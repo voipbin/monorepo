@@ -80,6 +80,8 @@ func (h *serviceHandler) ContactAddressGet(
 }
 
 // ContactAddressCreateIndependent creates an address via the /contact_addresses endpoint.
+// If contactID is uuid.Nil, creates an unresolved address (contact_id IS NULL) scoped to
+// the authenticated customer, skipping the contact-ownership lookup entirely.
 func (h *serviceHandler) ContactAddressCreateIndependent(
 	ctx context.Context,
 	a *auth.AuthIdentity,
@@ -100,6 +102,21 @@ func (h *serviceHandler) ContactAddressCreateIndependent(
 		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
+	if contactID == uuid.Nil {
+		// Unresolved creation: no contact to look up, scope directly to a.CustomerID.
+		if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+			return nil, serviceerrors.ErrPermissionDenied
+		}
+
+		res, err := h.reqHandler.ContactV1ContactAddressCreate(ctx, a.CustomerID, uuid.Nil, addrType, target, isPrimary, name, detail)
+		if err != nil {
+			log.Infof("Could not create unresolved contact address. err: %v", err)
+			return nil, err
+		}
+
+		return res, nil
+	}
+
 	// verify contact ownership
 	ct, err := h.contactGet(ctx, contactID)
 	if err != nil {
@@ -111,9 +128,68 @@ func (h *serviceHandler) ContactAddressCreateIndependent(
 		return nil, serviceerrors.ErrPermissionDenied
 	}
 
-	res, err := h.reqHandler.ContactV1ContactAddressCreate(ctx, contactID, addrType, target, isPrimary, name, detail)
+	res, err := h.reqHandler.ContactV1ContactAddressCreate(ctx, ct.CustomerID, contactID, addrType, target, isPrimary, name, detail)
 	if err != nil {
 		log.Infof("Could not create contact address. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// ContactAddressClaim attaches a currently-unresolved address to a contact.
+// Tenant isolation (both the address AND the target contact must belong to
+// a.CustomerID) is enforced here, per the "auth/ownership only in
+// bin-api-manager" rule.
+func (h *serviceHandler) ContactAddressClaim(
+	ctx context.Context,
+	a *auth.AuthIdentity,
+	addressID uuid.UUID,
+	contactID uuid.UUID,
+) (*cmcontact.Address, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "ContactAddressClaim",
+		"customer_id": a.CustomerID,
+		"address_id":  addressID,
+		"contact_id":  contactID,
+	})
+
+	if a.IsDirect() {
+		return nil, serviceerrors.ErrDirectAccessNotSupported
+	}
+
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		return nil, serviceerrors.ErrPermissionDenied
+	}
+
+	// Tenant isolation: AddressGet scopes by customerID
+	addr, err := h.reqHandler.ContactV1ContactAddressGet(ctx, a.CustomerID, addressID)
+	if err != nil {
+		log.Infof("Could not get contact address. err: %v", err)
+		return nil, err
+	}
+	if addr.CustomerID != a.CustomerID {
+		// Cross-tenant: return NotFound (404), not PermissionDenied (403), to
+		// avoid leaking the existence of another tenant's address. This
+		// matches the design doc's explicit anti-enumeration decision and
+		// mirrors contactHandler.ClaimAddress's own "treat cross-tenant
+		// contact as not-found" comment on the backend side.
+		return nil, serviceerrors.ErrNotFound
+	}
+
+	// Tenant isolation: verify the target contact also belongs to this customer
+	ct, err := h.contactGet(ctx, contactID)
+	if err != nil {
+		log.Errorf("Could not get contact. err: %v", err)
+		return nil, err
+	}
+	if ct.CustomerID != a.CustomerID {
+		return nil, serviceerrors.ErrNotFound
+	}
+
+	res, err := h.reqHandler.ContactV1ContactAddressClaim(ctx, a.CustomerID, addressID, contactID)
+	if err != nil {
+		log.Infof("Could not claim contact address. err: %v", err)
 		return nil, err
 	}
 
@@ -256,6 +332,8 @@ func (h *serviceHandler) ServiceAgentContactAddressGet(
 }
 
 // ServiceAgentContactAddressCreateIndependent creates an address for the service agent.
+// If contactID is uuid.Nil, creates an unresolved address (contact_id IS NULL) scoped to
+// the agent's customer, skipping the contact-ownership lookup entirely.
 func (h *serviceHandler) ServiceAgentContactAddressCreateIndependent(
 	ctx context.Context,
 	a *auth.AuthIdentity,
@@ -277,6 +355,17 @@ func (h *serviceHandler) ServiceAgentContactAddressCreateIndependent(
 		return nil, err
 	}
 
+	if contactID == uuid.Nil {
+		// Unresolved creation: no contact to look up, scope directly to agent.CustomerID.
+		res, err := h.reqHandler.ContactV1ContactAddressCreate(ctx, agent.CustomerID, uuid.Nil, addrType, target, isPrimary, name, detail)
+		if err != nil {
+			log.Infof("Could not create unresolved contact address. err: %v", err)
+			return nil, err
+		}
+
+		return res, nil
+	}
+
 	ct, err := h.contactGet(ctx, contactID)
 	if err != nil {
 		log.Errorf("Could not get contact. err: %v", err)
@@ -287,9 +376,61 @@ func (h *serviceHandler) ServiceAgentContactAddressCreateIndependent(
 		return nil, serviceerrors.ErrPermissionDenied
 	}
 
-	res, err := h.reqHandler.ContactV1ContactAddressCreate(ctx, contactID, addrType, target, isPrimary, name, detail)
+	res, err := h.reqHandler.ContactV1ContactAddressCreate(ctx, agent.CustomerID, contactID, addrType, target, isPrimary, name, detail)
 	if err != nil {
 		log.Infof("Could not create contact address. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// ServiceAgentContactAddressClaim attaches a currently-unresolved address to a contact,
+// for the service agent surface. Tenant isolation (both the address AND the target
+// contact must belong to the agent's customer) is enforced here.
+func (h *serviceHandler) ServiceAgentContactAddressClaim(
+	ctx context.Context,
+	a *auth.AuthIdentity,
+	addressID uuid.UUID,
+	contactID uuid.UUID,
+) (*cmcontact.Address, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "ServiceAgentContactAddressClaim",
+		"address_id": addressID,
+		"contact_id": contactID,
+	})
+
+	agent, err := h.agentGet(ctx, a.AgentID())
+	if err != nil {
+		log.Errorf("Could not get agent. err: %v", err)
+		return nil, err
+	}
+
+	// Tenant isolation: AddressGet scopes by customerID
+	addr, err := h.reqHandler.ContactV1ContactAddressGet(ctx, agent.CustomerID, addressID)
+	if err != nil {
+		log.Infof("Could not get contact address. err: %v", err)
+		return nil, err
+	}
+	if addr.CustomerID != agent.CustomerID {
+		// Cross-tenant: NotFound (404), not PermissionDenied (403) — see
+		// ContactAddressClaim's identical anti-enumeration rationale above.
+		return nil, serviceerrors.ErrNotFound
+	}
+
+	// Tenant isolation: verify the target contact also belongs to this customer
+	ct, err := h.contactGet(ctx, contactID)
+	if err != nil {
+		log.Errorf("Could not get contact. err: %v", err)
+		return nil, err
+	}
+	if ct.CustomerID != agent.CustomerID {
+		return nil, serviceerrors.ErrNotFound
+	}
+
+	res, err := h.reqHandler.ContactV1ContactAddressClaim(ctx, agent.CustomerID, addressID, contactID)
+	if err != nil {
+		log.Infof("Could not claim contact address. err: %v", err)
 		return nil, err
 	}
 

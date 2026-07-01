@@ -44,6 +44,9 @@ func (h *listenHandler) processV1ContactAddressesGet(ctx context.Context, m *soc
 	if v := u.Query().Get("type"); v != "" {
 		filters["type"] = v
 	}
+	if v := u.Query().Get("unresolved"); v == "true" {
+		filters["unresolved"] = true
+	}
 
 	pageToken := u.Query().Get("page_token")
 	pageSize := uint64(20)
@@ -85,8 +88,38 @@ func (h *listenHandler) processV1ContactAddressesPost(ctx context.Context, m *so
 	}
 
 	if reqData.ContactID == uuid.Nil {
-		log.Error("Missing contact_id.")
-		return simpleResponse(400), nil
+		if reqData.CustomerID == uuid.Nil {
+			log.Error("customer_id is required when creating an unresolved address (no contact_id).")
+			return simpleResponse(400), nil
+		}
+		if reqData.IsPrimary {
+			log.Error("An unresolved address (no contact_id) cannot be primary.")
+			return simpleResponse(400), nil
+		}
+
+		tmp, err := h.contactHandler.CreateUnresolvedAddress(ctx, reqData.CustomerID, &contact.Address{
+			Type:      reqData.Type,
+			Target:    reqData.Target,
+			Name:      reqData.Name,
+			Detail:    reqData.Detail,
+			IsPrimary: reqData.IsPrimary,
+		})
+		if err != nil {
+			log.Errorf("Could not create unresolved address. err: %v", err)
+			return simpleResponse(500), nil
+		}
+
+		data, err := json.Marshal(tmp)
+		if err != nil {
+			log.Debugf("Could not marshal the response message. err: %v", err)
+			return simpleResponse(500), nil
+		}
+
+		return &sock.Response{
+			StatusCode: 201,
+			DataType:   "application/json",
+			Data:       data,
+		}, nil
 	}
 
 	tmp, err := h.contactHandler.AddAddress(ctx, reqData.ContactID, &contact.Address{
@@ -219,6 +252,65 @@ func (h *listenHandler) processV1ContactAddressesIDPut(ctx context.Context, m *s
 	}
 
 	data, err := json.Marshal(updated)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	return &sock.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}, nil
+}
+
+// processV1ContactAddressesIDClaim handles POST /v1/contact_addresses/{id}/claim
+// Body: {contact_id}
+func (h *listenHandler) processV1ContactAddressesIDClaim(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 5 { // /v1/contact_addresses/{id}/claim
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "processV1ContactAddressesIDClaim",
+		"address_id": id,
+	})
+	log.WithField("request", m).Debug("Received request.")
+
+	// customer_id arrives via query param, same pattern as every other
+	// /v1/contact_addresses/{id} sibling endpoint (GET/PUT/DELETE above) —
+	// it is populated by the internal RPC caller (bin-api-manager), never
+	// by an external client directly.
+	u, err := url.Parse(m.URI)
+	if err != nil {
+		log.Errorf("Could not parse URI. err: %v", err)
+		return simpleResponse(400), nil
+	}
+	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
+	if customerID == uuid.Nil {
+		log.Error("Missing or invalid customer_id.")
+		return simpleResponse(400), nil
+	}
+
+	var reqData request.ContactAddressClaim
+	if err := json.Unmarshal(m.Data, &reqData); err != nil {
+		log.Errorf("Could not unmarshal the request. err: %v", err)
+		return simpleResponse(400), nil
+	}
+	if reqData.ContactID == uuid.Nil {
+		log.Error("Missing contact_id.")
+		return simpleResponse(400), nil
+	}
+
+	tmp, err := h.contactHandler.ClaimAddress(ctx, customerID, id, reqData.ContactID)
+	if err != nil {
+		log.Errorf("Could not claim address. err: %v", err)
+		return errorResponse(err), nil // routes cerrors.NotFound/AlreadyExists to 404/409
+	}
+
+	data, err := json.Marshal(tmp)
 	if err != nil {
 		log.Debugf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil

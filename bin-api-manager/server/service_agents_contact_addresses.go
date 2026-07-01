@@ -75,16 +75,20 @@ func (h *server) PostServiceAgentsContactAddresses(c *gin.Context) {
 		return
 	}
 
-	contactID := uuid.UUID(req.ContactId)
-	if contactID == uuid.Nil {
-		log.Error("Could not parse the contact_id.")
-		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_CONTACT_ID", "The provided contact_id is not a valid UUID."))
-		return
+	contactID := uuid.Nil
+	if req.ContactId != nil {
+		contactID = uuid.UUID(*req.ContactId)
 	}
 
 	isPrimary := false
 	if req.IsPrimary != nil {
 		isPrimary = *req.IsPrimary
+	}
+
+	if contactID == uuid.Nil && isPrimary {
+		log.Error("An unresolved address (no contact_id) cannot be primary.")
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_IS_PRIMARY", "An unresolved address (no contact_id) cannot be primary."))
+		return
 	}
 
 	name := ""
@@ -210,6 +214,50 @@ func (h *server) DeleteServiceAgentsContactAddressesId(c *gin.Context, id openap
 	res, err := h.serviceHandler.ServiceAgentContactAddressDeleteIndependent(c.Request.Context(), a, addressID)
 	if err != nil {
 		log.Errorf("Could not delete contact address. err: %v", err)
+		abortWithServiceError(c, err)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
+func (h *server) PostServiceAgentsContactAddressesIdClaim(c *gin.Context, id openapi_types.UUID) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "PostServiceAgentsContactAddressesIdClaim",
+		"request_address": c.ClientIP(),
+	})
+
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
+		return
+	}
+
+	addressID := uuid.UUID(id)
+	if addressID == uuid.Nil {
+		log.Error("Could not parse the id.")
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
+		return
+	}
+
+	var req openapi_server.PostServiceAgentsContactAddressesIdClaimJSONBody
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON.").Wrap(err))
+		return
+	}
+
+	contactID := uuid.UUID(req.ContactId)
+	if contactID == uuid.Nil {
+		log.Error("Could not parse the contact_id.")
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_CONTACT_ID", "The provided contact_id is not a valid UUID."))
+		return
+	}
+
+	res, err := h.serviceHandler.ServiceAgentContactAddressClaim(c.Request.Context(), a, addressID, contactID)
+	if err != nil {
+		log.Errorf("Could not claim contact address. err: %v", err)
 		abortWithServiceError(c, err)
 		return
 	}

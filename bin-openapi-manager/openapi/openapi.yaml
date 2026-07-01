@@ -7911,6 +7911,8 @@ paths:
     $ref: './paths/contact_addresses/main.yaml'
   /contact_addresses/{id}:
     $ref: './paths/contact_addresses/id.yaml'
+  /contact_addresses/{id}/claim:
+    $ref: './paths/contact_addresses/id_claim.yaml'
 
   /contacts:
     $ref: './paths/contacts/main.yaml'
@@ -8169,6 +8171,8 @@ paths:
     $ref: './paths/service_agents/contact_addresses.yaml'
   /service_agents/contact_addresses/{id}:
     $ref: './paths/service_agents/contact_addresses_id.yaml'
+  /service_agents/contact_addresses/{id}/claim:
+    $ref: './paths/service_agents/contact_addresses_id_claim.yaml'
 
   /service_agents/contacts/{id}/addresses:
     $ref: './paths/service_agents/contacts_id_addresses.yaml'

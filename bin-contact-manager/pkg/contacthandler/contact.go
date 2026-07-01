@@ -370,6 +370,75 @@ func (h *contactHandler) RemoveAddress(ctx context.Context, contactID, addressID
 	return res, nil
 }
 
+// CreateUnresolvedAddress creates an address row with no contact_id yet.
+// No event is published — the address is not attached to any contact.
+func (h *contactHandler) CreateUnresolvedAddress(ctx context.Context, customerID uuid.UUID, a *contact.Address) (*contact.Address, error) {
+	a.ID = h.utilHandler.UUIDCreate()
+	a.CustomerID = customerID
+	a.ContactID = uuid.Nil // explicit: unresolved
+
+	if err := h.db.AddressCreate(ctx, a); err != nil {
+		return nil, fmt.Errorf("could not create unresolved address: %w", err)
+	}
+
+	res, err := h.db.AddressGet(ctx, customerID, a.ID)
+	if err != nil {
+		return nil, fmt.Errorf("could not get created address: %w", err)
+	}
+	return res, nil
+}
+
+// ClaimAddress attaches a currently-unresolved address to contactID.
+// Publishes EventTypeContactUpdated on success (the address becomes part
+// of the contact's address set). Returns a typed conflict error (mapped to
+// 409 by the listenhandler) if the address is already resolved to a
+// DIFFERENT contact.
+func (h *contactHandler) ClaimAddress(ctx context.Context, customerID, addressID, contactID uuid.UUID) (*contact.Address, error) {
+	// Verify the target contact exists and belongs to this customer
+	// (defense-in-depth re-check; bin-api-manager already verified this).
+	c, err := h.db.ContactGet(ctx, contactID)
+	if err != nil {
+		return nil, err
+	}
+	if c.CustomerID != customerID {
+		return nil, cerrors.NotFound(
+			commonoutline.ServiceNameContactManager,
+			"CONTACT_NOT_FOUND",
+			"The contact was not found.",
+		) // treat cross-tenant contact as not-found, not permission-denied, to avoid leaking existence
+	}
+
+	if err := h.db.AddressClaim(ctx, customerID, addressID, contactID); err != nil {
+		if stderrors.Is(err, dbhandler.ErrConflict) {
+			return nil, cerrors.AlreadyExists(
+				commonoutline.ServiceNameContactManager,
+				"ADDRESS_ALREADY_CLAIMED",
+				"The address is already claimed by another contact.",
+			).Wrap(err)
+		}
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameContactManager,
+				"ADDRESS_NOT_FOUND",
+				"The address was not found.",
+			).Wrap(err)
+		}
+		return nil, err
+	}
+
+	addr, err := h.db.AddressGet(ctx, customerID, addressID)
+	if err != nil {
+		return nil, fmt.Errorf("could not get claimed address: %w", err)
+	}
+
+	// Publish the contact_updated event — this is the ONLY place that
+	// triggers the event for a successful claim. Reuse `c`, fetched above
+	// for the tenant check, instead of re-fetching the contact.
+	h.publishEvent(ctx, contact.EventTypeContactUpdated, c)
+
+	return addr, nil
+}
+
 // AddTag adds a tag to a contact
 func (h *contactHandler) AddTag(ctx context.Context, contactID, tagID uuid.UUID) (*contact.Contact, error) {
 	log := logrus.WithFields(logrus.Fields{

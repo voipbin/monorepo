@@ -38,6 +38,7 @@ type DBHandler interface {
 	AddressUpdate(ctx context.Context, id uuid.UUID, fields map[string]any) error
 	AddressDelete(ctx context.Context, id uuid.UUID) error
 	AddressResetPrimary(ctx context.Context, contactID uuid.UUID) error
+	AddressClaim(ctx context.Context, customerID, addressID, contactID uuid.UUID) error
 
 	// TagAssignment operations
 	TagAssignmentCreate(ctx context.Context, contactID, tagID uuid.UUID) error
@@ -68,6 +69,7 @@ type handler struct {
 // handler errors
 var (
 	ErrNotFound = fmt.Errorf("record not found")
+	ErrConflict = fmt.Errorf("address already claimed")
 )
 
 // NewHandler creates DBHandler

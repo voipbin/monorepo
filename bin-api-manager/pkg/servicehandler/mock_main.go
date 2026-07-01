@@ -1913,6 +1913,21 @@ func (mr *MockServiceHandlerMockRecorder) ConferencecallList(ctx, a, size, token
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferencecallList", reflect.TypeOf((*MockServiceHandler)(nil).ConferencecallList), ctx, a, size, token)
 }
 
+// ContactAddressClaim mocks base method.
+func (m *MockServiceHandler) ContactAddressClaim(ctx context.Context, a *auth.AuthIdentity, addressID, contactID uuid.UUID) (*contact.Address, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ContactAddressClaim", ctx, a, addressID, contactID)
+	ret0, _ := ret[0].(*contact.Address)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ContactAddressClaim indicates an expected call of ContactAddressClaim.
+func (mr *MockServiceHandlerMockRecorder) ContactAddressClaim(ctx, a, addressID, contactID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactAddressClaim", reflect.TypeOf((*MockServiceHandler)(nil).ContactAddressClaim), ctx, a, addressID, contactID)
+}
+
 // ContactAddressCreate mocks base method.
 func (m *MockServiceHandler) ContactAddressCreate(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, addrType, target string, isPrimary bool, name, detail string) (*contact.WebhookMessage, error) {
 	m.ctrl.T.Helper()
@@ -4192,6 +4207,21 @@ func (m *MockServiceHandler) ServiceAgentCallList(ctx context.Context, a *auth.A
 func (mr *MockServiceHandlerMockRecorder) ServiceAgentCallList(ctx, a, size, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentCallList", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentCallList), ctx, a, size, token)
+}
+
+// ServiceAgentContactAddressClaim mocks base method.
+func (m *MockServiceHandler) ServiceAgentContactAddressClaim(ctx context.Context, a *auth.AuthIdentity, addressID, contactID uuid.UUID) (*contact.Address, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentContactAddressClaim", ctx, a, addressID, contactID)
+	ret0, _ := ret[0].(*contact.Address)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceAgentContactAddressClaim indicates an expected call of ServiceAgentContactAddressClaim.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentContactAddressClaim(ctx, a, addressID, contactID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentContactAddressClaim", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentContactAddressClaim), ctx, a, addressID, contactID)
 }
 
 // ServiceAgentContactAddressCreate mocks base method.

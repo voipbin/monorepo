@@ -22,6 +22,17 @@ get:
         type: string
         enum: [tel, email]
         example: tel
+    - name: unresolved
+      in: query
+      required: false
+      description: >-
+        When true, list only unresolved addresses (contact_id IS NULL) for
+        the customer — the pool of addresses not yet attached to any
+        contact. Mutually exclusive with contact_id; if both are given,
+        unresolved=true wins and contact_id is ignored.
+      schema:
+        type: boolean
+        example: true
   responses:
     '200':
       description: Successful response.
@@ -43,7 +54,11 @@ get:
 
 post:
   summary: Create a contact address
-  description: Create a new address (tel or email) for a contact.
+  description: >-
+    Create a new address (tel or email) for a contact. If contact_id is
+    omitted, creates an unresolved address (not yet attached to any
+    contact) for the authenticated customer's unresolved pool; such an
+    address cannot be primary.
   tags:
     - Contact
   requestBody:
@@ -53,14 +68,16 @@ post:
         schema:
           type: object
           required:
-            - contact_id
             - type
             - target
           properties:
             contact_id:
               type: string
               format: uuid
-              description: The ID of the contact to add the address to.
+              description: >-
+                The ID of the contact to add the address to. Omit to
+                create an unresolved address in the customer's unresolved
+                pool.
               example: 5e4a0680-eba3-4001-a000-000000000001
             type:
               type: string

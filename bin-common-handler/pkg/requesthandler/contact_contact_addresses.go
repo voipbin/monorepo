@@ -57,8 +57,12 @@ func (r *requestHandler) ContactV1ContactAddressList(
 }
 
 // ContactV1ContactAddressCreate sends a request to contact-manager to create an address.
+// customerID is the tenant-scoping value, always derived from the authenticated
+// identity in bin-api-manager — never client-supplied. When contactID is
+// uuid.Nil, contact-manager creates an "unresolved" address (no contact_id).
 func (r *requestHandler) ContactV1ContactAddressCreate(
 	ctx context.Context,
+	customerID uuid.UUID,
 	contactID uuid.UUID,
 	addrType string,
 	target string,
@@ -69,12 +73,13 @@ func (r *requestHandler) ContactV1ContactAddressCreate(
 	uri := "/v1/contact_addresses"
 
 	data := &cmrequest.ContactAddressCreate{
-		ContactID: contactID,
-		Type:      addrType,
-		Target:    target,
-		IsPrimary: isPrimary,
-		Name:      name,
-		Detail:    detail,
+		CustomerID: customerID,
+		ContactID:  contactID,
+		Type:       addrType,
+		Target:     target,
+		IsPrimary:  isPrimary,
+		Name:       name,
+		Detail:     detail,
 	}
 
 	m, err := json.Marshal(data)
@@ -83,6 +88,35 @@ func (r *requestHandler) ContactV1ContactAddressCreate(
 	}
 
 	tmp, err := r.sendRequestContact(ctx, uri, sock.RequestMethodPost, "contact/contact_addresses", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
+		return nil, err
+	}
+
+	var res cmcontact.Address
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
+}
+
+// ContactV1ContactAddressClaim sends a request to contact-manager to claim
+// an unresolved address onto a contact.
+func (r *requestHandler) ContactV1ContactAddressClaim(
+	ctx context.Context,
+	customerID uuid.UUID,
+	addressID uuid.UUID,
+	contactID uuid.UUID,
+) (*cmcontact.Address, error) {
+	uri := fmt.Sprintf("/v1/contact_addresses/%s/claim?customer_id=%s", addressID, customerID)
+
+	data := &cmrequest.ContactAddressClaim{ContactID: contactID}
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestContact(ctx, uri, sock.RequestMethodPost, "contact/contact_addresses/<id>/claim", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}

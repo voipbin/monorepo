@@ -3472,19 +3472,34 @@ func (mr *MockRequestHandlerMockRecorder) ContactV1AddressUpdate(ctx, contactID,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactV1AddressUpdate", reflect.TypeOf((*MockRequestHandler)(nil).ContactV1AddressUpdate), ctx, contactID, addressID, fields)
 }
 
-// ContactV1ContactAddressCreate mocks base method.
-func (m *MockRequestHandler) ContactV1ContactAddressCreate(ctx context.Context, contactID uuid.UUID, addrType, target string, isPrimary bool, name, detail string) (*contact.Address, error) {
+// ContactV1ContactAddressClaim mocks base method.
+func (m *MockRequestHandler) ContactV1ContactAddressClaim(ctx context.Context, customerID, addressID, contactID uuid.UUID) (*contact.Address, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ContactV1ContactAddressCreate", ctx, contactID, addrType, target, isPrimary, name, detail)
+	ret := m.ctrl.Call(m, "ContactV1ContactAddressClaim", ctx, customerID, addressID, contactID)
+	ret0, _ := ret[0].(*contact.Address)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ContactV1ContactAddressClaim indicates an expected call of ContactV1ContactAddressClaim.
+func (mr *MockRequestHandlerMockRecorder) ContactV1ContactAddressClaim(ctx, customerID, addressID, contactID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactV1ContactAddressClaim", reflect.TypeOf((*MockRequestHandler)(nil).ContactV1ContactAddressClaim), ctx, customerID, addressID, contactID)
+}
+
+// ContactV1ContactAddressCreate mocks base method.
+func (m *MockRequestHandler) ContactV1ContactAddressCreate(ctx context.Context, customerID, contactID uuid.UUID, addrType, target string, isPrimary bool, name, detail string) (*contact.Address, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ContactV1ContactAddressCreate", ctx, customerID, contactID, addrType, target, isPrimary, name, detail)
 	ret0, _ := ret[0].(*contact.Address)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ContactV1ContactAddressCreate indicates an expected call of ContactV1ContactAddressCreate.
-func (mr *MockRequestHandlerMockRecorder) ContactV1ContactAddressCreate(ctx, contactID, addrType, target, isPrimary, name, detail any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) ContactV1ContactAddressCreate(ctx, customerID, contactID, addrType, target, isPrimary, name, detail any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactV1ContactAddressCreate", reflect.TypeOf((*MockRequestHandler)(nil).ContactV1ContactAddressCreate), ctx, contactID, addrType, target, isPrimary, name, detail)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactV1ContactAddressCreate", reflect.TypeOf((*MockRequestHandler)(nil).ContactV1ContactAddressCreate), ctx, customerID, contactID, addrType, target, isPrimary, name, detail)
 }
 
 // ContactV1ContactAddressDelete mocks base method.
