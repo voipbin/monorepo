@@ -149,7 +149,12 @@ func (h *listenHandler) processV1ContactAddressesPost(ctx context.Context, m *so
 
 // processV1ContactAddressesIDGet handles GET /v1/contact_addresses/{id} request
 func (h *listenHandler) processV1ContactAddressesIDGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
-	uriItems := strings.Split(m.URI, "/")
+	u, err := url.Parse(m.URI)
+	if err != nil {
+		return simpleResponse(400), nil
+	}
+
+	uriItems := strings.Split(u.Path, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
 	}
@@ -162,7 +167,6 @@ func (h *listenHandler) processV1ContactAddressesIDGet(ctx context.Context, m *s
 	log.WithField("request", m).Debug("Received request.")
 
 	// customer_id is passed via query param for tenant scoping
-	u, _ := url.Parse(m.URI)
 	customerID := uuid.FromStringOrNil(u.Query().Get("customer_id"))
 	if customerID == uuid.Nil {
 		log.Error("Missing or invalid customer_id.")
@@ -191,7 +195,12 @@ func (h *listenHandler) processV1ContactAddressesIDGet(ctx context.Context, m *s
 // processV1ContactAddressesIDPut handles PUT /v1/contact_addresses/{id} request
 // Body: {target?, is_primary?}
 func (h *listenHandler) processV1ContactAddressesIDPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
-	uriItems := strings.Split(m.URI, "/")
+	u, err := url.Parse(m.URI)
+	if err != nil {
+		return simpleResponse(400), nil
+	}
+
+	uriItems := strings.Split(u.Path, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
 	}
@@ -210,7 +219,6 @@ func (h *listenHandler) processV1ContactAddressesIDPut(ctx context.Context, m *s
 	}
 
 	// Build contact_id from URI query (needed for UpdateAddress)
-	u, _ := url.Parse(m.URI)
 	contactID := uuid.FromStringOrNil(u.Query().Get("contact_id"))
 
 	fields := map[string]any{}
@@ -325,7 +333,12 @@ func (h *listenHandler) processV1ContactAddressesIDClaim(ctx context.Context, m 
 
 // processV1ContactAddressesIDDelete handles DELETE /v1/contact_addresses/{id} request
 func (h *listenHandler) processV1ContactAddressesIDDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
-	uriItems := strings.Split(m.URI, "/")
+	u, err := url.Parse(m.URI)
+	if err != nil {
+		return simpleResponse(400), nil
+	}
+
+	uriItems := strings.Split(u.Path, "/")
 	if len(uriItems) < 4 {
 		return simpleResponse(400), nil
 	}
@@ -337,7 +350,6 @@ func (h *listenHandler) processV1ContactAddressesIDDelete(ctx context.Context, m
 	})
 	log.WithField("request", m).Debug("Received request.")
 
-	u, _ := url.Parse(m.URI)
 	contactID := uuid.FromStringOrNil(u.Query().Get("contact_id"))
 
 	tmp, err := h.contactHandler.RemoveAddress(ctx, contactID, id)
