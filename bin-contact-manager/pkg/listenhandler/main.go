@@ -54,8 +54,8 @@ var (
 	// v1 contact_addresses (independent resource)
 	regV1ContactAddresses        = regexp.MustCompile("/v1/contact_addresses$")
 	regV1ContactAddressesGet     = regexp.MustCompile(`/v1/contact_addresses\?(.*)$`)
-	regV1ContactAddressesID      = regexp.MustCompile("/v1/contact_addresses/" + regUUID + "$")
-	regV1ContactAddressesIDClaim = regexp.MustCompile("/v1/contact_addresses/" + regUUID + "/claim$")
+	regV1ContactAddressesID      = regexp.MustCompile("/v1/contact_addresses/" + regUUID + `(\?.*)?$`)
+	regV1ContactAddressesIDClaim = regexp.MustCompile("/v1/contact_addresses/" + regUUID + `/claim(\?.*)?$`)
 
 	// v1 contacts/{id}/addresses
 	regV1ContactsAddresses   = regexp.MustCompile("/v1/contacts/" + regUUID + "/addresses$")
