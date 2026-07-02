@@ -4,9 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
+	mysql_driver "github.com/go-sql-driver/mysql"
 	"github.com/gofrs/uuid"
 
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
@@ -133,6 +135,35 @@ func (h *handler) AddressCreate(ctx context.Context, a *contact.Address) error {
 	}
 
 	if _, err := h.db.Exec(query, args...); err != nil {
+		// Detect a unique-constraint violation SPECIFICALLY on
+		// idx_contact_addresses_cust_type_target(customer_id, type, target)
+		// and surface it as a typed sentinel so callers can distinguish
+		// "duplicate address" from a genuine infrastructure failure.
+		//
+		// contact_addresses has a SECOND unique index,
+		// idx_contact_addresses_cust_primary(customer_id, primary_contact_uk),
+		// enforcing the one-primary-per-contact invariant via a generated
+		// column. Both indexes can raise MySQL errno 1062 / SQLite "UNIQUE
+		// constraint failed", so the violated index/key name MUST be
+		// inspected — checking only the errno/substring would misclassify
+		// a primary-invariant violation as a duplicate-target conflict.
+		// MySQL's error message names the violated key (e.g. "Duplicate
+		// entry '...' for key 'idx_contact_addresses_cust_type_target'");
+		// SQLite's names the violated columns (e.g. "UNIQUE constraint
+		// failed: contact_addresses.customer_id, contact_addresses.type,
+		// contact_addresses.target"). Same detection idiom as
+		// InteractionCreate, narrowed to the specific index.
+		if me, ok := err.(*mysql_driver.MySQLError); ok && me.Number == 1062 {
+			if strings.Contains(me.Message, "idx_contact_addresses_cust_type_target") {
+				return ErrDuplicateTarget
+			}
+			return fmt.Errorf("could not execute. AddressCreate. err: %v", err)
+		}
+		if strings.Contains(err.Error(), "UNIQUE constraint failed") &&
+			strings.Contains(err.Error(), "contact_addresses.type") &&
+			strings.Contains(err.Error(), "contact_addresses.target") {
+			return ErrDuplicateTarget
+		}
 		return fmt.Errorf("could not execute. AddressCreate. err: %v", err)
 	}
 

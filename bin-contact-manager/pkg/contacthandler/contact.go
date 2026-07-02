@@ -275,7 +275,18 @@ func (h *contactHandler) AddAddress(ctx context.Context, contactID uuid.UUID, a 
 		a.Target, _ = commonaddress.NormalizeTarget(commonaddress.TypeEmail, a.Target)
 	}
 
-	// Enforce single primary: reset existing primaries before setting new one
+	// Enforce single primary: reset existing primaries before setting new one.
+	// NOTE: AddressResetPrimary and AddressCreate are two separate,
+	// unguarded statements (no transaction wrapping them). Under
+	// concurrent AddAddress(IsPrimary=true) calls for the same contact,
+	// the reset/insert pair can interleave and the losing request's
+	// insert can then collide on idx_contact_addresses_cust_primary
+	// (the one-primary-per-contact invariant), which AddressCreate now
+	// correctly classifies as a non-ErrDuplicateTarget error (see the
+	// index-name check in AddressCreate) rather than misreporting it as
+	// ADDRESS_ALREADY_EXISTS. This ordering/non-atomicity predates this
+	// fix and is not addressed here; flagged for a future transactional
+	// follow-up if the race is ever observed in production.
 	if a.IsPrimary {
 		if err := h.db.AddressResetPrimary(ctx, contactID); err != nil {
 			return nil, fmt.Errorf("could not reset primary address: %w", err)
@@ -283,6 +294,13 @@ func (h *contactHandler) AddAddress(ctx context.Context, contactID uuid.UUID, a 
 	}
 
 	if err := h.db.AddressCreate(ctx, a); err != nil {
+		if stderrors.Is(err, dbhandler.ErrDuplicateTarget) {
+			return nil, cerrors.AlreadyExists(
+				commonoutline.ServiceNameContactManager,
+				"ADDRESS_ALREADY_EXISTS",
+				"An address with this type and target already exists for this customer.",
+			).Wrap(err)
+		}
 		return nil, fmt.Errorf("could not create address: %w", err)
 	}
 

@@ -131,7 +131,7 @@ func (h *listenHandler) processV1ContactAddressesPost(ctx context.Context, m *so
 	})
 	if err != nil {
 		log.Errorf("Could not add address. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
