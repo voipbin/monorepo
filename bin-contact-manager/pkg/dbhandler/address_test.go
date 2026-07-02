@@ -298,6 +298,82 @@ func Test_AddressCreate_Duplicate(t *testing.T) {
 	}
 }
 
+// Test_AddressCreate_PrimaryIndexCollision_NotMisclassified is a regression
+// test for a round-2 PR-review finding on issue #1044's fix:
+// contact_addresses has a SECOND unique index,
+// idx_contact_addresses_cust_primary(customer_id, primary_contact_uk), which
+// enforces the one-primary-per-contact invariant via a generated column.
+// Both this index and idx_contact_addresses_cust_type_target can raise
+// MySQL errno 1062 / SQLite "UNIQUE constraint failed", so AddressCreate's
+// duplicate-target detection must inspect WHICH index/key fired, not just
+// the errno/substring — otherwise a primary-invariant violation (two
+// addresses with DIFFERENT type/target, both IsPrimary=true, for the same
+// contact) gets misclassified as ErrDuplicateTarget / ADDRESS_ALREADY_EXISTS
+// (409), which is materially wrong for what is actually a different
+// constraint being violated.
+func Test_AddressCreate_PrimaryIndexCollision_NotMisclassified(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	h := handler{
+		utilHandler: mockUtil,
+		db:          dbTest,
+		cache:       mockCache,
+	}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("ab1b2c3d-0011-0011-0011-000000000001")
+	contactID := uuid.FromStringOrNil("ab1b2c3d-0011-0011-0011-000000000002")
+	curTime := timePtr(time.Date(2026, 6, 28, 9, 0, 0, 0, time.UTC))
+
+	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
+	c := &contact.Contact{
+		Identity: commonidentity.Identity{ID: contactID, CustomerID: customerID},
+		Source:   "manual",
+	}
+	if err := h.ContactCreate(ctx, c); err != nil {
+		t.Fatalf("ContactCreate() error = %v", err)
+	}
+
+	// first primary address: tel
+	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
+	a1 := &contact.Address{
+		ID:         uuid.FromStringOrNil("ab1b2c3d-0011-0011-0011-000000000003"),
+		CustomerID: customerID,
+		ContactID:  contactID,
+		Type:       contact.AddressTypeTel,
+		Target:     "+155****9101",
+		IsPrimary:  true,
+	}
+	if err := h.AddressCreate(ctx, a1); err != nil {
+		t.Fatalf("first AddressCreate() error = %v", err)
+	}
+
+	// second primary address: DIFFERENT type/target, same contact, also
+	// primary — collides on idx_contact_addresses_cust_primary, NOT on
+	// idx_contact_addresses_cust_type_target. Must NOT be ErrDuplicateTarget.
+	mockUtil.EXPECT().TimeNow().Return(curTime)
+	a2 := &contact.Address{
+		ID:         uuid.FromStringOrNil("ab1b2c3d-0011-0011-0011-000000000004"),
+		CustomerID: customerID,
+		ContactID:  contactID,
+		Type:       contact.AddressTypeEmail,
+		Target:     "second-primary@example.com",
+		IsPrimary:  true,
+	}
+	err := h.AddressCreate(ctx, a2)
+	if err == nil {
+		t.Fatal("AddressCreate() expected an error for the primary-index collision, got nil")
+	}
+	if stderrors.Is(err, ErrDuplicateTarget) {
+		t.Errorf("AddressCreate() primary-index collision must NOT be classified as ErrDuplicateTarget (that index/key is idx_contact_addresses_cust_primary, not idx_contact_addresses_cust_type_target), got: %v", err)
+	}
+}
+
 func Test_AddressUpdate(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
