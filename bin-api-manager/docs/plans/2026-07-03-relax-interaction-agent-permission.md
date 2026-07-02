@@ -126,10 +126,18 @@ coverage, not a rewrite of existing cases:
 - Add one new success-path test per method (5 total) in
   `interaction_test.go` asserting a `PermissionCustomerAgent`-only
   identity (no Admin/Manager bits) now succeeds.
-- `server/interactions_test.go` currently has zero permission-path test
-  cases; add at least one asserting the same at the HTTP-handler level.
 - Keep existing `PermissionNone` / cross-`customer_id` rejection cases
   unchanged — they must still fail after this change.
+- `server/interactions_test.go` has zero permission-path test cases
+  today, and this PR does not add any there. That file's tests mock
+  `ServiceHandler` entirely (`servicehandler.NewMockServiceHandler`), so a
+  permission-bitmask regression in `interaction.go` is invisible at that
+  layer regardless of what mock expectations are set — the actual
+  authorization logic lives one layer down, in `pkg/servicehandler`, which
+  is where the 5 new tests above already assert it directly. Adding a
+  same-shaped test at the HTTP-handler layer would only prove the mock
+  wiring works, not that permission enforcement works, so it is skipped
+  as redundant rather than deferred as future work.
 
 ## Not in scope
 
