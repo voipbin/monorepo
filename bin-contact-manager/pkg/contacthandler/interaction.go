@@ -31,6 +31,40 @@ func deriveEndpoints(direction string, source, dest commonaddress.Address) (peer
 	}
 }
 
+// crmIneligiblePeerTypes lists address types that never represent a
+// re-identifiable external contact (customer). Interactions whose peer
+// resolves to one of these types are internal-resource noise (agent
+// extensions, conference legs, AI resources, PSTN trunk direct-SIP legs,
+// etc.) and must not be projected into the CRM interaction timeline: they
+// can never be matched to a contact_address, so they would otherwise sit in
+// the unresolved queue forever.
+//
+// Note: PSTN trunk partner calls are NOT affected by excluding TypeSIP here.
+// bin-call-manager normalizes trunk-domain and SIP-domain incoming/outgoing
+// call endpoints to TypeTel before publishing the webhook event (see
+// AddressGetSource/AddressGetDestination call sites in
+// bin-call-manager/pkg/callhandler), so a real external SIP trunk partner is
+// always observed here as peer_type=tel, never peer_type=sip.
+var crmIneligiblePeerTypes = map[commonaddress.Type]struct{}{
+	commonaddress.TypeAgent:      {},
+	commonaddress.TypeAI:         {},
+	commonaddress.TypeAITeam:     {},
+	commonaddress.TypeConference: {},
+	commonaddress.TypeExtension:  {},
+	commonaddress.TypeSIP:        {},
+	"web_session":                {}, // synthetic type; not in commonaddress.Type enum
+}
+
+// isCRMEligiblePeer reports whether the given peer address type can ever
+// represent an external, re-identifiable contact. Interactions with an
+// ineligible peer type are dropped at projection time (never persisted),
+// not merely filtered out of the unresolved queue at read time, since they
+// can never legitimately resolve to a contact.
+func isCRMEligiblePeer(peerType commonaddress.Type) bool {
+	_, ineligible := crmIneligiblePeerTypes[peerType]
+	return !ineligible
+}
+
 // EventCallCreated projects a call-created webhook event into the CRM
 // interaction timeline.
 func (h *contactHandler) EventCallCreated(ctx context.Context, m *call.WebhookMessage) error {
@@ -41,6 +75,11 @@ func (h *contactHandler) EventCallCreated(ctx context.Context, m *call.WebhookMe
 	})
 
 	peer, local := deriveEndpoints(string(m.Direction), m.Source, m.Destination)
+
+	if !isCRMEligiblePeer(peer.Type) {
+		log.Debugf("Peer type is not CRM-eligible; skipping interaction projection. peer_type: %s", peer.Type)
+		return nil
+	}
 
 	peerTarget, err := commonaddress.NormalizeTarget(peer.Type, peer.Target)
 	if err != nil {
@@ -84,6 +123,11 @@ func (h *contactHandler) EventConversationMessageCreated(ctx context.Context, m 
 	})
 
 	peer, local := deriveEndpoints(string(m.Direction), m.Source, m.Destination)
+
+	if !isCRMEligiblePeer(peer.Type) {
+		log.Debugf("Peer type is not CRM-eligible; skipping interaction projection. peer_type: %s", peer.Type)
+		return nil
+	}
 
 	peerTarget, err := commonaddress.NormalizeTarget(peer.Type, peer.Target)
 	if err != nil {
