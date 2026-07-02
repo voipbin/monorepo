@@ -283,6 +283,13 @@ func (h *contactHandler) AddAddress(ctx context.Context, contactID uuid.UUID, a 
 	}
 
 	if err := h.db.AddressCreate(ctx, a); err != nil {
+		if stderrors.Is(err, dbhandler.ErrDuplicateTarget) {
+			return nil, cerrors.AlreadyExists(
+				commonoutline.ServiceNameContactManager,
+				"ADDRESS_ALREADY_EXISTS",
+				"An address with this type and target already exists for this customer.",
+			).Wrap(err)
+		}
 		return nil, fmt.Errorf("could not create address: %w", err)
 	}
 

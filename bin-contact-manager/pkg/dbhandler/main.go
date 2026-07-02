@@ -70,6 +70,12 @@ type handler struct {
 var (
 	ErrNotFound = fmt.Errorf("record not found")
 	ErrConflict = fmt.Errorf("address already claimed")
+
+	// ErrDuplicateTarget is returned by AddressCreate when the insert
+	// violates the unique index on contact_addresses(customer_id, type,
+	// target). Distinct from ErrConflict, whose message ("address already
+	// claimed") is specific to the ClaimAddress flow.
+	ErrDuplicateTarget = fmt.Errorf("address already exists for this customer")
 )
 
 // NewHandler creates DBHandler

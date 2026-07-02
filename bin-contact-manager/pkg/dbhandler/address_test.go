@@ -3,6 +3,7 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
+	stderrors "errors"
 	"testing"
 	"time"
 
@@ -216,6 +217,84 @@ func Test_AddressCreate(t *testing.T) {
 	}
 	if !got.IsPrimary {
 		t.Errorf("AddressCreate() IsPrimary = false, want true")
+	}
+}
+
+// Test_AddressCreate_Duplicate covers the unique-constraint guard on
+// idx_contact_addresses_cust_type_target(customer_id, type, target):
+// inserting a second address with the same (customer_id, type, target)
+// tuple must surface ErrDuplicateTarget, not a generic wrapped error, per
+// issue #1044 (POST /v1/contacts/{id}/addresses returned bare 500 on
+// duplicate address instead of a distinguishable conflict status).
+func Test_AddressCreate_Duplicate(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	h := handler{
+		utilHandler: mockUtil,
+		db:          dbTest,
+		cache:       mockCache,
+	}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("ab1b2c3d-0010-0010-0010-000000000001")
+	contactID1 := uuid.FromStringOrNil("ab1b2c3d-0010-0010-0010-000000000002")
+	contactID2 := uuid.FromStringOrNil("ab1b2c3d-0010-0010-0010-000000000003")
+	curTime := timePtr(time.Date(2026, 6, 28, 9, 0, 0, 0, time.UTC))
+
+	// Create two parent contacts for the same customer
+	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
+	c1 := &contact.Contact{
+		Identity: commonidentity.Identity{ID: contactID1, CustomerID: customerID},
+		Source:   "manual",
+	}
+	if err := h.ContactCreate(ctx, c1); err != nil {
+		t.Fatalf("ContactCreate() error = %v", err)
+	}
+
+	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
+	c2 := &contact.Contact{
+		Identity: commonidentity.Identity{ID: contactID2, CustomerID: customerID},
+		Source:   "manual",
+	}
+	if err := h.ContactCreate(ctx, c2); err != nil {
+		t.Fatalf("ContactCreate() error = %v", err)
+	}
+
+	target := "+155****9001"
+
+	// first insert for contact1 succeeds
+	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
+	a1 := &contact.Address{
+		ID:         uuid.FromStringOrNil("ab1b2c3d-0010-0010-0010-000000000004"),
+		CustomerID: customerID,
+		ContactID:  contactID1,
+		Type:       contact.AddressTypeTel,
+		Target:     target,
+	}
+	if err := h.AddressCreate(ctx, a1); err != nil {
+		t.Fatalf("first AddressCreate() error = %v", err)
+	}
+
+	// second insert with the same (customer_id, type, target), even under a
+	// DIFFERENT contact, must be rejected as a duplicate — the unique index
+	// is scoped to customer_id, not contact_id.
+	mockUtil.EXPECT().TimeNow().Return(curTime)
+	a2 := &contact.Address{
+		ID:         uuid.FromStringOrNil("ab1b2c3d-0010-0010-0010-000000000005"),
+		CustomerID: customerID,
+		ContactID:  contactID2,
+		Type:       contact.AddressTypeTel,
+		Target:     target,
+	}
+	err := h.AddressCreate(ctx, a2)
+	if !stderrors.Is(err, ErrDuplicateTarget) {
+		t.Errorf("AddressCreate() duplicate target: expected ErrDuplicateTarget, got: %v", err)
 	}
 }
 

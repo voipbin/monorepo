@@ -2,6 +2,7 @@ package contacthandler
 
 import (
 	"context"
+	stderrors "errors"
 	"fmt"
 	"reflect"
 	"testing"
@@ -11,6 +12,7 @@ import (
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
 	cmcustomer "monorepo/bin-customer-manager/models/customer"
 
 	"github.com/gofrs/uuid"
@@ -985,6 +987,100 @@ func Test_AddAddress_Error(t *testing.T) {
 	_, err := h.AddAddress(ctx, contactID, addr)
 	if err == nil {
 		t.Error("AddAddress() expected error")
+	}
+}
+
+// Test_AddAddress_DuplicateTarget covers the classification path added for
+// issue #1044: a dbhandler.ErrDuplicateTarget from AddressCreate must be
+// mapped to a typed cerrors.AlreadyExists conflict (reason
+// ADDRESS_ALREADY_EXISTS), not a bare generic error, so the listenhandler
+// can route it to 409 via errorResponse instead of a bare 500.
+func Test_AddAddress_DuplicateTarget(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	h := contactHandler{
+		utilHandler:   mockUtil,
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+	ctx := context.Background()
+
+	contactID := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")
+	addr := &contact.Address{Type: contact.AddressTypeTel, Target: "+1-555-123-4567"}
+
+	responseContact := &contact.Contact{
+		Identity: commonidentity.Identity{
+			ID:         contactID,
+			CustomerID: uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222"),
+		},
+	}
+
+	mockDB.EXPECT().ContactGet(ctx, contactID).Return(responseContact, nil)
+	mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333"))
+	mockDB.EXPECT().AddressCreate(ctx, gomock.Any()).Return(dbhandler.ErrDuplicateTarget)
+
+	_, err := h.AddAddress(ctx, contactID, addr)
+
+	var ve *cerrors.VoipbinError
+	if !stderrors.As(err, &ve) {
+		t.Fatalf("AddAddress() expected a typed *cerrors.VoipbinError, got: %v (%T)", err, err)
+	}
+	if ve.Status != cerrors.StatusAlreadyExists {
+		t.Errorf("AddAddress() Status = %v, want %v", ve.Status, cerrors.StatusAlreadyExists)
+	}
+	if ve.Reason != "ADDRESS_ALREADY_EXISTS" {
+		t.Errorf("AddAddress() Reason = %q, want %q", ve.Reason, "ADDRESS_ALREADY_EXISTS")
+	}
+}
+
+// Test_AddAddress_DuplicateTarget_PrimaryReset confirms the existing
+// IsPrimary-reset-then-create ordering (AddressResetPrimary runs BEFORE
+// AddressCreate) is unaffected by the new classification: even when the
+// address being added is IsPrimary=true and AddressCreate then fails with
+// ErrDuplicateTarget, the typed conflict is still returned correctly. Note:
+// the reset having already run with no compensating rollback is pre-existing
+// behavior, not newly introduced or worsened by this fix.
+func Test_AddAddress_DuplicateTarget_PrimaryReset(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	h := contactHandler{
+		utilHandler:   mockUtil,
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+	ctx := context.Background()
+
+	contactID := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111112")
+	addr := &contact.Address{Type: contact.AddressTypeTel, Target: "+1-555-123-4568", IsPrimary: true}
+
+	responseContact := &contact.Contact{
+		Identity: commonidentity.Identity{
+			ID:         contactID,
+			CustomerID: uuid.FromStringOrNil("22222222-2222-2222-2222-222222222223"),
+		},
+	}
+
+	mockDB.EXPECT().ContactGet(ctx, contactID).Return(responseContact, nil)
+	mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("33333333-3333-3333-3333-333333333334"))
+	mockDB.EXPECT().AddressResetPrimary(ctx, contactID).Return(nil)
+	mockDB.EXPECT().AddressCreate(ctx, gomock.Any()).Return(dbhandler.ErrDuplicateTarget)
+
+	_, err := h.AddAddress(ctx, contactID, addr)
+
+	var ve *cerrors.VoipbinError
+	if !stderrors.As(err, &ve) {
+		t.Fatalf("AddAddress() expected a typed *cerrors.VoipbinError, got: %v (%T)", err, err)
+	}
+	if ve.Reason != "ADDRESS_ALREADY_EXISTS" {
+		t.Errorf("AddAddress() Reason = %q, want %q", ve.Reason, "ADDRESS_ALREADY_EXISTS")
 	}
 }
 

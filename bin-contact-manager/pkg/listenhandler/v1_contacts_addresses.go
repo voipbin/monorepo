@@ -93,7 +93,7 @@ func (h *listenHandler) processV1ContactsAddressesPost(ctx context.Context, m *s
 	tmp, err := h.contactHandler.AddAddress(ctx, contactID, address)
 	if err != nil {
 		log.Errorf("Could not add address. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)

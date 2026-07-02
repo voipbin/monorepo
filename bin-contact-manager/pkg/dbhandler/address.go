@@ -4,9 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
+	mysql_driver "github.com/go-sql-driver/mysql"
 	"github.com/gofrs/uuid"
 
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
@@ -133,6 +135,18 @@ func (h *handler) AddressCreate(ctx context.Context, a *contact.Address) error {
 	}
 
 	if _, err := h.db.Exec(query, args...); err != nil {
+		// Detect a unique-constraint violation on
+		// idx_contact_addresses_cust_type_target(customer_id, type, target)
+		// and surface it as a typed sentinel so callers can distinguish
+		// "duplicate address" from a genuine infrastructure failure.
+		// MySQL errno 1062 in production; SQLite "UNIQUE constraint failed"
+		// in tests. Same detection idiom as InteractionCreate.
+		if me, ok := err.(*mysql_driver.MySQLError); ok && me.Number == 1062 {
+			return ErrDuplicateTarget
+		}
+		if strings.Contains(err.Error(), "UNIQUE constraint failed") {
+			return ErrDuplicateTarget
+		}
 		return fmt.Errorf("could not execute. AddressCreate. err: %v", err)
 	}
 
