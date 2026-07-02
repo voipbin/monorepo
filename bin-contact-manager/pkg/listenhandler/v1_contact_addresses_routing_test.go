@@ -79,6 +79,25 @@ func Test_processRequest_ContactAddressesID_Routing(t *testing.T) {
 			},
 			expectCode: 200,
 		},
+		{
+			// Same bug class as #1042, found in review: the /claim sub-route
+			// regex (regV1ContactAddressesIDClaim) also ended in a bare "$"
+			// anchor while ContactV1ContactAddressClaim appends
+			// "?customer_id=..." to every call, so claim requests 404'd too.
+			name: "POST /contact_addresses/{id}/claim?customer_id=... routes correctly",
+			request: &sock.Request{
+				URI:    "/v1/contact_addresses/" + addressID.String() + "/claim?customer_id=" + customerID.String(),
+				Method: sock.RequestMethodPost,
+				Data:   []byte(`{"contact_id":"` + contactID.String() + `"}`),
+			},
+			setupMock: func(_ *addresshandler.MockAddressHandler, mockContact *contacthandler.MockContactHandler) {
+				mockContact.EXPECT().ClaimAddress(gomock.Any(), customerID, addressID, contactID).Return(&contact.Address{
+					ID:         addressID,
+					CustomerID: customerID,
+				}, nil)
+			},
+			expectCode: 200,
+		},
 	}
 
 	for _, tt := range tests {
