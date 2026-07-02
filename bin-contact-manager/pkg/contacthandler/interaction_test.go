@@ -136,6 +136,48 @@ func Test_EventCallCreated(t *testing.T) {
 				TMCreate:      func() *time.Time { t := time.Date(2026, 6, 28, 13, 0, 0, 0, time.UTC); return &t }(),
 			},
 		},
+		{
+			name: "incoming call - peer is agent extension - projection skipped",
+
+			message: &callmodel.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("aa000004-0000-0000-0000-000000000001"),
+					CustomerID: uuid.FromStringOrNil("aa000004-0000-0000-0000-000000000002"),
+				},
+				Source: commonaddress.Address{
+					Type:   commonaddress.TypeExtension,
+					Target: "extensionSrc",
+				},
+				Destination: commonaddress.Address{
+					Type:   commonaddress.TypeTel,
+					Target: "localTelIncoming",
+				},
+				Direction: callmodel.DirectionIncoming,
+			},
+
+			expectInteraction: nil,
+		},
+		{
+			name: "outgoing call - peer is direct-SIP leg - projection skipped",
+
+			message: &callmodel.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("aa000005-0000-0000-0000-000000000001"),
+					CustomerID: uuid.FromStringOrNil("aa000005-0000-0000-0000-000000000002"),
+				},
+				Source: commonaddress.Address{
+					Type:   commonaddress.TypeTel,
+					Target: "localTelOutgoing",
+				},
+				Destination: commonaddress.Address{
+					Type:   commonaddress.TypeSIP,
+					Target: "sip:peer@example.com",
+				},
+				Direction: callmodel.DirectionOutgoing,
+			},
+
+			expectInteraction: nil,
+		},
 	}
 
 	for _, tt := range tests {
@@ -155,9 +197,11 @@ func Test_EventCallCreated(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
-			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
-			mockDB.EXPECT().InteractionCreate(ctx, tt.expectInteraction).Return(nil)
+			if tt.expectInteraction != nil {
+				mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+				mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
+				mockDB.EXPECT().InteractionCreate(ctx, tt.expectInteraction).Return(nil)
+			}
 
 			if err := h.EventCallCreated(ctx, tt.message); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -212,6 +256,27 @@ func Test_EventConversationMessageCreated(t *testing.T) {
 				TMCreate:      func() *time.Time { t := time.Date(2026, 6, 28, 12, 0, 0, 0, time.UTC); return &t }(),
 			},
 		},
+		{
+			name: "outgoing web_session message - peer is synthetic web session type - projection skipped",
+
+			message: &convmsg.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("cc000002-0000-0000-0000-000000000001"),
+					CustomerID: uuid.FromStringOrNil("cc000002-0000-0000-0000-000000000002"),
+				},
+				Direction: convmsg.DirectionIncoming,
+				Source: commonaddress.Address{
+					Type:   "web_session",
+					Target: "web_session:xyz",
+				},
+				Destination: commonaddress.Address{
+					Type:   commonaddress.TypeAI,
+					Target: "",
+				},
+			},
+
+			expectInteraction: nil,
+		},
 	}
 
 	for _, tt := range tests {
@@ -231,9 +296,11 @@ func Test_EventConversationMessageCreated(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
-			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
-			mockDB.EXPECT().InteractionCreate(ctx, tt.expectInteraction).Return(nil)
+			if tt.expectInteraction != nil {
+				mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+				mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
+				mockDB.EXPECT().InteractionCreate(ctx, tt.expectInteraction).Return(nil)
+			}
 
 			if err := h.EventConversationMessageCreated(ctx, tt.message); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
