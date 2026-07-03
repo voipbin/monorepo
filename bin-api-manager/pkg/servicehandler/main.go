@@ -917,6 +917,19 @@ type ServiceHandler interface {
 	) (*cmcontact.WebhookMessage, error)
 	ServiceAgentContactDelete(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID) (*cmcontact.WebhookMessage, error)
 	ServiceAgentContactLookup(ctx context.Context, a *auth.AuthIdentity, phoneE164 string, email string) (*cmcontact.WebhookMessage, error)
+
+	// service agent transcribe handlers
+	ServiceAgentTranscribeList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, referenceType string, referenceID uuid.UUID) ([]*tmtranscribe.WebhookMessage, error)
+	ServiceAgentTranscribeStart(
+		ctx context.Context,
+		a *auth.AuthIdentity,
+		referenceType string,
+		referenceID uuid.UUID,
+		language string,
+		direction tmtranscribe.Direction,
+		onEndFlowID uuid.UUID,
+		provider tmtranscribe.Provider,
+	) (*tmtranscribe.WebhookMessage, error)
 	ServiceAgentContactAddressCreate(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, addrType string, target string, isPrimary bool, name string, detail string) (*cmcontact.WebhookMessage, error)
 	ServiceAgentContactAddressUpdate(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, addressID uuid.UUID, fields map[string]any) (*cmcontact.WebhookMessage, error)
 	ServiceAgentContactAddressDelete(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, addressID uuid.UUID) (*cmcontact.WebhookMessage, error)

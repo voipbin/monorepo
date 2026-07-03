@@ -9244,6 +9244,38 @@ type PostServiceAgentsTalkMessagesIdReactionsJSONBody struct {
 	Emoji string `json:"emoji"`
 }
 
+// GetServiceAgentsTranscribesParams defines parameters for GetServiceAgentsTranscribes.
+type GetServiceAgentsTranscribesParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// ReferenceType Filter by the reference type of the origin resource. Must be supplied together with reference_id; supplying only one of the two returns a 400 error.
+	ReferenceType *TranscribeManagerTranscribeReferenceType `form:"reference_type,omitempty" json:"reference_type,omitempty"`
+
+	// ReferenceId Filter by the ID of the origin resource (e.g. a call ID returned from `GET /service_agents/calls`). Must be supplied together with reference_type; supplying only one of the two returns a 400 error.
+	ReferenceId *openapi_types.UUID `form:"reference_id,omitempty" json:"reference_id,omitempty"`
+}
+
+// PostServiceAgentsTranscribesJSONBody defines parameters for PostServiceAgentsTranscribes.
+type PostServiceAgentsTranscribesJSONBody struct {
+	// Direction Which audio legs to transcribe. If omitted, defaults to "both".
+	Direction *TranscribeManagerTranscribeDirection `json:"direction,omitempty"`
+
+	// Language The language of the transcription.
+	Language string `json:"language"`
+
+	// OnEndFlowId The flow to execute when the transcription ends. The flow ID returned from the POST /flows or GET /flows response. If omitted, no follow-up flow is executed.
+	OnEndFlowId *string                              `json:"on_end_flow_id,omitempty"`
+	Provider    *TranscribeManagerTranscribeProvider `json:"provider,omitempty"`
+
+	// ReferenceId The ID of the reference for the transcription.
+	ReferenceId   string                                   `json:"reference_id"`
+	ReferenceType TranscribeManagerTranscribeReferenceType `json:"reference_type"`
+}
+
 // GetSpeakingsParams defines parameters for GetSpeakings.
 type GetSpeakingsParams struct {
 	PageSize  *int    `form:"page_size,omitempty" json:"page_size,omitempty"`
@@ -9861,6 +9893,9 @@ type PostServiceAgentsTalkMessagesJSONRequestBody PostServiceAgentsTalkMessagesJ
 
 // PostServiceAgentsTalkMessagesIdReactionsJSONRequestBody defines body for PostServiceAgentsTalkMessagesIdReactions for application/json ContentType.
 type PostServiceAgentsTalkMessagesIdReactionsJSONRequestBody PostServiceAgentsTalkMessagesIdReactionsJSONBody
+
+// PostServiceAgentsTranscribesJSONRequestBody defines body for PostServiceAgentsTranscribes for application/json ContentType.
+type PostServiceAgentsTranscribesJSONRequestBody PostServiceAgentsTranscribesJSONBody
 
 // PostSpeakingsJSONRequestBody defines body for PostSpeakings for application/json ContentType.
 type PostSpeakingsJSONRequestBody PostSpeakingsJSONBody

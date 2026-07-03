@@ -18888,6 +18888,154 @@
         }
       }
     },
+    "/service_agents/transcribes": {
+      "get": {
+        "summary": "List transcribes",
+        "description": "Retrieves a paginated list of transcriptions for the service agent's customer. Optionally filter by the origin resource (reference_type + reference_id) to find all transcribes tied to a specific call, conference, or recording. Note a single reference can have multiple transcribes (e.g. one per language, or multiple start/stop sessions), so this always returns a list, not a single item.",
+        "tags": [
+          "Service Agent"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageSize"
+          },
+          {
+            "$ref": "#/components/parameters/PageToken"
+          },
+          {
+            "name": "reference_type",
+            "in": "query",
+            "required": false,
+            "description": "Filter by the reference type of the origin resource. Must be supplied together with reference_id; supplying only one of the two returns a 400 error.",
+            "schema": {
+              "$ref": "#/components/schemas/TranscribeManagerTranscribeReferenceType"
+            },
+            "example": "call"
+          },
+          {
+            "name": "reference_id",
+            "in": "query",
+            "required": false,
+            "description": "Filter by the ID of the origin resource (e.g. a call ID returned from `GET /service_agents/calls`). Must be supplied together with reference_type; supplying only one of the two returns a 400 error.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "5e4a0680-804e-11ec-8477-2fea5968d85b"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of transcriptions.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/CommonPagination"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "result": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/TranscribeManagerTranscribe"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      },
+      "post": {
+        "summary": "Start a transcribe",
+        "description": "Starts a transcription of the given reference (call, conference, or recording) for the service agent's customer and returns the result.",
+        "tags": [
+          "Service Agent"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reference_type": {
+                    "$ref": "#/components/schemas/TranscribeManagerTranscribeReferenceType"
+                  },
+                  "reference_id": {
+                    "type": "string",
+                    "description": "The ID of the reference for the transcription."
+                  },
+                  "language": {
+                    "type": "string",
+                    "description": "The language of the transcription."
+                  },
+                  "direction": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/TranscribeManagerTranscribeDirection"
+                      }
+                    ],
+                    "description": "Which audio legs to transcribe. If omitted, defaults to \"both\"."
+                  },
+                  "provider": {
+                    "$ref": "#/components/schemas/TranscribeManagerTranscribeProvider"
+                  },
+                  "on_end_flow_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "x-go-type": "string",
+                    "description": "The flow to execute when the transcription ends. The flow ID returned from the POST /flows or GET /flows response. If omitted, no follow-up flow is executed.",
+                    "example": "d4e5f6a7-b8c9-0123-4567-890abcdef012"
+                  }
+                },
+                "required": [
+                  "reference_type",
+                  "reference_id",
+                  "language"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The created transcribe details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TranscribeManagerTranscribe"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
     "/speakings": {
       "get": {
         "summary": "List speaking sessions",

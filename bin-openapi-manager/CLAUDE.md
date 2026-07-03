@@ -55,7 +55,23 @@ OpenAPI schemas must match the `WebhookMessage` struct in each service (`models/
 4. Run `go generate ./...`.
 5. Commit `gens/models/gen.go` with spec changes.
 
+## CRITICAL: Adding a Service Agent (Agent-facing) resource — never widen the Admin/Manager endpoint instead
+
+**`/service_agents/<resource>` and top-level `/<resource>` are two intentionally separate API surfaces, not two routes to the same permission check.** Top-level `/<resource>` is the Admin/Manager surface (square-admin); `/service_agents/<resource>` is the Agent surface (square-talk and any other Agent-facing frontend). Agent-facing frontends are architecturally required to call ONLY `service_agents/*` paths (see `bin-api-manager/docs/auth.md`'s "Service Agent Auth" section).
+
+**If an Agent-facing app needs a capability that only exists as a top-level `/<resource>` endpoint today (e.g. it discovers `/transcribes` is Admin/Manager-gated and it needs list/start access), the fix is to add the missing `service_agents/<resource>` endpoint — never to relax the top-level endpoint's `hasPermission(...)` bitmask.** Relaxing the top-level endpoint's permission is a shortcut that (a) breaks the surface separation the two paths exist to preserve, (b) risks silently opening Admin/Manager-only data to Agents on a path square-admin also depends on, and (c) violates the Agent-facing frontend's own convention of using only `service_agents/*`.
+
+Checklist for adding a new `service_agents/<resource>` endpoint (worked example: `bin-api-manager/pkg/servicehandler/serviceagent_transcribe.go`, added alongside the pre-existing `TranscribeList`/`TranscribeStart` without touching them):
+
+1. **OpenAPI**: create `openapi/paths/service_agents/<resource>.yaml` (a NEW file — do not edit the top-level `openapi/paths/<resource>/main.yaml`), register it under `paths: /service_agents/<resource>:` in `openapi.yaml`. Reuse the same request/response schemas as the top-level endpoint; only the path and `tags: [Service Agent]` differ.
+2. **servicehandler**: add new `ServiceAgent<Resource><Action>` functions (e.g. `ServiceAgentTranscribeList`) in a new `pkg/servicehandler/serviceagent_<resource>.go` file. These call the SAME private, no-permission-check helpers the Admin/Manager functions already use (e.g. `h.transcribeGet`, `h.reqHandler.TranscribeV1TranscribeList`) — do not duplicate the RPC call, only the permission check and the public wrapper. Gate with `amagent.PermissionAll` (the "any authenticated agent of this customer" sentinel used throughout `ServiceAgentContact*`), not `PermissionCustomerAdmin|PermissionCustomerManager`.
+3. **Interface + mock**: add the new method signatures to the `ServiceHandler` interface in `pkg/servicehandler/main.go`, then regenerate the mock (`mockgen -package servicehandler -destination ./mock_main.go -source main.go -build_flags=-mod=mod`, run from `pkg/servicehandler/`).
+4. **server**: add a new `server/service_agents_<resource>.go` file with `Get/PostServiceAgents<Resource>` handlers, mirroring the existing top-level handler's request parsing (`server/<resource>.go`) but calling the new `ServiceAgent*` servicehandler methods.
+5. **Tests**: add both a servicehandler-level test (asserting the new function accepts a plain-Agent-permission identity, not just Admin/Manager) and a server-level HTTP test hitting the new `/service_agents/<resource>` path.
+6. Run the full verification workflow in `bin-api-manager` (`go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m`) — codegen touches both `bin-openapi-manager` and `bin-api-manager`, run `go generate ./...` in `bin-openapi-manager` FIRST, then in `bin-api-manager`.
+
 ## Further reading
 
 - [docs/architecture.md](docs/architecture.md)
 - [docs/usage.md](docs/usage.md)
+

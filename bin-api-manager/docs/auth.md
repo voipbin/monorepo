@@ -112,7 +112,14 @@ This means agents can only access resources belonging to their own customer, unl
 
 ### Service Agent Auth (scoped tokens)
 
-`/service_agents/*` endpoints use the same JWT validation but with a narrower scope. The agent identity is the authenticated agent; resources are automatically scoped to `agent.CustomerID`. These endpoints are intended for the agent-facing UI (talk.voipbin.net).
+`/service_agents/*` endpoints use the same JWT validation but with a narrower scope. The agent identity is the authenticated agent; resources are automatically scoped to `agent.CustomerID`. These endpoints are intended for the agent-facing UI (talk.voipbin.net, square-talk).
+
+**CRITICAL: `square-talk` (and any other Agent-facing frontend) MUST call ONLY `/service_agents/*` paths — never the top-level `/<resource>` path directly, even if the top-level path's permission bitmask happens to allow Agent-level access.** This is a deliberate API-surface separation, not an accident of history:
+
+- **Top-level `/<resource>` endpoints** (e.g. `/transcribes`, `/contacts`) are the Admin/Manager-facing surface (`square-admin`). Their `hasPermission(...)` checks commonly hardcode `PermissionCustomerAdmin|PermissionCustomerManager` and are free to change that bitmask over time to fit admin-console needs.
+- **`/service_agents/<resource>` endpoints** are the dedicated Agent-facing surface. They exist as their own path + servicehandler function (e.g. `ServiceAgentContactList`, `ServiceAgentTranscribeList`) specifically so their permission model (`amagent.PermissionAll`, i.e. "any authenticated agent of this customer") can evolve independently of the Admin/Manager surface's needs.
+
+**Do NOT "fix" a missing Agent-facing capability by relaxing the top-level endpoint's permission bitmask instead of adding the missing `/service_agents/<resource>` endpoint.** That shortcut collapses the two intentionally-separate surfaces into one, makes future permission changes on the Admin surface risk silently breaking the Agent-facing app (and vice versa), and violates the frontend's own architectural contract (square-talk's CLAUDE.md/skill states it uses `service_agents/*` only). If a `service_agents/<resource>` endpoint doesn't exist yet for a capability an Agent-facing app needs, add it as a new resource (new OpenAPI path file, new `ServiceAgent*` servicehandler function reusing the existing private `resourceGet`/`resourceList` helpers, new `server/service_agents_<resource>.go` handler) — do not touch the top-level endpoint's permission check. See `bin-openapi-manager/CLAUDE.md`'s "Adding a Service Agent (Agent-facing) resource" section for the concrete checklist, and `pkg/servicehandler/serviceagent_transcribe.go` for a worked example (adds `ServiceAgentTranscribeList`/`ServiceAgentTranscribeStart` alongside the pre-existing Admin/Manager-gated `TranscribeList`/`TranscribeStart`, without changing the latter).
 
 ### Direct Token Auth
 
