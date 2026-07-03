@@ -60,6 +60,17 @@ func Test_GetInteractions(t *testing.T) {
 			expectStatus: http.StatusBadRequest,
 		},
 		{
+			name: "bad request - two filters provided simultaneously",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         agentID,
+					CustomerID: customerID,
+				},
+			}),
+			reqQuery:     "/interactions?contact_id=11111111-0000-0000-0000-000000000001&peer_type=tel&peer_target=%2B155****1111",
+			expectStatus: http.StatusBadRequest,
+		},
+		{
 			name:         "unauthenticated",
 			agent:        nil,
 			reqQuery:     "/interactions?contact_id=11111111-0000-0000-0000-000000000001",
