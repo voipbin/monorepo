@@ -765,7 +765,8 @@
 <p>If you only know the call ID (for example, when linking from a CRM interaction
 record) and not the transcribe ID, filter <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/transcribes</span></code> by
 <code class="docutils literal notranslate"><span class="pre">reference_type</span></code> and <code class="docutils literal notranslate"><span class="pre">reference_id</span></code> instead of calling <code class="docutils literal notranslate"><span class="pre">GET</span>
-<span class="pre">/transcribes/{id}</span></code>.</p>
+<span class="pre">/transcribes/{id}</span></code>. Both parameters must be supplied together; supplying only
+one returns a <code class="docutils literal notranslate"><span class="pre">400</span></code> error.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>

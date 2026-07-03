@@ -120,7 +120,16 @@ func (h *server) GetTranscribes(c *gin.Context, params openapi_server.GetTranscr
 
 	referenceID := uuid.Nil
 	if params.ReferenceId != nil {
-		referenceID = uuid.FromStringOrNil(*params.ReferenceId)
+		referenceID = uuid.UUID(*params.ReferenceId)
+	}
+
+	// reference_type and reference_id are documented as a pair (see the
+	// OpenAPI description); reject a partial filter explicitly instead of
+	// silently applying only one half of the intended filter.
+	if (referenceType == "") != (referenceID == uuid.Nil) {
+		log.Errorf("reference_type and reference_id must be supplied together. reference_type: %s, reference_id: %s", referenceType, referenceID)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_REFERENCE_FILTER", "reference_type and reference_id must be supplied together."))
+		return
 	}
 
 	tmps, err := h.serviceHandler.TranscribeList(c.Request.Context(), a, pageSize, pageToken, referenceType, referenceID)

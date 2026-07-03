@@ -178,7 +178,8 @@ Retrieve transcription data after the transcription completes or during real-tim
 If you only know the call ID (for example, when linking from a CRM interaction
 record) and not the transcribe ID, filter ``GET /transcribes`` by
 ``reference_type`` and ``reference_id`` instead of calling ``GET
-/transcribes/{id}``.
+/transcribes/{id}``. Both parameters must be supplied together; supplying only
+one returns a ``400`` error.
 
 .. note:: **AI Implementation Hint**
 

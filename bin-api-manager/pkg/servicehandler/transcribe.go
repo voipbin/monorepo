@@ -61,6 +61,9 @@ func (h *serviceHandler) TranscribeGet(ctx context.Context, a *auth.AuthIdentity
 // call). Note a single reference can have multiple transcribes (different
 // languages, or multiple start/stop sessions), so this can return more than
 // one item even when scoped to a single reference.
+// The caller (server/transcribes.go) is expected to reject a partial pair
+// (only one of referenceType/referenceID non-zero) before calling this;
+// this function does not itself validate pairing.
 func (h *serviceHandler) TranscribeList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, referenceType string, referenceID uuid.UUID) ([]*tmtranscribe.WebhookMessage, error) {
 	if a.IsDirect() {
 		return nil, serviceerrors.ErrDirectAccessNotSupported

@@ -340,8 +340,96 @@ func Test_transcribesGET(t *testing.T) {
 	}
 }
 
-func Test_transcribesIDGET(t *testing.T) {
+// Test_transcribesGET_PartialReferenceFilter verifies GetTranscribes rejects
+// a partial reference_type/reference_id filter (only one of the two
+// supplied) with INVALID_ARGUMENT / INVALID_REFERENCE_FILTER before the
+// servicehandler is consulted, instead of silently applying only one half
+// of the intended filter.
+func Test_transcribesGET_PartialReferenceFilter(t *testing.T) {
+	gin.SetMode(gin.TestMode)
 
+	type test struct {
+		name     string
+		reqQuery string
+	}
+
+	tests := []test{
+		{
+			name:     "reference_type without reference_id",
+			reqQuery: "/transcribes?reference_type=call",
+		},
+		{
+			name:     "reference_id without reference_type",
+			reqQuery: "/transcribes?reference_id=5e4a0680-804e-11ec-8477-2fea5968d85b",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			agent := auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4e72f3ea-8285-11ed-a55b-6bf44eeb8a87"),
+				},
+			})
+
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+			h := &server{serviceHandler: mockSvc}
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+			r.Use(middleware.RequestID())
+			r.Use(func(c *gin.Context) {
+				c.Set("auth_identity", agent)
+			})
+			openapi_server.RegisterHandlers(r, h)
+
+			req, _ := http.NewRequest(http.MethodGet, tt.reqQuery, nil)
+			r.ServeHTTP(w, req)
+
+			assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_REFERENCE_FILTER")
+		})
+	}
+}
+
+// Test_transcribesGET_InvalidReferenceId verifies GetTranscribes rejects a
+// malformed reference_id query value at the binding layer (oapi-codegen's
+// generated openapi_types.UUID param), returning 400 instead of silently
+// treating it as unset (which the prior x-go-type: string param shape
+// allowed via uuid.FromStringOrNil's silent fallback to uuid.Nil).
+func Test_transcribesGET_InvalidReferenceId(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("4e72f3ea-8285-11ed-a55b-6bf44eeb8a87"),
+		},
+	})
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{serviceHandler: mockSvc}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(func(c *gin.Context) {
+		c.Set("auth_identity", agent)
+	})
+	openapi_server.RegisterHandlers(r, h)
+
+	req, _ := http.NewRequest(http.MethodGet, "/transcribes?reference_type=call&reference_id=not-a-uuid", nil)
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("Wrong match. expect: %d, got: %d", http.StatusBadRequest, w.Code)
+	}
+}
+
+func Test_transcribesIDGET(t *testing.T) {
 	type test struct {
 		name  string
 		agent *auth.AuthIdentity
