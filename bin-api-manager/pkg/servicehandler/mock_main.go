@@ -80,6 +80,7 @@ import (
 	streaming "monorepo/bin-tts-manager/models/streaming"
 	http "net/http"
 	reflect "reflect"
+	time "time"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -4690,9 +4691,9 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentInteractionGet(ctx, a, id 
 }
 
 // ServiceAgentInteractionList mocks base method.
-func (m *MockServiceHandler) ServiceAgentInteractionList(ctx context.Context, a *auth.AuthIdentity, size uint64, token, peerType, peerTarget string, contactID, addressID uuid.UUID) ([]*interaction.Interaction, string, error) {
+func (m *MockServiceHandler) ServiceAgentInteractionList(ctx context.Context, a *auth.AuthIdentity, size uint64, token, peerType, peerTarget string, contactID, addressID uuid.UUID, since time.Time) ([]*interaction.Interaction, string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ServiceAgentInteractionList", ctx, a, size, token, peerType, peerTarget, contactID, addressID)
+	ret := m.ctrl.Call(m, "ServiceAgentInteractionList", ctx, a, size, token, peerType, peerTarget, contactID, addressID, since)
 	ret0, _ := ret[0].([]*interaction.Interaction)
 	ret1, _ := ret[1].(string)
 	ret2, _ := ret[2].(error)
@@ -4700,9 +4701,9 @@ func (m *MockServiceHandler) ServiceAgentInteractionList(ctx context.Context, a 
 }
 
 // ServiceAgentInteractionList indicates an expected call of ServiceAgentInteractionList.
-func (mr *MockServiceHandlerMockRecorder) ServiceAgentInteractionList(ctx, a, size, token, peerType, peerTarget, contactID, addressID any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentInteractionList(ctx, a, size, token, peerType, peerTarget, contactID, addressID, since any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentInteractionList", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentInteractionList), ctx, a, size, token, peerType, peerTarget, contactID, addressID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentInteractionList", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentInteractionList), ctx, a, size, token, peerType, peerTarget, contactID, addressID, since)
 }
 
 // ServiceAgentInteractionListUnresolved mocks base method.

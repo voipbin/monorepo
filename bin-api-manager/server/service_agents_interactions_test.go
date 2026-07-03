@@ -64,7 +64,7 @@ func Test_GetServiceAgentsInteractions(t *testing.T) {
 			expectStatus:  http.StatusOK,
 		},
 		{
-			name: "bad request - no filter",
+			name: "normal - no filter, unfiltered mode with default 30d since",
 			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         agentID,
@@ -72,7 +72,47 @@ func Test_GetServiceAgentsInteractions(t *testing.T) {
 				},
 				Permission: amagent.PermissionCustomerAgent,
 			}),
-			reqQuery:     "/service_agents/interactions",
+			reqQuery:      "/service_agents/interactions",
+			responseItems: []*cminteraction.Interaction{},
+			responseToken: "",
+			expectStatus:  http.StatusOK,
+		},
+		{
+			name: "normal - no filter, explicit since",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         agentID,
+					CustomerID: customerID,
+				},
+				Permission: amagent.PermissionCustomerAgent,
+			}),
+			reqQuery:      "/service_agents/interactions?since=7d",
+			responseItems: []*cminteraction.Interaction{},
+			responseToken: "",
+			expectStatus:  http.StatusOK,
+		},
+		{
+			name: "bad request - since invalid format",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         agentID,
+					CustomerID: customerID,
+				},
+				Permission: amagent.PermissionCustomerAgent,
+			}),
+			reqQuery:     "/service_agents/interactions?since=7days",
+			expectStatus: http.StatusBadRequest,
+		},
+		{
+			name: "bad request - since exceeds 180d max",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         agentID,
+					CustomerID: customerID,
+				},
+				Permission: amagent.PermissionCustomerAgent,
+			}),
+			reqQuery:     "/service_agents/interactions?since=181d",
 			expectStatus: http.StatusBadRequest,
 		},
 		{
@@ -117,7 +157,7 @@ func Test_GetServiceAgentsInteractions(t *testing.T) {
 
 			if tt.responseItems != nil && tt.agent != nil {
 				mockSvc.EXPECT().
-					ServiceAgentInteractionList(req.Context(), tt.agent, uint64(100), "", gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+					ServiceAgentInteractionList(req.Context(), tt.agent, uint64(100), "", gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(tt.responseItems, tt.responseToken, nil)
 			}
 

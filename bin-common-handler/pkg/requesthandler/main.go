@@ -5,6 +5,7 @@ package requesthandler
 import (
 	"context"
 	"encoding/json"
+	"time"
 
 	"monorepo/bin-common-handler/pkg/circuitbreakerhandler"
 
@@ -28,11 +29,11 @@ import (
 	cscustomer "monorepo/bin-customer-manager/models/customer"
 
 	amai "monorepo/bin-ai-manager/models/ai"
-	amaicall "monorepo/bin-ai-manager/models/aicall"
 	amaiaudit "monorepo/bin-ai-manager/models/aiaudit"
-	amanalysis "monorepo/bin-ai-manager/models/analysis"
+	amaicall "monorepo/bin-ai-manager/models/aicall"
 	amaiprompthistory "monorepo/bin-ai-manager/models/aiprompthistory"
 	amaipromptproposal "monorepo/bin-ai-manager/models/aipromptproposal"
+	amanalysis "monorepo/bin-ai-manager/models/analysis"
 	ammessage "monorepo/bin-ai-manager/models/message"
 	amparticipant "monorepo/bin-ai-manager/models/participant"
 	amsummary "monorepo/bin-ai-manager/models/summary"
@@ -95,9 +96,9 @@ import (
 	tmevent "monorepo/bin-timeline-manager/models/event"
 	tmsipmessage "monorepo/bin-timeline-manager/models/sipmessage"
 
+	tkchat "monorepo/bin-talk-manager/models/chat"
 	talkmessage "monorepo/bin-talk-manager/models/message"
 	talkparticipant "monorepo/bin-talk-manager/models/participant"
-	tkchat "monorepo/bin-talk-manager/models/chat"
 
 	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
 	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
@@ -914,7 +915,7 @@ type RequestHandler interface {
 
 	// contact-manager interactions (CRM v1 read API, VOIP-1209)
 	ContactV1InteractionGet(ctx context.Context, customerID, id uuid.UUID) (*cminteraction.Interaction, error)
-	ContactV1InteractionList(ctx context.Context, customerID uuid.UUID, size uint64, token string, peerType, peerTarget string, contactID, addressID uuid.UUID) ([]*cminteraction.Interaction, string, error)
+	ContactV1InteractionList(ctx context.Context, customerID uuid.UUID, size uint64, token string, peerType, peerTarget string, contactID, addressID uuid.UUID, since time.Time) ([]*cminteraction.Interaction, string, error)
 	ContactV1InteractionListUnresolved(ctx context.Context, customerID uuid.UUID, size uint64, token string, since string) ([]*cminteraction.Interaction, string, error)
 	ContactV1ResolutionCreate(ctx context.Context, customerID, contactID, interactionID uuid.UUID, resolutionType, resolvedByType string, resolvedByID uuid.UUID) (*cmresolution.Resolution, error)
 	ContactV1ResolutionDelete(ctx context.Context, customerID uuid.UUID, interactionID, resolutionID uuid.UUID) error

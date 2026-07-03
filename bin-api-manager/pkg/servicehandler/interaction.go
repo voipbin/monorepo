@@ -2,6 +2,7 @@ package servicehandler
 
 import (
 	"context"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -70,7 +71,7 @@ func (h *serviceHandler) InteractionList(
 		return nil, "", serviceerrors.ErrPermissionDenied
 	}
 
-	items, nextToken, err := h.reqHandler.ContactV1InteractionList(ctx, a.CustomerID, size, token, peerType, peerTarget, contactID, addressID)
+	items, nextToken, err := h.reqHandler.ContactV1InteractionList(ctx, a.CustomerID, size, token, peerType, peerTarget, contactID, addressID, time.Time{})
 	if err != nil {
 		log.Errorf("Could not list interactions. err: %v", err)
 		return nil, "", err

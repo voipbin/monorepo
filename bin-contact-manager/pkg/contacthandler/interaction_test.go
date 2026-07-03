@@ -26,7 +26,7 @@ func Test_EventCallCreated(t *testing.T) {
 
 		message *callmodel.WebhookMessage
 
-		responseUUID uuid.UUID
+		responseUUID    uuid.UUID
 		responseCurTime *time.Time
 
 		expectInteraction *interaction.Interaction
@@ -304,6 +304,86 @@ func Test_EventConversationMessageCreated(t *testing.T) {
 
 			if err := h.EventConversationMessageCreated(ctx, tt.message); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+// Test_InteractionList_unfiltered covers the new since-based unfiltered branch
+// added alongside PR #1054/§3.2 of the design doc: when peerType/peerTarget/
+// contactID/addressID are all zero but since is non-zero, InteractionList must
+// route to h.db.InteractionList with an empty peer/addressSet and the since
+// value forwarded verbatim (not the interactionListByContact/ByAddress paths).
+func Test_InteractionList_unfiltered(t *testing.T) {
+	customerID := uuid.FromStringOrNil("dd000001-0000-0000-0000-000000000001")
+	since := time.Date(2026, 6, 1, 0, 0, 0, 0, time.UTC)
+
+	tests := []struct {
+		name string
+
+		customerID uuid.UUID
+		since      time.Time
+
+		responseItems []*interaction.Interaction
+		expectErr     bool
+	}{
+		{
+			name:       "normal - since forwarded, unfiltered branch reached",
+			customerID: customerID,
+			since:      since,
+
+			responseItems: []*interaction.Interaction{
+				{
+					ID:         uuid.FromStringOrNil("dd000001-0000-0000-0000-000000000002"),
+					CustomerID: customerID,
+				},
+			},
+			expectErr: false,
+		},
+		{
+			name:       "bad request - since is zero-value, no filter provided",
+			customerID: customerID,
+			since:      time.Time{},
+
+			expectErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			h := contactHandler{
+				db:            mockDB,
+				notifyHandler: mockNotify,
+				reqHandler:    mockReq,
+				utilHandler:   mockUtil,
+			}
+			ctx := context.Background()
+
+			if !tt.expectErr {
+				mockDB.EXPECT().
+					InteractionList(ctx, tt.customerID, uint64(21), "", "", "", nil, tt.since).
+					Return(tt.responseItems, nil)
+			}
+
+			items, _, err := h.InteractionList(ctx, tt.customerID, 20, "", "", "", uuid.Nil, uuid.Nil, tt.since)
+			if tt.expectErr {
+				if err == nil {
+					t.Errorf("Wrong match. expect: err, got: ok")
+				}
+				return
+			}
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+			if len(items) != len(tt.responseItems) {
+				t.Errorf("Wrong match. expect: %d items, got: %d", len(tt.responseItems), len(items))
 			}
 		})
 	}
