@@ -496,6 +496,34 @@ type ServiceHandler interface {
 	) (*cmresolution.Resolution, error)
 	ResolutionDelete(ctx context.Context, a *auth.AuthIdentity, interactionID, resolutionID uuid.UUID) error
 
+	// service agent interaction handlers
+	ServiceAgentInteractionList(
+		ctx context.Context,
+		a *auth.AuthIdentity,
+		size uint64,
+		token string,
+		peerType, peerTarget string,
+		contactID, addressID uuid.UUID,
+	) ([]*cminteraction.Interaction, string, error)
+	ServiceAgentInteractionListUnresolved(
+		ctx context.Context,
+		a *auth.AuthIdentity,
+		size uint64,
+		token string,
+		since string,
+	) ([]*cminteraction.Interaction, string, error)
+	ServiceAgentInteractionGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cminteraction.Interaction, error)
+	ServiceAgentResolutionCreate(
+		ctx context.Context,
+		a *auth.AuthIdentity,
+		interactionID uuid.UUID,
+		contactID uuid.UUID,
+		resolutionType string,
+		resolvedByType string,
+		resolvedByID uuid.UUID,
+	) (*cmresolution.Resolution, error)
+	ServiceAgentResolutionDelete(ctx context.Context, a *auth.AuthIdentity, interactionID, resolutionID uuid.UUID) error
+
 	// conversation handlers
 	ConversationGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cvconversation.WebhookMessage, error)
 	ConversationGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, ownerID uuid.UUID) ([]*cvconversation.WebhookMessage, error)

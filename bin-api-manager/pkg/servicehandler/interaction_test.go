@@ -59,7 +59,7 @@ func Test_InteractionList(t *testing.T) {
 			expectErr:     false,
 		},
 		{
-			name: "agent permission is sufficient",
+			name: "agent permission is insufficient",
 			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         agentID,
@@ -74,9 +74,7 @@ func Test_InteractionList(t *testing.T) {
 			contactID:  uuid.Nil,
 			addressID:  uuid.Nil,
 
-			responseItems: []*cminteraction.Interaction{},
-			responseToken: "",
-			expectErr:     false,
+			expectErr: true,
 		},
 		{
 			name: "permission denied",
@@ -178,7 +176,7 @@ func Test_InteractionGet(t *testing.T) {
 			expectErr: false,
 		},
 		{
-			name: "agent permission is sufficient",
+			name: "agent permission is insufficient",
 			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         agentID,
@@ -195,14 +193,7 @@ func Test_InteractionGet(t *testing.T) {
 				PeerType:   "tel",
 				PeerTarget: "+155****1111",
 			},
-			expectRes: &cminteraction.Interaction{
-				ID:         interactionID,
-				CustomerID: customerID,
-				Direction:  "incoming",
-				PeerType:   "tel",
-				PeerTarget: "+155****1111",
-			},
-			expectErr: false,
+			expectErr: true,
 		},
 		{
 			name: "permission denied",
@@ -315,7 +306,7 @@ func Test_ResolutionCreate(t *testing.T) {
 			expectErr: false,
 		},
 		{
-			name: "agent permission is sufficient",
+			name: "agent permission is insufficient",
 			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         agentID,
@@ -333,16 +324,7 @@ func Test_ResolutionCreate(t *testing.T) {
 				ID:         interactionID,
 				CustomerID: customerID,
 			},
-			responseResolution: &cmresolution.Resolution{
-				ID:             uuid.FromStringOrNil("44444444-0000-0000-0000-000000000004"),
-				CustomerID:     customerID,
-				InteractionID:  interactionID,
-				ContactID:      contactID,
-				ResolutionType: "positive",
-				ResolvedByType: "agent",
-				ResolvedByID:   resolvedByID,
-			},
-			expectErr: false,
+			expectErr: true,
 		},
 		{
 			name: "no permission",
@@ -443,7 +425,7 @@ func Test_ResolutionDelete(t *testing.T) {
 			expectErr:     false,
 		},
 		{
-			name: "agent permission is sufficient",
+			name: "agent permission is insufficient",
 			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         agentID,
@@ -453,7 +435,8 @@ func Test_ResolutionDelete(t *testing.T) {
 			}),
 			interactionID: interactionID,
 			resolutionID:  resolutionID,
-			expectErr:     false,
+			expectErr:     true,
+			expectErrVal:  serviceerrors.ErrPermissionDenied,
 		},
 		{
 			name: "permission denied",
@@ -555,7 +538,7 @@ func Test_InteractionListUnresolved(t *testing.T) {
 			expectErr:     false,
 		},
 		{
-			name: "agent permission is sufficient",
+			name: "agent permission is insufficient",
 			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         agentID,
@@ -563,12 +546,10 @@ func Test_InteractionListUnresolved(t *testing.T) {
 				},
 				Permission: amagent.PermissionCustomerAgent,
 			}),
-			size:          20,
-			token:         "",
-			since:         "",
-			responseItems: []*cminteraction.Interaction{},
-			responseToken: "",
-			expectErr:     false,
+			size:      20,
+			token:     "",
+			since:     "",
+			expectErr: true,
 		},
 		{
 			name: "permission denied",

@@ -18888,6 +18888,335 @@
         }
       }
     },
+    "/service_agents/interactions": {
+      "get": {
+        "summary": "List interactions",
+        "description": "List CRM interactions for the service agent's customer. Exactly one filter is required:\npeer_type + peer_target (remote endpoint), contact_id, or address_id.\n",
+        "tags": [
+          "Service Agent"
+        ],
+        "parameters": [
+          {
+            "name": "peer_type",
+            "in": "query",
+            "description": "Remote endpoint type (e.g. \"tel\", \"email\"). Required with peer_target.",
+            "schema": {
+              "type": "string",
+              "example": "tel"
+            }
+          },
+          {
+            "name": "peer_target",
+            "in": "query",
+            "description": "Remote endpoint target (e.g. \"+155****4567\"). Required with peer_type.",
+            "schema": {
+              "type": "string",
+              "example": "+155****4567"
+            }
+          },
+          {
+            "name": "contact_id",
+            "in": "query",
+            "description": "Filter by resolved contact ID.",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "550e8400-e29b-41d4-a716-446655440000"
+            }
+          },
+          {
+            "name": "address_id",
+            "in": "query",
+            "description": "Filter by contact address ID.",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          },
+          {
+            "$ref": "#/components/parameters/PageToken"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactManagerInteractionListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/service_agents/interactions/unresolved": {
+      "get": {
+        "summary": "List unresolved interactions",
+        "description": "List interactions that have no active resolution within the given time window,\nfor the service agent's customer.\nThe \"since\" parameter defines the lookback window (e.g. \"7d\" = last 7 days).\nDefault is \"30d\"; maximum is \"180d\".\n",
+        "tags": [
+          "Service Agent"
+        ],
+        "parameters": [
+          {
+            "name": "since",
+            "in": "query",
+            "description": "Lookback window in days (e.g. \"7d\", \"30d\"). Default \"30d\", max \"180d\".\n",
+            "schema": {
+              "type": "string",
+              "example": "30d"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          },
+          {
+            "$ref": "#/components/parameters/PageToken"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactManagerInteractionListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/service_agents/interactions/{id}": {
+      "get": {
+        "summary": "Get an interaction",
+        "description": "Get the interaction of the given ID, for the service agent's customer.",
+        "tags": [
+          "Service Agent"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the interaction. The ID is returned from GET /service_agents/interactions response.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "550e8400-e29b-41d4-a716-446655440000"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactManagerInteraction"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/service_agents/interactions/{id}/resolutions": {
+      "post": {
+        "summary": "Create a resolution for an interaction",
+        "description": "Manually attribute (positive) or suppress (negative) an interaction for a contact,\nfor the service agent's customer.\nA positive resolution attaches the interaction to the contact.\nA negative resolution suppresses an incorrect automatic match.\n",
+        "tags": [
+          "Service Agent"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the interaction. The ID is returned from GET /service_agents/interactions response.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "550e8400-e29b-41d4-a716-446655440000"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "contact_id",
+                  "resolution_type",
+                  "resolved_by_type",
+                  "resolved_by_id"
+                ],
+                "properties": {
+                  "contact_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "The contact to attach or suppress this interaction for.",
+                    "example": "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
+                  },
+                  "resolution_type": {
+                    "type": "string",
+                    "description": "Type of resolution.",
+                    "enum": [
+                      "positive",
+                      "negative"
+                    ],
+                    "example": "positive"
+                  },
+                  "resolved_by_type": {
+                    "type": "string",
+                    "description": "Who resolved this interaction.",
+                    "enum": [
+                      "agent",
+                      "system",
+                      "rule"
+                    ],
+                    "example": "agent"
+                  },
+                  "resolved_by_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "ID of the agent, system, or rule that resolved the interaction.",
+                    "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Resolution created successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactManagerResolution"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/service_agents/interactions/{id}/resolutions/{rid}": {
+      "delete": {
+        "summary": "Delete a resolution",
+        "description": "Soft-delete a resolution, for the service agent's customer.\nUse this to retract a wrong positive or negative resolution.\nRe-attribute by creating a new resolution after deletion.\n",
+        "tags": [
+          "Service Agent"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the interaction. The ID is returned from GET /service_agents/interactions response.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "550e8400-e29b-41d4-a716-446655440000"
+            }
+          },
+          {
+            "name": "rid",
+            "in": "path",
+            "description": "The ID of the resolution. The ID is returned from POST /service_agents/interactions/{id}/resolutions response.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resolution deleted successfully."
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
     "/service_agents/transcribes": {
       "get": {
         "summary": "List transcribes",
