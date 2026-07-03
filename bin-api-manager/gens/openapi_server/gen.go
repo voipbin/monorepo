@@ -7215,6 +7215,12 @@ type GetTranscribesParams struct {
 
 	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// ReferenceType Filter by the reference type of the origin resource. Must be supplied together with reference_id.
+	ReferenceType *TranscribeManagerTranscribeReferenceType `form:"reference_type,omitempty" json:"reference_type,omitempty"`
+
+	// ReferenceId Filter by the ID of the origin resource (e.g. a call ID returned from `GET /calls`). Must be supplied together with reference_type.
+	ReferenceId *string `form:"reference_id,omitempty" json:"reference_id,omitempty"`
 }
 
 // PostTranscribesJSONBody defines parameters for PostTranscribes.
@@ -17814,6 +17820,22 @@ func (siw *ServerInterfaceWrapper) GetTranscribes(c *gin.Context) {
 	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
 	if err != nil {
 		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "reference_type" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "reference_type", c.Request.URL.Query(), &params.ReferenceType)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter reference_type: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "reference_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "reference_id", c.Request.URL.Query(), &params.ReferenceId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter reference_id: %w", err), http.StatusBadRequest)
 		return
 	}
 

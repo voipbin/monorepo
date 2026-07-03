@@ -173,6 +173,45 @@ Retrieve transcription data after the transcription completes or during real-tim
         ]
     }
 
+**Find All Transcribes for a Call:**
+
+If you only know the call ID (for example, when linking from a CRM interaction
+record) and not the transcribe ID, filter ``GET /transcribes`` by
+``reference_type`` and ``reference_id`` instead of calling ``GET
+/transcribes/{id}``.
+
+.. note:: **AI Implementation Hint**
+
+   A single call can have more than one transcribe: one per language when
+   multiple languages are captured, or multiple sessions if transcription was
+   stopped and started again. This filter always returns a list — do not
+   assume a single result.
+
+.. code::
+
+    $ curl --location --request GET 'https://api.voipbin.net/v1.0/transcribes?token=<YOUR_AUTH_TOKEN>&reference_type=call&reference_id=a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+
+    {
+        "result": [
+            {
+                "id": "8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce",
+                "customer_id": "12345678-1234-1234-1234-123456789012",
+                "reference_type": "call",
+                "reference_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+                "language": "en-US",
+                "direction": "both",
+                "status": "done",
+                "tm_create": "2026-01-20 12:00:00.000000",
+                "tm_update": "2026-01-20 12:05:00.000000",
+                "tm_delete": "9999-01-01 00:00:00.000000"
+            }
+        ],
+        "next_page_token": ""
+    }
+
+An empty ``result`` array means no transcription has been started for that
+call yet.
+
 Understanding Transcription Direction
 --------------------------------------
 

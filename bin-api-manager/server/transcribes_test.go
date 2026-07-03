@@ -248,9 +248,11 @@ func Test_transcribesGET(t *testing.T) {
 
 		responseTranscribes []*tmtranscribe.WebhookMessage
 
-		expectedPageSize  uint64
-		expectedPageToken string
-		expectedRes       string
+		expectedPageSize      uint64
+		expectedPageToken     string
+		expectedReferenceType string
+		expectedReferenceID   uuid.UUID
+		expectedRes           string
 	}
 
 	tests := []test{
@@ -276,6 +278,30 @@ func Test_transcribesGET(t *testing.T) {
 			expectedPageToken: "2020-09-20T03:23:20.995000Z",
 			expectedRes:       `{"result":[{"id":"6e812ad0-828a-11ed-bfe8-9f9b344a834b","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","on_end_flow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","language":"","direction":"","provider":"","tm_create":null,"tm_update":null,"tm_delete":null}],"next_page_token":""}`,
 		},
+		{
+			name: "filtered by reference_type and reference_id",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4e72f3ea-8285-11ed-a55b-6bf44eeb8a87"),
+				},
+			}),
+
+			reqQuery: "/transcribes?reference_type=call&reference_id=5e4a0680-804e-11ec-8477-2fea5968d85b",
+
+			responseTranscribes: []*tmtranscribe.WebhookMessage{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("6e812ad0-828a-11ed-bfe8-9f9b344a834b"),
+					},
+				},
+			},
+
+			expectedPageSize:      100,
+			expectedPageToken:     "",
+			expectedReferenceType: "call",
+			expectedReferenceID:   uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
+			expectedRes:           `{"result":[{"id":"6e812ad0-828a-11ed-bfe8-9f9b344a834b","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","on_end_flow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","language":"","direction":"","provider":"","tm_create":null,"tm_update":null,"tm_delete":null}],"next_page_token":""}`,
+		},
 	}
 
 	for _, tt := range tests {
@@ -300,7 +326,7 @@ func Test_transcribesGET(t *testing.T) {
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().TranscribeList(req.Context(), tt.agent, tt.expectedPageSize, tt.expectedPageToken).Return(tt.responseTranscribes, nil)
+			mockSvc.EXPECT().TranscribeList(req.Context(), tt.agent, tt.expectedPageSize, tt.expectedPageToken, tt.expectedReferenceType, tt.expectedReferenceID).Return(tt.responseTranscribes, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

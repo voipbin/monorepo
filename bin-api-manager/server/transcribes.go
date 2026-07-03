@@ -113,7 +113,17 @@ func (h *server) GetTranscribes(c *gin.Context, params openapi_server.GetTranscr
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.TranscribeList(c.Request.Context(), a, pageSize, pageToken)
+	referenceType := ""
+	if params.ReferenceType != nil {
+		referenceType = string(*params.ReferenceType)
+	}
+
+	referenceID := uuid.Nil
+	if params.ReferenceId != nil {
+		referenceID = uuid.FromStringOrNil(*params.ReferenceId)
+	}
+
+	tmps, err := h.serviceHandler.TranscribeList(c.Request.Context(), a, pageSize, pageToken, referenceType, referenceID)
 	if err != nil {
 		logrus.Errorf("Could not get transcribes info. err: %v", err)
 		abortWithServiceError(c, err)
