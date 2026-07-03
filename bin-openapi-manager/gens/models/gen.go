@@ -9276,6 +9276,18 @@ type PostServiceAgentsTranscribesJSONBody struct {
 	ReferenceType TranscribeManagerTranscribeReferenceType `json:"reference_type"`
 }
 
+// GetServiceAgentsTranscriptsParams defines parameters for GetServiceAgentsTranscripts.
+type GetServiceAgentsTranscriptsParams struct {
+	// TranscribeId The transcribe session ID returned from `GET /service_agents/transcribes` or `POST /service_agents/transcribes`.
+	TranscribeId openapi_types.UUID `form:"transcribe_id" json:"transcribe_id"`
+
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
 // GetSpeakingsParams defines parameters for GetSpeakings.
 type GetSpeakingsParams struct {
 	PageSize  *int    `form:"page_size,omitempty" json:"page_size,omitempty"`
