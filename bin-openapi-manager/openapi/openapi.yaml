@@ -8195,6 +8195,9 @@ paths:
   /service_agents/tags:
     $ref: './paths/service_agents/tags.yaml'
 
+  /service_agents/transcribes:
+    $ref: './paths/service_agents/transcribes.yaml'
+
   /speakings:
     $ref: './paths/speakings/main.yaml'
   /speakings/{id}:

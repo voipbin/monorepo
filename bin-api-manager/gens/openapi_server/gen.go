@@ -7039,6 +7039,38 @@ type PostServiceAgentsTalkMessagesIdReactionsJSONBody struct {
 	Emoji string `json:"emoji"`
 }
 
+// GetServiceAgentsTranscribesParams defines parameters for GetServiceAgentsTranscribes.
+type GetServiceAgentsTranscribesParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// ReferenceType Filter by the reference type of the origin resource. Must be supplied together with reference_id; supplying only one of the two returns a 400 error.
+	ReferenceType *TranscribeManagerTranscribeReferenceType `form:"reference_type,omitempty" json:"reference_type,omitempty"`
+
+	// ReferenceId Filter by the ID of the origin resource (e.g. a call ID returned from `GET /service_agents/calls`). Must be supplied together with reference_type; supplying only one of the two returns a 400 error.
+	ReferenceId *openapi_types.UUID `form:"reference_id,omitempty" json:"reference_id,omitempty"`
+}
+
+// PostServiceAgentsTranscribesJSONBody defines parameters for PostServiceAgentsTranscribes.
+type PostServiceAgentsTranscribesJSONBody struct {
+	// Direction Which audio legs to transcribe. If omitted, defaults to "both".
+	Direction *TranscribeManagerTranscribeDirection `json:"direction,omitempty"`
+
+	// Language The language of the transcription.
+	Language string `json:"language"`
+
+	// OnEndFlowId The flow to execute when the transcription ends. The flow ID returned from the POST /flows or GET /flows response. If omitted, no follow-up flow is executed.
+	OnEndFlowId *string                              `json:"on_end_flow_id,omitempty"`
+	Provider    *TranscribeManagerTranscribeProvider `json:"provider,omitempty"`
+
+	// ReferenceId The ID of the reference for the transcription.
+	ReferenceId   string                                   `json:"reference_id"`
+	ReferenceType TranscribeManagerTranscribeReferenceType `json:"reference_type"`
+}
+
 // GetSpeakingsParams defines parameters for GetSpeakings.
 type GetSpeakingsParams struct {
 	PageSize  *int    `form:"page_size,omitempty" json:"page_size,omitempty"`
@@ -7656,6 +7688,9 @@ type PostServiceAgentsTalkMessagesJSONRequestBody PostServiceAgentsTalkMessagesJ
 
 // PostServiceAgentsTalkMessagesIdReactionsJSONRequestBody defines body for PostServiceAgentsTalkMessagesIdReactions for application/json ContentType.
 type PostServiceAgentsTalkMessagesIdReactionsJSONRequestBody PostServiceAgentsTalkMessagesIdReactionsJSONBody
+
+// PostServiceAgentsTranscribesJSONRequestBody defines body for PostServiceAgentsTranscribes for application/json ContentType.
+type PostServiceAgentsTranscribesJSONRequestBody PostServiceAgentsTranscribesJSONBody
 
 // PostSpeakingsJSONRequestBody defines body for PostSpeakings for application/json ContentType.
 type PostSpeakingsJSONRequestBody PostSpeakingsJSONBody
@@ -8661,6 +8696,12 @@ type ServerInterface interface {
 	// Add a reaction to a talk message
 	// (POST /service_agents/talk_messages/{id}/reactions)
 	PostServiceAgentsTalkMessagesIdReactions(c *gin.Context, id string)
+	// List transcribes
+	// (GET /service_agents/transcribes)
+	GetServiceAgentsTranscribes(c *gin.Context, params GetServiceAgentsTranscribesParams)
+	// Start a transcribe
+	// (POST /service_agents/transcribes)
+	PostServiceAgentsTranscribes(c *gin.Context)
 	// Establish a WebSocket connection
 	// (GET /service_agents/ws)
 	GetServiceAgentsWs(c *gin.Context)
@@ -16919,6 +16960,69 @@ func (siw *ServerInterfaceWrapper) PostServiceAgentsTalkMessagesIdReactions(c *g
 	siw.Handler.PostServiceAgentsTalkMessagesIdReactions(c, id)
 }
 
+// GetServiceAgentsTranscribes operation middleware
+func (siw *ServerInterfaceWrapper) GetServiceAgentsTranscribes(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetServiceAgentsTranscribesParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "reference_type" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "reference_type", c.Request.URL.Query(), &params.ReferenceType)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter reference_type: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "reference_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "reference_id", c.Request.URL.Query(), &params.ReferenceId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter reference_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetServiceAgentsTranscribes(c, params)
+}
+
+// PostServiceAgentsTranscribes operation middleware
+func (siw *ServerInterfaceWrapper) PostServiceAgentsTranscribes(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostServiceAgentsTranscribes(c)
+}
+
 // GetServiceAgentsWs operation middleware
 func (siw *ServerInterfaceWrapper) GetServiceAgentsWs(c *gin.Context) {
 
@@ -18476,6 +18580,8 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.DELETE(options.BaseURL+"/service_agents/talk_messages/:id", wrapper.DeleteServiceAgentsTalkMessagesId)
 	router.GET(options.BaseURL+"/service_agents/talk_messages/:id", wrapper.GetServiceAgentsTalkMessagesId)
 	router.POST(options.BaseURL+"/service_agents/talk_messages/:id/reactions", wrapper.PostServiceAgentsTalkMessagesIdReactions)
+	router.GET(options.BaseURL+"/service_agents/transcribes", wrapper.GetServiceAgentsTranscribes)
+	router.POST(options.BaseURL+"/service_agents/transcribes", wrapper.PostServiceAgentsTranscribes)
 	router.GET(options.BaseURL+"/service_agents/ws", wrapper.GetServiceAgentsWs)
 	router.GET(options.BaseURL+"/speakings", wrapper.GetSpeakings)
 	router.POST(options.BaseURL+"/speakings", wrapper.PostSpeakings)
@@ -36678,6 +36784,98 @@ func (response PostServiceAgentsTalkMessagesIdReactions500JSONResponse) VisitPos
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetServiceAgentsTranscribesRequestObject struct {
+	Params GetServiceAgentsTranscribesParams
+}
+
+type GetServiceAgentsTranscribesResponseObject interface {
+	VisitGetServiceAgentsTranscribesResponse(w http.ResponseWriter) error
+}
+
+type GetServiceAgentsTranscribes200JSONResponse struct {
+	// NextPageToken Cursor token for the next page of results. Pass this value as the page_token parameter in the next request.
+	NextPageToken *string                        `json:"next_page_token,omitempty"`
+	Result        *[]TranscribeManagerTranscribe `json:"result,omitempty"`
+}
+
+func (response GetServiceAgentsTranscribes200JSONResponse) VisitGetServiceAgentsTranscribesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetServiceAgentsTranscribes400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetServiceAgentsTranscribes400JSONResponse) VisitGetServiceAgentsTranscribesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetServiceAgentsTranscribes401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetServiceAgentsTranscribes401JSONResponse) VisitGetServiceAgentsTranscribesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetServiceAgentsTranscribes500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetServiceAgentsTranscribes500JSONResponse) VisitGetServiceAgentsTranscribesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostServiceAgentsTranscribesRequestObject struct {
+	Body *PostServiceAgentsTranscribesJSONRequestBody
+}
+
+type PostServiceAgentsTranscribesResponseObject interface {
+	VisitPostServiceAgentsTranscribesResponse(w http.ResponseWriter) error
+}
+
+type PostServiceAgentsTranscribes200JSONResponse TranscribeManagerTranscribe
+
+func (response PostServiceAgentsTranscribes200JSONResponse) VisitPostServiceAgentsTranscribesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostServiceAgentsTranscribes400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostServiceAgentsTranscribes400JSONResponse) VisitPostServiceAgentsTranscribesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostServiceAgentsTranscribes401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostServiceAgentsTranscribes401JSONResponse) VisitPostServiceAgentsTranscribesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostServiceAgentsTranscribes500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostServiceAgentsTranscribes500JSONResponse) VisitPostServiceAgentsTranscribesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type GetServiceAgentsWsRequestObject struct {
 }
 
@@ -40393,6 +40591,12 @@ type StrictServerInterface interface {
 	// Add a reaction to a talk message
 	// (POST /service_agents/talk_messages/{id}/reactions)
 	PostServiceAgentsTalkMessagesIdReactions(ctx context.Context, request PostServiceAgentsTalkMessagesIdReactionsRequestObject) (PostServiceAgentsTalkMessagesIdReactionsResponseObject, error)
+	// List transcribes
+	// (GET /service_agents/transcribes)
+	GetServiceAgentsTranscribes(ctx context.Context, request GetServiceAgentsTranscribesRequestObject) (GetServiceAgentsTranscribesResponseObject, error)
+	// Start a transcribe
+	// (POST /service_agents/transcribes)
+	PostServiceAgentsTranscribes(ctx context.Context, request PostServiceAgentsTranscribesRequestObject) (PostServiceAgentsTranscribesResponseObject, error)
 	// Establish a WebSocket connection
 	// (GET /service_agents/ws)
 	GetServiceAgentsWs(ctx context.Context, request GetServiceAgentsWsRequestObject) (GetServiceAgentsWsResponseObject, error)
@@ -50092,6 +50296,66 @@ func (sh *strictHandler) PostServiceAgentsTalkMessagesIdReactions(ctx *gin.Conte
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PostServiceAgentsTalkMessagesIdReactionsResponseObject); ok {
 		if err := validResponse.VisitPostServiceAgentsTalkMessagesIdReactionsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetServiceAgentsTranscribes operation middleware
+func (sh *strictHandler) GetServiceAgentsTranscribes(ctx *gin.Context, params GetServiceAgentsTranscribesParams) {
+	var request GetServiceAgentsTranscribesRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetServiceAgentsTranscribes(ctx, request.(GetServiceAgentsTranscribesRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetServiceAgentsTranscribes")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetServiceAgentsTranscribesResponseObject); ok {
+		if err := validResponse.VisitGetServiceAgentsTranscribesResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostServiceAgentsTranscribes operation middleware
+func (sh *strictHandler) PostServiceAgentsTranscribes(ctx *gin.Context) {
+	var request PostServiceAgentsTranscribesRequestObject
+
+	var body PostServiceAgentsTranscribesJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostServiceAgentsTranscribes(ctx, request.(PostServiceAgentsTranscribesRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostServiceAgentsTranscribes")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostServiceAgentsTranscribesResponseObject); ok {
+		if err := validResponse.VisitPostServiceAgentsTranscribesResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {
