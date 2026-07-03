@@ -58,8 +58,8 @@ func Test_ServiceAgentInteractionList(t *testing.T) {
 			expectErr:     false,
 		},
 		{
-			name:  "permission denied - direct access not supported",
-			agent: auth.NewDirectIdentity(&auth.DirectScope{CustomerID: customerID}),
+			name:       "permission denied - direct access not supported",
+			agent:      auth.NewDirectIdentity(&auth.DirectScope{CustomerID: customerID}),
 			size:       20,
 			token:      "",
 			peerType:   "tel",
@@ -140,8 +140,8 @@ func Test_ServiceAgentInteractionListUnresolved(t *testing.T) {
 			expectErr:     false,
 		},
 		{
-			name:  "permission denied - direct access not supported",
-			agent: auth.NewDirectIdentity(&auth.DirectScope{CustomerID: customerID}),
+			name:      "permission denied - direct access not supported",
+			agent:     auth.NewDirectIdentity(&auth.DirectScope{CustomerID: customerID}),
 			size:      20,
 			token:     "",
 			since:     "",
@@ -327,8 +327,8 @@ func Test_ServiceAgentResolutionCreate(t *testing.T) {
 			expectErr: false,
 		},
 		{
-			name:  "permission denied - direct access not supported",
-			agent: auth.NewDirectIdentity(&auth.DirectScope{CustomerID: customerID}),
+			name:           "permission denied - direct access not supported",
+			agent:          auth.NewDirectIdentity(&auth.DirectScope{CustomerID: customerID}),
 			interactionID:  interactionID,
 			contactID:      contactID,
 			resolutionType: "positive",
@@ -414,8 +414,8 @@ func Test_ServiceAgentResolutionDelete(t *testing.T) {
 			expectErr:     false,
 		},
 		{
-			name:  "permission denied - direct access not supported",
-			agent: auth.NewDirectIdentity(&auth.DirectScope{CustomerID: customerID}),
+			name:          "permission denied - direct access not supported",
+			agent:         auth.NewDirectIdentity(&auth.DirectScope{CustomerID: customerID}),
 			interactionID: interactionID,
 			resolutionID:  resolutionID,
 			expectErr:     true,

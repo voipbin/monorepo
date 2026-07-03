@@ -30,12 +30,12 @@ func (h *serviceHandler) ServiceAgentInteractionList(
 	}
 
 	log := logrus.WithFields(logrus.Fields{
-		"func":         "ServiceAgentInteractionList",
-		"customer_id":  a.CustomerID,
-		"peer_type":    peerType,
-		"peer_target":  peerTarget,
-		"contact_id":   contactID,
-		"address_id":   addressID,
+		"func":        "ServiceAgentInteractionList",
+		"customer_id": a.CustomerID,
+		"peer_type":   peerType,
+		"peer_target": peerTarget,
+		"contact_id":  contactID,
+		"address_id":  addressID,
 	})
 
 	if a.IsDirect() {
@@ -102,9 +102,9 @@ func (h *serviceHandler) ServiceAgentInteractionGet(ctx context.Context, a *auth
 	}
 
 	log := logrus.WithFields(logrus.Fields{
-		"func":            "ServiceAgentInteractionGet",
-		"customer_id":     a.CustomerID,
-		"interaction_id":  id,
+		"func":           "ServiceAgentInteractionGet",
+		"customer_id":    a.CustomerID,
+		"interaction_id": id,
 	})
 
 	if a.IsDirect() {
@@ -142,11 +142,11 @@ func (h *serviceHandler) ServiceAgentResolutionCreate(
 	}
 
 	log := logrus.WithFields(logrus.Fields{
-		"func":             "ServiceAgentResolutionCreate",
-		"customer_id":      a.CustomerID,
-		"interaction_id":   interactionID,
-		"contact_id":       contactID,
-		"resolution_type":  resolutionType,
+		"func":            "ServiceAgentResolutionCreate",
+		"customer_id":     a.CustomerID,
+		"interaction_id":  interactionID,
+		"contact_id":      contactID,
+		"resolution_type": resolutionType,
 	})
 
 	if a.IsDirect() {
@@ -184,10 +184,10 @@ func (h *serviceHandler) ServiceAgentResolutionDelete(ctx context.Context, a *au
 	}
 
 	log := logrus.WithFields(logrus.Fields{
-		"func":            "ServiceAgentResolutionDelete",
-		"customer_id":     a.CustomerID,
-		"interaction_id":  interactionID,
-		"resolution_id":   resolutionID,
+		"func":           "ServiceAgentResolutionDelete",
+		"customer_id":    a.CustomerID,
+		"interaction_id": interactionID,
+		"resolution_id":  resolutionID,
 	})
 
 	if a.IsDirect() {
