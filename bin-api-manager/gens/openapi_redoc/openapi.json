@@ -20105,7 +20105,7 @@
     "/transcribes": {
       "get": {
         "summary": "Get list of transcribes",
-        "description": "Retrieves a paginated list of transcriptions for the authenticated customer.",
+        "description": "Retrieves a paginated list of transcriptions for the authenticated customer. Optionally filter by the origin resource (reference_type + reference_id) to find all transcribes tied to a specific call, conference, or recording. Note a single reference can have multiple transcribes (e.g. one per language, or multiple start/stop sessions), so this always returns a list, not a single item.",
         "tags": [
           "Transcribe"
         ],
@@ -20115,6 +20115,27 @@
           },
           {
             "$ref": "#/components/parameters/PageToken"
+          },
+          {
+            "name": "reference_type",
+            "in": "query",
+            "required": false,
+            "description": "Filter by the reference type of the origin resource. Must be supplied together with reference_id; supplying only one of the two returns a 400 error.",
+            "schema": {
+              "$ref": "#/components/schemas/TranscribeManagerTranscribeReferenceType"
+            },
+            "example": "call"
+          },
+          {
+            "name": "reference_id",
+            "in": "query",
+            "required": false,
+            "description": "Filter by the ID of the origin resource (e.g. a call ID returned from `GET /calls`). Must be supplied together with reference_type; supplying only one of the two returns a 400 error.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "5e4a0680-804e-11ec-8477-2fea5968d85b"
           }
         ],
         "responses": {
@@ -20142,6 +20163,9 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
           },
           "401": {
             "$ref": "#/components/responses/Unauthenticated"

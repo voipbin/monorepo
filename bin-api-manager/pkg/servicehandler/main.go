@@ -980,7 +980,7 @@ type ServiceHandler interface {
 
 	// transcribe handlers
 	TranscribeGet(ctx context.Context, a *auth.AuthIdentity, routeID uuid.UUID) (*tmtranscribe.WebhookMessage, error)
-	TranscribeList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*tmtranscribe.WebhookMessage, error)
+	TranscribeList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, referenceType string, referenceID uuid.UUID) ([]*tmtranscribe.WebhookMessage, error)
 	TranscribeStart(
 		ctx context.Context,
 		a *auth.AuthIdentity,

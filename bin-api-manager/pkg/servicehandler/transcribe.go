@@ -56,17 +56,27 @@ func (h *serviceHandler) TranscribeGet(ctx context.Context, a *auth.AuthIdentity
 // TranscribeGets sends a request to transcribe-manager
 // to getting a list of transcribes.
 // it returns list of transcribe info if it succeed.
-func (h *serviceHandler) TranscribeList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*tmtranscribe.WebhookMessage, error) {
+// If referenceType/referenceID are both provided, results are additionally
+// filtered to transcribes originating from that specific resource (e.g. a
+// call). Note a single reference can have multiple transcribes (different
+// languages, or multiple start/stop sessions), so this can return more than
+// one item even when scoped to a single reference.
+// The caller (server/transcribes.go) is expected to reject a partial pair
+// (only one of referenceType/referenceID non-zero) before calling this;
+// this function does not itself validate pairing.
+func (h *serviceHandler) TranscribeList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, referenceType string, referenceID uuid.UUID) ([]*tmtranscribe.WebhookMessage, error) {
 	if a.IsDirect() {
 		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "TranscribeGets",
-		"customer_id": a.CustomerID,
-		"username":    a.DisplayName(),
-		"size":        size,
-		"token":       token,
+		"func":           "TranscribeGets",
+		"customer_id":    a.CustomerID,
+		"username":       a.DisplayName(),
+		"size":           size,
+		"token":          token,
+		"reference_type": referenceType,
+		"reference_id":   referenceID,
 	})
 
 	if token == "" {
@@ -81,6 +91,12 @@ func (h *serviceHandler) TranscribeList(ctx context.Context, a *auth.AuthIdentit
 	filters := map[string]string{
 		"customer_id": a.CustomerID.String(),
 		"deleted":     "false",
+	}
+	if referenceType != "" {
+		filters["reference_type"] = referenceType
+	}
+	if referenceID != uuid.Nil {
+		filters["reference_id"] = referenceID.String()
 	}
 
 	// Convert string filters to typed filters

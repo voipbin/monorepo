@@ -97,9 +97,11 @@ func Test_TranscribeList(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent     *auth.AuthIdentity
-		pageToken string
-		pageSize  uint64
+		agent         *auth.AuthIdentity
+		pageToken     string
+		pageSize      uint64
+		referenceType string
+		referenceID   uuid.UUID
 
 		response []tmtranscribe.Transcribe
 
@@ -117,6 +119,8 @@ func Test_TranscribeList(t *testing.T) {
 			}),
 			"2020-10-20T01:00:00.995000Z",
 			10,
+			"",
+			uuid.Nil,
 
 			[]tmtranscribe.Transcribe{
 				{
@@ -148,6 +152,42 @@ func Test_TranscribeList(t *testing.T) {
 				},
 			},
 		},
+		{
+			"filtered by reference_type and reference_id",
+			auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			}),
+			"2020-10-20T01:00:00.995000Z",
+			10,
+			"call",
+			uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
+
+			[]tmtranscribe.Transcribe{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("df394b78-8270-11ed-914d-6bceafeffecb"),
+					},
+				},
+			},
+
+			map[tmtranscribe.Field]any{
+				tmtranscribe.FieldCustomerID:    uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				tmtranscribe.FieldDeleted:       false,
+				tmtranscribe.FieldReferenceType: "call",
+				tmtranscribe.FieldReferenceID:   uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
+			},
+			[]*tmtranscribe.WebhookMessage{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("df394b78-8270-11ed-914d-6bceafeffecb"),
+					},
+				},
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -165,7 +205,7 @@ func Test_TranscribeList(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().TranscribeV1TranscribeList(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.response, nil)
-			res, err := h.TranscribeList(ctx, tt.agent, tt.pageSize, tt.pageToken)
+			res, err := h.TranscribeList(ctx, tt.agent, tt.pageSize, tt.pageToken, tt.referenceType, tt.referenceID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
