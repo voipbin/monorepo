@@ -29,8 +29,8 @@ import (
 	cscustomer "monorepo/bin-customer-manager/models/customer"
 
 	amai "monorepo/bin-ai-manager/models/ai"
-	amaicall "monorepo/bin-ai-manager/models/aicall"
 	amaiaudit "monorepo/bin-ai-manager/models/aiaudit"
+	amaicall "monorepo/bin-ai-manager/models/aicall"
 	amaiprompthistory "monorepo/bin-ai-manager/models/aiprompthistory"
 	amaipromptproposal "monorepo/bin-ai-manager/models/aipromptproposal"
 	ammessage "monorepo/bin-ai-manager/models/message"
@@ -76,8 +76,8 @@ import (
 
 	tmtag "monorepo/bin-tag-manager/models/tag"
 
-	tmsipmessage "monorepo/bin-timeline-manager/models/sipmessage"
 	tmanalysis "monorepo/bin-timeline-manager/models/analysis"
+	tmsipmessage "monorepo/bin-timeline-manager/models/sipmessage"
 
 	tkchat "monorepo/bin-talk-manager/models/chat"
 	tkmessage "monorepo/bin-talk-manager/models/message"
@@ -504,6 +504,7 @@ type ServiceHandler interface {
 		token string,
 		peerType, peerTarget string,
 		contactID, addressID uuid.UUID,
+		since time.Time,
 	) ([]*cminteraction.Interaction, string, error)
 	ServiceAgentInteractionListUnresolved(
 		ctx context.Context,

@@ -52,7 +52,8 @@ func (h *contactHandler) InteractionGet(ctx context.Context, customerID, id uuid
 }
 
 // InteractionList is the main timeline read path.
-// Exactly one of (peerType+peerTarget), contactID, or addressID must be non-zero.
+// Exactly one of (peerType+peerTarget), contactID, or addressID must be non-zero,
+// UNLESS since is non-zero, in which case zero filters is allowed (unfiltered, time-scoped mode).
 // Returns the interaction slice and a next-page token (empty when no further pages).
 func (h *contactHandler) InteractionList(
 	ctx context.Context,
@@ -62,6 +63,7 @@ func (h *contactHandler) InteractionList(
 	peerType, peerTarget string,
 	contactID uuid.UUID,
 	addressID uuid.UUID,
+	since time.Time,
 ) ([]*interaction.Interaction, string, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "InteractionList",
@@ -75,7 +77,7 @@ func (h *contactHandler) InteractionList(
 	switch {
 	case peerType != "" || peerTarget != "":
 		// Direct peer path
-		items, err := h.db.InteractionList(ctx, customerID, size+1, token, peerType, peerTarget, nil)
+		items, err := h.db.InteractionList(ctx, customerID, size+1, token, peerType, peerTarget, nil, time.Time{})
 		if err != nil {
 			return nil, "", fmt.Errorf("could not list interactions by peer. InteractionList. err: %v", err)
 		}
@@ -86,6 +88,14 @@ func (h *contactHandler) InteractionList(
 
 	case addressID != uuid.Nil:
 		return h.interactionListByAddress(ctx, customerID, addressID, size, token)
+
+	case !since.IsZero():
+		// Unfiltered mode: scope by customer_id + tm_create >= since only.
+		items, err := h.db.InteractionList(ctx, customerID, size+1, token, "", "", nil, since)
+		if err != nil {
+			return nil, "", fmt.Errorf("could not list all interactions. InteractionList. err: %v", err)
+		}
+		return buildPagedResult(items, size)
 
 	default:
 		return nil, "", cerrors.InvalidArgument(
@@ -127,7 +137,7 @@ func (h *contactHandler) interactionListByContact(
 	// STEP 2: Fetch ALL automatic peer matches (internal cap, not caller page size).
 	var automatic []*interaction.Interaction
 	if len(addressPairs) > 0 {
-		automatic, err = h.db.InteractionList(ctx, customerID, interactionInternalCap, "", "", "", addressPairs)
+		automatic, err = h.db.InteractionList(ctx, customerID, interactionInternalCap, "", "", "", addressPairs, time.Time{})
 		if err != nil {
 			return nil, "", fmt.Errorf("could not list interactions by address set. interactionListByContact. err: %v", err)
 		}
@@ -263,7 +273,7 @@ func (h *contactHandler) interactionListByAddress(
 		return nil, "", fmt.Errorf("could not get address. interactionListByAddress. err: %v", err)
 	}
 
-	items, err := h.db.InteractionList(ctx, customerID, size+1, token, "", "", []dbhandler.AddressPair{{Type: ap.Type, Target: ap.Target}})
+	items, err := h.db.InteractionList(ctx, customerID, size+1, token, "", "", []dbhandler.AddressPair{{Type: ap.Type, Target: ap.Target}}, time.Time{})
 	if err != nil {
 		return nil, "", fmt.Errorf("could not list interactions by address. interactionListByAddress. err: %v", err)
 	}

@@ -84,7 +84,7 @@ func (h *listenHandler) processV1InteractionsGet(ctx context.Context, req *sock.
 		return simpleResponse(400), nil
 	}
 
-	// Validate: exactly one filter mode.
+	// Validate: exactly one filter mode, UNLESS since is provided with zero filters (unfiltered mode).
 	filterCount := 0
 	if peerType != "" || peerTarget != "" {
 		filterCount++
@@ -95,12 +95,35 @@ func (h *listenHandler) processV1InteractionsGet(ctx context.Context, req *sock.
 	if addressID != uuid.Nil {
 		filterCount++
 	}
-	if filterCount != 1 {
+
+	var since time.Time
+	if filterCount == 0 {
+		sinceStr := q.Get("since")
+		if sinceStr == "" {
+			since = time.Now().Add(-30 * 24 * time.Hour) // default 30d
+		} else {
+			parsed, parseErr := time.Parse(time.RFC3339Nano, sinceStr)
+			if parseErr != nil {
+				log.Errorf("Invalid since param format: %v", parseErr)
+				return simpleResponse(400), nil
+			}
+			since = parsed
+		}
+		// Re-validate the 180d max lookback here too (defense-in-depth, matches
+		// processV1InteractionsUnresolvedGet's parseDaysDuration(sinceStr, 180) precedent).
+		maxLookback := time.Now().Add(-180 * 24 * time.Hour)
+		if since.Before(maxLookback) {
+			log.Errorf("since exceeds maximum lookback of 180d: %v", since)
+			return simpleResponse(400), nil
+		}
+	}
+
+	if filterCount != 1 && filterCount != 0 {
 		log.Errorf("Expected exactly one filter mode, got %d.", filterCount)
 		return simpleResponse(400), nil
 	}
 
-	res, _, err := h.contactHandler.InteractionList(ctx, customerID, pageSize, pageToken, peerType, peerTarget, contactID, addressID)
+	res, _, err := h.contactHandler.InteractionList(ctx, customerID, pageSize, pageToken, peerType, peerTarget, contactID, addressID, since)
 	if err != nil {
 		log.Errorf("Could not list interactions. err: %v", err)
 		return errorResponse(err), nil

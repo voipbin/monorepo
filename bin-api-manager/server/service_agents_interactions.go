@@ -3,6 +3,7 @@ package server
 import (
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -63,7 +64,8 @@ func (h *server) GetServiceAgentsInteractions(c *gin.Context, params openapi_ser
 		addressID = uuid.UUID(*params.AddressId)
 	}
 
-	// Validate: exactly one filter mode must be provided (same as top-level GetInteractions).
+	// Validate: at most one filter mode. Zero filters means "unfiltered, time-scoped" mode
+	// (customer's full interaction history within the `since` window).
 	filterCount := 0
 	if peerType != "" || peerTarget != "" {
 		filterCount++
@@ -74,13 +76,38 @@ func (h *server) GetServiceAgentsInteractions(c *gin.Context, params openapi_ser
 	if addressID != uuid.Nil {
 		filterCount++
 	}
-	if filterCount != 1 {
-		log.Errorf("Expected exactly one filter mode, got %d.", filterCount)
-		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_FILTER", "Exactly one filter is required: peer_type+peer_target, contact_id, or address_id."))
+	if filterCount > 1 {
+		log.Errorf("Expected at most one filter mode, got %d.", filterCount)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_FILTER", "At most one filter is allowed: peer_type+peer_target, contact_id, or address_id."))
 		return
 	}
 
-	items, nextToken, err := h.serviceHandler.ServiceAgentInteractionList(c.Request.Context(), a, pageSize, pageToken, peerType, peerTarget, contactID, addressID)
+	var since time.Time
+	if filterCount == 0 {
+		sinceStr := "30d"
+		if params.Since != nil && *params.Since != "" {
+			sinceStr = *params.Since
+		}
+		if !strings.HasSuffix(sinceStr, "d") {
+			log.Errorf("Invalid since param format: %q", sinceStr)
+			abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_SINCE", "The 'since' parameter must be in the format '<N>d' (e.g. '7d', '30d')."))
+			return
+		}
+		n, parseErr := strconv.Atoi(strings.TrimSuffix(sinceStr, "d"))
+		if parseErr != nil || n <= 0 {
+			log.Errorf("Invalid since param value: %q", sinceStr)
+			abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_SINCE", "The 'since' parameter must be a positive number of days (e.g. '7d')."))
+			return
+		}
+		if n > 180 {
+			log.Errorf("since param exceeds maximum of 180d: %q", sinceStr)
+			abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_SINCE", "The 'since' parameter must be at most 180d."))
+			return
+		}
+		since = time.Now().Add(-time.Duration(n) * 24 * time.Hour)
+	}
+
+	items, nextToken, err := h.serviceHandler.ServiceAgentInteractionList(c.Request.Context(), a, pageSize, pageToken, peerType, peerTarget, contactID, addressID, since)
 	if err != nil {
 		log.Errorf("Could not list interactions. err: %v", err)
 		abortWithServiceError(c, err)

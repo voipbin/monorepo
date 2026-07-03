@@ -306,18 +306,18 @@ func (mr *MockDBHandlerMockRecorder) InteractionGet(ctx, id any) *gomock.Call {
 }
 
 // InteractionList mocks base method.
-func (m *MockDBHandler) InteractionList(ctx context.Context, customerID uuid.UUID, size uint64, token, peerType, peerTarget string, addressSet []AddressPair) ([]*interaction.Interaction, error) {
+func (m *MockDBHandler) InteractionList(ctx context.Context, customerID uuid.UUID, size uint64, token, peerType, peerTarget string, addressSet []AddressPair, since time.Time) ([]*interaction.Interaction, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "InteractionList", ctx, customerID, size, token, peerType, peerTarget, addressSet)
+	ret := m.ctrl.Call(m, "InteractionList", ctx, customerID, size, token, peerType, peerTarget, addressSet, since)
 	ret0, _ := ret[0].([]*interaction.Interaction)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // InteractionList indicates an expected call of InteractionList.
-func (mr *MockDBHandlerMockRecorder) InteractionList(ctx, customerID, size, token, peerType, peerTarget, addressSet any) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) InteractionList(ctx, customerID, size, token, peerType, peerTarget, addressSet, since any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InteractionList", reflect.TypeOf((*MockDBHandler)(nil).InteractionList), ctx, customerID, size, token, peerType, peerTarget, addressSet)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InteractionList", reflect.TypeOf((*MockDBHandler)(nil).InteractionList), ctx, customerID, size, token, peerType, peerTarget, addressSet, since)
 }
 
 // InteractionListByIDs mocks base method.

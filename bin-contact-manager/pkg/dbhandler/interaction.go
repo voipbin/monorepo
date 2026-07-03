@@ -98,11 +98,11 @@ func (h *handler) InteractionGet(ctx context.Context, id uuid.UUID) (*interactio
 	return res, nil
 }
 
-
-
 // InteractionList returns a page of interactions.
-// Filter mode: either (peerType+peerTarget) OR addressSet (multi-column IN).
-// If both peerType/peerTarget are empty AND addressSet is empty → returns nil, nil immediately.
+// Filter mode: either (peerType+peerTarget) OR addressSet (multi-column IN) OR since (unfiltered, time-scoped).
+// If peerType/peerTarget/addressSet are all empty AND since is zero-value → returns nil, nil immediately
+// (preserves the original "no filter" behavior for existing callers).
+// If peerType/peerTarget/addressSet are all empty AND since is non-zero → scopes by customer_id + tm_create >= since only.
 // Pagination: cursor is a tm_create timestamp string (WHERE tm_create < token ORDER BY tm_create DESC).
 // This matches the platform-wide convention used by calls, messages, emails, etc.
 func (h *handler) InteractionList(
@@ -112,9 +112,10 @@ func (h *handler) InteractionList(
 	token string,
 	peerType, peerTarget string,
 	addressSet []AddressPair,
+	since time.Time,
 ) ([]*interaction.Interaction, error) {
-	// 1. If all filters empty → return nil, nil
-	if peerType == "" && peerTarget == "" && len(addressSet) == 0 {
+	// 1. If all filters empty and since not set → return nil, nil (unchanged legacy behavior)
+	if peerType == "" && peerTarget == "" && len(addressSet) == 0 && since.IsZero() {
 		return nil, nil
 	}
 
@@ -135,6 +136,11 @@ func (h *handler) InteractionList(
 			or = append(or, sq.Eq{"peer_type": ap.Type, "peer_target": ap.Target})
 		}
 		builder = builder.Where(or)
+	}
+
+	// 3b. Unfiltered mode: scope by tm_create lower bound (customer_id is already applied above).
+	if !since.IsZero() {
+		builder = builder.Where(sq.GtOrEq{"tm_create": since.UTC()})
 	}
 
 	// 4. Apply cursor if token != "" (simple timestamp cursor, platform standard)

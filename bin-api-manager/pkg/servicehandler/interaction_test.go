@@ -3,6 +3,7 @@ package servicehandler
 import (
 	"context"
 	"testing"
+	"time"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/models/auth"
@@ -111,7 +112,7 @@ func Test_InteractionList(t *testing.T) {
 
 			if !tt.expectErr {
 				mockReq.EXPECT().
-					ContactV1InteractionList(ctx, tt.agent.CustomerID, tt.size, tt.token, tt.peerType, tt.peerTarget, tt.contactID, tt.addressID).
+					ContactV1InteractionList(ctx, tt.agent.CustomerID, tt.size, tt.token, tt.peerType, tt.peerTarget, tt.contactID, tt.addressID, time.Time{}).
 					Return(tt.responseItems, tt.responseToken, nil)
 			}
 

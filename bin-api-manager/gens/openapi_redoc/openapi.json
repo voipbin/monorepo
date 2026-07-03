@@ -18891,7 +18891,7 @@
     "/service_agents/interactions": {
       "get": {
         "summary": "List interactions",
-        "description": "List CRM interactions for the service agent's customer. Exactly one filter is required:\npeer_type + peer_target (remote endpoint), contact_id, or address_id.\n",
+        "description": "List CRM interactions for the service agent's customer. At most one filter may be\nprovided: peer_type + peer_target (remote endpoint), contact_id, or address_id.\nIf no filter is provided, the full customer interaction history is returned,\nscoped to the \"since\" lookback window (default \"30d\", maximum \"180d\").\n",
         "tags": [
           "Service Agent"
         ],
@@ -18932,6 +18932,15 @@
               "type": "string",
               "format": "uuid",
               "example": "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
+            }
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "description": "Lookback window in days (e.g. \"7d\", \"30d\"), used only when no filter\n(peer_type+peer_target, contact_id, address_id) is provided. Default \"30d\", max \"180d\".\nIgnored when a filter is provided.\n",
+            "schema": {
+              "type": "string",
+              "example": "30d"
             }
           },
           {

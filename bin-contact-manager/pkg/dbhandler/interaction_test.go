@@ -215,7 +215,7 @@ func Test_InteractionList_byPeer(t *testing.T) {
 	}
 
 	// InteractionList with peerType+peerTarget → both returned
-	res, err := h.InteractionList(ctx, customerID, 10, "", peerType, peerTarget, nil)
+	res, err := h.InteractionList(ctx, customerID, 10, "", peerType, peerTarget, nil, time.Time{})
 	if err != nil {
 		t.Fatalf("InteractionList() error = %v", err)
 	}
@@ -224,7 +224,7 @@ func Test_InteractionList_byPeer(t *testing.T) {
 	}
 
 	// InteractionList with wrong peer → empty
-	res, err = h.InteractionList(ctx, customerID, 10, "", peerType, "+19990000000", nil)
+	res, err = h.InteractionList(ctx, customerID, 10, "", peerType, "+19990000000", nil, time.Time{})
 	if err != nil {
 		t.Fatalf("InteractionList() wrong peer error = %v", err)
 	}
@@ -285,7 +285,7 @@ func Test_InteractionList_byAddressSet(t *testing.T) {
 		{Type: "tel", Target: "+15550003001"},
 		{Type: "line", Target: "Ufake12345"},
 	}
-	res, err := h.InteractionList(ctx, customerID, 10, "", "", "", bothPairs)
+	res, err := h.InteractionList(ctx, customerID, 10, "", "", "", bothPairs, time.Time{})
 	if err != nil {
 		t.Fatalf("InteractionList() both pairs error = %v", err)
 	}
@@ -297,7 +297,7 @@ func Test_InteractionList_byAddressSet(t *testing.T) {
 	onePair := []AddressPair{
 		{Type: "tel", Target: "+15550003001"},
 	}
-	res, err = h.InteractionList(ctx, customerID, 10, "", "", "", onePair)
+	res, err = h.InteractionList(ctx, customerID, 10, "", "", "", onePair, time.Time{})
 	if err != nil {
 		t.Fatalf("InteractionList() one pair error = %v", err)
 	}
@@ -321,13 +321,92 @@ func Test_InteractionList_empty(t *testing.T) {
 
 	customerID := uuid.FromStringOrNil("e1b2c3d4-0004-0004-0004-000000000001")
 
-	// InteractionList with all-empty filters → no error, nil result
-	res, err := h.InteractionList(ctx, customerID, 10, "", "", "", nil)
+	// InteractionList with all-empty filters and since=zero-value → no error, nil result (legacy behavior)
+	res, err := h.InteractionList(ctx, customerID, 10, "", "", "", nil, time.Time{})
 	if err != nil {
 		t.Fatalf("InteractionList() empty filters error = %v", err)
 	}
 	if res != nil {
 		t.Errorf("InteractionList() empty filters expected nil, got %v", res)
+	}
+}
+
+// Test_InteractionList_unfiltered_since verifies the new unfiltered mode: when all
+// filters are empty but since is non-zero, InteractionList scopes by customer_id +
+// tm_create >= since only, and correctly excludes both other customers' rows and
+// rows older than since.
+func Test_InteractionList_unfiltered_since(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	h := handler{
+		utilHandler: mockUtil,
+		db:          dbTest,
+		cache:       mockCache,
+	}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("e1b2c3d4-0006-0006-0006-000000000001")
+	otherCustomerID := uuid.FromStringOrNil("e1b2c3d4-0006-0006-0006-000000000099")
+
+	recent := time.Date(2026, 6, 20, 10, 0, 0, 0, time.UTC)
+	old := time.Date(2025, 1, 1, 10, 0, 0, 0, time.UTC)
+	since := time.Date(2026, 6, 1, 0, 0, 0, 0, time.UTC)
+
+	iRecent := &interaction.Interaction{
+		ID:            uuid.FromStringOrNil("e1b2c3d4-0006-0006-0006-000000000002"),
+		CustomerID:    customerID,
+		Direction:     "incoming",
+		PeerType:      "tel",
+		PeerTarget:    "+155****6001",
+		LocalType:     "tel",
+		LocalTarget:   "+155****0006",
+		ReferenceType: "call",
+		ReferenceID:   uuid.FromStringOrNil("e1b2c3d4-0006-0006-0006-000000000003"),
+		TMCreate:      &recent,
+	}
+	iOld := &interaction.Interaction{
+		ID:            uuid.FromStringOrNil("e1b2c3d4-0006-0006-0006-000000000004"),
+		CustomerID:    customerID,
+		Direction:     "incoming",
+		PeerType:      "tel",
+		PeerTarget:    "+155****6002",
+		LocalType:     "tel",
+		LocalTarget:   "+155****0006",
+		ReferenceType: "call",
+		ReferenceID:   uuid.FromStringOrNil("e1b2c3d4-0006-0006-0006-000000000005"),
+		TMCreate:      &old,
+	}
+	iOtherCustomer := &interaction.Interaction{
+		ID:            uuid.FromStringOrNil("e1b2c3d4-0006-0006-0006-000000000006"),
+		CustomerID:    otherCustomerID,
+		Direction:     "incoming",
+		PeerType:      "tel",
+		PeerTarget:    "+155****6003",
+		LocalType:     "tel",
+		LocalTarget:   "+155****0006",
+		ReferenceType: "call",
+		ReferenceID:   uuid.FromStringOrNil("e1b2c3d4-0006-0006-0006-000000000007"),
+		TMCreate:      &recent,
+	}
+
+	for _, i := range []*interaction.Interaction{iRecent, iOld, iOtherCustomer} {
+		if err := h.InteractionCreate(ctx, i); err != nil {
+			t.Fatalf("InteractionCreate() error = %v", err)
+		}
+	}
+
+	res, err := h.InteractionList(ctx, customerID, 10, "", "", "", nil, since)
+	if err != nil {
+		t.Fatalf("InteractionList() unfiltered since error = %v", err)
+	}
+	if len(res) != 1 {
+		t.Fatalf("InteractionList() unfiltered since len = %d, want 1", len(res))
+	}
+	if res[0].ID != iRecent.ID {
+		t.Errorf("InteractionList() unfiltered since returned wrong row. got ID = %v, want %v", res[0].ID, iRecent.ID)
 	}
 }
 
@@ -460,7 +539,7 @@ func Test_InteractionList_pagination(t *testing.T) {
 
 	// pageSize=2, pass size+1=3 → expect 3 rows returned (probe row present)
 	const pageSize uint64 = 2
-	res, err := h.InteractionList(ctx, customerID, pageSize+1, "", "tel", "+15550001111", nil)
+	res, err := h.InteractionList(ctx, customerID, pageSize+1, "", "tel", "+15550001111", nil, time.Time{})
 	if err != nil {
 		t.Fatalf("InteractionList() error = %v", err)
 	}
@@ -484,7 +563,7 @@ func Test_InteractionList_pagination(t *testing.T) {
 	}
 
 	// Second page: pass token, expect 1 row (the remaining one).
-	res2, err := h.InteractionList(ctx, customerID, pageSize+1, nextToken, "tel", "+15550001111", nil)
+	res2, err := h.InteractionList(ctx, customerID, pageSize+1, nextToken, "tel", "+15550001111", nil, time.Time{})
 	if err != nil {
 		t.Fatalf("InteractionList page2 error = %v", err)
 	}

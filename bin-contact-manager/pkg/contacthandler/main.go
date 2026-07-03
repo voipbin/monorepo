@@ -54,7 +54,7 @@ type ContactHandler interface {
 	// Interaction read operations (CRM v1 read API, VOIP-1209)
 	InteractionGet(ctx context.Context, customerID, id uuid.UUID) (*interaction.Interaction, error)
 	InteractionList(ctx context.Context, customerID uuid.UUID, size uint64, token string,
-		peerType, peerTarget string, contactID uuid.UUID, addressID uuid.UUID) ([]*interaction.Interaction, string, error)
+		peerType, peerTarget string, contactID uuid.UUID, addressID uuid.UUID, since time.Time) ([]*interaction.Interaction, string, error)
 	InteractionListUnresolved(ctx context.Context, customerID uuid.UUID, size uint64, token string, since time.Time) ([]*interaction.Interaction, string, error)
 
 	// Resolution operations (CRM v1 attribution, VOIP-1209)

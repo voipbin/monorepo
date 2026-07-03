@@ -48,7 +48,7 @@ type DBHandler interface {
 	// Interaction operations
 	InteractionCreate(ctx context.Context, i *interaction.Interaction) error
 	InteractionGet(ctx context.Context, id uuid.UUID) (*interaction.Interaction, error)
-	InteractionList(ctx context.Context, customerID uuid.UUID, size uint64, token string, peerType, peerTarget string, addressSet []AddressPair) ([]*interaction.Interaction, error)
+	InteractionList(ctx context.Context, customerID uuid.UUID, size uint64, token string, peerType, peerTarget string, addressSet []AddressPair, since time.Time) ([]*interaction.Interaction, error)
 	InteractionListByIDs(ctx context.Context, customerID uuid.UUID, ids []uuid.UUID) ([]*interaction.Interaction, error)
 	InteractionListUnresolved(ctx context.Context, customerID uuid.UUID, size uint64, token string, since time.Time) ([]*interaction.Interaction, error)
 
