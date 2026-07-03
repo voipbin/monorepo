@@ -7071,6 +7071,18 @@ type PostServiceAgentsTranscribesJSONBody struct {
 	ReferenceType TranscribeManagerTranscribeReferenceType `json:"reference_type"`
 }
 
+// GetServiceAgentsTranscriptsParams defines parameters for GetServiceAgentsTranscripts.
+type GetServiceAgentsTranscriptsParams struct {
+	// TranscribeId The transcribe session ID returned from `GET /service_agents/transcribes` or `POST /service_agents/transcribes`.
+	TranscribeId openapi_types.UUID `form:"transcribe_id" json:"transcribe_id"`
+
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
 // GetSpeakingsParams defines parameters for GetSpeakings.
 type GetSpeakingsParams struct {
 	PageSize  *int    `form:"page_size,omitempty" json:"page_size,omitempty"`
@@ -8702,6 +8714,9 @@ type ServerInterface interface {
 	// Start a transcribe
 	// (POST /service_agents/transcribes)
 	PostServiceAgentsTranscribes(c *gin.Context)
+	// List transcript lines
+	// (GET /service_agents/transcripts)
+	GetServiceAgentsTranscripts(c *gin.Context, params GetServiceAgentsTranscriptsParams)
 	// Establish a WebSocket connection
 	// (GET /service_agents/ws)
 	GetServiceAgentsWs(c *gin.Context)
@@ -17023,6 +17038,55 @@ func (siw *ServerInterfaceWrapper) PostServiceAgentsTranscribes(c *gin.Context) 
 	siw.Handler.PostServiceAgentsTranscribes(c)
 }
 
+// GetServiceAgentsTranscripts operation middleware
+func (siw *ServerInterfaceWrapper) GetServiceAgentsTranscripts(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetServiceAgentsTranscriptsParams
+
+	// ------------- Required query parameter "transcribe_id" -------------
+
+	if paramValue := c.Query("transcribe_id"); paramValue != "" {
+
+	} else {
+		siw.ErrorHandler(c, fmt.Errorf("Query argument transcribe_id is required, but not found"), http.StatusBadRequest)
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "transcribe_id", c.Request.URL.Query(), &params.TranscribeId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter transcribe_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetServiceAgentsTranscripts(c, params)
+}
+
 // GetServiceAgentsWs operation middleware
 func (siw *ServerInterfaceWrapper) GetServiceAgentsWs(c *gin.Context) {
 
@@ -18582,6 +18646,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.POST(options.BaseURL+"/service_agents/talk_messages/:id/reactions", wrapper.PostServiceAgentsTalkMessagesIdReactions)
 	router.GET(options.BaseURL+"/service_agents/transcribes", wrapper.GetServiceAgentsTranscribes)
 	router.POST(options.BaseURL+"/service_agents/transcribes", wrapper.PostServiceAgentsTranscribes)
+	router.GET(options.BaseURL+"/service_agents/transcripts", wrapper.GetServiceAgentsTranscripts)
 	router.GET(options.BaseURL+"/service_agents/ws", wrapper.GetServiceAgentsWs)
 	router.GET(options.BaseURL+"/speakings", wrapper.GetSpeakings)
 	router.POST(options.BaseURL+"/speakings", wrapper.PostSpeakings)
@@ -36876,6 +36941,72 @@ func (response PostServiceAgentsTranscribes500JSONResponse) VisitPostServiceAgen
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetServiceAgentsTranscriptsRequestObject struct {
+	Params GetServiceAgentsTranscriptsParams
+}
+
+type GetServiceAgentsTranscriptsResponseObject interface {
+	VisitGetServiceAgentsTranscriptsResponse(w http.ResponseWriter) error
+}
+
+type GetServiceAgentsTranscripts200JSONResponse struct {
+	// NextPageToken Cursor token for the next page of results. Pass this value as the page_token parameter in the next request.
+	NextPageToken *string                        `json:"next_page_token,omitempty"`
+	Result        *[]TranscribeManagerTranscript `json:"result,omitempty"`
+}
+
+func (response GetServiceAgentsTranscripts200JSONResponse) VisitGetServiceAgentsTranscriptsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetServiceAgentsTranscripts400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetServiceAgentsTranscripts400JSONResponse) VisitGetServiceAgentsTranscriptsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetServiceAgentsTranscripts401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetServiceAgentsTranscripts401JSONResponse) VisitGetServiceAgentsTranscriptsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetServiceAgentsTranscripts403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetServiceAgentsTranscripts403JSONResponse) VisitGetServiceAgentsTranscriptsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetServiceAgentsTranscripts404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response GetServiceAgentsTranscripts404JSONResponse) VisitGetServiceAgentsTranscriptsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetServiceAgentsTranscripts500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetServiceAgentsTranscripts500JSONResponse) VisitGetServiceAgentsTranscriptsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type GetServiceAgentsWsRequestObject struct {
 }
 
@@ -40597,6 +40728,9 @@ type StrictServerInterface interface {
 	// Start a transcribe
 	// (POST /service_agents/transcribes)
 	PostServiceAgentsTranscribes(ctx context.Context, request PostServiceAgentsTranscribesRequestObject) (PostServiceAgentsTranscribesResponseObject, error)
+	// List transcript lines
+	// (GET /service_agents/transcripts)
+	GetServiceAgentsTranscripts(ctx context.Context, request GetServiceAgentsTranscriptsRequestObject) (GetServiceAgentsTranscriptsResponseObject, error)
 	// Establish a WebSocket connection
 	// (GET /service_agents/ws)
 	GetServiceAgentsWs(ctx context.Context, request GetServiceAgentsWsRequestObject) (GetServiceAgentsWsResponseObject, error)
@@ -50356,6 +50490,33 @@ func (sh *strictHandler) PostServiceAgentsTranscribes(ctx *gin.Context) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PostServiceAgentsTranscribesResponseObject); ok {
 		if err := validResponse.VisitPostServiceAgentsTranscribesResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetServiceAgentsTranscripts operation middleware
+func (sh *strictHandler) GetServiceAgentsTranscripts(ctx *gin.Context, params GetServiceAgentsTranscriptsParams) {
+	var request GetServiceAgentsTranscriptsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetServiceAgentsTranscripts(ctx, request.(GetServiceAgentsTranscriptsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetServiceAgentsTranscripts")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetServiceAgentsTranscriptsResponseObject); ok {
+		if err := validResponse.VisitGetServiceAgentsTranscriptsResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

@@ -19036,6 +19036,76 @@
         }
       }
     },
+    "/service_agents/transcripts": {
+      "get": {
+        "summary": "List transcript lines",
+        "description": "Retrieves the individual spoken/written lines (transcript entries) for one transcribe session, scoped to the service agent's own customer. Ownership is authorized against the target transcribe's own customer_id (fetched by transcribe_id), not a re-derived parent resource.",
+        "tags": [
+          "Service Agent"
+        ],
+        "parameters": [
+          {
+            "name": "transcribe_id",
+            "in": "query",
+            "required": true,
+            "description": "The transcribe session ID returned from `GET /service_agents/transcribes` or `POST /service_agents/transcribes`.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          },
+          {
+            "$ref": "#/components/parameters/PageToken"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of transcript lines, in creation order.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/CommonPagination"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "result": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/TranscribeManagerTranscript"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
     "/speakings": {
       "get": {
         "summary": "List speaking sessions",

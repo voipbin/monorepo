@@ -930,6 +930,7 @@ type ServiceHandler interface {
 		onEndFlowID uuid.UUID,
 		provider tmtranscribe.Provider,
 	) (*tmtranscribe.WebhookMessage, error)
+	ServiceAgentTranscriptList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, transcribeID uuid.UUID) ([]*tmtranscript.WebhookMessage, error)
 	ServiceAgentContactAddressCreate(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, addrType string, target string, isPrimary bool, name string, detail string) (*cmcontact.WebhookMessage, error)
 	ServiceAgentContactAddressUpdate(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, addressID uuid.UUID, fields map[string]any) (*cmcontact.WebhookMessage, error)
 	ServiceAgentContactAddressDelete(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, addressID uuid.UUID) (*cmcontact.WebhookMessage, error)
