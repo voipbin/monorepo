@@ -6,9 +6,9 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Conference" href="conference_struct_conference.html"><link rel="prev" title="Conference" href="conference.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 7.2.6 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Overview - VoIPBin Documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
     
@@ -746,7 +746,7 @@ to leave.</p></td>
            <span class="o">|</span> <span class="n">hangup</span> <span class="ow">or</span> <span class="n">kicked</span>
            <span class="n">v</span>
      <span class="o">+------------+</span>
-     <span class="o">|</span>  <span class="n">leaving</span>   <span class="o">|</span>  <span class="p">(</span><span class="n">being</span> <span class="n">removed</span> <span class="kn">from</span> <span class="nn">bridge</span><span class="p">)</span>
+     <span class="o">|</span>  <span class="n">leaving</span>   <span class="o">|</span>  <span class="p">(</span><span class="n">being</span> <span class="n">removed</span> <span class="kn">from</span><span class="w"> </span><span class="nn">bridge</span><span class="p">)</span>
      <span class="o">+-----+------+</span>
            <span class="o">|</span>
            <span class="o">|</span> <span class="n">fully</span> <span class="n">disconnected</span>
@@ -838,7 +838,7 @@ Flow                    Conference-Manager              Call-Manager
     <span class="o">|</span> <span class="n">Hangs</span> <span class="n">up</span> <span class="n">phone</span>          <span class="o">|</span>                            <span class="o">|</span>
     <span class="o">|------------------------&gt;|</span>                            <span class="o">|</span>
     <span class="o">|</span>                         <span class="o">|</span>                            <span class="o">|</span>
-    <span class="o">|</span>                         <span class="o">|</span> <span class="n">Detects</span> <span class="n">leave</span> <span class="kn">from</span> <span class="nn">bridge</span>  <span class="o">|</span>
+    <span class="o">|</span>                         <span class="o">|</span> <span class="n">Detects</span> <span class="n">leave</span> <span class="kn">from</span><span class="w"> </span><span class="nn">bridge</span>  <span class="o">|</span>
     <span class="o">|</span>                         <span class="o">|</span>                            <span class="o">|</span>
     <span class="o">|</span>                         <span class="o">|</span>  <span class="n">confbridge_leaved</span> <span class="n">event</span>   <span class="o">|</span>
     <span class="o">|</span>                         <span class="o">|---------------------------&gt;|</span>
@@ -847,7 +847,7 @@ Flow                    Conference-Manager              Call-Manager
     <span class="o">|</span>                         <span class="o">|</span>                            <span class="o">|</span> <span class="n">to</span> <span class="s2">&quot;leaved&quot;</span>
     <span class="o">|</span>                         <span class="o">|</span>                            <span class="o">|</span>
     <span class="o">|</span>                         <span class="o">|</span>                            <span class="o">|</span> <span class="n">Remove</span> <span class="kn">from</span>
-    <span class="o">|</span>                         <span class="o">|</span>                            <span class="o">|</span> <span class="n">participant</span> <span class="nb">list</span>
+<span class="w">    </span><span class="o">|</span>                         <span class="o">|</span>                            <span class="o">|</span> <span class="n">participant</span> <span class="nb">list</span>
     <span class="o">|</span>                         <span class="o">|</span>                            <span class="o">|</span>
 </pre></div>
 </div>
@@ -1403,8 +1403,8 @@ Every 5 seconds, for each participant:
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=888ff710"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

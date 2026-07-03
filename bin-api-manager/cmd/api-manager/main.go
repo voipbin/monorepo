@@ -242,7 +242,9 @@ func runListenHTTP(serviceHandler servicehandler.ServiceHandler) {
 
 	v1 := app.Group("v1.0")
 	v1.Use(middleware.Authenticate())
-	openapi_server.RegisterHandlers(v1, appServer)
+	openapi_server.RegisterHandlersWithOptions(v1, appServer, openapi_server.GinServerOptions{
+		ErrorHandler: server.BindingErrorHandler,
+	})
 
 	// // inject servicehandler
 	// app.Use(func(c *gin.Context) {

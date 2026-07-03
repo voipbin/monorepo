@@ -52,13 +52,19 @@ These reasons are not tied to a specific resource and may be returned by any end
      - The requested HTTP endpoint does not exist (wrong path or typo). Verify the URL against the API reference; check API version prefix (``/v1.0/``) and resource name.
    * - ``INVALID_ARGUMENT``
      - 400
-     - The request body or a path/query parameter is invalid. Inspect ``error.message`` for details.
+     - The request body or a path/query parameter failed handler-level validation (e.g. a manually-parsed UUID typed as ``string`` in the OpenAPI spec). Inspect ``error.message`` for details. Distinct from ``INVALID_REQUEST_PARAMETER``/``MISSING_REQUEST_PARAMETER`` below, which fire earlier, at the wrapper/binding stage, for parameters typed with a specific OpenAPI format (e.g. ``uuid``).
    * - ``INVALID_JSON_BODY``
      - 400
      - The request body is not valid JSON. Ensure ``Content-Type`` is ``application/json`` and the payload parses as a JSON object or array.
    * - ``INVALID_ID``
      - 400
      - A path or body parameter is not a valid UUID. Verify the ID was obtained from a recent ``GET`` list call and has the form ``a1b2c3d4-e5f6-7890-abcd-ef1234567890``.
+   * - ``INVALID_REQUEST_PARAMETER``
+     - 400
+     - A path or query parameter typed with a specific OpenAPI format (e.g. ``uuid``, integer) was present but its value failed to parse, caught at the wrapper/binding stage before any handler code ran. Inspect ``error.message`` for the offending parameter name.
+   * - ``MISSING_REQUEST_PARAMETER``
+     - 400
+     - A required path or query parameter was absent entirely, caught at the same wrapper/binding stage as ``INVALID_REQUEST_PARAMETER``. **Fix:** Add the parameter named in ``error.message``.
    * - ``STATE_INVALID``
      - 409
      - The target resource is in a state that does not allow the requested operation. Check the current state via the resource's ``GET`` endpoint and retry only when the state matches the operation's prerequisite. Returned when the upstream condition does not carry a more specific resource-prefixed state reason.
