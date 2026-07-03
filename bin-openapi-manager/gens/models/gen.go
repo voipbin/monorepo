@@ -3291,6 +3291,45 @@ func (e PostServiceAgentsFilesMultipartBodyType) Valid() bool {
 	}
 }
 
+// Defines values for PostServiceAgentsInteractionsIdResolutionsJSONBodyResolutionType.
+const (
+	Negative PostServiceAgentsInteractionsIdResolutionsJSONBodyResolutionType = "negative"
+	Positive PostServiceAgentsInteractionsIdResolutionsJSONBodyResolutionType = "positive"
+)
+
+// Valid indicates whether the value is a known member of the PostServiceAgentsInteractionsIdResolutionsJSONBodyResolutionType enum.
+func (e PostServiceAgentsInteractionsIdResolutionsJSONBodyResolutionType) Valid() bool {
+	switch e {
+	case Negative:
+		return true
+	case Positive:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PostServiceAgentsInteractionsIdResolutionsJSONBodyResolvedByType.
+const (
+	Agent  PostServiceAgentsInteractionsIdResolutionsJSONBodyResolvedByType = "agent"
+	Rule   PostServiceAgentsInteractionsIdResolutionsJSONBodyResolvedByType = "rule"
+	System PostServiceAgentsInteractionsIdResolutionsJSONBodyResolvedByType = "system"
+)
+
+// Valid indicates whether the value is a known member of the PostServiceAgentsInteractionsIdResolutionsJSONBodyResolvedByType enum.
+func (e PostServiceAgentsInteractionsIdResolutionsJSONBodyResolvedByType) Valid() bool {
+	switch e {
+	case Agent:
+		return true
+	case Rule:
+		return true
+	case System:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for PostStorageFilesMultipartBodyType.
 const (
 	Rag PostStorageFilesMultipartBodyType = "rag"
@@ -9118,6 +9157,60 @@ type PostServiceAgentsFilesMultipartBody struct {
 // PostServiceAgentsFilesMultipartBodyType defines parameters for PostServiceAgentsFiles.
 type PostServiceAgentsFilesMultipartBodyType string
 
+// GetServiceAgentsInteractionsParams defines parameters for GetServiceAgentsInteractions.
+type GetServiceAgentsInteractionsParams struct {
+	// PeerType Remote endpoint type (e.g. "tel", "email"). Required with peer_target.
+	PeerType *string `form:"peer_type,omitempty" json:"peer_type,omitempty"`
+
+	// PeerTarget Remote endpoint target (e.g. "+155****4567"). Required with peer_type.
+	PeerTarget *string `form:"peer_target,omitempty" json:"peer_target,omitempty"`
+
+	// ContactId Filter by resolved contact ID.
+	ContactId *openapi_types.UUID `form:"contact_id,omitempty" json:"contact_id,omitempty"`
+
+	// AddressId Filter by contact address ID.
+	AddressId *openapi_types.UUID `form:"address_id,omitempty" json:"address_id,omitempty"`
+
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// GetServiceAgentsInteractionsUnresolvedParams defines parameters for GetServiceAgentsInteractionsUnresolved.
+type GetServiceAgentsInteractionsUnresolvedParams struct {
+	// Since Lookback window in days (e.g. "7d", "30d"). Default "30d", max "180d".
+	Since *string `form:"since,omitempty" json:"since,omitempty"`
+
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostServiceAgentsInteractionsIdResolutionsJSONBody defines parameters for PostServiceAgentsInteractionsIdResolutions.
+type PostServiceAgentsInteractionsIdResolutionsJSONBody struct {
+	// ContactId The contact to attach or suppress this interaction for.
+	ContactId openapi_types.UUID `json:"contact_id"`
+
+	// ResolutionType Type of resolution.
+	ResolutionType PostServiceAgentsInteractionsIdResolutionsJSONBodyResolutionType `json:"resolution_type"`
+
+	// ResolvedById ID of the agent, system, or rule that resolved the interaction.
+	ResolvedById openapi_types.UUID `json:"resolved_by_id"`
+
+	// ResolvedByType Who resolved this interaction.
+	ResolvedByType PostServiceAgentsInteractionsIdResolutionsJSONBodyResolvedByType `json:"resolved_by_type"`
+}
+
+// PostServiceAgentsInteractionsIdResolutionsJSONBodyResolutionType defines parameters for PostServiceAgentsInteractionsIdResolutions.
+type PostServiceAgentsInteractionsIdResolutionsJSONBodyResolutionType string
+
+// PostServiceAgentsInteractionsIdResolutionsJSONBodyResolvedByType defines parameters for PostServiceAgentsInteractionsIdResolutions.
+type PostServiceAgentsInteractionsIdResolutionsJSONBodyResolvedByType string
+
 // PutServiceAgentsMeJSONBody defines parameters for PutServiceAgentsMe.
 type PutServiceAgentsMeJSONBody struct {
 	// Detail Additional details about the agent.
@@ -9878,6 +9971,9 @@ type PostServiceAgentsConversationsIdMessagesJSONRequestBody PostServiceAgentsCo
 
 // PostServiceAgentsFilesMultipartRequestBody defines body for PostServiceAgentsFiles for multipart/form-data ContentType.
 type PostServiceAgentsFilesMultipartRequestBody PostServiceAgentsFilesMultipartBody
+
+// PostServiceAgentsInteractionsIdResolutionsJSONRequestBody defines body for PostServiceAgentsInteractionsIdResolutions for application/json ContentType.
+type PostServiceAgentsInteractionsIdResolutionsJSONRequestBody PostServiceAgentsInteractionsIdResolutionsJSONBody
 
 // PutServiceAgentsMeJSONRequestBody defines body for PutServiceAgentsMe for application/json ContentType.
 type PutServiceAgentsMeJSONRequestBody PutServiceAgentsMeJSONBody

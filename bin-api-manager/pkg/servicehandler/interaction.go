@@ -66,7 +66,7 @@ func (h *serviceHandler) InteractionList(
 		return nil, "", serviceerrors.ErrDirectAccessNotSupported
 	}
 
-	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAgent|amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		return nil, "", serviceerrors.ErrPermissionDenied
 	}
 
@@ -99,7 +99,7 @@ func (h *serviceHandler) InteractionListUnresolved(
 		return nil, "", serviceerrors.ErrDirectAccessNotSupported
 	}
 
-	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAgent|amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		return nil, "", serviceerrors.ErrPermissionDenied
 	}
 
@@ -132,7 +132,7 @@ func (h *serviceHandler) InteractionGet(ctx context.Context, a *auth.AuthIdentit
 		return nil, err
 	}
 
-	if !h.hasPermission(ctx, a, res.CustomerID, amagent.PermissionCustomerAgent|amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+	if !h.hasPermission(ctx, a, res.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		return nil, serviceerrors.ErrPermissionDenied
 	}
 
@@ -170,7 +170,7 @@ func (h *serviceHandler) ResolutionCreate(
 		return nil, err
 	}
 
-	if !h.hasPermission(ctx, a, ia.CustomerID, amagent.PermissionCustomerAgent|amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+	if !h.hasPermission(ctx, a, ia.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		return nil, serviceerrors.ErrPermissionDenied
 	}
 
@@ -199,7 +199,7 @@ func (h *serviceHandler) ResolutionDelete(ctx context.Context, a *auth.AuthIdent
 		return serviceerrors.ErrDirectAccessNotSupported
 	}
 
-	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAgent|amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		return serviceerrors.ErrPermissionDenied
 	}
 

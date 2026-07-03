@@ -8192,8 +8192,20 @@ paths:
 
   /service_agents/tags/{id}:
     $ref: './paths/service_agents/tags_id.yaml'
+
   /service_agents/tags:
     $ref: './paths/service_agents/tags.yaml'
+
+  /service_agents/interactions:
+    $ref: './paths/service_agents/interactions.yaml'
+  /service_agents/interactions/unresolved:
+    $ref: './paths/service_agents/interactions_unresolved.yaml'
+  /service_agents/interactions/{id}:
+    $ref: './paths/service_agents/interactions_id.yaml'
+  /service_agents/interactions/{id}/resolutions:
+    $ref: './paths/service_agents/interactions_id_resolutions.yaml'
+  /service_agents/interactions/{id}/resolutions/{rid}:
+    $ref: './paths/service_agents/interactions_id_resolutions_id.yaml'
 
   /service_agents/transcribes:
     $ref: './paths/service_agents/transcribes.yaml'
