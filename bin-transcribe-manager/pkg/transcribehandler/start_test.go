@@ -2,12 +2,14 @@ package transcribehandler
 
 import (
 	"context"
+	stderrors "errors"
 	"reflect"
 	"testing"
 
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
@@ -138,6 +140,9 @@ func Test_Start_referencetype_call(t *testing.T) {
 
 			// streaming start
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+
+			// duplicate check finds nothing
+			mockDB.EXPECT().TranscribeList(ctx, uint64(1), "", gomock.Any()).Return([]*transcribe.Transcribe{}, nil)
 
 			if tt.direction == transcribe.DirectionBoth {
 				mockStreaming.EXPECT().Start(ctx, tt.customerID, tt.responseUUID, tt.referenceType, tt.referenceID, tt.language, transcript.DirectionIn, tt.provider).Return(tt.responseStreamings[0], nil)
@@ -331,6 +336,9 @@ func Test_startLive(t *testing.T) {
 
 			ctx := context.Background()
 
+			// duplicate check finds nothing
+			mockDB.EXPECT().TranscribeList(ctx, uint64(1), "", gomock.Any()).Return([]*transcribe.Transcribe{}, nil)
+
 			// create
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDB.EXPECT().TranscribeCreate(ctx, gomock.Any()).Return(nil)
@@ -355,6 +363,78 @@ func Test_startLive(t *testing.T) {
 			}
 
 
+		})
+	}
+}
+
+func Test_startLive_duplicate_rejected(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customerID    uuid.UUID
+		activeflowID  uuid.UUID
+		onEndFlowID   uuid.UUID
+		referenceType transcribe.ReferenceType
+		referenceID   uuid.UUID
+		language      string
+		direction     transcribe.Direction
+		provider      transcribe.Provider
+
+		responseExisting []*transcribe.Transcribe
+	}{
+		{
+			name: "existing progressing transcribe rejects duplicate start",
+
+			customerID:    uuid.FromStringOrNil("469b200c-8786-11ec-bd4f-bb7ae5541d57"),
+			activeflowID:  uuid.FromStringOrNil("6dc457de-0924-11f0-9360-739df5241a77"),
+			onEndFlowID:   uuid.FromStringOrNil("6df2b30e-0924-11f0-9350-cf73077f53bd"),
+			referenceType: transcribe.ReferenceTypeCall,
+			referenceID:   uuid.FromStringOrNil("47b30720-8786-11ec-ac47-f37c07bbbef5"),
+			language:      "en-US",
+			direction:     transcribe.DirectionBoth,
+			provider:      transcribe.ProviderEmpty,
+
+			responseExisting: []*transcribe.Transcribe{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("49a3529c-8786-11ec-928e-bb8e9b925697"),
+					},
+					Status: transcribe.StatusProgressing,
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &transcribeHandler{
+				utilHandler: mockUtil,
+				db:          mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("ad23290c-9877-11ed-8d54-07172f870dfb"))
+			mockDB.EXPECT().TranscribeList(ctx, uint64(1), "", gomock.Any()).Return(tt.responseExisting, nil)
+
+			res, err := h.startLive(ctx, tt.customerID, tt.activeflowID, tt.onEndFlowID, tt.referenceType, tt.referenceID, tt.language, tt.direction, tt.provider)
+			if err == nil {
+				t.Errorf("Wrong match. expect: error, got: ok. res: %v", res)
+			}
+
+			var ve *cerrors.VoipbinError
+			if !stderrors.As(err, &ve) {
+				t.Errorf("Wrong error type. expect: VoipbinError, got: %T", err)
+			} else if ve.Status != cerrors.StatusAlreadyExists {
+				t.Errorf("Wrong status. expect: %s, got: %s", cerrors.StatusAlreadyExists, ve.Status)
+			}
 		})
 	}
 }
@@ -558,6 +638,9 @@ func Test_Start_direction_normalize(t *testing.T) {
 
 			mockReq.EXPECT().CallV1CallGet(ctx, tt.referenceID).Return(tt.responseCall, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+
+			// duplicate check finds nothing
+			mockDB.EXPECT().TranscribeList(ctx, uint64(1), "", gomock.Any()).Return([]*transcribe.Transcribe{}, nil)
 
 			// the streamings started must match the normalized direction:
 			// "both" starts in and out, a single direction starts only that leg.
