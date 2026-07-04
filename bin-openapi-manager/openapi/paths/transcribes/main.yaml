@@ -56,7 +56,14 @@ get:
 
 post:
   summary: Create a transcribe
-  description: Creates a transcription of a recording and returns the result.
+  description: >-
+    Starts a transcription of the given reference (call, confbridge, or
+    recording) and returns the result. Duplicate behavior differs by
+    reference type: for a recording that already has a transcribe in the
+    requested language, the existing transcribe is returned (200); for a
+    call/confbridge that already has a progressing live transcribe in the
+    requested language, the request is rejected with 409. Stop the
+    existing transcribe first, or start with a different language.
   tags:
     - Transcribe
   requestBody:
@@ -105,5 +112,7 @@ post:
       $ref: '#/components/responses/BadRequest'
     '401':
       $ref: '#/components/responses/Unauthenticated'
+    '409':
+      $ref: '#/components/responses/Conflict'
     '500':
       $ref: '#/components/responses/InternalError'

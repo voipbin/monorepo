@@ -10,6 +10,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-transcribe-manager/models/transcribe"
 	"monorepo/bin-transcribe-manager/models/transcript"
 )
@@ -166,6 +168,50 @@ func (h *transcribeHandler) startLive(
 	id := h.utilHandler.UUIDCreate()
 	log = log.WithField("transcribe_id", id)
 	log.Debugf("Starting live transcribe. transcribe_id: %s", id)
+
+	// Reject a duplicate live session: if a progressing transcribe already
+	// exists for the same customer, reference and language, starting another
+	// one would silently create parallel streaming sessions (double-click,
+	// network retry, or two agents pressing Start simultaneously). The
+	// recording path has its own dedup (startRecording returns the existing
+	// transcribe); for live we conflict instead of returning the existing one
+	// because the caller may have requested a different direction/provider,
+	// and the existing session keeps streaming either way.
+	//
+	// Scoped per customer_id AND language on purpose:
+	// - customer_id: bin-ai-manager starts its own summary transcribes on the
+	//   SAME call/confbridge under IDAIManager ownership (see
+	//   bin-ai-manager/pkg/summaryhandler/start.go) — those must keep
+	//   coexisting with the customer's own live transcribe, and a customer
+	//   must never be blocked by a hidden system-owned session. The
+	//   double-start scenarios this guard exists for are all same-customer.
+	// - language: multi-language sessions on one call remain possible.
+	//
+	// Note this is a read-then-create check, not a DB unique constraint, so a
+	// true concurrent race can still slip through; it closes the practical
+	// double-start window. Also, a transcribe stuck in progressing (e.g. an
+	// orphaned session after a pod restart whose hangup event was lost) keeps
+	// returning 409 for its reference until it is stopped or cleaned up —
+	// acceptable for call-scoped lifetimes, but worth knowing when debugging.
+	dupFilters := map[transcribe.Field]any{
+		transcribe.FieldCustomerID:  customerID,
+		transcribe.FieldReferenceID: referenceID,
+		transcribe.FieldLanguage:    language,
+		transcribe.FieldStatus:      transcribe.StatusProgressing,
+		transcribe.FieldDeleted:     false,
+	}
+	existings, err := h.List(ctx, 1, "", dupFilters)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not check for an existing live transcribe. reference_id: %s", referenceID)
+	}
+	if len(existings) > 0 {
+		log.Infof("Found an existing progressing transcribe. Rejecting duplicate start. existing_transcribe_id: %s", existings[0].ID)
+		return nil, cerrors.AlreadyExists(
+			commonoutline.ServiceNameTranscribeManager,
+			"TRANSCRIBE_ALREADY_PROGRESSING",
+			"A live transcribe is already progressing for this reference and language. Stop the existing transcribe first, or start with a different language.",
+		)
+	}
 
 	directions := []transcript.Direction{transcript.Direction(direction)}
 	if direction == transcribe.DirectionBoth {
