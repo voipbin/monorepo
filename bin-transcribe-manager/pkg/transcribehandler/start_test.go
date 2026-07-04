@@ -452,6 +452,68 @@ func Test_startLive_duplicate_rejected(t *testing.T) {
 	}
 }
 
+func Test_startLive_different_language_coexists(t *testing.T) {
+	// Positive coexistence guard: a progressing transcribe in ANOTHER
+	// language must NOT block a new start — the duplicate check is scoped
+	// per customer+reference+language. The dup-check List (exact-matched on
+	// the requested ja-JP) returns empty even though an en-US session
+	// exists, and the start proceeds normally.
+	customerID := uuid.FromStringOrNil("469b200c-8786-11ec-bd4f-bb7ae5541d57")
+	activeflowID := uuid.FromStringOrNil("6dc457de-0924-11f0-9360-739df5241a77")
+	onEndFlowID := uuid.FromStringOrNil("6df2b30e-0924-11f0-9350-cf73077f53bd")
+	referenceID := uuid.FromStringOrNil("47b30720-8786-11ec-ac47-f37c07bbbef5")
+	responseUUID := uuid.FromStringOrNil("ad23290c-9877-11ed-8d54-07172f870dfb")
+	responseTranscribe := &transcribe.Transcribe{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("49a3529c-8786-11ec-928e-bb8e9b925697"),
+		},
+	}
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockStreaming := streaminghandler.NewMockStreamingHandler(mc)
+
+	h := &transcribeHandler{
+		utilHandler:      mockUtil,
+		reqHandler:       mockReq,
+		db:               mockDB,
+		notifyHandler:    mockNotify,
+		streamingHandler: mockStreaming,
+	}
+
+	ctx := context.Background()
+
+	mockUtil.EXPECT().UUIDCreate().Return(responseUUID)
+
+	expectFilters := map[transcribe.Field]any{
+		transcribe.FieldCustomerID:  customerID,
+		transcribe.FieldReferenceID: referenceID,
+		transcribe.FieldLanguage:    "ja-JP",
+		transcribe.FieldStatus:      transcribe.StatusProgressing,
+		transcribe.FieldDeleted:     false,
+	}
+	mockDB.EXPECT().TranscribeList(ctx, uint64(1), "", expectFilters).Return([]*transcribe.Transcribe{}, nil)
+
+	mockStreaming.EXPECT().Start(ctx, customerID, responseUUID, transcribe.ReferenceTypeCall, referenceID, "ja-JP", transcript.DirectionIn, transcribe.ProviderEmpty).Return(&streaming.Streaming{}, nil)
+	mockDB.EXPECT().TranscribeCreate(ctx, gomock.Any()).Return(nil)
+	mockDB.EXPECT().TranscribeGet(ctx, gomock.Any()).Return(responseTranscribe, nil)
+	mockReq.EXPECT().FlowV1VariableSetVariable(ctx, activeflowID, gomock.Any()).Return(nil)
+	mockNotify.EXPECT().PublishWebhookEvent(ctx, responseTranscribe.CustomerID, transcribe.EventTypeTranscribeCreated, responseTranscribe)
+
+	res, err := h.startLive(ctx, customerID, activeflowID, onEndFlowID, transcribe.ReferenceTypeCall, referenceID, "ja-JP", transcribe.DirectionIn, transcribe.ProviderEmpty)
+	if err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+	if res == nil || res.ID != responseTranscribe.ID {
+		t.Errorf("Wrong match.\nexpect: %v\ngot: %v", responseTranscribe, res)
+	}
+}
+
 func Test_Start_direction_normalize(t *testing.T) {
 
 	tests := []struct {

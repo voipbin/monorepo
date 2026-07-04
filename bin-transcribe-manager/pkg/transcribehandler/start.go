@@ -209,7 +209,7 @@ func (h *transcribeHandler) startLive(
 		return nil, cerrors.AlreadyExists(
 			commonoutline.ServiceNameTranscribeManager,
 			"TRANSCRIBE_ALREADY_PROGRESSING",
-			"A live transcribe is already progressing for this reference and language.",
+			"A live transcribe is already progressing for this reference and language. Stop the existing transcribe first, or start with a different language.",
 		)
 	}
 
