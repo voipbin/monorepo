@@ -107,5 +107,7 @@ post:
       $ref: '#/components/responses/BadRequest'
     '401':
       $ref: '#/components/responses/Unauthenticated'
+    '409':
+      $ref: '#/components/responses/Conflict'
     '500':
       $ref: '#/components/responses/InternalError'

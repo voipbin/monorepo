@@ -422,7 +422,20 @@ func Test_startLive_duplicate_rejected(t *testing.T) {
 			ctx := context.Background()
 
 			mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("ad23290c-9877-11ed-8d54-07172f870dfb"))
-			mockDB.EXPECT().TranscribeList(ctx, uint64(1), "", gomock.Any()).Return(tt.responseExisting, nil)
+
+			// exact-match the duplicate-check filters: if any scoping key
+			// (customer_id, language, status) is dropped from dupFilters,
+			// this test must fail — that scoping is what keeps ai-manager's
+			// IDAIManager-owned summary transcribes and other-language
+			// sessions coexisting.
+			expectFilters := map[transcribe.Field]any{
+				transcribe.FieldCustomerID:  tt.customerID,
+				transcribe.FieldReferenceID: tt.referenceID,
+				transcribe.FieldLanguage:    tt.language,
+				transcribe.FieldStatus:      transcribe.StatusProgressing,
+				transcribe.FieldDeleted:     false,
+			}
+			mockDB.EXPECT().TranscribeList(ctx, uint64(1), "", expectFilters).Return(tt.responseExisting, nil)
 
 			res, err := h.startLive(ctx, tt.customerID, tt.activeflowID, tt.onEndFlowID, tt.referenceType, tt.referenceID, tt.language, tt.direction, tt.provider)
 			if err == nil {
