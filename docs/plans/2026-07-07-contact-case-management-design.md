@@ -18,13 +18,13 @@ This design introduces **Case**: a thin, per-channel session header that groups 
 ### In scope
 
 - `Case` entity: get-or-create keyed by `(customer_id, peer_type, peer_target, reference_type)`, with explicit-context override for same-session cross-channel actions (e.g. agent sends SMS mid-call).
-- Case lifecycle: open → closed (`agent_closed` / `timeout` / `merged`-reserved). No reopen; re-contact creates a new Case linked via `previous_case_id`.
+- Case lifecycle: open → closed (`agent_closed` / `timeout` / `merged`-reserved). No reopen; re-contact creates a new Case linked via `previous_case_id`. Agent-initiated `/continue` for accidental-close recovery.
 - `Interaction.case_id` (nullable FK) — Interaction stays the event log; Case is the new grouping layer.
-- `Resolution.case_id` (nullable) — case-level contact attribution, promoted to first-class alongside the existing interaction-level override.
+- `Resolution.case_id` (nullable) — case-level contact attribution, promoted to first-class alongside the existing interaction-level override. This requires relaxing `Resolution.InteractionID` to nullable, which is a real Go-side breaking change, not just a DB `ALTER` — see §3.3.
 - `Case.contact_id` — denormalized cache, single source of truth is Resolution, single derivation function.
-- Case ownership (`owner_type`/`owner_id`) reusing the existing `commonidentity.Owner` pattern (see `assignable-conversation-design.md`).
+- Case ownership (`owner_type`/`owner_id`) reusing the existing `commonidentity.Owner` pattern (see `assignable-conversation-design.md`); ownership is never cleared by closing (§7).
 - Case tagging via the existing `bin-tag-manager` (Case registered as a taggable resource type).
-- `CaseNote` — new, physically separate table for agent-internal notes. Never customer-facing.
+- `CaseNote` — new, physically separate table for agent-internal notes. Never customer-facing, including at the event-delivery layer (§3.5).
 - Explicit case_id propagation for actions taken inside an active case context (e.g. outbound SMS sent while a call is active).
 
 ### Out of scope (parked)
@@ -64,7 +64,9 @@ type Case struct {
 
     ContactID *uuid.UUID // nullable; denormalized cache, see §3.3
 
-    commonidentity.Owner // OwnerType + OwnerID — reused as-is from the conversation assignment precedent
+    commonidentity.Owner // OwnerType + OwnerID — reused as-is from the conversation assignment precedent;
+                          // NEVER cleared by closing a case (§7) — this is a load-bearing invariant for
+                          // /continue's authorization (§5.3)
 
     Status       string     // open | closed
     OpenedAt     *time.Time // always set at INSERT time (no code path leaves it NULL); kept as a
@@ -82,24 +84,35 @@ type Case struct {
 }
 ```
 
-Constraint — **MySQL/MariaDB does not support partial/filtered unique indexes** (this platform runs MySQL exclusively via `bin-dbscheme-manager`, per its own prior precedent in `ac5d4e18060c_contact_crm_create_tables.py` for `contact_addresses.primary_contact_uk`). The identical generated-column technique is reused here instead of the Postgres-style `WHERE`-clause index from the first draft of this doc:
+Constraint — **MySQL/MariaDB does not support partial/filtered unique indexes** (this platform runs MySQL exclusively via `bin-dbscheme-manager`, per its own prior precedent in `ac5d4e18060c_contact_crm_create_tables.py` for `contact_addresses.primary_contact_uk`). The identical generated-column technique is reused here, with a fixed-size hash digest rather than a raw `CONCAT` (see rationale below) to avoid the truncation risk a raw-value approach would carry:
 
 ```sql
 -- open_peer_uk carries a value only when status='open'; closed rows compute NULL,
 -- which MySQL treats as distinct under UNIQUE, so any number of closed rows for the
 -- same peer/reference_type may coexist, while at most one open row may exist.
-open_peer_uk BINARY(?) GENERATED ALWAYS AS (
+--
+-- SHA2(..., 256) is used INSTEAD OF a raw CONCAT of the key fields. peer_type/peer_target/
+-- reference_type are VARCHAR(255) under utf8mb4 (up to 4 bytes/char); a raw concatenation of
+-- customer_id + all three fields can approach ~3KB in the worst case, close to or over
+-- InnoDB's index key-length limits, and MySQL SILENTLY TRUNCATES an oversized value assigned
+-- into a fixed-size BINARY column rather than erroring — which could create false-positive
+-- uniqueness collisions between genuinely different (customer, peer, reference_type) tuples.
+-- A fixed-size hash input eliminates that risk outright; this decision is made now, not
+-- deferred to implementation, per round-2 design review.
+open_peer_uk BINARY(32) GENERATED ALWAYS AS (
     IF(status = 'open',
-       CONCAT(customer_id, '|', peer_type, '|', peer_target, '|', reference_type),
+       UNHEX(SHA2(CONCAT_WS('|', customer_id, peer_type, peer_target, reference_type), 256)),
        NULL)
 ) STORED,
 
-UNIQUE INDEX uq_case_open_peer (open_peer_uk);
+UNIQUE INDEX uq_case_open_peer (open_peer_uk),
+
+-- Supporting indexes for the hot-path queries this design specifies elsewhere:
+INDEX idx_case_unresolved (customer_id, status, contact_id),   -- backs §6 CaseListUnresolved
+INDEX idx_case_owner      (customer_id, owner_type, owner_id); -- backs §7 "my cases" list
 ```
 
-(Concrete column sizing/hashing approach to be finalized at implementation time — e.g. a `SHA2(...)` digest if the concatenated key exceeds a practical index-key length — but the generated-column + distinct-NULL mechanism is the load-bearing part carried over from the existing precedent.)
-
-At most one **open** Case per (customer, peer, reference_type). Closed cases are unconstrained; many can accumulate for the same peer over time, chained by `previous_case_id`.
+At most one **open** Case per (customer, peer, reference_type). Closed cases are unconstrained; many can accumulate for the same peer over time, chained by `previous_case_id`. `CONCAT_WS` (not `CONCAT`) is used so a `NULL` component (none of these fields are nullable today, but this is defensive) produces a distinguishable hash input rather than collapsing the whole expression to `NULL`.
 
 ### 3.2 `Interaction` (existing, one new column)
 
@@ -112,24 +125,33 @@ type Interaction struct {
 
 No backfill of historical Interactions into synthetic Cases — see §8.
 
-### 3.3 `Resolution` (existing, extended)
+### 3.3 `Resolution` (existing, extended) — including the Go-side breaking change
 
 ```go
 type Resolution struct {
     // ... existing fields unchanged ...
-    InteractionID *uuid.UUID // CHANGED from non-nullable uuid.UUID to nullable — see migration note below
+    InteractionID *uuid.UUID // CHANGED from non-nullable uuid.UUID to nullable
     CaseID        *uuid.UUID // nullable — new case-level attribution path
 }
 ```
 
-**Breaking correction from the first draft:** `Resolution.InteractionID` is `uuid.UUID` (non-pointer) and `NOT NULL` in the schema shipped today (`models/resolution/resolution.go:18`, migration `ac5d4e18060c...py:132`). The case-level attribution mode (`case_id` set, `interaction_id` absent) is impossible to insert unless `interaction_id` is altered to nullable first. The migration in §8 explicitly includes this `ALTER COLUMN` as its own numbered step — it is not implied by adding `case_id`.
+**This is not a pure additive change — it is a breaking change to existing Go call sites, and the implementation plan must scope it as its own work item, not treat it as implied by the DB `ALTER`.** Concretely, today `models/resolution/resolution.go:18` declares `InteractionID uuid.UUID` (non-pointer), and callers rely on that non-nullability as a scoping parameter, not merely a type:
+
+- `pkg/dbhandler/resolution.go` — `ResolutionDelete` / `ResolutionListByInteraction` take `interactionID uuid.UUID` as a **mandatory row-scoping parameter** used directly in `WHERE interaction_id = ?`. A case-level Resolution (interaction_id absent) has nothing to pass here — these functions need a `case_id`-scoped counterpart (`ResolutionListByCase`, and a `ResolutionDelete` variant that accepts either scope), not just a widened signature.
+- `pkg/contacthandler/resolution.go` — propagates the same non-nullable signature upward; needs updating in lockstep.
+- `pkg/contacthandler/interaction_read.go` — builds a `map[uuid.UUID]bool` keyed directly off `r.InteractionID` with no nil-check; this must be guarded once `InteractionID` can be nil.
+- All existing table-driven tests in `dbhandler/resolution_test.go` and `contacthandler/resolution_test.go` need new nil-`InteractionID` cases.
+
+The DB migration itself is additive-safe (§8), but the surrounding Go code requires a real refactor. This is called out explicitly here so the implementation plan sizes it correctly rather than discovering it mid-implementation.
 
 ```sql
 ALTER TABLE contact_resolutions MODIFY COLUMN interaction_id BINARY(16) DEFAULT NULL;
 ALTER TABLE contact_resolutions ADD CONSTRAINT chk_resolution_case_or_interaction
   CHECK (interaction_id IS NOT NULL OR case_id IS NOT NULL);
 
--- Same MySQL generated-column technique as §3.1 (no native partial unique index):
+-- Same MySQL generated-column + SHA2 technique as §3.1 (no native partial unique index,
+-- and case_id alone is a 16-byte UUID so no truncation risk here — SHA2 is used purely
+-- for consistency with §3.1, a raw case_id-keyed generated column would also be safe):
 case_positive_uk BINARY(16) GENERATED ALWAYS AS (
     IF(resolution_type = 'positive' AND interaction_id IS NULL AND tm_delete IS NULL,
        case_id, NULL)
@@ -141,7 +163,9 @@ A Resolution row now has two independent modes:
 - **`case_id` set** (primary path): "this whole case belongs to this contact." All Interactions carrying this `case_id` inherit the attribution.
 - **`interaction_id` set** (exception path, existing behavior): fine-grained override of a single Interaction — used to add/remove one message from an otherwise-correct case attribution.
 
-The generated-column unique index guarantees at most one active case-level positive Resolution per case, which is required for `Case.contact_id` (§3.4) to be derivable without ambiguity.
+The generated-column unique index guarantees at most one active case-level positive Resolution per case. Creating a case-level positive Resolution when one already exists (uncommon, but not impossible under concurrent agent action) is a duplicate-key situation with exactly the same shape as the Case-insert races in §4 — the handler MUST apply the identical `ON DUPLICATE KEY` reuse pattern (re-select the existing active resolution and treat the call as a no-op/already-resolved) rather than surfacing a raw DB error.
+
+The **soft-delete-then-insert "replace"** flow (used when correcting a case's contact attribution) MUST run both statements plus the `Case.contact_id` derivation write (§3.4) inside a **single transaction**. Splitting them across separate transactions would let the case transiently derive to `contact_id = NULL` between the delete and the insert, causing it to flicker into and out of §6's unresolved queue — not data corruption, but a visible inconsistency this design explicitly rules out by requiring single-transaction atomicity for the replace operation.
 
 ### 3.4 `Case.contact_id` — derivation, not a second source of truth
 
@@ -158,8 +182,10 @@ deriveCaseContactID(case_id):
 
 This single function is the **only** place `Case.contact_id` is computed. Two call sites:
 
-1. **Write path** — invoked inside the same transaction whenever a case-level Resolution is created, soft-deleted, or replaced. `Case.contact_id` is written directly from the function's result; no re-derivation elsewhere.
+1. **Write path** — invoked inside the same transaction whenever a case-level Resolution is created, soft-deleted, or replaced (see §3.3's atomicity requirement for the replace case specifically). `Case.contact_id` is written directly from the function's result; no re-derivation elsewhere.
 2. **Recovery path** — `case-control` CLI command `case reconcile-contact <case_id | --all>` re-runs the same function and overwrites `Case.contact_id`. Idempotent. Used only if drift is discovered (e.g. a bulk import wrote Resolution rows without going through the handler). No scheduled reconciliation job at this stage — added only after a real drift incident, per platform incident-response convention.
+
+Concurrent closing (§5.1) and resolving (this section) of the same Case do not race destructively: both are row-level `UPDATE`s on the same `Case` row, so InnoDB's row lock serializes them regardless of which columns each statement touches. Whichever commits second still lands correctly — closing never clobbers `contact_id`, and resolving never clobbers `status`/`closed_*`. §6's explicit support for retroactively resolving a closed Case depends on, and is consistent with, this guarantee.
 
 ### 3.5 `CaseNote` (new, owned by `bin-contact-manager`)
 
@@ -180,9 +206,13 @@ type CaseNote struct {
 }
 ```
 
-**Physically separate from `Interaction`.** CaseNote is never surfaced in any customer-facing webhook or API response. Mixing internal notes into the Interaction timeline (e.g. via `ReferenceType: "note"`) is explicitly rejected — it would require every consumer of the customer-facing timeline to correctly filter internal rows, and a single missed filter becomes a customer-visible data leak. A separate table makes that class of bug structurally impossible.
+**Physically separate from `Interaction`.** CaseNote is never surfaced in any customer-facing webhook or API response. Mixing internal notes into the Interaction timeline (e.g. via `ReferenceType: "note"`) is explicitly rejected — it would require every consumer of the customer-facing timeline to correctly filter internal rows, and a single missed filter becomes a customer-visible data leak. A separate table makes that class of bug structurally impossible **at the storage layer** — but the guarantee must also hold at the event-delivery layer, which the first draft of this section got wrong (corrected below).
 
-A `case_note_created` webhook event is emitted alongside `CaseNote` creation (same convention as `case_created`/`case_updated`), primarily so an agent UI can implement @-mention notifications by scanning `text` for mentions client-side or in a thin subscriber — this is deliberately the only notification mechanism at launch; a first-class mentions/notify data model is parked (§2). Rich formatting and attachments on `CaseNote` are also parked (§2), not silently dropped.
+**`case_note_created` delivery — corrected from the first draft.** An earlier version of this section said this event is published "same convention as `case_created`/`case_updated`." Both of those ARE customer-facing today, delivered via the standard `notifyHandler.PublishEvent` → webhook-manager path that sends **every** subscribed event to the customer's configured webhook endpoint (there is no per-event-type customer opt-out in the current webhook-manager model). Publishing `case_note_created` through that same path would leak internal note text to the customer webhook endpoint — directly contradicting this section's own "never customer-facing" guarantee. That was a real, self-contradictory defect in the first draft, not a hypothetical.
+
+**Corrected design:** `case_note_created` is published as an **internal-only** event — a distinct RabbitMQ routing/exchange path that `bin-contact-manager` publishes to and that only internal subscribers (the agent-facing websocket/notification layer, e.g. via `bin-api-manager`'s internal event bridge) consume. It is never routed through `notifyHandler.PublishWebhookEvent` / `webhook-manager`'s customer-delivery path. Concretely: `CaseNote` creation calls the internal pub/sub primitive directly (the same mechanism agent-manager or conversation-manager use for agent-facing real-time updates), not the `PublishWebhookEvent` helper used for `case_created`/`case_updated`/`case_closed`. §10 includes an explicit negative test asserting `case_note_created` is never delivered to the customer webhook endpoint, mirroring the existing negative test for `CaseNote` rows themselves.
+
+Rich formatting and attachments on `CaseNote` are parked (§2), not silently dropped.
 
 ## 4. Case get-or-create
 
@@ -191,12 +221,12 @@ Triggered from the same projection points that create Interactions today (`Event
 ```
 BEGIN TRANSACTION
 
-1. IF the triggering event carries an explicit case_id hint (§4.1):
+1. IF the triggering event carries an explicit case_id hint (§4.3):
      SELECT * FROM contact_cases WHERE id=? AND customer_id=? AND status='open' FOR UPDATE
      IF found: case_id = hint value  -- validated: correct tenant, still open
      ELSE: fall through to the peer/reference_type path below as if no hint were given
            (stale/invalid/closed hint never silently attaches an Interaction to the
-           wrong case or a closed one — see §4.1 for why this validation is mandatory)
+           wrong case or a closed one — see §4.3 for why this validation is mandatory)
 
    ELSE (or hint invalid, falling through):
      SELECT * FROM contact_cases
@@ -209,33 +239,37 @@ BEGIN TRANSACTION
      ELSE IF found (timed out):
          UPDATE contact_cases SET status='closed', closed_at=now, closed_reason='timeout'
          WHERE id = found.id
-         TRY:
-           INSERT INTO contact_cases (..., status='open', opened_at=now, previous_case_id=found.id)
-           RETURNING id INTO case_id
-         ON DUPLICATE KEY (uq_case_open_peer):
-           -- another transaction's insert for the same peer won the race between our
-           -- UPDATE...closed and our INSERT (see §4.2); re-select the now-open row
-           -- instead of erroring
-           SELECT id FROM contact_cases WHERE customer_id=? AND peer_type=? AND peer_target=?
-             AND reference_type=? AND status='open' INTO case_id
+         LOOP (bounded, e.g. max 3 attempts — see §4.2 for why a loop, not a single retry):
+           TRY:
+             INSERT INTO contact_cases (..., status='open', opened_at=now, previous_case_id=found.id)
+             RETURNING id INTO case_id
+             BREAK
+           ON DUPLICATE KEY (uq_case_open_peer):
+             SELECT * FROM contact_cases WHERE customer_id=? AND peer_type=? AND peer_target=?
+               AND reference_type=? AND status='open' FOR UPDATE
+             IF found AND still 'open': case_id = found.id; BREAK
+             ELSE: retry the INSERT (the row we just raced against may itself have since
+                   closed/timed out; loop rather than assume the first re-select is final)
 
      ELSE (not found):
          last_closed = SELECT * FROM contact_cases
                        WHERE customer_id=? AND peer_type=? AND peer_target=? AND reference_type=?
                        ORDER BY tm_create DESC LIMIT 1
-         TRY:
-           INSERT INTO contact_cases (..., status='open', opened_at=now,
-                  previous_case_id = last_closed.id if exists else NULL)
-           RETURNING id INTO case_id
-         ON DUPLICATE KEY (uq_case_open_peer):
-           -- a concurrent first-contact insert for the same peer won; reuse it
-           -- rather than erroring (see §4.2)
-           SELECT id FROM contact_cases WHERE customer_id=? AND peer_type=? AND peer_target=?
-             AND reference_type=? AND status='open' INTO case_id
+         LOOP (bounded, same shape as above):
+           TRY:
+             INSERT INTO contact_cases (..., status='open', opened_at=now,
+                    previous_case_id = last_closed.id if exists else NULL)
+             RETURNING id INTO case_id
+             BREAK
+           ON DUPLICATE KEY (uq_case_open_peer):
+             SELECT * FROM contact_cases WHERE customer_id=? AND peer_type=? AND peer_target=?
+               AND reference_type=? AND status='open' FOR UPDATE
+             IF found AND still 'open': case_id = found.id; BREAK
+             ELSE: retry the INSERT
 
 2. Attempt contact auto-match via existing address-set lookup (same mechanism as
    Interaction's automatic contact matching); if matched, set contact_id on the new Case row.
-   (Skipped when case_id came from the §4.1 hint path — the case's contact_id is already
+   (Skipped when case_id came from the §4.3 hint path — the case's contact_id is already
    established from whenever that case was originally opened.)
 
 3. INSERT INTO contact_interactions (..., case_id=case_id)
@@ -249,7 +283,11 @@ COMMIT
 
 `FOR UPDATE` on an existing open row correctly serializes concurrent transactions targeting that row — any process issuing the same `SELECT ... FOR UPDATE` blocks on the DB-level row lock regardless of pod/instance boundary, so the "reuse an existing open case" branch is race-free as stated.
 
-The **insert** branches (first contact, and timeout-triggered re-open) are a distinct race class: two transactions can simultaneously conclude "no open row exists" (nothing to lock when the row doesn't exist yet, or — for the timeout branch — a lock granted after a concurrent commit re-evaluates the `WHERE status='open'` predicate to zero rows and falls through to the same "not found" path). Both then attempt `INSERT`, and the unique index (`uq_case_open_peer`, §3.1) correctly rejects the second one as a duplicate key — but only if the pseudocode handles that rejection. The `ON DUPLICATE KEY` branches above are the fix: on a unique-constraint violation, re-select the row the other transaction just inserted and reuse it, rather than surfacing the DB error to the caller. This makes the full get-or-create race-free **with** a retry-on-conflict step, not "race-free without a retry loop" as an earlier draft of this section claimed — the corrected claim is: no distributed lock or advisory lock is needed, but the insert path must handle its own unique-constraint collision.
+The **insert** branches (first contact, and timeout-triggered re-open) are a distinct race class: two transactions can simultaneously conclude "no open row exists" and both attempt `INSERT`, which the unique index (`uq_case_open_peer`, §3.1) correctly rejects for the loser as a duplicate key.
+
+**Round-2 correction: the retry-select itself must be locked and re-checked, not treated as final.** An earlier draft of this section used a bare `SELECT` (no `FOR UPDATE`) in the `ON DUPLICATE KEY` branch, on the assumption that re-reading the winning row was sufficient. That is not safe: between that unlocked read and this transaction's later steps (3: `INSERT INTO contact_interactions`, 4: `UPDATE tm_update`), a third actor could close the winning case via `POST /close` (§5.1) with nothing to block it, resulting in an Interaction inserted into (and `tm_update` bumped on) a case that is now `status='closed'` — silently violating §5.3's closed-case-immutability invariant. The corrected pseudocode above fixes this two ways: (a) the retry-select takes `FOR UPDATE`, extending this transaction's lock to the winning row so no other transaction can close it out from under us before we commit, and (b) the retry is a **bounded loop**, not a single re-select — if the row we raced against itself transitions out of `open` before we re-select it (a second, rarer race), we fall through and retry the insert again rather than proceeding with a stale assumption.
+
+This makes the full get-or-create race-free with a bounded retry-on-conflict loop, not a single retry — the earlier "race-free without a retry loop" framing understated the mechanism required; the corrected claim is: no distributed or advisory lock is needed, but the insert path must both retry on conflict and re-lock what it finds on retry.
 
 ### 4.3 Explicit case_id override
 
@@ -286,7 +324,7 @@ SET status='closed', closed_at=now, closed_reason='agent_closed',
 WHERE id=? AND status='open'
 ```
 
-The `WHERE status='open'` guard makes this an idempotent, race-tolerant optimistic update for the **double-close** case: two identical close requests racing each other resolve safely (the second is a harmless 0-row no-op) without a distributed lock.
+The `WHERE status='open'` guard makes this an idempotent, race-tolerant optimistic update for the **double-close** case: two identical close requests racing each other resolve safely (the second is a harmless 0-row no-op) without a distributed lock. This `UPDATE` deliberately does not touch `owner_type`/`owner_id` — ownership is never cleared by closing (§7), which is what makes `/continue`'s owning-agent authorization (§5.3) work on a case that has since closed.
 
 **This guard alone is not sufficient for the close-vs-timeout race**, which is a materially different scenario: an inbound event's lazy timeout evaluation (§5.2, `closed_reason='timeout'`, `closed_by_type='system'`) and an agent's explicit `POST /close` (`closed_reason='agent_closed'`) can race for the same row. Whichever commits first wins the row; the loser's `UPDATE ... WHERE status='open'` matches zero rows. Silently treating that 0-row result as success would let an agent believe they closed the case with `agent_closed` while the persisted `closed_reason` is actually `timeout` — a real divergence between what the actor believes happened and what is recorded, not merely a "which case does the borderline message land in" question.
 
@@ -326,7 +364,9 @@ A closed Case is immutable. Re-contact from the same peer always creates a new C
 POST /v1/cases/{id}/continue
 ```
 
-Creates a new, empty `open` Case with `previous_case_id = id`, using the same `(peer_type, peer_target, reference_type, contact_id)` as the source case. Requires the source case to be `status='closed'`; requires the caller to be the case's owning agent or admin/manager (same permission shape as case assignment, §7). This is a distinct action from "reopening" the closed case itself — the old case stays exactly as it was, permanently attributed to whoever/whatever closed it; only a *new* case is created.
+Creates a new, empty `open` Case with `previous_case_id = id`, using the same `(peer_type, peer_target, reference_type, contact_id)` as the source case. Requires the source case to be `status='closed'`; requires the caller to be the case's owning agent or admin/manager. **This authorization check relies on the invariant stated in §3.1/§7 that closing a case never clears `owner_type`/`owner_id`** — without that invariant, `/continue` would have no owning agent to check against for any case that closed normally. A case that timed out unowned (never assigned) has no meaningful owning agent at all and correctly falls through to the admin/manager path.
+
+`/continue`'s insert is subject to **the exact same race as §4's insert branches** — two agents calling `/continue` on the same closed case simultaneously, or `/continue` racing a genuine inbound event on the same peer, both attempt `INSERT ... status='open'` against the same `uq_case_open_peer` constraint. `/continue` MUST reuse §4's bounded retry-and-reuse loop (locked re-select, retry on conflict) rather than defining its own handling or, worse, leaving the DB unique-constraint violation to surface as a raw, unhandled error. Concretely: `/continue`'s handler calls the same internal get-or-create primitive used by §4's insert branches, parameterized with `previous_case_id = id` instead of a peer-derived value, rather than reimplementing the insert logic. This is a distinct action from "reopening" the closed case itself — the old case stays exactly as it was, permanently attributed to whoever/whatever closed it; only a *new* case is created (or, per the shared retry logic, an already-open case for that peer is reused if one was concurrently created by another path).
 
 ## 6. Contact attribution and the unresolved queue
 
@@ -338,12 +378,12 @@ Creates a new, empty `open` Case with `previous_case_id = id`, using the same `(
 
 ```
 CaseListUnresolved:
-  WHERE customer_id=? AND contact_id IS NULL AND status='open'
+  WHERE customer_id=? AND status='open' AND contact_id IS NULL
 ```
 
-This is the agent's live work queue. Closing a case removes it from the queue regardless of resolution state — closing *is* the "no further action needed" signal; no separate "permanently unresolved" marker is introduced.
+Backed by `idx_case_unresolved (customer_id, status, contact_id)` (§3.1). This is the agent's live work queue. Closing a case removes it from the queue regardless of resolution state — closing *is* the "no further action needed" signal; no separate "permanently unresolved" marker is introduced.
 
-Resolution can be attached retroactively to a closed Case at any time (e.g. the contact is identified later), which updates `Case.contact_id` via the same derivation function.
+Resolution can be attached retroactively to a closed Case at any time (e.g. the contact is identified later), which updates `Case.contact_id` via the same derivation function. See §3.4 for why this does not race destructively against a concurrent close.
 
 ## 7. Case-adjacent agent workflow (this design's addition over the base Interaction/Resolution foundation)
 
@@ -351,40 +391,43 @@ Based on common patterns across ticketing/case platforms (assignment, internal n
 
 | Capability | Approach | Why |
 |---|---|---|
-| Ownership / assignment | Reuse `commonidentity.Owner` (`owner_type`/`owner_id`) exactly as conversation-manager already does it | Existing, proven pattern (`assignable-conversation-design.md`); same permission model (admin/manager assign, owning agent self-unassigns) applies unchanged |
+| Ownership / assignment | Reuse `commonidentity.Owner` (`owner_type`/`owner_id`) exactly as conversation-manager already does it | Existing, proven pattern (`assignable-conversation-design.md`); same permission model (admin/manager assign, owning agent self-unassigns) applies unchanged to *open* cases |
+| Ownership survives closing | Closing a case (§5.1) never clears `owner_type`/`owner_id` | Load-bearing for `/continue`'s authorization (§5.3); an implementer adding a "clear owner on close" cleanup step would silently break `/continue` for agent-closed cases, so this is stated as an explicit invariant here rather than left implicit |
 | Tags | Register `Case` as a taggable resource in the existing `bin-tag-manager` | Purpose-built generic tagging service already exists; no new tag storage needed |
 | Audit trail | Existing `case_created` / `case_updated` / `case_closed` webhook events | Same convention already used for Interaction/Resolution/Conversation; no new audit table |
-| Internal notes | New `CaseNote` table (§3.5) | Genuinely missing capability; must be physically isolated from customer-facing data |
+| Internal notes | New `CaseNote` table (§3.5), delivered to agents via an internal-only event, never through the customer webhook path | Genuinely missing capability; must be physically **and** transport-isolated from customer-facing data (see §3.5's corrected event-delivery design) |
 | Priority, SLA, CSAT | Explicitly out of scope (§2) | Meaningless without routing/queue integration or a separate survey feature; adding now risks unused decoration |
+| Platform-operator cross-customer visibility | Case/CaseNote endpoints are exposed through `bin-api-manager`'s standard permission gate and therefore inherit the platform's existing `PermissionProjectSuperAdmin` cross-customer bypass (used today for support/investigation) automatically — no new authorization code path is introduced for this | Called out explicitly so an implementer doesn't add case-specific customer-scoping logic that inadvertently excludes the existing superadmin bypass. If a future review finds Case/CaseNote do NOT correctly inherit this bypass, that is an implementation bug against this stated intent, not a design gap. |
 
 ## 8. Migration
 
-1. Create `contact_cases` table (with the generated-column-based unique index, §3.1 — not a native partial/filtered index, per the MySQL constraint noted there).
+1. Create `contact_cases` table (with the generated-column-based unique index and supporting indexes, §3.1 — not a native partial/filtered index, per the MySQL constraint noted there).
 2. Add `case_id` (nullable) to `contact_interactions`.
-3. Add `case_id` (nullable) to `contact_resolutions`; alter `interaction_id` to nullable (§3.3 — a real schema change from today's `NOT NULL`, not additive-only); add the CHECK constraint and the generated-column-based unique index.
-4. Create `contact_case_notes` table.
+3. Add `case_id` (nullable) to `contact_resolutions`; alter `interaction_id` to nullable (§3.3 — a real schema change from today's `NOT NULL`, not additive-only, AND a real Go-side breaking change to `dbhandler`/`contacthandler` call sites that must be scoped as its own implementation work, not assumed free); add the CHECK constraint and the generated-column-based unique index.
+4. Create `contact_case_notes` table (with an index on `case_id` to back the note-list query).
 5. Register `case` as a resource type in `bin-tag-manager`.
 6. **No backfill.** Historical Interactions predate the Case concept; retroactively grouping them by peer+time-gap heuristics would invent case boundaries that never existed operationally and could misattribute historical activity. The feature's value is forward-looking case management, not historical reconstruction.
 
-Step 3's `interaction_id` nullability change is the one non-purely-additive change in this migration; it relaxes a constraint (loosens `NOT NULL` to nullable) rather than tightening one, so it cannot reject previously-valid data — every existing row already has a non-null `interaction_id` and continues to satisfy the new, looser constraint unchanged.
+Step 3's `interaction_id` nullability change is additive-safe **at the DB level** (relaxing `NOT NULL` to nullable cannot reject previously-valid data), but is a real breaking change at the **Go code level** per §3.3 — the implementation plan must include the `dbhandler`/`contacthandler` refactor and test updates as explicit, separately-estimated work, not fold it silently into "add a column."
 
 ## 9. Service/API surface impact
 
-- **bin-contact-manager**: `CaseHandler` (get-or-create, close with truthful-persisted-state response per §5.1, continue, assign/unassign, list, list-unresolved), `CaseNoteHandler` (create/list/delete, emits `case_note_created`), Resolution handler extended with the case-level derivation hook, `case-control` CLI (including `reconcile-contact`).
+- **bin-contact-manager**: `CaseHandler` (get-or-create with the bounded retry loop per §4.2, close with truthful-persisted-state response per §5.1, continue reusing the same get-or-create primitive per §5.3, assign/unassign, list, list-unresolved), `CaseNoteHandler` (create/list/delete, emits `case_note_created` via the internal-only event path per §3.5 — never through `PublishWebhookEvent`), Resolution handler extended with the case-level derivation hook and case-scoped list/delete operations (§3.3), `case-control` CLI (including `reconcile-contact`).
 - **bin-tag-manager**: register `case` as a taggable resource type (no schema change expected — generic tagging already supports arbitrary resource types).
-- **bin-api-manager**: `/v1.0/cases`, `/v1.0/cases/{id}`, `/v1.0/cases/{id}/close`, `/v1.0/cases/{id}/continue`, `/v1.0/cases/{id}/notes`; extend `/v1.0/interactions` responses with `case_id`.
+- **bin-api-manager**: `/v1.0/cases`, `/v1.0/cases/{id}`, `/v1.0/cases/{id}/close`, `/v1.0/cases/{id}/continue`, `/v1.0/cases/{id}/notes`; extend `/v1.0/interactions` responses with `case_id`. Inherits the existing `PermissionProjectSuperAdmin` cross-customer bypass automatically (§7) — no new authorization code path.
 - **bin-openapi-manager**: spec additions per `voipbin-openapi-spec-handler-parity` convention.
 - **square-admin**: case list / unresolved queue / close button / notes panel — separate frontend design, not covered here.
 
 ## 10. Test scope (high level; detailed table-driven cases in the implementation plan)
 
-- Case get-or-create: reuse on open match, timeout-triggered chain with duplicate-key retry (§4.2), first-contact concurrent-insert retry (§4.2), explicit-hint bypass with valid/stale/wrong-tenant/closed hint (§4.3).
-- Case close: idempotent double-close, close-vs-timeout race returns the actually-persisted `closed_reason`/`closed_by` rather than the caller's assumed outcome (§5.1), `continue` on a closed case creates a correctly-chained new case without mutating the source.
-- Resolution → Case.contact_id derivation: create, replace (soft-delete + insert), delete, reconcile CLI idempotency, insert rejected when neither `case_id` nor `interaction_id` is set (CHECK constraint).
+- Case get-or-create: reuse on open match; timeout-triggered chain with locked, bounded-retry duplicate-key handling (§4.2); first-contact concurrent-insert with the same locked retry; explicit-hint bypass with valid/stale/wrong-tenant/closed hint (§4.3); the specific TOCTOU scenario from round-2 review — a case closes between a losing transaction's duplicate-key retry-select and its subsequent Interaction insert — must NOT succeed in attaching an Interaction to a since-closed case.
+- Case close: idempotent double-close; close-vs-timeout race returns the actually-persisted `closed_reason`/`closed_by` rather than the caller's assumed outcome (§5.1); `continue` on a closed case creates a correctly-chained new case without mutating the source; two concurrent `/continue` calls on the same case resolve via the shared get-or-create retry logic (one creates, the other reuses) rather than raising a raw DB error; `/continue` racing a genuine inbound event on the same peer resolves the same way.
+- Resolution → Case.contact_id derivation: create; replace (soft-delete + insert, single transaction — verify no transient NULL is externally observable); delete; reconcile CLI idempotency; insert rejected when neither `case_id` nor `interaction_id` is set (CHECK constraint); concurrent case-level Resolution creation for the same case resolves via the same duplicate-key reuse pattern as Case inserts, not a raw error.
 - Unresolved queue correctness under all three closing outcomes (§6).
-- CaseNote: never appears in customer-facing Interaction list or webhook payload (explicit negative test); `case_note_created` event fires on creation.
+- CaseNote: never appears in customer-facing Interaction list or webhook payload (explicit negative test); `case_note_created` fires on creation via the internal-only path AND is explicitly verified to never reach the customer webhook delivery mechanism (explicit negative test — this closes the exact gap the first design draft had).
 - Cross-channel explicit-hint scenario: call-active SMS lands in the same case_id as the call; a stale/closed hint falls back to normal peer-based matching rather than erroring or attaching to the wrong case.
+- `/continue` authorization: verify a case closed via normal agent close retains its `owner_type`/`owner_id` and that the owning agent (and only the owning agent, or admin/manager) can call `/continue` on it.
 
 ## 11. Rollback
 
-No destructive migration. All new columns are nullable and all new tables are additive. Rollback is a straightforward revert-and-redeploy: existing Interaction/Resolution/Conversation behavior is untouched by this feature, since Case sits alongside them rather than replacing any existing write path.
+No destructive migration. All new columns are nullable and all new tables are additive; the one relaxed constraint (`interaction_id` NOT NULL → nullable) cannot reject previously-valid data. Rollback is a straightforward revert-and-redeploy: existing Interaction/Resolution/Conversation behavior is untouched by this feature, since Case sits alongside them rather than replacing any existing write path. Reverting the Go-side `dbhandler`/`contacthandler` changes from §3.3 alongside the schema revert restores the original non-nullable `InteractionID` contract cleanly, since no external caller depends on the nullable form once this feature is rolled back.
