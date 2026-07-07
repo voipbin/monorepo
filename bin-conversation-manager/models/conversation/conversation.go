@@ -29,6 +29,12 @@ type Conversation struct {
 	Self commonaddress.Address `json:"self,omitempty" db:"self,json"` // self address
 	Peer commonaddress.Address `json:"peer,omitempty" db:"peer,json"` // peer address
 
+	// Metadata carries extensible per-Conversation annotations, currently
+	// used only for ContactCaseID (§4.3/§4.4 of the contact-case-management
+	// design). Inert with respect to conversation-manager's own dispatch
+	// logic -- never read by getExecuteMode or flow/agent-routing.
+	Metadata Metadata `json:"metadata,omitempty" db:"metadata,json"`
+
 	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
 	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`
 	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
@@ -56,6 +62,8 @@ const (
 
 	FieldSelf Field = "self"
 	FieldPeer Field = "peer"
+
+	FieldMetadata Field = "metadata"
 
 	FieldTMCreate Field = "tm_create"
 	FieldTMUpdate Field = "tm_update"
