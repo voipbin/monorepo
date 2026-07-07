@@ -18,6 +18,10 @@ var timeType = reflect.TypeOf(time.Time{})
 // timePtrType is the reflect.Type for *time.Time
 var timePtrType = reflect.TypeOf((*time.Time)(nil))
 
+// uuidPtrType is the reflect.Type for *uuid.UUID (nullable UUID FK fields,
+// e.g. Resolution.InteractionID/CaseID per contact-case-management §3.3).
+var uuidPtrType = reflect.TypeOf((*uuid.UUID)(nil))
+
 // mysqlDatetimeRegex matches MySQL DATETIME format: "2024-01-15 10:30:45.123456"
 var mysqlDatetimeRegex = regexp.MustCompile(`^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(\.\d+)?$`)
 
@@ -132,7 +136,17 @@ func convertValueForDB(value interface{}, conversionType string) (interface{}, e
 		if uuidVal, ok := value.(uuid.UUID); ok {
 			return uuidVal.Bytes(), nil
 		}
-		return nil, fmt.Errorf("expected uuid.UUID for uuid conversion, got %T", value)
+		// Nullable UUID FK (contact-case-management design §3.3, e.g.
+		// Resolution.InteractionID/CaseID): nil pointer -> SQL NULL, not
+		// a zero-UUID's bytes (which would silently satisfy a NOT
+		// NULL/FK constraint with garbage data).
+		if uuidPtr, ok := value.(*uuid.UUID); ok {
+			if uuidPtr == nil {
+				return nil, nil
+			}
+			return uuidPtr.Bytes(), nil
+		}
+		return nil, fmt.Errorf("expected uuid.UUID or *uuid.UUID for uuid conversion, got %T", value)
 	}
 
 	// Explicit JSON conversion
@@ -379,6 +393,24 @@ func (t *scanTarget) copyToField() error {
 
 func (t *scanTarget) copyUUID() error {
 	nullStr := t.scanPtr.(*sql.NullString)
+
+	// Nullable UUID FK field (contact-case-management design §3.3, e.g.
+	// Resolution.InteractionID/CaseID): NULL/empty DB value -> leave the
+	// field nil, never a pointer to a zero-UUID (which would look like a
+	// real, if garbage, foreign key to any caller that only nil-checks).
+	if t.fieldVal.Type() == uuidPtrType {
+		if nullStr.Valid && len(nullStr.String) > 0 {
+			uuidVal, err := uuid.FromBytes([]byte(nullStr.String))
+			if err != nil {
+				return fmt.Errorf("cannot convert bytes to UUID: %w", err)
+			}
+			t.fieldVal.Set(reflect.ValueOf(&uuidVal))
+		} else {
+			t.fieldVal.Set(reflect.Zero(uuidPtrType))
+		}
+		return nil
+	}
+
 	if nullStr.Valid && len(nullStr.String) > 0 {
 		uuidVal, err := uuid.FromBytes([]byte(nullStr.String))
 		if err != nil {

@@ -1,6 +1,7 @@
 package databasehandler
 
 import (
+	"database/sql"
 	"reflect"
 	"testing"
 	"time"
@@ -652,6 +653,94 @@ func TestScanRow_Basic(t *testing.T) {
 
 		if err == nil {
 			t.Errorf("ScanRow should reject non-pointer destination")
+		}
+	})
+}
+
+// Test_PrepareFieldsFromStruct_NullableUUID verifies the "uuid" conversion
+// type on a *uuid.UUID field (contact-case-management design §3.3:
+// Resolution.InteractionID/CaseID are now nullable UUID FKs). A non-nil
+// pointer converts to 16 raw bytes exactly like the non-pointer uuid.UUID
+// case; a nil pointer converts to SQL NULL (nil), not a zero-UUID's bytes
+// -- this distinction matters because a zero-UUID would otherwise silently
+// satisfy a NOT NULL/FK constraint with garbage data.
+func Test_PrepareFieldsFromStruct_NullableUUID(t *testing.T) {
+	id := uuid.Must(uuid.FromString("550e8400-e29b-41d4-a716-446655440000"))
+
+	t.Run("non-nil *uuid.UUID converts to 16 bytes", func(t *testing.T) {
+		input := &struct {
+			CaseID *uuid.UUID `db:"case_id,uuid"`
+		}{
+			CaseID: &id,
+		}
+		val := reflect.ValueOf(input).Elem()
+		result, err := prepareFieldsFromStruct(val)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		bytes, ok := result["case_id"].([]byte)
+		if !ok {
+			t.Fatalf("case_id type = %T, want []byte", result["case_id"])
+		}
+		if len(bytes) != 16 {
+			t.Errorf("case_id length = %d, want 16", len(bytes))
+		}
+	})
+
+	t.Run("nil *uuid.UUID converts to SQL NULL, not zero-UUID bytes", func(t *testing.T) {
+		input := &struct {
+			CaseID *uuid.UUID `db:"case_id,uuid"`
+		}{
+			CaseID: nil,
+		}
+		val := reflect.ValueOf(input).Elem()
+		result, err := prepareFieldsFromStruct(val)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if result["case_id"] != nil {
+			t.Errorf("case_id = %v, want nil (SQL NULL)", result["case_id"])
+		}
+	})
+}
+
+// Test_CopyUUID_NullablePointerField verifies copyUUID (the ScanRow read
+// side) handles a *uuid.UUID field (contact-case-management design §3.3),
+// mirroring Test_PrepareFieldsFromStruct_NullableUUID on the write side.
+// NULL/empty DB value -> field left nil (not a zero-UUID pointer); a
+// non-empty value -> field set to a non-nil pointer holding the decoded UUID.
+func Test_CopyUUID_NullablePointerField(t *testing.T) {
+	id := uuid.Must(uuid.FromString("550e8400-e29b-41d4-a716-446655440000"))
+
+	t.Run("valid bytes sets a non-nil *uuid.UUID", func(t *testing.T) {
+		holder := &struct{ CaseID *uuid.UUID }{}
+		val := reflect.ValueOf(holder).Elem().FieldByName("CaseID")
+		scanPtr := &sql.NullString{Valid: true, String: string(id.Bytes())}
+		st := &scanTarget{fieldVal: val, scanPtr: scanPtr, conversionType: "uuid"}
+
+		if err := st.copyUUID(); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		got := holder.CaseID
+		if got == nil {
+			t.Fatalf("expected non-nil *uuid.UUID, got nil")
+		}
+		if *got != id {
+			t.Errorf("got %v, want %v", *got, id)
+		}
+	})
+
+	t.Run("NULL DB value leaves *uuid.UUID nil, not zero-UUID pointer", func(t *testing.T) {
+		holder := &struct{ CaseID *uuid.UUID }{}
+		val := reflect.ValueOf(holder).Elem().FieldByName("CaseID")
+		scanPtr := &sql.NullString{Valid: false}
+		st := &scanTarget{fieldVal: val, scanPtr: scanPtr, conversionType: "uuid"}
+
+		if err := st.copyUUID(); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if holder.CaseID != nil {
+			t.Errorf("expected nil *uuid.UUID for NULL DB value, got: %v", *holder.CaseID)
 		}
 	})
 }
