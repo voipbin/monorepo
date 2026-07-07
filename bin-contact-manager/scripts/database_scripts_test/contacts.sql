@@ -128,9 +128,20 @@ create table contact_resolutions (
   tm_create         datetime(6),
   tm_update         datetime(6),
   tm_delete         datetime(6),
+
+  -- Mirrors migration 99e7e955a149's case_positive_uk (design §3.3): at
+  -- most one active case-level positive Resolution per case. SQLite has
+  -- no IF()/SHA2; CASE WHEN over the raw case_id is equivalent here (no
+  -- truncation risk, same rationale as open_peer_uk above).
+  case_positive_uk binary(16) generated always as (
+    case when resolution_type = 'positive' and interaction_id is null and tm_delete is null
+         then case_id else null end
+  ) stored,
+
   primary key(id)
 );
 
+create unique index uq_resolution_case_positive on contact_resolutions(case_positive_uk);
 create index idx_contact_resolutions_contact_interaction
   on contact_resolutions(customer_id, contact_id, tm_delete);
 create index idx_contact_resolutions_interaction

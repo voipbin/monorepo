@@ -309,20 +309,50 @@ func (h *handler) CaseUpdateContactID(ctx context.Context, id, contactID uuid.UU
 	return caseUpdateContactIDExec(h.db, id, contactID)
 }
 
+// caseClearContactIDExec is the shared implementation for
+// CaseClearContactIDTx: reverts Case.contact_id to NULL, used when
+// deriveCaseContactID (design §3.4) finds no active case-level positive
+// Resolution left (e.g. the sole one was just soft-deleted).
+func caseClearContactIDExec(exec sqlExecutor, id uuid.UUID) error {
+	query, args, err := sq.Update(caseTable).
+		Set("contact_id", nil).
+		Where(sq.Eq{"id": id.Bytes()}).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("could not build query. CaseClearContactID. err: %v", err)
+	}
+
+	if _, err := exec.Exec(query, args...); err != nil {
+		return fmt.Errorf("could not execute. CaseClearContactID. err: %v", err)
+	}
+
+	return nil
+}
+
+// CaseClearContactIDTx reverts a Case's denormalized contact_id cache to
+// NULL, scoped to a caller-managed transaction.
+func (h *handler) CaseClearContactIDTx(ctx context.Context, tx *sql.Tx, id uuid.UUID) error {
+	return caseClearContactIDExec(tx, id)
+}
+
 // CaseUpdateContactIDTx is CaseUpdateContactID scoped to a caller-managed
 // transaction (design §4 step 2's contact auto-match write).
 func (h *handler) CaseUpdateContactIDTx(ctx context.Context, tx *sql.Tx, id, contactID uuid.UUID) error {
 	return caseUpdateContactIDExec(tx, id, contactID)
 }
 
-// CaseListUnresolved returns Cases with contact_id IS NULL, scoped to
-// customerID (design §6; backed by idx_case_unresolved).
+// CaseListUnresolved returns OPEN Cases with contact_id IS NULL, scoped
+// to customerID (design §6; backed by idx_case_unresolved). A closed
+// case is never in this queue regardless of contact_id -- closing IS the
+// "no further action needed" signal per §6, independent of whether the
+// case was ever resolved to a contact.
 func (h *handler) CaseListUnresolved(ctx context.Context, customerID uuid.UUID) ([]*kase.Case, error) {
 	columns := commondatabasehandler.GetDBFields(&kase.Case{})
 
 	query, args, err := sq.Select(columns...).
 		From(caseTable).
 		Where(sq.Eq{"customer_id": customerID.Bytes()}).
+		Where(sq.Eq{"status": kase.StatusOpen}).
 		Where(sq.Eq{"contact_id": nil}).
 		ToSql()
 	if err != nil {

@@ -60,10 +60,13 @@ type DBHandler interface {
 
 	// Resolution operations
 	ResolutionCreate(ctx context.Context, r *resolution.Resolution) error
+	ResolutionCreateTx(ctx context.Context, tx *sql.Tx, r *resolution.Resolution) error
 	ResolutionDelete(ctx context.Context, customerID, interactionID, id uuid.UUID) error
 	ResolutionDeleteByCase(ctx context.Context, customerID, caseID, id uuid.UUID) error
+	ResolutionDeleteByCaseTx(ctx context.Context, tx *sql.Tx, customerID, caseID, id uuid.UUID) error
 	ResolutionListByInteraction(ctx context.Context, customerID, interactionID uuid.UUID) ([]*resolution.Resolution, error)
 	ResolutionListByCase(ctx context.Context, customerID, caseID uuid.UUID) ([]*resolution.Resolution, error)
+	ResolutionListByCaseTx(ctx context.Context, tx *sql.Tx, customerID, caseID uuid.UUID) ([]*resolution.Resolution, error)
 	ResolutionListByContact(ctx context.Context, customerID, contactID uuid.UUID) ([]*resolution.Resolution, error)
 
 	// Case operations
@@ -80,6 +83,7 @@ type DBHandler interface {
 	CaseUpdateTMUpdateTx(ctx context.Context, tx *sql.Tx, id uuid.UUID, tmUpdate *time.Time) error
 	CaseUpdateContactID(ctx context.Context, id, contactID uuid.UUID) error
 	CaseUpdateContactIDTx(ctx context.Context, tx *sql.Tx, id, contactID uuid.UUID) error
+	CaseClearContactIDTx(ctx context.Context, tx *sql.Tx, id uuid.UUID) error
 	CaseListUnresolved(ctx context.Context, customerID uuid.UUID) ([]*kase.Case, error)
 	CaseListByOwner(ctx context.Context, customerID uuid.UUID, ownerType commonidentity.OwnerType, ownerID uuid.UUID) ([]*kase.Case, error)
 	CaseGetLastClosedByPeer(ctx context.Context, customerID uuid.UUID, peerType commonaddress.Type, peerTarget, referenceType string) (*kase.Case, error)

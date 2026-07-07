@@ -9,6 +9,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"monorepo/bin-contact-manager/models/resolution"
 )
@@ -26,6 +27,18 @@ func resolutionGetFromRow(rows *sql.Rows) (*resolution.Resolution, error) {
 
 // ResolutionCreate inserts a new Resolution row into contact_resolutions.
 func (h *handler) ResolutionCreate(ctx context.Context, r *resolution.Resolution) error {
+	return resolutionCreateExec(h.db, r)
+}
+
+// ResolutionCreateTx is ResolutionCreate scoped to a caller-managed
+// transaction (design §3.3's single-transaction requirement for the
+// soft-delete-then-insert "replace" flow, and for the case-level create/
+// delete write paths that must derive+write Case.contact_id atomically).
+func (h *handler) ResolutionCreateTx(ctx context.Context, tx *sql.Tx, r *resolution.Resolution) error {
+	return resolutionCreateExec(tx, r)
+}
+
+func resolutionCreateExec(exec sqlExecutor, r *resolution.Resolution) error {
 	fields, err := commondatabasehandler.PrepareFields(r)
 	if err != nil {
 		return fmt.Errorf("could not prepare fields. ResolutionCreate. err: %v", err)
@@ -36,7 +49,7 @@ func (h *handler) ResolutionCreate(ctx context.Context, r *resolution.Resolution
 		return fmt.Errorf("could not build query. ResolutionCreate. err: %v", err)
 	}
 
-	_, err = h.db.Exec(query, args...)
+	_, err = exec.Exec(query, args...)
 	if err != nil {
 		return fmt.Errorf("could not create resolution. ResolutionCreate. err: %v", err)
 	}
@@ -90,7 +103,17 @@ func (h *handler) ResolutionDelete(ctx context.Context, customerID, interactionI
 // counterpart to ResolutionDelete required by contact-case-management
 // design §3.3: a case-level Resolution has no interaction_id to scope by.
 func (h *handler) ResolutionDeleteByCase(ctx context.Context, customerID, caseID, id uuid.UUID) error {
-	now := h.utilHandler.TimeNow()
+	return resolutionDeleteByCaseExec(h.db, h.utilHandler, customerID, caseID, id)
+}
+
+// ResolutionDeleteByCaseTx is ResolutionDeleteByCase scoped to a
+// caller-managed transaction.
+func (h *handler) ResolutionDeleteByCaseTx(ctx context.Context, tx *sql.Tx, customerID, caseID, id uuid.UUID) error {
+	return resolutionDeleteByCaseExec(tx, h.utilHandler, customerID, caseID, id)
+}
+
+func resolutionDeleteByCaseExec(exec sqlExecutor, utilHandler utilhandler.UtilHandler, customerID, caseID, id uuid.UUID) error {
+	now := utilHandler.TimeNow()
 
 	query, args, err := sq.Update(resolutionTable).
 		Set("tm_delete", now).
@@ -103,7 +126,7 @@ func (h *handler) ResolutionDeleteByCase(ctx context.Context, customerID, caseID
 		return fmt.Errorf("could not build query. ResolutionDeleteByCase. err: %v", err)
 	}
 
-	result, err := h.db.Exec(query, args...)
+	result, err := exec.Exec(query, args...)
 	if err != nil {
 		return fmt.Errorf("could not execute. ResolutionDeleteByCase. err: %v", err)
 	}
@@ -160,6 +183,18 @@ func (h *handler) ResolutionListByInteraction(ctx context.Context, customerID, i
 // case-scoped counterpart to ResolutionListByInteraction required by
 // contact-case-management design §3.3 (Task 2.2).
 func (h *handler) ResolutionListByCase(ctx context.Context, customerID, caseID uuid.UUID) ([]*resolution.Resolution, error) {
+	return resolutionListByCaseExec(h.db, customerID, caseID)
+}
+
+// ResolutionListByCaseTx is ResolutionListByCase scoped to a
+// caller-managed transaction (used by the case-level contact-attribution
+// write paths, design §3.4, to derive Case.contact_id atomically with
+// the triggering Resolution write).
+func (h *handler) ResolutionListByCaseTx(ctx context.Context, tx *sql.Tx, customerID, caseID uuid.UUID) ([]*resolution.Resolution, error) {
+	return resolutionListByCaseExec(tx, customerID, caseID)
+}
+
+func resolutionListByCaseExec(exec sqlExecutor, customerID, caseID uuid.UUID) ([]*resolution.Resolution, error) {
 	columns := commondatabasehandler.GetDBFields(&resolution.Resolution{})
 
 	query, args, err := sq.Select(columns...).
@@ -172,7 +207,7 @@ func (h *handler) ResolutionListByCase(ctx context.Context, customerID, caseID u
 		return nil, fmt.Errorf("could not build query. ResolutionListByCase. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := exec.Query(query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ResolutionListByCase. err: %v", err)
 	}

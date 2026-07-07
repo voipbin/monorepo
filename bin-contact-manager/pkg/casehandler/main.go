@@ -15,6 +15,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	"monorepo/bin-contact-manager/models/kase"
+	"monorepo/bin-contact-manager/models/resolution"
 	"monorepo/bin-contact-manager/pkg/dbhandler"
 )
 
@@ -49,6 +50,16 @@ type CaseHandler interface {
 	// admin/manager (callerIsAdmin, decided upstream). Reuses the same
 	// insertWithRetry primitive as GetOrCreate's insert branches.
 	Continue(ctx context.Context, customerID, id uuid.UUID, callerType commonidentity.OwnerType, callerID uuid.UUID, callerIsAdmin bool) (*kase.Case, error)
+
+	// ResolutionCreateCaseLevel / ResolutionDeleteCaseLevel implement
+	// design §3.4's contact-attribution write paths: create/soft-delete a
+	// case-level Resolution and, in the SAME transaction, re-derive and
+	// write Case.contact_id via deriveCaseContactID.
+	ResolutionCreateCaseLevel(ctx context.Context, customerID, caseID, contactID uuid.UUID, resolutionType, resolvedByType string, resolvedByID uuid.UUID) (*resolution.Resolution, error)
+	ResolutionDeleteCaseLevel(ctx context.Context, customerID, caseID, id uuid.UUID) error
+
+	// CaseListUnresolved is design §6's agent-facing unresolved queue.
+	CaseListUnresolved(ctx context.Context, customerID uuid.UUID) ([]*kase.Case, error)
 }
 
 type caseHandler struct {
