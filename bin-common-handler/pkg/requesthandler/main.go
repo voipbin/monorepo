@@ -48,8 +48,10 @@ import (
 	cfconference "monorepo/bin-conference-manager/models/conference"
 	cfconferencecall "monorepo/bin-conference-manager/models/conferencecall"
 
+	cmcasenote "monorepo/bin-contact-manager/models/casenote"
 	cmcontact "monorepo/bin-contact-manager/models/contact"
 	cminteraction "monorepo/bin-contact-manager/models/interaction"
+	cmkase "monorepo/bin-contact-manager/models/kase"
 	cmresolution "monorepo/bin-contact-manager/models/resolution"
 	cmrequest "monorepo/bin-contact-manager/pkg/listenhandler/models/request"
 
@@ -919,6 +921,19 @@ type RequestHandler interface {
 	ContactV1InteractionListUnresolved(ctx context.Context, customerID uuid.UUID, size uint64, token string, since string) ([]*cminteraction.Interaction, string, error)
 	ContactV1ResolutionCreate(ctx context.Context, customerID, contactID, interactionID uuid.UUID, resolutionType, resolvedByType string, resolvedByID uuid.UUID) (*cmresolution.Resolution, error)
 	ContactV1ResolutionDelete(ctx context.Context, customerID uuid.UUID, interactionID, resolutionID uuid.UUID) error
+
+	// contact-manager cases (Phase 5, NOJIRA-contact-case-management)
+	ContactV1CaseList(ctx context.Context, customerID uuid.UUID, status, ownerType string, ownerID uuid.UUID, size uint64, token string) ([]*cmkase.Case, string, error)
+	ContactV1CaseListUnresolved(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*cmkase.Case, string, error)
+	ContactV1CaseGet(ctx context.Context, customerID, id uuid.UUID) (*cmkase.Case, error)
+	ContactV1CaseClose(ctx context.Context, customerID, id uuid.UUID, closedByType string, closedByID uuid.UUID) (*cmkase.Case, error)
+	ContactV1CaseContinue(ctx context.Context, customerID, id uuid.UUID, callerType string, callerID uuid.UUID, callerIsAdmin bool) (*cmkase.Case, error)
+	ContactV1CaseNoteList(ctx context.Context, customerID, caseID uuid.UUID) ([]*cmcasenote.CaseNote, error)
+	ContactV1CaseNoteCreate(ctx context.Context, customerID, caseID uuid.UUID, authorType string, authorID *uuid.UUID, text string) (*cmcasenote.CaseNote, error)
+	ContactV1CaseNoteDelete(ctx context.Context, customerID, caseID, noteID uuid.UUID) error
+	ContactV1CaseTagList(ctx context.Context, customerID, caseID uuid.UUID) ([]uuid.UUID, error)
+	ContactV1CaseTagAdd(ctx context.Context, customerID, caseID, tagID uuid.UUID) error
+	ContactV1CaseTagRemove(ctx context.Context, customerID, caseID, tagID uuid.UUID) error
 
 	// direct-manager directs
 	DirectV1DirectCreate(ctx context.Context, customerID uuid.UUID, resourceType string, resourceID uuid.UUID) (*dmdirect.Direct, error)
