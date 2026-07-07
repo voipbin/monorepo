@@ -59,6 +59,12 @@ type ConversationHandler interface {
 	List(ctx context.Context, pageToken string, pageSize uint64, filters map[conversation.Field]any) ([]*conversation.Conversation, error)
 	// GetByTypeAndDialogID(ctx context.Context, conversationType conversation.Type, dialogID string) (*conversation.Conversation, error)
 	Update(ctx context.Context, id uuid.UUID, fields map[conversation.Field]any) (*conversation.Conversation, error)
+	// UpdateMetadata is a dedicated, whole-struct-replace update for
+	// Metadata, deliberately NOT reachable via the general Update
+	// partial-update field allowlist (contact-case-management design
+	// §4.3/§4.4/§4.5). Never publishes a webhook event -- Metadata is
+	// purely internal case-linking plumbing.
+	UpdateMetadata(ctx context.Context, id uuid.UUID, metadata conversation.Metadata) (*conversation.Conversation, error)
 
 	Hook(ctx context.Context, uri string, method string, signature string, data []byte) error
 	HookVerify(ctx context.Context, uri string, mode string, verifyToken string, challenge string) (string, error)

@@ -207,3 +207,18 @@ func (mr *MockConversationHandlerMockRecorder) Update(ctx, id, fields any) *gomo
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockConversationHandler)(nil).Update), ctx, id, fields)
 }
+
+// UpdateMetadata mocks base method.
+func (m *MockConversationHandler) UpdateMetadata(ctx context.Context, id uuid.UUID, metadata conversation.Metadata) (*conversation.Conversation, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateMetadata", ctx, id, metadata)
+	ret0, _ := ret[0].(*conversation.Conversation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateMetadata indicates an expected call of UpdateMetadata.
+func (mr *MockConversationHandlerMockRecorder) UpdateMetadata(ctx, id, metadata any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateMetadata", reflect.TypeOf((*MockConversationHandler)(nil).UpdateMetadata), ctx, id, metadata)
+}

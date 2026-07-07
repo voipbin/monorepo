@@ -59,3 +59,15 @@ type V1DataConversationsGetOrCreateBySelfAndPeerPost struct {
 	Self             commonaddress.Address `json:"self,omitempty"`
 	Peer             commonaddress.Address `json:"peer,omitempty"`
 }
+
+// V1DataConversationsIDMetadataPut is
+// v1 data type request struct for
+// /v1/conversations/<conversation-id>/metadata PUT
+//
+// Whole-struct-replace update, used by bin-contact-manager's
+// Case-linking write paths (contact-case-management design
+// §4.3/§4.4/§4.5). Deliberately a dedicated route, NOT reachable via
+// the general /v1/conversations/<conversation-id> PUT field allowlist.
+type V1DataConversationsIDMetadataPut struct {
+	Metadata conversation.Metadata `json:"metadata,omitempty"`
+}

@@ -53,6 +53,7 @@ var (
 	regV1ConversationsSelfAndPeer              = regexp.MustCompile(`/v1/conversations/self_and_peer$`)
 	regV1ConversationsGetOrCreateBySelfAndPeer = regexp.MustCompile(`/v1/conversations/get_or_create_by_self_and_peer$`)
 	regV1ConversationsID                       = regexp.MustCompile("/v1/conversations/" + regUUID + "$")
+	regV1ConversationsIDMetadata               = regexp.MustCompile("/v1/conversations/" + regUUID + "/metadata$")
 
 	// hooks
 	regV1Hooks = regexp.MustCompile(`/v1/hooks$`)
@@ -237,6 +238,13 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1ConversationsGetOrCreateBySelfAndPeer.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1ConversationsGetOrCreateBySelfAndPeerPost(ctx, m)
 		requestType = "/v1/conversations/get_or_create_by_self_and_peer"
+
+	// PUT /conversations/<conversation-id>/metadata (must be checked before
+	// the generic regV1ConversationsID PUT route below, since it's a more
+	// specific match on the same URI prefix)
+	case regV1ConversationsIDMetadata.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
+		response, err = h.processV1ConversationsIDMetadataPut(ctx, m)
+		requestType = "/v1/conversations/<conversation-id>/metadata"
 
 	// GET /conversations/<conversation-id>
 	case regV1ConversationsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:

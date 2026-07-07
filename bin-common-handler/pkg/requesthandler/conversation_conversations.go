@@ -196,3 +196,33 @@ func (r *requestHandler) ConversationV1ConversationUpdate(ctx context.Context, c
 
 	return &res, nil
 }
+
+// ConversationV1ConversationUpdateMetadata sends a whole-struct-replace
+// metadata update request to conversation-manager. Used by
+// bin-contact-manager's Case-linking write paths (contact-case-management
+// design §4.3/§4.4/§4.5). A dedicated RPC, distinct from the general
+// ConversationV1ConversationUpdate partial-update above.
+func (r *requestHandler) ConversationV1ConversationUpdateMetadata(ctx context.Context, conversationID uuid.UUID, metadata cvconversation.Metadata) (*cvconversation.Conversation, error) {
+	uri := fmt.Sprintf("/v1/conversations/%s/metadata", conversationID)
+
+	data := &cvrequest.V1DataConversationsIDMetadataPut{
+		Metadata: metadata,
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestConversation(ctx, uri, sock.RequestMethodPut, "conversation/conversations/<conversation_id>/metadata", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
+		return nil, err
+	}
+
+	var res cvconversation.Conversation
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
+}

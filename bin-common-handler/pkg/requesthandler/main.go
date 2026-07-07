@@ -967,6 +967,11 @@ type RequestHandler interface {
 	) (*cvconversation.Conversation, error)
 	ConversationV1ConversationList(ctx context.Context, pageToken string, pageSize uint64, fields map[cvconversation.Field]any) ([]cvconversation.Conversation, error)
 	ConversationV1ConversationUpdate(ctx context.Context, conversationID uuid.UUID, fields map[cvconversation.Field]any) (*cvconversation.Conversation, error)
+	// ConversationV1ConversationUpdateMetadata is a dedicated
+	// whole-struct-replace metadata update, distinct from the general
+	// ConversationV1ConversationUpdate above (contact-case-management
+	// design §4.3/§4.4/§4.5).
+	ConversationV1ConversationUpdateMetadata(ctx context.Context, conversationID uuid.UUID, metadata cvconversation.Metadata) (*cvconversation.Conversation, error)
 
 	// conversation-manager hook
 	ConversationV1Hook(ctx context.Context, hm *hmhook.Hook) error

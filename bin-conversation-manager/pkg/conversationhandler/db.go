@@ -286,3 +286,32 @@ func (h *conversationHandler) Update(ctx context.Context, id uuid.UUID, fields m
 
 	return res, nil
 }
+
+// UpdateMetadata performs a whole-struct-replace update of Metadata,
+// used by bin-contact-manager's Case-linking write paths
+// (contact-case-management design §4.3/§4.4/§4.5). Mirrors
+// bin-customer-manager's UpdateMetadata shape (models/customer,
+// pkg/customerhandler/db.go).
+//
+// Deliberately does NOT publish any webhook or internal event:
+// Metadata.ContactCaseID is purely internal case-linking plumbing
+// (never customer-facing), so there is nothing here worth notifying
+// about at this layer -- the case-linking effect surfaces instead via
+// the case_id hint echoed onto MessageEventReceived/MessageEventSent
+// payloads (§4.3), not via a Conversation-level event.
+func (h *conversationHandler) UpdateMetadata(ctx context.Context, id uuid.UUID, metadata conversation.Metadata) (*conversation.Conversation, error) {
+	fields := map[conversation.Field]any{
+		conversation.FieldMetadata: metadata,
+	}
+
+	if errUpdate := h.db.ConversationUpdate(ctx, id, fields); errUpdate != nil {
+		return nil, errors.Wrapf(errUpdate, "could not update conversation metadata. id: %s", id)
+	}
+
+	res, err := h.db.ConversationGet(ctx, id)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get updated conversation. id: %s", id)
+	}
+
+	return res, nil
+}
