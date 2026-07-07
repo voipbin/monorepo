@@ -196,6 +196,62 @@ func Test_ProcessV1CasesIDContinuePost(t *testing.T) {
 	}
 }
 
+// Test_ProcessV1CasesIDContinuePost_ErrorMapping is a regression test
+// (round-1 Phase 5 review defect): casehandler.Continue's two
+// domain-specific sentinels (ErrCaseNotClosed, ErrCaseContinueForbidden)
+// must be typed *cerrors.VoipbinError so errorResponse() maps them to
+// the OpenAPI spec's declared 400/403, not a generic 500.
+func Test_ProcessV1CasesIDContinuePost_ErrorMapping(t *testing.T) {
+	tests := []struct {
+		name         string
+		continueErr  error
+		expectStatus int
+	}{
+		{
+			name:         "source case not closed maps to 400",
+			continueErr:  casehandler.ErrCaseNotClosed,
+			expectStatus: 400,
+		},
+		{
+			name:         "caller forbidden maps to 403",
+			continueErr:  casehandler.ErrCaseContinueForbidden,
+			expectStatus: 403,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+			h, mockCase := newTestListenHandlerWithCase(mc)
+			ctx := context.Background()
+
+			customerID := uuid.FromStringOrNil("aaaaaaaa-0005-0005-0005-000000000004")
+			caseID := uuid.FromStringOrNil("aaaaaaaa-0005-0005-0005-000000000005")
+			callerID := uuid.FromStringOrNil("aaaaaaaa-0005-0005-0005-000000000006")
+
+			body, _ := json.Marshal(map[string]any{
+				"customer_id":     customerID.String(),
+				"caller_type":     "agent",
+				"caller_id":       callerID.String(),
+				"caller_is_admin": false,
+			})
+			req := &sock.Request{URI: "/v1/cases/" + caseID.String() + "/continue", Method: sock.RequestMethodPost, Data: body}
+
+			mockCase.EXPECT().Continue(ctx, customerID, caseID, commonidentity.OwnerTypeAgent, callerID, false).
+				Return(nil, tt.continueErr)
+
+			res, err := h.processV1CasesIDContinuePost(ctx, req)
+			if err != nil {
+				t.Fatalf("processV1CasesIDContinuePost() error = %v", err)
+			}
+			if res.StatusCode != tt.expectStatus {
+				t.Errorf("StatusCode = %v, want %v", res.StatusCode, tt.expectStatus)
+			}
+		})
+	}
+}
+
 // Test_ProcessV1CasesIDNotesGetPostDelete covers the full notes
 // sub-resource CRUD surface.
 func Test_ProcessV1CasesIDNotesGetPostDelete(t *testing.T) {

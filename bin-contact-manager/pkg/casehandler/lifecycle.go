@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	"github.com/gofrs/uuid"
 
@@ -13,16 +15,32 @@ import (
 )
 
 // ErrCaseNotClosed is returned by Continue when the source case is not
-// status='closed' (design §5.3 requires a closed source).
-var ErrCaseNotClosed = fmt.Errorf("case is not closed; /continue requires a closed source case")
+// status='closed' (design §5.3 requires a closed source). Typed as a
+// *cerrors.VoipbinError (InvalidArgument -> HTTP 400) so listenhandler's
+// errorResponse() maps it correctly instead of falling through to a
+// generic 500 -- matching the OpenAPI spec's declared 400 response for
+// POST /v1.0/cases/{id}/continue.
+var ErrCaseNotClosed = cerrors.InvalidArgument(
+	commonoutline.ServiceNameContactManager,
+	"CASE_NOT_CLOSED",
+	"case is not closed; /continue requires a closed source case",
+)
 
 // ErrCaseContinueForbidden is returned by Continue when the caller is
 // neither the source case's owning agent nor an admin/manager (design
 // §5.3's authorization rule). callerIsAdmin is decided by the API layer's
 // permission gate (e.g. PermissionProjectSuperAdmin), not by casehandler
 // itself -- casehandler only knows about Case ownership, not the
-// platform's broader agent/permission model.
-var ErrCaseContinueForbidden = fmt.Errorf("caller is neither the case's owning agent nor an admin/manager")
+// platform's broader agent/permission model. Typed as a
+// *cerrors.VoipbinError (PermissionDenied -> HTTP 403) so listenhandler's
+// errorResponse() maps it correctly instead of falling through to a
+// generic 500 -- matching the OpenAPI spec's declared 403 response for
+// POST /v1.0/cases/{id}/continue.
+var ErrCaseContinueForbidden = cerrors.PermissionDenied(
+	commonoutline.ServiceNameContactManager,
+	"CASE_CONTINUE_FORBIDDEN",
+	"caller is neither the case's owning agent nor an admin/manager",
+)
 
 // CloseResult is the response shape for Close (design §5.1). It always
 // reflects the ACTUALLY persisted closed_reason/closed_by -- never the
