@@ -5774,12 +5774,6 @@ type GetCasesUnresolvedParams struct {
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
-// PostCasesIdCloseJSONBody defines parameters for PostCasesIdClose.
-type PostCasesIdCloseJSONBody struct {
-	// ClosedById ID of the agent closing this case.
-	ClosedById openapi_types.UUID `json:"closed_by_id"`
-}
-
 // PostCasesIdMessagesJSONBody defines parameters for PostCasesIdMessages.
 type PostCasesIdMessagesJSONBody struct {
 	// Destination The customer's number to send to. Must be attributable to this case (the matched Contact's address, or the case's peer_target).
@@ -7724,9 +7718,6 @@ type PutCampaignsIdServiceLevelJSONRequestBody PutCampaignsIdServiceLevelJSONBod
 
 // PutCampaignsIdStatusJSONRequestBody defines body for PutCampaignsIdStatus for application/json ContentType.
 type PutCampaignsIdStatusJSONRequestBody PutCampaignsIdStatusJSONBody
-
-// PostCasesIdCloseJSONRequestBody defines body for PostCasesIdClose for application/json ContentType.
-type PostCasesIdCloseJSONRequestBody PostCasesIdCloseJSONBody
 
 // PostCasesIdMessagesJSONRequestBody defines body for PostCasesIdMessages for application/json ContentType.
 type PostCasesIdMessagesJSONRequestBody PostCasesIdMessagesJSONBody
@@ -25769,8 +25760,7 @@ func (response GetCasesId500JSONResponse) VisitGetCasesIdResponse(w http.Respons
 }
 
 type PostCasesIdCloseRequestObject struct {
-	Id   openapi_types.UUID `json:"id"`
-	Body *PostCasesIdCloseJSONRequestBody
+	Id openapi_types.UUID `json:"id"`
 }
 
 type PostCasesIdCloseResponseObject interface {
@@ -45868,14 +45858,6 @@ func (sh *strictHandler) PostCasesIdClose(ctx *gin.Context, id openapi_types.UUI
 	var request PostCasesIdCloseRequestObject
 
 	request.Id = id
-
-	var body PostCasesIdCloseJSONRequestBody
-	if err := ctx.ShouldBindJSON(&body); err != nil {
-		ctx.Status(http.StatusBadRequest)
-		ctx.Error(err)
-		return
-	}
-	request.Body = &body
 
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.PostCasesIdClose(ctx, request.(PostCasesIdCloseRequestObject))

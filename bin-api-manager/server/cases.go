@@ -136,7 +136,12 @@ func (h *server) GetCasesId(c *gin.Context, id openapi_types.UUID) {
 	c.JSON(200, res)
 }
 
-// PostCasesIdClose handles POST /cases/{id}/close
+// PostCasesIdClose handles POST /cases/{id}/close. closed_by_id is
+// derived server-side from the authenticated caller's own agent identity
+// (CaseClose internally uses a.AgentID()) -- there is no request body to
+// bind, matching PostCasesIdContinue's pattern below, so the
+// closing-agent attribution the platform treats as a hard invariant
+// (design §5.3) cannot be forged via a client-supplied agent_id.
 func (h *server) PostCasesIdClose(c *gin.Context, id openapi_types.UUID) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "PostCasesIdClose",
@@ -152,17 +157,9 @@ func (h *server) PostCasesIdClose(c *gin.Context, id openapi_types.UUID) {
 	}
 	log = log.WithField("customer_id", a.CustomerID)
 
-	var req openapi_server.PostCasesIdCloseJSONRequestBody
-	if err := c.BindJSON(&req); err != nil {
-		log.Errorf("Could not parse the request. err: %v", err)
-		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON.").Wrap(err))
-		return
-	}
-
 	caseID := uuid.UUID(id)
-	closedByID := uuid.UUID(req.ClosedById)
 
-	res, err := h.serviceHandler.CaseClose(c.Request.Context(), a, caseID, closedByID)
+	res, err := h.serviceHandler.CaseClose(c.Request.Context(), a, caseID)
 	if err != nil {
 		log.Errorf("Could not close case. err: %v", err)
 		abortWithServiceError(c, err)

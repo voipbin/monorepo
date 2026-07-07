@@ -8904,7 +8904,7 @@
     "/cases/{id}/close": {
       "post": {
         "summary": "Close a case",
-        "description": "Close a case. Returns the actually-persisted state, including\nalready_closed semantics reflected via the returned closed_reason /\nclosed_by_type / closed_by_id fields when the case had already been\nclosed by someone/something else.\n",
+        "description": "Close a case. closed_by_id is derived server-side from the\nauthenticated caller's own agent identity -- there is no request\nbody -- so the closing-agent attribution the platform treats as a\nhard invariant cannot be forged by supplying an arbitrary agent_id.\nReturns the actually-persisted state, including already_closed\nsemantics reflected via the returned closed_reason / closed_by_type /\nclosed_by_id fields when the case had already been closed by\nsomeone/something else.\n",
         "tags": [
           "Case"
         ],
@@ -8921,27 +8921,6 @@
             }
           }
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "closed_by_id"
-                ],
-                "properties": {
-                  "closed_by_id": {
-                    "type": "string",
-                    "format": "uuid",
-                    "description": "ID of the agent closing this case.",
-                    "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
-                  }
-                }
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "Case closed successfully.",

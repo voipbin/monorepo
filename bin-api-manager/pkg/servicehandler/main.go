@@ -42,9 +42,9 @@ import (
 	cfconference "monorepo/bin-conference-manager/models/conference"
 	cfconferencecall "monorepo/bin-conference-manager/models/conferencecall"
 
+	cmcasenote "monorepo/bin-contact-manager/models/casenote"
 	cmcontact "monorepo/bin-contact-manager/models/contact"
 	cminteraction "monorepo/bin-contact-manager/models/interaction"
-	cmcasenote "monorepo/bin-contact-manager/models/casenote"
 	cmkase "monorepo/bin-contact-manager/models/kase"
 	cmresolution "monorepo/bin-contact-manager/models/resolution"
 	cmrequest "monorepo/bin-contact-manager/pkg/listenhandler/models/request"
@@ -488,7 +488,7 @@ type ServiceHandler interface {
 		token string,
 	) ([]*cmkase.Case, string, error)
 	CaseGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cmkase.Case, error)
-	CaseClose(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, closedByID uuid.UUID) (*cmkase.Case, error)
+	CaseClose(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cmkase.Case, error)
 	CaseContinue(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cmkase.Case, error)
 
 	// case note handlers

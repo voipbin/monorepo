@@ -145,11 +145,13 @@ func (h *serviceHandler) CaseGet(ctx context.Context, a *auth.AuthIdentity, id u
 	return res, nil
 }
 
-// CaseClose sends a request to contact-manager to close a case, returning
-// the actually-persisted state (design §5.1) -- including AlreadyClosed if
-// the case had already been closed by someone/something else, rather than
-// a synthesized "caller's action won" assumption.
-func (h *serviceHandler) CaseClose(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, closedByID uuid.UUID) (*cmkase.Case, error) {
+// CaseClose closes an open case (design §5.1). closed_by_id is derived
+// server-side from the authenticated caller's own agent identity
+// (a.AgentID()) -- matching CaseContinue's pattern below -- rather than
+// accepted from client input, so the closing-agent attribution the
+// platform treats as a hard invariant (§5.3) cannot be forged by
+// supplying an arbitrary agent_id in the request body.
+func (h *serviceHandler) CaseClose(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cmkase.Case, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CaseClose",
 		"customer_id": a.CustomerID,
@@ -170,7 +172,7 @@ func (h *serviceHandler) CaseClose(ctx context.Context, a *auth.AuthIdentity, id
 		return nil, serviceerrors.ErrPermissionDenied
 	}
 
-	res, err := h.reqHandler.ContactV1CaseClose(ctx, a.CustomerID, id, string(commonidentity.OwnerTypeAgent), closedByID)
+	res, err := h.reqHandler.ContactV1CaseClose(ctx, a.CustomerID, id, string(commonidentity.OwnerTypeAgent), a.AgentID())
 	if err != nil {
 		log.Errorf("Could not close case. err: %v", err)
 		return nil, err

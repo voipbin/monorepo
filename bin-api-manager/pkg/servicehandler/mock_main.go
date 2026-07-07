@@ -1708,18 +1708,18 @@ func (mr *MockServiceHandlerMockRecorder) CampaigncallList(ctx, a, size, token a
 }
 
 // CaseClose mocks base method.
-func (m *MockServiceHandler) CaseClose(ctx context.Context, a *auth.AuthIdentity, id, closedByID uuid.UUID) (*kase.Case, error) {
+func (m *MockServiceHandler) CaseClose(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*kase.Case, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CaseClose", ctx, a, id, closedByID)
+	ret := m.ctrl.Call(m, "CaseClose", ctx, a, id)
 	ret0, _ := ret[0].(*kase.Case)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CaseClose indicates an expected call of CaseClose.
-func (mr *MockServiceHandlerMockRecorder) CaseClose(ctx, a, id, closedByID any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) CaseClose(ctx, a, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseClose", reflect.TypeOf((*MockServiceHandler)(nil).CaseClose), ctx, a, id, closedByID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseClose", reflect.TypeOf((*MockServiceHandler)(nil).CaseClose), ctx, a, id)
 }
 
 // CaseContinue mocks base method.

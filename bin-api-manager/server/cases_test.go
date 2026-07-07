@@ -1,8 +1,6 @@
 package server
 
 import (
-	"bytes"
-	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -238,7 +236,6 @@ func Test_PostCasesIdClose(t *testing.T) {
 		agent *auth.AuthIdentity
 
 		reqQuery     string
-		reqBody      map[string]string
 		responseCase *cmkase.Case
 		expectStatus int
 	}{
@@ -251,9 +248,6 @@ func Test_PostCasesIdClose(t *testing.T) {
 				},
 			}),
 			reqQuery: "/cases/11111111-0000-0000-0000-000000000001/close",
-			reqBody: map[string]string{
-				"closed_by_id": agentID.String(),
-			},
 			responseCase: &cmkase.Case{
 				ID:         caseID,
 				CustomerID: customerID,
@@ -265,7 +259,6 @@ func Test_PostCasesIdClose(t *testing.T) {
 			name:         "unauthenticated",
 			agent:        nil,
 			reqQuery:     "/cases/11111111-0000-0000-0000-000000000001/close",
-			reqBody:      map[string]string{},
 			expectStatus: http.StatusUnauthorized,
 		},
 	}
@@ -288,13 +281,12 @@ func Test_PostCasesIdClose(t *testing.T) {
 			})
 			openapi_server.RegisterHandlers(r, h)
 
-			bodyBytes, _ := json.Marshal(tt.reqBody)
-			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(bodyBytes))
+			req, _ := http.NewRequest("POST", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
 			if tt.responseCase != nil && tt.agent != nil {
 				mockSvc.EXPECT().
-					CaseClose(req.Context(), tt.agent, caseID, agentID).
+					CaseClose(req.Context(), tt.agent, caseID).
 					Return(tt.responseCase, nil)
 			}
 
