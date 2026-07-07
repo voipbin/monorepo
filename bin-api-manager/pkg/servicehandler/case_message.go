@@ -128,6 +128,17 @@ func (h *serviceHandler) CaseMessageSend(
 	// customer_id) -- not a.CustomerID directly, though the two are
 	// identical by this point since caseGet already tenant-checked the
 	// case against a.CustomerID.
+	//
+	// Design §4.5's round-17 correction specifies this single mechanism
+	// (NumberV1NumberList) unconditionally, with no per-channel branching.
+	// For non-tel channels (WhatsApp/LINE), "source" is a business account
+	// identifier, not a bin-number-manager-issued PSTN number, so this
+	// check will legitimately reject those sends -- an accepted v1 scope
+	// limitation inherited directly from the design, not an
+	// implementation gap: extending source-ownership validation to
+	// non-tel channels would require a design change (e.g. querying the
+	// relevant Account resource in bin-conversation-manager), which is
+	// out of scope for this phase.
 	numbers, err := h.reqHandler.NumberV1NumberList(ctx, "", 1, map[nmnumber.Field]any{
 		nmnumber.FieldCustomerID: c.CustomerID,
 		nmnumber.FieldNumber:     source,
@@ -143,9 +154,16 @@ func (h *serviceHandler) CaseMessageSend(
 		return nil, serviceerrors.ErrCaseSourceNotOwned
 	}
 
-	// Step 4: resolve conversationID via get-or-create.
+	// Step 4: resolve conversationID via get-or-create. self and peer must
+	// use the SAME address Type (c.PeerType) -- conversation-manager's own
+	// self/peer construction always matches both sides to the channel type
+	// (e.g. bin-conversation-manager/pkg/whatsapphandler/hook.go), and
+	// ConversationGetBySelfAndPeer's lookup matches on self.type/peer.type
+	// exactly. A mismatched self.Type would never find an existing
+	// conversation for non-tel channels and would create a spurious
+	// duplicate (with its own conversation_created webhook) on every send.
 	selfAddr := commonaddress.Address{
-		Type:   commonaddress.TypeTel,
+		Type:   c.PeerType,
 		Target: source,
 	}
 	peerAddr := commonaddress.Address{

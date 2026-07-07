@@ -610,11 +610,100 @@ func Test_CaseMessageSend_PermissionDenied(t *testing.T) {
 			ID:         caseID,
 			CustomerID: customerID,
 			Status:     cmkase.StatusOpen,
-			PeerTarget: "+15559999999",
+			PeerTarget: "+155****9999",
 		}, nil)
 
-	_, err := h.CaseMessageSend(ctx, a, caseID, "+15551234567", "+15559999999", "hello")
+	_, err := h.CaseMessageSend(ctx, a, caseID, "+155****4567", "+155****9999", "hello")
 	if !errors.Is(err, serviceerrors.ErrPermissionDenied) {
 		t.Errorf("Expected ErrPermissionDenied, got: %v", err)
+	}
+}
+
+// Test_CaseMessageSend_SelfAndPeerTypeMatch_WhatsApp is a regression test
+// for a round-1 Phase 5 review defect: selfAddr.Type must match the
+// case's PeerType (not be hardcoded to TypeTel), otherwise
+// ConversationGetOrCreateBySelfAndPeer would never find an existing
+// WhatsApp/LINE conversation (self.type/peer.type mismatch) and would
+// create a spurious duplicate on every send.
+func Test_CaseMessageSend_SelfAndPeerTypeMatch_WhatsApp(t *testing.T) {
+	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
+	agentID := uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c")
+	caseID := uuid.FromStringOrNil("11111111-0000-0000-0000-000000000001")
+	conversationID := uuid.FromStringOrNil("55555555-0000-0000-0000-000000000005")
+	messageID := uuid.FromStringOrNil("66666666-0000-0000-0000-000000000006")
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &serviceHandler{
+		reqHandler: mockReq,
+		dbHandler:  mockDB,
+	}
+
+	ctx := context.Background()
+	a := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID:         agentID,
+			CustomerID: customerID,
+		},
+		Permission: amagent.PermissionCustomerAdmin,
+	})
+
+	mockReq.EXPECT().
+		ContactV1CaseGet(ctx, customerID, caseID).
+		Return(&cmkase.Case{
+			ID:         caseID,
+			CustomerID: customerID,
+			Status:     cmkase.StatusOpen,
+			ContactID:  nil,
+			PeerTarget: "whatsapp-peer-id-9999",
+			PeerType:   commonaddress.TypeWhatsApp,
+		}, nil)
+
+	mockReq.EXPECT().
+		NumberV1NumberList(ctx, "", uint64(1), map[nmnumber.Field]any{
+			nmnumber.FieldCustomerID: customerID,
+			nmnumber.FieldNumber:     "whatsapp-business-id-4567",
+			nmnumber.FieldType:       nmnumber.TypeNormal,
+			nmnumber.FieldStatus:     nmnumber.StatusActive,
+			nmnumber.FieldDeleted:    false,
+		}).
+		Return([]nmnumber.Number{{}}, nil)
+
+	// The key assertion: BOTH self and peer addresses must carry
+	// TypeWhatsApp (matching c.PeerType), not a hardcoded TypeTel on the
+	// self side. gomock's exact-match EXPECT() below fails the test if
+	// selfAddr.Type reverts to TypeTel.
+	mockReq.EXPECT().
+		ConversationV1ConversationGetOrCreateBySelfAndPeer(
+			ctx, customerID, cvconversation.TypeWhatsApp, "",
+			commonaddress.Address{Type: commonaddress.TypeWhatsApp, Target: "whatsapp-business-id-4567"},
+			commonaddress.Address{Type: commonaddress.TypeWhatsApp, Target: "whatsapp-peer-id-9999"},
+		).
+		Return(&cvconversation.Conversation{
+			Identity: commonidentity.Identity{ID: conversationID, CustomerID: customerID},
+		}, nil)
+
+	mockReq.EXPECT().
+		ConversationV1ConversationUpdateMetadata(ctx, conversationID, cvconversation.Metadata{ContactCaseID: &caseID}).
+		Return(&cvconversation.Conversation{Identity: commonidentity.Identity{ID: conversationID, CustomerID: customerID}}, nil)
+
+	mockReq.EXPECT().
+		ConversationV1MessageSend(ctx, conversationID, "hello", nil).
+		Return(&cvmessage.Message{
+			Identity:       commonidentity.Identity{ID: messageID, CustomerID: customerID},
+			ConversationID: conversationID,
+			Text:           "hello",
+		}, nil)
+
+	res, err := h.CaseMessageSend(ctx, a, caseID, "whatsapp-business-id-4567", "whatsapp-peer-id-9999", "hello")
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+	if res == nil {
+		t.Errorf("Expected a result but got nil")
 	}
 }
