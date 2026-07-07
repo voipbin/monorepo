@@ -6,6 +6,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 	"time"
 
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -90,6 +91,15 @@ type handler struct {
 	utilHandler utilhandler.UtilHandler
 	db          *sql.DB
 	cache       cachehandler.CacheHandler
+
+	// forUpdateSuffix is "FOR UPDATE" against MySQL and "" against the
+	// SQLite in-memory test DB (SQLite has no FOR UPDATE syntax; its
+	// whole-connection/file-level locking already serializes writers
+	// coarsely enough for tests, which never run concurrent goroutines
+	// against the same in-memory DB across separate connections anyway).
+	// Detected once at construction via the driver's type name -- see
+	// NewHandler.
+	forUpdateSuffix string
 }
 
 // handler errors
@@ -114,10 +124,22 @@ var (
 
 // NewHandler creates DBHandler
 func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {
+	// Detect SQLite (used only by the in-memory test harness) vs. MySQL
+	// (production) by the driver's concrete type name, so FOR UPDATE
+	// locking clauses can be conditionally omitted where the driver
+	// doesn't support the syntax. reflect avoids importing the sqlite3
+	// driver package here (kept as a test-only dependency).
+	driverType := fmt.Sprintf("%T", db.Driver())
+	forUpdateSuffix := "FOR UPDATE"
+	if strings.Contains(strings.ToLower(driverType), "sqlite") {
+		forUpdateSuffix = ""
+	}
+
 	h := &handler{
-		utilHandler: utilhandler.NewUtilHandler(),
-		db:          db,
-		cache:       cache,
+		utilHandler:     utilhandler.NewUtilHandler(),
+		db:              db,
+		cache:           cache,
+		forUpdateSuffix: forUpdateSuffix,
 	}
 	return h
 }

@@ -140,15 +140,17 @@ func (h *handler) CaseGetByIDTx(ctx context.Context, tx *sql.Tx, id uuid.UUID) (
 func (h *handler) CaseGetOpenByPeer(ctx context.Context, tx *sql.Tx, customerID uuid.UUID, peerType commonaddress.Type, peerTarget, referenceType string) (*kase.Case, error) {
 	columns := commondatabasehandler.GetDBFields(&kase.Case{})
 
-	query, args, err := sq.Select(columns...).
+	builder := sq.Select(columns...).
 		From(caseTable).
 		Where(sq.Eq{"customer_id": customerID.Bytes()}).
 		Where(sq.Eq{"peer_type": string(peerType)}).
 		Where(sq.Eq{"peer_target": peerTarget}).
 		Where(sq.Eq{"reference_type": referenceType}).
-		Where(sq.Eq{"status": string(kase.StatusOpen)}).
-		Suffix("FOR UPDATE").
-		ToSql()
+		Where(sq.Eq{"status": string(kase.StatusOpen)})
+	if h.forUpdateSuffix != "" {
+		builder = builder.Suffix(h.forUpdateSuffix)
+	}
+	query, args, err := builder.ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("could not build query. CaseGetOpenByPeer. err: %v", err)
 	}
@@ -175,13 +177,15 @@ func (h *handler) CaseGetOpenByPeer(ctx context.Context, tx *sql.Tx, customerID 
 func (h *handler) CaseGetByIDForUpdate(ctx context.Context, tx *sql.Tx, customerID, id uuid.UUID) (*kase.Case, error) {
 	columns := commondatabasehandler.GetDBFields(&kase.Case{})
 
-	query, args, err := sq.Select(columns...).
+	builder := sq.Select(columns...).
 		From(caseTable).
 		Where(sq.Eq{"id": id.Bytes()}).
 		Where(sq.Eq{"customer_id": customerID.Bytes()}).
-		Where(sq.Eq{"status": string(kase.StatusOpen)}).
-		Suffix("FOR UPDATE").
-		ToSql()
+		Where(sq.Eq{"status": string(kase.StatusOpen)})
+	if h.forUpdateSuffix != "" {
+		builder = builder.Suffix(h.forUpdateSuffix)
+	}
+	query, args, err := builder.ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("could not build query. CaseGetByIDForUpdate. err: %v", err)
 	}

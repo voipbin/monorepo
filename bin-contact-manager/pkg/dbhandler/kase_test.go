@@ -135,7 +135,7 @@ func Test_CaseGetOpenByPeer(t *testing.T) {
 	defer mc.Finish()
 	mockUtil := utilhandler.NewMockUtilHandler(mc)
 	mockCache := cachehandler.NewMockCacheHandler(mc)
-	h := handler{utilHandler: mockUtil, db: db, cache: mockCache}
+	h := handler{utilHandler: mockUtil, db: db, cache: mockCache, forUpdateSuffix: "FOR UPDATE"}
 	ctx := context.Background()
 
 	customerID := uuid.FromStringOrNil("f1b2c3d4-5003-5003-5003-000000000001")
