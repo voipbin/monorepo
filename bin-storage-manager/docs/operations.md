@@ -52,7 +52,7 @@ go tool cover -html=cp.out -o cp.html
 | `GCP_PROJECT_ID` | Google Cloud project | required |
 | `GCP_BUCKET_NAME_MEDIA` | Persistent media GCS bucket | required |
 | `GCP_BUCKET_NAME_TMP` | Temporary zip GCS bucket | required |
-| `GOOGLE_APPLICATION_CREDENTIALS` | SA JSON key file path | required |
+| `GOOGLE_APPLICATION_CREDENTIALS` | SA JSON key file path (mounted in k8s from `Secret/voipbin` key `GOOGLE_APPLICATION_CREDENTIALS_JSON` at `/var/secrets/google/service-account.json`) | required |
 | `PROMETHEUS_ENDPOINT` | Metrics path | `/metrics` |
 | `PROMETHEUS_LISTEN_ADDRESS` | Metrics listen address | `:2112` |
 

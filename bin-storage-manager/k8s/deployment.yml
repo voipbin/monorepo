@@ -78,6 +78,12 @@ spec:
                 secretKeyRef:
                   name: voipbin
                   key: CLICKHOUSE_ADDRESS
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: "/var/secrets/google/service-account.json"
+          volumeMounts:
+            - name: google-application-credentials
+              mountPath: /var/secrets/google
+              readOnly: true
           ports:
             - name: metrics
               protocol: "TCP"
@@ -89,3 +95,10 @@ spec:
             limits:
               cpu: "100m"
               memory: "100M"
+      volumes:
+        - name: google-application-credentials
+          secret:
+            secretName: voipbin
+            items:
+              - key: GOOGLE_APPLICATION_CREDENTIALS_JSON
+                path: service-account.json
