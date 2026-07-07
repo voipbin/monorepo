@@ -9,10 +9,12 @@ import (
 	commonaddress "monorepo/bin-common-handler/models/address"
 
 	"github.com/gofrs/uuid"
+	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-contact-manager/internal/config"
 	"monorepo/bin-contact-manager/models/kase"
 	"monorepo/bin-contact-manager/pkg/dbhandler"
+	cvconversation "monorepo/bin-conversation-manager/models/conversation"
 )
 
 // maxInsertRetries bounds the ON DUPLICATE KEY retry loop on the insert
@@ -32,6 +34,7 @@ var ErrGetOrCreateExhausted = fmt.Errorf("could not get-or-create case: exhauste
 func (h *caseHandler) GetOrCreate(
 	ctx context.Context,
 	customerID uuid.UUID,
+	self commonaddress.Address,
 	peerType commonaddress.Type,
 	peerTarget, referenceType string,
 	caseIDHint *uuid.UUID,
@@ -63,10 +66,50 @@ func (h *caseHandler) GetOrCreate(
 	}
 	committed = true
 
-	_ = isNewCase // consumed by later sub-tasks (contact auto-match, §4.4 proactive link)
-
 	res.TMUpdate = now
+
+	// Design §4.4: proactive linking write, AFTER the Case transaction has
+	// committed (never inside it -- the FOR UPDATE locks above must not be
+	// held across a cross-service network round trip). Only on a genuine
+	// new-Case open (not cache-hit reuse), and only for a non-
+	// "conversation_message" referenceType (today: "call"). Best-effort:
+	// any failure here is logged and never fails/rolls back the already-
+	// committed Case-open.
+	if isNewCase && referenceType != "conversation_message" && self.Type != "" {
+		h.linkSiblingConversation(ctx, customerID, self, peerType, peerTarget, res.ID)
+	}
+
 	return res, nil
+}
+
+// linkSiblingConversation implements design §4.4's proactive-link write:
+// look up (get-only, never create) the sibling message Conversation for
+// (self, peer); if found, stamp Metadata.ContactCaseID on it via
+// ConversationUpdateMetadata. Both RPCs are best-effort -- see GetOrCreate's
+// call site comment for the failure-handling rationale.
+func (h *caseHandler) linkSiblingConversation(
+	ctx context.Context,
+	customerID uuid.UUID,
+	self commonaddress.Address,
+	peerType commonaddress.Type,
+	peerTarget string,
+	caseID uuid.UUID,
+) {
+	peer := commonaddress.Address{Type: peerType, Target: peerTarget}
+
+	conv, err := h.reqHandler.ConversationV1ConversationGetBySelfAndPeer(ctx, self, peer)
+	if err != nil || conv == nil {
+		// Not found (or lookup failed) -- no further RPC, nothing created.
+		// This is the expected, common outcome (no prior message history
+		// with this peer), not a defect; do not log as an error.
+		return
+	}
+
+	id := caseID
+	metadata := cvconversation.Metadata{ContactCaseID: &id}
+	if _, err := h.reqHandler.ConversationV1ConversationUpdateMetadata(ctx, conv.ID, metadata); err != nil {
+		logrus.WithError(err).Warnf("could not update conversation metadata for proactive case link. conversation_id: %s case_id: %s", conv.ID, caseID)
+	}
 }
 
 // getOrCreateInTx runs design §4 steps 1 (case resolution) inside tx.

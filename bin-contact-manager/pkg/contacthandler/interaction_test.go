@@ -206,7 +206,7 @@ func Test_EventCallCreated(t *testing.T) {
 			ctx := context.Background()
 
 			if tt.expectInteraction != nil {
-				mockCase.EXPECT().GetOrCreate(ctx, tt.expectInteraction.CustomerID, commonaddress.Type(tt.expectInteraction.PeerType), tt.expectInteraction.PeerTarget, "call", gomock.Any()).Return(&kase.Case{ID: tt.expectCaseID}, nil)
+				mockCase.EXPECT().GetOrCreate(ctx, tt.expectInteraction.CustomerID, gomock.Any(), commonaddress.Type(tt.expectInteraction.PeerType), tt.expectInteraction.PeerTarget, "call", gomock.Any()).Return(&kase.Case{ID: tt.expectCaseID}, nil)
 				expected := *tt.expectInteraction
 				expected.CaseID = &tt.expectCaseID
 				mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
@@ -312,7 +312,7 @@ func Test_EventConversationMessageCreated(t *testing.T) {
 			ctx := context.Background()
 
 			if tt.expectInteraction != nil {
-				mockCase.EXPECT().GetOrCreate(ctx, tt.expectInteraction.CustomerID, commonaddress.Type(tt.expectInteraction.PeerType), tt.expectInteraction.PeerTarget, "conversation_message", gomock.Any()).Return(&kase.Case{ID: tt.expectCaseID}, nil)
+				mockCase.EXPECT().GetOrCreate(ctx, tt.expectInteraction.CustomerID, gomock.Any(), commonaddress.Type(tt.expectInteraction.PeerType), tt.expectInteraction.PeerTarget, "conversation_message", gomock.Any()).Return(&kase.Case{ID: tt.expectCaseID}, nil)
 				expected := *tt.expectInteraction
 				expected.CaseID = &tt.expectCaseID
 				mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)

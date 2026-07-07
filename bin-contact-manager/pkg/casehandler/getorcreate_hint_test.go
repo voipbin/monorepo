@@ -55,7 +55,7 @@ func Test_GetOrCreate_ValidHint_UsesIt(t *testing.T) {
 	// short-circuits peer matching entirely (if it fell through to peer
 	// matching, no open case would be found for this peer and a NEW case
 	// would be inserted instead of reusing hintedCaseID).
-	res, err := h.GetOrCreate(ctx, customerID, commonaddress.TypeTel, "+19999999999", "call", &hintedCaseID)
+	res, err := h.GetOrCreate(ctx, customerID, commonaddress.Address{}, commonaddress.TypeTel, "+19999999999", "call", &hintedCaseID)
 	if err != nil {
 		t.Fatalf("GetOrCreate() error = %v", err)
 	}
@@ -146,7 +146,7 @@ func Test_GetOrCreate_StaleHint_FallsThrough(t *testing.T) {
 
 			// No open case exists for this peer -> falls through to a
 			// fresh insert, proving the hint was NOT trusted.
-			res, err := h.GetOrCreate(ctx, customerID, commonaddress.TypeTel, tt.peerTarget, "call", hint)
+			res, err := h.GetOrCreate(ctx, customerID, commonaddress.Address{}, commonaddress.TypeTel, tt.peerTarget, "call", hint)
 			if err != nil {
 				t.Fatalf("GetOrCreate() error = %v", err)
 			}

@@ -64,7 +64,7 @@ func Test_GetOrCreate_ConcurrentGoroutines_ExactlyOneCaseSurvives(t *testing.T) 
 				return uuid.Must(uuid.NewV4())
 			}).AnyTimes()
 
-			res, err := h.GetOrCreate(context.Background(), customerID, commonaddress.TypeTel, "+15551190001", "call", nil)
+			res, err := h.GetOrCreate(context.Background(), customerID, commonaddress.Address{}, commonaddress.TypeTel, "+15551190001", "call", nil)
 			if err != nil {
 				errs[idx] = err
 				return

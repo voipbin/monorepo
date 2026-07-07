@@ -97,7 +97,7 @@ func (h *contactHandler) EventCallCreated(ctx context.Context, m *call.WebhookMe
 	id := h.utilHandler.UUIDCreate()
 	now := h.utilHandler.TimeNow()
 
-	c, err := h.caseHandler.GetOrCreate(ctx, m.CustomerID, peer.Type, peerTarget, "call", nil)
+	c, err := h.caseHandler.GetOrCreate(ctx, m.CustomerID, local, peer.Type, peerTarget, "call", nil)
 	if err != nil {
 		return fmt.Errorf("could not get-or-create case. EventCallCreated. err: %v", err)
 	}
@@ -151,7 +151,7 @@ func (h *contactHandler) EventConversationMessageCreated(ctx context.Context, m 
 	id := h.utilHandler.UUIDCreate()
 	now := h.utilHandler.TimeNow()
 
-	c, err := h.caseHandler.GetOrCreate(ctx, m.CustomerID, peer.Type, peerTarget, "conversation_message", nil)
+	c, err := h.caseHandler.GetOrCreate(ctx, m.CustomerID, commonaddress.Address{}, peer.Type, peerTarget, "conversation_message", nil)
 	if err != nil {
 		return fmt.Errorf("could not get-or-create case. EventConversationMessageCreated. err: %v", err)
 	}

@@ -56,7 +56,7 @@ func Test_GetOrCreate_TimedOutCase_ClosesAndReopens(t *testing.T) {
 	mockUtil.EXPECT().TimeNow().Return(&now)
 	mockUtil.EXPECT().UUIDCreate().Return(newCaseID)
 
-	res, err := h.GetOrCreate(ctx, customerID, commonaddress.TypeTel, "+15551140001", "call", nil)
+	res, err := h.GetOrCreate(ctx, customerID, commonaddress.Address{}, commonaddress.TypeTel, "+15551140001", "call", nil)
 	if err != nil {
 		t.Fatalf("GetOrCreate() error = %v", err)
 	}
