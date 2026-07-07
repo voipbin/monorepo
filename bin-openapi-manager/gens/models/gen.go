@@ -8053,12 +8053,6 @@ type GetCasesUnresolvedParams struct {
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
-// PostCasesIdCloseJSONBody defines parameters for PostCasesIdClose.
-type PostCasesIdCloseJSONBody struct {
-	// ClosedById ID of the agent closing this case.
-	ClosedById openapi_types.UUID `json:"closed_by_id"`
-}
-
 // PostCasesIdMessagesJSONBody defines parameters for PostCasesIdMessages.
 type PostCasesIdMessagesJSONBody struct {
 	// Destination The customer's number to send to. Must be attributable to this case (the matched Contact's address, or the case's peer_target).
@@ -10003,9 +9997,6 @@ type PutCampaignsIdServiceLevelJSONRequestBody PutCampaignsIdServiceLevelJSONBod
 
 // PutCampaignsIdStatusJSONRequestBody defines body for PutCampaignsIdStatus for application/json ContentType.
 type PutCampaignsIdStatusJSONRequestBody PutCampaignsIdStatusJSONBody
-
-// PostCasesIdCloseJSONRequestBody defines body for PostCasesIdClose for application/json ContentType.
-type PostCasesIdCloseJSONRequestBody PostCasesIdCloseJSONBody
 
 // PostCasesIdMessagesJSONRequestBody defines body for PostCasesIdMessages for application/json ContentType.
 type PostCasesIdMessagesJSONRequestBody PostCasesIdMessagesJSONBody

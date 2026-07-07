@@ -1,10 +1,14 @@
 post:
   summary: Close a case
   description: |
-    Close a case. Returns the actually-persisted state, including
-    already_closed semantics reflected via the returned closed_reason /
-    closed_by_type / closed_by_id fields when the case had already been
-    closed by someone/something else.
+    Close a case. closed_by_id is derived server-side from the
+    authenticated caller's own agent identity -- there is no request
+    body -- so the closing-agent attribution the platform treats as a
+    hard invariant cannot be forged by supplying an arbitrary agent_id.
+    Returns the actually-persisted state, including already_closed
+    semantics reflected via the returned closed_reason / closed_by_type /
+    closed_by_id fields when the case had already been closed by
+    someone/something else.
   tags:
     - Case
   parameters:
@@ -16,20 +20,6 @@ post:
         type: string
         format: uuid
         example: "550e8400-e29b-41d4-a716-446655440000"
-  requestBody:
-    required: true
-    content:
-      application/json:
-        schema:
-          type: object
-          required:
-            - closed_by_id
-          properties:
-            closed_by_id:
-              type: string
-              format: uuid
-              description: ID of the agent closing this case.
-              example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
   responses:
     '200':
       description: Case closed successfully.
