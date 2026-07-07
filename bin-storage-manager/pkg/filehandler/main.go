@@ -18,8 +18,6 @@ import (
 	accounthandler "monorepo/bin-storage-manager/pkg/accounthandler"
 	"monorepo/bin-storage-manager/pkg/dbhandler"
 
-	"cloud.google.com/go/compute/metadata"
-	credentials "cloud.google.com/go/iam/credentials/apiv1"
 	"cloud.google.com/go/storage"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -71,8 +69,7 @@ type fileHandler struct {
 	db             dbhandler.DBHandler
 	accountHandler accounthandler.AccountHandler
 
-	client    *storage.Client
-	iamClient *credentials.IamCredentialsClient
+	client *storage.Client
 
 	projectID string
 
@@ -95,76 +92,33 @@ func NewFileHandler(
 ) FileHandler {
 	log := logrus.WithField("func", "NewFileHandler")
 
-	var client *storage.Client
-	var accessID string
-	var privateKey []byte
-	var errClient error
-	ctx := context.Background()
-
 	envCredPath := os.Getenv("GOOGLE_APPLICATION_CREDENTIALS")
-	if envCredPath != "" {
-		log.Infof("Found GOOGLE_APPLICATION_CREDENTIALS at: %s", envCredPath)
-
-		jsonContent, err := os.ReadFile(envCredPath)
-		if err != nil {
-			log.Errorf("Failed to read credential file: %v", err)
-			return nil
-		}
-
-		conf, err := google.JWTConfigFromJSON(jsonContent)
-		if err != nil {
-			log.Errorf("Failed to parse credential JSON: %v", err)
-			return nil
-		}
-
-		accessID = conf.Email
-		privateKey = conf.PrivateKey
-		client, errClient = storage.NewClient(ctx)
-	} else {
-		log.Info("No GOOGLE_APPLICATION_CREDENTIALS, trying ADC/Metadata")
-
-		client, errClient = storage.NewClient(ctx)
-		privateKey = nil
-		if metadata.OnGCE() {
-			log.Debugf("The service is running on the GCE")
-			email, err := metadata.EmailWithContext(ctx, "default")
-			if err != nil {
-				log.Errorf("Failed to retrieve service account email from metadata: %v", err)
-				return nil
-			} else {
-				accessID = email
-			}
-		} else {
-			if localEmail := os.Getenv("GOOGLE_SERVICE_ACCOUNT_EMAIL"); localEmail != "" {
-				log.Infof("Using explicit service account email from env: %s", localEmail)
-				accessID = localEmail
-			} else {
-				log.Errorf("Could not determine Service Account Email. Not running on GCE/GKE and GOOGLE_SERVICE_ACCOUNT_EMAIL is not set.")
-				return nil
-			}
-		}
+	if envCredPath == "" {
+		log.Error("GOOGLE_APPLICATION_CREDENTIALS is not set. A service account JSON key file is required to generate GCS signed URLs.")
+		return nil
 	}
+	log.Infof("Found GOOGLE_APPLICATION_CREDENTIALS at: %s", envCredPath)
 
-	if errClient != nil {
-		log.Errorf("Failed to create client: %v", errClient)
+	jsonContent, err := os.ReadFile(envCredPath)
+	if err != nil {
+		log.Errorf("Failed to read credential file: %v", err)
 		return nil
 	}
 
-	var iamClient *credentials.IamCredentialsClient
-	// privateKey is set when GOOGLE_APPLICATION_CREDENTIALS points to a service account
-	// JSON file and we parse it via google.JWTConfigFromJSON above. In that case we can
-	// sign blobs locally and do not need an IAM Credentials client. When no JSON file
-	// is provided (ADC/metadata scenarios), privateKey remains nil and we rely on the
-	// IAM Credentials API instead, so we create an IamCredentialsClient here.
-	if privateKey == nil {
-		log.Debugf("The private key is nil. Creating IAM Credentials Client.")
-		tmpClient, err := credentials.NewIamCredentialsClient(ctx)
-		if err != nil {
-			log.Errorf("Failed to create IAM Credentials Client: %v", err)
-			return nil
-		}
+	conf, err := google.JWTConfigFromJSON(jsonContent)
+	if err != nil {
+		log.Errorf("Failed to parse credential JSON: %v", err)
+		return nil
+	}
 
-		iamClient = tmpClient
+	accessID := conf.Email
+	privateKey := conf.PrivateKey
+
+	ctx := context.Background()
+	client, errClient := storage.NewClient(ctx)
+	if errClient != nil {
+		log.Errorf("Failed to create client: %v", errClient)
+		return nil
 	}
 
 	log.Debugf("Checking account. project_id: %s, bucket_media: %s, bucket_tmp: %s, access_id: %s", projectID, bucketMedia, bucketTmp, accessID)
@@ -175,7 +129,6 @@ func NewFileHandler(
 		accountHandler: accountHandler,
 
 		client:      client,
-		iamClient:   iamClient,
 		projectID:   projectID,
 		bucketMedia: bucketMedia,
 		bucketTmp:   bucketTmp,

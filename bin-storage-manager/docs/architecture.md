@@ -25,16 +25,17 @@ models/                 — Data structures (file, account, bucketfile, compress
 | Transport | `pkg/listenhandler` | Consumes `bin-manager.storage-manager.request`; regex-routes to storagehandler |
 | Events | `pkg/subscribehandler` | Subscribes to `bin-manager.customer-manager.event`; handles cascading deletes |
 | Business logic | `pkg/storagehandler` | Coordinates file lifecycle, quota checks, recording compression |
-| GCS operations | `pkg/filehandler` | Bucket CRUD, signed URL generation (local-key or IAM Credentials API) |
+| GCS operations | `pkg/filehandler` | Bucket CRUD, signed URL generation (service account JSON key file, local signing) |
 | Account management | `pkg/accounthandler` | 10 GB quota enforcement per customer |
 | Persistence | `pkg/dbhandler` | MySQL for durable records; Redis for cache |
 | Cache | `pkg/cachehandler` | Redis lookups for files and accounts; invalidates on mutation |
 
 ### GCS Authentication
 
-Two modes supported:
-1. **Service Account JSON** — `GOOGLE_APPLICATION_CREDENTIALS` points to JSON file; private keys used for local signing.
-2. **ADC/Workload Identity** — GKE environment; uses Application Default Credentials with IAM Credentials API for signing.
+`GOOGLE_APPLICATION_CREDENTIALS` must point to a service account JSON key file. The key's
+private key is used for local GCS V4 signed-URL signing (`storage.SignedURLOptions.PrivateKey`).
+There is no in-cluster metadata-server / IAM Credentials API fallback — the env var is
+required and the handler refuses to start without it.
 
 ## Request Routing
 

@@ -6,7 +6,7 @@
 |---------|-------------|-----------|
 | File upload rejected | Customer storage quota (10 GB) exceeded | Check account usage; delete old files or contact customer |
 | Signed URL expired | Default 24 h expiry passed | Call `POST /v1/files/<uuid>/download_uri_refresh` |
-| GCS signed URL generation fails | IAM Credentials API disabled or Workload Identity misconfigured | Verify pod SA has `iam.serviceAccountTokenCreator` role |
+| GCS signed URL generation fails | `GOOGLE_APPLICATION_CREDENTIALS` missing/invalid, or the service account JSON key lacks bucket permissions | Verify the env var points to a valid service account key file with `storage.objects.get`/`storage.signUrl` |
 | Cascading delete incomplete | `subscribehandler` missed `customer_deleted` event | Check RabbitMQ dead-letter queue; re-publish event manually |
 | Redis cache stale | Crash between DB write and cache invalidation | Restart pod — cache keys expire; DB is the source of truth |
 | Compressfile generation slow | Many large recordings with same `reference_id` | Expected; zip is built synchronously on first request |
