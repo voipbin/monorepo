@@ -357,7 +357,7 @@ func Test_PostServiceAgentsInteractionsIdResolutions(t *testing.T) {
 			responseRes: &cmresolution.Resolution{
 				ID:            uuid.FromStringOrNil("44444444-0000-0000-0000-000000000004"),
 				CustomerID:    customerID,
-				InteractionID: interactionID,
+				InteractionID: &interactionID,
 				ContactID:     contactID,
 			},
 			expectStatus: http.StatusCreated,

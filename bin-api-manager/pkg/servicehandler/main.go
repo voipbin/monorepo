@@ -44,6 +44,7 @@ import (
 
 	cmcontact "monorepo/bin-contact-manager/models/contact"
 	cminteraction "monorepo/bin-contact-manager/models/interaction"
+	cmkase "monorepo/bin-contact-manager/models/kase"
 	cmresolution "monorepo/bin-contact-manager/models/resolution"
 	cmrequest "monorepo/bin-contact-manager/pkg/listenhandler/models/request"
 
@@ -467,6 +468,27 @@ type ServiceHandler interface {
 
 	ContactTagAdd(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, tagID uuid.UUID) (*cmcontact.WebhookMessage, error)
 	ContactTagRemove(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, tagID uuid.UUID) (*cmcontact.WebhookMessage, error)
+
+	// case handlers
+	CaseList(
+		ctx context.Context,
+		a *auth.AuthIdentity,
+		targetCustomerID uuid.UUID,
+		size uint64,
+		token string,
+		status string,
+		ownerType string,
+		ownerID uuid.UUID,
+	) ([]*cmkase.Case, string, error)
+	CaseListUnresolved(
+		ctx context.Context,
+		a *auth.AuthIdentity,
+		size uint64,
+		token string,
+	) ([]*cmkase.Case, string, error)
+	CaseGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cmkase.Case, error)
+	CaseClose(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, closedByID uuid.UUID) (*cmkase.Case, error)
+	CaseContinue(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cmkase.Case, error)
 
 	// interaction handlers
 	InteractionList(

@@ -506,6 +506,12 @@ const (
 	ContactManagerAddressTypeCommonAddressTypeTel        ContactManagerAddressType = "tel"
 )
 
+// Defines values for ContactManagerCaseStatus.
+const (
+	ContactManagerCaseStatusClosed ContactManagerCaseStatus = "closed"
+	ContactManagerCaseStatusOpen   ContactManagerCaseStatus = "open"
+)
+
 // Defines values for ContactManagerContactSource.
 const (
 	ContactManagerContactSourceAPI    ContactManagerContactSource = "api"
@@ -998,6 +1004,12 @@ const (
 // Defines values for PostCallsIdRecordingStartJSONBodyFormat.
 const (
 	PostCallsIdRecordingStartJSONBodyFormatWav PostCallsIdRecordingStartJSONBodyFormat = "wav"
+)
+
+// Defines values for GetCasesParamsStatus.
+const (
+	GetCasesParamsStatusClosed GetCasesParamsStatus = "closed"
+	GetCasesParamsStatusOpen   GetCasesParamsStatus = "open"
 )
 
 // Defines values for PostConferencesIdRecordingStartJSONBodyFormat.
@@ -2638,6 +2650,72 @@ type ContactManagerAddress struct {
 
 // ContactManagerAddressType Type of address.
 type ContactManagerAddressType string
+
+// ContactManagerCase defines model for ContactManagerCase.
+type ContactManagerCase struct {
+	// ClosedAt Timestamp when the case was closed. Nullable.
+	ClosedAt *time.Time `json:"closed_at,omitempty"`
+
+	// ClosedById ID of the actor that closed the case. Nullable.
+	ClosedById *openapi_types.UUID `json:"closed_by_id,omitempty"`
+
+	// ClosedByType Type of the actor that closed the case (e.g. "agent", "system").
+	ClosedByType *string `json:"closed_by_type,omitempty"`
+
+	// ClosedReason Reason the case was closed (e.g. "agent_closed", "timeout").
+	ClosedReason *string `json:"closed_reason,omitempty"`
+
+	// ContactId The resolved contact this case is attributed to. Nullable until resolved.
+	ContactId *openapi_types.UUID `json:"contact_id,omitempty"`
+
+	// CustomerId Unique identifier of the associated customer.
+	CustomerId *openapi_types.UUID `json:"customer_id,omitempty"`
+
+	// Id Unique identifier for the case.
+	Id *openapi_types.UUID `json:"id,omitempty"`
+
+	// OpenedAt Timestamp when the case was opened. Nullable.
+	OpenedAt *time.Time `json:"opened_at,omitempty"`
+
+	// OwnerId ID of the case owner.
+	OwnerId *openapi_types.UUID `json:"owner_id,omitempty"`
+
+	// OwnerType Type of the case owner.
+	OwnerType *string `json:"owner_type,omitempty"`
+
+	// PeerTarget Remote endpoint address (normalized, e.g. "+155****4567").
+	PeerTarget *string `json:"peer_target,omitempty"`
+
+	// PeerType Remote endpoint type (e.g. "tel", "email") this case is scoped to.
+	PeerType *string `json:"peer_type,omitempty"`
+
+	// PreviousCaseId ID of the prior (now-closed) case this case continues from, if any.
+	PreviousCaseId *openapi_types.UUID `json:"previous_case_id,omitempty"`
+
+	// ReferenceType Origin channel type (e.g. "call", "conversation_message").
+	ReferenceType *string `json:"reference_type,omitempty"`
+
+	// Status Case lifecycle status.
+	Status *ContactManagerCaseStatus `json:"status,omitempty"`
+
+	// TmCreate Timestamp when this case was created.
+	TmCreate *time.Time `json:"tm_create,omitempty"`
+
+	// TmUpdate Timestamp when this case was last updated.
+	TmUpdate *time.Time `json:"tm_update,omitempty"`
+}
+
+// ContactManagerCaseStatus Case lifecycle status.
+type ContactManagerCaseStatus string
+
+// ContactManagerCaseListResponse defines model for ContactManagerCaseListResponse.
+type ContactManagerCaseListResponse struct {
+	// NextPageToken Pagination token for the next page. Empty when no further pages exist.
+	NextPageToken *string `json:"next_page_token,omitempty"`
+
+	// Result List of cases.
+	Result *[]ContactManagerCase `json:"result,omitempty"`
+}
 
 // ContactManagerContact defines model for ContactManagerContact.
 type ContactManagerContact struct {
@@ -5612,6 +5690,42 @@ type PutCampaignsIdStatusJSONBody struct {
 	Status CampaignManagerCampaignStatus `json:"status"`
 }
 
+// GetCasesParams defines parameters for GetCases.
+type GetCasesParams struct {
+	// Status Filter by case status.
+	Status *GetCasesParamsStatus `form:"status,omitempty" json:"status,omitempty"`
+
+	// OwnerType Filter by owner type.
+	OwnerType *string `form:"owner_type,omitempty" json:"owner_type,omitempty"`
+
+	// OwnerId Filter by owner ID.
+	OwnerId *openapi_types.UUID `form:"owner_id,omitempty" json:"owner_id,omitempty"`
+
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// GetCasesParamsStatus defines parameters for GetCases.
+type GetCasesParamsStatus string
+
+// GetCasesUnresolvedParams defines parameters for GetCasesUnresolved.
+type GetCasesUnresolvedParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostCasesIdCloseJSONBody defines parameters for PostCasesIdClose.
+type PostCasesIdCloseJSONBody struct {
+	// ClosedById ID of the agent closing this case.
+	ClosedById openapi_types.UUID `json:"closed_by_id"`
+}
+
 // GetConferencecallsParams defines parameters for GetConferencecalls.
 type GetConferencecallsParams struct {
 	// PageSize Number of results to return per page.
@@ -7530,6 +7644,9 @@ type PutCampaignsIdServiceLevelJSONRequestBody PutCampaignsIdServiceLevelJSONBod
 // PutCampaignsIdStatusJSONRequestBody defines body for PutCampaignsIdStatus for application/json ContentType.
 type PutCampaignsIdStatusJSONRequestBody PutCampaignsIdStatusJSONBody
 
+// PostCasesIdCloseJSONRequestBody defines body for PostCasesIdClose for application/json ContentType.
+type PostCasesIdCloseJSONRequestBody PostCasesIdCloseJSONBody
+
 // PostConferencesJSONRequestBody defines body for PostConferences for application/json ContentType.
 type PostConferencesJSONRequestBody PostConferencesJSONBody
 
@@ -8141,6 +8258,21 @@ type ServerInterface interface {
 	// Update campaign status
 	// (PUT /campaigns/{id}/status)
 	PutCampaignsIdStatus(c *gin.Context, id string)
+	// List cases
+	// (GET /cases)
+	GetCases(c *gin.Context, params GetCasesParams)
+	// List unresolved cases
+	// (GET /cases/unresolved)
+	GetCasesUnresolved(c *gin.Context, params GetCasesUnresolvedParams)
+	// Get a case
+	// (GET /cases/{id})
+	GetCasesId(c *gin.Context, id openapi_types.UUID)
+	// Close a case
+	// (POST /cases/{id}/close)
+	PostCasesIdClose(c *gin.Context, id openapi_types.UUID)
+	// Continue a closed case
+	// (POST /cases/{id}/continue)
+	PostCasesIdContinue(c *gin.Context, id openapi_types.UUID)
 	// Get list of conference calls
 	// (GET /conferencecalls)
 	GetConferencecalls(c *gin.Context, params GetConferencecallsParams)
@@ -11667,6 +11799,170 @@ func (siw *ServerInterfaceWrapper) PutCampaignsIdStatus(c *gin.Context) {
 	}
 
 	siw.Handler.PutCampaignsIdStatus(c, id)
+}
+
+// GetCases operation middleware
+func (siw *ServerInterfaceWrapper) GetCases(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetCasesParams
+
+	// ------------- Optional query parameter "status" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "status", c.Request.URL.Query(), &params.Status)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter status: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "owner_type" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "owner_type", c.Request.URL.Query(), &params.OwnerType)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter owner_type: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "owner_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "owner_id", c.Request.URL.Query(), &params.OwnerId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter owner_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetCases(c, params)
+}
+
+// GetCasesUnresolved operation middleware
+func (siw *ServerInterfaceWrapper) GetCasesUnresolved(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetCasesUnresolvedParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetCasesUnresolved(c, params)
+}
+
+// GetCasesId operation middleware
+func (siw *ServerInterfaceWrapper) GetCasesId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetCasesId(c, id)
+}
+
+// PostCasesIdClose operation middleware
+func (siw *ServerInterfaceWrapper) PostCasesIdClose(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostCasesIdClose(c, id)
+}
+
+// PostCasesIdContinue operation middleware
+func (siw *ServerInterfaceWrapper) PostCasesIdContinue(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostCasesIdContinue(c, id)
 }
 
 // GetConferencecalls operation middleware
@@ -18717,6 +19013,11 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.PUT(options.BaseURL+"/campaigns/:id/resource_info", wrapper.PutCampaignsIdResourceInfo)
 	router.PUT(options.BaseURL+"/campaigns/:id/service_level", wrapper.PutCampaignsIdServiceLevel)
 	router.PUT(options.BaseURL+"/campaigns/:id/status", wrapper.PutCampaignsIdStatus)
+	router.GET(options.BaseURL+"/cases", wrapper.GetCases)
+	router.GET(options.BaseURL+"/cases/unresolved", wrapper.GetCasesUnresolved)
+	router.GET(options.BaseURL+"/cases/:id", wrapper.GetCasesId)
+	router.POST(options.BaseURL+"/cases/:id/close", wrapper.PostCasesIdClose)
+	router.POST(options.BaseURL+"/cases/:id/continue", wrapper.PostCasesIdContinue)
 	router.GET(options.BaseURL+"/conferencecalls", wrapper.GetConferencecalls)
 	router.DELETE(options.BaseURL+"/conferencecalls/:id", wrapper.DeleteConferencecallsId)
 	router.GET(options.BaseURL+"/conferencecalls/:id", wrapper.GetConferencecallsId)
@@ -25085,6 +25386,299 @@ func (response PutCampaignsIdStatus404JSONResponse) VisitPutCampaignsIdStatusRes
 type PutCampaignsIdStatus500JSONResponse struct{ InternalErrorJSONResponse }
 
 func (response PutCampaignsIdStatus500JSONResponse) VisitPutCampaignsIdStatusResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetCasesRequestObject struct {
+	Params GetCasesParams
+}
+
+type GetCasesResponseObject interface {
+	VisitGetCasesResponse(w http.ResponseWriter) error
+}
+
+type GetCases200JSONResponse ContactManagerCaseListResponse
+
+func (response GetCases200JSONResponse) VisitGetCasesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetCases400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetCases400JSONResponse) VisitGetCasesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetCases401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetCases401JSONResponse) VisitGetCasesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetCases403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetCases403JSONResponse) VisitGetCasesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetCases500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetCases500JSONResponse) VisitGetCasesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetCasesUnresolvedRequestObject struct {
+	Params GetCasesUnresolvedParams
+}
+
+type GetCasesUnresolvedResponseObject interface {
+	VisitGetCasesUnresolvedResponse(w http.ResponseWriter) error
+}
+
+type GetCasesUnresolved200JSONResponse ContactManagerCaseListResponse
+
+func (response GetCasesUnresolved200JSONResponse) VisitGetCasesUnresolvedResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetCasesUnresolved400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetCasesUnresolved400JSONResponse) VisitGetCasesUnresolvedResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetCasesUnresolved401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetCasesUnresolved401JSONResponse) VisitGetCasesUnresolvedResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetCasesUnresolved403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetCasesUnresolved403JSONResponse) VisitGetCasesUnresolvedResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetCasesUnresolved500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetCasesUnresolved500JSONResponse) VisitGetCasesUnresolvedResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetCasesIdRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type GetCasesIdResponseObject interface {
+	VisitGetCasesIdResponse(w http.ResponseWriter) error
+}
+
+type GetCasesId200JSONResponse ContactManagerCase
+
+func (response GetCasesId200JSONResponse) VisitGetCasesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetCasesId400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetCasesId400JSONResponse) VisitGetCasesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetCasesId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetCasesId401JSONResponse) VisitGetCasesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetCasesId403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetCasesId403JSONResponse) VisitGetCasesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetCasesId404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response GetCasesId404JSONResponse) VisitGetCasesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetCasesId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetCasesId500JSONResponse) VisitGetCasesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCasesIdCloseRequestObject struct {
+	Id   openapi_types.UUID `json:"id"`
+	Body *PostCasesIdCloseJSONRequestBody
+}
+
+type PostCasesIdCloseResponseObject interface {
+	VisitPostCasesIdCloseResponse(w http.ResponseWriter) error
+}
+
+type PostCasesIdClose200JSONResponse ContactManagerCase
+
+func (response PostCasesIdClose200JSONResponse) VisitPostCasesIdCloseResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCasesIdClose400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostCasesIdClose400JSONResponse) VisitPostCasesIdCloseResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCasesIdClose401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostCasesIdClose401JSONResponse) VisitPostCasesIdCloseResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCasesIdClose403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostCasesIdClose403JSONResponse) VisitPostCasesIdCloseResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCasesIdClose404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostCasesIdClose404JSONResponse) VisitPostCasesIdCloseResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCasesIdClose500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostCasesIdClose500JSONResponse) VisitPostCasesIdCloseResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCasesIdContinueRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type PostCasesIdContinueResponseObject interface {
+	VisitPostCasesIdContinueResponse(w http.ResponseWriter) error
+}
+
+type PostCasesIdContinue200JSONResponse ContactManagerCase
+
+func (response PostCasesIdContinue200JSONResponse) VisitPostCasesIdContinueResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCasesIdContinue400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostCasesIdContinue400JSONResponse) VisitPostCasesIdContinueResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCasesIdContinue401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostCasesIdContinue401JSONResponse) VisitPostCasesIdContinueResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCasesIdContinue403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostCasesIdContinue403JSONResponse) VisitPostCasesIdContinueResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCasesIdContinue404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostCasesIdContinue404JSONResponse) VisitPostCasesIdContinueResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCasesIdContinue500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostCasesIdContinue500JSONResponse) VisitPostCasesIdContinueResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(500)
 
@@ -37517,6 +38111,15 @@ func (response PostServiceAgentsTranscribes401JSONResponse) VisitPostServiceAgen
 	return json.NewEncoder(w).Encode(response)
 }
 
+type PostServiceAgentsTranscribes409JSONResponse struct{ ConflictJSONResponse }
+
+func (response PostServiceAgentsTranscribes409JSONResponse) VisitPostServiceAgentsTranscribesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type PostServiceAgentsTranscribes500JSONResponse struct{ InternalErrorJSONResponse }
 
 func (response PostServiceAgentsTranscribes500JSONResponse) VisitPostServiceAgentsTranscribesResponse(w http.ResponseWriter) error {
@@ -39715,6 +40318,15 @@ func (response PostTranscribes401JSONResponse) VisitPostTranscribesResponse(w ht
 	return json.NewEncoder(w).Encode(response)
 }
 
+type PostTranscribes409JSONResponse struct{ ConflictJSONResponse }
+
+func (response PostTranscribes409JSONResponse) VisitPostTranscribesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type PostTranscribes500JSONResponse struct{ InternalErrorJSONResponse }
 
 func (response PostTranscribes500JSONResponse) VisitPostTranscribesResponse(w http.ResponseWriter) error {
@@ -40665,6 +41277,21 @@ type StrictServerInterface interface {
 	// Update campaign status
 	// (PUT /campaigns/{id}/status)
 	PutCampaignsIdStatus(ctx context.Context, request PutCampaignsIdStatusRequestObject) (PutCampaignsIdStatusResponseObject, error)
+	// List cases
+	// (GET /cases)
+	GetCases(ctx context.Context, request GetCasesRequestObject) (GetCasesResponseObject, error)
+	// List unresolved cases
+	// (GET /cases/unresolved)
+	GetCasesUnresolved(ctx context.Context, request GetCasesUnresolvedRequestObject) (GetCasesUnresolvedResponseObject, error)
+	// Get a case
+	// (GET /cases/{id})
+	GetCasesId(ctx context.Context, request GetCasesIdRequestObject) (GetCasesIdResponseObject, error)
+	// Close a case
+	// (POST /cases/{id}/close)
+	PostCasesIdClose(ctx context.Context, request PostCasesIdCloseRequestObject) (PostCasesIdCloseResponseObject, error)
+	// Continue a closed case
+	// (POST /cases/{id}/continue)
+	PostCasesIdContinue(ctx context.Context, request PostCasesIdContinueRequestObject) (PostCasesIdContinueResponseObject, error)
 	// Get list of conference calls
 	// (GET /conferencecalls)
 	GetConferencecalls(ctx context.Context, request GetConferencecallsRequestObject) (GetConferencecallsResponseObject, error)
@@ -44668,6 +45295,149 @@ func (sh *strictHandler) PutCampaignsIdStatus(ctx *gin.Context, id string) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PutCampaignsIdStatusResponseObject); ok {
 		if err := validResponse.VisitPutCampaignsIdStatusResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetCases operation middleware
+func (sh *strictHandler) GetCases(ctx *gin.Context, params GetCasesParams) {
+	var request GetCasesRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetCases(ctx, request.(GetCasesRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetCases")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetCasesResponseObject); ok {
+		if err := validResponse.VisitGetCasesResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetCasesUnresolved operation middleware
+func (sh *strictHandler) GetCasesUnresolved(ctx *gin.Context, params GetCasesUnresolvedParams) {
+	var request GetCasesUnresolvedRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetCasesUnresolved(ctx, request.(GetCasesUnresolvedRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetCasesUnresolved")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetCasesUnresolvedResponseObject); ok {
+		if err := validResponse.VisitGetCasesUnresolvedResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetCasesId operation middleware
+func (sh *strictHandler) GetCasesId(ctx *gin.Context, id openapi_types.UUID) {
+	var request GetCasesIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetCasesId(ctx, request.(GetCasesIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetCasesId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetCasesIdResponseObject); ok {
+		if err := validResponse.VisitGetCasesIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostCasesIdClose operation middleware
+func (sh *strictHandler) PostCasesIdClose(ctx *gin.Context, id openapi_types.UUID) {
+	var request PostCasesIdCloseRequestObject
+
+	request.Id = id
+
+	var body PostCasesIdCloseJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostCasesIdClose(ctx, request.(PostCasesIdCloseRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostCasesIdClose")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostCasesIdCloseResponseObject); ok {
+		if err := validResponse.VisitPostCasesIdCloseResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostCasesIdContinue operation middleware
+func (sh *strictHandler) PostCasesIdContinue(ctx *gin.Context, id openapi_types.UUID) {
+	var request PostCasesIdContinueRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostCasesIdContinue(ctx, request.(PostCasesIdContinueRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostCasesIdContinue")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostCasesIdContinueResponseObject); ok {
+		if err := validResponse.VisitPostCasesIdContinueResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

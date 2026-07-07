@@ -39,6 +39,7 @@ import (
 	conferencecall "monorepo/bin-conference-manager/models/conferencecall"
 	contact "monorepo/bin-contact-manager/models/contact"
 	interaction "monorepo/bin-contact-manager/models/interaction"
+	kase "monorepo/bin-contact-manager/models/kase"
 	resolution "monorepo/bin-contact-manager/models/resolution"
 	request "monorepo/bin-contact-manager/pkg/listenhandler/models/request"
 	account0 "monorepo/bin-conversation-manager/models/account"
@@ -1703,6 +1704,83 @@ func (m *MockServiceHandler) CampaigncallList(ctx context.Context, a *auth.AuthI
 func (mr *MockServiceHandlerMockRecorder) CampaigncallList(ctx, a, size, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaigncallList", reflect.TypeOf((*MockServiceHandler)(nil).CampaigncallList), ctx, a, size, token)
+}
+
+// CaseClose mocks base method.
+func (m *MockServiceHandler) CaseClose(ctx context.Context, a *auth.AuthIdentity, id, closedByID uuid.UUID) (*kase.Case, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseClose", ctx, a, id, closedByID)
+	ret0, _ := ret[0].(*kase.Case)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CaseClose indicates an expected call of CaseClose.
+func (mr *MockServiceHandlerMockRecorder) CaseClose(ctx, a, id, closedByID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseClose", reflect.TypeOf((*MockServiceHandler)(nil).CaseClose), ctx, a, id, closedByID)
+}
+
+// CaseContinue mocks base method.
+func (m *MockServiceHandler) CaseContinue(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*kase.Case, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseContinue", ctx, a, id)
+	ret0, _ := ret[0].(*kase.Case)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CaseContinue indicates an expected call of CaseContinue.
+func (mr *MockServiceHandlerMockRecorder) CaseContinue(ctx, a, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseContinue", reflect.TypeOf((*MockServiceHandler)(nil).CaseContinue), ctx, a, id)
+}
+
+// CaseGet mocks base method.
+func (m *MockServiceHandler) CaseGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*kase.Case, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseGet", ctx, a, id)
+	ret0, _ := ret[0].(*kase.Case)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CaseGet indicates an expected call of CaseGet.
+func (mr *MockServiceHandlerMockRecorder) CaseGet(ctx, a, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseGet", reflect.TypeOf((*MockServiceHandler)(nil).CaseGet), ctx, a, id)
+}
+
+// CaseList mocks base method.
+func (m *MockServiceHandler) CaseList(ctx context.Context, a *auth.AuthIdentity, targetCustomerID uuid.UUID, size uint64, token, status, ownerType string, ownerID uuid.UUID) ([]*kase.Case, string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseList", ctx, a, targetCustomerID, size, token, status, ownerType, ownerID)
+	ret0, _ := ret[0].([]*kase.Case)
+	ret1, _ := ret[1].(string)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// CaseList indicates an expected call of CaseList.
+func (mr *MockServiceHandlerMockRecorder) CaseList(ctx, a, targetCustomerID, size, token, status, ownerType, ownerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseList", reflect.TypeOf((*MockServiceHandler)(nil).CaseList), ctx, a, targetCustomerID, size, token, status, ownerType, ownerID)
+}
+
+// CaseListUnresolved mocks base method.
+func (m *MockServiceHandler) CaseListUnresolved(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*kase.Case, string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseListUnresolved", ctx, a, size, token)
+	ret0, _ := ret[0].([]*kase.Case)
+	ret1, _ := ret[1].(string)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// CaseListUnresolved indicates an expected call of CaseListUnresolved.
+func (mr *MockServiceHandlerMockRecorder) CaseListUnresolved(ctx, a, size, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseListUnresolved", reflect.TypeOf((*MockServiceHandler)(nil).CaseListUnresolved), ctx, a, size, token)
 }
 
 // ConferenceCreate mocks base method.

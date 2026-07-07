@@ -134,10 +134,10 @@ func Test_GetInteractionsUnresolved(t *testing.T) {
 					CustomerID: customerID,
 				},
 			}),
-			reqQuery:        "/interactions/unresolved",
-			responseItems:   nil,
-			responseToken:   "",
-			expectStatus:    http.StatusOK,
+			reqQuery:         "/interactions/unresolved",
+			responseItems:    nil,
+			responseToken:    "",
+			expectStatus:     http.StatusOK,
 			expectMockCalled: true,
 		},
 		{
@@ -335,7 +335,7 @@ func Test_PostInteractionsIdResolutions(t *testing.T) {
 			responseRes: &cmresolution.Resolution{
 				ID:            uuid.FromStringOrNil("44444444-0000-0000-0000-000000000004"),
 				CustomerID:    customerID,
-				InteractionID: interactionID,
+				InteractionID: &interactionID,
 				ContactID:     contactID,
 			},
 			expectStatus: http.StatusCreated,

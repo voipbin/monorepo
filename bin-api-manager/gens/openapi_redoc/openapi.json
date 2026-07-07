@@ -8738,6 +8738,288 @@
         }
       }
     },
+    "/cases": {
+      "get": {
+        "summary": "List cases",
+        "description": "List cases for the customer, optionally filtered by status, owner_type,\nand owner_id.\n",
+        "tags": [
+          "Case"
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by case status.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "open",
+                "closed"
+              ],
+              "example": "open"
+            }
+          },
+          {
+            "name": "owner_type",
+            "in": "query",
+            "description": "Filter by owner type.",
+            "schema": {
+              "type": "string",
+              "example": "agent"
+            }
+          },
+          {
+            "name": "owner_id",
+            "in": "query",
+            "description": "Filter by owner ID.",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          },
+          {
+            "$ref": "#/components/parameters/PageToken"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactManagerCaseListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/cases/unresolved": {
+      "get": {
+        "summary": "List unresolved cases",
+        "description": "List unresolved cases (open, contact_id IS NULL) for the authenticated\ncaller's customer.\n",
+        "tags": [
+          "Case"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageSize"
+          },
+          {
+            "$ref": "#/components/parameters/PageToken"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactManagerCaseListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/cases/{id}": {
+      "get": {
+        "summary": "Get a case",
+        "description": "Get the case of the given ID.",
+        "tags": [
+          "Case"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the case. The ID is returned from GET /v1.0/cases response.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "550e8400-e29b-41d4-a716-446655440000"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactManagerCase"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/cases/{id}/close": {
+      "post": {
+        "summary": "Close a case",
+        "description": "Close a case. Returns the actually-persisted state, including\nalready_closed semantics reflected via the returned closed_reason /\nclosed_by_type / closed_by_id fields when the case had already been\nclosed by someone/something else.\n",
+        "tags": [
+          "Case"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the case. The ID is returned from GET /v1.0/cases response.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "550e8400-e29b-41d4-a716-446655440000"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "closed_by_id"
+                ],
+                "properties": {
+                  "closed_by_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "ID of the agent closing this case.",
+                    "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Case closed successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactManagerCase"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/cases/{id}/continue": {
+      "post": {
+        "summary": "Continue a closed case",
+        "description": "Create a new, open case that continues a previously closed case, chained\nvia previous_case_id.\n",
+        "tags": [
+          "Case"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the (closed) case to continue. The ID is returned from GET /v1.0/cases response.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "550e8400-e29b-41d4-a716-446655440000"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "New case created (or existing open case reused) successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactManagerCase"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
     "/conversation_accounts/{id}": {
       "get": {
         "summary": "Get details of a conversation account",
@@ -19301,7 +19583,7 @@
       },
       "post": {
         "summary": "Start a transcribe",
-        "description": "Starts a transcription of the given reference (call, conference, or recording) for the service agent's customer and returns the result.",
+        "description": "Starts a transcription of the given reference (call, conference, or recording) for the service agent's customer and returns the result. Duplicate behavior differs by reference type: for a recording that already has a transcribe in the requested language, the existing transcribe is returned (200); for a call/confbridge that already has a progressing live transcribe in the requested language, the request is rejected with 409. Stop the existing transcribe first, or start with a different language.",
         "tags": [
           "Service Agent"
         ],
@@ -19367,6 +19649,9 @@
           },
           "401": {
             "$ref": "#/components/responses/Unauthenticated"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           },
           "500": {
             "$ref": "#/components/responses/InternalError"
@@ -20733,7 +21018,7 @@
       },
       "post": {
         "summary": "Create a transcribe",
-        "description": "Creates a transcription of a recording and returns the result.",
+        "description": "Starts a transcription of the given reference (call, confbridge, or recording) and returns the result. Duplicate behavior differs by reference type: for a recording that already has a transcribe in the requested language, the existing transcribe is returned (200); for a call/confbridge that already has a progressing live transcribe in the requested language, the request is rejected with 409. Stop the existing transcribe first, or start with a different language.",
         "tags": [
           "Transcribe"
         ],
@@ -20799,6 +21084,9 @@
           },
           "401": {
             "$ref": "#/components/responses/Unauthenticated"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           },
           "500": {
             "$ref": "#/components/responses/InternalError"
@@ -25670,6 +25958,127 @@
             "format": "date-time",
             "description": "Timestamp when the resolution was soft-deleted. Null if active.",
             "example": "2026-06-02T08:00:00.000000Z"
+          }
+        }
+      },
+      "ContactManagerCase": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for the case.",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "customer_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier of the associated customer.",
+            "example": "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
+          },
+          "peer_type": {
+            "type": "string",
+            "description": "Remote endpoint type (e.g. \"tel\", \"email\") this case is scoped to.",
+            "example": "tel"
+          },
+          "peer_target": {
+            "type": "string",
+            "description": "Remote endpoint address (normalized, e.g. \"+155****4567\").",
+            "example": "+155****4567"
+          },
+          "reference_type": {
+            "type": "string",
+            "description": "Origin channel type (e.g. \"call\", \"conversation_message\").",
+            "example": "call"
+          },
+          "contact_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The resolved contact this case is attributed to. Nullable until resolved.",
+            "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+          },
+          "owner_type": {
+            "type": "string",
+            "description": "Type of the case owner.",
+            "example": "agent"
+          },
+          "owner_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "ID of the case owner.",
+            "example": "2a2ec0ba-8004-11ec-aea5-439829c92a7c"
+          },
+          "status": {
+            "type": "string",
+            "description": "Case lifecycle status.",
+            "enum": [
+              "open",
+              "closed"
+            ],
+            "example": "open"
+          },
+          "opened_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when the case was opened. Nullable.",
+            "example": "2026-06-01T09:30:00.000000Z"
+          },
+          "closed_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when the case was closed. Nullable.",
+            "example": "2026-06-02T09:30:00.000000Z"
+          },
+          "closed_reason": {
+            "type": "string",
+            "description": "Reason the case was closed (e.g. \"agent_closed\", \"timeout\").",
+            "example": "agent_closed"
+          },
+          "closed_by_type": {
+            "type": "string",
+            "description": "Type of the actor that closed the case (e.g. \"agent\", \"system\").",
+            "example": "agent"
+          },
+          "closed_by_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "ID of the actor that closed the case. Nullable.",
+            "example": "2a2ec0ba-8004-11ec-aea5-439829c92a7c"
+          },
+          "previous_case_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "ID of the prior (now-closed) case this case continues from, if any.",
+            "example": "11111111-0000-0000-0000-000000000001"
+          },
+          "tm_create": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when this case was created.",
+            "example": "2026-06-01T09:30:00.000000Z"
+          },
+          "tm_update": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when this case was last updated.",
+            "example": "2026-06-01T09:30:00.000000Z"
+          }
+        }
+      },
+      "ContactManagerCaseListResponse": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "array",
+            "description": "List of cases.",
+            "items": {
+              "$ref": "#/components/schemas/ContactManagerCase"
+            }
+          },
+          "next_page_token": {
+            "type": "string",
+            "description": "Pagination token for the next page. Empty when no further pages exist.",
+            "example": "2026-06-01T09:30:01.000000Z"
           }
         }
       },

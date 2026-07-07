@@ -298,7 +298,7 @@ func Test_ResolutionCreate(t *testing.T) {
 			responseResolution: &cmresolution.Resolution{
 				ID:             uuid.FromStringOrNil("44444444-0000-0000-0000-000000000004"),
 				CustomerID:     customerID,
-				InteractionID:  interactionID,
+				InteractionID:  &interactionID,
 				ContactID:      contactID,
 				ResolutionType: "positive",
 				ResolvedByType: "agent",
