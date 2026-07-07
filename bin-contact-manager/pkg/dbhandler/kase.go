@@ -20,6 +20,27 @@ import (
 
 const caseTable = "contact_cases"
 
+// sqlExecutor is the common subset of *sql.DB and *sql.Tx used by the
+// case* functions below, letting the same query-building logic run either
+// standalone (h.db) or inside a caller-managed transaction (a *sql.Tx from
+// BeginTx) -- needed because the design §4 get-or-create algorithm must
+// perform several of these operations atomically within one transaction.
+type sqlExecutor interface {
+	Exec(query string, args ...interface{}) (sql.Result, error)
+	Query(query string, args ...interface{}) (*sql.Rows, error)
+}
+
+// BeginTx starts a new transaction for callers (casehandler's get-or-create,
+// design §4) that need to run several Case/Interaction operations
+// atomically.
+func (h *handler) BeginTx(ctx context.Context) (*sql.Tx, error) {
+	tx, err := h.db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, fmt.Errorf("could not begin transaction. BeginTx. err: %v", err)
+	}
+	return tx, nil
+}
+
 // caseGetFromRow scans a single row into a Case struct.
 func caseGetFromRow(rows *sql.Rows) (*kase.Case, error) {
 	res := &kase.Case{}
@@ -29,10 +50,8 @@ func caseGetFromRow(rows *sql.Rows) (*kase.Case, error) {
 	return res, nil
 }
 
-// CaseInsert inserts a new Case row into contact_cases. Returns ErrDuplicate
-// if the insert violates uq_case_open_peer (an open case already exists
-// for this customer/peer/reference_type -- design §3.1/§4).
-func (h *handler) CaseInsert(ctx context.Context, c *kase.Case) error {
+// caseInsertExec is the shared implementation for CaseInsert/CaseInsertTx.
+func caseInsertExec(exec sqlExecutor, c *kase.Case) error {
 	fields, err := commondatabasehandler.PrepareFields(c)
 	if err != nil {
 		return fmt.Errorf("could not prepare fields. CaseInsert. err: %v", err)
@@ -43,7 +62,7 @@ func (h *handler) CaseInsert(ctx context.Context, c *kase.Case) error {
 		return fmt.Errorf("could not build query. CaseInsert. err: %v", err)
 	}
 
-	if _, err := h.db.Exec(query, args...); err != nil {
+	if _, err := exec.Exec(query, args...); err != nil {
 		// Detect a unique-constraint violation on uq_case_open_peer
 		// specifically (open_peer_uk), same detection idiom as
 		// AddressCreate's ErrDuplicateTarget classification: MySQL names
@@ -64,8 +83,22 @@ func (h *handler) CaseInsert(ctx context.Context, c *kase.Case) error {
 	return nil
 }
 
-// CaseGetByID returns a Case by id, unlocked (for read APIs).
-func (h *handler) CaseGetByID(ctx context.Context, id uuid.UUID) (*kase.Case, error) {
+// CaseInsert inserts a new Case row into contact_cases. Returns ErrDuplicate
+// if the insert violates uq_case_open_peer (an open case already exists
+// for this customer/peer/reference_type -- design §3.1/§4).
+func (h *handler) CaseInsert(ctx context.Context, c *kase.Case) error {
+	return caseInsertExec(h.db, c)
+}
+
+// CaseInsertTx is CaseInsert scoped to a caller-managed transaction (design
+// §4's get-or-create insert branches, run atomically with the rest of the
+// transaction).
+func (h *handler) CaseInsertTx(ctx context.Context, tx *sql.Tx, c *kase.Case) error {
+	return caseInsertExec(tx, c)
+}
+
+// caseGetByIDExec is the shared implementation for CaseGetByID/CaseGetByIDTx.
+func caseGetByIDExec(exec sqlExecutor, id uuid.UUID) (*kase.Case, error) {
 	columns := commondatabasehandler.GetDBFields(&kase.Case{})
 
 	query, args, err := sq.Select(columns...).
@@ -76,7 +109,7 @@ func (h *handler) CaseGetByID(ctx context.Context, id uuid.UUID) (*kase.Case, er
 		return nil, fmt.Errorf("could not build query. CaseGetByID. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := exec.Query(query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. CaseGetByID. err: %v", err)
 	}
@@ -87,6 +120,16 @@ func (h *handler) CaseGetByID(ctx context.Context, id uuid.UUID) (*kase.Case, er
 	}
 
 	return caseGetFromRow(rows)
+}
+
+// CaseGetByID returns a Case by id, unlocked (for read APIs).
+func (h *handler) CaseGetByID(ctx context.Context, id uuid.UUID) (*kase.Case, error) {
+	return caseGetByIDExec(h.db, id)
+}
+
+// CaseGetByIDTx is CaseGetByID scoped to a caller-managed transaction.
+func (h *handler) CaseGetByIDTx(ctx context.Context, tx *sql.Tx, id uuid.UUID) (*kase.Case, error) {
+	return caseGetByIDExec(tx, id)
 }
 
 // CaseGetOpenByPeer returns the currently-OPEN Case for a given
@@ -123,14 +166,42 @@ func (h *handler) CaseGetOpenByPeer(ctx context.Context, tx *sql.Tx, customerID 
 	return caseGetFromRow(rows)
 }
 
-// CaseUpdateStatusClosed transitions a Case to closed, guarded by
-// WHERE status='open' (design §5.1's optimistic idempotent-double-close
-// invariant). Returns (true, nil) if the close actually happened (1 row
-// affected), (false, nil) if the Case was already closed (0 rows
-// affected -- a no-op, not an error): callers must re-read the Case to
-// discover the actually-persisted closed_reason/closed_by, not assume
-// their own call's arguments won.
-func (h *handler) CaseUpdateStatusClosed(ctx context.Context, id uuid.UUID, closedReason, closedByType string, closedByID *uuid.UUID, closedAt *time.Time) (bool, error) {
+// CaseGetByIDForUpdate returns a Case by id, locked FOR UPDATE within the
+// given transaction, scoped to customerID (tenant guard). Used by design
+// §4 step 1's explicit case_id hint validation: SELECT ... WHERE id=? AND
+// customer_id=? AND status='open' FOR UPDATE. Returns (nil, nil) if not
+// found / wrong tenant / not open -- an invalid hint is never an error,
+// only a signal to fall through to the peer/reference_type path.
+func (h *handler) CaseGetByIDForUpdate(ctx context.Context, tx *sql.Tx, customerID, id uuid.UUID) (*kase.Case, error) {
+	columns := commondatabasehandler.GetDBFields(&kase.Case{})
+
+	query, args, err := sq.Select(columns...).
+		From(caseTable).
+		Where(sq.Eq{"id": id.Bytes()}).
+		Where(sq.Eq{"customer_id": customerID.Bytes()}).
+		Where(sq.Eq{"status": string(kase.StatusOpen)}).
+		Suffix("FOR UPDATE").
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. CaseGetByIDForUpdate. err: %v", err)
+	}
+
+	rows, err := tx.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. CaseGetByIDForUpdate. err: %v", err)
+	}
+	defer func() { _ = rows.Close() }()
+
+	if !rows.Next() {
+		return nil, nil
+	}
+
+	return caseGetFromRow(rows)
+}
+
+// caseUpdateStatusClosedExec is the shared implementation for
+// CaseUpdateStatusClosed/CaseUpdateStatusClosedTx.
+func caseUpdateStatusClosedExec(exec sqlExecutor, id uuid.UUID, closedReason, closedByType string, closedByID *uuid.UUID, closedAt *time.Time) (bool, error) {
 	setMap := sq.Eq{
 		"status":         string(kase.StatusClosed),
 		"closed_reason":  closedReason,
@@ -150,7 +221,7 @@ func (h *handler) CaseUpdateStatusClosed(ctx context.Context, id uuid.UUID, clos
 		return false, fmt.Errorf("could not build query. CaseUpdateStatusClosed. err: %v", err)
 	}
 
-	result, err := h.db.Exec(query, args...)
+	result, err := exec.Exec(query, args...)
 	if err != nil {
 		return false, fmt.Errorf("could not execute. CaseUpdateStatusClosed. err: %v", err)
 	}
@@ -163,9 +234,26 @@ func (h *handler) CaseUpdateStatusClosed(ctx context.Context, id uuid.UUID, clos
 	return rows > 0, nil
 }
 
-// CaseUpdateTMUpdate bumps a Case's tm_update, used at the end of the
-// get-or-create transaction (design §4 step 4).
-func (h *handler) CaseUpdateTMUpdate(ctx context.Context, id uuid.UUID, tmUpdate *time.Time) error {
+// CaseUpdateStatusClosed transitions a Case to closed, guarded by
+// WHERE status='open' (design §5.1's optimistic idempotent-double-close
+// invariant). Returns (true, nil) if the close actually happened (1 row
+// affected), (false, nil) if the Case was already closed (0 rows
+// affected -- a no-op, not an error): callers must re-read the Case to
+// discover the actually-persisted closed_reason/closed_by, not assume
+// their own call's arguments won.
+func (h *handler) CaseUpdateStatusClosed(ctx context.Context, id uuid.UUID, closedReason, closedByType string, closedByID *uuid.UUID, closedAt *time.Time) (bool, error) {
+	return caseUpdateStatusClosedExec(h.db, id, closedReason, closedByType, closedByID, closedAt)
+}
+
+// CaseUpdateStatusClosedTx is CaseUpdateStatusClosed scoped to a
+// caller-managed transaction (design §4's timeout-close branch).
+func (h *handler) CaseUpdateStatusClosedTx(ctx context.Context, tx *sql.Tx, id uuid.UUID, closedReason, closedByType string, closedByID *uuid.UUID, closedAt *time.Time) (bool, error) {
+	return caseUpdateStatusClosedExec(tx, id, closedReason, closedByType, closedByID, closedAt)
+}
+
+// caseUpdateTMUpdateExec is the shared implementation for
+// CaseUpdateTMUpdate/CaseUpdateTMUpdateTx.
+func caseUpdateTMUpdateExec(exec sqlExecutor, id uuid.UUID, tmUpdate *time.Time) error {
 	query, args, err := sq.Update(caseTable).
 		Set("tm_update", tmUpdate).
 		Where(sq.Eq{"id": id.Bytes()}).
@@ -174,16 +262,28 @@ func (h *handler) CaseUpdateTMUpdate(ctx context.Context, id uuid.UUID, tmUpdate
 		return fmt.Errorf("could not build query. CaseUpdateTMUpdate. err: %v", err)
 	}
 
-	if _, err := h.db.Exec(query, args...); err != nil {
+	if _, err := exec.Exec(query, args...); err != nil {
 		return fmt.Errorf("could not execute. CaseUpdateTMUpdate. err: %v", err)
 	}
 
 	return nil
 }
 
-// CaseUpdateContactID updates a Case's denormalized contact_id cache
-// (design §3.4; single source of truth is Resolution).
-func (h *handler) CaseUpdateContactID(ctx context.Context, id, contactID uuid.UUID) error {
+// CaseUpdateTMUpdate bumps a Case's tm_update, used at the end of the
+// get-or-create transaction (design §4 step 4).
+func (h *handler) CaseUpdateTMUpdate(ctx context.Context, id uuid.UUID, tmUpdate *time.Time) error {
+	return caseUpdateTMUpdateExec(h.db, id, tmUpdate)
+}
+
+// CaseUpdateTMUpdateTx is CaseUpdateTMUpdate scoped to a caller-managed
+// transaction.
+func (h *handler) CaseUpdateTMUpdateTx(ctx context.Context, tx *sql.Tx, id uuid.UUID, tmUpdate *time.Time) error {
+	return caseUpdateTMUpdateExec(tx, id, tmUpdate)
+}
+
+// caseUpdateContactIDExec is the shared implementation for
+// CaseUpdateContactID/CaseUpdateContactIDTx.
+func caseUpdateContactIDExec(exec sqlExecutor, id, contactID uuid.UUID) error {
 	query, args, err := sq.Update(caseTable).
 		Set("contact_id", contactID.Bytes()).
 		Where(sq.Eq{"id": id.Bytes()}).
@@ -192,11 +292,23 @@ func (h *handler) CaseUpdateContactID(ctx context.Context, id, contactID uuid.UU
 		return fmt.Errorf("could not build query. CaseUpdateContactID. err: %v", err)
 	}
 
-	if _, err := h.db.Exec(query, args...); err != nil {
+	if _, err := exec.Exec(query, args...); err != nil {
 		return fmt.Errorf("could not execute. CaseUpdateContactID. err: %v", err)
 	}
 
 	return nil
+}
+
+// CaseUpdateContactID updates a Case's denormalized contact_id cache
+// (design §3.4; single source of truth is Resolution).
+func (h *handler) CaseUpdateContactID(ctx context.Context, id, contactID uuid.UUID) error {
+	return caseUpdateContactIDExec(h.db, id, contactID)
+}
+
+// CaseUpdateContactIDTx is CaseUpdateContactID scoped to a caller-managed
+// transaction (design §4 step 2's contact auto-match write).
+func (h *handler) CaseUpdateContactIDTx(ctx context.Context, tx *sql.Tx, id, contactID uuid.UUID) error {
+	return caseUpdateContactIDExec(tx, id, contactID)
 }
 
 // CaseListUnresolved returns Cases with contact_id IS NULL, scoped to
@@ -270,11 +382,9 @@ func (h *handler) CaseListByOwner(ctx context.Context, customerID uuid.UUID, own
 	return res, nil
 }
 
-// CaseGetLastClosedByPeer returns the most recently closed Case for a
-// given (customer_id, peer_type, peer_target, reference_type), or
-// (nil, nil) if none exists. Used for previous_case_id chaining on the
-// fresh-insert path (design §4).
-func (h *handler) CaseGetLastClosedByPeer(ctx context.Context, customerID uuid.UUID, peerType commonaddress.Type, peerTarget, referenceType string) (*kase.Case, error) {
+// caseGetLastClosedByPeerExec is the shared implementation for
+// CaseGetLastClosedByPeer/CaseGetLastClosedByPeerTx.
+func caseGetLastClosedByPeerExec(exec sqlExecutor, customerID uuid.UUID, peerType commonaddress.Type, peerTarget, referenceType string) (*kase.Case, error) {
 	columns := commondatabasehandler.GetDBFields(&kase.Case{})
 
 	query, args, err := sq.Select(columns...).
@@ -291,7 +401,7 @@ func (h *handler) CaseGetLastClosedByPeer(ctx context.Context, customerID uuid.U
 		return nil, fmt.Errorf("could not build query. CaseGetLastClosedByPeer. err: %v", err)
 	}
 
-	rows, err := h.db.Query(query, args...)
+	rows, err := exec.Query(query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. CaseGetLastClosedByPeer. err: %v", err)
 	}
@@ -302,4 +412,19 @@ func (h *handler) CaseGetLastClosedByPeer(ctx context.Context, customerID uuid.U
 	}
 
 	return caseGetFromRow(rows)
+}
+
+// CaseGetLastClosedByPeer returns the most recently closed Case for a
+// given (customer_id, peer_type, peer_target, reference_type), or
+// (nil, nil) if none exists. Used for previous_case_id chaining on the
+// fresh-insert path (design §4).
+func (h *handler) CaseGetLastClosedByPeer(ctx context.Context, customerID uuid.UUID, peerType commonaddress.Type, peerTarget, referenceType string) (*kase.Case, error) {
+	return caseGetLastClosedByPeerExec(h.db, customerID, peerType, peerTarget, referenceType)
+}
+
+// CaseGetLastClosedByPeerTx is CaseGetLastClosedByPeer scoped to a
+// caller-managed transaction (design §4's fresh-insert previous_case_id
+// chaining lookup).
+func (h *handler) CaseGetLastClosedByPeerTx(ctx context.Context, tx *sql.Tx, customerID uuid.UUID, peerType commonaddress.Type, peerTarget, referenceType string) (*kase.Case, error) {
+	return caseGetLastClosedByPeerExec(tx, customerID, peerType, peerTarget, referenceType)
 }

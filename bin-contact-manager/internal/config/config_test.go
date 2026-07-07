@@ -20,6 +20,7 @@ func TestGet(t *testing.T) {
 	viper.Set("redis_address", "testhost:6379")
 	viper.Set("redis_database", "5")
 	viper.Set("redis_password", "testpass")
+	viper.Set("case_timeout_hours", 48)
 
 	LoadGlobalConfig()
 
@@ -54,6 +55,39 @@ func TestGet(t *testing.T) {
 
 	if cfg.RedisPassword != "testpass" {
 		t.Errorf("RedisPassword = %v, want testpass", cfg.RedisPassword)
+	}
+
+	if cfg.CaseTimeoutHours != 48 {
+		t.Errorf("CaseTimeoutHours = %v, want 48", cfg.CaseTimeoutHours)
+	}
+}
+
+// TestSetCaseTimeoutHoursForTest verifies the test-override helper
+// (contact-case-management design §4.1's CASE_TIMEOUT_HOURS, following
+// the bin-ai-manager AIcallConversationIdleTimeoutHours precedent for
+// both the config shape and this override helper).
+func TestSetCaseTimeoutHoursForTest(t *testing.T) {
+	tests := []struct {
+		name  string
+		hours int
+	}{
+		{
+			name:  "overrides_case_timeout",
+			hours: 72,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			globalConfig = Config{}
+
+			SetCaseTimeoutHoursForTest(tt.hours)
+
+			res := Get()
+			if res.CaseTimeoutHours != tt.hours {
+				t.Errorf("Wrong CaseTimeoutHours. expect: %d, got: %d", tt.hours, res.CaseTimeoutHours)
+			}
+		})
 	}
 }
 
@@ -104,6 +138,12 @@ func TestBootstrap(t *testing.T) {
 			}
 			if cmd.PersistentFlags().Lookup("redis_password") == nil {
 				t.Error("redis_password flag not created")
+			}
+			flagCaseTimeout := cmd.PersistentFlags().Lookup("case_timeout_hours")
+			if flagCaseTimeout == nil {
+				t.Error("case_timeout_hours flag not created")
+			} else if flagCaseTimeout.DefValue != "24" {
+				t.Errorf("Wrong case_timeout_hours default. expect: 24, got: %s", flagCaseTimeout.DefValue)
 			}
 		})
 	}
@@ -202,6 +242,7 @@ func TestInitConfig(t *testing.T) {
 				cmd.Flags().String("redis_address", "localhost:6379", "")
 				cmd.Flags().String("redis_database", "1", "")
 				cmd.Flags().String("redis_password", "", "")
+				cmd.Flags().Int("case_timeout_hours", 24, "")
 				return cmd
 			},
 			wantErr: false,
@@ -283,6 +324,7 @@ func TestInitConfig_BindErrors(t *testing.T) {
 				"redis_address",
 				"redis_database",
 				"redis_password",
+				"case_timeout_hours",
 			}
 
 			for _, flag := range allFlags {
