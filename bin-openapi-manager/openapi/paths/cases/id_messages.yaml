@@ -1,0 +1,72 @@
+post:
+  summary: Send a message from a case
+  description: |
+    Send a message from a known, open case with an explicit source and
+    destination address (design §4.5). Validation order:
+      1. Case validation -- case belongs to the calling customer and is
+         status=open (closed cases must be reopened via POST
+         /v1.0/cases/{id}/continue first).
+      2. Destination-to-case binding -- destination must be attributable
+         to this specific case (matched Contact's addresses, or the
+         case's bare peer_target when unresolved). Failure of either
+         sub-check returns the same generic error, by design, to prevent
+         a caller from using case_id as a bare capability token to probe
+         which binding sub-case failed.
+      3. Source-ownership validation -- source must be an active, normal
+         number owned by this case's customer.
+    The message is sent through the same underlying conversation-message
+    send path as POST /v1.0/service_agents/conversations/{id}/messages,
+    reusing the ConversationManagerMessage response schema.
+  tags:
+    - Case
+  parameters:
+    - name: id
+      in: path
+      description: The ID of the case. The ID is returned from GET /v1.0/cases response.
+      required: true
+      schema:
+        type: string
+        format: uuid
+        example: "550e8400-e29b-41d4-a716-446655440000"
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - source
+            - destination
+            - text
+          properties:
+            source:
+              type: string
+              description: The business's own number to send from. Must be an active, normal number owned by this case's customer.
+              example: "+15551234567"
+            destination:
+              type: string
+              description: The customer's number to send to. Must be attributable to this case (the matched Contact's address, or the case's peer_target).
+              example: "+15559876543"
+            text:
+              type: string
+              description: The text content of the message.
+              example: "Thanks for reaching out -- following up on your request."
+  responses:
+    '200':
+      description: The details of the sent message.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ConversationManagerMessage'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '409':
+      $ref: '#/components/responses/Conflict'
+    '500':
+      $ref: '#/components/responses/InternalError'

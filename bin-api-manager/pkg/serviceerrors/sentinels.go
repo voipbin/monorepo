@@ -22,4 +22,23 @@ var (
 	ErrStateInvalid                 = stderrors.New("state invalid")
 	ErrServiceUnavailable           = stderrors.New("service unavailable")
 	ErrInsufficientBalance          = stderrors.New("insufficient balance")
+
+	// ErrCaseClosed is returned by Case-message-send validation (design
+	// §4.5 step 1) when the target case is not status='open'. Points the
+	// caller at POST /v1.0/cases/{id}/continue.
+	ErrCaseClosed = stderrors.New("case is closed; call continue to reopen it before sending a message")
+
+	// ErrCaseDestinationNotAssociated is the SINGLE GENERIC error for
+	// design §4.5 step 2's destination-to-case binding check. It MUST be
+	// returned identically (same sentinel, same message) regardless of
+	// which of the two binding sub-checks failed (contact address list
+	// miss vs. peer_target mismatch) -- this is the anti-oracle property
+	// that prevents a caller from probing which branch failed. Do not
+	// introduce a second, more specific error for either sub-case.
+	ErrCaseDestinationNotAssociated = stderrors.New("destination is not associated with this case")
+
+	// ErrCaseSourceNotOwned is returned by design §4.5 step 3 (round-17
+	// correction) when the given source number is not an active, normal
+	// number owned by the case's customer.
+	ErrCaseSourceNotOwned = stderrors.New("source is not an active number owned by this customer")
 )

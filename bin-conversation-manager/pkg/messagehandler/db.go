@@ -66,6 +66,12 @@ func (h *messageHandler) Create(ctx context.Context, args MessageCreateArgs) (*m
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not get created message.")
 	}
+	// Message.CaseID is db:"-" (not a persisted column -- see main.go's
+	// MessageCreateArgs.CaseID comment), so the DB re-read above always
+	// comes back with CaseID unset. Re-attach it here before publishing
+	// so the case_id hint (contact-case-management design §4.3) survives
+	// onto the conversation_message_created event.
+	res.CaseID = args.CaseID
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, message.EventTypeMessageCreated, res)
 
 	return res, nil

@@ -3431,6 +3431,167 @@ components:
           description: Timestamp when the resolution was soft-deleted. Null if active.
           example: "2026-06-02T08:00:00.000000Z"
 
+    ContactManagerCase:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the case.
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        customer_id:
+          type: string
+          format: uuid
+          description: Unique identifier of the associated customer.
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
+        peer_type:
+          type: string
+          description: Remote endpoint type (e.g. "tel", "email") this case is scoped to.
+          example: "tel"
+        peer_target:
+          type: string
+          description: Remote endpoint address (normalized, e.g. "+155****4567").
+          example: "+155****4567"
+        reference_type:
+          type: string
+          description: Origin channel type (e.g. "call", "conversation_message").
+          example: "call"
+        contact_id:
+          type: string
+          format: uuid
+          description: The resolved contact this case is attributed to. Nullable until resolved.
+          example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+        owner_type:
+          type: string
+          description: Type of the case owner.
+          example: "agent"
+        owner_id:
+          type: string
+          format: uuid
+          description: ID of the case owner.
+          example: "2a2ec0ba-8004-11ec-aea5-439829c92a7c"
+        status:
+          type: string
+          description: Case lifecycle status.
+          enum:
+            - open
+            - closed
+          example: "open"
+        opened_at:
+          type: string
+          format: date-time
+          description: Timestamp when the case was opened. Nullable.
+          example: "2026-06-01T09:30:00.000000Z"
+        closed_at:
+          type: string
+          format: date-time
+          description: Timestamp when the case was closed. Nullable.
+          example: "2026-06-02T09:30:00.000000Z"
+        closed_reason:
+          type: string
+          description: Reason the case was closed (e.g. "agent_closed", "timeout").
+          example: "agent_closed"
+        closed_by_type:
+          type: string
+          description: Type of the actor that closed the case (e.g. "agent", "system").
+          example: "agent"
+        closed_by_id:
+          type: string
+          format: uuid
+          description: ID of the actor that closed the case. Nullable.
+          example: "2a2ec0ba-8004-11ec-aea5-439829c92a7c"
+        previous_case_id:
+          type: string
+          format: uuid
+          description: ID of the prior (now-closed) case this case continues from, if any.
+          example: "11111111-0000-0000-0000-000000000001"
+        tm_create:
+          type: string
+          format: date-time
+          description: Timestamp when this case was created.
+          example: "2026-06-01T09:30:00.000000Z"
+        tm_update:
+          type: string
+          format: date-time
+          description: Timestamp when this case was last updated.
+          example: "2026-06-01T09:30:00.000000Z"
+
+    ContactManagerCaseListResponse:
+      type: object
+      properties:
+        result:
+          type: array
+          description: List of cases.
+          items:
+            $ref: '#/components/schemas/ContactManagerCase'
+        next_page_token:
+          type: string
+          description: Pagination token for the next page. Empty when no further pages exist.
+          example: "2026-06-01T09:30:01.000000Z"
+
+    ContactManagerCaseNote:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the case note.
+          example: "33333333-0000-0000-0000-000000000003"
+        customer_id:
+          type: string
+          format: uuid
+          description: Unique identifier of the associated customer.
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
+        case_id:
+          type: string
+          format: uuid
+          description: The case this note belongs to. The ID is returned from GET /v1.0/cases response.
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        author_type:
+          type: string
+          description: Type of the note's author.
+          enum:
+            - agent
+            - system
+          example: "agent"
+        author_id:
+          type: string
+          format: uuid
+          description: ID of the agent authoring this note. Nullable for system-authored notes.
+          example: "2a2ec0ba-8004-11ec-aea5-439829c92a7c"
+        text:
+          type: string
+          description: The note's text content.
+          example: "Called the customer back, no answer."
+        tm_create:
+          type: string
+          format: date-time
+          description: Timestamp when this note was created.
+          example: "2026-06-01T09:30:00.000000Z"
+        tm_update:
+          type: string
+          format: date-time
+          description: Timestamp when this note was last updated.
+          example: "2026-06-01T09:30:00.000000Z"
+        tm_delete:
+          type: string
+          format: date-time
+          description: Timestamp when this note was soft-deleted. Null if active.
+          example: "2026-06-02T08:00:00.000000Z"
+
+    ContactManagerCaseNoteListResponse:
+      type: object
+      properties:
+        result:
+          type: array
+          description: List of case notes.
+          items:
+            $ref: '#/components/schemas/ContactManagerCaseNote'
+        next_page_token:
+          type: string
+          description: Pagination token for the next page. Empty when no further pages exist.
+          example: "2026-06-01T09:30:01.000000Z"
+
     ContactManagerContact:
       type: object
       properties:
@@ -7939,6 +8100,22 @@ paths:
     $ref: './paths/interactions/id_resolutions.yaml'
   /interactions/{id}/resolutions/{rid}:
     $ref: './paths/interactions/id_resolutions_id.yaml'
+  /cases:
+    $ref: './paths/cases/main.yaml'
+  /cases/unresolved:
+    $ref: './paths/cases/unresolved.yaml'
+  /cases/{id}:
+    $ref: './paths/cases/id.yaml'
+  /cases/{id}/close:
+    $ref: './paths/cases/id_close.yaml'
+  /cases/{id}/continue:
+    $ref: './paths/cases/id_continue.yaml'
+  /cases/{id}/notes:
+    $ref: './paths/cases/id_notes.yaml'
+  /cases/{id}/notes/{note_id}:
+    $ref: './paths/cases/id_notes_id.yaml'
+  /cases/{id}/messages:
+    $ref: './paths/cases/id_messages.yaml'
 
   /conversation_accounts/{id}:
     $ref: './paths/conversation_accounts/id.yaml'

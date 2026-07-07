@@ -26,6 +26,7 @@ import (
 	"monorepo/bin-contact-manager/internal/config"
 	"monorepo/bin-contact-manager/pkg/addresshandler"
 	"monorepo/bin-contact-manager/pkg/cachehandler"
+	"monorepo/bin-contact-manager/pkg/casehandler"
 	"monorepo/bin-contact-manager/pkg/contacthandler"
 	"monorepo/bin-contact-manager/pkg/dbhandler"
 	"monorepo/bin-contact-manager/pkg/listenhandler"
@@ -126,10 +127,11 @@ func runService(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	db := dbhandler.NewHandler(sqlDB, cache)
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameContactEvent, serviceName)
-	contactHandler := contacthandler.NewContactHandler(reqHandler, db, notifyHandler)
+	caseHandler := casehandler.NewCaseHandler(reqHandler, db, notifyHandler)
+	contactHandler := contacthandler.NewContactHandler(reqHandler, db, notifyHandler, caseHandler)
 	addrHandler := addresshandler.NewAddressHandler(db)
 
-	if err := runListen(sockHandler, contactHandler, addrHandler); err != nil {
+	if err := runListen(sockHandler, contactHandler, addrHandler, caseHandler); err != nil {
 		return err
 	}
 
@@ -141,8 +143,8 @@ func runService(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 }
 
 // runListen runs the listen service
-func runListen(sockHandler sockhandler.SockHandler, contactHandler contacthandler.ContactHandler, addrHandler addresshandler.AddressHandler) error {
-	listenHandler := listenhandler.NewListenHandler(sockHandler, contactHandler, addrHandler)
+func runListen(sockHandler sockhandler.SockHandler, contactHandler contacthandler.ContactHandler, addrHandler addresshandler.AddressHandler, caseHandler casehandler.CaseHandler) error {
+	listenHandler := listenhandler.NewListenHandler(sockHandler, contactHandler, addrHandler, caseHandler)
 
 	// run
 	if err := listenHandler.Run(string(commonoutline.QueueNameContactRequest), string(commonoutline.QueueNameDelay)); err != nil {
@@ -157,8 +159,8 @@ func runSubscribe(sockHandler sockhandler.SockHandler, contactHandler contacthan
 
 	subscribeTargets := []string{
 		string(commonoutline.QueueNameCustomerEvent),
-		string(commonoutline.QueueNameCallEvent),           // call_created -> CRM interaction timeline
-		string(commonoutline.QueueNameConversationEvent),   // conversation_message_created -> CRM interaction timeline
+		string(commonoutline.QueueNameCallEvent),         // call_created -> CRM interaction timeline
+		string(commonoutline.QueueNameConversationEvent), // conversation_message_created -> CRM interaction timeline
 	}
 	subHandler := subscribehandler.NewSubscribeHandler(sockHandler, string(commonoutline.QueueNameContactSubscribe), subscribeTargets, contactHandler)
 

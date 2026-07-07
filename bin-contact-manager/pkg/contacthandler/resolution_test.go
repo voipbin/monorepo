@@ -155,7 +155,7 @@ func Test_ResolutionCreate(t *testing.T) {
 			mockExisting: []*resolution.Resolution{
 				{
 					ContactID:      contactID,
-					InteractionID:  interactionID,
+					InteractionID:  &interactionID,
 					ResolutionType: resolution.ResolutionTypePositive,
 				},
 			},

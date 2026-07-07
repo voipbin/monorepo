@@ -36,6 +36,17 @@ type Message struct {
 	Subject string        `json:"subject,omitempty" db:"subject"` // email subject; empty for non-email messages
 	Medias  []media.Media `json:"medias,omitempty" db:"medias,json"`
 
+	// CaseID is the (single) case-linking hint this event carries,
+	// sourced from the owning Conversation's Metadata.ContactCaseID at
+	// the moment this message was created (contact-case-management
+	// design §4.3). Purely internal plumbing for bin-contact-manager's
+	// Case get-or-create -- deliberately NOT copied by
+	// ConvertWebhookMessage onto the customer-facing webhook payload
+	// (see webhook.go). Not persisted as its own DB column; it is a
+	// point-in-time snapshot taken when the event is built, not a
+	// stored field of the message row.
+	CaseID *uuid.UUID `json:"case_id,omitempty" db:"-"`
+
 	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
 	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`
 	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`

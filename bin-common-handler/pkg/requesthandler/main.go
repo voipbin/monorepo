@@ -48,8 +48,10 @@ import (
 	cfconference "monorepo/bin-conference-manager/models/conference"
 	cfconferencecall "monorepo/bin-conference-manager/models/conferencecall"
 
+	cmcasenote "monorepo/bin-contact-manager/models/casenote"
 	cmcontact "monorepo/bin-contact-manager/models/contact"
 	cminteraction "monorepo/bin-contact-manager/models/interaction"
+	cmkase "monorepo/bin-contact-manager/models/kase"
 	cmresolution "monorepo/bin-contact-manager/models/resolution"
 	cmrequest "monorepo/bin-contact-manager/pkg/listenhandler/models/request"
 
@@ -920,6 +922,19 @@ type RequestHandler interface {
 	ContactV1ResolutionCreate(ctx context.Context, customerID, contactID, interactionID uuid.UUID, resolutionType, resolvedByType string, resolvedByID uuid.UUID) (*cmresolution.Resolution, error)
 	ContactV1ResolutionDelete(ctx context.Context, customerID uuid.UUID, interactionID, resolutionID uuid.UUID) error
 
+	// contact-manager cases (Phase 5, NOJIRA-contact-case-management)
+	ContactV1CaseList(ctx context.Context, customerID uuid.UUID, status, ownerType string, ownerID uuid.UUID, size uint64, token string) ([]*cmkase.Case, string, error)
+	ContactV1CaseListUnresolved(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*cmkase.Case, string, error)
+	ContactV1CaseGet(ctx context.Context, customerID, id uuid.UUID) (*cmkase.Case, error)
+	ContactV1CaseClose(ctx context.Context, customerID, id uuid.UUID, closedByType string, closedByID uuid.UUID) (*cmkase.Case, error)
+	ContactV1CaseContinue(ctx context.Context, customerID, id uuid.UUID, callerType string, callerID uuid.UUID, callerIsAdmin bool) (*cmkase.Case, error)
+	ContactV1CaseNoteList(ctx context.Context, customerID, caseID uuid.UUID) ([]*cmcasenote.CaseNote, error)
+	ContactV1CaseNoteCreate(ctx context.Context, customerID, caseID uuid.UUID, authorType string, authorID *uuid.UUID, text string) (*cmcasenote.CaseNote, error)
+	ContactV1CaseNoteDelete(ctx context.Context, customerID, caseID, noteID uuid.UUID) error
+	ContactV1CaseTagList(ctx context.Context, customerID, caseID uuid.UUID) ([]uuid.UUID, error)
+	ContactV1CaseTagAdd(ctx context.Context, customerID, caseID, tagID uuid.UUID) error
+	ContactV1CaseTagRemove(ctx context.Context, customerID, caseID, tagID uuid.UUID) error
+
 	// direct-manager directs
 	DirectV1DirectCreate(ctx context.Context, customerID uuid.UUID, resourceType string, resourceID uuid.UUID) (*dmdirect.Direct, error)
 	DirectV1DirectGet(ctx context.Context, id uuid.UUID) (*dmdirect.Direct, error)
@@ -947,8 +962,31 @@ type RequestHandler interface {
 		peer commonaddress.Address,
 	) (*cvconversation.Conversation, error)
 	ConversationV1ConversationGet(ctx context.Context, conversationID uuid.UUID) (*cvconversation.Conversation, error)
+	// ConversationV1ConversationGetBySelfAndPeer is a get-only lookup
+	// (never creates), used by bin-contact-manager's proactive
+	// Case-linking write path (contact-case-management design §4.4).
+	ConversationV1ConversationGetBySelfAndPeer(ctx context.Context, self commonaddress.Address, peer commonaddress.Address) (*cvconversation.Conversation, error)
+	// ConversationV1ConversationGetOrCreateBySelfAndPeer is a distinct,
+	// separate RPC from ConversationV1ConversationGetBySelfAndPeer above
+	// (round-12 correction, contact-case-management design §4.5):
+	// creating a Conversation on a miss is correct here because it is
+	// only called from the agent-send path, where a real message is
+	// genuinely about to be sent.
+	ConversationV1ConversationGetOrCreateBySelfAndPeer(
+		ctx context.Context,
+		customerID uuid.UUID,
+		conversationType cvconversation.Type,
+		dialogID string,
+		self commonaddress.Address,
+		peer commonaddress.Address,
+	) (*cvconversation.Conversation, error)
 	ConversationV1ConversationList(ctx context.Context, pageToken string, pageSize uint64, fields map[cvconversation.Field]any) ([]cvconversation.Conversation, error)
 	ConversationV1ConversationUpdate(ctx context.Context, conversationID uuid.UUID, fields map[cvconversation.Field]any) (*cvconversation.Conversation, error)
+	// ConversationV1ConversationUpdateMetadata is a dedicated
+	// whole-struct-replace metadata update, distinct from the general
+	// ConversationV1ConversationUpdate above (contact-case-management
+	// design §4.3/§4.4/§4.5).
+	ConversationV1ConversationUpdateMetadata(ctx context.Context, conversationID uuid.UUID, metadata cvconversation.Metadata) (*cvconversation.Conversation, error)
 
 	// conversation-manager hook
 	ConversationV1Hook(ctx context.Context, hm *hmhook.Hook) error

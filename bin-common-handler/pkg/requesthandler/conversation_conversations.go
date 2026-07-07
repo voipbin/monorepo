@@ -100,6 +100,79 @@ func (r *requestHandler) ConversationV1ConversationCreate(
 	return &res, nil
 }
 
+// ConversationV1ConversationGetBySelfAndPeer sends a get-only lookup
+// request to conversation-manager (never creates on a miss). Used by
+// bin-contact-manager's proactive Case-linking write path
+// (contact-case-management design §4.4).
+func (r *requestHandler) ConversationV1ConversationGetBySelfAndPeer(ctx context.Context, self address.Address, peer address.Address) (*cvconversation.Conversation, error) {
+	uri := "/v1/conversations/self_and_peer"
+
+	data := &cvrequest.V1DataConversationsSelfAndPeerGet{
+		Self: self,
+		Peer: peer,
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestConversation(ctx, uri, sock.RequestMethodGet, "conversation/conversations/self_and_peer", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
+		return nil, err
+	}
+
+	var res cvconversation.Conversation
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
+}
+
+// ConversationV1ConversationGetOrCreateBySelfAndPeer sends a
+// get-or-create request to conversation-manager. Distinct from
+// ConversationV1ConversationGetBySelfAndPeer above (round-12
+// correction, contact-case-management design §4.5): creating a
+// Conversation on a miss is correct here because this is only called
+// from the agent-send path, where a real message is genuinely about to
+// be sent.
+func (r *requestHandler) ConversationV1ConversationGetOrCreateBySelfAndPeer(
+	ctx context.Context,
+	customerID uuid.UUID,
+	conversationType cvconversation.Type,
+	dialogID string,
+	self address.Address,
+	peer address.Address,
+) (*cvconversation.Conversation, error) {
+	uri := "/v1/conversations/get_or_create_by_self_and_peer"
+
+	data := &cvrequest.V1DataConversationsGetOrCreateBySelfAndPeerPost{
+		CustomerID:       customerID,
+		ConversationType: conversationType,
+		DialogID:         dialogID,
+		Self:             self,
+		Peer:             peer,
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestConversation(ctx, uri, sock.RequestMethodPost, "conversation/conversations/get_or_create_by_self_and_peer", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
+		return nil, err
+	}
+
+	var res cvconversation.Conversation
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
+}
+
 // ConversationV1ConversationUpdate sends a request to conversation-manager
 // to update the conversation info.
 // it returns updated conversation info if it succeed.
@@ -112,6 +185,36 @@ func (r *requestHandler) ConversationV1ConversationUpdate(ctx context.Context, c
 	}
 
 	tmp, err := r.sendRequestConversation(ctx, uri, sock.RequestMethodPut, "conversation/conversations/<conversation_id>", 30000, 0, ContentTypeJSON, m)
+	if err != nil {
+		return nil, err
+	}
+
+	var res cvconversation.Conversation
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
+}
+
+// ConversationV1ConversationUpdateMetadata sends a whole-struct-replace
+// metadata update request to conversation-manager. Used by
+// bin-contact-manager's Case-linking write paths (contact-case-management
+// design §4.3/§4.4/§4.5). A dedicated RPC, distinct from the general
+// ConversationV1ConversationUpdate partial-update above.
+func (r *requestHandler) ConversationV1ConversationUpdateMetadata(ctx context.Context, conversationID uuid.UUID, metadata cvconversation.Metadata) (*cvconversation.Conversation, error) {
+	uri := fmt.Sprintf("/v1/conversations/%s/metadata", conversationID)
+
+	data := &cvrequest.V1DataConversationsIDMetadataPut{
+		Metadata: metadata,
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestConversation(ctx, uri, sock.RequestMethodPut, "conversation/conversations/<conversation_id>/metadata", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}

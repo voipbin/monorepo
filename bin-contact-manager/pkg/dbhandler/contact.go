@@ -8,6 +8,7 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"monorepo/bin-contact-manager/models/contact"
@@ -299,6 +300,54 @@ func (h *handler) ContactDelete(ctx context.Context, id uuid.UUID) error {
 	_ = h.cache.ContactDelete(ctx, id)
 
 	return nil
+}
+
+// AddressLookupContactIDByTypeTarget resolves a (type, target) pair
+// directly to its associated contact_id, used by Case get-or-create's
+// contact auto-match step (design §4 step 2). Unlike ContactLookupByPhone/
+// ByEmail (tel/email specific with a hard-coded addressTypeTel/Email
+// constant), this is generic over commonaddress.Type since a Case's
+// peer_type is not restricted to tel/email (today: call's tel peer_type,
+// but the mechanism is type-agnostic). Returns ErrNotFound both when no
+// address row matches AND when a matching row exists but is unresolved
+// (contact_id IS NULL) -- neither case should ever attribute a contact_id
+// to the Case.
+func (h *handler) AddressLookupContactIDByTypeTarget(ctx context.Context, customerID uuid.UUID, addrType commonaddress.Type, target string) (uuid.UUID, error) {
+	query, args, err := sq.Select("contact_id").
+		From(addressTable).
+		Where(sq.Eq{
+			"customer_id": customerID.Bytes(),
+			"type":        string(addrType),
+			"target":      target,
+		}).
+		Where(sq.NotEq{"contact_id": nil}).
+		Limit(1).
+		ToSql()
+	if err != nil {
+		return uuid.Nil, fmt.Errorf("could not build query. AddressLookupContactIDByTypeTarget. err: %v", err)
+	}
+
+	rows, err := h.db.Query(query, args...)
+	if err != nil {
+		return uuid.Nil, fmt.Errorf("could not query. AddressLookupContactIDByTypeTarget. err: %v", err)
+	}
+	defer func() { _ = rows.Close() }()
+
+	if !rows.Next() {
+		return uuid.Nil, ErrNotFound
+	}
+
+	var contactIDBytes []byte
+	if err := rows.Scan(&contactIDBytes); err != nil {
+		return uuid.Nil, fmt.Errorf("could not scan contact_id. AddressLookupContactIDByTypeTarget. err: %v", err)
+	}
+
+	contactID, err := uuid.FromBytes(contactIDBytes)
+	if err != nil {
+		return uuid.Nil, fmt.Errorf("could not parse contact_id. AddressLookupContactIDByTypeTarget. err: %v", err)
+	}
+
+	return contactID, nil
 }
 
 // ContactLookupByPhone finds a contact by phone number (E.164 format).

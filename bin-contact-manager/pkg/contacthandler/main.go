@@ -18,6 +18,7 @@ import (
 	"monorepo/bin-contact-manager/models/contact"
 	"monorepo/bin-contact-manager/models/interaction"
 	"monorepo/bin-contact-manager/models/resolution"
+	"monorepo/bin-contact-manager/pkg/casehandler"
 	"monorepo/bin-contact-manager/pkg/dbhandler"
 	convmsg "monorepo/bin-conversation-manager/models/message"
 )
@@ -68,6 +69,7 @@ type contactHandler struct {
 	reqHandler    requesthandler.RequestHandler
 	db            dbhandler.DBHandler
 	notifyHandler notifyhandler.NotifyHandler
+	caseHandler   casehandler.CaseHandler
 }
 
 // NewContactHandler returns ContactHandler interface
@@ -75,11 +77,13 @@ func NewContactHandler(
 	reqHandler requesthandler.RequestHandler,
 	dbHandler dbhandler.DBHandler,
 	notifyHandler notifyhandler.NotifyHandler,
+	caseHandler casehandler.CaseHandler,
 ) ContactHandler {
 	return &contactHandler{
 		utilHandler:   utilhandler.NewUtilHandler(),
 		reqHandler:    reqHandler,
 		db:            dbHandler,
 		notifyHandler: notifyHandler,
+		caseHandler:   caseHandler,
 	}
 }

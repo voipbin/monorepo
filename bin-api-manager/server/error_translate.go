@@ -107,6 +107,15 @@ func translateToVoipbinError(err error) (out *cerrors.VoipbinError) {
 	case stderrors.Is(err, serviceerrors.ErrInsufficientBalance):
 		return cerrors.PaymentRequired(commonoutline.ServiceNameAPIManager, "INSUFFICIENT_BALANCE",
 			"Customer balance is below the minimum required for this operation.").Wrap(err)
+	case stderrors.Is(err, serviceerrors.ErrCaseClosed):
+		return cerrors.FailedPrecondition(commonoutline.ServiceNameAPIManager, "CASE_CLOSED",
+			"This case is closed. Call POST /v1.0/cases/{id}/continue to reopen it before sending a message.")
+	case stderrors.Is(err, serviceerrors.ErrCaseDestinationNotAssociated):
+		return cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "DESTINATION_NOT_ASSOCIATED",
+			"destination is not associated with this case")
+	case stderrors.Is(err, serviceerrors.ErrCaseSourceNotOwned):
+		return cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "SOURCE_NOT_OWNED",
+			"source is not an active number owned by this customer")
 	}
 
 	// 3. Transport failures.

@@ -19,6 +19,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-contact-manager/pkg/addresshandler"
+	"monorepo/bin-contact-manager/pkg/casehandler"
 	"monorepo/bin-contact-manager/pkg/contacthandler"
 	"monorepo/bin-contact-manager/pkg/dbhandler"
 )
@@ -40,6 +41,7 @@ type listenHandler struct {
 	utilHandler    utilhandler.UtilHandler
 	contactHandler contacthandler.ContactHandler
 	addressHandler addresshandler.AddressHandler
+	caseHandler    casehandler.CaseHandler
 }
 
 var (
@@ -71,6 +73,17 @@ var (
 	regV1InteractionsID            = regexp.MustCompile("/v1/interactions/" + regUUID + "$")
 	regV1InteractionsResolutions   = regexp.MustCompile("/v1/interactions/" + regUUID + "/resolutions$")
 	regV1InteractionsResolutionsID = regexp.MustCompile("/v1/interactions/" + regUUID + "/resolutions/" + regUUID + "$")
+
+	// v1 cases
+	regV1CasesUnresolved = regexp.MustCompile(`/v1/cases/unresolved(\?.*)?$`)
+	regV1CasesGet        = regexp.MustCompile(`/v1/cases\?(.*)$`)
+	regV1CasesID         = regexp.MustCompile("/v1/cases/" + regUUID + "$")
+	regV1CasesIDClose    = regexp.MustCompile("/v1/cases/" + regUUID + "/close$")
+	regV1CasesIDContinue = regexp.MustCompile("/v1/cases/" + regUUID + "/continue$")
+	regV1CasesIDNotes    = regexp.MustCompile("/v1/cases/" + regUUID + "/notes$")
+	regV1CasesIDNotesID  = regexp.MustCompile("/v1/cases/" + regUUID + "/notes/" + regUUID + "$")
+	regV1CasesIDTags     = regexp.MustCompile("/v1/cases/" + regUUID + "/tags$")
+	regV1CasesIDTagsID   = regexp.MustCompile("/v1/cases/" + regUUID + "/tags/" + regUUID + "$")
 )
 
 var (
@@ -129,13 +142,14 @@ func errorResponse(err error) *sock.Response {
 }
 
 // NewListenHandler return ListenHandler interface
-func NewListenHandler(sockHandler sockhandler.SockHandler, contactHandler contacthandler.ContactHandler, addressHandler addresshandler.AddressHandler) ListenHandler {
+func NewListenHandler(sockHandler sockhandler.SockHandler, contactHandler contacthandler.ContactHandler, addressHandler addresshandler.AddressHandler, caseHandler casehandler.CaseHandler) ListenHandler {
 	h := &listenHandler{
 		sockHandler: sockHandler,
 
 		utilHandler:    utilhandler.NewUtilHandler(),
 		contactHandler: contactHandler,
 		addressHandler: addressHandler,
+		caseHandler:    caseHandler,
 	}
 
 	return h
@@ -312,6 +326,65 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1InteractionsResolutionsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		response, err = h.processV1InteractionsResolutionsIDDelete(ctx, m)
 		requestType = "/v1/interactions/{id}/resolutions/{rid}"
+
+	/////////////////////////////////////////////////////////////////////////////////////////////////
+	// v1 Cases
+	/////////////////////////////////////////////////////////////////////////////////////////////////
+
+	// GET /cases/unresolved (must be before regV1CasesID)
+	case regV1CasesUnresolved.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1CasesUnresolvedGet(ctx, m)
+		requestType = "/v1/cases/unresolved"
+
+	// GET /cases?...
+	case regV1CasesGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1CasesGet(ctx, m)
+		requestType = "/v1/cases"
+
+	// GET /cases/{id}
+	case regV1CasesID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1CasesIDGet(ctx, m)
+		requestType = "/v1/cases/{id}"
+
+	// POST /cases/{id}/close
+	case regV1CasesIDClose.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1CasesIDClosePost(ctx, m)
+		requestType = "/v1/cases/{id}/close"
+
+	// POST /cases/{id}/continue
+	case regV1CasesIDContinue.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1CasesIDContinuePost(ctx, m)
+		requestType = "/v1/cases/{id}/continue"
+
+	// GET /cases/{id}/notes
+	case regV1CasesIDNotes.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1CasesIDNotesGet(ctx, m)
+		requestType = "/v1/cases/{id}/notes"
+
+	// POST /cases/{id}/notes
+	case regV1CasesIDNotes.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1CasesIDNotesPost(ctx, m)
+		requestType = "/v1/cases/{id}/notes"
+
+	// DELETE /cases/{id}/notes/{note_id}
+	case regV1CasesIDNotesID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
+		response, err = h.processV1CasesIDNotesIDDelete(ctx, m)
+		requestType = "/v1/cases/{id}/notes/{note_id}"
+
+	// GET /cases/{id}/tags
+	case regV1CasesIDTags.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1CasesIDTagsGet(ctx, m)
+		requestType = "/v1/cases/{id}/tags"
+
+	// POST /cases/{id}/tags
+	case regV1CasesIDTags.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1CasesIDTagsPost(ctx, m)
+		requestType = "/v1/cases/{id}/tags"
+
+	// DELETE /cases/{id}/tags/{tag_id}
+	case regV1CasesIDTagsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
+		response, err = h.processV1CasesIDTagsIDDelete(ctx, m)
+		requestType = "/v1/cases/{id}/tags/{tag_id}"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found

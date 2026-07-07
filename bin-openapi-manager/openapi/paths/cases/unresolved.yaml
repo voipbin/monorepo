@@ -1,0 +1,25 @@
+get:
+  summary: List unresolved cases
+  description: |
+    List unresolved cases (open, contact_id IS NULL) for the authenticated
+    caller's customer.
+  tags:
+    - Case
+  parameters:
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: Successful response.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ContactManagerCaseListResponse'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '500':
+      $ref: '#/components/responses/InternalError'

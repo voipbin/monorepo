@@ -38,9 +38,33 @@ type ConversationHandler interface {
 		peer commonaddress.Address,
 	) (*conversation.Conversation, error)
 	Get(ctx context.Context, id uuid.UUID) (*conversation.Conversation, error)
+	// GetBySelfAndPeer is a get-only lookup (never creates), used by
+	// bin-contact-manager's proactive Case-linking write path
+	// (contact-case-management design §4.4). A miss must not have any
+	// create side-effect.
+	GetBySelfAndPeer(ctx context.Context, self commonaddress.Address, peer commonaddress.Address) (*conversation.Conversation, error)
+	// GetOrCreateBySelfAndPeer is a distinct, separate RPC from
+	// GetBySelfAndPeer above (round-12 correction, contact-case-management
+	// design §4.5): creating a Conversation on a miss is correct here
+	// because this is only called from the agent-send path, where a real
+	// message is genuinely about to be sent.
+	GetOrCreateBySelfAndPeer(
+		ctx context.Context,
+		customerID uuid.UUID,
+		conversationType conversation.Type,
+		dialogID string,
+		self commonaddress.Address,
+		peer commonaddress.Address,
+	) (*conversation.Conversation, error)
 	List(ctx context.Context, pageToken string, pageSize uint64, filters map[conversation.Field]any) ([]*conversation.Conversation, error)
 	// GetByTypeAndDialogID(ctx context.Context, conversationType conversation.Type, dialogID string) (*conversation.Conversation, error)
 	Update(ctx context.Context, id uuid.UUID, fields map[conversation.Field]any) (*conversation.Conversation, error)
+	// UpdateMetadata is a dedicated, whole-struct-replace update for
+	// Metadata, deliberately NOT reachable via the general Update
+	// partial-update field allowlist (contact-case-management design
+	// §4.3/§4.4/§4.5). Never publishes a webhook event -- Metadata is
+	// purely internal case-linking plumbing.
+	UpdateMetadata(ctx context.Context, id uuid.UUID, metadata conversation.Metadata) (*conversation.Conversation, error)
 
 	Hook(ctx context.Context, uri string, method string, signature string, data []byte) error
 	HookVerify(ctx context.Context, uri string, mode string, verifyToken string, challenge string) (string, error)

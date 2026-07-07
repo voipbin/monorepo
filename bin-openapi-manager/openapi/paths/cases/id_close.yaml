@@ -1,0 +1,39 @@
+post:
+  summary: Close a case
+  description: |
+    Close a case. closed_by_id is derived server-side from the
+    authenticated caller's own agent identity -- there is no request
+    body -- so the closing-agent attribution the platform treats as a
+    hard invariant cannot be forged by supplying an arbitrary agent_id.
+    Returns the actually-persisted state, including already_closed
+    semantics reflected via the returned closed_reason / closed_by_type /
+    closed_by_id fields when the case had already been closed by
+    someone/something else.
+  tags:
+    - Case
+  parameters:
+    - name: id
+      in: path
+      description: The ID of the case. The ID is returned from GET /v1.0/cases response.
+      required: true
+      schema:
+        type: string
+        format: uuid
+        example: "550e8400-e29b-41d4-a716-446655440000"
+  responses:
+    '200':
+      description: Case closed successfully.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ContactManagerCase'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'

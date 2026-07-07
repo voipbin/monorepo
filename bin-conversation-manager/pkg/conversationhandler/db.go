@@ -39,6 +39,32 @@ func (h *conversationHandler) Get(ctx context.Context, id uuid.UUID) (*conversat
 	return res, nil
 }
 
+// GetBySelfAndPeer is a get-only lookup (deliberately never creates).
+// Used by bin-contact-manager's proactive Case-linking write path
+// (contact-case-management design §4.4, round-7 correction): a miss
+// must not create a Conversation, since doing so purely as case-linking
+// plumbing -- with no message ever having been sent -- would fire a
+// genuine, real, customer-facing conversation_created webhook for a
+// thread that doesn't actually exist yet from the customer's
+// perspective. Contrast with GetOrCreateBySelfAndPeer below, which is
+// correct to create on miss because it is only ever called when a real
+// message is genuinely about to be sent (§4.5).
+func (h *conversationHandler) GetBySelfAndPeer(ctx context.Context, self commonaddress.Address, peer commonaddress.Address) (*conversation.Conversation, error) {
+	// Canonicalize self/peer BEFORE the lookup so the lookup key and the
+	// stored value share one canonical form, matching
+	// GetOrCreateBySelfAndPeer's normalization. NormalizeTarget is
+	// loss-proof, so the error is discarded.
+	self.Target, _ = commonaddress.NormalizeTarget(self.Type, self.Target)
+	peer.Target, _ = commonaddress.NormalizeTarget(peer.Type, peer.Target)
+
+	res, err := h.db.ConversationGetBySelfAndPeer(ctx, self, peer)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
 // GetBySelfAndPeer returns conversation
 func (h *conversationHandler) GetOrCreateBySelfAndPeer(
 	ctx context.Context,
@@ -257,6 +283,35 @@ func (h *conversationHandler) Update(ctx context.Context, id uuid.UUID, fields m
 		return nil, errors.Wrapf(err, "could not get updated conversation. id: %s", id)
 	}
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, conversation.EventTypeConversationUpdated, res)
+
+	return res, nil
+}
+
+// UpdateMetadata performs a whole-struct-replace update of Metadata,
+// used by bin-contact-manager's Case-linking write paths
+// (contact-case-management design §4.3/§4.4/§4.5). Mirrors
+// bin-customer-manager's UpdateMetadata shape (models/customer,
+// pkg/customerhandler/db.go).
+//
+// Deliberately does NOT publish any webhook or internal event:
+// Metadata.ContactCaseID is purely internal case-linking plumbing
+// (never customer-facing), so there is nothing here worth notifying
+// about at this layer -- the case-linking effect surfaces instead via
+// the case_id hint echoed onto MessageEventReceived/MessageEventSent
+// payloads (§4.3), not via a Conversation-level event.
+func (h *conversationHandler) UpdateMetadata(ctx context.Context, id uuid.UUID, metadata conversation.Metadata) (*conversation.Conversation, error) {
+	fields := map[conversation.Field]any{
+		conversation.FieldMetadata: metadata,
+	}
+
+	if errUpdate := h.db.ConversationUpdate(ctx, id, fields); errUpdate != nil {
+		return nil, errors.Wrapf(errUpdate, "could not update conversation metadata. id: %s", id)
+	}
+
+	res, err := h.db.ConversationGet(ctx, id)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get updated conversation. id: %s", id)
+	}
 
 	return res, nil
 }

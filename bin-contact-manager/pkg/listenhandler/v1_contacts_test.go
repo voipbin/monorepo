@@ -16,6 +16,7 @@ import (
 
 	"monorepo/bin-contact-manager/models/contact"
 	"monorepo/bin-contact-manager/pkg/addresshandler"
+	"monorepo/bin-contact-manager/pkg/casehandler"
 	"monorepo/bin-contact-manager/pkg/contacthandler"
 )
 
@@ -1181,8 +1182,9 @@ func TestNewListenHandler(t *testing.T) {
 	mockSock := sockhandler.NewMockSockHandler(mc)
 	mockContact := contacthandler.NewMockContactHandler(mc)
 	mockAddr := addresshandler.NewMockAddressHandler(mc)
+	mockCase := casehandler.NewMockCaseHandler(mc)
 
-	h := NewListenHandler(mockSock, mockContact, mockAddr)
+	h := NewListenHandler(mockSock, mockContact, mockAddr, mockCase)
 	if h == nil {
 		t.Error("NewListenHandler() returned nil")
 	}

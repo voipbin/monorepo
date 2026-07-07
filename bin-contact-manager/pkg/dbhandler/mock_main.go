@@ -11,8 +11,13 @@ package dbhandler
 
 import (
 	context "context"
+	sql "database/sql"
+	address "monorepo/bin-common-handler/models/address"
+	identity "monorepo/bin-common-handler/models/identity"
+	casenote "monorepo/bin-contact-manager/models/casenote"
 	contact "monorepo/bin-contact-manager/models/contact"
 	interaction "monorepo/bin-contact-manager/models/interaction"
+	kase "monorepo/bin-contact-manager/models/kase"
 	resolution "monorepo/bin-contact-manager/models/resolution"
 	reflect "reflect"
 	time "time"
@@ -132,6 +137,21 @@ func (mr *MockDBHandlerMockRecorder) AddressListByContactID(ctx, contactID any) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddressListByContactID", reflect.TypeOf((*MockDBHandler)(nil).AddressListByContactID), ctx, contactID)
 }
 
+// AddressLookupContactIDByTypeTarget mocks base method.
+func (m *MockDBHandler) AddressLookupContactIDByTypeTarget(ctx context.Context, customerID uuid.UUID, addrType address.Type, target string) (uuid.UUID, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddressLookupContactIDByTypeTarget", ctx, customerID, addrType, target)
+	ret0, _ := ret[0].(uuid.UUID)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AddressLookupContactIDByTypeTarget indicates an expected call of AddressLookupContactIDByTypeTarget.
+func (mr *MockDBHandlerMockRecorder) AddressLookupContactIDByTypeTarget(ctx, customerID, addrType, target any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddressLookupContactIDByTypeTarget", reflect.TypeOf((*MockDBHandler)(nil).AddressLookupContactIDByTypeTarget), ctx, customerID, addrType, target)
+}
+
 // AddressResetPrimary mocks base method.
 func (m *MockDBHandler) AddressResetPrimary(ctx context.Context, contactID uuid.UUID) error {
 	m.ctrl.T.Helper()
@@ -158,6 +178,385 @@ func (m *MockDBHandler) AddressUpdate(ctx context.Context, id uuid.UUID, fields 
 func (mr *MockDBHandlerMockRecorder) AddressUpdate(ctx, id, fields any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddressUpdate", reflect.TypeOf((*MockDBHandler)(nil).AddressUpdate), ctx, id, fields)
+}
+
+// BeginTx mocks base method.
+func (m *MockDBHandler) BeginTx(ctx context.Context) (*sql.Tx, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BeginTx", ctx)
+	ret0, _ := ret[0].(*sql.Tx)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BeginTx indicates an expected call of BeginTx.
+func (mr *MockDBHandlerMockRecorder) BeginTx(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BeginTx", reflect.TypeOf((*MockDBHandler)(nil).BeginTx), ctx)
+}
+
+// CaseClearContactIDTx mocks base method.
+func (m *MockDBHandler) CaseClearContactIDTx(ctx context.Context, tx *sql.Tx, customerID, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseClearContactIDTx", ctx, tx, customerID, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CaseClearContactIDTx indicates an expected call of CaseClearContactIDTx.
+func (mr *MockDBHandlerMockRecorder) CaseClearContactIDTx(ctx, tx, customerID, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseClearContactIDTx", reflect.TypeOf((*MockDBHandler)(nil).CaseClearContactIDTx), ctx, tx, customerID, id)
+}
+
+// CaseGetByID mocks base method.
+func (m *MockDBHandler) CaseGetByID(ctx context.Context, id uuid.UUID) (*kase.Case, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseGetByID", ctx, id)
+	ret0, _ := ret[0].(*kase.Case)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CaseGetByID indicates an expected call of CaseGetByID.
+func (mr *MockDBHandlerMockRecorder) CaseGetByID(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseGetByID", reflect.TypeOf((*MockDBHandler)(nil).CaseGetByID), ctx, id)
+}
+
+// CaseGetByIDForUpdate mocks base method.
+func (m *MockDBHandler) CaseGetByIDForUpdate(ctx context.Context, tx *sql.Tx, customerID, id uuid.UUID) (*kase.Case, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseGetByIDForUpdate", ctx, tx, customerID, id)
+	ret0, _ := ret[0].(*kase.Case)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CaseGetByIDForUpdate indicates an expected call of CaseGetByIDForUpdate.
+func (mr *MockDBHandlerMockRecorder) CaseGetByIDForUpdate(ctx, tx, customerID, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseGetByIDForUpdate", reflect.TypeOf((*MockDBHandler)(nil).CaseGetByIDForUpdate), ctx, tx, customerID, id)
+}
+
+// CaseGetByIDTx mocks base method.
+func (m *MockDBHandler) CaseGetByIDTx(ctx context.Context, tx *sql.Tx, id uuid.UUID) (*kase.Case, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseGetByIDTx", ctx, tx, id)
+	ret0, _ := ret[0].(*kase.Case)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CaseGetByIDTx indicates an expected call of CaseGetByIDTx.
+func (mr *MockDBHandlerMockRecorder) CaseGetByIDTx(ctx, tx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseGetByIDTx", reflect.TypeOf((*MockDBHandler)(nil).CaseGetByIDTx), ctx, tx, id)
+}
+
+// CaseGetLastClosedByPeer mocks base method.
+func (m *MockDBHandler) CaseGetLastClosedByPeer(ctx context.Context, customerID uuid.UUID, peerType address.Type, peerTarget, referenceType string) (*kase.Case, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseGetLastClosedByPeer", ctx, customerID, peerType, peerTarget, referenceType)
+	ret0, _ := ret[0].(*kase.Case)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CaseGetLastClosedByPeer indicates an expected call of CaseGetLastClosedByPeer.
+func (mr *MockDBHandlerMockRecorder) CaseGetLastClosedByPeer(ctx, customerID, peerType, peerTarget, referenceType any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseGetLastClosedByPeer", reflect.TypeOf((*MockDBHandler)(nil).CaseGetLastClosedByPeer), ctx, customerID, peerType, peerTarget, referenceType)
+}
+
+// CaseGetLastClosedByPeerTx mocks base method.
+func (m *MockDBHandler) CaseGetLastClosedByPeerTx(ctx context.Context, tx *sql.Tx, customerID uuid.UUID, peerType address.Type, peerTarget, referenceType string) (*kase.Case, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseGetLastClosedByPeerTx", ctx, tx, customerID, peerType, peerTarget, referenceType)
+	ret0, _ := ret[0].(*kase.Case)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CaseGetLastClosedByPeerTx indicates an expected call of CaseGetLastClosedByPeerTx.
+func (mr *MockDBHandlerMockRecorder) CaseGetLastClosedByPeerTx(ctx, tx, customerID, peerType, peerTarget, referenceType any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseGetLastClosedByPeerTx", reflect.TypeOf((*MockDBHandler)(nil).CaseGetLastClosedByPeerTx), ctx, tx, customerID, peerType, peerTarget, referenceType)
+}
+
+// CaseGetOpenByPeer mocks base method.
+func (m *MockDBHandler) CaseGetOpenByPeer(ctx context.Context, tx *sql.Tx, customerID uuid.UUID, peerType address.Type, peerTarget, referenceType string) (*kase.Case, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseGetOpenByPeer", ctx, tx, customerID, peerType, peerTarget, referenceType)
+	ret0, _ := ret[0].(*kase.Case)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CaseGetOpenByPeer indicates an expected call of CaseGetOpenByPeer.
+func (mr *MockDBHandlerMockRecorder) CaseGetOpenByPeer(ctx, tx, customerID, peerType, peerTarget, referenceType any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseGetOpenByPeer", reflect.TypeOf((*MockDBHandler)(nil).CaseGetOpenByPeer), ctx, tx, customerID, peerType, peerTarget, referenceType)
+}
+
+// CaseInsert mocks base method.
+func (m *MockDBHandler) CaseInsert(ctx context.Context, c *kase.Case) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseInsert", ctx, c)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CaseInsert indicates an expected call of CaseInsert.
+func (mr *MockDBHandlerMockRecorder) CaseInsert(ctx, c any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseInsert", reflect.TypeOf((*MockDBHandler)(nil).CaseInsert), ctx, c)
+}
+
+// CaseInsertTx mocks base method.
+func (m *MockDBHandler) CaseInsertTx(ctx context.Context, tx *sql.Tx, c *kase.Case) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseInsertTx", ctx, tx, c)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CaseInsertTx indicates an expected call of CaseInsertTx.
+func (mr *MockDBHandlerMockRecorder) CaseInsertTx(ctx, tx, c any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseInsertTx", reflect.TypeOf((*MockDBHandler)(nil).CaseInsertTx), ctx, tx, c)
+}
+
+// CaseList mocks base method.
+func (m *MockDBHandler) CaseList(ctx context.Context, customerID uuid.UUID, status string, ownerType identity.OwnerType, ownerID uuid.UUID) ([]*kase.Case, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseList", ctx, customerID, status, ownerType, ownerID)
+	ret0, _ := ret[0].([]*kase.Case)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CaseList indicates an expected call of CaseList.
+func (mr *MockDBHandlerMockRecorder) CaseList(ctx, customerID, status, ownerType, ownerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseList", reflect.TypeOf((*MockDBHandler)(nil).CaseList), ctx, customerID, status, ownerType, ownerID)
+}
+
+// CaseListAll mocks base method.
+func (m *MockDBHandler) CaseListAll(ctx context.Context) ([]*kase.Case, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseListAll", ctx)
+	ret0, _ := ret[0].([]*kase.Case)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CaseListAll indicates an expected call of CaseListAll.
+func (mr *MockDBHandlerMockRecorder) CaseListAll(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseListAll", reflect.TypeOf((*MockDBHandler)(nil).CaseListAll), ctx)
+}
+
+// CaseListByOwner mocks base method.
+func (m *MockDBHandler) CaseListByOwner(ctx context.Context, customerID uuid.UUID, ownerType identity.OwnerType, ownerID uuid.UUID) ([]*kase.Case, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseListByOwner", ctx, customerID, ownerType, ownerID)
+	ret0, _ := ret[0].([]*kase.Case)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CaseListByOwner indicates an expected call of CaseListByOwner.
+func (mr *MockDBHandlerMockRecorder) CaseListByOwner(ctx, customerID, ownerType, ownerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseListByOwner", reflect.TypeOf((*MockDBHandler)(nil).CaseListByOwner), ctx, customerID, ownerType, ownerID)
+}
+
+// CaseListUnresolved mocks base method.
+func (m *MockDBHandler) CaseListUnresolved(ctx context.Context, customerID uuid.UUID) ([]*kase.Case, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseListUnresolved", ctx, customerID)
+	ret0, _ := ret[0].([]*kase.Case)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CaseListUnresolved indicates an expected call of CaseListUnresolved.
+func (mr *MockDBHandlerMockRecorder) CaseListUnresolved(ctx, customerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseListUnresolved", reflect.TypeOf((*MockDBHandler)(nil).CaseListUnresolved), ctx, customerID)
+}
+
+// CaseNoteCreate mocks base method.
+func (m *MockDBHandler) CaseNoteCreate(ctx context.Context, n *casenote.CaseNote) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseNoteCreate", ctx, n)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CaseNoteCreate indicates an expected call of CaseNoteCreate.
+func (mr *MockDBHandlerMockRecorder) CaseNoteCreate(ctx, n any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseNoteCreate", reflect.TypeOf((*MockDBHandler)(nil).CaseNoteCreate), ctx, n)
+}
+
+// CaseNoteDelete mocks base method.
+func (m *MockDBHandler) CaseNoteDelete(ctx context.Context, customerID, caseID, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseNoteDelete", ctx, customerID, caseID, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CaseNoteDelete indicates an expected call of CaseNoteDelete.
+func (mr *MockDBHandlerMockRecorder) CaseNoteDelete(ctx, customerID, caseID, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseNoteDelete", reflect.TypeOf((*MockDBHandler)(nil).CaseNoteDelete), ctx, customerID, caseID, id)
+}
+
+// CaseNoteListByCase mocks base method.
+func (m *MockDBHandler) CaseNoteListByCase(ctx context.Context, customerID, caseID uuid.UUID) ([]*casenote.CaseNote, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseNoteListByCase", ctx, customerID, caseID)
+	ret0, _ := ret[0].([]*casenote.CaseNote)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CaseNoteListByCase indicates an expected call of CaseNoteListByCase.
+func (mr *MockDBHandlerMockRecorder) CaseNoteListByCase(ctx, customerID, caseID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseNoteListByCase", reflect.TypeOf((*MockDBHandler)(nil).CaseNoteListByCase), ctx, customerID, caseID)
+}
+
+// CaseTagAssignmentCreate mocks base method.
+func (m *MockDBHandler) CaseTagAssignmentCreate(ctx context.Context, caseID, tagID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseTagAssignmentCreate", ctx, caseID, tagID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CaseTagAssignmentCreate indicates an expected call of CaseTagAssignmentCreate.
+func (mr *MockDBHandlerMockRecorder) CaseTagAssignmentCreate(ctx, caseID, tagID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseTagAssignmentCreate", reflect.TypeOf((*MockDBHandler)(nil).CaseTagAssignmentCreate), ctx, caseID, tagID)
+}
+
+// CaseTagAssignmentDelete mocks base method.
+func (m *MockDBHandler) CaseTagAssignmentDelete(ctx context.Context, caseID, tagID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseTagAssignmentDelete", ctx, caseID, tagID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CaseTagAssignmentDelete indicates an expected call of CaseTagAssignmentDelete.
+func (mr *MockDBHandlerMockRecorder) CaseTagAssignmentDelete(ctx, caseID, tagID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseTagAssignmentDelete", reflect.TypeOf((*MockDBHandler)(nil).CaseTagAssignmentDelete), ctx, caseID, tagID)
+}
+
+// CaseTagAssignmentListByCaseID mocks base method.
+func (m *MockDBHandler) CaseTagAssignmentListByCaseID(ctx context.Context, caseID uuid.UUID) ([]uuid.UUID, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseTagAssignmentListByCaseID", ctx, caseID)
+	ret0, _ := ret[0].([]uuid.UUID)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CaseTagAssignmentListByCaseID indicates an expected call of CaseTagAssignmentListByCaseID.
+func (mr *MockDBHandlerMockRecorder) CaseTagAssignmentListByCaseID(ctx, caseID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseTagAssignmentListByCaseID", reflect.TypeOf((*MockDBHandler)(nil).CaseTagAssignmentListByCaseID), ctx, caseID)
+}
+
+// CaseUpdateContactID mocks base method.
+func (m *MockDBHandler) CaseUpdateContactID(ctx context.Context, customerID, id, contactID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseUpdateContactID", ctx, customerID, id, contactID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CaseUpdateContactID indicates an expected call of CaseUpdateContactID.
+func (mr *MockDBHandlerMockRecorder) CaseUpdateContactID(ctx, customerID, id, contactID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseUpdateContactID", reflect.TypeOf((*MockDBHandler)(nil).CaseUpdateContactID), ctx, customerID, id, contactID)
+}
+
+// CaseUpdateContactIDTx mocks base method.
+func (m *MockDBHandler) CaseUpdateContactIDTx(ctx context.Context, tx *sql.Tx, customerID, id, contactID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseUpdateContactIDTx", ctx, tx, customerID, id, contactID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CaseUpdateContactIDTx indicates an expected call of CaseUpdateContactIDTx.
+func (mr *MockDBHandlerMockRecorder) CaseUpdateContactIDTx(ctx, tx, customerID, id, contactID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseUpdateContactIDTx", reflect.TypeOf((*MockDBHandler)(nil).CaseUpdateContactIDTx), ctx, tx, customerID, id, contactID)
+}
+
+// CaseUpdateStatusClosed mocks base method.
+func (m *MockDBHandler) CaseUpdateStatusClosed(ctx context.Context, customerID, id uuid.UUID, closedReason, closedByType string, closedByID *uuid.UUID, closedAt *time.Time) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseUpdateStatusClosed", ctx, customerID, id, closedReason, closedByType, closedByID, closedAt)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CaseUpdateStatusClosed indicates an expected call of CaseUpdateStatusClosed.
+func (mr *MockDBHandlerMockRecorder) CaseUpdateStatusClosed(ctx, customerID, id, closedReason, closedByType, closedByID, closedAt any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseUpdateStatusClosed", reflect.TypeOf((*MockDBHandler)(nil).CaseUpdateStatusClosed), ctx, customerID, id, closedReason, closedByType, closedByID, closedAt)
+}
+
+// CaseUpdateStatusClosedTx mocks base method.
+func (m *MockDBHandler) CaseUpdateStatusClosedTx(ctx context.Context, tx *sql.Tx, customerID, id uuid.UUID, closedReason, closedByType string, closedByID *uuid.UUID, closedAt *time.Time) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseUpdateStatusClosedTx", ctx, tx, customerID, id, closedReason, closedByType, closedByID, closedAt)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CaseUpdateStatusClosedTx indicates an expected call of CaseUpdateStatusClosedTx.
+func (mr *MockDBHandlerMockRecorder) CaseUpdateStatusClosedTx(ctx, tx, customerID, id, closedReason, closedByType, closedByID, closedAt any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseUpdateStatusClosedTx", reflect.TypeOf((*MockDBHandler)(nil).CaseUpdateStatusClosedTx), ctx, tx, customerID, id, closedReason, closedByType, closedByID, closedAt)
+}
+
+// CaseUpdateTMUpdate mocks base method.
+func (m *MockDBHandler) CaseUpdateTMUpdate(ctx context.Context, id uuid.UUID, tmUpdate *time.Time) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseUpdateTMUpdate", ctx, id, tmUpdate)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CaseUpdateTMUpdate indicates an expected call of CaseUpdateTMUpdate.
+func (mr *MockDBHandlerMockRecorder) CaseUpdateTMUpdate(ctx, id, tmUpdate any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseUpdateTMUpdate", reflect.TypeOf((*MockDBHandler)(nil).CaseUpdateTMUpdate), ctx, id, tmUpdate)
+}
+
+// CaseUpdateTMUpdateTx mocks base method.
+func (m *MockDBHandler) CaseUpdateTMUpdateTx(ctx context.Context, tx *sql.Tx, id uuid.UUID, tmUpdate *time.Time) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseUpdateTMUpdateTx", ctx, tx, id, tmUpdate)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CaseUpdateTMUpdateTx indicates an expected call of CaseUpdateTMUpdateTx.
+func (mr *MockDBHandlerMockRecorder) CaseUpdateTMUpdateTx(ctx, tx, id, tmUpdate any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseUpdateTMUpdateTx", reflect.TypeOf((*MockDBHandler)(nil).CaseUpdateTMUpdateTx), ctx, tx, id, tmUpdate)
 }
 
 // ContactCreate mocks base method.
@@ -364,6 +763,20 @@ func (mr *MockDBHandlerMockRecorder) ResolutionCreate(ctx, r any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResolutionCreate", reflect.TypeOf((*MockDBHandler)(nil).ResolutionCreate), ctx, r)
 }
 
+// ResolutionCreateTx mocks base method.
+func (m *MockDBHandler) ResolutionCreateTx(ctx context.Context, tx *sql.Tx, r *resolution.Resolution) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ResolutionCreateTx", ctx, tx, r)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ResolutionCreateTx indicates an expected call of ResolutionCreateTx.
+func (mr *MockDBHandlerMockRecorder) ResolutionCreateTx(ctx, tx, r any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResolutionCreateTx", reflect.TypeOf((*MockDBHandler)(nil).ResolutionCreateTx), ctx, tx, r)
+}
+
 // ResolutionDelete mocks base method.
 func (m *MockDBHandler) ResolutionDelete(ctx context.Context, customerID, interactionID, id uuid.UUID) error {
 	m.ctrl.T.Helper()
@@ -376,6 +789,64 @@ func (m *MockDBHandler) ResolutionDelete(ctx context.Context, customerID, intera
 func (mr *MockDBHandlerMockRecorder) ResolutionDelete(ctx, customerID, interactionID, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResolutionDelete", reflect.TypeOf((*MockDBHandler)(nil).ResolutionDelete), ctx, customerID, interactionID, id)
+}
+
+// ResolutionDeleteByCase mocks base method.
+func (m *MockDBHandler) ResolutionDeleteByCase(ctx context.Context, customerID, caseID, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ResolutionDeleteByCase", ctx, customerID, caseID, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ResolutionDeleteByCase indicates an expected call of ResolutionDeleteByCase.
+func (mr *MockDBHandlerMockRecorder) ResolutionDeleteByCase(ctx, customerID, caseID, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResolutionDeleteByCase", reflect.TypeOf((*MockDBHandler)(nil).ResolutionDeleteByCase), ctx, customerID, caseID, id)
+}
+
+// ResolutionDeleteByCaseTx mocks base method.
+func (m *MockDBHandler) ResolutionDeleteByCaseTx(ctx context.Context, tx *sql.Tx, customerID, caseID, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ResolutionDeleteByCaseTx", ctx, tx, customerID, caseID, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ResolutionDeleteByCaseTx indicates an expected call of ResolutionDeleteByCaseTx.
+func (mr *MockDBHandlerMockRecorder) ResolutionDeleteByCaseTx(ctx, tx, customerID, caseID, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResolutionDeleteByCaseTx", reflect.TypeOf((*MockDBHandler)(nil).ResolutionDeleteByCaseTx), ctx, tx, customerID, caseID, id)
+}
+
+// ResolutionListByCase mocks base method.
+func (m *MockDBHandler) ResolutionListByCase(ctx context.Context, customerID, caseID uuid.UUID) ([]*resolution.Resolution, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ResolutionListByCase", ctx, customerID, caseID)
+	ret0, _ := ret[0].([]*resolution.Resolution)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ResolutionListByCase indicates an expected call of ResolutionListByCase.
+func (mr *MockDBHandlerMockRecorder) ResolutionListByCase(ctx, customerID, caseID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResolutionListByCase", reflect.TypeOf((*MockDBHandler)(nil).ResolutionListByCase), ctx, customerID, caseID)
+}
+
+// ResolutionListByCaseTx mocks base method.
+func (m *MockDBHandler) ResolutionListByCaseTx(ctx context.Context, tx *sql.Tx, customerID, caseID uuid.UUID) ([]*resolution.Resolution, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ResolutionListByCaseTx", ctx, tx, customerID, caseID)
+	ret0, _ := ret[0].([]*resolution.Resolution)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ResolutionListByCaseTx indicates an expected call of ResolutionListByCaseTx.
+func (mr *MockDBHandlerMockRecorder) ResolutionListByCaseTx(ctx, tx, customerID, caseID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResolutionListByCaseTx", reflect.TypeOf((*MockDBHandler)(nil).ResolutionListByCaseTx), ctx, tx, customerID, caseID)
 }
 
 // ResolutionListByContact mocks base method.

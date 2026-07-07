@@ -6,14 +6,20 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 	"time"
 
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
+
 	"github.com/gofrs/uuid"
 
+	"monorepo/bin-contact-manager/models/casenote"
 	"monorepo/bin-contact-manager/models/contact"
 	"monorepo/bin-contact-manager/models/interaction"
+	"monorepo/bin-contact-manager/models/kase"
 	"monorepo/bin-contact-manager/models/resolution"
 	"monorepo/bin-contact-manager/pkg/cachehandler"
 )
@@ -28,6 +34,7 @@ type DBHandler interface {
 	ContactDelete(ctx context.Context, id uuid.UUID) error
 	ContactLookupByPhone(ctx context.Context, customerID uuid.UUID, phoneE164 string) (*contact.Contact, error)
 	ContactLookupByEmail(ctx context.Context, customerID uuid.UUID, email string) (*contact.Contact, error)
+	AddressLookupContactIDByTypeTarget(ctx context.Context, customerID uuid.UUID, addrType commonaddress.Type, target string) (uuid.UUID, error)
 	ContactDeleteByCustomerID(ctx context.Context, customerID uuid.UUID) error
 
 	// Address operations
@@ -54,9 +61,52 @@ type DBHandler interface {
 
 	// Resolution operations
 	ResolutionCreate(ctx context.Context, r *resolution.Resolution) error
+	ResolutionCreateTx(ctx context.Context, tx *sql.Tx, r *resolution.Resolution) error
 	ResolutionDelete(ctx context.Context, customerID, interactionID, id uuid.UUID) error
+	ResolutionDeleteByCase(ctx context.Context, customerID, caseID, id uuid.UUID) error
+	ResolutionDeleteByCaseTx(ctx context.Context, tx *sql.Tx, customerID, caseID, id uuid.UUID) error
 	ResolutionListByInteraction(ctx context.Context, customerID, interactionID uuid.UUID) ([]*resolution.Resolution, error)
+	ResolutionListByCase(ctx context.Context, customerID, caseID uuid.UUID) ([]*resolution.Resolution, error)
+	ResolutionListByCaseTx(ctx context.Context, tx *sql.Tx, customerID, caseID uuid.UUID) ([]*resolution.Resolution, error)
 	ResolutionListByContact(ctx context.Context, customerID, contactID uuid.UUID) ([]*resolution.Resolution, error)
+
+	// Case operations
+	BeginTx(ctx context.Context) (*sql.Tx, error)
+	CaseInsert(ctx context.Context, c *kase.Case) error
+	CaseInsertTx(ctx context.Context, tx *sql.Tx, c *kase.Case) error
+	CaseGetByID(ctx context.Context, id uuid.UUID) (*kase.Case, error)
+	CaseGetByIDTx(ctx context.Context, tx *sql.Tx, id uuid.UUID) (*kase.Case, error)
+	CaseGetByIDForUpdate(ctx context.Context, tx *sql.Tx, customerID, id uuid.UUID) (*kase.Case, error)
+	CaseGetOpenByPeer(ctx context.Context, tx *sql.Tx, customerID uuid.UUID, peerType commonaddress.Type, peerTarget, referenceType string) (*kase.Case, error)
+	CaseUpdateStatusClosed(ctx context.Context, customerID, id uuid.UUID, closedReason, closedByType string, closedByID *uuid.UUID, closedAt *time.Time) (bool, error)
+	CaseUpdateStatusClosedTx(ctx context.Context, tx *sql.Tx, customerID, id uuid.UUID, closedReason, closedByType string, closedByID *uuid.UUID, closedAt *time.Time) (bool, error)
+	CaseUpdateTMUpdate(ctx context.Context, id uuid.UUID, tmUpdate *time.Time) error
+	CaseUpdateTMUpdateTx(ctx context.Context, tx *sql.Tx, id uuid.UUID, tmUpdate *time.Time) error
+	CaseUpdateContactID(ctx context.Context, customerID, id, contactID uuid.UUID) error
+	CaseUpdateContactIDTx(ctx context.Context, tx *sql.Tx, customerID, id, contactID uuid.UUID) error
+	CaseClearContactIDTx(ctx context.Context, tx *sql.Tx, customerID, id uuid.UUID) error
+	CaseListUnresolved(ctx context.Context, customerID uuid.UUID) ([]*kase.Case, error)
+	CaseListAll(ctx context.Context) ([]*kase.Case, error)
+
+	// CaseNote operations (design §3.5)
+	CaseNoteCreate(ctx context.Context, n *casenote.CaseNote) error
+	CaseNoteDelete(ctx context.Context, customerID, caseID, id uuid.UUID) error
+	CaseNoteListByCase(ctx context.Context, customerID, caseID uuid.UUID) ([]*casenote.CaseNote, error)
+
+	// CaseTagAssignment operations (design §7 round-22 correction)
+	CaseTagAssignmentCreate(ctx context.Context, caseID, tagID uuid.UUID) error
+	CaseTagAssignmentDelete(ctx context.Context, caseID, tagID uuid.UUID) error
+	CaseTagAssignmentListByCaseID(ctx context.Context, caseID uuid.UUID) ([]uuid.UUID, error)
+	CaseListByOwner(ctx context.Context, customerID uuid.UUID, ownerType commonidentity.OwnerType, ownerID uuid.UUID) ([]*kase.Case, error)
+	CaseGetLastClosedByPeer(ctx context.Context, customerID uuid.UUID, peerType commonaddress.Type, peerTarget, referenceType string) (*kase.Case, error)
+	CaseGetLastClosedByPeerTx(ctx context.Context, tx *sql.Tx, customerID uuid.UUID, peerType commonaddress.Type, peerTarget, referenceType string) (*kase.Case, error)
+
+	// CaseList returns Cases scoped to customerID, optionally filtered by
+	// status (empty string = no status filter) and/or owner
+	// (ownerType == commonidentity.OwnerTypeNone or ownerID == uuid.Nil =
+	// no owner filter). Backs the Phase 5 RPC/REST GET /v1/cases?...
+	// list surface (design §9).
+	CaseList(ctx context.Context, customerID uuid.UUID, status string, ownerType commonidentity.OwnerType, ownerID uuid.UUID) ([]*kase.Case, error)
 }
 
 // handler database handler
@@ -64,6 +114,15 @@ type handler struct {
 	utilHandler utilhandler.UtilHandler
 	db          *sql.DB
 	cache       cachehandler.CacheHandler
+
+	// forUpdateSuffix is "FOR UPDATE" against MySQL and "" against the
+	// SQLite in-memory test DB (SQLite has no FOR UPDATE syntax; its
+	// whole-connection/file-level locking already serializes writers
+	// coarsely enough for tests, which never run concurrent goroutines
+	// against the same in-memory DB across separate connections anyway).
+	// Detected once at construction via the driver's type name -- see
+	// NewHandler.
+	forUpdateSuffix string
 }
 
 // handler errors
@@ -76,14 +135,34 @@ var (
 	// target). Distinct from ErrConflict, whose message ("address already
 	// claimed") is specific to the ClaimAddress flow.
 	ErrDuplicateTarget = fmt.Errorf("address already exists for this customer")
+
+	// ErrDuplicate is returned by CaseInsert when the insert violates
+	// uq_case_open_peer (contact_cases' partial-unique invariant: at most
+	// one OPEN case per customer/peer/reference_type -- see
+	// contact-case-management design §3.1). Callers (the get-or-create
+	// algorithm, design §4) use this as the signal to retry with a locked
+	// re-select rather than treating it as a generic infrastructure error.
+	ErrDuplicate = fmt.Errorf("an open case already exists for this customer/peer/reference_type")
 )
 
 // NewHandler creates DBHandler
 func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {
+	// Detect SQLite (used only by the in-memory test harness) vs. MySQL
+	// (production) by the driver's concrete type name, so FOR UPDATE
+	// locking clauses can be conditionally omitted where the driver
+	// doesn't support the syntax. reflect avoids importing the sqlite3
+	// driver package here (kept as a test-only dependency).
+	driverType := fmt.Sprintf("%T", db.Driver())
+	forUpdateSuffix := "FOR UPDATE"
+	if strings.Contains(strings.ToLower(driverType), "sqlite") {
+		forUpdateSuffix = ""
+	}
+
 	h := &handler{
-		utilHandler: utilhandler.NewUtilHandler(),
-		db:          db,
-		cache:       cache,
+		utilHandler:     utilhandler.NewUtilHandler(),
+		db:              db,
+		cache:           cache,
+		forUpdateSuffix: forUpdateSuffix,
 	}
 	return h
 }

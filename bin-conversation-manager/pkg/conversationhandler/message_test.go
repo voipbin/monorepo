@@ -447,3 +447,97 @@ func Test_MessageEventReceived(t *testing.T) {
 		})
 	}
 }
+
+// Test_MessageEventReceived_CaseIDHint verifies that when the resolved
+// Conversation carries Metadata.ContactCaseID (contact-case-management
+// design §4.3/§4.4), MessageEventReceived passes it through as
+// MessageCreateArgs.CaseID so it survives onto the
+// conversation_message_created event. A Conversation with nil Metadata
+// (the far more common case) must pass a nil CaseID -- not a zero UUID.
+func Test_MessageEventReceived_CaseIDHint(t *testing.T) {
+	customerID := uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
+	convID := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111112")
+	msgID := uuid.FromStringOrNil("22222222-2222-2222-2222-222222222223")
+	convMsgID := uuid.FromStringOrNil("33333333-3333-3333-3333-333333333334")
+	caseID := uuid.FromStringOrNil("f1b2c3d4-000e-000e-000e-000000000001")
+
+	selfAddr := commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551110000"}
+	peerAddr := commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15552220000"}
+
+	incoming := &mmmessage.Message{
+		Identity: commonidentity.Identity{
+			ID:         msgID,
+			CustomerID: customerID,
+		},
+		Source: &peerAddr,
+		Targets: []mmtarget.Target{
+			{Destination: selfAddr},
+		},
+		Direction: mmmessage.DirectionInbound,
+		Text:      "hello, this conversation has an open case linked",
+	}
+
+	responseConversation := &conversation.Conversation{
+		Identity: commonidentity.Identity{
+			ID:         convID,
+			CustomerID: customerID,
+		},
+		Owner: commonidentity.Owner{
+			OwnerType: commonidentity.OwnerTypeAgent,
+			OwnerID:   uuid.FromStringOrNil("f1b2c3d4-000e-000e-000e-000000000002"),
+		},
+		Type:     conversation.TypeMessage,
+		Self:     selfAddr,
+		Peer:     peerAddr,
+		Metadata: &conversation.Metadata{ContactCaseID: &caseID},
+	}
+	responseConvMessage := &message.Message{
+		Identity: commonidentity.Identity{
+			ID:         convMsgID,
+			CustomerID: customerID,
+		},
+		ConversationID: convID,
+		CaseID:         &caseID,
+	}
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockMessage := messagehandler.NewMockMessageHandler(mc)
+	mockLine := linehandler.NewMockLineHandler(mc)
+	h := &conversationHandler{
+		db:             mockDB,
+		notifyHandler:  mockNotify,
+		reqHandler:     mockReq,
+		messageHandler: mockMessage,
+		lineHandler:    mockLine,
+	}
+	ctx := context.Background()
+
+	mockDB.EXPECT().ConversationGetBySelfAndPeer(ctx, selfAddr, peerAddr).Return(responseConversation, nil)
+
+	mockMessage.EXPECT().Create(
+		ctx,
+		messagehandler.MessageCreateArgs{
+			ID:             incoming.ID,
+			CustomerID:     responseConversation.CustomerID,
+			ConversationID: responseConversation.ID,
+			Direction:      message.DirectionIncoming,
+			Status:         message.StatusDone,
+			ReferenceType:  message.ReferenceTypeMessage,
+			ReferenceID:    incoming.ID,
+			Text:           incoming.Text,
+			Medias:         []media.Media{},
+			Source:         peerAddr,
+			Destination:    selfAddr,
+			CaseID:         &caseID,
+		},
+	).Return(responseConvMessage, nil)
+
+	if err := h.MessageEventReceived(ctx, incoming); err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+}

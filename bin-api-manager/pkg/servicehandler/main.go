@@ -42,8 +42,10 @@ import (
 	cfconference "monorepo/bin-conference-manager/models/conference"
 	cfconferencecall "monorepo/bin-conference-manager/models/conferencecall"
 
+	cmcasenote "monorepo/bin-contact-manager/models/casenote"
 	cmcontact "monorepo/bin-contact-manager/models/contact"
 	cminteraction "monorepo/bin-contact-manager/models/interaction"
+	cmkase "monorepo/bin-contact-manager/models/kase"
 	cmresolution "monorepo/bin-contact-manager/models/resolution"
 	cmrequest "monorepo/bin-contact-manager/pkg/listenhandler/models/request"
 
@@ -467,6 +469,49 @@ type ServiceHandler interface {
 
 	ContactTagAdd(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, tagID uuid.UUID) (*cmcontact.WebhookMessage, error)
 	ContactTagRemove(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, tagID uuid.UUID) (*cmcontact.WebhookMessage, error)
+
+	// case handlers
+	CaseList(
+		ctx context.Context,
+		a *auth.AuthIdentity,
+		targetCustomerID uuid.UUID,
+		size uint64,
+		token string,
+		status string,
+		ownerType string,
+		ownerID uuid.UUID,
+	) ([]*cmkase.Case, string, error)
+	CaseListUnresolved(
+		ctx context.Context,
+		a *auth.AuthIdentity,
+		size uint64,
+		token string,
+	) ([]*cmkase.Case, string, error)
+	CaseGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cmkase.Case, error)
+	CaseClose(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cmkase.Case, error)
+	CaseContinue(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cmkase.Case, error)
+
+	// case note handlers
+	CaseNoteList(ctx context.Context, a *auth.AuthIdentity, caseID uuid.UUID) ([]*cmcasenote.CaseNote, error)
+	CaseNoteCreate(
+		ctx context.Context,
+		a *auth.AuthIdentity,
+		caseID uuid.UUID,
+		authorType string,
+		authorID *uuid.UUID,
+		text string,
+	) (*cmcasenote.CaseNote, error)
+	CaseNoteDelete(ctx context.Context, a *auth.AuthIdentity, caseID uuid.UUID, noteID uuid.UUID) error
+
+	// case message handlers
+	CaseMessageSend(
+		ctx context.Context,
+		a *auth.AuthIdentity,
+		caseID uuid.UUID,
+		source string,
+		destination string,
+		text string,
+	) (*cvmessage.WebhookMessage, error)
 
 	// interaction handlers
 	InteractionList(

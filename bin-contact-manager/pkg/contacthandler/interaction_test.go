@@ -17,6 +17,8 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"monorepo/bin-contact-manager/models/interaction"
+	"monorepo/bin-contact-manager/models/kase"
+	"monorepo/bin-contact-manager/pkg/casehandler"
 	"monorepo/bin-contact-manager/pkg/dbhandler"
 )
 
@@ -28,6 +30,7 @@ func Test_EventCallCreated(t *testing.T) {
 
 		responseUUID    uuid.UUID
 		responseCurTime *time.Time
+		expectCaseID    uuid.UUID
 
 		expectInteraction *interaction.Interaction
 	}{
@@ -52,6 +55,7 @@ func Test_EventCallCreated(t *testing.T) {
 
 			responseUUID:    uuid.FromStringOrNil("bb000001-0000-0000-0000-000000000001"),
 			responseCurTime: func() *time.Time { t := time.Date(2026, 6, 28, 10, 0, 0, 0, time.UTC); return &t }(),
+			expectCaseID:    uuid.FromStringOrNil("bb000001-0000-0000-0000-0000000000ca"),
 
 			expectInteraction: &interaction.Interaction{
 				ID:            uuid.FromStringOrNil("bb000001-0000-0000-0000-000000000001"),
@@ -87,6 +91,7 @@ func Test_EventCallCreated(t *testing.T) {
 
 			responseUUID:    uuid.FromStringOrNil("bb000002-0000-0000-0000-000000000001"),
 			responseCurTime: func() *time.Time { t := time.Date(2026, 6, 28, 11, 0, 0, 0, time.UTC); return &t }(),
+			expectCaseID:    uuid.FromStringOrNil("bb000002-0000-0000-0000-0000000000ca"),
 
 			expectInteraction: &interaction.Interaction{
 				ID:            uuid.FromStringOrNil("bb000002-0000-0000-0000-000000000001"),
@@ -122,6 +127,7 @@ func Test_EventCallCreated(t *testing.T) {
 
 			responseUUID:    uuid.FromStringOrNil("bb000003-0000-0000-0000-000000000001"),
 			responseCurTime: func() *time.Time { t := time.Date(2026, 6, 28, 13, 0, 0, 0, time.UTC); return &t }(),
+			expectCaseID:    uuid.FromStringOrNil("bb000003-0000-0000-0000-0000000000ca"),
 
 			expectInteraction: &interaction.Interaction{
 				ID:            uuid.FromStringOrNil("bb000003-0000-0000-0000-000000000001"),
@@ -189,18 +195,23 @@ func Test_EventCallCreated(t *testing.T) {
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCase := casehandler.NewMockCaseHandler(mc)
 			h := contactHandler{
 				db:            mockDB,
 				notifyHandler: mockNotify,
 				reqHandler:    mockReq,
 				utilHandler:   mockUtil,
+				caseHandler:   mockCase,
 			}
 			ctx := context.Background()
 
 			if tt.expectInteraction != nil {
+				mockCase.EXPECT().GetOrCreate(ctx, tt.expectInteraction.CustomerID, gomock.Any(), commonaddress.Type(tt.expectInteraction.PeerType), tt.expectInteraction.PeerTarget, "call", gomock.Any()).Return(&kase.Case{ID: tt.expectCaseID}, nil)
+				expected := *tt.expectInteraction
+				expected.CaseID = &tt.expectCaseID
 				mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 				mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
-				mockDB.EXPECT().InteractionCreate(ctx, tt.expectInteraction).Return(nil)
+				mockDB.EXPECT().InteractionCreate(ctx, &expected).Return(nil)
 			}
 
 			if err := h.EventCallCreated(ctx, tt.message); err != nil {
@@ -211,6 +222,8 @@ func Test_EventCallCreated(t *testing.T) {
 }
 
 func Test_EventConversationMessageCreated(t *testing.T) {
+	hintCaseID := uuid.FromStringOrNil("ee000001-0000-0000-0000-000000000099")
+
 	tests := []struct {
 		name string
 
@@ -218,6 +231,7 @@ func Test_EventConversationMessageCreated(t *testing.T) {
 
 		responseUUID    uuid.UUID
 		responseCurTime *time.Time
+		expectCaseID    uuid.UUID
 
 		expectInteraction *interaction.Interaction
 	}{
@@ -238,10 +252,12 @@ func Test_EventConversationMessageCreated(t *testing.T) {
 					Type:   commonaddress.TypeLine,
 					Target: "",
 				},
+				CaseID: &hintCaseID,
 			},
 
 			responseUUID:    uuid.FromStringOrNil("dd000001-0000-0000-0000-000000000001"),
 			responseCurTime: func() *time.Time { t := time.Date(2026, 6, 28, 12, 0, 0, 0, time.UTC); return &t }(),
+			expectCaseID:    uuid.FromStringOrNil("dd000001-0000-0000-0000-0000000000ca"),
 
 			expectInteraction: &interaction.Interaction{
 				ID:            uuid.FromStringOrNil("dd000001-0000-0000-0000-000000000001"),
@@ -288,18 +304,31 @@ func Test_EventConversationMessageCreated(t *testing.T) {
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCase := casehandler.NewMockCaseHandler(mc)
 			h := contactHandler{
 				db:            mockDB,
 				notifyHandler: mockNotify,
 				reqHandler:    mockReq,
 				utilHandler:   mockUtil,
+				caseHandler:   mockCase,
 			}
 			ctx := context.Background()
 
 			if tt.expectInteraction != nil {
+				// Regression guard for the round-1 review defect: the
+				// message's CaseID hint MUST be forwarded verbatim to
+				// GetOrCreate's caseIDHint parameter, not silently
+				// dropped as a hardcoded nil. gomock.Eq on the actual
+				// pointer VALUE (not gomock.Any()) is required here --
+				// gomock.Any() would pass identically whether the hint
+				// were forwarded or discarded, which is exactly how this
+				// regression escaped detection in round 1.
+				mockCase.EXPECT().GetOrCreate(ctx, tt.expectInteraction.CustomerID, gomock.Any(), commonaddress.Type(tt.expectInteraction.PeerType), tt.expectInteraction.PeerTarget, "conversation_message", tt.message.CaseID).Return(&kase.Case{ID: tt.expectCaseID}, nil)
+				expected := *tt.expectInteraction
+				expected.CaseID = &tt.expectCaseID
 				mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 				mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
-				mockDB.EXPECT().InteractionCreate(ctx, tt.expectInteraction).Return(nil)
+				mockDB.EXPECT().InteractionCreate(ctx, &expected).Return(nil)
 			}
 
 			if err := h.EventConversationMessageCreated(ctx, tt.message); err != nil {

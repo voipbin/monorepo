@@ -154,11 +154,20 @@ func (h *contactHandler) interactionListByContact(
 	positiveIDs := make(map[uuid.UUID]bool)
 	negativeIDs := make(map[uuid.UUID]bool)
 	for _, r := range resolutions {
+		// Case-level Resolutions (InteractionID nil, CaseID set --
+		// contact-case-management design §3.3) carry no interaction to
+		// key this Interaction-timeline set-MINUS map by; skip them
+		// here rather than incorrectly keying/dedupe-ing against a
+		// zero-UUID (which could otherwise collide with a real,
+		// legitimately-zero interaction reference in a future schema).
+		if r.InteractionID == nil {
+			continue
+		}
 		switch r.ResolutionType {
 		case resolution.ResolutionTypePositive:
-			positiveIDs[r.InteractionID] = true
+			positiveIDs[*r.InteractionID] = true
 		case resolution.ResolutionTypeNegative:
-			negativeIDs[r.InteractionID] = true
+			negativeIDs[*r.InteractionID] = true
 		}
 	}
 
