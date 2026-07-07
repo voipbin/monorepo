@@ -378,6 +378,35 @@ func (mr *MockDBHandlerMockRecorder) ResolutionDelete(ctx, customerID, interacti
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResolutionDelete", reflect.TypeOf((*MockDBHandler)(nil).ResolutionDelete), ctx, customerID, interactionID, id)
 }
 
+// ResolutionDeleteByCase mocks base method.
+func (m *MockDBHandler) ResolutionDeleteByCase(ctx context.Context, customerID, caseID, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ResolutionDeleteByCase", ctx, customerID, caseID, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ResolutionDeleteByCase indicates an expected call of ResolutionDeleteByCase.
+func (mr *MockDBHandlerMockRecorder) ResolutionDeleteByCase(ctx, customerID, caseID, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResolutionDeleteByCase", reflect.TypeOf((*MockDBHandler)(nil).ResolutionDeleteByCase), ctx, customerID, caseID, id)
+}
+
+// ResolutionListByCase mocks base method.
+func (m *MockDBHandler) ResolutionListByCase(ctx context.Context, customerID, caseID uuid.UUID) ([]*resolution.Resolution, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ResolutionListByCase", ctx, customerID, caseID)
+	ret0, _ := ret[0].([]*resolution.Resolution)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ResolutionListByCase indicates an expected call of ResolutionListByCase.
+func (mr *MockDBHandlerMockRecorder) ResolutionListByCase(ctx, customerID, caseID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResolutionListByCase", reflect.TypeOf((*MockDBHandler)(nil).ResolutionListByCase), ctx, customerID, caseID)
+}
+
 // ResolutionListByContact mocks base method.
 func (m *MockDBHandler) ResolutionListByContact(ctx context.Context, customerID, contactID uuid.UUID) ([]*resolution.Resolution, error) {
 	m.ctrl.T.Helper()

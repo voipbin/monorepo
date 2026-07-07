@@ -107,7 +107,7 @@ func (h *contactHandler) ResolutionCreate(
 		ID:             id,
 		CustomerID:     customerID,
 		ContactID:      contactID,
-		InteractionID:  interactionID,
+		InteractionID:  &interactionID,
 		ResolutionType: resolutionType,
 		ResolvedByType: resolvedByType,
 		ResolvedByID:   resolvedByID,
