@@ -224,7 +224,7 @@ func Test_CaseUpdateStatusClosed(t *testing.T) {
 		t.Fatalf("CaseInsert() error = %v", err)
 	}
 
-	ok, err := h.CaseUpdateStatusClosed(ctx, caseID, kase.ClosedReasonAgentClosed, kase.ClosedByTypeAgent, &agentID, closedAt)
+	ok, err := h.CaseUpdateStatusClosed(ctx, customerID, caseID, kase.ClosedReasonAgentClosed, kase.ClosedByTypeAgent, &agentID, closedAt)
 	if err != nil {
 		t.Fatalf("CaseUpdateStatusClosed() error = %v", err)
 	}
@@ -245,7 +245,7 @@ func Test_CaseUpdateStatusClosed(t *testing.T) {
 
 	// Double-close: WHERE status='open' guard means the second call
 	// affects 0 rows -- idempotent no-op, not an error.
-	ok2, err := h.CaseUpdateStatusClosed(ctx, caseID, kase.ClosedReasonTimeout, kase.ClosedByTypeSystem, nil, closedAt)
+	ok2, err := h.CaseUpdateStatusClosed(ctx, customerID, caseID, kase.ClosedReasonTimeout, kase.ClosedByTypeSystem, nil, closedAt)
 	if err != nil {
 		t.Fatalf("CaseUpdateStatusClosed() second call error = %v", err)
 	}

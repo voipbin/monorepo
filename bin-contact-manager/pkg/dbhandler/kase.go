@@ -204,8 +204,12 @@ func (h *handler) CaseGetByIDForUpdate(ctx context.Context, tx *sql.Tx, customer
 }
 
 // caseUpdateStatusClosedExec is the shared implementation for
-// CaseUpdateStatusClosed/CaseUpdateStatusClosedTx.
-func caseUpdateStatusClosedExec(exec sqlExecutor, id uuid.UUID, closedReason, closedByType string, closedByID *uuid.UUID, closedAt *time.Time) (bool, error) {
+// CaseUpdateStatusClosed/CaseUpdateStatusClosedTx. The customer_id
+// predicate is included in the same UPDATE statement as the mutation
+// itself (not checked separately afterward) so a cross-tenant caller's
+// UPDATE can never match a row at all -- there is no window where the
+// mutation could commit before tenancy is verified.
+func caseUpdateStatusClosedExec(exec sqlExecutor, customerID, id uuid.UUID, closedReason, closedByType string, closedByID *uuid.UUID, closedAt *time.Time) (bool, error) {
 	setMap := sq.Eq{
 		"status":         string(kase.StatusClosed),
 		"closed_reason":  closedReason,
@@ -219,6 +223,7 @@ func caseUpdateStatusClosedExec(exec sqlExecutor, id uuid.UUID, closedReason, cl
 	query, args, err := sq.Update(caseTable).
 		SetMap(setMap).
 		Where(sq.Eq{"id": id.Bytes()}).
+		Where(sq.Eq{"customer_id": customerID.Bytes()}).
 		Where(sq.Eq{"status": string(kase.StatusOpen)}).
 		ToSql()
 	if err != nil {
@@ -239,20 +244,23 @@ func caseUpdateStatusClosedExec(exec sqlExecutor, id uuid.UUID, closedReason, cl
 }
 
 // CaseUpdateStatusClosed transitions a Case to closed, guarded by
-// WHERE status='open' (design §5.1's optimistic idempotent-double-close
-// invariant). Returns (true, nil) if the close actually happened (1 row
-// affected), (false, nil) if the Case was already closed (0 rows
-// affected -- a no-op, not an error): callers must re-read the Case to
+// WHERE customer_id=? AND status='open' (design §5.1's optimistic
+// idempotent-double-close invariant, plus tenant isolation baked into
+// the mutating statement itself). Returns (true, nil) if the close
+// actually happened (1 row affected), (false, nil) if the Case was
+// already closed OR belongs to a different tenant OR doesn't exist (0
+// rows affected -- a no-op, not an error): callers must re-read the
+// Case (itself tenant-scoped) to distinguish these cases and to
 // discover the actually-persisted closed_reason/closed_by, not assume
 // their own call's arguments won.
-func (h *handler) CaseUpdateStatusClosed(ctx context.Context, id uuid.UUID, closedReason, closedByType string, closedByID *uuid.UUID, closedAt *time.Time) (bool, error) {
-	return caseUpdateStatusClosedExec(h.db, id, closedReason, closedByType, closedByID, closedAt)
+func (h *handler) CaseUpdateStatusClosed(ctx context.Context, customerID, id uuid.UUID, closedReason, closedByType string, closedByID *uuid.UUID, closedAt *time.Time) (bool, error) {
+	return caseUpdateStatusClosedExec(h.db, customerID, id, closedReason, closedByType, closedByID, closedAt)
 }
 
 // CaseUpdateStatusClosedTx is CaseUpdateStatusClosed scoped to a
 // caller-managed transaction (design §4's timeout-close branch).
-func (h *handler) CaseUpdateStatusClosedTx(ctx context.Context, tx *sql.Tx, id uuid.UUID, closedReason, closedByType string, closedByID *uuid.UUID, closedAt *time.Time) (bool, error) {
-	return caseUpdateStatusClosedExec(tx, id, closedReason, closedByType, closedByID, closedAt)
+func (h *handler) CaseUpdateStatusClosedTx(ctx context.Context, tx *sql.Tx, customerID, id uuid.UUID, closedReason, closedByType string, closedByID *uuid.UUID, closedAt *time.Time) (bool, error) {
+	return caseUpdateStatusClosedExec(tx, customerID, id, closedReason, closedByType, closedByID, closedAt)
 }
 
 // caseUpdateTMUpdateExec is the shared implementation for

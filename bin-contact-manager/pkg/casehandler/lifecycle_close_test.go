@@ -155,3 +155,61 @@ func Test_Close_NonExistentCase_Returns404Signal(t *testing.T) {
 		t.Errorf("expected ErrNotFound for a genuinely non-existent case, got: %v", err)
 	}
 }
+
+// Test_Close_CrossTenant_MustNotMutateOtherTenantsCase is the round-1
+// review's critical defect regression guard: a caller from a DIFFERENT
+// customer must NOT be able to close another tenant's open case. Prior
+// to the fix, CaseUpdateStatusClosed's UPDATE had no customer_id
+// predicate at all -- the mutation committed BEFORE the c.CustomerID !=
+// customerID check ran, so an attacker calling Close() with their own
+// customerID but a victim's case id would silently close the victim's
+// case while receiving ErrNotFound (looking like nothing happened). The
+// fix moves the customer_id predicate into the UPDATE statement itself,
+// so a cross-tenant caller's UPDATE can never match a row at all.
+func Test_Close_CrossTenant_MustNotMutateOtherTenantsCase(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	db := dbhandler.NewHandler(dbTest, mockCache)
+	h := &caseHandler{utilHandler: mockUtil, reqHandler: mockReq, db: db, notifyHandler: mockNotify}
+	ctx := context.Background()
+
+	victimCustomerID := uuid.FromStringOrNil("f1b2c3d4-9004-9004-9004-000000000001")
+	attackerCustomerID := uuid.FromStringOrNil("f1b2c3d4-9004-9004-9004-000000000002")
+	caseID := uuid.FromStringOrNil("f1b2c3d4-9004-9004-9004-000000000003")
+	attackerAgentID := uuid.FromStringOrNil("f1b2c3d4-9004-9004-9004-000000000004")
+	opened := time.Date(2026, 6, 28, 10, 0, 0, 0, time.UTC)
+	attackTime := time.Date(2026, 6, 28, 11, 0, 0, 0, time.UTC)
+
+	victimCase := &kase.Case{
+		ID: caseID, CustomerID: victimCustomerID,
+		PeerType: commonaddress.TypeTel, PeerTarget: "+155****0004", ReferenceType: "call",
+		Status: kase.StatusOpen, OpenedAt: &opened, TMCreate: &opened, TMUpdate: &opened,
+	}
+	if err := db.CaseInsert(ctx, victimCase); err != nil {
+		t.Fatalf("CaseInsert() error = %v", err)
+	}
+
+	mockUtil.EXPECT().TimeNow().Return(&attackTime)
+
+	// The attacker calls Close() with THEIR OWN customerID but the
+	// victim's case id.
+	_, err := h.Close(ctx, attackerCustomerID, caseID, commonidentity.OwnerTypeAgent, attackerAgentID)
+	if err != dbhandler.ErrNotFound {
+		t.Errorf("expected ErrNotFound (tenant isolation must hide existence), got: %v", err)
+	}
+
+	// The critical assertion: the victim's case must be UNCHANGED --
+	// still open, never touched by the attacker's call.
+	reread, err := db.CaseGetByID(ctx, caseID)
+	if err != nil {
+		t.Fatalf("CaseGetByID() error = %v", err)
+	}
+	if reread.Status != kase.StatusOpen {
+		t.Errorf("BUG: cross-tenant Close() mutated another tenant's case. status=%s closed_reason=%s closed_by_id=%v", reread.Status, reread.ClosedReason, reread.ClosedByID)
+	}
+}

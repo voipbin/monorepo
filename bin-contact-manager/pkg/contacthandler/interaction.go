@@ -151,7 +151,7 @@ func (h *contactHandler) EventConversationMessageCreated(ctx context.Context, m 
 	id := h.utilHandler.UUIDCreate()
 	now := h.utilHandler.TimeNow()
 
-	c, err := h.caseHandler.GetOrCreate(ctx, m.CustomerID, commonaddress.Address{}, peer.Type, peerTarget, "conversation_message", nil)
+	c, err := h.caseHandler.GetOrCreate(ctx, m.CustomerID, commonaddress.Address{}, peer.Type, peerTarget, "conversation_message", m.CaseID)
 	if err != nil {
 		return fmt.Errorf("could not get-or-create case. EventConversationMessageCreated. err: %v", err)
 	}

@@ -155,7 +155,7 @@ func (h *caseHandler) getOrCreateInTx(
 
 		// Timed out: close it, then insert a fresh replacement chained via
 		// previous_case_id.
-		if _, err := h.db.CaseUpdateStatusClosedTx(ctx, tx, found.ID, kase.ClosedReasonTimeout, kase.ClosedByTypeSystem, nil, now); err != nil {
+		if _, err := h.db.CaseUpdateStatusClosedTx(ctx, tx, customerID, found.ID, kase.ClosedReasonTimeout, kase.ClosedByTypeSystem, nil, now); err != nil {
 			return nil, false, fmt.Errorf("could not close timed-out case. GetOrCreate. err: %v", err)
 		}
 		return h.insertWithRetry(ctx, tx, customerID, peerType, peerTarget, referenceType, &found.ID, now)

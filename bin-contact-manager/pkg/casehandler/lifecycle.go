@@ -37,19 +37,43 @@ type CloseResult struct {
 }
 
 // Close implements design §5.1: an idempotent, race-tolerant close guarded
-// by WHERE status='open'. Distinguishes "0 rows because already closed by
-// someone/something else" (returns the truthful persisted state) from
-// "0 rows because the id doesn't exist" (returns dbhandler.ErrNotFound).
+// by WHERE customer_id=? AND status='open' (the tenant predicate lives in
+// the mutating UPDATE statement itself, not in a separate check run after
+// the mutation -- a cross-tenant caller's UPDATE can never match a row at
+// all). Distinguishes "0 rows because already closed by someone/something
+// else" (returns the truthful persisted state) from "0 rows because the id
+// doesn't exist or belongs to a different tenant" (returns
+// dbhandler.ErrNotFound).
 func (h *caseHandler) Close(ctx context.Context, customerID, id uuid.UUID, closedByType commonidentity.OwnerType, closedByID uuid.UUID) (*CloseResult, error) {
 	now := h.utilHandler.TimeNow()
 
 	byType := string(closedByType)
 	byID := closedByID
-	ok, err := h.db.CaseUpdateStatusClosed(ctx, id, kase.ClosedReasonAgentClosed, byType, &byID, now)
+	ok, err := h.db.CaseUpdateStatusClosed(ctx, customerID, id, kase.ClosedReasonAgentClosed, byType, &byID, now)
 	if err != nil {
 		return nil, fmt.Errorf("could not close case. Close. err: %v", err)
 	}
 
+	if ok {
+		c, err := h.db.CaseGetByID(ctx, id)
+		if err != nil {
+			return nil, err
+		}
+		return &CloseResult{
+			Case:          c,
+			ClosedReason:  c.ClosedReason,
+			ClosedByType:  c.ClosedByType,
+			ClosedByID:    c.ClosedByID,
+			AlreadyClosed: false,
+		}, nil
+	}
+
+	// 0 rows affected: the UPDATE's WHERE id=? AND customer_id=? AND
+	// status='open' matched nothing. This is ambiguous between three
+	// cases -- id doesn't exist at all, id exists but belongs to a
+	// different tenant, or id exists in this tenant but was already
+	// closed -- and re-reading via the tenant-scoped path below resolves
+	// the ambiguity without ever having mutated a row we didn't own.
 	c, err := h.db.CaseGetByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -60,22 +84,6 @@ func (h *caseHandler) Close(ctx context.Context, customerID, id uuid.UUID, close
 		return nil, dbhandler.ErrNotFound
 	}
 
-	if ok {
-		return &CloseResult{
-			Case:          c,
-			ClosedReason:  c.ClosedReason,
-			ClosedByType:  c.ClosedByType,
-			ClosedByID:    c.ClosedByID,
-			AlreadyClosed: false,
-		}, nil
-	}
-
-	// 0 rows affected: either the case was already closed by someone/
-	// something else (truthful state already reflected in the re-read c
-	// above), or the update's WHERE id=? never matched at all because the
-	// row doesn't exist -- but CaseGetByID above would have already
-	// returned ErrNotFound in that case, so reaching here means the row
-	// exists and was simply not 'open'.
 	return &CloseResult{
 		Case:          c,
 		ClosedReason:  c.ClosedReason,

@@ -222,6 +222,8 @@ func Test_EventCallCreated(t *testing.T) {
 }
 
 func Test_EventConversationMessageCreated(t *testing.T) {
+	hintCaseID := uuid.FromStringOrNil("ee000001-0000-0000-0000-000000000099")
+
 	tests := []struct {
 		name string
 
@@ -250,6 +252,7 @@ func Test_EventConversationMessageCreated(t *testing.T) {
 					Type:   commonaddress.TypeLine,
 					Target: "",
 				},
+				CaseID: &hintCaseID,
 			},
 
 			responseUUID:    uuid.FromStringOrNil("dd000001-0000-0000-0000-000000000001"),
@@ -312,7 +315,15 @@ func Test_EventConversationMessageCreated(t *testing.T) {
 			ctx := context.Background()
 
 			if tt.expectInteraction != nil {
-				mockCase.EXPECT().GetOrCreate(ctx, tt.expectInteraction.CustomerID, gomock.Any(), commonaddress.Type(tt.expectInteraction.PeerType), tt.expectInteraction.PeerTarget, "conversation_message", gomock.Any()).Return(&kase.Case{ID: tt.expectCaseID}, nil)
+				// Regression guard for the round-1 review defect: the
+				// message's CaseID hint MUST be forwarded verbatim to
+				// GetOrCreate's caseIDHint parameter, not silently
+				// dropped as a hardcoded nil. gomock.Eq on the actual
+				// pointer VALUE (not gomock.Any()) is required here --
+				// gomock.Any() would pass identically whether the hint
+				// were forwarded or discarded, which is exactly how this
+				// regression escaped detection in round 1.
+				mockCase.EXPECT().GetOrCreate(ctx, tt.expectInteraction.CustomerID, gomock.Any(), commonaddress.Type(tt.expectInteraction.PeerType), tt.expectInteraction.PeerTarget, "conversation_message", tt.message.CaseID).Return(&kase.Case{ID: tt.expectCaseID}, nil)
 				expected := *tt.expectInteraction
 				expected.CaseID = &tt.expectCaseID
 				mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
