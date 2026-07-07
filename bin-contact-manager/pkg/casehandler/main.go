@@ -86,6 +86,17 @@ type CaseHandler interface {
 	CaseTagAdd(ctx context.Context, customerID, caseID, tagID uuid.UUID) error
 	CaseTagRemove(ctx context.Context, customerID, caseID, tagID uuid.UUID) error
 	CaseTagList(ctx context.Context, customerID, caseID uuid.UUID) ([]uuid.UUID, error)
+
+	// CaseList / CaseGet implement design §9's Phase 5 RPC/REST list and
+	// get surface. CaseList is a customer-scoped, optionally
+	// status/owner-filtered list (thin delegation to dbhandler.CaseList).
+	// CaseGet is CaseGetByID with an explicit tenant check -- unlike the
+	// raw dbhandler.CaseGetByID primitive, which is unscoped and relied
+	// upon by internal callers that already verify ownership themselves
+	// (see verifyCaseOwnership), CaseGet is the public, safe-by-default
+	// entry point for the customer-facing GET /v1/cases/{id} route.
+	CaseList(ctx context.Context, customerID uuid.UUID, status string, ownerType commonidentity.OwnerType, ownerID uuid.UUID) ([]*kase.Case, error)
+	CaseGet(ctx context.Context, customerID, id uuid.UUID) (*kase.Case, error)
 }
 
 type caseHandler struct {

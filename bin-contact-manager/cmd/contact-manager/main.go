@@ -131,7 +131,7 @@ func runService(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	contactHandler := contacthandler.NewContactHandler(reqHandler, db, notifyHandler, caseHandler)
 	addrHandler := addresshandler.NewAddressHandler(db)
 
-	if err := runListen(sockHandler, contactHandler, addrHandler); err != nil {
+	if err := runListen(sockHandler, contactHandler, addrHandler, caseHandler); err != nil {
 		return err
 	}
 
@@ -143,8 +143,8 @@ func runService(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 }
 
 // runListen runs the listen service
-func runListen(sockHandler sockhandler.SockHandler, contactHandler contacthandler.ContactHandler, addrHandler addresshandler.AddressHandler) error {
-	listenHandler := listenhandler.NewListenHandler(sockHandler, contactHandler, addrHandler)
+func runListen(sockHandler sockhandler.SockHandler, contactHandler contacthandler.ContactHandler, addrHandler addresshandler.AddressHandler, caseHandler casehandler.CaseHandler) error {
+	listenHandler := listenhandler.NewListenHandler(sockHandler, contactHandler, addrHandler, caseHandler)
 
 	// run
 	if err := listenHandler.Run(string(commonoutline.QueueNameContactRequest), string(commonoutline.QueueNameDelay)); err != nil {
@@ -159,8 +159,8 @@ func runSubscribe(sockHandler sockhandler.SockHandler, contactHandler contacthan
 
 	subscribeTargets := []string{
 		string(commonoutline.QueueNameCustomerEvent),
-		string(commonoutline.QueueNameCallEvent),           // call_created -> CRM interaction timeline
-		string(commonoutline.QueueNameConversationEvent),   // conversation_message_created -> CRM interaction timeline
+		string(commonoutline.QueueNameCallEvent),         // call_created -> CRM interaction timeline
+		string(commonoutline.QueueNameConversationEvent), // conversation_message_created -> CRM interaction timeline
 	}
 	subHandler := subscribehandler.NewSubscribeHandler(sockHandler, string(commonoutline.QueueNameContactSubscribe), subscribeTargets, contactHandler)
 

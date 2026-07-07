@@ -515,3 +515,48 @@ func (h *handler) CaseGetLastClosedByPeer(ctx context.Context, customerID uuid.U
 func (h *handler) CaseGetLastClosedByPeerTx(ctx context.Context, tx *sql.Tx, customerID uuid.UUID, peerType commonaddress.Type, peerTarget, referenceType string) (*kase.Case, error) {
 	return caseGetLastClosedByPeerExec(tx, customerID, peerType, peerTarget, referenceType)
 }
+
+// CaseList returns Cases scoped to customerID, optionally filtered by
+// status and/or owner (design §9's GET /v1/cases?... list surface).
+// status == "" means no status filter; ownerType == "" or
+// ownerID == uuid.Nil means no owner filter.
+func (h *handler) CaseList(ctx context.Context, customerID uuid.UUID, status string, ownerType commonidentity.OwnerType, ownerID uuid.UUID) ([]*kase.Case, error) {
+	columns := commondatabasehandler.GetDBFields(&kase.Case{})
+
+	builder := sq.Select(columns...).
+		From(caseTable).
+		Where(sq.Eq{"customer_id": customerID.Bytes()})
+	if status != "" {
+		builder = builder.Where(sq.Eq{"status": status})
+	}
+	if ownerType != "" && ownerID != uuid.Nil {
+		builder = builder.
+			Where(sq.Eq{"owner_type": string(ownerType)}).
+			Where(sq.Eq{"owner_id": ownerID.Bytes()})
+	}
+
+	query, args, err := builder.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. CaseList. err: %v", err)
+	}
+
+	rows, err := h.db.Query(query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. CaseList. err: %v", err)
+	}
+	defer func() { _ = rows.Close() }()
+
+	var res []*kase.Case
+	for rows.Next() {
+		item, scanErr := caseGetFromRow(rows)
+		if scanErr != nil {
+			return nil, fmt.Errorf("could not scan the row. CaseList. err: %v", scanErr)
+		}
+		res = append(res, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("row iteration error. CaseList. err: %v", err)
+	}
+
+	return res, nil
+}
