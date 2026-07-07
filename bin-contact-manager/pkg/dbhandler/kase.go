@@ -341,6 +341,40 @@ func (h *handler) CaseUpdateContactIDTx(ctx context.Context, tx *sql.Tx, id, con
 	return caseUpdateContactIDExec(tx, id, contactID)
 }
 
+// CaseListAll returns every Case across all tenants. CLI-only usage
+// (case-control's `--all` reconcile-contact sweep) -- never exposed via
+// a customer-facing RPC/route.
+func (h *handler) CaseListAll(ctx context.Context) ([]*kase.Case, error) {
+	columns := commondatabasehandler.GetDBFields(&kase.Case{})
+
+	query, args, err := sq.Select(columns...).
+		From(caseTable).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. CaseListAll. err: %v", err)
+	}
+
+	rows, err := h.db.Query(query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. CaseListAll. err: %v", err)
+	}
+	defer func() { _ = rows.Close() }()
+
+	var res []*kase.Case
+	for rows.Next() {
+		item, scanErr := caseGetFromRow(rows)
+		if scanErr != nil {
+			return nil, fmt.Errorf("could not scan the row. CaseListAll. err: %v", scanErr)
+		}
+		res = append(res, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("row iteration error. CaseListAll. err: %v", err)
+	}
+
+	return res, nil
+}
+
 // CaseListUnresolved returns OPEN Cases with contact_id IS NULL, scoped
 // to customerID (design §6; backed by idx_case_unresolved). A closed
 // case is never in this queue regardless of contact_id -- closing IS the

@@ -62,6 +62,15 @@ type CaseHandler interface {
 	// CaseListUnresolved is design §6's agent-facing unresolved queue.
 	CaseListUnresolved(ctx context.Context, customerID uuid.UUID) ([]*kase.Case, error)
 
+	// ReconcileContact implements design §3.4's recovery path: the
+	// case-control CLI's `reconcile-contact` command. Idempotent.
+	ReconcileContact(ctx context.Context, caseID uuid.UUID) error
+
+	// CaseListAll returns every Case (all tenants), for case-control's
+	// `--all` reconcile-contact sweep. CLI-only usage -- never exposed
+	// via a customer-facing RPC/route.
+	CaseListAll(ctx context.Context) ([]*kase.Case, error)
+
 	// CaseNoteCreate / CaseNoteDelete / CaseNoteListByCase implement
 	// design §3.5: internal, agent-facing case annotations, physically
 	// and transport-isolated from customer-facing data. Both create and

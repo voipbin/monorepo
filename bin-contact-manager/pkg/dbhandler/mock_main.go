@@ -327,6 +327,21 @@ func (mr *MockDBHandlerMockRecorder) CaseInsertTx(ctx, tx, c any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseInsertTx", reflect.TypeOf((*MockDBHandler)(nil).CaseInsertTx), ctx, tx, c)
 }
 
+// CaseListAll mocks base method.
+func (m *MockDBHandler) CaseListAll(ctx context.Context) ([]*kase.Case, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseListAll", ctx)
+	ret0, _ := ret[0].([]*kase.Case)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CaseListAll indicates an expected call of CaseListAll.
+func (mr *MockDBHandlerMockRecorder) CaseListAll(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseListAll", reflect.TypeOf((*MockDBHandler)(nil).CaseListAll), ctx)
+}
+
 // CaseListByOwner mocks base method.
 func (m *MockDBHandler) CaseListByOwner(ctx context.Context, customerID uuid.UUID, ownerType identity.OwnerType, ownerID uuid.UUID) ([]*kase.Case, error) {
 	m.ctrl.T.Helper()

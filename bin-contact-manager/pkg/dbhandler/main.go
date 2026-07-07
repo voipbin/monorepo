@@ -86,6 +86,7 @@ type DBHandler interface {
 	CaseUpdateContactIDTx(ctx context.Context, tx *sql.Tx, id, contactID uuid.UUID) error
 	CaseClearContactIDTx(ctx context.Context, tx *sql.Tx, id uuid.UUID) error
 	CaseListUnresolved(ctx context.Context, customerID uuid.UUID) ([]*kase.Case, error)
+	CaseListAll(ctx context.Context) ([]*kase.Case, error)
 
 	// CaseNote operations (design §3.5)
 	CaseNoteCreate(ctx context.Context, n *casenote.CaseNote) error

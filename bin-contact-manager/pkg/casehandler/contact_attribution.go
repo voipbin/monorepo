@@ -153,3 +153,51 @@ func (h *caseHandler) ResolutionDeleteCaseLevel(ctx context.Context, customerID,
 func (h *caseHandler) CaseListUnresolved(ctx context.Context, customerID uuid.UUID) ([]*kase.Case, error) {
 	return h.db.CaseListUnresolved(ctx, customerID)
 }
+
+// CaseListAll returns every Case (all tenants), for case-control's
+// `--all` reconcile-contact sweep. CLI-only usage -- never exposed via
+// a customer-facing RPC/route.
+func (h *caseHandler) CaseListAll(ctx context.Context) ([]*kase.Case, error) {
+	return h.db.CaseListAll(ctx)
+}
+
+// ReconcileContact implements design §3.4's recovery path: the
+// case-control CLI command `case reconcile-contact <case_id | --all>`
+// re-runs deriveCaseContactID and overwrites Case.contact_id. Idempotent
+// -- used only if drift is discovered (e.g. a bulk import wrote
+// Resolution rows without going through the handler). Runs inside a
+// transaction for the same reason ResolutionCreateCaseLevel/
+// ResolutionDeleteCaseLevel do: the derivation read and the resulting
+// Case.contact_id write must be atomic.
+func (h *caseHandler) ReconcileContact(ctx context.Context, caseID uuid.UUID) error {
+	c, err := h.db.CaseGetByID(ctx, caseID)
+	if err != nil {
+		return err
+	}
+
+	tx, err := h.db.BeginTx(ctx)
+	if err != nil {
+		return fmt.Errorf("could not begin transaction. ReconcileContact. err: %v", err)
+	}
+	committed := false
+	defer func() {
+		if !committed {
+			_ = tx.Rollback()
+		}
+	}()
+
+	derived, err := h.deriveCaseContactIDTx(ctx, tx, c.CustomerID, caseID)
+	if err != nil {
+		return err
+	}
+	if err := h.applyDerivedContactID(ctx, tx, caseID, derived); err != nil {
+		return fmt.Errorf("could not update case contact_id. ReconcileContact. err: %v", err)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("could not commit transaction. ReconcileContact. err: %v", err)
+	}
+	committed = true
+
+	return nil
+}
