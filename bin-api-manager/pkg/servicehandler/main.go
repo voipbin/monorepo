@@ -44,6 +44,7 @@ import (
 
 	cmcontact "monorepo/bin-contact-manager/models/contact"
 	cminteraction "monorepo/bin-contact-manager/models/interaction"
+	cmcasenote "monorepo/bin-contact-manager/models/casenote"
 	cmkase "monorepo/bin-contact-manager/models/kase"
 	cmresolution "monorepo/bin-contact-manager/models/resolution"
 	cmrequest "monorepo/bin-contact-manager/pkg/listenhandler/models/request"
@@ -489,6 +490,18 @@ type ServiceHandler interface {
 	CaseGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cmkase.Case, error)
 	CaseClose(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, closedByID uuid.UUID) (*cmkase.Case, error)
 	CaseContinue(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cmkase.Case, error)
+
+	// case note handlers
+	CaseNoteList(ctx context.Context, a *auth.AuthIdentity, caseID uuid.UUID) ([]*cmcasenote.CaseNote, error)
+	CaseNoteCreate(
+		ctx context.Context,
+		a *auth.AuthIdentity,
+		caseID uuid.UUID,
+		authorType string,
+		authorID *uuid.UUID,
+		text string,
+	) (*cmcasenote.CaseNote, error)
+	CaseNoteDelete(ctx context.Context, a *auth.AuthIdentity, caseID uuid.UUID, noteID uuid.UUID) error
 
 	// interaction handlers
 	InteractionList(

@@ -512,6 +512,12 @@ const (
 	ContactManagerCaseStatusOpen   ContactManagerCaseStatus = "open"
 )
 
+// Defines values for ContactManagerCaseNoteAuthorType.
+const (
+	ContactManagerCaseNoteAuthorTypeAgent  ContactManagerCaseNoteAuthorType = "agent"
+	ContactManagerCaseNoteAuthorTypeSystem ContactManagerCaseNoteAuthorType = "system"
+)
+
 // Defines values for ContactManagerContactSource.
 const (
 	ContactManagerContactSourceAPI    ContactManagerContactSource = "api"
@@ -1010,6 +1016,12 @@ const (
 const (
 	GetCasesParamsStatusClosed GetCasesParamsStatus = "closed"
 	GetCasesParamsStatusOpen   GetCasesParamsStatus = "open"
+)
+
+// Defines values for PostCasesIdNotesJSONBodyAuthorType.
+const (
+	PostCasesIdNotesJSONBodyAuthorTypeAgent  PostCasesIdNotesJSONBodyAuthorType = "agent"
+	PostCasesIdNotesJSONBodyAuthorTypeSystem PostCasesIdNotesJSONBodyAuthorType = "system"
 )
 
 // Defines values for PostConferencesIdRecordingStartJSONBodyFormat.
@@ -2715,6 +2727,48 @@ type ContactManagerCaseListResponse struct {
 
 	// Result List of cases.
 	Result *[]ContactManagerCase `json:"result,omitempty"`
+}
+
+// ContactManagerCaseNote defines model for ContactManagerCaseNote.
+type ContactManagerCaseNote struct {
+	// AuthorId ID of the agent authoring this note. Nullable for system-authored notes.
+	AuthorId *openapi_types.UUID `json:"author_id,omitempty"`
+
+	// AuthorType Type of the note's author.
+	AuthorType *ContactManagerCaseNoteAuthorType `json:"author_type,omitempty"`
+
+	// CaseId The case this note belongs to. The ID is returned from GET /v1.0/cases response.
+	CaseId *openapi_types.UUID `json:"case_id,omitempty"`
+
+	// CustomerId Unique identifier of the associated customer.
+	CustomerId *openapi_types.UUID `json:"customer_id,omitempty"`
+
+	// Id Unique identifier for the case note.
+	Id *openapi_types.UUID `json:"id,omitempty"`
+
+	// Text The note's text content.
+	Text *string `json:"text,omitempty"`
+
+	// TmCreate Timestamp when this note was created.
+	TmCreate *time.Time `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when this note was soft-deleted. Null if active.
+	TmDelete *time.Time `json:"tm_delete,omitempty"`
+
+	// TmUpdate Timestamp when this note was last updated.
+	TmUpdate *time.Time `json:"tm_update,omitempty"`
+}
+
+// ContactManagerCaseNoteAuthorType Type of the note's author.
+type ContactManagerCaseNoteAuthorType string
+
+// ContactManagerCaseNoteListResponse defines model for ContactManagerCaseNoteListResponse.
+type ContactManagerCaseNoteListResponse struct {
+	// NextPageToken Pagination token for the next page. Empty when no further pages exist.
+	NextPageToken *string `json:"next_page_token,omitempty"`
+
+	// Result List of case notes.
+	Result *[]ContactManagerCaseNote `json:"result,omitempty"`
 }
 
 // ContactManagerContact defines model for ContactManagerContact.
@@ -5726,6 +5780,21 @@ type PostCasesIdCloseJSONBody struct {
 	ClosedById openapi_types.UUID `json:"closed_by_id"`
 }
 
+// PostCasesIdNotesJSONBody defines parameters for PostCasesIdNotes.
+type PostCasesIdNotesJSONBody struct {
+	// AuthorId ID of the agent authoring this note. Nullable for system-authored notes.
+	AuthorId *openapi_types.UUID `json:"author_id,omitempty"`
+
+	// AuthorType Type of the note's author.
+	AuthorType PostCasesIdNotesJSONBodyAuthorType `json:"author_type"`
+
+	// Text The note's text content.
+	Text string `json:"text"`
+}
+
+// PostCasesIdNotesJSONBodyAuthorType defines parameters for PostCasesIdNotes.
+type PostCasesIdNotesJSONBodyAuthorType string
+
 // GetConferencecallsParams defines parameters for GetConferencecalls.
 type GetConferencecallsParams struct {
 	// PageSize Number of results to return per page.
@@ -7647,6 +7716,9 @@ type PutCampaignsIdStatusJSONRequestBody PutCampaignsIdStatusJSONBody
 // PostCasesIdCloseJSONRequestBody defines body for PostCasesIdClose for application/json ContentType.
 type PostCasesIdCloseJSONRequestBody PostCasesIdCloseJSONBody
 
+// PostCasesIdNotesJSONRequestBody defines body for PostCasesIdNotes for application/json ContentType.
+type PostCasesIdNotesJSONRequestBody PostCasesIdNotesJSONBody
+
 // PostConferencesJSONRequestBody defines body for PostConferences for application/json ContentType.
 type PostConferencesJSONRequestBody PostConferencesJSONBody
 
@@ -8273,6 +8345,15 @@ type ServerInterface interface {
 	// Continue a closed case
 	// (POST /cases/{id}/continue)
 	PostCasesIdContinue(c *gin.Context, id openapi_types.UUID)
+	// List notes for a case
+	// (GET /cases/{id}/notes)
+	GetCasesIdNotes(c *gin.Context, id openapi_types.UUID)
+	// Create a note on a case
+	// (POST /cases/{id}/notes)
+	PostCasesIdNotes(c *gin.Context, id openapi_types.UUID)
+	// Delete a case note
+	// (DELETE /cases/{id}/notes/{note_id})
+	DeleteCasesIdNotesNoteId(c *gin.Context, id openapi_types.UUID, noteId openapi_types.UUID)
 	// Get list of conference calls
 	// (GET /conferencecalls)
 	GetConferencecalls(c *gin.Context, params GetConferencecallsParams)
@@ -11963,6 +12044,87 @@ func (siw *ServerInterfaceWrapper) PostCasesIdContinue(c *gin.Context) {
 	}
 
 	siw.Handler.PostCasesIdContinue(c, id)
+}
+
+// GetCasesIdNotes operation middleware
+func (siw *ServerInterfaceWrapper) GetCasesIdNotes(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetCasesIdNotes(c, id)
+}
+
+// PostCasesIdNotes operation middleware
+func (siw *ServerInterfaceWrapper) PostCasesIdNotes(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostCasesIdNotes(c, id)
+}
+
+// DeleteCasesIdNotesNoteId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteCasesIdNotesNoteId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Path parameter "note_id" -------------
+	var noteId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "note_id", c.Param("note_id"), &noteId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter note_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteCasesIdNotesNoteId(c, id, noteId)
 }
 
 // GetConferencecalls operation middleware
@@ -19018,6 +19180,9 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.GET(options.BaseURL+"/cases/:id", wrapper.GetCasesId)
 	router.POST(options.BaseURL+"/cases/:id/close", wrapper.PostCasesIdClose)
 	router.POST(options.BaseURL+"/cases/:id/continue", wrapper.PostCasesIdContinue)
+	router.GET(options.BaseURL+"/cases/:id/notes", wrapper.GetCasesIdNotes)
+	router.POST(options.BaseURL+"/cases/:id/notes", wrapper.PostCasesIdNotes)
+	router.DELETE(options.BaseURL+"/cases/:id/notes/:note_id", wrapper.DeleteCasesIdNotesNoteId)
 	router.GET(options.BaseURL+"/conferencecalls", wrapper.GetConferencecalls)
 	router.DELETE(options.BaseURL+"/conferencecalls/:id", wrapper.DeleteConferencecallsId)
 	router.GET(options.BaseURL+"/conferencecalls/:id", wrapper.GetConferencecallsId)
@@ -25679,6 +25844,194 @@ func (response PostCasesIdContinue404JSONResponse) VisitPostCasesIdContinueRespo
 type PostCasesIdContinue500JSONResponse struct{ InternalErrorJSONResponse }
 
 func (response PostCasesIdContinue500JSONResponse) VisitPostCasesIdContinueResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetCasesIdNotesRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type GetCasesIdNotesResponseObject interface {
+	VisitGetCasesIdNotesResponse(w http.ResponseWriter) error
+}
+
+type GetCasesIdNotes200JSONResponse ContactManagerCaseNoteListResponse
+
+func (response GetCasesIdNotes200JSONResponse) VisitGetCasesIdNotesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetCasesIdNotes400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetCasesIdNotes400JSONResponse) VisitGetCasesIdNotesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetCasesIdNotes401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetCasesIdNotes401JSONResponse) VisitGetCasesIdNotesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetCasesIdNotes403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetCasesIdNotes403JSONResponse) VisitGetCasesIdNotesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetCasesIdNotes404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response GetCasesIdNotes404JSONResponse) VisitGetCasesIdNotesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetCasesIdNotes500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetCasesIdNotes500JSONResponse) VisitGetCasesIdNotesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCasesIdNotesRequestObject struct {
+	Id   openapi_types.UUID `json:"id"`
+	Body *PostCasesIdNotesJSONRequestBody
+}
+
+type PostCasesIdNotesResponseObject interface {
+	VisitPostCasesIdNotesResponse(w http.ResponseWriter) error
+}
+
+type PostCasesIdNotes200JSONResponse ContactManagerCaseNote
+
+func (response PostCasesIdNotes200JSONResponse) VisitPostCasesIdNotesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCasesIdNotes400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostCasesIdNotes400JSONResponse) VisitPostCasesIdNotesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCasesIdNotes401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostCasesIdNotes401JSONResponse) VisitPostCasesIdNotesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCasesIdNotes403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostCasesIdNotes403JSONResponse) VisitPostCasesIdNotesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCasesIdNotes404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostCasesIdNotes404JSONResponse) VisitPostCasesIdNotesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCasesIdNotes500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostCasesIdNotes500JSONResponse) VisitPostCasesIdNotesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteCasesIdNotesNoteIdRequestObject struct {
+	Id     openapi_types.UUID `json:"id"`
+	NoteId openapi_types.UUID `json:"note_id"`
+}
+
+type DeleteCasesIdNotesNoteIdResponseObject interface {
+	VisitDeleteCasesIdNotesNoteIdResponse(w http.ResponseWriter) error
+}
+
+type DeleteCasesIdNotesNoteId200JSONResponse map[string]interface{}
+
+func (response DeleteCasesIdNotesNoteId200JSONResponse) VisitDeleteCasesIdNotesNoteIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteCasesIdNotesNoteId400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response DeleteCasesIdNotesNoteId400JSONResponse) VisitDeleteCasesIdNotesNoteIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteCasesIdNotesNoteId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response DeleteCasesIdNotesNoteId401JSONResponse) VisitDeleteCasesIdNotesNoteIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteCasesIdNotesNoteId403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response DeleteCasesIdNotesNoteId403JSONResponse) VisitDeleteCasesIdNotesNoteIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteCasesIdNotesNoteId404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response DeleteCasesIdNotesNoteId404JSONResponse) VisitDeleteCasesIdNotesNoteIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteCasesIdNotesNoteId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response DeleteCasesIdNotesNoteId500JSONResponse) VisitDeleteCasesIdNotesNoteIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(500)
 
@@ -41292,6 +41645,15 @@ type StrictServerInterface interface {
 	// Continue a closed case
 	// (POST /cases/{id}/continue)
 	PostCasesIdContinue(ctx context.Context, request PostCasesIdContinueRequestObject) (PostCasesIdContinueResponseObject, error)
+	// List notes for a case
+	// (GET /cases/{id}/notes)
+	GetCasesIdNotes(ctx context.Context, request GetCasesIdNotesRequestObject) (GetCasesIdNotesResponseObject, error)
+	// Create a note on a case
+	// (POST /cases/{id}/notes)
+	PostCasesIdNotes(ctx context.Context, request PostCasesIdNotesRequestObject) (PostCasesIdNotesResponseObject, error)
+	// Delete a case note
+	// (DELETE /cases/{id}/notes/{note_id})
+	DeleteCasesIdNotesNoteId(ctx context.Context, request DeleteCasesIdNotesNoteIdRequestObject) (DeleteCasesIdNotesNoteIdResponseObject, error)
 	// Get list of conference calls
 	// (GET /conferencecalls)
 	GetConferencecalls(ctx context.Context, request GetConferencecallsRequestObject) (GetConferencecallsResponseObject, error)
@@ -45438,6 +45800,96 @@ func (sh *strictHandler) PostCasesIdContinue(ctx *gin.Context, id openapi_types.
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PostCasesIdContinueResponseObject); ok {
 		if err := validResponse.VisitPostCasesIdContinueResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetCasesIdNotes operation middleware
+func (sh *strictHandler) GetCasesIdNotes(ctx *gin.Context, id openapi_types.UUID) {
+	var request GetCasesIdNotesRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetCasesIdNotes(ctx, request.(GetCasesIdNotesRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetCasesIdNotes")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetCasesIdNotesResponseObject); ok {
+		if err := validResponse.VisitGetCasesIdNotesResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostCasesIdNotes operation middleware
+func (sh *strictHandler) PostCasesIdNotes(ctx *gin.Context, id openapi_types.UUID) {
+	var request PostCasesIdNotesRequestObject
+
+	request.Id = id
+
+	var body PostCasesIdNotesJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostCasesIdNotes(ctx, request.(PostCasesIdNotesRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostCasesIdNotes")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostCasesIdNotesResponseObject); ok {
+		if err := validResponse.VisitPostCasesIdNotesResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteCasesIdNotesNoteId operation middleware
+func (sh *strictHandler) DeleteCasesIdNotesNoteId(ctx *gin.Context, id openapi_types.UUID, noteId openapi_types.UUID) {
+	var request DeleteCasesIdNotesNoteIdRequestObject
+
+	request.Id = id
+	request.NoteId = noteId
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteCasesIdNotesNoteId(ctx, request.(DeleteCasesIdNotesNoteIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteCasesIdNotesNoteId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteCasesIdNotesNoteIdResponseObject); ok {
+		if err := validResponse.VisitDeleteCasesIdNotesNoteIdResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

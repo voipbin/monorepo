@@ -37,6 +37,7 @@ import (
 	address "monorepo/bin-common-handler/models/address"
 	conference "monorepo/bin-conference-manager/models/conference"
 	conferencecall "monorepo/bin-conference-manager/models/conferencecall"
+	casenote "monorepo/bin-contact-manager/models/casenote"
 	contact "monorepo/bin-contact-manager/models/contact"
 	interaction "monorepo/bin-contact-manager/models/interaction"
 	kase "monorepo/bin-contact-manager/models/kase"
@@ -1781,6 +1782,50 @@ func (m *MockServiceHandler) CaseListUnresolved(ctx context.Context, a *auth.Aut
 func (mr *MockServiceHandlerMockRecorder) CaseListUnresolved(ctx, a, size, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseListUnresolved", reflect.TypeOf((*MockServiceHandler)(nil).CaseListUnresolved), ctx, a, size, token)
+}
+
+// CaseNoteCreate mocks base method.
+func (m *MockServiceHandler) CaseNoteCreate(ctx context.Context, a *auth.AuthIdentity, caseID uuid.UUID, authorType string, authorID *uuid.UUID, text string) (*casenote.CaseNote, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseNoteCreate", ctx, a, caseID, authorType, authorID, text)
+	ret0, _ := ret[0].(*casenote.CaseNote)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CaseNoteCreate indicates an expected call of CaseNoteCreate.
+func (mr *MockServiceHandlerMockRecorder) CaseNoteCreate(ctx, a, caseID, authorType, authorID, text any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseNoteCreate", reflect.TypeOf((*MockServiceHandler)(nil).CaseNoteCreate), ctx, a, caseID, authorType, authorID, text)
+}
+
+// CaseNoteDelete mocks base method.
+func (m *MockServiceHandler) CaseNoteDelete(ctx context.Context, a *auth.AuthIdentity, caseID, noteID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseNoteDelete", ctx, a, caseID, noteID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CaseNoteDelete indicates an expected call of CaseNoteDelete.
+func (mr *MockServiceHandlerMockRecorder) CaseNoteDelete(ctx, a, caseID, noteID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseNoteDelete", reflect.TypeOf((*MockServiceHandler)(nil).CaseNoteDelete), ctx, a, caseID, noteID)
+}
+
+// CaseNoteList mocks base method.
+func (m *MockServiceHandler) CaseNoteList(ctx context.Context, a *auth.AuthIdentity, caseID uuid.UUID) ([]*casenote.CaseNote, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseNoteList", ctx, a, caseID)
+	ret0, _ := ret[0].([]*casenote.CaseNote)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CaseNoteList indicates an expected call of CaseNoteList.
+func (mr *MockServiceHandlerMockRecorder) CaseNoteList(ctx, a, caseID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseNoteList", reflect.TypeOf((*MockServiceHandler)(nil).CaseNoteList), ctx, a, caseID)
 }
 
 // ConferenceCreate mocks base method.
