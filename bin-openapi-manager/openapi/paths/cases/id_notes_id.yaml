@@ -1,0 +1,40 @@
+delete:
+  summary: Delete a case note
+  description: |
+    Delete the note of the given note ID on the case of the given case ID.
+  tags:
+    - Case
+  parameters:
+    - name: id
+      in: path
+      description: The ID of the case. The ID is returned from GET /v1.0/cases response.
+      required: true
+      schema:
+        type: string
+        format: uuid
+        example: "550e8400-e29b-41d4-a716-446655440000"
+    - name: note_id
+      in: path
+      description: The ID of the note. The ID is returned from GET /v1.0/cases/{id}/notes response.
+      required: true
+      schema:
+        type: string
+        format: uuid
+        example: "33333333-0000-0000-0000-000000000003"
+  responses:
+    '200':
+      description: Case note deleted successfully.
+      content:
+        application/json:
+          schema:
+            type: object
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'

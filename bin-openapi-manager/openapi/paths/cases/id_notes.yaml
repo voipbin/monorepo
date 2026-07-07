@@ -1,0 +1,95 @@
+get:
+  summary: List notes for a case
+  description: |
+    List all notes for the case of the given ID. Notes are an internal,
+    agent-facing annotation on a Case and never appear in any
+    customer-facing webhook or response.
+  tags:
+    - Case
+  parameters:
+    - name: id
+      in: path
+      description: The ID of the case. The ID is returned from GET /v1.0/cases response.
+      required: true
+      schema:
+        type: string
+        format: uuid
+        example: "550e8400-e29b-41d4-a716-446655440000"
+  responses:
+    '200':
+      description: Successful response.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ContactManagerCaseNoteListResponse'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'
+
+post:
+  summary: Create a note on a case
+  description: |
+    Create a new note on the case of the given ID. Notes are an internal,
+    agent-facing annotation on a Case and never appear in any
+    customer-facing webhook or response.
+  tags:
+    - Case
+  parameters:
+    - name: id
+      in: path
+      description: The ID of the case. The ID is returned from GET /v1.0/cases response.
+      required: true
+      schema:
+        type: string
+        format: uuid
+        example: "550e8400-e29b-41d4-a716-446655440000"
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - author_type
+            - text
+          properties:
+            author_type:
+              type: string
+              description: Type of the note's author.
+              enum:
+                - agent
+                - system
+              example: "agent"
+            author_id:
+              type: string
+              format: uuid
+              description: ID of the agent authoring this note. Nullable for system-authored notes.
+              example: "2a2ec0ba-8004-11ec-aea5-439829c92a7c"
+            text:
+              type: string
+              description: The note's text content.
+              example: "Called the customer back, no answer."
+  responses:
+    '200':
+      description: Case note created successfully.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ContactManagerCaseNote'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'

@@ -3529,6 +3529,69 @@ components:
           description: Pagination token for the next page. Empty when no further pages exist.
           example: "2026-06-01T09:30:01.000000Z"
 
+    ContactManagerCaseNote:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the case note.
+          example: "33333333-0000-0000-0000-000000000003"
+        customer_id:
+          type: string
+          format: uuid
+          description: Unique identifier of the associated customer.
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
+        case_id:
+          type: string
+          format: uuid
+          description: The case this note belongs to. The ID is returned from GET /v1.0/cases response.
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        author_type:
+          type: string
+          description: Type of the note's author.
+          enum:
+            - agent
+            - system
+          example: "agent"
+        author_id:
+          type: string
+          format: uuid
+          description: ID of the agent authoring this note. Nullable for system-authored notes.
+          example: "2a2ec0ba-8004-11ec-aea5-439829c92a7c"
+        text:
+          type: string
+          description: The note's text content.
+          example: "Called the customer back, no answer."
+        tm_create:
+          type: string
+          format: date-time
+          description: Timestamp when this note was created.
+          example: "2026-06-01T09:30:00.000000Z"
+        tm_update:
+          type: string
+          format: date-time
+          description: Timestamp when this note was last updated.
+          example: "2026-06-01T09:30:00.000000Z"
+        tm_delete:
+          type: string
+          format: date-time
+          description: Timestamp when this note was soft-deleted. Null if active.
+          example: "2026-06-02T08:00:00.000000Z"
+
+    ContactManagerCaseNoteListResponse:
+      type: object
+      properties:
+        result:
+          type: array
+          description: List of case notes.
+          items:
+            $ref: '#/components/schemas/ContactManagerCaseNote'
+        next_page_token:
+          type: string
+          description: Pagination token for the next page. Empty when no further pages exist.
+          example: "2026-06-01T09:30:01.000000Z"
+
     ContactManagerContact:
       type: object
       properties:
@@ -8047,6 +8110,10 @@ paths:
     $ref: './paths/cases/id_close.yaml'
   /cases/{id}/continue:
     $ref: './paths/cases/id_continue.yaml'
+  /cases/{id}/notes:
+    $ref: './paths/cases/id_notes.yaml'
+  /cases/{id}/notes/{note_id}:
+    $ref: './paths/cases/id_notes_id.yaml'
 
   /conversation_accounts/{id}:
     $ref: './paths/conversation_accounts/id.yaml'

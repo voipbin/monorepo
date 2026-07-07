@@ -1491,6 +1491,24 @@ func (e ContactManagerCaseStatus) Valid() bool {
 	}
 }
 
+// Defines values for ContactManagerCaseNoteAuthorType.
+const (
+	ContactManagerCaseNoteAuthorTypeAgent  ContactManagerCaseNoteAuthorType = "agent"
+	ContactManagerCaseNoteAuthorTypeSystem ContactManagerCaseNoteAuthorType = "system"
+)
+
+// Valid indicates whether the value is a known member of the ContactManagerCaseNoteAuthorType enum.
+func (e ContactManagerCaseNoteAuthorType) Valid() bool {
+	switch e {
+	case ContactManagerCaseNoteAuthorTypeAgent:
+		return true
+	case ContactManagerCaseNoteAuthorTypeSystem:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ContactManagerContactSource.
 const (
 	ContactManagerContactSourceAPI    ContactManagerContactSource = "api"
@@ -2985,6 +3003,24 @@ func (e GetCasesParamsStatus) Valid() bool {
 	case GetCasesParamsStatusClosed:
 		return true
 	case GetCasesParamsStatusOpen:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PostCasesIdNotesJSONBodyAuthorType.
+const (
+	PostCasesIdNotesJSONBodyAuthorTypeAgent  PostCasesIdNotesJSONBodyAuthorType = "agent"
+	PostCasesIdNotesJSONBodyAuthorTypeSystem PostCasesIdNotesJSONBodyAuthorType = "system"
+)
+
+// Valid indicates whether the value is a known member of the PostCasesIdNotesJSONBodyAuthorType enum.
+func (e PostCasesIdNotesJSONBodyAuthorType) Valid() bool {
+	switch e {
+	case PostCasesIdNotesJSONBodyAuthorTypeAgent:
+		return true
+	case PostCasesIdNotesJSONBodyAuthorTypeSystem:
 		return true
 	default:
 		return false
@@ -4970,6 +5006,48 @@ type ContactManagerCaseListResponse struct {
 
 	// Result List of cases.
 	Result *[]ContactManagerCase `json:"result,omitempty"`
+}
+
+// ContactManagerCaseNote defines model for ContactManagerCaseNote.
+type ContactManagerCaseNote struct {
+	// AuthorId ID of the agent authoring this note. Nullable for system-authored notes.
+	AuthorId *openapi_types.UUID `json:"author_id,omitempty"`
+
+	// AuthorType Type of the note's author.
+	AuthorType *ContactManagerCaseNoteAuthorType `json:"author_type,omitempty"`
+
+	// CaseId The case this note belongs to. The ID is returned from GET /v1.0/cases response.
+	CaseId *openapi_types.UUID `json:"case_id,omitempty"`
+
+	// CustomerId Unique identifier of the associated customer.
+	CustomerId *openapi_types.UUID `json:"customer_id,omitempty"`
+
+	// Id Unique identifier for the case note.
+	Id *openapi_types.UUID `json:"id,omitempty"`
+
+	// Text The note's text content.
+	Text *string `json:"text,omitempty"`
+
+	// TmCreate Timestamp when this note was created.
+	TmCreate *time.Time `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when this note was soft-deleted. Null if active.
+	TmDelete *time.Time `json:"tm_delete,omitempty"`
+
+	// TmUpdate Timestamp when this note was last updated.
+	TmUpdate *time.Time `json:"tm_update,omitempty"`
+}
+
+// ContactManagerCaseNoteAuthorType Type of the note's author.
+type ContactManagerCaseNoteAuthorType string
+
+// ContactManagerCaseNoteListResponse defines model for ContactManagerCaseNoteListResponse.
+type ContactManagerCaseNoteListResponse struct {
+	// NextPageToken Pagination token for the next page. Empty when no further pages exist.
+	NextPageToken *string `json:"next_page_token,omitempty"`
+
+	// Result List of case notes.
+	Result *[]ContactManagerCaseNote `json:"result,omitempty"`
 }
 
 // ContactManagerContact defines model for ContactManagerContact.
@@ -7981,6 +8059,21 @@ type PostCasesIdCloseJSONBody struct {
 	ClosedById openapi_types.UUID `json:"closed_by_id"`
 }
 
+// PostCasesIdNotesJSONBody defines parameters for PostCasesIdNotes.
+type PostCasesIdNotesJSONBody struct {
+	// AuthorId ID of the agent authoring this note. Nullable for system-authored notes.
+	AuthorId *openapi_types.UUID `json:"author_id,omitempty"`
+
+	// AuthorType Type of the note's author.
+	AuthorType PostCasesIdNotesJSONBodyAuthorType `json:"author_type"`
+
+	// Text The note's text content.
+	Text string `json:"text"`
+}
+
+// PostCasesIdNotesJSONBodyAuthorType defines parameters for PostCasesIdNotes.
+type PostCasesIdNotesJSONBodyAuthorType string
+
 // GetConferencecallsParams defines parameters for GetConferencecalls.
 type GetConferencecallsParams struct {
 	// PageSize Number of results to return per page.
@@ -9901,6 +9994,9 @@ type PutCampaignsIdStatusJSONRequestBody PutCampaignsIdStatusJSONBody
 
 // PostCasesIdCloseJSONRequestBody defines body for PostCasesIdClose for application/json ContentType.
 type PostCasesIdCloseJSONRequestBody PostCasesIdCloseJSONBody
+
+// PostCasesIdNotesJSONRequestBody defines body for PostCasesIdNotes for application/json ContentType.
+type PostCasesIdNotesJSONRequestBody PostCasesIdNotesJSONBody
 
 // PostConferencesJSONRequestBody defines body for PostConferences for application/json ContentType.
 type PostConferencesJSONRequestBody PostConferencesJSONBody
