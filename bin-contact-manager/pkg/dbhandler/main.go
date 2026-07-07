@@ -10,10 +10,14 @@ import (
 
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
+
 	"github.com/gofrs/uuid"
 
 	"monorepo/bin-contact-manager/models/contact"
 	"monorepo/bin-contact-manager/models/interaction"
+	"monorepo/bin-contact-manager/models/kase"
 	"monorepo/bin-contact-manager/models/resolution"
 	"monorepo/bin-contact-manager/pkg/cachehandler"
 )
@@ -59,6 +63,17 @@ type DBHandler interface {
 	ResolutionListByInteraction(ctx context.Context, customerID, interactionID uuid.UUID) ([]*resolution.Resolution, error)
 	ResolutionListByCase(ctx context.Context, customerID, caseID uuid.UUID) ([]*resolution.Resolution, error)
 	ResolutionListByContact(ctx context.Context, customerID, contactID uuid.UUID) ([]*resolution.Resolution, error)
+
+	// Case operations
+	CaseInsert(ctx context.Context, c *kase.Case) error
+	CaseGetByID(ctx context.Context, id uuid.UUID) (*kase.Case, error)
+	CaseGetOpenByPeer(ctx context.Context, tx *sql.Tx, customerID uuid.UUID, peerType commonaddress.Type, peerTarget, referenceType string) (*kase.Case, error)
+	CaseUpdateStatusClosed(ctx context.Context, id uuid.UUID, closedReason, closedByType string, closedByID *uuid.UUID, closedAt *time.Time) (bool, error)
+	CaseUpdateTMUpdate(ctx context.Context, id uuid.UUID, tmUpdate *time.Time) error
+	CaseUpdateContactID(ctx context.Context, id, contactID uuid.UUID) error
+	CaseListUnresolved(ctx context.Context, customerID uuid.UUID) ([]*kase.Case, error)
+	CaseListByOwner(ctx context.Context, customerID uuid.UUID, ownerType commonidentity.OwnerType, ownerID uuid.UUID) ([]*kase.Case, error)
+	CaseGetLastClosedByPeer(ctx context.Context, customerID uuid.UUID, peerType commonaddress.Type, peerTarget, referenceType string) (*kase.Case, error)
 }
 
 // handler database handler
@@ -78,6 +93,14 @@ var (
 	// target). Distinct from ErrConflict, whose message ("address already
 	// claimed") is specific to the ClaimAddress flow.
 	ErrDuplicateTarget = fmt.Errorf("address already exists for this customer")
+
+	// ErrDuplicate is returned by CaseInsert when the insert violates
+	// uq_case_open_peer (contact_cases' partial-unique invariant: at most
+	// one OPEN case per customer/peer/reference_type -- see
+	// contact-case-management design §3.1). Callers (the get-or-create
+	// algorithm, design §4) use this as the signal to retry with a locked
+	// re-select rather than treating it as a generic infrastructure error.
+	ErrDuplicate = fmt.Errorf("an open case already exists for this customer/peer/reference_type")
 )
 
 // NewHandler creates DBHandler
