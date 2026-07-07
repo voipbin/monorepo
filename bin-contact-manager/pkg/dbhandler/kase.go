@@ -294,11 +294,19 @@ func (h *handler) CaseUpdateTMUpdateTx(ctx context.Context, tx *sql.Tx, id uuid.
 }
 
 // caseUpdateContactIDExec is the shared implementation for
-// CaseUpdateContactID/CaseUpdateContactIDTx.
-func caseUpdateContactIDExec(exec sqlExecutor, id, contactID uuid.UUID) error {
+// CaseUpdateContactID/CaseUpdateContactIDTx. Scoped by customer_id as a
+// defense-in-depth measure -- every caller today (ResolutionCreateCase
+// Level/ResolutionDeleteCaseLevel/ReconcileContact) already verifies
+// case ownership via verifyCaseOwnership before calling this, but the
+// round-2 review's finding (multiple case-scoped handler methods
+// accepted customerID without using it) makes an unscoped mutation
+// primitive itself a latent risk for any future caller that forgets the
+// upstream check.
+func caseUpdateContactIDExec(exec sqlExecutor, customerID, id, contactID uuid.UUID) error {
 	query, args, err := sq.Update(caseTable).
 		Set("contact_id", contactID.Bytes()).
 		Where(sq.Eq{"id": id.Bytes()}).
+		Where(sq.Eq{"customer_id": customerID.Bytes()}).
 		ToSql()
 	if err != nil {
 		return fmt.Errorf("could not build query. CaseUpdateContactID. err: %v", err)
@@ -313,18 +321,21 @@ func caseUpdateContactIDExec(exec sqlExecutor, id, contactID uuid.UUID) error {
 
 // CaseUpdateContactID updates a Case's denormalized contact_id cache
 // (design §3.4; single source of truth is Resolution).
-func (h *handler) CaseUpdateContactID(ctx context.Context, id, contactID uuid.UUID) error {
-	return caseUpdateContactIDExec(h.db, id, contactID)
+func (h *handler) CaseUpdateContactID(ctx context.Context, customerID, id, contactID uuid.UUID) error {
+	return caseUpdateContactIDExec(h.db, customerID, id, contactID)
 }
 
 // caseClearContactIDExec is the shared implementation for
 // CaseClearContactIDTx: reverts Case.contact_id to NULL, used when
 // deriveCaseContactID (design §3.4) finds no active case-level positive
-// Resolution left (e.g. the sole one was just soft-deleted).
-func caseClearContactIDExec(exec sqlExecutor, id uuid.UUID) error {
+// Resolution left (e.g. the sole one was just soft-deleted). Scoped by
+// customer_id as defense-in-depth (see caseUpdateContactIDExec's
+// comment).
+func caseClearContactIDExec(exec sqlExecutor, customerID, id uuid.UUID) error {
 	query, args, err := sq.Update(caseTable).
 		Set("contact_id", nil).
 		Where(sq.Eq{"id": id.Bytes()}).
+		Where(sq.Eq{"customer_id": customerID.Bytes()}).
 		ToSql()
 	if err != nil {
 		return fmt.Errorf("could not build query. CaseClearContactID. err: %v", err)
@@ -339,14 +350,14 @@ func caseClearContactIDExec(exec sqlExecutor, id uuid.UUID) error {
 
 // CaseClearContactIDTx reverts a Case's denormalized contact_id cache to
 // NULL, scoped to a caller-managed transaction.
-func (h *handler) CaseClearContactIDTx(ctx context.Context, tx *sql.Tx, id uuid.UUID) error {
-	return caseClearContactIDExec(tx, id)
+func (h *handler) CaseClearContactIDTx(ctx context.Context, tx *sql.Tx, customerID, id uuid.UUID) error {
+	return caseClearContactIDExec(tx, customerID, id)
 }
 
 // CaseUpdateContactIDTx is CaseUpdateContactID scoped to a caller-managed
 // transaction (design §4 step 2's contact auto-match write).
-func (h *handler) CaseUpdateContactIDTx(ctx context.Context, tx *sql.Tx, id, contactID uuid.UUID) error {
-	return caseUpdateContactIDExec(tx, id, contactID)
+func (h *handler) CaseUpdateContactIDTx(ctx context.Context, tx *sql.Tx, customerID, id, contactID uuid.UUID) error {
+	return caseUpdateContactIDExec(tx, customerID, id, contactID)
 }
 
 // CaseListAll returns every Case across all tenants. CLI-only usage

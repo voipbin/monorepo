@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -14,6 +15,7 @@ import (
 
 	"monorepo/bin-contact-manager/models/casenote"
 	"monorepo/bin-contact-manager/models/interaction"
+	"monorepo/bin-contact-manager/models/kase"
 	"monorepo/bin-contact-manager/pkg/cachehandler"
 	"monorepo/bin-contact-manager/pkg/dbhandler"
 )
@@ -47,6 +49,15 @@ func Test_CaseNote_NeverLeaksIntoInteractionList(t *testing.T) {
 
 	// A real customer-visible Interaction for the same peer/case, so the
 	// list path has at least one legitimate row to return.
+	c := &kase.Case{
+		ID: caseID, CustomerID: customerID,
+		PeerType: commonaddress.TypeTel, PeerTarget: "+155****0001", ReferenceType: "call",
+		Status: kase.StatusOpen, OpenedAt: &now, TMCreate: &now, TMUpdate: &now,
+	}
+	if err := db.CaseInsert(ctx, c); err != nil {
+		t.Fatalf("CaseInsert() error = %v", err)
+	}
+
 	i := &interaction.Interaction{
 		ID: interactionID, CustomerID: customerID,
 		Direction: "incoming", PeerType: "tel", PeerTarget: "+15551700001",

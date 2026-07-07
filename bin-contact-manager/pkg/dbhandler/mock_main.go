@@ -196,17 +196,17 @@ func (mr *MockDBHandlerMockRecorder) BeginTx(ctx any) *gomock.Call {
 }
 
 // CaseClearContactIDTx mocks base method.
-func (m *MockDBHandler) CaseClearContactIDTx(ctx context.Context, tx *sql.Tx, id uuid.UUID) error {
+func (m *MockDBHandler) CaseClearContactIDTx(ctx context.Context, tx *sql.Tx, customerID, id uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CaseClearContactIDTx", ctx, tx, id)
+	ret := m.ctrl.Call(m, "CaseClearContactIDTx", ctx, tx, customerID, id)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CaseClearContactIDTx indicates an expected call of CaseClearContactIDTx.
-func (mr *MockDBHandlerMockRecorder) CaseClearContactIDTx(ctx, tx, id any) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) CaseClearContactIDTx(ctx, tx, customerID, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseClearContactIDTx", reflect.TypeOf((*MockDBHandler)(nil).CaseClearContactIDTx), ctx, tx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseClearContactIDTx", reflect.TypeOf((*MockDBHandler)(nil).CaseClearContactIDTx), ctx, tx, customerID, id)
 }
 
 // CaseGetByID mocks base method.
@@ -459,31 +459,31 @@ func (mr *MockDBHandlerMockRecorder) CaseTagAssignmentListByCaseID(ctx, caseID a
 }
 
 // CaseUpdateContactID mocks base method.
-func (m *MockDBHandler) CaseUpdateContactID(ctx context.Context, id, contactID uuid.UUID) error {
+func (m *MockDBHandler) CaseUpdateContactID(ctx context.Context, customerID, id, contactID uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CaseUpdateContactID", ctx, id, contactID)
+	ret := m.ctrl.Call(m, "CaseUpdateContactID", ctx, customerID, id, contactID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CaseUpdateContactID indicates an expected call of CaseUpdateContactID.
-func (mr *MockDBHandlerMockRecorder) CaseUpdateContactID(ctx, id, contactID any) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) CaseUpdateContactID(ctx, customerID, id, contactID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseUpdateContactID", reflect.TypeOf((*MockDBHandler)(nil).CaseUpdateContactID), ctx, id, contactID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseUpdateContactID", reflect.TypeOf((*MockDBHandler)(nil).CaseUpdateContactID), ctx, customerID, id, contactID)
 }
 
 // CaseUpdateContactIDTx mocks base method.
-func (m *MockDBHandler) CaseUpdateContactIDTx(ctx context.Context, tx *sql.Tx, id, contactID uuid.UUID) error {
+func (m *MockDBHandler) CaseUpdateContactIDTx(ctx context.Context, tx *sql.Tx, customerID, id, contactID uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CaseUpdateContactIDTx", ctx, tx, id, contactID)
+	ret := m.ctrl.Call(m, "CaseUpdateContactIDTx", ctx, tx, customerID, id, contactID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CaseUpdateContactIDTx indicates an expected call of CaseUpdateContactIDTx.
-func (mr *MockDBHandlerMockRecorder) CaseUpdateContactIDTx(ctx, tx, id, contactID any) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) CaseUpdateContactIDTx(ctx, tx, customerID, id, contactID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseUpdateContactIDTx", reflect.TypeOf((*MockDBHandler)(nil).CaseUpdateContactIDTx), ctx, tx, id, contactID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseUpdateContactIDTx", reflect.TypeOf((*MockDBHandler)(nil).CaseUpdateContactIDTx), ctx, tx, customerID, id, contactID)
 }
 
 // CaseUpdateStatusClosed mocks base method.

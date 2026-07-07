@@ -143,7 +143,7 @@ func (h *caseHandler) Continue(ctx context.Context, customerID, id uuid.UUID, ca
 	res.ContactID = source.ContactID
 
 	if source.ContactID != nil {
-		if err := h.db.CaseUpdateContactIDTx(ctx, tx, res.ID, *source.ContactID); err != nil {
+		if err := h.db.CaseUpdateContactIDTx(ctx, tx, customerID, res.ID, *source.ContactID); err != nil {
 			return nil, fmt.Errorf("could not carry over contact_id. Continue. err: %v", err)
 		}
 	}

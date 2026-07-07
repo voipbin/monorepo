@@ -56,18 +56,25 @@ func firstCaseLevelPositiveContactID(resolutions []*resolution.Resolution) *uuid
 // Case.contact_id: a non-nil derivation writes that contact_id; a nil
 // derivation reverts Case.contact_id to NULL (e.g. the sole active
 // case-level positive Resolution was just soft-deleted).
-func (h *caseHandler) applyDerivedContactID(ctx context.Context, tx *sql.Tx, caseID uuid.UUID, derived *uuid.UUID) error {
+func (h *caseHandler) applyDerivedContactID(ctx context.Context, tx *sql.Tx, customerID, caseID uuid.UUID, derived *uuid.UUID) error {
 	if derived == nil {
-		return h.db.CaseClearContactIDTx(ctx, tx, caseID)
+		return h.db.CaseClearContactIDTx(ctx, tx, customerID, caseID)
 	}
-	return h.db.CaseUpdateContactIDTx(ctx, tx, caseID, *derived)
+	return h.db.CaseUpdateContactIDTx(ctx, tx, customerID, caseID, *derived)
 }
 
 // ResolutionCreateCaseLevel implements design §3.4's write-path call
 // site 1 (create direction): creates a case-level positive or negative
 // Resolution and, in the SAME transaction, derives and writes
-// Case.contact_id from the result.
+// Case.contact_id from the result. Verifies the Case belongs to
+// customerID before writing -- without this check an attacker who knew
+// another tenant's case_id could overwrite that case's contact_id
+// (round-2 review defect).
 func (h *caseHandler) ResolutionCreateCaseLevel(ctx context.Context, customerID, caseID, contactID uuid.UUID, resolutionType, resolvedByType string, resolvedByID uuid.UUID) (*resolution.Resolution, error) {
+	if err := verifyCaseOwnership(ctx, h.db, customerID, caseID); err != nil {
+		return nil, err
+	}
+
 	now := h.utilHandler.TimeNow()
 
 	tx, err := h.db.BeginTx(ctx)
@@ -99,7 +106,7 @@ func (h *caseHandler) ResolutionCreateCaseLevel(ctx context.Context, customerID,
 	if err != nil {
 		return nil, err
 	}
-	if err := h.applyDerivedContactID(ctx, tx, caseID, derived); err != nil {
+	if err := h.applyDerivedContactID(ctx, tx, customerID, caseID, derived); err != nil {
 		return nil, fmt.Errorf("could not update case contact_id. ResolutionCreateCaseLevel. err: %v", err)
 	}
 
@@ -114,7 +121,13 @@ func (h *caseHandler) ResolutionCreateCaseLevel(ctx context.Context, customerID,
 // ResolutionDeleteCaseLevel implements design §3.4's write-path call
 // site 1 (soft-delete direction): soft-deletes a case-level Resolution
 // and, in the SAME transaction, re-derives and writes Case.contact_id.
+// Verifies the Case belongs to customerID before writing (see
+// ResolutionCreateCaseLevel's comment on why this check is required).
 func (h *caseHandler) ResolutionDeleteCaseLevel(ctx context.Context, customerID, caseID, id uuid.UUID) error {
+	if err := verifyCaseOwnership(ctx, h.db, customerID, caseID); err != nil {
+		return err
+	}
+
 	tx, err := h.db.BeginTx(ctx)
 	if err != nil {
 		return fmt.Errorf("could not begin transaction. ResolutionDeleteCaseLevel. err: %v", err)
@@ -134,7 +147,7 @@ func (h *caseHandler) ResolutionDeleteCaseLevel(ctx context.Context, customerID,
 	if err != nil {
 		return err
 	}
-	if err := h.applyDerivedContactID(ctx, tx, caseID, derived); err != nil {
+	if err := h.applyDerivedContactID(ctx, tx, customerID, caseID, derived); err != nil {
 		return fmt.Errorf("could not update case contact_id. ResolutionDeleteCaseLevel. err: %v", err)
 	}
 
@@ -190,7 +203,7 @@ func (h *caseHandler) ReconcileContact(ctx context.Context, caseID uuid.UUID) er
 	if err != nil {
 		return err
 	}
-	if err := h.applyDerivedContactID(ctx, tx, caseID, derived); err != nil {
+	if err := h.applyDerivedContactID(ctx, tx, c.CustomerID, caseID, derived); err != nil {
 		return fmt.Errorf("could not update case contact_id. ReconcileContact. err: %v", err)
 	}
 

@@ -155,3 +155,60 @@ func Test_CaseTagRemove_DeletesAssignment(t *testing.T) {
 		t.Errorf("expected no tags remaining, got: %v", tags)
 	}
 }
+
+// Test_CaseTagAdd_CrossTenant_MustNotAssignToOtherTenantsCase is the
+// round-2 review's defect regression guard: CaseTagAdd/Remove/List
+// accepted a customerID parameter but never verified the target Case
+// actually belongs to that customer -- contact_case_tag_assignments has
+// no customer_id column of its own, so an attacker who knew (or
+// guessed) another tenant's case_id could tag, untag, or list tags on
+// it. Fixed by verifyCaseOwnership gating all three methods.
+func Test_CaseTagAdd_CrossTenant_MustNotAssignToOtherTenantsCase(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	db := dbhandler.NewHandler(dbTest, mockCache)
+	h := &caseHandler{utilHandler: mockUtil, reqHandler: mockReq, db: db, notifyHandler: mockNotify}
+	ctx := context.Background()
+
+	victimCustomerID := uuid.FromStringOrNil("f1b2c3d4-9806-9806-9806-000000000001")
+	attackerCustomerID := uuid.FromStringOrNil("f1b2c3d4-9806-9806-9806-000000000002")
+	caseID := uuid.FromStringOrNil("f1b2c3d4-9806-9806-9806-000000000003")
+	tagID := uuid.FromStringOrNil("f1b2c3d4-9806-9806-9806-000000000004")
+	opened := time.Date(2026, 6, 28, 10, 0, 0, 0, time.UTC)
+
+	victimCase := &kase.Case{
+		ID: caseID, CustomerID: victimCustomerID,
+		PeerType: commonaddress.TypeTel, PeerTarget: "+155****0004", ReferenceType: "call",
+		Status: kase.StatusOpen, OpenedAt: &opened, TMCreate: &opened, TMUpdate: &opened,
+	}
+	if err := db.CaseInsert(ctx, victimCase); err != nil {
+		t.Fatalf("CaseInsert() error = %v", err)
+	}
+
+	// No TagV1TagGet EXPECT is set: the ownership check must reject
+	// BEFORE the tag-existence RPC is even called.
+	if err := h.CaseTagAdd(ctx, attackerCustomerID, caseID, tagID); err != dbhandler.ErrNotFound {
+		t.Errorf("expected ErrNotFound (tenant isolation must hide existence), got: %v", err)
+	}
+	if err := h.CaseTagRemove(ctx, attackerCustomerID, caseID, tagID); err != dbhandler.ErrNotFound {
+		t.Errorf("expected ErrNotFound for CaseTagRemove, got: %v", err)
+	}
+	if _, err := h.CaseTagList(ctx, attackerCustomerID, caseID); err != dbhandler.ErrNotFound {
+		t.Errorf("expected ErrNotFound for CaseTagList, got: %v", err)
+	}
+
+	// The victim's case must have zero tag assignments -- the attacker's
+	// calls must never have reached the DB write/read at all.
+	tags, err := h.CaseTagList(ctx, victimCustomerID, caseID)
+	if err != nil {
+		t.Fatalf("CaseTagList() (victim) error = %v", err)
+	}
+	if len(tags) != 0 {
+		t.Errorf("BUG: attacker's cross-tenant CaseTagAdd call created an assignment on the victim's case: %v", tags)
+	}
+}

@@ -82,9 +82,9 @@ type DBHandler interface {
 	CaseUpdateStatusClosedTx(ctx context.Context, tx *sql.Tx, customerID, id uuid.UUID, closedReason, closedByType string, closedByID *uuid.UUID, closedAt *time.Time) (bool, error)
 	CaseUpdateTMUpdate(ctx context.Context, id uuid.UUID, tmUpdate *time.Time) error
 	CaseUpdateTMUpdateTx(ctx context.Context, tx *sql.Tx, id uuid.UUID, tmUpdate *time.Time) error
-	CaseUpdateContactID(ctx context.Context, id, contactID uuid.UUID) error
-	CaseUpdateContactIDTx(ctx context.Context, tx *sql.Tx, id, contactID uuid.UUID) error
-	CaseClearContactIDTx(ctx context.Context, tx *sql.Tx, id uuid.UUID) error
+	CaseUpdateContactID(ctx context.Context, customerID, id, contactID uuid.UUID) error
+	CaseUpdateContactIDTx(ctx context.Context, tx *sql.Tx, customerID, id, contactID uuid.UUID) error
+	CaseClearContactIDTx(ctx context.Context, tx *sql.Tx, customerID, id uuid.UUID) error
 	CaseListUnresolved(ctx context.Context, customerID uuid.UUID) ([]*kase.Case, error)
 	CaseListAll(ctx context.Context) ([]*kase.Case, error)
 

@@ -338,7 +338,7 @@ func Test_CaseUpdateContactID(t *testing.T) {
 		t.Fatalf("CaseInsert() error = %v", err)
 	}
 
-	if err := h.CaseUpdateContactID(ctx, caseID, contactID); err != nil {
+	if err := h.CaseUpdateContactID(ctx, customerID, caseID, contactID); err != nil {
 		t.Fatalf("CaseUpdateContactID() error = %v", err)
 	}
 
