@@ -12,6 +12,7 @@ package casehandler
 import (
 	context "context"
 	address "monorepo/bin-common-handler/models/address"
+	identity "monorepo/bin-common-handler/models/identity"
 	kase "monorepo/bin-contact-manager/models/kase"
 	reflect "reflect"
 
@@ -41,6 +42,36 @@ func NewMockCaseHandler(ctrl *gomock.Controller) *MockCaseHandler {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockCaseHandler) EXPECT() *MockCaseHandlerMockRecorder {
 	return m.recorder
+}
+
+// Close mocks base method.
+func (m *MockCaseHandler) Close(ctx context.Context, customerID, id uuid.UUID, closedByType identity.OwnerType, closedByID uuid.UUID) (*CloseResult, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Close", ctx, customerID, id, closedByType, closedByID)
+	ret0, _ := ret[0].(*CloseResult)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Close indicates an expected call of Close.
+func (mr *MockCaseHandlerMockRecorder) Close(ctx, customerID, id, closedByType, closedByID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockCaseHandler)(nil).Close), ctx, customerID, id, closedByType, closedByID)
+}
+
+// Continue mocks base method.
+func (m *MockCaseHandler) Continue(ctx context.Context, customerID, id uuid.UUID, callerType identity.OwnerType, callerID uuid.UUID, callerIsAdmin bool) (*kase.Case, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Continue", ctx, customerID, id, callerType, callerID, callerIsAdmin)
+	ret0, _ := ret[0].(*kase.Case)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Continue indicates an expected call of Continue.
+func (mr *MockCaseHandlerMockRecorder) Continue(ctx, customerID, id, callerType, callerID, callerIsAdmin any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Continue", reflect.TypeOf((*MockCaseHandler)(nil).Continue), ctx, customerID, id, callerType, callerID, callerIsAdmin)
 }
 
 // GetOrCreate mocks base method.

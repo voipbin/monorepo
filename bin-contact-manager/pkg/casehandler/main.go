@@ -10,6 +10,7 @@ import (
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
 
@@ -35,6 +36,19 @@ type CaseHandler interface {
 	// entirely (e.g. reference_type == "conversation_message" itself,
 	// which never triggers this write per §4.4's scope).
 	GetOrCreate(ctx context.Context, customerID uuid.UUID, self commonaddress.Address, peerType commonaddress.Type, peerTarget, referenceType string, caseIDHint *uuid.UUID) (*kase.Case, error)
+
+	// Close implements design §5.1: idempotent, race-tolerant close.
+	// Returns the ACTUALLY persisted closed_reason/closed_by, never the
+	// caller's own intent, distinguishing a genuine close from a
+	// race-lost double-close via CloseResult.AlreadyClosed.
+	Close(ctx context.Context, customerID, id uuid.UUID, closedByType commonidentity.OwnerType, closedByID uuid.UUID) (*CloseResult, error)
+
+	// Continue implements design §5.3: agent-initiated manual
+	// continuation for accidental-close recovery. Requires the source
+	// case closed; requires the caller be the owning agent or an
+	// admin/manager (callerIsAdmin, decided upstream). Reuses the same
+	// insertWithRetry primitive as GetOrCreate's insert branches.
+	Continue(ctx context.Context, customerID, id uuid.UUID, callerType commonidentity.OwnerType, callerID uuid.UUID, callerIsAdmin bool) (*kase.Case, error)
 }
 
 type caseHandler struct {
