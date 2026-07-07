@@ -133,6 +133,7 @@ func (h *conversationHandler) MessageEventReceived(ctx context.Context, m *mmmes
 			Medias:         []media.Media{},
 			Source:         source,
 			Destination:    destination,
+			CaseID:         caseIDHint(cv),
 		})
 		if err != nil {
 			return errors.Wrapf(err, "Could not create a message")
@@ -200,6 +201,7 @@ func (h *conversationHandler) MessageEventSent(ctx context.Context, m *mmmessage
 				Medias:         []media.Media{},
 				Source:         source,
 				Destination:    destination,
+				CaseID:         caseIDHint(cv),
 			})
 			if err != nil {
 				return errors.Wrapf(err, "Could not create a message")

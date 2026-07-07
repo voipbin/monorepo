@@ -22,6 +22,27 @@ func (h *conversationHandler) getExecuteMode(cv *conversation.Conversation) Exec
 	return ExecuteModeFlow
 }
 
+// caseIDHint reads the single case-linking hint off a Conversation's
+// Metadata.ContactCaseID (contact-case-management design §4.3), for
+// callers building MessageCreateArgs. Returns nil when Metadata is nil
+// or ContactCaseID is unset -- the overwhelmingly common case, since
+// most Conversations are never linked to a Case.
+//
+// Deliberately NOT read by getExecuteMode above or any agent/flow
+// dispatch decision: this hint carries case-linking information for
+// bin-contact-manager's Case get-or-create only, and must never
+// influence how a message is routed to an agent or a flow (that
+// decision is governed exclusively by Conversation.Owner, per
+// getExecuteMode's own doc comment). See
+// Test_CaseIDHint_NeverReadByExecuteMode for the explicit negative
+// test the design doc requires.
+func caseIDHint(cv *conversation.Conversation) *uuid.UUID {
+	if cv == nil || cv.Metadata == nil {
+		return nil
+	}
+	return cv.Metadata.ContactCaseID
+}
+
 // runExecuteModeAgent handles inbound messages on conversations owned by an agent.
 // The agent UI learns of new messages via the existing `message_created` event filtered on cv.OwnerID.
 // No new event is published; no flow is triggered. Logging only.

@@ -54,6 +54,15 @@ type MessageCreateArgs struct {
 
 	Source      commonaddress.Address
 	Destination commonaddress.Address
+
+	// CaseID is the case-linking hint to attach to the created message's
+	// event payload (contact-case-management design §4.3), sourced by
+	// the caller (message.go's MessageEventReceived/MessageEventSent)
+	// from the owning Conversation's Metadata.ContactCaseID. Not
+	// persisted to the message row (Message.CaseID is db:"-"); Create
+	// re-attaches it to the post-DB-read result before publishing the
+	// event, since the DB round-trip would otherwise drop it.
+	CaseID *uuid.UUID
 }
 
 // DeriveEndpoints maps a conversation's relative Self/Peer to a message's

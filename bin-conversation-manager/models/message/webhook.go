@@ -32,6 +32,15 @@ type WebhookMessage struct {
 	Text   string        `json:"text,omitempty"`
 	Medias []media.Media `json:"medias,omitempty"`
 
+	// CaseID decodes the case-linking hint carried on the internal
+	// conversation_message_created event (contact-case-management
+	// design §4.3). This struct doubles as the decode target for
+	// bin-contact-manager's subscribehandler AND the shape
+	// ConvertWebhookMessage below builds for the customer-facing
+	// webhook -- ConvertWebhookMessage deliberately leaves this unset;
+	// see its comment and Test_ConvertWebhookMessage_NeverCopiesCaseID.
+	CaseID *uuid.UUID `json:"case_id,omitempty"`
+
 	TMCreate *time.Time `json:"tm_create"`
 	TMUpdate *time.Time `json:"tm_update"`
 	TMDelete *time.Time `json:"tm_delete"`
