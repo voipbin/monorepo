@@ -740,7 +740,7 @@ func TestNewContactHandler(t *testing.T) {
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
-	h := NewContactHandler(nil, mockDB, mockNotify)
+	h := NewContactHandler(nil, mockDB, mockNotify, nil)
 	if h == nil {
 		t.Error("NewContactHandler() returned nil")
 	}

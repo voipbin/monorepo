@@ -10,6 +10,7 @@ import (
 	"monorepo/bin-contact-manager/internal/config"
 	"monorepo/bin-contact-manager/models/contact"
 	"monorepo/bin-contact-manager/pkg/cachehandler"
+	"monorepo/bin-contact-manager/pkg/casehandler"
 	"monorepo/bin-contact-manager/pkg/contacthandler"
 	"monorepo/bin-contact-manager/pkg/dbhandler"
 
@@ -65,8 +66,9 @@ func initContactHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (contact
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameContactEvent, serviceName)
+	caseHandler := casehandler.NewCaseHandler(reqHandler, db, notifyHandler)
 
-	return contacthandler.NewContactHandler(reqHandler, db, notifyHandler), nil
+	return contacthandler.NewContactHandler(reqHandler, db, notifyHandler, caseHandler), nil
 }
 
 func initCommand() *cobra.Command {

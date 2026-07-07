@@ -26,6 +26,7 @@ import (
 	"monorepo/bin-contact-manager/internal/config"
 	"monorepo/bin-contact-manager/pkg/addresshandler"
 	"monorepo/bin-contact-manager/pkg/cachehandler"
+	"monorepo/bin-contact-manager/pkg/casehandler"
 	"monorepo/bin-contact-manager/pkg/contacthandler"
 	"monorepo/bin-contact-manager/pkg/dbhandler"
 	"monorepo/bin-contact-manager/pkg/listenhandler"
@@ -126,7 +127,8 @@ func runService(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	db := dbhandler.NewHandler(sqlDB, cache)
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameContactEvent, serviceName)
-	contactHandler := contacthandler.NewContactHandler(reqHandler, db, notifyHandler)
+	caseHandler := casehandler.NewCaseHandler(reqHandler, db, notifyHandler)
+	contactHandler := contacthandler.NewContactHandler(reqHandler, db, notifyHandler, caseHandler)
 	addrHandler := addresshandler.NewAddressHandler(db)
 
 	if err := runListen(sockHandler, contactHandler, addrHandler); err != nil {
