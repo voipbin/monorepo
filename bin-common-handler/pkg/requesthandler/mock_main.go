@@ -3864,6 +3864,21 @@ func (mr *MockRequestHandlerMockRecorder) ConversationV1ConversationGet(ctx, con
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1ConversationGet", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1ConversationGet), ctx, conversationID)
 }
 
+// ConversationV1ConversationGetBySelfAndPeer mocks base method.
+func (m *MockRequestHandler) ConversationV1ConversationGetBySelfAndPeer(ctx context.Context, self, peer address.Address) (*conversation.Conversation, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConversationV1ConversationGetBySelfAndPeer", ctx, self, peer)
+	ret0, _ := ret[0].(*conversation.Conversation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConversationV1ConversationGetBySelfAndPeer indicates an expected call of ConversationV1ConversationGetBySelfAndPeer.
+func (mr *MockRequestHandlerMockRecorder) ConversationV1ConversationGetBySelfAndPeer(ctx, self, peer any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1ConversationGetBySelfAndPeer", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1ConversationGetBySelfAndPeer), ctx, self, peer)
+}
+
 // ConversationV1ConversationList mocks base method.
 func (m *MockRequestHandler) ConversationV1ConversationList(ctx context.Context, pageToken string, pageSize uint64, fields map[conversation.Field]any) ([]conversation.Conversation, error) {
 	m.ctrl.T.Helper()

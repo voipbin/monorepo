@@ -225,3 +225,44 @@ func (h *listenHandler) processV1ConversationsIDPut(ctx context.Context, m *sock
 
 	return res, nil
 }
+
+// processV1ConversationsSelfAndPeerGet handles
+// /v1/conversations/self_and_peer GET
+//
+// Get-only lookup (never creates), used by bin-contact-manager's
+// proactive Case-linking write path (contact-case-management design
+// §4.4). Deliberately calls conversationHandler.GetBySelfAndPeer, NOT
+// GetOrCreateBySelfAndPeer -- a miss must not create a Conversation or
+// fire a conversation_created webhook (round-7 correction).
+func (h *listenHandler) processV1ConversationsSelfAndPeerGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1ConversationsSelfAndPeerGet",
+		"request": m,
+	})
+
+	var req request.V1DataConversationsSelfAndPeerGet
+	if err := json.Unmarshal(m.Data, &req); err != nil {
+		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		return simpleResponse(400), nil
+	}
+
+	tmp, err := h.conversationHandler.GetBySelfAndPeer(ctx, req.Self, req.Peer)
+	if err != nil {
+		log.Debugf("Could not get a conversation. err: %v", err)
+		return errorResponse(err), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &sock.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}

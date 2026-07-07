@@ -104,6 +104,21 @@ func (mr *MockConversationHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockConversationHandler)(nil).Get), ctx, id)
 }
 
+// GetBySelfAndPeer mocks base method.
+func (m *MockConversationHandler) GetBySelfAndPeer(ctx context.Context, self, peer address.Address) (*conversation.Conversation, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetBySelfAndPeer", ctx, self, peer)
+	ret0, _ := ret[0].(*conversation.Conversation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetBySelfAndPeer indicates an expected call of GetBySelfAndPeer.
+func (mr *MockConversationHandlerMockRecorder) GetBySelfAndPeer(ctx, self, peer any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBySelfAndPeer", reflect.TypeOf((*MockConversationHandler)(nil).GetBySelfAndPeer), ctx, self, peer)
+}
+
 // Hook mocks base method.
 func (m *MockConversationHandler) Hook(ctx context.Context, uri, method, signature string, data []byte) error {
 	m.ctrl.T.Helper()

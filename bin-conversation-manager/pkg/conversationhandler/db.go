@@ -39,6 +39,32 @@ func (h *conversationHandler) Get(ctx context.Context, id uuid.UUID) (*conversat
 	return res, nil
 }
 
+// GetBySelfAndPeer is a get-only lookup (deliberately never creates).
+// Used by bin-contact-manager's proactive Case-linking write path
+// (contact-case-management design §4.4, round-7 correction): a miss
+// must not create a Conversation, since doing so purely as case-linking
+// plumbing -- with no message ever having been sent -- would fire a
+// genuine, real, customer-facing conversation_created webhook for a
+// thread that doesn't actually exist yet from the customer's
+// perspective. Contrast with GetOrCreateBySelfAndPeer below, which is
+// correct to create on miss because it is only ever called when a real
+// message is genuinely about to be sent (§4.5).
+func (h *conversationHandler) GetBySelfAndPeer(ctx context.Context, self commonaddress.Address, peer commonaddress.Address) (*conversation.Conversation, error) {
+	// Canonicalize self/peer BEFORE the lookup so the lookup key and the
+	// stored value share one canonical form, matching
+	// GetOrCreateBySelfAndPeer's normalization. NormalizeTarget is
+	// loss-proof, so the error is discarded.
+	self.Target, _ = commonaddress.NormalizeTarget(self.Type, self.Target)
+	peer.Target, _ = commonaddress.NormalizeTarget(peer.Type, peer.Target)
+
+	res, err := h.db.ConversationGetBySelfAndPeer(ctx, self, peer)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
 // GetBySelfAndPeer returns conversation
 func (h *conversationHandler) GetOrCreateBySelfAndPeer(
 	ctx context.Context,

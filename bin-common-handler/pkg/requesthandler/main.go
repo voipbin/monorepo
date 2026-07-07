@@ -947,6 +947,10 @@ type RequestHandler interface {
 		peer commonaddress.Address,
 	) (*cvconversation.Conversation, error)
 	ConversationV1ConversationGet(ctx context.Context, conversationID uuid.UUID) (*cvconversation.Conversation, error)
+	// ConversationV1ConversationGetBySelfAndPeer is a get-only lookup
+	// (never creates), used by bin-contact-manager's proactive
+	// Case-linking write path (contact-case-management design §4.4).
+	ConversationV1ConversationGetBySelfAndPeer(ctx context.Context, self commonaddress.Address, peer commonaddress.Address) (*cvconversation.Conversation, error)
 	ConversationV1ConversationList(ctx context.Context, pageToken string, pageSize uint64, fields map[cvconversation.Field]any) ([]cvconversation.Conversation, error)
 	ConversationV1ConversationUpdate(ctx context.Context, conversationID uuid.UUID, fields map[cvconversation.Field]any) (*cvconversation.Conversation, error)
 

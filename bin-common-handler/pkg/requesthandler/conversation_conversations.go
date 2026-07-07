@@ -100,6 +100,36 @@ func (r *requestHandler) ConversationV1ConversationCreate(
 	return &res, nil
 }
 
+// ConversationV1ConversationGetBySelfAndPeer sends a get-only lookup
+// request to conversation-manager (never creates on a miss). Used by
+// bin-contact-manager's proactive Case-linking write path
+// (contact-case-management design §4.4).
+func (r *requestHandler) ConversationV1ConversationGetBySelfAndPeer(ctx context.Context, self address.Address, peer address.Address) (*cvconversation.Conversation, error) {
+	uri := "/v1/conversations/self_and_peer"
+
+	data := &cvrequest.V1DataConversationsSelfAndPeerGet{
+		Self: self,
+		Peer: peer,
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestConversation(ctx, uri, sock.RequestMethodGet, "conversation/conversations/self_and_peer", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
+		return nil, err
+	}
+
+	var res cvconversation.Conversation
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
+}
+
 // ConversationV1ConversationUpdate sends a request to conversation-manager
 // to update the conversation info.
 // it returns updated conversation info if it succeed.

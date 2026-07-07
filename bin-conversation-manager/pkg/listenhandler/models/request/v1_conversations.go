@@ -28,3 +28,17 @@ type V1DataConversationsIDMessagesPost struct {
 	Text   string        `json:"text"`
 	Medias []media.Media `json:"medias"`
 }
+
+// V1DataConversationsSelfAndPeerGet is
+// v1 data type request struct for
+// /v1/conversations/self_and_peer GET
+//
+// Used by bin-contact-manager's get-only proactive Case-linking lookup
+// (contact-case-management design §4.4). Sent as a JSON body on a GET
+// request, matching this service's existing convention for
+// /v1/conversations GET (filters are JSON-marshaled and sent as the
+// request body, not query params).
+type V1DataConversationsSelfAndPeerGet struct {
+	Self commonaddress.Address `json:"self,omitempty"`
+	Peer commonaddress.Address `json:"peer,omitempty"`
+}

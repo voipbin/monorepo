@@ -38,6 +38,11 @@ type ConversationHandler interface {
 		peer commonaddress.Address,
 	) (*conversation.Conversation, error)
 	Get(ctx context.Context, id uuid.UUID) (*conversation.Conversation, error)
+	// GetBySelfAndPeer is a get-only lookup (never creates), used by
+	// bin-contact-manager's proactive Case-linking write path
+	// (contact-case-management design §4.4). A miss must not have any
+	// create side-effect.
+	GetBySelfAndPeer(ctx context.Context, self commonaddress.Address, peer commonaddress.Address) (*conversation.Conversation, error)
 	List(ctx context.Context, pageToken string, pageSize uint64, filters map[conversation.Field]any) ([]*conversation.Conversation, error)
 	// GetByTypeAndDialogID(ctx context.Context, conversationType conversation.Type, dialogID string) (*conversation.Conversation, error)
 	Update(ctx context.Context, id uuid.UUID, fields map[conversation.Field]any) (*conversation.Conversation, error)

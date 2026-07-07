@@ -48,9 +48,10 @@ var (
 	regV1AccountsID  = regexp.MustCompile("/v1/accounts/" + regUUID + "$")
 
 	// conversations
-	regV1ConversationsGet = regexp.MustCompile(`/v1/conversations\?`)
-	regV1Conversations    = regexp.MustCompile(`/v1/conversations$`)
-	regV1ConversationsID  = regexp.MustCompile("/v1/conversations/" + regUUID + "$")
+	regV1ConversationsGet           = regexp.MustCompile(`/v1/conversations\?`)
+	regV1Conversations              = regexp.MustCompile(`/v1/conversations$`)
+	regV1ConversationsSelfAndPeer   = regexp.MustCompile(`/v1/conversations/self_and_peer$`)
+	regV1ConversationsID            = regexp.MustCompile("/v1/conversations/" + regUUID + "$")
 
 	// hooks
 	regV1Hooks = regexp.MustCompile(`/v1/hooks$`)
@@ -225,6 +226,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1Conversations.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1ConversationsPost(ctx, m)
 		requestType = "/v1/conversations"
+
+	// GET /conversations/self_and_peer
+	case regV1ConversationsSelfAndPeer.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1ConversationsSelfAndPeerGet(ctx, m)
+		requestType = "/v1/conversations/self_and_peer"
 
 	// GET /conversations/<conversation-id>
 	case regV1ConversationsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
