@@ -1784,6 +1784,21 @@ func (mr *MockServiceHandlerMockRecorder) CaseListUnresolved(ctx, a, size, token
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseListUnresolved", reflect.TypeOf((*MockServiceHandler)(nil).CaseListUnresolved), ctx, a, size, token)
 }
 
+// CaseMessageSend mocks base method.
+func (m *MockServiceHandler) CaseMessageSend(ctx context.Context, a *auth.AuthIdentity, caseID uuid.UUID, source, destination, text string) (*message0.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseMessageSend", ctx, a, caseID, source, destination, text)
+	ret0, _ := ret[0].(*message0.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CaseMessageSend indicates an expected call of CaseMessageSend.
+func (mr *MockServiceHandlerMockRecorder) CaseMessageSend(ctx, a, caseID, source, destination, text any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseMessageSend", reflect.TypeOf((*MockServiceHandler)(nil).CaseMessageSend), ctx, a, caseID, source, destination, text)
+}
+
 // CaseNoteCreate mocks base method.
 func (m *MockServiceHandler) CaseNoteCreate(ctx context.Context, a *auth.AuthIdentity, caseID uuid.UUID, authorType string, authorID *uuid.UUID, text string) (*casenote.CaseNote, error) {
 	m.ctrl.T.Helper()

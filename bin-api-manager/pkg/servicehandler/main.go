@@ -503,6 +503,16 @@ type ServiceHandler interface {
 	) (*cmcasenote.CaseNote, error)
 	CaseNoteDelete(ctx context.Context, a *auth.AuthIdentity, caseID uuid.UUID, noteID uuid.UUID) error
 
+	// case message handlers
+	CaseMessageSend(
+		ctx context.Context,
+		a *auth.AuthIdentity,
+		caseID uuid.UUID,
+		source string,
+		destination string,
+		text string,
+	) (*cvmessage.WebhookMessage, error)
+
 	// interaction handlers
 	InteractionList(
 		ctx context.Context,

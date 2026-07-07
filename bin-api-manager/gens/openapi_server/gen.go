@@ -5780,6 +5780,18 @@ type PostCasesIdCloseJSONBody struct {
 	ClosedById openapi_types.UUID `json:"closed_by_id"`
 }
 
+// PostCasesIdMessagesJSONBody defines parameters for PostCasesIdMessages.
+type PostCasesIdMessagesJSONBody struct {
+	// Destination The customer's number to send to. Must be attributable to this case (the matched Contact's address, or the case's peer_target).
+	Destination string `json:"destination"`
+
+	// Source The business's own number to send from. Must be an active, normal number owned by this case's customer.
+	Source string `json:"source"`
+
+	// Text The text content of the message.
+	Text string `json:"text"`
+}
+
 // PostCasesIdNotesJSONBody defines parameters for PostCasesIdNotes.
 type PostCasesIdNotesJSONBody struct {
 	// AuthorId ID of the agent authoring this note. Nullable for system-authored notes.
@@ -7716,6 +7728,9 @@ type PutCampaignsIdStatusJSONRequestBody PutCampaignsIdStatusJSONBody
 // PostCasesIdCloseJSONRequestBody defines body for PostCasesIdClose for application/json ContentType.
 type PostCasesIdCloseJSONRequestBody PostCasesIdCloseJSONBody
 
+// PostCasesIdMessagesJSONRequestBody defines body for PostCasesIdMessages for application/json ContentType.
+type PostCasesIdMessagesJSONRequestBody PostCasesIdMessagesJSONBody
+
 // PostCasesIdNotesJSONRequestBody defines body for PostCasesIdNotes for application/json ContentType.
 type PostCasesIdNotesJSONRequestBody PostCasesIdNotesJSONBody
 
@@ -8345,6 +8360,9 @@ type ServerInterface interface {
 	// Continue a closed case
 	// (POST /cases/{id}/continue)
 	PostCasesIdContinue(c *gin.Context, id openapi_types.UUID)
+	// Send a message from a case
+	// (POST /cases/{id}/messages)
+	PostCasesIdMessages(c *gin.Context, id openapi_types.UUID)
 	// List notes for a case
 	// (GET /cases/{id}/notes)
 	GetCasesIdNotes(c *gin.Context, id openapi_types.UUID)
@@ -12044,6 +12062,30 @@ func (siw *ServerInterfaceWrapper) PostCasesIdContinue(c *gin.Context) {
 	}
 
 	siw.Handler.PostCasesIdContinue(c, id)
+}
+
+// PostCasesIdMessages operation middleware
+func (siw *ServerInterfaceWrapper) PostCasesIdMessages(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostCasesIdMessages(c, id)
 }
 
 // GetCasesIdNotes operation middleware
@@ -19180,6 +19222,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.GET(options.BaseURL+"/cases/:id", wrapper.GetCasesId)
 	router.POST(options.BaseURL+"/cases/:id/close", wrapper.PostCasesIdClose)
 	router.POST(options.BaseURL+"/cases/:id/continue", wrapper.PostCasesIdContinue)
+	router.POST(options.BaseURL+"/cases/:id/messages", wrapper.PostCasesIdMessages)
 	router.GET(options.BaseURL+"/cases/:id/notes", wrapper.GetCasesIdNotes)
 	router.POST(options.BaseURL+"/cases/:id/notes", wrapper.PostCasesIdNotes)
 	router.DELETE(options.BaseURL+"/cases/:id/notes/:note_id", wrapper.DeleteCasesIdNotesNoteId)
@@ -25844,6 +25887,78 @@ func (response PostCasesIdContinue404JSONResponse) VisitPostCasesIdContinueRespo
 type PostCasesIdContinue500JSONResponse struct{ InternalErrorJSONResponse }
 
 func (response PostCasesIdContinue500JSONResponse) VisitPostCasesIdContinueResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCasesIdMessagesRequestObject struct {
+	Id   openapi_types.UUID `json:"id"`
+	Body *PostCasesIdMessagesJSONRequestBody
+}
+
+type PostCasesIdMessagesResponseObject interface {
+	VisitPostCasesIdMessagesResponse(w http.ResponseWriter) error
+}
+
+type PostCasesIdMessages200JSONResponse ConversationManagerMessage
+
+func (response PostCasesIdMessages200JSONResponse) VisitPostCasesIdMessagesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCasesIdMessages400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostCasesIdMessages400JSONResponse) VisitPostCasesIdMessagesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCasesIdMessages401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostCasesIdMessages401JSONResponse) VisitPostCasesIdMessagesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCasesIdMessages403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostCasesIdMessages403JSONResponse) VisitPostCasesIdMessagesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCasesIdMessages404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostCasesIdMessages404JSONResponse) VisitPostCasesIdMessagesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCasesIdMessages409JSONResponse struct{ ConflictJSONResponse }
+
+func (response PostCasesIdMessages409JSONResponse) VisitPostCasesIdMessagesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCasesIdMessages500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostCasesIdMessages500JSONResponse) VisitPostCasesIdMessagesResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(500)
 
@@ -41645,6 +41760,9 @@ type StrictServerInterface interface {
 	// Continue a closed case
 	// (POST /cases/{id}/continue)
 	PostCasesIdContinue(ctx context.Context, request PostCasesIdContinueRequestObject) (PostCasesIdContinueResponseObject, error)
+	// Send a message from a case
+	// (POST /cases/{id}/messages)
+	PostCasesIdMessages(ctx context.Context, request PostCasesIdMessagesRequestObject) (PostCasesIdMessagesResponseObject, error)
 	// List notes for a case
 	// (GET /cases/{id}/notes)
 	GetCasesIdNotes(ctx context.Context, request GetCasesIdNotesRequestObject) (GetCasesIdNotesResponseObject, error)
@@ -45800,6 +45918,41 @@ func (sh *strictHandler) PostCasesIdContinue(ctx *gin.Context, id openapi_types.
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PostCasesIdContinueResponseObject); ok {
 		if err := validResponse.VisitPostCasesIdContinueResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostCasesIdMessages operation middleware
+func (sh *strictHandler) PostCasesIdMessages(ctx *gin.Context, id openapi_types.UUID) {
+	var request PostCasesIdMessagesRequestObject
+
+	request.Id = id
+
+	var body PostCasesIdMessagesJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostCasesIdMessages(ctx, request.(PostCasesIdMessagesRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostCasesIdMessages")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostCasesIdMessagesResponseObject); ok {
+		if err := validResponse.VisitPostCasesIdMessagesResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {
