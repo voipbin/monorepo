@@ -14,6 +14,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	"monorepo/bin-contact-manager/models/casenote"
 	"monorepo/bin-contact-manager/models/kase"
 	"monorepo/bin-contact-manager/models/resolution"
 	"monorepo/bin-contact-manager/pkg/dbhandler"
@@ -60,6 +61,15 @@ type CaseHandler interface {
 
 	// CaseListUnresolved is design §6's agent-facing unresolved queue.
 	CaseListUnresolved(ctx context.Context, customerID uuid.UUID) ([]*kase.Case, error)
+
+	// CaseNoteCreate / CaseNoteDelete / CaseNoteListByCase implement
+	// design §3.5: internal, agent-facing case annotations, physically
+	// and transport-isolated from customer-facing data. Both create and
+	// delete publish their event via the plain PublishEvent() primitive
+	// -- NEVER PublishWebhookEvent().
+	CaseNoteCreate(ctx context.Context, customerID, caseID uuid.UUID, authorType string, authorID *uuid.UUID, text string) (*casenote.CaseNote, error)
+	CaseNoteDelete(ctx context.Context, customerID, caseID, id uuid.UUID) error
+	CaseNoteListByCase(ctx context.Context, customerID, caseID uuid.UUID) ([]*casenote.CaseNote, error)
 }
 
 type caseHandler struct {

@@ -13,6 +13,7 @@ import (
 	context "context"
 	address "monorepo/bin-common-handler/models/address"
 	identity "monorepo/bin-common-handler/models/identity"
+	casenote "monorepo/bin-contact-manager/models/casenote"
 	kase "monorepo/bin-contact-manager/models/kase"
 	resolution "monorepo/bin-contact-manager/models/resolution"
 	reflect "reflect"
@@ -58,6 +59,50 @@ func (m *MockCaseHandler) CaseListUnresolved(ctx context.Context, customerID uui
 func (mr *MockCaseHandlerMockRecorder) CaseListUnresolved(ctx, customerID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseListUnresolved", reflect.TypeOf((*MockCaseHandler)(nil).CaseListUnresolved), ctx, customerID)
+}
+
+// CaseNoteCreate mocks base method.
+func (m *MockCaseHandler) CaseNoteCreate(ctx context.Context, customerID, caseID uuid.UUID, authorType string, authorID *uuid.UUID, text string) (*casenote.CaseNote, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseNoteCreate", ctx, customerID, caseID, authorType, authorID, text)
+	ret0, _ := ret[0].(*casenote.CaseNote)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CaseNoteCreate indicates an expected call of CaseNoteCreate.
+func (mr *MockCaseHandlerMockRecorder) CaseNoteCreate(ctx, customerID, caseID, authorType, authorID, text any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseNoteCreate", reflect.TypeOf((*MockCaseHandler)(nil).CaseNoteCreate), ctx, customerID, caseID, authorType, authorID, text)
+}
+
+// CaseNoteDelete mocks base method.
+func (m *MockCaseHandler) CaseNoteDelete(ctx context.Context, customerID, caseID, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseNoteDelete", ctx, customerID, caseID, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CaseNoteDelete indicates an expected call of CaseNoteDelete.
+func (mr *MockCaseHandlerMockRecorder) CaseNoteDelete(ctx, customerID, caseID, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseNoteDelete", reflect.TypeOf((*MockCaseHandler)(nil).CaseNoteDelete), ctx, customerID, caseID, id)
+}
+
+// CaseNoteListByCase mocks base method.
+func (m *MockCaseHandler) CaseNoteListByCase(ctx context.Context, customerID, caseID uuid.UUID) ([]*casenote.CaseNote, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseNoteListByCase", ctx, customerID, caseID)
+	ret0, _ := ret[0].([]*casenote.CaseNote)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CaseNoteListByCase indicates an expected call of CaseNoteListByCase.
+func (mr *MockCaseHandlerMockRecorder) CaseNoteListByCase(ctx, customerID, caseID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseNoteListByCase", reflect.TypeOf((*MockCaseHandler)(nil).CaseNoteListByCase), ctx, customerID, caseID)
 }
 
 // Close mocks base method.

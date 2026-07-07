@@ -16,6 +16,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	"monorepo/bin-contact-manager/models/casenote"
 	"monorepo/bin-contact-manager/models/contact"
 	"monorepo/bin-contact-manager/models/interaction"
 	"monorepo/bin-contact-manager/models/kase"
@@ -85,6 +86,11 @@ type DBHandler interface {
 	CaseUpdateContactIDTx(ctx context.Context, tx *sql.Tx, id, contactID uuid.UUID) error
 	CaseClearContactIDTx(ctx context.Context, tx *sql.Tx, id uuid.UUID) error
 	CaseListUnresolved(ctx context.Context, customerID uuid.UUID) ([]*kase.Case, error)
+
+	// CaseNote operations (design §3.5)
+	CaseNoteCreate(ctx context.Context, n *casenote.CaseNote) error
+	CaseNoteDelete(ctx context.Context, customerID, caseID, id uuid.UUID) error
+	CaseNoteListByCase(ctx context.Context, customerID, caseID uuid.UUID) ([]*casenote.CaseNote, error)
 	CaseListByOwner(ctx context.Context, customerID uuid.UUID, ownerType commonidentity.OwnerType, ownerID uuid.UUID) ([]*kase.Case, error)
 	CaseGetLastClosedByPeer(ctx context.Context, customerID uuid.UUID, peerType commonaddress.Type, peerTarget, referenceType string) (*kase.Case, error)
 	CaseGetLastClosedByPeerTx(ctx context.Context, tx *sql.Tx, customerID uuid.UUID, peerType commonaddress.Type, peerTarget, referenceType string) (*kase.Case, error)

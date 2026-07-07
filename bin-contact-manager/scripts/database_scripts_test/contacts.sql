@@ -193,3 +193,37 @@ create unique index uq_case_open_peer on contact_cases(open_peer_uk);
 create index idx_case_unresolved on contact_cases(customer_id, status, contact_id);
 create index idx_case_owner on contact_cases(customer_id, owner_type, owner_id);
 create index idx_case_customer_reftype on contact_cases(customer_id, reference_type);
+
+-- contact_case_notes mirrors migration 437ca5f2e4ee (design §3.5).
+-- Physically separate from contact_interactions -- never surfaced in any
+-- customer-facing webhook or API response.
+create table contact_case_notes (
+  id          binary(16)   not null,
+  customer_id binary(16)   not null,
+  case_id     binary(16)   not null,
+
+  author_type varchar(32)  not null default '',
+  author_id   binary(16),
+
+  text        text         not null,
+
+  tm_create   datetime(6),
+  tm_update   datetime(6),
+  tm_delete   datetime(6),
+
+  primary key(id)
+);
+
+create index idx_contact_case_notes_case_id on contact_case_notes(case_id, tm_delete);
+
+-- contact_case_tag_assignments mirrors migration 5c7bc362be27 (design
+-- §7 round-22): case-scoped tag assignment, exactly mirroring
+-- contact_tag_assignments' shape. bin-tag-manager itself is unchanged.
+create table contact_case_tag_assignments (
+  case_id   binary(16),
+  tag_id    binary(16),
+
+  tm_create datetime(6),
+
+  primary key(case_id, tag_id)
+);

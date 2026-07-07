@@ -14,6 +14,7 @@ import (
 	sql "database/sql"
 	address "monorepo/bin-common-handler/models/address"
 	identity "monorepo/bin-common-handler/models/identity"
+	casenote "monorepo/bin-contact-manager/models/casenote"
 	contact "monorepo/bin-contact-manager/models/contact"
 	interaction "monorepo/bin-contact-manager/models/interaction"
 	kase "monorepo/bin-contact-manager/models/kase"
@@ -354,6 +355,49 @@ func (m *MockDBHandler) CaseListUnresolved(ctx context.Context, customerID uuid.
 func (mr *MockDBHandlerMockRecorder) CaseListUnresolved(ctx, customerID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseListUnresolved", reflect.TypeOf((*MockDBHandler)(nil).CaseListUnresolved), ctx, customerID)
+}
+
+// CaseNoteCreate mocks base method.
+func (m *MockDBHandler) CaseNoteCreate(ctx context.Context, n *casenote.CaseNote) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseNoteCreate", ctx, n)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CaseNoteCreate indicates an expected call of CaseNoteCreate.
+func (mr *MockDBHandlerMockRecorder) CaseNoteCreate(ctx, n any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseNoteCreate", reflect.TypeOf((*MockDBHandler)(nil).CaseNoteCreate), ctx, n)
+}
+
+// CaseNoteDelete mocks base method.
+func (m *MockDBHandler) CaseNoteDelete(ctx context.Context, customerID, caseID, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseNoteDelete", ctx, customerID, caseID, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CaseNoteDelete indicates an expected call of CaseNoteDelete.
+func (mr *MockDBHandlerMockRecorder) CaseNoteDelete(ctx, customerID, caseID, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseNoteDelete", reflect.TypeOf((*MockDBHandler)(nil).CaseNoteDelete), ctx, customerID, caseID, id)
+}
+
+// CaseNoteListByCase mocks base method.
+func (m *MockDBHandler) CaseNoteListByCase(ctx context.Context, customerID, caseID uuid.UUID) ([]*casenote.CaseNote, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseNoteListByCase", ctx, customerID, caseID)
+	ret0, _ := ret[0].([]*casenote.CaseNote)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CaseNoteListByCase indicates an expected call of CaseNoteListByCase.
+func (mr *MockDBHandlerMockRecorder) CaseNoteListByCase(ctx, customerID, caseID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseNoteListByCase", reflect.TypeOf((*MockDBHandler)(nil).CaseNoteListByCase), ctx, customerID, caseID)
 }
 
 // CaseUpdateContactID mocks base method.
