@@ -75,3 +75,25 @@ func TestMetadata_NilContactCaseID_OmitsFieldOnMarshal(t *testing.T) {
 		t.Errorf("Got %s, expected {}", string(b))
 	}
 }
+
+func TestMetadata_NilMetadataPointer_OmittedFromConversationJSON(t *testing.T) {
+	// A nil *Metadata (the zero value for Conversation.Metadata) must be
+	// completely absent from the marshaled Conversation JSON -- this is
+	// what keeps existing API responses byte-for-byte unchanged for
+	// Conversations that never set Metadata. A non-pointer struct field's
+	// omitempty would NOT achieve this (Go's encoding/json only treats a
+	// struct as "empty" for omitempty if it is the zero value AND not a
+	// struct kind -- structs are never considered empty), which is exactly
+	// the regression this pointer type avoids.
+	type wrapper struct {
+		Metadata *Metadata `json:"metadata,omitempty"`
+	}
+	w := wrapper{}
+	b, err := json.Marshal(w)
+	if err != nil {
+		t.Fatalf("Marshal failed: %v", err)
+	}
+	if string(b) != `{}` {
+		t.Errorf("Got %s, expected {} (nil *Metadata must be omitted)", string(b))
+	}
+}

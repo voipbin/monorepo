@@ -31,9 +31,12 @@ type Conversation struct {
 
 	// Metadata carries extensible per-Conversation annotations, currently
 	// used only for ContactCaseID (§4.3/§4.4 of the contact-case-management
-	// design). Inert with respect to conversation-manager's own dispatch
-	// logic -- never read by getExecuteMode or flow/agent-routing.
-	Metadata Metadata `json:"metadata,omitempty" db:"metadata,json"`
+	// design). Pointer + omitempty so existing API responses that never set
+	// it are byte-for-byte unchanged (a non-pointer struct's omitempty does
+	// not suppress an empty-but-present value in Go's encoding/json).
+	// Inert with respect to conversation-manager's own dispatch logic --
+	// never read by getExecuteMode or flow/agent-routing.
+	Metadata *Metadata `json:"metadata,omitempty" db:"metadata,json"`
 
 	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
 	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`
