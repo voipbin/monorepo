@@ -266,3 +266,47 @@ func (h *listenHandler) processV1ConversationsSelfAndPeerGet(ctx context.Context
 
 	return res, nil
 }
+
+// processV1ConversationsGetOrCreateBySelfAndPeerPost handles
+// /v1/conversations/get_or_create_by_self_and_peer POST
+//
+// Get-or-create lookup, used by bin-contact-manager's agent-send
+// Case-linked messaging path (contact-case-management design §4.5,
+// round-12 correction). Deliberately calls
+// conversationHandler.GetOrCreateBySelfAndPeer, NOT GetBySelfAndPeer --
+// creating a Conversation on a miss is correct here because a real
+// message is genuinely about to be sent through the resulting
+// Conversation. This is a distinct RPC from processV1ConversationsSelfAndPeerGet
+// above, not a relaxation of its get-only semantics.
+func (h *listenHandler) processV1ConversationsGetOrCreateBySelfAndPeerPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1ConversationsGetOrCreateBySelfAndPeerPost",
+		"request": m,
+	})
+
+	var req request.V1DataConversationsGetOrCreateBySelfAndPeerPost
+	if err := json.Unmarshal(m.Data, &req); err != nil {
+		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		return simpleResponse(400), nil
+	}
+
+	tmp, err := h.conversationHandler.GetOrCreateBySelfAndPeer(ctx, req.CustomerID, req.ConversationType, req.DialogID, req.Self, req.Peer)
+	if err != nil {
+		log.Debugf("Could not get or create a conversation. err: %v", err)
+		return errorResponse(err), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &sock.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}

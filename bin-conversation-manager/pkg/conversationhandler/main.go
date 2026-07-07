@@ -43,6 +43,19 @@ type ConversationHandler interface {
 	// (contact-case-management design §4.4). A miss must not have any
 	// create side-effect.
 	GetBySelfAndPeer(ctx context.Context, self commonaddress.Address, peer commonaddress.Address) (*conversation.Conversation, error)
+	// GetOrCreateBySelfAndPeer is a distinct, separate RPC from
+	// GetBySelfAndPeer above (round-12 correction, contact-case-management
+	// design §4.5): creating a Conversation on a miss is correct here
+	// because this is only called from the agent-send path, where a real
+	// message is genuinely about to be sent.
+	GetOrCreateBySelfAndPeer(
+		ctx context.Context,
+		customerID uuid.UUID,
+		conversationType conversation.Type,
+		dialogID string,
+		self commonaddress.Address,
+		peer commonaddress.Address,
+	) (*conversation.Conversation, error)
 	List(ctx context.Context, pageToken string, pageSize uint64, filters map[conversation.Field]any) ([]*conversation.Conversation, error)
 	// GetByTypeAndDialogID(ctx context.Context, conversationType conversation.Type, dialogID string) (*conversation.Conversation, error)
 	Update(ctx context.Context, id uuid.UUID, fields map[conversation.Field]any) (*conversation.Conversation, error)

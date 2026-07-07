@@ -42,3 +42,20 @@ type V1DataConversationsSelfAndPeerGet struct {
 	Self commonaddress.Address `json:"self,omitempty"`
 	Peer commonaddress.Address `json:"peer,omitempty"`
 }
+
+// V1DataConversationsGetOrCreateBySelfAndPeerPost is
+// v1 data type request struct for
+// /v1/conversations/get_or_create_by_self_and_peer POST
+//
+// Used by bin-contact-manager's agent-send Case-linked messaging path
+// (contact-case-management design §4.5, round-12 correction). Distinct
+// from the get-only V1DataConversationsSelfAndPeerGet above: this one is
+// correct to create on a miss, because a real message is genuinely
+// about to be sent through the resulting Conversation.
+type V1DataConversationsGetOrCreateBySelfAndPeerPost struct {
+	CustomerID       uuid.UUID             `json:"customer_id,omitempty"`
+	ConversationType conversation.Type     `json:"type,omitempty"`
+	DialogID         string                `json:"dialog_id,omitempty"`
+	Self             commonaddress.Address `json:"self,omitempty"`
+	Peer             commonaddress.Address `json:"peer,omitempty"`
+}

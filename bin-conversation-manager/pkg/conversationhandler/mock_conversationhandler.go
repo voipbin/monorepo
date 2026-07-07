@@ -119,6 +119,21 @@ func (mr *MockConversationHandlerMockRecorder) GetBySelfAndPeer(ctx, self, peer 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBySelfAndPeer", reflect.TypeOf((*MockConversationHandler)(nil).GetBySelfAndPeer), ctx, self, peer)
 }
 
+// GetOrCreateBySelfAndPeer mocks base method.
+func (m *MockConversationHandler) GetOrCreateBySelfAndPeer(ctx context.Context, customerID uuid.UUID, conversationType conversation.Type, dialogID string, self, peer address.Address) (*conversation.Conversation, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetOrCreateBySelfAndPeer", ctx, customerID, conversationType, dialogID, self, peer)
+	ret0, _ := ret[0].(*conversation.Conversation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetOrCreateBySelfAndPeer indicates an expected call of GetOrCreateBySelfAndPeer.
+func (mr *MockConversationHandlerMockRecorder) GetOrCreateBySelfAndPeer(ctx, customerID, conversationType, dialogID, self, peer any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOrCreateBySelfAndPeer", reflect.TypeOf((*MockConversationHandler)(nil).GetOrCreateBySelfAndPeer), ctx, customerID, conversationType, dialogID, self, peer)
+}
+
 // Hook mocks base method.
 func (m *MockConversationHandler) Hook(ctx context.Context, uri, method, signature string, data []byte) error {
 	m.ctrl.T.Helper()

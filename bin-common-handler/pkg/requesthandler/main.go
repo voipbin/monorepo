@@ -951,6 +951,20 @@ type RequestHandler interface {
 	// (never creates), used by bin-contact-manager's proactive
 	// Case-linking write path (contact-case-management design §4.4).
 	ConversationV1ConversationGetBySelfAndPeer(ctx context.Context, self commonaddress.Address, peer commonaddress.Address) (*cvconversation.Conversation, error)
+	// ConversationV1ConversationGetOrCreateBySelfAndPeer is a distinct,
+	// separate RPC from ConversationV1ConversationGetBySelfAndPeer above
+	// (round-12 correction, contact-case-management design §4.5):
+	// creating a Conversation on a miss is correct here because it is
+	// only called from the agent-send path, where a real message is
+	// genuinely about to be sent.
+	ConversationV1ConversationGetOrCreateBySelfAndPeer(
+		ctx context.Context,
+		customerID uuid.UUID,
+		conversationType cvconversation.Type,
+		dialogID string,
+		self commonaddress.Address,
+		peer commonaddress.Address,
+	) (*cvconversation.Conversation, error)
 	ConversationV1ConversationList(ctx context.Context, pageToken string, pageSize uint64, fields map[cvconversation.Field]any) ([]cvconversation.Conversation, error)
 	ConversationV1ConversationUpdate(ctx context.Context, conversationID uuid.UUID, fields map[cvconversation.Field]any) (*cvconversation.Conversation, error)
 
