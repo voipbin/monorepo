@@ -8114,6 +8114,8 @@ paths:
     $ref: './paths/cases/id_notes.yaml'
   /cases/{id}/notes/{note_id}:
     $ref: './paths/cases/id_notes_id.yaml'
+  /cases/{id}/messages:
+    $ref: './paths/cases/id_messages.yaml'
 
   /conversation_accounts/{id}:
     $ref: './paths/conversation_accounts/id.yaml'
