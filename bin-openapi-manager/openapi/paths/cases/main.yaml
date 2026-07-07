@@ -1,0 +1,47 @@
+get:
+  summary: List cases
+  description: |
+    List cases for the customer, optionally filtered by status, owner_type,
+    and owner_id.
+  tags:
+    - Case
+  parameters:
+    - name: status
+      in: query
+      description: Filter by case status.
+      schema:
+        type: string
+        enum:
+          - open
+          - closed
+        example: "open"
+    - name: owner_type
+      in: query
+      description: Filter by owner type.
+      schema:
+        type: string
+        example: "agent"
+    - name: owner_id
+      in: query
+      description: Filter by owner ID.
+      schema:
+        type: string
+        format: uuid
+        example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: Successful response.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ContactManagerCaseListResponse'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '500':
+      $ref: '#/components/responses/InternalError'

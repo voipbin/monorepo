@@ -1473,6 +1473,24 @@ func (e ContactManagerAddressType) Valid() bool {
 	}
 }
 
+// Defines values for ContactManagerCaseStatus.
+const (
+	ContactManagerCaseStatusClosed ContactManagerCaseStatus = "closed"
+	ContactManagerCaseStatusOpen   ContactManagerCaseStatus = "open"
+)
+
+// Valid indicates whether the value is a known member of the ContactManagerCaseStatus enum.
+func (e ContactManagerCaseStatus) Valid() bool {
+	switch e {
+	case ContactManagerCaseStatusClosed:
+		return true
+	case ContactManagerCaseStatusOpen:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ContactManagerContactSource.
 const (
 	ContactManagerContactSourceAPI    ContactManagerContactSource = "api"
@@ -2949,6 +2967,24 @@ const (
 func (e PostCallsIdRecordingStartJSONBodyFormat) Valid() bool {
 	switch e {
 	case PostCallsIdRecordingStartJSONBodyFormatWav:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetCasesParamsStatus.
+const (
+	GetCasesParamsStatusClosed GetCasesParamsStatus = "closed"
+	GetCasesParamsStatusOpen   GetCasesParamsStatus = "open"
+)
+
+// Valid indicates whether the value is a known member of the GetCasesParamsStatus enum.
+func (e GetCasesParamsStatus) Valid() bool {
+	switch e {
+	case GetCasesParamsStatusClosed:
+		return true
+	case GetCasesParamsStatusOpen:
 		return true
 	default:
 		return false
@@ -4869,6 +4905,72 @@ type ContactManagerAddress struct {
 
 // ContactManagerAddressType Type of address.
 type ContactManagerAddressType string
+
+// ContactManagerCase defines model for ContactManagerCase.
+type ContactManagerCase struct {
+	// ClosedAt Timestamp when the case was closed. Nullable.
+	ClosedAt *time.Time `json:"closed_at,omitempty"`
+
+	// ClosedById ID of the actor that closed the case. Nullable.
+	ClosedById *openapi_types.UUID `json:"closed_by_id,omitempty"`
+
+	// ClosedByType Type of the actor that closed the case (e.g. "agent", "system").
+	ClosedByType *string `json:"closed_by_type,omitempty"`
+
+	// ClosedReason Reason the case was closed (e.g. "agent_closed", "timeout").
+	ClosedReason *string `json:"closed_reason,omitempty"`
+
+	// ContactId The resolved contact this case is attributed to. Nullable until resolved.
+	ContactId *openapi_types.UUID `json:"contact_id,omitempty"`
+
+	// CustomerId Unique identifier of the associated customer.
+	CustomerId *openapi_types.UUID `json:"customer_id,omitempty"`
+
+	// Id Unique identifier for the case.
+	Id *openapi_types.UUID `json:"id,omitempty"`
+
+	// OpenedAt Timestamp when the case was opened. Nullable.
+	OpenedAt *time.Time `json:"opened_at,omitempty"`
+
+	// OwnerId ID of the case owner.
+	OwnerId *openapi_types.UUID `json:"owner_id,omitempty"`
+
+	// OwnerType Type of the case owner.
+	OwnerType *string `json:"owner_type,omitempty"`
+
+	// PeerTarget Remote endpoint address (normalized, e.g. "+155****4567").
+	PeerTarget *string `json:"peer_target,omitempty"`
+
+	// PeerType Remote endpoint type (e.g. "tel", "email") this case is scoped to.
+	PeerType *string `json:"peer_type,omitempty"`
+
+	// PreviousCaseId ID of the prior (now-closed) case this case continues from, if any.
+	PreviousCaseId *openapi_types.UUID `json:"previous_case_id,omitempty"`
+
+	// ReferenceType Origin channel type (e.g. "call", "conversation_message").
+	ReferenceType *string `json:"reference_type,omitempty"`
+
+	// Status Case lifecycle status.
+	Status *ContactManagerCaseStatus `json:"status,omitempty"`
+
+	// TmCreate Timestamp when this case was created.
+	TmCreate *time.Time `json:"tm_create,omitempty"`
+
+	// TmUpdate Timestamp when this case was last updated.
+	TmUpdate *time.Time `json:"tm_update,omitempty"`
+}
+
+// ContactManagerCaseStatus Case lifecycle status.
+type ContactManagerCaseStatus string
+
+// ContactManagerCaseListResponse defines model for ContactManagerCaseListResponse.
+type ContactManagerCaseListResponse struct {
+	// NextPageToken Pagination token for the next page. Empty when no further pages exist.
+	NextPageToken *string `json:"next_page_token,omitempty"`
+
+	// Result List of cases.
+	Result *[]ContactManagerCase `json:"result,omitempty"`
+}
 
 // ContactManagerContact defines model for ContactManagerContact.
 type ContactManagerContact struct {
@@ -7843,6 +7945,42 @@ type PutCampaignsIdStatusJSONBody struct {
 	Status CampaignManagerCampaignStatus `json:"status"`
 }
 
+// GetCasesParams defines parameters for GetCases.
+type GetCasesParams struct {
+	// Status Filter by case status.
+	Status *GetCasesParamsStatus `form:"status,omitempty" json:"status,omitempty"`
+
+	// OwnerType Filter by owner type.
+	OwnerType *string `form:"owner_type,omitempty" json:"owner_type,omitempty"`
+
+	// OwnerId Filter by owner ID.
+	OwnerId *openapi_types.UUID `form:"owner_id,omitempty" json:"owner_id,omitempty"`
+
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// GetCasesParamsStatus defines parameters for GetCases.
+type GetCasesParamsStatus string
+
+// GetCasesUnresolvedParams defines parameters for GetCasesUnresolved.
+type GetCasesUnresolvedParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostCasesIdCloseJSONBody defines parameters for PostCasesIdClose.
+type PostCasesIdCloseJSONBody struct {
+	// ClosedById ID of the agent closing this case.
+	ClosedById openapi_types.UUID `json:"closed_by_id"`
+}
+
 // GetConferencecallsParams defines parameters for GetConferencecalls.
 type GetConferencecallsParams struct {
 	// PageSize Number of results to return per page.
@@ -9760,6 +9898,9 @@ type PutCampaignsIdServiceLevelJSONRequestBody PutCampaignsIdServiceLevelJSONBod
 
 // PutCampaignsIdStatusJSONRequestBody defines body for PutCampaignsIdStatus for application/json ContentType.
 type PutCampaignsIdStatusJSONRequestBody PutCampaignsIdStatusJSONBody
+
+// PostCasesIdCloseJSONRequestBody defines body for PostCasesIdClose for application/json ContentType.
+type PostCasesIdCloseJSONRequestBody PostCasesIdCloseJSONBody
 
 // PostConferencesJSONRequestBody defines body for PostConferences for application/json ContentType.
 type PostConferencesJSONRequestBody PostConferencesJSONBody

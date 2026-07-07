@@ -1,0 +1,33 @@
+post:
+  summary: Continue a closed case
+  description: |
+    Create a new, open case that continues a previously closed case, chained
+    via previous_case_id.
+  tags:
+    - Case
+  parameters:
+    - name: id
+      in: path
+      description: The ID of the (closed) case to continue. The ID is returned from GET /v1.0/cases response.
+      required: true
+      schema:
+        type: string
+        format: uuid
+        example: "550e8400-e29b-41d4-a716-446655440000"
+  responses:
+    '200':
+      description: New case created (or existing open case reused) successfully.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ContactManagerCase'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'
