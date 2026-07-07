@@ -6,7 +6,7 @@
 |---------|-------------|-----------|
 | File upload rejected | Customer storage quota (10 GB) exceeded | Check account usage; delete old files or contact customer |
 | Signed URL expired | Default 24 h expiry passed | Call `POST /v1/files/<uuid>/download_uri_refresh` |
-| GCS signed URL generation fails | `GOOGLE_APPLICATION_CREDENTIALS` missing/invalid, or the service account JSON key lacks bucket permissions | Verify the env var points to a valid service account key file with `storage.objects.get`/`storage.signUrl` |
+| GCS signed URL generation fails | `GOOGLE_APPLICATION_CREDENTIALS` missing/invalid, or the service account JSON key lacks bucket permissions | Verify the env var points to a valid service account key file with `storage.objects.get`/`storage.signUrl`. **Known failure mode**: if the key file is missing at startup, `storage-manager`/`storage-control` fail fast and exit non-zero (`NewFileHandler` returns an error that aborts `main()`) — the process will not start with a broken signed-URL path. |
 | Cascading delete incomplete | `subscribehandler` missed `customer_deleted` event | Check RabbitMQ dead-letter queue; re-publish event manually |
 | Redis cache stale | Crash between DB write and cache invalidation | Restart pod — cache keys expire; DB is the source of truth |
 | Compressfile generation slow | Many large recordings with same `reference_id` | Expected; zip is built synchronously on first request |
@@ -52,8 +52,7 @@ go tool cover -html=cp.out -o cp.html
 | `GCP_PROJECT_ID` | Google Cloud project | required |
 | `GCP_BUCKET_NAME_MEDIA` | Persistent media GCS bucket | required |
 | `GCP_BUCKET_NAME_TMP` | Temporary zip GCS bucket | required |
-| `GOOGLE_APPLICATION_CREDENTIALS` | SA JSON path (local dev / non-GKE) | optional |
-| `GOOGLE_SERVICE_ACCOUNT_EMAIL` | SA email for IAM signing (non-GCE) | optional |
+| `GOOGLE_APPLICATION_CREDENTIALS` | SA JSON key file path | required |
 | `PROMETHEUS_ENDPOINT` | Metrics path | `/metrics` |
 | `PROMETHEUS_LISTEN_ADDRESS` | Metrics listen address | `:2112` |
 

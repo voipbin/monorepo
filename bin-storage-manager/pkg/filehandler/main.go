@@ -20,6 +20,7 @@ import (
 
 	"cloud.google.com/go/storage"
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2/google"
 )
@@ -89,26 +90,23 @@ func NewFileHandler(
 	projectID string,
 	bucketMedia string,
 	bucketTmp string,
-) FileHandler {
+) (FileHandler, error) {
 	log := logrus.WithField("func", "NewFileHandler")
 
 	envCredPath := os.Getenv("GOOGLE_APPLICATION_CREDENTIALS")
 	if envCredPath == "" {
-		log.Error("GOOGLE_APPLICATION_CREDENTIALS is not set. A service account JSON key file is required to generate GCS signed URLs.")
-		return nil
+		return nil, errors.New("GOOGLE_APPLICATION_CREDENTIALS is not set. A service account JSON key file is required to generate GCS signed URLs")
 	}
 	log.Infof("Found GOOGLE_APPLICATION_CREDENTIALS at: %s", envCredPath)
 
 	jsonContent, err := os.ReadFile(envCredPath)
 	if err != nil {
-		log.Errorf("Failed to read credential file: %v", err)
-		return nil
+		return nil, errors.Wrapf(err, "failed to read credential file")
 	}
 
 	conf, err := google.JWTConfigFromJSON(jsonContent)
 	if err != nil {
-		log.Errorf("Failed to parse credential JSON: %v", err)
-		return nil
+		return nil, errors.Wrapf(err, "failed to parse credential JSON")
 	}
 
 	accessID := conf.Email
@@ -117,8 +115,7 @@ func NewFileHandler(
 	ctx := context.Background()
 	client, errClient := storage.NewClient(ctx)
 	if errClient != nil {
-		log.Errorf("Failed to create client: %v", errClient)
-		return nil
+		return nil, errors.Wrapf(errClient, "failed to create client")
 	}
 
 	log.Debugf("Checking account. project_id: %s, bucket_media: %s, bucket_tmp: %s, access_id: %s", projectID, bucketMedia, bucketTmp, accessID)
@@ -136,7 +133,7 @@ func NewFileHandler(
 		privateKey:  privateKey,
 	}
 
-	return res
+	return res, nil
 }
 
 // Init initialize the bucket

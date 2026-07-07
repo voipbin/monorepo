@@ -88,7 +88,7 @@ func initHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (storagehandler
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameStorageEvent, serviceName)
 	accountHandler := accounthandler.NewAccountHandler(notifyHandler, db)
-	fileHandler := filehandler.NewFileHandler(
+	fileHandler, errFileHandler := filehandler.NewFileHandler(
 		notifyHandler,
 		db,
 		accountHandler,
@@ -96,6 +96,9 @@ func initHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (storagehandler
 		config.Get().GCPBucketNameMedia,
 		config.Get().GCPBucketNameTmp,
 	)
+	if errFileHandler != nil {
+		return nil, errors.Wrapf(errFileHandler, "could not create the file handler")
+	}
 
 	return storagehandler.NewStorageHandler(reqHandler, fileHandler, config.Get().GCPBucketNameMedia), nil
 }
