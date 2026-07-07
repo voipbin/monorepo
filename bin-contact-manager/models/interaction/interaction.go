@@ -33,6 +33,12 @@ type Interaction struct {
 	ReferenceType string    `json:"reference_type" db:"reference_type"`
 	ReferenceID   uuid.UUID `json:"reference_id"   db:"reference_id,uuid"`
 
+	// CaseID links this Interaction to the Case it was projected into by
+	// design §4's get-or-create algorithm. Nullable: Interactions
+	// projected before this feature existed have it nil; it is always
+	// set going forward (get-or-create never returns without a Case).
+	CaseID *uuid.UUID `json:"case_id,omitempty" db:"case_id,uuid"`
+
 	// TMInteraction is the origin event time, used for display sort.
 	// Nullable: may be nil when the origin event omits TMCreate (e.g. call events
 	// with omitempty). Stored as NULL in that case — do not dereference.

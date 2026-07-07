@@ -107,6 +107,7 @@ create table contact_interactions(
   local_target   varchar(255)  not null default '',
   reference_type varchar(255)  not null default '',
   reference_id   binary(16)    not null,
+  case_id        binary(16),
   tm_interaction datetime(6),
   tm_create      datetime(6),
   primary key(id)
