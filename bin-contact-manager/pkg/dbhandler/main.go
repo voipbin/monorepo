@@ -32,6 +32,7 @@ type DBHandler interface {
 	ContactDelete(ctx context.Context, id uuid.UUID) error
 	ContactLookupByPhone(ctx context.Context, customerID uuid.UUID, phoneE164 string) (*contact.Contact, error)
 	ContactLookupByEmail(ctx context.Context, customerID uuid.UUID, email string) (*contact.Contact, error)
+	AddressLookupContactIDByTypeTarget(ctx context.Context, customerID uuid.UUID, addrType commonaddress.Type, target string) (uuid.UUID, error)
 	ContactDeleteByCustomerID(ctx context.Context, customerID uuid.UUID) error
 
 	// Address operations

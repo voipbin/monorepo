@@ -136,6 +136,21 @@ func (mr *MockDBHandlerMockRecorder) AddressListByContactID(ctx, contactID any) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddressListByContactID", reflect.TypeOf((*MockDBHandler)(nil).AddressListByContactID), ctx, contactID)
 }
 
+// AddressLookupContactIDByTypeTarget mocks base method.
+func (m *MockDBHandler) AddressLookupContactIDByTypeTarget(ctx context.Context, customerID uuid.UUID, addrType address.Type, target string) (uuid.UUID, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddressLookupContactIDByTypeTarget", ctx, customerID, addrType, target)
+	ret0, _ := ret[0].(uuid.UUID)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AddressLookupContactIDByTypeTarget indicates an expected call of AddressLookupContactIDByTypeTarget.
+func (mr *MockDBHandlerMockRecorder) AddressLookupContactIDByTypeTarget(ctx, customerID, addrType, target any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddressLookupContactIDByTypeTarget", reflect.TypeOf((*MockDBHandler)(nil).AddressLookupContactIDByTypeTarget), ctx, customerID, addrType, target)
+}
+
 // AddressResetPrimary mocks base method.
 func (m *MockDBHandler) AddressResetPrimary(ctx context.Context, contactID uuid.UUID) error {
 	m.ctrl.T.Helper()
