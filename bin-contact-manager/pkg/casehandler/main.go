@@ -70,6 +70,13 @@ type CaseHandler interface {
 	CaseNoteCreate(ctx context.Context, customerID, caseID uuid.UUID, authorType string, authorID *uuid.UUID, text string) (*casenote.CaseNote, error)
 	CaseNoteDelete(ctx context.Context, customerID, caseID, id uuid.UUID) error
 	CaseNoteListByCase(ctx context.Context, customerID, caseID uuid.UUID) ([]*casenote.CaseNote, error)
+
+	// CaseTagAdd / CaseTagRemove / CaseTagList implement design §7
+	// round-22: case-scoped tag assignment. CaseTagAdd validates tag_id
+	// existence via bin-tag-manager's TagV1TagGet before assigning.
+	CaseTagAdd(ctx context.Context, customerID, caseID, tagID uuid.UUID) error
+	CaseTagRemove(ctx context.Context, customerID, caseID, tagID uuid.UUID) error
+	CaseTagList(ctx context.Context, customerID, caseID uuid.UUID) ([]uuid.UUID, error)
 }
 
 type caseHandler struct {

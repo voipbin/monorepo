@@ -105,6 +105,49 @@ func (mr *MockCaseHandlerMockRecorder) CaseNoteListByCase(ctx, customerID, caseI
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseNoteListByCase", reflect.TypeOf((*MockCaseHandler)(nil).CaseNoteListByCase), ctx, customerID, caseID)
 }
 
+// CaseTagAdd mocks base method.
+func (m *MockCaseHandler) CaseTagAdd(ctx context.Context, customerID, caseID, tagID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseTagAdd", ctx, customerID, caseID, tagID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CaseTagAdd indicates an expected call of CaseTagAdd.
+func (mr *MockCaseHandlerMockRecorder) CaseTagAdd(ctx, customerID, caseID, tagID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseTagAdd", reflect.TypeOf((*MockCaseHandler)(nil).CaseTagAdd), ctx, customerID, caseID, tagID)
+}
+
+// CaseTagList mocks base method.
+func (m *MockCaseHandler) CaseTagList(ctx context.Context, customerID, caseID uuid.UUID) ([]uuid.UUID, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseTagList", ctx, customerID, caseID)
+	ret0, _ := ret[0].([]uuid.UUID)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CaseTagList indicates an expected call of CaseTagList.
+func (mr *MockCaseHandlerMockRecorder) CaseTagList(ctx, customerID, caseID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseTagList", reflect.TypeOf((*MockCaseHandler)(nil).CaseTagList), ctx, customerID, caseID)
+}
+
+// CaseTagRemove mocks base method.
+func (m *MockCaseHandler) CaseTagRemove(ctx context.Context, customerID, caseID, tagID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseTagRemove", ctx, customerID, caseID, tagID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CaseTagRemove indicates an expected call of CaseTagRemove.
+func (mr *MockCaseHandlerMockRecorder) CaseTagRemove(ctx, customerID, caseID, tagID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseTagRemove", reflect.TypeOf((*MockCaseHandler)(nil).CaseTagRemove), ctx, customerID, caseID, tagID)
+}
+
 // Close mocks base method.
 func (m *MockCaseHandler) Close(ctx context.Context, customerID, id uuid.UUID, closedByType identity.OwnerType, closedByID uuid.UUID) (*CloseResult, error) {
 	m.ctrl.T.Helper()
