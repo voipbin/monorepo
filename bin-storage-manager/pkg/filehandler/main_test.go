@@ -1,6 +1,7 @@
 package filehandler
 
 import (
+	"os"
 	"testing"
 )
 
@@ -36,7 +37,6 @@ func Test_getFilename(t *testing.T) {
 }
 
 func Test_filenameHash(t *testing.T) {
-
 	type test struct {
 		name string
 
@@ -66,5 +66,28 @@ func Test_filenameHash(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %s\ngot: %s", tt.expectRes, res)
 			}
 		})
+	}
+}
+
+// Test_NewFileHandler_MissingCredentials verifies that NewFileHandler fails
+// fast with a non-nil error (not a silent nil interface) when
+// GOOGLE_APPLICATION_CREDENTIALS is unset. Callers rely on this error to
+// abort startup instead of continuing with a nil FileHandler that would
+// panic on the first request.
+func Test_NewFileHandler_MissingCredentials(t *testing.T) {
+	origCredPath, hadCredPath := os.LookupEnv("GOOGLE_APPLICATION_CREDENTIALS")
+	if hadCredPath {
+		defer func() { _ = os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", origCredPath) }()
+	} else {
+		defer func() { _ = os.Unsetenv("GOOGLE_APPLICATION_CREDENTIALS") }()
+	}
+	_ = os.Unsetenv("GOOGLE_APPLICATION_CREDENTIALS")
+
+	res, err := NewFileHandler(nil, nil, nil, "test-project", "test-bucket-media", "test-bucket-tmp")
+	if err == nil {
+		t.Errorf("Wrong match. expect: non-nil error, got: nil error")
+	}
+	if res != nil {
+		t.Errorf("Wrong match. expect: nil FileHandler, got: %v", res)
 	}
 }

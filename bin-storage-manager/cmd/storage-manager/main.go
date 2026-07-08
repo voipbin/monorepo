@@ -154,7 +154,11 @@ func runService(dbHandler dbhandler.DBHandler) error {
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameStorageEvent, serviceName)
 	accountHandler := accounthandler.NewAccountHandler(notifyHandler, dbHandler)
-	fileHandler := filehandler.NewFileHandler(notifyHandler, dbHandler, accountHandler, cfg.GCPProjectID, cfg.GCPBucketNameMedia, cfg.GCPBucketNameTmp)
+	fileHandler, errFileHandler := filehandler.NewFileHandler(notifyHandler, dbHandler, accountHandler, cfg.GCPProjectID, cfg.GCPBucketNameMedia, cfg.GCPBucketNameTmp)
+	if errFileHandler != nil {
+		log.Errorf("Could not create the file handler. err: %v", errFileHandler)
+		return errFileHandler
+	}
 	storageHandler := storagehandler.NewStorageHandler(reqHandler, fileHandler, cfg.GCPBucketNameMedia)
 
 	// run listener

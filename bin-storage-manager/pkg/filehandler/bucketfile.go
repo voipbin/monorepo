@@ -9,7 +9,6 @@ import (
 	"net/url"
 	"time"
 
-	"cloud.google.com/go/iam/credentials/apiv1/credentialspb"
 	"cloud.google.com/go/storage"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -157,23 +156,7 @@ func (h *fileHandler) bucketfileGenerateDownloadURI(bucketName string, filepath 
 	}
 
 	if opts.PrivateKey == nil {
-		if h.iamClient == nil {
-			return "", errors.New("No private key found and IAM Credentials Client is not configured. Cannot generate signed URLs.")
-		}
-
-		opts.SignBytes = func(b []byte) ([]byte, error) {
-			req := &credentialspb.SignBlobRequest{
-				Name:    "projects/-/serviceAccounts/" + h.accessID,
-				Payload: b,
-			}
-
-			resp, err := h.iamClient.SignBlob(context.Background(), req)
-			if err != nil {
-				return nil, errors.Wrapf(err, "could not sign the blob using IAM SignBlob API")
-			}
-
-			return resp.SignedBlob, nil
-		}
+		return "", errors.New("No private key found. Cannot generate signed URLs.")
 	}
 
 	// get downloadable url

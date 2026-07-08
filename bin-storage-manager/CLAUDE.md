@@ -21,7 +21,7 @@ File and media storage service for the VoIPbin platform. Manages customer storag
 | `pkg/listenhandler` | RabbitMQ RPC router (regex dispatch) |
 | `pkg/subscribehandler` | Event consumer (customer_deleted) |
 | `pkg/storagehandler` | Core business logic |
-| `pkg/filehandler` | GCS operations and signed URL generation |
+| `pkg/filehandler` | GCS operations and signed URL generation (requires `GOOGLE_APPLICATION_CREDENTIALS` service account key file; no in-cluster metadata-server fallback) |
 | `pkg/accounthandler` | 10 GB quota enforcement |
 | `pkg/dbhandler` | MySQL reads/writes |
 | `pkg/cachehandler` | Redis cache |
