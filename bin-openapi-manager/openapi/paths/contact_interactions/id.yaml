@@ -1,14 +1,12 @@
-post:
-  summary: Continue a closed case
-  description: |
-    Create a new, open case that continues a previously closed case, chained
-    via previous_case_id.
+get:
+  summary: Get an interaction
+  description: Get the interaction of the given ID.
   tags:
-    - Case
+    - Interaction
   parameters:
     - name: id
       in: path
-      description: The ID of the (closed) case to continue. The ID is returned from GET /v1.0/cases response.
+      description: The ID of the interaction. The ID is returned from GET /contact_interactions response.
       required: true
       schema:
         type: string
@@ -16,11 +14,11 @@ post:
         example: "550e8400-e29b-41d4-a716-446655440000"
   responses:
     '200':
-      description: New case created (or existing open case reused) successfully.
+      description: Successful response.
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ContactManagerCase'
+            $ref: '#/components/schemas/ContactManagerInteraction'
     '400':
       $ref: '#/components/responses/BadRequest'
     '401':

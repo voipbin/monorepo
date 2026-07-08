@@ -1,6 +1,8 @@
 package server
 
 import (
+	"bytes"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -9,7 +11,8 @@ import (
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/servicehandler"
-	cmkase "monorepo/bin-contact-manager/models/kase"
+	cminteraction "monorepo/bin-contact-manager/models/interaction"
+	cmresolution "monorepo/bin-contact-manager/models/resolution"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
@@ -18,7 +21,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func Test_GetCases(t *testing.T) {
+func Test_GetContactInteractions(t *testing.T) {
 	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
 	agentID := uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c")
 
@@ -28,27 +31,49 @@ func Test_GetCases(t *testing.T) {
 
 		reqQuery string
 
-		responseItems []*cmkase.Case
+		responseItems []*cminteraction.Interaction
 		responseToken string
 		expectStatus  int
 	}{
 		{
-			name: "normal",
+			name: "normal - filter by contact_id",
 			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         agentID,
 					CustomerID: customerID,
 				},
 			}),
-			reqQuery:      "/cases",
-			responseItems: []*cmkase.Case{},
+			reqQuery:      "/contact_interactions?contact_id=11111111-0000-0000-0000-000000000001",
+			responseItems: []*cminteraction.Interaction{},
 			responseToken: "",
 			expectStatus:  http.StatusOK,
 		},
 		{
+			name: "bad request - no filter",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         agentID,
+					CustomerID: customerID,
+				},
+			}),
+			reqQuery:     "/contact_interactions",
+			expectStatus: http.StatusBadRequest,
+		},
+		{
+			name: "bad request - two filters provided simultaneously",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         agentID,
+					CustomerID: customerID,
+				},
+			}),
+			reqQuery:     "/contact_interactions?contact_id=11111111-0000-0000-0000-000000000001&peer_type=tel&peer_target=%2B155****1111",
+			expectStatus: http.StatusBadRequest,
+		},
+		{
 			name:         "unauthenticated",
 			agent:        nil,
-			reqQuery:     "/cases",
+			reqQuery:     "/contact_interactions?contact_id=11111111-0000-0000-0000-000000000001",
 			expectStatus: http.StatusUnauthorized,
 		},
 	}
@@ -75,7 +100,7 @@ func Test_GetCases(t *testing.T) {
 
 			if tt.responseItems != nil && tt.agent != nil {
 				mockSvc.EXPECT().
-					CaseList(req.Context(), tt.agent, uuid.Nil, uint64(100), "", gomock.Any(), gomock.Any(), gomock.Any()).
+					InteractionList(req.Context(), tt.agent, uint64(100), "", gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(tt.responseItems, tt.responseToken, nil)
 			}
 
@@ -87,7 +112,7 @@ func Test_GetCases(t *testing.T) {
 	}
 }
 
-func Test_GetCasesUnresolved(t *testing.T) {
+func Test_GetContactInteractionsUnresolved(t *testing.T) {
 	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
 	agentID := uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c")
 
@@ -95,28 +120,78 @@ func Test_GetCasesUnresolved(t *testing.T) {
 		name  string
 		agent *auth.AuthIdentity
 
-		reqQuery      string
-		responseItems []*cmkase.Case
-		responseToken string
-		expectStatus  int
+		reqQuery         string
+		responseItems    []*cminteraction.Interaction
+		responseToken    string
+		expectStatus     int
+		expectMockCalled bool
 	}{
 		{
-			name: "normal",
+			name: "normal - nil result from backend serializes as []",
 			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         agentID,
 					CustomerID: customerID,
 				},
 			}),
-			reqQuery:      "/cases/unresolved",
-			responseItems: []*cmkase.Case{},
+			reqQuery:         "/contact_interactions/unresolved",
+			responseItems:    nil,
+			responseToken:    "",
+			expectStatus:     http.StatusOK,
+			expectMockCalled: true,
+		},
+		{
+			name: "normal - default since",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         agentID,
+					CustomerID: customerID,
+				},
+			}),
+			reqQuery:      "/contact_interactions/unresolved",
+			responseItems: []*cminteraction.Interaction{},
 			responseToken: "",
 			expectStatus:  http.StatusOK,
 		},
 		{
+			name: "normal - explicit since",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         agentID,
+					CustomerID: customerID,
+				},
+			}),
+			reqQuery:      "/contact_interactions/unresolved?since=7d",
+			responseItems: []*cminteraction.Interaction{},
+			responseToken: "",
+			expectStatus:  http.StatusOK,
+		},
+		{
+			name: "bad request - invalid since format",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         agentID,
+					CustomerID: customerID,
+				},
+			}),
+			reqQuery:     "/contact_interactions/unresolved?since=30",
+			expectStatus: http.StatusBadRequest,
+		},
+		{
+			name: "bad request - zero days",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         agentID,
+					CustomerID: customerID,
+				},
+			}),
+			reqQuery:     "/contact_interactions/unresolved?since=0d",
+			expectStatus: http.StatusBadRequest,
+		},
+		{
 			name:         "unauthenticated",
 			agent:        nil,
-			reqQuery:     "/cases/unresolved",
+			reqQuery:     "/contact_interactions/unresolved",
 			expectStatus: http.StatusUnauthorized,
 		},
 	}
@@ -141,9 +216,9 @@ func Test_GetCasesUnresolved(t *testing.T) {
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			if tt.responseItems != nil && tt.agent != nil {
+			if (tt.responseItems != nil || tt.expectMockCalled) && tt.agent != nil {
 				mockSvc.EXPECT().
-					CaseListUnresolved(req.Context(), tt.agent, uint64(100), "").
+					InteractionListUnresolved(req.Context(), tt.agent, uint64(100), "", gomock.Any()).
 					Return(tt.responseItems, tt.responseToken, nil)
 			}
 
@@ -155,18 +230,18 @@ func Test_GetCasesUnresolved(t *testing.T) {
 	}
 }
 
-func Test_GetCasesId(t *testing.T) {
+func Test_GetContactInteractionsId(t *testing.T) {
 	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
 	agentID := uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c")
-	caseID := uuid.FromStringOrNil("11111111-0000-0000-0000-000000000001")
+	interactionID := uuid.FromStringOrNil("11111111-0000-0000-0000-000000000001")
 
 	tests := []struct {
 		name  string
 		agent *auth.AuthIdentity
 
-		reqQuery     string
-		responseCase *cmkase.Case
-		expectStatus int
+		reqQuery            string
+		responseInteraction *cminteraction.Interaction
+		expectStatus        int
 	}{
 		{
 			name: "normal",
@@ -176,18 +251,18 @@ func Test_GetCasesId(t *testing.T) {
 					CustomerID: customerID,
 				},
 			}),
-			reqQuery: "/cases/11111111-0000-0000-0000-000000000001",
-			responseCase: &cmkase.Case{
-				ID:         caseID,
+			reqQuery: "/contact_interactions/11111111-0000-0000-0000-000000000001",
+			responseInteraction: &cminteraction.Interaction{
+				ID:         interactionID,
 				CustomerID: customerID,
-				Status:     cmkase.StatusOpen,
+				Direction:  "incoming",
 			},
 			expectStatus: http.StatusOK,
 		},
 		{
 			name:         "unauthenticated",
 			agent:        nil,
-			reqQuery:     "/cases/11111111-0000-0000-0000-000000000001",
+			reqQuery:     "/contact_interactions/11111111-0000-0000-0000-000000000001",
 			expectStatus: http.StatusUnauthorized,
 		},
 	}
@@ -212,10 +287,10 @@ func Test_GetCasesId(t *testing.T) {
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			if tt.responseCase != nil && tt.agent != nil {
+			if tt.responseInteraction != nil && tt.agent != nil {
 				mockSvc.EXPECT().
-					CaseGet(req.Context(), tt.agent, caseID).
-					Return(tt.responseCase, nil)
+					InteractionGet(req.Context(), tt.agent, interactionID).
+					Return(tt.responseInteraction, nil)
 			}
 
 			r.ServeHTTP(w, req)
@@ -226,17 +301,20 @@ func Test_GetCasesId(t *testing.T) {
 	}
 }
 
-func Test_PostCasesIdClose(t *testing.T) {
+func Test_PostContactInteractionsIdResolutions(t *testing.T) {
 	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
 	agentID := uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c")
-	caseID := uuid.FromStringOrNil("11111111-0000-0000-0000-000000000001")
+	interactionID := uuid.FromStringOrNil("11111111-0000-0000-0000-000000000001")
+	contactID := uuid.FromStringOrNil("22222222-0000-0000-0000-000000000002")
+	resolvedByID := uuid.FromStringOrNil("33333333-0000-0000-0000-000000000003")
 
 	tests := []struct {
 		name  string
 		agent *auth.AuthIdentity
 
 		reqQuery     string
-		responseCase *cmkase.Case
+		reqBody      map[string]string
+		responseRes  *cmresolution.Resolution
 		expectStatus int
 	}{
 		{
@@ -247,18 +325,26 @@ func Test_PostCasesIdClose(t *testing.T) {
 					CustomerID: customerID,
 				},
 			}),
-			reqQuery: "/cases/11111111-0000-0000-0000-000000000001/close",
-			responseCase: &cmkase.Case{
-				ID:         caseID,
-				CustomerID: customerID,
-				Status:     cmkase.StatusClosed,
+			reqQuery: "/contact_interactions/11111111-0000-0000-0000-000000000001/resolutions",
+			reqBody: map[string]string{
+				"contact_id":       contactID.String(),
+				"resolution_type":  "positive",
+				"resolved_by_type": "agent",
+				"resolved_by_id":   resolvedByID.String(),
 			},
-			expectStatus: http.StatusOK,
+			responseRes: &cmresolution.Resolution{
+				ID:            uuid.FromStringOrNil("44444444-0000-0000-0000-000000000004"),
+				CustomerID:    customerID,
+				InteractionID: &interactionID,
+				ContactID:     contactID,
+			},
+			expectStatus: http.StatusCreated,
 		},
 		{
 			name:         "unauthenticated",
 			agent:        nil,
-			reqQuery:     "/cases/11111111-0000-0000-0000-000000000001/close",
+			reqQuery:     "/contact_interactions/11111111-0000-0000-0000-000000000001/resolutions",
+			reqBody:      map[string]string{},
 			expectStatus: http.StatusUnauthorized,
 		},
 	}
@@ -281,13 +367,14 @@ func Test_PostCasesIdClose(t *testing.T) {
 			})
 			openapi_server.RegisterHandlers(r, h)
 
-			req, _ := http.NewRequest("POST", tt.reqQuery, nil)
+			bodyBytes, _ := json.Marshal(tt.reqBody)
+			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(bodyBytes))
 			req.Header.Set("Content-Type", "application/json")
 
-			if tt.responseCase != nil && tt.agent != nil {
+			if tt.responseRes != nil && tt.agent != nil {
 				mockSvc.EXPECT().
-					CaseClose(req.Context(), tt.agent, caseID).
-					Return(tt.responseCase, nil)
+					ResolutionCreate(req.Context(), tt.agent, interactionID, contactID, "positive", "agent", resolvedByID).
+					Return(tt.responseRes, nil)
 			}
 
 			r.ServeHTTP(w, req)
@@ -298,18 +385,17 @@ func Test_PostCasesIdClose(t *testing.T) {
 	}
 }
 
-func Test_PostCasesIdContinue(t *testing.T) {
+func Test_DeleteContactInteractionsIdResolutionsRid(t *testing.T) {
 	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
 	agentID := uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c")
-	caseID := uuid.FromStringOrNil("11111111-0000-0000-0000-000000000001")
-	newCaseID := uuid.FromStringOrNil("22222222-0000-0000-0000-000000000002")
+	interactionID := uuid.FromStringOrNil("11111111-0000-0000-0000-000000000001")
+	resolutionID := uuid.FromStringOrNil("44444444-0000-0000-0000-000000000004")
 
 	tests := []struct {
 		name  string
 		agent *auth.AuthIdentity
 
 		reqQuery     string
-		responseCase *cmkase.Case
 		expectStatus int
 	}{
 		{
@@ -320,18 +406,13 @@ func Test_PostCasesIdContinue(t *testing.T) {
 					CustomerID: customerID,
 				},
 			}),
-			reqQuery: "/cases/11111111-0000-0000-0000-000000000001/continue",
-			responseCase: &cmkase.Case{
-				ID:         newCaseID,
-				CustomerID: customerID,
-				Status:     cmkase.StatusOpen,
-			},
+			reqQuery:     "/contact_interactions/11111111-0000-0000-0000-000000000001/resolutions/44444444-0000-0000-0000-000000000004",
 			expectStatus: http.StatusOK,
 		},
 		{
 			name:         "unauthenticated",
 			agent:        nil,
-			reqQuery:     "/cases/11111111-0000-0000-0000-000000000001/continue",
+			reqQuery:     "/contact_interactions/11111111-0000-0000-0000-000000000001/resolutions/44444444-0000-0000-0000-000000000004",
 			expectStatus: http.StatusUnauthorized,
 		},
 	}
@@ -354,12 +435,12 @@ func Test_PostCasesIdContinue(t *testing.T) {
 			})
 			openapi_server.RegisterHandlers(r, h)
 
-			req, _ := http.NewRequest("POST", tt.reqQuery, nil)
+			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 
-			if tt.responseCase != nil && tt.agent != nil {
+			if tt.agent != nil {
 				mockSvc.EXPECT().
-					CaseContinue(req.Context(), tt.agent, caseID).
-					Return(tt.responseCase, nil)
+					ResolutionDelete(req.Context(), tt.agent, interactionID, resolutionID).
+					Return(nil)
 			}
 
 			r.ServeHTTP(w, req)

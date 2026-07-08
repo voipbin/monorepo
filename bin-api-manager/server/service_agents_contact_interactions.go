@@ -16,10 +16,10 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
-// GetServiceAgentsInteractions handles GET /service_agents/interactions
-func (h *server) GetServiceAgentsInteractions(c *gin.Context, params openapi_server.GetServiceAgentsInteractionsParams) {
+// GetServiceAgentsContactInteractions handles GET /service_agents/contact_interactions
+func (h *server) GetServiceAgentsContactInteractions(c *gin.Context, params openapi_server.GetServiceAgentsContactInteractionsParams) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":            "GetServiceAgentsInteractions",
+		"func":            "GetServiceAgentsContactInteractions",
 		"request_address": c.ClientIP(),
 	})
 
@@ -117,10 +117,10 @@ func (h *server) GetServiceAgentsInteractions(c *gin.Context, params openapi_ser
 	c.JSON(200, GenerateListResponse(items, nextToken))
 }
 
-// GetServiceAgentsInteractionsUnresolved handles GET /service_agents/interactions/unresolved
-func (h *server) GetServiceAgentsInteractionsUnresolved(c *gin.Context, params openapi_server.GetServiceAgentsInteractionsUnresolvedParams) {
+// GetServiceAgentsContactInteractionsUnresolved handles GET /service_agents/contact_interactions/unresolved
+func (h *server) GetServiceAgentsContactInteractionsUnresolved(c *gin.Context, params openapi_server.GetServiceAgentsContactInteractionsUnresolvedParams) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":            "GetServiceAgentsInteractionsUnresolved",
+		"func":            "GetServiceAgentsContactInteractionsUnresolved",
 		"request_address": c.ClientIP(),
 	})
 
@@ -172,10 +172,10 @@ func (h *server) GetServiceAgentsInteractionsUnresolved(c *gin.Context, params o
 	c.JSON(200, GenerateListResponse(items, nextToken))
 }
 
-// GetServiceAgentsInteractionsId handles GET /service_agents/interactions/{id}
-func (h *server) GetServiceAgentsInteractionsId(c *gin.Context, id openapi_types.UUID) {
+// GetServiceAgentsContactInteractionsId handles GET /service_agents/contact_interactions/{id}
+func (h *server) GetServiceAgentsContactInteractionsId(c *gin.Context, id openapi_types.UUID) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":            "GetServiceAgentsInteractionsId",
+		"func":            "GetServiceAgentsContactInteractionsId",
 		"request_address": c.ClientIP(),
 		"id":              id,
 	})
@@ -200,10 +200,10 @@ func (h *server) GetServiceAgentsInteractionsId(c *gin.Context, id openapi_types
 	c.JSON(200, res)
 }
 
-// PostServiceAgentsInteractionsIdResolutions handles POST /service_agents/interactions/{id}/resolutions
-func (h *server) PostServiceAgentsInteractionsIdResolutions(c *gin.Context, id openapi_types.UUID) {
+// PostServiceAgentsContactInteractionsIdResolutions handles POST /service_agents/contact_interactions/{id}/resolutions
+func (h *server) PostServiceAgentsContactInteractionsIdResolutions(c *gin.Context, id openapi_types.UUID) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":            "PostServiceAgentsInteractionsIdResolutions",
+		"func":            "PostServiceAgentsContactInteractionsIdResolutions",
 		"request_address": c.ClientIP(),
 		"id":              id,
 	})
@@ -216,7 +216,7 @@ func (h *server) PostServiceAgentsInteractionsIdResolutions(c *gin.Context, id o
 	}
 	log = log.WithField("customer_id", a.CustomerID)
 
-	var req openapi_server.PostServiceAgentsInteractionsIdResolutionsJSONRequestBody
+	var req openapi_server.PostServiceAgentsContactInteractionsIdResolutionsJSONRequestBody
 	if err := c.BindJSON(&req); err != nil {
 		log.Errorf("Could not parse the request. err: %v", err)
 		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON.").Wrap(err))
@@ -245,10 +245,10 @@ func (h *server) PostServiceAgentsInteractionsIdResolutions(c *gin.Context, id o
 	c.JSON(201, res)
 }
 
-// DeleteServiceAgentsInteractionsIdResolutionsRid handles DELETE /service_agents/interactions/{id}/resolutions/{rid}
-func (h *server) DeleteServiceAgentsInteractionsIdResolutionsRid(c *gin.Context, id openapi_types.UUID, rid openapi_types.UUID) {
+// DeleteServiceAgentsContactInteractionsIdResolutionsRid handles DELETE /service_agents/contact_interactions/{id}/resolutions/{rid}
+func (h *server) DeleteServiceAgentsContactInteractionsIdResolutionsRid(c *gin.Context, id openapi_types.UUID, rid openapi_types.UUID) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":            "DeleteServiceAgentsInteractionsIdResolutionsRid",
+		"func":            "DeleteServiceAgentsContactInteractionsIdResolutionsRid",
 		"request_address": c.ClientIP(),
 		"id":              id,
 		"rid":             rid,

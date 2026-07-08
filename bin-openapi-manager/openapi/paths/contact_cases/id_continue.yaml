@@ -1,12 +1,14 @@
-get:
-  summary: Get a case
-  description: Get the case of the given ID.
+post:
+  summary: Continue a closed case
+  description: |
+    Create a new, open case that continues a previously closed case, chained
+    via previous_case_id.
   tags:
     - Case
   parameters:
     - name: id
       in: path
-      description: The ID of the case. The ID is returned from GET /v1.0/cases response.
+      description: The ID of the (closed) case to continue. The ID is returned from GET /v1.0/contact_cases response.
       required: true
       schema:
         type: string
@@ -14,7 +16,7 @@ get:
         example: "550e8400-e29b-41d4-a716-446655440000"
   responses:
     '200':
-      description: Successful response.
+      description: New case created (or existing open case reused) successfully.
       content:
         application/json:
           schema:

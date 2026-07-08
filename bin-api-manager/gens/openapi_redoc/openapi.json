@@ -8409,7 +8409,7 @@
         }
       }
     },
-    "/interactions": {
+    "/contact_interactions": {
       "get": {
         "summary": "List interactions",
         "description": "List CRM interactions for the customer. Exactly one filter is required:\npeer_type + peer_target (remote endpoint), contact_id, or address_id.\n",
@@ -8488,7 +8488,7 @@
         }
       }
     },
-    "/interactions/unresolved": {
+    "/contact_interactions/unresolved": {
       "get": {
         "summary": "List unresolved interactions",
         "description": "List interactions that have no active resolution within the given time window.\nThe \"since\" parameter defines the lookback window (e.g. \"7d\" = last 7 days).\nDefault is \"30d\"; maximum is \"180d\".\n",
@@ -8538,7 +8538,7 @@
         }
       }
     },
-    "/interactions/{id}": {
+    "/contact_interactions/{id}": {
       "get": {
         "summary": "Get an interaction",
         "description": "Get the interaction of the given ID.",
@@ -8549,7 +8549,7 @@
           {
             "name": "id",
             "in": "path",
-            "description": "The ID of the interaction. The ID is returned from GET /interactions response.",
+            "description": "The ID of the interaction. The ID is returned from GET /contact_interactions response.",
             "required": true,
             "schema": {
               "type": "string",
@@ -8587,7 +8587,7 @@
         }
       }
     },
-    "/interactions/{id}/resolutions": {
+    "/contact_interactions/{id}/resolutions": {
       "post": {
         "summary": "Create a resolution for an interaction",
         "description": "Manually attribute (positive) or suppress (negative) an interaction for a contact.\nA positive resolution attaches the interaction to the contact.\nA negative resolution suppresses an incorrect automatic match.\n",
@@ -8598,7 +8598,7 @@
           {
             "name": "id",
             "in": "path",
-            "description": "The ID of the interaction. The ID is returned from GET /interactions response.",
+            "description": "The ID of the interaction. The ID is returned from GET /contact_interactions response.",
             "required": true,
             "schema": {
               "type": "string",
@@ -8685,7 +8685,7 @@
         }
       }
     },
-    "/interactions/{id}/resolutions/{rid}": {
+    "/contact_interactions/{id}/resolutions/{rid}": {
       "delete": {
         "summary": "Delete a resolution",
         "description": "Soft-delete a resolution. Use this to retract a wrong positive or negative resolution.\nRe-attribute by creating a new resolution after deletion.\n",
@@ -8696,7 +8696,7 @@
           {
             "name": "id",
             "in": "path",
-            "description": "The ID of the interaction. The ID is returned from GET /interactions response.",
+            "description": "The ID of the interaction. The ID is returned from GET /contact_interactions response.",
             "required": true,
             "schema": {
               "type": "string",
@@ -8707,7 +8707,7 @@
           {
             "name": "rid",
             "in": "path",
-            "description": "The ID of the resolution. The ID is returned from POST /interactions/{id}/resolutions response.",
+            "description": "The ID of the resolution. The ID is returned from POST /contact_interactions/{id}/resolutions response.",
             "required": true,
             "schema": {
               "type": "string",
@@ -8738,7 +8738,7 @@
         }
       }
     },
-    "/cases": {
+    "/contact_cases": {
       "get": {
         "summary": "List cases",
         "description": "List cases for the customer, optionally filtered by status, owner_type,\nand owner_id.\n",
@@ -8811,7 +8811,7 @@
         }
       }
     },
-    "/cases/unresolved": {
+    "/contact_cases/unresolved": {
       "get": {
         "summary": "List unresolved cases",
         "description": "List unresolved cases (open, contact_id IS NULL) for the authenticated\ncaller's customer.\n",
@@ -8852,7 +8852,7 @@
         }
       }
     },
-    "/cases/{id}": {
+    "/contact_cases/{id}": {
       "get": {
         "summary": "Get a case",
         "description": "Get the case of the given ID.",
@@ -8863,7 +8863,7 @@
           {
             "name": "id",
             "in": "path",
-            "description": "The ID of the case. The ID is returned from GET /v1.0/cases response.",
+            "description": "The ID of the case. The ID is returned from GET /v1.0/contact_cases response.",
             "required": true,
             "schema": {
               "type": "string",
@@ -8901,7 +8901,7 @@
         }
       }
     },
-    "/cases/{id}/close": {
+    "/contact_cases/{id}/close": {
       "post": {
         "summary": "Close a case",
         "description": "Close a case. closed_by_id is derived server-side from the\nauthenticated caller's own agent identity -- there is no request\nbody -- so the closing-agent attribution the platform treats as a\nhard invariant cannot be forged by supplying an arbitrary agent_id.\nReturns the actually-persisted state, including already_closed\nsemantics reflected via the returned closed_reason / closed_by_type /\nclosed_by_id fields when the case had already been closed by\nsomeone/something else.\n",
@@ -8912,7 +8912,7 @@
           {
             "name": "id",
             "in": "path",
-            "description": "The ID of the case. The ID is returned from GET /v1.0/cases response.",
+            "description": "The ID of the case. The ID is returned from GET /v1.0/contact_cases response.",
             "required": true,
             "schema": {
               "type": "string",
@@ -8950,7 +8950,7 @@
         }
       }
     },
-    "/cases/{id}/continue": {
+    "/contact_cases/{id}/continue": {
       "post": {
         "summary": "Continue a closed case",
         "description": "Create a new, open case that continues a previously closed case, chained\nvia previous_case_id.\n",
@@ -8961,7 +8961,7 @@
           {
             "name": "id",
             "in": "path",
-            "description": "The ID of the (closed) case to continue. The ID is returned from GET /v1.0/cases response.",
+            "description": "The ID of the (closed) case to continue. The ID is returned from GET /v1.0/contact_cases response.",
             "required": true,
             "schema": {
               "type": "string",
@@ -8999,7 +8999,7 @@
         }
       }
     },
-    "/cases/{id}/notes": {
+    "/contact_cases/{id}/notes": {
       "get": {
         "summary": "List notes for a case",
         "description": "List all notes for the case of the given ID. Notes are an internal,\nagent-facing annotation on a Case and never appear in any\ncustomer-facing webhook or response.\n",
@@ -9010,7 +9010,7 @@
           {
             "name": "id",
             "in": "path",
-            "description": "The ID of the case. The ID is returned from GET /v1.0/cases response.",
+            "description": "The ID of the case. The ID is returned from GET /v1.0/contact_cases response.",
             "required": true,
             "schema": {
               "type": "string",
@@ -9057,7 +9057,7 @@
           {
             "name": "id",
             "in": "path",
-            "description": "The ID of the case. The ID is returned from GET /v1.0/cases response.",
+            "description": "The ID of the case. The ID is returned from GET /v1.0/contact_cases response.",
             "required": true,
             "schema": {
               "type": "string",
@@ -9131,7 +9131,7 @@
         }
       }
     },
-    "/cases/{id}/notes/{note_id}": {
+    "/contact_cases/{id}/notes/{note_id}": {
       "delete": {
         "summary": "Delete a case note",
         "description": "Delete the note of the given note ID on the case of the given case ID.\n",
@@ -9142,7 +9142,7 @@
           {
             "name": "id",
             "in": "path",
-            "description": "The ID of the case. The ID is returned from GET /v1.0/cases response.",
+            "description": "The ID of the case. The ID is returned from GET /v1.0/contact_cases response.",
             "required": true,
             "schema": {
               "type": "string",
@@ -9153,7 +9153,7 @@
           {
             "name": "note_id",
             "in": "path",
-            "description": "The ID of the note. The ID is returned from GET /v1.0/cases/{id}/notes response.",
+            "description": "The ID of the note. The ID is returned from GET /v1.0/contact_cases/{id}/notes response.",
             "required": true,
             "schema": {
               "type": "string",
@@ -9191,10 +9191,10 @@
         }
       }
     },
-    "/cases/{id}/messages": {
+    "/contact_cases/{id}/messages": {
       "post": {
         "summary": "Send a message from a case",
-        "description": "Send a message from a known, open case with an explicit source and\ndestination address (design §4.5). Validation order:\n  1. Case validation -- case belongs to the calling customer and is\n     status=open (closed cases must be reopened via POST\n     /v1.0/cases/{id}/continue first).\n  2. Destination-to-case binding -- destination must be attributable\n     to this specific case (matched Contact's addresses, or the\n     case's bare peer_target when unresolved). Failure of either\n     sub-check returns the same generic error, by design, to prevent\n     a caller from using case_id as a bare capability token to probe\n     which binding sub-case failed.\n  3. Source-ownership validation -- source must be an active, normal\n     number owned by this case's customer.\nThe message is sent through the same underlying conversation-message\nsend path as POST /v1.0/service_agents/conversations/{id}/messages,\nreusing the ConversationManagerMessage response schema.\n",
+        "description": "Send a message from a known, open case with an explicit source and\ndestination address (design §4.5). Validation order:\n  1. Case validation -- case belongs to the calling customer and is\n     status=open (closed cases must be reopened via POST\n     /v1.0/contact_cases/{id}/continue first).\n  2. Destination-to-case binding -- destination must be attributable\n     to this specific case (matched Contact's addresses, or the\n     case's bare peer_target when unresolved). Failure of either\n     sub-check returns the same generic error, by design, to prevent\n     a caller from using case_id as a bare capability token to probe\n     which binding sub-case failed.\n  3. Source-ownership validation -- source must be an active, normal\n     number owned by this case's customer.\nThe message is sent through the same underlying conversation-message\nsend path as POST /v1.0/service_agents/conversations/{id}/messages,\nreusing the ConversationManagerMessage response schema.\n",
         "tags": [
           "Case"
         ],
@@ -9202,7 +9202,7 @@
           {
             "name": "id",
             "in": "path",
-            "description": "The ID of the case. The ID is returned from GET /v1.0/cases response.",
+            "description": "The ID of the case. The ID is returned from GET /v1.0/contact_cases response.",
             "required": true,
             "schema": {
               "type": "string",
@@ -19425,7 +19425,7 @@
         }
       }
     },
-    "/service_agents/interactions": {
+    "/service_agents/contact_interactions": {
       "get": {
         "summary": "List interactions",
         "description": "List CRM interactions for the service agent's customer. At most one filter may be\nprovided: peer_type + peer_target (remote endpoint), contact_id, or address_id.\nIf no filter is provided, the full customer interaction history is returned,\nscoped to the \"since\" lookback window (default \"30d\", maximum \"180d\").\n",
@@ -19513,7 +19513,7 @@
         }
       }
     },
-    "/service_agents/interactions/unresolved": {
+    "/service_agents/contact_interactions/unresolved": {
       "get": {
         "summary": "List unresolved interactions",
         "description": "List interactions that have no active resolution within the given time window,\nfor the service agent's customer.\nThe \"since\" parameter defines the lookback window (e.g. \"7d\" = last 7 days).\nDefault is \"30d\"; maximum is \"180d\".\n",
@@ -19563,7 +19563,7 @@
         }
       }
     },
-    "/service_agents/interactions/{id}": {
+    "/service_agents/contact_interactions/{id}": {
       "get": {
         "summary": "Get an interaction",
         "description": "Get the interaction of the given ID, for the service agent's customer.",
@@ -19574,7 +19574,7 @@
           {
             "name": "id",
             "in": "path",
-            "description": "The ID of the interaction. The ID is returned from GET /service_agents/interactions response.",
+            "description": "The ID of the interaction. The ID is returned from GET /service_agents/contact_interactions response.",
             "required": true,
             "schema": {
               "type": "string",
@@ -19612,7 +19612,7 @@
         }
       }
     },
-    "/service_agents/interactions/{id}/resolutions": {
+    "/service_agents/contact_interactions/{id}/resolutions": {
       "post": {
         "summary": "Create a resolution for an interaction",
         "description": "Manually attribute (positive) or suppress (negative) an interaction for a contact,\nfor the service agent's customer.\nA positive resolution attaches the interaction to the contact.\nA negative resolution suppresses an incorrect automatic match.\n",
@@ -19623,7 +19623,7 @@
           {
             "name": "id",
             "in": "path",
-            "description": "The ID of the interaction. The ID is returned from GET /service_agents/interactions response.",
+            "description": "The ID of the interaction. The ID is returned from GET /service_agents/contact_interactions response.",
             "required": true,
             "schema": {
               "type": "string",
@@ -19710,7 +19710,7 @@
         }
       }
     },
-    "/service_agents/interactions/{id}/resolutions/{rid}": {
+    "/service_agents/contact_interactions/{id}/resolutions/{rid}": {
       "delete": {
         "summary": "Delete a resolution",
         "description": "Soft-delete a resolution, for the service agent's customer.\nUse this to retract a wrong positive or negative resolution.\nRe-attribute by creating a new resolution after deletion.\n",
@@ -19721,7 +19721,7 @@
           {
             "name": "id",
             "in": "path",
-            "description": "The ID of the interaction. The ID is returned from GET /service_agents/interactions response.",
+            "description": "The ID of the interaction. The ID is returned from GET /service_agents/contact_interactions response.",
             "required": true,
             "schema": {
               "type": "string",
@@ -19732,7 +19732,7 @@
           {
             "name": "rid",
             "in": "path",
-            "description": "The ID of the resolution. The ID is returned from POST /service_agents/interactions/{id}/resolutions response.",
+            "description": "The ID of the resolution. The ID is returned from POST /service_agents/contact_interactions/{id}/resolutions response.",
             "required": true,
             "schema": {
               "type": "string",
@@ -26355,7 +26355,7 @@
           "case_id": {
             "type": "string",
             "format": "uuid",
-            "description": "The case this note belongs to. The ID is returned from GET /v1.0/cases response.",
+            "description": "The case this note belongs to. The ID is returned from GET /v1.0/contact_cases response.",
             "example": "550e8400-e29b-41d4-a716-446655440000"
           },
           "author_type": {

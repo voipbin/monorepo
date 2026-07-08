@@ -12,10 +12,10 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
-// GetCasesIdNotes handles GET /cases/{id}/notes
-func (h *server) GetCasesIdNotes(c *gin.Context, id openapi_types.UUID) {
+// GetContactCasesIdNotes handles GET /contact_cases/{id}/notes
+func (h *server) GetContactCasesIdNotes(c *gin.Context, id openapi_types.UUID) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":            "GetCasesIdNotes",
+		"func":            "GetContactCasesIdNotes",
 		"request_address": c.ClientIP(),
 		"id":              id,
 	})
@@ -40,10 +40,10 @@ func (h *server) GetCasesIdNotes(c *gin.Context, id openapi_types.UUID) {
 	c.JSON(200, GenerateListResponse(res, ""))
 }
 
-// PostCasesIdNotes handles POST /cases/{id}/notes
-func (h *server) PostCasesIdNotes(c *gin.Context, id openapi_types.UUID) {
+// PostContactCasesIdNotes handles POST /contact_cases/{id}/notes
+func (h *server) PostContactCasesIdNotes(c *gin.Context, id openapi_types.UUID) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":            "PostCasesIdNotes",
+		"func":            "PostContactCasesIdNotes",
 		"request_address": c.ClientIP(),
 		"id":              id,
 	})
@@ -56,7 +56,7 @@ func (h *server) PostCasesIdNotes(c *gin.Context, id openapi_types.UUID) {
 	}
 	log = log.WithField("customer_id", a.CustomerID)
 
-	var req openapi_server.PostCasesIdNotesJSONRequestBody
+	var req openapi_server.PostContactCasesIdNotesJSONRequestBody
 	if err := c.BindJSON(&req); err != nil {
 		log.Errorf("Could not parse the request. err: %v", err)
 		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON.").Wrap(err))
@@ -81,10 +81,10 @@ func (h *server) PostCasesIdNotes(c *gin.Context, id openapi_types.UUID) {
 	c.JSON(200, res)
 }
 
-// DeleteCasesIdNotesNoteId handles DELETE /cases/{id}/notes/{note_id}
-func (h *server) DeleteCasesIdNotesNoteId(c *gin.Context, id openapi_types.UUID, noteId openapi_types.UUID) {
+// DeleteContactCasesIdNotesNoteId handles DELETE /contact_cases/{id}/notes/{note_id}
+func (h *server) DeleteContactCasesIdNotesNoteId(c *gin.Context, id openapi_types.UUID, noteId openapi_types.UUID) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":            "DeleteCasesIdNotesNoteId",
+		"func":            "DeleteContactCasesIdNotesNoteId",
 		"request_address": c.ClientIP(),
 		"id":              id,
 		"note_id":         noteId,

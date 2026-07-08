@@ -109,7 +109,7 @@ func translateToVoipbinError(err error) (out *cerrors.VoipbinError) {
 			"Customer balance is below the minimum required for this operation.").Wrap(err)
 	case stderrors.Is(err, serviceerrors.ErrCaseClosed):
 		return cerrors.FailedPrecondition(commonoutline.ServiceNameAPIManager, "CASE_CLOSED",
-			"This case is closed. Call POST /v1.0/cases/{id}/continue to reopen it before sending a message.")
+			"This case is closed. Call POST /v1.0/contact_cases/{id}/continue to reopen it before sending a message.")
 	case stderrors.Is(err, serviceerrors.ErrCaseDestinationNotAssociated):
 		return cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "DESTINATION_NOT_ASSOCIATED",
 			"destination is not associated with this case")

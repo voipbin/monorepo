@@ -1,12 +1,12 @@
 get:
-  summary: Get an interaction
-  description: Get the interaction of the given ID.
+  summary: Get a case
+  description: Get the case of the given ID.
   tags:
-    - Interaction
+    - Case
   parameters:
     - name: id
       in: path
-      description: The ID of the interaction. The ID is returned from GET /interactions response.
+      description: The ID of the case. The ID is returned from GET /v1.0/contact_cases response.
       required: true
       schema:
         type: string
@@ -18,7 +18,7 @@ get:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ContactManagerInteraction'
+            $ref: '#/components/schemas/ContactManagerCase'
     '400':
       $ref: '#/components/responses/BadRequest'
     '401':

@@ -20,7 +20,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func Test_GetCasesIdNotes(t *testing.T) {
+func Test_GetContactCasesIdNotes(t *testing.T) {
 	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
 	agentID := uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c")
 	caseID := uuid.FromStringOrNil("11111111-0000-0000-0000-000000000001")
@@ -42,14 +42,14 @@ func Test_GetCasesIdNotes(t *testing.T) {
 					CustomerID: customerID,
 				},
 			}),
-			reqQuery:      "/cases/11111111-0000-0000-0000-000000000001/notes",
+			reqQuery:      "/contact_cases/11111111-0000-0000-0000-000000000001/notes",
 			responseNotes: []*cmcasenote.CaseNote{},
 			expectStatus:  http.StatusOK,
 		},
 		{
 			name:         "unauthenticated",
 			agent:        nil,
-			reqQuery:     "/cases/11111111-0000-0000-0000-000000000001/notes",
+			reqQuery:     "/contact_cases/11111111-0000-0000-0000-000000000001/notes",
 			expectStatus: http.StatusUnauthorized,
 		},
 	}
@@ -88,7 +88,7 @@ func Test_GetCasesIdNotes(t *testing.T) {
 	}
 }
 
-func Test_PostCasesIdNotes(t *testing.T) {
+func Test_PostContactCasesIdNotes(t *testing.T) {
 	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
 	agentID := uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c")
 	caseID := uuid.FromStringOrNil("11111111-0000-0000-0000-000000000001")
@@ -113,7 +113,7 @@ func Test_PostCasesIdNotes(t *testing.T) {
 					CustomerID: customerID,
 				},
 			}),
-			reqQuery: "/cases/11111111-0000-0000-0000-000000000001/notes",
+			reqQuery: "/contact_cases/11111111-0000-0000-0000-000000000001/notes",
 			reqBody: map[string]interface{}{
 				"author_type": "agent",
 				"author_id":   agentID.String(),
@@ -133,7 +133,7 @@ func Test_PostCasesIdNotes(t *testing.T) {
 		{
 			name:         "unauthenticated",
 			agent:        nil,
-			reqQuery:     "/cases/11111111-0000-0000-0000-000000000001/notes",
+			reqQuery:     "/contact_cases/11111111-0000-0000-0000-000000000001/notes",
 			reqBody:      map[string]interface{}{},
 			expectStatus: http.StatusUnauthorized,
 		},
@@ -175,7 +175,7 @@ func Test_PostCasesIdNotes(t *testing.T) {
 	}
 }
 
-func Test_DeleteCasesIdNotesNoteId(t *testing.T) {
+func Test_DeleteContactCasesIdNotesNoteId(t *testing.T) {
 	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
 	agentID := uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c")
 	caseID := uuid.FromStringOrNil("11111111-0000-0000-0000-000000000001")
@@ -198,14 +198,14 @@ func Test_DeleteCasesIdNotesNoteId(t *testing.T) {
 					CustomerID: customerID,
 				},
 			}),
-			reqQuery:     "/cases/11111111-0000-0000-0000-000000000001/notes/33333333-0000-0000-0000-000000000003",
+			reqQuery:     "/contact_cases/11111111-0000-0000-0000-000000000001/notes/33333333-0000-0000-0000-000000000003",
 			expectDelete: true,
 			expectStatus: http.StatusOK,
 		},
 		{
 			name:         "unauthenticated",
 			agent:        nil,
-			reqQuery:     "/cases/11111111-0000-0000-0000-000000000001/notes/33333333-0000-0000-0000-000000000003",
+			reqQuery:     "/contact_cases/11111111-0000-0000-0000-000000000001/notes/33333333-0000-0000-0000-000000000003",
 			expectStatus: http.StatusUnauthorized,
 		},
 	}

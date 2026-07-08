@@ -21,7 +21,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func Test_PostCasesIdMessages(t *testing.T) {
+func Test_PostContactCasesIdMessages(t *testing.T) {
 	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
 	agentID := uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c")
 	caseID := uuid.FromStringOrNil("11111111-0000-0000-0000-000000000001")
@@ -50,7 +50,7 @@ func Test_PostCasesIdMessages(t *testing.T) {
 			name:  "normal",
 			agent: agent,
 
-			reqQuery: "/cases/11111111-0000-0000-0000-000000000001/messages",
+			reqQuery: "/contact_cases/11111111-0000-0000-0000-000000000001/messages",
 			reqBody: map[string]string{
 				"source":      "+15551234567",
 				"destination": "+15559876543",
@@ -65,7 +65,7 @@ func Test_PostCasesIdMessages(t *testing.T) {
 			name:  "case closed maps to a 4xx",
 			agent: agent,
 
-			reqQuery: "/cases/11111111-0000-0000-0000-000000000001/messages",
+			reqQuery: "/contact_cases/11111111-0000-0000-0000-000000000001/messages",
 			reqBody: map[string]string{
 				"source":      "+15551234567",
 				"destination": "+15559876543",
@@ -79,7 +79,7 @@ func Test_PostCasesIdMessages(t *testing.T) {
 		{
 			name:         "unauthenticated",
 			agent:        nil,
-			reqQuery:     "/cases/11111111-0000-0000-0000-000000000001/messages",
+			reqQuery:     "/contact_cases/11111111-0000-0000-0000-000000000001/messages",
 			reqBody:      map[string]string{},
 			expectStatus: http.StatusUnauthorized,
 		},

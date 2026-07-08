@@ -8,7 +8,7 @@ delete:
   parameters:
     - name: id
       in: path
-      description: The ID of the interaction. The ID is returned from GET /interactions response.
+      description: The ID of the interaction. The ID is returned from GET /contact_interactions response.
       required: true
       schema:
         type: string
@@ -16,7 +16,7 @@ delete:
         example: "550e8400-e29b-41d4-a716-446655440000"
     - name: rid
       in: path
-      description: The ID of the resolution. The ID is returned from POST /interactions/{id}/resolutions response.
+      description: The ID of the resolution. The ID is returned from POST /contact_interactions/{id}/resolutions response.
       required: true
       schema:
         type: string

@@ -5,7 +5,7 @@ post:
     destination address (design §4.5). Validation order:
       1. Case validation -- case belongs to the calling customer and is
          status=open (closed cases must be reopened via POST
-         /v1.0/cases/{id}/continue first).
+         /v1.0/contact_cases/{id}/continue first).
       2. Destination-to-case binding -- destination must be attributable
          to this specific case (matched Contact's addresses, or the
          case's bare peer_target when unresolved). Failure of either
@@ -22,7 +22,7 @@ post:
   parameters:
     - name: id
       in: path
-      description: The ID of the case. The ID is returned from GET /v1.0/cases response.
+      description: The ID of the case. The ID is returned from GET /v1.0/contact_cases response.
       required: true
       schema:
         type: string

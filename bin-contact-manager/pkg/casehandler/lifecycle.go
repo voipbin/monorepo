@@ -19,7 +19,7 @@ import (
 // *cerrors.VoipbinError (InvalidArgument -> HTTP 400) so listenhandler's
 // errorResponse() maps it correctly instead of falling through to a
 // generic 500 -- matching the OpenAPI spec's declared 400 response for
-// POST /v1.0/cases/{id}/continue.
+// POST /v1.0/contact_cases/{id}/continue.
 var ErrCaseNotClosed = cerrors.InvalidArgument(
 	commonoutline.ServiceNameContactManager,
 	"CASE_NOT_CLOSED",
@@ -35,7 +35,7 @@ var ErrCaseNotClosed = cerrors.InvalidArgument(
 // *cerrors.VoipbinError (PermissionDenied -> HTTP 403) so listenhandler's
 // errorResponse() maps it correctly instead of falling through to a
 // generic 500 -- matching the OpenAPI spec's declared 403 response for
-// POST /v1.0/cases/{id}/continue.
+// POST /v1.0/contact_cases/{id}/continue.
 var ErrCaseContinueForbidden = cerrors.PermissionDenied(
 	commonoutline.ServiceNameContactManager,
 	"CASE_CONTINUE_FORBIDDEN",

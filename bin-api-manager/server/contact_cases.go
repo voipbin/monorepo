@@ -12,10 +12,10 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
-// GetCases handles GET /cases
-func (h *server) GetCases(c *gin.Context, params openapi_server.GetCasesParams) {
+// GetContactCases handles GET /contact_cases
+func (h *server) GetContactCases(c *gin.Context, params openapi_server.GetContactCasesParams) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":            "GetCases",
+		"func":            "GetContactCases",
 		"request_address": c.ClientIP(),
 	})
 
@@ -70,10 +70,10 @@ func (h *server) GetCases(c *gin.Context, params openapi_server.GetCasesParams) 
 	c.JSON(200, GenerateListResponse(items, nextToken))
 }
 
-// GetCasesUnresolved handles GET /cases/unresolved
-func (h *server) GetCasesUnresolved(c *gin.Context, params openapi_server.GetCasesUnresolvedParams) {
+// GetContactCasesUnresolved handles GET /contact_cases/unresolved
+func (h *server) GetContactCasesUnresolved(c *gin.Context, params openapi_server.GetContactCasesUnresolvedParams) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":            "GetCasesUnresolved",
+		"func":            "GetContactCasesUnresolved",
 		"request_address": c.ClientIP(),
 	})
 
@@ -108,10 +108,10 @@ func (h *server) GetCasesUnresolved(c *gin.Context, params openapi_server.GetCas
 	c.JSON(200, GenerateListResponse(items, nextToken))
 }
 
-// GetCasesId handles GET /cases/{id}
-func (h *server) GetCasesId(c *gin.Context, id openapi_types.UUID) {
+// GetContactCasesId handles GET /contact_cases/{id}
+func (h *server) GetContactCasesId(c *gin.Context, id openapi_types.UUID) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":            "GetCasesId",
+		"func":            "GetContactCasesId",
 		"request_address": c.ClientIP(),
 		"id":              id,
 	})
@@ -136,15 +136,15 @@ func (h *server) GetCasesId(c *gin.Context, id openapi_types.UUID) {
 	c.JSON(200, res)
 }
 
-// PostCasesIdClose handles POST /cases/{id}/close. closed_by_id is
+// PostContactCasesIdClose handles POST /contact_cases/{id}/close. closed_by_id is
 // derived server-side from the authenticated caller's own agent identity
 // (CaseClose internally uses a.AgentID()) -- there is no request body to
-// bind, matching PostCasesIdContinue's pattern below, so the
+// bind, matching PostContactCasesIdContinue's pattern below, so the
 // closing-agent attribution the platform treats as a hard invariant
 // (design §5.3) cannot be forged via a client-supplied agent_id.
-func (h *server) PostCasesIdClose(c *gin.Context, id openapi_types.UUID) {
+func (h *server) PostContactCasesIdClose(c *gin.Context, id openapi_types.UUID) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":            "PostCasesIdClose",
+		"func":            "PostContactCasesIdClose",
 		"request_address": c.ClientIP(),
 		"id":              id,
 	})
@@ -169,10 +169,10 @@ func (h *server) PostCasesIdClose(c *gin.Context, id openapi_types.UUID) {
 	c.JSON(200, res)
 }
 
-// PostCasesIdContinue handles POST /cases/{id}/continue
-func (h *server) PostCasesIdContinue(c *gin.Context, id openapi_types.UUID) {
+// PostContactCasesIdContinue handles POST /contact_cases/{id}/continue
+func (h *server) PostContactCasesIdContinue(c *gin.Context, id openapi_types.UUID) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":            "PostCasesIdContinue",
+		"func":            "PostContactCasesIdContinue",
 		"request_address": c.ClientIP(),
 		"id":              id,
 	})

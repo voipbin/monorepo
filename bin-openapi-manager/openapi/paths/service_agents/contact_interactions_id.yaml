@@ -6,7 +6,7 @@ get:
   parameters:
     - name: id
       in: path
-      description: The ID of the interaction. The ID is returned from GET /service_agents/interactions response.
+      description: The ID of the interaction. The ID is returned from GET /service_agents/contact_interactions response.
       required: true
       schema:
         type: string
