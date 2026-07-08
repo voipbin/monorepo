@@ -7,7 +7,7 @@
 | Session stuck in `progressing` | `call_hangup` event not received or not processed | Check subscribe handler queue; manually stop via `POST /v1/transcribes/{id}/stop` |
 | STT RPC routed to wrong pod | Stale `host_id` after pod restart (Calico POD_IP recycle) | See [per-pod-queues.md](../../docs/patterns/per-pod-queues.md) for known limitation; session must be recreated |
 | No transcripts appearing | WebSocket to Asterisk not established | Check `streaming_handler` logs for dial errors; verify `MediaURI` from `ExternalMediaStart` |
-| GCP auth failure | ADC not configured | Check `GOOGLE_APPLICATION_CREDENTIALS` or GKE workload identity |
+| GCP auth failure | ADC not configured | Check `GOOGLE_APPLICATION_CREDENTIALS` points to a valid mounted service account key file |
 | AWS auth failure | Missing credentials | Verify `AWS_ACCESS_KEY` / `AWS_SECRET_KEY` env vars |
 | Session health-check failing | Pod hosting session is down | Session is lost; streaming cannot be resumed — client must recreate |
 | `customer_deleted` cascade not running | Subscribe handler not consuming customer-manager events | Check queue binding: `bin-manager.customer-manager.event` |

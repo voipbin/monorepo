@@ -7,7 +7,7 @@ Multi-tenant RAG (Retrieval-Augmented Generation) service. Indexes document sour
 ## Key facts
 
 - **PostgreSQL + pgvector** (not MySQL). DSN via `POSTGRESQL_DSN`.
-- **Google Gemini** (`text-embedding-004`, 768-dim vectors). Auth via GKE Workload Identity — no API keys.
+- **Google Gemini** (`text-embedding-004`, 768-dim vectors). Auth via `GOOGLE_APPLICATION_CREDENTIALS` service account key file (mounted from `Secret/voipbin` key `GOOGLE_APPLICATION_CREDENTIALS_JSON`) — no metadata-server fallback.
 - **RabbitMQ queue**: `bin-manager.rag-manager.request`
 - **No SubscribeHandler** — no event subscriptions.
 

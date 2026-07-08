@@ -18,6 +18,13 @@ spec:
         prometheus.io/path: "/metrics"
         prometheus.io/port: "2112"
     spec:
+      volumes:
+        - name: google-application-credentials
+          secret:
+            secretName: voipbin
+            items:
+              - key: GOOGLE_APPLICATION_CREDENTIALS_JSON
+                path: service-account.json
       containers:
         - name: api-manager
           image: api-manager-image
@@ -90,6 +97,12 @@ spec:
                 secretKeyRef:
                   name: voipbin
                   key: JWT_KEY
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: "/var/secrets/google/service-account.json"
+          volumeMounts:
+            - name: google-application-credentials
+              mountPath: /var/secrets/google
+              readOnly: true
           readinessProbe:
             httpGet:
               path: /ping

@@ -4,7 +4,7 @@
 
 | Symptom | Likely Cause | Resolution |
 |---------|-------------|-----------|
-| Embedding calls fail / timeout | Vertex AI quota exhausted or GKE Workload Identity misconfigured | Check pod IAM binding; verify `GCP_PROJECT_ID` and `GCP_REGION` |
+| Embedding calls fail / timeout | GCP credential file missing/invalid, or Vertex AI quota exhausted | Verify `GOOGLE_APPLICATION_CREDENTIALS` points to a valid service account key file; verify `GCP_PROJECT_ID` and `GCP_REGION` |
 | "missing go.sum entry" at Docker build | `go mod tidy` not run after dependency change | Run full verification workflow |
 | pgvector extension missing | PostgreSQL instance provisioned without pgvector | Run `CREATE EXTENSION IF NOT EXISTS vector` on the database |
 | Query returns 0 chunks | RAG config has no indexed sources, or embedding dimension mismatch | Verify documents were successfully ingested; check chunk count in DB |
@@ -17,8 +17,8 @@
 # Check pod logs
 kubectl logs -n voipbin -l app=rag-manager --tail=100
 
-# Verify Workload Identity is working
-kubectl exec -n voipbin <pod> -- curl -s "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token" -H "Metadata-Flavor: Google"
+# Verify the mounted service account key file is present and readable
+kubectl exec -n voipbin <pod> -- cat /var/secrets/google/service-account.json | head -c 100
 
 # Check pgvector extension
 psql $POSTGRESQL_DSN -c "SELECT extname FROM pg_extension WHERE extname='vector';"

@@ -21,6 +21,12 @@ spec:
       volumes:
         - name: shared-data
           emptyDir: {}
+        - name: google-application-credentials
+          secret:
+            secretName: voipbin
+            items:
+              - key: GOOGLE_APPLICATION_CREDENTIALS_JSON
+                path: service-account.json
       containers:
         - name: tts-manager
           image: tts-manager-image
@@ -86,9 +92,14 @@ spec:
                 secretKeyRef:
                   name: voipbin
                   key: CLICKHOUSE_ADDRESS
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: "/var/secrets/google/service-account.json"
           volumeMounts:
             - name: shared-data
               mountPath: /shared-data
+            - name: google-application-credentials
+              mountPath: /var/secrets/google
+              readOnly: true
           command:
             - './tts-manager'
           ports:
