@@ -4,7 +4,7 @@
 
 | Symptom | Likely Cause | Resolution |
 |---------|-------------|------------|
-| Batch TTS returns no audio URL | GCP ADC credentials not available | Check `GOOGLE_APPLICATION_CREDENTIALS` or GKE workload identity; check `speech_fallback_total` metric |
+| Batch TTS returns no audio URL | GCP ADC credentials not available | Check `GOOGLE_APPLICATION_CREDENTIALS` points to a valid mounted service account key file; check `speech_fallback_total` metric |
 | AWS Polly fallback failing | Missing `aws_access_key` / `aws_secret_key` | Verify credentials in environment; check AWS Polly quotas |
 | Streaming session RPC timeout | RPC routed to wrong pod (wrong per-pod queue) | Verify `host_id` matches `HOSTNAME` of target pod; check per-pod queue binding |
 | AudioSocket connection refused | Go service port 8080 not listening | Check pod readiness; verify no port conflict with Python sidecar |
@@ -63,7 +63,7 @@ kubectl logs -n voipbin -l app=tts-manager -c tts-manager --tail=200 | grep -E "
 | `prometheus_endpoint` / `PROMETHEUS_ENDPOINT` | Metrics HTTP path | `/metrics` |
 | `prometheus_listen_address` / `PROMETHEUS_LISTEN_ADDRESS` | Metrics listen address | `:2112` |
 
-GCP authentication uses Application Default Credentials — typically via `GOOGLE_APPLICATION_CREDENTIALS` or GKE workload identity.
+GCP authentication uses Application Default Credentials via `GOOGLE_APPLICATION_CREDENTIALS` (mounted service account key file from `Secret/voipbin` key `GOOGLE_APPLICATION_CREDENTIALS_JSON`).
 
 ## Prometheus Metrics
 

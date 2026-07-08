@@ -18,6 +18,13 @@ spec:
         prometheus.io/path: "/metrics"
         prometheus.io/port: "2112"
     spec:
+      volumes:
+        - name: google-application-credentials
+          secret:
+            secretName: voipbin
+            items:
+              - key: GOOGLE_APPLICATION_CREDENTIALS_JSON
+                path: service-account.json
       containers:
         - name: transcribe-manager
           image: transcribe-manager-image
@@ -80,6 +87,12 @@ spec:
                 secretKeyRef:
                   name: voipbin
                   key: CLICKHOUSE_ADDRESS
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: "/var/secrets/google/service-account.json"
+          volumeMounts:
+            - name: google-application-credentials
+              mountPath: /var/secrets/google
+              readOnly: true
           resources:
             requests:
               cpu: "6m"
