@@ -143,6 +143,22 @@ var (
 	// algorithm, design §4) use this as the signal to retry with a locked
 	// re-select rather than treating it as a generic infrastructure error.
 	ErrDuplicate = fmt.Errorf("an open case already exists for this customer/peer/reference_type")
+
+	// ErrDeadlock is returned by any Case* Tx-scoped operation (design §4's
+	// get-or-create transaction) when the underlying driver reports a
+	// MySQL deadlock (errno 1213, "Deadlock found when trying to get
+	// lock; try restarting transaction"). VOIP-1232: concurrent
+	// GetOrCreate calls racing to INSERT into contact_cases for the same
+	// (customer_id, peer_type, peer_target, reference_type) tuple can
+	// occasionally surface a 1213 instead of the clean 1062/ErrDuplicate
+	// path, because the collision can occur during the insert-intention
+	// gap-lock phase before either transaction commits. InnoDB
+	// auto-rolls-back the ENTIRE transaction server-side when it reports
+	// 1213 -- callers MUST NOT reuse the same *sql.Tx after seeing this
+	// error; a correct retry restarts from a fresh BeginTx (design §4.2's
+	// insert-retry loop is a different, narrower mechanism scoped to
+	// ErrDuplicate only and does not cover this).
+	ErrDeadlock = fmt.Errorf("deadlock detected; transaction was rolled back by the server")
 )
 
 // NewHandler creates DBHandler

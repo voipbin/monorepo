@@ -67,6 +67,10 @@ Metrics are served at `<prometheus_listen_address><prometheus_endpoint>` (defaul
 |--------|------|--------|-------------|
 | `contact_manager_receive_request_process_time` | Histogram | `type`, `method` | RPC request processing latency |
 | `contact_manager_receive_subscribe_event_process_time` | Histogram | `publisher`, `type` | Event subscription processing latency |
+| `contact_manager_case_getorcreate_deadlock_retry_total` | Counter | (none) | VOIP-1232: total GetOrCreate attempts restarted after a MySQL deadlock (errno 1213) on the case get-or-create transaction. Non-zero-but-flat is expected under concurrent same-peer traffic; a sustained climb suggests the in-process peer lock isn't preventing the race (e.g. multi-replica deployment -- see the topology caveat below) |
+| `contact_manager_case_getorcreate_deadlock_exhausted_total` | Counter | (none) | VOIP-1232: total GetOrCreate calls that exhausted all `maxDeadlockRetries` attempts and gave up. Each occurrence means one `conversation_message_created`/`call_created` event's CRM projection was silently dropped (ack-before-process pipeline, no DLQ yet -- see VOIP-1233) |
+| `contact_manager_case_getorcreate_peer_lock_timeout_total` | Counter | (none) | VOIP-1232: total GetOrCreate calls that failed to acquire the per-peer in-process serialization lock within `peerLockTimeout` (5s). Each occurrence also drops the triggering event (same caveat as above) |
+| `contact_manager_case_peer_lock_map_size` | Gauge | (none) | VOIP-1232: current number of distinct peer-tuple entries held in the in-process GetOrCreate serialization lock map. No eviction is implemented yet; monitor for unbounded growth (expected to stay in the thousands-to-low-tens-of-thousands range for a busy tenant; escalate if it grows without bound) |
 
 **Useful PromQL:**
 ```promql
@@ -75,4 +79,26 @@ histogram_quantile(0.99, rate(contact_manager_receive_request_process_time_bucke
 
 # Event processing rate
 rate(contact_manager_receive_subscribe_event_process_time_count[5m])
+
+# VOIP-1232: deadlock retry rate (per-minute)
+rate(contact_manager_case_getorcreate_deadlock_retry_total[5m]) * 60
+
+# VOIP-1232: silently-dropped-event rate (deadlock exhaustion + peer-lock timeout combined)
+rate(contact_manager_case_getorcreate_deadlock_exhausted_total[5m]) * 60
+  + rate(contact_manager_case_getorcreate_peer_lock_timeout_total[5m]) * 60
 ```
+
+**VOIP-1232 topology caveat:** the peer-tuple serialization lock described
+above is **in-process only**, not a distributed lock. It fully prevents
+the same-peer-tuple concurrent-INSERT race under contact-manager's
+**current single-replica production config** (`replicas: 1`, no HPA --
+confirmed in both `k8s/deployment.yml` and the install repo's
+`k8s/backend/services/contact-manager.yaml`). If contact-manager is ever
+scaled to 2+ replicas, RabbitMQ's plain shared-queue competing-consumers
+model gives no per-peer-tuple pod affinity, so this lock would provide
+**zero** cross-pod protection and the fix degrades to relying on the
+DB-level deadlock retry alone (still correct, just less effective at
+preventing the deadlock in the first place). A Redis-based distributed
+lock (contact-manager already depends on Redis for contact-body caching)
+is the correct upgrade path if/when replicas are increased -- not built
+preemptively here.
