@@ -4,6 +4,7 @@ package casehandler
 
 import (
 	"context"
+	"sync"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -104,6 +105,17 @@ type caseHandler struct {
 	reqHandler    requesthandler.RequestHandler
 	db            dbhandler.DBHandler
 	notifyHandler notifyhandler.NotifyHandler
+
+	// peerLocks/peerLocksMu implement VOIP-1232's per-(customer_id,
+	// peer_type, peer_target, reference_type) in-process serialization
+	// lock: a map of buffered channels (capacity 1) used as keyed
+	// mutexes, guarded by peerLocksMu for map access. See peerlock.go.
+	// caseHandler is a process-wide singleton (constructed once by
+	// NewCaseHandler at service startup), so this map is genuinely
+	// shared across every concurrent GetOrCreate call for the life of
+	// the process.
+	peerLocks   map[string]chan struct{}
+	peerLocksMu sync.RWMutex
 }
 
 // NewCaseHandler returns CaseHandler interface
@@ -117,5 +129,6 @@ func NewCaseHandler(
 		reqHandler:    reqHandler,
 		db:            dbHandler,
 		notifyHandler: notifyHandler,
+		peerLocks:     make(map[string]chan struct{}),
 	}
 }

@@ -4,6 +4,7 @@ package subscribehandler
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -18,6 +19,7 @@ import (
 
 	call "monorepo/bin-call-manager/models/call"
 	convmsg "monorepo/bin-conversation-manager/models/message"
+	"monorepo/bin-contact-manager/pkg/casehandler"
 	"monorepo/bin-contact-manager/pkg/contacthandler"
 )
 
@@ -164,6 +166,22 @@ func (h *subscribeHandler) processEvent(m *sock.Event) {
 	promEventProcessTime.WithLabelValues(m.Publisher, string(m.Type)).Observe(float64(elapsed.Milliseconds()))
 
 	if err != nil {
-		log.Errorf("Could not process the event correctly. publisher: %s, type: %s, err: %v", m.Publisher, m.Type, err)
+		// VOIP-1232: distinctly tag the two new GetOrCreate failure modes
+		// (deadlock-retry exhaustion, peer-lock acquisition timeout) from
+		// generic GetOrCreate errors, so operators can triage which
+		// mechanism is firing. NOTE: none of these three outcomes have a
+		// recovery path yet -- the message was already Ack'd before this
+		// handler ran (rabbitmqhandler.consumeMessageWorker's ack-before-
+		// process design), and this branch only logs. VOIP-1233 tracks the
+		// follow-up ack-after-process/DLQ fix that would give these
+		// failures an actual retry/redelivery path.
+		switch {
+		case errors.Is(err, casehandler.ErrDeadlockExhausted):
+			log.Errorf("GetOrCreate exhausted all deadlock retries; event dropped (ack-before-process, no DLQ -- see VOIP-1233). publisher: %s, type: %s, err: %v", m.Publisher, m.Type, err)
+		case errors.Is(err, casehandler.ErrPeerLockTimeout):
+			log.Errorf("GetOrCreate could not acquire peer serialization lock within timeout; event dropped (ack-before-process, no DLQ -- see VOIP-1233). publisher: %s, type: %s, err: %v", m.Publisher, m.Type, err)
+		default:
+			log.Errorf("Could not process the event correctly. publisher: %s, type: %s, err: %v", m.Publisher, m.Type, err)
+		}
 	}
 }

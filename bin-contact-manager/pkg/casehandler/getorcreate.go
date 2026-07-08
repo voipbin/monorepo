@@ -23,6 +23,16 @@ import (
 // thundering-herd scenario; see design §4.2's "Loop exhaustion" note.
 const maxInsertRetries = 3
 
+// maxDeadlockRetries bounds the outer retry loop that restarts the ENTIRE
+// GetOrCreate transaction (fresh BeginTx) when the underlying driver
+// reports a MySQL deadlock (errno 1213, VOIP-1232). This is a distinct,
+// wider mechanism than maxInsertRetries above: an InnoDB deadlock kills
+// the whole transaction server-side (unlike a plain uq_case_open_peer
+// conflict, which is safely retryable within the SAME tx via a locked
+// re-select), so recovery here must restart the transaction from
+// scratch, not just retry one statement.
+const maxDeadlockRetries = 3
+
 // ErrGetOrCreateExhausted is returned when all maxInsertRetries attempts
 // to insert-or-reselect an open Case collide (design §4.2's "Loop
 // exhaustion" path). Callers must surface this as a transient 5xx, not
@@ -30,7 +40,25 @@ const maxInsertRetries = 3
 // retry.
 var ErrGetOrCreateExhausted = fmt.Errorf("could not get-or-create case: exhausted retries under sustained conflict")
 
+// ErrDeadlockExhausted is returned when all maxDeadlockRetries attempts
+// to run the GetOrCreate transaction collide with a MySQL deadlock
+// (VOIP-1232). Distinct from ErrGetOrCreateExhausted (which covers the
+// narrower uq_case_open_peer insert-conflict retry) so callers
+// (subscribehandler.processEvent) can tag deadlock-exhaustion separately
+// for interim triage -- see VOIP-1233 for the ack-after-process/DLQ
+// follow-up that would give this failure a genuine recovery path instead
+// of falling through the current silent-drop pipeline.
+var ErrDeadlockExhausted = fmt.Errorf("could not get-or-create case: exhausted retries under sustained deadlock")
+
 // GetOrCreate implements design doc §4's get-or-create algorithm exactly.
+//
+// VOIP-1232: wraps the whole transaction lifecycle in two additional
+// layers versus the original design: (1) a per-peer-tuple in-process
+// serialization lock (acquired once here, held across ALL
+// maxDeadlockRetries attempts below, released immediately after a
+// successful tx.Commit() and BEFORE linkSiblingConversation's network
+// RPCs), and (2) an outer bounded retry loop that discards the tx and
+// restarts from a fresh BeginTx whenever the driver reports a deadlock.
 func (h *caseHandler) GetOrCreate(
 	ctx context.Context,
 	customerID uuid.UUID,
@@ -39,11 +67,73 @@ func (h *caseHandler) GetOrCreate(
 	peerTarget, referenceType string,
 	caseIDHint *uuid.UUID,
 ) (*kase.Case, error) {
+	lockKey := peerLockKey(customerID, peerType, peerTarget, referenceType)
+	release, err := h.acquirePeerLock(ctx, lockKey)
+	if err != nil {
+		promPeerLockTimeoutTotal.Inc()
+		return nil, fmt.Errorf("could not acquire peer lock. GetOrCreate. err: %w", err)
+	}
+	// Released as soon as a successful attempt commits (see the
+	// released-early path below); this defer is the fallback for every
+	// early-return error path so the lock is never leaked.
+	locked := true
+	defer func() {
+		if locked {
+			release()
+		}
+	}()
+
+	var lastErr error
+	for attempt := 0; attempt < maxDeadlockRetries; attempt++ {
+		res, isNewCase, err := h.getOrCreateAttempt(ctx, customerID, self, peerType, peerTarget, referenceType, caseIDHint)
+		if err == nil {
+			// Release the peer lock immediately after a successful commit,
+			// strictly BEFORE linkSiblingConversation's cross-service RPCs
+			// (design §4.4's own comment already establishes this
+			// principle for the DB-level FOR UPDATE locks; the in-process
+			// peer lock follows the identical rule -- see
+			// getOrCreateAttempt's call site below).
+			release()
+			locked = false
+
+			if isNewCase && referenceType != "conversation_message" && self.Type != "" {
+				h.linkSiblingConversation(ctx, customerID, self, peerType, peerTarget, res.ID)
+			}
+
+			return res, nil
+		}
+
+		if err == dbhandler.ErrDeadlock {
+			promDeadlockRetryTotal.Inc()
+			lastErr = err
+			continue
+		}
+
+		return nil, err
+	}
+
+	promDeadlockExhaustedTotal.Inc()
+	return nil, fmt.Errorf("%w: %v", ErrDeadlockExhausted, lastErr)
+}
+
+// getOrCreateAttempt runs ONE full attempt of the GetOrCreate transaction
+// lifecycle (BeginTx through Commit), re-capturing `now` fresh for this
+// attempt -- so TMCreate/TMUpdate/OpenedAt reflect the wall-clock time of
+// the attempt that actually succeeds, not a stale timestamp captured
+// before an earlier attempt's deadlock + retry backoff.
+func (h *caseHandler) getOrCreateAttempt(
+	ctx context.Context,
+	customerID uuid.UUID,
+	self commonaddress.Address,
+	peerType commonaddress.Type,
+	peerTarget, referenceType string,
+	caseIDHint *uuid.UUID,
+) (*kase.Case, bool, error) {
 	now := h.utilHandler.TimeNow()
 
 	tx, err := h.db.BeginTx(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("could not begin transaction. GetOrCreate. err: %v", err)
+		return nil, false, fmt.Errorf("could not begin transaction. GetOrCreate. err: %v", err)
 	}
 	committed := false
 	defer func() {
@@ -54,32 +144,23 @@ func (h *caseHandler) GetOrCreate(
 
 	res, isNewCase, err := h.getOrCreateInTx(ctx, tx, customerID, peerType, peerTarget, referenceType, caseIDHint, now)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 
 	if err := h.db.CaseUpdateTMUpdateTx(ctx, tx, res.ID, now); err != nil {
-		return nil, fmt.Errorf("could not bump tm_update. GetOrCreate. err: %v", err)
+		if err == dbhandler.ErrDeadlock {
+			return nil, false, dbhandler.ErrDeadlock
+		}
+		return nil, false, fmt.Errorf("could not bump tm_update. GetOrCreate. err: %v", err)
 	}
 
 	if err := tx.Commit(); err != nil {
-		return nil, fmt.Errorf("could not commit transaction. GetOrCreate. err: %v", err)
+		return nil, false, fmt.Errorf("could not commit transaction. GetOrCreate. err: %v", err)
 	}
 	committed = true
 
 	res.TMUpdate = now
-
-	// Design §4.4: proactive linking write, AFTER the Case transaction has
-	// committed (never inside it -- the FOR UPDATE locks above must not be
-	// held across a cross-service network round trip). Only on a genuine
-	// new-Case open (not cache-hit reuse), and only for a non-
-	// "conversation_message" referenceType (today: "call"). Best-effort:
-	// any failure here is logged and never fails/rolls back the already-
-	// committed Case-open.
-	if isNewCase && referenceType != "conversation_message" && self.Type != "" {
-		h.linkSiblingConversation(ctx, customerID, self, peerType, peerTarget, res.ID)
-	}
-
-	return res, nil
+	return res, isNewCase, nil
 }
 
 // linkSiblingConversation implements design §4.4's proactive-link write:
@@ -131,6 +212,9 @@ func (h *caseHandler) getOrCreateInTx(
 	if caseIDHint != nil {
 		hinted, err := h.db.CaseGetByIDForUpdate(ctx, tx, customerID, *caseIDHint)
 		if err != nil {
+			if err == dbhandler.ErrDeadlock {
+				return nil, false, dbhandler.ErrDeadlock
+			}
 			return nil, false, fmt.Errorf("could not validate case_id hint. GetOrCreate. err: %v", err)
 		}
 		if hinted != nil {
@@ -142,6 +226,9 @@ func (h *caseHandler) getOrCreateInTx(
 	// Step 1b: peer/reference_type resolution.
 	found, err := h.db.CaseGetOpenByPeer(ctx, tx, customerID, peerType, peerTarget, referenceType)
 	if err != nil {
+		if err == dbhandler.ErrDeadlock {
+			return nil, false, dbhandler.ErrDeadlock
+		}
 		return nil, false, fmt.Errorf("could not look up open case. GetOrCreate. err: %v", err)
 	}
 
@@ -156,6 +243,9 @@ func (h *caseHandler) getOrCreateInTx(
 		// Timed out: close it, then insert a fresh replacement chained via
 		// previous_case_id.
 		if _, err := h.db.CaseUpdateStatusClosedTx(ctx, tx, customerID, found.ID, kase.ClosedReasonTimeout, kase.ClosedByTypeSystem, nil, now); err != nil {
+			if err == dbhandler.ErrDeadlock {
+				return nil, false, dbhandler.ErrDeadlock
+			}
 			return nil, false, fmt.Errorf("could not close timed-out case. GetOrCreate. err: %v", err)
 		}
 		return h.insertWithRetry(ctx, tx, customerID, peerType, peerTarget, referenceType, &found.ID, now)
@@ -165,6 +255,9 @@ func (h *caseHandler) getOrCreateInTx(
 	// closed case for this peer (if any) via previous_case_id.
 	lastClosed, err := h.db.CaseGetLastClosedByPeerTx(ctx, tx, customerID, peerType, peerTarget, referenceType)
 	if err != nil {
+		if err == dbhandler.ErrDeadlock {
+			return nil, false, dbhandler.ErrDeadlock
+		}
 		return nil, false, fmt.Errorf("could not look up last closed case. GetOrCreate. err: %v", err)
 	}
 	var previousCaseID *uuid.UUID
@@ -207,6 +300,9 @@ func (h *caseHandler) insertWithRetry(
 		if err == nil {
 			return newCase, true, nil
 		}
+		if err == dbhandler.ErrDeadlock {
+			return nil, false, dbhandler.ErrDeadlock
+		}
 		if err != dbhandler.ErrDuplicate {
 			return nil, false, fmt.Errorf("could not insert case. GetOrCreate. err: %v", err)
 		}
@@ -214,6 +310,9 @@ func (h *caseHandler) insertWithRetry(
 		// Conflict: another transaction won. Re-select the winner, locked.
 		winner, selErr := h.db.CaseGetOpenByPeer(ctx, tx, customerID, peerType, peerTarget, referenceType)
 		if selErr != nil {
+			if selErr == dbhandler.ErrDeadlock {
+				return nil, false, dbhandler.ErrDeadlock
+			}
 			return nil, false, fmt.Errorf("could not re-select after insert conflict. GetOrCreate. err: %v", selErr)
 		}
 		if winner != nil {

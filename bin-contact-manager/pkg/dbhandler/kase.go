@@ -50,6 +50,23 @@ func caseGetFromRow(rows *sql.Rows) (*kase.Case, error) {
 	return res, nil
 }
 
+// mysqlDeadlockErrno is MySQL's errno for "Deadlock found when trying to
+// get lock; try restarting transaction" (VOIP-1232).
+const mysqlDeadlockErrno = 1213
+
+// isMySQLDeadlock reports whether err is a MySQL deadlock (errno 1213).
+// Mirrors the existing *mysql_driver.MySQLError type-assertion idiom used
+// for the 1062/ErrDuplicate check below -- inlined per call site rather
+// than a shared cross-package helper, matching this codebase's existing
+// convention (see also interaction.go/address.go's own inline 1062
+// checks). SQLite (the test harness driver) has no deadlock concept, so
+// this is unconditionally false against SQLite errors -- consistent with
+// forUpdateSuffix's SQLite-has-no-real-locking rationale in main.go.
+func isMySQLDeadlock(err error) bool {
+	me, ok := err.(*mysql_driver.MySQLError)
+	return ok && me.Number == mysqlDeadlockErrno
+}
+
 // caseInsertExec is the shared implementation for CaseInsert/CaseInsertTx.
 func caseInsertExec(exec sqlExecutor, c *kase.Case) error {
 	fields, err := commondatabasehandler.PrepareFields(c)
@@ -76,6 +93,16 @@ func caseInsertExec(exec sqlExecutor, c *kase.Case) error {
 		if strings.Contains(err.Error(), "UNIQUE constraint failed") &&
 			strings.Contains(err.Error(), "open_peer_uk") {
 			return ErrDuplicate
+		}
+		// VOIP-1232: concurrent INSERTs racing on the same uq_case_open_peer
+		// value can surface as a deadlock (1213) instead of a clean 1062,
+		// per InnoDB's insert-intention gap-lock interaction. The caller
+		// (casehandler.GetOrCreate's outer retry loop) must discard the
+		// whole transaction (already server-side rolled back) and restart
+		// from a fresh BeginTx -- unlike ErrDuplicate, which is safely
+		// retryable within the SAME tx via a locked re-select.
+		if isMySQLDeadlock(err) {
+			return ErrDeadlock
 		}
 		return fmt.Errorf("could not execute. CaseInsert. err: %v", err)
 	}
@@ -157,6 +184,11 @@ func (h *handler) CaseGetOpenByPeer(ctx context.Context, tx *sql.Tx, customerID 
 
 	rows, err := tx.QueryContext(ctx, query, args...)
 	if err != nil {
+		// VOIP-1232: a FOR UPDATE select can itself be the victim of an
+		// InnoDB deadlock under concurrent same-tuple GetOrCreate calls.
+		if isMySQLDeadlock(err) {
+			return nil, ErrDeadlock
+		}
 		return nil, fmt.Errorf("could not query. CaseGetOpenByPeer. err: %v", err)
 	}
 	defer func() { _ = rows.Close() }()
@@ -192,6 +224,10 @@ func (h *handler) CaseGetByIDForUpdate(ctx context.Context, tx *sql.Tx, customer
 
 	rows, err := tx.QueryContext(ctx, query, args...)
 	if err != nil {
+		// VOIP-1232: see CaseGetOpenByPeer's identical rationale.
+		if isMySQLDeadlock(err) {
+			return nil, ErrDeadlock
+		}
 		return nil, fmt.Errorf("could not query. CaseGetByIDForUpdate. err: %v", err)
 	}
 	defer func() { _ = rows.Close() }()
@@ -232,6 +268,12 @@ func caseUpdateStatusClosedExec(exec sqlExecutor, customerID, id uuid.UUID, clos
 
 	result, err := exec.Exec(query, args...)
 	if err != nil {
+		// VOIP-1232: the timeout-close UPDATE (design §4's close-and-reopen
+		// branch) can also be a deadlock victim under concurrent same-tuple
+		// GetOrCreate calls.
+		if isMySQLDeadlock(err) {
+			return false, ErrDeadlock
+		}
 		return false, fmt.Errorf("could not execute. CaseUpdateStatusClosed. err: %v", err)
 	}
 
@@ -275,6 +317,11 @@ func caseUpdateTMUpdateExec(exec sqlExecutor, id uuid.UUID, tmUpdate *time.Time)
 	}
 
 	if _, err := exec.Exec(query, args...); err != nil {
+		// VOIP-1232: the final tm_update bump can itself deadlock under
+		// concurrent same-tuple GetOrCreate calls.
+		if isMySQLDeadlock(err) {
+			return ErrDeadlock
+		}
 		return fmt.Errorf("could not execute. CaseUpdateTMUpdate. err: %v", err)
 	}
 

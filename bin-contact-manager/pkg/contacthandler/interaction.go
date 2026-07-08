@@ -99,7 +99,7 @@ func (h *contactHandler) EventCallCreated(ctx context.Context, m *call.WebhookMe
 
 	c, err := h.caseHandler.GetOrCreate(ctx, m.CustomerID, local, peer.Type, peerTarget, "call", nil)
 	if err != nil {
-		return fmt.Errorf("could not get-or-create case. EventCallCreated. err: %v", err)
+		return fmt.Errorf("could not get-or-create case. EventCallCreated. err: %w", err)
 	}
 
 	i := interaction.Interaction{
@@ -153,7 +153,7 @@ func (h *contactHandler) EventConversationMessageCreated(ctx context.Context, m 
 
 	c, err := h.caseHandler.GetOrCreate(ctx, m.CustomerID, commonaddress.Address{}, peer.Type, peerTarget, "conversation_message", m.CaseID)
 	if err != nil {
-		return fmt.Errorf("could not get-or-create case. EventConversationMessageCreated. err: %v", err)
+		return fmt.Errorf("could not get-or-create case. EventConversationMessageCreated. err: %w", err)
 	}
 
 	// m.ID comes from the embedded commonidentity.Identity; use it directly.
