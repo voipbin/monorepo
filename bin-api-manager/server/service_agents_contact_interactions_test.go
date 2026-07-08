@@ -21,7 +21,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func Test_GetServiceAgentsInteractions(t *testing.T) {
+func Test_GetServiceAgentsContactInteractions(t *testing.T) {
 	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
 	agentID := uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c")
 
@@ -44,7 +44,7 @@ func Test_GetServiceAgentsInteractions(t *testing.T) {
 				},
 				Permission: amagent.PermissionCustomerAgent,
 			}),
-			reqQuery:      "/service_agents/interactions?contact_id=11111111-0000-0000-0000-000000000001",
+			reqQuery:      "/service_agents/contact_interactions?contact_id=11111111-0000-0000-0000-000000000001",
 			responseItems: []*cminteraction.Interaction{},
 			responseToken: "",
 			expectStatus:  http.StatusOK,
@@ -58,7 +58,7 @@ func Test_GetServiceAgentsInteractions(t *testing.T) {
 				},
 				Permission: amagent.PermissionCustomerAdmin,
 			}),
-			reqQuery:      "/service_agents/interactions?contact_id=11111111-0000-0000-0000-000000000001",
+			reqQuery:      "/service_agents/contact_interactions?contact_id=11111111-0000-0000-0000-000000000001",
 			responseItems: []*cminteraction.Interaction{},
 			responseToken: "",
 			expectStatus:  http.StatusOK,
@@ -72,7 +72,7 @@ func Test_GetServiceAgentsInteractions(t *testing.T) {
 				},
 				Permission: amagent.PermissionCustomerAgent,
 			}),
-			reqQuery:      "/service_agents/interactions",
+			reqQuery:      "/service_agents/contact_interactions",
 			responseItems: []*cminteraction.Interaction{},
 			responseToken: "",
 			expectStatus:  http.StatusOK,
@@ -86,7 +86,7 @@ func Test_GetServiceAgentsInteractions(t *testing.T) {
 				},
 				Permission: amagent.PermissionCustomerAgent,
 			}),
-			reqQuery:      "/service_agents/interactions?since=7d",
+			reqQuery:      "/service_agents/contact_interactions?since=7d",
 			responseItems: []*cminteraction.Interaction{},
 			responseToken: "",
 			expectStatus:  http.StatusOK,
@@ -100,7 +100,7 @@ func Test_GetServiceAgentsInteractions(t *testing.T) {
 				},
 				Permission: amagent.PermissionCustomerAgent,
 			}),
-			reqQuery:     "/service_agents/interactions?since=7days",
+			reqQuery:     "/service_agents/contact_interactions?since=7days",
 			expectStatus: http.StatusBadRequest,
 		},
 		{
@@ -112,7 +112,7 @@ func Test_GetServiceAgentsInteractions(t *testing.T) {
 				},
 				Permission: amagent.PermissionCustomerAgent,
 			}),
-			reqQuery:     "/service_agents/interactions?since=181d",
+			reqQuery:     "/service_agents/contact_interactions?since=181d",
 			expectStatus: http.StatusBadRequest,
 		},
 		{
@@ -124,13 +124,13 @@ func Test_GetServiceAgentsInteractions(t *testing.T) {
 				},
 				Permission: amagent.PermissionCustomerAgent,
 			}),
-			reqQuery:     "/service_agents/interactions?contact_id=11111111-0000-0000-0000-000000000001&peer_type=tel&peer_target=%2B155****1111",
+			reqQuery:     "/service_agents/contact_interactions?contact_id=11111111-0000-0000-0000-000000000001&peer_type=tel&peer_target=%2B155****1111",
 			expectStatus: http.StatusBadRequest,
 		},
 		{
 			name:         "unauthenticated",
 			agent:        nil,
-			reqQuery:     "/service_agents/interactions?contact_id=11111111-0000-0000-0000-000000000001",
+			reqQuery:     "/service_agents/contact_interactions?contact_id=11111111-0000-0000-0000-000000000001",
 			expectStatus: http.StatusUnauthorized,
 		},
 	}
@@ -169,7 +169,7 @@ func Test_GetServiceAgentsInteractions(t *testing.T) {
 	}
 }
 
-func Test_GetServiceAgentsInteractionsUnresolved(t *testing.T) {
+func Test_GetServiceAgentsContactInteractionsUnresolved(t *testing.T) {
 	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
 	agentID := uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c")
 
@@ -191,7 +191,7 @@ func Test_GetServiceAgentsInteractionsUnresolved(t *testing.T) {
 				},
 				Permission: amagent.PermissionCustomerAgent,
 			}),
-			reqQuery:      "/service_agents/interactions/unresolved",
+			reqQuery:      "/service_agents/contact_interactions/unresolved",
 			responseItems: []*cminteraction.Interaction{},
 			responseToken: "",
 			expectStatus:  http.StatusOK,
@@ -205,13 +205,13 @@ func Test_GetServiceAgentsInteractionsUnresolved(t *testing.T) {
 				},
 				Permission: amagent.PermissionCustomerAgent,
 			}),
-			reqQuery:     "/service_agents/interactions/unresolved?since=30",
+			reqQuery:     "/service_agents/contact_interactions/unresolved?since=30",
 			expectStatus: http.StatusBadRequest,
 		},
 		{
 			name:         "unauthenticated",
 			agent:        nil,
-			reqQuery:     "/service_agents/interactions/unresolved",
+			reqQuery:     "/service_agents/contact_interactions/unresolved",
 			expectStatus: http.StatusUnauthorized,
 		},
 	}
@@ -250,7 +250,7 @@ func Test_GetServiceAgentsInteractionsUnresolved(t *testing.T) {
 	}
 }
 
-func Test_GetServiceAgentsInteractionsId(t *testing.T) {
+func Test_GetServiceAgentsContactInteractionsId(t *testing.T) {
 	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
 	agentID := uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c")
 	interactionID := uuid.FromStringOrNil("11111111-0000-0000-0000-000000000001")
@@ -272,7 +272,7 @@ func Test_GetServiceAgentsInteractionsId(t *testing.T) {
 				},
 				Permission: amagent.PermissionCustomerAgent,
 			}),
-			reqQuery: "/service_agents/interactions/11111111-0000-0000-0000-000000000001",
+			reqQuery: "/service_agents/contact_interactions/11111111-0000-0000-0000-000000000001",
 			responseInteraction: &cminteraction.Interaction{
 				ID:         interactionID,
 				CustomerID: customerID,
@@ -283,7 +283,7 @@ func Test_GetServiceAgentsInteractionsId(t *testing.T) {
 		{
 			name:         "unauthenticated",
 			agent:        nil,
-			reqQuery:     "/service_agents/interactions/11111111-0000-0000-0000-000000000001",
+			reqQuery:     "/service_agents/contact_interactions/11111111-0000-0000-0000-000000000001",
 			expectStatus: http.StatusUnauthorized,
 		},
 	}
@@ -322,7 +322,7 @@ func Test_GetServiceAgentsInteractionsId(t *testing.T) {
 	}
 }
 
-func Test_PostServiceAgentsInteractionsIdResolutions(t *testing.T) {
+func Test_PostServiceAgentsContactInteractionsIdResolutions(t *testing.T) {
 	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
 	agentID := uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c")
 	interactionID := uuid.FromStringOrNil("11111111-0000-0000-0000-000000000001")
@@ -347,7 +347,7 @@ func Test_PostServiceAgentsInteractionsIdResolutions(t *testing.T) {
 				},
 				Permission: amagent.PermissionCustomerAgent,
 			}),
-			reqQuery: "/service_agents/interactions/11111111-0000-0000-0000-000000000001/resolutions",
+			reqQuery: "/service_agents/contact_interactions/11111111-0000-0000-0000-000000000001/resolutions",
 			reqBody: map[string]string{
 				"contact_id":       contactID.String(),
 				"resolution_type":  "positive",
@@ -365,7 +365,7 @@ func Test_PostServiceAgentsInteractionsIdResolutions(t *testing.T) {
 		{
 			name:         "unauthenticated",
 			agent:        nil,
-			reqQuery:     "/service_agents/interactions/11111111-0000-0000-0000-000000000001/resolutions",
+			reqQuery:     "/service_agents/contact_interactions/11111111-0000-0000-0000-000000000001/resolutions",
 			reqBody:      map[string]string{},
 			expectStatus: http.StatusUnauthorized,
 		},
@@ -407,7 +407,7 @@ func Test_PostServiceAgentsInteractionsIdResolutions(t *testing.T) {
 	}
 }
 
-func Test_DeleteServiceAgentsInteractionsIdResolutionsRid(t *testing.T) {
+func Test_DeleteServiceAgentsContactInteractionsIdResolutionsRid(t *testing.T) {
 	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
 	agentID := uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c")
 	interactionID := uuid.FromStringOrNil("11111111-0000-0000-0000-000000000001")
@@ -429,13 +429,13 @@ func Test_DeleteServiceAgentsInteractionsIdResolutionsRid(t *testing.T) {
 				},
 				Permission: amagent.PermissionCustomerAgent,
 			}),
-			reqQuery:     "/service_agents/interactions/11111111-0000-0000-0000-000000000001/resolutions/44444444-0000-0000-0000-000000000004",
+			reqQuery:     "/service_agents/contact_interactions/11111111-0000-0000-0000-000000000001/resolutions/44444444-0000-0000-0000-000000000004",
 			expectStatus: http.StatusOK,
 		},
 		{
 			name:         "unauthenticated",
 			agent:        nil,
-			reqQuery:     "/service_agents/interactions/11111111-0000-0000-0000-000000000001/resolutions/44444444-0000-0000-0000-000000000004",
+			reqQuery:     "/service_agents/contact_interactions/11111111-0000-0000-0000-000000000001/resolutions/44444444-0000-0000-0000-000000000004",
 			expectStatus: http.StatusUnauthorized,
 		},
 	}

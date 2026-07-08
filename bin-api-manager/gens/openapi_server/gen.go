@@ -1012,18 +1012,6 @@ const (
 	PostCallsIdRecordingStartJSONBodyFormatWav PostCallsIdRecordingStartJSONBodyFormat = "wav"
 )
 
-// Defines values for GetCasesParamsStatus.
-const (
-	GetCasesParamsStatusClosed GetCasesParamsStatus = "closed"
-	GetCasesParamsStatusOpen   GetCasesParamsStatus = "open"
-)
-
-// Defines values for PostCasesIdNotesJSONBodyAuthorType.
-const (
-	PostCasesIdNotesJSONBodyAuthorTypeAgent  PostCasesIdNotesJSONBodyAuthorType = "agent"
-	PostCasesIdNotesJSONBodyAuthorTypeSystem PostCasesIdNotesJSONBodyAuthorType = "system"
-)
-
 // Defines values for PostConferencesIdRecordingStartJSONBodyFormat.
 const (
 	PostConferencesIdRecordingStartJSONBodyFormatWav PostConferencesIdRecordingStartJSONBodyFormat = "wav"
@@ -1039,6 +1027,31 @@ const (
 const (
 	PostContactAddressesJSONBodyTypeEmail PostContactAddressesJSONBodyType = "email"
 	PostContactAddressesJSONBodyTypeTel   PostContactAddressesJSONBodyType = "tel"
+)
+
+// Defines values for GetContactCasesParamsStatus.
+const (
+	GetContactCasesParamsStatusClosed GetContactCasesParamsStatus = "closed"
+	GetContactCasesParamsStatusOpen   GetContactCasesParamsStatus = "open"
+)
+
+// Defines values for PostContactCasesIdNotesJSONBodyAuthorType.
+const (
+	PostContactCasesIdNotesJSONBodyAuthorTypeAgent  PostContactCasesIdNotesJSONBodyAuthorType = "agent"
+	PostContactCasesIdNotesJSONBodyAuthorTypeSystem PostContactCasesIdNotesJSONBodyAuthorType = "system"
+)
+
+// Defines values for PostContactInteractionsIdResolutionsJSONBodyResolutionType.
+const (
+	PostContactInteractionsIdResolutionsJSONBodyResolutionTypeNegative PostContactInteractionsIdResolutionsJSONBodyResolutionType = "negative"
+	PostContactInteractionsIdResolutionsJSONBodyResolutionTypePositive PostContactInteractionsIdResolutionsJSONBodyResolutionType = "positive"
+)
+
+// Defines values for PostContactInteractionsIdResolutionsJSONBodyResolvedByType.
+const (
+	PostContactInteractionsIdResolutionsJSONBodyResolvedByTypeAgent  PostContactInteractionsIdResolutionsJSONBodyResolvedByType = "agent"
+	PostContactInteractionsIdResolutionsJSONBodyResolvedByTypeRule   PostContactInteractionsIdResolutionsJSONBodyResolvedByType = "rule"
+	PostContactInteractionsIdResolutionsJSONBodyResolvedByTypeSystem PostContactInteractionsIdResolutionsJSONBodyResolvedByType = "system"
 )
 
 // Defines values for PostContactsJSONBodyAddressesType.
@@ -1073,19 +1086,6 @@ const (
 	Message GetConversationsJSONBodyType = "message"
 )
 
-// Defines values for PostInteractionsIdResolutionsJSONBodyResolutionType.
-const (
-	PostInteractionsIdResolutionsJSONBodyResolutionTypeNegative PostInteractionsIdResolutionsJSONBodyResolutionType = "negative"
-	PostInteractionsIdResolutionsJSONBodyResolutionTypePositive PostInteractionsIdResolutionsJSONBodyResolutionType = "positive"
-)
-
-// Defines values for PostInteractionsIdResolutionsJSONBodyResolvedByType.
-const (
-	PostInteractionsIdResolutionsJSONBodyResolvedByTypeAgent  PostInteractionsIdResolutionsJSONBodyResolvedByType = "agent"
-	PostInteractionsIdResolutionsJSONBodyResolvedByTypeRule   PostInteractionsIdResolutionsJSONBodyResolvedByType = "rule"
-	PostInteractionsIdResolutionsJSONBodyResolvedByTypeSystem PostInteractionsIdResolutionsJSONBodyResolvedByType = "system"
-)
-
 // Defines values for PostProvidercallsJSONBodyAnonymous.
 const (
 	PostProvidercallsJSONBodyAnonymousAuto PostProvidercallsJSONBodyAnonymous = "auto"
@@ -1103,6 +1103,19 @@ const (
 const (
 	PostServiceAgentsContactAddressesJSONBodyTypeEmail PostServiceAgentsContactAddressesJSONBodyType = "email"
 	PostServiceAgentsContactAddressesJSONBodyTypeTel   PostServiceAgentsContactAddressesJSONBodyType = "tel"
+)
+
+// Defines values for PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolutionType.
+const (
+	Negative PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolutionType = "negative"
+	Positive PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolutionType = "positive"
+)
+
+// Defines values for PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolvedByType.
+const (
+	Agent  PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolvedByType = "agent"
+	Rule   PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolvedByType = "rule"
+	System PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolvedByType = "system"
 )
 
 // Defines values for PostServiceAgentsContactsJSONBodyAddressesType.
@@ -1134,19 +1147,6 @@ const (
 // Defines values for PostServiceAgentsFilesMultipartBodyType.
 const (
 	Talk PostServiceAgentsFilesMultipartBodyType = "talk"
-)
-
-// Defines values for PostServiceAgentsInteractionsIdResolutionsJSONBodyResolutionType.
-const (
-	Negative PostServiceAgentsInteractionsIdResolutionsJSONBodyResolutionType = "negative"
-	Positive PostServiceAgentsInteractionsIdResolutionsJSONBodyResolutionType = "positive"
-)
-
-// Defines values for PostServiceAgentsInteractionsIdResolutionsJSONBodyResolvedByType.
-const (
-	Agent  PostServiceAgentsInteractionsIdResolutionsJSONBodyResolvedByType = "agent"
-	Rule   PostServiceAgentsInteractionsIdResolutionsJSONBodyResolvedByType = "rule"
-	System PostServiceAgentsInteractionsIdResolutionsJSONBodyResolvedByType = "system"
 )
 
 // Defines values for PostStorageFilesMultipartBodyType.
@@ -2737,7 +2737,7 @@ type ContactManagerCaseNote struct {
 	// AuthorType Type of the note's author.
 	AuthorType *ContactManagerCaseNoteAuthorType `json:"author_type,omitempty"`
 
-	// CaseId The case this note belongs to. The ID is returned from GET /v1.0/cases response.
+	// CaseId The case this note belongs to. The ID is returned from GET /v1.0/contact_cases response.
 	CaseId *openapi_types.UUID `json:"case_id,omitempty"`
 
 	// CustomerId Unique identifier of the associated customer.
@@ -5744,63 +5744,6 @@ type PutCampaignsIdStatusJSONBody struct {
 	Status CampaignManagerCampaignStatus `json:"status"`
 }
 
-// GetCasesParams defines parameters for GetCases.
-type GetCasesParams struct {
-	// Status Filter by case status.
-	Status *GetCasesParamsStatus `form:"status,omitempty" json:"status,omitempty"`
-
-	// OwnerType Filter by owner type.
-	OwnerType *string `form:"owner_type,omitempty" json:"owner_type,omitempty"`
-
-	// OwnerId Filter by owner ID.
-	OwnerId *openapi_types.UUID `form:"owner_id,omitempty" json:"owner_id,omitempty"`
-
-	// PageSize Number of results to return per page.
-	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
-
-	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
-	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
-}
-
-// GetCasesParamsStatus defines parameters for GetCases.
-type GetCasesParamsStatus string
-
-// GetCasesUnresolvedParams defines parameters for GetCasesUnresolved.
-type GetCasesUnresolvedParams struct {
-	// PageSize Number of results to return per page.
-	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
-
-	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
-	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
-}
-
-// PostCasesIdMessagesJSONBody defines parameters for PostCasesIdMessages.
-type PostCasesIdMessagesJSONBody struct {
-	// Destination The customer's number to send to. Must be attributable to this case (the matched Contact's address, or the case's peer_target).
-	Destination string `json:"destination"`
-
-	// Source The business's own number to send from. Must be an active, normal number owned by this case's customer.
-	Source string `json:"source"`
-
-	// Text The text content of the message.
-	Text string `json:"text"`
-}
-
-// PostCasesIdNotesJSONBody defines parameters for PostCasesIdNotes.
-type PostCasesIdNotesJSONBody struct {
-	// AuthorId ID of the agent authoring this note. Nullable for system-authored notes.
-	AuthorId *openapi_types.UUID `json:"author_id,omitempty"`
-
-	// AuthorType Type of the note's author.
-	AuthorType PostCasesIdNotesJSONBodyAuthorType `json:"author_type"`
-
-	// Text The note's text content.
-	Text string `json:"text"`
-}
-
-// PostCasesIdNotesJSONBodyAuthorType defines parameters for PostCasesIdNotes.
-type PostCasesIdNotesJSONBodyAuthorType string
-
 // GetConferencecallsParams defines parameters for GetConferencecalls.
 type GetConferencecallsParams struct {
 	// PageSize Number of results to return per page.
@@ -5936,6 +5879,117 @@ type PutContactAddressesIdJSONBody struct {
 type PostContactAddressesIdClaimJSONBody struct {
 	ContactId openapi_types.UUID `json:"contact_id"`
 }
+
+// GetContactCasesParams defines parameters for GetContactCases.
+type GetContactCasesParams struct {
+	// Status Filter by case status.
+	Status *GetContactCasesParamsStatus `form:"status,omitempty" json:"status,omitempty"`
+
+	// OwnerType Filter by owner type.
+	OwnerType *string `form:"owner_type,omitempty" json:"owner_type,omitempty"`
+
+	// OwnerId Filter by owner ID.
+	OwnerId *openapi_types.UUID `form:"owner_id,omitempty" json:"owner_id,omitempty"`
+
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// GetContactCasesParamsStatus defines parameters for GetContactCases.
+type GetContactCasesParamsStatus string
+
+// GetContactCasesUnresolvedParams defines parameters for GetContactCasesUnresolved.
+type GetContactCasesUnresolvedParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostContactCasesIdMessagesJSONBody defines parameters for PostContactCasesIdMessages.
+type PostContactCasesIdMessagesJSONBody struct {
+	// Destination The customer's number to send to. Must be attributable to this case (the matched Contact's address, or the case's peer_target).
+	Destination string `json:"destination"`
+
+	// Source The business's own number to send from. Must be an active, normal number owned by this case's customer.
+	Source string `json:"source"`
+
+	// Text The text content of the message.
+	Text string `json:"text"`
+}
+
+// PostContactCasesIdNotesJSONBody defines parameters for PostContactCasesIdNotes.
+type PostContactCasesIdNotesJSONBody struct {
+	// AuthorId ID of the agent authoring this note. Nullable for system-authored notes.
+	AuthorId *openapi_types.UUID `json:"author_id,omitempty"`
+
+	// AuthorType Type of the note's author.
+	AuthorType PostContactCasesIdNotesJSONBodyAuthorType `json:"author_type"`
+
+	// Text The note's text content.
+	Text string `json:"text"`
+}
+
+// PostContactCasesIdNotesJSONBodyAuthorType defines parameters for PostContactCasesIdNotes.
+type PostContactCasesIdNotesJSONBodyAuthorType string
+
+// GetContactInteractionsParams defines parameters for GetContactInteractions.
+type GetContactInteractionsParams struct {
+	// PeerType Remote endpoint type (e.g. "tel", "email"). Required with peer_target.
+	PeerType *string `form:"peer_type,omitempty" json:"peer_type,omitempty"`
+
+	// PeerTarget Remote endpoint target (e.g. "+15551234567"). Required with peer_type.
+	PeerTarget *string `form:"peer_target,omitempty" json:"peer_target,omitempty"`
+
+	// ContactId Filter by resolved contact ID.
+	ContactId *openapi_types.UUID `form:"contact_id,omitempty" json:"contact_id,omitempty"`
+
+	// AddressId Filter by contact address ID.
+	AddressId *openapi_types.UUID `form:"address_id,omitempty" json:"address_id,omitempty"`
+
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// GetContactInteractionsUnresolvedParams defines parameters for GetContactInteractionsUnresolved.
+type GetContactInteractionsUnresolvedParams struct {
+	// Since Lookback window in days (e.g. "7d", "30d"). Default "30d", max "180d".
+	Since *string `form:"since,omitempty" json:"since,omitempty"`
+
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostContactInteractionsIdResolutionsJSONBody defines parameters for PostContactInteractionsIdResolutions.
+type PostContactInteractionsIdResolutionsJSONBody struct {
+	// ContactId The contact to attach or suppress this interaction for.
+	ContactId openapi_types.UUID `json:"contact_id"`
+
+	// ResolutionType Type of resolution.
+	ResolutionType PostContactInteractionsIdResolutionsJSONBodyResolutionType `json:"resolution_type"`
+
+	// ResolvedById ID of the agent, system, or rule that resolved the interaction.
+	ResolvedById openapi_types.UUID `json:"resolved_by_id"`
+
+	// ResolvedByType Who resolved this interaction.
+	ResolvedByType PostContactInteractionsIdResolutionsJSONBodyResolvedByType `json:"resolved_by_type"`
+}
+
+// PostContactInteractionsIdResolutionsJSONBodyResolutionType defines parameters for PostContactInteractionsIdResolutions.
+type PostContactInteractionsIdResolutionsJSONBodyResolutionType string
+
+// PostContactInteractionsIdResolutionsJSONBodyResolvedByType defines parameters for PostContactInteractionsIdResolutions.
+type PostContactInteractionsIdResolutionsJSONBodyResolvedByType string
 
 // GetContactsParams defines parameters for GetContacts.
 type GetContactsParams struct {
@@ -6338,60 +6392,6 @@ type PostGroupcallsJSONBody struct {
 	// Source Contains source or destination detail info.
 	Source CommonAddress `json:"source"`
 }
-
-// GetInteractionsParams defines parameters for GetInteractions.
-type GetInteractionsParams struct {
-	// PeerType Remote endpoint type (e.g. "tel", "email"). Required with peer_target.
-	PeerType *string `form:"peer_type,omitempty" json:"peer_type,omitempty"`
-
-	// PeerTarget Remote endpoint target (e.g. "+15551234567"). Required with peer_type.
-	PeerTarget *string `form:"peer_target,omitempty" json:"peer_target,omitempty"`
-
-	// ContactId Filter by resolved contact ID.
-	ContactId *openapi_types.UUID `form:"contact_id,omitempty" json:"contact_id,omitempty"`
-
-	// AddressId Filter by contact address ID.
-	AddressId *openapi_types.UUID `form:"address_id,omitempty" json:"address_id,omitempty"`
-
-	// PageSize Number of results to return per page.
-	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
-
-	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
-	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
-}
-
-// GetInteractionsUnresolvedParams defines parameters for GetInteractionsUnresolved.
-type GetInteractionsUnresolvedParams struct {
-	// Since Lookback window in days (e.g. "7d", "30d"). Default "30d", max "180d".
-	Since *string `form:"since,omitempty" json:"since,omitempty"`
-
-	// PageSize Number of results to return per page.
-	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
-
-	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
-	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
-}
-
-// PostInteractionsIdResolutionsJSONBody defines parameters for PostInteractionsIdResolutions.
-type PostInteractionsIdResolutionsJSONBody struct {
-	// ContactId The contact to attach or suppress this interaction for.
-	ContactId openapi_types.UUID `json:"contact_id"`
-
-	// ResolutionType Type of resolution.
-	ResolutionType PostInteractionsIdResolutionsJSONBodyResolutionType `json:"resolution_type"`
-
-	// ResolvedById ID of the agent, system, or rule that resolved the interaction.
-	ResolvedById openapi_types.UUID `json:"resolved_by_id"`
-
-	// ResolvedByType Who resolved this interaction.
-	ResolvedByType PostInteractionsIdResolutionsJSONBodyResolvedByType `json:"resolved_by_type"`
-}
-
-// PostInteractionsIdResolutionsJSONBodyResolutionType defines parameters for PostInteractionsIdResolutions.
-type PostInteractionsIdResolutionsJSONBodyResolutionType string
-
-// PostInteractionsIdResolutionsJSONBodyResolvedByType defines parameters for PostInteractionsIdResolutions.
-type PostInteractionsIdResolutionsJSONBodyResolvedByType string
 
 // GetMessagesParams defines parameters for GetMessages.
 type GetMessagesParams struct {
@@ -6942,6 +6942,65 @@ type PostServiceAgentsContactAddressesIdClaimJSONBody struct {
 	ContactId openapi_types.UUID `json:"contact_id"`
 }
 
+// GetServiceAgentsContactInteractionsParams defines parameters for GetServiceAgentsContactInteractions.
+type GetServiceAgentsContactInteractionsParams struct {
+	// PeerType Remote endpoint type (e.g. "tel", "email"). Required with peer_target.
+	PeerType *string `form:"peer_type,omitempty" json:"peer_type,omitempty"`
+
+	// PeerTarget Remote endpoint target (e.g. "+155****4567"). Required with peer_type.
+	PeerTarget *string `form:"peer_target,omitempty" json:"peer_target,omitempty"`
+
+	// ContactId Filter by resolved contact ID.
+	ContactId *openapi_types.UUID `form:"contact_id,omitempty" json:"contact_id,omitempty"`
+
+	// AddressId Filter by contact address ID.
+	AddressId *openapi_types.UUID `form:"address_id,omitempty" json:"address_id,omitempty"`
+
+	// Since Lookback window in days (e.g. "7d", "30d"), used only when no filter
+	// (peer_type+peer_target, contact_id, address_id) is provided. Default "30d", max "180d".
+	// Ignored when a filter is provided.
+	Since *string `form:"since,omitempty" json:"since,omitempty"`
+
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// GetServiceAgentsContactInteractionsUnresolvedParams defines parameters for GetServiceAgentsContactInteractionsUnresolved.
+type GetServiceAgentsContactInteractionsUnresolvedParams struct {
+	// Since Lookback window in days (e.g. "7d", "30d"). Default "30d", max "180d".
+	Since *string `form:"since,omitempty" json:"since,omitempty"`
+
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostServiceAgentsContactInteractionsIdResolutionsJSONBody defines parameters for PostServiceAgentsContactInteractionsIdResolutions.
+type PostServiceAgentsContactInteractionsIdResolutionsJSONBody struct {
+	// ContactId The contact to attach or suppress this interaction for.
+	ContactId openapi_types.UUID `json:"contact_id"`
+
+	// ResolutionType Type of resolution.
+	ResolutionType PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolutionType `json:"resolution_type"`
+
+	// ResolvedById ID of the agent, system, or rule that resolved the interaction.
+	ResolvedById openapi_types.UUID `json:"resolved_by_id"`
+
+	// ResolvedByType Who resolved this interaction.
+	ResolvedByType PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolvedByType `json:"resolved_by_type"`
+}
+
+// PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolutionType defines parameters for PostServiceAgentsContactInteractionsIdResolutions.
+type PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolutionType string
+
+// PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolvedByType defines parameters for PostServiceAgentsContactInteractionsIdResolutions.
+type PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolvedByType string
+
 // GetServiceAgentsContactsParams defines parameters for GetServiceAgentsContacts.
 type GetServiceAgentsContactsParams struct {
 	// PageSize Number of results to return per page.
@@ -7114,65 +7173,6 @@ type PostServiceAgentsFilesMultipartBody struct {
 
 // PostServiceAgentsFilesMultipartBodyType defines parameters for PostServiceAgentsFiles.
 type PostServiceAgentsFilesMultipartBodyType string
-
-// GetServiceAgentsInteractionsParams defines parameters for GetServiceAgentsInteractions.
-type GetServiceAgentsInteractionsParams struct {
-	// PeerType Remote endpoint type (e.g. "tel", "email"). Required with peer_target.
-	PeerType *string `form:"peer_type,omitempty" json:"peer_type,omitempty"`
-
-	// PeerTarget Remote endpoint target (e.g. "+155****4567"). Required with peer_type.
-	PeerTarget *string `form:"peer_target,omitempty" json:"peer_target,omitempty"`
-
-	// ContactId Filter by resolved contact ID.
-	ContactId *openapi_types.UUID `form:"contact_id,omitempty" json:"contact_id,omitempty"`
-
-	// AddressId Filter by contact address ID.
-	AddressId *openapi_types.UUID `form:"address_id,omitempty" json:"address_id,omitempty"`
-
-	// Since Lookback window in days (e.g. "7d", "30d"), used only when no filter
-	// (peer_type+peer_target, contact_id, address_id) is provided. Default "30d", max "180d".
-	// Ignored when a filter is provided.
-	Since *string `form:"since,omitempty" json:"since,omitempty"`
-
-	// PageSize Number of results to return per page.
-	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
-
-	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
-	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
-}
-
-// GetServiceAgentsInteractionsUnresolvedParams defines parameters for GetServiceAgentsInteractionsUnresolved.
-type GetServiceAgentsInteractionsUnresolvedParams struct {
-	// Since Lookback window in days (e.g. "7d", "30d"). Default "30d", max "180d".
-	Since *string `form:"since,omitempty" json:"since,omitempty"`
-
-	// PageSize Number of results to return per page.
-	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
-
-	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
-	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
-}
-
-// PostServiceAgentsInteractionsIdResolutionsJSONBody defines parameters for PostServiceAgentsInteractionsIdResolutions.
-type PostServiceAgentsInteractionsIdResolutionsJSONBody struct {
-	// ContactId The contact to attach or suppress this interaction for.
-	ContactId openapi_types.UUID `json:"contact_id"`
-
-	// ResolutionType Type of resolution.
-	ResolutionType PostServiceAgentsInteractionsIdResolutionsJSONBodyResolutionType `json:"resolution_type"`
-
-	// ResolvedById ID of the agent, system, or rule that resolved the interaction.
-	ResolvedById openapi_types.UUID `json:"resolved_by_id"`
-
-	// ResolvedByType Who resolved this interaction.
-	ResolvedByType PostServiceAgentsInteractionsIdResolutionsJSONBodyResolvedByType `json:"resolved_by_type"`
-}
-
-// PostServiceAgentsInteractionsIdResolutionsJSONBodyResolutionType defines parameters for PostServiceAgentsInteractionsIdResolutions.
-type PostServiceAgentsInteractionsIdResolutionsJSONBodyResolutionType string
-
-// PostServiceAgentsInteractionsIdResolutionsJSONBodyResolvedByType defines parameters for PostServiceAgentsInteractionsIdResolutions.
-type PostServiceAgentsInteractionsIdResolutionsJSONBodyResolvedByType string
 
 // PutServiceAgentsMeJSONBody defines parameters for PutServiceAgentsMe.
 type PutServiceAgentsMeJSONBody struct {
@@ -7719,12 +7719,6 @@ type PutCampaignsIdServiceLevelJSONRequestBody PutCampaignsIdServiceLevelJSONBod
 // PutCampaignsIdStatusJSONRequestBody defines body for PutCampaignsIdStatus for application/json ContentType.
 type PutCampaignsIdStatusJSONRequestBody PutCampaignsIdStatusJSONBody
 
-// PostCasesIdMessagesJSONRequestBody defines body for PostCasesIdMessages for application/json ContentType.
-type PostCasesIdMessagesJSONRequestBody PostCasesIdMessagesJSONBody
-
-// PostCasesIdNotesJSONRequestBody defines body for PostCasesIdNotes for application/json ContentType.
-type PostCasesIdNotesJSONRequestBody PostCasesIdNotesJSONBody
-
 // PostConferencesJSONRequestBody defines body for PostConferences for application/json ContentType.
 type PostConferencesJSONRequestBody PostConferencesJSONBody
 
@@ -7745,6 +7739,15 @@ type PutContactAddressesIdJSONRequestBody PutContactAddressesIdJSONBody
 
 // PostContactAddressesIdClaimJSONRequestBody defines body for PostContactAddressesIdClaim for application/json ContentType.
 type PostContactAddressesIdClaimJSONRequestBody PostContactAddressesIdClaimJSONBody
+
+// PostContactCasesIdMessagesJSONRequestBody defines body for PostContactCasesIdMessages for application/json ContentType.
+type PostContactCasesIdMessagesJSONRequestBody PostContactCasesIdMessagesJSONBody
+
+// PostContactCasesIdNotesJSONRequestBody defines body for PostContactCasesIdNotes for application/json ContentType.
+type PostContactCasesIdNotesJSONRequestBody PostContactCasesIdNotesJSONBody
+
+// PostContactInteractionsIdResolutionsJSONRequestBody defines body for PostContactInteractionsIdResolutions for application/json ContentType.
+type PostContactInteractionsIdResolutionsJSONRequestBody PostContactInteractionsIdResolutionsJSONBody
 
 // PostContactsJSONRequestBody defines body for PostContacts for application/json ContentType.
 type PostContactsJSONRequestBody PostContactsJSONBody
@@ -7814,9 +7817,6 @@ type PutFlowsIdJSONRequestBody PutFlowsIdJSONBody
 
 // PostGroupcallsJSONRequestBody defines body for PostGroupcalls for application/json ContentType.
 type PostGroupcallsJSONRequestBody PostGroupcallsJSONBody
-
-// PostInteractionsIdResolutionsJSONRequestBody defines body for PostInteractionsIdResolutions for application/json ContentType.
-type PostInteractionsIdResolutionsJSONRequestBody PostInteractionsIdResolutionsJSONBody
 
 // PostMessagesJSONRequestBody defines body for PostMessages for application/json ContentType.
 type PostMessagesJSONRequestBody PostMessagesJSONBody
@@ -7917,6 +7917,9 @@ type PutServiceAgentsContactAddressesIdJSONRequestBody PutServiceAgentsContactAd
 // PostServiceAgentsContactAddressesIdClaimJSONRequestBody defines body for PostServiceAgentsContactAddressesIdClaim for application/json ContentType.
 type PostServiceAgentsContactAddressesIdClaimJSONRequestBody PostServiceAgentsContactAddressesIdClaimJSONBody
 
+// PostServiceAgentsContactInteractionsIdResolutionsJSONRequestBody defines body for PostServiceAgentsContactInteractionsIdResolutions for application/json ContentType.
+type PostServiceAgentsContactInteractionsIdResolutionsJSONRequestBody PostServiceAgentsContactInteractionsIdResolutionsJSONBody
+
 // PostServiceAgentsContactsJSONRequestBody defines body for PostServiceAgentsContacts for application/json ContentType.
 type PostServiceAgentsContactsJSONRequestBody PostServiceAgentsContactsJSONBody
 
@@ -7940,9 +7943,6 @@ type PostServiceAgentsConversationsIdMessagesJSONRequestBody PostServiceAgentsCo
 
 // PostServiceAgentsFilesMultipartRequestBody defines body for PostServiceAgentsFiles for multipart/form-data ContentType.
 type PostServiceAgentsFilesMultipartRequestBody PostServiceAgentsFilesMultipartBody
-
-// PostServiceAgentsInteractionsIdResolutionsJSONRequestBody defines body for PostServiceAgentsInteractionsIdResolutions for application/json ContentType.
-type PostServiceAgentsInteractionsIdResolutionsJSONRequestBody PostServiceAgentsInteractionsIdResolutionsJSONBody
 
 // PutServiceAgentsMeJSONRequestBody defines body for PutServiceAgentsMe for application/json ContentType.
 type PutServiceAgentsMeJSONRequestBody PutServiceAgentsMeJSONBody
@@ -8336,33 +8336,6 @@ type ServerInterface interface {
 	// Update campaign status
 	// (PUT /campaigns/{id}/status)
 	PutCampaignsIdStatus(c *gin.Context, id string)
-	// List cases
-	// (GET /cases)
-	GetCases(c *gin.Context, params GetCasesParams)
-	// List unresolved cases
-	// (GET /cases/unresolved)
-	GetCasesUnresolved(c *gin.Context, params GetCasesUnresolvedParams)
-	// Get a case
-	// (GET /cases/{id})
-	GetCasesId(c *gin.Context, id openapi_types.UUID)
-	// Close a case
-	// (POST /cases/{id}/close)
-	PostCasesIdClose(c *gin.Context, id openapi_types.UUID)
-	// Continue a closed case
-	// (POST /cases/{id}/continue)
-	PostCasesIdContinue(c *gin.Context, id openapi_types.UUID)
-	// Send a message from a case
-	// (POST /cases/{id}/messages)
-	PostCasesIdMessages(c *gin.Context, id openapi_types.UUID)
-	// List notes for a case
-	// (GET /cases/{id}/notes)
-	GetCasesIdNotes(c *gin.Context, id openapi_types.UUID)
-	// Create a note on a case
-	// (POST /cases/{id}/notes)
-	PostCasesIdNotes(c *gin.Context, id openapi_types.UUID)
-	// Delete a case note
-	// (DELETE /cases/{id}/notes/{note_id})
-	DeleteCasesIdNotesNoteId(c *gin.Context, id openapi_types.UUID, noteId openapi_types.UUID)
 	// Get list of conference calls
 	// (GET /conferencecalls)
 	GetConferencecalls(c *gin.Context, params GetConferencecallsParams)
@@ -8423,6 +8396,48 @@ type ServerInterface interface {
 	// Claim an unresolved contact address
 	// (POST /contact_addresses/{id}/claim)
 	PostContactAddressesIdClaim(c *gin.Context, id openapi_types.UUID)
+	// List cases
+	// (GET /contact_cases)
+	GetContactCases(c *gin.Context, params GetContactCasesParams)
+	// List unresolved cases
+	// (GET /contact_cases/unresolved)
+	GetContactCasesUnresolved(c *gin.Context, params GetContactCasesUnresolvedParams)
+	// Get a case
+	// (GET /contact_cases/{id})
+	GetContactCasesId(c *gin.Context, id openapi_types.UUID)
+	// Close a case
+	// (POST /contact_cases/{id}/close)
+	PostContactCasesIdClose(c *gin.Context, id openapi_types.UUID)
+	// Continue a closed case
+	// (POST /contact_cases/{id}/continue)
+	PostContactCasesIdContinue(c *gin.Context, id openapi_types.UUID)
+	// Send a message from a case
+	// (POST /contact_cases/{id}/messages)
+	PostContactCasesIdMessages(c *gin.Context, id openapi_types.UUID)
+	// List notes for a case
+	// (GET /contact_cases/{id}/notes)
+	GetContactCasesIdNotes(c *gin.Context, id openapi_types.UUID)
+	// Create a note on a case
+	// (POST /contact_cases/{id}/notes)
+	PostContactCasesIdNotes(c *gin.Context, id openapi_types.UUID)
+	// Delete a case note
+	// (DELETE /contact_cases/{id}/notes/{note_id})
+	DeleteContactCasesIdNotesNoteId(c *gin.Context, id openapi_types.UUID, noteId openapi_types.UUID)
+	// List interactions
+	// (GET /contact_interactions)
+	GetContactInteractions(c *gin.Context, params GetContactInteractionsParams)
+	// List unresolved interactions
+	// (GET /contact_interactions/unresolved)
+	GetContactInteractionsUnresolved(c *gin.Context, params GetContactInteractionsUnresolvedParams)
+	// Get an interaction
+	// (GET /contact_interactions/{id})
+	GetContactInteractionsId(c *gin.Context, id openapi_types.UUID)
+	// Create a resolution for an interaction
+	// (POST /contact_interactions/{id}/resolutions)
+	PostContactInteractionsIdResolutions(c *gin.Context, id openapi_types.UUID)
+	// Delete a resolution
+	// (DELETE /contact_interactions/{id}/resolutions/{rid})
+	DeleteContactInteractionsIdResolutionsRid(c *gin.Context, id openapi_types.UUID, rid openapi_types.UUID)
 	// List contacts
 	// (GET /contacts)
 	GetContacts(c *gin.Context, params GetContactsParams)
@@ -8591,21 +8606,6 @@ type ServerInterface interface {
 	// Hangup the groupcall
 	// (POST /groupcalls/{id}/hangup)
 	PostGroupcallsIdHangup(c *gin.Context, id string)
-	// List interactions
-	// (GET /interactions)
-	GetInteractions(c *gin.Context, params GetInteractionsParams)
-	// List unresolved interactions
-	// (GET /interactions/unresolved)
-	GetInteractionsUnresolved(c *gin.Context, params GetInteractionsUnresolvedParams)
-	// Get an interaction
-	// (GET /interactions/{id})
-	GetInteractionsId(c *gin.Context, id openapi_types.UUID)
-	// Create a resolution for an interaction
-	// (POST /interactions/{id}/resolutions)
-	PostInteractionsIdResolutions(c *gin.Context, id openapi_types.UUID)
-	// Delete a resolution
-	// (DELETE /interactions/{id}/resolutions/{rid})
-	DeleteInteractionsIdResolutionsRid(c *gin.Context, id openapi_types.UUID, rid openapi_types.UUID)
 	// Get the logged-in agent
 	// (GET /me)
 	GetMe(c *gin.Context)
@@ -8864,6 +8864,21 @@ type ServerInterface interface {
 	// Claim an unresolved contact address (service agent)
 	// (POST /service_agents/contact_addresses/{id}/claim)
 	PostServiceAgentsContactAddressesIdClaim(c *gin.Context, id openapi_types.UUID)
+	// List interactions
+	// (GET /service_agents/contact_interactions)
+	GetServiceAgentsContactInteractions(c *gin.Context, params GetServiceAgentsContactInteractionsParams)
+	// List unresolved interactions
+	// (GET /service_agents/contact_interactions/unresolved)
+	GetServiceAgentsContactInteractionsUnresolved(c *gin.Context, params GetServiceAgentsContactInteractionsUnresolvedParams)
+	// Get an interaction
+	// (GET /service_agents/contact_interactions/{id})
+	GetServiceAgentsContactInteractionsId(c *gin.Context, id openapi_types.UUID)
+	// Create a resolution for an interaction
+	// (POST /service_agents/contact_interactions/{id}/resolutions)
+	PostServiceAgentsContactInteractionsIdResolutions(c *gin.Context, id openapi_types.UUID)
+	// Delete a resolution
+	// (DELETE /service_agents/contact_interactions/{id}/resolutions/{rid})
+	DeleteServiceAgentsContactInteractionsIdResolutionsRid(c *gin.Context, id openapi_types.UUID, rid openapi_types.UUID)
 	// List contacts
 	// (GET /service_agents/contacts)
 	GetServiceAgentsContacts(c *gin.Context, params GetServiceAgentsContactsParams)
@@ -8939,21 +8954,6 @@ type ServerInterface interface {
 	// Download the service agent file
 	// (GET /service_agents/files/{id}/file)
 	GetServiceAgentsFilesIdFile(c *gin.Context, id openapi_types.UUID)
-	// List interactions
-	// (GET /service_agents/interactions)
-	GetServiceAgentsInteractions(c *gin.Context, params GetServiceAgentsInteractionsParams)
-	// List unresolved interactions
-	// (GET /service_agents/interactions/unresolved)
-	GetServiceAgentsInteractionsUnresolved(c *gin.Context, params GetServiceAgentsInteractionsUnresolvedParams)
-	// Get an interaction
-	// (GET /service_agents/interactions/{id})
-	GetServiceAgentsInteractionsId(c *gin.Context, id openapi_types.UUID)
-	// Create a resolution for an interaction
-	// (POST /service_agents/interactions/{id}/resolutions)
-	PostServiceAgentsInteractionsIdResolutions(c *gin.Context, id openapi_types.UUID)
-	// Delete a resolution
-	// (DELETE /service_agents/interactions/{id}/resolutions/{rid})
-	DeleteServiceAgentsInteractionsIdResolutionsRid(c *gin.Context, id openapi_types.UUID, rid openapi_types.UUID)
 	// Get authenticated agent's details
 	// (GET /service_agents/me)
 	GetServiceAgentsMe(c *gin.Context)
@@ -11891,275 +11891,6 @@ func (siw *ServerInterfaceWrapper) PutCampaignsIdStatus(c *gin.Context) {
 	siw.Handler.PutCampaignsIdStatus(c, id)
 }
 
-// GetCases operation middleware
-func (siw *ServerInterfaceWrapper) GetCases(c *gin.Context) {
-
-	var err error
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params GetCasesParams
-
-	// ------------- Optional query parameter "status" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "status", c.Request.URL.Query(), &params.Status)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter status: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "owner_type" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "owner_type", c.Request.URL.Query(), &params.OwnerType)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter owner_type: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "owner_id" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "owner_id", c.Request.URL.Query(), &params.OwnerId)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter owner_id: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "page_size" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "page_token" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	siw.Handler.GetCases(c, params)
-}
-
-// GetCasesUnresolved operation middleware
-func (siw *ServerInterfaceWrapper) GetCasesUnresolved(c *gin.Context) {
-
-	var err error
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params GetCasesUnresolvedParams
-
-	// ------------- Optional query parameter "page_size" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "page_token" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	siw.Handler.GetCasesUnresolved(c, params)
-}
-
-// GetCasesId operation middleware
-func (siw *ServerInterfaceWrapper) GetCasesId(c *gin.Context) {
-
-	var err error
-
-	// ------------- Path parameter "id" -------------
-	var id openapi_types.UUID
-
-	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	siw.Handler.GetCasesId(c, id)
-}
-
-// PostCasesIdClose operation middleware
-func (siw *ServerInterfaceWrapper) PostCasesIdClose(c *gin.Context) {
-
-	var err error
-
-	// ------------- Path parameter "id" -------------
-	var id openapi_types.UUID
-
-	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	siw.Handler.PostCasesIdClose(c, id)
-}
-
-// PostCasesIdContinue operation middleware
-func (siw *ServerInterfaceWrapper) PostCasesIdContinue(c *gin.Context) {
-
-	var err error
-
-	// ------------- Path parameter "id" -------------
-	var id openapi_types.UUID
-
-	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	siw.Handler.PostCasesIdContinue(c, id)
-}
-
-// PostCasesIdMessages operation middleware
-func (siw *ServerInterfaceWrapper) PostCasesIdMessages(c *gin.Context) {
-
-	var err error
-
-	// ------------- Path parameter "id" -------------
-	var id openapi_types.UUID
-
-	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	siw.Handler.PostCasesIdMessages(c, id)
-}
-
-// GetCasesIdNotes operation middleware
-func (siw *ServerInterfaceWrapper) GetCasesIdNotes(c *gin.Context) {
-
-	var err error
-
-	// ------------- Path parameter "id" -------------
-	var id openapi_types.UUID
-
-	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	siw.Handler.GetCasesIdNotes(c, id)
-}
-
-// PostCasesIdNotes operation middleware
-func (siw *ServerInterfaceWrapper) PostCasesIdNotes(c *gin.Context) {
-
-	var err error
-
-	// ------------- Path parameter "id" -------------
-	var id openapi_types.UUID
-
-	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	siw.Handler.PostCasesIdNotes(c, id)
-}
-
-// DeleteCasesIdNotesNoteId operation middleware
-func (siw *ServerInterfaceWrapper) DeleteCasesIdNotesNoteId(c *gin.Context) {
-
-	var err error
-
-	// ------------- Path parameter "id" -------------
-	var id openapi_types.UUID
-
-	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Path parameter "note_id" -------------
-	var noteId openapi_types.UUID
-
-	err = runtime.BindStyledParameterWithOptions("simple", "note_id", c.Param("note_id"), &noteId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter note_id: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	siw.Handler.DeleteCasesIdNotesNoteId(c, id, noteId)
-}
-
 // GetConferencecalls operation middleware
 func (siw *ServerInterfaceWrapper) GetConferencecalls(c *gin.Context) {
 
@@ -12688,6 +12419,464 @@ func (siw *ServerInterfaceWrapper) PostContactAddressesIdClaim(c *gin.Context) {
 	}
 
 	siw.Handler.PostContactAddressesIdClaim(c, id)
+}
+
+// GetContactCases operation middleware
+func (siw *ServerInterfaceWrapper) GetContactCases(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetContactCasesParams
+
+	// ------------- Optional query parameter "status" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "status", c.Request.URL.Query(), &params.Status)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter status: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "owner_type" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "owner_type", c.Request.URL.Query(), &params.OwnerType)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter owner_type: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "owner_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "owner_id", c.Request.URL.Query(), &params.OwnerId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter owner_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetContactCases(c, params)
+}
+
+// GetContactCasesUnresolved operation middleware
+func (siw *ServerInterfaceWrapper) GetContactCasesUnresolved(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetContactCasesUnresolvedParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetContactCasesUnresolved(c, params)
+}
+
+// GetContactCasesId operation middleware
+func (siw *ServerInterfaceWrapper) GetContactCasesId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetContactCasesId(c, id)
+}
+
+// PostContactCasesIdClose operation middleware
+func (siw *ServerInterfaceWrapper) PostContactCasesIdClose(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostContactCasesIdClose(c, id)
+}
+
+// PostContactCasesIdContinue operation middleware
+func (siw *ServerInterfaceWrapper) PostContactCasesIdContinue(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostContactCasesIdContinue(c, id)
+}
+
+// PostContactCasesIdMessages operation middleware
+func (siw *ServerInterfaceWrapper) PostContactCasesIdMessages(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostContactCasesIdMessages(c, id)
+}
+
+// GetContactCasesIdNotes operation middleware
+func (siw *ServerInterfaceWrapper) GetContactCasesIdNotes(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetContactCasesIdNotes(c, id)
+}
+
+// PostContactCasesIdNotes operation middleware
+func (siw *ServerInterfaceWrapper) PostContactCasesIdNotes(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostContactCasesIdNotes(c, id)
+}
+
+// DeleteContactCasesIdNotesNoteId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteContactCasesIdNotesNoteId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Path parameter "note_id" -------------
+	var noteId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "note_id", c.Param("note_id"), &noteId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter note_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteContactCasesIdNotesNoteId(c, id, noteId)
+}
+
+// GetContactInteractions operation middleware
+func (siw *ServerInterfaceWrapper) GetContactInteractions(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetContactInteractionsParams
+
+	// ------------- Optional query parameter "peer_type" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "peer_type", c.Request.URL.Query(), &params.PeerType)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter peer_type: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "peer_target" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "peer_target", c.Request.URL.Query(), &params.PeerTarget)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter peer_target: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "contact_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "contact_id", c.Request.URL.Query(), &params.ContactId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter contact_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "address_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "address_id", c.Request.URL.Query(), &params.AddressId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter address_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetContactInteractions(c, params)
+}
+
+// GetContactInteractionsUnresolved operation middleware
+func (siw *ServerInterfaceWrapper) GetContactInteractionsUnresolved(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetContactInteractionsUnresolvedParams
+
+	// ------------- Optional query parameter "since" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "since", c.Request.URL.Query(), &params.Since)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter since: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetContactInteractionsUnresolved(c, params)
+}
+
+// GetContactInteractionsId operation middleware
+func (siw *ServerInterfaceWrapper) GetContactInteractionsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetContactInteractionsId(c, id)
+}
+
+// PostContactInteractionsIdResolutions operation middleware
+func (siw *ServerInterfaceWrapper) PostContactInteractionsIdResolutions(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostContactInteractionsIdResolutions(c, id)
+}
+
+// DeleteContactInteractionsIdResolutionsRid operation middleware
+func (siw *ServerInterfaceWrapper) DeleteContactInteractionsIdResolutionsRid(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Path parameter "rid" -------------
+	var rid openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "rid", c.Param("rid"), &rid, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter rid: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteContactInteractionsIdResolutionsRid(c, id, rid)
 }
 
 // GetContacts operation middleware
@@ -14055,195 +14244,6 @@ func (siw *ServerInterfaceWrapper) PostGroupcallsIdHangup(c *gin.Context) {
 	}
 
 	siw.Handler.PostGroupcallsIdHangup(c, id)
-}
-
-// GetInteractions operation middleware
-func (siw *ServerInterfaceWrapper) GetInteractions(c *gin.Context) {
-
-	var err error
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params GetInteractionsParams
-
-	// ------------- Optional query parameter "peer_type" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "peer_type", c.Request.URL.Query(), &params.PeerType)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter peer_type: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "peer_target" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "peer_target", c.Request.URL.Query(), &params.PeerTarget)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter peer_target: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "contact_id" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "contact_id", c.Request.URL.Query(), &params.ContactId)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter contact_id: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "address_id" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "address_id", c.Request.URL.Query(), &params.AddressId)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter address_id: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "page_size" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "page_token" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	siw.Handler.GetInteractions(c, params)
-}
-
-// GetInteractionsUnresolved operation middleware
-func (siw *ServerInterfaceWrapper) GetInteractionsUnresolved(c *gin.Context) {
-
-	var err error
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params GetInteractionsUnresolvedParams
-
-	// ------------- Optional query parameter "since" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "since", c.Request.URL.Query(), &params.Since)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter since: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "page_size" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "page_token" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	siw.Handler.GetInteractionsUnresolved(c, params)
-}
-
-// GetInteractionsId operation middleware
-func (siw *ServerInterfaceWrapper) GetInteractionsId(c *gin.Context) {
-
-	var err error
-
-	// ------------- Path parameter "id" -------------
-	var id openapi_types.UUID
-
-	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	siw.Handler.GetInteractionsId(c, id)
-}
-
-// PostInteractionsIdResolutions operation middleware
-func (siw *ServerInterfaceWrapper) PostInteractionsIdResolutions(c *gin.Context) {
-
-	var err error
-
-	// ------------- Path parameter "id" -------------
-	var id openapi_types.UUID
-
-	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	siw.Handler.PostInteractionsIdResolutions(c, id)
-}
-
-// DeleteInteractionsIdResolutionsRid operation middleware
-func (siw *ServerInterfaceWrapper) DeleteInteractionsIdResolutionsRid(c *gin.Context) {
-
-	var err error
-
-	// ------------- Path parameter "id" -------------
-	var id openapi_types.UUID
-
-	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Path parameter "rid" -------------
-	var rid openapi_types.UUID
-
-	err = runtime.BindStyledParameterWithOptions("simple", "rid", c.Param("rid"), &rid, runtime.BindStyledParameterOptions{Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter rid: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	siw.Handler.DeleteInteractionsIdResolutionsRid(c, id, rid)
 }
 
 // GetMe operation middleware
@@ -16378,6 +16378,203 @@ func (siw *ServerInterfaceWrapper) PostServiceAgentsContactAddressesIdClaim(c *g
 	siw.Handler.PostServiceAgentsContactAddressesIdClaim(c, id)
 }
 
+// GetServiceAgentsContactInteractions operation middleware
+func (siw *ServerInterfaceWrapper) GetServiceAgentsContactInteractions(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetServiceAgentsContactInteractionsParams
+
+	// ------------- Optional query parameter "peer_type" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "peer_type", c.Request.URL.Query(), &params.PeerType)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter peer_type: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "peer_target" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "peer_target", c.Request.URL.Query(), &params.PeerTarget)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter peer_target: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "contact_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "contact_id", c.Request.URL.Query(), &params.ContactId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter contact_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "address_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "address_id", c.Request.URL.Query(), &params.AddressId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter address_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "since" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "since", c.Request.URL.Query(), &params.Since)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter since: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetServiceAgentsContactInteractions(c, params)
+}
+
+// GetServiceAgentsContactInteractionsUnresolved operation middleware
+func (siw *ServerInterfaceWrapper) GetServiceAgentsContactInteractionsUnresolved(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetServiceAgentsContactInteractionsUnresolvedParams
+
+	// ------------- Optional query parameter "since" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "since", c.Request.URL.Query(), &params.Since)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter since: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetServiceAgentsContactInteractionsUnresolved(c, params)
+}
+
+// GetServiceAgentsContactInteractionsId operation middleware
+func (siw *ServerInterfaceWrapper) GetServiceAgentsContactInteractionsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetServiceAgentsContactInteractionsId(c, id)
+}
+
+// PostServiceAgentsContactInteractionsIdResolutions operation middleware
+func (siw *ServerInterfaceWrapper) PostServiceAgentsContactInteractionsIdResolutions(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostServiceAgentsContactInteractionsIdResolutions(c, id)
+}
+
+// DeleteServiceAgentsContactInteractionsIdResolutionsRid operation middleware
+func (siw *ServerInterfaceWrapper) DeleteServiceAgentsContactInteractionsIdResolutionsRid(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Path parameter "rid" -------------
+	var rid openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "rid", c.Param("rid"), &rid, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter rid: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteServiceAgentsContactInteractionsIdResolutionsRid(c, id, rid)
+}
+
 // GetServiceAgentsContacts operation middleware
 func (siw *ServerInterfaceWrapper) GetServiceAgentsContacts(c *gin.Context) {
 
@@ -17039,203 +17236,6 @@ func (siw *ServerInterfaceWrapper) GetServiceAgentsFilesIdFile(c *gin.Context) {
 	}
 
 	siw.Handler.GetServiceAgentsFilesIdFile(c, id)
-}
-
-// GetServiceAgentsInteractions operation middleware
-func (siw *ServerInterfaceWrapper) GetServiceAgentsInteractions(c *gin.Context) {
-
-	var err error
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params GetServiceAgentsInteractionsParams
-
-	// ------------- Optional query parameter "peer_type" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "peer_type", c.Request.URL.Query(), &params.PeerType)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter peer_type: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "peer_target" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "peer_target", c.Request.URL.Query(), &params.PeerTarget)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter peer_target: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "contact_id" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "contact_id", c.Request.URL.Query(), &params.ContactId)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter contact_id: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "address_id" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "address_id", c.Request.URL.Query(), &params.AddressId)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter address_id: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "since" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "since", c.Request.URL.Query(), &params.Since)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter since: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "page_size" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "page_token" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	siw.Handler.GetServiceAgentsInteractions(c, params)
-}
-
-// GetServiceAgentsInteractionsUnresolved operation middleware
-func (siw *ServerInterfaceWrapper) GetServiceAgentsInteractionsUnresolved(c *gin.Context) {
-
-	var err error
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params GetServiceAgentsInteractionsUnresolvedParams
-
-	// ------------- Optional query parameter "since" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "since", c.Request.URL.Query(), &params.Since)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter since: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "page_size" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "page_token" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	siw.Handler.GetServiceAgentsInteractionsUnresolved(c, params)
-}
-
-// GetServiceAgentsInteractionsId operation middleware
-func (siw *ServerInterfaceWrapper) GetServiceAgentsInteractionsId(c *gin.Context) {
-
-	var err error
-
-	// ------------- Path parameter "id" -------------
-	var id openapi_types.UUID
-
-	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	siw.Handler.GetServiceAgentsInteractionsId(c, id)
-}
-
-// PostServiceAgentsInteractionsIdResolutions operation middleware
-func (siw *ServerInterfaceWrapper) PostServiceAgentsInteractionsIdResolutions(c *gin.Context) {
-
-	var err error
-
-	// ------------- Path parameter "id" -------------
-	var id openapi_types.UUID
-
-	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	siw.Handler.PostServiceAgentsInteractionsIdResolutions(c, id)
-}
-
-// DeleteServiceAgentsInteractionsIdResolutionsRid operation middleware
-func (siw *ServerInterfaceWrapper) DeleteServiceAgentsInteractionsIdResolutionsRid(c *gin.Context) {
-
-	var err error
-
-	// ------------- Path parameter "id" -------------
-	var id openapi_types.UUID
-
-	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Path parameter "rid" -------------
-	var rid openapi_types.UUID
-
-	err = runtime.BindStyledParameterWithOptions("simple", "rid", c.Param("rid"), &rid, runtime.BindStyledParameterOptions{Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter rid: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	siw.Handler.DeleteServiceAgentsInteractionsIdResolutionsRid(c, id, rid)
 }
 
 // GetServiceAgentsMe operation middleware
@@ -19208,15 +19208,6 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.PUT(options.BaseURL+"/campaigns/:id/resource_info", wrapper.PutCampaignsIdResourceInfo)
 	router.PUT(options.BaseURL+"/campaigns/:id/service_level", wrapper.PutCampaignsIdServiceLevel)
 	router.PUT(options.BaseURL+"/campaigns/:id/status", wrapper.PutCampaignsIdStatus)
-	router.GET(options.BaseURL+"/cases", wrapper.GetCases)
-	router.GET(options.BaseURL+"/cases/unresolved", wrapper.GetCasesUnresolved)
-	router.GET(options.BaseURL+"/cases/:id", wrapper.GetCasesId)
-	router.POST(options.BaseURL+"/cases/:id/close", wrapper.PostCasesIdClose)
-	router.POST(options.BaseURL+"/cases/:id/continue", wrapper.PostCasesIdContinue)
-	router.POST(options.BaseURL+"/cases/:id/messages", wrapper.PostCasesIdMessages)
-	router.GET(options.BaseURL+"/cases/:id/notes", wrapper.GetCasesIdNotes)
-	router.POST(options.BaseURL+"/cases/:id/notes", wrapper.PostCasesIdNotes)
-	router.DELETE(options.BaseURL+"/cases/:id/notes/:note_id", wrapper.DeleteCasesIdNotesNoteId)
 	router.GET(options.BaseURL+"/conferencecalls", wrapper.GetConferencecalls)
 	router.DELETE(options.BaseURL+"/conferencecalls/:id", wrapper.DeleteConferencecallsId)
 	router.GET(options.BaseURL+"/conferencecalls/:id", wrapper.GetConferencecallsId)
@@ -19237,6 +19228,20 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.GET(options.BaseURL+"/contact_addresses/:id", wrapper.GetContactAddressesId)
 	router.PUT(options.BaseURL+"/contact_addresses/:id", wrapper.PutContactAddressesId)
 	router.POST(options.BaseURL+"/contact_addresses/:id/claim", wrapper.PostContactAddressesIdClaim)
+	router.GET(options.BaseURL+"/contact_cases", wrapper.GetContactCases)
+	router.GET(options.BaseURL+"/contact_cases/unresolved", wrapper.GetContactCasesUnresolved)
+	router.GET(options.BaseURL+"/contact_cases/:id", wrapper.GetContactCasesId)
+	router.POST(options.BaseURL+"/contact_cases/:id/close", wrapper.PostContactCasesIdClose)
+	router.POST(options.BaseURL+"/contact_cases/:id/continue", wrapper.PostContactCasesIdContinue)
+	router.POST(options.BaseURL+"/contact_cases/:id/messages", wrapper.PostContactCasesIdMessages)
+	router.GET(options.BaseURL+"/contact_cases/:id/notes", wrapper.GetContactCasesIdNotes)
+	router.POST(options.BaseURL+"/contact_cases/:id/notes", wrapper.PostContactCasesIdNotes)
+	router.DELETE(options.BaseURL+"/contact_cases/:id/notes/:note_id", wrapper.DeleteContactCasesIdNotesNoteId)
+	router.GET(options.BaseURL+"/contact_interactions", wrapper.GetContactInteractions)
+	router.GET(options.BaseURL+"/contact_interactions/unresolved", wrapper.GetContactInteractionsUnresolved)
+	router.GET(options.BaseURL+"/contact_interactions/:id", wrapper.GetContactInteractionsId)
+	router.POST(options.BaseURL+"/contact_interactions/:id/resolutions", wrapper.PostContactInteractionsIdResolutions)
+	router.DELETE(options.BaseURL+"/contact_interactions/:id/resolutions/:rid", wrapper.DeleteContactInteractionsIdResolutionsRid)
 	router.GET(options.BaseURL+"/contacts", wrapper.GetContacts)
 	router.POST(options.BaseURL+"/contacts", wrapper.PostContacts)
 	router.GET(options.BaseURL+"/contacts/lookup", wrapper.GetContactsLookup)
@@ -19293,11 +19298,6 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.DELETE(options.BaseURL+"/groupcalls/:id", wrapper.DeleteGroupcallsId)
 	router.GET(options.BaseURL+"/groupcalls/:id", wrapper.GetGroupcallsId)
 	router.POST(options.BaseURL+"/groupcalls/:id/hangup", wrapper.PostGroupcallsIdHangup)
-	router.GET(options.BaseURL+"/interactions", wrapper.GetInteractions)
-	router.GET(options.BaseURL+"/interactions/unresolved", wrapper.GetInteractionsUnresolved)
-	router.GET(options.BaseURL+"/interactions/:id", wrapper.GetInteractionsId)
-	router.POST(options.BaseURL+"/interactions/:id/resolutions", wrapper.PostInteractionsIdResolutions)
-	router.DELETE(options.BaseURL+"/interactions/:id/resolutions/:rid", wrapper.DeleteInteractionsIdResolutionsRid)
 	router.GET(options.BaseURL+"/me", wrapper.GetMe)
 	router.GET(options.BaseURL+"/messages", wrapper.GetMessages)
 	router.POST(options.BaseURL+"/messages", wrapper.PostMessages)
@@ -19384,6 +19384,11 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.GET(options.BaseURL+"/service_agents/contact_addresses/:id", wrapper.GetServiceAgentsContactAddressesId)
 	router.PUT(options.BaseURL+"/service_agents/contact_addresses/:id", wrapper.PutServiceAgentsContactAddressesId)
 	router.POST(options.BaseURL+"/service_agents/contact_addresses/:id/claim", wrapper.PostServiceAgentsContactAddressesIdClaim)
+	router.GET(options.BaseURL+"/service_agents/contact_interactions", wrapper.GetServiceAgentsContactInteractions)
+	router.GET(options.BaseURL+"/service_agents/contact_interactions/unresolved", wrapper.GetServiceAgentsContactInteractionsUnresolved)
+	router.GET(options.BaseURL+"/service_agents/contact_interactions/:id", wrapper.GetServiceAgentsContactInteractionsId)
+	router.POST(options.BaseURL+"/service_agents/contact_interactions/:id/resolutions", wrapper.PostServiceAgentsContactInteractionsIdResolutions)
+	router.DELETE(options.BaseURL+"/service_agents/contact_interactions/:id/resolutions/:rid", wrapper.DeleteServiceAgentsContactInteractionsIdResolutionsRid)
 	router.GET(options.BaseURL+"/service_agents/contacts", wrapper.GetServiceAgentsContacts)
 	router.POST(options.BaseURL+"/service_agents/contacts", wrapper.PostServiceAgentsContacts)
 	router.GET(options.BaseURL+"/service_agents/contacts/lookup", wrapper.GetServiceAgentsContactsLookup)
@@ -19409,11 +19414,6 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.DELETE(options.BaseURL+"/service_agents/files/:id", wrapper.DeleteServiceAgentsFilesId)
 	router.GET(options.BaseURL+"/service_agents/files/:id", wrapper.GetServiceAgentsFilesId)
 	router.GET(options.BaseURL+"/service_agents/files/:id/file", wrapper.GetServiceAgentsFilesIdFile)
-	router.GET(options.BaseURL+"/service_agents/interactions", wrapper.GetServiceAgentsInteractions)
-	router.GET(options.BaseURL+"/service_agents/interactions/unresolved", wrapper.GetServiceAgentsInteractionsUnresolved)
-	router.GET(options.BaseURL+"/service_agents/interactions/:id", wrapper.GetServiceAgentsInteractionsId)
-	router.POST(options.BaseURL+"/service_agents/interactions/:id/resolutions", wrapper.PostServiceAgentsInteractionsIdResolutions)
-	router.DELETE(options.BaseURL+"/service_agents/interactions/:id/resolutions/:rid", wrapper.DeleteServiceAgentsInteractionsIdResolutionsRid)
 	router.GET(options.BaseURL+"/service_agents/me", wrapper.GetServiceAgentsMe)
 	router.PUT(options.BaseURL+"/service_agents/me", wrapper.PutServiceAgentsMe)
 	router.PUT(options.BaseURL+"/service_agents/me/addresses", wrapper.PutServiceAgentsMeAddresses)
@@ -25591,558 +25591,6 @@ func (response PutCampaignsIdStatus500JSONResponse) VisitPutCampaignsIdStatusRes
 	return json.NewEncoder(w).Encode(response)
 }
 
-type GetCasesRequestObject struct {
-	Params GetCasesParams
-}
-
-type GetCasesResponseObject interface {
-	VisitGetCasesResponse(w http.ResponseWriter) error
-}
-
-type GetCases200JSONResponse ContactManagerCaseListResponse
-
-func (response GetCases200JSONResponse) VisitGetCasesResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetCases400JSONResponse struct{ BadRequestJSONResponse }
-
-func (response GetCases400JSONResponse) VisitGetCasesResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(400)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetCases401JSONResponse struct{ UnauthenticatedJSONResponse }
-
-func (response GetCases401JSONResponse) VisitGetCasesResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(401)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetCases403JSONResponse struct{ PermissionDeniedJSONResponse }
-
-func (response GetCases403JSONResponse) VisitGetCasesResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(403)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetCases500JSONResponse struct{ InternalErrorJSONResponse }
-
-func (response GetCases500JSONResponse) VisitGetCasesResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(500)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetCasesUnresolvedRequestObject struct {
-	Params GetCasesUnresolvedParams
-}
-
-type GetCasesUnresolvedResponseObject interface {
-	VisitGetCasesUnresolvedResponse(w http.ResponseWriter) error
-}
-
-type GetCasesUnresolved200JSONResponse ContactManagerCaseListResponse
-
-func (response GetCasesUnresolved200JSONResponse) VisitGetCasesUnresolvedResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetCasesUnresolved400JSONResponse struct{ BadRequestJSONResponse }
-
-func (response GetCasesUnresolved400JSONResponse) VisitGetCasesUnresolvedResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(400)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetCasesUnresolved401JSONResponse struct{ UnauthenticatedJSONResponse }
-
-func (response GetCasesUnresolved401JSONResponse) VisitGetCasesUnresolvedResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(401)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetCasesUnresolved403JSONResponse struct{ PermissionDeniedJSONResponse }
-
-func (response GetCasesUnresolved403JSONResponse) VisitGetCasesUnresolvedResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(403)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetCasesUnresolved500JSONResponse struct{ InternalErrorJSONResponse }
-
-func (response GetCasesUnresolved500JSONResponse) VisitGetCasesUnresolvedResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(500)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetCasesIdRequestObject struct {
-	Id openapi_types.UUID `json:"id"`
-}
-
-type GetCasesIdResponseObject interface {
-	VisitGetCasesIdResponse(w http.ResponseWriter) error
-}
-
-type GetCasesId200JSONResponse ContactManagerCase
-
-func (response GetCasesId200JSONResponse) VisitGetCasesIdResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetCasesId400JSONResponse struct{ BadRequestJSONResponse }
-
-func (response GetCasesId400JSONResponse) VisitGetCasesIdResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(400)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetCasesId401JSONResponse struct{ UnauthenticatedJSONResponse }
-
-func (response GetCasesId401JSONResponse) VisitGetCasesIdResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(401)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetCasesId403JSONResponse struct{ PermissionDeniedJSONResponse }
-
-func (response GetCasesId403JSONResponse) VisitGetCasesIdResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(403)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetCasesId404JSONResponse struct{ NotFoundJSONResponse }
-
-func (response GetCasesId404JSONResponse) VisitGetCasesIdResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(404)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetCasesId500JSONResponse struct{ InternalErrorJSONResponse }
-
-func (response GetCasesId500JSONResponse) VisitGetCasesIdResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(500)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PostCasesIdCloseRequestObject struct {
-	Id openapi_types.UUID `json:"id"`
-}
-
-type PostCasesIdCloseResponseObject interface {
-	VisitPostCasesIdCloseResponse(w http.ResponseWriter) error
-}
-
-type PostCasesIdClose200JSONResponse ContactManagerCase
-
-func (response PostCasesIdClose200JSONResponse) VisitPostCasesIdCloseResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PostCasesIdClose400JSONResponse struct{ BadRequestJSONResponse }
-
-func (response PostCasesIdClose400JSONResponse) VisitPostCasesIdCloseResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(400)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PostCasesIdClose401JSONResponse struct{ UnauthenticatedJSONResponse }
-
-func (response PostCasesIdClose401JSONResponse) VisitPostCasesIdCloseResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(401)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PostCasesIdClose403JSONResponse struct{ PermissionDeniedJSONResponse }
-
-func (response PostCasesIdClose403JSONResponse) VisitPostCasesIdCloseResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(403)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PostCasesIdClose404JSONResponse struct{ NotFoundJSONResponse }
-
-func (response PostCasesIdClose404JSONResponse) VisitPostCasesIdCloseResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(404)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PostCasesIdClose500JSONResponse struct{ InternalErrorJSONResponse }
-
-func (response PostCasesIdClose500JSONResponse) VisitPostCasesIdCloseResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(500)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PostCasesIdContinueRequestObject struct {
-	Id openapi_types.UUID `json:"id"`
-}
-
-type PostCasesIdContinueResponseObject interface {
-	VisitPostCasesIdContinueResponse(w http.ResponseWriter) error
-}
-
-type PostCasesIdContinue200JSONResponse ContactManagerCase
-
-func (response PostCasesIdContinue200JSONResponse) VisitPostCasesIdContinueResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PostCasesIdContinue400JSONResponse struct{ BadRequestJSONResponse }
-
-func (response PostCasesIdContinue400JSONResponse) VisitPostCasesIdContinueResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(400)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PostCasesIdContinue401JSONResponse struct{ UnauthenticatedJSONResponse }
-
-func (response PostCasesIdContinue401JSONResponse) VisitPostCasesIdContinueResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(401)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PostCasesIdContinue403JSONResponse struct{ PermissionDeniedJSONResponse }
-
-func (response PostCasesIdContinue403JSONResponse) VisitPostCasesIdContinueResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(403)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PostCasesIdContinue404JSONResponse struct{ NotFoundJSONResponse }
-
-func (response PostCasesIdContinue404JSONResponse) VisitPostCasesIdContinueResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(404)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PostCasesIdContinue500JSONResponse struct{ InternalErrorJSONResponse }
-
-func (response PostCasesIdContinue500JSONResponse) VisitPostCasesIdContinueResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(500)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PostCasesIdMessagesRequestObject struct {
-	Id   openapi_types.UUID `json:"id"`
-	Body *PostCasesIdMessagesJSONRequestBody
-}
-
-type PostCasesIdMessagesResponseObject interface {
-	VisitPostCasesIdMessagesResponse(w http.ResponseWriter) error
-}
-
-type PostCasesIdMessages200JSONResponse ConversationManagerMessage
-
-func (response PostCasesIdMessages200JSONResponse) VisitPostCasesIdMessagesResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PostCasesIdMessages400JSONResponse struct{ BadRequestJSONResponse }
-
-func (response PostCasesIdMessages400JSONResponse) VisitPostCasesIdMessagesResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(400)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PostCasesIdMessages401JSONResponse struct{ UnauthenticatedJSONResponse }
-
-func (response PostCasesIdMessages401JSONResponse) VisitPostCasesIdMessagesResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(401)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PostCasesIdMessages403JSONResponse struct{ PermissionDeniedJSONResponse }
-
-func (response PostCasesIdMessages403JSONResponse) VisitPostCasesIdMessagesResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(403)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PostCasesIdMessages404JSONResponse struct{ NotFoundJSONResponse }
-
-func (response PostCasesIdMessages404JSONResponse) VisitPostCasesIdMessagesResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(404)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PostCasesIdMessages409JSONResponse struct{ ConflictJSONResponse }
-
-func (response PostCasesIdMessages409JSONResponse) VisitPostCasesIdMessagesResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(409)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PostCasesIdMessages500JSONResponse struct{ InternalErrorJSONResponse }
-
-func (response PostCasesIdMessages500JSONResponse) VisitPostCasesIdMessagesResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(500)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetCasesIdNotesRequestObject struct {
-	Id openapi_types.UUID `json:"id"`
-}
-
-type GetCasesIdNotesResponseObject interface {
-	VisitGetCasesIdNotesResponse(w http.ResponseWriter) error
-}
-
-type GetCasesIdNotes200JSONResponse ContactManagerCaseNoteListResponse
-
-func (response GetCasesIdNotes200JSONResponse) VisitGetCasesIdNotesResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetCasesIdNotes400JSONResponse struct{ BadRequestJSONResponse }
-
-func (response GetCasesIdNotes400JSONResponse) VisitGetCasesIdNotesResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(400)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetCasesIdNotes401JSONResponse struct{ UnauthenticatedJSONResponse }
-
-func (response GetCasesIdNotes401JSONResponse) VisitGetCasesIdNotesResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(401)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetCasesIdNotes403JSONResponse struct{ PermissionDeniedJSONResponse }
-
-func (response GetCasesIdNotes403JSONResponse) VisitGetCasesIdNotesResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(403)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetCasesIdNotes404JSONResponse struct{ NotFoundJSONResponse }
-
-func (response GetCasesIdNotes404JSONResponse) VisitGetCasesIdNotesResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(404)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetCasesIdNotes500JSONResponse struct{ InternalErrorJSONResponse }
-
-func (response GetCasesIdNotes500JSONResponse) VisitGetCasesIdNotesResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(500)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PostCasesIdNotesRequestObject struct {
-	Id   openapi_types.UUID `json:"id"`
-	Body *PostCasesIdNotesJSONRequestBody
-}
-
-type PostCasesIdNotesResponseObject interface {
-	VisitPostCasesIdNotesResponse(w http.ResponseWriter) error
-}
-
-type PostCasesIdNotes200JSONResponse ContactManagerCaseNote
-
-func (response PostCasesIdNotes200JSONResponse) VisitPostCasesIdNotesResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PostCasesIdNotes400JSONResponse struct{ BadRequestJSONResponse }
-
-func (response PostCasesIdNotes400JSONResponse) VisitPostCasesIdNotesResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(400)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PostCasesIdNotes401JSONResponse struct{ UnauthenticatedJSONResponse }
-
-func (response PostCasesIdNotes401JSONResponse) VisitPostCasesIdNotesResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(401)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PostCasesIdNotes403JSONResponse struct{ PermissionDeniedJSONResponse }
-
-func (response PostCasesIdNotes403JSONResponse) VisitPostCasesIdNotesResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(403)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PostCasesIdNotes404JSONResponse struct{ NotFoundJSONResponse }
-
-func (response PostCasesIdNotes404JSONResponse) VisitPostCasesIdNotesResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(404)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PostCasesIdNotes500JSONResponse struct{ InternalErrorJSONResponse }
-
-func (response PostCasesIdNotes500JSONResponse) VisitPostCasesIdNotesResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(500)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type DeleteCasesIdNotesNoteIdRequestObject struct {
-	Id     openapi_types.UUID `json:"id"`
-	NoteId openapi_types.UUID `json:"note_id"`
-}
-
-type DeleteCasesIdNotesNoteIdResponseObject interface {
-	VisitDeleteCasesIdNotesNoteIdResponse(w http.ResponseWriter) error
-}
-
-type DeleteCasesIdNotesNoteId200JSONResponse map[string]interface{}
-
-func (response DeleteCasesIdNotesNoteId200JSONResponse) VisitDeleteCasesIdNotesNoteIdResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type DeleteCasesIdNotesNoteId400JSONResponse struct{ BadRequestJSONResponse }
-
-func (response DeleteCasesIdNotesNoteId400JSONResponse) VisitDeleteCasesIdNotesNoteIdResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(400)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type DeleteCasesIdNotesNoteId401JSONResponse struct{ UnauthenticatedJSONResponse }
-
-func (response DeleteCasesIdNotesNoteId401JSONResponse) VisitDeleteCasesIdNotesNoteIdResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(401)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type DeleteCasesIdNotesNoteId403JSONResponse struct{ PermissionDeniedJSONResponse }
-
-func (response DeleteCasesIdNotesNoteId403JSONResponse) VisitDeleteCasesIdNotesNoteIdResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(403)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type DeleteCasesIdNotesNoteId404JSONResponse struct{ NotFoundJSONResponse }
-
-func (response DeleteCasesIdNotesNoteId404JSONResponse) VisitDeleteCasesIdNotesNoteIdResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(404)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type DeleteCasesIdNotesNoteId500JSONResponse struct{ InternalErrorJSONResponse }
-
-func (response DeleteCasesIdNotesNoteId500JSONResponse) VisitDeleteCasesIdNotesNoteIdResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(500)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
 type GetConferencecallsRequestObject struct {
 	Params GetConferencecallsParams
 }
@@ -27300,6 +26748,851 @@ func (response PostContactAddressesIdClaim409JSONResponse) VisitPostContactAddre
 type PostContactAddressesIdClaim500JSONResponse struct{ InternalErrorJSONResponse }
 
 func (response PostContactAddressesIdClaim500JSONResponse) VisitPostContactAddressesIdClaimResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetContactCasesRequestObject struct {
+	Params GetContactCasesParams
+}
+
+type GetContactCasesResponseObject interface {
+	VisitGetContactCasesResponse(w http.ResponseWriter) error
+}
+
+type GetContactCases200JSONResponse ContactManagerCaseListResponse
+
+func (response GetContactCases200JSONResponse) VisitGetContactCasesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetContactCases400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetContactCases400JSONResponse) VisitGetContactCasesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetContactCases401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetContactCases401JSONResponse) VisitGetContactCasesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetContactCases403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetContactCases403JSONResponse) VisitGetContactCasesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetContactCases500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetContactCases500JSONResponse) VisitGetContactCasesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetContactCasesUnresolvedRequestObject struct {
+	Params GetContactCasesUnresolvedParams
+}
+
+type GetContactCasesUnresolvedResponseObject interface {
+	VisitGetContactCasesUnresolvedResponse(w http.ResponseWriter) error
+}
+
+type GetContactCasesUnresolved200JSONResponse ContactManagerCaseListResponse
+
+func (response GetContactCasesUnresolved200JSONResponse) VisitGetContactCasesUnresolvedResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetContactCasesUnresolved400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetContactCasesUnresolved400JSONResponse) VisitGetContactCasesUnresolvedResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetContactCasesUnresolved401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetContactCasesUnresolved401JSONResponse) VisitGetContactCasesUnresolvedResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetContactCasesUnresolved403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetContactCasesUnresolved403JSONResponse) VisitGetContactCasesUnresolvedResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetContactCasesUnresolved500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetContactCasesUnresolved500JSONResponse) VisitGetContactCasesUnresolvedResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetContactCasesIdRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type GetContactCasesIdResponseObject interface {
+	VisitGetContactCasesIdResponse(w http.ResponseWriter) error
+}
+
+type GetContactCasesId200JSONResponse ContactManagerCase
+
+func (response GetContactCasesId200JSONResponse) VisitGetContactCasesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetContactCasesId400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetContactCasesId400JSONResponse) VisitGetContactCasesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetContactCasesId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetContactCasesId401JSONResponse) VisitGetContactCasesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetContactCasesId403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetContactCasesId403JSONResponse) VisitGetContactCasesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetContactCasesId404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response GetContactCasesId404JSONResponse) VisitGetContactCasesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetContactCasesId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetContactCasesId500JSONResponse) VisitGetContactCasesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactCasesIdCloseRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type PostContactCasesIdCloseResponseObject interface {
+	VisitPostContactCasesIdCloseResponse(w http.ResponseWriter) error
+}
+
+type PostContactCasesIdClose200JSONResponse ContactManagerCase
+
+func (response PostContactCasesIdClose200JSONResponse) VisitPostContactCasesIdCloseResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactCasesIdClose400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostContactCasesIdClose400JSONResponse) VisitPostContactCasesIdCloseResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactCasesIdClose401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostContactCasesIdClose401JSONResponse) VisitPostContactCasesIdCloseResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactCasesIdClose403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostContactCasesIdClose403JSONResponse) VisitPostContactCasesIdCloseResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactCasesIdClose404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostContactCasesIdClose404JSONResponse) VisitPostContactCasesIdCloseResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactCasesIdClose500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostContactCasesIdClose500JSONResponse) VisitPostContactCasesIdCloseResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactCasesIdContinueRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type PostContactCasesIdContinueResponseObject interface {
+	VisitPostContactCasesIdContinueResponse(w http.ResponseWriter) error
+}
+
+type PostContactCasesIdContinue200JSONResponse ContactManagerCase
+
+func (response PostContactCasesIdContinue200JSONResponse) VisitPostContactCasesIdContinueResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactCasesIdContinue400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostContactCasesIdContinue400JSONResponse) VisitPostContactCasesIdContinueResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactCasesIdContinue401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostContactCasesIdContinue401JSONResponse) VisitPostContactCasesIdContinueResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactCasesIdContinue403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostContactCasesIdContinue403JSONResponse) VisitPostContactCasesIdContinueResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactCasesIdContinue404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostContactCasesIdContinue404JSONResponse) VisitPostContactCasesIdContinueResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactCasesIdContinue500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostContactCasesIdContinue500JSONResponse) VisitPostContactCasesIdContinueResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactCasesIdMessagesRequestObject struct {
+	Id   openapi_types.UUID `json:"id"`
+	Body *PostContactCasesIdMessagesJSONRequestBody
+}
+
+type PostContactCasesIdMessagesResponseObject interface {
+	VisitPostContactCasesIdMessagesResponse(w http.ResponseWriter) error
+}
+
+type PostContactCasesIdMessages200JSONResponse ConversationManagerMessage
+
+func (response PostContactCasesIdMessages200JSONResponse) VisitPostContactCasesIdMessagesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactCasesIdMessages400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostContactCasesIdMessages400JSONResponse) VisitPostContactCasesIdMessagesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactCasesIdMessages401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostContactCasesIdMessages401JSONResponse) VisitPostContactCasesIdMessagesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactCasesIdMessages403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostContactCasesIdMessages403JSONResponse) VisitPostContactCasesIdMessagesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactCasesIdMessages404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostContactCasesIdMessages404JSONResponse) VisitPostContactCasesIdMessagesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactCasesIdMessages409JSONResponse struct{ ConflictJSONResponse }
+
+func (response PostContactCasesIdMessages409JSONResponse) VisitPostContactCasesIdMessagesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactCasesIdMessages500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostContactCasesIdMessages500JSONResponse) VisitPostContactCasesIdMessagesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetContactCasesIdNotesRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type GetContactCasesIdNotesResponseObject interface {
+	VisitGetContactCasesIdNotesResponse(w http.ResponseWriter) error
+}
+
+type GetContactCasesIdNotes200JSONResponse ContactManagerCaseNoteListResponse
+
+func (response GetContactCasesIdNotes200JSONResponse) VisitGetContactCasesIdNotesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetContactCasesIdNotes400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetContactCasesIdNotes400JSONResponse) VisitGetContactCasesIdNotesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetContactCasesIdNotes401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetContactCasesIdNotes401JSONResponse) VisitGetContactCasesIdNotesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetContactCasesIdNotes403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetContactCasesIdNotes403JSONResponse) VisitGetContactCasesIdNotesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetContactCasesIdNotes404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response GetContactCasesIdNotes404JSONResponse) VisitGetContactCasesIdNotesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetContactCasesIdNotes500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetContactCasesIdNotes500JSONResponse) VisitGetContactCasesIdNotesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactCasesIdNotesRequestObject struct {
+	Id   openapi_types.UUID `json:"id"`
+	Body *PostContactCasesIdNotesJSONRequestBody
+}
+
+type PostContactCasesIdNotesResponseObject interface {
+	VisitPostContactCasesIdNotesResponse(w http.ResponseWriter) error
+}
+
+type PostContactCasesIdNotes200JSONResponse ContactManagerCaseNote
+
+func (response PostContactCasesIdNotes200JSONResponse) VisitPostContactCasesIdNotesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactCasesIdNotes400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostContactCasesIdNotes400JSONResponse) VisitPostContactCasesIdNotesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactCasesIdNotes401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostContactCasesIdNotes401JSONResponse) VisitPostContactCasesIdNotesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactCasesIdNotes403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostContactCasesIdNotes403JSONResponse) VisitPostContactCasesIdNotesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactCasesIdNotes404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostContactCasesIdNotes404JSONResponse) VisitPostContactCasesIdNotesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactCasesIdNotes500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostContactCasesIdNotes500JSONResponse) VisitPostContactCasesIdNotesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteContactCasesIdNotesNoteIdRequestObject struct {
+	Id     openapi_types.UUID `json:"id"`
+	NoteId openapi_types.UUID `json:"note_id"`
+}
+
+type DeleteContactCasesIdNotesNoteIdResponseObject interface {
+	VisitDeleteContactCasesIdNotesNoteIdResponse(w http.ResponseWriter) error
+}
+
+type DeleteContactCasesIdNotesNoteId200JSONResponse map[string]interface{}
+
+func (response DeleteContactCasesIdNotesNoteId200JSONResponse) VisitDeleteContactCasesIdNotesNoteIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteContactCasesIdNotesNoteId400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response DeleteContactCasesIdNotesNoteId400JSONResponse) VisitDeleteContactCasesIdNotesNoteIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteContactCasesIdNotesNoteId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response DeleteContactCasesIdNotesNoteId401JSONResponse) VisitDeleteContactCasesIdNotesNoteIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteContactCasesIdNotesNoteId403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response DeleteContactCasesIdNotesNoteId403JSONResponse) VisitDeleteContactCasesIdNotesNoteIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteContactCasesIdNotesNoteId404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response DeleteContactCasesIdNotesNoteId404JSONResponse) VisitDeleteContactCasesIdNotesNoteIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteContactCasesIdNotesNoteId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response DeleteContactCasesIdNotesNoteId500JSONResponse) VisitDeleteContactCasesIdNotesNoteIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetContactInteractionsRequestObject struct {
+	Params GetContactInteractionsParams
+}
+
+type GetContactInteractionsResponseObject interface {
+	VisitGetContactInteractionsResponse(w http.ResponseWriter) error
+}
+
+type GetContactInteractions200JSONResponse ContactManagerInteractionListResponse
+
+func (response GetContactInteractions200JSONResponse) VisitGetContactInteractionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetContactInteractions400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetContactInteractions400JSONResponse) VisitGetContactInteractionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetContactInteractions401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetContactInteractions401JSONResponse) VisitGetContactInteractionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetContactInteractions403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetContactInteractions403JSONResponse) VisitGetContactInteractionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetContactInteractions500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetContactInteractions500JSONResponse) VisitGetContactInteractionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetContactInteractionsUnresolvedRequestObject struct {
+	Params GetContactInteractionsUnresolvedParams
+}
+
+type GetContactInteractionsUnresolvedResponseObject interface {
+	VisitGetContactInteractionsUnresolvedResponse(w http.ResponseWriter) error
+}
+
+type GetContactInteractionsUnresolved200JSONResponse ContactManagerInteractionListResponse
+
+func (response GetContactInteractionsUnresolved200JSONResponse) VisitGetContactInteractionsUnresolvedResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetContactInteractionsUnresolved400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetContactInteractionsUnresolved400JSONResponse) VisitGetContactInteractionsUnresolvedResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetContactInteractionsUnresolved401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetContactInteractionsUnresolved401JSONResponse) VisitGetContactInteractionsUnresolvedResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetContactInteractionsUnresolved403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetContactInteractionsUnresolved403JSONResponse) VisitGetContactInteractionsUnresolvedResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetContactInteractionsUnresolved500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetContactInteractionsUnresolved500JSONResponse) VisitGetContactInteractionsUnresolvedResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetContactInteractionsIdRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type GetContactInteractionsIdResponseObject interface {
+	VisitGetContactInteractionsIdResponse(w http.ResponseWriter) error
+}
+
+type GetContactInteractionsId200JSONResponse ContactManagerInteraction
+
+func (response GetContactInteractionsId200JSONResponse) VisitGetContactInteractionsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetContactInteractionsId400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetContactInteractionsId400JSONResponse) VisitGetContactInteractionsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetContactInteractionsId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetContactInteractionsId401JSONResponse) VisitGetContactInteractionsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetContactInteractionsId403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetContactInteractionsId403JSONResponse) VisitGetContactInteractionsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetContactInteractionsId404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response GetContactInteractionsId404JSONResponse) VisitGetContactInteractionsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetContactInteractionsId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetContactInteractionsId500JSONResponse) VisitGetContactInteractionsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactInteractionsIdResolutionsRequestObject struct {
+	Id   openapi_types.UUID `json:"id"`
+	Body *PostContactInteractionsIdResolutionsJSONRequestBody
+}
+
+type PostContactInteractionsIdResolutionsResponseObject interface {
+	VisitPostContactInteractionsIdResolutionsResponse(w http.ResponseWriter) error
+}
+
+type PostContactInteractionsIdResolutions201JSONResponse ContactManagerResolution
+
+func (response PostContactInteractionsIdResolutions201JSONResponse) VisitPostContactInteractionsIdResolutionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(201)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactInteractionsIdResolutions400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostContactInteractionsIdResolutions400JSONResponse) VisitPostContactInteractionsIdResolutionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactInteractionsIdResolutions401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostContactInteractionsIdResolutions401JSONResponse) VisitPostContactInteractionsIdResolutionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactInteractionsIdResolutions403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostContactInteractionsIdResolutions403JSONResponse) VisitPostContactInteractionsIdResolutionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactInteractionsIdResolutions404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostContactInteractionsIdResolutions404JSONResponse) VisitPostContactInteractionsIdResolutionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactInteractionsIdResolutions500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostContactInteractionsIdResolutions500JSONResponse) VisitPostContactInteractionsIdResolutionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteContactInteractionsIdResolutionsRidRequestObject struct {
+	Id  openapi_types.UUID `json:"id"`
+	Rid openapi_types.UUID `json:"rid"`
+}
+
+type DeleteContactInteractionsIdResolutionsRidResponseObject interface {
+	VisitDeleteContactInteractionsIdResolutionsRidResponse(w http.ResponseWriter) error
+}
+
+type DeleteContactInteractionsIdResolutionsRid200Response struct {
+}
+
+func (response DeleteContactInteractionsIdResolutionsRid200Response) VisitDeleteContactInteractionsIdResolutionsRidResponse(w http.ResponseWriter) error {
+	w.WriteHeader(200)
+	return nil
+}
+
+type DeleteContactInteractionsIdResolutionsRid400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response DeleteContactInteractionsIdResolutionsRid400JSONResponse) VisitDeleteContactInteractionsIdResolutionsRidResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteContactInteractionsIdResolutionsRid401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response DeleteContactInteractionsIdResolutionsRid401JSONResponse) VisitDeleteContactInteractionsIdResolutionsRidResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteContactInteractionsIdResolutionsRid403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response DeleteContactInteractionsIdResolutionsRid403JSONResponse) VisitDeleteContactInteractionsIdResolutionsRidResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteContactInteractionsIdResolutionsRid404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response DeleteContactInteractionsIdResolutionsRid404JSONResponse) VisitDeleteContactInteractionsIdResolutionsRidResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteContactInteractionsIdResolutionsRid500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response DeleteContactInteractionsIdResolutionsRid500JSONResponse) VisitDeleteContactInteractionsIdResolutionsRidResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(500)
 
@@ -30475,299 +30768,6 @@ type PostGroupcallsIdHangup503JSONResponse struct{ UnavailableJSONResponse }
 func (response PostGroupcallsIdHangup503JSONResponse) VisitPostGroupcallsIdHangupResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(503)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetInteractionsRequestObject struct {
-	Params GetInteractionsParams
-}
-
-type GetInteractionsResponseObject interface {
-	VisitGetInteractionsResponse(w http.ResponseWriter) error
-}
-
-type GetInteractions200JSONResponse ContactManagerInteractionListResponse
-
-func (response GetInteractions200JSONResponse) VisitGetInteractionsResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetInteractions400JSONResponse struct{ BadRequestJSONResponse }
-
-func (response GetInteractions400JSONResponse) VisitGetInteractionsResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(400)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetInteractions401JSONResponse struct{ UnauthenticatedJSONResponse }
-
-func (response GetInteractions401JSONResponse) VisitGetInteractionsResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(401)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetInteractions403JSONResponse struct{ PermissionDeniedJSONResponse }
-
-func (response GetInteractions403JSONResponse) VisitGetInteractionsResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(403)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetInteractions500JSONResponse struct{ InternalErrorJSONResponse }
-
-func (response GetInteractions500JSONResponse) VisitGetInteractionsResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(500)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetInteractionsUnresolvedRequestObject struct {
-	Params GetInteractionsUnresolvedParams
-}
-
-type GetInteractionsUnresolvedResponseObject interface {
-	VisitGetInteractionsUnresolvedResponse(w http.ResponseWriter) error
-}
-
-type GetInteractionsUnresolved200JSONResponse ContactManagerInteractionListResponse
-
-func (response GetInteractionsUnresolved200JSONResponse) VisitGetInteractionsUnresolvedResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetInteractionsUnresolved400JSONResponse struct{ BadRequestJSONResponse }
-
-func (response GetInteractionsUnresolved400JSONResponse) VisitGetInteractionsUnresolvedResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(400)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetInteractionsUnresolved401JSONResponse struct{ UnauthenticatedJSONResponse }
-
-func (response GetInteractionsUnresolved401JSONResponse) VisitGetInteractionsUnresolvedResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(401)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetInteractionsUnresolved403JSONResponse struct{ PermissionDeniedJSONResponse }
-
-func (response GetInteractionsUnresolved403JSONResponse) VisitGetInteractionsUnresolvedResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(403)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetInteractionsUnresolved500JSONResponse struct{ InternalErrorJSONResponse }
-
-func (response GetInteractionsUnresolved500JSONResponse) VisitGetInteractionsUnresolvedResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(500)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetInteractionsIdRequestObject struct {
-	Id openapi_types.UUID `json:"id"`
-}
-
-type GetInteractionsIdResponseObject interface {
-	VisitGetInteractionsIdResponse(w http.ResponseWriter) error
-}
-
-type GetInteractionsId200JSONResponse ContactManagerInteraction
-
-func (response GetInteractionsId200JSONResponse) VisitGetInteractionsIdResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetInteractionsId400JSONResponse struct{ BadRequestJSONResponse }
-
-func (response GetInteractionsId400JSONResponse) VisitGetInteractionsIdResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(400)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetInteractionsId401JSONResponse struct{ UnauthenticatedJSONResponse }
-
-func (response GetInteractionsId401JSONResponse) VisitGetInteractionsIdResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(401)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetInteractionsId403JSONResponse struct{ PermissionDeniedJSONResponse }
-
-func (response GetInteractionsId403JSONResponse) VisitGetInteractionsIdResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(403)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetInteractionsId404JSONResponse struct{ NotFoundJSONResponse }
-
-func (response GetInteractionsId404JSONResponse) VisitGetInteractionsIdResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(404)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetInteractionsId500JSONResponse struct{ InternalErrorJSONResponse }
-
-func (response GetInteractionsId500JSONResponse) VisitGetInteractionsIdResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(500)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PostInteractionsIdResolutionsRequestObject struct {
-	Id   openapi_types.UUID `json:"id"`
-	Body *PostInteractionsIdResolutionsJSONRequestBody
-}
-
-type PostInteractionsIdResolutionsResponseObject interface {
-	VisitPostInteractionsIdResolutionsResponse(w http.ResponseWriter) error
-}
-
-type PostInteractionsIdResolutions201JSONResponse ContactManagerResolution
-
-func (response PostInteractionsIdResolutions201JSONResponse) VisitPostInteractionsIdResolutionsResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(201)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PostInteractionsIdResolutions400JSONResponse struct{ BadRequestJSONResponse }
-
-func (response PostInteractionsIdResolutions400JSONResponse) VisitPostInteractionsIdResolutionsResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(400)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PostInteractionsIdResolutions401JSONResponse struct{ UnauthenticatedJSONResponse }
-
-func (response PostInteractionsIdResolutions401JSONResponse) VisitPostInteractionsIdResolutionsResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(401)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PostInteractionsIdResolutions403JSONResponse struct{ PermissionDeniedJSONResponse }
-
-func (response PostInteractionsIdResolutions403JSONResponse) VisitPostInteractionsIdResolutionsResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(403)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PostInteractionsIdResolutions404JSONResponse struct{ NotFoundJSONResponse }
-
-func (response PostInteractionsIdResolutions404JSONResponse) VisitPostInteractionsIdResolutionsResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(404)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PostInteractionsIdResolutions500JSONResponse struct{ InternalErrorJSONResponse }
-
-func (response PostInteractionsIdResolutions500JSONResponse) VisitPostInteractionsIdResolutionsResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(500)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type DeleteInteractionsIdResolutionsRidRequestObject struct {
-	Id  openapi_types.UUID `json:"id"`
-	Rid openapi_types.UUID `json:"rid"`
-}
-
-type DeleteInteractionsIdResolutionsRidResponseObject interface {
-	VisitDeleteInteractionsIdResolutionsRidResponse(w http.ResponseWriter) error
-}
-
-type DeleteInteractionsIdResolutionsRid200Response struct {
-}
-
-func (response DeleteInteractionsIdResolutionsRid200Response) VisitDeleteInteractionsIdResolutionsRidResponse(w http.ResponseWriter) error {
-	w.WriteHeader(200)
-	return nil
-}
-
-type DeleteInteractionsIdResolutionsRid400JSONResponse struct{ BadRequestJSONResponse }
-
-func (response DeleteInteractionsIdResolutionsRid400JSONResponse) VisitDeleteInteractionsIdResolutionsRidResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(400)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type DeleteInteractionsIdResolutionsRid401JSONResponse struct{ UnauthenticatedJSONResponse }
-
-func (response DeleteInteractionsIdResolutionsRid401JSONResponse) VisitDeleteInteractionsIdResolutionsRidResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(401)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type DeleteInteractionsIdResolutionsRid403JSONResponse struct{ PermissionDeniedJSONResponse }
-
-func (response DeleteInteractionsIdResolutionsRid403JSONResponse) VisitDeleteInteractionsIdResolutionsRidResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(403)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type DeleteInteractionsIdResolutionsRid404JSONResponse struct{ NotFoundJSONResponse }
-
-func (response DeleteInteractionsIdResolutionsRid404JSONResponse) VisitDeleteInteractionsIdResolutionsRidResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(404)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type DeleteInteractionsIdResolutionsRid500JSONResponse struct{ InternalErrorJSONResponse }
-
-func (response DeleteInteractionsIdResolutionsRid500JSONResponse) VisitDeleteInteractionsIdResolutionsRidResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(500)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -35672,6 +35672,299 @@ func (response PostServiceAgentsContactAddressesIdClaim500JSONResponse) VisitPos
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetServiceAgentsContactInteractionsRequestObject struct {
+	Params GetServiceAgentsContactInteractionsParams
+}
+
+type GetServiceAgentsContactInteractionsResponseObject interface {
+	VisitGetServiceAgentsContactInteractionsResponse(w http.ResponseWriter) error
+}
+
+type GetServiceAgentsContactInteractions200JSONResponse ContactManagerInteractionListResponse
+
+func (response GetServiceAgentsContactInteractions200JSONResponse) VisitGetServiceAgentsContactInteractionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetServiceAgentsContactInteractions400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetServiceAgentsContactInteractions400JSONResponse) VisitGetServiceAgentsContactInteractionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetServiceAgentsContactInteractions401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetServiceAgentsContactInteractions401JSONResponse) VisitGetServiceAgentsContactInteractionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetServiceAgentsContactInteractions403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetServiceAgentsContactInteractions403JSONResponse) VisitGetServiceAgentsContactInteractionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetServiceAgentsContactInteractions500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetServiceAgentsContactInteractions500JSONResponse) VisitGetServiceAgentsContactInteractionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetServiceAgentsContactInteractionsUnresolvedRequestObject struct {
+	Params GetServiceAgentsContactInteractionsUnresolvedParams
+}
+
+type GetServiceAgentsContactInteractionsUnresolvedResponseObject interface {
+	VisitGetServiceAgentsContactInteractionsUnresolvedResponse(w http.ResponseWriter) error
+}
+
+type GetServiceAgentsContactInteractionsUnresolved200JSONResponse ContactManagerInteractionListResponse
+
+func (response GetServiceAgentsContactInteractionsUnresolved200JSONResponse) VisitGetServiceAgentsContactInteractionsUnresolvedResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetServiceAgentsContactInteractionsUnresolved400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetServiceAgentsContactInteractionsUnresolved400JSONResponse) VisitGetServiceAgentsContactInteractionsUnresolvedResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetServiceAgentsContactInteractionsUnresolved401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetServiceAgentsContactInteractionsUnresolved401JSONResponse) VisitGetServiceAgentsContactInteractionsUnresolvedResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetServiceAgentsContactInteractionsUnresolved403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetServiceAgentsContactInteractionsUnresolved403JSONResponse) VisitGetServiceAgentsContactInteractionsUnresolvedResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetServiceAgentsContactInteractionsUnresolved500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetServiceAgentsContactInteractionsUnresolved500JSONResponse) VisitGetServiceAgentsContactInteractionsUnresolvedResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetServiceAgentsContactInteractionsIdRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type GetServiceAgentsContactInteractionsIdResponseObject interface {
+	VisitGetServiceAgentsContactInteractionsIdResponse(w http.ResponseWriter) error
+}
+
+type GetServiceAgentsContactInteractionsId200JSONResponse ContactManagerInteraction
+
+func (response GetServiceAgentsContactInteractionsId200JSONResponse) VisitGetServiceAgentsContactInteractionsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetServiceAgentsContactInteractionsId400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetServiceAgentsContactInteractionsId400JSONResponse) VisitGetServiceAgentsContactInteractionsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetServiceAgentsContactInteractionsId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetServiceAgentsContactInteractionsId401JSONResponse) VisitGetServiceAgentsContactInteractionsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetServiceAgentsContactInteractionsId403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetServiceAgentsContactInteractionsId403JSONResponse) VisitGetServiceAgentsContactInteractionsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetServiceAgentsContactInteractionsId404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response GetServiceAgentsContactInteractionsId404JSONResponse) VisitGetServiceAgentsContactInteractionsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetServiceAgentsContactInteractionsId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetServiceAgentsContactInteractionsId500JSONResponse) VisitGetServiceAgentsContactInteractionsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostServiceAgentsContactInteractionsIdResolutionsRequestObject struct {
+	Id   openapi_types.UUID `json:"id"`
+	Body *PostServiceAgentsContactInteractionsIdResolutionsJSONRequestBody
+}
+
+type PostServiceAgentsContactInteractionsIdResolutionsResponseObject interface {
+	VisitPostServiceAgentsContactInteractionsIdResolutionsResponse(w http.ResponseWriter) error
+}
+
+type PostServiceAgentsContactInteractionsIdResolutions201JSONResponse ContactManagerResolution
+
+func (response PostServiceAgentsContactInteractionsIdResolutions201JSONResponse) VisitPostServiceAgentsContactInteractionsIdResolutionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(201)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostServiceAgentsContactInteractionsIdResolutions400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostServiceAgentsContactInteractionsIdResolutions400JSONResponse) VisitPostServiceAgentsContactInteractionsIdResolutionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostServiceAgentsContactInteractionsIdResolutions401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostServiceAgentsContactInteractionsIdResolutions401JSONResponse) VisitPostServiceAgentsContactInteractionsIdResolutionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostServiceAgentsContactInteractionsIdResolutions403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostServiceAgentsContactInteractionsIdResolutions403JSONResponse) VisitPostServiceAgentsContactInteractionsIdResolutionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostServiceAgentsContactInteractionsIdResolutions404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostServiceAgentsContactInteractionsIdResolutions404JSONResponse) VisitPostServiceAgentsContactInteractionsIdResolutionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostServiceAgentsContactInteractionsIdResolutions500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostServiceAgentsContactInteractionsIdResolutions500JSONResponse) VisitPostServiceAgentsContactInteractionsIdResolutionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteServiceAgentsContactInteractionsIdResolutionsRidRequestObject struct {
+	Id  openapi_types.UUID `json:"id"`
+	Rid openapi_types.UUID `json:"rid"`
+}
+
+type DeleteServiceAgentsContactInteractionsIdResolutionsRidResponseObject interface {
+	VisitDeleteServiceAgentsContactInteractionsIdResolutionsRidResponse(w http.ResponseWriter) error
+}
+
+type DeleteServiceAgentsContactInteractionsIdResolutionsRid200Response struct {
+}
+
+func (response DeleteServiceAgentsContactInteractionsIdResolutionsRid200Response) VisitDeleteServiceAgentsContactInteractionsIdResolutionsRidResponse(w http.ResponseWriter) error {
+	w.WriteHeader(200)
+	return nil
+}
+
+type DeleteServiceAgentsContactInteractionsIdResolutionsRid400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response DeleteServiceAgentsContactInteractionsIdResolutionsRid400JSONResponse) VisitDeleteServiceAgentsContactInteractionsIdResolutionsRidResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteServiceAgentsContactInteractionsIdResolutionsRid401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response DeleteServiceAgentsContactInteractionsIdResolutionsRid401JSONResponse) VisitDeleteServiceAgentsContactInteractionsIdResolutionsRidResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteServiceAgentsContactInteractionsIdResolutionsRid403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response DeleteServiceAgentsContactInteractionsIdResolutionsRid403JSONResponse) VisitDeleteServiceAgentsContactInteractionsIdResolutionsRidResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteServiceAgentsContactInteractionsIdResolutionsRid404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response DeleteServiceAgentsContactInteractionsIdResolutionsRid404JSONResponse) VisitDeleteServiceAgentsContactInteractionsIdResolutionsRidResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteServiceAgentsContactInteractionsIdResolutionsRid500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response DeleteServiceAgentsContactInteractionsIdResolutionsRid500JSONResponse) VisitDeleteServiceAgentsContactInteractionsIdResolutionsRidResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type GetServiceAgentsContactsRequestObject struct {
 	Params GetServiceAgentsContactsParams
 }
@@ -37047,299 +37340,6 @@ func (response GetServiceAgentsFilesIdFile404JSONResponse) VisitGetServiceAgents
 type GetServiceAgentsFilesIdFile500JSONResponse struct{ InternalErrorJSONResponse }
 
 func (response GetServiceAgentsFilesIdFile500JSONResponse) VisitGetServiceAgentsFilesIdFileResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(500)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetServiceAgentsInteractionsRequestObject struct {
-	Params GetServiceAgentsInteractionsParams
-}
-
-type GetServiceAgentsInteractionsResponseObject interface {
-	VisitGetServiceAgentsInteractionsResponse(w http.ResponseWriter) error
-}
-
-type GetServiceAgentsInteractions200JSONResponse ContactManagerInteractionListResponse
-
-func (response GetServiceAgentsInteractions200JSONResponse) VisitGetServiceAgentsInteractionsResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetServiceAgentsInteractions400JSONResponse struct{ BadRequestJSONResponse }
-
-func (response GetServiceAgentsInteractions400JSONResponse) VisitGetServiceAgentsInteractionsResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(400)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetServiceAgentsInteractions401JSONResponse struct{ UnauthenticatedJSONResponse }
-
-func (response GetServiceAgentsInteractions401JSONResponse) VisitGetServiceAgentsInteractionsResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(401)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetServiceAgentsInteractions403JSONResponse struct{ PermissionDeniedJSONResponse }
-
-func (response GetServiceAgentsInteractions403JSONResponse) VisitGetServiceAgentsInteractionsResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(403)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetServiceAgentsInteractions500JSONResponse struct{ InternalErrorJSONResponse }
-
-func (response GetServiceAgentsInteractions500JSONResponse) VisitGetServiceAgentsInteractionsResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(500)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetServiceAgentsInteractionsUnresolvedRequestObject struct {
-	Params GetServiceAgentsInteractionsUnresolvedParams
-}
-
-type GetServiceAgentsInteractionsUnresolvedResponseObject interface {
-	VisitGetServiceAgentsInteractionsUnresolvedResponse(w http.ResponseWriter) error
-}
-
-type GetServiceAgentsInteractionsUnresolved200JSONResponse ContactManagerInteractionListResponse
-
-func (response GetServiceAgentsInteractionsUnresolved200JSONResponse) VisitGetServiceAgentsInteractionsUnresolvedResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetServiceAgentsInteractionsUnresolved400JSONResponse struct{ BadRequestJSONResponse }
-
-func (response GetServiceAgentsInteractionsUnresolved400JSONResponse) VisitGetServiceAgentsInteractionsUnresolvedResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(400)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetServiceAgentsInteractionsUnresolved401JSONResponse struct{ UnauthenticatedJSONResponse }
-
-func (response GetServiceAgentsInteractionsUnresolved401JSONResponse) VisitGetServiceAgentsInteractionsUnresolvedResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(401)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetServiceAgentsInteractionsUnresolved403JSONResponse struct{ PermissionDeniedJSONResponse }
-
-func (response GetServiceAgentsInteractionsUnresolved403JSONResponse) VisitGetServiceAgentsInteractionsUnresolvedResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(403)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetServiceAgentsInteractionsUnresolved500JSONResponse struct{ InternalErrorJSONResponse }
-
-func (response GetServiceAgentsInteractionsUnresolved500JSONResponse) VisitGetServiceAgentsInteractionsUnresolvedResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(500)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetServiceAgentsInteractionsIdRequestObject struct {
-	Id openapi_types.UUID `json:"id"`
-}
-
-type GetServiceAgentsInteractionsIdResponseObject interface {
-	VisitGetServiceAgentsInteractionsIdResponse(w http.ResponseWriter) error
-}
-
-type GetServiceAgentsInteractionsId200JSONResponse ContactManagerInteraction
-
-func (response GetServiceAgentsInteractionsId200JSONResponse) VisitGetServiceAgentsInteractionsIdResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetServiceAgentsInteractionsId400JSONResponse struct{ BadRequestJSONResponse }
-
-func (response GetServiceAgentsInteractionsId400JSONResponse) VisitGetServiceAgentsInteractionsIdResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(400)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetServiceAgentsInteractionsId401JSONResponse struct{ UnauthenticatedJSONResponse }
-
-func (response GetServiceAgentsInteractionsId401JSONResponse) VisitGetServiceAgentsInteractionsIdResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(401)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetServiceAgentsInteractionsId403JSONResponse struct{ PermissionDeniedJSONResponse }
-
-func (response GetServiceAgentsInteractionsId403JSONResponse) VisitGetServiceAgentsInteractionsIdResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(403)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetServiceAgentsInteractionsId404JSONResponse struct{ NotFoundJSONResponse }
-
-func (response GetServiceAgentsInteractionsId404JSONResponse) VisitGetServiceAgentsInteractionsIdResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(404)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetServiceAgentsInteractionsId500JSONResponse struct{ InternalErrorJSONResponse }
-
-func (response GetServiceAgentsInteractionsId500JSONResponse) VisitGetServiceAgentsInteractionsIdResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(500)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PostServiceAgentsInteractionsIdResolutionsRequestObject struct {
-	Id   openapi_types.UUID `json:"id"`
-	Body *PostServiceAgentsInteractionsIdResolutionsJSONRequestBody
-}
-
-type PostServiceAgentsInteractionsIdResolutionsResponseObject interface {
-	VisitPostServiceAgentsInteractionsIdResolutionsResponse(w http.ResponseWriter) error
-}
-
-type PostServiceAgentsInteractionsIdResolutions201JSONResponse ContactManagerResolution
-
-func (response PostServiceAgentsInteractionsIdResolutions201JSONResponse) VisitPostServiceAgentsInteractionsIdResolutionsResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(201)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PostServiceAgentsInteractionsIdResolutions400JSONResponse struct{ BadRequestJSONResponse }
-
-func (response PostServiceAgentsInteractionsIdResolutions400JSONResponse) VisitPostServiceAgentsInteractionsIdResolutionsResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(400)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PostServiceAgentsInteractionsIdResolutions401JSONResponse struct{ UnauthenticatedJSONResponse }
-
-func (response PostServiceAgentsInteractionsIdResolutions401JSONResponse) VisitPostServiceAgentsInteractionsIdResolutionsResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(401)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PostServiceAgentsInteractionsIdResolutions403JSONResponse struct{ PermissionDeniedJSONResponse }
-
-func (response PostServiceAgentsInteractionsIdResolutions403JSONResponse) VisitPostServiceAgentsInteractionsIdResolutionsResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(403)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PostServiceAgentsInteractionsIdResolutions404JSONResponse struct{ NotFoundJSONResponse }
-
-func (response PostServiceAgentsInteractionsIdResolutions404JSONResponse) VisitPostServiceAgentsInteractionsIdResolutionsResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(404)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PostServiceAgentsInteractionsIdResolutions500JSONResponse struct{ InternalErrorJSONResponse }
-
-func (response PostServiceAgentsInteractionsIdResolutions500JSONResponse) VisitPostServiceAgentsInteractionsIdResolutionsResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(500)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type DeleteServiceAgentsInteractionsIdResolutionsRidRequestObject struct {
-	Id  openapi_types.UUID `json:"id"`
-	Rid openapi_types.UUID `json:"rid"`
-}
-
-type DeleteServiceAgentsInteractionsIdResolutionsRidResponseObject interface {
-	VisitDeleteServiceAgentsInteractionsIdResolutionsRidResponse(w http.ResponseWriter) error
-}
-
-type DeleteServiceAgentsInteractionsIdResolutionsRid200Response struct {
-}
-
-func (response DeleteServiceAgentsInteractionsIdResolutionsRid200Response) VisitDeleteServiceAgentsInteractionsIdResolutionsRidResponse(w http.ResponseWriter) error {
-	w.WriteHeader(200)
-	return nil
-}
-
-type DeleteServiceAgentsInteractionsIdResolutionsRid400JSONResponse struct{ BadRequestJSONResponse }
-
-func (response DeleteServiceAgentsInteractionsIdResolutionsRid400JSONResponse) VisitDeleteServiceAgentsInteractionsIdResolutionsRidResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(400)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type DeleteServiceAgentsInteractionsIdResolutionsRid401JSONResponse struct{ UnauthenticatedJSONResponse }
-
-func (response DeleteServiceAgentsInteractionsIdResolutionsRid401JSONResponse) VisitDeleteServiceAgentsInteractionsIdResolutionsRidResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(401)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type DeleteServiceAgentsInteractionsIdResolutionsRid403JSONResponse struct{ PermissionDeniedJSONResponse }
-
-func (response DeleteServiceAgentsInteractionsIdResolutionsRid403JSONResponse) VisitDeleteServiceAgentsInteractionsIdResolutionsRidResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(403)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type DeleteServiceAgentsInteractionsIdResolutionsRid404JSONResponse struct{ NotFoundJSONResponse }
-
-func (response DeleteServiceAgentsInteractionsIdResolutionsRid404JSONResponse) VisitDeleteServiceAgentsInteractionsIdResolutionsRidResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(404)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type DeleteServiceAgentsInteractionsIdResolutionsRid500JSONResponse struct{ InternalErrorJSONResponse }
-
-func (response DeleteServiceAgentsInteractionsIdResolutionsRid500JSONResponse) VisitDeleteServiceAgentsInteractionsIdResolutionsRidResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(500)
 
@@ -41735,33 +41735,6 @@ type StrictServerInterface interface {
 	// Update campaign status
 	// (PUT /campaigns/{id}/status)
 	PutCampaignsIdStatus(ctx context.Context, request PutCampaignsIdStatusRequestObject) (PutCampaignsIdStatusResponseObject, error)
-	// List cases
-	// (GET /cases)
-	GetCases(ctx context.Context, request GetCasesRequestObject) (GetCasesResponseObject, error)
-	// List unresolved cases
-	// (GET /cases/unresolved)
-	GetCasesUnresolved(ctx context.Context, request GetCasesUnresolvedRequestObject) (GetCasesUnresolvedResponseObject, error)
-	// Get a case
-	// (GET /cases/{id})
-	GetCasesId(ctx context.Context, request GetCasesIdRequestObject) (GetCasesIdResponseObject, error)
-	// Close a case
-	// (POST /cases/{id}/close)
-	PostCasesIdClose(ctx context.Context, request PostCasesIdCloseRequestObject) (PostCasesIdCloseResponseObject, error)
-	// Continue a closed case
-	// (POST /cases/{id}/continue)
-	PostCasesIdContinue(ctx context.Context, request PostCasesIdContinueRequestObject) (PostCasesIdContinueResponseObject, error)
-	// Send a message from a case
-	// (POST /cases/{id}/messages)
-	PostCasesIdMessages(ctx context.Context, request PostCasesIdMessagesRequestObject) (PostCasesIdMessagesResponseObject, error)
-	// List notes for a case
-	// (GET /cases/{id}/notes)
-	GetCasesIdNotes(ctx context.Context, request GetCasesIdNotesRequestObject) (GetCasesIdNotesResponseObject, error)
-	// Create a note on a case
-	// (POST /cases/{id}/notes)
-	PostCasesIdNotes(ctx context.Context, request PostCasesIdNotesRequestObject) (PostCasesIdNotesResponseObject, error)
-	// Delete a case note
-	// (DELETE /cases/{id}/notes/{note_id})
-	DeleteCasesIdNotesNoteId(ctx context.Context, request DeleteCasesIdNotesNoteIdRequestObject) (DeleteCasesIdNotesNoteIdResponseObject, error)
 	// Get list of conference calls
 	// (GET /conferencecalls)
 	GetConferencecalls(ctx context.Context, request GetConferencecallsRequestObject) (GetConferencecallsResponseObject, error)
@@ -41822,6 +41795,48 @@ type StrictServerInterface interface {
 	// Claim an unresolved contact address
 	// (POST /contact_addresses/{id}/claim)
 	PostContactAddressesIdClaim(ctx context.Context, request PostContactAddressesIdClaimRequestObject) (PostContactAddressesIdClaimResponseObject, error)
+	// List cases
+	// (GET /contact_cases)
+	GetContactCases(ctx context.Context, request GetContactCasesRequestObject) (GetContactCasesResponseObject, error)
+	// List unresolved cases
+	// (GET /contact_cases/unresolved)
+	GetContactCasesUnresolved(ctx context.Context, request GetContactCasesUnresolvedRequestObject) (GetContactCasesUnresolvedResponseObject, error)
+	// Get a case
+	// (GET /contact_cases/{id})
+	GetContactCasesId(ctx context.Context, request GetContactCasesIdRequestObject) (GetContactCasesIdResponseObject, error)
+	// Close a case
+	// (POST /contact_cases/{id}/close)
+	PostContactCasesIdClose(ctx context.Context, request PostContactCasesIdCloseRequestObject) (PostContactCasesIdCloseResponseObject, error)
+	// Continue a closed case
+	// (POST /contact_cases/{id}/continue)
+	PostContactCasesIdContinue(ctx context.Context, request PostContactCasesIdContinueRequestObject) (PostContactCasesIdContinueResponseObject, error)
+	// Send a message from a case
+	// (POST /contact_cases/{id}/messages)
+	PostContactCasesIdMessages(ctx context.Context, request PostContactCasesIdMessagesRequestObject) (PostContactCasesIdMessagesResponseObject, error)
+	// List notes for a case
+	// (GET /contact_cases/{id}/notes)
+	GetContactCasesIdNotes(ctx context.Context, request GetContactCasesIdNotesRequestObject) (GetContactCasesIdNotesResponseObject, error)
+	// Create a note on a case
+	// (POST /contact_cases/{id}/notes)
+	PostContactCasesIdNotes(ctx context.Context, request PostContactCasesIdNotesRequestObject) (PostContactCasesIdNotesResponseObject, error)
+	// Delete a case note
+	// (DELETE /contact_cases/{id}/notes/{note_id})
+	DeleteContactCasesIdNotesNoteId(ctx context.Context, request DeleteContactCasesIdNotesNoteIdRequestObject) (DeleteContactCasesIdNotesNoteIdResponseObject, error)
+	// List interactions
+	// (GET /contact_interactions)
+	GetContactInteractions(ctx context.Context, request GetContactInteractionsRequestObject) (GetContactInteractionsResponseObject, error)
+	// List unresolved interactions
+	// (GET /contact_interactions/unresolved)
+	GetContactInteractionsUnresolved(ctx context.Context, request GetContactInteractionsUnresolvedRequestObject) (GetContactInteractionsUnresolvedResponseObject, error)
+	// Get an interaction
+	// (GET /contact_interactions/{id})
+	GetContactInteractionsId(ctx context.Context, request GetContactInteractionsIdRequestObject) (GetContactInteractionsIdResponseObject, error)
+	// Create a resolution for an interaction
+	// (POST /contact_interactions/{id}/resolutions)
+	PostContactInteractionsIdResolutions(ctx context.Context, request PostContactInteractionsIdResolutionsRequestObject) (PostContactInteractionsIdResolutionsResponseObject, error)
+	// Delete a resolution
+	// (DELETE /contact_interactions/{id}/resolutions/{rid})
+	DeleteContactInteractionsIdResolutionsRid(ctx context.Context, request DeleteContactInteractionsIdResolutionsRidRequestObject) (DeleteContactInteractionsIdResolutionsRidResponseObject, error)
 	// List contacts
 	// (GET /contacts)
 	GetContacts(ctx context.Context, request GetContactsRequestObject) (GetContactsResponseObject, error)
@@ -41990,21 +42005,6 @@ type StrictServerInterface interface {
 	// Hangup the groupcall
 	// (POST /groupcalls/{id}/hangup)
 	PostGroupcallsIdHangup(ctx context.Context, request PostGroupcallsIdHangupRequestObject) (PostGroupcallsIdHangupResponseObject, error)
-	// List interactions
-	// (GET /interactions)
-	GetInteractions(ctx context.Context, request GetInteractionsRequestObject) (GetInteractionsResponseObject, error)
-	// List unresolved interactions
-	// (GET /interactions/unresolved)
-	GetInteractionsUnresolved(ctx context.Context, request GetInteractionsUnresolvedRequestObject) (GetInteractionsUnresolvedResponseObject, error)
-	// Get an interaction
-	// (GET /interactions/{id})
-	GetInteractionsId(ctx context.Context, request GetInteractionsIdRequestObject) (GetInteractionsIdResponseObject, error)
-	// Create a resolution for an interaction
-	// (POST /interactions/{id}/resolutions)
-	PostInteractionsIdResolutions(ctx context.Context, request PostInteractionsIdResolutionsRequestObject) (PostInteractionsIdResolutionsResponseObject, error)
-	// Delete a resolution
-	// (DELETE /interactions/{id}/resolutions/{rid})
-	DeleteInteractionsIdResolutionsRid(ctx context.Context, request DeleteInteractionsIdResolutionsRidRequestObject) (DeleteInteractionsIdResolutionsRidResponseObject, error)
 	// Get the logged-in agent
 	// (GET /me)
 	GetMe(ctx context.Context, request GetMeRequestObject) (GetMeResponseObject, error)
@@ -42263,6 +42263,21 @@ type StrictServerInterface interface {
 	// Claim an unresolved contact address (service agent)
 	// (POST /service_agents/contact_addresses/{id}/claim)
 	PostServiceAgentsContactAddressesIdClaim(ctx context.Context, request PostServiceAgentsContactAddressesIdClaimRequestObject) (PostServiceAgentsContactAddressesIdClaimResponseObject, error)
+	// List interactions
+	// (GET /service_agents/contact_interactions)
+	GetServiceAgentsContactInteractions(ctx context.Context, request GetServiceAgentsContactInteractionsRequestObject) (GetServiceAgentsContactInteractionsResponseObject, error)
+	// List unresolved interactions
+	// (GET /service_agents/contact_interactions/unresolved)
+	GetServiceAgentsContactInteractionsUnresolved(ctx context.Context, request GetServiceAgentsContactInteractionsUnresolvedRequestObject) (GetServiceAgentsContactInteractionsUnresolvedResponseObject, error)
+	// Get an interaction
+	// (GET /service_agents/contact_interactions/{id})
+	GetServiceAgentsContactInteractionsId(ctx context.Context, request GetServiceAgentsContactInteractionsIdRequestObject) (GetServiceAgentsContactInteractionsIdResponseObject, error)
+	// Create a resolution for an interaction
+	// (POST /service_agents/contact_interactions/{id}/resolutions)
+	PostServiceAgentsContactInteractionsIdResolutions(ctx context.Context, request PostServiceAgentsContactInteractionsIdResolutionsRequestObject) (PostServiceAgentsContactInteractionsIdResolutionsResponseObject, error)
+	// Delete a resolution
+	// (DELETE /service_agents/contact_interactions/{id}/resolutions/{rid})
+	DeleteServiceAgentsContactInteractionsIdResolutionsRid(ctx context.Context, request DeleteServiceAgentsContactInteractionsIdResolutionsRidRequestObject) (DeleteServiceAgentsContactInteractionsIdResolutionsRidResponseObject, error)
 	// List contacts
 	// (GET /service_agents/contacts)
 	GetServiceAgentsContacts(ctx context.Context, request GetServiceAgentsContactsRequestObject) (GetServiceAgentsContactsResponseObject, error)
@@ -42338,21 +42353,6 @@ type StrictServerInterface interface {
 	// Download the service agent file
 	// (GET /service_agents/files/{id}/file)
 	GetServiceAgentsFilesIdFile(ctx context.Context, request GetServiceAgentsFilesIdFileRequestObject) (GetServiceAgentsFilesIdFileResponseObject, error)
-	// List interactions
-	// (GET /service_agents/interactions)
-	GetServiceAgentsInteractions(ctx context.Context, request GetServiceAgentsInteractionsRequestObject) (GetServiceAgentsInteractionsResponseObject, error)
-	// List unresolved interactions
-	// (GET /service_agents/interactions/unresolved)
-	GetServiceAgentsInteractionsUnresolved(ctx context.Context, request GetServiceAgentsInteractionsUnresolvedRequestObject) (GetServiceAgentsInteractionsUnresolvedResponseObject, error)
-	// Get an interaction
-	// (GET /service_agents/interactions/{id})
-	GetServiceAgentsInteractionsId(ctx context.Context, request GetServiceAgentsInteractionsIdRequestObject) (GetServiceAgentsInteractionsIdResponseObject, error)
-	// Create a resolution for an interaction
-	// (POST /service_agents/interactions/{id}/resolutions)
-	PostServiceAgentsInteractionsIdResolutions(ctx context.Context, request PostServiceAgentsInteractionsIdResolutionsRequestObject) (PostServiceAgentsInteractionsIdResolutionsResponseObject, error)
-	// Delete a resolution
-	// (DELETE /service_agents/interactions/{id}/resolutions/{rid})
-	DeleteServiceAgentsInteractionsIdResolutionsRid(ctx context.Context, request DeleteServiceAgentsInteractionsIdResolutionsRidRequestObject) (DeleteServiceAgentsInteractionsIdResolutionsRidResponseObject, error)
 	// Get authenticated agent's details
 	// (GET /service_agents/me)
 	GetServiceAgentsMe(ctx context.Context, request GetServiceAgentsMeRequestObject) (GetServiceAgentsMeResponseObject, error)
@@ -45772,266 +45772,6 @@ func (sh *strictHandler) PutCampaignsIdStatus(ctx *gin.Context, id string) {
 	}
 }
 
-// GetCases operation middleware
-func (sh *strictHandler) GetCases(ctx *gin.Context, params GetCasesParams) {
-	var request GetCasesRequestObject
-
-	request.Params = params
-
-	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.GetCases(ctx, request.(GetCasesRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "GetCases")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		ctx.Error(err)
-		ctx.Status(http.StatusInternalServerError)
-	} else if validResponse, ok := response.(GetCasesResponseObject); ok {
-		if err := validResponse.VisitGetCasesResponse(ctx.Writer); err != nil {
-			ctx.Error(err)
-		}
-	} else if response != nil {
-		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// GetCasesUnresolved operation middleware
-func (sh *strictHandler) GetCasesUnresolved(ctx *gin.Context, params GetCasesUnresolvedParams) {
-	var request GetCasesUnresolvedRequestObject
-
-	request.Params = params
-
-	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.GetCasesUnresolved(ctx, request.(GetCasesUnresolvedRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "GetCasesUnresolved")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		ctx.Error(err)
-		ctx.Status(http.StatusInternalServerError)
-	} else if validResponse, ok := response.(GetCasesUnresolvedResponseObject); ok {
-		if err := validResponse.VisitGetCasesUnresolvedResponse(ctx.Writer); err != nil {
-			ctx.Error(err)
-		}
-	} else if response != nil {
-		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// GetCasesId operation middleware
-func (sh *strictHandler) GetCasesId(ctx *gin.Context, id openapi_types.UUID) {
-	var request GetCasesIdRequestObject
-
-	request.Id = id
-
-	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.GetCasesId(ctx, request.(GetCasesIdRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "GetCasesId")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		ctx.Error(err)
-		ctx.Status(http.StatusInternalServerError)
-	} else if validResponse, ok := response.(GetCasesIdResponseObject); ok {
-		if err := validResponse.VisitGetCasesIdResponse(ctx.Writer); err != nil {
-			ctx.Error(err)
-		}
-	} else if response != nil {
-		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// PostCasesIdClose operation middleware
-func (sh *strictHandler) PostCasesIdClose(ctx *gin.Context, id openapi_types.UUID) {
-	var request PostCasesIdCloseRequestObject
-
-	request.Id = id
-
-	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.PostCasesIdClose(ctx, request.(PostCasesIdCloseRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "PostCasesIdClose")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		ctx.Error(err)
-		ctx.Status(http.StatusInternalServerError)
-	} else if validResponse, ok := response.(PostCasesIdCloseResponseObject); ok {
-		if err := validResponse.VisitPostCasesIdCloseResponse(ctx.Writer); err != nil {
-			ctx.Error(err)
-		}
-	} else if response != nil {
-		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// PostCasesIdContinue operation middleware
-func (sh *strictHandler) PostCasesIdContinue(ctx *gin.Context, id openapi_types.UUID) {
-	var request PostCasesIdContinueRequestObject
-
-	request.Id = id
-
-	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.PostCasesIdContinue(ctx, request.(PostCasesIdContinueRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "PostCasesIdContinue")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		ctx.Error(err)
-		ctx.Status(http.StatusInternalServerError)
-	} else if validResponse, ok := response.(PostCasesIdContinueResponseObject); ok {
-		if err := validResponse.VisitPostCasesIdContinueResponse(ctx.Writer); err != nil {
-			ctx.Error(err)
-		}
-	} else if response != nil {
-		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// PostCasesIdMessages operation middleware
-func (sh *strictHandler) PostCasesIdMessages(ctx *gin.Context, id openapi_types.UUID) {
-	var request PostCasesIdMessagesRequestObject
-
-	request.Id = id
-
-	var body PostCasesIdMessagesJSONRequestBody
-	if err := ctx.ShouldBindJSON(&body); err != nil {
-		ctx.Status(http.StatusBadRequest)
-		ctx.Error(err)
-		return
-	}
-	request.Body = &body
-
-	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.PostCasesIdMessages(ctx, request.(PostCasesIdMessagesRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "PostCasesIdMessages")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		ctx.Error(err)
-		ctx.Status(http.StatusInternalServerError)
-	} else if validResponse, ok := response.(PostCasesIdMessagesResponseObject); ok {
-		if err := validResponse.VisitPostCasesIdMessagesResponse(ctx.Writer); err != nil {
-			ctx.Error(err)
-		}
-	} else if response != nil {
-		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// GetCasesIdNotes operation middleware
-func (sh *strictHandler) GetCasesIdNotes(ctx *gin.Context, id openapi_types.UUID) {
-	var request GetCasesIdNotesRequestObject
-
-	request.Id = id
-
-	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.GetCasesIdNotes(ctx, request.(GetCasesIdNotesRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "GetCasesIdNotes")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		ctx.Error(err)
-		ctx.Status(http.StatusInternalServerError)
-	} else if validResponse, ok := response.(GetCasesIdNotesResponseObject); ok {
-		if err := validResponse.VisitGetCasesIdNotesResponse(ctx.Writer); err != nil {
-			ctx.Error(err)
-		}
-	} else if response != nil {
-		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// PostCasesIdNotes operation middleware
-func (sh *strictHandler) PostCasesIdNotes(ctx *gin.Context, id openapi_types.UUID) {
-	var request PostCasesIdNotesRequestObject
-
-	request.Id = id
-
-	var body PostCasesIdNotesJSONRequestBody
-	if err := ctx.ShouldBindJSON(&body); err != nil {
-		ctx.Status(http.StatusBadRequest)
-		ctx.Error(err)
-		return
-	}
-	request.Body = &body
-
-	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.PostCasesIdNotes(ctx, request.(PostCasesIdNotesRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "PostCasesIdNotes")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		ctx.Error(err)
-		ctx.Status(http.StatusInternalServerError)
-	} else if validResponse, ok := response.(PostCasesIdNotesResponseObject); ok {
-		if err := validResponse.VisitPostCasesIdNotesResponse(ctx.Writer); err != nil {
-			ctx.Error(err)
-		}
-	} else if response != nil {
-		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// DeleteCasesIdNotesNoteId operation middleware
-func (sh *strictHandler) DeleteCasesIdNotesNoteId(ctx *gin.Context, id openapi_types.UUID, noteId openapi_types.UUID) {
-	var request DeleteCasesIdNotesNoteIdRequestObject
-
-	request.Id = id
-	request.NoteId = noteId
-
-	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.DeleteCasesIdNotesNoteId(ctx, request.(DeleteCasesIdNotesNoteIdRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "DeleteCasesIdNotesNoteId")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		ctx.Error(err)
-		ctx.Status(http.StatusInternalServerError)
-	} else if validResponse, ok := response.(DeleteCasesIdNotesNoteIdResponseObject); ok {
-		if err := validResponse.VisitDeleteCasesIdNotesNoteIdResponse(ctx.Writer); err != nil {
-			ctx.Error(err)
-		}
-	} else if response != nil {
-		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
 // GetConferencecalls operation middleware
 func (sh *strictHandler) GetConferencecalls(ctx *gin.Context, params GetConferencecallsParams) {
 	var request GetConferencecallsRequestObject
@@ -46618,6 +46358,410 @@ func (sh *strictHandler) PostContactAddressesIdClaim(ctx *gin.Context, id openap
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PostContactAddressesIdClaimResponseObject); ok {
 		if err := validResponse.VisitPostContactAddressesIdClaimResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetContactCases operation middleware
+func (sh *strictHandler) GetContactCases(ctx *gin.Context, params GetContactCasesParams) {
+	var request GetContactCasesRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetContactCases(ctx, request.(GetContactCasesRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetContactCases")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetContactCasesResponseObject); ok {
+		if err := validResponse.VisitGetContactCasesResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetContactCasesUnresolved operation middleware
+func (sh *strictHandler) GetContactCasesUnresolved(ctx *gin.Context, params GetContactCasesUnresolvedParams) {
+	var request GetContactCasesUnresolvedRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetContactCasesUnresolved(ctx, request.(GetContactCasesUnresolvedRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetContactCasesUnresolved")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetContactCasesUnresolvedResponseObject); ok {
+		if err := validResponse.VisitGetContactCasesUnresolvedResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetContactCasesId operation middleware
+func (sh *strictHandler) GetContactCasesId(ctx *gin.Context, id openapi_types.UUID) {
+	var request GetContactCasesIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetContactCasesId(ctx, request.(GetContactCasesIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetContactCasesId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetContactCasesIdResponseObject); ok {
+		if err := validResponse.VisitGetContactCasesIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostContactCasesIdClose operation middleware
+func (sh *strictHandler) PostContactCasesIdClose(ctx *gin.Context, id openapi_types.UUID) {
+	var request PostContactCasesIdCloseRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostContactCasesIdClose(ctx, request.(PostContactCasesIdCloseRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostContactCasesIdClose")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostContactCasesIdCloseResponseObject); ok {
+		if err := validResponse.VisitPostContactCasesIdCloseResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostContactCasesIdContinue operation middleware
+func (sh *strictHandler) PostContactCasesIdContinue(ctx *gin.Context, id openapi_types.UUID) {
+	var request PostContactCasesIdContinueRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostContactCasesIdContinue(ctx, request.(PostContactCasesIdContinueRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostContactCasesIdContinue")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostContactCasesIdContinueResponseObject); ok {
+		if err := validResponse.VisitPostContactCasesIdContinueResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostContactCasesIdMessages operation middleware
+func (sh *strictHandler) PostContactCasesIdMessages(ctx *gin.Context, id openapi_types.UUID) {
+	var request PostContactCasesIdMessagesRequestObject
+
+	request.Id = id
+
+	var body PostContactCasesIdMessagesJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostContactCasesIdMessages(ctx, request.(PostContactCasesIdMessagesRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostContactCasesIdMessages")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostContactCasesIdMessagesResponseObject); ok {
+		if err := validResponse.VisitPostContactCasesIdMessagesResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetContactCasesIdNotes operation middleware
+func (sh *strictHandler) GetContactCasesIdNotes(ctx *gin.Context, id openapi_types.UUID) {
+	var request GetContactCasesIdNotesRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetContactCasesIdNotes(ctx, request.(GetContactCasesIdNotesRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetContactCasesIdNotes")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetContactCasesIdNotesResponseObject); ok {
+		if err := validResponse.VisitGetContactCasesIdNotesResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostContactCasesIdNotes operation middleware
+func (sh *strictHandler) PostContactCasesIdNotes(ctx *gin.Context, id openapi_types.UUID) {
+	var request PostContactCasesIdNotesRequestObject
+
+	request.Id = id
+
+	var body PostContactCasesIdNotesJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostContactCasesIdNotes(ctx, request.(PostContactCasesIdNotesRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostContactCasesIdNotes")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostContactCasesIdNotesResponseObject); ok {
+		if err := validResponse.VisitPostContactCasesIdNotesResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteContactCasesIdNotesNoteId operation middleware
+func (sh *strictHandler) DeleteContactCasesIdNotesNoteId(ctx *gin.Context, id openapi_types.UUID, noteId openapi_types.UUID) {
+	var request DeleteContactCasesIdNotesNoteIdRequestObject
+
+	request.Id = id
+	request.NoteId = noteId
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteContactCasesIdNotesNoteId(ctx, request.(DeleteContactCasesIdNotesNoteIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteContactCasesIdNotesNoteId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteContactCasesIdNotesNoteIdResponseObject); ok {
+		if err := validResponse.VisitDeleteContactCasesIdNotesNoteIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetContactInteractions operation middleware
+func (sh *strictHandler) GetContactInteractions(ctx *gin.Context, params GetContactInteractionsParams) {
+	var request GetContactInteractionsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetContactInteractions(ctx, request.(GetContactInteractionsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetContactInteractions")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetContactInteractionsResponseObject); ok {
+		if err := validResponse.VisitGetContactInteractionsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetContactInteractionsUnresolved operation middleware
+func (sh *strictHandler) GetContactInteractionsUnresolved(ctx *gin.Context, params GetContactInteractionsUnresolvedParams) {
+	var request GetContactInteractionsUnresolvedRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetContactInteractionsUnresolved(ctx, request.(GetContactInteractionsUnresolvedRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetContactInteractionsUnresolved")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetContactInteractionsUnresolvedResponseObject); ok {
+		if err := validResponse.VisitGetContactInteractionsUnresolvedResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetContactInteractionsId operation middleware
+func (sh *strictHandler) GetContactInteractionsId(ctx *gin.Context, id openapi_types.UUID) {
+	var request GetContactInteractionsIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetContactInteractionsId(ctx, request.(GetContactInteractionsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetContactInteractionsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetContactInteractionsIdResponseObject); ok {
+		if err := validResponse.VisitGetContactInteractionsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostContactInteractionsIdResolutions operation middleware
+func (sh *strictHandler) PostContactInteractionsIdResolutions(ctx *gin.Context, id openapi_types.UUID) {
+	var request PostContactInteractionsIdResolutionsRequestObject
+
+	request.Id = id
+
+	var body PostContactInteractionsIdResolutionsJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostContactInteractionsIdResolutions(ctx, request.(PostContactInteractionsIdResolutionsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostContactInteractionsIdResolutions")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostContactInteractionsIdResolutionsResponseObject); ok {
+		if err := validResponse.VisitPostContactInteractionsIdResolutionsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteContactInteractionsIdResolutionsRid operation middleware
+func (sh *strictHandler) DeleteContactInteractionsIdResolutionsRid(ctx *gin.Context, id openapi_types.UUID, rid openapi_types.UUID) {
+	var request DeleteContactInteractionsIdResolutionsRidRequestObject
+
+	request.Id = id
+	request.Rid = rid
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteContactInteractionsIdResolutionsRid(ctx, request.(DeleteContactInteractionsIdResolutionsRidRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteContactInteractionsIdResolutionsRid")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteContactInteractionsIdResolutionsRidResponseObject); ok {
+		if err := validResponse.VisitDeleteContactInteractionsIdResolutionsRidResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {
@@ -48296,150 +48440,6 @@ func (sh *strictHandler) PostGroupcallsIdHangup(ctx *gin.Context, id string) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PostGroupcallsIdHangupResponseObject); ok {
 		if err := validResponse.VisitPostGroupcallsIdHangupResponse(ctx.Writer); err != nil {
-			ctx.Error(err)
-		}
-	} else if response != nil {
-		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// GetInteractions operation middleware
-func (sh *strictHandler) GetInteractions(ctx *gin.Context, params GetInteractionsParams) {
-	var request GetInteractionsRequestObject
-
-	request.Params = params
-
-	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.GetInteractions(ctx, request.(GetInteractionsRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "GetInteractions")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		ctx.Error(err)
-		ctx.Status(http.StatusInternalServerError)
-	} else if validResponse, ok := response.(GetInteractionsResponseObject); ok {
-		if err := validResponse.VisitGetInteractionsResponse(ctx.Writer); err != nil {
-			ctx.Error(err)
-		}
-	} else if response != nil {
-		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// GetInteractionsUnresolved operation middleware
-func (sh *strictHandler) GetInteractionsUnresolved(ctx *gin.Context, params GetInteractionsUnresolvedParams) {
-	var request GetInteractionsUnresolvedRequestObject
-
-	request.Params = params
-
-	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.GetInteractionsUnresolved(ctx, request.(GetInteractionsUnresolvedRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "GetInteractionsUnresolved")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		ctx.Error(err)
-		ctx.Status(http.StatusInternalServerError)
-	} else if validResponse, ok := response.(GetInteractionsUnresolvedResponseObject); ok {
-		if err := validResponse.VisitGetInteractionsUnresolvedResponse(ctx.Writer); err != nil {
-			ctx.Error(err)
-		}
-	} else if response != nil {
-		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// GetInteractionsId operation middleware
-func (sh *strictHandler) GetInteractionsId(ctx *gin.Context, id openapi_types.UUID) {
-	var request GetInteractionsIdRequestObject
-
-	request.Id = id
-
-	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.GetInteractionsId(ctx, request.(GetInteractionsIdRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "GetInteractionsId")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		ctx.Error(err)
-		ctx.Status(http.StatusInternalServerError)
-	} else if validResponse, ok := response.(GetInteractionsIdResponseObject); ok {
-		if err := validResponse.VisitGetInteractionsIdResponse(ctx.Writer); err != nil {
-			ctx.Error(err)
-		}
-	} else if response != nil {
-		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// PostInteractionsIdResolutions operation middleware
-func (sh *strictHandler) PostInteractionsIdResolutions(ctx *gin.Context, id openapi_types.UUID) {
-	var request PostInteractionsIdResolutionsRequestObject
-
-	request.Id = id
-
-	var body PostInteractionsIdResolutionsJSONRequestBody
-	if err := ctx.ShouldBindJSON(&body); err != nil {
-		ctx.Status(http.StatusBadRequest)
-		ctx.Error(err)
-		return
-	}
-	request.Body = &body
-
-	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.PostInteractionsIdResolutions(ctx, request.(PostInteractionsIdResolutionsRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "PostInteractionsIdResolutions")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		ctx.Error(err)
-		ctx.Status(http.StatusInternalServerError)
-	} else if validResponse, ok := response.(PostInteractionsIdResolutionsResponseObject); ok {
-		if err := validResponse.VisitPostInteractionsIdResolutionsResponse(ctx.Writer); err != nil {
-			ctx.Error(err)
-		}
-	} else if response != nil {
-		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// DeleteInteractionsIdResolutionsRid operation middleware
-func (sh *strictHandler) DeleteInteractionsIdResolutionsRid(ctx *gin.Context, id openapi_types.UUID, rid openapi_types.UUID) {
-	var request DeleteInteractionsIdResolutionsRidRequestObject
-
-	request.Id = id
-	request.Rid = rid
-
-	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.DeleteInteractionsIdResolutionsRid(ctx, request.(DeleteInteractionsIdResolutionsRidRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "DeleteInteractionsIdResolutionsRid")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		ctx.Error(err)
-		ctx.Status(http.StatusInternalServerError)
-	} else if validResponse, ok := response.(DeleteInteractionsIdResolutionsRidResponseObject); ok {
-		if err := validResponse.VisitDeleteInteractionsIdResolutionsRidResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {
@@ -51005,6 +51005,150 @@ func (sh *strictHandler) PostServiceAgentsContactAddressesIdClaim(ctx *gin.Conte
 	}
 }
 
+// GetServiceAgentsContactInteractions operation middleware
+func (sh *strictHandler) GetServiceAgentsContactInteractions(ctx *gin.Context, params GetServiceAgentsContactInteractionsParams) {
+	var request GetServiceAgentsContactInteractionsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetServiceAgentsContactInteractions(ctx, request.(GetServiceAgentsContactInteractionsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetServiceAgentsContactInteractions")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetServiceAgentsContactInteractionsResponseObject); ok {
+		if err := validResponse.VisitGetServiceAgentsContactInteractionsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetServiceAgentsContactInteractionsUnresolved operation middleware
+func (sh *strictHandler) GetServiceAgentsContactInteractionsUnresolved(ctx *gin.Context, params GetServiceAgentsContactInteractionsUnresolvedParams) {
+	var request GetServiceAgentsContactInteractionsUnresolvedRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetServiceAgentsContactInteractionsUnresolved(ctx, request.(GetServiceAgentsContactInteractionsUnresolvedRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetServiceAgentsContactInteractionsUnresolved")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetServiceAgentsContactInteractionsUnresolvedResponseObject); ok {
+		if err := validResponse.VisitGetServiceAgentsContactInteractionsUnresolvedResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetServiceAgentsContactInteractionsId operation middleware
+func (sh *strictHandler) GetServiceAgentsContactInteractionsId(ctx *gin.Context, id openapi_types.UUID) {
+	var request GetServiceAgentsContactInteractionsIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetServiceAgentsContactInteractionsId(ctx, request.(GetServiceAgentsContactInteractionsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetServiceAgentsContactInteractionsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetServiceAgentsContactInteractionsIdResponseObject); ok {
+		if err := validResponse.VisitGetServiceAgentsContactInteractionsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostServiceAgentsContactInteractionsIdResolutions operation middleware
+func (sh *strictHandler) PostServiceAgentsContactInteractionsIdResolutions(ctx *gin.Context, id openapi_types.UUID) {
+	var request PostServiceAgentsContactInteractionsIdResolutionsRequestObject
+
+	request.Id = id
+
+	var body PostServiceAgentsContactInteractionsIdResolutionsJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostServiceAgentsContactInteractionsIdResolutions(ctx, request.(PostServiceAgentsContactInteractionsIdResolutionsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostServiceAgentsContactInteractionsIdResolutions")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostServiceAgentsContactInteractionsIdResolutionsResponseObject); ok {
+		if err := validResponse.VisitPostServiceAgentsContactInteractionsIdResolutionsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteServiceAgentsContactInteractionsIdResolutionsRid operation middleware
+func (sh *strictHandler) DeleteServiceAgentsContactInteractionsIdResolutionsRid(ctx *gin.Context, id openapi_types.UUID, rid openapi_types.UUID) {
+	var request DeleteServiceAgentsContactInteractionsIdResolutionsRidRequestObject
+
+	request.Id = id
+	request.Rid = rid
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteServiceAgentsContactInteractionsIdResolutionsRid(ctx, request.(DeleteServiceAgentsContactInteractionsIdResolutionsRidRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteServiceAgentsContactInteractionsIdResolutionsRid")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteServiceAgentsContactInteractionsIdResolutionsRidResponseObject); ok {
+		if err := validResponse.VisitDeleteServiceAgentsContactInteractionsIdResolutionsRidResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
 // GetServiceAgentsContacts operation middleware
 func (sh *strictHandler) GetServiceAgentsContacts(ctx *gin.Context, params GetServiceAgentsContactsParams) {
 	var request GetServiceAgentsContactsRequestObject
@@ -51734,150 +51878,6 @@ func (sh *strictHandler) GetServiceAgentsFilesIdFile(ctx *gin.Context, id openap
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(GetServiceAgentsFilesIdFileResponseObject); ok {
 		if err := validResponse.VisitGetServiceAgentsFilesIdFileResponse(ctx.Writer); err != nil {
-			ctx.Error(err)
-		}
-	} else if response != nil {
-		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// GetServiceAgentsInteractions operation middleware
-func (sh *strictHandler) GetServiceAgentsInteractions(ctx *gin.Context, params GetServiceAgentsInteractionsParams) {
-	var request GetServiceAgentsInteractionsRequestObject
-
-	request.Params = params
-
-	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.GetServiceAgentsInteractions(ctx, request.(GetServiceAgentsInteractionsRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "GetServiceAgentsInteractions")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		ctx.Error(err)
-		ctx.Status(http.StatusInternalServerError)
-	} else if validResponse, ok := response.(GetServiceAgentsInteractionsResponseObject); ok {
-		if err := validResponse.VisitGetServiceAgentsInteractionsResponse(ctx.Writer); err != nil {
-			ctx.Error(err)
-		}
-	} else if response != nil {
-		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// GetServiceAgentsInteractionsUnresolved operation middleware
-func (sh *strictHandler) GetServiceAgentsInteractionsUnresolved(ctx *gin.Context, params GetServiceAgentsInteractionsUnresolvedParams) {
-	var request GetServiceAgentsInteractionsUnresolvedRequestObject
-
-	request.Params = params
-
-	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.GetServiceAgentsInteractionsUnresolved(ctx, request.(GetServiceAgentsInteractionsUnresolvedRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "GetServiceAgentsInteractionsUnresolved")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		ctx.Error(err)
-		ctx.Status(http.StatusInternalServerError)
-	} else if validResponse, ok := response.(GetServiceAgentsInteractionsUnresolvedResponseObject); ok {
-		if err := validResponse.VisitGetServiceAgentsInteractionsUnresolvedResponse(ctx.Writer); err != nil {
-			ctx.Error(err)
-		}
-	} else if response != nil {
-		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// GetServiceAgentsInteractionsId operation middleware
-func (sh *strictHandler) GetServiceAgentsInteractionsId(ctx *gin.Context, id openapi_types.UUID) {
-	var request GetServiceAgentsInteractionsIdRequestObject
-
-	request.Id = id
-
-	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.GetServiceAgentsInteractionsId(ctx, request.(GetServiceAgentsInteractionsIdRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "GetServiceAgentsInteractionsId")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		ctx.Error(err)
-		ctx.Status(http.StatusInternalServerError)
-	} else if validResponse, ok := response.(GetServiceAgentsInteractionsIdResponseObject); ok {
-		if err := validResponse.VisitGetServiceAgentsInteractionsIdResponse(ctx.Writer); err != nil {
-			ctx.Error(err)
-		}
-	} else if response != nil {
-		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// PostServiceAgentsInteractionsIdResolutions operation middleware
-func (sh *strictHandler) PostServiceAgentsInteractionsIdResolutions(ctx *gin.Context, id openapi_types.UUID) {
-	var request PostServiceAgentsInteractionsIdResolutionsRequestObject
-
-	request.Id = id
-
-	var body PostServiceAgentsInteractionsIdResolutionsJSONRequestBody
-	if err := ctx.ShouldBindJSON(&body); err != nil {
-		ctx.Status(http.StatusBadRequest)
-		ctx.Error(err)
-		return
-	}
-	request.Body = &body
-
-	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.PostServiceAgentsInteractionsIdResolutions(ctx, request.(PostServiceAgentsInteractionsIdResolutionsRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "PostServiceAgentsInteractionsIdResolutions")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		ctx.Error(err)
-		ctx.Status(http.StatusInternalServerError)
-	} else if validResponse, ok := response.(PostServiceAgentsInteractionsIdResolutionsResponseObject); ok {
-		if err := validResponse.VisitPostServiceAgentsInteractionsIdResolutionsResponse(ctx.Writer); err != nil {
-			ctx.Error(err)
-		}
-	} else if response != nil {
-		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// DeleteServiceAgentsInteractionsIdResolutionsRid operation middleware
-func (sh *strictHandler) DeleteServiceAgentsInteractionsIdResolutionsRid(ctx *gin.Context, id openapi_types.UUID, rid openapi_types.UUID) {
-	var request DeleteServiceAgentsInteractionsIdResolutionsRidRequestObject
-
-	request.Id = id
-	request.Rid = rid
-
-	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.DeleteServiceAgentsInteractionsIdResolutionsRid(ctx, request.(DeleteServiceAgentsInteractionsIdResolutionsRidRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "DeleteServiceAgentsInteractionsIdResolutionsRid")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		ctx.Error(err)
-		ctx.Status(http.StatusInternalServerError)
-	} else if validResponse, ok := response.(DeleteServiceAgentsInteractionsIdResolutionsRidResponseObject); ok {
-		if err := validResponse.VisitDeleteServiceAgentsInteractionsIdResolutionsRidResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

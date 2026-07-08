@@ -1,16 +1,15 @@
 post:
   summary: Create a resolution for an interaction
   description: |
-    Manually attribute (positive) or suppress (negative) an interaction for a contact,
-    for the service agent's customer.
+    Manually attribute (positive) or suppress (negative) an interaction for a contact.
     A positive resolution attaches the interaction to the contact.
     A negative resolution suppresses an incorrect automatic match.
   tags:
-    - Service Agent
+    - Interaction
   parameters:
     - name: id
       in: path
-      description: The ID of the interaction. The ID is returned from GET /service_agents/interactions response.
+      description: The ID of the interaction. The ID is returned from GET /contact_interactions response.
       required: true
       schema:
         type: string

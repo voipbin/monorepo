@@ -2991,42 +2991,6 @@ func (e PostCallsIdRecordingStartJSONBodyFormat) Valid() bool {
 	}
 }
 
-// Defines values for GetCasesParamsStatus.
-const (
-	GetCasesParamsStatusClosed GetCasesParamsStatus = "closed"
-	GetCasesParamsStatusOpen   GetCasesParamsStatus = "open"
-)
-
-// Valid indicates whether the value is a known member of the GetCasesParamsStatus enum.
-func (e GetCasesParamsStatus) Valid() bool {
-	switch e {
-	case GetCasesParamsStatusClosed:
-		return true
-	case GetCasesParamsStatusOpen:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for PostCasesIdNotesJSONBodyAuthorType.
-const (
-	PostCasesIdNotesJSONBodyAuthorTypeAgent  PostCasesIdNotesJSONBodyAuthorType = "agent"
-	PostCasesIdNotesJSONBodyAuthorTypeSystem PostCasesIdNotesJSONBodyAuthorType = "system"
-)
-
-// Valid indicates whether the value is a known member of the PostCasesIdNotesJSONBodyAuthorType enum.
-func (e PostCasesIdNotesJSONBodyAuthorType) Valid() bool {
-	switch e {
-	case PostCasesIdNotesJSONBodyAuthorTypeAgent:
-		return true
-	case PostCasesIdNotesJSONBodyAuthorTypeSystem:
-		return true
-	default:
-		return false
-	}
-}
-
 // Defines values for PostConferencesIdRecordingStartJSONBodyFormat.
 const (
 	PostConferencesIdRecordingStartJSONBodyFormatWav PostConferencesIdRecordingStartJSONBodyFormat = "wav"
@@ -3072,6 +3036,81 @@ func (e PostContactAddressesJSONBodyType) Valid() bool {
 	case PostContactAddressesJSONBodyTypeEmail:
 		return true
 	case PostContactAddressesJSONBodyTypeTel:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetContactCasesParamsStatus.
+const (
+	GetContactCasesParamsStatusClosed GetContactCasesParamsStatus = "closed"
+	GetContactCasesParamsStatusOpen   GetContactCasesParamsStatus = "open"
+)
+
+// Valid indicates whether the value is a known member of the GetContactCasesParamsStatus enum.
+func (e GetContactCasesParamsStatus) Valid() bool {
+	switch e {
+	case GetContactCasesParamsStatusClosed:
+		return true
+	case GetContactCasesParamsStatusOpen:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PostContactCasesIdNotesJSONBodyAuthorType.
+const (
+	PostContactCasesIdNotesJSONBodyAuthorTypeAgent  PostContactCasesIdNotesJSONBodyAuthorType = "agent"
+	PostContactCasesIdNotesJSONBodyAuthorTypeSystem PostContactCasesIdNotesJSONBodyAuthorType = "system"
+)
+
+// Valid indicates whether the value is a known member of the PostContactCasesIdNotesJSONBodyAuthorType enum.
+func (e PostContactCasesIdNotesJSONBodyAuthorType) Valid() bool {
+	switch e {
+	case PostContactCasesIdNotesJSONBodyAuthorTypeAgent:
+		return true
+	case PostContactCasesIdNotesJSONBodyAuthorTypeSystem:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PostContactInteractionsIdResolutionsJSONBodyResolutionType.
+const (
+	PostContactInteractionsIdResolutionsJSONBodyResolutionTypeNegative PostContactInteractionsIdResolutionsJSONBodyResolutionType = "negative"
+	PostContactInteractionsIdResolutionsJSONBodyResolutionTypePositive PostContactInteractionsIdResolutionsJSONBodyResolutionType = "positive"
+)
+
+// Valid indicates whether the value is a known member of the PostContactInteractionsIdResolutionsJSONBodyResolutionType enum.
+func (e PostContactInteractionsIdResolutionsJSONBodyResolutionType) Valid() bool {
+	switch e {
+	case PostContactInteractionsIdResolutionsJSONBodyResolutionTypeNegative:
+		return true
+	case PostContactInteractionsIdResolutionsJSONBodyResolutionTypePositive:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PostContactInteractionsIdResolutionsJSONBodyResolvedByType.
+const (
+	PostContactInteractionsIdResolutionsJSONBodyResolvedByTypeAgent  PostContactInteractionsIdResolutionsJSONBodyResolvedByType = "agent"
+	PostContactInteractionsIdResolutionsJSONBodyResolvedByTypeRule   PostContactInteractionsIdResolutionsJSONBodyResolvedByType = "rule"
+	PostContactInteractionsIdResolutionsJSONBodyResolvedByTypeSystem PostContactInteractionsIdResolutionsJSONBodyResolvedByType = "system"
+)
+
+// Valid indicates whether the value is a known member of the PostContactInteractionsIdResolutionsJSONBodyResolvedByType enum.
+func (e PostContactInteractionsIdResolutionsJSONBodyResolvedByType) Valid() bool {
+	switch e {
+	case PostContactInteractionsIdResolutionsJSONBodyResolvedByTypeAgent:
+		return true
+	case PostContactInteractionsIdResolutionsJSONBodyResolvedByTypeRule:
+		return true
+	case PostContactInteractionsIdResolutionsJSONBodyResolvedByTypeSystem:
 		return true
 	default:
 		return false
@@ -3174,45 +3213,6 @@ func (e GetConversationsJSONBodyType) Valid() bool {
 	}
 }
 
-// Defines values for PostInteractionsIdResolutionsJSONBodyResolutionType.
-const (
-	PostInteractionsIdResolutionsJSONBodyResolutionTypeNegative PostInteractionsIdResolutionsJSONBodyResolutionType = "negative"
-	PostInteractionsIdResolutionsJSONBodyResolutionTypePositive PostInteractionsIdResolutionsJSONBodyResolutionType = "positive"
-)
-
-// Valid indicates whether the value is a known member of the PostInteractionsIdResolutionsJSONBodyResolutionType enum.
-func (e PostInteractionsIdResolutionsJSONBodyResolutionType) Valid() bool {
-	switch e {
-	case PostInteractionsIdResolutionsJSONBodyResolutionTypeNegative:
-		return true
-	case PostInteractionsIdResolutionsJSONBodyResolutionTypePositive:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for PostInteractionsIdResolutionsJSONBodyResolvedByType.
-const (
-	PostInteractionsIdResolutionsJSONBodyResolvedByTypeAgent  PostInteractionsIdResolutionsJSONBodyResolvedByType = "agent"
-	PostInteractionsIdResolutionsJSONBodyResolvedByTypeRule   PostInteractionsIdResolutionsJSONBodyResolvedByType = "rule"
-	PostInteractionsIdResolutionsJSONBodyResolvedByTypeSystem PostInteractionsIdResolutionsJSONBodyResolvedByType = "system"
-)
-
-// Valid indicates whether the value is a known member of the PostInteractionsIdResolutionsJSONBodyResolvedByType enum.
-func (e PostInteractionsIdResolutionsJSONBodyResolvedByType) Valid() bool {
-	switch e {
-	case PostInteractionsIdResolutionsJSONBodyResolvedByTypeAgent:
-		return true
-	case PostInteractionsIdResolutionsJSONBodyResolvedByTypeRule:
-		return true
-	case PostInteractionsIdResolutionsJSONBodyResolvedByTypeSystem:
-		return true
-	default:
-		return false
-	}
-}
-
 // Defines values for PostProvidercallsJSONBodyAnonymous.
 const (
 	PostProvidercallsJSONBodyAnonymousAuto PostProvidercallsJSONBodyAnonymous = "auto"
@@ -3264,6 +3264,45 @@ func (e PostServiceAgentsContactAddressesJSONBodyType) Valid() bool {
 	case PostServiceAgentsContactAddressesJSONBodyTypeEmail:
 		return true
 	case PostServiceAgentsContactAddressesJSONBodyTypeTel:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolutionType.
+const (
+	Negative PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolutionType = "negative"
+	Positive PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolutionType = "positive"
+)
+
+// Valid indicates whether the value is a known member of the PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolutionType enum.
+func (e PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolutionType) Valid() bool {
+	switch e {
+	case Negative:
+		return true
+	case Positive:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolvedByType.
+const (
+	Agent  PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolvedByType = "agent"
+	Rule   PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolvedByType = "rule"
+	System PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolvedByType = "system"
+)
+
+// Valid indicates whether the value is a known member of the PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolvedByType enum.
+func (e PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolvedByType) Valid() bool {
+	switch e {
+	case Agent:
+		return true
+	case Rule:
+		return true
+	case System:
 		return true
 	default:
 		return false
@@ -3357,45 +3396,6 @@ const (
 func (e PostServiceAgentsFilesMultipartBodyType) Valid() bool {
 	switch e {
 	case Talk:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for PostServiceAgentsInteractionsIdResolutionsJSONBodyResolutionType.
-const (
-	Negative PostServiceAgentsInteractionsIdResolutionsJSONBodyResolutionType = "negative"
-	Positive PostServiceAgentsInteractionsIdResolutionsJSONBodyResolutionType = "positive"
-)
-
-// Valid indicates whether the value is a known member of the PostServiceAgentsInteractionsIdResolutionsJSONBodyResolutionType enum.
-func (e PostServiceAgentsInteractionsIdResolutionsJSONBodyResolutionType) Valid() bool {
-	switch e {
-	case Negative:
-		return true
-	case Positive:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for PostServiceAgentsInteractionsIdResolutionsJSONBodyResolvedByType.
-const (
-	Agent  PostServiceAgentsInteractionsIdResolutionsJSONBodyResolvedByType = "agent"
-	Rule   PostServiceAgentsInteractionsIdResolutionsJSONBodyResolvedByType = "rule"
-	System PostServiceAgentsInteractionsIdResolutionsJSONBodyResolvedByType = "system"
-)
-
-// Valid indicates whether the value is a known member of the PostServiceAgentsInteractionsIdResolutionsJSONBodyResolvedByType enum.
-func (e PostServiceAgentsInteractionsIdResolutionsJSONBodyResolvedByType) Valid() bool {
-	switch e {
-	case Agent:
-		return true
-	case Rule:
-		return true
-	case System:
 		return true
 	default:
 		return false
@@ -5016,7 +5016,7 @@ type ContactManagerCaseNote struct {
 	// AuthorType Type of the note's author.
 	AuthorType *ContactManagerCaseNoteAuthorType `json:"author_type,omitempty"`
 
-	// CaseId The case this note belongs to. The ID is returned from GET /v1.0/cases response.
+	// CaseId The case this note belongs to. The ID is returned from GET /v1.0/contact_cases response.
 	CaseId *openapi_types.UUID `json:"case_id,omitempty"`
 
 	// CustomerId Unique identifier of the associated customer.
@@ -8023,63 +8023,6 @@ type PutCampaignsIdStatusJSONBody struct {
 	Status CampaignManagerCampaignStatus `json:"status"`
 }
 
-// GetCasesParams defines parameters for GetCases.
-type GetCasesParams struct {
-	// Status Filter by case status.
-	Status *GetCasesParamsStatus `form:"status,omitempty" json:"status,omitempty"`
-
-	// OwnerType Filter by owner type.
-	OwnerType *string `form:"owner_type,omitempty" json:"owner_type,omitempty"`
-
-	// OwnerId Filter by owner ID.
-	OwnerId *openapi_types.UUID `form:"owner_id,omitempty" json:"owner_id,omitempty"`
-
-	// PageSize Number of results to return per page.
-	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
-
-	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
-	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
-}
-
-// GetCasesParamsStatus defines parameters for GetCases.
-type GetCasesParamsStatus string
-
-// GetCasesUnresolvedParams defines parameters for GetCasesUnresolved.
-type GetCasesUnresolvedParams struct {
-	// PageSize Number of results to return per page.
-	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
-
-	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
-	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
-}
-
-// PostCasesIdMessagesJSONBody defines parameters for PostCasesIdMessages.
-type PostCasesIdMessagesJSONBody struct {
-	// Destination The customer's number to send to. Must be attributable to this case (the matched Contact's address, or the case's peer_target).
-	Destination string `json:"destination"`
-
-	// Source The business's own number to send from. Must be an active, normal number owned by this case's customer.
-	Source string `json:"source"`
-
-	// Text The text content of the message.
-	Text string `json:"text"`
-}
-
-// PostCasesIdNotesJSONBody defines parameters for PostCasesIdNotes.
-type PostCasesIdNotesJSONBody struct {
-	// AuthorId ID of the agent authoring this note. Nullable for system-authored notes.
-	AuthorId *openapi_types.UUID `json:"author_id,omitempty"`
-
-	// AuthorType Type of the note's author.
-	AuthorType PostCasesIdNotesJSONBodyAuthorType `json:"author_type"`
-
-	// Text The note's text content.
-	Text string `json:"text"`
-}
-
-// PostCasesIdNotesJSONBodyAuthorType defines parameters for PostCasesIdNotes.
-type PostCasesIdNotesJSONBodyAuthorType string
-
 // GetConferencecallsParams defines parameters for GetConferencecalls.
 type GetConferencecallsParams struct {
 	// PageSize Number of results to return per page.
@@ -8215,6 +8158,117 @@ type PutContactAddressesIdJSONBody struct {
 type PostContactAddressesIdClaimJSONBody struct {
 	ContactId openapi_types.UUID `json:"contact_id"`
 }
+
+// GetContactCasesParams defines parameters for GetContactCases.
+type GetContactCasesParams struct {
+	// Status Filter by case status.
+	Status *GetContactCasesParamsStatus `form:"status,omitempty" json:"status,omitempty"`
+
+	// OwnerType Filter by owner type.
+	OwnerType *string `form:"owner_type,omitempty" json:"owner_type,omitempty"`
+
+	// OwnerId Filter by owner ID.
+	OwnerId *openapi_types.UUID `form:"owner_id,omitempty" json:"owner_id,omitempty"`
+
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// GetContactCasesParamsStatus defines parameters for GetContactCases.
+type GetContactCasesParamsStatus string
+
+// GetContactCasesUnresolvedParams defines parameters for GetContactCasesUnresolved.
+type GetContactCasesUnresolvedParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostContactCasesIdMessagesJSONBody defines parameters for PostContactCasesIdMessages.
+type PostContactCasesIdMessagesJSONBody struct {
+	// Destination The customer's number to send to. Must be attributable to this case (the matched Contact's address, or the case's peer_target).
+	Destination string `json:"destination"`
+
+	// Source The business's own number to send from. Must be an active, normal number owned by this case's customer.
+	Source string `json:"source"`
+
+	// Text The text content of the message.
+	Text string `json:"text"`
+}
+
+// PostContactCasesIdNotesJSONBody defines parameters for PostContactCasesIdNotes.
+type PostContactCasesIdNotesJSONBody struct {
+	// AuthorId ID of the agent authoring this note. Nullable for system-authored notes.
+	AuthorId *openapi_types.UUID `json:"author_id,omitempty"`
+
+	// AuthorType Type of the note's author.
+	AuthorType PostContactCasesIdNotesJSONBodyAuthorType `json:"author_type"`
+
+	// Text The note's text content.
+	Text string `json:"text"`
+}
+
+// PostContactCasesIdNotesJSONBodyAuthorType defines parameters for PostContactCasesIdNotes.
+type PostContactCasesIdNotesJSONBodyAuthorType string
+
+// GetContactInteractionsParams defines parameters for GetContactInteractions.
+type GetContactInteractionsParams struct {
+	// PeerType Remote endpoint type (e.g. "tel", "email"). Required with peer_target.
+	PeerType *string `form:"peer_type,omitempty" json:"peer_type,omitempty"`
+
+	// PeerTarget Remote endpoint target (e.g. "+15551234567"). Required with peer_type.
+	PeerTarget *string `form:"peer_target,omitempty" json:"peer_target,omitempty"`
+
+	// ContactId Filter by resolved contact ID.
+	ContactId *openapi_types.UUID `form:"contact_id,omitempty" json:"contact_id,omitempty"`
+
+	// AddressId Filter by contact address ID.
+	AddressId *openapi_types.UUID `form:"address_id,omitempty" json:"address_id,omitempty"`
+
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// GetContactInteractionsUnresolvedParams defines parameters for GetContactInteractionsUnresolved.
+type GetContactInteractionsUnresolvedParams struct {
+	// Since Lookback window in days (e.g. "7d", "30d"). Default "30d", max "180d".
+	Since *string `form:"since,omitempty" json:"since,omitempty"`
+
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostContactInteractionsIdResolutionsJSONBody defines parameters for PostContactInteractionsIdResolutions.
+type PostContactInteractionsIdResolutionsJSONBody struct {
+	// ContactId The contact to attach or suppress this interaction for.
+	ContactId openapi_types.UUID `json:"contact_id"`
+
+	// ResolutionType Type of resolution.
+	ResolutionType PostContactInteractionsIdResolutionsJSONBodyResolutionType `json:"resolution_type"`
+
+	// ResolvedById ID of the agent, system, or rule that resolved the interaction.
+	ResolvedById openapi_types.UUID `json:"resolved_by_id"`
+
+	// ResolvedByType Who resolved this interaction.
+	ResolvedByType PostContactInteractionsIdResolutionsJSONBodyResolvedByType `json:"resolved_by_type"`
+}
+
+// PostContactInteractionsIdResolutionsJSONBodyResolutionType defines parameters for PostContactInteractionsIdResolutions.
+type PostContactInteractionsIdResolutionsJSONBodyResolutionType string
+
+// PostContactInteractionsIdResolutionsJSONBodyResolvedByType defines parameters for PostContactInteractionsIdResolutions.
+type PostContactInteractionsIdResolutionsJSONBodyResolvedByType string
 
 // GetContactsParams defines parameters for GetContacts.
 type GetContactsParams struct {
@@ -8617,60 +8671,6 @@ type PostGroupcallsJSONBody struct {
 	// Source Contains source or destination detail info.
 	Source CommonAddress `json:"source"`
 }
-
-// GetInteractionsParams defines parameters for GetInteractions.
-type GetInteractionsParams struct {
-	// PeerType Remote endpoint type (e.g. "tel", "email"). Required with peer_target.
-	PeerType *string `form:"peer_type,omitempty" json:"peer_type,omitempty"`
-
-	// PeerTarget Remote endpoint target (e.g. "+15551234567"). Required with peer_type.
-	PeerTarget *string `form:"peer_target,omitempty" json:"peer_target,omitempty"`
-
-	// ContactId Filter by resolved contact ID.
-	ContactId *openapi_types.UUID `form:"contact_id,omitempty" json:"contact_id,omitempty"`
-
-	// AddressId Filter by contact address ID.
-	AddressId *openapi_types.UUID `form:"address_id,omitempty" json:"address_id,omitempty"`
-
-	// PageSize Number of results to return per page.
-	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
-
-	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
-	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
-}
-
-// GetInteractionsUnresolvedParams defines parameters for GetInteractionsUnresolved.
-type GetInteractionsUnresolvedParams struct {
-	// Since Lookback window in days (e.g. "7d", "30d"). Default "30d", max "180d".
-	Since *string `form:"since,omitempty" json:"since,omitempty"`
-
-	// PageSize Number of results to return per page.
-	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
-
-	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
-	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
-}
-
-// PostInteractionsIdResolutionsJSONBody defines parameters for PostInteractionsIdResolutions.
-type PostInteractionsIdResolutionsJSONBody struct {
-	// ContactId The contact to attach or suppress this interaction for.
-	ContactId openapi_types.UUID `json:"contact_id"`
-
-	// ResolutionType Type of resolution.
-	ResolutionType PostInteractionsIdResolutionsJSONBodyResolutionType `json:"resolution_type"`
-
-	// ResolvedById ID of the agent, system, or rule that resolved the interaction.
-	ResolvedById openapi_types.UUID `json:"resolved_by_id"`
-
-	// ResolvedByType Who resolved this interaction.
-	ResolvedByType PostInteractionsIdResolutionsJSONBodyResolvedByType `json:"resolved_by_type"`
-}
-
-// PostInteractionsIdResolutionsJSONBodyResolutionType defines parameters for PostInteractionsIdResolutions.
-type PostInteractionsIdResolutionsJSONBodyResolutionType string
-
-// PostInteractionsIdResolutionsJSONBodyResolvedByType defines parameters for PostInteractionsIdResolutions.
-type PostInteractionsIdResolutionsJSONBodyResolvedByType string
 
 // GetMessagesParams defines parameters for GetMessages.
 type GetMessagesParams struct {
@@ -9221,6 +9221,65 @@ type PostServiceAgentsContactAddressesIdClaimJSONBody struct {
 	ContactId openapi_types.UUID `json:"contact_id"`
 }
 
+// GetServiceAgentsContactInteractionsParams defines parameters for GetServiceAgentsContactInteractions.
+type GetServiceAgentsContactInteractionsParams struct {
+	// PeerType Remote endpoint type (e.g. "tel", "email"). Required with peer_target.
+	PeerType *string `form:"peer_type,omitempty" json:"peer_type,omitempty"`
+
+	// PeerTarget Remote endpoint target (e.g. "+155****4567"). Required with peer_type.
+	PeerTarget *string `form:"peer_target,omitempty" json:"peer_target,omitempty"`
+
+	// ContactId Filter by resolved contact ID.
+	ContactId *openapi_types.UUID `form:"contact_id,omitempty" json:"contact_id,omitempty"`
+
+	// AddressId Filter by contact address ID.
+	AddressId *openapi_types.UUID `form:"address_id,omitempty" json:"address_id,omitempty"`
+
+	// Since Lookback window in days (e.g. "7d", "30d"), used only when no filter
+	// (peer_type+peer_target, contact_id, address_id) is provided. Default "30d", max "180d".
+	// Ignored when a filter is provided.
+	Since *string `form:"since,omitempty" json:"since,omitempty"`
+
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// GetServiceAgentsContactInteractionsUnresolvedParams defines parameters for GetServiceAgentsContactInteractionsUnresolved.
+type GetServiceAgentsContactInteractionsUnresolvedParams struct {
+	// Since Lookback window in days (e.g. "7d", "30d"). Default "30d", max "180d".
+	Since *string `form:"since,omitempty" json:"since,omitempty"`
+
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostServiceAgentsContactInteractionsIdResolutionsJSONBody defines parameters for PostServiceAgentsContactInteractionsIdResolutions.
+type PostServiceAgentsContactInteractionsIdResolutionsJSONBody struct {
+	// ContactId The contact to attach or suppress this interaction for.
+	ContactId openapi_types.UUID `json:"contact_id"`
+
+	// ResolutionType Type of resolution.
+	ResolutionType PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolutionType `json:"resolution_type"`
+
+	// ResolvedById ID of the agent, system, or rule that resolved the interaction.
+	ResolvedById openapi_types.UUID `json:"resolved_by_id"`
+
+	// ResolvedByType Who resolved this interaction.
+	ResolvedByType PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolvedByType `json:"resolved_by_type"`
+}
+
+// PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolutionType defines parameters for PostServiceAgentsContactInteractionsIdResolutions.
+type PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolutionType string
+
+// PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolvedByType defines parameters for PostServiceAgentsContactInteractionsIdResolutions.
+type PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolvedByType string
+
 // GetServiceAgentsContactsParams defines parameters for GetServiceAgentsContacts.
 type GetServiceAgentsContactsParams struct {
 	// PageSize Number of results to return per page.
@@ -9393,65 +9452,6 @@ type PostServiceAgentsFilesMultipartBody struct {
 
 // PostServiceAgentsFilesMultipartBodyType defines parameters for PostServiceAgentsFiles.
 type PostServiceAgentsFilesMultipartBodyType string
-
-// GetServiceAgentsInteractionsParams defines parameters for GetServiceAgentsInteractions.
-type GetServiceAgentsInteractionsParams struct {
-	// PeerType Remote endpoint type (e.g. "tel", "email"). Required with peer_target.
-	PeerType *string `form:"peer_type,omitempty" json:"peer_type,omitempty"`
-
-	// PeerTarget Remote endpoint target (e.g. "+155****4567"). Required with peer_type.
-	PeerTarget *string `form:"peer_target,omitempty" json:"peer_target,omitempty"`
-
-	// ContactId Filter by resolved contact ID.
-	ContactId *openapi_types.UUID `form:"contact_id,omitempty" json:"contact_id,omitempty"`
-
-	// AddressId Filter by contact address ID.
-	AddressId *openapi_types.UUID `form:"address_id,omitempty" json:"address_id,omitempty"`
-
-	// Since Lookback window in days (e.g. "7d", "30d"), used only when no filter
-	// (peer_type+peer_target, contact_id, address_id) is provided. Default "30d", max "180d".
-	// Ignored when a filter is provided.
-	Since *string `form:"since,omitempty" json:"since,omitempty"`
-
-	// PageSize Number of results to return per page.
-	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
-
-	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
-	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
-}
-
-// GetServiceAgentsInteractionsUnresolvedParams defines parameters for GetServiceAgentsInteractionsUnresolved.
-type GetServiceAgentsInteractionsUnresolvedParams struct {
-	// Since Lookback window in days (e.g. "7d", "30d"). Default "30d", max "180d".
-	Since *string `form:"since,omitempty" json:"since,omitempty"`
-
-	// PageSize Number of results to return per page.
-	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
-
-	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
-	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
-}
-
-// PostServiceAgentsInteractionsIdResolutionsJSONBody defines parameters for PostServiceAgentsInteractionsIdResolutions.
-type PostServiceAgentsInteractionsIdResolutionsJSONBody struct {
-	// ContactId The contact to attach or suppress this interaction for.
-	ContactId openapi_types.UUID `json:"contact_id"`
-
-	// ResolutionType Type of resolution.
-	ResolutionType PostServiceAgentsInteractionsIdResolutionsJSONBodyResolutionType `json:"resolution_type"`
-
-	// ResolvedById ID of the agent, system, or rule that resolved the interaction.
-	ResolvedById openapi_types.UUID `json:"resolved_by_id"`
-
-	// ResolvedByType Who resolved this interaction.
-	ResolvedByType PostServiceAgentsInteractionsIdResolutionsJSONBodyResolvedByType `json:"resolved_by_type"`
-}
-
-// PostServiceAgentsInteractionsIdResolutionsJSONBodyResolutionType defines parameters for PostServiceAgentsInteractionsIdResolutions.
-type PostServiceAgentsInteractionsIdResolutionsJSONBodyResolutionType string
-
-// PostServiceAgentsInteractionsIdResolutionsJSONBodyResolvedByType defines parameters for PostServiceAgentsInteractionsIdResolutions.
-type PostServiceAgentsInteractionsIdResolutionsJSONBodyResolvedByType string
 
 // PutServiceAgentsMeJSONBody defines parameters for PutServiceAgentsMe.
 type PutServiceAgentsMeJSONBody struct {
@@ -9998,12 +9998,6 @@ type PutCampaignsIdServiceLevelJSONRequestBody PutCampaignsIdServiceLevelJSONBod
 // PutCampaignsIdStatusJSONRequestBody defines body for PutCampaignsIdStatus for application/json ContentType.
 type PutCampaignsIdStatusJSONRequestBody PutCampaignsIdStatusJSONBody
 
-// PostCasesIdMessagesJSONRequestBody defines body for PostCasesIdMessages for application/json ContentType.
-type PostCasesIdMessagesJSONRequestBody PostCasesIdMessagesJSONBody
-
-// PostCasesIdNotesJSONRequestBody defines body for PostCasesIdNotes for application/json ContentType.
-type PostCasesIdNotesJSONRequestBody PostCasesIdNotesJSONBody
-
 // PostConferencesJSONRequestBody defines body for PostConferences for application/json ContentType.
 type PostConferencesJSONRequestBody PostConferencesJSONBody
 
@@ -10024,6 +10018,15 @@ type PutContactAddressesIdJSONRequestBody PutContactAddressesIdJSONBody
 
 // PostContactAddressesIdClaimJSONRequestBody defines body for PostContactAddressesIdClaim for application/json ContentType.
 type PostContactAddressesIdClaimJSONRequestBody PostContactAddressesIdClaimJSONBody
+
+// PostContactCasesIdMessagesJSONRequestBody defines body for PostContactCasesIdMessages for application/json ContentType.
+type PostContactCasesIdMessagesJSONRequestBody PostContactCasesIdMessagesJSONBody
+
+// PostContactCasesIdNotesJSONRequestBody defines body for PostContactCasesIdNotes for application/json ContentType.
+type PostContactCasesIdNotesJSONRequestBody PostContactCasesIdNotesJSONBody
+
+// PostContactInteractionsIdResolutionsJSONRequestBody defines body for PostContactInteractionsIdResolutions for application/json ContentType.
+type PostContactInteractionsIdResolutionsJSONRequestBody PostContactInteractionsIdResolutionsJSONBody
 
 // PostContactsJSONRequestBody defines body for PostContacts for application/json ContentType.
 type PostContactsJSONRequestBody PostContactsJSONBody
@@ -10093,9 +10096,6 @@ type PutFlowsIdJSONRequestBody PutFlowsIdJSONBody
 
 // PostGroupcallsJSONRequestBody defines body for PostGroupcalls for application/json ContentType.
 type PostGroupcallsJSONRequestBody PostGroupcallsJSONBody
-
-// PostInteractionsIdResolutionsJSONRequestBody defines body for PostInteractionsIdResolutions for application/json ContentType.
-type PostInteractionsIdResolutionsJSONRequestBody PostInteractionsIdResolutionsJSONBody
 
 // PostMessagesJSONRequestBody defines body for PostMessages for application/json ContentType.
 type PostMessagesJSONRequestBody PostMessagesJSONBody
@@ -10196,6 +10196,9 @@ type PutServiceAgentsContactAddressesIdJSONRequestBody PutServiceAgentsContactAd
 // PostServiceAgentsContactAddressesIdClaimJSONRequestBody defines body for PostServiceAgentsContactAddressesIdClaim for application/json ContentType.
 type PostServiceAgentsContactAddressesIdClaimJSONRequestBody PostServiceAgentsContactAddressesIdClaimJSONBody
 
+// PostServiceAgentsContactInteractionsIdResolutionsJSONRequestBody defines body for PostServiceAgentsContactInteractionsIdResolutions for application/json ContentType.
+type PostServiceAgentsContactInteractionsIdResolutionsJSONRequestBody PostServiceAgentsContactInteractionsIdResolutionsJSONBody
+
 // PostServiceAgentsContactsJSONRequestBody defines body for PostServiceAgentsContacts for application/json ContentType.
 type PostServiceAgentsContactsJSONRequestBody PostServiceAgentsContactsJSONBody
 
@@ -10219,9 +10222,6 @@ type PostServiceAgentsConversationsIdMessagesJSONRequestBody PostServiceAgentsCo
 
 // PostServiceAgentsFilesMultipartRequestBody defines body for PostServiceAgentsFiles for multipart/form-data ContentType.
 type PostServiceAgentsFilesMultipartRequestBody PostServiceAgentsFilesMultipartBody
-
-// PostServiceAgentsInteractionsIdResolutionsJSONRequestBody defines body for PostServiceAgentsInteractionsIdResolutions for application/json ContentType.
-type PostServiceAgentsInteractionsIdResolutionsJSONRequestBody PostServiceAgentsInteractionsIdResolutionsJSONBody
 
 // PutServiceAgentsMeJSONRequestBody defines body for PutServiceAgentsMe for application/json ContentType.
 type PutServiceAgentsMeJSONRequestBody PutServiceAgentsMeJSONBody

@@ -25,7 +25,7 @@ var (
 
 	// ErrCaseClosed is returned by Case-message-send validation (design
 	// §4.5 step 1) when the target case is not status='open'. Points the
-	// caller at POST /v1.0/cases/{id}/continue.
+	// caller at POST /v1.0/contact_cases/{id}/continue.
 	ErrCaseClosed = stderrors.New("case is closed; call continue to reopen it before sending a message")
 
 	// ErrCaseDestinationNotAssociated is the SINGLE GENERIC error for

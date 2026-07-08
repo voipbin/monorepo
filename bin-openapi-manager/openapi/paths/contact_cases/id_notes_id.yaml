@@ -1,31 +1,33 @@
 delete:
-  summary: Delete a resolution
+  summary: Delete a case note
   description: |
-    Soft-delete a resolution, for the service agent's customer.
-    Use this to retract a wrong positive or negative resolution.
-    Re-attribute by creating a new resolution after deletion.
+    Delete the note of the given note ID on the case of the given case ID.
   tags:
-    - Service Agent
+    - Case
   parameters:
     - name: id
       in: path
-      description: The ID of the interaction. The ID is returned from GET /service_agents/interactions response.
+      description: The ID of the case. The ID is returned from GET /v1.0/contact_cases response.
       required: true
       schema:
         type: string
         format: uuid
         example: "550e8400-e29b-41d4-a716-446655440000"
-    - name: rid
+    - name: note_id
       in: path
-      description: The ID of the resolution. The ID is returned from POST /service_agents/interactions/{id}/resolutions response.
+      description: The ID of the note. The ID is returned from GET /v1.0/contact_cases/{id}/notes response.
       required: true
       schema:
         type: string
         format: uuid
-        example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+        example: "33333333-0000-0000-0000-000000000003"
   responses:
     '200':
-      description: Resolution deleted successfully.
+      description: Case note deleted successfully.
+      content:
+        application/json:
+          schema:
+            type: object
     '400':
       $ref: '#/components/responses/BadRequest'
     '401':

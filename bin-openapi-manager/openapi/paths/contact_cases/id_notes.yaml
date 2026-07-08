@@ -9,7 +9,7 @@ get:
   parameters:
     - name: id
       in: path
-      description: The ID of the case. The ID is returned from GET /v1.0/cases response.
+      description: The ID of the case. The ID is returned from GET /v1.0/contact_cases response.
       required: true
       schema:
         type: string
@@ -44,7 +44,7 @@ post:
   parameters:
     - name: id
       in: path
-      description: The ID of the case. The ID is returned from GET /v1.0/cases response.
+      description: The ID of the case. The ID is returned from GET /v1.0/contact_cases response.
       required: true
       schema:
         type: string

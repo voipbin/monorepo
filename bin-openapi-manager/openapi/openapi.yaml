@@ -3545,7 +3545,7 @@ components:
         case_id:
           type: string
           format: uuid
-          description: The case this note belongs to. The ID is returned from GET /v1.0/cases response.
+          description: The case this note belongs to. The ID is returned from GET /v1.0/contact_cases response.
           example: "550e8400-e29b-41d4-a716-446655440000"
         author_type:
           type: string
@@ -8090,32 +8090,32 @@ paths:
   /contacts/{id}/tags/{tag_id}:
     $ref: './paths/contacts/id_tags_id.yaml'
 
-  /interactions:
-    $ref: './paths/interactions/main.yaml'
-  /interactions/unresolved:
-    $ref: './paths/interactions/unresolved.yaml'
-  /interactions/{id}:
-    $ref: './paths/interactions/id.yaml'
-  /interactions/{id}/resolutions:
-    $ref: './paths/interactions/id_resolutions.yaml'
-  /interactions/{id}/resolutions/{rid}:
-    $ref: './paths/interactions/id_resolutions_id.yaml'
-  /cases:
-    $ref: './paths/cases/main.yaml'
-  /cases/unresolved:
-    $ref: './paths/cases/unresolved.yaml'
-  /cases/{id}:
-    $ref: './paths/cases/id.yaml'
-  /cases/{id}/close:
-    $ref: './paths/cases/id_close.yaml'
-  /cases/{id}/continue:
-    $ref: './paths/cases/id_continue.yaml'
-  /cases/{id}/notes:
-    $ref: './paths/cases/id_notes.yaml'
-  /cases/{id}/notes/{note_id}:
-    $ref: './paths/cases/id_notes_id.yaml'
-  /cases/{id}/messages:
-    $ref: './paths/cases/id_messages.yaml'
+  /contact_interactions:
+    $ref: './paths/contact_interactions/main.yaml'
+  /contact_interactions/unresolved:
+    $ref: './paths/contact_interactions/unresolved.yaml'
+  /contact_interactions/{id}:
+    $ref: './paths/contact_interactions/id.yaml'
+  /contact_interactions/{id}/resolutions:
+    $ref: './paths/contact_interactions/id_resolutions.yaml'
+  /contact_interactions/{id}/resolutions/{rid}:
+    $ref: './paths/contact_interactions/id_resolutions_id.yaml'
+  /contact_cases:
+    $ref: './paths/contact_cases/main.yaml'
+  /contact_cases/unresolved:
+    $ref: './paths/contact_cases/unresolved.yaml'
+  /contact_cases/{id}:
+    $ref: './paths/contact_cases/id.yaml'
+  /contact_cases/{id}/close:
+    $ref: './paths/contact_cases/id_close.yaml'
+  /contact_cases/{id}/continue:
+    $ref: './paths/contact_cases/id_continue.yaml'
+  /contact_cases/{id}/notes:
+    $ref: './paths/contact_cases/id_notes.yaml'
+  /contact_cases/{id}/notes/{note_id}:
+    $ref: './paths/contact_cases/id_notes_id.yaml'
+  /contact_cases/{id}/messages:
+    $ref: './paths/contact_cases/id_messages.yaml'
 
   /conversation_accounts/{id}:
     $ref: './paths/conversation_accounts/id.yaml'
@@ -8373,16 +8373,16 @@ paths:
   /service_agents/tags:
     $ref: './paths/service_agents/tags.yaml'
 
-  /service_agents/interactions:
-    $ref: './paths/service_agents/interactions.yaml'
-  /service_agents/interactions/unresolved:
-    $ref: './paths/service_agents/interactions_unresolved.yaml'
-  /service_agents/interactions/{id}:
-    $ref: './paths/service_agents/interactions_id.yaml'
-  /service_agents/interactions/{id}/resolutions:
-    $ref: './paths/service_agents/interactions_id_resolutions.yaml'
-  /service_agents/interactions/{id}/resolutions/{rid}:
-    $ref: './paths/service_agents/interactions_id_resolutions_id.yaml'
+  /service_agents/contact_interactions:
+    $ref: './paths/service_agents/contact_interactions.yaml'
+  /service_agents/contact_interactions/unresolved:
+    $ref: './paths/service_agents/contact_interactions_unresolved.yaml'
+  /service_agents/contact_interactions/{id}:
+    $ref: './paths/service_agents/contact_interactions_id.yaml'
+  /service_agents/contact_interactions/{id}/resolutions:
+    $ref: './paths/service_agents/contact_interactions_id_resolutions.yaml'
+  /service_agents/contact_interactions/{id}/resolutions/{rid}:
+    $ref: './paths/service_agents/contact_interactions_id_resolutions_id.yaml'
 
   /service_agents/transcribes:
     $ref: './paths/service_agents/transcribes.yaml'
