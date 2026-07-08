@@ -55,6 +55,7 @@ func init() {
 	rootCmd.Flags().String("redis_address", "127.0.0.1:6379", "Address of the Redis server (e.g., localhost:6379)")
 	rootCmd.Flags().Int("redis_database", 1, "Redis database index to use (default is 1)")
 	rootCmd.Flags().String("redis_password", "", "Password for authenticating with the Redis server (if required)")
+	rootCmd.Flags().Int("case_timeout_hours", 24, "Case idle timeout (hours) before a peer's open case is closed as timed out")
 
 	// Initialize logging
 	logrus.SetFormatter(joonix.NewFormatter())
