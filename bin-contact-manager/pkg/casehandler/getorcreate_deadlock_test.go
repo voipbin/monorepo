@@ -133,6 +133,23 @@ func Test_GetOrCreate_Deadlock_ExhaustionReturnsDistinctError(t *testing.T) {
 	if !errors.Is(err, ErrDeadlockExhausted) {
 		t.Errorf("expected ErrDeadlockExhausted, got: %v", err)
 	}
+	if len(txs) != maxDeadlockRetries {
+		t.Fatalf("expected exactly %d BeginTx calls, got: %d", maxDeadlockRetries, len(txs))
+	}
+	// VOIP-1232 round-1 PR review finding: a call-count assertion alone
+	// would still pass even if a bug reused the SAME *sql.Tx handle
+	// across every exhaustion attempt (instead of a genuinely fresh
+	// transaction per retry). Assert pairwise pointer distinctness to
+	// actually prove the fresh-BeginTx-per-attempt contract holds even
+	// on the give-up path, matching the assertion already present in
+	// Test_GetOrCreate_Deadlock_RetriesWithFreshBeginTx above.
+	for i := 0; i < len(txs); i++ {
+		for j := i + 1; j < len(txs); j++ {
+			if txs[i] == txs[j] {
+				t.Errorf("expected every deadlock-retry attempt to use a distinct *sql.Tx, but attempt %d and %d shared the same tx handle", i, j)
+			}
+		}
+	}
 }
 
 // Test_GetOrCreate_PeerLock_SerializesSameTuple verifies VOIP-1232's
