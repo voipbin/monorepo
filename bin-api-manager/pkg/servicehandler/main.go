@@ -5,6 +5,7 @@ package servicehandler
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	multipart "mime/multipart"
 	"net/http"
 	"time"
@@ -1153,14 +1154,14 @@ func NewServiceHandler(
 	bucketName string,
 
 	jwtKey string,
-) ServiceHandler {
+) (ServiceHandler, error) {
 	log := logrus.WithField("func", "NewServiceHandler")
 
 	// Create storage client using the decoded credentials
 	storageClient, err := storage.NewClient(context.Background())
 	if err != nil {
 		log.Errorf("Could not create a new storage client. Please ensure the environment is configured for Application Default Credentials (ADC) (for example via GOOGLE_APPLICATION_CREDENTIALS, workload identity, or in-cluster metadata). error: %v", err)
-		return nil
+		return nil, fmt.Errorf("could not create a new storage client: %w", err)
 	}
 
 	return &serviceHandler{
@@ -1174,7 +1175,7 @@ func NewServiceHandler(
 		bucketName:    bucketName,
 
 		jwtKey: []byte(jwtKey),
-	}
+	}, nil
 }
 
 // Find takes a slice and looks for an element in it. If found it will

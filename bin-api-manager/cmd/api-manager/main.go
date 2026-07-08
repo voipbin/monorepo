@@ -124,6 +124,8 @@ func run(
 	sockHandler sockhandler.SockHandler,
 	db dbhandler.DBHandler,
 ) {
+	log := logrus.WithField("func", "run")
+
 	cfg := config.Get()
 	addressListenStream := getAddressListenAudiosock()
 
@@ -132,7 +134,10 @@ func run(
 	zmqPubHandler := zmqpubhandler.NewZMQPubHandler()
 	streamHandler := streamhandler.NewStreamHandler(requestHandler, addressListenStream)
 	websockHandler := websockhandler.NewWebsockHandler(requestHandler, streamHandler)
-	serviceHandler := servicehandler.NewServiceHandler(requestHandler, db, websockHandler, cfg.GCPProjectID, cfg.GCPBucketName, cfg.JWTKey)
+	serviceHandler, err := servicehandler.NewServiceHandler(requestHandler, db, websockHandler, cfg.GCPProjectID, cfg.GCPBucketName, cfg.JWTKey)
+	if err != nil {
+		log.Fatalf("Could not create service handler. err: %v", err)
+	}
 
 	go runSubscribe(sockHandler, requestHandler, zmqPubHandler)
 	go runListenHTTP(serviceHandler)
