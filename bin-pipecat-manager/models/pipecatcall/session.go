@@ -42,10 +42,21 @@ type Session struct {
 	// bot-llm-text token), so all intermediate/final events for that
 	// generation report which inbound message triggered it, even if
 	// PendingInReplyToMessageID is overwritten by a newer send-text in the
-	// meantime. Managed by the single-goroutine-per-session read loop; no
-	// additional synchronization needed beyond LLMFlushing's existing role as
-	// the generation boundary.
-	PendingInReplyToMessageID uuid.UUID `json:"-"`
+	// meantime.
+	//
+	// SendMessage is invoked from the RabbitMQ RPC listener's worker pool —
+	// a goroutine distinct from the WebSocket read loop that reads this value
+	// (see receiveMessageFrameTypeMessage). uuid.UUID is a plain [16]byte
+	// array with no atomicity guarantee, so pendingInReplyToMessageID MUST be
+	// accessed only through SetPendingInReplyToMessageID (writer) and
+	// SnapshotPendingInReplyToMessageID (reader) below — never read or
+	// written directly — to avoid a data race between the RPC worker and the
+	// read loop. LLMInReplyToMessageID itself has no such race: it is
+	// written only by the read loop and read only by the flush goroutine
+	// after LLMDoneChan/generation-start handoff, both of which already have
+	// happens-before ordering via the existing channel/atomic machinery below.
+	muPendingInReplyTo        sync.Mutex
+	pendingInReplyToMessageID uuid.UUID
 	LLMInReplyToMessageID     uuid.UUID `json:"-"`
 
 	// LLM intermediate event flush coordination.
@@ -61,6 +72,28 @@ type Session struct {
 
 	// audio quality monitoring
 	DroppedFrames atomic.Int64 `json:"-"`
+}
+
+// SetPendingInReplyToMessageID records the message ID that the next LLM
+// generation should be correlated with. Called from SendMessage, which runs
+// on the RabbitMQ RPC listener's worker pool goroutine — safe for concurrent
+// use with SnapshotPendingInReplyToMessageID, called from the WebSocket read
+// loop goroutine. See the field comment on Session for the race this guards
+// against.
+func (s *Session) SetPendingInReplyToMessageID(id uuid.UUID) {
+	s.muPendingInReplyTo.Lock()
+	defer s.muPendingInReplyTo.Unlock()
+	s.pendingInReplyToMessageID = id
+}
+
+// SnapshotPendingInReplyToMessageID returns the current pending in-reply-to
+// message ID. Called from the WebSocket read loop at the start of a new LLM
+// generation to snapshot the correlation before it can be overwritten by a
+// subsequent SendMessage. See SetPendingInReplyToMessageID.
+func (s *Session) SnapshotPendingInReplyToMessageID() uuid.UUID {
+	s.muPendingInReplyTo.Lock()
+	defer s.muPendingInReplyTo.Unlock()
+	return s.pendingInReplyToMessageID
 }
 
 // SetConnAst sets the Asterisk WebSocket connection and signals readiness.

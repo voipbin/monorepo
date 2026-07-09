@@ -20,7 +20,7 @@ type Message struct {
 	// InReplyToMessageID is the ID of the user-authored message (as passed to
 	// SendMessage) that this bot response answers. Snapshotted once per LLM
 	// generation (on the first bot-llm-text token) from
-	// Session.PendingInReplyToMessageID, so every intermediate and final event
+	// Session.SetPendingInReplyToMessageID / SnapshotPendingInReplyToMessageID, so every intermediate and final event
 	// for that generation carries the same value. Zero UUID if the session had
 	// no pending inbound message ID at generation start (e.g. voice calls,
 	// which do not go through the same-aicall-reuse SendMessage path this

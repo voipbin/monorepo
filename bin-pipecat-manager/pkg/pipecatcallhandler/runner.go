@@ -575,11 +575,14 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Sess
 		if !se.LLMFlushing.Load() {
 			se.LLMMessageID = h.utilHandler.UUIDCreate()
 			// Snapshot the pending in-reply-to correlation at generation start
-			// (VOIP-1234 §4-1). PendingInReplyToMessageID may be overwritten by
-			// a subsequent SendMessage before this generation finishes; the
+			// (VOIP-1234 §4-1). The pending value may be overwritten by a
+			// subsequent SendMessage before this generation finishes; the
 			// snapshot ensures every event this generation emits reports the
-			// message that actually triggered it.
-			se.LLMInReplyToMessageID = se.PendingInReplyToMessageID
+			// message that actually triggered it. Goes through Session's
+			// exported getter (not a direct field read) because SendMessage
+			// writes this value from the RPC worker pool goroutine while this
+			// read loop reads it concurrently.
+			se.LLMInReplyToMessageID = se.SnapshotPendingInReplyToMessageID()
 			se.LLMTokenChan = make(chan string, 64)
 			se.LLMStopChan = make(chan struct{})
 			se.LLMDoneChan = make(chan struct{})

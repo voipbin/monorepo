@@ -885,10 +885,11 @@ func TestRunLLMIntermediateFlush_idleWatchdog_doesNotFireBeforeFirstToken(t *tes
 
 // TestBotLLMText_inReplyToMessageID_snapshotsAtGenerationStart verifies the
 // VOIP-1234 §4-1 cross-talk correlation: receiveMessageFrameTypeMessage
-// snapshots Session.PendingInReplyToMessageID into
+// snapshots the pending correlation (set via Session.SetPendingInReplyToMessageID) into
 // Session.LLMInReplyToMessageID exactly once, at the start of each LLM
-// generation (the first bot-llm-text token). If SendMessage overwrites
-// PendingInReplyToMessageID with a newer value while a generation is still
+// generation (the first bot-llm-text token). If a subsequent SendMessage
+// overwrites the pending value via SetPendingInReplyToMessageID while a
+// generation is still
 // in flight, that generation's published events must still carry the
 // snapshot taken at its own start -- not the newer pending value -- so an
 // agent-facing client can correctly attribute a response to the message
@@ -942,7 +943,7 @@ func TestBotLLMText_inReplyToMessageID_snapshotsAtGenerationStart(t *testing.T) 
 	stoppedFrame := []byte(`{"label":"rtvi-ai","type":"bot-llm-stopped"}`)
 
 	// --- Generation 1: pending = inReplyTo1 ---
-	se.PendingInReplyToMessageID = inReplyTo1
+	se.SetPendingInReplyToMessageID(inReplyTo1)
 	if err := h.receiveMessageFrameTypeMessage(se, textFrame("First")); err != nil {
 		t.Fatalf("gen1 BotLLMText returned unexpected error: %v", err)
 	}
@@ -953,7 +954,7 @@ func TestBotLLMText_inReplyToMessageID_snapshotsAtGenerationStart(t *testing.T) 
 
 	// Simulate a second SendMessage arriving mid-generation-1, overwriting the
 	// pending value before generation 1 has finished.
-	se.PendingInReplyToMessageID = inReplyTo2
+	se.SetPendingInReplyToMessageID(inReplyTo2)
 
 	if err := h.receiveMessageFrameTypeMessage(se, stoppedFrame); err != nil {
 		t.Fatalf("gen1 BotLLMStopped returned unexpected error: %v", err)
