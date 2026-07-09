@@ -33,6 +33,21 @@ type Session struct {
 	// llm
 	LLMKey string `json:"-"`
 
+	// InReplyToMessageID correlation (VOIP-1234 §4-1): prevents cross-talk when
+	// an aicall is reused for a rapid sequence of send-text requests (e.g. an
+	// agent sending a second question before the first bot response arrives).
+	// PendingInReplyToMessageID is set by SendMessage each time a message is
+	// sent to the LLM; the WebSocket read loop snapshots it into
+	// LLMInReplyToMessageID exactly once per generation (on the first
+	// bot-llm-text token), so all intermediate/final events for that
+	// generation report which inbound message triggered it, even if
+	// PendingInReplyToMessageID is overwritten by a newer send-text in the
+	// meantime. Managed by the single-goroutine-per-session read loop; no
+	// additional synchronization needed beyond LLMFlushing's existing role as
+	// the generation boundary.
+	PendingInReplyToMessageID uuid.UUID `json:"-"`
+	LLMInReplyToMessageID     uuid.UUID `json:"-"`
+
 	// LLM intermediate event flush coordination.
 	// These fields are managed by the WebSocket read loop (single goroutine per session).
 	// The flush goroutine communicates via channels only — no shared mutable state.

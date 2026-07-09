@@ -24,9 +24,10 @@ type CreateOption func(*createParams)
 
 // createParams holds optional parameters for Create.
 type createParams struct {
-	pipecatcallID  uuid.UUID
-	deliveryStatus message.DeliveryStatus
-	activeAIID     uuid.UUID
+	pipecatcallID      uuid.UUID
+	deliveryStatus     message.DeliveryStatus
+	activeAIID         uuid.UUID
+	inReplyToMessageID uuid.UUID
 }
 
 // WithPipecatcallID sets the pipecatcall ID on createParams.
@@ -42,6 +43,12 @@ func WithDeliveryStatus(s message.DeliveryStatus) CreateOption {
 // WithActiveAIID sets the active AI ID on createParams.
 func WithActiveAIID(id uuid.UUID) CreateOption {
 	return func(p *createParams) { p.activeAIID = id }
+}
+
+// WithInReplyToMessageID sets the in-reply-to message ID on createParams.
+// See VOIP-1234 design doc §4-1 for the cross-talk prevention this supports.
+func WithInReplyToMessageID(id uuid.UUID) CreateOption {
+	return func(p *createParams) { p.inReplyToMessageID = id }
 }
 
 type MessageHandler interface {

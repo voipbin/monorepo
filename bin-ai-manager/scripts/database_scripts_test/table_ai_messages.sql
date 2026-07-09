@@ -20,6 +20,9 @@ create table ai_messages(
   pipecatcall_id  binary(16),
   delivery_status varchar(16) not null default 'delivered',
 
+  -- reply correlation
+  in_reply_to_message_id binary(16) not null default 0x00000000000000000000000000000000,
+
   -- timestamps
   tm_create datetime(6),  --
   tm_delete datetime(6),

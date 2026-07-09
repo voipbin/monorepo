@@ -883,6 +883,123 @@ func TestRunLLMIntermediateFlush_idleWatchdog_doesNotFireBeforeFirstToken(t *tes
 	<-se.LLMDoneChan
 }
 
+// TestBotLLMText_inReplyToMessageID_snapshotsAtGenerationStart verifies the
+// VOIP-1234 §4-1 cross-talk correlation: receiveMessageFrameTypeMessage
+// snapshots Session.PendingInReplyToMessageID into
+// Session.LLMInReplyToMessageID exactly once, at the start of each LLM
+// generation (the first bot-llm-text token). If SendMessage overwrites
+// PendingInReplyToMessageID with a newer value while a generation is still
+// in flight, that generation's published events must still carry the
+// snapshot taken at its own start -- not the newer pending value -- so an
+// agent-facing client can correctly attribute a response to the message
+// that actually triggered it.
+func TestBotLLMText_inReplyToMessageID_snapshotsAtGenerationStart(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+
+	h := &pipecatcallHandler{
+		notifyHandler: mockNotify,
+		utilHandler:   mockUtil,
+	}
+
+	gen1MessageID := uuid.FromStringOrNil("11111111-2222-3333-4444-555555555555")
+	gen2MessageID := uuid.FromStringOrNil("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee")
+	inReplyTo1 := uuid.FromStringOrNil("00000001-0000-0000-0000-000000000000")
+	inReplyTo2 := uuid.FromStringOrNil("00000002-0000-0000-0000-000000000000")
+
+	gomock.InOrder(
+		mockUtil.EXPECT().UUIDCreate().Return(gen1MessageID),
+		mockUtil.EXPECT().UUIDCreate().Return(gen2MessageID),
+	)
+
+	mockNotify.EXPECT().PublishEvent(gomock.Any(), gomock.Eq(message.EventTypeBotLLMIntermediate), gomock.Any()).AnyTimes()
+
+	finalInReplyTo := make(chan uuid.UUID, 2)
+	mockNotify.EXPECT().
+		PublishEvent(gomock.Any(), gomock.Eq(message.EventTypeBotLLM), gomock.Any()).
+		DoAndReturn(func(_ any, _ any, evt message.Message) {
+			finalInReplyTo <- evt.InReplyToMessageID
+		}).
+		Times(2)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	se := &pipecatcall.Session{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("ffffffff-9999-2222-3333-444444444444"),
+			CustomerID: uuid.FromStringOrNil("dddddddd-9999-2222-3333-444444444444"),
+		},
+		Ctx: ctx,
+	}
+
+	textFrame := func(text string) []byte {
+		return []byte(`{"label":"rtvi-ai","type":"bot-llm-text","data":{"text":"` + text + `"}}`)
+	}
+	stoppedFrame := []byte(`{"label":"rtvi-ai","type":"bot-llm-stopped"}`)
+
+	// --- Generation 1: pending = inReplyTo1 ---
+	se.PendingInReplyToMessageID = inReplyTo1
+	if err := h.receiveMessageFrameTypeMessage(se, textFrame("First")); err != nil {
+		t.Fatalf("gen1 BotLLMText returned unexpected error: %v", err)
+	}
+	if se.LLMInReplyToMessageID != inReplyTo1 {
+		t.Fatalf("gen1: expected LLMInReplyToMessageID snapshot %s, got %s", inReplyTo1, se.LLMInReplyToMessageID)
+	}
+	gen1Done := se.LLMDoneChan
+
+	// Simulate a second SendMessage arriving mid-generation-1, overwriting the
+	// pending value before generation 1 has finished.
+	se.PendingInReplyToMessageID = inReplyTo2
+
+	if err := h.receiveMessageFrameTypeMessage(se, stoppedFrame); err != nil {
+		t.Fatalf("gen1 BotLLMStopped returned unexpected error: %v", err)
+	}
+	select {
+	case <-gen1Done:
+	case <-time.After(500 * time.Millisecond):
+		t.Fatal("gen1 flush goroutine did not exit within 500ms")
+	}
+
+	// --- Generation 2: pending is now inReplyTo2 ---
+	if err := h.receiveMessageFrameTypeMessage(se, textFrame("Second")); err != nil {
+		t.Fatalf("gen2 BotLLMText returned unexpected error: %v", err)
+	}
+	if se.LLMInReplyToMessageID != inReplyTo2 {
+		t.Fatalf("gen2: expected LLMInReplyToMessageID snapshot %s, got %s", inReplyTo2, se.LLMInReplyToMessageID)
+	}
+	gen2Done := se.LLMDoneChan
+
+	if err := h.receiveMessageFrameTypeMessage(se, stoppedFrame); err != nil {
+		t.Fatalf("gen2 BotLLMStopped returned unexpected error: %v", err)
+	}
+	select {
+	case <-gen2Done:
+	case <-time.After(500 * time.Millisecond):
+		t.Fatal("gen2 flush goroutine did not exit within 500ms")
+	}
+
+	close(finalInReplyTo)
+	got := []uuid.UUID{}
+	for id := range finalInReplyTo {
+		got = append(got, id)
+	}
+	if len(got) != 2 {
+		t.Fatalf("expected 2 final events (one per generation), got %d", len(got))
+	}
+	// Generation 1's final event must report inReplyTo1 (its own snapshot),
+	// NOT inReplyTo2 (the value pending was overwritten to mid-flight).
+	if got[0] != inReplyTo1 {
+		t.Errorf("gen1 final event: expected InReplyToMessageID %s (snapshot at gen1 start), got %s", inReplyTo1, got[0])
+	}
+	if got[1] != inReplyTo2 {
+		t.Errorf("gen2 final event: expected InReplyToMessageID %s (snapshot at gen2 start), got %s", inReplyTo2, got[1])
+	}
+}
+
 // TestFlushAndFinalize_outcomes covers the four observable outcomes of
 // flushAndFinalize, the synchronous helper terminate() will call to
 // deterministically force the flush goroutine to publish its final event

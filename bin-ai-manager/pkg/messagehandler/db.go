@@ -64,6 +64,8 @@ func (h *messageHandler) Create(
 
 		PipecatcallID:  p.pipecatcallID,
 		DeliveryStatus: p.deliveryStatus,
+
+		InReplyToMessageID: p.inReplyToMessageID,
 	}
 	if err := h.db.MessageCreate(ctx, m); err != nil {
 		return nil, err
