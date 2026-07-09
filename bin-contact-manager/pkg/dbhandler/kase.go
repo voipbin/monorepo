@@ -564,10 +564,11 @@ func (h *handler) CaseGetLastClosedByPeerTx(ctx context.Context, tx *sql.Tx, cus
 }
 
 // CaseList returns Cases scoped to customerID, optionally filtered by
-// status and/or owner (design §9's GET /v1/cases?... list surface).
-// status == "" means no status filter; ownerType == "" or
-// ownerID == uuid.Nil means no owner filter.
-func (h *handler) CaseList(ctx context.Context, customerID uuid.UUID, status string, ownerType commonidentity.OwnerType, ownerID uuid.UUID) ([]*kase.Case, error) {
+// status, owner, and/or contact_id (design §9's GET /v1/cases?...
+// list surface). status == "" means no status filter; ownerType == ""
+// or ownerID == uuid.Nil means no owner filter; contactID == uuid.Nil
+// means no contact filter.
+func (h *handler) CaseList(ctx context.Context, customerID uuid.UUID, status string, ownerType commonidentity.OwnerType, ownerID uuid.UUID, contactID uuid.UUID) ([]*kase.Case, error) {
 	columns := commondatabasehandler.GetDBFields(&kase.Case{})
 
 	builder := sq.Select(columns...).
@@ -580,6 +581,9 @@ func (h *handler) CaseList(ctx context.Context, customerID uuid.UUID, status str
 		builder = builder.
 			Where(sq.Eq{"owner_type": string(ownerType)}).
 			Where(sq.Eq{"owner_id": ownerID.Bytes()})
+	}
+	if contactID != uuid.Nil {
+		builder = builder.Where(sq.Eq{"contact_id": contactID.Bytes()})
 	}
 
 	query, args, err := builder.ToSql()

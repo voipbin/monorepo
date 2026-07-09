@@ -59,6 +59,7 @@ func (h *serviceHandler) CaseList(
 	status string,
 	ownerType string,
 	ownerID uuid.UUID,
+	contactID uuid.UUID,
 ) ([]*cmkase.Case, string, error) {
 	customerID := targetCustomerID
 	if customerID == uuid.Nil {
@@ -78,7 +79,7 @@ func (h *serviceHandler) CaseList(
 		return nil, "", serviceerrors.ErrPermissionDenied
 	}
 
-	items, nextToken, err := h.reqHandler.ContactV1CaseList(ctx, customerID, status, ownerType, ownerID, size, token)
+	items, nextToken, err := h.reqHandler.ContactV1CaseList(ctx, customerID, status, ownerType, ownerID, contactID, size, token)
 	if err != nil {
 		log.Errorf("Could not list cases. err: %v", err)
 		return nil, "", err

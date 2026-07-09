@@ -5928,6 +5928,9 @@ type GetContactCasesParams struct {
 	// OwnerId Filter by owner ID.
 	OwnerId *openapi_types.UUID `form:"owner_id,omitempty" json:"owner_id,omitempty"`
 
+	// ContactId Filter to cases attributed to this Contact.
+	ContactId *openapi_types.UUID `form:"contact_id,omitempty" json:"contact_id,omitempty"`
+
 	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
 
@@ -12562,6 +12565,14 @@ func (siw *ServerInterfaceWrapper) GetContactCases(c *gin.Context) {
 	err = runtime.BindQueryParameter("form", true, false, "owner_id", c.Request.URL.Query(), &params.OwnerId)
 	if err != nil {
 		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter owner_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "contact_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "contact_id", c.Request.URL.Query(), &params.ContactId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter contact_id: %w", err), http.StatusBadRequest)
 		return
 	}
 

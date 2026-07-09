@@ -37,7 +37,8 @@ func caseSubIDFromURI(uri string) uuid.UUID {
 }
 
 // processV1CasesGet handles GET /v1/cases?... request. Supports
-// optional status and owner_type/owner_id filters (design §9).
+// optional status, owner_type/owner_id, and contact_id filters
+// (design §9).
 func (h *listenHandler) processV1CasesGet(ctx context.Context, req *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{"func": "processV1CasesGet"})
 	log.WithField("request", req).Debug("Received request.")
@@ -54,6 +55,10 @@ func (h *listenHandler) processV1CasesGet(ctx context.Context, req *sock.Request
 	if s := q.Get("owner_id"); s != "" {
 		ownerID = uuid.FromStringOrNil(s)
 	}
+	var contactID uuid.UUID
+	if s := q.Get("contact_id"); s != "" {
+		contactID = uuid.FromStringOrNil(s)
+	}
 
 	var body request.V1DataCasesGet
 	if len(req.Data) > 0 {
@@ -64,7 +69,7 @@ func (h *listenHandler) processV1CasesGet(ctx context.Context, req *sock.Request
 		return simpleResponse(400), nil
 	}
 
-	res, err := h.caseHandler.CaseList(ctx, body.CustomerID, status, ownerType, ownerID)
+	res, err := h.caseHandler.CaseList(ctx, body.CustomerID, status, ownerType, ownerID, contactID)
 	if err != nil {
 		log.Errorf("Could not list cases. err: %v", err)
 		return errorResponse(err), nil

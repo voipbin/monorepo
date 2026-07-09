@@ -75,7 +75,7 @@ func Test_GetContactCases(t *testing.T) {
 
 			if tt.responseItems != nil && tt.agent != nil {
 				mockSvc.EXPECT().
-					CaseList(req.Context(), tt.agent, uuid.Nil, uint64(100), "", gomock.Any(), gomock.Any(), gomock.Any()).
+					CaseList(req.Context(), tt.agent, uuid.Nil, uint64(100), "", gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(tt.responseItems, tt.responseToken, nil)
 			}
 

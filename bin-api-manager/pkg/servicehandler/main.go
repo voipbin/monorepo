@@ -483,6 +483,7 @@ type ServiceHandler interface {
 		status string,
 		ownerType string,
 		ownerID uuid.UUID,
+		contactID uuid.UUID,
 	) ([]*cmkase.Case, string, error)
 	CaseListUnresolved(
 		ctx context.Context,

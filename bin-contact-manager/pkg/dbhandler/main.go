@@ -106,7 +106,7 @@ type DBHandler interface {
 	// (ownerType == commonidentity.OwnerTypeNone or ownerID == uuid.Nil =
 	// no owner filter). Backs the Phase 5 RPC/REST GET /v1/cases?...
 	// list surface (design §9).
-	CaseList(ctx context.Context, customerID uuid.UUID, status string, ownerType commonidentity.OwnerType, ownerID uuid.UUID) ([]*kase.Case, error)
+	CaseList(ctx context.Context, customerID uuid.UUID, status string, ownerType commonidentity.OwnerType, ownerID uuid.UUID, contactID uuid.UUID) ([]*kase.Case, error)
 }
 
 // handler database handler

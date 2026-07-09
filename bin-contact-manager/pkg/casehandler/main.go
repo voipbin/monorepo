@@ -96,7 +96,7 @@ type CaseHandler interface {
 	// upon by internal callers that already verify ownership themselves
 	// (see verifyCaseOwnership), CaseGet is the public, safe-by-default
 	// entry point for the customer-facing GET /v1/cases/{id} route.
-	CaseList(ctx context.Context, customerID uuid.UUID, status string, ownerType commonidentity.OwnerType, ownerID uuid.UUID) ([]*kase.Case, error)
+	CaseList(ctx context.Context, customerID uuid.UUID, status string, ownerType commonidentity.OwnerType, ownerID uuid.UUID, contactID uuid.UUID) ([]*kase.Case, error)
 	CaseGet(ctx context.Context, customerID, id uuid.UUID) (*kase.Case, error)
 }
 

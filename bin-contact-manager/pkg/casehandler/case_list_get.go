@@ -12,9 +12,9 @@ import (
 
 // CaseList implements design §9's Phase 5 GET /v1/cases?... list
 // surface: a thin, customer-scoped delegation to dbhandler.CaseList,
-// optionally filtered by status and/or owner.
-func (h *caseHandler) CaseList(ctx context.Context, customerID uuid.UUID, status string, ownerType commonidentity.OwnerType, ownerID uuid.UUID) ([]*kase.Case, error) {
-	return h.db.CaseList(ctx, customerID, status, ownerType, ownerID)
+// optionally filtered by status, owner, and/or contact_id.
+func (h *caseHandler) CaseList(ctx context.Context, customerID uuid.UUID, status string, ownerType commonidentity.OwnerType, ownerID uuid.UUID, contactID uuid.UUID) ([]*kase.Case, error) {
+	return h.db.CaseList(ctx, customerID, status, ownerType, ownerID, contactID)
 }
 
 // CaseGet implements design §9's Phase 5 GET /v1/cases/{id} route: the
