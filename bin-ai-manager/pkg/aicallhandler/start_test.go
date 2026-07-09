@@ -557,10 +557,10 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 
 				// new pipecatcall ID + atomic UpdatePipecatcallIDAndActiveflowID
 				m.util.EXPECT().UUIDCreate().Return(newPCC)
-				m.db.EXPECT().AIcallUpdate(ctx, existingAIcallID, map[aicall.Field]any{
+				m.db.EXPECT().AIcallUpdateIfActive(ctx, existingAIcallID, map[aicall.Field]any{
 					aicall.FieldPipecatcallID: newPCC,
 					aicall.FieldActiveflowID:  uuid.FromStringOrNil("d15ae476-30dd-11f0-87af-67d3c47111a7"),
-				}).Return(nil)
+				}).Return(int64(1), nil)
 				m.db.EXPECT().AIcallGet(ctx, existingAIcallID).Return(existing, nil)
 
 				// conversation message create
@@ -644,10 +644,10 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 
 				// new pipecatcall ID + atomic UpdatePipecatcallIDAndActiveflowID
 				m.util.EXPECT().UUIDCreate().Return(newPCC)
-				m.db.EXPECT().AIcallUpdate(ctx, existingAIcallID, map[aicall.Field]any{
+				m.db.EXPECT().AIcallUpdateIfActive(ctx, existingAIcallID, map[aicall.Field]any{
 					aicall.FieldPipecatcallID: newPCC,
 					aicall.FieldActiveflowID:  uuid.FromStringOrNil("d15ae476-30dd-11f0-87af-67d3c47111a7"),
-				}).Return(nil)
+				}).Return(int64(1), nil)
 				m.db.EXPECT().AIcallGet(ctx, existingAIcallID).Return(existing, nil)
 
 				m.message.EXPECT().Create(ctx, uuid.Nil, existing.CustomerID, existing.ID, existing.ActiveflowID, message.DirectionOutgoing, message.RoleUser, "another user message.", nil, "", gomock.Any()).Return(&message.Message{}, nil)
@@ -1138,10 +1138,10 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 
 				// new pipecatcall ID + atomic UpdatePipecatcallIDAndActiveflowID
 				m.util.EXPECT().UUIDCreate().Return(newPCC)
-				m.db.EXPECT().AIcallUpdate(ctx, existingAIcallID, map[aicall.Field]any{
+				m.db.EXPECT().AIcallUpdateIfActive(ctx, existingAIcallID, map[aicall.Field]any{
 					aicall.FieldPipecatcallID: newPCC,
 					aicall.FieldActiveflowID:  uuid.FromStringOrNil("d15ae476-30dd-11f0-87af-67d3c47111a7"),
-				}).Return(nil)
+				}).Return(int64(1), nil)
 				m.db.EXPECT().AIcallGet(ctx, existingAIcallID).Return(existing, nil)
 
 				// resolveTeamMemberForSend: refresh AIEngineModel from current member's AI.
@@ -3573,6 +3573,318 @@ func Test_buildPromptSnapshots_autoAudit(t *testing.T) {
 			_, gotAudit := h.buildPromptSnapshots(ctx, tt.a, tt.assistanceType, tt.assistanceID, uuid.Nil)
 			if gotAudit != tt.expectAudit {
 				t.Errorf("wrong auto audit flag. expect: %v, got: %v", tt.expectAudit, gotAudit)
+			}
+		})
+	}
+}
+
+func Test_startReferenceTypeContactCase(t *testing.T) {
+
+	type mocks struct {
+		util    *utilhandler.MockUtilHandler
+		req     *requesthandler.MockRequestHandler
+		notify  *notifyhandler.MockNotifyHandler
+		db      *dbhandler.MockDBHandler
+		message *messagehandler.MockMessageHandler
+	}
+
+	tests := []struct {
+		name string
+
+		ai             *ai.AI
+		assistanceType aicall.AssistanceType
+		assistanceID   uuid.UUID
+		activeflowID   uuid.UUID
+		referenceID    uuid.UUID
+
+		mockSetup func(ctx context.Context, m *mocks)
+
+		expectRes *aicall.AIcall
+		expectErr bool
+		checkErr  func(t *testing.T, err error)
+	}{
+		{
+			name: "create succeeds on first attempt",
+
+			ai: &ai.AI{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("10000000-0001-11f0-aaaa-000000000001"),
+					CustomerID: uuid.FromStringOrNil("10000000-0002-11f0-aaaa-000000000001"),
+				},
+				EngineModel: ai.EngineModelOpenaiGPT5,
+			},
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   uuid.FromStringOrNil("10000000-0001-11f0-aaaa-000000000001"),
+			activeflowID:   uuid.FromStringOrNil("10000000-0003-11f0-aaaa-000000000001"),
+			referenceID:    uuid.FromStringOrNil("10000000-0004-11f0-aaaa-000000000001"),
+
+			mockSetup: func(ctx context.Context, m *mocks) {
+				pipecatcallID := uuid.FromStringOrNil("10000000-0005-11f0-aaaa-000000000001")
+				aicallID := uuid.FromStringOrNil("10000000-0006-11f0-aaaa-000000000001")
+				created := &aicall.AIcall{
+					Identity: commonidentity.Identity{
+						ID:         aicallID,
+						CustomerID: uuid.FromStringOrNil("10000000-0002-11f0-aaaa-000000000001"),
+					},
+					ActiveflowID:  uuid.FromStringOrNil("10000000-0003-11f0-aaaa-000000000001"),
+					ReferenceType: aicall.ReferenceTypeContactCase,
+					ReferenceID:   uuid.FromStringOrNil("10000000-0004-11f0-aaaa-000000000001"),
+					Status:        aicall.StatusInitiating,
+				}
+
+				m.util.EXPECT().UUIDCreate().Return(pipecatcallID)
+				m.util.EXPECT().UUIDCreate().Return(aicallID)
+				m.db.EXPECT().AIcallCreate(ctx, gomock.Any()).Return(nil)
+				m.db.EXPECT().AIcallGet(ctx, aicallID).Return(created, nil)
+				m.notify.EXPECT().PublishWebhookEvent(ctx, created.CustomerID, aicall.EventTypeStatusInitializing, created)
+				m.req.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any()).Return(nil)
+				m.message.EXPECT().Create(ctx, uuid.Nil, created.CustomerID, created.ID, created.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, gomock.Any(), nil, "", gomock.Any()).Return(&message.Message{}, nil)
+			},
+
+			expectRes: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("10000000-0006-11f0-aaaa-000000000001"),
+					CustomerID: uuid.FromStringOrNil("10000000-0002-11f0-aaaa-000000000001"),
+				},
+				ActiveflowID:  uuid.FromStringOrNil("10000000-0003-11f0-aaaa-000000000001"),
+				ReferenceType: aicall.ReferenceTypeContactCase,
+				ReferenceID:   uuid.FromStringOrNil("10000000-0004-11f0-aaaa-000000000001"),
+				Status:        aicall.StatusInitiating,
+			},
+		},
+		{
+			name: "duplicate key — reuses existing active aicall",
+
+			ai: &ai.AI{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("20000000-0001-11f0-bbbb-000000000001"),
+					CustomerID: uuid.FromStringOrNil("20000000-0002-11f0-bbbb-000000000001"),
+				},
+				EngineModel: ai.EngineModelOpenaiGPT5,
+			},
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   uuid.FromStringOrNil("20000000-0001-11f0-bbbb-000000000001"),
+			activeflowID:   uuid.FromStringOrNil("20000000-0003-11f0-bbbb-000000000001"),
+			referenceID:    uuid.FromStringOrNil("20000000-0004-11f0-bbbb-000000000001"),
+
+			mockSetup: func(ctx context.Context, m *mocks) {
+				pipecatcallID := uuid.FromStringOrNil("20000000-0005-11f0-bbbb-000000000001")
+				aicallID := uuid.FromStringOrNil("20000000-0006-11f0-bbbb-000000000001")
+				existingActive := &aicall.AIcall{
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("20000000-0007-11f0-bbbb-000000000001"),
+						CustomerID: uuid.FromStringOrNil("20000000-0002-11f0-bbbb-000000000001"),
+					},
+					ReferenceType: aicall.ReferenceTypeContactCase,
+					ReferenceID:   uuid.FromStringOrNil("20000000-0004-11f0-bbbb-000000000001"),
+					Status:        aicall.StatusProgressing,
+				}
+
+				m.util.EXPECT().UUIDCreate().Return(pipecatcallID)
+				m.util.EXPECT().UUIDCreate().Return(aicallID)
+				m.db.EXPECT().AIcallCreate(ctx, gomock.Any()).Return(fmt.Errorf("Error 1062: Duplicate entry 'x' for key 'uq_aicall_active_reference_key'"))
+				m.db.EXPECT().AIcallGetByReferenceID(ctx, uuid.FromStringOrNil("20000000-0004-11f0-bbbb-000000000001")).Return(existingActive, nil)
+			},
+
+			expectRes: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("20000000-0007-11f0-bbbb-000000000001"),
+					CustomerID: uuid.FromStringOrNil("20000000-0002-11f0-bbbb-000000000001"),
+				},
+				ReferenceType: aicall.ReferenceTypeContactCase,
+				ReferenceID:   uuid.FromStringOrNil("20000000-0004-11f0-bbbb-000000000001"),
+				Status:        aicall.StatusProgressing,
+			},
+		},
+		{
+			name: "duplicate key — existing terminated, retry create succeeds",
+
+			ai: &ai.AI{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("30000000-0001-11f0-cccc-000000000001"),
+					CustomerID: uuid.FromStringOrNil("30000000-0002-11f0-cccc-000000000001"),
+				},
+				EngineModel: ai.EngineModelOpenaiGPT5,
+			},
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   uuid.FromStringOrNil("30000000-0001-11f0-cccc-000000000001"),
+			activeflowID:   uuid.FromStringOrNil("30000000-0003-11f0-cccc-000000000001"),
+			referenceID:    uuid.FromStringOrNil("30000000-0004-11f0-cccc-000000000001"),
+
+			mockSetup: func(ctx context.Context, m *mocks) {
+				pipecatcallID1 := uuid.FromStringOrNil("30000000-0005-11f0-cccc-000000000001")
+				aicallID1 := uuid.FromStringOrNil("30000000-0006-11f0-cccc-000000000001")
+				pipecatcallID2 := uuid.FromStringOrNil("30000000-0007-11f0-cccc-000000000001")
+				aicallID2 := uuid.FromStringOrNil("30000000-0008-11f0-cccc-000000000001")
+
+				existingTerminated := &aicall.AIcall{
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("30000000-0009-11f0-cccc-000000000001"),
+						CustomerID: uuid.FromStringOrNil("30000000-0002-11f0-cccc-000000000001"),
+					},
+					Status: aicall.StatusTerminated,
+				}
+				created := &aicall.AIcall{
+					Identity: commonidentity.Identity{
+						ID:         aicallID2,
+						CustomerID: uuid.FromStringOrNil("30000000-0002-11f0-cccc-000000000001"),
+					},
+					ActiveflowID:  uuid.FromStringOrNil("30000000-0003-11f0-cccc-000000000001"),
+					ReferenceType: aicall.ReferenceTypeContactCase,
+					ReferenceID:   uuid.FromStringOrNil("30000000-0004-11f0-cccc-000000000001"),
+					Status:        aicall.StatusInitiating,
+				}
+
+				// attempt 0: duplicate key, existing is terminated -> retry
+				m.util.EXPECT().UUIDCreate().Return(pipecatcallID1)
+				m.util.EXPECT().UUIDCreate().Return(aicallID1)
+				m.db.EXPECT().AIcallCreate(ctx, gomock.Any()).Return(fmt.Errorf("Error 1062: Duplicate entry 'x' for key 'uq_aicall_active_reference_key'"))
+				m.db.EXPECT().AIcallGetByReferenceID(ctx, uuid.FromStringOrNil("30000000-0004-11f0-cccc-000000000001")).Return(existingTerminated, nil)
+
+				// attempt 1: create succeeds
+				m.util.EXPECT().UUIDCreate().Return(pipecatcallID2)
+				m.util.EXPECT().UUIDCreate().Return(aicallID2)
+				m.db.EXPECT().AIcallCreate(ctx, gomock.Any()).Return(nil)
+				m.db.EXPECT().AIcallGet(ctx, aicallID2).Return(created, nil)
+				m.notify.EXPECT().PublishWebhookEvent(ctx, created.CustomerID, aicall.EventTypeStatusInitializing, created)
+				m.req.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any()).Return(nil)
+				m.message.EXPECT().Create(ctx, uuid.Nil, created.CustomerID, created.ID, created.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, gomock.Any(), nil, "", gomock.Any()).Return(&message.Message{}, nil)
+			},
+
+			expectRes: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("30000000-0008-11f0-cccc-000000000001"),
+					CustomerID: uuid.FromStringOrNil("30000000-0002-11f0-cccc-000000000001"),
+				},
+				ActiveflowID:  uuid.FromStringOrNil("30000000-0003-11f0-cccc-000000000001"),
+				ReferenceType: aicall.ReferenceTypeContactCase,
+				ReferenceID:   uuid.FromStringOrNil("30000000-0004-11f0-cccc-000000000001"),
+				Status:        aicall.StatusInitiating,
+			},
+		},
+		{
+			name: "duplicate key on every attempt — retries exhausted, returns error",
+
+			ai: &ai.AI{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("40000000-0001-11f0-dddd-000000000001"),
+					CustomerID: uuid.FromStringOrNil("40000000-0002-11f0-dddd-000000000001"),
+				},
+				EngineModel: ai.EngineModelOpenaiGPT5,
+			},
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   uuid.FromStringOrNil("40000000-0001-11f0-dddd-000000000001"),
+			activeflowID:   uuid.FromStringOrNil("40000000-0003-11f0-dddd-000000000001"),
+			referenceID:    uuid.FromStringOrNil("40000000-0004-11f0-dddd-000000000001"),
+
+			mockSetup: func(ctx context.Context, m *mocks) {
+				existingTerminated := &aicall.AIcall{
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("40000000-0009-11f0-dddd-000000000001"),
+						CustomerID: uuid.FromStringOrNil("40000000-0002-11f0-dddd-000000000001"),
+					},
+					Status: aicall.StatusTerminated,
+				}
+
+				for i := 0; i < maxContactCaseCreateRetries; i++ {
+					pcc := uuid.Must(uuid.NewV4())
+					acID := uuid.Must(uuid.NewV4())
+					m.util.EXPECT().UUIDCreate().Return(pcc)
+					m.util.EXPECT().UUIDCreate().Return(acID)
+					m.db.EXPECT().AIcallCreate(ctx, gomock.Any()).Return(fmt.Errorf("Error 1062: Duplicate entry 'x' for key 'uq_aicall_active_reference_key'"))
+					m.db.EXPECT().AIcallGetByReferenceID(ctx, uuid.FromStringOrNil("40000000-0004-11f0-dddd-000000000001")).Return(existingTerminated, nil)
+				}
+			},
+
+			expectErr: true,
+			checkErr: func(t *testing.T, err error) {
+				if !strings.Contains(err.Error(), fmt.Sprintf("%d retries", maxContactCaseCreateRetries)) {
+					t.Errorf("expected error to mention retry count %d, got: %v", maxContactCaseCreateRetries, err)
+				}
+				if !strings.Contains(err.Error(), "1062") {
+					t.Errorf("expected error to wrap the last 1062 duplicate-key error, got: %v", err)
+				}
+			},
+		},
+		{
+			name: "non-1062 db error — returns immediately without retrying",
+
+			ai: &ai.AI{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("50000000-0001-11f0-eeee-000000000001"),
+					CustomerID: uuid.FromStringOrNil("50000000-0002-11f0-eeee-000000000001"),
+				},
+				EngineModel: ai.EngineModelOpenaiGPT5,
+			},
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   uuid.FromStringOrNil("50000000-0001-11f0-eeee-000000000001"),
+			activeflowID:   uuid.FromStringOrNil("50000000-0003-11f0-eeee-000000000001"),
+			referenceID:    uuid.FromStringOrNil("50000000-0004-11f0-eeee-000000000001"),
+
+			mockSetup: func(ctx context.Context, m *mocks) {
+				pipecatcallID := uuid.FromStringOrNil("50000000-0005-11f0-eeee-000000000001")
+				aicallID := uuid.FromStringOrNil("50000000-0006-11f0-eeee-000000000001")
+
+				m.util.EXPECT().UUIDCreate().Return(pipecatcallID)
+				m.util.EXPECT().UUIDCreate().Return(aicallID)
+				m.db.EXPECT().AIcallCreate(ctx, gomock.Any()).Return(fmt.Errorf("connection refused")).Times(1)
+			},
+
+			expectErr: true,
+			checkErr: func(t *testing.T, err error) {
+				if strings.Contains(err.Error(), "1062") {
+					t.Errorf("did not expect 1062 duplicate-key wrapping for a non-duplicate db error, got: %v", err)
+				}
+				if !strings.Contains(err.Error(), "connection refused") {
+					t.Errorf("expected the original db error to be wrapped, got: %v", err)
+				}
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			m := &mocks{
+				util:    utilhandler.NewMockUtilHandler(mc),
+				req:     requesthandler.NewMockRequestHandler(mc),
+				notify:  notifyhandler.NewMockNotifyHandler(mc),
+				db:      dbhandler.NewMockDBHandler(mc),
+				message: messagehandler.NewMockMessageHandler(mc),
+			}
+
+			h := &aicallHandler{
+				utilHandler:    m.util,
+				reqHandler:     m.req,
+				notifyHandler:  m.notify,
+				db:             m.db,
+				messageHandler: m.message,
+			}
+			ctx := context.Background()
+
+			tt.mockSetup(ctx, m)
+
+			res, err := h.startReferenceTypeContactCase(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceID, nil, uuid.Nil)
+			if tt.expectErr {
+				if err == nil {
+					t.Fatalf("expected error, got nil")
+				}
+				if res != nil {
+					t.Errorf("expected nil res on error, got: %v", res)
+				}
+				if tt.checkErr != nil {
+					tt.checkErr(t, err)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}

@@ -475,6 +475,21 @@ func (mr *MockDBHandlerMockRecorder) AIcallUpdate(ctx, id, fields any) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallUpdate", reflect.TypeOf((*MockDBHandler)(nil).AIcallUpdate), ctx, id, fields)
 }
 
+// AIcallUpdateIfActive mocks base method.
+func (m *MockDBHandler) AIcallUpdateIfActive(ctx context.Context, id uuid.UUID, fields map[aicall.Field]any) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIcallUpdateIfActive", ctx, id, fields)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIcallUpdateIfActive indicates an expected call of AIcallUpdateIfActive.
+func (mr *MockDBHandlerMockRecorder) AIcallUpdateIfActive(ctx, id, fields any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallUpdateIfActive", reflect.TypeOf((*MockDBHandler)(nil).AIcallUpdateIfActive), ctx, id, fields)
+}
+
 // MessageAssistantReplyExists mocks base method.
 func (m *MockDBHandler) MessageAssistantReplyExists(ctx context.Context, pipecatcallID uuid.UUID) (bool, error) {
 	m.ctrl.T.Helper()

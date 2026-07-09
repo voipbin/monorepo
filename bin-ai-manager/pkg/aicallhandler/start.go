@@ -8,6 +8,7 @@ import (
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
 	"monorepo/bin-ai-manager/models/team"
+	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/messagehandler"
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 	cmcustomer "monorepo/bin-customer-manager/models/customer"
@@ -185,6 +186,9 @@ func (h *aicallHandler) Start(
 	case aicall.ReferenceTypeConversation:
 		return h.startReferenceTypeConversation(ctx, c, assistanceType, assistanceID, activeflowID, referenceID, teamParameter, currentMemberID)
 
+	case aicall.ReferenceTypeContactCase:
+		return h.startReferenceTypeContactCase(ctx, c, assistanceType, assistanceID, activeflowID, referenceID, teamParameter, currentMemberID)
+
 	case aicall.ReferenceTypeNone:
 		return h.startReferenceTypeNone(ctx, c, assistanceType, assistanceID, activeflowID, teamParameter, currentMemberID)
 
@@ -342,6 +346,87 @@ func (h *aicallHandler) startReferenceTypeConversation(
 	}
 
 	return res, nil
+}
+
+// maxContactCaseCreateRetries bounds the create/reconcile loop in
+// startReferenceTypeContactCase. A bound is required because a pathological
+// sequence of concurrent creators+terminators could in principle keep colliding
+// forever; 3 is generous relative to the spike-measured contention (20 concurrent
+// INSERTs -> 1 success/19 duplicate-key 1062/0 deadlocks, see VOIP-1234 design).
+const maxContactCaseCreateRetries = 3
+
+// startReferenceTypeContactCase starts (or reuses) an aicall for reference type
+// contact_case (VOIP-1234). Concurrency guard: the DB enforces "at most one active
+// AIcall per (customer_id, reference_type, reference_id)" via the
+// active_reference_key generated-column UNIQUE index (bin-dbscheme-manager
+// a5a40c93d3e6). This function relies on that DB-level constraint with an
+// optimistic-INSERT + reconcile-on-1062 pattern rather than a pre-check SELECT or
+// in-process lock — a real spike (20 concurrent INSERTs against MySQL 8.0) proved
+// the optimistic path alone gives full consistency for this workload (1
+// success/19 duplicate-key 1062/0 deadlocks), unlike the heavier
+// SELECT...FOR UPDATE + retry pattern bin-contact-manager uses for contact_cases.
+//
+// Flow:
+//  1. Attempt to create a new AIcall.
+//  2. On success, return it.
+//  3. On a duplicate-key (1062) conflict, re-fetch the existing AIcall by
+//     reference_id.
+//     - If it is still active (not Terminated/Terminating), reuse it.
+//     - If it has since terminated, its active_reference_key is NULL (no longer
+//       occupying the unique slot), so retry the create — bounded by
+//       maxContactCaseCreateRetries.
+//  4. Any other error propagates immediately.
+func (h *aicallHandler) startReferenceTypeContactCase(
+	ctx context.Context,
+	a *ai.AI,
+	assistanceType aicall.AssistanceType,
+	assistanceID uuid.UUID,
+	activeflowID uuid.UUID,
+	referenceID uuid.UUID,
+	teamParameter map[string]any,
+	currentMemberID uuid.UUID,
+) (*aicall.AIcall, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "startReferenceTypeContactCase",
+		"ai":            a,
+		"activeflow_id": activeflowID,
+		"reference_id":  referenceID,
+	})
+
+	var lastErr error
+	for attempt := 0; attempt < maxContactCaseCreateRetries; attempt++ {
+		res, err := h.startAIcallByMessaging(ctx, a, assistanceType, assistanceID, activeflowID, aicall.ReferenceTypeContactCase, referenceID, false, teamParameter, currentMemberID)
+		if err == nil {
+			log.WithField("aicall", res).Debugf("Created aicall for contact_case. aicall_id: %s", res.ID)
+			return res, nil
+		}
+
+		if !dbhandler.IsErrDuplicate(err) {
+			return nil, errors.Wrapf(err, "could not create aicall for contact_case. reference_id: %s", referenceID)
+		}
+
+		// duplicate key: another creator won the race for this
+		// (customer_id, reference_type, reference_id) tuple. Re-fetch and decide
+		// whether to reuse it or retry the create.
+		existing, errGet := h.GetByReferenceID(ctx, referenceID)
+		if errGet != nil {
+			return nil, errors.Wrapf(errGet, "could not get existing aicall after duplicate key conflict. reference_id: %s", referenceID)
+		}
+
+		if existing.Status == aicall.StatusTerminated || existing.Status == aicall.StatusTerminating {
+			// The row that won the race has since terminated (or was already
+			// terminating). Its active_reference_key computes to NULL, so it no
+			// longer occupies the unique slot — retry the create.
+			log.Infof("Existing AIcall for contact_case is terminated/terminating — retrying create. aicall_id: %s, attempt: %d", existing.ID, attempt+1)
+			lastErr = err
+			continue
+		}
+
+		log.WithField("aicall", existing).Debugf("Reusing existing active aicall for contact_case. aicall_id: %s", existing.ID)
+		return existing, nil
+	}
+
+	return nil, errors.Wrapf(lastErr, "could not create aicall for contact_case after %d retries. reference_id: %s", maxContactCaseCreateRetries, referenceID)
 }
 
 // startReferenceTypeNone starts a new aicall with no reference
