@@ -3,7 +3,7 @@ package aicallhandler
 import (
 	"context"
 	"fmt"
-	"time"
+	"monorepo/bin-ai-manager/internal/config"
 	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
@@ -13,6 +13,7 @@ import (
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 	cmcustomer "monorepo/bin-customer-manager/models/customer"
 	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -373,9 +374,24 @@ const maxContactCaseCreateRetries = 3
 //     reference_id.
 //     - If it is still active (not Terminated/Terminating), reuse it.
 //     - If it has since terminated, its active_reference_key is NULL (no longer
-//       occupying the unique slot), so retry the create — bounded by
-//       maxContactCaseCreateRetries.
+//     occupying the unique slot). Before retrying the create, a rate-limit
+//     guard is checked (see below) — if it trips, an error is returned
+//     immediately instead of retrying.
 //  4. Any other error propagates immediately.
+//
+// Recreate rate limit (VOIP-1234 design doc §2-1):
+// Unlike Call/Conversation references, a Contact Case has no natural upper
+// bound on lifetime — there is no "call ended" or "conversation closed" event
+// that stops new questions from arriving. An agent can repeatedly reopen a
+// closed Case and ask questions; each question after the existing AIcall has
+// idle-expired (or otherwise become Terminated/Terminating) would otherwise
+// trigger an unbounded sequence of AIcall recreations, and therefore unbounded
+// LLM spend. To bound this, once an existing AIcall for the reference_id is
+// observed to be Terminated/Terminating, recreation is blocked for
+// config.Get().AIcallContactCaseRecreateRateLimitMinutes minutes measured from
+// that AIcall's end time (TMEnd, falling back to TMUpdate when TMEnd is unset).
+// If neither timestamp is available there is no basis to compute an age, so
+// the guard fails open and the retry proceeds.
 func (h *aicallHandler) startReferenceTypeContactCase(
 	ctx context.Context,
 	a *ai.AI,
@@ -416,7 +432,12 @@ func (h *aicallHandler) startReferenceTypeContactCase(
 		if existing.Status == aicall.StatusTerminated || existing.Status == aicall.StatusTerminating {
 			// The row that won the race has since terminated (or was already
 			// terminating). Its active_reference_key computes to NULL, so it no
-			// longer occupies the unique slot — retry the create.
+			// longer occupies the unique slot — but before retrying the create,
+			// check the recreate rate limit (VOIP-1234 design doc §2-1).
+			if blocked, blockedErr := h.checkContactCaseRecreateRateLimit(referenceID, existing); blocked {
+				return nil, blockedErr
+			}
+
 			log.Infof("Existing AIcall for contact_case is terminated/terminating — retrying create. aicall_id: %s, attempt: %d", existing.ID, attempt+1)
 			lastErr = err
 			continue
@@ -427,6 +448,44 @@ func (h *aicallHandler) startReferenceTypeContactCase(
 	}
 
 	return nil, errors.Wrapf(lastErr, "could not create aicall for contact_case after %d retries. reference_id: %s", maxContactCaseCreateRetries, referenceID)
+}
+
+// checkContactCaseRecreateRateLimit implements the VOIP-1234 §2-1 recreate rate
+// limit for contact_case AIcalls. It returns (true, err) when recreation must be
+// blocked because the given terminated/terminating AIcall ended within the
+// configured rate-limit window; the returned err is ready to be surfaced to the
+// caller as-is. It returns (false, nil) when the retry may proceed — either
+// because the window has elapsed, or because neither TMEnd nor TMUpdate is set
+// on the existing AIcall (fail-open: no timestamp means no basis to block).
+func (h *aicallHandler) checkContactCaseRecreateRateLimit(referenceID uuid.UUID, existing *aicall.AIcall) (bool, error) {
+	terminatedAt := existing.TMEnd
+	if terminatedAt == nil {
+		terminatedAt = existing.TMUpdate
+	}
+	if terminatedAt == nil {
+		// No timestamp to reason about — fail open and allow the retry.
+		return false, nil
+	}
+
+	limitMinutes := config.Get().AIcallContactCaseRecreateRateLimitMinutes
+	elapsed := time.Since(*terminatedAt)
+	limitDuration := time.Duration(limitMinutes) * time.Minute
+	if elapsed >= limitDuration {
+		return false, nil
+	}
+
+	remaining := limitDuration - elapsed
+	remainingMinutes := int(remaining.Minutes())
+	if remaining%time.Minute != 0 {
+		remainingMinutes++
+	}
+
+	promAIcallContactCaseRecreateRateLimitedTotal.Inc()
+
+	return true, fmt.Errorf(
+		"rate limit exceeded: aicall for contact_case reference_id %s was terminated %s ago, recreate blocked for %d more minutes",
+		referenceID, elapsed.Round(time.Second), remainingMinutes,
+	)
 }
 
 // startReferenceTypeNone starts a new aicall with no reference
