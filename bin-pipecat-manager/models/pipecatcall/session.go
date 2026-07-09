@@ -36,13 +36,12 @@ type Session struct {
 	// InReplyToMessageID correlation (VOIP-1234 §4-1): prevents cross-talk when
 	// an aicall is reused for a rapid sequence of send-text requests (e.g. an
 	// agent sending a second question before the first bot response arrives).
-	// PendingInReplyToMessageID is set by SendMessage each time a message is
-	// sent to the LLM; the WebSocket read loop snapshots it into
-	// LLMInReplyToMessageID exactly once per generation (on the first
-	// bot-llm-text token), so all intermediate/final events for that
-	// generation report which inbound message triggered it, even if
-	// PendingInReplyToMessageID is overwritten by a newer send-text in the
-	// meantime.
+	// SetPendingInReplyToMessageID is called by SendMessage each time a
+	// message is sent to the LLM; the WebSocket read loop snapshots the
+	// pending value into LLMInReplyToMessageID exactly once per generation
+	// (on the first bot-llm-text token), so all intermediate/final events
+	// for that generation report which inbound message triggered it, even if
+	// a later SendMessage overwrites the pending value in the meantime.
 	//
 	// SendMessage is invoked from the RabbitMQ RPC listener's worker pool —
 	// a goroutine distinct from the WebSocket read loop that reads this value
