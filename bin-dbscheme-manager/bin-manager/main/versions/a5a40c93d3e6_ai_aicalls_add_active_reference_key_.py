@@ -50,6 +50,29 @@ h2b3c4d5e6f7_billing_billings_idempotency_key_unique.py) so the
 migration is idempotent and safe to retry from this partially-applied
 state, or from a clean state, or after a downgrade.
 
+A second production retry (after the zero-UUID fix above) still hit a
+1062 on CREATE UNIQUE INDEX, this time with a real (non-zero, non-NULL)
+hash value. Direct inspection confirmed there is currently no *steady
+state* duplicate for any real (customer_id, reference_type,
+reference_id) tuple -- ai_aicalls is a live, actively-written table,
+and the CREATE UNIQUE INDEX scan can observe a transient window where
+two rows are concurrently "active" for the same real reference (the
+exact race this migration exists to prevent going forward) before one
+of them is naturally cleaned up (idle-expire, normal termination,
+etc.) moments later. Because DDL scan timing cannot be controlled and
+the table cannot be quiesced for this migration, the fix is a
+backfill step that runs immediately before CREATE UNIQUE INDEX: for
+every group of currently-active rows sharing a real (customer_id,
+reference_type, reference_id), keep only the most recently updated row
+active and mark the rest 'terminated'. This makes CREATE UNIQUE INDEX
+apply against a table with no coexisting active duplicates regardless
+of what transient state produced them, without guessing at or
+depending on the root cause of any individual duplicate. The backfill
+only runs while the index does not yet exist (i.e. only during the
+one-time transition to enforcing the constraint) since once the index
+exists the constraint itself prevents new active duplicates from
+accumulating.
+
 A real-world spike (20 concurrent INSERTs against a MySQL 8.0
 container) confirmed the optimistic-INSERT + DB-level unique index
 combination alone is sufficient here (1 success / 19 duplicate-key
@@ -98,6 +121,27 @@ def upgrade():
         """)
 
     if not _index_exists(conn, 'ai_aicalls', 'uq_aicall_active_reference_key'):
+        # One-time backfill: collapse any group of currently-active rows
+        # sharing a real reference down to a single active row (keep the
+        # most recently updated, terminate the rest) so the unique index
+        # below can be created cleanly regardless of how those active
+        # duplicates arose.
+        op.execute("""
+            UPDATE ai_aicalls a
+            JOIN (
+                SELECT id, ROW_NUMBER() OVER (
+                    PARTITION BY customer_id, reference_type, reference_id
+                    ORDER BY tm_update DESC, tm_create DESC, id DESC
+                ) AS rn
+                FROM ai_aicalls
+                WHERE status NOT IN ('terminated', 'terminating')
+                  AND reference_id != UNHEX('00000000000000000000000000000000')
+            ) ranked ON a.id = ranked.id AND ranked.rn > 1
+            SET a.status = 'terminated',
+                a.tm_end = COALESCE(a.tm_end, NOW(6)),
+                a.tm_update = NOW(6)
+        """)
+
         op.execute("""
             CREATE UNIQUE INDEX uq_aicall_active_reference_key
             ON ai_aicalls(active_reference_key)
