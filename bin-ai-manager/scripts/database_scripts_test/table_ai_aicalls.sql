@@ -38,10 +38,12 @@ create table ai_aicalls(
   -- active_reference_key (BINARY(32) SHA2(...) hash, see
   -- bin-dbscheme-manager a5a40c93d3e6). This concat-based generated column
   -- preserves the same invariant (unique per active (customer_id,
-  -- reference_type, reference_id), terminated/terminating rows excluded)
-  -- at test-data scale without needing a SHA2 equivalent in SQLite.
+  -- reference_type, reference_id), terminated/terminating rows AND legacy
+  -- rows with a zero-value reference_id excluded) at test-data scale
+  -- without needing a SHA2 equivalent in SQLite.
   active_reference_key varchar(255) GENERATED ALWAYS AS (
     CASE WHEN status NOT IN ('terminated', 'terminating')
+      AND reference_id != X'00000000000000000000000000000000'
       THEN customer_id || '|' || reference_type || '|' || reference_id
       ELSE NULL
     END
