@@ -9235,6 +9235,9 @@ type GetServiceAgentsAicallsParams struct {
 
 	// ReferenceId Filter by the ID of the origin resource (e.g. a contact case ID). Must be supplied together with reference_type; supplying only one of the two returns a 400 error.
 	ReferenceId *openapi_types.UUID `form:"reference_id,omitempty" json:"reference_id,omitempty"`
+
+	// Status Filter by AI call status. Useful together with reference_type and reference_id to check whether an AI call is currently active for a given reference (e.g. pass `status=progressing` to avoid matching a prior, already-terminated AI call for the same contact case).
+	Status *AIManagerAIcallStatus `form:"status,omitempty" json:"status,omitempty"`
 }
 
 // PostServiceAgentsAicallsJSONBody defines parameters for PostServiceAgentsAicalls.

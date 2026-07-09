@@ -6918,6 +6918,9 @@ type GetServiceAgentsAicallsParams struct {
 
 	// ReferenceId Filter by the ID of the origin resource (e.g. a contact case ID). Must be supplied together with reference_type; supplying only one of the two returns a 400 error.
 	ReferenceId *openapi_types.UUID `form:"reference_id,omitempty" json:"reference_id,omitempty"`
+
+	// Status Filter by AI call status. Useful together with reference_type and reference_id to check whether an AI call is currently active for a given reference (e.g. pass `status=progressing` to avoid matching a prior, already-terminated AI call for the same contact case).
+	Status *AIManagerAIcallStatus `form:"status,omitempty" json:"status,omitempty"`
 }
 
 // PostServiceAgentsAicallsJSONBody defines parameters for PostServiceAgentsAicalls.
@@ -16266,6 +16269,14 @@ func (siw *ServerInterfaceWrapper) GetServiceAgentsAicalls(c *gin.Context) {
 	err = runtime.BindQueryParameter("form", true, false, "reference_id", c.Request.URL.Query(), &params.ReferenceId)
 	if err != nil {
 		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter reference_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "status" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "status", c.Request.URL.Query(), &params.Status)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter status: %w", err), http.StatusBadRequest)
 		return
 	}
 

@@ -35,6 +35,7 @@ func Test_ServiceAgentAIcallList(t *testing.T) {
 		pageSize      uint64
 		referenceType string
 		referenceID   uuid.UUID
+		status        string
 
 		response []amaicall.AIcall
 
@@ -54,6 +55,7 @@ func Test_ServiceAgentAIcallList(t *testing.T) {
 			10,
 			"",
 			uuid.Nil,
+			"",
 
 			[]amaicall.AIcall{
 				{
@@ -88,6 +90,7 @@ func Test_ServiceAgentAIcallList(t *testing.T) {
 			10,
 			"contact_case",
 			uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
+			"",
 
 			[]amaicall.AIcall{
 				{
@@ -102,6 +105,44 @@ func Test_ServiceAgentAIcallList(t *testing.T) {
 				amaicall.FieldDeleted:       false,
 				amaicall.FieldReferenceType: "contact_case",
 				amaicall.FieldReferenceID:   uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
+			},
+			[]*amaicall.WebhookMessage{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("df394b78-8270-11ed-914d-6bceafeffecb"),
+					},
+				},
+			},
+		},
+		{
+			"agent permission, filtered by reference_type, reference_id, and status",
+			auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Permission: amagent.PermissionCustomerAgent,
+			}),
+			"2020-10-20T01:00:00.995000Z",
+			10,
+			"contact_case",
+			uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
+			"progressing",
+
+			[]amaicall.AIcall{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("df394b78-8270-11ed-914d-6bceafeffecb"),
+					},
+				},
+			},
+
+			map[amaicall.Field]any{
+				amaicall.FieldCustomerID:    uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				amaicall.FieldDeleted:       false,
+				amaicall.FieldReferenceType: "contact_case",
+				amaicall.FieldReferenceID:   uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
+				amaicall.FieldStatus:        "progressing",
 			},
 			[]*amaicall.WebhookMessage{
 				{
@@ -130,7 +171,7 @@ func Test_ServiceAgentAIcallList(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().AIV1AIcallList(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.response, nil)
-			res, err := h.ServiceAgentAIcallList(ctx, tt.agent, tt.pageSize, tt.pageToken, tt.referenceType, tt.referenceID)
+			res, err := h.ServiceAgentAIcallList(ctx, tt.agent, tt.pageSize, tt.pageToken, tt.referenceType, tt.referenceID, tt.status)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

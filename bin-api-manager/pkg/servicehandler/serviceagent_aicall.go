@@ -22,11 +22,14 @@ import (
 // filtered to aicalls originating from that specific resource (e.g. a
 // contact case). This lets a service agent frontend (e.g. square-talk) check
 // whether an aicall is already in progress for a given reference before
-// starting a new one.
+// starting a new one. status can additionally be supplied (independently of
+// referenceType/referenceID) to narrow to a specific lifecycle state (e.g.
+// "progressing") so a prior, already-terminated aicall for the same
+// reference is not mistaken for one still in progress.
 // The caller (server/service_agents_aicalls.go) is expected to reject a
 // partial pair (only one of referenceType/referenceID non-zero) before
 // calling this; this function does not itself validate pairing.
-func (h *serviceHandler) ServiceAgentAIcallList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, referenceType string, referenceID uuid.UUID) ([]*amaicall.WebhookMessage, error) {
+func (h *serviceHandler) ServiceAgentAIcallList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, referenceType string, referenceID uuid.UUID, status string) ([]*amaicall.WebhookMessage, error) {
 	if !a.IsAgent() {
 		return nil, serviceerrors.ErrAuthenticationRequired
 	}
@@ -39,6 +42,7 @@ func (h *serviceHandler) ServiceAgentAIcallList(ctx context.Context, a *auth.Aut
 		"token":          token,
 		"reference_type": referenceType,
 		"reference_id":   referenceID,
+		"status":         status,
 	})
 
 	if token == "" {
@@ -59,6 +63,9 @@ func (h *serviceHandler) ServiceAgentAIcallList(ctx context.Context, a *auth.Aut
 	}
 	if referenceID != uuid.Nil {
 		filters["reference_id"] = referenceID.String()
+	}
+	if status != "" {
+		filters["status"] = status
 	}
 
 	typedFilters, err := h.convertAIcallFilters(filters)

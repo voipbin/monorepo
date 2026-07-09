@@ -996,7 +996,7 @@ type ServiceHandler interface {
 	ServiceAgentContactLookup(ctx context.Context, a *auth.AuthIdentity, phoneE164 string, email string) (*cmcontact.WebhookMessage, error)
 
 	// service agent aicall handlers
-	ServiceAgentAIcallList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, referenceType string, referenceID uuid.UUID) ([]*amaicall.WebhookMessage, error)
+	ServiceAgentAIcallList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, referenceType string, referenceID uuid.UUID, status string) ([]*amaicall.WebhookMessage, error)
 	ServiceAgentAIcallCreate(
 		ctx context.Context,
 		a *auth.AuthIdentity,

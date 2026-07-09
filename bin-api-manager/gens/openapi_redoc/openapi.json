@@ -16329,6 +16329,16 @@
               "format": "uuid"
             },
             "example": "5e4a0680-804e-11ec-8477-2fea5968d85b"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "description": "Filter by AI call status. Useful together with reference_type and reference_id to check whether an AI call is currently active for a given reference (e.g. pass `status=progressing` to avoid matching a prior, already-terminated AI call for the same contact case).",
+            "schema": {
+              "$ref": "#/components/schemas/AIManagerAIcallStatus"
+            },
+            "example": "progressing"
           }
         ],
         "responses": {

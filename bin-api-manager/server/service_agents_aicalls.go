@@ -61,7 +61,12 @@ func (h *server) GetServiceAgentsAicalls(c *gin.Context, params openapi_server.G
 		return
 	}
 
-	tmps, err := h.serviceHandler.ServiceAgentAIcallList(c.Request.Context(), a, pageSize, pageToken, referenceType, referenceID)
+	status := ""
+	if params.Status != nil {
+		status = string(*params.Status)
+	}
+
+	tmps, err := h.serviceHandler.ServiceAgentAIcallList(c.Request.Context(), a, pageSize, pageToken, referenceType, referenceID, status)
 	if err != nil {
 		logrus.Errorf("Could not get aicalls info. err: %v", err)
 		abortWithServiceError(c, err)

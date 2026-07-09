@@ -34,6 +34,7 @@ func Test_GetServiceAgentsAicalls(t *testing.T) {
 		expectedPageToken     string
 		expectedReferenceType string
 		expectedReferenceID   uuid.UUID
+		expectedStatus        string
 		expectedRes           string
 	}
 
@@ -84,6 +85,31 @@ func Test_GetServiceAgentsAicalls(t *testing.T) {
 			expectedReferenceID:   uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 			expectedRes:           `{"result":[{"id":"6e812ad0-828a-11ed-bfe8-9f9b344a834b","customer_id":"00000000-0000-0000-0000-000000000000","assistance_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","current_member_id":"00000000-0000-0000-0000-000000000000","tm_end":null,"tm_create":null,"tm_update":null,"tm_delete":null}],"next_page_token":""}`,
 		},
+		{
+			name: "filtered by reference_type, reference_id, and status",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4e72f3ea-8285-11ed-a55b-6bf44eeb8a87"),
+				},
+			}),
+
+			reqQuery: "/service_agents/aicalls?reference_type=contact_case&reference_id=5e4a0680-804e-11ec-8477-2fea5968d85b&status=progressing",
+
+			responseAicalls: []*amaicall.WebhookMessage{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("6e812ad0-828a-11ed-bfe8-9f9b344a834b"),
+					},
+				},
+			},
+
+			expectedPageSize:      100,
+			expectedPageToken:     "",
+			expectedReferenceType: "contact_case",
+			expectedReferenceID:   uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
+			expectedStatus:        "progressing",
+			expectedRes:           `{"result":[{"id":"6e812ad0-828a-11ed-bfe8-9f9b344a834b","customer_id":"00000000-0000-0000-0000-000000000000","assistance_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","current_member_id":"00000000-0000-0000-0000-000000000000","tm_end":null,"tm_create":null,"tm_update":null,"tm_delete":null}],"next_page_token":""}`,
+		},
 	}
 
 	for _, tt := range tests {
@@ -107,7 +133,7 @@ func Test_GetServiceAgentsAicalls(t *testing.T) {
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ServiceAgentAIcallList(req.Context(), tt.agent, tt.expectedPageSize, tt.expectedPageToken, tt.expectedReferenceType, tt.expectedReferenceID).Return(tt.responseAicalls, nil)
+			mockSvc.EXPECT().ServiceAgentAIcallList(req.Context(), tt.agent, tt.expectedPageSize, tt.expectedPageToken, tt.expectedReferenceType, tt.expectedReferenceID, tt.expectedStatus).Return(tt.responseAicalls, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
