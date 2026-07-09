@@ -193,86 +193,45 @@ func (c *telnyxClient) DeleteOutboundVoiceProfile(ctx context.Context, profileID
 	return nil
 }
 
-func (c *telnyxClient) CreateIPConnection(ctx context.Context, name string, profileID string) (string, error) {
+func (c *telnyxClient) CreateFQDNConnection(ctx context.Context, name, profileID, userName, password string) (string, error) {
+	// Telnyx requires an FQDN connection to have credential authentication
+	// fully configured (user_name + password) before an outbound_voice_profile
+	// can be attached — confirmed empirically against the Telnyx API (a PATCH
+	// setting only outbound_voice_profile_id on a fresh FQDN connection with no
+	// credentials returns 422 "must be fully configured before assigning an
+	// outbound profile"). All three are therefore sent together in a single
+	// create call.
 	body, err := json.Marshal(map[string]interface{}{
 		"connection_name": name,
+		"user_name":       userName,
+		"password":        password,
+		"inbound": map[string]string{
+			// dnis_number_format must match the format VoIPBin stores numbers
+			// in (E.164 with a leading '+'). The Telnyx default ("e164", no
+			// leading '+') causes number-manager lookups for the called
+			// number to silently return zero results.
+			"ani_number_format":  "+E.164",
+			"dnis_number_format": "+e164",
+		},
 		"outbound": map[string]string{
 			"outbound_voice_profile_id": profileID,
 		},
 	})
 	if err != nil {
-		return "", fmt.Errorf("marshal create ip connection request: %w", err)
+		return "", fmt.Errorf("marshal create fqdn connection request: %w", err)
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL+"/ip_connections",
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL+"/fqdn_connections",
 		bytes.NewReader(body))
 	if err != nil {
-		return "", fmt.Errorf("build create ip connection request: %w", err)
+		return "", fmt.Errorf("build create fqdn connection request: %w", err)
 	}
 	req.Header.Set("Authorization", "Bearer "+c.apiKey)
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return "", fmt.Errorf("create ip connection request failed: %w", err)
-	}
-	defer resp.Body.Close() //nolint:errcheck
-
-	if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
-		return "", ErrInvalidKey
-	}
-	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
-		return "", fmt.Errorf("telnyx create ip connection returned unexpected status %d", resp.StatusCode)
-	}
-
-	var res idResponse
-	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
-		return "", fmt.Errorf("decode create ip connection response: %w", err)
-	}
-	return res.Data.ID, nil
-}
-
-func (c *telnyxClient) DeleteIPConnection(ctx context.Context, connID string) error {
-	req, err := http.NewRequestWithContext(ctx, http.MethodDelete,
-		fmt.Sprintf("%s/ip_connections/%s", c.baseURL, connID), nil)
-	if err != nil {
-		return fmt.Errorf("build delete ip connection request: %w", err)
-	}
-	req.Header.Set("Authorization", "Bearer "+c.apiKey)
-
-	resp, err := c.httpClient.Do(req)
-	if err != nil {
-		return fmt.Errorf("delete ip connection request failed: %w", err)
-	}
-	defer resp.Body.Close() //nolint:errcheck
-
-	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
-		return fmt.Errorf("telnyx delete ip connection returned unexpected status %d", resp.StatusCode)
-	}
-	return nil
-}
-
-func (c *telnyxClient) RegisterIP(ctx context.Context, connID string, ipAddress string, port int) (string, error) {
-	body, err := json.Marshal(map[string]interface{}{
-		"connection_id": connID,
-		"ip_address":    ipAddress,
-		"port":          port,
-	})
-	if err != nil {
-		return "", fmt.Errorf("marshal register ip request: %w", err)
-	}
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL+"/ips",
-		bytes.NewReader(body))
-	if err != nil {
-		return "", fmt.Errorf("build register ip request: %w", err)
-	}
-	req.Header.Set("Authorization", "Bearer "+c.apiKey)
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := c.httpClient.Do(req)
-	if err != nil {
-		return "", fmt.Errorf("register ip request failed: %w", err)
+		return "", fmt.Errorf("create fqdn connection request failed: %w", err)
 	}
 	defer resp.Body.Close() //nolint:errcheck
 
@@ -281,32 +240,92 @@ func (c *telnyxClient) RegisterIP(ctx context.Context, connID string, ipAddress 
 	}
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		errBody, _ := io.ReadAll(resp.Body)
-		return "", fmt.Errorf("telnyx register ip returned status %d: %s", resp.StatusCode, string(errBody))
+		return "", fmt.Errorf("telnyx create fqdn connection returned status %d: %s", resp.StatusCode, string(errBody))
 	}
 
 	var res idResponse
 	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
-		return "", fmt.Errorf("decode register ip response: %w", err)
+		return "", fmt.Errorf("decode create fqdn connection response: %w", err)
 	}
 	return res.Data.ID, nil
 }
 
-func (c *telnyxClient) DeleteIP(ctx context.Context, ipID string) error {
+func (c *telnyxClient) DeleteFQDNConnection(ctx context.Context, connID string) error {
 	req, err := http.NewRequestWithContext(ctx, http.MethodDelete,
-		fmt.Sprintf("%s/ips/%s", c.baseURL, ipID), nil)
+		fmt.Sprintf("%s/fqdn_connections/%s", c.baseURL, connID), nil)
 	if err != nil {
-		return fmt.Errorf("build delete ip request: %w", err)
+		return fmt.Errorf("build delete fqdn connection request: %w", err)
 	}
 	req.Header.Set("Authorization", "Bearer "+c.apiKey)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return fmt.Errorf("delete ip request failed: %w", err)
+		return fmt.Errorf("delete fqdn connection request failed: %w", err)
 	}
 	defer resp.Body.Close() //nolint:errcheck
 
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
-		return fmt.Errorf("telnyx delete ip returned unexpected status %d", resp.StatusCode)
+		return fmt.Errorf("telnyx delete fqdn connection returned unexpected status %d", resp.StatusCode)
+	}
+	return nil
+}
+
+func (c *telnyxClient) RegisterFQDN(ctx context.Context, connID string, fqdn string, port int) (string, error) {
+	body, err := json.Marshal(map[string]interface{}{
+		"connection_id":   connID,
+		"fqdn":            fqdn,
+		"port":            port,
+		"dns_record_type": "a",
+	})
+	if err != nil {
+		return "", fmt.Errorf("marshal register fqdn request: %w", err)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL+"/fqdns",
+		bytes.NewReader(body))
+	if err != nil {
+		return "", fmt.Errorf("build register fqdn request: %w", err)
+	}
+	req.Header.Set("Authorization", "Bearer "+c.apiKey)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("register fqdn request failed: %w", err)
+	}
+	defer resp.Body.Close() //nolint:errcheck
+
+	if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
+		return "", ErrInvalidKey
+	}
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
+		errBody, _ := io.ReadAll(resp.Body)
+		return "", fmt.Errorf("telnyx register fqdn returned status %d: %s", resp.StatusCode, string(errBody))
+	}
+
+	var res idResponse
+	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
+		return "", fmt.Errorf("decode register fqdn response: %w", err)
+	}
+	return res.Data.ID, nil
+}
+
+func (c *telnyxClient) DeleteFQDN(ctx context.Context, fqdnID string) error {
+	req, err := http.NewRequestWithContext(ctx, http.MethodDelete,
+		fmt.Sprintf("%s/fqdns/%s", c.baseURL, fqdnID), nil)
+	if err != nil {
+		return fmt.Errorf("build delete fqdn request: %w", err)
+	}
+	req.Header.Set("Authorization", "Bearer "+c.apiKey)
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("delete fqdn request failed: %w", err)
+	}
+	defer resp.Body.Close() //nolint:errcheck
+
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
+		return fmt.Errorf("telnyx delete fqdn returned unexpected status %d", resp.StatusCode)
 	}
 	return nil
 }

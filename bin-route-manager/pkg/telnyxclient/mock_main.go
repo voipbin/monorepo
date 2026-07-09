@@ -40,19 +40,19 @@ func (m *MockTelnyxClient) EXPECT() *MockTelnyxClientMockRecorder {
 	return m.recorder
 }
 
-// CreateIPConnection mocks base method.
-func (m *MockTelnyxClient) CreateIPConnection(ctx context.Context, name, profileID string) (string, error) {
+// CreateFQDNConnection mocks base method.
+func (m *MockTelnyxClient) CreateFQDNConnection(ctx context.Context, name, profileID, userName, password string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateIPConnection", ctx, name, profileID)
+	ret := m.ctrl.Call(m, "CreateFQDNConnection", ctx, name, profileID, userName, password)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CreateIPConnection indicates an expected call of CreateIPConnection.
-func (mr *MockTelnyxClientMockRecorder) CreateIPConnection(ctx, name, profileID any) *gomock.Call {
+// CreateFQDNConnection indicates an expected call of CreateFQDNConnection.
+func (mr *MockTelnyxClientMockRecorder) CreateFQDNConnection(ctx, name, profileID, userName, password any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateIPConnection", reflect.TypeOf((*MockTelnyxClient)(nil).CreateIPConnection), ctx, name, profileID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateFQDNConnection", reflect.TypeOf((*MockTelnyxClient)(nil).CreateFQDNConnection), ctx, name, profileID, userName, password)
 }
 
 // CreateOutboundVoiceProfile mocks base method.
@@ -70,32 +70,32 @@ func (mr *MockTelnyxClientMockRecorder) CreateOutboundVoiceProfile(ctx, name any
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOutboundVoiceProfile", reflect.TypeOf((*MockTelnyxClient)(nil).CreateOutboundVoiceProfile), ctx, name)
 }
 
-// DeleteIP mocks base method.
-func (m *MockTelnyxClient) DeleteIP(ctx context.Context, ipID string) error {
+// DeleteFQDN mocks base method.
+func (m *MockTelnyxClient) DeleteFQDN(ctx context.Context, fqdnID string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteIP", ctx, ipID)
+	ret := m.ctrl.Call(m, "DeleteFQDN", ctx, fqdnID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// DeleteIP indicates an expected call of DeleteIP.
-func (mr *MockTelnyxClientMockRecorder) DeleteIP(ctx, ipID any) *gomock.Call {
+// DeleteFQDN indicates an expected call of DeleteFQDN.
+func (mr *MockTelnyxClientMockRecorder) DeleteFQDN(ctx, fqdnID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteIP", reflect.TypeOf((*MockTelnyxClient)(nil).DeleteIP), ctx, ipID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteFQDN", reflect.TypeOf((*MockTelnyxClient)(nil).DeleteFQDN), ctx, fqdnID)
 }
 
-// DeleteIPConnection mocks base method.
-func (m *MockTelnyxClient) DeleteIPConnection(ctx context.Context, connID string) error {
+// DeleteFQDNConnection mocks base method.
+func (m *MockTelnyxClient) DeleteFQDNConnection(ctx context.Context, connID string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteIPConnection", ctx, connID)
+	ret := m.ctrl.Call(m, "DeleteFQDNConnection", ctx, connID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// DeleteIPConnection indicates an expected call of DeleteIPConnection.
-func (mr *MockTelnyxClientMockRecorder) DeleteIPConnection(ctx, connID any) *gomock.Call {
+// DeleteFQDNConnection indicates an expected call of DeleteFQDNConnection.
+func (mr *MockTelnyxClientMockRecorder) DeleteFQDNConnection(ctx, connID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteIPConnection", reflect.TypeOf((*MockTelnyxClient)(nil).DeleteIPConnection), ctx, connID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteFQDNConnection", reflect.TypeOf((*MockTelnyxClient)(nil).DeleteFQDNConnection), ctx, connID)
 }
 
 // DeleteOutboundVoiceProfile mocks base method.
@@ -112,19 +112,19 @@ func (mr *MockTelnyxClientMockRecorder) DeleteOutboundVoiceProfile(ctx, profileI
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteOutboundVoiceProfile", reflect.TypeOf((*MockTelnyxClient)(nil).DeleteOutboundVoiceProfile), ctx, profileID)
 }
 
-// RegisterIP mocks base method.
-func (m *MockTelnyxClient) RegisterIP(ctx context.Context, connID, ipAddress string, port int) (string, error) {
+// RegisterFQDN mocks base method.
+func (m *MockTelnyxClient) RegisterFQDN(ctx context.Context, connID, fqdn string, port int) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RegisterIP", ctx, connID, ipAddress, port)
+	ret := m.ctrl.Call(m, "RegisterFQDN", ctx, connID, fqdn, port)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// RegisterIP indicates an expected call of RegisterIP.
-func (mr *MockTelnyxClientMockRecorder) RegisterIP(ctx, connID, ipAddress, port any) *gomock.Call {
+// RegisterFQDN indicates an expected call of RegisterFQDN.
+func (mr *MockTelnyxClientMockRecorder) RegisterFQDN(ctx, connID, fqdn, port any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterIP", reflect.TypeOf((*MockTelnyxClient)(nil).RegisterIP), ctx, connID, ipAddress, port)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterFQDN", reflect.TypeOf((*MockTelnyxClient)(nil).RegisterFQDN), ctx, connID, fqdn, port)
 }
 
 // ValidateKey mocks base method.
