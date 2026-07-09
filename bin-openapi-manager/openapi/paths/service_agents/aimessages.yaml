@@ -1,0 +1,88 @@
+get:
+  summary: List aimessages for an aicall
+  description: >-
+    Retrieves a paginated list of AI messages for the given aicall id. The
+    aicall must belong to the service agent's own customer.
+  tags:
+    - Service Agent
+  parameters:
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+    - name: aicall_id
+      in: query
+      required: true
+      description: >-
+        The ID of the aicall whose messages should be retrieved. Returned
+        from the `POST /service_agents/aicalls` or `GET /service_agents/aicalls`
+        response.
+      schema:
+        type: string
+        format: uuid
+      example: "5e4a0680-804e-11ec-8477-2fea5968d85b"
+  responses:
+    '200':
+      description: A list of AI messages.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/CommonPagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AIManagerMessage'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '500':
+      $ref: '#/components/responses/InternalError'
+
+post:
+  summary: Send an aimessage
+  description: >-
+    Creates and sends a new message to the given aicall and returns the
+    details of the created message. The aicall must belong to the service
+    agent's own customer.
+  tags:
+    - Service Agent
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            aicall_id:
+              type: string
+              format: uuid
+              description: >-
+                The ID of the aicall to send the message to. Returned from the
+                `POST /service_agents/aicalls` or `GET /service_agents/aicalls`
+                response.
+              example: "5e4a0680-804e-11ec-8477-2fea5968d85b"
+            role:
+              $ref: '#/components/schemas/AIManagerMessageRole'
+            content:
+              type: string
+              description: The message content.
+              example: "Hello, how can I help you today?"
+          required:
+            - aicall_id
+            - role
+            - content
+  responses:
+    '200':
+      description: The created aimessage details.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AIManagerMessage'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '500':
+      $ref: '#/components/responses/InternalError'

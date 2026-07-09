@@ -6938,6 +6938,30 @@ type PostServiceAgentsAicallsJSONBody struct {
 	ReferenceType AIManagerAIcallReferenceType `json:"reference_type"`
 }
 
+// GetServiceAgentsAimessagesParams defines parameters for GetServiceAgentsAimessages.
+type GetServiceAgentsAimessagesParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// AicallId The ID of the aicall whose messages should be retrieved. Returned from the `POST /service_agents/aicalls` or `GET /service_agents/aicalls` response.
+	AicallId openapi_types.UUID `form:"aicall_id" json:"aicall_id"`
+}
+
+// PostServiceAgentsAimessagesJSONBody defines parameters for PostServiceAgentsAimessages.
+type PostServiceAgentsAimessagesJSONBody struct {
+	// AicallId The ID of the aicall to send the message to. Returned from the `POST /service_agents/aicalls` or `GET /service_agents/aicalls` response.
+	AicallId openapi_types.UUID `json:"aicall_id"`
+
+	// Content The message content.
+	Content string `json:"content"`
+
+	// Role Role of the entity in the conversation.
+	Role AIManagerMessageRole `json:"role"`
+}
+
 // GetServiceAgentsCallsParams defines parameters for GetServiceAgentsCalls.
 type GetServiceAgentsCallsParams struct {
 	// PageSize Number of results to return per page.
@@ -7981,6 +8005,9 @@ type PutRoutesIdJSONRequestBody PutRoutesIdJSONBody
 // PostServiceAgentsAicallsJSONRequestBody defines body for PostServiceAgentsAicalls for application/json ContentType.
 type PostServiceAgentsAicallsJSONRequestBody PostServiceAgentsAicallsJSONBody
 
+// PostServiceAgentsAimessagesJSONRequestBody defines body for PostServiceAgentsAimessages for application/json ContentType.
+type PostServiceAgentsAimessagesJSONRequestBody PostServiceAgentsAimessagesJSONBody
+
 // PostServiceAgentsContactAddressesJSONRequestBody defines body for PostServiceAgentsContactAddresses for application/json ContentType.
 type PostServiceAgentsContactAddressesJSONRequestBody PostServiceAgentsContactAddressesJSONBody
 
@@ -8919,6 +8946,12 @@ type ServerInterface interface {
 	// Create an aicall
 	// (POST /service_agents/aicalls)
 	PostServiceAgentsAicalls(c *gin.Context)
+	// List aimessages for an aicall
+	// (GET /service_agents/aimessages)
+	GetServiceAgentsAimessages(c *gin.Context, params GetServiceAgentsAimessagesParams)
+	// Send an aimessage
+	// (POST /service_agents/aimessages)
+	PostServiceAgentsAimessages(c *gin.Context)
 	// Retrieve a list of calls for the given customer
 	// (GET /service_agents/calls)
 	GetServiceAgentsCalls(c *gin.Context, params GetServiceAgentsCallsParams)
@@ -16303,6 +16336,68 @@ func (siw *ServerInterfaceWrapper) PostServiceAgentsAicalls(c *gin.Context) {
 	siw.Handler.PostServiceAgentsAicalls(c)
 }
 
+// GetServiceAgentsAimessages operation middleware
+func (siw *ServerInterfaceWrapper) GetServiceAgentsAimessages(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetServiceAgentsAimessagesParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Required query parameter "aicall_id" -------------
+
+	if paramValue := c.Query("aicall_id"); paramValue != "" {
+
+	} else {
+		siw.ErrorHandler(c, fmt.Errorf("Query argument aicall_id is required, but not found"), http.StatusBadRequest)
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "aicall_id", c.Request.URL.Query(), &params.AicallId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter aicall_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetServiceAgentsAimessages(c, params)
+}
+
+// PostServiceAgentsAimessages operation middleware
+func (siw *ServerInterfaceWrapper) PostServiceAgentsAimessages(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostServiceAgentsAimessages(c)
+}
+
 // GetServiceAgentsCalls operation middleware
 func (siw *ServerInterfaceWrapper) GetServiceAgentsCalls(c *gin.Context) {
 
@@ -19528,6 +19623,8 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.GET(options.BaseURL+"/service_agents/agents/:id", wrapper.GetServiceAgentsAgentsId)
 	router.GET(options.BaseURL+"/service_agents/aicalls", wrapper.GetServiceAgentsAicalls)
 	router.POST(options.BaseURL+"/service_agents/aicalls", wrapper.PostServiceAgentsAicalls)
+	router.GET(options.BaseURL+"/service_agents/aimessages", wrapper.GetServiceAgentsAimessages)
+	router.POST(options.BaseURL+"/service_agents/aimessages", wrapper.PostServiceAgentsAimessages)
 	router.GET(options.BaseURL+"/service_agents/calls", wrapper.GetServiceAgentsCalls)
 	router.GET(options.BaseURL+"/service_agents/calls/:id", wrapper.GetServiceAgentsCallsId)
 	router.GET(options.BaseURL+"/service_agents/contact_addresses", wrapper.GetServiceAgentsContactAddresses)
@@ -35455,6 +35552,98 @@ func (response PostServiceAgentsAicalls500JSONResponse) VisitPostServiceAgentsAi
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetServiceAgentsAimessagesRequestObject struct {
+	Params GetServiceAgentsAimessagesParams
+}
+
+type GetServiceAgentsAimessagesResponseObject interface {
+	VisitGetServiceAgentsAimessagesResponse(w http.ResponseWriter) error
+}
+
+type GetServiceAgentsAimessages200JSONResponse struct {
+	// NextPageToken Cursor token for the next page of results. Pass this value as the page_token parameter in the next request.
+	NextPageToken *string             `json:"next_page_token,omitempty"`
+	Result        *[]AIManagerMessage `json:"result,omitempty"`
+}
+
+func (response GetServiceAgentsAimessages200JSONResponse) VisitGetServiceAgentsAimessagesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetServiceAgentsAimessages400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetServiceAgentsAimessages400JSONResponse) VisitGetServiceAgentsAimessagesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetServiceAgentsAimessages401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetServiceAgentsAimessages401JSONResponse) VisitGetServiceAgentsAimessagesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetServiceAgentsAimessages500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetServiceAgentsAimessages500JSONResponse) VisitGetServiceAgentsAimessagesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostServiceAgentsAimessagesRequestObject struct {
+	Body *PostServiceAgentsAimessagesJSONRequestBody
+}
+
+type PostServiceAgentsAimessagesResponseObject interface {
+	VisitPostServiceAgentsAimessagesResponse(w http.ResponseWriter) error
+}
+
+type PostServiceAgentsAimessages200JSONResponse AIManagerMessage
+
+func (response PostServiceAgentsAimessages200JSONResponse) VisitPostServiceAgentsAimessagesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostServiceAgentsAimessages400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostServiceAgentsAimessages400JSONResponse) VisitPostServiceAgentsAimessagesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostServiceAgentsAimessages401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostServiceAgentsAimessages401JSONResponse) VisitPostServiceAgentsAimessagesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostServiceAgentsAimessages500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostServiceAgentsAimessages500JSONResponse) VisitPostServiceAgentsAimessagesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type GetServiceAgentsCallsRequestObject struct {
 	Params GetServiceAgentsCallsParams
 }
@@ -42489,6 +42678,12 @@ type StrictServerInterface interface {
 	// Create an aicall
 	// (POST /service_agents/aicalls)
 	PostServiceAgentsAicalls(ctx context.Context, request PostServiceAgentsAicallsRequestObject) (PostServiceAgentsAicallsResponseObject, error)
+	// List aimessages for an aicall
+	// (GET /service_agents/aimessages)
+	GetServiceAgentsAimessages(ctx context.Context, request GetServiceAgentsAimessagesRequestObject) (GetServiceAgentsAimessagesResponseObject, error)
+	// Send an aimessage
+	// (POST /service_agents/aimessages)
+	PostServiceAgentsAimessages(ctx context.Context, request PostServiceAgentsAimessagesRequestObject) (PostServiceAgentsAimessagesResponseObject, error)
 	// Retrieve a list of calls for the given customer
 	// (GET /service_agents/calls)
 	GetServiceAgentsCalls(ctx context.Context, request GetServiceAgentsCallsRequestObject) (GetServiceAgentsCallsResponseObject, error)
@@ -51070,6 +51265,66 @@ func (sh *strictHandler) PostServiceAgentsAicalls(ctx *gin.Context) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PostServiceAgentsAicallsResponseObject); ok {
 		if err := validResponse.VisitPostServiceAgentsAicallsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetServiceAgentsAimessages operation middleware
+func (sh *strictHandler) GetServiceAgentsAimessages(ctx *gin.Context, params GetServiceAgentsAimessagesParams) {
+	var request GetServiceAgentsAimessagesRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetServiceAgentsAimessages(ctx, request.(GetServiceAgentsAimessagesRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetServiceAgentsAimessages")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetServiceAgentsAimessagesResponseObject); ok {
+		if err := validResponse.VisitGetServiceAgentsAimessagesResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostServiceAgentsAimessages operation middleware
+func (sh *strictHandler) PostServiceAgentsAimessages(ctx *gin.Context) {
+	var request PostServiceAgentsAimessagesRequestObject
+
+	var body PostServiceAgentsAimessagesJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostServiceAgentsAimessages(ctx, request.(PostServiceAgentsAimessagesRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostServiceAgentsAimessages")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostServiceAgentsAimessagesResponseObject); ok {
+		if err := validResponse.VisitPostServiceAgentsAimessagesResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

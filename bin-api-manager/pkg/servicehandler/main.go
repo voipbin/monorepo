@@ -1005,6 +1005,11 @@ type ServiceHandler interface {
 		referenceType amaicall.ReferenceType,
 		referenceID uuid.UUID,
 	) (*amaicall.WebhookMessage, error)
+	ServiceAgentAIcallGet(ctx context.Context, a *auth.AuthIdentity, aicallID uuid.UUID) (*amaicall.WebhookMessage, error)
+
+	// service agent aimessage handlers
+	ServiceAgentAImessageList(ctx context.Context, a *auth.AuthIdentity, aicallID uuid.UUID, size uint64, token string) ([]*ammessage.WebhookMessage, error)
+	ServiceAgentAImessageCreate(ctx context.Context, a *auth.AuthIdentity, aicallID uuid.UUID, role ammessage.Role, content string) (*ammessage.WebhookMessage, error)
 
 	// service agent transcribe handlers
 	ServiceAgentTranscribeList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, referenceType string, referenceID uuid.UUID) ([]*tmtranscribe.WebhookMessage, error)
