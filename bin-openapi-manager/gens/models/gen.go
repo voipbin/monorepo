@@ -249,6 +249,7 @@ func (e AIManagerAIcallAssistanceType) Valid() bool {
 // Defines values for AIManagerAIcallReferenceType.
 const (
 	AIManagerAIcallReferenceTypeCall         AIManagerAIcallReferenceType = "call"
+	AIManagerAIcallReferenceTypeContactCase  AIManagerAIcallReferenceType = "contact_case"
 	AIManagerAIcallReferenceTypeConversation AIManagerAIcallReferenceType = "conversation"
 	AIManagerAIcallReferenceTypeNone         AIManagerAIcallReferenceType = ""
 	AIManagerAIcallReferenceTypeTask         AIManagerAIcallReferenceType = "task"
@@ -258,6 +259,8 @@ const (
 func (e AIManagerAIcallReferenceType) Valid() bool {
 	switch e {
 	case AIManagerAIcallReferenceTypeCall:
+		return true
+	case AIManagerAIcallReferenceTypeContactCase:
 		return true
 	case AIManagerAIcallReferenceTypeConversation:
 		return true
@@ -9219,6 +9222,39 @@ type GetServiceAgentsAgentsParams struct {
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
+// GetServiceAgentsAicallsParams defines parameters for GetServiceAgentsAicalls.
+type GetServiceAgentsAicallsParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// ReferenceType Filter by the reference type of the origin resource. Must be supplied together with reference_id; supplying only one of the two returns a 400 error.
+	ReferenceType *AIManagerAIcallReferenceType `form:"reference_type,omitempty" json:"reference_type,omitempty"`
+
+	// ReferenceId Filter by the ID of the origin resource (e.g. a contact case ID). Must be supplied together with reference_type; supplying only one of the two returns a 400 error.
+	ReferenceId *openapi_types.UUID `form:"reference_id,omitempty" json:"reference_id,omitempty"`
+
+	// Status Filter by AI call status. Useful together with reference_type and reference_id to check whether an AI call is currently active for a given reference (e.g. pass `status=progressing` to avoid matching a prior, already-terminated AI call for the same contact case).
+	Status *AIManagerAIcallStatus `form:"status,omitempty" json:"status,omitempty"`
+}
+
+// PostServiceAgentsAicallsJSONBody defines parameters for PostServiceAgentsAicalls.
+type PostServiceAgentsAicallsJSONBody struct {
+	// AssistanceId The unique identifier of the assistance entity (AI or Team). Returned from the `POST /ais`, `GET /ais`, `POST /teams`, or `GET /teams` response.
+	AssistanceId openapi_types.UUID `json:"assistance_id"`
+
+	// AssistanceType Type of assistance entity associated with the AI call.
+	AssistanceType AIManagerAIcallAssistanceType `json:"assistance_type"`
+
+	// ReferenceId The ID of the reference resource for the AI call.
+	ReferenceId openapi_types.UUID `json:"reference_id"`
+
+	// ReferenceType Type of reference associated with the ai call.
+	ReferenceType AIManagerAIcallReferenceType `json:"reference_type"`
+}
+
 // GetServiceAgentsCallsParams defines parameters for GetServiceAgentsCalls.
 type GetServiceAgentsCallsParams struct {
 	// PageSize Number of results to return per page.
@@ -10258,6 +10294,9 @@ type PostRoutesJSONRequestBody PostRoutesJSONBody
 
 // PutRoutesIdJSONRequestBody defines body for PutRoutesId for application/json ContentType.
 type PutRoutesIdJSONRequestBody PutRoutesIdJSONBody
+
+// PostServiceAgentsAicallsJSONRequestBody defines body for PostServiceAgentsAicalls for application/json ContentType.
+type PostServiceAgentsAicallsJSONRequestBody PostServiceAgentsAicallsJSONBody
 
 // PostServiceAgentsContactAddressesJSONRequestBody defines body for PostServiceAgentsContactAddresses for application/json ContentType.
 type PostServiceAgentsContactAddressesJSONRequestBody PostServiceAgentsContactAddressesJSONBody

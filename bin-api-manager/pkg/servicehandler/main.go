@@ -995,6 +995,17 @@ type ServiceHandler interface {
 	ServiceAgentContactDelete(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID) (*cmcontact.WebhookMessage, error)
 	ServiceAgentContactLookup(ctx context.Context, a *auth.AuthIdentity, phoneE164 string, email string) (*cmcontact.WebhookMessage, error)
 
+	// service agent aicall handlers
+	ServiceAgentAIcallList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, referenceType string, referenceID uuid.UUID, status string) ([]*amaicall.WebhookMessage, error)
+	ServiceAgentAIcallCreate(
+		ctx context.Context,
+		a *auth.AuthIdentity,
+		assistanceType amaicall.AssistanceType,
+		assistanceID uuid.UUID,
+		referenceType amaicall.ReferenceType,
+		referenceID uuid.UUID,
+	) (*amaicall.WebhookMessage, error)
+
 	// service agent transcribe handlers
 	ServiceAgentTranscribeList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, referenceType string, referenceID uuid.UUID) ([]*tmtranscribe.WebhookMessage, error)
 	ServiceAgentTranscribeStart(

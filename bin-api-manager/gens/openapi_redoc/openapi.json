@@ -16295,6 +16295,154 @@
         }
       }
     },
+    "/service_agents/aicalls": {
+      "get": {
+        "summary": "List aicalls",
+        "description": "Retrieves a paginated list of AI calls for the service agent's customer. Optionally filter by the origin resource (reference_type + reference_id) to find AI calls tied to a specific call, conversation, task, or contact case — e.g. to check whether an AI call is already in progress for a given contact case before starting a new one.",
+        "tags": [
+          "Service Agent"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageSize"
+          },
+          {
+            "$ref": "#/components/parameters/PageToken"
+          },
+          {
+            "name": "reference_type",
+            "in": "query",
+            "required": false,
+            "description": "Filter by the reference type of the origin resource. Must be supplied together with reference_id; supplying only one of the two returns a 400 error.",
+            "schema": {
+              "$ref": "#/components/schemas/AIManagerAIcallReferenceType"
+            },
+            "example": "contact_case"
+          },
+          {
+            "name": "reference_id",
+            "in": "query",
+            "required": false,
+            "description": "Filter by the ID of the origin resource (e.g. a contact case ID). Must be supplied together with reference_type; supplying only one of the two returns a 400 error.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "5e4a0680-804e-11ec-8477-2fea5968d85b"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "description": "Filter by AI call status. Useful together with reference_type and reference_id to check whether an AI call is currently active for a given reference (e.g. pass `status=progressing` to avoid matching a prior, already-terminated AI call for the same contact case).",
+            "schema": {
+              "$ref": "#/components/schemas/AIManagerAIcallStatus"
+            },
+            "example": "progressing"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of AI calls.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/CommonPagination"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "result": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/AIManagerAIcall"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create an aicall",
+        "description": "Creates a new AI call for the service agent's customer and returns the created aicall's details. An activeflow is automatically created and associated with the new AI call.",
+        "tags": [
+          "Service Agent"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "assistance_type": {
+                    "$ref": "#/components/schemas/AIManagerAIcallAssistanceType"
+                  },
+                  "assistance_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "The unique identifier of the assistance entity (AI or Team). Returned from the `POST /ais`, `GET /ais`, `POST /teams`, or `GET /teams` response.",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                  },
+                  "reference_type": {
+                    "$ref": "#/components/schemas/AIManagerAIcallReferenceType"
+                  },
+                  "reference_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "The ID of the reference resource for the AI call.",
+                    "example": "5e4a0680-804e-11ec-8477-2fea5968d85b"
+                  }
+                },
+                "required": [
+                  "assistance_type",
+                  "assistance_id",
+                  "reference_type",
+                  "reference_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The created aicall details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AIManagerAIcall"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
     "/service_agents/calls/{id}": {
       "get": {
         "summary": "Retrieve detailed information of a specific call",
@@ -24930,13 +25078,15 @@
           "",
           "call",
           "conversation",
-          "task"
+          "task",
+          "contact_case"
         ],
         "x-enum-varnames": [
           "AIManagerAIcallReferenceTypeNone",
           "AIManagerAIcallReferenceTypeCall",
           "AIManagerAIcallReferenceTypeConversation",
-          "AIManagerAIcallReferenceTypeTask"
+          "AIManagerAIcallReferenceTypeTask",
+          "AIManagerAIcallReferenceTypeContactCase"
         ]
       },
       "AIManagerAIcallStatus": {
