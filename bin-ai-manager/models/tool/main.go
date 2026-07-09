@@ -20,6 +20,15 @@ const (
 	ToolNameGetCorrelation    ToolName = "get_correlation"
 	ToolNameGetResource       ToolName = "get_resource"
 	ToolNameDescribeAction    ToolName = "describe_action"
+
+	// Insight AI tool set (VOIP-1234). TODO(VOIP-1234): these two tools are not
+	// yet implemented (no toolDefinitions entry / no execution handler exists).
+	// Implementing get_contact_interactions and get_conversation_content is
+	// tracked as a separate follow-up subtask. The names are defined here now
+	// so ai.TypeInsight AIs can already reference/whitelist them via
+	// AllInsightToolNames ahead of the real implementation.
+	ToolNameGetContactInteractions ToolName = "get_contact_interactions"
+	ToolNameGetConversationContent ToolName = "get_conversation_content"
 )
 
 // AllToolNames returns all available tool names (excluding "all")
@@ -38,6 +47,18 @@ var AllToolNames = []ToolName{
 	ToolNameGetCorrelation,
 	ToolNameGetResource,
 	ToolNameDescribeAction,
+}
+
+// AllInsightToolNames defines the tool set available to ai.TypeInsight AIs.
+//
+// TODO(VOIP-1234): get_contact_interactions and get_conversation_content are
+// NOT YET IMPLEMENTED — there is no corresponding toolDefinitions entry or
+// execution handler for either tool yet. This list only reserves the names so
+// the ai.Type / Insight-system-prompt plumbing can be wired end-to-end now;
+// implementing the two tools themselves is a separate follow-up subtask.
+var AllInsightToolNames = []ToolName{
+	ToolNameGetContactInteractions,
+	ToolNameGetConversationContent,
 }
 
 // Tool defines a tool with its schema for LLM function calling.

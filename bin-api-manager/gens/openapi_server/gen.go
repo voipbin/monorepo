@@ -18,6 +18,12 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
+// Defines values for AIManagerAIType.
+const (
+	AIManagerAITypeInsight AIManagerAIType = "insight"
+	AIManagerAITypeNormal  AIManagerAIType = "normal"
+)
+
 // Defines values for AIManagerAIAuditStatus.
 const (
 	AIManagerAIAuditStatusCompleted   AIManagerAIAuditStatus = "completed"
@@ -1000,6 +1006,18 @@ const (
 	TtsManagerSpeakingStatusStopped    TtsManagerSpeakingStatus = "stopped"
 )
 
+// Defines values for PostAisJSONBodyType.
+const (
+	PostAisJSONBodyTypeInsight PostAisJSONBodyType = "insight"
+	PostAisJSONBodyTypeNormal  PostAisJSONBodyType = "normal"
+)
+
+// Defines values for PutAisIdJSONBodyType.
+const (
+	Insight PutAisIdJSONBodyType = "insight"
+	Normal  PutAisIdJSONBodyType = "normal"
+)
+
 // Defines values for PostCallsJSONBodyAnonymous.
 const (
 	PostCallsJSONBodyAnonymousAuto PostCallsJSONBodyAnonymous = "auto"
@@ -1227,9 +1245,15 @@ type AIManagerAI struct {
 	// TtsVoiceId Text-to-speech voice identifier.
 	TtsVoiceId *string `json:"tts_voice_id,omitempty"`
 
+	// Type AI type. `normal` (default) is a general-purpose AI. `insight` restricts the AI to the Insight tool set and uses a dedicated system prompt for analyzing existing contact/conversation data.
+	Type *AIManagerAIType `json:"type,omitempty"`
+
 	// VadConfig Voice Activity Detection configuration. Omitted fields use Pipecat defaults (confidence=0.7, start_secs=0.2, stop_secs=0.2, min_volume=0.6).
 	VadConfig *AIManagerVADConfig `json:"vad_config,omitempty"`
 }
+
+// AIManagerAIType AI type. `normal` (default) is a general-purpose AI. `insight` restricts the AI to the Insight tool set and uses a dedicated system prompt for analyzing existing contact/conversation data.
+type AIManagerAIType string
 
 // AIManagerAIAudit defines model for AIManagerAIAudit.
 type AIManagerAIAudit struct {
@@ -5371,9 +5395,15 @@ type PostAisJSONBody struct {
 	// TtsVoiceId Voice ID for the text-to-speech engine.
 	TtsVoiceId string `json:"tts_voice_id"`
 
+	// Type AI type. `normal` (default) is a general-purpose AI. `insight` restricts the AI to the Insight tool set and uses a dedicated system prompt.
+	Type *PostAisJSONBodyType `json:"type,omitempty"`
+
 	// VadConfig Voice Activity Detection configuration. Omitted fields use Pipecat defaults (confidence=0.7, start_secs=0.2, stop_secs=0.2, min_volume=0.6).
 	VadConfig *AIManagerVADConfig `json:"vad_config,omitempty"`
 }
+
+// PostAisJSONBodyType defines parameters for PostAis.
+type PostAisJSONBodyType string
 
 // PutAisIdJSONBody defines parameters for PutAisId.
 type PutAisIdJSONBody struct {
@@ -5410,9 +5440,15 @@ type PutAisIdJSONBody struct {
 	// TtsVoiceId Voice ID for the text-to-speech engine.
 	TtsVoiceId string `json:"tts_voice_id"`
 
+	// Type AI type. `normal` (default) is a general-purpose AI. `insight` restricts the AI to the Insight tool set and uses a dedicated system prompt.
+	Type *PutAisIdJSONBodyType `json:"type,omitempty"`
+
 	// VadConfig Voice Activity Detection configuration. Omitted fields use Pipecat defaults (confidence=0.7, start_secs=0.2, stop_secs=0.2, min_volume=0.6).
 	VadConfig *AIManagerVADConfig `json:"vad_config,omitempty"`
 }
+
+// PutAisIdJSONBodyType defines parameters for PutAisId.
+type PutAisIdJSONBodyType string
 
 // GetAisIdParticipantsParams defines parameters for GetAisIdParticipants.
 type GetAisIdParticipantsParams struct {

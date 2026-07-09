@@ -614,6 +614,7 @@
     <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;engine_model&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;parameter&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;object&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;engine_key&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -645,6 +646,7 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer that owns this AI configuration. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String, Required): A human-readable name for the AI configuration (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;Sales</span> <span class="pre">Assistant&quot;</span></code>).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String, Optional): A description of the AI’s purpose or additional notes.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string, Optional): The AI’s operating mode. <code class="docutils literal notranslate"><span class="pre">normal</span></code> (default) is a general-purpose AI usable in calls, tasks, and conversations. <code class="docutils literal notranslate"><span class="pre">insight</span></code> restricts the AI to the Insight tool set (<a class="reference internal" href="#ai-struct-ai-tool-names"><span class="std std-ref">AllInsightToolNames</span></a>) and uses a dedicated system prompt tailored for agent-facing Q&amp;A over a contact-manager Case. See <a class="reference internal" href="#ai-struct-ai-type"><span class="std std-ref">Type</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">engine_model</span></code> (String, Required): The LLM provider and model. Format: <code class="docutils literal notranslate"><span class="pre">&lt;provider&gt;.&lt;model&gt;</span></code> (e.g., <code class="docutils literal notranslate"><span class="pre">openai.gpt-4o</span></code>, <code class="docutils literal notranslate"><span class="pre">anthropic.claude-3-5-sonnet</span></code>). See <a class="reference internal" href="#ai-struct-ai-engine-model"><span class="std std-ref">Engine Models</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">parameter</span></code> (Object, Optional): Custom key-value parameter data for the AI configuration. Supports flow variable substitution at runtime. Typically left as <code class="docutils literal notranslate"><span class="pre">{}</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">engine_key</span></code> (String, Required): The API key for the LLM provider. Must be a valid key from the provider’s dashboard.</p></li>
@@ -684,6 +686,7 @@ no versioned prompt history has been recorded yet.</p></li>
     <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
     <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Sales Assistant AI&quot;</span><span class="p">,</span>
     <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;AI assistant for handling sales inquiries&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span><span class="p">,</span>
     <span class="s2">&quot;engine_model&quot;</span><span class="p">:</span> <span class="s2">&quot;openai.gpt-4o&quot;</span><span class="p">,</span>
     <span class="s2">&quot;parameter&quot;</span><span class="p">:</span> <span class="p">{},</span>
     <span class="s2">&quot;engine_key&quot;</span><span class="p">:</span> <span class="s2">&quot;sk-...&quot;</span><span class="p">,</span>
@@ -707,6 +710,32 @@ no versioned prompt history has been recorded yet.</p></li>
 </pre></div>
 </div>
 </section>
+</section>
+<section id="type">
+<span id="ai-struct-ai-type"></span><h2>Type<a class="headerlink" href="#type" title="Link to this heading">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">type</span></code> field controls the AI’s operating mode.</p>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>normal</p></td>
+<td><p>General-purpose AI. Usable in calls, tasks, and conversations, with the tool set configured via <code class="docutils literal notranslate"><span class="pre">tool_names</span></code>. This is the default when <code class="docutils literal notranslate"><span class="pre">type</span></code> is omitted.</p></td>
+</tr>
+<tr class="row-odd"><td><p>insight</p></td>
+<td><p>Restricted to the Insight tool set (<code class="docutils literal notranslate"><span class="pre">get_contact_interactions</span></code>, <code class="docutils literal notranslate"><span class="pre">get_conversation_content</span></code>) and a dedicated system prompt. Intended for agent-facing Q&amp;A over a contact-manager Case (e.g., an agent asking the AI questions about a Case while working it in square-talk), not for handling live calls.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Updating an AI via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/ais/{id}</span></code> without sending <code class="docutils literal notranslate"><span class="pre">type</span></code> leaves the existing type unchanged — it does not reset the AI to <code class="docutils literal notranslate"><span class="pre">normal</span></code>. To change an AI’s type, explicitly send the desired <code class="docutils literal notranslate"><span class="pre">type</span></code> value in the PUT body.</p>
+</div>
 </section>
 <section id="engine-model">
 <span id="ai-struct-ai-engine-model"></span><h2>Engine Model<a class="headerlink" href="#engine-model" title="Link to this heading">¶</a></h2>
@@ -1166,6 +1195,7 @@ no versioned prompt history has been recorded yet.</p></li>
 <li><a class="reference internal" href="#example">Example</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#type">Type</a></li>
 <li><a class="reference internal" href="#engine-model">Engine Model</a></li>
 <li><a class="reference internal" href="#tts-type">TTS Type</a></li>
 <li><a class="reference internal" href="#stt-type">STT Type</a></li>

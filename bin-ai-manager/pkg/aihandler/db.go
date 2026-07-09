@@ -26,6 +26,7 @@ func (h *aiHandler) dbCreate(
 	customerID uuid.UUID,
 	name string,
 	detail string,
+	aiType ai.Type,
 	engineModel ai.EngineModel,
 	parameter map[string]any,
 	engineKey string,
@@ -63,6 +64,7 @@ func (h *aiHandler) dbCreate(
 
 		Name:   name,
 		Detail: detail,
+		Type:   aiType,
 
 		EngineModel: engineModel,
 		Parameter:   parameter,
@@ -173,6 +175,7 @@ func (h *aiHandler) dbUpdate(
 	id uuid.UUID,
 	name string,
 	detail string,
+	aiType ai.Type,
 	engineModel ai.EngineModel,
 	parameter map[string]any,
 	engineKey string,
@@ -187,7 +190,7 @@ func (h *aiHandler) dbUpdate(
 	smartTurnEnabled bool,
 	autoAICallAuditEnabled bool,
 ) (*ai.AI, error) {
-	fields := h.buildUpdateFields(name, detail, engineModel, parameter, engineKey, ragID, initPrompt,
+	fields := h.buildUpdateFields(name, detail, aiType, engineModel, parameter, engineKey, ragID, initPrompt,
 		ttsType, ttsVoice, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled, autoAICallAuditEnabled)
 
 	if err := h.db.AIUpdate(ctx, id, fields); err != nil {
@@ -206,6 +209,7 @@ func (h *aiHandler) dbUpdate(
 // buildUpdateFields builds the AI field map used for AIUpdate calls.
 func (h *aiHandler) buildUpdateFields(
 	name, detail string,
+	aiType ai.Type,
 	engineModel ai.EngineModel,
 	parameter map[string]any,
 	engineKey string,
@@ -223,6 +227,7 @@ func (h *aiHandler) buildUpdateFields(
 	return map[ai.Field]any{
 		ai.FieldName:             name,
 		ai.FieldDetail:           detail,
+		ai.FieldType:             aiType,
 		ai.FieldEngineModel:      engineModel,
 		ai.FieldParameter:        parameter,
 		ai.FieldEngineKey:        engineKey,

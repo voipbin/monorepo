@@ -167,6 +167,7 @@ func Test_processV1AIsPost(t *testing.T) {
 				tt.expectCustomerID,
 				tt.expectName,
 				tt.expectDetail,
+				gomock.Any(), // aiType
 				tt.expectEngineModel,
 				tt.expectParameter,
 				tt.expectEngineKey,
@@ -387,6 +388,7 @@ func Test_processV1AIsIDPut(t *testing.T) {
 				tt.expectID,
 				tt.expectName,
 				tt.expectDetail,
+				gomock.Any(), // aiType
 				tt.expectEngineModel,
 				tt.expectParameter,
 				tt.expectEngineKey,

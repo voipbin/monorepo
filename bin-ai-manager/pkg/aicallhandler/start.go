@@ -690,9 +690,12 @@ func (h *aicallHandler) startInitMessages(ctx context.Context, a *ai.AI, c *aica
 	})
 
 	messages := []string{}
-	if isTask {
+	switch {
+	case a.Type == ai.TypeInsight:
+		messages = append(messages, InsightSystemPrompt)
+	case isTask:
 		messages = append(messages, defaultCommonAItaskSystemPrompt)
-	} else {
+	default:
 		messages = append(messages, defaultCommonAIcallSystemPrompt)
 	}
 

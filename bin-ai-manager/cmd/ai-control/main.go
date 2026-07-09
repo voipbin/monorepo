@@ -225,6 +225,7 @@ func runCreate(cmd *cobra.Command, args []string) error {
 		customerID,
 		name,
 		detail,
+		ai.TypeNormal, // aiType - not supported via CLI yet
 		engineModel,
 		map[string]any{}, // engineData - empty for now
 		engineKey,
@@ -348,6 +349,7 @@ func runUpdate(cmd *cobra.Command, args []string) error {
 		targetID,
 		name,
 		detail,
+		ai.TypeNone, // aiType - not supported via CLI yet; TypeNone preserves the existing type on update
 		engineModel,
 		map[string]any{}, // engineData - empty for now
 		engineKey,

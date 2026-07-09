@@ -65,6 +65,7 @@ func (r *requestHandler) AIV1AICreate(
 	customerID uuid.UUID,
 	name string,
 	detail string,
+	aiType amai.Type,
 	engineModel amai.EngineModel,
 	parameter map[string]any,
 	engineKey string,
@@ -83,6 +84,7 @@ func (r *requestHandler) AIV1AICreate(
 		CustomerID: customerID,
 		Name:       name,
 		Detail:     detail,
+		Type:       aiType,
 
 		EngineModel: engineModel,
 		Parameter:   parameter,
@@ -165,6 +167,7 @@ func (r *requestHandler) AIV1AIUpdate(
 	aiID uuid.UUID,
 	name string,
 	detail string,
+	aiType amai.Type,
 	engineModel amai.EngineModel,
 	parameter map[string]any,
 	engineKey string,
@@ -182,6 +185,7 @@ func (r *requestHandler) AIV1AIUpdate(
 	data := &amrequest.V1DataAIsIDPut{
 		Name:   name,
 		Detail: detail,
+		Type:   aiType,
 
 		EngineModel: engineModel,
 		Parameter:   parameter,

@@ -14,6 +14,7 @@ type V1DataAIsPost struct {
 	CustomerID uuid.UUID `json:"customer_id,omitempty"`
 	Name       string    `json:"name,omitempty"`
 	Detail     string    `json:"detail,omitempty"`
+	Type       ai.Type   `json:"type,omitempty"`
 
 	EngineModel ai.EngineModel `json:"engine_model,omitempty"`
 	Parameter   map[string]any `json:"parameter,omitempty"`
@@ -40,8 +41,9 @@ type V1DataAIsPost struct {
 // v1 data type request struct for
 // /v1/ais/<ai-id> PUT
 type V1DataAIsIDPut struct {
-	Name   string `json:"name,omitempty"`
-	Detail string `json:"detail,omitempty"`
+	Name   string  `json:"name,omitempty"`
+	Detail string  `json:"detail,omitempty"`
+	Type   ai.Type `json:"type,omitempty"`
 
 	EngineModel ai.EngineModel `json:"engine_model,omitempty"`
 	Parameter   map[string]any `json:"parameter,omitempty"`
