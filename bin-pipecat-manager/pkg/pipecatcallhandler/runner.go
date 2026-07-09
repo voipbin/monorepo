@@ -130,7 +130,19 @@ func (h *pipecatcallHandler) runnerStartScript(pc *pipecatcall.Pipecatcall, se *
 			// Single AI: resolve tools from the AI's configuration
 			ai, errAI := h.resolveAIFromAIcall(se.Ctx, aicall)
 			if errAI != nil {
-				log.WithError(errAI).Warnf("Could not resolve AI, returning all tools")
+				// Fail-open by design (VOIP-1234 §6 v4): this AI lookup failure
+				// cannot be scoped to Insight-typed AIs specifically (pipecatcall.ReferenceType
+				// only distinguishes ReferenceTypeCall/ReferenceTypeAICall, not AI.Type), and
+				// there is no observed incident motivating a fail-closed change that would
+				// affect every AICall-backed session (not just Insight). Falling back to
+				// GetAll() keeps the session usable at the cost of over-broad tool exposure
+				// on this rare error path. Metric + alert-worthy log below give operators
+				// visibility so a real incident can be detected and this decision revisited.
+				metricsToolResolveFallbackTotal.Inc()
+				log.WithFields(logrus.Fields{
+					"aicall_id":     aicall.ID,
+					"assistance_id": aicall.AssistanceID,
+				}).WithError(errAI).Errorf("Could not resolve AI for pipecat session %s; falling back to all tools (fail-open, over-broad tool exposure)", pc.ID)
 				tools = h.toolHandler.GetAll()
 			} else {
 				tools = h.toolHandler.GetByNames(ai.ToolNames)
@@ -174,7 +186,6 @@ func (h *pipecatcallHandler) runnerStartScript(pc *pipecatcall.Pipecatcall, se *
 
 	return nil
 }
-
 
 func (h *pipecatcallHandler) RunnerWebsocketHandle(id uuid.UUID, c *gin.Context) error {
 	direction := c.Query("direction")
@@ -471,7 +482,7 @@ func (h *pipecatcallHandler) RunnerMemberSwitchedHandle(id uuid.UUID, c *gin.Con
 	}
 
 	request := struct {
-		TransitionFunctionName string         `json:"transition_function_name"`
+		TransitionFunctionName string             `json:"transition_function_name"`
 		FromMember             message.MemberInfo `json:"from_member"`
 		ToMember               message.MemberInfo `json:"to_member"`
 	}{}
@@ -682,8 +693,8 @@ func (h *pipecatcallHandler) runLLMIntermediateFlush(se *pipecatcall.Session, me
 	defer ticker.Stop()
 	watchdog := time.NewTicker(idleWatchdogTickRate)
 	defer watchdog.Stop()
-	defer close(se.LLMDoneChan)        // close-broadcasts goroutine exit to readers
-	defer se.LLMFlushing.Store(false)  // LIFO: runs before close(LLMDoneChan), so observers see flushing=false
+	defer close(se.LLMDoneChan)       // close-broadcasts goroutine exit to readers
+	defer se.LLMFlushing.Store(false) // LIFO: runs before close(LLMDoneChan), so observers see flushing=false
 
 	var fullText string
 	var deltaBuffer string
@@ -903,4 +914,3 @@ func (h *pipecatcallHandler) runnerWebsocketHandleAudio(se *pipecatcall.Session,
 
 	return nil
 }
-

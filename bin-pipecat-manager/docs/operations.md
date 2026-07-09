@@ -36,6 +36,7 @@ Exposed at `PROMETHEUS_LISTEN_ADDRESS/PROMETHEUS_ENDPOINT` (default `:2112/metri
 | `pipecat_manager_llm_flush_exit_total` | Counter | — | LLM flush operations that exited cleanly |
 | `pipecat_manager_llm_flush_finalize_outcome_total` | Counter | `outcome` | LLM flush finalization outcomes |
 | `pipecat_manager_llm_idle_watchdog_fired_total` | Counter | — | Idle watchdog triggers |
+| `pipecat_manager_tool_resolve_fallback_total` | Counter | — | runnerStartScript fell back to all tools (GetAll()) after an AI lookup failure. Intentionally fail-open (VOIP-1234 §6); a sustained non-zero rate should be investigated and alerted on, since it means sessions are running with an over-broad tool set instead of the AI's configured whitelist |
 | `receive_request_process_time` | Histogram | `type`, `method` | RPC request latency |
 
 Circuit-breaker metrics from `bin-common-handler/pkg/requesthandler` are also registered under the `pipecat_manager_*` namespace. See [docs/patterns/circuit-breaker.md](../../docs/patterns/circuit-breaker.md).
