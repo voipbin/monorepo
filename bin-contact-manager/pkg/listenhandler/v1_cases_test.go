@@ -55,7 +55,40 @@ func Test_ProcessV1CasesGet_ListsWithFilters(t *testing.T) {
 		Data:   body,
 	}
 
-	mockCase.EXPECT().CaseList(ctx, customerID, "open", commonidentity.OwnerTypeAgent, ownerID).
+	mockCase.EXPECT().CaseList(ctx, customerID, "open", commonidentity.OwnerTypeAgent, ownerID, uuid.Nil).
+		Return([]*kase.Case{{ID: caseID}}, nil)
+
+	res, err := h.processV1CasesGet(ctx, req)
+	if err != nil {
+		t.Fatalf("processV1CasesGet() error = %v", err)
+	}
+	if res.StatusCode != 200 {
+		t.Errorf("StatusCode = %v, want 200", res.StatusCode)
+	}
+}
+
+// Test_ProcessV1CasesGet_ContactIDFilter verifies GET /v1/cases?contact_id=...
+// parses the contact_id query filter and passes it through to
+// caseHandler.CaseList, for the Contact-detail "Cases" tab use case
+// (square-admin contacts_detail.js).
+func Test_ProcessV1CasesGet_ContactIDFilter(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+	h, mockCase := newTestListenHandlerWithCase(mc)
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("aaaaaaaa-0002-0002-0002-000000000001")
+	contactID := uuid.FromStringOrNil("aaaaaaaa-0002-0002-0002-000000000002")
+	caseID := uuid.FromStringOrNil("aaaaaaaa-0002-0002-0002-000000000003")
+
+	body, _ := json.Marshal(map[string]any{"customer_id": customerID.String()})
+	req := &sock.Request{
+		URI:    "/v1/cases?contact_id=" + contactID.String(),
+		Method: sock.RequestMethodGet,
+		Data:   body,
+	}
+
+	mockCase.EXPECT().CaseList(ctx, customerID, "", commonidentity.OwnerType(""), uuid.Nil, contactID).
 		Return([]*kase.Case{{ID: caseID}}, nil)
 
 	res, err := h.processV1CasesGet(ctx, req)

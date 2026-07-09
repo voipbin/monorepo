@@ -24,6 +24,7 @@ func Test_ContactV1CaseList(t *testing.T) {
 		status     string
 		ownerType  string
 		ownerID    uuid.UUID
+		contactID  uuid.UUID
 		size       uint64
 		token      string
 
@@ -59,6 +60,30 @@ func Test_ContactV1CaseList(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "contact_id filter",
+
+			customerID: uuid.FromStringOrNil("55ecfc4e-2c74-11ee-98fb-0762519529f3"),
+			contactID:  uuid.FromStringOrNil("7a3ec8f0-2c74-11ee-b0e5-8f2ac8c9a111"),
+
+			expectTarget: "bin-manager.contact-manager.request",
+			expectRequest: &sock.Request{
+				URI:      "/v1/cases?contact_id=7a3ec8f0-2c74-11ee-b0e5-8f2ac8c9a111",
+				Method:   sock.RequestMethodGet,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"customer_id":"55ecfc4e-2c74-11ee-98fb-0762519529f3"}`),
+			},
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[{"id":"5623e25e-2c74-11ee-87a6-bfa8ae34077f"}]`),
+			},
+			expectRes: []*cmkase.Case{
+				{
+					ID: uuid.FromStringOrNil("5623e25e-2c74-11ee-87a6-bfa8ae34077f"),
+				},
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -74,7 +99,7 @@ func Test_ContactV1CaseList(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, nextToken, err := reqHandler.ContactV1CaseList(ctx, tt.customerID, tt.status, tt.ownerType, tt.ownerID, tt.size, tt.token)
+			res, nextToken, err := reqHandler.ContactV1CaseList(ctx, tt.customerID, tt.status, tt.ownerType, tt.ownerID, tt.contactID, tt.size, tt.token)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

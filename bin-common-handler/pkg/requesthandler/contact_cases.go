@@ -16,15 +16,16 @@ import (
 )
 
 // ContactV1CaseList lists cases from contact-manager, optionally filtered
-// by status and/or owner (owner_type/owner_id are query-string filters;
-// size/token are accepted for API symmetry with other list clients, but
-// the v1_cases.go listenhandler does not currently implement pagination
+// by status, owner, and/or contact_id (query-string filters; size/token
+// are accepted for API symmetry with other list clients, but the
+// v1_cases.go listenhandler does not currently implement pagination
 // on this route, so nextToken is always returned empty).
 func (r *requestHandler) ContactV1CaseList(
 	ctx context.Context,
 	customerID uuid.UUID,
 	status, ownerType string,
 	ownerID uuid.UUID,
+	contactID uuid.UUID,
 	size uint64,
 	token string,
 ) ([]*cmkase.Case, string, error) {
@@ -37,6 +38,9 @@ func (r *requestHandler) ContactV1CaseList(
 	}
 	if ownerID != uuid.Nil {
 		u.Set("owner_id", ownerID.String())
+	}
+	if contactID != uuid.Nil {
+		u.Set("contact_id", contactID.String())
 	}
 
 	uri := "/v1/cases?" + u.Encode()

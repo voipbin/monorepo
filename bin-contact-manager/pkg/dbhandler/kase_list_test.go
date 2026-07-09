@@ -70,7 +70,7 @@ func Test_CaseList_FiltersByCustomerStatusAndOwner(t *testing.T) {
 	}
 
 	// No filters beyond customer_id: expect all 3 of this customer's cases.
-	all, err := h.CaseList(ctx, customerID, "", "", uuid.Nil)
+	all, err := h.CaseList(ctx, customerID, "", "", uuid.Nil, uuid.Nil)
 	if err != nil {
 		t.Fatalf("CaseList() error = %v", err)
 	}
@@ -86,7 +86,7 @@ func Test_CaseList_FiltersByCustomerStatusAndOwner(t *testing.T) {
 	}
 
 	// status=open filter.
-	openOnly, err := h.CaseList(ctx, customerID, string(kase.StatusOpen), "", uuid.Nil)
+	openOnly, err := h.CaseList(ctx, customerID, string(kase.StatusOpen), "", uuid.Nil, uuid.Nil)
 	if err != nil {
 		t.Fatalf("CaseList(status=open) error = %v", err)
 	}
@@ -102,7 +102,7 @@ func Test_CaseList_FiltersByCustomerStatusAndOwner(t *testing.T) {
 	}
 
 	// owner_type+owner_id filter.
-	ownedOnly, err := h.CaseList(ctx, customerID, "", commonidentity.OwnerTypeAgent, ownerID)
+	ownedOnly, err := h.CaseList(ctx, customerID, "", commonidentity.OwnerTypeAgent, ownerID, uuid.Nil)
 	if err != nil {
 		t.Fatalf("CaseList(owner) error = %v", err)
 	}
@@ -115,5 +115,32 @@ func Test_CaseList_FiltersByCustomerStatusAndOwner(t *testing.T) {
 	}
 	if foundOwned[openOtherOwnerCaseID] {
 		t.Errorf("owner filter must exclude the other owner's case")
+	}
+
+	// contact_id filter.
+	contactID := uuid.FromStringOrNil("f1b2c3d4-9601-9601-9601-000000000004")
+	otherContactID := uuid.FromStringOrNil("f1b2c3d4-9601-9601-9601-000000000005")
+	contactAttributedCaseID := uuid.FromStringOrNil("f1b2c3d4-9601-9601-9601-000000000014")
+	if err := h.CaseInsert(ctx, &kase.Case{
+		ID: contactAttributedCaseID, CustomerID: customerID,
+		PeerType: commonaddress.TypeTel, PeerTarget: "+155****1014", ReferenceType: "call",
+		ContactID: &contactID,
+		Status:    kase.StatusOpen, OpenedAt: &opened, TMCreate: &opened, TMUpdate: &opened,
+	}); err != nil {
+		t.Fatalf("CaseInsert(contact-attributed) error = %v", err)
+	}
+	contactOnly, err := h.CaseList(ctx, customerID, "", "", uuid.Nil, contactID)
+	if err != nil {
+		t.Fatalf("CaseList(contact_id) error = %v", err)
+	}
+	if len(contactOnly) != 1 || contactOnly[0].ID != contactAttributedCaseID {
+		t.Errorf("contact_id filter = %v, want exactly [%v]", contactOnly, contactAttributedCaseID)
+	}
+	contactNoMatch, err := h.CaseList(ctx, customerID, "", "", uuid.Nil, otherContactID)
+	if err != nil {
+		t.Fatalf("CaseList(contact_id=other) error = %v", err)
+	}
+	if len(contactNoMatch) != 0 {
+		t.Errorf("contact_id filter for an unmatched contact = %v, want empty", contactNoMatch)
 	}
 }

@@ -21,6 +21,7 @@ import (
 func Test_GetContactCases(t *testing.T) {
 	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
 	agentID := uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c")
+	contactID := uuid.FromStringOrNil("7a3ec8f0-2c74-11ee-b0e5-8f2ac8c9a111")
 
 	tests := []struct {
 		name  string
@@ -28,9 +29,12 @@ func Test_GetContactCases(t *testing.T) {
 
 		reqQuery string
 
-		responseItems []*cmkase.Case
-		responseToken string
-		expectStatus  int
+		expectOwnerID   uuid.UUID
+		expectContactID uuid.UUID
+
+		responseItems    []*cmkase.Case
+		responseToken    string
+		expectStatusCode int
 	}{
 		{
 			name: "normal",
@@ -40,16 +44,30 @@ func Test_GetContactCases(t *testing.T) {
 					CustomerID: customerID,
 				},
 			}),
-			reqQuery:      "/contact_cases",
-			responseItems: []*cmkase.Case{},
-			responseToken: "",
-			expectStatus:  http.StatusOK,
+			reqQuery:         "/contact_cases",
+			responseItems:    []*cmkase.Case{},
+			responseToken:    "",
+			expectStatusCode: http.StatusOK,
 		},
 		{
-			name:         "unauthenticated",
-			agent:        nil,
-			reqQuery:     "/contact_cases",
-			expectStatus: http.StatusUnauthorized,
+			name: "contact_id filter reaches servicehandler with the exact value",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         agentID,
+					CustomerID: customerID,
+				},
+			}),
+			reqQuery:         "/contact_cases?contact_id=" + contactID.String(),
+			expectContactID:  contactID,
+			responseItems:    []*cmkase.Case{},
+			responseToken:    "",
+			expectStatusCode: http.StatusOK,
+		},
+		{
+			name:             "unauthenticated",
+			agent:            nil,
+			reqQuery:         "/contact_cases",
+			expectStatusCode: http.StatusUnauthorized,
 		},
 	}
 
@@ -75,13 +93,13 @@ func Test_GetContactCases(t *testing.T) {
 
 			if tt.responseItems != nil && tt.agent != nil {
 				mockSvc.EXPECT().
-					CaseList(req.Context(), tt.agent, uuid.Nil, uint64(100), "", gomock.Any(), gomock.Any(), gomock.Any()).
+					CaseList(req.Context(), tt.agent, uuid.Nil, uint64(100), "", gomock.Any(), gomock.Any(), tt.expectOwnerID, tt.expectContactID).
 					Return(tt.responseItems, tt.responseToken, nil)
 			}
 
 			r.ServeHTTP(w, req)
-			if w.Code != tt.expectStatus {
-				t.Errorf("Wrong status. expect: %d, got: %d, body: %s", tt.expectStatus, w.Code, w.Body.String())
+			if w.Code != tt.expectStatusCode {
+				t.Errorf("Wrong status. expect: %d, got: %d, body: %s", tt.expectStatusCode, w.Code, w.Body.String())
 			}
 		})
 	}

@@ -57,7 +57,7 @@ func Test_CaseList_ScopesToCustomerAndAppliesFilters(t *testing.T) {
 		t.Fatalf("CaseInsert() error = %v", err)
 	}
 
-	res, err := h.CaseList(ctx, customerID, "", commonidentity.OwnerTypeNone, uuid.Nil)
+	res, err := h.CaseList(ctx, customerID, "", commonidentity.OwnerTypeNone, uuid.Nil, uuid.Nil)
 	if err != nil {
 		t.Fatalf("CaseList() error = %v", err)
 	}
