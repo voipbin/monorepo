@@ -3,6 +3,7 @@ package listenhandler
 import (
 	"context"
 	"encoding/json"
+	"net/url"
 	"testing"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -50,13 +51,13 @@ func Test_ProcessV1CasesGet_ListsWithFilters(t *testing.T) {
 
 	body, _ := json.Marshal(map[string]any{"customer_id": customerID.String()})
 	req := &sock.Request{
-		URI:    "/v1/cases?status=open&owner_type=agent&owner_id=" + ownerID.String(),
+		URI:    "/v1/cases?status=open&owner_type=agent&owner_id=" + ownerID.String() + "&page_size=50&page_token=" + url.QueryEscape("2026-06-28T10:00:00.000000Z"),
 		Method: sock.RequestMethodGet,
 		Data:   body,
 	}
 
-	mockCase.EXPECT().CaseList(ctx, customerID, "open", commonidentity.OwnerTypeAgent, ownerID, uuid.Nil).
-		Return([]*kase.Case{{ID: caseID}}, nil)
+	mockCase.EXPECT().CaseList(ctx, customerID, uint64(50), "2026-06-28T10:00:00.000000Z", "open", commonidentity.OwnerTypeAgent, ownerID, uuid.Nil).
+		Return([]*kase.Case{{ID: caseID}}, "", nil)
 
 	res, err := h.processV1CasesGet(ctx, req)
 	if err != nil {
@@ -88,8 +89,8 @@ func Test_ProcessV1CasesGet_ContactIDFilter(t *testing.T) {
 		Data:   body,
 	}
 
-	mockCase.EXPECT().CaseList(ctx, customerID, "", commonidentity.OwnerType(""), uuid.Nil, contactID).
-		Return([]*kase.Case{{ID: caseID}}, nil)
+	mockCase.EXPECT().CaseList(ctx, customerID, uint64(0), "", "", commonidentity.OwnerType(""), uuid.Nil, contactID).
+		Return([]*kase.Case{{ID: caseID}}, "", nil)
 
 	res, err := h.processV1CasesGet(ctx, req)
 	if err != nil {

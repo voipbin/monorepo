@@ -84,6 +84,31 @@ func Test_ContactV1CaseList(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "page_size and page_token are encoded into the query string",
+
+			customerID: uuid.FromStringOrNil("55ecfc4e-2c74-11ee-98fb-0762519529f3"),
+			size:       uint64(50),
+			token:      "2026-06-28T10:00:00.000000Z",
+
+			expectTarget: "bin-manager.contact-manager.request",
+			expectRequest: &sock.Request{
+				URI:      "/v1/cases?page_size=50&page_token=2026-06-28T10%3A00%3A00.000000Z",
+				Method:   sock.RequestMethodGet,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"customer_id":"55ecfc4e-2c74-11ee-98fb-0762519529f3"}`),
+			},
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[{"id":"5623e25e-2c74-11ee-87a6-bfa8ae34077f"}]`),
+			},
+			expectRes: []*cmkase.Case{
+				{
+					ID: uuid.FromStringOrNil("5623e25e-2c74-11ee-87a6-bfa8ae34077f"),
+				},
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -111,6 +136,41 @@ func Test_ContactV1CaseList(t *testing.T) {
 				t.Errorf("Wrong match. expect: empty, got: %v", nextToken)
 			}
 		})
+	}
+}
+
+// Test_ContactV1CaseList_NextToken verifies nextToken is derived from
+// the last returned item's tm_create (round-2-review-fixed pagination
+// wiring), matching ContactV1InteractionList's convention.
+func Test_ContactV1CaseList_NextToken(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(mc)
+	reqHandler := requestHandler{
+		sock: mockSock,
+	}
+
+	customerID := uuid.FromStringOrNil("55ecfc4e-2c74-11ee-98fb-0762519529f3")
+
+	ctx := context.Background()
+	mockSock.EXPECT().RequestPublish(gomock.Any(), "bin-manager.contact-manager.request", &sock.Request{
+		URI:      "/v1/cases?",
+		Method:   sock.RequestMethodGet,
+		DataType: ContentTypeJSON,
+		Data:     []byte(`{"customer_id":"55ecfc4e-2c74-11ee-98fb-0762519529f3"}`),
+	}).Return(&sock.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       []byte(`[{"id":"5623e25e-2c74-11ee-87a6-bfa8ae34077f","tm_create":"2026-06-28T12:00:00.000000Z"},{"id":"8fe6c136-2c75-11ee-a3a4-37400837e12e","tm_create":"2026-06-28T11:00:00.000000Z"}]`),
+	}, nil)
+
+	_, nextToken, err := reqHandler.ContactV1CaseList(ctx, customerID, "", "", uuid.Nil, uuid.Nil, 0, "")
+	if err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+	if nextToken != "2026-06-28T11:00:00.000000Z" {
+		t.Errorf("nextToken = %q, want %q (last item's tm_create)", nextToken, "2026-06-28T11:00:00.000000Z")
 	}
 }
 

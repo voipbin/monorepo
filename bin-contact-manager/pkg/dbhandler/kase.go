@@ -567,8 +567,13 @@ func (h *handler) CaseGetLastClosedByPeerTx(ctx context.Context, tx *sql.Tx, cus
 // status, owner, and/or contact_id (design §9's GET /v1/cases?...
 // list surface). status == "" means no status filter; ownerType == ""
 // or ownerID == uuid.Nil means no owner filter; contactID == uuid.Nil
-// means no contact filter.
-func (h *handler) CaseList(ctx context.Context, customerID uuid.UUID, status string, ownerType commonidentity.OwnerType, ownerID uuid.UUID, contactID uuid.UUID) ([]*kase.Case, error) {
+// means no contact filter. Results are ordered by tm_create DESC with
+// a tm_create-cursor token (token == "" means the first page), mirroring
+// InteractionList's pagination convention so that page_size on
+// GET /contact_cases is no longer silently ignored end-to-end and the
+// square-admin "Cases" list surfaces the most-recently-opened Cases
+// first instead of an arbitrary DB-engine row order.
+func (h *handler) CaseList(ctx context.Context, customerID uuid.UUID, size uint64, token string, status string, ownerType commonidentity.OwnerType, ownerID uuid.UUID, contactID uuid.UUID) ([]*kase.Case, error) {
 	columns := commondatabasehandler.GetDBFields(&kase.Case{})
 
 	builder := sq.Select(columns...).
@@ -585,6 +590,22 @@ func (h *handler) CaseList(ctx context.Context, customerID uuid.UUID, status str
 	if contactID != uuid.Nil {
 		builder = builder.Where(sq.Eq{"contact_id": contactID.Bytes()})
 	}
+
+	if token != "" {
+		cursorTime, err := time.Parse("2006-01-02T15:04:05.000000Z", token)
+		if err != nil {
+			// Fallback to RFC3339Nano for forward compatibility.
+			cursorTime, err = time.Parse(time.RFC3339Nano, token)
+		}
+		if err != nil {
+			return nil, fmt.Errorf("could not parse page token. CaseList. err: %v", err)
+		}
+		builder = builder.Where(sq.Lt{"tm_create": cursorTime.UTC()})
+	}
+
+	builder = builder.
+		OrderBy("tm_create DESC").
+		Limit(size)
 
 	query, args, err := builder.ToSql()
 	if err != nil {
