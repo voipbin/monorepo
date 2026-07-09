@@ -9255,6 +9255,30 @@ type PostServiceAgentsAicallsJSONBody struct {
 	ReferenceType AIManagerAIcallReferenceType `json:"reference_type"`
 }
 
+// GetServiceAgentsAimessagesParams defines parameters for GetServiceAgentsAimessages.
+type GetServiceAgentsAimessagesParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// AicallId The ID of the aicall whose messages should be retrieved. Returned from the `POST /service_agents/aicalls` or `GET /service_agents/aicalls` response.
+	AicallId openapi_types.UUID `form:"aicall_id" json:"aicall_id"`
+}
+
+// PostServiceAgentsAimessagesJSONBody defines parameters for PostServiceAgentsAimessages.
+type PostServiceAgentsAimessagesJSONBody struct {
+	// AicallId The ID of the aicall to send the message to. Returned from the `POST /service_agents/aicalls` or `GET /service_agents/aicalls` response.
+	AicallId openapi_types.UUID `json:"aicall_id"`
+
+	// Content The message content.
+	Content string `json:"content"`
+
+	// Role Role of the entity in the conversation.
+	Role AIManagerMessageRole `json:"role"`
+}
+
 // GetServiceAgentsCallsParams defines parameters for GetServiceAgentsCalls.
 type GetServiceAgentsCallsParams struct {
 	// PageSize Number of results to return per page.
@@ -10297,6 +10321,9 @@ type PutRoutesIdJSONRequestBody PutRoutesIdJSONBody
 
 // PostServiceAgentsAicallsJSONRequestBody defines body for PostServiceAgentsAicalls for application/json ContentType.
 type PostServiceAgentsAicallsJSONRequestBody PostServiceAgentsAicallsJSONBody
+
+// PostServiceAgentsAimessagesJSONRequestBody defines body for PostServiceAgentsAimessages for application/json ContentType.
+type PostServiceAgentsAimessagesJSONRequestBody PostServiceAgentsAimessagesJSONBody
 
 // PostServiceAgentsContactAddressesJSONRequestBody defines body for PostServiceAgentsContactAddresses for application/json ContentType.
 type PostServiceAgentsContactAddressesJSONRequestBody PostServiceAgentsContactAddressesJSONBody

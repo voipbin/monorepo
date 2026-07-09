@@ -88,6 +88,40 @@ func (h *serviceHandler) ServiceAgentAIcallList(ctx context.Context, a *auth.Aut
 	return res, nil
 }
 
+// ServiceAgentAIcallGet sends a request to ai-manager to get the aicall info
+// for the service agent's customer. it returns the aicall info if it succeed.
+// Tenant isolation only -- no ownership check beyond the customer match.
+func (h *serviceHandler) ServiceAgentAIcallGet(ctx context.Context, a *auth.AuthIdentity, aicallID uuid.UUID) (*amaicall.WebhookMessage, error) {
+	if !a.IsAgent() {
+		return nil, serviceerrors.ErrAuthenticationRequired
+	}
+
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "ServiceAgentAIcallGet",
+		"customer_id": a.CustomerID,
+		"username":    a.DisplayName(),
+		"aicall_id":   aicallID,
+	})
+
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionAll) {
+		log.Info("The agent has no permission.")
+		return nil, serviceerrors.ErrPermissionDenied
+	}
+
+	tmp, err := h.aicallGet(ctx, aicallID)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get the aicall info. aicall_id: %v", aicallID)
+	}
+
+	if tmp.CustomerID != a.CustomerID {
+		log.Info("The aicall does not belong to the agent's customer.")
+		return nil, serviceerrors.ErrPermissionDenied
+	}
+
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
+
 // ServiceAgentAIcallCreate sends a request to ai-manager to create an aicall
 // for the service agent's customer. An activeflow is automatically created
 // and associated with the new aicall, mirroring the top-level AIcallCreate.
