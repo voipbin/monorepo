@@ -32,6 +32,21 @@ var (
 		},
 		[]string{"outcome"},
 	)
+
+	// metricsToolResolveFallbackTotal counts occurrences of the runnerStartScript
+	// fail-open path where resolveAIFromAIcall fails and the session falls back
+	// to GetAll() (all tools, over-broad exposure) instead of the AI's configured
+	// tool whitelist. This path is intentionally fail-open (VOIP-1234 §6 v4) since
+	// it cannot be scoped to Insight-typed AIs specifically and no incident has
+	// been observed to justify a fail-closed change affecting all AICall-backed
+	// sessions. This counter (paired with the Errorf log at the call site) exists
+	// so a real-world spike is observable and can trigger a design revisit.
+	metricsToolResolveFallbackTotal = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Name: "pipecat_manager_tool_resolve_fallback_total",
+			Help: "Counter of runnerStartScript falling back to GetAll() (all tools) after an AI lookup failure.",
+		},
+	)
 )
 
 func init() {
@@ -39,5 +54,6 @@ func init() {
 		metricsLLMFlushExit,
 		metricsIdleWatchdogFired,
 		metricsFlushFinalizeOutcome,
+		metricsToolResolveFallbackTotal,
 	)
 }
