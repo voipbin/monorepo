@@ -2,6 +2,7 @@ package aicallhandler
 
 import (
 	"context"
+	stderrors "errors"
 	"fmt"
 	reflect "reflect"
 	"testing"
@@ -715,13 +716,15 @@ func Test_UpdatePipecatcallIDAndActiveflowID(t *testing.T) {
 		pipecatcallID uuid.UUID
 		activeflowID  uuid.UUID
 
-		responseUpdateErr error
-		responseAIcall    *aicall.AIcall
-		responseGetErr    error
+		responseRowsAffected int64
+		responseUpdateErr    error
+		responseAIcall       *aicall.AIcall
+		responseGetErr       error
 
-		expectFields map[aicall.Field]any
-		expectRes    *aicall.AIcall
-		expectErr    bool
+		expectFields  map[aicall.Field]any
+		expectRes     *aicall.AIcall
+		expectErr     bool
+		expectErrIs   error
 	}{
 		{
 			name: "normal",
@@ -730,7 +733,8 @@ func Test_UpdatePipecatcallIDAndActiveflowID(t *testing.T) {
 			pipecatcallID: uuid.FromStringOrNil("3a3454ce-2342-11ef-bd13-7b3a4f7c2d11"),
 			activeflowID:  uuid.FromStringOrNil("3a6660d4-2342-11ef-9c3a-bb6e9d8f2c33"),
 
-			responseUpdateErr: nil,
+			responseRowsAffected: 1,
+			responseUpdateErr:    nil,
 			responseAIcall: &aicall.AIcall{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("3a01b6c0-2342-11ef-9f0a-cb0d8f0c3a01"),
@@ -760,7 +764,8 @@ func Test_UpdatePipecatcallIDAndActiveflowID(t *testing.T) {
 			pipecatcallID: uuid.FromStringOrNil("3ad5d6dc-2342-11ef-9c3a-bb6e9d8f2c33"),
 			activeflowID:  uuid.FromStringOrNil("3b07ce28-2342-11ef-aebc-7f4c9d0e3a44"),
 
-			responseUpdateErr: fmt.Errorf("update failed"),
+			responseRowsAffected: 0,
+			responseUpdateErr:    fmt.Errorf("update failed"),
 
 			expectFields: map[aicall.Field]any{
 				aicall.FieldPipecatcallID: uuid.FromStringOrNil("3ad5d6dc-2342-11ef-9c3a-bb6e9d8f2c33"),
@@ -775,15 +780,33 @@ func Test_UpdatePipecatcallIDAndActiveflowID(t *testing.T) {
 			pipecatcallID: uuid.FromStringOrNil("3b6dadea-2342-11ef-b6c4-cb1d2e3f4a55"),
 			activeflowID:  uuid.FromStringOrNil("3b9f9c5c-2342-11ef-b6c4-cb1d2e3f4a55"),
 
-			responseUpdateErr: nil,
-			responseAIcall:    nil,
-			responseGetErr:    fmt.Errorf("get failed"),
+			responseRowsAffected: 1,
+			responseUpdateErr:    nil,
+			responseAIcall:       nil,
+			responseGetErr:       fmt.Errorf("get failed"),
 
 			expectFields: map[aicall.Field]any{
 				aicall.FieldPipecatcallID: uuid.FromStringOrNil("3b6dadea-2342-11ef-b6c4-cb1d2e3f4a55"),
 				aicall.FieldActiveflowID:  uuid.FromStringOrNil("3b9f9c5c-2342-11ef-b6c4-cb1d2e3f4a55"),
 			},
 			expectErr: true,
+		},
+		{
+			name: "aicall no longer active — rows affected 0",
+
+			id:            uuid.FromStringOrNil("3c1e6a7a-2342-11ef-9c3a-bb6e9d8f2c33"),
+			pipecatcallID: uuid.FromStringOrNil("3c4dd7b8-2342-11ef-bd13-7b3a4f7c2d11"),
+			activeflowID:  uuid.FromStringOrNil("3c7fac8a-2342-11ef-9f0a-cb0d8f0c3a01"),
+
+			responseRowsAffected: 0,
+			responseUpdateErr:    nil,
+
+			expectFields: map[aicall.Field]any{
+				aicall.FieldPipecatcallID: uuid.FromStringOrNil("3c4dd7b8-2342-11ef-bd13-7b3a4f7c2d11"),
+				aicall.FieldActiveflowID:  uuid.FromStringOrNil("3c7fac8a-2342-11ef-9f0a-cb0d8f0c3a01"),
+			},
+			expectErr:   true,
+			expectErrIs: ErrAIcallNoLongerActive,
 		},
 	}
 
@@ -804,8 +827,8 @@ func Test_UpdatePipecatcallIDAndActiveflowID(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockDB.EXPECT().AIcallUpdate(ctx, tt.id, tt.expectFields).Return(tt.responseUpdateErr)
-			if tt.responseUpdateErr == nil {
+			mockDB.EXPECT().AIcallUpdateIfActive(ctx, tt.id, tt.expectFields).Return(tt.responseRowsAffected, tt.responseUpdateErr)
+			if tt.responseUpdateErr == nil && tt.responseRowsAffected > 0 {
 				mockDB.EXPECT().AIcallGet(ctx, tt.id).Return(tt.responseAIcall, tt.responseGetErr)
 			}
 
@@ -813,6 +836,9 @@ func Test_UpdatePipecatcallIDAndActiveflowID(t *testing.T) {
 			if tt.expectErr {
 				if err == nil {
 					t.Errorf("Wrong match. expect: error, got: nil")
+				}
+				if tt.expectErrIs != nil && !stderrors.Is(err, tt.expectErrIs) {
+					t.Errorf("Wrong match. expect err to wrap: %v, got: %v", tt.expectErrIs, err)
 				}
 				return
 			}

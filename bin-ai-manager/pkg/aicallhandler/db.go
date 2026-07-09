@@ -272,17 +272,32 @@ func (h *aicallHandler) UpdateActiveflowID(ctx context.Context, id uuid.UUID, ac
 	return res, nil
 }
 
+// ErrAIcallNoLongerActive is returned when a reuse-path write targets an AIcall that
+// has transitioned to Terminated/Terminating between the caller's read and this write
+// (a TOCTOU race). Callers of UpdatePipecatcallIDAndActiveflowID must not assume the
+// write took effect when this error is returned — the reuse attempt should be abandoned
+// in favor of a fresh AIcall creation path.
+var ErrAIcallNoLongerActive = stderrors.New("aicall is no longer active")
+
 // UpdatePipecatcallIDAndActiveflowID atomically updates both PipecatcallID and
 // ActiveflowID in a single DB write. Used in the conversation reuse branch to
 // avoid the race where a concurrent reader observes the new PipecatcallID
-// alongside a stale ActiveflowID.
+// alongside a stale ActiveflowID. The write is conditioned on the AIcall still
+// being active (status NOT IN ('terminated','terminating')) at write time — if
+// the row transitioned to a terminal status between the caller's read and this
+// write, ErrAIcallNoLongerActive is returned and the caller must fall back to
+// creating a fresh AIcall rather than trusting a half-reused stale row.
 func (h *aicallHandler) UpdatePipecatcallIDAndActiveflowID(ctx context.Context, id uuid.UUID, pipecatcallID uuid.UUID, activeflowID uuid.UUID) (*aicall.AIcall, error) {
 	fields := map[aicall.Field]any{
 		aicall.FieldPipecatcallID: pipecatcallID,
 		aicall.FieldActiveflowID:  activeflowID,
 	}
-	if errUpdate := h.db.AIcallUpdate(ctx, id, fields); errUpdate != nil {
+	rowsAffected, errUpdate := h.db.AIcallUpdateIfActive(ctx, id, fields)
+	if errUpdate != nil {
 		return nil, errors.Wrapf(errUpdate, "could not update pipecatcall_id+activeflow_id for aicall. aicall_id: %s", id)
+	}
+	if rowsAffected == 0 {
+		return nil, errors.Wrapf(ErrAIcallNoLongerActive, "aicall no longer active. aicall_id: %s", id)
 	}
 
 	res, err := h.db.AIcallGet(ctx, id)

@@ -34,8 +34,23 @@ create table ai_aicalls(
   tm_update datetime(6),  --
   tm_delete datetime(6),  --
 
+  -- SQLite-compatible stand-in for the MySQL STORED generated column
+  -- active_reference_key (BINARY(32) SHA2(...) hash, see
+  -- bin-dbscheme-manager a5a40c93d3e6). This concat-based generated column
+  -- preserves the same invariant (unique per active (customer_id,
+  -- reference_type, reference_id), terminated/terminating rows excluded)
+  -- at test-data scale without needing a SHA2 equivalent in SQLite.
+  active_reference_key varchar(255) GENERATED ALWAYS AS (
+    CASE WHEN status NOT IN ('terminated', 'terminating')
+      THEN customer_id || '|' || reference_type || '|' || reference_id
+      ELSE NULL
+    END
+  ) STORED,
+
   primary key(id)
 );
+
+create unique index uq_aicall_active_reference_key on ai_aicalls(active_reference_key);
 
 create index idx_ai_aicalls_customer_id on ai_aicalls(customer_id);
 create index idx_ai_aicalls_assistance_type on ai_aicalls(assistance_type);

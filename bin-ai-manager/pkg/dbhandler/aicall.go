@@ -262,3 +262,48 @@ func (h *handler) AIcallUpdate(ctx context.Context, id uuid.UUID, fields map[aic
 
 	return nil
 }
+
+// AIcallUpdateIfActive updates the aicall fields only when the row's status is NOT
+// 'terminated'/'terminating' (i.e. the AIcall is still active). This guards against a
+// TOCTOU race in reuse paths (e.g. UpdatePipecatcallIDAndActiveflowID in aicallhandler)
+// where the caller read an AIcall as active, but it terminated before the write landed.
+// Returns rowsAffected: 0 means the row no longer matched the active-status condition
+// (or does not exist) and the caller must NOT assume the update took effect.
+func (h *handler) AIcallUpdateIfActive(ctx context.Context, id uuid.UUID, fields map[aicall.Field]any) (int64, error) {
+	updateFields := make(map[string]any)
+	for k, v := range fields {
+		updateFields[string(k)] = v
+	}
+	updateFields["tm_update"] = h.utilHandler.TimeNow()
+
+	preparedFields, err := commondatabasehandler.PrepareFields(updateFields)
+	if err != nil {
+		return 0, fmt.Errorf("AIcallUpdateIfActive: could not prepare fields. err: %v", err)
+	}
+
+	query, args, err := sq.Update(aicallTable).
+		SetMap(preparedFields).
+		Where(sq.Eq{"id": id.Bytes()}).
+		Where(sq.NotEq{"status": []string{string(aicall.StatusTerminated), string(aicall.StatusTerminating)}}).
+		ToSql()
+	if err != nil {
+		return 0, fmt.Errorf("AIcallUpdateIfActive: could not build query. err: %v", err)
+	}
+
+	res, err := h.db.Exec(query, args...)
+	if err != nil {
+		return 0, fmt.Errorf("AIcallUpdateIfActive: could not execute. err: %v", err)
+	}
+
+	n, err := res.RowsAffected()
+	if err != nil {
+		return 0, fmt.Errorf("AIcallUpdateIfActive: could not get rows affected. err: %v", err)
+	}
+
+	if n > 0 {
+		// update the cache
+		_ = h.aicallUpdateToCache(ctx, id)
+	}
+
+	return n, nil
+}

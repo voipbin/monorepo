@@ -71,6 +71,7 @@ const (
 	ReferenceTypeCall         ReferenceType = "call"
 	ReferenceTypeConversation ReferenceType = "conversation"
 	ReferenceTypeTask         ReferenceType = "task"
+	ReferenceTypeContactCase  ReferenceType = "contact_case"
 )
 
 // AssistanceType defines the type of assistance entity backing an AIcall.

@@ -412,10 +412,10 @@ func Test_ServiceStart_serviceStartReferenceTypeConversation(t *testing.T) {
 
 			// new pipecatcall ID + atomic UpdatePipecatcallIDAndActiveflowID
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDPipecatcallID)
-			mockDB.EXPECT().AIcallUpdate(ctx, tt.responseAIcall.ID, map[aicall.Field]any{
+			mockDB.EXPECT().AIcallUpdateIfActive(ctx, tt.responseAIcall.ID, map[aicall.Field]any{
 				aicall.FieldPipecatcallID: tt.responseUUIDPipecatcallID,
 				aicall.FieldActiveflowID:  tt.activeflowID,
-			}).Return(nil)
+			}).Return(int64(1), nil)
 			mockDB.EXPECT().AIcallGet(ctx, tt.responseAIcall.ID).Return(tt.responseAIcall, nil)
 
 			mockMessage.EXPECT().Create(ctx, uuid.Nil, tt.responseAIcall.CustomerID, tt.responseAIcall.ID, tt.responseAIcall.ActiveflowID, message.DirectionOutgoing, message.RoleUser, tt.expectMessageText, nil, "", gomock.Any()).Return(&message.Message{}, nil)

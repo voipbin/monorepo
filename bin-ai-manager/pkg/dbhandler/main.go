@@ -7,6 +7,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"strings"
 
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -42,6 +43,7 @@ type DBHandler interface {
 	AIcallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*aicall.AIcall, error)
 	AIcallList(ctx context.Context, size uint64, token string, filters map[aicall.Field]any) ([]*aicall.AIcall, error)
 	AIcallUpdate(ctx context.Context, id uuid.UUID, fields map[aicall.Field]any) error
+	AIcallUpdateIfActive(ctx context.Context, id uuid.UUID, fields map[aicall.Field]any) (rowsAffected int64, err error)
 
 	MessageCreate(ctx context.Context, c *message.Message) error
 	MessageGet(ctx context.Context, id uuid.UUID) (*message.Message, error)
@@ -97,6 +99,20 @@ type handler struct {
 var (
 	ErrNotFound = errors.New("record not found")
 )
+
+// IsErrDuplicate reports whether err represents a duplicate-key/unique-constraint
+// violation. MySQL reports this as error 1062 ("Duplicate entry"); the test suite's
+// SQLite driver reports "UNIQUE constraint failed". Mirrors the ad-hoc check already
+// used in ParticipantCreate (participant.go), centralized here so other dbhandler
+// functions (e.g. AIcallCreate callers) can classify the error consistently.
+func IsErrDuplicate(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	errStr := err.Error()
+	return strings.Contains(errStr, "Duplicate entry") || strings.Contains(errStr, "UNIQUE constraint failed")
+}
 
 
 // NewHandler creates DBHandler
