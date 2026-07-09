@@ -37,6 +37,19 @@ data backfill/cleanup as a precondition, and does not weaken the
 invariant we actually want to enforce (uniqueness of a *real*
 reference).
 
+Because that first upgrade attempt failed partway through -- MySQL DDL
+statements commit individually and are not rolled back by a failed
+statement later in the same op.execute() sequence -- ADD COLUMN
+active_reference_key had already succeeded in production before
+CREATE UNIQUE INDEX failed with 1062. A naive retry of the original
+unconditional upgrade() would hit "Duplicate column name" (1060) on
+the ADD COLUMN this time instead. upgrade()/downgrade() now guard each
+statement with information_schema existence checks (the same
+_index_exists()-style pattern already established by
+h2b3c4d5e6f7_billing_billings_idempotency_key_unique.py) so the
+migration is idempotent and safe to retry from this partially-applied
+state, or from a clean state, or after a downgrade.
+
 A real-world spike (20 concurrent INSERTs against a MySQL 8.0
 container) confirmed the optimistic-INSERT + DB-level unique index
 combination alone is sufficient here (1 success / 19 duplicate-key
@@ -54,29 +67,53 @@ branch_labels = None
 depends_on = None
 
 
-def upgrade():
-    op.execute("""
-        ALTER TABLE ai_aicalls
-        ADD COLUMN active_reference_key BINARY(32) GENERATED ALWAYS AS (
-            IF(status NOT IN ('terminated', 'terminating')
-               AND reference_id != UNHEX('00000000000000000000000000000000'),
-               UNHEX(SHA2(CONCAT_WS('|', customer_id, reference_type, reference_id), 256)),
-               NULL)
-        ) STORED
-    """)
+def _column_exists(conn, table, column):
+    result = conn.execute(sa.text(
+        "SELECT COUNT(*) FROM information_schema.columns "
+        "WHERE table_schema = DATABASE() AND table_name = :table AND column_name = :col"
+    ), {'table': table, 'col': column})
+    return result.scalar() > 0
 
-    op.execute("""
-        CREATE UNIQUE INDEX uq_aicall_active_reference_key
-        ON ai_aicalls(active_reference_key)
-    """)
+
+def _index_exists(conn, table, index):
+    result = conn.execute(sa.text(
+        "SELECT COUNT(*) FROM information_schema.statistics "
+        "WHERE table_schema = DATABASE() AND table_name = :table AND index_name = :idx"
+    ), {'table': table, 'idx': index})
+    return result.scalar() > 0
+
+
+def upgrade():
+    conn = op.get_bind()
+
+    if not _column_exists(conn, 'ai_aicalls', 'active_reference_key'):
+        op.execute("""
+            ALTER TABLE ai_aicalls
+            ADD COLUMN active_reference_key BINARY(32) GENERATED ALWAYS AS (
+                IF(status NOT IN ('terminated', 'terminating')
+                   AND reference_id != UNHEX('00000000000000000000000000000000'),
+                   UNHEX(SHA2(CONCAT_WS('|', customer_id, reference_type, reference_id), 256)),
+                   NULL)
+            ) STORED
+        """)
+
+    if not _index_exists(conn, 'ai_aicalls', 'uq_aicall_active_reference_key'):
+        op.execute("""
+            CREATE UNIQUE INDEX uq_aicall_active_reference_key
+            ON ai_aicalls(active_reference_key)
+        """)
 
 
 def downgrade():
-    op.execute("""
-        DROP INDEX uq_aicall_active_reference_key ON ai_aicalls
-    """)
+    conn = op.get_bind()
 
-    op.execute("""
-        ALTER TABLE ai_aicalls
-        DROP COLUMN active_reference_key
-    """)
+    if _index_exists(conn, 'ai_aicalls', 'uq_aicall_active_reference_key'):
+        op.execute("""
+            DROP INDEX uq_aicall_active_reference_key ON ai_aicalls
+        """)
+
+    if _column_exists(conn, 'ai_aicalls', 'active_reference_key'):
+        op.execute("""
+            ALTER TABLE ai_aicalls
+            DROP COLUMN active_reference_key
+        """)
