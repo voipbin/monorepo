@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/url"
+	"strconv"
 	"strings"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -38,7 +39,8 @@ func caseSubIDFromURI(uri string) uuid.UUID {
 
 // processV1CasesGet handles GET /v1/cases?... request. Supports
 // optional status, owner_type/owner_id, and contact_id filters
-// (design §9).
+// (design §9), plus page_size/page_token pagination (matching
+// InteractionList's convention).
 func (h *listenHandler) processV1CasesGet(ctx context.Context, req *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{"func": "processV1CasesGet"})
 	log.WithField("request", req).Debug("Received request.")
@@ -48,6 +50,10 @@ func (h *listenHandler) processV1CasesGet(ctx context.Context, req *sock.Request
 		return simpleResponse(400), nil
 	}
 	q := u.Query()
+
+	tmpSize, _ := strconv.Atoi(q.Get(PageSize))
+	pageSize := uint64(tmpSize)
+	pageToken := q.Get(PageToken)
 
 	status := q.Get("status")
 	ownerType := commonidentity.OwnerType(q.Get("owner_type"))
@@ -69,7 +75,7 @@ func (h *listenHandler) processV1CasesGet(ctx context.Context, req *sock.Request
 		return simpleResponse(400), nil
 	}
 
-	res, err := h.caseHandler.CaseList(ctx, body.CustomerID, status, ownerType, ownerID, contactID)
+	res, _, err := h.caseHandler.CaseList(ctx, body.CustomerID, pageSize, pageToken, status, ownerType, ownerID, contactID)
 	if err != nil {
 		log.Errorf("Could not list cases. err: %v", err)
 		return errorResponse(err), nil

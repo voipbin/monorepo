@@ -16,10 +16,11 @@ import (
 )
 
 // ContactV1CaseList lists cases from contact-manager, optionally filtered
-// by status, owner, and/or contact_id (query-string filters; size/token
-// are accepted for API symmetry with other list clients, but the
-// v1_cases.go listenhandler does not currently implement pagination
-// on this route, so nextToken is always returned empty).
+// by status, owner, and/or contact_id (query-string filters), with
+// page_size/page_token pagination matching ContactV1InteractionList's
+// convention (results ordered by tm_create DESC; nextToken is the
+// tm_create of the last returned item's page, empty when no further
+// pages).
 func (r *requestHandler) ContactV1CaseList(
 	ctx context.Context,
 	customerID uuid.UUID,
@@ -42,6 +43,12 @@ func (r *requestHandler) ContactV1CaseList(
 	if contactID != uuid.Nil {
 		u.Set("contact_id", contactID.String())
 	}
+	if size > 0 {
+		u.Set("page_size", fmt.Sprintf("%d", size))
+	}
+	if token != "" {
+		u.Set("page_token", token)
+	}
 
 	uri := "/v1/cases?" + u.Encode()
 
@@ -60,7 +67,12 @@ func (r *requestHandler) ContactV1CaseList(
 		return nil, "", errParse
 	}
 
-	return res, "", nil
+	nextToken := ""
+	if len(res) > 0 && res[len(res)-1].TMCreate != nil {
+		nextToken = res[len(res)-1].TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z")
+	}
+
+	return res, nextToken, nil
 }
 
 // ContactV1CaseListUnresolved lists unresolved cases (open, contact_id

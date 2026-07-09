@@ -10,11 +10,44 @@ import (
 	"monorepo/bin-contact-manager/models/kase"
 )
 
+// defaultCaseListSize is used when size == 0 (design §9's Phase 5 GET
+// /v1/cases?... list surface has no client-mandatory size, mirroring
+// InteractionList's default-of-20 convention).
+const defaultCaseListSize = 20
+
 // CaseList implements design §9's Phase 5 GET /v1/cases?... list
 // surface: a thin, customer-scoped delegation to dbhandler.CaseList,
-// optionally filtered by status, owner, and/or contact_id.
-func (h *caseHandler) CaseList(ctx context.Context, customerID uuid.UUID, status string, ownerType commonidentity.OwnerType, ownerID uuid.UUID, contactID uuid.UUID) ([]*kase.Case, error) {
-	return h.db.CaseList(ctx, customerID, status, ownerType, ownerID, contactID)
+// optionally filtered by status, owner, and/or contact_id. Results are
+// ordered by tm_create DESC with a tm_create-cursor token (empty when no
+// further pages), matching InteractionList's pagination convention.
+func (h *caseHandler) CaseList(ctx context.Context, customerID uuid.UUID, size uint64, token string, status string, ownerType commonidentity.OwnerType, ownerID uuid.UUID, contactID uuid.UUID) ([]*kase.Case, string, error) {
+	if size == 0 {
+		size = defaultCaseListSize
+	}
+
+	items, err := h.db.CaseList(ctx, customerID, size+1, token, status, ownerType, ownerID, contactID)
+	if err != nil {
+		return nil, "", err
+	}
+
+	hasMore := uint64(len(items)) > size
+	if hasMore {
+		items = items[:size]
+	}
+
+	var nextToken string
+	if hasMore && len(items) > 0 {
+		last := items[len(items)-1]
+		if last.TMCreate != nil {
+			nextToken = last.TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z")
+		}
+		// If TMCreate is nil, cursor cannot be encoded -- pagination stops
+		// here (matches InteractionList's buildPagedResult precedent; in
+		// production this should not occur since CaseInsert always sets
+		// TMCreate).
+	}
+
+	return items, nextToken, nil
 }
 
 // CaseGet implements design §9's Phase 5 GET /v1/cases/{id} route: the

@@ -57,7 +57,7 @@ func Test_CaseList_ScopesToCustomerAndAppliesFilters(t *testing.T) {
 		t.Fatalf("CaseInsert() error = %v", err)
 	}
 
-	res, err := h.CaseList(ctx, customerID, "", commonidentity.OwnerTypeNone, uuid.Nil, uuid.Nil)
+	res, _, err := h.CaseList(ctx, customerID, 0, "", "", commonidentity.OwnerTypeNone, uuid.Nil, uuid.Nil)
 	if err != nil {
 		t.Fatalf("CaseList() error = %v", err)
 	}
@@ -70,6 +70,62 @@ func Test_CaseList_ScopesToCustomerAndAppliesFilters(t *testing.T) {
 	}
 	if found[otherCaseID] {
 		t.Errorf("CaseList() must not leak another customer's case")
+	}
+}
+
+// Test_CaseList_DefaultSizeAndNextToken verifies the casehandler-level
+// pagination wrapper: size==0 defaults to defaultCaseListSize, and a
+// non-empty nextToken is returned only when more rows exist beyond the
+// requested page.
+func Test_CaseList_DefaultSizeAndNextToken(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	db := dbhandler.NewHandler(dbTest, mockCache)
+	h := &caseHandler{utilHandler: mockUtil, reqHandler: mockReq, db: db, notifyHandler: mockNotify}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("f1b2c3d4-9712-9712-9712-000000000001")
+	t1 := time.Date(2026, 6, 28, 10, 0, 0, 0, time.UTC)
+	t2 := time.Date(2026, 6, 28, 11, 0, 0, 0, time.UTC)
+	id1 := uuid.FromStringOrNil("f1b2c3d4-9712-9712-9712-000000000011")
+	id2 := uuid.FromStringOrNil("f1b2c3d4-9712-9712-9712-000000000012")
+
+	for _, c := range []*kase.Case{
+		{ID: id1, CustomerID: customerID, PeerType: commonaddress.TypeTel, PeerTarget: "+155****2011", ReferenceType: "call", Status: kase.StatusOpen, OpenedAt: &t1, TMCreate: &t1, TMUpdate: &t1},
+		{ID: id2, CustomerID: customerID, PeerType: commonaddress.TypeTel, PeerTarget: "+155****2012", ReferenceType: "call", Status: kase.StatusOpen, OpenedAt: &t2, TMCreate: &t2, TMUpdate: &t2},
+	} {
+		if err := db.CaseInsert(ctx, c); err != nil {
+			t.Fatalf("CaseInsert(%s) error = %v", c.ID, err)
+		}
+	}
+
+	// size=1: exactly 1 item back, plus a non-empty nextToken (id1 still pending).
+	page, nextToken, err := h.CaseList(ctx, customerID, 1, "", "", commonidentity.OwnerTypeNone, uuid.Nil, uuid.Nil)
+	if err != nil {
+		t.Fatalf("CaseList(size=1) error = %v", err)
+	}
+	if len(page) != 1 || page[0].ID != id2 {
+		t.Fatalf("CaseList(size=1) = %v, want exactly [id2] (newest first)", page)
+	}
+	if nextToken == "" {
+		t.Errorf("CaseList(size=1) nextToken = %q, want non-empty (id1 still pending)", nextToken)
+	}
+
+	// Follow the cursor: expect id1, and an empty nextToken (no further pages).
+	page2, nextToken2, err := h.CaseList(ctx, customerID, 1, nextToken, "", commonidentity.OwnerTypeNone, uuid.Nil, uuid.Nil)
+	if err != nil {
+		t.Fatalf("CaseList(token) error = %v", err)
+	}
+	if len(page2) != 1 || page2[0].ID != id1 {
+		t.Fatalf("CaseList(token) = %v, want exactly [id1]", page2)
+	}
+	if nextToken2 != "" {
+		t.Errorf("CaseList(token) nextToken = %q, want empty (no further pages)", nextToken2)
 	}
 }
 
