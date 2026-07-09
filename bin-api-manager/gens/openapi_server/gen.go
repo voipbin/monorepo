@@ -100,6 +100,7 @@ const (
 // Defines values for AIManagerAIcallReferenceType.
 const (
 	AIManagerAIcallReferenceTypeCall         AIManagerAIcallReferenceType = "call"
+	AIManagerAIcallReferenceTypeContactCase  AIManagerAIcallReferenceType = "contact_case"
 	AIManagerAIcallReferenceTypeConversation AIManagerAIcallReferenceType = "conversation"
 	AIManagerAIcallReferenceTypeNone         AIManagerAIcallReferenceType = ""
 	AIManagerAIcallReferenceTypeTask         AIManagerAIcallReferenceType = "task"
@@ -6904,6 +6905,36 @@ type GetServiceAgentsAgentsParams struct {
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
+// GetServiceAgentsAicallsParams defines parameters for GetServiceAgentsAicalls.
+type GetServiceAgentsAicallsParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// ReferenceType Filter by the reference type of the origin resource. Must be supplied together with reference_id; supplying only one of the two returns a 400 error.
+	ReferenceType *AIManagerAIcallReferenceType `form:"reference_type,omitempty" json:"reference_type,omitempty"`
+
+	// ReferenceId Filter by the ID of the origin resource (e.g. a contact case ID). Must be supplied together with reference_type; supplying only one of the two returns a 400 error.
+	ReferenceId *openapi_types.UUID `form:"reference_id,omitempty" json:"reference_id,omitempty"`
+}
+
+// PostServiceAgentsAicallsJSONBody defines parameters for PostServiceAgentsAicalls.
+type PostServiceAgentsAicallsJSONBody struct {
+	// AssistanceId The unique identifier of the assistance entity (AI or Team). Returned from the `POST /ais`, `GET /ais`, `POST /teams`, or `GET /teams` response.
+	AssistanceId openapi_types.UUID `json:"assistance_id"`
+
+	// AssistanceType Type of assistance entity associated with the AI call.
+	AssistanceType AIManagerAIcallAssistanceType `json:"assistance_type"`
+
+	// ReferenceId The ID of the reference resource for the AI call.
+	ReferenceId openapi_types.UUID `json:"reference_id"`
+
+	// ReferenceType Type of reference associated with the ai call.
+	ReferenceType AIManagerAIcallReferenceType `json:"reference_type"`
+}
+
 // GetServiceAgentsCallsParams defines parameters for GetServiceAgentsCalls.
 type GetServiceAgentsCallsParams struct {
 	// PageSize Number of results to return per page.
@@ -7944,6 +7975,9 @@ type PostRoutesJSONRequestBody PostRoutesJSONBody
 // PutRoutesIdJSONRequestBody defines body for PutRoutesId for application/json ContentType.
 type PutRoutesIdJSONRequestBody PutRoutesIdJSONBody
 
+// PostServiceAgentsAicallsJSONRequestBody defines body for PostServiceAgentsAicalls for application/json ContentType.
+type PostServiceAgentsAicallsJSONRequestBody PostServiceAgentsAicallsJSONBody
+
 // PostServiceAgentsContactAddressesJSONRequestBody defines body for PostServiceAgentsContactAddresses for application/json ContentType.
 type PostServiceAgentsContactAddressesJSONRequestBody PostServiceAgentsContactAddressesJSONBody
 
@@ -8876,6 +8910,12 @@ type ServerInterface interface {
 	// Retrieve detailed information of a service agent
 	// (GET /service_agents/agents/{id})
 	GetServiceAgentsAgentsId(c *gin.Context, id string)
+	// List aicalls
+	// (GET /service_agents/aicalls)
+	GetServiceAgentsAicalls(c *gin.Context, params GetServiceAgentsAicallsParams)
+	// Create an aicall
+	// (POST /service_agents/aicalls)
+	PostServiceAgentsAicalls(c *gin.Context)
 	// Retrieve a list of calls for the given customer
 	// (GET /service_agents/calls)
 	GetServiceAgentsCalls(c *gin.Context, params GetServiceAgentsCallsParams)
@@ -16189,6 +16229,69 @@ func (siw *ServerInterfaceWrapper) GetServiceAgentsAgentsId(c *gin.Context) {
 	siw.Handler.GetServiceAgentsAgentsId(c, id)
 }
 
+// GetServiceAgentsAicalls operation middleware
+func (siw *ServerInterfaceWrapper) GetServiceAgentsAicalls(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetServiceAgentsAicallsParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "reference_type" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "reference_type", c.Request.URL.Query(), &params.ReferenceType)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter reference_type: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "reference_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "reference_id", c.Request.URL.Query(), &params.ReferenceId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter reference_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetServiceAgentsAicalls(c, params)
+}
+
+// PostServiceAgentsAicalls operation middleware
+func (siw *ServerInterfaceWrapper) PostServiceAgentsAicalls(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostServiceAgentsAicalls(c)
+}
+
 // GetServiceAgentsCalls operation middleware
 func (siw *ServerInterfaceWrapper) GetServiceAgentsCalls(c *gin.Context) {
 
@@ -19412,6 +19515,8 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.PUT(options.BaseURL+"/routes/:id", wrapper.PutRoutesId)
 	router.GET(options.BaseURL+"/service_agents/agents", wrapper.GetServiceAgentsAgents)
 	router.GET(options.BaseURL+"/service_agents/agents/:id", wrapper.GetServiceAgentsAgentsId)
+	router.GET(options.BaseURL+"/service_agents/aicalls", wrapper.GetServiceAgentsAicalls)
+	router.POST(options.BaseURL+"/service_agents/aicalls", wrapper.PostServiceAgentsAicalls)
 	router.GET(options.BaseURL+"/service_agents/calls", wrapper.GetServiceAgentsCalls)
 	router.GET(options.BaseURL+"/service_agents/calls/:id", wrapper.GetServiceAgentsCallsId)
 	router.GET(options.BaseURL+"/service_agents/contact_addresses", wrapper.GetServiceAgentsContactAddresses)
@@ -35247,6 +35352,98 @@ func (response GetServiceAgentsAgentsId500JSONResponse) VisitGetServiceAgentsAge
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetServiceAgentsAicallsRequestObject struct {
+	Params GetServiceAgentsAicallsParams
+}
+
+type GetServiceAgentsAicallsResponseObject interface {
+	VisitGetServiceAgentsAicallsResponse(w http.ResponseWriter) error
+}
+
+type GetServiceAgentsAicalls200JSONResponse struct {
+	// NextPageToken Cursor token for the next page of results. Pass this value as the page_token parameter in the next request.
+	NextPageToken *string            `json:"next_page_token,omitempty"`
+	Result        *[]AIManagerAIcall `json:"result,omitempty"`
+}
+
+func (response GetServiceAgentsAicalls200JSONResponse) VisitGetServiceAgentsAicallsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetServiceAgentsAicalls400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetServiceAgentsAicalls400JSONResponse) VisitGetServiceAgentsAicallsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetServiceAgentsAicalls401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetServiceAgentsAicalls401JSONResponse) VisitGetServiceAgentsAicallsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetServiceAgentsAicalls500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetServiceAgentsAicalls500JSONResponse) VisitGetServiceAgentsAicallsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostServiceAgentsAicallsRequestObject struct {
+	Body *PostServiceAgentsAicallsJSONRequestBody
+}
+
+type PostServiceAgentsAicallsResponseObject interface {
+	VisitPostServiceAgentsAicallsResponse(w http.ResponseWriter) error
+}
+
+type PostServiceAgentsAicalls200JSONResponse AIManagerAIcall
+
+func (response PostServiceAgentsAicalls200JSONResponse) VisitPostServiceAgentsAicallsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostServiceAgentsAicalls400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostServiceAgentsAicalls400JSONResponse) VisitPostServiceAgentsAicallsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostServiceAgentsAicalls401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostServiceAgentsAicalls401JSONResponse) VisitPostServiceAgentsAicallsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostServiceAgentsAicalls500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostServiceAgentsAicalls500JSONResponse) VisitPostServiceAgentsAicallsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type GetServiceAgentsCallsRequestObject struct {
 	Params GetServiceAgentsCallsParams
 }
@@ -42275,6 +42472,12 @@ type StrictServerInterface interface {
 	// Retrieve detailed information of a service agent
 	// (GET /service_agents/agents/{id})
 	GetServiceAgentsAgentsId(ctx context.Context, request GetServiceAgentsAgentsIdRequestObject) (GetServiceAgentsAgentsIdResponseObject, error)
+	// List aicalls
+	// (GET /service_agents/aicalls)
+	GetServiceAgentsAicalls(ctx context.Context, request GetServiceAgentsAicallsRequestObject) (GetServiceAgentsAicallsResponseObject, error)
+	// Create an aicall
+	// (POST /service_agents/aicalls)
+	PostServiceAgentsAicalls(ctx context.Context, request PostServiceAgentsAicallsRequestObject) (PostServiceAgentsAicallsResponseObject, error)
 	// Retrieve a list of calls for the given customer
 	// (GET /service_agents/calls)
 	GetServiceAgentsCalls(ctx context.Context, request GetServiceAgentsCallsRequestObject) (GetServiceAgentsCallsResponseObject, error)
@@ -50796,6 +50999,66 @@ func (sh *strictHandler) GetServiceAgentsAgentsId(ctx *gin.Context, id string) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(GetServiceAgentsAgentsIdResponseObject); ok {
 		if err := validResponse.VisitGetServiceAgentsAgentsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetServiceAgentsAicalls operation middleware
+func (sh *strictHandler) GetServiceAgentsAicalls(ctx *gin.Context, params GetServiceAgentsAicallsParams) {
+	var request GetServiceAgentsAicallsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetServiceAgentsAicalls(ctx, request.(GetServiceAgentsAicallsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetServiceAgentsAicalls")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetServiceAgentsAicallsResponseObject); ok {
+		if err := validResponse.VisitGetServiceAgentsAicallsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostServiceAgentsAicalls operation middleware
+func (sh *strictHandler) PostServiceAgentsAicalls(ctx *gin.Context) {
+	var request PostServiceAgentsAicallsRequestObject
+
+	var body PostServiceAgentsAicallsJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostServiceAgentsAicalls(ctx, request.(PostServiceAgentsAicallsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostServiceAgentsAicalls")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostServiceAgentsAicallsResponseObject); ok {
+		if err := validResponse.VisitPostServiceAgentsAicallsResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

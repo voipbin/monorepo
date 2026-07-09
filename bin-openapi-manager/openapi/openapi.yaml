@@ -2324,11 +2324,13 @@ components:
         - call
         - conversation
         - task
+        - contact_case
       x-enum-varnames:
         - AIManagerAIcallReferenceTypeNone
         - AIManagerAIcallReferenceTypeCall
         - AIManagerAIcallReferenceTypeConversation
         - AIManagerAIcallReferenceTypeTask
+        - AIManagerAIcallReferenceTypeContactCase
 
     AIManagerAIcallStatus:
       type: string
@@ -8288,6 +8290,8 @@ paths:
     $ref: './paths/service_agents/agents_id.yaml'
   /service_agents/agents:
     $ref: './paths/service_agents/agents.yaml'
+  /service_agents/aicalls:
+    $ref: './paths/service_agents/aicalls.yaml'
   /service_agents/calls/{id}:
     $ref: './paths/service_agents/calls_id.yaml'
   /service_agents/calls:
