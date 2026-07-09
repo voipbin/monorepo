@@ -15,6 +15,7 @@ import (
 
 	dmdirect "monorepo/bin-direct-manager/models/direct"
 
+	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/team"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 )
@@ -30,13 +31,12 @@ func (h *teamHandler) Create(ctx context.Context, customerID uuid.UUID, name str
 		return nil, errors.Wrap(err, "validation failed")
 	}
 
-	// Rule 6: Verify each member's AIID references an existing AI
-	for _, m := range members {
-		ai, err := h.db.AIGet(ctx, m.AIID)
-		if err != nil {
-			return nil, errors.Wrapf(err, "member %s references non-existent ai %s", m.ID, m.AIID)
-		}
-		log.WithField("ai", ai).Debugf("Retrieved ai info. ai_id: %s", ai.ID)
+	// Rule 6: Verify each member's AIID references an existing AI.
+	// Insight-typed AIs (VOIP-1234 §6 v4 item4) are excluded from team membership:
+	// they carry a restricted tool set and a dedicated system prompt intended for
+	// agent-facing Case Q&A, not for team-based multi-agent call/conversation flows.
+	if err := h.validateNoInsightMembers(ctx, members); err != nil {
+		return nil, err
 	}
 
 	id := h.utilHandler.UUIDCreate()
@@ -163,13 +163,10 @@ func (h *teamHandler) Update(ctx context.Context, id uuid.UUID, name string, det
 		return nil, errors.Wrap(err, "validation failed")
 	}
 
-	// Rule 6: Verify each member's AIID references an existing AI
-	for _, m := range members {
-		ai, err := h.db.AIGet(ctx, m.AIID)
-		if err != nil {
-			return nil, errors.Wrapf(err, "member %s references non-existent ai %s", m.ID, m.AIID)
-		}
-		log.WithField("ai", ai).Debugf("Retrieved ai info. ai_id: %s", ai.ID)
+	// Rule 6: Verify each member's AIID references an existing AI.
+	// Insight-typed AIs (VOIP-1234 §6 v4 item4) are excluded from team membership.
+	if err := h.validateNoInsightMembers(ctx, members); err != nil {
+		return nil, err
 	}
 
 	fields := map[team.Field]any{
@@ -192,4 +189,33 @@ func (h *teamHandler) Update(ctx context.Context, id uuid.UUID, name string, det
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, team.EventTypeUpdated, res)
 
 	return res, nil
+}
+
+// validateNoInsightMembers verifies that each member's AIID references an
+// existing AI (Rule 6) and rejects any member backed by an Insight-typed AI.
+// Insight AIs (ai.TypeInsight) carry a restricted tool set
+// (ai.AllInsightToolNames) and a dedicated system prompt built for
+// agent-facing Q&A over a single contact-manager Case (VOIP-1234 §5); they
+// are not designed for team-based multi-agent call/conversation flows, where
+// members hand off to each other via LLM function calling and share a
+// pipecat-managed voice/chat session. Admitting an Insight AI into a team
+// would silently expose the wrong tool set and prompt in that context.
+func (h *teamHandler) validateNoInsightMembers(ctx context.Context, members []team.Member) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "validateNoInsightMembers",
+	})
+
+	for _, m := range members {
+		a, err := h.db.AIGet(ctx, m.AIID)
+		if err != nil {
+			return errors.Wrapf(err, "member %s references non-existent ai %s", m.ID, m.AIID)
+		}
+		log.WithField("ai", a).Debugf("Retrieved ai info. ai_id: %s", a.ID)
+
+		if a.Type == ai.TypeInsight {
+			return fmt.Errorf("member %s references ai %s of type %q, which cannot be used as a team member", m.ID, m.AIID, a.Type)
+		}
+	}
+
+	return nil
 }

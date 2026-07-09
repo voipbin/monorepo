@@ -200,6 +200,76 @@ func Test_Create_ai_not_found(t *testing.T) {
 	}
 }
 
+func Test_Create_insight_member_rejected(t *testing.T) {
+	memberA := uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
+	aiA := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &teamHandler{
+		utilHandler:   mockUtil,
+		reqHandler:    mockReq,
+		notifyHandler: mockNotify,
+		db:            mockDB,
+	}
+
+	ctx := context.Background()
+
+	members := []team.Member{
+		{ID: memberA, Name: "A", AIID: aiA},
+	}
+
+	// VOIP-1234 §6 v4 item4: an Insight-typed AI must not be admittable as a team member.
+	mockDB.EXPECT().AIGet(ctx, aiA).Return(&ai.AI{Type: ai.TypeInsight}, nil)
+
+	_, err := h.Create(ctx, uuid.FromStringOrNil("cccccccc-cccc-cccc-cccc-cccccccccccc"), "test", "detail", memberA, members, nil)
+	if err == nil {
+		t.Error("Expected error for Insight-typed AI member, got nil")
+	}
+}
+
+func Test_Update_insight_member_rejected(t *testing.T) {
+	memberA := uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
+	aiA := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")
+	teamID := uuid.FromStringOrNil("dddddddd-dddd-dddd-dddd-dddddddddddd")
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &teamHandler{
+		utilHandler:   mockUtil,
+		reqHandler:    mockReq,
+		notifyHandler: mockNotify,
+		db:            mockDB,
+	}
+
+	ctx := context.Background()
+
+	members := []team.Member{
+		{ID: memberA, Name: "A", AIID: aiA},
+	}
+
+	// VOIP-1234 §6 v4 item4: same rejection applies to Update, so an existing
+	// team cannot be edited to admit an Insight-typed AI either.
+	mockDB.EXPECT().AIGet(ctx, aiA).Return(&ai.AI{Type: ai.TypeInsight}, nil)
+
+	_, err := h.Update(ctx, teamID, "test", "detail", memberA, members, nil)
+	if err == nil {
+		t.Error("Expected error for Insight-typed AI member, got nil")
+	}
+}
+
 func Test_Get(t *testing.T) {
 
 	tests := []struct {
