@@ -18,10 +18,17 @@ var (
 		},
 		[]string{"result"},
 	)
+	promAIcallContactCaseRecreateRateLimitedTotal = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "aicall_contact_case_recreate_rate_limited_total",
+			Help:      "Total times a contact_case AIcall recreation was blocked by the post-terminate rate limit (VOIP-1234).",
+		},
+	)
 )
 
 func init() {
-	prometheus.MustRegister(promAIcallIdleExpiredTotal, promAIcallInterruptAttemptedTotal)
+	prometheus.MustRegister(promAIcallIdleExpiredTotal, promAIcallInterruptAttemptedTotal, promAIcallContactCaseRecreateRateLimitedTotal)
 }
 
 // Test parallelism note:

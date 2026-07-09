@@ -42,7 +42,6 @@ func Test_startReferenceTypeCall(t *testing.T) {
 		activeflowID   uuid.UUID
 		referenceID    uuid.UUID
 
-
 		responseConfbridge        *cmconfbridge.Confbridge
 		responseUUIDPipecatcallID uuid.UUID
 		responseUUIDAIcallID      uuid.UUID
@@ -80,7 +79,6 @@ func Test_startReferenceTypeCall(t *testing.T) {
 			activeflowID:   uuid.FromStringOrNil("a47265a2-f06d-11ef-8317-2bf92ae88a9d"),
 			referenceID:    uuid.FromStringOrNil("a4a663fc-f06d-11ef-aeb9-6b2d8f0da3ac"),
 
-
 			responseConfbridge: &cmconfbridge.Confbridge{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
@@ -105,8 +103,8 @@ func Test_startReferenceTypeCall(t *testing.T) {
 				ConfbridgeID:   uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
 				PipecatcallID:  uuid.FromStringOrNil("a4e5c7ae-b539-11f0-ac68-c38f244d145b"),
 
-				STTLanguage:    "en-US",
-				Status:         aicall.StatusInitiating,
+				STTLanguage: "en-US",
+				Status:      aicall.StatusInitiating,
 			},
 			responseMessages: []*message.Message{
 				{
@@ -134,8 +132,8 @@ func Test_startReferenceTypeCall(t *testing.T) {
 				ConfbridgeID:   uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
 				PipecatcallID:  uuid.FromStringOrNil("a4e5c7ae-b539-11f0-ac68-c38f244d145b"),
 
-				STTLanguage:    "en-US",
-				Status:         aicall.StatusInitiating,
+				STTLanguage: "en-US",
+				Status:      aicall.StatusInitiating,
 			},
 			expectVariables: map[string]string{
 				variableID:            "a6cd01d0-d785-467f-9069-684e46cc2644",
@@ -174,8 +172,8 @@ func Test_startReferenceTypeCall(t *testing.T) {
 				ConfbridgeID:   uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
 				PipecatcallID:  uuid.FromStringOrNil("a4e5c7ae-b539-11f0-ac68-c38f244d145b"),
 
-				STTLanguage:    "en-US",
-				Status:         aicall.StatusInitiating,
+				STTLanguage: "en-US",
+				Status:      aicall.StatusInitiating,
 			},
 		},
 		{
@@ -374,7 +372,6 @@ func Test_startReferenceTypeNone(t *testing.T) {
 		assistanceType aicall.AssistanceType
 		assistanceID   uuid.UUID
 
-
 		responseUUIDPipecatcallID uuid.UUID
 		responseUUIDAIcallID      uuid.UUID
 		responseAIcall            *aicall.AIcall
@@ -395,7 +392,6 @@ func Test_startReferenceTypeNone(t *testing.T) {
 			},
 			assistanceType: aicall.AssistanceTypeAI,
 			assistanceID:   uuid.FromStringOrNil("1d758ff0-f06f-11ef-bcb1-1ff1f3691915"),
-
 
 			responseUUIDPipecatcallID: uuid.FromStringOrNil("78a31220-b465-11f0-a3f2-b77bb59ccdcd"),
 			responseUUIDAIcallID:      uuid.FromStringOrNil("1e1a95ea-f06f-11ef-b98e-cf0423a1e383"),
@@ -1147,20 +1143,20 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				// resolveTeamMemberForSend: refresh AIEngineModel from current member's AI.
 				// CurrentMemberID matches a team member, so no fallback / no UpdateCurrentMemberID call.
 				m.team.EXPECT().Get(ctx, teamID).Return(&team.Team{
-					Identity: commonidentity.Identity{ID: teamID},
+					Identity:      commonidentity.Identity{ID: teamID},
 					StartMemberID: uuid.FromStringOrNil("a7777777-0001-11f0-9999-999999999999"),
 					Members: []team.Member{
 						{ID: memberID, AIID: memberAIID},
 					},
 				}, nil)
 				m.ai.EXPECT().Get(ctx, memberAIID).Return(&ai.AI{
-					Identity: commonidentity.Identity{ID: memberAIID},
+					Identity:    commonidentity.Identity{ID: memberAIID},
 					EngineModel: "grok.grok-3", // resolved engine model overrides the stale snapshot
 				}, nil)
 
 				// resolveActiveAIIDFromAIcall: get team to find CurrentMemberID's AIID.
 				m.team.EXPECT().Get(ctx, teamID).Return(&team.Team{
-					Identity: commonidentity.Identity{ID: teamID},
+					Identity:      commonidentity.Identity{ID: teamID},
 					StartMemberID: uuid.FromStringOrNil("a7777777-0001-11f0-9999-999999999999"),
 					Members: []team.Member{
 						{ID: memberID, AIID: memberAIID},
@@ -1819,13 +1815,13 @@ func Test_startAIcallByRealtime(t *testing.T) {
 	tests := []struct {
 		name string
 
-		ai              *ai.AI
-		assistanceType  aicall.AssistanceType
-		assistanceID    uuid.UUID
-		activeflowID    uuid.UUID
-		referenceType   aicall.ReferenceType
-		referenceID     uuid.UUID
-		confbridgeID    uuid.UUID
+		ai             *ai.AI
+		assistanceType aicall.AssistanceType
+		assistanceID   uuid.UUID
+		activeflowID   uuid.UUID
+		referenceType  aicall.ReferenceType
+		referenceID    uuid.UUID
+		confbridgeID   uuid.UUID
 
 		isTask          bool
 		teamParameter   map[string]any
@@ -1863,7 +1859,7 @@ func Test_startAIcallByRealtime(t *testing.T) {
 			referenceID:    uuid.FromStringOrNil("b3662e38-b659-11f0-820a-833195d45f7e"),
 			confbridgeID:   uuid.FromStringOrNil("b3864e5c-b659-11f0-ab17-6b281e446482"),
 
-			isTask:         false,
+			isTask: false,
 
 			responseUUIDPipecatcallID: uuid.FromStringOrNil("b3af613e-b659-11f0-9a72-e3e004fae386"),
 			responseUUIDAIcallID:      uuid.FromStringOrNil("b3af613e-b659-11f0-9a72-e3e004fae386"),
@@ -1882,7 +1878,7 @@ func Test_startAIcallByRealtime(t *testing.T) {
 				ConfbridgeID:  uuid.FromStringOrNil("b3864e5c-b659-11f0-ab17-6b281e446482"),
 				PipecatcallID: uuid.FromStringOrNil("b3af613e-b659-11f0-9a72-e3e004fae386"),
 
-				Status:   aicall.StatusInitiating,
+				Status: aicall.StatusInitiating,
 
 				STTLanguage: "en-US",
 
@@ -1901,9 +1897,9 @@ func Test_startAIcallByRealtime(t *testing.T) {
 				"voipbin.aicall.ai_id":           "b30ecf94-b659-11f0-b8ef-13f90dff9ee8",
 				"voipbin.aicall.confbridge_id":   "b3864e5c-b659-11f0-ab17-6b281e446482",
 
-				"voipbin.aicall.id":              "b3af613e-b659-11f0-9a72-e3e004fae386",
-				"voipbin.aicall.stt_language":        "en-US",
-				"voipbin.aicall.pipecatcall_id":  "b3af613e-b659-11f0-9a72-e3e004fae386",
+				"voipbin.aicall.id":             "b3af613e-b659-11f0-9a72-e3e004fae386",
+				"voipbin.aicall.stt_language":   "en-US",
+				"voipbin.aicall.pipecatcall_id": "b3af613e-b659-11f0-9a72-e3e004fae386",
 			},
 			expectMessageTexts: []string{
 				defaultCommonAIcallSystemPrompt,
@@ -1923,7 +1919,7 @@ func Test_startAIcallByRealtime(t *testing.T) {
 				ConfbridgeID:  uuid.FromStringOrNil("b3864e5c-b659-11f0-ab17-6b281e446482"),
 				PipecatcallID: uuid.FromStringOrNil("b3af613e-b659-11f0-9a72-e3e004fae386"),
 
-				Status:   aicall.StatusInitiating,
+				Status: aicall.StatusInitiating,
 
 				STTLanguage: "en-US",
 
@@ -1959,7 +1955,7 @@ func Test_startAIcallByRealtime(t *testing.T) {
 			referenceID:    uuid.FromStringOrNil("c3662e38-b659-11f0-820a-833195d45f7e"),
 			confbridgeID:   uuid.FromStringOrNil("c3864e5c-b659-11f0-ab17-6b281e446482"),
 
-			isTask:         false,
+			isTask: false,
 			teamParameter: map[string]any{
 				"shared_key": "team_value",
 				"team_only":  "team_data",
@@ -2002,7 +1998,7 @@ func Test_startAIcallByRealtime(t *testing.T) {
 				ConfbridgeID:  uuid.FromStringOrNil("c3864e5c-b659-11f0-ab17-6b281e446482"),
 				PipecatcallID: uuid.FromStringOrNil("c3af613e-b659-11f0-9a72-e3e004fae386"),
 
-				Status:   aicall.StatusInitiating,
+				Status: aicall.StatusInitiating,
 
 				STTLanguage: "ko-KR",
 
@@ -2021,9 +2017,9 @@ func Test_startAIcallByRealtime(t *testing.T) {
 				"voipbin.aicall.ai_id":           "c40ecf94-b659-11f0-b8ef-13f90dff9ee8",
 				"voipbin.aicall.confbridge_id":   "c3864e5c-b659-11f0-ab17-6b281e446482",
 
-				"voipbin.aicall.id":              "c3af613e-b659-11f0-9a72-e3e004fae386",
-				"voipbin.aicall.stt_language":        "ko-KR",
-				"voipbin.aicall.pipecatcall_id":  "c3af613e-b659-11f0-9a72-e3e004fae386",
+				"voipbin.aicall.id":             "c3af613e-b659-11f0-9a72-e3e004fae386",
+				"voipbin.aicall.stt_language":   "ko-KR",
+				"voipbin.aicall.pipecatcall_id": "c3af613e-b659-11f0-9a72-e3e004fae386",
 			},
 			expectMessageTexts: []string{
 				defaultCommonAIcallSystemPrompt,
@@ -2048,7 +2044,7 @@ func Test_startAIcallByRealtime(t *testing.T) {
 				ConfbridgeID:  uuid.FromStringOrNil("c3864e5c-b659-11f0-ab17-6b281e446482"),
 				PipecatcallID: uuid.FromStringOrNil("c3af613e-b659-11f0-9a72-e3e004fae386"),
 
-				Status:   aicall.StatusInitiating,
+				Status: aicall.StatusInitiating,
 
 				STTLanguage: "ko-KR",
 
@@ -2153,12 +2149,12 @@ func Test_startAIcallByMessaging(t *testing.T) {
 	tests := []struct {
 		name string
 
-		ai              *ai.AI
-		assistanceType  aicall.AssistanceType
-		assistanceID    uuid.UUID
-		activeflowID    uuid.UUID
-		referenceType   aicall.ReferenceType
-		referenceID     uuid.UUID
+		ai             *ai.AI
+		assistanceType aicall.AssistanceType
+		assistanceID   uuid.UUID
+		activeflowID   uuid.UUID
+		referenceType  aicall.ReferenceType
+		referenceID    uuid.UUID
 
 		isTask          bool
 		teamParameter   map[string]any
@@ -2194,7 +2190,7 @@ func Test_startAIcallByMessaging(t *testing.T) {
 			referenceType:  aicall.ReferenceTypeConversation,
 			referenceID:    uuid.FromStringOrNil("d3662e38-b659-11f0-820a-833195d45f7e"),
 
-			isTask:         false,
+			isTask: false,
 
 			responseUUIDPipecatcallID: uuid.FromStringOrNil("d3af613e-b659-11f0-9a72-e3e004fae386"),
 			responseUUIDAIcallID:      uuid.FromStringOrNil("d3af613e-b659-11f0-9a72-e3e004fae386"),
@@ -2214,7 +2210,7 @@ func Test_startAIcallByMessaging(t *testing.T) {
 				ReferenceID:   uuid.FromStringOrNil("d3662e38-b659-11f0-820a-833195d45f7e"),
 				PipecatcallID: uuid.FromStringOrNil("d3af613e-b659-11f0-9a72-e3e004fae386"),
 
-				Status:   aicall.StatusInitiating,
+				Status: aicall.StatusInitiating,
 
 				STTLanguage: "en-US",
 
@@ -2233,9 +2229,9 @@ func Test_startAIcallByMessaging(t *testing.T) {
 				"voipbin.aicall.ai_id":           "d30ecf94-b659-11f0-b8ef-13f90dff9ee8",
 				"voipbin.aicall.confbridge_id":   uuid.Nil.String(),
 
-				"voipbin.aicall.id":              "d3af613e-b659-11f0-9a72-e3e004fae386",
-				"voipbin.aicall.stt_language":        "en-US",
-				"voipbin.aicall.pipecatcall_id":  "d3af613e-b659-11f0-9a72-e3e004fae386",
+				"voipbin.aicall.id":             "d3af613e-b659-11f0-9a72-e3e004fae386",
+				"voipbin.aicall.stt_language":   "en-US",
+				"voipbin.aicall.pipecatcall_id": "d3af613e-b659-11f0-9a72-e3e004fae386",
 			},
 			expectMessageTexts: []string{
 				defaultCommonAIcallSystemPrompt,
@@ -2256,7 +2252,7 @@ func Test_startAIcallByMessaging(t *testing.T) {
 				ReferenceID:   uuid.FromStringOrNil("d3662e38-b659-11f0-820a-833195d45f7e"),
 				PipecatcallID: uuid.FromStringOrNil("d3af613e-b659-11f0-9a72-e3e004fae386"),
 
-				Status:   aicall.StatusInitiating,
+				Status: aicall.StatusInitiating,
 
 				STTLanguage: "en-US",
 
@@ -2324,7 +2320,7 @@ func Test_startAIcallByMessaging(t *testing.T) {
 				"voipbin.aicall.ai_id":           "f10ecf94-b659-11f0-b8ef-13f90dff9ee8",
 				"voipbin.aicall.confbridge_id":   uuid.Nil.String(),
 				"voipbin.aicall.id":              "f3af613e-b659-11f0-9a72-e3e004fae386",
-				"voipbin.aicall.stt_language":        "en-US",
+				"voipbin.aicall.stt_language":    "en-US",
 				"voipbin.aicall.pipecatcall_id":  "f3af613e-b659-11f0-9a72-e3e004fae386",
 			},
 			expectMessageTexts: []string{
@@ -2372,7 +2368,7 @@ func Test_startAIcallByMessaging(t *testing.T) {
 			referenceType:  aicall.ReferenceTypeTask,
 			referenceID:    uuid.Nil,
 
-			isTask:         true,
+			isTask: true,
 
 			responseUUIDPipecatcallID: uuid.FromStringOrNil("e3af613e-b659-11f0-9a72-e3e004fae386"),
 			responseUUIDAIcallID:      uuid.FromStringOrNil("e3af613e-b659-11f0-9a72-e3e004fae386"),
@@ -2407,9 +2403,9 @@ func Test_startAIcallByMessaging(t *testing.T) {
 				"voipbin.aicall.ai_id":           "e40ecf94-b659-11f0-b8ef-13f90dff9ee8",
 				"voipbin.aicall.confbridge_id":   uuid.Nil.String(),
 
-				"voipbin.aicall.id":              "e3af613e-b659-11f0-9a72-e3e004fae386",
-				"voipbin.aicall.stt_language":        "",
-				"voipbin.aicall.pipecatcall_id":  "e3af613e-b659-11f0-9a72-e3e004fae386",
+				"voipbin.aicall.id":             "e3af613e-b659-11f0-9a72-e3e004fae386",
+				"voipbin.aicall.stt_language":   "",
+				"voipbin.aicall.pipecatcall_id": "e3af613e-b659-11f0-9a72-e3e004fae386",
 			},
 			expectMessageTexts: []string{
 				defaultCommonAItaskSystemPrompt,
@@ -2771,7 +2767,7 @@ func Test_StartTask(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("da5752be-d798-11f0-9181-d3db413a82d0"),
 				},
 				EngineModel: ai.EngineModelOpenaiGPT5Dot1,
-				Parameter:  map[string]any{},
+				Parameter:   map[string]any{},
 
 				InitPrompt: "",
 			},
@@ -3485,8 +3481,9 @@ func Test_buildPromptSnapshots_autoAudit(t *testing.T) {
 			},
 			assistanceType: aicall.AssistanceTypeAI,
 			assistanceID:   uuid.FromStringOrNil("11111111-0000-0000-0000-000000000001"),
-			mockSetup:      func(_ *teamhandler.MockTeamHandler, _ *aihandler.MockAIHandler, _ *requesthandler.MockRequestHandler) {},
-			expectAudit:    true,
+			mockSetup: func(_ *teamhandler.MockTeamHandler, _ *aihandler.MockAIHandler, _ *requesthandler.MockRequestHandler) {
+			},
+			expectAudit: true,
 		},
 		{
 			name: "single AI with auto audit disabled",
@@ -3496,8 +3493,9 @@ func Test_buildPromptSnapshots_autoAudit(t *testing.T) {
 			},
 			assistanceType: aicall.AssistanceTypeAI,
 			assistanceID:   uuid.FromStringOrNil("11111111-0000-0000-0000-000000000002"),
-			mockSetup:      func(_ *teamhandler.MockTeamHandler, _ *aihandler.MockAIHandler, _ *requesthandler.MockRequestHandler) {},
-			expectAudit:    false,
+			mockSetup: func(_ *teamhandler.MockTeamHandler, _ *aihandler.MockAIHandler, _ *requesthandler.MockRequestHandler) {
+			},
+			expectAudit: false,
 		},
 		{
 			name: "team with any member having auto audit enabled returns true",
@@ -3579,6 +3577,12 @@ func Test_buildPromptSnapshots_autoAudit(t *testing.T) {
 }
 
 func Test_startReferenceTypeContactCase(t *testing.T) {
+	// ensure the recreate rate-limit window is set deterministically for cases
+	// that depend on it (VOIP-1234)
+	config.SetAIcallContactCaseRecreateRateLimitMinutesForTest(5)
+
+	recentTerminatedTM := time.Now().Add(-1 * time.Minute) // inside the 5-minute rate-limit window
+	staleTerminatedTM := time.Now().Add(-10 * time.Minute) // outside the 5-minute rate-limit window
 
 	type mocks struct {
 		util    *utilhandler.MockUtilHandler
@@ -3602,6 +3606,11 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 		expectRes *aicall.AIcall
 		expectErr bool
 		checkErr  func(t *testing.T, err error)
+
+		// expectRateLimitedInc — when true, the rate-limited counter
+		// (promAIcallContactCaseRecreateRateLimitedTotal) MUST increment by
+		// exactly 1 across the call. When false, it is not asserted.
+		expectRateLimitedInc bool
 	}{
 		{
 			name: "create succeeds on first attempt",
@@ -3840,6 +3849,186 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				}
 			},
 		},
+		{
+			name: "duplicate key — existing terminated recently, blocked by recreate rate limit",
+
+			ai: &ai.AI{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("60000000-0001-11f0-ffff-000000000001"),
+					CustomerID: uuid.FromStringOrNil("60000000-0002-11f0-ffff-000000000001"),
+				},
+				EngineModel: ai.EngineModelOpenaiGPT5,
+			},
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   uuid.FromStringOrNil("60000000-0001-11f0-ffff-000000000001"),
+			activeflowID:   uuid.FromStringOrNil("60000000-0003-11f0-ffff-000000000001"),
+			referenceID:    uuid.FromStringOrNil("60000000-0004-11f0-ffff-000000000001"),
+
+			mockSetup: func(ctx context.Context, m *mocks) {
+				pipecatcallID := uuid.FromStringOrNil("60000000-0005-11f0-ffff-000000000001")
+				aicallID := uuid.FromStringOrNil("60000000-0006-11f0-ffff-000000000001")
+
+				existingTerminated := &aicall.AIcall{
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("60000000-0009-11f0-ffff-000000000001"),
+						CustomerID: uuid.FromStringOrNil("60000000-0002-11f0-ffff-000000000001"),
+					},
+					Status: aicall.StatusTerminated,
+					TMEnd:  &recentTerminatedTM,
+				}
+
+				// only the first-attempt create; NO retry create call must happen
+				// because the rate-limit guard must block before attempt 2.
+				m.util.EXPECT().UUIDCreate().Return(pipecatcallID)
+				m.util.EXPECT().UUIDCreate().Return(aicallID)
+				m.db.EXPECT().AIcallCreate(ctx, gomock.Any()).Return(fmt.Errorf("Error 1062: Duplicate entry 'x' for key 'uq_aicall_active_reference_key'"))
+				m.db.EXPECT().AIcallGetByReferenceID(ctx, uuid.FromStringOrNil("60000000-0004-11f0-ffff-000000000001")).Return(existingTerminated, nil)
+			},
+
+			expectErr: true,
+			checkErr: func(t *testing.T, err error) {
+				if !strings.Contains(err.Error(), "rate limit exceeded") {
+					t.Errorf("expected rate limit error, got: %v", err)
+				}
+				if !strings.Contains(err.Error(), "60000000-0004-11f0-ffff-000000000001") {
+					t.Errorf("expected error to mention the reference_id, got: %v", err)
+				}
+			},
+			expectRateLimitedInc: true,
+		},
+		{
+			name: "duplicate key — existing terminated outside rate limit window, retries successfully",
+
+			ai: &ai.AI{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("70000000-0001-11f0-1111-000000000001"),
+					CustomerID: uuid.FromStringOrNil("70000000-0002-11f0-1111-000000000001"),
+				},
+				EngineModel: ai.EngineModelOpenaiGPT5,
+			},
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   uuid.FromStringOrNil("70000000-0001-11f0-1111-000000000001"),
+			activeflowID:   uuid.FromStringOrNil("70000000-0003-11f0-1111-000000000001"),
+			referenceID:    uuid.FromStringOrNil("70000000-0004-11f0-1111-000000000001"),
+
+			mockSetup: func(ctx context.Context, m *mocks) {
+				pipecatcallID1 := uuid.FromStringOrNil("70000000-0005-11f0-1111-000000000001")
+				aicallID1 := uuid.FromStringOrNil("70000000-0006-11f0-1111-000000000001")
+				pipecatcallID2 := uuid.FromStringOrNil("70000000-0007-11f0-1111-000000000001")
+				aicallID2 := uuid.FromStringOrNil("70000000-0008-11f0-1111-000000000001")
+
+				existingTerminated := &aicall.AIcall{
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("70000000-0009-11f0-1111-000000000001"),
+						CustomerID: uuid.FromStringOrNil("70000000-0002-11f0-1111-000000000001"),
+					},
+					Status: aicall.StatusTerminated,
+					TMEnd:  &staleTerminatedTM,
+				}
+				created := &aicall.AIcall{
+					Identity: commonidentity.Identity{
+						ID:         aicallID2,
+						CustomerID: uuid.FromStringOrNil("70000000-0002-11f0-1111-000000000001"),
+					},
+					ActiveflowID:  uuid.FromStringOrNil("70000000-0003-11f0-1111-000000000001"),
+					ReferenceType: aicall.ReferenceTypeContactCase,
+					ReferenceID:   uuid.FromStringOrNil("70000000-0004-11f0-1111-000000000001"),
+					Status:        aicall.StatusInitiating,
+				}
+
+				// attempt 0: duplicate key, existing terminated outside the
+				// rate-limit window -> retry
+				m.util.EXPECT().UUIDCreate().Return(pipecatcallID1)
+				m.util.EXPECT().UUIDCreate().Return(aicallID1)
+				m.db.EXPECT().AIcallCreate(ctx, gomock.Any()).Return(fmt.Errorf("Error 1062: Duplicate entry 'x' for key 'uq_aicall_active_reference_key'"))
+				m.db.EXPECT().AIcallGetByReferenceID(ctx, uuid.FromStringOrNil("70000000-0004-11f0-1111-000000000001")).Return(existingTerminated, nil)
+
+				// attempt 1: create succeeds
+				m.util.EXPECT().UUIDCreate().Return(pipecatcallID2)
+				m.util.EXPECT().UUIDCreate().Return(aicallID2)
+				m.db.EXPECT().AIcallCreate(ctx, gomock.Any()).Return(nil)
+				m.db.EXPECT().AIcallGet(ctx, aicallID2).Return(created, nil)
+				m.notify.EXPECT().PublishWebhookEvent(ctx, created.CustomerID, aicall.EventTypeStatusInitializing, created)
+				m.req.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any()).Return(nil)
+				m.message.EXPECT().Create(ctx, uuid.Nil, created.CustomerID, created.ID, created.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, gomock.Any(), nil, "", gomock.Any()).Return(&message.Message{}, nil)
+			},
+
+			expectRes: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("70000000-0008-11f0-1111-000000000001"),
+					CustomerID: uuid.FromStringOrNil("70000000-0002-11f0-1111-000000000001"),
+				},
+				ActiveflowID:  uuid.FromStringOrNil("70000000-0003-11f0-1111-000000000001"),
+				ReferenceType: aicall.ReferenceTypeContactCase,
+				ReferenceID:   uuid.FromStringOrNil("70000000-0004-11f0-1111-000000000001"),
+				Status:        aicall.StatusInitiating,
+			},
+		},
+		{
+			name: "duplicate key — existing terminated with no TMEnd/TMUpdate, fail-open retries successfully",
+
+			ai: &ai.AI{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("80000000-0001-11f0-2222-000000000001"),
+					CustomerID: uuid.FromStringOrNil("80000000-0002-11f0-2222-000000000001"),
+				},
+				EngineModel: ai.EngineModelOpenaiGPT5,
+			},
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   uuid.FromStringOrNil("80000000-0001-11f0-2222-000000000001"),
+			activeflowID:   uuid.FromStringOrNil("80000000-0003-11f0-2222-000000000001"),
+			referenceID:    uuid.FromStringOrNil("80000000-0004-11f0-2222-000000000001"),
+
+			mockSetup: func(ctx context.Context, m *mocks) {
+				pipecatcallID1 := uuid.FromStringOrNil("80000000-0005-11f0-2222-000000000001")
+				aicallID1 := uuid.FromStringOrNil("80000000-0006-11f0-2222-000000000001")
+				pipecatcallID2 := uuid.FromStringOrNil("80000000-0007-11f0-2222-000000000001")
+				aicallID2 := uuid.FromStringOrNil("80000000-0008-11f0-2222-000000000001")
+
+				// no TMEnd and no TMUpdate — fail-open expected
+				existingTerminated := &aicall.AIcall{
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("80000000-0009-11f0-2222-000000000001"),
+						CustomerID: uuid.FromStringOrNil("80000000-0002-11f0-2222-000000000001"),
+					},
+					Status: aicall.StatusTerminated,
+				}
+				created := &aicall.AIcall{
+					Identity: commonidentity.Identity{
+						ID:         aicallID2,
+						CustomerID: uuid.FromStringOrNil("80000000-0002-11f0-2222-000000000001"),
+					},
+					ActiveflowID:  uuid.FromStringOrNil("80000000-0003-11f0-2222-000000000001"),
+					ReferenceType: aicall.ReferenceTypeContactCase,
+					ReferenceID:   uuid.FromStringOrNil("80000000-0004-11f0-2222-000000000001"),
+					Status:        aicall.StatusInitiating,
+				}
+
+				m.util.EXPECT().UUIDCreate().Return(pipecatcallID1)
+				m.util.EXPECT().UUIDCreate().Return(aicallID1)
+				m.db.EXPECT().AIcallCreate(ctx, gomock.Any()).Return(fmt.Errorf("Error 1062: Duplicate entry 'x' for key 'uq_aicall_active_reference_key'"))
+				m.db.EXPECT().AIcallGetByReferenceID(ctx, uuid.FromStringOrNil("80000000-0004-11f0-2222-000000000001")).Return(existingTerminated, nil)
+
+				m.util.EXPECT().UUIDCreate().Return(pipecatcallID2)
+				m.util.EXPECT().UUIDCreate().Return(aicallID2)
+				m.db.EXPECT().AIcallCreate(ctx, gomock.Any()).Return(nil)
+				m.db.EXPECT().AIcallGet(ctx, aicallID2).Return(created, nil)
+				m.notify.EXPECT().PublishWebhookEvent(ctx, created.CustomerID, aicall.EventTypeStatusInitializing, created)
+				m.req.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any()).Return(nil)
+				m.message.EXPECT().Create(ctx, uuid.Nil, created.CustomerID, created.ID, created.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, gomock.Any(), nil, "", gomock.Any()).Return(&message.Message{}, nil)
+			},
+
+			expectRes: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("80000000-0008-11f0-2222-000000000001"),
+					CustomerID: uuid.FromStringOrNil("80000000-0002-11f0-2222-000000000001"),
+				},
+				ActiveflowID:  uuid.FromStringOrNil("80000000-0003-11f0-2222-000000000001"),
+				ReferenceType: aicall.ReferenceTypeContactCase,
+				ReferenceID:   uuid.FromStringOrNil("80000000-0004-11f0-2222-000000000001"),
+				Status:        aicall.StatusInitiating,
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -3866,7 +4055,18 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 
 			tt.mockSetup(ctx, m)
 
+			var beforeRateLimited float64
+			if tt.expectRateLimitedInc {
+				beforeRateLimited = testutil.ToFloat64(promAIcallContactCaseRecreateRateLimitedTotal)
+			}
+
 			res, err := h.startReferenceTypeContactCase(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceID, nil, uuid.Nil)
+			if tt.expectRateLimitedInc {
+				afterRateLimited := testutil.ToFloat64(promAIcallContactCaseRecreateRateLimitedTotal)
+				if afterRateLimited-beforeRateLimited < 1 {
+					t.Errorf("expected rate-limited counter to increment by at least 1, got delta=%f", afterRateLimited-beforeRateLimited)
+				}
+			}
 			if tt.expectErr {
 				if err == nil {
 					t.Fatalf("expected error, got nil")
