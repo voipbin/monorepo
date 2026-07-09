@@ -2086,6 +2086,11 @@ components:
           type: string
           description: Detailed information about the AI.
           example: "AI assistant for handling customer inquiries"
+        type:
+          type: string
+          enum: ["normal", "insight"]
+          description: "AI type. `normal` (default) is a general-purpose AI. `insight` restricts the AI to the Insight tool set and uses a dedicated system prompt for analyzing existing contact/conversation data."
+          example: "normal"
         engine_model:
           $ref: '#/components/schemas/AIManagerAIEngineModel'
           description: Model of the AI engine.

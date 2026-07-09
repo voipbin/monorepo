@@ -20,6 +20,7 @@ func (h *aiHandler) Create(
 	customerID uuid.UUID,
 	name string,
 	detail string,
+	aiType ai.Type,
 	engineModel ai.EngineModel,
 	parameter map[string]any,
 	engineKey string,
@@ -37,6 +38,13 @@ func (h *aiHandler) Create(
 
 	if !ai.IsValidEngineModel(engineModel) {
 		return nil, fmt.Errorf("invalid engine model: %s", engineModel)
+	}
+
+	if aiType == ai.TypeNone {
+		aiType = ai.TypeNormal
+	}
+	if !aiType.IsValid() {
+		return nil, fmt.Errorf("invalid type: %s. valid values: %s", aiType, strings.Join(aiType.ValidValues(), ", "))
 	}
 
 	if !ttsType.IsValid() {
@@ -57,7 +65,7 @@ func (h *aiHandler) Create(
 		currentPromptHistoryID = h.utilHandler.UUIDCreate()
 	}
 
-	res, err := h.dbCreate(ctx, customerID, name, detail, engineModel, parameter, engineKey, ragID,
+	res, err := h.dbCreate(ctx, customerID, name, detail, aiType, engineModel, parameter, engineKey, ragID,
 		initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled,
 		autoAICallAuditEnabled, currentPromptHistoryID)
 	if err != nil {
@@ -86,6 +94,7 @@ func (h *aiHandler) Update(
 	id uuid.UUID,
 	name string,
 	detail string,
+	aiType ai.Type,
 	engineModel ai.EngineModel,
 	parameter map[string]any,
 	engineKey string,
@@ -123,13 +132,27 @@ func (h *aiHandler) Update(
 		return nil, errors.Wrapf(errGet, "could not get current ai for update")
 	}
 
+	// A caller omitting the type field (aiType == TypeNone) means "leave it
+	// unchanged", not "reset to normal" -- unlike Create, Update must not
+	// silently downgrade an existing Insight AI to Normal on a partial PUT
+	// that doesn't touch the type field.
+	if aiType == ai.TypeNone {
+		aiType = preUpdateAI.Type
+	}
+	if aiType == ai.TypeNone {
+		aiType = ai.TypeNormal
+	}
+	if !aiType.IsValid() {
+		return nil, fmt.Errorf("invalid type: %s. valid values: %s", aiType, strings.Join(aiType.ValidValues(), ", "))
+	}
+
 	promptChanged := initPrompt != "" && initPrompt != preUpdateAI.InitPrompt
 	promptCleared := initPrompt == "" && preUpdateAI.InitPrompt != ""
 
 	switch {
 	case promptChanged:
 		historyID := h.utilHandler.UUIDCreate()
-		fields := h.buildUpdateFields(name, detail, engineModel, parameter, engineKey, ragID, initPrompt,
+		fields := h.buildUpdateFields(name, detail, aiType, engineModel, parameter, engineKey, ragID, initPrompt,
 			ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled, autoAICallAuditEnabled)
 		fields[ai.FieldCurrentPromptHistoryID] = historyID
 		if err := h.db.AIUpdate(ctx, id, fields); err != nil {
@@ -153,7 +176,7 @@ func (h *aiHandler) Update(
 		return res, nil
 
 	case promptCleared:
-		fields := h.buildUpdateFields(name, detail, engineModel, parameter, engineKey, ragID, "",
+		fields := h.buildUpdateFields(name, detail, aiType, engineModel, parameter, engineKey, ragID, "",
 			ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled, autoAICallAuditEnabled)
 		fields[ai.FieldCurrentPromptHistoryID] = uuid.Nil
 		if err := h.db.AIUpdate(ctx, id, fields); err != nil {
@@ -167,7 +190,7 @@ func (h *aiHandler) Update(
 		return res, nil
 
 	default: // prompt unchanged
-		return h.dbUpdate(ctx, id, name, detail, engineModel, parameter, engineKey, ragID, initPrompt,
+		return h.dbUpdate(ctx, id, name, detail, aiType, engineModel, parameter, engineKey, ragID, initPrompt,
 			ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled, autoAICallAuditEnabled)
 	}
 }

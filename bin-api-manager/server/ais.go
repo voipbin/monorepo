@@ -60,11 +60,17 @@ func (h *server) PostAis(c *gin.Context) {
 		autoAICallAuditEnabled = *req.AutoAicallAuditEnabled
 	}
 
+	var aiType amai.Type
+	if req.Type != nil {
+		aiType = amai.Type(*req.Type)
+	}
+
 	res, err := h.serviceHandler.AICreate(
 		c.Request.Context(),
 		a,
 		req.Name,
 		req.Detail,
+		aiType,
 		amai.EngineModel(req.EngineModel),
 		req.Parameter,
 		req.EngineKey,
@@ -257,12 +263,18 @@ func (h *server) PutAisId(c *gin.Context, id string) {
 		autoAICallAuditEnabled = *req.AutoAicallAuditEnabled
 	}
 
+	var aiType amai.Type
+	if req.Type != nil {
+		aiType = amai.Type(*req.Type)
+	}
+
 	res, err := h.serviceHandler.AIUpdate(
 		c.Request.Context(),
 		a,
 		target,
 		req.Name,
 		req.Detail,
+		aiType,
 		amai.EngineModel(req.EngineModel),
 		req.Parameter,
 		req.EngineKey,

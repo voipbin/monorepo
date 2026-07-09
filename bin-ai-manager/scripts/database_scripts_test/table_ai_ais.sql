@@ -27,6 +27,8 @@ create table ai_ais(
 
   auto_aicall_audit_enabled  boolean not null default 0,   -- auto aicall audit enabled
 
+  type  varchar(255) not null default 'normal',   -- ai type: normal, insight
+
   tool_names  json,           -- enabled tools for this AI
 
   current_prompt_history_id  binary(16),   -- current prompt history id

@@ -81,6 +81,11 @@ put:
               type: string
             detail:
               type: string
+            type:
+              type: string
+              enum: ["normal", "insight"]
+              description: "AI type. `normal` (default) is a general-purpose AI. `insight` restricts the AI to the Insight tool set and uses a dedicated system prompt."
+              example: "normal"
             engine_model:
               $ref: '#/components/schemas/AIManagerAIEngineModel'
             parameter:

@@ -187,6 +187,7 @@ func TestCreate(t *testing.T) {
 				tt.customerID,
 				tt.aiName,
 				"Test detail",
+				ai.TypeNormal,
 				tt.engineModel,
 				nil,
 				"test-key",
@@ -380,6 +381,7 @@ func TestUpdate(t *testing.T) {
 				tt.aiID,
 				tt.aiName,
 				"Updated detail",
+				ai.TypeNormal,
 				tt.engineModel,
 				nil,
 				"updated-key",
@@ -442,6 +444,7 @@ func TestCreate_RecordsPromptHistory(t *testing.T) {
 		uuid.Must(uuid.NewV4()),
 		"Helpful AI",
 		"",
+		ai.TypeNormal,
 		ai.EngineModelOpenaiGPT5,
 		nil,
 		"key",
@@ -490,6 +493,7 @@ func TestCreate_EmptyPrompt_NoHistory(t *testing.T) {
 		uuid.Must(uuid.NewV4()),
 		"AI no prompt",
 		"",
+		ai.TypeNormal,
 		ai.EngineModelOpenaiGPT5,
 		nil,
 		"key",
@@ -545,6 +549,7 @@ func TestUpdate_NewPrompt_RecordsHistory(t *testing.T) {
 		aiID,
 		"My AI",
 		"",
+		ai.TypeNormal,
 		ai.EngineModelOpenaiGPT5,
 		nil,
 		"key",
@@ -599,6 +604,7 @@ func TestUpdate_SamePrompt_NoHistory(t *testing.T) {
 		aiID,
 		"My AI",
 		"",
+		ai.TypeNormal,
 		ai.EngineModelOpenaiGPT5,
 		nil,
 		"key",
@@ -648,6 +654,7 @@ func TestUpdate_EmptyPrompt_AlreadyEmpty_NoHistory(t *testing.T) {
 		aiID,
 		"My AI",
 		"",
+		ai.TypeNormal,
 		ai.EngineModelOpenaiGPT5,
 		nil,
 		"key",
@@ -697,6 +704,7 @@ func TestCreate_HistoryFails_CreateSucceeds(t *testing.T) {
 		uuid.Must(uuid.NewV4()),
 		"AI with history failure",
 		"",
+		ai.TypeNormal,
 		ai.EngineModelOpenaiGPT5,
 		nil,
 		"key",
@@ -766,6 +774,7 @@ func TestCreate_WithPrompt_SetsCurrentHistoryIDAtomically(t *testing.T) {
 		uuid.Must(uuid.NewV4()),
 		"AI with prompt",
 		"",
+		ai.TypeNormal,
 		ai.EngineModelOpenaiGPT5,
 		nil,
 		"key",
@@ -814,6 +823,7 @@ func TestCreate_WithoutPrompt_NoCurrentHistoryID(t *testing.T) {
 		uuid.Must(uuid.NewV4()),
 		"AI no prompt",
 		"",
+		ai.TypeNormal,
 		ai.EngineModelOpenaiGPT5,
 		nil,
 		"key",
@@ -869,7 +879,7 @@ func TestUpdate_promptChangedCreatesHistoryAndSetsID(t *testing.T) {
 		notifyHandler: mockNotify,
 		utilHandler:   mockUtil,
 	}
-	_, err := h.Update(context.Background(), aiID, "name", "", ai.EngineModelOpenaiGPT5, nil, "", uuid.Nil,
+	_, err := h.Update(context.Background(), aiID, "name", "", ai.TypeNormal, ai.EngineModelOpenaiGPT5, nil, "", uuid.Nil,
 		"new prompt", ai.TTSTypeNone, "", ai.STTTypeNone, "", nil, nil, false, false)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -913,7 +923,7 @@ func TestUpdate_promptClearedResetsID(t *testing.T) {
 		notifyHandler: mockNotify,
 		utilHandler:   mockUtil,
 	}
-	_, err := h.Update(context.Background(), aiID, "name", "", ai.EngineModelOpenaiGPT5, nil, "", uuid.Nil,
+	_, err := h.Update(context.Background(), aiID, "name", "", ai.TypeNormal, ai.EngineModelOpenaiGPT5, nil, "", uuid.Nil,
 		"", ai.TTSTypeNone, "", ai.STTTypeNone, "", nil, nil, false, false)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -947,7 +957,7 @@ func TestUpdate_promptUnchangedDoesNotCreateHistory(t *testing.T) {
 		notifyHandler: mockNotify,
 		utilHandler:   mockUtil,
 	}
-	_, err := h.Update(context.Background(), aiID, "name", "", ai.EngineModelOpenaiGPT5, nil, "", uuid.Nil,
+	_, err := h.Update(context.Background(), aiID, "name", "", ai.TypeNormal, ai.EngineModelOpenaiGPT5, nil, "", uuid.Nil,
 		same, ai.TTSTypeNone, "", ai.STTTypeNone, "", nil, nil, false, false)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)

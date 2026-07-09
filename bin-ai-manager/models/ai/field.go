@@ -10,6 +10,7 @@ const (
 
 	FieldName   Field = "name"
 	FieldDetail Field = "detail"
+	FieldType   Field = "type"
 
 	FieldEngineModel Field = "engine_model"
 	FieldParameter   Field = "parameter"

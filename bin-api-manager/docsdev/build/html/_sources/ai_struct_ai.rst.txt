@@ -15,6 +15,7 @@ AI
         "customer_id": "<string>",
         "name": "<string>",
         "detail": "<string>",
+        "type": "<string>",
         "engine_model": "<string>",
         "parameter": "<object>",
         "engine_key": "<string>",
@@ -44,6 +45,7 @@ AI
 * ``customer_id`` (UUID): The customer that owns this AI configuration. Obtained from the ``id`` field of ``GET /customers``.
 * ``name`` (String, Required): A human-readable name for the AI configuration (e.g., ``"Sales Assistant"``).
 * ``detail`` (String, Optional): A description of the AI's purpose or additional notes.
+* ``type`` (enum string, Optional): The AI's operating mode. ``normal`` (default) is a general-purpose AI usable in calls, tasks, and conversations. ``insight`` restricts the AI to the Insight tool set (:ref:`AllInsightToolNames <ai-struct-ai-tool_names>`) and uses a dedicated system prompt tailored for agent-facing Q&A over a contact-manager Case. See :ref:`Type <ai-struct-ai-type>`.
 * ``engine_model`` (String, Required): The LLM provider and model. Format: ``<provider>.<model>`` (e.g., ``openai.gpt-4o``, ``anthropic.claude-3-5-sonnet``). See :ref:`Engine Models <ai-struct-ai-engine_model>`.
 * ``parameter`` (Object, Optional): Custom key-value parameter data for the AI configuration. Supports flow variable substitution at runtime. Typically left as ``{}``.
 * ``engine_key`` (String, Required): The API key for the LLM provider. Must be a valid key from the provider's dashboard.
@@ -84,6 +86,7 @@ Example
         "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
         "name": "Sales Assistant AI",
         "detail": "AI assistant for handling sales inquiries",
+        "type": "normal",
         "engine_model": "openai.gpt-4o",
         "parameter": {},
         "engine_key": "sk-...",
@@ -104,6 +107,23 @@ Example
         "tm_update": "9999-01-01 00:00:00.000000",
         "tm_delete": "9999-01-01 00:00:00.000000"
     }
+
+.. _ai-struct-ai-type:
+
+Type
+----
+The ``type`` field controls the AI's operating mode.
+
+================ =======================================
+Type             Description
+================ =======================================
+normal           General-purpose AI. Usable in calls, tasks, and conversations, with the tool set configured via ``tool_names``. This is the default when ``type`` is omitted.
+insight          Restricted to the Insight tool set (``get_contact_interactions``, ``get_conversation_content``) and a dedicated system prompt. Intended for agent-facing Q&A over a contact-manager Case (e.g., an agent asking the AI questions about a Case while working it in square-talk), not for handling live calls.
+================ =======================================
+
+.. note:: **AI Implementation Hint**
+
+   Updating an AI via ``PUT /ais/{id}`` without sending ``type`` leaves the existing type unchanged — it does not reset the AI to ``normal``. To change an AI's type, explicitly send the desired ``type`` value in the PUT body.
 
 .. _ai-struct-ai-engine_model:
 

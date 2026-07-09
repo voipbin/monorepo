@@ -49,6 +49,11 @@ type AI struct {
 	Name   string `json:"name,omitempty" db:"name"`
 	Detail string `json:"detail,omitempty" db:"detail"`
 
+	// Type distinguishes a Normal AI (default) from an Insight AI. Insight AIs
+	// use a dedicated system prompt and are restricted to the Insight tool set
+	// (see tool.AllInsightToolNames / toolhandler.AllInsightToolNames).
+	Type Type `json:"type,omitempty" db:"type"`
+
 	EngineModel EngineModel    `json:"engine_model,omitempty" db:"engine_model"` // ai(llm) model. combine with <engine model target>.<model>
 	Parameter   map[string]any `json:"parameter,omitempty" db:"parameter,json"`
 	EngineKey   string         `json:"engine_key,omitempty" db:"engine_key"` // ai(llm) service api key
@@ -195,6 +200,36 @@ func IsValidEngineModel(engineModel EngineModel) bool {
 	}
 
 	return false
+}
+
+// Type define
+type Type string
+
+const (
+	TypeNone    Type = ""
+	TypeNormal  Type = "normal"  // general-purpose AI (default)
+	TypeInsight Type = "insight" // Insight AI: dedicated system prompt + restricted tool set
+)
+
+var validTypes = map[Type]bool{
+	TypeNone: true, TypeNormal: true, TypeInsight: true,
+}
+
+// IsValid returns true if the Type is a known valid value.
+func (t Type) IsValid() bool {
+	return validTypes[t]
+}
+
+// ValidValues returns a sorted list of valid Type values (excluding empty string).
+func (t Type) ValidValues() []string {
+	res := make([]string, 0, len(validTypes))
+	for k := range validTypes {
+		if k != TypeNone {
+			res = append(res, string(k))
+		}
+	}
+	sort.Strings(res)
+	return res
 }
 
 // TTSType define

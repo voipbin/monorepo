@@ -34,6 +34,7 @@ func Test_PostAis(t *testing.T) {
 
 		expectedName        string
 		expectedDetail      string
+		expectedAIType      amai.Type
 		expectedEngineModel amai.EngineModel
 		expectedParameter   map[string]any
 		expectedEngineKey   string
@@ -272,6 +273,7 @@ func Test_PostAis(t *testing.T) {
 				tt.agent,
 				tt.expectedName,
 				tt.expectedDetail,
+				tt.expectedAIType,
 				tt.expectedEngineModel,
 				tt.expectedParameter,
 				tt.expectedEngineKey,
@@ -556,6 +558,7 @@ func Test_PutAisId(t *testing.T) {
 		expectedAIID        uuid.UUID
 		expectedName        string
 		expectedDetail      string
+		expectedAIType      amai.Type
 		epxectedEngineModel amai.EngineModel
 		expectedParameter   map[string]any
 		expectedEngineKey   string
@@ -767,6 +770,7 @@ func Test_PutAisId(t *testing.T) {
 				tt.expectedAIID,
 				tt.expectedName,
 				tt.expectedDetail,
+				tt.expectedAIType,
 				tt.epxectedEngineModel,
 				tt.expectedParameter,
 				tt.expectedEngineKey,
