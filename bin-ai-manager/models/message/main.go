@@ -26,6 +26,17 @@ type Message struct {
 	PipecatcallID  uuid.UUID      `json:"-" db:"pipecatcall_id,uuid"`
 	DeliveryStatus DeliveryStatus `json:"-" db:"delivery_status"`
 
+	// InReplyToMessageID is the ID of the user-authored message this assistant
+	// message answers. Populated on assistant messages created via
+	// EventPMMessageBotLLM (echoed from bin-pipecat-manager's
+	// pmmessage.Message.InReplyToMessageID) to disambiguate which inbound
+	// message triggered this response when an AIcall is reused for a rapid
+	// sequence of sends (e.g. an agent asking a second question before the
+	// first bot response arrives). Zero UUID for user messages and for
+	// assistant messages where no correlation was available. See VOIP-1234
+	// design doc §4-1.
+	InReplyToMessageID uuid.UUID `json:"in_reply_to_message_id,omitempty" db:"in_reply_to_message_id,uuid"`
+
 	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
 	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
 }

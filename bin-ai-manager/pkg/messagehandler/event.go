@@ -147,7 +147,8 @@ func (h *messageHandler) EventPMMessageBotLLM(ctx context.Context, evt *pmmessag
 	// All other pipecat reference types use the legacy "persist and return" path.
 	if evt.PipecatcallReferenceType != pmpipecatcall.ReferenceTypeAICall {
 		tmp, err := h.Create(ctx, evt.ID, evt.CustomerID, evt.PipecatcallReferenceID, evt.ActiveflowID,
-			message.DirectionIncoming, message.RoleAssistant, evt.Text, nil, "")
+			message.DirectionIncoming, message.RoleAssistant, evt.Text, nil, "",
+			WithInReplyToMessageID(evt.InReplyToMessageID))
 		if err != nil {
 			log.Errorf("Could not create the message. err: %v", err)
 			return
@@ -168,7 +169,8 @@ func (h *messageHandler) EventPMMessageBotLLM(ctx context.Context, evt *pmmessag
 		activeAIID := h.resolveActiveAIIDFromAIcall(ctx, ac)
 		tmp, errCreate := h.Create(ctx, evt.ID, evt.CustomerID, evt.PipecatcallReferenceID, evt.ActiveflowID,
 			message.DirectionIncoming, message.RoleAssistant, evt.Text, nil, "",
-			WithActiveAIID(activeAIID))
+			WithActiveAIID(activeAIID),
+			WithInReplyToMessageID(evt.InReplyToMessageID))
 		if errCreate != nil {
 			log.Errorf("Could not create the message. err: %v", errCreate)
 			return
@@ -194,7 +196,8 @@ func (h *messageHandler) EventPMMessageBotLLM(ctx context.Context, evt *pmmessag
 		message.DirectionIncoming, message.RoleAssistant, evt.Text, nil, "",
 		WithPipecatcallID(evt.PipecatcallID),
 		WithDeliveryStatus(message.DeliveryStatusPending),
-		WithActiveAIID(activeAIID))
+		WithActiveAIID(activeAIID),
+		WithInReplyToMessageID(evt.InReplyToMessageID))
 	if err != nil {
 		log.Errorf("Could not create the message. err: %v", err)
 		return
