@@ -28,17 +28,24 @@ type TelnyxClient interface {
 	// DeleteOutboundVoiceProfile calls DELETE /v2/outbound_voice_profiles/{id}.
 	DeleteOutboundVoiceProfile(ctx context.Context, profileID string) error
 
-	// CreateIPConnection calls POST /v2/ip_connections.
-	// Returns the Telnyx connection ID.
-	CreateIPConnection(ctx context.Context, name string, profileID string) (connID string, err error)
-	// DeleteIPConnection calls DELETE /v2/ip_connections/{id}.
-	DeleteIPConnection(ctx context.Context, connID string) error
+	// CreateFQDNConnection calls POST /v2/fqdn_connections. FQDN connections
+	// (unlike IP connections) present inbound calls with the actual FQDN as
+	// the SIP request-URI domain (e.g. "pstn.voipbin.net") instead of a raw
+	// IP address, which Kamailio's domain validation requires. Telnyx
+	// requires credential authentication to be configured before an
+	// outbound_voice_profile can be attached to an FQDN connection, so
+	// userName/password must be supplied. Returns the Telnyx connection ID.
+	CreateFQDNConnection(ctx context.Context, name, profileID, userName, password string) (connID string, err error)
+	// DeleteFQDNConnection calls DELETE /v2/fqdn_connections/{id}.
+	DeleteFQDNConnection(ctx context.Context, connID string) error
 
-	// RegisterIP calls POST /v2/ips to attach our SIP LB IP to the connection.
-	// Returns the Telnyx IP resource ID.
-	RegisterIP(ctx context.Context, connID string, ipAddress string, port int) (ipID string, err error)
-	// DeleteIP calls DELETE /v2/ips/{id}.
-	DeleteIP(ctx context.Context, ipID string) error
+	// RegisterFQDN calls POST /v2/fqdns to attach our public SIP domain to
+	// the connection. DNS resolution of fqdn to our SIP LB address(es) is
+	// managed outside of Telnyx (see EXTERNAL_SIP_GATEWAY_FQDN_FOR_PSTN). Returns the
+	// Telnyx FQDN resource ID.
+	RegisterFQDN(ctx context.Context, connID string, fqdn string, port int) (fqdnID string, err error)
+	// DeleteFQDN calls DELETE /v2/fqdns/{id}.
+	DeleteFQDN(ctx context.Context, fqdnID string) error
 }
 
 type telnyxClient struct {

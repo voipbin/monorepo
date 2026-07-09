@@ -58,11 +58,11 @@ spec:
                 secretKeyRef:
                   name: voipbin
                   key: CLICKHOUSE_ADDRESS
-            - name: EXTERNAL_SIP_GATEWAY_ADDRESSES
+            - name: EXTERNAL_SIP_GATEWAY_FQDN_FOR_PSTN
               valueFrom:
                 secretKeyRef:
                   name: voipbin
-                  key: EXTERNAL_SIP_GATEWAY_ADDRESSES
+                  key: EXTERNAL_SIP_GATEWAY_FQDN_FOR_PSTN
           ports:
             - name: metrics
               protocol: "TCP"

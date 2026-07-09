@@ -2,6 +2,8 @@ package providerhandler
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/base64"
 	"fmt"
 	"net"
 	"strconv"
@@ -14,6 +16,75 @@ import (
 )
 
 const telnyxSIPHostname = "sip.telnyx.com"
+
+// generateCredentialSecret returns a random alphanumeric string suitable for
+// a Telnyx FQDN connection's SIP credential user_name/password. Telnyx
+// rejects punctuation/whitespace in these fields ("Must contain only letters
+// and numbers; no spacing allowed" — confirmed empirically against the
+// Telnyx API), so the alphabet is restricted to letters and digits.
+func generateCredentialSecret(n int) (string, error) {
+	// base64 URL-safe encoding without padding only uses [A-Za-z0-9_-];
+	// stripping '_'/'-' leaves a purely alphanumeric string. Over-request
+	// bytes so the stripped result still has at least n characters.
+	buf := make([]byte, n*2)
+	if _, err := rand.Read(buf); err != nil {
+		return "", fmt.Errorf("generate random secret: %w", err)
+	}
+	encoded := base64.RawURLEncoding.EncodeToString(buf)
+	out := make([]byte, 0, n)
+	for i := 0; i < len(encoded) && len(out) < n; i++ {
+		c := encoded[i]
+		if c == '_' || c == '-' {
+			continue
+		}
+		out = append(out, c)
+	}
+	if len(out) < n {
+		return "", fmt.Errorf("could not generate %d alphanumeric characters", n)
+	}
+	return string(out), nil
+}
+
+// sanitizeCredentialUserName strips everything but letters/digits from name
+// so it is safe to use as (part of) a Telnyx FQDN connection's user_name.
+// Telnyx rejects punctuation/whitespace in user_name (e.g. hyphens, spaces),
+// which provider names commonly contain (confirmed empirically: a request
+// with a hyphenated user_name returns 422 "Must contain only letters and
+// numbers; no spacing allowed").
+func sanitizeCredentialUserName(name string) string {
+	out := make([]byte, 0, len(name))
+	for i := 0; i < len(name); i++ {
+		c := name[i]
+		if (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') {
+			out = append(out, c)
+		}
+	}
+	return string(out)
+}
+
+// credentialUserNamePrefix is prepended to the sanitized provider name to
+// form the Telnyx FQDN connection's user_name.
+const credentialUserNamePrefix = "voipbinrm"
+
+// telnyxUserNameMaxLen is Telnyx's hard limit on the FQDN connection
+// user_name field (confirmed empirically: a 90-character user_name returns
+// 422 "is too long (maximum is 32 characters)").
+const telnyxUserNameMaxLen = 32
+
+// buildCredentialUserName combines the fixed prefix with a sanitized,
+// length-capped provider name so the result never exceeds Telnyx's 32
+// character user_name limit regardless of how long the provider name is.
+func buildCredentialUserName(name string) string {
+	sanitized := sanitizeCredentialUserName(name)
+	maxSanitizedLen := telnyxUserNameMaxLen - len(credentialUserNamePrefix)
+	if maxSanitizedLen < 0 {
+		maxSanitizedLen = 0
+	}
+	if len(sanitized) > maxSanitizedLen {
+		sanitized = sanitized[:maxSanitizedLen]
+	}
+	return credentialUserNamePrefix + sanitized
+}
 
 // Setup is the public entry point. It constructs a TelnyxClient from apiKey and delegates to setupWithClient.
 func (h *providerHandler) Setup(ctx context.Context, carrier, name, detail, apiKey string) (*provider.Provider, error) {
@@ -33,8 +104,8 @@ func (h *providerHandler) setupWithClient(ctx context.Context, carrier, name, de
 		return nil, fmt.Errorf("unsupported carrier: %s", carrier)
 	}
 
-	if len(h.sipLBAddresses) == 0 {
-		return nil, fmt.Errorf("no SIP gateway addresses configured; set EXTERNAL_SIP_GATEWAY_ADDRESSES")
+	if h.sipGatewayFQDNForPSTN == "" {
+		return nil, fmt.Errorf("no PSTN SIP gateway FQDN configured; set EXTERNAL_SIP_GATEWAY_FQDN_FOR_PSTN")
 	}
 
 	// Step 1: validate the API key
@@ -51,45 +122,58 @@ func (h *providerHandler) setupWithClient(ctx context.Context, carrier, name, de
 	}
 	log.Debugf("Created Telnyx outbound voice profile. profile_id: %s", profileID)
 
-	// Step 3: create IP connection linked to the voice profile
-	connID, err := client.CreateIPConnection(ctx, name, profileID)
+	// Step 3: create an FQDN connection linked to the voice profile. An FQDN
+	// connection (as opposed to an IP connection) presents inbound calls with
+	// the FQDN as the SIP request-URI domain instead of a raw IP address,
+	// which Kamailio's domain validation (request_from_external_init_connection)
+	// requires. Telnyx requires the connection's credential authentication to
+	// be fully configured before an outbound_voice_profile can be attached, so
+	// a random credential is generated here; it is never used for actual
+	// authentication since inbound routing is FQDN/DNS-based and outbound
+	// dialing uses IP-based tech-prefix auth, but Telnyx still requires the
+	// fields to be populated.
+	credUser := buildCredentialUserName(name)
+	credPassword, err := generateCredentialSecret(32)
 	if err != nil {
-		log.Errorf("Could not create Telnyx IP connection. err: %v", err)
-		h.telnyxCleanup(log, client, nil, "", profileID)
-		return nil, fmt.Errorf("telnyx create ip connection failed: %w", err)
+		log.Errorf("Could not generate Telnyx connection credential. err: %v", err)
+		h.telnyxCleanup(log, client, "", "", profileID)
+		return nil, fmt.Errorf("generate telnyx credential failed: %w", err)
 	}
-	log.Debugf("Created Telnyx IP connection. conn_id: %s", connID)
+	connID, err := client.CreateFQDNConnection(ctx, name, profileID, credUser, credPassword)
+	if err != nil {
+		log.Errorf("Could not create Telnyx FQDN connection. err: %v", err)
+		h.telnyxCleanup(log, client, "", "", profileID)
+		return nil, fmt.Errorf("telnyx create fqdn connection failed: %w", err)
+	}
+	log.Debugf("Created Telnyx FQDN connection. conn_id: %s", connID)
 
-	// Step 4: register each SIP LB address on the connection
-	ipIDs := make([]string, 0, len(h.sipLBAddresses))
-	for _, addr := range h.sipLBAddresses {
-		ip, portStr, parseErr := net.SplitHostPort(addr)
-		if parseErr != nil {
-			log.Errorf("Invalid SIP LB address. addr: %s, err: %v", addr, parseErr)
-			h.telnyxCleanup(log, client, ipIDs, connID, profileID)
-			return nil, fmt.Errorf("invalid sip lb address %q: %w", addr, parseErr)
-		}
-		port, convErr := strconv.Atoi(portStr)
-		if convErr != nil {
-			log.Errorf("Invalid SIP LB port. addr: %s, err: %v", addr, convErr)
-			h.telnyxCleanup(log, client, ipIDs, connID, profileID)
-			return nil, fmt.Errorf("invalid sip lb port in %q: %w", addr, convErr)
-		}
-		ipID, regErr := client.RegisterIP(ctx, connID, ip, port)
-		if regErr != nil {
-			log.Errorf("Could not register SIP LB IP. addr: %s, err: %v", addr, regErr)
-			h.telnyxCleanup(log, client, ipIDs, connID, profileID)
-			return nil, fmt.Errorf("telnyx register ip %q failed: %w", addr, regErr)
-		}
-		log.Debugf("Registered SIP LB IP. addr: %s, ip_id: %s", addr, ipID)
-		ipIDs = append(ipIDs, ipID)
+	// Step 4: register our public PSTN SIP gateway FQDN on the connection.
+	_, portStr, parseErr := net.SplitHostPort(h.sipGatewayFQDNForPSTN)
+	if parseErr != nil {
+		log.Errorf("Invalid PSTN SIP gateway FQDN. fqdn: %s, err: %v", h.sipGatewayFQDNForPSTN, parseErr)
+		h.telnyxCleanup(log, client, "", connID, profileID)
+		return nil, fmt.Errorf("invalid pstn sip gateway fqdn %q: %w", h.sipGatewayFQDNForPSTN, parseErr)
 	}
+	port, convErr := strconv.Atoi(portStr)
+	if convErr != nil {
+		log.Errorf("Invalid PSTN SIP gateway port. fqdn: %s, err: %v", h.sipGatewayFQDNForPSTN, convErr)
+		h.telnyxCleanup(log, client, "", connID, profileID)
+		return nil, fmt.Errorf("invalid pstn sip gateway port in %q: %w", h.sipGatewayFQDNForPSTN, convErr)
+	}
+	fqdnHost, _, _ := net.SplitHostPort(h.sipGatewayFQDNForPSTN)
+	fqdnID, regErr := client.RegisterFQDN(ctx, connID, fqdnHost, port)
+	if regErr != nil {
+		log.Errorf("Could not register PSTN SIP gateway FQDN. fqdn: %s, err: %v", h.sipGatewayFQDNForPSTN, regErr)
+		h.telnyxCleanup(log, client, "", connID, profileID)
+		return nil, fmt.Errorf("telnyx register fqdn %q failed: %w", h.sipGatewayFQDNForPSTN, regErr)
+	}
+	log.Debugf("Registered PSTN SIP gateway FQDN. fqdn: %s, fqdn_id: %s", h.sipGatewayFQDNForPSTN, fqdnID)
 
 	// Step 5: create the VoIPBin provider record
 	res, err := h.Create(ctx, provider.TypeSIP, telnyxSIPHostname, "", "", map[string]string{}, name, detail, "")
 	if err != nil {
 		log.Errorf("Could not create provider record. Attempting Telnyx cleanup. err: %v", err)
-		h.telnyxCleanup(log, client, ipIDs, connID, profileID)
+		h.telnyxCleanup(log, client, fqdnID, connID, profileID)
 		return nil, fmt.Errorf("provider create failed: %w", err)
 	}
 
@@ -101,7 +185,8 @@ func (h *providerHandler) setupWithClient(ctx context.Context, carrier, name, de
 	metadata := map[string]interface{}{
 		"telnyx_profile_id":    profileID,
 		"telnyx_connection_id": connID,
-		"telnyx_ip_ids":        ipIDs,
+		"telnyx_fqdn_id":       fqdnID,
+		"telnyx_fqdn":          h.sipGatewayFQDNForPSTN,
 	}
 	if errMeta := h.db.ProviderUpdate(ctx, res.ID, map[provider.Field]any{
 		provider.FieldMetadata: metadata,
@@ -121,23 +206,23 @@ func (h *providerHandler) setupWithClient(ctx context.Context, carrier, name, de
 // telnyxCleanup attempts to delete Telnyx resources created before a failure.
 // Empty IDs are skipped. Errors are logged but not returned — the caller's
 // original error takes precedence.
-func (h *providerHandler) telnyxCleanup(log *logrus.Entry, client telnyxclient.TelnyxClient, ipIDs []string, connID, profileID string) {
+func (h *providerHandler) telnyxCleanup(log *logrus.Entry, client telnyxclient.TelnyxClient, fqdnID, connID, profileID string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
-	for _, ipID := range ipIDs {
-		if err := client.DeleteIP(ctx, ipID); err != nil {
-			log.Errorf("Telnyx IP cleanup failed. ip_id: %s, err: %v", ipID, err)
+	if fqdnID != "" {
+		if err := client.DeleteFQDN(ctx, fqdnID); err != nil {
+			log.Errorf("Telnyx FQDN cleanup failed. fqdn_id: %s, err: %v", fqdnID, err)
 		} else {
-			log.Infof("Telnyx IP deleted during cleanup. ip_id: %s", ipID)
+			log.Infof("Telnyx FQDN deleted during cleanup. fqdn_id: %s", fqdnID)
 		}
 	}
 
 	if connID != "" {
-		if err := client.DeleteIPConnection(ctx, connID); err != nil {
-			log.Errorf("Telnyx IP connection cleanup failed. conn_id: %s, err: %v", connID, err)
+		if err := client.DeleteFQDNConnection(ctx, connID); err != nil {
+			log.Errorf("Telnyx FQDN connection cleanup failed. conn_id: %s, err: %v", connID, err)
 		} else {
-			log.Infof("Telnyx IP connection deleted during cleanup. conn_id: %s", connID)
+			log.Infof("Telnyx FQDN connection deleted during cleanup. conn_id: %s", connID)
 		}
 	}
 

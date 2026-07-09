@@ -70,7 +70,7 @@ ORDER BY r.priority;
 | `--redis_address` | `REDIS_ADDRESS` | required | Redis cache |
 | `--redis_password` | `REDIS_PASSWORD` | `` | Redis auth password |
 | `--redis_database` | `REDIS_DATABASE` | `` | Redis DB index |
-| `--external_sip_gateway_addresses` | `EXTERNAL_SIP_GATEWAY_ADDRESSES` | `` | Comma-separated SIP gateway IPs for provider setup |
+| `--external_sip_gateway_fqdn_for_pstn` | `EXTERNAL_SIP_GATEWAY_FQDN_FOR_PSTN` | `` | Public SIP gateway FQDN:port (e.g. `pstn.voipbin.net:5060`) registered on Telnyx as an FQDN connection for provider setup |
 | `--prometheus_endpoint` | `PROMETHEUS_ENDPOINT` | `/metrics` | Metrics path |
 | `--prometheus_listen_address` | `PROMETHEUS_LISTEN_ADDRESS` | `:2112` | Metrics listen address |
 

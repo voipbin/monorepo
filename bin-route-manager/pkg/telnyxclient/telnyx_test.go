@@ -74,9 +74,9 @@ func TestDeleteOutboundVoiceProfile_Success(t *testing.T) {
 	}
 }
 
-func TestCreateIPConnection_Success(t *testing.T) {
+func TestCreateFQDNConnection_Success(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPost || r.URL.Path != "/ip_connections" {
+		if r.Method != http.MethodPost || r.URL.Path != "/fqdn_connections" {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
@@ -87,7 +87,7 @@ func TestCreateIPConnection_Success(t *testing.T) {
 	defer srv.Close()
 
 	c := newTelnyxClientWithBase("testkey", srv.URL)
-	connID, err := c.CreateIPConnection(context.Background(), "My Provider", "profile-abc-123")
+	connID, err := c.CreateFQDNConnection(context.Background(), "My Provider", "profile-abc-123", "myprovideruser", "mypassword123")
 	if err != nil {
 		t.Fatalf("expected nil, got %v", err)
 	}
@@ -96,7 +96,7 @@ func TestCreateIPConnection_Success(t *testing.T) {
 	}
 }
 
-func TestDeleteIPConnection_Success(t *testing.T) {
+func TestDeleteFQDNConnection_Success(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodDelete {
 			w.WriteHeader(http.StatusMethodNotAllowed)
@@ -107,34 +107,34 @@ func TestDeleteIPConnection_Success(t *testing.T) {
 	defer srv.Close()
 
 	c := newTelnyxClientWithBase("testkey", srv.URL)
-	if err := c.DeleteIPConnection(context.Background(), "conn-abc-123"); err != nil {
+	if err := c.DeleteFQDNConnection(context.Background(), "conn-abc-123"); err != nil {
 		t.Fatalf("expected nil, got %v", err)
 	}
 }
 
-func TestRegisterIP_Success(t *testing.T) {
+func TestRegisterFQDN_Success(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPost || r.URL.Path != "/ips" {
+		if r.Method != http.MethodPost || r.URL.Path != "/fqdns" {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
-		w.Write([]byte(`{"data":{"id":"ip-abc-123"}}`)) //nolint:errcheck
+		w.Write([]byte(`{"data":{"id":"fqdn-abc-123"}}`)) //nolint:errcheck
 	}))
 	defer srv.Close()
 
 	c := newTelnyxClientWithBase("testkey", srv.URL)
-	ipID, err := c.RegisterIP(context.Background(), "conn-abc-123", "1.2.3.4", 5060)
+	fqdnID, err := c.RegisterFQDN(context.Background(), "conn-abc-123", "pstn.voipbin.net", 5060)
 	if err != nil {
 		t.Fatalf("expected nil, got %v", err)
 	}
-	if ipID != "ip-abc-123" {
-		t.Fatalf("expected ip-abc-123, got %s", ipID)
+	if fqdnID != "fqdn-abc-123" {
+		t.Fatalf("expected fqdn-abc-123, got %s", fqdnID)
 	}
 }
 
-func TestDeleteIP_Success(t *testing.T) {
+func TestDeleteFQDN_Success(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodDelete {
 			w.WriteHeader(http.StatusMethodNotAllowed)
@@ -145,7 +145,7 @@ func TestDeleteIP_Success(t *testing.T) {
 	defer srv.Close()
 
 	c := newTelnyxClientWithBase("testkey", srv.URL)
-	if err := c.DeleteIP(context.Background(), "ip-abc-123"); err != nil {
+	if err := c.DeleteFQDN(context.Background(), "fqdn-abc-123"); err != nil {
 		t.Fatalf("expected nil, got %v", err)
 	}
 }
