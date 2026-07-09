@@ -40,38 +40,38 @@ reference).
 Because that first upgrade attempt failed partway through -- MySQL DDL
 statements commit individually and are not rolled back by a failed
 statement later in the same op.execute() sequence -- ADD COLUMN
-active_reference_key had already succeeded in production before
-CREATE UNIQUE INDEX failed with 1062. A naive retry of the original
-unconditional upgrade() would hit "Duplicate column name" (1060) on
-the ADD COLUMN this time instead. upgrade()/downgrade() now guard each
-statement with information_schema existence checks (the same
-_index_exists()-style pattern already established by
-h2b3c4d5e6f7_billing_billings_idempotency_key_unique.py) so the
-migration is idempotent and safe to retry from this partially-applied
-state, or from a clean state, or after a downgrade.
+active_reference_key had already succeeded in production (with the
+FIRST, pre-zero-UUID-exclusion definition) before CREATE UNIQUE INDEX
+failed with 1062.
 
-A second production retry (after the zero-UUID fix above) still hit a
-1062 on CREATE UNIQUE INDEX, this time with a real (non-zero, non-NULL)
-hash value. Direct inspection confirmed there is currently no *steady
-state* duplicate for any real (customer_id, reference_type,
-reference_id) tuple -- ai_aicalls is a live, actively-written table,
-and the CREATE UNIQUE INDEX scan can observe a transient window where
-two rows are concurrently "active" for the same real reference (the
-exact race this migration exists to prevent going forward) before one
-of them is naturally cleaned up (idle-expire, normal termination,
-etc.) moments later. Because DDL scan timing cannot be controlled and
-the table cannot be quiesced for this migration, the fix is a
-backfill step that runs immediately before CREATE UNIQUE INDEX: for
-every group of currently-active rows sharing a real (customer_id,
-reference_type, reference_id), keep only the most recently updated row
-active and mark the rest 'terminated'. This makes CREATE UNIQUE INDEX
-apply against a table with no coexisting active duplicates regardless
-of what transient state produced them, without guessing at or
-depending on the root cause of any individual duplicate. The backfill
-only runs while the index does not yet exist (i.e. only during the
-one-time transition to enforcing the constraint) since once the index
-exists the constraint itself prevents new active duplicates from
-accumulating.
+Two follow-up "fixes" (backfill, then a bounded retry loop around
+backfill+CREATE INDEX) were attempted and both still failed with 1062
+against the identical, deterministic hash value on every retry over
+several separate runs spanning minutes -- with zero new rows written
+to ai_aicalls in that window (the table's last row create/update
+timestamp predates all of these attempts by over a week). That combination
+-- same hash, every time, on a table receiving no new writes -- ruled out
+a live-traffic race entirely. Root cause: upgrade()'s ADD COLUMN was
+guarded with a bare "does the column exist" check (_column_exists),
+which is true from the FIRST failed attempt onward. Every subsequent
+retry saw the column already present and skipped ADD COLUMN entirely,
+so the production column's GENERATED ALWAYS AS expression was still
+the original one WITHOUT the zero-UUID exclusion (confirmed via
+information_schema.columns.GENERATION_EXPRESSION against production).
+The 200+ zero-reference legacy rows were therefore still colliding on
+the unique index every time, deterministically, regardless of any
+backfill of genuinely-duplicate real references (of which there were
+none). upgrade() now checks the existing column's generation
+expression against the current definition (via
+_column_has_current_definition, matched on the literal zero-UUID hex
+substring) and drops+recreates the column if it does not match, before
+proceeding -- so a column left over from an earlier, pre-fix attempt
+of this same migration gets brought current instead of silently kept.
+The backfill and retry-loop scaffolding from the second and third
+attempts is removed: with the column definition correct, the
+zero-reference rows compute NULL (excluded) and there is no evidence
+of any real, non-zero-UUID active duplicate in production, so
+CREATE UNIQUE INDEX needs no retry loop and no backfill precondition.
 
 A real-world spike (20 concurrent INSERTs against a MySQL 8.0
 container) confirmed the optimistic-INSERT + DB-level unique index
@@ -89,6 +89,11 @@ down_revision = '573756d87322'
 branch_labels = None
 depends_on = None
 
+# Substring unique to the CURRENT generated-column expression (the
+# zero-UUID exclusion clause). Used to detect a stale column left over
+# from an earlier, pre-fix attempt at this same migration.
+_CURRENT_DEFINITION_MARKER = '00000000000000000000000000000000'
+
 
 def _column_exists(conn, table, column):
     result = conn.execute(sa.text(
@@ -96,6 +101,18 @@ def _column_exists(conn, table, column):
         "WHERE table_schema = DATABASE() AND table_name = :table AND column_name = :col"
     ), {'table': table, 'col': column})
     return result.scalar() > 0
+
+
+def _column_has_current_definition(conn, table, column):
+    result = conn.execute(sa.text(
+        "SELECT GENERATION_EXPRESSION FROM information_schema.columns "
+        "WHERE table_schema = DATABASE() AND table_name = :table AND column_name = :col"
+    ), {'table': table, 'col': column})
+    row = result.first()
+    if row is None:
+        return False
+    expression = row[0] or ''
+    return _CURRENT_DEFINITION_MARKER in expression
 
 
 def _index_exists(conn, table, index):
@@ -109,6 +126,17 @@ def _index_exists(conn, table, index):
 def upgrade():
     conn = op.get_bind()
 
+    if _column_exists(conn, 'ai_aicalls', 'active_reference_key') \
+            and not _column_has_current_definition(conn, 'ai_aicalls', 'active_reference_key'):
+        # Leftover column from an earlier, pre-fix attempt at this
+        # migration (created before the zero-UUID exclusion existed).
+        # No index depends on it yet in that state, so it is safe to
+        # drop and recreate with the current definition.
+        op.execute("""
+            ALTER TABLE ai_aicalls
+            DROP COLUMN active_reference_key
+        """)
+
     if not _column_exists(conn, 'ai_aicalls', 'active_reference_key'):
         op.execute("""
             ALTER TABLE ai_aicalls
@@ -121,27 +149,6 @@ def upgrade():
         """)
 
     if not _index_exists(conn, 'ai_aicalls', 'uq_aicall_active_reference_key'):
-        # One-time backfill: collapse any group of currently-active rows
-        # sharing a real reference down to a single active row (keep the
-        # most recently updated, terminate the rest) so the unique index
-        # below can be created cleanly regardless of how those active
-        # duplicates arose.
-        op.execute("""
-            UPDATE ai_aicalls a
-            JOIN (
-                SELECT id, ROW_NUMBER() OVER (
-                    PARTITION BY customer_id, reference_type, reference_id
-                    ORDER BY tm_update DESC, tm_create DESC, id DESC
-                ) AS rn
-                FROM ai_aicalls
-                WHERE status NOT IN ('terminated', 'terminating')
-                  AND reference_id != UNHEX('00000000000000000000000000000000')
-            ) ranked ON a.id = ranked.id AND ranked.rn > 1
-            SET a.status = 'terminated',
-                a.tm_end = COALESCE(a.tm_end, NOW(6)),
-                a.tm_update = NOW(6)
-        """)
-
         op.execute("""
             CREATE UNIQUE INDEX uq_aicall_active_reference_key
             ON ai_aicalls(active_reference_key)
