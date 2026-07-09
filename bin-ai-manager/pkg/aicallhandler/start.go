@@ -186,6 +186,9 @@ func (h *aicallHandler) Start(
 	case aicall.ReferenceTypeConversation:
 		return h.startReferenceTypeConversation(ctx, c, assistanceType, assistanceID, activeflowID, referenceID, teamParameter, currentMemberID)
 
+	case aicall.ReferenceTypeContactCase:
+		return h.startReferenceTypeContactCase(ctx, c, assistanceType, assistanceID, activeflowID, referenceID, teamParameter, currentMemberID)
+
 	case aicall.ReferenceTypeNone:
 		return h.startReferenceTypeNone(ctx, c, assistanceType, assistanceID, activeflowID, teamParameter, currentMemberID)
 

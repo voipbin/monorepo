@@ -3601,6 +3601,7 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 
 		expectRes *aicall.AIcall
 		expectErr bool
+		checkErr  func(t *testing.T, err error)
 	}{
 		{
 			name: "create succeeds on first attempt",
@@ -3796,6 +3797,48 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 			},
 
 			expectErr: true,
+			checkErr: func(t *testing.T, err error) {
+				if !strings.Contains(err.Error(), fmt.Sprintf("%d retries", maxContactCaseCreateRetries)) {
+					t.Errorf("expected error to mention retry count %d, got: %v", maxContactCaseCreateRetries, err)
+				}
+				if !strings.Contains(err.Error(), "1062") {
+					t.Errorf("expected error to wrap the last 1062 duplicate-key error, got: %v", err)
+				}
+			},
+		},
+		{
+			name: "non-1062 db error — returns immediately without retrying",
+
+			ai: &ai.AI{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("50000000-0001-11f0-eeee-000000000001"),
+					CustomerID: uuid.FromStringOrNil("50000000-0002-11f0-eeee-000000000001"),
+				},
+				EngineModel: ai.EngineModelOpenaiGPT5,
+			},
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   uuid.FromStringOrNil("50000000-0001-11f0-eeee-000000000001"),
+			activeflowID:   uuid.FromStringOrNil("50000000-0003-11f0-eeee-000000000001"),
+			referenceID:    uuid.FromStringOrNil("50000000-0004-11f0-eeee-000000000001"),
+
+			mockSetup: func(ctx context.Context, m *mocks) {
+				pipecatcallID := uuid.FromStringOrNil("50000000-0005-11f0-eeee-000000000001")
+				aicallID := uuid.FromStringOrNil("50000000-0006-11f0-eeee-000000000001")
+
+				m.util.EXPECT().UUIDCreate().Return(pipecatcallID)
+				m.util.EXPECT().UUIDCreate().Return(aicallID)
+				m.db.EXPECT().AIcallCreate(ctx, gomock.Any()).Return(fmt.Errorf("connection refused")).Times(1)
+			},
+
+			expectErr: true,
+			checkErr: func(t *testing.T, err error) {
+				if strings.Contains(err.Error(), "1062") {
+					t.Errorf("did not expect 1062 duplicate-key wrapping for a non-duplicate db error, got: %v", err)
+				}
+				if !strings.Contains(err.Error(), "connection refused") {
+					t.Errorf("expected the original db error to be wrapped, got: %v", err)
+				}
+			},
 		},
 	}
 
@@ -3830,6 +3873,9 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				}
 				if res != nil {
 					t.Errorf("expected nil res on error, got: %v", res)
+				}
+				if tt.checkErr != nil {
+					tt.checkErr(t, err)
 				}
 				return
 			}
