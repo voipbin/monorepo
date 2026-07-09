@@ -21,6 +21,20 @@ import (
 // convention (results ordered by tm_create DESC; nextToken is the
 // tm_create of the last returned item's page, empty when no further
 // pages).
+//
+// Known limitation (shared with ContactV1InteractionList, not novel to
+// Case pagination): the listenhandler wire response is a bare JSON
+// array -- the accurate server-computed hasMore signal from
+// casehandler.CaseList's size+1 probe is discarded at that layer
+// (processV1CasesGet's `res, _, err := ...`) rather than being
+// marshaled onto the wire. This client-side nextToken re-derivation can
+// therefore emit a non-empty token on the exact last page (when the
+// caller's requested size happens to equal the total remaining rows),
+// causing one wasted empty follow-up page fetch at list end. This is
+// the same wire-format tradeoff ContactV1InteractionList already makes;
+// fixing it platform-wide (changing every list RPC's wire response
+// shape from a bare array to {items, next_token}) is out of scope for
+// this filter/ordering fix.
 func (r *requestHandler) ContactV1CaseList(
 	ctx context.Context,
 	customerID uuid.UUID,
