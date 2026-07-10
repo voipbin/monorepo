@@ -76,6 +76,7 @@ var (
 
 	// v1 cases
 	regV1CasesUnresolved = regexp.MustCompile(`/v1/cases/unresolved(\?.*)?$`)
+	regV1Cases           = regexp.MustCompile(`/v1/cases$`)
 	regV1CasesGet        = regexp.MustCompile(`/v1/cases\?(.*)$`)
 	regV1CasesID         = regexp.MustCompile("/v1/cases/" + regUUID + "$")
 	regV1CasesIDClose    = regexp.MustCompile("/v1/cases/" + regUUID + "/close$")
@@ -339,6 +340,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	// GET /cases?...
 	case regV1CasesGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1CasesGet(ctx, m)
+		requestType = "/v1/cases"
+
+	// POST /cases
+	case regV1Cases.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1CasesPost(ctx, m)
 		requestType = "/v1/cases"
 
 	// GET /cases/{id}

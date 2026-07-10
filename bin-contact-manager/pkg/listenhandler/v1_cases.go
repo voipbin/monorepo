@@ -89,6 +89,37 @@ func (h *listenHandler) processV1CasesGet(ctx context.Context, req *sock.Request
 	return &sock.Response{StatusCode: 200, DataType: "application/json", Data: data}, nil
 }
 
+// processV1CasesPost handles POST /v1/cases request. Implements design
+// VOIP-1243 §3/§4: a plain, explicit Case creation delegated to
+// casehandler.Create -- distinct from the GetOrCreate path used
+// internally by the interaction projection pipeline.
+func (h *listenHandler) processV1CasesPost(ctx context.Context, req *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{"func": "processV1CasesPost"})
+	log.WithField("request", req).Debug("Received request.")
+
+	var body request.V1DataCasesPost
+	if err := json.Unmarshal(req.Data, &body); err != nil {
+		log.Errorf("Could not unmarshal request body. err: %v", err)
+		return simpleResponse(400), nil
+	}
+	if body.CustomerID == uuid.Nil {
+		return simpleResponse(400), nil
+	}
+
+	res, err := h.caseHandler.Create(ctx, body.CustomerID, body.Self, body.PeerType, body.PeerTarget, body.ReferenceType, body.Name, body.Detail)
+	if err != nil {
+		log.Errorf("Could not create case. err: %v", err)
+		return errorResponse(err), nil
+	}
+
+	data, err := json.Marshal(res)
+	if err != nil {
+		return simpleResponse(500), nil
+	}
+
+	return &sock.Response{StatusCode: 200, DataType: "application/json", Data: data}, nil
+}
+
 // processV1CasesUnresolvedGet handles GET /v1/cases/unresolved request.
 func (h *listenHandler) processV1CasesUnresolvedGet(ctx context.Context, req *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{"func": "processV1CasesUnresolvedGet"})

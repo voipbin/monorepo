@@ -8,12 +8,56 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/models/sock"
 
 	cmcasenote "monorepo/bin-contact-manager/models/casenote"
 	cmkase "monorepo/bin-contact-manager/models/kase"
 	cmrequest "monorepo/bin-contact-manager/pkg/listenhandler/models/request"
 )
+
+// ContactV1CaseCreate creates a new case in contact-manager via a plain,
+// explicit Create (design VOIP-1243 §3) -- distinct from the internal
+// GetOrCreate path. self/peerType/peerTarget/referenceType must be
+// derived by the caller from the actual call/conversation context (see
+// design §3.2); name/detail are optional (empty string persisted as
+// the column's empty default, not NULL).
+func (r *requestHandler) ContactV1CaseCreate(
+	ctx context.Context,
+	customerID uuid.UUID,
+	self commonaddress.Address,
+	peerType commonaddress.Type,
+	peerTarget, referenceType, name, detail string,
+) (*cmkase.Case, error) {
+	uri := "/v1/cases"
+
+	data := &cmrequest.V1DataCasesPost{
+		CustomerID:    customerID,
+		Self:          self,
+		PeerType:      peerType,
+		PeerTarget:    peerTarget,
+		ReferenceType: referenceType,
+		Name:          name,
+		Detail:        detail,
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestContact(ctx, uri, sock.RequestMethodPost, "contact/cases", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
+		return nil, err
+	}
+
+	var res cmkase.Case
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
+}
 
 // ContactV1CaseList lists cases from contact-manager, optionally filtered
 // by status, owner, and/or contact_id (query-string filters), with

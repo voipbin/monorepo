@@ -8,12 +8,88 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	cmcasenote "monorepo/bin-contact-manager/models/casenote"
 	cmkase "monorepo/bin-contact-manager/models/kase"
 )
+
+func Test_ContactV1CaseCreate(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customerID    uuid.UUID
+		self          commonaddress.Address
+		peerType      commonaddress.Type
+		peerTarget    string
+		referenceType string
+		caseName      string
+		detail        string
+
+		expectTarget  string
+		expectRequest *sock.Request
+		response      *sock.Response
+
+		expectRes *cmkase.Case
+	}{
+		{
+			name: "normal",
+
+			customerID:    uuid.FromStringOrNil("55ecfc4e-2c74-11ee-98fb-0762519529f3"),
+			self:          commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****0001"},
+			peerType:      commonaddress.TypeTel,
+			peerTarget:    "+155****0002",
+			referenceType: "call",
+			caseName:      "VIP escalation",
+			detail:        "customer called about billing",
+
+			expectTarget: "bin-manager.contact-manager.request",
+			expectRequest: &sock.Request{
+				URI:      "/v1/cases",
+				Method:   sock.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data: []byte(
+					`{"customer_id":"55ecfc4e-2c74-11ee-98fb-0762519529f3","self":{"type":"tel","target":"+155****0001"},"peer_type":"tel","peer_target":"+155****0002","reference_type":"call","name":"VIP escalation","detail":"customer called about billing"}`,
+				),
+			},
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"5623e25e-2c74-11ee-87a6-bfa8ae34077f"}`),
+			},
+			expectRes: &cmkase.Case{
+				ID: uuid.FromStringOrNil("5623e25e-2c74-11ee-87a6-bfa8ae34077f"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.ContactV1CaseCreate(ctx, tt.customerID, tt.self, tt.peerType, tt.peerTarget, tt.referenceType, tt.caseName, tt.detail)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
 
 func Test_ContactV1CaseList(t *testing.T) {
 

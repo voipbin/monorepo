@@ -165,6 +165,9 @@ create table contact_cases (
   peer_target       varchar(255)  not null default '',
   reference_type    varchar(255)  not null default '',
 
+  name              varchar(255)  not null default '',
+  detail            text,
+
   contact_id        binary(16),
 
   owner_type        varchar(255),
