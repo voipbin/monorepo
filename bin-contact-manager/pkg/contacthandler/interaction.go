@@ -99,8 +99,8 @@ func (h *contactHandler) EventCallCreated(ctx context.Context, m *call.WebhookMe
 	// Automatic Case creation removed (design VOIP-1243 §7): Case
 	// creation is now exclusively an explicit action (Flow action
 	// case_create / AI tool case_create), never a side effect of
-	// Interaction projection. Interaction.CaseID is therefore always
-	// nil for newly-projected rows going forward.
+	// Interaction projection. The now-dead Interaction.CaseID field was
+	// removed entirely (VOIP-1245).
 	i := interaction.Interaction{
 		ID:            id,
 		CustomerID:    m.CustomerID,
@@ -152,8 +152,8 @@ func (h *contactHandler) EventConversationMessageCreated(ctx context.Context, m 
 	// Automatic Case creation removed (design VOIP-1243 §7): Case
 	// creation is now exclusively an explicit action (Flow action
 	// case_create / AI tool case_create), never a side effect of
-	// Interaction projection. Interaction.CaseID is therefore always
-	// nil for newly-projected rows going forward.
+	// Interaction projection. The now-dead Interaction.CaseID field was
+	// removed entirely (VOIP-1245).
 	// m.ID comes from the embedded commonidentity.Identity; use it directly.
 	i := interaction.Interaction{
 		ID:            id,

@@ -11,6 +11,8 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/gofrs/uuid"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+
 	"monorepo/bin-contact-manager/models/contact"
 )
 
@@ -145,19 +147,23 @@ func TestHandler_ContactWithRelatedData(t *testing.T) {
 		FirstName: "John",
 		Addresses: []contact.Address{
 			{
-				ID:        uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333"),
+				Address: commonaddress.Address{
+					Type:   contact.AddressTypeTel,
+					Target: "+155****4567",
+				},
+				ID:         uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333"),
 				CustomerID: uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222"),
 				ContactID:  uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111"),
-				Type:       contact.AddressTypeTel,
-				Target:     "+155****4567",
 				IsPrimary:  true,
 			},
 			{
-				ID:        uuid.FromStringOrNil("44444444-4444-4444-4444-444444444444"),
+				Address: commonaddress.Address{
+					Type:   contact.AddressTypeEmail,
+					Target: "john@example.com",
+				},
+				ID:         uuid.FromStringOrNil("44444444-4444-4444-4444-444444444444"),
 				CustomerID: uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222"),
 				ContactID:  uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111"),
-				Type:       contact.AddressTypeEmail,
-				Target:     "john@example.com",
 				IsPrimary:  false,
 			},
 		},
@@ -584,9 +590,11 @@ func TestHandler_ContactSetUpdateExisting(t *testing.T) {
 	testContact.FirstName = "Updated"
 	testContact.Addresses = []contact.Address{
 		{
-			ID:     uuid.FromStringOrNil("dddddddd-eeee-ffff-0000-222222222222"),
-			Type:   contact.AddressTypeTel,
-			Target: "+155****0000",
+			Address: commonaddress.Address{
+				Type:   contact.AddressTypeTel,
+				Target: "+155****0000",
+			},
+			ID: uuid.FromStringOrNil("dddddddd-eeee-ffff-0000-222222222222"),
 		},
 	}
 
@@ -672,11 +680,11 @@ func TestHandler_ContactWithLargeData(t *testing.T) {
 		ExternalID:  "large-ext-001",
 		Notes:       "This is a contact with lots of related data for testing serialization",
 		Addresses: []contact.Address{
-			{ID: uuid.FromStringOrNil("a0001111-1111-1111-1111-111111111111"), Type: contact.AddressTypeTel, Target: "+155****1111", IsPrimary: true},
-			{ID: uuid.FromStringOrNil("a0002222-2222-2222-2222-222222222222"), Type: contact.AddressTypeTel, Target: "+155****2222", IsPrimary: false},
-			{ID: uuid.FromStringOrNil("a0003333-3333-3333-3333-333333333333"), Type: contact.AddressTypeTel, Target: "+155****3333", IsPrimary: false},
-			{ID: uuid.FromStringOrNil("b0001111-1111-1111-1111-111111111111"), Type: contact.AddressTypeEmail, Target: "primary@example.com", IsPrimary: false},
-			{ID: uuid.FromStringOrNil("b0002222-2222-2222-2222-222222222222"), Type: contact.AddressTypeEmail, Target: "secondary@example.com", IsPrimary: false},
+			{Address: commonaddress.Address{Type: contact.AddressTypeTel, Target: "+155****1111"}, ID: uuid.FromStringOrNil("a0001111-1111-1111-1111-111111111111"), IsPrimary: true},
+			{Address: commonaddress.Address{Type: contact.AddressTypeTel, Target: "+155****2222"}, ID: uuid.FromStringOrNil("a0002222-2222-2222-2222-222222222222"), IsPrimary: false},
+			{Address: commonaddress.Address{Type: contact.AddressTypeTel, Target: "+155****3333"}, ID: uuid.FromStringOrNil("a0003333-3333-3333-3333-333333333333"), IsPrimary: false},
+			{Address: commonaddress.Address{Type: contact.AddressTypeEmail, Target: "primary@example.com"}, ID: uuid.FromStringOrNil("b0001111-1111-1111-1111-111111111111"), IsPrimary: false},
+			{Address: commonaddress.Address{Type: contact.AddressTypeEmail, Target: "secondary@example.com"}, ID: uuid.FromStringOrNil("b0002222-2222-2222-2222-222222222222"), IsPrimary: false},
 		},
 		TagIDs: []uuid.UUID{
 			uuid.FromStringOrNil("c0001111-1111-1111-1111-111111111111"),

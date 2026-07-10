@@ -11,6 +11,7 @@ import (
 	mysql_driver "github.com/go-sql-driver/mysql"
 	"github.com/gofrs/uuid"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"monorepo/bin-contact-manager/models/contact"
@@ -21,11 +22,6 @@ const (
 	// (phone numbers and emails), replacing the legacy contact_phone_numbers
 	// and contact_emails tables (VOIP-1207).
 	addressTable = "contact_addresses"
-
-	// addressTypeTel and addressTypeEmail are the channel-type discriminators
-	// stored in contact_addresses.type.
-	addressTypeTel   = "tel"
-	addressTypeEmail = "email"
 )
 
 // addressRow mirrors the contact_addresses columns the handler reads back.
@@ -35,6 +31,7 @@ type addressRow struct {
 	ContactID  uuid.UUID  `db:"contact_id,uuid"`
 	Type       string     `db:"type"`
 	Target     string     `db:"target"`
+	TargetName string     `db:"target_name"`
 	Name       string     `db:"name"`
 	Detail     string     `db:"detail"`
 	IsPrimary  bool       `db:"is_primary"`
@@ -53,13 +50,16 @@ func scanFullAddressRow(rows *sql.Rows) (*contact.Address, error) {
 		return nil, fmt.Errorf("could not scan the row. scanFullAddressRow. err: %v", err)
 	}
 	return &contact.Address{
+		Address: commonaddress.Address{
+			Type:       commonaddress.Type(r.Type),
+			Target:     r.Target,
+			TargetName: r.TargetName,
+			Name:       r.Name,
+			Detail:     r.Detail,
+		},
 		ID:         r.ID,
 		CustomerID: r.CustomerID,
 		ContactID:  r.ContactID,
-		Type:       r.Type,
-		Target:     r.Target,
-		Name:       r.Name,
-		Detail:     r.Detail,
 		IsPrimary:  r.IsPrimary,
 		TMCreate:   r.TMCreate,
 	}, nil
@@ -121,9 +121,9 @@ func (h *handler) AddressCreate(ctx context.Context, a *contact.Address) error {
 			"id":          a.ID.Bytes(),
 			"customer_id": a.CustomerID.Bytes(),
 			"contact_id":  contactIDValue,
-			"type":        a.Type,
+			"type":        string(a.Type),
 			"target":      a.Target,
-			"target_name": "",
+			"target_name": a.TargetName,
 			"name":        a.Name,
 			"detail":      a.Detail,
 			"is_primary":  a.IsPrimary,

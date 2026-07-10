@@ -11,6 +11,8 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+
 	"monorepo/bin-contact-manager/models/contact"
 	"monorepo/bin-contact-manager/pkg/cachehandler"
 )
@@ -65,11 +67,13 @@ func Test_AddressMigration_CrossTypeSinglePrimary(t *testing.T) {
 	}
 
 	telAddr := &contact.Address{
+		Address: commonaddress.Address{
+			Type:   contact.AddressTypeTel,
+			Target: "+155****1111",
+		},
 		ID:         uuid.FromStringOrNil("c1c1c1c1-0003-0003-0003-000000000003"),
 		CustomerID: customerID,
 		ContactID:  contactID,
-		Type:       contact.AddressTypeTel,
-		Target:     "+155****1111",
 		IsPrimary:  true,
 	}
 	mockUtil.EXPECT().TimeNow().Return(curTime)
@@ -95,11 +99,13 @@ func Test_AddressMigration_CrossTypeSinglePrimary(t *testing.T) {
 	}
 
 	emailAddr := &contact.Address{
+		Address: commonaddress.Address{
+			Type:   contact.AddressTypeEmail,
+			Target: "primary@example.com",
+		},
 		ID:         uuid.FromStringOrNil("c1c1c1c1-0004-0004-0004-000000000004"),
 		CustomerID: customerID,
 		ContactID:  contactID,
-		Type:       contact.AddressTypeEmail,
-		Target:     "primary@example.com",
 		IsPrimary:  true,
 	}
 	mockUtil.EXPECT().TimeNow().Return(curTime)

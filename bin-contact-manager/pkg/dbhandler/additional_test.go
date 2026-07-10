@@ -11,6 +11,8 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+
 	"monorepo/bin-contact-manager/models/contact"
 	"monorepo/bin-contact-manager/pkg/cachehandler"
 )
@@ -37,11 +39,13 @@ func Test_AddressUpdate_IsPrimary(t *testing.T) {
 				Source:    "manual",
 			},
 			address: &contact.Address{
+				Address: commonaddress.Address{
+					Type:   contact.AddressTypeTel,
+					Target: "+155****1111",
+				},
 				ID:         uuid.FromStringOrNil("a3a3a3a3-a3a3-a3a3-a3a3-a3a3a3a3a3a3"),
 				CustomerID: uuid.FromStringOrNil("a2a2a2a2-a2a2-a2a2-a2a2-a2a2a2a2a2a2"),
 				ContactID:  uuid.FromStringOrNil("a1a1a1a1-a1a1-a1a1-a1a1-a1a1a1a1a1a1"),
-				Type:       contact.AddressTypeTel,
-				Target:     "+155****1111",
 				IsPrimary:  false,
 			},
 			update: map[string]any{
@@ -135,11 +139,13 @@ func Test_AddressResetPrimary(t *testing.T) {
 
 	// Create primary address
 	addr1 := &contact.Address{
+		Address: commonaddress.Address{
+			Type:   contact.AddressTypeTel,
+			Target: "+155****1111",
+		},
 		ID:         uuid.FromStringOrNil("a6a6a6a6-a6a6-a6a6-a6a6-a6a6a6a6a6a6"),
 		CustomerID: customerID,
 		ContactID:  contactID,
-		Type:       contact.AddressTypeTel,
-		Target:     "+155****1111",
 		IsPrimary:  true,
 	}
 
@@ -188,11 +194,13 @@ func Test_AddressUpdate_Target(t *testing.T) {
 				Source:    "manual",
 			},
 			address: &contact.Address{
+				Address: commonaddress.Address{
+					Type:   contact.AddressTypeEmail,
+					Target: "old@example.com",
+				},
 				ID:         uuid.FromStringOrNil("a9a9a9a9-a9a9-a9a9-a9a9-a9a9a9a9a9a9"),
 				CustomerID: uuid.FromStringOrNil("a8a8a8a8-a8a8-a8a8-a8a8-a8a8a8a8a8a8"),
 				ContactID:  uuid.FromStringOrNil("a7a7a7a7-a7a7-a7a7-a7a7-a7a7a7a7a7a7"),
-				Type:       contact.AddressTypeEmail,
-				Target:     "old@example.com",
 				IsPrimary:  false,
 			},
 			update: map[string]any{
@@ -286,11 +294,13 @@ func Test_AddressResetPrimary_Email(t *testing.T) {
 
 	// Create email address with primary
 	addr1 := &contact.Address{
+		Address: commonaddress.Address{
+			Type:   contact.AddressTypeEmail,
+			Target: "primary@example.com",
+		},
 		ID:         uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa3"),
 		CustomerID: customerID,
 		ContactID:  contactID,
-		Type:       contact.AddressTypeEmail,
-		Target:     "primary@example.com",
 		IsPrimary:  true,
 	}
 
@@ -398,11 +408,13 @@ func Test_AddressUpdate_MultipleFields(t *testing.T) {
 
 	// Create address
 	addr := &contact.Address{
+		Address: commonaddress.Address{
+			Type:   contact.AddressTypeTel,
+			Target: "+155****1111",
+		},
 		ID:         uuid.FromStringOrNil("dddddddd-dddd-dddd-dddd-ddddddddddd3"),
 		CustomerID: customerID,
 		ContactID:  contactID,
-		Type:       contact.AddressTypeTel,
-		Target:     "+155****1111",
 		IsPrimary:  false,
 	}
 
@@ -473,11 +485,13 @@ func Test_AddressUpdate_EmailTarget(t *testing.T) {
 
 	// Create email address
 	addr := &contact.Address{
+		Address: commonaddress.Address{
+			Type:   contact.AddressTypeEmail,
+			Target: "old@example.com",
+		},
 		ID:         uuid.FromStringOrNil("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeee3"),
 		CustomerID: customerID,
 		ContactID:  contactID,
-		Type:       contact.AddressTypeEmail,
-		Target:     "old@example.com",
 		IsPrimary:  false,
 	}
 

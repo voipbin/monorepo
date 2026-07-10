@@ -3,28 +3,35 @@ package contact
 import (
 	"time"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+
 	"github.com/gofrs/uuid"
 )
 
 // Address represents a single row in contact_addresses.
 // type = "tel"   -> target holds an E.164 phone number
 // type = "email" -> target holds a lowercase email address
+//
+// Embeds commonaddress.Address (Type/Target/TargetName/Name/Detail) rather
+// than hand-copying its fields -- this is the monorepo's standing convention
+// for reusing a shared struct (see kase.Case embedding commonidentity.Owner).
 type Address struct {
+	commonaddress.Address
 	ID         uuid.UUID  `json:"id"`
 	CustomerID uuid.UUID  `json:"customer_id"`
 	ContactID  uuid.UUID  `json:"contact_id"`
-	Type       string     `json:"type"`       // "tel" | "email"
-	Target     string     `json:"target"`     // E.164 or email
-	Name       string     `json:"name"`       // optional human-readable label
-	Detail     string     `json:"detail"`     // optional free-form notes
 	IsPrimary  bool       `json:"is_primary"`
 	TMCreate   *time.Time `json:"tm_create"`
 }
 
-// Address type constants (discriminator values in contact_addresses.type column)
+// Address type constants. Reuse commonaddress.Type's canonical values --
+// do not redeclare the string literals here. contact.Address intentionally
+// accepts ONLY these two of commonaddress.Type's 10 possible values (see
+// the explicit whitelist validation added to Create/AddAddress/UpdateAddress
+// in pkg/contacthandler/contact.go as part of this same change).
 const (
-	AddressTypeTel   = "tel"
-	AddressTypeEmail = "email"
+	AddressTypeTel   = commonaddress.TypeTel
+	AddressTypeEmail = commonaddress.TypeEmail
 )
 
 // AddressField represents a database/update field name for Address model

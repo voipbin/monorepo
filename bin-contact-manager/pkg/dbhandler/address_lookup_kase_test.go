@@ -51,28 +51,32 @@ func Test_AddressLookupContactIDByTypeTarget(t *testing.T) {
 	}
 
 	resolvedAddr := &contact.Address{
+		Address: commonaddress.Address{
+			Type:   commonaddress.TypeTel,
+			Target: "+155****9001",
+		},
 		ID:         addressID,
 		CustomerID: customerID,
 		ContactID:  contactID,
-		Type:       string(commonaddress.TypeTel),
-		Target:     "+15551119001",
 	}
 	if err := h.AddressCreate(ctx, resolvedAddr); err != nil {
 		t.Fatalf("AddressCreate(resolved) error = %v", err)
 	}
 
 	unresolvedAddr := &contact.Address{
+		Address: commonaddress.Address{
+			Type:   commonaddress.TypeTel,
+			Target: "+155****9002",
+		},
 		ID:         unresolvedAddressID,
 		CustomerID: customerID,
 		ContactID:  uuid.Nil,
-		Type:       string(commonaddress.TypeTel),
-		Target:     "+15551119002",
 	}
 	if err := h.AddressCreate(ctx, unresolvedAddr); err != nil {
 		t.Fatalf("AddressCreate(unresolved) error = %v", err)
 	}
 
-	res, err := h.AddressLookupContactIDByTypeTarget(ctx, customerID, commonaddress.TypeTel, "+15551119001")
+	res, err := h.AddressLookupContactIDByTypeTarget(ctx, customerID, commonaddress.TypeTel, "+155****9001")
 	if err != nil {
 		t.Fatalf("AddressLookupContactIDByTypeTarget() error = %v", err)
 	}

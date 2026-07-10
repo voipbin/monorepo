@@ -13,6 +13,8 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+
 	"monorepo/bin-contact-manager/models/contact"
 	"monorepo/bin-contact-manager/pkg/cachehandler"
 )
@@ -224,7 +226,7 @@ func Test_ContactUpdate(t *testing.T) {
 
 			// Clear related data for comparison
 			res.Addresses = nil
-			
+
 			res.TagIDs = nil
 
 			if reflect.DeepEqual(tt.expectRes, res) == false {
@@ -895,11 +897,13 @@ func Test_ContactLookupByPhone(t *testing.T) {
 				Source:    "manual",
 			},
 			phone: &contact.Address{
+				Address: commonaddress.Address{
+					Type:   contact.AddressTypeTel,
+					Target: "+155****8888",
+				},
 				ID:         uuid.FromStringOrNil("03030303-0303-0303-0303-030303030303"),
 				CustomerID: uuid.FromStringOrNil("02020202-0202-0202-0202-020202020202"),
 				ContactID:  uuid.FromStringOrNil("01010101-0101-0101-0101-010101010101"),
-				Type:       contact.AddressTypeTel,
-				Target:     "+155****8888",
 				IsPrimary:  true,
 			},
 
@@ -993,11 +997,13 @@ func Test_ContactLookupByEmail(t *testing.T) {
 				Source:    "manual",
 			},
 			email: &contact.Address{
+				Address: commonaddress.Address{
+					Type:   contact.AddressTypeEmail,
+					Target: "lookup@example.com",
+				},
 				ID:         uuid.FromStringOrNil("07070707-0707-0707-0707-070707070707"),
 				CustomerID: uuid.FromStringOrNil("06060606-0606-0606-0606-060606060606"),
 				ContactID:  uuid.FromStringOrNil("05050505-0505-0505-0505-050505050505"),
-				Type:       contact.AddressTypeEmail,
-				Target:     "lookup@example.com",
 				IsPrimary:  true,
 			},
 
@@ -1206,7 +1212,6 @@ func Test_ContactList_DeletedFilterReturnsDeleted(t *testing.T) {
 	}
 }
 
-
 // Test_ContactUpdateToCache_TombstoneEvicts verifies that a mutation reaching
 // contactUpdateToCache for an already soft-deleted contact evicts the cache
 // instead of re-caching the tombstone (VOIP-1205, single choke-point
@@ -1250,11 +1255,13 @@ func Test_ContactUpdateToCache_TombstoneEvicts(t *testing.T) {
 	// A late address write routes through contactUpdateToCache. Because the
 	// contact is a tombstone, the cache MUST be evicted, not repopulated.
 	p := &contact.Address{
+		Address: commonaddress.Address{
+			Type:   contact.AddressTypeTel,
+			Target: "+155****0000",
+		},
 		ID:         uuid.FromStringOrNil("f2222222-2222-2222-2222-0000000005f1"),
 		CustomerID: c.CustomerID,
 		ContactID:  c.ID,
-		Type:       contact.AddressTypeTel,
-		Target:     "+155****0000",
 	}
 	mockUtil.EXPECT().TimeNow().Return(curTime)
 	mockCache.EXPECT().ContactDelete(gomock.Any(), c.ID).Return(nil)
@@ -1401,11 +1408,13 @@ func Test_Multiple_Addresses_ForSameContact(t *testing.T) {
 
 	// Create first address (tel)
 	addr1 := &contact.Address{
+		Address: commonaddress.Address{
+			Type:   contact.AddressTypeTel,
+			Target: "+155****1111",
+		},
 		ID:         uuid.FromStringOrNil("23232323-2323-2323-2323-232323232323"),
 		CustomerID: c.CustomerID,
 		ContactID:  c.ID,
-		Type:       contact.AddressTypeTel,
-		Target:     "+155****1111",
 		IsPrimary:  true,
 	}
 	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)))
@@ -1416,11 +1425,13 @@ func Test_Multiple_Addresses_ForSameContact(t *testing.T) {
 
 	// Create second address (email)
 	addr2 := &contact.Address{
+		Address: commonaddress.Address{
+			Type:   contact.AddressTypeEmail,
+			Target: "primary@example.com",
+		},
 		ID:         uuid.FromStringOrNil("24242424-2424-2424-2424-242424242424"),
 		CustomerID: c.CustomerID,
 		ContactID:  c.ID,
-		Type:       contact.AddressTypeEmail,
-		Target:     "primary@example.com",
 		IsPrimary:  false,
 	}
 	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)))

@@ -14,6 +14,8 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+
 	"monorepo/bin-contact-manager/models/contact"
 	"monorepo/bin-contact-manager/pkg/listenhandler/models/request"
 )
@@ -108,10 +110,12 @@ func (h *listenHandler) processV1ContactsPost(ctx context.Context, m *sock.Reque
 	// Convert addresses
 	for _, a := range reqData.Addresses {
 		c.Addresses = append(c.Addresses, contact.Address{
-			Type:      a.Type,
-			Target:    a.Target,
-			Name:      a.Name,
-			Detail:    a.Detail,
+			Address: commonaddress.Address{
+				Type:   commonaddress.Type(a.Type),
+				Target: a.Target,
+				Name:   a.Name,
+				Detail: a.Detail,
+			},
 			IsPrimary: a.IsPrimary,
 		})
 	}

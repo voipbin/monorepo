@@ -30,6 +30,21 @@ func normalizeE164(e164, number string) string {
 	return out
 }
 
+// isValidContactAddressType reports whether t is one of the two
+// commonaddress.Type values contact.Address supports. Embedding
+// commonaddress.Address widened contact.Address.Type's declared range to
+// all 10 commonaddress.Type values, so write entry points must explicitly
+// reject anything other than tel/email rather than relying on the switch
+// statements below to silently no-op on an unrecognized type.
+func isValidContactAddressType(t commonaddress.Type) bool {
+	switch t {
+	case commonaddress.TypeTel, commonaddress.TypeEmail:
+		return true
+	default:
+		return false
+	}
+}
+
 // Create creates a new contact with optional addresses and tags
 func (h *contactHandler) Create(ctx context.Context, c *contact.Contact) (*contact.Contact, error) {
 	log := logrus.WithFields(logrus.Fields{
@@ -63,15 +78,20 @@ func (h *contactHandler) Create(ctx context.Context, c *contact.Contact) (*conta
 
 	// Add addresses
 	for _, a := range addresses {
+		if !isValidContactAddressType(a.Type) {
+			log.Warnf("Invalid contact address type. type: %v", a.Type)
+			continue
+		}
+
 		a.ID = h.utilHandler.UUIDCreate()
 		a.CustomerID = c.CustomerID
 		a.ContactID = c.ID
 
 		// normalize
 		switch a.Type {
-		case contact.AddressTypeTel:
+		case commonaddress.TypeTel:
 			a.Target = normalizeE164("", a.Target)
-		case contact.AddressTypeEmail:
+		case commonaddress.TypeEmail:
 			a.Target, _ = commonaddress.NormalizeTarget(commonaddress.TypeEmail, a.Target)
 		}
 
@@ -263,15 +283,23 @@ func (h *contactHandler) AddAddress(ctx context.Context, contactID uuid.UUID, a 
 		return nil, err
 	}
 
+	if !isValidContactAddressType(a.Type) {
+		return nil, cerrors.InvalidArgument(
+			commonoutline.ServiceNameContactManager,
+			"ADDRESS_TYPE_INVALID",
+			"The address type must be tel or email.",
+		)
+	}
+
 	a.ID = h.utilHandler.UUIDCreate()
 	a.CustomerID = c.CustomerID
 	a.ContactID = contactID
 
 	// normalize
 	switch a.Type {
-	case contact.AddressTypeTel:
+	case commonaddress.TypeTel:
 		a.Target = normalizeE164("", a.Target)
-	case contact.AddressTypeEmail:
+	case commonaddress.TypeEmail:
 		a.Target, _ = commonaddress.NormalizeTarget(commonaddress.TypeEmail, a.Target)
 	}
 
@@ -332,9 +360,9 @@ func (h *contactHandler) UpdateAddress(ctx context.Context, contactID, addressID
 	if target, ok := fields["target"]; ok {
 		if targetStr, isStr := target.(string); isStr {
 			switch addr.Type {
-			case contact.AddressTypeTel:
+			case commonaddress.TypeTel:
 				fields["target"] = normalizeE164("", targetStr)
-			case contact.AddressTypeEmail:
+			case commonaddress.TypeEmail:
 				fields["target"], _ = commonaddress.NormalizeTarget(commonaddress.TypeEmail, targetStr)
 			}
 		}

@@ -10,6 +10,8 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+
 	"monorepo/bin-contact-manager/models/contact"
 	"monorepo/bin-contact-manager/pkg/listenhandler/models/request"
 )
@@ -83,10 +85,12 @@ func (h *listenHandler) processV1ContactsAddressesPost(ctx context.Context, m *s
 	log.WithField("request", reqData).Debug("Adding address.")
 
 	address := &contact.Address{
-		Type:      reqData.Type,
-		Target:    reqData.Target,
-		Name:      reqData.Name,
-		Detail:    reqData.Detail,
+		Address: commonaddress.Address{
+			Type:   commonaddress.Type(reqData.Type),
+			Target: reqData.Target,
+			Name:   reqData.Name,
+			Detail: reqData.Detail,
+		},
 		IsPrimary: reqData.IsPrimary,
 	}
 

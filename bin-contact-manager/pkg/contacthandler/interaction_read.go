@@ -131,7 +131,7 @@ func (h *contactHandler) interactionListByContact(
 	}
 	var addressPairs []dbhandler.AddressPair
 	for _, a := range addrs {
-		addressPairs = append(addressPairs, dbhandler.AddressPair{Type: a.Type, Target: a.Target})
+		addressPairs = append(addressPairs, dbhandler.AddressPair{Type: string(a.Type), Target: a.Target})
 	}
 
 	// STEP 2: Fetch ALL automatic peer matches (internal cap, not caller page size).
@@ -282,7 +282,7 @@ func (h *contactHandler) interactionListByAddress(
 		return nil, "", fmt.Errorf("could not get address. interactionListByAddress. err: %v", err)
 	}
 
-	items, err := h.db.InteractionList(ctx, customerID, size+1, token, "", "", []dbhandler.AddressPair{{Type: ap.Type, Target: ap.Target}}, time.Time{})
+	items, err := h.db.InteractionList(ctx, customerID, size+1, token, "", "", []dbhandler.AddressPair{{Type: string(ap.Type), Target: ap.Target}}, time.Time{})
 	if err != nil {
 		return nil, "", fmt.Errorf("could not list interactions by address. interactionListByAddress. err: %v", err)
 	}
