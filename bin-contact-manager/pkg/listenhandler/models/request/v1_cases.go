@@ -1,6 +1,10 @@
 package request
 
-import "github.com/gofrs/uuid"
+import (
+	commonaddress "monorepo/bin-common-handler/models/address"
+
+	"github.com/gofrs/uuid"
+)
 
 // V1DataCasesIDClose is the request body for POST /v1/cases/{id}/close.
 type V1DataCasesIDClose struct {
@@ -73,4 +77,15 @@ type V1DataCasesUnresolvedGet struct {
 // V1DataCasesGet is the request body for GET /v1/cases?...
 type V1DataCasesGet struct {
 	CustomerID uuid.UUID `json:"customer_id"`
+}
+
+// V1DataCasesPost is the request body for POST /v1/cases.
+type V1DataCasesPost struct {
+	CustomerID    uuid.UUID             `json:"customer_id"`
+	Self          commonaddress.Address `json:"self"`
+	PeerType      commonaddress.Type    `json:"peer_type"`
+	PeerTarget    string                `json:"peer_target"`
+	ReferenceType string                `json:"reference_type"`
+	Name          string                `json:"name,omitempty"`
+	Detail        string                `json:"detail,omitempty"`
 }

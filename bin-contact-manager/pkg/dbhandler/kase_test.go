@@ -144,6 +144,7 @@ func Test_CaseGetOpenByPeer(t *testing.T) {
 
 	rowColumns := []string{
 		"id", "customer_id", "peer_type", "peer_target", "reference_type",
+		"name", "detail",
 		"contact_id", "owner_type", "owner_id",
 		"status", "opened_at", "closed_at", "closed_reason", "closed_by_type", "closed_by_id",
 		"previous_case_id", "tm_create", "tm_update",
@@ -157,15 +158,16 @@ func Test_CaseGetOpenByPeer(t *testing.T) {
 	defer func() { _ = tx.Rollback() }()
 
 	mock.ExpectQuery("SELECT .* FROM contact_cases WHERE .* FOR UPDATE").
-		WithArgs(customerID.Bytes(), string(commonaddress.TypeTel), "+15551110003", "call", string(kase.StatusOpen)).
+		WithArgs(customerID.Bytes(), string(commonaddress.TypeTel), "+155****0003", "call", string(kase.StatusOpen)).
 		WillReturnRows(sqlmock.NewRows(rowColumns).AddRow(
-			caseID.Bytes(), customerID.Bytes(), string(commonaddress.TypeTel), "+15551110003", "call",
+			caseID.Bytes(), customerID.Bytes(), string(commonaddress.TypeTel), "+155****0003", "call",
+			"", nil,
 			nil, nil, nil,
 			string(kase.StatusOpen), openedAt, nil, nil, nil, nil,
 			nil, openedAt, openedAt,
 		))
 
-	res, err := h.CaseGetOpenByPeer(ctx, tx, customerID, commonaddress.TypeTel, "+15551110003", "call")
+	res, err := h.CaseGetOpenByPeer(ctx, tx, customerID, commonaddress.TypeTel, "+155****0003", "call")
 	if err != nil {
 		t.Fatalf("CaseGetOpenByPeer() error = %v", err)
 	}

@@ -224,6 +224,21 @@ func (mr *MockCaseHandlerMockRecorder) Continue(ctx, customerID, id, callerType,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Continue", reflect.TypeOf((*MockCaseHandler)(nil).Continue), ctx, customerID, id, callerType, callerID, callerIsAdmin)
 }
 
+// Create mocks base method.
+func (m *MockCaseHandler) Create(ctx context.Context, customerID uuid.UUID, self address.Address, peerType address.Type, peerTarget, referenceType, name, detail string) (*kase.Case, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Create", ctx, customerID, self, peerType, peerTarget, referenceType, name, detail)
+	ret0, _ := ret[0].(*kase.Case)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Create indicates an expected call of Create.
+func (mr *MockCaseHandlerMockRecorder) Create(ctx, customerID, self, peerType, peerTarget, referenceType, name, detail any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockCaseHandler)(nil).Create), ctx, customerID, self, peerType, peerTarget, referenceType, name, detail)
+}
+
 // GetOrCreate mocks base method.
 func (m *MockCaseHandler) GetOrCreate(ctx context.Context, customerID uuid.UUID, self address.Address, peerType address.Type, peerTarget, referenceType string, caseIDHint *uuid.UUID) (*kase.Case, error) {
 	m.ctrl.T.Helper()

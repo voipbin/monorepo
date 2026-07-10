@@ -34,6 +34,12 @@ type Case struct {
 	// exactly for the design §4 get-or-create join to work.
 	ReferenceType string `json:"reference_type" db:"reference_type"`
 
+	// Name/Detail are optional, freeform case metadata settable only at
+	// creation time via Create (design VOIP-1243 §3.4). Empty string is
+	// persisted as the column's default/empty value, not NULL.
+	Name   string `json:"name,omitempty"   db:"name"`
+	Detail string `json:"detail,omitempty" db:"detail"`
+
 	// ContactID is a nullable denormalized cache; single source of truth
 	// is Resolution (see resolution.CaseID), single derivation function.
 	ContactID *uuid.UUID `json:"contact_id" db:"contact_id,uuid"`

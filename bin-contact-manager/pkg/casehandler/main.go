@@ -98,6 +98,15 @@ type CaseHandler interface {
 	// entry point for the customer-facing GET /v1/cases/{id} route.
 	CaseList(ctx context.Context, customerID uuid.UUID, size uint64, token string, status string, ownerType commonidentity.OwnerType, ownerID uuid.UUID, contactID uuid.UUID) ([]*kase.Case, string, error)
 	CaseGet(ctx context.Context, customerID, id uuid.UUID) (*kase.Case, error)
+
+	// Create implements design VOIP-1243 §3: a plain, explicit Case
+	// creation -- NOT get-or-create. No transaction, no peer lock, no
+	// retry loop, no previous_case_id chaining, no owner
+	// auto-assignment. Reuses the existing dbhandler.CaseInsert
+	// primitive and translates its sentinel errors
+	// (dbhandler.ErrDuplicate / dbhandler.ErrDeadlock) into typed
+	// cerrors.AlreadyExists / cerrors.Unavailable respectively.
+	Create(ctx context.Context, customerID uuid.UUID, self commonaddress.Address, peerType commonaddress.Type, peerTarget, referenceType, name, detail string) (*kase.Case, error)
 }
 
 type caseHandler struct {
