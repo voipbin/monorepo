@@ -41,4 +41,5 @@ const (
 	FunctionCallNameGetCorrelation    FunctionCallName = "get_correlation"
 	FunctionCallNameGetResource       FunctionCallName = "get_resource"
 	FunctionCallNameDescribeAction    FunctionCallName = "describe_action"
+	FunctionCallNameCaseCreate        FunctionCallName = "case_create"
 )

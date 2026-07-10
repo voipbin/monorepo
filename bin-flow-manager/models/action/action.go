@@ -97,6 +97,11 @@ const (
 	// required media: none
 	TypeCall Type = "call"
 
+	// TypeCaseCreate creates a new contact CRM case for the current call/conversation reference.
+	// contact-manager
+	// required media: none
+	TypeCaseCreate Type = "case_create"
+
 	// TypeConditionCallDigits deprecated. use the TypeConditionVariable instead.
 	// required media: call
 	TypeConditionCallDigits Type = "condition_call_digits" // flow-manager. condition check(call's digits)
@@ -277,6 +282,7 @@ var TypeListAll []Type = []Type{
 	TypeBlock,
 	TypeBranch,
 	TypeCall,
+	TypeCaseCreate,
 	TypeConditionCallDigits,
 	TypeConditionCallStatus,
 	TypeConditionDatetime,
@@ -330,6 +336,7 @@ var MapRequiredMediasByType = map[Type][]MediaType{
 	TypeBlock:               {MediaTypeNonRealTimeCommunication},
 	TypeBranch:              {MediaTypeNone},
 	TypeCall:                {MediaTypeNone},
+	TypeCaseCreate:          {MediaTypeNone},
 	TypeConditionCallDigits: {MediaTypeRealTimeCommunication},
 	TypeConditionCallStatus: {MediaTypeRealTimeCommunication},
 	TypeConditionDatetime:   {MediaTypeNone},

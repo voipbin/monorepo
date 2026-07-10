@@ -63,6 +63,7 @@ func Test_FilterToolsForConversation(t *testing.T) {
 				tool.ToolNameGetAIcallMessages,
 				tool.ToolNameSearchKnowledge,
 				tool.ToolNameDescribeAction,
+				tool.ToolNameCaseCreate,
 			},
 		},
 		{
@@ -82,6 +83,7 @@ func Test_FilterToolsForConversation(t *testing.T) {
 				tool.ToolNameGetAIcallMessages,
 				tool.ToolNameSearchKnowledge,
 				tool.ToolNameDescribeAction,
+				tool.ToolNameCaseCreate,
 			},
 		},
 		{

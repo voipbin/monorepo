@@ -20,6 +20,7 @@ const (
 	ToolNameGetCorrelation    ToolName = "get_correlation"
 	ToolNameGetResource       ToolName = "get_resource"
 	ToolNameDescribeAction    ToolName = "describe_action"
+	ToolNameCaseCreate        ToolName = "case_create"
 
 	// Insight AI tool set (VOIP-1234). TODO(VOIP-1234): these two tools are not
 	// yet implemented (no toolDefinitions entry / no execution handler exists).
@@ -47,6 +48,7 @@ var AllToolNames = []ToolName{
 	ToolNameGetCorrelation,
 	ToolNameGetResource,
 	ToolNameDescribeAction,
+	ToolNameCaseCreate,
 }
 
 // AllInsightToolNames defines the tool set available to ai.TypeInsight AIs.

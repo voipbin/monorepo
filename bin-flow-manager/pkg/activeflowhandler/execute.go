@@ -240,6 +240,12 @@ func (h *activeflowHandler) executeAction(ctx context.Context, af *activeflow.Ac
 		}
 		return &action.ActionNext, nil
 
+	case action.TypeCaseCreate:
+		if errHandle := h.actionHandleCaseCreate(ctx, af); errHandle != nil {
+			log.Errorf("Could not create the case correctly. err: %v", errHandle)
+		}
+		return &action.ActionNext, nil
+
 	case action.TypeConversationSend:
 		if errHandle := h.actionHandleConversationSend(ctx, af); errHandle != nil {
 			log.Errorf("Could not send the conversation message correctly. err: %v", errHandle)

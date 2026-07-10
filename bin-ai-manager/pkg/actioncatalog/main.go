@@ -86,6 +86,12 @@ var actionCatalog = []actionCatalogEntry{
 		{Name: "default_target_id", Type: "uuid", Required: false, Description: "Action id to go to when no target matches."},
 		{Name: "target_ids", Type: "object (map of value -> action id)", Required: true, Description: "Map of matched value to the action id to jump to."},
 	}},
+	{Type: fmaction.TypeCaseCreate, Summary: "Create a new CRM case for the current call/conversation's contact. No-op if the reference type is not call/conversation, the peer is not CRM-eligible, or a case already exists for this activeflow.", Options: []actionOptionField{
+		{Name: "name", Type: "string", Required: false, Description: "Short case title."},
+		{Name: "detail", Type: "string", Required: false, Description: "Longer free-text description of the issue."},
+		{Name: "note", Type: "string", Required: false, Description: "An initial internal note for the agent (not shown to the customer)."},
+		{Name: "sync", Type: "bool", Required: false, Description: "Whether to wait for the case-create RPC to complete before continuing (matches conversation_send/email_send's sync/async toggle)."},
+	}},
 	{Type: fmaction.TypeCall, Summary: "Originate one or more new outbound calls (each runs its own flow or actions).", Options: []actionOptionField{
 		{Name: "source", Type: "address object {type,target,target_name}", Required: false, Description: "Source endpoint / caller id. type is one of tel, sip, extension, agent."},
 		{Name: "destinations", Type: "array of address objects {type,target,target_name}", Required: true, Description: "Destinations to call. type is one of tel, sip, extension, agent, conference."},

@@ -722,4 +722,32 @@ run_llm: Set true so you can use the returned schema to build the action.`,
 			"required": []string{"action_type"},
 		},
 	},
+	{
+		Name: tool.ToolNameCaseCreate,
+		Description: `Creates a new CRM case for the current contact/interaction.
+
+WHEN TO USE:
+- The caller's issue is substantive and should be tracked as a case (e.g. a complaint, a multi-step request, something requiring follow-up).
+- An agent or the AI itself judges this interaction needs a trackable record beyond the raw interaction log.
+
+WHEN NOT TO USE:
+- Casual/short interactions with no follow-up need.
+- A case may already be open for this contact/channel -- creating another will fail silently (existing open case is not returned; this call will simply not create a duplicate). Do not retry on failure.
+
+Optional name/detail/note describe the case for a human agent reviewing it later.`,
+		Parameters: map[string]any{
+			"type": "object",
+			"properties": map[string]any{
+				"run_llm": map[string]any{
+					"type":        "boolean",
+					"description": "Set true to have the assistant mention the case was created (e.g. tell the caller 'I've opened a case for this'). Set false to create silently.",
+					"default":     true,
+				},
+				"name":   map[string]any{"type": "string", "description": "Short case title (optional)."},
+				"detail": map[string]any{"type": "string", "description": "Longer free-text description of the issue (optional)."},
+				"note":   map[string]any{"type": "string", "description": "An initial internal note for the agent (optional, not shown to the customer)."},
+			},
+		},
+		RunLLM: true,
+	},
 }

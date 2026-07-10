@@ -66,6 +66,7 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 		message.FunctionCallNameGetCorrelation:      h.toolHandleGetCorrelation,
 		message.FunctionCallNameGetResource:         h.toolHandleGetResource,
 		message.FunctionCallNameDescribeAction:      h.toolHandleDescribeAction,
+		message.FunctionCallNameCaseCreate:          h.toolHandleCaseCreate,
 	}
 
 	promAIcallToolExecuteTotal.WithLabelValues(string(tool.Function.Name)).Inc()
@@ -431,6 +432,141 @@ func (h *aicallHandler) toolHandleEmailSend(ctx context.Context, c *aicall.AIcal
 	}
 
 	fillSuccess(res, "email", tmpRes.ID.String(), "Email sent successfully.")
+
+	return res
+}
+
+// caseCreateCRMIneligiblePeerTypes duplicates
+// bin-flow-manager/pkg/activeflowhandler's crmIneligiblePeerTypes (design
+// VOIP-1243 §5.2/§6.3) -- the original is unexported in bin-contact-manager
+// and cannot be imported.
+var caseCreateCRMIneligiblePeerTypes = map[commonaddress.Type]struct{}{
+	commonaddress.TypeAgent:      {},
+	commonaddress.TypeAI:         {},
+	commonaddress.TypeAITeam:     {},
+	commonaddress.TypeConference: {},
+	commonaddress.TypeExtension:  {},
+	commonaddress.TypeSIP:        {},
+	"web_session":                {}, // synthetic type; not in commonaddress.Type enum
+}
+
+// isCRMEligiblePeer reports whether the given peer address type can ever
+// represent an external, re-identifiable contact. Duplicated from
+// contacthandler.isCRMEligiblePeer / bin-flow-manager's copy (design
+// VOIP-1243 §6.3).
+func isCRMEligiblePeer(peerType commonaddress.Type) bool {
+	_, ineligible := caseCreateCRMIneligiblePeerTypes[peerType]
+	return !ineligible
+}
+
+// deriveEndpointsForCase resolves which address is the remote peer and
+// which is our local endpoint based on the call direction. Mirrors
+// bin-flow-manager's deriveEndpointsForCase / contacthandler.deriveEndpoints
+// (design VOIP-1243 §6.3).
+func deriveEndpointsForCase(direction string, source, dest commonaddress.Address) (peer commonaddress.Address, self commonaddress.Address) {
+	switch direction {
+	case "incoming":
+		return source, dest
+	case "outgoing":
+		return dest, source
+	default:
+		return commonaddress.Address{}, commonaddress.Address{}
+	}
+}
+
+// deriveCaseEndpointsForAIcall derives the case peer/self/reference_type
+// for an AIcall, mirroring bin-flow-manager's actionHandleCaseCreate
+// derivation logic (design VOIP-1243 §6.3). ok=false means "no defined
+// derivation for this reference type" -- a deliberate scope limit, not an
+// error.
+func (h *aicallHandler) deriveCaseEndpointsForAIcall(ctx context.Context, c *aicall.AIcall) (peer commonaddress.Address, self commonaddress.Address, referenceType string, ok bool) {
+	switch c.ReferenceType {
+	case aicall.ReferenceTypeCall:
+		cl, errGet := h.reqHandler.CallV1CallGet(ctx, c.ReferenceID)
+		if errGet != nil {
+			return commonaddress.Address{}, commonaddress.Address{}, "", false
+		}
+		peer, self = deriveEndpointsForCase(string(cl.Direction), cl.Source, cl.Destination)
+		return peer, self, "call", true
+
+	case aicall.ReferenceTypeConversation:
+		cv, errGet := h.reqHandler.ConversationV1ConversationGet(ctx, c.ReferenceID)
+		if errGet != nil {
+			return commonaddress.Address{}, commonaddress.Address{}, "", false
+		}
+		return cv.Peer, cv.Self, "conversation_message", true
+
+	default:
+		return commonaddress.Address{}, commonaddress.Address{}, "", false
+	}
+}
+
+// toolHandleCaseCreate handles tool call case_create: creates a new
+// contact CRM case for the AIcall's current call/conversation reference.
+// Per design VOIP-1243 §6.3/§8: CRM-ineligibility is reported via
+// fillSuccess (not a failure -- symmetric with the Flow action's silent
+// skip). A ContactV1CaseCreate error (AlreadyExists/Unavailable/other) IS
+// reported to the LLM via fillFailed, unlike the Flow action which only
+// logs -- the tool caller (the LLM) has no other way to learn the
+// attempt did not produce a new case.
+func (h *aicallHandler) toolHandleCaseCreate(ctx context.Context, c *aicall.AIcall, tool *message.ToolCall) *messageContent {
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "toolHandleCaseCreate",
+		"aicall_id": c.ID,
+	})
+	log.Debugf("handling tool case_create.")
+
+	res := newToolResult(tool.ID)
+
+	var tmpOpt fmaction.OptionCaseCreate
+	if errUnmarshal := json.Unmarshal([]byte(tool.Function.Arguments), &tmpOpt); errUnmarshal != nil {
+		fillFailed(res, errUnmarshal)
+		return res
+	}
+
+	peer, self, referenceType, ok := h.deriveCaseEndpointsForAIcall(ctx, c)
+	if !ok {
+		fillSuccess(res, "case", "", "No case was created: this reference type does not support case tracking, or the underlying call/conversation could not be retrieved.")
+		return res
+	}
+
+	if !isCRMEligiblePeer(peer.Type) {
+		fillSuccess(res, "case", "", fmt.Sprintf("No case was created: peer type %s is not eligible for CRM case tracking.", peer.Type))
+		return res
+	}
+
+	// Activeflow-scoped dedup (design VOIP-1243 §3.5): check the
+	// activeflow's own variable store BEFORE calling ContactV1CaseCreate.
+	if v, errVar := h.reqHandler.FlowV1VariableGet(ctx, c.ActiveflowID); errVar == nil && v != nil {
+		if existingCaseID, ok := v.Variables["contact_case_id"]; ok && existingCaseID != "" {
+			fillSuccess(res, "case", existingCaseID, "A case already exists for this call/conversation; no new case was created.")
+			return res
+		}
+	}
+
+	peerTarget, errNormalize := commonaddress.NormalizeTarget(peer.Type, peer.Target)
+	if errNormalize != nil {
+		log.WithError(errNormalize).Warnf("could not normalize peer target; using raw value. peer_type: %s", peer.Type)
+		peerTarget = peer.Target
+	}
+
+	created, errCreate := h.reqHandler.ContactV1CaseCreate(ctx, c.CustomerID, self, peer.Type, peerTarget, referenceType, tmpOpt.Name, tmpOpt.Detail)
+	if errCreate != nil {
+		fillFailed(res, errCreate)
+		return res
+	}
+
+	if errSet := h.reqHandler.FlowV1VariableSetVariable(ctx, c.ActiveflowID, map[string]string{"contact_case_id": created.ID.String()}); errSet != nil {
+		log.Errorf("could not set contact_case_id variable. err: %v", errSet) // best-effort; the Case itself was created successfully regardless
+	}
+
+	if tmpOpt.Note != "" {
+		if _, errNote := h.reqHandler.ContactV1CaseNoteCreate(ctx, c.CustomerID, created.ID, "ai", nil, tmpOpt.Note); errNote != nil {
+			log.Errorf("could not create initial case note. err: %v", errNote) // best-effort
+		}
+	}
+
+	fillSuccess(res, "case", created.ID.String(), "Case created successfully.")
 
 	return res
 }
