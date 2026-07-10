@@ -2,7 +2,6 @@ package contacthandler
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/sirupsen/logrus"
 
@@ -97,11 +96,11 @@ func (h *contactHandler) EventCallCreated(ctx context.Context, m *call.WebhookMe
 	id := h.utilHandler.UUIDCreate()
 	now := h.utilHandler.TimeNow()
 
-	c, err := h.caseHandler.GetOrCreate(ctx, m.CustomerID, local, peer.Type, peerTarget, "call", nil)
-	if err != nil {
-		return fmt.Errorf("could not get-or-create case. EventCallCreated. err: %w", err)
-	}
-
+	// Automatic Case creation removed (design VOIP-1243 §7): Case
+	// creation is now exclusively an explicit action (Flow action
+	// case_create / AI tool case_create), never a side effect of
+	// Interaction projection. Interaction.CaseID is therefore always
+	// nil for newly-projected rows going forward.
 	i := interaction.Interaction{
 		ID:            id,
 		CustomerID:    m.CustomerID,
@@ -112,7 +111,6 @@ func (h *contactHandler) EventCallCreated(ctx context.Context, m *call.WebhookMe
 		LocalTarget:   localTarget,
 		ReferenceType: "call",
 		ReferenceID:   m.ID,
-		CaseID:        &c.ID,
 		TMInteraction: m.TMCreate,
 		TMCreate:      now,
 	}
@@ -151,11 +149,11 @@ func (h *contactHandler) EventConversationMessageCreated(ctx context.Context, m 
 	id := h.utilHandler.UUIDCreate()
 	now := h.utilHandler.TimeNow()
 
-	c, err := h.caseHandler.GetOrCreate(ctx, m.CustomerID, commonaddress.Address{}, peer.Type, peerTarget, "conversation_message", m.CaseID)
-	if err != nil {
-		return fmt.Errorf("could not get-or-create case. EventConversationMessageCreated. err: %w", err)
-	}
-
+	// Automatic Case creation removed (design VOIP-1243 §7): Case
+	// creation is now exclusively an explicit action (Flow action
+	// case_create / AI tool case_create), never a side effect of
+	// Interaction projection. Interaction.CaseID is therefore always
+	// nil for newly-projected rows going forward.
 	// m.ID comes from the embedded commonidentity.Identity; use it directly.
 	i := interaction.Interaction{
 		ID:            id,
@@ -167,7 +165,6 @@ func (h *contactHandler) EventConversationMessageCreated(ctx context.Context, m 
 		LocalTarget:   localTarget,
 		ReferenceType: "conversation_message",
 		ReferenceID:   m.ID,
-		CaseID:        &c.ID,
 		TMInteraction: m.TMCreate,
 		TMCreate:      now,
 	}
