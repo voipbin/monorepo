@@ -7,31 +7,23 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-// Test_Interaction_CaseID_NullableField verifies Task 3.4's addition of
-// the case_id linkage column (contact-case-management design §4 step 3:
-// "INSERT INTO contact_interactions (..., case_id=case_id)"). CaseID is
-// nullable -- Interactions projected before this feature existed (or
-// whose peer/reference_type never resolved to a Case) have it nil.
-func Test_Interaction_CaseID_NullableField(t *testing.T) {
-	caseID := uuid.FromStringOrNil("f1b2c3d4-8001-8001-8001-000000000001")
+// Test_Interaction_ConstructAndMarshal verifies the basic Interaction
+// struct constructs as expected. The now-removed CaseID field (VOIP-1245)
+// used to be asserted here; that field was dead code (Case creation is
+// explicit-only since VOIP-1243, and case_id was never written after
+// InteractionCreate).
+func Test_Interaction_ConstructAndMarshal(t *testing.T) {
 	now := time.Now()
 
-	withCase := Interaction{
+	i := Interaction{
 		ID:            uuid.FromStringOrNil("f1b2c3d4-8001-8001-8001-000000000002"),
 		ReferenceType: "call",
-		CaseID:        &caseID,
 		TMCreate:      &now,
 	}
-	if withCase.CaseID == nil || *withCase.CaseID != caseID {
-		t.Errorf("expected CaseID: %v, got: %v", caseID, withCase.CaseID)
+	if i.ReferenceType != "call" {
+		t.Errorf("expected ReferenceType: call, got: %v", i.ReferenceType)
 	}
-
-	withoutCase := Interaction{
-		ID:            uuid.FromStringOrNil("f1b2c3d4-8001-8001-8001-000000000003"),
-		ReferenceType: "call",
-		TMCreate:      &now,
-	}
-	if withoutCase.CaseID != nil {
-		t.Errorf("expected nil CaseID for an interaction with no resolved case, got: %v", *withoutCase.CaseID)
+	if i.TMCreate == nil || !i.TMCreate.Equal(now) {
+		t.Errorf("expected TMCreate: %v, got: %v", now, i.TMCreate)
 	}
 }

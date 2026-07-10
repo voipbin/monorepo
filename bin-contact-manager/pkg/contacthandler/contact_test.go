@@ -18,6 +18,8 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+
 	"monorepo/bin-contact-manager/models/contact"
 	"monorepo/bin-contact-manager/pkg/dbhandler"
 )
@@ -324,8 +326,10 @@ func Test_AddAddress(t *testing.T) {
 
 			contactID: uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111"),
 			address: &contact.Address{
-				Type:      contact.AddressTypeTel,
-				Target:    "+155****4567",
+				Address: commonaddress.Address{
+					Type: contact.AddressTypeTel,
+					Target: "+155****4567",
+				},
 				IsPrimary: true,
 			},
 
@@ -341,8 +345,10 @@ func Test_AddAddress(t *testing.T) {
 
 			contactID: uuid.FromStringOrNil("44444444-4444-4444-4444-444444444444"),
 			address: &contact.Address{
-				Type:      contact.AddressTypeEmail,
-				Target:    "test@example.com",
+				Address: commonaddress.Address{
+					Type: contact.AddressTypeEmail,
+					Target: "test@example.com",
+				},
 				IsPrimary: true,
 			},
 
@@ -525,8 +531,10 @@ func Test_RemoveAddress(t *testing.T) {
 				},
 			},
 			responseAddress: &contact.Address{
-				ID:        uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222"),
-				Type:      contact.AddressTypeTel,
+				Address: commonaddress.Address{
+					Type: contact.AddressTypeTel,
+				},
+				ID: uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222"),
 				ContactID: uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111"),
 			},
 		},
@@ -543,8 +551,10 @@ func Test_RemoveAddress(t *testing.T) {
 				},
 			},
 			responseAddress: &contact.Address{
-				ID:        uuid.FromStringOrNil("55555555-5555-5555-5555-555555555555"),
-				Type:      contact.AddressTypeEmail,
+				Address: commonaddress.Address{
+					Type: contact.AddressTypeEmail,
+				},
+				ID: uuid.FromStringOrNil("55555555-5555-5555-5555-555555555555"),
 				ContactID: uuid.FromStringOrNil("44444444-4444-4444-4444-444444444444"),
 			},
 		},
@@ -799,8 +809,8 @@ func Test_Create_WithAddresses(t *testing.T) {
 		},
 		FirstName: "Test",
 		Addresses: []contact.Address{
-			{Type: contact.AddressTypeTel, Target: "+155****4567"},
-			{Type: contact.AddressTypeEmail, Target: "test@example.com"},
+			{Address: commonaddress.Address{Type: contact.AddressTypeTel, Target: "+155****4567"}},
+			{Address: commonaddress.Address{Type: contact.AddressTypeEmail, Target: "test@example.com"}},
 		},
 		TagIDs: []uuid.UUID{
 			uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333"),
@@ -971,7 +981,7 @@ func Test_AddAddress_Error(t *testing.T) {
 	ctx := context.Background()
 
 	contactID := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")
-	addr := &contact.Address{Type: contact.AddressTypeTel, Target: "+1-555-123-4567"}
+	addr := &contact.Address{Address: commonaddress.Address{Type: contact.AddressTypeTel, Target: "+1-555-123-4567"}}
 
 	responseContact := &contact.Contact{
 		Identity: commonidentity.Identity{
@@ -1010,7 +1020,7 @@ func Test_AddAddress_DuplicateTarget(t *testing.T) {
 	ctx := context.Background()
 
 	contactID := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")
-	addr := &contact.Address{Type: contact.AddressTypeTel, Target: "+1-555-123-4567"}
+	addr := &contact.Address{Address: commonaddress.Address{Type: contact.AddressTypeTel, Target: "+1-555-123-4567"}}
 
 	responseContact := &contact.Contact{
 		Identity: commonidentity.Identity{
@@ -1059,7 +1069,7 @@ func Test_AddAddress_DuplicateTarget_PrimaryReset(t *testing.T) {
 	ctx := context.Background()
 
 	contactID := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111112")
-	addr := &contact.Address{Type: contact.AddressTypeTel, Target: "+1-555-123-4568", IsPrimary: true}
+	addr := &contact.Address{Address: commonaddress.Address{Type: contact.AddressTypeTel, Target: "+1-555-123-4568"}, IsPrimary: true}
 
 	responseContact := &contact.Contact{
 		Identity: commonidentity.Identity{
@@ -1108,8 +1118,10 @@ func Test_RemoveAddress_Error(t *testing.T) {
 		},
 	}
 	responseAddress := &contact.Address{
-		ID:   addressID,
-		Type: contact.AddressTypeTel,
+		Address: commonaddress.Address{
+			Type: contact.AddressTypeTel,
+		},
+		ID: addressID,
 	}
 
 	mockDB.EXPECT().ContactGet(ctx, contactID).Return(responseContact, nil)
@@ -1274,7 +1286,7 @@ func Test_AddAddress_ContactGetError(t *testing.T) {
 	ctx := context.Background()
 
 	contactID := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")
-	addr := &contact.Address{Type: contact.AddressTypeTel, Target: "+15551234567"}
+	addr := &contact.Address{Address: commonaddress.Address{Type: contact.AddressTypeTel, Target: "+15551234567"}}
 
 	mockDB.EXPECT().ContactGet(ctx, contactID).Return(nil, fmt.Errorf("not found"))
 
@@ -1299,7 +1311,7 @@ func Test_AddAddress_GetAfterCreateError(t *testing.T) {
 	ctx := context.Background()
 
 	contactID := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")
-	addr := &contact.Address{Type: contact.AddressTypeTel, Target: "+15551234567"}
+	addr := &contact.Address{Address: commonaddress.Address{Type: contact.AddressTypeTel, Target: "+15551234567"}}
 
 	responseContact := &contact.Contact{
 		Identity: commonidentity.Identity{
@@ -1369,7 +1381,7 @@ func Test_RemoveAddress_GetAfterDeleteError(t *testing.T) {
 			CustomerID: customerID,
 		},
 	}
-	existingAddr := &contact.Address{ID: addressID, Type: contact.AddressTypeTel, Target: "+155****4567"}
+	existingAddr := &contact.Address{Address: commonaddress.Address{Type: contact.AddressTypeTel, Target: "+155****4567"}, ID: addressID}
 
 	mockDB.EXPECT().ContactGet(ctx, contactID).Return(responseContact, nil)
 	mockDB.EXPECT().AddressGet(ctx, customerID, addressID).Return(existingAddr, nil)
@@ -1641,8 +1653,8 @@ func Test_Create_WithAddressTagErrors(t *testing.T) {
 		},
 		FirstName: "Test",
 		Addresses: []contact.Address{
-			{Type: contact.AddressTypeTel, Target: "+155****4567"},
-			{Type: contact.AddressTypeEmail, Target: "test@example.com"},
+			{Address: commonaddress.Address{Type: contact.AddressTypeTel, Target: "+155****4567"}},
+			{Address: commonaddress.Address{Type: contact.AddressTypeEmail, Target: "test@example.com"}},
 		},
 		TagIDs: []uuid.UUID{
 			uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333"),
@@ -1703,9 +1715,9 @@ func Test_Create_WithMultipleAddresses(t *testing.T) {
 		FirstName: "Multiple",
 		LastName:  "Addresses",
 		Addresses: []contact.Address{
-			{Type: contact.AddressTypeTel, Target: "+155****1111", IsPrimary: true},
-			{Type: contact.AddressTypeTel, Target: "+155****2222", IsPrimary: false},
-			{Type: contact.AddressTypeEmail, Target: "primary@example.com", IsPrimary: false},
+			{Address: commonaddress.Address{Type: contact.AddressTypeTel, Target: "+155****1111"}, IsPrimary: true},
+			{Address: commonaddress.Address{Type: contact.AddressTypeTel, Target: "+155****2222"}, IsPrimary: false},
+			{Address: commonaddress.Address{Type: contact.AddressTypeEmail, Target: "primary@example.com"}, IsPrimary: false},
 		},
 	}
 
@@ -1847,8 +1859,11 @@ func Test_AddAddress_NormalizesEmail(t *testing.T) {
 
 	contactID := uuid.FromStringOrNil("e1111111-1111-1111-1111-111111111111")
 	addr := &contact.Address{
-		Type:      contact.AddressTypeEmail,
-		Target:    "  USER@EXAMPLE.COM  ", // uppercase with spaces
+		Address: commonaddress.Address{
+			Type: contact.AddressTypeEmail,
+			Target: "  USER@EXAMPLE.COM  ",
+		},
+		// uppercase with spaces
 		IsPrimary: true,
 	}
 
@@ -1951,8 +1966,10 @@ func Test_AddAddress_NormalizesPhone(t *testing.T) {
 
 	contactID := uuid.FromStringOrNil("f1111111-1111-1111-1111-111111111111")
 	addr := &contact.Address{
-		Type:      contact.AddressTypeTel,
-		Target:    "+12345678901",
+		Address: commonaddress.Address{
+			Type: contact.AddressTypeTel,
+			Target: "+12345678901",
+		},
 		IsPrimary: false,
 	}
 
@@ -1997,8 +2014,11 @@ func Test_AddAddress_TrimsSpaces(t *testing.T) {
 
 	contactID := uuid.FromStringOrNil("f1111111-1111-1111-1111-111111111111")
 	addr := &contact.Address{
-		Type:      contact.AddressTypeTel,
-		Target:    "  +15551234567  ", // with spaces
+		Address: commonaddress.Address{
+			Type: contact.AddressTypeTel,
+			Target: "  +15551234567  ",
+		},
+		// with spaces
 		IsPrimary: true,
 	}
 

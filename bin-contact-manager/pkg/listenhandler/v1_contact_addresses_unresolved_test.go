@@ -9,6 +9,8 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+
 	"monorepo/bin-contact-manager/models/contact"
 	"monorepo/bin-contact-manager/pkg/addresshandler"
 	"monorepo/bin-contact-manager/pkg/contacthandler"
@@ -59,10 +61,12 @@ func Test_processV1ContactAddressesPost_Unresolved(t *testing.T) {
 
 			if tt.expectCall {
 				mockContact.EXPECT().CreateUnresolvedAddress(gomock.Any(), customerID, gomock.Any()).Return(&contact.Address{
-					ID:         addressID,
+					Address: commonaddress.Address{
+						Type: "tel",
+						Target: "+15559998888",
+					},
+					ID: addressID,
 					CustomerID: customerID,
-					Type:       "tel",
-					Target:     "+15559998888",
 				}, nil)
 			}
 

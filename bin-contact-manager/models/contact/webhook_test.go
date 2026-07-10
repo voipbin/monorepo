@@ -8,6 +8,8 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
+
+	commonaddress "monorepo/bin-common-handler/models/address"
 )
 
 func TestContact_ConvertWebhookMessage(t *testing.T) {
@@ -26,15 +28,19 @@ func TestContact_ConvertWebhookMessage(t *testing.T) {
 		Notes:       "Key enterprise customer - VIP account.",
 		Addresses: []Address{
 			{
-				ID:        uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333"),
-				Type:      AddressTypeTel,
-				Target:    "+15551234567",
+				ID: uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333"),
+				Address: commonaddress.Address{
+					Type:   AddressTypeTel,
+					Target: "+155****4567",
+				},
 				IsPrimary: true,
 			},
 			{
-				ID:        uuid.FromStringOrNil("44444444-4444-4444-4444-444444444444"),
-				Type:      AddressTypeEmail,
-				Target:    "john@example.com",
+				ID: uuid.FromStringOrNil("44444444-4444-4444-4444-444444444444"),
+				Address: commonaddress.Address{
+					Type:   AddressTypeEmail,
+					Target: "john@example.com",
+				},
 				IsPrimary: true,
 			},
 		},
@@ -125,14 +131,18 @@ func TestContact_CreateWebhookEvent(t *testing.T) {
 				FirstName: "Jane",
 				Addresses: []Address{
 					{
-						ID:     uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333"),
-						Type:   AddressTypeTel,
-						Target: "+15558888888",
+						ID: uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333"),
+						Address: commonaddress.Address{
+							Type:   AddressTypeTel,
+							Target: "+155****8888",
+						},
 					},
 					{
-						ID:     uuid.FromStringOrNil("44444444-4444-4444-4444-444444444444"),
-						Type:   AddressTypeEmail,
-						Target: "jane@example.com",
+						ID: uuid.FromStringOrNil("44444444-4444-4444-4444-444444444444"),
+						Address: commonaddress.Address{
+							Type:   AddressTypeEmail,
+							Target: "jane@example.com",
+						},
 					},
 				},
 			},

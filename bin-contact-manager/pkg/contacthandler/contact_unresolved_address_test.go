@@ -14,6 +14,8 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+
 	"monorepo/bin-contact-manager/models/contact"
 	"monorepo/bin-contact-manager/pkg/dbhandler"
 )
@@ -39,8 +41,10 @@ func Test_CreateUnresolvedAddress(t *testing.T) {
 	generatedID := uuid.FromStringOrNil("bbbbbbbb-1111-1111-1111-111111111111")
 
 	a := &contact.Address{
-		Type:   contact.AddressTypeTel,
-		Target: "+15559998888",
+		Address: commonaddress.Address{
+			Type: contact.AddressTypeTel,
+			Target: "+15559998888",
+		},
 	}
 
 	mockUtil.EXPECT().UUIDCreate().Return(generatedID)
@@ -58,11 +62,13 @@ func Test_CreateUnresolvedAddress(t *testing.T) {
 	})
 
 	created := &contact.Address{
-		ID:         generatedID,
+		Address: commonaddress.Address{
+			Type: contact.AddressTypeTel,
+			Target: "+15559998888",
+		},
+		ID: generatedID,
 		CustomerID: customerID,
-		ContactID:  uuid.Nil,
-		Type:       contact.AddressTypeTel,
-		Target:     "+15559998888",
+		ContactID: uuid.Nil,
 	}
 	mockDB.EXPECT().AddressGet(ctx, customerID, generatedID).Return(created, nil)
 

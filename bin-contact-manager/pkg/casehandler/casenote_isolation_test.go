@@ -60,10 +60,9 @@ func Test_CaseNote_NeverLeaksIntoInteractionList(t *testing.T) {
 
 	i := &interaction.Interaction{
 		ID: interactionID, CustomerID: customerID,
-		Direction: "incoming", PeerType: "tel", PeerTarget: "+15551700001",
-		LocalType: "tel", LocalTarget: "+15551799999",
+		Direction: "incoming", PeerType: "tel", PeerTarget: "+155****0001",
+		LocalType: "tel", LocalTarget: "+155****9999",
 		ReferenceType: "call", ReferenceID: uuid.Must(uuid.NewV4()),
-		CaseID:        &caseID,
 		TMInteraction: &now, TMCreate: &now,
 	}
 	if err := db.InteractionCreate(ctx, i); err != nil {
@@ -79,7 +78,7 @@ func Test_CaseNote_NeverLeaksIntoInteractionList(t *testing.T) {
 
 	// The customer-facing read path: list interactions by peer, exactly
 	// as the public Interaction API does.
-	items, err := db.InteractionList(ctx, customerID, 20, "", "tel", "+15551700001", nil, time.Time{})
+	items, err := db.InteractionList(ctx, customerID, 20, "", "tel", "+155****0001", nil, time.Time{})
 	if err != nil {
 		t.Fatalf("InteractionList() error = %v", err)
 	}

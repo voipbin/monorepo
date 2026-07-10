@@ -8,6 +8,8 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+
 	"monorepo/bin-contact-manager/models/contact"
 	"monorepo/bin-contact-manager/pkg/addresshandler"
 	"monorepo/bin-contact-manager/pkg/contacthandler"
@@ -62,7 +64,7 @@ func Test_processRequest_ContactAddressesID_Routing(t *testing.T) {
 			setupMock: func(_ *addresshandler.MockAddressHandler, mockContact *contacthandler.MockContactHandler) {
 				mockContact.EXPECT().UpdateAddress(gomock.Any(), contactID, addressID, gomock.Any()).Return(&contact.Contact{
 					Addresses: []contact.Address{
-						{ID: addressID, CustomerID: customerID, Target: "+15551234567"},
+						{Address: commonaddress.Address{Target: "+15551234567"}, ID: addressID, CustomerID: customerID},
 					},
 				}, nil)
 			},
