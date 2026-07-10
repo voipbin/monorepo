@@ -313,32 +313,43 @@ rare backstop condition (only cross-activeflow races) rather than a
 routine outcome of same-activeflow re-execution — see §8's revised
 log-level guidance.
 
-**Known limitation, deliberately accepted (added per targeted verification
-round, 2026-07-10): `contact_case_id` is a single flat activeflow-scoped
-key, NOT peer-scoped, unlike `uq_case_open_peer` which is scoped per
-`(customer_id, peer_type, peer_target, reference_type)`.** If a single
-activeflow legitimately interacts with more than one distinct peer during
-its lifetime (e.g. a call that gets transferred, a conference leg change,
-or any scenario where the "current" peer genuinely changes mid-activeflow)
-and `case_create` is called for peer A first, the variable check would
-incorrectly skip a LEGITIMATE `case_create` attempt for peer B later in the
-same activeflow — because the flat key can't distinguish "a case already
-exists for peer B" from "a case exists for a DIFFERENT peer A." This is a
-false-suppression risk, not merely a missed optimization: a real case for
-peer B would silently never get created. Scoped as an accepted v1
-limitation, not fixed here, for two reasons: (1) VoIPBin's existing call
-transfer/conference mechanics were not audited as part of this design to
-confirm whether `af.ReferenceID`/the derived peer can actually change
-mid-activeflow in a way that would trigger this — if it cannot in practice,
-the risk is theoretical; (2) fixing it (e.g. a peer-qualified key like
-`contact_case_id_<peer_type>_<normalized_peer_target>`) is a small, later,
-backward-compatible change if the theoretical risk turns out to be real.
-Per this project's standing convention on theoretical-only risks (do not
-invest until an actual incident is observed), this is recorded here as an
-explicit, deliberate, documented limitation rather than silently
-unaddressed — flag for implementation-time confirmation whether call
-transfer changes `af.ReferenceID`'s derived peer within the same
-activeflow ID.
+**Peer-scoping gap — INVESTIGATED AND RESOLVED (confirmed not applicable,
+2026-07-10): `contact_case_id` is a single flat activeflow-scoped key, NOT
+peer-scoped, unlike `uq_case_open_peer` which is scoped per
+`(customer_id, peer_type, peer_target, reference_type)`.** A prior
+verification round flagged this as a theoretical false-suppression risk
+(a hypothetical case where one activeflow legitimately talks to two
+different peers in sequence — e.g. a transferred call — and a flat key
+would incorrectly suppress a legitimate second `case_create` for the new
+peer). **pchero's own read, confirmed against source: this cannot happen
+in VoIPBin's actual architecture**, because Leg A and Leg B in any
+transfer/conference scenario are never the same activeflow to begin with:
+
+- `actionHandleConnect` (`bin-flow-manager/pkg/activeflowhandler/actionhandle.go:471-`,
+  the transfer/connect mechanism) creates the new outbound leg via
+  `CallV1CallsCreate`, and EVERY call-creation path in
+  `bin-call-manager/pkg/callhandler` that produces a new call
+  unconditionally also calls `FlowV1ActiveflowCreate` to spin up a
+  **brand-new activeflow** for that new leg (confirmed at
+  `outgoing_call.go:236` and `start.go:601` — both call sites, no
+  conditional skip). So Leg A (the original activeflow, which may already
+  have `contact_case_id` set) and Leg B (the transferred-to peer) NEVER
+  share an activeflow ID — `contact_case_id` on Leg A's activeflow is
+  simply invisible to Leg B's `case_create`, which starts with a clean
+  variable store and creates its own case normally. Two legs, two
+  activeflows, two tickets — exactly as pchero expected.
+- The other direction — `actionHandleConferenceJoin` — does the opposite:
+  it keeps the SAME activeflow and merely swaps in the conference's flow
+  content. But this path does not involve a peer change at all (the
+  existing call is simply joined to a different bridge); there is no
+  scenario here where the "current peer" for `case_create` purposes
+  actually changes within one activeflow.
+
+**Conclusion: no fix needed.** The flat `contact_case_id` key is safe as
+designed. This closes the limitation recorded in the earlier verification
+round and Open Question #7 (§9) — downgraded from "accepted limitation,
+flagged for implementation-time confirmation" to "investigated, confirmed
+not applicable."
 
 ## 4. RPC / route wiring (cross-layer)
 
@@ -875,16 +886,17 @@ right log level; it is no longer a false-alarm risk.
    actions can reference `{{contact_case_id}}` or branch on its presence via
    `condition_variable`. This closes the gap flagged in round-2 review; no
    longer an open limitation.
-7. **`contact_case_id` peer-scoping gap (new, added per targeted
-   verification round, 2026-07-10)**: see §3.5's "Known limitation,
-   deliberately accepted" note — the activeflow-scoped `contact_case_id`
-   variable is a flat key, not qualified by peer, and could theoretically
-   false-suppress a legitimate second `case_create` for a genuinely
-   different peer within one activeflow (transfer/conference scenarios).
-   Not fixed in this design per the project's standing "no investment
-   without an observed incident" convention for theoretical-only risks;
-   flagged for implementation-time confirmation of whether this can
-   actually occur given VoIPBin's transfer/conference mechanics.
+7. **~~`contact_case_id` peer-scoping gap~~ — RESOLVED (investigated and
+   confirmed not applicable, 2026-07-10, see §3.5)**: the flat, non-peer-
+   qualified `contact_case_id` key was flagged as a theoretical
+   false-suppression risk for transfer/conference scenarios. pchero's own
+   architectural read, confirmed against source: transfer (`connect`
+   action) always spins up a brand-new activeflow for the new leg
+   (`FlowV1ActiveflowCreate` is called unconditionally by every
+   call-creation path in `bin-call-manager/pkg/callhandler`), so Leg A and
+   Leg B never share an activeflow id and never share a `contact_case_id`
+   variable store; conference join keeps the same activeflow but never
+   changes the peer. No fix needed — closed, not merely deferred.
 
 ## 10. Test plan (high level, per layer)
 
