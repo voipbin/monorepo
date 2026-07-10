@@ -34,6 +34,7 @@ var OptionStructByType = map[Type]any{
 	TypeBlock:               OptionBlock{},
 	TypeBranch:              OptionBranch{},
 	TypeCall:                OptionCall{},
+	TypeCaseCreate:          OptionCaseCreate{},
 	TypeConditionCallDigits: OptionConditionCallDigits{},
 	TypeConditionCallStatus: OptionConditionCallStatus{},
 	TypeConditionDatetime:   OptionConditionDatetime{},
