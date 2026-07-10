@@ -439,3 +439,54 @@ func Test_actionHandleCaseCreate_dispatchRegistration(t *testing.T) {
 		t.Errorf("action.TypeCaseCreate is not registered in action.MapRequiredMediasByType")
 	}
 }
+
+// Test_actionHandleCaseCreate_UnknownDirection_Skipped is a regression
+// guard (VOIP-1243 round-review fix): an unknown/unrecognized call
+// Direction makes deriveEndpointsForCase return a zero-value peer
+// (commonaddress.TypeNone), which MUST be classified as CRM-ineligible
+// so ContactV1CaseCreate is never called with an empty peer.
+func Test_actionHandleCaseCreate_UnknownDirection_Skipped(t *testing.T) {
+
+	af := &activeflow.Activeflow{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("77777777-0000-11f0-8000-000000000001"),
+			CustomerID: uuid.FromStringOrNil("77777777-0000-11f0-8000-000000000002"),
+		},
+		ReferenceType: activeflow.ReferenceTypeCall,
+		ReferenceID:   uuid.FromStringOrNil("77777777-0000-11f0-8000-000000000003"),
+		CurrentAction: action.Action{
+			ID:   uuid.FromStringOrNil("77777777-0000-11f0-8000-000000000004"),
+			Type: action.TypeCaseCreate,
+		},
+	}
+
+	responseCall := &cmcall.Call{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("77777777-0000-11f0-8000-000000000003"),
+		},
+		Direction:   "", // unknown direction
+		Source:      commonaddress.Address{Type: commonaddress.TypeTel, Target: "+821****0001"},
+		Destination: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+821****0002"},
+	}
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+
+	h := &activeflowHandler{
+		db:         mockDB,
+		reqHandler: mockReq,
+	}
+
+	ctx := context.Background()
+
+	mockReq.EXPECT().CallV1CallGet(ctx, af.ReferenceID).Return(responseCall, nil)
+	// no FlowV1VariableGet/ContactV1CaseCreate expected -- zero-value peer
+	// from an unknown direction must be skipped as CRM-ineligible.
+
+	if errAction := h.actionHandleCaseCreate(ctx, af); errAction != nil {
+		t.Errorf("Wrong match.\nexpect: ok\ngot: %v", errAction)
+	}
+}

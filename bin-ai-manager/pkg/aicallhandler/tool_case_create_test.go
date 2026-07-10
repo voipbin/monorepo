@@ -88,11 +88,13 @@ func Test_deriveCaseEndpointsForAIcall(t *testing.T) {
 
 		responseCall         *cmcall.Call
 		responseConversation *cvconversation.Conversation
+		responseErr          error
 
 		expectPeer          commonaddress.Address
 		expectSelf          commonaddress.Address
 		expectReferenceType string
-		expectOK            bool
+		expectSupported     bool
+		expectErr           bool
 	}{
 		{
 			name: "call reference type",
@@ -108,7 +110,7 @@ func Test_deriveCaseEndpointsForAIcall(t *testing.T) {
 			expectPeer:          commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****0001"},
 			expectSelf:          commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****0002"},
 			expectReferenceType: "call",
-			expectOK:            true,
+			expectSupported:     true,
 		},
 		{
 			name: "conversation reference type",
@@ -123,7 +125,7 @@ func Test_deriveCaseEndpointsForAIcall(t *testing.T) {
 			expectPeer:          commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****0004"},
 			expectSelf:          commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****0003"},
 			expectReferenceType: "conversation_message",
-			expectOK:            true,
+			expectSupported:     true,
 		},
 		{
 			name: "unsupported reference type",
@@ -131,7 +133,27 @@ func Test_deriveCaseEndpointsForAIcall(t *testing.T) {
 				ReferenceType: aicall.ReferenceTypeTask,
 				ReferenceID:   uuid.FromStringOrNil("2b6f4c3e-c001-11f0-9000-000000000003"),
 			},
-			expectOK: false,
+			expectSupported: false,
+		},
+		{
+			name: "call reference type - CallV1CallGet errors -> err is returned, not swallowed",
+			aicall: &aicall.AIcall{
+				ReferenceType: aicall.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("2b6f4c3e-c001-11f0-9000-000000000004"),
+			},
+			responseErr:     errTest,
+			expectSupported: true,
+			expectErr:       true,
+		},
+		{
+			name: "conversation reference type - ConversationV1ConversationGet errors -> err is returned, not swallowed",
+			aicall: &aicall.AIcall{
+				ReferenceType: aicall.ReferenceTypeConversation,
+				ReferenceID:   uuid.FromStringOrNil("2b6f4c3e-c001-11f0-9000-000000000005"),
+			},
+			responseErr:     errTest,
+			expectSupported: true,
+			expectErr:       true,
 		},
 	}
 
@@ -147,16 +169,25 @@ func Test_deriveCaseEndpointsForAIcall(t *testing.T) {
 
 			switch tt.aicall.ReferenceType {
 			case aicall.ReferenceTypeCall:
-				mockReq.EXPECT().CallV1CallGet(ctx, tt.aicall.ReferenceID).Return(tt.responseCall, nil)
+				mockReq.EXPECT().CallV1CallGet(ctx, tt.aicall.ReferenceID).Return(tt.responseCall, tt.responseErr)
 			case aicall.ReferenceTypeConversation:
-				mockReq.EXPECT().ConversationV1ConversationGet(ctx, tt.aicall.ReferenceID).Return(tt.responseConversation, nil)
+				mockReq.EXPECT().ConversationV1ConversationGet(ctx, tt.aicall.ReferenceID).Return(tt.responseConversation, tt.responseErr)
 			}
 
-			peer, self, referenceType, ok := h.deriveCaseEndpointsForAIcall(ctx, tt.aicall)
-			if ok != tt.expectOK {
-				t.Fatalf("ok = %v, want %v", ok, tt.expectOK)
+			peer, self, referenceType, supported, err := h.deriveCaseEndpointsForAIcall(ctx, tt.aicall)
+			if supported != tt.expectSupported {
+				t.Fatalf("supported = %v, want %v", supported, tt.expectSupported)
 			}
-			if !tt.expectOK {
+			if tt.expectErr {
+				if err == nil {
+					t.Fatalf("expected a non-nil err, got nil")
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("unexpected err: %v", err)
+			}
+			if !tt.expectSupported {
 				return
 			}
 			if peer != tt.expectPeer || self != tt.expectSelf || referenceType != tt.expectReferenceType {
@@ -373,5 +404,72 @@ func Test_toolHandleCaseCreate(t *testing.T) {
 				t.Errorf("expected: %v, got: %v", tt.expectRes, res)
 			}
 		})
+	}
+}
+
+// Test_toolHandleCaseCreate_UnknownDirection_Skipped is a regression
+// guard (VOIP-1243 round-review fix): an unknown/unrecognized call
+// Direction makes deriveEndpointsForCase return a zero-value peer
+// (commonaddress.TypeNone), which MUST be classified as CRM-ineligible
+// so ContactV1CaseCreate is never called with an empty peer.
+func Test_toolHandleCaseCreate_UnknownDirection_Skipped(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockAI := aihandler.NewMockAIHandler(mc)
+	mockMessage := messagehandler.NewMockMessageHandler(mc)
+
+	h := &aicallHandler{
+		utilHandler:    mockUtil,
+		reqHandler:     mockReq,
+		notifyHandler:  mockNotify,
+		db:             mockDB,
+		aiHandler:      mockAI,
+		messageHandler: mockMessage,
+	}
+	ctx := context.Background()
+
+	tc := &aicall.AIcall{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("88888888-0000-11f0-8000-000000000001"),
+			CustomerID: uuid.FromStringOrNil("88888888-0000-11f0-8000-000000000002"),
+		},
+		ActiveflowID:  uuid.FromStringOrNil("88888888-0000-11f0-8000-000000000003"),
+		ReferenceType: aicall.ReferenceTypeCall,
+		ReferenceID:   uuid.FromStringOrNil("88888888-0000-11f0-8000-000000000004"),
+	}
+	tool := &message.ToolCall{
+		ID:   "88888888-0000-11f0-8000-000000000005",
+		Type: message.ToolTypeFunction,
+		Function: message.FunctionCall{
+			Name:      message.FunctionCallNameCaseCreate,
+			Arguments: `{}`,
+		},
+	}
+	responseCall := &cmcall.Call{
+		Direction:   "", // unknown direction
+		Source:      commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****0001"},
+		Destination: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****0002"},
+	}
+
+	mockReq.EXPECT().CallV1CallGet(ctx, tc.ReferenceID).Return(responseCall, nil)
+	// no FlowV1VariableGet/ContactV1CaseCreate expected -- zero-value peer
+	// from an unknown direction must be skipped as CRM-ineligible.
+
+	res := h.toolHandleCaseCreate(ctx, tc, tool)
+
+	expectRes := &messageContent{
+		ToolCallID:   "88888888-0000-11f0-8000-000000000005",
+		Result:       "success",
+		Message:      "No case was created: peer type  is not eligible for CRM case tracking.",
+		ResourceType: "case",
+		ResourceID:   "",
+	}
+	if !reflect.DeepEqual(res, expectRes) {
+		t.Errorf("expected: %v, got: %v", expectRes, res)
 	}
 }

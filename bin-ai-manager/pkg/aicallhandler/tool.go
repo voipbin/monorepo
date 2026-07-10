@@ -441,6 +441,7 @@ func (h *aicallHandler) toolHandleEmailSend(ctx context.Context, c *aicall.AIcal
 // VOIP-1243 §5.2/§6.3) -- the original is unexported in bin-contact-manager
 // and cannot be imported.
 var caseCreateCRMIneligiblePeerTypes = map[commonaddress.Type]struct{}{
+	commonaddress.TypeNone:       {}, // zero-value/unknown-direction peer -- never a real contact (VOIP-1243 round-review fix)
 	commonaddress.TypeAgent:      {},
 	commonaddress.TypeAI:         {},
 	commonaddress.TypeAITeam:     {},
@@ -476,28 +477,32 @@ func deriveEndpointsForCase(direction string, source, dest commonaddress.Address
 
 // deriveCaseEndpointsForAIcall derives the case peer/self/reference_type
 // for an AIcall, mirroring bin-flow-manager's actionHandleCaseCreate
-// derivation logic (design VOIP-1243 §6.3). ok=false means "no defined
-// derivation for this reference type" -- a deliberate scope limit, not an
-// error.
-func (h *aicallHandler) deriveCaseEndpointsForAIcall(ctx context.Context, c *aicall.AIcall) (peer commonaddress.Address, self commonaddress.Address, referenceType string, ok bool) {
+// derivation logic (design VOIP-1243 §6.3). supported=false means "no
+// defined derivation for this reference type" -- a deliberate scope
+// limit, not an error, and is reported to the LLM via fillSuccess. A
+// non-nil err means a genuine downstream RPC failure (CallV1CallGet /
+// ConversationV1ConversationGet erroring) and MUST be reported via
+// fillFailed per design §6.3/§8 -- these two outcomes are NOT the same
+// and must not be collapsed into a single bool (round-review fix).
+func (h *aicallHandler) deriveCaseEndpointsForAIcall(ctx context.Context, c *aicall.AIcall) (peer commonaddress.Address, self commonaddress.Address, referenceType string, supported bool, err error) {
 	switch c.ReferenceType {
 	case aicall.ReferenceTypeCall:
 		cl, errGet := h.reqHandler.CallV1CallGet(ctx, c.ReferenceID)
 		if errGet != nil {
-			return commonaddress.Address{}, commonaddress.Address{}, "", false
+			return commonaddress.Address{}, commonaddress.Address{}, "", true, errGet
 		}
 		peer, self = deriveEndpointsForCase(string(cl.Direction), cl.Source, cl.Destination)
-		return peer, self, "call", true
+		return peer, self, "call", true, nil
 
 	case aicall.ReferenceTypeConversation:
 		cv, errGet := h.reqHandler.ConversationV1ConversationGet(ctx, c.ReferenceID)
 		if errGet != nil {
-			return commonaddress.Address{}, commonaddress.Address{}, "", false
+			return commonaddress.Address{}, commonaddress.Address{}, "", true, errGet
 		}
-		return cv.Peer, cv.Self, "conversation_message", true
+		return cv.Peer, cv.Self, "conversation_message", true, nil
 
 	default:
-		return commonaddress.Address{}, commonaddress.Address{}, "", false
+		return commonaddress.Address{}, commonaddress.Address{}, "", false, nil
 	}
 }
 
@@ -524,9 +529,13 @@ func (h *aicallHandler) toolHandleCaseCreate(ctx context.Context, c *aicall.AIca
 		return res
 	}
 
-	peer, self, referenceType, ok := h.deriveCaseEndpointsForAIcall(ctx, c)
-	if !ok {
-		fillSuccess(res, "case", "", "No case was created: this reference type does not support case tracking, or the underlying call/conversation could not be retrieved.")
+	peer, self, referenceType, supported, errDerive := h.deriveCaseEndpointsForAIcall(ctx, c)
+	if errDerive != nil {
+		fillFailed(res, errDerive)
+		return res
+	}
+	if !supported {
+		fillSuccess(res, "case", "", "No case was created: this reference type does not support case tracking.")
 		return res
 	}
 

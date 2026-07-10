@@ -1255,6 +1255,7 @@ func (h *activeflowHandler) actionHandleAITask(ctx context.Context, af *activefl
 // be imported cross-service, so bin-flow-manager and bin-ai-manager each
 // carry their own copy.
 var crmIneligiblePeerTypes = map[commonaddress.Type]struct{}{
+	commonaddress.TypeNone:       {}, // zero-value/unknown-direction peer -- never a real contact (VOIP-1243 round-review fix)
 	commonaddress.TypeAgent:      {},
 	commonaddress.TypeAI:         {},
 	commonaddress.TypeAITeam:     {},
