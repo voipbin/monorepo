@@ -63,6 +63,15 @@ Flow (or let their AI decide to create one).
   test coverage of this no-op path.
 - **New AI tool**: `case_create` (`bin-ai-manager`). Usable in both AI calls
   and AI conversations (added to `ConversationSafeTools`).
+- **Activeflow-scoped dedup via variable** (added per pchero's 2026-07-10
+  follow-up): on successful creation, the case id is stamped into the
+  activeflow's own variable store as `contact_case_id`, and both the Flow
+  action and the AI tool check this variable BEFORE calling
+  `ContactV1CaseCreate` — if already set, skip the RPC entirely (no case
+  created, no DB round-trip). See §3.5 for exact mechanics and rationale
+  (this reuses the existing `variableHandler`/`FlowV1VariableGet`/
+  `FlowV1VariableSetVariable` infrastructure already shared by Flow actions
+  and AI tools — no new storage, no new RPC).
 - **New optional Case fields**: `name`, `detail` (both nullable, both
   settable only at creation time in this scope). Requires an Alembic
   migration on `contact_cases`.
@@ -168,11 +177,19 @@ func (h *caseHandler) Create(
      re-issue `case_create` later if they want a Case for that peer, but
      `Create` itself never auto-retries.
    - **A Flow `goto`/loop re-executing `case_create` for the same peer**,
-     or two rapid AI tool calls for the same peer, both resolve safely:
-     the second call receives `AlreadyExists` (or, rarely, `Unavailable`
-     under deadlock contention), logs it, and does not create a second
-     Case. This is the intended, safe outcome and is now stated explicitly
-     rather than left to inference.
+     or two rapid AI tool calls for the same peer, both resolve safely
+     AT THE DB LAYER: the second call receives `AlreadyExists` (or,
+     rarely, `Unavailable` under deadlock contention), logs it, and does
+     not create a second Case. This is the intended, safe outcome.
+     **Updated per a later addition (§3.5): within a SINGLE activeflow,
+     this DB-layer path is now the fallback, not the normal outcome** —
+     the activeflow-scoped `contact_case_id` variable check (§3.5)
+     intercepts the common same-activeflow goto/loop/AI+agent-handoff
+     re-execution BEFORE the RPC is even called, so in practice this
+     `AlreadyExists`/`Unavailable`-at-the-DB path is reached only for
+     cross-activeflow duplicates (two different live activeflows
+     targeting the same peer) or the narrow §3.5 check-then-set race
+     window — see §3.5 and §8 for the full picture.
 3. `Case.Status` is always `StatusOpen` at creation (no other status is
    possible via Create).
 4. `Case.PreviousCaseID` is always `nil` for a Create-produced Case. Chaining
@@ -245,6 +262,83 @@ conflating "same type" with "same nullability."
 
 Both fields are simple additive columns — no index, no uniqueness
 constraint, no interaction with `open_peer_uk`.
+
+### 3.5 Activeflow-scoped dedup via `contact_case_id` variable (added 2026-07-10)
+
+`bin-flow-manager` already has an activeflow-scoped key/value variable
+store (`variableHandler`, RPC'd as `FlowV1VariableGet`/
+`FlowV1VariableSetVariable` — both confirmed real, already used by
+existing actions like `variable_set` and already called from
+`bin-ai-manager`'s `aicallhandler` today, e.g. `start.go:261`,
+`tool.go:525,550`, `chat.go:33` — this is a store both consumer surfaces
+already share via the SAME `activeflowID` key, not new infrastructure).
+
+Both the Flow action (§5.2) and the AI tool (§6.3) use this to short-circuit
+repeat `case_create` attempts within the SAME activeflow, BEFORE calling
+`ContactV1CaseCreate`:
+
+1. **Before creating**: call `FlowV1VariableGet(ctx, activeflowID)` and
+   check for a `contact_case_id` key. If present, skip the RPC entirely —
+   log at Debug (Flow) / report success with an explanatory message (AI
+   tool, matching the CRM-ineligible-peer treatment in §8), and do NOT call
+   `ContactV1CaseCreate` at all. No DB round-trip, no chance of
+   `ErrDuplicate`/`ErrDeadlock` for this path.
+2. **After creating successfully**: call
+   `FlowV1VariableSetVariable(ctx, activeflowID, map[string]string{"contact_case_id": created.ID.String()})`
+   so subsequent actions/tool-calls within the same activeflow can both
+   detect the existing case (step 1) and reference its id (e.g. a later
+   `talk`/`webhook_send` action substituting `{{contact_case_id}}`, or a
+   `condition_variable` action branching on whether it's set).
+
+**Why this does not replace the DB unique index, and is layered underneath
+it, not instead of it**: `contact_case_id` is scoped to ONE activeflow.
+It correctly short-circuits the two most common real-world duplicate
+scenarios discussed during design review — a Flow `goto`/loop
+re-executing `case_create` for the same peer, and an AI mid-call
+`case_create` followed by a human agent's Flow `case_create` attempt later
+in the SAME call — without a network round-trip. It does NOT (and cannot)
+catch two DIFFERENT activeflows (e.g. a live call's activeflow and a
+separate outbound callback activeflow) both targeting the same peer; that
+case still relies on `uq_case_open_peer` / `ErrDuplicate` as the backstop
+(§3.3), exactly matching this codebase's standing convention that
+"concurrency's final defense is the DB conditional unique index," with the
+variable check as a cheap, non-mandatory optimization layered on top — not
+a substitute for it. A narrow check-then-set race remains possible (the
+variable could theoretically be set by a concurrent request between the
+Get and the Create), but this is bounded by ordinary request latency within
+a single activeflow, and any residual race is still caught by
+`ErrDuplicate` at the DB layer. Practical effect: after this change,
+`ErrDuplicate`/`ErrDeadlock` at the `Create` RPC layer become a genuinely
+rare backstop condition (only cross-activeflow races) rather than a
+routine outcome of same-activeflow re-execution — see §8's revised
+log-level guidance.
+
+**Known limitation, deliberately accepted (added per targeted verification
+round, 2026-07-10): `contact_case_id` is a single flat activeflow-scoped
+key, NOT peer-scoped, unlike `uq_case_open_peer` which is scoped per
+`(customer_id, peer_type, peer_target, reference_type)`.** If a single
+activeflow legitimately interacts with more than one distinct peer during
+its lifetime (e.g. a call that gets transferred, a conference leg change,
+or any scenario where the "current" peer genuinely changes mid-activeflow)
+and `case_create` is called for peer A first, the variable check would
+incorrectly skip a LEGITIMATE `case_create` attempt for peer B later in the
+same activeflow — because the flat key can't distinguish "a case already
+exists for peer B" from "a case exists for a DIFFERENT peer A." This is a
+false-suppression risk, not merely a missed optimization: a real case for
+peer B would silently never get created. Scoped as an accepted v1
+limitation, not fixed here, for two reasons: (1) VoIPBin's existing call
+transfer/conference mechanics were not audited as part of this design to
+confirm whether `af.ReferenceID`/the derived peer can actually change
+mid-activeflow in a way that would trigger this — if it cannot in practice,
+the risk is theoretical; (2) fixing it (e.g. a peer-qualified key like
+`contact_case_id_<peer_type>_<normalized_peer_target>`) is a small, later,
+backward-compatible change if the theoretical risk turns out to be real.
+Per this project's standing convention on theoretical-only risks (do not
+invest until an actual incident is observed), this is recorded here as an
+explicit, deliberate, documented limitation rather than silently
+unaddressed — flag for implementation-time confirmation whether call
+transfer changes `af.ReferenceID`'s derived peer within the same
+activeflow ID.
 
 ## 4. RPC / route wiring (cross-layer)
 
@@ -434,6 +528,20 @@ func (h *activeflowHandler) actionHandleCaseCreate(ctx context.Context, af *acti
         return nil
     }
 
+    // Activeflow-scoped dedup (§3.5, added 2026-07-10): check the
+    // activeflow's own variable store BEFORE calling ContactV1CaseCreate.
+    // If a Case was already created earlier in THIS SAME activeflow (e.g.
+    // an earlier pass through a goto/loop, or an AI tool call that already
+    // created one during this same call), skip the RPC entirely -- no
+    // network round-trip, no chance of hitting ErrDuplicate/ErrDeadlock for
+    // this path.
+    if v, errVar := h.reqHandler.FlowV1VariableGet(ctx, af.ID); errVar == nil && v != nil {
+        if existingCaseID, ok := v.Variables["contact_case_id"]; ok && existingCaseID != "" {
+            log.Debugf("a case already exists for this activeflow; skipping case_create. contact_case_id: %s", existingCaseID)
+            return nil
+        }
+    } // a FlowV1VariableGet error itself is non-fatal here -- fall through and let ContactV1CaseCreate's own ErrDuplicate backstop (§3.3) catch it if a duplicate does exist
+
     peerTarget, err := commonaddress.NormalizeTarget(peer.Type, peer.Target)
     if err != nil {
         log.WithError(err).Warnf("could not normalize peer target; using raw value. peer_type: %s", peer.Type)
@@ -443,13 +551,21 @@ func (h *activeflowHandler) actionHandleCaseCreate(ctx context.Context, af *acti
     res, err := h.reqHandler.ContactV1CaseCreate(ctx, af.CustomerID, self, peer.Type, peerTarget, referenceType, opt.Name, opt.Detail)
     if err != nil {
         // Covers BOTH cerrors.AlreadyExists (an open case for this peer
-        // already exists -- expected under the "goto/loop re-executes
-        // case_create for the same peer" scenario, see §3.3) and
+        // already exists -- now a RARE backstop condition after the §3.5
+        // activeflow-variable check above absorbs the common
+        // same-activeflow re-execution case; see §3.3/§3.5) and
         // cerrors.Unavailable (rare ErrDeadlock race loser, see §3.3).
         // Neither is escalated, retried, or distinguished here -- both are
         // simply logged and the activeflow continues without a new Case.
+        // Log level: kept at Error (not downgraded to Warn/Info) precisely
+        // BECAUSE §3.5's variable check now makes this a genuinely
+        // unusual, cross-activeflow-race condition worth an operator's
+        // attention, rather than a routine same-activeflow duplicate.
         log.Errorf("could not create case. err: %v", err)
         return nil
+    }
+    if errSet := h.reqHandler.FlowV1VariableSetVariable(ctx, af.ID, map[string]string{"contact_case_id": res.ID.String()}); errSet != nil {
+        log.Errorf("could not set contact_case_id variable. err: %v", errSet) // best-effort; the Case itself was created successfully regardless
     }
     if opt.Note != "" {
         if _, errNote := h.reqHandler.ContactV1CaseNoteCreate(ctx, af.CustomerID, res.ID, "system", nil, opt.Note); errNote != nil {
@@ -586,6 +702,17 @@ func (h *aicallHandler) toolHandleCaseCreate(ctx context.Context, c *aicall.AIca
         return res
     }
 
+    // Activeflow-scoped dedup (§3.5, added 2026-07-10): same check as the
+    // Flow action (§5.2), keyed on c.ActiveflowID -- the AI tool and the
+    // Flow action share the SAME activeflow variable store, so a case
+    // created by either surface during this call is visible to the other.
+    if v, errVar := h.reqHandler.FlowV1VariableGet(ctx, c.ActiveflowID); errVar == nil && v != nil {
+        if existingCaseID, ok := v.Variables["contact_case_id"]; ok && existingCaseID != "" {
+            fillSuccess(res, "case", existingCaseID, "A case already exists for this interaction; no new case was created.")
+            return res
+        }
+    } // a FlowV1VariableGet error itself is non-fatal here -- fall through and let ContactV1CaseCreate's own ErrDuplicate backstop (§3.3) catch it if a duplicate does exist
+
     peerTarget, err := commonaddress.NormalizeTarget(peer.Type, peer.Target)
     if err != nil {
         peerTarget = peer.Target // best-effort fallback, matches §5.2's Flow-action handling
@@ -594,14 +721,19 @@ func (h *aicallHandler) toolHandleCaseCreate(ctx context.Context, c *aicall.AIca
     created, err := h.reqHandler.ContactV1CaseCreate(ctx, c.CustomerID, self, peer.Type, peerTarget, referenceType, tmpOpt.Name, tmpOpt.Detail)
     if err != nil {
         // Covers cerrors.AlreadyExists (an open case for this peer already
-        // exists -- see §3.3) and cerrors.Unavailable (rare ErrDeadlock
-        // race loser -- see §3.3). Both are reported to the LLM via
-        // fillFailed (per this tool's convention, matching every other
-        // toolHandle* function) -- the tool description's own "Do not
-        // retry on failure" text (§6.2) is the mechanism that keeps this
-        // from causing a retry loop; the LLM is expected to move on.
+        // exists -- now a RARE backstop condition after the §3.5
+        // activeflow-variable check above, see §3.3/§3.5) and
+        // cerrors.Unavailable (rare ErrDeadlock race loser -- see §3.3).
+        // Both are reported to the LLM via fillFailed (per this tool's
+        // convention, matching every other toolHandle* function) -- the
+        // tool description's own "Do not retry on failure" text (§6.2) is
+        // the mechanism that keeps this from causing a retry loop; the LLM
+        // is expected to move on.
         fillFailed(res, err)
         return res
+    }
+    if errSet := h.reqHandler.FlowV1VariableSetVariable(ctx, c.ActiveflowID, map[string]string{"contact_case_id": created.ID.String()}); errSet != nil {
+        logrus.WithError(errSet).Warnf("could not set contact_case_id variable. aicall_id: %s", c.ID) // best-effort; the Case itself was created successfully regardless
     }
     if tmpOpt.Note != "" {
         _, _ = h.reqHandler.ContactV1CaseNoteCreate(ctx, c.CustomerID, created.ID, "ai", nil, tmpOpt.Note) // best-effort, error swallowed same as §3.3 point 6
@@ -662,19 +794,33 @@ only logs).
 
 ## 8. Failure-handling summary (cross-reference)
 
-| Call site | On `ContactV1CaseCreate` error (AlreadyExists or Unavailable) | On CRM-ineligible peer | On `ContactV1CaseNoteCreate` error |
-|---|---|---|---|
-| Flow action (`case_create`) | `logrus.Errorf`, return `nil` (activeflow continues) | `logrus.Debugf` (benign skip, not an error) | `logrus.Errorf`, no further action |
-| AI tool (`case_create`) | `fillFailed(res, err)` — LLM sees tool failure; AIcall continues | `fillSuccess(res, ...)` with an explanatory "no case created" message — NOT reported as a tool failure | error swallowed, tool call still reports success |
+| Call site | On activeflow-variable dedup hit (§3.5) | On `ContactV1CaseCreate` error (AlreadyExists or Unavailable) | On CRM-ineligible peer | On `ContactV1CaseNoteCreate` error |
+|---|---|---|---|---|
+| Flow action (`case_create`) | `logrus.Debugf` (benign skip, no RPC call made) | `logrus.Errorf`, return `nil` (activeflow continues) — now a rare, genuinely-worth-attention condition, see §3.5 | `logrus.Debugf` (benign skip, not an error) | `logrus.Errorf`, no further action |
+| AI tool (`case_create`) | `fillSuccess(res, ...)` with an explanatory "case already exists" message — NOT reported as a tool failure, no RPC call made | `fillFailed(res, err)` — LLM sees tool failure; AIcall continues | `fillSuccess(res, ...)` with an explanatory "no case created" message — NOT reported as a tool failure | error swallowed, tool call still reports success |
 
 Both paths satisfy "log and continue, never abort" (§2) for genuine
 errors — they differ only in whether an LLM-facing signal exists to report
 the failure, which is inherent to the two surfaces (a Flow action has no
-LLM to tell; a tool call does). The CRM-ineligible-peer condition is
-explicitly NOT treated as a failure on either surface (corrected per
-round-1 review — an earlier draft had the AI tool path incorrectly
-reporting this benign skip as a tool failure, inconsistent with the Flow
-action's silent-skip treatment of the identical condition).
+LLM to tell; a tool call does). The CRM-ineligible-peer condition and the
+activeflow-variable dedup hit are both explicitly NOT treated as failures
+on either surface (the CRM-ineligible-peer symmetry corrected per round-1
+review — an earlier draft had the AI tool path incorrectly reporting this
+benign skip as a tool failure, inconsistent with the Flow action's
+silent-skip treatment of the identical condition; the dedup-hit symmetry
+is new, added alongside §3.5).
+
+**Log-level note for `ContactV1CaseCreate` errors (added alongside §3.5)**:
+before the §3.5 activeflow-variable check existed, `AlreadyExists` was the
+*expected, routine* outcome of a Flow `goto`/loop re-executing `case_create`
+for the same peer within one activeflow — logging it at Error level would
+have been noisy for a normal, harmless occurrence. Now that §3.5's
+variable check absorbs that common case before the RPC is ever called, an
+`AlreadyExists`/`Unavailable` error surfacing from `ContactV1CaseCreate`
+itself means either a CROSS-activeflow race (two different live
+activeflows targeting the same peer) or the narrow variable check-then-set
+race window (§3.5) — both are unusual enough that `Errorf` remains the
+right log level; it is no longer a false-alarm risk.
 
 ## 9. Open questions for review
 
@@ -721,19 +867,24 @@ action's silent-skip treatment of the identical condition).
    agent-created-and-later-closed Case may need an explicit "assign to me"
    step before it becomes agent-resumable, or the UI needs to route
    unowned-closed-Case continuations through an admin/manager path.
-6. **No activeflow-facing outcome signal for the Flow action (new, round-2
-   review finding)**: `actionHandleCaseCreate` (§5.2) never sets an
-   activeflow variable (e.g. `case_id`) reporting whether it created a
-   Case, deduped against an existing one, or hit an error — a Flow author
-   has no way to branch subsequent flow logic on the outcome. This matches
-   the existing convention for sibling non-critical actions
-   (`actionHandleEmailSend`/`actionHandleWebhookSend` likewise set no
-   output variable), so it is NOT a regression or an inconsistency with
-   established patterns — but it is worth flagging explicitly as a known
-   v1 limitation rather than leaving it undiscussed. If a future Flow
-   author needs conditional logic based on "did case_create actually
-   create a case," that would be a separate, later enhancement (e.g. a
-   `case_id`/`case_created` output variable), not in scope here.
+6. **~~No activeflow-facing outcome signal for the Flow action~~ — RESOLVED
+   (round-2 finding, closed by pchero's 2026-07-10 follow-up, §3.5)**:
+   `actionHandleCaseCreate` now sets `contact_case_id` on the activeflow's
+   own variable store on successful creation (§3.5), which doubles as both
+   the dedup check AND the outcome signal a Flow author needs — subsequent
+   actions can reference `{{contact_case_id}}` or branch on its presence via
+   `condition_variable`. This closes the gap flagged in round-2 review; no
+   longer an open limitation.
+7. **`contact_case_id` peer-scoping gap (new, added per targeted
+   verification round, 2026-07-10)**: see §3.5's "Known limitation,
+   deliberately accepted" note — the activeflow-scoped `contact_case_id`
+   variable is a flat key, not qualified by peer, and could theoretically
+   false-suppress a legitimate second `case_create` for a genuinely
+   different peer within one activeflow (transfer/conference scenarios).
+   Not fixed in this design per the project's standing "no investment
+   without an observed incident" convention for theoretical-only risks;
+   flagged for implementation-time confirmation of whether this can
+   actually occur given VoIPBin's transfer/conference mechanics.
 
 ## 10. Test plan (high level, per layer)
 
@@ -751,7 +902,15 @@ action's silent-skip treatment of the identical condition).
     `actionHandleCaseCreate` — call-context derivation, conversation-context
     derivation, CRM-ineligible-peer skip (Debug-level, non-error),
     `ContactV1CaseCreate` AlreadyExists/Unavailable both swallowed
-    (activeflow continues), `peerTarget` normalization applied.
+    (activeflow continues), `peerTarget` normalization applied,
+    **§3.5 dedup**: `FlowV1VariableGet` returning an existing
+    `contact_case_id` skips `ContactV1CaseCreate` entirely (assert it's
+    never called via mock), and a successful `ContactV1CaseCreate` is
+    followed by exactly one `FlowV1VariableSetVariable` call with the
+    correct `contact_case_id` value; also cover `FlowV1VariableGet`
+    erroring (non-fatal, falls through to the normal Create path) and
+    `FlowV1VariableSetVariable` erroring after a successful Create
+    (logged, does not fail the action).
   - A NAMED unit test for `deriveEndpointsForCase` (the new helper itself,
     not just exercised indirectly through `actionHandleCaseCreate`) —
     incoming/outgoing/unknown direction cases, mirroring
@@ -777,7 +936,11 @@ action's silent-skip treatment of the identical condition).
     (not `fillFailed`) on CRM-ineligible-peer skip, `ConversationSafeTools`
     whitelist inclusion test, tool-definitions schema validity test
     (existing pattern in `definitions_resource_test.go`), `run_llm`
-    property present in the schema.
+    property present in the schema, **§3.5 dedup**: `FlowV1VariableGet`
+    returning an existing `contact_case_id` produces `fillSuccess` (not
+    `fillFailed`) with the existing case id and never calls
+    `ContactV1CaseCreate`; a successful Create is followed by exactly one
+    `FlowV1VariableSetVariable` call keyed on `c.ActiveflowID`.
   - A NAMED unit test for `deriveCaseEndpointsForAIcall` (new helper).
   - Both `bin-ai-manager/pkg/actioncatalog/main.go`'s
     `TestActionCatalogMatchesTypeListAll` AND
