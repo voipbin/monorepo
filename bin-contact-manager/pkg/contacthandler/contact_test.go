@@ -844,6 +844,64 @@ func Test_Create_WithAddresses(t *testing.T) {
 	}
 }
 
+// Test_Create_WithInvalidAddressType verifies that Create silently drops
+// an address whose commonaddress.Type is neither tel nor email from the
+// batch (isValidContactAddressType in contact.go), while still creating
+// the contact and the remaining valid addresses. No AddressCreate call
+// or UUIDCreate call is expected for the invalid entry.
+func Test_Create_WithInvalidAddressType(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	h := contactHandler{
+		utilHandler:   mockUtil,
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+	ctx := context.Background()
+
+	contactID := uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222")
+	c := &contact.Contact{
+		Identity: commonidentity.Identity{
+			CustomerID: uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111"),
+		},
+		FirstName: "Test",
+		Addresses: []contact.Address{
+			{Address: commonaddress.Address{Type: contact.AddressTypeTel, Target: "+155****4567"}},
+			{Address: commonaddress.Address{Type: commonaddress.TypeAgent, Target: "some-agent-id"}},
+		},
+	}
+
+	responseContact := &contact.Contact{
+		Identity: commonidentity.Identity{
+			ID:         contactID,
+			CustomerID: c.CustomerID,
+		},
+		FirstName: "Test",
+	}
+
+	mockUtil.EXPECT().UUIDCreate().Return(contactID)
+	mockDB.EXPECT().ContactCreate(ctx, gomock.Any()).Return(nil)
+	// Only the tel address (valid) results in an AddressCreate call. The
+	// commonaddress.TypeAgent address must be skipped entirely: no
+	// UUIDCreate() and no AddressCreate() call for it.
+	mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("44444444-4444-4444-4444-444444444444"))
+	mockDB.EXPECT().AddressCreate(ctx, gomock.Any()).Return(nil)
+	mockDB.EXPECT().ContactGet(ctx, contactID).Return(responseContact, nil)
+	mockNotify.EXPECT().PublishEvent(ctx, contact.EventTypeContactCreated, gomock.Any())
+
+	res, err := h.Create(ctx, c)
+	if err != nil {
+		t.Errorf("Create() error = %v", err)
+	}
+	if res.ID != contactID {
+		t.Errorf("Create() ID = %v, want %v", res.ID, contactID)
+	}
+}
+
 func Test_Get_Error(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()

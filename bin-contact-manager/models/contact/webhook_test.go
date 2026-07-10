@@ -2,6 +2,7 @@ package contact
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 	"time"
 
@@ -98,6 +99,81 @@ func TestContact_ConvertWebhookMessage(t *testing.T) {
 	}
 	if (webhook.TMDelete == nil) != (contact.TMDelete == nil) {
 		t.Errorf("TMDelete mismatch: got %v, want %v", webhook.TMDelete, contact.TMDelete)
+	}
+}
+
+// TestAddress_JSON_EmbeddedFlattening proves that Address's embedded
+// commonaddress.Address marshals its fields (type, target, ...) directly
+// into the parent object rather than nesting them under an "address" key.
+// Go's encoding/json flattens anonymous (embedded) struct fields into the
+// enclosing object by default; this test locks that behavior in with a
+// literal string assertion so a future accidental switch from embedding
+// to a named field (e.g. `Address commonaddress.Address \`json:"address"\`)
+// would be caught immediately.
+func TestAddress_JSON_EmbeddedFlattening(t *testing.T) {
+	addr := Address{
+		ID: uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333"),
+		Address: commonaddress.Address{
+			Type:   AddressTypeTel,
+			Target: "+155****4567",
+		},
+		IsPrimary: true,
+	}
+
+	data, err := json.Marshal(addr)
+	if err != nil {
+		t.Fatalf("json.Marshal() error = %v", err)
+	}
+
+	got := string(data)
+
+	if strings.Contains(got, `"address":{`) {
+		t.Errorf("JSON output contains a nested \"address\":{ key, embedded commonaddress.Address fields were not flattened. got: %s", got)
+	}
+
+	// Positive assertion: the embedded fields must appear flattened at
+	// the top level of the JSON object.
+	if !strings.Contains(got, `"type":"tel"`) {
+		t.Errorf("JSON output missing flattened \"type\" field. got: %s", got)
+	}
+	if !strings.Contains(got, `"target":"+155****4567"`) {
+		t.Errorf("JSON output missing flattened \"target\" field. got: %s", got)
+	}
+}
+
+// TestContact_JSON_AddressEmbeddedFlattening runs the same flattening
+// assertion at the Contact level (an Address nested inside Contact.Addresses)
+// to confirm the embedding holds through the full webhook payload, not just
+// a bare Address value.
+func TestContact_JSON_AddressEmbeddedFlattening(t *testing.T) {
+	c := &Contact{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111"),
+			CustomerID: uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222"),
+		},
+		Addresses: []Address{
+			{
+				ID: uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333"),
+				Address: commonaddress.Address{
+					Type:   AddressTypeEmail,
+					Target: "john@example.com",
+				},
+			},
+		},
+	}
+
+	data, err := json.Marshal(c)
+	if err != nil {
+		t.Fatalf("json.Marshal() error = %v", err)
+	}
+
+	got := string(data)
+
+	if strings.Contains(got, `"address":{`) {
+		t.Errorf("JSON output contains a nested \"address\":{ key, embedded commonaddress.Address fields were not flattened. got: %s", got)
+	}
+	if !strings.Contains(got, `"type":"email"`) {
+		t.Errorf("JSON output missing flattened \"type\" field. got: %s", got)
 	}
 }
 
