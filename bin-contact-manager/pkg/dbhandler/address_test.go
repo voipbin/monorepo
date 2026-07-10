@@ -195,13 +195,13 @@ func Test_AddressCreate(t *testing.T) {
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	a := &contact.Address{
 		Address: commonaddress.Address{
-			Type: contact.AddressTypeTel,
+			Type:   contact.AddressTypeTel,
 			Target: "+155****3001",
 		},
-		ID: addrID,
+		ID:         addrID,
 		CustomerID: customerID,
-		ContactID: contactID,
-		IsPrimary: true,
+		ContactID:  contactID,
+		IsPrimary:  true,
 	}
 	if err := h.AddressCreate(ctx, a); err != nil {
 		t.Fatalf("AddressCreate() error = %v", err)
@@ -275,12 +275,12 @@ func Test_AddressCreate_Duplicate(t *testing.T) {
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	a1 := &contact.Address{
 		Address: commonaddress.Address{
-			Type: contact.AddressTypeTel,
+			Type:   contact.AddressTypeTel,
 			Target: target,
 		},
-		ID: uuid.FromStringOrNil("ab1b2c3d-0010-0010-0010-000000000004"),
+		ID:         uuid.FromStringOrNil("ab1b2c3d-0010-0010-0010-000000000004"),
 		CustomerID: customerID,
-		ContactID: contactID1,
+		ContactID:  contactID1,
 	}
 	if err := h.AddressCreate(ctx, a1); err != nil {
 		t.Fatalf("first AddressCreate() error = %v", err)
@@ -292,12 +292,12 @@ func Test_AddressCreate_Duplicate(t *testing.T) {
 	mockUtil.EXPECT().TimeNow().Return(curTime)
 	a2 := &contact.Address{
 		Address: commonaddress.Address{
-			Type: contact.AddressTypeTel,
+			Type:   contact.AddressTypeTel,
 			Target: target,
 		},
-		ID: uuid.FromStringOrNil("ab1b2c3d-0010-0010-0010-000000000005"),
+		ID:         uuid.FromStringOrNil("ab1b2c3d-0010-0010-0010-000000000005"),
 		CustomerID: customerID,
-		ContactID: contactID2,
+		ContactID:  contactID2,
 	}
 	err := h.AddressCreate(ctx, a2)
 	if !stderrors.Is(err, ErrDuplicateTarget) {
@@ -350,13 +350,13 @@ func Test_AddressCreate_PrimaryIndexCollision_NotMisclassified(t *testing.T) {
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	a1 := &contact.Address{
 		Address: commonaddress.Address{
-			Type: contact.AddressTypeTel,
+			Type:   contact.AddressTypeTel,
 			Target: "+155****9101",
 		},
-		ID: uuid.FromStringOrNil("ab1b2c3d-0011-0011-0011-000000000003"),
+		ID:         uuid.FromStringOrNil("ab1b2c3d-0011-0011-0011-000000000003"),
 		CustomerID: customerID,
-		ContactID: contactID,
-		IsPrimary: true,
+		ContactID:  contactID,
+		IsPrimary:  true,
 	}
 	if err := h.AddressCreate(ctx, a1); err != nil {
 		t.Fatalf("first AddressCreate() error = %v", err)
@@ -368,13 +368,13 @@ func Test_AddressCreate_PrimaryIndexCollision_NotMisclassified(t *testing.T) {
 	mockUtil.EXPECT().TimeNow().Return(curTime)
 	a2 := &contact.Address{
 		Address: commonaddress.Address{
-			Type: contact.AddressTypeEmail,
+			Type:   contact.AddressTypeEmail,
 			Target: "second-primary@example.com",
 		},
-		ID: uuid.FromStringOrNil("ab1b2c3d-0011-0011-0011-000000000004"),
+		ID:         uuid.FromStringOrNil("ab1b2c3d-0011-0011-0011-000000000004"),
 		CustomerID: customerID,
-		ContactID: contactID,
-		IsPrimary: true,
+		ContactID:  contactID,
+		IsPrimary:  true,
 	}
 	err := h.AddressCreate(ctx, a2)
 	if err == nil {
@@ -424,13 +424,13 @@ func Test_AddressUpdate(t *testing.T) {
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	a := &contact.Address{
 		Address: commonaddress.Address{
-			Type: contact.AddressTypeTel,
+			Type:   contact.AddressTypeTel,
 			Target: "+155****4001",
 		},
-		ID: addrID,
+		ID:         addrID,
 		CustomerID: customerID,
-		ContactID: contactID,
-		IsPrimary: false,
+		ContactID:  contactID,
+		IsPrimary:  false,
 	}
 	if err := h.AddressCreate(ctx, a); err != nil {
 		t.Fatalf("AddressCreate() error = %v", err)
@@ -492,13 +492,13 @@ func Test_AddressDelete(t *testing.T) {
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	a := &contact.Address{
 		Address: commonaddress.Address{
-			Type: contact.AddressTypeTel,
+			Type:   contact.AddressTypeTel,
 			Target: "+155****5001",
 		},
-		ID: addrID,
+		ID:         addrID,
 		CustomerID: customerID,
-		ContactID: contactID,
-		IsPrimary: false,
+		ContactID:  contactID,
+		IsPrimary:  false,
 	}
 	if err := h.AddressCreate(ctx, a); err != nil {
 		t.Fatalf("AddressCreate() error = %v", err)
@@ -542,12 +542,12 @@ func Test_AddressCreate_Unresolved(t *testing.T) {
 	mockUtil.EXPECT().TimeNow().Return(curTime)
 	a := &contact.Address{
 		Address: commonaddress.Address{
-			Type: contact.AddressTypeTel,
+			Type:   contact.AddressTypeTel,
 			Target: "+155****6001",
 		},
-		ID: addrID,
+		ID:         addrID,
 		CustomerID: customerID,
-		ContactID: uuid.Nil,
+		ContactID:  uuid.Nil,
 	}
 	if err := h.AddressCreate(ctx, a); err != nil {
 		t.Fatalf("AddressCreate() error = %v", err)
@@ -614,12 +614,12 @@ func Test_AddressList_Unresolved(t *testing.T) {
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	if err := h.AddressCreate(ctx, &contact.Address{
 		Address: commonaddress.Address{
-			Type: contact.AddressTypeTel,
+			Type:   contact.AddressTypeTel,
 			Target: "+155****7001",
 		},
-		ID: resolvedAddrID,
+		ID:         resolvedAddrID,
 		CustomerID: customerID,
-		ContactID: contactID,
+		ContactID:  contactID,
 	}); err != nil {
 		t.Fatalf("AddressCreate() resolved error = %v", err)
 	}
@@ -628,12 +628,12 @@ func Test_AddressList_Unresolved(t *testing.T) {
 	mockUtil.EXPECT().TimeNow().Return(curTime)
 	if err := h.AddressCreate(ctx, &contact.Address{
 		Address: commonaddress.Address{
-			Type: contact.AddressTypeTel,
+			Type:   contact.AddressTypeTel,
 			Target: "+155****7002",
 		},
-		ID: unresolvedAddrID,
+		ID:         unresolvedAddrID,
 		CustomerID: customerID,
-		ContactID: uuid.Nil,
+		ContactID:  uuid.Nil,
 	}); err != nil {
 		t.Fatalf("AddressCreate() unresolved error = %v", err)
 	}
@@ -703,12 +703,12 @@ func Test_AddressList_UnresolvedWinsOverContactID(t *testing.T) {
 	mockUtil.EXPECT().TimeNow().Return(curTime)
 	if err := h.AddressCreate(ctx, &contact.Address{
 		Address: commonaddress.Address{
-			Type: contact.AddressTypeTel,
+			Type:   contact.AddressTypeTel,
 			Target: "+155****8001",
 		},
-		ID: unresolvedAddrID,
+		ID:         unresolvedAddrID,
 		CustomerID: customerID,
-		ContactID: uuid.Nil,
+		ContactID:  uuid.Nil,
 	}); err != nil {
 		t.Fatalf("AddressCreate() unresolved error = %v", err)
 	}
@@ -780,12 +780,12 @@ func Test_AddressClaim(t *testing.T) {
 	mockUtil.EXPECT().TimeNow().Return(curTime)
 	if err := h.AddressCreate(ctx, &contact.Address{
 		Address: commonaddress.Address{
-			Type: contact.AddressTypeTel,
+			Type:   contact.AddressTypeTel,
 			Target: "+155****8001",
 		},
-		ID: unresolvedAddrID,
+		ID:         unresolvedAddrID,
 		CustomerID: customerID,
-		ContactID: uuid.Nil,
+		ContactID:  uuid.Nil,
 	}); err != nil {
 		t.Fatalf("AddressCreate() unresolved error = %v", err)
 	}
@@ -795,12 +795,12 @@ func Test_AddressClaim(t *testing.T) {
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	if err := h.AddressCreate(ctx, &contact.Address{
 		Address: commonaddress.Address{
-			Type: contact.AddressTypeTel,
+			Type:   contact.AddressTypeTel,
 			Target: "+155****8002",
 		},
-		ID: resolvedAddrID,
+		ID:         resolvedAddrID,
 		CustomerID: customerID,
-		ContactID: contactID1,
+		ContactID:  contactID1,
 	}); err != nil {
 		t.Fatalf("AddressCreate() resolved error = %v", err)
 	}
@@ -829,4 +829,3 @@ func Test_AddressClaim(t *testing.T) {
 		t.Errorf("AddressClaim() idempotent same-contact claim: expected success, got: %v", err)
 	}
 }
-

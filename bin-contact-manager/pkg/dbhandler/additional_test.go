@@ -40,13 +40,13 @@ func Test_AddressUpdate_IsPrimary(t *testing.T) {
 			},
 			address: &contact.Address{
 				Address: commonaddress.Address{
-					Type: contact.AddressTypeTel,
+					Type:   contact.AddressTypeTel,
 					Target: "+155****1111",
 				},
-				ID: uuid.FromStringOrNil("a3a3a3a3-a3a3-a3a3-a3a3-a3a3a3a3a3a3"),
+				ID:         uuid.FromStringOrNil("a3a3a3a3-a3a3-a3a3-a3a3-a3a3a3a3a3a3"),
 				CustomerID: uuid.FromStringOrNil("a2a2a2a2-a2a2-a2a2-a2a2-a2a2a2a2a2a2"),
-				ContactID: uuid.FromStringOrNil("a1a1a1a1-a1a1-a1a1-a1a1-a1a1a1a1a1a1"),
-				IsPrimary: false,
+				ContactID:  uuid.FromStringOrNil("a1a1a1a1-a1a1-a1a1-a1a1-a1a1a1a1a1a1"),
+				IsPrimary:  false,
 			},
 			update: map[string]any{
 				"is_primary": true,
@@ -140,13 +140,13 @@ func Test_AddressResetPrimary(t *testing.T) {
 	// Create primary address
 	addr1 := &contact.Address{
 		Address: commonaddress.Address{
-			Type: contact.AddressTypeTel,
+			Type:   contact.AddressTypeTel,
 			Target: "+155****1111",
 		},
-		ID: uuid.FromStringOrNil("a6a6a6a6-a6a6-a6a6-a6a6-a6a6a6a6a6a6"),
+		ID:         uuid.FromStringOrNil("a6a6a6a6-a6a6-a6a6-a6a6-a6a6a6a6a6a6"),
 		CustomerID: customerID,
-		ContactID: contactID,
-		IsPrimary: true,
+		ContactID:  contactID,
+		IsPrimary:  true,
 	}
 
 	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)))
@@ -195,13 +195,13 @@ func Test_AddressUpdate_Target(t *testing.T) {
 			},
 			address: &contact.Address{
 				Address: commonaddress.Address{
-					Type: contact.AddressTypeEmail,
+					Type:   contact.AddressTypeEmail,
 					Target: "old@example.com",
 				},
-				ID: uuid.FromStringOrNil("a9a9a9a9-a9a9-a9a9-a9a9-a9a9a9a9a9a9"),
+				ID:         uuid.FromStringOrNil("a9a9a9a9-a9a9-a9a9-a9a9-a9a9a9a9a9a9"),
 				CustomerID: uuid.FromStringOrNil("a8a8a8a8-a8a8-a8a8-a8a8-a8a8a8a8a8a8"),
-				ContactID: uuid.FromStringOrNil("a7a7a7a7-a7a7-a7a7-a7a7-a7a7a7a7a7a7"),
-				IsPrimary: false,
+				ContactID:  uuid.FromStringOrNil("a7a7a7a7-a7a7-a7a7-a7a7-a7a7a7a7a7a7"),
+				IsPrimary:  false,
 			},
 			update: map[string]any{
 				"is_primary": true,
@@ -295,13 +295,13 @@ func Test_AddressResetPrimary_Email(t *testing.T) {
 	// Create email address with primary
 	addr1 := &contact.Address{
 		Address: commonaddress.Address{
-			Type: contact.AddressTypeEmail,
+			Type:   contact.AddressTypeEmail,
 			Target: "primary@example.com",
 		},
-		ID: uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa3"),
+		ID:         uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa3"),
 		CustomerID: customerID,
-		ContactID: contactID,
-		IsPrimary: true,
+		ContactID:  contactID,
+		IsPrimary:  true,
 	}
 
 	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)))
@@ -409,13 +409,13 @@ func Test_AddressUpdate_MultipleFields(t *testing.T) {
 	// Create address
 	addr := &contact.Address{
 		Address: commonaddress.Address{
-			Type: contact.AddressTypeTel,
+			Type:   contact.AddressTypeTel,
 			Target: "+155****1111",
 		},
-		ID: uuid.FromStringOrNil("dddddddd-dddd-dddd-dddd-ddddddddddd3"),
+		ID:         uuid.FromStringOrNil("dddddddd-dddd-dddd-dddd-ddddddddddd3"),
 		CustomerID: customerID,
-		ContactID: contactID,
-		IsPrimary: false,
+		ContactID:  contactID,
+		IsPrimary:  false,
 	}
 
 	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)))
@@ -486,13 +486,13 @@ func Test_AddressUpdate_EmailTarget(t *testing.T) {
 	// Create email address
 	addr := &contact.Address{
 		Address: commonaddress.Address{
-			Type: contact.AddressTypeEmail,
+			Type:   contact.AddressTypeEmail,
 			Target: "old@example.com",
 		},
-		ID: uuid.FromStringOrNil("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeee3"),
+		ID:         uuid.FromStringOrNil("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeee3"),
 		CustomerID: customerID,
-		ContactID: contactID,
-		IsPrimary: false,
+		ContactID:  contactID,
+		IsPrimary:  false,
 	}
 
 	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)))

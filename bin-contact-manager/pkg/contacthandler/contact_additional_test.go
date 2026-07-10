@@ -48,13 +48,13 @@ func Test_UpdateAddress(t *testing.T) {
 			},
 			responseAddress: &contact.Address{
 				Address: commonaddress.Address{
-					Type: contact.AddressTypeTel,
+					Type:   contact.AddressTypeTel,
 					Target: "+15559998888",
 				},
-				ID: uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222"),
+				ID:         uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222"),
 				CustomerID: uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333"),
-				ContactID: uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111"),
-				IsPrimary: false,
+				ContactID:  uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111"),
+				IsPrimary:  false,
 			},
 		},
 		{
@@ -74,13 +74,13 @@ func Test_UpdateAddress(t *testing.T) {
 			},
 			responseAddress: &contact.Address{
 				Address: commonaddress.Address{
-					Type: contact.AddressTypeEmail,
+					Type:   contact.AddressTypeEmail,
 					Target: "test@example.com",
 				},
-				ID: uuid.FromStringOrNil("55555555-5555-5555-5555-555555555555"),
+				ID:         uuid.FromStringOrNil("55555555-5555-5555-5555-555555555555"),
 				CustomerID: uuid.FromStringOrNil("66666666-6666-6666-6666-666666666666"),
-				ContactID: uuid.FromStringOrNil("44444444-4444-4444-4444-444444444444"),
-				IsPrimary: false,
+				ContactID:  uuid.FromStringOrNil("44444444-4444-4444-4444-444444444444"),
+				IsPrimary:  false,
 			},
 		},
 	}
@@ -178,7 +178,7 @@ func Test_UpdateAddress_Error(t *testing.T) {
 					Address: commonaddress.Address{
 						Type: contact.AddressTypeTel,
 					},
-					ID: addressID,
+					ID:        addressID,
 					IsPrimary: false,
 				}
 				mockDB.EXPECT().ContactGet(ctx, contactID).Return(responseContact, nil)
@@ -289,10 +289,10 @@ func Test_UpdateAddress_WithTarget(t *testing.T) {
 	}
 	responseAddress := &contact.Address{
 		Address: commonaddress.Address{
-			Type: contact.AddressTypeTel,
+			Type:   contact.AddressTypeTel,
 			Target: "+15551234567",
 		},
-		ID: addressID,
+		ID:        addressID,
 		ContactID: contactID,
 	}
 
@@ -343,10 +343,10 @@ func Test_UpdateAddress_WithEmailTarget(t *testing.T) {
 	}
 	responseAddress := &contact.Address{
 		Address: commonaddress.Address{
-			Type: contact.AddressTypeEmail,
+			Type:   contact.AddressTypeEmail,
 			Target: "test@example.com",
 		},
-		ID: addressID,
+		ID:        addressID,
 		ContactID: contactID,
 	}
 
@@ -386,7 +386,7 @@ func Test_AddAddress_ResetPrimaryError(t *testing.T) {
 	contactID := uuid.FromStringOrNil("a0a0a0a0-a0a0-a0a0-a0a0-a0a0a0a0a0a0")
 	addr := &contact.Address{
 		Address: commonaddress.Address{
-			Type: contact.AddressTypeTel,
+			Type:   contact.AddressTypeTel,
 			Target: "+15554567890",
 		},
 		IsPrimary: true,

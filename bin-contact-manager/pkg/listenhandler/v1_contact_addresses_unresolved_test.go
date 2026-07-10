@@ -62,10 +62,10 @@ func Test_processV1ContactAddressesPost_Unresolved(t *testing.T) {
 			if tt.expectCall {
 				mockContact.EXPECT().CreateUnresolvedAddress(gomock.Any(), customerID, gomock.Any()).Return(&contact.Address{
 					Address: commonaddress.Address{
-						Type: "tel",
+						Type:   "tel",
 						Target: "+15559998888",
 					},
-					ID: addressID,
+					ID:         addressID,
 					CustomerID: customerID,
 				}, nil)
 			}

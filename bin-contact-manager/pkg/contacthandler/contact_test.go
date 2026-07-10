@@ -327,7 +327,7 @@ func Test_AddAddress(t *testing.T) {
 			contactID: uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111"),
 			address: &contact.Address{
 				Address: commonaddress.Address{
-					Type: contact.AddressTypeTel,
+					Type:   contact.AddressTypeTel,
 					Target: "+155****4567",
 				},
 				IsPrimary: true,
@@ -346,7 +346,7 @@ func Test_AddAddress(t *testing.T) {
 			contactID: uuid.FromStringOrNil("44444444-4444-4444-4444-444444444444"),
 			address: &contact.Address{
 				Address: commonaddress.Address{
-					Type: contact.AddressTypeEmail,
+					Type:   contact.AddressTypeEmail,
 					Target: "test@example.com",
 				},
 				IsPrimary: true,
@@ -459,16 +459,16 @@ func Test_LookupByPhone(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID  uuid.UUID
-		phoneE164   string
+		customerID uuid.UUID
+		phoneE164  string
 
 		responseContact *contact.Contact
 	}{
 		{
 			name: "normal",
 
-			customerID:  uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
-			phoneE164:   "+15551234567",
+			customerID: uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+			phoneE164:  "+15551234567",
 
 			responseContact: &contact.Contact{
 				Identity: commonidentity.Identity{
@@ -534,7 +534,7 @@ func Test_RemoveAddress(t *testing.T) {
 				Address: commonaddress.Address{
 					Type: contact.AddressTypeTel,
 				},
-				ID: uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222"),
+				ID:        uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222"),
 				ContactID: uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111"),
 			},
 		},
@@ -554,7 +554,7 @@ func Test_RemoveAddress(t *testing.T) {
 				Address: commonaddress.Address{
 					Type: contact.AddressTypeEmail,
 				},
-				ID: uuid.FromStringOrNil("55555555-5555-5555-5555-555555555555"),
+				ID:        uuid.FromStringOrNil("55555555-5555-5555-5555-555555555555"),
 				ContactID: uuid.FromStringOrNil("44444444-4444-4444-4444-444444444444"),
 			},
 		},
@@ -1860,7 +1860,7 @@ func Test_AddAddress_NormalizesEmail(t *testing.T) {
 	contactID := uuid.FromStringOrNil("e1111111-1111-1111-1111-111111111111")
 	addr := &contact.Address{
 		Address: commonaddress.Address{
-			Type: contact.AddressTypeEmail,
+			Type:   contact.AddressTypeEmail,
 			Target: "  USER@EXAMPLE.COM  ",
 		},
 		// uppercase with spaces
@@ -1967,7 +1967,7 @@ func Test_AddAddress_NormalizesPhone(t *testing.T) {
 	contactID := uuid.FromStringOrNil("f1111111-1111-1111-1111-111111111111")
 	addr := &contact.Address{
 		Address: commonaddress.Address{
-			Type: contact.AddressTypeTel,
+			Type:   contact.AddressTypeTel,
 			Target: "+12345678901",
 		},
 		IsPrimary: false,
@@ -2015,7 +2015,7 @@ func Test_AddAddress_TrimsSpaces(t *testing.T) {
 	contactID := uuid.FromStringOrNil("f1111111-1111-1111-1111-111111111111")
 	addr := &contact.Address{
 		Address: commonaddress.Address{
-			Type: contact.AddressTypeTel,
+			Type:   contact.AddressTypeTel,
 			Target: "  +15551234567  ",
 		},
 		// with spaces

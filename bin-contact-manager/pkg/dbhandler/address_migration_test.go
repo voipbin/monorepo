@@ -68,13 +68,13 @@ func Test_AddressMigration_CrossTypeSinglePrimary(t *testing.T) {
 
 	telAddr := &contact.Address{
 		Address: commonaddress.Address{
-			Type: contact.AddressTypeTel,
+			Type:   contact.AddressTypeTel,
 			Target: "+155****1111",
 		},
-		ID: uuid.FromStringOrNil("c1c1c1c1-0003-0003-0003-000000000003"),
+		ID:         uuid.FromStringOrNil("c1c1c1c1-0003-0003-0003-000000000003"),
 		CustomerID: customerID,
-		ContactID: contactID,
-		IsPrimary: true,
+		ContactID:  contactID,
+		IsPrimary:  true,
 	}
 	mockUtil.EXPECT().TimeNow().Return(curTime)
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
@@ -100,13 +100,13 @@ func Test_AddressMigration_CrossTypeSinglePrimary(t *testing.T) {
 
 	emailAddr := &contact.Address{
 		Address: commonaddress.Address{
-			Type: contact.AddressTypeEmail,
+			Type:   contact.AddressTypeEmail,
 			Target: "primary@example.com",
 		},
-		ID: uuid.FromStringOrNil("c1c1c1c1-0004-0004-0004-000000000004"),
+		ID:         uuid.FromStringOrNil("c1c1c1c1-0004-0004-0004-000000000004"),
 		CustomerID: customerID,
-		ContactID: contactID,
-		IsPrimary: true,
+		ContactID:  contactID,
+		IsPrimary:  true,
 	}
 	mockUtil.EXPECT().TimeNow().Return(curTime)
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())

@@ -42,7 +42,7 @@ func Test_CreateUnresolvedAddress(t *testing.T) {
 
 	a := &contact.Address{
 		Address: commonaddress.Address{
-			Type: contact.AddressTypeTel,
+			Type:   contact.AddressTypeTel,
 			Target: "+15559998888",
 		},
 	}
@@ -63,12 +63,12 @@ func Test_CreateUnresolvedAddress(t *testing.T) {
 
 	created := &contact.Address{
 		Address: commonaddress.Address{
-			Type: contact.AddressTypeTel,
+			Type:   contact.AddressTypeTel,
 			Target: "+15559998888",
 		},
-		ID: generatedID,
+		ID:         generatedID,
 		CustomerID: customerID,
-		ContactID: uuid.Nil,
+		ContactID:  uuid.Nil,
 	}
 	mockDB.EXPECT().AddressGet(ctx, customerID, generatedID).Return(created, nil)
 
