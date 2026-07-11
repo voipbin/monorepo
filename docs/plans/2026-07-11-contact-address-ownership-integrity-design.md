@@ -149,6 +149,22 @@ All four ownership-period-affecting operations are additions alongside the
 existing `contact_addresses` write, inside the **same transaction** the existing
 write already runs in (see §5 for the transaction restructuring this requires).
 
+**Round-10 finding: `CreateUnresolvedAddress` (`contact_id = uuid.Nil`,
+`pkg/contacthandler/contact.go:426`) calls the same `dbhandler.AddressCreate`
+this section governs, but §3.1 already establishes that an unresolved
+address must not get a period until `ClaimAddress` assigns a real owner.**
+Applying the steps below with `contact_id = uuid.Nil` as "this contact" would
+misfire — Step 1 in particular would treat *every* live owner anywhere as a
+conflict against `Nil`, which is not the semantic this design intends and is
+not the `ErrDuplicateTarget`/unique-index behavior `contact_addresses`
+already provides for this path today. **This section's steps apply only when
+`contact_id != uuid.Nil`.** `AddressCreate` calls with `contact_id ==
+uuid.Nil` (i.e. only `CreateUnresolvedAddress`) skip the §4 locking read and
+the steps below entirely — they write `contact_addresses` exactly as today,
+with no ownership-period effect, and no period exists for that target until
+a later `ClaimAddress` call (which always supplies a real `contact_id`) runs
+the steps below for the first time.
+
 **Round-8 review found the "1–5 cases" framing (round-6/7's fix) was not
 actually mutually exclusive — several real states satisfy more than one
 case's stated precondition (e.g. this contact's own row is open AND it also
@@ -276,9 +292,18 @@ pre-lock read and the post-lock re-read. Unlike a target mismatch (transient
 — retrying with the fresh target can still succeed), a NotFound here is
 **permanent** — the address this `ClaimAddress` call was trying to claim no
 longer exists, and no amount of retrying changes that. **Fix: if the
-post-lock re-read returns NotFound, do not retry — abort immediately and
-return `cerrors.NotFound` (404),** the same mapping `AddressClaim`'s existing
-pre-lock `AddressNotFound` case already uses today. Feeding this into the
+post-lock re-read returns NotFound, do not retry — abort the transaction and
+return `dbhandler.ErrNotFound`** (a plain sentinel error; the `dbhandler`
+package has no `cerrors` dependency, so this stays purely at the dbhandler
+layer), **the same sentinel `AddressClaim`'s existing pre-lock NotFound case
+already returns.** No new mapping code is needed: `contacthandler.ClaimAddress`
+already converts `dbhandler.ErrNotFound → cerrors.NotFound` via its existing
+`stderrors.Is(err, dbhandler.ErrNotFound)` branch (`contact.go:465-471`,
+§5.4's convention) for that pre-lock case, and this post-lock case reuses the
+exact same branch — round-9's original wording ("return `cerrors.NotFound`")
+incorrectly implied the dbhandler layer itself performs that conversion,
+which round-10 review found crosses the package boundary §5.4 itself
+establishes. Feeding this into the
 retry loop instead would misclassify a permanent condition as transient,
 burning all `maxDeadlockRetries` attempts before incorrectly surfacing a
 transient 5xx for something that was never going to succeed — the same class
@@ -569,6 +594,9 @@ duplicated here). Disposition of each finding that survived to this design:
 | Round-9 verification: re-derived the full 8-state truth table (self row absent/open/closed × other row absent/open/closed, with self-open and other-open mutually exclusive via `open_period_uk`) against the round-8 5-step procedure | **Confirmed correct** — every reachable state maps to exactly one step, no overlap or gap. This is the first round where §4's core decision logic itself produced zero findings. |
 | Round-9 finding: round-8's stale-target compare-and-retry (§4/§5.3) only specified behavior for "target differs" — a concurrent `RemoveAddress` deleting the same `addressID` between the pre-lock and post-lock reads (`contact_addresses` is hard-delete) would return NotFound instead, a permanent condition the retry loop would have misclassified as transient, burning all retries before an incorrect 5xx | **Fixed** (§4: post-lock NotFound aborts immediately with `cerrors.NotFound`, no retry — the same mapping `AddressClaim`'s existing pre-lock NotFound case already uses) |
 | Round-9 finding: two places in §4/§5.1 still referred to the pre-round-8 "case" terminology ("case 2 above", "which of §4's cases applies") after §4 was restructured into numbered steps, risking an implementer misreading a stale cross-reference | **Fixed** (both corrected to "Step 4" / "steps" respectively) |
+| Round-10 finding: round-9's NotFound fix said "return `cerrors.NotFound`" from inside the transaction/dbhandler-layer procedure §4 describes, but `dbhandler` has no `cerrors` dependency (verified: zero imports) — the actual conversion happens only in `contacthandler.ClaimAddress`'s existing error-mapping branch, exactly as §5.4 itself establishes for B5 | **Fixed** (§4 reworded: dbhandler returns `dbhandler.ErrNotFound`, the same sentinel the existing pre-lock case already returns; `contacthandler.ClaimAddress`'s existing mapping branch handles the conversion, no new mapping code needed) |
+| Round-10 BLOCKER: `CreateUnresolvedAddress` (`contact_id = uuid.Nil`) calls the same `dbhandler.AddressCreate` §4's step procedure governs, but §3.1 already establishes unresolved addresses must not get a period until `ClaimAddress` assigns a real owner — applying Step 1 with `contact_id = Nil` as "this contact" would misfire, treating every live owner anywhere as a conflict against `Nil` | **Fixed** (§4: explicit new paragraph scoping the entire step procedure to `contact_id != uuid.Nil`; `CreateUnresolvedAddress`'s `AddressCreate` calls skip the locking read and steps entirely, unchanged from today, until a later `ClaimAddress` call with a real contact_id runs the steps for the first time) |
+| Round-10 verification: re-confirmed no remaining "case N" terminology and re-verified §3.1's schema supports every rule accumulated across all 9 prior rounds | **Confirmed correct**, no further findings on either point. |
 
 ## 9. Migration plan
 
