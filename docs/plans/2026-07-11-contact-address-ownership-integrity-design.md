@@ -644,17 +644,39 @@ slice type the caller passes (a new optional parameter, not a signature
 change to the existing one — see below), building each clause as:
 
 ```go
-or = append(or, sq.And{
-	sq.Eq{"peer_type": b.Type, "peer_target": b.Target},
-	sq.GtOrEq{"tm_interaction": coalesce(b.ValidFrom, sq.Expr("tm_interaction"))},
-	sq.Lt{"tm_interaction": coalesce(b.ValidTo, sq.Expr("tm_interaction + INTERVAL 1 SECOND"))},
-})
+// Round-17 finding: sq.GtOrEq{"col": sq.Expr(...)}/sq.Lt{...} is NOT valid —
+// squirrel's Eq/Lt/GtOrEq only special-case driver.Valuer values in their
+// toSql() implementation (vendor/github.com/Masterminds/squirrel/expr.go),
+// with no branch for a Sqlizer (what sq.Expr returns) placed as a map
+// value — passing one there serializes to a bind-parameter placeholder
+// with the *expr struct itself* as the argument, which errors at query-exec
+// time ("unsupported type") since expr doesn't implement driver.Valuer.
+// sq.And/sq.Or (composing whole conditions) do check for Sqlizer; individual
+// column-comparison builders like Eq/Lt/GtOrEq do not. The comparison must
+// instead be built as a single raw-SQL fragment via sq.Expr, with the ±∞
+// fallback expressed inside that one SQL string rather than assembled from
+// separate squirrel value-position helpers:
+validFromSQL, validToSQL := "tm_interaction", "tm_interaction + INTERVAL 1 SECOND"
+if b.ValidFrom != nil {
+	validFromSQL = "?"
+}
+if b.ValidTo != nil {
+	validToSQL = "?"
+}
+clause := fmt.Sprintf("(peer_type = ? AND peer_target = ? AND tm_interaction >= %s AND tm_interaction < %s)", validFromSQL, validToSQL)
+args := []any{b.Type, b.Target}
+if b.ValidFrom != nil {
+	args = append(args, *b.ValidFrom)
+}
+if b.ValidTo != nil {
+	args = append(args, *b.ValidTo)
+}
+or = append(or, sq.Expr(clause, args...))
 ```
 
-(`coalesce` here denotes: use the literal bound if non-nil, else fall back to
-referencing `tm_interaction` itself, reproducing the same "compare a column
-to itself" ±∞ trick §6.3's SQL already uses, expressed through squirrel's
-query builder instead of raw SQL.) **Call-site impact:** `InteractionList` is
+(This is the same pattern §6.3's `NOT EXISTS` correlated subquery already
+uses — the ±∞ fallback lives inside one SQL string, never as a value handed
+to a squirrel column-comparison builder.) **Call-site impact:** `InteractionList` is
 shared by `interactionListByContact`'s STEP2 (this call site, needs the new
 `[]OwnershipPeriodBound` path) and by the single-address re-fetch in
 `interaction_read.go:285` (STEP5, unchanged — that call site still only
@@ -802,6 +824,8 @@ duplicated here). Disposition of each finding that survived to this design:
 | Round-15 note (recorded, not blocking): round-14's `ContactDelete` membership re-check loop has no explicit pass-count cap, so a sustained stream of concurrent `ClaimAddress` calls against new targets could keep it re-checking across many passes | Acknowledged as a liveness/latency concern, not a correctness one (each pass still converges toward a fixed point); not given an arbitrary cap because that would trade a rare long-transaction case for a new, precedent-less correctness question (what disposition applies if the cap is hit without converging). |
 | Round-16 finding: §6.2's claim that STEP2's time-range condition "mirrors the existing OR-expansion shape... no new query pattern" doesn't hold up — `AddressPair`/`sq.Eq` only carry pure equality, no field for `valid_from`/`valid_to`, and `sq.Eq` cannot express a range condition; STEP2 cannot be implemented by passing more `AddressPair` values into the existing `InteractionList` call | **Fixed** (§6.2: concrete `OwnershipPeriodBound` type and OR-builder added, additive alongside `AddressPair` — only STEP2's call site changes, `interaction_read.go:285`'s single-address re-fetch and all existing tests/mocks are unaffected) |
 | Round-16 BLOCKER: round-15's "schema-and-binary-together, drain-then-replace" deployment-ordering fix for the rolling-deploy version-skew window is not enforceable — `bin-dbscheme-manager`/`bin-contact-manager` are independent CI/CD workflows with no `requires` dependency, schema migrations are applied manually outside CI/CD, and the k8s Deployment has no explicit `strategy` (inherits Kubernetes' default surge-first `RollingUpdate`, the opposite of what the fix assumed) | **Fixed** (§9: replaced the unenforceable deploy-ordering instruction with a code-level defense — the ownership-period-closing `UPDATE` gets the same `RowsAffected` check B5 established, now incrementing a Prometheus counter on a miss instead of silently no-op'ing; the residual gap (Step 5 can't distinguish "never owned" from "owned pre-migration with no period") is accepted as a bounded, monitored blast radius limited to the rollout window, not solved) |
+| Round-17 finding: §6.2's `sq.GtOrEq{"col": sq.Expr(...)}` construction is not valid squirrel usage — verified against the vendored source that `Eq`/`Lt`/`GtOrEq` only special-case `driver.Valuer` values in their `toSql()`, with no branch for a `Sqlizer` in value position; this compiles but fails at query-exec time with an "unsupported type" error | **Fixed** (§6.2: rewritten to build the whole comparison as one `sq.Expr(...)` raw-SQL fragment with the ±∞ fallback embedded in the SQL string itself, the same pattern §6.3's `NOT EXISTS` subquery already uses, rather than assembling it from squirrel value-position helpers) |
+| Round-17 finding: §9's Prometheus-counter fix for the version-skew defense (a) only named `AddressDelete`'s closing `UPDATE`, leaving the identical race in `AddressUpdate`'s old-target close and `ContactDelete`'s per-target close silently un-instrumented, and (b) claimed to be "consistent with an existing pattern" while `pkg/dbhandler` has zero Prometheus integration today (verified: no `prometheus` import in the package; existing metrics live only in `casehandler`/`listenhandler`/`subscribehandler`) | **Fixed** (§9: extended the `RowsAffected == 0` handling to all three closing-`UPDATE` sites, not just `AddressDelete`'s; specified `dbhandler` gaining its own `metricsNamespace` + `init()` block mirroring `casehandler`'s existing shape, package-local with no new upward dependency into the handler layer) |
 
 ## 9. Migration plan
 
@@ -911,16 +935,37 @@ duplicated here). Disposition of each finding that survived to this design:
    exactly as round-15 described. **Fix: defend against the skew in code,
    not in deploy-ordering discipline.** Two changes, both cheap and already
    consistent with patterns this design uses elsewhere:
-   - The closing `UPDATE ... SET valid_to=NOW() WHERE open_period_uk = <hash>`
-     (`AddressDelete`'s ownership-period effect, §4) gets the same
-     `RowsAffected` check B5 already established for
-     `AddressUpdate`/`AddressDelete`'s `contact_addresses`-side write (§5.4):
-     if `RowsAffected == 0`, this is not an error (the address itself still
-     deletes normally — an old-binary-created address with no period is a
+   - **Round-17 finding: the original text here only named `AddressDelete`'s
+     closing `UPDATE`, but §4 has three closing-`UPDATE` sites exposed to the
+     identical skew race** — `AddressDelete`, `AddressUpdate` (target
+     changed)'s old-target close, and `ContactDelete`'s per-target close
+     (round-13/14's N-target generalization). Applying the `RowsAffected`
+     check to only one of the three would leave the other two silently
+     no-op'ing exactly as before, contradicting this fix's own "make the
+     blast radius visible" goal for those paths. **All three closing-`UPDATE`
+     sites get the same `RowsAffected == 0` handling**, not just
+     `AddressDelete`'s.
+   - **Round-17 finding: `pkg/dbhandler` has zero Prometheus integration
+     today** (verified: no `prometheus` import anywhere in the package) —
+     existing metrics live only in `pkg/casehandler`/`pkg/listenhandler`/
+     `pkg/subscribehandler`, each with its own `metricsNamespace` var and an
+     `init()` registering it via `prometheus.MustRegister`. Claiming this is
+     "consistent with an existing pattern" was wrong; `dbhandler` has no
+     such pattern to reuse and introducing one there for the first time is
+     itself a small architectural decision this design needs to make
+     explicit rather than wave at. **Fix:** `dbhandler` gains its own
+     `metricsNamespace` + `init()` block, following the exact same shape as
+     `casehandler`'s (same `prometheus.MustRegister` pattern, package-local
+     — not a dependency on `casehandler`'s or `listenhandler`'s existing
+     counters, and not a new upward dependency from `dbhandler` into any
+     handler-layer package). All three closing-`UPDATE` sites above call
+     this one `dbhandler`-local counter on a `RowsAffected == 0` miss: this
+     is not an error (the address itself, or Contact, still updates/deletes
+     normally — an old-binary-created address with no period is a
      legitimate, if degraded, state) but it now increments a Prometheus
-     counter (this service's existing `:2112/metrics` endpoint, per its
-     `CLAUDE.md`) so the skew window's actual blast radius becomes visible
-     in monitoring rather than being purely silent.
+     counter (surfaced through this service's existing `:2112/metrics`
+     endpoint, per its `CLAUDE.md`) so the skew window's actual blast radius
+     becomes visible in monitoring rather than being purely silent.
    - Step 5 of §4 (true first-ever registration → `valid_from=NULL`) already
      cannot distinguish "genuinely never owned by anyone" from "owned by an
      old-binary pod that never wrote a period" — those two states are
