@@ -57,12 +57,19 @@ only for interactions someone has already individually resolved.
     its siblings).
 
 ### Explicitly out of scope
-- **No new API.** All four existing endpoints
-  (`POST /v1/contacts/{id}/addresses`, `POST /v1/contact_addresses`,
+- **No new API.** All existing endpoints
+  (`POST /v1/contacts` with inline addresses, `POST /v1/contacts/{id}/addresses`,
+  `POST /v1/contact_addresses`,
   `PUT /v1/contact_addresses/{id}`, `DELETE /v1/contact_addresses/{id}`,
   `POST /v1/contact_addresses/{id}/claim`) keep their exact current signatures,
   request/response shapes, and status codes. This design is a pure internal
   rewire behind those endpoints. (Confirmed with pchero: no `transfer` endpoint.)
+  The one behavior change, per §4's round-11 finding, is that `POST
+  /v1/contacts`'s inline address registration now propagates
+  `AddressCreate`/`AddressResetPrimary` errors instead of silently swallowing
+  them — a correctness fix to existing broken error handling, not a new
+  response shape (the error still surfaces through the same response
+  envelope any other validation failure on that endpoint already uses).
 - **No atomic reassignment RPC.** Reassigning a number between Contacts remains
   two independent calls (`DELETE` on the old Contact, then `POST`/`claim` on the
   new one), exactly as today. The TOCTOU gap between those two calls is a known,
@@ -145,9 +152,37 @@ and soft-delete instead of hard-delete. Rejected because:
 
 ## 4. Write paths
 
-All four ownership-period-affecting operations are additions alongside the
+All five ownership-period-affecting operations are additions alongside the
 existing `contact_addresses` write, inside the **same transaction** the existing
 write already runs in (see §5 for the transaction restructuring this requires).
+
+**Round-11 finding: `contacthandler.Create` (`ContactCreate`,
+`pkg/contacthandler/contact.go:79-107`) is a fifth caller of
+`dbhandler.AddressCreate`/`AddressResetPrimary` that this design had not
+accounted for — its inline address-registration loop, run when a Contact is
+created together with its initial addresses, calls both with the real
+`contact_id = c.ID` (never `uuid.Nil`), so per the scope note above it is
+squarely subject to the step procedure below, not exempt from it the way
+`CreateUnresolvedAddress` is. It was missing from every reference to "the
+four write handlers" in this document (§4's A9-b paragraph, §5.1's
+transaction wrapping) purely because earlier rounds' review scope never
+grepped for every *caller* of the dbhandler functions this design touches,
+only re-examined the logic of handlers already in scope. Today this loop
+also has no transaction and swallows `AddressCreate`/`AddressResetPrimary`
+errors (`log.Warnf` + continue, no error propagation) — meaning a live-owner
+conflict this design's Step 1 is meant to reject with `ErrConflict` would
+today silently succeed instead, creating a Contact with an address it never
+gets an ownership period for, while the real owner's open period stays open
+untouched. **This design brings `ContactCreate`'s address loop under the
+exact same discipline as `AddAddress`/`UpdateAddress`/`RemoveAddress`/
+`ClaimAddress`: each address in the loop gets its own `BeginTx`-wrapped
+operation running the §4 locking read and step procedure (with the same
+fixed `AddressResetPrimary`-after-lock ordering §5.2 already specifies), and
+errors from it (including Step 1's `ErrConflict`) propagate to the caller
+instead of being logged and swallowed** — this is a correctness fix to
+existing broken error-swallowing behavior, not new scope creep, since the
+underlying bug (a live-owner conflict during Contact creation going
+unnoticed) already exists today independent of this design.
 
 **Round-10 finding: `CreateUnresolvedAddress` (`contact_id = uuid.Nil`,
 `pkg/contacthandler/contact.go:426`) calls the same `dbhandler.AddressCreate`
@@ -324,7 +359,11 @@ table governs — `AddAddress`, `UpdateAddress`, `RemoveAddress`, `ClaimAddress`
 immediately after their existing `ContactGet` call and before any
 `contact_addresses`/ownership-period write, mirroring the check
 `interactionListByContact` already performs
-(`pkg/contacthandler/interaction_read.go:117-125`). On a soft-deleted Contact,
+(`pkg/contacthandler/interaction_read.go:117-125`). (`ContactCreate` is
+deliberately not a fifth handler here — it creates a new Contact, so there
+is no pre-existing `TMDelete` state to check; it *is*, however, in scope for
+the round-11 fifth-caller fix above, which is a separate concern from this
+guard.) On a soft-deleted Contact,
 each handler returns `cerrors.NotFound` (the same "treat as not found" shape
 `interactionListByContact` and `ClaimAddress`'s existing cross-tenant check use
 — `contact.go:449-455`), so a caller cannot distinguish "Contact never existed"
@@ -597,6 +636,7 @@ duplicated here). Disposition of each finding that survived to this design:
 | Round-10 finding: round-9's NotFound fix said "return `cerrors.NotFound`" from inside the transaction/dbhandler-layer procedure §4 describes, but `dbhandler` has no `cerrors` dependency (verified: zero imports) — the actual conversion happens only in `contacthandler.ClaimAddress`'s existing error-mapping branch, exactly as §5.4 itself establishes for B5 | **Fixed** (§4 reworded: dbhandler returns `dbhandler.ErrNotFound`, the same sentinel the existing pre-lock case already returns; `contacthandler.ClaimAddress`'s existing mapping branch handles the conversion, no new mapping code needed) |
 | Round-10 BLOCKER: `CreateUnresolvedAddress` (`contact_id = uuid.Nil`) calls the same `dbhandler.AddressCreate` §4's step procedure governs, but §3.1 already establishes unresolved addresses must not get a period until `ClaimAddress` assigns a real owner — applying Step 1 with `contact_id = Nil` as "this contact" would misfire, treating every live owner anywhere as a conflict against `Nil` | **Fixed** (§4: explicit new paragraph scoping the entire step procedure to `contact_id != uuid.Nil`; `CreateUnresolvedAddress`'s `AddressCreate` calls skip the locking read and steps entirely, unchanged from today, until a later `ClaimAddress` call with a real contact_id runs the steps for the first time) |
 | Round-10 verification: re-confirmed no remaining "case N" terminology and re-verified §3.1's schema supports every rule accumulated across all 9 prior rounds | **Confirmed correct**, no further findings on either point. |
+| Round-11 BLOCKER: `contacthandler.Create` (`ContactCreate`) is a fifth caller of `dbhandler.AddressCreate`/`AddressResetPrimary`, missed by every prior round because review scope re-examined the logic of handlers already named in the document rather than grepping for every actual caller of the dbhandler functions this design touches. It calls both with a real (non-Nil) `contact_id`, so it is squarely subject to the step procedure, not exempt like `CreateUnresolvedAddress` — and today it also has no transaction and swallows `AddressCreate`/`AddressResetPrimary` errors entirely, meaning a live-owner conflict would silently succeed instead of surfacing `ErrConflict` | **Fixed** (§4: `ContactCreate`'s address loop now runs the same `BeginTx`-wrapped locking read and step procedure per address, with the same fixed lock ordering, and propagates errors instead of swallowing them; §2 scope note added noting the one behavior change — error propagation instead of silent swallowing — is a correctness fix to existing broken behavior, not new response-shape scope creep) |
 
 ## 9. Migration plan
 
