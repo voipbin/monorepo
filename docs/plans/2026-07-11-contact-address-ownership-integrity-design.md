@@ -300,9 +300,16 @@ close-at-NOW() period rule (§4 table) and calling it here would
 reproduce the ghost-period bug round-31 fixed. The compensating path is
 a **separate dbhandler entry point** (e.g.
 `AddressDeleteCompensating(ctx, contactID, type, target)`), which in one
-§5.1 transaction hard-deletes the address row AND hard-DELETEs the open
+§5.1 transaction — following §5.2's canonical order: ownership-period
+`FOR UPDATE` first, then the `contact_addresses` row delete, then the
+period DELETE (round-36: order stated explicitly; no `contact_contacts`
+read is needed since the caller is compensating its own just-failed
+create) — hard-deletes the address row AND hard-DELETEs the open
 period this same create-loop inserted (round-31's sanctioned
-exception), publishing nothing. **Round-32
+exception), publishing nothing. Round-36: this new function joins the
+`DBHandler` interface in `pkg/dbhandler/main.go` and requires `go
+generate` mock regeneration, exactly like `InteractionListByOwnershipPeriods`
+(§6.2's round-19 rule); §10's checklist carries it. **Round-32
 correction: the original round-13 text described this path as sharing
 `RemoveAddress`'s "ownership-period Step-based closure" and factoring out
 logic "both call sites need" — that sharing claim is FALSE after
@@ -1158,7 +1165,19 @@ address loop) has no mapping branches at all. Rule: **`AddAddress` and
 branch** (the alternative — reusing `ErrDuplicateTarget` as Step 1's
 sentinel — is rejected because §4's repair logic must distinguish
 "period conflict" from "unique-index collision": they trigger different
-recovery paths). The full §5.4 mapping roster is therefore:
+recovery paths). **Round-36 reason-code correction: "the same branch"
+refers to the sentinel-matching mechanics only, NOT the reason-code
+payload.** `ClaimAddress`'s existing branch emits
+`ADDRESS_ALREADY_CLAIMED` — but the user action reaching `AddAddress`'s
+new branch ("POST an address another contact already owns") returns
+`ADDRESS_ALREADY_EXISTS` today via the unique-index path, and the
+2026-07-02 duplicate-address design deliberately separated those two
+reason codes as an external contract. Rule: `AddAddress` and `Create`'s
+address-loop branches map Step-1 `ErrConflict` to
+`cerrors.AlreadyExists` with reason code **`ADDRESS_ALREADY_EXISTS`**
+(and its existing message), preserving today's externally observable
+payload byte-for-byte; `ClaimAddress` keeps `ADDRESS_ALREADY_CLAIMED`
+for its own path. The full §5.4 mapping roster is therefore:
 `UpdateAddress`, `RemoveAddress`, `AddAddress`, `Create` (address
 loop), plus `ClaimAddress` which already has the branches.
 
@@ -1351,7 +1370,7 @@ NOT EXISTS (
       AND a.target = i.peer_target
 )
 
--- becomes:
+-- becomes (round-36: the unresolved-row disjunct is REQUIRED — see below):
 NOT EXISTS (
     SELECT 1 FROM contact_address_ownership_periods p
     WHERE p.customer_id = i.customer_id
@@ -1360,14 +1379,41 @@ NOT EXISTS (
       AND COALESCE(i.tm_interaction, i.tm_create) >= COALESCE(p.valid_from, i.tm_interaction, i.tm_create)
       AND COALESCE(i.tm_interaction, i.tm_create) <  COALESCE(p.valid_to, i.tm_interaction + INTERVAL 1 SECOND, i.tm_create + INTERVAL 1 SECOND)
 )
+AND NOT EXISTS (
+    SELECT 1 FROM contact_addresses a
+    WHERE a.customer_id = i.customer_id
+      AND a.type = i.peer_type
+      AND a.target = i.peer_target
+      AND a.contact_id IS NULL
+)
 ```
 
-This is a single correlated subquery keyed entirely on the outer row's own
+**Round-36 finding, fixed by the second `NOT EXISTS` above: replacing the
+subquery wholesale would have silently removed the unresolved-row
+suppression effect — an unrecorded external behavior change.** Today's
+`NOT EXISTS` over `contact_addresses` carries no `contact_id` filter, so
+a `CreateUnresolvedAddress` row (`contact_id = NULL`) suppresses its
+matching interactions from the unresolved queue — that is the endpoint's
+only queue-side observable effect, and per §3.1/round-10 unresolved rows
+never get a period, so a periods-only subquery would (a) re-surface every
+such interaction at cutover and (b) permanently strip the endpoint's
+effect. The second disjunct preserves today's suppression exactly:
+unresolved rows suppress by presence (time-agnostic, as today), owned
+addresses suppress by period (the design's time-aware rule). Claimed
+rows are covered by the period subquery from the claim onward, and the
+pre-claim era stays suppressed by the row's own presence only until the
+claim converts it — matching today's observable sequence. §10's test
+checklist covers `InteractionListUnresolved` with an unresolved-row
+fixture on both sides of the cutover.
+
+These are two correlated subqueries keyed entirely on the outer row's own
 `contact_interactions` columns (`i.customer_id`, `i.peer_type`, `i.peer_target`,
 `i.tm_interaction`) — no Go-side loop, no bind parameters beyond the ones the
 surrounding query already has. `idx_ownership_periods_lookup` (§6.4) covers
-this subquery's `WHERE` clause the same way `idx_contact_addresses_lookup`
-already covers the original.
+the period subquery's `WHERE` clause, and the existing
+`idx_contact_addresses_identifier` prefix covers the unresolved-row
+subquery, the same way `idx_contact_addresses_lookup` already covers the
+original.
 
 ### 6.4 Index coverage (round-1 flagged as unresolved; addressed here)
 
@@ -1517,6 +1563,9 @@ duplicated here). Disposition of each finding that survived to this design:
 | Round-35 finding: the round-34 pending-metrics rule said "scoped to that call" — ambiguous for the two entry points where one dbhandler call owns multiple transactions: repair (b)'s T1/T2/T3 sequence (T2's committed repair increment could be lost if T3 fails, or double-flushed) and `ContactDeleteByCustomerID`'s per-contact transactions | **Fixed** (§4: pending struct scoped per TRANSACTION (per `BeginTx` attempt) — created with each BeginTx, flushed immediately after that transaction's commit, discarded on its rollback; per-case consequences spelled out for repair (b), `ContactDeleteByCustomerID`, and `ContactDelete`'s single N-way transaction) |
 | Round-35 finding: the round-13 paragraph (as rewritten by round-32) still named `dbhandler.AddressDelete` as the compensating-cleanup entry point while simultaneously forbidding its close-at-NOW() period semantics — a function-name vs semantics contradiction that would reproduce the round-31 ghost-period bug if followed literally | **Fixed** (§4: the compensating path is a separate dbhandler entry point (`AddressDeleteCompensating`) that hard-deletes the row AND hard-DELETEs the loop's own period in one §5.1 transaction, publishing nothing; `AddressDelete` is explicitly NOT the callee) |
 | Round-35 finding (recorded, non-blocking): §9.x's 60-minute lifetime filter models tm_create→tm_delete as the failed request's duration, but for recovered ghosts tm_delete is the OPERATOR's recovery time — a recovery later than the window drops the harmful residue from the report; and un-recovered ghosts (no tombstone, open period) match neither predicate, so the query covers only recovered ghosts | Recorded in §9.x as an honest scope note: the query is a lossy heuristic over recovered ghosts only; the log line remains the sole canonical identifier for both states, and the operator instruction is to tune/widen the interval when reviewing after delayed recoveries |
+| Round-36 BLOCKER: §6.3's periods-only `NOT EXISTS` silently removed the unresolved-row suppression effect — today's subquery has no `contact_id` filter, so `CreateUnresolvedAddress` rows (`contact_id = NULL`, never given a period per §3.1/round-10) suppress matching interactions from the unresolved queue; the wholesale replacement would re-surface all of them at cutover and permanently strip the endpoint's only queue-side observable effect — an unrecorded external behavior change in a never-enumerated population (the round-13 backfill-filter verification checked the write side only, never this read-path consequence) | **Fixed** (§6.3: a second `NOT EXISTS` over `contact_addresses ... contact_id IS NULL` preserves today's suppression exactly — unresolved rows suppress by presence (time-agnostic), owned addresses by period (time-aware); index coverage stated for both subqueries; §10's checklist covers the cutover fixture) |
+| Round-36 finding: §5.4's round-35 "the same branch" wording steered implementers to copy `ClaimAddress`'s `ADDRESS_ALREADY_CLAIMED` reason code — but the user action reaching `AddAddress`'s new branch returns `ADDRESS_ALREADY_EXISTS` today, and the 2026-07-02 design deliberately separated those codes as an external contract: an unrecorded reason-code change behind an identical 409 | **Fixed** (§5.4: `AddAddress`/`Create` map Step-1 `ErrConflict` with reason code `ADDRESS_ALREADY_EXISTS` and its existing message — byte-for-byte payload preservation; `ClaimAddress` keeps `ADDRESS_ALREADY_CLAIMED`) |
+| Round-36 finding: the round-35 `AddressDeleteCompensating` entry point was absent from the DBHandler-interface/mockgen list and §10's checklist, and its internal lock order was only implicit — violating the document's own round-19 codegen-explicitness standard | **Fixed** (§4: canonical order stated explicitly (period FOR UPDATE → row delete → period DELETE, no `contact_contacts` read needed), interface membership + mock regeneration named, §10 checklist updated) |
 
 ## 9. Migration plan
 
@@ -1870,6 +1919,12 @@ humans decide; the correction path is `contact_resolutions` (§7).
   payload's `addresses` field intact; the test must be re-verified against
   the snapshot-based implementation, and a new case must cover "tombstoned
   Contact's address rows are hard-deleted, including period-less ones."
+  **Round-36 additions:** (a) `AddressDeleteCompensating` is a new
+  `DBHandler` interface method — mockgen regeneration required, plus a
+  test asserting it DELETEs (not closes) the loop's own period and
+  publishes nothing; (b) `InteractionListUnresolved` needs an
+  unresolved-row fixture on both sides of the cutover asserting the
+  suppression effect is preserved (§6.3's second `NOT EXISTS`).
 - (Recorded, not blocking implementation — §6.2/§8) If a customer's ownership-period
   count for a single Contact ever grows large enough to make the OR-expanded
   STEP2 query in §6.2 a real performance concern, the fix is switching
