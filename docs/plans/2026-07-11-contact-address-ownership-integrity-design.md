@@ -268,6 +268,22 @@ existing `maxDeadlockRetries` machinery (a stale-target mismatch is treated
 as the same class of transient, retry-eligible condition as a deadlock,
 capped the same way) rather than introducing a second retry mechanism.
 
+**Round-9 finding: the compare-and-retry above only defined behavior for
+"target differs" — it left the post-lock re-read returning NotFound entirely
+unhandled.** `contact_addresses` is hard-delete (§1), so a concurrent
+`RemoveAddress` on the same `addressID` can delete the row between the
+pre-lock read and the post-lock re-read. Unlike a target mismatch (transient
+— retrying with the fresh target can still succeed), a NotFound here is
+**permanent** — the address this `ClaimAddress` call was trying to claim no
+longer exists, and no amount of retrying changes that. **Fix: if the
+post-lock re-read returns NotFound, do not retry — abort immediately and
+return `cerrors.NotFound` (404),** the same mapping `AddressClaim`'s existing
+pre-lock `AddressNotFound` case already uses today. Feeding this into the
+retry loop instead would misclassify a permanent condition as transient,
+burning all `maxDeadlockRetries` attempts before incorrectly surfacing a
+transient 5xx for something that was never going to succeed — the same class
+of error-mapping mistake §5.4 fixed for B5.
+
 | Existing operation | Ownership-period effect |
 |---|---|
 | `AddressCreate` / `ClaimAddress` | Steps 1–5 above, decided from the single locked read |
@@ -299,7 +315,7 @@ Round-1 review confirmed `ClaimAddress` unconditionally rejects (`ErrConflict`)
 any address that already resolves to a live owner
 (`pkg/dbhandler/address.go:182-218`), so "reassign while B's period is still open"
 is not a reachable code path; A's row must be deleted first. The TOCTOU gap
-between those two calls is accepted, not solved (§7) — but case 2 above
+between those two calls is accepted, not solved (§7) — but Step 4 above
 (`valid_from=NOW()` for B, not NULL) is a hard requirement independent
 of that gap, and is what actually prevents history leaking from A to B once
 B's `AddressCreate` does land.
@@ -322,7 +338,7 @@ wraps **all five** in a single `BeginTx` per outer operation, following
 `casehandler.getOrCreateAttempt`'s shape (`pkg/casehandler/getorcreate.go:124-164`):
 open tx, do every step that operation actually needs on that one tx,
 run the §4 locking read (`SELECT ... FOR UPDATE` over *every* period row for
-the target, not just one) before deciding which of §4's cases applies,
+the target, not just one) before deciding which of §4's steps applies,
 commit.
 
 **`AddressResetPrimary` is conditional per operation, not universally invoked**
@@ -550,6 +566,9 @@ duplicated here). Disposition of each finding that survived to this design:
 | Round-7 BLOCKER: case 2's "(open or closed)" wording for the other contact_id's row conflated two situations with opposite required handling — a closed row (genuine reassignment, safe to INSERT) and an open row (live-owner conflict, must be rejected, not inserted — the insert would hit `idx_ownership_periods_open`'s unique constraint as an unmapped raw MySQL 1062) | **Fixed** (case 2 narrowed to "closed" only; new case 5 added for the open-row situation, mapping it to the same `ErrConflict`/409 `AddressClaim` already returns today, moved inside the lock for the same reason as case 4) |
 | Round-8 BLOCKER: the round-6/7 "1–5 cases" list was never actually mutually exclusive — several real states (own row open AND own closed history; own closed row AND a different contact's currently-open row) satisfied more than one case's precondition, and no evaluation order was specified. Implemented in list order (the natural reading), this reproduced the same "unmapped 1062 from inserting over a live open row" bug round-5/7 believed already fixed | **Fixed** (§4 restructured from a flat case list into an ordered 5-step decision procedure — step 1 checks for a different contact's open row unconditionally before anything else, making every later overlap structurally impossible rather than merely documented) |
 | Round-8 finding: the round-7 claim that `AddressClaim`'s pre-lock `addressID → target` resolution was "already protected by lock ordering alone" was incorrect — lock ordering serializes acquisition order, not the freshness of a value read before any lock was taken; a concurrent `AddressUpdate` target-change could commit between that read and this transaction's lock acquisition, leaving `AddressClaim` writing an ownership period for a target `contact_addresses` no longer has | **Fixed** (§4: `AddressClaim` re-reads `contact_addresses.target` inside the transaction immediately after acquiring the lock, and retries from the top via §5.3's existing deadlock-retry loop if the pre-lock and post-lock reads disagree — not a new retry mechanism) |
+| Round-9 verification: re-derived the full 8-state truth table (self row absent/open/closed × other row absent/open/closed, with self-open and other-open mutually exclusive via `open_period_uk`) against the round-8 5-step procedure | **Confirmed correct** — every reachable state maps to exactly one step, no overlap or gap. This is the first round where §4's core decision logic itself produced zero findings. |
+| Round-9 finding: round-8's stale-target compare-and-retry (§4/§5.3) only specified behavior for "target differs" — a concurrent `RemoveAddress` deleting the same `addressID` between the pre-lock and post-lock reads (`contact_addresses` is hard-delete) would return NotFound instead, a permanent condition the retry loop would have misclassified as transient, burning all retries before an incorrect 5xx | **Fixed** (§4: post-lock NotFound aborts immediately with `cerrors.NotFound`, no retry — the same mapping `AddressClaim`'s existing pre-lock NotFound case already uses) |
+| Round-9 finding: two places in §4/§5.1 still referred to the pre-round-8 "case" terminology ("case 2 above", "which of §4's cases applies") after §4 was restructured into numbered steps, risking an implementer misreading a stale cross-reference | **Fixed** (both corrected to "Step 4" / "steps" respectively) |
 
 ## 9. Migration plan
 
