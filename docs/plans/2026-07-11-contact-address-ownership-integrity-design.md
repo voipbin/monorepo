@@ -287,7 +287,12 @@ further queries needed at any step:
 
 **Step 1 — is there already an open row for a *different* contact_id?** (At
 most one can exist, globally, because `open_period_uk` hashes only
-`(customer_id, type, target)`.) If yes: this is a live-owner conflict.
+`(customer_id, type, target)`.) If yes: **first verify the blocking owner's
+`contact_addresses` row still exists (same locked transaction) — if it is
+gone, this open period is a version-skew orphan: close it (`valid_to=NOW()`,
+Prometheus counter) and continue to the next step as if it were closed (see
+§9's round-23 self-healing rule for the full rationale).** Otherwise this is
+a genuine live-owner conflict.
 Return `ErrConflict` (mapped to `cerrors.AlreadyExists`/409, exactly as
 `ClaimAddress`'s existing pre-check does today — round-7's case 5) and roll
 back. **Checked first, unconditionally**, so no later step can ever attempt
@@ -1025,6 +1030,10 @@ duplicated here). Disposition of each finding that survived to this design:
 | Round-22 BLOCKER: §9's residual-gap paragraph claimed a "bounded blast radius (only the rollout window)" while a strictly larger unbounded gap sat unacknowledged — targets hard-deleted *before* the migration leave no row for the backfill, so their post-migration re-registration hits Step 5 and inherits the prior owner's entire pre-migration history (defect #2 itself), firing indefinitely, unfixable because hard-delete (defect #2's own root cause) destroyed the needed data | **Acknowledged, not solvable** (§9: added the honest scope statement — defect #2 is prevented for ownership changes made after migration; misattribution rooted in pre-migration deletions is unrecoverable-by-design, with `contact_resolutions` as the manual correction path; the "bounded" claim now explicitly covers only the skew-window gap) |
 | Round-22 finding: round-21's `COALESCE(tm_interaction, tm_create)` fallback substitutes projection time for event time on timestamp-less interactions — under RabbitMQ at-least-once delivery with unbounded projection lag, an ownership boundary falling inside the lag misattributes the interaction to the projection-time owner (a bounded-population, unbounded-window defect-#2 variant) — and no disposition was recorded, violating this document's own every-gap-gets-a-disposition convention | **Acknowledged, accepted** (§9: recorded as an accepted trade — the alternative, leaving NULL-`tm_interaction` rows unmatchable, is a certain defect-#1 regression for the same population, strictly worse than conditional misattribution; `contact_resolutions` is the correction path) |
 | Round-22 minor: §6.4's claim that the lookup index's "two range columns" prevent per-row filter scans is overstated — `valid_from`/`valid_to` appear inside COALESCE with outer-row columns mixed in, so they serve covering-only, not range pruning (real performance impact negligible: single-digit periods per target) | **Fixed** (wording corrected where §6.4 describes the index's role) |
+| Round-23 finding: §9's "inert by construction" claim for the `valid_from=NULL` backfill contradicted the round-14 `tm_delete`-closing branch two paragraphs later — a closed `[NULL, tm_delete)` period stops suppressing post-deletion interactions today's time-agnostic `NOT EXISTS` wrongly hides, so those newly appear in the unresolved queue at cutover, an observable change | **Fixed** (§9: inertness claim explicitly scoped to the live-Contact branch; the deleted-Contact branch is recorded as intentionally not inert — the observable change IS the A9-b cleanup working) |
+| Round-23 BLOCKER: the design would have permanently locked A9-b-corrupted targets out of every API path — the stale live row blocks `AddressCreate` (unique index) and `ClaimAddress` (unconditional `ErrConflict` on non-Nil owner), while the design's own new `TMDelete` guard removes the only existing recovery path (`RemoveAddress` on the deleted Contact), leaving manual DB surgery as the sole fix | **Fixed** (§9: the backfill hard-deletes each A9-b `contact_addresses` row after writing its closed period — attribution history lives in the period row; the target returns to a cleanly re-registrable state, exactly what a timely `RemoveAddress` would have produced) |
+| Round-23 BLOCKER: the version-skew analysis covered only the missing-period direction; the reverse (new-binary opens a period, old-binary hard-deletes the address without closing it) leaves an orphaned OPEN period — indefinite Step-1 409 lockout on a target nobody owns, unbounded defect-#2 absorption into the stale owner's timeline, and a falsified "unreachable for `AddressCreate`" claim on Step 2 | **Fixed** (§4 Step 1 + §9 round-23 rule: Step 1 now verifies the blocking owner's `contact_addresses` row still exists inside the same locked transaction; if gone, the period is a skew orphan — closed on the spot with a Prometheus counter, converting permanent lockout into one-time self-healing; Step 2's unreachability claim is restored post-repair) |
+| Round-23 note (recorded, non-blocking): the backfill's no-overlap/uniqueness safety silently depended on `idx_contact_addresses_identifier` (UNIQUE on a hard-delete table → max one source row per target) | **Fixed** (§9: dependency named explicitly so a future relaxation of that index is recognized as invalidating the backfill's assumptions) |
 
 ## 9. Migration plan
 
@@ -1049,13 +1058,49 @@ duplicated here). Disposition of each finding that survived to this design:
    It would also have been internally inconsistent: the same registration
    made *after* migration goes through §4 Step 5 and gets `valid_from=NULL`,
    so attribution would have depended on which side of the migration the
-   registration happened to fall. `valid_from = NULL` is the unique backfill
-   that is genuinely inert — it reproduces today's time-agnostic value
-   matching exactly for every pre-migration address, changing nothing
-   observable at cutover; this design's period boundaries then take effect
-   only for ownership changes made after migration. (This resolves §10's
-   "is the backfill actually inert" open question in the affirmative, by
-   construction rather than by dataset audit.)
+   registration happened to fall. `valid_from = NULL` is the backfill that
+   is genuinely inert **for live addresses under live Contacts (the
+   `tm_delete IS NULL` branch below)** — it reproduces today's time-agnostic
+   value matching exactly for those rows, changing nothing observable at
+   cutover; this design's period boundaries then take effect only for
+   ownership changes made after migration. **Round-23 correction: this
+   inertness claim is explicitly scoped to that branch.** The round-14
+   `tm_delete`-closing branch below is deliberately NOT inert: a closed
+   `[NULL, tm_delete)` period stops suppressing post-deletion interactions
+   that today's time-agnostic `NOT EXISTS` wrongly hides, so on migration
+   day those interactions newly appear in the unresolved queue. That is an
+   intended, desirable behavior change (it is precisely the A9-b cleanup
+   working), recorded here as such per this document's
+   every-gap-gets-a-disposition convention. (§10's backfill-inertness open
+   question is resolved for the live-branch by construction; the
+   deleted-branch resolves as "intentionally not inert.")
+
+   **Round-23 finding, fixed here: without a cleanup step, this design
+   would permanently lock A9-b-corrupted targets out of every API path.**
+   The A9-b row (a live `contact_addresses` row under a soft-deleted
+   Contact) blocks re-registration by anyone else (`ErrDuplicateTarget`
+   from `idx_contact_addresses_identifier`; `ClaimAddress` returns
+   `ErrConflict` whenever `ContactID != uuid.Nil` without checking the
+   owner's `tm_delete`, `address.go:187-192`), and this design's own new
+   A9-b `TMDelete` guard simultaneously blocks the previously-available
+   recovery path (`RemoveAddress`/`UpdateAddress` on the deleted Contact →
+   now `cerrors.NotFound`) — the design would have removed the only API
+   escape hatch while leaving the blocking row in place, a regression
+   requiring manual DB surgery. **Fix: the migration's backfill step, after
+   inserting the closed `[NULL, tm_delete)` period for each A9-b row,
+   hard-deletes that `contact_addresses` row in the same `upgrade()`** —
+   the period row preserves the attribution history (that is its entire
+   job), and removing the orphaned live row restores the target to a
+   cleanly re-registrable state, which is exactly what a `RemoveAddress`
+   call would have produced had it been made when the Contact was deleted.
+
+   **Round-23 note (recorded, non-blocking): the backfill's no-overlap and
+   open-period-uniqueness safety depends on `idx_contact_addresses_identifier`
+   (UNIQUE `(customer_id, type, target)` on a hard-delete table)** — the
+   source table can hold at most one row per target, so the backfill cannot
+   produce two periods (let alone two open periods) for one target. Named
+   explicitly so a future relaxation of that unique index is recognized as
+   invalidating this backfill's assumptions.
 
    **Round-14 finding: the backfill must not leave permanently-open periods
    under already-deleted Contacts (A9-b-corrupted data).** Before this
@@ -1203,6 +1248,44 @@ duplicated here). Disposition of each finding that survived to this design:
      regression of defect #1 for the same population, strictly worse than a
      conditional misattribution; `contact_resolutions` remains the manual
      correction path, consistent with §7's other accepted gaps.
+   - **Round-23 finding: the skew analysis above covered only one direction
+     (old-binary write creates no period); the reverse direction — a
+     new-binary pod opens a period, then an old-binary pod deletes the
+     address — leaves an orphaned OPEN period, which is qualitatively worse
+     than a missing one.** Sequence: new-binary handles B's
+     `AddressCreate`/`ClaimAddress` on target T (open period written);
+     old-binary handles B's `AddressDelete` (or target-changing
+     `AddressUpdate`) — the `contact_addresses` row is hard-deleted but the
+     period stays open forever (the old binary doesn't know the table
+     exists). Consequences: (a) **indefinite Step-1 lockout** — any later
+     registration of T finds B's orphaned open row and returns
+     `ErrConflict`/409 even though nobody owns T in `contact_addresses`,
+     persisting long after the rollout window closes, with no self-healing
+     path short of B's own `ContactDelete` or manual surgery; (b) B's
+     timeline keeps absorbing T's future interactions (defect #2,
+     unbounded); (c) it also falsifies §4 Step 2's "unreachable for
+     `AddressCreate`" claim in this corrupted state — with the address row
+     gone, the unique index no longer blocks B re-registering T, and
+     `AddressCreate` really can arrive at its own open period.
+     **Disposition — detected and self-healing, not prevented:** prevention
+     is impossible (the old binary cannot be patched retroactively), so the
+     new binary gets one additional rule making Step 1 self-healing against
+     exactly this state: **when Step 1 finds a blocking open period, it
+     verifies the corresponding `contact_addresses` row still exists (same
+     locked transaction, `SELECT ... FOR UPDATE` on the unique identifier);
+     if the address row is gone, the open period is an orphan — close it
+     (`valid_to = NOW()`, incrementing a second dbhandler-local Prometheus
+     counter for visibility) and continue the step procedure as if it were
+     closed.** This converts the permanent 409 lockout into a one-time,
+     self-repairing detour on the next registration attempt; the closed
+     period retains B's attribution up to the repair point (the best
+     available approximation of the unrecorded deletion time, same standard
+     as the `tm_create` fallback's disposition above); and Step 2's
+     unreachability claim is restored after repair because the orphan that
+     made `AddressCreate` reach it no longer survives the check. During the
+     skew window itself B's timeline over-absorbs until repair — accepted,
+     same bounded-window standard as the missing-period direction. §4 Step
+     1's text gains a cross-reference to this rule.
 
 ## 10. Open questions for round-4+ review
 
