@@ -241,12 +241,26 @@ happened — no attribution is manufactured either way. This makes a failed `POS
 addresses were added" (the Contact row itself, and any of its own non-address
 fields, are unaffected either way — this design does not touch that), so a
 retry of the same request behaves as a fresh attempt rather than colliding
-with partially-committed state. If the compensating `RemoveAddress` calls
+with partially-committed state. If the compensating cleanup calls
 themselves fail (a further concurrency edge case), that failure is logged
 but does not mask the original error returned to the caller — the caller
-still sees why the address it cared about failed, and an orphaned partial
-address set becomes an operational cleanup concern (visible via existing
-`GET /v1/contacts/{id}` inspection) rather than a silent data-integrity bug.
+still sees why the address it cared about failed. **Round-32 update to
+this failure disposition (the pre-round-31 text described the close-at-NOW
+regime):** under the round-31 DELETE regime, a failed cleanup leaves an
+OPEN period + live row under a ghost Contact whose `ContactCreated` was
+never published — a retry then hits Step 1's live-owner conflict (the
+ghost is not tombstoned, so ownership agreement passes) and receives 409,
+not a fresh attempt, until the ghost is repaired. Recorded disposition:
+this is a doubly-degraded best-effort-failure state (the cleanup itself
+already failed, which the design accepts as log-and-continue), it is
+self-identifying (the skew-orphan/cleanup-failure log line carries the
+ghost's contact_id), and the standing repair paths apply — deleting the
+ghost Contact via `DELETE /v1/contacts/{id}` (ContactDelete's round-25/26
+cleanup closes the period and removes the row) or operator inspection via
+`GET /v1/contacts?customer_id=...` listing (the ghost IS visible in
+list reads; the failed caller does receive the create response body
+containing the new Contact's id alongside the error path today, and the
+log line covers the RPC-error case where it does not).
 
 **Round-13 finding: reusing `contacthandler.RemoveAddress` verbatim for this
 compensating cleanup silently leaks a wrong event.** `RemoveAddress`
@@ -255,16 +269,21 @@ unconditionally publishes `EventTypeContactUpdated` on success
 address loop, `ContactCreated` was never published for this Contact (the
 handler returns an error before ever reaching that point) — so a downstream
 consumer would receive an `updated` event for a Contact it never saw
-`created` for, a phantom-update with no corresponding prior state. **Fix:**
-the compensating cleanup calls a **non-event-publishing** internal path —
-specifically, the same `dbhandler.AddressDelete` (plus the ownership-period
-Step-based closure) `contacthandler.RemoveAddress` itself calls internally,
-but invoked directly rather than through the `contacthandler.RemoveAddress`
-entry point, so no `EventTypeContactUpdated` is published. This is not a new
-code path: it factors out exactly the portion of `RemoveAddress`'s existing
-logic that both call sites need (the dbhandler-level delete + ownership-
-period closure) from the portion only the public `RemoveAddress` RPC needs
-(cache refresh + event publish).
+`created` for, a phantom-update with no corresponding prior state. **Fix
+(as amended by round-31/32):** the compensating cleanup calls a
+**non-event-publishing** internal path — `dbhandler.AddressDelete` invoked
+directly rather than through the `contacthandler.RemoveAddress` entry
+point, so no `EventTypeContactUpdated` is published. **Round-32
+correction: the original round-13 text described this path as sharing
+`RemoveAddress`'s "ownership-period Step-based closure" and factoring out
+logic "both call sites need" — that sharing claim is FALSE after
+round-31**: `RemoveAddress` closes the period (`valid_to=NOW()`, the
+record of a real era) while the compensating path DELETEs the period its
+own loop just inserted (round-31's sanctioned exception — closing it
+would create the ghost-period bug round-31 fixed). The two paths share
+only the row-delete portion; the period operation is deliberately
+different per caller, and an implementer must NOT unify them behind one
+helper that closes.
 
 **Round-10 finding: `CreateUnresolvedAddress` (`contact_id = uuid.Nil`,
 `pkg/contacthandler/contact.go:426`) calls the same `dbhandler.AddressCreate`
@@ -348,7 +367,29 @@ contact (§9's accepted period-less degraded state) and must NOT be
 touched — close the orphan and continue; if the caller's own
 INSERT/UPDATE then collides with that row, the round-28 duplicate-key
 path performs the tombstone check and either repairs (dead owner) or
-propagates 409 (live owner), which is the correct outcome. Row repair by
+propagates 409 (live owner). **Round-32 transaction-boundary
+clarification for the live-owner outcome:** the 409 aborts the caller's
+transaction, which rolls back the orphan close performed moments earlier
+in that same transaction — no partial state escapes (correct), but it
+also means a mixed-skew state with a LIVE occupant (B's orphan open
+period + live C's period-less row) is never healed by other parties'
+registration attempts: every such attempt ends 409-and-rollback.
+Recorded disposition: the state is NOT permanently stuck — it heals
+through C's own next touch on the target (C's `AddressDelete`/
+`AddressUpdate` closes by `open_period_uk` hash, which matches B's
+orphan regardless of contact_id, and C's `ClaimAddress`-based flows
+route through Step 2's ownership-agreement check), and until then the
+exposure is B's timeline over-absorbing C's interactions — the same
+bounded-by-next-touch standard as §9's other skew dispositions. The
+skew-orphan Prometheus counter must be incremented only AFTER commit
+(post-commit hook or transactional outbox-style deferral), never inside
+the transaction — otherwise every futile rolled-back close inflates the
+repair count while the state remains unchanged. **Round-32
+transaction-boundary rule for repair (b):** the duplicate-key repair
+runs in a NEW §5.1 transaction opened after the caller's failed
+INSERT/UPDATE transaction has rolled back (a 1062 poisons the
+transaction it occurs in); the retry INSERT then follows in yet another
+transaction, per the round-28/29 sequence. Row repair by
 caller in the tombstoned-owner branch: `AddressCreate` hard-deletes the
 stale row, `AddressUpdate` (new-target side) likewise hard-deletes it
 (round-30: its own UPDATE then re-occupies the freed slot), `ClaimAddress`
@@ -1353,7 +1394,7 @@ duplicated here). Disposition of each finding that survived to this design:
 | Round-28 finding: the three tombstone-check reads added `contact_contacts` to address-write transactions with no lock-order rule — an implementer locking it first would create an AB-BA surface against `ContactDelete` (which touches periods → rows → `contact_contacts` last), the implementer-discretion class round-19 established as blocking | **Fixed** (§4 round-28: `contact_contacts` is read LAST in every address-write transaction, plain read (tombstones only ever appear, never disappear — no undelete path per round-21's sweep), and §5.2's order now names it as the final table) |
 | Round-28 BLOCKER (bundled bug, production-only): `dbhandler`'s duplicate-key classifier matches the literal `idx_contact_addresses_cust_type_target`, but the production index (Alembic) is `idx_contact_addresses_identifier` — the classifier never fires on production MySQL (only the SQLite test schema uses the old name: tests green, production returns a generic 500 instead of 409), and round-27/28 repair (b)'s trigger depends on that classification | **Fixed, bundled** (§4 round-28: match strings corrected to the production names (`identifier`, and sibling `idx_contact_addresses_primary`), SQLite test schema aligned with production so the drift cannot silently recur — same bundling standard as A9-b/B5) |
 | Round-29 BLOCKER: round-28's fabricated `[NULL, tm_delete)` late-cleanup period imported §9's backfill bounds into a context where their precondition (empty periods table per target) no longer holds — a `valid_from=NULL` row can never satisfy Step 3's `valid_from >= closed.valid_to` intervening-owner test, so it is invisible to Step 3 and lets a previous owner's period reopen across the dead owner's era (defect #2 via Step 3, manufactured by the cleanup) | **Fixed** (§4 round-29: fabricated period bounds are `[latest existing valid_to for the target (NULL only if no periods exist), tm_delete)`, with round-15's zero-length disposition when the tombstone predates the last era — Step 3's `>=` test now sees the fabricated era) |
-| Round-29 finding: the round-28 covering predicate ("skip if a covering closed period exists") was undefined — the implementer-discretion ambiguity class — and the Step-1 clause vs repair (a) specified conflicting period-write orders that could leave two overlapping closed periods for one era | **Fixed** (§4 round-29: covering predicate defined — a closed period for the same tombstoned contact_id with `valid_to >= tm_delete`, evaluable from the §4 locked fetch; canonical late-cleanup order — close orphan open period first (which then satisfies the predicate), fabricate only for the period-less variant, row repair last — one era can never yield two overlapping closed periods) |
+| Round-29 finding: the round-28 covering predicate ("skip if a covering closed period exists") was undefined — the implementer-discretion ambiguity class — and the Step-1 clause vs repair (a) specified conflicting period-write orders that could leave two overlapping closed periods for one era | **Fixed, with a round-31 correction** (§4 round-29: covering predicate defined — a closed period for the same tombstoned contact_id with `valid_to >= tm_delete`, evaluable from the §4 locked fetch; canonical late-cleanup order — close orphan open period first, row repair last. Round-31 falsified two of this round's parenthetical claims: the close does NOT necessarily satisfy the predicate, and fabrication is NOT limited to the period-less variant — in mixed skew (orphan owner ≠ tombstoned row owner) both the close and the fabrication run; the predicate is always evaluated after the close. See the round-31 rows below and §4's refined ordering rule) |
 | Round-29 BLOCKER: §4 Step 2's "genuinely unreachable for `AddressCreate`" claim contradicted §9's own round-23(c) analysis (skew deletes the row but leaves the period open — the unique index no longer blocks), and the same-owner variant of round-24's slot-reoccupation had no check at all: Step 1's self-healing only fires for a *different* contact's period, so B re-registering its own orphaned target routed to Step 2, which had no defined `AddressCreate` behavior (a literal reading returns 200 without inserting the row) and an ambiguous `ClaimAddress` no-op | **Fixed** (§4 round-29: Step 2 performs the same ownership-agreement check as Step 1 — row agrees = true idempotent no-op; row missing = repair-in-place (AddressCreate inserts the row and keeps the existing open period; ClaimAddress claims the reoccupied NULL-owned row and keeps the period); the reachability claim is corrected) |
 | Round-29 verification: (1) ClaimAddress's `contact_id=NULL` reset is transaction-internal (never observable, fully rolled back on failure, no event/cache impact — post-commit paths fire only on success); (3) a third party slipping between the cleanup commit and the retry INSERT yields the same 409 the caller would have received had the third party arrived first — consistent with today's semantics | **Confirmed** (recorded as verified-safe) |
 | Round-30 BLOCKER: Step 2's round-29 "row agrees" branch defined only `ClaimAddress`, and a literal first-match-stops reading would turn `AddressCreate`'s everyday "you already own this target" duplicate from 409 into a 200 no-op — an API contract change contradicting §2's status-code promise, and self-contradictory with the "row disagrees" branch's unique-index reasoning | **Fixed** (§4 Step 2: row-agrees is now caller-specific — `ClaimAddress` keeps the idempotent no-op; `AddressCreate`/`AddressUpdate` return `ErrDuplicateTarget`/409 exactly as today) |
@@ -1366,6 +1407,9 @@ duplicated here). Disposition of each finding that survived to this design:
 | Round-31 finding: round-29's "closing the orphan necessarily satisfies the covering predicate, so fabrication is skipped" is false in mixed skew where the orphan's owner (B) differs from the stale row's tombstoned owner (D) — closing B's orphan records B's era, not D's, and both the close AND the fabrication must run | **Fixed** (§4 round-29 ordering rule refined: the covering predicate is always evaluated after the close (for the tombstoned row-owner), never skipped on the strength of the close; disjointness of the two periods holds by construction of the GREATEST bound) |
 | Round-31 BLOCKER: the round-12/13 compensating cleanup reused `AddressDelete`'s close-at-NOW() rule on periods the failed `ContactCreate` loop itself had just inserted — leaving a ghost Contact holding a closed `[NULL, NOW())` period, so the caller's retry routed through Step 4 instead of Step 5, permanently orphaning the target's pre-registration history (defect #1 remade) while displaying it on the ghost's timeline (defect #2 remade), directly falsifying the paragraph's own "converge back to no addresses were added"/"fresh attempt" claims — unverified combination of two rules defined 18 rounds apart | **Fixed** (§4: compensating cleanup DELETEs the period rows its own loop inserted (identifiable in-transaction: brand-new contact_id can only own the period it just created — Step 3 reopen unreachable), restoring the true no-rows state; recorded as the single sanctioned exception to "the period row is never deleted," with the brief-window interaction disposition stated) |
 | Round-31 verification: (1) same-transaction DELETE-then-UPDATE slot re-occupation is InnoDB-safe (own delete-marks don't collide in the unique check), and Step 2 row-missing re-targeting composes correctly with the §4 two-target rule (old-target period already closed by table order, round-17's RowsAffected counter covers the skew-missing case) | **Confirmed** (recorded as verified-safe) |
+| Round-32 finding: Step 1's other-owner branch described the orphan close as a completed repair, but with a LIVE occupant every reachable caller path ends 409-and-rollback in the same transaction — the close never commits, so mixed-skew with a live occupant is never healed by other parties' attempts, and the non-transactional Prometheus counter would count each futile rolled-back close as a repair; repair (b)'s transaction placement relative to the poisoned 1062 transaction was also unspecified | **Fixed** (§4: transaction boundary clarified — the rollback is correct (no partial state escapes); recorded disposition: the state heals via the live occupant's own next touch (hash-based close / Step 2), bounded-by-next-touch standard; the skew-orphan counter increments only post-commit; repair (b) runs in a NEW §5.1 transaction after the poisoned one rolls back, retry in a third) |
+| Round-32 finding: the round-12/13 compensating-cleanup prose still carried three pre-round-31 artifacts — the round-13 paragraph still specified "ownership-period Step-based closure" and a shared-factoring claim ("both call sites need") that round-31 falsified (an implementer unifying both paths behind one closing helper reproduces the ghost-period bug), the failure-disposition text still described the close-at-NOW regime, and a "compensating RemoveAddress" naming remnant survived | **Fixed** (§4: round-13 paragraph rewritten — paths share only the row-delete portion, the period operation is deliberately different per caller (close for `RemoveAddress`, DELETE for compensation) and must not be unified; failure disposition updated for the DELETE regime — a failed cleanup leaves an open period + live row under a ghost Contact, retry meets 409 until the ghost is deleted via the standing `ContactDelete` repair path, with the ghost's id available from the create response/log line) |
+| Round-32 finding: §8's round-29 ordering-rule row still asserted "(which then satisfies the predicate)" and "fabricate only for the period-less variant" — both falsified by round-31 — without a correction pointer, violating the document's own table-correction standard (the round-13/14/20 precedent) | **Fixed** (§8: round-29 row now carries "Fixed, with a round-31 correction" and states both falsified claims explicitly) |
 
 ## 9. Migration plan
 
