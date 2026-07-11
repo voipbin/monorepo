@@ -314,8 +314,18 @@ so any row found here is guaranteed closed, removing the ambiguity that let
 the old case 3 fire on a target that actually had an open row.) If yes, take
 the one with the latest `valid_to` (`ORDER BY valid_to DESC` over the
 already-fetched set, no extra query). Then check the same fetched set for
-any *other* contact_id's row with `valid_from` strictly later than that
-closed row's `valid_to` — and because step 1 already established there is no
+any *other* contact_id's row with `valid_from >= that closed row's valid_to`
+(**round-19 finding: this comparison must be inclusive, `>=` not `>`** — a
+prior version of this text said "strictly later," leaving the tie-break
+operator to the implementer's judgment. If A's closed row's `valid_to`
+exactly equals B's row's `valid_from` — an exact-timestamp tie, unlikely in
+production but easy to hit with a mocked/frozen clock in a unit test — a
+`>` reading finds "no intervening owner," reopens A's row unbounded, and
+that reopened period now overlaps the timestamp B's row already legitimately
+covers, reproducing defect #2 (history leaking across owners) through a
+boundary condition rather than a missing branch. `>=` treats the tie as an
+intervening owner, correctly routing to the INSERT branch below instead of
+reopening) — and because step 1 already established there is no
 currently-open row for any other contact_id, any such intervening row is
 now guaranteed closed too, so this comparison can never rediscover the
 live-owner conflict step 1 already exhausted:
@@ -456,6 +466,35 @@ trade a rare long-transaction case for a new correctness question (what
 happens to a `ContactDelete` that hits the cap without converging?) that
 does not have an existing precedent in this document to reuse, unlike
 `maxDeadlockRetries`.
+
+**Round-19 finding: this re-check loop's "extending the already-sorted lock
+list" claim is weaker than §5.2's "fixed total order eliminates this
+deadlock class structurally" standard, and this document should say so
+plainly rather than let the two claims sit side by side unreconciled.**
+Concretely: `ContactDelete` (Tx1) locks its initial open-period set {B, D}
+(B<D) in order; a concurrent `AddressUpdate` (Tx5, unrelated contact) then
+commits a target swap that hands this same contact_id a brand-new open
+period at target A (A<B); Tx1's re-check discovers A and requests it *after*
+already holding B and D — out of ascending order relative to a *different*
+concurrent `AddressUpdate` (Tx6) that legitimately acquires A before D in
+ascending order and blocks waiting for D, which Tx1 holds. Tx1 now waits on
+Tx6 for A while Tx6 waits on Tx1 for D: the exact reverse-order deadlock
+class §5.2 was built to make structurally impossible, reintroduced here
+because the re-check's late-arriving lock isn't actually re-sorted relative
+to the ones already held before it. This is not a new locking bug to fix —
+`maxDeadlockRetries` (§5.3) already covers it, the same way it covers every
+other deadlock this document accepts as a retry-bounded cost rather than a
+structurally-eliminated one — but claiming this re-check "follows the same
+global ascending order" overstated what it actually guarantees. **This
+paragraph corrects that:** the re-check loop is a `maxDeadlockRetries`-bounded
+mitigation, not a fixed-total-order guarantee; §5.2's "structurally
+impossible" framing applies to a single operation's initial lock acquisition,
+not to locks a re-check loop discovers and adds afterward. In a target
+rotated unusually frequently (the same call-center-number scenario §6.2's
+OR-clause-growth caveat already names), this could plausibly raise
+retry-exhaustion frequency for `ContactDelete` above other operations in this
+table — recorded here as a known, accepted characteristic rather than solved,
+consistent with how round-15's uncapped-pass-count note above was handled.
 
 **A9-b guard placement (round-3 finding: this was only in §8's summary table,
 never specified in this section — fixed here).** All four write handlers this
@@ -730,6 +769,19 @@ and all of `interaction_test.go`) are completely unchanged — only STEP2 of
 `interactionListByContact` calls the new function instead. STEP0, 3–6 of
 `interactionListByContact` are otherwise unchanged.
 
+**Round-19 finding (recorded, non-blocking): this section didn't say that a
+new function still needs the standard `DBHandler` interface + mock update.**
+`InteractionListByOwnershipPeriods` must be added to the `DBHandler`
+interface (`pkg/dbhandler/main.go`) alongside `InteractionList`, and
+`go generate ./pkg/dbhandler/...` re-run to regenerate `mock_main.go` before
+`contacthandler`'s tests (which construct `dbhandler.NewMockDBHandler(mc)`)
+can compile against it. This isn't a new step this design invents — it's the
+same `go generate ./...` the repo's `CLAUDE.md` verification workflow
+already mandates for any interface change — but earlier sections of this
+design (the Prometheus `init()` block, the `AddressGet` retry wiring) were
+specific about codegen/registration steps like this one, so leaving this one
+implicit was an inconsistency worth naming rather than a functional gap.
+
 **Round-3 finding, addressed here: OR-clause count is no longer bounded by
 "how many addresses does this Contact currently have" (typically single-digit)
 but by "how many ownership periods has this Contact ever held" — which grows
@@ -870,6 +922,9 @@ duplicated here). Disposition of each finding that survived to this design:
 | Round-17 finding: §9's Prometheus-counter fix for the version-skew defense (a) only named `AddressDelete`'s closing `UPDATE`, leaving the identical race in `AddressUpdate`'s old-target close and `ContactDelete`'s per-target close silently un-instrumented, and (b) claimed to be "consistent with an existing pattern" while `pkg/dbhandler` has zero Prometheus integration today (verified: no `prometheus` import in the package; existing metrics live only in `casehandler`/`listenhandler`/`subscribehandler`) | **Fixed** (§9: extended the `RowsAffected == 0` handling to all three closing-`UPDATE` sites, not just `AddressDelete`'s; specified `dbhandler` gaining its own `metricsNamespace` + `init()` block mirroring `casehandler`'s existing shape, package-local with no new upward dependency into the handler layer) |
 | Round-18 finding: §6.2's claim that the new `InteractionList` parameter was "optional, defaulted when omitted, no existing caller/test changes" is not implementable — Go has no optional-parameter syntax, `since time.Time` is already the final parameter, and Go allows only one variadic parameter, which must be last | **Fixed** (§6.2: replaced with a new sibling function `InteractionListByOwnershipPeriods` sharing `InteractionList`'s query internals; `InteractionList` itself and every existing caller/test are genuinely unchanged) |
 | Round-18 finding: §5.2's two lock-ordering rules (single-target-plus-`AddressResetPrimary`, and two-target-ascending-order) were each specified in isolation and never composed for the real, tested fourth combination — an `AddressUpdate` changing `target` and setting `is_primary=true` in the same call (`v1_contacts_update_test.go:33`) | **Fixed** (§5.2: added the composition rule — acquire every ownership-period lock the operation needs, in ascending target order if there are two, before `AddressResetPrimary`, before the `contact_addresses` write; not a third ordering rule, a direct composition of the existing two) |
+| Round-19 BLOCKER: §4 Step 3's intervening-owner check said "strictly later than," leaving the tie-break operator (`>` vs `>=`) to the implementer — an exact-timestamp tie between a closed row's `valid_to` and another contact's row's `valid_from` (rare in production, easy to hit with a frozen test clock) would, under `>`, reopen the stale row unbounded and overlap the interim owner's legitimately-closed period, reproducing defect #2 through a boundary condition | **Fixed** (§4 Step 3: the comparison is now explicitly `>=`, treating an exact tie as an intervening owner and routing to the INSERT branch instead of reopening) |
+| Round-19 finding: round-14's `ContactDelete` membership re-check loop claimed to "follow the same global ascending order" as §5.2's fixed-order rule, but a late-discovered target added to an already-partially-locked list is not actually re-sorted relative to locks already held — a concrete cross-transaction scenario reproduces the exact reverse-order deadlock class §5.2 exists to eliminate structurally | **Acknowledged, not solved** (§4: corrected the overstated claim — this re-check loop is a `maxDeadlockRetries`-bounded mitigation, not a structural elimination, the same standard already applied to every other deadlock this document accepts as a retry-bounded cost) |
+| Round-19 finding (recorded, non-blocking): §6.2 didn't mention that `InteractionListByOwnershipPeriods` needs adding to the `DBHandler` interface and a `go generate` mock regeneration before it compiles, despite earlier sections being specific about comparable codegen/registration steps | **Fixed** (§6.2: added a paragraph naming the interface + mock-regeneration step explicitly, noting it's the existing repo-wide verification workflow, not a new one this design invents) |
 
 ## 9. Migration plan
 
