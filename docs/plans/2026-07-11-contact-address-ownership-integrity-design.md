@@ -215,6 +215,24 @@ still sees why the address it cared about failed, and an orphaned partial
 address set becomes an operational cleanup concern (visible via existing
 `GET /v1/contacts/{id}` inspection) rather than a silent data-integrity bug.
 
+**Round-13 finding: reusing `contacthandler.RemoveAddress` verbatim for this
+compensating cleanup silently leaks a wrong event.** `RemoveAddress`
+unconditionally publishes `EventTypeContactUpdated` on success
+(`contact.go:393-417`). But when `ContactCreate` fails partway through its
+address loop, `ContactCreated` was never published for this Contact (the
+handler returns an error before ever reaching that point) — so a downstream
+consumer would receive an `updated` event for a Contact it never saw
+`created` for, a phantom-update with no corresponding prior state. **Fix:**
+the compensating cleanup calls a **non-event-publishing** internal path —
+specifically, the same `dbhandler.AddressDelete` (plus the ownership-period
+Step-based closure) `contacthandler.RemoveAddress` itself calls internally,
+but invoked directly rather than through the `contacthandler.RemoveAddress`
+entry point, so no `EventTypeContactUpdated` is published. This is not a new
+code path: it factors out exactly the portion of `RemoveAddress`'s existing
+logic that both call sites need (the dbhandler-level delete + ownership-
+period closure) from the portion only the public `RemoveAddress` RPC needs
+(cache refresh + event publish).
+
 **Round-10 finding: `CreateUnresolvedAddress` (`contact_id = uuid.Nil`,
 `pkg/contacthandler/contact.go:426`) calls the same `dbhandler.AddressCreate`
 this section governs, but §3.1 already establishes that an unresolved
@@ -381,7 +399,26 @@ of error-mapping mistake §5.4 fixed for B5.
 | `AddressDelete` | Close the open period for this contact_id+type+target: `UPDATE ... SET valid_to=NOW() WHERE open_period_uk = <hash>`. The period row is never deleted. |
 | `AddressUpdate` (target field changed) | Two locking reads required (§5.2 specifies the required order between them) — one for the old target, one for the new: close the old-target period (`valid_to=NOW()`), then apply steps 1–5 above to the new target |
 | `AddressUpdate` (target field NOT changed — e.g. only `name`/`detail`/`is_primary`) | **No ownership-period effect.** The write transaction (§5.1) still performs the locking read above for this target as part of its fixed lock-ordering rule, but performs no INSERT/UPDATE against `contact_address_ownership_periods` — the lock exists purely to keep this operation inside the same serialization order as every other address write on that target, not because there is a period decision to make. |
-| Contact soft-delete (`ContactDelete`) | Close **every** open period owned by that contact_id (prevents an orphaned open period after the owning Contact itself is gone) |
+| Contact soft-delete (`ContactDelete`) | Close **every** open period owned by that contact_id (prevents an orphaned open period after the owning Contact itself is gone) — see round-13 addition below for the transaction/lock discipline this requires |
+
+**Round-13 finding: `ContactDelete`'s "close every open period" effect above
+had no transaction, lock-ordering, or deadlock-retry discipline specified,
+unlike every other row in this table.** Because a Contact can hold multiple
+addresses, this operation locks multiple targets in one transaction — the
+same shape as `AddressUpdate`'s two-target case (§5.2), just with an
+arbitrary N instead of a fixed 2, and it is exposed to exactly the same
+deadlock class: a concurrent `AddressUpdate` on one of this Contact's
+targets could acquire locks in a conflicting order. **Fix, reusing §5.2's
+existing rule without introducing a new one:** `ContactDelete`'s ownership-
+period closure runs inside its own `BeginTx`, first `SELECT`s the full set of
+this contact_id's currently-open periods (ordinary read, no lock needed yet
+— membership, not values, is all that's needed at this step), then acquires
+the §4 locking read for **each** of those targets in the same ascending
+`(type, target)` order §5.2 already mandates for the two-target
+`AddressUpdate` case (a straightforward generalization from N=2 to arbitrary
+N, not a new ordering rule), closing each one in that order before
+committing. This transaction is subject to the same `maxDeadlockRetries = 3`
+retry loop (§5.3) as every other write path in this table.
 
 **A9-b guard placement (round-3 finding: this was only in §8's summary table,
 never specified in this section — fixed here).** All four write handlers this
@@ -670,6 +707,10 @@ duplicated here). Disposition of each finding that survived to this design:
 | Round-11 BLOCKER: `contacthandler.Create` (`ContactCreate`) is a fifth caller of `dbhandler.AddressCreate`/`AddressResetPrimary`, missed by every prior round because review scope re-examined the logic of handlers already named in the document rather than grepping for every actual caller of the dbhandler functions this design touches. It calls both with a real (non-Nil) `contact_id`, so it is squarely subject to the step procedure, not exempt like `CreateUnresolvedAddress` — and today it also has no transaction and swallows `AddressCreate`/`AddressResetPrimary` errors entirely, meaning a live-owner conflict would silently succeed instead of surfacing `ErrConflict` | **Fixed** (§4: `ContactCreate`'s address loop now runs the same `BeginTx`-wrapped locking read and step procedure per address, with the same fixed lock ordering, and propagates errors instead of swallowing them; §2 scope note added noting the one behavior change — error propagation instead of silent swallowing — is a correctness fix to existing broken behavior, not new response-shape scope creep) |
 | Round-12 verification: grepped every real call site of the 5 dbhandler Address* functions across all of `bin-contact-manager` (cmd/ + pkg/, excluding tests/mocks) | **Confirmed complete** — exactly 9 call sites across 6 logical paths (all in `pkg/contacthandler/contact.go`), all already covered by this document; `contact-control` CLI has zero address-function references; `dbhandler.ContactUpdate` only touches `contact_contacts`, never addresses; no batch/import path exists. No further callers remain. |
 | Round-12 finding: round-11's fix (propagate the address loop's error instead of swallowing it) introduced a new partial-success state it didn't address — `ContactCreate` commits the base Contact row before the address loop runs, and each address is its own separate transaction, so an error on address N leaves the Contact and addresses 1..N-1 committed while the caller receives an error, with no disposition specified for that gap | **Fixed** (§4: explicit compensating-cleanup behavior added — on any address-loop failure, `ContactCreate` issues best-effort `RemoveAddress` calls for every address that succeeded earlier in the same loop before returning the original error, converging a failed request back to "no addresses were added" rather than full cross-address atomicity, which this design explicitly declines to add as out of scope) |
+| Round-13 finding: `ContactDelete`'s "close every open period" effect had no transaction/lock-ordering/deadlock-retry discipline specified, unlike every other row in §4's table — it locks an arbitrary number of targets in one transaction, the same shape as `AddressUpdate`'s two-target case but with N instead of 2, exposed to the same deadlock class | **Fixed** (§4: generalizes §5.2's existing ascending `(type, target)` lock-ordering rule from N=2 to arbitrary N, same `maxDeadlockRetries` retry loop — not a new mechanism) |
+| Round-13 finding: reusing `contacthandler.RemoveAddress` verbatim for round-12's compensating cleanup would leak a spurious `EventTypeContactUpdated` for a Contact whose `ContactCreated` was never published (the create failed before reaching that point) | **Fixed** (§4: compensating cleanup calls the non-event-publishing dbhandler-level delete + ownership-period closure directly, not the public `RemoveAddress` entry point) |
+| Round-13 finding: §10's transaction-boundary-diff checklist named five handlers but omitted `ContactCreate`, despite round-11/12 changing it — an existing test, `Test_Create_WithAddressTagErrors`, explicitly asserts today's error-swallowing behavior and will need rewriting, not just re-verification | **Fixed** (§10: `ContactCreate` added to the checklist, with the specific test named) |
+| Round-13 finding, investigated and rejected: a reviewer flagged §9's backfill filter (`contact_id IS NOT NULL`) as potentially wrong on the theory that unresolved addresses are marked with the `uuid.Nil` sentinel rather than SQL `NULL`, which would make the filter a no-op | **Not a defect** — verified against `dbhandler.AddressCreate`'s actual code and its own comment (`address.go:112-117`): `uuid.Nil.Bytes()` is 16 zero bytes, "NOT SQL NULL," so the write path explicitly passes Go `nil` (→ SQL `NULL`) whenever `ContactID == uuid.Nil`. `contact_id IS NOT NULL` correctly excludes unresolved rows at the database level; the reviewer's theory conflated the Go-level zero-value sentinel with the DB-level column semantics, which the codebase itself takes explicit care to keep distinct. |
 
 ## 9. Migration plan
 
@@ -703,8 +744,16 @@ duplicated here). Disposition of each finding that survived to this design:
   registration"? (Requires a read-only diagnostic query against a real dataset,
   not reasoning from the empty-table round-trip.)
 - Full transaction-boundary diff for `AddAddress`/`UpdateAddress`/`RemoveAddress`/
-  `ClaimAddress`/`CreateUnresolvedAddress` against their current implementations,
-  to confirm no existing test fixture assumption (e.g. mock call ordering) breaks.
+  `ClaimAddress`/`CreateUnresolvedAddress`/`ContactCreate` against their current
+  implementations, to confirm no existing test fixture assumption (e.g. mock
+  call ordering) breaks. **Round-13 finding: `ContactCreate` was missing from
+  this list despite round-11/12 changing it** — confirmed at least one
+  existing test, `Test_Create_WithAddressTagErrors`
+  (`contact_test.go:1693-1751`), explicitly asserts today's error-swallowing
+  behavior (two `AddressCreate` failures, `Create()` still returns `nil`,
+  `TagAssignmentCreate`/`ContactGet`/`PublishEvent` all still called) and will
+  need to be rewritten, not just re-verified, to assert the new
+  error-propagation-plus-compensating-cleanup behavior instead.
 - (Recorded, not blocking implementation — §6.2/§8) If a customer's ownership-period
   count for a single Contact ever grows large enough to make the OR-expanded
   STEP2 query in §6.2 a real performance concern, the fix is switching
