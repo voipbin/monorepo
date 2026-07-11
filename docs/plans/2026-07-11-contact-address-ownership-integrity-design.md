@@ -184,6 +184,37 @@ existing broken error-swallowing behavior, not new scope creep, since the
 underlying bug (a live-owner conflict during Contact creation going
 unnoticed) already exists today independent of this design.
 
+**Round-12 finding: propagating the error, on its own, creates a new partial-
+success state this design must own the disposition of.** `contacthandler.Create`
+commits the base Contact row via `h.db.ContactCreate` (`contact.go:74`)
+*before* the address loop runs (`contact.go:80-107`); each address in the
+loop is its own separate `BeginTx` (round-11's fix). If address N in the loop
+fails (e.g. Step 1's `ErrConflict`) after addresses 1..N-1 already committed
+successfully, the caller now receives an error — but the Contact row and
+those N-1 addresses (each with an already-open ownership period) remain
+committed. This is a real gap, not accepted TOCTOU (§7) or out-of-scope
+atomicity (§2): it is a direct consequence of round-11's own fix, not a
+pre-existing limitation. **This design does not extend `ContactCreate`'s
+outer scope to wrap the base Contact insert and every address in one
+transaction** (that would be a materially larger change — moving Contact
+creation itself under transactional control — outside this design's stated
+goal of a same-API-surface internal rewire, §2). Instead: `contacthandler.Create`
+gains explicit cleanup-on-partial-failure — if any address in the loop
+returns an error, the handler stops the loop, and (in a *separate*, best-
+effort operation, not nested inside the failed address's own transaction)
+issues compensating `RemoveAddress` calls for every address that succeeded
+earlier in this same loop, then still returns the original error to the
+caller. This makes a failed `POST /v1/contacts` call converge back to "no
+addresses were added" (the Contact row itself, and any of its own non-address
+fields, are unaffected either way — this design does not touch that), so a
+retry of the same request behaves as a fresh attempt rather than colliding
+with partially-committed state. If the compensating `RemoveAddress` calls
+themselves fail (a further concurrency edge case), that failure is logged
+but does not mask the original error returned to the caller — the caller
+still sees why the address it cared about failed, and an orphaned partial
+address set becomes an operational cleanup concern (visible via existing
+`GET /v1/contacts/{id}` inspection) rather than a silent data-integrity bug.
+
 **Round-10 finding: `CreateUnresolvedAddress` (`contact_id = uuid.Nil`,
 `pkg/contacthandler/contact.go:426`) calls the same `dbhandler.AddressCreate`
 this section governs, but §3.1 already establishes that an unresolved
@@ -637,6 +668,8 @@ duplicated here). Disposition of each finding that survived to this design:
 | Round-10 BLOCKER: `CreateUnresolvedAddress` (`contact_id = uuid.Nil`) calls the same `dbhandler.AddressCreate` §4's step procedure governs, but §3.1 already establishes unresolved addresses must not get a period until `ClaimAddress` assigns a real owner — applying Step 1 with `contact_id = Nil` as "this contact" would misfire, treating every live owner anywhere as a conflict against `Nil` | **Fixed** (§4: explicit new paragraph scoping the entire step procedure to `contact_id != uuid.Nil`; `CreateUnresolvedAddress`'s `AddressCreate` calls skip the locking read and steps entirely, unchanged from today, until a later `ClaimAddress` call with a real contact_id runs the steps for the first time) |
 | Round-10 verification: re-confirmed no remaining "case N" terminology and re-verified §3.1's schema supports every rule accumulated across all 9 prior rounds | **Confirmed correct**, no further findings on either point. |
 | Round-11 BLOCKER: `contacthandler.Create` (`ContactCreate`) is a fifth caller of `dbhandler.AddressCreate`/`AddressResetPrimary`, missed by every prior round because review scope re-examined the logic of handlers already named in the document rather than grepping for every actual caller of the dbhandler functions this design touches. It calls both with a real (non-Nil) `contact_id`, so it is squarely subject to the step procedure, not exempt like `CreateUnresolvedAddress` — and today it also has no transaction and swallows `AddressCreate`/`AddressResetPrimary` errors entirely, meaning a live-owner conflict would silently succeed instead of surfacing `ErrConflict` | **Fixed** (§4: `ContactCreate`'s address loop now runs the same `BeginTx`-wrapped locking read and step procedure per address, with the same fixed lock ordering, and propagates errors instead of swallowing them; §2 scope note added noting the one behavior change — error propagation instead of silent swallowing — is a correctness fix to existing broken behavior, not new response-shape scope creep) |
+| Round-12 verification: grepped every real call site of the 5 dbhandler Address* functions across all of `bin-contact-manager` (cmd/ + pkg/, excluding tests/mocks) | **Confirmed complete** — exactly 9 call sites across 6 logical paths (all in `pkg/contacthandler/contact.go`), all already covered by this document; `contact-control` CLI has zero address-function references; `dbhandler.ContactUpdate` only touches `contact_contacts`, never addresses; no batch/import path exists. No further callers remain. |
+| Round-12 finding: round-11's fix (propagate the address loop's error instead of swallowing it) introduced a new partial-success state it didn't address — `ContactCreate` commits the base Contact row before the address loop runs, and each address is its own separate transaction, so an error on address N leaves the Contact and addresses 1..N-1 committed while the caller receives an error, with no disposition specified for that gap | **Fixed** (§4: explicit compensating-cleanup behavior added — on any address-loop failure, `ContactCreate` issues best-effort `RemoveAddress` calls for every address that succeeded earlier in the same loop before returning the original error, converging a failed request back to "no addresses were added" rather than full cross-address atomicity, which this design explicitly declines to add as out of scope) |
 
 ## 9. Migration plan
 
