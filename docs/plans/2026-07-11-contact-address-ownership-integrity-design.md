@@ -327,14 +327,38 @@ impossible now, not just documented as an edge case.
 reachable here because step 1 already ruled out a different contact's open
 row — `open_period_uk`'s global uniqueness means this and step 1 can never
 both be true, so reaching step 2 tells you the open row, if any, is this
-contact's own.) If yes: `AddressClaim`'s idempotency retry — round-6's case
-4. dbhandler still commits the transaction (nothing to roll back; this is a
-successful no-op, not an error), and `contacthandler.ClaimAddress`'s
-existing post-commit behavior (re-fetch via `AddressGet`, publish
-`EventTypeContactUpdated`) is unchanged either way — this design changes
-only what happens inside the transaction, not that response path. This case
-remains genuinely unreachable for `AddressCreate` (still blocked upstream by
-`contact_addresses`' unique index).
+contact's own.) **Round-29 correction: Step 2 performs the SAME
+ownership-agreement check as Step 1** (same locked transaction: the
+`contact_addresses` row for this target must exist and carry this
+contact_id) — round-24 fixed the slot-reoccupation scenario only for the
+*different-owner* variant; the *same-owner* variant (B's own orphan open
+period surviving an old-binary row deletion, then B itself re-registering)
+routes here and previously had no check at all. Outcomes:
+- **Row agrees (exists, owned by this contact): true idempotent retry**
+  (round-6's case 4). dbhandler commits (successful no-op, not an error),
+  and `contacthandler.ClaimAddress`'s existing post-commit behavior
+  (re-fetch via `AddressGet`, publish `EventTypeContactUpdated`) is
+  unchanged — this design changes only what happens inside the
+  transaction, not that response path.
+- **Row missing (self-orphan): repair-in-place.** The open period is this
+  contact's own and correct — keep it (do NOT fabricate anything). For
+  `AddressCreate`: proceed with the row INSERT and commit — the API
+  contract (row exists after success) is restored, no new period is
+  opened. For `ClaimAddress` (round-24's reoccupation, same-owner
+  variant: an unresolved row now occupies the slot): claim the row as
+  usual (its final UPDATE targets the NULL-owned row and succeeds), keep
+  the existing open period, commit.
+- **Row exists but disagrees (NULL-owned or another owner):** for
+  `ClaimAddress` claiming that very row, this is the repair-in-place case
+  above; for `AddressCreate` this cannot coexist with its own INSERT
+  succeeding — the unique index makes the insert fail first, routing
+  through the round-28 duplicate-key path instead.
+**Round-29 reachability correction:** the previous text claimed this case
+"remains genuinely unreachable for `AddressCreate`" — that was true only
+while the unique index always held a row; §9's round-23(c) skew state
+(row hard-deleted, period left open) makes `AddressCreate` genuinely
+arrive here for its own orphan, which is exactly the row-missing
+repair-in-place branch above.
 
 **Step 3 — does this contact_id have any closed row(s) of its own?** (Only
 reached once steps 1–2 confirm no open row exists anywhere for this target —
@@ -641,25 +665,56 @@ round-27 versions were broken):**
   retry would then hit Step 5 (no rows at all → `valid_from=NULL`) and the
   new owner would absorb the dead Contact's entire era — defect #2
   manufactured by the cleanup itself, and inconsistent with §9's backfill
-  which handles the identical data state by inserting a closed
-  `[NULL, contact_contacts.tm_delete)` period BEFORE deleting the row.
-  Rule: every late-cleanup site first INSERTs that closed period for the
-  tombstoned owner (skipping the INSERT only if a closed period covering
-  it already exists — idempotent under retries), then removes the stale
-  row, so the retry routes through Step 4 (`valid_from=NOW()`), not
-  Step 5.
+  which handles the identical data state by inserting a closed period
+  BEFORE deleting the row. **Round-29 correction to the fabricated
+  period's bounds:** §9's backfill may use `valid_from=NULL` only because
+  at migration time the periods table is empty for every target (max one
+  source row, per the round-23 uniqueness note); at post-migration
+  runtime other contacts' legitimate closed periods can already exist for
+  the same target, and a fabricated `valid_from=NULL` row can never
+  satisfy Step 3's `valid_from >= closed.valid_to` intervening-owner test
+  — it would be invisible to Step 3 and let a previous owner's period
+  reopen across the dead owner's era (defect #2 via Step 3). Rule: the
+  fabricated period is `[GREATEST(latest existing valid_to for this
+  target, or NULL if none), contact_contacts.tm_delete)` — i.e.
+  `valid_from` = the latest `valid_to` among the target's existing closed
+  periods (any owner, from the already-locked §4 fetch), or `NULL` only
+  when the target has no periods at all; `valid_to` = the owner's
+  tombstone timestamp. If that computed `valid_from` would exceed
+  `valid_to` (tombstone predates the last legitimate era — possible if
+  another owner held the target after the dead Contact), insert a
+  zero-length period `[tm_delete, tm_delete)` instead (round-15's
+  established zero-length disposition). **Round-29 covering predicate
+  (the "skip if already covered" test, previously undefined):** skip the
+  INSERT iff the already-fetched period set contains a closed period for
+  the SAME tombstoned contact_id whose `valid_to >= its
+  contact_contacts.tm_delete` — i.e. that owner's final era is already
+  recorded through its death; an older, earlier closed era for the same
+  owner does NOT count as covering. This is evaluable entirely from the
+  §4 locked fetch plus the tombstone read, no extra queries.
+- **Round-29 ordering rule (Step-1 clause vs repair (a) previously
+  disagreed):** in every late-cleanup site the canonical order is:
+  (1) close the orphan open period if one exists (`valid_to = NOW()`) —
+  this converts it into the closed-period record of the dead owner's
+  final era, and it necessarily satisfies the covering predicate, so
+  (2) the fabricated-period INSERT is then skipped (fabrication exists
+  ONLY for the period-less variant, where there is no open period to
+  close); (3) the caller-specific row repair last. One era therefore
+  never yields two overlapping closed periods — either the closed orphan
+  covers it, or the single fabricated period does, never both.
 - **(a) `ClaimAddress`: the stale row is NOT hard-deleted — its
   `contact_id` is reset to NULL (re-unresolved) instead.** Round-27's
   hard-delete would have destroyed the very row the claim's own final
   UPDATE targets (`UPDATE ... WHERE id=? AND contact_id IS NULL`,
   `RowsAffected==0 → ErrConflict` — the B5 guard this design preserves),
   making the claim always fail 409 and leaving the caller's addressID a
-  404 on retry. Correct repair inside the claim's transaction: write the
-  closed period for the tombstoned owner (rule above), `UPDATE
-  contact_addresses SET contact_id = NULL WHERE id = ?`, close any orphan
-  open period, then proceed — the claim's final UPDATE now finds exactly
-  the NULL-owned row its race guard expects, and the step procedure sees
-  a closed-period history (Step 4).
+  404 on retry. Correct repair inside the claim's transaction (round-29:
+  in the canonical late-cleanup order above): close any orphan open
+  period first, insert the fabricated period only if the covering
+  predicate fails (period-less variant), then `UPDATE contact_addresses
+  SET contact_id = NULL WHERE id = ?`, then proceed — the claim's final
+  UPDATE now finds exactly the NULL-owned row its race guard expects, and
+  the step procedure sees a closed-period history (Step 4).
 - **(b) `AddressCreate` on a duplicate-key error** checks (in a §5.1
   transaction) whether the conflicting row's owner is tombstoned — if so
   it performs the late cleanup (closed period first, then row delete —
@@ -1201,6 +1256,10 @@ duplicated here). Disposition of each finding that survived to this design:
 | Round-28 BLOCKER: round-27's repair (b) on the period-less variant deleted the row without writing any period — the retry then hit Step 5 (`valid_from=NULL`) and the new owner absorbed the dead Contact's entire era, defect #2 manufactured by the cleanup itself, and inconsistent with §9's backfill which handles the identical data state by writing a closed `[NULL, tm_delete)` period BEFORE deleting the row | **Fixed** (§4 round-28: every late-cleanup site writes the closed period FIRST (idempotent under retries), then repairs the row — the retry routes through Step 4, not Step 5) |
 | Round-28 finding: the three tombstone-check reads added `contact_contacts` to address-write transactions with no lock-order rule — an implementer locking it first would create an AB-BA surface against `ContactDelete` (which touches periods → rows → `contact_contacts` last), the implementer-discretion class round-19 established as blocking | **Fixed** (§4 round-28: `contact_contacts` is read LAST in every address-write transaction, plain read (tombstones only ever appear, never disappear — no undelete path per round-21's sweep), and §5.2's order now names it as the final table) |
 | Round-28 BLOCKER (bundled bug, production-only): `dbhandler`'s duplicate-key classifier matches the literal `idx_contact_addresses_cust_type_target`, but the production index (Alembic) is `idx_contact_addresses_identifier` — the classifier never fires on production MySQL (only the SQLite test schema uses the old name: tests green, production returns a generic 500 instead of 409), and round-27/28 repair (b)'s trigger depends on that classification | **Fixed, bundled** (§4 round-28: match strings corrected to the production names (`identifier`, and sibling `idx_contact_addresses_primary`), SQLite test schema aligned with production so the drift cannot silently recur — same bundling standard as A9-b/B5) |
+| Round-29 BLOCKER: round-28's fabricated `[NULL, tm_delete)` late-cleanup period imported §9's backfill bounds into a context where their precondition (empty periods table per target) no longer holds — a `valid_from=NULL` row can never satisfy Step 3's `valid_from >= closed.valid_to` intervening-owner test, so it is invisible to Step 3 and lets a previous owner's period reopen across the dead owner's era (defect #2 via Step 3, manufactured by the cleanup) | **Fixed** (§4 round-29: fabricated period bounds are `[latest existing valid_to for the target (NULL only if no periods exist), tm_delete)`, with round-15's zero-length disposition when the tombstone predates the last era — Step 3's `>=` test now sees the fabricated era) |
+| Round-29 finding: the round-28 covering predicate ("skip if a covering closed period exists") was undefined — the implementer-discretion ambiguity class — and the Step-1 clause vs repair (a) specified conflicting period-write orders that could leave two overlapping closed periods for one era | **Fixed** (§4 round-29: covering predicate defined — a closed period for the same tombstoned contact_id with `valid_to >= tm_delete`, evaluable from the §4 locked fetch; canonical late-cleanup order — close orphan open period first (which then satisfies the predicate), fabricate only for the period-less variant, row repair last — one era can never yield two overlapping closed periods) |
+| Round-29 BLOCKER: §4 Step 2's "genuinely unreachable for `AddressCreate`" claim contradicted §9's own round-23(c) analysis (skew deletes the row but leaves the period open — the unique index no longer blocks), and the same-owner variant of round-24's slot-reoccupation had no check at all: Step 1's self-healing only fires for a *different* contact's period, so B re-registering its own orphaned target routed to Step 2, which had no defined `AddressCreate` behavior (a literal reading returns 200 without inserting the row) and an ambiguous `ClaimAddress` no-op | **Fixed** (§4 round-29: Step 2 performs the same ownership-agreement check as Step 1 — row agrees = true idempotent no-op; row missing = repair-in-place (AddressCreate inserts the row and keeps the existing open period; ClaimAddress claims the reoccupied NULL-owned row and keeps the period); the reachability claim is corrected) |
+| Round-29 verification: (1) ClaimAddress's `contact_id=NULL` reset is transaction-internal (never observable, fully rolled back on failure, no event/cache impact — post-commit paths fire only on success); (3) a third party slipping between the cleanup commit and the retry INSERT yields the same 409 the caller would have received had the third party arrived first — consistent with today's semantics | **Confirmed** (recorded as verified-safe) |
 
 ## 9. Migration plan
 
