@@ -4,19 +4,34 @@ Operational reference for applying, verifying, and recovering Alembic migrations
 
 ## Environment Access
 
-Only humans may run `alembic upgrade` or `alembic downgrade` against staging or production. AI agents may assist with local development only.
+Only humans may run `alembic upgrade` or `alembic downgrade` against staging or production manually (VPN-based, ad hoc). AI agents may assist with local development only. As of VOIP-1246, production `bin_manager` and `asterisk` schema upgrades also run automatically via CircleCI's `bin-dbscheme-manager-migrate` job (see "CI-driven production migration" below) — that job is the one sanctioned exception to "human only", gated behind a CircleCI approval click restricted to the `main` branch, not an AI agent invoking alembic directly.
 
 | Environment | alembic upgrade allowed? | alembic downgrade allowed? | Who can run? |
 |---|---|---|---|
 | local (developer laptop) | Yes, with caution | Yes | Developer or AI agent |
 | staging | Yes, with human review | With explicit sign-off | Human only |
-| production | Yes, with change-control approval | Emergency use only (see below) | Human only, VPN required |
+| production | Yes, via CI (see below) or manual change-control approval | Emergency use only (see below), manual only | CI job (upgrade only) or human, VPN required for manual/downgrade |
 
-**Before running against any remote database:**
+**Before running against any remote database manually:**
 1. Connect to VPN.
 2. Confirm target database URL in `alembic.ini` points to the correct environment.
 3. Run `alembic current` to verify the current head before applying.
 4. Run against staging first; never skip straight to production.
+
+## CI-driven production migration (VOIP-1246)
+
+`bin-dbscheme-manager`'s CircleCI workflow includes a `build-approval` gate (restricted to the `main` branch) followed by `bin-dbscheme-manager-migrate`, which runs `bin-dbscheme-manager/ci/migrate.py` against the live production `bin_manager` and `asterisk` databases using the `CC_DATABASE_DSN` / `CC_DATABASE_DSN_ASTERISK` secrets already present in the `production` CircleCI context.
+
+**What clicking approval on `main` actually does now:** runs `alembic upgrade head` for both streams (`bin-manager` then `asterisk_config`, sequentially), each wrapped in a MySQL named lock (`GET_LOCK`/`RELEASE_LOCK`) to prevent two overlapping runs, preceded by an `alembic upgrade head --sql` dry-run logged for audit. Subprocess output streams to the CircleCI job log line-by-line as it's produced (not buffered until the command exits), so a slow-but-healthy migration doesn't go dark in the logs and a genuine hang still leaves a diagnosable trail up to the point it stopped.
+
+**If the job fails (either stream):**
+1. Check the CircleCI job log — the two streams run as separate steps ("Upgrade bin_manager (voipbin core DB)" / "Upgrade asterisk config DB"), so which stream failed is visually unambiguous (green vs. red step).
+2. A **rerun of the job is normally safe**: `alembic upgrade head` is naturally idempotent (a stream already at head is a no-op; a partially-applied stream resumes from its last committed revision), and the named lock is session-scoped so a dead/cancelled prior run's lock is released automatically. This safety currently relies on alembic/MySQL's own idempotent behavior around DDL, not on explicit partial-failure detection in the job itself — see "Locked table during migration" below for the one case (a long-running ALTER hitting `no_output_timeout`) where a rerun may not be enough and manual intervention via the procedure below is needed.
+3. If a rerun doesn't resolve it, or the failure looks like data corruption / an unsafe partial state, fall back to the manual VPN-based procedure in this document — connect to VPN, run `alembic current --verbose` against the affected stream to see exactly where it stands, and proceed from there (including Emergency Rollback below, if needed).
+
+**When to use CI vs. manual VPN procedure:** normal migrations (new columns/tables/indexes from routine feature work) go through CI on merge to `main`. The manual VPN procedure remains the only path for `alembic downgrade` (CI only ever runs `upgrade head`, never downgrade) and for any migration the operator wants to review to right before applying, no matter what.
+
+---
 
 ## Emergency Rollback
 
@@ -111,6 +126,8 @@ alembic -c alembic.ini downgrade <target_revision_id>
 1. Use `pt-online-schema-change` or `gh-ost` for large-table ALTERs in production.
 2. Schedule the migration during low-traffic windows.
 3. Break the migration into smaller steps (add column as nullable first, backfill, then add constraints).
+
+**If this happens via the CI job (`bin-dbscheme-manager-migrate`):** each `- run:` step has a 10-minute `no_output_timeout`. Output now streams line-by-line as alembic produces it, so a hang genuinely shows a stalled log (no new lines for 10 minutes) rather than a false alarm from output buffering — but 10 minutes is still an untuned guess for how long a real production migration takes, since this job has not run against a large production table yet. If a legitimate large-table migration is expected to take longer, raise `no_output_timeout` on that step ahead of time rather than discovering the false-timeout live.
 
 ---
 

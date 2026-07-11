@@ -10,7 +10,7 @@ import os
 import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from migrate import parse_dsn, sqlalchemy_url  # noqa: E402
+from migrate import parse_dsn, sqlalchemy_url, run_streamed  # noqa: E402
 
 
 class TestParseDSN(unittest.TestCase):
@@ -89,6 +89,41 @@ class TestSQLAlchemyURL(unittest.TestCase):
         with self.assertRaises(re.error):
             re.sub(r"^sqlalchemy\.url.*$", f"sqlalchemy.url = {url}",
                     ini_content, flags=re.MULTILINE)
+
+
+class TestRunStreamed(unittest.TestCase):
+    """Round-2 PR review finding: the original implementation used
+    subprocess.run(capture_output=True), which buffers all output until
+    the process exits -- risking a false-positive no_output_timeout on a
+    slow-but-healthy migration, and leaving zero diagnostic log trail on
+    a real hang. run_streamed() forwards output line-by-line instead."""
+
+    def test_streams_output_and_returns_exit_code(self):
+        code = [
+            "import sys, time",
+            "print('line1'); sys.stdout.flush()",
+            "print('line2'); sys.stdout.flush()",
+        ]
+        rc = run_streamed([sys.executable, "-c", "\n".join(code)], cwd=".", redact="")
+        self.assertEqual(rc, 0)
+
+    def test_nonzero_exit_code_propagates(self):
+        rc = run_streamed([sys.executable, "-c", "import sys; sys.exit(3)"],
+                           cwd=".", redact="")
+        self.assertEqual(rc, 3)
+
+    def test_redaction_applied_per_line(self):
+        import io
+        import contextlib
+
+        code = "print('password is supersecret123 in this line')"
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            rc = run_streamed([sys.executable, "-c", code], cwd=".",
+                               redact="supersecret123")
+        self.assertEqual(rc, 0)
+        self.assertNotIn("supersecret123", buf.getvalue())
+        self.assertIn("***", buf.getvalue())
 
 
 if __name__ == "__main__":

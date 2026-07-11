@@ -574,3 +574,52 @@ a follow-up PR reverting to the approval-gate-with-no-op state (restoring
 seed-image path; per the verified Non-goals finding above, no other
 consumer depends on it besides the (independent, source-clone-based)
 sandbox, so a temporary revert carries no other blast radius.
+
+## PR review history (implementation-level, after design approval)
+
+Once design review reached round-5 APPROVED, implementation was committed
+as PR #1086 and put through a separate PR review loop (per
+`design-first-with-review-loops`, minimum 3 rounds).
+
+**Round 1** (code-correctness focus): APPROVED with zero blocking defects.
+Confirmed the committed `bin-dbscheme-manager/ci/migrate.py` matches the
+design doc's intent with one positive drift (a `row is None` guard on
+`cur.fetchone()` that the design doc's literal snippet lacked), confirmed
+`test_migrate.py` imports and exercises the real module (not a duplicated
+copy), confirmed the CircleCI YAML diff is syntactically/semantically
+sound with `bin-dbscheme-manager-build` fully removed and no dangling
+references, and confirmed the generated `alembic.ini` files are already
+covered by an existing `bin-dbscheme-manager/.gitignore` entry (no new
+secret-leak vector introduced).
+
+**Round 2** (operational/failure-mode focus, deliberately different angle
+from round 1): CHANGES_REQUESTED. Found a genuine operational risk not
+covered by rounds 1-5 of design review or round 1 of PR review: the
+original `migrate.py` used `subprocess.run(..., capture_output=True)` for
+each alembic invocation, which buffers ALL output until the subprocess
+exits before printing anything. For the real `alembic upgrade head` step
+-- the one call that can legitimately run long on a production migration
+-- this meant (a) CircleCI's `no_output_timeout: 10m` could false-positive
+on a slow-but-healthy migration, since no bytes reach stdout to reset the
+timeout clock until the whole command finishes, and (b) if the step
+genuinely hung or was killed, the operator would have **zero** log output
+to diagnose what was happening -- exactly the worst failure mode for a
+job's first-ever run against production. **Fixed:** replaced the buffered
+`subprocess.run(capture_output=True)` calls with a new `run_streamed()`
+helper using `subprocess.Popen` + line-by-line forwarding (with the same
+password redaction applied per-line), so `no_output_timeout` reflects real
+progress and a hang leaves a partial, diagnosable log trail. Added
+`TestRunStreamed` unit tests (streaming + exit-code propagation +
+per-line redaction, verified passing). Also updated
+`bin-dbscheme-manager/docs/operations.md`: added a "CI-driven production
+migration" section documenting what the approval button now does, the
+rerun-safety story (relies on alembic/MySQL's natural idempotency, not
+explicit partial-failure detection -- stated plainly, not oversold), and
+when to fall back to the manual VPN procedure; and a note on the
+`no_output_timeout` risk under the existing "Locked table during
+migration" entry, since this job has not yet run against a real production
+table and 10 minutes is an untuned guess.
+
+A minimum of one further PR review round is required before this can be
+considered ready to merge (design-first-with-review-loops: min 3 PR-review
+rounds, continuing until 2 consecutive APPROVED).

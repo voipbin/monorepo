@@ -63,6 +63,37 @@ def sqlalchemy_url(fields: dict) -> str:
     return f"{base}?{qs}" if qs else base
 
 
+def run_streamed(cmd: list, cwd: str, redact: str) -> int:
+    """Run a subprocess, forwarding its output line-by-line to CI logs as
+    it's produced (not buffered until exit).
+
+    Round-2 PR review finding: the earlier implementation used
+    `subprocess.run(..., capture_output=True)`, which buffers ALL output
+    until the process exits before anything is printed. For the real
+    `alembic upgrade head` step -- the one that can legitimately run long
+    on a large migration -- that means CircleCI's `no_output_timeout`
+    could false-positive-kill a healthy-but-slow migration (no bytes ever
+    reach stdout to reset the timeout clock), AND if it genuinely hangs or
+    times out, the operator has ZERO log output to diagnose what was
+    happening. Streaming line-by-line means: (a) `no_output_timeout` is
+    driven by real progress, not an artificial buffering delay, and
+    (b) a hang/timeout still leaves a partial, useful log trail.
+    """
+    proc = subprocess.Popen(
+        cmd, cwd=cwd, env=os.environ.copy(),
+        stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+        text=True, bufsize=1,
+    )
+    assert proc.stdout is not None
+    with proc.stdout:
+        for line in proc.stdout:
+            if redact:
+                line = line.replace(redact, "***")
+            print(line, end="")
+    proc.wait()
+    return proc.returncode
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--stream", required=True, choices=["bin-manager", "asterisk_config"])
@@ -117,17 +148,14 @@ def main():
             ["alembic", "-c", ini_path, "upgrade", "head"],
             ["alembic", "-c", ini_path, "current", "--verbose"],
         ):
-            result = subprocess.run(cmd, cwd=stream_dir, env=os.environ.copy(),
-                                     capture_output=True, text=True)
-            # Redaction: defense in depth, on top of the primary claim
-            # (verified in tests / verification plan) that alembic
-            # --verbose output does not print sqlalchemy.url itself.
-            out = result.stdout.replace(fields["pass"], "***") if fields["pass"] else result.stdout
-            err = result.stderr.replace(fields["pass"], "***") if fields["pass"] else result.stderr
-            print(out)
-            print(err, file=sys.stderr)
-            if result.returncode != 0:
-                sys.exit(result.returncode)
+            print(f"+ {' '.join(cmd)}")
+            # Redaction: defense in depth, applied per-line as output
+            # streams, on top of the primary claim (verified in tests /
+            # verification plan) that alembic --verbose output does not
+            # print sqlalchemy.url itself.
+            returncode = run_streamed(cmd, cwd=stream_dir, redact=fields["pass"])
+            if returncode != 0:
+                sys.exit(returncode)
     finally:
         cur.execute("SELECT RELEASE_LOCK(%s)", (args.lock_name,))
         conn.close()
