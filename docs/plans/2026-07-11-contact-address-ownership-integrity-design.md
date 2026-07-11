@@ -615,8 +615,55 @@ match gains a time-range condition:
 ```
 
 i.e. `tm_interaction ∈ [valid_from or -∞, valid_to or +∞)` per period, OR'd
-across every period the Contact has ever held (mirrors the existing OR-expansion
-shape in `dbhandler/interaction.go:131-139`, no new query pattern). STEP0, 3–6 of
+across every period the Contact has ever held.
+
+**Round-16 finding: the claim above that this "mirrors the existing
+OR-expansion shape... no new query pattern" does not hold up against the
+actual code.** `dbhandler/interaction.go:23-28`'s `AddressPair{Type, Target
+string}` and the `sq.Or{sq.Eq{...}}` loop building it (`interaction.go:131-139`)
+only carry pure equality clauses — there is no field to carry a period's
+`valid_from`/`valid_to`, and `sq.Eq` cannot express a range condition. STEP2
+cannot be implemented by passing more `AddressPair` values into the existing
+`InteractionList` call; the type and the OR-builder both need to change.
+**Concrete implementation:**
+
+```go
+// dbhandler/interaction.go — new type, additive alongside AddressPair
+// (AddressPair itself is unchanged; every other InteractionList caller keeps
+// using it exactly as today — see call-site note below)
+type OwnershipPeriodBound struct {
+	Type      string
+	Target    string
+	ValidFrom *time.Time // nil = unbounded past
+	ValidTo   *time.Time // nil = still open (unbounded future)
+}
+```
+
+`InteractionList`'s OR-builder gains a second code path selected by which
+slice type the caller passes (a new optional parameter, not a signature
+change to the existing one — see below), building each clause as:
+
+```go
+or = append(or, sq.And{
+	sq.Eq{"peer_type": b.Type, "peer_target": b.Target},
+	sq.GtOrEq{"tm_interaction": coalesce(b.ValidFrom, sq.Expr("tm_interaction"))},
+	sq.Lt{"tm_interaction": coalesce(b.ValidTo, sq.Expr("tm_interaction + INTERVAL 1 SECOND"))},
+})
+```
+
+(`coalesce` here denotes: use the literal bound if non-nil, else fall back to
+referencing `tm_interaction` itself, reproducing the same "compare a column
+to itself" ±∞ trick §6.3's SQL already uses, expressed through squirrel's
+query builder instead of raw SQL.) **Call-site impact:** `InteractionList` is
+shared by `interactionListByContact`'s STEP2 (this call site, needs the new
+`[]OwnershipPeriodBound` path) and by the single-address re-fetch in
+`interaction_read.go:285` (STEP5, unchanged — that call site still only
+needs plain equality on one already-known address and keeps using
+`[]AddressPair`, not touched by this change). The existing
+`mock_main.go:708`/`main.go:58` signatures are additive (a new optional
+parameter, defaulted to the existing behavior when omitted), so no existing
+caller or existing test needs to change — only STEP2's specific call site
+in `interactionListByContact` is rewritten to use the new path. STEP0, 3–6 of
 `interactionListByContact` are unchanged.
 
 **Round-3 finding, addressed here: OR-clause count is no longer bounded by
@@ -753,6 +800,8 @@ duplicated here). Disposition of each finding that survived to this design:
 | Round-15 finding: round-14's `tm_delete`-closing backfill branch didn't guard against `contact_addresses.tm_create > contact_contacts.tm_delete` (the true A9-b-corrupted case — an address added *after* its Contact was already deleted), which would silently insert an inverted `valid_from > valid_to` period that no interaction-matching query could ever match, permanently and silently losing that address's entire history | **Fixed** (§9: the `tm_delete`-closing branch now requires `tm_create <= tm_delete`; rows that fail this check backfill as a zero-length already-closed period `valid_from = valid_to = tm_delete` instead of an inverted range) |
 | Round-15 BLOCKER: this plan never addressed the rolling-deploy version-skew window — an old-binary pod processing `AddressCreate` during a migrate-then-roll-pods deploy would create no ownership period, letting later `AddressDelete`/`ClaimAddress` calls silently no-op / misclassify as first-ever registration, reproducing defect #2 via a deploy-timing gap | **Fixed** (§9: added an explicit deployment-ordering constraint — this migration must ship as schema-and-binary-together, not the ordinary "migrate then roll pods old→new whenever" pattern, since the old binary is incompatible with the new schema being present) |
 | Round-15 note (recorded, not blocking): round-14's `ContactDelete` membership re-check loop has no explicit pass-count cap, so a sustained stream of concurrent `ClaimAddress` calls against new targets could keep it re-checking across many passes | Acknowledged as a liveness/latency concern, not a correctness one (each pass still converges toward a fixed point); not given an arbitrary cap because that would trade a rare long-transaction case for a new, precedent-less correctness question (what disposition applies if the cap is hit without converging). |
+| Round-16 finding: §6.2's claim that STEP2's time-range condition "mirrors the existing OR-expansion shape... no new query pattern" doesn't hold up — `AddressPair`/`sq.Eq` only carry pure equality, no field for `valid_from`/`valid_to`, and `sq.Eq` cannot express a range condition; STEP2 cannot be implemented by passing more `AddressPair` values into the existing `InteractionList` call | **Fixed** (§6.2: concrete `OwnershipPeriodBound` type and OR-builder added, additive alongside `AddressPair` — only STEP2's call site changes, `interaction_read.go:285`'s single-address re-fetch and all existing tests/mocks are unaffected) |
+| Round-16 BLOCKER: round-15's "schema-and-binary-together, drain-then-replace" deployment-ordering fix for the rolling-deploy version-skew window is not enforceable — `bin-dbscheme-manager`/`bin-contact-manager` are independent CI/CD workflows with no `requires` dependency, schema migrations are applied manually outside CI/CD, and the k8s Deployment has no explicit `strategy` (inherits Kubernetes' default surge-first `RollingUpdate`, the opposite of what the fix assumed) | **Fixed** (§9: replaced the unenforceable deploy-ordering instruction with a code-level defense — the ownership-period-closing `UPDATE` gets the same `RowsAffected` check B5 established, now incrementing a Prometheus counter on a miss instead of silently no-op'ing; the residual gap (Step 5 can't distinguish "never owned" from "owned pre-migration with no period") is accepted as a bounded, monitored blast radius limited to the rollout window, not solved) |
 
 ## 9. Migration plan
 
@@ -842,19 +891,49 @@ duplicated here). Disposition of each finding that survived to this design:
    so §4's Step 5 (true first-ever registration) misclassifies it and backs
    in `valid_from=NULL`, reproducing defect #2 (history leaking to the new
    owner) via a deploy-timing gap this design otherwise closes everywhere
-   else. **Fix: deployment ordering constraint, not a code change.** This
-   migration must be deployed as schema-first-then-binary, with the old
-   binary treated as incompatible with the new schema being present — i.e.
-   the rollout is not "migrate, then roll pods old→new" (which admits the
-   skew window above) but "drain and replace all pods to the new binary in
-   the same deploy step the migration ships in," the same way any migration
-   that changes a write path's transactional shape (not just adds a nullable
-   column) already has to be deployed in this codebase. This is an
-   operational/rollout constraint to document and follow, not a new runtime
-   safeguard this design needs to add — but this plan omitted stating it
-   even as a constraint, which round-15 review found meant an implementer
-   reading only this document would not know the ordinary "add a nullable
-   column, roll pods whenever" deploy pattern does not apply here.
+   else.
+
+   **Round-16 finding: round-15's proposed fix (a "schema-and-binary-together,
+   drain-then-replace" deployment ordering constraint) is not enforceable and
+   does not match this codebase's actual deploy shape.** Verified against the
+   real infrastructure: `bin-dbscheme-manager` and `bin-contact-manager` are
+   separate CI/CD workflows with independent path-filter triggers and no
+   `requires` dependency between them (`.circleci/config_work.yml`); schema
+   migrations are applied by a human running `alembic upgrade` manually
+   against a VPN connection, entirely outside CI/CD
+   (`bin-dbscheme-manager/docs/operations.md`); and `bin-contact-manager`'s
+   `k8s/deployment.yml` has no explicit `strategy`, so it inherits Kubernetes'
+   default surge-first `RollingUpdate` (new pods start before old ones
+   terminate) — the opposite of the drain-first sequencing round-15's fix
+   assumed. A prose deployment-ordering instruction with no CI gate and no
+   k8s manifest change to enforce it is not a real constraint; nothing stops
+   the schema migration and a surge-first rolling deploy from overlapping
+   exactly as round-15 described. **Fix: defend against the skew in code,
+   not in deploy-ordering discipline.** Two changes, both cheap and already
+   consistent with patterns this design uses elsewhere:
+   - The closing `UPDATE ... SET valid_to=NOW() WHERE open_period_uk = <hash>`
+     (`AddressDelete`'s ownership-period effect, §4) gets the same
+     `RowsAffected` check B5 already established for
+     `AddressUpdate`/`AddressDelete`'s `contact_addresses`-side write (§5.4):
+     if `RowsAffected == 0`, this is not an error (the address itself still
+     deletes normally — an old-binary-created address with no period is a
+     legitimate, if degraded, state) but it now increments a Prometheus
+     counter (this service's existing `:2112/metrics` endpoint, per its
+     `CLAUDE.md`) so the skew window's actual blast radius becomes visible
+     in monitoring rather than being purely silent.
+   - Step 5 of §4 (true first-ever registration → `valid_from=NULL`) already
+     cannot distinguish "genuinely never owned by anyone" from "owned by an
+     old-binary pod that never wrote a period" — those two states are
+     indistinguishable from the ownership-period table alone, by
+     construction, so no code change can fully close this gap without also
+     inspecting `contact_addresses.tm_create` for a plausible pre-migration
+     timestamp, which is out of scope here. This residual gap is accepted
+     (§7) rather than solved: it degrades gracefully into "this design's
+     history-leak protection does not apply to periods created during the
+     migration's version-skew window," a bounded blast radius (only the
+     rollout window, not indefinitely), which is a materially different
+     (and much smaller) claim than round-15's "closed via deployment
+     ordering," which round-16 found this codebase cannot actually enforce.
 
 ## 10. Open questions for round-4+ review
 
