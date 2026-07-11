@@ -552,7 +552,12 @@ operation is idempotent (closing an already-closed period is the same
 handles) and, with the round-21 ordering above, a re-driven event CAN now
 find every affected Contact (`tm_delete IS NOT NULL` rows are re-selectable
 by timestamp), making re-drive a genuine recovery path rather than the
-false one round-20 originally claimed.
+false one round-20 originally claimed. (Round-22 note: this recovery
+property depends on the bulk `UPDATE` carrying **no** `tm_delete IS NULL`
+filter — the unfiltered form re-stamps already-deleted rows with the new
+timestamp so the post-delete SELECT can find them; adding that seemingly
+natural filter would silently break re-drive. Recorded so no future
+cleanup "optimizes" it away.)
 
 **A9-b guard placement (round-3 finding: this was only in §8's summary table,
 never specified in this section — fixed here).** All four write handlers this
@@ -921,10 +926,17 @@ already covers the original.
 ### 6.4 Index coverage (round-1 flagged as unresolved; addressed here)
 
 `idx_ownership_periods_lookup (customer_id, type, target, valid_from, valid_to)`
-is added specifically so the OR-expanded, time-bounded STEP2 query and the
-`NOT EXISTS` in §6.3 are index-covered rather than falling back to a per-row
-filter scan. This mirrors `idx_contact_interactions_peer`'s existing shape
-(`customer_id, peer_type, peer_target`) with the two range columns appended.
+is added so the OR-expanded, time-bounded STEP2 query and the `NOT EXISTS`
+in §6.3 are driven by the `(customer_id, type, target)` equality prefix and
+**covered** by the index (no row lookups). Round-22 correction: the two
+appended range columns serve the covering role only, not range pruning —
+they appear inside `COALESCE(...)` with outer-row columns mixed in, which
+MySQL cannot use for index range access. This is fine in practice: a target
+carries single-digit period rows, so evaluating the range condition as a
+residual filter over the covered rows is negligible. The index mirrors
+`idx_contact_interactions_peer`'s existing shape
+(`customer_id, peer_type, peer_target`) with the two period columns appended
+for coverage.
 
 ## 7. Known, accepted limitation: the reassignment TOCTOU gap
 
@@ -955,7 +967,7 @@ duplicated here). Disposition of each finding that survived to this design:
 | D6 | `case-control reconcile-contact` CLI not in original scenario table | Documented as an existing, independent mechanism (§2 out-of-scope); no interaction with this design's tables. |
 | Round-1 BLOCKER: `ClaimAddress` unconditional-reject makes the originally-proposed "reassign inside `ClaimAddress`" branch unreachable | **Resolved by redefinition**, not by changing `ClaimAddress`: reassignment is delete-then-create/claim (§4, §7), not a `ClaimAddress`-internal branch. |
 | Round-1 BLOCKER: no DB-level uniqueness on "one open period" | **Fixed** (`open_period_uk`, §3.1, direct lift of `contact_cases.uq_case_open_peer`'s pattern) |
-| Round-1 BLOCKER: `[NULL,NULL]` backfill for all existing addresses is wrong (re-introduces mis-attribution for addresses with an unknown-to-us prior reassignment history) | **Backfill changed**: for every currently-live `contact_addresses` row, backfill an open period with `valid_from = that row's own tm_create` (not NULL), `valid_to = NULL`. `valid_from=NULL` (truly unbounded) is reserved for periods created *after* this migration ships, where "opened at CREATE time" already is the correct answer. The one-time backfill explicitly cannot know whether a live row's number was silently reassigned before this feature existed — using its own `tm_create` as the lower bound is the honest answer ("we don't know what happened before this address was (re-)registered"), not a claim of unbounded history. This is documented as a **known backfill limitation**, not silently glossed over. |
+| Round-1 BLOCKER: `[NULL,NULL]` backfill for all existing addresses is wrong (re-introduces mis-attribution for addresses with an unknown-to-us prior reassignment history) | **Superseded by round-22.** Round-1's answer (backfill `valid_from = tm_create`) traded that risk for a worse, certain one round-22 caught: erasing currently-visible pre-registration history at cutover (see the round-22 row below). Final rule: `valid_from = NULL` after all — round-1's concern is real but is exactly the *status quo* misattribution this system already exhibits today (NULL reproduces today's time-agnostic matching, no better and no worse at cutover), whereas `tm_create` was an active regression. Round-1's underlying concern is preserved honestly in §9's round-22 accepted-limitation paragraph: pre-migration reassignment history is unrecoverable-by-design, and defect #2 is only prevented for ownership changes made after migration. |
 | Round-1 finding: `AddressListByContactID` reuse would leak into `ContactGet`/`ContactList` | **Fixed** (§6.1, new function instead) |
 | Round-2 finding: lock-ordering deadlock risk from omitting `AddressResetPrimary` | **Fixed** (§5.2) |
 | Round-2 finding: B5's dbhandler-only fix doesn't propagate to contacthandler error mapping | **Fixed** (§5.4) |
@@ -1009,6 +1021,10 @@ duplicated here). Disposition of each finding that survived to this design:
 | Round-21 BLOCKER: §6.2/§6.3's time-range conditions compared bare `tm_interaction`, a documented-nullable column (origin events may omit TMCreate; the projection stores NULL) — under SQL three-valued logic every NULL-`tm_interaction` interaction would match no period at all, including the fully-unbounded one, silently vanishing from timelines (defect #1) and resurfacing in the unresolved queue (defect #3), a regression against today's pure-equality matching which returns those rows fine | **Fixed** (§6.2 SQL + Go fragment and §6.3 SQL all now compare `COALESCE(tm_interaction, tm_create)` — `tm_create` is projection-populated `NOW()`, `NOT NULL` — so a timestamp-less interaction is attributed by when this system recorded it instead of being unmatchable) |
 | Round-21 finding: round-20's `ContactDeleteByCustomerID` fix reused the function's pre-delete SELECT id set for the period-closure loop, but that SELECT and the bulk `UPDATE` are separate non-transactional statements and the `UPDATE` has no `tm_delete IS NULL` filter — a Contact created in the gap gets soft-deleted while absent from the id set, its open periods permanently orphaned, and event re-drive cannot recover it (the SELECT's `tm_delete IS NULL` filter can't see it) — the round-14 stale-membership defect class resurfacing at the contact-set level | **Fixed** (§4 round-21 correction: bulk `UPDATE` runs first, then the loop's id set is collected post-delete via `WHERE customer_id=? AND tm_delete = ts`; also fixes the pre-existing cache-invalidation variant of the same race and makes event re-drive a genuine recovery path) |
 | Round-21 verification: exhaustive grep of every path setting `contact_contacts.tm_delete` (only `ContactDelete` + `ContactDeleteByCustomerID`; `ContactUpdate`'s only caller whitelists fields and never passes `tm_delete`) and every `contact_addresses` write (only the five `dbhandler/address.go` functions; `ContactDeleteByCustomerID` never touches the table) | **Confirmed complete** — no third deletion path, no additional cascade-style address writer; §4's entry-point coverage is now exhaustive at both the contact and address levels |
+| Round-22 BLOCKER: the `valid_from = tm_create` backfill (round-1's rule) would have erased currently-visible history at cutover — interactions arriving *before* Contact registration (the most common CRM flow: unknown caller first, registered afterwards) fail `>= valid_from` under the backfilled period, vanishing from timelines (defect #1) and re-entering the unresolved queue (defect #3), and the same registration made post-migration would get `valid_from=NULL` via Step 5, making attribution depend on which side of the migration it fell | **Fixed** (§9: backfill rule changed to `valid_from = NULL` — inert by construction, reproducing today's time-agnostic matching exactly at cutover; round-1's disposition row updated as superseded; round-15's inverted-range workaround retired as structurally impossible under NULL; §10's backfill-inertness open question resolved by construction) |
+| Round-22 BLOCKER: §9's residual-gap paragraph claimed a "bounded blast radius (only the rollout window)" while a strictly larger unbounded gap sat unacknowledged — targets hard-deleted *before* the migration leave no row for the backfill, so their post-migration re-registration hits Step 5 and inherits the prior owner's entire pre-migration history (defect #2 itself), firing indefinitely, unfixable because hard-delete (defect #2's own root cause) destroyed the needed data | **Acknowledged, not solvable** (§9: added the honest scope statement — defect #2 is prevented for ownership changes made after migration; misattribution rooted in pre-migration deletions is unrecoverable-by-design, with `contact_resolutions` as the manual correction path; the "bounded" claim now explicitly covers only the skew-window gap) |
+| Round-22 finding: round-21's `COALESCE(tm_interaction, tm_create)` fallback substitutes projection time for event time on timestamp-less interactions — under RabbitMQ at-least-once delivery with unbounded projection lag, an ownership boundary falling inside the lag misattributes the interaction to the projection-time owner (a bounded-population, unbounded-window defect-#2 variant) — and no disposition was recorded, violating this document's own every-gap-gets-a-disposition convention | **Acknowledged, accepted** (§9: recorded as an accepted trade — the alternative, leaving NULL-`tm_interaction` rows unmatchable, is a certain defect-#1 regression for the same population, strictly worse than conditional misattribution; `contact_resolutions` is the correction path) |
+| Round-22 minor: §6.4's claim that the lookup index's "two range columns" prevent per-row filter scans is overstated — `valid_from`/`valid_to` appear inside COALESCE with outer-row columns mixed in, so they serve covering-only, not range pruning (real performance impact negligible: single-digit periods per target) | **Fixed** (wording corrected where §6.4 describes the index's role) |
 
 ## 9. Migration plan
 
@@ -1018,63 +1034,52 @@ duplicated here). Disposition of each finding that survived to this design:
    `voipbin-dbscheme-migration` skill).
 2. Backfill step in the **same migration's `upgrade()`**, guarded by an
    `INSERT ... SELECT` from `contact_addresses` (only rows with `contact_id IS
-   NOT NULL`), per §8's backfill rule (`valid_from = tm_create`, `valid_to =
-   NULL`).
+   NOT NULL`).
 
-   **Round-14 finding: this backfill rule, as originally written, does not
-   account for pre-existing data corrupted by the A9-b bug this design also
-   fixes.** Before this design's `TMDelete` guard (§4's A9-b paragraph)
-   existed, `AddAddress`/`UpdateAddress`/`RemoveAddress`/`ClaimAddress` never
+   **Round-22 BLOCKER, fixed by changing the backfill rule: `valid_from` must
+   backfill as `NULL` (unbounded past), not `tm_create`.** The previous rule
+   (`valid_from = tm_create`) would have erased currently-visible history on
+   migration day: the most common CRM flow — a call arrives from an unknown
+   number first, the Contact is registered afterwards — produces interactions
+   whose event time *precedes* the address row's `tm_create`. Today's
+   pure-equality matching attributes those interactions to the Contact;
+   under a `valid_from = tm_create` period they would fail
+   `>= valid_from` and simultaneously vanish from the timeline (defect #1's
+   symptom) and resurface in the unresolved queue (defect #3's symptom).
+   It would also have been internally inconsistent: the same registration
+   made *after* migration goes through §4 Step 5 and gets `valid_from=NULL`,
+   so attribution would have depended on which side of the migration the
+   registration happened to fall. `valid_from = NULL` is the unique backfill
+   that is genuinely inert — it reproduces today's time-agnostic value
+   matching exactly for every pre-migration address, changing nothing
+   observable at cutover; this design's period boundaries then take effect
+   only for ownership changes made after migration. (This resolves §10's
+   "is the backfill actually inert" open question in the affirmative, by
+   construction rather than by dataset audit.)
+
+   **Round-14 finding: the backfill must not leave permanently-open periods
+   under already-deleted Contacts (A9-b-corrupted data).** Before this
+   design's `TMDelete` guard (§4's A9-b paragraph) existed,
+   `AddAddress`/`UpdateAddress`/`RemoveAddress`/`ClaimAddress` never
    checked `Contact.TMDelete`, so a live `contact_addresses` row can already
    exist today under a Contact that was soft-deleted *before* this migration
-   runs — a state the runtime guard prevents going forward but cannot undo
-   retroactively for data already written. Backfilling such a row as
-   `valid_to = NULL` (the plain rule above) creates a permanently-open
-   period: `ContactDelete`'s "close every open period" trigger (§4, including
-   round-14's re-check fix above) only fires on *future* `ContactDelete`
-   calls, and this Contact's deletion already happened in the past, so
-   nothing will ever close it. That phantom open period would then silently
-   swallow interactions in `InteractionListUnresolved` (§6.3), whose
-   `NOT EXISTS` correlated subquery checks period existence only, never
-   `contact_contacts.tm_delete` — exactly the kind of silent misattribution
-   §1 exists to fix, reintroduced via this design's own migration. **Fix:**
-   the backfill `INSERT ... SELECT` joins `contact_addresses` to
+   runs. Backfilling such a row as `valid_to = NULL` creates a
+   permanently-open period nothing will ever close (`ContactDelete`'s
+   closure only fires on future calls), silently swallowing interactions in
+   `InteractionListUnresolved` (§6.3). **Fix:** the backfill
+   `INSERT ... SELECT` joins `contact_addresses` to
    `contact_contacts ON contact_addresses.contact_id = contact_contacts.id`
    and branches on `contact_contacts.tm_delete`: rows where it `IS NULL`
-   backfill as `valid_to = NULL` (the plain rule, unchanged); rows where it
-   `IS NOT NULL` backfill as `valid_to = contact_contacts.tm_delete` instead
-   — an already-closed period, consistent with what a `ContactDelete` call
-   made at that Contact's actual deletion time would have produced had this
-   design already existed then.
-
-   **Round-15 finding: this `tm_delete`-closing branch, as written, does not
-   guard against `valid_from > valid_to`.** The A9-b-corrupted data this
-   branch exists to handle is, by definition, a `contact_addresses` row
-   whose owning Contact was already soft-deleted *before* the write-guard
-   existed — meaning `contact_addresses.tm_create` (this backfill's
-   `valid_from`) can be *later* than `contact_contacts.tm_delete` (this
-   branch's `valid_to`): the address was added to an already-deleted Contact,
-   exactly the scenario A9-b made possible. `contact_address_ownership_periods`
-   has no `CHECK (valid_from < valid_to)` constraint (§3.1), and
-   `open_period_uk` only activates when `valid_to IS NULL`, so an inverted
-   row like this inserts silently with no error. Every interaction-matching
-   path that uses this row's range (§6.2's `>= valid_from AND < valid_to`,
-   §6.3's `NOT EXISTS` correlated subquery) can never match anything against
-   an inverted range — the address's entire interaction history becomes
-   permanently unmatchable, and because §6.3 treats "no matching period" the
-   same as "period doesn't exist," those interactions don't even resurface in
-   the unresolved queue; they silently vanish. This is defect #1 from §1
-   (delete → history disappears) reintroduced by this design's own backfill
-   for exactly the corrupted-data case it was trying to fix. **Fix:** the
-   backfill's `tm_delete`-closing branch additionally requires
-   `contact_addresses.tm_create <= contact_contacts.tm_delete`; rows that
-   fail this check (the true A9-b-corrupted case — added after the Contact's
-   own deletion) backfill as a **zero-length, already-closed period**
-   instead (`valid_from = valid_to = contact_contacts.tm_delete`) rather than
-   an inverted one — this correctly represents "no interaction could ever
-   have occurred while this contact_id validly owned this target" (the
-   Contact was already gone), without the inverted range's silent-vanishing
-   failure mode, and without violating any constraint.
+   backfill as `valid_to = NULL`; rows where it `IS NOT NULL` backfill as
+   `valid_to = contact_contacts.tm_delete` — an already-closed period,
+   consistent with what a `ContactDelete` call made at that Contact's actual
+   deletion time would have produced had this design already existed then.
+   (Round-15 had found the earlier `valid_from = tm_create` rule could
+   produce an inverted `valid_from > valid_to` range for addresses added
+   *after* their Contact's deletion, requiring a zero-length-period
+   workaround; round-22's `valid_from = NULL` rule makes inversion
+   structurally impossible — `NULL` is negative infinity, always before any
+   `valid_to` — so that workaround is no longer needed and is retired.)
 3. Round-trip verify (MariaDB build → mysqldump → MySQL 8.0 import) per the
    `voipbin-dbscheme-migration` skill, including the generated-column UNIQUE
    behavior probes (open-period coexistence, real-duplicate rejection, distinct-
@@ -1162,6 +1167,42 @@ duplicated here). Disposition of each finding that survived to this design:
      rollout window, not indefinitely), which is a materially different
      (and much smaller) claim than round-15's "closed via deployment
      ordering," which round-16 found this codebase cannot actually enforce.
+   - **Round-22 correction to the "bounded" claim above, and a second,
+     larger accepted limitation it obscured: targets hard-deleted BEFORE the
+     migration leave no `contact_addresses` row for the backfill to see, so
+     they get no period at all — and a post-migration re-registration of
+     such a target hits §4 Step 5 ("no rows at all") and opens
+     `valid_from=NULL`, inheriting the previous owner's entire pre-migration
+     interaction history.** This is defect #2 itself, unmitigated for the
+     entire population of pre-migration deletions — and unlike the skew-window
+     gap above it is NOT bounded by the rollout window: it fires whenever any
+     pre-migration-deleted target is re-registered, indefinitely. It is also
+     unfixable from data this system retains: `contact_addresses` is
+     hard-deleted (§1's defect #2's own root cause), so no record exists of
+     which targets were ever previously owned. The honest statement of what
+     this design delivers, replacing the over-broad "bounded blast radius"
+     claim above where it implied full coverage: **defect #2 is prevented
+     for ownership changes made after this migration; reassignment
+     misattribution rooted in deletions that predate the migration is
+     detectable only via `contact_resolutions` manual correction (§2's
+     existing mechanism) and is accepted as unrecoverable-by-design.** The
+     skew-window paragraph's "bounded" claim stands only for its own
+     specific gap (periods missed during rollout), not as a statement about
+     this design's total residual exposure.
+   - **Round-22 note (recorded, non-blocking): the `COALESCE(tm_interaction,
+     tm_create)` fallback (§6.2/§6.3, round-21) trades defect #1 for a
+     narrow, accepted misattribution window.** For interactions whose origin
+     event carried no timestamp, `tm_create` is the projection time, not the
+     event time; RabbitMQ at-least-once delivery with retries/backlog means
+     projection can lag the event by an unbounded interval, and if an
+     ownership boundary (delete, claim) falls inside that lag, the
+     interaction is attributed to the owner at projection time rather than
+     at event time — a bounded-population (NULL-`tm_interaction` rows only),
+     unbounded-window variant of defect #2. Accepted rather than solved:
+     the alternative (leaving those rows unmatchable) is a certain
+     regression of defect #1 for the same population, strictly worse than a
+     conditional misattribution; `contact_resolutions` remains the manual
+     correction path, consistent with §7's other accepted gaps.
 
 ## 10. Open questions for round-4+ review
 
@@ -1170,11 +1211,10 @@ duplicated here). Disposition of each finding that survived to this design:
   the `voipbin-dbscheme-migration` skill's "owner preferences" section mandates
   for any new get-or-create-shaped concurrency pattern — reasoning by analogy to
   `casehandler` is not sufficient proof per pchero's standing rule.)
-- Is `valid_from = tm_create` backfill actually inert for every existing
-  Contact, or does any existing Contact already have observable reassignment
-  history that this backfill would silently misrepresent as "always owned since
-  registration"? (Requires a read-only diagnostic query against a real dataset,
-  not reasoning from the empty-table round-trip.)
+- ~~Is `valid_from = tm_create` backfill actually inert for every existing
+  Contact...~~ **Resolved by round-22**: the backfill rule changed to
+  `valid_from = NULL`, which is inert by construction (reproduces today's
+  time-agnostic value matching exactly); the dataset-audit question is moot.
 - Full transaction-boundary diff for `AddAddress`/`UpdateAddress`/`RemoveAddress`/
   `ClaimAddress`/`CreateUnresolvedAddress`/`ContactCreate` against their current
   implementations, to confirm no existing test fixture assumption (e.g. mock
