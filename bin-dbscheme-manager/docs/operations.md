@@ -4,7 +4,9 @@ Operational reference for applying, verifying, and recovering Alembic migrations
 
 ## Environment Access
 
-Only humans may run `alembic upgrade` or `alembic downgrade` against staging or production. AI agents may assist with local development only.
+Only humans may run `alembic upgrade` or `alembic downgrade` against staging or production, manually, over VPN. AI agents may assist with local development only.
+
+**Why this is manual-only (confirmed 2026-07-11, VOIP-1246):** the production `bin_manager` and `asterisk` databases are intentionally not reachable from the public internet, and CircleCI's executors are not inside VoIPBin's VPC. A CI job attempting to connect times out at the TCP level — this was verified directly with a throwaway, read-only probe (DSN parsing succeeded; `SHOW TABLES` connection attempt timed out). CI-driven automatic migration application was explored and abandoned for this reason; see "Explored and rejected: CI-driven migration" below before re-attempting this.
 
 | Environment | alembic upgrade allowed? | alembic downgrade allowed? | Who can run? |
 |---|---|---|---|
@@ -17,6 +19,18 @@ Only humans may run `alembic upgrade` or `alembic downgrade` against staging or 
 2. Confirm target database URL in `alembic.ini` points to the correct environment.
 3. Run `alembic current` to verify the current head before applying.
 4. Run against staging first; never skip straight to production.
+
+## `bin-dbscheme-manager` CircleCI checkpoint (manual confirmation only)
+
+`bin-dbscheme-manager`'s CircleCI workflow has a single `migration-applied-checkpoint` approval gate (restricted to `main`) with no job behind it. It does not build, push, apply, or touch anything. Its purpose is to give the migration a visible, recorded checkpoint in CI history — click approve once you have manually applied and verified the migration over VPN per the procedure in this document. There is nothing to configure or debug here; if this gate is confusing operators more than helping, it can be removed entirely without any other CI impact.
+
+## Explored and rejected: CI-driven migration (VOIP-1246, 2026-07-11)
+
+A CircleCI job that ran `alembic upgrade head` directly against production (using the `CC_DATABASE_DSN` / `CC_DATABASE_DSN_ASTERISK` secrets already present in the `production` context) was designed, implemented, and put through 12 rounds of adversarial review (5 design + 7 PR review), catching and fixing 4 real bugs along the way (a DSN-format mismatch, a concurrency-lock regex crash, a `re.sub` backslash-reinterpretation crash, and a buffered-output false-timeout/silent-failure risk). All of that work is preserved in git history (see PR history / `git log --all --grep VOIP-1246`) in case CircleCI network access to production is ever set up later (e.g. a self-hosted runner inside the VPC) — but the approach was ultimately abandoned at the very last pre-merge verification step: **the production DB is not reachable from CircleCI's network at all**, confirmed via a live throwaway probe, not just theorized. No amount of further code review could have caught this — it required an actual network-level test against production from inside CircleCI.
+
+If CI-driven migration is revisited in the future, do the network-reachability check **first**, before any code/design work, not last.
+
+---
 
 ## Emergency Rollback
 
