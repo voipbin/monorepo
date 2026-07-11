@@ -623,3 +623,61 @@ table and 10 minutes is an untuned guess.
 A minimum of one further PR review round is required before this can be
 considered ready to merge (design-first-with-review-loops: min 3 PR-review
 rounds, continuing until 2 consecutive APPROVED).
+
+## Outcome: CI-driven migration abandoned after network-reachability test (2026-07-11)
+
+After the PR review loop closed (7 rounds, 2 consecutive APPROVED), the
+Verification plan's last outstanding item -- confirming CircleCI's
+production-context executor can reach the production DB host -- was
+tested directly, per pchero's request, before merge:
+
+1. A throwaway branch (`VOIP-1246-dsn-test`) added a read-only probe job
+   (`bin-dbscheme-manager/ci/dsn_probe.py`, reusing the already-reviewed
+   `parse_dsn()` from `migrate.py`) that only ran `SHOW TABLES`, gated
+   behind its own approval scoped strictly to that branch (never touching
+   the `main`-only filters on the real migrate job).
+2. Result: `parse_dsn()` correctly parsed the real production DSN (host,
+   port, db, user; zero query params present, confirming the
+   `FORWARDED_PARAMS` allowlist design was moot for the actual DSN format
+   in use). But the `pymysql.connect()` call **timed out** --
+   `pymysql.err.OperationalError: (2003, "Can't connect to MySQL server
+   ... (timed out)")`. Confirmed by pchero: the production DB is
+   intentionally not exposed to the public internet, and CircleCI's
+   standard executors are outside VoIPBin's VPC.
+
+This is a hard blocker that no further code review could have caught --
+it required an actual network-level test from inside CircleCI against the
+real production host. **Decision (pchero, 2026-07-11): abandon CI-driven
+migration application. Revert to the original manual, VPN-only, human-only
+procedure** (this was "option B" from the original scoping discussion,
+now adopted after the more ambitious "option A" proved infeasible at the
+infrastructure level rather than the code level).
+
+**What was kept from this PR:**
+- Removal of `bin-dbscheme-manager-build` (the seed-image build job) --
+  still valid and unaffected by the network finding; confirmed unused by
+  any consumer including `sandbox`.
+- The `build-approval` gate is kept as a documented no-op checkpoint
+  (renamed `migration-applied-checkpoint`) for recording "migration was
+  manually applied and verified over VPN" in CircleCI history, per
+  pchero's direction, rather than removed outright.
+
+**What was removed:**
+- `bin-dbscheme-manager-migrate` job and `bin-dbscheme-manager/ci/migrate.py`
+  / `test_migrate.py` -- the actual CI-driven alembic invocation. Not
+  reachable from CircleCI, so cannot run.
+- `bin-dbscheme-manager/ci/dsn_probe.py` and its temporary CircleCI job --
+  deleted along with the `VOIP-1246-dsn-test` branch once its one purpose
+  (confirming the network-reachability blocker) was served.
+
+`bin-dbscheme-manager/docs/operations.md` was updated to document this
+outcome plainly (a new "Explored and rejected: CI-driven migration"
+section) so a future attempt starts by testing network reachability
+first, not last -- avoiding repeating 12 rounds of code-level review on a
+design that infrastructure alone rules out.
+
+All of this design/implementation work remains in git history
+(this design doc, the deleted `migrate.py`/`test_migrate.py`, and the PR
+review history above) in case CircleCI is ever given VPC-internal network
+access to production (e.g. via a self-hosted runner), at which point the
+already-reviewed `migrate.py` logic could be resurrected largely as-is.

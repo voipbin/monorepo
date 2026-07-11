@@ -363,21 +363,25 @@ workflows:
           requires:
             - bin-customer-manager-build
 
+  # bin-dbscheme-manager: CI does not apply migrations. The production
+  # bin_manager / asterisk databases are not reachable from CircleCI's
+  # executors (confirmed 2026-07-11, VOIP-1246: a read-only DSN probe on
+  # a throwaway branch timed out connecting to the production DB host --
+  # it is intentionally not exposed to the public internet). alembic
+  # upgrade/downgrade against staging or production remains a manual,
+  # VPN-only, human-only procedure -- see
+  # bin-dbscheme-manager/docs/operations.md. This approval-only job is
+  # kept as a documented manual checkpoint (e.g. "I have applied and
+  # verified this migration over VPN") with no automated action behind
+  # it; it does not build, push, or apply anything.
   bin-dbscheme-manager:
     when: << pipeline.parameters.run-bin-dbscheme-manager >>
     jobs:
-      - build-approval:
+      - migration-applied-checkpoint:
           type: approval
           filters:
             branches:
               only: main
-      - bin-dbscheme-manager-migrate:
-          <<: *context_production
-          filters:
-            branches:
-              only: main
-          requires:
-            - build-approval
 
   bin-direct-manager:
     when: << pipeline.parameters.run-bin-direct-manager >>
@@ -1092,39 +1096,10 @@ jobs:
           project-id: voipbin
           project-repository: bin-customer-manager
 
-  # bin-dbscheme-manager
-  bin-dbscheme-manager-migrate:
-    docker: *gcp_image
-    resource_class: small
-    steps:
-      - checkout
-      - run:
-          name: Guard - main branch only
-          command: |
-            if [ "$CIRCLE_BRANCH" != "main" ]; then
-              echo "REFUSING: this job must only run on main (got: $CIRCLE_BRANCH)"
-              exit 1
-            fi
-      - run:
-          name: Install PyMySQL + alembic
-          command: |
-            pip install --no-cache-dir "sqlalchemy<2.0" alembic PyMySQL
-      - run:
-          name: Upgrade bin_manager (voipbin core DB)
-          no_output_timeout: 10m
-          command: |
-            python3 bin-dbscheme-manager/ci/migrate.py \
-              --stream bin-manager \
-              --dsn-env CC_DATABASE_DSN \
-              --lock-name voipbin_alembic_bin_manager
-      - run:
-          name: Upgrade asterisk config DB
-          no_output_timeout: 10m
-          command: |
-            python3 bin-dbscheme-manager/ci/migrate.py \
-              --stream asterisk_config \
-              --dsn-env CC_DATABASE_DSN_ASTERISK \
-              --lock-name voipbin_alembic_asterisk_config
+  # bin-dbscheme-manager has no build/deploy job. See the workflow
+  # definition above (migration-applied-checkpoint) and
+  # bin-dbscheme-manager/docs/operations.md for why: production DB is not
+  # reachable from CircleCI, so all migration application is manual/VPN.
 
   # bin-direct-manager
   bin-direct-manager-test:
