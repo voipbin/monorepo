@@ -310,7 +310,9 @@ If the row is gone, owned by anyone else, or owned by a tombstoned
 Contact, the open period is an orphan: close it (`valid_to=NOW()`,
 Prometheus counter), **apply the late cleanup for a tombstoned owner
 (round-28: closed period written first, then the caller-specific row
-repair — `AddressCreate` hard-deletes the stale row, `ClaimAddress`
+repair — `AddressCreate` hard-deletes the stale row, `AddressUpdate`
+(new-target side) likewise hard-deletes it (round-30: its own UPDATE then
+re-occupies the freed slot, same shape as the insert), `ClaimAddress`
 resets it to `contact_id = NULL` so its own final UPDATE still finds the
 NULL-owned row; see §4's round-28 correction below)**, and continue to the
 next step as if it were closed (see §9's round-23/24/27/28 self-healing
@@ -334,20 +336,41 @@ contact_id) — round-24 fixed the slot-reoccupation scenario only for the
 *different-owner* variant; the *same-owner* variant (B's own orphan open
 period surviving an old-binary row deletion, then B itself re-registering)
 routes here and previously had no check at all. Outcomes:
-- **Row agrees (exists, owned by this contact): true idempotent retry**
-  (round-6's case 4). dbhandler commits (successful no-op, not an error),
-  and `contacthandler.ClaimAddress`'s existing post-commit behavior
-  (re-fetch via `AddressGet`, publish `EventTypeContactUpdated`) is
-  unchanged — this design changes only what happens inside the
-  transaction, not that response path.
+- **Row agrees (exists, owned by this contact):** caller-specific
+  (round-30 — the previous text defined only `ClaimAddress`, leaving
+  `AddressCreate`'s everyday duplicate path ambiguous). For
+  `ClaimAddress`: true idempotent retry (round-6's case 4) — dbhandler
+  commits (successful no-op, not an error), and
+  `contacthandler.ClaimAddress`'s existing post-commit behavior (re-fetch
+  via `AddressGet`, publish `EventTypeContactUpdated`) is unchanged —
+  this design changes only what happens inside the transaction, not that
+  response path. For `AddressCreate` and `AddressUpdate` (new-target
+  side): this is NOT a skew state at all — it is today's ordinary
+  "you already own this target" duplicate, and the row's presence means
+  the INSERT/UPDATE would hit the unique index anyway; return
+  `ErrDuplicateTarget`/409 exactly as today (§2's status-code promise),
+  rolling back.
 - **Row missing (self-orphan): repair-in-place.** The open period is this
   contact's own and correct — keep it (do NOT fabricate anything). For
   `AddressCreate`: proceed with the row INSERT and commit — the API
   contract (row exists after success) is restored, no new period is
-  opened. For `ClaimAddress` (round-24's reoccupation, same-owner
-  variant: an unresolved row now occupies the slot): claim the row as
-  usual (its final UPDATE targets the NULL-owned row and succeeds), keep
-  the existing open period, commit.
+  opened. For `AddressUpdate` (new-target side, round-30: this third
+  step-procedure caller was previously unenumerated): proceed with its
+  own UPDATE re-targeting its existing row to this target and commit —
+  same repair-in-place semantics, no INSERT needed. For `ClaimAddress`
+  (round-24's reoccupation, same-owner variant: an unresolved row now
+  occupies the slot): claim the row as usual (its final UPDATE targets
+  the NULL-owned row and succeeds), keep the existing open period,
+  commit. **Round-30 disposition (gap attribution, recorded as
+  accepted):** keeping the open period means interactions from the
+  skew-deletion moment to this re-registration remain attributed to this
+  contact — acceptable because the orphan is the contact's own (the
+  deletion that failed to close it was an old-binary artifact, and the
+  contact is demonstrably re-claiming the same target now); the
+  resulting arrival-order asymmetry (a third party arriving first would
+  close the period at NOW(), truncating that gap) is inherent to
+  repair-on-next-touch designs and shares the bounded-window standard of
+  §9's other skew dispositions.
 - **Row exists but disagrees (NULL-owned or another owner):** for
   `ClaimAddress` claiming that very row, this is the repair-in-place case
   above; for `AddressCreate` this cannot coexist with its own INSERT
@@ -674,17 +697,28 @@ round-27 versions were broken):**
   the same target, and a fabricated `valid_from=NULL` row can never
   satisfy Step 3's `valid_from >= closed.valid_to` intervening-owner test
   — it would be invisible to Step 3 and let a previous owner's period
-  reopen across the dead owner's era (defect #2 via Step 3). Rule: the
-  fabricated period is `[GREATEST(latest existing valid_to for this
-  target, or NULL if none), contact_contacts.tm_delete)` — i.e.
-  `valid_from` = the latest `valid_to` among the target's existing closed
-  periods (any owner, from the already-locked §4 fetch), or `NULL` only
-  when the target has no periods at all; `valid_to` = the owner's
-  tombstone timestamp. If that computed `valid_from` would exceed
-  `valid_to` (tombstone predates the last legitimate era — possible if
-  another owner held the target after the dead Contact), insert a
-  zero-length period `[tm_delete, tm_delete)` instead (round-15's
-  established zero-length disposition). **Round-29 covering predicate
+  reopen across the dead owner's era (defect #2 via Step 3). Rule
+  (round-30 refinement — the round-29 bounds over-attributed unowned gap
+  time to the dead Contact): the fabricated period's `valid_from` =
+  **`GREATEST(latest existing valid_to for this target, stale row's
+  `tm_create`)`** — the stale `contact_addresses` row is already read
+  inside every late-cleanup transaction, and its `tm_create` is the
+  actual registration moment, a strictly more accurate lower bound than
+  the previous owner's `valid_to` alone; since `tm_create >= latest
+  valid_to` in every reachable ordering that matters, Step 3's `>=`
+  visibility argument is preserved, and the gap between the previous
+  owner's era and the dead Contact's real registration is no longer
+  swallowed into the fabricated era (head-gap disposition: with the
+  `tm_create` bound the head gap collapses to zero by construction).
+  `valid_from` may be `NULL` only when the target has no periods at all
+  AND the stale row's `tm_create` is itself NULL (not producible by
+  today's write paths — defensive default only). `valid_to` = the
+  owner's tombstone timestamp. If the computed `valid_from` would exceed
+  `valid_to` (registration after the tombstone — the old-binary A9-b
+  case, `tm_create > tm_delete`), insert a zero-length period
+  `[tm_create, tm_create)` instead (round-15's established zero-length
+  disposition; anchored at `tm_create` rather than `tm_delete` so no
+  instant that predates the row's actual existence is ever claimed). **Round-29 covering predicate
   (the "skip if already covered" test, previously undefined):** skip the
   INSERT iff the already-fetched period set contains a closed period for
   the SAME tombstoned contact_id whose `valid_to >= its
@@ -758,7 +792,17 @@ fix (same standard as the A9-b/B5 bundled fixes, §2): correct the match
 string to `idx_contact_addresses_identifier` (and the sibling
 `cust_primary` → `idx_contact_addresses_primary`), and align the SQLite
 test schema's index names with production so the drift cannot silently
-recur.
+recur. **Round-30 extension: the 1062 classifier exists only in
+`AddressCreate`'s error path today — `AddressUpdate`'s Exec wraps all
+errors generically (`address.go:382-384`), so the period-less
+tombstoned-owner variant occupying an `AddressUpdate` new-target slot
+would surface as a generic 500 with no repair trigger. The same
+classification (errno 1062 + production index name →
+`ErrDuplicateTarget`) is added to `AddressUpdate`'s target-change path,
+and its duplicate-key handling gains the same
+tombstoned-owner-check-then-retry-once behavior as repair (b)** — the §4
+table already routes `AddressUpdate` (target changed) through steps 1–5
+as a first-class caller, so its repair surface must match.
 
 **A9-b guard placement (round-3 finding: this was only in §8's summary table,
 never specified in this section — fixed here).** All four write handlers this
@@ -1260,6 +1304,11 @@ duplicated here). Disposition of each finding that survived to this design:
 | Round-29 finding: the round-28 covering predicate ("skip if a covering closed period exists") was undefined — the implementer-discretion ambiguity class — and the Step-1 clause vs repair (a) specified conflicting period-write orders that could leave two overlapping closed periods for one era | **Fixed** (§4 round-29: covering predicate defined — a closed period for the same tombstoned contact_id with `valid_to >= tm_delete`, evaluable from the §4 locked fetch; canonical late-cleanup order — close orphan open period first (which then satisfies the predicate), fabricate only for the period-less variant, row repair last — one era can never yield two overlapping closed periods) |
 | Round-29 BLOCKER: §4 Step 2's "genuinely unreachable for `AddressCreate`" claim contradicted §9's own round-23(c) analysis (skew deletes the row but leaves the period open — the unique index no longer blocks), and the same-owner variant of round-24's slot-reoccupation had no check at all: Step 1's self-healing only fires for a *different* contact's period, so B re-registering its own orphaned target routed to Step 2, which had no defined `AddressCreate` behavior (a literal reading returns 200 without inserting the row) and an ambiguous `ClaimAddress` no-op | **Fixed** (§4 round-29: Step 2 performs the same ownership-agreement check as Step 1 — row agrees = true idempotent no-op; row missing = repair-in-place (AddressCreate inserts the row and keeps the existing open period; ClaimAddress claims the reoccupied NULL-owned row and keeps the period); the reachability claim is corrected) |
 | Round-29 verification: (1) ClaimAddress's `contact_id=NULL` reset is transaction-internal (never observable, fully rolled back on failure, no event/cache impact — post-commit paths fire only on success); (3) a third party slipping between the cleanup commit and the retry INSERT yields the same 409 the caller would have received had the third party arrived first — consistent with today's semantics | **Confirmed** (recorded as verified-safe) |
+| Round-30 BLOCKER: Step 2's round-29 "row agrees" branch defined only `ClaimAddress`, and a literal first-match-stops reading would turn `AddressCreate`'s everyday "you already own this target" duplicate from 409 into a 200 no-op — an API contract change contradicting §2's status-code promise, and self-contradictory with the "row disagrees" branch's unique-index reasoning | **Fixed** (§4 Step 2: row-agrees is now caller-specific — `ClaimAddress` keeps the idempotent no-op; `AddressCreate`/`AddressUpdate` return `ErrDuplicateTarget`/409 exactly as today) |
+| Round-30 BLOCKER: `AddressUpdate` (target changed) is a first-class step-procedure caller per §4's own table, but every caller-specific repair enumeration (Step 1's row repair, Step 2's outcomes, round-28's (a)/(b)) named only `AddressCreate`/`ClaimAddress` — the round-19/24/27 implementer-discretion class again, with a wrong-choice failure mode (NULL-reset would leave the slot occupied and 1062-fail `AddressUpdate`'s own re-targeting UPDATE); additionally the 1062 classifier exists only in `AddressCreate`'s path, so the period-less variant on an `AddressUpdate` target surfaces as a generic 500 with no repair trigger at all | **Fixed** (§4: `AddressUpdate` (new-target side) enumerated everywhere — Step-1 repair = hard-delete (like `AddressCreate`), Step-2 outcomes defined; round-28 bundled fix extended: the 1062+index-name classification and the tombstoned-owner-check-then-retry-once behavior are added to `AddressUpdate`'s target-change path) |
+| Round-30 finding: the round-29 fabricated-period bounds (`valid_from` = latest existing `valid_to`) over-attribute the unowned gap between the previous owner's era and the dead Contact's actual registration — in the worst case (no periods + post-tombstone A9-b row) the entire fabricated era `[NULL, tm_delete)` covered time the dead Contact never owned; the stale row's `tm_create` is a strictly better lower bound available for free in the same transaction | **Fixed** (§4 round-30: `valid_from = GREATEST(latest valid_to, stale row's tm_create)` — head gap collapses to zero by construction, Step 3 visibility preserved; zero-length fallback re-anchored at `tm_create`; NULL only in a defensive default not producible by today's write paths) |
+| Round-30 finding: Step 2's repair-in-place keeps the contact's own orphan open period, permanently attributing the skew-deletion→re-registration gap to that contact, with an arrival-order asymmetry (a third party arriving first truncates the gap at NOW()) — undisposed | **Fixed** (§4 Step 2: recorded as an accepted disposition — the orphan is the contact's own and the asymmetry is inherent to repair-on-next-touch, same bounded-window standard as §9's other skew dispositions) |
+| Round-30 verification: Step 2's ownership-agreement read follows §5.2's canonical order (periods FOR UPDATE → addresses read, and Step 2 needs no `contact_contacts` read at all — the owner under check is the caller itself, whose liveness the A9-b guard already established) | **Confirmed** (recorded as verified-safe) |
 
 ## 9. Migration plan
 
