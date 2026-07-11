@@ -444,7 +444,18 @@ restarting it), and repeat this membership re-check until a pass finds
 nothing new. In practice this converges in at most one extra pass per
 concurrent `ClaimAddress` that actually raced the deletion, and the same
 `maxDeadlockRetries = 3` bound (§5.3) still caps the whole transaction if
-convergence itself deadlocks against something else.
+convergence itself deadlocks against something else. **Round-15 note (minor,
+recorded not blocking): this re-check loop's pass count has no explicit cap.**
+A sustained stream of `ClaimAddress` calls against new targets for this same
+contact_id could keep the loop finding "one more new target" across many
+passes, holding this transaction open longer than typical. This is a
+liveness/latency concern, not a correctness one (each pass still converges
+towards a fixed point), and is recorded here as an operational note rather
+than fixed with a new cap, since introducing an arbitrary pass limit would
+trade a rare long-transaction case for a new correctness question (what
+happens to a `ContactDelete` that hits the cap without converging?) that
+does not have an existing precedent in this document to reuse, unlike
+`maxDeadlockRetries`.
 
 **A9-b guard placement (round-3 finding: this was only in §8's summary table,
 never specified in this section — fixed here).** All four write handlers this
@@ -737,6 +748,11 @@ duplicated here). Disposition of each finding that survived to this design:
 | Round-13 finding: reusing `contacthandler.RemoveAddress` verbatim for round-12's compensating cleanup would leak a spurious `EventTypeContactUpdated` for a Contact whose `ContactCreated` was never published (the create failed before reaching that point) | **Fixed** (§4: compensating cleanup calls the non-event-publishing dbhandler-level delete + ownership-period closure directly, not the public `RemoveAddress` entry point) |
 | Round-13 finding: §10's transaction-boundary-diff checklist named five handlers but omitted `ContactCreate`, despite round-11/12 changing it — an existing test, `Test_Create_WithAddressTagErrors`, explicitly asserts today's error-swallowing behavior and will need rewriting, not just re-verification | **Fixed** (§10: `ContactCreate` added to the checklist, with the specific test named) |
 | Round-13 finding, investigated and rejected: a reviewer flagged §9's backfill filter (`contact_id IS NOT NULL`) as potentially wrong on the theory that unresolved addresses are marked with the `uuid.Nil` sentinel rather than SQL `NULL`, which would make the filter a no-op | **Not a defect** — verified against `dbhandler.AddressCreate`'s actual code and its own comment (`address.go:112-117`): `uuid.Nil.Bytes()` is 16 zero bytes, "NOT SQL NULL," so the write path explicitly passes Go `nil` (→ SQL `NULL`) whenever `ContactID == uuid.Nil`. `contact_id IS NOT NULL` correctly excludes unresolved rows at the database level; the reviewer's theory conflated the Go-level zero-value sentinel with the DB-level column semantics, which the codebase itself takes explicit care to keep distinct. |
+| Round-14 BLOCKER: `ContactDelete`'s ownership-period closure had no transaction/lock-ordering/deadlock-retry discipline specified, and its own membership-snapshot read only locks the targets it finds — a concurrent `ClaimAddress` committing a new open period after that read but before commit is invisible to it, leaving an orphan open period under a Contact that no longer exists | **Fixed** (§4: generalized §5.2's ascending lock-ordering rule to arbitrary N targets, reused §5.3's retry loop; added a post-lock membership re-check that repeats until a pass finds no new targets) |
+| Round-14 BLOCKER: §9's backfill rule didn't account for pre-existing data corrupted by the A9-b bug — a live `contact_addresses` row under an already-soft-deleted Contact would backfill as a permanently-open period with no future `ContactDelete` left to close it | **Fixed** (§9: backfill joins `contact_contacts` and closes the period at the Contact's `tm_delete` instead of leaving it open, for rows under an already-deleted Contact) |
+| Round-15 finding: round-14's `tm_delete`-closing backfill branch didn't guard against `contact_addresses.tm_create > contact_contacts.tm_delete` (the true A9-b-corrupted case — an address added *after* its Contact was already deleted), which would silently insert an inverted `valid_from > valid_to` period that no interaction-matching query could ever match, permanently and silently losing that address's entire history | **Fixed** (§9: the `tm_delete`-closing branch now requires `tm_create <= tm_delete`; rows that fail this check backfill as a zero-length already-closed period `valid_from = valid_to = tm_delete` instead of an inverted range) |
+| Round-15 BLOCKER: this plan never addressed the rolling-deploy version-skew window — an old-binary pod processing `AddressCreate` during a migrate-then-roll-pods deploy would create no ownership period, letting later `AddressDelete`/`ClaimAddress` calls silently no-op / misclassify as first-ever registration, reproducing defect #2 via a deploy-timing gap | **Fixed** (§9: added an explicit deployment-ordering constraint — this migration must ship as schema-and-binary-together, not the ordinary "migrate then roll pods old→new whenever" pattern, since the old binary is incompatible with the new schema being present) |
+| Round-15 note (recorded, not blocking): round-14's `ContactDelete` membership re-check loop has no explicit pass-count cap, so a sustained stream of concurrent `ClaimAddress` calls against new targets could keep it re-checking across many passes | Acknowledged as a liveness/latency concern, not a correctness one (each pass still converges toward a fixed point); not given an arbitrary cap because that would trade a rare long-transaction case for a new, precedent-less correctness question (what disposition applies if the cap is hit without converging). |
 
 ## 9. Migration plan
 
@@ -774,6 +790,35 @@ duplicated here). Disposition of each finding that survived to this design:
    — an already-closed period, consistent with what a `ContactDelete` call
    made at that Contact's actual deletion time would have produced had this
    design already existed then.
+
+   **Round-15 finding: this `tm_delete`-closing branch, as written, does not
+   guard against `valid_from > valid_to`.** The A9-b-corrupted data this
+   branch exists to handle is, by definition, a `contact_addresses` row
+   whose owning Contact was already soft-deleted *before* the write-guard
+   existed — meaning `contact_addresses.tm_create` (this backfill's
+   `valid_from`) can be *later* than `contact_contacts.tm_delete` (this
+   branch's `valid_to`): the address was added to an already-deleted Contact,
+   exactly the scenario A9-b made possible. `contact_address_ownership_periods`
+   has no `CHECK (valid_from < valid_to)` constraint (§3.1), and
+   `open_period_uk` only activates when `valid_to IS NULL`, so an inverted
+   row like this inserts silently with no error. Every interaction-matching
+   path that uses this row's range (§6.2's `>= valid_from AND < valid_to`,
+   §6.3's `NOT EXISTS` correlated subquery) can never match anything against
+   an inverted range — the address's entire interaction history becomes
+   permanently unmatchable, and because §6.3 treats "no matching period" the
+   same as "period doesn't exist," those interactions don't even resurface in
+   the unresolved queue; they silently vanish. This is defect #1 from §1
+   (delete → history disappears) reintroduced by this design's own backfill
+   for exactly the corrupted-data case it was trying to fix. **Fix:** the
+   backfill's `tm_delete`-closing branch additionally requires
+   `contact_addresses.tm_create <= contact_contacts.tm_delete`; rows that
+   fail this check (the true A9-b-corrupted case — added after the Contact's
+   own deletion) backfill as a **zero-length, already-closed period**
+   instead (`valid_from = valid_to = contact_contacts.tm_delete`) rather than
+   an inverted one — this correctly represents "no interaction could ever
+   have occurred while this contact_id validly owned this target" (the
+   Contact was already gone), without the inverted range's silent-vanishing
+   failure mode, and without violating any constraint.
 3. Round-trip verify (MariaDB build → mysqldump → MySQL 8.0 import) per the
    `voipbin-dbscheme-migration` skill, including the generated-column UNIQUE
    behavior probes (open-period coexistence, real-duplicate rejection, distinct-
@@ -782,6 +827,34 @@ duplicated here). Disposition of each finding that survived to this design:
 4. No `downgrade()` data-loss concern: `DROP TABLE IF EXISTS
    contact_address_ownership_periods` is fully reversible (no other table's data
    depends on it).
+5. **Round-15 finding: this plan never addressed the rolling-deploy version-
+   skew window, despite §5 itself establishing that `bin-contact-manager`
+   runs as multiple pods consuming a shared RabbitMQ queue.** If the schema
+   migration (step 1) lands before every pod is running code that knows
+   about `contact_address_ownership_periods`, an old-binary pod can process
+   `AddressCreate` during the overlap and write only to `contact_addresses`
+   — no ownership period is created for that target. A new-binary pod later
+   processing `AddressDelete` for the same address then finds no open period
+   to close (a silent no-op, since this closing `UPDATE` has no `RowsAffected`
+   check the way B5's fix added one for `AddressUpdate`/`AddressDelete`'s
+   `contact_addresses`-side write — see §5.4). If that target is later
+   `ClaimAddress`-ed by a different contact, no period exists at all for it,
+   so §4's Step 5 (true first-ever registration) misclassifies it and backs
+   in `valid_from=NULL`, reproducing defect #2 (history leaking to the new
+   owner) via a deploy-timing gap this design otherwise closes everywhere
+   else. **Fix: deployment ordering constraint, not a code change.** This
+   migration must be deployed as schema-first-then-binary, with the old
+   binary treated as incompatible with the new schema being present — i.e.
+   the rollout is not "migrate, then roll pods old→new" (which admits the
+   skew window above) but "drain and replace all pods to the new binary in
+   the same deploy step the migration ships in," the same way any migration
+   that changes a write path's transactional shape (not just adds a nullable
+   column) already has to be deployed in this codebase. This is an
+   operational/rollout constraint to document and follow, not a new runtime
+   safeguard this design needs to add — but this plan omitted stating it
+   even as a constraint, which round-15 review found meant an implementer
+   reading only this document would not know the ordinary "add a nullable
+   column, roll pods whenever" deploy pattern does not apply here.
 
 ## 10. Open questions for round-4+ review
 
