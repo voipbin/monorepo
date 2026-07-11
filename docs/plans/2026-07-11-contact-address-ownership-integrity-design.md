@@ -149,12 +149,21 @@ All four ownership-period-affecting operations are additions alongside the
 existing `contact_addresses` write, inside the **same transaction** the existing
 write already runs in (see §5 for the transaction restructuring this requires).
 
-**Round-5 review found the "three separate lookups" framing (round-3/round-4's
-fix) was still broken in two ways it could not both fix simultaneously — see
-§8 for the specifics. This section replaces that framing entirely with a
-single mechanism that resolves both.**
+**Round-8 review found the "1–5 cases" framing (round-6/7's fix) was not
+actually mutually exclusive — several real states satisfy more than one
+case's stated precondition (e.g. this contact's own row is open AND it also
+has an older closed row; or this contact has a closed row AND a different
+contact currently holds an open one), and the document never said which case
+to check first. Implemented in list order, that ambiguity reproduces the
+exact "unmapped 1062 from inserting over a live open row" bug this design
+exists to prevent. This section replaces the flat case list with an ordered
+decision procedure — an explicit sequence of checks against the one
+already-locked row set, each one either resolving the write or falling
+through to the next. Ordering makes exclusivity structural: once a step
+matches, no later step is ever evaluated, so overlapping preconditions
+between what were cases 3/4/5 can no longer both fire.**
 
-**The decision is made from ONE locking read, not several separate lookups.**
+The decision is made from ONE locking read, not several separate lookups.
 Inside the transaction (§5.1), immediately after acquiring the row lock this
 operation's target requires:
 
@@ -167,106 +176,103 @@ FOR UPDATE
 
 This locks **every** period row for the target (there are realistically at
 most a handful — one open, plus however many closed ones history has
-accumulated), not just the single `open_period_uk` row the earlier framing
-locked. Because this is a real locking read under `FOR UPDATE` — not the
-plain, un-locked `SELECT`s the round-3/4 "lookup (a)/(c)" framing used — it
+accumulated), not the single `open_period_uk` row alone. Because this is a
+real locking read under `FOR UPDATE` — not a plain, un-locked `SELECT` — it
 reads the true latest committed state under InnoDB's locking-read semantics,
-not a stale `REPEATABLE READ` snapshot: this is what closes round-5's
-concurrency finding (§8). The write path then decides **in application code,
-from this one already-fetched, already-locked row set** — no further queries
-needed:
+not a stale `REPEATABLE READ` snapshot (this is what closes round-5's
+concurrency finding, §8). The write path then decides **in application code,
+from this one already-fetched, already-locked row set**, by evaluating the
+following steps **in this exact order** and stopping at the first match — no
+further queries needed at any step:
 
-1. **No rows at all** (for *any* contact_id, open or closed) → true first-ever
-   registration. INSERT: `valid_from=NULL`, `valid_to=NULL`.
-2. **A *closed* row for a *different* contact_id exists and this contact_id
-   has no row of its own** → reassignment (A→B, or first-time `ClaimAddress`
-   of a target someone else previously held, where A's row was already
-   closed by A's own `AddressDelete` per §7's TOCTOU sequencing). This is the
-   case round-5 review found the three-lookup framing misclassified as case 1
-   above (§8) — explicitly checking "does *any* contact_id have a row here,
-   not just this one" is what fixes it. INSERT: `contact_id`=this contact,
-   `valid_from=NOW()` (not NULL — this contact never owned the target before
-   now), `valid_to=NULL`.
-3. **This contact_id has its own closed row(s)** — take the one with the
-   latest `valid_to` (`ORDER BY valid_to DESC` over the in-memory set already
-   fetched, no extra query). Then check the already-fetched row set for any
-   *other* contact_id's row with `valid_from` strictly later than that
-   closed row's `valid_to`:
-   - **None found** → this contact held the target continuously up to close,
-     nobody intervened. Re-open: `UPDATE ... SET valid_to=NULL WHERE id=<that
-     row>` (no new row — one continuous history).
-   - **Found** → someone else provably held the target in the interim (the
-     A→B→A case round-4 found broken). Do **not** reopen the stale row.
-     INSERT a new row instead: `contact_id`=this contact, `valid_from=NOW()`,
-     `valid_to=NULL`.
-4. **An open row for this exact contact_id already exists.** Round-6 review
-   found this is NOT unreachable via `ClaimAddress` as originally claimed: its
-   idempotency pre-check
-   (`existing, err := h.AddressGet(...); if existing.ContactID == contactID {
-   return nil }`, `pkg/dbhandler/address.go:182-190`) runs as a plain,
-   non-locking read **before** the `FOR UPDATE` acquisition this design adds
-   — so two concurrent, duplicate `ClaimAddress` calls for the same contact
-   (an ordinary at-least-once-delivery retry) can both pass that pre-check
-   (both see `ContactID == uuid.Nil` before either commits), then serialize
-   on the `FOR UPDATE` lock, and the second one now genuinely observes an
-   open row for its own contact_id post-lock. **Fix (moves the pre-check
-   inside the lock, not a new branch in this table):** `AddressClaim`'s
-   idempotency check is relocated to run *after* the §4 locking read, inside
-   the same transaction — if the already-locked row set shows an open period
-   for this exact contact_id, treat it as the pre-check always intended
-   (return success, no-op — the claim already holds), rather than falling
-   through into cases 1–3. With the check moved inside the lock, this case is
-   genuinely unreachable for `AddressCreate` (still blocked by
-   `contact_addresses`' unique index, unchanged) and is a well-defined no-op
-   for `ClaimAddress`, not an unhandled branch. dbhandler still commits this
-   transaction (there is nothing to roll back — no-op is not an error), and
-   `contacthandler.ClaimAddress`'s existing post-commit behavior (re-fetch via
-   `AddressGet`, publish `EventTypeContactUpdated`) is unchanged either way;
-   this design does not alter that response path, only what happens inside
-   the transaction that precedes it.
-5. **An *open* row for a *different* contact_id already exists.** Round-7
-   review found this is a distinct case from case 2 (§8), not covered by it:
-   case 2 only applies when the other contact_id's row is *closed*. An open
-   row means a live owner exists, and `AddressClaim`'s existing pre-check
-   (`existing.ContactID != uuid.Nil → ErrConflict`,
-   `pkg/dbhandler/address.go:191-193`) is meant to reject this before any
-   ownership-period write is attempted. Applying the same fix as case 4: this
-   pre-check also relocates to run *after* the §4 locking read, inside the
-   same transaction, checked against the already-locked row set — if it shows
-   an open row for a different contact_id, return `ErrConflict` (mapped to
-   `cerrors.AlreadyExists`/409 exactly as `ClaimAddress` already does today)
-   and roll back, without ever reaching cases 1–3. This closes the gap round-7
-   found: without this case, case 2's "(open or closed)" wording could be
-   misread as instructing an INSERT even when the other contact's row is
-   still open, which the `idx_ownership_periods_open` unique index would
-   reject as a raw, unmapped MySQL 1062 — case 2's wording above is corrected
-   to say "closed" specifically so this never gets attempted; case 5 is the
-   explicit, mapped handling for the open-row situation instead.
+**Step 1 — is there already an open row for a *different* contact_id?** (At
+most one can exist, globally, because `open_period_uk` hashes only
+`(customer_id, type, target)`.) If yes: this is a live-owner conflict.
+Return `ErrConflict` (mapped to `cerrors.AlreadyExists`/409, exactly as
+`ClaimAddress`'s existing pre-check does today — round-7's case 5) and roll
+back. **Checked first, unconditionally**, so no later step can ever attempt
+an INSERT that would collide with this row — this is what makes the old
+case-3-vs-case-5 and case-2-vs-case-5 overlaps round-8 found structurally
+impossible now, not just documented as an edge case.
+
+**Step 2 — is there already an open row for *this* contact_id?** (Only
+reachable here because step 1 already ruled out a different contact's open
+row — `open_period_uk`'s global uniqueness means this and step 1 can never
+both be true, so reaching step 2 tells you the open row, if any, is this
+contact's own.) If yes: `AddressClaim`'s idempotency retry — round-6's case
+4. dbhandler still commits the transaction (nothing to roll back; this is a
+successful no-op, not an error), and `contacthandler.ClaimAddress`'s
+existing post-commit behavior (re-fetch via `AddressGet`, publish
+`EventTypeContactUpdated`) is unchanged either way — this design changes
+only what happens inside the transaction, not that response path. This case
+remains genuinely unreachable for `AddressCreate` (still blocked upstream by
+`contact_addresses`' unique index).
+
+**Step 3 — does this contact_id have any closed row(s) of its own?** (Only
+reached once steps 1–2 confirm no open row exists anywhere for this target —
+so any row found here is guaranteed closed, removing the ambiguity that let
+the old case 3 fire on a target that actually had an open row.) If yes, take
+the one with the latest `valid_to` (`ORDER BY valid_to DESC` over the
+already-fetched set, no extra query). Then check the same fetched set for
+any *other* contact_id's row with `valid_from` strictly later than that
+closed row's `valid_to` — and because step 1 already established there is no
+currently-open row for any other contact_id, any such intervening row is
+now guaranteed closed too, so this comparison can never rediscover the
+live-owner conflict step 1 already exhausted:
+  - **None found** → this contact held the target continuously up to close,
+    nobody intervened. Re-open: `UPDATE ... SET valid_to=NULL WHERE id=<that
+    row>` (no new row — one continuous history).
+  - **Found** (the A→B→A case round-4 found broken) → do **not** reopen the
+    stale row. INSERT a new row instead: `contact_id`=this contact,
+    `valid_from=NOW()`, `valid_to=NULL`.
+
+**Step 4 — does any row exist for this target at all (any contact_id, any
+status)?** (Only reached once steps 1–3 rule out an open row for anyone and
+a closed row for this contact_id — so any row found here necessarily
+belongs to a *different* contact_id, and is closed.) If yes: reassignment
+(A→B, or first-time `ClaimAddress` of a target someone else previously
+held, where A's row was already closed by A's own `AddressDelete` per §7's
+TOCTOU sequencing) — round-5's fix, the case the original "no rows at all"
+framing misclassified as first-ever registration. INSERT: `contact_id`=this
+contact, `valid_from=NOW()` (not NULL — this contact never owned the target
+before now), `valid_to=NULL`.
+
+**Step 5 — no rows matched any of the above.** True first-ever registration.
+INSERT: `valid_from=NULL` (unbounded past — see §9 backfill), `valid_to=NULL`.
 
 **The target's `(type, target)` values, needed to know which row(s) to lock,
 must themselves come from data already covered by this transaction's locking
-discipline (round-7 finding) — not from a separate non-locking `AddressGet`
-preceding the lock.** For `AddressCreate`, the caller supplies `(type,
-target)` directly as request parameters, so there is nothing to look up.
-For `AddressClaim`, which locates the target address row by `addressID`
-first, that lookup (`pkg/dbhandler/address.go:182-190`'s `AddressGet`) is
-retained only to resolve `addressID → (type, target)` — a value that, once
-an address row exists, is immutable except through `AddressUpdate`'s
-target-change path. Concurrent target changes on the *same* `addressID` are
-already serialized by this design's own lock-ordering rules (§5.1/§5.2:
-every write to a given `(customer_id, type, target)` acquires the §4 locking
-read before proceeding), so by the time `AddressClaim`'s resolved `(type,
-target)` reaches its own `FOR UPDATE` acquisition, any concurrent
-`AddressUpdate` that would have changed it is either not yet started (and
-will queue behind this transaction's lock) or already committed (and this
-transaction's `FOR UPDATE` observes its result, per §4's stale-snapshot
-argument) — never interleaved mid-decision.
+discipline (round-7 finding, restated for the step-ordered form) — not from
+a separate non-locking `AddressGet` preceding the lock.** For
+`AddressCreate`, the caller supplies `(type, target)` directly as request
+parameters, so there is nothing to look up. For `AddressClaim`, which
+locates the target address row by `addressID` first: **round-8 review found
+the earlier claim that this resolution was already protected by lock
+ordering alone was wrong** — a plain, non-locking `AddressGet(addressID)`
+executed before this transaction's `FOR UPDATE` can read a `target` value
+that a concurrent `AddressUpdate` (target-change) then commits over before
+this transaction's lock is acquired, leaving `AddressClaim` holding a lock
+on — and writing an ownership period for — the *stale* target while the
+`contact_addresses` row it ultimately updates has already moved to the new
+one. Lock ordering serializes *who goes first* on a given target; it does
+nothing to guarantee the target value read outside any lock is still
+current by the time the lock is taken. **Fix: `AddressClaim` re-reads
+`contact_addresses.target` for this `addressID` a second time, inside the
+same transaction, immediately after acquiring the §4 locking read (using
+that just-locked `(type, target)` to know what it locked) — and if this
+second read's `target` differs from the first (pre-lock) read that
+determined which `(type, target)` to lock, aborts the transaction and
+retries the whole operation from the top with the freshly-read target.**
+This is a compare-and-retry, not a new lock: the retry loop reuses §5.3's
+existing `maxDeadlockRetries` machinery (a stale-target mismatch is treated
+as the same class of transient, retry-eligible condition as a deadlock,
+capped the same way) rather than introducing a second retry mechanism.
 
 | Existing operation | Ownership-period effect |
 |---|---|
-| `AddressCreate` / `ClaimAddress` | One of cases 1–5 above, decided from the single locked read |
+| `AddressCreate` / `ClaimAddress` | Steps 1–5 above, decided from the single locked read |
 | `AddressDelete` | Close the open period for this contact_id+type+target: `UPDATE ... SET valid_to=NOW() WHERE open_period_uk = <hash>`. The period row is never deleted. |
-| `AddressUpdate` (target field changed) | Two locking reads required (§5.2 specifies the required order between them) — one for the old target, one for the new: close the old-target period (`valid_to=NOW()`), then apply cases 1–5 above to the new target |
+| `AddressUpdate` (target field changed) | Two locking reads required (§5.2 specifies the required order between them) — one for the old target, one for the new: close the old-target period (`valid_to=NOW()`), then apply steps 1–5 above to the new target |
 | `AddressUpdate` (target field NOT changed — e.g. only `name`/`detail`/`is_primary`) | **No ownership-period effect.** The write transaction (§5.1) still performs the locking read above for this target as part of its fixed lock-ordering rule, but performs no INSERT/UPDATE against `contact_address_ownership_periods` — the lock exists purely to keep this operation inside the same serialization order as every other address write on that target, not because there is a period decision to make. |
 | Contact soft-delete (`ContactDelete`) | Close **every** open period owned by that contact_id (prevents an orphaned open period after the owning Contact itself is gone) |
 
@@ -375,6 +381,15 @@ Contact's `AddressResetPrimary` scan). Reuse `casehandler`'s exact pattern
 verbatim: `maxDeadlockRetries = 3`, fresh `BeginTx` per attempt, surface
 `ErrDeadlockExhausted` as a transient 5xx on exhaustion (`getorcreate.go:26-51,
 86-117`). This is a straight lift, not a new mechanism.
+
+**Round-8 addition: the same retry loop also covers `AddressClaim`'s
+stale-target compare-and-retry (§4).** A pre-lock `target` read that no
+longer matches the post-lock re-read is treated as the same class of
+transient condition as deadlock 1213 — both mean "the world moved under us,
+retry the whole operation" — and both count against the same
+`maxDeadlockRetries = 3` cap rather than a separate counter, so a target that
+keeps changing under a retrying `AddressClaim` fails closed (transient 5xx)
+at the same bound instead of retrying indefinitely.
 
 ### 5.4 `RowsAffected` + error mapping (B5 fix)
 
@@ -533,6 +548,8 @@ duplicated here). Disposition of each finding that survived to this design:
 | Round-6 finding (recorded, not actioned): the document's per-round meta-commentary ("round-3 finding", "round-4 BLOCKER" inline in §4/§5's rule text) makes it harder for an implementer to separate "the current rule" from "why it changed" | Acknowledged as a real readability cost; not restructured in this pass to avoid re-opening settled sections mid-review-loop. If this design proceeds to implementation, a follow-up pass should move all "round-N found..." prose out of §4/§5's rule bodies into §8 and leave only terse rule statements plus a `(history: §8)` pointer. |
 | Round-7 finding: case 4's fix (idempotency pre-check moved inside the lock) left the response's transaction handling (commit vs. rollback on no-op) and the still-non-locking target-address lookup that precedes the lock unaddressed | **Fixed** (§4 case 4: explicit "commit, unchanged post-commit response path" note added; §4 new paragraph after case 5: the `(type, target)` values feeding the lock request are shown to already be covered by this design's own lock-ordering discipline, not a separate unprotected read) |
 | Round-7 BLOCKER: case 2's "(open or closed)" wording for the other contact_id's row conflated two situations with opposite required handling — a closed row (genuine reassignment, safe to INSERT) and an open row (live-owner conflict, must be rejected, not inserted — the insert would hit `idx_ownership_periods_open`'s unique constraint as an unmapped raw MySQL 1062) | **Fixed** (case 2 narrowed to "closed" only; new case 5 added for the open-row situation, mapping it to the same `ErrConflict`/409 `AddressClaim` already returns today, moved inside the lock for the same reason as case 4) |
+| Round-8 BLOCKER: the round-6/7 "1–5 cases" list was never actually mutually exclusive — several real states (own row open AND own closed history; own closed row AND a different contact's currently-open row) satisfied more than one case's precondition, and no evaluation order was specified. Implemented in list order (the natural reading), this reproduced the same "unmapped 1062 from inserting over a live open row" bug round-5/7 believed already fixed | **Fixed** (§4 restructured from a flat case list into an ordered 5-step decision procedure — step 1 checks for a different contact's open row unconditionally before anything else, making every later overlap structurally impossible rather than merely documented) |
+| Round-8 finding: the round-7 claim that `AddressClaim`'s pre-lock `addressID → target` resolution was "already protected by lock ordering alone" was incorrect — lock ordering serializes acquisition order, not the freshness of a value read before any lock was taken; a concurrent `AddressUpdate` target-change could commit between that read and this transaction's lock acquisition, leaving `AddressClaim` writing an ownership period for a target `contact_addresses` no longer has | **Fixed** (§4: `AddressClaim` re-reads `contact_addresses.target` inside the transaction immediately after acquiring the lock, and retries from the top via §5.3's existing deadlock-retry loop if the pre-lock and post-lock reads disagree — not a new retry mechanism) |
 
 ## 9. Migration plan
 
