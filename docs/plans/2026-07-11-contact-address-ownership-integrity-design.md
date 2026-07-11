@@ -513,12 +513,33 @@ handler set itself was incomplete" failure mode as round-11's `ContactCreate`
 discovery; round-12's caller sweep grepped `dbhandler.Address*` callers but
 never swept "all paths that set `contact_contacts.tm_delete`").
 **Fix:** `ContactDeleteByCustomerID` performs the same per-contact ownership-
-period closure as `ContactDelete` — for each Contact its bulk `UPDATE`
-touches (it already knows the affected `contact_id` set; `contact.go:437-491`
-fetches the rows to build its post-delete cache invalidation), run the same
-close-every-open-period transaction specified in the round-13/14 paragraphs
-above, per contact, sequentially, each in its own `BeginTx` with the same
-ascending lock order, membership re-check, and `maxDeadlockRetries` bound.
+period closure as `ContactDelete` — run the same close-every-open-period
+transaction specified in the round-13/14 paragraphs above, per contact,
+sequentially, each in its own `BeginTx` with the same ascending lock order,
+membership re-check, and `maxDeadlockRetries` bound.
+
+**Round-21 correction: the contact-id set for that per-contact loop must be
+collected AFTER the bulk soft-delete `UPDATE`, not reused from the SELECT
+that precedes it.** Round-20's original text said the function "already
+knows the affected contact_id set" from its pre-delete SELECT
+(`contact.go:437-491`'s id fetch for cache invalidation) — but that SELECT
+and the bulk `UPDATE` are two separate non-transactional statements, and
+the `UPDATE` carries no `tm_delete IS NULL` filter: a Contact created (with
+addresses and open periods) in the gap between the SELECT and the UPDATE
+gets soft-deleted by the UPDATE while being absent from the pre-collected id
+set — the period-closure loop would never visit it, leaving a permanently
+orphaned open period. Worse, "re-drive the event to recover" does not work
+for this case: the pre-delete SELECT filters on `tm_delete IS NULL`, so a
+re-driven event still cannot see the already-deleted Contact. This is the
+same stale-membership-read defect class round-14 closed for target
+membership inside `ContactDelete`, resurfacing at the contact-set level.
+The fix is ordering, not locking: run the bulk `UPDATE ... SET tm_delete=ts
+WHERE customer_id=?` first, then collect the loop's id set with
+`SELECT id ... WHERE customer_id=? AND tm_delete = ts` (the exact timestamp
+just written), and drive both the period-closure loop and the existing
+cache-invalidation loop from that post-delete set. This also fixes the
+pre-existing cache-invalidation variant of the same race (a Contact missed
+by the stale id set kept a stale cache entry), at no extra cost.
 Per-contact transactions (not one giant transaction over every Contact of
 the customer) keep each transaction's lock footprint identical to the
 already-analyzed single-`ContactDelete` case, avoid introducing a new
@@ -528,7 +549,10 @@ bulk path's existing per-row cache invalidation loop. A crash mid-loop
 leaves some contacts processed and some not — acceptable because the
 operation is idempotent (closing an already-closed period is the same
 `RowsAffected == 0` no-op §9's round-16/17 instrumentation already
-handles) and the customer-deletion event can be re-driven.
+handles) and, with the round-21 ordering above, a re-driven event CAN now
+find every affected Contact (`tm_delete IS NOT NULL` rows are re-selectable
+by timestamp), making re-drive a genuine recovery path rather than the
+false one round-20 originally claimed.
 
 **A9-b guard placement (round-3 finding: this was only in §8's summary table,
 never specified in this section — fixed here).** All four write handlers this
@@ -707,9 +731,30 @@ STEP1 changes from `AddressListByContactID` (live rows only) to
 match gains a time-range condition:
 
 ```sql
-(peer_type = ? AND peer_target = ? AND tm_interaction >= COALESCE(?, tm_interaction)
-                                    AND tm_interaction <  COALESCE(?, tm_interaction + INTERVAL 1 SECOND))
+(peer_type = ? AND peer_target = ?
+ AND COALESCE(tm_interaction, tm_create) >= COALESCE(?, tm_interaction, tm_create)
+ AND COALESCE(tm_interaction, tm_create) <  COALESCE(?, tm_interaction + INTERVAL 1 SECOND, tm_create + INTERVAL 1 SECOND))
 ```
+
+**Round-21 BLOCKER, fixed here: the previous version of this condition
+compared bare `tm_interaction`, which is a documented-nullable column**
+(`models/interaction/interaction.go:36-39`: "may be nil when the origin
+event omits TMCreate (e.g. call events with omitempty). Stored as NULL in
+that case"; the projection at `contacthandler/interaction.go:114,168`
+propagates that nil directly). Under SQL three-valued logic every
+comparison against a NULL `tm_interaction` yields NULL (falsy), so a bare
+comparison would exclude every NULL-`tm_interaction` interaction from
+every period — including the fully-unbounded `[NULL, NULL)` period — on
+Contacts that never had a single reassignment. Today's pure-equality
+matching returns those rows fine, so this would have been a silent
+regression reintroducing defect #1 (interactions vanishing from the
+timeline) and, through §6.3's mirror of the same comparison, defect #3
+(currently-owned addresses' interactions resurfacing in the unresolved
+queue). The fix falls back to the interaction row's `tm_create` — which
+the projection always populates with `NOW()` and is `NOT NULL` — as the
+effective event time for period matching: an interaction whose origin
+event carried no timestamp is attributed by when this system recorded it,
+the closest available approximation, rather than being unmatchable.
 
 i.e. `tm_interaction ∈ [valid_from or -∞, valid_to or +∞)` per period, OR'd
 across every period the Contact has ever held.
@@ -753,14 +798,14 @@ change to the existing one — see below), building each clause as:
 // instead be built as a single raw-SQL fragment via sq.Expr, with the ±∞
 // fallback expressed inside that one SQL string rather than assembled from
 // separate squirrel value-position helpers:
-validFromSQL, validToSQL := "tm_interaction", "tm_interaction + INTERVAL 1 SECOND"
+validFromSQL, validToSQL := "COALESCE(tm_interaction, tm_create)", "COALESCE(tm_interaction, tm_create) + INTERVAL 1 SECOND"
 if b.ValidFrom != nil {
 	validFromSQL = "?"
 }
 if b.ValidTo != nil {
 	validToSQL = "?"
 }
-clause := fmt.Sprintf("(peer_type = ? AND peer_target = ? AND tm_interaction >= %s AND tm_interaction < %s)", validFromSQL, validToSQL)
+clause := fmt.Sprintf("(peer_type = ? AND peer_target = ? AND COALESCE(tm_interaction, tm_create) >= %s AND COALESCE(tm_interaction, tm_create) < %s)", validFromSQL, validToSQL)
 args := []any{b.Type, b.Target}
 if b.ValidFrom != nil {
 	args = append(args, *b.ValidFrom)
@@ -861,8 +906,8 @@ NOT EXISTS (
     WHERE p.customer_id = i.customer_id
       AND p.type = i.peer_type
       AND p.target = i.peer_target
-      AND i.tm_interaction >= COALESCE(p.valid_from, i.tm_interaction)
-      AND i.tm_interaction <  COALESCE(p.valid_to, i.tm_interaction + INTERVAL 1 SECOND)
+      AND COALESCE(i.tm_interaction, i.tm_create) >= COALESCE(p.valid_from, i.tm_interaction, i.tm_create)
+      AND COALESCE(i.tm_interaction, i.tm_create) <  COALESCE(p.valid_to, i.tm_interaction + INTERVAL 1 SECOND, i.tm_create + INTERVAL 1 SECOND)
 )
 ```
 
@@ -961,6 +1006,9 @@ duplicated here). Disposition of each finding that survived to this design:
 | Round-19 finding (recorded, non-blocking): §6.2 didn't mention that `InteractionListByOwnershipPeriods` needs adding to the `DBHandler` interface and a `go generate` mock regeneration before it compiles, despite earlier sections being specific about comparable codegen/registration steps | **Fixed** (§6.2: added a paragraph naming the interface + mock-regeneration step explicitly, noting it's the existing repo-wide verification workflow, not a new one this design invents) |
 | Round-20 BLOCKER: a fifth deletion entry point, `ContactDeleteByCustomerID` (invoked by `EventCustomerDeleted` when `bin-customer-manager` publishes `customer_deleted` — a real production path), bulk-soft-deletes every Contact of a customer without touching ownership periods, orphaning every open period those Contacts held — the same defect class round-13/14 closed for single-contact `ContactDelete`, through an entry point the document never knew existed. Round-12's caller sweep grepped `dbhandler.Address*` callers but never swept all paths that set `contact_contacts.tm_delete` | **Fixed** (§4: new table row + dedicated paragraph — the bulk path runs the same per-contact close-every-open-period transaction as `ContactDelete`, per contact sequentially, each in its own `BeginTx` with the same lock order/re-check/retry bound; mid-loop crash is acceptable because closure is idempotent and the event can be re-driven) |
 | Round-20 finding: §8's round-13/14 `ContactDelete` rows still said plain "**Fixed**" with wording implying the same structural-elimination guarantee as §5.2, contradicting the round-19 correction in §4's body — a reader skimming only this table would over-trust the re-check loop's deadlock guarantee | **Fixed** (both rows now read "Fixed, with a round-19 correction" and point to the round-19 row) |
+| Round-21 BLOCKER: §6.2/§6.3's time-range conditions compared bare `tm_interaction`, a documented-nullable column (origin events may omit TMCreate; the projection stores NULL) — under SQL three-valued logic every NULL-`tm_interaction` interaction would match no period at all, including the fully-unbounded one, silently vanishing from timelines (defect #1) and resurfacing in the unresolved queue (defect #3), a regression against today's pure-equality matching which returns those rows fine | **Fixed** (§6.2 SQL + Go fragment and §6.3 SQL all now compare `COALESCE(tm_interaction, tm_create)` — `tm_create` is projection-populated `NOW()`, `NOT NULL` — so a timestamp-less interaction is attributed by when this system recorded it instead of being unmatchable) |
+| Round-21 finding: round-20's `ContactDeleteByCustomerID` fix reused the function's pre-delete SELECT id set for the period-closure loop, but that SELECT and the bulk `UPDATE` are separate non-transactional statements and the `UPDATE` has no `tm_delete IS NULL` filter — a Contact created in the gap gets soft-deleted while absent from the id set, its open periods permanently orphaned, and event re-drive cannot recover it (the SELECT's `tm_delete IS NULL` filter can't see it) — the round-14 stale-membership defect class resurfacing at the contact-set level | **Fixed** (§4 round-21 correction: bulk `UPDATE` runs first, then the loop's id set is collected post-delete via `WHERE customer_id=? AND tm_delete = ts`; also fixes the pre-existing cache-invalidation variant of the same race and makes event re-drive a genuine recovery path) |
+| Round-21 verification: exhaustive grep of every path setting `contact_contacts.tm_delete` (only `ContactDelete` + `ContactDeleteByCustomerID`; `ContactUpdate`'s only caller whitelists fields and never passes `tm_delete`) and every `contact_addresses` write (only the five `dbhandler/address.go` functions; `ContactDeleteByCustomerID` never touches the table) | **Confirmed complete** — no third deletion path, no additional cascade-style address writer; §4's entry-point coverage is now exhaustive at both the contact and address levels |
 
 ## 9. Migration plan
 
