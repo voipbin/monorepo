@@ -287,12 +287,17 @@ further queries needed at any step:
 
 **Step 1 — is there already an open row for a *different* contact_id?** (At
 most one can exist, globally, because `open_period_uk` hashes only
-`(customer_id, type, target)`.) If yes: **first verify the blocking owner's
-`contact_addresses` row still exists (same locked transaction) — if it is
-gone, this open period is a version-skew orphan: close it (`valid_to=NOW()`,
+`(customer_id, type, target)`.) If yes: **first verify ownership agreement
+(same locked transaction): fetch the `contact_addresses` row for this
+`(customer_id, type, target)` and require that it exists AND its
+`contact_id` equals the blocking period's `contact_id` (round-24
+correction: row existence alone is not sufficient — an unresolved row with
+`contact_id = NULL`, or any other owner's row, occupying the slot does NOT
+legitimize the period). If the row is gone or owned by anyone else, the
+open period is a version-skew orphan: close it (`valid_to=NOW()`,
 Prometheus counter) and continue to the next step as if it were closed (see
-§9's round-23 self-healing rule for the full rationale).** Otherwise this is
-a genuine live-owner conflict.
+§9's round-23/24 self-healing rule for the full rationale).** Otherwise this
+is a genuine live-owner conflict.
 Return `ErrConflict` (mapped to `cerrors.AlreadyExists`/409, exactly as
 `ClaimAddress`'s existing pre-check does today — round-7's case 5) and roll
 back. **Checked first, unconditionally**, so no later step can ever attempt
@@ -1034,6 +1039,8 @@ duplicated here). Disposition of each finding that survived to this design:
 | Round-23 BLOCKER: the design would have permanently locked A9-b-corrupted targets out of every API path — the stale live row blocks `AddressCreate` (unique index) and `ClaimAddress` (unconditional `ErrConflict` on non-Nil owner), while the design's own new `TMDelete` guard removes the only existing recovery path (`RemoveAddress` on the deleted Contact), leaving manual DB surgery as the sole fix | **Fixed** (§9: the backfill hard-deletes each A9-b `contact_addresses` row after writing its closed period — attribution history lives in the period row; the target returns to a cleanly re-registrable state, exactly what a timely `RemoveAddress` would have produced) |
 | Round-23 BLOCKER: the version-skew analysis covered only the missing-period direction; the reverse (new-binary opens a period, old-binary hard-deletes the address without closing it) leaves an orphaned OPEN period — indefinite Step-1 409 lockout on a target nobody owns, unbounded defect-#2 absorption into the stale owner's timeline, and a falsified "unreachable for `AddressCreate`" claim on Step 2 | **Fixed** (§4 Step 1 + §9 round-23 rule: Step 1 now verifies the blocking owner's `contact_addresses` row still exists inside the same locked transaction; if gone, the period is a skew orphan — closed on the spot with a Prometheus counter, converting permanent lockout into one-time self-healing; Step 2's unreachability claim is restored post-repair) |
 | Round-23 note (recorded, non-blocking): the backfill's no-overlap/uniqueness safety silently depended on `idx_contact_addresses_identifier` (UNIQUE on a hard-delete table → max one source row per target) | **Fixed** (§9: dependency named explicitly so a future relaxation of that index is recognized as invalidating the backfill's assumptions) |
+| Round-24 BLOCKER: round-23's self-healing rule specified existence-only checking ("row still exists"), but an orphaned slot can be re-occupied by `CreateUnresolvedAddress` (`contact_id=NULL`), which per round-10's exemption skips the step procedure and never triggers the check itself — a later `ClaimAddress` would see "a row exists," misjudge the orphan period as a genuine live owner, and return 409, silently reinstating the exact permanent lockout (plus unbounded defect-#2 absorption) round-23 claimed to have fixed; both reviewers independently converged on this defect, and §4's "blocking owner's row" prose vs §9's operational "row exists" spec was itself the implementer-discretion ambiguity class round-19 established as a BLOCKER | **Fixed** (§4 Step 1 + §9: the check is now ownership agreement — the row must exist AND its `contact_id` must equal the blocking period's `contact_id`; gone, NULL-owned, or differently-owned all mean orphan → close and continue; §4 and §9 wordings unified) |
+| Round-24 verification: (a) Step 1's new `contact_addresses` FOR UPDATE follows the period-lock→address-read direction and no existing code path locks `contact_addresses` first (today's readers are all plain SELECTs; the five writers move inside the period-lock transaction under this design) — no reverse-order deadlock cycle; (b) false-positive orphan detection is structurally impossible because `AddressDelete` closes the period and deletes the row in one §5.1 transaction, so Step 1's locking read serializes against it and observes either pre-commit (period open + row present = genuine conflict) or post-commit (period closed = no Step-1 trigger), never the middle; (c) A9-b hard-delete cleanup leaves no `is_primary` or cache residue (uniqueness is a generated column on the row itself; tombstoned Contacts aren't cached, 24h TTL bounds worst-case) | **Confirmed** (recorded as verified-safe; the minor observation that Step 1's cross-owner row lock slightly widens the `AddressResetPrimary` AB-BA deadlock surface falls under §5.3's existing retry-bounded acceptance) |
 
 ## 9. Migration plan
 
@@ -1271,12 +1278,30 @@ duplicated here). Disposition of each finding that survived to this design:
      is impossible (the old binary cannot be patched retroactively), so the
      new binary gets one additional rule making Step 1 self-healing against
      exactly this state: **when Step 1 finds a blocking open period, it
-     verifies the corresponding `contact_addresses` row still exists (same
-     locked transaction, `SELECT ... FOR UPDATE` on the unique identifier);
-     if the address row is gone, the open period is an orphan — close it
-     (`valid_to = NOW()`, incrementing a second dbhandler-local Prometheus
-     counter for visibility) and continue the step procedure as if it were
-     closed.** This converts the permanent 409 lockout into a one-time,
+     fetches the `contact_addresses` row for the same
+     `(customer_id, type, target)` (same locked transaction,
+     `SELECT ... FOR UPDATE` on the unique identifier) and requires
+     ownership agreement — the row must exist AND its `contact_id` must
+     equal the blocking period's `contact_id`. If the row is gone, is
+     unresolved (`contact_id` NULL), or belongs to any other contact, the
+     open period is an orphan — close it (`valid_to = NOW()`, incrementing
+     a second dbhandler-local Prometheus counter for visibility) and
+     continue the step procedure as if it were closed.**
+
+     **Round-24 correction (why ownership agreement, not mere existence):
+     the round-23 text originally specified "row still exists" — but an
+     orphaned slot can be re-occupied by `CreateUnresolvedAddress`
+     (`contact_id = NULL`), which per round-10's exemption skips the step
+     procedure entirely and therefore never triggers this self-healing
+     check itself. Under existence-only checking, a later `ClaimAddress` on
+     that unresolved row would find the orphan period, see "a row exists,"
+     misjudge the orphan as a genuine live owner, and return 409 — silently
+     reinstating the exact permanent lockout this rule was created to
+     eliminate (the unresolved row also blocks re-registration via the
+     unique index, so no API path remains). Ownership agreement closes this
+     hole: a NULL-owned or differently-owned row proves the period's owner
+     no longer holds the address, which is precisely the orphan condition.**
+     This converts the permanent 409 lockout into a one-time,
      self-repairing detour on the next registration attempt; the closed
      period retains B's attribution up to the repair point (the best
      available approximation of the unrecorded deletion time, same standard
