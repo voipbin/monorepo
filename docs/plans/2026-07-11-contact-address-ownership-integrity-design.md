@@ -149,23 +149,48 @@ All four ownership-period-affecting operations are additions alongside the
 existing `contact_addresses` write, inside the **same transaction** the existing
 write already runs in (see §5 for the transaction restructuring this requires).
 
-**Determining which rule applies below always requires TWO lookups, not one**
-(this is the fix for the round-3 §4 defect — see §8): (a) does a period for
-this *exact* `(customer_id, type, target, contact_id)` tuple exist (any
-status)? (b) independently, does *any* period for this `(customer_id, type,
-target)` — regardless of contact_id — currently have `valid_to IS NULL`
-(open)? The second lookup is exactly the `open_period_uk` row the write
-transaction already `SELECT ... FOR UPDATE`s per §5.1; no extra query.
+**Determining which rule applies below always requires THREE lookups, not
+two** (round-3 fixed the two-lookup version; round-4 review found it still
+insufficient — see §8): (a) does a period for this *exact* `(customer_id,
+type, target, contact_id)` tuple exist (any status)? (b) independently, does
+*any* period for this `(customer_id, type, target)` — regardless of
+contact_id — currently have `valid_to IS NULL` (open)? (c) **if (a) found a
+closed period, does any *other* contact_id's period for this same
+`(customer_id, type, target)` have a `valid_from` strictly later than that
+closed period's `valid_to`?** Lookup (c) is what round-4 review found
+missing: without it, a contact reclaiming a target it held long ago (rule 2
+below) would blindly reopen its own old, stale row even when a *different*
+contact_id demonstrably owned the target for some interval in between —
+silently erasing that intervening owner's exclusive claim by stretching the
+reopened row's `valid_from` back to its own original (possibly unbounded)
+start. Lookup (b) is the `open_period_uk` row the write transaction already
+`SELECT ... FOR UPDATE`s per §5.1 (no extra query); lookup (c) is one indexed
+range scan on `idx_ownership_periods_lookup (customer_id, type, target,
+valid_from, valid_to)` (§6.4), scoped to `contact_id <> this contact_id AND
+valid_from > <that closed period's valid_to>` — cheap, and only ever run on
+the "closed period exists for this contact_id" branch, not on every write.
 
 | Existing operation | Ownership-period effect |
 |---|---|
 | `AddressCreate` / `ClaimAddress`, target has **no period at all**, for **any** contact_id, ever (true first-ever registration) | INSERT new period: `valid_from=NULL` (unbounded past — see §6), `valid_to=NULL` (open) |
-| `AddressCreate`, a **closed** period for this exact contact_id+type+target exists (this contact reclaiming a number it previously held) | Re-open it: `UPDATE ... SET valid_to=NULL WHERE id=<that period>` (no new row — keeps one continuous history, not two periods with a gap) |
-| `AddressCreate` / `ClaimAddress`, a **closed** period for this type+target exists but owned by a **different** contact_id (reassignment A→B; A's period was already closed by A's own `AddressDelete`, per §7's TOCTOU sequencing) | INSERT a **new** row: `contact_id=B`, `valid_from=NOW()` (**not** NULL — B never owned this target before now, so there is no unbounded-past claim to make), `valid_to=NULL`. This is the rule the round-3 review found missing; its absence was defect §8's row 1. |
+| `AddressCreate`, a **closed** period for this exact contact_id+type+target exists, **and lookup (c) finds no intervening different-contact_id period** (this contact reclaiming a number it held continuously up to close, with nobody else in between) | Re-open it: `UPDATE ... SET valid_to=NULL WHERE id=<that period>` (no new row — keeps one continuous history, not two periods with a gap) |
+| `AddressCreate`, a **closed** period for this exact contact_id+type+target exists, **but lookup (c) DOES find an intervening different-contact_id period** (this contact reclaiming a target that someone else provably held in between — the A→B→A case round-4 review found broken) | **Do not reopen the old row.** INSERT a **new** row instead: `contact_id=`(this contact), `valid_from=NOW()`, `valid_to=NULL`. Same treatment as the reassignment row below — the old row's stale `valid_from` must never be allowed to swallow the intervening owner's interval. |
+| `AddressCreate` / `ClaimAddress`, a **closed** period for this type+target exists but owned by a **different** contact_id (reassignment A→B; A's period was already closed by A's own `AddressDelete`, per §7's TOCTOU sequencing) | INSERT a **new** row: `contact_id=B`, `valid_from=NOW()` (**not** NULL — B never owned this target before now, so there is no unbounded-past claim to make), `valid_to=NULL`. |
 | `AddressDelete` | Close the open period for this contact_id+type+target: `UPDATE ... SET valid_to=NOW() WHERE open_period_uk = <hash>`. The period row is never deleted. |
-| `AddressUpdate` (target field changed) | Close the old-target period (`valid_to=NOW()`), then apply whichever of the three `AddressCreate` rows above matches the new target |
+| `AddressUpdate` (target field changed) | Close the old-target period (`valid_to=NOW()`), then apply whichever of the four `AddressCreate`/`ClaimAddress` rows above matches the new target |
 | `AddressUpdate` (target field NOT changed — e.g. only `name`/`detail`/`is_primary`) | **No ownership-period effect.** The write transaction (§5.1) still acquires the `open_period_uk` `FOR UPDATE` lock for this target as part of its fixed lock-ordering rule, but performs no INSERT/UPDATE against `contact_address_ownership_periods` — the lock exists purely to keep this operation inside the same serialization order as every other address write on that target, not because there is a period decision to make. |
 | Contact soft-delete (`ContactDelete`) | Close **every** open period owned by that contact_id (prevents an orphaned open period after the owning Contact itself is gone) |
+
+**Which of a contact's own multiple closed periods gets the reopen-vs-new-row
+decision, if it has more than one (round-3's secondary ambiguity, also
+resolved by lookup (c)):** always the *most recently closed* one for this
+`(customer_id, type, target, contact_id)` (`ORDER BY valid_to DESC LIMIT 1`).
+Lookup (c) is then evaluated against that specific row's `valid_to`, exactly
+as described above. An A↔B↔A↔B... alternation therefore never collapses
+history: each reclaim by a contact either extends its own most recent
+unbroken tenure (reopen) or starts a fresh row (new insert) the moment
+someone else has provably held the target in between — repeated regardless of
+how many times ownership alternates.
 
 **A9-b guard placement (round-3 finding: this was only in §8's summary table,
 never specified in this section — fixed here).** All four write handlers this
@@ -388,7 +413,7 @@ duplicated here). Disposition of each finding that survived to this design:
 
 | ID | Finding | Disposition |
 |---|---|---|
-| A9-b | `AddAddress`/`UpdateAddress`/`RemoveAddress`/`ClaimAddress` don't check `Contact.TMDelete` | **Fixed** (§4 table, "Contact soft-delete" row + an explicit `TMDelete != nil` guard added to all four handlers, mirroring `interactionListByContact`'s existing check at `interaction_read.go:117-125`) |
+| A9-b | `AddAddress`/`UpdateAddress`/`RemoveAddress`/`ClaimAddress` don't check `Contact.TMDelete` | **Fixed** (§4's dedicated "A9-b guard placement" paragraph — an explicit `TMDelete != nil` guard added to all four handlers, mirroring `interactionListByContact`'s existing check at `interaction_read.go:117-125`. Round-4 review found this row previously mis-cited §4's unrelated "Contact soft-delete (`ContactDelete`)" table row — that row closes open ownership periods when a Contact is deleted, a different mechanism from this guard; corrected to cite the actual guard paragraph.) |
 | B5 | `AddressUpdate`/`AddressDelete` missing `RowsAffected` check + error-type mapping | **Fixed** (§5.4) |
 | D5 | `TypeNone` missing from `crmIneligiblePeerTypes` | **Dropped — not a bug.** Round-2 proved `TypeNone` is the deliberate "unknown direction, persist a diagnostic zero-value row" sentinel; an existing test (`interaction_test.go:106-138`) locks this behavior in. Adding it to the blacklist would silently break that intentional behavior. |
 | D6 | `case-control reconcile-contact` CLI not in original scenario table | Documented as an existing, independent mechanism (§2 out-of-scope); no interaction with this design's tables. |
@@ -404,6 +429,8 @@ duplicated here). Disposition of each finding that survived to this design:
 | Round-3 finding: §8's A9-b row referenced a guard never specified in §4's body (table led the design instead of summarizing it) | **Fixed** (§4, explicit guard-placement paragraph added) |
 | Round-3 finding: §5.1 ("`AddressResetPrimary` when applicable") and §5.2 ("every code path follows this same order") read as contradictory — could be misread as forcing `AddressResetPrimary` on Delete/Claim | **Fixed** (§5.1/§5.2 reworded to make the conditionality explicit in both places) |
 | Round-3 finding: §4 had no row for `AddressUpdate` calls that change neither `target` nor `is_primary` | **Fixed** (§4, explicit no-op row added) |
+| Round-4 BLOCKER: §4's reopen rule (rule 2) didn't detect an intervening different-contact_id owner between a contact's old closed period and its reclaim, silently stretching the reopened row's `valid_from` back over the intervening owner's interval (A→B→A case) — this re-introduced the same history-leak defect (§1, defect #2) in the reopen path, mirroring the round-3 defect in the create path | **Fixed** (§4, third lookup (c) added + new "closed period + intervening owner" table row; also resolves round-3's secondary "which of several closed periods" ambiguity via the same lookup, ordered `valid_to DESC`) |
+| Round-4 finding: §8's A9-b disposition cited §4's "Contact soft-delete" table row, which is an unrelated mechanism (closing periods on Contact deletion, not blocking writes to an already-deleted Contact) | **Fixed** (this row, corrected citation) |
 
 ## 9. Migration plan
 
