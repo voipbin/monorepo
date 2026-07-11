@@ -293,10 +293,16 @@ address loop, `ContactCreated` was never published for this Contact (the
 handler returns an error before ever reaching that point) — so a downstream
 consumer would receive an `updated` event for a Contact it never saw
 `created` for, a phantom-update with no corresponding prior state. **Fix
-(as amended by round-31/32):** the compensating cleanup calls a
-**non-event-publishing** internal path — `dbhandler.AddressDelete` invoked
-directly rather than through the `contacthandler.RemoveAddress` entry
-point, so no `EventTypeContactUpdated` is published. **Round-32
+(as amended by round-31/32/35):** the compensating cleanup calls a
+**non-event-publishing** internal path. **Round-35 naming correction:
+this path is NOT `dbhandler.AddressDelete`** — that entry point owns the
+close-at-NOW() period rule (§4 table) and calling it here would
+reproduce the ghost-period bug round-31 fixed. The compensating path is
+a **separate dbhandler entry point** (e.g.
+`AddressDeleteCompensating(ctx, contactID, type, target)`), which in one
+§5.1 transaction hard-deletes the address row AND hard-DELETEs the open
+period this same create-loop inserted (round-31's sanctioned
+exception), publishing nothing. **Round-32
 correction: the original round-13 text described this path as sharing
 `RemoveAddress`'s "ownership-period Step-based closure" and factoring out
 logic "both call sites need" — that sharing claim is FALSE after
@@ -432,18 +438,28 @@ new-target Step-1 409). Every counter defined by this design increments
 post-commit only. **Round-34 implementation placement (previously
 unspecified — the natural dbhandler-internal immediate increment is
 exactly the form this rule forbids):** dbhandler functions do NOT call
-the Prometheus counters directly. Each transaction-owning dbhandler
-entry point accumulates pending increments in a small in-memory struct
-scoped to that call (e.g. `pendingMetrics{skewOrphanRepairs int,
-closeMisses int}`), and flushes it to the package-local counters
-(§9 round-17's `metricsNamespace` registration is unchanged) only after
-`tx.Commit()` returns nil, inside the same dbhandler function — the
-transaction owner IS the dbhandler entry point per §5.1, so commit
-observation and counter registration live in the same layer and no
-cross-layer plumbing (return values to contacthandler, tx hooks) is
-needed. A §5.3 deadlock retry discards the previous attempt's pending
+the Prometheus counters directly. **The pending struct is scoped per
+TRANSACTION (per `BeginTx` attempt), not per dbhandler call (round-35
+correction — "call-scoped" was ambiguous for the two entry points where
+one call owns multiple transactions):** a fresh `pendingMetrics{...}`
+is created alongside each `BeginTx`, flushed to the package-local
+counters (§9 round-17's `metricsNamespace` registration is unchanged)
+immediately after THAT transaction's `tx.Commit()` returns nil, and
+discarded on that transaction's rollback. Consequences: in repair (b)'s
+three-transaction sequence each transaction's pending is independent —
+T2's committed repair increment is flushed when T2 commits regardless
+of whether T3 later succeeds (no lost count) and is never re-flushed by
+T3 (no double count); in `ContactDeleteByCustomerID`'s per-contact
+transactions each contact's increments flush with its own commit, so a
+failure at contact k+1 neither loses contacts 1..k's counts nor counts
+k+1's rolled-back attempt; in `ContactDelete`'s single N-way
+transaction (round-14 re-check loop included) all loop passes
+accumulate into the one pending struct and flush once at the single
+commit. A §5.3 deadlock retry discards the previous attempt's pending
 struct with the rolled-back transaction, eliminating both inflation
-sources by construction. **Round-32
+sources by construction. Commit observation and counter registration
+live in the same layer (the transaction-owning dbhandler entry point,
+per §5.1), so no cross-layer plumbing is needed. **Round-32
 transaction-boundary rule for repair (b):** the duplicate-key repair
 runs in a NEW §5.1 transaction opened after the caller's failed
 INSERT/UPDATE transaction has rolled back (a 1062 poisons the
@@ -1127,6 +1143,25 @@ error in a bare `fmt.Errorf(...: %w, err)` with no `errors.Is` branch, so
 `stderrors.Is(err, dbhandler.ErrNotFound) → cerrors.NotFound` branches
 `ClaimAddress` already has (`contact.go:457-471`) to both handlers.
 
+**Round-35 addition — the mapping list was incomplete for the two
+handlers round-11 pulled into the step procedure.** Step 1 makes
+`dbhandler.AddressCreate` return `ErrConflict` on a cross-owner live
+conflict, but (a) `contacthandler.AddAddress` (`contact.go:324-332`)
+today has only an `ErrDuplicateTarget` branch — the new sentinel would
+fall through to a generic 500, even though the SAME user action ("POST
+an address another contact already owns") returns 409
+`ADDRESS_ALREADY_EXISTS` today via the unique index; and (b)
+`contacthandler.Create` (round-11: Step-1 errors propagate out of the
+address loop) has no mapping branches at all. Rule: **`AddAddress` and
+`Create`'s address-loop error path both gain the same
+`stderrors.Is(err, dbhandler.ErrConflict) → cerrors.AlreadyExists`
+branch** (the alternative — reusing `ErrDuplicateTarget` as Step 1's
+sentinel — is rejected because §4's repair logic must distinguish
+"period conflict" from "unique-index collision": they trigger different
+recovery paths). The full §5.4 mapping roster is therefore:
+`UpdateAddress`, `RemoveAddress`, `AddAddress`, `Create` (address
+loop), plus `ClaimAddress` which already has the branches.
+
 ## 6. Read paths
 
 ### 6.1 New dbhandler function, existing function untouched
@@ -1478,6 +1513,10 @@ duplicated here). Disposition of each finding that survived to this design:
 | Round-34 BLOCKER: the round-33 §9.x reconciliation query was doubly wrong — its predicate is in-band indistinguishable from a NORMAL `ContactDelete`'s data shape (false-positive flood: essentially every deleted-and-not-reregistered Contact), and its `succ.id IS NULL` condition dropped a ghost residue at exactly the moment its damage materializes (the retry's Step-4 period IS a successor — false negative on the harmful state); the "surfaces exactly these residues" claim was self-contradictory with the round-33 scenario it was written for | **Fixed** (§9.x rewritten: exactness claim withdrawn — no complete in-band ghost discriminator exists (the defining fact lives in the event stream/logs); the log line is canonical, the query is demoted to a heuristic candidate list (short Contact lifetime filter, no successor condition so the harmful state stays in the report, `succ.id != p.id` pitfall documented); §4's cross-reference updated to match) |
 | Round-34 finding: the round-33 post-commit instrumentation rule had no implementation placement — §9 round-17 fixes the counters as dbhandler package-local, but the §5.1 transaction owner is the layer that observes commit, and the natural dbhandler-internal immediate increment is exactly the forbidden form (implementer-discretion ambiguity with a wrong default) | **Fixed** (§4: placement specified — the transaction-owning dbhandler entry point accumulates pending increments in a call-scoped struct and flushes to the package-local counters only after `tx.Commit()` returns nil; deadlock retries discard the pending struct with the rolled-back attempt; no cross-layer plumbing needed since the dbhandler entry point owns the transaction per §5.1) |
 | Round-34 finding: §8's round-32 row still said the ghost id is "available from the create response/log line" — the create-response half was falsified by round-33's own §4 correction, without a pointer | **Fixed** (the row now carries the round-34 correction: response body carries no id per `(nil, err)`, log line is the sole canonical source) |
+| Round-35 BLOCKER: Step 1's `ErrConflict` sentinel had no contacthandler mapping for `AddAddress` (only an `ErrDuplicateTarget` branch exists today) or `contacthandler.Create` (no branches at all) — a cross-owner POST that returns 409 today via the unique index would return 500 under the design, violating §2's status-code promise; the exact B5/round-2 failure class ("dbhandler sentinel fixed, handler mapping missed") reproduced by the design's own new path, at the unverified intersection of rules from rounds 7-8, 2, and 11 | **Fixed** (§5.4: `AddAddress` and `Create`'s address-loop error path gain the `ErrConflict → cerrors.AlreadyExists` branch; reusing `ErrDuplicateTarget` as the Step-1 sentinel was considered and rejected — the repair logic must distinguish period conflicts from unique-index collisions; full mapping roster enumerated) |
+| Round-35 finding: the round-34 pending-metrics rule said "scoped to that call" — ambiguous for the two entry points where one dbhandler call owns multiple transactions: repair (b)'s T1/T2/T3 sequence (T2's committed repair increment could be lost if T3 fails, or double-flushed) and `ContactDeleteByCustomerID`'s per-contact transactions | **Fixed** (§4: pending struct scoped per TRANSACTION (per `BeginTx` attempt) — created with each BeginTx, flushed immediately after that transaction's commit, discarded on its rollback; per-case consequences spelled out for repair (b), `ContactDeleteByCustomerID`, and `ContactDelete`'s single N-way transaction) |
+| Round-35 finding: the round-13 paragraph (as rewritten by round-32) still named `dbhandler.AddressDelete` as the compensating-cleanup entry point while simultaneously forbidding its close-at-NOW() period semantics — a function-name vs semantics contradiction that would reproduce the round-31 ghost-period bug if followed literally | **Fixed** (§4: the compensating path is a separate dbhandler entry point (`AddressDeleteCompensating`) that hard-deletes the row AND hard-DELETEs the loop's own period in one §5.1 transaction, publishing nothing; `AddressDelete` is explicitly NOT the callee) |
+| Round-35 finding (recorded, non-blocking): §9.x's 60-minute lifetime filter models tm_create→tm_delete as the failed request's duration, but for recovered ghosts tm_delete is the OPERATOR's recovery time — a recovery later than the window drops the harmful residue from the report; and un-recovered ghosts (no tombstone, open period) match neither predicate, so the query covers only recovered ghosts | Recorded in §9.x as an honest scope note: the query is a lossy heuristic over recovered ghosts only; the log line remains the sole canonical identifier for both states, and the operator instruction is to tune/widen the interval when reviewing after delayed recoveries |
 
 ## 9. Migration plan
 
@@ -1787,7 +1826,15 @@ WHERE p.valid_to IS NOT NULL
 
 Notes: (i) the short-lifetime filter is a heuristic — a legitimately
 created-then-quickly-deleted Contact also matches; rows returned are
-candidates, not verdicts. (ii) There is deliberately no
+candidates, not verdicts. **(round-35 scope note: for RECOVERED ghosts
+`tm_delete` is the operator's recovery time, not the failed request's
+duration — a recovery performed later than the interval drops that
+residue from the report, so widen the interval when reviewing after
+delayed recoveries; and UN-recovered ghosts (no tombstone, open period,
+live row) match neither predicate — this query covers recovered ghosts
+only, which is acceptable because un-recovered ghosts are still
+actionable through their 409 symptom and the log line, the sole
+canonical identifier for both states.)** (ii) There is deliberately no
 successor-period condition: the harmful state (retry already re-routed
 through Step 4) must stay IN the report, and a `succ`-style join would
 also need a `succ.id != p.id` guard to avoid round-15 zero-length
