@@ -558,6 +558,30 @@ touching the same target pair can never request them in reverse order
 relative to each other, closing the same class of deadlock §5.2's
 `AddressResetPrimary` rule closes for the single-target case.
 
+**Round-18 finding: `AddressUpdate` requests submitting a changed `target`
+*and* `is_primary=true` in the same call are a real, tested code path
+(`contacthandler.UpdateAddress`, `contact.go:359-378`'s independent `target`
+and `is_primary` handling; exercised by `v1_contacts_update_test.go:33`'s
+`{"target":..., "is_primary":true}` body) — the two lock-ordering rules
+above were each specified in isolation and never composed for this fourth
+combination (target-changed × is_primary-set, on top of the already-covered
+target-unchanged × is_primary-set and target-changed × is_primary-unset
+cases).** **Fix, composing the two existing rules rather than adding a
+third:** when both apply to the same `AddressUpdate` call, acquire the two
+`(type, target)` locking reads first, in the same ascending order the
+second rule already mandates, then run `AddressResetPrimary` per the first
+rule — i.e. the first rule's "ownership-period lock(s) before
+`AddressResetPrimary`" ordering is unaffected by there being one lock or two;
+it is simply "acquire every ownership-period lock this operation needs
+(one, in ascending target order if there happen to be two) before
+`AddressResetPrimary`, if this operation calls for it, before the
+`contact_addresses` write, before commit." No transaction ever requests
+`AddressResetPrimary` before an ownership-period lock, and no transaction
+ever requests two ownership-period locks out of ascending order, regardless
+of which combination of target-change and `is_primary` a given call carries
+— so this fourth case introduces no lock-ordering rule that isn't already a
+direct composition of the two existing ones, and no new deadlock class.
+
 ### 5.3 Deadlock retry
 
 Even with fixed lock order, MySQL can still report deadlock 1213 under
@@ -681,12 +705,30 @@ shared by `interactionListByContact`'s STEP2 (this call site, needs the new
 `[]OwnershipPeriodBound` path) and by the single-address re-fetch in
 `interaction_read.go:285` (STEP5, unchanged — that call site still only
 needs plain equality on one already-known address and keeps using
-`[]AddressPair`, not touched by this change). The existing
-`mock_main.go:708`/`main.go:58` signatures are additive (a new optional
-parameter, defaulted to the existing behavior when omitted), so no existing
-caller or existing test needs to change — only STEP2's specific call site
-in `interactionListByContact` is rewritten to use the new path. STEP0, 3–6 of
-`interactionListByContact` are unchanged.
+`[]AddressPair`, not touched by this change).
+
+**Round-18 finding: calling this "a new optional parameter, defaulted to the
+existing behavior when omitted" is not implementable as stated.** Go has no
+optional-parameter syntax, and `InteractionList`'s existing signature
+(`ctx, customerID, size, token, peerType, peerTarget string, addressSet
+[]AddressPair, since time.Time`, confirmed against every existing call site
+in `interaction_test.go`) already ends in `since time.Time` — variadic
+arguments are Go's only optional-parameter-like mechanism, must be the final
+parameter, and Go permits at most one per signature, so a second variadic
+`[]OwnershipPeriodBound` cannot be appended after `since` and cannot be
+inserted before it without breaking every existing positional call site,
+directly contradicting "no existing caller... needs to change." **Fix:**
+this is a **new sibling function**, not a modified existing one —
+`InteractionListByOwnershipPeriods(ctx, customerID, size, token, peerType,
+peerTarget string, bounds []OwnershipPeriodBound, since time.Time)` — sharing
+`InteractionList`'s query-building internals (the same base query, pagination,
+and `since` handling) but taking `bounds` where `InteractionList` takes
+`addressSet` and building the OR-clause via the round-17 `sq.Expr` fragment
+instead of `sq.Eq`. `InteractionList` itself, its signature, and every
+existing caller (`interaction_read.go:285`, `mock_main.go:708`, `main.go:58`,
+and all of `interaction_test.go`) are completely unchanged — only STEP2 of
+`interactionListByContact` calls the new function instead. STEP0, 3–6 of
+`interactionListByContact` are otherwise unchanged.
 
 **Round-3 finding, addressed here: OR-clause count is no longer bounded by
 "how many addresses does this Contact currently have" (typically single-digit)
@@ -826,6 +868,8 @@ duplicated here). Disposition of each finding that survived to this design:
 | Round-16 BLOCKER: round-15's "schema-and-binary-together, drain-then-replace" deployment-ordering fix for the rolling-deploy version-skew window is not enforceable — `bin-dbscheme-manager`/`bin-contact-manager` are independent CI/CD workflows with no `requires` dependency, schema migrations are applied manually outside CI/CD, and the k8s Deployment has no explicit `strategy` (inherits Kubernetes' default surge-first `RollingUpdate`, the opposite of what the fix assumed) | **Fixed** (§9: replaced the unenforceable deploy-ordering instruction with a code-level defense — the ownership-period-closing `UPDATE` gets the same `RowsAffected` check B5 established, now incrementing a Prometheus counter on a miss instead of silently no-op'ing; the residual gap (Step 5 can't distinguish "never owned" from "owned pre-migration with no period") is accepted as a bounded, monitored blast radius limited to the rollout window, not solved) |
 | Round-17 finding: §6.2's `sq.GtOrEq{"col": sq.Expr(...)}` construction is not valid squirrel usage — verified against the vendored source that `Eq`/`Lt`/`GtOrEq` only special-case `driver.Valuer` values in their `toSql()`, with no branch for a `Sqlizer` in value position; this compiles but fails at query-exec time with an "unsupported type" error | **Fixed** (§6.2: rewritten to build the whole comparison as one `sq.Expr(...)` raw-SQL fragment with the ±∞ fallback embedded in the SQL string itself, the same pattern §6.3's `NOT EXISTS` subquery already uses, rather than assembling it from squirrel value-position helpers) |
 | Round-17 finding: §9's Prometheus-counter fix for the version-skew defense (a) only named `AddressDelete`'s closing `UPDATE`, leaving the identical race in `AddressUpdate`'s old-target close and `ContactDelete`'s per-target close silently un-instrumented, and (b) claimed to be "consistent with an existing pattern" while `pkg/dbhandler` has zero Prometheus integration today (verified: no `prometheus` import in the package; existing metrics live only in `casehandler`/`listenhandler`/`subscribehandler`) | **Fixed** (§9: extended the `RowsAffected == 0` handling to all three closing-`UPDATE` sites, not just `AddressDelete`'s; specified `dbhandler` gaining its own `metricsNamespace` + `init()` block mirroring `casehandler`'s existing shape, package-local with no new upward dependency into the handler layer) |
+| Round-18 finding: §6.2's claim that the new `InteractionList` parameter was "optional, defaulted when omitted, no existing caller/test changes" is not implementable — Go has no optional-parameter syntax, `since time.Time` is already the final parameter, and Go allows only one variadic parameter, which must be last | **Fixed** (§6.2: replaced with a new sibling function `InteractionListByOwnershipPeriods` sharing `InteractionList`'s query internals; `InteractionList` itself and every existing caller/test are genuinely unchanged) |
+| Round-18 finding: §5.2's two lock-ordering rules (single-target-plus-`AddressResetPrimary`, and two-target-ascending-order) were each specified in isolation and never composed for the real, tested fourth combination — an `AddressUpdate` changing `target` and setting `is_primary=true` in the same call (`v1_contacts_update_test.go:33`) | **Fixed** (§5.2: added the composition rule — acquire every ownership-period lock the operation needs, in ascending target order if there are two, before `AddressResetPrimary`, before the `contact_addresses` write; not a third ordering rule, a direct composition of the existing two) |
 
 ## 9. Migration plan
 
