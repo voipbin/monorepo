@@ -368,8 +368,14 @@ workflows:
     jobs:
       - build-approval:
           type: approval
-      - bin-dbscheme-manager-build:
+          filters:
+            branches:
+              only: main
+      - bin-dbscheme-manager-migrate:
           <<: *context_production
+          filters:
+            branches:
+              only: main
           requires:
             - build-approval
 
@@ -1087,14 +1093,38 @@ jobs:
           project-repository: bin-customer-manager
 
   # bin-dbscheme-manager
-  bin-dbscheme-manager-build:
+  bin-dbscheme-manager-migrate:
     docker: *gcp_image
     resource_class: small
     steps:
-      - docker-build:
-          source-directory: bin-dbscheme-manager
-          project-id: voipbin
-          project-repository: bin-database
+      - checkout
+      - run:
+          name: Guard - main branch only
+          command: |
+            if [ "$CIRCLE_BRANCH" != "main" ]; then
+              echo "REFUSING: this job must only run on main (got: $CIRCLE_BRANCH)"
+              exit 1
+            fi
+      - run:
+          name: Install PyMySQL + alembic
+          command: |
+            pip install --no-cache-dir "sqlalchemy<2.0" alembic PyMySQL
+      - run:
+          name: Upgrade bin_manager (voipbin core DB)
+          no_output_timeout: 10m
+          command: |
+            python3 bin-dbscheme-manager/ci/migrate.py \
+              --stream bin-manager \
+              --dsn-env CC_DATABASE_DSN \
+              --lock-name voipbin_alembic_bin_manager
+      - run:
+          name: Upgrade asterisk config DB
+          no_output_timeout: 10m
+          command: |
+            python3 bin-dbscheme-manager/ci/migrate.py \
+              --stream asterisk_config \
+              --dsn-env CC_DATABASE_DSN_ASTERISK \
+              --lock-name voipbin_alembic_asterisk_config
 
   # bin-direct-manager
   bin-direct-manager-test:
