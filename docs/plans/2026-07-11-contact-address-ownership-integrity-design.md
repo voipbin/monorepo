@@ -299,11 +299,19 @@ most one can exist, globally, because `open_period_uk` hashes only
 `contact_id` equals the blocking period's `contact_id` (round-24
 correction: row existence alone is not sufficient — an unresolved row with
 `contact_id = NULL`, or any other owner's row, occupying the slot does NOT
-legitimize the period). If the row is gone or owned by anyone else, the
-open period is a version-skew orphan: close it (`valid_to=NOW()`,
-Prometheus counter) and continue to the next step as if it were closed (see
-§9's round-23/24 self-healing rule for the full rationale).** Otherwise this
-is a genuine live-owner conflict.
+legitimize the period) AND — round-27 correction — **the owning Contact
+itself is not tombstoned** (`contact_contacts.tm_delete IS NULL`, checked
+in the same transaction): a matching row whose owner was soft-deleted by
+an old-binary `ContactDelete` during the skew window (which knew nothing
+of periods or the round-25 cleanup) is just as dead as a missing row, and
+without this clause the ownership-agreement check would *pass* and
+misjudge the tombstoned owner as live, permanently 409-locking the target.
+If the row is gone, owned by anyone else, or owned by a tombstoned
+Contact, the open period is an orphan: close it (`valid_to=NOW()`,
+Prometheus counter), **hard-delete the stale row too when its owner is
+tombstoned (the round-25 cleanup applied late)**, and continue to the next
+step as if it were closed (see §9's round-23/24/27 self-healing rule for
+the full rationale).** Otherwise this is a genuine live-owner conflict.
 Return `ErrConflict` (mapped to `cerrors.AlreadyExists`/409, exactly as
 `ClaimAddress`'s existing pre-check does today — round-7's case 5) and roll
 back. **Checked first, unconditionally**, so no later step can ever attempt
@@ -574,6 +582,66 @@ filter — the unfiltered form re-stamps already-deleted rows with the new
 timestamp so the post-delete SELECT can find them; adding that seemingly
 natural filter would silently break re-drive. Recorded so no future
 cleanup "optimizes" it away.)
+
+**Round-27 corrections (three, all consequences of round-25/26's cleanup
+additions):**
+
+1. **Event-payload snapshot must overlay the deletion timestamps.** The
+   round-26 pre-delete snapshot, used verbatim, would publish
+   `tm_delete: null` (the field is not `omitempty`) and a stale
+   `tm_update` — the same unrecorded-external-contract-change class
+   round-26 fixed for `addresses`. Rule: `contacthandler.Delete` takes the
+   pre-delete snapshot for `addresses`, then overlays `tm_delete`/`tm_update`
+   with the deletion timestamp (the same `ts` the `UPDATE` wrote) before
+   publishing the event / returning the RPC response, so downstream
+   consumers keep both the address list AND the deletion time. §10's
+   `Test_Delete` item covers both fields.
+2. **The row-cleanup membership joins the round-14 re-check loop.** The
+   round-26 row membership (`AddressListByContactID`) was specified as a
+   single read; a guard-passing `AddAddress` committing between that read
+   and the tombstone commit would leave its row uncleaned (closed period +
+   live row = the lockout's fourth population). Rule: each pass of the
+   round-14 re-check loop re-reads BOTH memberships (open periods AND
+   live address rows) under lock and processes anything new, converging
+   exactly as round-14 argued; the loop terminates when a pass finds no
+   new members in either set. The residual window round-14 already
+   accepted (an address transaction committing entirely after
+   `ContactDelete` commits — the A9-b guard's non-locking pre-check
+   passed before the tombstone landed) remains accepted, now with a
+   working escape hatch: the resulting state (live row + open period
+   under a tombstoned owner) is exactly what the round-27 Step-1 clause
+   above detects and repairs on the next registration attempt.
+3. **Terminology fixed: there is ONE transaction, not per-target
+   transactions.** Round-13 defined `ContactDelete`'s closure as a single
+   `BeginTx` locking N targets in ascending order; later rounds' phrase
+   "per-target transaction" muddied that. Canonical reading everywhere in
+   this document: `ContactDelete` runs ONE §5.1 transaction that locks all
+   discovered targets ascending (per §5.2's N-way rule), closes their
+   periods, deletes all the Contact's address rows, soft-deletes the
+   Contact, and commits atomically — so there is no partial-failure state
+   between period closure and row cleanup, and a deadlock retry restarts
+   the whole discovery+lock+mutate cycle idempotently.
+
+**Round-27 skew corrections (the deletion entry points are themselves a
+skew surface — §9's analysis covered only address-write skew):** an
+old-binary `ContactDelete`/`EventCustomerDeleted` during the rollout
+window tombstones the Contact but leaves rows live and periods OPEN
+(the old binary knows nothing of periods or cleanup). The Step-1
+tombstoned-owner clause above self-heals this on the next registration
+attempt. Two adjacent repairs complete the coverage: **(a)**
+`ClaimAddress`'s existing non-Nil pre-check (round-7's case 5) gains the
+same clause — a non-Nil owner that is tombstoned is treated as unowned,
+the stale row is hard-deleted inside the claim's own transaction, and
+the claim proceeds through the step procedure; **(b)** `AddressCreate`,
+on hitting `idx_contact_addresses_identifier`'s duplicate error, checks
+(in a §5.1 transaction) whether the conflicting row's owner is
+tombstoned — if so it performs the same late cleanup and retries the
+insert once, otherwise the duplicate error propagates as today. Together
+these also cover the period-less variant (an old-binary A9-b `AddAddress`
+onto an already-tombstoned Contact during the window), which never
+reaches Step 1 because no period exists — the unique-index path (b) is
+precisely where that state surfaces. All three repairs increment the
+same skew-orphan Prometheus counter.
 
 **A9-b guard placement (round-3 finding: this was only in §8's summary table,
 never specified in this section — fixed here).** All four write handlers this
@@ -1052,6 +1120,10 @@ duplicated here). Disposition of each finding that survived to this design:
 | Round-26 BLOCKER: round-25's row cleanup would silently strip `addresses` from the `contact_deleted` event payload and the `DELETE /v1/contacts/{id}` RPC response — today `contacthandler.Delete` re-reads the tombstone via the intentionally-unfiltered by-id `ContactGet` (per the service CLAUDE.md, exactly so the delete payload carries the full address list), and hard-deleting the rows before that re-read empties it (`omitempty` drops the field entirely), an unrecorded external contract change contradicting §3.1's "no read path changes" and §2's response-shape promise | **Fixed** (§4: `contacthandler.Delete` snapshots the Contact including addresses BEFORE `dbhandler.ContactDelete`, and the event payload/RPC response use the snapshot; `Test_Delete` added to §10's checklist) |
 | Round-26 finding: round-25's row cleanup derived its target set from open-period membership, so a skew-created row with no period (§9's own accepted degraded state) would survive under the tombstone — permanent lockout reproduced in a third population, with Step-1 self-healing unable to fire (no period exists; `AddressCreate` dies at the unique index first): the "fixed for one population, reproduced in another" failure mode's third recurrence | **Fixed** (§4: row-cleanup membership changed to `contact_addresses WHERE contact_id = ?` — all live rows owned by the tombstoned Contact are cleaned regardless of period existence; period closure keeps its own open-period membership) |
 | Round-26 verification: (2) period-based history reads are unaffected by row hard-deletes (closed periods carry the attribution; `interactionListByContact` already NotFounds tombstoned Contacts; `LookupByPhone/Email` already NotFounds tombstone resolutions today, so external lookup behavior is unchanged); (3) the row DELETE inside the per-target transaction follows §5.2's period-lock-first order (round-24's verified direction) and the N-target loop's larger lock footprint stays inside round-19's retry-bounded acceptance | **Confirmed** (recorded as verified-safe; `ContactDeleteByCustomerID` publishes no per-contact events, so the payload concern applies to single `ContactDelete` only) |
+| Round-27 BLOCKER: round-26's pre-delete snapshot, used verbatim, would publish `tm_delete: null` (not `omitempty`) and stale `tm_update` in the `contact_deleted` event/RPC response — the same unrecorded-external-contract-change class round-26 fixed for `addresses`, this time losing the deletion timestamp | **Fixed** (§4 round-27 correction #1: snapshot carries `addresses`, then `tm_delete`/`tm_update` are overlaid with the deletion timestamp before publish/return; `Test_Delete` checklist item extended to both fields) |
+| Round-27 finding: round-26's row-cleanup membership was a single read outside the round-14 re-check loop — a guard-passing `AddAddress` committing between that read and the tombstone would leave a live row under the tombstone (closed period + live row = the lockout's fourth population) | **Fixed** (§4 round-27 correction #2: each re-check pass re-reads BOTH memberships — open periods and live address rows — under lock until a pass finds nothing new; round-14's accepted residual window now has a working escape hatch via the round-27 Step-1 clause) |
+| Round-27 finding: "per-target transaction" wording (rounds 25/26) contradicted round-13's single-`BeginTx` definition — a transaction-boundary ambiguity of the implementer-discretion class round-19 established as blocking | **Fixed** (§4 round-27 correction #3: canonical reading stated — ONE §5.1 transaction locks all targets ascending, closes periods, deletes rows, tombstones the Contact, commits atomically; deadlock retry restarts the whole cycle idempotently) |
+| Round-27 BLOCKER: §9's skew analysis covered only address-write skew; the deletion entry points became a skew surface themselves once round-25/26 gave them new-binary-only behavior — an old-binary `ContactDelete` during the rollout window leaves live rows + OPEN periods under a tombstone, and round-24's ownership-agreement check *passes* on that state (row exists, contact_id matches), misjudging the dead owner as live: permanent 409 lockout in a fourth population, plus a period-less variant (old-binary A9-b `AddAddress` onto a tombstone) that never reaches Step 1 at all | **Fixed** (§4 round-27 skew corrections: Step 1's ownership agreement now also requires the owning Contact to not be tombstoned — tombstoned-owner rows are treated as orphans, closed AND hard-deleted (late round-25 cleanup); `ClaimAddress`'s pre-check gains the same clause; `AddressCreate` on a duplicate-key error checks the conflicting row's owner for a tombstone and retries once after cleanup — the unique-index path is where the period-less variant surfaces; all three repairs share the skew-orphan Prometheus counter) |
 
 ## 9. Migration plan
 
