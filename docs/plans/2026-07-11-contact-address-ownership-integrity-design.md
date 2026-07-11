@@ -149,23 +149,51 @@ All four ownership-period-affecting operations are additions alongside the
 existing `contact_addresses` write, inside the **same transaction** the existing
 write already runs in (see §5 for the transaction restructuring this requires).
 
+**Determining which rule applies below always requires TWO lookups, not one**
+(this is the fix for the round-3 §4 defect — see §8): (a) does a period for
+this *exact* `(customer_id, type, target, contact_id)` tuple exist (any
+status)? (b) independently, does *any* period for this `(customer_id, type,
+target)` — regardless of contact_id — currently have `valid_to IS NULL`
+(open)? The second lookup is exactly the `open_period_uk` row the write
+transaction already `SELECT ... FOR UPDATE`s per §5.1; no extra query.
+
 | Existing operation | Ownership-period effect |
 |---|---|
-| `AddressCreate` (no prior period for this contact_id+type+target) | INSERT new period: `valid_from=NULL` (unbounded past — see §6), `valid_to=NULL` (open) |
-| `AddressCreate` (a period for this exact contact_id+type+target exists, closed) | Re-open it: `UPDATE ... SET valid_to=NULL WHERE id=<that period>` (no new row — same contact reclaiming its own number keeps one continuous history, not two periods with a gap) |
-| `AddressCreate` (target has NO existing `contact_addresses` row at all — the common "first-ever registration" case) | Same as first case: open period, `valid_from=NULL` |
+| `AddressCreate` / `ClaimAddress`, target has **no period at all**, for **any** contact_id, ever (true first-ever registration) | INSERT new period: `valid_from=NULL` (unbounded past — see §6), `valid_to=NULL` (open) |
+| `AddressCreate`, a **closed** period for this exact contact_id+type+target exists (this contact reclaiming a number it previously held) | Re-open it: `UPDATE ... SET valid_to=NULL WHERE id=<that period>` (no new row — keeps one continuous history, not two periods with a gap) |
+| `AddressCreate` / `ClaimAddress`, a **closed** period for this type+target exists but owned by a **different** contact_id (reassignment A→B; A's period was already closed by A's own `AddressDelete`, per §7's TOCTOU sequencing) | INSERT a **new** row: `contact_id=B`, `valid_from=NOW()` (**not** NULL — B never owned this target before now, so there is no unbounded-past claim to make), `valid_to=NULL`. This is the rule the round-3 review found missing; its absence was defect §8's row 1. |
 | `AddressDelete` | Close the open period for this contact_id+type+target: `UPDATE ... SET valid_to=NOW() WHERE open_period_uk = <hash>`. The period row is never deleted. |
-| `AddressUpdate` (target changed) | Close the old-target period (`valid_to=NOW()`), open/reopen a new-target period (same rule as `AddressCreate`) |
-| `ClaimAddress` (unresolved → contact_id assigned) | Open a new period for the new contact_id (this is a first-time open, not a reopen, since an unresolved address never had a period) |
+| `AddressUpdate` (target field changed) | Close the old-target period (`valid_to=NOW()`), then apply whichever of the three `AddressCreate` rows above matches the new target |
+| `AddressUpdate` (target field NOT changed — e.g. only `name`/`detail`/`is_primary`) | **No ownership-period effect.** The write transaction (§5.1) still acquires the `open_period_uk` `FOR UPDATE` lock for this target as part of its fixed lock-ordering rule, but performs no INSERT/UPDATE against `contact_address_ownership_periods` — the lock exists purely to keep this operation inside the same serialization order as every other address write on that target, not because there is a period decision to make. |
 | Contact soft-delete (`ContactDelete`) | Close **every** open period owned by that contact_id (prevents an orphaned open period after the owning Contact itself is gone) |
+
+**A9-b guard placement (round-3 finding: this was only in §8's summary table,
+never specified in this section — fixed here).** All four write handlers this
+table governs — `AddAddress`, `UpdateAddress`, `RemoveAddress`, `ClaimAddress`
+(`pkg/contacthandler/contact.go`) — gain an explicit `c.TMDelete != nil` check
+immediately after their existing `ContactGet` call and before any
+`contact_addresses`/ownership-period write, mirroring the check
+`interactionListByContact` already performs
+(`pkg/contacthandler/interaction_read.go:117-125`). On a soft-deleted Contact,
+each handler returns `cerrors.NotFound` (the same "treat as not found" shape
+`interactionListByContact` and `ClaimAddress`'s existing cross-tenant check use
+— `contact.go:449-455`), so a caller cannot distinguish "Contact never existed"
+from "Contact was deleted," consistent with the platform's existing
+not-found-not-forbidden convention. This check runs before the transaction in
+§5.1 opens (it is a precondition, not part of the ownership-period write
+itself) — so a request against a soft-deleted Contact never acquires the
+`FOR UPDATE` lock at all.
 
 **Reassignment (A→B) is explicitly the composition of `AddressDelete`(A) +
 `AddressCreate`/`ClaimAddress`(B) as two separate calls — not a new operation.**
 Round-1 review confirmed `ClaimAddress` unconditionally rejects (`ErrConflict`)
 any address that already resolves to a live owner
 (`pkg/dbhandler/address.go:182-218`), so "reassign while B's period is still open"
-is not a reachable code path; A's row must be deleted first. This is accepted, not
-solved (§7).
+is not a reachable code path; A's row must be deleted first. The TOCTOU gap
+between those two calls is accepted, not solved (§7) — but the row 3 rule
+above (`valid_from=NOW()` for B, not NULL) is a hard requirement independent
+of that gap, and is what actually prevents history leaking from A to B once
+B's `AddressCreate` does land.
 
 ## 5. Transaction and concurrency strategy
 
@@ -181,12 +209,26 @@ pods. All serialization must be DB-level.
 `AddressCreate`, `AddressUpdate`, `AddressDelete`, `AddressClaim`, and
 `AddressResetPrimary` are today independent single-statement `Exec` calls with no
 `BeginTx` (confirmed round-1/round-2, `pkg/dbhandler/address.go`). This design
-wraps **all five** — including `AddressResetPrimary`, which round-1's original
-proposal omitted and round-2 correctly flagged as a lock-ordering hazard — in a
-single `BeginTx`, following `casehandler.getOrCreateAttempt`'s shape
-(`pkg/casehandler/getorcreate.go:124-164`): open tx, do every step (including the
-`is_primary` reset when applicable) on that one tx, `SELECT ... FOR UPDATE` the
-target ownership-period row before deciding open/reopen/close, commit.
+wraps **all five** in a single `BeginTx` per outer operation, following
+`casehandler.getOrCreateAttempt`'s shape (`pkg/casehandler/getorcreate.go:124-164`):
+open tx, do every step that operation actually needs on that one tx,
+`SELECT ... FOR UPDATE` the target ownership-period row before deciding
+open/reopen/close/no-op (§4's table, including the no-op row for a
+target-unchanged `AddressUpdate`), commit.
+
+**`AddressResetPrimary` is conditional per operation, not universally invoked**
+(round-3 finding, clarified here to remove the §5.1/§5.2 ambiguity that
+survived round-3): today's code only calls it from `AddAddress`/`UpdateAddress`
+when `is_primary` is part of the request (`pkg/contacthandler/contact.go:318-322,
+372-378`); `RemoveAddress`/`ClaimAddress` never call it at all. This design does
+not change that — `AddressDelete`/`AddressClaim`'s transactions never invoke
+`AddressResetPrimary`, full stop. §5.2's "every code path follows this same
+order" refers strictly to *lock acquisition order when a step is actually
+performed*, not to forcing `AddressResetPrimary` to run unconditionally on
+every path — the ownership-period `FOR UPDATE` is acquired first as a fixed
+rule, and whichever of `AddressResetPrimary`/`contact_addresses` write steps
+are applicable to *that specific operation* run after it, in that relative
+order, never out of it.
 
 ### 5.2 Lock ordering (round-2 finding, addressed)
 
@@ -194,11 +236,17 @@ Round-2 found that if `AddressResetPrimary` (contact-scoped: all rows for
 `contact_id`) and the ownership-period `FOR UPDATE` (target-scoped: one specific
 `(customer_id, type, target)` row) run in different orders across two concurrent
 requests touching the same Contact, InnoDB can deadlock (1213). Fix: **fixed lock
-order within the single transaction** — always acquire the ownership-period `FOR
-UPDATE` row lock *first*, then run `AddressResetPrimary`, then the
-`contact_addresses` write, then commit. Every code path (Create/Update/Delete/
-Claim) is written to follow this same order, so no two transactions can ever
-request the two locks in reverse order relative to each other.
+order within the single transaction, applied only on the operations that
+actually invoke `AddressResetPrimary` (`AddAddress`/`UpdateAddress` with
+`is_primary` set — see §5.1)** — always acquire the ownership-period `FOR
+UPDATE` row lock *first*, then run `AddressResetPrimary` if this operation
+calls for it, then the `contact_addresses` write, then commit. `AddressDelete`/
+`AddressClaim` (which never call `AddressResetPrimary`) still acquire the
+ownership-period `FOR UPDATE` lock first, per the same fixed rule, simply with
+no `AddressResetPrimary` step to follow it — so no two transactions can ever
+request the ownership-period lock and the primary-reset lock in reverse order
+relative to each other, regardless of which subset of operations either one
+performs.
 
 ### 5.3 Deadlock retry
 
@@ -252,12 +300,62 @@ across every period the Contact has ever held (mirrors the existing OR-expansion
 shape in `dbhandler/interaction.go:131-139`, no new query pattern). STEP0, 3–6 of
 `interactionListByContact` are unchanged.
 
+**Round-3 finding, addressed here: OR-clause count is no longer bounded by
+"how many addresses does this Contact currently have" (typically single-digit)
+but by "how many ownership periods has this Contact ever held" — which grows
+monotonically for any Contact that experiences repeated reassignment (e.g. a
+call-center front-desk number rotated across agents).** This design does not
+attempt to cap or paginate the OR-clause count in this iteration — for the
+realistic case (an end-customer Contact with a handful of numbers over its
+lifetime) the count stays in the same order of magnitude as today. It is
+recorded as an explicit known limitation (§10) rather than solved now, because
+solving it properly (e.g. a `JOIN` against
+`contact_address_ownership_periods` instead of a Go-built OR-expansion, which
+would also remove the OR-count concern entirely) is a larger rewrite of
+`InteractionList`'s calling convention that changes today's `AddressPair`-slice
+interface (`dbhandler/interaction.go`) — out of scope for a design whose stated
+goal (§2) is a same-API-surface internal rewire. If a customer's period count
+is ever observed approaching a problematic OR-clause size in production, that
+observation is the trigger to revisit this as a follow-up, not something to
+pre-solve speculatively now.
+
 ### 6.3 `InteractionListUnresolved`
 
-The `NOT EXISTS (SELECT 1 FROM contact_addresses ...)` correlated subquery
-(`pkg/dbhandler/interaction.go:259-264`) is replaced with the equivalent
-`NOT EXISTS` against `contact_address_ownership_periods`, with the same
-time-range condition as §6.2.
+Round-3 review found the original text here ("replaced with the equivalent
+`NOT EXISTS` ... with the same time-range condition as §6.2") was not
+sufficient to implement: §6.2's condition is expressed as Go-side bound
+parameters injected per period via an OR-loop
+(`dbhandler/interaction.go:131-139`'s existing shape), which is structurally
+different from a single correlated subquery, where the range condition must
+reference the joined table's own columns, not external bind parameters. The
+actual replacement SQL, concretely:
+
+```sql
+-- was (pkg/dbhandler/interaction.go:259-264):
+NOT EXISTS (
+    SELECT 1 FROM contact_addresses a
+    WHERE a.customer_id = i.customer_id
+      AND a.type = i.peer_type
+      AND a.target = i.peer_target
+)
+
+-- becomes:
+NOT EXISTS (
+    SELECT 1 FROM contact_address_ownership_periods p
+    WHERE p.customer_id = i.customer_id
+      AND p.type = i.peer_type
+      AND p.target = i.peer_target
+      AND i.tm_interaction >= COALESCE(p.valid_from, i.tm_interaction)
+      AND i.tm_interaction <  COALESCE(p.valid_to, i.tm_interaction + INTERVAL 1 SECOND)
+)
+```
+
+This is a single correlated subquery keyed entirely on the outer row's own
+`contact_interactions` columns (`i.customer_id`, `i.peer_type`, `i.peer_target`,
+`i.tm_interaction`) — no Go-side loop, no bind parameters beyond the ones the
+surrounding query already has. `idx_ownership_periods_lookup` (§6.4) covers
+this subquery's `WHERE` clause the same way `idx_contact_addresses_lookup`
+already covers the original.
 
 ### 6.4 Index coverage (round-1 flagged as unresolved; addressed here)
 
@@ -300,6 +398,12 @@ duplicated here). Disposition of each finding that survived to this design:
 | Round-1 finding: `AddressListByContactID` reuse would leak into `ContactGet`/`ContactList` | **Fixed** (§6.1, new function instead) |
 | Round-2 finding: lock-ordering deadlock risk from omitting `AddressResetPrimary` | **Fixed** (§5.2) |
 | Round-2 finding: B5's dbhandler-only fix doesn't propagate to contacthandler error mapping | **Fixed** (§5.4) |
+| Round-3 BLOCKER: `AddressCreate`'s "no prior period" rule didn't distinguish true-first-registration from reassignment-to-a-different-contact, re-introducing the exact history-leak defect (§1, defect #2) this design exists to fix | **Fixed** (§4, third table row + two-lookup rule) |
+| Round-3 finding: §6.3 (`InteractionListUnresolved`) described the replacement only in prose, without concrete SQL, and the described "same condition as §6.2" elided a real structural difference (Go-loop bind params vs. single correlated subquery) | **Fixed** (§6.3, concrete SQL added) |
+| Round-3 finding: §6.2's OR-clause count is unbounded by ownership-period accumulation, not addressed in the original text | **Acknowledged as an explicit known limitation** (§6.2, §10) — not solved this iteration; revisit only if observed in practice, per pchero's "don't pre-solve theoretical risk" standing preference |
+| Round-3 finding: §8's A9-b row referenced a guard never specified in §4's body (table led the design instead of summarizing it) | **Fixed** (§4, explicit guard-placement paragraph added) |
+| Round-3 finding: §5.1 ("`AddressResetPrimary` when applicable") and §5.2 ("every code path follows this same order") read as contradictory — could be misread as forcing `AddressResetPrimary` on Delete/Claim | **Fixed** (§5.1/§5.2 reworded to make the conditionality explicit in both places) |
+| Round-3 finding: §4 had no row for `AddressUpdate` calls that change neither `target` nor `is_primary` | **Fixed** (§4, explicit no-op row added) |
 
 ## 9. Migration plan
 
@@ -320,7 +424,7 @@ duplicated here). Disposition of each finding that survived to this design:
    contact_address_ownership_periods` is fully reversible (no other table's data
    depends on it).
 
-## 10. Open questions for round-3 review
+## 10. Open questions for round-4+ review
 
 - Does the fixed lock order in §5.2 actually eliminate the deadlock class round-2
   found, or only narrow it? (Needs the same live-concurrency spike verification
@@ -335,3 +439,9 @@ duplicated here). Disposition of each finding that survived to this design:
 - Full transaction-boundary diff for `AddAddress`/`UpdateAddress`/`RemoveAddress`/
   `ClaimAddress`/`CreateUnresolvedAddress` against their current implementations,
   to confirm no existing test fixture assumption (e.g. mock call ordering) breaks.
+- (Recorded, not blocking implementation — §6.2/§8) If a customer's ownership-period
+  count for a single Contact ever grows large enough to make the OR-expanded
+  STEP2 query in §6.2 a real performance concern, the fix is switching
+  `InteractionList`'s calling convention from an OR-expanded parameter slice to
+  a real `JOIN` against `contact_address_ownership_periods` — deferred, not
+  designed here, until real evidence of the problem exists.
