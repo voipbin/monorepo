@@ -420,6 +420,32 @@ N, not a new ordering rule), closing each one in that order before
 committing. This transaction is subject to the same `maxDeadlockRetries = 3`
 retry loop (§5.3) as every other write path in this table.
 
+**Round-14 finding: the membership `SELECT` above only locks the targets it
+finds — a `ClaimAddress` for this same contact_id that commits a brand-new
+open period *after* that `SELECT` but *before* this transaction commits is
+invisible to it, so that period is never locked and never closed, an orphan
+open period surviving under a Contact that no longer exists. This is not
+covered by §7's accepted TOCTOU (which only discusses the A→B reassignment
+delete/create gap) — it is a genuinely missed race on this operation's own
+membership read, the same "plain SELECT is a stale snapshot" class of bug
+rounds 5/8/9 already fixed elsewhere in this document, just not yet applied
+here.** **Fix:** after acquiring the §4 locking read (and thus the row lock)
+for every target from the initial membership `SELECT`, re-run that same
+membership `SELECT` once more, still inside the same transaction. Because
+every target this operation cares about is now individually locked, any
+period that existed at the time of the *first* `SELECT` is guaranteed stable
+by the second read; the only way the second read can show a *new* target
+absent from the first is a `ClaimAddress` that committed in the gap between
+them. If the second read finds no new targets, proceed to close and commit
+as already described. If it finds one or more new targets, acquire the §4
+locking read for each of them too (still following the same global ascending
+`(type, target)` order — extending the already-sorted lock list, not
+restarting it), and repeat this membership re-check until a pass finds
+nothing new. In practice this converges in at most one extra pass per
+concurrent `ClaimAddress` that actually raced the deletion, and the same
+`maxDeadlockRetries = 3` bound (§5.3) still caps the whole transaction if
+convergence itself deadlocks against something else.
+
 **A9-b guard placement (round-3 finding: this was only in §8's summary table,
 never specified in this section — fixed here).** All four write handlers this
 table governs — `AddAddress`, `UpdateAddress`, `RemoveAddress`, `ClaimAddress`
@@ -722,6 +748,32 @@ duplicated here). Disposition of each finding that survived to this design:
    `INSERT ... SELECT` from `contact_addresses` (only rows with `contact_id IS
    NOT NULL`), per §8's backfill rule (`valid_from = tm_create`, `valid_to =
    NULL`).
+
+   **Round-14 finding: this backfill rule, as originally written, does not
+   account for pre-existing data corrupted by the A9-b bug this design also
+   fixes.** Before this design's `TMDelete` guard (§4's A9-b paragraph)
+   existed, `AddAddress`/`UpdateAddress`/`RemoveAddress`/`ClaimAddress` never
+   checked `Contact.TMDelete`, so a live `contact_addresses` row can already
+   exist today under a Contact that was soft-deleted *before* this migration
+   runs — a state the runtime guard prevents going forward but cannot undo
+   retroactively for data already written. Backfilling such a row as
+   `valid_to = NULL` (the plain rule above) creates a permanently-open
+   period: `ContactDelete`'s "close every open period" trigger (§4, including
+   round-14's re-check fix above) only fires on *future* `ContactDelete`
+   calls, and this Contact's deletion already happened in the past, so
+   nothing will ever close it. That phantom open period would then silently
+   swallow interactions in `InteractionListUnresolved` (§6.3), whose
+   `NOT EXISTS` correlated subquery checks period existence only, never
+   `contact_contacts.tm_delete` — exactly the kind of silent misattribution
+   §1 exists to fix, reintroduced via this design's own migration. **Fix:**
+   the backfill `INSERT ... SELECT` joins `contact_addresses` to
+   `contact_contacts ON contact_addresses.contact_id = contact_contacts.id`
+   and branches on `contact_contacts.tm_delete`: rows where it `IS NULL`
+   backfill as `valid_to = NULL` (the plain rule, unchanged); rows where it
+   `IS NOT NULL` backfill as `valid_to = contact_contacts.tm_delete` instead
+   — an already-closed period, consistent with what a `ContactDelete` call
+   made at that Contact's actual deletion time would have produced had this
+   design already existed then.
 3. Round-trip verify (MariaDB build → mysqldump → MySQL 8.0 import) per the
    `voipbin-dbscheme-migration` skill, including the generated-column UNIQUE
    behavior probes (open-period coexistence, real-duplicate rejection, distinct-
