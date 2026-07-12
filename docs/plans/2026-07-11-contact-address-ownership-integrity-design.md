@@ -342,7 +342,14 @@ row is present in `lockedRows` (round-49's not-found → `ErrConflict`
 contract applies here too — a concurrent operation racing this
 compensating cleanup on the same target is a genuine conflict, not the
 bulk-loop's benign skew case, since this is a single-target operation
-like `AddressDeleteTx`), hard-deletes both the `contact_addresses` row
+like `AddressDeleteTx`; **round-57 clarification: the skew exemption
+does not apply here either — the period this operation is compensating
+for was just inserted moments earlier by this SAME `ContactCreate`
+call, in this same deploy, so an empty `lockedRows` here cannot be a
+rolling-deploy version-skew artifact the way it can for
+`AddressDeleteTx`/`AddressUpdateTx` acting on arbitrary pre-existing
+rows — an empty `lockedRows` here is unconditionally a genuine
+conflict**), hard-deletes both the `contact_addresses` row
 and the `contact_address_ownership_periods` row (not a `valid_to=NOW()`
 close — round-31/32's DELETE-not-close distinction is unaffected by this
 retrofit). It is subject to the same `maxDeadlockRetries = 3` retry
@@ -1362,7 +1369,26 @@ Concretely:
   `lockedRows`** (a concurrent close already ran — the same race B5
   (§5.4) exists to guard against, now surfacing at the `lockedRows`
   level instead of `RowsAffected`), **the close-ing caller returns
-  `dbhandler.ErrConflict`, not a silent success.** This is the same
+  `dbhandler.ErrConflict`, not a silent success.** **Round-57
+  correction: this `ErrConflict` rule applies only when `lockedRows`
+  contains AT LEAST ONE row for this `(customer_id, type, target)` — a
+  row that just isn't open for this contact (either CLOSED, meaning a
+  concurrent operation genuinely raced this one, or open for a
+  DIFFERENT contact_id, meaning a genuine ownership conflict). If
+  `lockedRows` is EMPTY — no period row for this target exists at
+  all — that is §9's round-16/17 rolling-deploy version-skew state
+  (an old-binary pod wrote the `contact_addresses` row without ever
+  creating a period), not a concurrency conflict, and `AddressDeleteTx`
+  /`AddressUpdateTx`'s old-target close follow §9's rule identically to
+  `ContactDelete`'s loop (round-50): this is not an error, skip the
+  close (there is nothing to close), increment the same skew
+  Prometheus counter, and let the rest of the operation (the
+  `contact_addresses` row delete/update itself) proceed and commit
+  normally. The distinguishing check is `len(lockedRows) == 0` (skew,
+  counter-only) vs. `len(lockedRows) > 0` but none open for this
+  contact (conflict, `ErrConflict`) — both are computed from the same
+  `lockedRows` slice the locking read already returns, no extra query
+  needed.** This is the same
   contract B5 established (`RowsAffected == 0 → ErrConflict`), restated
   for the round-43 architecture: `RowsAffected == 0` and "no open row
   for this contact in `lockedRows`" are the same condition observed
@@ -2352,6 +2378,7 @@ duplicated here). Disposition of each finding that survived to this design:
 | Round-53 finding: round-52's fix specified `AddressDeleteTx`'s `contactID` source but left `AddressUpdateTx`'s two calls (old-target CLOSE, new-target OPEN) with the same unstated-source gap — `contacthandler.UpdateAddress`'s pre-lock read (round-39, `contact.go:354`) was described as returning `target` only, never stated to also carry `contact_id`, the same "fixed for one caller, not retrofitted to a structurally identical sibling" class hit at rounds 40, 47, 49, 50, and 52 | **Fixed** (§4: `AddressUpdate`'s pre-lock read explicitly stated to return `contact_id` alongside `target` from the same row/query, supplying the `contactID` for both of `AddressUpdateTx`'s locking-read calls; the existing target-mismatch compare-and-retry is noted to catch a `contact_id` mismatch too, since both come from the same re-read) |
 | Round-55 finding: `AddressDeleteCompensating` (round-13/31/32/35/36) — the compensating-cleanup path for `ContactCreate`'s partial-failure address loop — was never retrofitted to §5.1's `Tx`-suffixed/`OwnershipPeriodsLockAndResolveTx` architecture (rounds 43–53); its own paragraph still described a bare "§5.1 transaction" with §5.2's pre-round-43 canonical-order phrasing, named neither the shared locking-read primitive nor a transaction-ownership shape, and appeared in none of the "five write functions plus ContactDelete's loop" enumerations that rounds 48–52 used to scope which callers get which contract — the same "fixed for established callers, sixth/seventh sibling missed" class hit at rounds 19, 24, 27, 30, 36, and 40 through 53 | **Fixed** (§4: `AddressDeleteCompensating` explicitly named as a seventh, distinct caller — a thin non-`Tx`-suffixed wrapper opening its own `BeginTx`, calling `OwnershipPeriodsLockAndResolveTx` with its own already-known `contactID` parameter, applying the single-target `ErrConflict`-on-not-found contract (round-49) rather than the bulk-loop's counter-only rule, and subject to the same `maxDeadlockRetries` retry loop as every other locking-read caller; §10 gains a fixture) |
 | Round-56 BLOCKER: §5.1's blanket claim that all five `Tx`-suffixed write functions "internally call `OwnershipPeriodsLockAndResolveTx` itself first, so every one is independently correct when invoked standalone" was false for `AddressResetPrimaryTx` — its signature (`ctx, tx, contactID`) has no `(type, target)` to lock (it isn't a per-target operation; it clears `is_primary` on every OTHER address row this contact owns), it never calls the shared locking-read primitive, and it is never invoked standalone — §5.1's own round-3 finding and §5.2 both already establish the caller (`AddressCreateTx`/`AddressUpdateTx`) acquires the lock first and `AddressResetPrimaryTx` only runs after, inside that already-locked transaction | **Fixed** (§5.1: the "internally calls... standalone" claim scoped explicitly to the other four write functions; `AddressResetPrimaryTx` described accurately as a plain `UPDATE` running inside its caller's already-open, already-locked transaction, never calling the shared primitive itself) |
+| Round-57 BLOCKER: §5.1's round-49 `ErrConflict`-on-not-found rule for close-ing callers (`AddressDeleteTx`, `AddressUpdateTx`'s old-target close) was never reconciled with §9's round-16/17 rule that the SAME two closing-UPDATE sites (grouped with `ContactDelete`'s per-target close, which round-50 already fixed for exactly this reason) must treat a period that was never created at all (rolling-deploy version skew) as "not an error" — counter-only, silent success — rather than a genuine conflict; round-49's `lockedRows`-empty check did not distinguish "no row at all for this target" (skew) from "a row exists but isn't open for this contact" (genuine race), collapsing both into `ErrConflict` and turning §9's explicitly-promised silent success into a user-visible 409 for the single-target write paths (the same fix round-50 already applied to `ContactDelete` was never extended to its two structurally identical single-target siblings) | **Fixed** (§5.1: the `ErrConflict` rule is now scoped to `len(lockedRows) > 0` but none open for this contact — a genuine conflict; `len(lockedRows) == 0` — no period ever existed for this target — instead follows §9's counter-only rule identically to `ContactDelete`'s loop: skip the close, increment the skew counter, let the rest of the operation commit normally) |
 
 ## 9. Migration plan
 
@@ -2813,6 +2840,13 @@ humans decide; the correction path is `contact_resolutions` (§7).
   ordering (period lock, then `AddressResetPrimaryTx`, §5.2) is
   satisfied by a single upstream lock acquisition, not a redundant one
   from within `AddressResetPrimaryTx`.
+  **Round-57 addition:** `AddressDeleteTx` and `AddressUpdateTx`'s
+  old-target close each need a fixture asserting the skew case
+  (`lockedRows` empty — no period ever existed for this target) is a
+  silent, counter-only success (matching `ContactDelete`'s loop and
+  §9's round-16/17 rule), distinct from the genuine-conflict case
+  (`lockedRows` non-empty but none open for this contact), which still
+  returns `ErrConflict`.
 - (Recorded, not blocking implementation — §6.2/§8) If a customer's ownership-period
   count for a single Contact ever grows large enough to make the OR-expanded
   STEP2 query in §6.2 a real performance concern, the fix is switching
