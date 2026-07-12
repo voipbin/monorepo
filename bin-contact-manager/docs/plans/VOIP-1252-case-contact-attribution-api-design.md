@@ -1,4 +1,4 @@
-# VOIP-1252 -- Case-Level Manual Contact Attribution API (Design v0.1)
+# VOIP-1252 -- Case-Level Manual Contact Attribution API (Design v0.3)
 
 Repo: voipbin/monorepo
 Ticket: VOIP-1252
@@ -8,6 +8,20 @@ Status: Draft, awaiting independent review
 
 ## Changelog
 
+- v0.3 (2026-07-12). Round 2 independent review found that Section 4.2b's
+  fix, applied as originally written, breaks two existing, currently-passing
+  tests (`Test_ResolutionCreateCaseLevel_DerivesContactID` and
+  `Test_ResolutionDeleteCaseLevel_RederivesContactID` in
+  `contact_attribution_write_test.go`), which call `ResolutionCreateCaseLevel`
+  with a `contactID` that has no corresponding Contact row -- contradicting
+  Section 6's claim that existing coverage is "unaffected." Fixed by adding
+  an explicit integration-plan step to update those two tests with real
+  Contact fixtures. Also: called out Section 4.2b's required new imports
+  explicitly, corrected Section 4.6's OpenAPI field convention (no
+  `nullable: true`, matching the sibling `interaction_id` field's actual
+  pattern) and added a provenance description, fixed the stale "v0.1" doc
+  title, and added a one-line acknowledgment of the pre-existing
+  soft-deleted-contact exposure inherited from the mirrored pattern.
 - v0.2 (2026-07-12). Round 1 independent review found a genuine cross-tenant
   security gap in the underlying domain function (contactID ownership was
   never validated) -- added Section 4.2b domain-layer fix, updated Section 7
@@ -193,6 +207,31 @@ func (h *caseHandler) ResolutionCreateCaseLevel(ctx context.Context, customerID,
 `ResolutionDeleteCaseLevel` does not need this check -- it only takes an
 existing Resolution's own id plus the caseID (already tenant-verified via
 `verifyCaseOwnership`); it never accepts a caller-supplied `contactID`.
+
+**Required new imports (flagged in Round 2 review):** `contact_attribution.go`
+currently imports only `context`, `database/sql`, `fmt`,
+`github.com/gofrs/uuid`, `monorepo/bin-contact-manager/models/kase`, and
+`monorepo/bin-contact-manager/models/resolution`. The snippet above requires
+FOUR additional imports not currently present: `stderrors "errors"`,
+`cerrors "monorepo/bin-common-handler/models/errors"`,
+`commonoutline "monorepo/bin-common-handler/models/outline"`, and
+`monorepo/bin-contact-manager/pkg/dbhandler` (for `dbhandler.ErrNotFound`).
+All four already exist as real, correct package paths elsewhere in this
+service (verified against `contacthandler/resolution.go`'s own import
+block) -- this is a routine addition, not a design risk, but is called out
+explicitly so the implementer isn't surprised by import-cycle or
+goimports diffs.
+
+**Pre-existing exposure inherited from the mirrored pattern (Round 2
+review):** `dbhandler.ContactGet` does not filter soft-deleted Contacts (per
+this service's own CLAUDE.md: "the by-id dbhandler primitive stays
+unfiltered so the delete event payload can re-read the tombstone"). This
+means the new check would allow attaching a Case to a soft-deleted Contact.
+This is NOT a new gap introduced by this design -- `contacthandler.
+ResolutionCreate`, the exact pattern being mirrored, has identical exposure
+today for interaction-level resolutions. Out of scope for this ticket to fix
+(would require changing shared `ContactGet` semantics platform-wide), noted
+here only for completeness.
 
 ### 4.3 bin-contact-manager: request models
 
@@ -387,19 +426,35 @@ Request schema `ContactManagerCaseResolutionCreate`: `contact_id` (uuid,
 required), `resolution_type` (enum: positive, negative, required).
 
 **Response schema decision (resolved in v0.2, was Section 8 open question
-3):** `ContactManagerResolution` already exists
+3; field convention corrected in v0.3 per Round 2 review):**
+`ContactManagerResolution` already exists
 (`bin-openapi-manager/openapi/openapi.yaml:3382-3439`, confirmed by Round 1
 review) but only has `interaction_id`, not `case_id` (fields:
 `id`, `customer_id`, `contact_id`, `interaction_id`, `resolution_type`,
 `resolved_by_type`, `resolved_by_id`, `tm_*`). Reusing it as-is would
 silently drop `case_id` from every case-level resolution response. Decision:
-**extend `ContactManagerResolution` with an optional `case_id` (uuid,
-nullable) field** rather than defining a separate schema -- the Go
-`resolution.Resolution` struct already carries both `InteractionID
-*uuid.UUID` and `CaseID *uuid.UUID` as mutually-exclusive nullable fields
-(see `models/resolution/resolution.go:19-31`), so extending the single
-schema mirrors the Go struct shape exactly and avoids a parallel duplicate
-schema for what is the same underlying row shape at both call sites.
+**extend `ContactManagerResolution` with an optional `case_id` field**
+rather than defining a separate schema -- the Go `resolution.Resolution`
+struct already carries both `InteractionID *uuid.UUID` and `CaseID
+*uuid.UUID` as mutually-exclusive nullable fields (see
+`models/resolution/resolution.go:19-31`), so extending the single schema
+mirrors the Go struct shape exactly and avoids a parallel duplicate schema
+for what is the same underlying row shape at both call sites.
+
+**Field convention correction (Round 2 review):** the sibling
+`interaction_id` field already on this schema
+(`openapi.yaml:3400-3404`) carries NO `nullable: true` flag despite being a
+`*uuid.UUID` in Go, and the schema has no `required:` array at all --
+everything is optional-by-omission, not `nullable`-by-flag. The new
+`case_id` field must mirror `interaction_id`'s exact pattern (type: string,
+format: uuid, no `nullable` flag, not added to any `required` list), NOT
+introduce a `nullable: true` flag that would be inconsistent with its
+sibling field in the same schema. Add a provenance description following
+this schema's existing convention (compare `ContactManagerCaseNote.case_id`,
+`openapi.yaml:3560-3564`: "The case this note belongs to. The ID is returned
+from GET /v1.0/contact_cases response."), e.g. "The case this resolution is
+scoped to (case-level resolutions only). The ID is returned from GET
+/v1.0/contact_cases response."
 
 ### 4.6b Verified negative-resolution no-op (Round 1 review)
 
@@ -415,13 +470,22 @@ as a confirmed-safe citation for the test plan below.
 ## 5. Integration plan
 
 1. `bin-contact-manager`: apply the Section 4.2b domain-layer fix to
-   `ResolutionCreateCaseLevel` FIRST (contact-ownership check), then add
-   request models, listenhandler handlers + route registration, mock
-   regeneration (`go generate ./pkg/listenhandler/...`).
+   `ResolutionCreateCaseLevel` FIRST (contact-ownership check, plus the four
+   new imports noted in Section 4.2b). **Before this fix will compile/pass,
+   update `contact_attribution_write_test.go`'s existing
+   `Test_ResolutionCreateCaseLevel_DerivesContactID` and
+   `Test_ResolutionDeleteCaseLevel_RederivesContactID` to insert a real
+   Contact row (matching customerID) for the `contactID` literal each test
+   currently uses without one -- Round 2 review confirmed neither test
+   creates a Contact today, so both will start failing with
+   `CONTACT_NOT_FOUND` the moment the new check lands.** Then add request
+   models, listenhandler handlers + route registration, mock regeneration
+   (`go generate ./pkg/listenhandler/...`).
 2. `bin-common-handler`: add requesthandler methods + interface entries,
    mock regeneration.
 3. `bin-openapi-manager`: add path files + extend `ContactManagerResolution`
-   with `case_id` (Section 4.6), `go generate ./...`.
+   with `case_id` per Section 4.6's corrected field convention, `go generate
+   ./...`.
 4. `bin-api-manager`: add servicehandler methods + interface + mock, add
    `server/` HTTP handlers wired to the new OpenAPI-generated route
    signatures, `go generate ./...` then `go build ./...`.
@@ -436,7 +500,7 @@ as a confirmed-safe citation for the test plan below.
 
 | Layer | New test file | Cases covered |
 |---|---|---|
-| bin-contact-manager casehandler | `contact_attribution_test.go` additions | **NEW (Round 1 finding): contact_id belongs to a different tenant -> rejected with CONTACT_NOT_FOUND, verified before any Resolution row is inserted or transaction begins**; contact_id does not exist -> CONTACT_NOT_FOUND; existing Test_ResolutionCreateCaseLevel_DerivesContactID coverage unaffected |
+| bin-contact-manager casehandler | `contact_attribution_write_test.go` (MODIFY existing) + `contact_attribution_test.go` (additions) | **Existing `Test_ResolutionCreateCaseLevel_DerivesContactID` and `Test_ResolutionDeleteCaseLevel_RederivesContactID` MUST be updated to insert a real Contact row for the customerID/contactID they use -- Round 2 review confirmed they don't today and will fail once the Section 4.2b check lands.** NEW: contact_id belongs to a different tenant -> rejected with CONTACT_NOT_FOUND, verified before any Resolution row is inserted or transaction begins; contact_id does not exist -> CONTACT_NOT_FOUND |
 | bin-contact-manager listenhandler | `v1_case_resolutions_test.go` | 200 success (create/delete), 400 missing customer_id/contact_id, cross-tenant case_id -> propagated NotFound/error, cross-tenant contact_id -> propagated NotFound/error (new), malformed JSON body |
 | bin-common-handler requesthandler | `contact_case_resolutions_test.go` | URI construction, success parse, error propagation -- mirrors `Test_ContactV1CaseClose` shape |
 | bin-api-manager servicehandler | `case_test.go` additions | permission denied (non-admin/manager), direct-access rejected, cross-tenant case_id rejected before contact_id is even used, success path asserts `resolved_by_id` is taken from `a.AgentID()` not client input |
@@ -481,5 +545,10 @@ as a confirmed-safe citation for the test plan below.
 Independent subagent review loop (minimum 3 rounds) on this design doc before
 implementation starts, per `voipbin-backend-feature-design` skill policy.
 Round 1 (2026-07-12): CHANGES REQUESTED -- found the cross-tenant contact
-gap (Section 4.2b) and the schema gap (Section 4.6), both now addressed in
-this v0.2. Proceeding to Round 2.
+gap (Section 4.2b) and the schema gap (Section 4.6), both addressed in v0.2.
+Round 2 (2026-07-12): CHANGES REQUESTED -- found that the Section 4.2b fix
+as originally written breaks two existing tests
+(`Test_ResolutionCreateCaseLevel_DerivesContactID`,
+`Test_ResolutionDeleteCaseLevel_RederivesContactID`), contradicting Section
+6's "unaffected" claim; also flagged missing import callouts and an OpenAPI
+field-convention mismatch. All addressed in this v0.3. Proceeding to Round 3.
