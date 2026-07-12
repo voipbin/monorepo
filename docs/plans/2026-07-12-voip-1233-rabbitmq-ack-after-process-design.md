@@ -1,10 +1,22 @@
 # VOIP-1233 Design — Ack-after-process for rabbitmqhandler event consumption
 
-Status: DESIGN REVIEW CONVERGED (2 consecutive APPROVED, rounds 2-3, 2026-07-12) — ready for implementation
+Status: IMPLEMENTED, PR #1094 (github.com/voipbin/monorepo) merged into main. PR review converged (3 rounds, rounds 1 CHANGES_REQUESTED then fixed, rounds 2-3 APPROVED).
 Ticket: https://voipbin.atlassian.net/browse/VOIP-1233
-Branch: `VOIP-1233-rabbitmq-ack-after-process` (worktree)
+Branch: `VOIP-1233-rabbitmq-ack-after-process` (worktree, merged)
 Prior artifact: Phase 0.8 analysis (converged, 2 consecutive APPROVED) — see JIRA comment history and `~/agent-hermes/notes/2026-07-11-voip-1233-analysis.md`.
 Design review history: round 1 = CHANGES_REQUESTED (1 BLOCKER: Prometheus label-cardinality panic risk; 1 MAJOR: missing DeliveryMode=Persistent transient-loss risk; 2 MINOR), all fixed. Round 2 = APPROVED (3 MINOR notes incorporated). Round 3 (final gate) = APPROVED (4 further MINOR implementation-phase notes incorporated, no BLOCKER/MAJOR). All MINOR notes across rounds are implementation-phase guidance, not open design questions.
+
+## 0. IMPORTANT LIMITATION DISCOVERED DURING PR REVIEW (round 3, 2026-07-12) — READ BEFORE ASSUMING THIS TICKET "FIXED" EVENT LOSS
+
+**This ticket's library fix alone does NOT achieve the stated goal (§1 below) for any of the 20 event-subscribe services in production today.** The retry mechanism this design implements is entirely gated on the `ConsumeMessage` callback returning a genuine `error`. An independent code audit of all 20 services' `pkg/subscribehandler/main.go` (`processEventRun`, the function passed as that callback) found that EVERY one of them, without exception, structurally prevents the real failure from ever reaching the library:
+
+- 16 services (agent, ai, api, campaign, conference, contact, conversation, direct, flow, number, queue, registrar, storage, tag, transfer, webhook-manager): fire-and-forget — `go h.processEvent(m); return nil`. The callback returns success immediately without waiting for or checking the actual outcome.
+- 3 services (billing, call, transcribe-manager): synchronous call, but errors are only logged; the callback still always returns `nil` to the library (billing's own `failedEventHandler.Save` failure is the only error that can propagate — the ORIGINAL processing error never does).
+- 1 service (timeline-manager): channel-based batching, callback always returns `nil`.
+
+This was not a new bug introduced by this ticket — it is the SAME pre-existing pattern that motivated VOIP-1233 in the first place (see `bin-contact-manager/pkg/subscribehandler/main.go:168-186`'s pre-existing VOIP-1232-era comment explicitly naming VOIP-1233 as the fix that would give these failures "an actual retry/redelivery path" — that comment's expectation is not yet met because the consumer side wasn't touched). This ticket closed the library half of the gap; **VOIP-1251 tracks the consumer-side half** (synchronizing each service's callback to propagate real failures). Until VOIP-1251 lands, `rabbitmqhandler_event_retried_total`/`_dropped_total` (§4.4) will read near-zero in production regardless of actual handler failure rates — that is expected, not a sign the mechanism is broken.
+
+**Practical implication for anyone reading this document to reason about production event-loss risk today: assume the pre-VOIP-1233 behavior (silent single-shot loss on handler failure/crash) still applies to all 20 services until VOIP-1251 (or per-service equivalent work) ships.** The mechanism below is real and correct at the library level, but inert until wired up by a consumer that actually reports failure.
 
 ## 1. Goal
 
