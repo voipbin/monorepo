@@ -124,25 +124,51 @@ func (h *contactHandler) interactionListByContact(
 		)
 	}
 
-	// STEP 1: Expand address set.
-	addrs, err := h.db.AddressListByContactID(ctx, contactID)
+	// STEP 1: Expand the ownership-period set (design §6.2). Replaces
+	// the old "currently-live contact_addresses rows only" expansion:
+	// OwnershipPeriodsListByContactID returns every period (open and
+	// closed) this Contact has ever held, so a target's PAST owner era
+	// still resolves correctly after the target is reassigned away or
+	// the row is deleted -- the core defect this design exists to fix.
+	// AddressListByContactID (dbhandler/address.go) is intentionally
+	// NOT used here (design §6.1): it also backs the public
+	// Contact.Addresses API field via ContactGet/ContactList, and
+	// widening its semantics would leak closed/historical addresses
+	// into GET /v1/contacts/{id}.
+	periods, err := h.db.OwnershipPeriodsListByContactID(ctx, contactID)
 	if err != nil {
-		return nil, "", fmt.Errorf("could not list addresses. interactionListByContact. err: %v", err)
+		return nil, "", fmt.Errorf("could not get ownership periods. interactionListByContact. err: %v", err)
 	}
-	var addressPairs []dbhandler.AddressPair
-	for _, a := range addrs {
-		addressPairs = append(addressPairs, dbhandler.AddressPair{Type: string(a.Type), Target: a.Target})
+	// Missing-period-skew guard (design §6.2 round-41-43/47): a target
+	// this Contact currently, live-owns but that has zero period rows
+	// (an old-binary pod's AddressCreate ran before this rewire and
+	// skipped the period write) would otherwise contribute NO bound to
+	// STEP2 at all -- not unbounded, none -- silently vanishing every
+	// interaction for that target from the Contact's OWN timeline.
+	// Reproduces today's time-agnostic value-match for exactly this
+	// transient population until the next write gives the row a real
+	// period.
+	skewed, err := h.db.MissingPeriodOwnedAddresses(ctx, customerID, contactID)
+	if err != nil {
+		return nil, "", fmt.Errorf("could not get missing-period-skew addresses. interactionListByContact. err: %v", err)
+	}
+	bounds := make([]dbhandler.OwnershipPeriodBound, 0, len(periods)+len(skewed))
+	for _, p := range periods {
+		bounds = append(bounds, dbhandler.OwnershipPeriodBound{Type: p.Type, Target: p.Target, ValidFrom: p.ValidFrom, ValidTo: p.ValidTo})
+	}
+	for _, s := range skewed {
+		bounds = append(bounds, dbhandler.OwnershipPeriodBound{Type: s.Type, Target: s.Target, ValidFrom: nil, ValidTo: nil}) // unbounded
 	}
 
 	// STEP 2: Fetch ALL automatic peer matches (internal cap, not caller page size).
 	var automatic []*interaction.Interaction
-	if len(addressPairs) > 0 {
-		automatic, err = h.db.InteractionList(ctx, customerID, interactionInternalCap, "", "", "", addressPairs, time.Time{})
+	if len(bounds) > 0 {
+		automatic, err = h.db.InteractionListByOwnershipPeriods(ctx, customerID, interactionInternalCap, "", "", "", bounds, time.Time{})
 		if err != nil {
-			return nil, "", fmt.Errorf("could not list interactions by address set. interactionListByContact. err: %v", err)
+			return nil, "", fmt.Errorf("could not list interactions by ownership periods. interactionListByContact. err: %v", err)
 		}
 	}
-	// If addressPairs is empty → automatic stays nil (short-circuit, no IN() query).
+	// If bounds is empty → automatic stays nil (short-circuit, no OR-expanded query).
 
 	// STEP 3: Fetch active resolutions.
 	resolutions, err := h.db.ResolutionListByContact(ctx, customerID, contactID)
