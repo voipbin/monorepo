@@ -466,6 +466,140 @@ func Test_OwnershipPeriods_Step4_Reassignment(t *testing.T) {
 	}
 }
 
+// Test_StaleRowRepair_TombstonedOwner_AddressCreate covers design §4
+// round-27/28/30's duplicate-key repair path: a Contact holding an
+// address gets tombstoned WITHOUT its contact_addresses row being
+// touched (design's own A9-b finding: ContactDelete never touches
+// contact_addresses), leaving a dead-owner row occupying the unique
+// index slot. A later AddressCreate for the SAME target by a DIFFERENT
+// contact must not be permanently 409-locked -- it should detect the
+// dead owner, repair (fabricate a closed period bounded by
+// GREATEST(latest valid_to, stale row's tm_create) ending at the
+// tombstone time, vacate the slot), and succeed on retry.
+func Test_StaleRowRepair_TombstonedOwner_AddressCreate(t *testing.T) {
+	h, mc := newOwnershipTestHandler(t, timePtr(time.Date(2026, 3, 1, 0, 0, 0, 0, time.UTC)))
+	defer mc.Finish()
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("72000000-0000-0000-0000-000000000001")
+	deadContactID := uuid.FromStringOrNil("72000000-0000-0000-0000-000000000002")
+	newContactID := uuid.FromStringOrNil("72000000-0000-0000-0000-000000000003")
+	target := "+155****2001"
+	createTestContact(t, h, ctx, customerID, deadContactID)
+
+	deadAddrID := uuid.FromStringOrNil("72000000-0000-0000-0000-000000000004")
+	if err := h.AddressCreate(ctx, &contact.Address{
+		Address:    commonaddress.Address{Type: contact.AddressTypeTel, Target: target},
+		ID:         deadAddrID,
+		CustomerID: customerID,
+		ContactID:  deadContactID,
+	}); err != nil {
+		t.Fatalf("AddressCreate(dead owner) error = %v", err)
+	}
+
+	// A9-b: soft-delete the Contact WITHOUT touching contact_addresses
+	// (ContactDelete's real, documented behavior) -- leaves a dead-owner
+	// row + a still-open period occupying the target's unique-index
+	// slot.
+	if err := h.ContactDelete(ctx, deadContactID); err != nil {
+		t.Fatalf("ContactDelete() error = %v", err)
+	}
+
+	// A different contact tries to register the SAME target.
+	createTestContact(t, h, ctx, customerID, newContactID)
+	newAddrID := uuid.FromStringOrNil("72000000-0000-0000-0000-000000000005")
+	if err := h.AddressCreate(ctx, &contact.Address{
+		Address:    commonaddress.Address{Type: contact.AddressTypeTel, Target: target},
+		ID:         newAddrID,
+		CustomerID: customerID,
+		ContactID:  newContactID,
+	}); err != nil {
+		t.Fatalf("AddressCreate(new owner, after dead-owner repair) error = %v, want success (self-healing, not permanent 409 lockout)", err)
+	}
+
+	got, err := h.AddressGet(ctx, customerID, newAddrID)
+	if err != nil {
+		t.Fatalf("AddressGet(new owner) error = %v", err)
+	}
+	if got.ContactID != newContactID {
+		t.Errorf("new address's ContactID = %s, want %s", got.ContactID, newContactID)
+	}
+
+	// The old dead-owner row must be gone (hard-deleted by the repair,
+	// design §4 round-28: AddressCreate's repair hard-deletes, not
+	// resets-to-NULL -- that's AddressClaimTx's variant only).
+	if _, err := h.AddressGet(ctx, customerID, deadAddrID); !stderrors.Is(err, ErrNotFound) {
+		t.Errorf("AddressGet(dead owner's old row) = %v, want ErrNotFound (repaired row must be removed)", err)
+	}
+
+	rows := ownershipPeriodsForTarget(t, ctx, h, customerID, contact.AddressTypeTel, target)
+	var deadClosed, newOpen *OwnershipPeriod
+	for i := range rows {
+		p := &rows[i]
+		if p.ContactID == deadContactID && p.ValidTo != nil {
+			deadClosed = p
+		}
+		if p.ContactID == newContactID && p.ValidTo == nil {
+			newOpen = p
+		}
+	}
+	if deadClosed == nil {
+		t.Errorf("expected a fabricated closed period for the dead owner's era, got: %+v", rows)
+	}
+	if newOpen == nil {
+		t.Fatalf("expected an open period for the new owner, got: %+v", rows)
+	}
+	if newOpen.ValidFrom == nil {
+		t.Errorf("new owner's period has valid_from=NULL, want NOW() (design §4 Step 4's caller-specific bound, reached via the repair's retry path)")
+	}
+}
+
+// Test_StaleRowRepair_LiveOwner_StaysErrDuplicateTarget covers the
+// negative case: if the occupying row's owner is LIVE (not tombstoned),
+// staleRowRepairTx must NOT repair -- the caller sees the ordinary
+// ErrDuplicateTarget collision, not a silently stolen target.
+func Test_StaleRowRepair_LiveOwner_StaysErrDuplicateTarget(t *testing.T) {
+	h, mc := newOwnershipTestHandler(t, timePtr(time.Date(2026, 3, 1, 0, 0, 0, 0, time.UTC)))
+	defer mc.Finish()
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("72000000-0000-0000-0000-000000000011")
+	contactA := uuid.FromStringOrNil("72000000-0000-0000-0000-000000000012")
+	contactB := uuid.FromStringOrNil("72000000-0000-0000-0000-000000000013")
+	target := "+155****2011"
+	createTestContact(t, h, ctx, customerID, contactA)
+	createTestContact(t, h, ctx, customerID, contactB)
+
+	addrA := uuid.FromStringOrNil("72000000-0000-0000-0000-000000000014")
+	if err := h.AddressCreate(ctx, &contact.Address{
+		Address:    commonaddress.Address{Type: contact.AddressTypeTel, Target: target},
+		ID:         addrA,
+		CustomerID: customerID,
+		ContactID:  contactA,
+	}); err != nil {
+		t.Fatalf("AddressCreate(A, live) error = %v", err)
+	}
+
+	addrB := uuid.FromStringOrNil("72000000-0000-0000-0000-000000000015")
+	err := h.AddressCreate(ctx, &contact.Address{
+		Address:    commonaddress.Address{Type: contact.AddressTypeTel, Target: target},
+		ID:         addrB,
+		CustomerID: customerID,
+		ContactID:  contactB,
+	})
+	// Note: Step 1's live-conflict check (open period + live owner)
+	// already rejects this with ErrConflict before ever reaching the
+	// unique-index INSERT -- staleRowRepairTx is never invoked here.
+	// This test asserts the end-to-end outcome (rejection, A undisturbed)
+	// regardless of which layer produces it.
+	if !stderrors.Is(err, ErrConflict) && !stderrors.Is(err, ErrDuplicateTarget) {
+		t.Errorf("AddressCreate(B, live A holds target) error = %v, want ErrConflict or ErrDuplicateTarget", err)
+	}
+	if _, err := h.AddressGet(ctx, customerID, addrB); !stderrors.Is(err, ErrNotFound) {
+		t.Errorf("AddressGet(B) = %v, want ErrNotFound (B's row must never have been written)", err)
+	}
+}
+
 // ---------------------------------------------------------------------
 // Unit tests: individual Tx-suffixed write functions.
 // ---------------------------------------------------------------------

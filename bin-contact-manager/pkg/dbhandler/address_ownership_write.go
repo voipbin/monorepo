@@ -134,18 +134,304 @@ func (h *handler) addressInsertTx(ctx context.Context, tx *sql.Tx, a *contact.Ad
 	// §4 round-28's index-name-drift bundled fix: match the PRODUCTION
 	// index name, not the stale idx_contact_addresses_cust_type_target
 	// literal).
-	if me, ok := execErr.(*mysql_driver.MySQLError); ok && me.Number == 1062 {
-		if strings.Contains(me.Message, "idx_contact_addresses_identifier") {
-			return ErrDuplicateTarget
+	if isDuplicateTargetErr(execErr) {
+		// Design §4 round-27/28/38's duplicate-key path: the occupying
+		// row may be a dead A9-b/A9-c artifact (its owning Contact
+		// tombstoned during the version-skew window). Check before
+		// surfacing the permanent-lockout 409 a live collision would
+		// warrant.
+		repaired, repairErr := h.staleRowRepairTx(ctx, tx, a.CustomerID, a.Type, a.Target, false)
+		if repairErr != nil {
+			return repairErr
 		}
-		return fmt.Errorf("could not execute. addressInsertTx. err: %v", execErr)
-	}
-	if strings.Contains(execErr.Error(), "UNIQUE constraint failed") &&
-		strings.Contains(execErr.Error(), "contact_addresses.type") &&
-		strings.Contains(execErr.Error(), "contact_addresses.target") {
-		return ErrDuplicateTarget
+		if !repaired {
+			return ErrDuplicateTarget // live owner -- genuine collision
+		}
+		// Dead owner repaired (period closed + stale row removed) --
+		// retry the INSERT once, now that the slot is vacated (design
+		// §4 round-28: "every late-cleanup site writes the closed
+		// period FIRST, then repairs the row -- the retry routes
+		// through Step 4, not Step 5").
+		step, lockedRows, err := h.OwnershipPeriodsLockAndResolveTx(ctx, tx, a.CustomerID, a.ContactID, a.Type, a.Target)
+		if err != nil {
+			return err
+		}
+		var validFrom *time.Time
+		if step == StepInsertAfterIntervening || step == StepReassign {
+			validFrom = h.utilHandler.TimeNow()
+		}
+		if err := h.applyOpenResolutionTx(ctx, tx, step, lockedRows, a.CustomerID, a.ContactID, a.Type, a.Target, validFrom); err != nil {
+			return err
+		}
+		retryQuery, retryArgs, err := sq.Insert(addressTable).
+			SetMap(map[string]any{
+				"id":          a.ID.Bytes(),
+				"customer_id": a.CustomerID.Bytes(),
+				"contact_id":  contactIDValue,
+				"type":        string(a.Type),
+				"target":      a.Target,
+				"target_name": a.TargetName,
+				"name":        a.Name,
+				"detail":      a.Detail,
+				"is_primary":  a.IsPrimary,
+				"tm_create":   a.TMCreate,
+			}).
+			ToSql()
+		if err != nil {
+			return fmt.Errorf("could not build retry query. addressInsertTx. err: %v", err)
+		}
+		if _, err := tx.ExecContext(ctx, retryQuery, retryArgs...); err != nil {
+			if isMySQLDeadlock(err) {
+				return ErrDeadlock
+			}
+			return fmt.Errorf("could not execute retry. addressInsertTx. err: %v", err)
+		}
+		return nil
 	}
 	return fmt.Errorf("could not execute. addressInsertTx. err: %v", execErr)
+}
+
+// isDuplicateTargetErr classifies a contact_addresses INSERT/UPDATE
+// error as the (customer_id, type, target) unique-index collision
+// (design §4 round-28's bundled index-name-drift fix: match the
+// PRODUCTION index name).
+func isDuplicateTargetErr(execErr error) bool {
+	if me, ok := execErr.(*mysql_driver.MySQLError); ok && me.Number == 1062 {
+		return strings.Contains(me.Message, "idx_contact_addresses_identifier")
+	}
+	return strings.Contains(execErr.Error(), "UNIQUE constraint failed") &&
+		strings.Contains(execErr.Error(), "contact_addresses.type") &&
+		strings.Contains(execErr.Error(), "contact_addresses.target")
+}
+
+// staleRowRepairTx implements design §4 round-27/28/29/30's duplicate-key
+// repair path: on a unique-index collision, check whether the occupying
+// contact_addresses row's owner is tombstoned. If the owner is LIVE, this
+// is a genuine conflict -- returns (false, nil), letting the caller
+// surface its own collision error. If the owner is TOMBSTONED (an
+// A9-b/A9-c version-skew artifact), this closes a period for the dead
+// owner's era (bounded by round-30's GREATEST(latest existing valid_to,
+// stale row's tm_create), collapsing to zero-length -- no period written
+// -- when that bound is not before the tombstone timestamp, per round-15/31's
+// inversion guard) and vacates the slot: hard-DELETE for the AddressCreate/
+// AddressUpdate callers (resetToNull=false), or NULL-reset for
+// AddressClaimTx (resetToNull=true, design §4 round-28: deleting the row
+// AddressClaimTx's own final UPDATE targets would always miss and 409).
+// Returns (true, nil) if a repair was performed (the caller should retry
+// its own write once); (false, nil) if the owner is live (caller
+// surfaces its own collision error); (false, err) on read failure.
+func (h *handler) staleRowRepairTx(ctx context.Context, tx *sql.Tx, customerID uuid.UUID, addrType commonaddress.Type, target string, resetToNull bool) (bool, error) {
+	row, err := staleRowByTargetTx(ctx, tx, customerID, addrType, target)
+	if err != nil {
+		return false, err
+	}
+	if row == nil {
+		// No occupying row found (e.g. a race already cleared it) --
+		// nothing to repair; let the caller's own retry/collision path
+		// handle it.
+		return false, nil
+	}
+
+	tmDelete, err := contactTombstoneTx(ctx, tx, row.ContactID)
+	if err != nil {
+		return false, err
+	}
+	if tmDelete == nil {
+		return false, nil // live owner -- genuine conflict
+	}
+
+	// Round-30: valid_from = GREATEST(latest existing closed valid_to for
+	// this target, stale row's tm_create) -- the strictly-better lower
+	// bound available for free in this same transaction.
+	latestValidTo, err := latestOwnershipPeriodValidToTx(ctx, tx, customerID, addrType, target)
+	if err != nil {
+		return false, err
+	}
+	validFrom := row.TMCreate
+	if latestValidTo != nil && (validFrom == nil || latestValidTo.After(*validFrom)) {
+		validFrom = latestValidTo
+	}
+
+	// Round-15/31 inversion guard: only write the fabricated period if
+	// it is non-empty (validFrom strictly before the tombstone time).
+	// A zero-length/inverted bound means the dead owner's era left no
+	// history to record -- skip the INSERT (zero-length disposition).
+	if validFrom == nil || validFrom.Before(*tmDelete) {
+		id := uuid.Must(uuid.NewV4())
+		now := h.utilHandler.TimeNow()
+		insQuery, insArgs, err := sq.Insert(ownershipPeriodTable).
+			SetMap(map[string]any{
+				"id":          id.Bytes(),
+				"customer_id": customerID.Bytes(),
+				"contact_id":  row.ContactID.Bytes(),
+				"type":        string(addrType),
+				"target":      target,
+				"valid_from":  validFrom,
+				"valid_to":    tmDelete,
+				"tm_create":   now,
+				"tm_update":   now,
+			}).
+			ToSql()
+		if err != nil {
+			return false, fmt.Errorf("could not build query. staleRowRepairTx. err: %v", err)
+		}
+		if _, err := tx.ExecContext(ctx, insQuery, insArgs...); err != nil {
+			if isMySQLDeadlock(err) {
+				return false, ErrDeadlock
+			}
+			return false, fmt.Errorf("could not execute. staleRowRepairTx. err: %v", err)
+		}
+	}
+
+	if resetToNull {
+		resetQuery, resetArgs, err := sq.Update(addressTable).
+			Set("contact_id", nil).
+			Set("tm_update", h.utilHandler.TimeNow()).
+			Where(sq.Eq{"id": row.ID.Bytes()}).
+			ToSql()
+		if err != nil {
+			return false, fmt.Errorf("could not build reset query. staleRowRepairTx. err: %v", err)
+		}
+		if _, err := tx.ExecContext(ctx, resetQuery, resetArgs...); err != nil {
+			if isMySQLDeadlock(err) {
+				return false, ErrDeadlock
+			}
+			return false, fmt.Errorf("could not execute reset. staleRowRepairTx. err: %v", err)
+		}
+	} else {
+		delQuery, delArgs, err := sq.Delete(addressTable).
+			Where(sq.Eq{"id": row.ID.Bytes()}).
+			ToSql()
+		if err != nil {
+			return false, fmt.Errorf("could not build delete query. staleRowRepairTx. err: %v", err)
+		}
+		if _, err := tx.ExecContext(ctx, delQuery, delArgs...); err != nil {
+			if isMySQLDeadlock(err) {
+				return false, ErrDeadlock
+			}
+			return false, fmt.Errorf("could not execute delete. staleRowRepairTx. err: %v", err)
+		}
+	}
+	return true, nil
+}
+
+// staleRowByID row shape for staleRowRepairTx's occupying-row read.
+type staleRowByID struct {
+	ID        uuid.UUID
+	ContactID uuid.UUID
+	TMCreate  *time.Time
+}
+
+// staleRowByTargetTx reads the (id, contact_id, tm_create) of the
+// contact_addresses row currently occupying (customer_id, type, target),
+// if any. Returns (nil, nil) if no row occupies the slot.
+func staleRowByTargetTx(ctx context.Context, tx *sql.Tx, customerID uuid.UUID, addrType commonaddress.Type, target string) (*staleRowByID, error) {
+	query, args, err := sq.Select("id", "contact_id", "tm_create").
+		From(addressTable).
+		Where(sq.Eq{"customer_id": customerID.Bytes()}).
+		Where(sq.Eq{"type": string(addrType)}).
+		Where(sq.Eq{"target": target}).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. staleRowByTargetTx. err: %v", err)
+	}
+	rows, err := tx.QueryContext(ctx, query, args...)
+	if err != nil {
+		if isMySQLDeadlock(err) {
+			return nil, ErrDeadlock
+		}
+		return nil, fmt.Errorf("could not query. staleRowByTargetTx. err: %v", err)
+	}
+	defer func() { _ = rows.Close() }()
+
+	if !rows.Next() {
+		return nil, nil
+	}
+	var idBytes, contactIDBytes []byte
+	var tmCreate sql.NullString
+	if err := rows.Scan(&idBytes, &contactIDBytes, &tmCreate); err != nil {
+		return nil, fmt.Errorf("could not scan. staleRowByTargetTx. err: %v", err)
+	}
+	id, err := uuid.FromBytes(idBytes)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse id. staleRowByTargetTx. err: %v", err)
+	}
+	var contactID uuid.UUID
+	if len(contactIDBytes) > 0 {
+		contactID, err = uuid.FromBytes(contactIDBytes)
+		if err != nil {
+			return nil, fmt.Errorf("could not parse contact_id. staleRowByTargetTx. err: %v", err)
+		}
+	}
+	tmCreatePtr, err := parseNullableDBTime(tmCreate)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse tm_create. staleRowByTargetTx. err: %v", err)
+	}
+	return &staleRowByID{ID: id, ContactID: contactID, TMCreate: tmCreatePtr}, nil
+}
+
+// contactTombstoneTx reads contact_contacts.tm_delete for one contact.
+// Returns nil if the contact is live (tm_delete IS NULL) or absent.
+func contactTombstoneTx(ctx context.Context, tx *sql.Tx, contactID uuid.UUID) (*time.Time, error) {
+	if contactID == uuid.Nil {
+		return nil, nil
+	}
+	query, args, err := sq.Select("tm_delete").
+		From(contactTable).
+		Where(sq.Eq{"id": contactID.Bytes()}).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. contactTombstoneTx. err: %v", err)
+	}
+	rows, err := tx.QueryContext(ctx, query, args...)
+	if err != nil {
+		if isMySQLDeadlock(err) {
+			return nil, ErrDeadlock
+		}
+		return nil, fmt.Errorf("could not query. contactTombstoneTx. err: %v", err)
+	}
+	defer func() { _ = rows.Close() }()
+	if !rows.Next() {
+		return nil, nil // Contact row gone entirely -- treat as live/unknown, no repair
+	}
+	var tmDelete sql.NullString
+	if err := rows.Scan(&tmDelete); err != nil {
+		return nil, fmt.Errorf("could not scan. contactTombstoneTx. err: %v", err)
+	}
+	return parseNullableDBTime(tmDelete)
+}
+
+// latestOwnershipPeriodValidToTx returns the latest valid_to among all
+// CLOSED periods for (customer_id, type, target), or nil if none exist.
+func latestOwnershipPeriodValidToTx(ctx context.Context, tx *sql.Tx, customerID uuid.UUID, addrType commonaddress.Type, target string) (*time.Time, error) {
+	query, args, err := sq.Select("valid_to").
+		From(ownershipPeriodTable).
+		Where(sq.Eq{"customer_id": customerID.Bytes()}).
+		Where(sq.Eq{"type": string(addrType)}).
+		Where(sq.Eq{"target": target}).
+		Where(sq.NotEq{"valid_to": nil}).
+		OrderBy("valid_to DESC").
+		Limit(1).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. latestOwnershipPeriodValidToTx. err: %v", err)
+	}
+	rows, err := tx.QueryContext(ctx, query, args...)
+	if err != nil {
+		if isMySQLDeadlock(err) {
+			return nil, ErrDeadlock
+		}
+		return nil, fmt.Errorf("could not query. latestOwnershipPeriodValidToTx. err: %v", err)
+	}
+	defer func() { _ = rows.Close() }()
+	if !rows.Next() {
+		return nil, nil
+	}
+	var validTo sql.NullString
+	if err := rows.Scan(&validTo); err != nil {
+		return nil, fmt.Errorf("could not scan. latestOwnershipPeriodValidToTx. err: %v", err)
+	}
+	return parseNullableDBTime(validTo)
 }
 
 // AddressUpdateTx is AddressUpdate's Tx-suffixed sibling. contactID and
@@ -212,13 +498,41 @@ func (h *handler) AddressUpdateTx(ctx context.Context, tx *sql.Tx, id, customerI
 	if err != nil {
 		return fmt.Errorf("could not build query. AddressUpdateTx. err: %v", err)
 	}
+	_, execErr := tx.ExecContext(ctx, query, args...)
+	if execErr == nil {
+		return nil
+	}
+	if isMySQLDeadlock(execErr) {
+		return ErrDeadlock
+	}
+	if !targetChanged || !isDuplicateTargetErr(execErr) {
+		return fmt.Errorf("could not execute. AddressUpdateTx. err: %v", execErr)
+	}
+	// Design §4 round-30's extension of the round-28 duplicate-key
+	// repair path to AddressUpdate's target-change side (only reachable
+	// when actually re-targeting -- a same-target update never collides
+	// with itself).
+	repaired, repairErr := h.staleRowRepairTx(ctx, tx, customerID, newTargetAddrType(oldType), newTarget, false)
+	if repairErr != nil {
+		return repairErr
+	}
+	if !repaired {
+		return ErrDuplicateTarget
+	}
 	if _, err := tx.ExecContext(ctx, query, args...); err != nil {
 		if isMySQLDeadlock(err) {
 			return ErrDeadlock
 		}
-		return fmt.Errorf("could not execute. AddressUpdateTx. err: %v", err)
+		return fmt.Errorf("could not execute retry. AddressUpdateTx. err: %v", err)
 	}
 	return nil
+}
+
+// newTargetAddrType is a tiny helper naming the fact that AddressUpdateTx
+// never changes an address's type, only its target -- the repaired
+// duplicate-key path reuses the OLD type for the NEW target.
+func newTargetAddrType(oldType commonaddress.Type) commonaddress.Type {
+	return oldType
 }
 
 // addressUpdateOpenNewTargetTx is AddressUpdateTx's OPEN-ing call for the

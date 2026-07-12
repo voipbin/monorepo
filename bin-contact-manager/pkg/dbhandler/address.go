@@ -72,6 +72,7 @@ func (h *handler) AddressCreate(ctx context.Context, a *contact.Address) error {
 	for attempt := 0; attempt < addressMaxDeadlockRetries; attempt++ {
 		err := h.addressCreateAttempt(ctx, a)
 		if err == nil {
+			lastErr = nil
 			break
 		}
 		if err == ErrDeadlock {
@@ -135,6 +136,7 @@ func (h *handler) AddressClaim(ctx context.Context, customerID, addressID, conta
 	for attempt := 0; attempt < addressMaxDeadlockRetries; attempt++ {
 		err := h.addressClaimAttempt(ctx, customerID, addressID, contactID, existing.Type, existing.Target)
 		if err == nil {
+			lastErr = nil
 			break
 		}
 		if err == ErrDeadlock || err == ErrStaleTarget {
