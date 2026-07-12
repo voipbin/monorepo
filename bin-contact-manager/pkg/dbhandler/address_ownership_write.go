@@ -133,60 +133,16 @@ func (h *handler) addressInsertTx(ctx context.Context, tx *sql.Tx, a *contact.Ad
 	// Same 1062 classification AddressCreate already performs (design
 	// §4 round-28's index-name-drift bundled fix: match the PRODUCTION
 	// index name, not the stale idx_contact_addresses_cust_type_target
-	// literal).
+	// literal). Design §4 round-32: the repair-and-retry sequence runs
+	// in SEPARATE transactions from this poisoned one -- a MySQL
+	// transaction that has seen a 1062 is not safely reusable for
+	// further writes. This function only classifies and returns;
+	// AddressCreate's outer retry loop (address.go) performs the
+	// repair (its own fresh BeginTx) and the retry (another fresh
+	// BeginTx via a normal loop iteration) once this poisoned
+	// transaction has rolled back.
 	if isDuplicateTargetErr(execErr) {
-		// Design §4 round-27/28/38's duplicate-key path: the occupying
-		// row may be a dead A9-b/A9-c artifact (its owning Contact
-		// tombstoned during the version-skew window). Check before
-		// surfacing the permanent-lockout 409 a live collision would
-		// warrant.
-		repaired, repairErr := h.staleRowRepairTx(ctx, tx, a.CustomerID, a.Type, a.Target, false)
-		if repairErr != nil {
-			return repairErr
-		}
-		if !repaired {
-			return ErrDuplicateTarget // live owner -- genuine collision
-		}
-		// Dead owner repaired (period closed + stale row removed) --
-		// retry the INSERT once, now that the slot is vacated (design
-		// §4 round-28: "every late-cleanup site writes the closed
-		// period FIRST, then repairs the row -- the retry routes
-		// through Step 4, not Step 5").
-		step, lockedRows, err := h.OwnershipPeriodsLockAndResolveTx(ctx, tx, a.CustomerID, a.ContactID, a.Type, a.Target)
-		if err != nil {
-			return err
-		}
-		var validFrom *time.Time
-		if step == StepInsertAfterIntervening || step == StepReassign {
-			validFrom = h.utilHandler.TimeNow()
-		}
-		if err := h.applyOpenResolutionTx(ctx, tx, step, lockedRows, a.CustomerID, a.ContactID, a.Type, a.Target, validFrom); err != nil {
-			return err
-		}
-		retryQuery, retryArgs, err := sq.Insert(addressTable).
-			SetMap(map[string]any{
-				"id":          a.ID.Bytes(),
-				"customer_id": a.CustomerID.Bytes(),
-				"contact_id":  contactIDValue,
-				"type":        string(a.Type),
-				"target":      a.Target,
-				"target_name": a.TargetName,
-				"name":        a.Name,
-				"detail":      a.Detail,
-				"is_primary":  a.IsPrimary,
-				"tm_create":   a.TMCreate,
-			}).
-			ToSql()
-		if err != nil {
-			return fmt.Errorf("could not build retry query. addressInsertTx. err: %v", err)
-		}
-		if _, err := tx.ExecContext(ctx, retryQuery, retryArgs...); err != nil {
-			if isMySQLDeadlock(err) {
-				return ErrDeadlock
-			}
-			return fmt.Errorf("could not execute retry. addressInsertTx. err: %v", err)
-		}
-		return nil
+		return ErrDuplicateTarget
 	}
 	return fmt.Errorf("could not execute. addressInsertTx. err: %v", execErr)
 }
@@ -204,6 +160,45 @@ func isDuplicateTargetErr(execErr error) bool {
 		strings.Contains(execErr.Error(), "contact_addresses.target")
 }
 
+// attemptStaleRowRepairNewTx implements design §4 round-32's
+// transaction-boundary rule: the duplicate-key repair runs in its OWN
+// fresh transaction, never inside the poisoned transaction that just saw
+// the 1062 (which InnoDB does not guarantee is safely reusable for
+// further writes after an error). Callers (AddressCreate/AddressUpdate/
+// AddressClaim's outer retry loops) invoke this once after their inner
+// Tx-suffixed attempt returns ErrDuplicateTarget, then retry their own
+// attempt in ANOTHER fresh transaction (an ordinary loop iteration) --
+// three separate §5.1 transactions total, matching the design's
+// specified sequence.
+func (h *handler) attemptStaleRowRepairNewTx(ctx context.Context, customerID uuid.UUID, addrType commonaddress.Type, target string, resetToNull bool) (bool, error) {
+	tx, err := h.db.BeginTx(ctx, nil)
+	if err != nil {
+		return false, fmt.Errorf("could not begin transaction. attemptStaleRowRepairNewTx. err: %v", err)
+	}
+	committed := false
+	defer func() {
+		if !committed {
+			_ = tx.Rollback()
+		}
+	}()
+
+	retry, repairErr := h.staleRowRepairTx(ctx, tx, customerID, addrType, target, resetToNull)
+	if repairErr != nil {
+		return false, repairErr
+	}
+	if !retry {
+		// Live owner -- nothing was written, no need to commit, but
+		// commit anyway (empty transaction) for uniform cleanup via
+		// the defer's rollback-only-if-not-committed guard.
+		return false, nil
+	}
+	if err := tx.Commit(); err != nil {
+		return false, fmt.Errorf("could not commit transaction. attemptStaleRowRepairNewTx. err: %v", err)
+	}
+	committed = true
+	return true, nil
+}
+
 // staleRowRepairTx implements design §4 round-27/28/29/30's duplicate-key
 // repair path: on a unique-index collision, check whether the occupying
 // contact_addresses row's owner is tombstoned. If the owner is LIVE, this
@@ -217,19 +212,25 @@ func isDuplicateTargetErr(execErr error) bool {
 // AddressUpdate callers (resetToNull=false), or NULL-reset for
 // AddressClaimTx (resetToNull=true, design §4 round-28: deleting the row
 // AddressClaimTx's own final UPDATE targets would always miss and 409).
-// Returns (true, nil) if a repair was performed (the caller should retry
-// its own write once); (false, nil) if the owner is live (caller
-// surfaces its own collision error); (false, err) on read failure.
+// If NO row occupies the slot at all (design §4 round-27(b): a losing
+// party in a concurrent repair race sees the winner's DELETE/reset
+// already landed), there is nothing to repair here but the caller should
+// still retry immediately -- the slot is already vacated.
+// Returns (true, nil) if the caller should retry its own write (either a
+// repair was just performed, or the row was already gone); (false, nil)
+// if the owner is live (caller surfaces its own collision error); (false,
+// err) on read failure.
 func (h *handler) staleRowRepairTx(ctx context.Context, tx *sql.Tx, customerID uuid.UUID, addrType commonaddress.Type, target string, resetToNull bool) (bool, error) {
 	row, err := staleRowByTargetTx(ctx, tx, customerID, addrType, target)
 	if err != nil {
 		return false, err
 	}
 	if row == nil {
-		// No occupying row found (e.g. a race already cleared it) --
-		// nothing to repair; let the caller's own retry/collision path
-		// handle it.
-		return false, nil
+		// Round-27(b): the occupying row is already gone (a concurrent
+		// repair won the race and committed/rolled back before this
+		// transaction's read) -- nothing left to repair, but the slot
+		// is vacated, so the caller should retry immediately.
+		return true, nil
 	}
 
 	tmDelete, err := contactTombstoneTx(ctx, tx, row.ContactID)
@@ -498,41 +499,25 @@ func (h *handler) AddressUpdateTx(ctx context.Context, tx *sql.Tx, id, customerI
 	if err != nil {
 		return fmt.Errorf("could not build query. AddressUpdateTx. err: %v", err)
 	}
-	_, execErr := tx.ExecContext(ctx, query, args...)
-	if execErr == nil {
-		return nil
-	}
-	if isMySQLDeadlock(execErr) {
-		return ErrDeadlock
-	}
-	if !targetChanged || !isDuplicateTargetErr(execErr) {
-		return fmt.Errorf("could not execute. AddressUpdateTx. err: %v", execErr)
-	}
-	// Design §4 round-30's extension of the round-28 duplicate-key
-	// repair path to AddressUpdate's target-change side (only reachable
-	// when actually re-targeting -- a same-target update never collides
-	// with itself).
-	repaired, repairErr := h.staleRowRepairTx(ctx, tx, customerID, newTargetAddrType(oldType), newTarget, false)
-	if repairErr != nil {
-		return repairErr
-	}
-	if !repaired {
-		return ErrDuplicateTarget
-	}
 	if _, err := tx.ExecContext(ctx, query, args...); err != nil {
 		if isMySQLDeadlock(err) {
 			return ErrDeadlock
 		}
-		return fmt.Errorf("could not execute retry. AddressUpdateTx. err: %v", err)
+		if targetChanged && isDuplicateTargetErr(err) {
+			// Design §4 round-30's extension of the round-28
+			// duplicate-key repair path to AddressUpdate's
+			// target-change side. Round-32: the repair itself does
+			// NOT run here -- it needs a fresh transaction, since
+			// this one has just seen a 1062. This function only
+			// classifies and returns; AddressUpdate's outer retry
+			// loop (address.go) performs the repair (fresh BeginTx)
+			// and the retry (another fresh BeginTx, an ordinary loop
+			// iteration).
+			return ErrDuplicateTarget
+		}
+		return fmt.Errorf("could not execute. AddressUpdateTx. err: %v", err)
 	}
 	return nil
-}
-
-// newTargetAddrType is a tiny helper naming the fact that AddressUpdateTx
-// never changes an address's type, only its target -- the repaired
-// duplicate-key path reuses the OLD type for the NEW target.
-func newTargetAddrType(oldType commonaddress.Type) commonaddress.Type {
-	return oldType
 }
 
 // addressUpdateOpenNewTargetTx is AddressUpdateTx's OPEN-ing call for the

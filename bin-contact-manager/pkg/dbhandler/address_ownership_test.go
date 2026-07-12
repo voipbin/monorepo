@@ -600,6 +600,73 @@ func Test_StaleRowRepair_LiveOwner_StaysErrDuplicateTarget(t *testing.T) {
 	}
 }
 
+// Test_StaleRowRepair_TombstonedOwner_AddressClaim covers design §4
+// round-27(a)/28's repair-in-place path: an unresolved address's target
+// history shows a DIFFERENT contact_id occupying the row (an A9-b/A9-c
+// version-skew artifact -- the address was left resolved to a now-dead
+// Contact because ContactDelete never touches contact_addresses). A
+// later AddressClaim by a NEW contact for that same address must not be
+// permanently rejected -- it should detect the tombstoned owner, reset
+// the row to unresolved in-place, and complete the claim.
+func Test_StaleRowRepair_TombstonedOwner_AddressClaim(t *testing.T) {
+	h, mc := newOwnershipTestHandler(t, timePtr(time.Date(2026, 4, 1, 0, 0, 0, 0, time.UTC)))
+	defer mc.Finish()
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("73000000-0000-0000-0000-000000000001")
+	deadContactID := uuid.FromStringOrNil("73000000-0000-0000-0000-000000000002")
+	newContactID := uuid.FromStringOrNil("73000000-0000-0000-0000-000000000003")
+	target := "+155****3001"
+	createTestContact(t, h, ctx, customerID, deadContactID)
+	createTestContact(t, h, ctx, customerID, newContactID)
+
+	addrID := uuid.FromStringOrNil("73000000-0000-0000-0000-000000000004")
+	if err := h.AddressCreate(ctx, &contact.Address{
+		Address:    commonaddress.Address{Type: contact.AddressTypeTel, Target: target},
+		ID:         addrID,
+		CustomerID: customerID,
+		ContactID:  deadContactID,
+	}); err != nil {
+		t.Fatalf("AddressCreate(dead owner) error = %v", err)
+	}
+
+	// A9-b: tombstone the owning Contact without touching contact_addresses.
+	if err := h.ContactDelete(ctx, deadContactID); err != nil {
+		t.Fatalf("ContactDelete() error = %v", err)
+	}
+
+	// A different contact claims the SAME address id.
+	if err := h.AddressClaim(ctx, customerID, addrID, newContactID); err != nil {
+		t.Fatalf("AddressClaim(new owner, after dead-owner repair-in-place) error = %v, want success", err)
+	}
+
+	got, err := h.AddressGet(ctx, customerID, addrID)
+	if err != nil {
+		t.Fatalf("AddressGet() error = %v", err)
+	}
+	if got.ContactID != newContactID {
+		t.Errorf("address's ContactID = %s, want %s", got.ContactID, newContactID)
+	}
+
+	rows := ownershipPeriodsForTarget(t, ctx, h, customerID, contact.AddressTypeTel, target)
+	var deadClosed, newOpen *OwnershipPeriod
+	for i := range rows {
+		p := &rows[i]
+		if p.ContactID == deadContactID && p.ValidTo != nil {
+			deadClosed = p
+		}
+		if p.ContactID == newContactID && p.ValidTo == nil {
+			newOpen = p
+		}
+	}
+	if deadClosed == nil {
+		t.Errorf("expected a fabricated closed period for the dead owner's era, got: %+v", rows)
+	}
+	if newOpen == nil {
+		t.Errorf("expected an open period for the new owner (Step 4 reassignment via the repaired NULL-owned row), got: %+v", rows)
+	}
+}
+
 // ---------------------------------------------------------------------
 // Unit tests: individual Tx-suffixed write functions.
 // ---------------------------------------------------------------------

@@ -66,9 +66,16 @@ func scanFullAddressRow(rows *sql.Rows) (*contact.Address, error) {
 // AddressCreate creates a new address in contact_addresses, wrapping
 // AddressCreateTx (design §5.1) in a BeginTx/commit/retry loop. Retries
 // on ErrDeadlock up to addressMaxDeadlockRetries (design §5.3), matching
-// casehandler.getOrCreateAttempt's pattern.
+// casehandler.getOrCreateAttempt's pattern. On ErrDuplicateTarget (design
+// §4 round-27/28/32's duplicate-key path), attempts a stale-row repair in
+// its OWN fresh transaction (round-32: never inside the poisoned
+// transaction that saw the 1062), then retries the create attempt once
+// more in a normal loop iteration -- three separate §5.1 transactions
+// total (poisoned insert, repair, retry), never a live-owner collision
+// silently swallowed.
 func (h *handler) AddressCreate(ctx context.Context, a *contact.Address) error {
 	var lastErr error
+	repairAttempted := false
 	for attempt := 0; attempt < addressMaxDeadlockRetries; attempt++ {
 		err := h.addressCreateAttempt(ctx, a)
 		if err == nil {
@@ -78,6 +85,17 @@ func (h *handler) AddressCreate(ctx context.Context, a *contact.Address) error {
 		if err == ErrDeadlock {
 			lastErr = err
 			continue
+		}
+		if err == ErrDuplicateTarget && !repairAttempted && a.ContactID != uuid.Nil {
+			repairAttempted = true
+			retry, repairErr := h.attemptStaleRowRepairNewTx(ctx, a.CustomerID, a.Type, a.Target, false)
+			if repairErr != nil {
+				return repairErr
+			}
+			if retry {
+				lastErr = err
+				continue // retry the create in a fresh transaction
+			}
 		}
 		return err
 	}
@@ -117,8 +135,12 @@ func (h *handler) addressCreateAttempt(ctx context.Context, a *contact.Address) 
 }
 
 // AddressClaim attaches contact_id to a currently-unresolved address.
-// Returns ErrConflict if the address is already resolved to a DIFFERENT
-// contact_id. No-ops (success) if already resolved to the SAME contact_id.
+// Returns ErrConflict if the address is already resolved to a DIFFERENT,
+// LIVE contact_id. No-ops (success) if already resolved to the SAME
+// contact_id. If resolved to a DIFFERENT contact_id that turns out to be
+// TOMBSTONED (an A9-b/A9-c version-skew artifact), design §4 round-27(a)/
+// 28's repair-in-place applies -- the transactional path resets the row
+// to unresolved and completes the claim, rather than a pre-lock ErrConflict.
 // Wraps AddressClaimTx in a BeginTx/commit/retry loop (design §5.1/§5.3).
 func (h *handler) AddressClaim(ctx context.Context, customerID, addressID, contactID uuid.UUID) error {
 	existing, err := h.AddressGet(ctx, customerID, addressID) // tenant-scoped fetch
@@ -128,9 +150,14 @@ func (h *handler) AddressClaim(ctx context.Context, customerID, addressID, conta
 	if existing.ContactID == contactID {
 		return nil // already claimed by this contact -- idempotent success
 	}
-	if existing.ContactID != uuid.Nil {
-		return ErrConflict // resolved to a DIFFERENT contact -- reject, no move
-	}
+	// Note: unlike an earlier version of this check, a non-Nil
+	// existing.ContactID does NOT short-circuit to ErrConflict here --
+	// the owner might be tombstoned (design §4 round-27(a)'s
+	// repair-in-place case), which only the transactional path below
+	// (with its own contact_contacts read under lock) can determine
+	// definitively. The pre-lock read above is purely an optimization
+	// for the common already-claimed-by-me case; every other outcome
+	// is decided post-lock, inside addressClaimAttempt.
 
 	var lastErr error
 	for attempt := 0; attempt < addressMaxDeadlockRetries; attempt++ {
@@ -177,7 +204,23 @@ func (h *handler) addressClaimAttempt(ctx context.Context, customerID, addressID
 		return ErrStaleTarget
 	}
 	if current.ContactID != uuid.Nil && current.ContactID != contactID {
-		return ErrConflict // lost the race -- someone else claimed it
+		// Design §4 round-27(a)/28's repair-in-place: the row may be
+		// held by a TOMBSTONED Contact (an A9-b/A9-c version-skew
+		// artifact), not a live conflict. Reset it to unresolved
+		// before surfacing ErrConflict.
+		tmDelete, tombErr := contactTombstoneTx(ctx, tx, current.ContactID)
+		if tombErr != nil {
+			return tombErr
+		}
+		if tmDelete == nil {
+			return ErrConflict // live owner -- lost the race, genuine conflict
+		}
+		if _, repairErr := h.staleRowRepairTx(ctx, tx, customerID, addrType, target, true); repairErr != nil {
+			return repairErr
+		}
+		// The row is now unresolved (contact_id reset to NULL) --
+		// AddressClaimTx's final UPDATE below proceeds exactly as the
+		// ordinary unresolved-address claim path.
 	}
 
 	if err := h.AddressClaimTx(ctx, tx, customerID, addressID, contactID, addrType, target); err != nil {
@@ -332,6 +375,7 @@ func (h *handler) AddressListByContactID(_ context.Context, contactID uuid.UUID)
 func (h *handler) AddressUpdate(ctx context.Context, id uuid.UUID, fields map[string]any) error {
 	var lastErr error
 	var contactID uuid.UUID
+	repairAttempted := false
 	for attempt := 0; attempt < addressMaxDeadlockRetries; attempt++ {
 		// Pre-lock read, re-run fresh every iteration (design §4
 		// round-45). Fetched OUTSIDE any tx, before BeginTx, so it
@@ -355,6 +399,19 @@ func (h *handler) AddressUpdate(ctx context.Context, id uuid.UUID, fields map[st
 		if err == ErrDeadlock || err == ErrStaleTarget {
 			lastErr = err
 			continue
+		}
+		if err == ErrDuplicateTarget && !repairAttempted {
+			if newTarget, ok := fields["target"].(string); ok && newTarget != pre.Target {
+				repairAttempted = true
+				retry, repairErr := h.attemptStaleRowRepairNewTx(ctx, customerID, commonaddress.Type(pre.Type), newTarget, false)
+				if repairErr != nil {
+					return repairErr
+				}
+				if retry {
+					lastErr = err
+					continue // retry with a fresh pre-lock read + fresh transaction
+				}
+			}
 		}
 		return err
 	}
