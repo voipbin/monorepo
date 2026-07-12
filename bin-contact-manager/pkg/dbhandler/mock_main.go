@@ -64,6 +64,20 @@ func (mr *MockDBHandlerMockRecorder) AddressClaim(ctx, customerID, addressID, co
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddressClaim", reflect.TypeOf((*MockDBHandler)(nil).AddressClaim), ctx, customerID, addressID, contactID)
 }
 
+// AddressClaimTx mocks base method.
+func (m *MockDBHandler) AddressClaimTx(ctx context.Context, tx *sql.Tx, customerID, addressID, contactID uuid.UUID, addrType address.Type, target string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddressClaimTx", ctx, tx, customerID, addressID, contactID, addrType, target)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddressClaimTx indicates an expected call of AddressClaimTx.
+func (mr *MockDBHandlerMockRecorder) AddressClaimTx(ctx, tx, customerID, addressID, contactID, addrType, target any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddressClaimTx", reflect.TypeOf((*MockDBHandler)(nil).AddressClaimTx), ctx, tx, customerID, addressID, contactID, addrType, target)
+}
+
 // AddressCreate mocks base method.
 func (m *MockDBHandler) AddressCreate(ctx context.Context, a *contact.Address) error {
 	m.ctrl.T.Helper()
@@ -78,6 +92,20 @@ func (mr *MockDBHandlerMockRecorder) AddressCreate(ctx, a any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddressCreate", reflect.TypeOf((*MockDBHandler)(nil).AddressCreate), ctx, a)
 }
 
+// AddressCreateTx mocks base method.
+func (m *MockDBHandler) AddressCreateTx(ctx context.Context, tx *sql.Tx, a *contact.Address) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddressCreateTx", ctx, tx, a)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddressCreateTx indicates an expected call of AddressCreateTx.
+func (mr *MockDBHandlerMockRecorder) AddressCreateTx(ctx, tx, a any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddressCreateTx", reflect.TypeOf((*MockDBHandler)(nil).AddressCreateTx), ctx, tx, a)
+}
+
 // AddressDelete mocks base method.
 func (m *MockDBHandler) AddressDelete(ctx context.Context, id uuid.UUID) error {
 	m.ctrl.T.Helper()
@@ -90,6 +118,34 @@ func (m *MockDBHandler) AddressDelete(ctx context.Context, id uuid.UUID) error {
 func (mr *MockDBHandlerMockRecorder) AddressDelete(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddressDelete", reflect.TypeOf((*MockDBHandler)(nil).AddressDelete), ctx, id)
+}
+
+// AddressDeleteCompensating mocks base method.
+func (m *MockDBHandler) AddressDeleteCompensating(ctx context.Context, customerID, contactID uuid.UUID, addrType address.Type, target string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddressDeleteCompensating", ctx, customerID, contactID, addrType, target)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddressDeleteCompensating indicates an expected call of AddressDeleteCompensating.
+func (mr *MockDBHandlerMockRecorder) AddressDeleteCompensating(ctx, customerID, contactID, addrType, target any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddressDeleteCompensating", reflect.TypeOf((*MockDBHandler)(nil).AddressDeleteCompensating), ctx, customerID, contactID, addrType, target)
+}
+
+// AddressDeleteTx mocks base method.
+func (m *MockDBHandler) AddressDeleteTx(ctx context.Context, tx *sql.Tx, addressID, customerID, contactID uuid.UUID, addrType address.Type, target string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddressDeleteTx", ctx, tx, addressID, customerID, contactID, addrType, target)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddressDeleteTx indicates an expected call of AddressDeleteTx.
+func (mr *MockDBHandlerMockRecorder) AddressDeleteTx(ctx, tx, addressID, customerID, contactID, addrType, target any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddressDeleteTx", reflect.TypeOf((*MockDBHandler)(nil).AddressDeleteTx), ctx, tx, addressID, customerID, contactID, addrType, target)
 }
 
 // AddressGet mocks base method.
@@ -166,6 +222,20 @@ func (mr *MockDBHandlerMockRecorder) AddressResetPrimary(ctx, contactID any) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddressResetPrimary", reflect.TypeOf((*MockDBHandler)(nil).AddressResetPrimary), ctx, contactID)
 }
 
+// AddressResetPrimaryTx mocks base method.
+func (m *MockDBHandler) AddressResetPrimaryTx(ctx context.Context, tx *sql.Tx, contactID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddressResetPrimaryTx", ctx, tx, contactID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddressResetPrimaryTx indicates an expected call of AddressResetPrimaryTx.
+func (mr *MockDBHandlerMockRecorder) AddressResetPrimaryTx(ctx, tx, contactID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddressResetPrimaryTx", reflect.TypeOf((*MockDBHandler)(nil).AddressResetPrimaryTx), ctx, tx, contactID)
+}
+
 // AddressUpdate mocks base method.
 func (m *MockDBHandler) AddressUpdate(ctx context.Context, id uuid.UUID, fields map[string]any) error {
 	m.ctrl.T.Helper()
@@ -178,6 +248,20 @@ func (m *MockDBHandler) AddressUpdate(ctx context.Context, id uuid.UUID, fields 
 func (mr *MockDBHandlerMockRecorder) AddressUpdate(ctx, id, fields any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddressUpdate", reflect.TypeOf((*MockDBHandler)(nil).AddressUpdate), ctx, id, fields)
+}
+
+// AddressUpdateTx mocks base method.
+func (m *MockDBHandler) AddressUpdateTx(ctx context.Context, tx *sql.Tx, id, customerID, contactID uuid.UUID, oldType address.Type, oldTarget string, fields map[string]any) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddressUpdateTx", ctx, tx, id, customerID, contactID, oldType, oldTarget, fields)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddressUpdateTx indicates an expected call of AddressUpdateTx.
+func (mr *MockDBHandlerMockRecorder) AddressUpdateTx(ctx, tx, id, customerID, contactID, oldType, oldTarget, fields any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddressUpdateTx", reflect.TypeOf((*MockDBHandler)(nil).AddressUpdateTx), ctx, tx, id, customerID, contactID, oldType, oldTarget, fields)
 }
 
 // BeginTx mocks base method.
@@ -747,6 +831,22 @@ func (m *MockDBHandler) InteractionListUnresolved(ctx context.Context, customerI
 func (mr *MockDBHandlerMockRecorder) InteractionListUnresolved(ctx, customerID, size, token, since any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InteractionListUnresolved", reflect.TypeOf((*MockDBHandler)(nil).InteractionListUnresolved), ctx, customerID, size, token, since)
+}
+
+// OwnershipPeriodsLockAndResolveTx mocks base method.
+func (m *MockDBHandler) OwnershipPeriodsLockAndResolveTx(ctx context.Context, tx *sql.Tx, customerID, contactID uuid.UUID, addrType address.Type, target string) (int, []OwnershipPeriod, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OwnershipPeriodsLockAndResolveTx", ctx, tx, customerID, contactID, addrType, target)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].([]OwnershipPeriod)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// OwnershipPeriodsLockAndResolveTx indicates an expected call of OwnershipPeriodsLockAndResolveTx.
+func (mr *MockDBHandlerMockRecorder) OwnershipPeriodsLockAndResolveTx(ctx, tx, customerID, contactID, addrType, target any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OwnershipPeriodsLockAndResolveTx", reflect.TypeOf((*MockDBHandler)(nil).OwnershipPeriodsLockAndResolveTx), ctx, tx, customerID, contactID, addrType, target)
 }
 
 // ResolutionCreate mocks base method.

@@ -47,6 +47,17 @@ type DBHandler interface {
 	AddressResetPrimary(ctx context.Context, contactID uuid.UUID) error
 	AddressClaim(ctx context.Context, customerID, addressID, contactID uuid.UUID) error
 
+	// Address ownership-period operations (design
+	// docs/plans/2026-07-11-contact-address-ownership-integrity-design.md
+	// §4/§5.1, NOJIRA-contact-address-ownership-periods Phase 1)
+	OwnershipPeriodsLockAndResolveTx(ctx context.Context, tx *sql.Tx, customerID, contactID uuid.UUID, addrType commonaddress.Type, target string) (int, []OwnershipPeriod, error)
+	AddressCreateTx(ctx context.Context, tx *sql.Tx, a *contact.Address) error
+	AddressUpdateTx(ctx context.Context, tx *sql.Tx, id, customerID, contactID uuid.UUID, oldType commonaddress.Type, oldTarget string, fields map[string]any) error
+	AddressDeleteTx(ctx context.Context, tx *sql.Tx, addressID, customerID, contactID uuid.UUID, addrType commonaddress.Type, target string) error
+	AddressClaimTx(ctx context.Context, tx *sql.Tx, customerID, addressID, contactID uuid.UUID, addrType commonaddress.Type, target string) error
+	AddressResetPrimaryTx(ctx context.Context, tx *sql.Tx, contactID uuid.UUID) error
+	AddressDeleteCompensating(ctx context.Context, customerID, contactID uuid.UUID, addrType commonaddress.Type, target string) error
+
 	// TagAssignment operations
 	TagAssignmentCreate(ctx context.Context, contactID, tagID uuid.UUID) error
 	TagAssignmentDelete(ctx context.Context, contactID, tagID uuid.UUID) error

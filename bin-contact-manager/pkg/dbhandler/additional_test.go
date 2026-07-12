@@ -71,21 +71,21 @@ func Test_AddressUpdate_IsPrimary(t *testing.T) {
 			ctx := context.Background()
 
 			// Create the contact first
-			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime).AnyTimes()
 			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 			if err := h.ContactCreate(ctx, tt.contact); err != nil {
 				t.Errorf("ContactCreate() error = %v", err)
 			}
 
 			// Create address
-			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime).AnyTimes()
 			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 			if err := h.AddressCreate(ctx, tt.address); err != nil {
 				t.Errorf("AddressCreate() error = %v", err)
 			}
 
 			// Update address
-			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime).AnyTimes()
 			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 			if err := h.AddressUpdate(ctx, tt.address.ID, tt.update); err != nil {
 				t.Errorf("AddressUpdate() error = %v", err)
@@ -131,7 +131,7 @@ func Test_AddressResetPrimary(t *testing.T) {
 	}
 
 	// Create contact
-	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)))
+	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC))).AnyTimes()
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	if err := h.ContactCreate(ctx, c); err != nil {
 		t.Errorf("ContactCreate() error = %v", err)
@@ -149,7 +149,7 @@ func Test_AddressResetPrimary(t *testing.T) {
 		IsPrimary:  true,
 	}
 
-	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)))
+	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC))).AnyTimes()
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	if err := h.AddressCreate(ctx, addr1); err != nil {
 		t.Errorf("AddressCreate() error = %v", err)
@@ -226,21 +226,21 @@ func Test_AddressUpdate_Target(t *testing.T) {
 			ctx := context.Background()
 
 			// Create the contact first
-			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime).AnyTimes()
 			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 			if err := h.ContactCreate(ctx, tt.contact); err != nil {
 				t.Errorf("ContactCreate() error = %v", err)
 			}
 
 			// Create address
-			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime).AnyTimes()
 			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 			if err := h.AddressCreate(ctx, tt.address); err != nil {
 				t.Errorf("AddressCreate() error = %v", err)
 			}
 
 			// Update address
-			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime).AnyTimes()
 			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 			if err := h.AddressUpdate(ctx, tt.address.ID, tt.update); err != nil {
 				t.Errorf("AddressUpdate() error = %v", err)
@@ -286,7 +286,7 @@ func Test_AddressResetPrimary_Email(t *testing.T) {
 	}
 
 	// Create contact
-	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)))
+	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC))).AnyTimes()
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	if err := h.ContactCreate(ctx, c); err != nil {
 		t.Errorf("ContactCreate() error = %v", err)
@@ -304,7 +304,7 @@ func Test_AddressResetPrimary_Email(t *testing.T) {
 		IsPrimary:  true,
 	}
 
-	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)))
+	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC))).AnyTimes()
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	if err := h.AddressCreate(ctx, addr1); err != nil {
 		t.Errorf("AddressCreate() error = %v", err)
@@ -400,7 +400,7 @@ func Test_AddressUpdate_MultipleFields(t *testing.T) {
 	}
 
 	// Create contact
-	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)))
+	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC))).AnyTimes()
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	if err := h.ContactCreate(ctx, c); err != nil {
 		t.Errorf("ContactCreate() error = %v", err)
@@ -418,7 +418,7 @@ func Test_AddressUpdate_MultipleFields(t *testing.T) {
 		IsPrimary:  false,
 	}
 
-	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)))
+	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC))).AnyTimes()
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	if err := h.AddressCreate(ctx, addr); err != nil {
 		t.Errorf("AddressCreate() error = %v", err)
@@ -430,7 +430,7 @@ func Test_AddressUpdate_MultipleFields(t *testing.T) {
 		"is_primary": true,
 	}
 
-	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)))
+	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC))).AnyTimes()
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	if err := h.AddressUpdate(ctx, addr.ID, updates); err != nil {
 		t.Errorf("AddressUpdate() error = %v", err)
@@ -477,7 +477,7 @@ func Test_AddressUpdate_EmailTarget(t *testing.T) {
 	}
 
 	// Create contact
-	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)))
+	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC))).AnyTimes()
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	if err := h.ContactCreate(ctx, c); err != nil {
 		t.Errorf("ContactCreate() error = %v", err)
@@ -495,7 +495,7 @@ func Test_AddressUpdate_EmailTarget(t *testing.T) {
 		IsPrimary:  false,
 	}
 
-	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)))
+	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC))).AnyTimes()
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	if err := h.AddressCreate(ctx, addr); err != nil {
 		t.Errorf("AddressCreate() error = %v", err)
@@ -507,7 +507,7 @@ func Test_AddressUpdate_EmailTarget(t *testing.T) {
 		"is_primary": true,
 	}
 
-	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)))
+	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC))).AnyTimes()
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	if err := h.AddressUpdate(ctx, addr.ID, updates); err != nil {
 		t.Errorf("AddressUpdate() error = %v", err)
