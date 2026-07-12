@@ -60,6 +60,33 @@ Status: Draft, awaiting independent review
     applied and ran a full identifier sweep confirming all other 14
     named identifiers are fully accounted for; this was the only
     remaining gap found.
+- v0.5 (2026-07-13). Round-4 review finding addressed:
+  - **MAJOR fix**: round 4's exhaustive sweep found the removal table
+    (§4) covers hand-written source files but never addressed the
+    generated-file layer: `bin-api-manager/gens/openapi_server/gen.go`
+    (committed to git, not gitignored) still declares the old
+    `PostContactCasesIdResolutions`/
+    `DeleteContactCasesIdResolutionsResolutionId` methods in
+    `ServerInterface`/`StrictServerInterface` until the
+    `bin-openapi-manager` -> `bin-api-manager` `go generate ./...`
+    chain is run in the correct order -- a genuine compile-breaker if
+    skipped or run out of order, not just a stale artifact. Added new
+    §5.7 spelling out the required two-step regeneration order and why
+    running it backwards (or skipping the `bin-openapi-manager` step)
+    silently undoes the revert.
+  - **MINOR fix**: also folded into §5.7 -- `gens/models/gen.go`'s
+    `ContactManagerResolution.CaseId` field and its
+    `gens/openapi_redoc/` copies are dangling generated content until
+    the same regen chain runs (no hand-written code reads `.CaseId`
+    today, so this alone doesn't break the build, but it's the same
+    "dangling reference to something this design removes" failure
+    class one layer deeper).
+  - Round 4 independently re-verified round 3's fix as genuine, ran a
+    full sweep of every §4-listed identifier across the ENTIRE
+    monorepo (not per-service) with zero hand-written-source
+    exceptions found, and checked bin-timeline-manager/
+    monorepo-monitoring/monorepo-javascript for any cross-repo
+    reference to the removed API surface (clean, no hits).
 
 ## 1. Why this exists (session history)
 
@@ -542,6 +569,64 @@ Remove `/contact_cases/{id}/resolutions` and
 and their two files. Remove the `case_id` field added to
 `ContactManagerResolution` by VOIP-1252 (no longer has a producer once
 the case-level write path is deleted).
+
+### 5.7 Code generation pipeline order (round-4 correction)
+
+**Round-4 finding**: the removal table (§4) only lists hand-written
+source files, but two files generated FROM the OpenAPI spec are
+committed to git (not gitignored) and will go stale if the
+`go generate` regeneration chain isn't run in the right order:
+
+- `bin-api-manager/gens/openapi_server/gen.go` currently declares
+  `PostContactCasesIdResolutions`/
+  `DeleteContactCasesIdResolutionsResolutionId` in both
+  `ServerInterface` and `StrictServerInterface`. Deleting
+  `server/contact_case_resolutions.go` (§4) WITHOUT first regenerating
+  this file leaves those two interface methods declared but
+  unimplemented -- `server.NewServer`'s `ServerInterface`
+  implementation breaks, a genuine compile failure, not just a stale
+  artifact.
+- `bin-openapi-manager/gens/models/gen.go`'s `ContactManagerResolution.CaseId`
+  field, and its downstream copy in
+  `bin-api-manager/gens/openapi_redoc/openapi.json`/`api.html`, will
+  remain as stale generated content if the regen chain isn't run,
+  even though (unlike the above) no hand-written code currently reads
+  `.CaseId`, so this alone wouldn't break the build -- it would just be
+  a dangling generated artifact, same failure class as everything else
+  this design has had to correct three times already, one layer deeper
+  in the codegen pipeline.
+
+**Required order** (per `bin-api-manager/CLAUDE.md`'s existing "Code
+generation" section, applies unchanged to this revert):
+
+1. `bin-openapi-manager`: apply §5.6's OpenAPI spec changes (remove
+   `id_resolutions.yaml`/`id_resolutions_id.yaml`, remove `case_id`
+   from `ContactManagerResolution`, add the `put:` block to
+   `contact_cases/id.yaml`), then run `go generate ./...` in
+   `bin-openapi-manager` FIRST. This regenerates
+   `gens/models/gen.go` and drops `CaseId` from the generated
+   `ContactManagerResolution` struct.
+2. `bin-api-manager`: only THEN delete
+   `server/contact_case_resolutions.go` and add the new
+   `PutContactCasesId` handler, then run `go generate ./...` in
+   `bin-api-manager`. This regenerates `gens/openapi_server/gen.go`
+   (dropping `PostContactCasesIdResolutions`/
+   `DeleteContactCasesIdResolutionsResolutionId` from both
+   `ServerInterface`/`StrictServerInterface` and adding
+   `PutContactCasesId`) and `gens/openapi_redoc/openapi.json`/`api.html`.
+3. Only after both regenerations succeed, implement/update
+   `server/contact_cases.go`'s `PutContactCasesId` handler body (§5.5)
+   against the freshly-regenerated interface signature -- do not write
+   this handler against a stale or hand-guessed signature.
+
+Running `bin-api-manager`'s `go generate ./...` before step 1 (or
+skipping step 1 entirely) will regenerate `gens/openapi_server/gen.go`
+from a STALE `bin-openapi-manager` spec that still has the resolutions
+paths, silently undoing the revert. This ordering constraint is not
+new to this design (bin-api-manager/CLAUDE.md already documents it for
+every OpenAPI-touching change) but is called out explicitly here
+because the removal table alone does not make the generated-file
+dependency visible.
 
 ## 6. Housekeeping: contact_attribution.go split
 
