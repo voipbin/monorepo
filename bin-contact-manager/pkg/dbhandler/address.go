@@ -72,29 +72,49 @@ func scanFullAddressRow(rows *sql.Rows) (*contact.Address, error) {
 // transaction that saw the 1062), then retries the create attempt once
 // more in a normal loop iteration -- three separate §5.1 transactions
 // total (poisoned insert, repair, retry), never a live-owner collision
-// silently swallowed.
+// silently swallowed. The repair attempt (at most once, per
+// repairAttempted) does NOT consume from the deadlock-retry budget
+// (round-3 code review fix): it is a distinct, bounded, one-shot
+// operation, not a deadlock retry, so it cannot cause a
+// repair-succeeded-but-write-never-retried outcome by exhausting
+// deadlockAttempts on its own turn.
 func (h *handler) AddressCreate(ctx context.Context, a *contact.Address) error {
 	var lastErr error
 	repairAttempted := false
-	for attempt := 0; attempt < addressMaxDeadlockRetries; attempt++ {
+	deadlockAttempts := 0
+	for deadlockAttempts < addressMaxDeadlockRetries {
 		err := h.addressCreateAttempt(ctx, a)
 		if err == nil {
 			lastErr = nil
 			break
 		}
 		if err == ErrDeadlock {
+			deadlockAttempts++
 			lastErr = err
 			continue
 		}
 		if err == ErrDuplicateTarget && !repairAttempted && a.ContactID != uuid.Nil {
 			repairAttempted = true
 			retry, repairErr := h.attemptStaleRowRepairNewTx(ctx, a.CustomerID, a.Type, a.Target, false)
+			if repairErr == ErrDeadlock {
+				// The repair transaction itself deadlocked -- this
+				// IS a deadlock-class event, so it consumes budget
+				// like any other (design §5.3), but it must not be
+				// conflated with "repair succeeded, nothing left to
+				// retry": lastErr carries the deadlock, and the loop
+				// re-enters at the top, retrying the ORIGINAL create
+				// (repairAttempted stays true -- repair is one-shot
+				// regardless of how it failed).
+				deadlockAttempts++
+				lastErr = repairErr
+				continue
+			}
 			if repairErr != nil {
 				return repairErr
 			}
 			if retry {
-				lastErr = err
-				continue // retry the create in a fresh transaction
+				lastErr = nil
+				continue // retry the create in a fresh transaction -- not a deadlock-budget consumer
 			}
 		}
 		return err
@@ -371,12 +391,17 @@ func (h *handler) AddressListByContactID(_ context.Context, contactID uuid.UUID)
 // fields keys: "target" (string), "is_primary" (bool). Wraps
 // AddressUpdateTx in a BeginTx/commit/retry loop (design §5.1/§5.3),
 // re-reading (type, target, contact_id) fresh on every retry iteration
-// (design §4 round-45's fix for the composed-retry-loop hazard).
+// (design §4 round-45's fix for the composed-retry-loop hazard). Like
+// AddressCreate, the one-shot stale-row repair attempt on
+// ErrDuplicateTarget does NOT consume from the deadlock-retry budget
+// (round-3 code review fix): it is a distinct, bounded operation, not a
+// deadlock retry.
 func (h *handler) AddressUpdate(ctx context.Context, id uuid.UUID, fields map[string]any) error {
 	var lastErr error
 	var contactID uuid.UUID
 	repairAttempted := false
-	for attempt := 0; attempt < addressMaxDeadlockRetries; attempt++ {
+	deadlockAttempts := 0
+	for deadlockAttempts < addressMaxDeadlockRetries {
 		// Pre-lock read, re-run fresh every iteration (design §4
 		// round-45). Fetched OUTSIDE any tx, before BeginTx, so it
 		// never contends with the tx's own connection (the SQLite test
@@ -397,6 +422,7 @@ func (h *handler) AddressUpdate(ctx context.Context, id uuid.UUID, fields map[st
 			break
 		}
 		if err == ErrDeadlock || err == ErrStaleTarget {
+			deadlockAttempts++
 			lastErr = err
 			continue
 		}
@@ -404,12 +430,21 @@ func (h *handler) AddressUpdate(ctx context.Context, id uuid.UUID, fields map[st
 			if newTarget, ok := fields["target"].(string); ok && newTarget != pre.Target {
 				repairAttempted = true
 				retry, repairErr := h.attemptStaleRowRepairNewTx(ctx, customerID, commonaddress.Type(pre.Type), newTarget, false)
+				if repairErr == ErrDeadlock {
+					// Repair transaction itself deadlocked -- a
+					// genuine deadlock-class event, consumes budget
+					// (design §5.3); repairAttempted stays true, the
+					// original update retries next iteration.
+					deadlockAttempts++
+					lastErr = repairErr
+					continue
+				}
 				if repairErr != nil {
 					return repairErr
 				}
 				if retry {
-					lastErr = err
-					continue // retry with a fresh pre-lock read + fresh transaction
+					lastErr = nil
+					continue // retry with a fresh pre-lock read + fresh transaction -- not a deadlock-budget consumer
 				}
 			}
 		}

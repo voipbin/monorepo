@@ -187,9 +187,10 @@ func (h *handler) attemptStaleRowRepairNewTx(ctx context.Context, customerID uui
 		return false, repairErr
 	}
 	if !retry {
-		// Live owner -- nothing was written, no need to commit, but
-		// commit anyway (empty transaction) for uniform cleanup via
-		// the defer's rollback-only-if-not-committed guard.
+		// Live owner -- nothing was written. Let the deferred
+		// rollback close this (empty, read-only) transaction; no
+		// commit needed since staleRowRepairTx made no writes on this
+		// path.
 		return false, nil
 	}
 	if err := tx.Commit(); err != nil {
