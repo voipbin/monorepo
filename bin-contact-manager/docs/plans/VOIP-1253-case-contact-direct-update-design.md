@@ -30,6 +30,19 @@ Status: Draft, awaiting independent review
     added `case_tag.go`'s `verifyCaseOwnership` comment to the §7
     doc-comment cleanup list; added explicit reasoning in §5.2 for why
     dropping the transaction wrapper is safe.
+- v0.3 (2026-07-13). Round-2 review finding addressed:
+  - **MAJOR fix**: §4's removal table omitted
+    `bin-api-manager/pkg/servicehandler/main.go` from the list of files
+    needing `CaseResolutionCreate`/`CaseResolutionDelete` removed from
+    the `ServiceHandler` interface declaration -- same defect class
+    round 1 caught for `case_resolution_test.go` (leaving a dangling
+    interface declaration after deleting its implementation breaks
+    compilation). Added an explicit removal-table row for `main.go`
+    (interface) and its mock regeneration.
+  - Round 2 independently re-verified all 6 of round-1's fixes against
+    actual main-branch source (not just doc text) and confirmed every
+    one is genuinely correct, including that the new
+    `CaseClearContactID` wrapper would actually compile.
 
 ## 1. Why this exists (session history)
 
@@ -155,6 +168,7 @@ and does not apply to this revert -- only the Case-level branch
 | `bin-openapi-manager/openapi/paths/contact_cases/id_resolutions.yaml`, `id_resolutions_id.yaml` | Delete entirely. |
 | `bin-openapi-manager/openapi/openapi.yaml` | Remove the two path registrations; remove `case_id` field from `ContactManagerResolution` (added by VOIP-1252, no longer has a producer); add `put:` block to `contact_cases/id.yaml` (new file content, not a new path entry -- path already exists for `get:`). |
 | `bin-api-manager/pkg/servicehandler/case.go` | Remove `CaseResolutionCreate`/`CaseResolutionDelete`; add `CaseUpdateContact`. |
+| `bin-api-manager/pkg/servicehandler/main.go` | Remove `CaseResolutionCreate`/`CaseResolutionDelete` from the `ServiceHandler` interface declaration (round-2 correction: originally omitted from this table -- leaving these declarations in place after deleting their `case.go` implementations breaks interface satisfaction and fails to compile, the same defect class round 1 caught for `case_resolution_test.go`); add `CaseUpdateContact`. Regenerate `mock_main.go` (confirmed both old methods are also declared there and must be removed by the regen). |
 | `bin-api-manager/pkg/servicehandler/case_resolution_test.go` | Delete entirely (round-1 correction: was missing from the original removal list; tests `CaseResolutionCreate`/`Delete`, which no longer exist post-revert, so this file would fail to compile if left in place). |
 | `bin-api-manager/server/contact_case_resolutions.go` | Delete entirely; add `PutContactCasesId` handler in a new/existing `server/contact_cases.go`. |
 
