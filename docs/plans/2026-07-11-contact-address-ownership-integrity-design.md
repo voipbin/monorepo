@@ -1167,6 +1167,46 @@ rule, and whichever of `AddressResetPrimary`/`contact_addresses` write steps
 are applicable to *that specific operation* run after it, in that relative
 order, never out of it.
 
+**Round-43 BLOCKER, fixed here: this section asserted that all five
+functions run under one shared `BeginTx`, but the actual `DBHandler`
+interface has no mechanism to share a transaction across two calls — a
+gap this document had only tracked as a non-blocking §10 open question
+since round-39, which round-43 review classified as blocking (it isn't
+an attribution question, it's whether the surrounding design compiles).**
+`pkg/contacthandler/contact.go`'s call sites for `AddAddress`/`UpdateAddress`
+invoke `h.db.AddressResetPrimary(ctx, contactID)` and
+`h.db.AddressCreate(ctx, a)` (or `AddressUpdate`) as two independent
+`DBHandler` interface calls with no shared transaction object — the
+`AddressResetPrimary` dbhandler method opens and commits its own
+`h.db.Exec` internally. **Fix: adopt the same explicit-`Tx`-parameter
+pattern `casehandler.getOrCreateAttempt` already uses
+(`CaseUpdateTMUpdateTx(ctx, tx, ...)`, `pkg/casehandler/getorcreate.go:134,150`).**
+Concretely:
+
+- Each of the five functions gains a `*Tx`-suffixed sibling in the
+  `DBHandler` interface: `AddressCreateTx(ctx, tx, a)`,
+  `AddressUpdateTx(ctx, tx, a)`, `AddressDeleteTx(ctx, tx, addressID)`,
+  `AddressClaimTx(ctx, tx, ...)`, `AddressResetPrimaryTx(ctx, tx,
+  contactID)` — each taking the already-open `*sql.Tx` (or the project's
+  transaction wrapper type, matching whatever `casehandler` uses) instead
+  of opening its own.
+- The existing non-`Tx` methods become thin wrappers: `AddressCreate(ctx,
+  a)` opens its own `BeginTx`, calls `AddressCreateTx` with it, and
+  commits — preserving every existing caller that doesn't need
+  multi-step composition (there are none among this design's five, but
+  other packages may still call the plain form).
+- `contacthandler`'s `AddAddress`/`UpdateAddress` (and the other three)
+  open ONE `tx` via `BeginTx`, then call the `Tx`-suffixed sequence (the
+  ownership-period `FOR UPDATE` read, `AddressResetPrimaryTx` if
+  applicable, then `AddressCreateTx`/`AddressUpdateTx`/etc.), then commit
+  once — exactly the shape §5.1 already describes, now with a concrete
+  mechanism to build it.
+- Mock regeneration (`go generate ./...` / mockgen) required for the five
+  new `Tx`-suffixed interface methods, same as every other new
+  `DBHandler` method this design adds (`AddressDeleteCompensating`,
+  round-36). §10's round-39 open question is now resolved by this
+  section rather than left open — removed from §10.
+
 ### 5.2 Lock ordering (round-2 finding, addressed)
 
 **Canonical table order within any single transaction (round-28
@@ -1356,28 +1396,42 @@ touch gives the row a real period, at which point it drops out of this
 extra query and the ordinary period-bound path takes over — same
 transient-and-bounded character as §6.3's fix, same handoff pattern.
 
-**Round-42 correction: the round-41 anti-join condition ("no period row
-for this target AT ALL") was too narrow — it only caught first-ever
-registrations, missing the reassignment case.** When A held the target,
-released it (A's period closed), and an old-binary pod then wrote B's
-`AddressCreate` without a period, the target-wide anti-join sees A's
-closed period row and does not fire: B's row, live-owned and
-period-less, gets no bound from either the periods list (B has none)
-or the anti-join (the target isn't period-less overall, just for B) —
-the exact gap this fix exists to close, reproduced. **The condition
-must be scoped to the OWNER, not the target:** STEP1's extra query is
-`contact_addresses` rows with `contact_id = ?` (this Contact) for which
-`contact_address_ownership_periods` has no row with that SAME
-`contact_id` for the matching `(customer_id, type, target)` — i.e. "this
-contact owns the row but has never been given a period for it," dropping
-the target-wide framing entirely. This is a strict widening of round-41's
-condition (every target-wide-period-less row is also owner-period-less,
-but not the reverse) and requires no `open_period_uk`-style global
-uniqueness reasoning: it is a per-owner existence check, structurally
-identical to §4 Step 1's own-row lookup. §10's fixture set gains a
-reassignment-then-skew case (closed A period exists, B's period-less row
-does not appear on A's timeline and does appear on B's) alongside the
-first-registration-skew case round-41 already required.
+**Round-42 correction (bound narrowed again in round-43 — see below):
+the round-41 anti-join condition ("no period row for this target AT
+ALL") was too narrow — it only caught first-ever registrations, missing
+the reassignment case.** When A held the target, released it (A's period
+closed), and an old-binary pod then wrote B's `AddressCreate` without a
+period, the target-wide anti-join sees A's closed period row and does
+not fire: B's row, live-owned and period-less, gets no bound from either
+the periods list (B has none) or the anti-join (the target isn't
+period-less overall, just for B) — the exact gap this fix exists to
+close, reproduced. **The condition must be scoped to the OWNER, not the
+target:** STEP1's extra query is `contact_addresses` rows with
+`contact_id = ?` (this Contact) for which `contact_address_ownership_periods`
+has no row with that SAME `contact_id` for the matching `(customer_id,
+type, target)` — i.e. "this contact owns the row but has never been
+given a period for it," dropping the target-wide framing entirely.
+
+**Round-43 correction: the round-42 owner-scoped condition ("no period
+row for this owner at all") still had a gap — same-owner
+release-then-reacquire.** If A held the target, released it (A's period
+closed with a `valid_to`), and later A re-acquired the SAME target and
+an old-binary pod wrote the new row period-less, the round-42 condition
+sees A's own OLD closed period row and does not fire (a row with
+`p2.contact_id = a.contact_id` does exist — it's just closed), leaving
+the second acquisition uncovered exactly like the round-41/42 bugs it
+was meant to fix. **Fix: the inner `NOT EXISTS` additionally requires
+`p2.valid_to IS NULL` — the guard fires when this owner has no OPEN
+period for the target, regardless of how many closed ones exist.** This
+is again a strict widening (an owner with zero periods trivially has no
+open one either, so round-42's population is a subset of round-43's),
+and it is the only condition of the three (target-wide, owner-wide,
+owner-plus-open) that correctly and exclusively targets "this owner's
+CURRENT occupancy of the row lacks a period," which is precisely what
+the missing-period skew state is. §10's fixture set gains a
+same-owner-reacquisition case (closed period for A on this target,
+period-less current row for A on the same target) alongside the two
+existing missing-period-skew cases.
 §10 gains an `interactionListByContact` missing-period-skew fixture
 symmetric to §6.3's round-40 one.
 
@@ -1574,6 +1628,7 @@ AND NOT EXISTS (
             AND p2.type = a.type
             AND p2.target = a.target
             AND p2.contact_id = a.contact_id
+            AND p2.valid_to IS NULL
       )
 )
 ```
@@ -1606,7 +1661,8 @@ degraded state is by definition transient (bounded by the rolling
 deploy window per §9), so the suppression window is bounded too. §10
 gains a missing-period-skew fixture for `InteractionListUnresolved`.
 
-**Round-42 correction: the round-40 guard's original condition ("no
+**Round-42 correction (bound narrowed again in round-43 — see below):
+the round-40 guard's original condition ("no
 period row for this target at all") missed the reassignment case, the
 same gap round-41's §6.2 mirror had.** When A's period for this target
 is already closed (A released it) and an old-binary pod then writes B's
@@ -1618,9 +1674,19 @@ normal ownership. **Fixed by adding `p2.contact_id = a.contact_id` to
 the inner `NOT EXISTS`:** the guard now fires whenever THIS owner has no
 period row for the target, regardless of other owners' history —
 strictly wider than round-40's version, and requiring no
-`open_period_uk`-style reasoning about global state. §10's fixture set
-gains the reassignment-then-skew case symmetric to §6.2's round-42
-addition.
+`open_period_uk`-style reasoning about global state.
+
+**Round-43 correction: the round-42 owner-scoped condition still missed
+same-owner release-then-reacquire.** If A held the target, released it
+(closed period with a `valid_to`), then A re-acquired the same target and
+an old-binary pod wrote the new row period-less, round-42's condition
+finds A's own OLD closed period row and does not fire, leaving the
+reacquired row uncovered. **Fixed by adding `p2.valid_to IS NULL`:** the
+guard now fires exactly when this owner has no OPEN period for the
+target, regardless of closed-period history — a strict widening of
+round-42's condition, and the one that correctly targets "this owner's
+current occupancy lacks a period." §10's fixture set gains the
+same-owner-reacquisition case alongside the reassignment-then-skew case.
 
 **Round-36 finding, fixed by the second `NOT EXISTS` above: replacing
 the subquery wholesale would have silently removed the unresolved-row
@@ -1863,6 +1929,8 @@ duplicated here). Disposition of each finding that survived to this design:
 | Round-41 BLOCKER: STEP1's round-40-adjacent gap — `interactionListByContact`'s STEP1 (`OwnershipPeriodsListByContactID`) is period-only, so the same owned-but-period-less skew population §6.3's round-40 fix covers on the queue side contributes NO bound at all to STEP2's OR-list, vanishing every one of its interactions from the OWNING Contact's own timeline: worse than the pre-round-40 §6.3 bug (there interactions at least resurfaced in the unresolved queue; here they resurface nowhere), reproducing defect #1 via pure skew with no deletion involved — round-40's fix, scoped to §6.3 only, left its exact mirror-image unfixed in §6.2, the same "fixed one population, not swept to the sibling read path" class this document has now hit at rounds 19, 24, 27, 30, 36, and 40→41 | **Fixed, bound narrowed in round-42** (§6.2 STEP1: an additional anti-join query, symmetric to §6.3's third disjunct, finds `(type, target)` pairs this Contact owns with no matching period row and gives each an unconditional unbounded bound in STEP2 — same transient, next-touch-bounded handoff; §10 gains the symmetric fixture) |
 | Round-42 BLOCKER: rounds 40/41's anti-join conditions were target-scoped ("no period row for this target at all"), catching only first-ever-registration skew and missing the reassignment case — when a prior owner's period is already closed and a new owner's row is written period-less, the target-wide condition sees the closed period and does not fire, so the new owner's interactions get neither periods coverage nor anti-join suppression/attribution in EITHER §6.2 or §6.3: the round-40/41 fixes' own scope, applied identically in both places, missed the same population in both places — the "fixed one population, not swept to the sibling read path" class's first instance of hitting BOTH siblings with the identical defect simultaneously | **Fixed** (§6.2 and §6.3: both anti-join conditions narrowed from target-scoped to OWNER-scoped — `p2.contact_id = a.contact_id` added to each inner `NOT EXISTS` — a strict widening that also covers first-registration skew as a special case; §10 gains a reassignment-then-skew fixture for both) |
 | Round-42 finding: §6.4's "Index coverage" section, despite its heading claiming comprehensive treatment and §6.3 explicitly pointing back to it, never covered §6.2's round-41 STEP1 anti-join query — a cross-reference completeness gap in the same class this document named at rounds 13/20/32/34 | **Fixed** (§6.4: coverage stated for the anti-join's `contact_id`-filtered outer query (index-driven, non-covering, one PK lookup per row) and its period anti-join (index-driven prefix, not fully covering per the round-22 precision standard); negligible in practice, now stated rather than omitted) |
+| Round-43 BLOCKER: rounds 40/41/42's owner-scoped anti-join condition ("no period row for this owner at all") still missed same-owner release-then-reacquire — if A released a target (closed period recorded) and later A reacquired the SAME target period-less, the owner-scoped condition finds A's own old closed row and does not fire, leaving the reacquisition uncovered in both §6.2 and §6.3 identically | **Fixed** (§6.2 and §6.3: `p2.valid_to IS NULL` added to both inner `NOT EXISTS` clauses — the guard now fires exactly when this owner has no OPEN period for the target, a strict widening of round-42's condition; §10 gains a same-owner-reacquisition fixture for both) |
+| Round-43 BLOCKER: §5.1 asserted all five address-write functions share one `BeginTx`, but the actual `DBHandler` interface has no transaction-sharing mechanism between `AddressResetPrimary` and `AddressCreate`/`AddressUpdate` — tracked as a non-blocking §10 open question since round-39, but round-43 review classified it as blocking since it is a compilability gap, not an attribution-correctness question, and the rest of the document is otherwise implementer-ready | **Fixed** (§5.1: adopts `casehandler.getOrCreateAttempt`'s existing `Tx`-suffixed method pattern — all five functions gain `*Tx`-suffixed `DBHandler` interface siblings taking an already-open transaction, with the plain names becoming thin `BeginTx`+commit wrappers; mockgen regeneration named; §10's round-39 entry removed as resolved) |
 
 ## 9. Migration plan
 
@@ -2190,17 +2258,9 @@ humans decide; the correction path is `contact_resolutions` (§7).
 
 ## 10. Open questions for future rounds' review
 
-- (Round-39, recorded not blocking) `AddressResetPrimary` and
-  `AddressCreate`/`AddressUpdate` are currently separate `DBHandler`
-  interface calls without a shared transaction parameter
-  (`contact.go:374,380`), yet §5.1 requires them under one `BeginTx` per
-  outer operation. The document has not specified the mechanical
-  approach (a transaction-carrying context, a combined method, or
-  something else) — needed before implementation starts, tracked here
-  rather than blocking this round's approval since it is a plumbing
-  detail with no attribution-correctness implication (unlike this
-  round's `AddressUpdate`/`AddressDelete` compare-and-retry fix, which
-  changes committed data).
+- (Round-43: resolved by §5.1's `Tx`-suffixed method pattern — removed
+  from this list. Previously: `AddressResetPrimary` and
+  `AddressCreate`/`AddressUpdate` lacked a shared-transaction mechanism.)
 - Does the fixed lock order in §5.2 actually eliminate the deadlock class round-2
   found, or only narrow it? (Needs the same live-concurrency spike verification
   the `voipbin-dbscheme-migration` skill's "owner preferences" section mandates
@@ -2253,6 +2313,11 @@ humans decide; the correction path is `contact_resolutions` (§7).
   period plus a new owner's period-less row — asserting the owner-scoped
   guard fires (interactions attach to the new owner / stay suppressed)
   where the round-40/41 target-wide guard would not have.
+  **Round-43 addition:** both fixtures need a same-owner-reacquisition
+  variant — this owner's own prior CLOSED period on the same target,
+  plus this owner's CURRENT period-less row on the same target —
+  asserting the owner-plus-open-scoped guard still fires where the
+  round-42 owner-scoped-but-not-open-scoped guard would not have.
 - (Recorded, not blocking implementation — §6.2/§8) If a customer's ownership-period
   count for a single Contact ever grows large enough to make the OR-expanded
   STEP2 query in §6.2 a real performance concern, the fix is switching
