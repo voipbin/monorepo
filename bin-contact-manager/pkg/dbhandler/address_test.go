@@ -175,7 +175,7 @@ func Test_AddressCreate(t *testing.T) {
 	curTime := timePtr(time.Date(2026, 6, 28, 9, 0, 0, 0, time.UTC))
 
 	// Create the parent contact
-	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockUtil.EXPECT().TimeNow().Return(curTime).AnyTimes()
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	c := &contact.Contact{
 		Identity: commonidentity.Identity{
@@ -191,7 +191,7 @@ func Test_AddressCreate(t *testing.T) {
 	}
 
 	// Create address
-	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockUtil.EXPECT().TimeNow().Return(curTime).AnyTimes()
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	a := &contact.Address{
 		Address: commonaddress.Address{
@@ -248,7 +248,7 @@ func Test_AddressCreate_Duplicate(t *testing.T) {
 	curTime := timePtr(time.Date(2026, 6, 28, 9, 0, 0, 0, time.UTC))
 
 	// Create two parent contacts for the same customer
-	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockUtil.EXPECT().TimeNow().Return(curTime).AnyTimes()
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	c1 := &contact.Contact{
 		Identity: commonidentity.Identity{ID: contactID1, CustomerID: customerID},
@@ -258,7 +258,7 @@ func Test_AddressCreate_Duplicate(t *testing.T) {
 		t.Fatalf("ContactCreate() error = %v", err)
 	}
 
-	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockUtil.EXPECT().TimeNow().Return(curTime).AnyTimes()
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	c2 := &contact.Contact{
 		Identity: commonidentity.Identity{ID: contactID2, CustomerID: customerID},
@@ -271,7 +271,7 @@ func Test_AddressCreate_Duplicate(t *testing.T) {
 	target := "+155****9001"
 
 	// first insert for contact1 succeeds
-	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockUtil.EXPECT().TimeNow().Return(curTime).AnyTimes()
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	a1 := &contact.Address{
 		Address: commonaddress.Address{
@@ -289,7 +289,7 @@ func Test_AddressCreate_Duplicate(t *testing.T) {
 	// second insert with the same (customer_id, type, target), even under a
 	// DIFFERENT contact, must be rejected as a duplicate — the unique index
 	// is scoped to customer_id, not contact_id.
-	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockUtil.EXPECT().TimeNow().Return(curTime).AnyTimes()
 	a2 := &contact.Address{
 		Address: commonaddress.Address{
 			Type:   contact.AddressTypeTel,
@@ -300,8 +300,15 @@ func Test_AddressCreate_Duplicate(t *testing.T) {
 		ContactID:  contactID2,
 	}
 	err := h.AddressCreate(ctx, a2)
-	if !stderrors.Is(err, ErrDuplicateTarget) {
-		t.Errorf("AddressCreate() duplicate target: expected ErrDuplicateTarget, got: %v", err)
+	// Design docs/plans/2026-07-11-contact-address-ownership-integrity-design.md
+	// §4 Step 1: contact1's live, agreement-verified open ownership
+	// period for this target is caught by the locking read BEFORE the
+	// contact_addresses INSERT is even attempted, surfacing ErrConflict
+	// (a live ownership conflict) rather than the old ErrDuplicateTarget
+	// path (which only ever saw the unique-index collision itself, with
+	// no visibility into WHO holds the target or whether they're live).
+	if !stderrors.Is(err, ErrConflict) {
+		t.Errorf("AddressCreate() duplicate target: expected ErrConflict, got: %v", err)
 	}
 }
 
@@ -335,7 +342,7 @@ func Test_AddressCreate_PrimaryIndexCollision_NotMisclassified(t *testing.T) {
 	contactID := uuid.FromStringOrNil("ab1b2c3d-0011-0011-0011-000000000002")
 	curTime := timePtr(time.Date(2026, 6, 28, 9, 0, 0, 0, time.UTC))
 
-	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockUtil.EXPECT().TimeNow().Return(curTime).AnyTimes()
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	c := &contact.Contact{
 		Identity: commonidentity.Identity{ID: contactID, CustomerID: customerID},
@@ -346,7 +353,7 @@ func Test_AddressCreate_PrimaryIndexCollision_NotMisclassified(t *testing.T) {
 	}
 
 	// first primary address: tel
-	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockUtil.EXPECT().TimeNow().Return(curTime).AnyTimes()
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	a1 := &contact.Address{
 		Address: commonaddress.Address{
@@ -365,7 +372,7 @@ func Test_AddressCreate_PrimaryIndexCollision_NotMisclassified(t *testing.T) {
 	// second primary address: DIFFERENT type/target, same contact, also
 	// primary — collides on idx_contact_addresses_cust_primary, NOT on
 	// idx_contact_addresses_cust_type_target. Must NOT be ErrDuplicateTarget.
-	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockUtil.EXPECT().TimeNow().Return(curTime).AnyTimes()
 	a2 := &contact.Address{
 		Address: commonaddress.Address{
 			Type:   contact.AddressTypeEmail,
@@ -404,7 +411,7 @@ func Test_AddressUpdate(t *testing.T) {
 	curTime := timePtr(time.Date(2026, 6, 28, 9, 0, 0, 0, time.UTC))
 
 	// Create the parent contact
-	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockUtil.EXPECT().TimeNow().Return(curTime).AnyTimes()
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	c := &contact.Contact{
 		Identity: commonidentity.Identity{
@@ -420,7 +427,7 @@ func Test_AddressUpdate(t *testing.T) {
 	}
 
 	// Create address
-	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockUtil.EXPECT().TimeNow().Return(curTime).AnyTimes()
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	a := &contact.Address{
 		Address: commonaddress.Address{
@@ -437,7 +444,7 @@ func Test_AddressUpdate(t *testing.T) {
 	}
 
 	// Update is_primary
-	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockUtil.EXPECT().TimeNow().Return(curTime).AnyTimes()
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	if err := h.AddressUpdate(ctx, addrID, map[string]any{"is_primary": true}); err != nil {
 		t.Fatalf("AddressUpdate() error = %v", err)
@@ -472,7 +479,7 @@ func Test_AddressDelete(t *testing.T) {
 	curTime := timePtr(time.Date(2026, 6, 28, 9, 0, 0, 0, time.UTC))
 
 	// Create the parent contact
-	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockUtil.EXPECT().TimeNow().Return(curTime).AnyTimes()
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	c := &contact.Contact{
 		Identity: commonidentity.Identity{
@@ -488,7 +495,7 @@ func Test_AddressDelete(t *testing.T) {
 	}
 
 	// Create address
-	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockUtil.EXPECT().TimeNow().Return(curTime).AnyTimes()
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	a := &contact.Address{
 		Address: commonaddress.Address{
@@ -539,7 +546,7 @@ func Test_AddressCreate_Unresolved(t *testing.T) {
 
 	// No mockCache.ContactSet expectation — contactUpdateToCache must NOT be
 	// called for an unresolved (uuid.Nil) contact_id.
-	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockUtil.EXPECT().TimeNow().Return(curTime).AnyTimes()
 	a := &contact.Address{
 		Address: commonaddress.Address{
 			Type:   contact.AddressTypeTel,
@@ -594,7 +601,7 @@ func Test_AddressList_Unresolved(t *testing.T) {
 	unresolvedAddrID := uuid.FromStringOrNil("ab1b2c3d-0007-0007-0007-000000000004")
 	curTime := timePtr(time.Date(2026, 6, 28, 9, 0, 0, 0, time.UTC))
 
-	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockUtil.EXPECT().TimeNow().Return(curTime).AnyTimes()
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	c := &contact.Contact{
 		Identity: commonidentity.Identity{
@@ -610,7 +617,7 @@ func Test_AddressList_Unresolved(t *testing.T) {
 	}
 
 	// resolved address
-	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockUtil.EXPECT().TimeNow().Return(curTime).AnyTimes()
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	if err := h.AddressCreate(ctx, &contact.Address{
 		Address: commonaddress.Address{
@@ -625,7 +632,7 @@ func Test_AddressList_Unresolved(t *testing.T) {
 	}
 
 	// unresolved address (no ContactSet expected)
-	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockUtil.EXPECT().TimeNow().Return(curTime).AnyTimes()
 	if err := h.AddressCreate(ctx, &contact.Address{
 		Address: commonaddress.Address{
 			Type:   contact.AddressTypeTel,
@@ -684,7 +691,7 @@ func Test_AddressList_UnresolvedWinsOverContactID(t *testing.T) {
 	unresolvedAddrID := uuid.FromStringOrNil("ab1b2c3d-0009-0009-0009-000000000003")
 	curTime := timePtr(time.Date(2026, 6, 28, 9, 0, 0, 0, time.UTC))
 
-	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockUtil.EXPECT().TimeNow().Return(curTime).AnyTimes()
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	c := &contact.Contact{
 		Identity: commonidentity.Identity{
@@ -700,7 +707,7 @@ func Test_AddressList_UnresolvedWinsOverContactID(t *testing.T) {
 	}
 
 	// unresolved address (no ContactSet expected — contact_id is NULL)
-	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockUtil.EXPECT().TimeNow().Return(curTime).AnyTimes()
 	if err := h.AddressCreate(ctx, &contact.Address{
 		Address: commonaddress.Address{
 			Type:   contact.AddressTypeTel,
@@ -759,7 +766,7 @@ func Test_AddressClaim(t *testing.T) {
 	curTime := timePtr(time.Date(2026, 6, 28, 9, 0, 0, 0, time.UTC))
 
 	// Two contacts to claim into / already claimed by.
-	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockUtil.EXPECT().TimeNow().Return(curTime).AnyTimes()
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	if err := h.ContactCreate(ctx, &contact.Contact{
 		Identity:  commonidentity.Identity{ID: contactID1, CustomerID: customerID},
@@ -767,7 +774,7 @@ func Test_AddressClaim(t *testing.T) {
 	}); err != nil {
 		t.Fatalf("ContactCreate() error = %v", err)
 	}
-	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockUtil.EXPECT().TimeNow().Return(curTime).AnyTimes()
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	if err := h.ContactCreate(ctx, &contact.Contact{
 		Identity:  commonidentity.Identity{ID: contactID2, CustomerID: customerID},
@@ -777,7 +784,7 @@ func Test_AddressClaim(t *testing.T) {
 	}
 
 	// unresolved address
-	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockUtil.EXPECT().TimeNow().Return(curTime).AnyTimes()
 	if err := h.AddressCreate(ctx, &contact.Address{
 		Address: commonaddress.Address{
 			Type:   contact.AddressTypeTel,
@@ -791,7 +798,7 @@ func Test_AddressClaim(t *testing.T) {
 	}
 
 	// already-resolved address (belongs to contactID1)
-	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockUtil.EXPECT().TimeNow().Return(curTime).AnyTimes()
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	if err := h.AddressCreate(ctx, &contact.Address{
 		Address: commonaddress.Address{
@@ -806,7 +813,7 @@ func Test_AddressClaim(t *testing.T) {
 	}
 
 	// (a) claiming an unresolved address succeeds
-	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockUtil.EXPECT().TimeNow().Return(curTime).AnyTimes()
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	if err := h.AddressClaim(ctx, customerID, unresolvedAddrID, contactID2); err != nil {
 		t.Fatalf("AddressClaim() error = %v", err)

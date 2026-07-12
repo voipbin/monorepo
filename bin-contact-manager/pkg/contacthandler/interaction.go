@@ -45,7 +45,18 @@ func deriveEndpoints(direction string, source, dest commonaddress.Address) (peer
 // AddressGetSource/AddressGetDestination call sites in
 // bin-call-manager/pkg/callhandler), so a real external SIP trunk partner is
 // always observed here as peer_type=tel, never peer_type=sip.
+//
+// D5 fix: TypeNone ("") is also listed. deriveEndpoints returns the zero
+// commonaddress.Address (Type == TypeNone) for any direction other than
+// "incoming"/"outgoing" -- an empty or unrecognized direction value. This
+// function's own doc-comment already stated the exact rule TypeNone
+// satisfies ("these types can never legitimately resolve to a contact...
+// must not be created in the first place"), but TypeNone itself was
+// missing from the map, so an unknown-direction event silently created a
+// permanently unresolved Interaction row instead of being dropped like
+// every other ineligible type.
 var crmIneligiblePeerTypes = map[commonaddress.Type]struct{}{
+	commonaddress.TypeNone:       {},
 	commonaddress.TypeAgent:      {},
 	commonaddress.TypeAI:         {},
 	commonaddress.TypeAITeam:     {},

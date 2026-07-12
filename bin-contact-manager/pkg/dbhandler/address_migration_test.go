@@ -53,7 +53,7 @@ func Test_AddressMigration_CrossTypeSinglePrimary(t *testing.T) {
 	}
 
 	// Create contact.
-	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockUtil.EXPECT().TimeNow().Return(curTime).AnyTimes()
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	if err := h.ContactCreate(ctx, c); err != nil {
 		t.Fatalf("ContactCreate() error = %v", err)
@@ -76,7 +76,7 @@ func Test_AddressMigration_CrossTypeSinglePrimary(t *testing.T) {
 		ContactID:  contactID,
 		IsPrimary:  true,
 	}
-	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockUtil.EXPECT().TimeNow().Return(curTime).AnyTimes()
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	if err := h.AddressCreate(ctx, telAddr); err != nil {
 		t.Fatalf("AddressCreate(tel) error = %v", err)
@@ -108,7 +108,7 @@ func Test_AddressMigration_CrossTypeSinglePrimary(t *testing.T) {
 		ContactID:  contactID,
 		IsPrimary:  true,
 	}
-	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockUtil.EXPECT().TimeNow().Return(curTime).AnyTimes()
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	if err := h.AddressCreate(ctx, emailAddr); err != nil {
 		t.Fatalf("AddressCreate(email) error = %v", err)

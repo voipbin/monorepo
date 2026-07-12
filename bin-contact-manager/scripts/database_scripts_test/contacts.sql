@@ -229,3 +229,36 @@ create table contact_case_tag_assignments (
 
   primary key(case_id, tag_id)
 );
+
+-- contact_address_ownership_periods mirrors migration
+-- 2d8f0ea90565_contact_address_ownership_periods_ (design §3.1/§9,
+-- Phase 1). SQLite has no SHA2/UNHEX -- the production open_period_uk
+-- hash-digest technique is replaced here with a plain STORED generated
+-- column over the same (customer_id, type, target) tuple, same
+-- "value only when valid_to IS NULL (open), NULL otherwise"
+-- partial-unique invariant as production, direct lift of contact_cases'
+-- open_peer_uk test-schema pattern above.
+create table contact_address_ownership_periods (
+  id          binary(16)    not null,
+  customer_id binary(16)    not null,
+  contact_id  binary(16)    not null,
+
+  type        varchar(255)  not null default '',
+  target      varchar(255)  not null default '',
+
+  valid_from  datetime(6),
+  valid_to    datetime(6),
+
+  open_period_uk varchar(600) generated always as (
+    case when valid_to is null then customer_id || '|' || type || '|' || target else null end
+  ) stored,
+
+  tm_create   datetime(6),
+  tm_update   datetime(6),
+
+  primary key(id)
+);
+
+create unique index idx_ownership_periods_open on contact_address_ownership_periods(open_period_uk);
+create index idx_ownership_periods_contact on contact_address_ownership_periods(customer_id, contact_id);
+create index idx_ownership_periods_lookup on contact_address_ownership_periods(customer_id, type, target, valid_from, valid_to);

@@ -103,7 +103,7 @@ func Test_EventCallCreated(t *testing.T) {
 			},
 		},
 		{
-			name: "unknown direction - zero peer/local, row still created",
+			name: "unknown direction - zero peer/local - projection skipped (D5 fix: TypeNone is CRM-ineligible)",
 
 			message: &callmodel.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -118,24 +118,10 @@ func Test_EventCallCreated(t *testing.T) {
 					Type:   commonaddress.TypeTel,
 					Target: "someDst",
 				},
-				Direction: "", // unknown direction (DirectionNond)
+				Direction: "", // unknown direction (DirectionNone) -> deriveEndpoints returns TypeNone peer
 			},
 
-			responseUUID:    uuid.FromStringOrNil("bb000003-0000-0000-0000-000000000001"),
-			responseCurTime: func() *time.Time { t := time.Date(2026, 6, 28, 13, 0, 0, 0, time.UTC); return &t }(),
-
-			expectInteraction: &interaction.Interaction{
-				ID:            uuid.FromStringOrNil("bb000003-0000-0000-0000-000000000001"),
-				CustomerID:    uuid.FromStringOrNil("aa000003-0000-0000-0000-000000000002"),
-				Direction:     "",
-				PeerType:      "",
-				PeerTarget:    "",
-				LocalType:     "",
-				LocalTarget:   "",
-				ReferenceType: "call",
-				ReferenceID:   uuid.FromStringOrNil("aa000003-0000-0000-0000-000000000001"),
-				TMCreate:      func() *time.Time { t := time.Date(2026, 6, 28, 13, 0, 0, 0, time.UTC); return &t }(),
-			},
+			expectInteraction: nil,
 		},
 		{
 			name: "incoming call - peer is agent extension - projection skipped",
