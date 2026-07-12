@@ -1245,13 +1245,27 @@ Concretely:
 
 - **The §4 locking read (period `FOR UPDATE` + step 1–5 resolution) is
   its own `Tx`-suffixed `DBHandler` method,
-  `OwnershipPeriodsLockAndResolveTx(ctx, tx, customerID, type, target)
-  (step int, lockedRows []OwnershipPeriod, err error)`** — added
+  `OwnershipPeriodsLockAndResolveTx(ctx, tx, customerID, contactID, type,
+  target) (step int, lockedRows []OwnershipPeriod, err error)`** — added
   explicitly to the interface (round-44: this was the missing piece —
   round-43's text named "the ownership-period FOR UPDATE read" as a step
   but never gave it a signature or interface membership, the same
   round-19 codegen-explicitness gap this document holds every other new
-  function to).
+  function to). **Round-51 correction: the signature is missing a
+  `contactID` parameter in every prior round's text (round-43 through
+  round-50) — §4's Steps 1–5 are inherently defined relative to "this
+  contact" (Step 1: another contact_id's open row; Step 2: THIS
+  contact_id's open row; Step 3: THIS contact_id's closed row plus
+  whether another contact_id intervened), so the function cannot compute
+  `step` at all without knowing which contact_id is "this" one.** Every
+  caller already has this value available (`a.ContactID` for
+  `AddressCreateTx`, the deleting Contact's ID for `AddressDeleteTx`,
+  etc.) — the signature simply omitted threading it through. This is a
+  pure signature correction; no round-43–50 semantics change (`step`'s
+  OPEN-ing/CLOSE-ing meaning, the `ErrConflict` not-found contract, the
+  `ContactDelete`-loop exclusion) depended on `contactID` being absent,
+  they all already assumed the caller's own contact_id was available to
+  compare against `lockedRows`.
 - Each of the five write functions gains a `*Tx`-suffixed sibling:
   `AddressCreateTx(ctx, tx, a)`, `AddressUpdateTx(ctx, tx, a)`,
   `AddressDeleteTx(ctx, tx, addressID)`, `AddressClaimTx(ctx, tx, ...)`,
@@ -2260,6 +2274,8 @@ duplicated here). Disposition of each finding that survived to this design:
 | Round-49 finding: round-33's "closes by `open_period_uk` hash, regardless of `contact_id`" healing-set phrasing and round-48's contact_id-scoped close-ing-caller contract described the same B-orphan-heals-via-C's-close scenario with apparently different mechanisms, with no cross-reference reconciling them | **Resolved, not a defect** (§5.1: round-33 was outcome-level, round-48 fills in the mechanism for this design's architecture — C's own close is contact_id-scoped, and the SAME locking read's Step 1 side effect independently closes B's orphan; together they reproduce round-33's outcome) |
 | Round-49 BLOCKER: §4's `ContactDelete` N-target closing-loop text (rounds 13/14/19) still said "acquires the §4 locking read for each of those targets" in prose, never updated to name `OwnershipPeriodsLockAndResolveTx` (§5.1, rounds 43–48) as that primitive, nor to state that this loop is a sixth, distinct caller applying the round-48 close-ing-caller contract N times — the same "newest §5.1 refactor not retrofitted to older §4 siblings" class hit at rounds 40 through 48 | **Fixed, with a round-50 correction** (§4: explicit cross-reference naming `OwnershipPeriodsLockAndResolveTx`; §10 gains a fixture) |
 | Round-50 BLOCKER: round-49's cross-reference stated `ContactDelete`'s N-target loop applies "the same close-ing-caller contract `AddressDeleteTx` uses" — but that contract's not-found case (round-49) returns `ErrConflict`, which would fail the ENTIRE `ContactDelete` transaction if even one of N targets was already closed by a concurrent operation, directly contradicting (a) this same section's own crash-recovery idempotence argument ("closing an already-closed period is a no-op") a few paragraphs below, and (b) §9's round-17 rule, which explicitly groups `ContactDelete`'s per-target close among the sites where not-found is a counter-only, non-blocking skew signal, not an error | **Fixed** (§4: `ContactDelete`'s loop explicitly does NOT use round-49's `ErrConflict` contract — not-found here follows §9 round-17's counter-only rule instead: skip, increment the skew counter, continue, and the whole transaction still commits; round-49's `ErrConflict` contract is scoped to single-target write operations, where a caller's own request racing a concurrent close on the SAME target is a genuine conflict worth reporting) |
+| Round-51 finding: round-49/50's `ContactDelete`-specific ErrConflict-exclusion fix and its §10 fixture requirement named only `ContactDelete`, never `ContactDeleteByCustomerID` — despite §4 round-20 establishing the latter reuses "the same per-contact ownership-period closure as `ContactDelete`" (as M sequential per-contact transactions rather than one N-way transaction, per round-27/35), leaving no document-internal fixture requirement forcing verification that the round-50 exclusion is actually implemented for `ContactDeleteByCustomerID`'s structurally different loop | **Fixed** (§10: fixture requirement extended explicitly to `ContactDeleteByCustomerID`'s per-contact loop, noting the transactional-structure difference does not change which contract applies) |
+| Round-51 BLOCKER: `OwnershipPeriodsLockAndResolveTx`'s signature, unchanged since round-43/44 through round-50's extensive elaboration of its `step`/`lockedRows` semantics, never included a `contactID` parameter — but §4's Steps 1–5 are inherently defined relative to "this contact" (Step 1: another contact_id's open row; Step 2: THIS contact_id's open row; Step 3: THIS contact_id's closed row plus whether another contact_id intervened), so the function cannot compute `step` at all without knowing which contact_id is "this" one; every round-43–50 elaboration silently assumed a value the signature never provided a way to pass | **Fixed** (§5.1: `contactID` added to the signature; a pure signature correction, since no round-43–50 semantics depended on its absence — every caller already had this value available and simply lacked a parameter to thread it through) |
 
 ## 9. Migration plan
 
@@ -2686,6 +2702,12 @@ humans decide; the correction path is `contact_resolutions` (§7).
   transaction still commits) rather than round-49's `ErrConflict`
   contract — asserting `ContactDelete` still commits successfully when
   one of N targets was already closed by a concurrent operation.
+  **Round-51 addition:** the same fixture requirement (b) applies
+  explicitly to `ContactDeleteByCustomerID`'s per-contact loop as well
+  — not just `ContactDelete` — asserting one contact's transaction
+  within the batch still commits when one of ITS targets was already
+  closed, without affecting the other contacts' independent
+  transactions in the same batch.
 - (Recorded, not blocking implementation — §6.2/§8) If a customer's ownership-period
   count for a single Contact ever grows large enough to make the OR-expanded
   STEP2 query in §6.2 a real performance concern, the fix is switching
