@@ -2708,8 +2708,14 @@ type ContactManagerCase struct {
 	// CustomerId Unique identifier of the associated customer.
 	CustomerId *openapi_types.UUID `json:"customer_id,omitempty"`
 
+	// Detail Optional freeform case detail, settable only at creation time.
+	Detail *string `json:"detail,omitempty"`
+
 	// Id Unique identifier for the case.
 	Id *openapi_types.UUID `json:"id,omitempty"`
+
+	// Name Optional freeform case name/title, settable only at creation time.
+	Name *string `json:"name,omitempty"`
 
 	// OpenedAt Timestamp when the case was opened. Nullable.
 	OpenedAt *time.Time `json:"opened_at,omitempty"`

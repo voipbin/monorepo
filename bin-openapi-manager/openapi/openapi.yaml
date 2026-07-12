@@ -3507,6 +3507,14 @@ components:
           format: uuid
           description: ID of the actor that closed the case. Nullable.
           example: "2a2ec0ba-8004-11ec-aea5-439829c92a7c"
+        name:
+          type: string
+          description: Optional freeform case name/title, settable only at creation time.
+          example: "Billing dispute follow-up"
+        detail:
+          type: string
+          description: Optional freeform case detail, settable only at creation time.
+          example: "Customer disputes March invoice charges."
         previous_case_id:
           type: string
           format: uuid
