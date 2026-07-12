@@ -1,12 +1,26 @@
-# VOIP-1252 -- Case-Level Manual Contact Attribution API (Design v0.3)
+# VOIP-1252 -- Case-Level Manual Contact Attribution API (Design v0.4)
 
 Repo: voipbin/monorepo
 Ticket: VOIP-1252
 Author: Hermes (CPO) on behalf of pchero (CEO/CTO)
 Date: 2026-07-12
-Status: Draft, awaiting independent review
+Status: APPROVED (Round 3, 2026-07-12) -- ready for implementation
 
 ## Changelog
+
+- v0.4 (2026-07-12). Round 3 independent review APPROVED the design.
+  Confirmed both Round 1 and Round 2 fixes are correct and complete
+  (verified against real source: the two modified tests use distinct
+  contactID/customerID literals so two separate Contact fixtures are
+  genuinely required, matching Section 5's plural phrasing; the four new
+  imports match `contact_attribution.go`'s real current import block; the
+  OpenAPI field-convention fix has no leftover `nullable` language). Applied
+  Round 3's two SHOULD-FIX citation-precision nits: corrected Section 4.2b's
+  citation range to `resolution.go:67-85` (was 67-76, missing the ownership
+  comparison half), and reworded Section 4.4's framing away from
+  "`ContactV1CaseClose`'s exact shape" (which wraps in `CloseResult`) toward
+  the correct bare-struct-decode precedent this design's response actually
+  matches.
 
 - v0.3 (2026-07-12). Round 2 independent review found that Section 4.2b's
   fix, applied as originally written, breaks two existing, currently-passing
@@ -167,13 +181,13 @@ Round 1 independent review found that `ResolutionCreateCaseLevel`
 Case tenant ownership via `verifyCaseOwnership`, but never validates that
 `contactID` belongs to the same `customerID`. Compare the sibling
 interaction-level path, `contacthandler.ResolutionCreate`
-(`bin-contact-manager/pkg/contacthandler/resolution.go:67-76`), which
-explicitly does this via `h.db.ContactGet(ctx, contactID)` +
-`ct.CustomerID != customerID` -> `NotFound`. Without an equivalent check, an
-authenticated agent of tenant A could attach tenant A's Case to an arbitrary
-Contact UUID belonging to tenant B -- a cross-tenant data-linkage exploit,
-and the resulting Resolution/response would leak tenant B's `contact_id`
-back to tenant A's agent.
+(`bin-contact-manager/pkg/contacthandler/resolution.go:67-85`), which
+explicitly does this via `h.db.ContactGet(ctx, contactID)` (lines 67-77) +
+`ct.CustomerID != customerID` -> `NotFound` (lines 79-85). Without an
+equivalent check, an authenticated agent of tenant A could attach tenant A's
+Case to an arbitrary Contact UUID belonging to tenant B -- a cross-tenant
+data-linkage exploit, and the resulting Resolution/response would leak
+tenant B's `contact_id` back to tenant A's agent.
 
 **This is now in scope for this ticket** (not a separate follow-up): add a
 contact-ownership check inside `ResolutionCreateCaseLevel`, mirroring
@@ -284,8 +298,12 @@ integrity.
 ### 4.4 bin-common-handler: requesthandler RPC client
 
 New file `bin-common-handler/pkg/requesthandler/contact_case_resolutions.go`,
-following `ContactV1CaseClose`'s exact shape (URI templating, JSON marshal,
-`sendRequestContact`, `parseResponse`):
+following the URI-templating/marshal/`sendRequestContact`/`parseResponse`
+mechanics common to this file's `ContactV1Case*` group (see
+`ContactV1CaseCreate`/`ContactV1CaseNoteCreate` for a bare-struct decode
+pattern; `ContactV1CaseClose` decodes into a `CloseResult` wrapper because
+its listenhandler returns one -- this design's response is a bare
+`*resolution.Resolution`, matching the plain-decode group instead):
 
 ```go
 // ContactV1CaseResolutionCreate attaches a case to a contact by creating a
@@ -542,13 +560,23 @@ as a confirmed-safe citation for the test plan below.
 
 ## 9. Next steps
 
-Independent subagent review loop (minimum 3 rounds) on this design doc before
-implementation starts, per `voipbin-backend-feature-design` skill policy.
-Round 1 (2026-07-12): CHANGES REQUESTED -- found the cross-tenant contact
-gap (Section 4.2b) and the schema gap (Section 4.6), both addressed in v0.2.
-Round 2 (2026-07-12): CHANGES REQUESTED -- found that the Section 4.2b fix
-as originally written breaks two existing tests
-(`Test_ResolutionCreateCaseLevel_DerivesContactID`,
-`Test_ResolutionDeleteCaseLevel_RederivesContactID`), contradicting Section
-6's "unaffected" claim; also flagged missing import callouts and an OpenAPI
-field-convention mismatch. All addressed in this v0.3. Proceeding to Round 3.
+Independent subagent review loop (minimum 3 rounds) completed, per
+`voipbin-backend-feature-design` skill policy.
+
+- Round 1 (2026-07-12): CHANGES REQUESTED -- found the cross-tenant contact
+  gap (Section 4.2b) and the schema gap (Section 4.6), both addressed in v0.2.
+- Round 2 (2026-07-12): CHANGES REQUESTED -- found that the Section 4.2b fix
+  as originally written breaks two existing tests
+  (`Test_ResolutionCreateCaseLevel_DerivesContactID`,
+  `Test_ResolutionDeleteCaseLevel_RederivesContactID`), contradicting
+  Section 6's "unaffected" claim; also flagged missing import callouts and
+  an OpenAPI field-convention mismatch. All addressed in v0.3.
+- Round 3 (2026-07-12): **APPROVED.** Confirmed all prior fixes are correct
+  and complete against real source, first-time-verified Section 4.4/4.5's
+  code snippets with no functional defects found, and applied two minor
+  citation-precision nits (now in this v0.4).
+
+Design is locked. Next: implementation PR(s) in `bin-contact-manager`,
+`bin-common-handler`, `bin-openapi-manager`, `bin-api-manager` per Section 5,
+each followed by its own independent PR-review-and-fix loop
+(minimum 3 rounds) before merge, per standing policy.
