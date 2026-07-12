@@ -2,9 +2,13 @@ package casehandler
 
 import (
 	"context"
+	stderrors "errors"
+	"fmt"
 	"testing"
 	"time"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -12,6 +16,8 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	"monorepo/bin-contact-manager/models/contact"
+	"monorepo/bin-contact-manager/models/kase"
 	"monorepo/bin-contact-manager/models/resolution"
 	"monorepo/bin-contact-manager/pkg/cachehandler"
 	"monorepo/bin-contact-manager/pkg/dbhandler"
@@ -151,5 +157,133 @@ func Test_DeriveCaseContactID_IgnoresInteractionScopedAndSoftDeleted(t *testing.
 	}
 	if got != nil {
 		t.Errorf("expected nil (neither resolution should count), got: %v", *got)
+	}
+}
+
+// Test_ResolutionCreateCaseLevel_CrossTenantContact_Rejected verifies
+// VOIP-1252 design review round 1's finding: ResolutionCreateCaseLevel
+// must reject a contactID that belongs to a DIFFERENT customerID than
+// the Case, before any Resolution row is inserted or transaction begins.
+func Test_ResolutionCreateCaseLevel_CrossTenantContact_Rejected(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockCache.EXPECT().ContactGet(gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("cache miss")).AnyTimes()
+	mockCache.EXPECT().ContactSet(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	db := dbhandler.NewHandler(dbTest, mockCache)
+	h := &caseHandler{utilHandler: mockUtil, reqHandler: mockReq, db: db, notifyHandler: mockNotify}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("f1b2c3d4-9204-9204-9204-000000000001")
+	otherCustomerID := uuid.FromStringOrNil("f1b2c3d4-9204-9204-9204-000000000099")
+	caseID := uuid.FromStringOrNil("f1b2c3d4-9204-9204-9204-000000000002")
+	contactID := uuid.FromStringOrNil("f1b2c3d4-9204-9204-9204-000000000003")
+	agentID := uuid.FromStringOrNil("f1b2c3d4-9204-9204-9204-000000000004")
+	opened := time.Date(2026, 6, 28, 10, 0, 0, 0, time.UTC)
+
+	c := &kase.Case{
+		ID: caseID, CustomerID: customerID,
+		PeerType: commonaddress.TypeTel, PeerTarget: "+15551500004", ReferenceType: "call",
+		Status: kase.StatusOpen, OpenedAt: &opened, TMCreate: &opened, TMUpdate: &opened,
+	}
+	if err := db.CaseInsert(ctx, c); err != nil {
+		t.Fatalf("CaseInsert() error = %v", err)
+	}
+
+	// Contact belongs to a DIFFERENT customer than the Case.
+	ct := &contact.Contact{
+		Identity: commonidentity.Identity{ID: contactID, CustomerID: otherCustomerID},
+	}
+	if err := db.ContactCreate(ctx, ct); err != nil {
+		t.Fatalf("ContactCreate() error = %v", err)
+	}
+
+	_, err := h.ResolutionCreateCaseLevel(ctx, customerID, caseID, contactID, resolution.ResolutionTypePositive, resolution.ResolvedByTypeAgent, agentID)
+	if err == nil {
+		t.Fatalf("expected an error for cross-tenant contact, got nil")
+	}
+
+	// Verify no Resolution row was created and Case.contact_id remains nil.
+	reread, err := db.CaseGetByID(ctx, caseID)
+	if err != nil {
+		t.Fatalf("CaseGetByID() error = %v", err)
+	}
+	if reread.ContactID != nil {
+		t.Errorf("expected Case.contact_id to remain nil after rejected attach, got: %v", *reread.ContactID)
+	}
+}
+
+// Test_ResolutionCreateCaseLevel_ContactNotFound_Rejected verifies
+// ResolutionCreateCaseLevel rejects a contactID that does not exist at
+// all (as opposed to belonging to a different tenant).
+func Test_ResolutionCreateCaseLevel_ContactNotFound_Rejected(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockCache.EXPECT().ContactGet(gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("cache miss")).AnyTimes()
+	mockCache.EXPECT().ContactSet(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	db := dbhandler.NewHandler(dbTest, mockCache)
+	h := &caseHandler{utilHandler: mockUtil, reqHandler: mockReq, db: db, notifyHandler: mockNotify}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("f1b2c3d4-9205-9205-9205-000000000001")
+	caseID := uuid.FromStringOrNil("f1b2c3d4-9205-9205-9205-000000000002")
+	nonExistentContactID := uuid.FromStringOrNil("f1b2c3d4-9205-9205-9205-000000000003")
+	agentID := uuid.FromStringOrNil("f1b2c3d4-9205-9205-9205-000000000004")
+	opened := time.Date(2026, 6, 28, 10, 0, 0, 0, time.UTC)
+
+	c := &kase.Case{
+		ID: caseID, CustomerID: customerID,
+		PeerType: commonaddress.TypeTel, PeerTarget: "+15551500005", ReferenceType: "call",
+		Status: kase.StatusOpen, OpenedAt: &opened, TMCreate: &opened, TMUpdate: &opened,
+	}
+	if err := db.CaseInsert(ctx, c); err != nil {
+		t.Fatalf("CaseInsert() error = %v", err)
+	}
+
+	_, err := h.ResolutionCreateCaseLevel(ctx, customerID, caseID, nonExistentContactID, resolution.ResolutionTypePositive, resolution.ResolvedByTypeAgent, agentID)
+	if err == nil {
+		t.Fatalf("expected an error for non-existent contact, got nil")
+	}
+	if !stderrors.Is(err, dbhandler.ErrNotFound) {
+		t.Errorf("expected wrapped dbhandler.ErrNotFound, got: %v", err)
+	}
+}
+
+// Test_ResolutionCreateCaseLevel_InvalidResolutionType_Rejected verifies
+// VOIP-1252 round-2 review's finding: ResolutionCreateCaseLevel must
+// reject any resolutionType other than "positive"/"negative", mirroring
+// contacthandler.ResolutionCreate's (interaction-level) validation. Must
+// be rejected before any DB lookup (Case or Contact) -- no mockCache
+// EXPECT() is registered, so gomock fails the test if the code reaches
+// as far as ContactGet.
+func Test_ResolutionCreateCaseLevel_InvalidResolutionType_Rejected(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	db := dbhandler.NewHandler(dbTest, mockCache)
+	h := &caseHandler{utilHandler: mockUtil, reqHandler: mockReq, db: db, notifyHandler: mockNotify}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("f1b2c3d4-9206-9206-9206-000000000001")
+	caseID := uuid.FromStringOrNil("f1b2c3d4-9206-9206-9206-000000000002")
+	contactID := uuid.FromStringOrNil("f1b2c3d4-9206-9206-9206-000000000003")
+	agentID := uuid.FromStringOrNil("f1b2c3d4-9206-9206-9206-000000000004")
+
+	_, err := h.ResolutionCreateCaseLevel(ctx, customerID, caseID, contactID, "Positive", resolution.ResolvedByTypeAgent, agentID)
+	if err == nil {
+		t.Fatalf("expected an error for an invalid resolution_type, got nil")
 	}
 }

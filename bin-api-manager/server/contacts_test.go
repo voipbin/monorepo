@@ -11,6 +11,7 @@ import (
 	"monorepo/bin-api-manager/lib/middleware"
 	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/servicehandler"
+	commonaddress "monorepo/bin-common-handler/models/address"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	cmcontact "monorepo/bin-contact-manager/models/contact"
@@ -505,9 +506,8 @@ func Test_PostContactsIdAddresses(t *testing.T) {
 				},
 				Addresses: []cmcontact.Address{
 					{
-						ID:     uuid.FromStringOrNil("a1b2c3d4-5066-11ec-ab34-23643cfdc1c5"),
-						Type:   "tel",
-						Target: "+121****1234",
+						ID:      uuid.FromStringOrNil("a1b2c3d4-5066-11ec-ab34-23643cfdc1c5"),
+						Address: commonaddress.Address{Type: "tel", Target: "+121****1234"},
 					},
 				},
 			},
@@ -516,7 +516,7 @@ func Test_PostContactsIdAddresses(t *testing.T) {
 			expectAddrType:  "tel",
 			expectTarget:    "+121****1234",
 			expectIsPrimary: false,
-			expectRes:       `{"id":"3147612c-5066-11ec-ab34-23643cfdc1c5","customer_id":"5f621078-8e5f-11ee-97b2-cfe7337b701c","first_name":"","last_name":"","display_name":"","company":"","job_title":"","source":"","external_id":"","notes":"","addresses":[{"id":"a1b2c3d4-5066-11ec-ab34-23643cfdc1c5","customer_id":"00000000-0000-0000-0000-000000000000","contact_id":"00000000-0000-0000-0000-000000000000","type":"tel","target":"+121****1234","name":"","detail":"","is_primary":false,"tm_create":null}],"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes:       `{"id":"3147612c-5066-11ec-ab34-23643cfdc1c5","customer_id":"5f621078-8e5f-11ee-97b2-cfe7337b701c","first_name":"","last_name":"","display_name":"","company":"","job_title":"","source":"","external_id":"","notes":"","addresses":[{"type":"tel","target":"+121****1234","id":"a1b2c3d4-5066-11ec-ab34-23643cfdc1c5","customer_id":"00000000-0000-0000-0000-000000000000","contact_id":"00000000-0000-0000-0000-000000000000","is_primary":false,"tm_create":null}],"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -590,9 +590,8 @@ func Test_PutContactsIdAddressesAddressId(t *testing.T) {
 				},
 				Addresses: []cmcontact.Address{
 					{
-						ID:     uuid.FromStringOrNil("a1b2c3d4-5066-11ec-ab34-23643cfdc1c5"),
-						Type:   "tel",
-						Target: "+121****9999",
+						ID:      uuid.FromStringOrNil("a1b2c3d4-5066-11ec-ab34-23643cfdc1c5"),
+						Address: commonaddress.Address{Type: "tel", Target: "+121****9999"},
 					},
 				},
 			},
@@ -600,7 +599,7 @@ func Test_PutContactsIdAddressesAddressId(t *testing.T) {
 			expectContactID: uuid.FromStringOrNil("3147612c-5066-11ec-ab34-23643cfdc1c5"),
 			expectAddressID: uuid.FromStringOrNil("a1b2c3d4-5066-11ec-ab34-23643cfdc1c5"),
 			expectFields:    map[string]any{"target": "+121****9999"},
-			expectRes:       `{"id":"3147612c-5066-11ec-ab34-23643cfdc1c5","customer_id":"5f621078-8e5f-11ee-97b2-cfe7337b701c","first_name":"","last_name":"","display_name":"","company":"","job_title":"","source":"","external_id":"","notes":"","addresses":[{"id":"a1b2c3d4-5066-11ec-ab34-23643cfdc1c5","customer_id":"00000000-0000-0000-0000-000000000000","contact_id":"00000000-0000-0000-0000-000000000000","type":"tel","target":"+121****9999","name":"","detail":"","is_primary":false,"tm_create":null}],"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes:       `{"id":"3147612c-5066-11ec-ab34-23643cfdc1c5","customer_id":"5f621078-8e5f-11ee-97b2-cfe7337b701c","first_name":"","last_name":"","display_name":"","company":"","job_title":"","source":"","external_id":"","notes":"","addresses":[{"type":"tel","target":"+121****9999","id":"a1b2c3d4-5066-11ec-ab34-23643cfdc1c5","customer_id":"00000000-0000-0000-0000-000000000000","contact_id":"00000000-0000-0000-0000-000000000000","is_primary":false,"tm_create":null}],"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 		{
 			name: "update name and detail",
@@ -621,11 +620,8 @@ func Test_PutContactsIdAddressesAddressId(t *testing.T) {
 				},
 				Addresses: []cmcontact.Address{
 					{
-						ID:     uuid.FromStringOrNil("a1b2c3d4-5066-11ec-ab34-23643cfdc1c5"),
-						Type:   "tel",
-						Target: "+121****9999",
-						Name:   "Main Office",
-						Detail: "Primary contact number",
+						ID:      uuid.FromStringOrNil("a1b2c3d4-5066-11ec-ab34-23643cfdc1c5"),
+						Address: commonaddress.Address{Type: "tel", Target: "+121****9999", Name: "Main Office", Detail: "Primary contact number"},
 					},
 				},
 			},
@@ -633,7 +629,7 @@ func Test_PutContactsIdAddressesAddressId(t *testing.T) {
 			expectContactID: uuid.FromStringOrNil("3147612c-5066-11ec-ab34-23643cfdc1c5"),
 			expectAddressID: uuid.FromStringOrNil("a1b2c3d4-5066-11ec-ab34-23643cfdc1c5"),
 			expectFields:    map[string]any{"name": "Main Office", "detail": "Primary contact number"},
-			expectRes:       `{"id":"3147612c-5066-11ec-ab34-23643cfdc1c5","customer_id":"5f621078-8e5f-11ee-97b2-cfe7337b701c","first_name":"","last_name":"","display_name":"","company":"","job_title":"","source":"","external_id":"","notes":"","addresses":[{"id":"a1b2c3d4-5066-11ec-ab34-23643cfdc1c5","customer_id":"00000000-0000-0000-0000-000000000000","contact_id":"00000000-0000-0000-0000-000000000000","type":"tel","target":"+121****9999","name":"Main Office","detail":"Primary contact number","is_primary":false,"tm_create":null}],"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes:       `{"id":"3147612c-5066-11ec-ab34-23643cfdc1c5","customer_id":"5f621078-8e5f-11ee-97b2-cfe7337b701c","first_name":"","last_name":"","display_name":"","company":"","job_title":"","source":"","external_id":"","notes":"","addresses":[{"type":"tel","target":"+121****9999","name":"Main Office","detail":"Primary contact number","id":"a1b2c3d4-5066-11ec-ab34-23643cfdc1c5","customer_id":"00000000-0000-0000-0000-000000000000","contact_id":"00000000-0000-0000-0000-000000000000","is_primary":false,"tm_create":null}],"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 

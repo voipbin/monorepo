@@ -11,6 +11,7 @@ import (
 	"monorepo/bin-api-manager/lib/middleware"
 	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/servicehandler"
+	commonaddress "monorepo/bin-common-handler/models/address"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	cmcontact "monorepo/bin-contact-manager/models/contact"
@@ -639,9 +640,8 @@ func Test_PostServiceAgentsContactsIdAddresses(t *testing.T) {
 				LastName:  "Doe",
 				Addresses: []cmcontact.Address{
 					{
-						ID:     uuid.FromStringOrNil("a1b2c3d4-0001-11ec-0001-000000000001"),
-						Type:   "tel",
-						Target: "+121****1234",
+						ID:      uuid.FromStringOrNil("a1b2c3d4-0001-11ec-0001-000000000001"),
+						Address: commonaddress.Address{Type: "tel", Target: "+121****1234"},
 					},
 				},
 				TMCreate: timePtr("2020-09-20T03:23:21.995Z"),
@@ -651,7 +651,7 @@ func Test_PostServiceAgentsContactsIdAddresses(t *testing.T) {
 			expectAddrType:  "tel",
 			expectTarget:    "+121****1234",
 			expectIsPrimary: false,
-			expectRes:       `{"id":"c07ff34e-500d-11ec-8393-2bc7870b7eff","customer_id":"5f621078-8004-11ec-aea5-d3a320e3b3c0","first_name":"John","last_name":"Doe","display_name":"","company":"","job_title":"","source":"","external_id":"","notes":"","addresses":[{"id":"a1b2c3d4-0001-11ec-0001-000000000001","customer_id":"00000000-0000-0000-0000-000000000000","contact_id":"00000000-0000-0000-0000-000000000000","type":"tel","target":"+121****1234","name":"","detail":"","is_primary":false,"tm_create":null}],"tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null}`,
+			expectRes:       `{"id":"c07ff34e-500d-11ec-8393-2bc7870b7eff","customer_id":"5f621078-8004-11ec-aea5-d3a320e3b3c0","first_name":"John","last_name":"Doe","display_name":"","company":"","job_title":"","source":"","external_id":"","notes":"","addresses":[{"type":"tel","target":"+121****1234","id":"a1b2c3d4-0001-11ec-0001-000000000001","customer_id":"00000000-0000-0000-0000-000000000000","contact_id":"00000000-0000-0000-0000-000000000000","is_primary":false,"tm_create":null}],"tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null}`,
 		},
 	}
 

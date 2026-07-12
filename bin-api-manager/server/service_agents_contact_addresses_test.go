@@ -14,8 +14,9 @@ import (
 	openapi_server "monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/servicehandler"
-	cmcontact "monorepo/bin-contact-manager/models/contact"
+	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	cmcontact "monorepo/bin-contact-manager/models/contact"
 )
 
 func Test_PutServiceAgentsContactAddressesId(t *testing.T) {
@@ -49,13 +50,12 @@ func Test_PutServiceAgentsContactAddressesId(t *testing.T) {
 			responseAddress: &cmcontact.Address{
 				ID:        uuid.FromStringOrNil("a1b2c3d4-0001-11ec-0001-000000000001"),
 				ContactID: uuid.FromStringOrNil("c07ff34e-500d-11ec-8393-2bc7870b7eff"),
-				Type:      "tel",
-				Target:    "+121****9999",
+				Address:   commonaddress.Address{Type: "tel", Target: "+121****9999"},
 			},
 
 			expectAddressID: uuid.FromStringOrNil("a1b2c3d4-0001-11ec-0001-000000000001"),
 			expectFields:    map[string]any{"target": "+121****9999"},
-			expectRes:       `{"id":"a1b2c3d4-0001-11ec-0001-000000000001","customer_id":"00000000-0000-0000-0000-000000000000","contact_id":"c07ff34e-500d-11ec-8393-2bc7870b7eff","type":"tel","target":"+121****9999","name":"","detail":"","is_primary":false,"tm_create":null}`,
+			expectRes:       `{"type":"tel","target":"+121****9999","id":"a1b2c3d4-0001-11ec-0001-000000000001","customer_id":"00000000-0000-0000-0000-000000000000","contact_id":"c07ff34e-500d-11ec-8393-2bc7870b7eff","is_primary":false,"tm_create":null}`,
 		},
 		{
 			name: "update name and detail",
@@ -73,15 +73,12 @@ func Test_PutServiceAgentsContactAddressesId(t *testing.T) {
 			responseAddress: &cmcontact.Address{
 				ID:        uuid.FromStringOrNil("a1b2c3d4-0001-11ec-0001-000000000001"),
 				ContactID: uuid.FromStringOrNil("c07ff34e-500d-11ec-8393-2bc7870b7eff"),
-				Type:      "tel",
-				Target:    "+121****9999",
-				Name:      "Main Office",
-				Detail:    "Primary contact number",
+				Address:   commonaddress.Address{Type: "tel", Target: "+121****9999", Name: "Main Office", Detail: "Primary contact number"},
 			},
 
 			expectAddressID: uuid.FromStringOrNil("a1b2c3d4-0001-11ec-0001-000000000001"),
 			expectFields:    map[string]any{"name": "Main Office", "detail": "Primary contact number"},
-			expectRes:       `{"id":"a1b2c3d4-0001-11ec-0001-000000000001","customer_id":"00000000-0000-0000-0000-000000000000","contact_id":"c07ff34e-500d-11ec-8393-2bc7870b7eff","type":"tel","target":"+121****9999","name":"Main Office","detail":"Primary contact number","is_primary":false,"tm_create":null}`,
+			expectRes:       `{"type":"tel","target":"+121****9999","name":"Main Office","detail":"Primary contact number","id":"a1b2c3d4-0001-11ec-0001-000000000001","customer_id":"00000000-0000-0000-0000-000000000000","contact_id":"c07ff34e-500d-11ec-8393-2bc7870b7eff","is_primary":false,"tm_create":null}`,
 		},
 	}
 

@@ -3135,6 +3135,24 @@ func (e PostContactCasesIdNotesJSONBodyAuthorType) Valid() bool {
 	}
 }
 
+// Defines values for PostContactCasesIdResolutionsJSONBodyResolutionType.
+const (
+	PostContactCasesIdResolutionsJSONBodyResolutionTypeNegative PostContactCasesIdResolutionsJSONBodyResolutionType = "negative"
+	PostContactCasesIdResolutionsJSONBodyResolutionTypePositive PostContactCasesIdResolutionsJSONBodyResolutionType = "positive"
+)
+
+// Valid indicates whether the value is a known member of the PostContactCasesIdResolutionsJSONBodyResolutionType enum.
+func (e PostContactCasesIdResolutionsJSONBodyResolutionType) Valid() bool {
+	switch e {
+	case PostContactCasesIdResolutionsJSONBodyResolutionTypeNegative:
+		return true
+	case PostContactCasesIdResolutionsJSONBodyResolutionTypePositive:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for PostContactInteractionsIdResolutionsJSONBodyResolutionType.
 const (
 	PostContactInteractionsIdResolutionsJSONBodyResolutionTypeNegative PostContactInteractionsIdResolutionsJSONBodyResolutionType = "negative"
@@ -3329,16 +3347,16 @@ func (e PostServiceAgentsContactAddressesJSONBodyType) Valid() bool {
 
 // Defines values for PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolutionType.
 const (
-	Negative PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolutionType = "negative"
-	Positive PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolutionType = "positive"
+	PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolutionTypeNegative PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolutionType = "negative"
+	PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolutionTypePositive PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolutionType = "positive"
 )
 
 // Valid indicates whether the value is a known member of the PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolutionType enum.
 func (e PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolutionType) Valid() bool {
 	switch e {
-	case Negative:
+	case PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolutionTypeNegative:
 		return true
-	case Positive:
+	case PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolutionTypePositive:
 		return true
 	default:
 		return false
@@ -5220,6 +5238,9 @@ type ContactManagerInteractionListResponse struct {
 
 // ContactManagerResolution defines model for ContactManagerResolution.
 type ContactManagerResolution struct {
+	// CaseId The case this resolution is scoped to (case-level resolutions only). The ID is returned from GET /v1.0/contact_cases response.
+	CaseId *openapi_types.UUID `json:"case_id,omitempty"`
+
 	// ContactId The contact this resolution is attributed to.
 	ContactId *openapi_types.UUID `json:"contact_id,omitempty"`
 
@@ -8300,6 +8321,18 @@ type PostContactCasesIdNotesJSONBody struct {
 // PostContactCasesIdNotesJSONBodyAuthorType defines parameters for PostContactCasesIdNotes.
 type PostContactCasesIdNotesJSONBodyAuthorType string
 
+// PostContactCasesIdResolutionsJSONBody defines parameters for PostContactCasesIdResolutions.
+type PostContactCasesIdResolutionsJSONBody struct {
+	// ContactId The contact to attach this case to. The ID is returned from GET /v1.0/contacts response.
+	ContactId openapi_types.UUID `json:"contact_id"`
+
+	// ResolutionType Attribution type. positive attaches the case to the contact; negative suppresses a prior positive attribution.
+	ResolutionType PostContactCasesIdResolutionsJSONBodyResolutionType `json:"resolution_type"`
+}
+
+// PostContactCasesIdResolutionsJSONBodyResolutionType defines parameters for PostContactCasesIdResolutions.
+type PostContactCasesIdResolutionsJSONBodyResolutionType string
+
 // GetContactInteractionsParams defines parameters for GetContactInteractions.
 type GetContactInteractionsParams struct {
 	// PeerType Remote endpoint type (e.g. "tel", "email"). Required with peer_target.
@@ -10165,6 +10198,9 @@ type PostContactCasesIdMessagesJSONRequestBody PostContactCasesIdMessagesJSONBod
 
 // PostContactCasesIdNotesJSONRequestBody defines body for PostContactCasesIdNotes for application/json ContentType.
 type PostContactCasesIdNotesJSONRequestBody PostContactCasesIdNotesJSONBody
+
+// PostContactCasesIdResolutionsJSONRequestBody defines body for PostContactCasesIdResolutions for application/json ContentType.
+type PostContactCasesIdResolutionsJSONRequestBody PostContactCasesIdResolutionsJSONBody
 
 // PostContactInteractionsIdResolutionsJSONRequestBody defines body for PostContactInteractionsIdResolutions for application/json ContentType.
 type PostContactInteractionsIdResolutionsJSONRequestBody PostContactInteractionsIdResolutionsJSONBody

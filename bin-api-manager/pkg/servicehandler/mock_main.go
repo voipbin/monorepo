@@ -1843,6 +1843,35 @@ func (mr *MockServiceHandlerMockRecorder) CaseNoteList(ctx, a, caseID any) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseNoteList", reflect.TypeOf((*MockServiceHandler)(nil).CaseNoteList), ctx, a, caseID)
 }
 
+// CaseResolutionCreate mocks base method.
+func (m *MockServiceHandler) CaseResolutionCreate(ctx context.Context, a *auth.AuthIdentity, id, contactID uuid.UUID, resolutionType string) (*resolution.Resolution, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseResolutionCreate", ctx, a, id, contactID, resolutionType)
+	ret0, _ := ret[0].(*resolution.Resolution)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CaseResolutionCreate indicates an expected call of CaseResolutionCreate.
+func (mr *MockServiceHandlerMockRecorder) CaseResolutionCreate(ctx, a, id, contactID, resolutionType any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseResolutionCreate", reflect.TypeOf((*MockServiceHandler)(nil).CaseResolutionCreate), ctx, a, id, contactID, resolutionType)
+}
+
+// CaseResolutionDelete mocks base method.
+func (m *MockServiceHandler) CaseResolutionDelete(ctx context.Context, a *auth.AuthIdentity, id, resolutionID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseResolutionDelete", ctx, a, id, resolutionID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CaseResolutionDelete indicates an expected call of CaseResolutionDelete.
+func (mr *MockServiceHandlerMockRecorder) CaseResolutionDelete(ctx, a, id, resolutionID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseResolutionDelete", reflect.TypeOf((*MockServiceHandler)(nil).CaseResolutionDelete), ctx, a, id, resolutionID)
+}
+
 // ConferenceCreate mocks base method.
 func (m *MockServiceHandler) ConferenceCreate(ctx context.Context, a *auth.AuthIdentity, conferenceID uuid.UUID, confType conference.Type, name, detail string, data map[string]any, timeout int, preFlowID, postFlowID uuid.UUID) (*conference.WebhookMessage, error) {
 	m.ctrl.T.Helper()

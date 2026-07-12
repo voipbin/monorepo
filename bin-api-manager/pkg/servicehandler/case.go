@@ -11,6 +11,7 @@ import (
 	"monorepo/bin-api-manager/pkg/serviceerrors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	cmkase "monorepo/bin-contact-manager/models/kase"
+	cmresolution "monorepo/bin-contact-manager/models/resolution"
 )
 
 // Note on ConvertWebhookMessage: cmkase.Case is returned directly as the
@@ -217,4 +218,78 @@ func (h *serviceHandler) CaseContinue(ctx context.Context, a *auth.AuthIdentity,
 	}
 
 	return res, nil
+}
+
+// CaseResolutionCreate attaches a case to a contact (design VOIP-1252) by
+// creating a case-level Resolution in contact-manager. resolved_by_id is
+// derived server-side from the authenticated caller's own agent identity
+// (a.AgentID()), matching CaseClose/CaseContinue's pattern -- never
+// accepted from client input, so attribution cannot be forged.
+func (h *serviceHandler) CaseResolutionCreate(
+	ctx context.Context,
+	a *auth.AuthIdentity,
+	id, contactID uuid.UUID,
+	resolutionType string,
+) (*cmresolution.Resolution, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "CaseResolutionCreate",
+		"customer_id": a.CustomerID,
+		"case_id":     id,
+	})
+
+	if a.IsDirect() {
+		return nil, serviceerrors.ErrDirectAccessNotSupported
+	}
+
+	c, err := h.caseGet(ctx, a.CustomerID, id)
+	if err != nil {
+		log.Errorf("Could not get the case info. err: %v", err)
+		return nil, err
+	}
+
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		return nil, serviceerrors.ErrPermissionDenied
+	}
+
+	res, err := h.reqHandler.ContactV1CaseResolutionCreate(
+		ctx, a.CustomerID, id, contactID,
+		resolutionType, string(commonidentity.OwnerTypeAgent), a.AgentID(),
+	)
+	if err != nil {
+		log.Errorf("Could not create case resolution. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
+// CaseResolutionDelete undoes a case-level Contact attribution (design
+// VOIP-1252) by soft-deleting the Resolution row in contact-manager.
+func (h *serviceHandler) CaseResolutionDelete(ctx context.Context, a *auth.AuthIdentity, id, resolutionID uuid.UUID) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "CaseResolutionDelete",
+		"customer_id": a.CustomerID,
+		"case_id":     id,
+	})
+
+	if a.IsDirect() {
+		return serviceerrors.ErrDirectAccessNotSupported
+	}
+
+	c, err := h.caseGet(ctx, a.CustomerID, id)
+	if err != nil {
+		log.Errorf("Could not get the case info. err: %v", err)
+		return err
+	}
+
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		return serviceerrors.ErrPermissionDenied
+	}
+
+	if err := h.reqHandler.ContactV1CaseResolutionDelete(ctx, a.CustomerID, id, resolutionID); err != nil {
+		log.Errorf("Could not delete case resolution. err: %v", err)
+		return err
+	}
+
+	return nil
 }

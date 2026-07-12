@@ -8,6 +8,7 @@ import (
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/dbhandler"
+	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	cmcontact "monorepo/bin-contact-manager/models/contact"
@@ -661,9 +662,8 @@ func Test_ServiceAgentContactAddressCreate(t *testing.T) {
 				},
 				Addresses: []cmcontact.Address{
 					{
-						ID:     uuid.FromStringOrNil("a1b2c3d4-5066-11ec-ab34-23643cfdc1c5"),
-						Type:   "tel",
-						Target: "+121****1234",
+						ID:      uuid.FromStringOrNil("a1b2c3d4-5066-11ec-ab34-23643cfdc1c5"),
+						Address: commonaddress.Address{Type: "tel", Target: "+121****1234"},
 					},
 				},
 			},
@@ -674,9 +674,8 @@ func Test_ServiceAgentContactAddressCreate(t *testing.T) {
 				},
 				Addresses: []cmcontact.Address{
 					{
-						ID:     uuid.FromStringOrNil("a1b2c3d4-5066-11ec-ab34-23643cfdc1c5"),
-						Type:   "tel",
-						Target: "+121****1234",
+						ID:      uuid.FromStringOrNil("a1b2c3d4-5066-11ec-ab34-23643cfdc1c5"),
+						Address: commonaddress.Address{Type: "tel", Target: "+121****1234"},
 					},
 				},
 			},

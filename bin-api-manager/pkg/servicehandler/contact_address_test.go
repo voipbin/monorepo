@@ -8,6 +8,7 @@ import (
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/serviceerrors"
+	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	cmcontact "monorepo/bin-contact-manager/models/contact"
@@ -33,8 +34,7 @@ func Test_ContactAddressCreateIndependent_Unresolved(t *testing.T) {
 		ID:         uuid.FromStringOrNil("2c9c9f0a-5066-11ec-ab34-23643cfdc1c5"),
 		CustomerID: customerID,
 		ContactID:  uuid.Nil,
-		Type:       "tel",
-		Target:     "+821100000001",
+		Address:    commonaddress.Address{Type: "tel", Target: "+821****0001"},
 	}
 
 	mc := gomock.NewController(t)
