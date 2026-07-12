@@ -517,8 +517,33 @@ accumulate into the one pending struct and flush once at the single
 commit. A §5.3 deadlock retry discards the previous attempt's pending
 struct with the rolled-back transaction, eliminating both inflation
 sources by construction. Commit observation and counter registration
-live in the same layer (the transaction-owning dbhandler entry point,
-per §5.1), so no cross-layer plumbing is needed. **Round-32
+live in the same layer that opened the `BeginTx` this pending struct is
+scoped to. **Round-60 correction: that layer is not always "the
+dbhandler entry point."** For the four write functions with no
+composition (`AddressDelete`, `AddressClaim`, `AddressUpdate`/
+`AddressCreate` without `is_primary`), §5.1's thin non-`Tx`-suffixed
+wrapper IS the transaction owner, so "dbhandler entry point" is
+correct there. But for the composed cases §5.1 rounds 43–46
+established — `AddAddress`/`UpdateAddress` with `is_primary` set, and
+each iteration of `ContactCreate`'s address loop when that address is
+`IsPrimary` — the `BeginTx` is opened by `contacthandler`, not
+dbhandler (that is precisely what "the retry loop moves up to
+`contacthandler`... since those are the ones opening the single shared
+`tx`" means). In those composed cases the pending struct is created
+and held by the `contacthandler` call, passed down through the `Tx`
+-suffixed sequence (`OwnershipPeriodsLockAndResolveTx`,
+`AddressResetPrimaryTx`, `AddressCreateTx`/`AddressUpdateTx` — each of
+which may append to it, e.g. a Step 1 orphan-cleanup skew increment
+inside `OwnershipPeriodsLockAndResolveTx`), and flushed by
+`contacthandler` immediately after its own `tx.Commit()` succeeds — the
+same "flush exactly once, at the actual commit, by whoever owns that
+commit" rule this paragraph already establishes, just naming the
+correct owner for the composed case. No dbhandler→handler layering
+violation results: the pending struct is a plain value threaded through
+existing call parameters/returns, not a reverse dependency (dbhandler
+functions still don't import or call into contacthandler; they just
+return accumulated counts to a caller who already called them).**
+**Round-32
 transaction-boundary rule for repair (b):** the duplicate-key repair
 runs in a NEW §5.1 transaction opened after the caller's failed
 INSERT/UPDATE transaction has rolled back (a 1062 poisons the
@@ -1837,11 +1862,11 @@ func (h *handler) missingPeriodOwnedAddresses(ctx context.Context, customerID, c
 // contacthandler — STEP1 composition
 periods, err := dbHandler.OwnershipPeriodsListByContactID(ctx, contactID) // existing, round-59: error now propagated
 if err != nil {
-    return nil, errors.Wrap(err, "OwnershipPeriodsListByContactID")
+    return nil, fmt.Errorf("could not get ownership periods. interactionListByContact. err: %v", err) // round-60: matches this file's fmt.Errorf convention, not pkg/errors (unused in this codebase)
 }
 skewed, err := dbHandler.missingPeriodOwnedAddresses(ctx, customerID, contactID) // round-41–43/47
 if err != nil {
-    return nil, errors.Wrap(err, "missingPeriodOwnedAddresses")
+    return nil, fmt.Errorf("could not get missing-period-skew addresses. interactionListByContact. err: %v", err) // round-60
 }
 bounds := make([]OwnershipPeriodBound, 0, len(periods)+len(skewed))
 for _, p := range periods {
@@ -2392,6 +2417,8 @@ duplicated here). Disposition of each finding that survived to this design:
 | Round-56 BLOCKER: §5.1's blanket claim that all five `Tx`-suffixed write functions "internally call `OwnershipPeriodsLockAndResolveTx` itself first, so every one is independently correct when invoked standalone" was false for `AddressResetPrimaryTx` — its signature (`ctx, tx, contactID`) has no `(type, target)` to lock (it isn't a per-target operation; it clears `is_primary` on every OTHER address row this contact owns), it never calls the shared locking-read primitive, and it is never invoked standalone — §5.1's own round-3 finding and §5.2 both already establish the caller (`AddressCreateTx`/`AddressUpdateTx`) acquires the lock first and `AddressResetPrimaryTx` only runs after, inside that already-locked transaction | **Fixed** (§5.1: the "internally calls... standalone" claim scoped explicitly to the other four write functions; `AddressResetPrimaryTx` described accurately as a plain `UPDATE` running inside its caller's already-open, already-locked transaction, never calling the shared primitive itself) |
 | Round-57 BLOCKER: §5.1's round-49 `ErrConflict`-on-not-found rule for close-ing callers (`AddressDeleteTx`, `AddressUpdateTx`'s old-target close) was never reconciled with §9's round-16/17 rule that the SAME two closing-UPDATE sites (grouped with `ContactDelete`'s per-target close, which round-50 already fixed for exactly this reason) must treat a period that was never created at all (rolling-deploy version skew) as "not an error" — counter-only, silent success — rather than a genuine conflict; round-49's `lockedRows`-empty check did not distinguish "no row at all for this target" (skew) from "a row exists but isn't open for this contact" (genuine race), collapsing both into `ErrConflict` and turning §9's explicitly-promised silent success into a user-visible 409 for the single-target write paths (the same fix round-50 already applied to `ContactDelete` was never extended to its two structurally identical single-target siblings) | **Fixed** (§5.1: the `ErrConflict` rule is now scoped to `len(lockedRows) > 0` but none open for this contact — a genuine conflict; `len(lockedRows) == 0` — no period ever existed for this target — instead follows §9's counter-only rule identically to `ContactDelete`'s loop: skip the close, increment the skew counter, let the rest of the operation commit normally) |
 | Round-59 BLOCKER: `OwnershipPeriodsListByContactID` (§6.1, used by §6.2's STEP1) was specified with no `error` return value — `(ctx, contactID) []OwnershipPeriod` — violating this codebase's own convention (every existing dbhandler read method returns `(T, error)`) and this document's own round-11/12/48 rule that new dbhandler-call errors must be propagated, not swallowed; §6.2's round-47/48 Go sketch reflected this gap literally, calling it as `periods := dbHandler.OwnershipPeriodsListByContactID(...)` with no error check at all, alongside a sibling call two lines below that DOES check its error — an inconsistency within the same code block that would have shipped a silently-swallowed DB-failure path | **Fixed** (§6.1: signature corrected to `(ctx, contactID) ([]OwnershipPeriod, error)`; §6.2's Go sketch updated to check and propagate this error identically to every other dbhandler call in the same function) |
+| Round-60 finding: round-59's error-propagation fix used `errors.Wrap(err, "...")` (the `github.com/pkg/errors` API), but the actual call site (`pkg/contacthandler/interaction_read.go`) and the rest of `bin-contact-manager` use `fmt.Errorf("...err: %v", err)` exclusively — `errors.Wrap` has zero real usages in this codebase, contradicting the sketch's own claim (§6.2) that it matches "the same error-handling shape as every other dbhandler read in this package" | **Fixed** (§6.2: sketch updated to `fmt.Errorf` matching this file's existing convention, e.g. its `AddressListByContactID`/`ResolutionListByContact` error handling) |
+| Round-60 BLOCKER: §4 round-34's pending-metrics placement rule ("commit observation and counter registration live in the same layer — the transaction-owning dbhandler entry point") was never reconciled with §5.1 rounds 43–46, which moved transaction ownership to `contacthandler` for the composed `is_primary` cases (`AddAddress`/`UpdateAddress` with `is_primary` set, and `ContactCreate`'s loop when an address is `IsPrimary`) — leaving no defined owner for the pending-metrics struct in the most common write path (setting a primary address), the same "newest §5.1 refactor not retrofitted to an older §4 rule" class hit at rounds 40, 47, 49, 50, 52, and 57 | **Fixed** (§4: the rule now names the actual `BeginTx` opener as the pending-metrics owner in all cases — the thin non-`Tx`-suffixed wrapper for the four non-composed write functions, `contacthandler` for the composed `is_primary` cases — with the pending struct threaded through the `Tx`-suffixed call sequence and flushed by whichever layer's own `tx.Commit()` succeeds; no dbhandler→handler reverse dependency results, since it's a plain value passed through existing calls) |
 
 ## 9. Migration plan
 
@@ -2865,6 +2892,13 @@ humans decide; the correction path is `contact_resolutions` (§7).
   is propagated as an error (not silently swallowed), matching the
   error handling already required of every other dbhandler call in the
   same function.
+  **Round-60 addition:** the composed `is_primary` write path
+  (`AddAddress`/`UpdateAddress` with `is_primary` set) needs a fixture
+  asserting a skew/orphan-cleanup counter increment that happens inside
+  `OwnershipPeriodsLockAndResolveTx` during that composed sequence is
+  flushed exactly once, by `contacthandler` after its own commit
+  succeeds — not lost, not double-flushed, and not attempted from
+  within dbhandler.
 - (Recorded, not blocking implementation — §6.2/§8) If a customer's ownership-period
   count for a single Contact ever grows large enough to make the OR-expanded
   STEP2 query in §6.2 a real performance concern, the fix is switching
