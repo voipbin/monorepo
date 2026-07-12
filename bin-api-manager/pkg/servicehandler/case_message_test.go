@@ -176,8 +176,8 @@ func Test_CaseMessageSend_DestinationBindingFailure_HasContactID(t *testing.T) {
 	mockReq.EXPECT().
 		ContactV1AddressGet(ctx, contactID).
 		Return([]cmcontact.Address{
-			{Target: "+15550002222"},
-			{Target: "+15550003333"},
+			{Address: commonaddress.Address{Target: "+155****2222"}},
+			{Address: commonaddress.Address{Target: "+155****3333"}},
 		}, nil)
 
 	_, err := h.CaseMessageSend(ctx, a, caseID, "+15551234567", "+15559999999", "hello")
@@ -242,7 +242,7 @@ func Test_CaseMessageSend_AntiOracle(t *testing.T) {
 	mockReq.EXPECT().
 		ContactV1AddressGet(ctx, contactID).
 		Return([]cmcontact.Address{
-			{Target: "+15550002222"},
+			{Address: commonaddress.Address{Target: "+155****2222"}},
 		}, nil)
 	_, err2 := h.CaseMessageSend(ctx, a, caseIDHasContact, "+15551234567", "+15559999999", "hello")
 

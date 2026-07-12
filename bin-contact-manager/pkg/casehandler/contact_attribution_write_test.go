@@ -2,10 +2,12 @@ package casehandler
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -13,6 +15,7 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	"monorepo/bin-contact-manager/models/contact"
 	"monorepo/bin-contact-manager/models/kase"
 	"monorepo/bin-contact-manager/models/resolution"
 	"monorepo/bin-contact-manager/pkg/cachehandler"
@@ -30,6 +33,8 @@ func Test_ResolutionCreateCaseLevel_DerivesContactID(t *testing.T) {
 	mockUtil := utilhandler.NewMockUtilHandler(mc)
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockCache.EXPECT().ContactGet(gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("cache miss")).AnyTimes()
+	mockCache.EXPECT().ContactSet(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	db := dbhandler.NewHandler(dbTest, mockCache)
 	h := &caseHandler{utilHandler: mockUtil, reqHandler: mockReq, db: db, notifyHandler: mockNotify}
@@ -50,6 +55,15 @@ func Test_ResolutionCreateCaseLevel_DerivesContactID(t *testing.T) {
 	}
 	if err := db.CaseInsert(ctx, c); err != nil {
 		t.Fatalf("CaseInsert() error = %v", err)
+	}
+
+	// Contact fixture required as of VOIP-1252's cross-tenant contact
+	// ownership check in ResolutionCreateCaseLevel (design review round 1).
+	ct := &contact.Contact{
+		Identity: commonidentity.Identity{ID: contactID, CustomerID: customerID},
+	}
+	if err := db.ContactCreate(ctx, ct); err != nil {
+		t.Fatalf("ContactCreate() error = %v", err)
 	}
 
 	mockUtil.EXPECT().UUIDCreate().Return(resolutionID)
@@ -83,6 +97,8 @@ func Test_ResolutionDeleteCaseLevel_RederivesContactID(t *testing.T) {
 	mockUtil := utilhandler.NewMockUtilHandler(mc)
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockCache.EXPECT().ContactGet(gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("cache miss")).AnyTimes()
+	mockCache.EXPECT().ContactSet(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	db := dbhandler.NewHandler(dbTest, mockCache)
 	h := &caseHandler{utilHandler: mockUtil, reqHandler: mockReq, db: db, notifyHandler: mockNotify}
@@ -103,6 +119,15 @@ func Test_ResolutionDeleteCaseLevel_RederivesContactID(t *testing.T) {
 	}
 	if err := db.CaseInsert(ctx, c); err != nil {
 		t.Fatalf("CaseInsert() error = %v", err)
+	}
+
+	// Contact fixture required as of VOIP-1252's cross-tenant contact
+	// ownership check in ResolutionCreateCaseLevel (design review round 1).
+	ct := &contact.Contact{
+		Identity: commonidentity.Identity{ID: contactID, CustomerID: customerID},
+	}
+	if err := db.ContactCreate(ctx, ct); err != nil {
+		t.Fatalf("ContactCreate() error = %v", err)
 	}
 
 	mockUtil.EXPECT().UUIDCreate().Return(resolutionID)

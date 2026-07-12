@@ -1060,6 +1060,12 @@ const (
 	PostContactCasesIdNotesJSONBodyAuthorTypeSystem PostContactCasesIdNotesJSONBodyAuthorType = "system"
 )
 
+// Defines values for PostContactCasesIdResolutionsJSONBodyResolutionType.
+const (
+	PostContactCasesIdResolutionsJSONBodyResolutionTypeNegative PostContactCasesIdResolutionsJSONBodyResolutionType = "negative"
+	PostContactCasesIdResolutionsJSONBodyResolutionTypePositive PostContactCasesIdResolutionsJSONBodyResolutionType = "positive"
+)
+
 // Defines values for PostContactInteractionsIdResolutionsJSONBodyResolutionType.
 const (
 	PostContactInteractionsIdResolutionsJSONBodyResolutionTypeNegative PostContactInteractionsIdResolutionsJSONBodyResolutionType = "negative"
@@ -1126,8 +1132,8 @@ const (
 
 // Defines values for PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolutionType.
 const (
-	Negative PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolutionType = "negative"
-	Positive PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolutionType = "positive"
+	PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolutionTypeNegative PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolutionType = "negative"
+	PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolutionTypePositive PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolutionType = "positive"
 )
 
 // Defines values for PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolvedByType.
@@ -2903,6 +2909,9 @@ type ContactManagerInteractionListResponse struct {
 
 // ContactManagerResolution defines model for ContactManagerResolution.
 type ContactManagerResolution struct {
+	// CaseId The case this resolution is scoped to (case-level resolutions only). The ID is returned from GET /v1.0/contact_cases response.
+	CaseId *openapi_types.UUID `json:"case_id,omitempty"`
+
 	// ContactId The contact this resolution is attributed to.
 	ContactId *openapi_types.UUID `json:"contact_id,omitempty"`
 
@@ -5983,6 +5992,18 @@ type PostContactCasesIdNotesJSONBody struct {
 // PostContactCasesIdNotesJSONBodyAuthorType defines parameters for PostContactCasesIdNotes.
 type PostContactCasesIdNotesJSONBodyAuthorType string
 
+// PostContactCasesIdResolutionsJSONBody defines parameters for PostContactCasesIdResolutions.
+type PostContactCasesIdResolutionsJSONBody struct {
+	// ContactId The contact to attach this case to. The ID is returned from GET /v1.0/contacts response.
+	ContactId openapi_types.UUID `json:"contact_id"`
+
+	// ResolutionType Attribution type. positive attaches the case to the contact; negative suppresses a prior positive attribution.
+	ResolutionType PostContactCasesIdResolutionsJSONBodyResolutionType `json:"resolution_type"`
+}
+
+// PostContactCasesIdResolutionsJSONBodyResolutionType defines parameters for PostContactCasesIdResolutions.
+type PostContactCasesIdResolutionsJSONBodyResolutionType string
+
 // GetContactInteractionsParams defines parameters for GetContactInteractions.
 type GetContactInteractionsParams struct {
 	// PeerType Remote endpoint type (e.g. "tel", "email"). Required with peer_target.
@@ -7849,6 +7870,9 @@ type PostContactCasesIdMessagesJSONRequestBody PostContactCasesIdMessagesJSONBod
 // PostContactCasesIdNotesJSONRequestBody defines body for PostContactCasesIdNotes for application/json ContentType.
 type PostContactCasesIdNotesJSONRequestBody PostContactCasesIdNotesJSONBody
 
+// PostContactCasesIdResolutionsJSONRequestBody defines body for PostContactCasesIdResolutions for application/json ContentType.
+type PostContactCasesIdResolutionsJSONRequestBody PostContactCasesIdResolutionsJSONBody
+
 // PostContactInteractionsIdResolutionsJSONRequestBody defines body for PostContactInteractionsIdResolutions for application/json ContentType.
 type PostContactInteractionsIdResolutionsJSONRequestBody PostContactInteractionsIdResolutionsJSONBody
 
@@ -8532,6 +8556,12 @@ type ServerInterface interface {
 	// Delete a case note
 	// (DELETE /contact_cases/{id}/notes/{note_id})
 	DeleteContactCasesIdNotesNoteId(c *gin.Context, id openapi_types.UUID, noteId openapi_types.UUID)
+	// Attach a case to a contact
+	// (POST /contact_cases/{id}/resolutions)
+	PostContactCasesIdResolutions(c *gin.Context, id openapi_types.UUID)
+	// Undo a case-level contact attribution
+	// (DELETE /contact_cases/{id}/resolutions/{resolution_id})
+	DeleteContactCasesIdResolutionsResolutionId(c *gin.Context, id openapi_types.UUID, resolutionId openapi_types.UUID)
 	// List interactions
 	// (GET /contact_interactions)
 	GetContactInteractions(c *gin.Context, params GetContactInteractionsParams)
@@ -12817,6 +12847,63 @@ func (siw *ServerInterfaceWrapper) DeleteContactCasesIdNotesNoteId(c *gin.Contex
 	}
 
 	siw.Handler.DeleteContactCasesIdNotesNoteId(c, id, noteId)
+}
+
+// PostContactCasesIdResolutions operation middleware
+func (siw *ServerInterfaceWrapper) PostContactCasesIdResolutions(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostContactCasesIdResolutions(c, id)
+}
+
+// DeleteContactCasesIdResolutionsResolutionId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteContactCasesIdResolutionsResolutionId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Path parameter "resolution_id" -------------
+	var resolutionId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "resolution_id", c.Param("resolution_id"), &resolutionId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter resolution_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteContactCasesIdResolutionsResolutionId(c, id, resolutionId)
 }
 
 // GetContactInteractions operation middleware
@@ -19499,6 +19586,8 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.GET(options.BaseURL+"/contact_cases/:id/notes", wrapper.GetContactCasesIdNotes)
 	router.POST(options.BaseURL+"/contact_cases/:id/notes", wrapper.PostContactCasesIdNotes)
 	router.DELETE(options.BaseURL+"/contact_cases/:id/notes/:note_id", wrapper.DeleteContactCasesIdNotesNoteId)
+	router.POST(options.BaseURL+"/contact_cases/:id/resolutions", wrapper.PostContactCasesIdResolutions)
+	router.DELETE(options.BaseURL+"/contact_cases/:id/resolutions/:resolution_id", wrapper.DeleteContactCasesIdResolutionsResolutionId)
 	router.GET(options.BaseURL+"/contact_interactions", wrapper.GetContactInteractions)
 	router.GET(options.BaseURL+"/contact_interactions/unresolved", wrapper.GetContactInteractionsUnresolved)
 	router.GET(options.BaseURL+"/contact_interactions/:id", wrapper.GetContactInteractionsId)
@@ -27566,6 +27655,132 @@ func (response DeleteContactCasesIdNotesNoteId404JSONResponse) VisitDeleteContac
 type DeleteContactCasesIdNotesNoteId500JSONResponse struct{ InternalErrorJSONResponse }
 
 func (response DeleteContactCasesIdNotesNoteId500JSONResponse) VisitDeleteContactCasesIdNotesNoteIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactCasesIdResolutionsRequestObject struct {
+	Id   openapi_types.UUID `json:"id"`
+	Body *PostContactCasesIdResolutionsJSONRequestBody
+}
+
+type PostContactCasesIdResolutionsResponseObject interface {
+	VisitPostContactCasesIdResolutionsResponse(w http.ResponseWriter) error
+}
+
+type PostContactCasesIdResolutions200JSONResponse ContactManagerResolution
+
+func (response PostContactCasesIdResolutions200JSONResponse) VisitPostContactCasesIdResolutionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactCasesIdResolutions400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostContactCasesIdResolutions400JSONResponse) VisitPostContactCasesIdResolutionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactCasesIdResolutions401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostContactCasesIdResolutions401JSONResponse) VisitPostContactCasesIdResolutionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactCasesIdResolutions403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostContactCasesIdResolutions403JSONResponse) VisitPostContactCasesIdResolutionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactCasesIdResolutions404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostContactCasesIdResolutions404JSONResponse) VisitPostContactCasesIdResolutionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactCasesIdResolutions500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostContactCasesIdResolutions500JSONResponse) VisitPostContactCasesIdResolutionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteContactCasesIdResolutionsResolutionIdRequestObject struct {
+	Id           openapi_types.UUID `json:"id"`
+	ResolutionId openapi_types.UUID `json:"resolution_id"`
+}
+
+type DeleteContactCasesIdResolutionsResolutionIdResponseObject interface {
+	VisitDeleteContactCasesIdResolutionsResolutionIdResponse(w http.ResponseWriter) error
+}
+
+type DeleteContactCasesIdResolutionsResolutionId200JSONResponse map[string]interface{}
+
+func (response DeleteContactCasesIdResolutionsResolutionId200JSONResponse) VisitDeleteContactCasesIdResolutionsResolutionIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteContactCasesIdResolutionsResolutionId400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response DeleteContactCasesIdResolutionsResolutionId400JSONResponse) VisitDeleteContactCasesIdResolutionsResolutionIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteContactCasesIdResolutionsResolutionId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response DeleteContactCasesIdResolutionsResolutionId401JSONResponse) VisitDeleteContactCasesIdResolutionsResolutionIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteContactCasesIdResolutionsResolutionId403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response DeleteContactCasesIdResolutionsResolutionId403JSONResponse) VisitDeleteContactCasesIdResolutionsResolutionIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteContactCasesIdResolutionsResolutionId404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response DeleteContactCasesIdResolutionsResolutionId404JSONResponse) VisitDeleteContactCasesIdResolutionsResolutionIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteContactCasesIdResolutionsResolutionId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response DeleteContactCasesIdResolutionsResolutionId500JSONResponse) VisitDeleteContactCasesIdResolutionsResolutionIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(500)
 
@@ -42272,6 +42487,12 @@ type StrictServerInterface interface {
 	// Delete a case note
 	// (DELETE /contact_cases/{id}/notes/{note_id})
 	DeleteContactCasesIdNotesNoteId(ctx context.Context, request DeleteContactCasesIdNotesNoteIdRequestObject) (DeleteContactCasesIdNotesNoteIdResponseObject, error)
+	// Attach a case to a contact
+	// (POST /contact_cases/{id}/resolutions)
+	PostContactCasesIdResolutions(ctx context.Context, request PostContactCasesIdResolutionsRequestObject) (PostContactCasesIdResolutionsResponseObject, error)
+	// Undo a case-level contact attribution
+	// (DELETE /contact_cases/{id}/resolutions/{resolution_id})
+	DeleteContactCasesIdResolutionsResolutionId(ctx context.Context, request DeleteContactCasesIdResolutionsResolutionIdRequestObject) (DeleteContactCasesIdResolutionsResolutionIdResponseObject, error)
 	// List interactions
 	// (GET /contact_interactions)
 	GetContactInteractions(ctx context.Context, request GetContactInteractionsRequestObject) (GetContactInteractionsResponseObject, error)
@@ -47080,6 +47301,69 @@ func (sh *strictHandler) DeleteContactCasesIdNotesNoteId(ctx *gin.Context, id op
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(DeleteContactCasesIdNotesNoteIdResponseObject); ok {
 		if err := validResponse.VisitDeleteContactCasesIdNotesNoteIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostContactCasesIdResolutions operation middleware
+func (sh *strictHandler) PostContactCasesIdResolutions(ctx *gin.Context, id openapi_types.UUID) {
+	var request PostContactCasesIdResolutionsRequestObject
+
+	request.Id = id
+
+	var body PostContactCasesIdResolutionsJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostContactCasesIdResolutions(ctx, request.(PostContactCasesIdResolutionsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostContactCasesIdResolutions")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostContactCasesIdResolutionsResponseObject); ok {
+		if err := validResponse.VisitPostContactCasesIdResolutionsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteContactCasesIdResolutionsResolutionId operation middleware
+func (sh *strictHandler) DeleteContactCasesIdResolutionsResolutionId(ctx *gin.Context, id openapi_types.UUID, resolutionId openapi_types.UUID) {
+	var request DeleteContactCasesIdResolutionsResolutionIdRequestObject
+
+	request.Id = id
+	request.ResolutionId = resolutionId
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteContactCasesIdResolutionsResolutionId(ctx, request.(DeleteContactCasesIdResolutionsResolutionIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteContactCasesIdResolutionsResolutionId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteContactCasesIdResolutionsResolutionIdResponseObject); ok {
+		if err := validResponse.VisitDeleteContactCasesIdResolutionsResolutionIdResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

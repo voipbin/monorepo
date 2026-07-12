@@ -494,6 +494,8 @@ type ServiceHandler interface {
 	CaseGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cmkase.Case, error)
 	CaseClose(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cmkase.Case, error)
 	CaseContinue(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cmkase.Case, error)
+	CaseResolutionCreate(ctx context.Context, a *auth.AuthIdentity, id, contactID uuid.UUID, resolutionType string) (*cmresolution.Resolution, error)
+	CaseResolutionDelete(ctx context.Context, a *auth.AuthIdentity, id, resolutionID uuid.UUID) error
 
 	// case note handlers
 	CaseNoteList(ctx context.Context, a *auth.AuthIdentity, caseID uuid.UUID) ([]*cmcasenote.CaseNote, error)

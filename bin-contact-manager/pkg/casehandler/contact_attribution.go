@@ -3,12 +3,17 @@ package casehandler
 import (
 	"context"
 	"database/sql"
+	stderrors "errors"
 	"fmt"
 
 	"github.com/gofrs/uuid"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
+
 	"monorepo/bin-contact-manager/models/kase"
 	"monorepo/bin-contact-manager/models/resolution"
+	"monorepo/bin-contact-manager/pkg/dbhandler"
 )
 
 // deriveCaseContactID implements design §3.4's single derivation
@@ -69,10 +74,34 @@ func (h *caseHandler) applyDerivedContactID(ctx context.Context, tx *sql.Tx, cus
 // Case.contact_id from the result. Verifies the Case belongs to
 // customerID before writing -- without this check an attacker who knew
 // another tenant's case_id could overwrite that case's contact_id
-// (round-2 review defect).
+// (round-2 review defect). Also verifies the target Contact belongs to
+// customerID (VOIP-1252 design review round 1 finding) -- without this
+// check an agent of one tenant could attach their own Case to an
+// arbitrary Contact belonging to a different tenant, mirroring the
+// existing check in contacthandler.ResolutionCreate (the
+// interaction-level counterpart).
 func (h *caseHandler) ResolutionCreateCaseLevel(ctx context.Context, customerID, caseID, contactID uuid.UUID, resolutionType, resolvedByType string, resolvedByID uuid.UUID) (*resolution.Resolution, error) {
 	if err := verifyCaseOwnership(ctx, h.db, customerID, caseID); err != nil {
 		return nil, err
+	}
+
+	ct, err := h.db.ContactGet(ctx, contactID)
+	if err != nil {
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameContactManager,
+				"CONTACT_NOT_FOUND",
+				"The contact was not found.",
+			).Wrap(err)
+		}
+		return nil, fmt.Errorf("could not get contact. ResolutionCreateCaseLevel. err: %v", err)
+	}
+	if ct.CustomerID != customerID {
+		return nil, cerrors.NotFound(
+			commonoutline.ServiceNameContactManager,
+			"CONTACT_NOT_FOUND",
+			"The contact was not found.",
+		)
 	}
 
 	now := h.utilHandler.TimeNow()
