@@ -1212,7 +1212,14 @@ Concretely:
   second, independent lock acquisition that could race §5.2's ordering.
   It is redundant work, not a correctness or ordering hazard, and is
   accepted as such rather than optimized away — this design does not
-  require callers to know whether the lock was already taken.
+  require callers to know whether the lock was already taken. **Round-45
+  note: the `step`/`lockedRows` VALUES returned by the two calls are not
+  separately guaranteed equal by name, but trivially are in practice —
+  no write to `contact_address_ownership_periods` occurs between the two
+  calls in the composed sequence (the only intervening step,
+  `AddressResetPrimaryTx`, only touches `contact_addresses.is_primary`),
+  so a same-transaction re-read is definitionally a re-read of unchanged
+  state.**
 - The existing non-`Tx` methods become thin wrappers **and are also
   where the round-39/40 stale-target compare-and-retry and §5.3's
   deadlock retry actually run** (round-44: round-43's "open ONE tx,
@@ -1241,7 +1248,42 @@ Concretely:
     retry-on-sentinel / cap-at-3 / commit loop the thin wrappers do, one
     level higher, wrapping the full `OwnershipPeriodsLockAndResolveTx`
     → `AddressResetPrimaryTx` → `AddressCreateTx`/`AddressUpdateTx`
-    sequence as the retried unit.
+    sequence as the retried unit. **Round-45 correction: for
+    `UpdateAddress` (target change), the retried unit MUST also include
+    `contacthandler`'s own pre-lock `AddressGet` (`contact.go:354`) that
+    reads the OLD target — not just the dbhandler `Tx`-suffixed
+    sequence.** Round-39/40's `ErrStaleTarget` sentinel carries no
+    payload (round-44: "a plain sentinel"), so nothing hands the retry
+    loop a fresh old-target value; if the loop only re-runs the
+    dbhandler sequence and reuses the `target` value captured before the
+    loop started, every retry re-submits the SAME stale old-target,
+    `AddressUpdateTx`'s post-lock re-check fails identically every time,
+    and a single-fresh-read-away situation is misclassified as
+    non-transient and burns through `maxDeadlockRetries` into a spurious
+    5xx — reproducing the exact round-39/40 bug one layer up, in the
+    caller round-44 moved retry ownership into. **The composed retry
+    loop's body is: re-run `contacthandler`'s own pre-lock reads
+    (`AddressGet` for old target, when target is changing) → `BeginTx`
+    → `OwnershipPeriodsLockAndResolveTx` → (§5.2 two-target ordering
+    note below) → `AddressResetPrimaryTx` → `AddressCreateTx`/
+    `AddressUpdateTx`, on every iteration, not just the first.**
+  - **Round-45 addition — the two-target composed case (round-18):**
+    when `UpdateAddress` changes `target` AND sets `is_primary` in the
+    same request (the tested path, `v1_contacts_update_test.go:33`),
+    §5.2's two-target ascending-order rule and this section's
+    single-target composed sequence must combine: the retried unit
+    calls `OwnershipPeriodsLockAndResolveTx` for BOTH the old and new
+    `(type, target)`, in ascending order per §5.2, and only THEN runs
+    `AddressResetPrimaryTx` — `AddressResetPrimaryTx` must never run
+    while only one of the two locks is held. This is the same
+    combination §5.2 already specifies for the pre-round-43 shape;
+    round-43/44's composed-sequence description was written for the
+    single-target case and did not carry that combination forward
+    explicitly, leaving an implementer free to acquire only one lock
+    before calling `AddressResetPrimaryTx` — the same "fixed for one
+    case, not generalized to an established sibling combination" class
+    this document has hit at rounds 19, 24, 27, 30, 36, and 40 through
+    44.
 - Mock regeneration (`go generate ./...` / mockgen) required for the six
   new `Tx`-suffixed interface methods (five writes plus the shared
   locking-read/resolve method), same as every other new `DBHandler`
@@ -1977,6 +2019,8 @@ duplicated here). Disposition of each finding that survived to this design:
 | Round-43 BLOCKER: rounds 40/41/42's owner-scoped anti-join condition ("no period row for this owner at all") still missed same-owner release-then-reacquire — if A released a target (closed period recorded) and later A reacquired the SAME target period-less, the owner-scoped condition finds A's own old closed row and does not fire, leaving the reacquisition uncovered in both §6.2 and §6.3 identically | **Fixed** (§6.2 and §6.3: `p2.valid_to IS NULL` added to both inner `NOT EXISTS` clauses — the guard now fires exactly when this owner has no OPEN period for the target, a strict widening of round-42's condition; §10 gains a same-owner-reacquisition fixture for both) |
 | Round-43 BLOCKER: §5.1 asserted all five address-write functions share one `BeginTx`, but the actual `DBHandler` interface has no transaction-sharing mechanism between `AddressResetPrimary` and `AddressCreate`/`AddressUpdate` — tracked as a non-blocking §10 open question since round-39, but round-43 review classified it as blocking since it is a compilability gap, not an attribution-correctness question, and the rest of the document is otherwise implementer-ready | **Fixed** (§5.1: adopts `casehandler.getOrCreateAttempt`'s existing `Tx`-suffixed method pattern — all five functions gain `*Tx`-suffixed `DBHandler` interface siblings taking an already-open transaction, with the plain names becoming thin `BeginTx`+commit wrappers; mockgen regeneration named; §10's round-39 entry removed as resolved) |
 | Round-44 BLOCKER (two-part): round-43's `Tx`-suffixed pattern named "the ownership-period FOR UPDATE read" as a step in the composed sequence but never gave it a function signature or interface membership (the round-19 codegen-explicitness gap, this time in the section that was supposed to have just closed it); and separately, once transaction ownership moved from dbhandler to the caller, round-43's "open ONE tx ... commit once" wording left retry ownership for round-39/40's compare-and-retry and §5.3's deadlock retry completely undefined — a `Tx`-suffixed method cannot roll back and re-`BeginTx` a transaction it does not own, so the retry mechanics this document spent rounds 7–9/39/40 establishing had nowhere left to run | **Fixed** (§5.1: the locking read is now its own named `Tx`-suffixed method, `OwnershipPeriodsLockAndResolveTx`, added to the interface, with same-transaction re-invocation from a composed write explicitly declared safe under InnoDB's per-transaction lock semantics rather than a hazard; retry ownership assigned explicitly — sentinel errors (`ErrStaleTarget` alongside the existing deadlock sentinel) propagate up to whichever function owns the `BeginTx` for that outer operation: the thin non-`Tx` wrapper for the four uncomposed operations, or `contacthandler.AddAddress`/`UpdateAddress` itself for the one composed case that spans `AddressResetPrimaryTx`; §10 gains a composed-retry-reruns-the-full-sequence fixture) |
+| Round-45 BLOCKER: round-44's composed retry loop (for `is_primary`-set `AddAddress`/`UpdateAddress`) defined the retried unit as the dbhandler `Tx`-suffixed sequence alone, not including `contacthandler`'s own pre-lock `AddressGet` (`contact.go:354`) that reads the OLD target for `UpdateAddress` — since `ErrStaleTarget` carries no payload, a retry that only re-runs the dbhandler sequence resubmits the SAME stale old-target every iteration, so a single-fresh-read-away situation never converges and instead burns through `maxDeadlockRetries` into a spurious 5xx, reproducing round-39/40's bug one layer up in exactly the caller round-44 moved retry ownership into | **Fixed** (§5.1: the composed retry loop's body now explicitly re-runs `contacthandler`'s own pre-lock reads on every iteration, not just the first, before the dbhandler `Tx`-suffixed sequence) |
+| Round-45 BLOCKER: round-43/44's composed-sequence description was written for the single-target case (`is_primary` set, target unchanged) and did not carry forward §5.2's round-18 two-target ascending-order rule for the tested `UpdateAddress`(target change)×`is_primary` combination — an implementer following only §5.1's "concretely" text could acquire just one of the two locks before running `AddressResetPrimaryTx`, reintroducing the round-2 deadlock class §5.2 exists to prevent — the same "fixed for one case, not generalized to an established sibling combination" class hit at rounds 19, 24, 27, 30, 36, and 40 through 44 | **Fixed** (§5.1: explicit rule added — the two-target composed case locks BOTH old and new `(type, target)` via `OwnershipPeriodsLockAndResolveTx`, ascending per §5.2, before `AddressResetPrimaryTx` ever runs) |
 
 ## 9. Migration plan
 
@@ -2371,6 +2415,15 @@ humans decide; the correction path is `contact_resolutions` (§7).
   `AddressResetPrimaryTx` → `AddressCreateTx`/`AddressUpdateTx`) with a
   fresh `BeginTx`, not just the failed sub-step — matching
   `AddressClaim`'s full-restart semantics from §4.
+  **Round-45 additions:** (a) `UpdateAddress` (target change) +
+  `is_primary` composed retry needs a fixture asserting each retry
+  iteration re-reads the OLD target via `contacthandler`'s own pre-lock
+  read (not a captured/stale value) — a fresh-old-target case that
+  converges within `maxDeadlockRetries` where reusing the stale value
+  would exhaust it; (b) the two-target composed case (`UpdateAddress`
+  target change + `is_primary`) needs a fixture asserting BOTH locks
+  (old and new target, ascending) are held before `AddressResetPrimaryTx`
+  runs, matching `v1_contacts_update_test.go:33`'s tested path.
 - (Recorded, not blocking implementation — §6.2/§8) If a customer's ownership-period
   count for a single Contact ever grows large enough to make the OR-expanded
   STEP2 query in §6.2 a real performance concern, the fix is switching
