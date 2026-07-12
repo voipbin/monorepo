@@ -1329,6 +1329,34 @@ match gains a time-range condition:
  AND COALESCE(tm_interaction, tm_create) <  COALESCE(?, tm_interaction + INTERVAL 1 SECOND, tm_create + INTERVAL 1 SECOND))
 ```
 
+**Round-41 BLOCKER, fixed here: STEP1's period-only source silently
+dropped the missing-period skew population §6.3's round-40 fix already
+covers on the queue side.** Because `OwnershipPeriodsListByContactID`
+queries `contact_address_ownership_periods` exclusively, a target this
+Contact currently, live-owns but that has zero period rows (§9
+round-16/17's accepted degraded state — an old-binary pod's
+`AddressCreate` skipped the period write) contributes NO bound to
+STEP2's OR-list at all: not an unbounded one, none. Every interaction
+for that target vanishes from the Contact's OWN timeline — worse than
+§6.3's pre-round-40 bug, because there the interactions at least
+resurfaced somewhere (the unresolved queue); here they resurface
+nowhere, reproducing defect #1 (the timeline-vanishing defect this
+entire design exists to fix) via pure skew, with no Contact deletion
+involved. **Fix: STEP1 additionally queries `contact_addresses` for
+`(type, target)` pairs this `contact_id` owns (`contact_id = ?`) that
+have NO matching row in `contact_address_ownership_periods` for that
+`(customer_id, type, target)` — the same anti-join §6.3's third
+disjunct performs, mirrored from the ownership side instead of the
+unresolved side — and STEP2 gives each such pair an unconditional
+(unbounded, `valid_from = valid_to = NULL`) bound, identical in shape
+to a true first-registration period.** This reproduces today's
+time-agnostic value-match for exactly this population until the next
+touch gives the row a real period, at which point it drops out of this
+extra query and the ordinary period-bound path takes over — same
+transient-and-bounded character as §6.3's fix, same handoff pattern.
+§10 gains an `interactionListByContact` missing-period-skew fixture
+symmetric to §6.3's round-40 one.
+
 **Round-21 BLOCKER, fixed here: the previous version of this condition
 compared bare `tm_interaction`, which is a documented-nullable column**
 (`models/interaction/interaction.go:36-39`: "may be nil when the origin
@@ -1769,6 +1797,7 @@ duplicated here). Disposition of each finding that survived to this design:
 | Round-40 finding: `AddressUpdate`'s round-39 compare-and-retry said only "abort and retry with the fresh old-target," not specifying full-transaction restart vs. a partial retry that keeps the already-acquired new-target lock — the latter reading would reintroduce the exact two-target reverse-order deadlock class §5.2 exists to prevent; and §5.3's round-8 `maxDeadlockRetries` text named only `AddressClaim`, never updated to cover round-39's two new retry points — the same "fixed in one place, not propagated to sibling paths" class the document named for itself at round-17 | **Fixed** (§4: `AddressUpdate`'s retry stated explicitly as a full-transaction restart, with the two-target deadlock argument spelled out; §5.3: the cap generalized to cover every stale-target-mismatch retry §4 defines, one shared budget) |
 | Round-40 finding: whether the round-39 `AddressUpdate`/`AddressDelete` retry makes B5's `RowsAffected == 0` guard unreachable (dead code) was left unstated | **Fixed** (§4: recorded as two deliberately non-overlapping layers — the retry covers same-binary staleness (serialized away by the periods lock once the retry succeeds), the guard covers an old-binary pod deleting the row in the mixed-version window between the post-lock re-read and the final write, which the new-binary retry logic cannot see) |
 | Round-40 BLOCKER: §6.3's two `NOT EXISTS` disjuncts (periods, unresolved-row presence) both vacuously match a live-owned `contact_addresses` row that has zero period rows — the missing-period skew state §9 round-16/17 already accepts as reachable via an old-binary pod's `AddressCreate` — re-surfacing ALL of a normal, currently-owned, never-deleted address's interactions in the unresolved queue; each guard was written for its own population and the owned-without-periods combination (which exists only because of §9's accepted skew window) was never checked against this query, the same population-vs-query-enumeration gap round-36 found one population over | **Fixed** (§6.3: a third `NOT EXISTS` suppresses by presence any owned row with no period rows at all, handing off to the periods disjunct once the next touch gives the row a period — same pattern as the second disjunct's claim handoff; index coverage restated for three subqueries; §10 gains the missing-period-skew fixture) |
+| Round-41 BLOCKER: STEP1's round-40-adjacent gap — `interactionListByContact`'s STEP1 (`OwnershipPeriodsListByContactID`) is period-only, so the same owned-but-period-less skew population §6.3's round-40 fix covers on the queue side contributes NO bound at all to STEP2's OR-list, vanishing every one of its interactions from the OWNING Contact's own timeline: worse than the pre-round-40 §6.3 bug (there interactions at least resurfaced in the unresolved queue; here they resurface nowhere), reproducing defect #1 via pure skew with no deletion involved — round-40's fix, scoped to §6.3 only, left its exact mirror-image unfixed in §6.2, the same "fixed one population, not swept to the sibling read path" class this document has now hit at rounds 19, 24, 27, 30, 36, and 40→41 | **Fixed** (§6.2 STEP1: an additional anti-join query, symmetric to §6.3's third disjunct, finds `(type, target)` pairs this Contact owns with no matching period row and gives each an unconditional unbounded bound in STEP2 — same transient, next-touch-bounded handoff; §10 gains the symmetric fixture) |
 
 ## 9. Migration plan
 
@@ -2150,6 +2179,10 @@ humans decide; the correction path is `contact_resolutions` (§7).
   zero period rows, per §9's accepted degraded state) asserting its
   interactions stay suppressed from the queue until the next touch gives
   the row a period.
+  **Round-41 addition:** `interactionListByContact` needs the symmetric
+  missing-period-skew fixture — asserting an owned, period-less row's
+  interactions still appear on the OWNING Contact's timeline (not just
+  correctly absent from the unresolved queue).
 - (Recorded, not blocking implementation — §6.2/§8) If a customer's ownership-period
   count for a single Contact ever grows large enough to make the OR-expanded
   STEP2 query in §6.2 a real performance concern, the fix is switching
