@@ -43,6 +43,23 @@ Status: Draft, awaiting independent review
     actual main-branch source (not just doc text) and confirmed every
     one is genuinely correct, including that the new
     `CaseClearContactID` wrapper would actually compile.
+- v0.4 (2026-07-13). Round-3 review finding addressed:
+  - **BLOCKER fix**: §4's `resolution.go` removal row only listed
+    `ResolutionListByCase`/`ResolutionListByCaseTx` -- silently missed
+    `ResolutionDeleteByCase`/`ResolutionDeleteByCaseTx` (equally
+    case-level-only, sole caller is the already-deleted
+    `ResolutionDeleteCaseLevel`). Added an explicit row for
+    `dbhandler/main.go`'s interface declarations (all four functions)
+    and a new row for `dbhandler/resolution_test.go`
+    (`Test_ResolutionListByCase`/`Test_ResolutionDeleteByCase`, never
+    previously mentioned in the doc, would fail to compile as written).
+    Also found and added two more dangling doc-comment references
+    during the final sweep (`ResolutionDelete`'s cross-reference,
+    `kase.go`'s `CaseGetByIDForUpdate` comment) to §7.
+  - Round 3 independently re-verified rounds 1-2's fixes were correctly
+    applied and ran a full identifier sweep confirming all other 14
+    named identifiers are fully accounted for; this was the only
+    remaining gap found.
 
 ## 1. Why this exists (session history)
 
@@ -161,7 +178,9 @@ and does not apply to this revert -- only the Case-level branch
 | `bin-contact-manager/cmd/case-control/main.go` | Remove the `reconcile-contact` subcommand (`cmdReconcileContact`, `runReconcileContact`) entirely -- its sole purpose (recovering from Resolution-row/Case.contact_id drift) no longer applies once Case.contact_id is the single directly-written source of truth with no derivation step to drift from. |
 | `bin-contact-manager/pkg/listenhandler/v1_case_resolutions.go`, `v1_case_resolutions_test.go`, `models/request/v1_case_resolutions.go` | Delete entirely. |
 | `bin-contact-manager/pkg/listenhandler/main.go` | Remove `regV1CasesIDResolutions`/`regV1CasesIDResolutionsID` routes; add `PUT /v1/cases/{id}` route. |
-| `bin-contact-manager/pkg/dbhandler/resolution.go` | Remove `ResolutionListByCase`/`ResolutionListByCaseTx` (case-level only; `ResolutionListByInteraction` and all interaction-level resolution CRUD stay). |
+| `bin-contact-manager/pkg/dbhandler/resolution.go` | Remove `ResolutionListByCase`/`ResolutionListByCaseTx` **and `ResolutionDeleteByCase`/`ResolutionDeleteByCaseTx`** (round-3 correction: the original table only listed the List variants; Delete variants are equally case-level-only -- their sole caller, confirmed by grep, is `contact_attribution.go`'s `ResolutionDeleteCaseLevel`, itself already scoped for deletion in this same table -- and were silently missed. All four are case-level-only; `ResolutionListByInteraction`/`ResolutionDelete` (interaction-level) and all other interaction-level resolution CRUD stay unchanged). |
+| `bin-contact-manager/pkg/dbhandler/main.go` | Remove `ResolutionDeleteByCase`/`ResolutionDeleteByCaseTx`/`ResolutionListByCase`/`ResolutionListByCaseTx` from the `DBHandler` interface declaration (round-3 correction: original table implied only `resolution.go`'s function bodies needed removal; the interface declarations in this file and their mock entries were not explicitly called out, matching the same "dangling declaration" defect class rounds 1 and 2 caught elsewhere). Regenerate `mock_main.go`. |
+| `bin-contact-manager/pkg/dbhandler/resolution_test.go` | Remove `Test_ResolutionListByCase` and `Test_ResolutionDeleteByCase` (round-3 correction: this file was never mentioned in the doc at all; both tests call the four functions being deleted above and the file will fail to compile as soon as those are removed, if left untouched -- same "dangling test reference" defect class round 1 caught for `bin-api-manager/pkg/servicehandler/case_resolution_test.go`). All other tests in this file (interaction-level `ResolutionCreate`/`ResolutionDelete`/`ResolutionListByInteraction` coverage) are unaffected and stay. |
 | `bin-contact-manager/pkg/dbhandler/kase.go` | No removals. **Addition required** (round-1 correction, see §5.1.1): a non-Tx `CaseClearContactID` wrapper does not currently exist -- only `CaseClearContactIDTx` does. Must be added, mirroring the existing `CaseUpdateContactID`/`CaseUpdateContactIDTx` non-Tx/Tx pairing. |
 | `bin-common-handler/pkg/requesthandler/contact_case_resolutions.go`, `contact_case_resolutions_test.go` | Delete entirely. |
 | `bin-common-handler/pkg/requesthandler/main.go` | Remove `ContactV1CaseResolutionCreate`/`ContactV1CaseResolutionDelete` from the interface; add `ContactV1CaseUpdateContact`. |
@@ -564,6 +583,28 @@ corrected as part of this change (not left stale):
   example callers of this shared choke point) -> update the caller list
   to reference `UpdateContact` instead, so it doesn't dangle-reference
   deleted functions.
+- `bin-contact-manager/pkg/dbhandler/resolution.go`'s `ResolutionDelete`
+  (interaction-level) doc-comment (round-3 correction: currently reads
+  "For a case-scoped Resolution ... use ResolutionDeleteByCase instead")
+  -> remove the case-scoped cross-reference entirely, since
+  `ResolutionDeleteByCase` no longer exists post-revert; this function's
+  own behavior (interaction-scoped delete) is unaffected and the
+  sentence is purely informational, safe to delete outright.
+- `bin-contact-manager/pkg/dbhandler/kase.go`'s comment near
+  `CaseGetByIDForUpdate` referencing "Level/ResolutionDeleteCaseLevel/
+  ReconcileContact" (round-3 correction: another dangling reference to
+  deleted functions found during the final sweep, not previously
+  listed) -> update to reference `UpdateContact` instead.
+
+**Process note (added after round 3):** this is the third occurrence
+of the "dangling reference to a function this same design deletes"
+defect class across three review rounds (round 1:
+`case_resolution_test.go`; round 2: `servicehandler/main.go`'s
+interface; round 3: `resolution.go`'s Delete-variant siblings +
+`resolution_test.go` + two more doc-comments). Before implementation
+begins, run a final systematic grep of every identifier named in §4's
+removal table across the ENTIRE monorepo (not per-file spot checks) and
+confirm zero remaining hits outside what §4/§7 already account for.
 
 ## 8. Open questions
 
