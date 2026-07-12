@@ -181,14 +181,26 @@ today silently succeed instead, creating a Contact with an address it never
 gets an ownership period for, while the real owner's open period stays open
 untouched. **This design brings `ContactCreate`'s address loop under the
 exact same discipline as `AddAddress`/`UpdateAddress`/`RemoveAddress`/
-`ClaimAddress`: each address in the loop gets its own `BeginTx`-wrapped
-operation running the §4 locking read and step procedure (with the same
-fixed `AddressResetPrimary`-after-lock ordering §5.2 already specifies), and
-errors from it (including Step 1's `ErrConflict`) propagate to the caller
-instead of being logged and swallowed** — this is a correctness fix to
-existing broken error-swallowing behavior, not new scope creep, since the
-underlying bug (a live-owner conflict during Contact creation going
-unnoticed) already exists today independent of this design.
+`ClaimAddress`: each address in the loop runs the §4 locking read and step
+procedure, and errors from it (including Step 1's `ErrConflict`) propagate
+to the caller instead of being logged and swallowed** — this is a
+correctness fix to existing broken error-swallowing behavior, not new scope
+creep, since the underlying bug (a live-owner conflict during Contact
+creation going unnoticed) already exists today independent of this design.
+**Round-47 cross-reference correction: the transaction/retry shape per
+address is governed by §5.1 (rounds 43–46), not by a "one BeginTx per
+address, `AddressResetPrimary` always runs" model — this paragraph's
+earlier wording implied both, and both are now false.** Concretely (per
+§5.1): an `IsPrimary` address in the loop takes the composed retry path
+(possibly multiple `BeginTx` attempts, capped at `maxDeadlockRetries`,
+composing `OwnershipPeriodsLockAndResolveTx` → `AddressResetPrimaryTx` →
+`AddressCreateTx`); a non-`IsPrimary` address takes the single-target
+uncomposed path (a single `BeginTx`-owning wrapper with its own retry
+cap, `AddressResetPrimaryTx` never invoked at all). §4/§5.1 is canonical
+for the exact transaction/retry/composition shape; this paragraph only
+establishes that the discipline applies to `ContactCreate`'s loop the
+same as it does to the other four entry points, not what that discipline
+mechanically is.
 
 **Round-12 finding: propagating the error, on its own, creates a new partial-
 success state this design must own the disposition of.** `contacthandler.Create`
@@ -1560,6 +1572,68 @@ existing missing-period-skew cases.
 §10 gains an `interactionListByContact` missing-period-skew fixture
 symmetric to §6.3's round-40 one.
 
+**Round-47 finding, fixed here: STEP1's missing-period-skew query
+(rounds 41–43) was described only in prose across three rounds of
+refinement, with no SQL or Go code — the same "prose-only is
+insufficient" bar this document already enforces for §6.3's symmetric
+guard (concrete `NOT EXISTS` SQL) and for §6.2 STEP2's own OR-list
+(concrete `OwnershipPeriodBound` type, round-16).** Concretely:
+
+```sql
+-- STEP1, additional query (round-41–43): owned rows this contact holds
+-- with no OPEN period of their own (regardless of other owners' or this
+-- owner's past closed periods)
+SELECT a.type, a.target
+FROM contact_addresses a
+WHERE a.customer_id = ?
+  AND a.contact_id = ?
+  AND NOT EXISTS (
+      SELECT 1 FROM contact_address_ownership_periods p2
+      WHERE p2.customer_id = a.customer_id
+        AND p2.type = a.type
+        AND p2.target = a.target
+        AND p2.contact_id = a.contact_id
+        AND p2.valid_to IS NULL
+  )
+```
+
+Unlike §6.3's guard (a pure boolean `NOT EXISTS` filter on the outer
+`contact_interactions` query), this is a **row-returning** query whose
+results are converted, one row at a time, into unbounded
+`OwnershipPeriodBound` entries and appended to STEP2's existing OR-list
+— it cannot be mechanically derived from §6.3's filter shape, since the
+two play different roles (§6.3 suppresses; §6.2 STEP1 supplies bounds
+to match against). In Go:
+
+```go
+// dbhandler — additional STEP1 helper, round-41–43/47
+type missingPeriodAddress struct {
+    Type   string
+    Target string
+}
+
+func (h *dbHandler) missingPeriodOwnedAddresses(ctx context.Context, customerID, contactID uuid.UUID) ([]missingPeriodAddress, error) {
+    rows, err := h.db.QueryContext(ctx, missingPeriodOwnedAddressesQuery, customerID, contactID)
+    // ... scan into []missingPeriodAddress, same error-handling shape as
+    // every other dbhandler read in this package
+}
+
+// contacthandler — STEP1 composition
+periods := dbHandler.OwnershipPeriodsListByContactID(ctx, contactID)         // existing
+skewed, _ := dbHandler.missingPeriodOwnedAddresses(ctx, customerID, contactID) // round-41–43/47
+bounds := make([]OwnershipPeriodBound, 0, len(periods)+len(skewed))
+for _, p := range periods {
+    bounds = append(bounds, OwnershipPeriodBound{Type: p.Type, Target: p.Target, ValidFrom: p.ValidFrom, ValidTo: p.ValidTo})
+}
+for _, s := range skewed {
+    bounds = append(bounds, OwnershipPeriodBound{Type: s.Type, Target: s.Target, ValidFrom: nil, ValidTo: nil}) // unbounded
+}
+```
+
+This is additive to STEP1/STEP2 exactly as round-16's `OwnershipPeriodBound`
+type already is — no change to `InteractionList`'s OR-builder beyond
+what round-16 already specified.
+
 **Round-21 BLOCKER, fixed here: the previous version of this condition
 compared bare `tm_interaction`, which is a documented-nullable column**
 (`models/interaction/interaction.go:36-39`: "may be nil when the origin
@@ -2062,6 +2136,8 @@ duplicated here). Disposition of each finding that survived to this design:
 | Round-46 finding: round-45's composed retry loop re-runs `contacthandler`'s pre-lock `AddressGet` every iteration, but never stated which retry filter governs a FAILURE of that read itself (a plain, non-locking, out-of-transaction read distinct from the in-transaction `ErrStaleTarget`/deadlock sentinels) — left unstated, an implementer could treat any error from the composed unit as retry-eligible, turning a permanent `ErrNotFound` (concurrent deletion) into a spurious 5xx after exhausting `maxDeadlockRetries`, the same round-39/40 bug recurring in the newly-composed loop | **Fixed** (§5.1: one retry filter — "retry only on `ErrStaleTarget` or a deadlock-class error, propagate everything else immediately" — stated as reused by every `BeginTx`-owning layer, composed or not, rather than implying a separate filter per loop) |
 | Round-46 finding: "target changed" was defined only by request-payload key presence (`contact.go:360`'s `fields["target"]` check), never by value comparison against the row's current target — a request resending the SAME target value with `is_primary` set would be misclassified as a target change, triggering the two-target lock-ordering path and an unconditional close-then-reopen of the address's own period despite no actual reassignment | **Fixed** (§5.1: "target changed" redefined as payload value differing from the row's current target; a same-value resend is explicitly routed to the existing single-target composed sequence, not a new path; §10 gains a same-value no-op fixture) |
 | Round-46 BLOCKER: round-45's "the ONE case that composes `AddressResetPrimaryTx` with a write" directly contradicted §4's own round-11 finding that `contacthandler.Create`'s per-address loop (`contact.go:79-107`) composes the identical `AddressResetPrimary`-then-`AddressCreate` pair for any `IsPrimary` address in a new Contact's address list — the same compilability/retry-ownership gap round-43 fixed for `AddAddress`/`UpdateAddress` was left unfixed for `Create`'s loop, the same "fixed for one case, not generalized to an established sibling" class hit at rounds 19, 24, 27, 30, 36, and 40 through 45 | **Fixed** (§5.1: the composed retry loop and its ownership rule extended explicitly to each iteration of `Create`'s address loop, not just `AddAddress`/`UpdateAddress`) |
+| Round-47 finding: §4's original round-11/12 text describing `ContactCreate`'s address loop still said "each address gets its own BeginTx" and "the same fixed AddressResetPrimary-after-lock ordering," both superseded by §5.1's round-43–46 composed/uncomposed split (an `IsPrimary` address takes the possibly-multi-`BeginTx` composed path; a non-`IsPrimary` address never invokes `AddressResetPrimary` at all) — left without a cross-reference correction, an implementer trusting §4's older wording could believe "one BeginTx per address" or "AddressResetPrimary always runs," the same stale-cross-reference class this document holds itself to elsewhere (e.g. the line ~479 "§9 superseded by §4" pointer) | **Fixed** (§4: added an explicit pointer that §5.1 (rounds 43–46) is canonical for the exact transaction/retry/composition shape; §4's paragraph now only establishes that error-propagation discipline applies to `Create`'s loop, not the mechanics) |
+| Round-47 finding: §6.2 STEP1's missing-period-skew query (rounds 41–43) was described only in prose across three rounds of refinement, with no SQL or Go code — unlike §6.3's symmetric guard (concrete `NOT EXISTS` SQL) and STEP2's own OR-list (concrete `OwnershipPeriodBound` type, round-16), violating this document's own established "prose alone is insufficient" bar, freshly discovered because it is a concreteness gap rather than a correctness gap the prior 46 rounds' correctness-focused review passes had not been looking for | **Fixed** (§6.2: concrete SQL for the additional STEP1 query and a Go sketch showing its row-to-`OwnershipPeriodBound` conversion and composition alongside the existing periods list, explicitly noting it cannot be mechanically derived from §6.3's boolean-filter shape since the two queries play different roles) |
 
 ## 9. Migration plan
 
