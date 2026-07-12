@@ -319,16 +319,42 @@ close-at-NOW() period rule (§4 table) and calling it here would
 reproduce the ghost-period bug round-31 fixed. The compensating path is
 a **separate dbhandler entry point** (e.g.
 `AddressDeleteCompensating(ctx, contactID, type, target)`), which in one
-§5.1 transaction — following §5.2's canonical order: ownership-period
-`FOR UPDATE` first, then the `contact_addresses` row delete, then the
-period DELETE (round-36: order stated explicitly; no `contact_contacts`
-read is needed since the caller is compensating its own just-failed
-create) — hard-deletes the address row AND hard-DELETEs the open
+§5.1 transaction hard-deletes the address row AND hard-DELETEs the open
 period this same create-loop inserted (round-31's sanctioned
-exception), publishing nothing. Round-36: this new function joins the
+exception), publishing nothing. **Round-55 retrofit: `AddressDeleteCompensating`
+is a SEVENTH, distinct caller of the shared locking-read/resolve
+primitive, alongside the five `Tx`-suffixed write functions and
+`ContactDelete`/`ContactDeleteByCustomerID`'s N-target loops (§5.1,
+rounds 43–53).** Concretely: `AddressDeleteCompensating` is a thin,
+non-`Tx`-suffixed wrapper — it opens its own `BeginTx` (it is not called
+from within another operation's already-open transaction; the
+compensating cleanup for `ContactCreate`'s address-loop failure is its
+own standalone operation, run after `ContactCreate`'s own transaction
+work has already failed/rolled back for that address) — and inside that
+`BeginTx` it calls `OwnershipPeriodsLockAndResolveTx(ctx, tx,
+customerID, contactID, type, target)` with the SAME `contactID` it
+already receives as its own parameter (no separate lookup — this
+function's caller, `ContactCreate`'s compensating-cleanup step, already
+knows which contact_id it is cleaning up after). Like `ContactDelete`'s
+loop, `AddressDeleteCompensating` is a CLOSE-ing (in this case,
+DELETE-ing) caller: it ignores `step` and, after confirming its own open
+row is present in `lockedRows` (round-49's not-found → `ErrConflict`
+contract applies here too — a concurrent operation racing this
+compensating cleanup on the same target is a genuine conflict, not the
+bulk-loop's benign skew case, since this is a single-target operation
+like `AddressDeleteTx`), hard-deletes both the `contact_addresses` row
+and the `contact_address_ownership_periods` row (not a `valid_to=NOW()`
+close — round-31/32's DELETE-not-close distinction is unaffected by this
+retrofit). It is subject to the same `maxDeadlockRetries = 3` retry
+loop (§5.3) as every other locking-read caller. Round-36: this new
+function joins the
 `DBHandler` interface in `pkg/dbhandler/main.go` and requires `go
 generate` mock regeneration, exactly like `InteractionListByOwnershipPeriods`
-(§6.2's round-19 rule); §10's checklist carries it. **Round-32
+(§6.2's round-19 rule); §10's checklist carries it, **now including a
+round-55 fixture asserting `AddressDeleteCompensating` calls
+`OwnershipPeriodsLockAndResolveTx` (not a bespoke locking read) and
+returns `ErrConflict` on not-found rather than the bulk-loop's
+counter-only rule**. **Round-32
 correction: the original round-13 text described this path as sharing
 `RemoveAddress`'s "ownership-period Step-based closure" and factoring out
 logic "both call sites need" — that sharing claim is FALSE after
@@ -2307,6 +2333,7 @@ duplicated here). Disposition of each finding that survived to this design:
 | Round-52 finding: round-51's `contactID` signature fix was applied to §5.1's own signature declaration but not retrofitted to the two other places that describe calls into this function — §4's `ContactDelete` N-target loop text (round-49/50, never states which `contactID` value the loop passes) and §10's corresponding fixture requirement (never requires verifying the right `contactID` is threaded through) — the same "newest §5.1 refactor not retrofitted to older §4 siblings" class hit at rounds 40, 47, 49, and 50 | **Fixed** (§4: explicit statement that the loop passes the SAME `contactID` — the Contact being deleted, known before the loop starts — on every one of its N calls; only `(type, target)` varies per iteration) |
 | Round-52 BLOCKER: round-51's claim that "every caller already had this value available... `the deleting Contact's ID for AddressDeleteTx`" was unverified against `AddressDeleteTx`'s actual signature (`ctx, tx, addressID`, fixed since round-43–46) and §4's own round-39 text, which explicitly enumerates only `(type, target)` as what `AddressDeleteTx` must read from the row — `contact_id` was never listed as a value this function has or reads, contradicting round-51's blanket assertion | **Fixed** (§4: `AddressDeleteTx` explicitly reads `contact_id` from the SAME row lookup that resolves `addressID` to `(type, target)` — one query, three columns, no separate lookup needed — and uses it for both the `OwnershipPeriodsLockAndResolveTx` call and the `lockedRows` self-row filter) |
 | Round-53 finding: round-52's fix specified `AddressDeleteTx`'s `contactID` source but left `AddressUpdateTx`'s two calls (old-target CLOSE, new-target OPEN) with the same unstated-source gap — `contacthandler.UpdateAddress`'s pre-lock read (round-39, `contact.go:354`) was described as returning `target` only, never stated to also carry `contact_id`, the same "fixed for one caller, not retrofitted to a structurally identical sibling" class hit at rounds 40, 47, 49, 50, and 52 | **Fixed** (§4: `AddressUpdate`'s pre-lock read explicitly stated to return `contact_id` alongside `target` from the same row/query, supplying the `contactID` for both of `AddressUpdateTx`'s locking-read calls; the existing target-mismatch compare-and-retry is noted to catch a `contact_id` mismatch too, since both come from the same re-read) |
+| Round-55 finding: `AddressDeleteCompensating` (round-13/31/32/35/36) — the compensating-cleanup path for `ContactCreate`'s partial-failure address loop — was never retrofitted to §5.1's `Tx`-suffixed/`OwnershipPeriodsLockAndResolveTx` architecture (rounds 43–53); its own paragraph still described a bare "§5.1 transaction" with §5.2's pre-round-43 canonical-order phrasing, named neither the shared locking-read primitive nor a transaction-ownership shape, and appeared in none of the "five write functions plus ContactDelete's loop" enumerations that rounds 48–52 used to scope which callers get which contract — the same "fixed for established callers, sixth/seventh sibling missed" class hit at rounds 19, 24, 27, 30, 36, and 40 through 53 | **Fixed** (§4: `AddressDeleteCompensating` explicitly named as a seventh, distinct caller — a thin non-`Tx`-suffixed wrapper opening its own `BeginTx`, calling `OwnershipPeriodsLockAndResolveTx` with its own already-known `contactID` parameter, applying the single-target `ErrConflict`-on-not-found contract (round-49) rather than the bulk-loop's counter-only rule, and subject to the same `maxDeadlockRetries` retry loop as every other locking-read caller; §10 gains a fixture) |
 
 ## 9. Migration plan
 
@@ -2753,6 +2780,12 @@ humans decide; the correction path is `contact_resolutions` (§7).
   and that a concurrent reassignment (row's `contact_id` changes
   between the pre-lock read and the lock) is caught by the existing
   post-lock compare-and-retry, not just a `target` change.
+  **Round-55 addition:** `AddressDeleteCompensating` needs a fixture
+  asserting it calls `OwnershipPeriodsLockAndResolveTx` (not a bespoke
+  locking read) with its own `contactID` parameter, ignores `step`, and
+  returns `ErrConflict` — not a silent no-op, and not the bulk-loop's
+  counter-only skew signal — when its own open row is not found in
+  `lockedRows`.
 - (Recorded, not blocking implementation — §6.2/§8) If a customer's ownership-period
   count for a single Contact ever grows large enough to make the OR-expanded
   STEP2 query in §6.2 a real performance concern, the fix is switching
