@@ -61,7 +61,14 @@ func (r *rabbit) consumeMessageWorker(messages <-chan amqp.Delivery, queueName s
 `queueName` is threaded in from `startConsumers` (`reg.queueName`, already known there) —
 needed by `ackOrRetry` to republish a retry onto the CORRECT queue (see §4.2; using
 `message.RoutingKey` instead would be wrong for topic-routed events where the publish
-routing key differs from the queue's own name).
+routing key differs from the queue's own name). **Design-review round-1 finding (MINOR,
+clarified here): this signature change means `startConsumers`'s goroutine-spawn line
+(§4.5) also changes** — `go r.consumeMessageWorker(messages, reg.cbMessage)` becomes
+`go r.consumeMessageWorker(messages, reg.queueName, reg.cbMessage)`. The `// ...
+unchanged` comment in §4.5's snippet refers only to the rest of `startConsumers`'s body
+below the `Consume` call, not to this spawn line — called out explicitly here so the
+implementation phase doesn't read "unchanged" as "no changes needed to make this
+compile."
 
 ### 4.2 Retry mechanism — header-based counter via the existing delay-exchange, NOT the boolean Redelivered flag
 
@@ -120,10 +127,10 @@ func (r *rabbit) ackOrRetry(message amqp.Delivery, queueName string, processErr 
 	delayMs := retryBackoff[retryCount]
 
 	log.Warnf("Message processing failed, scheduling retry %d/%d in %dms. err: %v", retryCount+1, maxEventRetries, delayMs, processErr)
-	promEventRetried.WithLabelValues(queueName).Inc()
+	promEventRetried.WithLabelValues(queueName, strconv.Itoa(retryCount+1)).Inc()
 
 	headers["x-delay"] = delayMs
-	if errPub := r.publishExchange(string(commonoutline.QueueNameDelay), queueName, message.Body, headers); errPub != nil {
+	if errPub := r.publishExchange(string(commonoutline.QueueNameDelay), queueName, message.Body, headers, amqp.Persistent); errPub != nil {
 		log.Errorf("Could not schedule delayed retry, falling back to immediate requeue. err: %v", errPub)
 		if err := message.Nack(false, true); err != nil {
 			log.Errorf("Error nacking (fallback requeue) message: %v", err)
@@ -195,6 +202,44 @@ further (e.g. persisting retry-count externally) is judged not worth the complex
 a channel-failure edge case that is already logged and already accepted as an idempotency
 risk under §5's "processed more than once" umbrella. If production data (§4.4) later
 shows this path firing at meaningful volume, revisit with an external/durable counter.
+
+**Design-review round-1 finding (BLOCKER, fixed above): the code snippet's Prometheus
+call did not match its own metric definition.** §4.4 defines `promEventRetried` with TWO
+labels (`queue`, `retry_count`), but the original snippet in this section called
+`promEventRetried.WithLabelValues(queueName)` with only ONE argument. `CounterVec` panics
+on a label-count mismatch ("inconsistent label cardinality") — this would have crashed
+the process on the very first retry, i.e. exactly the first time this fix's own retry
+path is exercised. Fixed: call now passes `strconv.Itoa(retryCount+1)` as the second
+argument (the 1/2/3 retry attempt number, matching §4.4's stated label). This needs a
+`strconv` import in the real implementation.
+
+**Design-review round-1 finding (MAJOR, fixed above): `publishExchange`/`amqp.Publishing`
+did not set `DeliveryMode`, so retry copies were transient (in-memory only) despite the
+original message's durable delivery.** `amqp.Publishing.DeliveryMode` defaults to 0
+(transient) unless explicitly set to `amqp.Persistent` (2). A message sitting in the
+`x-delayed-message` exchange's internal wait state for up to 120s (§4.2's longest
+backoff) with `DeliveryMode` unset would be silently lost if the broker restarts during
+that window — undermining the "never silent loss" framing this whole design is built on.
+Fixed: the retry republish now explicitly passes `amqp.Persistent`. This requires
+`publishExchange` (`publish.go:14-43`) to accept an optional `deliveryMode` parameter (or
+a new small wrapper) — a signature change flagged for the implementation phase, not
+committed to a specific shape here. Note this durability caveat is NOT new to this
+design: `EventPublish`/`EventPublishWithDelay` elsewhere in this codebase have the exact
+same gap today (also call `publishExchange` without setting `DeliveryMode`) — this design
+only fixes it for the NEW retry-republish path introduced here; the pre-existing gap in
+the other call sites is out of scope for this ticket but worth flagging as a related
+follow-up (the analysis's "observe, then build more" principle applies equally here).
+
+**Design-review round-1 finding (MINOR): `publishExchange` failure fallback has no
+backoff, risking a busy-loop under sustained broker/channel trouble.** If
+`publishExchange` keeps failing (e.g. a channel that's already unhealthy) while the local
+handler callback itself keeps succeeding-then-failing-to-schedule, the
+`Nack(false, true)`-then-immediate-redelivery fallback path has no rate limit, which
+could spin CPU/log volume under a pathological failure mode. Accepted for this
+iteration (the failure mode requires BOTH a working consume channel AND a broken publish
+channel simultaneously — an unusual combination) but flagged for the implementation phase
+to consider a minimal backoff (e.g. a short `time.Sleep` before the fallback `Nack`) if
+observed in practice.
 
 **Ordering guarantee (none, by design)**: because retries are republished as brand-new
 deliveries on the (possibly re-delayed) queue, a retried message can be interleaved with
