@@ -1698,8 +1698,17 @@ Round-1 confirmed it is shared by `ContactGet`/`ContactList`/
 public `Contact.Addresses` API field; changing its semantics would leak closed/
 historical addresses into `GET /v1/contacts/{id}`.
 
-A new function, `OwnershipPeriodsListByContactID(ctx, contactID) []OwnershipPeriod`,
-is added instead, used **only** by the two interaction-read paths below.
+A new function, `OwnershipPeriodsListByContactID(ctx, contactID)
+([]OwnershipPeriod, error)`, is added instead, used **only** by the two
+interaction-read paths below. **Round-59 correction: earlier prose in
+this section (and the round-47/48 Go sketch in §6.2) omitted the
+`error` return, in violation of this codebase's own convention — every
+existing dbhandler method (`InteractionGet`, `InteractionList`,
+`InteractionListUnresolved`, etc.) returns `(T, error)` with no
+exception, and this document's own round-11/12/48 rule requires errors
+from new dbhandler calls to be propagated, not swallowed. The caller in
+§6.2's STEP1 checks and returns this error like every other dbhandler
+call in that function, rather than the sketched `periods, _ :=`.**
 
 ### 6.2 `interactionListByContact` (STEP1/STEP2)
 
@@ -1826,7 +1835,10 @@ func (h *handler) missingPeriodOwnedAddresses(ctx context.Context, customerID, c
 }
 
 // contacthandler — STEP1 composition
-periods := dbHandler.OwnershipPeriodsListByContactID(ctx, contactID)         // existing
+periods, err := dbHandler.OwnershipPeriodsListByContactID(ctx, contactID) // existing, round-59: error now propagated
+if err != nil {
+    return nil, errors.Wrap(err, "OwnershipPeriodsListByContactID")
+}
 skewed, err := dbHandler.missingPeriodOwnedAddresses(ctx, customerID, contactID) // round-41–43/47
 if err != nil {
     return nil, errors.Wrap(err, "missingPeriodOwnedAddresses")
@@ -2379,6 +2391,7 @@ duplicated here). Disposition of each finding that survived to this design:
 | Round-55 finding: `AddressDeleteCompensating` (round-13/31/32/35/36) — the compensating-cleanup path for `ContactCreate`'s partial-failure address loop — was never retrofitted to §5.1's `Tx`-suffixed/`OwnershipPeriodsLockAndResolveTx` architecture (rounds 43–53); its own paragraph still described a bare "§5.1 transaction" with §5.2's pre-round-43 canonical-order phrasing, named neither the shared locking-read primitive nor a transaction-ownership shape, and appeared in none of the "five write functions plus ContactDelete's loop" enumerations that rounds 48–52 used to scope which callers get which contract — the same "fixed for established callers, sixth/seventh sibling missed" class hit at rounds 19, 24, 27, 30, 36, and 40 through 53 | **Fixed** (§4: `AddressDeleteCompensating` explicitly named as a seventh, distinct caller — a thin non-`Tx`-suffixed wrapper opening its own `BeginTx`, calling `OwnershipPeriodsLockAndResolveTx` with its own already-known `contactID` parameter, applying the single-target `ErrConflict`-on-not-found contract (round-49) rather than the bulk-loop's counter-only rule, and subject to the same `maxDeadlockRetries` retry loop as every other locking-read caller; §10 gains a fixture) |
 | Round-56 BLOCKER: §5.1's blanket claim that all five `Tx`-suffixed write functions "internally call `OwnershipPeriodsLockAndResolveTx` itself first, so every one is independently correct when invoked standalone" was false for `AddressResetPrimaryTx` — its signature (`ctx, tx, contactID`) has no `(type, target)` to lock (it isn't a per-target operation; it clears `is_primary` on every OTHER address row this contact owns), it never calls the shared locking-read primitive, and it is never invoked standalone — §5.1's own round-3 finding and §5.2 both already establish the caller (`AddressCreateTx`/`AddressUpdateTx`) acquires the lock first and `AddressResetPrimaryTx` only runs after, inside that already-locked transaction | **Fixed** (§5.1: the "internally calls... standalone" claim scoped explicitly to the other four write functions; `AddressResetPrimaryTx` described accurately as a plain `UPDATE` running inside its caller's already-open, already-locked transaction, never calling the shared primitive itself) |
 | Round-57 BLOCKER: §5.1's round-49 `ErrConflict`-on-not-found rule for close-ing callers (`AddressDeleteTx`, `AddressUpdateTx`'s old-target close) was never reconciled with §9's round-16/17 rule that the SAME two closing-UPDATE sites (grouped with `ContactDelete`'s per-target close, which round-50 already fixed for exactly this reason) must treat a period that was never created at all (rolling-deploy version skew) as "not an error" — counter-only, silent success — rather than a genuine conflict; round-49's `lockedRows`-empty check did not distinguish "no row at all for this target" (skew) from "a row exists but isn't open for this contact" (genuine race), collapsing both into `ErrConflict` and turning §9's explicitly-promised silent success into a user-visible 409 for the single-target write paths (the same fix round-50 already applied to `ContactDelete` was never extended to its two structurally identical single-target siblings) | **Fixed** (§5.1: the `ErrConflict` rule is now scoped to `len(lockedRows) > 0` but none open for this contact — a genuine conflict; `len(lockedRows) == 0` — no period ever existed for this target — instead follows §9's counter-only rule identically to `ContactDelete`'s loop: skip the close, increment the skew counter, let the rest of the operation commit normally) |
+| Round-59 BLOCKER: `OwnershipPeriodsListByContactID` (§6.1, used by §6.2's STEP1) was specified with no `error` return value — `(ctx, contactID) []OwnershipPeriod` — violating this codebase's own convention (every existing dbhandler read method returns `(T, error)`) and this document's own round-11/12/48 rule that new dbhandler-call errors must be propagated, not swallowed; §6.2's round-47/48 Go sketch reflected this gap literally, calling it as `periods := dbHandler.OwnershipPeriodsListByContactID(...)` with no error check at all, alongside a sibling call two lines below that DOES check its error — an inconsistency within the same code block that would have shipped a silently-swallowed DB-failure path | **Fixed** (§6.1: signature corrected to `(ctx, contactID) ([]OwnershipPeriod, error)`; §6.2's Go sketch updated to check and propagate this error identically to every other dbhandler call in the same function) |
 
 ## 9. Migration plan
 
@@ -2847,6 +2860,11 @@ humans decide; the correction path is `contact_resolutions` (§7).
   §9's round-16/17 rule), distinct from the genuine-conflict case
   (`lockedRows` non-empty but none open for this contact), which still
   returns `ErrConflict`.
+  **Round-59 addition:** `interactionListByContact`'s STEP1 needs a
+  fixture asserting a DB failure from `OwnershipPeriodsListByContactID`
+  is propagated as an error (not silently swallowed), matching the
+  error handling already required of every other dbhandler call in the
+  same function.
 - (Recorded, not blocking implementation — §6.2/§8) If a customer's ownership-period
   count for a single Contact ever grows large enough to make the OR-expanded
   STEP2 query in §6.2 a real performance concern, the fix is switching
