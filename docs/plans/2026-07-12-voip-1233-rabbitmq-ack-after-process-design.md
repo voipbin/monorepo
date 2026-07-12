@@ -171,6 +171,31 @@ backoff 5s → 30s → 120s between them, before the message is permanently drop
 (Acked without further action; no DLX to inspect it afterward — see §4.3/§7 for the
 production-signal-driven fast-follow).
 
+**Design-review round-1 finding (MAJOR, addressed here): the 4-attempt bound can be
+bypassed if `message.Ack()` itself fails on the SUCCESS path.** If `executeConsumeMessage`
+succeeds but the subsequent `message.Ack(false)` call errors (e.g. channel already
+closed — the same pre-existing edge case flagged in the current code's
+`consume.go:81-83` comment), the message stays unacked at the broker and gets
+auto-redelivered on channel/connection close, arriving with `Redelivered=true` but
+**without any `x-retry-count` header change**, because it never went through the
+explicit failure branch that sets that header. If this redelivered copy is then
+processed and fails, `ackOrRetry` reads `getRetryCount` off the ORIGINAL headers (still
+0, since the header was never touched), and schedules a fresh 3-retry sequence — meaning
+a single Ack failure on the happy path can silently reset the retry budget, allowing more
+than 4 total attempts in the worst case (bounded by how many times Ack itself keeps
+failing, which is an operational/connection-health question, not a design one). This
+mirrors the exact same class of issue already accepted for the current code (duplicate
+processing via Ack failure is pre-existing, §5), but the NEW risk introduced here is that
+it also resets the retry-count HEADER rather than just causing one duplicate delivery.
+**Mitigation adopted**: none required beyond documenting it — since Ack failure implies
+the channel is already in a degraded/closing state, the broker's own redelivery already
+dominates the retry-count mechanism at that point (the connection is about to be torn
+down and `reconsumerAll` will re-register consumers from scratch), and bounding this
+further (e.g. persisting retry-count externally) is judged not worth the complexity for
+a channel-failure edge case that is already logged and already accepted as an idempotency
+risk under §5's "processed more than once" umbrella. If production data (§4.4) later
+shows this path firing at meaningful volume, revisit with an external/durable counter.
+
 **Ordering guarantee (none, by design)**: because retries are republished as brand-new
 deliveries on the (possibly re-delayed) queue, a retried message can be interleaved with
 newer messages on the same queue — no FIFO guarantee across a retry. This matches the
@@ -276,6 +301,35 @@ immediately).
 (rather than a fixed constant) keeps prefetch matched to each queue's actual worker pool
 size with no new configuration surface.
 
+**Design-review round-1 finding (MAJOR, addressed here): same-queue multiple
+registrations would silently overwrite each other's Qos value.** `startConsumers` is
+called per `consumerRegistration` (`main.go:315-317` iterates `r.consumers`, a slice with
+no uniqueness constraint on `queueName`). If two registrations ever target the same
+queue with different `numWorkers` (nothing in `queueGet`/`r.consumers`'s structure
+prevents this today, even though it is not the intended usage pattern — each service
+normally calls `ConsumeMessage`/`ConsumeRPC` exactly once per queue it owns), the LAST
+`startConsumers` call's `Qos(reg.numWorkers, ...)` silently wins, and an earlier
+registration's workers now run under a prefetch smaller than their own worker count,
+reintroducing the serialization problem this fix exists to solve. Fix: `Qos` is a
+per-CHANNEL setting (not per-consumer), so the design adds an explicit invariant instead
+of a max()-tracking mechanism (simpler, and matches actual usage): **one queue = one
+`consumerRegistration` = one channel-owning `startConsumers` call, enforced by a guard in
+`ConsumeMessage`/`ConsumeRPC`** — reject (return an error) a second registration attempt
+for a `queueName` already present in `r.consumers`. This is a one-line addition to the
+existing registration path and matches how the codebase is actually used (grep of all
+service `main.go`s during the Phase 0.8 analysis found no case of a queue registered
+twice); it converts a latent footgun into a fail-fast error instead of leaving it as an
+unstated assumption.
+
+**Design-review round-1 finding (MINOR, clarified here): RPC-path prefetch increase has
+no compatibility risk beyond buffer sizing.** `consumeRPCWorker` (`consume.go:131-148`)
+keeps ack-before-process (§2) unconditionally — raising `Qos` on an RPC queue only grows
+how many unacked deliveries the broker can have in flight on that channel at once; actual
+concurrency is still bounded by `reg.numWorkers` goroutines (`startConsumers`,
+`consume.go:34-41`), and delivery ordering/semantics for RPC requests are unaffected
+since ack timing there is unchanged. No RPC-path behavior change beyond a larger
+broker-side unacked buffer.
+
 ## 5. Idempotency — bounded risk, not a blocking precondition
 
 At-least-once delivery is not new: the analysis established that duplicate processing
@@ -317,8 +371,8 @@ new library behavior; no config or DB migration involved.
 
 - Unit tests for `ackOrRetry`: success→Ack; failure with retryCount=0/1/2→`publishExchange` called on `QueueNameDelay` with `x-retry-count` incremented and correct `x-delay` from `retryBackoff`, then original Acked; failure with retryCount==3 (exhausted)→dropped via Ack + `promEventDropped` incremented, no republish; `publishExchange` failure during retry scheduling→falls back to `Nack(false, true)`; Ack-error/Nack-error on any path is logged, not fatal (doesn't panic or block the worker loop).
 - Unit tests for `getRetryCount`: missing header→0; malformed/wrong-type header→0 (fail open toward "treat as first attempt", not toward silently exceeding the retry cap); present int32 header→correct count.
-- Unit test for `startConsumers`: Qos is called with `(reg.numWorkers, 0, false)` before `Consume`; Qos error surfaces before Consume is attempted.
-- Existing `mock_rabbitmqhandler.go`/`main_test.go` mock channel patterns (`mockChannel`, `mockChannelWithConsumeCounter`) already have `Qos` mocked (per Phase 0.8 analysis grep) — reusable for the new assertions.
+- Unit test for `startConsumers`: Qos is called with `(reg.numWorkers, 0, false)` before `Consume`; Qos error surfaces before Consume is attempted; a second registration attempt for an already-registered `queueName` is rejected (§4.5 invariant).
+- Existing `mock_rabbitmqhandler.go`/`main_test.go` mock channel patterns (`mockChannel`, `mockChannelWithConsumeCounter`) already have `Qos` mocked (per Phase 0.8 analysis grep) — reusable as a starting point. **Design-review round-1 finding (MINOR, noted for implementation): the existing mocks return a fixed nil error and do not capture call arguments** (no `qosCallCount`/`qosArgs` fields on `mockChannel`), so the "Qos called with (reg.numWorkers, 0, false)" assertion needs a small addition to the mock (an argument-capturing field or a `gomock.Call` `.Do()`/`.Times()` expectation using the generated `MockamqpChannel` in `mock_rabbitmqhandler.go`, which already supports argument matching via gomock) — not a design concern, but flagged so the implementation phase doesn't assume zero mock changes are needed.
 - Integration-level note (not required to merge, nice-to-have): a real RabbitMQ (with the `rabbitmq-delayed-message-exchange` plugin, already required by this codebase) test verifying 3 consecutive failures actually result in the message landing nowhere (queue and delay-exchange both empty) after the ~155s total backoff — codifies the "bounded to 4 attempts" guarantee end-to-end.
 
 ## 8. Open questions for design review
