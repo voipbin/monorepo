@@ -805,6 +805,28 @@ N, not a new ordering rule), closing each one in that order before
 committing. This transaction is subject to the same `maxDeadlockRetries = 3`
 retry loop (§5.3) as every other write path in this table.
 
+**Round-49 cross-reference: "the §4 locking read" here is
+`OwnershipPeriodsLockAndResolveTx` (§5.1, rounds 43–44) — the SAME
+shared primitive the five `Tx`-suffixed write functions use, called
+once per target in this operation's own N-target loop, inside this
+operation's own single `BeginTx` (this loop is not one of the five
+functions and does not itself gain a `Tx`-suffixed sibling; it is a
+sixth, distinct caller that reuses the shared locking-read primitive
+directly).** Per §5.1's round-48 close-ing-caller contract, this loop
+ignores `OwnershipPeriodsLockAndResolveTx`'s `step` return value for
+every target (this operation is always closing, never opening) and
+closes each target's own open row (`contact_id = this contact`,
+`valid_to IS NULL`) found in that call's `lockedRows` — the same
+contract `AddressDeleteTx` uses, applied N times in one loop instead of
+once. Step 1's orphan-cleanup side effect (closing a DIFFERENT
+contact's stale open period, if the locking read for one of this
+Contact's targets happens to surface one) applies here exactly as it
+does for `AddressDeleteTx` — not a new interaction, the same shared
+mechanism reused at a different call site. §10 gains a fixture
+confirming `ContactDelete`'s N-target loop calls
+`OwnershipPeriodsLockAndResolveTx` per target rather than a bespoke
+locking read.
+
 **Round-14 finding: the membership `SELECT` above only locks the targets it
 finds — a `ClaimAddress` for this same contact_id that commits a brand-new
 open period *after* that `SELECT` but *before* this transaction commits is
@@ -1233,8 +1255,23 @@ Concretely:
   write) and return `lockedRows` — the caller then finds its own open
   row within `lockedRows` (`contact_id = this contact`, `valid_to IS
   NULL`) and closes it (`valid_to = NOW()`) directly, ignoring `step`
-  entirely. **This also settles a related question the round-48 review
-  raised: `OwnershipPeriodsLockAndResolveTx`'s Step 1 side-effect (round-1
+  entirely. **Round-49 correction: if no such open row exists in
+  `lockedRows`** (a concurrent close already ran — the same race B5
+  (§5.4) exists to guard against, now surfacing at the `lockedRows`
+  level instead of `RowsAffected`), **the close-ing caller returns
+  `dbhandler.ErrConflict`, not a silent success.** This is the same
+  contract B5 established (`RowsAffected == 0 → ErrConflict`), restated
+  for the round-43 architecture: `RowsAffected == 0` and "no open row
+  for this contact in `lockedRows`" are the same condition observed
+  through different mechanisms (a single `UPDATE ... WHERE` vs. a
+  `SELECT ... FOR UPDATE` followed by an in-memory find), and §5.4's
+  `ErrConflict` mapping applies identically to this outcome — an
+  implementer who reads only "find-and-close" without this addendum
+  could reintroduce B5's exact silent-200 bug in the new locking-read
+  shape. §10 gains a fixture asserting `AddressDeleteTx` returns
+  `ErrConflict` (not a no-op success) when called against an
+  already-closed row. **This also settles a related question the
+  round-48 review raised: `OwnershipPeriodsLockAndResolveTx`'s Step 1 side-effect (round-1
   orphan-period cleanup: closing another contact's stale open period
   found during the locking read) is NOT skipped for close-ing callers —
   it is the same shared locking read, and that cleanup is defined at the
@@ -1242,7 +1279,17 @@ Concretely:
   A `AddressDeleteTx` call that incidentally triggers Step 1's orphan
   cleanup on a DIFFERENT contact's row is exactly the self-healing this
   design already relies on (§4's healing-set discussion), not a new or
-  surprising side effect.** §10 gains a fixture asserting `AddressDeleteTx`
+  surprising side effect. Round-49 note: this is NOT in tension with
+  round-33's "closes by `open_period_uk` hash, regardless of contact_id"
+  phrasing — round-33 described the OUTCOME (B's orphan gets closed
+  incidentally by C's activity on the same target), and round-48
+  describes the MECHANISM producing that outcome for THIS design's
+  Tx-suffixed architecture: C's own row close is contact_id-scoped, but
+  the SAME locking read's Step 1 side effect independently closes B's
+  orphan (a different contact_id) — the two together produce the exact
+  round-33 outcome via a specific mechanism round-33's prose left
+  unstated. No contradiction; round-33 was outcome-level, round-48 fills
+  in the mechanism.** §10 gains a fixture asserting `AddressDeleteTx`
   ignores `step` and closes its own row directly from `lockedRows`.
   **Round-44 clarification on the "duplicate lock" concern:**
   when a composed caller (see `AddAddress` below) has already run
@@ -2191,6 +2238,9 @@ duplicated here). Disposition of each finding that survived to this design:
 | Round-48 finding: round-47's new §6.2 STEP1 Go sketch discarded `missingPeriodOwnedAddresses`'s error (`_`), used a `*dbHandler` receiver not matching the codebase's actual `*handler` receiver, and never registered the new function on the `DBHandler` interface/mockgen list — the sketch itself violated this document's own error-propagation and codegen-explicitness standards (rounds 11/12/19) in the same turn it was introduced to satisfy a concreteness bar | **Fixed** (§6.2: sketch corrected to `*handler` receiver, propagated error, and explicit `DBHandler`/mockgen registration; also notes the added DB round-trip as a recorded, non-blocking cost) |
 | Round-48 finding: round-47's §4 cross-reference correction was applied only to the round-11 paragraph, not the immediately adjacent round-12 paragraph, which still asserted "each address in the loop is its own separate `BeginTx`" — the exact wording round-47 itself declared false elsewhere in the same section, undermining round-47's claim of a complete cross-reference sweep | **Fixed** (§4: round-12 paragraph corrected to point to §5.1's composed/uncomposed split, noting the partial-success argument holds under either shape) |
 | Round-48 finding: §5.1 defined `OwnershipPeriodsLockAndResolveTx` as a shared primitive for all five write functions but never specified what its `step` return value means to CLOSE-ing callers (`AddressDeleteTx`, `AddressUpdateTx`'s old-target side) whose actual need (acquire the lock, then close MY OWN open row) has nothing to do with §4's Steps 1–5 open/reopen/conflict decision — an implementer had no guidance on whether to consume, ignore, or reinterpret `step` for these two callers | **Fixed** (§5.1: `step` explicitly scoped to OPEN-ing callers only; close-ing callers use `lockedRows` directly to find and close their own open row, ignoring `step`; Step 1's orphan-cleanup side effect confirmed to still apply uniformly, consistent with the existing healing-set design; §10 gains a fixture) |
+| Round-49 BLOCKER: round-48's close-ing-caller contract ("find its own open row in `lockedRows`, close it") specified only the found case, leaving the not-found case (a concurrent close already ran) unstated — exactly the race B5 (§5.4) exists to guard against, now unresolved at the `lockedRows` level instead of the `RowsAffected` level, risking a silent-success reintroduction of the bug B5 fixed | **Fixed** (§5.1: not-found in `lockedRows` returns `dbhandler.ErrConflict`, restating B5's contract for the round-43 architecture; §10 gains a fixture) |
+| Round-49 finding: round-33's "closes by `open_period_uk` hash, regardless of `contact_id`" healing-set phrasing and round-48's contact_id-scoped close-ing-caller contract described the same B-orphan-heals-via-C's-close scenario with apparently different mechanisms, with no cross-reference reconciling them | **Resolved, not a defect** (§5.1: round-33 was outcome-level, round-48 fills in the mechanism for this design's architecture — C's own close is contact_id-scoped, and the SAME locking read's Step 1 side effect independently closes B's orphan; together they reproduce round-33's outcome) |
+| Round-49 BLOCKER: §4's `ContactDelete` N-target closing-loop text (rounds 13/14/19) still said "acquires the §4 locking read for each of those targets" in prose, never updated to name `OwnershipPeriodsLockAndResolveTx` (§5.1, rounds 43–48) as that primitive, nor to state that this loop is a sixth, distinct caller applying the round-48 close-ing-caller contract N times — the same "newest §5.1 refactor not retrofitted to older §4 siblings" class hit at rounds 40 through 48 | **Fixed** (§4: explicit cross-reference naming `OwnershipPeriodsLockAndResolveTx` and stating the loop applies the close-ing-caller contract per target; §10 gains a fixture) |
 
 ## 9. Migration plan
 
@@ -2606,6 +2656,14 @@ humans decide; the correction path is `contact_resolutions` (§7).
   the CLOSE-ing-caller contract §5.1's round-48 correction defines,
   distinct from the OPEN-ing-caller contract the other three write
   functions use.
+  **Round-49 additions:** (a) `AddressDeleteTx` needs a fixture asserting
+  it returns `ErrConflict` (not a no-op success) when its own open row is
+  not found in `lockedRows` (already closed by a concurrent operation) —
+  restating B5's contract for the round-43 architecture; (b)
+  `ContactDelete`'s N-target closing loop needs a fixture confirming it
+  calls `OwnershipPeriodsLockAndResolveTx` per target (not a bespoke
+  locking read) and applies the same close-ing-caller contract as
+  `AddressDeleteTx`, N times in one transaction.
 - (Recorded, not blocking implementation — §6.2/§8) If a customer's ownership-period
   count for a single Contact ever grows large enough to make the OR-expanded
   STEP2 query in §6.2 a real performance concern, the fix is switching
