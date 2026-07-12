@@ -50,7 +50,8 @@ func Test_interactionListByContact_NilInteractionIDResolution_NoPanic(t *testing
 	mockDB.EXPECT().ContactGet(ctx, contactID).Return(&contact.Contact{
 		Identity: commonidentity.Identity{ID: contactID, CustomerID: customerID},
 	}, nil)
-	mockDB.EXPECT().AddressListByContactID(ctx, contactID).Return(nil, nil)
+	mockDB.EXPECT().OwnershipPeriodsListByContactID(ctx, contactID).Return(nil, nil)
+	mockDB.EXPECT().MissingPeriodOwnedAddresses(ctx, customerID, contactID).Return(nil, nil)
 
 	// One case-level Resolution (InteractionID nil) mixed with one
 	// ordinary interaction-level Resolution -- the panic/mis-keying risk

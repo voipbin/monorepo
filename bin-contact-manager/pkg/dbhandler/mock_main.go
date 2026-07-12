@@ -818,6 +818,21 @@ func (mr *MockDBHandlerMockRecorder) InteractionListByIDs(ctx, customerID, ids a
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InteractionListByIDs", reflect.TypeOf((*MockDBHandler)(nil).InteractionListByIDs), ctx, customerID, ids)
 }
 
+// InteractionListByOwnershipPeriods mocks base method.
+func (m *MockDBHandler) InteractionListByOwnershipPeriods(ctx context.Context, customerID uuid.UUID, size uint64, token, peerType, peerTarget string, bounds []OwnershipPeriodBound, since time.Time) ([]*interaction.Interaction, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "InteractionListByOwnershipPeriods", ctx, customerID, size, token, peerType, peerTarget, bounds, since)
+	ret0, _ := ret[0].([]*interaction.Interaction)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// InteractionListByOwnershipPeriods indicates an expected call of InteractionListByOwnershipPeriods.
+func (mr *MockDBHandlerMockRecorder) InteractionListByOwnershipPeriods(ctx, customerID, size, token, peerType, peerTarget, bounds, since any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InteractionListByOwnershipPeriods", reflect.TypeOf((*MockDBHandler)(nil).InteractionListByOwnershipPeriods), ctx, customerID, size, token, peerType, peerTarget, bounds, since)
+}
+
 // InteractionListUnresolved mocks base method.
 func (m *MockDBHandler) InteractionListUnresolved(ctx context.Context, customerID uuid.UUID, size uint64, token string, since time.Time) ([]*interaction.Interaction, error) {
 	m.ctrl.T.Helper()
@@ -831,6 +846,36 @@ func (m *MockDBHandler) InteractionListUnresolved(ctx context.Context, customerI
 func (mr *MockDBHandlerMockRecorder) InteractionListUnresolved(ctx, customerID, size, token, since any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InteractionListUnresolved", reflect.TypeOf((*MockDBHandler)(nil).InteractionListUnresolved), ctx, customerID, size, token, since)
+}
+
+// MissingPeriodOwnedAddresses mocks base method.
+func (m *MockDBHandler) MissingPeriodOwnedAddresses(ctx context.Context, customerID, contactID uuid.UUID) ([]MissingPeriodAddress, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MissingPeriodOwnedAddresses", ctx, customerID, contactID)
+	ret0, _ := ret[0].([]MissingPeriodAddress)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MissingPeriodOwnedAddresses indicates an expected call of MissingPeriodOwnedAddresses.
+func (mr *MockDBHandlerMockRecorder) MissingPeriodOwnedAddresses(ctx, customerID, contactID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MissingPeriodOwnedAddresses", reflect.TypeOf((*MockDBHandler)(nil).MissingPeriodOwnedAddresses), ctx, customerID, contactID)
+}
+
+// OwnershipPeriodsListByContactID mocks base method.
+func (m *MockDBHandler) OwnershipPeriodsListByContactID(ctx context.Context, contactID uuid.UUID) ([]OwnershipPeriod, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OwnershipPeriodsListByContactID", ctx, contactID)
+	ret0, _ := ret[0].([]OwnershipPeriod)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// OwnershipPeriodsListByContactID indicates an expected call of OwnershipPeriodsListByContactID.
+func (mr *MockDBHandlerMockRecorder) OwnershipPeriodsListByContactID(ctx, contactID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OwnershipPeriodsListByContactID", reflect.TypeOf((*MockDBHandler)(nil).OwnershipPeriodsListByContactID), ctx, contactID)
 }
 
 // OwnershipPeriodsLockAndResolveTx mocks base method.
