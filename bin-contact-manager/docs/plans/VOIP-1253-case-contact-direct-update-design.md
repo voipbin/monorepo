@@ -106,6 +106,38 @@ Status: Draft, awaiting independent review
     generated-artifact/mock sweep requested after round 4 opened that
     scope -- this casehandler mock gap was the only remaining issue
     found.
+- v0.7 (2026-07-13). Round-6 review timed out before completing (599s,
+  50 API calls, no verdict delivered), but self-directed follow-up
+  verification (compiling and running a standalone Go program against
+  this repo's actual vendored `github.com/gofrs/uuid`) surfaced a real
+  defect in the core mechanism itself, independent of the timeout:
+  - **BLOCKER fix**: the "empty string clears" convention was never
+    actually implementable as originally described. `uuid.UUID` has no
+    custom `UnmarshalJSON` (only `UnmarshalText`), and
+    `UnmarshalText("")` returns an error ("incorrect UUID length 0") --
+    verified by direct compile+run, not just static reading. This means
+    §5.3's internal RPC-layer `V1DataCasesIDPut.ContactID uuid.UUID`
+    can never itself receive a literal empty string; it must always
+    receive a valid UUID string (including `uuid.Nil`'s canonical
+    zero-value string, which DOES parse). Traced how
+    `bin-conference-manager`'s actual `PreFlowID`/`PostFlowID` PUT
+    precedent avoids this: the OUTER HTTP-layer OpenAPI-generated
+    struct (`openapi_server.PutConferencesIdJSONBody`) deliberately
+    keeps `pre_flow_id`/`post_flow_id` as plain `string` (no
+    `format: uuid` in the spec), and `PutConferencesId`'s hand-written
+    handler calls `uuid.FromStringOrNil(req.PreFlowId)` to convert
+    `""` -> `uuid.Nil` at that ONE specific boundary -- a literal empty
+    string never reaches the internal RPC-layer `uuid.UUID` struct.
+    Added new §5.5.1 with the previously-missing `PutContactCasesId`
+    HTTP handler code sample implementing this same conversion point,
+    and updated §5.6's `description` fields to explain why `contact_id`
+    is deliberately `type: string` with no `format: uuid` (this part of
+    §5.6 was already correct, just previously unexplained -- the actual
+    defect was §5.5's total absence of a server-layer code sample,
+    which is what let the wrong assumption -- that a raw uuid.UUID
+    field could accept "" anywhere on the wire -- go unnoticed through
+    5 prior rounds, since no round mentally compiled the missing
+    handler code that didn't exist yet to check against).
 
 ## 1. Why this exists (session history)
 
@@ -235,7 +267,7 @@ and does not apply to this revert -- only the Case-level branch
 | `bin-api-manager/pkg/servicehandler/case.go` | Remove `CaseResolutionCreate`/`CaseResolutionDelete`; add `CaseUpdateContact`. |
 | `bin-api-manager/pkg/servicehandler/main.go` | Remove `CaseResolutionCreate`/`CaseResolutionDelete` from the `ServiceHandler` interface declaration (round-2 correction: originally omitted from this table -- leaving these declarations in place after deleting their `case.go` implementations breaks interface satisfaction and fails to compile, the same defect class round 1 caught for `case_resolution_test.go`); add `CaseUpdateContact`. Regenerate `mock_main.go` (confirmed both old methods are also declared there and must be removed by the regen). |
 | `bin-api-manager/pkg/servicehandler/case_resolution_test.go` | Delete entirely (round-1 correction: was missing from the original removal list; tests `CaseResolutionCreate`/`Delete`, which no longer exist post-revert, so this file would fail to compile if left in place). |
-| `bin-api-manager/server/contact_case_resolutions.go` | Delete entirely; add `PutContactCasesId` handler in a new/existing `server/contact_cases.go`. |
+| `bin-api-manager/server/contact_case_resolutions.go` | Delete entirely; add `PutContactCasesId` handler in a new/existing `server/contact_cases.go` (see §5.5.1 for the required implementation -- the "" -> `uuid.Nil` conversion for contact_id MUST happen in this handler, not in any inner layer). |
 
 `resolution.Resolution.CaseID` (the model field itself, in
 `models/resolution/resolution.go`) is left in place even though no
@@ -520,10 +552,96 @@ func (h *serviceHandler) CaseUpdateContact(ctx context.Context, a *auth.AuthIden
 }
 ```
 
-Add to `ServiceHandler` interface + regenerate mock. Add
-`PutContactCasesId` to `server/` (new file `server/contact_cases.go` if
-one doesn't already exist for Case, else appended to the existing
-`case.go`/`cases.go` server file).
+Add to `ServiceHandler` interface + regenerate mock.
+
+### 5.5.1 bin-api-manager: server HTTP handler (round-6 correction)
+
+**Round-6 finding**: `hand-written V1DataCasesIDPut.ContactID uuid.UUID`
+(§5.3) does NOT accept an empty-string JSON value -- `uuid.UUID` has no
+custom `UnmarshalJSON`, only `UnmarshalText`, and `UnmarshalText("")`
+returns `"uuid: incorrect UUID length 0 in string \"\""` (verified by
+direct compile+run against this repo's vendored `github.com/gofrs/uuid`).
+This means the internal RPC-layer struct (`cmrequest.V1DataCasesIDPut`,
+`bin-contact-manager`'s listenhandler request model) can never itself
+receive a literal empty string over the wire -- it must always receive
+either a valid UUID or `uuid.Nil`'s canonical zero-value string
+(`"00000000-0000-0000-0000-000000000000"`, which DOES parse
+successfully, verified separately).
+
+The "empty clears" convention therefore is NOT implemented at the
+`uuid.UUID` JSON-unmarshal layer at all (§5.6's earlier "Conference
+precedent" framing was imprecise on this point -- Conference's own
+hand-written `V1DataConferencesIDPut.PreFlowID uuid.UUID` has the exact
+same limitation; sending a literal `""` to Conference's PUT would fail
+identically. Conference's actual API contract, confirmed by reading
+`bin-api-manager/server/conferences.go`'s `PutConferencesId` handler,
+is: the **outer HTTP-layer OpenAPI-generated struct** uses a plain
+`string` field -- `bin-openapi-manager` does not put `format: uuid` on
+`pre_flow_id`/`post_flow_id` in `conferences/id.yaml`, so oapi-codegen
+generates `PreFlowId string` (not `uuid.UUID`) in
+`openapi_server.PutConferencesIdJSONBody` -- and the HTTP handler
+itself calls `uuid.FromStringOrNil(req.PreFlowId)` BEFORE constructing
+the inner RPC-layer request, converting `""` -> `uuid.Nil` at that one
+specific boundary. Only `uuid.Nil` (never a literal empty string) ever
+reaches the internal RPC struct.
+
+This design must follow the identical pattern -- add the missing
+`server/` handler code sample (§5.5 only said "add `PutContactCasesId`
+to `server/`" with no code, which is why this gap wasn't caught until a
+compile-level trace in round 6):
+
+```go
+// PutContactCasesId handles PUT /contact_cases/{id} (VOIP-1253):
+// attaches or detaches a case's contact. contact_id="" in the request
+// body clears the attribution -- converted to uuid.Nil HERE, at the
+// HTTP boundary, mirroring PutConferencesId's pre_flow_id/post_flow_id
+// pattern exactly. The OpenAPI schema for contact_id must be a plain
+// string (no format: uuid) so an empty string round-trips through
+// JSON unmarshaling -- see §5.6's requestBody schema.
+func (h *server) PutContactCasesId(c *gin.Context, id string) {
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
+		return
+	}
+
+	caseID, err := uuid.FromString(id)
+	if err != nil {
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_CASE_ID", "The case ID is not a valid UUID."))
+		return
+	}
+
+	var req openapi_server.PutContactCasesIdJSONRequestBody
+	if err := c.BindJSON(&req); err != nil {
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON.").Wrap(err))
+		return
+	}
+
+	// The single conversion point: "" -> uuid.Nil (detach), anything
+	// else -> parsed UUID (attach). Mirrors conferences.go's
+	// uuid.FromStringOrNil(req.PreFlowId) exactly.
+	contactID := uuid.FromStringOrNil(req.ContactId)
+
+	res, err := h.serviceHandler.CaseUpdateContact(c.Request.Context(), a, caseID, contactID)
+	if err != nil {
+		abortWithServiceError(c, err)
+		return
+	}
+
+	c.JSON(200, res)
+}
+```
+
+Note: `uuid.FromStringOrNil` returns `uuid.Nil` both for a genuinely
+empty string AND for a malformed UUID string -- this is the same
+looseness `PutConferencesId` already accepts today (it does not
+distinguish "you sent empty" from "you sent garbage", both become
+`uuid.Nil`/clear). This is an accepted, pre-existing platform
+convention being followed here, not a new risk introduced by this
+design; flagged for completeness only.
+
+Add this new file (or append to an existing `server/contact_cases.go`
+if one already exists for other Case HTTP handlers).
 
 ### 5.6 OpenAPI spec
 
@@ -538,8 +656,11 @@ put:
     Attaches the case to a specific existing Contact, or detaches it,
     via a direct contact_id write (VOIP-1253). Send a non-empty
     contact_id to attach; send an empty string to detach (mirrors
-    bin-conference-manager's pre_flow_id/post_flow_id PUT convention:
-    an empty value in the request body clears the link). The target
+    bin-conference-manager's pre_flow_id/post_flow_id PUT convention at
+    the HTTP-layer JSON-schema level -- see §5.5.1 for the precise
+    conversion point; a literal empty string is only ever accepted at
+    this outer HTTP layer, never at the internal RPC-layer uuid.UUID
+    struct). The target
     contact_id must belong to the same customer as the case; a
     cross-tenant contact_id is rejected as not found. Every
     attach/detach is recorded as a case_contact_attributed/
@@ -565,7 +686,15 @@ put:
           properties:
             contact_id:
               type: string
-              description: The contact to attach. Empty string detaches.
+              description: >-
+                The contact to attach. Empty string detaches. Deliberately
+                NOT format: uuid (round-6 correction) -- see §5.5.1: the
+                hand-written internal RPC struct's uuid.UUID field cannot
+                unmarshal a literal empty string, so the HTTP-layer
+                oapi-codegen-generated field must stay a plain string and
+                the "" -> uuid.Nil conversion happens explicitly in the
+                PutContactCasesId handler, mirroring
+                PutConferencesId/pre_flow_id's existing pattern exactly.
               example: "660e8400-e29b-41d4-a716-446655440001"
   responses:
     '200':
