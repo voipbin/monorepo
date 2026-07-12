@@ -244,6 +244,22 @@ func (h *handler) staleRowRepairTx(ctx context.Context, tx *sql.Tx, customerID u
 	// Round-30: valid_from = GREATEST(latest existing closed valid_to for
 	// this target, stale row's tm_create) -- the strictly-better lower
 	// bound available for free in this same transaction.
+	//
+	// Note (round-2 code review): when this function is called after
+	// AddressCreateTx/AddressUpdateTx's own OwnershipPeriodsLockAndResolveTx
+	// call already ran (Step 1's orphan-close branch, in the SAME
+	// caller's earlier attempt before the 1062), that earlier Step 1 may
+	// have already closed a period for this exact tombstoned contactID
+	// at NOW() (>= the tombstone timestamp, since ContactDelete cannot
+	// predate its own row's existence). That prior close makes
+	// latestValidTo >= tmDelete, which the inversion guard below
+	// correctly treats as "already covered" and skips re-inserting.
+	// This is intentional, not a coincidence to preserve blindly: Step
+	// 1's orphan-close and this function's fabricated-period write are
+	// two independent mechanisms for the same invariant (the dead
+	// owner's era must be recorded exactly once), and the inversion
+	// guard is what keeps them from double-writing when both run
+	// against the same dead owner in the same repair sequence.
 	latestValidTo, err := latestOwnershipPeriodValidToTx(ctx, tx, customerID, addrType, target)
 	if err != nil {
 		return false, err
