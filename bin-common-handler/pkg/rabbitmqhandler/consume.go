@@ -160,7 +160,6 @@ func (r *rabbit) ackOrRetry(message amqp.Delivery, queueName string, processErr 
 	delayMs := retryBackoff[retryCount]
 
 	log.Warnf("Message processing failed, scheduling retry %d/%d in %dms. err: %v", retryCount+1, maxEventRetries, delayMs, processErr)
-	promEventRetried.WithLabelValues(queueName, strconv.Itoa(retryCount+1)).Inc()
 
 	headers["x-delay"] = delayMs
 	// DeliveryMode=Persistent: the retry copy can sit in the delay-exchange's
@@ -168,12 +167,19 @@ func (r *rabbit) ackOrRetry(message amqp.Delivery, queueName string, processErr 
 	// explicit persistence it would be transient and could be silently lost
 	// on a broker restart during that window, defeating the point of this fix.
 	if errPub := r.publishExchange(string(commonoutline.QueueNameDelay), queueName, message.Body, headers, amqp.Persistent); errPub != nil {
+		// Fall back to an immediate Nack(requeue=true): note this is NOT
+		// counted as a scheduled retry (no promEventRetried increment) --
+		// it's an untimed immediate requeue, distinct from the backed-off
+		// retry this metric is meant to track. Counting it here would
+		// over-report scheduled-retry volume during a broker/publish outage
+		// (PR review round-1 finding).
 		log.Errorf("Could not schedule delayed retry, falling back to immediate requeue. err: %v", errPub)
 		if err := message.Nack(false, true); err != nil {
 			log.Errorf("Error nacking (fallback requeue) message: %v", err)
 		}
 		return
 	}
+	promEventRetried.WithLabelValues(queueName, strconv.Itoa(retryCount+1)).Inc()
 
 	if err := message.Ack(false); err != nil {
 		// Original could not be acked after a successful republish -- broker
