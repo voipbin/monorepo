@@ -138,6 +138,29 @@ Status: Draft, awaiting independent review
     field could accept "" anywhere on the wire -- go unnoticed through
     5 prior rounds, since no round mentally compiled the missing
     handler code that didn't exist yet to check against).
+- v0.8 (2026-07-13). Round-7 review finding addressed:
+  - **BLOCKER fix**: §5.5.1's original code sample copied
+    `PutConferencesId`'s ID-parameter handling (`id string` +
+    `uuid.FromString`) without checking whether `contact_cases`'s `id`
+    path parameter has the same shape. It does not: `contact_cases/id.yaml`
+    already declares `format: uuid` on `id` (confirmed identical on the
+    existing `get:`/`close:`/`continue:` operations in the same file),
+    so oapi-codegen generates `id openapi_types.UUID`, not `string` --
+    confirmed directly against `GetContactCasesId`/`PostContactCasesIdClose`
+    in the actual `bin-api-manager/server/contact_cases.go` file this new
+    handler belongs in. Rewrote §5.5.1's code sample to follow that
+    file's own existing convention (`id openapi_types.UUID`, direct
+    `uuid.UUID(id)` cast, no error-returning parse) for the PATH
+    parameter, while keeping the `uuid.FromStringOrNil(req.ContactId)`
+    conversion (the part Conference's precedent genuinely does apply
+    to, since that's about the BODY field, not the PATH parameter).
+  - Round 7 independently re-verified the core §5.5.1 insight (the
+    uuid.UUID JSON-unmarshal defect itself) via a fresh compile+run
+    test with identical results, confirmed the generated type/field
+    naming (`PutContactCasesIdJSONRequestBody`, `req.ContactId`) and all
+    helper functions used in the code sample are real, and found this
+    one ID-parameter-type mismatch as the only new gap in the brand-new
+    v0.7 content.
 
 ## 1. Why this exists (session history)
 
@@ -267,7 +290,7 @@ and does not apply to this revert -- only the Case-level branch
 | `bin-api-manager/pkg/servicehandler/case.go` | Remove `CaseResolutionCreate`/`CaseResolutionDelete`; add `CaseUpdateContact`. |
 | `bin-api-manager/pkg/servicehandler/main.go` | Remove `CaseResolutionCreate`/`CaseResolutionDelete` from the `ServiceHandler` interface declaration (round-2 correction: originally omitted from this table -- leaving these declarations in place after deleting their `case.go` implementations breaks interface satisfaction and fails to compile, the same defect class round 1 caught for `case_resolution_test.go`); add `CaseUpdateContact`. Regenerate `mock_main.go` (confirmed both old methods are also declared there and must be removed by the regen). |
 | `bin-api-manager/pkg/servicehandler/case_resolution_test.go` | Delete entirely (round-1 correction: was missing from the original removal list; tests `CaseResolutionCreate`/`Delete`, which no longer exist post-revert, so this file would fail to compile if left in place). |
-| `bin-api-manager/server/contact_case_resolutions.go` | Delete entirely; add `PutContactCasesId` handler in a new/existing `server/contact_cases.go` (see §5.5.1 for the required implementation -- the "" -> `uuid.Nil` conversion for contact_id MUST happen in this handler, not in any inner layer). |
+| `bin-api-manager/server/contact_case_resolutions.go` | Delete entirely; add `PutContactCasesId` handler to the existing `bin-api-manager/server/contact_cases.go` (confirmed this file already exists with `GetContactCases`/`GetContactCasesId`/`PostContactCasesIdClose`/`PostContactCasesIdContinue`; see §5.5.1 for the required implementation -- the "" -> `uuid.Nil` conversion for contact_id MUST happen in this handler, not in any inner layer, and the `id` path parameter MUST use this file's existing `openapi_types.UUID` convention, not a plain `string`). |
 
 `resolution.Resolution.CaseID` (the model field itself, in
 `models/resolution/resolution.go`) is left in place even though no
@@ -595,35 +618,52 @@ compile-level trace in round 6):
 // attaches or detaches a case's contact. contact_id="" in the request
 // body clears the attribution -- converted to uuid.Nil HERE, at the
 // HTTP boundary, mirroring PutConferencesId's pre_flow_id/post_flow_id
-// pattern exactly. The OpenAPI schema for contact_id must be a plain
-// string (no format: uuid) so an empty string round-trips through
-// JSON unmarshaling -- see §5.6's requestBody schema.
-func (h *server) PutContactCasesId(c *gin.Context, id string) {
+// conversion pattern for the BODY field only. The `id` PATH parameter,
+// unlike Conference's, is round-6-correction-verified to be
+// openapi_types.UUID (not string) -- contact_cases/id.yaml already
+// declares `format: uuid` on the id path parameter (confirmed
+// identical on the existing get:/close:/continue: operations in this
+// same path file), so this handler follows THIS file's own existing
+// GetContactCasesId/PostContactCasesIdClose signature convention
+// (`id openapi_types.UUID`, direct `uuid.UUID(id)` cast, no
+// error-returning parse), NOT Conference's (`id string` +
+// uuid.FromString), which only applies to conferences/id.yaml because
+// THAT path's id param has no format: uuid.
+func (h *server) PutContactCasesId(c *gin.Context, id openapi_types.UUID) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "PutContactCasesId",
+		"request_address": c.ClientIP(),
+		"id":              id,
+	})
+
 	a, ok := getAuthIdentity(c)
 	if !ok {
+		log.Errorf("Could not find auth identity.")
 		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
+	log = log.WithField("customer_id", a.CustomerID)
 
-	caseID, err := uuid.FromString(id)
-	if err != nil {
-		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_CASE_ID", "The case ID is not a valid UUID."))
-		return
-	}
+	caseID := uuid.UUID(id)
 
 	var req openapi_server.PutContactCasesIdJSONRequestBody
 	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not bind request body. err: %v", err)
 		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON.").Wrap(err))
 		return
 	}
 
 	// The single conversion point: "" -> uuid.Nil (detach), anything
 	// else -> parsed UUID (attach). Mirrors conferences.go's
-	// uuid.FromStringOrNil(req.PreFlowId) exactly.
+	// uuid.FromStringOrNil(req.PreFlowId) exactly -- this is the only
+	// part of the pattern Conference and Case genuinely share (the
+	// BODY field conversion), as distinct from the PATH parameter
+	// handling above, which does NOT follow Conference's shape.
 	contactID := uuid.FromStringOrNil(req.ContactId)
 
 	res, err := h.serviceHandler.CaseUpdateContact(c.Request.Context(), a, caseID, contactID)
 	if err != nil {
+		log.Errorf("Could not update case contact. err: %v", err)
 		abortWithServiceError(c, err)
 		return
 	}
@@ -640,8 +680,13 @@ distinguish "you sent empty" from "you sent garbage", both become
 convention being followed here, not a new risk introduced by this
 design; flagged for completeness only.
 
-Add this new file (or append to an existing `server/contact_cases.go`
-if one already exists for other Case HTTP handlers).
+Add this function to the existing
+`bin-api-manager/server/contact_cases.go` (confirmed this file already
+exists with `GetContactCases`/`GetContactCasesId`/
+`PostContactCasesIdClose`/`PostContactCasesIdContinue`; no new imports
+are needed -- `gin`, `uuid`, `logrus`, `openapi_server`, `cerrors`,
+`commonoutline`, and `openapi_types` are all already imported in this
+file).
 
 ### 5.6 OpenAPI spec
 
