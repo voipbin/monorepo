@@ -699,6 +699,19 @@ for `AddressClaim`:**
 - **`AddressUpdate` (target change)**: `contacthandler.UpdateAddress`
   reads the row's current `target` (`contact.go:354`) before the
   transaction to know the OLD `(type, target)` to close a period for.
+  **Round-53 addition: this same pre-lock read returns `contact_id`
+  alongside `target`** — the SAME row, one query, three columns
+  (`type`, `target`, `contact_id`), no separate lookup needed — and
+  this is the `contactID` `AddressUpdateTx` passes to BOTH of its
+  `OwnershipPeriodsLockAndResolveTx` calls (old-target CLOSE and
+  new-target OPEN, §5.1). The pre-lock value is re-validated by the
+  same compare-and-retry this paragraph already describes for
+  `target` — if the row moved to a different `contact_id` between the
+  pre-lock read and the lock, that shows up as a `target` OR
+  `contact_id` mismatch on the post-lock re-read, both triggering the
+  identical full-transaction-restart path (a target can only change
+  together with, or independent of, its owner — either way the
+  post-lock re-read of the full row catches it).
   This is exactly the same stale-read hazard as `AddressClaim`'s — a
   concurrent `AddressUpdate`/`RemoveAddress`/`AddressClaim` on the same
   row can move or delete it between that read and this transaction's
@@ -2293,6 +2306,7 @@ duplicated here). Disposition of each finding that survived to this design:
 | Round-51 BLOCKER: `OwnershipPeriodsLockAndResolveTx`'s signature, unchanged since round-43/44 through round-50's extensive elaboration of its `step`/`lockedRows` semantics, never included a `contactID` parameter — but §4's Steps 1–5 are inherently defined relative to "this contact" (Step 1: another contact_id's open row; Step 2: THIS contact_id's open row; Step 3: THIS contact_id's closed row plus whether another contact_id intervened), so the function cannot compute `step` at all without knowing which contact_id is "this" one; every round-43–50 elaboration silently assumed a value the signature never provided a way to pass | **Fixed** (§5.1: `contactID` added to the signature; a pure signature correction, since no round-43–50 semantics depended on its absence — every caller already had this value available and simply lacked a parameter to thread it through) |
 | Round-52 finding: round-51's `contactID` signature fix was applied to §5.1's own signature declaration but not retrofitted to the two other places that describe calls into this function — §4's `ContactDelete` N-target loop text (round-49/50, never states which `contactID` value the loop passes) and §10's corresponding fixture requirement (never requires verifying the right `contactID` is threaded through) — the same "newest §5.1 refactor not retrofitted to older §4 siblings" class hit at rounds 40, 47, 49, and 50 | **Fixed** (§4: explicit statement that the loop passes the SAME `contactID` — the Contact being deleted, known before the loop starts — on every one of its N calls; only `(type, target)` varies per iteration) |
 | Round-52 BLOCKER: round-51's claim that "every caller already had this value available... `the deleting Contact's ID for AddressDeleteTx`" was unverified against `AddressDeleteTx`'s actual signature (`ctx, tx, addressID`, fixed since round-43–46) and §4's own round-39 text, which explicitly enumerates only `(type, target)` as what `AddressDeleteTx` must read from the row — `contact_id` was never listed as a value this function has or reads, contradicting round-51's blanket assertion | **Fixed** (§4: `AddressDeleteTx` explicitly reads `contact_id` from the SAME row lookup that resolves `addressID` to `(type, target)` — one query, three columns, no separate lookup needed — and uses it for both the `OwnershipPeriodsLockAndResolveTx` call and the `lockedRows` self-row filter) |
+| Round-53 finding: round-52's fix specified `AddressDeleteTx`'s `contactID` source but left `AddressUpdateTx`'s two calls (old-target CLOSE, new-target OPEN) with the same unstated-source gap — `contacthandler.UpdateAddress`'s pre-lock read (round-39, `contact.go:354`) was described as returning `target` only, never stated to also carry `contact_id`, the same "fixed for one caller, not retrofitted to a structurally identical sibling" class hit at rounds 40, 47, 49, 50, and 52 | **Fixed** (§4: `AddressUpdate`'s pre-lock read explicitly stated to return `contact_id` alongside `target` from the same row/query, supplying the `contactID` for both of `AddressUpdateTx`'s locking-read calls; the existing target-mismatch compare-and-retry is noted to catch a `contact_id` mismatch too, since both come from the same re-read) |
 
 ## 9. Migration plan
 
@@ -2732,6 +2746,13 @@ humans decide; the correction path is `contact_resolutions` (§7).
   needs a fixture asserting every one of its N calls passes the SAME
   `contactID` (the Contact being deleted), with only `(type, target)`
   varying per call.
+  **Round-53 addition:** `AddressUpdateTx` needs a fixture asserting
+  BOTH of its `OwnershipPeriodsLockAndResolveTx` calls (old-target
+  CLOSE, new-target OPEN) use `contact_id` read from the same pre-lock
+  row lookup that resolves the old `target` — not a separate query —
+  and that a concurrent reassignment (row's `contact_id` changes
+  between the pre-lock read and the lock) is caught by the existing
+  post-lock compare-and-retry, not just a `target` change.
 - (Recorded, not blocking implementation — §6.2/§8) If a customer's ownership-period
   count for a single Contact ever grows large enough to make the OR-expanded
   STEP2 query in §6.2 a real performance concern, the fix is switching
