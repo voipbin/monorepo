@@ -87,6 +87,25 @@ Status: Draft, awaiting independent review
     exceptions found, and checked bin-timeline-manager/
     monorepo-monitoring/monorepo-javascript for any cross-repo
     reference to the removed API surface (clean, no hits).
+- v0.6 (2026-07-13). Round-5 review finding addressed:
+  - **MAJOR fix**: §4's `casehandler/main.go` removal row was the only
+    interface-changing row in the entire table that never mentioned
+    regenerating its mock -- `mock_main.go`'s `MockCaseHandler`
+    currently implements the three removed methods and is used as a
+    real `CaseHandler` value in `pkg/listenhandler/v1_cases_test.go`/
+    `v1_contacts_test.go`; without regeneration it would lack
+    `UpdateContact` and fail interface satisfaction, breaking those
+    tests' compilation. Added the missing mock-regeneration instruction
+    to both the §4 table row and §5.2's matching interface-addition
+    text.
+  - Round 5 independently re-verified round 4's fix as genuine (direct
+    read of `gen.go`, `openapi_redoc/openapi.json`, and
+    `bin-api-manager/CLAUDE.md`'s actual codegen-order documentation),
+    confirmed the `PutContactCasesId` generated-method naming
+    convention against real precedent, and ran the broader
+    generated-artifact/mock sweep requested after round 4 opened that
+    scope -- this casehandler mock gap was the only remaining issue
+    found.
 
 ## 1. Why this exists (session history)
 
@@ -201,7 +220,7 @@ and does not apply to this revert -- only the Case-level branch
 |---|---|
 | `bin-contact-manager/pkg/casehandler/contact_attribution.go` | Delete entirely: `deriveCaseContactID`, `deriveCaseContactIDTx`, `firstCaseLevelPositiveContactID`, `applyDerivedContactID`, `ResolutionCreateCaseLevel`, `ResolutionDeleteCaseLevel`, **`ReconcileContact`** (round-1 correction: `ReconcileContact` hard-depends on `deriveCaseContactIDTx`/`applyDerivedContactID` and its entire purpose -- recomputing `Case.contact_id` from Resolution-row drift -- is moot once Resolution is no longer the source of truth; it is NOT preserved). `CaseListUnresolved`/`CaseListAll` (also in this file) do NOT depend on Resolution and move to a new file (see §6). |
 | `bin-contact-manager/pkg/casehandler/contact_attribution_test.go`, `contact_attribution_write_test.go`, `reconcile_test.go` | Delete entirely (test the removed functions). |
-| `bin-contact-manager/pkg/casehandler/main.go` | Remove `ResolutionCreateCaseLevel`/`ResolutionDeleteCaseLevel`/`ReconcileContact` from the `CaseHandler` interface; add `UpdateContact` (see §5). |
+| `bin-contact-manager/pkg/casehandler/main.go` | Remove `ResolutionCreateCaseLevel`/`ResolutionDeleteCaseLevel`/`ReconcileContact` from the `CaseHandler` interface; add `UpdateContact` (see §5). Regenerate `bin-contact-manager/pkg/casehandler/mock_main.go` (round-5 correction: this row previously never mentioned mock regeneration, unlike every other interface-changing row in this table -- `MockCaseHandler` currently implements the three removed methods and is used as a real `CaseHandler` value in `pkg/listenhandler/v1_cases_test.go`/`v1_contacts_test.go`; without regeneration it will lack `UpdateContact` and fail to satisfy the interface, breaking those tests' compilation). |
 | `bin-contact-manager/cmd/case-control/main.go` | Remove the `reconcile-contact` subcommand (`cmdReconcileContact`, `runReconcileContact`) entirely -- its sole purpose (recovering from Resolution-row/Case.contact_id drift) no longer applies once Case.contact_id is the single directly-written source of truth with no derivation step to drift from. |
 | `bin-contact-manager/pkg/listenhandler/v1_case_resolutions.go`, `v1_case_resolutions_test.go`, `models/request/v1_case_resolutions.go` | Delete entirely. |
 | `bin-contact-manager/pkg/listenhandler/main.go` | Remove `regV1CasesIDResolutions`/`regV1CasesIDResolutionsID` routes; add `PUT /v1/cases/{id}` route. |
@@ -391,6 +410,8 @@ Add to `CaseHandler` interface in `main.go`:
 ```go
 UpdateContact(ctx context.Context, customerID, caseID, contactID uuid.UUID) (*kase.Case, error)
 ```
+
+Regenerate `mock_main.go` (round-5 correction, see §4's `main.go` row).
 
 ### 5.3 bin-contact-manager: listenhandler
 
