@@ -816,16 +816,34 @@ directly).** Per §5.1's round-48 close-ing-caller contract, this loop
 ignores `OwnershipPeriodsLockAndResolveTx`'s `step` return value for
 every target (this operation is always closing, never opening) and
 closes each target's own open row (`contact_id = this contact`,
-`valid_to IS NULL`) found in that call's `lockedRows` — the same
-contract `AddressDeleteTx` uses, applied N times in one loop instead of
-once. Step 1's orphan-cleanup side effect (closing a DIFFERENT
-contact's stale open period, if the locking read for one of this
-Contact's targets happens to surface one) applies here exactly as it
-does for `AddressDeleteTx` — not a new interaction, the same shared
-mechanism reused at a different call site. §10 gains a fixture
-confirming `ContactDelete`'s N-target loop calls
-`OwnershipPeriodsLockAndResolveTx` per target rather than a bespoke
-locking read.
+`valid_to IS NULL`) found in that call's `lockedRows`. **Round-50
+correction: this loop does NOT use `AddressDeleteTx`'s round-49
+not-found→`ErrConflict` behavior.** Round-49's `ErrConflict` contract
+governs single-target write operations, where a caller's own request
+racing a concurrent close on the SAME target is a genuine conflict the
+caller should be told about (the B5 class this document exists to fix
+for `AddressDeleteTx`/`AddressUpdateTx`). `ContactDelete`'s bulk
+membership-driven loop is a different situation: not-found here means a
+concurrent close (of any kind) already achieved this target's goal
+before this loop got to it — exactly the "closing an already-closed
+period is a no-op" idempotence this operation's own crash-recovery
+argument (below, round-21/22) depends on, and exactly the skew scenario
+§9's round-17 counter-only rule was written for. **This loop instead
+follows §9 round-17's rule for all three of its closing-UPDATE sites
+(`AddressDelete`, `AddressUpdate`'s old-target, and `ContactDelete`'s
+per-target close, already grouped together there): not-found increments
+the Prometheus skew counter, the target is treated as already-closed
+(skip, do not retry, do not fail), and the loop proceeds to the next
+target — the whole transaction still commits normally.** Step 1's
+orphan-cleanup side effect (closing a DIFFERENT contact's stale open
+period, if the locking read for one of this Contact's targets happens
+to surface one) applies here exactly as it does for `AddressDeleteTx` —
+not a new interaction, the same shared mechanism reused at a different
+call site. §10 gains a fixture confirming `ContactDelete`'s N-target
+loop calls `OwnershipPeriodsLockAndResolveTx` per target, follows §9's
+counter-only not-found rule (not round-49's `ErrConflict`), and still
+commits when one of N targets was already closed by a concurrent
+operation.
 
 **Round-14 finding: the membership `SELECT` above only locks the targets it
 finds — a `ClaimAddress` for this same contact_id that commits a brand-new
@@ -2240,7 +2258,8 @@ duplicated here). Disposition of each finding that survived to this design:
 | Round-48 finding: §5.1 defined `OwnershipPeriodsLockAndResolveTx` as a shared primitive for all five write functions but never specified what its `step` return value means to CLOSE-ing callers (`AddressDeleteTx`, `AddressUpdateTx`'s old-target side) whose actual need (acquire the lock, then close MY OWN open row) has nothing to do with §4's Steps 1–5 open/reopen/conflict decision — an implementer had no guidance on whether to consume, ignore, or reinterpret `step` for these two callers | **Fixed** (§5.1: `step` explicitly scoped to OPEN-ing callers only; close-ing callers use `lockedRows` directly to find and close their own open row, ignoring `step`; Step 1's orphan-cleanup side effect confirmed to still apply uniformly, consistent with the existing healing-set design; §10 gains a fixture) |
 | Round-49 BLOCKER: round-48's close-ing-caller contract ("find its own open row in `lockedRows`, close it") specified only the found case, leaving the not-found case (a concurrent close already ran) unstated — exactly the race B5 (§5.4) exists to guard against, now unresolved at the `lockedRows` level instead of the `RowsAffected` level, risking a silent-success reintroduction of the bug B5 fixed | **Fixed** (§5.1: not-found in `lockedRows` returns `dbhandler.ErrConflict`, restating B5's contract for the round-43 architecture; §10 gains a fixture) |
 | Round-49 finding: round-33's "closes by `open_period_uk` hash, regardless of `contact_id`" healing-set phrasing and round-48's contact_id-scoped close-ing-caller contract described the same B-orphan-heals-via-C's-close scenario with apparently different mechanisms, with no cross-reference reconciling them | **Resolved, not a defect** (§5.1: round-33 was outcome-level, round-48 fills in the mechanism for this design's architecture — C's own close is contact_id-scoped, and the SAME locking read's Step 1 side effect independently closes B's orphan; together they reproduce round-33's outcome) |
-| Round-49 BLOCKER: §4's `ContactDelete` N-target closing-loop text (rounds 13/14/19) still said "acquires the §4 locking read for each of those targets" in prose, never updated to name `OwnershipPeriodsLockAndResolveTx` (§5.1, rounds 43–48) as that primitive, nor to state that this loop is a sixth, distinct caller applying the round-48 close-ing-caller contract N times — the same "newest §5.1 refactor not retrofitted to older §4 siblings" class hit at rounds 40 through 48 | **Fixed** (§4: explicit cross-reference naming `OwnershipPeriodsLockAndResolveTx` and stating the loop applies the close-ing-caller contract per target; §10 gains a fixture) |
+| Round-49 BLOCKER: §4's `ContactDelete` N-target closing-loop text (rounds 13/14/19) still said "acquires the §4 locking read for each of those targets" in prose, never updated to name `OwnershipPeriodsLockAndResolveTx` (§5.1, rounds 43–48) as that primitive, nor to state that this loop is a sixth, distinct caller applying the round-48 close-ing-caller contract N times — the same "newest §5.1 refactor not retrofitted to older §4 siblings" class hit at rounds 40 through 48 | **Fixed, with a round-50 correction** (§4: explicit cross-reference naming `OwnershipPeriodsLockAndResolveTx`; §10 gains a fixture) |
+| Round-50 BLOCKER: round-49's cross-reference stated `ContactDelete`'s N-target loop applies "the same close-ing-caller contract `AddressDeleteTx` uses" — but that contract's not-found case (round-49) returns `ErrConflict`, which would fail the ENTIRE `ContactDelete` transaction if even one of N targets was already closed by a concurrent operation, directly contradicting (a) this same section's own crash-recovery idempotence argument ("closing an already-closed period is a no-op") a few paragraphs below, and (b) §9's round-17 rule, which explicitly groups `ContactDelete`'s per-target close among the sites where not-found is a counter-only, non-blocking skew signal, not an error | **Fixed** (§4: `ContactDelete`'s loop explicitly does NOT use round-49's `ErrConflict` contract — not-found here follows §9 round-17's counter-only rule instead: skip, increment the skew counter, continue, and the whole transaction still commits; round-49's `ErrConflict` contract is scoped to single-target write operations, where a caller's own request racing a concurrent close on the SAME target is a genuine conflict worth reporting) |
 
 ## 9. Migration plan
 
@@ -2662,8 +2681,11 @@ humans decide; the correction path is `contact_resolutions` (§7).
   restating B5's contract for the round-43 architecture; (b)
   `ContactDelete`'s N-target closing loop needs a fixture confirming it
   calls `OwnershipPeriodsLockAndResolveTx` per target (not a bespoke
-  locking read) and applies the same close-ing-caller contract as
-  `AddressDeleteTx`, N times in one transaction.
+  locking read) and, **per round-50's correction**, follows §9's
+  round-17 counter-only not-found rule (skip and continue, whole
+  transaction still commits) rather than round-49's `ErrConflict`
+  contract — asserting `ContactDelete` still commits successfully when
+  one of N targets was already closed by a concurrent operation.
 - (Recorded, not blocking implementation — §6.2/§8) If a customer's ownership-period
   count for a single Contact ever grows large enough to make the OR-expanded
   STEP2 query in §6.2 a real performance concern, the fix is switching
