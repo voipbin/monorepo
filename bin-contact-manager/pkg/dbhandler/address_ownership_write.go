@@ -516,7 +516,8 @@ func (h *handler) AddressUpdateTx(ctx context.Context, tx *sql.Tx, id, customerI
 	if err != nil {
 		return fmt.Errorf("could not build query. AddressUpdateTx. err: %v", err)
 	}
-	if _, err := tx.ExecContext(ctx, query, args...); err != nil {
+	res, err := tx.ExecContext(ctx, query, args...)
+	if err != nil {
 		if isMySQLDeadlock(err) {
 			return ErrDeadlock
 		}
@@ -533,6 +534,22 @@ func (h *handler) AddressUpdateTx(ctx context.Context, tx *sql.Tx, id, customerI
 			return ErrDuplicateTarget
 		}
 		return fmt.Errorf("could not execute. AddressUpdateTx. err: %v", err)
+	}
+	// B5 fix: the post-lock re-read above (addressUpdateAttempt's
+	// addressTypeTargetContactByID) is a plain SELECT, not SELECT ...
+	// FOR UPDATE -- it confirms the row's shape a moment before this
+	// UPDATE, not atomically with it. If a concurrent AddressDelete
+	// removes the row in the gap between that read and this write
+	// (TOCTOU, same class of race AddressClaim's RowsAffected guard was
+	// already written to catch), the UPDATE affects zero rows and would
+	// otherwise return a silent success. Explicitly check RowsAffected
+	// and surface ErrStaleTarget, which the outer retry loop (address.go)
+	// already treats as retry-eligible -- the retry's fresh pre-lock
+	// read will correctly resolve to ErrNotFound this time.
+	if n, err := res.RowsAffected(); err != nil {
+		return fmt.Errorf("could not read rows affected. AddressUpdateTx. err: %v", err)
+	} else if n == 0 {
+		return ErrStaleTarget
 	}
 	return nil
 }
@@ -564,11 +581,27 @@ func (h *handler) AddressDeleteTx(ctx context.Context, tx *sql.Tx, addressID, cu
 	if err != nil {
 		return fmt.Errorf("could not build delete query. AddressDeleteTx. err: %v", err)
 	}
-	if _, err := tx.ExecContext(ctx, deleteQuery, deleteArgs...); err != nil {
+	res, err := tx.ExecContext(ctx, deleteQuery, deleteArgs...)
+	if err != nil {
 		if isMySQLDeadlock(err) {
 			return ErrDeadlock
 		}
 		return fmt.Errorf("could not execute delete. AddressDeleteTx. err: %v", err)
+	}
+	// B5 fix: same TOCTOU class as AddressUpdateTx's guard above -- the
+	// post-lock re-read (addressDeleteAttempt's addressTypeTargetContactByID)
+	// is a plain SELECT, not SELECT ... FOR UPDATE. If a concurrent
+	// AddressDelete/AddressUpdate (re-target) already removed this exact
+	// row in the gap since that read, this DELETE affects zero rows and
+	// would otherwise return a silent success while having ALREADY
+	// closed this contact's period above -- a double-close of history
+	// for a row that a concurrent winner is also closing/moving.
+	// Surfacing ErrStaleTarget lets the outer retry loop (address.go)
+	// re-read fresh and correctly resolve to ErrNotFound.
+	if n, err := res.RowsAffected(); err != nil {
+		return fmt.Errorf("could not read rows affected. AddressDeleteTx. err: %v", err)
+	} else if n == 0 {
+		return ErrStaleTarget
 	}
 	return nil
 }
