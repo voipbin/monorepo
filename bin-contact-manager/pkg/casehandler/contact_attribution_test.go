@@ -257,3 +257,33 @@ func Test_ResolutionCreateCaseLevel_ContactNotFound_Rejected(t *testing.T) {
 		t.Errorf("expected wrapped dbhandler.ErrNotFound, got: %v", err)
 	}
 }
+
+// Test_ResolutionCreateCaseLevel_InvalidResolutionType_Rejected verifies
+// VOIP-1252 round-2 review's finding: ResolutionCreateCaseLevel must
+// reject any resolutionType other than "positive"/"negative", mirroring
+// contacthandler.ResolutionCreate's (interaction-level) validation. Must
+// be rejected before any DB lookup (Case or Contact) -- no mockCache
+// EXPECT() is registered, so gomock fails the test if the code reaches
+// as far as ContactGet.
+func Test_ResolutionCreateCaseLevel_InvalidResolutionType_Rejected(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	db := dbhandler.NewHandler(dbTest, mockCache)
+	h := &caseHandler{utilHandler: mockUtil, reqHandler: mockReq, db: db, notifyHandler: mockNotify}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("f1b2c3d4-9206-9206-9206-000000000001")
+	caseID := uuid.FromStringOrNil("f1b2c3d4-9206-9206-9206-000000000002")
+	contactID := uuid.FromStringOrNil("f1b2c3d4-9206-9206-9206-000000000003")
+	agentID := uuid.FromStringOrNil("f1b2c3d4-9206-9206-9206-000000000004")
+
+	_, err := h.ResolutionCreateCaseLevel(ctx, customerID, caseID, contactID, "Positive", resolution.ResolvedByTypeAgent, agentID)
+	if err == nil {
+		t.Fatalf("expected an error for an invalid resolution_type, got nil")
+	}
+}

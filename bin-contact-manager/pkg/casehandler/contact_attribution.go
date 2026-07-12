@@ -81,6 +81,23 @@ func (h *caseHandler) applyDerivedContactID(ctx context.Context, tx *sql.Tx, cus
 // existing check in contacthandler.ResolutionCreate (the
 // interaction-level counterpart).
 func (h *caseHandler) ResolutionCreateCaseLevel(ctx context.Context, customerID, caseID, contactID uuid.UUID, resolutionType, resolvedByType string, resolvedByID uuid.UUID) (*resolution.Resolution, error) {
+	// 0. Validate resolutionType -- mirrors contacthandler.ResolutionCreate's
+	// (interaction-level) validation (VOIP-1252 round-2 review finding: the
+	// case-level path lacked this check the design doc claims it mirrors,
+	// letting an unvalidated string reach the DB unenforced by the
+	// OpenAPI-documented-but-unbound enum).
+	switch resolutionType {
+	case resolution.ResolutionTypePositive, resolution.ResolutionTypeNegative:
+		// valid
+	default:
+		return nil, cerrors.InvalidArgument(
+			commonoutline.ServiceNameContactManager,
+			"INVALID_RESOLUTION_TYPE",
+			fmt.Sprintf("resolution_type must be %q or %q, got %q",
+				resolution.ResolutionTypePositive, resolution.ResolutionTypeNegative, resolutionType),
+		)
+	}
+
 	if err := verifyCaseOwnership(ctx, h.db, customerID, caseID); err != nil {
 		return nil, err
 	}
