@@ -8,6 +8,13 @@ Status: Draft, awaiting independent review
 
 ## Changelog
 
+- v0.2 (2026-07-12). Round 1 independent review found a genuine cross-tenant
+  security gap in the underlying domain function (contactID ownership was
+  never validated) -- added Section 4.2b domain-layer fix, updated Section 7
+  to retract the "no changes to ResolutionCreateCaseLevel" claim, updated
+  Section 6 test plan with the new coverage row, resolved Section 8 open
+  question 3 (schema needs a case_id field), and added Section 4.3b
+  documenting the resolved_by_id trust-boundary invariant.
 - v0.1 (2026-07-12). Initial draft.
 
 ## 1. Problem recap
@@ -139,6 +146,54 @@ Register both routes in the listenhandler's route table (wherever
 `processV1CasesIDNotesPost`/`processV1CasesIDNotesIDDelete` are registered --
 same file, same pattern).
 
+### 4.2b Domain-layer fix (REQUIRED, found in Round 1 review)
+
+Round 1 independent review found that `ResolutionCreateCaseLevel`
+(`bin-contact-manager/pkg/casehandler/contact_attribution.go:73-119`) validates
+Case tenant ownership via `verifyCaseOwnership`, but never validates that
+`contactID` belongs to the same `customerID`. Compare the sibling
+interaction-level path, `contacthandler.ResolutionCreate`
+(`bin-contact-manager/pkg/contacthandler/resolution.go:67-76`), which
+explicitly does this via `h.db.ContactGet(ctx, contactID)` +
+`ct.CustomerID != customerID` -> `NotFound`. Without an equivalent check, an
+authenticated agent of tenant A could attach tenant A's Case to an arbitrary
+Contact UUID belonging to tenant B -- a cross-tenant data-linkage exploit,
+and the resulting Resolution/response would leak tenant B's `contact_id`
+back to tenant A's agent.
+
+**This is now in scope for this ticket** (not a separate follow-up): add a
+contact-ownership check inside `ResolutionCreateCaseLevel`, mirroring
+`contacthandler.ResolutionCreate`'s step 2 exactly, BEFORE the transaction
+begins:
+
+```go
+func (h *caseHandler) ResolutionCreateCaseLevel(ctx context.Context, customerID, caseID, contactID uuid.UUID, resolutionType, resolvedByType string, resolvedByID uuid.UUID) (*resolution.Resolution, error) {
+	if err := verifyCaseOwnership(ctx, h.db, customerID, caseID); err != nil {
+		return nil, err
+	}
+
+	// NEW: verify the target contact exists and belongs to this customer
+	// (mirrors contacthandler.ResolutionCreate's interaction-level check --
+	// see resolution.go:67-76 -- closing the gap Round 1 review found).
+	ct, err := h.db.ContactGet(ctx, contactID)
+	if err != nil {
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(commonoutline.ServiceNameContactManager, "CONTACT_NOT_FOUND", "The contact was not found.").Wrap(err)
+		}
+		return nil, fmt.Errorf("could not get contact. ResolutionCreateCaseLevel. err: %v", err)
+	}
+	if ct.CustomerID != customerID {
+		return nil, cerrors.NotFound(commonoutline.ServiceNameContactManager, "CONTACT_NOT_FOUND", "The contact was not found.")
+	}
+
+	// ... existing BeginTx / insert Resolution / deriveCaseContactIDTx / commit
+}
+```
+
+`ResolutionDeleteCaseLevel` does not need this check -- it only takes an
+existing Resolution's own id plus the caseID (already tenant-verified via
+`verifyCaseOwnership`); it never accepts a caller-supplied `contactID`.
+
 ### 4.3 bin-contact-manager: request models
 
 New file `bin-contact-manager/pkg/listenhandler/models/request/v1_case_resolutions.go`:
@@ -170,6 +225,22 @@ Note: unlike `V1DataCasesIDNotesPost` (which allows an optional/system
 "system-initiated" attach path in this design, only agent/admin action. If a
 future automated-attribution path is added, this can loosen the same way
 Notes did.
+
+### 4.3b Trust boundary for resolved_by_type/resolved_by_id (documented per Round 1 review)
+
+`ResolvedByType`/`ResolvedByID` are client-settable JSON fields on
+`V1DataCasesIDResolutionsPost`, and the listenhandler (Section 4.2) forwards
+them to `ResolutionCreateCaseLevel` with no independent validation at the
+contact-manager transport layer. This is safe ONLY because
+`bin-api-manager`'s servicehandler (Section 4.5) is the sole caller and
+always derives these fields server-side from `a.AgentID()`, never from
+client input -- exactly matching the existing, unguarded precedent in
+`CaseClose`'s `V1DataCasesIDClose.ClosedByID`. bin-contact-manager's
+listenhandler/RPC surface implicitly trusts bin-api-manager as the only
+caller of this internal RPC; this invariant is not new to this design (it's
+inherited from the whole `ContactV1Case*` RPC family) but is worth stating
+explicitly here since it directly protects the attribution audit trail's
+integrity.
 
 ### 4.4 bin-common-handler: requesthandler RPC client
 
@@ -313,21 +384,44 @@ Registered in `openapi.yaml` under:
 ```
 
 Request schema `ContactManagerCaseResolutionCreate`: `contact_id` (uuid,
-required), `resolution_type` (enum: positive, negative, required). Response
-schema reuses/extends the existing Resolution webhook schema (verify whether
-`ContactManagerResolution` already exists as a schema from the
-interaction-level `POST /v1/interactions/{id}/resolutions` endpoint -- if so,
-reuse it; `resolution.Resolution` carries no internal-only fields requiring
-a separate webhook type, same rationale as `case.go`'s existing
-`ConvertWebhookMessage` note for Case).
+required), `resolution_type` (enum: positive, negative, required).
+
+**Response schema decision (resolved in v0.2, was Section 8 open question
+3):** `ContactManagerResolution` already exists
+(`bin-openapi-manager/openapi/openapi.yaml:3382-3439`, confirmed by Round 1
+review) but only has `interaction_id`, not `case_id` (fields:
+`id`, `customer_id`, `contact_id`, `interaction_id`, `resolution_type`,
+`resolved_by_type`, `resolved_by_id`, `tm_*`). Reusing it as-is would
+silently drop `case_id` from every case-level resolution response. Decision:
+**extend `ContactManagerResolution` with an optional `case_id` (uuid,
+nullable) field** rather than defining a separate schema -- the Go
+`resolution.Resolution` struct already carries both `InteractionID
+*uuid.UUID` and `CaseID *uuid.UUID` as mutually-exclusive nullable fields
+(see `models/resolution/resolution.go:19-31`), so extending the single
+schema mirrors the Go struct shape exactly and avoids a parallel duplicate
+schema for what is the same underlying row shape at both call sites.
+
+### 4.6b Verified negative-resolution no-op (Round 1 review)
+
+Round 1 review confirmed `firstCaseLevelPositiveContactID`
+(`contact_attribution.go:45-53`) only matches
+`r.ResolutionType == resolution.ResolutionTypePositive`, so submitting a
+negative resolution for a Case with no prior positive resolution correctly
+derives `nil` from `deriveCaseContactID`, and `applyDerivedContactID`
+(`contact_attribution.go:59-64`) calls `CaseClearContactIDTx`, a safe no-op
+when `contact_id` is already NULL. No design change needed; retained here
+as a confirmed-safe citation for the test plan below.
 
 ## 5. Integration plan
 
-1. `bin-contact-manager`: add request models, listenhandler handlers + route
-   registration, mock regeneration (`go generate ./pkg/listenhandler/...`).
+1. `bin-contact-manager`: apply the Section 4.2b domain-layer fix to
+   `ResolutionCreateCaseLevel` FIRST (contact-ownership check), then add
+   request models, listenhandler handlers + route registration, mock
+   regeneration (`go generate ./pkg/listenhandler/...`).
 2. `bin-common-handler`: add requesthandler methods + interface entries,
    mock regeneration.
-3. `bin-openapi-manager`: add path files + schema, `go generate ./...`.
+3. `bin-openapi-manager`: add path files + extend `ContactManagerResolution`
+   with `case_id` (Section 4.6), `go generate ./...`.
 4. `bin-api-manager`: add servicehandler methods + interface + mock, add
    `server/` HTTP handlers wired to the new OpenAPI-generated route
    signatures, `go generate ./...` then `go build ./...`.
@@ -342,26 +436,27 @@ a separate webhook type, same rationale as `case.go`'s existing
 
 | Layer | New test file | Cases covered |
 |---|---|---|
-| bin-contact-manager listenhandler | `v1_case_resolutions_test.go` | 200 success (create/delete), 400 missing customer_id/contact_id, cross-tenant case_id -> propagated NotFound/error, malformed JSON body |
-| bin-contact-manager casehandler | already covered by existing `contact_attribution_write_test.go` -- no new domain-layer tests needed, this ticket only adds a transport wrapper |
+| bin-contact-manager casehandler | `contact_attribution_test.go` additions | **NEW (Round 1 finding): contact_id belongs to a different tenant -> rejected with CONTACT_NOT_FOUND, verified before any Resolution row is inserted or transaction begins**; contact_id does not exist -> CONTACT_NOT_FOUND; existing Test_ResolutionCreateCaseLevel_DerivesContactID coverage unaffected |
+| bin-contact-manager listenhandler | `v1_case_resolutions_test.go` | 200 success (create/delete), 400 missing customer_id/contact_id, cross-tenant case_id -> propagated NotFound/error, cross-tenant contact_id -> propagated NotFound/error (new), malformed JSON body |
 | bin-common-handler requesthandler | `contact_case_resolutions_test.go` | URI construction, success parse, error propagation -- mirrors `Test_ContactV1CaseClose` shape |
 | bin-api-manager servicehandler | `case_test.go` additions | permission denied (non-admin/manager), direct-access rejected, cross-tenant case_id rejected before contact_id is even used, success path asserts `resolved_by_id` is taken from `a.AgentID()` not client input |
 | bin-api-manager server | `case_resolutions_test.go` | HTTP-level request parsing, status code mapping |
 
 ## 7. Risks & tradeoffs
 
-- **Blast radius: small.** No changes to `ResolutionCreateCaseLevel`,
-  `ResolutionDeleteCaseLevel`, or `deriveCaseContactID` -- this is pure
-  transport wiring on top of an already-reviewed, already-tested domain
-  function (contact_attribution_write_test.go). Risk is concentrated in the
-  new listenhandler/servicehandler auth wiring, not in write correctness.
-- **resolution_type=negative use case.** A case-level negative resolution
-  suppresses a positive one for the same (case_id, contact_id) per set-MINUS
-  semantics (see `resolution.go` doc comment) -- this endpoint technically
-  allows an agent to submit a negative resolution for a Case that was never
-  positively attached in the first place, which is a harmless no-op (derives
-  to the same nil contact_id) but worth a unit test to confirm it doesn't
-  error.
+- **Blast radius: MODERATE, revised in v0.2 (was "small" in v0.1).** Round 1
+  independent review found that `ResolutionCreateCaseLevel` requires an
+  actual domain-layer code change (Section 4.2b, the missing contact-tenant
+  check) -- this is NOT pure transport wiring on top of an
+  already-correct function; it's a genuine fix to a previously-undetected
+  cross-tenant gap in existing (already-merged, already-unit-tested) code.
+  `ResolutionDeleteCaseLevel` and `deriveCaseContactID` remain unchanged.
+  Risk is now concentrated in: (a) getting the new contact-ownership check
+  correct without introducing a regression in the existing
+  `Test_ResolutionCreateCaseLevel_DerivesContactID` test, and (b) the new
+  listenhandler/servicehandler auth wiring.
+- **resolution_type=negative use case.** Verified safe as a no-op -- see
+  Section 4.6b.
 - **No GET added.** An agent cannot currently list a Case's resolution
   history via this API surface. Deferred to Section 8 as an open question
   rather than silently included, to keep this ticket's scope matching what
@@ -376,12 +471,15 @@ a separate webhook type, same rationale as `case.go`'s existing
 2. Should the square-admin UI work (a button/flow to search-and-attach a
    Contact from an unresolved Case) be filed as a linked follow-up ticket now,
    or wait until this API ships?
-3. Confirm whether `ContactManagerResolution` already exists as an OpenAPI
-   schema (from the interaction-level resolutions endpoint) to reuse, or
-   whether a new schema needs defining -- flagged for verification during
-   implementation, not blocking design lock-in.
+
+(Former open question 3 -- whether `ContactManagerResolution` already exists
+-- is resolved in Section 4.6: it exists and will be extended with
+`case_id`.)
 
 ## 9. Next steps
 
 Independent subagent review loop (minimum 3 rounds) on this design doc before
 implementation starts, per `voipbin-backend-feature-design` skill policy.
+Round 1 (2026-07-12): CHANGES REQUESTED -- found the cross-tenant contact
+gap (Section 4.2b) and the schema gap (Section 4.6), both now addressed in
+this v0.2. Proceeding to Round 2.
