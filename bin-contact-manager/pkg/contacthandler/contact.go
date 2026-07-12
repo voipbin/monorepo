@@ -282,6 +282,18 @@ func (h *contactHandler) AddAddress(ctx context.Context, contactID uuid.UUID, a 
 	if err != nil {
 		return nil, err
 	}
+	if c.TMDelete != nil {
+		// A9-b fix: interactionListByContact (interaction_read.go) has
+		// always treated a soft-deleted Contact as not-found; the four
+		// address-write handlers never adopted that same check, so a
+		// deleted Contact could keep accumulating new addresses
+		// indefinitely. Match the established convention.
+		return nil, cerrors.NotFound(
+			commonoutline.ServiceNameContactManager,
+			"CONTACT_NOT_FOUND",
+			"The contact was not found.",
+		)
+	}
 
 	if !isValidContactAddressType(a.Type) {
 		return nil, cerrors.InvalidArgument(
@@ -349,6 +361,14 @@ func (h *contactHandler) UpdateAddress(ctx context.Context, contactID, addressID
 	if err != nil {
 		return nil, err
 	}
+	if c.TMDelete != nil {
+		// A9-b fix -- see AddAddress's identical guard.
+		return nil, cerrors.NotFound(
+			commonoutline.ServiceNameContactManager,
+			"CONTACT_NOT_FOUND",
+			"The contact was not found.",
+		)
+	}
 
 	// Get address to verify existence + tenant isolation and to get its type for normalization
 	addr, err := h.db.AddressGet(ctx, c.CustomerID, addressID)
@@ -395,6 +415,14 @@ func (h *contactHandler) RemoveAddress(ctx context.Context, contactID, addressID
 	c, err := h.db.ContactGet(ctx, contactID)
 	if err != nil {
 		return nil, err
+	}
+	if c.TMDelete != nil {
+		// A9-b fix -- see AddAddress's identical guard.
+		return nil, cerrors.NotFound(
+			commonoutline.ServiceNameContactManager,
+			"CONTACT_NOT_FOUND",
+			"The contact was not found.",
+		)
 	}
 
 	// Verify address existence + tenant isolation
@@ -446,12 +474,12 @@ func (h *contactHandler) ClaimAddress(ctx context.Context, customerID, addressID
 	if err != nil {
 		return nil, err
 	}
-	if c.CustomerID != customerID {
+	if c.CustomerID != customerID || c.TMDelete != nil {
 		return nil, cerrors.NotFound(
 			commonoutline.ServiceNameContactManager,
 			"CONTACT_NOT_FOUND",
 			"The contact was not found.",
-		) // treat cross-tenant contact as not-found, not permission-denied, to avoid leaking existence
+		) // treat cross-tenant or soft-deleted contact as not-found, not permission-denied, to avoid leaking existence (A9-b fix: soft-deleted case)
 	}
 
 	if err := h.db.AddressClaim(ctx, customerID, addressID, contactID); err != nil {
