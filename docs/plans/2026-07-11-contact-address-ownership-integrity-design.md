@@ -1329,10 +1329,11 @@ match gains a time-range condition:
  AND COALESCE(tm_interaction, tm_create) <  COALESCE(?, tm_interaction + INTERVAL 1 SECOND, tm_create + INTERVAL 1 SECOND))
 ```
 
-**Round-41 BLOCKER, fixed here: STEP1's period-only source silently
-dropped the missing-period skew population §6.3's round-40 fix already
-covers on the queue side.** Because `OwnershipPeriodsListByContactID`
-queries `contact_address_ownership_periods` exclusively, a target this
+**Round-41 BLOCKER, fixed here (bound narrowed in round-42 — see
+below): STEP1's period-only source silently dropped the missing-period
+skew population §6.3's round-40 fix already covers on the queue side.**
+Because `OwnershipPeriodsListByContactID` queries
+`contact_address_ownership_periods` exclusively, a target this
 Contact currently, live-owns but that has zero period rows (§9
 round-16/17's accepted degraded state — an old-binary pod's
 `AddressCreate` skipped the period write) contributes NO bound to
@@ -1343,17 +1344,40 @@ resurfaced somewhere (the unresolved queue); here they resurface
 nowhere, reproducing defect #1 (the timeline-vanishing defect this
 entire design exists to fix) via pure skew, with no Contact deletion
 involved. **Fix: STEP1 additionally queries `contact_addresses` for
-`(type, target)` pairs this `contact_id` owns (`contact_id = ?`) that
-have NO matching row in `contact_address_ownership_periods` for that
-`(customer_id, type, target)` — the same anti-join §6.3's third
-disjunct performs, mirrored from the ownership side instead of the
-unresolved side — and STEP2 gives each such pair an unconditional
+`(type, target)` pairs this `contact_id` owns (`contact_id = ?`) for
+which `contact_address_ownership_periods` has NO row belonging to a
+period whose owner could plausibly be this contact — round-42
+correction below defines that condition precisely — and STEP2 gives
+each such pair an unconditional
 (unbounded, `valid_from = valid_to = NULL`) bound, identical in shape
 to a true first-registration period.** This reproduces today's
 time-agnostic value-match for exactly this population until the next
 touch gives the row a real period, at which point it drops out of this
 extra query and the ordinary period-bound path takes over — same
 transient-and-bounded character as §6.3's fix, same handoff pattern.
+
+**Round-42 correction: the round-41 anti-join condition ("no period row
+for this target AT ALL") was too narrow — it only caught first-ever
+registrations, missing the reassignment case.** When A held the target,
+released it (A's period closed), and an old-binary pod then wrote B's
+`AddressCreate` without a period, the target-wide anti-join sees A's
+closed period row and does not fire: B's row, live-owned and
+period-less, gets no bound from either the periods list (B has none)
+or the anti-join (the target isn't period-less overall, just for B) —
+the exact gap this fix exists to close, reproduced. **The condition
+must be scoped to the OWNER, not the target:** STEP1's extra query is
+`contact_addresses` rows with `contact_id = ?` (this Contact) for which
+`contact_address_ownership_periods` has no row with that SAME
+`contact_id` for the matching `(customer_id, type, target)` — i.e. "this
+contact owns the row but has never been given a period for it," dropping
+the target-wide framing entirely. This is a strict widening of round-41's
+condition (every target-wide-period-less row is also owner-period-less,
+but not the reverse) and requires no `open_period_uk`-style global
+uniqueness reasoning: it is a per-owner existence check, structurally
+identical to §4 Step 1's own-row lookup. §10's fixture set gains a
+reassignment-then-skew case (closed A period exists, B's period-less row
+does not appear on A's timeline and does appear on B's) alongside the
+first-registration-skew case round-41 already required.
 §10 gains an `interactionListByContact` missing-period-skew fixture
 symmetric to §6.3's round-40 one.
 
@@ -1538,7 +1562,7 @@ AND NOT EXISTS (
       AND a.contact_id IS NULL
 )
 AND NOT EXISTS (
-    -- round-40: missing-period skew guard (see the finding below)
+    -- round-40 guard, owner-scoped in round-42 (see the finding below)
     SELECT 1 FROM contact_addresses a
     WHERE a.customer_id = i.customer_id
       AND a.type = i.peer_type
@@ -1549,6 +1573,7 @@ AND NOT EXISTS (
           WHERE p2.customer_id = a.customer_id
             AND p2.type = a.type
             AND p2.target = a.target
+            AND p2.contact_id = a.contact_id
       )
 )
 ```
@@ -1570,8 +1595,9 @@ periods) and neither one's author considered the fourth combination
 window — the same "population enumerated for the write path, not
 re-checked against every read-path query" gap round-36 found for
 unresolved rows, recurring one population over. The third disjunct
-closes it: any address row that is owned but has no period row at all
-suppresses its interactions the same way an unresolved row does (by
+closes it: any address row that is owned but has no period row **for
+that same owner** (round-42: scoped to the owner, not the target — see
+below) suppresses its interactions the same way an unresolved row does (by
 presence, time-agnostic) until the next touch gives it a period (Step 4
 or 5, whichever applies) — at which point the third disjunct stops
 matching and the first (periods) disjunct takes over, exactly the same
@@ -1579,6 +1605,22 @@ handoff pattern the second disjunct already uses for claims. This
 degraded state is by definition transient (bounded by the rolling
 deploy window per §9), so the suppression window is bounded too. §10
 gains a missing-period-skew fixture for `InteractionListUnresolved`.
+
+**Round-42 correction: the round-40 guard's original condition ("no
+period row for this target at all") missed the reassignment case, the
+same gap round-41's §6.2 mirror had.** When A's period for this target
+is already closed (A released it) and an old-binary pod then writes B's
+row without a period, the target-wide anti-join sees A's closed period
+and does not fire, so B's interactions get neither periods-disjunct
+coverage (B has none) nor third-disjunct suppression (the target isn't
+period-less overall) — they resurface in the queue despite B's live,
+normal ownership. **Fixed by adding `p2.contact_id = a.contact_id` to
+the inner `NOT EXISTS`:** the guard now fires whenever THIS owner has no
+period row for the target, regardless of other owners' history —
+strictly wider than round-40's version, and requiring no
+`open_period_uk`-style reasoning about global state. §10's fixture set
+gains the reassignment-then-skew case symmetric to §6.2's round-42
+addition.
 
 **Round-36 finding, fixed by the second `NOT EXISTS` above: replacing
 the subquery wholesale would have silently removed the unresolved-row
@@ -1649,6 +1691,27 @@ residual filter over the covered rows is negligible. The index mirrors
 `idx_contact_interactions_peer`'s existing shape
 (`customer_id, peer_type, peer_target`) with the two period columns appended
 for coverage.
+
+**Round-42 finding, fixed here: §6.2's round-41 STEP1 anti-join
+(`contact_addresses` filtered by `contact_id`, anti-joined against
+`contact_address_ownership_periods`) was never added to this section,
+even though this section's own heading claims to address index
+coverage comprehensively and §6.3 explicitly points back to it.**
+Coverage: the anti-join's outer query filters `contact_addresses` by
+`contact_id = ?` — `idx_contact_addresses_contact_id (contact_id)` drives
+this as an index range scan, but is single-column and non-covering, so
+each matched row needs one clustered-index (PK) lookup to fetch
+`type`/`target`/`customer_id` (the round-42 owner-scoping in §6.2/§6.3
+narrows the volume this touches: per-owner, not per-target, so still
+single-digit row counts per contact). The inner `NOT EXISTS` against
+`contact_address_ownership_periods` is driven by
+`idx_ownership_periods_lookup`'s `(customer_id, type, target)` equality
+prefix — round-42's added `contact_id` predicate is not part of that
+index, so this is index-driven plus a residual filter, not fully
+covering, consistent with this section's own round-22 precision
+standard. All of this is negligible in practice for the same reason as
+the rest of this section (single-digit rows per contact/target), but is
+now stated rather than omitted.
 
 ## 7. Known, accepted limitation: the reassignment TOCTOU gap
 
@@ -1797,7 +1860,9 @@ duplicated here). Disposition of each finding that survived to this design:
 | Round-40 finding: `AddressUpdate`'s round-39 compare-and-retry said only "abort and retry with the fresh old-target," not specifying full-transaction restart vs. a partial retry that keeps the already-acquired new-target lock — the latter reading would reintroduce the exact two-target reverse-order deadlock class §5.2 exists to prevent; and §5.3's round-8 `maxDeadlockRetries` text named only `AddressClaim`, never updated to cover round-39's two new retry points — the same "fixed in one place, not propagated to sibling paths" class the document named for itself at round-17 | **Fixed** (§4: `AddressUpdate`'s retry stated explicitly as a full-transaction restart, with the two-target deadlock argument spelled out; §5.3: the cap generalized to cover every stale-target-mismatch retry §4 defines, one shared budget) |
 | Round-40 finding: whether the round-39 `AddressUpdate`/`AddressDelete` retry makes B5's `RowsAffected == 0` guard unreachable (dead code) was left unstated | **Fixed** (§4: recorded as two deliberately non-overlapping layers — the retry covers same-binary staleness (serialized away by the periods lock once the retry succeeds), the guard covers an old-binary pod deleting the row in the mixed-version window between the post-lock re-read and the final write, which the new-binary retry logic cannot see) |
 | Round-40 BLOCKER: §6.3's two `NOT EXISTS` disjuncts (periods, unresolved-row presence) both vacuously match a live-owned `contact_addresses` row that has zero period rows — the missing-period skew state §9 round-16/17 already accepts as reachable via an old-binary pod's `AddressCreate` — re-surfacing ALL of a normal, currently-owned, never-deleted address's interactions in the unresolved queue; each guard was written for its own population and the owned-without-periods combination (which exists only because of §9's accepted skew window) was never checked against this query, the same population-vs-query-enumeration gap round-36 found one population over | **Fixed** (§6.3: a third `NOT EXISTS` suppresses by presence any owned row with no period rows at all, handing off to the periods disjunct once the next touch gives the row a period — same pattern as the second disjunct's claim handoff; index coverage restated for three subqueries; §10 gains the missing-period-skew fixture) |
-| Round-41 BLOCKER: STEP1's round-40-adjacent gap — `interactionListByContact`'s STEP1 (`OwnershipPeriodsListByContactID`) is period-only, so the same owned-but-period-less skew population §6.3's round-40 fix covers on the queue side contributes NO bound at all to STEP2's OR-list, vanishing every one of its interactions from the OWNING Contact's own timeline: worse than the pre-round-40 §6.3 bug (there interactions at least resurfaced in the unresolved queue; here they resurface nowhere), reproducing defect #1 via pure skew with no deletion involved — round-40's fix, scoped to §6.3 only, left its exact mirror-image unfixed in §6.2, the same "fixed one population, not swept to the sibling read path" class this document has now hit at rounds 19, 24, 27, 30, 36, and 40→41 | **Fixed** (§6.2 STEP1: an additional anti-join query, symmetric to §6.3's third disjunct, finds `(type, target)` pairs this Contact owns with no matching period row and gives each an unconditional unbounded bound in STEP2 — same transient, next-touch-bounded handoff; §10 gains the symmetric fixture) |
+| Round-41 BLOCKER: STEP1's round-40-adjacent gap — `interactionListByContact`'s STEP1 (`OwnershipPeriodsListByContactID`) is period-only, so the same owned-but-period-less skew population §6.3's round-40 fix covers on the queue side contributes NO bound at all to STEP2's OR-list, vanishing every one of its interactions from the OWNING Contact's own timeline: worse than the pre-round-40 §6.3 bug (there interactions at least resurfaced in the unresolved queue; here they resurface nowhere), reproducing defect #1 via pure skew with no deletion involved — round-40's fix, scoped to §6.3 only, left its exact mirror-image unfixed in §6.2, the same "fixed one population, not swept to the sibling read path" class this document has now hit at rounds 19, 24, 27, 30, 36, and 40→41 | **Fixed, bound narrowed in round-42** (§6.2 STEP1: an additional anti-join query, symmetric to §6.3's third disjunct, finds `(type, target)` pairs this Contact owns with no matching period row and gives each an unconditional unbounded bound in STEP2 — same transient, next-touch-bounded handoff; §10 gains the symmetric fixture) |
+| Round-42 BLOCKER: rounds 40/41's anti-join conditions were target-scoped ("no period row for this target at all"), catching only first-ever-registration skew and missing the reassignment case — when a prior owner's period is already closed and a new owner's row is written period-less, the target-wide condition sees the closed period and does not fire, so the new owner's interactions get neither periods coverage nor anti-join suppression/attribution in EITHER §6.2 or §6.3: the round-40/41 fixes' own scope, applied identically in both places, missed the same population in both places — the "fixed one population, not swept to the sibling read path" class's first instance of hitting BOTH siblings with the identical defect simultaneously | **Fixed** (§6.2 and §6.3: both anti-join conditions narrowed from target-scoped to OWNER-scoped — `p2.contact_id = a.contact_id` added to each inner `NOT EXISTS` — a strict widening that also covers first-registration skew as a special case; §10 gains a reassignment-then-skew fixture for both) |
+| Round-42 finding: §6.4's "Index coverage" section, despite its heading claiming comprehensive treatment and §6.3 explicitly pointing back to it, never covered §6.2's round-41 STEP1 anti-join query — a cross-reference completeness gap in the same class this document named at rounds 13/20/32/34 | **Fixed** (§6.4: coverage stated for the anti-join's `contact_id`-filtered outer query (index-driven, non-covering, one PK lookup per row) and its period anti-join (index-driven prefix, not fully covering per the round-22 precision standard); negligible in practice, now stated rather than omitted) |
 
 ## 9. Migration plan
 
@@ -2183,6 +2248,11 @@ humans decide; the correction path is `contact_resolutions` (§7).
   missing-period-skew fixture — asserting an owned, period-less row's
   interactions still appear on the OWNING Contact's timeline (not just
   correctly absent from the unresolved queue).
+  **Round-42 addition:** both missing-period-skew fixtures (§6.2, §6.3)
+  need a reassignment variant — a target with a prior owner's CLOSED
+  period plus a new owner's period-less row — asserting the owner-scoped
+  guard fires (interactions attach to the new owner / stay suppressed)
+  where the round-40/41 target-wide guard would not have.
 - (Recorded, not blocking implementation — §6.2/§8) If a customer's ownership-period
   count for a single Contact ever grows large enough to make the OR-expanded
   STEP2 query in §6.2 a real performance concern, the fix is switching
