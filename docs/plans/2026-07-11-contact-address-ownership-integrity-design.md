@@ -685,14 +685,30 @@ for `AddressClaim`:**
   row can move or delete it between that read and this transaction's
   lock. `AddressUpdate` gets the identical compare-and-retry: re-read
   `contact_addresses.target` for this `addressID` immediately after
-  the §4 locking read; on a mismatch, abort and retry with the fresh
-  old-target; on NotFound, abort with `dbhandler.ErrNotFound` (no
+  the §4 locking read; on a mismatch, **abort the transaction entirely
+  and retry the whole operation from the top with the freshly-read
+  old-target (round-40 clarification: this is the same full-transaction
+  restart `AddressClaim` performs, not a partial retry of only the
+  old-target lock)** — `AddressUpdate` is a two-target transaction under
+  §5.2's ascending-`(type,target)`-order rule, so a partial retry that
+  kept the already-acquired new-target lock while re-acquiring a
+  different old-target lock would reintroduce the exact two-target
+  reverse-order deadlock class §5.2 exists to prevent; a full restart
+  re-establishes the ascending order from scratch with the fresh
+  old-target and is safe by the same argument as `AddressClaim`'s;
+  on NotFound, abort with `dbhandler.ErrNotFound` (no
   retry — permanent, same as `AddressClaim`'s rule).
 - **`AddressDelete`**: needs `(type, target)` from the row itself (the
   dbhandler entry point receives only `addressID`) to compute
   `open_period_uk` and close the right period. Same fix: locking read
-  first, re-read after, compare-and-retry on mismatch, abort on
+  first, re-read after, compare-and-retry on mismatch (full-transaction
+  restart, single-target so no ordering concern), abort on
   NotFound.
+
+Both new retry points join `AddressClaim`'s in §5.3's
+`maxDeadlockRetries` cap (round-40: §5.3's round-8 text named only
+`AddressClaim` — the cap is stated once, generically, as covering every
+stale-target-mismatch retry in this document, not per-caller).
 
 Without this extension, a concurrent re-target (Tx1: A→B commits) racing a
 stale-read `AddressDelete`/`AddressUpdate` (Tx2: reads old target A,
@@ -704,6 +720,18 @@ as skew-only, now producible by same-binary concurrency alone. Step
 own within-request correctness (§2's promise) is violated in the
 interim. This is the same enumeration-gap failure mode round-30 named
 for `AddressUpdate`'s omission elsewhere in this document.
+
+**Round-40 note on B5's `RowsAffected == 0` guard:** the compare-and-retry
+above does not make that guard dead code. Against another new-binary
+transaction it is effectively unreachable (§5.2's `FOR UPDATE` on the
+freshly-confirmed period serializes same-binary contenders), but during
+a rolling deploy an old-binary pod bypasses the ownership-period locking
+discipline entirely and can delete the row between this transaction's
+post-lock re-read and its final UPDATE/DELETE — so the guard still
+covers that mixed-version window. The retry logic's coverage
+(same-binary staleness) and the guard's coverage (any-version deletion
+after the re-read) are deliberately non-overlapping layers, not
+redundant ones.
 
 **Round-9 finding: the compare-and-retry above only defined behavior for
 "target differs" — it left the post-lock re-read returning NotFound entirely
@@ -1224,7 +1252,12 @@ transient condition as deadlock 1213 — both mean "the world moved under us,
 retry the whole operation" — and both count against the same
 `maxDeadlockRetries = 3` cap rather than a separate counter, so a target that
 keeps changing under a retrying `AddressClaim` fails closed (transient 5xx)
-at the same bound instead of retrying indefinitely.
+at the same bound instead of retrying indefinitely. **Round-40
+clarification: this rule is caller-generic, not `AddressClaim`-specific**
+— it covers every stale-target-mismatch retry §4 defines, which as of
+round-39 also includes `AddressUpdate` (full-transaction restart) and
+`AddressDelete` (single-target restart); all three share one
+`maxDeadlockRetries` budget per outer operation, not one budget each.
 
 ### 5.4 `RowsAffected` + error mapping (B5 fix)
 
@@ -1476,10 +1509,51 @@ AND NOT EXISTS (
       AND a.target = i.peer_target
       AND a.contact_id IS NULL
 )
+AND NOT EXISTS (
+    -- round-40: missing-period skew guard (see the finding below)
+    SELECT 1 FROM contact_addresses a
+    WHERE a.customer_id = i.customer_id
+      AND a.type = i.peer_type
+      AND a.target = i.peer_target
+      AND a.contact_id IS NOT NULL
+      AND NOT EXISTS (
+          SELECT 1 FROM contact_address_ownership_periods p2
+          WHERE p2.customer_id = a.customer_id
+            AND p2.type = a.type
+            AND p2.target = a.target
+      )
+)
 ```
 
-**Round-36 finding, fixed by the second `NOT EXISTS` above: replacing the
-subquery wholesale would have silently removed the unresolved-row
+**Round-40 finding, fixed by the third `NOT EXISTS` above: a live-owned
+row with zero period rows — the missing-period skew state §9
+round-16/17 already accepts as a degraded state reachable via an
+old-binary pod's `AddressCreate` — was falling through both existing
+disjuncts and re-surfacing ALL of that address's interactions in the
+unresolved queue, including ones for a perfectly normal, currently-owned
+address that was never deleted.** The first `NOT EXISTS` (periods) is
+vacuously true (no period rows to match — nothing to NOT-EXISTS
+against), and the second `NOT EXISTS` (unresolved-row presence) is also
+vacuously true because the row IS owned (`contact_id IS NOT NULL`, so
+the `contact_id IS NULL` filter excludes it). Both guards were written
+for their own populations (owned-with-periods, and unresolved-without-
+periods) and neither one's author considered the fourth combination
+(owned, without-periods) that only exists because of §9's accepted skew
+window — the same "population enumerated for the write path, not
+re-checked against every read-path query" gap round-36 found for
+unresolved rows, recurring one population over. The third disjunct
+closes it: any address row that is owned but has no period row at all
+suppresses its interactions the same way an unresolved row does (by
+presence, time-agnostic) until the next touch gives it a period (Step 4
+or 5, whichever applies) — at which point the third disjunct stops
+matching and the first (periods) disjunct takes over, exactly the same
+handoff pattern the second disjunct already uses for claims. This
+degraded state is by definition transient (bounded by the rolling
+deploy window per §9), so the suppression window is bounded too. §10
+gains a missing-period-skew fixture for `InteractionListUnresolved`.
+
+**Round-36 finding, fixed by the second `NOT EXISTS` above: replacing
+the subquery wholesale would have silently removed the unresolved-row
 suppression effect — an unrecorded external behavior change.** Today's
 `NOT EXISTS` over `contact_addresses` carries no `contact_id` filter, so
 a `CreateUnresolvedAddress` row (`contact_id = NULL`) suppresses its
@@ -1521,16 +1595,17 @@ interactions attach to the claimer and do NOT resurface in the queue,
 AND a two-prior-era fixture asserting the older, non-adjacent gap DOES
 resurface (documented, accepted).**
 
-These are two correlated subqueries keyed entirely on the outer row's own
+These are three correlated subqueries keyed entirely on the outer row's own
 `contact_interactions` columns (`i.customer_id`, `i.peer_type`, `i.peer_target`,
 `i.tm_interaction`) — no Go-side loop, no bind parameters beyond the ones the
 surrounding query already has. `idx_ownership_periods_lookup` (§6.4) covers
-the period subquery's `WHERE` clause, and the existing
-`idx_contact_addresses_identifier` prefix drives the unresolved-row
-subquery's equality lookup (round-37 precision: not fully covering —
-`contact_id` is not in that index, so one row lookup per matched target,
-at most one row by uniqueness; negligible), the same way
-`idx_contact_addresses_lookup` already covers the original.
+the period subquery's `WHERE` clause (used by both the first disjunct and
+the round-40 third disjunct's inner `NOT EXISTS`), and the existing
+`idx_contact_addresses_identifier` prefix drives the unresolved-row and
+missing-period-skew subqueries' equality lookups (round-37 precision: not
+fully covering — `contact_id`/`IS NOT NULL` are not in that index, so one
+row lookup per matched target, at most one row by uniqueness; negligible),
+the same way `idx_contact_addresses_lookup` already covers the original.
 
 ### 6.4 Index coverage (round-1 flagged as unresolved; addressed here)
 
@@ -1691,6 +1766,9 @@ duplicated here). Disposition of each finding that survived to this design:
 | Round-39 finding (non-blocking, recorded): Step 3-INSERT's "latest closed valid_to for this target" could be misread by an implementer as "this contact's own closed period's valid_to" rather than the target-wide max — both readings happen to be safe by construction here (the target-wide max structurally equals the intervening owner's valid_to), but the ambiguity itself matches the document's own round-19 implementer-discretion standard | **Fixed** (§4 Step 3-INSERT: the target-wide-max reading stated explicitly, with the structural proof that it equals the intervening owner's valid_to and cannot regress to an earlier era) |
 | Round-39 BLOCKER: the pre-lock target-resolution rule (round-7/8/9) was enumerated only for `AddressClaim` — `AddressUpdate` (target change) and `AddressDelete` also resolve `(type, target)` from a pre-lock row read (`contact.go:354` for `UpdateAddress`; `AddressDelete` needs the row's own target to compute `open_period_uk`) and are equally exposed to the same stale-read hazard: a concurrent re-target racing a stale-read close/update leaves a live open period orphaned under a live Contact, same-binary, no skew window required — the round-30 enumeration-gap failure mode's 6th recurrence | **Fixed** (§4: the round-7/8/9 compare-and-retry (re-read after lock, retry on mismatch, abort with `ErrNotFound` on NotFound, reusing §5.3's retry cap) extended explicitly to `AddressUpdate` and `AddressDelete`; §10 gains mismatch-retry/NotFound-abort fixtures for both, mirroring `AddressClaim`'s existing coverage) |
 | Round-39 finding (recorded, non-blocking): `AddressResetPrimary` and `AddressCreate`/`AddressUpdate` are separate `DBHandler` interface calls without a shared transaction parameter, yet §5.1 requires one `BeginTx` per outer operation — the mechanical integration approach is unspecified | Recorded as a §10 open question — plumbing detail with no attribution-correctness implication, tracked rather than blocking |
+| Round-40 finding: `AddressUpdate`'s round-39 compare-and-retry said only "abort and retry with the fresh old-target," not specifying full-transaction restart vs. a partial retry that keeps the already-acquired new-target lock — the latter reading would reintroduce the exact two-target reverse-order deadlock class §5.2 exists to prevent; and §5.3's round-8 `maxDeadlockRetries` text named only `AddressClaim`, never updated to cover round-39's two new retry points — the same "fixed in one place, not propagated to sibling paths" class the document named for itself at round-17 | **Fixed** (§4: `AddressUpdate`'s retry stated explicitly as a full-transaction restart, with the two-target deadlock argument spelled out; §5.3: the cap generalized to cover every stale-target-mismatch retry §4 defines, one shared budget) |
+| Round-40 finding: whether the round-39 `AddressUpdate`/`AddressDelete` retry makes B5's `RowsAffected == 0` guard unreachable (dead code) was left unstated | **Fixed** (§4: recorded as two deliberately non-overlapping layers — the retry covers same-binary staleness (serialized away by the periods lock once the retry succeeds), the guard covers an old-binary pod deleting the row in the mixed-version window between the post-lock re-read and the final write, which the new-binary retry logic cannot see) |
+| Round-40 BLOCKER: §6.3's two `NOT EXISTS` disjuncts (periods, unresolved-row presence) both vacuously match a live-owned `contact_addresses` row that has zero period rows — the missing-period skew state §9 round-16/17 already accepts as reachable via an old-binary pod's `AddressCreate` — re-surfacing ALL of a normal, currently-owned, never-deleted address's interactions in the unresolved queue; each guard was written for its own population and the owned-without-periods combination (which exists only because of §9's accepted skew window) was never checked against this query, the same population-vs-query-enumeration gap round-36 found one population over | **Fixed** (§6.3: a third `NOT EXISTS` suppresses by presence any owned row with no period rows at all, handing off to the periods disjunct once the next touch gives the row a period — same pattern as the second disjunct's claim handoff; index coverage restated for three subqueries; §10 gains the missing-period-skew fixture) |
 
 ## 9. Migration plan
 
@@ -2067,6 +2145,11 @@ humans decide; the correction path is `contact_resolutions` (§7).
   `AddressClaim`'s existing rounds 8/9 fixtures; (b) claim-of-unresolved
   fixtures per §6.3's round-39 update (immediately-prior gap attaches;
   older non-adjacent gap resurfaces, documented).
+  **Round-40 addition:** `InteractionListUnresolved` needs a
+  missing-period-skew fixture (an owned `contact_addresses` row with
+  zero period rows, per §9's accepted degraded state) asserting its
+  interactions stay suppressed from the queue until the next touch gives
+  the row a period.
 - (Recorded, not blocking implementation — §6.2/§8) If a customer's ownership-period
   count for a single Contact ever grows large enough to make the OR-expanded
   STEP2 query in §6.2 a real performance concern, the fix is switching
