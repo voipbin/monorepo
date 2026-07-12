@@ -542,7 +542,18 @@ correct owner for the composed case. No dbhandler→handler layering
 violation results: the pending struct is a plain value threaded through
 existing call parameters/returns, not a reverse dependency (dbhandler
 functions still don't import or call into contacthandler; they just
-return accumulated counts to a caller who already called them).**
+return accumulated counts to a caller who already called them). **Round-61
+addition: `AddressDeleteCompensating` (round-55's seventh, distinct
+locking-read caller) follows the same rule as the four non-composed
+write functions — it opens its own `BeginTx` (round-55), so it owns
+its own pending-metrics struct: created when its `BeginTx` opens,
+incremented by any skew/orphan-cleanup counter its own call into
+`OwnershipPeriodsLockAndResolveTx` produces, and flushed immediately
+after its own `tx.Commit()` succeeds. It is never part of `ContactCreate`'s
+address-loop transaction (round-55 already established it runs as a
+separate, standalone operation after that transaction has already
+rolled back), so there is no shared-struct ambiguity with the loop's
+own per-address pending-metrics instances.**
 **Round-32
 transaction-boundary rule for repair (b):** the duplicate-key repair
 runs in a NEW §5.1 transaction opened after the caller's failed
@@ -2419,6 +2430,7 @@ duplicated here). Disposition of each finding that survived to this design:
 | Round-59 BLOCKER: `OwnershipPeriodsListByContactID` (§6.1, used by §6.2's STEP1) was specified with no `error` return value — `(ctx, contactID) []OwnershipPeriod` — violating this codebase's own convention (every existing dbhandler read method returns `(T, error)`) and this document's own round-11/12/48 rule that new dbhandler-call errors must be propagated, not swallowed; §6.2's round-47/48 Go sketch reflected this gap literally, calling it as `periods := dbHandler.OwnershipPeriodsListByContactID(...)` with no error check at all, alongside a sibling call two lines below that DOES check its error — an inconsistency within the same code block that would have shipped a silently-swallowed DB-failure path | **Fixed** (§6.1: signature corrected to `(ctx, contactID) ([]OwnershipPeriod, error)`; §6.2's Go sketch updated to check and propagate this error identically to every other dbhandler call in the same function) |
 | Round-60 finding: round-59's error-propagation fix used `errors.Wrap(err, "...")` (the `github.com/pkg/errors` API), but the actual call site (`pkg/contacthandler/interaction_read.go`) and the rest of `bin-contact-manager` use `fmt.Errorf("...err: %v", err)` exclusively — `errors.Wrap` has zero real usages in this codebase, contradicting the sketch's own claim (§6.2) that it matches "the same error-handling shape as every other dbhandler read in this package" | **Fixed** (§6.2: sketch updated to `fmt.Errorf` matching this file's existing convention, e.g. its `AddressListByContactID`/`ResolutionListByContact` error handling) |
 | Round-60 BLOCKER: §4 round-34's pending-metrics placement rule ("commit observation and counter registration live in the same layer — the transaction-owning dbhandler entry point") was never reconciled with §5.1 rounds 43–46, which moved transaction ownership to `contacthandler` for the composed `is_primary` cases (`AddAddress`/`UpdateAddress` with `is_primary` set, and `ContactCreate`'s loop when an address is `IsPrimary`) — leaving no defined owner for the pending-metrics struct in the most common write path (setting a primary address), the same "newest §5.1 refactor not retrofitted to an older §4 rule" class hit at rounds 40, 47, 49, 50, 52, and 57 | **Fixed** (§4: the rule now names the actual `BeginTx` opener as the pending-metrics owner in all cases — the thin non-`Tx`-suffixed wrapper for the four non-composed write functions, `contacthandler` for the composed `is_primary` cases — with the pending struct threaded through the `Tx`-suffixed call sequence and flushed by whichever layer's own `tx.Commit()` succeeds; no dbhandler→handler reverse dependency results, since it's a plain value passed through existing calls) |
+| Round-61 finding: round-60's pending-metrics owner rule enumerated the four non-composed write functions, the composed `is_primary` cases, and `ContactDelete`/`ContactDeleteByCustomerID` by name — but omitted `AddressDeleteCompensating` (round-55's seventh, distinct locking-read caller, which the rule's own text acknowledges can trigger a skew/orphan-cleanup counter increment inside `OwnershipPeriodsLockAndResolveTx`), the same "sixth/seventh sibling missed" class hit at rounds 19, 24, 27, 30, 36, 40 through 53, 55, and 57 | **Fixed** (§4: `AddressDeleteCompensating` explicitly stated to own its own pending-metrics struct, following the same rule as the four non-composed write functions since it opens its own `BeginTx`; no ambiguity with `ContactCreate`'s address-loop transaction since it always runs as a separate, standalone operation after that transaction has already rolled back) |
 
 ## 9. Migration plan
 
