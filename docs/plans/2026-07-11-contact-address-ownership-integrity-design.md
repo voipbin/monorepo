@@ -719,7 +719,15 @@ for `AddressClaim`:**
   retry — permanent, same as `AddressClaim`'s rule).
 - **`AddressDelete`**: needs `(type, target)` from the row itself (the
   dbhandler entry point receives only `addressID`) to compute
-  `open_period_uk` and close the right period. Same fix: locking read
+  `open_period_uk` and close the right period. **Round-52 addition:
+  `AddressDeleteTx` also reads `contact_id` from the SAME row lookup**
+  — the same query that resolves `addressID` to `(type, target)` also
+  returns `contact_id`, since `contact_addresses` carries all three
+  columns on one row; no separate lookup is needed. This `contact_id`
+  is what `AddressDeleteTx` passes to `OwnershipPeriodsLockAndResolveTx`
+  (§5.1, round-51) and uses to filter `lockedRows` down to its own open
+  row (§5.1, round-48's close-ing-caller contract) — the same value,
+  read once, used for both. Same fix: locking read
   first, re-read after, compare-and-retry on mismatch (full-transaction
   restart, single-target so no ordering concern), abort on
   NotFound.
@@ -816,8 +824,15 @@ directly).** Per §5.1's round-48 close-ing-caller contract, this loop
 ignores `OwnershipPeriodsLockAndResolveTx`'s `step` return value for
 every target (this operation is always closing, never opening) and
 closes each target's own open row (`contact_id = this contact`,
-`valid_to IS NULL`) found in that call's `lockedRows`. **Round-50
-correction: this loop does NOT use `AddressDeleteTx`'s round-49
+`valid_to IS NULL`) found in that call's `lockedRows`. **Round-52
+clarification: "this contact" — both the `contactID` argument passed
+to `OwnershipPeriodsLockAndResolveTx` (round-51) and the `lockedRows`
+filter value — is the SAME single value throughout this loop: the ID
+of the Contact being deleted, already known before the loop starts
+(it is this operation's own input, not something read per-target).
+Every one of the N calls in the loop passes this same `contactID`; only
+`(type, target)` varies per iteration. Round-50 correction: this loop
+does NOT use `AddressDeleteTx`'s round-49
 not-found→`ErrConflict` behavior.** Round-49's `ErrConflict` contract
 governs single-target write operations, where a caller's own request
 racing a concurrent close on the SAME target is a genuine conflict the
@@ -2276,6 +2291,8 @@ duplicated here). Disposition of each finding that survived to this design:
 | Round-50 BLOCKER: round-49's cross-reference stated `ContactDelete`'s N-target loop applies "the same close-ing-caller contract `AddressDeleteTx` uses" — but that contract's not-found case (round-49) returns `ErrConflict`, which would fail the ENTIRE `ContactDelete` transaction if even one of N targets was already closed by a concurrent operation, directly contradicting (a) this same section's own crash-recovery idempotence argument ("closing an already-closed period is a no-op") a few paragraphs below, and (b) §9's round-17 rule, which explicitly groups `ContactDelete`'s per-target close among the sites where not-found is a counter-only, non-blocking skew signal, not an error | **Fixed** (§4: `ContactDelete`'s loop explicitly does NOT use round-49's `ErrConflict` contract — not-found here follows §9 round-17's counter-only rule instead: skip, increment the skew counter, continue, and the whole transaction still commits; round-49's `ErrConflict` contract is scoped to single-target write operations, where a caller's own request racing a concurrent close on the SAME target is a genuine conflict worth reporting) |
 | Round-51 finding: round-49/50's `ContactDelete`-specific ErrConflict-exclusion fix and its §10 fixture requirement named only `ContactDelete`, never `ContactDeleteByCustomerID` — despite §4 round-20 establishing the latter reuses "the same per-contact ownership-period closure as `ContactDelete`" (as M sequential per-contact transactions rather than one N-way transaction, per round-27/35), leaving no document-internal fixture requirement forcing verification that the round-50 exclusion is actually implemented for `ContactDeleteByCustomerID`'s structurally different loop | **Fixed** (§10: fixture requirement extended explicitly to `ContactDeleteByCustomerID`'s per-contact loop, noting the transactional-structure difference does not change which contract applies) |
 | Round-51 BLOCKER: `OwnershipPeriodsLockAndResolveTx`'s signature, unchanged since round-43/44 through round-50's extensive elaboration of its `step`/`lockedRows` semantics, never included a `contactID` parameter — but §4's Steps 1–5 are inherently defined relative to "this contact" (Step 1: another contact_id's open row; Step 2: THIS contact_id's open row; Step 3: THIS contact_id's closed row plus whether another contact_id intervened), so the function cannot compute `step` at all without knowing which contact_id is "this" one; every round-43–50 elaboration silently assumed a value the signature never provided a way to pass | **Fixed** (§5.1: `contactID` added to the signature; a pure signature correction, since no round-43–50 semantics depended on its absence — every caller already had this value available and simply lacked a parameter to thread it through) |
+| Round-52 finding: round-51's `contactID` signature fix was applied to §5.1's own signature declaration but not retrofitted to the two other places that describe calls into this function — §4's `ContactDelete` N-target loop text (round-49/50, never states which `contactID` value the loop passes) and §10's corresponding fixture requirement (never requires verifying the right `contactID` is threaded through) — the same "newest §5.1 refactor not retrofitted to older §4 siblings" class hit at rounds 40, 47, 49, and 50 | **Fixed** (§4: explicit statement that the loop passes the SAME `contactID` — the Contact being deleted, known before the loop starts — on every one of its N calls; only `(type, target)` varies per iteration) |
+| Round-52 BLOCKER: round-51's claim that "every caller already had this value available... `the deleting Contact's ID for AddressDeleteTx`" was unverified against `AddressDeleteTx`'s actual signature (`ctx, tx, addressID`, fixed since round-43–46) and §4's own round-39 text, which explicitly enumerates only `(type, target)` as what `AddressDeleteTx` must read from the row — `contact_id` was never listed as a value this function has or reads, contradicting round-51's blanket assertion | **Fixed** (§4: `AddressDeleteTx` explicitly reads `contact_id` from the SAME row lookup that resolves `addressID` to `(type, target)` — one query, three columns, no separate lookup needed — and uses it for both the `OwnershipPeriodsLockAndResolveTx` call and the `lockedRows` self-row filter) |
 
 ## 9. Migration plan
 
@@ -2708,6 +2725,13 @@ humans decide; the correction path is `contact_resolutions` (§7).
   within the batch still commits when one of ITS targets was already
   closed, without affecting the other contacts' independent
   transactions in the same batch.
+  **Round-52 addition:** `AddressDeleteTx` needs a fixture asserting it
+  reads `contact_id` from the same row lookup that resolves `target`
+  (not a separate query), and that this value is what gets passed to
+  `OwnershipPeriodsLockAndResolveTx`; `ContactDelete`'s N-target loop
+  needs a fixture asserting every one of its N calls passes the SAME
+  `contactID` (the Contact being deleted), with only `(type, target)`
+  varying per call.
 - (Recorded, not blocking implementation — §6.2/§8) If a customer's ownership-period
   count for a single Contact ever grows large enough to make the OR-expanded
   STEP2 query in §6.2 a real performance concern, the fix is switching
