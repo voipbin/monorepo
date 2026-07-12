@@ -79,10 +79,11 @@ func (h *rabbit) queueCreateVolatile(name string) error {
 }
 
 func (h *rabbit) queueConfig(name string) error {
-	// set qos
-	if errQos := h.QueueQoS(name, 1, 0); errQos != nil {
-		return fmt.Errorf("could not set the queue's qos. err: %v", errQos)
-	}
+	// note: prefetch (QoS) is intentionally NOT set here. It used to be fixed
+	// at 1 via QueueQoS(name, 1, 0), but that value is superseded by
+	// startConsumers's per-registration Qos(reg.numWorkers, ...) call, which
+	// also re-applies on every reconnection (see consume.go). Setting a stale
+	// prefetch=1 here would be misleading dead configuration.
 
 	// declare the exchange for deplayed message
 	if errDeclare := h.ExchangeDeclareForDelay(string(commonoutline.QueueNameDelay), true, false, false, false); errDeclare != nil {

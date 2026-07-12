@@ -11,7 +11,7 @@ import (
 )
 
 // PublishMessage sends a message to rabbitmq
-func (r *rabbit) publishExchange(exchange, key string, message []byte, headers amqp.Table) error {
+func (r *rabbit) publishExchange(exchange, key string, message []byte, headers amqp.Table, deliveryMode uint8) error {
 
 	channel, err := r.connection.Channel()
 	if err != nil {
@@ -31,9 +31,10 @@ func (r *rabbit) publishExchange(exchange, key string, message []byte, headers a
 		false,    // mandatory
 		false,    // immediate
 		amqp.Publishing{
-			ContentType: "text/plain",
-			Body:        message,
-			Headers:     headers,
+			ContentType:  "text/plain",
+			Body:         message,
+			Headers:      headers,
+			DeliveryMode: deliveryMode,
 		})
 	if err != nil {
 		return fmt.Errorf("could not send a message. err: %v", err)
@@ -124,7 +125,12 @@ func (r *rabbit) EventPublish(exchange string, key string, evt *sock.Event) erro
 	if err != nil {
 		return err
 	}
-	return r.publishExchange(exchange, key, message, nil)
+	// Preserves existing behavior exactly: delivery mode was never set before
+	// this parameter existed, which defaults to amqp.Transient. Not changed
+	// here -- durability of the platform's general event-publish path is a
+	// separate, pre-existing gap tracked outside VOIP-1233 (see design doc
+	// docs/plans/2026-07-12-voip-1233-rabbitmq-ack-after-process-design.md §4.2).
+	return r.publishExchange(exchange, key, message, nil, amqp.Transient)
 }
 
 // RequestPublishWithDelay sends a delayed request to the rabbitmq exchange
@@ -137,7 +143,8 @@ func (r *rabbit) RequestPublishWithDelay(key string, req *sock.Request, delay in
 	if err != nil {
 		return err
 	}
-	return r.publishExchange(string(commonoutline.QueueNameDelay), key, message, headers)
+	// See EventPublish comment above: preserves pre-existing transient behavior.
+	return r.publishExchange(string(commonoutline.QueueNameDelay), key, message, headers, amqp.Transient)
 }
 
 // EventPublishWithDelay sends a delayed event to the rabbitmq exchange
@@ -150,5 +157,6 @@ func (r *rabbit) EventPublishWithDelay(exchange, key string, evt *sock.Event, de
 	if err != nil {
 		return err
 	}
-	return r.publishExchange(exchange, key, message, headers)
+	// See EventPublish comment above: preserves pre-existing transient behavior.
+	return r.publishExchange(exchange, key, message, headers, amqp.Transient)
 }
