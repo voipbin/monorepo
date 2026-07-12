@@ -19,6 +19,16 @@ No data migration needed: bbcf80d332eb already copied every row from
 both tables into contact_addresses at M1 time: any data still physically
 present in these two tables is a stale, already-superseded duplicate of
 what contact_addresses holds, not a distinct data set.
+
+PRE-DEPLOY SAFETY CHECK (manual, before running this migration against
+staging/production): run
+    SELECT COUNT(*) FROM contact_phone_numbers;
+    SELECT COUNT(*) FROM contact_emails;
+first. Non-zero counts are still expected/safe per the above (stale
+duplicates), but should be spot-checked against contact_addresses row
+counts for the same customer_ids before the DROP is applied, since this
+migration's upgrade() is irreversible on data (downgrade() only restores
+the empty table shape, not rows).
 """
 from alembic import op
 import sqlalchemy as sa
@@ -37,22 +47,23 @@ def upgrade():
 
 
 def downgrade():
-    # Recreates the original (VOIP-1207-era) schema, per
-    # a1b2c3d4e5f6_contact_create_tables.py's upgrade(). Data is NOT
-    # restored -- if this table held any physical rows at drop time,
-    # they were already stale duplicates of contact_addresses (see
-    # upgrade()'s docstring); a downgrade recreates empty tables only.
+    # Exact copy of a1b2c3d4e5f6_contact_create_tables.py's upgrade()
+    # CREATE TABLE statements for these two tables (lines 51-83 there),
+    # verified field-for-field against round-2 review's diff. Data is
+    # NOT restored -- if these tables held any physical rows at drop
+    # time, they were already stale duplicates of contact_addresses
+    # (see upgrade()'s docstring); a downgrade recreates empty tables
+    # with the original schema shape only.
     op.execute("""
         CREATE TABLE IF NOT EXISTS contact_phone_numbers (
             id BINARY(16) NOT NULL,
             contact_id BINARY(16) NOT NULL,
             customer_id BINARY(16) NOT NULL,
-
-            number VARCHAR(50) NOT NULL,
+            number VARCHAR(30) NOT NULL,
             number_e164 VARCHAR(20) NOT NULL,
-            type VARCHAR(20) NOT NULL DEFAULT '',
-            is_primary BOOLEAN NOT NULL DEFAULT FALSE,
-
+            type VARCHAR(20) DEFAULT 'mobile',
+            is_primary TINYINT(1) DEFAULT 0,
+            label VARCHAR(50) DEFAULT '',
             tm_create DATETIME(6) NOT NULL,
 
             PRIMARY KEY (id),
@@ -66,11 +77,9 @@ def downgrade():
             id BINARY(16) NOT NULL,
             contact_id BINARY(16) NOT NULL,
             customer_id BINARY(16) NOT NULL,
-
             address VARCHAR(255) NOT NULL,
-            type VARCHAR(20) NOT NULL DEFAULT '',
-            is_primary BOOLEAN NOT NULL DEFAULT FALSE,
-
+            type VARCHAR(20) DEFAULT 'work',
+            is_primary TINYINT(1) DEFAULT 0,
             tm_create DATETIME(6) NOT NULL,
 
             PRIMARY KEY (id),
