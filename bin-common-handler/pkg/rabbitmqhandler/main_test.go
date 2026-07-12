@@ -25,6 +25,11 @@ type mockChannel struct {
 	qosErr       error
 	queueBindErr error
 	consumeErr   error
+
+	qosCallCount     int
+	qosPrefetchCount int
+	qosPrefetchSize  int
+	qosGlobal        bool
 }
 
 func newMockChannel() *mockChannel {
@@ -47,6 +52,10 @@ func (m *mockChannel) Consume(queue, consumer string, autoAck, exclusive, noLoca
 }
 
 func (m *mockChannel) Qos(prefetchCount, prefetchSize int, global bool) error {
+	m.qosCallCount++
+	m.qosPrefetchCount = prefetchCount
+	m.qosPrefetchSize = prefetchSize
+	m.qosGlobal = global
 	return m.qosErr
 }
 
