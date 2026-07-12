@@ -25,41 +25,6 @@ create table contact_contacts(
 create index idx_contact_contacts_customer_id on contact_contacts(customer_id);
 create index idx_contact_contacts_external_id on contact_contacts(external_id);
 
-create table contact_phone_numbers(
-  id            binary(16),
-  customer_id   binary(16),
-  contact_id    binary(16),
-
-  number        varchar(50),
-  number_e164   varchar(20),
-  type          varchar(20),
-  is_primary    boolean,
-
-  tm_create datetime(6),
-
-  primary key(id)
-);
-
-create index idx_contact_phone_numbers_contact_id on contact_phone_numbers(contact_id);
-create index idx_contact_phone_numbers_number_e164 on contact_phone_numbers(number_e164);
-
-create table contact_emails(
-  id            binary(16),
-  customer_id   binary(16),
-  contact_id    binary(16),
-
-  address       varchar(255),
-  type          varchar(20),
-  is_primary    boolean,
-
-  tm_create datetime(6),
-
-  primary key(id)
-);
-
-create index idx_contact_emails_contact_id on contact_emails(contact_id);
-create index idx_contact_emails_address on contact_emails(address);
-
 create table contact_addresses(
   id            binary(16),
   customer_id   binary(16),
