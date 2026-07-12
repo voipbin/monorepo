@@ -11,6 +11,25 @@ Status: Draft, awaiting independent review
 - v0.1 (2026-07-13). Initial draft. Reverts VOIP-1252's Resolution-based
   case-level attribution mechanism (merged 2026-07-12, commit `40ce3eafc`)
   in favor of a direct `Case.contact_id` write.
+- v0.2 (2026-07-13). Round-1 review findings addressed:
+  - **BLOCKER fix**: `ReconcileContact` (and its `case-control
+    reconcile-contact` CLI command) is now explicitly scoped for
+    deletion, not "preserved standalone" -- it hard-depends on
+    `deriveCaseContactIDTx`/`applyDerivedContactID` and its entire
+    purpose (recomputing `Case.contact_id` from Resolution-row drift)
+    is moot once Resolution is no longer the source of truth (§4, §6).
+  - **BLOCKER fix**: §5.2's `h.db.CaseClearContactID` (non-Tx) does NOT
+    already exist -- only `CaseClearContactIDTx` does. A new non-Tx
+    wrapper must be added to `dbhandler` (§5.1.1, new).
+  - **MAJOR fix**: added `bin-api-manager/pkg/servicehandler/case_resolution_test.go`
+    to the §4 removal table (was missing, would fail to compile).
+  - **MINOR fixes**: clarified the Conference PUT precedent is an
+    API-shape convention only (Conference persists a literal zero-UUID,
+    no SQL NULL; Case's clear path uses true NULL via the pre-existing
+    `CaseClearContactIDTx`) -- not identical DB persistence semantics;
+    added `case_tag.go`'s `verifyCaseOwnership` comment to the §7
+    doc-comment cleanup list; added explicit reasoning in §5.2 for why
+    dropping the transaction wrapper is safe.
 
 ## 1. Why this exists (session history)
 
@@ -58,6 +77,14 @@ empty UUID in the request body clears the link and a non-empty UUID sets
 it (see `pkg/conferencehandler/conference.go:109-110`,
 `models/conference/webhook.go:25-26`, OpenAPI `conferences/id.yaml`
 `put:` with `pre_flow_id`/`post_flow_id` as plain string fields).
+**Precision note (round-1 correction):** Conference establishes the
+API-shape convention only (empty value in the PUT body -> field
+cleared), not identical DB persistence semantics -- `PreFlowID`/
+`PostFlowID` are non-pointer required fields, so Conference persists a
+literal zero-UUID (`00000000-...`) into the column, not SQL `NULL`.
+Case's clear path uses true `NULL` via the pre-existing (Tx-scoped)
+`CaseClearContactIDTx`/(new, non-Tx) `CaseClearContactID` -- this
+design follows Conference's API shape, not its storage mechanics.
 
 **Decision (pchero, 2026-07-13):** revert VOIP-1252's Resolution-based
 case-level attribution. Replace with `PUT /v1/cases/{id}
@@ -115,17 +142,20 @@ and does not apply to this revert -- only the Case-level branch
 
 | File | Change |
 |---|---|
-| `bin-contact-manager/pkg/casehandler/contact_attribution.go` | Delete entirely: `deriveCaseContactID`, `deriveCaseContactIDTx`, `firstCaseLevelPositiveContactID`, `applyDerivedContactID`, `ResolutionCreateCaseLevel`, `ResolutionDeleteCaseLevel`. `CaseListUnresolved`/`CaseListAll`/`ReconcileContact` (also in this file) are UNRELATED to Resolution and move to a new file (see §6). |
-| `bin-contact-manager/pkg/casehandler/contact_attribution_test.go`, `contact_attribution_write_test.go` | Delete entirely (tests only the removed functions). |
-| `bin-contact-manager/pkg/casehandler/main.go` | Remove `ResolutionCreateCaseLevel`/`ResolutionDeleteCaseLevel` from the `CaseHandler` interface; add `UpdateContact` (see §5). |
+| `bin-contact-manager/pkg/casehandler/contact_attribution.go` | Delete entirely: `deriveCaseContactID`, `deriveCaseContactIDTx`, `firstCaseLevelPositiveContactID`, `applyDerivedContactID`, `ResolutionCreateCaseLevel`, `ResolutionDeleteCaseLevel`, **`ReconcileContact`** (round-1 correction: `ReconcileContact` hard-depends on `deriveCaseContactIDTx`/`applyDerivedContactID` and its entire purpose -- recomputing `Case.contact_id` from Resolution-row drift -- is moot once Resolution is no longer the source of truth; it is NOT preserved). `CaseListUnresolved`/`CaseListAll` (also in this file) do NOT depend on Resolution and move to a new file (see §6). |
+| `bin-contact-manager/pkg/casehandler/contact_attribution_test.go`, `contact_attribution_write_test.go`, `reconcile_test.go` | Delete entirely (test the removed functions). |
+| `bin-contact-manager/pkg/casehandler/main.go` | Remove `ResolutionCreateCaseLevel`/`ResolutionDeleteCaseLevel`/`ReconcileContact` from the `CaseHandler` interface; add `UpdateContact` (see §5). |
+| `bin-contact-manager/cmd/case-control/main.go` | Remove the `reconcile-contact` subcommand (`cmdReconcileContact`, `runReconcileContact`) entirely -- its sole purpose (recovering from Resolution-row/Case.contact_id drift) no longer applies once Case.contact_id is the single directly-written source of truth with no derivation step to drift from. |
 | `bin-contact-manager/pkg/listenhandler/v1_case_resolutions.go`, `v1_case_resolutions_test.go`, `models/request/v1_case_resolutions.go` | Delete entirely. |
 | `bin-contact-manager/pkg/listenhandler/main.go` | Remove `regV1CasesIDResolutions`/`regV1CasesIDResolutionsID` routes; add `PUT /v1/cases/{id}` route. |
 | `bin-contact-manager/pkg/dbhandler/resolution.go` | Remove `ResolutionListByCase`/`ResolutionListByCaseTx` (case-level only; `ResolutionListByInteraction` and all interaction-level resolution CRUD stay). |
+| `bin-contact-manager/pkg/dbhandler/kase.go` | No removals. **Addition required** (round-1 correction, see §5.1.1): a non-Tx `CaseClearContactID` wrapper does not currently exist -- only `CaseClearContactIDTx` does. Must be added, mirroring the existing `CaseUpdateContactID`/`CaseUpdateContactIDTx` non-Tx/Tx pairing. |
 | `bin-common-handler/pkg/requesthandler/contact_case_resolutions.go`, `contact_case_resolutions_test.go` | Delete entirely. |
 | `bin-common-handler/pkg/requesthandler/main.go` | Remove `ContactV1CaseResolutionCreate`/`ContactV1CaseResolutionDelete` from the interface; add `ContactV1CaseUpdateContact`. |
 | `bin-openapi-manager/openapi/paths/contact_cases/id_resolutions.yaml`, `id_resolutions_id.yaml` | Delete entirely. |
 | `bin-openapi-manager/openapi/openapi.yaml` | Remove the two path registrations; remove `case_id` field from `ContactManagerResolution` (added by VOIP-1252, no longer has a producer); add `put:` block to `contact_cases/id.yaml` (new file content, not a new path entry -- path already exists for `get:`). |
 | `bin-api-manager/pkg/servicehandler/case.go` | Remove `CaseResolutionCreate`/`CaseResolutionDelete`; add `CaseUpdateContact`. |
+| `bin-api-manager/pkg/servicehandler/case_resolution_test.go` | Delete entirely (round-1 correction: was missing from the original removal list; tests `CaseResolutionCreate`/`Delete`, which no longer exist post-revert, so this file would fail to compile if left in place). |
 | `bin-api-manager/server/contact_case_resolutions.go` | Delete entirely; add `PutContactCasesId` handler in a new/existing `server/contact_cases.go`. |
 
 `resolution.Resolution.CaseID` (the model field itself, in
@@ -149,6 +179,32 @@ Reuses the existing GET path (`contact_cases/{id}.yaml` already exists
 for `get:`) -- this adds a `put:` block to that same file, exactly as
 `conferences/id.yaml` and `contacts/id.yaml` do (`get:`/`put:`/`delete:`
 coexisting in one path file).
+
+### 5.1.1 New dbhandler primitive (round-1 correction)
+
+`dbhandler.CaseUpdateContactID` (non-Tx) already exists and is reused
+as-is. `dbhandler.CaseClearContactIDTx` (Tx-scoped) also already
+exists, but there is currently no non-Tx `CaseClearContactID` -- every
+existing caller of the clear path ran inside VOIP-1252's transaction.
+Since `UpdateContact` (below) is a single-statement, non-transactional
+write (see §5.2's reasoning), a new non-Tx wrapper is needed, mirroring
+`CaseUpdateContactID`'s existing non-Tx/Tx pairing exactly:
+
+```go
+// CaseClearContactID reverts a Case's contact_id to NULL, scoped
+// outside any caller-managed transaction (VOIP-1253's direct-write
+// path has no multi-statement derivation step requiring atomicity, so
+// no transaction wrapper is needed here -- see design §5.2).
+func (h *handler) CaseClearContactID(ctx context.Context, customerID, id uuid.UUID) error {
+	return caseClearContactIDExec(h.db, customerID, id)
+}
+```
+
+`caseClearContactIDExec` is the existing shared implementation
+`CaseClearContactIDTx` already delegates to -- this is a thin
+non-Tx wrapper around it, the same relationship `CaseUpdateContactID`/
+`CaseUpdateContactIDTx` already have via `caseUpdateContactIDExec`. Add
+to the `DBHandler` interface in `dbhandler/main.go`, regenerate mock.
 
 ### 5.2 bin-contact-manager: casehandler
 
@@ -240,12 +296,36 @@ func (h *caseHandler) UpdateContact(ctx context.Context, customerID, caseID, con
 }
 ```
 
-Note: `dbhandler.CaseUpdateContactID`/`CaseClearContactID` already exist
-(added by VOIP-1252, unchanged by this revert) -- this is pure reuse,
-no dbhandler changes needed for the write path itself. Only
-`CaseUpdateContactID`'s doc-comment ("design §3.4; single source of
-truth is Resolution") needs updating to drop the now-false Resolution
+Note (round-1 correction): `dbhandler.CaseUpdateContactID` already
+exists (added by VOIP-1252, unchanged by this revert) and is pure
+reuse. `dbhandler.CaseClearContactID` (non-Tx) does NOT already exist
+-- see §5.1.1 for the new wrapper this design adds around the existing
+`CaseClearContactIDTx`. Both `CaseUpdateContactID`'s and
+`CaseClearContactIDTx`'s doc-comments ("design §3.4; single source of
+truth is Resolution") need updating to drop the now-false Resolution
 reference (§7).
+
+**Why no transaction wrapper is needed here** (unlike VOIP-1252's
+`ResolutionCreateCaseLevel`, which wrapped its Resolution insert +
+`deriveCaseContactIDTx` read + `Case.contact_id` write in a single
+`BeginTx`/`Commit`): that transaction existed because VOIP-1252 had two
+separate writes (Resolution row insert, then a derived read-then-write
+of `Case.contact_id`) that needed to be atomic with each other, or a
+crash between them would leave a Resolution row with no corresponding
+`Case.contact_id` update. `UpdateContact` has exactly ONE write
+statement (`CaseUpdateContactID` or `CaseClearContactID`) -- there is
+no second write to keep atomic with it, so no multi-statement
+derivation step exists that a crash could leave half-done. The
+ownership checks (§5.2's `verifyCaseOwnership` and Contact-tenant
+check) happen before the single write, the same TOCTOU-tolerant pattern
+`ResolutionCreateCaseLevel` already used (a check-then-write race here
+is bounded by the same customer_id being re-validated inside the
+WHERE clause of `CaseUpdateContactID`/`CaseClearContactID`'s underlying
+SQL, per `caseUpdateContactIDExec`'s existing `WHERE id=? AND
+customer_id=?` shape) -- this is not a new risk introduced by dropping
+the transaction, it is the same check-then-write shape every other
+single-field Case write in this file already uses (e.g.
+`CaseUpdateStatusClosed`).
 
 Add to `CaseHandler` interface in `main.go`:
 ```go
@@ -434,10 +514,17 @@ the case-level write path is deleted).
 
 VOIP-1252 originally added `CaseListUnresolved`, `ReconcileContact`, and
 `CaseListAll` to `contact_attribution.go` alongside the Resolution
-functions being removed here. These three are unrelated to Resolution
-(they read/derive from whatever is already in `Case.contact_id`, they
-don't create Resolution rows) and must be preserved. Move them to a new
-file `bin-contact-manager/pkg/casehandler/contact_unresolved.go` before
+functions being removed here. Of these three, **only
+`CaseListUnresolved` and `CaseListAll` are unrelated to Resolution**
+(round-1 correction: they are thin dbhandler delegations that read/list
+whatever is already in `Case.contact_id`, with no dependency on
+Resolution derivation) and must be preserved. `ReconcileContact` is
+**not** preserved -- see §4's correction: it hard-depends on
+`deriveCaseContactIDTx`/`applyDerivedContactID` and its whole reason to
+exist (recomputing `Case.contact_id` after Resolution-row drift) is
+gone once Resolution is no longer the source of truth. Move
+`CaseListUnresolved`/`CaseListAll` to a new file
+`bin-contact-manager/pkg/casehandler/contact_unresolved.go` before
 deleting `contact_attribution.go`, so no functionality is lost in the
 revert.
 
@@ -457,6 +544,12 @@ corrected as part of this change (not left stale):
 - `models/resolution/resolution.go`'s package doc ("OR a whole
   contact_case") -> note that the CaseID branch is legacy/unused as of
   VOIP-1253 (see §4's note on leaving the column in place).
+- `bin-contact-manager/pkg/casehandler/case_tag.go`'s
+  `verifyCaseOwnership` doc-comment (round-1 correction: currently
+  name-drops `ResolutionCreateCaseLevel`/`ResolutionDeleteCaseLevel` as
+  example callers of this shared choke point) -> update the caller list
+  to reference `UpdateContact` instead, so it doesn't dangle-reference
+  deleted functions.
 
 ## 8. Open questions
 
