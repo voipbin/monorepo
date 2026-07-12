@@ -731,8 +731,9 @@ func newMonotonicTimeUtilHandler(t *testing.T, mc *gomock.Controller, start time
 // TimeNow() (confirmed against createTestContact's existing usage
 // pattern, which shares the same AnyTimes() mock as every other write in
 // its test), so this exists only to make that non-consumption explicit
-// at call sites using the strict, ordered newSequentialTimeUtilHandler
-// mock above, where an unexpected TimeNow() call would fail the test.
+// at call sites using the strict, monotonic-clock newMonotonicTimeUtilHandler
+// mock above, where an unexpected TimeNow() call would still succeed but
+// would shift every subsequent timestamp by one unintended tick.
 func createTestContactNoTimeNow(t *testing.T, h *handler, ctx context.Context, customerID, contactID uuid.UUID) {
 	t.Helper()
 	c := &contact.Contact{
