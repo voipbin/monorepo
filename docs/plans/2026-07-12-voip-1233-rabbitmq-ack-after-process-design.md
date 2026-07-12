@@ -131,6 +131,12 @@ func (r *rabbit) ackOrRetry(message amqp.Delivery, queueName string, processErr 
 
 	headers["x-delay"] = delayMs
 	if errPub := r.publishExchange(string(commonoutline.QueueNameDelay), queueName, message.Body, headers, amqp.Persistent); errPub != nil {
+		// NOTE: publishExchange (publish.go:14) is currently a 4-parameter
+		// function (exchange, key, message, headers). Passing amqp.Persistent
+		// here as shown requires adding a deliveryMode parameter -- this is a
+		// REQUIRED signature change for the implementation phase, not code that
+		// compiles as-is today. See the BLOCKER/MAJOR fix note directly below
+		// for the full rationale (round-1/round-2 design review).
 		log.Errorf("Could not schedule delayed retry, falling back to immediate requeue. err: %v", errPub)
 		if err := message.Nack(false, true); err != nil {
 			log.Errorf("Error nacking (fallback requeue) message: %v", err)
@@ -271,6 +277,11 @@ line. Rejected for THIS PR because:
 
 Quorum queue migration was also compared and rejected for the same reason (topology
 change, broker resource increase) plus it is a bigger unit of work than this PR's scope.
+
+**Design-review round-2 findings (all MINOR, implementation-phase notes):**
+1. `queueConfig`'s original `QueueQoS(name, 1, 0)` call (`queue.go:83`, runs once at queue creation) becomes dead/superseded once `startConsumers` applies `Qos(reg.numWorkers, ...)` on every registration (§4.5) — the final state is still correct (the later call wins), but the stale `1, 0` call should be removed or clearly commented as intentionally-overridden during implementation, to avoid a future reader thinking prefetch is still 1.
+2. `pkg/rabbitmqhandler` currently registers NO Prometheus metrics (only `pkg/requesthandler` does, via `init()` + `prometheus.MustRegister`, per `bin-common-handler/CLAUDE.md`'s "do not register duplicate metric names" rule). §4.4 introduces two new `CounterVec`s here for the first time in this package — the implementation must specify WHERE/WHEN `prometheus.MustRegister` is called (an `init()` in the same file, following `requesthandler`'s existing pattern) and confirm `NewRabbit()` is only ever called once per process (duplicate `MustRegister` calls panic). Metric names (`rabbitmqhandler_event_retried_total`, `rabbitmqhandler_event_dropped_total`) do not collide with any existing `requesthandler` metric name, so no naming conflict — only the registration-site and call-count question needs an explicit answer in the implementation.
+3. (Documentation-only tidiness) The "publishExchange needs a signature change" callout ended up several paragraphs after the code snippet that uses the not-yet-existing parameter; an inline `NOTE:` comment was added directly in the §4.2 snippet (see the retry-publish block above) so a reader skimming only the code block doesn't mistake it for already-compiling code.
 
 ### 4.4 Observability
 
