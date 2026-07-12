@@ -582,7 +582,7 @@ held, where A's row was already closed by A's own `AddressDelete` per §7's
 TOCTOU sequencing) — round-5's fix, the case the original "no rows at all"
 framing misclassified as first-ever registration. INSERT: `contact_id`=this
 contact, `valid_to=NULL`, and **`valid_from` is caller-specific
-(round-37, bound corrected in round-38):** for
+(round-37, bound corrected in round-38, scope note added round-39):** for
 `AddressCreate`/`AddressUpdate`, `valid_from=NOW()` (not NULL — this
 contact never owned the target before now). **For `ClaimAddress`,
 `valid_from = latest closed valid_to for this target`** (the round-38
@@ -595,25 +595,52 @@ them to the claimer; and (b) via round-28 repair (a), which resets a
 dead owner's row to `contact_id = NULL` mid-transaction, `tm_create` is
 the DEAD contact's registration time, not an unresolved-era start,
 making the bound semantically meaningless on that path. The corrected
-bound reproduces today's observable attribution exactly: a claim
-attributes the entire unowned span since the previous era to the
-claimer — which is precisely what today's value matching does — with
-no-overlap guaranteed trivially (`valid_from = latest valid_to`,
-half-open disjoint), and the same-instant tie resolving to the claimer
-by the half-open rule while Step 3's `>=` still classifies the claimer
-as an intervening owner for any later re-registration. `NOW()` here
-would orphan exactly the interactions the claim was performed to attach
-— they would leave the queue's suppression (row no longer NULL-owned)
-yet fall outside every period: unattributed forever, resurfacing in the
-unresolved queue. The same caller split applies to Step 3's INSERT arm
-(the intervening-owner case) when reached by `ClaimAddress`. One
-skew-scope note: when a Step-1 orphan close at `NOW()` has just pushed
-latest `valid_to` to `NOW()` (mixed-skew, rounds 23/31), the claim's
-`valid_from = NOW()` and the pre-close era stays attributed to the
-orphan's owner up to the close — the round-23 "attribution up to the
+bound reproduces today's observable attribution for the SINGLE gap
+immediately preceding the claim: a claim attributes the unowned span
+since the immediately-prior era to the claimer — which is precisely what
+today's value matching does for that gap — with no-overlap guaranteed
+trivially (`valid_from = latest valid_to`, half-open disjoint), and the
+same-instant tie resolving to the claimer by the half-open rule while
+Step 3's `>=` still classifies the claimer as an intervening owner for
+any later re-registration. `NOW()` here would orphan exactly the
+interactions the claim was performed to attach — they would leave the
+queue's suppression (row no longer NULL-owned) yet fall outside every
+period: unattributed forever, resurfacing in the unresolved queue. The
+same caller split applies to Step 3's INSERT arm (the intervening-owner
+case) when reached by `ClaimAddress` — there, "latest closed valid_to
+for this target" resolves to the intervening owner's `valid_to`
+structurally (any closed row's `valid_to >= valid_from >=` the prior
+owner's `valid_to`, so the target-wide max is always the most recent
+era's end, never an earlier one of this contact's own prior eras; stated
+explicitly here per round-39 to foreclose the reading "this contact's
+own closed period," which would overlap the intervening owner's era).
+One skew-scope note: when a Step-1 orphan close at `NOW()` has just
+pushed latest `valid_to` to `NOW()` (mixed-skew, rounds 23/31), the
+claim's `valid_from = NOW()` and the pre-close era stays attributed to
+the orphan's owner up to the close — the round-23 "attribution up to the
 repair point" standard, not a new gap (queue non-resurfacing still
 holds: every instant is covered by either the closed orphan period or
 the claimer's new period).
+
+**Round-39 disposition (recorded limitation, not fixed further): the
+bound covers only the gap immediately preceding the claim, not every
+earlier gap in the target's full history.** With multiple prior eras
+(A owned, then vacant, then B owned, then vacant, then C claims an
+unresolved row), `valid_from = latest closed valid_to` starts at B's
+`valid_to` — the A-to-B gap stays uncovered by any period. Today's
+row-presence suppression covers that gap unconditionally (time-agnostic
+existence); after the claim converts the row, only the periods do, and
+the A-to-B gap resurfaces in the unresolved queue with no owner. This is
+accepted, not fixed: reaching further back (e.g. to the earliest gap, or
+to `NULL`) would re-admit round-30's rejected over-absorption (a claim
+should not retroactively absorb eras this design has already
+positively closed for OTHER owners' history), and the round-23
+"attribution up to the repair point" standard already treats
+un-owned inter-era gaps as legitimately surfaced, un-suppressed
+territory once something disturbs the row that had been suppressing
+them. §10's fixture set gains a case with two prior eras asserting
+the older gap resurfaces (documented, not a regression from any
+in-scope baseline) while the immediately-prior gap does not.
 
 **Step 5 — no rows matched any of the above.** True first-ever registration.
 INSERT: `valid_from=NULL` (unbounded past — see §9 backfill), `valid_to=NULL`.
@@ -645,6 +672,38 @@ This is a compare-and-retry, not a new lock: the retry loop reuses §5.3's
 existing `maxDeadlockRetries` machinery (a stale-target mismatch is treated
 as the same class of transient, retry-eligible condition as a deadlock,
 capped the same way) rather than introducing a second retry mechanism.
+
+**Round-39 addition — the same by-addressID resolution problem, and the
+same fix, apply to two more callers the rule previously enumerated only
+for `AddressClaim`:**
+
+- **`AddressUpdate` (target change)**: `contacthandler.UpdateAddress`
+  reads the row's current `target` (`contact.go:354`) before the
+  transaction to know the OLD `(type, target)` to close a period for.
+  This is exactly the same stale-read hazard as `AddressClaim`'s — a
+  concurrent `AddressUpdate`/`RemoveAddress`/`AddressClaim` on the same
+  row can move or delete it between that read and this transaction's
+  lock. `AddressUpdate` gets the identical compare-and-retry: re-read
+  `contact_addresses.target` for this `addressID` immediately after
+  the §4 locking read; on a mismatch, abort and retry with the fresh
+  old-target; on NotFound, abort with `dbhandler.ErrNotFound` (no
+  retry — permanent, same as `AddressClaim`'s rule).
+- **`AddressDelete`**: needs `(type, target)` from the row itself (the
+  dbhandler entry point receives only `addressID`) to compute
+  `open_period_uk` and close the right period. Same fix: locking read
+  first, re-read after, compare-and-retry on mismatch, abort on
+  NotFound.
+
+Without this extension, a concurrent re-target (Tx1: A→B commits) racing a
+stale-read `AddressDelete`/`AddressUpdate` (Tx2: reads old target A,
+locks and closes A's period after Tx1 already moved the row to B) closes
+the wrong (already-closed) period and leaves B's live open period
+orphaned under a live Contact — the exact degraded state §9 designates
+as skew-only, now producible by same-binary concurrency alone. Step
+1/2's self-healing repairs it on the next touch, but the transaction's
+own within-request correctness (§2's promise) is violated in the
+interim. This is the same enumeration-gap failure mode round-30 named
+for `AddressUpdate`'s omission elsewhere in this document.
 
 **Round-9 finding: the compare-and-retry above only defined behavior for
 "target differs" — it left the post-lock re-read returning NotFound entirely
@@ -1431,32 +1490,36 @@ such interaction at cutover and (b) permanently strip the endpoint's
 effect. The second disjunct preserves today's suppression exactly:
 unresolved rows suppress by presence (time-agnostic, as today), owned
 addresses suppress by period (the design's time-aware rule). **Round-37
-scoping correction, bound updated in round-38 (the earlier "matching
-today's observable sequence" claim was true only for the Step-5 claim
-path):** after a claim converts the row (`contact_id` no longer NULL),
-the second `NOT EXISTS` stops suppressing and the first takes over —
-continuity of suppression for the pre-claim era therefore depends on the
-claim-created period's `valid_from` reaching back over that era. Step 5
-claims (`valid_from = NULL`) always do. Step 4 / Step 3-INSERT claims
-would NOT have under the old `NOW()` rule — which is why §4's
-caller-specific rule sets `ClaimAddress`'s `valid_from = latest closed
-valid_to` (round-38: the interim round-37 `tm_create` bound still left
-the pre-row-creation gap exposed on both the queue AND timeline sides,
-falsely labeled "not a behavior change"; the corrected bound covers the
-entire unowned span since the previous era, reproducing today's
-time-agnostic value-match attribution exactly): every interaction since
-the previous owner's era attaches to the claimer and nothing resurfaces
-in the unresolved queue — matching today's observable behavior on both
-surfaces. The one exception is the mixed-skew clamp (§4's skew-scope
-note): an era consumed by a Step-1 orphan close stays attributed to the
-orphan's owner up to the close (round-23 standard), and queue
-non-resurfacing still holds. Claimed
+scoping correction, bound updated in round-38, further scoped in
+round-39 (the earlier "matching today's observable sequence" claim was
+true only for the Step-5 claim path):** after a claim converts the row
+(`contact_id` no longer NULL), the second `NOT EXISTS` stops suppressing
+and the first takes over — continuity of suppression for the pre-claim
+era therefore depends on the claim-created period's `valid_from` reaching
+back over that era. Step 5 claims (`valid_from = NULL`) always do. Step
+4 / Step 3-INSERT claims would NOT have under the old `NOW()` rule —
+which is why §4's caller-specific rule sets `ClaimAddress`'s `valid_from
+= latest closed valid_to`: every interaction since the IMMEDIATELY
+PRIOR owner's era attaches to the claimer and does not resurface in the
+unresolved queue — matching today's observable behavior for that single
+gap. **Round-39 correction: "matching today's observable behavior" does
+NOT extend to every earlier gap in a multi-era history** — §4's round-39
+disposition records that an older, non-adjacent gap (e.g. an A-to-B gap
+preceding a B-to-claimer gap) is NOT covered by the claim-created period
+and DOES resurface in the queue once the claim removes the row-presence
+suppression that had covered it unconditionally. This is accepted (see
+§4), not a defect, but the earlier phrasing "nothing resurfaces... the
+one exception is the mixed-skew clamp" overstated the guarantee to
+exactly one named exception; there are two: the mixed-skew clamp AND
+non-adjacent historical gaps. Claimed
 rows are covered by the period subquery from the claim onward. §10's
 test checklist covers `InteractionListUnresolved` with an unresolved-row
-fixture on both sides of the cutover, **plus (round-37/38) a
+fixture on both sides of the cutover, **plus (round-37/38/39) a
 claim-of-unresolved fixture on a target with prior closed periods,
-asserting BOTH the unresolved-era and the pre-row-creation-gap
-interactions attach to the claimer and do NOT resurface in the queue.**
+asserting BOTH the unresolved-era and the immediately-prior gap
+interactions attach to the claimer and do NOT resurface in the queue,
+AND a two-prior-era fixture asserting the older, non-adjacent gap DOES
+resurface (documented, accepted).**
 
 These are two correlated subqueries keyed entirely on the outer row's own
 `contact_interactions` columns (`i.customer_id`, `i.peer_type`, `i.peer_target`,
@@ -1624,6 +1687,10 @@ duplicated here). Disposition of each finding that survived to this design:
 | Round-37 finding (recorded, non-blocking): §6.3's "covers" wording for the unresolved-row subquery overstated — `contact_id` is not in `idx_contact_addresses_identifier`, so the lookup is index-driven plus one row fetch (at most one row by uniqueness), not covering; corrected per the document's own §6.4 round-22 precision standard | **Fixed** (§6.3 wording corrected) |
 | Round-38 BLOCKER: the round-37 `GREATEST(latest valid_to, row tm_create)` bound was doubly wrong — (a) the pre-`tm_create` gap (previous era's end → row creation) stayed outside every period, so its interactions resurfaced in the unresolved queue AND dropped off the claimer's timeline (today's time-agnostic value-match attributes them to the claimer), while §6.3 falsely labeled this "not a behavior change"; (b) via round-28 repair (a) (dead owner's row reset to NULL mid-transaction), `tm_create` is the DEAD contact's registration time — the claimer would silently absorb the dead owner's post-tombstone vacancy, contradicting round-30's own head-gap standard | **Fixed** (§4: `ClaimAddress`'s bound corrected to `valid_from = latest closed valid_to` — covers the entire unowned span since the previous era, reproducing today's attribution exactly on both queue and timeline surfaces; trivially non-overlapping; the repair-(a) path loses its dependence on `tm_create` entirely; mixed-skew clamp recorded under the round-23 attribution-up-to-repair standard; §6.3 rescoped, §10 fixture extended to the pre-row-creation gap) |
 | Round-38 verification: (1) the corrected bound is consistent with Step 3's `>=` tie-break and the no-overlap invariant (half-open disjoint, same-instant tie resolves to the claimer, later re-registration still sees the claimer as intervening owner); (3) `ClaimAddress` can reach Step 3-reopen (own closed period, no intervener) and the reopened `[old valid_from, ∞)` period covers the pre-claim era — suppression continuity holds on that branch too | **Confirmed** (recorded as verified-safe) |
+| Round-39 BLOCKER: multi-era gap resurfacing — with two or more prior eras, `valid_from = latest closed valid_to` covers only the gap immediately preceding the claim; an older, non-adjacent gap (e.g. A-to-B, before a B-to-claimer gap) stays uncovered and resurfaces in the unresolved queue once the claim removes today's unconditional row-presence suppression — falsifying §4/§6.3/§8's prior "exactly / nothing resurfaces / one exception" claims, which had enumerated only the mixed-skew clamp | **Fixed** (§4: recorded as an accepted, not-fixed-further limitation — reaching further back would re-admit round-30's rejected over-absorption of other owners' history; §6.3 rescoped to name two exceptions instead of one; §10 gains a two-prior-era fixture asserting the older gap resurfaces) |
+| Round-39 finding (non-blocking, recorded): Step 3-INSERT's "latest closed valid_to for this target" could be misread by an implementer as "this contact's own closed period's valid_to" rather than the target-wide max — both readings happen to be safe by construction here (the target-wide max structurally equals the intervening owner's valid_to), but the ambiguity itself matches the document's own round-19 implementer-discretion standard | **Fixed** (§4 Step 3-INSERT: the target-wide-max reading stated explicitly, with the structural proof that it equals the intervening owner's valid_to and cannot regress to an earlier era) |
+| Round-39 BLOCKER: the pre-lock target-resolution rule (round-7/8/9) was enumerated only for `AddressClaim` — `AddressUpdate` (target change) and `AddressDelete` also resolve `(type, target)` from a pre-lock row read (`contact.go:354` for `UpdateAddress`; `AddressDelete` needs the row's own target to compute `open_period_uk`) and are equally exposed to the same stale-read hazard: a concurrent re-target racing a stale-read close/update leaves a live open period orphaned under a live Contact, same-binary, no skew window required — the round-30 enumeration-gap failure mode's 6th recurrence | **Fixed** (§4: the round-7/8/9 compare-and-retry (re-read after lock, retry on mismatch, abort with `ErrNotFound` on NotFound, reusing §5.3's retry cap) extended explicitly to `AddressUpdate` and `AddressDelete`; §10 gains mismatch-retry/NotFound-abort fixtures for both, mirroring `AddressClaim`'s existing coverage) |
+| Round-39 finding (recorded, non-blocking): `AddressResetPrimary` and `AddressCreate`/`AddressUpdate` are separate `DBHandler` interface calls without a shared transaction parameter, yet §5.1 requires one `BeginTx` per outer operation — the mechanical integration approach is unspecified | Recorded as a §10 open question — plumbing detail with no attribution-correctness implication, tracked rather than blocking |
 
 ## 9. Migration plan
 
@@ -1951,6 +2018,17 @@ humans decide; the correction path is `contact_resolutions` (§7).
 
 ## 10. Open questions for future rounds' review
 
+- (Round-39, recorded not blocking) `AddressResetPrimary` and
+  `AddressCreate`/`AddressUpdate` are currently separate `DBHandler`
+  interface calls without a shared transaction parameter
+  (`contact.go:374,380`), yet §5.1 requires them under one `BeginTx` per
+  outer operation. The document has not specified the mechanical
+  approach (a transaction-carrying context, a combined method, or
+  something else) — needed before implementation starts, tracked here
+  rather than blocking this round's approval since it is a plumbing
+  detail with no attribution-correctness implication (unlike this
+  round's `AddressUpdate`/`AddressDelete` compare-and-retry fix, which
+  changes committed data).
 - Does the fixed lock order in §5.2 actually eliminate the deadlock class round-2
   found, or only narrow it? (Needs the same live-concurrency spike verification
   the `voipbin-dbscheme-migration` skill's "owner preferences" section mandates
@@ -1983,6 +2061,12 @@ humans decide; the correction path is `contact_resolutions` (§7).
   publishes nothing; (b) `InteractionListUnresolved` needs an
   unresolved-row fixture on both sides of the cutover asserting the
   suppression effect is preserved (§6.3's second `NOT EXISTS`).
+  **Round-39 additions:** (a) `AddressUpdate`/`AddressDelete` gain the
+  same by-addressID compare-and-retry `AddressClaim` already has —
+  mismatch-retry and NotFound-abort test cases needed for both, mirroring
+  `AddressClaim`'s existing rounds 8/9 fixtures; (b) claim-of-unresolved
+  fixtures per §6.3's round-39 update (immediately-prior gap attaches;
+  older non-adjacent gap resurfaces, documented).
 - (Recorded, not blocking implementation — §6.2/§8) If a customer's ownership-period
   count for a single Contact ever grows large enough to make the OR-expanded
   STEP2 query in §6.2 a real performance concern, the fix is switching
