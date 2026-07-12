@@ -1324,11 +1324,28 @@ Concretely:
   `AddressCreateTx(ctx, tx, a)`, `AddressUpdateTx(ctx, tx, a)`,
   `AddressDeleteTx(ctx, tx, addressID)`, `AddressClaimTx(ctx, tx, ...)`,
   `AddressResetPrimaryTx(ctx, tx, contactID)` — each taking the
-  already-open `*sql.Tx`. **Each of these internally calls
-  `OwnershipPeriodsLockAndResolveTx` itself first**, so every one is
-  independently correct when invoked standalone (this is what lets the
-  existing non-`Tx` methods remain thin `BeginTx`+commit wrappers, as
-  before). **Round-48 clarification: `OwnershipPeriodsLockAndResolveTx`'s
+  already-open `*sql.Tx`. **Round-56 correction: "each of these
+  internally calls `OwnershipPeriodsLockAndResolveTx` itself first, so
+  every one is independently correct when invoked standalone" is true
+  of FOUR of the five — `AddressCreateTx`, `AddressUpdateTx`,
+  `AddressDeleteTx`, `AddressClaimTx` — but NOT
+  `AddressResetPrimaryTx`.** `AddressResetPrimaryTx`'s signature
+  (`ctx, tx, contactID`) has no `(type, target)` — it has nothing to
+  lock, because it isn't a per-target operation; it clears the
+  `is_primary` flag on every OTHER address row this contact owns. It
+  never calls `OwnershipPeriodsLockAndResolveTx` at all, and it is never
+  invoked standalone: §5.1's own round-3 finding already establishes
+  today's code calls it only from `AddAddress`/`UpdateAddress` when
+  `is_primary` is part of the request, and §5.2 states the composed
+  sequence explicitly acquires the ownership-period lock FIRST, then
+  runs `AddressResetPrimaryTx` — i.e. the caller (`AddressCreateTx` or
+  `AddressUpdateTx`) is what calls `OwnershipPeriodsLockAndResolveTx`;
+  `AddressResetPrimaryTx` itself is a plain `UPDATE ... WHERE
+  contact_id = ? AND is_primary = true` running inside the caller's
+  already-open `tx`, nothing more. The "internally calls... independently
+  correct standalone" claim, and the "existing non-`Tx` methods remain
+  thin wrappers" generalization drawn from it, apply only to the other
+  four functions. **Round-48 clarification: `OwnershipPeriodsLockAndResolveTx`'s
   `step` return value is meaningful only to Steps 1–5's own decision
   procedure (open-new / reopen / conflict — §4), which governs the
   OPEN-ing callers (`AddressCreateTx`, `AddressClaimTx`, and
@@ -2334,6 +2351,7 @@ duplicated here). Disposition of each finding that survived to this design:
 | Round-52 BLOCKER: round-51's claim that "every caller already had this value available... `the deleting Contact's ID for AddressDeleteTx`" was unverified against `AddressDeleteTx`'s actual signature (`ctx, tx, addressID`, fixed since round-43–46) and §4's own round-39 text, which explicitly enumerates only `(type, target)` as what `AddressDeleteTx` must read from the row — `contact_id` was never listed as a value this function has or reads, contradicting round-51's blanket assertion | **Fixed** (§4: `AddressDeleteTx` explicitly reads `contact_id` from the SAME row lookup that resolves `addressID` to `(type, target)` — one query, three columns, no separate lookup needed — and uses it for both the `OwnershipPeriodsLockAndResolveTx` call and the `lockedRows` self-row filter) |
 | Round-53 finding: round-52's fix specified `AddressDeleteTx`'s `contactID` source but left `AddressUpdateTx`'s two calls (old-target CLOSE, new-target OPEN) with the same unstated-source gap — `contacthandler.UpdateAddress`'s pre-lock read (round-39, `contact.go:354`) was described as returning `target` only, never stated to also carry `contact_id`, the same "fixed for one caller, not retrofitted to a structurally identical sibling" class hit at rounds 40, 47, 49, 50, and 52 | **Fixed** (§4: `AddressUpdate`'s pre-lock read explicitly stated to return `contact_id` alongside `target` from the same row/query, supplying the `contactID` for both of `AddressUpdateTx`'s locking-read calls; the existing target-mismatch compare-and-retry is noted to catch a `contact_id` mismatch too, since both come from the same re-read) |
 | Round-55 finding: `AddressDeleteCompensating` (round-13/31/32/35/36) — the compensating-cleanup path for `ContactCreate`'s partial-failure address loop — was never retrofitted to §5.1's `Tx`-suffixed/`OwnershipPeriodsLockAndResolveTx` architecture (rounds 43–53); its own paragraph still described a bare "§5.1 transaction" with §5.2's pre-round-43 canonical-order phrasing, named neither the shared locking-read primitive nor a transaction-ownership shape, and appeared in none of the "five write functions plus ContactDelete's loop" enumerations that rounds 48–52 used to scope which callers get which contract — the same "fixed for established callers, sixth/seventh sibling missed" class hit at rounds 19, 24, 27, 30, 36, and 40 through 53 | **Fixed** (§4: `AddressDeleteCompensating` explicitly named as a seventh, distinct caller — a thin non-`Tx`-suffixed wrapper opening its own `BeginTx`, calling `OwnershipPeriodsLockAndResolveTx` with its own already-known `contactID` parameter, applying the single-target `ErrConflict`-on-not-found contract (round-49) rather than the bulk-loop's counter-only rule, and subject to the same `maxDeadlockRetries` retry loop as every other locking-read caller; §10 gains a fixture) |
+| Round-56 BLOCKER: §5.1's blanket claim that all five `Tx`-suffixed write functions "internally call `OwnershipPeriodsLockAndResolveTx` itself first, so every one is independently correct when invoked standalone" was false for `AddressResetPrimaryTx` — its signature (`ctx, tx, contactID`) has no `(type, target)` to lock (it isn't a per-target operation; it clears `is_primary` on every OTHER address row this contact owns), it never calls the shared locking-read primitive, and it is never invoked standalone — §5.1's own round-3 finding and §5.2 both already establish the caller (`AddressCreateTx`/`AddressUpdateTx`) acquires the lock first and `AddressResetPrimaryTx` only runs after, inside that already-locked transaction | **Fixed** (§5.1: the "internally calls... standalone" claim scoped explicitly to the other four write functions; `AddressResetPrimaryTx` described accurately as a plain `UPDATE` running inside its caller's already-open, already-locked transaction, never calling the shared primitive itself) |
 
 ## 9. Migration plan
 
@@ -2786,6 +2804,15 @@ humans decide; the correction path is `contact_resolutions` (§7).
   returns `ErrConflict` — not a silent no-op, and not the bulk-loop's
   counter-only skew signal — when its own open row is not found in
   `lockedRows`.
+  **Round-56 addition:** the composed-sequence fixtures (§5.1,
+  `AddAddress`/`UpdateAddress` with `is_primary` set) need to assert
+  `AddressResetPrimaryTx` itself makes NO call to
+  `OwnershipPeriodsLockAndResolveTx` — only the enclosing
+  `AddressCreateTx`/`AddressUpdateTx` does, before calling
+  `AddressResetPrimaryTx` — confirming the composed sequence's lock
+  ordering (period lock, then `AddressResetPrimaryTx`, §5.2) is
+  satisfied by a single upstream lock acquisition, not a redundant one
+  from within `AddressResetPrimaryTx`.
 - (Recorded, not blocking implementation — §6.2/§8) If a customer's ownership-period
   count for a single Contact ever grows large enough to make the OR-expanded
   STEP2 query in §6.2 a real performance concern, the fix is switching
