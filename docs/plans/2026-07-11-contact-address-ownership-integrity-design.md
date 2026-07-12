@@ -206,7 +206,14 @@ mechanically is.
 success state this design must own the disposition of.** `contacthandler.Create`
 commits the base Contact row via `h.db.ContactCreate` (`contact.go:74`)
 *before* the address loop runs (`contact.go:80-107`); each address in the
-loop is its own separate `BeginTx` (round-11's fix). If address N in the loop
+loop runs its own §5.1-governed sequence (round-11's fix; round-48
+correction: the exact shape is not "its own separate `BeginTx`" for every
+address — an `IsPrimary` address takes the possibly-multi-`BeginTx`
+composed retry path, a non-`IsPrimary` address the single-`BeginTx`
+uncomposed path, per §5.1's round-43–47 model; what matters for THIS
+paragraph's partial-success argument is only that each address's
+sequence commits or fails as one unit, which holds under either shape).
+If address N in the loop
 fails (e.g. Step 1's `ErrConflict`) after addresses 1..N-1 already committed
 successfully, the caller now receives an error — but the Contact row and
 those N-1 addresses (each with an already-open ownership period) remain
@@ -1213,7 +1220,31 @@ Concretely:
   `OwnershipPeriodsLockAndResolveTx` itself first**, so every one is
   independently correct when invoked standalone (this is what lets the
   existing non-`Tx` methods remain thin `BeginTx`+commit wrappers, as
-  before). **Round-44 clarification on the "duplicate lock" concern:**
+  before). **Round-48 clarification: `OwnershipPeriodsLockAndResolveTx`'s
+  `step` return value is meaningful only to Steps 1–5's own decision
+  procedure (open-new / reopen / conflict — §4), which governs the
+  OPEN-ing callers (`AddressCreateTx`, `AddressClaimTx`, and
+  `AddressUpdateTx`'s NEW-target side). `AddressDeleteTx` and
+  `AddressUpdateTx`'s OLD-target side are CLOSE-ing callers — they do
+  not consume `step` at all.** For a close-ing caller,
+  `OwnershipPeriodsLockAndResolveTx`'s ONLY role is to acquire the
+  `FOR UPDATE` row lock on this `(customer_id, type, target)` (the
+  precondition every table in this document already requires before any
+  write) and return `lockedRows` — the caller then finds its own open
+  row within `lockedRows` (`contact_id = this contact`, `valid_to IS
+  NULL`) and closes it (`valid_to = NOW()`) directly, ignoring `step`
+  entirely. **This also settles a related question the round-48 review
+  raised: `OwnershipPeriodsLockAndResolveTx`'s Step 1 side-effect (round-1
+  orphan-period cleanup: closing another contact's stale open period
+  found during the locking read) is NOT skipped for close-ing callers —
+  it is the same shared locking read, and that cleanup is defined at the
+  row-set level, independent of which write the caller is about to make.
+  A `AddressDeleteTx` call that incidentally triggers Step 1's orphan
+  cleanup on a DIFFERENT contact's row is exactly the self-healing this
+  design already relies on (§4's healing-set discussion), not a new or
+  surprising side effect.** §10 gains a fixture asserting `AddressDeleteTx`
+  ignores `step` and closes its own row directly from `lockedRows`.
+  **Round-44 clarification on the "duplicate lock" concern:**
   when a composed caller (see `AddAddress` below) has already run
   `OwnershipPeriodsLockAndResolveTx` on the same `tx` before calling
   `AddressCreateTx`, `AddressCreateTx`'s internal re-run of the same
@@ -1612,7 +1643,7 @@ type missingPeriodAddress struct {
     Target string
 }
 
-func (h *dbHandler) missingPeriodOwnedAddresses(ctx context.Context, customerID, contactID uuid.UUID) ([]missingPeriodAddress, error) {
+func (h *handler) missingPeriodOwnedAddresses(ctx context.Context, customerID, contactID uuid.UUID) ([]missingPeriodAddress, error) {
     rows, err := h.db.QueryContext(ctx, missingPeriodOwnedAddressesQuery, customerID, contactID)
     // ... scan into []missingPeriodAddress, same error-handling shape as
     // every other dbhandler read in this package
@@ -1620,7 +1651,10 @@ func (h *dbHandler) missingPeriodOwnedAddresses(ctx context.Context, customerID,
 
 // contacthandler — STEP1 composition
 periods := dbHandler.OwnershipPeriodsListByContactID(ctx, contactID)         // existing
-skewed, _ := dbHandler.missingPeriodOwnedAddresses(ctx, customerID, contactID) // round-41–43/47
+skewed, err := dbHandler.missingPeriodOwnedAddresses(ctx, customerID, contactID) // round-41–43/47
+if err != nil {
+    return nil, errors.Wrap(err, "missingPeriodOwnedAddresses")
+}
 bounds := make([]OwnershipPeriodBound, 0, len(periods)+len(skewed))
 for _, p := range periods {
     bounds = append(bounds, OwnershipPeriodBound{Type: p.Type, Target: p.Target, ValidFrom: p.ValidFrom, ValidTo: p.ValidTo})
@@ -1629,6 +1663,22 @@ for _, s := range skewed {
     bounds = append(bounds, OwnershipPeriodBound{Type: s.Type, Target: s.Target, ValidFrom: nil, ValidTo: nil}) // unbounded
 }
 ```
+
+**Round-48 corrections to this sketch:** (1) the receiver is `*handler`,
+matching every existing dbhandler method (`address.go`/`interaction.go`)
+— not `*dbHandler`; (2) `missingPeriodOwnedAddresses`'s error is
+propagated, not discarded (`_`) — this document has held itself to
+strict error-propagation discipline since round-11/12, and a sketch
+that swallows an error is the exact anti-pattern it exists to eliminate;
+(3) `missingPeriodOwnedAddresses` is a new dbhandler function and
+therefore gains `DBHandler` interface membership and mockgen
+regeneration, same as `InteractionListByOwnershipPeriods` and
+`AddressDeleteCompensating` before it — §10 gains this as an explicit
+checklist item; (4) this adds a second DB round-trip to STEP1 (today one
+query, now two) — recorded here alongside §6.2's other performance
+footnotes as a cost of the missing-period-skew fix, not treated as a
+blocking concern (single-digit row counts per contact, per §6.4's
+existing negligibility standard).
 
 This is additive to STEP1/STEP2 exactly as round-16's `OwnershipPeriodBound`
 type already is — no change to `InteractionList`'s OR-builder beyond
@@ -2138,6 +2188,9 @@ duplicated here). Disposition of each finding that survived to this design:
 | Round-46 BLOCKER: round-45's "the ONE case that composes `AddressResetPrimaryTx` with a write" directly contradicted §4's own round-11 finding that `contacthandler.Create`'s per-address loop (`contact.go:79-107`) composes the identical `AddressResetPrimary`-then-`AddressCreate` pair for any `IsPrimary` address in a new Contact's address list — the same compilability/retry-ownership gap round-43 fixed for `AddAddress`/`UpdateAddress` was left unfixed for `Create`'s loop, the same "fixed for one case, not generalized to an established sibling" class hit at rounds 19, 24, 27, 30, 36, and 40 through 45 | **Fixed** (§5.1: the composed retry loop and its ownership rule extended explicitly to each iteration of `Create`'s address loop, not just `AddAddress`/`UpdateAddress`) |
 | Round-47 finding: §4's original round-11/12 text describing `ContactCreate`'s address loop still said "each address gets its own BeginTx" and "the same fixed AddressResetPrimary-after-lock ordering," both superseded by §5.1's round-43–46 composed/uncomposed split (an `IsPrimary` address takes the possibly-multi-`BeginTx` composed path; a non-`IsPrimary` address never invokes `AddressResetPrimary` at all) — left without a cross-reference correction, an implementer trusting §4's older wording could believe "one BeginTx per address" or "AddressResetPrimary always runs," the same stale-cross-reference class this document holds itself to elsewhere (e.g. the line ~479 "§9 superseded by §4" pointer) | **Fixed** (§4: added an explicit pointer that §5.1 (rounds 43–46) is canonical for the exact transaction/retry/composition shape; §4's paragraph now only establishes that error-propagation discipline applies to `Create`'s loop, not the mechanics) |
 | Round-47 finding: §6.2 STEP1's missing-period-skew query (rounds 41–43) was described only in prose across three rounds of refinement, with no SQL or Go code — unlike §6.3's symmetric guard (concrete `NOT EXISTS` SQL) and STEP2's own OR-list (concrete `OwnershipPeriodBound` type, round-16), violating this document's own established "prose alone is insufficient" bar, freshly discovered because it is a concreteness gap rather than a correctness gap the prior 46 rounds' correctness-focused review passes had not been looking for | **Fixed** (§6.2: concrete SQL for the additional STEP1 query and a Go sketch showing its row-to-`OwnershipPeriodBound` conversion and composition alongside the existing periods list, explicitly noting it cannot be mechanically derived from §6.3's boolean-filter shape since the two queries play different roles) |
+| Round-48 finding: round-47's new §6.2 STEP1 Go sketch discarded `missingPeriodOwnedAddresses`'s error (`_`), used a `*dbHandler` receiver not matching the codebase's actual `*handler` receiver, and never registered the new function on the `DBHandler` interface/mockgen list — the sketch itself violated this document's own error-propagation and codegen-explicitness standards (rounds 11/12/19) in the same turn it was introduced to satisfy a concreteness bar | **Fixed** (§6.2: sketch corrected to `*handler` receiver, propagated error, and explicit `DBHandler`/mockgen registration; also notes the added DB round-trip as a recorded, non-blocking cost) |
+| Round-48 finding: round-47's §4 cross-reference correction was applied only to the round-11 paragraph, not the immediately adjacent round-12 paragraph, which still asserted "each address in the loop is its own separate `BeginTx`" — the exact wording round-47 itself declared false elsewhere in the same section, undermining round-47's claim of a complete cross-reference sweep | **Fixed** (§4: round-12 paragraph corrected to point to §5.1's composed/uncomposed split, noting the partial-success argument holds under either shape) |
+| Round-48 finding: §5.1 defined `OwnershipPeriodsLockAndResolveTx` as a shared primitive for all five write functions but never specified what its `step` return value means to CLOSE-ing callers (`AddressDeleteTx`, `AddressUpdateTx`'s old-target side) whose actual need (acquire the lock, then close MY OWN open row) has nothing to do with §4's Steps 1–5 open/reopen/conflict decision — an implementer had no guidance on whether to consume, ignore, or reinterpret `step` for these two callers | **Fixed** (§5.1: `step` explicitly scoped to OPEN-ing callers only; close-ing callers use `lockedRows` directly to find and close their own open row, ignoring `step`; Step 1's orphan-cleanup side effect confirmed to still apply uniformly, consistent with the existing healing-set design; §10 gains a fixture) |
 
 ## 9. Migration plan
 
@@ -2520,6 +2573,11 @@ humans decide; the correction path is `contact_resolutions` (§7).
   period plus a new owner's period-less row — asserting the owner-scoped
   guard fires (interactions attach to the new owner / stay suppressed)
   where the round-40/41 target-wide guard would not have.
+  **Round-48 addition:** `missingPeriodOwnedAddresses` (§6.2's round-47
+  concrete SQL/Go sketch) is a new dbhandler function and needs
+  `DBHandler` interface membership plus mockgen regeneration named
+  explicitly, same as `AddressDeleteCompensating` (round-36) and
+  `InteractionListByOwnershipPeriods`.
   **Round-43 addition:** both fixtures need a same-owner-reacquisition
   variant — this owner's own prior CLOSED period on the same target,
   plus this owner's CURRENT period-less row on the same target —
@@ -2541,6 +2599,13 @@ humans decide; the correction path is `contact_resolutions` (§7).
   target change + `is_primary`) needs a fixture asserting BOTH locks
   (old and new target, ascending) are held before `AddressResetPrimaryTx`
   runs, matching `v1_contacts_update_test.go:33`'s tested path.
+  **Round-48 addition:** `AddressDeleteTx` (and `AddressUpdateTx`'s
+  old-target close) need a fixture asserting they ignore
+  `OwnershipPeriodsLockAndResolveTx`'s `step` return value and instead
+  find-and-close their own open row directly from `lockedRows` — this is
+  the CLOSE-ing-caller contract §5.1's round-48 correction defines,
+  distinct from the OPEN-ing-caller contract the other three write
+  functions use.
 - (Recorded, not blocking implementation — §6.2/§8) If a customer's ownership-period
   count for a single Contact ever grows large enough to make the OR-expanded
   STEP2 query in §6.2 a real performance concern, the fix is switching
