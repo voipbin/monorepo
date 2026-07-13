@@ -486,3 +486,243 @@ func Test_CaseContinue_UsesCallerAgentID(t *testing.T) {
 		t.Errorf("Expected result but got nil")
 	}
 }
+
+// Test_CaseUpdateContact_DirectAccessRejected verifies direct-access
+// callers (a.IsDirect() == true) are rejected with
+// ErrDirectAccessNotSupported before any RPC is issued (design
+// VOIP-1253).
+func Test_CaseUpdateContact_DirectAccessRejected(t *testing.T) {
+	caseID := uuid.FromStringOrNil("11111111-0000-0000-0000-000000000001")
+	contactID := uuid.FromStringOrNil("33333333-0000-0000-0000-000000000003")
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &serviceHandler{
+		reqHandler: mockReq,
+		dbHandler:  mockDB,
+	}
+
+	ctx := context.Background()
+	a := auth.NewDirectIdentity(&auth.DirectScope{CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")})
+
+	// No ContactV1CaseGet/ContactV1CaseUpdateContact EXPECT() set --
+	// gomock fails the test if either RPC is reached for a direct-access
+	// caller.
+	_, err := h.CaseUpdateContact(ctx, a, caseID, contactID)
+	if err != serviceerrors.ErrDirectAccessNotSupported {
+		t.Errorf("Expected ErrDirectAccessNotSupported, got: %v", err)
+	}
+}
+
+// Test_CaseUpdateContact_PermissionDenied verifies a caller lacking
+// PermissionCustomerAdmin/PermissionCustomerManager is rejected with
+// ErrPermissionDenied after the case is found but before the update RPC
+// is issued.
+func Test_CaseUpdateContact_PermissionDenied(t *testing.T) {
+	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
+	agentID := uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c")
+	caseID := uuid.FromStringOrNil("11111111-0000-0000-0000-000000000001")
+	contactID := uuid.FromStringOrNil("33333333-0000-0000-0000-000000000003")
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &serviceHandler{
+		reqHandler: mockReq,
+		dbHandler:  mockDB,
+	}
+
+	ctx := context.Background()
+	a := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID:         agentID,
+			CustomerID: customerID,
+		},
+		Permission: amagent.PermissionCustomerAgent,
+	})
+
+	mockReq.EXPECT().
+		ContactV1CaseGet(ctx, customerID, caseID).
+		Return(&cmkase.Case{
+			ID:         caseID,
+			CustomerID: customerID,
+			Status:     cmkase.StatusOpen,
+		}, nil)
+
+	// No ContactV1CaseUpdateContact EXPECT() set -- gomock fails the
+	// test if the update RPC is ever reached for a caller lacking the
+	// required permission.
+	_, err := h.CaseUpdateContact(ctx, a, caseID, contactID)
+	if err != serviceerrors.ErrPermissionDenied {
+		t.Errorf("Expected ErrPermissionDenied, got: %v", err)
+	}
+}
+
+// Test_CaseUpdateContact_CrossTenant verifies a cross-tenant case ID is
+// rejected (via caseGet's tenant check) before any update RPC is
+// issued.
+func Test_CaseUpdateContact_CrossTenant(t *testing.T) {
+	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
+	agentID := uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c")
+	caseID := uuid.FromStringOrNil("11111111-0000-0000-0000-000000000001")
+	contactID := uuid.FromStringOrNil("33333333-0000-0000-0000-000000000003")
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &serviceHandler{
+		reqHandler: mockReq,
+		dbHandler:  mockDB,
+	}
+
+	ctx := context.Background()
+	a := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID:         agentID,
+			CustomerID: customerID,
+		},
+		Permission: amagent.PermissionCustomerAdmin,
+	})
+
+	mockReq.EXPECT().
+		ContactV1CaseGet(ctx, customerID, caseID).
+		Return(nil, serviceerrors.ErrNotFound)
+
+	// No ContactV1CaseUpdateContact EXPECT() set -- gomock fails the
+	// test if the update RPC is ever reached for a case that failed the
+	// tenant check.
+	_, err := h.CaseUpdateContact(ctx, a, caseID, contactID)
+	if err == nil {
+		t.Errorf("Expected error but got none")
+	}
+}
+
+// Test_CaseUpdateContact_Success verifies a permitted, non-direct caller
+// delegates to ContactV1CaseUpdateContact with the exact
+// (customerID, id, contactID) arguments and returns its result. This is
+// exercised with a non-Nil contactID (the "attach" path); the
+// contact_id="" -> uuid.Nil ("detach") conversion itself is an HTTP-layer
+// concern covered in server/contact_cases_test.go
+// (Test_PutContactCasesId), since CaseUpdateContact only ever forwards
+// whatever uuid.UUID it is handed.
+func Test_CaseUpdateContact_Success(t *testing.T) {
+	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
+	agentID := uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c")
+	caseID := uuid.FromStringOrNil("11111111-0000-0000-0000-000000000001")
+	contactID := uuid.FromStringOrNil("33333333-0000-0000-0000-000000000003")
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &serviceHandler{
+		reqHandler: mockReq,
+		dbHandler:  mockDB,
+	}
+
+	ctx := context.Background()
+	a := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID:         agentID,
+			CustomerID: customerID,
+		},
+		Permission: amagent.PermissionCustomerAdmin,
+	})
+
+	mockReq.EXPECT().
+		ContactV1CaseGet(ctx, customerID, caseID).
+		Return(&cmkase.Case{
+			ID:         caseID,
+			CustomerID: customerID,
+			Status:     cmkase.StatusOpen,
+		}, nil)
+
+	expectRes := &cmkase.Case{
+		ID:         caseID,
+		CustomerID: customerID,
+		ContactID:  &contactID,
+	}
+	mockReq.EXPECT().
+		ContactV1CaseUpdateContact(ctx, customerID, caseID, contactID).
+		Return(expectRes, nil)
+
+	res, err := h.CaseUpdateContact(ctx, a, caseID, contactID)
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+	if res != expectRes {
+		t.Errorf("Expected result %v, got: %v", expectRes, res)
+	}
+}
+
+// Test_CaseUpdateContact_DetachToNil verifies CaseUpdateContact forwards
+// a uuid.Nil contactID as-is to ContactV1CaseUpdateContact (the
+// "detach" path) -- servicehandler performs no conversion of its own,
+// it merely passes through whatever contactID the HTTP layer already
+// resolved (see server/contact_cases_test.go for the actual
+// contact_id="" -> uuid.Nil boundary conversion coverage).
+func Test_CaseUpdateContact_DetachToNil(t *testing.T) {
+	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
+	agentID := uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c")
+	caseID := uuid.FromStringOrNil("11111111-0000-0000-0000-000000000001")
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &serviceHandler{
+		reqHandler: mockReq,
+		dbHandler:  mockDB,
+	}
+
+	ctx := context.Background()
+	a := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID:         agentID,
+			CustomerID: customerID,
+		},
+		Permission: amagent.PermissionCustomerAdmin,
+	})
+
+	mockReq.EXPECT().
+		ContactV1CaseGet(ctx, customerID, caseID).
+		Return(&cmkase.Case{
+			ID:         caseID,
+			CustomerID: customerID,
+			Status:     cmkase.StatusOpen,
+		}, nil)
+
+	expectRes := &cmkase.Case{
+		ID:         caseID,
+		CustomerID: customerID,
+		ContactID:  nil,
+	}
+	// The key assertion: contactID is forwarded as exactly uuid.Nil,
+	// not some other zero-ish sentinel -- gomock's exact-match EXPECT()
+	// fails the test otherwise.
+	mockReq.EXPECT().
+		ContactV1CaseUpdateContact(ctx, customerID, caseID, uuid.Nil).
+		Return(expectRes, nil)
+
+	res, err := h.CaseUpdateContact(ctx, a, caseID, uuid.Nil)
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+	if res != expectRes {
+		t.Errorf("Expected result %v, got: %v", expectRes, res)
+	}
+}
