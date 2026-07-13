@@ -8927,6 +8927,70 @@
             "$ref": "#/components/responses/InternalError"
           }
         }
+      },
+      "put": {
+        "summary": "Attach or detach a case's contact",
+        "description": "Attaches the case to a specific existing Contact, or detaches it,\nvia a direct contact_id write (VOIP-1253). Send a non-empty\ncontact_id to attach; send an empty string to detach (mirrors\nbin-conference-manager's pre_flow_id/post_flow_id PUT convention at\nthe HTTP-layer JSON-schema level -- see §5.5.1 for the precise\nconversion point; a literal empty string is only ever accepted at\nthis outer HTTP layer, never at the internal RPC-layer uuid.UUID\nstruct). The target\ncontact_id must belong to the same customer as the case; a\ncross-tenant contact_id is rejected as not found. Every\nattach/detach is recorded as a case_contact_attributed/\ncase_contact_detached event, queryable via bin-timeline-manager's\naudit log (no separate resolution history endpoint needed).\n",
+        "tags": [
+          "Case"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "contact_id"
+                ],
+                "properties": {
+                  "contact_id": {
+                    "type": "string",
+                    "description": "The contact to attach. Empty string detaches. Deliberately NOT format: uuid (round-6 correction) -- see §5.5.1: the hand-written internal RPC struct's uuid.UUID field cannot unmarshal a literal empty string, so the HTTP-layer oapi-codegen-generated field must stay a plain string and the \"\" -> uuid.Nil conversion happens explicitly in the PutContactCasesId handler, mirroring PutConferencesId/pre_flow_id's existing pattern exactly.",
+                    "example": "660e8400-e29b-41d4-a716-446655440001"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactManagerCase"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
       }
     },
     "/contact_cases/{id}/close": {
@@ -9296,146 +9360,6 @@
           },
           "409": {
             "$ref": "#/components/responses/Conflict"
-          },
-          "500": {
-            "$ref": "#/components/responses/InternalError"
-          }
-        }
-      }
-    },
-    "/contact_cases/{id}/resolutions": {
-      "post": {
-        "summary": "Attach a case to a contact",
-        "description": "Attaches the case of the given ID to a specific existing Contact by\ncreating a case-level Resolution (VOIP-1252). Useful when a case was\ncreated from an unregistered or unmatched peer address and an agent\nmanually identifies which existing Contact it belongs to.\nresolved_by_id is derived server-side from the authenticated caller's\nown agent identity -- it cannot be forged by supplying an arbitrary\nresolved_by_id in the request body. The target contact_id must belong\nto the same customer as the case; a cross-tenant contact_id is\nrejected as not found.\n",
-        "tags": [
-          "Case"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "The ID of the case. The ID is returned from GET /v1.0/contact_cases response.",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "example": "550e8400-e29b-41d4-a716-446655440000"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "contact_id",
-                  "resolution_type"
-                ],
-                "properties": {
-                  "contact_id": {
-                    "type": "string",
-                    "format": "uuid",
-                    "description": "The contact to attach this case to. The ID is returned from GET /v1.0/contacts response.",
-                    "example": "660e8400-e29b-41d4-a716-446655440001"
-                  },
-                  "resolution_type": {
-                    "type": "string",
-                    "description": "Attribution type. positive attaches the case to the contact; negative suppresses a prior positive attribution.",
-                    "enum": [
-                      "positive",
-                      "negative"
-                    ],
-                    "example": "positive"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Case resolution created successfully.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ContactManagerResolution"
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthenticated"
-          },
-          "403": {
-            "$ref": "#/components/responses/PermissionDenied"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "500": {
-            "$ref": "#/components/responses/InternalError"
-          }
-        }
-      }
-    },
-    "/contact_cases/{id}/resolutions/{resolution_id}": {
-      "delete": {
-        "summary": "Undo a case-level contact attribution",
-        "description": "Soft-deletes the case-level resolution of the given resolution ID on\nthe case of the given case ID (VOIP-1252). Case.contact_id is\nautomatically re-derived after the delete -- if no other active\ncase-level positive resolution remains, contact_id reverts to null.\n",
-        "tags": [
-          "Case"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "The ID of the case. The ID is returned from GET /v1.0/contact_cases response.",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "example": "550e8400-e29b-41d4-a716-446655440000"
-            }
-          },
-          {
-            "name": "resolution_id",
-            "in": "path",
-            "description": "The ID of the resolution. The ID is returned from POST /v1.0/contact_cases/{id}/resolutions response.",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "example": "770e8400-e29b-41d4-a716-446655440002"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Case resolution deleted successfully.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthenticated"
-          },
-          "403": {
-            "$ref": "#/components/responses/PermissionDenied"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
           },
           "500": {
             "$ref": "#/components/responses/InternalError"
@@ -26620,12 +26544,6 @@
             "format": "uuid",
             "description": "The interaction this resolution belongs to.",
             "example": "c3d4e5f6-a7b8-9012-cdef-345678901234"
-          },
-          "case_id": {
-            "type": "string",
-            "format": "uuid",
-            "description": "The case this resolution is scoped to (case-level resolutions only). The ID is returned from GET /v1.0/contact_cases response.",
-            "example": "d4e5f6a7-b8c9-0123-defa-456789012345"
           },
           "resolution_type": {
             "type": "string",

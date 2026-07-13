@@ -174,6 +174,62 @@ func (h *server) PostContactCasesIdClose(c *gin.Context, id openapi_types.UUID) 
 	c.JSON(200, res)
 }
 
+// PutContactCasesId handles PUT /contact_cases/{id} (VOIP-1253):
+// attaches or detaches a case's contact. contact_id="" in the request
+// body clears the attribution -- converted to uuid.Nil HERE, at the
+// HTTP boundary, mirroring PutConferencesId's pre_flow_id/post_flow_id
+// conversion pattern for the BODY field only. The `id` PATH parameter,
+// unlike Conference's, is openapi_types.UUID (not string) --
+// contact_cases/id.yaml already declares `format: uuid` on the id path
+// parameter (confirmed identical on the existing get:/close:/continue:
+// operations in this same path file), so this handler follows THIS
+// file's own existing GetContactCasesId/PostContactCasesIdClose
+// signature convention (`id openapi_types.UUID`, direct
+// `uuid.UUID(id)` cast, no error-returning parse), NOT Conference's
+// (`id string` + uuid.FromString), which only applies to
+// conferences/id.yaml because THAT path's id param has no format: uuid.
+func (h *server) PutContactCasesId(c *gin.Context, id openapi_types.UUID) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "PutContactCasesId",
+		"request_address": c.ClientIP(),
+		"id":              id,
+	})
+
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
+		return
+	}
+	log = log.WithField("customer_id", a.CustomerID)
+
+	caseID := uuid.UUID(id)
+
+	var req openapi_server.PutContactCasesIdJSONRequestBody
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not bind request body. err: %v", err)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON.").Wrap(err))
+		return
+	}
+
+	// The single conversion point: "" -> uuid.Nil (detach), anything
+	// else -> parsed UUID (attach). Mirrors conferences.go's
+	// uuid.FromStringOrNil(req.PreFlowId) exactly -- this is the only
+	// part of the pattern Conference and Case genuinely share (the
+	// BODY field conversion), as distinct from the PATH parameter
+	// handling above, which does NOT follow Conference's shape.
+	contactID := uuid.FromStringOrNil(req.ContactId)
+
+	res, err := h.serviceHandler.CaseUpdateContact(c.Request.Context(), a, caseID, contactID)
+	if err != nil {
+		log.Errorf("Could not update case contact. err: %v", err)
+		abortWithServiceError(c, err)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
 // PostContactCasesIdContinue handles POST /contact_cases/{id}/continue
 func (h *server) PostContactCasesIdContinue(c *gin.Context, id openapi_types.UUID) {
 	log := logrus.WithFields(logrus.Fields{

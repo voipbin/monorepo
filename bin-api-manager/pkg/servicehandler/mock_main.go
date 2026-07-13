@@ -1843,33 +1843,19 @@ func (mr *MockServiceHandlerMockRecorder) CaseNoteList(ctx, a, caseID any) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseNoteList", reflect.TypeOf((*MockServiceHandler)(nil).CaseNoteList), ctx, a, caseID)
 }
 
-// CaseResolutionCreate mocks base method.
-func (m *MockServiceHandler) CaseResolutionCreate(ctx context.Context, a *auth.AuthIdentity, id, contactID uuid.UUID, resolutionType string) (*resolution.Resolution, error) {
+// CaseUpdateContact mocks base method.
+func (m *MockServiceHandler) CaseUpdateContact(ctx context.Context, a *auth.AuthIdentity, id, contactID uuid.UUID) (*kase.Case, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CaseResolutionCreate", ctx, a, id, contactID, resolutionType)
-	ret0, _ := ret[0].(*resolution.Resolution)
+	ret := m.ctrl.Call(m, "CaseUpdateContact", ctx, a, id, contactID)
+	ret0, _ := ret[0].(*kase.Case)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CaseResolutionCreate indicates an expected call of CaseResolutionCreate.
-func (mr *MockServiceHandlerMockRecorder) CaseResolutionCreate(ctx, a, id, contactID, resolutionType any) *gomock.Call {
+// CaseUpdateContact indicates an expected call of CaseUpdateContact.
+func (mr *MockServiceHandlerMockRecorder) CaseUpdateContact(ctx, a, id, contactID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseResolutionCreate", reflect.TypeOf((*MockServiceHandler)(nil).CaseResolutionCreate), ctx, a, id, contactID, resolutionType)
-}
-
-// CaseResolutionDelete mocks base method.
-func (m *MockServiceHandler) CaseResolutionDelete(ctx context.Context, a *auth.AuthIdentity, id, resolutionID uuid.UUID) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CaseResolutionDelete", ctx, a, id, resolutionID)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// CaseResolutionDelete indicates an expected call of CaseResolutionDelete.
-func (mr *MockServiceHandlerMockRecorder) CaseResolutionDelete(ctx, a, id, resolutionID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseResolutionDelete", reflect.TypeOf((*MockServiceHandler)(nil).CaseResolutionDelete), ctx, a, id, resolutionID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseUpdateContact", reflect.TypeOf((*MockServiceHandler)(nil).CaseUpdateContact), ctx, a, id, contactID)
 }
 
 // ConferenceCreate mocks base method.
