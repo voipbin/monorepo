@@ -937,8 +937,7 @@ type RequestHandler interface {
 	ContactV1CaseTagList(ctx context.Context, customerID, caseID uuid.UUID) ([]uuid.UUID, error)
 	ContactV1CaseTagAdd(ctx context.Context, customerID, caseID, tagID uuid.UUID) error
 	ContactV1CaseTagRemove(ctx context.Context, customerID, caseID, tagID uuid.UUID) error
-	ContactV1CaseResolutionCreate(ctx context.Context, customerID, caseID, contactID uuid.UUID, resolutionType, resolvedByType string, resolvedByID uuid.UUID) (*cmresolution.Resolution, error)
-	ContactV1CaseResolutionDelete(ctx context.Context, customerID, caseID, resolutionID uuid.UUID) error
+	ContactV1CaseUpdateContact(ctx context.Context, customerID, caseID, contactID uuid.UUID) (*cmkase.Case, error)
 
 	// direct-manager directs
 	DirectV1DirectCreate(ctx context.Context, customerID uuid.UUID, resourceType string, resourceID uuid.UUID) (*dmdirect.Direct, error)
