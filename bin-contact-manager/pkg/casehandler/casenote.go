@@ -17,7 +17,7 @@ import (
 // attacker who knew another tenant's case_id could attach notes to it
 // (round-2 review defect).
 func (h *caseHandler) CaseNoteCreate(ctx context.Context, customerID, caseID uuid.UUID, authorType string, authorID *uuid.UUID, text string) (*casenote.CaseNote, error) {
-	if err := verifyCaseOwnership(ctx, h.db, customerID, caseID); err != nil {
+	if _, err := verifyCaseOwnershipAndGet(ctx, h.db, customerID, caseID); err != nil {
 		return nil, err
 	}
 
