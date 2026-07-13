@@ -85,8 +85,6 @@ var (
 	regV1CasesIDNotesID       = regexp.MustCompile("/v1/cases/" + regUUID + "/notes/" + regUUID + "$")
 	regV1CasesIDTags          = regexp.MustCompile("/v1/cases/" + regUUID + "/tags$")
 	regV1CasesIDTagsID        = regexp.MustCompile("/v1/cases/" + regUUID + "/tags/" + regUUID + "$")
-	regV1CasesIDResolutions   = regexp.MustCompile("/v1/cases/" + regUUID + "/resolutions$")
-	regV1CasesIDResolutionsID = regexp.MustCompile("/v1/cases/" + regUUID + "/resolutions/" + regUUID + "$")
 )
 
 var (
@@ -354,6 +352,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 		response, err = h.processV1CasesIDGet(ctx, m)
 		requestType = "/v1/cases/{id}"
 
+	// PUT /cases/{id}
+	case regV1CasesID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
+		response, err = h.processV1CasesIDPut(ctx, m)
+		requestType = "/v1/cases/{id}"
+
 	// POST /cases/{id}/close
 	case regV1CasesIDClose.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1CasesIDClosePost(ctx, m)
@@ -393,16 +396,6 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1CasesIDTagsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		response, err = h.processV1CasesIDTagsIDDelete(ctx, m)
 		requestType = "/v1/cases/{id}/tags/{tag_id}"
-
-	// POST /cases/{id}/resolutions
-	case regV1CasesIDResolutions.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
-		response, err = h.processV1CasesIDResolutionsPost(ctx, m)
-		requestType = "/v1/cases/{id}/resolutions"
-
-	// DELETE /cases/{id}/resolutions/{resolution_id}
-	case regV1CasesIDResolutionsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
-		response, err = h.processV1CasesIDResolutionsIDDelete(ctx, m)
-		requestType = "/v1/cases/{id}/resolutions/{resolution_id}"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found

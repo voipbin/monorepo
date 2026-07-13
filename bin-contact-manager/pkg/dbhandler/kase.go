@@ -205,7 +205,9 @@ func (h *handler) CaseGetOpenByPeer(ctx context.Context, tx *sql.Tx, customerID 
 // §4 step 1's explicit case_id hint validation: SELECT ... WHERE id=? AND
 // customer_id=? AND status='open' FOR UPDATE. Returns (nil, nil) if not
 // found / wrong tenant / not open -- an invalid hint is never an error,
-// only a signal to fall through to the peer/reference_type path.
+// only a signal to fall through to the peer/reference_type path. (Not
+// used by casehandler.UpdateContact, VOIP-1253's direct contact_id
+// write path -- see caseUpdateContactIDExec's comment.)
 func (h *handler) CaseGetByIDForUpdate(ctx context.Context, tx *sql.Tx, customerID, id uuid.UUID) (*kase.Case, error) {
 	columns := commondatabasehandler.GetDBFields(&kase.Case{})
 
@@ -342,13 +344,12 @@ func (h *handler) CaseUpdateTMUpdateTx(ctx context.Context, tx *sql.Tx, id uuid.
 
 // caseUpdateContactIDExec is the shared implementation for
 // CaseUpdateContactID/CaseUpdateContactIDTx. Scoped by customer_id as a
-// defense-in-depth measure -- every caller today (ResolutionCreateCase
-// Level/ResolutionDeleteCaseLevel/ReconcileContact) already verifies
-// case ownership via verifyCaseOwnership before calling this, but the
-// round-2 review's finding (multiple case-scoped handler methods
-// accepted customerID without using it) makes an unscoped mutation
-// primitive itself a latent risk for any future caller that forgets the
-// upstream check.
+// defense-in-depth measure -- the sole caller today
+// (casehandler.UpdateContact) already verifies case ownership via
+// verifyCaseOwnership before calling this, but the round-2 review's
+// finding (multiple case-scoped handler methods accepted customerID
+// without using it) makes an unscoped mutation primitive itself a
+// latent risk for any future caller that forgets the upstream check.
 func caseUpdateContactIDExec(exec sqlExecutor, customerID, id, contactID uuid.UUID) error {
 	query, args, err := sq.Update(caseTable).
 		Set("contact_id", contactID.Bytes()).
@@ -366,18 +367,17 @@ func caseUpdateContactIDExec(exec sqlExecutor, customerID, id, contactID uuid.UU
 	return nil
 }
 
-// CaseUpdateContactID updates a Case's denormalized contact_id cache
-// (design §3.4; single source of truth is Resolution).
+// CaseUpdateContactID updates a Case's contact_id (design VOIP-1253:
+// single source of truth is this column itself; every write goes
+// through casehandler.UpdateContact).
 func (h *handler) CaseUpdateContactID(ctx context.Context, customerID, id, contactID uuid.UUID) error {
 	return caseUpdateContactIDExec(h.db, customerID, id, contactID)
 }
 
 // caseClearContactIDExec is the shared implementation for
-// CaseClearContactIDTx: reverts Case.contact_id to NULL, used when
-// deriveCaseContactID (design §3.4) finds no active case-level positive
-// Resolution left (e.g. the sole one was just soft-deleted). Scoped by
-// customer_id as defense-in-depth (see caseUpdateContactIDExec's
-// comment).
+// CaseClearContactID/CaseClearContactIDTx: reverts Case.contact_id to
+// NULL. Scoped by customer_id as defense-in-depth (see
+// caseUpdateContactIDExec's comment).
 func caseClearContactIDExec(exec sqlExecutor, customerID, id uuid.UUID) error {
 	query, args, err := sq.Update(caseTable).
 		Set("contact_id", nil).
@@ -395,8 +395,18 @@ func caseClearContactIDExec(exec sqlExecutor, customerID, id uuid.UUID) error {
 	return nil
 }
 
-// CaseClearContactIDTx reverts a Case's denormalized contact_id cache to
-// NULL, scoped to a caller-managed transaction.
+// CaseClearContactID reverts a Case's contact_id to NULL, scoped
+// outside any caller-managed transaction (VOIP-1253's direct-write
+// path has no multi-statement derivation step requiring atomicity, so
+// no transaction wrapper is needed here -- see design §5.2).
+func (h *handler) CaseClearContactID(ctx context.Context, customerID, id uuid.UUID) error {
+	return caseClearContactIDExec(h.db, customerID, id)
+}
+
+// CaseClearContactIDTx reverts a Case's contact_id to NULL (design
+// VOIP-1253: single source of truth is this column itself; every
+// write goes through casehandler.UpdateContact), scoped to a
+// caller-managed transaction.
 func (h *handler) CaseClearContactIDTx(ctx context.Context, tx *sql.Tx, customerID, id uuid.UUID) error {
 	return caseClearContactIDExec(tx, customerID, id)
 }

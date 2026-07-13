@@ -144,9 +144,9 @@ func Test_ResolutionCreate_CaseLevel_NilInteractionID(t *testing.T) {
 		t.Fatalf("ResolutionCreate() error = %v", err)
 	}
 
-	res, err := h.ResolutionListByCase(ctx, customerID, caseID)
+	res, err := h.ResolutionListByContact(ctx, customerID, contactID)
 	if err != nil {
-		t.Fatalf("ResolutionListByCase() error = %v", err)
+		t.Fatalf("ResolutionListByContact() error = %v", err)
 	}
 	found := false
 	for _, item := range res {
@@ -162,7 +162,7 @@ func Test_ResolutionCreate_CaseLevel_NilInteractionID(t *testing.T) {
 		}
 	}
 	if !found {
-		t.Errorf("ResolutionListByCase() did not return the created case-level resolution")
+		t.Errorf("ResolutionListByContact() did not return the created case-level resolution")
 	}
 }
 
@@ -258,96 +258,6 @@ func Test_ResolutionDelete(t *testing.T) {
 	}
 }
 
-// Test_ResolutionDeleteByCase verifies the case-scoped soft-delete
-// counterpart (Task 2.2) for a case-level Resolution (InteractionID nil,
-// CaseID set). Mirrors Test_ResolutionDelete's cross-tenant/cross-case
-// guard coverage.
-func Test_ResolutionDeleteByCase(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockUtil := utilhandler.NewMockUtilHandler(mc)
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	h := handler{utilHandler: mockUtil, db: dbTest, cache: mockCache}
-	ctx := context.Background()
-
-	customerID := uuid.FromStringOrNil("f1b2c3d4-2006-2006-2006-000000000001")
-	contactID := uuid.FromStringOrNil("f1b2c3d4-2006-2006-2006-000000000002")
-	caseID := uuid.FromStringOrNil("f1b2c3d4-2006-2006-2006-000000000003")
-
-	ts := timePtr(time.Date(2026, 6, 28, 8, 0, 0, 0, time.UTC))
-	mockUtil.EXPECT().TimeNow().Return(ts)
-	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
-	c := &contact.Contact{
-		Identity: commonidentity.Identity{
-			ID:         contactID,
-			CustomerID: customerID,
-		},
-		FirstName: "CaseDelete",
-		LastName:  "Test",
-		Source:    "manual",
-	}
-	if err := h.ContactCreate(ctx, c); err != nil {
-		t.Fatalf("ContactCreate: %v", err)
-	}
-
-	r := &resolution.Resolution{
-		ID:             uuid.FromStringOrNil("f1b2c3d4-2006-2006-2006-000000000010"),
-		CustomerID:     customerID,
-		ContactID:      contactID,
-		CaseID:         &caseID,
-		ResolutionType: resolution.ResolutionTypePositive,
-		ResolvedByType: resolution.ResolvedByTypeAgent,
-		ResolvedByID:   uuid.FromStringOrNil("f1b2c3d4-2006-2006-2006-000000000011"),
-		TMCreate:       timePtr(time.Date(2026, 6, 28, 11, 0, 0, 0, time.UTC)),
-	}
-	if err := h.ResolutionCreate(ctx, r); err != nil {
-		t.Fatalf("ResolutionCreate() error = %v", err)
-	}
-
-	deleteTime := timePtr(time.Date(2026, 6, 28, 23, 0, 0, 0, time.UTC))
-
-	// soft-delete
-	mockUtil.EXPECT().TimeNow().Return(deleteTime)
-	if err := h.ResolutionDeleteByCase(ctx, r.CustomerID, caseID, r.ID); err != nil {
-		t.Errorf("ResolutionDeleteByCase() error = %v", err)
-	}
-
-	// delete again → ErrNotFound (already soft-deleted)
-	mockUtil.EXPECT().TimeNow().Return(deleteTime)
-	if err := h.ResolutionDeleteByCase(ctx, r.CustomerID, caseID, r.ID); err != ErrNotFound {
-		t.Errorf("ResolutionDeleteByCase() second delete expected ErrNotFound, got: %v", err)
-	}
-
-	// cross-tenant: wrong customerID → ErrNotFound
-	wrongCustomerID := uuid.FromStringOrNil("f1b2c3d4-2006-dead-beef-000000000000")
-	r2 := &resolution.Resolution{
-		ID:             uuid.FromStringOrNil("f1b2c3d4-2006-0000-0000-000000002002"),
-		CustomerID:     r.CustomerID,
-		ContactID:      r.ContactID,
-		CaseID:         &caseID,
-		ResolutionType: resolution.ResolutionTypeNegative,
-		ResolvedByType: resolution.ResolvedByTypeAgent,
-		ResolvedByID:   uuid.FromStringOrNil("f1b2c3d4-2006-0000-0000-000000003003"),
-		TMCreate:       deleteTime,
-		TMUpdate:       deleteTime,
-	}
-	if err := h.ResolutionCreate(ctx, r2); err != nil {
-		t.Fatalf("ResolutionCreate(r2) error = %v", err)
-	}
-	mockUtil.EXPECT().TimeNow().Return(deleteTime)
-	if err := h.ResolutionDeleteByCase(ctx, wrongCustomerID, caseID, r2.ID); err != ErrNotFound {
-		t.Errorf("ResolutionDeleteByCase() cross-tenant expected ErrNotFound, got: %v", err)
-	}
-
-	// cross-case: correct customerID + correct resolutionID + wrong caseID → ErrNotFound
-	wrongCaseID := uuid.FromStringOrNil("f1b2c3d4-2006-aaaa-aaaa-000000000000")
-	mockUtil.EXPECT().TimeNow().Return(deleteTime)
-	if err := h.ResolutionDeleteByCase(ctx, r2.CustomerID, wrongCaseID, r2.ID); err != ErrNotFound {
-		t.Errorf("ResolutionDeleteByCase() cross-case expected ErrNotFound, got: %v", err)
-	}
-}
-
 func Test_ResolutionListByInteraction(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
@@ -417,96 +327,6 @@ func Test_ResolutionListByInteraction(t *testing.T) {
 	}
 	if !found {
 		t.Errorf("ResolutionListByInteraction() r1 not found (len=%d)", len(res))
-	}
-}
-
-// Test_ResolutionListByCase verifies the case-scoped list counterpart
-// (Task 2.2), mirroring Test_ResolutionListByInteraction's soft-delete
-// exclusion coverage.
-func Test_ResolutionListByCase(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockUtil := utilhandler.NewMockUtilHandler(mc)
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	h := handler{utilHandler: mockUtil, db: dbTest, cache: mockCache}
-	ctx := context.Background()
-
-	customerID := uuid.FromStringOrNil("f1b2c3d4-3007-3007-3007-000000000001")
-	contactID := uuid.FromStringOrNil("f1b2c3d4-3007-3007-3007-000000000002")
-	caseID := uuid.FromStringOrNil("f1b2c3d4-3007-3007-3007-000000000003")
-
-	ts := timePtr(time.Date(2026, 6, 28, 8, 0, 0, 0, time.UTC))
-	mockUtil.EXPECT().TimeNow().Return(ts)
-	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
-	c := &contact.Contact{
-		Identity: commonidentity.Identity{
-			ID:         contactID,
-			CustomerID: customerID,
-		},
-		FirstName: "CaseList",
-		LastName:  "Test",
-		Source:    "manual",
-	}
-	if err := h.ContactCreate(ctx, c); err != nil {
-		t.Fatalf("ContactCreate: %v", err)
-	}
-
-	r1 := &resolution.Resolution{
-		ID:             uuid.FromStringOrNil("f1b2c3d4-3007-3007-3007-000000000010"),
-		CustomerID:     customerID,
-		ContactID:      contactID,
-		CaseID:         &caseID,
-		ResolutionType: resolution.ResolutionTypePositive,
-		ResolvedByType: resolution.ResolvedByTypeAgent,
-		ResolvedByID:   uuid.FromStringOrNil("f1b2c3d4-3007-3007-3007-000000000011"),
-		TMCreate:       timePtr(time.Date(2026, 6, 28, 12, 0, 0, 0, time.UTC)),
-	}
-	r2 := &resolution.Resolution{
-		ID:             uuid.FromStringOrNil("f1b2c3d4-3007-3007-3007-000000000020"),
-		CustomerID:     customerID,
-		ContactID:      contactID,
-		CaseID:         &caseID,
-		ResolutionType: resolution.ResolutionTypeNegative,
-		ResolvedByType: resolution.ResolvedByTypeSystem,
-		ResolvedByID:   resolution.ResolvedByIDSystem,
-		TMCreate:       timePtr(time.Date(2026, 6, 28, 13, 0, 0, 0, time.UTC)),
-	}
-	if err := h.ResolutionCreate(ctx, r1); err != nil {
-		t.Fatalf("ResolutionCreate(r1) error = %v", err)
-	}
-	if err := h.ResolutionCreate(ctx, r2); err != nil {
-		t.Fatalf("ResolutionCreate(r2) error = %v", err)
-	}
-
-	// Soft-delete r2; active only list should not include it
-	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2026, 6, 28, 23, 0, 0, 0, time.UTC)))
-	if err := h.ResolutionDeleteByCase(ctx, r2.CustomerID, caseID, r2.ID); err != nil {
-		t.Fatalf("ResolutionDeleteByCase(r2) error = %v", err)
-	}
-
-	res, err := h.ResolutionListByCase(ctx, customerID, caseID)
-	if err != nil {
-		t.Fatalf("ResolutionListByCase() error = %v", err)
-	}
-
-	// No soft-deleted rows
-	for _, item := range res {
-		if item.TMDelete != nil {
-			t.Errorf("ResolutionListByCase() returned soft-deleted resolution %v", item.ID)
-		}
-	}
-
-	// r1 should appear
-	found := false
-	for _, item := range res {
-		if item.ID == r1.ID {
-			found = true
-			break
-		}
-	}
-	if !found {
-		t.Errorf("ResolutionListByCase() r1 not found (len=%d)", len(res))
 	}
 }
 

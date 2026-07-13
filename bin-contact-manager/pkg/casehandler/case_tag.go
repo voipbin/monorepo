@@ -15,11 +15,11 @@ import (
 // This is the shared tenant-isolation choke point (design §4 step 1's
 // customer_id predicate, generalized to every case-scoped mutation, not
 // just get-or-create): round-2 review found CaseTagAdd/Remove/List,
-// CaseNoteCreate, and ResolutionCreateCaseLevel/ResolutionDeleteCaseLevel
-// all accepted a customerID parameter but never actually used it to gate
-// the mutation -- an attacker who knew or guessed another tenant's
-// case_id could tag, note, or resolve it. Call this FIRST, before any
-// mutating dbhandler call, in every case-scoped handler method.
+// CaseNoteCreate, and UpdateContact (VOIP-1253) all accepted a
+// customerID parameter but never actually used it to gate the mutation
+// -- an attacker who knew or guessed another tenant's case_id could
+// tag, note, or attribute it. Call this FIRST, before any mutating
+// dbhandler call, in every case-scoped handler method.
 func verifyCaseOwnership(ctx context.Context, db dbhandler.DBHandler, customerID, caseID uuid.UUID) error {
 	c, err := db.CaseGetByID(ctx, caseID)
 	if err != nil {

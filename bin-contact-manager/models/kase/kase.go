@@ -41,7 +41,8 @@ type Case struct {
 	Detail string `json:"detail,omitempty" db:"detail"`
 
 	// ContactID is a nullable denormalized cache; single source of truth
-	// is Resolution (see resolution.CaseID), single derivation function.
+	// is this column itself, every write goes through
+	// casehandler.UpdateContact (design VOIP-1253).
 	ContactID *uuid.UUID `json:"contact_id" db:"contact_id,uuid"`
 
 	// Owner (OwnerType + OwnerID) is reused as-is from the conversation

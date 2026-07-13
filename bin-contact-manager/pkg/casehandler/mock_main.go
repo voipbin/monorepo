@@ -15,7 +15,6 @@ import (
 	identity "monorepo/bin-common-handler/models/identity"
 	casenote "monorepo/bin-contact-manager/models/casenote"
 	kase "monorepo/bin-contact-manager/models/kase"
-	resolution "monorepo/bin-contact-manager/models/resolution"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -254,45 +253,17 @@ func (mr *MockCaseHandlerMockRecorder) GetOrCreate(ctx, customerID, self, peerTy
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOrCreate", reflect.TypeOf((*MockCaseHandler)(nil).GetOrCreate), ctx, customerID, self, peerType, peerTarget, referenceType, caseIDHint)
 }
 
-// ReconcileContact mocks base method.
-func (m *MockCaseHandler) ReconcileContact(ctx context.Context, caseID uuid.UUID) error {
+// UpdateContact mocks base method.
+func (m *MockCaseHandler) UpdateContact(ctx context.Context, customerID, caseID, contactID uuid.UUID) (*kase.Case, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReconcileContact", ctx, caseID)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ReconcileContact indicates an expected call of ReconcileContact.
-func (mr *MockCaseHandlerMockRecorder) ReconcileContact(ctx, caseID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileContact", reflect.TypeOf((*MockCaseHandler)(nil).ReconcileContact), ctx, caseID)
-}
-
-// ResolutionCreateCaseLevel mocks base method.
-func (m *MockCaseHandler) ResolutionCreateCaseLevel(ctx context.Context, customerID, caseID, contactID uuid.UUID, resolutionType, resolvedByType string, resolvedByID uuid.UUID) (*resolution.Resolution, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ResolutionCreateCaseLevel", ctx, customerID, caseID, contactID, resolutionType, resolvedByType, resolvedByID)
-	ret0, _ := ret[0].(*resolution.Resolution)
+	ret := m.ctrl.Call(m, "UpdateContact", ctx, customerID, caseID, contactID)
+	ret0, _ := ret[0].(*kase.Case)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ResolutionCreateCaseLevel indicates an expected call of ResolutionCreateCaseLevel.
-func (mr *MockCaseHandlerMockRecorder) ResolutionCreateCaseLevel(ctx, customerID, caseID, contactID, resolutionType, resolvedByType, resolvedByID any) *gomock.Call {
+// UpdateContact indicates an expected call of UpdateContact.
+func (mr *MockCaseHandlerMockRecorder) UpdateContact(ctx, customerID, caseID, contactID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResolutionCreateCaseLevel", reflect.TypeOf((*MockCaseHandler)(nil).ResolutionCreateCaseLevel), ctx, customerID, caseID, contactID, resolutionType, resolvedByType, resolvedByID)
-}
-
-// ResolutionDeleteCaseLevel mocks base method.
-func (m *MockCaseHandler) ResolutionDeleteCaseLevel(ctx context.Context, customerID, caseID, id uuid.UUID) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ResolutionDeleteCaseLevel", ctx, customerID, caseID, id)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ResolutionDeleteCaseLevel indicates an expected call of ResolutionDeleteCaseLevel.
-func (mr *MockCaseHandlerMockRecorder) ResolutionDeleteCaseLevel(ctx, customerID, caseID, id any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResolutionDeleteCaseLevel", reflect.TypeOf((*MockCaseHandler)(nil).ResolutionDeleteCaseLevel), ctx, customerID, caseID, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateContact", reflect.TypeOf((*MockCaseHandler)(nil).UpdateContact), ctx, customerID, caseID, contactID)
 }
