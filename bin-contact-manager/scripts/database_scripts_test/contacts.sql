@@ -146,6 +146,8 @@ create table contact_cases (
 
   previous_case_id  binary(16),
 
+  tag_ids           json,
+
   tm_create         datetime(6),
   tm_update         datetime(6),
 
@@ -183,17 +185,9 @@ create table contact_case_notes (
 
 create index idx_contact_case_notes_case_id on contact_case_notes(case_id, tm_delete);
 
--- contact_case_tag_assignments mirrors migration 5c7bc362be27 (design
--- §7 round-22): case-scoped tag assignment, exactly mirroring
--- contact_tag_assignments' shape. bin-tag-manager itself is unchanged.
-create table contact_case_tag_assignments (
-  case_id   binary(16),
-  tag_id    binary(16),
-
-  tm_create datetime(6),
-
-  primary key(case_id, tag_id)
-);
+-- contact_case_tag_assignments (junction table) removed -- superseded by
+-- contact_cases.tag_ids (design VOIP-1254, migration c2e53c0f6453),
+-- mirroring bin-queue-manager's Queue.TagIDs storage exactly.
 
 -- contact_address_ownership_periods mirrors migration
 -- 2d8f0ea90565_contact_address_ownership_periods_ (design §3.1/§9,

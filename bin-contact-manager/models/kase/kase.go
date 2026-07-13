@@ -62,6 +62,13 @@ type Case struct {
 	// given peer, set to the prior (now-closed) Case's ID on re-contact.
 	PreviousCaseID *uuid.UUID `json:"previous_case_id" db:"previous_case_id,uuid"`
 
+	// TagIDs mirrors bin-queue-manager's Queue.TagIDs storage exactly
+	// (VOIP-1254): a plain JSON column, no junction table, no reverse
+	// lookup. Case tag usage is low-frequency and agent-driven (not a
+	// routing hot path), so this is strictly lighter than Queue's own
+	// use of the same pattern for real-time agent-tag matching.
+	TagIDs []uuid.UUID `json:"tag_ids,omitempty" db:"tag_ids,json"`
+
 	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
 	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`
 }

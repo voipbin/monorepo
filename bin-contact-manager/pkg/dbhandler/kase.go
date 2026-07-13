@@ -374,6 +374,49 @@ func (h *handler) CaseUpdateContactID(ctx context.Context, customerID, id, conta
 	return caseUpdateContactIDExec(h.db, customerID, id, contactID)
 }
 
+// caseUpdateTagIDsExec is the shared implementation for CaseUpdateTagIDs
+// (design VOIP-1254). The customer_id-scoped UPDATE structure mirrors
+// caseUpdateContactIDExec's shape, but the column-value conversion does
+// NOT mirror it literally: contact_id is a single binary UUID (manual
+// .Bytes() conversion), while tag_ids is a JSON column holding
+// []uuid.UUID, which needs JSON marshaling. Routed through
+// commondatabasehandler.PrepareFields on a small ad-hoc map -- exactly
+// matching bin-queue-manager's own QueueUpdate/UpdateTagIDs precedent
+// (a map input auto-detects the []uuid.UUID slice and JSON-marshals it
+// before it reaches squirrel, with no db: tag needed since map inputs
+// skip tag-based filtering entirely).
+func caseUpdateTagIDsExec(exec sqlExecutor, customerID, id uuid.UUID, tagIDs []uuid.UUID) error {
+	fields, err := commondatabasehandler.PrepareFields(map[string]any{
+		"tag_ids": tagIDs,
+	})
+	if err != nil {
+		return fmt.Errorf("could not prepare fields. CaseUpdateTagIDs. err: %v", err)
+	}
+
+	query, args, err := sq.Update(caseTable).
+		SetMap(fields).
+		Where(sq.Eq{"id": id.Bytes()}).
+		Where(sq.Eq{"customer_id": customerID.Bytes()}).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("could not build query. CaseUpdateTagIDs. err: %v", err)
+	}
+
+	if _, err := exec.Exec(query, args...); err != nil {
+		return fmt.Errorf("could not execute. CaseUpdateTagIDs. err: %v", err)
+	}
+
+	return nil
+}
+
+// CaseUpdateTagIDs replaces a Case's tag_ids column (design VOIP-1254:
+// whole-list replace semantics, mirroring Queue.TagIDs's own JSON-column
+// storage representation). Called by casehandler.CaseTagAdd/Remove after
+// computing the new slice in application code.
+func (h *handler) CaseUpdateTagIDs(ctx context.Context, customerID, id uuid.UUID, tagIDs []uuid.UUID) error {
+	return caseUpdateTagIDsExec(h.db, customerID, id, tagIDs)
+}
+
 // caseClearContactIDExec is the shared implementation for
 // CaseClearContactID/CaseClearContactIDTx: reverts Case.contact_id to
 // NULL. Scoped by customer_id as defense-in-depth (see

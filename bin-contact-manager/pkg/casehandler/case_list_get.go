@@ -52,12 +52,15 @@ func (h *caseHandler) CaseList(ctx context.Context, customerID uuid.UUID, size u
 
 // CaseGet implements design §9's Phase 5 GET /v1/cases/{id} route: the
 // public, tenant-checked wrapper around dbhandler.CaseGetByID. Reuses
-// the shared verifyCaseOwnership choke point (see case_tag.go) so a
-// case belonging to a different customer returns dbhandler.ErrNotFound
-// rather than leaking existence.
+// the shared verifyCaseOwnershipAndGet choke point (see case_tag.go) so
+// a case belonging to a different customer returns dbhandler.ErrNotFound
+// rather than leaking existence. Returns the Case fetched by the
+// ownership check directly (VOIP-1254) instead of a second, redundant
+// CaseGetByID round trip.
 func (h *caseHandler) CaseGet(ctx context.Context, customerID, id uuid.UUID) (*kase.Case, error) {
-	if err := verifyCaseOwnership(ctx, h.db, customerID, id); err != nil {
+	c, err := verifyCaseOwnershipAndGet(ctx, h.db, customerID, id)
+	if err != nil {
 		return nil, err
 	}
-	return h.db.CaseGetByID(ctx, id)
+	return c, nil
 }

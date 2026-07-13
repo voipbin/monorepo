@@ -67,6 +67,137 @@ func Test_CaseInsert_And_CaseGetByID(t *testing.T) {
 	}
 }
 
+// Test_CaseUpdateTagIDs_SetOverwriteClear verifies design VOIP-1254's
+// CaseUpdateTagIDs round-trip: an initial nil TagIDs, a set of two
+// tags, an overwrite to a single different tag, and a clear back to an
+// empty slice -- each verified via a fresh CaseGetByID read.
+func Test_CaseUpdateTagIDs_SetOverwriteClear(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	h := handler{utilHandler: mockUtil, db: dbTest, cache: mockCache}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("f1b2c3d4-5090-5090-5090-000000000001")
+	caseID := uuid.FromStringOrNil("f1b2c3d4-5090-5090-5090-000000000002")
+	tagID1 := uuid.FromStringOrNil("f1b2c3d4-5090-5090-5090-000000000003")
+	tagID2 := uuid.FromStringOrNil("f1b2c3d4-5090-5090-5090-000000000004")
+	tagID3 := uuid.FromStringOrNil("f1b2c3d4-5090-5090-5090-000000000005")
+	openedAt := timePtr(time.Date(2026, 6, 28, 10, 0, 0, 0, time.UTC))
+
+	c := &kase.Case{
+		ID:            caseID,
+		CustomerID:    customerID,
+		PeerType:      commonaddress.TypeTel,
+		PeerTarget:    "+15551110010",
+		ReferenceType: "call",
+		Status:        kase.StatusOpen,
+		OpenedAt:      openedAt,
+		TMCreate:      openedAt,
+		TMUpdate:      openedAt,
+	}
+	if err := h.CaseInsert(ctx, c); err != nil {
+		t.Fatalf("CaseInsert() error = %v", err)
+	}
+
+	// Initial state: nil TagIDs.
+	res, err := h.CaseGetByID(ctx, caseID)
+	if err != nil {
+		t.Fatalf("CaseGetByID() (initial) error = %v", err)
+	}
+	if len(res.TagIDs) != 0 {
+		t.Errorf("expected empty TagIDs initially, got: %v", res.TagIDs)
+	}
+
+	// Set: two tags.
+	if err := h.CaseUpdateTagIDs(ctx, customerID, caseID, []uuid.UUID{tagID1, tagID2}); err != nil {
+		t.Fatalf("CaseUpdateTagIDs() (set) error = %v", err)
+	}
+	res, err = h.CaseGetByID(ctx, caseID)
+	if err != nil {
+		t.Fatalf("CaseGetByID() (after set) error = %v", err)
+	}
+	if len(res.TagIDs) != 2 || res.TagIDs[0] != tagID1 || res.TagIDs[1] != tagID2 {
+		t.Errorf("expected [%s %s], got: %v", tagID1, tagID2, res.TagIDs)
+	}
+
+	// Overwrite: a single different tag.
+	if err := h.CaseUpdateTagIDs(ctx, customerID, caseID, []uuid.UUID{tagID3}); err != nil {
+		t.Fatalf("CaseUpdateTagIDs() (overwrite) error = %v", err)
+	}
+	res, err = h.CaseGetByID(ctx, caseID)
+	if err != nil {
+		t.Fatalf("CaseGetByID() (after overwrite) error = %v", err)
+	}
+	if len(res.TagIDs) != 1 || res.TagIDs[0] != tagID3 {
+		t.Errorf("expected [%s], got: %v", tagID3, res.TagIDs)
+	}
+
+	// Clear: back to empty.
+	if err := h.CaseUpdateTagIDs(ctx, customerID, caseID, []uuid.UUID{}); err != nil {
+		t.Fatalf("CaseUpdateTagIDs() (clear) error = %v", err)
+	}
+	res, err = h.CaseGetByID(ctx, caseID)
+	if err != nil {
+		t.Fatalf("CaseGetByID() (after clear) error = %v", err)
+	}
+	if len(res.TagIDs) != 0 {
+		t.Errorf("expected empty TagIDs after clear, got: %v", res.TagIDs)
+	}
+}
+
+// Test_CaseUpdateTagIDs_CustomerScoped_WrongCustomerNoOp verifies the
+// customer_id-scoped UPDATE predicate (mirroring
+// caseUpdateContactIDExec's tenant-isolation shape): calling
+// CaseUpdateTagIDs with the wrong customerID must not modify the row.
+func Test_CaseUpdateTagIDs_CustomerScoped_WrongCustomerNoOp(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	h := handler{utilHandler: mockUtil, db: dbTest, cache: mockCache}
+	ctx := context.Background()
+
+	victimCustomerID := uuid.FromStringOrNil("f1b2c3d4-5091-5091-5091-000000000001")
+	attackerCustomerID := uuid.FromStringOrNil("f1b2c3d4-5091-5091-5091-000000000002")
+	caseID := uuid.FromStringOrNil("f1b2c3d4-5091-5091-5091-000000000003")
+	tagID := uuid.FromStringOrNil("f1b2c3d4-5091-5091-5091-000000000004")
+	openedAt := timePtr(time.Date(2026, 6, 28, 10, 0, 0, 0, time.UTC))
+
+	c := &kase.Case{
+		ID:            caseID,
+		CustomerID:    victimCustomerID,
+		PeerType:      commonaddress.TypeTel,
+		PeerTarget:    "+15551110011",
+		ReferenceType: "call",
+		Status:        kase.StatusOpen,
+		OpenedAt:      openedAt,
+		TMCreate:      openedAt,
+		TMUpdate:      openedAt,
+	}
+	if err := h.CaseInsert(ctx, c); err != nil {
+		t.Fatalf("CaseInsert() error = %v", err)
+	}
+
+	// Wrong customerID: the UPDATE's WHERE customer_id=? must match
+	// zero rows -- no error (Exec succeeds with 0 rows affected), but
+	// no mutation either.
+	if err := h.CaseUpdateTagIDs(ctx, attackerCustomerID, caseID, []uuid.UUID{tagID}); err != nil {
+		t.Fatalf("CaseUpdateTagIDs() (wrong customer) error = %v", err)
+	}
+
+	res, err := h.CaseGetByID(ctx, caseID)
+	if err != nil {
+		t.Fatalf("CaseGetByID() error = %v", err)
+	}
+	if len(res.TagIDs) != 0 {
+		t.Errorf("BUG: cross-tenant CaseUpdateTagIDs call modified the victim's case: %v", res.TagIDs)
+	}
+}
+
 // Test_CaseInsert_DuplicateOpenPeer_ReturnsConflict verifies the
 // uq_case_open_peer race-prevention invariant: a second INSERT for the
 // same (customer_id, peer_type, peer_target, reference_type) while the
@@ -147,7 +278,7 @@ func Test_CaseGetOpenByPeer(t *testing.T) {
 		"name", "detail",
 		"contact_id", "owner_type", "owner_id",
 		"status", "opened_at", "closed_at", "closed_reason", "closed_by_type", "closed_by_id",
-		"previous_case_id", "tm_create", "tm_update",
+		"previous_case_id", "tag_ids", "tm_create", "tm_update",
 	}
 
 	mock.ExpectBegin()
@@ -164,7 +295,7 @@ func Test_CaseGetOpenByPeer(t *testing.T) {
 			"", nil,
 			nil, nil, nil,
 			string(kase.StatusOpen), openedAt, nil, nil, nil, nil,
-			nil, openedAt, openedAt,
+			nil, nil, openedAt, openedAt,
 		))
 
 	res, err := h.CaseGetOpenByPeer(ctx, tx, customerID, commonaddress.TypeTel, "+155****0003", "call")
@@ -373,7 +504,7 @@ func Test_CaseClearContactID(t *testing.T) {
 		ID:            caseID,
 		CustomerID:    customerID,
 		PeerType:      commonaddress.TypeTel,
-		PeerTarget:    "+155****0008",
+		PeerTarget:    "+15551110008",
 		ReferenceType: "call",
 		Status:        kase.StatusOpen,
 		OpenedAt:      openedAt,
@@ -423,7 +554,7 @@ func Test_CaseClearContactID_CrossTenant(t *testing.T) {
 		ID:            caseID,
 		CustomerID:    victimCustomerID,
 		PeerType:      commonaddress.TypeTel,
-		PeerTarget:    "+155****0009",
+		PeerTarget:    "+15551110009",
 		ReferenceType: "call",
 		Status:        kase.StatusOpen,
 		OpenedAt:      openedAt,

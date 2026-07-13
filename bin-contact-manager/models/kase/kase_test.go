@@ -22,6 +22,8 @@ func Test_Case_ConstructAndMarshal(t *testing.T) {
 	ownerID := uuid.FromStringOrNil("f1b2c3d4-3001-3001-3001-000000000004")
 	closedByID := uuid.FromStringOrNil("f1b2c3d4-3001-3001-3001-000000000005")
 	previousCaseID := uuid.FromStringOrNil("f1b2c3d4-3001-3001-3001-000000000006")
+	tagID1 := uuid.FromStringOrNil("f1b2c3d4-3001-3001-3001-000000000009")
+	tagID2 := uuid.FromStringOrNil("f1b2c3d4-3001-3001-3001-000000000010")
 	openedAt := time.Date(2026, 6, 28, 10, 0, 0, 0, time.UTC)
 	closedAt := time.Date(2026, 6, 28, 11, 0, 0, 0, time.UTC)
 
@@ -49,6 +51,8 @@ func Test_Case_ConstructAndMarshal(t *testing.T) {
 
 		PreviousCaseID: &previousCaseID,
 
+		TagIDs: []uuid.UUID{tagID1, tagID2},
+
 		TMCreate: &openedAt,
 		TMUpdate: &closedAt,
 	}
@@ -62,6 +66,9 @@ func Test_Case_ConstructAndMarshal(t *testing.T) {
 	if c.OwnerType != commonidentity.OwnerTypeAgent {
 		t.Errorf("wrong OwnerType: %v", c.OwnerType)
 	}
+	if len(c.TagIDs) != 2 || c.TagIDs[0] != tagID1 || c.TagIDs[1] != tagID2 {
+		t.Errorf("wrong TagIDs: %v", c.TagIDs)
+	}
 
 	data, err := json.Marshal(c)
 	if err != nil {
@@ -74,11 +81,15 @@ func Test_Case_ConstructAndMarshal(t *testing.T) {
 	if raw["status"] != string(StatusOpen) {
 		t.Errorf("expected status: %v, got: %v", StatusOpen, raw["status"])
 	}
+	if tagIDsRaw, ok := raw["tag_ids"].([]any); !ok || len(tagIDsRaw) != 2 {
+		t.Errorf("expected 2 tag_ids in marshaled JSON, got: %v", raw["tag_ids"])
+	}
 }
 
 // Test_Case_NilOptionalFields verifies the common construction shape: a
 // freshly-opened Case has ContactID, ClosedAt, ClosedByID, PreviousCaseID
-// all nil (no prior contact match, not yet closed, first case for this peer).
+// all nil (no prior contact match, not yet closed, first case for this peer),
+// and TagIDs is nil (no tags assigned at creation -- design VOIP-1254).
 func Test_Case_NilOptionalFields(t *testing.T) {
 	c := &Case{
 		ID:            uuid.FromStringOrNil("f1b2c3d4-3001-3001-3001-000000000007"),
@@ -100,6 +111,9 @@ func Test_Case_NilOptionalFields(t *testing.T) {
 	}
 	if c.PreviousCaseID != nil {
 		t.Errorf("expected nil PreviousCaseID, got: %v", *c.PreviousCaseID)
+	}
+	if c.TagIDs != nil {
+		t.Errorf("expected nil TagIDs, got: %v", c.TagIDs)
 	}
 }
 

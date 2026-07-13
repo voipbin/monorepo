@@ -29,6 +29,7 @@ All tables below are in the `voipbin` MySQL database managed by `bin-manager/`. 
 | conference_conferences | bin-conference-manager | Conference room definitions |
 | conference_conferencecalls | bin-conference-manager | Per-participant conference legs |
 | contact_addresses | bin-contact-manager | Unified contact identifier mapping (CRM, merges phone/email) |
+| contact_cases | bin-contact-manager | Per-channel Case session header grouping related Interactions (CRM) |
 | contact_contacts | bin-contact-manager | Contact book entries |
 | contact_interactions | bin-contact-manager | Append-only cross-channel interaction fact log (CRM) |
 | contact_resolutions | bin-contact-manager | Manual interaction-to-contact attribution (CRM) |

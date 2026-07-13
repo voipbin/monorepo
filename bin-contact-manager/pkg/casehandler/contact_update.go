@@ -26,7 +26,7 @@ import (
 // without this check an agent of one tenant could attach their Case to
 // another tenant's Contact).
 func (h *caseHandler) UpdateContact(ctx context.Context, customerID, caseID, contactID uuid.UUID) (*kase.Case, error) {
-	if err := verifyCaseOwnership(ctx, h.db, customerID, caseID); err != nil {
+	if _, err := verifyCaseOwnershipAndGet(ctx, h.db, customerID, caseID); err != nil {
 		return nil, err
 	}
 
