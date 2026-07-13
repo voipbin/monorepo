@@ -29,3 +29,65 @@ get:
       $ref: '#/components/responses/NotFound'
     '500':
       $ref: '#/components/responses/InternalError'
+put:
+  summary: Attach or detach a case's contact
+  description: |
+    Attaches the case to a specific existing Contact, or detaches it,
+    via a direct contact_id write (VOIP-1253). Send a non-empty
+    contact_id to attach; send an empty string to detach (mirrors
+    bin-conference-manager's pre_flow_id/post_flow_id PUT convention at
+    the HTTP-layer JSON-schema level -- see §5.5.1 for the precise
+    conversion point; a literal empty string is only ever accepted at
+    this outer HTTP layer, never at the internal RPC-layer uuid.UUID
+    struct). The target
+    contact_id must belong to the same customer as the case; a
+    cross-tenant contact_id is rejected as not found. Every
+    attach/detach is recorded as a case_contact_attributed/
+    case_contact_detached event, queryable via bin-timeline-manager's
+    audit log (no separate resolution history endpoint needed).
+  tags:
+    - Case
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - contact_id
+          properties:
+            contact_id:
+              type: string
+              description: >-
+                The contact to attach. Empty string detaches. Deliberately
+                NOT format: uuid (round-6 correction) -- see §5.5.1: the
+                hand-written internal RPC struct's uuid.UUID field cannot
+                unmarshal a literal empty string, so the HTTP-layer
+                oapi-codegen-generated field must stay a plain string and
+                the "" -> uuid.Nil conversion happens explicitly in the
+                PutContactCasesId handler, mirroring
+                PutConferencesId/pre_flow_id's existing pattern exactly.
+              example: "660e8400-e29b-41d4-a716-446655440001"
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ContactManagerCase'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'

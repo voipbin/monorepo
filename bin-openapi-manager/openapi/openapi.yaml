@@ -3402,11 +3402,6 @@ components:
           format: uuid
           description: The interaction this resolution belongs to.
           example: "c3d4e5f6-a7b8-9012-cdef-345678901234"
-        case_id:
-          type: string
-          format: uuid
-          description: The case this resolution is scoped to (case-level resolutions only). The ID is returned from GET /v1.0/contact_cases response.
-          example: "d4e5f6a7-b8c9-0123-defa-456789012345"
         resolution_type:
           type: string
           description: Attribution type.
@@ -8136,10 +8131,6 @@ paths:
     $ref: './paths/contact_cases/id_notes_id.yaml'
   /contact_cases/{id}/messages:
     $ref: './paths/contact_cases/id_messages.yaml'
-  /contact_cases/{id}/resolutions:
-    $ref: './paths/contact_cases/id_resolutions.yaml'
-  /contact_cases/{id}/resolutions/{resolution_id}:
-    $ref: './paths/contact_cases/id_resolutions_id.yaml'
 
   /conversation_accounts/{id}:
     $ref: './paths/conversation_accounts/id.yaml'
