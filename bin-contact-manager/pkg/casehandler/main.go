@@ -17,7 +17,6 @@ import (
 
 	"monorepo/bin-contact-manager/models/casenote"
 	"monorepo/bin-contact-manager/models/kase"
-	"monorepo/bin-contact-manager/models/resolution"
 	"monorepo/bin-contact-manager/pkg/dbhandler"
 )
 
@@ -53,19 +52,12 @@ type CaseHandler interface {
 	// insertWithRetry primitive as GetOrCreate's insert branches.
 	Continue(ctx context.Context, customerID, id uuid.UUID, callerType commonidentity.OwnerType, callerID uuid.UUID, callerIsAdmin bool) (*kase.Case, error)
 
-	// ResolutionCreateCaseLevel / ResolutionDeleteCaseLevel implement
-	// design §3.4's contact-attribution write paths: create/soft-delete a
-	// case-level Resolution and, in the SAME transaction, re-derive and
-	// write Case.contact_id via deriveCaseContactID.
-	ResolutionCreateCaseLevel(ctx context.Context, customerID, caseID, contactID uuid.UUID, resolutionType, resolvedByType string, resolvedByID uuid.UUID) (*resolution.Resolution, error)
-	ResolutionDeleteCaseLevel(ctx context.Context, customerID, caseID, id uuid.UUID) error
+	// UpdateContact implements design VOIP-1253: attaches or detaches a
+	// Case's Contact via a direct Case.contact_id write.
+	UpdateContact(ctx context.Context, customerID, caseID, contactID uuid.UUID) (*kase.Case, error)
 
 	// CaseListUnresolved is design §6's agent-facing unresolved queue.
 	CaseListUnresolved(ctx context.Context, customerID uuid.UUID) ([]*kase.Case, error)
-
-	// ReconcileContact implements design §3.4's recovery path: the
-	// case-control CLI's `reconcile-contact` command. Idempotent.
-	ReconcileContact(ctx context.Context, caseID uuid.UUID) error
 
 	// CaseListAll returns every Case (all tenants), for case-control's
 	// `--all` reconcile-contact sweep. CLI-only usage -- never exposed

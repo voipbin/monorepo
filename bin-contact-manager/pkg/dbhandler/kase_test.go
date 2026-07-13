@@ -353,6 +353,108 @@ func Test_CaseUpdateContactID(t *testing.T) {
 	}
 }
 
+// Test_CaseClearContactID verifies the contact_id revert-to-NULL
+// helper (design VOIP-1253).
+func Test_CaseClearContactID(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	h := handler{utilHandler: mockUtil, db: dbTest, cache: mockCache}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("f1b2c3d4-5012-5012-5012-000000000001")
+	caseID := uuid.FromStringOrNil("f1b2c3d4-5012-5012-5012-000000000002")
+	contactID := uuid.FromStringOrNil("f1b2c3d4-5012-5012-5012-000000000003")
+	openedAt := timePtr(time.Date(2026, 6, 28, 10, 0, 0, 0, time.UTC))
+
+	c := &kase.Case{
+		ID:            caseID,
+		CustomerID:    customerID,
+		PeerType:      commonaddress.TypeTel,
+		PeerTarget:    "+155****0008",
+		ReferenceType: "call",
+		Status:        kase.StatusOpen,
+		OpenedAt:      openedAt,
+		TMCreate:      openedAt,
+		TMUpdate:      openedAt,
+	}
+	if err := h.CaseInsert(ctx, c); err != nil {
+		t.Fatalf("CaseInsert() error = %v", err)
+	}
+
+	if err := h.CaseUpdateContactID(ctx, customerID, caseID, contactID); err != nil {
+		t.Fatalf("CaseUpdateContactID() error = %v", err)
+	}
+
+	if err := h.CaseClearContactID(ctx, customerID, caseID); err != nil {
+		t.Fatalf("CaseClearContactID() error = %v", err)
+	}
+
+	res, err := h.CaseGetByID(ctx, caseID)
+	if err != nil {
+		t.Fatalf("CaseGetByID() error = %v", err)
+	}
+	if res.ContactID != nil {
+		t.Errorf("expected nil contact_id after clear, got: %v", *res.ContactID)
+	}
+}
+
+// Test_CaseClearContactID_CrossTenant verifies that clearing with a
+// non-matching customer_id is a scoped no-op (defense-in-depth): the
+// case's contact_id is left untouched.
+func Test_CaseClearContactID_CrossTenant(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	h := handler{utilHandler: mockUtil, db: dbTest, cache: mockCache}
+	ctx := context.Background()
+
+	victimCustomerID := uuid.FromStringOrNil("f1b2c3d4-5013-5013-5013-000000000001")
+	attackerCustomerID := uuid.FromStringOrNil("f1b2c3d4-5013-5013-5013-000000000002")
+	caseID := uuid.FromStringOrNil("f1b2c3d4-5013-5013-5013-000000000003")
+	contactID := uuid.FromStringOrNil("f1b2c3d4-5013-5013-5013-000000000004")
+	openedAt := timePtr(time.Date(2026, 6, 28, 10, 0, 0, 0, time.UTC))
+
+	c := &kase.Case{
+		ID:            caseID,
+		CustomerID:    victimCustomerID,
+		PeerType:      commonaddress.TypeTel,
+		PeerTarget:    "+155****0009",
+		ReferenceType: "call",
+		Status:        kase.StatusOpen,
+		OpenedAt:      openedAt,
+		TMCreate:      openedAt,
+		TMUpdate:      openedAt,
+	}
+	if err := h.CaseInsert(ctx, c); err != nil {
+		t.Fatalf("CaseInsert() error = %v", err)
+	}
+	if err := h.CaseUpdateContactID(ctx, victimCustomerID, caseID, contactID); err != nil {
+		t.Fatalf("CaseUpdateContactID() error = %v", err)
+	}
+
+	// The exec-based Update primitive is a scoped no-op (0 rows
+	// affected) for a non-matching customer_id, not an ErrNotFound --
+	// it returns nil, mirroring caseUpdateContactIDExec's own
+	// behavior. The upstream caller (casehandler.UpdateContact) is
+	// responsible for the ownership check via verifyCaseOwnership.
+	if err := h.CaseClearContactID(ctx, attackerCustomerID, caseID); err != nil {
+		t.Fatalf("CaseClearContactID() error = %v", err)
+	}
+
+	res, err := h.CaseGetByID(ctx, caseID)
+	if err != nil {
+		t.Fatalf("CaseGetByID() error = %v", err)
+	}
+	if res.ContactID == nil || *res.ContactID != contactID {
+		t.Errorf("BUG: cross-tenant CaseClearContactID call cleared the victim's contact_id: %v", res.ContactID)
+	}
+}
+
 // Test_CaseListUnresolved verifies the idx_case_unresolved-backed list
 // (design §6): Cases with contact_id IS NULL, scoped to customer.
 func Test_CaseListUnresolved(t *testing.T) {
@@ -434,10 +536,10 @@ func Test_CaseListByOwner(t *testing.T) {
 	h := handler{utilHandler: mockUtil, db: dbTest, cache: mockCache}
 	ctx := context.Background()
 
-	customerID := uuid.FromStringOrNil("f1b2c3d4-5008-5008-5008-000000000001")
-	ownedCaseID := uuid.FromStringOrNil("f1b2c3d4-5008-5008-5008-000000000002")
-	unownedCaseID := uuid.FromStringOrNil("f1b2c3d4-5008-5008-5008-000000000003")
-	agentID := uuid.FromStringOrNil("f1b2c3d4-5008-5008-5008-000000000004")
+	customerID := uuid.FromStringOrNil("f1b2c3d4-5010-5010-5010-000000000001")
+	ownedCaseID := uuid.FromStringOrNil("f1b2c3d4-5010-5010-5010-000000000002")
+	unownedCaseID := uuid.FromStringOrNil("f1b2c3d4-5010-5010-5010-000000000003")
+	agentID := uuid.FromStringOrNil("f1b2c3d4-5010-5010-5010-000000000004")
 	openedAt := timePtr(time.Date(2026, 6, 28, 10, 0, 0, 0, time.UTC))
 
 	owned := &kase.Case{
@@ -508,9 +610,9 @@ func Test_CaseGetLastClosedByPeer(t *testing.T) {
 	h := handler{utilHandler: mockUtil, db: dbTest, cache: mockCache}
 	ctx := context.Background()
 
-	customerID := uuid.FromStringOrNil("f1b2c3d4-5009-5009-5009-000000000001")
-	olderClosedID := uuid.FromStringOrNil("f1b2c3d4-5009-5009-5009-000000000002")
-	newerClosedID := uuid.FromStringOrNil("f1b2c3d4-5009-5009-5009-000000000003")
+	customerID := uuid.FromStringOrNil("f1b2c3d4-5011-5011-5011-000000000001")
+	olderClosedID := uuid.FromStringOrNil("f1b2c3d4-5011-5011-5011-000000000002")
+	newerClosedID := uuid.FromStringOrNil("f1b2c3d4-5011-5011-5011-000000000003")
 
 	older := &kase.Case{
 		ID:            olderClosedID,

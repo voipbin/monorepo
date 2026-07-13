@@ -83,11 +83,7 @@ type DBHandler interface {
 	ResolutionCreate(ctx context.Context, r *resolution.Resolution) error
 	ResolutionCreateTx(ctx context.Context, tx *sql.Tx, r *resolution.Resolution) error
 	ResolutionDelete(ctx context.Context, customerID, interactionID, id uuid.UUID) error
-	ResolutionDeleteByCase(ctx context.Context, customerID, caseID, id uuid.UUID) error
-	ResolutionDeleteByCaseTx(ctx context.Context, tx *sql.Tx, customerID, caseID, id uuid.UUID) error
 	ResolutionListByInteraction(ctx context.Context, customerID, interactionID uuid.UUID) ([]*resolution.Resolution, error)
-	ResolutionListByCase(ctx context.Context, customerID, caseID uuid.UUID) ([]*resolution.Resolution, error)
-	ResolutionListByCaseTx(ctx context.Context, tx *sql.Tx, customerID, caseID uuid.UUID) ([]*resolution.Resolution, error)
 	ResolutionListByContact(ctx context.Context, customerID, contactID uuid.UUID) ([]*resolution.Resolution, error)
 
 	// Case operations
@@ -104,6 +100,7 @@ type DBHandler interface {
 	CaseUpdateTMUpdateTx(ctx context.Context, tx *sql.Tx, id uuid.UUID, tmUpdate *time.Time) error
 	CaseUpdateContactID(ctx context.Context, customerID, id, contactID uuid.UUID) error
 	CaseUpdateContactIDTx(ctx context.Context, tx *sql.Tx, customerID, id, contactID uuid.UUID) error
+	CaseClearContactID(ctx context.Context, customerID, id uuid.UUID) error
 	CaseClearContactIDTx(ctx context.Context, tx *sql.Tx, customerID, id uuid.UUID) error
 	CaseListUnresolved(ctx context.Context, customerID uuid.UUID) ([]*kase.Case, error)
 	CaseListAll(ctx context.Context) ([]*kase.Case, error)

@@ -9,7 +9,6 @@ import (
 	"github.com/gofrs/uuid"
 
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
-	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"monorepo/bin-contact-manager/models/resolution"
 )
@@ -61,11 +60,6 @@ func resolutionCreateExec(exec sqlExecutor, r *resolution.Resolution) error {
 // tm_delete = NOW(). Scoped to customerID and interactionID to prevent
 // cross-tenant and cross-interaction deletion. Returns ErrNotFound if no
 // active row matches.
-//
-// For a case-scoped Resolution (InteractionID nil, CaseID set -- see
-// contact-case-management design §3.3), use ResolutionDeleteByCase instead;
-// this function's WHERE interaction_id = ? predicate can never match a
-// case-level row (interaction_id IS NULL on those rows by construction).
 func (h *handler) ResolutionDelete(ctx context.Context, customerID, interactionID, id uuid.UUID) error {
 	now := h.utilHandler.TimeNow()
 
@@ -88,52 +82,6 @@ func (h *handler) ResolutionDelete(ctx context.Context, customerID, interactionI
 	rows, err := result.RowsAffected()
 	if err != nil {
 		return fmt.Errorf("could not get rows affected. ResolutionDelete. err: %v", err)
-	}
-	if rows == 0 {
-		return ErrNotFound
-	}
-
-	return nil
-}
-
-// ResolutionDeleteByCase soft-deletes a case-scoped resolution (InteractionID
-// nil, CaseID set) by setting tm_delete = NOW(). Scoped to customerID and
-// caseID to prevent cross-tenant and cross-case deletion. Returns
-// ErrNotFound if no active row matches. This is the CaseID-scoped
-// counterpart to ResolutionDelete required by contact-case-management
-// design §3.3: a case-level Resolution has no interaction_id to scope by.
-func (h *handler) ResolutionDeleteByCase(ctx context.Context, customerID, caseID, id uuid.UUID) error {
-	return resolutionDeleteByCaseExec(h.db, h.utilHandler, customerID, caseID, id)
-}
-
-// ResolutionDeleteByCaseTx is ResolutionDeleteByCase scoped to a
-// caller-managed transaction.
-func (h *handler) ResolutionDeleteByCaseTx(ctx context.Context, tx *sql.Tx, customerID, caseID, id uuid.UUID) error {
-	return resolutionDeleteByCaseExec(tx, h.utilHandler, customerID, caseID, id)
-}
-
-func resolutionDeleteByCaseExec(exec sqlExecutor, utilHandler utilhandler.UtilHandler, customerID, caseID, id uuid.UUID) error {
-	now := utilHandler.TimeNow()
-
-	query, args, err := sq.Update(resolutionTable).
-		Set("tm_delete", now).
-		Where(sq.Eq{"id": id.Bytes()}).
-		Where(sq.Eq{"customer_id": customerID.Bytes()}).
-		Where(sq.Eq{"case_id": caseID.Bytes()}).
-		Where(sq.Eq{"tm_delete": nil}).
-		ToSql()
-	if err != nil {
-		return fmt.Errorf("could not build query. ResolutionDeleteByCase. err: %v", err)
-	}
-
-	result, err := exec.Exec(query, args...)
-	if err != nil {
-		return fmt.Errorf("could not execute. ResolutionDeleteByCase. err: %v", err)
-	}
-
-	rows, err := result.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("could not get rows affected. ResolutionDeleteByCase. err: %v", err)
 	}
 	if rows == 0 {
 		return ErrNotFound
@@ -173,56 +121,6 @@ func (h *handler) ResolutionListByInteraction(ctx context.Context, customerID, i
 	}
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("row iteration error. ResolutionListByInteraction. err: %v", err)
-	}
-
-	return res, nil
-}
-
-// ResolutionListByCase returns active resolutions for a given case,
-// scoped to customerID. Active = tm_delete IS NULL. This is the
-// case-scoped counterpart to ResolutionListByInteraction required by
-// contact-case-management design §3.3 (Task 2.2).
-func (h *handler) ResolutionListByCase(ctx context.Context, customerID, caseID uuid.UUID) ([]*resolution.Resolution, error) {
-	return resolutionListByCaseExec(h.db, customerID, caseID)
-}
-
-// ResolutionListByCaseTx is ResolutionListByCase scoped to a
-// caller-managed transaction (used by the case-level contact-attribution
-// write paths, design §3.4, to derive Case.contact_id atomically with
-// the triggering Resolution write).
-func (h *handler) ResolutionListByCaseTx(ctx context.Context, tx *sql.Tx, customerID, caseID uuid.UUID) ([]*resolution.Resolution, error) {
-	return resolutionListByCaseExec(tx, customerID, caseID)
-}
-
-func resolutionListByCaseExec(exec sqlExecutor, customerID, caseID uuid.UUID) ([]*resolution.Resolution, error) {
-	columns := commondatabasehandler.GetDBFields(&resolution.Resolution{})
-
-	query, args, err := sq.Select(columns...).
-		From(resolutionTable).
-		Where(sq.Eq{"customer_id": customerID.Bytes()}).
-		Where(sq.Eq{"case_id": caseID.Bytes()}).
-		Where(sq.Eq{"tm_delete": nil}).
-		ToSql()
-	if err != nil {
-		return nil, fmt.Errorf("could not build query. ResolutionListByCase. err: %v", err)
-	}
-
-	rows, err := exec.Query(query, args...)
-	if err != nil {
-		return nil, fmt.Errorf("could not query. ResolutionListByCase. err: %v", err)
-	}
-	defer func() { _ = rows.Close() }()
-
-	var res []*resolution.Resolution
-	for rows.Next() {
-		item, scanErr := resolutionGetFromRow(rows)
-		if scanErr != nil {
-			return nil, fmt.Errorf("could not scan the row. ResolutionListByCase. err: %v", scanErr)
-		}
-		res = append(res, item)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("row iteration error. ResolutionListByCase. err: %v", err)
 	}
 
 	return res, nil

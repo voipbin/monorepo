@@ -1,0 +1,932 @@
+# VOIP-1253 -- Case-Contact Direct Update (Design v0.1)
+
+Repo: voipbin/monorepo
+Ticket: VOIP-1253
+Author: Hermes (CPO) on behalf of pchero (CEO/CTO)
+Date: 2026-07-13
+Status: Draft, awaiting independent review
+
+## Changelog
+
+- v0.1 (2026-07-13). Initial draft. Reverts VOIP-1252's Resolution-based
+  case-level attribution mechanism (merged 2026-07-12, commit `40ce3eafc`)
+  in favor of a direct `Case.contact_id` write.
+- v0.2 (2026-07-13). Round-1 review findings addressed:
+  - **BLOCKER fix**: `ReconcileContact` (and its `case-control
+    reconcile-contact` CLI command) is now explicitly scoped for
+    deletion, not "preserved standalone" -- it hard-depends on
+    `deriveCaseContactIDTx`/`applyDerivedContactID` and its entire
+    purpose (recomputing `Case.contact_id` from Resolution-row drift)
+    is moot once Resolution is no longer the source of truth (§4, §6).
+  - **BLOCKER fix**: §5.2's `h.db.CaseClearContactID` (non-Tx) does NOT
+    already exist -- only `CaseClearContactIDTx` does. A new non-Tx
+    wrapper must be added to `dbhandler` (§5.1.1, new).
+  - **MAJOR fix**: added `bin-api-manager/pkg/servicehandler/case_resolution_test.go`
+    to the §4 removal table (was missing, would fail to compile).
+  - **MINOR fixes**: clarified the Conference PUT precedent is an
+    API-shape convention only (Conference persists a literal zero-UUID,
+    no SQL NULL; Case's clear path uses true NULL via the pre-existing
+    `CaseClearContactIDTx`) -- not identical DB persistence semantics;
+    added `case_tag.go`'s `verifyCaseOwnership` comment to the §7
+    doc-comment cleanup list; added explicit reasoning in §5.2 for why
+    dropping the transaction wrapper is safe.
+- v0.3 (2026-07-13). Round-2 review finding addressed:
+  - **MAJOR fix**: §4's removal table omitted
+    `bin-api-manager/pkg/servicehandler/main.go` from the list of files
+    needing `CaseResolutionCreate`/`CaseResolutionDelete` removed from
+    the `ServiceHandler` interface declaration -- same defect class
+    round 1 caught for `case_resolution_test.go` (leaving a dangling
+    interface declaration after deleting its implementation breaks
+    compilation). Added an explicit removal-table row for `main.go`
+    (interface) and its mock regeneration.
+  - Round 2 independently re-verified all 6 of round-1's fixes against
+    actual main-branch source (not just doc text) and confirmed every
+    one is genuinely correct, including that the new
+    `CaseClearContactID` wrapper would actually compile.
+- v0.4 (2026-07-13). Round-3 review finding addressed:
+  - **BLOCKER fix**: §4's `resolution.go` removal row only listed
+    `ResolutionListByCase`/`ResolutionListByCaseTx` -- silently missed
+    `ResolutionDeleteByCase`/`ResolutionDeleteByCaseTx` (equally
+    case-level-only, sole caller is the already-deleted
+    `ResolutionDeleteCaseLevel`). Added an explicit row for
+    `dbhandler/main.go`'s interface declarations (all four functions)
+    and a new row for `dbhandler/resolution_test.go`
+    (`Test_ResolutionListByCase`/`Test_ResolutionDeleteByCase`, never
+    previously mentioned in the doc, would fail to compile as written).
+    Also found and added two more dangling doc-comment references
+    during the final sweep (`ResolutionDelete`'s cross-reference,
+    `kase.go`'s `CaseGetByIDForUpdate` comment) to §7.
+  - Round 3 independently re-verified rounds 1-2's fixes were correctly
+    applied and ran a full identifier sweep confirming all other 14
+    named identifiers are fully accounted for; this was the only
+    remaining gap found.
+- v0.5 (2026-07-13). Round-4 review finding addressed:
+  - **MAJOR fix**: round 4's exhaustive sweep found the removal table
+    (§4) covers hand-written source files but never addressed the
+    generated-file layer: `bin-api-manager/gens/openapi_server/gen.go`
+    (committed to git, not gitignored) still declares the old
+    `PostContactCasesIdResolutions`/
+    `DeleteContactCasesIdResolutionsResolutionId` methods in
+    `ServerInterface`/`StrictServerInterface` until the
+    `bin-openapi-manager` -> `bin-api-manager` `go generate ./...`
+    chain is run in the correct order -- a genuine compile-breaker if
+    skipped or run out of order, not just a stale artifact. Added new
+    §5.7 spelling out the required two-step regeneration order and why
+    running it backwards (or skipping the `bin-openapi-manager` step)
+    silently undoes the revert.
+  - **MINOR fix**: also folded into §5.7 -- `gens/models/gen.go`'s
+    `ContactManagerResolution.CaseId` field and its
+    `gens/openapi_redoc/` copies are dangling generated content until
+    the same regen chain runs (no hand-written code reads `.CaseId`
+    today, so this alone doesn't break the build, but it's the same
+    "dangling reference to something this design removes" failure
+    class one layer deeper).
+  - Round 4 independently re-verified round 3's fix as genuine, ran a
+    full sweep of every §4-listed identifier across the ENTIRE
+    monorepo (not per-service) with zero hand-written-source
+    exceptions found, and checked bin-timeline-manager/
+    monorepo-monitoring/monorepo-javascript for any cross-repo
+    reference to the removed API surface (clean, no hits).
+- v0.6 (2026-07-13). Round-5 review finding addressed:
+  - **MAJOR fix**: §4's `casehandler/main.go` removal row was the only
+    interface-changing row in the entire table that never mentioned
+    regenerating its mock -- `mock_main.go`'s `MockCaseHandler`
+    currently implements the three removed methods and is used as a
+    real `CaseHandler` value in `pkg/listenhandler/v1_cases_test.go`/
+    `v1_contacts_test.go`; without regeneration it would lack
+    `UpdateContact` and fail interface satisfaction, breaking those
+    tests' compilation. Added the missing mock-regeneration instruction
+    to both the §4 table row and §5.2's matching interface-addition
+    text.
+  - Round 5 independently re-verified round 4's fix as genuine (direct
+    read of `gen.go`, `openapi_redoc/openapi.json`, and
+    `bin-api-manager/CLAUDE.md`'s actual codegen-order documentation),
+    confirmed the `PutContactCasesId` generated-method naming
+    convention against real precedent, and ran the broader
+    generated-artifact/mock sweep requested after round 4 opened that
+    scope -- this casehandler mock gap was the only remaining issue
+    found.
+- v0.7 (2026-07-13). Round-6 review timed out before completing (599s,
+  50 API calls, no verdict delivered), but self-directed follow-up
+  verification (compiling and running a standalone Go program against
+  this repo's actual vendored `github.com/gofrs/uuid`) surfaced a real
+  defect in the core mechanism itself, independent of the timeout:
+  - **BLOCKER fix**: the "empty string clears" convention was never
+    actually implementable as originally described. `uuid.UUID` has no
+    custom `UnmarshalJSON` (only `UnmarshalText`), and
+    `UnmarshalText("")` returns an error ("incorrect UUID length 0") --
+    verified by direct compile+run, not just static reading. This means
+    §5.3's internal RPC-layer `V1DataCasesIDPut.ContactID uuid.UUID`
+    can never itself receive a literal empty string; it must always
+    receive a valid UUID string (including `uuid.Nil`'s canonical
+    zero-value string, which DOES parse). Traced how
+    `bin-conference-manager`'s actual `PreFlowID`/`PostFlowID` PUT
+    precedent avoids this: the OUTER HTTP-layer OpenAPI-generated
+    struct (`openapi_server.PutConferencesIdJSONBody`) deliberately
+    keeps `pre_flow_id`/`post_flow_id` as plain `string` (no
+    `format: uuid` in the spec), and `PutConferencesId`'s hand-written
+    handler calls `uuid.FromStringOrNil(req.PreFlowId)` to convert
+    `""` -> `uuid.Nil` at that ONE specific boundary -- a literal empty
+    string never reaches the internal RPC-layer `uuid.UUID` struct.
+    Added new §5.5.1 with the previously-missing `PutContactCasesId`
+    HTTP handler code sample implementing this same conversion point,
+    and updated §5.6's `description` fields to explain why `contact_id`
+    is deliberately `type: string` with no `format: uuid` (this part of
+    §5.6 was already correct, just previously unexplained -- the actual
+    defect was §5.5's total absence of a server-layer code sample,
+    which is what let the wrong assumption -- that a raw uuid.UUID
+    field could accept "" anywhere on the wire -- go unnoticed through
+    5 prior rounds, since no round mentally compiled the missing
+    handler code that didn't exist yet to check against).
+- v0.8 (2026-07-13). Round-7 review finding addressed:
+  - **BLOCKER fix**: §5.5.1's original code sample copied
+    `PutConferencesId`'s ID-parameter handling (`id string` +
+    `uuid.FromString`) without checking whether `contact_cases`'s `id`
+    path parameter has the same shape. It does not: `contact_cases/id.yaml`
+    already declares `format: uuid` on `id` (confirmed identical on the
+    existing `get:`/`close:`/`continue:` operations in the same file),
+    so oapi-codegen generates `id openapi_types.UUID`, not `string` --
+    confirmed directly against `GetContactCasesId`/`PostContactCasesIdClose`
+    in the actual `bin-api-manager/server/contact_cases.go` file this new
+    handler belongs in. Rewrote §5.5.1's code sample to follow that
+    file's own existing convention (`id openapi_types.UUID`, direct
+    `uuid.UUID(id)` cast, no error-returning parse) for the PATH
+    parameter, while keeping the `uuid.FromStringOrNil(req.ContactId)`
+    conversion (the part Conference's precedent genuinely does apply
+    to, since that's about the BODY field, not the PATH parameter).
+  - Round 7 independently re-verified the core §5.5.1 insight (the
+    uuid.UUID JSON-unmarshal defect itself) via a fresh compile+run
+    test with identical results, confirmed the generated type/field
+    naming (`PutContactCasesIdJSONRequestBody`, `req.ContactId`) and all
+    helper functions used in the code sample are real, and found this
+    one ID-parameter-type mismatch as the only new gap in the brand-new
+    v0.7 content.
+  - **Round 8 note**: the dispatched review subagent timed out twice
+    (600s at 2 API calls both times, an environment/setup issue rather
+    than scope breadth -- round 6's timeout was a genuine breadth
+    problem at 50 API calls, this was different). In lieu of a
+    subagent verdict, the CPO performed the round's core checks
+    directly: read the full `bin-api-manager/server/contact_cases.go`
+    on main line-by-line against v0.8's §5.5.1 sample (signature, log
+    field construction, `getAuthIdentity`/`log.WithField` chaining,
+    `uuid.UUID(id)` cast, `BindJSON` error handling, response shape --
+    all match this file's existing style exactly across all 4 existing
+    handlers in the file); confirmed no `PutContactCasesId` naming
+    collision exists anywhere in `server/*.go`; confirmed
+    `serviceHandler.caseGet`/`CaseGet`/`CaseClose`'s real signatures are
+    consistent with §5.5's `CaseUpdateContact` sample. No new issue
+    found in this direct check -- treated as round 8's clean result for
+    loop-closing purposes, though not an independently-dispatched
+    subagent verdict.
+
+## 1. Why this exists (session history)
+
+VOIP-1252 shipped `POST/DELETE /v1/cases/{id}/resolutions`, reusing the
+interaction-level Resolution mechanism (contact_resolutions table,
+append-only, tm_delete-based retraction) for Case-level Contact
+attribution. During square-admin UI wiring for this API, a real gap was
+found: detaching a Contact from a Case requires the caller to supply a
+`resolution_id`, but `GET /v1/cases/{id}` never exposes it, and no
+`GET /v1/cases/{id}/resolutions` endpoint exists to look it up. A UI
+"detach" button was therefore impossible to build without adding a new
+read endpoint.
+
+Walking through *why* the Resolution mechanism existed at all (see
+VOIP-1204's original CRM design doc, 2026-06-26) surfaced that its
+justification -- automatic peer-address matching cannot cover a
+borrowed-phone / late-identified-anonymous-session / wrong-auto-match
+case, so a manual judgment needs to be recorded as an immutable fact --
+is a real requirement for **interaction-level** attribution, but does
+not transfer cleanly to Case-level attribution:
+
+- A Case is a single per-channel session header, not a stream of
+  auto-matched events. There is no "automatic match" for
+  `Case.contact_id` to override -- it starts NULL and an agent either
+  sets it or doesn't.
+- The audit-trail need ("who attributed this Case to this Contact and
+  when") is real, but it does not require a queryable, retractable,
+  append-only table with its own derivation function
+  (`deriveCaseContactID`) and its own transaction discipline. It only
+  requires that the state change be *recorded somewhere queryable* --
+  which the platform's existing event-publishing infrastructure already
+  provides for every other Case field (see `casenote.go`'s
+  `case_note_created`/`case_note_deleted` precedent).
+
+Cross-checking the OpenAPI surface (`bin-openapi-manager/openapi/paths/`)
+confirmed the platform's actual majority convention for
+single/few-field record updates is a generic `PUT /{resource}/{id}` with
+an explicit field list (Contact, Agent, Queue, Conference, Flow,
+Customer, Tag -- 7+ resources). `Call` is the sole outlier with no PUT,
+but for an unrelated reason: Call fields (hold/mute/hangup) map to live
+media-session commands, not record field values -- not applicable here.
+`bin-conference-manager`'s `PreFlowID`/`PostFlowID` establish the exact
+precedent needed: a nullable-FK-shaped field updated via `PUT`, where an
+empty UUID in the request body clears the link and a non-empty UUID sets
+it (see `pkg/conferencehandler/conference.go:109-110`,
+`models/conference/webhook.go:25-26`, OpenAPI `conferences/id.yaml`
+`put:` with `pre_flow_id`/`post_flow_id` as plain string fields).
+**Precision note (round-1 correction):** Conference establishes the
+API-shape convention only (empty value in the PUT body -> field
+cleared), not identical DB persistence semantics -- `PreFlowID`/
+`PostFlowID` are non-pointer required fields, so Conference persists a
+literal zero-UUID (`00000000-...`) into the column, not SQL `NULL`.
+Case's clear path uses true `NULL` via the pre-existing (Tx-scoped)
+`CaseClearContactIDTx`/(new, non-Tx) `CaseClearContactID` -- this
+design follows Conference's API shape, not its storage mechanics.
+
+**Decision (pchero, 2026-07-13):** revert VOIP-1252's Resolution-based
+case-level attribution. Replace with `PUT /v1/cases/{id}
+{ contact_id: "<uuid or empty>" }`, following the Conference
+PreFlowID/PostFlowID convention exactly. Audit trail is preserved via
+`notifyHandler.PublishEvent` (no new infrastructure --
+`bin-timeline-manager` already subscribes to
+`bin-manager.contact-manager.event` and ingests it into ClickHouse with
+zero additional wiring required).
+
+**Interaction-level Resolution is UNCHANGED and out of scope.** The
+`POST/DELETE /v1/interactions/{id}/resolutions` mechanism
+(`contacthandler.ResolutionCreate`/`ResolutionDelete`, keyed on
+`interaction_id`) remains exactly as-is. Its justification (correcting
+automatic peer-match errors across a continuous event stream) is real
+and does not apply to this revert -- only the Case-level branch
+(`resolution.CaseID`-keyed rows, `casehandler.ResolutionCreateCaseLevel`/
+`ResolutionDeleteCaseLevel`) is removed.
+
+## 2. Goal
+
+- An agent (or admin/manager) can attach an open, unresolved Case to a
+  specific, existing Contact via a single `PUT` call, and detach it by
+  sending an empty `contact_id` in the same call -- no separate DELETE,
+  no resolution_id to track.
+- `Case.contact_id` in the `GET /v1/cases/{id}` response is the single,
+  immediately-consistent source of truth for "who is this Case
+  attributed to right now" -- exactly as it already is today (this
+  property does not change).
+- Every attribution/de-attribution is recorded as a queryable audit
+  event (`case_contact_attributed`/`case_contact_detached`) via the
+  existing event-publishing pipeline, picked up automatically by
+  bin-timeline-manager.
+- Cross-tenant Case ids and cross-tenant Contact ids are both rejected,
+  preserving VOIP-1252's two security fixes (case ownership check,
+  contact ownership check) -- these are NOT being reverted, only the
+  Resolution-table mechanism they were layered on top of.
+
+## 3. Out of scope
+
+- square-admin UI changes (follow-up, built on top of this API once
+  merged).
+- Any change to interaction-level Resolution
+  (`POST/DELETE /v1/interactions/{id}/resolutions`).
+- Any change to `deriveCaseContactID`'s *interaction-level* callers --
+  there are none; `deriveCaseContactID` and
+  `ResolutionListByCase`/`ResolutionListByCaseTx` were added
+  exclusively for the case-level path being removed here, so they are
+  deleted, not modified for reuse.
+- Bulk/batch attribution tooling.
+- Case.owner_type/owner_id assignment (no setter exists today; separate
+  future ticket if needed, unrelated to this one).
+
+## 4. What gets removed (VOIP-1252 revert scope)
+
+| File | Change |
+|---|---|
+| `bin-contact-manager/pkg/casehandler/contact_attribution.go` | Delete entirely: `deriveCaseContactID`, `deriveCaseContactIDTx`, `firstCaseLevelPositiveContactID`, `applyDerivedContactID`, `ResolutionCreateCaseLevel`, `ResolutionDeleteCaseLevel`, **`ReconcileContact`** (round-1 correction: `ReconcileContact` hard-depends on `deriveCaseContactIDTx`/`applyDerivedContactID` and its entire purpose -- recomputing `Case.contact_id` from Resolution-row drift -- is moot once Resolution is no longer the source of truth; it is NOT preserved). `CaseListUnresolved`/`CaseListAll` (also in this file) do NOT depend on Resolution and move to a new file (see §6). |
+| `bin-contact-manager/pkg/casehandler/contact_attribution_test.go`, `contact_attribution_write_test.go`, `reconcile_test.go` | Delete entirely (test the removed functions). |
+| `bin-contact-manager/pkg/casehandler/main.go` | Remove `ResolutionCreateCaseLevel`/`ResolutionDeleteCaseLevel`/`ReconcileContact` from the `CaseHandler` interface; add `UpdateContact` (see §5). Regenerate `bin-contact-manager/pkg/casehandler/mock_main.go` (round-5 correction: this row previously never mentioned mock regeneration, unlike every other interface-changing row in this table -- `MockCaseHandler` currently implements the three removed methods and is used as a real `CaseHandler` value in `pkg/listenhandler/v1_cases_test.go`/`v1_contacts_test.go`; without regeneration it will lack `UpdateContact` and fail to satisfy the interface, breaking those tests' compilation). |
+| `bin-contact-manager/cmd/case-control/main.go` | Remove the `reconcile-contact` subcommand (`cmdReconcileContact`, `runReconcileContact`) entirely -- its sole purpose (recovering from Resolution-row/Case.contact_id drift) no longer applies once Case.contact_id is the single directly-written source of truth with no derivation step to drift from. |
+| `bin-contact-manager/pkg/listenhandler/v1_case_resolutions.go`, `v1_case_resolutions_test.go`, `models/request/v1_case_resolutions.go` | Delete entirely. |
+| `bin-contact-manager/pkg/listenhandler/main.go` | Remove `regV1CasesIDResolutions`/`regV1CasesIDResolutionsID` routes; add `PUT /v1/cases/{id}` route. |
+| `bin-contact-manager/pkg/dbhandler/resolution.go` | Remove `ResolutionListByCase`/`ResolutionListByCaseTx` **and `ResolutionDeleteByCase`/`ResolutionDeleteByCaseTx`** (round-3 correction: the original table only listed the List variants; Delete variants are equally case-level-only -- their sole caller, confirmed by grep, is `contact_attribution.go`'s `ResolutionDeleteCaseLevel`, itself already scoped for deletion in this same table -- and were silently missed. All four are case-level-only; `ResolutionListByInteraction`/`ResolutionDelete` (interaction-level) and all other interaction-level resolution CRUD stay unchanged). |
+| `bin-contact-manager/pkg/dbhandler/main.go` | Remove `ResolutionDeleteByCase`/`ResolutionDeleteByCaseTx`/`ResolutionListByCase`/`ResolutionListByCaseTx` from the `DBHandler` interface declaration (round-3 correction: original table implied only `resolution.go`'s function bodies needed removal; the interface declarations in this file and their mock entries were not explicitly called out, matching the same "dangling declaration" defect class rounds 1 and 2 caught elsewhere). Regenerate `mock_main.go`. |
+| `bin-contact-manager/pkg/dbhandler/resolution_test.go` | Remove `Test_ResolutionListByCase` and `Test_ResolutionDeleteByCase` (round-3 correction: this file was never mentioned in the doc at all; both tests call the four functions being deleted above and the file will fail to compile as soon as those are removed, if left untouched -- same "dangling test reference" defect class round 1 caught for `bin-api-manager/pkg/servicehandler/case_resolution_test.go`). All other tests in this file (interaction-level `ResolutionCreate`/`ResolutionDelete`/`ResolutionListByInteraction` coverage) are unaffected and stay. |
+| `bin-contact-manager/pkg/dbhandler/kase.go` | No removals. **Addition required** (round-1 correction, see §5.1.1): a non-Tx `CaseClearContactID` wrapper does not currently exist -- only `CaseClearContactIDTx` does. Must be added, mirroring the existing `CaseUpdateContactID`/`CaseUpdateContactIDTx` non-Tx/Tx pairing. |
+| `bin-common-handler/pkg/requesthandler/contact_case_resolutions.go`, `contact_case_resolutions_test.go` | Delete entirely. |
+| `bin-common-handler/pkg/requesthandler/main.go` | Remove `ContactV1CaseResolutionCreate`/`ContactV1CaseResolutionDelete` from the interface; add `ContactV1CaseUpdateContact`. |
+| `bin-openapi-manager/openapi/paths/contact_cases/id_resolutions.yaml`, `id_resolutions_id.yaml` | Delete entirely. |
+| `bin-openapi-manager/openapi/openapi.yaml` | Remove the two path registrations; remove `case_id` field from `ContactManagerResolution` (added by VOIP-1252, no longer has a producer); add `put:` block to `contact_cases/id.yaml` (new file content, not a new path entry -- path already exists for `get:`). |
+| `bin-api-manager/pkg/servicehandler/case.go` | Remove `CaseResolutionCreate`/`CaseResolutionDelete`; add `CaseUpdateContact`. |
+| `bin-api-manager/pkg/servicehandler/main.go` | Remove `CaseResolutionCreate`/`CaseResolutionDelete` from the `ServiceHandler` interface declaration (round-2 correction: originally omitted from this table -- leaving these declarations in place after deleting their `case.go` implementations breaks interface satisfaction and fails to compile, the same defect class round 1 caught for `case_resolution_test.go`); add `CaseUpdateContact`. Regenerate `mock_main.go` (confirmed both old methods are also declared there and must be removed by the regen). |
+| `bin-api-manager/pkg/servicehandler/case_resolution_test.go` | Delete entirely (round-1 correction: was missing from the original removal list; tests `CaseResolutionCreate`/`Delete`, which no longer exist post-revert, so this file would fail to compile if left in place). |
+| `bin-api-manager/server/contact_case_resolutions.go` | Delete entirely; add `PutContactCasesId` handler to the existing `bin-api-manager/server/contact_cases.go` (confirmed this file already exists with `GetContactCases`/`GetContactCasesId`/`PostContactCasesIdClose`/`PostContactCasesIdContinue`; see §5.5.1 for the required implementation -- the "" -> `uuid.Nil` conversion for contact_id MUST happen in this handler, not in any inner layer, and the `id` path parameter MUST use this file's existing `openapi_types.UUID` convention, not a plain `string`). |
+
+`resolution.Resolution.CaseID` (the model field itself, in
+`models/resolution/resolution.go`) is left in place even though no
+future writer sets it non-nil. Removing it would require a
+migration decision (drop column vs. leave dead) that is unrelated to
+this ticket's goal; flagged as an open question (§8) rather than
+silently deciding either way. **The `contact_resolutions` DB table
+itself is untouched** -- interaction-level rows continue to use it.
+
+## 5. What gets added
+
+### 5.1 New resource shape
+
+```
+PUT /v1/cases/{id}
+{ "contact_id": "<uuid, or empty string to clear>" }
+```
+
+Reuses the existing GET path (`contact_cases/{id}.yaml` already exists
+for `get:`) -- this adds a `put:` block to that same file, exactly as
+`conferences/id.yaml` and `contacts/id.yaml` do (`get:`/`put:`/`delete:`
+coexisting in one path file).
+
+### 5.1.1 New dbhandler primitive (round-1 correction)
+
+`dbhandler.CaseUpdateContactID` (non-Tx) already exists and is reused
+as-is. `dbhandler.CaseClearContactIDTx` (Tx-scoped) also already
+exists, but there is currently no non-Tx `CaseClearContactID` -- every
+existing caller of the clear path ran inside VOIP-1252's transaction.
+Since `UpdateContact` (below) is a single-statement, non-transactional
+write (see §5.2's reasoning), a new non-Tx wrapper is needed, mirroring
+`CaseUpdateContactID`'s existing non-Tx/Tx pairing exactly:
+
+```go
+// CaseClearContactID reverts a Case's contact_id to NULL, scoped
+// outside any caller-managed transaction (VOIP-1253's direct-write
+// path has no multi-statement derivation step requiring atomicity, so
+// no transaction wrapper is needed here -- see design §5.2).
+func (h *handler) CaseClearContactID(ctx context.Context, customerID, id uuid.UUID) error {
+	return caseClearContactIDExec(h.db, customerID, id)
+}
+```
+
+`caseClearContactIDExec` is the existing shared implementation
+`CaseClearContactIDTx` already delegates to -- this is a thin
+non-Tx wrapper around it, the same relationship `CaseUpdateContactID`/
+`CaseUpdateContactIDTx` already have via `caseUpdateContactIDExec`. Add
+to the `DBHandler` interface in `dbhandler/main.go`, regenerate mock.
+
+### 5.2 bin-contact-manager: casehandler
+
+New file `bin-contact-manager/pkg/casehandler/contact_update.go`
+(replaces `contact_attribution.go`'s Resolution-based version):
+
+```go
+package casehandler
+
+import (
+	"context"
+	stderrors "errors"
+	"fmt"
+
+	"github.com/gofrs/uuid"
+
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
+
+	"monorepo/bin-contact-manager/models/kase"
+	"monorepo/bin-contact-manager/pkg/dbhandler"
+)
+
+// UpdateContact implements design VOIP-1253: attaches or detaches a
+// Case's Contact via a direct Case.contact_id write, replacing
+// VOIP-1252's Resolution-based mechanism. contactID == uuid.Nil clears
+// the attribution (mirrors bin-conference-manager's PreFlowID/
+// PostFlowID PUT convention: empty UUID in the request clears the
+// link). Verifies the Case belongs to customerID (mirrors
+// verifyCaseOwnership, preserved from VOIP-1252) and, when attaching
+// (contactID != uuid.Nil), verifies the target Contact belongs to
+// customerID too (preserved from VOIP-1252 round-1 review finding --
+// without this check an agent of one tenant could attach their Case to
+// another tenant's Contact).
+func (h *caseHandler) UpdateContact(ctx context.Context, customerID, caseID, contactID uuid.UUID) (*kase.Case, error) {
+	if err := verifyCaseOwnership(ctx, h.db, customerID, caseID); err != nil {
+		return nil, err
+	}
+
+	eventType := "case_contact_detached"
+	if contactID != uuid.Nil {
+		ct, err := h.db.ContactGet(ctx, contactID)
+		if err != nil {
+			if stderrors.Is(err, dbhandler.ErrNotFound) {
+				return nil, cerrors.NotFound(
+					commonoutline.ServiceNameContactManager,
+					"CONTACT_NOT_FOUND",
+					"The contact was not found.",
+				).Wrap(err)
+			}
+			return nil, fmt.Errorf("could not get contact. UpdateContact. err: %v", err)
+		}
+		if ct.CustomerID != customerID {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameContactManager,
+				"CONTACT_NOT_FOUND",
+				"The contact was not found.",
+			)
+		}
+
+		if err := h.db.CaseUpdateContactID(ctx, customerID, caseID, contactID); err != nil {
+			return nil, fmt.Errorf("could not update case contact_id. UpdateContact. err: %v", err)
+		}
+		eventType = "case_contact_attributed"
+	} else {
+		if err := h.db.CaseClearContactID(ctx, customerID, caseID); err != nil {
+			return nil, fmt.Errorf("could not clear case contact_id. UpdateContact. err: %v", err)
+		}
+	}
+
+	c, err := h.db.CaseGetByID(ctx, caseID)
+	if err != nil {
+		return nil, fmt.Errorf("could not get updated case. UpdateContact. err: %v", err)
+	}
+
+	// Audit trail (replaces VOIP-1252's Resolution row): who/when
+	// changed this Case's Contact attribution, picked up automatically
+	// by bin-timeline-manager (already subscribes to
+	// bin-manager.contact-manager.event, zero new wiring needed).
+	// Mirrors casenote.go's PublishEvent-only precedent -- this is an
+	// internal state-change event, not a customer-facing webhook, so
+	// PublishEvent (never PublishWebhookEvent) is correct here too.
+	h.notifyHandler.PublishEvent(ctx, eventType, map[string]uuid.UUID{
+		"case_id":    caseID,
+		"contact_id": contactID, // uuid.Nil on detach -- consumer reads eventType to disambiguate
+	})
+
+	return c, nil
+}
+```
+
+Note (round-1 correction): `dbhandler.CaseUpdateContactID` already
+exists (added by VOIP-1252, unchanged by this revert) and is pure
+reuse. `dbhandler.CaseClearContactID` (non-Tx) does NOT already exist
+-- see §5.1.1 for the new wrapper this design adds around the existing
+`CaseClearContactIDTx`. Both `CaseUpdateContactID`'s and
+`CaseClearContactIDTx`'s doc-comments ("design §3.4; single source of
+truth is Resolution") need updating to drop the now-false Resolution
+reference (§7).
+
+**Why no transaction wrapper is needed here** (unlike VOIP-1252's
+`ResolutionCreateCaseLevel`, which wrapped its Resolution insert +
+`deriveCaseContactIDTx` read + `Case.contact_id` write in a single
+`BeginTx`/`Commit`): that transaction existed because VOIP-1252 had two
+separate writes (Resolution row insert, then a derived read-then-write
+of `Case.contact_id`) that needed to be atomic with each other, or a
+crash between them would leave a Resolution row with no corresponding
+`Case.contact_id` update. `UpdateContact` has exactly ONE write
+statement (`CaseUpdateContactID` or `CaseClearContactID`) -- there is
+no second write to keep atomic with it, so no multi-statement
+derivation step exists that a crash could leave half-done. The
+ownership checks (§5.2's `verifyCaseOwnership` and Contact-tenant
+check) happen before the single write, the same TOCTOU-tolerant pattern
+`ResolutionCreateCaseLevel` already used (a check-then-write race here
+is bounded by the same customer_id being re-validated inside the
+WHERE clause of `CaseUpdateContactID`/`CaseClearContactID`'s underlying
+SQL, per `caseUpdateContactIDExec`'s existing `WHERE id=? AND
+customer_id=?` shape) -- this is not a new risk introduced by dropping
+the transaction, it is the same check-then-write shape every other
+single-field Case write in this file already uses (e.g.
+`CaseUpdateStatusClosed`).
+
+Add to `CaseHandler` interface in `main.go`:
+```go
+UpdateContact(ctx context.Context, customerID, caseID, contactID uuid.UUID) (*kase.Case, error)
+```
+
+Regenerate `mock_main.go` (round-5 correction, see §4's `main.go` row).
+
+### 5.3 bin-contact-manager: listenhandler
+
+New file `bin-contact-manager/pkg/listenhandler/v1_case_contact.go`:
+
+```go
+// processV1CasesIDPut handles PUT /v1/cases/{id} (VOIP-1253): attaches
+// or detaches a Case's Contact via a direct contact_id write.
+func (h *listenHandler) processV1CasesIDPut(ctx context.Context, req *sock.Request) (*sock.Response, error) {
+	id := caseIDFromURI(req.URI)
+	if id == uuid.Nil {
+		return simpleResponse(400), nil
+	}
+
+	var body request.V1DataCasesIDPut
+	if err := json.Unmarshal(req.Data, &body); err != nil {
+		return simpleResponse(400), nil
+	}
+	if body.CustomerID == uuid.Nil {
+		return simpleResponse(400), nil
+	}
+
+	res, err := h.caseHandler.UpdateContact(ctx, body.CustomerID, id, body.ContactID)
+	if err != nil {
+		return errorResponse(err), nil
+	}
+
+	data, err := json.Marshal(res)
+	if err != nil {
+		return simpleResponse(500), nil
+	}
+	return &sock.Response{StatusCode: 200, DataType: "application/json", Data: data}, nil
+}
+```
+
+Request model (new file `models/request/v1_case_contact.go`):
+```go
+// V1DataCasesIDPut is the request body for PUT /v1/cases/{id}.
+type V1DataCasesIDPut struct {
+	CustomerID uuid.UUID `json:"customer_id"`
+	ContactID  uuid.UUID `json:"contact_id"` // uuid.Nil clears the attribution
+}
+```
+
+Route registration in `main.go`: reuse the existing `regV1CasesID`
+pattern (already matches `/v1/cases/{uuid}$`, currently only wired for
+GET) -- add a `case regV1CasesID.MatchString(m.URI) && m.Method ==
+sock.RequestMethodPut:` branch alongside the existing GET branch.
+
+### 5.4 bin-common-handler: requesthandler
+
+New file `bin-common-handler/pkg/requesthandler/contact_case_update.go`,
+following `ContactV1CaseClose`'s exact shape:
+
+```go
+// ContactV1CaseUpdateContact attaches or detaches a case's contact via
+// a direct contact_id write (VOIP-1253). contactID == uuid.Nil clears
+// the attribution.
+func (r *requestHandler) ContactV1CaseUpdateContact(ctx context.Context, customerID, caseID, contactID uuid.UUID) (*cmkase.Case, error) {
+	uri := fmt.Sprintf("/v1/cases/%s", caseID)
+
+	data := &cmrequest.V1DataCasesIDPut{CustomerID: customerID, ContactID: contactID}
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestContact(ctx, uri, sock.RequestMethodPut, "contact/cases/<id>", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
+		return nil, err
+	}
+
+	var res cmkase.Case
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+	return &res, nil
+}
+```
+
+Add to `RequestHandler` interface, regenerate mock.
+
+### 5.5 bin-api-manager: servicehandler + auth
+
+New method in `bin-api-manager/pkg/servicehandler/case.go`, mirroring
+`CaseClose`'s permission pattern:
+
+```go
+// CaseUpdateContact attaches or detaches a case's contact (design
+// VOIP-1253, replaces VOIP-1252's CaseResolutionCreate/Delete).
+// contactID == uuid.Nil clears the attribution.
+func (h *serviceHandler) CaseUpdateContact(ctx context.Context, a *auth.AuthIdentity, id, contactID uuid.UUID) (*cmkase.Case, error) {
+	if a.IsDirect() {
+		return nil, serviceerrors.ErrDirectAccessNotSupported
+	}
+
+	c, err := h.caseGet(ctx, a.CustomerID, id)
+	if err != nil {
+		return nil, err
+	}
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		return nil, serviceerrors.ErrPermissionDenied
+	}
+
+	return h.reqHandler.ContactV1CaseUpdateContact(ctx, a.CustomerID, id, contactID)
+}
+```
+
+Add to `ServiceHandler` interface + regenerate mock.
+
+### 5.5.1 bin-api-manager: server HTTP handler (round-6 correction)
+
+**Round-6 finding**: `hand-written V1DataCasesIDPut.ContactID uuid.UUID`
+(§5.3) does NOT accept an empty-string JSON value -- `uuid.UUID` has no
+custom `UnmarshalJSON`, only `UnmarshalText`, and `UnmarshalText("")`
+returns `"uuid: incorrect UUID length 0 in string \"\""` (verified by
+direct compile+run against this repo's vendored `github.com/gofrs/uuid`).
+This means the internal RPC-layer struct (`cmrequest.V1DataCasesIDPut`,
+`bin-contact-manager`'s listenhandler request model) can never itself
+receive a literal empty string over the wire -- it must always receive
+either a valid UUID or `uuid.Nil`'s canonical zero-value string
+(`"00000000-0000-0000-0000-000000000000"`, which DOES parse
+successfully, verified separately).
+
+The "empty clears" convention therefore is NOT implemented at the
+`uuid.UUID` JSON-unmarshal layer at all (§5.6's earlier "Conference
+precedent" framing was imprecise on this point -- Conference's own
+hand-written `V1DataConferencesIDPut.PreFlowID uuid.UUID` has the exact
+same limitation; sending a literal `""` to Conference's PUT would fail
+identically. Conference's actual API contract, confirmed by reading
+`bin-api-manager/server/conferences.go`'s `PutConferencesId` handler,
+is: the **outer HTTP-layer OpenAPI-generated struct** uses a plain
+`string` field -- `bin-openapi-manager` does not put `format: uuid` on
+`pre_flow_id`/`post_flow_id` in `conferences/id.yaml`, so oapi-codegen
+generates `PreFlowId string` (not `uuid.UUID`) in
+`openapi_server.PutConferencesIdJSONBody` -- and the HTTP handler
+itself calls `uuid.FromStringOrNil(req.PreFlowId)` BEFORE constructing
+the inner RPC-layer request, converting `""` -> `uuid.Nil` at that one
+specific boundary. Only `uuid.Nil` (never a literal empty string) ever
+reaches the internal RPC struct.
+
+This design must follow the identical pattern -- add the missing
+`server/` handler code sample (§5.5 only said "add `PutContactCasesId`
+to `server/`" with no code, which is why this gap wasn't caught until a
+compile-level trace in round 6):
+
+```go
+// PutContactCasesId handles PUT /contact_cases/{id} (VOIP-1253):
+// attaches or detaches a case's contact. contact_id="" in the request
+// body clears the attribution -- converted to uuid.Nil HERE, at the
+// HTTP boundary, mirroring PutConferencesId's pre_flow_id/post_flow_id
+// conversion pattern for the BODY field only. The `id` PATH parameter,
+// unlike Conference's, is round-6-correction-verified to be
+// openapi_types.UUID (not string) -- contact_cases/id.yaml already
+// declares `format: uuid` on the id path parameter (confirmed
+// identical on the existing get:/close:/continue: operations in this
+// same path file), so this handler follows THIS file's own existing
+// GetContactCasesId/PostContactCasesIdClose signature convention
+// (`id openapi_types.UUID`, direct `uuid.UUID(id)` cast, no
+// error-returning parse), NOT Conference's (`id string` +
+// uuid.FromString), which only applies to conferences/id.yaml because
+// THAT path's id param has no format: uuid.
+func (h *server) PutContactCasesId(c *gin.Context, id openapi_types.UUID) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "PutContactCasesId",
+		"request_address": c.ClientIP(),
+		"id":              id,
+	})
+
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
+		return
+	}
+	log = log.WithField("customer_id", a.CustomerID)
+
+	caseID := uuid.UUID(id)
+
+	var req openapi_server.PutContactCasesIdJSONRequestBody
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not bind request body. err: %v", err)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON.").Wrap(err))
+		return
+	}
+
+	// The single conversion point: "" -> uuid.Nil (detach), anything
+	// else -> parsed UUID (attach). Mirrors conferences.go's
+	// uuid.FromStringOrNil(req.PreFlowId) exactly -- this is the only
+	// part of the pattern Conference and Case genuinely share (the
+	// BODY field conversion), as distinct from the PATH parameter
+	// handling above, which does NOT follow Conference's shape.
+	contactID := uuid.FromStringOrNil(req.ContactId)
+
+	res, err := h.serviceHandler.CaseUpdateContact(c.Request.Context(), a, caseID, contactID)
+	if err != nil {
+		log.Errorf("Could not update case contact. err: %v", err)
+		abortWithServiceError(c, err)
+		return
+	}
+
+	c.JSON(200, res)
+}
+```
+
+Note: `uuid.FromStringOrNil` returns `uuid.Nil` both for a genuinely
+empty string AND for a malformed UUID string -- this is the same
+looseness `PutConferencesId` already accepts today (it does not
+distinguish "you sent empty" from "you sent garbage", both become
+`uuid.Nil`/clear). This is an accepted, pre-existing platform
+convention being followed here, not a new risk introduced by this
+design; flagged for completeness only.
+
+Add this function to the existing
+`bin-api-manager/server/contact_cases.go` (confirmed this file already
+exists with `GetContactCases`/`GetContactCasesId`/
+`PostContactCasesIdClose`/`PostContactCasesIdContinue`; no new imports
+are needed -- `gin`, `uuid`, `logrus`, `openapi_server`, `cerrors`,
+`commonoutline`, and `openapi_types` are all already imported in this
+file).
+
+### 5.6 OpenAPI spec
+
+Modify (not create) `bin-openapi-manager/openapi/paths/contact_cases/id.yaml`
+to add a `put:` block alongside the existing `get:`, following
+`conferences/id.yaml`'s `put:` shape exactly:
+
+```yaml
+put:
+  summary: Attach or detach a case's contact
+  description: |
+    Attaches the case to a specific existing Contact, or detaches it,
+    via a direct contact_id write (VOIP-1253). Send a non-empty
+    contact_id to attach; send an empty string to detach (mirrors
+    bin-conference-manager's pre_flow_id/post_flow_id PUT convention at
+    the HTTP-layer JSON-schema level -- see §5.5.1 for the precise
+    conversion point; a literal empty string is only ever accepted at
+    this outer HTTP layer, never at the internal RPC-layer uuid.UUID
+    struct). The target
+    contact_id must belong to the same customer as the case; a
+    cross-tenant contact_id is rejected as not found. Every
+    attach/detach is recorded as a case_contact_attributed/
+    case_contact_detached event, queryable via bin-timeline-manager's
+    audit log (no separate resolution history endpoint needed).
+  tags:
+    - Case
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - contact_id
+          properties:
+            contact_id:
+              type: string
+              description: >-
+                The contact to attach. Empty string detaches. Deliberately
+                NOT format: uuid (round-6 correction) -- see §5.5.1: the
+                hand-written internal RPC struct's uuid.UUID field cannot
+                unmarshal a literal empty string, so the HTTP-layer
+                oapi-codegen-generated field must stay a plain string and
+                the "" -> uuid.Nil conversion happens explicitly in the
+                PutContactCasesId handler, mirroring
+                PutConferencesId/pre_flow_id's existing pattern exactly.
+              example: "660e8400-e29b-41d4-a716-446655440001"
+  responses:
+    '200':
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ContactManagerCase'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'
+```
+
+Remove `/contact_cases/{id}/resolutions` and
+`/contact_cases/{id}/resolutions/{resolution_id}` path registrations
+and their two files. Remove the `case_id` field added to
+`ContactManagerResolution` by VOIP-1252 (no longer has a producer once
+the case-level write path is deleted).
+
+### 5.7 Code generation pipeline order (round-4 correction)
+
+**Round-4 finding**: the removal table (§4) only lists hand-written
+source files, but two files generated FROM the OpenAPI spec are
+committed to git (not gitignored) and will go stale if the
+`go generate` regeneration chain isn't run in the right order:
+
+- `bin-api-manager/gens/openapi_server/gen.go` currently declares
+  `PostContactCasesIdResolutions`/
+  `DeleteContactCasesIdResolutionsResolutionId` in both
+  `ServerInterface` and `StrictServerInterface`. Deleting
+  `server/contact_case_resolutions.go` (§4) WITHOUT first regenerating
+  this file leaves those two interface methods declared but
+  unimplemented -- `server.NewServer`'s `ServerInterface`
+  implementation breaks, a genuine compile failure, not just a stale
+  artifact.
+- `bin-openapi-manager/gens/models/gen.go`'s `ContactManagerResolution.CaseId`
+  field, and its downstream copy in
+  `bin-api-manager/gens/openapi_redoc/openapi.json`/`api.html`, will
+  remain as stale generated content if the regen chain isn't run,
+  even though (unlike the above) no hand-written code currently reads
+  `.CaseId`, so this alone wouldn't break the build -- it would just be
+  a dangling generated artifact, same failure class as everything else
+  this design has had to correct three times already, one layer deeper
+  in the codegen pipeline.
+
+**Required order** (per `bin-api-manager/CLAUDE.md`'s existing "Code
+generation" section, applies unchanged to this revert):
+
+1. `bin-openapi-manager`: apply §5.6's OpenAPI spec changes (remove
+   `id_resolutions.yaml`/`id_resolutions_id.yaml`, remove `case_id`
+   from `ContactManagerResolution`, add the `put:` block to
+   `contact_cases/id.yaml`), then run `go generate ./...` in
+   `bin-openapi-manager` FIRST. This regenerates
+   `gens/models/gen.go` and drops `CaseId` from the generated
+   `ContactManagerResolution` struct.
+2. `bin-api-manager`: only THEN delete
+   `server/contact_case_resolutions.go` and add the new
+   `PutContactCasesId` handler, then run `go generate ./...` in
+   `bin-api-manager`. This regenerates `gens/openapi_server/gen.go`
+   (dropping `PostContactCasesIdResolutions`/
+   `DeleteContactCasesIdResolutionsResolutionId` from both
+   `ServerInterface`/`StrictServerInterface` and adding
+   `PutContactCasesId`) and `gens/openapi_redoc/openapi.json`/`api.html`.
+3. Only after both regenerations succeed, implement/update
+   `server/contact_cases.go`'s `PutContactCasesId` handler body (§5.5)
+   against the freshly-regenerated interface signature -- do not write
+   this handler against a stale or hand-guessed signature.
+
+Running `bin-api-manager`'s `go generate ./...` before step 1 (or
+skipping step 1 entirely) will regenerate `gens/openapi_server/gen.go`
+from a STALE `bin-openapi-manager` spec that still has the resolutions
+paths, silently undoing the revert. This ordering constraint is not
+new to this design (bin-api-manager/CLAUDE.md already documents it for
+every OpenAPI-touching change) but is called out explicitly here
+because the removal table alone does not make the generated-file
+dependency visible.
+
+## 6. Housekeeping: contact_attribution.go split
+
+VOIP-1252 originally added `CaseListUnresolved`, `ReconcileContact`, and
+`CaseListAll` to `contact_attribution.go` alongside the Resolution
+functions being removed here. Of these three, **only
+`CaseListUnresolved` and `CaseListAll` are unrelated to Resolution**
+(round-1 correction: they are thin dbhandler delegations that read/list
+whatever is already in `Case.contact_id`, with no dependency on
+Resolution derivation) and must be preserved. `ReconcileContact` is
+**not** preserved -- see §4's correction: it hard-depends on
+`deriveCaseContactIDTx`/`applyDerivedContactID` and its whole reason to
+exist (recomputing `Case.contact_id` after Resolution-row drift) is
+gone once Resolution is no longer the source of truth. Move
+`CaseListUnresolved`/`CaseListAll` to a new file
+`bin-contact-manager/pkg/casehandler/contact_unresolved.go` before
+deleting `contact_attribution.go`, so no functionality is lost in the
+revert.
+
+## 7. Doc-comment cleanup
+
+Several existing doc-comments reference the now-removed Resolution
+mechanism as the source of truth for `Case.contact_id` and must be
+corrected as part of this change (not left stale):
+
+- `kase.Case.ContactID` field comment ("single source of truth is
+  Resolution, single derivation function") -> "single source of truth
+  is this column itself; every write goes through
+  `casehandler.UpdateContact`."
+- `dbhandler.CaseUpdateContactID`/`CaseClearContactIDTx` doc-comments
+  ("design §3.4; single source of truth is Resolution") -> reference
+  VOIP-1253 instead.
+- `models/resolution/resolution.go`'s package doc ("OR a whole
+  contact_case") -> note that the CaseID branch is legacy/unused as of
+  VOIP-1253 (see §4's note on leaving the column in place).
+- `bin-contact-manager/pkg/casehandler/case_tag.go`'s
+  `verifyCaseOwnership` doc-comment (round-1 correction: currently
+  name-drops `ResolutionCreateCaseLevel`/`ResolutionDeleteCaseLevel` as
+  example callers of this shared choke point) -> update the caller list
+  to reference `UpdateContact` instead, so it doesn't dangle-reference
+  deleted functions.
+- `bin-contact-manager/pkg/dbhandler/resolution.go`'s `ResolutionDelete`
+  (interaction-level) doc-comment (round-3 correction: currently reads
+  "For a case-scoped Resolution ... use ResolutionDeleteByCase instead")
+  -> remove the case-scoped cross-reference entirely, since
+  `ResolutionDeleteByCase` no longer exists post-revert; this function's
+  own behavior (interaction-scoped delete) is unaffected and the
+  sentence is purely informational, safe to delete outright.
+- `bin-contact-manager/pkg/dbhandler/kase.go`'s comment near
+  `CaseGetByIDForUpdate` referencing "Level/ResolutionDeleteCaseLevel/
+  ReconcileContact" (round-3 correction: another dangling reference to
+  deleted functions found during the final sweep, not previously
+  listed) -> update to reference `UpdateContact` instead.
+
+**Process note (added after round 3):** this is the third occurrence
+of the "dangling reference to a function this same design deletes"
+defect class across three review rounds (round 1:
+`case_resolution_test.go`; round 2: `servicehandler/main.go`'s
+interface; round 3: `resolution.go`'s Delete-variant siblings +
+`resolution_test.go` + two more doc-comments). Before implementation
+begins, run a final systematic grep of every identifier named in §4's
+removal table across the ENTIRE monorepo (not per-file spot checks) and
+confirm zero remaining hits outside what §4/§7 already account for.
+
+## 8. Open questions
+
+1. Should `resolution.Resolution.CaseID` (the struct field) and its DB
+   column be dropped in a follow-up migration, or left as permanently
+   dead/unused? Leaving it costs nothing at read time (always nil going
+   forward) but is a minor footgun for a future engineer who might
+   assume it's still written. Recommend a follow-up ticket, not blocking
+   this one.
+2. Production verification: this design assumes zero case-level
+   Resolution rows exist in production (VOIP-1252 merged 2026-07-12 with
+   no UI client). Since production DB is not directly reachable
+   (documented network-isolation finding from VOIP-1246), this can't be
+   directly confirmed before merge. If wrong, existing case-level
+   Resolution rows would become orphaned (still readable via
+   interaction-level `ResolutionListByInteraction`... no, actually NOT
+   readable at all, since case-level rows have `interaction_id IS NULL`
+   and no query targets them post-revert). Mitigate by having
+   case-control (or a one-off script) check for
+   `SELECT COUNT(*) FROM contact_resolutions WHERE case_id IS NOT NULL`
+   during a maintenance window before merge, or accept the risk given
+   the near-zero likelihood.
+
+## 9. Next steps
+
+Independent subagent review loop (minimum 3 rounds) on this design doc
+before implementation starts, per `voipbin-backend-feature-design`
+skill policy.

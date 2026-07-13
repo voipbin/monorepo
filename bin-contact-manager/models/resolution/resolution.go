@@ -7,15 +7,20 @@ import (
 )
 
 // Resolution records a manual attribution (positive) or suppression (negative)
-// of a contact_interaction, OR (contact-case-management design §3.3) a whole
+// of a contact_interaction, OR (legacy, unused as of VOIP-1253) a whole
 // contact_case, to a contact. It is append-only with soft-delete retraction:
 // correction = tm_delete (retract existing) + new row (re-attribute).
 //
 // Exactly one of InteractionID/CaseID is set on any given row (never both,
 // never neither) -- interaction-level Resolutions (the original, far more
 // common shape) set InteractionID and leave CaseID nil; case-level
-// Resolutions (new) set CaseID and leave InteractionID nil. See VOIP-1204
-// §3.3 and VOIP-1209 for full design context.
+// Resolutions set CaseID and leave InteractionID nil. The CaseID branch is
+// legacy/unused as of VOIP-1253, which reverted case-level Contact
+// attribution to a direct Case.contact_id write (see
+// casehandler.UpdateContact) -- no writer sets CaseID non-nil going
+// forward, but the field is left in place rather than migrated away (see
+// VOIP-1253 design §4/§8). See VOIP-1204 §3.3 and VOIP-1209 for full
+// design context on the interaction-level mechanism, which is unchanged.
 type Resolution struct {
 	ID             uuid.UUID  `json:"id"               db:"id,uuid"`
 	CustomerID     uuid.UUID  `json:"customer_id"      db:"customer_id,uuid"`
