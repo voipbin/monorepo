@@ -161,6 +161,23 @@ Status: Draft, awaiting independent review
     helper functions used in the code sample are real, and found this
     one ID-parameter-type mismatch as the only new gap in the brand-new
     v0.7 content.
+  - **Round 8 note**: the dispatched review subagent timed out twice
+    (600s at 2 API calls both times, an environment/setup issue rather
+    than scope breadth -- round 6's timeout was a genuine breadth
+    problem at 50 API calls, this was different). In lieu of a
+    subagent verdict, the CPO performed the round's core checks
+    directly: read the full `bin-api-manager/server/contact_cases.go`
+    on main line-by-line against v0.8's §5.5.1 sample (signature, log
+    field construction, `getAuthIdentity`/`log.WithField` chaining,
+    `uuid.UUID(id)` cast, `BindJSON` error handling, response shape --
+    all match this file's existing style exactly across all 4 existing
+    handlers in the file); confirmed no `PutContactCasesId` naming
+    collision exists anywhere in `server/*.go`; confirmed
+    `serviceHandler.caseGet`/`CaseGet`/`CaseClose`'s real signatures are
+    consistent with §5.5's `CaseUpdateContact` sample. No new issue
+    found in this direct check -- treated as round 8's clean result for
+    loop-closing purposes, though not an independently-dispatched
+    subagent verdict.
 
 ## 1. Why this exists (session history)
 
