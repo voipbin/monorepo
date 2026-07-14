@@ -5,16 +5,18 @@
 > that touches `bin-common-handler` (its consumers must not break silently).
 
 **Goal:** Convert `QueueNameWebhookEvent`'s RabbitMQ exchange from `fanout` to `topic`, with
-scope-first routing keys (`customer_id.<uuid>.#` / `owner_id.<uuid>.#`), so `bin-api-manager`
+scope-first routing keys (`customer_id.<uuid>.#` / `agent_id.<uuid>.#`), so `bin-api-manager`
 pods only receive events for scopes that have a live local websocket subscriber — eliminating
-unconditional per-pod processing cost and the `agent_id` → `owner_id` public API rename.
+unconditional per-pod processing cost. (An `agent_id` -> `owner_id` public API rename was
+considered and reverted the same day it was proposed; the wire-protocol prefix stays
+`agent_id`.)
 
 **Architecture:** 4 phases, each independently mergeable and independently safe to ship (no
 phase depends on a later phase being deployed to be correct — each is additive or dual-write
 until the final cutover step). Phase order: (1) shared plumbing in `bin-common-handler`
 (additive, zero existing call sites touched) → (2) `bin-webhook-manager` computes routing keys
 and dual-publishes → (3) exchange migration + non-websocket consumers move to the new exchange
-→ (4) `bin-api-manager` dynamic bind/unbind + owner_id rename + old-exchange decommission.
+→ (4) `bin-api-manager` dynamic bind/unbind + old-exchange decommission.
 
 **Tech Stack:** Go, RabbitMQ (`amqp091-go` via `bin-common-handler/pkg/rabbitmqhandler`), gomock
 (`go generate`), existing `sock`/`hook`/`websockhandler` packages in `bin-api-manager`.
@@ -579,7 +581,7 @@ Expected: all pass unchanged (Phase 1 is purely additive).
 
 ## Phase 2: `bin-webhook-manager` — compute routing keys, dual-publish
 
-**Objective:** Move `createTopics()`'s routing-key-computation logic (customer_id, owner_id
+**Objective:** Move `createTopics()`'s routing-key-computation logic (customer_id, agent_id
 extraction, chat-participant fan-out) into `bin-webhook-manager`, executed before publish, and
 dual-publish to both the old fanout exchange (unchanged, for safety) and the new topic exchange.
 
@@ -715,8 +717,9 @@ import (
 )
 
 // webhookOwnerData mirrors bin-api-manager's commonWebhookData struct (ported per VOIP-1258 §6
-// harder part 1). Used to extract customer_id/owner_id from the event data payload BEFORE
-// publish, so the routing key can be computed at publish time instead of at consumption time.
+// harder part 1). Used to extract customer_id/agent_id (owner) from the event data payload
+// BEFORE publish, so the routing key can be computed at publish time instead of at consumption
+// time.
 type webhookOwnerData struct {
 	commonidentity.Identity
 	commonidentity.Owner
@@ -752,7 +755,7 @@ git -c user.name="Sungtae Kim" -c user.email="pchero21@gmail.com" commit -m "Por
 - bin-webhook-manager: Add parseWebhookOwnerData, ported from bin-api-manager's commonWebhookData (VOIP-1258 §6 harder part 1)"
 ```
 
-### Task 2.3: Implement `createRoutingKeys()` in webhook-manager (owner_id, hard-cutover)
+### Task 2.3: Implement `createRoutingKeys()` in webhook-manager (agent_id, unchanged wire prefix)
 
 **Files:**
 - Modify: `bin-webhook-manager/pkg/webhookhandler/routingkey.go`
@@ -777,7 +780,7 @@ func TestCreateRoutingKeys_CustomerAndOwner(t *testing.T) {
 	keys := createRoutingKeys(d, "queue", "queue_updated")
 	require.ElementsMatch(t, []string{
 		"customer_id.a1b2c3d4-0000-0000-0000-000000000001.queue.queue_updated.xyz-0000-0000-0000-000000000003",
-		"owner_id.98765432-0000-0000-0000-000000000002.queue.queue_updated.xyz-0000-0000-0000-000000000003",
+		"agent_id.98765432-0000-0000-0000-000000000002.queue.queue_updated.xyz-0000-0000-0000-000000000003",
 	}, keys)
 }
 ```
@@ -797,7 +800,8 @@ import "fmt"
 
 // createRoutingKeys generates AMQP routing keys for the given event, scope-first
 // (VOIP-1258 §5): "<scope>.<scope_id>.<resource>.<message_type>.<resource_id>".
-// owner_id replaces the old client-facing agent_id prefix (hard cutover, Open Question 10).
+// The agent_id wire prefix is unchanged (an agent_id -> owner_id rename was considered and
+// reverted, see design doc §5).
 func createRoutingKeys(d *webhookOwnerData, resource string, messageType string) []string {
 	res := []string{}
 
@@ -805,7 +809,7 @@ func createRoutingKeys(d *webhookOwnerData, resource string, messageType string)
 		res = append(res, fmt.Sprintf("customer_id.%s.%s.%s.%s", d.CustomerID, resource, messageType, d.ID))
 	}
 	if d.OwnerID != uuid.Nil {
-		res = append(res, fmt.Sprintf("owner_id.%s.%s.%s.%s", d.OwnerID, resource, messageType, d.ID))
+		res = append(res, fmt.Sprintf("agent_id.%s.%s.%s.%s", d.OwnerID, resource, messageType, d.ID))
 	}
 
 	return res
@@ -825,7 +829,7 @@ Expected: PASS
 git add bin-webhook-manager/pkg/webhookhandler/routingkey.go bin-webhook-manager/pkg/webhookhandler/routingkey_test.go
 git -c user.name="Sungtae Kim" -c user.email="pchero21@gmail.com" commit -m "Implement createRoutingKeys for non-chat resource types
 
-- bin-webhook-manager: Add scope-first routing key generation (customer_id/owner_id), owner_id per Open Question 10 hard-cutover decision"
+- bin-webhook-manager: Add scope-first routing key generation (customer_id/agent_id), agent_id wire prefix unchanged (rename to owner_id was considered and reverted)"
 ```
 
 ### Task 2.4: Chat-participant fan-out routing keys (RPC relocation)
@@ -862,8 +866,8 @@ func TestCreateRoutingKeysForChat(t *testing.T) {
 	keys := h.createRoutingKeysForChat(context.Background(), d, "chatmessage_created")
 
 	require.Contains(t, keys, "customer_id.a1b2c3d4-0000-0000-0000-000000000001.talk.chatmessage_created.chat0000-0000-0000-0000-000000000001")
-	require.Contains(t, keys, "owner_id.p1000000-0000-0000-0000-000000000001.talk.chatmessage_created.chat0000-0000-0000-0000-000000000001")
-	require.Contains(t, keys, "owner_id.p2000000-0000-0000-0000-000000000002.talk.chatmessage_created.chat0000-0000-0000-0000-000000000001")
+	require.Contains(t, keys, "agent_id.p1000000-0000-0000-0000-000000000001.talk.chatmessage_created.chat0000-0000-0000-0000-000000000001")
+	require.Contains(t, keys, "agent_id.p2000000-0000-0000-0000-000000000002.talk.chatmessage_created.chat0000-0000-0000-0000-000000000001")
 }
 ```
 
@@ -887,7 +891,7 @@ grep -n "TalkV1ParticipantList" bin-common-handler/pkg/requesthandler/*.go
 import "context"
 
 // createRoutingKeysForChat generates routing keys for chat/chatmessage/chatparticipant events,
-// including one owner_id key per chat participant (fan-out). This RPC call was moved here from
+// including one agent_id key per chat participant (fan-out). This RPC call was moved here from
 // bin-api-manager's createTopics() per VOIP-1258 §6 harder part 2 -- it now runs ONCE at publish
 // time regardless of subscriber count, instead of once per pod after the fact.
 func (h *webhookHandler) createRoutingKeysForChat(ctx context.Context, d *webhookOwnerData, messageType string) []string {
@@ -907,12 +911,12 @@ func (h *webhookHandler) createRoutingKeysForChat(ctx context.Context, d *webhoo
 		res = append(res, fmt.Sprintf("customer_id.%s.talk.%s.%s", d.CustomerID, messageType, chatID))
 	}
 	if d.OwnerID != uuid.Nil {
-		res = append(res, fmt.Sprintf("owner_id.%s.talk.%s.%s", d.OwnerID, messageType, chatID))
+		res = append(res, fmt.Sprintf("agent_id.%s.talk.%s.%s", d.OwnerID, messageType, chatID))
 	}
 
 	participants, err := h.reqHandler.TalkV1ParticipantList(ctx, chatID)
 	if err != nil {
-		log.Errorf("Could not get chat participants, publishing customer/owner-scoped keys only. err: %v", err)
+		log.Errorf("Could not get chat participants, publishing customer/agent-scoped keys only. err: %v", err)
 		return res
 	}
 
@@ -922,7 +926,7 @@ func (h *webhookHandler) createRoutingKeysForChat(ctx context.Context, d *webhoo
 		if p.OwnerID == d.OwnerID {
 			continue // already added above
 		}
-		res = append(res, fmt.Sprintf("owner_id.%s.talk.%s.%s", p.OwnerID, messageType, chatID))
+		res = append(res, fmt.Sprintf("agent_id.%s.talk.%s.%s", p.OwnerID, messageType, chatID))
 	}
 
 	return res
@@ -1349,10 +1353,10 @@ git -c user.name="Sungtae Kim" -c user.email="pchero21@gmail.com" commit -m "Cut
 
 ---
 
-## Phase 4: `bin-api-manager` — dynamic bind/unbind, owner_id rename, decommission old exchange
+## Phase 4: `bin-api-manager` — dynamic bind/unbind, decommission old exchange
 
-**Objective:** Implement scope-aware dynamic binding on the per-pod queue, rename
-`agent_id`→`owner_id` in the client-facing wire protocol (hard cutover), remove the dead
+**Objective:** Implement scope-aware dynamic binding on the per-pod queue (the `agent_id`
+wire-protocol prefix stays unchanged, per the reverted rename decision), remove the dead
 `QueueNameAgentEvent`/`QueueNameTalkEvent` subscriptions, then decommission the old fanout
 exchange once everything is confirmed on the new one.
 
@@ -1514,7 +1518,7 @@ func TestTopicToBindPattern(t *testing.T) {
 		expected string
 	}{
 		{"customer_id:abc123:call:*", "customer_id.abc123.#"},
-		{"owner_id:def456:queue:*", "owner_id.def456.#"},
+		{"agent_id:def456:queue:*", "agent_id.def456.#"},
 		{"customer_id:abc123", "customer_id.abc123.#"},
 	}
 	for _, c := range cases {
@@ -1748,89 +1752,15 @@ git -c user.name="Sungtae Kim" -c user.email="pchero21@gmail.com" commit -m "Wir
 - bin-api-manager: Call scopeRefCount.Acquire/Release on explicit subscribe/unsubscribe, ReleaseAll on abrupt disconnect via subscriptionRun's existing teardown path (VOIP-1258 §9)"
 ```
 
-### Task 4.4: Rename `agent_id` -> `owner_id` in `validateTopics`/`validateTopic` (hard cutover)
+### Task 4.4: REMOVED — `agent_id` -> `owner_id` rename reverted
 
-**Files:**
-- Modify: `bin-api-manager/pkg/websockhandler/etc.go`
-- Modify: `bin-api-manager/pkg/websockhandler/etc_test.go`
-
-**Step 1: Write failing test**
-
-```go
-// bin-api-manager/pkg/websockhandler/etc_test.go — update existing agent_id test cases:
-func TestValidateTopics_OwnerScope(t *testing.T) {
-	a := &auth.AuthIdentity{ /* agent with AgentID() == "98765432-..." */ }
-	topics := []string{"owner_id:98765432-0000-0000-0000-000000000002:queue:*"}
-	require.True(t, h.validateTopics(context.Background(), a, topics))
-}
-
-func TestValidateTopics_RejectsOldAgentIdPrefix(t *testing.T) {
-	a := &auth.AuthIdentity{}
-	topics := []string{"agent_id:98765432-0000-0000-0000-000000000002:queue:*"}
-	require.False(t, h.validateTopics(context.Background(), a, topics)) // hard cutover: old prefix now invalid
-}
-```
-
-**Step 2: Run to verify failure**
-
-```bash
-cd bin-api-manager/pkg/websockhandler && go test ./... -run "TestValidateTopics_OwnerScope|TestValidateTopics_RejectsOldAgentIdPrefix" -v
-```
-Expected: `TestValidateTopics_OwnerScope` FAILS (still says `agent_id`),
-`TestValidateTopics_RejectsOldAgentIdPrefix` PASSES already (old behavior happens to reject
-unknown prefixes... verify this against current `default: return false` branch — should already
-pass since `owner_id` isn't yet a recognized case, meaning the NEW test needs `owner_id` to be
-accepted and `agent_id` to be REJECTED after the rename, i.e. write both tests to assert
-POST-rename behavior, run BEFORE the code change to confirm `TestValidateTopics_OwnerScope`
-fails and `TestValidateTopics_RejectsOldAgentIdPrefix`... actually also fails pre-change, since
-`agent_id` is currently ACCEPTED, not rejected. Both tests should fail before the code change).
-
-**Step 3: Implement (rename, both functions)**
-
-```go
-// bin-api-manager/pkg/websockhandler/etc.go — in validateTopics, change:
-//   case "agent_id":
-//       if tmpID != a.AgentID() {
-// TO:
-		case "owner_id":
-			if tmpID != a.AgentID() {
-				return false
-			}
-```
-
-Apply the identical change in `validateTopic` (the second near-duplicate function, line 139).
-Update the two `default:` comment lines from `// the first part should be "customer_id" or
-"agent_id"` to `// the first part should be "customer_id" or "owner_id"`.
-
-**Step 4: Run tests, verify pass**
-
-```bash
-cd bin-api-manager/pkg/websockhandler && go test ./... -v
-```
-Expected: all pass, including the two new tests.
-
-**Step 5: Update RST docs (per design doc §5, CLAUDE.md RST-sync rule)**
-
-```bash
-grep -rn "agent_id:" bin-api-manager/docsdev/source/websocket_overview.rst bin-api-manager/docsdev/source/websocket_struct.rst bin-api-manager/docsdev/source/websocket_tutorial.rst
-```
-Replace each `agent_id:` example with `owner_id:`. Rebuild:
-```bash
-cd bin-api-manager/docsdev && sphinx-build -M html source build
-```
-Force-add the build output per CLAUDE.md's RST-sync convention (build/ is gitignored elsewhere
-but the sync rule requires committing rendered output — confirm current convention with
-`git status` after build, follow existing pattern in the repo).
-
-**Step 6: Commit**
-
-```bash
-git add bin-api-manager/pkg/websockhandler/etc.go bin-api-manager/pkg/websockhandler/etc_test.go bin-api-manager/docsdev/
-git -c user.name="Sungtae Kim" -c user.email="pchero21@gmail.com" commit -m "Rename agent_id to owner_id in websocket wire protocol (breaking change)
-
-- bin-api-manager: Rename agent_id scope prefix to owner_id in validateTopics/validateTopic, hard cutover per Open Question 10 (no dual-accept period)
-- bin-api-manager: Update websocket RST docs (overview/struct/tutorial) to reflect owner_id"
-```
+**This task is REMOVED.** It originally renamed the `agent_id` wire-protocol prefix to
+`owner_id` in `validateTopics`/`validateTopic` (`bin-api-manager/pkg/websockhandler/etc.go`) and
+the websocket RST docs, as a hard-cutover breaking change. **pchero reverted the rename decision
+on 2026-07-14 (same day it was proposed) — the `agent_id` prefix stays exactly as it is today.
+No code change is needed in `etc.go`/`etc_test.go`/the RST docs for this reason.** See design
+doc §5 for the reverted rationale, kept for historical record only. Proceed directly to Task
+4.5; no dependency on this removed task.
 
 ### Task 4.5: Remove dead `QueueNameAgentEvent`/`QueueNameTalkEvent` subscriptions
 
@@ -1855,7 +1785,7 @@ exchange WITH an explicit `#` wildcard binding — do NOT use `QueueSubscribe`'s
 this target. **Verified via round-2 implementation-plan review finding: on a `topic`-kind
 exchange (unlike `fanout`), an empty routing key binding only matches messages published with an
 empty routing key. Since every VOIP-1258 publish path (Task 2.3/2.4/2.5) publishes with
-non-empty scope-first keys (`customer_id.xxx...`/`owner_id.xxx...`), using
+non-empty scope-first keys (`customer_id.xxx...`/`agent_id.xxx...`), using
 `QueueSubscribe(queue, target)`'s existing empty-key bind
 (`rabbitmqhandler/queue.go:158-159`) against `QueueNameWebhookEventTopic` would deliver ZERO
 events to bin-api-manager's baseline subscription — a silent total event-loss regression the
