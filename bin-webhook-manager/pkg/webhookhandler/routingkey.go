@@ -2,6 +2,7 @@ package webhookhandler
 
 import (
 	"encoding/json"
+	"fmt"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
@@ -28,4 +29,21 @@ func parseWebhookOwnerData(data json.RawMessage) (*webhookOwnerData, error) {
 		return nil, err
 	}
 	return d, nil
+}
+
+// createRoutingKeys generates AMQP routing keys for the given event, scope-first
+// (VOIP-1258 §5): "<scope>.<scope_id>.<resource>.<message_type>.<resource_id>".
+// The agent_id wire prefix is unchanged (an agent_id -> owner_id rename was considered and
+// reverted, see design doc §5).
+func createRoutingKeys(d *webhookOwnerData, resource string, messageType string) []string {
+	res := []string{}
+
+	if d.CustomerID != uuid.Nil {
+		res = append(res, fmt.Sprintf("customer_id.%s.%s.%s.%s", d.CustomerID, resource, messageType, d.ID))
+	}
+	if d.OwnerID != uuid.Nil {
+		res = append(res, fmt.Sprintf("agent_id.%s.%s.%s.%s", d.OwnerID, resource, messageType, d.ID))
+	}
+
+	return res
 }

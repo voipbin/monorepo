@@ -2,7 +2,11 @@ package webhookhandler
 
 import (
 	"encoding/json"
+	"reflect"
+	"sort"
 	"testing"
+
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
 )
@@ -79,5 +83,58 @@ func TestParseWebhookOwnerData_MalformedJSON(t *testing.T) {
 	}
 	if d != nil {
 		t.Errorf("Expected nil result on error, got %+v", d)
+	}
+}
+
+func TestCreateRoutingKeys_CustomerOnly(t *testing.T) {
+	d := &webhookOwnerData{
+		Identity: commonidentity.Identity{
+			CustomerID: uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-000000000001"),
+			ID:         uuid.FromStringOrNil("12345678-0000-0000-0000-000000000003"),
+		},
+	}
+
+	keys := createRoutingKeys(d, "call", "call_updated")
+
+	expected := []string{"customer_id.a1b2c3d4-0000-0000-0000-000000000001.call.call_updated.12345678-0000-0000-0000-000000000003"}
+	if !reflect.DeepEqual(keys, expected) {
+		t.Errorf("Expected %v, got %v", expected, keys)
+	}
+}
+
+func TestCreateRoutingKeys_CustomerAndOwner(t *testing.T) {
+	d := &webhookOwnerData{
+		Identity: commonidentity.Identity{
+			CustomerID: uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-000000000001"),
+			ID:         uuid.FromStringOrNil("12345678-0000-0000-0000-000000000003"),
+		},
+		Owner: commonidentity.Owner{
+			OwnerID: uuid.FromStringOrNil("98765432-0000-0000-0000-000000000002"),
+		},
+	}
+
+	keys := createRoutingKeys(d, "queue", "queue_updated")
+
+	expected := []string{
+		"customer_id.a1b2c3d4-0000-0000-0000-000000000001.queue.queue_updated.12345678-0000-0000-0000-000000000003",
+		"agent_id.98765432-0000-0000-0000-000000000002.queue.queue_updated.12345678-0000-0000-0000-000000000003",
+	}
+	sort.Strings(keys)
+	sort.Strings(expected)
+	if !reflect.DeepEqual(keys, expected) {
+		t.Errorf("Expected %v, got %v", expected, keys)
+	}
+}
+
+// TestCreateRoutingKeys_NoCustomerNoOwner verifies that when neither CustomerID nor OwnerID
+// is present (uuid.Nil), createRoutingKeys returns an empty slice rather than a key with a
+// nil UUID string.
+func TestCreateRoutingKeys_NoCustomerNoOwner(t *testing.T) {
+	d := &webhookOwnerData{}
+
+	keys := createRoutingKeys(d, "call", "call_updated")
+
+	if len(keys) != 0 {
+		t.Errorf("Expected empty keys, got %v", keys)
 	}
 }
