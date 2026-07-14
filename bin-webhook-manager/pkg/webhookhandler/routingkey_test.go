@@ -1,14 +1,18 @@
 package webhookhandler
 
 import (
+	"context"
 	"encoding/json"
 	"reflect"
 	"sort"
 	"testing"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+	tkparticipant "monorepo/bin-talk-manager/models/participant"
 
 	"github.com/gofrs/uuid"
+	"go.uber.org/mock/gomock"
 )
 
 func TestParseWebhookOwnerData(t *testing.T) {
@@ -136,5 +140,57 @@ func TestCreateRoutingKeys_NoCustomerNoOwner(t *testing.T) {
 
 	if len(keys) != 0 {
 		t.Errorf("Expected empty keys, got %v", keys)
+	}
+}
+
+// containsString is a small helper to avoid pulling testify's require into this file, matching
+// the existing plain if/t.Errorf convention used throughout this package.
+func containsString(haystack []string, needle string) bool {
+	for _, v := range haystack {
+		if v == needle {
+			return true
+		}
+	}
+	return false
+}
+
+func TestCreateRoutingKeysForChat(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &webhookHandler{reqHandler: mockReq}
+
+	// NOTE: the plan's original literal "chat0000-0000-0000-0000-000000000001" contains
+	// non-hex characters ('h', 't') and silently parses to uuid.Nil via FromStringOrNil,
+	// which would make this test vacuously check the "both Nil" empty-slice path instead of
+	// the fan-out path it's meant to exercise. Using a valid hex UUID here instead.
+	chatID := uuid.FromStringOrNil("ca740000-0000-0000-0000-000000000001")
+	d := &webhookOwnerData{
+		Identity: commonidentity.Identity{CustomerID: uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-000000000001")},
+		ChatID:   chatID,
+	}
+
+	// NOTE: the plan's original participant OwnerID literals ("p1000000-...", "p2000000-...")
+	// contain the non-hex character 'p' and silently parse to uuid.Nil via FromStringOrNil.
+	// Since d.OwnerID is also uuid.Nil here (not set on webhookOwnerData), that would make the
+	// participant-skip check "p.OwnerID == d.OwnerID" incorrectly true for every participant,
+	// silently dropping all participant keys. Using valid hex UUIDs instead.
+	mockReq.EXPECT().TalkV1ParticipantList(gomock.Any(), chatID).Return([]*tkparticipant.Participant{
+		{Owner: commonidentity.Owner{OwnerID: uuid.FromStringOrNil("a1000000-0000-0000-0000-000000000001")}},
+		{Owner: commonidentity.Owner{OwnerID: uuid.FromStringOrNil("a2000000-0000-0000-0000-000000000002")}},
+	}, nil)
+
+	keys := h.createRoutingKeysForChat(context.Background(), d, "chatmessage_created")
+
+	expectedKeys := []string{
+		"customer_id.a1b2c3d4-0000-0000-0000-000000000001.talk.chatmessage_created." + chatID.String(),
+		"agent_id.a1000000-0000-0000-0000-000000000001.talk.chatmessage_created." + chatID.String(),
+		"agent_id.a2000000-0000-0000-0000-000000000002.talk.chatmessage_created." + chatID.String(),
+	}
+	for _, expected := range expectedKeys {
+		if !containsString(keys, expected) {
+			t.Errorf("Expected keys to contain %q, got %v", expected, keys)
+		}
 	}
 }
