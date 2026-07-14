@@ -976,3 +976,193 @@ func hasSubstring(s, substr string) bool {
 	}
 	return false
 }
+
+// VOIP-1257: Create/Update must reject Type+ToolNames combinations that
+// violate ai.ValidateToolNames, before any DB write.
+
+func TestCreate_RejectsInsightAIWithNormalTools(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(ctrl)
+	mockReq := requesthandler.NewMockRequestHandler(ctrl)
+	mockNotify := notifyhandler.NewMockNotifyHandler(ctrl)
+	// No DB/RPC calls expected -- validation must reject before any write.
+
+	h := &aiHandler{
+		db:            mockDB,
+		reqHandler:    mockReq,
+		notifyHandler: mockNotify,
+		utilHandler:   utilhandler.NewUtilHandler(),
+	}
+
+	_, err := h.Create(
+		context.Background(),
+		uuid.Must(uuid.NewV4()),
+		"Insight AI",
+		"repro for VOIP-1257",
+		ai.TypeInsight,
+		ai.EngineModelOpenaiGPT5,
+		nil,
+		"test-key",
+		uuid.Nil,
+		"",
+		ai.TTSTypeNone,
+		"",
+		ai.STTTypeNone,
+		"",
+		[]tool.ToolName{tool.ToolNameSendEmail, tool.ToolNameConnectCall},
+		nil,
+		false,
+		false,
+	)
+	if err == nil {
+		t.Fatal("Create() with Type=insight and Normal-only tool_names should have been rejected, got nil error")
+	}
+	if !contains(err.Error(), "send_email") && !contains(err.Error(), "connect_call") {
+		t.Errorf("Create() error should name the offending tool(s), got: %v", err)
+	}
+}
+
+func TestCreate_RejectsNormalAIWithInsightTools(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(ctrl)
+	mockReq := requesthandler.NewMockRequestHandler(ctrl)
+	mockNotify := notifyhandler.NewMockNotifyHandler(ctrl)
+
+	h := &aiHandler{
+		db:            mockDB,
+		reqHandler:    mockReq,
+		notifyHandler: mockNotify,
+		utilHandler:   utilhandler.NewUtilHandler(),
+	}
+
+	_, err := h.Create(
+		context.Background(),
+		uuid.Must(uuid.NewV4()),
+		"Normal AI",
+		"repro for VOIP-1257",
+		ai.TypeNormal,
+		ai.EngineModelOpenaiGPT5,
+		nil,
+		"test-key",
+		uuid.Nil,
+		"",
+		ai.TTSTypeNone,
+		"",
+		ai.STTTypeNone,
+		"",
+		[]tool.ToolName{tool.ToolNameGetContactInteractions},
+		nil,
+		false,
+		false,
+	)
+	if err == nil {
+		t.Fatal("Create() with Type=normal and Insight-only tool_names should have been rejected, got nil error")
+	}
+}
+
+func TestCreate_AllowsValidInsightAI(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(ctrl)
+	mockReq := requesthandler.NewMockRequestHandler(ctrl)
+	mockNotify := notifyhandler.NewMockNotifyHandler(ctrl)
+	mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+
+	createdAI := &ai.AI{
+		Name:      "Insight AI",
+		Type:      ai.TypeInsight,
+		ToolNames: []tool.ToolName{tool.ToolNameGetContactInteractions},
+	}
+	createdAI.ID = uuid.Must(uuid.NewV4())
+
+	mockReq.EXPECT().DirectV1DirectCreate(gomock.Any(), gomock.Any(), dmdirect.ResourceTypeAI, gomock.Any()).
+		Return(&dmdirect.Direct{Hash: "aabbccdd0001"}, nil).Times(1)
+	mockDB.EXPECT().AICreate(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+	mockDB.EXPECT().AIGet(gomock.Any(), gomock.Any()).Return(createdAI, nil).Times(1)
+
+	h := &aiHandler{
+		db:            mockDB,
+		reqHandler:    mockReq,
+		notifyHandler: mockNotify,
+		utilHandler:   utilhandler.NewUtilHandler(),
+	}
+
+	res, err := h.Create(
+		context.Background(),
+		uuid.Must(uuid.NewV4()),
+		"Insight AI",
+		"",
+		ai.TypeInsight,
+		ai.EngineModelOpenaiGPT5,
+		nil,
+		"test-key",
+		uuid.Nil,
+		"",
+		ai.TTSTypeNone,
+		"",
+		ai.STTTypeNone,
+		"",
+		[]tool.ToolName{tool.ToolNameGetContactInteractions},
+		nil,
+		false,
+		false,
+	)
+	if err != nil {
+		t.Fatalf("Create() with a valid Insight tool should succeed, got error: %v", err)
+	}
+	if res == nil {
+		t.Fatal("Create() returned nil result with nil error")
+	}
+}
+
+func TestUpdate_RejectsInsightAIWithNormalTools(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(ctrl)
+	mockNotify := notifyhandler.NewMockNotifyHandler(ctrl)
+
+	aiID := uuid.Must(uuid.NewV4())
+	currentAI := &ai.AI{Type: ai.TypeInsight}
+	currentAI.ID = aiID
+	// Update pre-fetches the current AI to resolve Type when omitted; this
+	// call happens before ValidateToolNames, so it is still expected even
+	// though the request is ultimately rejected.
+	mockDB.EXPECT().AIGet(gomock.Any(), gomock.Any()).Return(currentAI, nil).Times(1)
+
+	h := &aiHandler{
+		db:            mockDB,
+		notifyHandler: mockNotify,
+		utilHandler:   utilhandler.NewUtilHandler(),
+	}
+
+	_, err := h.Update(
+		context.Background(),
+		aiID,
+		"Insight AI",
+		"",
+		ai.TypeNone, // omitted -- resolves to the existing Insight type
+		ai.EngineModelOpenaiGPT5,
+		nil,
+		"test-key",
+		uuid.Nil,
+		"",
+		ai.TTSTypeNone,
+		"",
+		ai.STTTypeNone,
+		"",
+		[]tool.ToolName{tool.ToolNameSendEmail},
+		nil,
+		false,
+		false,
+	)
+	if err == nil {
+		t.Fatal("Update() on an Insight AI with Normal-only tool_names should have been rejected, got nil error")
+	}
+}
+

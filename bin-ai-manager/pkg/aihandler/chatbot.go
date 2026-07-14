@@ -12,7 +12,9 @@ import (
 	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/aiprompthistory"
 	"monorepo/bin-ai-manager/models/tool"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	"monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 )
 
 func (h *aiHandler) Create(
@@ -45,6 +47,10 @@ func (h *aiHandler) Create(
 	}
 	if !aiType.IsValid() {
 		return nil, fmt.Errorf("invalid type: %s. valid values: %s", aiType, strings.Join(aiType.ValidValues(), ", "))
+	}
+
+	if err := ai.ValidateToolNames(aiType, toolNames); err != nil {
+		return nil, cerrors.InvalidArgument(commonoutline.ServiceNameAIManager, "INVALID_TOOL_NAMES", err.Error()).Wrap(err)
 	}
 
 	if !ttsType.IsValid() {
@@ -144,6 +150,10 @@ func (h *aiHandler) Update(
 	}
 	if !aiType.IsValid() {
 		return nil, fmt.Errorf("invalid type: %s. valid values: %s", aiType, strings.Join(aiType.ValidValues(), ", "))
+	}
+
+	if err := ai.ValidateToolNames(aiType, toolNames); err != nil {
+		return nil, cerrors.InvalidArgument(commonoutline.ServiceNameAIManager, "INVALID_TOOL_NAMES", err.Error()).Wrap(err)
 	}
 
 	promptChanged := initPrompt != "" && initPrompt != preUpdateAI.InitPrompt
