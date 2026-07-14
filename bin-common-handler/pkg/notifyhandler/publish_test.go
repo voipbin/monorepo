@@ -265,3 +265,24 @@ func Test_PublishEventRaw(t *testing.T) {
 	}
 }
 
+func TestPublishEventWithRoutingKey(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(mc)
+	h := &notifyHandler{
+		sockHandler: mockSock,
+		queueNotify: "test.queue",
+		publisher:   "test-service",
+	}
+
+	data := map[string]string{"foo": "bar"}
+	routingKey := "customer_id.abc123.call.call_updated.xyz789"
+
+	mockSock.EXPECT().EventPublish("test.queue", routingKey, gomock.Any()).Return(nil)
+
+	h.PublishEventWithRoutingKey(context.Background(), "call_updated", routingKey, data)
+
+	// PublishEventWithRoutingKey is fire-and-forget like PublishEvent; assert via mock call above.
+}
+

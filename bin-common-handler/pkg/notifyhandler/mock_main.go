@@ -104,6 +104,18 @@ func (mr *MockNotifyHandlerMockRecorder) PublishEventRaw(ctx, eventType, dataTyp
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishEventRaw", reflect.TypeOf((*MockNotifyHandler)(nil).PublishEventRaw), ctx, eventType, dataType, data)
 }
 
+// PublishEventWithRoutingKey mocks base method.
+func (m *MockNotifyHandler) PublishEventWithRoutingKey(ctx context.Context, eventType, routingKey string, data any) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "PublishEventWithRoutingKey", ctx, eventType, routingKey, data)
+}
+
+// PublishEventWithRoutingKey indicates an expected call of PublishEventWithRoutingKey.
+func (mr *MockNotifyHandlerMockRecorder) PublishEventWithRoutingKey(ctx, eventType, routingKey, data any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishEventWithRoutingKey", reflect.TypeOf((*MockNotifyHandler)(nil).PublishEventWithRoutingKey), ctx, eventType, routingKey, data)
+}
+
 // PublishWebhook mocks base method.
 func (m *MockNotifyHandler) PublishWebhook(ctx context.Context, customerID uuid.UUID, eventType string, data WebhookMessage) {
 	m.ctrl.T.Helper()

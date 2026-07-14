@@ -122,6 +122,54 @@ func (h *notifyHandler) publishEvent(eventType string, dataType string, data jso
 	return nil
 }
 
+// PublishEventWithRoutingKey publishes event to the event queue with an explicit AMQP routing
+// key, for topic-kind exchanges. Unlike PublishEvent (which always publishes with an empty
+// routing key, correct for fanout exchanges), this lets the caller target scope-based topic
+// bindings. See VOIP-1258 design doc §6.
+func (h *notifyHandler) PublishEventWithRoutingKey(ctx context.Context, eventType string, routingKey string, data interface{}) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "PublishEventWithRoutingKey",
+		"evnet_type":  eventType,
+		"routing_key": routingKey,
+	})
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		log.Errorf("Could not marshal the message. err: %v", err)
+		return
+	}
+
+	if err := h.publishEventWithKey(routingKey, string(eventType), string(wmwebhook.DataTypeJSON), m, requestTimeoutDefault); err != nil {
+		log.Errorf("Could not publish the event with routing key. err: %v", err)
+		return
+	}
+}
+
+// publishEventWithKey publishes an event to the event queue with the given routing key.
+func (h *notifyHandler) publishEventWithKey(routingKey string, eventType string, dataType string, data json.RawMessage, timeout int) error {
+	evt := &sock.Event{
+		Type:      eventType,
+		Publisher: string(h.publisher),
+		DataType:  dataType,
+		Data:      data,
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(timeout))
+	defer cancel()
+	_ = ctx // reserved for future use, matches existing publishEvent's unused-ctx pattern
+
+	start := time.Now()
+	err := h.sockHandler.EventPublish(string(h.queueNotify), routingKey, evt)
+	elapsed := time.Since(start)
+	promNotifyProcessTime.WithLabelValues(evt.Type).Observe(float64(elapsed.Milliseconds()))
+	if err != nil {
+		return fmt.Errorf("could not publish the event. err: %v", err)
+	}
+	promNotifyTotal.WithLabelValues(evt.Type).Inc()
+
+	return nil
+}
+
 // publishDirectEvent publish the event to the target without delay
 func (h *notifyHandler) publishDirectEvent(ctx context.Context, evt *sock.Event) error {
 
