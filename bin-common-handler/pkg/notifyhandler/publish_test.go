@@ -286,3 +286,26 @@ func TestPublishEventWithRoutingKey(t *testing.T) {
 	// PublishEventWithRoutingKey is fire-and-forget like PublishEvent; assert via mock call above.
 }
 
+// TestPublishEventWithRoutingKey_MarshalError verifies the marshal-error path returns early
+// without ever calling EventPublish (no mock expectation set -- gomock's strict-by-default
+// behavior fails the test if EventPublish is called unexpectedly).
+func TestPublishEventWithRoutingKey_MarshalError(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(mc)
+	h := &notifyHandler{
+		sockHandler: mockSock,
+		queueNotify: "test.queue",
+		publisher:   "test-service",
+	}
+
+	// json.Marshal cannot serialize a bare func value -- forces the marshal-error branch.
+	unmarshalable := func() {}
+
+	h.PublishEventWithRoutingKey(context.Background(), "call_updated", "customer_id.abc123.#", unmarshalable)
+
+	// No mockSock.EXPECT() set for EventPublish -- if PublishEventWithRoutingKey called it
+	// despite the marshal failure, gomock would fail this test with an unexpected-call error.
+}
+

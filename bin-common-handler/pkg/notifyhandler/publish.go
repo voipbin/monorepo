@@ -139,35 +139,38 @@ func (h *notifyHandler) PublishEventWithRoutingKey(ctx context.Context, eventTyp
 		return
 	}
 
-	if err := h.publishEventWithKey(routingKey, string(eventType), string(wmwebhook.DataTypeJSON), m, requestTimeoutDefault); err != nil {
-		log.Errorf("Could not publish the event with routing key. err: %v", err)
-		return
-	}
-}
-
-// publishEventWithKey publishes an event to the event queue with the given routing key.
-func (h *notifyHandler) publishEventWithKey(routingKey string, eventType string, dataType string, data json.RawMessage, timeout int) error {
 	evt := &sock.Event{
 		Type:      eventType,
 		Publisher: string(h.publisher),
-		DataType:  dataType,
-		Data:      data,
+		DataType:  string(wmwebhook.DataTypeJSON),
+		Data:      m,
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(timeout))
+	// Note: Using context.Background() intentionally, matching publishEvent's existing
+	// fire-and-forget rationale -- this event should complete independently of the caller's
+	// context lifecycle.
+	pubCtx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(requestTimeoutDefault))
 	defer cancel()
-	_ = ctx // reserved for future use, matches existing publishEvent's unused-ctx pattern
 
-	start := time.Now()
-	err := h.sockHandler.EventPublish(string(h.queueNotify), routingKey, evt)
-	elapsed := time.Since(start)
-	promNotifyProcessTime.WithLabelValues(evt.Type).Observe(float64(elapsed.Milliseconds()))
-	if err != nil {
-		return fmt.Errorf("could not publish the event. err: %v", err)
+	if err := h.publishDirectEventWithKey(pubCtx, routingKey, evt); err != nil {
+		log.Errorf("Could not publish the event with routing key. err: %v", err)
+		return
 	}
 	promNotifyTotal.WithLabelValues(evt.Type).Inc()
+}
 
-	return nil
+// publishDirectEventWithKey publishes the event to the target without delay, using the given
+// AMQP routing key instead of publishDirectEvent's hardcoded empty key. Shares the same
+// publish+metrics logic as publishDirectEvent (VOIP-1258 code-quality review: avoid duplicating
+// this logic in a second near-identical function).
+func (h *notifyHandler) publishDirectEventWithKey(ctx context.Context, key string, evt *sock.Event) error {
+
+	start := time.Now()
+	err := h.sockHandler.EventPublish(string(h.queueNotify), key, evt)
+	elapsed := time.Since(start)
+	promNotifyProcessTime.WithLabelValues(string(evt.Type)).Observe(float64(elapsed.Milliseconds()))
+
+	return err
 }
 
 // publishDirectEvent publish the event to the target without delay
