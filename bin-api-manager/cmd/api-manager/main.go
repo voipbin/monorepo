@@ -160,11 +160,11 @@ func runSubscribe(
 		"func": "runSubscribe",
 	})
 
-	subscribeTargets := []string{
-		string(commonoutline.QueueNameWebhookEvent),
-		string(commonoutline.QueueNameAgentEvent),
-		string(commonoutline.QueueNameTalkEvent),
+	if err := sockHandler.QueueBind(queueNamePod, "#", string(commonoutline.QueueNameWebhookEventTopic), false, nil); err != nil {
+		logrus.Errorf("Could not bind to the topic exchange. err: %v", err)
 	}
+
+	subscribeTargets := []string{}
 	subHandler := subscribehandler.NewSubscribeHandler(
 		sockHandler,
 		reqHandler,
