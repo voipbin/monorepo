@@ -95,19 +95,45 @@ RabbitMQ.
 
 Verified asymmetry that affects this move:
 - `notifyHandler.PublishWebhookEvent(ctx, customerID uuid.UUID, eventType string, data WebhookMessage)`
-  already receives `customerID` as an explicit parameter (used today for the webhook HTTP
-  delivery path) — computing `customer_id.<customerID>.#`-shaped keys here is straightforward.
-- `notifyHandler.PublishEvent(ctx, eventType string, data interface{})` (called directly, e.g.
-  `bin-agent-manager/pkg/agenthandler/agent.go:591`, `db.go:234/263/311/345`) does NOT receive
-  customerID as a parameter — it is embedded inside `data`. Extracting it generically (without
-  reflection or a fragile type-switch per caller) needs either (a) a shared `Owner`/`Identity`
-  interface with a `GetCustomerID()` method that callers' domain structs already satisfy (most
-  domain models embed `commonidentity.Identity`/`Owner` already, per `bin-common-handler/models/identity`),
-  or (b) requiring all bare `PublishEvent` call sites to migrate to `PublishWebhookEvent`-style
-  explicit-customerID signatures. Needs a design decision (see Open Questions).
+  (`bin-common-handler/pkg/notifyhandler/publish.go:22`) already receives `customerID` as an
+  explicit parameter (used today for the webhook HTTP delivery path) — computing
+  `customer_id.<customerID>.#`-shaped keys here is straightforward.
+- `notifyHandler.PublishEvent(ctx, eventType string, data interface{})`
+  (`bin-common-handler/pkg/notifyhandler/main.go:74`) does NOT receive customerID as a parameter
+  — it is embedded inside `data`. `PublishWebhookEvent` itself calls the bare `PublishEvent`
+  internally (`publish.go:23`), so this signature sits underneath both public entry points.
+
+**Blast radius, verified by full-monorepo grep (not a handful of call sites):** bare
+`notifyHandler.PublishEvent(` (excluding `PublishWebhookEvent`) has **~116 call sites across
+~25+ services** (customer, tag, tts, billing, sentinel, call, pipecat, agent, webhook,
+registrar, direct, conference, flow, queue, route, contact, transcribe, number, storage, ai,
+campaign, conversation, outdial, email, talk-manager, and more). Because `PublishEvent`'s
+signature lives in `bin-common-handler` (subject to the "3+ services" admission rule), any
+signature change or added interface requirement touches close to the whole monorepo's
+verification matrix — this is a large-blast-radius change, not an isolated one.
+
+**The two extraction options in the prior draft are NOT symmetric — option (a) below is
+disqualified for a real, non-trivial subset of call sites, confirmed by reading actual payloads:**
+- (a) ~~A shared `Owner`/`Identity` interface with a `GetCustomerID()` method~~ — does not work
+  universally. Several bare `PublishEvent` calls pass `map[string]uuid.UUID` or
+  `map[string]interface{}` as `data`, not a domain struct embedding
+  `commonidentity.Identity`/`Owner`:
+  - `bin-contact-manager/pkg/casehandler/casenote.go:53-57` —
+    `map[string]uuid.UUID{"id":..., "case_id":..., "customer_id": customerID}`
+  - `bin-contact-manager/pkg/casehandler/case_tag.go:92,130` — same map pattern
+  - `bin-call-manager/pkg/callhandler/outgoing_call.go:213-217` —
+    `map[string]interface{}{"customer_id":..., "call_id":..., ...}`
+
+  These have no embedded Go type to satisfy a `GetCustomerID()` interface; reflection would have
+  to special-case map string keys anyway, which is exactly the "fragile type-switch per caller"
+  approach this design wants to avoid. Interface extraction is not a clean universal solution.
+- (b) Migrate every bare `PublishEvent` call site to an explicit-customerID signature (mirroring
+  `PublishWebhookEvent`) is the only fully general option, at the ~116-site blast radius above.
+  This is the option this design should plan around, not (a).
 - `agent_id` scope: is there an equivalent "owner/agent" identity readily available at publish
   time for all three services, or does this only cleanly apply to `bin-agent-manager`'s own
-  events? Needs verification per-service before finalizing.
+  events? Needs verification per-service before finalizing (unchanged from prior draft, still
+  open — see Open Questions).
 
 ## 6. Exchange migration strategy
 
@@ -142,10 +168,30 @@ live local websocket subscriber on that pod, and bind/unbind the per-pod queue a
 - **Race condition to guard against**: a bind-in-flight event ordering where the client's
   subscribe ack is sent before the AMQP bind is confirmed, causing a missed first event. Bind
   must complete (or be confirmed) before acking the client's subscribe message.
+- **Abrupt disconnect must also decrement the refcount — this is a distinct code path from
+  explicit unsubscribe, verified against source.** Reading
+  `bin-api-manager/pkg/websockhandler/subscription.go:32-84`, today's cleanup on an abrupt
+  websocket close (network drop, tab close, mobile backgrounding) is whole-object teardown, not
+  incremental: the per-connection `zmqSub` (holding that connection's `topics` list) is discarded
+  via `defer zmqSub.Terminate()` (line 70) when `newCtx` is cancelled — triggered by
+  `receiveTextFromWebsock` erroring (lines 122-125) or a write failure in the pinger/ZMQ-run
+  goroutines. **No explicit `Unsubscribe(topic)` call fires on this path today.** The new
+  pod-level AMQP-bind-refcount component (shared across connections on a pod, per the paragraph
+  above) has nothing hooking it to decrement that connection's contribution to each scope's
+  refcount on this teardown path — `subscriptionHandleMessage`'s explicit-unsubscribe branch is
+  not sufficient by itself. The refcount decrement must also be driven from `subscriptionRun`'s
+  teardown (the `newCtx.Done()` / deferred-cleanup point), which needs new state tracking which
+  scopes each connection currently holds (this state doesn't fully exist yet in a pod-level-
+  reachable form — `zmqSub.topics` is per-connection only). Getting this wrong means every
+  abrupt client disconnect leaks a refcount and leaves a stale scope binding on the pod's queue
+  permanently, silently reintroducing the exact problem (unconditional processing for pods with
+  zero real subscribers) this design exists to fix.
 - Implementation surface: `bin-api-manager/pkg/websockhandler/subscription.go`
-  `subscriptionHandleMessage` (currently calls `zmqSub.Subscribe(topic)`/`Unsubscribe(topic)`)
-  is the natural integration point — needs a parallel call into a new per-pod AMQP-bind-refcount
-  component.
+  `subscriptionHandleMessage` (currently calls `zmqSub.Subscribe(topic)`/`Unsubscribe(topic)`,
+  lines 159/168) is the integration point for explicit subscribe/unsubscribe; `subscriptionRun`'s
+  teardown (line 70 `defer zmqSub.Terminate()`, triggered via `newCtx` cancellation) is the
+  separate integration point required for abrupt disconnect. Both need a parallel call into a new
+  per-pod AMQP-bind-refcount component.
 
 ## 8. Out of scope (explicit, per pchero's decision)
 
@@ -173,3 +219,11 @@ live local websocket subscriber on that pod, and bind/unbind the per-pod queue a
 5. Should `PublishEvent`/`PublishWebhookEvent`'s public interface signature change (e.g. add an
    explicit routing-key-relevant scope parameter), given `bin-common-handler`'s "3+ services"
    admission rule and the fact this interface is shared library code consumed by all 37 services?
+   Given the confirmed ~116-call-site blast radius (§5) and that the map-payload call sites
+   disqualify a non-invasive interface-extraction alternative, this is effectively asking
+   "are we prepared to touch ~25+ services' publish call sites," not a low-cost signature tweak.
+6. How does the per-pod bind/unbind refcount interact with abrupt disconnect / connection
+   teardown (not just explicit unsubscribe messages)? See §7 — `subscriptionRun`'s teardown path
+   (`newCtx` cancellation, `defer zmqSub.Terminate()`) fires on every disconnect, clean or not,
+   but carries no per-topic unsubscribe signal today; the refcount component needs its own state
+   to know what to decrement on this path, and that state doesn't exist in the codebase yet.
