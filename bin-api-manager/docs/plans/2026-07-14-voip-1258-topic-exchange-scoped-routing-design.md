@@ -174,7 +174,14 @@ Proposed path (to be detailed further in implementation planning; the steps belo
 not a finalized runbook):
 
 1. Declare new topic exchanges under new names (e.g. suffix `.topic` or a v2 queue-name constant)
-   alongside the existing fanout exchanges.
+   alongside the existing fanout exchanges. **Must declare `durable=true`, matching the existing
+   fanout exchanges** (`bin-common-handler/pkg/rabbitmqhandler/topic.go:7` declares today's
+   fanout exchanges with `durable=true`, i.e. they survive broker restart). If the new topic
+   exchange is declared non-durable (or `durable=true` is simply omitted during implementation),
+   a broker/node restart during the dual-publish transition window would silently drop the new
+   exchange and any queue bindings on it, causing message loss for every consumer already
+   migrated to it at that point — a real production-correctness gap in an otherwise "standard"
+   blue/green migration. Escalated as Open Question 8.
 2. Publishers dual-publish to both old (fanout, unscoped) and new (topic, scoped) exchanges during
    a transition window. **Bind/unbind ordering during this window needs an explicit guarantee**:
    if any consumer (api-manager pod, or the three non-websocket consumers above) ever binds to
@@ -276,3 +283,10 @@ live local websocket subscriber on that pod, and bind/unbind the per-pod queue a
    anywhere, even though they ignore it today), and what is the verification/rollback plan
    specific to each, given they are unrelated teams'/features' code paths from the websocket
    subscription feature this design is otherwise scoped to?
+8. **(New) New topic exchange durability.** §6 step 1 requires the new topic exchange(s) to be
+   declared `durable=true`, matching the existing fanout exchanges. Confirm the implementation
+   actually sets this (an easy omission since it's a boolean flag on `ExchangeDeclare`, not a
+   design-level structural decision), and consider whether a broker restart mid-dual-publish-
+   window needs an explicit recovery/reconciliation step beyond exchange durability alone (e.g.
+   are consumer queue bindings also durable, and is there a gap between exchange survival and
+   binding survival across a restart during the transition).
