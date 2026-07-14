@@ -214,10 +214,14 @@ code path in `bin-api-manager` depends on having consumed (vs. ignored) these tw
 before removing them -- flagged as Open Question 6, a verification step, not a design decision.
 
 This means `QueueNameAgentEvent` and `QueueNameTalkEvent` exchanges themselves are UNCHANGED --
-still `fanout`, still consumed by `bin-agent-manager`/`bin-queue-manager`
-(`QueueNameAgentEvent`) and `bin-timeline-manager` (`QueueNameTalkEvent`) for their own
-unrelated purposes (agent status logic, queue routing, audit-log ingestion). Only
-`bin-api-manager`'s now-pointless subscription is removed.
+still `fanout`, still consumed by `bin-queue-manager` (`QueueNameAgentEvent`, per
+`bin-queue-manager/cmd/queue-manager/main.go:149`) and `bin-timeline-manager`
+(`QueueNameTalkEvent`, per `bin-timeline-manager/pkg/subscribehandler/main.go:50`) for their own
+unrelated purposes (queue routing, audit-log ingestion). `bin-agent-manager` and
+`bin-talk-manager` are the PUBLISHERS to `QueueNameAgentEvent`/`QueueNameTalkEvent` respectively
+(`bin-agent-manager/cmd/agent-manager/main.go:95`, `bin-talk-manager/cmd/talk-manager/main.go:82-87`)
+-- they do not subscribe to their own exchange, and are unaffected either way. Only
+`bin-api-manager`'s now-pointless subscription to both exchanges is removed.
 
 ## 8. Exchange migration strategy (reduced: only QueueNameWebhookEvent)
 
@@ -299,10 +303,11 @@ live local websocket subscriber on that pod, and bind/unbind the per-pod queue a
 - Any change to the client-facing websocket subscribe/unsubscribe wire protocol or topic string
   format -- this design only changes the internal AMQP transport layer; the public API contract
   is unchanged.
-- **`QueueNameAgentEvent` and `QueueNameTalkEvent` exchanges and their existing consumers**
-  (`bin-agent-manager`, `bin-queue-manager`, `bin-talk-manager`, `bin-timeline-manager`'s
-  subscriptions to those two specifically) -- unaffected by this design, per §7. Only
-  `bin-api-manager`'s now-provably-pointless subscription to them is removed.
+- **`QueueNameAgentEvent` and `QueueNameTalkEvent` exchanges and their existing publishers/
+  consumers** (`bin-agent-manager` publishes to `QueueNameAgentEvent`, `bin-queue-manager`
+  consumes it; `bin-talk-manager` publishes to `QueueNameTalkEvent`, `bin-timeline-manager`
+  consumes it) -- unaffected by this design, per §7. Only `bin-api-manager`'s
+  now-provably-pointless subscription to both is removed.
 - Any change to `bin-common-handler`'s `notifyHandler.PublishEvent`/`PublishWebhookEvent` public
   signatures, or to any of the ~116 bare-`PublishEvent` call sites across ~25+ services --
   moot under the reduced scope (§4), since those events never reached a websocket client.
