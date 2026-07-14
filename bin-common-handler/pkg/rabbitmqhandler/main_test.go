@@ -17,14 +17,15 @@ type mockChannel struct {
 	closeErr     error
 	closeErrOnce bool // if true, only return error on first call
 
-	queueDeclareErr  error
-	queueDeclareName string
-	queueDeclareArgs amqp.Table
+	queueDeclareErr    error
+	queueDeclareName   string
+	queueDeclareArgs   amqp.Table
 	exchangeDeclareErr error
 
-	qosErr       error
-	queueBindErr error
-	consumeErr   error
+	qosErr         error
+	queueBindErr   error
+	queueUnbindErr error
+	consumeErr     error
 
 	qosCallCount     int
 	qosPrefetchCount int
@@ -61,6 +62,10 @@ func (m *mockChannel) Qos(prefetchCount, prefetchSize int, global bool) error {
 
 func (m *mockChannel) QueueBind(name, key, exchange string, noWait bool, args amqp.Table) error {
 	return m.queueBindErr
+}
+
+func (m *mockChannel) QueueUnbind(name, key, exchange string, args amqp.Table) error {
+	return m.queueUnbindErr
 }
 
 func (m *mockChannel) QueueDelete(name string, ifUnused, ifEmpty, noWait bool) (int, error) {
@@ -138,6 +143,9 @@ func (m *mockChannelWithConsumeCounter) Qos(prefetchCount, prefetchSize int, glo
 func (m *mockChannelWithConsumeCounter) QueueBind(name, key, exchange string, noWait bool, args amqp.Table) error {
 	return nil
 }
+func (m *mockChannelWithConsumeCounter) QueueUnbind(name, key, exchange string, args amqp.Table) error {
+	return nil
+}
 func (m *mockChannelWithConsumeCounter) QueueDelete(name string, ifUnused, ifEmpty, noWait bool) (int, error) {
 	return 0, nil
 }
@@ -163,7 +171,7 @@ func TestClose_ClosesAllQueueChannels(t *testing.T) {
 		connection: mockConn,
 		queues:     make(map[string]*queue),
 		exchanges:  make(map[string]*exchange),
-		queueBinds: make(map[string]*queueBind),
+		queueBinds: make(map[string][]*queueBind),
 	}
 
 	r.queues["queue1"] = &queue{name: "queue1", channel: mockCh1}
@@ -199,7 +207,7 @@ func TestClose_ClosesAllExchangeChannels(t *testing.T) {
 		connection: mockConn,
 		queues:     make(map[string]*queue),
 		exchanges:  make(map[string]*exchange),
-		queueBinds: make(map[string]*queueBind),
+		queueBinds: make(map[string][]*queueBind),
 	}
 
 	r.exchanges["exchange1"] = &exchange{name: "exchange1", channel: mockCh1}
@@ -225,7 +233,7 @@ func TestClose_ClosesQueueAndExchangeChannels(t *testing.T) {
 		connection: mockConn,
 		queues:     make(map[string]*queue),
 		exchanges:  make(map[string]*exchange),
-		queueBinds: make(map[string]*queueBind),
+		queueBinds: make(map[string][]*queueBind),
 	}
 
 	r.queues["queue1"] = &queue{name: "queue1", channel: queueCh}
@@ -249,7 +257,7 @@ func TestClose_HandlesNilChannels(t *testing.T) {
 		connection: mockConn,
 		queues:     make(map[string]*queue),
 		exchanges:  make(map[string]*exchange),
-		queueBinds: make(map[string]*queueBind),
+		queueBinds: make(map[string][]*queueBind),
 	}
 
 	r.queues["queue1"] = &queue{name: "queue1", channel: nil}
@@ -271,7 +279,7 @@ func TestClose_HandlesEmptyMaps(t *testing.T) {
 		connection: mockConn,
 		queues:     make(map[string]*queue),
 		exchanges:  make(map[string]*exchange),
-		queueBinds: make(map[string]*queueBind),
+		queueBinds: make(map[string][]*queueBind),
 	}
 
 	// Should not panic with empty maps
@@ -293,7 +301,7 @@ func TestClose_ContinuesOnChannelCloseError(t *testing.T) {
 		connection: mockConn,
 		queues:     make(map[string]*queue),
 		exchanges:  make(map[string]*exchange),
-		queueBinds: make(map[string]*queueBind),
+		queueBinds: make(map[string][]*queueBind),
 	}
 
 	r.queues["queue1"] = &queue{name: "queue1", channel: mockCh1}
@@ -329,7 +337,7 @@ func TestQueueDeclare_Success(t *testing.T) {
 		connection: mockConn,
 		queues:     make(map[string]*queue),
 		exchanges:  make(map[string]*exchange),
-		queueBinds: make(map[string]*queueBind),
+		queueBinds: make(map[string][]*queueBind),
 	}
 
 	// Since we can't easily inject the mock channel through connection.Channel(),
@@ -363,7 +371,7 @@ func TestQueueDeclare_ClosesOldChannelOnRedeclare(t *testing.T) {
 		connection: mockConn,
 		queues:     make(map[string]*queue),
 		exchanges:  make(map[string]*exchange),
-		queueBinds: make(map[string]*queueBind),
+		queueBinds: make(map[string][]*queueBind),
 	}
 
 	// Setup existing queue
@@ -418,7 +426,7 @@ func TestExchangeDeclare_ClosesOldChannelOnRedeclare(t *testing.T) {
 		connection: mockConn,
 		queues:     make(map[string]*queue),
 		exchanges:  make(map[string]*exchange),
-		queueBinds: make(map[string]*queueBind),
+		queueBinds: make(map[string][]*queueBind),
 	}
 
 	// Setup existing exchange
@@ -574,7 +582,7 @@ func TestQueueQoS_ReturnsChannelError(t *testing.T) {
 func TestQueueBind_ReturnsErrorForNonExistent(t *testing.T) {
 	r := &rabbit{
 		queues:     make(map[string]*queue),
-		queueBinds: make(map[string]*queueBind),
+		queueBinds: make(map[string][]*queueBind),
 	}
 
 	err := r.QueueBind("non-existent", "key", "exchange", false, nil)
@@ -589,7 +597,7 @@ func TestQueueBind_Success(t *testing.T) {
 
 	r := &rabbit{
 		queues:     make(map[string]*queue),
-		queueBinds: make(map[string]*queueBind),
+		queueBinds: make(map[string][]*queueBind),
 	}
 	r.queues["test-queue"] = &queue{
 		name:    "test-queue",
@@ -606,11 +614,11 @@ func TestQueueBind_Success(t *testing.T) {
 	if r.queueBinds["test-queue"] == nil {
 		t.Error("Expected queueBind to be stored")
 	}
-	if r.queueBinds["test-queue"].key != "routing-key" {
-		t.Errorf("Expected key 'routing-key', got '%s'", r.queueBinds["test-queue"].key)
+	if r.queueBinds["test-queue"][0].key != "routing-key" {
+		t.Errorf("Expected key 'routing-key', got '%s'", r.queueBinds["test-queue"][0].key)
 	}
-	if r.queueBinds["test-queue"].exchange != "test-exchange" {
-		t.Errorf("Expected exchange 'test-exchange', got '%s'", r.queueBinds["test-queue"].exchange)
+	if r.queueBinds["test-queue"][0].exchange != "test-exchange" {
+		t.Errorf("Expected exchange 'test-exchange', got '%s'", r.queueBinds["test-queue"][0].exchange)
 	}
 }
 
@@ -620,7 +628,7 @@ func TestQueueBind_ReturnsChannelError(t *testing.T) {
 
 	r := &rabbit{
 		queues:     make(map[string]*queue),
-		queueBinds: make(map[string]*queueBind),
+		queueBinds: make(map[string][]*queueBind),
 	}
 	r.queues["test-queue"] = &queue{
 		name:    "test-queue",
@@ -635,6 +643,100 @@ func TestQueueBind_ReturnsChannelError(t *testing.T) {
 }
 
 // ============================================================================
+// QueueUnbind() Tests
+// ============================================================================
+
+func TestQueueUnbind_Success(t *testing.T) {
+	mockCh := newMockChannel()
+
+	r := &rabbit{
+		queues:     make(map[string]*queue),
+		queueBinds: make(map[string][]*queueBind),
+	}
+	r.queues["test-queue"] = &queue{
+		name:    "test-queue",
+		channel: mockCh,
+	}
+
+	if err := r.QueueBind("test-queue", "routing-key", "test-exchange", false, nil); err != nil {
+		t.Fatalf("Expected no error binding, got %v", err)
+	}
+
+	err := r.QueueUnbind("test-queue", "routing-key", "test-exchange", nil)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
+	if len(r.queueBinds["test-queue"]) != 0 {
+		t.Errorf("Expected queueBinds entry to be removed, got %v", r.queueBinds["test-queue"])
+	}
+}
+
+func TestQueueUnbind_KeepsOtherBinds(t *testing.T) {
+	mockCh := newMockChannel()
+
+	r := &rabbit{
+		queues:     make(map[string]*queue),
+		queueBinds: make(map[string][]*queueBind),
+	}
+	r.queues["test-queue"] = &queue{
+		name:    "test-queue",
+		channel: mockCh,
+	}
+
+	if err := r.QueueBind("test-queue", "key1", "exchange1", false, nil); err != nil {
+		t.Fatalf("Expected no error binding, got %v", err)
+	}
+	if err := r.QueueBind("test-queue", "key2", "exchange2", false, nil); err != nil {
+		t.Fatalf("Expected no error binding, got %v", err)
+	}
+
+	err := r.QueueUnbind("test-queue", "key1", "exchange1", nil)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
+	binds := r.queueBinds["test-queue"]
+	if len(binds) != 1 {
+		t.Fatalf("Expected 1 remaining bind, got %d", len(binds))
+	}
+	if binds[0].key != "key2" || binds[0].exchange != "exchange2" {
+		t.Errorf("Expected remaining bind key2/exchange2, got %s/%s", binds[0].key, binds[0].exchange)
+	}
+}
+
+func TestQueueUnbind_ReturnsErrorForNonExistent(t *testing.T) {
+	r := &rabbit{
+		queues:     make(map[string]*queue),
+		queueBinds: make(map[string][]*queueBind),
+	}
+
+	err := r.QueueUnbind("no-such-queue", "key", "exchange", nil)
+	if err == nil {
+		t.Error("Expected error for non-existent queue")
+	}
+}
+
+func TestQueueUnbind_ReturnsChannelError(t *testing.T) {
+	mockCh := newMockChannel()
+	mockCh.queueUnbindErr = errors.New("unbind failed")
+
+	r := &rabbit{
+		queues:     make(map[string]*queue),
+		queueBinds: make(map[string][]*queueBind),
+	}
+	r.queues["test-queue"] = &queue{
+		name:    "test-queue",
+		channel: mockCh,
+	}
+
+	err := r.QueueUnbind("test-queue", "key", "exchange", nil)
+	if err == nil {
+		t.Error("Expected error from channel QueueUnbind")
+	}
+}
+
+// ============================================================================
 // QueueSubscribe() Tests
 // ============================================================================
 
@@ -643,7 +745,7 @@ func TestQueueSubscribe_CallsQueueBind(t *testing.T) {
 
 	r := &rabbit{
 		queues:     make(map[string]*queue),
-		queueBinds: make(map[string]*queueBind),
+		queueBinds: make(map[string][]*queueBind),
 	}
 	r.queues["test-queue"] = &queue{
 		name:    "test-queue",
@@ -660,11 +762,11 @@ func TestQueueSubscribe_CallsQueueBind(t *testing.T) {
 	if r.queueBinds["test-queue"] == nil {
 		t.Error("Expected queueBind to be stored")
 	}
-	if r.queueBinds["test-queue"].key != "" {
-		t.Errorf("Expected empty key, got '%s'", r.queueBinds["test-queue"].key)
+	if r.queueBinds["test-queue"][0].key != "" {
+		t.Errorf("Expected empty key, got '%s'", r.queueBinds["test-queue"][0].key)
 	}
-	if r.queueBinds["test-queue"].exchange != "test-topic" {
-		t.Errorf("Expected exchange 'test-topic', got '%s'", r.queueBinds["test-queue"].exchange)
+	if r.queueBinds["test-queue"][0].exchange != "test-topic" {
+		t.Errorf("Expected exchange 'test-topic', got '%s'", r.queueBinds["test-queue"][0].exchange)
 	}
 }
 
@@ -731,7 +833,7 @@ func TestQueueCreate_InvalidType(t *testing.T) {
 	r := &rabbit{
 		queues:     make(map[string]*queue),
 		exchanges:  make(map[string]*exchange),
-		queueBinds: make(map[string]*queueBind),
+		queueBinds: make(map[string][]*queueBind),
 	}
 
 	err := r.QueueCreate("test-queue", "invalid-type")
@@ -755,7 +857,7 @@ func TestRedeclareScenario_ClosesOldChannels(t *testing.T) {
 	r := &rabbit{
 		queues:     make(map[string]*queue),
 		exchanges:  make(map[string]*exchange),
-		queueBinds: make(map[string]*queueBind),
+		queueBinds: make(map[string][]*queueBind),
 	}
 
 	// Initial state
@@ -813,7 +915,7 @@ func TestReconnector_ExitsWhenErrorChannelClosed(t *testing.T) {
 		errorChannel: errCh,
 		queues:       make(map[string]*queue),
 		exchanges:    make(map[string]*exchange),
-		queueBinds:   make(map[string]*queueBind),
+		queueBinds:   make(map[string][]*queueBind),
 	}
 
 	done := make(chan struct{})
@@ -840,7 +942,7 @@ func TestReconnector_ExitsWhenClosedFlagIsSet(t *testing.T) {
 		errorChannel: errCh,
 		queues:       make(map[string]*queue),
 		exchanges:    make(map[string]*exchange),
-		queueBinds:   make(map[string]*queueBind),
+		queueBinds:   make(map[string][]*queueBind),
 	}
 
 	// Set closed before sending error
@@ -876,7 +978,7 @@ func TestClose_ClosedFlagIsAtomicallySafe(t *testing.T) {
 		errorChannel: errCh,
 		queues:       make(map[string]*queue),
 		exchanges:    make(map[string]*exchange),
-		queueBinds:   make(map[string]*queueBind),
+		queueBinds:   make(map[string][]*queueBind),
 	}
 
 	var wg sync.WaitGroup
@@ -912,7 +1014,7 @@ func TestClose_SetsClosedBeforeClosingResources(t *testing.T) {
 		connection: mockConn,
 		queues:     make(map[string]*queue),
 		exchanges:  make(map[string]*exchange),
-		queueBinds: make(map[string]*queueBind),
+		queueBinds: make(map[string][]*queueBind),
 	}
 
 	// Use a mock channel that captures the closed state when Close() is called
@@ -930,8 +1032,8 @@ func TestClose_SetsClosedBeforeClosingResources(t *testing.T) {
 
 // closedCaptureMockChannel is a mock that checks the closed flag when Close() is called
 type closedCaptureMockChannel struct {
-	r              *rabbit
-	closedWasTrue  bool
+	r             *rabbit
+	closedWasTrue bool
 }
 
 func (m *closedCaptureMockChannel) Close() error {
@@ -948,6 +1050,10 @@ func (m *closedCaptureMockChannel) Qos(prefetchCount, prefetchSize int, global b
 }
 
 func (m *closedCaptureMockChannel) QueueBind(name, key, exchange string, noWait bool, args amqp.Table) error {
+	return nil
+}
+
+func (m *closedCaptureMockChannel) QueueUnbind(name, key, exchange string, args amqp.Table) error {
 	return nil
 }
 
@@ -968,7 +1074,7 @@ func Test_queueDeclare_storesArgs(t *testing.T) {
 	r := &rabbit{
 		queues:     make(map[string]*queue),
 		exchanges:  make(map[string]*exchange),
-		queueBinds: make(map[string]*queueBind),
+		queueBinds: make(map[string][]*queueBind),
 	}
 
 	testArgs := amqp.Table{"x-expires": int32(1800000)}
@@ -996,7 +1102,7 @@ func Test_queueCreateVolatile_xExpires(t *testing.T) {
 	r := &rabbit{
 		queues:     make(map[string]*queue),
 		exchanges:  make(map[string]*exchange),
-		queueBinds: make(map[string]*queueBind),
+		queueBinds: make(map[string][]*queueBind),
 	}
 
 	// Verify args are stored in queue struct after queueCreateVolatile sets them
@@ -1308,7 +1414,7 @@ func TestHealthChecker_ForcesReconnectOnDeadConnection(t *testing.T) {
 		healthCheckInterval: 50 * time.Millisecond,
 		queues:              make(map[string]*queue),
 		exchanges:           make(map[string]*exchange),
-		queueBinds:          make(map[string]*queueBind),
+		queueBinds:          make(map[string][]*queueBind),
 	}
 
 	done := make(chan struct{})
@@ -1341,7 +1447,7 @@ func TestHealthChecker_ExitsWhenClosed(t *testing.T) {
 		healthCheckInterval: 50 * time.Millisecond,
 		queues:              make(map[string]*queue),
 		exchanges:           make(map[string]*exchange),
-		queueBinds:          make(map[string]*queueBind),
+		queueBinds:          make(map[string][]*queueBind),
 	}
 
 	r.closed.Store(true)
@@ -1370,7 +1476,7 @@ func TestHealthChecker_DoesNotCloseHealthyConnection(t *testing.T) {
 		healthCheckInterval: 50 * time.Millisecond,
 		queues:              make(map[string]*queue),
 		exchanges:           make(map[string]*exchange),
-		queueBinds:          make(map[string]*queueBind),
+		queueBinds:          make(map[string][]*queueBind),
 	}
 
 	done := make(chan struct{})
