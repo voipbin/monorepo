@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
@@ -90,4 +91,49 @@ func (h *webhookHandler) createRoutingKeysForChat(ctx context.Context, d *webhoo
 	}
 
 	return res
+}
+
+// publishRoutingKeyedEvent computes routing keys for the given event data and publishes to the
+// new topic exchange with each key. Best-effort: logs and returns on parse/RPC failure without
+// blocking the primary (fanout) delivery path above it.
+//
+// CRITICAL: uses h.topicNotifyHandler (bound to QueueNameWebhookEventTopic, a topic-kind
+// exchange -- constructed in Task 3.1), NOT h.notifyHandler (bound to the OLD fanout exchange).
+// Calling PublishEventWithRoutingKey on h.notifyHandler would compile and "succeed" silently --
+// fanout exchanges ignore routing keys entirely, so the event would be delivered but the
+// scoping this whole feature exists for would never take effect. This exact mistake was caught
+// in round-3 implementation-plan review: if Task 2.5 is implemented before Task 3.1 adds the
+// topicNotifyHandler field, this function CANNOT be written correctly yet -- do not stub it
+// with h.notifyHandler "temporarily," implement Task 3.1 first as already instructed above, and
+// write this function only once topicNotifyHandler exists on the struct.
+func (h *webhookHandler) publishRoutingKeyedEvent(ctx context.Context, eventType string, data json.RawMessage) {
+	log := logrus.WithFields(logrus.Fields{"func": "publishRoutingKeyedEvent", "event_type": eventType})
+
+	d, err := parseWebhookOwnerData(data)
+	if err != nil {
+		log.Errorf("Could not parse owner data for routing key computation. err: %v", err)
+		return
+	}
+
+	// messageType/resource parsing: eventType is the wire event type e.g. "call_updated".
+	// resource = first underscore-delimited segment, matching createTopics()'s existing
+	// convention (webhookmanager.go:111-120 in the pre-migration bin-api-manager code).
+	tmps := strings.SplitN(eventType, "_", 2)
+	if len(tmps) < 2 {
+		log.Errorf("Wrong event type format for routing key. event_type: %s", eventType)
+		return
+	}
+	resource := tmps[0]
+
+	var keys []string
+	switch resource {
+	case "chat", "chatmessage", "chatparticipant":
+		keys = h.createRoutingKeysForChat(ctx, d, eventType)
+	default:
+		keys = createRoutingKeys(d, resource, eventType)
+	}
+
+	for _, key := range keys {
+		h.topicNotifyHandler.PublishEventWithRoutingKey(ctx, eventType, key, json.RawMessage(data))
+	}
 }

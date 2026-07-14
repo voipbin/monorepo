@@ -461,3 +461,114 @@ func Test_SendWebhookToCustomer_activeflow(t *testing.T) {
 		})
 	}
 }
+
+// Test_SendWebhookToCustomer_DualPublishesWithRoutingKey verifies that SendWebhookToCustomer
+// dual-publishes: the existing fanout PublishEvent call on h.notifyHandler still fires, AND
+// h.topicNotifyHandler.PublishEventWithRoutingKey fires once per generated routing key. Two
+// DISTINCT mocks are used for notifyHandler vs topicNotifyHandler so that a mixup between the
+// two fields (calling PublishEventWithRoutingKey on the fanout handler, or vice versa) would
+// fail the test -- a single shared mock would not catch this class of bug.
+func Test_SendWebhookToCustomer_DualPublishesWithRoutingKey(t *testing.T) {
+
+	customerID := uuid.FromStringOrNil("a27dc1d6-8254-11ec-8f09-e30cbed3e51e")
+	callID := uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222")
+
+	data := json.RawMessage(fmt.Sprintf(
+		`{"id":"%s","customer_id":"%s"}`,
+		callID, customerID,
+	))
+
+	expectWebhook := &webhook.Webhook{
+		CustomerID: customerID,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	responseAccount := &account.Account{
+		ID:            customerID,
+		WebhookMethod: "POST",
+		WebhookURI:    "test.com",
+	}
+
+	// eventType passed to publishRoutingKeyedEvent is always webhook.EventTypeWebhookPublished
+	// ("webhook_published"); resource is the first underscore-delimited segment ("webhook"),
+	// but the FULL eventType is used as messageType in the routing key (per createRoutingKeys).
+	expectRoutingKey := fmt.Sprintf("customer_id.%s.webhook.webhook_published.%s", customerID, callID)
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockMessageTargethandler := accounthandler.NewMockAccountHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockTopicNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+	h := &webhookHandler{
+		db:                 mockDB,
+		notifyHandler:      mockNotify,
+		topicNotifyHandler: mockTopicNotify,
+		accoutHandler:      mockMessageTargethandler,
+	}
+
+	ctx := context.Background()
+
+	mockMessageTargethandler.EXPECT().Get(ctx, customerID).Return(responseAccount, nil)
+	mockNotify.EXPECT().PublishEvent(ctx, webhook.EventTypeWebhookPublished, expectWebhook)
+	mockTopicNotify.EXPECT().PublishEventWithRoutingKey(ctx, webhook.EventTypeWebhookPublished, expectRoutingKey, data)
+
+	err := h.SendWebhookToCustomer(ctx, customerID, "application/json", data)
+	if err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	time.Sleep(400 * time.Millisecond)
+}
+
+// Test_SendWebhookToURI_DualPublishesWithRoutingKey mirrors the above for SendWebhookToURI,
+// per the design doc §6 symmetry note: both entry points feed the same downstream path.
+func Test_SendWebhookToURI_DualPublishesWithRoutingKey(t *testing.T) {
+
+	customerID := uuid.FromStringOrNil("a27dc1d6-8254-11ec-8f09-e30cbed3e51e")
+	callID := uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333")
+
+	data := json.RawMessage(fmt.Sprintf(
+		`{"id":"%s","customer_id":"%s"}`,
+		callID, customerID,
+	))
+
+	expectWebhook := &webhook.Webhook{
+		CustomerID: customerID,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	expectRoutingKey := fmt.Sprintf("customer_id.%s.webhook.webhook_published.%s", customerID, callID)
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockMessageTargethandler := accounthandler.NewMockAccountHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockTopicNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+	h := &webhookHandler{
+		db:                 mockDB,
+		notifyHandler:      mockNotify,
+		topicNotifyHandler: mockTopicNotify,
+		accoutHandler:      mockMessageTargethandler,
+	}
+
+	ctx := context.Background()
+
+	mockNotify.EXPECT().PublishEvent(ctx, webhook.EventTypeWebhookPublished, expectWebhook)
+	mockTopicNotify.EXPECT().PublishEventWithRoutingKey(ctx, webhook.EventTypeWebhookPublished, expectRoutingKey, data)
+
+	err := h.SendWebhookToURI(ctx, customerID, "test.com", webhook.MethodTypePOST, "application/json", data)
+	if err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	time.Sleep(400 * time.Millisecond)
+}
+
