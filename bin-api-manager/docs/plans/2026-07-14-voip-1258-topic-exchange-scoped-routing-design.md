@@ -208,13 +208,18 @@ has (`notifyHandler.PublishEvent`) has no way to carry one.** Two structurally d
   ticket's scope, but plausible future work) can reuse the same `notifyHandler` method instead
   of each service reinventing it.
 - (b) **`bin-webhook-manager` bypasses `notifyHandler` and calls `sockHandler` directly** for
-  this one event type. Avoids touching `bin-common-handler` at all, but breaks the existing
-  architectural invariant that all event publishing goes through `notifyHandler` (every other
-  publish call site in the monorepo, ~116+, goes through it) -- `bin-webhook-manager` would have
-  two different, inconsistent publish paths for its own events (old `PublishEvent` calls
-  elsewhere in the service, if any, vs. a raw `sockHandler` call here), which is a maintainability
-  smell and makes the shared layer's contract ("publishing goes through notifyHandler") a soft
-  rule with a carve-out rather than an actual invariant.
+  this one event type. **Verified NOT currently wired up**: `webhookHandler`'s struct
+  (`bin-webhook-manager/pkg/webhookhandler/main.go:32-40`) has no `sockHandler` field today, and
+  `sockHandler` is constructed in `cmd/webhook-manager/main.go`/`cmd/webhook-control/main.go`
+  only to build `notifyHandler`/`reqHandler` -- it is never passed into `NewWebhookHandler`.
+  This means (b) is not a "no new plumbing" shortcut: it requires the SAME new DI-wiring cost as
+  option (a) (adding a constructor field, updating both `cmd/webhook-manager` and
+  `cmd/webhook-control` wiring sites), while ALSO breaking the existing architectural invariant
+  that all event publishing goes through `notifyHandler` (every other publish call site in the
+  monorepo, ~116+, goes through it) -- `bin-webhook-manager` would end up with two different,
+  inconsistent publish paths for its own events. **(b) has no wiring-cost advantage over (a) and
+  a real architectural cost (a) does not have** -- it is not a genuinely competitive alternative,
+  just a theoretically available one.
 
 **Option (a) is recommended** -- it keeps `notifyHandler` as the single publish entry point for
 every service (including `bin-webhook-manager`), costs a small, strictly-additive
@@ -420,9 +425,16 @@ live local websocket subscriber on that pod, and bind/unbind the per-pod queue a
    `TopicCreate` hardcodes `fanout` kind, even though `sockHandler`/`rabbitmqhandler` already
    support both underneath. Confirm the recommended approach (additive new method(s) on
    `notifyHandler`, e.g. `PublishEventWithRoutingKey`, plus an exchange-kind-aware
-   `TopicCreate` variant) during implementation planning: exact method signatures, whether
-   `PublishWebhookEvent`'s dual publish (event + webhook HTTP delivery) needs a parallel
-   with-routing-key variant or only the plain event path does, and confirm this really is
-   additive with zero changes to any of the ~116 existing bare `PublishEvent`/`PublishWebhookEvent`
-   call sites (verify via build/test of `bin-common-handler` and a sample of dependent services
-   after the change, not just by inspection).
+   `TopicCreate`/`TopicCreateWithKind` variant on `SockHandler`) during implementation planning:
+   exact method signatures, whether `PublishWebhookEvent`'s dual publish (event + webhook HTTP
+   delivery) needs a parallel with-routing-key variant or only the plain event path does, and
+   confirm this really is additive with zero changes to any of the ~116 existing bare
+   `PublishEvent`/`PublishWebhookEvent` call sites (verify via build/test of `bin-common-handler`
+   and a sample of dependent services after the change, not just by inspection). **Mechanical
+   cost, verified small**: `NotifyHandler` has exactly one production implementer
+   (`notifyhandler.notifyHandler`) plus `MockNotifyHandler`; `SockHandler` similarly has one
+   production implementer (`rabbitmqhandler.rabbit`) plus `MockSockHandler`. Adding a new
+   interface method to either touches only the interface definition, the one implementation, and
+   the `go generate`-regenerated mock -- not a broad blast radius, but should still be confirmed
+   as part of the standard verification workflow (`go generate ./... && go test ./...`) rather
+   than assumed.
