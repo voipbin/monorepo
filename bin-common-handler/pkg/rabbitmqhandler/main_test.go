@@ -35,6 +35,11 @@ type mockChannel struct {
 
 	mu                 sync.Mutex // guards queueBindCallCount for concurrent-access tests (VOIP-1258)
 	queueBindCallCount int         // VOIP-1258: counts QueueBind invocations, used to verify redeclareAll restores ALL tracked binds
+
+	// VOIP-1258 Task 1.4: captures ExchangeDeclare's actual call args for assertions.
+	exchangeDeclareName    string
+	exchangeDeclareKind    string
+	exchangeDeclareDurable bool
 }
 
 func newMockChannel() *mockChannel {
@@ -80,6 +85,9 @@ func (m *mockChannel) QueueDelete(name string, ifUnused, ifEmpty, noWait bool) (
 }
 
 func (m *mockChannel) ExchangeDeclare(name, kind string, durable, autoDelete, internal, noWait bool, args amqp.Table) error {
+	m.exchangeDeclareName = name
+	m.exchangeDeclareKind = kind
+	m.exchangeDeclareDurable = durable
 	return m.exchangeDeclareErr
 }
 
