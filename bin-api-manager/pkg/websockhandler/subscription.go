@@ -70,15 +70,31 @@ func (h *websockHandler) subscriptionRun(ctx context.Context, w http.ResponseWri
 	defer zmqSub.Terminate()
 	log.Debugf("Created a new subscribe socket correctly.")
 
+	// heldPatterns tracks the AMQP binding patterns THIS connection currently holds, so we can
+	// release everything on abrupt disconnect (no explicit unsubscribe received) via
+	// scopeRefCount.ReleaseAll below. See VOIP-1258 §9 / Task 4.3.
+	heldPatterns := make(map[string]bool)
+	var heldMu sync.Mutex
+
 	// we are creating a new context and cancel using the http request.
 	// we are expecting when the websocket closed, everything is closed too.
 	newCtx, newCancel := context.WithCancel(ctx)
-	go h.subscriptionRunWebsock(newCtx, newCancel, a, ws, zmqSub)
+	go h.subscriptionRunWebsock(newCtx, newCancel, a, ws, zmqSub, heldPatterns, &heldMu)
 	go h.subscriptionRunZMQSub(newCtx, newCancel, ws, zmqSub, &writeMu)
 	go h.subscriptionRunPinger(newCtx, newCancel, ws, &writeMu)
 
 	<-newCtx.Done()
 	log.Debugf("Websocket connection has been closed. agent_id: %s", a.AgentID())
+
+	// abrupt-disconnect cleanup -- release everything this connection held, regardless of
+	// whether an explicit unsubscribe message was ever received.
+	heldMu.Lock()
+	patterns := make([]string, 0, len(heldPatterns))
+	for p := range heldPatterns {
+		patterns = append(patterns, p)
+	}
+	heldMu.Unlock()
+	h.scopeRefCount.ReleaseAll(patterns)
 
 	return nil
 }
@@ -109,6 +125,8 @@ func (h *websockHandler) subscriptionRunWebsock(
 	a *auth.AuthIdentity,
 	ws *websocket.Conn,
 	zmqSub zmqsubhandler.ZMQSubHandler,
+	heldPatterns map[string]bool,
+	heldMu *sync.Mutex,
 ) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "subscriptionRunWebsock",
@@ -132,7 +150,7 @@ func (h *websockHandler) subscriptionRunWebsock(
 		log.Debugf("Received subscribee/unsubscribe message from the websocket. type: %s, topics: %v", p.Type, p.Topics)
 
 		// handle the message
-		if errHandle := h.subscriptionHandleMessage(ctx, a, zmqSub, p); errHandle != nil {
+		if errHandle := h.subscriptionHandleMessage(ctx, a, zmqSub, p, heldPatterns, heldMu); errHandle != nil {
 			log.Errorf("Could not handle the message correctly. err: %v", errHandle)
 			return
 		}
@@ -140,7 +158,14 @@ func (h *websockHandler) subscriptionRunWebsock(
 }
 
 // subscriptionHandleMessage handles the message from the websock and do the subscription/unsubscription.
-func (h *websockHandler) subscriptionHandleMessage(ctx context.Context, a *auth.AuthIdentity, zmqSub zmqsubhandler.ZMQSubHandler, m *hook.Hook) error {
+func (h *websockHandler) subscriptionHandleMessage(
+	ctx context.Context,
+	a *auth.AuthIdentity,
+	zmqSub zmqsubhandler.ZMQSubHandler,
+	m *hook.Hook,
+	heldPatterns map[string]bool,
+	heldMu *sync.Mutex,
+) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "subscriptionHandleMessage",
 		"agent":   a,
@@ -161,6 +186,23 @@ func (h *websockHandler) subscriptionHandleMessage(ctx context.Context, a *auth.
 				return errSub
 			}
 			log.Debugf("Subscribed the topic. topic: %s", topic)
+
+			// acquire the AMQP binding for this pattern. Non-fatal on error: the zmqSub
+			// subscribe above already succeeded, so local filtering still works even if
+			// broker-side AMQP scoping doesn't -- a safe degraded failure mode, not a hard
+			// failure (VOIP-1258 §9).
+			pattern, errConv := topicToBindPattern(topic)
+			if errConv != nil {
+				log.Errorf("Could not convert topic to bind pattern. topic: %s, err: %v", topic, errConv)
+				continue
+			}
+			if errAcq := h.scopeRefCount.Acquire(pattern); errAcq != nil {
+				log.Errorf("Could not acquire the AMQP binding. pattern: %s, err: %v", pattern, errAcq)
+				continue
+			}
+			heldMu.Lock()
+			heldPatterns[pattern] = true
+			heldMu.Unlock()
 		}
 
 	case hook.TypeUnsubscribe:
@@ -170,6 +212,19 @@ func (h *websockHandler) subscriptionHandleMessage(ctx context.Context, a *auth.
 				return errSub
 			}
 			log.Debugf("Unsubscribed the topic. topic: %s", topic)
+
+			// release the AMQP binding for this pattern
+			pattern, errConv := topicToBindPattern(topic)
+			if errConv != nil {
+				log.Errorf("Could not convert topic to bind pattern. topic: %s, err: %v", topic, errConv)
+				continue
+			}
+			if errRel := h.scopeRefCount.Release(pattern); errRel != nil {
+				log.Errorf("Could not release the AMQP binding. pattern: %s, err: %v", pattern, errRel)
+			}
+			heldMu.Lock()
+			delete(heldPatterns, pattern)
+			heldMu.Unlock()
 		}
 	}
 
