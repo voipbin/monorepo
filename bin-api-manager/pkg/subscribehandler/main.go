@@ -152,15 +152,37 @@ func (h *subscribeHandler) processEvent(m *sock.Event) {
 
 	switch {
 
-	//// webhook-manager
+	//// webhook-manager: OLD fanout path -- the wrapped {"type":"webhook_published","data":
+	//// {"type":<resource event type>,"data":{...}}} envelope, still dual-published until
+	//// Task 4.6's cutover.
 	case m.Publisher == string(commonoutline.ServiceNameWebhookManager) && (m.Type == string(wmwebhook.EventTypeWebhookPublished)):
 		err = h.processEventWebhookManagerWebhookPublished(ctx, m)
+
+	//// webhook-manager: NEW topic-exchange routing-keyed path (VOIP-1258 §6/§8). Published via
+	//// PublishEventWithRoutingKey with the REAL resource event type as m.Type (e.g.
+	//// "call_created") and the UNWRAPPED resource object as m.Data (bin-webhook-manager's
+	//// publishRoutingKeyedEvent already did the envelope unwrap at publish time -- see that
+	//// function's doc comment). This is NOT the same shape as the fanout path above (which is
+	//// still the doubly-wrapped envelope), so it needs its own handler, not reuse of
+	//// processEventWebhookManagerWebhookPublished (which expects the wrapped shape and would
+	//// fail to unmarshal this one correctly).
+	////
+	//// CRITICAL (production bug found 2026-07-15, post-envelope-fix verification): before this
+	//// case existed, every event arriving via the new topic exchange had m.Type set to the real
+	//// resource event type (never "webhook_published"), so it always fell through to `default:
+	//// return` below and was silently discarded -- the AMQP message reached this pod's queue
+	//// correctly (confirmed via RabbitMQ queue/binding inspection) but was never handed to
+	//// zmqpubHandler.Publish, so it never reached the browser's websocket. This is why the
+	//// AMQP-level fix (envelope unwrapping in bin-webhook-manager) alone was insufficient --
+	//// the consumer side needed a matching case for the new event shape.
+	case m.Publisher == string(commonoutline.ServiceNameWebhookManager) && (m.Type != string(wmwebhook.EventTypeWebhookPublished)):
+		err = h.processEventWebhookManagerRoutingKeyedEvent(ctx, m)
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	default:
-		// ignore the event
+		// ignore the event.
 		return
 	}
 	elapsed := time.Since(start)
