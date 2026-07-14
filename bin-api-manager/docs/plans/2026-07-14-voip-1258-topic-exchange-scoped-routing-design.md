@@ -112,8 +112,13 @@ unmarshal, or run `createTopics()`/RPC for that scope's events at all.
 ## 4. Reduced scope: two services only
 
 **In scope**: `bin-webhook-manager` (publisher-side routing key computation) and
-`bin-api-manager` (topic-exchange consumer + dynamic bind/unbind). No other service's publish
-call sites, signatures, or event-handling logic changes.
+`bin-api-manager` (topic-exchange consumer + dynamic bind/unbind), **plus a small, strictly
+additive change to `bin-common-handler`'s `notifyHandler`** to expose the routing-key/exchange-
+kind capability that `sockHandler`/`rabbitmqhandler` already have but `notifyHandler` currently
+blocks (see §6 -- this was not part of the original scope-reduction framing and is added here
+after further review). No existing `bin-common-handler` call site (all ~116+ bare `PublishEvent`
+callers) is modified; only a new method is added alongside the existing ones. No other service's
+publish call sites, signatures, or event-handling logic changes.
 
 **Consequence for `bin-common-handler`**: `notifyHandler.PublishEvent`/`PublishWebhookEvent`'s
 public signatures are UNCHANGED. The original design's Open Questions 1 and 5 (bare
@@ -155,11 +160,67 @@ Two scope namespaces (`customer_id`, `agent_id`) must coexist; a single event ma
 published under BOTH routing keys (mirrors the existing dual topic-string generation already
 done in `createTopics()` today for `customer_id:...` and `agent_id:...`).
 
-## 6. Who computes the routing key: moves into bin-webhook-manager
+## 6. Who computes the routing key: moves into bin-webhook-manager (computation), notifyHandler (publish mechanism)
 
 `createTopics()`'s logic (currently in `bin-api-manager/pkg/subscribehandler/webhookmanager.go`)
 must move into `bin-webhook-manager`, executed BEFORE `notifyHandler.PublishEvent` is called, so
 the routing key exists at publish time.
+
+**Layering gap, verified, NOT part of revision 1's original analysis -- addressed here.** The
+routing-key computation is only half the picture; the PUBLISH MECHANISM itself must also support
+carrying a routing key and targeting a `topic`-kind exchange, and today it does not, at the
+`notifyHandler` layer specifically (even though the layers below it already do):
+
+```
+notifyHandler.PublishEvent(ctx, eventType, data)          <- no routing-key parameter
+    -> publishDirectEvent() hardcodes key="" (publish.go:129)
+    -> sockHandler.EventPublish(topic string, key string, evt)   <- key param ALREADY EXISTS
+        -> rabbitmqhandler.EventPublish(exchange, key, evt)      <- passes key through
+            -> channel.PublishWithContext(ctx, exchange, key, ...)  <- AMQP routing key
+```
+
+`sockHandler.EventPublish` (`bin-common-handler/pkg/sockhandler/main.go:20`) already accepts a
+`key string` parameter, and it flows all the way to the AMQP client
+(`bin-common-handler/pkg/rabbitmqhandler/publish.go`). The plumbing to carry a routing key
+already exists at the `sockHandler`/`rabbitmqhandler` layer. **`notifyHandler` is the layer that
+blocks it**: `PublishEvent`/`PublishWebhookEvent`'s public signatures take no routing-key
+parameter, and `publishDirectEvent` hardcodes `key=""` internally
+(`bin-common-handler/pkg/notifyhandler/publish.go:129`). Separately, `TopicCreate`
+(`bin-common-handler/pkg/rabbitmqhandler/topic.go:5-9`) hardcodes exchange kind to `"fanout"`
+with no way to declare a `topic`-kind exchange through the existing API.
+
+**This means the reduced scope of §4 is incomplete as stated: `bin-webhook-manager` cannot
+actually publish with a routing key using only its own code, because the only publish path it
+has (`notifyHandler.PublishEvent`) has no way to carry one.** Two structurally different options:
+
+- (a) **Add new capability to `notifyHandler` (in `bin-common-handler`)**: e.g. a new
+  `PublishEventWithRoutingKey(ctx, eventType, routingKey, data)` method (or equivalent), and a
+  new exchange-kind-aware variant of `TopicCreate` (or a new `TopicCreateWithKind(name, kind)`).
+  This IS a `bin-common-handler` change, but a strictly additive one: existing `PublishEvent`/
+  `PublishWebhookEvent`/`TopicCreate` call sites (all ~116+ of them, per revision 1's now-moot
+  analysis) are untouched -- only `bin-webhook-manager` calls the new method. This does not
+  reopen the ~116-call-site blast radius from revision 1; it only adds a new, narrow surface
+  that `sockHandler`/`rabbitmqhandler` already structurally support. Consistent with
+  `bin-common-handler`'s architectural role as the shared transport layer -- the routing-key
+  and exchange-kind primitives already exist one layer down (`sockHandler`), so exposing them
+  through `notifyHandler` completes an existing capability rather than introducing scope creep.
+  This also means any OTHER service that later wants topic-scoped publishing (not in this
+  ticket's scope, but plausible future work) can reuse the same `notifyHandler` method instead
+  of each service reinventing it.
+- (b) **`bin-webhook-manager` bypasses `notifyHandler` and calls `sockHandler` directly** for
+  this one event type. Avoids touching `bin-common-handler` at all, but breaks the existing
+  architectural invariant that all event publishing goes through `notifyHandler` (every other
+  publish call site in the monorepo, ~116+, goes through it) -- `bin-webhook-manager` would have
+  two different, inconsistent publish paths for its own events (old `PublishEvent` calls
+  elsewhere in the service, if any, vs. a raw `sockHandler` call here), which is a maintainability
+  smell and makes the shared layer's contract ("publishing goes through notifyHandler") a soft
+  rule with a carve-out rather than an actual invariant.
+
+**Option (a) is recommended** -- it keeps `notifyHandler` as the single publish entry point for
+every service (including `bin-webhook-manager`), costs a small, strictly-additive
+`bin-common-handler` change (no existing call site touched), and reuses routing-key/exchange-kind
+plumbing that already exists one layer down. This decision is escalated to Open Question 9 (not
+resolved definitively in this doc -- (b) is not disqualified, just not preferred).
 
 **Straightforward part**: `customer_id` is already an explicit parameter at both call sites
 (§4) -- computing `customer_id.<customerID>.#`-shaped keys requires no new plumbing for that
@@ -316,9 +377,11 @@ live local websocket subscriber on that pod, and bind/unbind the per-pod queue a
   consumes it; `bin-talk-manager` publishes to `QueueNameTalkEvent`, `bin-timeline-manager`
   consumes it) -- unaffected by this design, per §7. Only `bin-api-manager`'s
   now-provably-pointless subscription to both is removed.
-- Any change to `bin-common-handler`'s `notifyHandler.PublishEvent`/`PublishWebhookEvent` public
-  signatures, or to any of the ~116 bare-`PublishEvent` call sites across ~25+ services --
-  moot under the reduced scope (§4), since those events never reached a websocket client.
+- Any change to `bin-common-handler`'s EXISTING `notifyHandler.PublishEvent`/
+  `PublishWebhookEvent`/`TopicCreate` signatures, or to any of the ~116 bare-`PublishEvent` call
+  sites across ~25+ services -- moot under the reduced scope (§4), since those events never
+  reached a websocket client. (A NEW, additive method on `notifyHandler` is in scope, per §6 --
+  this does not touch or require migrating any existing call site.)
 
 ## 11. Open questions (need resolution before/during implementation)
 
@@ -352,3 +415,14 @@ live local websocket subscriber on that pod, and bind/unbind the per-pod queue a
    (e.g. via `bin-common-handler`) between webhook-manager and whatever remains of
    `bin-api-manager`'s webhook-processing path, to avoid two independent implementations of the
    same envelope-parsing rules drifting apart over time?
+9. **(New) `notifyHandler` publish-mechanism extension.** §6 identifies that
+   `notifyHandler.PublishEvent`/`PublishWebhookEvent` have no routing-key parameter and
+   `TopicCreate` hardcodes `fanout` kind, even though `sockHandler`/`rabbitmqhandler` already
+   support both underneath. Confirm the recommended approach (additive new method(s) on
+   `notifyHandler`, e.g. `PublishEventWithRoutingKey`, plus an exchange-kind-aware
+   `TopicCreate` variant) during implementation planning: exact method signatures, whether
+   `PublishWebhookEvent`'s dual publish (event + webhook HTTP delivery) needs a parallel
+   with-routing-key variant or only the plain event path does, and confirm this really is
+   additive with zero changes to any of the ~116 existing bare `PublishEvent`/`PublishWebhookEvent`
+   call sites (verify via build/test of `bin-common-handler` and a sample of dependent services
+   after the change, not just by inspection).
