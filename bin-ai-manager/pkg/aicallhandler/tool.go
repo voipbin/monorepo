@@ -52,21 +52,23 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 	log.WithField("message", tmp).Debugf("Created the tool message for the actions. message_id: %s", tmp.ID)
 
 	mapFunctions := map[message.FunctionCallName]func(context.Context, *aicall.AIcall, *message.ToolCall) *messageContent{
-		message.FunctionCallNameConnectCall:       h.toolHandleConnect,
-		message.FunctionCallNameCreateCall:        h.toolHandleCreateCall,
-		message.FunctionCallNameGetVariables:      h.toolHandleGetVariables,
-		message.FunctionCallNameGetAIcallMessages: h.toolHandleGetAIcallMessages,
-		message.FunctionCallNameSendEmail:         h.toolHandleEmailSend,
-		message.FunctionCallNameSendMessage:       h.toolHandleMessageSend,
-		message.FunctionCallNameSetVariables:      h.toolHandleSetVariables,
-		message.FunctionCallNameStopFlow:          h.toolHandleStop,
-		message.FunctionCallNameStopMedia:           h.toolHandleMediaStop,
-		message.FunctionCallNameStopService:         h.toolHandleServiceStop,
-		message.FunctionCallNameSearchKnowledge:     h.toolHandleSearchKnowledge,
-		message.FunctionCallNameGetCorrelation:      h.toolHandleGetCorrelation,
-		message.FunctionCallNameGetResource:         h.toolHandleGetResource,
-		message.FunctionCallNameDescribeAction:      h.toolHandleDescribeAction,
-		message.FunctionCallNameCaseCreate:          h.toolHandleCaseCreate,
+		message.FunctionCallNameConnectCall:            h.toolHandleConnect,
+		message.FunctionCallNameCreateCall:             h.toolHandleCreateCall,
+		message.FunctionCallNameGetVariables:           h.toolHandleGetVariables,
+		message.FunctionCallNameGetAIcallMessages:      h.toolHandleGetAIcallMessages,
+		message.FunctionCallNameSendEmail:              h.toolHandleEmailSend,
+		message.FunctionCallNameSendMessage:            h.toolHandleMessageSend,
+		message.FunctionCallNameSetVariables:           h.toolHandleSetVariables,
+		message.FunctionCallNameStopFlow:               h.toolHandleStop,
+		message.FunctionCallNameStopMedia:              h.toolHandleMediaStop,
+		message.FunctionCallNameStopService:            h.toolHandleServiceStop,
+		message.FunctionCallNameSearchKnowledge:        h.toolHandleSearchKnowledge,
+		message.FunctionCallNameGetCorrelation:         h.toolHandleGetCorrelation,
+		message.FunctionCallNameGetResource:            h.toolHandleGetResource,
+		message.FunctionCallNameDescribeAction:         h.toolHandleDescribeAction,
+		message.FunctionCallNameCaseCreate:             h.toolHandleCaseCreate,
+		message.FunctionCallNameGetContactInteractions: h.toolHandleGetContactInteractions,
+		message.FunctionCallNameGetConversationContent: h.toolHandleGetConversationContent,
 	}
 
 	promAIcallToolExecuteTotal.WithLabelValues(string(tool.Function.Name)).Inc()
@@ -1026,4 +1028,3 @@ func formatCorrelationSummary(corr *tmcorrelation.Correlation) string {
 
 	return sb.String()
 }
-
