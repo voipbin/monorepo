@@ -120,7 +120,11 @@ disqualified for a real, non-trivial subset of call sites, confirmed by reading 
   `commonidentity.Identity`/`Owner`:
   - `bin-contact-manager/pkg/casehandler/casenote.go:53-57` —
     `map[string]uuid.UUID{"id":..., "case_id":..., "customer_id": customerID}`
-  - `bin-contact-manager/pkg/casehandler/case_tag.go:92,130` — same map pattern
+  - `bin-contact-manager/pkg/casehandler/case_tag.go:92-95,130-133` — same map pattern; note
+    this map carries only `case_id`/`tag_id` keys and has **no `customer_id` key at all**, so
+    these two call sites cannot even reach a `customer_id`-scoped routing key without an
+    additional lookup or a broader signature change beyond the map-to-struct migration itself —
+    a strictly harder case than the other two examples, not just "also a map."
   - `bin-call-manager/pkg/callhandler/outgoing_call.go:213-217` —
     `map[string]interface{}{"customer_id":..., "call_id":..., ...}`
 
@@ -140,16 +144,51 @@ disqualified for a real, non-trivial subset of call sites, confirmed by reading 
 RabbitMQ exchange kind is fixed at declare time; re-declaring an existing exchange name with a
 different kind fails with `PRECONDITION_FAILED`. Since `QueueNameWebhookEvent` /
 `QueueNameAgentEvent` / `QueueNameTalkEvent` are already declared `fanout` in production, an
-in-place kind change is not possible. Proposed path (to be detailed further in implementation
-planning, flagged here as a known constraint, not a solved problem):
+in-place kind change is not possible.
+
+**CRITICAL, verified: these three exchanges are NOT exclusively consumed by bin-api-manager.**
+A monorepo-wide grep confirms other, unrelated consumers subscribe to the same exchanges for
+their own purposes, all via `QueueSubscribe(queue, exchange)` -> `QueueBind(name, "", exchange,
+...)` (`bin-common-handler/pkg/rabbitmqhandler/queue.go:158-160`) — an **empty routing key**,
+which is irrelevant under `fanout` but under `topic` only matches messages published with an
+exactly-empty routing key:
+- `bin-agent-manager/cmd/agent-manager/main.go:159` subscribes to `QueueNameWebhookEvent`
+  (agent status update logic, unrelated to websocket delivery)
+- `bin-queue-manager/cmd/queue-manager/main.go:149` subscribes to `QueueNameAgentEvent`
+  (queue routing / agent-tag matching)
+- `bin-timeline-manager/pkg/subscribehandler/main.go:29,50,54` subscribes to **all three**
+  (`QueueNameAgentEvent`, `QueueNameTalkEvent`, `QueueNameWebhookEvent`) as part of its
+  platform-wide audit-log ingestion
+
+Because exchange kind is global per exchange name (not scoped per-consumer), converting these
+exchanges to `topic` with dot-formatted routing keys will **silently stop delivering events to
+bin-agent-manager, bin-queue-manager, and bin-timeline-manager** the moment the old fanout
+exchange is decommissioned, unless these three services' bindings are also migrated (e.g. to a
+wildcard `#` binding, since they need every event regardless of scope, not scoped filtering).
+This would break agent status updates, queue routing, and the platform audit log — a real,
+previously undisclosed regression risk, not covered by "api-manager pods migrate their per-pod
+queue bindings" alone. **The migration plan below is revised to explicitly include these three
+consumers**, and this is escalated to Open Question 7.
+
+Proposed path (to be detailed further in implementation planning; the steps below are a skeleton,
+not a finalized runbook):
 
 1. Declare new topic exchanges under new names (e.g. suffix `.topic` or a v2 queue-name constant)
    alongside the existing fanout exchanges.
 2. Publishers dual-publish to both old (fanout, unscoped) and new (topic, scoped) exchanges during
-   a transition window.
-3. api-manager pods migrate their per-pod queue bindings from the old exchange to the new one.
-4. Once all pods are confirmed on the new exchange, remove the dual-publish and decommission the
-   old fanout exchange.
+   a transition window. **Bind/unbind ordering during this window needs an explicit guarantee**:
+   if any consumer (api-manager pod, or the three non-websocket consumers above) ever binds to
+   the new exchange before fully cutting over from the old one, it will double-receive events
+   during the overlap. The doc does not yet specify a concrete ordering protocol for this —
+   flagged as part of Open Question 7, not resolved here.
+3. api-manager pods migrate their per-pod queue bindings from the old exchange to the new one
+   (scoped, per §7's dynamic bind/unbind). **bin-agent-manager, bin-queue-manager, and
+   bin-timeline-manager migrate their existing queues to bind the new topic exchange with a `#`
+   wildcard** (they need the full, unscoped event stream for their own purposes — this is a
+   like-for-like fanout-equivalent binding, not scoped filtering, and requires no changes to
+   their internal event-handling logic, only the bind call's target exchange name and key).
+4. Once all pods and all four consumer services are confirmed on the new exchange, remove the
+   dual-publish and decommission the old fanout exchange.
 
 This is standard blue/green exchange migration; needs concrete queue-name constants and a
 rollback plan before implementation, not resolved in this doc.
@@ -227,3 +266,13 @@ live local websocket subscriber on that pod, and bind/unbind the per-pod queue a
    (`newCtx` cancellation, `defer zmqSub.Terminate()`) fires on every disconnect, clean or not,
    but carries no per-topic unsubscribe signal today; the refcount component needs its own state
    to know what to decrement on this path, and that state doesn't exist in the codebase yet.
+7. **(New, blocking) Non-websocket consumers of the same exchanges.** `bin-agent-manager`,
+   `bin-queue-manager`, and `bin-timeline-manager` all subscribe to one or more of
+   `QueueNameWebhookEvent`/`QueueNameAgentEvent`/`QueueNameTalkEvent` today via empty-routing-key
+   fanout bindings, for purposes unrelated to websocket delivery (agent status updates, queue
+   routing, audit-log ingestion — see §6). Their migration to `#`-wildcard bindings on the new
+   topic exchange is sketched in §6 step 3 but not fully planned: does each of these three
+   services need code changes beyond the bind call (e.g. do they rely on routing-key value
+   anywhere, even though they ignore it today), and what is the verification/rollback plan
+   specific to each, given they are unrelated teams'/features' code paths from the websocket
+   subscription feature this design is otherwise scoped to?
