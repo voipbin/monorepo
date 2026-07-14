@@ -154,6 +154,7 @@ func containsString(haystack []string, needle string) bool {
 	return false
 }
 
+// TestCreateRoutingKeysForChat verifies the fan-out path.
 func TestCreateRoutingKeysForChat(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
