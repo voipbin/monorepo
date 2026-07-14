@@ -582,3 +582,54 @@ func Test_SendWebhookToURI_DualPublishesWithRoutingKey(t *testing.T) {
 	time.Sleep(400 * time.Millisecond)
 }
 
+// Test_SendWebhookToURI_ArbitraryFlowDesignerPayload_SkipsTopicPublishSilently is a regression
+// test for a round-1 review finding (2026-07-15) on the envelope-unwrapping fix: SendWebhookToURI
+// is not ONLY reached via the enveloped {"type":...,"data":...} POST /v1/webhooks path -- it is
+// also reached via the flow-designer's webhook_send action (bin-flow-manager's WebhookSend ->
+// processV1WebhookDestinationsPost), where the payload is arbitrary caller-authored string data,
+// never wrapped as webhook.Data{Type,Data}. This must NOT be misinterpreted as a malformed system
+// event (no Errorf spam) and must NOT publish a routing-keyed event to the topic exchange (there
+// is no reliable customer_id/owner_id/event-type to extract from arbitrary user content) --
+// it must fail safe and silent, while the primary fanout delivery (PublishEvent) still fires.
+func Test_SendWebhookToURI_ArbitraryFlowDesignerPayload_SkipsTopicPublishSilently(t *testing.T) {
+
+	customerID := uuid.FromStringOrNil("a27dc1d6-8254-11ec-8f09-e30cbed3e51e")
+
+	// Arbitrary flow-designer-authored payload -- NOT a {"type":...,"data":...} envelope.
+	data := json.RawMessage(`"hello world, this is my custom webhook_send body"`)
+
+	expectWebhook := &webhook.Webhook{
+		CustomerID: customerID,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockMessageTargethandler := accounthandler.NewMockAccountHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockTopicNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+	h := &webhookHandler{
+		db:                 mockDB,
+		notifyHandler:      mockNotify,
+		topicNotifyHandler: mockTopicNotify,
+		accoutHandler:      mockMessageTargethandler,
+	}
+
+	ctx := context.Background()
+
+	mockNotify.EXPECT().PublishEvent(ctx, webhook.EventTypeWebhookPublished, expectWebhook)
+	// CRITICAL: no PublishEventWithRoutingKey expectation set at all -- gomock will fail the
+	// test if the topic-exchange publish path is invoked for this non-enveloped payload.
+
+	err := h.SendWebhookToURI(ctx, customerID, "test.com", webhook.MethodTypePOST, "application/json", data)
+	if err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	time.Sleep(400 * time.Millisecond)
+}
+
