@@ -473,10 +473,16 @@ func Test_SendWebhookToCustomer_DualPublishesWithRoutingKey(t *testing.T) {
 	customerID := uuid.FromStringOrNil("a27dc1d6-8254-11ec-8f09-e30cbed3e51e")
 	callID := uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222")
 
-	data := json.RawMessage(fmt.Sprintf(
-		`{"id":"%s","customer_id":"%s"}`,
-		callID, customerID,
-	))
+	// data is the REAL production wire shape: a nested envelope {"type":"<resource>_<verb>",
+	// "data":{...resource fields incl. customer_id...}}. Every caller of SendWebhookToCustomer
+	// builds this via json.Marshal(webhook.Data{Type, Data}) -- see
+	// bin-webhook-manager/pkg/listenhandler/v1_webhooks.go. A flat, un-enveloped payload (as
+	// this test previously used) does NOT occur in production and does not exercise the
+	// envelope-unwrapping this function must do (VOIP-1258 post-deploy verification finding,
+	// 2026-07-14: an earlier version of publishRoutingKeyedEvent skipped this unwrap entirely
+	// and silently published zero routing keys for every real event).
+	innerData := json.RawMessage(fmt.Sprintf(`{"id":"%s","customer_id":"%s"}`, callID, customerID))
+	data := json.RawMessage(fmt.Sprintf(`{"type":"call_updated","data":%s}`, string(innerData)))
 
 	expectWebhook := &webhook.Webhook{
 		CustomerID: customerID,
@@ -490,10 +496,14 @@ func Test_SendWebhookToCustomer_DualPublishesWithRoutingKey(t *testing.T) {
 		WebhookURI:    "test.com",
 	}
 
-	// eventType passed to publishRoutingKeyedEvent is always webhook.EventTypeWebhookPublished
-	// ("webhook_published"); resource is the first underscore-delimited segment ("webhook"),
-	// but the FULL eventType is used as messageType in the routing key (per createRoutingKeys).
-	expectRoutingKey := fmt.Sprintf("customer_id.%s.webhook.webhook_published.%s", customerID, callID)
+	// eventType is now taken from the envelope's "type" field ("call_updated"), NOT the fixed
+	// webhook.EventTypeWebhookPublished constant passed into publishRoutingKeyedEvent -- see
+	// that function's doc comment. resource = "call" (first underscore segment of "call_updated").
+	// The routing key's payload is the INNER data (envelope.Data), not the full envelope --
+	// subscribers expect the bare resource object, matching the pre-VOIP-1258 consumer-side
+	// createTopics()/zmqpubHandler.Publish(topic, data) behavior where "data" was also the
+	// inner wh.Data, not the outer wrapper.
+	expectRoutingKey := fmt.Sprintf("customer_id.%s.call.call_updated.%s", customerID, callID)
 
 	mc := gomock.NewController(t)
 	defer mc.Finish()
@@ -514,7 +524,7 @@ func Test_SendWebhookToCustomer_DualPublishesWithRoutingKey(t *testing.T) {
 
 	mockMessageTargethandler.EXPECT().Get(ctx, customerID).Return(responseAccount, nil)
 	mockNotify.EXPECT().PublishEvent(ctx, webhook.EventTypeWebhookPublished, expectWebhook)
-	mockTopicNotify.EXPECT().PublishEventWithRoutingKey(ctx, webhook.EventTypeWebhookPublished, expectRoutingKey, data)
+	mockTopicNotify.EXPECT().PublishEventWithRoutingKey(ctx, "call_updated", expectRoutingKey, innerData)
 
 	err := h.SendWebhookToCustomer(ctx, customerID, "application/json", data)
 	if err != nil {
@@ -531,10 +541,10 @@ func Test_SendWebhookToURI_DualPublishesWithRoutingKey(t *testing.T) {
 	customerID := uuid.FromStringOrNil("a27dc1d6-8254-11ec-8f09-e30cbed3e51e")
 	callID := uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333")
 
-	data := json.RawMessage(fmt.Sprintf(
-		`{"id":"%s","customer_id":"%s"}`,
-		callID, customerID,
-	))
+	// See Test_SendWebhookToCustomer_DualPublishesWithRoutingKey's comment: data is always a
+	// nested {"type":...,"data":{...}} envelope in production, never a flat resource object.
+	innerData := json.RawMessage(fmt.Sprintf(`{"id":"%s","customer_id":"%s"}`, callID, customerID))
+	data := json.RawMessage(fmt.Sprintf(`{"type":"call_updated","data":%s}`, string(innerData)))
 
 	expectWebhook := &webhook.Webhook{
 		CustomerID: customerID,
@@ -542,7 +552,7 @@ func Test_SendWebhookToURI_DualPublishesWithRoutingKey(t *testing.T) {
 		Data:       data,
 	}
 
-	expectRoutingKey := fmt.Sprintf("customer_id.%s.webhook.webhook_published.%s", customerID, callID)
+	expectRoutingKey := fmt.Sprintf("customer_id.%s.call.call_updated.%s", customerID, callID)
 
 	mc := gomock.NewController(t)
 	defer mc.Finish()
@@ -562,7 +572,7 @@ func Test_SendWebhookToURI_DualPublishesWithRoutingKey(t *testing.T) {
 	ctx := context.Background()
 
 	mockNotify.EXPECT().PublishEvent(ctx, webhook.EventTypeWebhookPublished, expectWebhook)
-	mockTopicNotify.EXPECT().PublishEventWithRoutingKey(ctx, webhook.EventTypeWebhookPublished, expectRoutingKey, data)
+	mockTopicNotify.EXPECT().PublishEventWithRoutingKey(ctx, "call_updated", expectRoutingKey, innerData)
 
 	err := h.SendWebhookToURI(ctx, customerID, "test.com", webhook.MethodTypePOST, "application/json", data)
 	if err != nil {

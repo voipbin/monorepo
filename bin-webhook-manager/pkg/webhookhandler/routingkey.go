@@ -8,6 +8,8 @@ import (
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
+	"monorepo/bin-webhook-manager/models/webhook"
+
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 )
@@ -97,19 +99,33 @@ func (h *webhookHandler) createRoutingKeysForChat(ctx context.Context, d *webhoo
 // new topic exchange with each key. Best-effort: logs and returns on parse/RPC failure without
 // blocking the primary (fanout) delivery path above it.
 //
-// CRITICAL: uses h.topicNotifyHandler (bound to QueueNameWebhookEventTopic, a topic-kind
-// exchange -- constructed in Task 3.1), NOT h.notifyHandler (bound to the OLD fanout exchange).
-// Calling PublishEventWithRoutingKey on h.notifyHandler would compile and "succeed" silently --
-// fanout exchanges ignore routing keys entirely, so the event would be delivered but the
-// scoping this whole feature exists for would never take effect. This exact mistake was caught
-// in round-3 implementation-plan review: if Task 2.5 is implemented before Task 3.1 adds the
-// topicNotifyHandler field, this function CANNOT be written correctly yet -- do not stub it
-// with h.notifyHandler "temporarily," implement Task 3.1 first as already instructed above, and
-// write this function only once topicNotifyHandler exists on the struct.
-func (h *webhookHandler) publishRoutingKeyedEvent(ctx context.Context, eventType string, data json.RawMessage) {
-	log := logrus.WithFields(logrus.Fields{"func": "publishRoutingKeyedEvent", "event_type": eventType})
+// CRITICAL (envelope unwrapping): the `data` param here is the SAME json.RawMessage that
+// SendWebhookToCustomer/SendWebhookToURI receive, which is ALWAYS a nested wire envelope --
+// `{"type":"<resource>_<verb>","data":{...actual resource fields incl. customer_id/owner_id...}}`
+// -- because every caller of those two methods builds it via `json.Marshal(webhook.Data{Type,
+// Data})` (see bin-webhook-manager/models/webhook/webhook.go and
+// bin-webhook-manager/pkg/listenhandler/v1_webhooks.go). It is NEVER a flat resource object.
+// This was the actual production bug found during VOIP-1258 post-deploy verification
+// (2026-07-14): an earlier version of this function unmarshaled `data` directly into
+// webhookOwnerData, so customer_id/owner_id were always absent at the top level and always
+// parsed as uuid.Nil -- createRoutingKeys then returned an empty slice and NOTHING was ever
+// published to the topic exchange, even though the fanout (old-path) delivery succeeded and
+// looked completely fine. The pre-VOIP-1258 consumer-side code (bin-api-manager's
+// processEventWebhookManagerWebhookPublished/createTopics, now deleted) did this unwrap
+// correctly: unmarshal into webhook.Data{Type, Data}, use .Type as the message type, and parse
+// owner fields from .Data (not from the outer envelope). This function now does the same.
+func (h *webhookHandler) publishRoutingKeyedEvent(ctx context.Context, _ string, data json.RawMessage) {
+	log := logrus.WithFields(logrus.Fields{"func": "publishRoutingKeyedEvent"})
 
-	d, err := parseWebhookOwnerData(data)
+	envelope := &webhook.Data{}
+	if err := json.Unmarshal(data, envelope); err != nil {
+		log.Errorf("Could not unmarshal the webhook envelope for routing key computation. err: %v", err)
+		return
+	}
+	eventType := envelope.Type
+	log = log.WithField("event_type", eventType)
+
+	d, err := parseWebhookOwnerData(envelope.Data)
 	if err != nil {
 		log.Errorf("Could not parse owner data for routing key computation. err: %v", err)
 		return
@@ -134,6 +150,6 @@ func (h *webhookHandler) publishRoutingKeyedEvent(ctx context.Context, eventType
 	}
 
 	for _, key := range keys {
-		h.topicNotifyHandler.PublishEventWithRoutingKey(ctx, eventType, key, json.RawMessage(data))
+		h.topicNotifyHandler.PublishEventWithRoutingKey(ctx, eventType, key, envelope.Data)
 	}
 }
