@@ -530,14 +530,14 @@ live local websocket subscriber on that pod, and bind/unbind the per-pod queue a
    the `go generate`-regenerated mock -- not a broad blast radius, but should still be confirmed
    as part of the standard verification workflow (`go generate ./... && go test ./...`) rather
    than assumed.
-10. **(New) `agent_id` -> `owner_id` backward compatibility.** §5's wire-protocol rename is a
-    breaking change to the public websocket API. Decide: hard cutover (no transitional support),
-    or a transition window accepting BOTH `agent_id:...` and `owner_id:...` prefixes on
-    subscribe (with `owner_id` as the only one ever emitted server -> client, or with both
-    accepted client -> server but a deprecation notice), and for how long. This is a
-    product/support decision (announcement timing, existing customer migration communication),
-    not a pure engineering one -- flagged for explicit pchero sign-off before implementation,
-    not something to decide unilaterally during coding. If a transition window is chosen,
-    `validateTopics`/`validateTopic` (`bin-api-manager/pkg/websockhandler/etc.go`) would need to
-    accept both prefixes as equivalent during that window, adding temporary complexity that must
-    be tracked for removal afterward.
+10. **(New) `agent_id` -> `owner_id` backward compatibility -- RESOLVED (pchero, 2026-07-14):
+    hard cutover.** No transitional dual-accept period. `owner_id:...` is the only prefix
+    supported from the moment this ships; existing clients subscribing with `agent_id:...` break
+    immediately on deploy. Rationale: no external customers currently depend on the
+    `agent_id:...` wire format (internal/beta usage only at this stage). Consequence for
+    implementation: `validateTopics`/`validateTopic` (`bin-api-manager/pkg/websockhandler/etc.go`)
+    only need the `case "owner_id":` branch added/renamed -- no dual-prefix acceptance logic, no
+    deprecation-window bookkeeping, no follow-up removal task. Should still be called out in the
+    PR description and release notes as a breaking change to the public websocket API, and
+    confirmed with support/product before deploy that no known external client depends on
+    `agent_id:...` today.
