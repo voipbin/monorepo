@@ -169,7 +169,8 @@ const (
 	QueueNameUserSubscribe QueueName = "bin-manager.user-manager.subscribe"
 
 	// webhook-manager
-	QueueNameWebhookEvent     QueueName = "bin-manager.webhook-manager.event"
-	QueueNameWebhookRequest   QueueName = "bin-manager.webhook-manager.request"
-	QueueNameWebhookSubscribe QueueName = "bin-manager.webhook-manager.subscribe"
+	QueueNameWebhookEvent      QueueName = "bin-manager.webhook-manager.event"
+	QueueNameWebhookEventTopic QueueName = "bin-manager.webhook-manager.event.topic" // NEW, VOIP-1258
+	QueueNameWebhookRequest    QueueName = "bin-manager.webhook-manager.request"
+	QueueNameWebhookSubscribe  QueueName = "bin-manager.webhook-manager.subscribe"
 )

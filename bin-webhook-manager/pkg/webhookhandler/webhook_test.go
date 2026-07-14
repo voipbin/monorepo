@@ -329,7 +329,7 @@ func Test_NewWebhookHandler(t *testing.T) {
 	mockActiveflow := activeflowhandler.NewMockActiveflowHandler(mc)
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 
-	h := NewWebhookHandler(mockDB, mockNotify, mockReq, mockAccount, mockActiveflow)
+	h := NewWebhookHandler(mockDB, mockNotify, mockNotify, mockReq, mockAccount, mockActiveflow)
 	if h == nil {
 		t.Errorf("Wrong match. expect: handler, got: nil")
 	}
