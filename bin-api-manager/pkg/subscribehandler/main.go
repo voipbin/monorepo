@@ -98,6 +98,27 @@ func (h *subscribeHandler) Run() error {
 		}
 	}
 
+	// baseline "#" wildcard binding to the new topic exchange (VOIP-1258 §7 round-2 finding):
+	// a topic-kind exchange's empty-key bind (what QueueSubscribe used for the old fanout
+	// exchange) only matches messages published with an empty routing key, and every
+	// VOIP-1258 publish path uses non-empty scope-first keys, so this pod would receive ZERO
+	// events without this explicit bind.
+	//
+	// CRITICAL: this MUST run synchronously here, BEFORE ConsumeMessage is started below (not
+	// after Run() returns, as it originally lived in cmd/api-manager/main.go). QueueBind and
+	// ConsumeMessage's internal channel.Consume() share the SAME underlying AMQP channel
+	// object (rabbitmqhandler's queue.channel) for a given queue name. AMQP does not allow two
+	// synchronous RPCs to race on one channel -- if ConsumeMessage's basic.consume is already
+	// in flight on another goroutine when QueueBind fires, the broker closes the channel with
+	// "unexpected command received" (503), and ConsumeMessage fails to ever start consuming on
+	// this pod. This exact race was reproduced in production in bin-agent-manager (VOIP-1258 PR
+	// #1101 round-2 post-deploy verification, 2026-07-14) via the identical after-Run() call
+	// site pattern that this file also originally used -- fixed here proactively for the same
+	// reason before it recurs on this service too.
+	if err := h.sockHandler.QueueBind(h.subscribeQueueNamePod, "#", string(commonoutline.QueueNameWebhookEventTopic), false, nil); err != nil {
+		log.Errorf("Could not bind to the topic exchange. err: %v", err)
+	}
+
 	// receive subscribe events
 	go func() {
 		if errConsume := h.sockHandler.ConsumeMessage(context.Background(), h.subscribeQueueNamePod, string(commonoutline.ServiceNameAPIManager), false, false, false, 10, h.processEventRun); errConsume != nil {

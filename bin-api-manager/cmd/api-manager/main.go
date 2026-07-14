@@ -170,20 +170,16 @@ func runSubscribe(
 		zmqHandler,
 	)
 
+	// run. NOTE: the VOIP-1258 "#" wildcard binding to the new topic exchange lives INSIDE
+	// subscribeHandler.Run(), sequenced before ConsumeMessage starts -- see that function's
+	// doc comment for why doing it here (after Run() returns) is unsafe: Run() starts
+	// ConsumeMessage on a separate goroutine and returns immediately, so a QueueBind call
+	// here would race the in-flight basic.consume RPC on the same AMQP channel and could
+	// intermittently 503 the channel closed (reproduced in bin-agent-manager production,
+	// 2026-07-14, fixed there in commit ca8c104a9 and here proactively for the same reason).
 	if errRun := subHandler.Run(); errRun != nil {
 		log.Errorf("Could not run the subscribe handler. err: %v", errRun)
 		return
-	}
-
-	// baseline "#" wildcard binding to the new topic exchange (VOIP-1258 §7 round-2 finding):
-	// a topic-kind exchange's empty-key bind (what QueueSubscribe used for the old fanout
-	// exchange) only matches messages published with an empty routing key, and every
-	// VOIP-1258 publish path uses non-empty scope-first keys, so this pod would receive ZERO
-	// events without this explicit bind. MUST run AFTER subHandler.Run() above, since that is
-	// what actually declares queueNamePod via QueueCreate -- QueueBind against a queue that
-	// does not exist yet fails (see rabbitmqhandler.TestQueueBind_ReturnsErrorForNonExistent).
-	if err := sockHandler.QueueBind(queueNamePod, "#", string(commonoutline.QueueNameWebhookEventTopic), false, nil); err != nil {
-		logrus.Errorf("Could not bind to the topic exchange. err: %v", err)
 	}
 }
 
