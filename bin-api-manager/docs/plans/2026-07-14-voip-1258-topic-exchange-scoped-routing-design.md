@@ -176,6 +176,14 @@ into `bin-webhook-manager`**, run against `data` before publish, to extract `Own
 way `createTopics()` does today. This is a genuine, non-trivial logic move (not just a signature
 change), but it is confined to `bin-webhook-manager`, not spread across ~25 services.
 
+**Symmetry note, verified**: both `SendWebhookToCustomer` and `SendWebhookToURI` construct an
+identical `wh := &webhook.Webhook{...}` before calling `notifyHandler.PublishEvent` (lines
+~60-65 and ~138-143 respectively) -- they feed the exact same downstream event path to
+`QueueNameWebhookEvent`. Harder parts 1 and 2 below therefore apply symmetrically to BOTH entry
+points, not just `SendWebhookToCustomer`. The routing-key-computation logic (nested-envelope
+unmarshal + chat-participant RPC) should live in one shared internal helper called from both
+functions, not duplicated per call site.
+
 **Harder part 2 -- chat participant fan-out RPC moves to the publish path**: for
 `chat`/`chatmessage`/`chatparticipant` resource types, `createTopics()` today calls
 `h.reqHandler.TalkV1ParticipantList(ctx, chatID)` (`webhookmanager.go:143`) AFTER receiving the
