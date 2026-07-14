@@ -170,8 +170,11 @@ to the public API, not an internal-only rename.**
 **Why this is a natural fit, verified from source, not just naming preference:** the underlying
 data model is ALREADY generic. `commonidentity.Owner` (`bin-common-handler/models/identity/owner.go:5-8`)
 is `{OwnerType OwnerType, OwnerID uuid.UUID}`, with `OwnerType` currently having exactly one
-value, `OwnerTypeAgent = "agent"` (`owner.go:17`) -- the struct was designed to support more
-owner types later, but the wire-protocol string hardcodes `"agent_id"` regardless. Confirmed:
+value, `OwnerTypeAgent = "agent"` (`owner.go:17`) -- the struct's SHAPE is already generic
+(whether or not that was the original design intent; `owner.go` itself carries no comment
+indicating forward-looking design for multiple owner types, so this is an observation about the
+current structure, not a claim about historical intent), but the wire-protocol string hardcodes
+`"agent_id"` regardless. Confirmed:
 `createTopics()` (`bin-api-manager/pkg/subscribehandler/webhookmanager.go:138,150,152,162,171`)
 already reads `d.OwnerID` (the generic field) and only hardcodes the STRING PREFIX `"agent_id"`
 when building the topic string -- the rename aligns the wire string with the model that already
@@ -197,6 +200,24 @@ service -- no other service's code references the `agent_id:` wire string):
   docs.voipbin.net document `agent_id:<uuid>:<resource>:<resource_id>` as a first-class example
   topic pattern; MUST be updated per this repo's CLAUDE.md RST-sync rule ("stale docs actively
   mislead customers"), rebuilt via `sphinx -M html`, and force-added (`build/` is gitignored).
+
+**Checked and explicitly excluded, not silently omitted**: a fresh monorepo-wide grep for the
+literal `agent_id:` wire prefix additionally found two categories of non-code hits, neither
+requiring action:
+- `bin-api-manager/pkg/websockhandler/subscription.go:81` -- a log message
+  (`log.Debugf("Websocket connection has been closed. agent_id: %s", ...)`) using `agent_id` as
+  a structured-log field label, not the wire-protocol prefix. No rename needed; unrelated usage.
+- Repo-root `docs/plans/2026-04-02-talk-websocket-distribution-design.md` and
+  `docs/plans/2026-04-02-talk-manager-event-prefix-design.md` -- stale, historical, already-
+  implemented design docs that describe the `agent_id:...` wire format as it existed when those
+  designs shipped. These are a historical record, not live documentation (unlike the `docsdev/
+  source/*.rst` files above, which ARE the live docs.voipbin.net content) -- left as-is, not
+  updated, since retroactively editing historical design docs to reflect a later rename would
+  make them inaccurate as a historical record of what was actually decided/built at the time.
+- No hits in any OpenAPI spec file for the wire-protocol prefix (`bin-openapi-manager/openapi/
+  openapi.yaml`'s one `agent_id` occurrence is an unrelated schema field,
+  `TalkManagerMedia.type=agent`, not this topic-string prefix). No frontend repo hits (no
+  square-admin/square-main directories exist in this monorepo).
 
 **Not affected**: `commonidentity.Owner`'s Go field names (`OwnerType`, `OwnerID`) are already
 correctly named and require no change; only the WIRE STRING `"agent_id"` (embedded in topic
