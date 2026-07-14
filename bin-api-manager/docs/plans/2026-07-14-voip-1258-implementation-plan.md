@@ -38,39 +38,10 @@ and dual-publishes → (3) exchange migration + non-websocket consumers move to 
 **Step 1:** `QueueBind` already exists as a public method on `rabbit` (concrete struct,
 `rabbitmqhandler/queue.go:163`) but is NOT on the `SockHandler` interface. `QueueUnbind` does
 not exist anywhere in `bin-common-handler` yet (verified: zero hits). Both are needed for Phase
-4's dynamic bind/unbind. Add to the interface:
-
-```go
-// bin-common-handler/pkg/sockhandler/main.go
-type SockHandler interface {
-	Connect()
-	Close()
-
-	ConsumeMessage(ctx context.Context, queueName string, consumerName string, exclusive bool, noLocal bool, noWait bool, numWorkers int, messageConsume sock.CbMsgConsume) error
-	ConsumeRPC(ctx context.Context, queueName string, consumerName string, exclusive bool, noLocal bool, noWait bool, workerNum int, cbConsume sock.CbMsgRPC) error
-
-	TopicCreate(name string) error
-	TopicCreateWithKind(name string, kind string) error // NEW
-
-	EventPublish(topic string, key string, evt *sock.Event) error
-	EventPublishWithDelay(topic string, key string, evt *sock.Event, delay int) error
-	EventPublishWithKey(topic string, key string, evt *sock.Event) error // NEW (alias-clear name; see Task 1.2 note)
-
-	RequestPublish(ctx context.Context, queueName string, req *sock.Request) (*sock.Response, error)
-	RequestPublishWithDelay(queueName string, req *sock.Request, delay int) error
-
-	QueueCreate(name string, queueType string) error
-	QueueSubscribe(name string, topic string) error
-	QueueBind(name, key, exchange string, noWait bool, args amqp.Table) error    // NEW: expose existing rabbit method
-	QueueUnbind(name, key, exchange string, args amqp.Table) error                // NEW: does not exist yet, see Task 1.3
-}
-```
-
-**Note on `EventPublishWithKey`**: `EventPublish(topic, key string, evt *sock.Event)` already
-takes a `key` parameter (verified, `sockhandler/main.go:20`) — it is NOT missing at this layer.
-**Skip adding `EventPublishWithKey`; `EventPublish` is already sufficient at the `SockHandler`
-level.** The gap is one layer up, at `NotifyHandler` (Task 1.2). Strike this line from the
-interface above — corrected list:
+4's dynamic bind/unbind. Add the following to the interface (this is the FINAL, authoritative
+list — `EventPublish` at the `SockHandler` level already accepts a `key string` parameter,
+confirmed at `sockhandler/main.go:20`, so no new `EventPublishWithKey` method is needed here;
+the routing-key gap is one layer up, at `NotifyHandler`, addressed separately in Task 1.2):
 
 ```go
 type SockHandler interface {
@@ -257,9 +228,42 @@ needed — no change required there, it's already compatible with the interface 
 1.1. Only `QueueUnbind` needs to be added:
 
 ```go
-// bin-common-handler/pkg/rabbitmqhandler/queue.go — add after QueueBind:
+// bin-common-handler/pkg/rabbitmqhandler/queue.go — add after QueueBind, and MODIFY QueueBind
+// itself per the "Decision: implement option (a)" caveat above:
 
-// QueueUnbind unbinds queue and exchange with a key
+// QueueBind binds queue and exchange with a key. Appends to the tracked bind set for this
+// queue name (does not overwrite), so redeclareAll() can restore ALL active bindings after a
+// broker reconnect, not just the most recent one (VOIP-1258 round-1 implementation-plan review
+// finding F2).
+func (r *rabbit) QueueBind(name, key, exchange string, noWait bool, args amqp.Table) error {
+	queue := r.queueGet(name)
+	if queue == nil {
+		return fmt.Errorf("no queue found")
+	}
+
+	if err := queue.channel.QueueBind(name, key, exchange, noWait, args); err != nil {
+		return err
+	}
+
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	for _, b := range r.queueBinds[name] {
+		if b.key == key && b.exchange == exchange {
+			return nil // already tracked, idempotent re-bind
+		}
+	}
+	r.queueBinds[name] = append(r.queueBinds[name], &queueBind{
+		name:     name,
+		key:      key,
+		exchange: exchange,
+		noWait:   noWait,
+		args:     args,
+	})
+	return nil
+}
+
+// QueueUnbind unbinds queue and exchange with a key, removing the matching entry from the
+// tracked bind set (not the whole map key, unless the set becomes empty).
 func (r *rabbit) QueueUnbind(name, key, exchange string, args amqp.Table) error {
 	queue := r.queueGet(name)
 	if queue == nil {
@@ -271,24 +275,70 @@ func (r *rabbit) QueueUnbind(name, key, exchange string, args amqp.Table) error 
 	}
 
 	r.mu.Lock()
-	delete(r.queueBinds, name) // NOTE: see caveat below if multiple binds per queue name are tracked
-	r.mu.Unlock()
+	defer r.mu.Unlock()
+	binds := r.queueBinds[name]
+	for i, b := range binds {
+		if b.key == key && b.exchange == exchange {
+			r.queueBinds[name] = append(binds[:i], binds[i+1:]...)
+			break
+		}
+	}
+	if len(r.queueBinds[name]) == 0 {
+		delete(r.queueBinds, name)
+	}
 	return nil
 }
 ```
 
-**Caveat, must verify before merging**: `r.queueBinds` is keyed by queue `name` only
-(`queue.go:174`, `QueueBind`'s existing code: `r.queueBinds[name] = &queueBind{...}`) — it
-overwrites on each bind, so it currently only tracks the MOST RECENT bind per queue name, not a
-set of all binds. For Phase 4's dynamic bind/unbind (one queue, many scope bindings
-simultaneously), this internal bookkeeping map is insufficient as-is. Two options, decide during
-Phase 4 planning (Task 4.1), not now:
-- (a) Change `r.queueBinds[name]` to `map[string][]*queueBind` (a slice per queue name) --
-  affects any other code reading `r.queueBinds` (grep before changing).
-  - (b) Don't rely on `r.queueBinds` for the refcount tracking at all; track scope→refcount
-  entirely in `bin-api-manager`'s own new component (Task 4.2) and treat `QueueBind`/`QueueUnbind`
-  as pure fire-and-forget AMQP calls. **Recommended**: (b) is simpler and doesn't touch shared
-  `rabbitmqhandler` internals for an api-manager-specific concern.
+Also update the `r.queueBinds` field declaration (find its struct, likely in
+`bin-common-handler/pkg/rabbitmqhandler/main.go` near the `queues`/`exchanges` map
+declarations) from `map[string]*queueBind` to `map[string][]*queueBind`, and update
+`redeclareAll()`'s snapshot loop (`main.go:275-278`) to flatten the nested slices:
+
+```go
+// bin-common-handler/pkg/rabbitmqhandler/main.go:275-278 — MODIFY:
+bindsCopy := make([]*queueBind, 0, len(r.queueBinds))
+for _, binds := range r.queueBinds { // now a [][]*queueBind value per key
+	bindsCopy = append(bindsCopy, binds...)
+}
+```
+
+**Caveat, RESOLVED (was previously deferred, now decided per round-1 implementation-plan review
+finding F2)**: `r.queueBinds` is keyed by queue `name` only (`queue.go:174`, `QueueBind`'s
+existing code: `r.queueBinds[name] = &queueBind{...}`) — it overwrites on each bind, so it
+currently only tracks the MOST RECENT bind per queue name, not a set of all binds. **This is not
+merely a bookkeeping gap: `rabbitmqhandler/main.go:260-307`'s `redeclareAll()` iterates
+`r.queueBinds` and automatically re-issues `QueueBind` for each tracked entry on every broker
+reconnect, to restore state after a connection drop.** Since only the LAST bind survives in the
+map, once Phase 4's `scopeRefCount` (Task 4.1) has bound a single per-pod queue to N different
+scope patterns, a broker reconnect will silently restore only ONE of those N bindings — every
+other live subscriber's scope goes dark (receives zero events) until that specific connection
+happens to re-subscribe (which nothing today triggers automatically on reconnect). **This is a
+real production-availability bug, not a hypothetical**, and treating `QueueBind`/`QueueUnbind`
+as fire-and-forget from `bin-api-manager`'s side (the originally-considered option (b)) does NOT
+avoid it, because the bug lives inside `rabbitmqhandler`'s own internal reconnect logic, a layer
+below where `bin-api-manager`'s refcount component operates.
+
+**Decision: implement option (a).** Change `r.queueBinds` from `map[string]*queueBind` to
+`map[string][]*queueBind` (one queue name maps to a SET of binds, not a single overwritten
+entry). This requires:
+- Updating the field declaration in `rabbitmqhandler`'s struct (find via `grep -n "queueBinds"
+  bin-common-handler/pkg/rabbitmqhandler/*.go` — check ALL read/write sites, not just
+  `queue.go:174` and `main.go:275-278`, before changing the type).
+- `QueueBind` (Task 1.3, below): append to the slice instead of overwriting, but first check
+  whether an identical `(name, key, exchange)` triple already exists in the slice (idempotent
+  re-bind, since `Acquire()` in Task 4.1 may call `QueueBind` again for a pattern that's already
+  bound if `scopeRefCount`'s in-memory state and the broker's actual state ever diverge after a
+  reconnect — defensive, avoids duplicate slice entries).
+- `QueueUnbind` (Task 1.3, below): remove the matching entry from the slice, not the whole map
+  key, and only delete the map key entirely when the slice becomes empty.
+- `redeclareAll()` (`main.go:298-303`): already iterates a flat list of all binds — this loop is
+  UNCHANGED once the underlying data structure holds every bind instead of just the last one;
+  the fix is entirely in how `queueBinds` is populated/depopulated, not in how it's replayed.
+
+This is now a REQUIRED part of Task 1.3 (not deferred to Phase 4 planning as originally
+written), since Phase 4's `scopeRefCount` component depends on reconnects correctly restoring
+ALL of a pod's active scope bindings, not just the most recent one.
 
 **Step 2: Verify build**
 
@@ -686,7 +736,11 @@ func TestCreateRoutingKeysForChat(t *testing.T) {
 		ChatID:   chatID,
 	}
 
-	mockReq.EXPECT().TalkV1ParticipantList(gomock.Any(), chatID).Return([]tmparticipant.Participant{
+	// NOTE: TalkV1ParticipantList returns []*tkparticipant.Participant (POINTER slice),
+	// verified against bin-common-handler/pkg/requesthandler/main.go:1394 and
+	// talk_participants.go:16 -- NOT a value slice. Using tkparticipant (bin-talk-manager's
+	// models/participant package), not tmparticipant.
+	mockReq.EXPECT().TalkV1ParticipantList(gomock.Any(), chatID).Return([]*tkparticipant.Participant{
 		{Owner: commonidentity.Owner{OwnerID: uuid.FromStringOrNil("p1000000-0000-0000-0000-000000000001")}},
 		{Owner: commonidentity.Owner{OwnerID: uuid.FromStringOrNil("p2000000-0000-0000-0000-000000000002")}},
 	}, nil)
@@ -748,6 +802,8 @@ func (h *webhookHandler) createRoutingKeysForChat(ctx context.Context, d *webhoo
 		return res
 	}
 
+	// NOTE: participants is []*tkparticipant.Participant (pointer slice) -- verified against
+	// bin-common-handler/pkg/requesthandler/main.go:1394. p is a pointer here, not a value.
 	for _, p := range participants {
 		if p.OwnerID == d.OwnerID {
 			continue // already added above
@@ -1082,19 +1138,39 @@ marking Phase 3 complete.
 **Step 1:** Replace the additive `QueueBind` call from Task 3.2/3.3 with a direct swap: change
 the exchange name in the EXISTING `QueueSubscribe(queueNamePod, string(commonoutline.QueueNameWebhookEvent))`
 call to `commonoutline.QueueNameWebhookEventTopic`, and follow it with an explicit `#`
-`QueueBind` (since `QueueSubscribe` always binds with an empty key, wrong for a topic exchange):
+`QueueBind` (since `QueueSubscribe` always binds with an empty key, wrong for a topic exchange).
+**Critically, this must also explicitly `QueueUnbind` the OLD fanout binding — verified via
+round-1 implementation-plan review finding F3 that `bin-agent-manager`/`bin-timeline-manager`
+use a DURABLE, shared, non-per-pod queue (`QueueCreate(subscribeQueue, "normal")`, confirmed at
+`subscribehandler/main.go:120` for timeline-manager, not `"volatile"`/UUID-suffixed like
+api-manager's per-pod queue) that PERSISTS the old binding across deploys. AMQP `QueueBind` is
+additive — declaring a new binding does NOT remove a pre-existing one on the same queue. Without
+an explicit `QueueUnbind`, this queue ends up bound to BOTH the old fanout exchange (implicit
+match-all) AND the new topic exchange with `#` (also match-all) simultaneously, reproducing
+Task 3.4's double-processing bug exactly, since `bin-webhook-manager` dual-publishes to both
+exchanges during this window (Task 2.5/3.1).**
 
 ```go
 // bin-agent-manager/cmd/agent-manager/main.go — REPLACE:
 //   sockHandler.QueueSubscribe(queueNamePod, string(commonoutline.QueueNameWebhookEvent))
-// WITH:
-if err := sockHandler.QueueCreate(queueNamePod, "volatile"); err != nil { /* ... */ }
+// WITH (bind new + unbind old, in that order, to avoid an event-loss window where the queue is
+// briefly bound to neither exchange):
+if err := sockHandler.QueueCreate(queueNamePod, "normal"); err != nil { /* ... */ } // queueType matches existing declaration; do not change to "volatile"
 if err := sockHandler.QueueBind(queueNamePod, "#", string(commonoutline.QueueNameWebhookEventTopic), false, nil); err != nil {
 	logrus.Errorf("Could not bind to the topic exchange. err: %v", err)
+	// do NOT proceed to unbind the old exchange if this bind failed -- stay on the old
+	// exchange rather than risk ending up bound to neither.
+} else if err := sockHandler.QueueUnbind(queueNamePod, "", string(commonoutline.QueueNameWebhookEvent), nil); err != nil {
+	logrus.Errorf("Could not unbind from the old fanout exchange. err: %v", err)
+	// non-fatal: the queue is now bound to BOTH exchanges (double-processing resumes) --
+	// alert/log loudly, this needs manual intervention (confirm the unbind succeeded via
+	// RabbitMQ management API) rather than silently leaving the queue in a degraded state.
 }
 ```
 
-Same pattern for `bin-timeline-manager`.
+Same pattern for `bin-timeline-manager`, using its actual queue-type argument as currently
+declared (`"normal"`, confirmed at `subscribehandler/main.go:120` — do not assume `"volatile"`;
+verify the exact call before writing this code).
 
 **Step 2:** Build, test, deploy, re-verify single delivery per event (repeat Task 3.4's
 verification, this time checking no double-processing).
@@ -1430,22 +1506,54 @@ func (h *websockHandler) subscriptionHandleMessage(ctx context.Context, a *auth.
 }
 ```
 
-**Step 3:** Add `scopeRefCount` field to `websockHandler` struct and construct one PER
-CONNECTION pointed at that pod's SHARED per-pod queue (the refcount map itself must be
-pod-wide/shared across connections on the same pod, NOT per-connection — re-check: `scopeRefCount`
-should be a single instance owned by `websockHandler` itself, constructed once at pod startup,
-not per `subscriptionRun` call). Revise:
+**Step 3:** Add `scopeRefCount` field to `websockHandler` struct, threaded from `cmd/api-manager/
+main.go` where the per-pod queue and `sockHandler` actually live. **Verified via round-1
+implementation-plan review finding F4: `websockHandler` (`pkg/websockhandler/main.go:30-33`)
+currently has NO `sockhandler.SockHandler` field, and its constructor `NewWebsockHandler(reqHandler,
+streamHandler)` (called from `cmd/api-manager/main.go:136`) takes neither a sock handler nor a
+queue name — the per-pod queue (`queueNamePod`) and its `sockHandler` are constructed entirely
+in `cmd/api-manager/main.go:157`, outside the `websockhandler` package. This requires a new
+cross-package wiring, not just a struct field addition:**
 
 ```go
-// bin-api-manager/pkg/websockhandler/main.go — websockHandler struct:
+// bin-api-manager/pkg/websockhandler/main.go — MODIFY:
 type websockHandler struct {
-	// ... existing fields ...
+	reqHandler    requesthandler.RequestHandler
+	streamHandler streamhandler.StreamHandler
 	scopeRefCount *scopeRefCount // NEW: shared across all connections on this pod
+}
+
+// NewWebsockHandler creates a new HookHandler
+func NewWebsockHandler(
+	reqHandler requesthandler.RequestHandler,
+	streamHandler streamhandler.StreamHandler,
+	sockHandler sockhandler.SockHandler, // NEW param
+	queueNamePod string, // NEW param -- the SAME per-pod queue name main.go already constructs
+) WebsockHandler {
+
+	res := &websockHandler{
+		reqHandler:    reqHandler,
+		streamHandler: streamHandler,
+		scopeRefCount: newScopeRefCount(sockHandler, queueNamePod, string(commonoutline.QueueNameWebhookEventTopic)), // NEW
+	}
+
+	endpointInit()
+
+	return res
 }
 ```
 
-Construct once in the handler's constructor (find `NewWebsockHandler` or equivalent), pointed at
-the pod's existing per-pod queue name and the new topic exchange constant.
+```go
+// bin-api-manager/cmd/api-manager/main.go — MODIFY the existing NewWebsockHandler call site
+// at line 136 to pass the sockHandler and queueNamePod locals that are ALREADY constructed at
+// line 157 today. This requires either (a) reordering so queue/sockHandler construction happens
+// BEFORE the NewWebsockHandler(...) call (currently it's the reverse order, verify with
+// `grep -n "queueNamePod\|NewWebsockHandler" bin-api-manager/cmd/api-manager/main.go` before
+// writing this change), or (b) passing them as forward references if Go's initialization order
+// allows it. Read the full current main.go control flow before implementing this reordering --
+// do not assume it's a trivial one-line change.
+websockHandler := websockhandler.NewWebsockHandler(reqHandler, streamHandler, sockHandler, queueNamePod)
+```
 
 **Step 4: Write test for the wiring**
 
