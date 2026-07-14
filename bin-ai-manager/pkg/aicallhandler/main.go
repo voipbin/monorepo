@@ -266,10 +266,6 @@ Keep the message content empty.
 	// Insight AIs are restricted to the Insight tool set (see
 	// tool.AllInsightToolNames) and are used to analyze existing contact/
 	// conversation data rather than to drive a live call or task workflow.
-	//
-	// TODO(VOIP-1234): the two Insight tools (get_contact_interactions,
-	// get_conversation_content) referenced by this prompt are not implemented
-	// yet; this prompt describes the intended behavior ahead of that work.
 	InsightSystemPrompt = `You are an Insight AI for VoIPBin. Your role is to analyze existing contact and conversation
 data to answer questions and surface insights — you do not drive a live call or execute a task workflow.
 

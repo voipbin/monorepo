@@ -605,7 +605,7 @@ run_llm: Set true (default) to confirm verbally ("I've placed the call").`,
 					"description": "UUID of a pre-existing flow the new call will execute. Provide EITHER flow_id OR actions, not both. Must belong to your account.",
 				},
 				"actions": map[string]any{
-					"type": "array",
+					"type":        "array",
 					"description": "Assemble the call scenario inline as an ordered list of flow actions, INSTEAD OF flow_id. Provide EITHER flow_id OR actions, not both. Each item is a flow action with a 'type' and a type-specific 'option' object. Example to speak a message then hang up: [{\"type\":\"talk\",\"option\":{\"text\":\"Hi, the meeting moved to 3pm\",\"language\":\"en-US\"}},{\"type\":\"hangup\"}].",
 					"items": map[string]any{
 						"type": "object",
@@ -749,5 +749,75 @@ Optional name/detail/note describe the case for a human agent reviewing it later
 			},
 		},
 		RunLLM: true,
+	},
+	{
+		Name:   tool.ToolNameGetContactInteractions,
+		RunLLM: true,
+		Description: `Lists past interactions (calls, conversation messages) with the contact/peer of the Case this Insight AI was opened for.
+
+WHEN TO USE:
+- Answering "has this customer contacted us before" / "what's the interaction history".
+- Discovering candidate conversation message ids to pass into get_conversation_content.
+
+WHEN NOT TO USE:
+- You need the actual message text (use get_conversation_content with a reference_id from this tool's output).
+
+Always scoped to the current Case; there is no argument to target a different Case or contact.
+
+run_llm: Set true to reason about the returned interaction history.`,
+		Parameters: map[string]any{
+			"type": "object",
+			"properties": map[string]any{
+				"run_llm": map[string]any{
+					"type":        "boolean",
+					"description": "Set true to reason about the retrieved interaction history.",
+					"default":     true,
+				},
+				"limit": map[string]any{
+					"type":        "integer",
+					"description": "Maximum number of interactions to return (default 20, max 50).",
+					"default":     20,
+				},
+			},
+		},
+	},
+	{
+		Name:   tool.ToolNameGetConversationContent,
+		RunLLM: true,
+		Description: `Retrieves the message transcript of a conversation, given the reference_id of a conversation_message-type interaction returned by get_contact_interactions.
+
+WHEN TO USE:
+- You need the actual text of what was said, not just that an interaction happened.
+- You already have a reference_id from get_contact_interactions for the conversation you want to read.
+
+WHEN NOT TO USE:
+- You have not yet called get_contact_interactions -- call it first to discover candidate reference_id values.
+
+ARGUMENTS:
+- reference_id (required): the reference id of a conversation_message-type interaction (a message id), as returned by get_contact_interactions. This tool resolves the message's conversation and returns the surrounding thread.
+
+You can only retrieve conversations owned by your own account; anything else returns "Resource not found."
+
+run_llm: Set true to reason about the retrieved conversation content.`,
+		Parameters: map[string]any{
+			"type": "object",
+			"properties": map[string]any{
+				"run_llm": map[string]any{
+					"type":        "boolean",
+					"description": "Set true to reason about the retrieved conversation content.",
+					"default":     true,
+				},
+				"reference_id": map[string]any{
+					"type":        "string",
+					"description": "The reference id of a conversation_message-type interaction, as returned by get_contact_interactions. Call get_contact_interactions first to discover candidate ids.",
+				},
+				"limit": map[string]any{
+					"type":        "integer",
+					"description": "Maximum number of messages to return from the resolved conversation (default 20, max 50).",
+					"default":     20,
+				},
+			},
+			"required": []string{"reference_id"},
+		},
 	},
 }
