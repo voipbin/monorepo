@@ -3,6 +3,7 @@ package rabbitmqhandler
 import (
 	"context"
 	"errors"
+	"fmt"
 	"monorepo/bin-common-handler/models/sock"
 	"sync"
 	"testing"
@@ -31,6 +32,9 @@ type mockChannel struct {
 	qosPrefetchCount int
 	qosPrefetchSize  int
 	qosGlobal        bool
+
+	mu                 sync.Mutex // guards queueBindCallCount for concurrent-access tests (VOIP-1258)
+	queueBindCallCount int         // VOIP-1258: counts QueueBind invocations, used to verify redeclareAll restores ALL tracked binds
 }
 
 func newMockChannel() *mockChannel {
@@ -61,6 +65,9 @@ func (m *mockChannel) Qos(prefetchCount, prefetchSize int, global bool) error {
 }
 
 func (m *mockChannel) QueueBind(name, key, exchange string, noWait bool, args amqp.Table) error {
+	m.mu.Lock()
+	m.queueBindCallCount++
+	m.mu.Unlock()
 	return m.queueBindErr
 }
 
@@ -733,6 +740,122 @@ func TestQueueUnbind_ReturnsChannelError(t *testing.T) {
 	err := r.QueueUnbind("test-queue", "key", "exchange", nil)
 	if err == nil {
 		t.Error("Expected error from channel QueueUnbind")
+	}
+}
+
+// TestQueueBind_IdempotentRebind verifies that binding the same (key, exchange) pair twice
+// does not create a duplicate tracked entry (VOIP-1258 round-1 review, code-quality follow-up:
+// this was the single most novel piece of logic in the diff and had no direct test).
+func TestQueueBind_IdempotentRebind(t *testing.T) {
+	mockCh := newMockChannel()
+
+	r := &rabbit{
+		queues:     make(map[string]*queue),
+		queueBinds: make(map[string][]*queueBind),
+	}
+	r.queues["test-queue"] = &queue{
+		name:    "test-queue",
+		channel: mockCh,
+	}
+
+	if err := r.QueueBind("test-queue", "routing-key", "test-exchange", false, nil); err != nil {
+		t.Fatalf("Expected no error on first bind, got %v", err)
+	}
+	if err := r.QueueBind("test-queue", "routing-key", "test-exchange", false, nil); err != nil {
+		t.Fatalf("Expected no error on idempotent re-bind, got %v", err)
+	}
+
+	binds := r.queueBinds["test-queue"]
+	if len(binds) != 1 {
+		t.Fatalf("Expected slice to stay at length 1 after idempotent re-bind, got %d", len(binds))
+	}
+}
+
+// TestRedeclareAll_RestoresAllBindsForSameQueue is a direct regression test for VOIP-1258
+// round-1 implementation-plan review finding F2: a broker reconnect must restore ALL active
+// binds for a queue, not just the most recent one (the bug that motivated the
+// map[string]*queueBind -> map[string][]*queueBind change). This exercises the exact snapshot
+// + replay logic redeclareAll uses for binds (bindsCopy flattening + re-issuing QueueBind per
+// entry), without going through the full redeclareAll (which also re-declares queues/exchanges
+// via a live amqp connection, out of scope for this unit test).
+func TestRedeclareAll_RestoresAllBindsForSameQueue(t *testing.T) {
+	mockCh := newMockChannel()
+
+	r := &rabbit{
+		queues:     make(map[string]*queue),
+		exchanges:  make(map[string]*exchange),
+		queueBinds: make(map[string][]*queueBind),
+	}
+	r.queues["test-queue"] = &queue{
+		name:    "test-queue",
+		channel: mockCh,
+	}
+
+	if err := r.QueueBind("test-queue", "customer_id.abc.#", "topic-exchange", false, nil); err != nil {
+		t.Fatalf("Expected no error binding first scope, got %v", err)
+	}
+	if err := r.QueueBind("test-queue", "agent_id.def.#", "topic-exchange", false, nil); err != nil {
+		t.Fatalf("Expected no error binding second scope, got %v", err)
+	}
+
+	// Reproduce redeclareAll's bind-snapshot-and-replay logic directly (main.go:279-282,
+	// 302-307), which is the part this test targets -- flattening map[string][]*queueBind into
+	// a single replay list and re-issuing QueueBind for every entry.
+	r.mu.RLock()
+	bindsCopy := make([]*queueBind, 0, len(r.queueBinds))
+	for _, binds := range r.queueBinds {
+		bindsCopy = append(bindsCopy, binds...)
+	}
+	r.mu.RUnlock()
+
+	if len(bindsCopy) != 2 {
+		t.Fatalf("Expected the bind snapshot to contain both tracked binds, got %d", len(bindsCopy))
+	}
+
+	mockCh.queueBindCallCount = 0 // reset so we only observe the replay below
+	for _, qb := range bindsCopy {
+		if err := r.QueueBind(qb.name, qb.key, qb.exchange, qb.noWait, qb.args); err != nil {
+			t.Fatalf("Expected no error replaying bind %+v, got %v", qb, err)
+		}
+	}
+
+	if mockCh.queueBindCallCount != 2 {
+		t.Fatalf("Expected exactly 2 QueueBind calls when replaying all tracked binds (F2 regression), got %d", mockCh.queueBindCallCount)
+	}
+}
+
+// TestQueueBindUnbind_ConcurrentAccess exercises QueueBind/QueueUnbind under concurrent access
+// on the same queue name to validate the mutex actually guards the map/slice mutations
+// (run with -race).
+func TestQueueBindUnbind_ConcurrentAccess(t *testing.T) {
+	mockCh := newMockChannel()
+
+	r := &rabbit{
+		queues:     make(map[string]*queue),
+		queueBinds: make(map[string][]*queueBind),
+	}
+	r.queues["test-queue"] = &queue{
+		name:    "test-queue",
+		channel: mockCh,
+	}
+
+	var wg sync.WaitGroup
+	for i := 0; i < 20; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			key := fmt.Sprintf("key-%d", i)
+			_ = r.QueueBind("test-queue", key, "exchange", false, nil)
+			_ = r.QueueUnbind("test-queue", key, "exchange", nil)
+		}(i)
+	}
+	wg.Wait()
+
+	// After all binds+unbinds complete, the tracked set for this queue should be empty
+	// (every Acquire paired with a Release) -- if the mutex had a gap, this could show a
+	// stale/corrupted entry or the test would have already panicked/raced.
+	if len(r.queueBinds["test-queue"]) != 0 {
+		t.Errorf("Expected no leftover binds after balanced concurrent bind/unbind, got %v", r.queueBinds["test-queue"])
 	}
 }
 
