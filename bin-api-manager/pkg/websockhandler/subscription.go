@@ -70,10 +70,15 @@ func (h *websockHandler) subscriptionRun(ctx context.Context, w http.ResponseWri
 	defer zmqSub.Terminate()
 	log.Debugf("Created a new subscribe socket correctly.")
 
-	// heldPatterns tracks the AMQP binding patterns THIS connection currently holds, so we can
-	// release everything on abrupt disconnect (no explicit unsubscribe received) via
-	// scopeRefCount.ReleaseAll below. See VOIP-1258 §9 / Task 4.3.
-	heldPatterns := make(map[string]bool)
+	// heldPatterns tracks, per AMQP binding pattern, how many times THIS connection has
+	// Acquire()d it (a double-subscribe to the same topic without an intervening unsubscribe
+	// legitimately calls scopeRefCount.Acquire twice). This MUST be a counter, not a boolean
+	// set: with a boolean set, a double-subscribe followed by a single unsubscribe would
+	// delete the pattern from this connection's held set entirely while scopeRefCount's
+	// internal refcount is still at 1, so ReleaseAll on abrupt disconnect would never release
+	// it again -- a permanent per-scope bind leak until pod restart. See VOIP-1258 §9 / Task
+	// 4.3 (leak found and fixed during PR #1101 round-2 review).
+	heldPatterns := make(map[string]int)
 	var heldMu sync.Mutex
 
 	// we are creating a new context and cancel using the http request.
@@ -87,11 +92,15 @@ func (h *websockHandler) subscriptionRun(ctx context.Context, w http.ResponseWri
 	log.Debugf("Websocket connection has been closed. agent_id: %s", a.AgentID())
 
 	// abrupt-disconnect cleanup -- release everything this connection held, regardless of
-	// whether an explicit unsubscribe message was ever received.
+	// whether an explicit unsubscribe message was ever received. Release once per
+	// outstanding Acquire (heldPatterns is a count, not a boolean) so a double-subscribed
+	// pattern is fully released, not left at refcount 1 forever.
 	heldMu.Lock()
 	patterns := make([]string, 0, len(heldPatterns))
-	for p := range heldPatterns {
-		patterns = append(patterns, p)
+	for p, count := range heldPatterns {
+		for i := 0; i < count; i++ {
+			patterns = append(patterns, p)
+		}
 	}
 	heldMu.Unlock()
 	h.scopeRefCount.ReleaseAll(patterns)
@@ -125,7 +134,7 @@ func (h *websockHandler) subscriptionRunWebsock(
 	a *auth.AuthIdentity,
 	ws *websocket.Conn,
 	zmqSub zmqsubhandler.ZMQSubHandler,
-	heldPatterns map[string]bool,
+	heldPatterns map[string]int,
 	heldMu *sync.Mutex,
 ) {
 	log := logrus.WithFields(logrus.Fields{
@@ -163,7 +172,7 @@ func (h *websockHandler) subscriptionHandleMessage(
 	a *auth.AuthIdentity,
 	zmqSub zmqsubhandler.ZMQSubHandler,
 	m *hook.Hook,
-	heldPatterns map[string]bool,
+	heldPatterns map[string]int,
 	heldMu *sync.Mutex,
 ) error {
 	log := logrus.WithFields(logrus.Fields{
@@ -201,7 +210,7 @@ func (h *websockHandler) subscriptionHandleMessage(
 				continue
 			}
 			heldMu.Lock()
-			heldPatterns[pattern] = true
+			heldPatterns[pattern]++
 			heldMu.Unlock()
 		}
 
@@ -223,7 +232,11 @@ func (h *websockHandler) subscriptionHandleMessage(
 				log.Errorf("Could not release the AMQP binding. pattern: %s, err: %v", pattern, errRel)
 			}
 			heldMu.Lock()
-			delete(heldPatterns, pattern)
+			if heldPatterns[pattern] > 1 {
+				heldPatterns[pattern]--
+			} else {
+				delete(heldPatterns, pattern)
+			}
 			heldMu.Unlock()
 		}
 	}

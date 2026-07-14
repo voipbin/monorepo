@@ -8,6 +8,8 @@ import (
 	"testing"
 	"time"
 
+	amqp "github.com/rabbitmq/amqp091-go"
+
 	"github.com/gofrs/uuid"
 
 	"monorepo/bin-rag-manager/models/document"
@@ -66,6 +68,20 @@ func (m *mockSockHandler) RequestPublishWithDelay(queueName string, req *sock.Re
 }
 
 func (m *mockSockHandler) QueueSubscribe(name string, topic string) error {
+	return nil
+}
+
+// QueueBind/QueueUnbind/TopicCreateWithKind added to satisfy sockhandler.SockHandler after
+// VOIP-1258 (Tasks 1.3/1.4). This service does not exercise these paths -- no-op stubs.
+func (m *mockSockHandler) QueueBind(name, key, exchange string, noWait bool, args amqp.Table) error {
+	return nil
+}
+
+func (m *mockSockHandler) QueueUnbind(name, key, exchange string, args amqp.Table) error {
+	return nil
+}
+
+func (m *mockSockHandler) TopicCreateWithKind(name string, kind string) error {
 	return nil
 }
 

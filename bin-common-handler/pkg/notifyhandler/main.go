@@ -4,6 +4,7 @@ package notifyhandler
 
 import (
 	"context"
+	"sync"
 
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
@@ -38,9 +39,26 @@ const (
 var (
 	promNotifyProcessTime *prometheus.HistogramVec
 	promNotifyTotal       *prometheus.CounterVec
+
+	// initPrometheusMu/initPrometheusDone guard against duplicate MustRegister panics when
+	// initPrometheus is called more than once for the same namespace -- e.g. VOIP-1258's
+	// second NotifyHandler instance (NewNotifyHandlerForExistingExchange, bound to the new
+	// topic exchange) is constructed for the SAME publisher/namespace as the existing
+	// fanout-bound NewNotifyHandler call in the same process (webhook-manager, webhook-control).
+	// Without this guard, the second initPrometheus call would panic with "duplicate metrics
+	// collector registration attempted" on every startup.
+	initPrometheusMu   sync.Mutex
+	initPrometheusDone = map[string]bool{}
 )
 
 func initPrometheus(namespace string) {
+	initPrometheusMu.Lock()
+	defer initPrometheusMu.Unlock()
+
+	if initPrometheusDone[namespace] {
+		return
+	}
+	initPrometheusDone[namespace] = true
 
 	promNotifyProcessTime = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
