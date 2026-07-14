@@ -160,21 +160,14 @@ func runServiceSubscribe(
 	queueNamePod := string(commonoutline.QueueNameAgentSubscribe)
 	subHandler := subscribehandler.NewSubscribeHandler(sockHandler, queueNamePod, subscribeTargets, agentHandler)
 
-	// run
+	// run. NOTE: the VOIP-1258 topic-exchange cutover (QueueBind/QueueUnbind) lives INSIDE
+	// subscribeHandler.Run(), sequenced before ConsumeMessage starts -- see that function's
+	// doc comment for why doing it here (after Run() returns) is unsafe: Run() starts
+	// ConsumeMessage on a separate goroutine and returns immediately, so a bind/unbind call
+	// here would race the in-flight basic.consume RPC on the same AMQP channel and could
+	// intermittently 503 the channel closed (reproduced in production 2026-07-14).
 	if errRun := subHandler.Run(); errRun != nil {
 		return errRun
-	}
-
-	// Cut over from the old fanout QueueNameWebhookEvent exchange to the new
-	// QueueNameWebhookEventTopic topic exchange with a "#" wildcard binding.
-	// Bind new first, then unbind old, to avoid an event-loss window where the
-	// queue is briefly bound to neither exchange (VOIP-1258 Task 3.5).
-	if errBind := sockHandler.QueueBind(queueNamePod, "#", string(commonoutline.QueueNameWebhookEventTopic), false, nil); errBind != nil {
-		logrus.Errorf("Could not bind to the topic exchange. err: %v", errBind)
-		// do NOT proceed to unbind the old exchange if this bind failed -- stay on the
-		// old exchange rather than risk ending up bound to neither.
-	} else if errUnbind := sockHandler.QueueUnbind(queueNamePod, "", string(commonoutline.QueueNameWebhookEvent), nil); errUnbind != nil {
-		logrus.Errorf("CRITICAL: Could not unbind from the old fanout exchange after binding to the new topic exchange. queue: %s is now bound to BOTH exchanges (double-processing resumes). Manual intervention required. err: %v", queueNamePod, errUnbind)
 	}
 
 	return nil
