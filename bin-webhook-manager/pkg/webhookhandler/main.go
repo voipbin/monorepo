@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
@@ -32,6 +33,7 @@ type WebhookHandler interface {
 type webhookHandler struct {
 	db            dbhandler.DBHandler
 	notifyHandler notifyhandler.NotifyHandler
+	reqHandler    requesthandler.RequestHandler
 
 	accoutHandler     accounthandler.AccountHandler
 	activeflowHandler activeflowhandler.ActiveflowHandler
@@ -110,11 +112,18 @@ func newSafeHTTPClient() *http.Client {
 }
 
 // NewWebhookHandler returns new webhook handler
-func NewWebhookHandler(db dbhandler.DBHandler, notifyHandler notifyhandler.NotifyHandler, messageTargetHandler accounthandler.AccountHandler, activeflowHandler activeflowhandler.ActiveflowHandler) WebhookHandler {
+func NewWebhookHandler(
+	db dbhandler.DBHandler,
+	notifyHandler notifyhandler.NotifyHandler,
+	reqHandler requesthandler.RequestHandler,
+	messageTargetHandler accounthandler.AccountHandler,
+	activeflowHandler activeflowhandler.ActiveflowHandler,
+) WebhookHandler {
 
 	h := &webhookHandler{
 		db:            db,
 		notifyHandler: notifyHandler,
+		reqHandler:    reqHandler,
 
 		accoutHandler:     messageTargetHandler,
 		activeflowHandler: activeflowHandler,

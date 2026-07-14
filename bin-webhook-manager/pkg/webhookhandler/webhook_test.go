@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 	cscustomer "monorepo/bin-customer-manager/models/customer"
 
 	"github.com/gofrs/uuid"
@@ -326,8 +327,9 @@ func Test_NewWebhookHandler(t *testing.T) {
 	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	mockAccount := accounthandler.NewMockAccountHandler(mc)
 	mockActiveflow := activeflowhandler.NewMockActiveflowHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
 
-	h := NewWebhookHandler(mockDB, mockNotify, mockAccount, mockActiveflow)
+	h := NewWebhookHandler(mockDB, mockNotify, mockReq, mockAccount, mockActiveflow)
 	if h == nil {
 		t.Errorf("Wrong match. expect: handler, got: nil")
 	}

@@ -68,7 +68,7 @@ func initWebhookHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (webhook
 	accountHandler := accounthandler.NewAccountHandler(db, reqHandler)
 	activeflowHandler := activeflowhandler.NewActiveflowHandler(cache, reqHandler)
 
-	return webhookhandler.NewWebhookHandler(db, notifyHandler, accountHandler, activeflowHandler), nil
+	return webhookhandler.NewWebhookHandler(db, notifyHandler, reqHandler, accountHandler, activeflowHandler), nil
 }
 
 func initCommand() *cobra.Command {
