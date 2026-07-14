@@ -1,69 +1,141 @@
-# VOIP-1258: bin-api-manager WebSocket Event Subscription — Broker-Level Scoped Routing
+# VOIP-1258: bin-webhook-manager / bin-api-manager WebSocket Event Subscription — Broker-Level Scoped Routing (Reduced Scope)
 
-## 1. Origin and decision already made
+## 1. Origin and decisions already made
 
 Tracking ticket: VOIP-1258. Discovered and verified (2 independent adversarial review rounds,
 both APPROVED with zero changes requested) in a CPO/CEO discussion on 2026-07-14: per-pod
-processing cost for events published to `QueueNameWebhookEvent` / `QueueNameAgentEvent` /
-`QueueNameTalkEvent` is paid unconditionally for every published event, multiplied by
-api-manager pod count, with zero dependency on connected websocket client count. Chat-type
-events additionally pay a live `TalkV1ParticipantList` RPC call per event, also unconditional.
+processing cost for events published to `QueueNameWebhookEvent` is paid unconditionally for
+every published event, multiplied by api-manager pod count, with zero dependency on connected
+websocket client count. Chat-type events additionally pay a live `TalkV1ParticipantList` RPC
+call per event, also unconditional.
 
-**pchero has already decided the direction**: go broker-level (RabbitMQ `fanout` → `topic`
-exchange), with **scope-first** routing key ordering (`customer_id.<uuid>.#` /
-`agent_id.<uuid>.#`), explicitly rejecting resource-first ordering and deferring functional
-sharding (resource-type-dedicated pod pools) as out of scope. This design doc executes that
-decision — it does not revisit the broker-vs-app-level or scope-first-vs-resource-first choice.
+**pchero has decided**: go broker-level (RabbitMQ `fanout` -> `topic` exchange), with
+**scope-first** routing key ordering (`customer_id.<uuid>.#` / `agent_id.<uuid>.#`), explicitly
+rejecting resource-first ordering and deferring functional sharding as out of scope.
 
-## 2. Current implementation (verified from source)
+**This is REVISION 2 of the design, reflecting a scope-reduction decision made 2026-07-14 in
+follow-up discussion, superseding the original 8-open-question, ~25-service-blast-radius draft.**
+The reduction was triggered by a decisive finding (verified below, §2): `bin-api-manager`'s
+event-processing switch statement handles exactly ONE event type
+(`webhook.EventTypeWebhookPublished` from `bin-webhook-manager`) and unconditionally discards
+everything else. This means the original design's ~116-call-site blast radius across ~25+
+services (bare `notifyHandler.PublishEvent` calls feeding `QueueNameAgentEvent`/
+`QueueNameTalkEvent`) was solving a problem that does not exist for websocket delivery purposes
+-- those events were never reaching a client anyway. **pchero's explicit direction: touch only
+`bin-webhook-manager` (publisher) and `bin-api-manager` (consumer).**
+
+## 2. Current implementation (verified from source, revised)
+
+**Decisive finding: bin-api-manager only ever acts on webhook-manager's events.**
+
+```go
+// bin-api-manager/pkg/subscribehandler/main.go:132-144, processEvent()
+switch {
+case m.Publisher == string(commonoutline.ServiceNameWebhookManager) && (m.Type == string(wmwebhook.EventTypeWebhookPublished)):
+    err = h.processEventWebhookManagerWebhookPublished(ctx, m)
+default:
+    // ignore the event
+    return
+}
+```
+
+There is exactly one `case`. Events arriving via the `QueueNameAgentEvent` / `QueueNameTalkEvent`
+subscriptions (`cmd/api-manager/main.go:159-162`) hit `default: return` unconditionally --
+they are consumed off RabbitMQ (so the RabbitMQ-side cost the original design worried about does
+apply to them too) but never reach `createTopics()`/ZMQ/any websocket client. **This subscription
+is dead weight for websocket delivery purposes today.** Real client-visible agent/chat events
+reach clients ONLY by first going through `bin-webhook-manager`:
 
 ```
-webhook/agent/talk-manager
-  notifyHandler.PublishEvent(ctx, eventType, data)
-    -> publishEvent() -> sockHandler.EventPublish(exchange=queueName, key="", evt)
-        -> rabbitmqhandler.EventPublish(exchange, key, evt)
-            -> publishExchange(exchange, key, message, ...) [amqp channel.PublishWithContext]
+bin-agent-manager / bin-talk-manager (any handler)
+  -> notifyHandler.PublishWebhookEvent(ctx, customerID, eventType, data)
+      -> go PublishEvent(...)          [-> QueueNameAgentEvent / QueueNameTalkEvent -- DEAD END for websocket, per above]
+      -> go PublishWebhook(...)        [-> reqHandler.WebhookV1WebhookSend(...) RPC to webhook-manager]
+          -> bin-webhook-manager.SendWebhookToCustomer(ctx, customerID, dataType, data)
+              -> h.notifyHandler.PublishEvent(ctx, webhook.EventTypeWebhookPublished, wh)
+                  -> QueueNameWebhookEvent (fanout exchange)   <- THIS is the only path that
+                                                                    reaches a websocket client
+```
+
+Full existing pipeline for the path that matters:
+
+```
+bin-webhook-manager (webhookhandler/webhook.go):
+  SendWebhookToCustomer(ctx, customerID, dataType, data)     [line 26, customerID EXPLICIT param]
+  SendWebhookToURI(ctx, customerID, uri, method, dataType, data)  [line 120, customerID EXPLICIT param]
+    both build wh := &webhook.Webhook{CustomerID: customerID, DataType: dataType, Data: data}
+    both call h.notifyHandler.PublishEvent(ctx, webhook.EventTypeWebhookPublished, wh)
+      -> sockHandler.EventPublish(exchange="bin-manager.webhook-manager.event", key="", evt)
+          -> channel.PublishWithContext(...)  [amqp]
 
 Exchange declared once at NewNotifyHandler() time via sockHandler.TopicCreate(name)
-    -> ExchangeDeclare(name, "fanout", ...)   [bin-common-handler/pkg/rabbitmqhandler/topic.go:5-9]
+    -> ExchangeDeclare(name, "fanout", durable=true, ...)
+       [bin-common-handler/pkg/rabbitmqhandler/topic.go:5-9]
 
-bin-api-manager, at pod boot (cmd/api-manager/main.go:142 runSubscribe, unconditional):
-    per-pod queue (QueueNameAPISubscribe-<uuid>) bound via QueueSubscribe -> QueueBind(name, "", exchange, ...)
+bin-api-manager, at pod boot (cmd/api-manager/main.go:160, runSubscribe, unconditional):
+    per-pod queue (QueueNameAPISubscribe-<uuid>) bound to QueueNameWebhookEvent via
+    QueueSubscribe -> QueueBind(name, "", exchange, ...)
     [bin-common-handler/pkg/rabbitmqhandler/queue.go:158-160]
     -- empty routing key, irrelevant for fanout, binding lives for the pod's whole lifetime
 
-subscribehandler.processEventRun -> processEvent -> (webhook_published) ->
+subscribehandler.processEventRun -> processEvent -> (webhook_published, only case) ->
   processEventWebhookManagerWebhookPublished (bin-api-manager/pkg/subscribehandler/webhookmanager.go:48)
-    -- 3x json.Unmarshal, createTopics() [may call TalkV1ParticipantList RPC for chat types],
-       zmqpubHandler.Publish(topic, data) per generated topic string -- all unconditional
+    -- 3x json.Unmarshal (Webhook envelope, Data, commonWebhookData), createTopics() [may call
+       TalkV1ParticipantList RPC for chat types], zmqpubHandler.Publish(topic, data) per
+       generated topic string -- all unconditional, regardless of local subscriber count
 
 Local per-connection ZMQ SUB filtering (bin-api-manager/pkg/zmqsubhandler) is the ONLY
 connection-count-dependent step, and it sits after all the above.
 ```
 
+`createTopics()` (`bin-api-manager/pkg/subscribehandler/webhookmanager.go:107-175`) unmarshals
+the doubly-nested webhook envelope (`Webhook.Data` -> `Data.Data` -> `commonWebhookData{Identity,
+Owner, AIcallID, ChatID}`) to extract `CustomerID`/`OwnerID`, and for
+`chat`/`chatmessage`/`chatparticipant` resource types calls
+`h.reqHandler.TalkV1ParticipantList(ctx, chatID)` to fan out a topic string per chat participant.
+
 Existing client-facing topic string format (already public API contract, documented in
-`bin-api-manager/docsdev/source/websocket_overview.rst` etc.):
+`bin-api-manager/docsdev/source/websocket_overview.rst` etc., UNCHANGED by this design):
 ```
 <scope>:<scope_id>:<resource>:<resource_id>
 e.g. customer_id:abc123:call:xyz789
      agent_id:agent123:queue:*
 ```
-This colon-delimited string is currently used ONLY for the final local ZMQ SUB/PUB filter and
-the client wire protocol (subscribe/unsubscribe websocket messages) — it is NOT currently an
-AMQP routing key (routing key is always `""` today, since fanout ignores it).
 
-`createTopics()` (`bin-api-manager/pkg/subscribehandler/webhookmanager.go:107-175`) is where this
-topic-string generation currently lives, on the **consumer** (api-manager) side, after the event
-has already been fully received and unmarshalled.
-
-## 3. Design goal
+## 3. Design goal (unchanged)
 
 Move scope-based filtering from "after full local processing, at the final ZMQ hop" to "at the
-RabbitMQ broker, before the event ever reaches a pod without a matching subscriber." Concretely:
-a pod with zero clients subscribed to a given `customer_id`/`agent_id` scope should never receive,
-consume, unmarshal, or run `createTopics()`/RPC for that scope's events at all.
+RabbitMQ broker, before the event ever reaches a pod without a matching subscriber." A pod with
+zero clients subscribed to a given `customer_id`/`agent_id` scope should never receive, consume,
+unmarshal, or run `createTopics()`/RPC for that scope's events at all.
 
-## 4. Proposed routing key format (scope-first, confirmed direction)
+## 4. Reduced scope: two services only
+
+**In scope**: `bin-webhook-manager` (publisher-side routing key computation) and
+`bin-api-manager` (topic-exchange consumer + dynamic bind/unbind). No other service's publish
+call sites, signatures, or event-handling logic changes.
+
+**Consequence for `bin-common-handler`**: `notifyHandler.PublishEvent`/`PublishWebhookEvent`'s
+public signatures are UNCHANGED. The original design's Open Questions 1 and 5 (bare
+`PublishEvent`'s customerID-less signature, ~116-call-site blast radius, disqualified
+Owner/Identity interface option) are now MOOT -- those call sites feed `QueueNameAgentEvent`/
+`QueueNameTalkEvent`, which are out of scope entirely (see §7).
+
+**Consequence for routing-key computation**: both webhook-manager entry points that reach
+`QueueNameWebhookEvent` already receive `customerID` as an explicit parameter:
+- `SendWebhookToCustomer(ctx, customerID uuid.UUID, dataType, data)` (`webhook.go:26`)
+- `SendWebhookToURI(ctx, customerID uuid.UUID, uri, method, dataType, data)` (`webhook.go:120`)
+
+Both already construct `wh := &webhook.Webhook{CustomerID: customerID, ...}` before calling
+`notifyHandler.PublishEvent`. No signature change is needed on the webhook-manager side to
+obtain `customer_id` for the routing key -- it is already in scope at the call site. This is
+a materially simpler starting point than the original design's ~116-site migration.
+
+**What is NOT simplified**: the `agent_id`/owner scope and the chat-participant fan-out (see §6)
+still require moving logic that currently lives in `createTopics()` (consumer side) to the
+publisher side, because the routing key must exist at `channel.PublishWithContext` time.
+
+## 5. Proposed routing key format (scope-first, unchanged from revision 1)
 
 ```
 <scope>.<scope_id>.#
@@ -72,135 +144,121 @@ e.g. customer_id.a1b2c3d4-....call.xyz789   (as the PUBLISHED routing key)
      agent_id.98765432-....#
 ```
 
-Rationale already established in discussion (recapped for the record): resource_id is unknown
-at bind time (client hasn't received the event yet), so any pattern putting it before the scope
-segment forces the scope filter to collapse into an unfiltered wildcard, defeating the purpose.
-Scope-first keeps the wildcard tail (`#`) confined to the low-value, high-cardinality segments
-(resource type + resource id), while the scope segment — known at websocket-connect/subscribe
-time, low cardinality per pod — does the actual filtering work at the trie's first level.
+Rationale (recapped): resource_id is unknown at bind time, so any pattern putting it before the
+scope segment forces the scope filter to collapse into an unfiltered wildcard, defeating the
+purpose. Scope-first keeps the wildcard tail (`#`) confined to the low-value, high-cardinality
+segments (resource type + resource id), while the scope segment -- known at
+websocket-connect/subscribe time, low cardinality per pod -- does the actual filtering work at
+the trie's first level.
 
-Two scope namespaces (`customer_id`, `agent_id`) must coexist. Proposed: publish BOTH routing
-keys per event when both a customer and an owner/agent scope apply (mirrors the existing
-dual-topic generation already done in `createTopics()` today, which already emits both
-`customer_id:...` and `agent_id:...` topic strings for the same event where applicable — this is
-not new complexity, just moving existing dual-key generation earlier in the pipeline).
+Two scope namespaces (`customer_id`, `agent_id`) must coexist; a single event may need to be
+published under BOTH routing keys (mirrors the existing dual topic-string generation already
+done in `createTopics()` today for `customer_id:...` and `agent_id:...`).
 
-## 5. Who computes the routing key: publisher-side move
+## 6. Who computes the routing key: moves into bin-webhook-manager
 
-**Decision point carried into this doc, not yet resolved — see Open Questions.** Today
-`createTopics()` runs on the consumer (api-manager) after receiving the full event. For topic-
-exchange filtering to work, the AMQP routing key must exist at `channel.PublishWithContext` time,
-i.e. on the publisher (webhook/agent/talk-manager) side, before the message ever reaches
-RabbitMQ.
+`createTopics()`'s logic (currently in `bin-api-manager/pkg/subscribehandler/webhookmanager.go`)
+must move into `bin-webhook-manager`, executed BEFORE `notifyHandler.PublishEvent` is called, so
+the routing key exists at publish time.
 
-Verified asymmetry that affects this move:
-- `notifyHandler.PublishWebhookEvent(ctx, customerID uuid.UUID, eventType string, data WebhookMessage)`
-  (`bin-common-handler/pkg/notifyhandler/publish.go:22`) already receives `customerID` as an
-  explicit parameter (used today for the webhook HTTP delivery path) — computing
-  `customer_id.<customerID>.#`-shaped keys here is straightforward.
-- `notifyHandler.PublishEvent(ctx, eventType string, data interface{})`
-  (`bin-common-handler/pkg/notifyhandler/main.go:74`) does NOT receive customerID as a parameter
-  — it is embedded inside `data`. `PublishWebhookEvent` itself calls the bare `PublishEvent`
-  internally (`publish.go:23`), so this signature sits underneath both public entry points.
+**Straightforward part**: `customer_id` is already an explicit parameter at both call sites
+(§4) -- computing `customer_id.<customerID>.#`-shaped keys requires no new plumbing for that
+scope alone.
 
-**Blast radius, verified by full-monorepo grep (not a handful of call sites):** bare
-`notifyHandler.PublishEvent(` (excluding `PublishWebhookEvent`) has **~116 call sites across
-~25+ services** (customer, tag, tts, billing, sentinel, call, pipecat, agent, webhook,
-registrar, direct, conference, flow, queue, route, contact, transcribe, number, storage, ai,
-campaign, conversation, outdial, email, talk-manager, and more). Because `PublishEvent`'s
-signature lives in `bin-common-handler` (subject to the "3+ services" admission rule), any
-signature change or added interface requirement touches close to the whole monorepo's
-verification matrix — this is a large-blast-radius change, not an isolated one.
+**Harder part 1 -- `agent_id`/owner scope extraction**: today's `createTopics()` unmarshals the
+event `data` payload (via the nested `Webhook.Data` -> `Data.Data` -> `commonWebhookData{Owner}`
+envelope) to find `OwnerID` for the `agent_id:...` routing key. `SendWebhookToCustomer`/
+`SendWebhookToURI` receive `data json.RawMessage` as an opaque blob (`webhook.go:26,120`) --
+they do not know the owner/agent ID structurally, only that it may be present somewhere inside
+`data`'s nested JSON. **This requires porting the SAME nested-unmarshal logic
+(`commonWebhookData` struct, currently in `bin-api-manager/pkg/subscribehandler/webhookmanager.go`)
+into `bin-webhook-manager`**, run against `data` before publish, to extract `OwnerID` the same
+way `createTopics()` does today. This is a genuine, non-trivial logic move (not just a signature
+change), but it is confined to `bin-webhook-manager`, not spread across ~25 services.
 
-**The two extraction options in the prior draft are NOT symmetric — option (a) below is
-disqualified for a real, non-trivial subset of call sites, confirmed by reading actual payloads:**
-- (a) ~~A shared `Owner`/`Identity` interface with a `GetCustomerID()` method~~ — does not work
-  universally. Several bare `PublishEvent` calls pass `map[string]uuid.UUID` or
-  `map[string]interface{}` as `data`, not a domain struct embedding
-  `commonidentity.Identity`/`Owner`:
-  - `bin-contact-manager/pkg/casehandler/casenote.go:53-57` —
-    `map[string]uuid.UUID{"id":..., "case_id":..., "customer_id": customerID}`
-  - `bin-contact-manager/pkg/casehandler/case_tag.go:92-95,130-133` — same map pattern; note
-    this map carries only `case_id`/`tag_id` keys and has **no `customer_id` key at all**, so
-    these two call sites cannot even reach a `customer_id`-scoped routing key without an
-    additional lookup or a broader signature change beyond the map-to-struct migration itself —
-    a strictly harder case than the other two examples, not just "also a map."
-  - `bin-call-manager/pkg/callhandler/outgoing_call.go:213-217` —
-    `map[string]interface{}{"customer_id":..., "call_id":..., ...}`
+**Harder part 2 -- chat participant fan-out RPC moves to the publish path**: for
+`chat`/`chatmessage`/`chatparticipant` resource types, `createTopics()` today calls
+`h.reqHandler.TalkV1ParticipantList(ctx, chatID)` (`webhookmanager.go:143`) AFTER receiving the
+event, to generate one `agent_id:<participant>:chat:...` routing key per chat participant. Moving
+this to webhook-manager means:
+- `webhook-manager`'s `webhookHandler` struct (`pkg/webhookhandler/main.go:32-40`) does NOT
+  currently hold a `reqHandler requesthandler.RequestHandler` dependency -- verified by reading
+  the struct definition. **A new dependency injection is required** (constructor signature
+  change to `NewWebhookHandler`, plus wiring in `cmd/webhook-manager/main.go` and
+  `cmd/webhook-control/main.go`) to call `TalkV1ParticipantList` from webhook-manager.
+- This means every chat-type webhook publish now makes a synchronous RPC call to
+  `bin-talk-manager` BEFORE the event reaches RabbitMQ at all, rather than after api-manager
+  receives it. The RPC cost does not disappear -- it relocates from "per-pod, per-event, only if
+  a subscriber happens to be listening after the fact" to "once per event, at publish time,
+  regardless of subscriber count." This is a NET IMPROVEMENT versus today (today it is
+  unconditional AND multiplied by pod count; after this change it is unconditional but paid
+  exactly once, not once-per-pod) but it is NOT eliminated, and should not be described as
+  "solved" -- flagged as Open Question 4.
 
-  These have no embedded Go type to satisfy a `GetCustomerID()` interface; reflection would have
-  to special-case map string keys anyway, which is exactly the "fragile type-switch per caller"
-  approach this design wants to avoid. Interface extraction is not a clean universal solution.
-- (b) Migrate every bare `PublishEvent` call site to an explicit-customerID signature (mirroring
-  `PublishWebhookEvent`) is the only fully general option, at the ~116-site blast radius above.
-  This is the option this design should plan around, not (a).
-- `agent_id` scope: is there an equivalent "owner/agent" identity readily available at publish
-  time for all three services, or does this only cleanly apply to `bin-agent-manager`'s own
-  events? Needs verification per-service before finalizing (unchanged from prior draft, still
-  open — see Open Questions).
+## 7. Explicit scope exclusion: QueueNameAgentEvent / QueueNameTalkEvent
 
-## 6. Exchange migration strategy
+**Decision, not deferred**: `bin-api-manager`'s subscriptions to `QueueNameAgentEvent`
+(`bin-agent-manager`'s direct publishes) and `QueueNameTalkEvent` (`bin-talk-manager`'s direct
+publishes) are OUT OF SCOPE for the topic-exchange conversion, because they are proven dead
+weight for websocket delivery (§2) -- `bin-api-manager`'s `processEvent` switch never acts on
+them.
+
+**Bonus cleanup, in scope for this ticket** (small, low-risk, and a direct consequence of the
+finding in §2, not a new feature): remove `bin-api-manager`'s subscription to
+`QueueNameAgentEvent`/`QueueNameTalkEvent` entirely --
+`cmd/api-manager/main.go:159-162`'s `subscribeTargets` list shrinks to just
+`QueueNameWebhookEvent`. This eliminates RabbitMQ consumption cost (per pod) for two exchanges'
+worth of events that were always discarded, with zero behavior change (nothing was ever acted on
+from those two subscriptions). Low risk: `git log`/blast-radius check should confirm no other
+code path in `bin-api-manager` depends on having consumed (vs. ignored) these two subscriptions
+before removing them -- flagged as Open Question 6, a verification step, not a design decision.
+
+This means `QueueNameAgentEvent` and `QueueNameTalkEvent` exchanges themselves are UNCHANGED --
+still `fanout`, still consumed by `bin-agent-manager`/`bin-queue-manager`
+(`QueueNameAgentEvent`) and `bin-timeline-manager` (`QueueNameTalkEvent`) for their own
+unrelated purposes (agent status logic, queue routing, audit-log ingestion). Only
+`bin-api-manager`'s now-pointless subscription is removed.
+
+## 8. Exchange migration strategy (reduced: only QueueNameWebhookEvent)
 
 RabbitMQ exchange kind is fixed at declare time; re-declaring an existing exchange name with a
-different kind fails with `PRECONDITION_FAILED`. Since `QueueNameWebhookEvent` /
-`QueueNameAgentEvent` / `QueueNameTalkEvent` are already declared `fanout` in production, an
-in-place kind change is not possible.
+different kind fails with `PRECONDITION_FAILED`. `QueueNameWebhookEvent` is already declared
+`fanout`/`durable=true` in production, so an in-place kind change is not possible.
 
-**CRITICAL, verified: these three exchanges are NOT exclusively consumed by bin-api-manager.**
-A monorepo-wide grep confirms other, unrelated consumers subscribe to the same exchanges for
-their own purposes, all via `QueueSubscribe(queue, exchange)` -> `QueueBind(name, "", exchange,
-...)` (`bin-common-handler/pkg/rabbitmqhandler/queue.go:158-160`) — an **empty routing key**,
-which is irrelevant under `fanout` but under `topic` only matches messages published with an
-exactly-empty routing key:
+**Still relevant even at reduced scope: other, unrelated consumers of `QueueNameWebhookEvent`
+specifically** (verified, monorepo-wide grep, independent of the `QueueNameAgentEvent`/
+`QueueNameTalkEvent` exclusion in §7):
 - `bin-agent-manager/cmd/agent-manager/main.go:159` subscribes to `QueueNameWebhookEvent`
   (agent status update logic, unrelated to websocket delivery)
-- `bin-queue-manager/cmd/queue-manager/main.go:149` subscribes to `QueueNameAgentEvent`
-  (queue routing / agent-tag matching)
-- `bin-timeline-manager/pkg/subscribehandler/main.go:29,50,54` subscribes to **all three**
-  (`QueueNameAgentEvent`, `QueueNameTalkEvent`, `QueueNameWebhookEvent`) as part of its
-  platform-wide audit-log ingestion
+- `bin-timeline-manager/pkg/subscribehandler/main.go:54` subscribes to `QueueNameWebhookEvent`
+  (platform-wide audit-log ingestion, along with the other two exchanges which are unaffected
+  by this design per §7)
 
-Because exchange kind is global per exchange name (not scoped per-consumer), converting these
-exchanges to `topic` with dot-formatted routing keys will **silently stop delivering events to
-bin-agent-manager, bin-queue-manager, and bin-timeline-manager** the moment the old fanout
-exchange is decommissioned, unless these three services' bindings are also migrated (e.g. to a
-wildcard `#` binding, since they need every event regardless of scope, not scoped filtering).
-This would break agent status updates, queue routing, and the platform audit log — a real,
-previously undisclosed regression risk, not covered by "api-manager pods migrate their per-pod
-queue bindings" alone. **The migration plan below is revised to explicitly include these three
-consumers**, and this is escalated to Open Question 7.
+Both use empty-routing-key fanout bindings (`QueueBind(name, "", exchange, ...)`,
+`queue.go:158-160`) and, per an earlier verification pass, neither reads or branches on the AMQP
+routing key anywhere in their code (`grep RoutingKey` in both services: zero hits) -- a
+`#`-wildcard binding on the new topic exchange preserves identical delivery semantics with no
+internal logic changes required for either service.
 
-Proposed path (to be detailed further in implementation planning; the steps below are a skeleton,
-not a finalized runbook):
+Proposed path (skeleton, not a finalized runbook):
 
-1. Declare new topic exchanges under new names (e.g. suffix `.topic` or a v2 queue-name constant)
-   alongside the existing fanout exchanges. **Must declare `durable=true`, matching the existing
-   fanout exchanges** (`bin-common-handler/pkg/rabbitmqhandler/topic.go:7` declares today's
-   fanout exchanges with `durable=true`, i.e. they survive broker restart). If the new topic
-   exchange is declared non-durable (or `durable=true` is simply omitted during implementation),
-   a broker/node restart during the dual-publish transition window would silently drop the new
-   exchange and any queue bindings on it, causing message loss for every consumer already
-   migrated to it at that point — a real production-correctness gap in an otherwise "standard"
-   blue/green migration. Escalated as Open Question 8.
-2. Publishers dual-publish to both old (fanout, unscoped) and new (topic, scoped) exchanges during
-   a transition window. **Bind/unbind ordering during this window needs an explicit guarantee**:
-   if any consumer (api-manager pod, or the three non-websocket consumers above) ever binds to
-   the new exchange before fully cutting over from the old one, it will double-receive events
-   during the overlap. The doc does not yet specify a concrete ordering protocol for this —
-   flagged as part of Open Question 7, not resolved here.
-3. api-manager pods migrate their per-pod queue bindings from the old exchange to the new one
-   (scoped, per §7's dynamic bind/unbind). **bin-agent-manager, bin-queue-manager, and
-   bin-timeline-manager migrate their existing queues to bind the new topic exchange with a `#`
-   wildcard** (they need the full, unscoped event stream for their own purposes — this is a
-   like-for-like fanout-equivalent binding, not scoped filtering, and requires no changes to
-   their internal event-handling logic, only the bind call's target exchange name and key).
-4. Once all pods and all four consumer services are confirmed on the new exchange, remove the
-   dual-publish and decommission the old fanout exchange.
+1. Declare a new topic exchange under a new name (e.g. `QueueNameWebhookEvent` + `.topic`
+   suffix, or a new `models/outline` constant) alongside the existing fanout exchange. **Must
+   declare `durable=true`**, matching today's fanout exchange
+   (`bin-common-handler/pkg/rabbitmqhandler/topic.go:7`) -- a non-durable new exchange risks
+   silent message loss on a broker restart during the transition window (Open Question 7).
+2. `bin-webhook-manager` dual-publishes to both old (fanout, unscoped) and new (topic, scoped)
+   exchanges during a transition window. **Bind/unbind ordering during this window needs an
+   explicit guarantee** to avoid double-delivery to any consumer bound to both simultaneously --
+   not resolved in this doc, flagged as Open Question 3.
+3. `bin-api-manager` pods migrate their per-pod queue bindings from the old exchange to the new
+   one (scoped, per §9's dynamic bind/unbind). `bin-agent-manager` and `bin-timeline-manager`
+   migrate their existing `QueueNameWebhookEvent` bindings to the new topic exchange with a `#`
+   wildcard (bind-call-target-only change, per the finding above).
+4. Once `bin-api-manager`, `bin-agent-manager`, and `bin-timeline-manager` are all confirmed on
+   the new exchange, remove the dual-publish and decommission the old fanout exchange.
 
-This is standard blue/green exchange migration; needs concrete queue-name constants and a
-rollback plan before implementation, not resolved in this doc.
-
-## 7. Dynamic bind/unbind at the api-manager side
+## 9. Dynamic bind/unbind at the api-manager side (unchanged from revision 1)
 
 Unlike today (bind once at pod boot, for the pod's whole lifetime), a topic-exchange scoped
 binding must track which scopes (`customer_id`/`agent_id` values) currently have at least one
@@ -214,79 +272,70 @@ live local websocket subscriber on that pod, and bind/unbind the per-pod queue a
 - **Race condition to guard against**: a bind-in-flight event ordering where the client's
   subscribe ack is sent before the AMQP bind is confirmed, causing a missed first event. Bind
   must complete (or be confirmed) before acking the client's subscribe message.
-- **Abrupt disconnect must also decrement the refcount — this is a distinct code path from
-  explicit unsubscribe, verified against source.** Reading
+- **Abrupt disconnect must also decrement the refcount -- a distinct code path from explicit
+  unsubscribe, verified against source.** Reading
   `bin-api-manager/pkg/websockhandler/subscription.go:32-84`, today's cleanup on an abrupt
-  websocket close (network drop, tab close, mobile backgrounding) is whole-object teardown, not
-  incremental: the per-connection `zmqSub` (holding that connection's `topics` list) is discarded
-  via `defer zmqSub.Terminate()` (line 70) when `newCtx` is cancelled — triggered by
-  `receiveTextFromWebsock` erroring (lines 122-125) or a write failure in the pinger/ZMQ-run
-  goroutines. **No explicit `Unsubscribe(topic)` call fires on this path today.** The new
-  pod-level AMQP-bind-refcount component (shared across connections on a pod, per the paragraph
-  above) has nothing hooking it to decrement that connection's contribution to each scope's
-  refcount on this teardown path — `subscriptionHandleMessage`'s explicit-unsubscribe branch is
-  not sufficient by itself. The refcount decrement must also be driven from `subscriptionRun`'s
-  teardown (the `newCtx.Done()` / deferred-cleanup point), which needs new state tracking which
-  scopes each connection currently holds (this state doesn't fully exist yet in a pod-level-
-  reachable form — `zmqSub.topics` is per-connection only). Getting this wrong means every
+  websocket close is whole-object teardown, not incremental: the per-connection `zmqSub`
+  (holding that connection's `topics` list) is discarded via `defer zmqSub.Terminate()` (line
+  70) when `newCtx` is cancelled -- triggered by `receiveTextFromWebsock` erroring (lines
+  122-125) or a write failure in the pinger/ZMQ-run goroutines. No explicit `Unsubscribe(topic)`
+  call fires on this path today. The refcount decrement must also be driven from
+  `subscriptionRun`'s teardown (the `newCtx.Done()` / deferred-cleanup point), which needs new
+  state tracking which scopes each connection currently holds. Getting this wrong means every
   abrupt client disconnect leaks a refcount and leaves a stale scope binding on the pod's queue
-  permanently, silently reintroducing the exact problem (unconditional processing for pods with
-  zero real subscribers) this design exists to fix.
-- Implementation surface: `bin-api-manager/pkg/websockhandler/subscription.go`
-  `subscriptionHandleMessage` (currently calls `zmqSub.Subscribe(topic)`/`Unsubscribe(topic)`,
-  lines 159/168) is the integration point for explicit subscribe/unsubscribe; `subscriptionRun`'s
-  teardown (line 70 `defer zmqSub.Terminate()`, triggered via `newCtx` cancellation) is the
-  separate integration point required for abrupt disconnect. Both need a parallel call into a new
-  per-pod AMQP-bind-refcount component.
+  permanently, silently reintroducing the exact problem this design exists to fix.
+- Implementation surface: `subscriptionHandleMessage` (`subscription.go:159/168`, currently
+  calls `zmqSub.Subscribe`/`Unsubscribe`) is the integration point for explicit
+  subscribe/unsubscribe; `subscriptionRun`'s teardown (line 70) is the separate integration
+  point required for abrupt disconnect. Both need a parallel call into a new per-pod
+  AMQP-bind-refcount component.
 
-## 8. Out of scope (explicit, per pchero's decision)
+## 10. Out of scope (explicit)
 
-- Resource-first or hybrid (`resource_name.customer_id.<uuid>.#`) routing key ordering.
+- Resource-first or hybrid routing key ordering.
 - Functional sharding / resource-type-dedicated api-manager pod pools.
-- Application-level zero-subscriber short-circuit (discussed as "Alternative B" in prior
-  conversation) — not adopted as a substitute; may still be worth layering in later as defense
-  in depth, but is not part of this design.
+- Application-level zero-subscriber short-circuit ("Alternative B" in prior discussion) -- not
+  adopted as a substitute; may be worth layering in later as defense in depth.
 - Any change to the client-facing websocket subscribe/unsubscribe wire protocol or topic string
-  format (`customer_id:<uuid>:<resource>:<resource_id>`) — this design only changes the internal
-  AMQP transport layer between publishers and api-manager pods; the public API contract is
-  unchanged.
+  format -- this design only changes the internal AMQP transport layer; the public API contract
+  is unchanged.
+- **`QueueNameAgentEvent` and `QueueNameTalkEvent` exchanges and their existing consumers**
+  (`bin-agent-manager`, `bin-queue-manager`, `bin-talk-manager`, `bin-timeline-manager`'s
+  subscriptions to those two specifically) -- unaffected by this design, per §7. Only
+  `bin-api-manager`'s now-provably-pointless subscription to them is removed.
+- Any change to `bin-common-handler`'s `notifyHandler.PublishEvent`/`PublishWebhookEvent` public
+  signatures, or to any of the ~116 bare-`PublishEvent` call sites across ~25+ services --
+  moot under the reduced scope (§4), since those events never reached a websocket client.
 
-## 9. Open questions (need resolution before/during implementation)
+## 11. Open questions (need resolution before/during implementation)
 
-1. Bare `PublishEvent` (no explicit customerID) call sites: adopt an `Owner`/`Identity` interface
-   extraction, or migrate all call sites to explicit-customerID signatures?
-2. Does `agent_id` scope routing apply uniformly across webhook/agent/talk-manager publishers, or
-   only to a subset? Needs per-service verification of what identity data is available at
-   publish time.
-3. Exchange migration: concrete new queue-name constants, dual-publish transition window length,
-   and rollback trigger criteria.
-4. Testing strategy for the dynamic bind/unbind reference-counting logic — needs a plan for
-   simulating multiple concurrent connections per pod sharing/unsharing scopes without flaking.
-5. Should `PublishEvent`/`PublishWebhookEvent`'s public interface signature change (e.g. add an
-   explicit routing-key-relevant scope parameter), given `bin-common-handler`'s "3+ services"
-   admission rule and the fact this interface is shared library code consumed by all 37 services?
-   Given the confirmed ~116-call-site blast radius (§5) and that the map-payload call sites
-   disqualify a non-invasive interface-extraction alternative, this is effectively asking
-   "are we prepared to touch ~25+ services' publish call sites," not a low-cost signature tweak.
-6. How does the per-pod bind/unbind refcount interact with abrupt disconnect / connection
-   teardown (not just explicit unsubscribe messages)? See §7 — `subscriptionRun`'s teardown path
-   (`newCtx` cancellation, `defer zmqSub.Terminate()`) fires on every disconnect, clean or not,
-   but carries no per-topic unsubscribe signal today; the refcount component needs its own state
-   to know what to decrement on this path, and that state doesn't exist in the codebase yet.
-7. **(New, blocking) Non-websocket consumers of the same exchanges.** `bin-agent-manager`,
-   `bin-queue-manager`, and `bin-timeline-manager` all subscribe to one or more of
-   `QueueNameWebhookEvent`/`QueueNameAgentEvent`/`QueueNameTalkEvent` today via empty-routing-key
-   fanout bindings, for purposes unrelated to websocket delivery (agent status updates, queue
-   routing, audit-log ingestion — see §6). Their migration to `#`-wildcard bindings on the new
-   topic exchange is sketched in §6 step 3 but not fully planned: does each of these three
-   services need code changes beyond the bind call (e.g. do they rely on routing-key value
-   anywhere, even though they ignore it today), and what is the verification/rollback plan
-   specific to each, given they are unrelated teams'/features' code paths from the websocket
-   subscription feature this design is otherwise scoped to?
-8. **(New) New topic exchange durability.** §6 step 1 requires the new topic exchange(s) to be
-   declared `durable=true`, matching the existing fanout exchanges. Confirm the implementation
-   actually sets this (an easy omission since it's a boolean flag on `ExchangeDeclare`, not a
-   design-level structural decision), and consider whether a broker restart mid-dual-publish-
-   window needs an explicit recovery/reconciliation step beyond exchange durability alone (e.g.
-   are consumer queue bindings also durable, and is there a gap between exchange survival and
-   binding survival across a restart during the transition).
+1. Concrete new exchange name/queue-name constant for the new topic exchange, dual-publish
+   transition window length, and rollback trigger criteria.
+2. Testing strategy for the dynamic bind/unbind reference-counting logic in `bin-api-manager` --
+   needs a plan for simulating multiple concurrent connections per pod sharing/unsharing scopes
+   without flaking.
+3. Bind/unbind ordering guarantee during the dual-publish transition window, to avoid transient
+   double-delivery to any consumer bound to both exchanges simultaneously.
+4. Chat-participant-fan-out RPC relocation (§6, harder part 2): confirm the "paid once at
+   publish time, not once per pod" framing is accurate once implemented (i.e. does NOT
+   accidentally get called once per routing key generated, or once per dual-publish target,
+   which would multiply it again); design the new `reqHandler` dependency injection into
+   `webhookHandler` cleanly (constructor signature, mock updates, wiring in both
+   `cmd/webhook-manager` and `cmd/webhook-control`).
+5. How does the per-pod bind/unbind refcount interact with abrupt disconnect / connection
+   teardown (not just explicit unsubscribe messages)? See §9 -- `subscriptionRun`'s teardown
+   path fires on every disconnect, clean or not, but carries no per-topic unsubscribe signal
+   today; the refcount component needs its own state to know what to decrement on this path.
+6. Verify (via blast-radius grep / test coverage check) that no other code path in
+   `bin-api-manager` depends on the `QueueNameAgentEvent`/`QueueNameTalkEvent` subscriptions
+   before removing them (§7) -- expected to be a clean removal given the `processEvent` switch
+   statement's single-case structure, but should be confirmed, not assumed.
+7. New topic exchange durability: confirm `durable=true` is actually set in implementation (easy
+   boolean-flag omission), and whether a broker restart mid-dual-publish-window needs an
+   explicit recovery/reconciliation step beyond exchange durability alone (binding durability
+   vs. exchange survival).
+8. Does moving the nested-envelope unmarshal logic (§6, harder part 1: extracting `OwnerID` from
+   `commonWebhookData`) into `bin-webhook-manager` duplicate logic that should instead be shared
+   (e.g. via `bin-common-handler`) between webhook-manager and whatever remains of
+   `bin-api-manager`'s webhook-processing path, to avoid two independent implementations of the
+   same envelope-parsing rules drifting apart over time?
