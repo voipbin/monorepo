@@ -15,6 +15,7 @@ import (
 	"monorepo/bin-ai-manager/models/aiprompthistory"
 	"monorepo/bin-ai-manager/models/tool"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -977,6 +978,24 @@ func hasSubstring(s, substr string) bool {
 	return false
 }
 
+// assertInvalidArgument fails the test unless err is a *cerrors.VoipbinError
+// with Status == cerrors.StatusInvalidArgument, per VOIP-1257's design
+// (errors from ValidateToolNames must be wrapped as InvalidArgument, not
+// just any non-nil error).
+func assertInvalidArgument(t *testing.T, err error) {
+	t.Helper()
+	if err == nil {
+		t.Fatal("expected an error, got nil")
+	}
+	var ve *cerrors.VoipbinError
+	if !errors.As(err, &ve) {
+		t.Fatalf("expected a *cerrors.VoipbinError, got: %v (%T)", err, err)
+	}
+	if ve.Status != cerrors.StatusInvalidArgument {
+		t.Errorf("expected Status=%v, got %v (err: %v)", cerrors.StatusInvalidArgument, ve.Status, err)
+	}
+}
+
 // VOIP-1257: Create/Update must reject Type+ToolNames combinations that
 // violate ai.ValidateToolNames, before any DB write.
 
@@ -1019,6 +1038,7 @@ func TestCreate_RejectsInsightAIWithNormalTools(t *testing.T) {
 	if err == nil {
 		t.Fatal("Create() with Type=insight and Normal-only tool_names should have been rejected, got nil error")
 	}
+	assertInvalidArgument(t, err)
 	if !contains(err.Error(), "send_email") && !contains(err.Error(), "connect_call") {
 		t.Errorf("Create() error should name the offending tool(s), got: %v", err)
 	}
@@ -1062,6 +1082,7 @@ func TestCreate_RejectsNormalAIWithInsightTools(t *testing.T) {
 	if err == nil {
 		t.Fatal("Create() with Type=normal and Insight-only tool_names should have been rejected, got nil error")
 	}
+	assertInvalidArgument(t, err)
 }
 
 func TestCreate_AllowsValidInsightAI(t *testing.T) {
@@ -1164,5 +1185,6 @@ func TestUpdate_RejectsInsightAIWithNormalTools(t *testing.T) {
 	if err == nil {
 		t.Fatal("Update() on an Insight AI with Normal-only tool_names should have been rejected, got nil error")
 	}
+	assertInvalidArgument(t, err)
 }
 
