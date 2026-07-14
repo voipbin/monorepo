@@ -112,3 +112,29 @@ func NewNotifyHandler(sockHandler sockhandler.SockHandler, reqHandler requesthan
 	return h
 }
 
+// NewNotifyHandlerForExistingExchange creates a NotifyHandler for an exchange that has ALREADY
+// been declared by the caller (e.g. via sockHandler.TopicCreateWithKind for a non-fanout kind).
+// Unlike NewNotifyHandler, this does NOT call sockHandler.TopicCreate/TopicCreateWithKind
+// internally -- it assumes the exchange already exists with the correct kind, and skips the
+// redundant (and, for non-fanout kinds, conflicting) declare. Added for VOIP-1258 (see design
+// doc §6, implementation plan Task 3.1) to support a second NotifyHandler instance bound to a
+// topic-kind exchange, alongside the existing fanout-only NewNotifyHandler used everywhere else.
+func NewNotifyHandlerForExistingExchange(sockHandler sockhandler.SockHandler, reqHandler requesthandler.RequestHandler, queueEvent commonoutline.QueueName, publisher commonoutline.ServiceName) NotifyHandler {
+	h := &notifyHandler{
+		sockHandler: sockHandler,
+		reqHandler:  reqHandler,
+
+		queueNotify: queueEvent,
+
+		publisher: publisher,
+	}
+
+	// NOTE: deliberately NOT calling sockHandler.TopicCreate/TopicCreateWithKind here -- the
+	// caller is responsible for declaring the exchange BEFORE calling this constructor.
+
+	namespace := commonoutline.GetMetricNameSpace(publisher)
+	initPrometheus(namespace)
+
+	return h
+}
+
