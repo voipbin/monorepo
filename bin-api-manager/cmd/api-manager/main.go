@@ -160,10 +160,6 @@ func runSubscribe(
 		"func": "runSubscribe",
 	})
 
-	if err := sockHandler.QueueBind(queueNamePod, "#", string(commonoutline.QueueNameWebhookEventTopic), false, nil); err != nil {
-		logrus.Errorf("Could not bind to the topic exchange. err: %v", err)
-	}
-
 	subscribeTargets := []string{}
 	subHandler := subscribehandler.NewSubscribeHandler(
 		sockHandler,
@@ -177,6 +173,17 @@ func runSubscribe(
 	if errRun := subHandler.Run(); errRun != nil {
 		log.Errorf("Could not run the subscribe handler. err: %v", errRun)
 		return
+	}
+
+	// baseline "#" wildcard binding to the new topic exchange (VOIP-1258 §7 round-2 finding):
+	// a topic-kind exchange's empty-key bind (what QueueSubscribe used for the old fanout
+	// exchange) only matches messages published with an empty routing key, and every
+	// VOIP-1258 publish path uses non-empty scope-first keys, so this pod would receive ZERO
+	// events without this explicit bind. MUST run AFTER subHandler.Run() above, since that is
+	// what actually declares queueNamePod via QueueCreate -- QueueBind against a queue that
+	// does not exist yet fails (see rabbitmqhandler.TestQueueBind_ReturnsErrorForNonExistent).
+	if err := sockHandler.QueueBind(queueNamePod, "#", string(commonoutline.QueueNameWebhookEventTopic), false, nil); err != nil {
+		logrus.Errorf("Could not bind to the topic exchange. err: %v", err)
 	}
 }
 
