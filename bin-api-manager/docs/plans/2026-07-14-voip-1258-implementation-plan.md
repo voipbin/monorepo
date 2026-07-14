@@ -336,14 +336,17 @@ entry). This requires:
   UNCHANGED once the underlying data structure holds every bind instead of just the last one;
   the fix is entirely in how `queueBinds` is populated/depopulated, not in how it's replayed.
 - **`bin-common-handler/pkg/rabbitmqhandler/main_test.go` MUST also be updated** — verified via
-  round-2 implementation-plan review finding: this test file has ~20 direct references to
-  `map[string]*queueBind{}` literals and single-value field access (e.g. `main_test.go:606-613,
-  660-667`: `r.queueBinds["test-queue"].key`, `.exchange`), none of which compile against the
+  round-2/round-4 implementation-plan review: this test file has **36 hits** of `queueBinds`
+  (verified via fresh grep, not the originally-cited "~20" — always re-grep rather than trust a
+  hardcoded count, since line numbers/counts drift as the file changes), including direct
+  single-value field access (e.g. `r.queueBinds["test-queue"].key`) AND struct-literal
+  initializations (`queueBinds: make(map[string]*queueBind)`), none of which compile against the
   new `map[string][]*queueBind` type. Before starting Task 1.3's implementation, run
   `grep -n "queueBinds" bin-common-handler/pkg/rabbitmqhandler/main_test.go` and update EVERY
   hit to the new slice-based access pattern (e.g. `r.queueBinds["test-queue"][0].key` for
-  single-bind test cases, or iterate the slice for multi-bind cases). This is a REQUIRED part of
-  Task 1.3's Step 2/Step 4 (build/test verification) — do not consider Task 1.3 complete until
+  single-bind test cases, `make(map[string][]*queueBind)` for init sites, or iterate the slice
+  for multi-bind cases). This is a REQUIRED part of Task 1.3's Step 2/Step 4 (build/test
+  verification) — do not consider Task 1.3 complete until
   `go test ./bin-common-handler/pkg/rabbitmqhandler/...` passes with the new type.
 
 This is now a REQUIRED part of Task 1.3 (not deferred to Phase 4 planning as originally
@@ -968,6 +971,102 @@ git -c user.name="Sungtae Kim" -c user.email="pchero21@gmail.com" commit -m "Dua
 - bin-webhook-manager: Wire routing-key computation into both webhook entry points, dual-publish to new topic exchange alongside existing fanout publish (VOIP-1258 §6/§8 transition window)"
 ```
 
+### Task 1.2b: Add `NewNotifyHandlerForExistingExchange` (additive constructor variant)
+
+**Files:**
+- Modify: `bin-common-handler/pkg/notifyhandler/main.go`
+
+**Objective:** Resolve a self-contradiction found in round-4 implementation-plan review (see
+Task 3.1's note below): `NewNotifyHandler` unconditionally calls `sockHandler.TopicCreate(name)`
+internally (`main.go:103`), which hardcodes `fanout`
+(`rabbitmqhandler/topic.go`). There is no way to use `NewNotifyHandler` to construct a
+`NotifyHandler` bound to an exchange that has ALREADY been declared as `topic` kind elsewhere --
+attempting to do so causes RabbitMQ to reject the redundant fanout declare with
+`PRECONDITION_FAILED` (kind mismatch), and `NewNotifyHandler` swallows that error by logging and
+returning `nil` (`main.go:104-105`), producing a nil `NotifyHandler` interface that panics on
+first use.
+
+**Step 1: Write failing test**
+
+```go
+func TestNewNotifyHandlerForExistingExchange_SkipsDeclare(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(mc)
+	// TopicCreate/TopicCreateWithKind must NOT be called -- the exchange is assumed
+	// already declared by the caller.
+	mockSock.EXPECT().TopicCreate(gomock.Any()).Times(0)
+	mockSock.EXPECT().TopicCreateWithKind(gomock.Any(), gomock.Any()).Times(0)
+
+	h := NewNotifyHandlerForExistingExchange(mockSock, nil, "some.exchange.name", "test-service")
+
+	require.NotNil(t, h)
+}
+```
+
+**Step 2: Run to verify failure**
+
+```bash
+cd bin-common-handler/pkg/notifyhandler && go test ./... -run TestNewNotifyHandlerForExistingExchange -v
+```
+Expected: FAIL — undefined.
+
+**Step 3: Implement (purely additive, does not touch `NewNotifyHandler` or any of its ~116
+existing call sites)**
+
+```go
+// bin-common-handler/pkg/notifyhandler/main.go — add:
+
+// NewNotifyHandlerForExistingExchange creates a NotifyHandler for an exchange that has ALREADY
+// been declared by the caller (e.g. via sockHandler.TopicCreateWithKind for a non-fanout kind).
+// Unlike NewNotifyHandler, this does NOT call sockHandler.TopicCreate/TopicCreateWithKind
+// internally -- it assumes the exchange already exists with the correct kind, and skips the
+// redundant (and, for non-fanout kinds, conflicting) declare. Added for VOIP-1258 (see design
+// doc §6, implementation plan Task 3.1) to support a second NotifyHandler instance bound to a
+// topic-kind exchange, alongside the existing fanout-only NewNotifyHandler used everywhere else.
+func NewNotifyHandlerForExistingExchange(sockHandler sockhandler.SockHandler, reqHandler requesthandler.RequestHandler, queueEvent commonoutline.QueueName, publisher commonoutline.ServiceName) NotifyHandler {
+	h := &notifyHandler{
+		sockHandler: sockHandler,
+		reqHandler:  reqHandler,
+
+		queueNotify: queueEvent,
+
+		publisher: publisher,
+	}
+
+	// NOTE: deliberately NOT calling sockHandler.TopicCreate/TopicCreateWithKind here -- the
+	// caller is responsible for declaring the exchange BEFORE calling this constructor.
+
+	namespace := commonoutline.GetMetricNameSpace(publisher)
+	initPrometheus(namespace)
+
+	return h
+}
+```
+
+**Step 4: Run test, verify pass**
+
+```bash
+cd bin-common-handler/pkg/notifyhandler && go test ./... -run TestNewNotifyHandlerForExistingExchange -v
+```
+Expected: PASS
+
+**Step 5: Full build/test, confirm zero regression to existing `NewNotifyHandler`**
+
+```bash
+cd bin-common-handler && go build ./... && go test ./...
+```
+
+**Step 6: Commit**
+
+```bash
+git add bin-common-handler/pkg/notifyhandler/
+git -c user.name="Sungtae Kim" -c user.email="pchero21@gmail.com" commit -m "Add NewNotifyHandlerForExistingExchange, additive constructor variant
+
+- bin-common-handler: Add NewNotifyHandlerForExistingExchange, skips the internal TopicCreate declare so a NotifyHandler can be bound to an already-declared non-fanout exchange, resolves VOIP-1258 Task 3.1's fanout/topic declare conflict without touching NewNotifyHandler's existing ~116 call sites"
+```
+
 ---
 
 ## Phase 3: Exchange migration — new topic exchange, non-websocket consumer migration
@@ -1010,10 +1109,21 @@ Apply the same in `cmd/webhook-control/main.go`.
 **Step 3:** Update `webhookHandler`'s `publishRoutingKeyedEvent` (Task 2.5) to target this
 constant instead of `h.queueNotify` — this requires `PublishEventWithRoutingKey` to accept an
 explicit queue/exchange name parameter, OR a second `NotifyHandler` instance pointed at the new
-exchange. **Recommended**: give `notifyhandler.NewNotifyHandler` a second call in webhook-manager
-startup, creating a SEPARATE `NotifyHandler` instance bound to `QueueNameWebhookEventTopic`, and
-inject it into `webhookHandler` as a distinct field (`topicNotifyHandler`) alongside the existing
-`notifyHandler`. Revise Task 2.1's struct:
+exchange. **Recommended, using Task 1.2b's `NewNotifyHandlerForExistingExchange`**: give
+webhook-manager startup a SEPARATE `NotifyHandler` instance bound to
+`QueueNameWebhookEventTopic`, constructed via the ADDITIVE constructor added in Task 1.2b (not
+`NewNotifyHandler`), and inject it into `webhookHandler` as a distinct field
+(`topicNotifyHandler`) alongside the existing `notifyHandler`. **Do NOT use `NewNotifyHandler`
+for this second instance — verified via round-4 implementation-plan review: `NewNotifyHandler`
+unconditionally calls `sockHandler.TopicCreate(name)` internally (`notifyhandler/main.go:103`),
+which is hardcoded to declare `fanout` (`rabbitmqhandler/topic.go`). Since Step 2 above already
+declared `QueueNameWebhookEventTopic` as `topic` kind via `TopicCreateWithKind`, a subsequent
+`NewNotifyHandler` call for the same exchange name would have its internal fanout declare
+rejected by RabbitMQ (`PRECONDITION_FAILED`, kind mismatch), and `NewNotifyHandler` swallows
+that error by logging and returning `nil` — producing a nil `NotifyHandler` that panics on first
+use in Task 2.5's `h.topicNotifyHandler.PublishEventWithRoutingKey(...)` call. Using
+`NewNotifyHandlerForExistingExchange` (which skips the internal declare entirely, assuming the
+caller already declared the exchange) avoids this conflict.** Revise Task 2.1's struct:
 
 ```go
 type webhookHandler struct {
@@ -1027,8 +1137,21 @@ type webhookHandler struct {
 
 Update `NewWebhookHandler`'s signature to accept `topicNotifyHandler` as a new parameter, and
 `publishRoutingKeyedEvent` to call `h.topicNotifyHandler.PublishEventWithRoutingKey(...)` instead
-of `h.notifyHandler...`. Update both `cmd/` wiring sites to construct and pass the second
-`NotifyHandler`.
+of `h.notifyHandler...`. Update both `cmd/` wiring sites:
+
+```go
+// bin-webhook-manager/cmd/webhook-manager/main.go — after the TopicCreateWithKind declare
+// from Step 2 above, construct the second NotifyHandler using the ADDITIVE constructor:
+topicNotifyHandler := notifyhandler.NewNotifyHandlerForExistingExchange(
+	sockHandler,
+	reqHandler,
+	commonoutline.QueueNameWebhookEventTopic,
+	commonoutline.ServiceNameWebhookManager,
+)
+// ... then pass topicNotifyHandler into NewWebhookHandler(...) alongside the existing notifyHandler
+```
+
+Apply the same in `cmd/webhook-control/main.go`.
 
 **Step 4:** Build and test:
 ```bash
