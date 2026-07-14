@@ -156,13 +156,25 @@ func runServiceSubscribe(
 	subscribeTargets := []string{
 		string(commonoutline.QueueNameCallEvent),
 		string(commonoutline.QueueNameCustomerEvent),
-		string(commonoutline.QueueNameWebhookEvent),
 	}
-	subHandler := subscribehandler.NewSubscribeHandler(sockHandler, string(commonoutline.QueueNameAgentSubscribe), subscribeTargets, agentHandler)
+	queueNamePod := string(commonoutline.QueueNameAgentSubscribe)
+	subHandler := subscribehandler.NewSubscribeHandler(sockHandler, queueNamePod, subscribeTargets, agentHandler)
 
 	// run
 	if errRun := subHandler.Run(); errRun != nil {
 		return errRun
+	}
+
+	// Cut over from the old fanout QueueNameWebhookEvent exchange to the new
+	// QueueNameWebhookEventTopic topic exchange with a "#" wildcard binding.
+	// Bind new first, then unbind old, to avoid an event-loss window where the
+	// queue is briefly bound to neither exchange (VOIP-1258 Task 3.5).
+	if errBind := sockHandler.QueueBind(queueNamePod, "#", string(commonoutline.QueueNameWebhookEventTopic), false, nil); errBind != nil {
+		logrus.Errorf("Could not bind to the topic exchange. err: %v", errBind)
+		// do NOT proceed to unbind the old exchange if this bind failed -- stay on the
+		// old exchange rather than risk ending up bound to neither.
+	} else if errUnbind := sockHandler.QueueUnbind(queueNamePod, "", string(commonoutline.QueueNameWebhookEvent), nil); errUnbind != nil {
+		logrus.Errorf("CRITICAL: Could not unbind from the old fanout exchange after binding to the new topic exchange. queue: %s is now bound to BOTH exchanges (double-processing resumes). Manual intervention required. err: %v", queueNamePod, errUnbind)
 	}
 
 	return nil
