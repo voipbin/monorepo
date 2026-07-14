@@ -10,7 +10,9 @@ import (
 
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
 	cminteraction "monorepo/bin-contact-manager/models/interaction"
@@ -131,6 +133,20 @@ func Test_toolHandleGetContactInteractions(t *testing.T) {
 			name:            "case RPC transient failure -> honest failure",
 			responseCaseErr: errTest,
 			expectResult:    "failed",
+		},
+		{
+			name: "Contact soft-deleted (typed CONTACT_NOT_FOUND from InteractionList) -> success, not failed",
+			responseCase: &kmkase.Case{
+				ID:         caseID,
+				CustomerID: customerID,
+				ContactID:  &contactID,
+				PeerType:   "tel",
+				PeerTarget: "+15551500004",
+			},
+			responseListErr:     cerrors.NotFound(commonoutline.ServiceNameContactManager, "CONTACT_NOT_FOUND", "The contact was not found."),
+			expectContactFilter: true,
+			expectResult:        "success",
+			expectMessageEmpty:  true,
 		},
 	}
 
@@ -335,4 +351,51 @@ func Test_toolHandleGetConversationContent(t *testing.T) {
 
 func timePtr(t time.Time) *time.Time {
 	return &t
+}
+
+// Test_isNotFoundErr covers both error shapes this codebase's downstream
+// managers use for "not found" (Round-2 review finding, VOIP-1234 PR
+// #1100): the legacy requesthandler.ErrNotFound sentinel AND a typed
+// *cerrors.VoipbinError with Status == StatusNotFound. A caller that checks
+// only one shape silently misclassifies the other as an honest failure.
+func Test_isNotFoundErr(t *testing.T) {
+	tests := []struct {
+		name string
+		err  error
+		want bool
+	}{
+		{
+			name: "legacy sentinel",
+			err:  requesthandler.ErrNotFound,
+			want: true,
+		},
+		{
+			name: "typed VoipbinError NotFound",
+			err:  cerrors.NotFound(commonoutline.ServiceNameContactManager, "CONTACT_NOT_FOUND", "The contact was not found."),
+			want: true,
+		},
+		{
+			name: "typed VoipbinError, different status -> not a not-found",
+			err:  cerrors.PermissionDenied(commonoutline.ServiceNameContactManager, "X", "x"),
+			want: false,
+		},
+		{
+			name: "unrelated error",
+			err:  errTest,
+			want: false,
+		},
+		{
+			name: "nil error",
+			err:  nil,
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			if got := isNotFoundErr(tt.err); got != tt.want {
+				t.Errorf("isNotFoundErr(%v) = %v, want %v", tt.err, got, tt.want)
+			}
+		})
+	}
 }

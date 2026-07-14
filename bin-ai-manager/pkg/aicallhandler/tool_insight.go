@@ -9,6 +9,7 @@ import (
 
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	cminteraction "monorepo/bin-contact-manager/models/interaction"
 	cvmessage "monorepo/bin-conversation-manager/models/message"
@@ -38,6 +39,29 @@ func resolveInsightListLimit(v int) uint64 {
 		return insightMaxListLimit
 	}
 	return uint64(v)
+}
+
+// isNotFoundErr reports whether err represents a "not found" outcome from a
+// downstream RPC, across BOTH error shapes this codebase's managers use:
+//   - legacy: the bare requesthandler.ErrNotFound sentinel (status-code
+//     fallback path in parseResponse), used by e.g. ContactV1CaseGet.
+//   - typed: a *cerrors.VoipbinError with Status == cerrors.StatusNotFound
+//     (the migrated envelope, cerrors.FromResponse takes precedence over
+//     the legacy sentinel in parseResponse), used by e.g. contact-manager's
+//     interactionListByContact (CONTACT_NOT_FOUND, e.g. when the Contact
+//     backing a Case has been soft-deleted).
+//
+// Round-2 adversarial review (VOIP-1234 PR #1100) found that checking only
+// the legacy sentinel silently misclassified a typed NotFound (a routine,
+// user-facing "no history yet" outcome) as an honest RPC failure. Both
+// shapes are checked here so every not-found path -- regardless of which
+// migration state the downstream manager is in -- is treated identically.
+func isNotFoundErr(err error) bool {
+	if stderrors.Is(err, requesthandler.ErrNotFound) {
+		return true
+	}
+	var ve *cerrors.VoipbinError
+	return stderrors.As(err, &ve) && ve.Status == cerrors.StatusNotFound
 }
 
 // toolHandleGetContactInteractions lists past interactions (calls,
@@ -71,7 +95,7 @@ func (h *aicallHandler) toolHandleGetContactInteractions(ctx context.Context, c 
 
 	kase, err := h.reqHandler.ContactV1CaseGet(ctx, c.CustomerID, c.ReferenceID)
 	if err != nil {
-		if stderrors.Is(err, requesthandler.ErrNotFound) {
+		if isNotFoundErr(err) {
 			fillSuccess(res, "interaction_list", c.ReferenceID.String(), msgResourceNotFound)
 			return res
 		}
@@ -96,6 +120,17 @@ func (h *aicallHandler) toolHandleGetContactInteractions(ctx context.Context, c 
 			ctx, c.CustomerID, limit, "", string(kase.PeerType), kase.PeerTarget, uuid.Nil, uuid.Nil, time.Time{})
 	}
 	if err != nil {
+		// Round-2 review finding (VOIP-1234 PR #1100): the Contact backing
+		// this Case may have been soft-deleted (merge, GDPR erasure, etc.)
+		// since the Case was created. contact-manager's interactionListByContact
+		// returns a TYPED NotFound (CONTACT_NOT_FOUND) in that case, which is a
+		// routine "no history to show" outcome for this tool -- not a genuine
+		// downstream failure. Treat it as an empty result (success), same as
+		// the Case-not-found path above, rather than an honest tool failure.
+		if isNotFoundErr(err) {
+			fillSuccess(res, "interaction_list", c.ReferenceID.String(), "no interactions found")
+			return res
+		}
 		log.Errorf("Could not list interactions. err: %v", err)
 		fillFailed(res, fmt.Errorf("resource lookup failed"))
 		return res
@@ -167,7 +202,7 @@ func (h *aicallHandler) toolHandleGetConversationContent(ctx context.Context, c 
 	// mirrors resolveResource's IDOR-safe contract in tool_resource.go).
 	msg, err := h.reqHandler.ConversationV1MessageGet(ctx, refID)
 	if err != nil {
-		if stderrors.Is(err, requesthandler.ErrNotFound) {
+		if isNotFoundErr(err) {
 			fillSuccess(res, "conversation_content", args.ReferenceID, msgResourceNotFound)
 			return res
 		}
