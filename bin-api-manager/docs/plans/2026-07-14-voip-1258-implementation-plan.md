@@ -335,6 +335,16 @@ entry). This requires:
 - `redeclareAll()` (`main.go:298-303`): already iterates a flat list of all binds — this loop is
   UNCHANGED once the underlying data structure holds every bind instead of just the last one;
   the fix is entirely in how `queueBinds` is populated/depopulated, not in how it's replayed.
+- **`bin-common-handler/pkg/rabbitmqhandler/main_test.go` MUST also be updated** — verified via
+  round-2 implementation-plan review finding: this test file has ~20 direct references to
+  `map[string]*queueBind{}` literals and single-value field access (e.g. `main_test.go:606-613,
+  660-667`: `r.queueBinds["test-queue"].key`, `.exchange`), none of which compile against the
+  new `map[string][]*queueBind` type. Before starting Task 1.3's implementation, run
+  `grep -n "queueBinds" bin-common-handler/pkg/rabbitmqhandler/main_test.go` and update EVERY
+  hit to the new slice-based access pattern (e.g. `r.queueBinds["test-queue"][0].key` for
+  single-bind test cases, or iterate the slice for multi-bind cases). This is a REQUIRED part of
+  Task 1.3's Step 2/Step 4 (build/test verification) — do not consider Task 1.3 complete until
+  `go test ./bin-common-handler/pkg/rabbitmqhandler/...` passes with the new type.
 
 This is now a REQUIRED part of Task 1.3 (not deferred to Phase 4 planning as originally
 written), since Phase 4's `scopeRefCount` component depends on reconnects correctly restoring
@@ -1687,7 +1697,19 @@ grep -rn "QueueNameAgentEvent\|QueueNameTalkEvent" bin-api-manager/
 Expected: only the `subscribeTargets` list itself references them (confirmed in design doc §2's
 single-case switch analysis — should show no other dependents).
 
-**Step 3:** Remove both from the list:
+**Step 3:** Remove both from the list, and switch the baseline exchange target to the new topic
+exchange WITH an explicit `#` wildcard binding — do NOT use `QueueSubscribe`'s empty-key bind for
+this target. **Verified via round-2 implementation-plan review finding: on a `topic`-kind
+exchange (unlike `fanout`), an empty routing key binding only matches messages published with an
+empty routing key. Since every VOIP-1258 publish path (Task 2.3/2.4/2.5) publishes with
+non-empty scope-first keys (`customer_id.xxx...`/`owner_id.xxx...`), using
+`QueueSubscribe(queue, target)`'s existing empty-key bind
+(`rabbitmqhandler/queue.go:158-159`) against `QueueNameWebhookEventTopic` would deliver ZERO
+events to bin-api-manager's baseline subscription — a silent total event-loss regression the
+moment this task deploys, contradicting the plan's own phased-safety principle that no phase
+should depend on a later phase to be correct.** This task and Task 4.6's `#`-fallback binding
+must land TOGETHER, not sequentially:
+
 ```go
 // BEFORE:
 subscribeTargets := []string{
@@ -1695,11 +1717,23 @@ subscribeTargets := []string{
 	string(commonoutline.QueueNameAgentEvent),
 	string(commonoutline.QueueNameTalkEvent),
 }
-// AFTER:
-subscribeTargets := []string{
-	string(commonoutline.QueueNameWebhookEventTopic), // also switch to the new exchange, see Task 4.6
+// ... elsewhere, existing subscribehandler.Run() loop calls
+// sockHandler.QueueSubscribe(queue, target) for each target, which binds with an empty key --
+// correct for fanout, WRONG for the new topic exchange.
+
+// AFTER: remove subscribeTargets' use of QueueSubscribe for the new exchange entirely; bind it
+// explicitly with "#" instead, immediately after the per-pod queue is created:
+if err := sockHandler.QueueBind(queueNamePod, "#", string(commonoutline.QueueNameWebhookEventTopic), false, nil); err != nil {
+	logrus.Errorf("Could not bind to the topic exchange. err: %v", err)
 }
+// subscribeTargets no longer includes QueueNameWebhookEvent/AgentEvent/TalkEvent at all --
+// the topic exchange binding above replaces it, done here (not deferred to Task 4.6).
 ```
+
+Task 4.6's "keep the `#` fallback for the first deploy, remove later" framing still applies, but
+the `#` binding itself must exist from THIS task's deploy onward, not added later — Task 4.6 is
+now solely about REMOVING the fallback once dynamic per-scope bind/unbind (Task 4.3) is confirmed
+stable, not about adding it for the first time.
 
 **Step 4:** Build:
 ```bash
@@ -1725,12 +1759,12 @@ git -c user.name="Sungtae Kim" -c user.email="pchero21@gmail.com" commit -m "Rem
 **This is the final cutover step — deploy and verify Tasks 4.1-4.5 in staging/production for a
 full transition window (Open Question 1: window length TBD) BEFORE executing this task.**
 
-**Step 1:** Change `bin-api-manager`'s baseline (always-bound) subscription target from
-`QueueNameWebhookEvent` to `QueueNameWebhookEventTopic` with an unconditional `#` fallback (or,
-per §9, NO baseline binding at all — every scope is acquired dynamically per connection; decide
-based on whether an always-on `#` fallback binding is wanted as a safety net during initial
-rollout, recommend keeping a `#` fallback for the first deploy, removing it in a follow-up once
-dynamic bind/unbind is confirmed stable).
+**Step 1:** Change `bin-api-manager`'s baseline `#` fallback binding (added in Task 4.5, kept as
+a safety net during initial dynamic-bind/unbind rollout) — REMOVE it now that Task 4.3's
+per-scope dynamic bind/unbind is confirmed stable in production, so pods only receive events for
+scopes with a live local subscriber (the actual point of this whole design). This is now a
+REMOVAL step, not an initial addition — Task 4.5 already added and deployed the `#` binding as
+part of its own safe cutover.
 
 **Step 2:** Remove the dual-publish from `bin-webhook-manager`: delete the old
 `h.notifyHandler.PublishEvent(ctx, webhook.EventTypeWebhookPublished, wh)` calls in
@@ -1777,10 +1811,6 @@ cd ../bin-talk-manager && go build ./... && go test ./...    # unaffected, sanit
 
 ## Deferred to follow-up tickets (explicitly out of this plan's scope)
 
-- Removing the temporary `#`-fallback baseline binding in `bin-api-manager` once dynamic
-  bind/unbind is confirmed stable in production (Task 4.6 note).
-- Cosmetic rename of `topicNotifyHandler` back to `notifyHandler` after the old fanout exchange
-  is fully decommissioned.
 - Load/chaos testing the `scopeRefCount` component under concurrent connect/disconnect storms
   (Open Question 2 — testing strategy still needs a dedicated design pass before this ships to
   production traffic at scale).
