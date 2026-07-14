@@ -850,16 +850,26 @@ git -c user.name="Sungtae Kim" -c user.email="pchero21@gmail.com" commit -m "Imp
 **Step 1:** Determine the new topic exchange name constant first (Phase 3, Task 3.1 defines
 it — this task has a forward dependency; if executing phases sequentially, do Task 3.1 before
 this task, OR use a placeholder constant here and rename in Task 3.1's commit). Recommended:
-do Task 3.1 (exchange name + declare) BEFORE this task, then return here.
+do Task 3.1 (exchange name + declare + `topicNotifyHandler` field) BEFORE this task, then return
+here. **This ordering is not optional — verified via round-3 implementation-plan review: the
+code in this task calls `h.topicNotifyHandler.PublishEventWithRoutingKey(...)`, a field that
+does not exist on `webhookHandler` until Task 3.1 adds it. There is no safe way to implement
+this task using `h.notifyHandler` "temporarily" — that field is bound to the OLD fanout
+exchange, which silently ignores routing keys, so the event would appear to publish
+successfully while never actually reaching the new topic exchange at all (no compiler error, no
+test failure, a completely silent feature failure). Do Task 3.1 first, full stop.**
 
 **Step 2: Write failing test**
 
 ```go
 func TestSendWebhookToCustomer_DualPublishesWithRoutingKey(t *testing.T) {
-	// extend existing SendWebhookToCustomer test setup; add expectation that
-	// notifyHandler.PublishEventWithRoutingKey is called once per generated routing key,
-	// in addition to the existing notifyHandler.PublishEvent call (dual-publish, Task 3.2's
-	// transition-window requirement)
+	// extend existing SendWebhookToCustomer test setup; assert that
+	// h.topicNotifyHandler.PublishEventWithRoutingKey (NOT h.notifyHandler) is called once per
+	// generated routing key, in addition to the existing h.notifyHandler.PublishEvent call
+	// (dual-publish, Task 3.1's transition-window requirement). Use two DISTINCT mocks
+	// (mockNotifyHandler, mockTopicNotifyHandler) in the test setup and assert each receives
+	// calls on the correct one -- a test using a single shared mock for both fields would not
+	// have caught the h.notifyHandler/h.topicNotifyHandler mixup found in round-3 review.
 }
 ```
 
@@ -895,6 +905,16 @@ func (h *webhookHandler) SendWebhookToCustomer(ctx context.Context, customerID u
 // publishRoutingKeyedEvent computes routing keys for the given event data and publishes to the
 // new topic exchange with each key. Best-effort: logs and returns on parse/RPC failure without
 // blocking the primary (fanout) delivery path above it.
+//
+// CRITICAL: uses h.topicNotifyHandler (bound to QueueNameWebhookEventTopic, a topic-kind
+// exchange -- constructed in Task 3.1), NOT h.notifyHandler (bound to the OLD fanout exchange).
+// Calling PublishEventWithRoutingKey on h.notifyHandler would compile and "succeed" silently --
+// fanout exchanges ignore routing keys entirely, so the event would be delivered but the
+// scoping this whole feature exists for would never take effect. This exact mistake was caught
+// in round-3 implementation-plan review: if Task 2.5 is implemented before Task 3.1 adds the
+// topicNotifyHandler field, this function CANNOT be written correctly yet -- do not stub it
+// with h.notifyHandler "temporarily," implement Task 3.1 first as already instructed above, and
+// write this function only once topicNotifyHandler exists on the struct.
 func (h *webhookHandler) publishRoutingKeyedEvent(ctx context.Context, eventType string, data json.RawMessage) {
 	log := logrus.WithFields(logrus.Fields{"func": "publishRoutingKeyedEvent", "event_type": eventType})
 
@@ -923,7 +943,7 @@ func (h *webhookHandler) publishRoutingKeyedEvent(ctx context.Context, eventType
 	}
 
 	for _, key := range keys {
-		h.notifyHandler.PublishEventWithRoutingKey(ctx, eventType, key, json.RawMessage(data))
+		h.topicNotifyHandler.PublishEventWithRoutingKey(ctx, eventType, key, json.RawMessage(data))
 	}
 }
 ```
