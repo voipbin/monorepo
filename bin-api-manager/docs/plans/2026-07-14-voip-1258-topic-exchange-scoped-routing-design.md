@@ -201,12 +201,20 @@ service -- no other service's code references the `agent_id:` wire string):
   topic pattern; MUST be updated per this repo's CLAUDE.md RST-sync rule ("stale docs actively
   mislead customers"), rebuilt via `sphinx -M html`, and force-added (`build/` is gitignored).
 
-**Checked and explicitly excluded, not silently omitted**: a fresh monorepo-wide grep for the
-literal `agent_id:` wire prefix additionally found two categories of non-code hits, neither
-requiring action:
-- `bin-api-manager/pkg/websockhandler/subscription.go:81` -- a log message
-  (`log.Debugf("Websocket connection has been closed. agent_id: %s", ...)`) using `agent_id` as
-  a structured-log field label, not the wire-protocol prefix. No rename needed; unrelated usage.
+**Checked and explicitly excluded, not silently omitted**: a monorepo-wide grep for the literal
+`agent_id:` wire prefix additionally found non-code hits, none requiring action:
+- `bin-api-manager/pkg/websockhandler/subscription.go:81` and numerous similar occurrences
+  across other services (e.g. `bin-agent-manager/pkg/agenthandler/agent.go`,
+  `bin-agent-manager/pkg/agenthandler/event.go`, `bin-agent-manager/cmd/agent-control/
+  normalize_addresses.go`, `bin-call-manager/pkg/callhandler/start_incoming_domain_type_sip.go`,
+  `bin-call-manager/pkg/groupcallhandler/dial.go`, `bin-queue-manager/pkg/queuecallhandler/
+  execute.go`, and others) -- ALL of these use `agent_id` as a structured-log field label
+  (e.g. `log.Debugf("...agent_id: %s...", ...)`), not the wire-protocol prefix. This is a
+  distinct, unrelated naming pattern (log-field labels vs. topic-string prefixes) that spans
+  many services; none of it is in scope for this rename, and this doc does not attempt an
+  exhaustive enumeration of every such log statement -- the actionable blast radius for the
+  WIRE-PROTOCOL rename is confined to `bin-api-manager` (the list above), independently of how
+  many unrelated log statements elsewhere happen to share the substring `agent_id:`.
 - Repo-root `docs/plans/2026-04-02-talk-websocket-distribution-design.md` and
   `docs/plans/2026-04-02-talk-manager-event-prefix-design.md` -- stale, historical, already-
   implemented design docs that describe the `agent_id:...` wire format as it existed when those
@@ -216,8 +224,9 @@ requiring action:
   make them inaccurate as a historical record of what was actually decided/built at the time.
 - No hits in any OpenAPI spec file for the wire-protocol prefix (`bin-openapi-manager/openapi/
   openapi.yaml`'s one `agent_id` occurrence is an unrelated schema field,
-  `TalkManagerMedia.type=agent`, not this topic-string prefix). No frontend repo hits (no
-  square-admin/square-main directories exist in this monorepo).
+  `TalkManagerMedia.type=agent`, not this topic-string prefix; `architecture_flow.rst`'s
+  `agent_id` occurrence is an unrelated JWT/auth-header example, also not the topic prefix). No
+  frontend repo hits (no square-admin/square-main directories exist in this monorepo).
 
 **Not affected**: `commonidentity.Owner`'s Go field names (`OwnerType`, `OwnerID`) are already
 correctly named and require no change; only the WIRE STRING `"agent_id"` (embedded in topic
