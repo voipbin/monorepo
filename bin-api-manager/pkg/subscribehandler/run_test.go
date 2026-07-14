@@ -34,17 +34,23 @@ func Test_Run_BindsTopicExchangeBeforeReturning(t *testing.T) {
 	queueName := "bin-manager.api-manager.subscribe-test-pod"
 	subscribeTargets := []string{}
 
-	var callOrder []string
+	// callOrderCh, not a shared slice: QueueBind runs synchronously on the caller's goroutine,
+	// but ConsumeMessage's callback runs on Run()'s internal goroutine. A plain
+	// `var callOrder []string` appended from both would be a data race (caught by `-race`,
+	// intermittently) -- exactly the bug class this production fix addresses, ironically
+	// reintroduced in the test harness in an earlier version of this test. Use a buffered
+	// channel instead, matching bin-timeline-manager's Test_Run_BindsTopicExchangeBeforeConsuming.
+	callOrderCh := make(chan string, 4)
 
 	mockSock.EXPECT().QueueCreate(queueName, "volatile").Return(nil)
 	mockSock.EXPECT().QueueBind(queueName, "#", string(commonoutline.QueueNameWebhookEventTopic), false, nil).
 		DoAndReturn(func(_, _, _ string, _ bool, _ interface{}) error {
-			callOrder = append(callOrder, "QueueBind")
+			callOrderCh <- "QueueBind"
 			return nil
 		})
 	mockSock.EXPECT().ConsumeMessage(gomock.Any(), queueName, gomock.Any(), false, false, false, 10, gomock.Any()).
 		DoAndReturn(func(_, _, _ interface{}, _, _, _ bool, _ int, _ interface{}) error {
-			callOrder = append(callOrder, "ConsumeMessage")
+			callOrderCh <- "ConsumeMessage"
 			return nil
 		}).AnyTimes()
 
@@ -52,6 +58,19 @@ func Test_Run_BindsTopicExchangeBeforeReturning(t *testing.T) {
 
 	if err := h.Run(); err != nil {
 		t.Fatalf("Run() returned an unexpected error: %v", err)
+	}
+
+	// Drain whatever has arrived so far without closing the channel -- ConsumeMessage's mock
+	// may still be in flight on its own goroutine and could send after we're done reading.
+	var callOrder []string
+	draining := true
+	for draining {
+		select {
+		case c := <-callOrderCh:
+			callOrder = append(callOrder, c)
+		default:
+			draining = false
+		}
 	}
 
 	foundBind := false

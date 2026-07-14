@@ -31,7 +31,14 @@ func Test_Run_BindsTopicExchangeBeforeReturning(t *testing.T) {
 		string(commonoutline.QueueNameCustomerEvent),
 	}
 
-	var callOrder []string
+	// callOrderCh, not a shared slice: QueueBind/QueueUnbind run synchronously on the caller's
+	// goroutine, but ConsumeMessage's callback runs on Run()'s internal goroutine. A plain
+	// `var callOrder []string` appended from both would be a data race (caught by `-race`,
+	// intermittently, since ConsumeMessage's goroutine may or may not have scheduled by the
+	// time Run() returns) -- exactly the bug class this production fix addresses, ironically
+	// reintroduced in the test harness in an earlier version of this test. Use a buffered
+	// channel instead, matching bin-timeline-manager's Test_Run_BindsTopicExchangeBeforeConsuming.
+	callOrderCh := make(chan string, 8)
 
 	mockSock.EXPECT().QueueCreate(queueName, "normal").Return(nil)
 	for _, target := range subscribeTargets {
@@ -39,12 +46,12 @@ func Test_Run_BindsTopicExchangeBeforeReturning(t *testing.T) {
 	}
 	mockSock.EXPECT().QueueBind(queueName, "#", string(commonoutline.QueueNameWebhookEventTopic), false, nil).
 		DoAndReturn(func(_, _, _ string, _ bool, _ interface{}) error {
-			callOrder = append(callOrder, "QueueBind")
+			callOrderCh <- "QueueBind"
 			return nil
 		})
 	mockSock.EXPECT().QueueUnbind(queueName, "", string(commonoutline.QueueNameWebhookEvent), nil).
 		DoAndReturn(func(_, _, _ string, _ interface{}) error {
-			callOrder = append(callOrder, "QueueUnbind")
+			callOrderCh <- "QueueUnbind"
 			return nil
 		})
 	// ConsumeMessage is started in a goroutine inside Run() -- allow it to be called (or not,
@@ -52,7 +59,7 @@ func Test_Run_BindsTopicExchangeBeforeReturning(t *testing.T) {
 	// test; the ordering assertion below is what actually matters, not whether this fires.
 	mockSock.EXPECT().ConsumeMessage(gomock.Any(), queueName, gomock.Any(), false, false, false, 10, gomock.Any()).
 		DoAndReturn(func(_, _, _ interface{}, _, _, _ bool, _ int, _ interface{}) error {
-			callOrder = append(callOrder, "ConsumeMessage")
+			callOrderCh <- "ConsumeMessage"
 			return nil
 		}).AnyTimes()
 
@@ -63,7 +70,19 @@ func Test_Run_BindsTopicExchangeBeforeReturning(t *testing.T) {
 	}
 
 	// By the time Run() returns, QueueBind and QueueUnbind must already have been recorded
-	// (they are called synchronously before the ConsumeMessage goroutine is launched).
+	// (they are called synchronously before the ConsumeMessage goroutine is launched). Drain
+	// whatever has arrived so far without closing the channel -- ConsumeMessage's mock may
+	// still be in flight on its own goroutine and could send after we're done reading.
+	var callOrder []string
+	draining := true
+	for draining {
+		select {
+		case c := <-callOrderCh:
+			callOrder = append(callOrder, c)
+		default:
+			draining = false
+		}
+	}
 	foundBind, foundUnbind := false, false
 	for _, c := range callOrder {
 		if c == "QueueBind" {
