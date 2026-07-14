@@ -120,7 +120,13 @@ put:
               type: array
               items:
                 $ref: '#/components/schemas/AIManagerToolName'
-              description: List of tool names to enable for this AI. Use ["all"] to enable all available tools.
+              description: >-
+                List of tool names to enable for this AI. Use ["all"] to
+                enable all available tools. For type=insight AIs, only
+                Insight tool names are permitted (currently:
+                get_contact_interactions, get_conversation_content);
+                type=normal AIs may use any Normal tool name or ["all"].
+                Mismatched combinations are rejected with a 400.
             auto_aicall_audit_enabled:
               type: boolean
               description: When true, any finished AICall involving this AI is audited automatically.
