@@ -10,8 +10,11 @@ websocket client count. Chat-type events additionally pay a live `TalkV1Particip
 call per event, also unconditional.
 
 **pchero has decided**: go broker-level (RabbitMQ `fanout` -> `topic` exchange), with
-**scope-first** routing key ordering (`customer_id.<uuid>.#` / `agent_id.<uuid>.#`), explicitly
-rejecting resource-first ordering and deferring functional sharding as out of scope.
+**scope-first** routing key ordering (`customer_id.<uuid>.#` / `owner_id.<uuid>.#`), explicitly
+rejecting resource-first ordering and deferring functional sharding as out of scope. On
+2026-07-14 in further follow-up, pchero additionally decided to rename the owner-scope wire
+string from `agent_id` to `owner_id` end to end (internal routing key AND the client-facing
+public API) -- see §5.
 
 **This is REVISION 2 of the design, reflecting a scope-reduction decision made 2026-07-14 in
 follow-up discussion, superseding the original 8-open-question, ~25-service-blast-radius draft.**
@@ -94,19 +97,21 @@ Owner, AIcallID, ChatID}`) to extract `CustomerID`/`OwnerID`, and for
 `chat`/`chatmessage`/`chatparticipant` resource types calls
 `h.reqHandler.TalkV1ParticipantList(ctx, chatID)` to fan out a topic string per chat participant.
 
-Existing client-facing topic string format (already public API contract, documented in
-`bin-api-manager/docsdev/source/websocket_overview.rst` etc., UNCHANGED by this design):
+Existing client-facing topic string format (public API contract, documented in
+`bin-api-manager/docsdev/source/websocket_overview.rst` etc. -- the `agent_id` scope prefix is
+RENAMED to `owner_id` by this design, per §5; the overall `<scope>:<scope_id>:<resource>:
+<resource_id>` shape and the `customer_id` prefix are unchanged):
 ```
 <scope>:<scope_id>:<resource>:<resource_id>
 e.g. customer_id:abc123:call:xyz789
-     agent_id:agent123:queue:*
+     agent_id:agent123:queue:*      (BEFORE this design; becomes owner_id:agent123:queue:* -- see §5)
 ```
 
 ## 3. Design goal (unchanged)
 
 Move scope-based filtering from "after full local processing, at the final ZMQ hop" to "at the
 RabbitMQ broker, before the event ever reaches a pod without a matching subscriber." A pod with
-zero clients subscribed to a given `customer_id`/`agent_id` scope should never receive, consume,
+zero clients subscribed to a given `customer_id`/`owner_id` scope should never receive, consume,
 unmarshal, or run `createTopics()`/RPC for that scope's events at all.
 
 ## 4. Reduced scope: two services only
@@ -136,17 +141,18 @@ Both already construct `wh := &webhook.Webhook{CustomerID: customerID, ...}` bef
 obtain `customer_id` for the routing key -- it is already in scope at the call site. This is
 a materially simpler starting point than the original design's ~116-site migration.
 
-**What is NOT simplified**: the `agent_id`/owner scope and the chat-participant fan-out (see §6)
-still require moving logic that currently lives in `createTopics()` (consumer side) to the
-publisher side, because the routing key must exist at `channel.PublishWithContext` time.
+**What is NOT simplified**: the owner scope (`agent_id` -> `owner_id`, see §5) and the
+chat-participant fan-out (see §6) still require moving logic that currently lives in
+`createTopics()` (consumer side) to the publisher side, because the routing key must exist at
+`channel.PublishWithContext` time.
 
-## 5. Proposed routing key format (scope-first, unchanged from revision 1)
+## 5. Proposed routing key format (scope-first) AND client-facing wire-protocol rename: `agent_id` -> `owner_id`
 
 ```
 <scope>.<scope_id>.#
 e.g. customer_id.a1b2c3d4-....call.xyz789   (as the PUBLISHED routing key)
      customer_id.a1b2c3d4-....#             (as a pod's BOUND pattern, wildcard tail)
-     agent_id.98765432-....#
+     owner_id.98765432-....#                (RENAMED from agent_id, see below)
 ```
 
 Rationale (recapped): resource_id is unknown at bind time, so any pattern putting it before the
@@ -156,9 +162,62 @@ segments (resource type + resource id), while the scope segment -- known at
 websocket-connect/subscribe time, low cardinality per pod -- does the actual filtering work at
 the trie's first level.
 
-Two scope namespaces (`customer_id`, `agent_id`) must coexist; a single event may need to be
-published under BOTH routing keys (mirrors the existing dual topic-string generation already
-done in `createTopics()` today for `customer_id:...` and `agent_id:...`).
+**Scope rename decision (2026-07-14, pchero): `agent_id` becomes `owner_id`, applied end to end
+-- not just the internal AMQP routing key, but the CLIENT-FACING wire protocol too (subscribe
+message topic strings, and the developer-facing RST docs). This is a deliberate breaking change
+to the public API, not an internal-only rename.**
+
+**Why this is a natural fit, verified from source, not just naming preference:** the underlying
+data model is ALREADY generic. `commonidentity.Owner` (`bin-common-handler/models/identity/owner.go:5-8`)
+is `{OwnerType OwnerType, OwnerID uuid.UUID}`, with `OwnerType` currently having exactly one
+value, `OwnerTypeAgent = "agent"` (`owner.go:17`) -- the struct was designed to support more
+owner types later, but the wire-protocol string hardcodes `"agent_id"` regardless. Confirmed:
+`createTopics()` (`bin-api-manager/pkg/subscribehandler/webhookmanager.go:138,150,152,162,171`)
+already reads `d.OwnerID` (the generic field) and only hardcodes the STRING PREFIX `"agent_id"`
+when building the topic string -- the rename aligns the wire string with the model that already
+underlies it, rather than introducing new abstraction.
+
+**Verified blast radius for the rename** (grep across `bin-api-manager`, confined to this
+service -- no other service's code references the `agent_id:` wire string):
+- `bin-api-manager/pkg/subscribehandler/webhookmanager.go:138,150,152,162,171` -- `createTopics()`,
+  the 5 `fmt.Sprintf("agent_id:...", ...)` call sites generating the topic string (moves to
+  `bin-webhook-manager` per §6/§7, so this is really 5 call sites in the NEW location, not this
+  file, once §6 lands -- but the string literal itself needs updating wherever it ends up).
+- `bin-api-manager/pkg/websockhandler/etc.go:16-19,36-56,73-76,102-142` -- `validateTopics`/
+  `validateTopic`, the `case "agent_id":` branches (2 near-duplicate functions, confirmed both
+  need updating) that validate a subscribed topic's scope prefix against the authenticated
+  identity.
+- `bin-api-manager/pkg/websockhandler/etc_test.go` -- test cases using `agent_id:` literal
+  strings, need updating alongside the above.
+- `bin-api-manager/pkg/subscribehandler/webhookmanager_test.go` -- same, for `createTopics()`'s
+  tests (or their new home post-§6/§7).
+- `bin-api-manager/docsdev/source/websocket_overview.rst`,
+  `bin-api-manager/docsdev/source/websocket_struct.rst`,
+  `bin-api-manager/docsdev/source/websocket_tutorial.rst` -- developer-facing RST docs at
+  docs.voipbin.net document `agent_id:<uuid>:<resource>:<resource_id>` as a first-class example
+  topic pattern; MUST be updated per this repo's CLAUDE.md RST-sync rule ("stale docs actively
+  mislead customers"), rebuilt via `sphinx -M html`, and force-added (`build/` is gitignored).
+
+**Not affected**: `commonidentity.Owner`'s Go field names (`OwnerType`, `OwnerID`) are already
+correctly named and require no change; only the WIRE STRING `"agent_id"` (embedded in topic
+strings, both AMQP routing keys and the client-facing subscribe/unsubscribe protocol) is
+renamed to `"owner_id"`. `amagent.PermissionProjectSuperAdmin` and other agent-domain permission
+checks in `etc.go` are unaffected -- they gate on `AuthIdentity`'s actual agent/permission state,
+not the topic string prefix.
+
+**This is explicitly a breaking change to the public websocket API** -- any existing client
+subscribing with `agent_id:<uuid>:...` topic strings will need to migrate to `owner_id:<uuid>:...`.
+No backward-compatibility/dual-accept period is assumed in this doc; whether one is needed
+(accept both prefixes for a transition window, emit a deprecation warning, etc.) is escalated to
+Open Question 10, since this touches external API consumers, not just internal code -- a product/
+support decision, not a pure engineering one.
+
+Two scope namespaces (`customer_id`, `owner_id`) must coexist. Proposed: publish BOTH routing
+keys per event when both a customer and an owner scope apply (mirrors the existing dual-topic
+generation already done in `createTopics()` today, which already emits both `customer_id:...`
+and the soon-to-be-renamed owner-scope topic strings for the same event where applicable -- this
+is not new complexity, just moving existing dual-key generation earlier in the pipeline, plus
+the rename above).
 
 ## 6. Who computes the routing key: moves into bin-webhook-manager (computation), notifyHandler (publish mechanism)
 
@@ -231,16 +290,17 @@ resolved definitively in this doc -- (b) is not disqualified, just not preferred
 (§4) -- computing `customer_id.<customerID>.#`-shaped keys requires no new plumbing for that
 scope alone.
 
-**Harder part 1 -- `agent_id`/owner scope extraction**: today's `createTopics()` unmarshals the
-event `data` payload (via the nested `Webhook.Data` -> `Data.Data` -> `commonWebhookData{Owner}`
-envelope) to find `OwnerID` for the `agent_id:...` routing key. `SendWebhookToCustomer`/
-`SendWebhookToURI` receive `data json.RawMessage` as an opaque blob (`webhook.go:26,120`) --
-they do not know the owner/agent ID structurally, only that it may be present somewhere inside
-`data`'s nested JSON. **This requires porting the SAME nested-unmarshal logic
+**Harder part 1 -- owner scope extraction (`agent_id` -> `owner_id`)**: today's `createTopics()`
+unmarshals the event `data` payload (via the nested `Webhook.Data` -> `Data.Data` ->
+`commonWebhookData{Owner}` envelope) to find `OwnerID` for the owner-scope routing key.
+`SendWebhookToCustomer`/`SendWebhookToURI` receive `data json.RawMessage` as an opaque blob
+(`webhook.go:26,120`) -- they do not know the owner ID structurally, only that it may be present
+somewhere inside `data`'s nested JSON. **This requires porting the SAME nested-unmarshal logic
 (`commonWebhookData` struct, currently in `bin-api-manager/pkg/subscribehandler/webhookmanager.go`)
 into `bin-webhook-manager`**, run against `data` before publish, to extract `OwnerID` the same
-way `createTopics()` does today. This is a genuine, non-trivial logic move (not just a signature
-change), but it is confined to `bin-webhook-manager`, not spread across ~25 services.
+way `createTopics()` does today, and emitting the RENAMED `owner_id:...` prefix (§5) rather than
+today's `agent_id:...`. This is a genuine, non-trivial logic move (not just a signature change),
+but it is confined to `bin-webhook-manager`, not spread across ~25 services.
 
 **Symmetry note, verified**: both `SendWebhookToCustomer` and `SendWebhookToURI` construct an
 identical `wh := &webhook.Webhook{...}` before calling `notifyHandler.PublishEvent` (lines
@@ -253,8 +313,8 @@ functions, not duplicated per call site.
 **Harder part 2 -- chat participant fan-out RPC moves to the publish path**: for
 `chat`/`chatmessage`/`chatparticipant` resource types, `createTopics()` today calls
 `h.reqHandler.TalkV1ParticipantList(ctx, chatID)` (`webhookmanager.go:143`) AFTER receiving the
-event, to generate one `agent_id:<participant>:chat:...` routing key per chat participant. Moving
-this to webhook-manager means:
+event, to generate one `agent_id:<participant>:chat:...` (becoming `owner_id:<participant>:
+chat:...`, per §5) routing key per chat participant. Moving this to webhook-manager means:
 - `webhook-manager`'s `webhookHandler` struct (`pkg/webhookhandler/main.go:32-40`) does NOT
   currently hold a `reqHandler requesthandler.RequestHandler` dependency -- verified by reading
   the struct definition. **A new dependency injection is required** (constructor signature
@@ -339,11 +399,11 @@ Proposed path (skeleton, not a finalized runbook):
 ## 9. Dynamic bind/unbind at the api-manager side (unchanged from revision 1)
 
 Unlike today (bind once at pod boot, for the pod's whole lifetime), a topic-exchange scoped
-binding must track which scopes (`customer_id`/`agent_id` values) currently have at least one
+binding must track which scopes (`customer_id`/`owner_id` values) currently have at least one
 live local websocket subscriber on that pod, and bind/unbind the per-pod queue accordingly:
 
 - On a client's first `subscribe` message for a new scope on that pod: bind
-  `customer_id.<uuid>.#` (or `agent_id.<uuid>.#`) to the pod's queue.
+  `customer_id.<uuid>.#` (or `owner_id.<uuid>.#`) to the pod's queue.
 - On the last client unsubscribing from / disconnecting from a scope on that pod: unbind.
 - **Reference counting required**: multiple local connections (or multiple topic subscriptions
   from the same connection) can share a scope; only unbind when the count reaches zero.
@@ -374,9 +434,11 @@ live local websocket subscriber on that pod, and bind/unbind the per-pod queue a
 - Functional sharding / resource-type-dedicated api-manager pod pools.
 - Application-level zero-subscriber short-circuit ("Alternative B" in prior discussion) -- not
   adopted as a substitute; may be worth layering in later as defense in depth.
-- Any change to the client-facing websocket subscribe/unsubscribe wire protocol or topic string
-  format -- this design only changes the internal AMQP transport layer; the public API contract
-  is unchanged.
+- Any OTHER change to the client-facing websocket subscribe/unsubscribe wire protocol beyond the
+  `agent_id` -> `owner_id` rename (§5) -- the overall `<scope>:<scope_id>:<resource>:
+  <resource_id>` shape, the `customer_id` prefix, and all other subscribe/unsubscribe message
+  semantics are unchanged; this design does not touch the client-facing protocol structure, only
+  the internal AMQP transport layer PLUS this one specific, deliberate rename.
 - **`QueueNameAgentEvent` and `QueueNameTalkEvent` exchanges and their existing publishers/
   consumers** (`bin-agent-manager` publishes to `QueueNameAgentEvent`, `bin-queue-manager`
   consumes it; `bin-talk-manager` publishes to `QueueNameTalkEvent`, `bin-timeline-manager`
@@ -438,3 +500,14 @@ live local websocket subscriber on that pod, and bind/unbind the per-pod queue a
    the `go generate`-regenerated mock -- not a broad blast radius, but should still be confirmed
    as part of the standard verification workflow (`go generate ./... && go test ./...`) rather
    than assumed.
+10. **(New) `agent_id` -> `owner_id` backward compatibility.** §5's wire-protocol rename is a
+    breaking change to the public websocket API. Decide: hard cutover (no transitional support),
+    or a transition window accepting BOTH `agent_id:...` and `owner_id:...` prefixes on
+    subscribe (with `owner_id` as the only one ever emitted server -> client, or with both
+    accepted client -> server but a deprecation notice), and for how long. This is a
+    product/support decision (announcement timing, existing customer migration communication),
+    not a pure engineering one -- flagged for explicit pchero sign-off before implementation,
+    not something to decide unilaterally during coding. If a transition window is chosen,
+    `validateTopics`/`validateTopic` (`bin-api-manager/pkg/websockhandler/etc.go`) would need to
+    accept both prefixes as equivalent during that window, adding temporary complexity that must
+    be tracked for removal afterward.
