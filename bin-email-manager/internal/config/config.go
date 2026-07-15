@@ -26,6 +26,9 @@ type Config struct {
 	RedisDatabase           int
 	SendgridAPIKey          string
 	MailgunAPIKey           string
+
+	EmailOutboundRateLimitPerMinute int // EmailOutboundRateLimitPerMinute is the max outbound emails a customer may send per minute (VOIP-1259).
+	EmailOutboundRateLimitPerHour   int // EmailOutboundRateLimitPerHour is the max outbound emails a customer may send per hour (VOIP-1259).
 }
 
 func Bootstrap(cmd *cobra.Command) error {
@@ -51,6 +54,8 @@ func bindConfig(cmd *cobra.Command) error {
 	f.Int("redis_database", 0, "Redis database index")
 	f.String("sendgrid_api_key", "", "SendGrid API key")
 	f.String("mailgun_api_key", "", "Mailgun API key")
+	f.Int("email_outbound_rate_limit_per_minute", 100, "Max outbound emails per customer per minute (VOIP-1259)")
+	f.Int("email_outbound_rate_limit_per_hour", 1000, "Max outbound emails per customer per hour (VOIP-1259)")
 
 	bindings := map[string]string{
 		"rabbitmq_address":          "RABBITMQ_ADDRESS",
@@ -62,6 +67,8 @@ func bindConfig(cmd *cobra.Command) error {
 		"redis_database":            "REDIS_DATABASE",
 		"sendgrid_api_key":          "SENDGRID_API_KEY",
 		"mailgun_api_key":           "MAILGUN_API_KEY",
+		"email_outbound_rate_limit_per_minute": "EMAIL_OUTBOUND_RATE_LIMIT_PER_MINUTE",
+		"email_outbound_rate_limit_per_hour":   "EMAIL_OUTBOUND_RATE_LIMIT_PER_HOUR",
 	}
 
 	for flagKey, envKey := range bindings {
@@ -95,6 +102,9 @@ func LoadGlobalConfig() {
 			RedisDatabase:           viper.GetInt("redis_database"),
 			SendgridAPIKey:          viper.GetString("sendgrid_api_key"),
 			MailgunAPIKey:           viper.GetString("mailgun_api_key"),
+
+			EmailOutboundRateLimitPerMinute: viper.GetInt("email_outbound_rate_limit_per_minute"),
+			EmailOutboundRateLimitPerHour:   viper.GetInt("email_outbound_rate_limit_per_hour"),
 		}
 		logrus.Debug("Configuration has been loaded and locked.")
 	})
@@ -121,4 +131,12 @@ func InitConfig(cmd *cobra.Command) {
 		logrus.Fatalf("Failed to bind flags: %v", err)
 	}
 	LoadGlobalConfig()
+}
+
+// SetEmailOutboundRateLimitForTest overrides the outbound email rate limit caps
+// in the global config without going through the Bootstrap+LoadGlobalConfig
+// path. USE ONLY FROM TESTS. VOIP-1259.
+func SetEmailOutboundRateLimitForTest(perMinute, perHour int) {
+	globalConfig.EmailOutboundRateLimitPerMinute = perMinute
+	globalConfig.EmailOutboundRateLimitPerHour = perHour
 }

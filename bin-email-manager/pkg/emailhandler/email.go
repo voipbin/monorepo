@@ -56,6 +56,11 @@ func (h *emailHandler) Create(
 		return nil, errors.New("insufficient balance for email")
 	}
 
+	// gate: outbound email rate limit (fail-closed). VOIP-1259.
+	if !h.validateCustomerEmailRate(ctx, customerID) {
+		return nil, cerrors.ResourceExhausted(commonoutline.ServiceNameEmailManager, "RATE_LIMIT_EXCEEDED", "outbound email rate limit exceeded")
+	}
+
 	res, err := h.create(ctx, customerID, activeflowID, email.ProviderTypeSendgrid, defaultSource, destinations, subject, content, attachments)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create email")

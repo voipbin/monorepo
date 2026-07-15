@@ -10,7 +10,9 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	cucustomer "monorepo/bin-customer-manager/models/customer"
+	"monorepo/bin-email-manager/internal/config"
 	"monorepo/bin-email-manager/models/email"
+	"monorepo/bin-email-manager/pkg/cachehandler"
 	"monorepo/bin-email-manager/pkg/dbhandler"
 	reflect "reflect"
 	"testing"
@@ -21,6 +23,7 @@ import (
 )
 
 func Test_Create(t *testing.T) {
+	config.SetEmailOutboundRateLimitForTest(100, 1000)
 
 	tests := []struct {
 		name string
@@ -124,6 +127,7 @@ func Test_Create(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
 			mockSendgrid := NewMockEngineSendgrid(mc)
 			mockMailgun := NewMockEngineMailgun(mc)
 
@@ -132,6 +136,7 @@ func Test_Create(t *testing.T) {
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
 				utilHandler:   mockUtil,
+				cache:         mockCache,
 
 				engineSendgrid: mockSendgrid,
 				engineMailgun:  mockMailgun,
@@ -144,6 +149,8 @@ func Test_Create(t *testing.T) {
 				IdentityVerificationStatus: cucustomer.IdentityVerificationStatusVerified,
 			}, nil)
 			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.customerID, bmbilling.ReferenceTypeEmail, "", len(tt.destinations)).Return(true, nil)
+			mockCache.EXPECT().RateLimitIncrement(ctx, gomock.Any(), time.Minute).Return(int64(1), nil)
+			mockCache.EXPECT().RateLimitIncrement(ctx, gomock.Any(), time.Hour).Return(int64(1), nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDB.EXPECT().EmailCreate(ctx, tt.expectEmail).Return(nil)
 			mockDB.EXPECT().EmailGet(ctx, tt.responseUUID).Return(tt.expectEmail, nil)
@@ -196,12 +203,14 @@ func Test_Create_InsufficientBalance(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
 
 			h := &emailHandler{
 				db:            mockDB,
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
 				utilHandler:   mockUtil,
+				cache:         mockCache,
 			}
 
 			ctx := context.Background()
@@ -277,6 +286,7 @@ func Test_List(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
 			mockSendgrid := NewMockEngineSendgrid(mc)
 
 			h := &emailHandler{
@@ -284,6 +294,7 @@ func Test_List(t *testing.T) {
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
 				utilHandler:   mockUtil,
+				cache:         mockCache,
 
 				engineSendgrid: mockSendgrid,
 			}
@@ -340,6 +351,7 @@ func Test_Delete(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
 			mockSendgrid := NewMockEngineSendgrid(mc)
 
 			h := &emailHandler{
@@ -347,6 +359,7 @@ func Test_Delete(t *testing.T) {
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
 				utilHandler:   mockUtil,
+				cache:         mockCache,
 
 				engineSendgrid: mockSendgrid,
 			}
@@ -405,6 +418,7 @@ func Test_Get(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
 			mockSendgrid := NewMockEngineSendgrid(mc)
 
 			h := &emailHandler{
@@ -412,6 +426,7 @@ func Test_Get(t *testing.T) {
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
 				utilHandler:   mockUtil,
+				cache:         mockCache,
 
 				engineSendgrid: mockSendgrid,
 			}
@@ -549,6 +564,7 @@ func Test_create(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
 			mockSendgrid := NewMockEngineSendgrid(mc)
 
 			h := &emailHandler{
@@ -556,6 +572,7 @@ func Test_create(t *testing.T) {
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
 				utilHandler:   mockUtil,
+				cache:         mockCache,
 
 				engineSendgrid: mockSendgrid,
 			}
@@ -606,6 +623,7 @@ func Test_UpdateProviderReferenceID(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
 			mockSendgrid := NewMockEngineSendgrid(mc)
 
 			h := &emailHandler{
@@ -613,6 +631,7 @@ func Test_UpdateProviderReferenceID(t *testing.T) {
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
 				utilHandler:   mockUtil,
+				cache:         mockCache,
 
 				engineSendgrid: mockSendgrid,
 			}
@@ -660,6 +679,7 @@ func Test_UpdateStatus(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
 			mockSendgrid := NewMockEngineSendgrid(mc)
 
 			h := &emailHandler{
@@ -667,6 +687,7 @@ func Test_UpdateStatus(t *testing.T) {
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
 				utilHandler:   mockUtil,
+				cache:         mockCache,
 
 				engineSendgrid: mockSendgrid,
 			}
@@ -713,12 +734,14 @@ func Test_Create_InvalidEmail(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
 
 			h := &emailHandler{
 				db:            mockDB,
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
 				utilHandler:   mockUtil,
+				cache:         mockCache,
 			}
 
 			ctx := context.Background()
@@ -751,12 +774,14 @@ func Test_List_DBError(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
 
 			h := &emailHandler{
 				db:            mockDB,
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
 				utilHandler:   mockUtil,
+				cache:         mockCache,
 			}
 
 			ctx := context.Background()
@@ -792,12 +817,14 @@ func Test_Delete_DBError(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
 
 			h := &emailHandler{
 				db:            mockDB,
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
 				utilHandler:   mockUtil,
+				cache:         mockCache,
 			}
 
 			ctx := context.Background()
@@ -833,12 +860,14 @@ func Test_Get_DBError(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
 
 			h := &emailHandler{
 				db:            mockDB,
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
 				utilHandler:   mockUtil,
+				cache:         mockCache,
 			}
 
 			ctx := context.Background()
@@ -876,12 +905,14 @@ func Test_UpdateProviderReferenceID_DBError(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
 
 			h := &emailHandler{
 				db:            mockDB,
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
 				utilHandler:   mockUtil,
+				cache:         mockCache,
 			}
 
 			ctx := context.Background()
@@ -919,12 +950,14 @@ func Test_UpdateStatus_DBError(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
 
 			h := &emailHandler{
 				db:            mockDB,
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
 				utilHandler:   mockUtil,
+				cache:         mockCache,
 			}
 
 			ctx := context.Background()
@@ -947,6 +980,7 @@ func Test_UpdateStatus_DBError(t *testing.T) {
 // the persisted email (EmailCreate). TargetName (display name) is preserved
 // untouched.
 func Test_Create_NormalizesDestinations(t *testing.T) {
+	config.SetEmailOutboundRateLimitForTest(100, 1000)
 
 	tests := []struct {
 		name string
@@ -1032,6 +1066,7 @@ func Test_Create_NormalizesDestinations(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
 			mockSendgrid := NewMockEngineSendgrid(mc)
 			mockMailgun := NewMockEngineMailgun(mc)
 
@@ -1040,6 +1075,7 @@ func Test_Create_NormalizesDestinations(t *testing.T) {
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
 				utilHandler:   mockUtil,
+				cache:         mockCache,
 
 				engineSendgrid: mockSendgrid,
 				engineMailgun:  mockMailgun,
@@ -1052,6 +1088,8 @@ func Test_Create_NormalizesDestinations(t *testing.T) {
 				IdentityVerificationStatus: cucustomer.IdentityVerificationStatusVerified,
 			}, nil)
 			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.customerID, bmbilling.ReferenceTypeEmail, "", len(tt.destinations)).Return(true, nil)
+			mockCache.EXPECT().RateLimitIncrement(ctx, gomock.Any(), time.Minute).Return(int64(1), nil)
+			mockCache.EXPECT().RateLimitIncrement(ctx, gomock.Any(), time.Hour).Return(int64(1), nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			// EmailCreate must receive the canonical (lowercased+trimmed)
 			// destination with the display name preserved.

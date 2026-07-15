@@ -5,6 +5,7 @@ import (
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
+	"monorepo/bin-email-manager/pkg/cachehandler"
 	"monorepo/bin-email-manager/pkg/dbhandler"
 	"testing"
 
@@ -71,6 +72,7 @@ func Test_validateEmailAddress(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
 			mockSendgrid := NewMockEngineSendgrid(mc)
 
 			h := &emailHandler{
@@ -78,6 +80,7 @@ func Test_validateEmailAddress(t *testing.T) {
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
 				utilHandler:   mockUtil,
+				cache:         mockCache,
 
 				engineSendgrid: mockSendgrid,
 			}

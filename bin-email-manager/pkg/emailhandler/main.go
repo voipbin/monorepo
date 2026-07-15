@@ -9,6 +9,7 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-email-manager/models/email"
+	"monorepo/bin-email-manager/pkg/cachehandler"
 	"monorepo/bin-email-manager/pkg/dbhandler"
 
 	"github.com/gofrs/uuid"
@@ -19,6 +20,7 @@ type emailHandler struct {
 	db            dbhandler.DBHandler
 	reqHandler    requesthandler.RequestHandler
 	notifyHandler notifyhandler.NotifyHandler
+	cache         cachehandler.CacheHandler
 
 	engineSendgrid EngineSendgrid
 	engineMailgun  EngineMailgun
@@ -58,6 +60,7 @@ func NewEmailHandler(
 	db dbhandler.DBHandler,
 	reqHandler requesthandler.RequestHandler,
 	notifyHandler notifyhandler.NotifyHandler,
+	cache cachehandler.CacheHandler,
 
 	sendgridAPIKey string,
 	mailgunAPIKey string,
@@ -71,6 +74,7 @@ func NewEmailHandler(
 		db:            db,
 		reqHandler:    reqHandler,
 		notifyHandler: notifyHandler,
+		cache:         cache,
 
 		engineSendgrid: engineSendgrid,
 		engineMailgun:  engineMailgun,

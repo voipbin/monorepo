@@ -5,6 +5,7 @@ package cachehandler
 import (
 	"context"
 	"monorepo/bin-email-manager/models/email"
+	"time"
 
 	"github.com/go-redsync/redsync/v4"
 	"github.com/go-redsync/redsync/v4/redis/goredis/v9"
@@ -29,6 +30,13 @@ type CacheHandler interface {
 
 	EmailGet(ctx context.Context, id uuid.UUID) (*email.Email, error)
 	EmailSet(ctx context.Context, e *email.Email) error
+
+	// RateLimitIncrement atomically increments the counter at key (INCR) and
+	// unconditionally attempts to set a TTL on it via EXPIRE...NX (only applies
+	// if the key has no TTL yet). Unconditional ExpireNX (rather than gating on
+	// count==1) avoids a permanent-lockout gap if the process crashes between
+	// INCR and EXPIRE (e.g. pod restart during a rolling deploy). VOIP-1259.
+	RateLimitIncrement(ctx context.Context, key string, ttl time.Duration) (int64, error)
 }
 
 // NewHandler creates DBHandler

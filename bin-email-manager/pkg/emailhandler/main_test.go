@@ -5,6 +5,7 @@ import (
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-email-manager/pkg/cachehandler"
 	"monorepo/bin-email-manager/pkg/dbhandler"
 
 	"go.uber.org/mock/gomock"
@@ -37,7 +38,9 @@ func TestNewEmailHandler(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
-			h := NewEmailHandler(mockDB, mockReq, mockNotify, tt.sendgridAPIKey, tt.mailgunAPIKey)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
+			h := NewEmailHandler(mockDB, mockReq, mockNotify, mockCache, tt.sendgridAPIKey, tt.mailgunAPIKey)
 
 			if h == nil {
 				t.Errorf("Expected non-nil handler")

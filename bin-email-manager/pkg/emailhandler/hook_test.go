@@ -6,6 +6,7 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-email-manager/models/email"
+	"monorepo/bin-email-manager/pkg/cachehandler"
 	"monorepo/bin-email-manager/pkg/dbhandler"
 	"testing"
 
@@ -50,6 +51,7 @@ func Test_Hook(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
 			mockSendgrid := NewMockEngineSendgrid(mc)
 
 			h := &emailHandler{
@@ -57,6 +59,7 @@ func Test_Hook(t *testing.T) {
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
 				utilHandler:   mockUtil,
+				cache:         mockCache,
 
 				engineSendgrid: mockSendgrid,
 			}
@@ -110,6 +113,7 @@ func Test_hookSendgrid(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
 			mockSendgrid := NewMockEngineSendgrid(mc)
 
 			h := &emailHandler{
@@ -117,6 +121,7 @@ func Test_hookSendgrid(t *testing.T) {
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
 				utilHandler:   mockUtil,
+				cache:         mockCache,
 
 				engineSendgrid: mockSendgrid,
 			}
@@ -159,12 +164,14 @@ func Test_hookMailgun(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
 
 			h := &emailHandler{
 				db:            mockDB,
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
 				utilHandler:   mockUtil,
+				cache:         mockCache,
 			}
 			ctx := context.Background()
 
@@ -197,12 +204,14 @@ func Test_Hook_UnknownURI(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
 
 			h := &emailHandler{
 				db:            mockDB,
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
 				utilHandler:   mockUtil,
+				cache:         mockCache,
 			}
 			ctx := context.Background()
 
@@ -234,12 +243,14 @@ func Test_hookSendgrid_InvalidJSON(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
 
 			h := &emailHandler{
 				db:            mockDB,
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
 				utilHandler:   mockUtil,
+				cache:         mockCache,
 			}
 			ctx := context.Background()
 

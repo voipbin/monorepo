@@ -65,7 +65,7 @@ func initEmailHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (emailhand
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameEmailEvent, serviceName)
 
-	return emailhandler.NewEmailHandler(db, reqHandler, notifyHandler, config.Get().SendgridAPIKey, config.Get().MailgunAPIKey), nil
+	return emailhandler.NewEmailHandler(db, reqHandler, notifyHandler, cache, config.Get().SendgridAPIKey, config.Get().MailgunAPIKey), nil
 }
 
 func initCommand() *cobra.Command {

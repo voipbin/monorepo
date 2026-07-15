@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-email-manager/models/email"
 )
@@ -59,4 +60,27 @@ func (h *handler) EmailGet(ctx context.Context, id uuid.UUID) (*email.Email, err
 	}
 
 	return &res, nil
+}
+
+// RateLimitIncrement atomically increments the counter at key (INCR) and
+// unconditionally attempts to set a TTL on it via EXPIRE...NX. See interface
+// doc comment in main.go for the crash-safety rationale. VOIP-1259.
+func (h *handler) RateLimitIncrement(ctx context.Context, key string, ttl time.Duration) (int64, error) {
+	count, err := h.Cache.Incr(ctx, key).Result()
+	if err != nil {
+		return 0, err
+	}
+
+	// Unconditionally attempt to set TTL with NX (only applies if the key has no
+	// TTL yet). Safe to call on every request — a key that already has a TTL is a
+	// no-op. Log-and-continue: a transient EXPIRE failure does not invalidate the
+	// INCR result, and the next request retries ExpireNX regardless of count.
+	if _, expErr := h.Cache.ExpireNX(ctx, key, ttl).Result(); expErr != nil {
+		logrus.WithFields(logrus.Fields{
+			"func": "RateLimitIncrement",
+			"key":  key,
+		}).Errorf("Could not set TTL on rate limit key via ExpireNX. err: %v", expErr)
+	}
+
+	return count, nil
 }

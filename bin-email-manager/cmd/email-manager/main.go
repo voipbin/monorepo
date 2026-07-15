@@ -140,7 +140,13 @@ func run(dbHandler dbhandler.DBHandler, cfg *config.Config) {
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameEmailEvent, serviceName)
 
-	emailHandler := emailhandler.NewEmailHandler(dbHandler, reqHandler, notifyHandler, cfg.SendgridAPIKey, cfg.MailgunAPIKey)
+	cache := cachehandler.NewHandler(cfg.RedisAddress, cfg.RedisPassword, cfg.RedisDatabase)
+	if err := cache.Connect(); err != nil {
+		log.Errorf("Could not connect to cache server. err: %v", err)
+		return
+	}
+
+	emailHandler := emailhandler.NewEmailHandler(dbHandler, reqHandler, notifyHandler, cache, cfg.SendgridAPIKey, cfg.MailgunAPIKey)
 
 	// run listen
 	if errListen := runListen(sockHandler, emailHandler); errListen != nil {

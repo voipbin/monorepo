@@ -7,6 +7,7 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-email-manager/models/email"
+	"monorepo/bin-email-manager/pkg/cachehandler"
 	"monorepo/bin-email-manager/pkg/dbhandler"
 	"testing"
 
@@ -45,6 +46,7 @@ func Test_Send(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
 			mockSendgrid := NewMockEngineSendgrid(mc)
 			mockMailgun := NewMockEngineMailgun(mc)
 
@@ -53,6 +55,7 @@ func Test_Send(t *testing.T) {
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
 				utilHandler:   mockUtil,
+				cache:         mockCache,
 
 				engineSendgrid: mockSendgrid,
 				engineMailgun:  mockMailgun,
