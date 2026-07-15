@@ -122,6 +122,20 @@ func (mr *MockRabbitMockRecorder) EventPublishWithDelay(topic, key, evt, delay a
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventPublishWithDelay", reflect.TypeOf((*MockRabbit)(nil).EventPublishWithDelay), topic, key, evt, delay)
 }
 
+// QueueBind mocks base method.
+func (m *MockRabbit) QueueBind(name, key, exchange string, noWait bool, args amqp091.Table) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueueBind", name, key, exchange, noWait, args)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// QueueBind indicates an expected call of QueueBind.
+func (mr *MockRabbitMockRecorder) QueueBind(name, key, exchange, noWait, args any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueBind", reflect.TypeOf((*MockRabbit)(nil).QueueBind), name, key, exchange, noWait, args)
+}
+
 // QueueCreate mocks base method.
 func (m *MockRabbit) QueueCreate(name, queueType string) error {
 	m.ctrl.T.Helper()
@@ -148,6 +162,20 @@ func (m *MockRabbit) QueueSubscribe(name, topic string) error {
 func (mr *MockRabbitMockRecorder) QueueSubscribe(name, topic any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueSubscribe", reflect.TypeOf((*MockRabbit)(nil).QueueSubscribe), name, topic)
+}
+
+// QueueUnbind mocks base method.
+func (m *MockRabbit) QueueUnbind(name, key, exchange string, args amqp091.Table) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueueUnbind", name, key, exchange, args)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// QueueUnbind indicates an expected call of QueueUnbind.
+func (mr *MockRabbitMockRecorder) QueueUnbind(name, key, exchange, args any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueUnbind", reflect.TypeOf((*MockRabbit)(nil).QueueUnbind), name, key, exchange, args)
 }
 
 // RequestPublish mocks base method.
@@ -191,6 +219,20 @@ func (m *MockRabbit) TopicCreate(name string) error {
 func (mr *MockRabbitMockRecorder) TopicCreate(name any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TopicCreate", reflect.TypeOf((*MockRabbit)(nil).TopicCreate), name)
+}
+
+// TopicCreateWithKind mocks base method.
+func (m *MockRabbit) TopicCreateWithKind(name, kind string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TopicCreateWithKind", name, kind)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// TopicCreateWithKind indicates an expected call of TopicCreateWithKind.
+func (mr *MockRabbitMockRecorder) TopicCreateWithKind(name, kind any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TopicCreateWithKind", reflect.TypeOf((*MockRabbit)(nil).TopicCreateWithKind), name, kind)
 }
 
 // MockamqpChannel is a mock of amqpChannel interface.
@@ -316,6 +358,20 @@ func (m *MockamqpChannel) QueueDelete(name string, ifUnused, ifEmpty, noWait boo
 func (mr *MockamqpChannelMockRecorder) QueueDelete(name, ifUnused, ifEmpty, noWait any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueDelete", reflect.TypeOf((*MockamqpChannel)(nil).QueueDelete), name, ifUnused, ifEmpty, noWait)
+}
+
+// QueueUnbind mocks base method.
+func (m *MockamqpChannel) QueueUnbind(name, key, exchange string, args amqp091.Table) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueueUnbind", name, key, exchange, args)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// QueueUnbind indicates an expected call of QueueUnbind.
+func (mr *MockamqpChannelMockRecorder) QueueUnbind(name, key, exchange, args any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueUnbind", reflect.TypeOf((*MockamqpChannel)(nil).QueueUnbind), name, key, exchange, args)
 }
 
 // MockamqpConnection is a mock of amqpConnection interface.

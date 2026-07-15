@@ -65,10 +65,21 @@ func initWebhookHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (webhook
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameWebhookEvent, serviceName)
+
+	if err := sockHandler.TopicCreateWithKind(string(commonoutline.QueueNameWebhookEventTopic), "topic"); err != nil {
+		return nil, errors.Wrapf(err, "could not declare the topic exchange")
+	}
+	topicNotifyHandler := notifyhandler.NewNotifyHandlerForExistingExchange(
+		sockHandler,
+		reqHandler,
+		commonoutline.QueueNameWebhookEventTopic,
+		commonoutline.ServiceNameWebhookManager,
+	)
+
 	accountHandler := accounthandler.NewAccountHandler(db, reqHandler)
 	activeflowHandler := activeflowhandler.NewActiveflowHandler(cache, reqHandler)
 
-	return webhookhandler.NewWebhookHandler(db, notifyHandler, accountHandler, activeflowHandler), nil
+	return webhookhandler.NewWebhookHandler(db, notifyHandler, topicNotifyHandler, reqHandler, accountHandler, activeflowHandler), nil
 }
 
 func initCommand() *cobra.Command {

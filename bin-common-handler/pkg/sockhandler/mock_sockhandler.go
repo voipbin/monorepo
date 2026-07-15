@@ -14,6 +14,7 @@ import (
 	sock "monorepo/bin-common-handler/models/sock"
 	reflect "reflect"
 
+	amqp091 "github.com/rabbitmq/amqp091-go"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -121,6 +122,20 @@ func (mr *MockSockHandlerMockRecorder) EventPublishWithDelay(topic, key, evt, de
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventPublishWithDelay", reflect.TypeOf((*MockSockHandler)(nil).EventPublishWithDelay), topic, key, evt, delay)
 }
 
+// QueueBind mocks base method.
+func (m *MockSockHandler) QueueBind(name, key, exchange string, noWait bool, args amqp091.Table) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueueBind", name, key, exchange, noWait, args)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// QueueBind indicates an expected call of QueueBind.
+func (mr *MockSockHandlerMockRecorder) QueueBind(name, key, exchange, noWait, args any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueBind", reflect.TypeOf((*MockSockHandler)(nil).QueueBind), name, key, exchange, noWait, args)
+}
+
 // QueueCreate mocks base method.
 func (m *MockSockHandler) QueueCreate(name, queueType string) error {
 	m.ctrl.T.Helper()
@@ -147,6 +162,20 @@ func (m *MockSockHandler) QueueSubscribe(name, topic string) error {
 func (mr *MockSockHandlerMockRecorder) QueueSubscribe(name, topic any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueSubscribe", reflect.TypeOf((*MockSockHandler)(nil).QueueSubscribe), name, topic)
+}
+
+// QueueUnbind mocks base method.
+func (m *MockSockHandler) QueueUnbind(name, key, exchange string, args amqp091.Table) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "QueueUnbind", name, key, exchange, args)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// QueueUnbind indicates an expected call of QueueUnbind.
+func (mr *MockSockHandlerMockRecorder) QueueUnbind(name, key, exchange, args any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueUnbind", reflect.TypeOf((*MockSockHandler)(nil).QueueUnbind), name, key, exchange, args)
 }
 
 // RequestPublish mocks base method.
@@ -190,4 +219,18 @@ func (m *MockSockHandler) TopicCreate(name string) error {
 func (mr *MockSockHandlerMockRecorder) TopicCreate(name any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TopicCreate", reflect.TypeOf((*MockSockHandler)(nil).TopicCreate), name)
+}
+
+// TopicCreateWithKind mocks base method.
+func (m *MockSockHandler) TopicCreateWithKind(name, kind string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TopicCreateWithKind", name, kind)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// TopicCreateWithKind indicates an expected call of TopicCreateWithKind.
+func (mr *MockSockHandlerMockRecorder) TopicCreateWithKind(name, kind any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TopicCreateWithKind", reflect.TypeOf((*MockSockHandler)(nil).TopicCreateWithKind), name, kind)
 }

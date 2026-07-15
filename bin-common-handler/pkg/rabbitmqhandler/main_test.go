@@ -3,6 +3,7 @@ package rabbitmqhandler
 import (
 	"context"
 	"errors"
+	"fmt"
 	"monorepo/bin-common-handler/models/sock"
 	"sync"
 	"testing"
@@ -17,19 +18,28 @@ type mockChannel struct {
 	closeErr     error
 	closeErrOnce bool // if true, only return error on first call
 
-	queueDeclareErr  error
-	queueDeclareName string
-	queueDeclareArgs amqp.Table
+	queueDeclareErr    error
+	queueDeclareName   string
+	queueDeclareArgs   amqp.Table
 	exchangeDeclareErr error
 
-	qosErr       error
-	queueBindErr error
-	consumeErr   error
+	qosErr         error
+	queueBindErr   error
+	queueUnbindErr error
+	consumeErr     error
 
 	qosCallCount     int
 	qosPrefetchCount int
 	qosPrefetchSize  int
 	qosGlobal        bool
+
+	mu                 sync.Mutex // guards queueBindCallCount for concurrent-access tests (VOIP-1258)
+	queueBindCallCount int         // VOIP-1258: counts QueueBind invocations, used to verify redeclareAll restores ALL tracked binds
+
+	// VOIP-1258 Task 1.4: captures ExchangeDeclare's actual call args for assertions.
+	exchangeDeclareName    string
+	exchangeDeclareKind    string
+	exchangeDeclareDurable bool
 }
 
 func newMockChannel() *mockChannel {
@@ -60,7 +70,14 @@ func (m *mockChannel) Qos(prefetchCount, prefetchSize int, global bool) error {
 }
 
 func (m *mockChannel) QueueBind(name, key, exchange string, noWait bool, args amqp.Table) error {
+	m.mu.Lock()
+	m.queueBindCallCount++
+	m.mu.Unlock()
 	return m.queueBindErr
+}
+
+func (m *mockChannel) QueueUnbind(name, key, exchange string, args amqp.Table) error {
+	return m.queueUnbindErr
 }
 
 func (m *mockChannel) QueueDelete(name string, ifUnused, ifEmpty, noWait bool) (int, error) {
@@ -68,6 +85,9 @@ func (m *mockChannel) QueueDelete(name string, ifUnused, ifEmpty, noWait bool) (
 }
 
 func (m *mockChannel) ExchangeDeclare(name, kind string, durable, autoDelete, internal, noWait bool, args amqp.Table) error {
+	m.exchangeDeclareName = name
+	m.exchangeDeclareKind = kind
+	m.exchangeDeclareDurable = durable
 	return m.exchangeDeclareErr
 }
 
@@ -138,6 +158,9 @@ func (m *mockChannelWithConsumeCounter) Qos(prefetchCount, prefetchSize int, glo
 func (m *mockChannelWithConsumeCounter) QueueBind(name, key, exchange string, noWait bool, args amqp.Table) error {
 	return nil
 }
+func (m *mockChannelWithConsumeCounter) QueueUnbind(name, key, exchange string, args amqp.Table) error {
+	return nil
+}
 func (m *mockChannelWithConsumeCounter) QueueDelete(name string, ifUnused, ifEmpty, noWait bool) (int, error) {
 	return 0, nil
 }
@@ -163,7 +186,7 @@ func TestClose_ClosesAllQueueChannels(t *testing.T) {
 		connection: mockConn,
 		queues:     make(map[string]*queue),
 		exchanges:  make(map[string]*exchange),
-		queueBinds: make(map[string]*queueBind),
+		queueBinds: make(map[string][]*queueBind),
 	}
 
 	r.queues["queue1"] = &queue{name: "queue1", channel: mockCh1}
@@ -199,7 +222,7 @@ func TestClose_ClosesAllExchangeChannels(t *testing.T) {
 		connection: mockConn,
 		queues:     make(map[string]*queue),
 		exchanges:  make(map[string]*exchange),
-		queueBinds: make(map[string]*queueBind),
+		queueBinds: make(map[string][]*queueBind),
 	}
 
 	r.exchanges["exchange1"] = &exchange{name: "exchange1", channel: mockCh1}
@@ -225,7 +248,7 @@ func TestClose_ClosesQueueAndExchangeChannels(t *testing.T) {
 		connection: mockConn,
 		queues:     make(map[string]*queue),
 		exchanges:  make(map[string]*exchange),
-		queueBinds: make(map[string]*queueBind),
+		queueBinds: make(map[string][]*queueBind),
 	}
 
 	r.queues["queue1"] = &queue{name: "queue1", channel: queueCh}
@@ -249,7 +272,7 @@ func TestClose_HandlesNilChannels(t *testing.T) {
 		connection: mockConn,
 		queues:     make(map[string]*queue),
 		exchanges:  make(map[string]*exchange),
-		queueBinds: make(map[string]*queueBind),
+		queueBinds: make(map[string][]*queueBind),
 	}
 
 	r.queues["queue1"] = &queue{name: "queue1", channel: nil}
@@ -271,7 +294,7 @@ func TestClose_HandlesEmptyMaps(t *testing.T) {
 		connection: mockConn,
 		queues:     make(map[string]*queue),
 		exchanges:  make(map[string]*exchange),
-		queueBinds: make(map[string]*queueBind),
+		queueBinds: make(map[string][]*queueBind),
 	}
 
 	// Should not panic with empty maps
@@ -293,7 +316,7 @@ func TestClose_ContinuesOnChannelCloseError(t *testing.T) {
 		connection: mockConn,
 		queues:     make(map[string]*queue),
 		exchanges:  make(map[string]*exchange),
-		queueBinds: make(map[string]*queueBind),
+		queueBinds: make(map[string][]*queueBind),
 	}
 
 	r.queues["queue1"] = &queue{name: "queue1", channel: mockCh1}
@@ -329,7 +352,7 @@ func TestQueueDeclare_Success(t *testing.T) {
 		connection: mockConn,
 		queues:     make(map[string]*queue),
 		exchanges:  make(map[string]*exchange),
-		queueBinds: make(map[string]*queueBind),
+		queueBinds: make(map[string][]*queueBind),
 	}
 
 	// Since we can't easily inject the mock channel through connection.Channel(),
@@ -363,7 +386,7 @@ func TestQueueDeclare_ClosesOldChannelOnRedeclare(t *testing.T) {
 		connection: mockConn,
 		queues:     make(map[string]*queue),
 		exchanges:  make(map[string]*exchange),
-		queueBinds: make(map[string]*queueBind),
+		queueBinds: make(map[string][]*queueBind),
 	}
 
 	// Setup existing queue
@@ -418,7 +441,7 @@ func TestExchangeDeclare_ClosesOldChannelOnRedeclare(t *testing.T) {
 		connection: mockConn,
 		queues:     make(map[string]*queue),
 		exchanges:  make(map[string]*exchange),
-		queueBinds: make(map[string]*queueBind),
+		queueBinds: make(map[string][]*queueBind),
 	}
 
 	// Setup existing exchange
@@ -574,7 +597,7 @@ func TestQueueQoS_ReturnsChannelError(t *testing.T) {
 func TestQueueBind_ReturnsErrorForNonExistent(t *testing.T) {
 	r := &rabbit{
 		queues:     make(map[string]*queue),
-		queueBinds: make(map[string]*queueBind),
+		queueBinds: make(map[string][]*queueBind),
 	}
 
 	err := r.QueueBind("non-existent", "key", "exchange", false, nil)
@@ -589,7 +612,7 @@ func TestQueueBind_Success(t *testing.T) {
 
 	r := &rabbit{
 		queues:     make(map[string]*queue),
-		queueBinds: make(map[string]*queueBind),
+		queueBinds: make(map[string][]*queueBind),
 	}
 	r.queues["test-queue"] = &queue{
 		name:    "test-queue",
@@ -606,11 +629,11 @@ func TestQueueBind_Success(t *testing.T) {
 	if r.queueBinds["test-queue"] == nil {
 		t.Error("Expected queueBind to be stored")
 	}
-	if r.queueBinds["test-queue"].key != "routing-key" {
-		t.Errorf("Expected key 'routing-key', got '%s'", r.queueBinds["test-queue"].key)
+	if r.queueBinds["test-queue"][0].key != "routing-key" {
+		t.Errorf("Expected key 'routing-key', got '%s'", r.queueBinds["test-queue"][0].key)
 	}
-	if r.queueBinds["test-queue"].exchange != "test-exchange" {
-		t.Errorf("Expected exchange 'test-exchange', got '%s'", r.queueBinds["test-queue"].exchange)
+	if r.queueBinds["test-queue"][0].exchange != "test-exchange" {
+		t.Errorf("Expected exchange 'test-exchange', got '%s'", r.queueBinds["test-queue"][0].exchange)
 	}
 }
 
@@ -620,7 +643,7 @@ func TestQueueBind_ReturnsChannelError(t *testing.T) {
 
 	r := &rabbit{
 		queues:     make(map[string]*queue),
-		queueBinds: make(map[string]*queueBind),
+		queueBinds: make(map[string][]*queueBind),
 	}
 	r.queues["test-queue"] = &queue{
 		name:    "test-queue",
@@ -635,6 +658,216 @@ func TestQueueBind_ReturnsChannelError(t *testing.T) {
 }
 
 // ============================================================================
+// QueueUnbind() Tests
+// ============================================================================
+
+func TestQueueUnbind_Success(t *testing.T) {
+	mockCh := newMockChannel()
+
+	r := &rabbit{
+		queues:     make(map[string]*queue),
+		queueBinds: make(map[string][]*queueBind),
+	}
+	r.queues["test-queue"] = &queue{
+		name:    "test-queue",
+		channel: mockCh,
+	}
+
+	if err := r.QueueBind("test-queue", "routing-key", "test-exchange", false, nil); err != nil {
+		t.Fatalf("Expected no error binding, got %v", err)
+	}
+
+	err := r.QueueUnbind("test-queue", "routing-key", "test-exchange", nil)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
+	if len(r.queueBinds["test-queue"]) != 0 {
+		t.Errorf("Expected queueBinds entry to be removed, got %v", r.queueBinds["test-queue"])
+	}
+}
+
+func TestQueueUnbind_KeepsOtherBinds(t *testing.T) {
+	mockCh := newMockChannel()
+
+	r := &rabbit{
+		queues:     make(map[string]*queue),
+		queueBinds: make(map[string][]*queueBind),
+	}
+	r.queues["test-queue"] = &queue{
+		name:    "test-queue",
+		channel: mockCh,
+	}
+
+	if err := r.QueueBind("test-queue", "key1", "exchange1", false, nil); err != nil {
+		t.Fatalf("Expected no error binding, got %v", err)
+	}
+	if err := r.QueueBind("test-queue", "key2", "exchange2", false, nil); err != nil {
+		t.Fatalf("Expected no error binding, got %v", err)
+	}
+
+	err := r.QueueUnbind("test-queue", "key1", "exchange1", nil)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
+	binds := r.queueBinds["test-queue"]
+	if len(binds) != 1 {
+		t.Fatalf("Expected 1 remaining bind, got %d", len(binds))
+	}
+	if binds[0].key != "key2" || binds[0].exchange != "exchange2" {
+		t.Errorf("Expected remaining bind key2/exchange2, got %s/%s", binds[0].key, binds[0].exchange)
+	}
+}
+
+func TestQueueUnbind_ReturnsErrorForNonExistent(t *testing.T) {
+	r := &rabbit{
+		queues:     make(map[string]*queue),
+		queueBinds: make(map[string][]*queueBind),
+	}
+
+	err := r.QueueUnbind("no-such-queue", "key", "exchange", nil)
+	if err == nil {
+		t.Error("Expected error for non-existent queue")
+	}
+}
+
+func TestQueueUnbind_ReturnsChannelError(t *testing.T) {
+	mockCh := newMockChannel()
+	mockCh.queueUnbindErr = errors.New("unbind failed")
+
+	r := &rabbit{
+		queues:     make(map[string]*queue),
+		queueBinds: make(map[string][]*queueBind),
+	}
+	r.queues["test-queue"] = &queue{
+		name:    "test-queue",
+		channel: mockCh,
+	}
+
+	err := r.QueueUnbind("test-queue", "key", "exchange", nil)
+	if err == nil {
+		t.Error("Expected error from channel QueueUnbind")
+	}
+}
+
+// TestQueueBind_IdempotentRebind verifies that binding the same (key, exchange) pair twice
+// does not create a duplicate tracked entry (VOIP-1258 round-1 review, code-quality follow-up:
+// this was the single most novel piece of logic in the diff and had no direct test).
+func TestQueueBind_IdempotentRebind(t *testing.T) {
+	mockCh := newMockChannel()
+
+	r := &rabbit{
+		queues:     make(map[string]*queue),
+		queueBinds: make(map[string][]*queueBind),
+	}
+	r.queues["test-queue"] = &queue{
+		name:    "test-queue",
+		channel: mockCh,
+	}
+
+	if err := r.QueueBind("test-queue", "routing-key", "test-exchange", false, nil); err != nil {
+		t.Fatalf("Expected no error on first bind, got %v", err)
+	}
+	if err := r.QueueBind("test-queue", "routing-key", "test-exchange", false, nil); err != nil {
+		t.Fatalf("Expected no error on idempotent re-bind, got %v", err)
+	}
+
+	binds := r.queueBinds["test-queue"]
+	if len(binds) != 1 {
+		t.Fatalf("Expected slice to stay at length 1 after idempotent re-bind, got %d", len(binds))
+	}
+}
+
+// TestRedeclareAll_RestoresAllBindsForSameQueue is a direct regression test for VOIP-1258
+// round-1 implementation-plan review finding F2: a broker reconnect must restore ALL active
+// binds for a queue, not just the most recent one (the bug that motivated the
+// map[string]*queueBind -> map[string][]*queueBind change). This exercises the exact snapshot
+// + replay logic redeclareAll uses for binds (bindsCopy flattening + re-issuing QueueBind per
+// entry), without going through the full redeclareAll (which also re-declares queues/exchanges
+// via a live amqp connection, out of scope for this unit test).
+func TestRedeclareAll_RestoresAllBindsForSameQueue(t *testing.T) {
+	mockCh := newMockChannel()
+
+	r := &rabbit{
+		queues:     make(map[string]*queue),
+		exchanges:  make(map[string]*exchange),
+		queueBinds: make(map[string][]*queueBind),
+	}
+	r.queues["test-queue"] = &queue{
+		name:    "test-queue",
+		channel: mockCh,
+	}
+
+	if err := r.QueueBind("test-queue", "customer_id.abc.#", "topic-exchange", false, nil); err != nil {
+		t.Fatalf("Expected no error binding first scope, got %v", err)
+	}
+	if err := r.QueueBind("test-queue", "agent_id.def.#", "topic-exchange", false, nil); err != nil {
+		t.Fatalf("Expected no error binding second scope, got %v", err)
+	}
+
+	// Reproduce redeclareAll's bind-snapshot-and-replay logic directly (main.go:279-282,
+	// 302-307), which is the part this test targets -- flattening map[string][]*queueBind into
+	// a single replay list and re-issuing QueueBind for every entry.
+	r.mu.RLock()
+	bindsCopy := make([]*queueBind, 0, len(r.queueBinds))
+	for _, binds := range r.queueBinds {
+		bindsCopy = append(bindsCopy, binds...)
+	}
+	r.mu.RUnlock()
+
+	if len(bindsCopy) != 2 {
+		t.Fatalf("Expected the bind snapshot to contain both tracked binds, got %d", len(bindsCopy))
+	}
+
+	mockCh.queueBindCallCount = 0 // reset so we only observe the replay below
+	for _, qb := range bindsCopy {
+		if err := r.QueueBind(qb.name, qb.key, qb.exchange, qb.noWait, qb.args); err != nil {
+			t.Fatalf("Expected no error replaying bind %+v, got %v", qb, err)
+		}
+	}
+
+	if mockCh.queueBindCallCount != 2 {
+		t.Fatalf("Expected exactly 2 QueueBind calls when replaying all tracked binds (F2 regression), got %d", mockCh.queueBindCallCount)
+	}
+}
+
+// TestQueueBindUnbind_ConcurrentAccess exercises QueueBind/QueueUnbind under concurrent access
+// on the same queue name to validate the mutex actually guards the map/slice mutations
+// (run with -race).
+func TestQueueBindUnbind_ConcurrentAccess(t *testing.T) {
+	mockCh := newMockChannel()
+
+	r := &rabbit{
+		queues:     make(map[string]*queue),
+		queueBinds: make(map[string][]*queueBind),
+	}
+	r.queues["test-queue"] = &queue{
+		name:    "test-queue",
+		channel: mockCh,
+	}
+
+	var wg sync.WaitGroup
+	for i := 0; i < 20; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			key := fmt.Sprintf("key-%d", i)
+			_ = r.QueueBind("test-queue", key, "exchange", false, nil)
+			_ = r.QueueUnbind("test-queue", key, "exchange", nil)
+		}(i)
+	}
+	wg.Wait()
+
+	// After all binds+unbinds complete, the tracked set for this queue should be empty
+	// (every Acquire paired with a Release) -- if the mutex had a gap, this could show a
+	// stale/corrupted entry or the test would have already panicked/raced.
+	if len(r.queueBinds["test-queue"]) != 0 {
+		t.Errorf("Expected no leftover binds after balanced concurrent bind/unbind, got %v", r.queueBinds["test-queue"])
+	}
+}
+
+// ============================================================================
 // QueueSubscribe() Tests
 // ============================================================================
 
@@ -643,7 +876,7 @@ func TestQueueSubscribe_CallsQueueBind(t *testing.T) {
 
 	r := &rabbit{
 		queues:     make(map[string]*queue),
-		queueBinds: make(map[string]*queueBind),
+		queueBinds: make(map[string][]*queueBind),
 	}
 	r.queues["test-queue"] = &queue{
 		name:    "test-queue",
@@ -660,11 +893,11 @@ func TestQueueSubscribe_CallsQueueBind(t *testing.T) {
 	if r.queueBinds["test-queue"] == nil {
 		t.Error("Expected queueBind to be stored")
 	}
-	if r.queueBinds["test-queue"].key != "" {
-		t.Errorf("Expected empty key, got '%s'", r.queueBinds["test-queue"].key)
+	if r.queueBinds["test-queue"][0].key != "" {
+		t.Errorf("Expected empty key, got '%s'", r.queueBinds["test-queue"][0].key)
 	}
-	if r.queueBinds["test-queue"].exchange != "test-topic" {
-		t.Errorf("Expected exchange 'test-topic', got '%s'", r.queueBinds["test-queue"].exchange)
+	if r.queueBinds["test-queue"][0].exchange != "test-topic" {
+		t.Errorf("Expected exchange 'test-topic', got '%s'", r.queueBinds["test-queue"][0].exchange)
 	}
 }
 
@@ -731,7 +964,7 @@ func TestQueueCreate_InvalidType(t *testing.T) {
 	r := &rabbit{
 		queues:     make(map[string]*queue),
 		exchanges:  make(map[string]*exchange),
-		queueBinds: make(map[string]*queueBind),
+		queueBinds: make(map[string][]*queueBind),
 	}
 
 	err := r.QueueCreate("test-queue", "invalid-type")
@@ -755,7 +988,7 @@ func TestRedeclareScenario_ClosesOldChannels(t *testing.T) {
 	r := &rabbit{
 		queues:     make(map[string]*queue),
 		exchanges:  make(map[string]*exchange),
-		queueBinds: make(map[string]*queueBind),
+		queueBinds: make(map[string][]*queueBind),
 	}
 
 	// Initial state
@@ -813,7 +1046,7 @@ func TestReconnector_ExitsWhenErrorChannelClosed(t *testing.T) {
 		errorChannel: errCh,
 		queues:       make(map[string]*queue),
 		exchanges:    make(map[string]*exchange),
-		queueBinds:   make(map[string]*queueBind),
+		queueBinds:   make(map[string][]*queueBind),
 	}
 
 	done := make(chan struct{})
@@ -840,7 +1073,7 @@ func TestReconnector_ExitsWhenClosedFlagIsSet(t *testing.T) {
 		errorChannel: errCh,
 		queues:       make(map[string]*queue),
 		exchanges:    make(map[string]*exchange),
-		queueBinds:   make(map[string]*queueBind),
+		queueBinds:   make(map[string][]*queueBind),
 	}
 
 	// Set closed before sending error
@@ -876,7 +1109,7 @@ func TestClose_ClosedFlagIsAtomicallySafe(t *testing.T) {
 		errorChannel: errCh,
 		queues:       make(map[string]*queue),
 		exchanges:    make(map[string]*exchange),
-		queueBinds:   make(map[string]*queueBind),
+		queueBinds:   make(map[string][]*queueBind),
 	}
 
 	var wg sync.WaitGroup
@@ -912,7 +1145,7 @@ func TestClose_SetsClosedBeforeClosingResources(t *testing.T) {
 		connection: mockConn,
 		queues:     make(map[string]*queue),
 		exchanges:  make(map[string]*exchange),
-		queueBinds: make(map[string]*queueBind),
+		queueBinds: make(map[string][]*queueBind),
 	}
 
 	// Use a mock channel that captures the closed state when Close() is called
@@ -930,8 +1163,8 @@ func TestClose_SetsClosedBeforeClosingResources(t *testing.T) {
 
 // closedCaptureMockChannel is a mock that checks the closed flag when Close() is called
 type closedCaptureMockChannel struct {
-	r              *rabbit
-	closedWasTrue  bool
+	r             *rabbit
+	closedWasTrue bool
 }
 
 func (m *closedCaptureMockChannel) Close() error {
@@ -948,6 +1181,10 @@ func (m *closedCaptureMockChannel) Qos(prefetchCount, prefetchSize int, global b
 }
 
 func (m *closedCaptureMockChannel) QueueBind(name, key, exchange string, noWait bool, args amqp.Table) error {
+	return nil
+}
+
+func (m *closedCaptureMockChannel) QueueUnbind(name, key, exchange string, args amqp.Table) error {
 	return nil
 }
 
@@ -968,7 +1205,7 @@ func Test_queueDeclare_storesArgs(t *testing.T) {
 	r := &rabbit{
 		queues:     make(map[string]*queue),
 		exchanges:  make(map[string]*exchange),
-		queueBinds: make(map[string]*queueBind),
+		queueBinds: make(map[string][]*queueBind),
 	}
 
 	testArgs := amqp.Table{"x-expires": int32(1800000)}
@@ -996,7 +1233,7 @@ func Test_queueCreateVolatile_xExpires(t *testing.T) {
 	r := &rabbit{
 		queues:     make(map[string]*queue),
 		exchanges:  make(map[string]*exchange),
-		queueBinds: make(map[string]*queueBind),
+		queueBinds: make(map[string][]*queueBind),
 	}
 
 	// Verify args are stored in queue struct after queueCreateVolatile sets them
@@ -1308,7 +1545,7 @@ func TestHealthChecker_ForcesReconnectOnDeadConnection(t *testing.T) {
 		healthCheckInterval: 50 * time.Millisecond,
 		queues:              make(map[string]*queue),
 		exchanges:           make(map[string]*exchange),
-		queueBinds:          make(map[string]*queueBind),
+		queueBinds:          make(map[string][]*queueBind),
 	}
 
 	done := make(chan struct{})
@@ -1341,7 +1578,7 @@ func TestHealthChecker_ExitsWhenClosed(t *testing.T) {
 		healthCheckInterval: 50 * time.Millisecond,
 		queues:              make(map[string]*queue),
 		exchanges:           make(map[string]*exchange),
-		queueBinds:          make(map[string]*queueBind),
+		queueBinds:          make(map[string][]*queueBind),
 	}
 
 	r.closed.Store(true)
@@ -1370,7 +1607,7 @@ func TestHealthChecker_DoesNotCloseHealthyConnection(t *testing.T) {
 		healthCheckInterval: 50 * time.Millisecond,
 		queues:              make(map[string]*queue),
 		exchanges:           make(map[string]*exchange),
-		queueBinds:          make(map[string]*queueBind),
+		queueBinds:          make(map[string][]*queueBind),
 	}
 
 	done := make(chan struct{})

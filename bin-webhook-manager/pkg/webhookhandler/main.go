@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
@@ -30,8 +31,10 @@ type WebhookHandler interface {
 
 // webhookHandler structure for service handle
 type webhookHandler struct {
-	db            dbhandler.DBHandler
-	notifyHandler notifyhandler.NotifyHandler
+	db                 dbhandler.DBHandler
+	notifyHandler      notifyhandler.NotifyHandler // existing fanout exchange
+	topicNotifyHandler notifyhandler.NotifyHandler // topic exchange, VOIP-1258
+	reqHandler         requesthandler.RequestHandler
 
 	accoutHandler     accounthandler.AccountHandler
 	activeflowHandler activeflowhandler.ActiveflowHandler
@@ -110,11 +113,20 @@ func newSafeHTTPClient() *http.Client {
 }
 
 // NewWebhookHandler returns new webhook handler
-func NewWebhookHandler(db dbhandler.DBHandler, notifyHandler notifyhandler.NotifyHandler, messageTargetHandler accounthandler.AccountHandler, activeflowHandler activeflowhandler.ActiveflowHandler) WebhookHandler {
+func NewWebhookHandler(
+	db dbhandler.DBHandler,
+	notifyHandler notifyhandler.NotifyHandler,
+	topicNotifyHandler notifyhandler.NotifyHandler,
+	reqHandler requesthandler.RequestHandler,
+	messageTargetHandler accounthandler.AccountHandler,
+	activeflowHandler activeflowhandler.ActiveflowHandler,
+) WebhookHandler {
 
 	h := &webhookHandler{
-		db:            db,
-		notifyHandler: notifyHandler,
+		db:                 db,
+		notifyHandler:      notifyHandler,
+		topicNotifyHandler: topicNotifyHandler,
+		reqHandler:         reqHandler,
 
 		accoutHandler:     messageTargetHandler,
 		activeflowHandler: activeflowHandler,

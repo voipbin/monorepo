@@ -133,13 +133,18 @@ func run(
 	requestHandler := requesthandler.NewRequestHandler(sockHandler, "api_manager")
 	zmqPubHandler := zmqpubhandler.NewZMQPubHandler()
 	streamHandler := streamhandler.NewStreamHandler(requestHandler, addressListenStream)
-	websockHandler := websockhandler.NewWebsockHandler(requestHandler, streamHandler)
+
+	// per-pod subscribe queue name -- constructed here (before websockHandler) so it can be
+	// shared with websockhandler's scopeRefCount for dynamic AMQP bind/unbind (VOIP-1258 §9).
+	queueNamePod := fmt.Sprintf("%s-%s", commonoutline.QueueNameAPISubscribe, uuid.Must(uuid.NewV4()))
+
+	websockHandler := websockhandler.NewWebsockHandler(requestHandler, streamHandler, sockHandler, queueNamePod)
 	serviceHandler, err := servicehandler.NewServiceHandler(requestHandler, db, websockHandler, cfg.GCPProjectID, cfg.GCPBucketName, cfg.JWTKey)
 	if err != nil {
 		log.Fatalf("Could not create service handler. err: %v", err)
 	}
 
-	go runSubscribe(sockHandler, requestHandler, zmqPubHandler)
+	go runSubscribe(sockHandler, requestHandler, zmqPubHandler, queueNamePod)
 	go runListenHTTP(serviceHandler)
 	go runListenStreamsock(ctx, streamHandler)
 
@@ -149,18 +154,13 @@ func runSubscribe(
 	sockHandler sockhandler.SockHandler,
 	reqHandler requesthandler.RequestHandler,
 	zmqHandler zmqpubhandler.ZMQPubHandler,
+	queueNamePod string,
 ) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "runSubscribe",
 	})
 
-	queueNamePod := fmt.Sprintf("%s-%s", commonoutline.QueueNameAPISubscribe, uuid.Must(uuid.NewV4()))
-
-	subscribeTargets := []string{
-		string(commonoutline.QueueNameWebhookEvent),
-		string(commonoutline.QueueNameAgentEvent),
-		string(commonoutline.QueueNameTalkEvent),
-	}
+	subscribeTargets := []string{}
 	subHandler := subscribehandler.NewSubscribeHandler(
 		sockHandler,
 		reqHandler,
@@ -170,6 +170,13 @@ func runSubscribe(
 		zmqHandler,
 	)
 
+	// run. NOTE: the VOIP-1258 "#" wildcard binding to the new topic exchange lives INSIDE
+	// subscribeHandler.Run(), sequenced before ConsumeMessage starts -- see that function's
+	// doc comment for why doing it here (after Run() returns) is unsafe: Run() starts
+	// ConsumeMessage on a separate goroutine and returns immediately, so a QueueBind call
+	// here would race the in-flight basic.consume RPC on the same AMQP channel and could
+	// intermittently 503 the channel closed (reproduced in bin-agent-manager production,
+	// 2026-07-14, fixed there in commit ca8c104a9 and here proactively for the same reason).
 	if errRun := subHandler.Run(); errRun != nil {
 		log.Errorf("Could not run the subscribe handler. err: %v", errRun)
 		return

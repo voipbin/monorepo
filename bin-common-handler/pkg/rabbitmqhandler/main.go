@@ -22,6 +22,7 @@ type Rabbit interface {
 	ConsumeRPC(ctx context.Context, queueName string, consumerName string, exclusive bool, noLocal bool, noWait bool, workerNum int, cbConsume sock.CbMsgRPC) error
 
 	TopicCreate(name string) error
+	TopicCreateWithKind(name string, kind string) error
 
 	EventPublish(topic string, key string, evt *sock.Event) error
 	EventPublishWithDelay(topic string, key string, evt *sock.Event, delay int) error
@@ -31,6 +32,8 @@ type Rabbit interface {
 
 	QueueCreate(name string, queueType string) error
 	QueueSubscribe(name string, topic string) error
+	QueueBind(name, key, exchange string, noWait bool, args amqp.Table) error
+	QueueUnbind(name, key, exchange string, args amqp.Table) error
 }
 
 // amqpChannel is an interface for amqp.Channel operations used by queue and exchange.
@@ -41,6 +44,7 @@ type amqpChannel interface {
 	Consume(queue, consumer string, autoAck, exclusive, noLocal, noWait bool, args amqp.Table) (<-chan amqp.Delivery, error)
 	Qos(prefetchCount, prefetchSize int, global bool) error
 	QueueBind(name, key, exchange string, noWait bool, args amqp.Table) error
+	QueueUnbind(name, key, exchange string, args amqp.Table) error
 	QueueDelete(name string, ifUnused, ifEmpty, noWait bool) (int, error)
 	ExchangeDeclare(name, kind string, durable, autoDelete, internal, noWait bool, args amqp.Table) error
 	QueueDeclare(name string, durable, autoDelete, exclusive, noWait bool, args amqp.Table) (amqp.Queue, error)
@@ -69,7 +73,7 @@ type rabbit struct {
 	mu         sync.RWMutex
 	queues     map[string]*queue
 	exchanges  map[string]*exchange
-	queueBinds map[string]*queueBind
+	queueBinds map[string][]*queueBind
 	consumers  []*consumerRegistration
 }
 
@@ -132,7 +136,7 @@ func NewRabbit(uri string) Rabbit {
 		healthCheckInterval: 30 * time.Second,
 		queues:              make(map[string]*queue),
 		exchanges:           make(map[string]*exchange),
-		queueBinds:          make(map[string]*queueBind),
+		queueBinds:          make(map[string][]*queueBind),
 		consumers:           make([]*consumerRegistration, 0),
 	}
 
@@ -273,8 +277,8 @@ func (r *rabbit) redeclareAll() {
 		exchangesCopy = append(exchangesCopy, e)
 	}
 	bindsCopy := make([]*queueBind, 0, len(r.queueBinds))
-	for _, b := range r.queueBinds {
-		bindsCopy = append(bindsCopy, b)
+	for _, binds := range r.queueBinds { // now a [][]*queueBind value per key
+		bindsCopy = append(bindsCopy, binds...)
 	}
 	r.mu.RUnlock()
 

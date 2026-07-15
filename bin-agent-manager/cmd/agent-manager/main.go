@@ -156,11 +156,16 @@ func runServiceSubscribe(
 	subscribeTargets := []string{
 		string(commonoutline.QueueNameCallEvent),
 		string(commonoutline.QueueNameCustomerEvent),
-		string(commonoutline.QueueNameWebhookEvent),
 	}
-	subHandler := subscribehandler.NewSubscribeHandler(sockHandler, string(commonoutline.QueueNameAgentSubscribe), subscribeTargets, agentHandler)
+	queueNamePod := string(commonoutline.QueueNameAgentSubscribe)
+	subHandler := subscribehandler.NewSubscribeHandler(sockHandler, queueNamePod, subscribeTargets, agentHandler)
 
-	// run
+	// run. NOTE: the VOIP-1258 topic-exchange cutover (QueueBind/QueueUnbind) lives INSIDE
+	// subscribeHandler.Run(), sequenced before ConsumeMessage starts -- see that function's
+	// doc comment for why doing it here (after Run() returns) is unsafe: Run() starts
+	// ConsumeMessage on a separate goroutine and returns immediately, so a bind/unbind call
+	// here would race the in-flight basic.consume RPC on the same AMQP channel and could
+	// intermittently 503 the channel closed (reproduced in production 2026-07-14).
 	if errRun := subHandler.Run(); errRun != nil {
 		return errRun
 	}

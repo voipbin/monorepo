@@ -51,7 +51,6 @@ var subscribeTargets = []commonoutline.QueueName{
 	commonoutline.QueueNameTranscribeEvent,
 	commonoutline.QueueNameTransferEvent,
 	commonoutline.QueueNameTTSEvent,
-	commonoutline.QueueNameWebhookEvent,
 }
 
 var (
@@ -128,6 +127,20 @@ func (h *subscribeHandler) Run(ctx context.Context) (<-chan struct{}, error) {
 			return nil, errSubscribe
 		}
 		log.Debugf("Subscribed to event exchange. target: %s", target)
+	}
+
+	// Cut over from the old fanout QueueNameWebhookEvent exchange to the new
+	// QueueNameWebhookEventTopic topic exchange with a "#" wildcard binding.
+	// Bind new first, then unbind old, to avoid an event-loss window where the
+	// queue is briefly bound to neither exchange. This queue is durable and shared
+	// (not per-pod), so the old binding persists across deploys unless explicitly
+	// removed (VOIP-1258 Task 3.5).
+	if errBind := h.sockHandler.QueueBind(subscribeQueue, "#", string(commonoutline.QueueNameWebhookEventTopic), false, nil); errBind != nil {
+		log.Errorf("Could not bind to the topic exchange. err: %v", errBind)
+		// do NOT proceed to unbind the old exchange if this bind failed -- stay on the
+		// old exchange rather than risk ending up bound to neither.
+	} else if errUnbind := h.sockHandler.QueueUnbind(subscribeQueue, "", string(commonoutline.QueueNameWebhookEvent), nil); errUnbind != nil {
+		log.Errorf("CRITICAL: Could not unbind from the old fanout exchange after binding to the new topic exchange. queue: %s is now bound to BOTH exchanges (double-processing resumes). Manual intervention required. err: %v", subscribeQueue, errUnbind)
 	}
 
 	// Start the batch flush worker; doneCh is closed when the worker exits.

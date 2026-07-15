@@ -122,6 +122,57 @@ func (h *notifyHandler) publishEvent(eventType string, dataType string, data jso
 	return nil
 }
 
+// PublishEventWithRoutingKey publishes event to the event queue with an explicit AMQP routing
+// key, for topic-kind exchanges. Unlike PublishEvent (which always publishes with an empty
+// routing key, correct for fanout exchanges), this lets the caller target scope-based topic
+// bindings. See VOIP-1258 design doc §6.
+func (h *notifyHandler) PublishEventWithRoutingKey(ctx context.Context, eventType string, routingKey string, data interface{}) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "PublishEventWithRoutingKey",
+		"evnet_type":  eventType,
+		"routing_key": routingKey,
+	})
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		log.Errorf("Could not marshal the message. err: %v", err)
+		return
+	}
+
+	evt := &sock.Event{
+		Type:      eventType,
+		Publisher: string(h.publisher),
+		DataType:  string(wmwebhook.DataTypeJSON),
+		Data:      m,
+	}
+
+	// Note: Using context.Background() intentionally, matching publishEvent's existing
+	// fire-and-forget rationale -- this event should complete independently of the caller's
+	// context lifecycle.
+	pubCtx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(requestTimeoutDefault))
+	defer cancel()
+
+	if err := h.publishDirectEventWithKey(pubCtx, routingKey, evt); err != nil {
+		log.Errorf("Could not publish the event with routing key. err: %v", err)
+		return
+	}
+	promNotifyTotal.WithLabelValues(evt.Type).Inc()
+}
+
+// publishDirectEventWithKey publishes the event to the target without delay, using the given
+// AMQP routing key instead of publishDirectEvent's hardcoded empty key. Shares the same
+// publish+metrics logic as publishDirectEvent (VOIP-1258 code-quality review: avoid duplicating
+// this logic in a second near-identical function).
+func (h *notifyHandler) publishDirectEventWithKey(ctx context.Context, key string, evt *sock.Event) error {
+
+	start := time.Now()
+	err := h.sockHandler.EventPublish(string(h.queueNotify), key, evt)
+	elapsed := time.Since(start)
+	promNotifyProcessTime.WithLabelValues(string(evt.Type)).Observe(float64(elapsed.Milliseconds()))
+
+	return err
+}
+
 // publishDirectEvent publish the event to the target without delay
 func (h *notifyHandler) publishDirectEvent(ctx context.Context, evt *sock.Event) error {
 

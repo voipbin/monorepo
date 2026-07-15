@@ -159,7 +159,10 @@ func (h *rabbit) QueueSubscribe(name string, topic string) error {
 	return h.QueueBind(name, "", topic, false, nil)
 }
 
-// QueueBind binds queue and exchange with a key
+// QueueBind binds queue and exchange with a key. Appends to the tracked bind set for this
+// queue name (does not overwrite), so redeclareAll() can restore ALL active bindings after a
+// broker reconnect, not just the most recent one (VOIP-1258 round-1 implementation-plan review
+// finding F2).
 func (r *rabbit) QueueBind(name, key, exchange string, noWait bool, args amqp.Table) error {
 	queue := r.queueGet(name)
 	if queue == nil {
@@ -171,13 +174,45 @@ func (r *rabbit) QueueBind(name, key, exchange string, noWait bool, args amqp.Ta
 	}
 
 	r.mu.Lock()
-	r.queueBinds[name] = &queueBind{
+	defer r.mu.Unlock()
+	for _, b := range r.queueBinds[name] {
+		if b.key == key && b.exchange == exchange {
+			return nil // already tracked, idempotent re-bind
+		}
+	}
+	r.queueBinds[name] = append(r.queueBinds[name], &queueBind{
 		name:     name,
 		key:      key,
 		exchange: exchange,
 		noWait:   noWait,
 		args:     args,
+	})
+	return nil
+}
+
+// QueueUnbind unbinds queue and exchange with a key, removing the matching entry from the
+// tracked bind set (not the whole map key, unless the set becomes empty).
+func (r *rabbit) QueueUnbind(name, key, exchange string, args amqp.Table) error {
+	queue := r.queueGet(name)
+	if queue == nil {
+		return fmt.Errorf("no queue found")
 	}
-	r.mu.Unlock()
+
+	if err := queue.channel.QueueUnbind(name, key, exchange, args); err != nil {
+		return err
+	}
+
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	binds := r.queueBinds[name]
+	for i, b := range binds {
+		if b.key == key && b.exchange == exchange {
+			r.queueBinds[name] = append(binds[:i], binds[i+1:]...)
+			break
+		}
+	}
+	if len(r.queueBinds[name]) == 0 {
+		delete(r.queueBinds, name)
+	}
 	return nil
 }

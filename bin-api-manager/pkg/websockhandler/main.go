@@ -9,7 +9,9 @@ import (
 	"monorepo/bin-api-manager/pkg/streamhandler"
 	cmexternalmedia "monorepo/bin-call-manager/models/externalmedia"
 
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	"monorepo/bin-api-manager/models/auth"
 
@@ -30,14 +32,21 @@ var upgrader = websocket.Upgrader{
 type websockHandler struct {
 	reqHandler    requesthandler.RequestHandler
 	streamHandler streamhandler.StreamHandler
+	scopeRefCount *scopeRefCount // shared across all connections on this pod
 }
 
 // NewWebsockHandler creates a new HookHandler
-func NewWebsockHandler(reqHandler requesthandler.RequestHandler, streamHandler streamhandler.StreamHandler) WebsockHandler {
+func NewWebsockHandler(
+	reqHandler requesthandler.RequestHandler,
+	streamHandler streamhandler.StreamHandler,
+	sockHandler sockhandler.SockHandler,
+	queueNamePod string,
+) WebsockHandler {
 
 	res := &websockHandler{
 		reqHandler:    reqHandler,
 		streamHandler: streamHandler,
+		scopeRefCount: newScopeRefCount(sockHandler, queueNamePod, string(commonoutline.QueueNameWebhookEventTopic)),
 	}
 
 	endpointInit()

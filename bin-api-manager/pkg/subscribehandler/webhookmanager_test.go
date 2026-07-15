@@ -636,3 +636,77 @@ func Test_createTopics(t *testing.T) {
 		})
 	}
 }
+
+// Test_processEventWebhookManagerRoutingKeyedEvent is a regression test for a production bug
+// found 2026-07-15 (post-envelope-fix verification): events arriving via the NEW topic exchange
+// (m.Publisher == "webhook-manager", m.Type == the REAL resource event type e.g. "call_created")
+// were silently discarded by processEvent's switch statement, which only matched
+// m.Type == "webhook_published" (the OLD fanout path's fixed constant). The AMQP message reached
+// this pod's queue correctly, but was never handed to zmqpubHandler.Publish, so it never reached
+// a connected websocket client. This test asserts the new case actually publishes the topics a
+// real websocket client would have subscribed to (the OLD-FORMAT prefix, e.g.
+// "customer_id:<id>:call", which zmqSub.Subscribe uses as a ZMQ prefix filter).
+func Test_processEventWebhookManagerRoutingKeyedEvent(t *testing.T) {
+	customerID := uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b")
+	ownerID := uuid.FromStringOrNil("62005165-7592-4ff7-9076-55bf491023f2")
+	callID := uuid.FromStringOrNil("d499c4f4-2f07-488b-a5f7-4b49c00e9a2a")
+
+	// m.Data here is the ALREADY-UNWRAPPED resource object (bin-webhook-manager's
+	// publishRoutingKeyedEvent does the envelope unwrap at publish time) -- NOT the doubly-nested
+	// {"type":...,"data":...} envelope that processEventWebhookManagerWebhookPublished expects.
+	data := json.RawMessage(fmt.Sprintf(
+		`{"id":"%s","customer_id":"%s","owner_id":"%s","owner_type":"agent"}`,
+		callID, customerID, ownerID,
+	))
+
+	event := &sock.Event{
+		Type:      "call_created",
+		Publisher: "webhook-manager",
+		DataType:  "application/json",
+		Data:      data,
+	}
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockZMQ := zmqpubhandler.NewMockZMQPubHandler(mc)
+	h := &subscribeHandler{zmqpubHandler: mockZMQ}
+
+	expectedOldFormatCustomerTopic := fmt.Sprintf("customer_id:%s:call:%s", customerID, callID)
+	expectedOldFormatOwnerTopic := fmt.Sprintf("agent_id:%s:call:%s", ownerID, callID)
+
+	mockZMQ.EXPECT().Publish(expectedOldFormatCustomerTopic, string(data)).Return(nil)
+	mockZMQ.EXPECT().Publish(expectedOldFormatOwnerTopic, string(data)).Return(nil)
+	// NEW format topics also get published (createTopics always emits both) -- accept any
+	// remaining Publish calls for those, this test's focus is the OLD-FORMAT compatibility.
+	mockZMQ.EXPECT().Publish(gomock.Any(), string(data)).Return(nil).AnyTimes()
+
+	err := h.processEventWebhookManagerRoutingKeyedEvent(context.Background(), event)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+}
+
+// Test_processEventWebhookManagerRoutingKeyedEvent_WrongEventTypeFormat verifies the error path:
+// an event type with no underscore segment cannot be split into a resource/verb pair and must
+// return an error rather than silently producing zero topics.
+func Test_processEventWebhookManagerRoutingKeyedEvent_WrongEventTypeFormat(t *testing.T) {
+	event := &sock.Event{
+		Type:      "malformed",
+		Publisher: "webhook-manager",
+		DataType:  "application/json",
+		Data:      json.RawMessage(`{"id":"9d0966c0-da98-11ee-97df-1786497422fb"}`),
+	}
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockZMQ := zmqpubhandler.NewMockZMQPubHandler(mc)
+	h := &subscribeHandler{zmqpubHandler: mockZMQ}
+	// No Publish call expected at all.
+
+	err := h.processEventWebhookManagerRoutingKeyedEvent(context.Background(), event)
+	if err == nil {
+		t.Error("Expected an error for a malformed event type, got nil")
+	}
+}
