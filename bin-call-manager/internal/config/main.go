@@ -30,6 +30,9 @@ type Config struct {
 	HomerAuthToken          string   // HomerAuthToken is the authentication token for the Homer API.
 	HomerWhitelist          []string // HomerWhitelist is a list of whitelisted IP addresses for Homer.
 	AsteriskWSPort          int      // AsteriskWSPort is the Asterisk HTTP server port for WebSocket media connections.
+
+	CallOutboundRateLimitPerMinute int // CallOutboundRateLimitPerMinute is the max outbound calls a customer may create per minute (VOIP-1259).
+	CallOutboundRateLimitPerHour   int // CallOutboundRateLimitPerHour is the max outbound calls a customer may create per hour (VOIP-1259).
 }
 
 func Bootstrap(cmd *cobra.Command) error {
@@ -58,6 +61,8 @@ func bindConfig(cmd *cobra.Command) error {
 	f.String("homer_auth_token", "", "Homer API authentication token")
 	f.String("homer_whitelist", "", "Comma-separated list of whitelisted IPs for Homer")
 	f.Int("asterisk_ws_port", 8088, "Asterisk WebSocket media port")
+	f.Int("call_outbound_rate_limit_per_minute", 20, "Max outbound calls per customer per minute (VOIP-1259)")
+	f.Int("call_outbound_rate_limit_per_hour", 200, "Max outbound calls per customer per hour (VOIP-1259)")
 
 	bindings := map[string]string{
 		"rabbitmq_address":          "RABBITMQ_ADDRESS",
@@ -71,6 +76,8 @@ func bindConfig(cmd *cobra.Command) error {
 		"homer_auth_token":          "HOMER_AUTH_TOKEN",
 		"homer_whitelist":           "HOMER_WHITELIST",
 		"asterisk_ws_port":          "ASTERISK_WS_PORT",
+		"call_outbound_rate_limit_per_minute": "CALL_OUTBOUND_RATE_LIMIT_PER_MINUTE",
+		"call_outbound_rate_limit_per_hour":   "CALL_OUTBOUND_RATE_LIMIT_PER_HOUR",
 	}
 
 	for flagKey, envKey := range bindings {
@@ -114,6 +121,9 @@ func LoadGlobalConfig() {
 			HomerAuthToken:          viper.GetString("homer_auth_token"),
 			HomerWhitelist:          homerWhitelist,
 			AsteriskWSPort:          viper.GetInt("asterisk_ws_port"),
+
+			CallOutboundRateLimitPerMinute: viper.GetInt("call_outbound_rate_limit_per_minute"),
+			CallOutboundRateLimitPerHour:   viper.GetInt("call_outbound_rate_limit_per_hour"),
 		}
 		logrus.Debug("Configuration has been loaded and locked.")
 	})
@@ -122,4 +132,12 @@ func LoadGlobalConfig() {
 func initLog() {
 	logrus.SetFormatter(joonix.NewFormatter())
 	logrus.SetLevel(logrus.DebugLevel)
+}
+
+// SetCallOutboundRateLimitForTest overrides the outbound call rate limit caps
+// in the global config without going through the Bootstrap+LoadGlobalConfig
+// path. USE ONLY FROM TESTS. VOIP-1259.
+func SetCallOutboundRateLimitForTest(perMinute, perHour int) {
+	globalConfig.CallOutboundRateLimitPerMinute = perMinute
+	globalConfig.CallOutboundRateLimitPerHour = perHour
 }

@@ -81,7 +81,7 @@ func initCallHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (callhandle
 	recoveryHandler := callhandler.NewRecoveryHandler(reqHandler, config.Get().HomerAPIAddress, config.Get().HomerAuthToken, config.Get().HomerWhitelist)
 	outboundConfigHandlerInst := outboundconfighandler.NewOutboundConfigHandler(utilhandler.NewUtilHandler(), db, cache, reqHandler)
 
-	return callhandler.NewCallHandler(reqHandler, notifyHandler, db, confbridgeHandler, channelHandler, bridgeHandler, recordingHandlerInst, externalMediaHandler, groupcallHandler, recoveryHandler, outboundConfigHandlerInst), nil
+	return callhandler.NewCallHandler(reqHandler, notifyHandler, db, cache, confbridgeHandler, channelHandler, bridgeHandler, recordingHandlerInst, externalMediaHandler, groupcallHandler, recoveryHandler, outboundConfigHandlerInst), nil
 }
 
 func initCommand() *cobra.Command {

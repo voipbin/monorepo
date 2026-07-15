@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"monorepo/bin-billing-manager/models/billing"
 	commonaddress "monorepo/bin-common-handler/models/address"
@@ -13,6 +14,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-call-manager/internal/config"
 	"monorepo/bin-call-manager/models/call"
 	outboundconfig "monorepo/bin-call-manager/models/outboundconfig"
 )
@@ -189,6 +191,63 @@ func (h *callHandler) ValidateCustomerBalance(
 
 	if !validBalance {
 		log.Infof("The account has not enough balance.")
+		return false
+	}
+
+	return true
+}
+
+// rateLimitWindowMinute and rateLimitWindowHour are the fixed-window TTLs for
+// the outbound call rate limit counters. VOIP-1259.
+const (
+	rateLimitWindowMinute = time.Minute
+	rateLimitWindowHour   = time.Hour
+)
+
+// ValidateCustomerOutboundCallRate returns true if the customer has not exceeded
+// the outbound call rate limit (per-minute and per-hour), regardless of call
+// origin (flow action, API, campaign, or AI create_call tool). VOIP-1259.
+//
+// Implementation: Redis-backed fixed-window counters keyed
+// "call-manager:ratelimit:call:<customerID>:minute" and "...:hour". Each request
+// unconditionally performs INCR + ExpireNX (NOT gated on count==1 — see design
+// doc VOIP-1259 §6-A for why a count==1 guard leaves a permanent-lockout gap if
+// the process crashes between INCR and EXPIRE). Either window breaching its cap
+// fails closed (false). Any Redis error also fails closed (false), consistent
+// with ValidateCustomerBalance's fail-closed convention.
+func (h *callHandler) ValidateCustomerOutboundCallRate(ctx context.Context, customerID uuid.UUID) bool {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "ValidateCustomerOutboundCallRate",
+		"customer_id": customerID,
+	})
+
+	cfg := config.Get()
+
+	minuteKey := fmt.Sprintf("call-manager:ratelimit:call:%s:minute", customerID)
+	minuteCount, err := h.cache.RateLimitIncrement(ctx, minuteKey, rateLimitWindowMinute)
+	if err != nil {
+		log.Errorf("Could not increment the minute rate limit counter, failing closed. err: %v", err)
+		promOutboundRateLimitedTotal.WithLabelValues("call", "rejected").Inc()
+		return false
+	}
+
+	hourKey := fmt.Sprintf("call-manager:ratelimit:call:%s:hour", customerID)
+	hourCount, err := h.cache.RateLimitIncrement(ctx, hourKey, rateLimitWindowHour)
+	if err != nil {
+		log.Errorf("Could not increment the hour rate limit counter, failing closed. err: %v", err)
+		promOutboundRateLimitedTotal.WithLabelValues("call", "rejected").Inc()
+		return false
+	}
+
+	if minuteCount > int64(cfg.CallOutboundRateLimitPerMinute) {
+		log.Infof("Customer exceeded the per-minute outbound call rate limit. count: %d, limit: %d", minuteCount, cfg.CallOutboundRateLimitPerMinute)
+		promOutboundRateLimitedTotal.WithLabelValues("call", "rejected").Inc()
+		return false
+	}
+
+	if hourCount > int64(cfg.CallOutboundRateLimitPerHour) {
+		log.Infof("Customer exceeded the per-hour outbound call rate limit. count: %d, limit: %d", hourCount, cfg.CallOutboundRateLimitPerHour)
+		promOutboundRateLimitedTotal.WithLabelValues("call", "rejected").Inc()
 		return false
 	}
 

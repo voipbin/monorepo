@@ -30,6 +30,7 @@ import (
 	"monorepo/bin-call-manager/models/groupcall"
 	"monorepo/bin-call-manager/models/recording"
 	"monorepo/bin-call-manager/pkg/bridgehandler"
+	"monorepo/bin-call-manager/pkg/cachehandler"
 	"monorepo/bin-call-manager/pkg/channelhandler"
 	"monorepo/bin-call-manager/pkg/confbridgehandler"
 	"monorepo/bin-call-manager/pkg/dbhandler"
@@ -144,6 +145,7 @@ type CallHandler interface {
 	EventSMPodDeleted(ctx context.Context, p *smpod.Pod) error
 
 	ValidateDestination(ctx context.Context, customerID uuid.UUID, config *outboundconfig.OutboundConfig, destination commonaddress.Address) bool
+	ValidateCustomerOutboundCallRate(ctx context.Context, customerID uuid.UUID) bool
 }
 
 // callHandler structure for service handle
@@ -151,6 +153,7 @@ type callHandler struct {
 	utilHandler            utilhandler.UtilHandler
 	reqHandler             requesthandler.RequestHandler
 	db                     dbhandler.DBHandler
+	cache                  cachehandler.CacheHandler
 	notifyHandler          notifyhandler.NotifyHandler
 	confbridgeHandler      confbridgehandler.ConfbridgeHandler
 	channelHandler         channelhandler.ChannelHandler
@@ -312,6 +315,7 @@ func NewCallHandler(
 	requestHandler requesthandler.RequestHandler,
 	notifyHandler notifyhandler.NotifyHandler,
 	db dbhandler.DBHandler,
+	cache cachehandler.CacheHandler,
 	confbridgeHandler confbridgehandler.ConfbridgeHandler,
 	channelHandler channelhandler.ChannelHandler,
 	bridgeHandler bridgehandler.BridgeHandler,
@@ -327,6 +331,7 @@ func NewCallHandler(
 		reqHandler:            requestHandler,
 		notifyHandler:         notifyHandler,
 		db:                    db,
+		cache:                 cache,
 		confbridgeHandler:     confbridgeHandler,
 		channelHandler:        channelHandler,
 		bridgeHandler:         bridgeHandler,

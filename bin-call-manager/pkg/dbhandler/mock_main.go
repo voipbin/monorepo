@@ -197,17 +197,17 @@ func (mr *MockDBHandlerMockRecorder) CallApplicationAMDSet(ctx, channelID, app a
 }
 
 // CallCreate mocks base method.
-func (m *MockDBHandler) CallCreate(ctx context.Context, call *call.Call) error {
+func (m *MockDBHandler) CallCreate(ctx context.Context, arg1 *call.Call) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallCreate", ctx, call)
+	ret := m.ctrl.Call(m, "CallCreate", ctx, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CallCreate indicates an expected call of CallCreate.
-func (mr *MockDBHandlerMockRecorder) CallCreate(ctx, call any) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) CallCreate(ctx, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallCreate", reflect.TypeOf((*MockDBHandler)(nil).CallCreate), ctx, call)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallCreate", reflect.TypeOf((*MockDBHandler)(nil).CallCreate), ctx, arg1)
 }
 
 // CallDelete mocks base method.
@@ -298,17 +298,17 @@ func (mr *MockDBHandlerMockRecorder) CallRemoveExternalMediaID(ctx, id, external
 }
 
 // CallSetActionAndActionNextHold mocks base method.
-func (m *MockDBHandler) CallSetActionAndActionNextHold(ctx context.Context, id uuid.UUID, action *action.Action, hold bool) error {
+func (m *MockDBHandler) CallSetActionAndActionNextHold(ctx context.Context, id uuid.UUID, arg2 *action.Action, hold bool) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallSetActionAndActionNextHold", ctx, id, action, hold)
+	ret := m.ctrl.Call(m, "CallSetActionAndActionNextHold", ctx, id, arg2, hold)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CallSetActionAndActionNextHold indicates an expected call of CallSetActionAndActionNextHold.
-func (mr *MockDBHandlerMockRecorder) CallSetActionAndActionNextHold(ctx, id, action, hold any) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) CallSetActionAndActionNextHold(ctx, id, arg2, hold any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetActionAndActionNextHold", reflect.TypeOf((*MockDBHandler)(nil).CallSetActionAndActionNextHold), ctx, id, action, hold)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSetActionAndActionNextHold", reflect.TypeOf((*MockDBHandler)(nil).CallSetActionAndActionNextHold), ctx, id, arg2, hold)
 }
 
 // CallSetActionNextHold mocks base method.
@@ -578,17 +578,17 @@ func (mr *MockDBHandlerMockRecorder) CallUpdate(ctx, id, fields any) *gomock.Cal
 }
 
 // ChannelCreate mocks base method.
-func (m *MockDBHandler) ChannelCreate(ctx context.Context, channel *channel.Channel) error {
+func (m *MockDBHandler) ChannelCreate(ctx context.Context, arg1 *channel.Channel) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChannelCreate", ctx, channel)
+	ret := m.ctrl.Call(m, "ChannelCreate", ctx, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ChannelCreate indicates an expected call of ChannelCreate.
-func (mr *MockDBHandlerMockRecorder) ChannelCreate(ctx, channel any) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) ChannelCreate(ctx, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelCreate", reflect.TypeOf((*MockDBHandler)(nil).ChannelCreate), ctx, channel)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelCreate", reflect.TypeOf((*MockDBHandler)(nil).ChannelCreate), ctx, arg1)
 }
 
 // ChannelEndAndDelete mocks base method.

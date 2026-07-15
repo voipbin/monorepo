@@ -21,6 +21,7 @@ import (
 	outboundconfig "monorepo/bin-call-manager/models/outboundconfig"
 	recording "monorepo/bin-call-manager/models/recording"
 	reflect "reflect"
+	time "time"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -81,17 +82,17 @@ func (mr *MockCacheHandlerMockRecorder) BridgeGet(ctx, id any) *gomock.Call {
 }
 
 // BridgeSet mocks base method.
-func (m *MockCacheHandler) BridgeSet(ctx context.Context, bridge *bridge.Bridge) error {
+func (m *MockCacheHandler) BridgeSet(ctx context.Context, arg1 *bridge.Bridge) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BridgeSet", ctx, bridge)
+	ret := m.ctrl.Call(m, "BridgeSet", ctx, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // BridgeSet indicates an expected call of BridgeSet.
-func (mr *MockCacheHandlerMockRecorder) BridgeSet(ctx, bridge any) *gomock.Call {
+func (mr *MockCacheHandlerMockRecorder) BridgeSet(ctx, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BridgeSet", reflect.TypeOf((*MockCacheHandler)(nil).BridgeSet), ctx, bridge)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BridgeSet", reflect.TypeOf((*MockCacheHandler)(nil).BridgeSet), ctx, arg1)
 }
 
 // CallAppAMDGet mocks base method.
@@ -139,17 +140,17 @@ func (mr *MockCacheHandlerMockRecorder) CallGet(ctx, id any) *gomock.Call {
 }
 
 // CallSet mocks base method.
-func (m *MockCacheHandler) CallSet(ctx context.Context, call *call.Call) error {
+func (m *MockCacheHandler) CallSet(ctx context.Context, arg1 *call.Call) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallSet", ctx, call)
+	ret := m.ctrl.Call(m, "CallSet", ctx, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CallSet indicates an expected call of CallSet.
-func (mr *MockCacheHandlerMockRecorder) CallSet(ctx, call any) *gomock.Call {
+func (mr *MockCacheHandlerMockRecorder) CallSet(ctx, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSet", reflect.TypeOf((*MockCacheHandler)(nil).CallSet), ctx, call)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSet", reflect.TypeOf((*MockCacheHandler)(nil).CallSet), ctx, arg1)
 }
 
 // ChannelGet mocks base method.
@@ -168,17 +169,17 @@ func (mr *MockCacheHandlerMockRecorder) ChannelGet(ctx, id any) *gomock.Call {
 }
 
 // ChannelSet mocks base method.
-func (m *MockCacheHandler) ChannelSet(ctx context.Context, channel *channel.Channel) error {
+func (m *MockCacheHandler) ChannelSet(ctx context.Context, arg1 *channel.Channel) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChannelSet", ctx, channel)
+	ret := m.ctrl.Call(m, "ChannelSet", ctx, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ChannelSet indicates an expected call of ChannelSet.
-func (mr *MockCacheHandlerMockRecorder) ChannelSet(ctx, channel any) *gomock.Call {
+func (mr *MockCacheHandlerMockRecorder) ChannelSet(ctx, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSet", reflect.TypeOf((*MockCacheHandler)(nil).ChannelSet), ctx, channel)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSet", reflect.TypeOf((*MockCacheHandler)(nil).ChannelSet), ctx, arg1)
 }
 
 // ConfbridgeGet mocks base method.
@@ -381,6 +382,21 @@ func (m *MockCacheHandler) OutboundConfigSetNotFound(ctx context.Context, custom
 func (mr *MockCacheHandlerMockRecorder) OutboundConfigSetNotFound(ctx, customerID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutboundConfigSetNotFound", reflect.TypeOf((*MockCacheHandler)(nil).OutboundConfigSetNotFound), ctx, customerID)
+}
+
+// RateLimitIncrement mocks base method.
+func (m *MockCacheHandler) RateLimitIncrement(ctx context.Context, key string, ttl time.Duration) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RateLimitIncrement", ctx, key, ttl)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RateLimitIncrement indicates an expected call of RateLimitIncrement.
+func (mr *MockCacheHandlerMockRecorder) RateLimitIncrement(ctx, key, ttl any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RateLimitIncrement", reflect.TypeOf((*MockCacheHandler)(nil).RateLimitIncrement), ctx, key, ttl)
 }
 
 // RecordingGet mocks base method.

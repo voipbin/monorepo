@@ -7,6 +7,8 @@ import (
 	"strings"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
 	cucustomer "monorepo/bin-customer-manager/models/customer"
@@ -177,6 +179,14 @@ func (h *callHandler) CreateCallOutgoing(
 	if validBalance := h.ValidateCustomerBalance(ctx, id, customerID, call.DirectionOutgoing, source, destination); !validBalance {
 		log.Debugf("Could not pass the balance validation. customer_id: %s", customerID)
 		return nil, fmt.Errorf("could not pass the balance validation")
+	}
+
+	// validate customer's outbound call rate limit (per-minute and per-hour). VOIP-1259.
+	// Applies uniformly regardless of call origin (flow action, API, campaign, or AI
+	// create_call tool) since this is the single choke point for outbound call creation.
+	if validRate := h.ValidateCustomerOutboundCallRate(ctx, customerID); !validRate {
+		log.Debugf("Could not pass the outbound call rate limit validation. customer_id: %s", customerID)
+		return nil, cerrors.ResourceExhausted(commonoutline.ServiceNameCallManager, "RATE_LIMIT_EXCEEDED", "outbound call rate limit exceeded")
 	}
 
 	// Fetch outbound config once for all non-internal customers.

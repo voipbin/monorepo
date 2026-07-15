@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 
 	bmbilling "monorepo/bin-billing-manager/models/billing"
 	commonaddress "monorepo/bin-common-handler/models/address"
@@ -34,6 +35,7 @@ import (
 	"monorepo/bin-call-manager/models/common"
 	"monorepo/bin-call-manager/models/groupcall"
 	outboundconfig "monorepo/bin-call-manager/models/outboundconfig"
+	"monorepo/bin-call-manager/pkg/cachehandler"
 	"monorepo/bin-call-manager/pkg/channelhandler"
 	"monorepo/bin-call-manager/pkg/dbhandler"
 	"monorepo/bin-call-manager/pkg/groupcallhandler"
@@ -169,7 +171,10 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
 			mockOutboundConfig := outboundconfighandler.NewMockOutboundConfigHandler(mc)
 
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
 			h := &callHandler{
+				cache:                 mockCache,
 				utilHandler:           mockUtil,
 				reqHandler:            mockReq,
 				notifyHandler:         mockNotify,
@@ -189,6 +194,8 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 				IdentityVerificationStatus: cucustomer.IdentityVerificationStatusVerified,
 			}, nil)
 			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.customerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
+			mockCache.EXPECT().RateLimitIncrement(ctx, gomock.Any(), time.Minute).Return(int64(0), nil)
+			mockCache.EXPECT().RateLimitIncrement(ctx, gomock.Any(), time.Hour).Return(int64(0), nil)
 			mockOutboundConfig.EXPECT().GetByCustomerID(ctx, tt.customerID).Return(nil, nil)
 			mockReq.EXPECT().AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, tt.customerID, tt.destination).Return(tt.responseAgent, nil)
 			mockDB.EXPECT().CallCreate(ctx, tt.expectCall).Return(nil)
@@ -353,7 +360,10 @@ func Test_CreateCallOutgoing_Metadata(t *testing.T) {
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
 			mockOutboundConfig := outboundconfighandler.NewMockOutboundConfigHandler(mc)
 
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
 			h := &callHandler{
+				cache:                 mockCache,
 				utilHandler:           mockUtil,
 				reqHandler:            mockReq,
 				notifyHandler:         mockNotify,
@@ -373,6 +383,8 @@ func Test_CreateCallOutgoing_Metadata(t *testing.T) {
 				IdentityVerificationStatus: cucustomer.IdentityVerificationStatusVerified,
 			}, nil)
 			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.customerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
+			mockCache.EXPECT().RateLimitIncrement(ctx, gomock.Any(), time.Minute).Return(int64(0), nil)
+			mockCache.EXPECT().RateLimitIncrement(ctx, gomock.Any(), time.Hour).Return(int64(0), nil)
 			mockOutboundConfig.EXPECT().GetByCustomerID(ctx, tt.customerID).Return(nil, nil)
 			mockReq.EXPECT().AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, tt.customerID, tt.destination).Return(tt.responseAgent, nil)
 
@@ -620,7 +632,10 @@ func Test_CreateCallOutgoing_RTPDebug(t *testing.T) {
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
 			mockOutboundConfig := outboundconfighandler.NewMockOutboundConfigHandler(mc)
 
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
 			h := &callHandler{
+				cache:                 mockCache,
 				utilHandler:           mockUtil,
 				reqHandler:            mockReq,
 				notifyHandler:         mockNotify,
@@ -636,6 +651,8 @@ func Test_CreateCallOutgoing_RTPDebug(t *testing.T) {
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDChannel)
 			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.customerID).Return(tt.responseCustomer, nil)
 			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.customerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
+			mockCache.EXPECT().RateLimitIncrement(ctx, gomock.Any(), time.Minute).Return(int64(0), nil)
+			mockCache.EXPECT().RateLimitIncrement(ctx, gomock.Any(), time.Hour).Return(int64(0), nil)
 			mockOutboundConfig.EXPECT().GetByCustomerID(ctx, tt.customerID).Return(nil, nil)
 			mockReq.EXPECT().AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, tt.customerID, tt.destination).Return(tt.responseAgent, nil)
 
@@ -816,7 +833,10 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
 			mockOutboundConfig := outboundconfighandler.NewMockOutboundConfigHandler(mc)
 
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
 			h := &callHandler{
+				cache:                 mockCache,
 				utilHandler:           mockUtil,
 				reqHandler:            mockReq,
 				notifyHandler:         mockNotify,
@@ -843,6 +863,8 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 				IdentityVerificationStatus: cucustomer.IdentityVerificationStatusVerified,
 			}, nil)
 			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.customerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
+			mockCache.EXPECT().RateLimitIncrement(ctx, gomock.Any(), time.Minute).Return(int64(0), nil)
+			mockCache.EXPECT().RateLimitIncrement(ctx, gomock.Any(), time.Hour).Return(int64(0), nil)
 
 			// source number validation: source +99999888 belongs to customer as a normal number
 			mockReq.EXPECT().NumberV1NumberList(ctx, "", uint64(1), map[nmnumber.Field]any{
@@ -956,7 +978,10 @@ func Test_CreateCallOutgoing_TypeTel_OutboundConfigFetchError_FailClosed(t *test
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
 			mockOutboundConfig := outboundconfighandler.NewMockOutboundConfigHandler(mc)
 
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
 			h := &callHandler{
+				cache:                 mockCache,
 				utilHandler:           mockUtil,
 				reqHandler:            mockReq,
 				notifyHandler:         mockNotify,
@@ -971,6 +996,8 @@ func Test_CreateCallOutgoing_TypeTel_OutboundConfigFetchError_FailClosed(t *test
 			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.customerID).Return(tt.responseCustomer, nil)
 			// balance check passes so the function reaches the OutboundConfig fetch site
 			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.customerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
+			mockCache.EXPECT().RateLimitIncrement(ctx, gomock.Any(), time.Minute).Return(int64(0), nil)
+			mockCache.EXPECT().RateLimitIncrement(ctx, gomock.Any(), time.Hour).Return(int64(0), nil)
 
 			// the load-bearing mock: outbound config fetch fails
 			mockOutboundConfig.EXPECT().GetByCustomerID(ctx, tt.customerID).Return(nil, tt.fetchErr)
@@ -1107,7 +1134,10 @@ func Test_CreateCallOutgoing_TypeSIP_OutboundConfigFetchError_FailClosed(t *test
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
 			mockOutboundConfig := outboundconfighandler.NewMockOutboundConfigHandler(mc)
 
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
 			h := &callHandler{
+				cache:                 mockCache,
 				utilHandler:           mockUtil,
 				reqHandler:            mockReq,
 				notifyHandler:         mockNotify,
@@ -1124,6 +1154,8 @@ func Test_CreateCallOutgoing_TypeSIP_OutboundConfigFetchError_FailClosed(t *test
 				IdentityVerificationStatus: cucustomer.IdentityVerificationStatusVerified,
 			}, nil)
 			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.customerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
+			mockCache.EXPECT().RateLimitIncrement(ctx, gomock.Any(), time.Minute).Return(int64(0), nil)
+			mockCache.EXPECT().RateLimitIncrement(ctx, gomock.Any(), time.Hour).Return(int64(0), nil)
 			mockOutboundConfig.EXPECT().GetByCustomerID(ctx, tt.customerID).Return(nil, tt.fetchErr)
 
 			// no further interactions: dialroutes, activeflow create, channel start, etc.
@@ -1199,7 +1231,10 @@ func Test_createCallsOutgoingGroupcall_endpoint(t *testing.T) {
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
 			mockGroupcall := groupcallhandler.NewMockGroupcallHandler(mc)
 
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
 			h := &callHandler{
+				cache:                 mockCache,
 				utilHandler:      mockUtil,
 				reqHandler:       mockReq,
 				db:               mockDB,
@@ -1275,7 +1310,10 @@ func Test_createCallsOutgoingGroupcall_agent(t *testing.T) {
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
 			mockGroupcall := groupcallhandler.NewMockGroupcallHandler(mc)
 
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
 			h := &callHandler{
+				cache:                 mockCache,
 				utilHandler:      mockUtil,
 				reqHandler:       mockReq,
 				db:               mockDB,
@@ -1488,7 +1526,10 @@ func Test_getDialURI_Tel(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
 			h := &callHandler{
+				cache:                 mockCache,
 				reqHandler: mockReq,
 				db:         mockDB,
 			}
@@ -1585,7 +1626,10 @@ func Test_getDialURI_SIP(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
 			h := &callHandler{
+				cache:                 mockCache,
 				reqHandler: mockReq,
 				db:         mockDB,
 			}
@@ -1657,7 +1701,10 @@ func Test_getDialURI_error(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
 			h := &callHandler{
+				cache:                 mockCache,
 				reqHandler: mockReq,
 				db:         mockDB,
 			}
@@ -1784,7 +1831,10 @@ func Test_createChannel(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
 
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
 			h := &callHandler{
+				cache:                 mockCache,
 				utilHandler:    mockUtil,
 				reqHandler:     mockReq,
 				db:             mockDB,
@@ -1937,7 +1987,10 @@ func Test_createFailoverChannel(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
 
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
 			h := &callHandler{
+				cache:                 mockCache,
 				utilHandler:    mockUtil,
 				reqHandler:     mockReq,
 				notifyHandler:  mockNotify,
@@ -2012,7 +2065,10 @@ func Test_getNextDialroute(t *testing.T) {
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
 			h := &callHandler{
+				cache:                 mockCache,
 				utilHandler:   mockUtil,
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
@@ -2094,7 +2150,10 @@ func Test_getNextDialroute_error(t *testing.T) {
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
 			h := &callHandler{
+				cache:                 mockCache,
 				utilHandler:   mockUtil,
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
@@ -2268,7 +2327,10 @@ func Test_getDialroutes(t *testing.T) {
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
 			h := &callHandler{
+				cache:                 mockCache,
 				utilHandler:   mockUtil,
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
@@ -2342,7 +2404,10 @@ func Test_getDialroutes_errorCases(t *testing.T) {
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
 			h := &callHandler{
+				cache:                 mockCache,
 				utilHandler:   mockUtil,
 				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
@@ -2867,7 +2932,10 @@ func Test_getValidatedSourceForOutgoingCall(t *testing.T) {
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
 			h := &callHandler{
+				cache:                 mockCache,
 				reqHandler: mockReq,
 			}
 
@@ -2976,7 +3044,10 @@ func Test_getGroupcallRingMethod_destination_type_agent(t *testing.T) {
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
 			mockGroupcall := groupcallhandler.NewMockGroupcallHandler(mc)
 
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
 			h := &callHandler{
+				cache:                 mockCache,
 				utilHandler:      mockUtil,
 				reqHandler:       mockReq,
 				db:               mockDB,
@@ -3176,7 +3247,10 @@ func Test_getDialURISIP(t *testing.T) {
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
 			mockGroupcall := groupcallhandler.NewMockGroupcallHandler(mc)
 
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
 			h := &callHandler{
+				cache:                 mockCache,
 				utilHandler:      mockUtil,
 				reqHandler:       mockReq,
 				db:               mockDB,
@@ -3234,7 +3308,10 @@ func Test_getDialURISIPDirect(t *testing.T) {
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
 			mockGroupcall := groupcallhandler.NewMockGroupcallHandler(mc)
 
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
 			h := &callHandler{
+				cache:                 mockCache,
 				utilHandler:      mockUtil,
 				reqHandler:       mockReq,
 				db:               mockDB,
@@ -3499,7 +3576,10 @@ func Test_createChannelOutgoing_ProviderCodecs(t *testing.T) {
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
 			mockOutboundConfig := outboundconfighandler.NewMockOutboundConfigHandler(mc)
 
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
 			h := &callHandler{
+				cache:                 mockCache,
 				utilHandler:           mockUtil,
 				reqHandler:            mockReq,
 				notifyHandler:         mockNotify,
@@ -3525,6 +3605,8 @@ func Test_createChannelOutgoing_ProviderCodecs(t *testing.T) {
 				IdentityVerificationStatus: cucustomer.IdentityVerificationStatusVerified,
 			}, nil)
 			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.customerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
+			mockCache.EXPECT().RateLimitIncrement(ctx, gomock.Any(), time.Minute).Return(int64(0), nil)
+			mockCache.EXPECT().RateLimitIncrement(ctx, gomock.Any(), time.Hour).Return(int64(0), nil)
 
 			// source number validation: source belongs to customer as a normal number
 			mockReq.EXPECT().NumberV1NumberList(ctx, "", uint64(1), map[nmnumber.Field]any{

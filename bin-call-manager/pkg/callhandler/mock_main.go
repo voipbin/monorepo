@@ -700,6 +700,20 @@ func (mr *MockCallHandlerMockRecorder) UpdateStatus(ctx, id, status any) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatus", reflect.TypeOf((*MockCallHandler)(nil).UpdateStatus), ctx, id, status)
 }
 
+// ValidateCustomerOutboundCallRate mocks base method.
+func (m *MockCallHandler) ValidateCustomerOutboundCallRate(ctx context.Context, customerID uuid.UUID) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ValidateCustomerOutboundCallRate", ctx, customerID)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// ValidateCustomerOutboundCallRate indicates an expected call of ValidateCustomerOutboundCallRate.
+func (mr *MockCallHandlerMockRecorder) ValidateCustomerOutboundCallRate(ctx, customerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateCustomerOutboundCallRate", reflect.TypeOf((*MockCallHandler)(nil).ValidateCustomerOutboundCallRate), ctx, customerID)
+}
+
 // ValidateDestination mocks base method.
 func (m *MockCallHandler) ValidateDestination(ctx context.Context, customerID uuid.UUID, config *outboundconfig.OutboundConfig, destination address.Address) bool {
 	m.ctrl.T.Helper()
