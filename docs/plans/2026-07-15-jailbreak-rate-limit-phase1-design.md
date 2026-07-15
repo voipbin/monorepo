@@ -371,26 +371,52 @@ Each service's `Validate*Rate` method (§3.2/4.2/5.2) becomes a thin wrapper:
 따라야 하며, 임의로 변형하지 않는다.
 
 **A. INCR+EXPIRE 원자성 (필수 패턴, 3개 서비스 공통):**
+
+**[설계 리뷰 라운드 3 CRITICAL 수정, 2026-07-15]** 최초 버전(`count == 1`일
+때만 EXPIRE)은 "TTL이 영원히 갱신되는" 버그(sliding window로 변질)는
+막지만, **정반대 방향의 더 심각한 버그를 놓치고 있었다**: `Incr`가 성공해
+`count == 1`이 된 직후, `Expire` 호출 전에 프로세스가 죽으면(k8s 파드
+재시작·롤링 디플로이·OOM-kill — 이 인프라는 GKE 기반 롤링 배포이므로 드문
+이벤트가 아니라 일상적 배포 절차) 그 카운터 키는 **TTL 없이 영구히 남는다**.
+이후 요청마다 `count`는 계속 증가하지만 TTL을 다시 설정할 기회는 오지
+않으므로(가드 조건이 `count==1`뿐이라), cap을 넘긴 시점부터 **해당 고객은
+Redis 키를 수동 삭제하기 전까지 영구적으로 outbound call/email/SMS가
+차단**된다. §6-B의 fail-closed 정책과 결합하면 정상 상태의 Redis에서도 파드
+재시작 타이밍 하나로 고객이 영구 DoS 상태에 빠질 수 있다는 뜻이다.
+
+이를 방지하기 위해 `EXPIRE key ttl NX`(Redis 7.0+에서 도입된 NX 플래그 —
+"키에 이미 TTL이 설정되어 있지 않을 때만 적용")를 매 요청마다 무조건
+호출하는 방식으로 변경한다. 프로덕션 Redis 버전은 `redis:7-alpine`
+(`install/k8s/infrastructure/redis/deployment.yaml:31` 확인, 7.0+ 요구사항
+충족)이고, go-redis v8/v9 양쪽 모두 `ExpireNX` 메서드를 지원한다(클라이언트
+버전과 무관하게 Redis 서버 프로토콜 레벨 기능). 이 방식이면 `count==1`
+조건 분기 자체가 불필요해지고, 어느 시점에 크래시가 나든 다음 요청이
+안전하게 TTL을 채워 넣는다:
+
 ```go
 // each service's own Redis client, own key. Pattern below applies verbatim
 // to both minute and hour windows (call twice with different key/TTL).
+// Requires Redis 7.0+ (this deployment runs redis:7-alpine — confirmed via
+// install/k8s/infrastructure/redis/deployment.yaml). ExpireNX is available
+// on both go-redis v8 and v9 clients.
 count, err := redisClient.Incr(ctx, key).Result()
 if err != nil {
     // see fail-closed policy below
 }
-if count == 1 {
-    // ONLY set TTL on the first increment (count==1) — the window's first
-    // hit. Re-setting TTL on every INCR would keep extending the window and
-    // the counter would never reset (sliding, not fixed). This is the
-    // standard fixed-window Redis idiom.
-    redisClient.Expire(ctx, key, windowTTL) // 60s for minute key, 3600s for hour key
+// Unconditionally attempt to set TTL with NX (only applies if the key has no
+// TTL yet). This is safe to call on every request — a key that already has a
+// TTL is a no-op. This closes the permanent-lockout gap that a
+// count==1-only guard would leave open if the process crashes between Incr
+// and Expire (e.g. pod restart during a rolling deploy).
+if _, expErr := redisClient.ExpireNX(ctx, key, windowTTL).Result(); expErr != nil {
+    // log and continue; a transient EXPIRE failure does not invalidate the
+    // Incr result, and the next request retries ExpireNX regardless of count
 }
 ```
-비원자적(INCR 따로, EXPIRE 조건부 따로)이지만, `count == 1`일 때만 TTL을 거는
-가드가 있으면 "TTL이 영원히 갱신되는" 버그는 방지된다. INCR 자체는 Redis에서
-원자적이므로 동시 요청 간 카운트 누락/중복은 발생하지 않는다. 완전한
-MULTI/EXEC나 Lua 스크립트는 Phase 1에서는 불필요한 복잡도로 판단해 채택하지
-않음(명시적 트레이드오프).
+INCR 자체는 Redis에서 원자적이므로 동시 요청 간 카운트 누락/중복은 발생하지
+않는다. 완전한 MULTI/EXEC나 Lua 스크립트는 여전히 불필요한 복잡도로 판단해
+채택하지 않음(명시적 트레이드오프, ExpireNX로 영구 잠금 문제는 이미
+해소되었으므로 유지).
 
 **B. Redis 장애 시 정책: fail-closed.** Redis `Incr`/`Expire` 호출 자체가
 에러를 반환하면(네트워크 장애 등), `Validate*Rate`는 `false`(rate limit
