@@ -312,29 +312,47 @@ and Redis client wiring differing, add one small shared helper to
 
 `bin-common-handler/pkg/ratelimithandler/main.go` (new package):
 
+**[설계 리뷰 라운드 1 CRITICAL 수정, 2026-07-15]** 최초 초안은 `*redis.Client`
+구체 타입을 받는 시그니처였으나, 3개 서비스의 Redis 클라이언트 버전이 실제로
+다름을 `go.mod` 직접 확인으로 검증했다:
+
+| 서비스 | Redis 클라이언트 |
+|---|---|
+| `bin-call-manager` | `github.com/go-redis/redis/v8 v8.11.5` |
+| `bin-email-manager` | `github.com/redis/go-redis/v9 v9.17.2` |
+| `bin-message-manager` | `github.com/go-redis/redis/v8 v8.11.5` |
+
+v8과 v9는 API 비호환(별도 모듈)이므로 구체 타입 하나로는 세 서비스에서 동시에
+컴파일되지 않는다. `bin-common-handler/go.mod`에는 redis 의존성 자체가 없음도
+확인(신규로 v8이든 v9이든 특정 버전을 강제하면 나머지 서비스와 충돌).
+
+go-redis v8/v9는 `Cmdable` 인터페이스의 반환 타입(`*redis.IntCmd` 등)이 버전마다
+다른 패키지 경로를 가진 타입이라, 클라이언트 자체를 공유 인터페이스로 감싸는
+방식은 불필요하게 복잡해진다. 대신 **공유 대상을 "Redis 호출"이 아니라 "카운터
+비교 및 fail-closed 판정 로직"으로 좁힌다** — Redis I/O(INCR/EXPIRE)는 각
+서비스가 자신의 client(v8 또는 v9)로 직접 수행하고, 그 결과값만 순수 함수에
+넘겨 판정을 공유한다. Redis 의존성이 전혀 없는 함수이므로 버전 문제가 애초에
+발생하지 않는다:
+
 ```go
 package ratelimithandler
 
-// AllowFixedWindow increments a minute and hour Redis counter for the given
-// key prefix + subject and returns true if both are within their caps. Uses
-// INCR + EXPIRE (NX-guarded) on first increment, same idiom as existing
-// per-service Redis cache writers. VOIP-1259.
-func AllowFixedWindow(ctx context.Context, redisClient *redis.Client, keyPrefix string, subject uuid.UUID, perMinuteCap, perHourCap int) (bool, error)
+// CheckFixedWindow returns true if both the minute and hour counts are within
+// their caps. Pure function, no Redis dependency — each service performs its
+// own INCR+EXPIRE (via its own go-redis v8 or v9 client) and passes the
+// resulting counts here for the shared cap-comparison logic. VOIP-1259.
+func CheckFixedWindow(minuteCount, hourCount int64, perMinuteCap, perHourCap int) bool {
+    return minuteCount <= int64(perMinuteCap) && hourCount <= int64(perHourCap)
+}
 ```
 
-Each service's `Validate*Rate` method (§3.2/4.2/5.2) becomes a thin wrapper
-calling this helper with its own Redis client and key prefix
+Each service's `Validate*Rate` method (§3.2/4.2/5.2) becomes a thin wrapper:
+자기 client로 INCR+EXPIRE를 수행하고, 그 결과값을 `ratelimithandler.CheckFixedWindow(...)`
+에 넘겨 판정만 공유. 키 프리픽스
 (`call-manager:ratelimit:call`, `email-manager:ratelimit:email`,
-`message-manager:ratelimit:sms`), then increments its own service-local
-Prometheus counter on rejection. This keeps the Redis logic tested once
-(`bin-common-handler/pkg/ratelimithandler/main_test.go`) while keeping the
-per-service call sites, config, and metrics local (matching the existing
-convention that config/metrics are always service-local, never shared).
-
-**Open verification item for implementation phase:** confirm which Redis client
-type call-manager/email-manager/message-manager each already use (likely
-`github.com/redis/go-redis/v9`, need to confirm per-service `go.mod` — if they
-differ, the helper signature takes an interface, not a concrete client type).
+`message-manager:ratelimit:sms`)와 실제 Redis 호출은 서비스별로 남기고,
+판정 로직만 `bin-common-handler/pkg/ratelimithandler`에서 공유해 3중 복붙을
+막는다. Prometheus 카운터는 각 서비스 로컬에 유지(기존 컨벤션과 동일).
 
 ## 7. bin-ai-manager — session tool-call count cap (D) + destinations cap (E)
 
@@ -414,6 +432,21 @@ acceptable for Phase 1. If the AI turn loop is ever parallelized, this needs a
 proper atomic increment (e.g. move to Redis `INCR` like §6, keyed by AIcall ID)
 — explicitly out of scope for Phase 1, noted here so Phase 2/3 doesn't silently
 inherit a race.
+
+**[설계 리뷰 라운드 1 수정, 2026-07-15]** 위 "동기 순차 호출" 가정은 리포지토리
+코드 경로 기준으로는 확인됨(`bin-pipecat-manager/scripts/pipecat/tools.py`에
+tool 호출을 병렬 발행하는 `asyncio.gather`/`parallel_tool_calls` 류 코드 없음,
+`run.py`의 `asyncio.gather`는 파이프라인 초기화 전용으로 tool 실행과 무관).
+다만 **pipecat 프레임워크 자체(서드파티 라이브러리)가 LLM이 한 턴에서 여러
+tool_call을 동시에 반환했을 때 이를 순차 await하는지 concurrent task로
+스케줄링하는지까지는 리포지토리 코드만으로 100% 확정되지 않는다.** 따라서 위
+문구를 "confirmed"가 아니라 다음으로 완화한다: **"현재 리포지토리 코드 경로상
+명시적 병렬 tool-call 디스패치는 없음이 확인됨. pipecat 프레임워크 레벨의
+스케줄링 보장까지는 이 설계 문서의 검증 범위 밖이며, Phase 1은 이 잔여
+불확실성을 허용 가능한 리스크로 받아들인다(레이스가 실제로 발생해도 최악의
+경우 카운터가 정확히 100회에서 끊기지 않고 근사치가 되는 정도이며, 최종
+방어선인 call/email/message-manager 쪽 rate limit이 별도로 존재하므로 이
+카운터의 정확도 저하가 곧바로 남용 허용으로 이어지지는 않는다)."**
 
 ### 7.3 Prometheus metric
 
@@ -533,6 +566,11 @@ in `aicallhandler`).
       golangci-lint run -v --timeout 5m` green in ALL FOUR touched services
       (call-manager, email-manager, message-manager, ai-manager) AND
       common-handler (new `ratelimithandler` package).
+- [ ] **[설계 리뷰 라운드 1 추가]** email/SMS가 `bin-campaign-manager`의
+      `TypeFlow` 경로(flow 액션 `actionHandleMessageSend`/`actionHandleEmailSend`)를
+      통해 실행될 때, 최종적으로 `messageHandler.Send`/`emailHandler.Create`로
+      수렴하는지 구현 착수 전 end-to-end로 추적 확인 (call 경로는 이미 검증
+      완료, email/SMS만 남음).
 
 ## 9. Explicitly out of scope for Phase 1
 
@@ -542,11 +580,21 @@ in `aicallhandler`).
   ships one global default per resource type, operator-tunable only via
   service config/env, not per-customer DB override.
 - Alerting/dashboards for the new Prometheus counters.
-- Any changes to `bin-campaign-manager`'s campaign-driven call/SMS/email
-  dispatch loops — they already funnel through the same
-  `CreateCallOutgoing`/`emailHandler.Create`/`messageHandler.Send` choke
-  points identified above, so they inherit the new gates for free without
-  code changes in campaign-manager itself. (Verify this claim at
-  implementation time by tracing campaign-manager's call site into one of
-  these three functions — flagged here as an assumption pending confirmation,
-  not yet traced in this design pass.)
+- Any changes to `bin-campaign-manager`'s campaign-driven call dispatch loop —
+  it already funnels through `CreateCallOutgoing`
+  (`executeCall()` → `CallV1CallCreateWithID` → call-manager
+  `processV1CallsIDPost` → `h.callHandler.CreateCallOutgoing`, traced and
+  confirmed end-to-end in design review round 1), so it inherits the new call
+  rate-limit gate for free without code changes in campaign-manager itself.
+  **[설계 리뷰 라운드 1 수정, 2026-07-15]** 최초 초안의 "campaign-driven
+  call/SMS/email dispatch loops" 표현은 부정확했다: `bin-campaign-manager`는
+  `Type` 필드로 `TypeCall`/`TypeFlow` 두 가지만 가지며, SMS/email 전용
+  dispatch loop는 존재하지 않는다. `TypeFlow` 경로에서 flow 액션으로
+  `send_message`/`send_email`이 있는 경우 flow-manager의
+  `actionHandleMessageSend`/`actionHandleEmailSend` (`actionhandle.go:863-892`,
+  `1123-1152`) → `MessageV1MessageSend`/`EmailV1EmailSend` RPC로 이어지는
+  간접 경로만 존재하며, 이 RPC가 최종적으로 `messageHandler.Send`/
+  `emailHandler.Create`로 수렴하는지는 이번 설계 라운드에서 정황상 강한
+  근거(공통 RPC 패턴)는 있으나 끝까지 추적 완료되지 않았다. **call 경로만
+  end-to-end로 검증 완료**; email/SMS 경로는 구현 착수 전 별도로 추적
+  확인이 필요하다 (§8 체크리스트에 항목 추가).
