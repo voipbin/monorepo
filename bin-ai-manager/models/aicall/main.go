@@ -26,6 +26,10 @@ const MetaKeyPromptSnapshots = "prompt_snapshots"
 // at call-creation time.
 const MetaKeyAutoAuditEnabled = "auto_audit_enabled"
 
+// MetaKeyToolCallCount is the Metadata map key (int) tracking the total number
+// of LLM tool calls executed within this AIcall session (VOIP-1259).
+const MetaKeyToolCallCount = "tool_call_count"
+
 // AIcall define
 type AIcall struct {
 	identity.Identity

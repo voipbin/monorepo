@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	stderrors "errors"
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -740,5 +741,62 @@ func Test_toolHandleCreateCall_doesNotTerminateAIcall(t *testing.T) {
 	res := h.toolHandleCreateCall(context.Background(), a, tool)
 	if res.Result != "success" {
 		t.Errorf("expected success, got %q (message: %q)", res.Result, res.Message)
+	}
+}
+
+// Test_toolHandleCreateCall_TooManyDestinations verifies the destinations-per-invocation
+// cap (VOIP-1259, design §7.5): 11 destinations must be rejected before CallV1CallsCreate is
+// ever invoked (the strict gomock controller fails the test on any unexpected call).
+func Test_toolHandleCreateCall_TooManyDestinations(t *testing.T) {
+	customerID := uuid.FromStringOrNil("44440000-0000-4000-8000-000000000001")
+	flowID := uuid.FromStringOrNil("44440000-0000-4000-8000-000000000002")
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &aicallHandler{
+		utilHandler:    utilhandler.NewMockUtilHandler(mc),
+		reqHandler:     mockReq,
+		notifyHandler:  notifyhandler.NewMockNotifyHandler(mc),
+		db:             dbhandler.NewMockDBHandler(mc),
+		aiHandler:      aihandler.NewMockAIHandler(mc),
+		messageHandler: messagehandler.NewMockMessageHandler(mc),
+	}
+
+	a := &aicall.AIcall{
+		Identity:      commonidentity.Identity{ID: uuid.FromStringOrNil("44440000-0000-4000-8000-0000000000a1"), CustomerID: customerID},
+		ReferenceType: aicall.ReferenceTypeCall,
+	}
+
+	destinations := make([]map[string]string, 0, 11)
+	for i := 0; i < 11; i++ {
+		destinations = append(destinations, map[string]string{"type": "tel", "target": fmt.Sprintf("+111%07d", i)})
+	}
+	destBytes, err := json.Marshal(destinations)
+	if err != nil {
+		t.Fatalf("could not marshal test destinations: %v", err)
+	}
+
+	tool := &message.ToolCall{
+		ID:   "toomany-tool",
+		Type: message.ToolTypeFunction,
+		Function: message.FunctionCall{
+			Name:      message.FunctionCallNameCreateCall,
+			Arguments: fmt.Sprintf(`{"flow_id": "%s", "destinations": %s}`, flowID, string(destBytes)),
+		},
+	}
+
+	// Deliberately NO mockReq.EXPECT() at all: the destinations cap must reject before
+	// FlowV1FlowGet/CallV1CallsCreate are ever invoked; a strict gomock controller fails
+	// the test on any unexpected call.
+
+	res := h.toolHandleCreateCall(context.Background(), a, tool)
+	if res.Result != "failed" {
+		t.Errorf("expected failed, got %q", res.Result)
+	}
+	expectMsg := "too many destinations in a single create_call invocation (max 10)"
+	if res.Message != expectMsg {
+		t.Errorf("expected message %q, got %q", expectMsg, res.Message)
 	}
 }

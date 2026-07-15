@@ -325,6 +325,36 @@ func (h *aicallHandler) UpdateCurrentMemberID(ctx context.Context, id uuid.UUID,
 	return res, nil
 }
 
+// UpdateMetadata merges the given key/value into the aicall's Metadata map and
+// persists it. VOIP-1259 (session tool-call counter); reusable for future
+// per-session counters/flags.
+func (h *aicallHandler) UpdateMetadata(ctx context.Context, id uuid.UUID, key string, value any) (*aicall.AIcall, error) {
+	cur, err := h.db.AIcallGet(ctx, id)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get aicall info before metadata update. aicall_id: %s", id)
+	}
+
+	metadata := map[string]any{}
+	for k, v := range cur.Metadata {
+		metadata[k] = v
+	}
+	metadata[key] = value
+
+	fields := map[aicall.Field]any{
+		aicall.FieldMetadata: metadata,
+	}
+	if errUpdate := h.db.AIcallUpdate(ctx, id, fields); errUpdate != nil {
+		return nil, errors.Wrapf(errUpdate, "could not update the metadata for aicall. aicall_id: %s", id)
+	}
+
+	res, err := h.db.AIcallGet(ctx, id)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get updated aicall info. aicall_id: %s", id)
+	}
+
+	return res, nil
+}
+
 // UpdateStatus updates the aicall status and emits the corresponding webhook event.
 func (h *aicallHandler) UpdateStatus(ctx context.Context, id uuid.UUID, status aicall.Status) (*aicall.AIcall, error) {
 	fields := map[aicall.Field]any{

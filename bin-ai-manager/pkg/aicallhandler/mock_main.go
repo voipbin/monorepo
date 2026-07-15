@@ -303,6 +303,21 @@ func (mr *MockAIcallHandlerMockRecorder) UpdateCurrentMemberID(ctx, id, currentM
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCurrentMemberID", reflect.TypeOf((*MockAIcallHandler)(nil).UpdateCurrentMemberID), ctx, id, currentMemberID)
 }
 
+// UpdateMetadata mocks base method.
+func (m *MockAIcallHandler) UpdateMetadata(ctx context.Context, id uuid.UUID, key string, value any) (*aicall.AIcall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateMetadata", ctx, id, key, value)
+	ret0, _ := ret[0].(*aicall.AIcall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateMetadata indicates an expected call of UpdateMetadata.
+func (mr *MockAIcallHandlerMockRecorder) UpdateMetadata(ctx, id, key, value any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateMetadata", reflect.TypeOf((*MockAIcallHandler)(nil).UpdateMetadata), ctx, id, key, value)
+}
+
 // UpdatePipecatcallIDAndActiveflowID mocks base method.
 func (m *MockAIcallHandler) UpdatePipecatcallIDAndActiveflowID(ctx context.Context, id, pipecatcallID, activeflowID uuid.UUID) (*aicall.AIcall, error) {
 	m.ctrl.T.Helper()

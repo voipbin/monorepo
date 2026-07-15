@@ -69,6 +69,7 @@ type AIcallHandler interface {
 	UpdateActiveflowID(ctx context.Context, id uuid.UUID, activeflowID uuid.UUID) (*aicall.AIcall, error)
 	UpdatePipecatcallIDAndActiveflowID(ctx context.Context, id uuid.UUID, pipecatcallID uuid.UUID, activeflowID uuid.UUID) (*aicall.AIcall, error)
 	UpdateCurrentMemberID(ctx context.Context, id uuid.UUID, currentMemberID uuid.UUID) (*aicall.AIcall, error)
+	UpdateMetadata(ctx context.Context, id uuid.UUID, key string, value any) (*aicall.AIcall, error)
 }
 
 const (

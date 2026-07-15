@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strings"
 
+	"monorepo/bin-ai-manager/internal/config"
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
 	"monorepo/bin-ai-manager/pkg/messagehandler"
@@ -20,6 +21,11 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
+
+// errToolCallSessionCapExceeded is returned (via fillFailed) to the LLM when the
+// session (AIcall) tool-call cap has been exceeded (VOIP-1259). The message is
+// intentionally generic/user-facing, not a raw RPC/internal error.
+var errToolCallSessionCapExceeded = fmt.Errorf("too many tool calls in this session")
 
 func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID string, toolType message.ToolType, function message.FunctionCall) (map[string]any, error) {
 	log := logrus.WithFields(logrus.Fields{
@@ -74,7 +80,11 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 	promAIcallToolExecuteTotal.WithLabelValues(string(tool.Function.Name)).Inc()
 
 	var tmpMessageContent *messageContent
-	if fn, exists := mapFunctions[tool.Function.Name]; exists {
+	if !h.validateSessionToolCallRate(ctx, c) {
+		promAIcallToolCallSessionCapExceededTotal.Inc()
+		tmpMessageContent = &messageContent{ToolCallID: tool.ID}
+		fillFailed(tmpMessageContent, errToolCallSessionCapExceeded)
+	} else if fn, exists := mapFunctions[tool.Function.Name]; exists {
 		tmpMessageContent = fn(ctx, c, tool)
 	} else {
 		log.Debugf("unknown tool call: %s", tool.Function.Name)
@@ -148,6 +158,59 @@ func (h *aicallHandler) unmarshalToolResponse(tmp *message.Message) (map[string]
 	return res, nil
 }
 
+// toolCallCountFromMetadata extracts the current session tool-call count from the
+// AIcall's Metadata map. The value round-trips through JSON (db "metadata,json" tag),
+// so it may be stored as an int (fresh in-process value) or float64/json.Number
+// (after a DB read); both are handled. A missing or malformed value is treated as 0.
+func toolCallCountFromMetadata(metadata map[string]any) int {
+	raw, ok := metadata[aicall.MetaKeyToolCallCount]
+	if !ok {
+		return 0
+	}
+
+	switch v := raw.(type) {
+	case int:
+		return v
+	case int64:
+		return int(v)
+	case float64:
+		return int(v)
+	case json.Number:
+		n, err := v.Int64()
+		if err != nil {
+			return 0
+		}
+		return int(n)
+	default:
+		return 0
+	}
+}
+
+// validateSessionToolCallRate enforces the per-AIcall-session tool-call cap (VOIP-1259,
+// design §7). It reads the current count from c.Metadata, and if under the configured
+// cap, persists the incremented count via UpdateMetadata (read -> merge -> write) and
+// returns true. If the cap has already been reached, it returns false WITHOUT
+// incrementing further (so the counter does not grow unbounded past the cap).
+func (h *aicallHandler) validateSessionToolCallRate(ctx context.Context, c *aicall.AIcall) bool {
+	limit := config.Get().AIcallSessionToolCallLimit
+
+	current := toolCallCountFromMetadata(c.Metadata)
+	if current >= limit {
+		return false
+	}
+
+	next := current + 1
+	if _, err := h.UpdateMetadata(ctx, c.ID, aicall.MetaKeyToolCallCount, next); err != nil {
+		logrus.WithFields(logrus.Fields{
+			"func":      "validateSessionToolCallRate",
+			"aicall_id": c.ID,
+		}).Errorf("could not persist the session tool-call count. err: %v", err)
+		return false
+	}
+
+	return true
+}
+
 func (h *aicallHandler) toolHandleConnect(ctx context.Context, c *aicall.AIcall, tool *message.ToolCall) *messageContent {
 	log := logrus.WithFields(logrus.Fields{
 		"func":      "toolHandleConnect",
@@ -202,6 +265,11 @@ func (h *aicallHandler) toolHandleConnect(ctx context.Context, c *aicall.AIcall,
 // flow-existence oracle. Bare sentinel (no stack, no %w wrap) keeps both paths byte-identical.
 var errCouldNotResolveFlow = stderrors.New("could not resolve flow")
 
+// maxCreateCallDestinationsPerInvocation caps the number of destinations accepted in a
+// single create_call tool invocation (VOIP-1259, design §7.5). Fixed constant, not
+// operator-tunable via config (JIRA Revision 4 confirms 10 as a fixed value).
+const maxCreateCallDestinationsPerInvocation = 10
+
 // toolHandleCreateCall places a NEW, INDEPENDENT outbound call that is NOT bridged to the
 // current session and does NOT terminate the current AIcall (contrast with toolHandleConnect).
 // The originated call runs its own flow_id; the current AI session continues.
@@ -252,6 +320,10 @@ func (h *aicallHandler) toolHandleCreateCall(ctx context.Context, c *aicall.AIca
 
 	if len(args.Destinations) == 0 {
 		fillFailed(res, fmt.Errorf("at least one destination is required"))
+		return res
+	}
+	if len(args.Destinations) > maxCreateCallDestinationsPerInvocation {
+		fillFailed(res, fmt.Errorf("too many destinations in a single create_call invocation (max %d)", maxCreateCallDestinationsPerInvocation))
 		return res
 	}
 	// input hygiene: an empty destination target would be silently skipped by call-manager.

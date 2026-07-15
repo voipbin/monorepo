@@ -1,8 +1,15 @@
 package aicallhandler
 
-// The aicall_backstop_reply_total counter previously declared here was relocated
-// to pkg/messagehandler (see metrics_backstop.go) because the only emit site is
-// messagehandler.EventPMPipecatcallTerminated, and aicallhandler imports
-// messagehandler — referencing the counter here would have created a circular
-// import. The fully-qualified metric name (`ai_manager_aicall_backstop_reply_total`)
-// is preserved by reusing the same `metricsNamespace` from this package's main.go.
+import "github.com/prometheus/client_golang/prometheus"
+
+var promAIcallToolCallSessionCapExceededTotal = prometheus.NewCounter(
+	prometheus.CounterOpts{
+		Namespace: metricsNamespace,
+		Name:      "aicall_tool_call_session_cap_exceeded_total",
+		Help:      "Total tool calls rejected because the AIcall session tool-call cap was exceeded (VOIP-1259).",
+	},
+)
+
+func init() {
+	prometheus.MustRegister(promAIcallToolCallSessionCapExceededTotal)
+}
