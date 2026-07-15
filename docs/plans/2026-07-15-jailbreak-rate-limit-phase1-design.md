@@ -132,15 +132,22 @@ int)` test-only setter mirroring
 
 ### 3.4 Prometheus metric
 
-New file `bin-call-manager/pkg/callhandler/metrics.go` (no metrics file exists
-yet in this package — confirmed via file search) modeled on
-`bin-ai-manager/pkg/aicallhandler/metrics_conversation.go`'s registration
-pattern:
+**[설계 리뷰 라운드 2 수정, 2026-07-15]** `metricsNamespace`는 이번 라운드에서
+`bin-call-manager/pkg/callhandler/main.go:226`에 이미 패키지 레벨 변수로
+존재함을 직접 확인했다 (`metricsNamespace = commonoutline.GetMetricNameSpace(common.Servicename)`).
+신규 `metrics.go`에서 이를 재선언하면 동일 패키지 내 중복 선언으로 **컴파일
+에러**가 발생한다. 아래는 재선언 없이 기존 변수를 그대로 참조하는 버전이다.
+
+New file `bin-call-manager/pkg/callhandler/metrics.go` (no metrics FILE exists
+yet in this package, but `metricsNamespace` itself already does in `main.go` —
+reuse it, do not redeclare):
 
 ```go
 package callhandler
 
 import "github.com/prometheus/client_golang/prometheus"
+
+// metricsNamespace is already declared in main.go:226 — do NOT redeclare here.
 
 var promOutboundRateLimitedTotal = prometheus.NewCounterVec(
     prometheus.CounterOpts{
@@ -161,10 +168,6 @@ counter side is intentionally NOT separately incremented per-call (would be
 extremely high-cardinality/high-volume with little operational value) — only
 rejections are counted, consistent with `promAIcallContactCaseRecreateRateLimitedTotal`
 which also only counts the blocked case, not every allowed recreation attempt.
-Confirm `metricsNamespace` constant already exists in
-`bin-call-manager/pkg/callhandler` (verify at implementation time; if absent,
-define `const metricsNamespace = "call_manager"` following the sibling-service
-convention seen in `bin-ai-manager/pkg/aicallhandler/main.go`).
 
 ### 3.5 Tests
 
@@ -294,7 +297,13 @@ Flags: `message_outbound_rate_limit_per_minute` (default 100) /
 
 ### 5.4 Prometheus metric
 
-New `bin-message-manager/pkg/messagehandler/metrics.go`, `resource_type="sms"`.
+**[설계 리뷰 라운드 2 수정, 2026-07-15]** `metricsNamespace`는
+`bin-message-manager/pkg/messagehandler/main.go:64`에 이미
+`metricsNamespace = "message_manager"`로 존재함을 직접 확인했다. 신규
+`metrics.go`에서 재선언하면 컴파일 에러. 기존 변수를 그대로 참조할 것.
+
+New `bin-message-manager/pkg/messagehandler/metrics.go` (do NOT redeclare
+`metricsNamespace`, already exists in `main.go:64`), `resource_type="sms"`.
 
 ### 5.5 Tests
 
@@ -354,19 +363,65 @@ Each service's `Validate*Rate` method (§3.2/4.2/5.2) becomes a thin wrapper:
 판정 로직만 `bin-common-handler/pkg/ratelimithandler`에서 공유해 3중 복붙을
 막는다. Prometheus 카운터는 각 서비스 로컬에 유지(기존 컨벤션과 동일).
 
+**[설계 리뷰 라운드 2 CRITICAL 수정, 2026-07-15]** 위 §6은 "무엇을 공유할지"를
+비교 로직 한 줄로 좁혔으나, 실제로 3개 서비스가 각자 재구현할 때 가장 위험한
+두 지점 — **INCR/EXPIRE의 원자성**과 **Redis 장애 시 정책** — 이 명세되지
+않아, 서비스마다 다르게 구현될 위험이 그대로 남아 있었다(라운드 2 리뷰에서
+지적). 이를 아래와 같이 명세로 확정한다. 3개 서비스는 이 명세를 그대로
+따라야 하며, 임의로 변형하지 않는다.
+
+**A. INCR+EXPIRE 원자성 (필수 패턴, 3개 서비스 공통):**
+```go
+// each service's own Redis client, own key. Pattern below applies verbatim
+// to both minute and hour windows (call twice with different key/TTL).
+count, err := redisClient.Incr(ctx, key).Result()
+if err != nil {
+    // see fail-closed policy below
+}
+if count == 1 {
+    // ONLY set TTL on the first increment (count==1) — the window's first
+    // hit. Re-setting TTL on every INCR would keep extending the window and
+    // the counter would never reset (sliding, not fixed). This is the
+    // standard fixed-window Redis idiom.
+    redisClient.Expire(ctx, key, windowTTL) // 60s for minute key, 3600s for hour key
+}
+```
+비원자적(INCR 따로, EXPIRE 조건부 따로)이지만, `count == 1`일 때만 TTL을 거는
+가드가 있으면 "TTL이 영원히 갱신되는" 버그는 방지된다. INCR 자체는 Redis에서
+원자적이므로 동시 요청 간 카운트 누락/중복은 발생하지 않는다. 완전한
+MULTI/EXEC나 Lua 스크립트는 Phase 1에서는 불필요한 복잡도로 판단해 채택하지
+않음(명시적 트레이드오프).
+
+**B. Redis 장애 시 정책: fail-closed.** Redis `Incr`/`Expire` 호출 자체가
+에러를 반환하면(네트워크 장애 등), `Validate*Rate`는 `false`(rate limit
+초과로 간주, 거부)를 반환한다. 이는 `ValidateCustomerBalance`를 비롯해 이
+저장소 전체에 일관된 fail-closed 컨벤션과 일치시킨 것이며, CLAUDE.md에
+명시된 원칙이기도 하다. Redis 장애 시 "발신을 막아버리는" 가용성 트레이드오프를
+받아들인다(그 반대인 fail-open은 Redis 장애를 남용의 우회로로 만든다).
+
+**C. `CheckFixedWindow` 자체의 단위 테스트:** §3.5/4.5/5.5와 별개로,
+`bin-common-handler/pkg/ratelimithandler/main_test.go`에 `CheckFixedWindow`의
+경계값(정확히 cap, cap+1, cap-1, 0/0) 테스트를 추가한다.
+
 ## 7. bin-ai-manager — session tool-call count cap (D) + destinations cap (E)
 
 ### 7.1 Verified insertion point — tool-call cap (D)
 
 `ToolHandle` (`bin-ai-manager/pkg/aicallhandler/tool.go:24-96`) is the single
 dispatch point for every LLM tool call (`mapFunctions` table at lines 54-72
-covers all 15 tool names including `create_call`, `send_email`,
-`send_message`). It already increments
+covers all tool names including `create_call`, `send_email`,
+`send_message`). **[설계 리뷰 라운드 2 수정, 2026-07-15]** 최초 초안은
+"15 tool names"라고 썼으나, `mapFunctions`를 라운드 2에서 직접 열람한 결과
+실제로는 17개 엔트리(`ConnectCall`, `CreateCall`, `GetVariables`,
+`GetAIcallMessages`, `SendEmail`, `SendMessage`, `SetVariables`, `StopFlow`,
+`StopMedia`, `StopService`, `SearchKnowledge`, `GetCorrelation`,
+`GetResource`, `DescribeAction`, `CaseCreate`, `GetContactInteractions`,
+`GetConversationContent`)다. 설계 자체(카운터가 모든 tool에 대해 무조건
+증가한다는 점)에는 영향 없으나 사실관계 정정. It already increments
 `promAIcallToolExecuteTotal.WithLabelValues(string(tool.Function.Name)).Inc()`
 unconditionally at line 74 — confirming this is the correct single choke point
 for a session-wide tool-call counter, since it fires for every tool
-indiscriminately, exactly matching the JIRA Revision 3 decision ("세션 내 모든
-tool 호출을 합산", not `create_call`-only).
+indiscriminately.
 
 The cap check must happen BEFORE the `fn(ctx, c, tool)` dispatch at line 78, so
 an over-cap call never executes the underlying tool logic:
@@ -428,10 +483,20 @@ modeled on the existing `Update*` methods' `fields := map[aicall.Field]any{...}`
 AIcall are not expected in the current single-threaded-per-turn LLM tool
 execution model (the caller invokes `ToolHandle` synchronously per tool call
 returned by the LLM turn), so a read-then-write without row-level locking is
-acceptable for Phase 1. If the AI turn loop is ever parallelized, this needs a
-proper atomic increment (e.g. move to Redis `INCR` like §6, keyed by AIcall ID)
-— explicitly out of scope for Phase 1, noted here so Phase 2/3 doesn't silently
-inherit a race.
+acceptable for Phase 1.
+
+**[설계 리뷰 라운드 2 수정, 2026-07-15]** 위 레이스 노트는 "동일 AIcall 내
+병렬 tool-call"만 다루고 있었으나, `UpdateMetadata`가 read-merge-write
+방식이므로 **Metadata 맵의 다른 키를 동시에 쓰는 다른 하위시스템**(예: prompt
+snapshot 갱신 `MetaKeyPromptSnapshots`, audit 플래그 `MetaKeyAutoAuditEnabled`)
+과의 lost-update 레이스도 이론적으로 가능하다. 범위를 다음으로 확장한다:
+"동일 AIcall의 Metadata 맵에 대한 모든 동시 쓰기 경로(세션 내 tool-call
+카운터 갱신 포함)는 read-then-write 기반이며 락이 없다. Phase 1에서는 이를
+허용 가능한 리스크로 받아들인다 — 최악의 경우 카운터/플래그 값이 정확하지
+않게 될 수 있으나 데이터 손상이나 크래시로는 이어지지 않으며, 남용 방지의
+최종 방어선은 call/email/message-manager의 rate limit이므로 이 레이스가
+직접적인 보안 결함으로 이어지지 않는다." 병렬화가 실제로 도입되면 Redis
+INCR 기반 원자적 카운터(§6과 동일 패턴)로 전환 필요.
 
 **[설계 리뷰 라운드 1 수정, 2026-07-15]** 위 "동기 순차 호출" 가정은 리포지토리
 코드 경로 기준으로는 확인됨(`bin-pipecat-manager/scripts/pipecat/tools.py`에
@@ -566,11 +631,17 @@ in `aicallhandler`).
       golangci-lint run -v --timeout 5m` green in ALL FOUR touched services
       (call-manager, email-manager, message-manager, ai-manager) AND
       common-handler (new `ratelimithandler` package).
-- [ ] **[설계 리뷰 라운드 1 추가]** email/SMS가 `bin-campaign-manager`의
-      `TypeFlow` 경로(flow 액션 `actionHandleMessageSend`/`actionHandleEmailSend`)를
-      통해 실행될 때, 최종적으로 `messageHandler.Send`/`emailHandler.Create`로
-      수렴하는지 구현 착수 전 end-to-end로 추적 확인 (call 경로는 이미 검증
-      완료, email/SMS만 남음).
+- [ ] **[설계 리뷰 라운드 2에서 확인 완료, 더 이상 "확인 필요" 아님]**
+      email/SMS가 `bin-campaign-manager`의 `TypeFlow` 경로(flow 액션
+      `actionHandleMessageSend`/`actionHandleEmailSend`)를 통해 실행될 때,
+      `MessageV1MessageSend`/`EmailV1EmailSend` RPC → message-manager
+      `processV1MessagesPost`(`listenhandler/messages.go:73-105`, 직접
+      `h.messageHandler.Send` 호출) / email-manager
+      `v1EmailsPost`(`listenhandler/v1_emails.go:71-94`, 직접
+      `h.emailHandler.Create` 호출)로 end-to-end 수렴함을 라운드 2에서
+      코드로 끝까지 추적 확인했다. call 경로와 마찬가지로 email/SMS도
+      campaign-manager 코드 변경 없이 새 rate-limit 게이트를 자동 상속받음이
+      확정되었다.
 
 ## 9. Explicitly out of scope for Phase 1
 
