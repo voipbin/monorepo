@@ -20,6 +20,7 @@ import (
 
 	"monorepo/bin-message-manager/models/message"
 	"monorepo/bin-message-manager/models/target"
+	"monorepo/bin-message-manager/pkg/cachehandler"
 	"monorepo/bin-message-manager/pkg/dbhandler"
 )
 
@@ -134,6 +135,7 @@ func Test_Send(t *testing.T) {
 
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockBird := NewMockMessageHandlerMessagebird(mc)
@@ -142,6 +144,7 @@ func Test_Send(t *testing.T) {
 			h := &messageHandler{
 				utilHandler:               mockUtil,
 				db:                        mockDB,
+				cache:                     mockCache,
 				reqHandler:                mockReq,
 				notifyHandler:             mockNotify,
 				messageHandlerMessagebird: mockBird,
@@ -155,6 +158,8 @@ func Test_Send(t *testing.T) {
 			}, nil)
 
 			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.customerID, bmbilling.ReferenceTypeSMS, "", len(tt.destinations)).Return(true, nil)
+
+			mockCache.EXPECT().RateLimitIncrement(ctx, gomock.Any(), gomock.Any()).Return(int64(1), nil).Times(2)
 
 			mockDB.EXPECT().MessageCreate(ctx, tt.expectMessage).Return(nil)
 			mockDB.EXPECT().MessageGet(ctx, tt.id).Return(tt.responseMessage, nil)
@@ -283,6 +288,7 @@ func Test_Send_NormalizesAddress(t *testing.T) {
 
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockBird := NewMockMessageHandlerMessagebird(mc)
@@ -291,6 +297,7 @@ func Test_Send_NormalizesAddress(t *testing.T) {
 			h := &messageHandler{
 				utilHandler:               mockUtil,
 				db:                        mockDB,
+				cache:                     mockCache,
 				reqHandler:                mockReq,
 				notifyHandler:             mockNotify,
 				messageHandlerMessagebird: mockBird,
@@ -304,6 +311,8 @@ func Test_Send_NormalizesAddress(t *testing.T) {
 			}, nil)
 
 			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.customerID, bmbilling.ReferenceTypeSMS, "", len(tt.destinations)).Return(true, nil)
+
+			mockCache.EXPECT().RateLimitIncrement(ctx, gomock.Any(), gomock.Any()).Return(int64(1), nil).Times(2)
 
 			// Capture-by-matcher: inspect the *message.Message persisted by the
 			// synchronous Create -> MessageCreate path and assert that BOTH the
@@ -343,5 +352,66 @@ func Test_Send_NormalizesAddress(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseMessage, res)
 			}
 		})
+	}
+}
+
+// Test_Send_RateLimitExceeded_FailClosed asserts that when the outbound SMS
+// rate limit is exceeded (minute cap breached), Send returns a typed
+// ResourceExhausted error and skips message creation/dispatch — mirroring the
+// existing balance-check gating pattern. VOIP-1259.
+func Test_Send_RateLimitExceeded_FailClosed(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockBird := NewMockMessageHandlerMessagebird(mc)
+	mockTelnyx := NewMockMessageHandlerTelnyx(mc)
+
+	h := &messageHandler{
+		utilHandler:               mockUtil,
+		db:                        mockDB,
+		cache:                     mockCache,
+		reqHandler:                mockReq,
+		notifyHandler:             mockNotify,
+		messageHandlerMessagebird: mockBird,
+		messageHandlerTelnyx:      mockTelnyx,
+	}
+	ctx := context.Background()
+
+	id := uuid.FromStringOrNil("88888888-8888-8888-8888-888888888888")
+	customerID := uuid.FromStringOrNil("99999999-9999-9999-9999-999999999999")
+
+	source := &commonaddress.Address{
+		Type:   commonaddress.TypeTel,
+		Target: "+821****0001",
+	}
+	destinations := []commonaddress.Address{
+		{
+			Type:   commonaddress.TypeTel,
+			Target: "+821****0002",
+		},
+	}
+
+	mockReq.EXPECT().CustomerV1CustomerGet(ctx, customerID).Return(&cucustomer.Customer{
+		ID:                         customerID,
+		IdentityVerificationStatus: cucustomer.IdentityVerificationStatusVerified,
+	}, nil)
+
+	mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, customerID, bmbilling.ReferenceTypeSMS, "", len(destinations)).Return(true, nil)
+
+	// minute counter breaches the cap; the rate-limit gate must reject before
+	// MessageCreate/provider dispatch is ever reached.
+	mockCache.EXPECT().RateLimitIncrement(ctx, gomock.Any(), gomock.Any()).Return(int64(999999), nil).Times(2)
+
+	res, err := h.Send(ctx, id, customerID, source, destinations, "blocked by rate limit")
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: nil")
+	}
+	if res != nil {
+		t.Errorf("Wrong match. expect: nil, got: %v", res)
 	}
 }

@@ -67,7 +67,7 @@ func initMessageHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (message
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameMessageEvent, serviceName)
 	requestExternal := requestexternal.NewRequestExternal(config.Get().AuthtokenTelnyx, config.Get().AuthtokenMessagebird)
 
-	return messagehandler.NewMessageHandler(reqHandler, notifyHandler, db, requestExternal), nil
+	return messagehandler.NewMessageHandler(reqHandler, notifyHandler, db, cache, requestExternal), nil
 }
 
 func initCommand() *cobra.Command {

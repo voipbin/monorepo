@@ -6,6 +6,8 @@ import (
 
 	bmbilling "monorepo/bin-billing-manager/models/billing"
 	commonaddress "monorepo/bin-common-handler/models/address"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -64,6 +66,11 @@ func (h *messageHandler) Send(ctx context.Context, id uuid.UUID, customerID uuid
 	if !valid {
 		log.Errorf("Customer has insufficient balance. customer_id: %s", customerID)
 		return nil, fmt.Errorf("insufficient balance for message")
+	}
+
+	// gate: outbound SMS rate limit (per-minute and per-hour, fail-closed). VOIP-1259.
+	if !h.validateCustomerMessageRate(ctx, customerID) {
+		return nil, cerrors.ResourceExhausted(commonoutline.ServiceNameMessageManager, "RATE_LIMIT_EXCEEDED", "outbound SMS rate limit exceeded")
 	}
 
 	// select provider

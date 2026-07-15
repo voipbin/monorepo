@@ -21,6 +21,9 @@ type Config struct {
 	RedisPassword           string // RedisPassword is the password used for authenticating to the Redis server.
 	AuthtokenMessagebird    string // AuthtokenMessagebird is the authentication token for MessageBird API.
 	AuthtokenTelnyx         string // AuthtokenTelnyx is the authentication token for Telnyx API.
+
+	MessageOutboundRateLimitPerMinute int // MessageOutboundRateLimitPerMinute is the max outbound SMS messages a customer may send per minute (VOIP-1259).
+	MessageOutboundRateLimitPerHour   int // MessageOutboundRateLimitPerHour is the max outbound SMS messages a customer may send per hour (VOIP-1259).
 }
 
 var (
@@ -54,6 +57,8 @@ func bindConfig(cmd *cobra.Command) error {
 	f.Int("redis_database", 0, "Redis database index")
 	f.String("authtoken_messagebird", "", "MessageBird authentication token")
 	f.String("authtoken_telnyx", "", "Telnyx authentication token")
+	f.Int("message_outbound_rate_limit_per_minute", 100, "Max outbound SMS messages per customer per minute")
+	f.Int("message_outbound_rate_limit_per_hour", 1000, "Max outbound SMS messages per customer per hour")
 
 	bindings := map[string]string{
 		"rabbitmq_address":          "RABBITMQ_ADDRESS",
@@ -65,6 +70,8 @@ func bindConfig(cmd *cobra.Command) error {
 		"redis_database":            "REDIS_DATABASE",
 		"authtoken_messagebird":     "AUTHTOKEN_MESSAGEBIRD",
 		"authtoken_telnyx":          "AUTHTOKEN_TELNYX",
+		"message_outbound_rate_limit_per_minute": "MESSAGE_OUTBOUND_RATE_LIMIT_PER_MINUTE",
+		"message_outbound_rate_limit_per_hour":   "MESSAGE_OUTBOUND_RATE_LIMIT_PER_HOUR",
 	}
 
 	for flagKey, envKey := range bindings {
@@ -100,6 +107,9 @@ func LoadGlobalConfig() {
 			RedisDatabase:           viper.GetInt("redis_database"),
 			AuthtokenMessagebird:    viper.GetString("authtoken_messagebird"),
 			AuthtokenTelnyx:         viper.GetString("authtoken_telnyx"),
+
+			MessageOutboundRateLimitPerMinute: viper.GetInt("message_outbound_rate_limit_per_minute"),
+			MessageOutboundRateLimitPerHour:   viper.GetInt("message_outbound_rate_limit_per_hour"),
 		}
 		logrus.Debug("Configuration has been loaded and locked.")
 	})
@@ -126,4 +136,12 @@ func InitConfig(cmd *cobra.Command) {
 		logrus.Fatalf("Failed to bind flags: %v", err)
 	}
 	LoadGlobalConfig()
+}
+
+// SetMessageOutboundRateLimitForTest overrides the outbound SMS rate limit
+// caps in the global config without going through the Bootstrap+LoadGlobalConfig
+// path. USE ONLY FROM TESTS. VOIP-1259.
+func SetMessageOutboundRateLimitForTest(perMinute, perHour int) {
+	globalConfig.MessageOutboundRateLimitPerMinute = perMinute
+	globalConfig.MessageOutboundRateLimitPerHour = perHour
 }

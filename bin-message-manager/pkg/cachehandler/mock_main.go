@@ -13,6 +13,7 @@ import (
 	context "context"
 	message "monorepo/bin-message-manager/models/message"
 	reflect "reflect"
+	time "time"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -83,4 +84,19 @@ func (m_2 *MockCacheHandler) MessageSet(ctx context.Context, m *message.Message)
 func (mr *MockCacheHandlerMockRecorder) MessageSet(ctx, m any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageSet", reflect.TypeOf((*MockCacheHandler)(nil).MessageSet), ctx, m)
+}
+
+// RateLimitIncrement mocks base method.
+func (m *MockCacheHandler) RateLimitIncrement(ctx context.Context, key string, ttl time.Duration) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RateLimitIncrement", ctx, key, ttl)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RateLimitIncrement indicates an expected call of RateLimitIncrement.
+func (mr *MockCacheHandlerMockRecorder) RateLimitIncrement(ctx, key, ttl any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RateLimitIncrement", reflect.TypeOf((*MockCacheHandler)(nil).RateLimitIncrement), ctx, key, ttl)
 }

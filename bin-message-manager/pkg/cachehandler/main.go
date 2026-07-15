@@ -4,6 +4,7 @@ package cachehandler
 
 import (
 	"context"
+	"time"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/gofrs/uuid"
@@ -25,6 +26,15 @@ type CacheHandler interface {
 
 	MessageGet(ctx context.Context, id uuid.UUID) (*message.Message, error)
 	MessageSet(ctx context.Context, m *message.Message) error
+
+	// RateLimitIncrement atomically increments the counter at key (INCR) and
+	// unconditionally attempts to set a TTL on it via EXPIRE...NX (only takes effect
+	// if the key has no TTL yet). Returns the counter's new value after the increment.
+	// Calling ExpireNX unconditionally on every request (instead of only when
+	// count==1) closes a permanent-lockout gap: if the process crashes between INCR
+	// and EXPIRE (e.g. pod restart during a rolling deploy), the key would otherwise
+	// keep incrementing forever with no TTL. Requires Redis 7.0+ (ExpireNX). VOIP-1259.
+	RateLimitIncrement(ctx context.Context, key string, ttl time.Duration) (int64, error)
 }
 
 // NewHandler creates DBHandler

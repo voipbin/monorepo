@@ -14,6 +14,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 
 	"monorepo/bin-message-manager/models/message"
+	"monorepo/bin-message-manager/pkg/cachehandler"
 	"monorepo/bin-message-manager/pkg/dbhandler"
 	"monorepo/bin-message-manager/pkg/messagehandlermessagebird"
 	"monorepo/bin-message-manager/pkg/requestexternal"
@@ -39,6 +40,7 @@ type MessageHandler interface {
 type messageHandler struct {
 	utilHandler   utilhandler.UtilHandler
 	db            dbhandler.DBHandler
+	cache         cachehandler.CacheHandler
 	reqHandler    requesthandler.RequestHandler
 	notifyHandler notifyhandler.NotifyHandler
 
@@ -47,11 +49,12 @@ type messageHandler struct {
 }
 
 // NewMessageHandler returns a new MessageHandler
-func NewMessageHandler(r requesthandler.RequestHandler, n notifyhandler.NotifyHandler, db dbhandler.DBHandler, requestExternal requestexternal.RequestExternal) MessageHandler {
+func NewMessageHandler(r requesthandler.RequestHandler, n notifyhandler.NotifyHandler, db dbhandler.DBHandler, cache cachehandler.CacheHandler, requestExternal requestexternal.RequestExternal) MessageHandler {
 
 	return &messageHandler{
 		utilHandler:   utilhandler.NewUtilHandler(),
 		db:            db,
+		cache:         cache,
 		reqHandler:    r,
 		notifyHandler: n,
 

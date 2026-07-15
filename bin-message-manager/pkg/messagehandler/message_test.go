@@ -16,6 +16,7 @@ import (
 
 	"monorepo/bin-message-manager/models/message"
 	"monorepo/bin-message-manager/models/target"
+	"monorepo/bin-message-manager/pkg/cachehandler"
 	"monorepo/bin-message-manager/pkg/dbhandler"
 	"monorepo/bin-message-manager/pkg/messagehandlermessagebird"
 	"monorepo/bin-message-manager/pkg/requestexternal"
@@ -138,9 +139,10 @@ func TestNewMessageHandler(t *testing.T) {
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
 	mockExternal := requestexternal.NewMockRequestExternal(mc)
 
-	h := NewMessageHandler(mockReq, mockNotify, mockDB, mockExternal)
+	h := NewMessageHandler(mockReq, mockNotify, mockDB, mockCache, mockExternal)
 
 	if h == nil {
 		t.Error("Expected non-nil handler")
