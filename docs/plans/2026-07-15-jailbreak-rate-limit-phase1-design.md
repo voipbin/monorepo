@@ -363,6 +363,17 @@ Each service's `Validate*Rate` method (§3.2/4.2/5.2) becomes a thin wrapper:
 판정 로직만 `bin-common-handler/pkg/ratelimithandler`에서 공유해 3중 복붙을
 막는다. Prometheus 카운터는 각 서비스 로컬에 유지(기존 컨벤션과 동일).
 
+**[PR 리뷰 라운드 1 이연 결정, 2026-07-15]** 실제 구현(PR #1102)에서는 이
+공유 패키지를 만들지 않기로 했다. `bin-common-handler`에 새 패키지를
+추가하면 CLAUDE.md의 admission rule에 따라 37개 전체 컨슈머 서비스에 대한
+검증이 트리거되는데, `minuteCount > cap` 한 줄짜리 비교 로직을 공유하기
+위해 감수하기엔 비용 대비 이익이 맞지 않는다고 판단했다. 판정 로직은
+3개 서비스에 동일하게 인라인 복붙되어 있고, 각 서비스에서 독립적으로
+테스트로 검증됨(`Test_ValidateCustomerOutboundCallRate`,
+`Test_validateCustomerEmailRate`, `Test_validateCustomerMessageRate`).
+이 결정은 PR 본문에도 명시했다. 4번째 소비자가 생기면 그때 promote를
+재검토한다.
+
 **[설계 리뷰 라운드 2 CRITICAL 수정, 2026-07-15]** 위 §6은 "무엇을 공유할지"를
 비교 로직 한 줄로 좁혔으나, 실제로 3개 서비스가 각자 재구현할 때 가장 위험한
 두 지점 — **INCR/EXPIRE의 원자성**과 **Redis 장애 시 정책** — 이 명세되지
