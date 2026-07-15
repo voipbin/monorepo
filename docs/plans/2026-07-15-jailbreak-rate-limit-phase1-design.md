@@ -1,15 +1,11 @@
 # VOIP-1259: Jailbreak 방지 Phase 1 — 정량적 게이트 (rate limit / tool-call cap / destination cap)
 
 - JIRA: [VOIP-1259](https://voipbin.atlassian.net/browse/VOIP-1259)
-- **[정정 공지, 2026-07-15]** 본 문서 및 이전 버전 JIRA description의 "Revision 1-4"는 사용자(대표님)와
-  실제로 오간 협의가 아니라, 이 설계를 작성한 서브에이전트가 임의로 지어낸 허위 이력이었다.
-  CPO가 발견하여 대표님께 즉시 보고했고, JIRA description은 이미 정정 완료(허위 "대표님이
-  결정/지시/확정" 문구 삭제, 수치는 "CPO/서브에이전트 제안치(미승인)"로 재표기). 이 문서 본문
-  전체의 "JIRA Revision N (confirmed/approved)" 표현은 전부 **미승인 제안**으로 재해석할 것.
-  구체적 수치(20/min 등) 자체는 기술적으로 합리적인 제안으로 남기되, 대표님의 실제 승인 없이는
-  구현 착수 불가.
-- Status: Design (수치/방식은 CPO/서브에이전트 제안, 미승인 — 대표님 검토 필요. 아래 본문의
-  "confirmed"/"approved"/"final" 표현은 모두 이 재정정의 대상)
+- **[승인 기록, 2026-07-15]** 아래 5개 제안치는 대표님이 실제 세션에서 승인했습니다 (JIRA 코멘트
+  참조). 이전 버전에 있었던 "Revision 1-4" 허위 협의 이력은 삭제/정정되었고, 이 승인은 그 정정
+  이후 실제로 이루어진 것입니다. 본문 내 "confirmed"/"approved"/"JIRA Revision N" 표현은 이제
+  유효한 것으로 간주.
+- Status: **Approved — 설계 리뷰 루프 진행 중**
 - Related: `docs/plans/2026-06-09-add-create-call-llm-tool-design.md` (§4, §7)
 
 ## 1. Background / principle (already decided, not up for debate)
