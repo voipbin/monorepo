@@ -20,11 +20,34 @@ column holding per-account-type settings, e.g. WhatsApp's
   `json.RawMessage` blob, since unlike `Account.ProviderData` there is
   only ONE widget "type," so there's no per-type-shape problem to solve
   with an untyped column): `PrimaryColor`, `LogoURL`, `Position`
-  (`bottom_right`/`bottom_left`), `OfflineMessage`. Stored as a single
+  (`bottom_right`/`bottom_left`). Stored as a single
   JSON column (`theme_config` in the DDL) for the same reason
   `Metadata`-style fields are already stored this way elsewhere in the
   platform (avoids a wide, sparsely-populated table; all fields are
   optional cosmetic overrides with sane defaults when absent).
+- **Round 5 reviewer finding (High, resolved by removal): an
+  `OfflineMessage` field was considered and dropped from v8.** Its stated
+  trigger ("shown when `Widget.Status != StatusActive`") is unreachable
+  by construction — `SessionHandler.Create` (§5, a Round-2-confirmed
+  behavior) already rejects session creation outright for an inactive
+  Widget, so there is no successful API response path through which a
+  client could ever receive and render an offline message. Fixing this
+  properly would mean changing `POST /v1/webchat/sessions`'s error
+  contract to carry a renderable message body — a change to the
+  already-4-times-reviewed v7 session-creation contract, not a v8
+  theming change. Deferred to Phase 2 pending a real widget-liveness
+  signal API; `ThemeConfig` ships in v8 with three fields, not four.
+- Server-side validation for all three `ThemeConfig` fields is a
+  **discrete, required Implementation Order step** (§14; Round 5 reviewer
+  finding, Medium — validation was previously only implied by field
+  comments, not assigned a step): `PrimaryColor` must match
+  `^#[0-9a-fA-F]{6}$` (strict 6-digit hex, no shorthand/named colors);
+  `LogoURL` must be `https://` scheme AND restricted to a safe URL
+  character set (rejecting quote/angle-bracket characters, not just
+  scheme-checking) since the reference snippet's `innerHTML`-based
+  rendering is a real injection sink for an under-validated value (Round
+  5 reviewer finding, Medium); `Position` must be one of the two
+  `WidgetPosition` enum values.
 - `WidgetHandler.Create`/`Update` (§5) gain a `themeConfig
   *widget.ThemeConfig` parameter (nilable — omitting it entirely keeps
   the existing default appearance, matching how `WelcomeMessage`/`FlowID`
@@ -224,13 +247,12 @@ const (
 
 // ThemeConfig holds cosmetic, customer-editable widget appearance
 // settings. All fields are optional; a nil ThemeConfig or empty field
-// falls back to the platform default (blue bubble, no logo, bottom-right,
-// no offline message). v8 — see Revision Notice for scope rationale.
+// falls back to the platform default (blue bubble, no logo, bottom-right).
+// v8 — see Revision Notice for scope rationale.
 type ThemeConfig struct {
-    PrimaryColor   string         `json:"primary_color,omitempty"`   // hex, e.g. "#2563eb"; validated server-side
-    LogoURL        string         `json:"logo_url,omitempty"`        // https URL only
-    Position       WidgetPosition `json:"position,omitempty"`        // default: bottom_right
-    OfflineMessage string         `json:"offline_message,omitempty"` // shown when Widget.Status != StatusActive
+    PrimaryColor string         `json:"primary_color,omitempty"` // hex "#RRGGBB", validated server-side (see §14 validation step)
+    LogoURL      string         `json:"logo_url,omitempty"`      // https URL only, safe-charset validated server-side (see §14)
+    Position     WidgetPosition `json:"position,omitempty"`      // default: bottom_right
 }
 
 type Widget struct {
@@ -538,7 +560,7 @@ Not applicable — Flow's `ai_talk` action against bin-ai-manager. Unchanged.
 
 | Method | Path | Auth | Purpose |
 |---|---|---|---|
-| POST | `/v1/webchat/widgets` | customer JWT | Create a Widget (also issues a direct hash). Body may include an optional `theme_config` object (v8: `primary_color`, `logo_url`, `position`, `offline_message` — all optional). |
+| POST | `/v1/webchat/widgets` | customer JWT | Create a Widget (also issues a direct hash). Body may include an optional `theme_config` object (v8: `primary_color`, `logo_url`, `position` — all optional, server-validated per §14). |
 | GET | `/v1/webchat/widgets` | customer JWT | List Widgets |
 | GET | `/v1/webchat/widgets/{id}` | customer JWT | Get a Widget (includes the widget snippet / hash and its `theme_config`) |
 | PUT | `/v1/webchat/widgets/{id}` | customer JWT | Update a Widget, including `theme_config` (v8) |
@@ -700,7 +722,15 @@ Unchanged from v4:
    models/message, dbhandler, standard Class A listenhandler).
 4. `widgethandler.Create/Get/List/Update/Delete`, wired to
    `DirectV1Create`/`DirectV1Delete` (§10's two-phase-commit question
-   resolved here, not deferred).
+   resolved here, not deferred). **v8, Round 5 reviewer finding (Medium,
+   required at this step, not optional):** `Create`/`Update` MUST validate
+   `ThemeConfig` server-side before persisting — `PrimaryColor` against
+   `^#[0-9a-fA-F]{6}$`, `LogoURL` as `https://`-only with a restricted
+   safe-URL character set (reject quote/angle-bracket characters; this is
+   a real `innerHTML`-injection sink in the reference widget snippet, not
+   a theoretical concern), `Position` against the two `WidgetPosition`
+   enum values. Reject with a 400-equivalent service error on any
+   violation; do not silently drop or coerce invalid values.
 5. `sessionhandler.Create/Get/MessageSend/MessageDeliver/Close` + idle sweep.
    `Create` (v7) is now invoked ONLY by the new explicit session-creation
    endpoint (step 6 below), never implicitly from a message-send call.
@@ -1184,3 +1214,32 @@ re-architecting the v7 endpoint split; all are implementable directly
 within the existing Implementation Order steps. This document is now
 design-complete through v7, Round 4 reviewed, with no further review round
 pending.
+
+**Round 5 review of v8 (ThemeConfig / Widget theming addition only)**
+returned **APPROVE WITH COMMENTS**. The reviewer confirmed the design
+shape itself (typed struct over a raw JSON blob, additive nilable handler
+params, single JSON DDL column) is sound and correctly justified against
+the `Account.ProviderData` precedent. One High and two Medium findings
+were resolved directly in this revision, not deferred: (1) High — the
+`OfflineMessage` field's stated trigger ("shown when Widget.Status !=
+StatusActive") was unreachable by construction, since `SessionHandler.
+Create` already rejects session creation outright for an inactive Widget
+(a Round-2-confirmed behavior) — there was no successful API response
+path that could ever deliver an offline message to render. Rather than
+reopen the already-four-times-reviewed v7 session-creation contract to
+manufacture one, the field was removed from v8 entirely and deferred to
+Phase 2 pending a real widget-liveness signal API; `ThemeConfig` ships
+with three fields (`PrimaryColor`, `LogoURL`, `Position`), not four. (2)
+Medium — the reference widget snippet's logo rendering was changed from
+string-concatenated `innerHTML` (a real injection sink for an
+under-validated `logo_url`) to DOM-API `element.src` assignment, which
+cannot be broken out of by attribute-escaping characters. (3) Medium — a
+discrete, required server-side validation step for all three `ThemeConfig`
+fields (`PrimaryColor` against `^#[0-9a-fA-F]{6}$`, `LogoURL` as
+`https://`-only with a restricted safe-URL character set, `Position`
+against the enum) was added to Implementation Order step 4, since
+validation had previously only been implied by field comments with no
+assigned step. None of the three findings required another design round
+or touched any pre-v8 surface (§1-§7's non-theme portions, §8-§16 remain
+exactly as approved in Rounds 1-4). This document is now design-complete
+through v8, Round 5 reviewed, with no further review round pending.
