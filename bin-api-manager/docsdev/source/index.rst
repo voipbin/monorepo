@@ -73,6 +73,7 @@ What you can build
    email
    talk
    conversation
+   webchat
 
 .. toctree::
    :maxdepth: 2
