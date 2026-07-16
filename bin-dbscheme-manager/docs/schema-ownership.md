@@ -66,6 +66,9 @@ All tables below are in the `voipbin` MySQL database managed by `bin-manager/`. 
 | talk_chats | bin-talk-manager | Talk (agent UI) chat sessions |
 | talk_messages | bin-talk-manager | Messages in talk chats |
 | talk_participants | bin-talk-manager | Participants in talk sessions |
+| webchat_widgets | bin-webchat-manager | Website chat widget configuration (flow_id, theme, direct-access hash) |
+| webchat_sessions | bin-webchat-manager | Visitor conversation sessions per widget |
+| webchat_messages | bin-webchat-manager | Individual inbound/outbound webchat messages |
 
 ### Asterisk Database Tables (`asterisk` database)
 
