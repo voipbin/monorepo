@@ -25,6 +25,8 @@ func channelLabel(t conversation.Type) string {
 		return "SMS"
 	case conversation.TypeWhatsApp:
 		return "WhatsApp"
+	case conversation.TypeWebchat:
+		return "Webchat"
 	default:
 		return string(t)
 	}

@@ -30,7 +30,7 @@ func ValidateTarget(addressType Type, target string) error {
 		return validateEmail(target)
 	case TypeSIP:
 		return validateSIP(target)
-	case TypeAgent, TypeConference, TypeLine, TypeExtension:
+	case TypeAgent, TypeConference, TypeLine, TypeExtension, TypeWebchat:
 		return validateUUID(target)
 	default:
 		return fmt.Errorf("unknown address type: %s", addressType)

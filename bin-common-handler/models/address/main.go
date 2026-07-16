@@ -24,5 +24,6 @@ const (
 	TypeLine       Type = "line"       // target is naver line's id
 	TypeSIP        Type = "sip"        // target is sip destination
 	TypeTel        Type = "tel"        // target tel number
+	TypeWebchat    Type = "webchat"    // target is webchat-manager's Session.ID or Widget.ID
 	TypeWhatsApp   Type = "whatsapp"   // target is WhatsApp phone number
 )

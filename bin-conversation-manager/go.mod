@@ -62,6 +62,8 @@ replace monorepo/bin-tts-manager => ../bin-tts-manager
 
 replace monorepo/bin-webhook-manager => ../bin-webhook-manager
 
+replace monorepo/bin-webchat-manager => ../bin-webchat-manager
+
 require (
 	github.com/Masterminds/squirrel v1.5.4
 	github.com/go-redis/redis/v8 v8.11.5
@@ -84,6 +86,7 @@ require (
 	monorepo/bin-hook-manager v0.0.0-20240313052650-d3e4c79af4c0
 	monorepo/bin-message-manager v0.0.0-20240328053936-9008e28c2268
 	monorepo/bin-number-manager v0.0.0-20240328055052-ec1c723aa183
+	monorepo/bin-webchat-manager v0.0.0-00010101000000-000000000000
 )
 
 require (

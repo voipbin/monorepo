@@ -28,6 +28,12 @@ func (h *conversationHandler) Event(ctx context.Context, referenceType conversat
 			return err
 		}
 
+	case conversation.TypeWebchat:
+		if err := h.eventWebchat(ctx, data); err != nil {
+			log.Errorf("Could not handle the webchat type event. err: %v", err)
+			return err
+		}
+
 	default:
 		log.Errorf("Could not find reference type handler. reference_type: %s", referenceType)
 		return fmt.Errorf("reference type handler not found")

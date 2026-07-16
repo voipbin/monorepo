@@ -12,6 +12,8 @@ import (
 
 	mmmessage "monorepo/bin-message-manager/models/message"
 
+	wmmessage "monorepo/bin-webchat-manager/models/message"
+
 	emmemail "monorepo/bin-email-manager/models/email"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -26,6 +28,7 @@ const (
 	publisherCustomerManager = "customer-manager"
 	publisherMessageManager  = "message-manager"
 	publisherEmailManager    = "email-manager"
+	publisherWebchatManager  = "webchat-manager"
 )
 
 // SubscribeHandler interface
@@ -144,6 +147,10 @@ func (h *subscribeHandler) processEvent(m *sock.Event) {
 	// email-manager
 	case m.Publisher == publisherEmailManager && (m.Type == emmemail.EventTypeCreated):
 		err = h.processEventEmailEmailCreated(ctx, m)
+
+	// webchat-manager
+	case m.Publisher == publisherWebchatManager && (m.Type == wmmessage.EventTypeMessageCreated):
+		err = h.processEventWebchatMessageMessageCreated(ctx, m)
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found
