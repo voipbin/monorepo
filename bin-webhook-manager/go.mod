@@ -30,6 +30,8 @@ replace monorepo/bin-email-manager => ../bin-email-manager
 
 replace monorepo/bin-flow-manager => ../bin-flow-manager
 
+replace monorepo/bin-webchat-manager => ../bin-webchat-manager
+
 replace monorepo/bin-hook-manager => ../bin-hook-manager
 
 replace monorepo/bin-message-manager => ../bin-message-manager
@@ -87,6 +89,7 @@ require (
 	golang.org/x/sync v0.20.0
 	monorepo/bin-customer-manager v0.0.0-20240408042746-c45b2b5aa984
 	monorepo/bin-flow-manager v0.0.0-20240403034140-ce82222fe7f4
+	monorepo/bin-talk-manager v0.0.0-00010101000000-000000000000
 )
 
 require (
@@ -140,9 +143,9 @@ require (
 	monorepo/bin-route-manager v0.0.0-20240313065038-1498b922bb24 // indirect
 	monorepo/bin-storage-manager v0.0.0-20240330083852-ab008a2e3880 // indirect
 	monorepo/bin-tag-manager v0.0.0-20240313070856-7d3433af905d // indirect
-	monorepo/bin-talk-manager v0.0.0-00010101000000-000000000000 // indirect
 	monorepo/bin-timeline-manager v0.0.0-00010101000000-000000000000 // indirect
 	monorepo/bin-transcribe-manager v0.0.0-20240405044227-febd49f8b700 // indirect
 	monorepo/bin-transfer-manager v0.0.0-20230419025515-44dea928ef34 // indirect
 	monorepo/bin-tts-manager v0.0.0-20240313070648-addf67d64996 // indirect
+	monorepo/bin-webchat-manager v0.0.0-00010101000000-000000000000 // indirect
 )

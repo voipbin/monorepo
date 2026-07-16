@@ -10,6 +10,8 @@ replace monorepo/bin-call-manager => ../bin-call-manager
 
 replace monorepo/bin-common-handler => ../bin-common-handler
 
+replace monorepo/bin-webchat-manager => ../bin-webchat-manager
+
 replace monorepo/bin-direct-manager => ../bin-direct-manager
 
 replace monorepo/bin-contact-manager => ../bin-contact-manager
@@ -142,4 +144,5 @@ require (
 	monorepo/bin-timeline-manager v0.0.0-00010101000000-000000000000 // indirect
 	monorepo/bin-transfer-manager v0.0.0-20230419025515-44dea928ef34 // indirect
 	monorepo/bin-tts-manager v0.0.0-20240313070648-addf67d64996 // indirect
+	monorepo/bin-webchat-manager v0.0.0-00010101000000-000000000000 // indirect
 )

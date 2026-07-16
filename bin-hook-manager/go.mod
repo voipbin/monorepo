@@ -30,6 +30,8 @@ replace monorepo/bin-email-manager => ../bin-email-manager
 
 replace monorepo/bin-flow-manager => ../bin-flow-manager
 
+replace monorepo/bin-webchat-manager => ../bin-webchat-manager
+
 replace monorepo/bin-hook-manager => ../bin-hook-manager
 
 replace monorepo/bin-message-manager => ../bin-message-manager
@@ -83,6 +85,7 @@ require (
 	monorepo/bin-registrar-manager v0.0.0-20240402051305-cf14186e380d // indirect
 	monorepo/bin-storage-manager v0.0.0-20240330083852-ab008a2e3880 // indirect
 	monorepo/bin-transcribe-manager v0.0.0-20240405044227-febd49f8b700 // indirect
+	monorepo/bin-webchat-manager v0.0.0-00010101000000-000000000000 // indirect
 )
 
 require (
