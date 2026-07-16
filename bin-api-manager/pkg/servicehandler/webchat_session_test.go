@@ -9,7 +9,10 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	wcsession "monorepo/bin-webchat-manager/models/session"
+	wcwidget "monorepo/bin-webchat-manager/models/widget"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -18,11 +21,7 @@ import (
 )
 
 // Test_WebchatSessionCreate_Direct verifies the visitor-facing path: a
-// direct-scope JWT issued by POST /auth/boot to a specific Widget can
-// create a Session for that same widget. This is the v7 core flow
-// (design doc §7/§14): session creation decoupled from first message,
-// authenticated purely by the widget's direct hash, no agent/customer
-// JWT involved.
+// direct-scope JWT scoped to widget A can create a Session for widget A.
 func Test_WebchatSessionCreate_Direct(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
@@ -118,6 +117,49 @@ func Test_WebchatSessionCreate_Direct_DisallowedResourceType(t *testing.T) {
 	})
 
 	if _, err := h.WebchatSessionCreate(ctx, a, widgetID); err == nil {
+		t.Error("Wrong match. expect: permission denied error, got: ok")
+	}
+}
+
+// Test_WebchatSessionCreate_Agent_CrossTenant_WrongWidgetOwner is a
+// regression test for a cross-tenant resource-linkage bug: an
+// agent/accesskey with admin/manager permission on their OWN customer
+// account must not be able to create a session for a widget_id belonging
+// to a DIFFERENT customer -- doing so would trigger that other customer's
+// configured Flow using the wrong customer_id as the activeflow owner.
+// Before the fix, the a.IsAgent()||a.IsAccesskey() branch only checked
+// hasPermission(ctx, a, a.CustomerID, ...) -- a tautology that never
+// resolved the widget or verified it belonged to the caller.
+func Test_WebchatSessionCreate_Agent_CrossTenant_WrongWidgetOwner(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &serviceHandler{
+		utilHandler: utilhandler.NewUtilHandler(),
+		reqHandler:  mockReq,
+	}
+	ctx := context.Background()
+
+	callerCustomerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
+	victimCustomerID := uuid.FromStringOrNil("00000000-0000-0000-0000-0000000000ff")
+	victimWidgetID := uuid.FromStringOrNil("bb847807-6cc4-4713-9dec-53a42840e74c")
+
+	a := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+			CustomerID: callerCustomerID,
+		},
+		Permission: amagent.PermissionCustomerAdmin,
+	})
+
+	victimWidget := &wcwidget.Widget{
+		Identity: commonidentity.Identity{ID: victimWidgetID, CustomerID: victimCustomerID},
+	}
+
+	mockReq.EXPECT().WebchatV1WidgetGet(ctx, victimWidgetID).Return(victimWidget, nil)
+
+	if _, err := h.WebchatSessionCreate(ctx, a, victimWidgetID); err == nil {
 		t.Error("Wrong match. expect: permission denied error, got: ok")
 	}
 }

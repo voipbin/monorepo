@@ -9,6 +9,8 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
+	amagent "monorepo/bin-agent-manager/models/agent"
+
 	wcmessage "monorepo/bin-webchat-manager/models/message"
 	wcsession "monorepo/bin-webchat-manager/models/session"
 
@@ -195,5 +197,50 @@ func Test_WebchatSessionEnd_Direct(t *testing.T) {
 	expectRes := ended.ConvertWebhookMessage()
 	if !reflect.DeepEqual(res, expectRes) {
 		t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", expectRes, res)
+	}
+}
+
+// Test_WebchatMessageCreate_Agent_CrossTenant_WrongSessionOwner is a
+// regression test for a cross-tenant message-injection bug: an
+// agent/accesskey with admin/manager permission on their OWN customer
+// account must not be able to post a message into a session_id belonging
+// to a DIFFERENT customer's widget -- the reply would be delivered to that
+// other customer's live visitor as if sent by the caller's own agent.
+// Before the fix, the a.IsAgent()||a.IsAccesskey() branch only checked
+// hasPermission(ctx, a, a.CustomerID, ...) -- a tautology that never
+// resolved the session or verified it belonged to the caller's customer.
+func Test_WebchatMessageCreate_Agent_CrossTenant_WrongSessionOwner(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &serviceHandler{
+		utilHandler: utilhandler.NewUtilHandler(),
+		reqHandler:  mockReq,
+	}
+	ctx := context.Background()
+
+	callerCustomerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
+	victimCustomerID := uuid.FromStringOrNil("00000000-0000-0000-0000-0000000000ff")
+	victimWidgetID := uuid.FromStringOrNil("bb847807-6cc4-4713-9dec-53a42840e74c")
+	victimSessionID := uuid.FromStringOrNil("876defde-ad5e-11ed-a8c3-7bc19647b03f")
+
+	a := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+			CustomerID: callerCustomerID,
+		},
+		Permission: amagent.PermissionCustomerAdmin,
+	})
+
+	victimSession := &wcsession.Session{
+		Identity: commonidentity.Identity{ID: victimSessionID, CustomerID: victimCustomerID},
+		WidgetID: victimWidgetID,
+	}
+
+	mockReq.EXPECT().WebchatV1SessionGet(ctx, victimSessionID).Return(victimSession, nil)
+
+	if _, err := h.WebchatMessageCreate(ctx, a, victimSessionID, wcmessage.DirectionOutbound, "injected reply"); err == nil {
+		t.Error("Wrong match. expect: permission denied error, got: ok")
 	}
 }

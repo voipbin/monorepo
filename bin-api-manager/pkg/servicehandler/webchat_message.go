@@ -122,7 +122,19 @@ func (h *serviceHandler) WebchatMessageCreate(
 
 	switch {
 	case a.IsAgent() || a.IsAccesskey():
-		if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		// Resolve the target session first and check permission against
+		// the SESSION's actual owner (s.CustomerID), not the caller's own
+		// a.CustomerID -- the latter is a tautology that any customer
+		// admin/manager trivially passes regardless of which customer's
+		// session they're targeting, mirroring WebchatSessionEnd's agent
+		// branch and closing the same cross-tenant message-injection gap
+		// already fixed for the a.IsDirect() branch below.
+		s, err := h.sessionGet(ctx, sessionID)
+		if err != nil {
+			log.Errorf("Could not validate the session info. err: %v", err)
+			return nil, err
+		}
+		if !h.hasPermission(ctx, a, s.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 			return nil, serviceerrors.ErrPermissionDenied
 		}
 		senderID = a.AgentID()

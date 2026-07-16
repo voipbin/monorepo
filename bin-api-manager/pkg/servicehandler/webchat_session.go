@@ -115,7 +115,19 @@ func (h *serviceHandler) WebchatSessionCreate(ctx context.Context, a *auth.AuthI
 
 	switch {
 	case a.IsAgent() || a.IsAccesskey():
-		if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		// Resolve the target widget first and check permission against
+		// the WIDGET's actual owner (w.CustomerID), not the caller's own
+		// a.CustomerID -- the latter is a tautology that lets a Customer
+		// A admin create a session (and thereby trigger Customer B's
+		// configured Flow on first inbound message) for a widgetID
+		// belonging to Customer B, mirroring WebchatWidgetUpdate/Delete's
+		// fetch-then-check-owner pattern.
+		w, err := h.widgetGet(ctx, widgetID)
+		if err != nil {
+			log.Errorf("Could not validate the widget info. err: %v", err)
+			return nil, err
+		}
+		if !h.hasPermission(ctx, a, w.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 			return nil, serviceerrors.ErrPermissionDenied
 		}
 	case a.IsDirect():
