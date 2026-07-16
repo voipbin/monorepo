@@ -1,90 +1,62 @@
 # bin-webchat-manager Design
 
-## Revision Notice (v5 — multi-visitor topic scoping resolved via verified precedent)
+## Revision Notice (v6 — conversation-manager integration via message-manager pattern)
 
-**v4's Round-1 review returned CHANGES REQUESTED.** The reviewer correctly
-identified a Critical gap: v4 set `Direct.resource_id = Widget.ID`, meaning
-every visitor of a widget shared the SAME `resource_id`. Combined with the
-platform's 4-part WebSocket topic shape
-(`customer_id:<id>:<resource_type>:<resource_id>`), this meant every visitor
-subscribing to their widget's topic would receive every OTHER visitor's
-messages too — a live cross-visitor data leak, not a hypothetical one. v4
-flagged this honestly as an Open Question ("add a `visitor_id` claim to
-`/auth/boot`?") but had not verified the fix against real code, and the
-reviewer additionally caught that adding a new JWT claim would itself
-contradict §13's claim of "no auth-pipeline changes."
+**pchero (CEO/CTO) directed a further integration requirement**: webchat
+conversations must also surface in `bin-conversation-manager`'s unified
+Conversation/Message view (the same place SMS/LINE/WhatsApp threads live),
+so agents get one timeline across every channel, and any existing
+Contact/Case linkage (`Conversation.Metadata.ContactCaseID`) applies to
+webchat automatically. Three follow-up questions were resolved in discussion
+before writing this revision:
 
-**v5 resolves this by reading the actual `validateTopics`/`AuthBoot` code
-in `bin-api-manager`, not by guessing.** The fix requires no new JWT claim
-and no api-manager auth-pipeline logic change — only a one-line addition to
-an existing static mapping table, because the platform already has this
-exact "one parent resource shared by many children" pattern in production
-for AI voice widgets:
+1. **Should `bin-webchat-manager` disappear and conversation-manager own
+   Widget/Session/Message directly (full delegation)?** No — pchero
+   directed that webchat-manager must keep owning messages itself, the same
+   way `bin-message-manager` owns SMS `Message`/`Target` records
+   independently of conversation-manager.
+2. **Should conversation-manager get its own webchat-specific columns
+   (e.g. a `DirectID` field on `Account`)?** No — verified against the real
+   `Account`/`Conversation`/`Message` structs and the SMS ingestion path
+   (`conversationhandler.eventSMS`, `execute_mode.go`'s
+   `runExecuteModeFlowMessage`) that **`Account` is not universal**: SMS has
+   no Account at all (it resolves via `bin-number-manager`'s `Number`
+   instead), and Conversation identity for SMS comes from `(self, peer)`
+   address pairs, not `(account_id, dialog_id)`. Webchat's cardinality
+   (`Widget` = fixed VoIPbin-side identity reused across many visitors;
+   each visitor's Session = a fresh, per-conversation identity) matches
+   SMS's `(self=our number, peer=caller's number)` shape far more closely
+   than LINE/WhatsApp's `(account_id, dialog_id)` shape. **Conclusion:
+   webchat does NOT get a conversation-manager `Account` row at all,
+   mirroring SMS exactly** — not the earlier-considered "Account per
+   Widget" design.
+3. **How is the double-Flow-trigger problem resolved** (both
+   `bin-webchat-manager`, via `Widget.FlowID`, and conversation-manager's
+   `execute_mode.go`, via a hypothetical per-channel flow source, would
+   otherwise independently create an activeflow for the same inbound
+   message)? Three options were discussed (webchat-manager triggers /
+   conversation-manager triggers / hand off based on `ExecuteModeAgent` vs
+   `ExecuteModeFlow`). **pchero selected: `bin-webchat-manager` keeps the
+   ONLY Flow-triggering responsibility for the real-time visitor-facing
+   path (AI response, welcome message, etc.); `bin-conversation-manager`'s
+   webchat ingestion path NEVER triggers a Flow** — mirroring how
+   `bin-message-manager` itself never triggers a Flow (only
+   conversation-manager's SMS `execute_mode.go` does, and there is no
+   third layer above conversation-manager to double-trigger against). For
+   webchat, webchat-manager occupies the position message-manager occupies
+   for SMS, but retains the Flow-triggering role that, for SMS, uniquely
+   belongs to conversation-manager — because for webchat, real-time
+   visitor-facing response requires no perceptible additional latency hop,
+   which was the deciding product requirement.
 
-- `bin-api-manager/pkg/websockhandler/etc.go`'s `validateTopics` explicitly
-  does **not** check the 4-part topic's `resource_id` segment (`tmps[3]`)
-  against `DirectScope.ResourceID` — verbatim code comment: *"resource_id
-  (tmps[3]) is NOT validated against DirectScope.ResourceID because they
-  refer to different things. DirectScope.ResourceID is the parent resource
-  (e.g., AI), while tmps[3] is a child resource (e.g., aicall)."* Only the
-  topic's `resource_type` segment (`tmps[2]`) is checked, via
-  `a.HasAllowedResourceType(tmps[2])`.
-- `bin-api-manager/pkg/servicehandler/boot.go`'s `AuthBoot` looks up
-  `directResourceMapping[d.ResourceType]` — a static Go map — to populate
-  `DirectScope.AllowedResourceTypes`. For `resource_type=ai` today, this
-  maps to `["aicall"]`: one AI agent (the parent, reused across every call)
-  can have many `aicall` children (one per call), each independently
-  addressable via its own topic, with **zero code needed to keep two
-  different `aicall`s from seeing each other's events** — the isolation
-  comes entirely from `aicall` IDs being non-guessable, randomly generated
-  UUIDs, the same "capability-based" trust model this platform already
-  ships in production (verified against `pkg/servicehandler/aicall.go`'s
-  `AIcallCreate`/`AIcallGet`/etc., all of which gate on
-  `HasAllowedResourceType("aicall")` + `CustomerID` match, never on a
-  specific `aicall` ID being pre-registered in the token).
-
-**webchat maps onto this precedent exactly, with `Widget` as the parent and
-`Session` as the child** — the identical shape as `ai`/`aicall`. This
-replaces v4's flawed "shared resource_id, guess a 5th topic segment" design
-entirely:
-
-- `bin-direct-manager`: `resource_type = "webchat_widget"` (as in v4).
-- `bin-api-manager/pkg/servicehandler/boot.go`: add ONE entry to
-  `directResourceMapping`: `"webchat_widget": {"webchat_session"}`. This is
-  the entire api-manager auth-pipeline change — a static table entry, not
-  new claim-parsing logic, so §13's "no auth-pipeline changes beyond a
-  routing/servicehandler layer" claim now actually holds without the
-  internal contradiction the reviewer caught.
-- **No `visitor_id` JWT claim, no new claim of any kind.** A visitor's
-  identity IS their `Session.ID` — generated server-side by webchat-manager
-  on the FIRST message of a conversation (no client-supplied identity input
-  at all), returned to the browser in the REST response, and round-tripped
-  by the client (e.g. `localStorage`) on subsequent messages and the
-  WebSocket subscribe call. This is simpler than v4's proposal, not just a
-  fix to it — it needed nothing new from `/auth/boot` at all.
-- WebSocket subscription topic: `customer_id:<customer_id>:webchat_session:<Session.ID>`.
-  Validated by the EXISTING `validateTopics` logic completely unmodified:
-  `tmps[2]="webchat_session"` checked against
-  `AllowedResourceTypes=["webchat_session"]`; `tmps[3]=<Session.ID>` is
-  never checked against anything, exactly mirroring `aicall` — isolation
-  comes from `Session.ID` being an unguessable UUID, not from a
-  authorization check on that ID within the WS layer. This is a real
-  security property with an honest, already-accepted risk profile (see
-  §12), not a bug I'm papering over.
-- **Session ownership check still happens — at the REST layer, not the WS
-  layer** — mirroring `AIcallCreate`'s existing
-  `if a.DirectScope.ResourceID != assistanceID { return ...ErrPermissionDenied }`
-  pattern: when a client supplies an existing `session_id` on a subsequent
-  message, `bin-api-manager`'s new webchat servicehandler must verify
-  `session.WidgetID == a.DirectScope.ResourceID` (the token's own scope)
-  AND `session.CustomerID == a.CustomerID` before treating that session as
-  addressable. This is the exact same shape as the already-shipped
-  `AIcallGet`/`AIcallCreate` checks, copied, not invented.
-
-Everything else from v4 (webchat-manager as a plain Class A RPC manager, no
-public HTTP surface, no WebSocket code in webchat-manager, reuse of
-existing `/ws` fan-out) is unchanged and was validated by the Round-1
-reviewer as directionally correct.
+**Everything from v5 is unchanged**: `bin-webchat-manager` remains a plain
+Class A RabbitMQ RPC manager owning `Widget`/`Session`/`Message` in its own
+tables; the direct-token identity model (`Widget`=parent, `Session`=child,
+mirroring `ai`/`aicall`) is unchanged; the WebSocket delivery path via
+api-manager's existing `/ws` and `pkg/subscribehandler`/`pkg/websockhandler`
+is unchanged; Round 1/Round 2 review findings (§15) are unchanged and still
+open. **This revision is purely additive**: a new one-way integration from
+webchat-manager into conversation-manager, described in §16.
 
 ## 1. Problem Statement
 
@@ -572,8 +544,8 @@ Unchanged from v4:
 | `bin-api-manager` | New REST routes; **exactly one line added to the existing `directResourceMapping` table** (`"webchat_widget": {"webchat_session"}`) in `pkg/servicehandler/boot.go` — no JWT claim changes, no `pkg/websockhandler` changes | 1 |
 | `bin-openapi-manager` | New OpenAPI paths | 1 |
 | `bin-webhook-manager` | No change — new event keys only | 1 |
+| `bin-conversation-manager` | **New in v6**: subscribe to `webchat_message_created`; add `conversation.TypeWebchat`; `eventWebchat()` handler mirroring `eventSMS()`; `execute_mode.go` gets a no-op webchat branch (never triggers Flow) — see §16 | 1 |
 | `bin-queue-manager` | Human-agent handoff integration | 2 |
-| `bin-conversation-manager` | Possible storage delegation | 2 (conditional) |
 
 ## 14. Implementation Order
 
@@ -606,6 +578,50 @@ Unchanged from v4:
     session (different `Session.ID`, same `Widget`) does NOT receive the
     first session's messages, proving the isolation claim in §12 rather
     than assuming it.
+12. `bin-conversation-manager`: add `conversation.TypeWebchat` to the
+    `Type` enum (models/conversation). Add `publisherWebchatManager`
+    constant + a `webchat_message_created` case to
+    `pkg/subscribehandler/main.go`'s `processEvent` switch, mirroring the
+    existing `publisherMessageManager` case exactly.
+13. `bin-conversation-manager`: new `pkg/subscribehandler/webchatmanager.go`
+    (`processEventWebchatMessageMessageCreated`) + new
+    `conversationhandler.eventWebchat()`, mirroring `eventSMS()`'s shape:
+    resolve/create `Conversation` by `(Self, Peer)` address pair (NOT
+    `(account_id, dialog_id)` — see §16), create the `Message` record with
+    `ReferenceType=webchat`, `ReferenceID=<webchat-manager Message.ID>`,
+    publish `conversation_created`/`message_created`. **Explicit note (Round
+    3 reviewer finding): `conversationHandler.Event(ctx, referenceType,
+    data)` in `event.go` is a SECOND, distinct switch from
+    `subscribehandler.processEvent`'s outer switch — today it only has
+    `case conversation.TypeMessage: return h.eventSMS(...)`, and its
+    `default` branch returns a HARD ERROR (`"reference type handler not
+    found"`), not a silent no-op (unlike `execute_mode.go`'s dispatcher, see
+    step 14). This step MUST add `case conversation.TypeWebchat: return
+    h.eventWebchat(ctx, data)` to `Event()`'s switch alongside the existing
+    `TypeMessage` case. Skipping this — e.g. by wiring
+    `processEventWebchatMessageMessageCreated` straight to `eventWebchat()`
+    and bypassing `Event()` entirely — silently diverges from the mirrored
+    SMS pattern; wiring through `Event()` but forgetting this case produces
+    a hard error logged on every single webchat message.**
+14. `bin-conversation-manager`: add `conversation.TypeWebchat` as a
+    no-op case in `execute_mode.go`'s `runExecuteModeFlow` dispatch —
+    **Round 3 reviewer verified this is actually unnecessary: the existing
+    switch's `default` branch already logs and returns `nil` for any
+    unrecognized `cv.Type`, and this no-op behavior is already covered by
+    an existing test (`Test_runExecuteModeFlow_unsupportedTypeIsNoop`).
+    `TypeWebchat` inherits correct no-op behavior automatically with ZERO
+    new code at this layer** — this step is now a verification-only item
+    (confirm the existing test still passes with a webchat `Conversation`
+    fixture), not an implementation item. The reviewer additionally
+    confirmed `MessageEventSent` (the outbound path) never calls
+    `getExecuteMode`/`runExecuteModeFlow` at all, so outbound webchat
+    messages carry zero flow-trigger risk by construction, independent of
+    this step.
+15. End-to-end test (conversation-manager side): a webchat message flowing
+    through webchat-manager produces exactly ONE activeflow execution
+    (webchat-manager's), and a corresponding Conversation/Message row in
+    conversation-manager with zero activeflow executions triggered from
+    that side — this is the test that directly verifies §16's core claim.
 
 ## 15. Open Questions
 
@@ -621,6 +637,209 @@ Unchanged from v4:
 | **Widget status/liveness not checked at Session-create time (Round-2 reviewer finding).** `AuthBoot` (verified source) only checks `Customer.Status == StatusActive`; it does not check the resource (`Widget`) itself. A visitor holding a valid direct-token JWT for a `Widget` that has since been set `StatusInactive` (or soft-deleted) can still successfully call `SessionHandler.Create` and start a new conversation against a widget the customer believes is disabled. | `SessionHandler.Create` should reject with a clear error if `Widget.Status != StatusActive` or `Widget.TMDelete` is set (soft-deleted); this is a small, uncontroversial addition to Implementation Order step 5, not a design change | Engineering default, confirm no objection |
 | **Idle sweep / `Close()` racing with an in-flight `MessageSend` (Round-2 reviewer finding).** No version/lock discussion: if the idle sweep (or an explicit agent `Close()`) transitions a `Session` to `ended` between `SessionHandler.Get()` returning `active` and `MessageSend()` committing, a message can be persisted against an already-`ended` session with no re-check. Lower likelihood with the default 1800s idle timeout, but a concurrent explicit `Close()` mid-message is plausible. | Phase 1: accept as a low-severity product consequence (a message arrives just as/after a session closes — comparable to the double-`Create` race already accepted for the no-`session_id` case), OR add a lightweight status re-check inside `MessageSend`'s transaction if trivial to implement. Either is acceptable; flag the decision explicitly rather than leaving it silently unaddressed | Engineering default, confirm no objection |
 | **`DELETE /v1/webchat/widgets/{id}` is silent on existing active Sessions under that Widget (Round-2 reviewer finding).** Per the verified `validateTopics` mechanism, an in-flight visitor's WS subscription would continue to function after the parent `Widget` is deleted (topic validation only checks `resource_type`, never `Widget` liveness) — this is a direct, intentional consequence of the capability-based design, not a bug, but the document should say so explicitly rather than leave it implicit. | State explicitly: deleting a `Widget` revokes future session issuance (the direct hash) but does NOT retroactively terminate already-`active` Sessions or their live WS subscriptions; if the product wants "delete = kill live conversations too," that requires an explicit cascade in `WidgetHandler.Delete` (bulk `Close()` of active Sessions), which is not in Phase 1 scope by default | CEO/CTO, confirm desired behavior before ship |
+
+## 16. Conversation-Manager Integration (new in v6)
+
+### 16.1 Why (and why not full delegation)
+
+pchero required that webchat conversations surface in
+`bin-conversation-manager`'s unified Conversation/Message view alongside
+SMS/LINE/WhatsApp, so agents get a single cross-channel timeline and any
+existing Contact/Case linkage (`Conversation.Metadata.ContactCaseID`, used
+by `bin-contact-manager`) applies to webchat automatically without new
+contact-manager work.
+
+The integration shape is **not** "conversation-manager owns webchat data" —
+that was considered and rejected. Instead it mirrors the platform's
+existing precedent for exactly this situation:
+**`bin-message-manager` owns SMS `Message`/`Target` records completely
+independently, and conversation-manager consumes a `message_created` event
+to build its own, separate `Conversation`/`Message` view.**
+`bin-webchat-manager` occupies the same position message-manager occupies
+for SMS. Concretely:
+
+- `bin-webchat-manager` keeps its own `webchat_widgets`/`webchat_sessions`/
+  `webchat_messages` tables (v5, unchanged) as the source of truth for
+  real-time visitor-facing delivery (direct-token auth, WS fan-out, Flow
+  triggering).
+- `bin-conversation-manager` keeps its own `conversation_conversations`/
+  `conversation_messages` tables (unchanged schema) as the source of truth
+  for the cross-channel agent-facing timeline.
+- The two are connected by ONE event subscription, one direction only:
+  webchat-manager → conversation-manager. Conversation-manager never calls
+  back into webchat-manager.
+
+### 16.2 Why webchat does NOT get a `conversation-manager` `Account` row
+
+This was the main design fork in v6 and is worth stating explicitly because
+the earlier direction of this conversation (before this revision) assumed
+the opposite.
+
+Verified against the real `Account`/`Conversation` structs and the SMS
+ingestion path:
+
+- `Account` is not a universal "one per channel type" concept.
+  **SMS has no `Account` at all.** `conversationhandler.eventSMS()` and
+  `execute_mode.go`'s `runExecuteModeFlowMessage` resolve the Flow source
+  via `bin-number-manager`'s `Number.MessageFlowID` (looked up by
+  `cv.Self.Target`, the phone number), not via any `Account` row.
+  `Conversation` identity for SMS is `ConversationGetBySelfAndPeer(self,
+  peer)` — an address-pair lookup — not `(account_id, dialog_id)`.
+- LINE/WhatsApp DO use `Account`, because their `Conversation` identity is
+  genuinely `(account_id, dialog_id)`: the `account_id` is load-bearing for
+  conversation lookup itself, not just credential storage.
+- Webchat's cardinality is: `Widget` = one fixed VoIPbin-side identity,
+  reused across every visitor who ever chats with it (structurally
+  identical to "our phone number" in the SMS case). Each visitor's
+  `Session` = a fresh, per-conversation identity that exists once and is
+  never reused (structurally identical to "the caller's phone number" in
+  the SMS case, except unpredictable/random instead of a real telephone
+  number). **This is the SMS shape, not the LINE/WhatsApp shape.**
+
+Conclusion: webchat gets **no `Account` row in conversation-manager at
+all**. `Conversation.Self`/`Conversation.Peer` carry the full identity, the
+same way SMS's `Self`/`Peer` do.
+
+### 16.3 Address type and Conversation identity
+
+`bin-common-handler/models/address` gets one new `Type`:
+
+```go
+TypeWebchat Type = "webchat" // opaque identifier (Widget.ID or Session.ID); no sub-form to canonicalize, same class as TypeLine/TypeAgent/TypeConference
+```
+
+`NormalizeTarget`/`ValidateTarget` require the corresponding `case
+TypeWebchat` added alongside the existing `TypeNone, TypeAgent, TypeAI,
+TypeAITeam, TypeConference, TypeExtension, TypeLine` "opaque identifier"
+group in both functions (`address/normalize.go`, `address/validate.go`) —
+UUID validation, no telephone/email canonicalization, mirroring exactly how
+`TypeLine` is handled today.
+
+`Conversation` fields for a webchat thread:
+
+```go
+Type:     conversation.TypeWebchat
+DialogID: ""                                              // unused for address-pair-identified types, same as SMS
+Self:     commonaddress.Address{Type: TypeWebchat, Target: <Widget.ID>}
+Peer:     commonaddress.Address{Type: TypeWebchat, Target: <Session.ID>}
+```
+
+Lookup/creation uses `ConversationGetBySelfAndPeer(self, peer)`, the
+existing SMS code path — no new lookup method needed.
+
+### 16.4 New webchat-manager → conversation-manager event flow
+
+```
+1. Visitor sends a message (or Flow delivers one via webchat_message_send).
+2. bin-webchat-manager persists to webchat_messages, publishes
+   webchat_message_created (unchanged from v5 — this event already existed
+   for §8's webhook/flow-variable purposes; conversation-manager becomes a
+   second, independent subscriber of the same event).
+3. bin-conversation-manager's pkg/subscribehandler (NEW):
+   - subscribeTargets gains bin-manager.webchat-manager.event
+   - processEvent's switch gains:
+     case m.Publisher == publisherWebchatManager && m.Type == "webchat_message_created":
+         err = h.processEventWebchatMessageMessageCreated(ctx, m)
+   mirroring the existing publisherMessageManager case verbatim.
+4. processEventWebchatMessageMessageCreated -> conversationHandler.eventWebchat():
+   - unmarshal the webchat-manager Message payload (session_id, widget_id,
+     direction, text, tm_create)
+   - self := Address{Type: TypeWebchat, Target: widget_id}
+   - peer := Address{Type: TypeWebchat, Target: session_id}
+   - cv, err := ConversationGetBySelfAndPeer(self, peer); if not found,
+     ConversationCreate(...) — same shape as eventSMS's Conversation
+     resolution.
+   - create the conversation-manager Message record:
+     ReferenceType: message.ReferenceTypeWebchat  (NEW enum value)
+     ReferenceID:   <webchat-manager Message.ID>  (cross-service pointer,
+                    same pattern as ReferenceTypeMessage -> message-manager
+                    Message.ID today)
+     Direction:     incoming | outgoing  (mapped from webchat's inbound/outbound)
+     Source/Destination: derived from Self/Peer + Direction, same helper
+                    (deriveEndpoints) SMS/LINE/WhatsApp already use.
+   - publish conversation_created (if new) + message_created (conversation-
+     manager's own event, distinct from webchat-manager's).
+5. execute_mode.go's runExecuteModeFlow dispatch on cv.Type == TypeWebchat:
+   returns nil immediately, no Account/Number lookup, no
+   FlowV1ActiveflowCreate call — see §16.5.
+```
+
+### 16.5 No double Flow trigger — explicit design decision, not an oversight
+
+Both webchat-manager and conversation-manager COULD independently trigger
+an activeflow for the same inbound visitor message (webchat-manager via
+`Widget.FlowID`, conversation-manager via a hypothetical webchat flow
+source). This was identified explicitly and pchero decided:
+
+**`bin-webchat-manager` retains exclusive Flow-triggering responsibility
+for the real-time visitor-facing path. `bin-conversation-manager`'s webchat
+ingestion path (§16.4) NEVER calls `FlowV1ActiveflowCreate`.**
+
+Rationale, and how this differs from every other channel:
+
+- For SMS/LINE/WhatsApp, the *only* Flow-triggering layer in the entire
+  inbound path is conversation-manager (`execute_mode.go`). The
+  originating service (`bin-message-manager` for SMS; the LINE/WhatsApp
+  webhook arrives directly at conversation-manager, no separate service in
+  between) never triggers a Flow itself — so there is no double-trigger
+  risk for those channels by construction, not by an explicit prevention
+  rule.
+- Webchat is structurally different: `bin-webchat-manager` is NOT a dumb
+  ingestion layer like message-manager is for SMS. It has a *product
+  requirement* v5 already established (§2, §5) that a visitor's first
+  message must produce a real-time response (AI reply, welcome message)
+  with no perceptible extra latency — the entire reason `Widget.FlowID`
+  triggering lives in webchat-manager, at the point of first contact,
+  rather than one event-subscription hop away in conversation-manager.
+  Moving that responsibility to conversation-manager (mirroring SMS exactly)
+  was considered and rejected specifically because it would add a
+  publish-then-consume round trip to the critical real-time path for no
+  benefit — conversation-manager's timeline is an agent-facing read model,
+  not the visitor-facing response path.
+- Concretely, this means:
+  - `bin-flow-manager`'s `reference_type=webchat` activeflow (triggered by
+    webchat-manager, §9) is the ONLY activeflow a webchat message ever
+    produces automatically.
+  - conversation-manager's `Conversation` for a webchat thread MUST NOT
+    carry a flow-triggering identity the way `Account.MessageFlowID` or
+    `Number.MessageFlowID` do for other channels — there is deliberately no
+    such field to look up, because there is no `Account` row at all
+    (§16.2) and `execute_mode.go`'s webchat branch is a hard no-op, not a
+    "look up flow id, usually nil" branch.
+  - If a human agent later takes ownership of a webchat `Conversation`
+    (`OwnerType=agent`), `getExecuteMode` already returns
+    `ExecuteModeAgent` for ANY conversation type purely from
+    `cv.OwnerType`/`cv.OwnerID` — this requires no webchat-specific code,
+    it's the existing dispatch working unmodified. The `ExecuteModeFlow`
+    branch (which would otherwise attempt a Flow trigger) is what must be
+    hard no-op'd for `TypeWebchat` specifically, precisely because it's
+    the one branch that could double-trigger.
+
+### 16.6 Message field mapping (webchat-manager → conversation-manager)
+
+| conversation-manager `Message` field | Derived from |
+|---|---|
+| `ConversationID` | Resolved/created `Conversation.ID` (§16.4) |
+| `Direction` | `incoming` if webchat `direction=inbound`, `outgoing` if `direction=outbound` |
+| `ReferenceType` | New enum value `ReferenceTypeWebchat` |
+| `ReferenceID` | webchat-manager's `Message.ID` (cross-service pointer, read-only from conversation-manager's side) |
+| `Source`/`Destination` | Derived from `Self`/`Peer` + `Direction` via the existing `deriveEndpoints` helper — no new logic |
+| `Text` | webchat `Message.Text`, copied verbatim |
+| `Medias` | Empty (Phase 1 webchat has no attachments, §2 Out of scope) |
+
+This is a **one-way, eventually-consistent copy**, not a live reference.
+conversation-manager's copy of a webchat message can never be edited back
+into webchat-manager; conversation-manager is a read model for the agent
+timeline, matching how it already treats SMS/LINE/WhatsApp messages.
+
+### 16.7 Open Questions (v6 additions)
+
+| Question | Recommendation | Decision owner |
+|---|---|---|
+| If conversation-manager's event consumption lags or fails (RabbitMQ backlog, transient DB error), does the agent-facing timeline silently miss messages, and is there a reconciliation/replay mechanism? | Same limitation SMS/LINE/WhatsApp already accept today (subscribehandler has no dead-letter/replay story documented) — not a webchat-specific gap to solve in Phase 1, but worth confirming this is an accepted platform-wide limitation rather than an oversight | CEO/CTO, confirm no objection |
+| Does `bin-contact-manager`'s existing Case-linking logic (`Conversation.Metadata.ContactCaseID`) need ANY webchat-specific change, or does it work unmodified because it operates on `Conversation`, not on channel type? | Expected to work unmodified — `ContactCaseID` linking is conversation-type-agnostic per the existing code; verify with a contact-manager owner as a implementation-time sanity check, not a design blocker | Engineering default, confirm during implementation |
+| Should `Conversation.Peer.TargetName` be populated with anything human-readable for a webchat visitor (LINE populates a display name; a webchat visitor has none by default)? | Leave empty in Phase 1; if/when a pre-chat form (§2, deferred) collects a visitor name, that becomes the natural place to populate it | Product, Phase 2 |
+| Retry/ordering: could conversation-manager ever process a `webchat_message_created` event for message N+1 before message N (out-of-order delivery)? | Same question already applies to SMS/LINE/WhatsApp today (RabbitMQ does not guarantee cross-message ordering to a single consumer group under retries) — not a new webchat-specific risk; confirm existing platform behavior/assumption rather than solving uniquely for webchat | Engineering default, confirm no objection |
 
 ---
 
@@ -675,5 +894,54 @@ race with in-flight MessageSend, and DELETE-cascade behavior toward live
 sessions) — none require another design round; all are implementable
 directly as part of Implementation Order steps 4-6.
 
+**v5 → v6 (this revision).** Purely additive — §1-§15 unchanged except
+§13/§14 gaining `bin-conversation-manager` rows/steps. Adds a new
+integration (§16) surfacing webchat conversations in conversation-manager's
+cross-channel agent timeline, requested directly by pchero after the v5
+review closed. Mirrors the platform's existing `bin-message-manager` → SMS
+pattern rather than inventing a new one: webchat-manager keeps owning its
+own data and publishes an event; conversation-manager independently builds
+its own `Conversation`/`Message` view from that event, exactly as it
+already does for SMS via `eventSMS`/`ConversationGetBySelfAndPeer`.
+Verified against real code that `Account` is not a universal concept (SMS
+has none — Flow source resolves via `bin-number-manager`'s `Number`
+instead) and that webchat's cardinality (`Widget`=fixed self,
+`Session`=per-visit peer) matches SMS's `(self, peer)` address-pair shape,
+not LINE/WhatsApp's `(account_id, dialog_id)` shape — so webchat gets no
+`Account` row in conversation-manager at all. The double-Flow-trigger risk
+this integration would otherwise introduce (both webchat-manager and
+conversation-manager independently triggering an activeflow for the same
+message) is resolved by an explicit CEO/CTO decision, not left ambiguous:
+webchat-manager keeps exclusive Flow-triggering responsibility for the
+real-time visitor-facing path; conversation-manager's webchat ingestion
+path is a hard no-op for Flow triggering, matching how message-manager
+itself never triggers a Flow for SMS.
+
+This document has not yet been through a review round in its v6 form.
+Pending a fresh Step 4 review focused on §16.
+
+**v6 → v6 (Round 3, this revision, §16-only).** Verdict: **APPROVE.** The
+reviewer independently verified every factual code claim in §16 against the
+live monorepo rather than trusting the doc's prose: `eventSMS`,
+`ConversationGetBySelfAndPeer`, `NormalizeTarget`'s opaque-identifier case
+list, and the `message.ReferenceType` enum all match §16's description
+field-for-field. §16.5's no-double-Flow-trigger claim turned out to be
+**stronger than documented**: `runExecuteModeFlow`'s dispatch already
+no-ops on any unrecognized `cv.Type` (verified via an existing test,
+`Test_runExecuteModeFlow_unsupportedTypeIsNoop`), so `TypeWebchat` inherits
+correct behavior with zero new code at that layer — Implementation Order
+step 14 is now a verification-only item, not new code. The reviewer also
+confirmed the outbound path (`MessageEventSent`) never calls
+`runExecuteModeFlow` at all, closing off a flow-trigger risk on that side
+by construction. One real, previously-unflagged gap was found and folded
+into Implementation Order step 13: `conversationHandler.Event()` in
+`event.go` is a SECOND, distinct switch from `subscribehandler.processEvent`,
+and its `default` branch returns a HARD ERROR rather than a no-op — an
+implementer following §16.4's narrative literally could plausibly miss
+adding the required `case conversation.TypeWebchat` there, producing an
+error logged on every webchat message. This is a documentation-completeness
+fix, not a design flaw, and required no further review round.
+
 This document is considered design-complete pending CEO/CTO sign-off on the
-remaining Open Questions in §15.
+remaining Open Questions in §15 and §16.7. §16 has passed its Round 3
+review (APPROVE); no further review round is pending.
