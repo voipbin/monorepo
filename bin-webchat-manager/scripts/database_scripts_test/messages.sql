@@ -2,6 +2,7 @@ create table webchat_messages(
   -- identity
   id             binary(16),
   customer_id    binary(16),
+  widget_id      binary(16),
   session_id     binary(16),
 
   direction      varchar(16),

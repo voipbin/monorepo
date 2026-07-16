@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -24,12 +25,15 @@ func newTestMessageHandler(mc *gomock.Controller) (*messageHandler, *utilhandler
 	mockUtil := utilhandler.NewMockUtilHandler(mc)
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), message.EventTypeMessageCreated, gomock.Any()).AnyTimes()
 
 	h := &messageHandler{
-		utilHandler:  mockUtil,
-		reqHandler:   mockReq,
-		db:           mockDB,
-		sessionLocks: map[uuid.UUID]chan struct{}{},
+		utilHandler:   mockUtil,
+		reqHandler:    mockReq,
+		notifyHandler: mockNotify,
+		db:            mockDB,
+		sessionLocks:  map[uuid.UUID]chan struct{}{},
 	}
 
 	return h, mockUtil, mockReq, mockDB
@@ -219,11 +223,19 @@ func Test_Create_Outbound_NeverTriggersFlow(t *testing.T) {
 
 	customerID := uuid.FromStringOrNil("c1b2c3d4-0000-0000-0000-000000000001")
 	sessionID := uuid.FromStringOrNil("876defde-ad5e-11ed-a8c3-7bc19647b03f")
+	widgetID := uuid.FromStringOrNil("aa847807-6cc4-4713-9dec-53a42840e74c")
 	messageID := uuid.FromStringOrNil("db596422-07f5-11f0-9afe-e7cd6b75aeac")
 	senderID := uuid.FromStringOrNil("5f4e2b1a-0000-0000-0000-000000000001")
 
+	sess := &session.Session{
+		Identity: commonidentity.Identity{ID: sessionID, CustomerID: customerID},
+		WidgetID: widgetID,
+		Status:   session.StatusActive,
+	}
+
 	msg := &message.Message{
 		Identity:  commonidentity.Identity{ID: messageID, CustomerID: customerID},
+		WidgetID:  widgetID,
 		SessionID: sessionID,
 		Direction: message.DirectionOutbound,
 		Status:    message.StatusSent,
@@ -231,11 +243,12 @@ func Test_Create_Outbound_NeverTriggersFlow(t *testing.T) {
 		Text:      "hi, how can I help?",
 	}
 
+	mockDB.EXPECT().SessionGet(ctx, sessionID).Return(sess, nil)
 	mockUtil.EXPECT().UUIDCreate().Return(messageID)
 	mockDB.EXPECT().MessageCreate(ctx, gomock.Any()).Return(nil)
 	mockDB.EXPECT().MessageGet(ctx, messageID).Return(msg, nil)
 
-	// No SessionGet, no WidgetGet, no FlowV1ActiveflowCreate expected.
+	// No WidgetGet, no FlowV1ActiveflowCreate expected.
 
 	res, err := h.Create(ctx, customerID, sessionID, message.DirectionOutbound, senderID, "hi, how can I help?")
 	if err != nil {

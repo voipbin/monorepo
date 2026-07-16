@@ -7,6 +7,7 @@ const (
 	FieldID         Field = "id"
 	FieldCustomerID Field = "customer_id"
 
+	FieldWidgetID  Field = "widget_id"
 	FieldSessionID Field = "session_id"
 	FieldDirection Field = "direction"
 	FieldStatus    Field = "status"

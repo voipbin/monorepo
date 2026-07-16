@@ -6,6 +6,7 @@ import (
 	"context"
 	"sync"
 
+	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -31,9 +32,10 @@ type MessageHandler interface {
 }
 
 type messageHandler struct {
-	utilHandler utilhandler.UtilHandler
-	reqHandler  requesthandler.RequestHandler
-	db          dbhandler.DBHandler
+	utilHandler   utilhandler.UtilHandler
+	reqHandler    requesthandler.RequestHandler
+	notifyHandler notifyhandler.NotifyHandler
+	db            dbhandler.DBHandler
 
 	// sessionLocks serializes MessageSend/Create calls per Session.ID so
 	// the "is this the first inbound message" check inside Create cannot
@@ -49,12 +51,14 @@ type messageHandler struct {
 // NewMessageHandler returns MessageHandler interface
 func NewMessageHandler(
 	reqHandler requesthandler.RequestHandler,
+	notifyHandler notifyhandler.NotifyHandler,
 	dbHandler dbhandler.DBHandler,
 ) MessageHandler {
 	return &messageHandler{
-		utilHandler: utilhandler.NewUtilHandler(),
-		reqHandler:  reqHandler,
-		db:          dbHandler,
+		utilHandler:   utilhandler.NewUtilHandler(),
+		reqHandler:    reqHandler,
+		notifyHandler: notifyHandler,
+		db:            dbHandler,
 
 		sessionLocks: map[uuid.UUID]chan struct{}{},
 	}

@@ -52,8 +52,17 @@ func (h *messageHandler) Create(
 	// reply or a Flow-delivered response) never does — matches
 	// conversation-manager's MessageEventSent never calling
 	// runExecuteModeFlow (verified in the design doc's Round 3 review).
+	// Both paths still resolve the Session (WidgetID is denormalized
+	// onto every Message for the outbound event payload too), but only
+	// the inbound path takes the per-session lock, since only inbound
+	// messages can trigger the Flow.
 	if direction != message.DirectionInbound {
-		return h.create(ctx, customerID, sessionID, direction, senderID, text)
+		sess, err := h.db.SessionGet(ctx, sessionID)
+		if err != nil {
+			log.Errorf("Could not get session. err: %v", err)
+			return nil, err
+		}
+		return h.create(ctx, customerID, sess.WidgetID, sessionID, direction, senderID, text)
 	}
 
 	lockCh := h.lockSession(sessionID)
@@ -65,7 +74,7 @@ func (h *messageHandler) Create(
 		return nil, err
 	}
 
-	res, err := h.create(ctx, customerID, sessionID, direction, senderID, text)
+	res, err := h.create(ctx, customerID, sess.WidgetID, sessionID, direction, senderID, text)
 	if err != nil {
 		return nil, err
 	}
@@ -99,10 +108,14 @@ func (h *messageHandler) Create(
 
 // create is the shared persistence step, factored out so both the
 // inbound (lock-guarded) and outbound (unguarded) paths share identical
-// row-construction logic.
+// row-construction logic. Publishes EventTypeMessageCreated to both the
+// webhook and event queue on every successful create (design doc §16:
+// conversation-manager subscribes to this event to build its own
+// independent Conversation/Message records, message-manager pattern).
 func (h *messageHandler) create(
 	ctx context.Context,
 	customerID uuid.UUID,
+	widgetID uuid.UUID,
 	sessionID uuid.UUID,
 	direction message.Direction,
 	senderID uuid.UUID,
@@ -116,6 +129,7 @@ func (h *messageHandler) create(
 			CustomerID: customerID,
 		},
 
+		WidgetID:  widgetID,
 		SessionID: sessionID,
 		Direction: direction,
 		Status:    message.StatusSent,
@@ -131,6 +145,10 @@ func (h *messageHandler) create(
 	res, err := h.db.MessageGet(ctx, id)
 	if err != nil {
 		return nil, err
+	}
+
+	if h.notifyHandler != nil {
+		h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, message.EventTypeMessageCreated, res)
 	}
 
 	return res, nil

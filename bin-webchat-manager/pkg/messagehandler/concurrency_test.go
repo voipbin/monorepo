@@ -7,6 +7,7 @@ import (
 	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -34,12 +35,15 @@ func Test_Create_ConcurrentFirstMessages_TriggersFlowExactlyOnce(t *testing.T) {
 	mockUtil := utilhandler.NewMockUtilHandler(mc)
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), message.EventTypeMessageCreated, gomock.Any()).AnyTimes()
 
 	h := &messageHandler{
-		utilHandler:  mockUtil,
-		reqHandler:   mockReq,
-		db:           mockDB,
-		sessionLocks: map[uuid.UUID]chan struct{}{},
+		utilHandler:   mockUtil,
+		reqHandler:    mockReq,
+		notifyHandler: mockNotify,
+		db:            mockDB,
+		sessionLocks:  map[uuid.UUID]chan struct{}{},
 	}
 
 	ctx := context.Background()

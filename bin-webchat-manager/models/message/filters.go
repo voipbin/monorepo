@@ -7,6 +7,7 @@ import "github.com/gofrs/uuid"
 type FieldStruct struct {
 	ID         uuid.UUID `filter:"id"`
 	CustomerID uuid.UUID `filter:"customer_id"`
+	WidgetID   uuid.UUID `filter:"widget_id"`
 	SessionID  uuid.UUID `filter:"session_id"`
 	Direction  Direction `filter:"direction"`
 	Status     Status    `filter:"status"`

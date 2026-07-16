@@ -12,6 +12,15 @@ import (
 type Message struct {
 	commonidentity.Identity
 
+	// WidgetID is denormalized from Session.WidgetID onto every Message
+	// so downstream event consumers (conversation-manager's §16
+	// message-manager-pattern integration) can build Conversation.Self
+	// without a second RPC back to webchat-manager to resolve
+	// Session -> Widget. Session.ID remains the sole visitor identity
+	// (Conversation.Peer); WidgetID here is purely a denormalized
+	// convenience field for the event payload, not a second identity.
+	WidgetID uuid.UUID `json:"widget_id,omitempty" db:"widget_id,uuid"`
+
 	SessionID uuid.UUID `json:"session_id,omitempty" db:"session_id,uuid"`
 	Direction Direction `json:"direction,omitempty" db:"direction"`
 	Status    Status    `json:"status,omitempty" db:"status"`

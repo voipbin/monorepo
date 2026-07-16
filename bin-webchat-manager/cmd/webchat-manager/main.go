@@ -10,6 +10,7 @@ import (
 	"monorepo/bin-common-handler/models/sock"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
+	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
@@ -117,9 +118,10 @@ func run(db dbhandler.DBHandler) error {
 
 	// create handlers
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameWebchatEvent, serviceName)
 	widgetHandler := widgethandler.NewWidgetHandler(reqHandler, db)
 	sessionHandler := sessionhandler.NewSessionHandler(reqHandler, db)
-	messageHandler := messagehandler.NewMessageHandler(reqHandler, db)
+	messageHandler := messagehandler.NewMessageHandler(reqHandler, notifyHandler, db)
 
 	// run listen
 	if err := runListen(sockHandler, widgetHandler, sessionHandler, messageHandler); err != nil {
