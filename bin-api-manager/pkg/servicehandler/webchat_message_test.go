@@ -244,3 +244,106 @@ func Test_WebchatMessageCreate_Agent_CrossTenant_WrongSessionOwner(t *testing.T)
 		t.Error("Wrong match. expect: permission denied error, got: ok")
 	}
 }
+
+// Test_WebchatMessageCreate_Direct_DirectionSpoofIgnored is a regression
+// test for message-direction spoofing (Round 3 finding): a visitor holding
+// only a direct-scope JWT must never be able to author an
+// outbound (agent-authored-looking) message, even if the client explicitly
+// requests direction=outbound in the API call. The server must silently
+// force direction=inbound for this auth path regardless of the caller-
+// supplied value -- verified here by asserting the downstream RPC call is
+// made with DirectionInbound even though the handler was invoked with
+// DirectionOutbound.
+func Test_WebchatMessageCreate_Direct_DirectionSpoofIgnored(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &serviceHandler{
+		utilHandler: utilhandler.NewUtilHandler(),
+		reqHandler:  mockReq,
+	}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
+	widgetID := uuid.FromStringOrNil("aa847807-6cc4-4713-9dec-53a42840e74c")
+	sessionID := uuid.FromStringOrNil("876defde-ad5e-11ed-a8c3-7bc19647b03f")
+	messageID := uuid.FromStringOrNil("db596422-07f5-11f0-9f5e-4762c3c1e4e5")
+
+	a := auth.NewDirectIdentity(&auth.DirectScope{
+		CustomerID:           customerID,
+		ResourceType:         "webchat_widget",
+		ResourceID:           widgetID,
+		AllowedResourceTypes: []string{"webchat_session"},
+	})
+
+	responseSession := &wcsession.Session{
+		Identity: commonidentity.Identity{ID: sessionID, CustomerID: customerID},
+		WidgetID: widgetID,
+	}
+	responseMessage := &wcmessage.Message{
+		Identity:  commonidentity.Identity{ID: messageID, CustomerID: customerID},
+		SessionID: sessionID,
+		Direction: wcmessage.DirectionInbound,
+		Text:      "spoof attempt",
+	}
+
+	mockReq.EXPECT().WebchatV1SessionGet(ctx, sessionID).Return(responseSession, nil)
+	// The mock strictly asserts DirectionInbound -- if the handler forwarded
+	// the caller-supplied DirectionOutbound instead, gomock would reject
+	// the call as unexpected and this test would fail.
+	mockReq.EXPECT().WebchatV1MessageCreate(ctx, customerID, sessionID, wcmessage.DirectionInbound, uuid.Nil, "spoof attempt").Return(responseMessage, nil)
+
+	// Caller explicitly requests DirectionOutbound -- must be overridden.
+	if _, err := h.WebchatMessageCreate(ctx, a, sessionID, wcmessage.DirectionOutbound, "spoof attempt"); err != nil {
+		t.Fatalf("Wrong match. expect: ok (direction silently overridden), got: %v", err)
+	}
+}
+
+// Test_WebchatMessageCreate_Agent_DirectionSpoofIgnored is the symmetric
+// regression test: an authenticated agent/accesskey must never be able to
+// author an inbound (visitor-authored-looking) message, even if the
+// client explicitly requests direction=inbound.
+func Test_WebchatMessageCreate_Agent_DirectionSpoofIgnored(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &serviceHandler{
+		utilHandler: utilhandler.NewUtilHandler(),
+		reqHandler:  mockReq,
+	}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
+	sessionID := uuid.FromStringOrNil("876defde-ad5e-11ed-a8c3-7bc19647b03f")
+	messageID := uuid.FromStringOrNil("db596422-07f5-11f0-9f5e-4762c3c1e4e5")
+	agentID := uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979")
+
+	a := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID:         agentID,
+			CustomerID: customerID,
+		},
+		Permission: amagent.PermissionCustomerAdmin,
+	})
+
+	session := &wcsession.Session{
+		Identity: commonidentity.Identity{ID: sessionID, CustomerID: customerID},
+	}
+	responseMessage := &wcmessage.Message{
+		Identity:  commonidentity.Identity{ID: messageID, CustomerID: customerID},
+		SessionID: sessionID,
+		Direction: wcmessage.DirectionOutbound,
+		SenderID:  agentID,
+		Text:      "spoof attempt",
+	}
+
+	mockReq.EXPECT().WebchatV1SessionGet(ctx, sessionID).Return(session, nil)
+	mockReq.EXPECT().WebchatV1MessageCreate(ctx, customerID, sessionID, wcmessage.DirectionOutbound, agentID, "spoof attempt").Return(responseMessage, nil)
+
+	// Caller explicitly requests DirectionInbound -- must be overridden.
+	if _, err := h.WebchatMessageCreate(ctx, a, sessionID, wcmessage.DirectionInbound, "spoof attempt"); err != nil {
+		t.Fatalf("Wrong match. expect: ok (direction silently overridden), got: %v", err)
+	}
+}

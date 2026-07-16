@@ -105,11 +105,17 @@ func (h *serviceHandler) WebchatMessageList(ctx context.Context, a *auth.AuthIde
 // (visitor-authored inbound messages) and an authenticated agent/accesskey
 // (agent-authored outbound replies), mirroring aicall.go's dual-path auth.
 // senderID is uuid.Nil for the direct-token (visitor) path.
+//
+// requestedDirection is intentionally NOT trusted: the actual message
+// direction is derived from which auth path authenticated the caller (see
+// below), never from the caller-supplied value, to prevent
+// message-direction spoofing (a visitor forging direction=outbound to
+// appear as an agent reply, or an agent forging direction=inbound).
 func (h *serviceHandler) WebchatMessageCreate(
 	ctx context.Context,
 	a *auth.AuthIdentity,
 	sessionID uuid.UUID,
-	direction wcmessage.Direction,
+	requestedDirection wcmessage.Direction,
 	text string,
 ) (*wcmessage.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
@@ -117,8 +123,10 @@ func (h *serviceHandler) WebchatMessageCreate(
 		"customer_id": a.CustomerID,
 		"session_id":  sessionID,
 	})
+	_ = requestedDirection // never trusted; direction is derived below per auth path
 
 	senderID := uuid.Nil
+	var direction wcmessage.Direction
 
 	switch {
 	case a.IsAgent() || a.IsAccesskey():
@@ -138,6 +146,9 @@ func (h *serviceHandler) WebchatMessageCreate(
 			return nil, serviceerrors.ErrPermissionDenied
 		}
 		senderID = a.AgentID()
+		// An agent/accesskey caller can only ever author an outbound
+		// (business-to-visitor) reply.
+		direction = wcmessage.DirectionOutbound
 	case a.IsDirect():
 		if !a.HasAllowedResourceType("webchat_session") {
 			return nil, serviceerrors.ErrPermissionDenied
@@ -156,6 +167,13 @@ func (h *serviceHandler) WebchatMessageCreate(
 		if s.WidgetID != a.DirectScope.ResourceID {
 			return nil, serviceerrors.ErrPermissionDenied
 		}
+		// A visitor holding only a direct-scope JWT can only ever author
+		// an inbound (visitor-to-business) message. Without this, a
+		// visitor could forge direction=outbound and have the message
+		// mirrored into the agent-facing Conversation transcript as if
+		// an agent had sent it (same-tenant integrity issue, not caught
+		// by the ownership checks above).
+		direction = wcmessage.DirectionInbound
 	default:
 		return nil, serviceerrors.ErrPermissionDenied
 	}
