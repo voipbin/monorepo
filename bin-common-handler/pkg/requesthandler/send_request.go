@@ -337,3 +337,11 @@ func (r *requestHandler) sendRequestRTPEngine(ctx context.Context, rtpengineID, 
 func (r *requestHandler) sendRequestKamailio(ctx context.Context, uri string, method sock.RequestMethod, resource string, timeout int, delayed int, dataType string, data []byte) (*sock.Response, error) {
 	return r.sendRequest(ctx, commonoutline.QueueNameKamailioRequest, uri, method, resource, timeout, delayed, dataType, data)
 }
+
+// sendRequestWebchat send a request to the webchat-manager and return the response
+// timeout millisecond
+// delayed millisecond
+func (r *requestHandler) sendRequestWebchat(ctx context.Context, uri string, method sock.RequestMethod, resource string, timeout, delayed int, dataType string, data json.RawMessage) (*sock.Response, error) {
+
+	return r.sendRequest(ctx, commonoutline.QueueNameWebchatRequest, uri, method, resource, timeout, delayed, dataType, data)
+}
