@@ -263,6 +263,15 @@ func (h *serviceHandler) WebchatSessionEnd(ctx context.Context, a *auth.AuthIden
 		if s.WidgetID != a.DirectScope.ResourceID {
 			return nil, serviceerrors.ErrPermissionDenied
 		}
+		// Confirm the widget itself hasn't been soft-deleted, mirroring
+		// WebchatMessageCreate's/WebchatSessionCreate's direct branches
+		// -- kept for consistency even though ending a session is a
+		// terminal, low-risk operation. Found via round 9 of an
+		// independent adversarial code review.
+		if _, err := h.widgetGet(ctx, a.DirectScope.ResourceID); err != nil {
+			log.Errorf("Could not validate the widget info. err: %v", err)
+			return nil, err
+		}
 	default:
 		return nil, serviceerrors.ErrPermissionDenied
 	}

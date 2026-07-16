@@ -202,6 +202,20 @@ func (h *serviceHandler) WebchatMessageCreate(
 		if s.WidgetID != a.DirectScope.ResourceID {
 			return nil, serviceerrors.ErrPermissionDenied
 		}
+		// Confirm the widget itself hasn't been soft-deleted -- a widget
+		// deletion is expected to shut off the visitor-facing surface
+		// entirely. Without this, a visitor holding a previously-issued
+		// direct-scope JWT for a now-deleted widget could keep posting
+		// new inbound messages indefinitely into any of that widget's
+		// still-open sessions, making widget deletion ineffective as a
+		// kill switch for ongoing message flow. Mirrors
+		// WebchatSessionCreate's direct branch, which already performs
+		// this same widgetGet check for the identical reason. Found via
+		// round 9 of an independent adversarial code review.
+		if _, err := h.widgetGet(ctx, a.DirectScope.ResourceID); err != nil {
+			log.Errorf("Could not validate the widget info. err: %v", err)
+			return nil, err
+		}
 		// Defense in depth: tag the message with the session's actual
 		// owner rather than assuming a.CustomerID (derived from the
 		// direct-scope JWT at boot time) still matches it.

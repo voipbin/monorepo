@@ -16,6 +16,7 @@ import (
 
 	wcmessage "monorepo/bin-webchat-manager/models/message"
 	wcsession "monorepo/bin-webchat-manager/models/session"
+	wcwidget "monorepo/bin-webchat-manager/models/widget"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -59,8 +60,12 @@ func Test_WebchatMessageCreate_Direct(t *testing.T) {
 		Direction: wcmessage.DirectionInbound,
 		Text:      "hello",
 	}
+	widget := &wcwidget.Widget{
+		Identity: commonidentity.Identity{ID: widgetID, CustomerID: customerID},
+	}
 
 	mockReq.EXPECT().WebchatV1SessionGet(ctx, sessionID).Return(responseSession, nil)
+	mockReq.EXPECT().WebchatV1WidgetGet(ctx, widgetID).Return(widget, nil)
 	mockReq.EXPECT().WebchatV1MessageCreate(ctx, customerID, sessionID, wcmessage.DirectionInbound, uuid.Nil, "hello").Return(responseMessage, nil)
 
 	res, err := h.WebchatMessageCreate(ctx, a, sessionID, wcmessage.DirectionInbound, "hello")
@@ -188,8 +193,12 @@ func Test_WebchatSessionEnd_Direct(t *testing.T) {
 		WidgetID: widgetID,
 		Status:   wcsession.StatusEnded,
 	}
+	widget := &wcwidget.Widget{
+		Identity: commonidentity.Identity{ID: widgetID, CustomerID: customerID},
+	}
 
 	mockReq.EXPECT().WebchatV1SessionGet(ctx, sessionID).Return(session, nil)
+	mockReq.EXPECT().WebchatV1WidgetGet(ctx, widgetID).Return(widget, nil)
 	mockReq.EXPECT().WebchatV1SessionEnd(ctx, sessionID).Return(ended, nil)
 
 	res, err := h.WebchatSessionEnd(ctx, a, sessionID)
@@ -290,8 +299,12 @@ func Test_WebchatMessageCreate_Direct_DirectionSpoofIgnored(t *testing.T) {
 		Direction: wcmessage.DirectionInbound,
 		Text:      "spoof attempt",
 	}
+	widget := &wcwidget.Widget{
+		Identity: commonidentity.Identity{ID: widgetID, CustomerID: customerID},
+	}
 
 	mockReq.EXPECT().WebchatV1SessionGet(ctx, sessionID).Return(responseSession, nil)
+	mockReq.EXPECT().WebchatV1WidgetGet(ctx, widgetID).Return(widget, nil)
 	// The mock strictly asserts DirectionInbound -- if the handler forwarded
 	// the caller-supplied DirectionOutbound instead, gomock would reject
 	// the call as unexpected and this test would fail.
@@ -497,5 +510,93 @@ func Test_WebchatMessageCreate_Accesskey_SenderIDIsAccesskeyID(t *testing.T) {
 
 	if _, err := h.WebchatMessageCreate(ctx, a, sessionID, wcmessage.DirectionOutbound, "reply"); err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+}
+
+// Test_WebchatMessageCreate_Direct_WidgetSoftDeleted is a regression test
+// for round 9's finding: a visitor holding a previously-issued
+// direct-scope JWT for a now-deleted widget must not be able to keep
+// posting new inbound messages into that widget's still-open sessions.
+// Widget deletion is expected to shut off the visitor-facing surface
+// entirely, not just the session/widget-creation paths.
+func Test_WebchatMessageCreate_Direct_WidgetSoftDeleted(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &serviceHandler{
+		utilHandler: utilhandler.NewUtilHandler(),
+		reqHandler:  mockReq,
+	}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
+	widgetID := uuid.FromStringOrNil("aa847807-6cc4-4713-9dec-53a42840e74c")
+	sessionID := uuid.FromStringOrNil("876defde-ad5e-11ed-a8c3-7bc19647b03f")
+	deletedAt := time.Now()
+
+	a := auth.NewDirectIdentity(&auth.DirectScope{
+		CustomerID:           customerID,
+		ResourceType:         "webchat_widget",
+		ResourceID:           widgetID,
+		AllowedResourceTypes: []string{"webchat_session"},
+	})
+
+	session := &wcsession.Session{
+		Identity: commonidentity.Identity{ID: sessionID, CustomerID: customerID},
+		WidgetID: widgetID,
+	}
+	deletedWidget := &wcwidget.Widget{
+		Identity: commonidentity.Identity{ID: widgetID, CustomerID: customerID},
+		TMDelete: &deletedAt,
+	}
+
+	mockReq.EXPECT().WebchatV1SessionGet(ctx, sessionID).Return(session, nil)
+	mockReq.EXPECT().WebchatV1WidgetGet(ctx, widgetID).Return(deletedWidget, nil)
+
+	if _, err := h.WebchatMessageCreate(ctx, a, sessionID, wcmessage.DirectionInbound, "still trying"); err == nil {
+		t.Error("Wrong match. expect: not found error, got: ok")
+	}
+}
+
+// Test_WebchatSessionEnd_Direct_WidgetSoftDeleted is the WebchatSessionEnd
+// equivalent of the above (round 9 finding).
+func Test_WebchatSessionEnd_Direct_WidgetSoftDeleted(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &serviceHandler{
+		utilHandler: utilhandler.NewUtilHandler(),
+		reqHandler:  mockReq,
+	}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
+	widgetID := uuid.FromStringOrNil("aa847807-6cc4-4713-9dec-53a42840e74c")
+	sessionID := uuid.FromStringOrNil("876defde-ad5e-11ed-a8c3-7bc19647b03f")
+	deletedAt := time.Now()
+
+	a := auth.NewDirectIdentity(&auth.DirectScope{
+		CustomerID:           customerID,
+		ResourceType:         "webchat_widget",
+		ResourceID:           widgetID,
+		AllowedResourceTypes: []string{"webchat_session"},
+	})
+
+	session := &wcsession.Session{
+		Identity: commonidentity.Identity{ID: sessionID, CustomerID: customerID},
+		WidgetID: widgetID,
+	}
+	deletedWidget := &wcwidget.Widget{
+		Identity: commonidentity.Identity{ID: widgetID, CustomerID: customerID},
+		TMDelete: &deletedAt,
+	}
+
+	mockReq.EXPECT().WebchatV1SessionGet(ctx, sessionID).Return(session, nil)
+	mockReq.EXPECT().WebchatV1WidgetGet(ctx, widgetID).Return(deletedWidget, nil)
+
+	if _, err := h.WebchatSessionEnd(ctx, a, sessionID); err == nil {
+		t.Error("Wrong match. expect: not found error, got: ok")
 	}
 }
