@@ -1,62 +1,68 @@
 # bin-webchat-manager Design
 
-## Revision Notice (v6 — conversation-manager integration via message-manager pattern)
+## Revision Notice (v7 — explicit session creation, decoupled from first message)
 
-**pchero (CEO/CTO) directed a further integration requirement**: webchat
-conversations must also surface in `bin-conversation-manager`'s unified
-Conversation/Message view (the same place SMS/LINE/WhatsApp threads live),
-so agents get one timeline across every channel, and any existing
-Contact/Case linkage (`Conversation.Metadata.ContactCaseID`) applies to
-webchat automatically. Three follow-up questions were resolved in discussion
-before writing this revision:
+**pchero identified a UX/API-shape gap after re-verifying the direct-hash →
+JWT flow against real code**: v5/v6 create a `Session` implicitly, as a
+side effect of the visitor's first message (`SessionHandler.Create` was
+called from inside the message-send path whenever no `session_id` was
+supplied). This works, but has two real costs:
 
-1. **Should `bin-webchat-manager` disappear and conversation-manager own
-   Widget/Session/Message directly (full delegation)?** No — pchero
-   directed that webchat-manager must keep owning messages itself, the same
-   way `bin-message-manager` owns SMS `Message`/`Target` records
-   independently of conversation-manager.
-2. **Should conversation-manager get its own webchat-specific columns
-   (e.g. a `DirectID` field on `Account`)?** No — verified against the real
-   `Account`/`Conversation`/`Message` structs and the SMS ingestion path
-   (`conversationhandler.eventSMS`, `execute_mode.go`'s
-   `runExecuteModeFlowMessage`) that **`Account` is not universal**: SMS has
-   no Account at all (it resolves via `bin-number-manager`'s `Number`
-   instead), and Conversation identity for SMS comes from `(self, peer)`
-   address pairs, not `(account_id, dialog_id)`. Webchat's cardinality
-   (`Widget` = fixed VoIPbin-side identity reused across many visitors;
-   each visitor's Session = a fresh, per-conversation identity) matches
-   SMS's `(self=our number, peer=caller's number)` shape far more closely
-   than LINE/WhatsApp's `(account_id, dialog_id)` shape. **Conclusion:
-   webchat does NOT get a conversation-manager `Account` row at all,
-   mirroring SMS exactly** — not the earlier-considered "Account per
-   Widget" design.
-3. **How is the double-Flow-trigger problem resolved** (both
-   `bin-webchat-manager`, via `Widget.FlowID`, and conversation-manager's
-   `execute_mode.go`, via a hypothetical per-channel flow source, would
-   otherwise independently create an activeflow for the same inbound
-   message)? Three options were discussed (webchat-manager triggers /
-   conversation-manager triggers / hand off based on `ExecuteModeAgent` vs
-   `ExecuteModeFlow`). **pchero selected: `bin-webchat-manager` keeps the
-   ONLY Flow-triggering responsibility for the real-time visitor-facing
-   path (AI response, welcome message, etc.); `bin-conversation-manager`'s
-   webchat ingestion path NEVER triggers a Flow** — mirroring how
-   `bin-message-manager` itself never triggers a Flow (only
-   conversation-manager's SMS `execute_mode.go` does, and there is no
-   third layer above conversation-manager to double-trigger against). For
-   webchat, webchat-manager occupies the position message-manager occupies
-   for SMS, but retains the Flow-triggering role that, for SMS, uniquely
-   belongs to conversation-manager — because for webchat, real-time
-   visitor-facing response requires no perceptible additional latency hop,
-   which was the deciding product requirement.
+1. **No way to show `Widget.WelcomeMessage` before the visitor types
+   anything.** A `Session` (and therefore a `session_id` to scope a WS
+   subscription to) doesn't exist until the visitor sends their first
+   message — so the widget can't display a welcome message or open its
+   WebSocket subscription at load time, only after the first keystroke.
+2. **`session_id` was an optional field with two meanings** (absent = create;
+   present = continue) baked into a single endpoint, requiring a branch in
+   both the API contract and every caller's mental model.
 
-**Everything from v5 is unchanged**: `bin-webchat-manager` remains a plain
-Class A RabbitMQ RPC manager owning `Widget`/`Session`/`Message` in its own
-tables; the direct-token identity model (`Widget`=parent, `Session`=child,
-mirroring `ai`/`aicall`) is unchanged; the WebSocket delivery path via
-api-manager's existing `/ws` and `pkg/subscribehandler`/`pkg/websockhandler`
-is unchanged; Round 1/Round 2 review findings (§15) are unchanged and still
-open. **This revision is purely additive**: a new one-way integration from
-webchat-manager into conversation-manager, described in §16.
+**v7 makes Session creation an explicit, separate step**, decoupled from
+sending the first message — mirroring how `aicall` creation is already a
+distinct RPC from sending an `aimessage` to that call. Concretely:
+
+- New endpoint: `POST /v1/webchat/sessions` (direct token) — creates a
+  `Session` immediately on widget load, before the visitor types anything.
+  Returns `{ session_id, welcome_message }` so the widget can render the
+  welcome message and open its `/ws` subscription right away.
+- `POST /v1/webchat/sessions/messages` is replaced by
+  `POST /v1/webchat/sessions/{id}/messages` (direct token) — `session_id`
+  is now a required path parameter, never an optional body field. The
+  "create vs continue" branch in `SessionHandler`/the servicehandler is
+  eliminated entirely; every message-send call is now a `Get` + ownership
+  check + `MessageSend`, full stop.
+- `SessionHandler.Create` no longer takes an implicit trigger from message
+  content — it is invoked directly by the new session-create endpoint.
+- The Round-1/Round-2 rate-limiting decision (§15) is extended: the new
+  `POST /v1/webchat/sessions` endpoint gets the SAME IP-based
+  `middleware.RateLimit(20, 40)` applied to the sessions route group,
+  since it is now a widget-load-time call an attacker could otherwise
+  spam to create unbounded empty Sessions.
+- Widget-level Flow triggering (§9) still fires on the FIRST INBOUND
+  MESSAGE, not on Session creation — an empty Session with no message
+  should not itself start an activeflow. This is unchanged in spirit from
+  v6, just re-anchored to the (now separate) message-send step rather
+  than being conflated with session creation.
+
+**Direct-hash → JWT generation (`AuthBoot`) was independently re-verified
+against the live `bin-api-manager/pkg/servicehandler/boot.go` source in
+this pass and found to need NO changes**: the hash-format check, the
+`DirectV1DirectGetByHash` lookup, the `Customer.Status == StatusActive`
+check, the `directResourceMapping` lookup, and the `DirectScope`/JWT
+construction are all exactly as previously documented. The only
+already-known gap (`AuthBoot` checks Customer liveness, not Widget
+liveness) is the same gap already recorded and resolved in §15 (Widget
+status check added to `SessionHandler.Create`) — re-verification found
+nothing new to fix there.
+
+**Everything else from v6 is unchanged**: `bin-webchat-manager` remains a
+plain Class A RabbitMQ RPC manager owning `Widget`/`Session`/`Message`;
+the direct-token identity model (`Widget`=parent, `Session`=child,
+mirroring `ai`/`aicall`) is unchanged; the WebSocket delivery path is
+unchanged; the conversation-manager integration (§16) is unchanged;
+Round 1/2/3 review findings are unchanged and still hold. **This revision
+only touches the session-creation/message-send API shape** (§5, §7) and
+the corresponding Implementation Order steps (§14).
 
 ## 1. Problem Statement
 
@@ -343,16 +349,21 @@ type WidgetHandler interface {
 }
 
 type SessionHandler interface {
-    // Create makes a brand new Session for a Widget (first message, no
-    // client-supplied session_id). Always succeeds with a fresh UUID — no
-    // uniqueness constraint to violate, no race to guard (see §4).
+    // Create makes a brand new Session for a Widget. Invoked directly by
+    // the new POST /v1/webchat/sessions endpoint (v7) — explicit, not an
+    // implicit side effect of the first message. Always succeeds with a
+    // fresh UUID — no uniqueness constraint to violate, no race to guard
+    // (see §4). Rejects if Widget.Status != StatusActive or
+    // Widget.TMDelete is set (§15 Widget-liveness check).
     Create(ctx context.Context, widgetID uuid.UUID) (*session.Session, error)
 
-    // Get + ownership check for a client-supplied session_id on a
-    // subsequent message. Callers (api-manager's servicehandler) MUST
-    // additionally verify session.WidgetID == token's DirectScope.ResourceID
-    // and session.CustomerID == token's CustomerID before trusting this —
+    // Get + ownership check for a client-supplied session_id. Callers
+    // (api-manager's servicehandler) MUST additionally verify
+    // session.WidgetID == token's DirectScope.ResourceID and
+    // session.CustomerID == token's CustomerID before trusting this —
     // mirrors AIcallCreate's existing `ResourceID != assistanceID` check.
+    // v7: this is now the ONLY path into MessageSend; there is no longer
+    // a "create if absent" branch here (see Revision Notice).
     Get(ctx context.Context, id uuid.UUID) (*session.Session, error)
 
     MessageSend(ctx context.Context, sessionID uuid.UUID, text string) (*message.Message, error)
@@ -370,30 +381,43 @@ type SessionHandler interface {
       ("webchat_widget" -> ["webchat_session"]). Returns JWT:
       { token, type:"direct", resource_type:"webchat_widget",
         resource_id:<Widget.ID>, customer_id, expire }
-3. Visitor's FIRST message (no session_id known yet):
-   POST /v1/webchat/sessions/messages?token=<jwt> { text: "hello" }
+3. Widget load, BEFORE the visitor types anything (v7, explicit step):
+   POST /v1/webchat/sessions?token=<jwt>  { } (no body needed)
    -> api-manager verifies a.HasAllowedResourceType("webchat_session")
    -> calls SessionHandler.Create(widgetID = a.DirectScope.ResourceID)
-   -> calls SessionHandler.MessageSend(session.ID, text)
-   -> response includes { session_id, message_id, status }
-   -> IF Widget.FlowID set: FlowV1ActiveflowCreate(reference_type=webchat, reference_id=session.ID)
-4. Browser stores session_id (e.g. localStorage), then:
-   GET https://api.voipbin.net/ws?token=<jwt>
+      (rejects if Widget.Status != StatusActive or Widget.TMDelete set)
+   -> response: { session_id, welcome_message }
+   -> Browser stores session_id (e.g. localStorage) and can immediately
+      render Widget.WelcomeMessage and open its /ws subscription (step 4)
+      without waiting for the visitor to type anything.
+4. Browser: GET https://api.voipbin.net/ws?token=<jwt>
    -> EXISTING code, UNCHANGED. Subscribes to topic:
       customer_id:<id>:webchat_session:<session_id>
    -> validateTopics checks HasAllowedResourceType("webchat_session") only;
       the session_id segment is never re-validated against anything — same
       as the aicall precedent.
-5. Visitor's SUBSEQUENT messages include the stored session_id:
-   POST /v1/webchat/sessions/messages?token=<jwt> { session_id, text }
+5. Visitor's FIRST message (session_id is now ALWAYS known — required path
+   param, never an optional body field, v7):
+   POST /v1/webchat/sessions/{session_id}/messages?token=<jwt> { text: "hello" }
    -> api-manager calls SessionHandler.Get(session_id), then verifies
       session.WidgetID == a.DirectScope.ResourceID AND
       session.CustomerID == a.CustomerID (ownership check, mirrors
       AIcallCreate) before calling MessageSend.
-6. Flow executes actions (ai_talk / queue_join / webchat_message_send).
+   -> response includes { message_id, status }
+   -> IF this is the FIRST inbound message on this Session AND
+      Widget.FlowID set: FlowV1ActiveflowCreate(reference_type=webchat,
+      reference_id=session.ID). An empty Session with no message never
+      triggers a Flow on its own (Revision Notice) — the trigger condition
+      is anchored to "first inbound message," not "session creation."
+6. Visitor's SUBSEQUENT messages (same shape as step 5, same endpoint,
+   same session_id in the path — there is no longer a distinct "first
+   message" vs "follow-up message" API shape, only a distinct FLOW-TRIGGER
+   condition inside webchat-manager):
+   POST /v1/webchat/sessions/{session_id}/messages?token=<jwt> { text }
+7. Flow executes actions (ai_talk / queue_join / webchat_message_send).
    -> webchat_message_send calls MessageDeliver().
    -> webchat-manager publishes webchat_message_created (outbound).
-7. api-manager's EXISTING pkg/subscribehandler/websockhandler fans the
+8. api-manager's EXISTING pkg/subscribehandler/websockhandler fans the
    event out to any browser subscribed to
    customer_id:<id>:webchat_session:<session_id>. Only the browser that
    knows this specific session_id can ever be subscribed to it (the ID is
@@ -414,35 +438,47 @@ Not applicable — Flow's `ai_talk` action against bin-ai-manager. Unchanged.
 | GET | `/v1/webchat/widgets/{id}` | customer JWT | Get a Widget (includes the widget snippet / hash) |
 | PUT | `/v1/webchat/widgets/{id}` | customer JWT | Update a Widget |
 | DELETE | `/v1/webchat/widgets/{id}` | customer JWT | Delete a Widget (cascades: revoke direct hash) |
-| POST | `/v1/webchat/sessions/messages` | direct token (`resource_type=webchat_widget`, allows `webchat_session`) | Visitor sends a message; `session_id` optional (first message creates a new Session; supplying an existing one continues it, subject to the ownership check in §5) |
+| POST | `/v1/webchat/sessions` | direct token (`resource_type=webchat_widget`, allows `webchat_session`) | **New in v7.** Visitor's browser calls this at widget-load time, before typing anything. Always creates a brand-new Session — no "get or create" branch. Returns `{ session_id, welcome_message }` so the widget can render the welcome message and open its `/ws` subscription immediately. |
+| POST | `/v1/webchat/sessions/{id}/messages` | direct token (`resource_type=webchat_widget`, allows `webchat_session`) | **v7: replaces the old `POST /v1/webchat/sessions/messages`.** `session_id` is now a required path parameter, not an optional body field — every call is `Get` + ownership check + `MessageSend`, whether it's the visitor's first message or a follow-up. |
 | GET | `/v1/webchat/sessions/{id}/messages` | customer JWT | List a session's messages (agent/dashboard view) |
-| POST | `/v1/webchat/sessions/{id}/messages` | customer JWT | Agent/API-authored outbound message |
+| POST | `/v1/webchat/sessions/{id}/messages` | customer JWT | Agent/API-authored outbound message (same path as the visitor's direct-token route above; auth type on the request distinguishes caller identity, mirroring how `/aicalls` already serves both `IsAgent()`/`IsAccesskey()` and `IsDirect()` callers on one path) |
 | POST | `/v1/webchat/sessions/{id}/close` | customer JWT | Explicitly end a session |
 
 No public/unauthenticated routes. Unchanged from v4.
 
-Example: visitor sends first message
+Example: widget load — create Session before the visitor types anything (v7)
 
 ```json
-POST /v1/webchat/sessions/messages?token=<direct-jwt>
+POST /v1/webchat/sessions?token=<direct-jwt>
+{}
+
+200 OK
+{
+  "session_id": "7a1b...",
+  "welcome_message": "Hi! How can we help you today?"
+}
+```
+
+Example: visitor sends their first message (session_id now always known)
+
+```json
+POST /v1/webchat/sessions/7a1b.../messages?token=<direct-jwt>
 {
   "text": "Hi, I have a question about pricing"
 }
 
 200 OK
 {
-  "session_id": "7a1b...",
   "message_id": "5e9c...",
   "status": "sent"
 }
 ```
 
-Example: visitor sends a follow-up message (same conversation)
+Example: visitor sends a follow-up message (same conversation, same endpoint)
 
 ```json
-POST /v1/webchat/sessions/messages?token=<direct-jwt>
+POST /v1/webchat/sessions/7a1b.../messages?token=<direct-jwt>
 {
-  "session_id": "7a1b...",
   "text": "Do you offer a free trial?"
 }
 ```
@@ -561,19 +597,35 @@ Unchanged from v4:
    `DirectV1Create`/`DirectV1Delete` (§10's two-phase-commit question
    resolved here, not deferred).
 5. `sessionhandler.Create/Get/MessageSend/MessageDeliver/Close` + idle sweep.
+   `Create` (v7) is now invoked ONLY by the new explicit session-creation
+   endpoint (step 6 below), never implicitly from a message-send call.
 6. `bin-api-manager`: new `pkg/servicehandler/webchat_widget.go` and
-   `webchat_session.go`. The session-message handler implements the
-   ownership check from §5 (`session.WidgetID == a.DirectScope.ResourceID`,
-   `session.CustomerID == a.CustomerID`) for any client-supplied
-   `session_id`, mirroring `AIcallCreate`'s existing pattern verbatim.
+   `webchat_session.go`. **v7 API shape**: `SessionCreate` (new,
+   `POST /v1/webchat/sessions`, always creates, no branch) and
+   `SessionMessageSend` (`POST /v1/webchat/sessions/{id}/messages`,
+   `session_id` is a required path parameter — implements the ownership
+   check from §5, `session.WidgetID == a.DirectScope.ResourceID` +
+   `session.CustomerID == a.CustomerID`, mirroring `AIcallCreate`'s
+   existing pattern verbatim). Add `middleware.RateLimit(20, 40)` to BOTH
+   the new `POST /v1/webchat/sessions` route and the existing
+   `/v1/webchat/sessions/{id}/messages` route (§15 rate-limiting decision,
+   extended in v7 to cover session creation too, since it is now a
+   widget-load-time call reachable without sending any message).
 7. `bin-flow-manager`: `reference_type=webchat` + `webchat_message_send`
    action.
-8. First-inbound-message flow trigger wiring.
+8. First-inbound-message flow trigger wiring — anchored to the first
+   inbound `Message` on a Session (via `sessionhandler.MessageSend`'s
+   internal message-count check), NOT to `Session` creation. An empty
+   Session with no messages never triggers a Flow (v7 Revision Notice).
 9. Webhook events.
 10. OpenAPI spec + REST routes.
-11. End-to-end test: hash issuance -> `/auth/boot` -> first message (new
-    session) -> `/ws` subscribe to that exact `session_id` topic -> second
-    message with the stored `session_id` -> flow-triggered reply -> event
+11. End-to-end test (v7 flow): hash issuance -> `/auth/boot` -> explicit
+    `POST /v1/webchat/sessions` (session created, welcome_message
+    returned, NO Flow triggered yet) -> `/ws` subscribe to that exact
+    `session_id` topic -> first message via
+    `POST /v1/webchat/sessions/{id}/messages` (Flow triggers here, on
+    first inbound message, not on session creation) -> second message,
+    same endpoint, same session_id -> flow-triggered reply -> event
     fan-out to the subscribed browser -> negative test: a SECOND browser
     session (different `Session.ID`, same `Widget`) does NOT receive the
     first session's messages, proving the isolation claim in §12 rather
@@ -631,7 +683,7 @@ heading for traceability.**
 
 | Question | Decision | Rationale / Implementation note |
 |---|---|---|
-| Rate limiting / abuse control on `/auth/boot` and the session-message endpoint | **Confirmed.** `/auth/boot` already inherits the existing `middleware.RateLimit` applied to the whole `/auth` route group in `cmd/api-manager/main.go` (IP-based, 10 req/s, burst 20) — no new code needed there. `/v1/webchat/sessions/messages` is a new route outside that group and gets the SAME middleware applied fresh: IP-based, 20 req/s, burst 40. Per-session rate limiting (as opposed to per-IP) is explicitly deferred to Phase 2 — the existing `middleware.RateLimit` is IP-keyed only and would need generalizing to key on an arbitrary identifier (session_id) to support it; not required for Phase 1. | Implementation: add `sessions.Use(middleware.RateLimit(20, 40))` to the new `/v1/webchat/sessions` route group, mirroring the existing `/auth` group's usage verbatim (same function, different numbers). No middleware code changes required. |
+| Rate limiting / abuse control on `/auth/boot` and the session endpoints | **Confirmed.** `/auth/boot` already inherits the existing `middleware.RateLimit` applied to the whole `/auth` route group in `cmd/api-manager/main.go` (IP-based, 10 req/s, burst 20) — no new code needed there. **v7**: BOTH new/changed session routes — `POST /v1/webchat/sessions` (session creation, now a widget-load-time call) and `POST /v1/webchat/sessions/{id}/messages` (message send) — get the SAME middleware applied fresh: IP-based, 20 req/s, burst 40. Per-session rate limiting (as opposed to per-IP) is explicitly deferred to Phase 2 — the existing `middleware.RateLimit` is IP-keyed only and would need generalizing to key on an arbitrary identifier (session_id) to support it; not required for Phase 1. | Implementation: add `sessions.Use(middleware.RateLimit(20, 40))` to the new `/v1/webchat/sessions` route group (covers both the session-create and message-send routes), mirroring the existing `/auth` group's usage verbatim (same function, different numbers). No middleware code changes required. |
 | `MessageStatus.Delivered` semantics are weaker than a confirmed socket write | **Confirmed: ship without a delivery-ack loop in Phase 1.** Matches every other channel's actual guarantee level. | No implementation change from v5. |
 | Widget/Direct two-phase-commit gap | **Confirmed: `Widget.DirectID` nullable; a Widget with `DirectID = NULL` is "provisioning incomplete," excluded from the widget-snippet response until resolved.** | Engineering default, as proposed. |
 | Should `webchat_widget` direct hashes support rotation (`POST /v1/directs/{id}/regenerate`)? | **Confirmed: yes**, via the existing generic regenerate endpoint — no webchat-specific rotation logic. | No new code beyond `resource_type` enum registration (§13). |
@@ -961,3 +1013,25 @@ deferred to Phase 2); no delivery-ack loop, no webchat-specific PII
 retention policy, and Widget deletion does NOT force-terminate already-active
 Sessions (explicitly confirmed, not merely defaulted). Ready to proceed to
 implementation per §14's Implementation Order.
+
+**v6 → v7 (this revision).** Following re-verification of the direct-hash →
+JWT boot flow against the live `AuthBoot` source (found accurate, no
+changes needed), pchero identified an API-shape gap: implicit Session
+creation as a side effect of the first message meant the widget could not
+render `Widget.WelcomeMessage` or open its `/ws` subscription until AFTER
+the visitor typed something. v7 makes Session creation an explicit,
+separate step (`POST /v1/webchat/sessions`, always creates, no branch),
+decoupled from message sending (`POST /v1/webchat/sessions/{id}/messages`,
+`session_id` now a required path parameter, never an optional body field).
+This eliminates the "create vs continue" branch that previously existed in
+both the API contract and `SessionHandler`/servicehandler implementations.
+Flow-triggering (§9) remains anchored to the FIRST INBOUND MESSAGE, not to
+Session creation — an empty Session with no message never starts an
+activeflow on its own. The existing rate-limiting decision (§15) is
+extended to cover the new session-creation endpoint, since it is now a
+widget-load-time call reachable without sending any message. This revision
+touches only §5 and §7 (and the corresponding Implementation Order steps
+in §14); §16's conversation-manager integration, its Round 3 approval, and
+all other Open-Question decisions are unaffected and still hold. This
+document is design-complete pending a fresh, narrowly-scoped review of the
+v7 API-shape change if one is desired before implementation begins.
