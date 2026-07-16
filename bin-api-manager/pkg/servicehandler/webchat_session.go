@@ -199,6 +199,17 @@ func (h *serviceHandler) WebchatSessionEnd(ctx context.Context, a *auth.AuthIden
 		if !a.HasAllowedResourceType("webchat_session") {
 			return nil, serviceerrors.ErrPermissionDenied
 		}
+		// Same widget-ownership check as WebchatMessageCreate: a visitor
+		// JWT is scoped to one widget_id and must not be able to end an
+		// arbitrary session belonging to a different customer's widget.
+		s, err := h.sessionGet(ctx, sessionID)
+		if err != nil {
+			log.Errorf("Could not validate the session info. err: %v", err)
+			return nil, err
+		}
+		if s.WidgetID != a.DirectScope.ResourceID {
+			return nil, serviceerrors.ErrPermissionDenied
+		}
 	default:
 		return nil, serviceerrors.ErrPermissionDenied
 	}

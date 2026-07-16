@@ -130,6 +130,20 @@ func (h *serviceHandler) WebchatMessageCreate(
 		if !a.HasAllowedResourceType("webchat_session") {
 			return nil, serviceerrors.ErrPermissionDenied
 		}
+		// The visitor's direct-scope JWT is bound to a single widget_id
+		// (DirectScope.ResourceID). Resolve the target session and verify
+		// it actually belongs to that widget before allowing message
+		// injection -- otherwise any visitor JWT could post into (or
+		// read the reply stream of) an arbitrary session UUID belonging
+		// to a different customer's widget.
+		s, err := h.sessionGet(ctx, sessionID)
+		if err != nil {
+			log.Errorf("Could not validate the session info. err: %v", err)
+			return nil, err
+		}
+		if s.WidgetID != a.DirectScope.ResourceID {
+			return nil, serviceerrors.ErrPermissionDenied
+		}
 	default:
 		return nil, serviceerrors.ErrPermissionDenied
 	}
