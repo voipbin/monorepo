@@ -1,0 +1,70 @@
+get:
+  summary: Get a list of webchat messages.
+  description: Retrieves a paginated list of webchat messages for the authenticated customer.
+  tags:
+    - Webchat
+  parameters:
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: A list of webchat messages.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/CommonPagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/WebchatManagerMessage'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '500':
+      $ref: '#/components/responses/InternalError'
+
+post:
+  summary: Create a new webchat message.
+  description: Creates (sends) a new message on a webchat session. Used for agent/API-authored outbound replies.
+  tags:
+    - Webchat
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            session_id:
+              type: string
+              format: uuid
+              x-go-type: string
+              description: "The session to send the message on. Returned from the `POST /sessions` or `GET /sessions` response."
+              example: "7a1bcb1a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
+            direction:
+              $ref: '#/components/schemas/WebchatManagerMessageDirection'
+              description: The direction of the message.
+              example: "outbound"
+            text:
+              type: string
+              description: The text content of the message.
+              example: "Thanks for reaching out! How can we help?"
+          required:
+            - session_id
+            - direction
+            - text
+  responses:
+    '200':
+      description: Details of the created message.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/WebchatManagerMessage'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '500':
+      $ref: '#/components/responses/InternalError'

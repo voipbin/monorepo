@@ -2976,6 +2976,99 @@ func (e TtsManagerSpeakingStatus) Valid() bool {
 	}
 }
 
+// Defines values for WebchatManagerMessageDirection.
+const (
+	WebchatManagerMessageDirectionInbound  WebchatManagerMessageDirection = "inbound"
+	WebchatManagerMessageDirectionOutbound WebchatManagerMessageDirection = "outbound"
+)
+
+// Valid indicates whether the value is a known member of the WebchatManagerMessageDirection enum.
+func (e WebchatManagerMessageDirection) Valid() bool {
+	switch e {
+	case WebchatManagerMessageDirectionInbound:
+		return true
+	case WebchatManagerMessageDirectionOutbound:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for WebchatManagerMessageStatus.
+const (
+	WebchatManagerMessageStatusDelivered WebchatManagerMessageStatus = "delivered"
+	WebchatManagerMessageStatusFailed    WebchatManagerMessageStatus = "failed"
+	WebchatManagerMessageStatusSent      WebchatManagerMessageStatus = "sent"
+)
+
+// Valid indicates whether the value is a known member of the WebchatManagerMessageStatus enum.
+func (e WebchatManagerMessageStatus) Valid() bool {
+	switch e {
+	case WebchatManagerMessageStatusDelivered:
+		return true
+	case WebchatManagerMessageStatusFailed:
+		return true
+	case WebchatManagerMessageStatusSent:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for WebchatManagerSessionStatus.
+const (
+	WebchatManagerSessionStatusActive WebchatManagerSessionStatus = "active"
+	WebchatManagerSessionStatusEnded  WebchatManagerSessionStatus = "ended"
+)
+
+// Valid indicates whether the value is a known member of the WebchatManagerSessionStatus enum.
+func (e WebchatManagerSessionStatus) Valid() bool {
+	switch e {
+	case WebchatManagerSessionStatusActive:
+		return true
+	case WebchatManagerSessionStatusEnded:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for WebchatManagerWidgetPosition.
+const (
+	WebchatManagerWidgetPositionBottomLeft  WebchatManagerWidgetPosition = "bottom_left"
+	WebchatManagerWidgetPositionBottomRight WebchatManagerWidgetPosition = "bottom_right"
+)
+
+// Valid indicates whether the value is a known member of the WebchatManagerWidgetPosition enum.
+func (e WebchatManagerWidgetPosition) Valid() bool {
+	switch e {
+	case WebchatManagerWidgetPositionBottomLeft:
+		return true
+	case WebchatManagerWidgetPositionBottomRight:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for WebchatManagerWidgetStatus.
+const (
+	WebchatManagerWidgetStatusActive   WebchatManagerWidgetStatus = "active"
+	WebchatManagerWidgetStatusInactive WebchatManagerWidgetStatus = "inactive"
+)
+
+// Valid indicates whether the value is a known member of the WebchatManagerWidgetStatus enum.
+func (e WebchatManagerWidgetStatus) Valid() bool {
+	switch e {
+	case WebchatManagerWidgetStatusActive:
+		return true
+	case WebchatManagerWidgetStatusInactive:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for PostAisJSONBodyType.
 const (
 	PostAisJSONBodyTypeInsight PostAisJSONBodyType = "insight"
@@ -7406,6 +7499,129 @@ type TtsManagerSpeakingReferenceType string
 // TtsManagerSpeakingStatus Status of the speaking session.
 type TtsManagerSpeakingStatus string
 
+// WebchatManagerMessage A single chat message within a webchat session.
+type WebchatManagerMessage struct {
+	// CustomerId The unique identifier of the associated customer. Returned from the `GET /customers` response.
+	CustomerId string `json:"customer_id"`
+
+	// Direction The direction of the message.
+	Direction WebchatManagerMessageDirection `json:"direction"`
+
+	// Id The unique identifier of the message. Returned from the `POST /messages` or `GET /messages` response.
+	Id string `json:"id"`
+
+	// SenderId The agent ID for an agent-typed outbound reply; empty for flow/AI-originated or inbound messages.
+	SenderId *string `json:"sender_id,omitempty"`
+
+	// SessionId The session this message belongs to. Returned from the `POST /sessions` or `GET /sessions` response.
+	SessionId string `json:"session_id"`
+
+	// Status The status of the message.
+	Status WebchatManagerMessageStatus `json:"status"`
+
+	// Text The text content of the message.
+	Text string `json:"text"`
+
+	// TmCreate Timestamp when the message was created.
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the message was deleted.
+	TmDelete *string `json:"tm_delete,omitempty"`
+
+	// WidgetId The widget this message belongs to (denormalized from the session). Returned from the `POST /widgets` or `GET /widgets` response.
+	WidgetId string `json:"widget_id"`
+}
+
+// WebchatManagerMessageDirection The direction of the message.
+type WebchatManagerMessageDirection string
+
+// WebchatManagerMessageStatus The status of the message.
+type WebchatManagerMessageStatus string
+
+// WebchatManagerSession A webchat visitor session. Session.id doubles as the visitor's continuity token.
+type WebchatManagerSession struct {
+	// CustomerId The unique identifier of the associated customer. Returned from the `GET /customers` response.
+	CustomerId string `json:"customer_id"`
+
+	// Id The unique identifier of the session, and the visitor's continuity token. Returned from the `POST /sessions` or `GET /sessions` response.
+	Id string `json:"id"`
+
+	// Status The status of the session.
+	Status WebchatManagerSessionStatus `json:"status"`
+
+	// TmCreate Timestamp when the session was created.
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmEnd Timestamp when the session ended.
+	TmEnd *string `json:"tm_end,omitempty"`
+
+	// TmLastActivity Timestamp of the last activity on this session.
+	TmLastActivity *string `json:"tm_last_activity,omitempty"`
+
+	// TmUpdate Timestamp when the session was last updated.
+	TmUpdate *string `json:"tm_update,omitempty"`
+
+	// WidgetId The widget this session belongs to. Returned from the `POST /widgets` or `GET /widgets` response.
+	WidgetId string `json:"widget_id"`
+}
+
+// WebchatManagerSessionStatus The status of the session.
+type WebchatManagerSessionStatus string
+
+// WebchatManagerWidget A customer's webchat widget configuration. Also issues a direct hash for anonymous visitor authentication.
+type WebchatManagerWidget struct {
+	// CustomerId The unique identifier of the associated customer. Returned from the `GET /customers` response.
+	CustomerId string `json:"customer_id"`
+
+	// FlowId The flow to trigger on the visitor's first inbound message. Returned from the `POST /flows` or `GET /flows` response.
+	FlowId string `json:"flow_id"`
+
+	// Id The unique identifier of the widget. Returned from the `POST /widgets` or `GET /widgets` response.
+	Id string `json:"id"`
+
+	// Name Name of the widget.
+	Name string `json:"name"`
+
+	// SessionIdleTimeout Session idle timeout in seconds before the session is automatically ended.
+	SessionIdleTimeout int `json:"session_idle_timeout"`
+
+	// Status The status of the widget.
+	Status WebchatManagerWidgetStatus `json:"status"`
+
+	// ThemeConfig Cosmetic, customer-editable widget appearance settings. All fields are optional; omitted fields fall back to the platform default (blue bubble, no logo, bottom-right).
+	ThemeConfig *WebchatManagerWidgetThemeConfig `json:"theme_config,omitempty"`
+
+	// TmCreate Timestamp when the widget was created.
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the widget was deleted.
+	TmDelete *string `json:"tm_delete,omitempty"`
+
+	// TmUpdate Timestamp when the widget was last updated.
+	TmUpdate *string `json:"tm_update,omitempty"`
+
+	// WelcomeMessage The message shown to the visitor when the widget loads.
+	WelcomeMessage string `json:"welcome_message"`
+}
+
+// WebchatManagerWidgetPosition Where the floating bubble/panel renders on the customer's page.
+type WebchatManagerWidgetPosition string
+
+// WebchatManagerWidgetStatus The status of the widget.
+type WebchatManagerWidgetStatus string
+
+// WebchatManagerWidgetThemeConfig Cosmetic, customer-editable widget appearance settings. All fields are optional; omitted fields fall back to the platform default (blue bubble, no logo, bottom-right).
+type WebchatManagerWidgetThemeConfig struct {
+	// LogoUrl HTTPS URL of the logo image displayed in the widget header.
+	LogoUrl *string `json:"logo_url,omitempty"`
+
+	// Position Where the floating bubble/panel renders on the customer's page.
+	Position *WebchatManagerWidgetPosition `json:"position,omitempty"`
+
+	// PrimaryColor Hex color code for the widget's primary color.
+	PrimaryColor *string `json:"primary_color,omitempty"`
+}
+
 // PageSize defines model for PageSize.
 type PageSize = int
 
@@ -10022,6 +10238,87 @@ type PutTrunksIdJSONBody struct {
 	Username   string                     `json:"username"`
 }
 
+// GetWebchatMessagesParams defines parameters for GetWebchatMessages.
+type GetWebchatMessagesParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostWebchatMessagesJSONBody defines parameters for PostWebchatMessages.
+type PostWebchatMessagesJSONBody struct {
+	// Direction The direction of the message.
+	Direction WebchatManagerMessageDirection `json:"direction"`
+
+	// SessionId The session to send the message on. Returned from the `POST /sessions` or `GET /sessions` response.
+	SessionId string `json:"session_id"`
+
+	// Text The text content of the message.
+	Text string `json:"text"`
+}
+
+// GetWebchatSessionsParams defines parameters for GetWebchatSessions.
+type GetWebchatSessionsParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostWebchatSessionsJSONBody defines parameters for PostWebchatSessions.
+type PostWebchatSessionsJSONBody struct {
+	// WidgetId The widget to create the session for. Returned from the `POST /widgets` or `GET /widgets` response.
+	WidgetId string `json:"widget_id"`
+}
+
+// GetWebchatWidgetsParams defines parameters for GetWebchatWidgets.
+type GetWebchatWidgetsParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostWebchatWidgetsJSONBody defines parameters for PostWebchatWidgets.
+type PostWebchatWidgetsJSONBody struct {
+	// FlowId The flow to trigger on the visitor's first inbound message. Returned from the `POST /flows` or `GET /flows` response.
+	FlowId string `json:"flow_id"`
+
+	// Name Name of the widget.
+	Name string `json:"name"`
+
+	// SessionIdleTimeout Session idle timeout in seconds before the session is automatically ended. Defaults to 1800 (30 minutes) when omitted.
+	SessionIdleTimeout *int `json:"session_idle_timeout,omitempty"`
+
+	// ThemeConfig Cosmetic, customer-editable widget appearance settings. All fields are optional; omitted fields fall back to the platform default (blue bubble, no logo, bottom-right).
+	ThemeConfig *WebchatManagerWidgetThemeConfig `json:"theme_config,omitempty"`
+
+	// WelcomeMessage The message shown to the visitor when the widget loads.
+	WelcomeMessage string `json:"welcome_message"`
+}
+
+// PutWebchatWidgetsIdJSONBody defines parameters for PutWebchatWidgetsId.
+type PutWebchatWidgetsIdJSONBody struct {
+	// FlowId The flow to trigger on the visitor's first inbound message. Returned from the `POST /flows` or `GET /flows` response.
+	FlowId string `json:"flow_id"`
+
+	// Name Name of the widget.
+	Name string `json:"name"`
+
+	// SessionIdleTimeout Session idle timeout in seconds before the session is automatically ended.
+	SessionIdleTimeout *int `json:"session_idle_timeout,omitempty"`
+
+	// ThemeConfig Cosmetic, customer-editable widget appearance settings. All fields are optional; omitted fields fall back to the platform default (blue bubble, no logo, bottom-right).
+	ThemeConfig *WebchatManagerWidgetThemeConfig `json:"theme_config,omitempty"`
+
+	// WelcomeMessage The message shown to the visitor when the widget loads.
+	WelcomeMessage string `json:"welcome_message"`
+}
+
 // PostAccesskeysJSONRequestBody defines body for PostAccesskeys for application/json ContentType.
 type PostAccesskeysJSONRequestBody PostAccesskeysJSONBody
 
@@ -10447,3 +10744,15 @@ type PostTrunksJSONRequestBody PostTrunksJSONBody
 
 // PutTrunksIdJSONRequestBody defines body for PutTrunksId for application/json ContentType.
 type PutTrunksIdJSONRequestBody PutTrunksIdJSONBody
+
+// PostWebchatMessagesJSONRequestBody defines body for PostWebchatMessages for application/json ContentType.
+type PostWebchatMessagesJSONRequestBody PostWebchatMessagesJSONBody
+
+// PostWebchatSessionsJSONRequestBody defines body for PostWebchatSessions for application/json ContentType.
+type PostWebchatSessionsJSONRequestBody PostWebchatSessionsJSONBody
+
+// PostWebchatWidgetsJSONRequestBody defines body for PostWebchatWidgets for application/json ContentType.
+type PostWebchatWidgetsJSONRequestBody PostWebchatWidgetsJSONBody
+
+// PutWebchatWidgetsIdJSONRequestBody defines body for PutWebchatWidgetsId for application/json ContentType.
+type PutWebchatWidgetsIdJSONRequestBody PutWebchatWidgetsIdJSONBody

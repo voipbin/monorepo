@@ -2302,6 +2302,272 @@ components:
         - description
         - next_member_id
 
+    WebchatManagerWidgetStatus:
+      type: string
+      description: "The status of the widget."
+      enum:
+        - "active"
+        - "inactive"
+      x-enum-varnames:
+        - WebchatManagerWidgetStatusActive
+        - WebchatManagerWidgetStatusInactive
+      example: "active"
+
+    WebchatManagerWidgetPosition:
+      type: string
+      description: "Where the floating bubble/panel renders on the customer's page."
+      enum:
+        - "bottom_right"
+        - "bottom_left"
+      x-enum-varnames:
+        - WebchatManagerWidgetPositionBottomRight
+        - WebchatManagerWidgetPositionBottomLeft
+      example: "bottom_right"
+
+    WebchatManagerWidgetThemeConfig:
+      type: object
+      description: "Cosmetic, customer-editable widget appearance settings. All fields are optional; omitted fields fall back to the platform default (blue bubble, no logo, bottom-right)."
+      properties:
+        primary_color:
+          type: string
+          description: "Hex color code for the widget's primary color."
+          pattern: '^#[0-9a-fA-F]{6}$'
+          example: "#1a73e8"
+        logo_url:
+          type: string
+          format: uri
+          description: "HTTPS URL of the logo image displayed in the widget header."
+          example: "https://cdn.example.com/logo.png"
+        position:
+          $ref: '#/components/schemas/WebchatManagerWidgetPosition'
+          description: "Where the floating bubble/panel renders on the customer's page."
+          example: "bottom_right"
+
+    WebchatManagerWidget:
+      type: object
+      description: "A customer's webchat widget configuration. Also issues a direct hash for anonymous visitor authentication."
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the widget. Returned from the `POST /widgets` or `GET /widgets` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        customer_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the associated customer. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
+        name:
+          type: string
+          description: "Name of the widget."
+          example: "Support Widget"
+        status:
+          $ref: '#/components/schemas/WebchatManagerWidgetStatus'
+          description: "The status of the widget."
+          example: "active"
+        welcome_message:
+          type: string
+          description: "The message shown to the visitor when the widget loads."
+          example: "Hi! How can we help you today?"
+        flow_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "The flow to trigger on the visitor's first inbound message. Returned from the `POST /flows` or `GET /flows` response."
+          example: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
+        session_idle_timeout:
+          type: integer
+          description: "Session idle timeout in seconds before the session is automatically ended."
+          example: 1800
+        theme_config:
+          $ref: '#/components/schemas/WebchatManagerWidgetThemeConfig'
+        tm_create:
+          type: string
+          format: date-time
+          x-go-type: string
+          description: "Timestamp when the widget was created."
+          example: "2026-01-15T09:30:00.000000Z"
+        tm_update:
+          type: string
+          format: date-time
+          x-go-type: string
+          description: "Timestamp when the widget was last updated."
+          example: "2026-01-15T09:30:00.000000Z"
+        tm_delete:
+          type: string
+          format: date-time
+          x-go-type: string
+          description: "Timestamp when the widget was deleted."
+          example: "2026-01-15T09:30:00.000000Z"
+      required:
+        - id
+        - customer_id
+        - name
+        - status
+        - welcome_message
+        - flow_id
+        - session_idle_timeout
+
+    WebchatManagerSessionStatus:
+      type: string
+      description: "The status of the session."
+      enum:
+        - "active"
+        - "ended"
+      x-enum-varnames:
+        - WebchatManagerSessionStatusActive
+        - WebchatManagerSessionStatusEnded
+      example: "active"
+
+    WebchatManagerSession:
+      type: object
+      description: "A webchat visitor session. Session.id doubles as the visitor's continuity token."
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the session, and the visitor's continuity token. Returned from the `POST /sessions` or `GET /sessions` response."
+          example: "7a1bcb1a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
+        customer_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the associated customer. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
+        widget_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "The widget this session belongs to. Returned from the `POST /widgets` or `GET /widgets` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        status:
+          $ref: '#/components/schemas/WebchatManagerSessionStatus'
+          description: "The status of the session."
+          example: "active"
+        tm_last_activity:
+          type: string
+          format: date-time
+          x-go-type: string
+          description: "Timestamp of the last activity on this session."
+          example: "2026-01-15T09:30:00.000000Z"
+        tm_create:
+          type: string
+          format: date-time
+          x-go-type: string
+          description: "Timestamp when the session was created."
+          example: "2026-01-15T09:30:00.000000Z"
+        tm_update:
+          type: string
+          format: date-time
+          x-go-type: string
+          description: "Timestamp when the session was last updated."
+          example: "2026-01-15T09:30:00.000000Z"
+        tm_end:
+          type: string
+          format: date-time
+          x-go-type: string
+          description: "Timestamp when the session ended."
+          example: "2026-01-15T09:30:00.000000Z"
+      required:
+        - id
+        - customer_id
+        - widget_id
+        - status
+
+    WebchatManagerMessageDirection:
+      type: string
+      description: "The direction of the message."
+      enum:
+        - "inbound"
+        - "outbound"
+      x-enum-varnames:
+        - WebchatManagerMessageDirectionInbound
+        - WebchatManagerMessageDirectionOutbound
+      example: "inbound"
+
+    WebchatManagerMessageStatus:
+      type: string
+      description: "The status of the message."
+      enum:
+        - "sent"
+        - "delivered"
+        - "failed"
+      x-enum-varnames:
+        - WebchatManagerMessageStatusSent
+        - WebchatManagerMessageStatusDelivered
+        - WebchatManagerMessageStatusFailed
+      example: "sent"
+
+    WebchatManagerMessage:
+      type: object
+      description: "A single chat message within a webchat session."
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the message. Returned from the `POST /messages` or `GET /messages` response."
+          example: "5e9c2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
+        customer_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the associated customer. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
+        widget_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "The widget this message belongs to (denormalized from the session). Returned from the `POST /widgets` or `GET /widgets` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        session_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "The session this message belongs to. Returned from the `POST /sessions` or `GET /sessions` response."
+          example: "7a1bcb1a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
+        direction:
+          $ref: '#/components/schemas/WebchatManagerMessageDirection'
+          description: "The direction of the message."
+          example: "inbound"
+        status:
+          $ref: '#/components/schemas/WebchatManagerMessageStatus'
+          description: "The status of the message."
+          example: "sent"
+        sender_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "The agent ID for an agent-typed outbound reply; empty for flow/AI-originated or inbound messages."
+          example: "d4e5f6a7-b8c9-0d1e-2f3a-4b5c6d7e8f90"
+        text:
+          type: string
+          description: "The text content of the message."
+          example: "Hi, I have a question about pricing"
+        tm_create:
+          type: string
+          format: date-time
+          x-go-type: string
+          description: "Timestamp when the message was created."
+          example: "2026-01-15T09:30:00.000000Z"
+        tm_delete:
+          type: string
+          format: date-time
+          x-go-type: string
+          description: "Timestamp when the message was deleted."
+          example: "2026-01-15T09:30:00.000000Z"
+      required:
+        - id
+        - customer_id
+        - widget_id
+        - session_id
+        - direction
+        - status
+        - text
+
     AIManagerAIcallAssistanceType:
       type: string
       description: Type of assistance entity associated with the AI call.
@@ -7975,6 +8241,25 @@ paths:
     $ref: './paths/teams/id_direct_hash_regenerate.yaml'
   /teams:
     $ref: './paths/teams/main.yaml'
+
+  /webchat_widgets:
+    $ref: './paths/webchat_widgets/main.yaml'
+  /webchat_widgets/{id}:
+    $ref: './paths/webchat_widgets/id.yaml'
+  /webchat_widgets/{id}/direct_hash_regenerate:
+    $ref: './paths/webchat_widgets/id_direct_hash_regenerate.yaml'
+
+  /webchat_sessions:
+    $ref: './paths/webchat_sessions/main.yaml'
+  /webchat_sessions/{id}:
+    $ref: './paths/webchat_sessions/id.yaml'
+  /webchat_sessions/{id}/end:
+    $ref: './paths/webchat_sessions/id_end.yaml'
+
+  /webchat_messages:
+    $ref: './paths/webchat_messages/main.yaml'
+  /webchat_messages/{id}:
+    $ref: './paths/webchat_messages/id.yaml'
 
   /auth/boot:
     $ref: './paths/auth/boot.yaml'

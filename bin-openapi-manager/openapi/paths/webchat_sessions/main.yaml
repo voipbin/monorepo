@@ -1,0 +1,60 @@
+get:
+  summary: Get a list of webchat sessions.
+  description: Retrieves a paginated list of webchat sessions for the authenticated customer.
+  tags:
+    - Webchat
+  parameters:
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: A list of webchat sessions.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/CommonPagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/WebchatManagerSession'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '500':
+      $ref: '#/components/responses/InternalError'
+
+post:
+  summary: Create a new webchat session.
+  description: Creates a new webchat visitor session for the given widget. Always creates a brand-new session.
+  tags:
+    - Webchat
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            widget_id:
+              type: string
+              format: uuid
+              x-go-type: string
+              description: "The widget to create the session for. Returned from the `POST /widgets` or `GET /widgets` response."
+              example: "550e8400-e29b-41d4-a716-446655440000"
+          required:
+            - widget_id
+  responses:
+    '200':
+      description: Details of the created session.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/WebchatManagerSession'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '500':
+      $ref: '#/components/responses/InternalError'
