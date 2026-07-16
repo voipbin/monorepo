@@ -9,6 +9,7 @@ import (
 	amagent "monorepo/bin-agent-manager/models/agent"
 
 	wcmessage "monorepo/bin-webchat-manager/models/message"
+	wcsession "monorepo/bin-webchat-manager/models/session"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -166,6 +167,15 @@ func (h *serviceHandler) WebchatMessageCreate(
 		if !h.hasPermission(ctx, a, s.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 			return nil, serviceerrors.ErrPermissionDenied
 		}
+		// Reject posting into an already-ended session -- session.go's
+		// own documented lifecycle contract states "ended is terminal; a
+		// subsequent message ... creates a NEW Session", but nothing in
+		// this call path (or webchat-manager's messagehandler) enforced
+		// that before this fix, making Status purely cosmetic. Found via
+		// round 10 of an independent adversarial code review.
+		if s.Status == wcsession.StatusEnded {
+			return nil, serviceerrors.ErrNotFound
+		}
 		senderID = a.AgentID()
 		// For an accesskey-authenticated caller, a.AgentID() is always
 		// uuid.Nil (a.Agent is nil for Accesskey identities) -- without
@@ -201,6 +211,11 @@ func (h *serviceHandler) WebchatMessageCreate(
 		}
 		if s.WidgetID != a.DirectScope.ResourceID {
 			return nil, serviceerrors.ErrPermissionDenied
+		}
+		// Same ended-session rejection as the agent/accesskey branch
+		// above -- round 10 finding.
+		if s.Status == wcsession.StatusEnded {
+			return nil, serviceerrors.ErrNotFound
 		}
 		// Confirm the widget itself hasn't been soft-deleted -- a widget
 		// deletion is expected to shut off the visitor-facing surface

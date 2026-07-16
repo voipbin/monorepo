@@ -600,3 +600,80 @@ func Test_WebchatSessionEnd_Direct_WidgetSoftDeleted(t *testing.T) {
 		t.Error("Wrong match. expect: not found error, got: ok")
 	}
 }
+
+// Test_WebchatMessageCreate_Direct_SessionEnded is a regression test for
+// round 10's finding: session.go's own documented lifecycle contract
+// states "ended is terminal; a subsequent message ... creates a NEW
+// Session", but nothing in the call path enforced that -- a visitor
+// could keep posting inbound messages into an already-ended session_id
+// indefinitely, making Status purely cosmetic.
+func Test_WebchatMessageCreate_Direct_SessionEnded(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &serviceHandler{
+		utilHandler: utilhandler.NewUtilHandler(),
+		reqHandler:  mockReq,
+	}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
+	widgetID := uuid.FromStringOrNil("aa847807-6cc4-4713-9dec-53a42840e74c")
+	sessionID := uuid.FromStringOrNil("876defde-ad5e-11ed-a8c3-7bc19647b03f")
+
+	a := auth.NewDirectIdentity(&auth.DirectScope{
+		CustomerID:           customerID,
+		ResourceType:         "webchat_widget",
+		ResourceID:           widgetID,
+		AllowedResourceTypes: []string{"webchat_session"},
+	})
+
+	endedSession := &wcsession.Session{
+		Identity: commonidentity.Identity{ID: sessionID, CustomerID: customerID},
+		WidgetID: widgetID,
+		Status:   wcsession.StatusEnded,
+	}
+
+	mockReq.EXPECT().WebchatV1SessionGet(ctx, sessionID).Return(endedSession, nil)
+
+	if _, err := h.WebchatMessageCreate(ctx, a, sessionID, wcmessage.DirectionInbound, "zombie message"); err == nil {
+		t.Error("Wrong match. expect: not found error, got: ok")
+	}
+}
+
+// Test_WebchatMessageCreate_Agent_SessionEnded is the agent/accesskey-path
+// equivalent of the above (round 10 finding).
+func Test_WebchatMessageCreate_Agent_SessionEnded(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &serviceHandler{
+		utilHandler: utilhandler.NewUtilHandler(),
+		reqHandler:  mockReq,
+	}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
+	sessionID := uuid.FromStringOrNil("876defde-ad5e-11ed-a8c3-7bc19647b03f")
+
+	a := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+			CustomerID: customerID,
+		},
+		Permission: amagent.PermissionCustomerAdmin,
+	})
+
+	endedSession := &wcsession.Session{
+		Identity: commonidentity.Identity{ID: sessionID, CustomerID: customerID},
+		Status:   wcsession.StatusEnded,
+	}
+
+	mockReq.EXPECT().WebchatV1SessionGet(ctx, sessionID).Return(endedSession, nil)
+
+	if _, err := h.WebchatMessageCreate(ctx, a, sessionID, wcmessage.DirectionOutbound, "reply to zombie"); err == nil {
+		t.Error("Wrong match. expect: not found error, got: ok")
+	}
+}
