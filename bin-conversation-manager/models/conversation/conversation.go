@@ -83,4 +83,5 @@ const (
 	TypeLine     Type = "line"
 	TypeWhatsApp Type = "whatsapp"
 	TypeEmail    Type = "email" // outbound email
+	TypeWebchat  Type = "webchat"
 )

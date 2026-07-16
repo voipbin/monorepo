@@ -12,12 +12,13 @@ const DirectPrefix = "direct."
 
 // Resource type constants for Direct records
 const (
-	ResourceTypeAI         = "ai"
-	ResourceTypeAITeam     = "ai_team"
-	ResourceTypeAgent      = "agent"
-	ResourceTypeQueue      = "queue"
-	ResourceTypeConference = "conference"
-	ResourceTypeExtension  = "extension"
+	ResourceTypeAI            = "ai"
+	ResourceTypeAITeam        = "ai_team"
+	ResourceTypeAgent         = "agent"
+	ResourceTypeQueue         = "queue"
+	ResourceTypeConference    = "conference"
+	ResourceTypeExtension     = "extension"
+	ResourceTypeWebchatWidget = "webchat_widget"
 )
 
 // Direct data model

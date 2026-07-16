@@ -1,0 +1,123 @@
+get:
+  summary: Get webchat widget details.
+  description: Retrieves detailed information for a specific webchat widget by its ID.
+  tags:
+    - Webchat
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: "The unique identifier of the widget. Returned from the `POST /widgets` response."
+  responses:
+    '200':
+      description: Details of the requested widget.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/WebchatManagerWidget'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'
+
+put:
+  summary: Update a webchat widget.
+  description: Updates an existing webchat widget's basic info and returns the updated resource.
+  tags:
+    - Webchat
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: "The unique identifier of the widget. Returned from the `POST /widgets` response."
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+              description: Name of the widget.
+              example: "Support Widget"
+            welcome_message:
+              type: string
+              description: The message shown to the visitor when the widget loads.
+              example: "Hi! How can we help you today?"
+            flow_id:
+              type: string
+              format: uuid
+              x-go-type: string
+              description: "The flow to trigger on the visitor's first inbound message. Returned from the `POST /flows` or `GET /flows` response."
+              example: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
+            session_idle_timeout:
+              type: integer
+              description: Session idle timeout in seconds before the session is automatically ended.
+              example: 1800
+            theme_config:
+              $ref: '#/components/schemas/WebchatManagerWidgetThemeConfig'
+          required:
+            - name
+            - welcome_message
+            - flow_id
+  responses:
+    '200':
+      description: Details of the updated widget.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/WebchatManagerWidget'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'
+
+delete:
+  summary: Delete a webchat widget.
+  description: Deletes an existing webchat widget by its ID. Cascades to revoke the associated direct hash.
+  tags:
+    - Webchat
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: "The unique identifier of the widget. Returned from the `POST /widgets` response."
+  responses:
+    '200':
+      description: Widget successfully deleted.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/WebchatManagerWidget'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'

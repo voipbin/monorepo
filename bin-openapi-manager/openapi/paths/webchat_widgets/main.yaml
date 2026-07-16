@@ -1,0 +1,76 @@
+get:
+  summary: Get a list of webchat widgets.
+  description: Retrieves a paginated list of webchat widgets for the authenticated customer.
+  tags:
+    - Webchat
+  parameters:
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: A list of webchat widgets.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/CommonPagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/WebchatManagerWidget'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '500':
+      $ref: '#/components/responses/InternalError'
+
+post:
+  summary: Create a new webchat widget.
+  description: Creates a new webchat widget configuration. Also issues a direct hash for anonymous visitor authentication.
+  tags:
+    - Webchat
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+              description: Name of the widget.
+              example: "Support Widget"
+            welcome_message:
+              type: string
+              description: The message shown to the visitor when the widget loads.
+              example: "Hi! How can we help you today?"
+            flow_id:
+              type: string
+              format: uuid
+              x-go-type: string
+              description: "The flow to trigger on the visitor's first inbound message. Returned from the `POST /flows` or `GET /flows` response."
+              example: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
+            session_idle_timeout:
+              type: integer
+              description: Session idle timeout in seconds before the session is automatically ended. Defaults to 1800 (30 minutes) when omitted.
+              example: 1800
+            theme_config:
+              $ref: '#/components/schemas/WebchatManagerWidgetThemeConfig'
+          required:
+            - name
+            - welcome_message
+            - flow_id
+  responses:
+    '200':
+      description: Details of the created widget.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/WebchatManagerWidget'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '500':
+      $ref: '#/components/responses/InternalError'

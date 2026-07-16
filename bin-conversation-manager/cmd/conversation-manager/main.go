@@ -175,6 +175,7 @@ func runSubscribe(
 	subscribeTargets := []string{
 		string(commonoutline.QueueNameMessageEvent),
 		string(commonoutline.QueueNameEmailEvent),
+		string(commonoutline.QueueNameWebchatEvent),
 	}
 
 	subHandler := subscribehandler.NewSubscribeHandler(

@@ -1,0 +1,30 @@
+post:
+  summary: End a webchat session.
+  description: Explicitly ends an active webchat session and returns the updated resource.
+  tags:
+    - Webchat
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: "The unique identifier of the session. Returned from the `POST /sessions` response."
+  responses:
+    '200':
+      description: Session ended successfully.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/WebchatManagerSession'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'

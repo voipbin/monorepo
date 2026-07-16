@@ -40,6 +40,7 @@ const (
 	ServiceNameTranscribeManager ServiceName = "transcribe-manager"
 	ServiceNameTransferManager   ServiceName = "transfer-manager"
 	ServiceNameTTSManager        ServiceName = "tts-manager"
+	ServiceNameWebchatManager    ServiceName = "webchat-manager"
 	ServiceNameWebhookManager    ServiceName = "webhook-manager"
 )
 

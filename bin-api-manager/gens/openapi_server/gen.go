@@ -1007,6 +1007,37 @@ const (
 	TtsManagerSpeakingStatusStopped    TtsManagerSpeakingStatus = "stopped"
 )
 
+// Defines values for WebchatManagerMessageDirection.
+const (
+	WebchatManagerMessageDirectionInbound  WebchatManagerMessageDirection = "inbound"
+	WebchatManagerMessageDirectionOutbound WebchatManagerMessageDirection = "outbound"
+)
+
+// Defines values for WebchatManagerMessageStatus.
+const (
+	WebchatManagerMessageStatusDelivered WebchatManagerMessageStatus = "delivered"
+	WebchatManagerMessageStatusFailed    WebchatManagerMessageStatus = "failed"
+	WebchatManagerMessageStatusSent      WebchatManagerMessageStatus = "sent"
+)
+
+// Defines values for WebchatManagerSessionStatus.
+const (
+	WebchatManagerSessionStatusActive WebchatManagerSessionStatus = "active"
+	WebchatManagerSessionStatusEnded  WebchatManagerSessionStatus = "ended"
+)
+
+// Defines values for WebchatManagerWidgetPosition.
+const (
+	WebchatManagerWidgetPositionBottomLeft  WebchatManagerWidgetPosition = "bottom_left"
+	WebchatManagerWidgetPositionBottomRight WebchatManagerWidgetPosition = "bottom_right"
+)
+
+// Defines values for WebchatManagerWidgetStatus.
+const (
+	WebchatManagerWidgetStatusActive   WebchatManagerWidgetStatus = "active"
+	WebchatManagerWidgetStatusInactive WebchatManagerWidgetStatus = "inactive"
+)
+
 // Defines values for PostAisJSONBodyType.
 const (
 	PostAisJSONBodyTypeInsight PostAisJSONBodyType = "insight"
@@ -5089,6 +5120,129 @@ type TtsManagerSpeakingReferenceType string
 // TtsManagerSpeakingStatus Status of the speaking session.
 type TtsManagerSpeakingStatus string
 
+// WebchatManagerMessage A single chat message within a webchat session.
+type WebchatManagerMessage struct {
+	// CustomerId The unique identifier of the associated customer. Returned from the `GET /customers` response.
+	CustomerId string `json:"customer_id"`
+
+	// Direction The direction of the message.
+	Direction WebchatManagerMessageDirection `json:"direction"`
+
+	// Id The unique identifier of the message. Returned from the `POST /messages` or `GET /messages` response.
+	Id string `json:"id"`
+
+	// SenderId The agent ID for an agent-typed outbound reply; empty for flow/AI-originated or inbound messages.
+	SenderId *string `json:"sender_id,omitempty"`
+
+	// SessionId The session this message belongs to. Returned from the `POST /sessions` or `GET /sessions` response.
+	SessionId string `json:"session_id"`
+
+	// Status The status of the message.
+	Status WebchatManagerMessageStatus `json:"status"`
+
+	// Text The text content of the message.
+	Text string `json:"text"`
+
+	// TmCreate Timestamp when the message was created.
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the message was deleted.
+	TmDelete *string `json:"tm_delete,omitempty"`
+
+	// WidgetId The widget this message belongs to (denormalized from the session). Returned from the `POST /widgets` or `GET /widgets` response.
+	WidgetId string `json:"widget_id"`
+}
+
+// WebchatManagerMessageDirection The direction of the message.
+type WebchatManagerMessageDirection string
+
+// WebchatManagerMessageStatus The status of the message.
+type WebchatManagerMessageStatus string
+
+// WebchatManagerSession A webchat visitor session. Session.id doubles as the visitor's continuity token.
+type WebchatManagerSession struct {
+	// CustomerId The unique identifier of the associated customer. Returned from the `GET /customers` response.
+	CustomerId string `json:"customer_id"`
+
+	// Id The unique identifier of the session, and the visitor's continuity token. Returned from the `POST /sessions` or `GET /sessions` response.
+	Id string `json:"id"`
+
+	// Status The status of the session.
+	Status WebchatManagerSessionStatus `json:"status"`
+
+	// TmCreate Timestamp when the session was created.
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmEnd Timestamp when the session ended.
+	TmEnd *string `json:"tm_end,omitempty"`
+
+	// TmLastActivity Timestamp of the last activity on this session.
+	TmLastActivity *string `json:"tm_last_activity,omitempty"`
+
+	// TmUpdate Timestamp when the session was last updated.
+	TmUpdate *string `json:"tm_update,omitempty"`
+
+	// WidgetId The widget this session belongs to. Returned from the `POST /widgets` or `GET /widgets` response.
+	WidgetId string `json:"widget_id"`
+}
+
+// WebchatManagerSessionStatus The status of the session.
+type WebchatManagerSessionStatus string
+
+// WebchatManagerWidget A customer's webchat widget configuration. Also issues a direct hash for anonymous visitor authentication.
+type WebchatManagerWidget struct {
+	// CustomerId The unique identifier of the associated customer. Returned from the `GET /customers` response.
+	CustomerId string `json:"customer_id"`
+
+	// FlowId The flow to trigger on the visitor's first inbound message. Returned from the `POST /flows` or `GET /flows` response.
+	FlowId string `json:"flow_id"`
+
+	// Id The unique identifier of the widget. Returned from the `POST /widgets` or `GET /widgets` response.
+	Id string `json:"id"`
+
+	// Name Name of the widget.
+	Name string `json:"name"`
+
+	// SessionIdleTimeout Session idle timeout in seconds before the session is automatically ended.
+	SessionIdleTimeout int `json:"session_idle_timeout"`
+
+	// Status The status of the widget.
+	Status WebchatManagerWidgetStatus `json:"status"`
+
+	// ThemeConfig Cosmetic, customer-editable widget appearance settings. All fields are optional; omitted fields fall back to the platform default (blue bubble, no logo, bottom-right).
+	ThemeConfig *WebchatManagerWidgetThemeConfig `json:"theme_config,omitempty"`
+
+	// TmCreate Timestamp when the widget was created.
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the widget was deleted.
+	TmDelete *string `json:"tm_delete,omitempty"`
+
+	// TmUpdate Timestamp when the widget was last updated.
+	TmUpdate *string `json:"tm_update,omitempty"`
+
+	// WelcomeMessage The message shown to the visitor when the widget loads.
+	WelcomeMessage string `json:"welcome_message"`
+}
+
+// WebchatManagerWidgetPosition Where the floating bubble/panel renders on the customer's page.
+type WebchatManagerWidgetPosition string
+
+// WebchatManagerWidgetStatus The status of the widget.
+type WebchatManagerWidgetStatus string
+
+// WebchatManagerWidgetThemeConfig Cosmetic, customer-editable widget appearance settings. All fields are optional; omitted fields fall back to the platform default (blue bubble, no logo, bottom-right).
+type WebchatManagerWidgetThemeConfig struct {
+	// LogoUrl HTTPS URL of the logo image displayed in the widget header.
+	LogoUrl *string `json:"logo_url,omitempty"`
+
+	// Position Where the floating bubble/panel renders on the customer's page.
+	Position *WebchatManagerWidgetPosition `json:"position,omitempty"`
+
+	// PrimaryColor Hex color code for the widget's primary color.
+	PrimaryColor *string `json:"primary_color,omitempty"`
+}
+
 // PageSize defines model for PageSize.
 type PageSize = int
 
@@ -7705,6 +7859,87 @@ type PutTrunksIdJSONBody struct {
 	Username   string                     `json:"username"`
 }
 
+// GetWebchatMessagesParams defines parameters for GetWebchatMessages.
+type GetWebchatMessagesParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostWebchatMessagesJSONBody defines parameters for PostWebchatMessages.
+type PostWebchatMessagesJSONBody struct {
+	// Direction The direction of the message.
+	Direction WebchatManagerMessageDirection `json:"direction"`
+
+	// SessionId The session to send the message on. Returned from the `POST /sessions` or `GET /sessions` response.
+	SessionId string `json:"session_id"`
+
+	// Text The text content of the message.
+	Text string `json:"text"`
+}
+
+// GetWebchatSessionsParams defines parameters for GetWebchatSessions.
+type GetWebchatSessionsParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostWebchatSessionsJSONBody defines parameters for PostWebchatSessions.
+type PostWebchatSessionsJSONBody struct {
+	// WidgetId The widget to create the session for. Returned from the `POST /widgets` or `GET /widgets` response.
+	WidgetId string `json:"widget_id"`
+}
+
+// GetWebchatWidgetsParams defines parameters for GetWebchatWidgets.
+type GetWebchatWidgetsParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostWebchatWidgetsJSONBody defines parameters for PostWebchatWidgets.
+type PostWebchatWidgetsJSONBody struct {
+	// FlowId The flow to trigger on the visitor's first inbound message. Returned from the `POST /flows` or `GET /flows` response.
+	FlowId string `json:"flow_id"`
+
+	// Name Name of the widget.
+	Name string `json:"name"`
+
+	// SessionIdleTimeout Session idle timeout in seconds before the session is automatically ended. Defaults to 1800 (30 minutes) when omitted.
+	SessionIdleTimeout *int `json:"session_idle_timeout,omitempty"`
+
+	// ThemeConfig Cosmetic, customer-editable widget appearance settings. All fields are optional; omitted fields fall back to the platform default (blue bubble, no logo, bottom-right).
+	ThemeConfig *WebchatManagerWidgetThemeConfig `json:"theme_config,omitempty"`
+
+	// WelcomeMessage The message shown to the visitor when the widget loads.
+	WelcomeMessage string `json:"welcome_message"`
+}
+
+// PutWebchatWidgetsIdJSONBody defines parameters for PutWebchatWidgetsId.
+type PutWebchatWidgetsIdJSONBody struct {
+	// FlowId The flow to trigger on the visitor's first inbound message. Returned from the `POST /flows` or `GET /flows` response.
+	FlowId string `json:"flow_id"`
+
+	// Name Name of the widget.
+	Name string `json:"name"`
+
+	// SessionIdleTimeout Session idle timeout in seconds before the session is automatically ended.
+	SessionIdleTimeout *int `json:"session_idle_timeout,omitempty"`
+
+	// ThemeConfig Cosmetic, customer-editable widget appearance settings. All fields are optional; omitted fields fall back to the platform default (blue bubble, no logo, bottom-right).
+	ThemeConfig *WebchatManagerWidgetThemeConfig `json:"theme_config,omitempty"`
+
+	// WelcomeMessage The message shown to the visitor when the widget loads.
+	WelcomeMessage string `json:"welcome_message"`
+}
+
 // PostAccesskeysJSONRequestBody defines body for PostAccesskeys for application/json ContentType.
 type PostAccesskeysJSONRequestBody PostAccesskeysJSONBody
 
@@ -8130,6 +8365,18 @@ type PostTrunksJSONRequestBody PostTrunksJSONBody
 
 // PutTrunksIdJSONRequestBody defines body for PutTrunksId for application/json ContentType.
 type PutTrunksIdJSONRequestBody PutTrunksIdJSONBody
+
+// PostWebchatMessagesJSONRequestBody defines body for PostWebchatMessages for application/json ContentType.
+type PostWebchatMessagesJSONRequestBody PostWebchatMessagesJSONBody
+
+// PostWebchatSessionsJSONRequestBody defines body for PostWebchatSessions for application/json ContentType.
+type PostWebchatSessionsJSONRequestBody PostWebchatSessionsJSONBody
+
+// PostWebchatWidgetsJSONRequestBody defines body for PostWebchatWidgets for application/json ContentType.
+type PostWebchatWidgetsJSONRequestBody PostWebchatWidgetsJSONBody
+
+// PutWebchatWidgetsIdJSONRequestBody defines body for PutWebchatWidgetsId for application/json ContentType.
+type PutWebchatWidgetsIdJSONRequestBody PutWebchatWidgetsIdJSONBody
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
@@ -9306,6 +9553,51 @@ type ServerInterface interface {
 	// Update a trunk.
 	// (PUT /trunks/{id})
 	PutTrunksId(c *gin.Context, id string)
+	// Get a list of webchat messages.
+	// (GET /webchat_messages)
+	GetWebchatMessages(c *gin.Context, params GetWebchatMessagesParams)
+	// Create a new webchat message.
+	// (POST /webchat_messages)
+	PostWebchatMessages(c *gin.Context)
+	// Delete a webchat message.
+	// (DELETE /webchat_messages/{id})
+	DeleteWebchatMessagesId(c *gin.Context, id openapi_types.UUID)
+	// Get webchat message details.
+	// (GET /webchat_messages/{id})
+	GetWebchatMessagesId(c *gin.Context, id openapi_types.UUID)
+	// Get a list of webchat sessions.
+	// (GET /webchat_sessions)
+	GetWebchatSessions(c *gin.Context, params GetWebchatSessionsParams)
+	// Create a new webchat session.
+	// (POST /webchat_sessions)
+	PostWebchatSessions(c *gin.Context)
+	// Delete a webchat session.
+	// (DELETE /webchat_sessions/{id})
+	DeleteWebchatSessionsId(c *gin.Context, id openapi_types.UUID)
+	// Get webchat session details.
+	// (GET /webchat_sessions/{id})
+	GetWebchatSessionsId(c *gin.Context, id openapi_types.UUID)
+	// End a webchat session.
+	// (POST /webchat_sessions/{id}/end)
+	PostWebchatSessionsIdEnd(c *gin.Context, id openapi_types.UUID)
+	// Get a list of webchat widgets.
+	// (GET /webchat_widgets)
+	GetWebchatWidgets(c *gin.Context, params GetWebchatWidgetsParams)
+	// Create a new webchat widget.
+	// (POST /webchat_widgets)
+	PostWebchatWidgets(c *gin.Context)
+	// Delete a webchat widget.
+	// (DELETE /webchat_widgets/{id})
+	DeleteWebchatWidgetsId(c *gin.Context, id openapi_types.UUID)
+	// Get webchat widget details.
+	// (GET /webchat_widgets/{id})
+	GetWebchatWidgetsId(c *gin.Context, id openapi_types.UUID)
+	// Update a webchat widget.
+	// (PUT /webchat_widgets/{id})
+	PutWebchatWidgetsId(c *gin.Context, id openapi_types.UUID)
+	// Regenerate direct hash for a webchat widget.
+	// (POST /webchat_widgets/{id}/direct_hash_regenerate)
+	PostWebchatWidgetsIdDirectHashRegenerate(c *gin.Context, id openapi_types.UUID)
 	// Create a new websocket connection.
 	// (GET /ws)
 	GetWs(c *gin.Context)
@@ -19359,6 +19651,363 @@ func (siw *ServerInterfaceWrapper) PutTrunksId(c *gin.Context) {
 	siw.Handler.PutTrunksId(c, id)
 }
 
+// GetWebchatMessages operation middleware
+func (siw *ServerInterfaceWrapper) GetWebchatMessages(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetWebchatMessagesParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetWebchatMessages(c, params)
+}
+
+// PostWebchatMessages operation middleware
+func (siw *ServerInterfaceWrapper) PostWebchatMessages(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostWebchatMessages(c)
+}
+
+// DeleteWebchatMessagesId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteWebchatMessagesId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteWebchatMessagesId(c, id)
+}
+
+// GetWebchatMessagesId operation middleware
+func (siw *ServerInterfaceWrapper) GetWebchatMessagesId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetWebchatMessagesId(c, id)
+}
+
+// GetWebchatSessions operation middleware
+func (siw *ServerInterfaceWrapper) GetWebchatSessions(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetWebchatSessionsParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetWebchatSessions(c, params)
+}
+
+// PostWebchatSessions operation middleware
+func (siw *ServerInterfaceWrapper) PostWebchatSessions(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostWebchatSessions(c)
+}
+
+// DeleteWebchatSessionsId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteWebchatSessionsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteWebchatSessionsId(c, id)
+}
+
+// GetWebchatSessionsId operation middleware
+func (siw *ServerInterfaceWrapper) GetWebchatSessionsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetWebchatSessionsId(c, id)
+}
+
+// PostWebchatSessionsIdEnd operation middleware
+func (siw *ServerInterfaceWrapper) PostWebchatSessionsIdEnd(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostWebchatSessionsIdEnd(c, id)
+}
+
+// GetWebchatWidgets operation middleware
+func (siw *ServerInterfaceWrapper) GetWebchatWidgets(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetWebchatWidgetsParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetWebchatWidgets(c, params)
+}
+
+// PostWebchatWidgets operation middleware
+func (siw *ServerInterfaceWrapper) PostWebchatWidgets(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostWebchatWidgets(c)
+}
+
+// DeleteWebchatWidgetsId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteWebchatWidgetsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteWebchatWidgetsId(c, id)
+}
+
+// GetWebchatWidgetsId operation middleware
+func (siw *ServerInterfaceWrapper) GetWebchatWidgetsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetWebchatWidgetsId(c, id)
+}
+
+// PutWebchatWidgetsId operation middleware
+func (siw *ServerInterfaceWrapper) PutWebchatWidgetsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PutWebchatWidgetsId(c, id)
+}
+
+// PostWebchatWidgetsIdDirectHashRegenerate operation middleware
+func (siw *ServerInterfaceWrapper) PostWebchatWidgetsIdDirectHashRegenerate(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostWebchatWidgetsIdDirectHashRegenerate(c, id)
+}
+
 // GetWs operation middleware
 func (siw *ServerInterfaceWrapper) GetWs(c *gin.Context) {
 
@@ -19790,6 +20439,21 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.DELETE(options.BaseURL+"/trunks/:id", wrapper.DeleteTrunksId)
 	router.GET(options.BaseURL+"/trunks/:id", wrapper.GetTrunksId)
 	router.PUT(options.BaseURL+"/trunks/:id", wrapper.PutTrunksId)
+	router.GET(options.BaseURL+"/webchat_messages", wrapper.GetWebchatMessages)
+	router.POST(options.BaseURL+"/webchat_messages", wrapper.PostWebchatMessages)
+	router.DELETE(options.BaseURL+"/webchat_messages/:id", wrapper.DeleteWebchatMessagesId)
+	router.GET(options.BaseURL+"/webchat_messages/:id", wrapper.GetWebchatMessagesId)
+	router.GET(options.BaseURL+"/webchat_sessions", wrapper.GetWebchatSessions)
+	router.POST(options.BaseURL+"/webchat_sessions", wrapper.PostWebchatSessions)
+	router.DELETE(options.BaseURL+"/webchat_sessions/:id", wrapper.DeleteWebchatSessionsId)
+	router.GET(options.BaseURL+"/webchat_sessions/:id", wrapper.GetWebchatSessionsId)
+	router.POST(options.BaseURL+"/webchat_sessions/:id/end", wrapper.PostWebchatSessionsIdEnd)
+	router.GET(options.BaseURL+"/webchat_widgets", wrapper.GetWebchatWidgets)
+	router.POST(options.BaseURL+"/webchat_widgets", wrapper.PostWebchatWidgets)
+	router.DELETE(options.BaseURL+"/webchat_widgets/:id", wrapper.DeleteWebchatWidgetsId)
+	router.GET(options.BaseURL+"/webchat_widgets/:id", wrapper.GetWebchatWidgetsId)
+	router.PUT(options.BaseURL+"/webchat_widgets/:id", wrapper.PutWebchatWidgetsId)
+	router.POST(options.BaseURL+"/webchat_widgets/:id/direct_hash_regenerate", wrapper.PostWebchatWidgetsIdDirectHashRegenerate)
 	router.GET(options.BaseURL+"/ws", wrapper.GetWs)
 }
 
@@ -41937,6 +42601,814 @@ func (response PutTrunksId500JSONResponse) VisitPutTrunksIdResponse(w http.Respo
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetWebchatMessagesRequestObject struct {
+	Params GetWebchatMessagesParams
+}
+
+type GetWebchatMessagesResponseObject interface {
+	VisitGetWebchatMessagesResponse(w http.ResponseWriter) error
+}
+
+type GetWebchatMessages200JSONResponse struct {
+	// NextPageToken Cursor token for the next page of results. Pass this value as the page_token parameter in the next request.
+	NextPageToken *string                  `json:"next_page_token,omitempty"`
+	Result        *[]WebchatManagerMessage `json:"result,omitempty"`
+}
+
+func (response GetWebchatMessages200JSONResponse) VisitGetWebchatMessagesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetWebchatMessages401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetWebchatMessages401JSONResponse) VisitGetWebchatMessagesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetWebchatMessages500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetWebchatMessages500JSONResponse) VisitGetWebchatMessagesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostWebchatMessagesRequestObject struct {
+	Body *PostWebchatMessagesJSONRequestBody
+}
+
+type PostWebchatMessagesResponseObject interface {
+	VisitPostWebchatMessagesResponse(w http.ResponseWriter) error
+}
+
+type PostWebchatMessages200JSONResponse WebchatManagerMessage
+
+func (response PostWebchatMessages200JSONResponse) VisitPostWebchatMessagesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostWebchatMessages400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostWebchatMessages400JSONResponse) VisitPostWebchatMessagesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostWebchatMessages401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostWebchatMessages401JSONResponse) VisitPostWebchatMessagesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostWebchatMessages500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostWebchatMessages500JSONResponse) VisitPostWebchatMessagesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteWebchatMessagesIdRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type DeleteWebchatMessagesIdResponseObject interface {
+	VisitDeleteWebchatMessagesIdResponse(w http.ResponseWriter) error
+}
+
+type DeleteWebchatMessagesId200JSONResponse WebchatManagerMessage
+
+func (response DeleteWebchatMessagesId200JSONResponse) VisitDeleteWebchatMessagesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteWebchatMessagesId400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response DeleteWebchatMessagesId400JSONResponse) VisitDeleteWebchatMessagesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteWebchatMessagesId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response DeleteWebchatMessagesId401JSONResponse) VisitDeleteWebchatMessagesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteWebchatMessagesId403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response DeleteWebchatMessagesId403JSONResponse) VisitDeleteWebchatMessagesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteWebchatMessagesId404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response DeleteWebchatMessagesId404JSONResponse) VisitDeleteWebchatMessagesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteWebchatMessagesId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response DeleteWebchatMessagesId500JSONResponse) VisitDeleteWebchatMessagesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetWebchatMessagesIdRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type GetWebchatMessagesIdResponseObject interface {
+	VisitGetWebchatMessagesIdResponse(w http.ResponseWriter) error
+}
+
+type GetWebchatMessagesId200JSONResponse WebchatManagerMessage
+
+func (response GetWebchatMessagesId200JSONResponse) VisitGetWebchatMessagesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetWebchatMessagesId400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetWebchatMessagesId400JSONResponse) VisitGetWebchatMessagesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetWebchatMessagesId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetWebchatMessagesId401JSONResponse) VisitGetWebchatMessagesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetWebchatMessagesId403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetWebchatMessagesId403JSONResponse) VisitGetWebchatMessagesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetWebchatMessagesId404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response GetWebchatMessagesId404JSONResponse) VisitGetWebchatMessagesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetWebchatMessagesId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetWebchatMessagesId500JSONResponse) VisitGetWebchatMessagesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetWebchatSessionsRequestObject struct {
+	Params GetWebchatSessionsParams
+}
+
+type GetWebchatSessionsResponseObject interface {
+	VisitGetWebchatSessionsResponse(w http.ResponseWriter) error
+}
+
+type GetWebchatSessions200JSONResponse struct {
+	// NextPageToken Cursor token for the next page of results. Pass this value as the page_token parameter in the next request.
+	NextPageToken *string                  `json:"next_page_token,omitempty"`
+	Result        *[]WebchatManagerSession `json:"result,omitempty"`
+}
+
+func (response GetWebchatSessions200JSONResponse) VisitGetWebchatSessionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetWebchatSessions401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetWebchatSessions401JSONResponse) VisitGetWebchatSessionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetWebchatSessions500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetWebchatSessions500JSONResponse) VisitGetWebchatSessionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostWebchatSessionsRequestObject struct {
+	Body *PostWebchatSessionsJSONRequestBody
+}
+
+type PostWebchatSessionsResponseObject interface {
+	VisitPostWebchatSessionsResponse(w http.ResponseWriter) error
+}
+
+type PostWebchatSessions200JSONResponse WebchatManagerSession
+
+func (response PostWebchatSessions200JSONResponse) VisitPostWebchatSessionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostWebchatSessions400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostWebchatSessions400JSONResponse) VisitPostWebchatSessionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostWebchatSessions401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostWebchatSessions401JSONResponse) VisitPostWebchatSessionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostWebchatSessions500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostWebchatSessions500JSONResponse) VisitPostWebchatSessionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteWebchatSessionsIdRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type DeleteWebchatSessionsIdResponseObject interface {
+	VisitDeleteWebchatSessionsIdResponse(w http.ResponseWriter) error
+}
+
+type DeleteWebchatSessionsId200JSONResponse WebchatManagerSession
+
+func (response DeleteWebchatSessionsId200JSONResponse) VisitDeleteWebchatSessionsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteWebchatSessionsId400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response DeleteWebchatSessionsId400JSONResponse) VisitDeleteWebchatSessionsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteWebchatSessionsId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response DeleteWebchatSessionsId401JSONResponse) VisitDeleteWebchatSessionsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteWebchatSessionsId403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response DeleteWebchatSessionsId403JSONResponse) VisitDeleteWebchatSessionsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteWebchatSessionsId404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response DeleteWebchatSessionsId404JSONResponse) VisitDeleteWebchatSessionsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteWebchatSessionsId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response DeleteWebchatSessionsId500JSONResponse) VisitDeleteWebchatSessionsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetWebchatSessionsIdRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type GetWebchatSessionsIdResponseObject interface {
+	VisitGetWebchatSessionsIdResponse(w http.ResponseWriter) error
+}
+
+type GetWebchatSessionsId200JSONResponse WebchatManagerSession
+
+func (response GetWebchatSessionsId200JSONResponse) VisitGetWebchatSessionsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetWebchatSessionsId400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetWebchatSessionsId400JSONResponse) VisitGetWebchatSessionsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetWebchatSessionsId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetWebchatSessionsId401JSONResponse) VisitGetWebchatSessionsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetWebchatSessionsId403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetWebchatSessionsId403JSONResponse) VisitGetWebchatSessionsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetWebchatSessionsId404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response GetWebchatSessionsId404JSONResponse) VisitGetWebchatSessionsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetWebchatSessionsId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetWebchatSessionsId500JSONResponse) VisitGetWebchatSessionsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostWebchatSessionsIdEndRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type PostWebchatSessionsIdEndResponseObject interface {
+	VisitPostWebchatSessionsIdEndResponse(w http.ResponseWriter) error
+}
+
+type PostWebchatSessionsIdEnd200JSONResponse WebchatManagerSession
+
+func (response PostWebchatSessionsIdEnd200JSONResponse) VisitPostWebchatSessionsIdEndResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostWebchatSessionsIdEnd400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostWebchatSessionsIdEnd400JSONResponse) VisitPostWebchatSessionsIdEndResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostWebchatSessionsIdEnd401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostWebchatSessionsIdEnd401JSONResponse) VisitPostWebchatSessionsIdEndResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostWebchatSessionsIdEnd403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostWebchatSessionsIdEnd403JSONResponse) VisitPostWebchatSessionsIdEndResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostWebchatSessionsIdEnd404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostWebchatSessionsIdEnd404JSONResponse) VisitPostWebchatSessionsIdEndResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostWebchatSessionsIdEnd500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostWebchatSessionsIdEnd500JSONResponse) VisitPostWebchatSessionsIdEndResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetWebchatWidgetsRequestObject struct {
+	Params GetWebchatWidgetsParams
+}
+
+type GetWebchatWidgetsResponseObject interface {
+	VisitGetWebchatWidgetsResponse(w http.ResponseWriter) error
+}
+
+type GetWebchatWidgets200JSONResponse struct {
+	// NextPageToken Cursor token for the next page of results. Pass this value as the page_token parameter in the next request.
+	NextPageToken *string                 `json:"next_page_token,omitempty"`
+	Result        *[]WebchatManagerWidget `json:"result,omitempty"`
+}
+
+func (response GetWebchatWidgets200JSONResponse) VisitGetWebchatWidgetsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetWebchatWidgets401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetWebchatWidgets401JSONResponse) VisitGetWebchatWidgetsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetWebchatWidgets500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetWebchatWidgets500JSONResponse) VisitGetWebchatWidgetsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostWebchatWidgetsRequestObject struct {
+	Body *PostWebchatWidgetsJSONRequestBody
+}
+
+type PostWebchatWidgetsResponseObject interface {
+	VisitPostWebchatWidgetsResponse(w http.ResponseWriter) error
+}
+
+type PostWebchatWidgets200JSONResponse WebchatManagerWidget
+
+func (response PostWebchatWidgets200JSONResponse) VisitPostWebchatWidgetsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostWebchatWidgets400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostWebchatWidgets400JSONResponse) VisitPostWebchatWidgetsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostWebchatWidgets401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostWebchatWidgets401JSONResponse) VisitPostWebchatWidgetsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostWebchatWidgets500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostWebchatWidgets500JSONResponse) VisitPostWebchatWidgetsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteWebchatWidgetsIdRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type DeleteWebchatWidgetsIdResponseObject interface {
+	VisitDeleteWebchatWidgetsIdResponse(w http.ResponseWriter) error
+}
+
+type DeleteWebchatWidgetsId200JSONResponse WebchatManagerWidget
+
+func (response DeleteWebchatWidgetsId200JSONResponse) VisitDeleteWebchatWidgetsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteWebchatWidgetsId400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response DeleteWebchatWidgetsId400JSONResponse) VisitDeleteWebchatWidgetsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteWebchatWidgetsId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response DeleteWebchatWidgetsId401JSONResponse) VisitDeleteWebchatWidgetsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteWebchatWidgetsId403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response DeleteWebchatWidgetsId403JSONResponse) VisitDeleteWebchatWidgetsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteWebchatWidgetsId404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response DeleteWebchatWidgetsId404JSONResponse) VisitDeleteWebchatWidgetsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteWebchatWidgetsId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response DeleteWebchatWidgetsId500JSONResponse) VisitDeleteWebchatWidgetsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetWebchatWidgetsIdRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type GetWebchatWidgetsIdResponseObject interface {
+	VisitGetWebchatWidgetsIdResponse(w http.ResponseWriter) error
+}
+
+type GetWebchatWidgetsId200JSONResponse WebchatManagerWidget
+
+func (response GetWebchatWidgetsId200JSONResponse) VisitGetWebchatWidgetsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetWebchatWidgetsId400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetWebchatWidgetsId400JSONResponse) VisitGetWebchatWidgetsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetWebchatWidgetsId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetWebchatWidgetsId401JSONResponse) VisitGetWebchatWidgetsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetWebchatWidgetsId403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetWebchatWidgetsId403JSONResponse) VisitGetWebchatWidgetsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetWebchatWidgetsId404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response GetWebchatWidgetsId404JSONResponse) VisitGetWebchatWidgetsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetWebchatWidgetsId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetWebchatWidgetsId500JSONResponse) VisitGetWebchatWidgetsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutWebchatWidgetsIdRequestObject struct {
+	Id   openapi_types.UUID `json:"id"`
+	Body *PutWebchatWidgetsIdJSONRequestBody
+}
+
+type PutWebchatWidgetsIdResponseObject interface {
+	VisitPutWebchatWidgetsIdResponse(w http.ResponseWriter) error
+}
+
+type PutWebchatWidgetsId200JSONResponse WebchatManagerWidget
+
+func (response PutWebchatWidgetsId200JSONResponse) VisitPutWebchatWidgetsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutWebchatWidgetsId400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PutWebchatWidgetsId400JSONResponse) VisitPutWebchatWidgetsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutWebchatWidgetsId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PutWebchatWidgetsId401JSONResponse) VisitPutWebchatWidgetsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutWebchatWidgetsId403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PutWebchatWidgetsId403JSONResponse) VisitPutWebchatWidgetsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutWebchatWidgetsId404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PutWebchatWidgetsId404JSONResponse) VisitPutWebchatWidgetsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutWebchatWidgetsId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PutWebchatWidgetsId500JSONResponse) VisitPutWebchatWidgetsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostWebchatWidgetsIdDirectHashRegenerateRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type PostWebchatWidgetsIdDirectHashRegenerateResponseObject interface {
+	VisitPostWebchatWidgetsIdDirectHashRegenerateResponse(w http.ResponseWriter) error
+}
+
+type PostWebchatWidgetsIdDirectHashRegenerate200JSONResponse WebchatManagerWidget
+
+func (response PostWebchatWidgetsIdDirectHashRegenerate200JSONResponse) VisitPostWebchatWidgetsIdDirectHashRegenerateResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostWebchatWidgetsIdDirectHashRegenerate400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostWebchatWidgetsIdDirectHashRegenerate400JSONResponse) VisitPostWebchatWidgetsIdDirectHashRegenerateResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostWebchatWidgetsIdDirectHashRegenerate401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostWebchatWidgetsIdDirectHashRegenerate401JSONResponse) VisitPostWebchatWidgetsIdDirectHashRegenerateResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostWebchatWidgetsIdDirectHashRegenerate403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostWebchatWidgetsIdDirectHashRegenerate403JSONResponse) VisitPostWebchatWidgetsIdDirectHashRegenerateResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostWebchatWidgetsIdDirectHashRegenerate404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostWebchatWidgetsIdDirectHashRegenerate404JSONResponse) VisitPostWebchatWidgetsIdDirectHashRegenerateResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostWebchatWidgetsIdDirectHashRegenerate500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostWebchatWidgetsIdDirectHashRegenerate500JSONResponse) VisitPostWebchatWidgetsIdDirectHashRegenerateResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type GetWsRequestObject struct {
 }
 
@@ -43137,6 +44609,51 @@ type StrictServerInterface interface {
 	// Update a trunk.
 	// (PUT /trunks/{id})
 	PutTrunksId(ctx context.Context, request PutTrunksIdRequestObject) (PutTrunksIdResponseObject, error)
+	// Get a list of webchat messages.
+	// (GET /webchat_messages)
+	GetWebchatMessages(ctx context.Context, request GetWebchatMessagesRequestObject) (GetWebchatMessagesResponseObject, error)
+	// Create a new webchat message.
+	// (POST /webchat_messages)
+	PostWebchatMessages(ctx context.Context, request PostWebchatMessagesRequestObject) (PostWebchatMessagesResponseObject, error)
+	// Delete a webchat message.
+	// (DELETE /webchat_messages/{id})
+	DeleteWebchatMessagesId(ctx context.Context, request DeleteWebchatMessagesIdRequestObject) (DeleteWebchatMessagesIdResponseObject, error)
+	// Get webchat message details.
+	// (GET /webchat_messages/{id})
+	GetWebchatMessagesId(ctx context.Context, request GetWebchatMessagesIdRequestObject) (GetWebchatMessagesIdResponseObject, error)
+	// Get a list of webchat sessions.
+	// (GET /webchat_sessions)
+	GetWebchatSessions(ctx context.Context, request GetWebchatSessionsRequestObject) (GetWebchatSessionsResponseObject, error)
+	// Create a new webchat session.
+	// (POST /webchat_sessions)
+	PostWebchatSessions(ctx context.Context, request PostWebchatSessionsRequestObject) (PostWebchatSessionsResponseObject, error)
+	// Delete a webchat session.
+	// (DELETE /webchat_sessions/{id})
+	DeleteWebchatSessionsId(ctx context.Context, request DeleteWebchatSessionsIdRequestObject) (DeleteWebchatSessionsIdResponseObject, error)
+	// Get webchat session details.
+	// (GET /webchat_sessions/{id})
+	GetWebchatSessionsId(ctx context.Context, request GetWebchatSessionsIdRequestObject) (GetWebchatSessionsIdResponseObject, error)
+	// End a webchat session.
+	// (POST /webchat_sessions/{id}/end)
+	PostWebchatSessionsIdEnd(ctx context.Context, request PostWebchatSessionsIdEndRequestObject) (PostWebchatSessionsIdEndResponseObject, error)
+	// Get a list of webchat widgets.
+	// (GET /webchat_widgets)
+	GetWebchatWidgets(ctx context.Context, request GetWebchatWidgetsRequestObject) (GetWebchatWidgetsResponseObject, error)
+	// Create a new webchat widget.
+	// (POST /webchat_widgets)
+	PostWebchatWidgets(ctx context.Context, request PostWebchatWidgetsRequestObject) (PostWebchatWidgetsResponseObject, error)
+	// Delete a webchat widget.
+	// (DELETE /webchat_widgets/{id})
+	DeleteWebchatWidgetsId(ctx context.Context, request DeleteWebchatWidgetsIdRequestObject) (DeleteWebchatWidgetsIdResponseObject, error)
+	// Get webchat widget details.
+	// (GET /webchat_widgets/{id})
+	GetWebchatWidgetsId(ctx context.Context, request GetWebchatWidgetsIdRequestObject) (GetWebchatWidgetsIdResponseObject, error)
+	// Update a webchat widget.
+	// (PUT /webchat_widgets/{id})
+	PutWebchatWidgetsId(ctx context.Context, request PutWebchatWidgetsIdRequestObject) (PutWebchatWidgetsIdResponseObject, error)
+	// Regenerate direct hash for a webchat widget.
+	// (POST /webchat_widgets/{id}/direct_hash_regenerate)
+	PostWebchatWidgetsIdDirectHashRegenerate(ctx context.Context, request PostWebchatWidgetsIdDirectHashRegenerateRequestObject) (PostWebchatWidgetsIdDirectHashRegenerateResponseObject, error)
 	// Create a new websocket connection.
 	// (GET /ws)
 	GetWs(ctx context.Context, request GetWsRequestObject) (GetWsResponseObject, error)
@@ -54717,6 +56234,437 @@ func (sh *strictHandler) PutTrunksId(ctx *gin.Context, id string) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PutTrunksIdResponseObject); ok {
 		if err := validResponse.VisitPutTrunksIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetWebchatMessages operation middleware
+func (sh *strictHandler) GetWebchatMessages(ctx *gin.Context, params GetWebchatMessagesParams) {
+	var request GetWebchatMessagesRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetWebchatMessages(ctx, request.(GetWebchatMessagesRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetWebchatMessages")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetWebchatMessagesResponseObject); ok {
+		if err := validResponse.VisitGetWebchatMessagesResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostWebchatMessages operation middleware
+func (sh *strictHandler) PostWebchatMessages(ctx *gin.Context) {
+	var request PostWebchatMessagesRequestObject
+
+	var body PostWebchatMessagesJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostWebchatMessages(ctx, request.(PostWebchatMessagesRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostWebchatMessages")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostWebchatMessagesResponseObject); ok {
+		if err := validResponse.VisitPostWebchatMessagesResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteWebchatMessagesId operation middleware
+func (sh *strictHandler) DeleteWebchatMessagesId(ctx *gin.Context, id openapi_types.UUID) {
+	var request DeleteWebchatMessagesIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteWebchatMessagesId(ctx, request.(DeleteWebchatMessagesIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteWebchatMessagesId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteWebchatMessagesIdResponseObject); ok {
+		if err := validResponse.VisitDeleteWebchatMessagesIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetWebchatMessagesId operation middleware
+func (sh *strictHandler) GetWebchatMessagesId(ctx *gin.Context, id openapi_types.UUID) {
+	var request GetWebchatMessagesIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetWebchatMessagesId(ctx, request.(GetWebchatMessagesIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetWebchatMessagesId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetWebchatMessagesIdResponseObject); ok {
+		if err := validResponse.VisitGetWebchatMessagesIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetWebchatSessions operation middleware
+func (sh *strictHandler) GetWebchatSessions(ctx *gin.Context, params GetWebchatSessionsParams) {
+	var request GetWebchatSessionsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetWebchatSessions(ctx, request.(GetWebchatSessionsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetWebchatSessions")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetWebchatSessionsResponseObject); ok {
+		if err := validResponse.VisitGetWebchatSessionsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostWebchatSessions operation middleware
+func (sh *strictHandler) PostWebchatSessions(ctx *gin.Context) {
+	var request PostWebchatSessionsRequestObject
+
+	var body PostWebchatSessionsJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostWebchatSessions(ctx, request.(PostWebchatSessionsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostWebchatSessions")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostWebchatSessionsResponseObject); ok {
+		if err := validResponse.VisitPostWebchatSessionsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteWebchatSessionsId operation middleware
+func (sh *strictHandler) DeleteWebchatSessionsId(ctx *gin.Context, id openapi_types.UUID) {
+	var request DeleteWebchatSessionsIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteWebchatSessionsId(ctx, request.(DeleteWebchatSessionsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteWebchatSessionsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteWebchatSessionsIdResponseObject); ok {
+		if err := validResponse.VisitDeleteWebchatSessionsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetWebchatSessionsId operation middleware
+func (sh *strictHandler) GetWebchatSessionsId(ctx *gin.Context, id openapi_types.UUID) {
+	var request GetWebchatSessionsIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetWebchatSessionsId(ctx, request.(GetWebchatSessionsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetWebchatSessionsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetWebchatSessionsIdResponseObject); ok {
+		if err := validResponse.VisitGetWebchatSessionsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostWebchatSessionsIdEnd operation middleware
+func (sh *strictHandler) PostWebchatSessionsIdEnd(ctx *gin.Context, id openapi_types.UUID) {
+	var request PostWebchatSessionsIdEndRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostWebchatSessionsIdEnd(ctx, request.(PostWebchatSessionsIdEndRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostWebchatSessionsIdEnd")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostWebchatSessionsIdEndResponseObject); ok {
+		if err := validResponse.VisitPostWebchatSessionsIdEndResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetWebchatWidgets operation middleware
+func (sh *strictHandler) GetWebchatWidgets(ctx *gin.Context, params GetWebchatWidgetsParams) {
+	var request GetWebchatWidgetsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetWebchatWidgets(ctx, request.(GetWebchatWidgetsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetWebchatWidgets")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetWebchatWidgetsResponseObject); ok {
+		if err := validResponse.VisitGetWebchatWidgetsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostWebchatWidgets operation middleware
+func (sh *strictHandler) PostWebchatWidgets(ctx *gin.Context) {
+	var request PostWebchatWidgetsRequestObject
+
+	var body PostWebchatWidgetsJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostWebchatWidgets(ctx, request.(PostWebchatWidgetsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostWebchatWidgets")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostWebchatWidgetsResponseObject); ok {
+		if err := validResponse.VisitPostWebchatWidgetsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteWebchatWidgetsId operation middleware
+func (sh *strictHandler) DeleteWebchatWidgetsId(ctx *gin.Context, id openapi_types.UUID) {
+	var request DeleteWebchatWidgetsIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteWebchatWidgetsId(ctx, request.(DeleteWebchatWidgetsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteWebchatWidgetsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteWebchatWidgetsIdResponseObject); ok {
+		if err := validResponse.VisitDeleteWebchatWidgetsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetWebchatWidgetsId operation middleware
+func (sh *strictHandler) GetWebchatWidgetsId(ctx *gin.Context, id openapi_types.UUID) {
+	var request GetWebchatWidgetsIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetWebchatWidgetsId(ctx, request.(GetWebchatWidgetsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetWebchatWidgetsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetWebchatWidgetsIdResponseObject); ok {
+		if err := validResponse.VisitGetWebchatWidgetsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PutWebchatWidgetsId operation middleware
+func (sh *strictHandler) PutWebchatWidgetsId(ctx *gin.Context, id openapi_types.UUID) {
+	var request PutWebchatWidgetsIdRequestObject
+
+	request.Id = id
+
+	var body PutWebchatWidgetsIdJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PutWebchatWidgetsId(ctx, request.(PutWebchatWidgetsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PutWebchatWidgetsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PutWebchatWidgetsIdResponseObject); ok {
+		if err := validResponse.VisitPutWebchatWidgetsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostWebchatWidgetsIdDirectHashRegenerate operation middleware
+func (sh *strictHandler) PostWebchatWidgetsIdDirectHashRegenerate(ctx *gin.Context, id openapi_types.UUID) {
+	var request PostWebchatWidgetsIdDirectHashRegenerateRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostWebchatWidgetsIdDirectHashRegenerate(ctx, request.(PostWebchatWidgetsIdDirectHashRegenerateRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostWebchatWidgetsIdDirectHashRegenerate")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostWebchatWidgetsIdDirectHashRegenerateResponseObject); ok {
+		if err := validResponse.VisitPostWebchatWidgetsIdDirectHashRegenerateResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

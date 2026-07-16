@@ -107,6 +107,10 @@ import (
 
 	tmtransfer "monorepo/bin-transfer-manager/models/transfer"
 
+	wcmessage "monorepo/bin-webchat-manager/models/message"
+	wcsession "monorepo/bin-webchat-manager/models/session"
+	wcwidget "monorepo/bin-webchat-manager/models/widget"
+
 	tmspeaking "monorepo/bin-tts-manager/models/speaking"
 	tmstreaming "monorepo/bin-tts-manager/models/streaming"
 	tmtts "monorepo/bin-tts-manager/models/tts"
@@ -1486,6 +1490,50 @@ type RequestHandler interface {
 	// webhook-manager webhooks
 	WebhookV1WebhookSend(ctx context.Context, customerID uuid.UUID, dataType wmwebhook.DataType, messageType string, messageData []byte) error
 	WebhookV1WebhookSendToDestination(ctx context.Context, customerID uuid.UUID, destination string, method wmwebhook.MethodType, dataType wmwebhook.DataType, messageData []byte) error
+
+	// webchat-manager widgets
+	WebchatV1WidgetCreate(
+		ctx context.Context,
+		customerID uuid.UUID,
+		name string,
+		welcomeMessage string,
+		flowID uuid.UUID,
+		sessionIdleTimeout int,
+		themeConfig *wcwidget.ThemeConfig,
+	) (*wcwidget.Widget, error)
+	WebchatV1WidgetGet(ctx context.Context, id uuid.UUID) (*wcwidget.Widget, error)
+	WebchatV1WidgetList(ctx context.Context, pageToken string, pageSize uint64, filters map[wcwidget.Field]any) ([]*wcwidget.Widget, error)
+	WebchatV1WidgetUpdate(
+		ctx context.Context,
+		id uuid.UUID,
+		name string,
+		welcomeMessage string,
+		flowID uuid.UUID,
+		sessionIdleTimeout int,
+		themeConfig *wcwidget.ThemeConfig,
+	) (*wcwidget.Widget, error)
+	WebchatV1WidgetDelete(ctx context.Context, id uuid.UUID) (*wcwidget.Widget, error)
+	WebchatV1WidgetDirectHashRegenerate(ctx context.Context, id uuid.UUID) (*wcwidget.Widget, error)
+
+	// webchat-manager sessions
+	WebchatV1SessionCreate(ctx context.Context, customerID uuid.UUID, widgetID uuid.UUID) (*wcsession.Session, error)
+	WebchatV1SessionGet(ctx context.Context, id uuid.UUID) (*wcsession.Session, error)
+	WebchatV1SessionList(ctx context.Context, pageToken string, pageSize uint64, filters map[wcsession.Field]any) ([]*wcsession.Session, error)
+	WebchatV1SessionDelete(ctx context.Context, id uuid.UUID) (*wcsession.Session, error)
+	WebchatV1SessionEnd(ctx context.Context, id uuid.UUID) (*wcsession.Session, error)
+
+	// webchat-manager messages
+	WebchatV1MessageCreate(
+		ctx context.Context,
+		customerID uuid.UUID,
+		sessionID uuid.UUID,
+		direction wcmessage.Direction,
+		senderID uuid.UUID,
+		text string,
+	) (*wcmessage.Message, error)
+	WebchatV1MessageGet(ctx context.Context, id uuid.UUID) (*wcmessage.Message, error)
+	WebchatV1MessageList(ctx context.Context, pageToken string, pageSize uint64, filters map[wcmessage.Field]any) ([]*wcmessage.Message, error)
+	WebchatV1MessageDelete(ctx context.Context, id uuid.UUID) (*wcmessage.Message, error)
 }
 
 type requestHandler struct {

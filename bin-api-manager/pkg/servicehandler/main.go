@@ -67,6 +67,9 @@ import (
 	omoutdial "monorepo/bin-outdial-manager/models/outdial"
 	omoutdialtarget "monorepo/bin-outdial-manager/models/outdialtarget"
 	qmqueue "monorepo/bin-queue-manager/models/queue"
+	wcmessage "monorepo/bin-webchat-manager/models/message"
+	wcsession "monorepo/bin-webchat-manager/models/session"
+	wcwidget "monorepo/bin-webchat-manager/models/widget"
 	qmqueuecall "monorepo/bin-queue-manager/models/queuecall"
 
 	rmextension "monorepo/bin-registrar-manager/models/extension"
@@ -872,6 +875,48 @@ type ServiceHandler interface {
 		timeoutWait int,
 		timeoutService int,
 	) (*qmqueue.WebhookMessage, error)
+
+	// webchat handlers
+	WebchatWidgetGet(ctx context.Context, a *auth.AuthIdentity, widgetID uuid.UUID) (*wcwidget.WebhookMessage, error)
+	WebchatWidgetList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*wcwidget.WebhookMessage, error)
+	WebchatWidgetCreate(
+		ctx context.Context,
+		a *auth.AuthIdentity,
+		name string,
+		welcomeMessage string,
+		flowID uuid.UUID,
+		sessionIdleTimeout int,
+		themeConfig *wcwidget.ThemeConfig,
+	) (*wcwidget.WebhookMessage, error)
+	WebchatWidgetUpdate(
+		ctx context.Context,
+		a *auth.AuthIdentity,
+		widgetID uuid.UUID,
+		name string,
+		welcomeMessage string,
+		flowID uuid.UUID,
+		sessionIdleTimeout int,
+		themeConfig *wcwidget.ThemeConfig,
+	) (*wcwidget.WebhookMessage, error)
+	WebchatWidgetDelete(ctx context.Context, a *auth.AuthIdentity, widgetID uuid.UUID) (*wcwidget.WebhookMessage, error)
+	WebchatWidgetDirectHashRegenerate(ctx context.Context, a *auth.AuthIdentity, widgetID uuid.UUID) (*wcwidget.WebhookMessage, error)
+
+	WebchatSessionGet(ctx context.Context, a *auth.AuthIdentity, sessionID uuid.UUID) (*wcsession.WebhookMessage, error)
+	WebchatSessionList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*wcsession.WebhookMessage, error)
+	WebchatSessionCreate(ctx context.Context, a *auth.AuthIdentity, widgetID uuid.UUID) (*wcsession.WebhookMessage, error)
+	WebchatSessionDelete(ctx context.Context, a *auth.AuthIdentity, sessionID uuid.UUID) (*wcsession.WebhookMessage, error)
+	WebchatSessionEnd(ctx context.Context, a *auth.AuthIdentity, sessionID uuid.UUID) (*wcsession.WebhookMessage, error)
+
+	WebchatMessageGet(ctx context.Context, a *auth.AuthIdentity, messageID uuid.UUID) (*wcmessage.WebhookMessage, error)
+	WebchatMessageList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*wcmessage.WebhookMessage, error)
+	WebchatMessageCreate(
+		ctx context.Context,
+		a *auth.AuthIdentity,
+		sessionID uuid.UUID,
+		direction wcmessage.Direction,
+		text string,
+	) (*wcmessage.WebhookMessage, error)
+	WebchatMessageDelete(ctx context.Context, a *auth.AuthIdentity, messageID uuid.UUID) (*wcmessage.WebhookMessage, error)
 	QueueUpdateTagIDs(ctx context.Context, a *auth.AuthIdentity, queueID uuid.UUID, tagIDs []uuid.UUID) (*qmqueue.WebhookMessage, error)
 	QueueUpdateRoutingMethod(ctx context.Context, a *auth.AuthIdentity, queueID uuid.UUID, routingMethod qmqueue.RoutingMethod) (*qmqueue.WebhookMessage, error)
 	QueueDirectHashRegenerate(ctx context.Context, a *auth.AuthIdentity, queueID uuid.UUID) (*qmqueue.WebhookMessage, error)

@@ -60,6 +60,8 @@ replace monorepo/bin-tts-manager => ../bin-tts-manager
 
 replace monorepo/bin-webhook-manager => ../bin-webhook-manager
 
+replace monorepo/bin-webchat-manager => ../bin-webchat-manager
+
 replace monorepo/bin-customer-manager => ../bin-customer-manager
 
 require (
@@ -128,6 +130,7 @@ require (
 	monorepo/bin-transcribe-manager v0.0.0-20240405044227-febd49f8b700
 	monorepo/bin-transfer-manager v0.0.0-20230419025515-44dea928ef34
 	monorepo/bin-tts-manager v0.0.0-20240313070648-addf67d64996
+	monorepo/bin-webchat-manager v0.0.0-00010101000000-000000000000
 	monorepo/bin-webhook-manager v0.0.0-20240313071253-ebca1db1437c
 )
 
