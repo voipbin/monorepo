@@ -155,6 +155,10 @@ parameters:
     type: boolean
     default: false
 
+  run-bin-webchat-manager:
+    type: boolean
+    default: false
+
   run-bin-webhook-manager:
     type: boolean
     default: false
@@ -746,6 +750,23 @@ workflows:
           <<: *context_production
           requires:
             - bin-tts-manager-build
+
+  bin-webchat-manager:
+    when: << pipeline.parameters.run-bin-webchat-manager >>
+    jobs:
+      - build-approval:
+          type: approval
+      - bin-webchat-manager-test:
+          requires:
+            - build-approval
+      - bin-webchat-manager-build:
+          <<: *context_production
+          requires:
+            - bin-webchat-manager-test
+      - bin-webchat-manager-release:
+          <<: *context_production
+          requires:
+            - bin-webchat-manager-build
 
   bin-webhook-manager:
     when: << pipeline.parameters.run-bin-webhook-manager >>
@@ -1685,6 +1706,33 @@ jobs:
           project-repository: bin-tts-manager
           image-name: tts-manager
           source-directory: bin-tts-manager
+
+  # bin-webchat-manager
+  bin-webchat-manager-test:
+    docker: *go_image
+    resource_class: small
+    steps:
+      - go-test:
+          source-directory: bin-webchat-manager
+
+  bin-webchat-manager-build:
+    docker: *gcp_image
+    resource_class: small
+    steps:
+      - docker-build:
+          project-id: voipbin
+          project-repository: bin-webchat-manager
+          source-directory: bin-webchat-manager
+
+  bin-webchat-manager-release:
+    docker: *gcloud_image
+    resource_class: small
+    steps:
+      - docker-release:
+          project-id: voipbin
+          project-repository: bin-webchat-manager
+          source-directory: bin-webchat-manager
+          image-name: webchat-manager
 
   # bin-webhook-manager
   bin-webhook-manager-test:

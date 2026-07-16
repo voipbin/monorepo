@@ -48,6 +48,7 @@ workflows:
             bin-transfer-manager/.*     run-bin-transfer-manager true
             bin-trigger-sender/.*       run-bin-trigger-sender true
             bin-tts-manager/.*          run-bin-tts-manager true
+            bin-webchat-manager/.*      run-bin-webchat-manager true
             bin-webhook-manager/.*      run-bin-webhook-manager true
 
             voip-asterisk-proxy/.*      run-voip-asterisk-proxy true
