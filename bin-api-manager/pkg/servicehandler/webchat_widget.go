@@ -167,7 +167,12 @@ func (h *serviceHandler) WebchatWidgetCreate(
 	}
 	log.WithField("widget", tmp).Debug("Create a new widget.")
 
+	// Unlike GET/List/Update, the create response is the one place the
+	// widget's direct hash IS surfaced -- it's the visitor-facing embed
+	// script's data-hash value, shown to the customer exactly once. See
+	// wcwidget.ConvertWebhookMessage's doc comment for the rationale.
 	res := tmp.ConvertWebhookMessage()
+	res.DirectHash = tmp.Hash
 	return res, nil
 }
 
@@ -305,6 +310,9 @@ func (h *serviceHandler) WebchatWidgetDirectHashRegenerate(ctx context.Context, 
 		return nil, err
 	}
 
+	// Same rationale as WebchatWidgetCreate: the regenerate response is
+	// the one other place the new hash is surfaced to the customer.
 	res := tmp.ConvertWebhookMessage()
+	res.DirectHash = tmp.Hash
 	return res, nil
 }

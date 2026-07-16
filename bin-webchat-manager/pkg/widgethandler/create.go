@@ -59,6 +59,7 @@ func (h *widgetHandler) Create(
 		Status: widget.StatusActive,
 
 		DirectID: d.ID,
+		Hash:     d.Hash,
 
 		WelcomeMessage: welcomeMessage,
 		FlowID:         flowID,

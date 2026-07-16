@@ -2383,6 +2383,10 @@ components:
           example: 1800
         theme_config:
           $ref: '#/components/schemas/WebchatManagerWidgetThemeConfig'
+        direct_hash:
+          type: string
+          description: "Hash used by the embed script (data-hash attribute) to authenticate anonymous visitors via POST /auth/boot. Only returned by POST /webchat_widgets and POST /webchat_widgets/{id}/direct_hash_regenerate -- never returned by GET, since it is a secret embedded in the customer's public website."
+          example: "a8f3b2c1d4e5"
         tm_create:
           type: string
           format: date-time

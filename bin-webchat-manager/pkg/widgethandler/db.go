@@ -125,8 +125,23 @@ func (h *widgetHandler) DirectHashRegenerate(ctx context.Context, id uuid.UUID) 
 		return nil, fmt.Errorf("widget has no direct hash to regenerate")
 	}
 
-	if _, err := h.reqHandler.DirectV1DirectRegenerate(ctx, w.DirectID); err != nil {
+	d, err := h.reqHandler.DirectV1DirectRegenerate(ctx, w.DirectID)
+	if err != nil {
 		log.Errorf("Could not regenerate direct hash. err: %v", err)
+		return nil, err
+	}
+	log.WithField("direct", d).Debugf("Direct hash regenerated. direct_id: %s", d.ID)
+
+	// persist the newly regenerated hash string onto the widget --
+	// direct-manager owns the value, but the widget keeps a
+	// denormalized copy so API responses don't need a second
+	// round-trip on every read (mirrors bin-ai-manager's
+	// DirectHashRegenerate, see aihandler/direct_hash.go).
+	fields := map[widget.Field]any{
+		widget.FieldHash: d.Hash,
+	}
+	if err := h.db.WidgetUpdate(ctx, id, fields); err != nil {
+		log.Errorf("Could not update widget direct hash. err: %v", err)
 		return nil, err
 	}
 

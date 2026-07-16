@@ -24,6 +24,15 @@ type Widget struct {
 	// a Widget with DirectID = uuid.Nil is "provisioning incomplete".
 	DirectID uuid.UUID `json:"direct_id,omitempty" db:"direct_id,uuid"`
 
+	// Hash is the direct hash string itself, used by the embed script
+	// (data-hash="<hash>") to authenticate anonymous visitors via
+	// POST /auth/boot. Mirrors the DirectHash pattern used by AI/Team
+	// (see bin-ai-manager/models/ai/main.go's DirectHash field) --
+	// direct-manager is the source of truth for the hash value, this
+	// is a denormalized copy so API responses don't need a second
+	// round-trip to direct-manager on every widget read.
+	Hash string `json:"direct_hash,omitempty" db:"direct_hash"`
+
 	WelcomeMessage string    `json:"welcome_message,omitempty" db:"welcome_message"`
 	FlowID         uuid.UUID `json:"flow_id,omitempty" db:"flow_id,uuid"`
 

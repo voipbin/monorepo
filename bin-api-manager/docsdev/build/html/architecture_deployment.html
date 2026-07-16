@@ -8,7 +8,7 @@
 
     <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Deployment Architecture - VoIPBin Documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
     
@@ -999,14 +999,14 @@
 <span class="o">|</span>                                           <span class="o">|</span>
 <span class="o">|</span>  <span class="n">Node</span> <span class="mi">2</span> <span class="p">(</span><span class="n">Mirror</span><span class="p">)</span>                          <span class="o">|</span>
 <span class="o">|</span>  <span class="o">+----------------------------------+</span>     <span class="o">|</span>
-<span class="o">|</span>  <span class="o">|</span>  <span class="n">Queues</span><span class="p">:</span> <span class="n">Mirrored</span> <span class="kn">from</span><span class="w"> </span><span class="nn">Node</span> <span class="mi">1</span>    <span class="o">|</span>     <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>  <span class="n">Queues</span><span class="p">:</span> <span class="n">Mirrored</span> <span class="kn">from</span> <span class="nn">Node</span> <span class="mi">1</span>    <span class="o">|</span>     <span class="o">|</span>
 <span class="o">|</span>  <span class="o">|</span>  <span class="n">CPU</span><span class="p">:</span> <span class="mi">4</span> <span class="n">vCPU</span>                     <span class="o">|</span>     <span class="o">|</span>
 <span class="o">|</span>  <span class="o">|</span>  <span class="n">Memory</span><span class="p">:</span> <span class="mi">16</span> <span class="n">GB</span>                   <span class="o">|</span>     <span class="o">|</span>
 <span class="o">|</span>  <span class="o">+----------------------------------+</span>     <span class="o">|</span>
 <span class="o">|</span>                                           <span class="o">|</span>
 <span class="o">|</span>  <span class="n">Node</span> <span class="mi">3</span> <span class="p">(</span><span class="n">Mirror</span><span class="p">)</span>                          <span class="o">|</span>
 <span class="o">|</span>  <span class="o">+----------------------------------+</span>     <span class="o">|</span>
-<span class="o">|</span>  <span class="o">|</span>  <span class="n">Queues</span><span class="p">:</span> <span class="n">Mirrored</span> <span class="kn">from</span><span class="w"> </span><span class="nn">Node</span> <span class="mi">1</span>    <span class="o">|</span>     <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>  <span class="n">Queues</span><span class="p">:</span> <span class="n">Mirrored</span> <span class="kn">from</span> <span class="nn">Node</span> <span class="mi">1</span>    <span class="o">|</span>     <span class="o">|</span>
 <span class="o">|</span>  <span class="o">|</span>  <span class="n">CPU</span><span class="p">:</span> <span class="mi">4</span> <span class="n">vCPU</span>                     <span class="o">|</span>     <span class="o">|</span>
 <span class="o">|</span>  <span class="o">|</span>  <span class="n">Memory</span><span class="p">:</span> <span class="mi">16</span> <span class="n">GB</span>                   <span class="o">|</span>     <span class="o">|</span>
 <span class="o">|</span>  <span class="o">+----------------------------------+</span>     <span class="o">|</span>
@@ -1230,7 +1230,7 @@
 <span class="o">+-------------------------------------------+</span>
 <span class="o">|</span> <span class="mf">1.</span> <span class="n">New</span> <span class="n">pod</span> <span class="n">created</span> <span class="k">with</span> <span class="n">new</span> <span class="n">version</span>       <span class="o">|</span>
 <span class="o">|</span> <span class="mf">2.</span> <span class="n">Wait</span> <span class="k">for</span> <span class="n">readiness</span> <span class="n">probe</span> <span class="n">success</span>       <span class="o">|</span>
-<span class="o">|</span> <span class="mf">3.</span> <span class="n">Remove</span> <span class="n">old</span> <span class="n">pod</span> <span class="kn">from</span><span class="w"> </span><span class="nn">service</span>            <span class="o">|</span>
+<span class="o">|</span> <span class="mf">3.</span> <span class="n">Remove</span> <span class="n">old</span> <span class="n">pod</span> <span class="kn">from</span> <span class="nn">service</span>            <span class="o">|</span>
 <span class="o">|</span> <span class="mf">4.</span> <span class="n">Terminate</span> <span class="n">old</span> <span class="n">pod</span>                      <span class="o">|</span>
 <span class="o">|</span> <span class="mf">5.</span> <span class="n">Repeat</span> <span class="k">for</span> <span class="nb">all</span> <span class="n">replicas</span>                <span class="o">|</span>
 <span class="o">+-------------------------------------------+</span>
