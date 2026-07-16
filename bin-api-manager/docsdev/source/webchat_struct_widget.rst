@@ -36,14 +36,10 @@ Widget struct
 * ``flow_id`` (UUID): The flow triggered on the visitor's first inbound message in each session. Obtained from the ``id`` field of ``GET /flows``.
 * ``session_idle_timeout`` (Integer): Session idle timeout in seconds before an inactive session is automatically ended. Default ``1800`` (30 minutes).
 * ``theme_config`` (Object, optional): Cosmetic widget appearance settings. See :ref:`Theme Config <webchat-struct-widget-theme-config>`. Omitted or ``null`` fields fall back to the platform default (blue bubble, no logo, bottom-right).
-* ``direct_hash`` (String, optional): Hash used by the embed script (``data-hash`` attribute) to authenticate anonymous visitors via ``POST /auth/boot``. See the note below -- only present on ``POST /webchat_widgets`` and ``POST /webchat_widgets/{id}/direct_hash_regenerate`` responses.
+* ``direct_hash`` (String, optional): Hash used by the embed script (``data-hash`` attribute) to authenticate anonymous visitors via ``POST /auth/boot``. Returned on every response (``GET``, list, create, update, regenerate).
 * ``tm_create`` (string, ISO 8601): Timestamp when the widget was created.
 * ``tm_update`` (string, ISO 8601): Timestamp of the last update to any widget property.
 * ``tm_delete`` (string, ISO 8601): Timestamp when the widget was deleted. Set to ``9999-01-01 00:00:00.000000`` if not deleted.
-
-.. note:: **AI Implementation Hint**
-
-   The widget's ``direct_hash`` (used to authenticate anonymous visitors via ``POST /auth/boot``) is intentionally **not** included in this response -- it is a one-time secret shown only in the raw ``POST /webchat_widgets`` create response and ``POST /webchat_widgets/{id}/direct_hash_regenerate`` response, never in subsequent ``GET`` calls. Store it securely when creating the widget; if lost, regenerate it.
 
 .. _webchat-struct-widget-status:
 

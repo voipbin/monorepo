@@ -10,8 +10,14 @@ import (
 // WebhookMessage defines the webchat widget webhook event / external response.
 // DirectID is intentionally omitted — it is an internal linkage to
 // bin-direct-manager and must never be exposed externally. DirectHash IS
-// exposed (unlike DirectID): it is the value the embed script needs to
-// authenticate anonymous visitors, mirroring the AI/Team DirectHash pattern.
+// exposed on every response (GET/List/Create/Update/Regenerate), mirroring
+// bin-ai-manager's AI/Team DirectHash pattern: the embed script's
+// data-hash value is not actually a secret in the traditional sense --
+// it's embedded directly into the customer's public website HTML, so
+// hiding it from GET responses only made it harder for the customer's
+// own admins to retrieve it, without providing any real confidentiality
+// (anyone can read it via "View Source" on the customer's site). See
+// VOIP-1264.
 type WebhookMessage struct {
 	commonidentity.Identity
 
@@ -33,17 +39,6 @@ type WebhookMessage struct {
 }
 
 // ConvertWebhookMessage converts the Widget into a WebhookMessage.
-//
-// DirectHash is intentionally left empty here -- unlike bin-ai-manager's
-// AI/Team resources (which return direct_hash on every GET), the webchat
-// widget's direct_hash is a one-time secret embedded directly into the
-// customer's public website via the embed script. Exposing it on every GET
-// would mean any authenticated agent viewing the widget list/detail page
-// could exfiltrate a value meant to be shown exactly once at
-// creation/regeneration time (see webchat_struct_widget.rst's "AI
-// Implementation Hint"). Callers that need to surface the hash (Create,
-// DirectHashRegenerate) must set WebhookMessage.DirectHash explicitly after
-// calling this -- see bin-api-manager's servicehandler/webchat_widget.go.
 func (h *Widget) ConvertWebhookMessage() *WebhookMessage {
 	return &WebhookMessage{
 		Identity: h.Identity,
@@ -57,6 +52,8 @@ func (h *Widget) ConvertWebhookMessage() *WebhookMessage {
 		SessionIdleTimeout: h.SessionIdleTimeout,
 
 		ThemeConfig: h.ThemeConfig,
+
+		DirectHash: h.Hash,
 
 		TMCreate: h.TMCreate,
 		TMUpdate: h.TMUpdate,
