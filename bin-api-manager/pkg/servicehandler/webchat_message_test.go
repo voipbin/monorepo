@@ -12,6 +12,8 @@ import (
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 
+	csaccesskey "monorepo/bin-customer-manager/models/accesskey"
+
 	wcmessage "monorepo/bin-webchat-manager/models/message"
 	wcsession "monorepo/bin-webchat-manager/models/session"
 
@@ -443,5 +445,57 @@ func Test_WebchatMessageGet_SoftDeleted(t *testing.T) {
 
 	if _, err := h.WebchatMessageGet(ctx, a, messageID); err == nil {
 		t.Error("Wrong match. expect: not found error, got: ok")
+	}
+}
+
+// Test_WebchatMessageCreate_Accesskey_SenderIDIsAccesskeyID is a
+// regression test for round 8's finding: an accesskey-authenticated
+// caller's a.AgentID() is always uuid.Nil (a.Agent is nil for Accesskey
+// identities), so without an explicit override the created message's
+// SenderID would collapse to the same empty value used for genuinely
+// automated flow/AI-originated messages, losing audit-trail
+// traceability. Verified by asserting the downstream RPC call carries
+// a.AccesskeyID(), not uuid.Nil.
+func Test_WebchatMessageCreate_Accesskey_SenderIDIsAccesskeyID(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &serviceHandler{
+		utilHandler: utilhandler.NewUtilHandler(),
+		reqHandler:  mockReq,
+	}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
+	accesskeyID := uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222")
+	sessionID := uuid.FromStringOrNil("876defde-ad5e-11ed-a8c3-7bc19647b03f")
+	messageID := uuid.FromStringOrNil("db596422-07f5-11f0-9f5e-4762c3c1e4e5")
+
+	a := auth.NewAccesskeyIdentity(&csaccesskey.Accesskey{
+		ID:         accesskeyID,
+		CustomerID: customerID,
+		Name:       "test-key",
+	})
+
+	session := &wcsession.Session{
+		Identity: commonidentity.Identity{ID: sessionID, CustomerID: customerID},
+	}
+	responseMessage := &wcmessage.Message{
+		Identity:  commonidentity.Identity{ID: messageID, CustomerID: customerID},
+		SessionID: sessionID,
+		Direction: wcmessage.DirectionOutbound,
+		SenderID:  accesskeyID,
+		Text:      "reply",
+	}
+
+	mockReq.EXPECT().WebchatV1SessionGet(ctx, sessionID).Return(session, nil)
+	// The mock strictly asserts accesskeyID as the SenderID arg -- if the
+	// handler forwarded a.AgentID() (uuid.Nil) instead, gomock would
+	// reject the call as unexpected and this test would fail.
+	mockReq.EXPECT().WebchatV1MessageCreate(ctx, customerID, sessionID, wcmessage.DirectionOutbound, accesskeyID, "reply").Return(responseMessage, nil)
+
+	if _, err := h.WebchatMessageCreate(ctx, a, sessionID, wcmessage.DirectionOutbound, "reply"); err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
 }

@@ -167,6 +167,19 @@ func (h *serviceHandler) WebchatMessageCreate(
 			return nil, serviceerrors.ErrPermissionDenied
 		}
 		senderID = a.AgentID()
+		// For an accesskey-authenticated caller, a.AgentID() is always
+		// uuid.Nil (a.Agent is nil for Accesskey identities) -- without
+		// this override, an accesskey-originated outbound reply would be
+		// persisted with the same empty SenderID as a genuinely
+		// automated flow/AI-originated message, losing the distinction
+		// documented in message.go ("SenderID: agent user ID for an
+		// agent-typed outbound reply; empty for flow/AI-originated or
+		// inbound messages") and making it impossible to audit which
+		// integration/accesskey sent a given reply. Mirrors the
+		// ownerID-resolution pattern in storage_file.go.
+		if a.IsAccesskey() {
+			senderID = a.AccesskeyID()
+		}
 		// An agent/accesskey caller can only ever author an outbound
 		// (business-to-visitor) reply.
 		direction = wcmessage.DirectionOutbound
