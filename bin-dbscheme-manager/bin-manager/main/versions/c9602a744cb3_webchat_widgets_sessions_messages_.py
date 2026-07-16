@@ -95,6 +95,14 @@ def upgrade():
         create index idx_webchat_sessions_widget_id_status on webchat_sessions(widget_id, status);
     """)
 
+    # widget-scoped session listing (WHERE widget_id = ? AND tm_delete
+    # IS NULL AND tm_create < ? ORDER BY tm_create DESC, per
+    # dbhandler.SessionList) isn't covered by the (widget_id, status)
+    # index above -- mirrors the analogous fix on webchat_messages.
+    op.execute("""
+        create index idx_webchat_sessions_widget_id_tm_create on webchat_sessions(widget_id, tm_create);
+    """)
+
     op.execute("""
         create index idx_webchat_sessions_status_tm_last_activity on webchat_sessions(status, tm_last_activity);
     """)
