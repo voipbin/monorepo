@@ -24,6 +24,8 @@ replace monorepo/bin-email-manager => ../bin-email-manager
 
 replace monorepo/bin-flow-manager => ../bin-flow-manager
 
+replace monorepo/bin-webchat-manager => ../bin-webchat-manager
+
 replace monorepo/bin-hook-manager => ../bin-hook-manager
 
 replace monorepo/bin-message-manager => ../bin-message-manager
@@ -189,6 +191,7 @@ require (
 	monorepo/bin-customer-manager v0.0.0-20240408042746-c45b2b5aa984 // indirect
 	monorepo/bin-email-manager v0.0.0-00010101000000-000000000000 // indirect
 	monorepo/bin-flow-manager v0.0.0-20240403034140-ce82222fe7f4 // indirect
+	monorepo/bin-webchat-manager v0.0.0-00010101000000-000000000000
 	monorepo/bin-hook-manager v0.0.0-20240313052650-d3e4c79af4c0 // indirect
 	monorepo/bin-message-manager v0.0.0-20240328053936-9008e28c2268 // indirect
 	monorepo/bin-number-manager v0.0.0-20240328055052-ec1c723aa183 // indirect
