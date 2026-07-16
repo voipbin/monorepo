@@ -8,7 +8,7 @@
 
     <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Widget - VoIPBin Documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
     
@@ -629,6 +629,7 @@
         <span class="s2">&quot;logo_url&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
         <span class="s2">&quot;position&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
     <span class="p">},</span>
+    <span class="s2">&quot;direct_hash&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
@@ -643,6 +644,7 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">flow_id</span></code> (UUID): The flow triggered on the visitor’s first inbound message in each session. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">session_idle_timeout</span></code> (Integer): Session idle timeout in seconds before an inactive session is automatically ended. Default <code class="docutils literal notranslate"><span class="pre">1800</span></code> (30 minutes).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">theme_config</span></code> (Object, optional): Cosmetic widget appearance settings. See <a class="reference internal" href="#webchat-struct-widget-theme-config"><span class="std std-ref">Theme Config</span></a>. Omitted or <code class="docutils literal notranslate"><span class="pre">null</span></code> fields fall back to the platform default (blue bubble, no logo, bottom-right).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">direct_hash</span></code> (String, optional): Hash used by the embed script (<code class="docutils literal notranslate"><span class="pre">data-hash</span></code> attribute) to authenticate anonymous visitors via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/boot</span></code>. See the note below – only present on <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/webchat_widgets</span></code> and <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/webchat_widgets/{id}/direct_hash_regenerate</span></code> responses.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the widget was created.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp of the last update to any widget property.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (string, ISO 8601): Timestamp when the widget was deleted. Set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> if not deleted.</p></li>

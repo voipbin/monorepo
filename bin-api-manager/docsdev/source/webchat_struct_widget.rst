@@ -23,6 +23,7 @@ Widget struct
             "logo_url": "<string>",
             "position": "<string>"
         },
+        "direct_hash": "<string>",
         "tm_create": "<string>",
         "tm_update": "<string>",
         "tm_delete": "<string>"
@@ -35,6 +36,7 @@ Widget struct
 * ``flow_id`` (UUID): The flow triggered on the visitor's first inbound message in each session. Obtained from the ``id`` field of ``GET /flows``.
 * ``session_idle_timeout`` (Integer): Session idle timeout in seconds before an inactive session is automatically ended. Default ``1800`` (30 minutes).
 * ``theme_config`` (Object, optional): Cosmetic widget appearance settings. See :ref:`Theme Config <webchat-struct-widget-theme-config>`. Omitted or ``null`` fields fall back to the platform default (blue bubble, no logo, bottom-right).
+* ``direct_hash`` (String, optional): Hash used by the embed script (``data-hash`` attribute) to authenticate anonymous visitors via ``POST /auth/boot``. See the note below -- only present on ``POST /webchat_widgets`` and ``POST /webchat_widgets/{id}/direct_hash_regenerate`` responses.
 * ``tm_create`` (string, ISO 8601): Timestamp when the widget was created.
 * ``tm_update`` (string, ISO 8601): Timestamp of the last update to any widget property.
 * ``tm_delete`` (string, ISO 8601): Timestamp when the widget was deleted. Set to ``9999-01-01 00:00:00.000000`` if not deleted.

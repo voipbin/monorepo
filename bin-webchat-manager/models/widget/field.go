@@ -11,6 +11,7 @@ const (
 	FieldStatus Field = "status"
 
 	FieldDirectID Field = "direct_id"
+	FieldHash     Field = "direct_hash"
 
 	FieldWelcomeMessage Field = "welcome_message"
 	FieldFlowID         Field = "flow_id"

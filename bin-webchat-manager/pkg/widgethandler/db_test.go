@@ -255,6 +255,7 @@ func Test_DirectHashRegenerate(t *testing.T) {
 		id uuid.UUID
 
 		responseWidget *widget.Widget
+		responseDirect *dmdirect.Direct
 		expectRes      *widget.Widget
 	}{
 		{
@@ -265,12 +266,20 @@ func Test_DirectHashRegenerate(t *testing.T) {
 					ID: uuid.FromStringOrNil("876defde-ad5e-11ed-a8c3-7bc19647b03f"),
 				},
 				DirectID: uuid.FromStringOrNil("e4368e4e-59de-11ec-badd-378688c95856"),
+				Hash:     "oldhash123",
+			},
+			responseDirect: &dmdirect.Direct{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e4368e4e-59de-11ec-badd-378688c95856"),
+				},
+				Hash: "newhash456",
 			},
 			expectRes: &widget.Widget{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("876defde-ad5e-11ed-a8c3-7bc19647b03f"),
 				},
 				DirectID: uuid.FromStringOrNil("e4368e4e-59de-11ec-badd-378688c95856"),
+				Hash:     "newhash456",
 			},
 		},
 	}
@@ -289,8 +298,12 @@ func Test_DirectHashRegenerate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().WidgetGet(ctx, tt.id).Return(tt.responseWidget, nil).Times(2)
-			mockReq.EXPECT().DirectV1DirectRegenerate(ctx, tt.responseWidget.DirectID).Return(&dmdirect.Direct{}, nil)
+			mockDB.EXPECT().WidgetGet(ctx, tt.id).Return(tt.responseWidget, nil)
+			mockReq.EXPECT().DirectV1DirectRegenerate(ctx, tt.responseWidget.DirectID).Return(tt.responseDirect, nil)
+			mockDB.EXPECT().WidgetUpdate(ctx, tt.id, map[widget.Field]any{
+				widget.FieldHash: tt.responseDirect.Hash,
+			}).Return(nil)
+			mockDB.EXPECT().WidgetGet(ctx, tt.id).Return(tt.expectRes, nil)
 
 			res, err := h.DirectHashRegenerate(ctx, tt.id)
 			if err != nil {

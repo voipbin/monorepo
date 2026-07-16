@@ -9,6 +9,7 @@ create table webchat_widgets(
 
   -- direct hash
   direct_id             binary(16),
+  direct_hash           varchar(255),
 
   welcome_message       text,
   flow_id               binary(16),

@@ -8,7 +8,7 @@
 
     <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Security Architecture - VoIPBin Documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
     
@@ -875,7 +875,7 @@ Request Arrives
 <span class="o">+------------------------------------------------+</span>
 <span class="o">|</span> <span class="n">o</span> <span class="n">JWT</span> <span class="n">validation</span> <span class="n">happens</span> <span class="n">ONLY</span> <span class="ow">in</span> <span class="n">api</span><span class="o">-</span><span class="n">manager</span>   <span class="o">|</span>
 <span class="o">|</span> <span class="n">o</span> <span class="n">Internal</span> <span class="n">services</span> <span class="n">DO</span> <span class="n">NOT</span> <span class="n">validate</span> <span class="n">tokens</span>     <span class="o">|</span>
-<span class="o">|</span> <span class="n">o</span> <span class="n">Internal</span> <span class="n">services</span> <span class="n">TRUST</span> <span class="n">customer_id</span> <span class="kn">from</span><span class="w"> </span><span class="nn">RPC</span> <span class="o">|</span>
+<span class="o">|</span> <span class="n">o</span> <span class="n">Internal</span> <span class="n">services</span> <span class="n">TRUST</span> <span class="n">customer_id</span> <span class="kn">from</span> <span class="nn">RPC</span> <span class="o">|</span>
 <span class="o">|</span> <span class="n">o</span> <span class="n">This</span> <span class="n">simplifies</span> <span class="n">internal</span> <span class="n">service</span> <span class="n">logic</span>       <span class="o">|</span>
 <span class="o">+------------------------------------------------+</span>
 </pre></div>
@@ -1223,7 +1223,7 @@ query := sq.Select(&quot;*&quot;).
 <span class="n">WAF</span> <span class="n">Rules</span><span class="p">:</span>
 <span class="o">+------------------------------------------+</span>
 <span class="o">|</span> <span class="n">Rule</span><span class="p">:</span> <span class="n">block</span><span class="o">-</span><span class="n">known</span><span class="o">-</span><span class="n">attackers</span>              <span class="o">|</span>
-<span class="o">|</span> <span class="o">-</span> <span class="n">Block</span> <span class="n">IPs</span> <span class="kn">from</span><span class="w"> </span><span class="nn">threat</span> <span class="n">intelligence</span>     <span class="o">|</span>
+<span class="o">|</span> <span class="o">-</span> <span class="n">Block</span> <span class="n">IPs</span> <span class="kn">from</span> <span class="nn">threat</span> <span class="n">intelligence</span>     <span class="o">|</span>
 <span class="o">+------------------------------------------+</span>
 <span class="o">|</span> <span class="n">Rule</span><span class="p">:</span> <span class="n">rate</span><span class="o">-</span><span class="n">limit</span><span class="o">-</span><span class="n">by</span><span class="o">-</span><span class="n">ip</span>                   <span class="o">|</span>
 <span class="o">|</span> <span class="o">-</span> <span class="mi">10</span><span class="p">,</span><span class="mi">000</span> <span class="n">requests</span><span class="o">/</span><span class="n">minute</span> <span class="n">per</span> <span class="n">IP</span>          <span class="o">|</span>
