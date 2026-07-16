@@ -11,6 +11,8 @@ import (
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 
+	fmflow "monorepo/bin-flow-manager/models/flow"
+
 	wcwidget "monorepo/bin-webchat-manager/models/widget"
 
 	"github.com/gofrs/uuid"
@@ -118,5 +120,137 @@ func Test_WebchatWidgetGet_DirectAccessNotSupported(t *testing.T) {
 	// SessionCreate/MessageCreate/SessionEnd are direct-reachable.
 	if _, err := h.WebchatWidgetGet(ctx, a, widgetID); err == nil {
 		t.Error("Wrong match. expect: direct access not supported error, got: ok")
+	}
+}
+
+// Test_WebchatWidgetCreate verifies the happy path: an admin creating a
+// widget with a flow_id that genuinely belongs to their own customer.
+func Test_WebchatWidgetCreate(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &serviceHandler{
+		utilHandler: utilhandler.NewUtilHandler(),
+		reqHandler:  mockReq,
+	}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
+	flowID := uuid.FromStringOrNil("cc847807-6cc4-4713-9dec-53a42840e74c")
+	widgetID := uuid.FromStringOrNil("dd7defde-ad5e-11ed-a8c3-7bc19647b03f")
+
+	a := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+			CustomerID: customerID,
+		},
+		Permission: amagent.PermissionCustomerAdmin,
+	})
+
+	flow := &fmflow.Flow{
+		Identity: commonidentity.Identity{ID: flowID, CustomerID: customerID},
+	}
+	responseWidget := &wcwidget.Widget{
+		Identity: commonidentity.Identity{ID: widgetID, CustomerID: customerID},
+		FlowID:   flowID,
+	}
+
+	mockReq.EXPECT().FlowV1FlowGet(ctx, flowID).Return(flow, nil)
+	mockReq.EXPECT().WebchatV1WidgetCreate(ctx, customerID, "widget", "welcome", flowID, 300, gomock.Any()).Return(responseWidget, nil)
+
+	res, err := h.WebchatWidgetCreate(ctx, a, "widget", "welcome", flowID, 300, nil)
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	expectRes := responseWidget.ConvertWebhookMessage()
+	if !reflect.DeepEqual(res, expectRes) {
+		t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", expectRes, res)
+	}
+}
+
+// Test_WebchatWidgetCreate_CrossTenant_WrongFlowOwner is a regression test
+// for a cross-tenant flow-execution vector: an admin must not be able to
+// point their own customer's widget at a flow_id belonging to a DIFFERENT
+// customer. Without this check, the first inbound message on that
+// widget's session would trigger the other customer's Flow using the
+// caller's own customer_id as the activeflow owner -- a cross-tenant
+// flow-execution/data-leak bug, found via round 4 of an independent
+// adversarial code review.
+func Test_WebchatWidgetCreate_CrossTenant_WrongFlowOwner(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &serviceHandler{
+		utilHandler: utilhandler.NewUtilHandler(),
+		reqHandler:  mockReq,
+	}
+	ctx := context.Background()
+
+	callerCustomerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
+	victimCustomerID := uuid.FromStringOrNil("00000000-0000-0000-0000-0000000000ff")
+	victimFlowID := uuid.FromStringOrNil("bb847807-6cc4-4713-9dec-53a42840e74c")
+
+	a := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+			CustomerID: callerCustomerID,
+		},
+		Permission: amagent.PermissionCustomerAdmin,
+	})
+
+	victimFlow := &fmflow.Flow{
+		Identity: commonidentity.Identity{ID: victimFlowID, CustomerID: victimCustomerID},
+	}
+
+	mockReq.EXPECT().FlowV1FlowGet(ctx, victimFlowID).Return(victimFlow, nil)
+
+	if _, err := h.WebchatWidgetCreate(ctx, a, "widget", "welcome", victimFlowID, 300, nil); err == nil {
+		t.Error("Wrong match. expect: permission denied error, got: ok")
+	}
+}
+
+// Test_WebchatWidgetUpdate_CrossTenant_WrongFlowOwner is the Update-path
+// equivalent of the above: an admin must not be able to repoint an
+// EXISTING widget (that they do own) at a flow_id belonging to a
+// different customer.
+func Test_WebchatWidgetUpdate_CrossTenant_WrongFlowOwner(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &serviceHandler{
+		utilHandler: utilhandler.NewUtilHandler(),
+		reqHandler:  mockReq,
+	}
+	ctx := context.Background()
+
+	callerCustomerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
+	victimCustomerID := uuid.FromStringOrNil("00000000-0000-0000-0000-0000000000ff")
+	widgetID := uuid.FromStringOrNil("ee7defde-ad5e-11ed-a8c3-7bc19647b03f")
+	victimFlowID := uuid.FromStringOrNil("bb847807-6cc4-4713-9dec-53a42840e74c")
+
+	a := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+			CustomerID: callerCustomerID,
+		},
+		Permission: amagent.PermissionCustomerAdmin,
+	})
+
+	ownWidget := &wcwidget.Widget{
+		Identity: commonidentity.Identity{ID: widgetID, CustomerID: callerCustomerID},
+	}
+	victimFlow := &fmflow.Flow{
+		Identity: commonidentity.Identity{ID: victimFlowID, CustomerID: victimCustomerID},
+	}
+
+	mockReq.EXPECT().WebchatV1WidgetGet(ctx, widgetID).Return(ownWidget, nil)
+	mockReq.EXPECT().FlowV1FlowGet(ctx, victimFlowID).Return(victimFlow, nil)
+
+	if _, err := h.WebchatWidgetUpdate(ctx, a, widgetID, "widget", "welcome", victimFlowID, 300, nil); err == nil {
+		t.Error("Wrong match. expect: permission denied error, got: ok")
 	}
 }

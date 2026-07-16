@@ -125,6 +125,27 @@ func (h *serviceHandler) WebchatWidgetCreate(
 		return nil, serviceerrors.ErrPermissionDenied
 	}
 
+	// Verify the referenced flow belongs to the caller's own customer --
+	// otherwise Customer A could point their widget at Customer B's
+	// flow_id, and the first inbound message on that widget's session
+	// would trigger Customer B's Flow using Customer A's customer_id as
+	// the activeflow owner (cross-tenant flow-execution/data-leak
+	// vector). Neither bin-webchat-manager nor bin-flow-manager
+	// re-validates flow ownership downstream, so this is the only
+	// enforcement point, mirroring CallCreate's flowGet+CustomerID check
+	// in call.go.
+	if flowID != uuid.Nil {
+		f, err := h.flowGet(ctx, flowID)
+		if err != nil {
+			log.Errorf("Could not get flow. err: %v", err)
+			return nil, err
+		}
+		if f.CustomerID != a.CustomerID {
+			log.Info("The flow does not belong to this customer.")
+			return nil, serviceerrors.ErrPermissionDenied
+		}
+	}
+
 	tmp, err := h.reqHandler.WebchatV1WidgetCreate(ctx, a.CustomerID, name, welcomeMessage, flowID, sessionIdleTimeout, themeConfig)
 	if err != nil {
 		log.Errorf("Could not create the widget. err: %v", err)
@@ -166,6 +187,21 @@ func (h *serviceHandler) WebchatWidgetUpdate(
 	if !h.hasPermission(ctx, a, w.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
 		return nil, serviceerrors.ErrPermissionDenied
+	}
+
+	// Same flow-ownership check as WebchatWidgetCreate: the caller must
+	// not be able to repoint an existing widget at a flow_id belonging to
+	// a different customer.
+	if flowID != uuid.Nil {
+		f, err := h.flowGet(ctx, flowID)
+		if err != nil {
+			log.Errorf("Could not get flow. err: %v", err)
+			return nil, err
+		}
+		if f.CustomerID != a.CustomerID {
+			log.Info("The flow does not belong to this customer.")
+			return nil, serviceerrors.ErrPermissionDenied
+		}
 	}
 
 	tmp, err := h.reqHandler.WebchatV1WidgetUpdate(ctx, widgetID, name, welcomeMessage, flowID, sessionIdleTimeout, themeConfig)
