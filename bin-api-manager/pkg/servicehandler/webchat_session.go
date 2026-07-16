@@ -69,7 +69,14 @@ func (h *serviceHandler) WebchatSessionGet(ctx context.Context, a *auth.AuthIden
 }
 
 // WebchatSessionList sends a request to webchat-manager to get a list of sessions.
-func (h *serviceHandler) WebchatSessionList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*wcsession.WebhookMessage, error) {
+// widgetID, if non-nil (uuid.Nil means "no filter"), scopes the list to
+// sessions belonging to that widget -- e.g. the Sessions tab on a widget's
+// detail page in square-admin. The widget's ownership is verified via
+// widgetGet before the filter is applied, mirroring
+// WebchatSessionCreate/End's fetch-then-check-owner pattern, so a caller
+// cannot use an arbitrary widget_id to enumerate another customer's
+// sessions.
+func (h *serviceHandler) WebchatSessionList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, widgetID uuid.UUID) ([]*wcsession.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "WebchatSessionList",
 		"customer_id": a.CustomerID,
@@ -92,6 +99,19 @@ func (h *serviceHandler) WebchatSessionList(ctx context.Context, a *auth.AuthIde
 	filters := map[wcsession.Field]any{
 		wcsession.FieldCustomerID: a.CustomerID,
 		wcsession.FieldDeleted:    false,
+	}
+
+	if widgetID != uuid.Nil {
+		w, err := h.widgetGet(ctx, widgetID)
+		if err != nil {
+			log.Errorf("Could not validate the widget info. err: %v", err)
+			return nil, err
+		}
+		if w.CustomerID != a.CustomerID {
+			log.Info("The widget does not belong to the requesting customer.")
+			return nil, serviceerrors.ErrPermissionDenied
+		}
+		filters[wcsession.FieldWidgetID] = widgetID
 	}
 
 	tmps, err := h.reqHandler.WebchatV1SessionList(ctx, token, size, filters)
