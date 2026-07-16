@@ -113,6 +113,23 @@ func (h *serviceHandler) WebchatSessionCreate(ctx context.Context, a *auth.AuthI
 		"widget_id":   widgetID,
 	})
 
+	// ownerCustomerID is the customer_id the created session must be
+	// tagged with. It defaults to the caller's own a.CustomerID and is
+	// overridden below to the WIDGET's actual owner once resolved --
+	// they are normally identical, but a ProjectSuperAdmin caller can
+	// pass hasPermission's ownership check below while belonging to a
+	// completely different customer than the widget (hasPermission
+	// short-circuits to true for PermissionProjectSuperAdmin regardless
+	// of a.CustomerID). Passing the caller's own a.CustomerID through in
+	// that case would create a session tagged with the WRONG customer_id
+	// (mismatched from widget_id's real owner), making it invisible to
+	// that owner's WebchatSessionList/Get calls and effectively leaking
+	// the record under the superadmin's own tenant -- a data-integrity
+	// bug distinct from the permission-check gaps fixed in earlier
+	// rounds. Mirrors AIcallCreate's use of the resolved resource's
+	// customerID (not a.CustomerID) in aicall.go.
+	ownerCustomerID := a.CustomerID
+
 	switch {
 	case a.IsAgent() || a.IsAccesskey():
 		// Resolve the target widget first and check permission against
@@ -130,6 +147,7 @@ func (h *serviceHandler) WebchatSessionCreate(ctx context.Context, a *auth.AuthI
 		if !h.hasPermission(ctx, a, w.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 			return nil, serviceerrors.ErrPermissionDenied
 		}
+		ownerCustomerID = w.CustomerID
 	case a.IsDirect():
 		if !a.HasAllowedResourceType("webchat_session") {
 			return nil, serviceerrors.ErrPermissionDenied
@@ -141,7 +159,7 @@ func (h *serviceHandler) WebchatSessionCreate(ctx context.Context, a *auth.AuthI
 		return nil, serviceerrors.ErrPermissionDenied
 	}
 
-	tmp, err := h.reqHandler.WebchatV1SessionCreate(ctx, a.CustomerID, widgetID)
+	tmp, err := h.reqHandler.WebchatV1SessionCreate(ctx, ownerCustomerID, widgetID)
 	if err != nil {
 		log.Errorf("Could not create the session. err: %v", err)
 		return nil, err

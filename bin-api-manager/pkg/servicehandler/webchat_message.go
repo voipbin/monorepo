@@ -127,6 +127,20 @@ func (h *serviceHandler) WebchatMessageCreate(
 
 	senderID := uuid.Nil
 	var direction wcmessage.Direction
+	// ownerCustomerID is the customer_id the created message must be
+	// tagged with, resolved to the SESSION's actual owner in each switch
+	// branch below rather than assumed to equal the caller's own
+	// a.CustomerID -- they are normally identical, but a ProjectSuperAdmin
+	// caller can pass hasPermission's ownership check while belonging to
+	// a completely different customer than the session (hasPermission
+	// short-circuits to true for PermissionProjectSuperAdmin regardless
+	// of a.CustomerID). Passing the caller's own a.CustomerID through in
+	// that case would create a message tagged with the WRONG customer_id,
+	// mismatched from the session/widget's real owner -- a data-integrity
+	// bug distinct from the permission-check and direction-spoofing gaps
+	// fixed in earlier rounds. Mirrors the same fix applied to
+	// WebchatSessionCreate.
+	var ownerCustomerID uuid.UUID
 
 	switch {
 	case a.IsAgent() || a.IsAccesskey():
@@ -149,6 +163,7 @@ func (h *serviceHandler) WebchatMessageCreate(
 		// An agent/accesskey caller can only ever author an outbound
 		// (business-to-visitor) reply.
 		direction = wcmessage.DirectionOutbound
+		ownerCustomerID = s.CustomerID
 	case a.IsDirect():
 		if !a.HasAllowedResourceType("webchat_session") {
 			return nil, serviceerrors.ErrPermissionDenied
@@ -167,6 +182,10 @@ func (h *serviceHandler) WebchatMessageCreate(
 		if s.WidgetID != a.DirectScope.ResourceID {
 			return nil, serviceerrors.ErrPermissionDenied
 		}
+		// Defense in depth: tag the message with the session's actual
+		// owner rather than assuming a.CustomerID (derived from the
+		// direct-scope JWT at boot time) still matches it.
+		ownerCustomerID = s.CustomerID
 		// A visitor holding only a direct-scope JWT can only ever author
 		// an inbound (visitor-to-business) message. Without this, a
 		// visitor could forge direction=outbound and have the message
@@ -178,7 +197,7 @@ func (h *serviceHandler) WebchatMessageCreate(
 		return nil, serviceerrors.ErrPermissionDenied
 	}
 
-	tmp, err := h.reqHandler.WebchatV1MessageCreate(ctx, a.CustomerID, sessionID, direction, senderID, text)
+	tmp, err := h.reqHandler.WebchatV1MessageCreate(ctx, ownerCustomerID, sessionID, direction, senderID, text)
 	if err != nil {
 		log.Errorf("Could not create the message. err: %v", err)
 		return nil, err

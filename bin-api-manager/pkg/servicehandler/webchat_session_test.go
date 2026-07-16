@@ -163,3 +163,56 @@ func Test_WebchatSessionCreate_Agent_CrossTenant_WrongWidgetOwner(t *testing.T) 
 		t.Error("Wrong match. expect: permission denied error, got: ok")
 	}
 }
+
+// Test_WebchatSessionCreate_Agent_SuperAdmin_CrossTenant_OwnerCustomerID is
+// a regression test for a customer_id data-integrity bug: hasPermission
+// short-circuits to true for PermissionProjectSuperAdmin regardless of
+// a.CustomerID vs the widget's actual owner. Before this fix,
+// WebchatSessionCreate unconditionally passed the caller's OWN a.CustomerID
+// (the superadmin's, not the widget owner's) to WebchatV1SessionCreate --
+// creating a session tagged with the WRONG customer_id, invisible to the
+// widget owner's own WebchatSessionList/Get calls. Verified here by
+// asserting the downstream RPC call is made with the WIDGET's customer_id,
+// not the superadmin caller's.
+func Test_WebchatSessionCreate_Agent_SuperAdmin_CrossTenant_OwnerCustomerID(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &serviceHandler{
+		utilHandler: utilhandler.NewUtilHandler(),
+		reqHandler:  mockReq,
+	}
+	ctx := context.Background()
+
+	superAdminCustomerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
+	widgetOwnerCustomerID := uuid.FromStringOrNil("00000000-0000-0000-0000-0000000000ff")
+	widgetID := uuid.FromStringOrNil("bb847807-6cc4-4713-9dec-53a42840e74c")
+	sessionID := uuid.FromStringOrNil("876defde-ad5e-11ed-a8c3-7bc19647b03f")
+
+	a := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+			CustomerID: superAdminCustomerID,
+		},
+		Permission: amagent.PermissionProjectSuperAdmin,
+	})
+
+	widget := &wcwidget.Widget{
+		Identity: commonidentity.Identity{ID: widgetID, CustomerID: widgetOwnerCustomerID},
+	}
+	responseSession := &wcsession.Session{
+		Identity: commonidentity.Identity{ID: sessionID, CustomerID: widgetOwnerCustomerID},
+		WidgetID: widgetID,
+	}
+
+	mockReq.EXPECT().WebchatV1WidgetGet(ctx, widgetID).Return(widget, nil)
+	// The mock strictly asserts widgetOwnerCustomerID -- if the handler
+	// forwarded the superadmin's own a.CustomerID instead, gomock would
+	// reject the call as unexpected and this test would fail.
+	mockReq.EXPECT().WebchatV1SessionCreate(ctx, widgetOwnerCustomerID, widgetID).Return(responseSession, nil)
+
+	if _, err := h.WebchatSessionCreate(ctx, a, widgetID); err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+}
