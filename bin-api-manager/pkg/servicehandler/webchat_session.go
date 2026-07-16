@@ -114,21 +114,22 @@ func (h *serviceHandler) WebchatSessionCreate(ctx context.Context, a *auth.AuthI
 	})
 
 	// ownerCustomerID is the customer_id the created session must be
-	// tagged with. It defaults to the caller's own a.CustomerID and is
-	// overridden below to the WIDGET's actual owner once resolved --
-	// they are normally identical, but a ProjectSuperAdmin caller can
-	// pass hasPermission's ownership check below while belonging to a
-	// completely different customer than the widget (hasPermission
-	// short-circuits to true for PermissionProjectSuperAdmin regardless
-	// of a.CustomerID). Passing the caller's own a.CustomerID through in
-	// that case would create a session tagged with the WRONG customer_id
-	// (mismatched from widget_id's real owner), making it invisible to
-	// that owner's WebchatSessionList/Get calls and effectively leaking
-	// the record under the superadmin's own tenant -- a data-integrity
-	// bug distinct from the permission-check gaps fixed in earlier
-	// rounds. Mirrors AIcallCreate's use of the resolved resource's
-	// customerID (not a.CustomerID) in aicall.go.
-	ownerCustomerID := a.CustomerID
+	// tagged with, resolved to the WIDGET's actual owner in each switch
+	// branch below rather than assumed to equal the caller's own
+	// a.CustomerID -- they are normally identical, but a ProjectSuperAdmin
+	// caller can pass hasPermission's ownership check below while
+	// belonging to a completely different customer than the widget
+	// (hasPermission short-circuits to true for
+	// PermissionProjectSuperAdmin regardless of a.CustomerID). Passing
+	// the caller's own a.CustomerID through in that case would create a
+	// session tagged with the WRONG customer_id (mismatched from
+	// widget_id's real owner), making it invisible to that owner's
+	// WebchatSessionList/Get calls and effectively leaking the record
+	// under the superadmin's own tenant -- a data-integrity bug distinct
+	// from the permission-check gaps fixed in earlier rounds. Mirrors
+	// AIcallCreate's use of the resolved resource's customerID (not
+	// a.CustomerID) in aicall.go.
+	var ownerCustomerID uuid.UUID
 
 	switch {
 	case a.IsAgent() || a.IsAccesskey():
@@ -155,6 +156,19 @@ func (h *serviceHandler) WebchatSessionCreate(ctx context.Context, a *auth.AuthI
 		if a.DirectScope.ResourceID != widgetID {
 			return nil, serviceerrors.ErrPermissionDenied
 		}
+		// Defense in depth: re-resolve ownerCustomerID from the widget's
+		// actual current owner rather than trusting the CustomerID claim
+		// baked into the direct-scope JWT at boot time -- mirrors
+		// WebchatMessageCreate's direct branch, which does the same for
+		// ownerCustomerID = s.CustomerID. Also confirms the widget still
+		// exists (widgetGet returns ErrNotFound for a deleted widget)
+		// before creating a session against it.
+		w, err := h.widgetGet(ctx, widgetID)
+		if err != nil {
+			log.Errorf("Could not validate the widget info. err: %v", err)
+			return nil, err
+		}
+		ownerCustomerID = w.CustomerID
 	default:
 		return nil, serviceerrors.ErrPermissionDenied
 	}

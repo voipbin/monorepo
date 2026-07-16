@@ -49,7 +49,11 @@ func Test_WebchatSessionCreate_Direct(t *testing.T) {
 		WidgetID: widgetID,
 		Status:   wcsession.StatusActive,
 	}
+	widget := &wcwidget.Widget{
+		Identity: commonidentity.Identity{ID: widgetID, CustomerID: customerID},
+	}
 
+	mockReq.EXPECT().WebchatV1WidgetGet(ctx, widgetID).Return(widget, nil)
 	mockReq.EXPECT().WebchatV1SessionCreate(ctx, customerID, widgetID).Return(responseSession, nil)
 
 	res, err := h.WebchatSessionCreate(ctx, a, widgetID)
@@ -211,6 +215,58 @@ func Test_WebchatSessionCreate_Agent_SuperAdmin_CrossTenant_OwnerCustomerID(t *t
 	// forwarded the superadmin's own a.CustomerID instead, gomock would
 	// reject the call as unexpected and this test would fail.
 	mockReq.EXPECT().WebchatV1SessionCreate(ctx, widgetOwnerCustomerID, widgetID).Return(responseSession, nil)
+
+	if _, err := h.WebchatSessionCreate(ctx, a, widgetID); err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+}
+
+// Test_WebchatSessionCreate_Direct_OwnerCustomerID_ReResolvedFromWidget is a
+// regression test for defense-in-depth found in round 6: the direct-scope
+// (visitor) branch must re-resolve ownerCustomerID from the widget's
+// actual current owner (via widgetGet) rather than trusting the
+// CustomerID claim baked into the direct-scope JWT at boot time --
+// mirroring WebchatMessageCreate's direct branch, which does the same
+// for ownerCustomerID = s.CustomerID. Verified by using a JWT whose
+// DirectScope.CustomerID claim deliberately does NOT match the widget's
+// real w.CustomerID (simulating a stale/rotated-ownership claim) and
+// asserting the downstream RPC call uses the widget's real owner.
+func Test_WebchatSessionCreate_Direct_OwnerCustomerID_ReResolvedFromWidget(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &serviceHandler{
+		utilHandler: utilhandler.NewUtilHandler(),
+		reqHandler:  mockReq,
+	}
+	ctx := context.Background()
+
+	staleClaimCustomerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
+	actualWidgetOwnerID := uuid.FromStringOrNil("00000000-0000-0000-0000-0000000000ff")
+	widgetID := uuid.FromStringOrNil("aa847807-6cc4-4713-9dec-53a42840e74c")
+	sessionID := uuid.FromStringOrNil("876defde-ad5e-11ed-a8c3-7bc19647b03f")
+
+	a := auth.NewDirectIdentity(&auth.DirectScope{
+		CustomerID:           staleClaimCustomerID,
+		ResourceType:         "webchat_widget",
+		ResourceID:           widgetID,
+		AllowedResourceTypes: []string{"webchat_session"},
+	})
+
+	widget := &wcwidget.Widget{
+		Identity: commonidentity.Identity{ID: widgetID, CustomerID: actualWidgetOwnerID},
+	}
+	responseSession := &wcsession.Session{
+		Identity: commonidentity.Identity{ID: sessionID, CustomerID: actualWidgetOwnerID},
+		WidgetID: widgetID,
+	}
+
+	mockReq.EXPECT().WebchatV1WidgetGet(ctx, widgetID).Return(widget, nil)
+	// The mock strictly asserts actualWidgetOwnerID -- if the handler
+	// forwarded the JWT's stale staleClaimCustomerID instead, gomock
+	// would reject the call as unexpected and this test would fail.
+	mockReq.EXPECT().WebchatV1SessionCreate(ctx, actualWidgetOwnerID, widgetID).Return(responseSession, nil)
 
 	if _, err := h.WebchatSessionCreate(ctx, a, widgetID); err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
