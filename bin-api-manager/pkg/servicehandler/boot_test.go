@@ -14,6 +14,7 @@ import (
 	"monorepo/bin-api-manager/pkg/dbhandler"
 
 	"github.com/gofrs/uuid"
+	"github.com/golang-jwt/jwt/v5"
 	"go.uber.org/mock/gomock"
 )
 
@@ -30,7 +31,8 @@ func Test_AuthBoot(t *testing.T) {
 		responseCustomerErr error
 		responseCurTime     string
 
-		expectErr bool
+		expectErr                  bool
+		expectAllowedResourceTypes []string
 	}{
 		{
 			name: "happy path",
@@ -142,6 +144,32 @@ func Test_AuthBoot(t *testing.T) {
 
 			expectErr: true,
 		},
+		{
+			name: "happy path - webchat_widget",
+
+			directHash: "direct.webchat123",
+
+			responseDirect: &dmdirect.Direct{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d1b2c3d4-0000-0000-0000-000000000003"),
+					CustomerID: uuid.FromStringOrNil("c1b2c3d4-0000-0000-0000-000000000001"),
+				},
+				ResourceType: dmdirect.ResourceTypeWebchatWidget,
+				ResourceID:   uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-000000000003"),
+				Hash:         "direct.webchat123",
+			},
+			responseDirectErr: nil,
+			responseCustomer: &cscustomer.Customer{
+				ID:     uuid.FromStringOrNil("c1b2c3d4-0000-0000-0000-000000000001"),
+				Status: cscustomer.StatusActive,
+			},
+			responseCustomerErr: nil,
+			responseCurTime:     "2026-04-06T16:00:00Z",
+
+			expectErr: false,
+
+			expectAllowedResourceTypes: []string{"webchat_session"},
+		},
 	}
 
 	for _, tt := range tests {
@@ -208,6 +236,40 @@ func Test_AuthBoot(t *testing.T) {
 
 			if res.Expire != tt.responseCurTime {
 				t.Errorf("Expected expire '%s', got: %v", tt.responseCurTime, res.Expire)
+			}
+
+			if tt.expectAllowedResourceTypes != nil {
+				parsed, parseErr := jwt.Parse(res.Token, func(token *jwt.Token) (interface{}, error) {
+					return h.jwtKey, nil
+				})
+				if parseErr != nil {
+					t.Fatalf("Could not parse issued JWT: %v", parseErr)
+				}
+
+				claims, ok := parsed.Claims.(jwt.MapClaims)
+				if !ok {
+					t.Fatalf("Could not read JWT claims")
+				}
+
+				directClaim, ok := claims["direct"].(map[string]interface{})
+				if !ok {
+					t.Fatalf("Expected 'direct' claim to be an object, got: %v", claims["direct"])
+				}
+
+				gotAllowed, ok := directClaim["allowed_resource_types"].([]interface{})
+				if !ok {
+					t.Fatalf("Expected 'allowed_resource_types' to be an array, got: %v", directClaim["allowed_resource_types"])
+				}
+
+				if len(gotAllowed) != len(tt.expectAllowedResourceTypes) {
+					t.Fatalf("Expected %d allowed_resource_types, got %d: %v", len(tt.expectAllowedResourceTypes), len(gotAllowed), gotAllowed)
+				}
+
+				for i, want := range tt.expectAllowedResourceTypes {
+					if gotAllowed[i] != want {
+						t.Errorf("Expected allowed_resource_types[%d] = %q, got: %v", i, want, gotAllowed[i])
+					}
+				}
 			}
 		})
 	}

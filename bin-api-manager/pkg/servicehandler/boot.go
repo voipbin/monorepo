@@ -18,8 +18,9 @@ import (
 
 // directResourceMapping maps a direct resource_type to the allowed_resource_types
 var directResourceMapping = map[string][]string{
-	dmdirect.ResourceTypeAI:     {"aicall"},
-	dmdirect.ResourceTypeAITeam: {"aicall"},
+	dmdirect.ResourceTypeAI:            {"aicall"},
+	dmdirect.ResourceTypeAITeam:        {"aicall"},
+	dmdirect.ResourceTypeWebchatWidget: {"webchat_session"},
 }
 
 // BootResponse is the typed response for POST /auth/boot.
