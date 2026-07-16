@@ -85,6 +85,7 @@ const (
 	ReferenceTypeConversation ReferenceType = "conversation" // conversation
 	ReferenceTypeTranscribe   ReferenceType = "transcribe"   // transcribe
 	ReferenceTypeRecording    ReferenceType = "recording"    // recording
+	ReferenceTypeWebchat      ReferenceType = "webchat"      // webchat
 )
 
 // Matches return true if the given items are the same
@@ -115,4 +116,5 @@ var MapActionMediaTypeByReferenceType = map[ReferenceType]action.MediaType{
 	ReferenceTypeRecording:    action.MediaTypeNonRealTimeCommunication,
 	ReferenceTypeTranscribe:   action.MediaTypeNonRealTimeCommunication,
 	ReferenceTypeCampaign:     action.MediaTypeNonRealTimeCommunication,
+	ReferenceTypeWebchat:      action.MediaTypeNonRealTimeCommunication,
 }

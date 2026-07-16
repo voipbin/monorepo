@@ -168,6 +168,11 @@ const (
 	QueueNameUserRequest   QueueName = "bin-manager.user-manager.request"
 	QueueNameUserSubscribe QueueName = "bin-manager.user-manager.subscribe"
 
+	// webchat-manager
+	QueueNameWebchatEvent     QueueName = "bin-manager.webchat-manager.event"
+	QueueNameWebchatRequest   QueueName = "bin-manager.webchat-manager.request"
+	QueueNameWebchatSubscribe QueueName = "bin-manager.webchat-manager.subscribe"
+
 	// webhook-manager
 	QueueNameWebhookEvent      QueueName = "bin-manager.webhook-manager.event"
 	QueueNameWebhookEventTopic QueueName = "bin-manager.webhook-manager.event.topic" // NEW, VOIP-1258
