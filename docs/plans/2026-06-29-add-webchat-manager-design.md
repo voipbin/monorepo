@@ -1,5 +1,54 @@
 # bin-webchat-manager Design
 
+## Revision Notice (v8 — Widget theming/appearance customization)
+
+**pchero asked whether the widget's appearance can be customized the way
+Intercom's is** ("브랜드 컬러/로고/위치 등을 위젯 대시보드에서 바꿀 수 있나").
+v7 and earlier gave `Widget` exactly three customer-facing knobs
+(`WelcomeMessage`, `FlowID`, `SessionIdleTimeout`) — none of them visual.
+Matching Intercom-class appearance customization requires new schema, not
+just new UI, so this is a real design revision, not a pure frontend task.
+
+**v8 adds a `ThemeConfig` field to `Widget`**, following the exact
+platform precedent already used elsewhere for "small bag of typed,
+customer-editable settings that don't deserve their own table":
+`bin-conversation-manager`'s `Account.ProviderData` (a `json.RawMessage`
+column holding per-account-type settings, e.g. WhatsApp's
+`phone_number_id`/`app_secret`). Concretely:
+
+- `Widget.ThemeConfig` — a new, optional, typed struct (NOT a raw
+  `json.RawMessage` blob, since unlike `Account.ProviderData` there is
+  only ONE widget "type," so there's no per-type-shape problem to solve
+  with an untyped column): `PrimaryColor`, `LogoURL`, `Position`
+  (`bottom_right`/`bottom_left`), `OfflineMessage`. Stored as a single
+  JSON column (`theme_config` in the DDL) for the same reason
+  `Metadata`-style fields are already stored this way elsewhere in the
+  platform (avoids a wide, sparsely-populated table; all fields are
+  optional cosmetic overrides with sane defaults when absent).
+- `WidgetHandler.Create`/`Update` (§5) gain a `themeConfig
+  *widget.ThemeConfig` parameter (nilable — omitting it entirely keeps
+  the existing default appearance, matching how `WelcomeMessage`/`FlowID`
+  are already optional).
+- `POST`/`PUT /v1/webchat/widgets` (§7) gain an optional `theme_config`
+  body field with the same four sub-fields.
+- **No new endpoint, no new service, no new auth surface.** This is
+  additive to the existing Widget CRUD — everything else in v7 (session
+  creation, message send, rate limiting, the Round 4 findings) is
+  unchanged.
+- The widget-embed snippet (frontend deliverable, not part of the API
+  design) reads `GET /v1/webchat/widgets/{id}`'s `theme_config` at load
+  time and applies it to the floating bubble/panel it renders — see the
+  companion `voipbin-webchat-widget-snippet.js` reference implementation.
+
+**Explicitly out of scope for v8** (same "Phase 2" bucket as other
+deferred cosmetic/product-config items in §2): custom CSS injection,
+multiple themes per widget (e.g. dark/light), avatar per-agent (vs. one
+logo for the whole widget), font selection. `ThemeConfig`'s four fields
+are chosen to cover the highest-value 80% (Intercom's own "Brand" tab is
+similarly minimal: primary color, avatar/logo, widget position) without
+opening an arbitrary CSS-injection attack surface on a page rendered
+inside a customer's own site.
+
 ## Revision Notice (v7 — explicit session creation, decoupled from first message)
 
 **pchero identified a UX/API-shape gap after re-verifying the direct-hash →
@@ -164,6 +213,26 @@ const (
     StatusInactive Status = "inactive"
 )
 
+// WidgetPosition controls where the floating bubble/panel renders on the
+// customer's page. v8.
+type WidgetPosition string
+
+const (
+    WidgetPositionBottomRight WidgetPosition = "bottom_right" // default
+    WidgetPositionBottomLeft  WidgetPosition = "bottom_left"
+)
+
+// ThemeConfig holds cosmetic, customer-editable widget appearance
+// settings. All fields are optional; a nil ThemeConfig or empty field
+// falls back to the platform default (blue bubble, no logo, bottom-right,
+// no offline message). v8 — see Revision Notice for scope rationale.
+type ThemeConfig struct {
+    PrimaryColor   string         `json:"primary_color,omitempty"`   // hex, e.g. "#2563eb"; validated server-side
+    LogoURL        string         `json:"logo_url,omitempty"`        // https URL only
+    Position       WidgetPosition `json:"position,omitempty"`        // default: bottom_right
+    OfflineMessage string         `json:"offline_message,omitempty"` // shown when Widget.Status != StatusActive
+}
+
 type Widget struct {
     commonidentity.Identity // ID, CustomerID
 
@@ -180,6 +249,9 @@ type Widget struct {
     FlowID         uuid.UUID `json:"flow_id,omitempty"` // activeflow started on first inbound message; empty = no auto flow
 
     SessionIdleTimeout int `json:"session_idle_timeout"` // seconds; default 1800 (30m)
+
+    // ThemeConfig: cosmetic appearance overrides (v8). Nil = all defaults.
+    ThemeConfig *ThemeConfig `json:"theme_config,omitempty"`
 
     TMCreate string `json:"tm_create"`
     TMUpdate string `json:"tm_update"`
@@ -298,6 +370,7 @@ CREATE TABLE webchat_widgets (
     welcome_message       TEXT,
     flow_id               BINARY(16),
     session_idle_timeout  INT          NOT NULL DEFAULT 1800,
+    theme_config          JSON,
 
     tm_create             DATETIME(6)  NOT NULL,
     tm_update             DATETIME(6)  NOT NULL,
@@ -373,10 +446,10 @@ integrity bug requiring transactional protection.
 
 ```go
 type WidgetHandler interface {
-    Create(ctx context.Context, customerID uuid.UUID, name string, welcomeMessage string, flowID uuid.UUID, idleTimeout int) (*widget.Widget, error)
+    Create(ctx context.Context, customerID uuid.UUID, name string, welcomeMessage string, flowID uuid.UUID, idleTimeout int, themeConfig *widget.ThemeConfig) (*widget.Widget, error)
     Get(ctx context.Context, id uuid.UUID) (*widget.Widget, error)
     List(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]*widget.Widget, error)
-    Update(ctx context.Context, id uuid.UUID, name string, welcomeMessage string, flowID uuid.UUID, idleTimeout int) (*widget.Widget, error)
+    Update(ctx context.Context, id uuid.UUID, name string, welcomeMessage string, flowID uuid.UUID, idleTimeout int, themeConfig *widget.ThemeConfig) (*widget.Widget, error)
     Delete(ctx context.Context, id uuid.UUID) (*widget.Widget, error)
 }
 
@@ -465,10 +538,10 @@ Not applicable — Flow's `ai_talk` action against bin-ai-manager. Unchanged.
 
 | Method | Path | Auth | Purpose |
 |---|---|---|---|
-| POST | `/v1/webchat/widgets` | customer JWT | Create a Widget (also issues a direct hash) |
+| POST | `/v1/webchat/widgets` | customer JWT | Create a Widget (also issues a direct hash). Body may include an optional `theme_config` object (v8: `primary_color`, `logo_url`, `position`, `offline_message` — all optional). |
 | GET | `/v1/webchat/widgets` | customer JWT | List Widgets |
-| GET | `/v1/webchat/widgets/{id}` | customer JWT | Get a Widget (includes the widget snippet / hash) |
-| PUT | `/v1/webchat/widgets/{id}` | customer JWT | Update a Widget |
+| GET | `/v1/webchat/widgets/{id}` | customer JWT | Get a Widget (includes the widget snippet / hash and its `theme_config`) |
+| PUT | `/v1/webchat/widgets/{id}` | customer JWT | Update a Widget, including `theme_config` (v8) |
 | DELETE | `/v1/webchat/widgets/{id}` | customer JWT | Delete a Widget (cascades: revoke direct hash) |
 | POST | `/v1/webchat/sessions` | direct token (`resource_type=webchat_widget`, allows `webchat_session`) | **New in v7.** Visitor's browser calls this at widget-load time, before typing anything. Always creates a brand-new Session — no "get or create" branch. Returns `{ session_id, welcome_message }` so the widget can render the welcome message and open its `/ws` subscription immediately. |
 | POST | `/v1/webchat/sessions/{id}/messages` | direct token (`resource_type=webchat_widget`, allows `webchat_session`) | **v7: replaces the old `POST /v1/webchat/sessions/messages`.** `session_id` is now a required path parameter, not an optional body field — every call is `Get` + ownership check + `MessageSend`, whether it's the visitor's first message or a follow-up. |
