@@ -20,14 +20,15 @@ def upgrade():
     op.execute("""
         create table webchat_widgets(
             -- identity
-            id                    binary(16),
-            customer_id           binary(16),
+            id                    binary(16)   not null,
+            customer_id           binary(16)   not null,
 
             -- basic info
             name                  varchar(255),
-            status                varchar(16),
+            status                varchar(16)  not null,
 
-            -- direct hash
+            -- direct hash -- nullable: a Widget with no DirectID is
+            -- "provisioning incomplete" (see widget.go doc comment).
             direct_id             binary(16),
 
             welcome_message       text,
@@ -52,14 +53,24 @@ def upgrade():
         create index idx_webchat_widgets_customer_id_tm_delete on webchat_widgets(customer_id, tm_delete);
     """)
 
+    # direct_id is the visitor-facing linkage to bin-direct-manager
+    # (resource_type=webchat_widget, resource_id=Widget.ID). Two
+    # widgets must never share the same direct_id -- a unique index
+    # enforces that invariant at the DB layer (defense in depth on
+    # top of bin-direct-manager's own uniqueness), and doubles as the
+    # index needed for any future direct_id lookup path.
+    op.execute("""
+        create unique index idx_webchat_widgets_direct_id on webchat_widgets(direct_id);
+    """)
+
     op.execute("""
         create table webchat_sessions(
             -- identity
-            id                binary(16),
-            customer_id       binary(16),
-            widget_id         binary(16),
+            id                binary(16)   not null,
+            customer_id       binary(16)   not null,
+            widget_id         binary(16)   not null,
 
-            status            varchar(16),
+            status            varchar(16)  not null,
             activeflow_id     binary(16),
 
             tm_last_activity  datetime(6),
@@ -91,13 +102,13 @@ def upgrade():
     op.execute("""
         create table webchat_messages(
             -- identity
-            id             binary(16),
-            customer_id    binary(16),
-            widget_id      binary(16),
-            session_id     binary(16),
+            id             binary(16)   not null,
+            customer_id    binary(16)   not null,
+            widget_id      binary(16)   not null,
+            session_id     binary(16)   not null,
 
-            direction      varchar(16),
-            status         varchar(16),
+            direction      varchar(16)  not null,
+            status         varchar(16)  not null,
             text           varchar(4000),
             sender_id      binary(16),
             activeflow_id  binary(16),
@@ -115,6 +126,13 @@ def upgrade():
 
     op.execute("""
         create index idx_webchat_messages_customer_id_tm_create on webchat_messages(customer_id, tm_create);
+    """)
+
+    # widget_id is denormalized onto every message so downstream event
+    # consumers can build Conversation.Self without a join back through
+    # webchat_sessions -- index it for any widget-scoped message query.
+    op.execute("""
+        create index idx_webchat_messages_widget_id_tm_create on webchat_messages(widget_id, tm_create);
     """)
 
 
