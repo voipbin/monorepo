@@ -28,6 +28,13 @@ func (h *serviceHandler) webchatMessageGet(ctx context.Context, id uuid.UUID) (*
 	}
 	log.WithField("message", res).Debug("Received result.")
 
+	// Mirror flowGet/widgetGet/sessionGet's established pattern: a
+	// soft-deleted message must behave as not-found -- found via round
+	// 7 of an independent adversarial code review.
+	if res.TMDelete != nil {
+		return nil, serviceerrors.ErrNotFound
+	}
+
 	return res, nil
 }
 

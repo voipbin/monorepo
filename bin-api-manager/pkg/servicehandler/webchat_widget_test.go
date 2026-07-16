@@ -4,6 +4,7 @@ import (
 	"context"
 	"reflect"
 	"testing"
+	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -302,5 +303,47 @@ func Test_WebchatWidgetUpdate_SuperAdmin_CrossTenant_WrongFlowOwner(t *testing.T
 
 	if _, err := h.WebchatWidgetUpdate(ctx, a, widgetID, "widget", "welcome", sameTenantAsCallerFlowID, 300, nil); err == nil {
 		t.Error("Wrong match. expect: permission denied error, got: ok")
+	}
+}
+
+// Test_WebchatWidgetGet_SoftDeleted is a regression test for round 7's
+// finding: widgetGet must reject a soft-deleted widget (TMDelete set),
+// mirroring flowGet's established "deleted resources are not found"
+// pattern. Without this, WebchatWidgetGet could return full config for a
+// deleted widget, WebchatWidgetUpdate could silently resurrect one, and
+// WebchatWidgetDirectHashRegenerate could mint fresh visitor-facing
+// credentials for a widget that should be gone.
+func Test_WebchatWidgetGet_SoftDeleted(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &serviceHandler{
+		utilHandler: utilhandler.NewUtilHandler(),
+		reqHandler:  mockReq,
+	}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
+	widgetID := uuid.FromStringOrNil("aa847807-6cc4-4713-9dec-53a42840e74c")
+	deletedAt := time.Now()
+
+	a := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+			CustomerID: customerID,
+		},
+		Permission: amagent.PermissionCustomerAdmin,
+	})
+
+	deletedWidget := &wcwidget.Widget{
+		Identity: commonidentity.Identity{ID: widgetID, CustomerID: customerID},
+		TMDelete: &deletedAt,
+	}
+
+	mockReq.EXPECT().WebchatV1WidgetGet(ctx, widgetID).Return(deletedWidget, nil)
+
+	if _, err := h.WebchatWidgetGet(ctx, a, widgetID); err == nil {
+		t.Error("Wrong match. expect: not found error, got: ok")
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"reflect"
 	"testing"
+	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -270,5 +271,44 @@ func Test_WebchatSessionCreate_Direct_OwnerCustomerID_ReResolvedFromWidget(t *te
 
 	if _, err := h.WebchatSessionCreate(ctx, a, widgetID); err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+}
+
+// Test_WebchatSessionGet_SoftDeleted is a regression test for round 7's
+// finding: sessionGet must reject a soft-deleted session (TMDelete set),
+// mirroring flowGet/widgetGet's established "deleted resources are not
+// found" pattern.
+func Test_WebchatSessionGet_SoftDeleted(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &serviceHandler{
+		utilHandler: utilhandler.NewUtilHandler(),
+		reqHandler:  mockReq,
+	}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
+	sessionID := uuid.FromStringOrNil("876defde-ad5e-11ed-a8c3-7bc19647b03f")
+	deletedAt := time.Now()
+
+	a := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+			CustomerID: customerID,
+		},
+		Permission: amagent.PermissionCustomerAdmin,
+	})
+
+	deletedSession := &wcsession.Session{
+		Identity: commonidentity.Identity{ID: sessionID, CustomerID: customerID},
+		TMDelete: &deletedAt,
+	}
+
+	mockReq.EXPECT().WebchatV1SessionGet(ctx, sessionID).Return(deletedSession, nil)
+
+	if _, err := h.WebchatSessionGet(ctx, a, sessionID); err == nil {
+		t.Error("Wrong match. expect: not found error, got: ok")
 	}
 }

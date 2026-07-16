@@ -28,6 +28,20 @@ func (h *serviceHandler) widgetGet(ctx context.Context, id uuid.UUID) (*wcwidget
 	}
 	log.WithField("widget", res).Debug("Received result.")
 
+	// Mirror flowGet's established pattern: a soft-deleted widget must
+	// behave as not-found to every caller resolving ownership through
+	// this helper. Without this, WebchatWidgetUpdate could silently
+	// resurrect a deleted widget's config, WebchatWidgetDirectHashRegenerate
+	// could mint fresh visitor-facing credentials for a widget that
+	// should be gone, and WebchatSessionCreate could open a brand-new
+	// active session against a deleted widget -- WebchatV1WidgetGet
+	// itself does not filter TMDelete (only the List path does, via
+	// FieldDeleted), so this check is the only enforcement point. Found
+	// via round 7 of an independent adversarial code review.
+	if res.TMDelete != nil {
+		return nil, serviceerrors.ErrNotFound
+	}
+
 	return res, nil
 }
 

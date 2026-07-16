@@ -4,6 +4,7 @@ import (
 	"context"
 	"reflect"
 	"testing"
+	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -403,5 +404,44 @@ func Test_WebchatMessageCreate_Agent_SuperAdmin_CrossTenant_OwnerCustomerID(t *t
 
 	if _, err := h.WebchatMessageCreate(ctx, a, sessionID, wcmessage.DirectionOutbound, "reply"); err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+}
+
+// Test_WebchatMessageGet_SoftDeleted is a regression test for round 7's
+// finding: webchatMessageGet must reject a soft-deleted message
+// (TMDelete set), mirroring flowGet/widgetGet/sessionGet's established
+// "deleted resources are not found" pattern.
+func Test_WebchatMessageGet_SoftDeleted(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &serviceHandler{
+		utilHandler: utilhandler.NewUtilHandler(),
+		reqHandler:  mockReq,
+	}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
+	messageID := uuid.FromStringOrNil("db596422-07f5-11f0-9f5e-4762c3c1e4e5")
+	deletedAt := time.Now()
+
+	a := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+			CustomerID: customerID,
+		},
+		Permission: amagent.PermissionCustomerAdmin,
+	})
+
+	deletedMessage := &wcmessage.Message{
+		Identity: commonidentity.Identity{ID: messageID, CustomerID: customerID},
+		TMDelete: &deletedAt,
+	}
+
+	mockReq.EXPECT().WebchatV1MessageGet(ctx, messageID).Return(deletedMessage, nil)
+
+	if _, err := h.WebchatMessageGet(ctx, a, messageID); err == nil {
+		t.Error("Wrong match. expect: not found error, got: ok")
 	}
 }

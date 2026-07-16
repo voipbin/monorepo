@@ -28,6 +28,15 @@ func (h *serviceHandler) sessionGet(ctx context.Context, id uuid.UUID) (*wcsessi
 	}
 	log.WithField("session", res).Debug("Received result.")
 
+	// Mirror flowGet/widgetGet's established pattern: a soft-deleted
+	// session must behave as not-found. Without this, a caller could
+	// keep posting messages into or double-ending an already-deleted
+	// session -- found via round 7 of an independent adversarial code
+	// review.
+	if res.TMDelete != nil {
+		return nil, serviceerrors.ErrNotFound
+	}
+
 	return res, nil
 }
 
