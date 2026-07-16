@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webchat-manager
+  labels:
+    app: webchat-manager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webchat-manager
+  template:
+    metadata:
+      labels:
+        app: webchat-manager
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "2112"
+    spec:
+      containers:
+        - name: webchat-manager
+          image: webchat-manager-image
+          command:
+            - './webchat-manager'
+          env:
+            - name: DATABASE_DSN
+              valueFrom:
+                secretKeyRef:
+                  name: voipbin
+                  key: DATABASE_DSN_BIN
+            - name: PROMETHEUS_ENDPOINT
+              value: "/metrics"
+            - name: PROMETHEUS_LISTEN_ADDRESS
+              value: ":2112"
+            - name: RABBITMQ_ADDRESS
+              valueFrom:
+                secretKeyRef:
+                  name: voipbin
+                  key: RABBITMQ_ADDRESS
+            - name: REDIS_ADDRESS
+              valueFrom:
+                secretKeyRef:
+                  name: voipbin
+                  key: REDIS_ADDRESS
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: voipbin
+                  key: REDIS_PASSWORD
+            - name: REDIS_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: voipbin
+                  key: REDIS_DATABASE
+          ports:
+            - name: metrics
+              protocol: "TCP"
+              containerPort: 2112
+          resources:
+            requests:
+              cpu: "2m"
+              memory: "2M"
+            limits:
+              cpu: "20m"
+              memory: "20M"
