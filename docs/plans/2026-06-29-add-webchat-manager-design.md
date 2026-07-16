@@ -3,7 +3,7 @@
 ## Revision Notice (v5 — multi-visitor topic scoping resolved via verified precedent)
 
 **v4's Round-1 review returned CHANGES REQUESTED.** The reviewer correctly
-identified a Critical gap: v4 set `Direct.resource_id = Source.ID`, meaning
+identified a Critical gap: v4 set `Direct.resource_id = Widget.ID`, meaning
 every visitor of a widget shared the SAME `resource_id`. Combined with the
 platform's 4-part WebSocket topic shape
 (`customer_id:<id>:<resource_type>:<resource_id>`), this meant every visitor
@@ -43,14 +43,14 @@ for AI voice widgets:
   `HasAllowedResourceType("aicall")` + `CustomerID` match, never on a
   specific `aicall` ID being pre-registered in the token).
 
-**webchat maps onto this precedent exactly, with `Source` as the parent and
+**webchat maps onto this precedent exactly, with `Widget` as the parent and
 `Session` as the child** — the identical shape as `ai`/`aicall`. This
 replaces v4's flawed "shared resource_id, guess a 5th topic segment" design
 entirely:
 
-- `bin-direct-manager`: `resource_type = "webchat_source"` (as in v4).
+- `bin-direct-manager`: `resource_type = "webchat_widget"` (as in v4).
 - `bin-api-manager/pkg/servicehandler/boot.go`: add ONE entry to
-  `directResourceMapping`: `"webchat_source": {"webchat_session"}`. This is
+  `directResourceMapping`: `"webchat_widget": {"webchat_session"}`. This is
   the entire api-manager auth-pipeline change — a static table entry, not
   new claim-parsing logic, so §13's "no auth-pipeline changes beyond a
   routing/servicehandler layer" claim now actually holds without the
@@ -76,7 +76,7 @@ entirely:
   `if a.DirectScope.ResourceID != assistanceID { return ...ErrPermissionDenied }`
   pattern: when a client supplies an existing `session_id` on a subsequent
   message, `bin-api-manager`'s new webchat servicehandler must verify
-  `session.SourceID == a.DirectScope.ResourceID` (the token's own scope)
+  `session.WidgetID == a.DirectScope.ResourceID` (the token's own scope)
   AND `session.CustomerID == a.CustomerID` before treating that session as
   addressable. This is the exact same shape as the already-shipped
   `AIcallGet`/`AIcallCreate` checks, copied, not invented.
@@ -98,7 +98,7 @@ sessions. The two services that look adjacent do not fit:
 - **bin-talk-manager** models `Chat`/`Participant` for already-known entities.
   It has no concept of an anonymous, unauthenticated, expiring identity.
 
-What's missing is a Source/Session/Message domain model for widget
+What's missing is a Widget/Session/Message domain model for widget
 configuration and conversation state, wired onto the platform's EXISTING
 parent/child direct-token pattern (proven in production for AI voice
 widgets via `ai`/`aicall`) rather than a webchat-specific mechanism.
@@ -108,15 +108,15 @@ widgets via `ai`/`aicall`) rather than a webchat-specific mechanism.
 ### In scope (Phase 1)
 
 - New service `bin-webchat-manager`: a standard Class A RabbitMQ RPC manager
-  owning three entities — `Source` (widget config, the parent), `Session`
+  owning three entities — `Widget` (widget config, the parent), `Session`
   (a visitor's conversation instance, the child — doubles as visitor
   identity, see Revision Notice), `Message`.
-- `bin-direct-manager`: add `resource_type = "webchat_source"`.
+- `bin-direct-manager`: add `resource_type = "webchat_widget"`.
 - `bin-api-manager`: add ONE entry to the existing `directResourceMapping`
-  table in `pkg/servicehandler/boot.go`: `"webchat_source": {"webchat_session"}`.
+  table in `pkg/servicehandler/boot.go`: `"webchat_widget": {"webchat_session"}`.
   No new JWT claims, no changes to `validateTopics`, no changes to
   `pkg/websockhandler` at all.
-- `bin-api-manager`: new REST routes `/v1/webchat/sources` (customer-JWT,
+- `bin-api-manager`: new REST routes `/v1/webchat/widgets` (customer-JWT,
   admin CRUD) and `/v1/webchat/sessions/*` (mix of customer-JWT and
   direct-token-scoped operations, with the ownership check described in
   the Revision Notice).
@@ -140,10 +140,10 @@ widgets via `ai`/`aicall`) rather than a webchat-specific mechanism.
 
 ## 3. Domain Model
 
-### Source
+### Widget
 
 Widget configuration owned by a customer. One customer may have multiple
-`Source`s. Each `Source` has exactly one direct hash (1:1), the platform's
+`Widget`s. Each `Widget` has exactly one direct hash (1:1), the platform's
 existing PARENT resource in the direct-token model.
 
 ```go
@@ -154,15 +154,15 @@ const (
     StatusInactive Status = "inactive"
 )
 
-type Source struct {
+type Widget struct {
     commonidentity.Identity // ID, CustomerID
 
     Name   string `json:"name"`
     Status Status `json:"status"`
 
     // DirectID references the bin-direct-manager record
-    // (resource_type=webchat_source, resource_id=Source.ID). Populated by
-    // webchat-manager calling DirectV1Create immediately after Source
+    // (resource_type=webchat_widget, resource_id=Widget.ID). Populated by
+    // webchat-manager calling DirectV1Create immediately after Widget
     // creation. See §10 for the create/delete failure-mode handling.
     DirectID uuid.UUID `json:"direct_id,omitempty"`
 
@@ -203,7 +203,7 @@ const (
 type Session struct {
     commonidentity.Identity // ID, CustomerID — Identity.ID IS the visitor's continuity token
 
-    SourceID uuid.UUID     `json:"source_id"`
+    WidgetID uuid.UUID     `json:"widget_id"`
     Status   SessionStatus `json:"status"`
 
     ActiveflowID uuid.UUID `json:"activeflow_id,omitempty"`
@@ -277,7 +277,7 @@ type Message struct {
 ## 4. Database Schema
 
 ```sql
-CREATE TABLE webchat_sources (
+CREATE TABLE webchat_widgets (
     id                    BINARY(16)   NOT NULL,
     customer_id           BINARY(16)   NOT NULL,
 
@@ -294,14 +294,14 @@ CREATE TABLE webchat_sources (
     tm_delete             DATETIME(6)  NOT NULL DEFAULT '9999-01-01 00:00:00.000000',
 
     PRIMARY KEY (id),
-    INDEX idx_webchat_sources_customer_id_tm_create (customer_id, tm_create),
-    INDEX idx_webchat_sources_customer_id_tm_delete (customer_id, tm_delete)
+    INDEX idx_webchat_widgets_customer_id_tm_create (customer_id, tm_create),
+    INDEX idx_webchat_widgets_customer_id_tm_delete (customer_id, tm_delete)
 );
 
 CREATE TABLE webchat_sessions (
     id                BINARY(16)   NOT NULL,
     customer_id       BINARY(16)   NOT NULL,
-    source_id         BINARY(16)   NOT NULL,
+    widget_id         BINARY(16)   NOT NULL,
 
     status            VARCHAR(16)  NOT NULL,
     activeflow_id     BINARY(16),
@@ -315,7 +315,7 @@ CREATE TABLE webchat_sessions (
     PRIMARY KEY (id),
     INDEX idx_webchat_sessions_customer_id_tm_create (customer_id, tm_create),
     INDEX idx_webchat_sessions_customer_id_tm_delete (customer_id, tm_delete),
-    INDEX idx_webchat_sessions_source_id_status (source_id, status),
+    INDEX idx_webchat_sessions_widget_id_status (widget_id, status),
     INDEX idx_webchat_sessions_status_tm_last_activity (status, tm_last_activity)
 );
 
@@ -341,7 +341,7 @@ CREATE TABLE webchat_messages (
 
 Changed vs v4: `webchat_sessions.visitor_id` column removed entirely (no
 longer needed — `Session.ID` IS the visitor's continuity token); the
-`(source_id, visitor_id)` index is replaced with `(source_id, status)`,
+`(widget_id, visitor_id)` index is replaced with `(widget_id, status)`,
 useful for admin/dashboard queries ("how many active sessions does this
 widget have right now").
 
@@ -362,23 +362,23 @@ integrity bug requiring transactional protection.
 ## 5. Handler Interface
 
 ```go
-type SourceHandler interface {
-    Create(ctx context.Context, customerID uuid.UUID, name string, welcomeMessage string, flowID uuid.UUID, idleTimeout int) (*source.Source, error)
-    Get(ctx context.Context, id uuid.UUID) (*source.Source, error)
-    List(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]*source.Source, error)
-    Update(ctx context.Context, id uuid.UUID, name string, welcomeMessage string, flowID uuid.UUID, idleTimeout int) (*source.Source, error)
-    Delete(ctx context.Context, id uuid.UUID) (*source.Source, error)
+type WidgetHandler interface {
+    Create(ctx context.Context, customerID uuid.UUID, name string, welcomeMessage string, flowID uuid.UUID, idleTimeout int) (*widget.Widget, error)
+    Get(ctx context.Context, id uuid.UUID) (*widget.Widget, error)
+    List(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64) ([]*widget.Widget, error)
+    Update(ctx context.Context, id uuid.UUID, name string, welcomeMessage string, flowID uuid.UUID, idleTimeout int) (*widget.Widget, error)
+    Delete(ctx context.Context, id uuid.UUID) (*widget.Widget, error)
 }
 
 type SessionHandler interface {
-    // Create makes a brand new Session for a Source (first message, no
+    // Create makes a brand new Session for a Widget (first message, no
     // client-supplied session_id). Always succeeds with a fresh UUID — no
     // uniqueness constraint to violate, no race to guard (see §4).
-    Create(ctx context.Context, sourceID uuid.UUID) (*session.Session, error)
+    Create(ctx context.Context, widgetID uuid.UUID) (*session.Session, error)
 
     // Get + ownership check for a client-supplied session_id on a
     // subsequent message. Callers (api-manager's servicehandler) MUST
-    // additionally verify session.SourceID == token's DirectScope.ResourceID
+    // additionally verify session.WidgetID == token's DirectScope.ResourceID
     // and session.CustomerID == token's CustomerID before trusting this —
     // mirrors AIcallCreate's existing `ResourceID != assistanceID` check.
     Get(ctx context.Context, id uuid.UUID) (*session.Session, error)
@@ -392,19 +392,19 @@ type SessionHandler interface {
 ### Core flow: visitor boots, chats, gets a Flow-routed reply
 
 ```
-1. Widget snippet embeds Source's direct hash (obtained at Source creation).
+1. Widget snippet embeds Widget's direct hash (obtained at Widget creation).
 2. Visitor's browser: POST https://api.voipbin.net/auth/boot { direct_hash }
    -> EXISTING code, ONE new directResourceMapping entry
-      ("webchat_source" -> ["webchat_session"]). Returns JWT:
-      { token, type:"direct", resource_type:"webchat_source",
-        resource_id:<Source.ID>, customer_id, expire }
+      ("webchat_widget" -> ["webchat_session"]). Returns JWT:
+      { token, type:"direct", resource_type:"webchat_widget",
+        resource_id:<Widget.ID>, customer_id, expire }
 3. Visitor's FIRST message (no session_id known yet):
    POST /v1/webchat/sessions/messages?token=<jwt> { text: "hello" }
    -> api-manager verifies a.HasAllowedResourceType("webchat_session")
-   -> calls SessionHandler.Create(sourceID = a.DirectScope.ResourceID)
+   -> calls SessionHandler.Create(widgetID = a.DirectScope.ResourceID)
    -> calls SessionHandler.MessageSend(session.ID, text)
    -> response includes { session_id, message_id, status }
-   -> IF Source.FlowID set: FlowV1ActiveflowCreate(reference_type=webchat, reference_id=session.ID)
+   -> IF Widget.FlowID set: FlowV1ActiveflowCreate(reference_type=webchat, reference_id=session.ID)
 4. Browser stores session_id (e.g. localStorage), then:
    GET https://api.voipbin.net/ws?token=<jwt>
    -> EXISTING code, UNCHANGED. Subscribes to topic:
@@ -415,7 +415,7 @@ type SessionHandler interface {
 5. Visitor's SUBSEQUENT messages include the stored session_id:
    POST /v1/webchat/sessions/messages?token=<jwt> { session_id, text }
    -> api-manager calls SessionHandler.Get(session_id), then verifies
-      session.SourceID == a.DirectScope.ResourceID AND
+      session.WidgetID == a.DirectScope.ResourceID AND
       session.CustomerID == a.CustomerID (ownership check, mirrors
       AIcallCreate) before calling MessageSend.
 6. Flow executes actions (ai_talk / queue_join / webchat_message_send).
@@ -437,12 +437,12 @@ Not applicable — Flow's `ai_talk` action against bin-ai-manager. Unchanged.
 
 | Method | Path | Auth | Purpose |
 |---|---|---|---|
-| POST | `/v1/webchat/sources` | customer JWT | Create a Source (also issues a direct hash) |
-| GET | `/v1/webchat/sources` | customer JWT | List Sources |
-| GET | `/v1/webchat/sources/{id}` | customer JWT | Get a Source (includes the widget snippet / hash) |
-| PUT | `/v1/webchat/sources/{id}` | customer JWT | Update a Source |
-| DELETE | `/v1/webchat/sources/{id}` | customer JWT | Delete a Source (cascades: revoke direct hash) |
-| POST | `/v1/webchat/sessions/messages` | direct token (`resource_type=webchat_source`, allows `webchat_session`) | Visitor sends a message; `session_id` optional (first message creates a new Session; supplying an existing one continues it, subject to the ownership check in §5) |
+| POST | `/v1/webchat/widgets` | customer JWT | Create a Widget (also issues a direct hash) |
+| GET | `/v1/webchat/widgets` | customer JWT | List Widgets |
+| GET | `/v1/webchat/widgets/{id}` | customer JWT | Get a Widget (includes the widget snippet / hash) |
+| PUT | `/v1/webchat/widgets/{id}` | customer JWT | Update a Widget |
+| DELETE | `/v1/webchat/widgets/{id}` | customer JWT | Delete a Widget (cascades: revoke direct hash) |
+| POST | `/v1/webchat/sessions/messages` | direct token (`resource_type=webchat_widget`, allows `webchat_session`) | Visitor sends a message; `session_id` optional (first message creates a new Session; supplying an existing one continues it, subject to the ownership check in §5) |
 | GET | `/v1/webchat/sessions/{id}/messages` | customer JWT | List a session's messages (agent/dashboard view) |
 | POST | `/v1/webchat/sessions/{id}/messages` | customer JWT | Agent/API-authored outbound message |
 | POST | `/v1/webchat/sessions/{id}/close` | customer JWT | Explicitly end a session |
@@ -490,7 +490,7 @@ Unchanged from v4.
 | Variable | Value |
 |---|---|
 | `voipbin.webchat.session.id` | Session UUID |
-| `voipbin.webchat.session.source_id` | Source UUID |
+| `voipbin.webchat.session.widget_id` | Widget UUID |
 | `voipbin.webchat.message.text` | Most recent inbound message text |
 
 Unchanged from v4.
@@ -507,9 +507,9 @@ invisible to webchat-manager. `MessageStatus.Delivered` semantics are
 correspondingly weaker than "confirmed socket write" (Open Question §15,
 unchanged from v4).
 
-**Direct hash lifecycle ties to Source lifecycle.** Unchanged from v4:
-`SourceHandler.Create` calls `DirectV1Create` synchronously;
-`SourceHandler.Delete` calls `DirectV1Delete`. The partial-failure gap
+**Direct hash lifecycle ties to Widget lifecycle.** Unchanged from v4:
+`WidgetHandler.Create` calls `DirectV1Create` synchronously;
+`WidgetHandler.Delete` calls `DirectV1Delete`. The partial-failure gap
 (§15) is unchanged.
 
 **Idle sweep**: unchanged from v4 — ticker scans
@@ -566,10 +566,10 @@ Unchanged from v4:
 
 | Service | Change | Phase |
 |---|---|---|
-| `bin-webchat-manager` (new) | New Class A RPC service: Source/Session/Message | 1 |
-| `bin-direct-manager` | Add `resource_type = "webchat_source"` to the existing enum | 1 |
+| `bin-webchat-manager` (new) | New Class A RPC service: Widget/Session/Message | 1 |
+| `bin-direct-manager` | Add `resource_type = "webchat_widget"` to the existing enum | 1 |
 | `bin-flow-manager` | Add `reference_type=webchat`; add `webchat_message_send` action | 1 |
-| `bin-api-manager` | New REST routes; **exactly one line added to the existing `directResourceMapping` table** (`"webchat_source": {"webchat_session"}`) in `pkg/servicehandler/boot.go` — no JWT claim changes, no `pkg/websockhandler` changes | 1 |
+| `bin-api-manager` | New REST routes; **exactly one line added to the existing `directResourceMapping` table** (`"webchat_widget": {"webchat_session"}`) in `pkg/servicehandler/boot.go` — no JWT claim changes, no `pkg/websockhandler` changes | 1 |
 | `bin-openapi-manager` | New OpenAPI paths | 1 |
 | `bin-webhook-manager` | No change — new event keys only | 1 |
 | `bin-queue-manager` | Human-agent handoff integration | 2 |
@@ -577,21 +577,21 @@ Unchanged from v4:
 
 ## 14. Implementation Order
 
-1. `bin-direct-manager`: add `resource_type = "webchat_source"` to the enum.
+1. `bin-direct-manager`: add `resource_type = "webchat_widget"` to the enum.
 2. `bin-api-manager/pkg/servicehandler/boot.go`: add the single
    `directResourceMapping` entry. Write a unit test asserting
-   `AuthBoot` against a `webchat_source` hash returns
+   `AuthBoot` against a `webchat_widget` hash returns
    `AllowedResourceTypes=["webchat_session"]`, mirroring the existing
    `ai`->`["aicall"]` test coverage.
-3. `bin-webchat-manager` scaffold (cmd/, models/source, models/session,
+3. `bin-webchat-manager` scaffold (cmd/, models/widget, models/session,
    models/message, dbhandler, standard Class A listenhandler).
-4. `sourcehandler.Create/Get/List/Update/Delete`, wired to
+4. `widgethandler.Create/Get/List/Update/Delete`, wired to
    `DirectV1Create`/`DirectV1Delete` (§10's two-phase-commit question
    resolved here, not deferred).
 5. `sessionhandler.Create/Get/MessageSend/MessageDeliver/Close` + idle sweep.
-6. `bin-api-manager`: new `pkg/servicehandler/webchat_source.go` and
+6. `bin-api-manager`: new `pkg/servicehandler/webchat_widget.go` and
    `webchat_session.go`. The session-message handler implements the
-   ownership check from §5 (`session.SourceID == a.DirectScope.ResourceID`,
+   ownership check from §5 (`session.WidgetID == a.DirectScope.ResourceID`,
    `session.CustomerID == a.CustomerID`) for any client-supplied
    `session_id`, mirroring `AIcallCreate`'s existing pattern verbatim.
 7. `bin-flow-manager`: `reference_type=webchat` + `webchat_message_send`
@@ -603,7 +603,7 @@ Unchanged from v4:
     session) -> `/ws` subscribe to that exact `session_id` topic -> second
     message with the stored `session_id` -> flow-triggered reply -> event
     fan-out to the subscribed browser -> negative test: a SECOND browser
-    session (different `Session.ID`, same `Source`) does NOT receive the
+    session (different `Session.ID`, same `Widget`) does NOT receive the
     first session's messages, proving the isolation claim in §12 rather
     than assuming it.
 
@@ -613,14 +613,14 @@ Unchanged from v4:
 |---|---|---|
 | Rate limiting / abuse control on `/auth/boot` and the session-message endpoint | Confirm current state before assuming either "already covered" or "needs new work"; the reviewer correctly notes a text widget likely sees higher automated-abuse volume than the existing voice-widget use case | CEO/CTO, pre-implementation |
 | `MessageStatus.Delivered` semantics are weaker than a confirmed socket write — acceptable, or does it need a delivery-ack loop back to webchat-manager? | Ship without an ack loop in Phase 1 (matches every other channel's actual guarantee level) | CEO/CTO |
-| Source/Direct two-phase-commit gap: `Source.Create` succeeding but the paired `Direct.Create` failing (or vice versa on delete) | `Source.DirectID` nullable; a Source with `DirectID = NULL` is "provisioning incomplete," excluded from the widget-snippet response until resolved, rather than distributed-transaction machinery | Engineering default, confirm no objection |
-| Should `webchat_source` direct hashes support rotation the same way other resource types do (`POST /v1/directs/{id}/regenerate`)? | Yes by default — platform-wide feature, not webchat-specific work | Engineering default, confirm no objection |
+| Widget/Direct two-phase-commit gap: `Widget.Create` succeeding but the paired `Direct.Create` failing (or vice versa on delete) | `Widget.DirectID` nullable; a Widget with `DirectID = NULL` is "provisioning incomplete," excluded from the widget-snippet response until resolved, rather than distributed-transaction machinery | Engineering default, confirm no objection |
+| Should `webchat_widget` direct hashes support rotation the same way other resource types do (`POST /v1/directs/{id}/regenerate`)? | Yes by default — platform-wide feature, not webchat-specific work | Engineering default, confirm no objection |
 | Message content retention window for visitor-volunteered PII | Align with whatever policy exists for conversation-manager messages today, or surface as a pre-existing platform gap if none exists | CEO/CTO |
 | Widget JS SDK / embeddable snippet delivery, including exactly how/when the client persists and re-sends `session_id` (localStorage key naming, expiry alignment with `idle_timeout`) | Out of scope for this backend design doc; needs its own frontend design once this API is stable, but flag the `session_id` persistence contract explicitly in that follow-up doc since it's the client-side half of this design's security model | Product, Phase 2 planning |
-| **WS-subscribe vs REST-send ownership asymmetry (Round-2 reviewer finding).** The REST message-send path checks `session.SourceID == a.DirectScope.ResourceID`; the WS subscribe path has NO equivalent check — `validateTopics` only verifies `resource_type` match, never that the specific `session_id` in the topic belongs to the token's own `Source`. A token scoped to Source A can subscribe to `customer_id:<id>:webchat_session:<any-UUID>`, including a session under Source B (same customer) or one whose SourceID doesn't match the token at all, if that UUID is somehow known (leaked referrer, shared/misconfigured proxy, a future "share this session link" feature). This is the exact same mechanism `aicall` already accepts in production — not a new hole introduced by this design — but it is a real, asymmetric guarantee (write is ownership-checked, read-via-subscribe is not) that §12 previously only alluded to inside the "capability-based" framing rather than stating plainly. | Accept as an inherited, platform-wide characteristic of the direct-token WS model (same as `aicall` today), not a webchat-specific defect requiring new engineering; state it explicitly in customer-facing security documentation once a UI ever exposes a "session link" to agents, since that is the point at which this asymmetry becomes actionable rather than theoretical | CEO/CTO, informational — no code change requested |
-| **Source status/liveness not checked at Session-create time (Round-2 reviewer finding).** `AuthBoot` (verified source) only checks `Customer.Status == StatusActive`; it does not check the resource (`Source`) itself. A visitor holding a valid direct-token JWT for a `Source` that has since been set `StatusInactive` (or soft-deleted) can still successfully call `SessionHandler.Create` and start a new conversation against a widget the customer believes is disabled. | `SessionHandler.Create` should reject with a clear error if `Source.Status != StatusActive` or `Source.TMDelete` is set (soft-deleted); this is a small, uncontroversial addition to Implementation Order step 5, not a design change | Engineering default, confirm no objection |
+| **WS-subscribe vs REST-send ownership asymmetry (Round-2 reviewer finding).** The REST message-send path checks `session.WidgetID == a.DirectScope.ResourceID`; the WS subscribe path has NO equivalent check — `validateTopics` only verifies `resource_type` match, never that the specific `session_id` in the topic belongs to the token's own `Widget`. A token scoped to Widget A can subscribe to `customer_id:<id>:webchat_session:<any-UUID>`, including a session under Widget B (same customer) or one whose WidgetID doesn't match the token at all, if that UUID is somehow known (leaked referrer, shared/misconfigured proxy, a future "share this session link" feature). This is the exact same mechanism `aicall` already accepts in production — not a new hole introduced by this design — but it is a real, asymmetric guarantee (write is ownership-checked, read-via-subscribe is not) that §12 previously only alluded to inside the "capability-based" framing rather than stating plainly. | Accept as an inherited, platform-wide characteristic of the direct-token WS model (same as `aicall` today), not a webchat-specific defect requiring new engineering; state it explicitly in customer-facing security documentation once a UI ever exposes a "session link" to agents, since that is the point at which this asymmetry becomes actionable rather than theoretical | CEO/CTO, informational — no code change requested |
+| **Widget status/liveness not checked at Session-create time (Round-2 reviewer finding).** `AuthBoot` (verified source) only checks `Customer.Status == StatusActive`; it does not check the resource (`Widget`) itself. A visitor holding a valid direct-token JWT for a `Widget` that has since been set `StatusInactive` (or soft-deleted) can still successfully call `SessionHandler.Create` and start a new conversation against a widget the customer believes is disabled. | `SessionHandler.Create` should reject with a clear error if `Widget.Status != StatusActive` or `Widget.TMDelete` is set (soft-deleted); this is a small, uncontroversial addition to Implementation Order step 5, not a design change | Engineering default, confirm no objection |
 | **Idle sweep / `Close()` racing with an in-flight `MessageSend` (Round-2 reviewer finding).** No version/lock discussion: if the idle sweep (or an explicit agent `Close()`) transitions a `Session` to `ended` between `SessionHandler.Get()` returning `active` and `MessageSend()` committing, a message can be persisted against an already-`ended` session with no re-check. Lower likelihood with the default 1800s idle timeout, but a concurrent explicit `Close()` mid-message is plausible. | Phase 1: accept as a low-severity product consequence (a message arrives just as/after a session closes — comparable to the double-`Create` race already accepted for the no-`session_id` case), OR add a lightweight status re-check inside `MessageSend`'s transaction if trivial to implement. Either is acceptable; flag the decision explicitly rather than leaving it silently unaddressed | Engineering default, confirm no objection |
-| **`DELETE /v1/webchat/sources/{id}` is silent on existing active Sessions under that Source (Round-2 reviewer finding).** Per the verified `validateTopics` mechanism, an in-flight visitor's WS subscription would continue to function after the parent `Source` is deleted (topic validation only checks `resource_type`, never `Source` liveness) — this is a direct, intentional consequence of the capability-based design, not a bug, but the document should say so explicitly rather than leave it implicit. | State explicitly: deleting a `Source` revokes future session issuance (the direct hash) but does NOT retroactively terminate already-`active` Sessions or their live WS subscriptions; if the product wants "delete = kill live conversations too," that requires an explicit cascade in `SourceHandler.Delete` (bulk `Close()` of active Sessions), which is not in Phase 1 scope by default | CEO/CTO, confirm desired behavior before ship |
+| **`DELETE /v1/webchat/widgets/{id}` is silent on existing active Sessions under that Widget (Round-2 reviewer finding).** Per the verified `validateTopics` mechanism, an in-flight visitor's WS subscription would continue to function after the parent `Widget` is deleted (topic validation only checks `resource_type`, never `Widget` liveness) — this is a direct, intentional consequence of the capability-based design, not a bug, but the document should say so explicitly rather than leave it implicit. | State explicitly: deleting a `Widget` revokes future session issuance (the direct hash) but does NOT retroactively terminate already-`active` Sessions or their live WS subscriptions; if the product wants "delete = kill live conversations too," that requires an explicit cascade in `WidgetHandler.Delete` (bulk `Close()` of active Sessions), which is not in Phase 1 scope by default | CEO/CTO, confirm desired behavior before ship |
 
 ---
 
@@ -636,7 +636,7 @@ webchat-manager hosting its own ingress and minting its own tokens.
 
 **v4 → v5 (this revision).** Round 1 review of v4 returned **CHANGES
 REQUESTED**, correctly identifying: (a) Critical — `Direct.resource_id =
-Source.ID` is shared across all visitors of a widget, and combined with the
+Widget.ID` is shared across all visitors of a widget, and combined with the
 platform's 4-part topic shape, this meant every visitor would receive
 every other visitor's messages (a live data leak, not a hypothetical); (b)
 High — the fix (\"maybe a 5th topic segment?\") was speculative, not
@@ -649,7 +649,7 @@ platform already has an established parent/child direct-token pattern in
 production for AI voice widgets (`ai` parent, `aicall` child,
 `directResourceMapping` static table, `validateTopics`'s explicit
 non-validation of the topic's `resource_id` segment). Applying that exact,
-verified pattern to `Source`/`Session` eliminates the need for any new JWT
+verified pattern to `Widget`/`Session` eliminates the need for any new JWT
 claim, any `pkg/websockhandler` change, or any topic-shape extension — the
 only api-manager change becomes a single new entry in an existing static
 map. `Session.ID` (server-generated, unguessable, never derived from any
@@ -662,7 +662,7 @@ concurrent requests could race on).
 
 **Round 2 review of v5** returned **APPROVE WITH COMMENTS**. The reviewer
 independently traced the fix against the same verified `validateTopics`/
-`AuthBoot`/`AIcallCreate` source quoted in the Revision Notice above and
+`AuthBoot`/`AIcallCreate` source code quoted in the Revision Notice above and
 confirmed it holds: 4-part topic validation genuinely never checks
 `resource_id`, the `directResourceMapping` addition is genuinely a pure
 data-table change, and the REST-layer ownership check is a correct,
@@ -670,7 +670,7 @@ non-superficial adaptation of `AIcallCreate`'s existing pattern (not just a
 plausible-sounding copy). No Critical or High finding remained, and no new
 issue was introduced by the v4→v5 edit itself. Four Medium-severity gaps
 were identified and folded into §15 above (WS-subscribe/REST-send ownership
-asymmetry, Source status check at Session-create time, idle-sweep/Close()
+asymmetry, Widget status check at Session-create time, idle-sweep/Close()
 race with in-flight MessageSend, and DELETE-cascade behavior toward live
 sessions) — none require another design round; all are implementable
 directly as part of Implementation Order steps 4-6.
