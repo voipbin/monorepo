@@ -254,3 +254,53 @@ func Test_WebchatWidgetUpdate_CrossTenant_WrongFlowOwner(t *testing.T) {
 		t.Error("Wrong match. expect: permission denied error, got: ok")
 	}
 }
+
+// Test_WebchatWidgetUpdate_SuperAdmin_CrossTenant_WrongFlowOwner is a
+// regression test for round 5 of an independent adversarial code review:
+// a ProjectSuperAdmin caller (whose own a.CustomerID is DIFFERENT from
+// both the target widget's owner and the flow's owner) must not be able
+// to repoint Customer B's widget at a flow that happens to belong to the
+// superadmin's OWN tenant. The buggy code compared f.CustomerID against
+// the caller's a.CustomerID (a tautology satisfied here) instead of the
+// widget's actual owner (w.CustomerID), silently reintroducing the
+// cross-tenant flow-execution vector the round 4 fix was meant to close,
+// gated behind the superadmin privilege level.
+func Test_WebchatWidgetUpdate_SuperAdmin_CrossTenant_WrongFlowOwner(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &serviceHandler{
+		utilHandler: utilhandler.NewUtilHandler(),
+		reqHandler:  mockReq,
+	}
+	ctx := context.Background()
+
+	superAdminCustomerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
+	victimCustomerID := uuid.FromStringOrNil("00000000-0000-0000-0000-0000000000ff")
+	widgetID := uuid.FromStringOrNil("ee7defde-ad5e-11ed-a8c3-7bc19647b03f")
+	// The flow belongs to the SUPERADMIN's own tenant, not the widget's.
+	sameTenantAsCallerFlowID := uuid.FromStringOrNil("bb847807-6cc4-4713-9dec-53a42840e74c")
+
+	a := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+			CustomerID: superAdminCustomerID,
+		},
+		Permission: amagent.PermissionProjectSuperAdmin,
+	})
+
+	victimWidget := &wcwidget.Widget{
+		Identity: commonidentity.Identity{ID: widgetID, CustomerID: victimCustomerID},
+	}
+	callerTenantFlow := &fmflow.Flow{
+		Identity: commonidentity.Identity{ID: sameTenantAsCallerFlowID, CustomerID: superAdminCustomerID},
+	}
+
+	mockReq.EXPECT().WebchatV1WidgetGet(ctx, widgetID).Return(victimWidget, nil)
+	mockReq.EXPECT().FlowV1FlowGet(ctx, sameTenantAsCallerFlowID).Return(callerTenantFlow, nil)
+
+	if _, err := h.WebchatWidgetUpdate(ctx, a, widgetID, "widget", "welcome", sameTenantAsCallerFlowID, 300, nil); err == nil {
+		t.Error("Wrong match. expect: permission denied error, got: ok")
+	}
+}

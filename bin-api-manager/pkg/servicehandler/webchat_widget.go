@@ -192,14 +192,28 @@ func (h *serviceHandler) WebchatWidgetUpdate(
 	// Same flow-ownership check as WebchatWidgetCreate: the caller must
 	// not be able to repoint an existing widget at a flow_id belonging to
 	// a different customer.
+	//
+	// IMPORTANT: compare against the WIDGET's actual owner (w.CustomerID),
+	// not the caller's own a.CustomerID. Unlike WebchatWidgetCreate --
+	// where the new widget is always created under a.CustomerID, so the
+	// two are always identical -- Update operates on an EXISTING widget
+	// whose owner can legitimately differ from a.CustomerID when the
+	// caller holds PermissionProjectSuperAdmin (hasPermission
+	// short-circuits to true above regardless of tenant match). Using
+	// a.CustomerID here let a ProjectSuperAdmin caller repoint Customer
+	// B's widget (w.CustomerID) at a flow belonging to the superadmin's
+	// own tenant (a.CustomerID) as long as f.CustomerID == a.CustomerID,
+	// silently reintroducing the exact cross-tenant flow-execution vector
+	// this check was added to close (Round 4 fix), just gated behind the
+	// superadmin privilege level instead of a plain customer-admin one.
 	if flowID != uuid.Nil {
 		f, err := h.flowGet(ctx, flowID)
 		if err != nil {
 			log.Errorf("Could not get flow. err: %v", err)
 			return nil, err
 		}
-		if f.CustomerID != a.CustomerID {
-			log.Info("The flow does not belong to this customer.")
+		if f.CustomerID != w.CustomerID {
+			log.Info("The flow does not belong to this widget's customer.")
 			return nil, serviceerrors.ErrPermissionDenied
 		}
 	}
