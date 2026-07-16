@@ -7869,6 +7869,9 @@ type GetWebchatMessagesParams struct {
 
 	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// SessionId Filter messages to those belonging to this session. Returned from the `POST /webchat_sessions` or `GET /webchat_sessions` response.
+	SessionId *openapi_types.UUID `form:"session_id,omitempty" json:"session_id,omitempty"`
 }
 
 // PostWebchatMessagesJSONBody defines parameters for PostWebchatMessages.
@@ -7890,6 +7893,9 @@ type GetWebchatSessionsParams struct {
 
 	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// WidgetId Filter sessions to those belonging to this widget. Returned from the `POST /webchat_widgets` or `GET /webchat_widgets` response.
+	WidgetId *openapi_types.UUID `form:"widget_id,omitempty" json:"widget_id,omitempty"`
 }
 
 // PostWebchatSessionsJSONBody defines parameters for PostWebchatSessions.
@@ -19678,6 +19684,14 @@ func (siw *ServerInterfaceWrapper) GetWebchatMessages(c *gin.Context) {
 		return
 	}
 
+	// ------------- Optional query parameter "session_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "session_id", c.Request.URL.Query(), &params.SessionId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter session_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 		if c.IsAborted() {
@@ -19770,6 +19784,14 @@ func (siw *ServerInterfaceWrapper) GetWebchatSessions(c *gin.Context) {
 	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
 	if err != nil {
 		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "widget_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "widget_id", c.Request.URL.Query(), &params.WidgetId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter widget_id: %w", err), http.StatusBadRequest)
 		return
 	}
 

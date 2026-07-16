@@ -6109,18 +6109,18 @@ func (mr *MockServiceHandlerMockRecorder) WebchatMessageGet(ctx, a, messageID an
 }
 
 // WebchatMessageList mocks base method.
-func (m *MockServiceHandler) WebchatMessageList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*message3.WebhookMessage, error) {
+func (m *MockServiceHandler) WebchatMessageList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, sessionID uuid.UUID) ([]*message3.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "WebchatMessageList", ctx, a, size, token)
+	ret := m.ctrl.Call(m, "WebchatMessageList", ctx, a, size, token, sessionID)
 	ret0, _ := ret[0].([]*message3.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // WebchatMessageList indicates an expected call of WebchatMessageList.
-func (mr *MockServiceHandlerMockRecorder) WebchatMessageList(ctx, a, size, token any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) WebchatMessageList(ctx, a, size, token, sessionID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WebchatMessageList", reflect.TypeOf((*MockServiceHandler)(nil).WebchatMessageList), ctx, a, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WebchatMessageList", reflect.TypeOf((*MockServiceHandler)(nil).WebchatMessageList), ctx, a, size, token, sessionID)
 }
 
 // WebchatSessionCreate mocks base method.
@@ -6184,18 +6184,18 @@ func (mr *MockServiceHandlerMockRecorder) WebchatSessionGet(ctx, a, sessionID an
 }
 
 // WebchatSessionList mocks base method.
-func (m *MockServiceHandler) WebchatSessionList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*session.WebhookMessage, error) {
+func (m *MockServiceHandler) WebchatSessionList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, widgetID uuid.UUID) ([]*session.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "WebchatSessionList", ctx, a, size, token)
+	ret := m.ctrl.Call(m, "WebchatSessionList", ctx, a, size, token, widgetID)
 	ret0, _ := ret[0].([]*session.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // WebchatSessionList indicates an expected call of WebchatSessionList.
-func (mr *MockServiceHandlerMockRecorder) WebchatSessionList(ctx, a, size, token any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) WebchatSessionList(ctx, a, size, token, widgetID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WebchatSessionList", reflect.TypeOf((*MockServiceHandler)(nil).WebchatSessionList), ctx, a, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WebchatSessionList", reflect.TypeOf((*MockServiceHandler)(nil).WebchatSessionList), ctx, a, size, token, widgetID)
 }
 
 // WebchatWidgetCreate mocks base method.

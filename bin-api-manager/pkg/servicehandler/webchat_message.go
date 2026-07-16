@@ -68,7 +68,14 @@ func (h *serviceHandler) WebchatMessageGet(ctx context.Context, a *auth.AuthIden
 }
 
 // WebchatMessageList sends a request to webchat-manager to get a list of messages.
-func (h *serviceHandler) WebchatMessageList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*wcmessage.WebhookMessage, error) {
+// sessionID, if non-nil (uuid.Nil means "no filter"), scopes the list to
+// messages belonging to that session -- e.g. the message timeline shown
+// when an agent clicks into a session from a widget's Sessions tab in
+// square-admin. The session's ownership is verified via sessionGet before
+// the filter is applied, mirroring WebchatMessageCreate's
+// fetch-then-check-owner pattern, so a caller cannot use an arbitrary
+// session_id to enumerate another customer's messages.
+func (h *serviceHandler) WebchatMessageList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, sessionID uuid.UUID) ([]*wcmessage.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "WebchatMessageList",
 		"customer_id": a.CustomerID,
@@ -91,6 +98,19 @@ func (h *serviceHandler) WebchatMessageList(ctx context.Context, a *auth.AuthIde
 	filters := map[wcmessage.Field]any{
 		wcmessage.FieldCustomerID: a.CustomerID,
 		wcmessage.FieldDeleted:    false,
+	}
+
+	if sessionID != uuid.Nil {
+		s, err := h.sessionGet(ctx, sessionID)
+		if err != nil {
+			log.Errorf("Could not validate the session info. err: %v", err)
+			return nil, err
+		}
+		if s.CustomerID != a.CustomerID {
+			log.Info("The session does not belong to the requesting customer.")
+			return nil, serviceerrors.ErrPermissionDenied
+		}
+		filters[wcmessage.FieldSessionID] = sessionID
 	}
 
 	tmps, err := h.reqHandler.WebchatV1MessageList(ctx, token, size, filters)

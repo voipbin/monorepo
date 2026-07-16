@@ -39,7 +39,12 @@ func (h *server) GetWebchatSessions(c *gin.Context, params openapi_server.GetWeb
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.WebchatSessionList(c.Request.Context(), a, pageSize, pageToken)
+	widgetID := uuid.Nil
+	if params.WidgetId != nil {
+		widgetID = uuid.FromStringOrNil(params.WidgetId.String())
+	}
+
+	tmps, err := h.serviceHandler.WebchatSessionList(c.Request.Context(), a, pageSize, pageToken, widgetID)
 	if err != nil {
 		logrus.Errorf("Could not get webchat sessions info. err: %v", err)
 		abortWithServiceError(c, err)
