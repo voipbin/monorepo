@@ -37,12 +37,44 @@ distinct RPC from sending an `aimessage` to that call. Concretely:
   `POST /v1/webchat/sessions` endpoint gets the SAME IP-based
   `middleware.RateLimit(20, 40)` applied to the sessions route group,
   since it is now a widget-load-time call an attacker could otherwise
-  spam to create unbounded empty Sessions.
+  spam to create unbounded empty Sessions. **Round 4 reviewer finding**:
+  since `POST /v1/webchat/sessions/{id}/messages` now serves BOTH the
+  visitor's direct-token path AND the agent/dashboard's customer-JWT path
+  (§7), this IP-based limiter must be scoped to the direct-token-
+  authenticated branch only — applying it to the whole route group risks
+  rate-limiting legitimate agent/dashboard traffic (e.g. several agents
+  behind one office NAT) under a budget sized for anonymous visitor abuse.
 - Widget-level Flow triggering (§9) still fires on the FIRST INBOUND
   MESSAGE, not on Session creation — an empty Session with no message
   should not itself start an activeflow. This is unchanged in spirit from
   v6, just re-anchored to the (now separate) message-send step rather
-  than being conflated with session creation.
+  than being conflated with session creation. **Round 4 reviewer finding
+  (Medium, accepted as a tracked risk, not silently assumed safe)**: the
+  "first inbound message" check inside `MessageSend` is a read-then-act
+  race if not done under row-level locking or single-writer serialization
+  per session — unlike the session-creation double-fire race (§4, which
+  only duplicates a cosmetic Session row), a double-fired first message
+  racing this check could cause BOTH calls to observe "zero prior
+  messages" and both trigger `FlowV1ActiveflowCreate`, producing a
+  visible, customer-facing double-response (duplicate AI reply or
+  duplicate queue-join). This must be resolved with either a serialized
+  message-count check (e.g. `SELECT ... FOR UPDATE` or an equivalent
+  single-writer guarantee per session) at implementation time — not
+  treated as equivalent in severity to the session-row-duplication case
+  it superficially resembles.
+- **Round 4 reviewer finding (Medium): the `webchat_session_created`
+  webhook's meaning changes under v7** — pre-v7 it only fired when a
+  visitor sent an actual message (a real-engagement signal); v7 fires it
+  on every widget page load, before any message exists. Page-view bots,
+  crawlers, and link/preview-fetchers now each spawn a persistent Session
+  row and a webhook event. Any downstream consumer of
+  `webchat_session_created` that previously read it as "someone started
+  chatting" will see a materially higher false-positive rate. This is a
+  genuine behavior change, not the same accepted concern as the v5
+  double-`Create` race (which was scoped to message-triggered creation,
+  not page-load-triggered creation) — flagged here explicitly so
+  downstream webhook consumers are not silently surprised by the
+  broadened blast radius.
 
 **Direct-hash → JWT generation (`AuthBoot`) was independently re-verified
 against the live `bin-api-manager/pkg/servicehandler/boot.go` source in
@@ -606,17 +638,36 @@ Unchanged from v4:
    `session_id` is a required path parameter — implements the ownership
    check from §5, `session.WidgetID == a.DirectScope.ResourceID` +
    `session.CustomerID == a.CustomerID`, mirroring `AIcallCreate`'s
-   existing pattern verbatim). Add `middleware.RateLimit(20, 40)` to BOTH
-   the new `POST /v1/webchat/sessions` route and the existing
-   `/v1/webchat/sessions/{id}/messages` route (§15 rate-limiting decision,
-   extended in v7 to cover session creation too, since it is now a
-   widget-load-time call reachable without sending any message).
+   existing pattern verbatim). Add `middleware.RateLimit(20, 40)` to the
+   new `POST /v1/webchat/sessions` route AND to the direct-token-
+   authenticated BRANCH of `/v1/webchat/sessions/{id}/messages` ONLY
+   (§15 rate-limiting decision, extended in v7 to cover session creation
+   too, since it is now a widget-load-time call reachable without sending
+   any message). **Round 4 reviewer finding: do NOT apply this limiter to
+   the whole `/v1/webchat/sessions` gin route group**, since that group
+   also serves the customer-JWT agent/dashboard branch of the same
+   `{id}/messages` path — an IP-based limiter sized for anonymous visitor
+   abuse would incorrectly throttle legitimate agent traffic (e.g.
+   several agents behind one office NAT). Scope the middleware to the
+   direct-token branch specifically, or apply it inside the handler after
+   auth-type dispatch, not via a blanket route-group `.Use(...)`.
 7. `bin-flow-manager`: `reference_type=webchat` + `webchat_message_send`
    action.
 8. First-inbound-message flow trigger wiring — anchored to the first
    inbound `Message` on a Session (via `sessionhandler.MessageSend`'s
    internal message-count check), NOT to `Session` creation. An empty
    Session with no messages never triggers a Flow (v7 Revision Notice).
+   **Round 4 reviewer finding (Medium, must be resolved here, not
+   deferred): the message-count check inside `MessageSend` MUST be
+   serialized per session** (e.g. `SELECT ... FOR UPDATE` on the Session
+   row, or an equivalent single-writer guarantee) before this step is
+   considered complete. Unlike the session-creation double-fire race
+   (§4, cosmetic — an extra Session row), a double-fired first message
+   racing this unguarded check could cause BOTH concurrent calls to
+   observe "zero prior messages" and both call
+   `FlowV1ActiveflowCreate`, producing a visible, customer-facing
+   double-response (duplicate AI reply or duplicate queue-join). This is
+   a correctness requirement for this step, not an accepted Phase-1 risk.
 9. Webhook events.
 10. OpenAPI spec + REST routes.
 11. End-to-end test (v7 flow): hash issuance -> `/auth/boot` -> explicit
@@ -683,7 +734,7 @@ heading for traceability.**
 
 | Question | Decision | Rationale / Implementation note |
 |---|---|---|
-| Rate limiting / abuse control on `/auth/boot` and the session endpoints | **Confirmed.** `/auth/boot` already inherits the existing `middleware.RateLimit` applied to the whole `/auth` route group in `cmd/api-manager/main.go` (IP-based, 10 req/s, burst 20) — no new code needed there. **v7**: BOTH new/changed session routes — `POST /v1/webchat/sessions` (session creation, now a widget-load-time call) and `POST /v1/webchat/sessions/{id}/messages` (message send) — get the SAME middleware applied fresh: IP-based, 20 req/s, burst 40. Per-session rate limiting (as opposed to per-IP) is explicitly deferred to Phase 2 — the existing `middleware.RateLimit` is IP-keyed only and would need generalizing to key on an arbitrary identifier (session_id) to support it; not required for Phase 1. | Implementation: add `sessions.Use(middleware.RateLimit(20, 40))` to the new `/v1/webchat/sessions` route group (covers both the session-create and message-send routes), mirroring the existing `/auth` group's usage verbatim (same function, different numbers). No middleware code changes required. |
+| Rate limiting / abuse control on `/auth/boot` and the session endpoints | **Confirmed.** `/auth/boot` already inherits the existing `middleware.RateLimit` applied to the whole `/auth` route group in `cmd/api-manager/main.go` (IP-based, 10 req/s, burst 20) — no new code needed there. **v7**: BOTH new/changed session routes — `POST /v1/webchat/sessions` (session creation, now a widget-load-time call) and the direct-token-authenticated branch of `POST /v1/webchat/sessions/{id}/messages` (message send) — get the SAME middleware applied fresh: IP-based, 20 req/s, burst 40. **Round 4 reviewer finding: this limiter must be scoped to the direct-token branch only, NOT the whole route group**, since `{id}/messages` also serves customer-JWT agent/dashboard traffic that should not share an anonymous-visitor-sized IP budget. Per-session rate limiting (as opposed to per-IP) is explicitly deferred to Phase 2 — the existing `middleware.RateLimit` is IP-keyed only and would need generalizing to key on an arbitrary identifier (session_id) to support it; not required for Phase 1. | Implementation: apply `middleware.RateLimit(20, 40)` to the `POST /v1/webchat/sessions` route and to the direct-token branch of `{id}/messages` specifically (post-auth-dispatch, not a blanket route-group `.Use(...)`), mirroring the existing `/auth` group's usage in spirit but scoped correctly for a dual-auth-type path. |
 | `MessageStatus.Delivered` semantics are weaker than a confirmed socket write | **Confirmed: ship without a delivery-ack loop in Phase 1.** Matches every other channel's actual guarantee level. | No implementation change from v5. |
 | Widget/Direct two-phase-commit gap | **Confirmed: `Widget.DirectID` nullable; a Widget with `DirectID = NULL` is "provisioning incomplete," excluded from the widget-snippet response until resolved.** | Engineering default, as proposed. |
 | Should `webchat_widget` direct hashes support rotation (`POST /v1/directs/{id}/regenerate`)? | **Confirmed: yes**, via the existing generic regenerate endpoint — no webchat-specific rotation logic. | No new code beyond `resource_type` enum registration (§13). |
@@ -1035,3 +1086,28 @@ in §14); §16's conversation-manager integration, its Round 3 approval, and
 all other Open-Question decisions are unaffected and still hold. This
 document is design-complete pending a fresh, narrowly-scoped review of the
 v7 API-shape change if one is desired before implementation begins.
+
+**Round 4 review of v7 (§5/§7/§14 API-shape change only)** returned
+**APPROVE WITH COMMENTS**. The reviewer independently verified the "mirrors
+`/aicalls`" claim in §7 against the real `PostAicalls`/`AIcallCreate`
+source and confirmed the shared-path dual-auth pattern (direct token =
+visitor, customer JWT = agent, one handler, one path) is precedented, not
+fabricated. No objection to the endpoint split itself — it correctly
+solves the stated welcome-message/early-`/ws`-subscribe problem. Three
+findings were folded directly into the Revision Notice, §14, and §15
+above: (1) Medium — the first-inbound-message Flow-trigger check inside
+`MessageSend` needs an explicit per-session serialization guarantee (e.g.
+row-level locking), since unlike the already-accepted session-creation
+double-fire race, a race here would double-trigger a customer-facing Flow
+response, not just duplicate a cosmetic row; (2) Medium — the
+`webchat_session_created` webhook's meaning changes from "someone started
+chatting" to "someone loaded the widget," which downstream webhook
+consumers should be told about explicitly rather than left to discover;
+(3) Minor — the new IP-based rate limiter must be scoped to the
+direct-token-authenticated branch of `{id}/messages` only, since that path
+now also serves customer-JWT agent/dashboard traffic that must not share
+an anonymous-visitor-sized budget. None of the three require
+re-architecting the v7 endpoint split; all are implementable directly
+within the existing Implementation Order steps. This document is now
+design-complete through v7, Round 4 reviewed, with no further review round
+pending.
