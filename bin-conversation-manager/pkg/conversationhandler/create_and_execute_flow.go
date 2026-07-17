@@ -112,6 +112,17 @@ func (h *conversationHandler) CreateAndExecuteFlow(
 	}
 	log.WithField("activeflow_id", af.ID).Debug("Created activeflow.")
 
+	// Set voipbin.conversation.* flow variables before executing --
+	// unlike executeActiveflow (message.go), there is no Message yet
+	// at webchat session-start time, so only the conversation variables
+	// are set here. Best-effort: a variable-set failure must not fail
+	// the visitor-facing session-creation response, same framing as the
+	// activeflow create/execute failures below.
+	if errVariable := h.setVariablesConversation(ctx, af.ID, res); errVariable != nil {
+		log.Errorf("Could not set conversation variables. activeflow_id: %s, err: %v", af.ID, errVariable)
+		return res, nil
+	}
+
 	if errExecute := h.reqHandler.FlowV1ActiveflowExecute(ctx, af.ID); errExecute != nil {
 		log.Errorf("Could not execute activeflow. activeflow_id: %s, err: %v", af.ID, errExecute)
 		return res, nil

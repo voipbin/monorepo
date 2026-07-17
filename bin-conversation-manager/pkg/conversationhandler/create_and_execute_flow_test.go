@@ -74,6 +74,7 @@ func Test_CreateAndExecuteFlow_Normal(t *testing.T) {
 	).Return(&fmactiveflow.Activeflow{
 		Identity: commonidentity.Identity{ID: activeflowID},
 	}, nil)
+	mockReq.EXPECT().FlowV1VariableSetVariable(ctx, activeflowID, gomock.Any()).Return(nil)
 	mockReq.EXPECT().FlowV1ActiveflowExecute(ctx, activeflowID).Return(nil)
 
 	res, err := h.CreateAndExecuteFlow(ctx, customerID, flowID, conversation.TypeWebchat, "", self, peer)
@@ -176,6 +177,65 @@ func Test_CreateAndExecuteFlow_ActiveflowCreateFails(t *testing.T) {
 	mockReq.EXPECT().FlowV1ActiveflowCreate(
 		ctx, uuid.Nil, customerID, flowID, fmactiveflow.ReferenceTypeConversation, conversationID, uuid.Nil, nil, "", fmactiveflow.WebhookMethodNone,
 	).Return(nil, context.DeadlineExceeded)
+
+	res, err := h.CreateAndExecuteFlow(ctx, customerID, flowID, conversation.TypeWebchat, "", self, peer)
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok (best-effort), got: %v", err)
+	}
+	if res.ID != conversationID {
+		t.Errorf("Wrong match. expect: %s, got: %s", conversationID, res.ID)
+	}
+}
+
+// Test_CreateAndExecuteFlow_SetVariablesFails verifies the Conversation
+// is still returned (best-effort) when setting the voipbin.conversation.*
+// flow variables fails, and that FlowV1ActiveflowExecute is never called
+// in that case (variables must be set before execution starts).
+func Test_CreateAndExecuteFlow_SetVariablesFails(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+	h := &conversationHandler{
+		utilHandler:   mockUtil,
+		db:            mockDB,
+		reqHandler:    mockReq,
+		notifyHandler: mockNotify,
+	}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("c1b2c3d4-0000-0000-0000-000000000001")
+	flowID := uuid.FromStringOrNil("2b5bc824-2066-11f0-81b0-672de53dec30")
+	conversationID := uuid.FromStringOrNil("44ebbd2e-82d8-11eb-8a4e-f7957fea9f50")
+	activeflowID := uuid.FromStringOrNil("aa847807-6cc4-4713-9dec-53a42840e74c")
+
+	self := commonaddress.Address{Type: commonaddress.TypeWebchat, Target: "widget-id"}
+	peer := commonaddress.Address{Type: commonaddress.TypeWebchat, Target: "session-id"}
+
+	cv := &conversation.Conversation{
+		Identity: commonidentity.Identity{ID: conversationID, CustomerID: customerID},
+		Type:     conversation.TypeWebchat,
+		Self:     self,
+		Peer:     peer,
+	}
+
+	mockUtil.EXPECT().UUIDCreate().Return(conversationID)
+	mockDB.EXPECT().ConversationCreate(ctx, gomock.Any()).Return(nil)
+	mockDB.EXPECT().ConversationGet(ctx, conversationID).Return(cv, nil)
+	mockNotify.EXPECT().PublishWebhookEvent(ctx, customerID, conversation.EventTypeConversationCreated, cv)
+
+	mockReq.EXPECT().FlowV1ActiveflowCreate(
+		ctx, uuid.Nil, customerID, flowID, fmactiveflow.ReferenceTypeConversation, conversationID, uuid.Nil, nil, "", fmactiveflow.WebhookMethodNone,
+	).Return(&fmactiveflow.Activeflow{
+		Identity: commonidentity.Identity{ID: activeflowID},
+	}, nil)
+	mockReq.EXPECT().FlowV1VariableSetVariable(ctx, activeflowID, gomock.Any()).Return(context.DeadlineExceeded)
+	// FlowV1ActiveflowExecute must NOT be called -- its absence from the
+	// mock is enforced by gomock failing on any unexpected call.
 
 	res, err := h.CreateAndExecuteFlow(ctx, customerID, flowID, conversation.TypeWebchat, "", self, peer)
 	if err != nil {
