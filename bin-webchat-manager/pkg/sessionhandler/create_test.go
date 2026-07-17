@@ -69,8 +69,19 @@ func Test_Create_NoSessionFlowConfigured(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
-	if !reflect.DeepEqual(res, sess) {
-		t.Errorf("Wrong match.\nexpect: %v\ngot: %v", sess, res)
+	// expectRes is a value copy, independent of sess -- SessionGet's mock
+	// returns the sess pointer, so if Create() ever mutated the pointee
+	// in place (as it did with WelcomeMessage before), a DeepEqual against
+	// sess itself would be tautological (the mutation lands in both
+	// operands). Comparing against a separately-constructed value ensures
+	// this test genuinely fails on any post-fetch mutation.
+	expectRes := &session.Session{
+		Identity: commonidentity.Identity{ID: sessionID, CustomerID: customerID},
+		WidgetID: widgetID,
+		Status:   session.StatusActive,
+	}
+	if !reflect.DeepEqual(res, expectRes) {
+		t.Errorf("Wrong match.\nexpect: %v\ngot: %v", expectRes, res)
 	}
 }
 
