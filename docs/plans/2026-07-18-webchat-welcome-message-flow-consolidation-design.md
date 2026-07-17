@@ -107,16 +107,24 @@ behavior** (see CPO decision log, 2026-07). Concretely:
 | `bin-webchat-manager/pkg/listenhandler/models/request/v1_widgets.go` | Remove `WelcomeMessage` from `V1DataWidgetsPost`/`V1DataWidgetsIDPut` |
 | `bin-webchat-manager/pkg/sessionhandler/create.go` | Remove `res.WelcomeMessage = w.WelcomeMessage` line; comment update (Widget fetch now serves ONE purpose: SessionFlowID) |
 | `bin-webchat-manager/pkg/sessionhandler/create_test.go` | Drop welcome_message assertions in all 3 test cases |
+| `bin-webchat-manager/pkg/widgethandler/mock_main.go` | Regenerated (`go generate ./...` in `bin-webchat-manager`) |
 | `bin-webchat-manager/scripts/database_scripts_test/widgets.sql` | Drop `welcome_message` column (test-DB fixture) |
-| `bin-dbscheme-manager/bin-manager/main/versions/<new>.py` | New Alembic migration: `alter table webchat_widgets drop column welcome_message` |
+| `bin-dbscheme-manager/bin-manager/main/versions/<new>.py` | New Alembic migration: `alter table webchat_widgets drop column welcome_message`. `down_revision` must chain off the CURRENT head at implementation time — re-verify with `alembic -c alembic.ini heads` immediately before running `alembic revision` (as of design time, head is `1a1f28d6842c`, but do not hardcode this; re-check for drift) |
 | `bin-openapi-manager/openapi/openapi.yaml` | Remove `welcome_message` from `WebchatManagerWidget` and `WebchatManagerSession` schemas (incl. `required` arrays) |
 | `bin-openapi-manager/openapi/paths/webchat_widgets/main.yaml` | Remove `welcome_message` from POST request body + required |
 | `bin-openapi-manager/openapi/paths/webchat_widgets/id.yaml` | Remove `welcome_message` from PUT request body + required |
 | `bin-openapi-manager/gens/models/gen.go` | Regenerated (`go generate ./...`) |
+| `bin-common-handler/pkg/requesthandler/main.go` | Remove `welcomeMessage string` param from `WebchatV1WidgetCreate`/`WebchatV1WidgetUpdate` interface decls (~L1515, L1527) |
+| `bin-common-handler/pkg/requesthandler/webchat_widget.go` | Remove `welcomeMessage` param + `WelcomeMessage: welcomeMessage` field set from both impl functions (L21/32, L101/111) — this is the actual RPC-client layer that `bin-api-manager/pkg/servicehandler` and `bin-webchat-manager`'s own callers depend on |
+| `bin-common-handler/pkg/requesthandler/mock_main.go` | Regenerated (`go generate ./...` in `bin-common-handler`) |
+| `bin-api-manager/pkg/servicehandler/main.go` | Remove `welcomeMessage string` param from `WebchatWidgetCreate`/`WebchatWidgetUpdate` interface decls (~L886, L897) |
+| `bin-api-manager/pkg/servicehandler/webchat_widget.go` | Remove `welcomeMessage` param from both public functions and the `h.reqHandler.WebchatV1Widget*` call args (L122, 179, 196, 264) — this is the layer between `server/webchat_widgets.go` (HTTP) and `bin-common-handler` (RPC); it independently carries the same positional param and must be edited in the same PR |
+| `bin-api-manager/pkg/servicehandler/mock_main.go` | Regenerated (`go generate ./...` in `bin-api-manager`) |
+| `bin-api-manager/pkg/servicehandler/webchat_widget_test.go` | **Not cosmetic** — has 5 compile-breaking call sites (L161, 163, 211, 254, 304) passing a positional `"welcome"` string arg to `WebchatWidgetCreate`/`WebchatWidgetUpdate`/mocked `WebchatV1WidgetCreate` that must be removed to match the new shorter signature, in addition to the stale doc comment |
 | `bin-api-manager/server/webchat_widgets.go` | Remove `req.WelcomeMessage` args (2 call sites: create + update) |
 | `bin-api-manager/gens/openapi_server/gen.go`, `gens/openapi_redoc/*` | Regenerated |
-| `bin-api-manager/pkg/servicehandler/webchat_widget_test.go` | Update stale comment referencing welcome_message as admin config |
 | `bin-api-manager/docsdev/source/webchat_struct_session.rst` | Remove `welcome_message` field doc + example |
+| `bin-api-manager/docsdev/source/webchat_struct_widget.rst` | Checked — this RST already has no `welcome_message` field (pre-existing drift vs. code); no edit needed here, noted explicitly so it is not mistaken for an omission |
 | `bin-api-manager/docsdev/source/webchat_overview.rst` | Rewrite step 4 (no longer "receive welcome_message") |
 | `bin-api-manager/docsdev/source/websocket_struct.rst` | Check/update any welcome_message example fields |
 | `bin-api-manager/docsdev/build/` | Rebuilt Sphinx HTML, force-added |
@@ -161,21 +169,43 @@ After: drop the `res.WelcomeMessage = w.WelcomeMessage` line and
 rewrite the doc comment to say the WidgetGet call now serves the
 single purpose of reading `SessionFlowID`.
 
-### 6.4 Widget CRUD signature change (breaking, same-PR across all callers)
+### 6.4 Widget CRUD signature change (breaking, same-PR across ALL layers)
 
-`WidgetHandler.Create` and `UpdateBasicInfo` drop the
-`welcomeMessage string` parameter:
+`welcomeMessage string` is a positional parameter threaded through
+FOUR layers, not one — every layer must drop it in the same PR or
+the monorepo fails to compile:
+
+1. `bin-webchat-manager/pkg/widgethandler.WidgetHandler.Create` /
+   `UpdateBasicInfo` (the service's own internal handler interface)
+2. `bin-common-handler/pkg/requesthandler.RequestHandler.WebchatV1WidgetCreate`
+   / `WebchatV1WidgetUpdate` (the shared RPC-client interface every
+   OTHER service uses to call webchat-manager over RabbitMQ —
+   `main.go` ~L1515/L1527 declares it, `webchat_widget.go` L21/32 and
+   L101/111 implement it)
+3. `bin-api-manager/pkg/servicehandler.ServiceHandler.WebchatWidgetCreate`
+   / `WebchatWidgetUpdate` (the auth+RPC-delegation layer between
+   HTTP and `bin-common-handler` — `main.go` ~L886/L897 interface,
+   `webchat_widget.go` L122/179/196/264 impl + RPC call args)
+4. `bin-api-manager/server/webchat_widgets.go` (the HTTP handler
+   parsing the request body)
 
 ```go
-// before
+// before (widgethandler, mirrored at requesthandler and servicehandler layers)
 Create(ctx context.Context, customerID uuid.UUID, name string, welcomeMessage string, sessionFlowID uuid.UUID, messageFlowID uuid.UUID, sessionIdleTimeout int, themeConfig *widget.ThemeConfig) (*widget.Widget, error)
 
 // after
 Create(ctx context.Context, customerID uuid.UUID, name string, sessionFlowID uuid.UUID, messageFlowID uuid.UUID, sessionIdleTimeout int, themeConfig *widget.ThemeConfig) (*widget.Widget, error)
 ```
-Same shape change applies to `UpdateBasicInfo`. Every caller in
-`listenhandler/v1_widgets.go` and `bin-api-manager/server/webchat_widgets.go`
-drops the corresponding `req.WelcomeMessage` argument.
+Same shape change applies to `UpdateBasicInfo`/`WebchatV1WidgetUpdate`/
+`WebchatWidgetUpdate`. Every caller across all four layers drops the
+corresponding `welcomeMessage`/`req.WelcomeMessage` argument,
+including 5 compile-breaking call sites in
+`bin-api-manager/pkg/servicehandler/webchat_widget_test.go`
+(L161, 163, 211, 254, 304) that pass a positional `"welcome"` string.
+Generated mocks (`bin-webchat-manager/pkg/widgethandler/mock_main.go`,
+`bin-common-handler/pkg/requesthandler/mock_main.go`,
+`bin-api-manager/pkg/servicehandler/mock_main.go`) are regenerated by
+each service's own `go generate ./...` — no manual edits.
 
 ### 6.5 Alembic migration
 
@@ -236,13 +266,19 @@ flow trigger as the sole mechanism for greeting a visitor.
 
 ## 8. Verification plan
 
+Build order matters: `bin-common-handler` is the shared RPC-client
+library every other service vendors, so it must be edited AND
+regenerated first, then `bin-webchat-manager` and
+`bin-api-manager` (which both depend on it) after.
+
 1. `cd bin-webchat-manager && go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m`
-2. `cd bin-openapi-manager && go generate ./...` (regenerate `gens/models/gen.go`)
-3. `cd bin-api-manager && go generate ./... && go build ./...` (confirm `gens/openapi_server/gen.go` drops the field cleanly and `server/webchat_widgets.go` compiles once the 2 call sites are edited)
-4. `cd bin-api-manager && go mod tidy && go mod vendor && go test ./... && golangci-lint run -v --timeout 5m`
-5. Grep verification: `grep -rn "welcome_message\|WelcomeMessage" bin-webchat-manager bin-openapi-manager bin-api-manager/server bin-api-manager/pkg/servicehandler` — zero hits expected outside `docsdev/` (updated separately) and the new migration's downgrade path.
-6. Rebuild RST docs: `cd bin-api-manager/docsdev && rm -rf build && python3 -m sphinx -M html source build`, `git add -f bin-api-manager/docsdev/build/`.
-7. Alembic: generate migration file via `alembic revision`, hand-edit SQL, verify with `alembic -c alembic.ini heads` (single head) — do NOT run `alembic upgrade` against any shared DB.
+2. `cd bin-common-handler && go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m` (regenerates `pkg/requesthandler/mock_main.go`)
+3. `cd bin-openapi-manager && go generate ./...` (regenerate `gens/models/gen.go`)
+4. `cd bin-api-manager && go generate ./... && go build ./...` (confirm `gens/openapi_server/gen.go` drops the field cleanly, and `pkg/servicehandler`, `server/webchat_widgets.go` compile once all call sites are edited)
+5. `cd bin-api-manager && go mod tidy && go mod vendor && go test ./... && golangci-lint run -v --timeout 5m` (regenerates `pkg/servicehandler/mock_main.go`)
+6. Grep verification: `grep -rn "welcome_message\|WelcomeMessage" bin-webchat-manager bin-openapi-manager bin-api-manager bin-common-handler` — zero hits expected outside `docsdev/` (updated separately) and the new migration's downgrade path.
+7. Rebuild RST docs: `cd bin-api-manager/docsdev && rm -rf build && python3 -m sphinx -M html source build`, `git add -f bin-api-manager/docsdev/build/`.
+8. Alembic: re-verify head with `alembic -c alembic.ini heads` immediately before generating, generate migration file via `alembic revision`, hand-edit SQL, verify with `alembic -c alembic.ini heads` again (single head) — do NOT run `alembic upgrade` against any shared DB.
 
 ## 9. Rollout / risk
 
