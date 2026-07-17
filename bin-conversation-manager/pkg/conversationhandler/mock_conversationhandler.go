@@ -61,6 +61,21 @@ func (mr *MockConversationHandlerMockRecorder) Create(ctx, customerID, name, det
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockConversationHandler)(nil).Create), ctx, customerID, name, detail, conversationType, dialogID, self, peer)
 }
 
+// CreateAndExecuteFlow mocks base method.
+func (m *MockConversationHandler) CreateAndExecuteFlow(ctx context.Context, customerID, flowID uuid.UUID, conversationType conversation.Type, dialogID string, self, peer address.Address) (*conversation.Conversation, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateAndExecuteFlow", ctx, customerID, flowID, conversationType, dialogID, self, peer)
+	ret0, _ := ret[0].(*conversation.Conversation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateAndExecuteFlow indicates an expected call of CreateAndExecuteFlow.
+func (mr *MockConversationHandlerMockRecorder) CreateAndExecuteFlow(ctx, customerID, flowID, conversationType, dialogID, self, peer any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAndExecuteFlow", reflect.TypeOf((*MockConversationHandler)(nil).CreateAndExecuteFlow), ctx, customerID, flowID, conversationType, dialogID, self, peer)
+}
+
 // EmailEventSent mocks base method.
 func (m *MockConversationHandler) EmailEventSent(ctx context.Context, e *email.Email) error {
 	m.ctrl.T.Helper()

@@ -16,7 +16,8 @@ Widget struct
         "customer_id": "<string>",
         "name": "<string>",
         "status": "<string>",
-        "flow_id": "<string>",
+        "session_flow_id": "<string>",
+        "message_flow_id": "<string>",
         "session_idle_timeout": <number>,
         "theme_config": {
             "primary_color": "<string>",
@@ -33,7 +34,8 @@ Widget struct
 * ``customer_id`` (UUID): The customer who owns this widget. Obtained from the ``id`` field of ``GET /customers``.
 * ``name`` (String): Human-readable name for the widget.
 * ``status`` (enum string): The widget's status. See :ref:`Status <webchat-struct-widget-status>`.
-* ``flow_id`` (UUID): The flow triggered on the visitor's first inbound message in each session. Obtained from the ``id`` field of ``GET /flows``.
+* ``session_flow_id`` (UUID): The flow triggered once per Session, at Session creation. Obtained from the ``id`` field of ``GET /flows``.
+* ``message_flow_id`` (UUID, optional): An independent flow triggered on every inbound message. Obtained from the ``id`` field of ``GET /flows``. Omit to leave inbound messages un-triggered.
 * ``session_idle_timeout`` (Integer): Session idle timeout in seconds before an inactive session is automatically ended. Default ``1800`` (30 minutes).
 * ``theme_config`` (Object, optional): Cosmetic widget appearance settings. See :ref:`Theme Config <webchat-struct-widget-theme-config>`. Omitted or ``null`` fields fall back to the platform default (blue bubble, no logo, bottom-right).
 * ``direct_hash`` (String, optional): Hash used by the embed script (``data-hash`` attribute) to authenticate anonymous visitors via ``POST /auth/boot``. Returned on every response (``GET``, list, create, update, regenerate).

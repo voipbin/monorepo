@@ -5182,6 +5182,9 @@ type WebchatManagerSession struct {
 	// TmUpdate Timestamp when the session was last updated.
 	TmUpdate *string `json:"tm_update,omitempty"`
 
+	// WelcomeMessage The owning Widget's welcome message, populated ONLY on the POST /webchat_sessions (Create) response -- List/Get/End responses always leave this empty. The client is expected to call POST /webchat_sessions fresh on every page load, so this asymmetry does not surface as a real gap in the visitor-facing flow.
+	WelcomeMessage *string `json:"welcome_message,omitempty"`
+
 	// WidgetId The widget this session belongs to. Returned from the `POST /widgets` or `GET /widgets` response.
 	WidgetId string `json:"widget_id"`
 }
@@ -5197,14 +5200,17 @@ type WebchatManagerWidget struct {
 	// DirectHash Hash used by the embed script (data-hash attribute) to authenticate anonymous visitors via POST /auth/boot. Returned on every response (GET, List, Create, Update, direct_hash_regenerate) -- this value is embedded directly in the customer's public website HTML by design, so it is not a traditional secret; hiding it from GET responses would only make it harder for the customer's own admins to retrieve it.
 	DirectHash *string `json:"direct_hash,omitempty"`
 
-	// FlowId The flow to trigger on the visitor's first inbound message. Returned from the `POST /flows` or `GET /flows` response.
-	FlowId string `json:"flow_id"`
-
 	// Id The unique identifier of the widget. Returned from the `POST /widgets` or `GET /widgets` response.
 	Id string `json:"id"`
 
+	// MessageFlowId Optional. When set, fires an independent, stateless activeflow on EVERY inbound message (mirrors bin-conversation-manager's Account.MessageFlowID/Number.MessageFlowID pattern for LINE/WhatsApp/SMS). Returned from the `POST /flows` or `GET /flows` response.
+	MessageFlowId *string `json:"message_flow_id,omitempty"`
+
 	// Name Name of the widget.
 	Name string `json:"name"`
+
+	// SessionFlowId Fires once per Session, at session creation/start (POST /webchat_sessions) -- bin-conversation-manager owns Create+Execute for this Flow's activeflow. Returned from the `POST /flows` or `GET /flows` response.
+	SessionFlowId string `json:"session_flow_id"`
 
 	// SessionIdleTimeout Session idle timeout in seconds before the session is automatically ended.
 	SessionIdleTimeout int `json:"session_idle_timeout"`
@@ -7915,11 +7921,14 @@ type GetWebchatWidgetsParams struct {
 
 // PostWebchatWidgetsJSONBody defines parameters for PostWebchatWidgets.
 type PostWebchatWidgetsJSONBody struct {
-	// FlowId The flow to trigger on the visitor's first inbound message. Returned from the `POST /flows` or `GET /flows` response.
-	FlowId string `json:"flow_id"`
+	// MessageFlowId Optional. Fires on every inbound message, independently. Returned from the `POST /flows` or `GET /flows` response.
+	MessageFlowId *string `json:"message_flow_id,omitempty"`
 
 	// Name Name of the widget.
 	Name string `json:"name"`
+
+	// SessionFlowId Fires once per Session, at session creation/start. Returned from the `POST /flows` or `GET /flows` response.
+	SessionFlowId string `json:"session_flow_id"`
 
 	// SessionIdleTimeout Session idle timeout in seconds before the session is automatically ended. Defaults to 1800 (30 minutes) when omitted.
 	SessionIdleTimeout *int `json:"session_idle_timeout,omitempty"`
@@ -7933,11 +7942,14 @@ type PostWebchatWidgetsJSONBody struct {
 
 // PutWebchatWidgetsIdJSONBody defines parameters for PutWebchatWidgetsId.
 type PutWebchatWidgetsIdJSONBody struct {
-	// FlowId The flow to trigger on the visitor's first inbound message. Returned from the `POST /flows` or `GET /flows` response.
-	FlowId string `json:"flow_id"`
+	// MessageFlowId Optional. Fires on every inbound message, independently. Returned from the `POST /flows` or `GET /flows` response.
+	MessageFlowId *string `json:"message_flow_id,omitempty"`
 
 	// Name Name of the widget.
 	Name string `json:"name"`
+
+	// SessionFlowId Fires once per Session, at session creation/start. Returned from the `POST /flows` or `GET /flows` response.
+	SessionFlowId string `json:"session_flow_id"`
 
 	// SessionIdleTimeout Session idle timeout in seconds before the session is automatically ended.
 	SessionIdleTimeout *int `json:"session_idle_timeout,omitempty"`

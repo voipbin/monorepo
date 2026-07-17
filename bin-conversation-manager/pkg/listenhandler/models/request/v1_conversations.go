@@ -60,6 +60,24 @@ type V1DataConversationsGetOrCreateBySelfAndPeerPost struct {
 	Peer             commonaddress.Address `json:"peer,omitempty"`
 }
 
+// V1DataConversationsCreateAndExecuteFlowPost is
+// v1 data type request struct for
+// /v1/conversations/create_and_execute_flow POST
+//
+// Used by bin-webchat-manager's sessionhandler.Create at webchat
+// session-create time to trigger Widget.SessionFlowID (design doc
+// 2026-07-17-webchat-widget-session-message-flow-split-design.md §3.3).
+// Always creates a new Conversation (no dedup lookup) -- callers must
+// pass a self/peer pair that is unique per call.
+type V1DataConversationsCreateAndExecuteFlowPost struct {
+	CustomerID       uuid.UUID             `json:"customer_id,omitempty"`
+	FlowID           uuid.UUID             `json:"flow_id,omitempty"`
+	ConversationType conversation.Type     `json:"type,omitempty"`
+	DialogID         string                `json:"dialog_id,omitempty"`
+	Self             commonaddress.Address `json:"self,omitempty"`
+	Peer             commonaddress.Address `json:"peer,omitempty"`
+}
+
 // V1DataConversationsIDMetadataPut is
 // v1 data type request struct for
 // /v1/conversations/<conversation-id>/metadata PUT

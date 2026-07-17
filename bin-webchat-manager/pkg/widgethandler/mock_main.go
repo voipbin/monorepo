@@ -43,18 +43,18 @@ func (m *MockWidgetHandler) EXPECT() *MockWidgetHandlerMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockWidgetHandler) Create(ctx context.Context, customerID uuid.UUID, name, welcomeMessage string, flowID uuid.UUID, sessionIdleTimeout int, themeConfig *widget.ThemeConfig) (*widget.Widget, error) {
+func (m *MockWidgetHandler) Create(ctx context.Context, customerID uuid.UUID, name, welcomeMessage string, sessionFlowID, messageFlowID uuid.UUID, sessionIdleTimeout int, themeConfig *widget.ThemeConfig) (*widget.Widget, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, customerID, name, welcomeMessage, flowID, sessionIdleTimeout, themeConfig)
+	ret := m.ctrl.Call(m, "Create", ctx, customerID, name, welcomeMessage, sessionFlowID, messageFlowID, sessionIdleTimeout, themeConfig)
 	ret0, _ := ret[0].(*widget.Widget)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockWidgetHandlerMockRecorder) Create(ctx, customerID, name, welcomeMessage, flowID, sessionIdleTimeout, themeConfig any) *gomock.Call {
+func (mr *MockWidgetHandlerMockRecorder) Create(ctx, customerID, name, welcomeMessage, sessionFlowID, messageFlowID, sessionIdleTimeout, themeConfig any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockWidgetHandler)(nil).Create), ctx, customerID, name, welcomeMessage, flowID, sessionIdleTimeout, themeConfig)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockWidgetHandler)(nil).Create), ctx, customerID, name, welcomeMessage, sessionFlowID, messageFlowID, sessionIdleTimeout, themeConfig)
 }
 
 // Delete mocks base method.
@@ -118,16 +118,16 @@ func (mr *MockWidgetHandlerMockRecorder) List(ctx, size, token, filters any) *go
 }
 
 // UpdateBasicInfo mocks base method.
-func (m *MockWidgetHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, welcomeMessage string, flowID uuid.UUID, sessionIdleTimeout int, themeConfig *widget.ThemeConfig) (*widget.Widget, error) {
+func (m *MockWidgetHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, welcomeMessage string, sessionFlowID, messageFlowID uuid.UUID, sessionIdleTimeout int, themeConfig *widget.ThemeConfig) (*widget.Widget, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateBasicInfo", ctx, id, name, welcomeMessage, flowID, sessionIdleTimeout, themeConfig)
+	ret := m.ctrl.Call(m, "UpdateBasicInfo", ctx, id, name, welcomeMessage, sessionFlowID, messageFlowID, sessionIdleTimeout, themeConfig)
 	ret0, _ := ret[0].(*widget.Widget)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpdateBasicInfo indicates an expected call of UpdateBasicInfo.
-func (mr *MockWidgetHandlerMockRecorder) UpdateBasicInfo(ctx, id, name, welcomeMessage, flowID, sessionIdleTimeout, themeConfig any) *gomock.Call {
+func (mr *MockWidgetHandlerMockRecorder) UpdateBasicInfo(ctx, id, name, welcomeMessage, sessionFlowID, messageFlowID, sessionIdleTimeout, themeConfig any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBasicInfo", reflect.TypeOf((*MockWidgetHandler)(nil).UpdateBasicInfo), ctx, id, name, welcomeMessage, flowID, sessionIdleTimeout, themeConfig)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBasicInfo", reflect.TypeOf((*MockWidgetHandler)(nil).UpdateBasicInfo), ctx, id, name, welcomeMessage, sessionFlowID, messageFlowID, sessionIdleTimeout, themeConfig)
 }

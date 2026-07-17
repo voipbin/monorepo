@@ -21,7 +21,8 @@ type WidgetHandler interface {
 		customerID uuid.UUID,
 		name string,
 		welcomeMessage string,
-		flowID uuid.UUID,
+		sessionFlowID uuid.UUID,
+		messageFlowID uuid.UUID,
 		sessionIdleTimeout int,
 		themeConfig *widget.ThemeConfig,
 	) (*widget.Widget, error)
@@ -32,7 +33,8 @@ type WidgetHandler interface {
 		id uuid.UUID,
 		name string,
 		welcomeMessage string,
-		flowID uuid.UUID,
+		sessionFlowID uuid.UUID,
+		messageFlowID uuid.UUID,
 		sessionIdleTimeout int,
 		themeConfig *widget.ThemeConfig,
 	) (*widget.Widget, error)

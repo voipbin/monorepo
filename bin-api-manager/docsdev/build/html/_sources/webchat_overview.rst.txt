@@ -57,7 +57,12 @@ The visitor-facing flow never uses a customer JWT. Instead:
 
 Flow trigger
 ------------
-The configured Flow (``Widget.flow_id``) is triggered exactly once per Session, on that Session's **first inbound message** -- not on Session creation. This keeps session creation cheap (safe to call on every page load) while still giving the Flow the full conversation context once the visitor actually engages.
+Two independent Flows can be configured per Widget:
+
+* ``Widget.session_flow_id`` -- triggered once, at Session creation (``POST /webchat_sessions``), before the visitor has sent any message. VoIPBin creates the Conversation for this Widget/Session pair up front and triggers the Flow against it; use this for routing decisions that don't depend on message content (e.g. time-of-day routing, a proactive greeting flow).
+* ``Widget.message_flow_id`` (optional) -- triggered independently on every inbound message, mirroring the Flow-per-message pattern used by SMS/LINE/WhatsApp. Use this when the Flow needs to react to what the visitor actually typed (e.g. routing to a human agent when unassigned, or an AI reply per message).
+
+Both are optional and independent; a Widget can configure either, both, or neither.
 
 Session lifecycle
 ------------------

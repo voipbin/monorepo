@@ -42,7 +42,8 @@ func Test_WidgetCreate(t *testing.T) {
 				Status:              widget.StatusActive,
 				DirectID:            uuid.FromStringOrNil("e4368e4e-59de-11ec-badd-378688c95856"),
 				WelcomeMessage:      "Hello!",
-				FlowID:              uuid.FromStringOrNil("4dfaf278-205d-11f0-8be0-d74aed2ef0bc"),
+				SessionFlowID:       uuid.FromStringOrNil("4dfaf278-205d-11f0-8be0-d74aed2ef0bc"),
+				MessageFlowID:       uuid.FromStringOrNil("5efbf389-206e-11f0-9cf1-e85fbf3f01cd"),
 				SessionIdleTimeout:  1800,
 				ThemeConfig: &widget.ThemeConfig{
 					PrimaryColor: "#3366ff",
@@ -61,7 +62,8 @@ func Test_WidgetCreate(t *testing.T) {
 				Status:              widget.StatusActive,
 				DirectID:            uuid.FromStringOrNil("e4368e4e-59de-11ec-badd-378688c95856"),
 				WelcomeMessage:      "Hello!",
-				FlowID:              uuid.FromStringOrNil("4dfaf278-205d-11f0-8be0-d74aed2ef0bc"),
+				SessionFlowID:       uuid.FromStringOrNil("4dfaf278-205d-11f0-8be0-d74aed2ef0bc"),
+				MessageFlowID:       uuid.FromStringOrNil("5efbf389-206e-11f0-9cf1-e85fbf3f01cd"),
 				SessionIdleTimeout:  1800,
 				ThemeConfig: &widget.ThemeConfig{
 					PrimaryColor: "#3366ff",

@@ -15,7 +15,8 @@ type V1DataWidgetsPost struct {
 	Name           string `json:"name,omitempty"`
 	WelcomeMessage string `json:"welcome_message,omitempty"`
 
-	FlowID uuid.UUID `json:"flow_id,omitempty"`
+	SessionFlowID uuid.UUID `json:"session_flow_id,omitempty"`
+	MessageFlowID uuid.UUID `json:"message_flow_id,omitempty"`
 
 	SessionIdleTimeout int `json:"session_idle_timeout,omitempty"`
 
@@ -29,7 +30,8 @@ type V1DataWidgetsIDPut struct {
 	Name           string `json:"name,omitempty"`
 	WelcomeMessage string `json:"welcome_message,omitempty"`
 
-	FlowID uuid.UUID `json:"flow_id,omitempty"`
+	SessionFlowID uuid.UUID `json:"session_flow_id,omitempty"`
+	MessageFlowID uuid.UUID `json:"message_flow_id,omitempty"`
 
 	SessionIdleTimeout int `json:"session_idle_timeout,omitempty"`
 

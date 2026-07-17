@@ -10,14 +10,16 @@ func TestWidgetStruct(t *testing.T) {
 	id := uuid.Must(uuid.NewV4())
 	customerID := uuid.Must(uuid.NewV4())
 	directID := uuid.Must(uuid.NewV4())
-	flowID := uuid.Must(uuid.NewV4())
+	sessionFlowID := uuid.Must(uuid.NewV4())
+	messageFlowID := uuid.Must(uuid.NewV4())
 
 	w := Widget{
 		Name:               "test widget",
 		Status:             StatusActive,
 		DirectID:           directID,
 		WelcomeMessage:     "welcome!",
-		FlowID:             flowID,
+		SessionFlowID:      sessionFlowID,
+		MessageFlowID:      messageFlowID,
 		SessionIdleTimeout: 1800,
 		ThemeConfig: &ThemeConfig{
 			PrimaryColor: "#112233",
@@ -46,8 +48,11 @@ func TestWidgetStruct(t *testing.T) {
 	if w.WelcomeMessage != "welcome!" {
 		t.Errorf("Widget.WelcomeMessage = %v, expected %v", w.WelcomeMessage, "welcome!")
 	}
-	if w.FlowID != flowID {
-		t.Errorf("Widget.FlowID = %v, expected %v", w.FlowID, flowID)
+	if w.SessionFlowID != sessionFlowID {
+		t.Errorf("Widget.SessionFlowID = %v, expected %v", w.SessionFlowID, sessionFlowID)
+	}
+	if w.MessageFlowID != messageFlowID {
+		t.Errorf("Widget.MessageFlowID = %v, expected %v", w.MessageFlowID, messageFlowID)
 	}
 	if w.SessionIdleTimeout != 1800 {
 		t.Errorf("Widget.SessionIdleTimeout = %v, expected %v", w.SessionIdleTimeout, 1800)

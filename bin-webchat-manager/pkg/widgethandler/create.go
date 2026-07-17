@@ -19,17 +19,19 @@ func (h *widgetHandler) Create(
 	customerID uuid.UUID,
 	name string,
 	welcomeMessage string,
-	flowID uuid.UUID,
+	sessionFlowID uuid.UUID,
+	messageFlowID uuid.UUID,
 	sessionIdleTimeout int,
 	themeConfig *widget.ThemeConfig,
 ) (*widget.Widget, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":                  "Create",
-		"customer_id":           customerID,
-		"name":                  name,
-		"welcome_message":       welcomeMessage,
-		"flow_id":               flowID,
-		"session_idle_timeout":  sessionIdleTimeout,
+		"func":                 "Create",
+		"customer_id":          customerID,
+		"name":                 name,
+		"welcome_message":      welcomeMessage,
+		"session_flow_id":      sessionFlowID,
+		"message_flow_id":      messageFlowID,
+		"session_idle_timeout": sessionIdleTimeout,
 	})
 	log.Debug("Creating a new widget.")
 
@@ -62,7 +64,8 @@ func (h *widgetHandler) Create(
 		Hash:     d.Hash,
 
 		WelcomeMessage: welcomeMessage,
-		FlowID:         flowID,
+		SessionFlowID:  sessionFlowID,
+		MessageFlowID:  messageFlowID,
 
 		SessionIdleTimeout: sessionIdleTimeout,
 

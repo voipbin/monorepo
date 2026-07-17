@@ -36,7 +36,8 @@ func (h *widgetHandler) UpdateBasicInfo(
 	id uuid.UUID,
 	name string,
 	welcomeMessage string,
-	flowID uuid.UUID,
+	sessionFlowID uuid.UUID,
+	messageFlowID uuid.UUID,
 	sessionIdleTimeout int,
 	themeConfig *widget.ThemeConfig,
 ) (*widget.Widget, error) {
@@ -51,11 +52,12 @@ func (h *widgetHandler) UpdateBasicInfo(
 	}
 
 	fields := map[widget.Field]any{
-		widget.FieldName:                name,
-		widget.FieldWelcomeMessage:      welcomeMessage,
-		widget.FieldFlowID:              flowID,
-		widget.FieldSessionIdleTimeout:  sessionIdleTimeout,
-		widget.FieldThemeConfig:         themeConfig,
+		widget.FieldName:               name,
+		widget.FieldWelcomeMessage:     welcomeMessage,
+		widget.FieldSessionFlowID:      sessionFlowID,
+		widget.FieldMessageFlowID:      messageFlowID,
+		widget.FieldSessionIdleTimeout: sessionIdleTimeout,
+		widget.FieldThemeConfig:        themeConfig,
 	}
 
 	if err := h.db.WidgetUpdate(ctx, id, fields); err != nil {

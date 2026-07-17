@@ -989,6 +989,22 @@ type RequestHandler interface {
 		peer commonaddress.Address,
 	) (*cvconversation.Conversation, error)
 	ConversationV1ConversationList(ctx context.Context, pageToken string, pageSize uint64, fields map[cvconversation.Field]any) ([]cvconversation.Conversation, error)
+	// ConversationV1ConversationCreateAndExecuteFlow creates a
+	// brand-new conversation and immediately Create+Executes an
+	// activeflow against it. Distinct from ConversationV1ConversationCreate
+	// above: always fires a Flow trigger. Used by
+	// bin-webchat-manager's sessionhandler.Create at webchat
+	// session-create time to trigger Widget.SessionFlowID (design doc
+	// 2026-07-17-webchat-widget-session-message-flow-split-design.md §3.3).
+	ConversationV1ConversationCreateAndExecuteFlow(
+		ctx context.Context,
+		customerID uuid.UUID,
+		flowID uuid.UUID,
+		conversationType cvconversation.Type,
+		dialogID string,
+		self commonaddress.Address,
+		peer commonaddress.Address,
+	) (*cvconversation.Conversation, error)
 	ConversationV1ConversationUpdate(ctx context.Context, conversationID uuid.UUID, fields map[cvconversation.Field]any) (*cvconversation.Conversation, error)
 	// ConversationV1ConversationUpdateMetadata is a dedicated
 	// whole-struct-replace metadata update, distinct from the general
@@ -1497,7 +1513,8 @@ type RequestHandler interface {
 		customerID uuid.UUID,
 		name string,
 		welcomeMessage string,
-		flowID uuid.UUID,
+		sessionFlowID uuid.UUID,
+		messageFlowID uuid.UUID,
 		sessionIdleTimeout int,
 		themeConfig *wcwidget.ThemeConfig,
 	) (*wcwidget.Widget, error)
@@ -1508,7 +1525,8 @@ type RequestHandler interface {
 		id uuid.UUID,
 		name string,
 		welcomeMessage string,
-		flowID uuid.UUID,
+		sessionFlowID uuid.UUID,
+		messageFlowID uuid.UUID,
 		sessionIdleTimeout int,
 		themeConfig *wcwidget.ThemeConfig,
 	) (*wcwidget.Widget, error)

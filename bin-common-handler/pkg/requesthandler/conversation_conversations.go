@@ -173,6 +173,55 @@ func (r *requestHandler) ConversationV1ConversationGetOrCreateBySelfAndPeer(
 	return &res, nil
 }
 
+// ConversationV1ConversationCreateAndExecuteFlow sends a request to
+// conversation-manager to create a brand-new conversation and
+// immediately Create+Execute an activeflow against it
+// (ReferenceType=Conversation). Distinct from
+// ConversationV1ConversationCreate above: this always fires a Flow
+// trigger, so it's a separate RPC rather than an optional-parameter
+// extension of Create (matching this file's existing
+// GetOrCreateBySelfAndPeer-vs-GetBySelfAndPeer separation pattern).
+// Used by bin-webchat-manager's sessionhandler.Create at webchat
+// session-create time to trigger Widget.SessionFlowID (design doc
+// 2026-07-17-webchat-widget-session-message-flow-split-design.md §3.3).
+func (r *requestHandler) ConversationV1ConversationCreateAndExecuteFlow(
+	ctx context.Context,
+	customerID uuid.UUID,
+	flowID uuid.UUID,
+	conversationType cvconversation.Type,
+	dialogID string,
+	self address.Address,
+	peer address.Address,
+) (*cvconversation.Conversation, error) {
+	uri := "/v1/conversations/create_and_execute_flow"
+
+	data := &cvrequest.V1DataConversationsCreateAndExecuteFlowPost{
+		CustomerID:       customerID,
+		FlowID:           flowID,
+		ConversationType: conversationType,
+		DialogID:         dialogID,
+		Self:             self,
+		Peer:             peer,
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestConversation(ctx, uri, sock.RequestMethodPost, "conversation/conversations/create_and_execute_flow", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
+		return nil, err
+	}
+
+	var res cvconversation.Conversation
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
+}
+
 // ConversationV1ConversationUpdate sends a request to conversation-manager
 // to update the conversation info.
 // it returns updated conversation info if it succeed.

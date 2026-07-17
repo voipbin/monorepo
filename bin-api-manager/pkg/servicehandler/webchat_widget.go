@@ -120,7 +120,8 @@ func (h *serviceHandler) WebchatWidgetCreate(
 	a *auth.AuthIdentity,
 	name string,
 	welcomeMessage string,
-	flowID uuid.UUID,
+	sessionFlowID uuid.UUID,
+	messageFlowID uuid.UUID,
 	sessionIdleTimeout int,
 	themeConfig *wcwidget.ThemeConfig,
 ) (*wcwidget.WebhookMessage, error) {
@@ -139,28 +140,43 @@ func (h *serviceHandler) WebchatWidgetCreate(
 		return nil, serviceerrors.ErrPermissionDenied
 	}
 
-	// Verify the referenced flow belongs to the caller's own customer --
-	// otherwise Customer A could point their widget at Customer B's
-	// flow_id, and the first inbound message on that widget's session
-	// would trigger Customer B's Flow using Customer A's customer_id as
-	// the activeflow owner (cross-tenant flow-execution/data-leak
-	// vector). Neither bin-webchat-manager nor bin-flow-manager
-	// re-validates flow ownership downstream, so this is the only
-	// enforcement point, mirroring CallCreate's flowGet+CustomerID check
-	// in call.go.
-	if flowID != uuid.Nil {
-		f, err := h.flowGet(ctx, flowID)
+	// Verify BOTH referenced flows (SessionFlowID and MessageFlowID,
+	// independently) belong to the caller's own customer -- otherwise
+	// Customer A could point their widget at Customer B's flow, and a
+	// session-create/inbound-message on that widget would trigger
+	// Customer B's Flow using Customer A's customer_id as the
+	// activeflow owner (cross-tenant flow-execution/data-leak vector).
+	// Neither bin-webchat-manager, bin-conversation-manager, nor
+	// bin-flow-manager re-validates flow ownership downstream, so this
+	// is the only enforcement point, mirroring CallCreate's
+	// flowGet+CustomerID check in call.go. Design doc
+	// 2026-07-17-webchat-widget-session-message-flow-split-design.md
+	// §9: this check must run TWICE, once per field -- skipping it on
+	// either field reopens the vector for that field independently.
+	if sessionFlowID != uuid.Nil {
+		f, err := h.flowGet(ctx, sessionFlowID)
 		if err != nil {
-			log.Errorf("Could not get flow. err: %v", err)
+			log.Errorf("Could not get session flow. err: %v", err)
 			return nil, err
 		}
 		if f.CustomerID != a.CustomerID {
-			log.Info("The flow does not belong to this customer.")
+			log.Info("The session flow does not belong to this customer.")
+			return nil, serviceerrors.ErrPermissionDenied
+		}
+	}
+	if messageFlowID != uuid.Nil {
+		f, err := h.flowGet(ctx, messageFlowID)
+		if err != nil {
+			log.Errorf("Could not get message flow. err: %v", err)
+			return nil, err
+		}
+		if f.CustomerID != a.CustomerID {
+			log.Info("The message flow does not belong to this customer.")
 			return nil, serviceerrors.ErrPermissionDenied
 		}
 	}
 
-	tmp, err := h.reqHandler.WebchatV1WidgetCreate(ctx, a.CustomerID, name, welcomeMessage, flowID, sessionIdleTimeout, themeConfig)
+	tmp, err := h.reqHandler.WebchatV1WidgetCreate(ctx, a.CustomerID, name, welcomeMessage, sessionFlowID, messageFlowID, sessionIdleTimeout, themeConfig)
 	if err != nil {
 		log.Errorf("Could not create the widget. err: %v", err)
 		return nil, err
@@ -178,7 +194,8 @@ func (h *serviceHandler) WebchatWidgetUpdate(
 	widgetID uuid.UUID,
 	name string,
 	welcomeMessage string,
-	flowID uuid.UUID,
+	sessionFlowID uuid.UUID,
+	messageFlowID uuid.UUID,
 	sessionIdleTimeout int,
 	themeConfig *wcwidget.ThemeConfig,
 ) (*wcwidget.WebhookMessage, error) {
@@ -203,9 +220,10 @@ func (h *serviceHandler) WebchatWidgetUpdate(
 		return nil, serviceerrors.ErrPermissionDenied
 	}
 
-	// Same flow-ownership check as WebchatWidgetCreate: the caller must
-	// not be able to repoint an existing widget at a flow_id belonging to
-	// a different customer.
+	// Same flow-ownership check as WebchatWidgetCreate, run TWICE (once
+	// per field, design doc §9): the caller must not be able to repoint
+	// an existing widget's SessionFlowID or MessageFlowID at a flow
+	// belonging to a different customer.
 	//
 	// IMPORTANT: compare against the WIDGET's actual owner (w.CustomerID),
 	// not the caller's own a.CustomerID. Unlike WebchatWidgetCreate --
@@ -220,19 +238,30 @@ func (h *serviceHandler) WebchatWidgetUpdate(
 	// silently reintroducing the exact cross-tenant flow-execution vector
 	// this check was added to close (Round 4 fix), just gated behind the
 	// superadmin privilege level instead of a plain customer-admin one.
-	if flowID != uuid.Nil {
-		f, err := h.flowGet(ctx, flowID)
+	if sessionFlowID != uuid.Nil {
+		f, err := h.flowGet(ctx, sessionFlowID)
 		if err != nil {
-			log.Errorf("Could not get flow. err: %v", err)
+			log.Errorf("Could not get session flow. err: %v", err)
 			return nil, err
 		}
 		if f.CustomerID != w.CustomerID {
-			log.Info("The flow does not belong to this widget's customer.")
+			log.Info("The session flow does not belong to this widget's customer.")
+			return nil, serviceerrors.ErrPermissionDenied
+		}
+	}
+	if messageFlowID != uuid.Nil {
+		f, err := h.flowGet(ctx, messageFlowID)
+		if err != nil {
+			log.Errorf("Could not get message flow. err: %v", err)
+			return nil, err
+		}
+		if f.CustomerID != w.CustomerID {
+			log.Info("The message flow does not belong to this widget's customer.")
 			return nil, serviceerrors.ErrPermissionDenied
 		}
 	}
 
-	tmp, err := h.reqHandler.WebchatV1WidgetUpdate(ctx, widgetID, name, welcomeMessage, flowID, sessionIdleTimeout, themeConfig)
+	tmp, err := h.reqHandler.WebchatV1WidgetUpdate(ctx, widgetID, name, welcomeMessage, sessionFlowID, messageFlowID, sessionIdleTimeout, themeConfig)
 	if err != nil {
 		log.Errorf("Could not update the widget. err: %v", err)
 		return nil, err

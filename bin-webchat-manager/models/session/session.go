@@ -21,6 +21,14 @@ type Session struct {
 
 	ActiveflowID uuid.UUID `json:"activeflow_id,omitempty" db:"activeflow_id,uuid"`
 
+	// WelcomeMessage is a transient, DB-unbound field: an in-memory
+	// copy of the owning Widget.WelcomeMessage attached only to the
+	// Create response (POST /webchat_sessions). List/Get/End responses
+	// always leave this empty -- see design doc §6. db:"-" is an
+	// established pattern in this codebase (bin-agent-manager's
+	// Addresses field).
+	WelcomeMessage string `json:"welcome_message,omitempty" db:"-"`
+
 	TMLastActivity *time.Time `json:"tm_last_activity,omitempty" db:"tm_last_activity"`
 	TMCreate       *time.Time `json:"tm_create,omitempty" db:"tm_create"`
 	TMUpdate       *time.Time `json:"tm_update,omitempty" db:"tm_update"`

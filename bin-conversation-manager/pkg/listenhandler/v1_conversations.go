@@ -311,6 +311,49 @@ func (h *listenHandler) processV1ConversationsGetOrCreateBySelfAndPeerPost(ctx c
 	return res, nil
 }
 
+// processV1ConversationsCreateAndExecuteFlowPost handles
+// /v1/conversations/create_and_execute_flow POST
+//
+// Used by bin-webchat-manager's sessionhandler.Create at webchat
+// session-create time to trigger Widget.SessionFlowID (design doc
+// 2026-07-17-webchat-widget-session-message-flow-split-design.md §3.3).
+// Deliberately calls conversationHandler.CreateAndExecuteFlow, NOT
+// GetOrCreateBySelfAndPeer -- callers are expected to pass a self/peer
+// pair that is unique per call (e.g. a fresh Session.ID as peer), so
+// this always creates a new Conversation rather than deduping.
+func (h *listenHandler) processV1ConversationsCreateAndExecuteFlowPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1ConversationsCreateAndExecuteFlowPost",
+		"request": m,
+	})
+
+	var req request.V1DataConversationsCreateAndExecuteFlowPost
+	if err := json.Unmarshal(m.Data, &req); err != nil {
+		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		return simpleResponse(400), nil
+	}
+
+	tmp, err := h.conversationHandler.CreateAndExecuteFlow(ctx, req.CustomerID, req.FlowID, req.ConversationType, req.DialogID, req.Self, req.Peer)
+	if err != nil {
+		log.Debugf("Could not create and execute flow for a conversation. err: %v", err)
+		return errorResponse(err), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &sock.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
 // processV1ConversationsIDMetadataPut handles
 // /v1/conversations/<conversation-id>/metadata PUT
 //

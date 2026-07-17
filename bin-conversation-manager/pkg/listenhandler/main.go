@@ -52,6 +52,7 @@ var (
 	regV1Conversations                         = regexp.MustCompile(`/v1/conversations$`)
 	regV1ConversationsSelfAndPeer              = regexp.MustCompile(`/v1/conversations/self_and_peer$`)
 	regV1ConversationsGetOrCreateBySelfAndPeer = regexp.MustCompile(`/v1/conversations/get_or_create_by_self_and_peer$`)
+	regV1ConversationsCreateAndExecuteFlow     = regexp.MustCompile(`/v1/conversations/create_and_execute_flow$`)
 	regV1ConversationsID                       = regexp.MustCompile("/v1/conversations/" + regUUID + "$")
 	regV1ConversationsIDMetadata               = regexp.MustCompile("/v1/conversations/" + regUUID + "/metadata$")
 
@@ -238,6 +239,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1ConversationsGetOrCreateBySelfAndPeer.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1ConversationsGetOrCreateBySelfAndPeerPost(ctx, m)
 		requestType = "/v1/conversations/get_or_create_by_self_and_peer"
+
+	// POST /conversations/create_and_execute_flow
+	case regV1ConversationsCreateAndExecuteFlow.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1ConversationsCreateAndExecuteFlowPost(ctx, m)
+		requestType = "/v1/conversations/create_and_execute_flow"
 
 	// PUT /conversations/<conversation-id>/metadata (must be checked before
 	// the generic regV1ConversationsID PUT route below, since it's a more
