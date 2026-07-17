@@ -3,6 +3,7 @@ package messagehandler
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -141,12 +142,19 @@ func (h *messageHandler) sendWhatsApp(ctx context.Context, cv *conversation.Conv
 // bin-webchat-manager (the sole owner of the webchat Session/Message
 // thread). cv.Peer.Target holds the webchat Session ID (see
 // conversationhandler.eventWebchat's Self=Widget/Peer=Session convention).
-// The message is persisted immediately here (ID = webchat-manager's own
+// The message is persisted locally here (ID = webchat-manager's own
 // returned message ID) so the flow-manager caller gets a durable response
-// right away; the later webchat_message_created (outbound) subscribed
-// event -- handled by messageEventSentWebchat -- finds this same ID
-// already present and only updates its status, so no duplicate row is
-// created.
+// right away.
+//
+// Idempotency note: bin-webchat-manager fires the corresponding
+// webchat_message_created (outbound) event asynchronously, which
+// conversation-manager's own subscribeHandler processes via
+// messageEventSentWebchat -- and that path can race this one and win,
+// persisting the same wm.ID first. Guard both directions of the race: if
+// the row is already there (event handler won), return it instead of
+// erroring on a duplicate-key insert; if h.db.MessageCreate itself hits a
+// duplicate-key error (race lost mid-call), fall back to a Get rather than
+// surfacing an error for a message that was, in fact, delivered.
 func (h *messageHandler) sendWebchat(ctx context.Context, cv *conversation.Conversation, text string) (*message.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "sendWebchat",
@@ -166,6 +174,13 @@ func (h *messageHandler) sendWebchat(ctx context.Context, cv *conversation.Conve
 		return nil, err
 	}
 
+	// The subscribed webchat_message_created (outbound) event may have
+	// already persisted this same wm.ID via messageEventSentWebchat --
+	// check first so we don't attempt a doomed duplicate insert.
+	if existing, errGet := h.Get(ctx, wm.ID); errGet == nil {
+		return existing, nil
+	}
+
 	source, destination := DeriveEndpoints(cv, message.DirectionOutgoing)
 	res, err := h.Create(ctx, MessageCreateArgs{
 		ID:             wm.ID,
@@ -180,6 +195,15 @@ func (h *messageHandler) sendWebchat(ctx context.Context, cv *conversation.Conve
 		Destination:    destination,
 	})
 	if err != nil {
+		// The event handler may have won the race between our Get
+		// above and this Create -- if so, the failure is a
+		// duplicate-key insert for a message that was, in fact,
+		// delivered. Fall back to a re-Get instead of erroring out.
+		if strings.Contains(err.Error(), "Duplicate entry") || strings.Contains(err.Error(), "UNIQUE constraint failed") {
+			if existing, errGet := h.Get(ctx, wm.ID); errGet == nil {
+				return existing, nil
+			}
+		}
 		log.Errorf("Could not create a message. err: %v", err)
 		return nil, err
 	}

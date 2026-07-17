@@ -221,6 +221,10 @@ func Test_Send_sendWebchat(t *testing.T) {
 
 			mockReq.EXPECT().WebchatV1MessageCreate(ctx, tt.conversation.CustomerID, tt.expectSessionID, wcmessage.DirectionOutbound, uuid.Nil, tt.text).Return(tt.responseWebchatMessage, nil)
 
+			// sendWebchat's race-guard Get: no row yet (event handler
+			// hasn't won the race), proceed to Create below.
+			mockDB.EXPECT().MessageGet(ctx, tt.responseWebchatMessage.ID).Return(nil, dbhandler.ErrNotFound)
+
 			mockDB.EXPECT().MessageCreate(ctx, tt.expectMessage).Return(nil)
 			mockDB.EXPECT().MessageGet(ctx, tt.expectMessage.ID).Return(tt.expectMessage, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectMessage.CustomerID, message.EventTypeMessageCreated, tt.expectMessage)
@@ -508,5 +512,72 @@ func Test_Send_sendWebchat_InvalidSessionID(t *testing.T) {
 	res, err := h.Send(ctx, cv, "hello", nil)
 	if err == nil {
 		t.Fatalf("Wrong match. expect: error, got: ok (res: %v)", res)
+	}
+}
+
+// Test_Send_sendWebchat_RaceEventHandlerWon simulates the
+// messageEventSentWebchat subscribed-event path winning the race and
+// persisting the same wm.ID before sendWebchat's own Create runs.
+// sendWebchat's post-RPC Get must find that row and return it, rather
+// than attempting -- and failing -- a duplicate insert.
+func Test_Send_sendWebchat_RaceEventHandlerWon(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &messageHandler{
+		db:         mockDB,
+		reqHandler: mockReq,
+	}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("e2b0c3d1-1234-11f0-bbbb-bbbbbbbbbbbb")
+	sessionID := uuid.FromStringOrNil("e3d1e4f2-1234-11f0-cccc-cccccccccccc")
+	messageID := uuid.FromStringOrNil("e4e2f5a3-1234-11f0-dddd-dddddddddddd")
+
+	cv := &conversation.Conversation{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("e1a9c2d0-1234-11f0-aaaa-aaaaaaaaaaaa"),
+			CustomerID: customerID,
+		},
+		Type: conversation.TypeWebchat,
+		Self: commonaddress.Address{
+			Type:   commonaddress.TypeWebchat,
+			Target: "widget-id",
+		},
+		Peer: commonaddress.Address{
+			Type:   commonaddress.TypeWebchat,
+			Target: sessionID.String(),
+		},
+	}
+
+	existing := &message.Message{
+		Identity: commonidentity.Identity{
+			ID:         messageID,
+			CustomerID: customerID,
+		},
+		ConversationID: cv.ID,
+		Direction:      message.DirectionOutgoing,
+		Status:         message.StatusDone,
+		ReferenceType:  message.ReferenceTypeWebchat,
+		ReferenceID:    messageID,
+		Text:           "hello",
+	}
+
+	mockReq.EXPECT().WebchatV1MessageCreate(ctx, customerID, sessionID, wcmessage.DirectionOutbound, uuid.Nil, "hello").Return(&wcmessage.Message{
+		Identity: commonidentity.Identity{ID: messageID},
+	}, nil)
+
+	// The event handler already won the race and persisted this row --
+	// sendWebchat's guard Get finds it and must NOT attempt Create.
+	mockDB.EXPECT().MessageGet(ctx, messageID).Return(existing, nil)
+
+	res, err := h.Send(ctx, cv, "hello", nil)
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	if !reflect.DeepEqual(res, existing) {
+		t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", existing, res)
 	}
 }
