@@ -279,6 +279,7 @@ regenerated first, then `bin-webchat-manager` and
 6. Grep verification: `grep -rn "welcome_message\|WelcomeMessage" bin-webchat-manager bin-openapi-manager bin-api-manager bin-common-handler` — zero hits expected outside `docsdev/` (updated separately) and the new migration's downgrade path.
 7. Rebuild RST docs: `cd bin-api-manager/docsdev && rm -rf build && python3 -m sphinx -M html source build`, `git add -f bin-api-manager/docsdev/build/`.
 8. Alembic: re-verify head with `alembic -c alembic.ini heads` immediately before generating, generate migration file via `alembic revision`, hand-edit SQL, verify with `alembic -c alembic.ini heads` again (single head) — do NOT run `alembic upgrade` against any shared DB.
+9. Add one test case (`sessionhandler/create_test.go`) explicitly asserting the accepted post-removal behavior: a Session created against a Widget with `SessionFlowID == uuid.Nil` succeeds with no welcome-message field/delivery of any kind, rather than relying solely on deleting the old assertions + a grep check. Makes the no-greeting outcome intentional-by-test, not just intentional-by-doc.
 
 ## 9. Rollout / risk
 
@@ -298,6 +299,23 @@ regenerated first, then `bin-webchat-manager` and
   column but not prior data. Documented; matches project convention
   for other breaking-rename migrations in this service (see
   `1a1f28d6842c_webchat_widgets_session_message_flow_.py`).
+- **Silent no-greeting for pre-`SessionFlowID` widgets**: `welcome_message`
+  (migration `c9602a744cb3`) predates `session_flow_id` (migration
+  `1a1f28d6842c`), so every widget created before `SessionFlowID`
+  existed has no Flow configured. After this change, such a widget's
+  visitor gets ZERO greeting on session start — `sessionhandler.Create()`
+  silently returns when `SessionFlowID == uuid.Nil`, with no log level
+  bump, no metric, no square-admin warning anywhere. This is the
+  concrete runtime shape of the "existing customers lose it silently"
+  decision in §3.2 — called out explicitly here so it is not only
+  implied by the migration decision.
+- **`DROP COLUMN` lock consideration**: `ALTER TABLE webchat_widgets
+  DROP COLUMN welcome_message` is not covered by MySQL 8.0's instant-DDL
+  algorithm (drop-column always requires a table rebuild) and can
+  briefly hold a metadata/write lock under write load. Low risk given
+  the service's low current row count (webchat-manager shipped
+  2026-07-16), but worth this one-line note before running against a
+  shared environment.
 
 ## 10. Open questions
 
@@ -305,4 +323,8 @@ None — all locked in §3.
 
 ## 11. Approval status
 
-Draft → pending Design Review loop (min 2, 2-consecutive-APPROVED).
+Design Review loop: Round 1 CHANGES_REQUESTED (missing 4-layer
+signature-change coverage, fixed), Round 2 APPROVED (no findings),
+Round 3 APPROVED (3 non-blocking informational findings, incorporated
+into §8/§9 above). 2 consecutive APPROVED — loop closed. APPROVED,
+ready for implementation.
