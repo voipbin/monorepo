@@ -60,7 +60,24 @@ func Test_CreateAndExecuteFlow_Normal(t *testing.T) {
 	mockDB.EXPECT().ConversationGet(ctx, conversationID).Return(cv, nil)
 	mockNotify.EXPECT().PublishWebhookEvent(ctx, customerID, conversation.EventTypeConversationCreated, cv)
 
-	mockReq.EXPECT().FlowV1ActiveflowCreate(
+	expectVariables := map[string]string{
+		variableConversationSelfName:       cv.Self.Name,
+		variableConversationSelfDetail:     cv.Self.Detail,
+		variableConversationSelfTarget:     cv.Self.Target,
+		variableConversationSelfTargetName: cv.Self.TargetName,
+		variableConversationSelfType:       string(cv.Self.Type),
+
+		variableConversationPeerName:       cv.Peer.Name,
+		variableConversationPeerDetail:     cv.Peer.Detail,
+		variableConversationPeerTarget:     cv.Peer.Target,
+		variableConversationPeerTargetName: cv.Peer.TargetName,
+		variableConversationPeerType:       string(cv.Peer.Type),
+
+		variableConversationID:      cv.ID.String(),
+		variableConversationOwnerID: cv.OwnerID.String(),
+	}
+
+	callCreate := mockReq.EXPECT().FlowV1ActiveflowCreate(
 		ctx,
 		uuid.Nil,
 		customerID,
@@ -74,8 +91,9 @@ func Test_CreateAndExecuteFlow_Normal(t *testing.T) {
 	).Return(&fmactiveflow.Activeflow{
 		Identity: commonidentity.Identity{ID: activeflowID},
 	}, nil)
-	mockReq.EXPECT().FlowV1VariableSetVariable(ctx, activeflowID, gomock.Any()).Return(nil)
-	mockReq.EXPECT().FlowV1ActiveflowExecute(ctx, activeflowID).Return(nil)
+	callSetVariable := mockReq.EXPECT().FlowV1VariableSetVariable(ctx, activeflowID, expectVariables).Return(nil)
+	callExecute := mockReq.EXPECT().FlowV1ActiveflowExecute(ctx, activeflowID).Return(nil)
+	gomock.InOrder(callCreate, callSetVariable, callExecute)
 
 	res, err := h.CreateAndExecuteFlow(ctx, customerID, flowID, conversation.TypeWebchat, "", self, peer)
 	if err != nil {
@@ -228,12 +246,13 @@ func Test_CreateAndExecuteFlow_SetVariablesFails(t *testing.T) {
 	mockDB.EXPECT().ConversationGet(ctx, conversationID).Return(cv, nil)
 	mockNotify.EXPECT().PublishWebhookEvent(ctx, customerID, conversation.EventTypeConversationCreated, cv)
 
-	mockReq.EXPECT().FlowV1ActiveflowCreate(
+	callCreate := mockReq.EXPECT().FlowV1ActiveflowCreate(
 		ctx, uuid.Nil, customerID, flowID, fmactiveflow.ReferenceTypeConversation, conversationID, uuid.Nil, nil, "", fmactiveflow.WebhookMethodNone,
 	).Return(&fmactiveflow.Activeflow{
 		Identity: commonidentity.Identity{ID: activeflowID},
 	}, nil)
-	mockReq.EXPECT().FlowV1VariableSetVariable(ctx, activeflowID, gomock.Any()).Return(context.DeadlineExceeded)
+	callSetVariable := mockReq.EXPECT().FlowV1VariableSetVariable(ctx, activeflowID, gomock.Any()).Return(context.DeadlineExceeded)
+	gomock.InOrder(callCreate, callSetVariable)
 	// FlowV1ActiveflowExecute must NOT be called -- its absence from the
 	// mock is enforced by gomock failing on any unexpected call.
 
