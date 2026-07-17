@@ -5,6 +5,7 @@ package sessionhandler
 import (
 	"context"
 
+	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -24,19 +25,22 @@ type SessionHandler interface {
 }
 
 type sessionHandler struct {
-	utilHandler utilhandler.UtilHandler
-	reqHandler  requesthandler.RequestHandler
-	db          dbhandler.DBHandler
+	utilHandler   utilhandler.UtilHandler
+	reqHandler    requesthandler.RequestHandler
+	notifyHandler notifyhandler.NotifyHandler
+	db            dbhandler.DBHandler
 }
 
 // NewSessionHandler returns SessionHandler interface
 func NewSessionHandler(
 	reqHandler requesthandler.RequestHandler,
+	notifyHandler notifyhandler.NotifyHandler,
 	dbHandler dbhandler.DBHandler,
 ) SessionHandler {
 	return &sessionHandler{
-		utilHandler: utilhandler.NewUtilHandler(),
-		reqHandler:  reqHandler,
-		db:          dbHandler,
+		utilHandler:   utilhandler.NewUtilHandler(),
+		reqHandler:    reqHandler,
+		notifyHandler: notifyHandler,
+		db:            dbHandler,
 	}
 }

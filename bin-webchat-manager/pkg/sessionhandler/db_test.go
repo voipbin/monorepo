@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -126,10 +127,53 @@ func Test_SessionHandler_End(t *testing.T) {
 	defer mc.Finish()
 
 	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	h := &sessionHandler{
+		utilHandler:   utilhandler.NewMockUtilHandler(mc),
+		db:            mockDB,
+		reqHandler:    requesthandler.NewMockRequestHandler(mc),
+		notifyHandler: mockNotify,
+	}
+	ctx := context.Background()
+
+	id := uuid.FromStringOrNil("876defde-ad5e-11ed-a8c3-7bc19647b03f")
+	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
+	expectRes := &session.Session{
+		Identity: commonidentity.Identity{ID: id, CustomerID: customerID},
+		Status:   session.StatusEnded,
+	}
+
+	mockDB.EXPECT().SessionUpdate(ctx, id, map[session.Field]any{
+		session.FieldStatus: session.StatusEnded,
+	}).Return(nil)
+	mockDB.EXPECT().SessionGet(ctx, id).Return(expectRes, nil)
+	// VOIP-1265 §9.3: End() must publish EventTypeSessionEnded so the
+	// visitor-side WS client can close its connection cooperatively.
+	mockNotify.EXPECT().PublishWebhookEvent(ctx, customerID, session.EventTypeSessionEnded, expectRes)
+
+	res, err := h.End(ctx, id)
+	if err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+	if !reflect.DeepEqual(res, expectRes) {
+		t.Errorf("Wrong match.\nexpect: %v\ngot: %v", expectRes, res)
+	}
+}
+
+// Test_SessionHandler_End_NilNotifyHandler verifies End() does not panic
+// when notifyHandler is nil (mirrors messagehandler.create's nil-guard
+// pattern -- defensive for tests/tools that construct sessionHandler
+// without a full dependency set).
+func Test_SessionHandler_End_NilNotifyHandler(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
 	h := &sessionHandler{
 		utilHandler: utilhandler.NewMockUtilHandler(mc),
 		db:          mockDB,
 		reqHandler:  requesthandler.NewMockRequestHandler(mc),
+		// notifyHandler intentionally left nil.
 	}
 	ctx := context.Background()
 

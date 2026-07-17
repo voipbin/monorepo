@@ -75,6 +75,16 @@ func (h *serviceHandler) WebchatMessageGet(ctx context.Context, a *auth.AuthIden
 // the filter is applied, mirroring WebchatMessageCreate's
 // fetch-then-check-owner pattern, so a caller cannot use an arbitrary
 // session_id to enumerate another customer's messages.
+//
+// Also reachable by a direct-scoped caller (a widget visitor) -- added
+// per VOIP-1265, mirroring WebchatMessageCreate's dual-path auth. A
+// visitor can only ever list their own session's messages (session_id is
+// mandatory in that path); widget soft-delete is checked (mirrors
+// Create's direct branch), but an ended session's history remains
+// readable (deliberately -- unlike posting into it, reading the final
+// history of an ended session is a legitimate need, e.g. reconnecting
+// after a network drop to see the last replies before the session
+// ended).
 func (h *serviceHandler) WebchatMessageList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, sessionID uuid.UUID) ([]*wcmessage.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "WebchatMessageList",
@@ -82,35 +92,66 @@ func (h *serviceHandler) WebchatMessageList(ctx context.Context, a *auth.AuthIde
 		"username":    a.DisplayName(),
 	})
 
-	if a.IsDirect() {
-		return nil, serviceerrors.ErrDirectAccessNotSupported
-	}
-
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		log.Info("The agent has no permission.")
-		return nil, serviceerrors.ErrPermissionDenied
-	}
-
 	filters := map[wcmessage.Field]any{
-		wcmessage.FieldCustomerID: a.CustomerID,
-		wcmessage.FieldDeleted:    false,
+		wcmessage.FieldDeleted: false,
 	}
 
-	if sessionID != uuid.Nil {
+	switch {
+	case a.IsDirect():
+		if !a.HasAllowedResourceType("webchat_session") {
+			return nil, serviceerrors.ErrPermissionDenied
+		}
+		if sessionID == uuid.Nil {
+			// A visitor must always scope to their own session; there is
+			// no "list all my messages across sessions" concept for a
+			// direct-scoped caller.
+			return nil, serviceerrors.ErrPermissionDenied
+		}
 		s, err := h.sessionGet(ctx, sessionID)
 		if err != nil {
 			log.Errorf("Could not validate the session info. err: %v", err)
 			return nil, err
 		}
-		if s.CustomerID != a.CustomerID {
-			log.Info("The session does not belong to the requesting customer.")
+		if s.WidgetID != a.DirectScope.ResourceID {
 			return nil, serviceerrors.ErrPermissionDenied
 		}
+		// Confirm the widget itself hasn't been soft-deleted -- mirrors
+		// WebchatMessageCreate's/WebchatSessionCreate's direct branches.
+		if _, err := h.widgetGet(ctx, a.DirectScope.ResourceID); err != nil {
+			log.Errorf("Could not validate the widget info. err: %v", err)
+			return nil, err
+		}
+		// s.CustomerID is authoritative here (already ownership-verified
+		// above via s.WidgetID check) -- set explicitly rather than
+		// trusting a.CustomerID, mirroring WebchatMessageCreate's
+		// ownerCustomerID pattern for the same defense-in-depth reason.
+		filters[wcmessage.FieldCustomerID] = s.CustomerID
 		filters[wcmessage.FieldSessionID] = sessionID
+
+	default:
+		if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+			log.Info("The agent has no permission.")
+			return nil, serviceerrors.ErrPermissionDenied
+		}
+
+		filters[wcmessage.FieldCustomerID] = a.CustomerID
+
+		if sessionID != uuid.Nil {
+			s, err := h.sessionGet(ctx, sessionID)
+			if err != nil {
+				log.Errorf("Could not validate the session info. err: %v", err)
+				return nil, err
+			}
+			if s.CustomerID != a.CustomerID {
+				log.Info("The session does not belong to the requesting customer.")
+				return nil, serviceerrors.ErrPermissionDenied
+			}
+			filters[wcmessage.FieldSessionID] = sessionID
+		}
 	}
 
 	tmps, err := h.reqHandler.WebchatV1MessageList(ctx, token, size, filters)
