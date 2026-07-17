@@ -75,5 +75,14 @@ func (h *sessionHandler) End(ctx context.Context, id uuid.UUID) (*session.Sessio
 		return nil, err
 	}
 
+	// Publish EventTypeSessionEnded so the visitor-side WS client (see
+	// bin-api-manager's createTopics webchat_session topic, VOIP-1265)
+	// can close its connection cooperatively -- otherwise the visitor's
+	// WS subscription for this session's topic would stay open
+	// indefinitely with no signal that the session is over.
+	if h.notifyHandler != nil {
+		h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, session.EventTypeSessionEnded, res)
+	}
+
 	return res, nil
 }

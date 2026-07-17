@@ -420,6 +420,42 @@ func Test_createTopics(t *testing.T) {
 			expectError: false,
 		},
 		{
+			name:        "webchat_message_created uses webchat_session topic scoped by session_id",
+			messageType: "webchat_message_created",
+			data: &commonWebhookData{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("e1e1e1e1-1111-1111-1111-111111111111"),
+					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
+				},
+				SessionID: uuid.FromStringOrNil("f2f2f2f2-2222-2222-2222-222222222222"),
+			},
+			expectTopics: []string{
+				// webchat case: scoped by session_id, not message id
+				"customer_id:5e4a0680-804e-11ec-8477-2fea5968d85b:webchat_session:f2f2f2f2-2222-2222-2222-222222222222",
+				// New format still uses the message's own id
+				"customer_id:5e4a0680-804e-11ec-8477-2fea5968d85b:test-manager:webchat_message_created:e1e1e1e1-1111-1111-1111-111111111111",
+			},
+			expectError: false,
+		},
+		{
+			name:        "webchat_session_ended uses webchat_session topic scoped by the session's own id",
+			messageType: "webchat_session_ended",
+			data: &commonWebhookData{
+				Identity: commonidentity.Identity{
+					// A Session's own webhook payload has no separate
+					// SessionID field -- its own Identity.ID IS the
+					// session id (VOIP-1265 §9.3).
+					ID:         uuid.FromStringOrNil("f2f2f2f2-2222-2222-2222-222222222222"),
+					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
+				},
+			},
+			expectTopics: []string{
+				"customer_id:5e4a0680-804e-11ec-8477-2fea5968d85b:webchat_session:f2f2f2f2-2222-2222-2222-222222222222",
+				"customer_id:5e4a0680-804e-11ec-8477-2fea5968d85b:test-manager:webchat_session_ended:f2f2f2f2-2222-2222-2222-222222222222",
+			},
+			expectError: false,
+		},
+		{
 			name:        "chatmessage_created with chat_id and participants",
 			messageType: "chatmessage_created",
 			data: &commonWebhookData{

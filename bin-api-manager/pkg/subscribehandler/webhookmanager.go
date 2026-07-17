@@ -17,8 +17,9 @@ import (
 type commonWebhookData struct {
 	commonidentity.Identity
 	commonidentity.Owner
-	AIcallID uuid.UUID `json:"aicall_id,omitempty"`
-	ChatID   uuid.UUID `json:"chat_id,omitempty"`
+	AIcallID  uuid.UUID `json:"aicall_id,omitempty"`
+	ChatID    uuid.UUID `json:"chat_id,omitempty"`
+	SessionID uuid.UUID `json:"session_id,omitempty"`
 }
 
 // getServiceNamespace maps RabbitMQ publisher name to topic namespace
@@ -203,6 +204,27 @@ func (h *subscribeHandler) createTopics(ctx context.Context, messageType string,
 					res = append(res, fmt.Sprintf("agent_id:%s:%s:%s:%s", p.OwnerID, service, messageType, d.ID))
 				}
 			}
+		}
+
+	case "webchat":
+		// Both webchat_message_created and webchat_session_ended land
+		// here (both split to "webchat" as tmps[0]). Scope the topic by
+		// SESSION id, not message/session-row id, so a visitor's
+		// direct-scope JWT (which only learns the session id at
+		// POST /webchat_sessions time, before any message exists) can
+		// subscribe to it -- mirrors the aimessage case's "scope by
+		// stable parent id, not the not-yet-known child id" pattern
+		// above. For webchat_message_created, d.SessionID (the
+		// message's own session_id field) is the session id; for
+		// webchat_session_ended, the event's own d.ID (the Session's
+		// Identity.ID) IS the session id -- there is no separate
+		// SessionID field on a Session's own webhook payload. VOIP-1265.
+		sessionID := d.SessionID
+		if sessionID == uuid.Nil {
+			sessionID = d.ID
+		}
+		if d.CustomerID != uuid.Nil && sessionID != uuid.Nil {
+			res = append(res, fmt.Sprintf("customer_id:%s:webchat_session:%s", d.CustomerID, sessionID))
 		}
 
 	default:

@@ -120,7 +120,7 @@ func run(db dbhandler.DBHandler) error {
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameWebchatEvent, serviceName)
 	widgetHandler := widgethandler.NewWidgetHandler(reqHandler, db)
-	sessionHandler := sessionhandler.NewSessionHandler(reqHandler, db)
+	sessionHandler := sessionhandler.NewSessionHandler(reqHandler, notifyHandler, db)
 	messageHandler := messagehandler.NewMessageHandler(reqHandler, notifyHandler, db)
 
 	// run listen
