@@ -374,13 +374,27 @@ workflows:
   # it is intentionally not exposed to the public internet). alembic
   # upgrade/downgrade against staging or production remains a manual,
   # VPN-only, human-only procedure -- see
-  # bin-dbscheme-manager/docs/operations.md. This approval-only job is
-  # kept as a documented manual checkpoint (e.g. "I have applied and
+  # bin-dbscheme-manager/docs/operations.md. migration-applied-checkpoint
+  # is kept as a documented manual checkpoint (e.g. "I have applied and
   # verified this migration over VPN") with no automated action behind
-  # it; it does not build, push, or apply anything.
+  # it; it does not build, push, or apply anything. It is intentionally
+  # restricted to main only (see filters below) -- it attests that an
+  # already-merged migration was applied to production, so approving it
+  # on an unmerged PR branch would be a false signal.
+  #
+  # migration-lint runs on EVERY branch (including PR branches) that
+  # touches bin-dbscheme-manager/**, with no approval gate. It performs a
+  # lightweight, DB-connection-free structural validation of every Alembic
+  # migration file via `alembic heads`/`alembic history` (parses revision
+  # files, confirms exactly one head per stream, confirms no broken
+  # down_revision references). See
+  # bin-dbscheme-manager/docs/migrations.md for what it checks and
+  # docs/plans/2026-07-18-dbscheme-pr-migration-validation-job-design.md
+  # for the design rationale.
   bin-dbscheme-manager:
     when: << pipeline.parameters.run-bin-dbscheme-manager >>
     jobs:
+      - migration-lint
       - migration-applied-checkpoint:
           type: approval
           filters:
@@ -1117,10 +1131,55 @@ jobs:
           project-id: voipbin
           project-repository: bin-customer-manager
 
-  # bin-dbscheme-manager has no build/deploy job. See the workflow
-  # definition above (migration-applied-checkpoint) and
-  # bin-dbscheme-manager/docs/operations.md for why: production DB is not
+  # bin-dbscheme-manager has no build/deploy job -- production DB is not
   # reachable from CircleCI, so all migration application is manual/VPN.
+  # See bin-dbscheme-manager/docs/operations.md for why, and
+  # migration-applied-checkpoint in the workflow definition above (main-only
+  # approval attesting a migration was manually applied).
+  #
+  # migration-lint is the one automated CI job this service has: a
+  # lightweight, DB-connection-free structural validation of the Alembic
+  # migration chain, run on every branch. See
+  # bin-dbscheme-manager/docs/migrations.md.
+  migration-lint:
+    docker:
+      - image: python:3.11-slim
+    steps:
+      - checkout
+      - run:
+          name: Install alembic (metadata-only, no DB driver needed)
+          no_output_timeout: 2m
+          command: pip install --no-cache-dir "sqlalchemy<2.0" alembic
+      - run:
+          name: Validate bin-manager migration chain (voipbin DB)
+          command: |
+            cd bin-dbscheme-manager/bin-manager
+            cp alembic.ini.sample alembic.ini
+            # alembic.ini requires a sqlalchemy.url key to parse, but
+            # `heads`/`history` never open it -- a syntactically valid but
+            # unreachable placeholder is sufficient and deliberately used
+            # instead of a real credential.
+            HEAD_COUNT=$(alembic -c alembic.ini heads | grep -c '(head)')
+            echo "Detected $HEAD_COUNT head(s):"
+            alembic -c alembic.ini heads --verbose
+            if [ "$HEAD_COUNT" -ne 1 ]; then
+              echo "ERROR: expected exactly 1 head, found $HEAD_COUNT. Multiple heads means two migrations were authored against the same down_revision without rebasing -- see bin-dbscheme-manager/docs/migrations.md."
+              exit 1
+            fi
+            alembic -c alembic.ini history --verbose > /dev/null
+      - run:
+          name: Validate asterisk_config migration chain (asterisk DB)
+          command: |
+            cd bin-dbscheme-manager/asterisk_config
+            cp alembic.ini.sample alembic.ini
+            HEAD_COUNT=$(alembic -c alembic.ini heads | grep -c '(head)')
+            echo "Detected $HEAD_COUNT head(s):"
+            alembic -c alembic.ini heads --verbose
+            if [ "$HEAD_COUNT" -ne 1 ]; then
+              echo "ERROR: expected exactly 1 head, found $HEAD_COUNT."
+              exit 1
+            fi
+            alembic -c alembic.ini history --verbose > /dev/null
 
   # bin-direct-manager
   bin-direct-manager-test:
