@@ -11,7 +11,6 @@ create table webchat_widgets(
   direct_id             binary(16),
   direct_hash           varchar(255),
 
-  welcome_message       text,
   session_flow_id       binary(16),
   message_flow_id       binary(16),
   session_idle_timeout  integer,

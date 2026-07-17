@@ -33,8 +33,6 @@ type Widget struct {
 	// round-trip to direct-manager on every widget read.
 	Hash string `json:"direct_hash,omitempty" db:"direct_hash"`
 
-	WelcomeMessage string `json:"welcome_message,omitempty" db:"welcome_message"`
-
 	// SessionFlowID fires once per Session, anchored to session
 	// creation/start (POST /webchat_sessions) -- NOT to the first
 	// inbound message. Named for its cardinality (once per session),

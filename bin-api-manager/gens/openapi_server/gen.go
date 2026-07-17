@@ -5182,9 +5182,6 @@ type WebchatManagerSession struct {
 	// TmUpdate Timestamp when the session was last updated.
 	TmUpdate *string `json:"tm_update,omitempty"`
 
-	// WelcomeMessage The owning Widget's welcome message, populated ONLY on the POST /webchat_sessions (Create) response -- List/Get/End responses always leave this empty. The client is expected to call POST /webchat_sessions fresh on every page load, so this asymmetry does not surface as a real gap in the visitor-facing flow.
-	WelcomeMessage *string `json:"welcome_message,omitempty"`
-
 	// WidgetId The widget this session belongs to. Returned from the `POST /widgets` or `GET /widgets` response.
 	WidgetId string `json:"widget_id"`
 }
@@ -5229,9 +5226,6 @@ type WebchatManagerWidget struct {
 
 	// TmUpdate Timestamp when the widget was last updated.
 	TmUpdate *string `json:"tm_update,omitempty"`
-
-	// WelcomeMessage The message shown to the visitor when the widget loads.
-	WelcomeMessage string `json:"welcome_message"`
 }
 
 // WebchatManagerWidgetPosition Where the floating bubble/panel renders on the customer's page.
@@ -7935,9 +7929,6 @@ type PostWebchatWidgetsJSONBody struct {
 
 	// ThemeConfig Cosmetic, customer-editable widget appearance settings. All fields are optional; omitted fields fall back to the platform default (blue bubble, no logo, bottom-right).
 	ThemeConfig *WebchatManagerWidgetThemeConfig `json:"theme_config,omitempty"`
-
-	// WelcomeMessage The message shown to the visitor when the widget loads.
-	WelcomeMessage string `json:"welcome_message"`
 }
 
 // PutWebchatWidgetsIdJSONBody defines parameters for PutWebchatWidgetsId.
@@ -7956,9 +7947,6 @@ type PutWebchatWidgetsIdJSONBody struct {
 
 	// ThemeConfig Cosmetic, customer-editable widget appearance settings. All fields are optional; omitted fields fall back to the platform default (blue bubble, no logo, bottom-right).
 	ThemeConfig *WebchatManagerWidgetThemeConfig `json:"theme_config,omitempty"`
-
-	// WelcomeMessage The message shown to the visitor when the widget loads.
-	WelcomeMessage string `json:"welcome_message"`
 }
 
 // PostAccesskeysJSONRequestBody defines body for PostAccesskeys for application/json ContentType.

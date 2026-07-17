@@ -23,8 +23,9 @@ import (
 
 // Test_Create_NoSessionFlowConfigured verifies session creation when
 // the Widget has no SessionFlowID configured: no conversation-manager
-// RPC call is made, and welcome_message is still attached from
-// Widget.WelcomeMessage.
+// RPC call is made, and no welcome delivery of any kind is attached
+// to the response (accepted no-greeting outcome — see design doc
+// 2026-07-18-webchat-welcome-message-flow-consolidation-design.md §9).
 func Test_Create_NoSessionFlowConfigured(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
@@ -40,9 +41,8 @@ func Test_Create_NoSessionFlowConfigured(t *testing.T) {
 	}
 
 	w := &widget.Widget{
-		Identity:       commonidentity.Identity{ID: widgetID, CustomerID: customerID},
-		WelcomeMessage: "Hello, welcome!",
-		SessionFlowID:  uuid.Nil,
+		Identity:      commonidentity.Identity{ID: widgetID, CustomerID: customerID},
+		SessionFlowID: uuid.Nil,
 	}
 
 	mockUtil := utilhandler.NewMockUtilHandler(mc)
@@ -69,8 +69,8 @@ func Test_Create_NoSessionFlowConfigured(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
-	if res.WelcomeMessage != w.WelcomeMessage {
-		t.Errorf("Wrong match. expect: %s, got: %s", w.WelcomeMessage, res.WelcomeMessage)
+	if !reflect.DeepEqual(res, sess) {
+		t.Errorf("Wrong match.\nexpect: %v\ngot: %v", sess, res)
 	}
 }
 
@@ -96,9 +96,8 @@ func Test_Create_SessionFlowConfigured_TriggersFlow(t *testing.T) {
 	}
 
 	w := &widget.Widget{
-		Identity:       commonidentity.Identity{ID: widgetID, CustomerID: customerID},
-		WelcomeMessage: "Hello, welcome!",
-		SessionFlowID:  sessionFlowID,
+		Identity:      commonidentity.Identity{ID: widgetID, CustomerID: customerID},
+		SessionFlowID: sessionFlowID,
 	}
 
 	cv := &cvconversation.Conversation{
@@ -140,8 +139,8 @@ func Test_Create_SessionFlowConfigured_TriggersFlow(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
-	if res.WelcomeMessage != w.WelcomeMessage {
-		t.Errorf("Wrong match. expect: %s, got: %s", w.WelcomeMessage, res.WelcomeMessage)
+	if !reflect.DeepEqual(res, sess) {
+		t.Errorf("Wrong match.\nexpect: %v\ngot: %v", sess, res)
 	}
 }
 
@@ -180,9 +179,6 @@ func Test_Create_WidgetFetchFails_SessionStillSucceeds(t *testing.T) {
 	res, err := h.Create(ctx, customerID, widgetID)
 	if err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
-	}
-	if res.WelcomeMessage != "" {
-		t.Errorf("Wrong match. expect: empty welcome_message, got: %s", res.WelcomeMessage)
 	}
 	if !reflect.DeepEqual(res, sess) {
 		t.Errorf("Wrong match.\nexpect: %v\ngot: %v", sess, res)

@@ -12,8 +12,7 @@ import (
 type V1DataWidgetsPost struct {
 	CustomerID uuid.UUID `json:"customer_id,omitempty"`
 
-	Name           string `json:"name,omitempty"`
-	WelcomeMessage string `json:"welcome_message,omitempty"`
+	Name string `json:"name,omitempty"`
 
 	SessionFlowID uuid.UUID `json:"session_flow_id,omitempty"`
 	MessageFlowID uuid.UUID `json:"message_flow_id,omitempty"`
@@ -27,8 +26,7 @@ type V1DataWidgetsPost struct {
 // v1 data type request struct for
 // /v1/widgets/<widget-id> PUT
 type V1DataWidgetsIDPut struct {
-	Name           string `json:"name,omitempty"`
-	WelcomeMessage string `json:"welcome_message,omitempty"`
+	Name string `json:"name,omitempty"`
 
 	SessionFlowID uuid.UUID `json:"session_flow_id,omitempty"`
 	MessageFlowID uuid.UUID `json:"message_flow_id,omitempty"`

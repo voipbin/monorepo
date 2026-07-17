@@ -3811,11 +3811,6 @@
                     "description": "Name of the widget.",
                     "example": "Support Widget"
                   },
-                  "welcome_message": {
-                    "type": "string",
-                    "description": "The message shown to the visitor when the widget loads.",
-                    "example": "Hi! How can we help you today?"
-                  },
                   "session_flow_id": {
                     "type": "string",
                     "format": "uuid",
@@ -3841,7 +3836,6 @@
                 },
                 "required": [
                   "name",
-                  "welcome_message",
                   "session_flow_id"
                 ]
               }
@@ -3948,11 +3942,6 @@
                     "description": "Name of the widget.",
                     "example": "Support Widget"
                   },
-                  "welcome_message": {
-                    "type": "string",
-                    "description": "The message shown to the visitor when the widget loads.",
-                    "example": "Hi! How can we help you today?"
-                  },
                   "session_flow_id": {
                     "type": "string",
                     "format": "uuid",
@@ -3978,7 +3967,6 @@
                 },
                 "required": [
                   "name",
-                  "welcome_message",
                   "session_flow_id"
                 ]
               }
@@ -26163,11 +26151,6 @@
             "description": "The status of the widget.",
             "example": "active"
           },
-          "welcome_message": {
-            "type": "string",
-            "description": "The message shown to the visitor when the widget loads.",
-            "example": "Hi! How can we help you today?"
-          },
           "session_flow_id": {
             "type": "string",
             "format": "uuid",
@@ -26222,7 +26205,6 @@
           "customer_id",
           "name",
           "status",
-          "welcome_message",
           "session_flow_id",
           "session_idle_timeout"
         ]
@@ -26276,11 +26258,6 @@
             "x-go-type": "string",
             "description": "Timestamp of the last activity on this session.",
             "example": "2026-01-15T09:30:00.000000Z"
-          },
-          "welcome_message": {
-            "type": "string",
-            "description": "The owning Widget's welcome message, populated ONLY on the POST /webchat_sessions (Create) response -- List/Get/End responses always leave this empty. The client is expected to call POST /webchat_sessions fresh on every page load, so this asymmetry does not surface as a real gap in the visitor-facing flow.",
-            "example": "Hi! How can we help you today?"
           },
           "tm_create": {
             "type": "string",

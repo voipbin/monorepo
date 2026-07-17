@@ -16,7 +16,6 @@ Session struct
         "customer_id": "<string>",
         "widget_id": "<string>",
         "status": "<string>",
-        "welcome_message": "<string>",
         "tm_last_activity": "<string>",
         "tm_create": "<string>",
         "tm_update": "<string>",
@@ -27,7 +26,6 @@ Session struct
 * ``customer_id`` (UUID): The customer who owns the parent widget. Obtained from the ``id`` field of ``GET /customers``.
 * ``widget_id`` (UUID): The widget this session belongs to. Obtained from the ``id`` field of ``GET /webchat_widgets``.
 * ``status`` (enum string): The session's status. See :ref:`Status <webchat-struct-session-status>`.
-* ``welcome_message`` (String): The owning Widget's welcome message. Populated only on the ``POST /webchat_sessions`` (create) response -- list/get/end responses always leave this empty, since the frontend is expected to call create fresh on every page load.
 * ``tm_last_activity`` (string, ISO 8601): Timestamp of the most recent message on this session. Used to determine idle timeout.
 * ``tm_create`` (string, ISO 8601): Timestamp when the session was created.
 * ``tm_update`` (string, ISO 8601): Timestamp of the last update to any session property.

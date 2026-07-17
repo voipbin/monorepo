@@ -622,7 +622,6 @@
     <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;widget_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;welcome_message&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_last_activity&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -635,7 +634,6 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer who owns the parent widget. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">widget_id</span></code> (UUID): The widget this session belongs to. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/webchat_widgets</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">status</span></code> (enum string): The session’s status. See <a class="reference internal" href="#webchat-struct-session-status"><span class="std std-ref">Status</span></a>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">welcome_message</span></code> (String): The owning Widget’s welcome message. Populated only on the <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/webchat_sessions</span></code> (create) response – list/get/end responses always leave this empty, since the frontend is expected to call create fresh on every page load.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_last_activity</span></code> (string, ISO 8601): Timestamp of the most recent message on this session. Used to determine idle timeout.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the session was created.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp of the last update to any session property.</p></li>
