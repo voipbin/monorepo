@@ -5194,7 +5194,7 @@ type WebchatManagerWidget struct {
 	// CustomerId The unique identifier of the associated customer. Returned from the `GET /customers` response.
 	CustomerId string `json:"customer_id"`
 
-	// DirectHash Hash used by the embed script (data-hash attribute) to authenticate anonymous visitors via POST /auth/boot. Only returned by POST /webchat_widgets and POST /webchat_widgets/{id}/direct_hash_regenerate -- never returned by GET, since it is a secret embedded in the customer's public website.
+	// DirectHash Hash used by the embed script (data-hash attribute) to authenticate anonymous visitors via POST /auth/boot. Returned on every response (GET, List, Create, Update, direct_hash_regenerate) -- this value is embedded directly in the customer's public website HTML by design, so it is not a traditional secret; hiding it from GET responses would only make it harder for the customer's own admins to retrieve it.
 	DirectHash *string `json:"direct_hash,omitempty"`
 
 	// FlowId The flow to trigger on the visitor's first inbound message. Returned from the `POST /flows` or `GET /flows` response.

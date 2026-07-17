@@ -2385,7 +2385,7 @@ components:
           $ref: '#/components/schemas/WebchatManagerWidgetThemeConfig'
         direct_hash:
           type: string
-          description: "Hash used by the embed script (data-hash attribute) to authenticate anonymous visitors via POST /auth/boot. Only returned by POST /webchat_widgets and POST /webchat_widgets/{id}/direct_hash_regenerate -- never returned by GET, since it is a secret embedded in the customer's public website."
+          description: "Hash used by the embed script (data-hash attribute) to authenticate anonymous visitors via POST /auth/boot. Returned on every response (GET, List, Create, Update, direct_hash_regenerate) -- this value is embedded directly in the customer's public website HTML by design, so it is not a traditional secret; hiding it from GET responses would only make it harder for the customer's own admins to retrieve it."
           example: "a8f3b2c1d4e5"
         tm_create:
           type: string
