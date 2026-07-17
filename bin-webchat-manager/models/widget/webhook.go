@@ -10,8 +10,8 @@ import (
 // WebhookMessage defines the webchat widget webhook event / external response.
 // DirectID is intentionally omitted — it is an internal linkage to
 // bin-direct-manager and must never be exposed externally. DirectHash IS
-// exposed on every response (GET/List/Create/Update/Regenerate), mirroring
-// bin-ai-manager's AI/Team DirectHash pattern: the embed script's
+// exposed on every response (GET/List/Create/Update/direct_hash_regenerate),
+// mirroring bin-ai-manager's AI/Team DirectHash pattern: the embed script's
 // data-hash value is not actually a secret in the traditional sense --
 // it's embedded directly into the customer's public website HTML, so
 // hiding it from GET responses only made it harder for the customer's
