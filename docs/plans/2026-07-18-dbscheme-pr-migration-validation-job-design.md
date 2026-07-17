@@ -1,6 +1,6 @@
 # bin-dbscheme-manager: PR-branch migration validation job
 
-Status: DRAFT (design review round 3 response, v4)
+Status: CLOSED-OUT (implementation verified, PR #1112, v5)
 Author: Hermes (CPO)
 Date: 2026-07-18
 
@@ -242,15 +242,24 @@ checkpoint to even become visible.
       dereference the placeholder DSN) -- no other step in the job needs
       network/secret access either (pip install from PyPI, local filesystem
       parse only).
-- [ ] Confirm this job is not accidentally gated behind
+- [x] Confirm this job is not accidentally gated behind
       `migration-applied-checkpoint`'s approval (it must NOT `require:` the
       approval job -- it should run independently and immediately).
-- [ ] Confirm no existing job elsewhere in `config_work.yml` is named
+      **Verified at implementation time (PR #1112 merge candidate):** the
+      `migration-lint` bare-string list entry carries no `requires:` key at
+      all in `.circleci/config_work.yml`'s `bin-dbscheme-manager` workflow
+      block, and the merged-diff `migration-lint` job definition itself has
+      no dependency on `migration-applied-checkpoint`. Confirmed empirically
+      too -- `migration-lint` scheduled and passed immediately on this PR
+      branch while `migration-applied-checkpoint` never appeared at all
+      (branch is not `main`), which would be impossible if it were gated.
+- [x] Confirm no existing job elsewhere in `config_work.yml` is named
       `migration-lint` (name collision check) -- **confirmed clean as of
       round 1** (`grep -n "migration-lint" .circleci/config_work.yml` returns
-      no matches before this design's changes are applied), but re-verify at
-      implementation time in case another change lands first.
-- [ ] Confirm `bin-dbscheme-manager/docs/migrations.md` gets a short addition
+      no matches before this design's changes are applied). **Re-verified at
+      implementation time**: exactly one `migration-lint:` job definition
+      exists in the merged `config_work.yml`, no collision.
+- [x] Confirm `bin-dbscheme-manager/docs/migrations.md` gets a short addition
       documenting this new automated check. **Target file decided (round 3):
       `docs/migrations.md`**, not `docs/operations.md` -- chosen because it
       is the file the job's own failure message already cross-references for
@@ -267,7 +276,9 @@ checkpoint to even become visible.
       to look when it fails -- the CircleCI job's own log output names the
       specific problem (multiple heads, import error, or broken
       `down_revision` reference) and cites `docs/migrations.md` for the
-      multiple-heads case specifically.
+      multiple-heads case specifically. **Verified at implementation time**:
+      `bin-dbscheme-manager/docs/migrations.md`'s new "CI: `migration-lint`
+      (automatic, every branch)" section covers all three points verbatim.
 - [x] Verify multi-head detection actually fires as designed. **Verified
       round 1**: created two throwaway revision files both pointing at the
       same `down_revision` (the real current head) in `bin-manager/main/versions/`,
@@ -365,3 +376,16 @@ to guard against.
   the characterization of it. Round 3 independently re-verified all
   round-1/round-2 citations from scratch and found them still accurate; no
   drift found in the §7 changelog against real diffs.
+- v5 (2026-07-18, implementation + integration): implemented exactly per
+  v4, spike-tested standalone on a throwaway PR (#1113: `migration-lint`
+  pass, `migration-applied-checkpoint` absent, confirmed via `gh pr checks`)
+  -- then, per CEO direction, folded into the existing PR #1112 (webchat
+  Session/Message Flow split) instead of shipping as a separate PR;
+  re-verified the same spike-test result on PR #1112 itself. A PR-review
+  round-1 subagent (dispatched against the now-closed standalone PR #1113,
+  result arrived after the fold-in) found the implementation byte-identical
+  to v4's design and functionally correct, with one cosmetic finding: this
+  changelog's own §4 checklist had 2 items still marked `[ ]` despite being
+  verifiably true post-implementation (not gated behind the approval job; no
+  job-name collision) -- both checked off here with verification notes, plus
+  the doc-addition checklist item.
