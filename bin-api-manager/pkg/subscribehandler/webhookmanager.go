@@ -6,21 +6,14 @@ import (
 	"fmt"
 	"strings"
 
-	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	wmwebhook "monorepo/bin-webhook-manager/models/webhook"
+
+	apiwebhook "monorepo/bin-api-manager/models/webhook"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 )
-
-type commonWebhookData struct {
-	commonidentity.Identity
-	commonidentity.Owner
-	AIcallID  uuid.UUID `json:"aicall_id,omitempty"`
-	ChatID    uuid.UUID `json:"chat_id,omitempty"`
-	SessionID uuid.UUID `json:"session_id,omitempty"`
-}
 
 // getServiceNamespace maps RabbitMQ publisher name to topic namespace
 func (h *subscribeHandler) getServiceNamespace(publisher string) string {
@@ -72,8 +65,12 @@ func (h *subscribeHandler) processEventWebhookManagerWebhookPublished(ctx contex
 		return err
 	}
 
-	// parse the webhook.data.data
-	d := &commonWebhookData{}
+	// parse the webhook.data.data -- only the resource-agnostic
+	// Identity/Owner fields are decoded into the shared struct here.
+	// Resource-specific fields (aicall_id, chat_id, session_id, ...) are
+	// decoded per-case, locally, inside createTopics -- see that
+	// function and apiwebhook.CommonData's doc comment for why.
+	d := &apiwebhook.CommonData{}
 	if err := json.Unmarshal(whData.Data, d); err != nil {
 		log.Errorf("Could not unmarshal the webhook data. err: %v", err)
 		return err
@@ -87,7 +84,7 @@ func (h *subscribeHandler) processEventWebhookManagerWebhookPublished(ctx contex
 	}
 	log.Debugf("Created data. data: %s", string(data))
 
-	topics, err := h.createTopics(ctx, whData.Type, d, m.Publisher)
+	topics, err := h.createTopics(ctx, whData.Type, d, whData.Data, m.Publisher)
 	if err != nil {
 		log.Errorf("Could not create the topics")
 		return fmt.Errorf("could not create the topics")
@@ -119,7 +116,7 @@ func (h *subscribeHandler) processEventWebhookManagerRoutingKeyedEvent(ctx conte
 	})
 	log.Debugf("Received routing-keyed event. type: %s", m.Type)
 
-	d := &commonWebhookData{}
+	d := &apiwebhook.CommonData{}
 	if err := json.Unmarshal(m.Data, d); err != nil {
 		log.Errorf("Could not unmarshal the resource data. err: %v", err)
 		return err
@@ -138,7 +135,7 @@ func (h *subscribeHandler) processEventWebhookManagerRoutingKeyedEvent(ctx conte
 	}
 	resource := tmps[0]
 
-	topics, err := h.createTopics(ctx, m.Type, d, resource)
+	topics, err := h.createTopics(ctx, m.Type, d, m.Data, resource)
 	if err != nil {
 		log.Errorf("Could not create the topics. err: %v", err)
 		return fmt.Errorf("could not create the topics")
@@ -155,8 +152,13 @@ func (h *subscribeHandler) processEventWebhookManagerRoutingKeyedEvent(ctx conte
 	return nil
 }
 
-// createTopics generates the topics
-func (h *subscribeHandler) createTopics(ctx context.Context, messageType string, d *commonWebhookData, publisher string) ([]string, error) {
+// createTopics generates the topics. d carries only the resource-agnostic
+// Identity/Owner fields; raw is the original event payload bytes, used by
+// individual switch cases below to locally decode whatever
+// resource-specific field they need (aicall_id, chat_id, session_id, ...)
+// without adding that field to the shared apiwebhook.CommonData struct --
+// see that struct's doc comment for why.
+func (h *subscribeHandler) createTopics(ctx context.Context, messageType string, d *apiwebhook.CommonData, raw json.RawMessage, publisher string) ([]string, error) {
 
 	res := []string{}
 
@@ -173,12 +175,26 @@ func (h *subscribeHandler) createTopics(ctx context.Context, messageType string,
 
 	switch resource {
 	case "aimessage":
+		// aicall_id is specific to aimessage events only -- decoded
+		// locally rather than carried on the shared CommonData struct.
+		var extra struct {
+			AIcallID uuid.UUID `json:"aicall_id"`
+		}
+		_ = json.Unmarshal(raw, &extra)
+
 		if d.CustomerID != uuid.Nil {
-			res = append(res, fmt.Sprintf("customer_id:%s:aicall:%s", d.CustomerID, d.AIcallID))
+			res = append(res, fmt.Sprintf("customer_id:%s:aicall:%s", d.CustomerID, extra.AIcallID))
 		}
 
 	case "chat", "chatmessage", "chatparticipant":
-		chatID := d.ChatID
+		// chat_id is specific to chat-family events only -- decoded
+		// locally rather than carried on the shared CommonData struct.
+		var extra struct {
+			ChatID uuid.UUID `json:"chat_id"`
+		}
+		_ = json.Unmarshal(raw, &extra)
+
+		chatID := extra.ChatID
 		if chatID == uuid.Nil {
 			chatID = d.ID
 		}
@@ -214,12 +230,18 @@ func (h *subscribeHandler) createTopics(ctx context.Context, messageType string,
 		// POST /webchat_sessions time, before any message exists) can
 		// subscribe to it -- mirrors the aimessage case's "scope by
 		// stable parent id, not the not-yet-known child id" pattern
-		// above. For webchat_message_created, d.SessionID (the
-		// message's own session_id field) is the session id; for
+		// above. For webchat_message_created, session_id (the
+		// message's own session_id field, decoded locally, specific to
+		// this event type) is the session id; for
 		// webchat_session_ended, the event's own d.ID (the Session's
 		// Identity.ID) IS the session id -- there is no separate
 		// SessionID field on a Session's own webhook payload. VOIP-1265.
-		sessionID := d.SessionID
+		var extra struct {
+			SessionID uuid.UUID `json:"session_id"`
+		}
+		_ = json.Unmarshal(raw, &extra)
+
+		sessionID := extra.SessionID
 		if sessionID == uuid.Nil {
 			sessionID = d.ID
 		}

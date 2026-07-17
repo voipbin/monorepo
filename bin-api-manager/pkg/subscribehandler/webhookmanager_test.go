@@ -9,6 +9,7 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 
+	apiwebhook "monorepo/bin-api-manager/models/webhook"
 	"monorepo/bin-api-manager/pkg/zmqpubhandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
@@ -313,7 +314,12 @@ func Test_createTopics(t *testing.T) {
 		name string
 
 		messageType string
-		data        *commonWebhookData
+		data        *apiwebhook.CommonData
+		// raw is the original event payload bytes -- createTopics decodes
+		// resource-specific fields (aicall_id, chat_id, session_id, ...)
+		// from this locally, per switch case, rather than from a shared
+		// struct field. See apiwebhook.CommonData's doc comment.
+		raw json.RawMessage
 
 		// For chat events that need participant fan-out
 		chatID       uuid.UUID
@@ -328,7 +334,7 @@ func Test_createTopics(t *testing.T) {
 		{
 			name:        "have id, customer_id",
 			messageType: "activeflow_created",
-			data: &commonWebhookData{
+			data: &apiwebhook.CommonData{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d5d70d9d-85ad-4ffc-90c1-fdda37c046b0"),
 					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
@@ -345,7 +351,7 @@ func Test_createTopics(t *testing.T) {
 		{
 			name:        "have id, customer_id, owner_id",
 			messageType: "chatroom_created",
-			data: &commonWebhookData{
+			data: &apiwebhook.CommonData{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("7b0966c0-da98-11ee-97df-1786497422fb"),
 					CustomerID: uuid.FromStringOrNil("7b6cc58a-da98-11ee-b114-3fb0f4ae9318"),
@@ -367,7 +373,7 @@ func Test_createTopics(t *testing.T) {
 		{
 			name:        "have id, owner_id",
 			messageType: "task_created",
-			data: &commonWebhookData{
+			data: &apiwebhook.CommonData{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("8c0966c0-da98-11ee-97df-1786497422fb"),
 				},
@@ -386,13 +392,13 @@ func Test_createTopics(t *testing.T) {
 		{
 			name:        "aimessage_created with aicall_id uses aicall topic",
 			messageType: "aimessage_created",
-			data: &commonWebhookData{
+			data: &apiwebhook.CommonData{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
 					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 				},
-				AIcallID: uuid.FromStringOrNil("c3d4e5f6-a1b2-7890-abcd-1234567890ef"),
 			},
+			raw: json.RawMessage(`{"id":"a1b2c3d4-e5f6-7890-abcd-ef1234567890","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","aicall_id":"c3d4e5f6-a1b2-7890-abcd-1234567890ef"}`),
 			expectTopics: []string{
 				// Old format uses aicall_id
 				"customer_id:5e4a0680-804e-11ec-8477-2fea5968d85b:aicall:c3d4e5f6-a1b2-7890-abcd-1234567890ef",
@@ -404,13 +410,13 @@ func Test_createTopics(t *testing.T) {
 		{
 			name:        "aimessage_intermediate with aicall_id uses aicall topic",
 			messageType: "aimessage_intermediate",
-			data: &commonWebhookData{
+			data: &apiwebhook.CommonData{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("b2c3d4e5-f6a1-7890-abcd-234567890ef1"),
 					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 				},
-				AIcallID: uuid.FromStringOrNil("c3d4e5f6-a1b2-7890-abcd-1234567890ef"),
 			},
+			raw: json.RawMessage(`{"id":"b2c3d4e5-f6a1-7890-abcd-234567890ef1","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","aicall_id":"c3d4e5f6-a1b2-7890-abcd-1234567890ef"}`),
 			expectTopics: []string{
 				// Old format uses aicall_id
 				"customer_id:5e4a0680-804e-11ec-8477-2fea5968d85b:aicall:c3d4e5f6-a1b2-7890-abcd-1234567890ef",
@@ -422,13 +428,13 @@ func Test_createTopics(t *testing.T) {
 		{
 			name:        "webchat_message_created uses webchat_session topic scoped by session_id",
 			messageType: "webchat_message_created",
-			data: &commonWebhookData{
+			data: &apiwebhook.CommonData{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("e1e1e1e1-1111-1111-1111-111111111111"),
 					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 				},
-				SessionID: uuid.FromStringOrNil("f2f2f2f2-2222-2222-2222-222222222222"),
 			},
+			raw: json.RawMessage(`{"id":"e1e1e1e1-1111-1111-1111-111111111111","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b","session_id":"f2f2f2f2-2222-2222-2222-222222222222"}`),
 			expectTopics: []string{
 				// webchat case: scoped by session_id, not message id
 				"customer_id:5e4a0680-804e-11ec-8477-2fea5968d85b:webchat_session:f2f2f2f2-2222-2222-2222-222222222222",
@@ -440,15 +446,16 @@ func Test_createTopics(t *testing.T) {
 		{
 			name:        "webchat_session_ended uses webchat_session topic scoped by the session's own id",
 			messageType: "webchat_session_ended",
-			data: &commonWebhookData{
+			data: &apiwebhook.CommonData{
 				Identity: commonidentity.Identity{
 					// A Session's own webhook payload has no separate
-					// SessionID field -- its own Identity.ID IS the
+					// session_id field -- its own Identity.ID IS the
 					// session id (VOIP-1265 §9.3).
 					ID:         uuid.FromStringOrNil("f2f2f2f2-2222-2222-2222-222222222222"),
 					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 				},
 			},
+			raw: json.RawMessage(`{"id":"f2f2f2f2-2222-2222-2222-222222222222","customer_id":"5e4a0680-804e-11ec-8477-2fea5968d85b"}`),
 			expectTopics: []string{
 				"customer_id:5e4a0680-804e-11ec-8477-2fea5968d85b:webchat_session:f2f2f2f2-2222-2222-2222-222222222222",
 				"customer_id:5e4a0680-804e-11ec-8477-2fea5968d85b:test-manager:webchat_session_ended:f2f2f2f2-2222-2222-2222-222222222222",
@@ -458,7 +465,7 @@ func Test_createTopics(t *testing.T) {
 		{
 			name:        "chatmessage_created with chat_id and participants",
 			messageType: "chatmessage_created",
-			data: &commonWebhookData{
+			data: &apiwebhook.CommonData{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("a11d1da0-3ed7-11ef-9208-4bcc069917a1"),
 					CustomerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
@@ -466,8 +473,8 @@ func Test_createTopics(t *testing.T) {
 				Owner: commonidentity.Owner{
 					OwnerID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 				},
-				ChatID: uuid.FromStringOrNil("e66d1da0-3ed7-11ef-9208-4bcc069917a1"),
 			},
+			raw: json.RawMessage(`{"id":"a11d1da0-3ed7-11ef-9208-4bcc069917a1","customer_id":"550e8400-e29b-41d4-a716-446655440000","owner_id":"cdb5213a-8003-11ec-84ca-9fa226fcda9f","chat_id":"e66d1da0-3ed7-11ef-9208-4bcc069917a1"}`),
 
 			chatID: uuid.FromStringOrNil("e66d1da0-3ed7-11ef-9208-4bcc069917a1"),
 			participants: []*tkparticipant.Participant{
@@ -508,7 +515,7 @@ func Test_createTopics(t *testing.T) {
 		{
 			name:        "chat_created with chatID nil fallback to d.ID",
 			messageType: "chat_created",
-			data: &commonWebhookData{
+			data: &apiwebhook.CommonData{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("e66d1da0-3ed7-11ef-9208-4bcc069917a1"),
 					CustomerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
@@ -542,7 +549,7 @@ func Test_createTopics(t *testing.T) {
 		{
 			name:        "chatparticipant_added with chat_id",
 			messageType: "chatparticipant_added",
-			data: &commonWebhookData{
+			data: &apiwebhook.CommonData{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("f66d1da0-3ed7-11ef-9208-4bcc069917a2"),
 					CustomerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
@@ -550,8 +557,8 @@ func Test_createTopics(t *testing.T) {
 				Owner: commonidentity.Owner{
 					OwnerID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 				},
-				ChatID: uuid.FromStringOrNil("e66d1da0-3ed7-11ef-9208-4bcc069917a1"),
 			},
+			raw: json.RawMessage(`{"id":"f66d1da0-3ed7-11ef-9208-4bcc069917a2","customer_id":"550e8400-e29b-41d4-a716-446655440000","owner_id":"cdb5213a-8003-11ec-84ca-9fa226fcda9f","chat_id":"e66d1da0-3ed7-11ef-9208-4bcc069917a1"}`),
 
 			chatID: uuid.FromStringOrNil("e66d1da0-3ed7-11ef-9208-4bcc069917a1"),
 			participants: []*tkparticipant.Participant{
@@ -592,7 +599,7 @@ func Test_createTopics(t *testing.T) {
 		{
 			name:        "chatmessage_created with participant lookup failure",
 			messageType: "chatmessage_created",
-			data: &commonWebhookData{
+			data: &apiwebhook.CommonData{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("a11d1da0-3ed7-11ef-9208-4bcc069917a1"),
 					CustomerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440000"),
@@ -600,8 +607,8 @@ func Test_createTopics(t *testing.T) {
 				Owner: commonidentity.Owner{
 					OwnerID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 				},
-				ChatID: uuid.FromStringOrNil("e66d1da0-3ed7-11ef-9208-4bcc069917a1"),
 			},
+			raw: json.RawMessage(`{"id":"a11d1da0-3ed7-11ef-9208-4bcc069917a1","customer_id":"550e8400-e29b-41d4-a716-446655440000","owner_id":"cdb5213a-8003-11ec-84ca-9fa226fcda9f","chat_id":"e66d1da0-3ed7-11ef-9208-4bcc069917a1"}`),
 
 			chatID:         uuid.FromStringOrNil("e66d1da0-3ed7-11ef-9208-4bcc069917a1"),
 			participantErr: fmt.Errorf("rpc error"),
@@ -622,7 +629,7 @@ func Test_createTopics(t *testing.T) {
 		{
 			name:        "invalid message type",
 			messageType: "invalidtype",
-			data: &commonWebhookData{
+			data: &apiwebhook.CommonData{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("9d0966c0-da98-11ee-97df-1786497422fb"),
 					CustomerID: uuid.FromStringOrNil("9d6cc58a-da98-11ee-b114-3fb0f4ae9318"),
@@ -655,7 +662,7 @@ func Test_createTopics(t *testing.T) {
 
 			ctx := context.Background()
 
-			topics, err := h.createTopics(ctx, tt.messageType, tt.data, "test-manager")
+			topics, err := h.createTopics(ctx, tt.messageType, tt.data, tt.raw, "test-manager")
 			if (err != nil) != tt.expectError {
 				t.Errorf("Unexpected error. expect: %v, got: %v", tt.expectError, err)
 			}
