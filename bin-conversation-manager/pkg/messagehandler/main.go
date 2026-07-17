@@ -7,6 +7,7 @@ import (
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
@@ -91,6 +92,7 @@ type messageHandler struct {
 	utilHandler   utilhandler.UtilHandler
 	db            dbhandler.DBHandler
 	notifyHandler notifyhandler.NotifyHandler
+	reqHandler    requesthandler.RequestHandler
 
 	accountHandler  accounthandler.AccountHandler
 	lineHandler     linehandler.LineHandler
@@ -102,6 +104,7 @@ type messageHandler struct {
 func NewMessageHandler(
 	db dbhandler.DBHandler,
 	notifyHandler notifyhandler.NotifyHandler,
+	reqHandler requesthandler.RequestHandler,
 	accountHandler accounthandler.AccountHandler,
 	lineHandler linehandler.LineHandler,
 	smsHandler smshandler.SMSHandler,
@@ -111,6 +114,7 @@ func NewMessageHandler(
 		utilHandler:   utilhandler.NewUtilHandler(),
 		db:            db,
 		notifyHandler: notifyHandler,
+		reqHandler:    reqHandler,
 
 		accountHandler:  accountHandler,
 		lineHandler:     lineHandler,

@@ -11,6 +11,8 @@ import (
 	"monorepo/bin-conversation-manager/models/conversation"
 	"monorepo/bin-conversation-manager/models/media"
 	"monorepo/bin-conversation-manager/models/message"
+
+	wcmessage "monorepo/bin-webchat-manager/models/message"
 )
 
 // Send sends the message to the given conversation
@@ -32,6 +34,9 @@ func (h *messageHandler) Send(ctx context.Context, cv *conversation.Conversation
 
 	case conversation.TypeWhatsApp:
 		return h.sendWhatsApp(ctx, cv, text)
+
+	case conversation.TypeWebchat:
+		return h.sendWebchat(ctx, cv, text)
 
 	default:
 		log.Errorf("Unsupported reference type. reference_type: %s", cv.Type)
@@ -129,6 +134,56 @@ func (h *messageHandler) sendWhatsApp(ctx context.Context, cv *conversation.Conv
 	}
 
 	log.Debugf("Sent WhatsApp message. wamid: %s", wamid)
+	return res, nil
+}
+
+// sendWebchat sends the message to the webchat type of conversation, via
+// bin-webchat-manager (the sole owner of the webchat Session/Message
+// thread). cv.Peer.Target holds the webchat Session ID (see
+// conversationhandler.eventWebchat's Self=Widget/Peer=Session convention).
+// The message is persisted immediately here (ID = webchat-manager's own
+// returned message ID) so the flow-manager caller gets a durable response
+// right away; the later webchat_message_created (outbound) subscribed
+// event -- handled by messageEventSentWebchat -- finds this same ID
+// already present and only updates its status, so no duplicate row is
+// created.
+func (h *messageHandler) sendWebchat(ctx context.Context, cv *conversation.Conversation, text string) (*message.Message, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "sendWebchat",
+		"conversation": cv,
+		"text":         text,
+	})
+
+	sessionID, err := uuid.FromString(cv.Peer.Target)
+	if err != nil {
+		log.Errorf("Could not parse the session id. err: %v", err)
+		return nil, errors.Wrapf(err, "could not parse the session id. target: %s", cv.Peer.Target)
+	}
+
+	wm, err := h.reqHandler.WebchatV1MessageCreate(ctx, cv.CustomerID, sessionID, wcmessage.DirectionOutbound, uuid.Nil, text)
+	if err != nil {
+		log.Errorf("Could not send the webchat message. err: %v", err)
+		return nil, err
+	}
+
+	source, destination := DeriveEndpoints(cv, message.DirectionOutgoing)
+	res, err := h.Create(ctx, MessageCreateArgs{
+		ID:             wm.ID,
+		CustomerID:     cv.CustomerID,
+		ConversationID: cv.ID,
+		Direction:      message.DirectionOutgoing,
+		Status:         message.StatusDone,
+		ReferenceType:  message.ReferenceTypeWebchat,
+		ReferenceID:    wm.ID,
+		Text:           text,
+		Source:         source,
+		Destination:    destination,
+	})
+	if err != nil {
+		log.Errorf("Could not create a message. err: %v", err)
+		return nil, err
+	}
+
 	return res, nil
 }
 

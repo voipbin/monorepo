@@ -75,7 +75,7 @@ func initConversationHandlers(sqlDB *sql.DB, cache cachehandler.CacheHandler, re
 	whatsAppHandler := whatsapphandler.NewWhatsAppHandler(reqHandler)
 	accountHandler := accounthandler.NewAccountHandler(db, reqHandler, notifyHandler, lineHandler, whatsAppHandler)
 	smsHandler := smshandler.NewSMSHandler(reqHandler, accountHandler)
-	messageHandler := messagehandler.NewMessageHandler(db, notifyHandler, accountHandler, lineHandler, smsHandler, whatsAppHandler)
+	messageHandler := messagehandler.NewMessageHandler(db, notifyHandler, reqHandler, accountHandler, lineHandler, smsHandler, whatsAppHandler)
 	conversationHandler := conversationhandler.NewConversationHandler(db, notifyHandler, reqHandler, accountHandler, messageHandler, lineHandler, smsHandler, whatsAppHandler)
 
 	return conversationHandler, accountHandler, messageHandler, nil
