@@ -35,7 +35,8 @@ func (h *listenHandler) processV1WidgetsPost(ctx context.Context, m *sock.Reques
 		req.CustomerID,
 		req.Name,
 		req.WelcomeMessage,
-		req.FlowID,
+		req.SessionFlowID,
+		req.MessageFlowID,
 		req.SessionIdleTimeout,
 		req.ThemeConfig,
 	)
@@ -218,7 +219,8 @@ func (h *listenHandler) processV1WidgetsIDPut(ctx context.Context, m *sock.Reque
 		id,
 		req.Name,
 		req.WelcomeMessage,
-		req.FlowID,
+		req.SessionFlowID,
+		req.MessageFlowID,
 		req.SessionIdleTimeout,
 		req.ThemeConfig,
 	)

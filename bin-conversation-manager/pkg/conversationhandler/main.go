@@ -56,6 +56,25 @@ type ConversationHandler interface {
 		self commonaddress.Address,
 		peer commonaddress.Address,
 	) (*conversation.Conversation, error)
+	// CreateAndExecuteFlow creates a brand-new Conversation (self/peer
+	// are expected to be unique per call, e.g. a webchat Session.ID as
+	// peer -- this is NOT a get-or-create) and immediately Create+Executes
+	// an activeflow against it (ReferenceType=Conversation). Used by
+	// bin-webchat-manager's sessionhandler.Create at webchat session-create
+	// time to trigger Widget.SessionFlowID (design doc
+	// 2026-07-17-webchat-widget-session-message-flow-split-design.md §3.3):
+	// bin-conversation-manager, not bin-webchat-manager, owns Flow
+	// trigger Create+Execute for SessionFlowID, matching every other
+	// channel's existing pattern (executeActiveflow).
+	CreateAndExecuteFlow(
+		ctx context.Context,
+		customerID uuid.UUID,
+		flowID uuid.UUID,
+		conversationType conversation.Type,
+		dialogID string,
+		self commonaddress.Address,
+		peer commonaddress.Address,
+	) (*conversation.Conversation, error)
 	List(ctx context.Context, pageToken string, pageSize uint64, filters map[conversation.Field]any) ([]*conversation.Conversation, error)
 	// GetByTypeAndDialogID(ctx context.Context, conversationType conversation.Type, dialogID string) (*conversation.Conversation, error)
 	Update(ctx context.Context, id uuid.UUID, fields map[conversation.Field]any) (*conversation.Conversation, error)

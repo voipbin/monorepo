@@ -10,27 +10,31 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-webchat-manager/models/message"
-	"monorepo/bin-webchat-manager/models/session"
 	"monorepo/bin-webchat-manager/models/widget"
 )
 
-// Create creates a new message. If this is the first INBOUND message on
-// the given Session AND the owning Widget has a FlowID configured, this
-// also triggers the Widget's activeflow (reference_type=webchat) —
-// design doc §5 core flow step 5, §9 Flow variable integration, §14
-// step 8. An empty Session with no message never triggers a Flow on its
-// own (the trigger is anchored to the first inbound message, not to
-// Session creation — v7 Revision Notice).
+// Create creates a new message. If this is an INBOUND message AND the
+// owning Widget has a MessageFlowID configured, this also triggers a
+// brand-new, independent activeflow for THIS message -- unconditionally,
+// on every inbound message, with no "already triggered" gate and no
+// per-session lock. This mirrors bin-conversation-manager's existing
+// Account.MessageFlowID/Number.MessageFlowID pattern (SMS/LINE/WhatsApp)
+// exactly. See design doc
+// 2026-07-17-webchat-widget-session-message-flow-split-design.md §2.3, §5.
 //
-// Round 4 review finding (Medium, must be resolved here): the
-// first-inbound-message check is serialized per Session via an
-// in-process keyed lock (see main.go's lockSession/unlockSession) so a
-// double-fired first message cannot observe "no prior activeflow" twice
-// and trigger the Flow twice. This only protects within one pod — see
-// the design doc's multi-replica caveat; DB-level duplicate-trigger risk
-// beyond a single pod is accepted as a low-probability Phase 1 risk,
-// consistent with the doc's own accepted-risk framing for adjacent
-// races (idle sweep vs in-flight MessageSend, §15).
+// SessionFlowID's trigger (fires once per Session, at session-create
+// time) is NOT this function's concern -- that is owned by
+// bin-conversation-manager's CreateAndExecuteFlow, called from
+// bin-webchat-manager's sessionhandler.Create. See design doc §3.
+//
+// Accepted risk (design doc §4): with no per-session lock, rapid
+// consecutive inbound messages can each trigger their own concurrent
+// activeflow. This is the same shape of risk
+// bin-conversation-manager's SMS/LINE/WhatsApp executeActiveflow
+// already lives with (no per-conversation lock there either) --
+// applying an existing, already-accepted platform risk to a channel
+// with a higher realistic message frequency, not introducing a new
+// class of risk.
 func (h *messageHandler) Create(
 	ctx context.Context,
 	customerID uuid.UUID,
@@ -47,27 +51,6 @@ func (h *messageHandler) Create(
 	})
 	log.Debug("Creating a new message.")
 
-	// Only inbound (visitor -> VoIPbin) messages can trigger the
-	// first-message Flow. Outbound (VoIPbin -> visitor, e.g. an agent
-	// reply or a Flow-delivered response) never does — matches
-	// conversation-manager's MessageEventSent never calling
-	// runExecuteModeFlow (verified in the design doc's Round 3 review).
-	// Both paths still resolve the Session (WidgetID is denormalized
-	// onto every Message for the outbound event payload too), but only
-	// the inbound path takes the per-session lock, since only inbound
-	// messages can trigger the Flow.
-	if direction != message.DirectionInbound {
-		sess, err := h.db.SessionGet(ctx, sessionID)
-		if err != nil {
-			log.Errorf("Could not get session. err: %v", err)
-			return nil, err
-		}
-		return h.create(ctx, customerID, sess.WidgetID, sessionID, direction, senderID, text)
-	}
-
-	lockCh := h.lockSession(sessionID)
-	defer h.unlockSession(lockCh)
-
 	sess, err := h.db.SessionGet(ctx, sessionID)
 	if err != nil {
 		log.Errorf("Could not get session. err: %v", err)
@@ -79,9 +62,12 @@ func (h *messageHandler) Create(
 		return nil, err
 	}
 
-	// First inbound message on this Session iff no activeflow has been
-	// recorded on it yet. Checked/set under the per-session lock above.
-	if sess.ActiveflowID != uuid.Nil {
+	// Only inbound (visitor -> VoIPbin) messages can trigger
+	// MessageFlowID. Outbound (VoIPbin -> visitor, e.g. an agent reply
+	// or a Flow-delivered response) never does -- matches
+	// conversation-manager's MessageEventSent never calling
+	// runExecuteModeFlow.
+	if direction != message.DirectionInbound {
 		return res, nil
 	}
 
@@ -93,13 +79,13 @@ func (h *messageHandler) Create(
 		return res, nil
 	}
 
-	if w.FlowID == uuid.Nil {
-		log.Debugf("Widget has no flow configured. Skipping activeflow. widget_id: %s", w.ID)
+	if w.MessageFlowID == uuid.Nil {
+		log.Debugf("Widget has no message flow configured. Skipping activeflow. widget_id: %s", w.ID)
 		return res, nil
 	}
 
-	if errFlow := h.triggerFirstMessageFlow(ctx, customerID, sessionID, w, res); errFlow != nil {
-		log.Errorf("Could not trigger the first-message activeflow. err: %v", errFlow)
+	if errFlow := h.triggerMessageFlow(ctx, customerID, sessionID, w, res); errFlow != nil {
+		log.Errorf("Could not trigger the message activeflow. err: %v", errFlow)
 		// Best-effort: the message send itself already succeeded.
 	}
 
@@ -107,11 +93,11 @@ func (h *messageHandler) Create(
 }
 
 // create is the shared persistence step, factored out so both the
-// inbound (lock-guarded) and outbound (unguarded) paths share identical
-// row-construction logic. Publishes EventTypeMessageCreated to both the
-// webhook and event queue on every successful create (design doc §16:
-// conversation-manager subscribes to this event to build its own
-// independent Conversation/Message records, message-manager pattern).
+// inbound and outbound paths share identical row-construction logic.
+// Publishes EventTypeMessageCreated to both the webhook and event queue
+// on every successful create (design doc §16: conversation-manager
+// subscribes to this event to build its own independent
+// Conversation/Message records, message-manager pattern).
 func (h *messageHandler) create(
 	ctx context.Context,
 	customerID uuid.UUID,
@@ -154,11 +140,12 @@ func (h *messageHandler) create(
 	return res, nil
 }
 
-// triggerFirstMessageFlow creates and executes the Widget's activeflow
-// for this Session's first inbound message, then records the resulting
-// ActiveflowID on the Session (this is the "already triggered" marker
-// read by Create above).
-func (h *messageHandler) triggerFirstMessageFlow(
+// triggerMessageFlow creates and executes a brand-new activeflow for
+// THIS inbound message, unconditionally -- no "already triggered"
+// bookkeeping, no cross-message state. Mirrors
+// bin-conversation-manager's executeActiveflow for SMS/LINE/WhatsApp's
+// MessageFlowID exactly.
+func (h *messageHandler) triggerMessageFlow(
 	ctx context.Context,
 	customerID uuid.UUID,
 	sessionID uuid.UUID,
@@ -166,10 +153,10 @@ func (h *messageHandler) triggerFirstMessageFlow(
 	m *message.Message,
 ) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":       "triggerFirstMessageFlow",
-		"session_id": sessionID,
-		"widget_id":  w.ID,
-		"flow_id":    w.FlowID,
+		"func":            "triggerMessageFlow",
+		"session_id":      sessionID,
+		"widget_id":       w.ID,
+		"message_flow_id": w.MessageFlowID,
 	})
 
 	variables := map[string]string{
@@ -182,7 +169,7 @@ func (h *messageHandler) triggerFirstMessageFlow(
 		ctx,
 		uuid.Nil,
 		customerID,
-		w.FlowID,
+		w.MessageFlowID,
 		fmactiveflow.ReferenceTypeWebchat,
 		sessionID,
 		uuid.Nil,
@@ -194,16 +181,6 @@ func (h *messageHandler) triggerFirstMessageFlow(
 		return err
 	}
 	log.WithField("activeflow_id", af.ID).Debug("Created activeflow.")
-
-	fields := map[session.Field]any{
-		session.FieldActiveflowID: af.ID,
-	}
-	if errUpdate := h.db.SessionUpdate(ctx, sessionID, fields); errUpdate != nil {
-		log.Errorf("Could not record activeflow_id on session. err: %v", errUpdate)
-		// Not fatal: the Flow itself was already created/executed. Worst
-		// case a subsequent message re-triggers (bounded by this same
-		// lock, so at most once more) rather than never triggering.
-	}
 
 	if err := h.reqHandler.FlowV1ActiveflowExecute(ctx, af.ID); err != nil {
 		return err

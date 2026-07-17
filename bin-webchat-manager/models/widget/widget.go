@@ -33,8 +33,22 @@ type Widget struct {
 	// round-trip to direct-manager on every widget read.
 	Hash string `json:"direct_hash,omitempty" db:"direct_hash"`
 
-	WelcomeMessage string    `json:"welcome_message,omitempty" db:"welcome_message"`
-	FlowID         uuid.UUID `json:"flow_id,omitempty" db:"flow_id,uuid"`
+	WelcomeMessage string `json:"welcome_message,omitempty" db:"welcome_message"`
+
+	// SessionFlowID fires once per Session, anchored to session
+	// creation/start (POST /webchat_sessions) -- NOT to the first
+	// inbound message. Named for its cardinality (once per session),
+	// not its trigger event. Trigger+execute ownership belongs to
+	// bin-conversation-manager (see design doc
+	// 2026-07-17-webchat-widget-session-message-flow-split-design.md
+	// §3), not this service.
+	SessionFlowID uuid.UUID `json:"session_flow_id,omitempty" db:"session_flow_id,uuid"`
+
+	// MessageFlowID fires on EVERY inbound message, independently and
+	// statelessly -- mirrors bin-conversation-manager's
+	// Account.MessageFlowID/Number.MessageFlowID pattern exactly.
+	// Opt-in: nil means no per-message trigger.
+	MessageFlowID uuid.UUID `json:"message_flow_id,omitempty" db:"message_flow_id,uuid"`
 
 	SessionIdleTimeout int `json:"session_idle_timeout,omitempty" db:"session_idle_timeout"` // seconds; default 1800
 

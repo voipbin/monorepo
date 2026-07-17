@@ -153,14 +153,14 @@ func Test_WebchatWidgetCreate(t *testing.T) {
 		Identity: commonidentity.Identity{ID: flowID, CustomerID: customerID},
 	}
 	responseWidget := &wcwidget.Widget{
-		Identity: commonidentity.Identity{ID: widgetID, CustomerID: customerID},
-		FlowID:   flowID,
+		Identity:      commonidentity.Identity{ID: widgetID, CustomerID: customerID},
+		SessionFlowID: flowID,
 	}
 
 	mockReq.EXPECT().FlowV1FlowGet(ctx, flowID).Return(flow, nil)
-	mockReq.EXPECT().WebchatV1WidgetCreate(ctx, customerID, "widget", "welcome", flowID, 300, gomock.Any()).Return(responseWidget, nil)
+	mockReq.EXPECT().WebchatV1WidgetCreate(ctx, customerID, "widget", "welcome", flowID, uuid.Nil, 300, gomock.Any()).Return(responseWidget, nil)
 
-	res, err := h.WebchatWidgetCreate(ctx, a, "widget", "welcome", flowID, 300, nil)
+	res, err := h.WebchatWidgetCreate(ctx, a, "widget", "welcome", flowID, uuid.Nil, 300, nil)
 	if err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
@@ -208,7 +208,7 @@ func Test_WebchatWidgetCreate_CrossTenant_WrongFlowOwner(t *testing.T) {
 
 	mockReq.EXPECT().FlowV1FlowGet(ctx, victimFlowID).Return(victimFlow, nil)
 
-	if _, err := h.WebchatWidgetCreate(ctx, a, "widget", "welcome", victimFlowID, 300, nil); err == nil {
+	if _, err := h.WebchatWidgetCreate(ctx, a, "widget", "welcome", victimFlowID, uuid.Nil, 300, nil); err == nil {
 		t.Error("Wrong match. expect: permission denied error, got: ok")
 	}
 }
@@ -251,7 +251,7 @@ func Test_WebchatWidgetUpdate_CrossTenant_WrongFlowOwner(t *testing.T) {
 	mockReq.EXPECT().WebchatV1WidgetGet(ctx, widgetID).Return(ownWidget, nil)
 	mockReq.EXPECT().FlowV1FlowGet(ctx, victimFlowID).Return(victimFlow, nil)
 
-	if _, err := h.WebchatWidgetUpdate(ctx, a, widgetID, "widget", "welcome", victimFlowID, 300, nil); err == nil {
+	if _, err := h.WebchatWidgetUpdate(ctx, a, widgetID, "widget", "welcome", victimFlowID, uuid.Nil, 300, nil); err == nil {
 		t.Error("Wrong match. expect: permission denied error, got: ok")
 	}
 }
@@ -301,7 +301,7 @@ func Test_WebchatWidgetUpdate_SuperAdmin_CrossTenant_WrongFlowOwner(t *testing.T
 	mockReq.EXPECT().WebchatV1WidgetGet(ctx, widgetID).Return(victimWidget, nil)
 	mockReq.EXPECT().FlowV1FlowGet(ctx, sameTenantAsCallerFlowID).Return(callerTenantFlow, nil)
 
-	if _, err := h.WebchatWidgetUpdate(ctx, a, widgetID, "widget", "welcome", sameTenantAsCallerFlowID, 300, nil); err == nil {
+	if _, err := h.WebchatWidgetUpdate(ctx, a, widgetID, "widget", "welcome", sameTenantAsCallerFlowID, uuid.Nil, 300, nil); err == nil {
 		t.Error("Wrong match. expect: permission denied error, got: ok")
 	}
 }

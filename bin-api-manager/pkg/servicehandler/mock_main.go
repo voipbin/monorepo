@@ -6199,18 +6199,18 @@ func (mr *MockServiceHandlerMockRecorder) WebchatSessionList(ctx, a, size, token
 }
 
 // WebchatWidgetCreate mocks base method.
-func (m *MockServiceHandler) WebchatWidgetCreate(ctx context.Context, a *auth.AuthIdentity, name, welcomeMessage string, flowID uuid.UUID, sessionIdleTimeout int, themeConfig *widget.ThemeConfig) (*widget.WebhookMessage, error) {
+func (m *MockServiceHandler) WebchatWidgetCreate(ctx context.Context, a *auth.AuthIdentity, name, welcomeMessage string, sessionFlowID, messageFlowID uuid.UUID, sessionIdleTimeout int, themeConfig *widget.ThemeConfig) (*widget.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "WebchatWidgetCreate", ctx, a, name, welcomeMessage, flowID, sessionIdleTimeout, themeConfig)
+	ret := m.ctrl.Call(m, "WebchatWidgetCreate", ctx, a, name, welcomeMessage, sessionFlowID, messageFlowID, sessionIdleTimeout, themeConfig)
 	ret0, _ := ret[0].(*widget.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // WebchatWidgetCreate indicates an expected call of WebchatWidgetCreate.
-func (mr *MockServiceHandlerMockRecorder) WebchatWidgetCreate(ctx, a, name, welcomeMessage, flowID, sessionIdleTimeout, themeConfig any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) WebchatWidgetCreate(ctx, a, name, welcomeMessage, sessionFlowID, messageFlowID, sessionIdleTimeout, themeConfig any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WebchatWidgetCreate", reflect.TypeOf((*MockServiceHandler)(nil).WebchatWidgetCreate), ctx, a, name, welcomeMessage, flowID, sessionIdleTimeout, themeConfig)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WebchatWidgetCreate", reflect.TypeOf((*MockServiceHandler)(nil).WebchatWidgetCreate), ctx, a, name, welcomeMessage, sessionFlowID, messageFlowID, sessionIdleTimeout, themeConfig)
 }
 
 // WebchatWidgetDelete mocks base method.
@@ -6274,18 +6274,18 @@ func (mr *MockServiceHandlerMockRecorder) WebchatWidgetList(ctx, a, size, token 
 }
 
 // WebchatWidgetUpdate mocks base method.
-func (m *MockServiceHandler) WebchatWidgetUpdate(ctx context.Context, a *auth.AuthIdentity, widgetID uuid.UUID, name, welcomeMessage string, flowID uuid.UUID, sessionIdleTimeout int, themeConfig *widget.ThemeConfig) (*widget.WebhookMessage, error) {
+func (m *MockServiceHandler) WebchatWidgetUpdate(ctx context.Context, a *auth.AuthIdentity, widgetID uuid.UUID, name, welcomeMessage string, sessionFlowID, messageFlowID uuid.UUID, sessionIdleTimeout int, themeConfig *widget.ThemeConfig) (*widget.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "WebchatWidgetUpdate", ctx, a, widgetID, name, welcomeMessage, flowID, sessionIdleTimeout, themeConfig)
+	ret := m.ctrl.Call(m, "WebchatWidgetUpdate", ctx, a, widgetID, name, welcomeMessage, sessionFlowID, messageFlowID, sessionIdleTimeout, themeConfig)
 	ret0, _ := ret[0].(*widget.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // WebchatWidgetUpdate indicates an expected call of WebchatWidgetUpdate.
-func (mr *MockServiceHandlerMockRecorder) WebchatWidgetUpdate(ctx, a, widgetID, name, welcomeMessage, flowID, sessionIdleTimeout, themeConfig any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) WebchatWidgetUpdate(ctx, a, widgetID, name, welcomeMessage, sessionFlowID, messageFlowID, sessionIdleTimeout, themeConfig any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WebchatWidgetUpdate", reflect.TypeOf((*MockServiceHandler)(nil).WebchatWidgetUpdate), ctx, a, widgetID, name, welcomeMessage, flowID, sessionIdleTimeout, themeConfig)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WebchatWidgetUpdate", reflect.TypeOf((*MockServiceHandler)(nil).WebchatWidgetUpdate), ctx, a, widgetID, name, welcomeMessage, sessionFlowID, messageFlowID, sessionIdleTimeout, themeConfig)
 }
 
 // WebsockCreate mocks base method.

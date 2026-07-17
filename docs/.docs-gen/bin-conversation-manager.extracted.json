@@ -19,7 +19,19 @@
       "pattern": "/v1/conversations$"
     },
     {
+      "pattern": "/v1/conversations/self_and_peer$"
+    },
+    {
+      "pattern": "/v1/conversations/get_or_create_by_self_and_peer$"
+    },
+    {
+      "pattern": "/v1/conversations/create_and_execute_flow$"
+    },
+    {
       "pattern": "/v1/conversations/{{UUID}}$"
+    },
+    {
+      "pattern": "/v1/conversations/{{UUID}}/metadata$"
     },
     {
       "pattern": "/v1/hooks$"
@@ -37,6 +49,12 @@
   "events_subscribed": [
     {
       "queue_symbol": "bin-manager.message-manager.event"
+    },
+    {
+      "queue_symbol": "bin-manager.email-manager.event"
+    },
+    {
+      "queue_symbol": "bin-manager.webchat-manager.event"
     }
   ],
   "events_published": [
@@ -176,6 +194,10 @@
     {
       "module_path": "monorepo/bin-webhook-manager",
       "local_path": "../bin-webhook-manager"
+    },
+    {
+      "module_path": "monorepo/bin-webchat-manager",
+      "local_path": "../bin-webchat-manager"
     }
   ],
   "config_vars": [

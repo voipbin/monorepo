@@ -26,7 +26,8 @@ func Test_Create(t *testing.T) {
 		customerID          uuid.UUID
 		widgetName          string
 		welcomeMessage      string
-		flowID              uuid.UUID
+		sessionFlowID       uuid.UUID
+		messageFlowID       uuid.UUID
 		sessionIdleTimeout  int
 		themeConfig         *widget.ThemeConfig
 
@@ -41,7 +42,8 @@ func Test_Create(t *testing.T) {
 			customerID:         uuid.FromStringOrNil("1ed812a6-7f56-11ec-82c1-8bb47b0f9d98"),
 			widgetName:         "test widget",
 			welcomeMessage:     "Hello!",
-			flowID:             uuid.FromStringOrNil("2b5bc824-2066-11f0-81b0-672de53dec30"),
+			sessionFlowID:      uuid.FromStringOrNil("2b5bc824-2066-11f0-81b0-672de53dec30"),
+			messageFlowID:      uuid.FromStringOrNil("3a3e5e9a-2077-11f0-8dc2-fb5b62d502fe"),
 			sessionIdleTimeout: 1800,
 			themeConfig: &widget.ThemeConfig{
 				PrimaryColor: "#3366ff",
@@ -93,7 +95,8 @@ func Test_Create(t *testing.T) {
 				tt.customerID,
 				tt.widgetName,
 				tt.welcomeMessage,
-				tt.flowID,
+				tt.sessionFlowID,
+				tt.messageFlowID,
 				tt.sessionIdleTimeout,
 				tt.themeConfig,
 			)

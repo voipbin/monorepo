@@ -12,7 +12,8 @@ create table webchat_widgets(
   direct_hash           varchar(255),
 
   welcome_message       text,
-  flow_id               binary(16),
+  session_flow_id       binary(16),
+  message_flow_id       binary(16),
   session_idle_timeout  integer,
 
   theme_config          json,

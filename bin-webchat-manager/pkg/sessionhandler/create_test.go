@@ -5,81 +5,186 @@ import (
 	"reflect"
 	"testing"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
+
+	cvconversation "monorepo/bin-conversation-manager/models/conversation"
 
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 
 	"monorepo/bin-webchat-manager/models/session"
+	"monorepo/bin-webchat-manager/models/widget"
 	"monorepo/bin-webchat-manager/pkg/dbhandler"
+	"monorepo/bin-webchat-manager/pkg/widgethandler"
 )
 
-func Test_Create(t *testing.T) {
-	tests := []struct {
-		name string
+// Test_Create_NoSessionFlowConfigured verifies session creation when
+// the Widget has no SessionFlowID configured: no conversation-manager
+// RPC call is made, and welcome_message is still attached from
+// Widget.WelcomeMessage.
+func Test_Create_NoSessionFlowConfigured(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
 
-		customerID uuid.UUID
-		widgetID   uuid.UUID
+	customerID := uuid.FromStringOrNil("c1b2c3d4-0000-0000-0000-000000000001")
+	widgetID := uuid.FromStringOrNil("876defde-ad5e-11ed-a8c3-7bc19647b03f")
+	sessionID := uuid.FromStringOrNil("aa847807-6cc4-4713-9dec-53a42840e74c")
 
-		responseUUID    uuid.UUID
-		responseSession *session.Session
-
-		expectRes *session.Session
-	}{
-		{
-			name: "normal",
-
-			customerID: uuid.FromStringOrNil("c1b2c3d4-0000-0000-0000-000000000001"),
-			widgetID:   uuid.FromStringOrNil("876defde-ad5e-11ed-a8c3-7bc19647b03f"),
-
-			responseUUID: uuid.FromStringOrNil("aa847807-6cc4-4713-9dec-53a42840e74c"),
-			responseSession: &session.Session{
-				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("aa847807-6cc4-4713-9dec-53a42840e74c"),
-					CustomerID: uuid.FromStringOrNil("c1b2c3d4-0000-0000-0000-000000000001"),
-				},
-				WidgetID: uuid.FromStringOrNil("876defde-ad5e-11ed-a8c3-7bc19647b03f"),
-				Status:   session.StatusActive,
-			},
-
-			expectRes: &session.Session{
-				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("aa847807-6cc4-4713-9dec-53a42840e74c"),
-					CustomerID: uuid.FromStringOrNil("c1b2c3d4-0000-0000-0000-000000000001"),
-				},
-				WidgetID: uuid.FromStringOrNil("876defde-ad5e-11ed-a8c3-7bc19647b03f"),
-				Status:   session.StatusActive,
-			},
-		},
+	sess := &session.Session{
+		Identity: commonidentity.Identity{ID: sessionID, CustomerID: customerID},
+		WidgetID: widgetID,
+		Status:   session.StatusActive,
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
+	w := &widget.Widget{
+		Identity:       commonidentity.Identity{ID: widgetID, CustomerID: customerID},
+		WelcomeMessage: "Hello, welcome!",
+		SessionFlowID:  uuid.Nil,
+	}
 
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			h := &sessionHandler{
-				utilHandler: mockUtil,
-				db:          mockDB,
-				reqHandler:  requesthandler.NewMockRequestHandler(mc),
-			}
-			ctx := context.Background()
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockWidget := widgethandler.NewMockWidgetHandler(mc)
+	h := &sessionHandler{
+		utilHandler:   mockUtil,
+		db:            mockDB,
+		reqHandler:    requesthandler.NewMockRequestHandler(mc),
+		widgetHandler: mockWidget,
+	}
+	ctx := context.Background()
 
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
-			mockDB.EXPECT().SessionCreate(ctx, gomock.Any()).Return(nil)
-			mockDB.EXPECT().SessionGet(ctx, tt.responseUUID).Return(tt.responseSession, nil)
+	mockUtil.EXPECT().UUIDCreate().Return(sessionID)
+	mockDB.EXPECT().SessionCreate(ctx, gomock.Any()).Return(nil)
+	mockDB.EXPECT().SessionGet(ctx, sessionID).Return(sess, nil)
+	mockWidget.EXPECT().Get(ctx, widgetID).Return(w, nil)
 
-			res, err := h.Create(ctx, tt.customerID, tt.widgetID)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-			if !reflect.DeepEqual(res, tt.expectRes) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-			}
-		})
+	// No ConversationV1ConversationCreateAndExecuteFlow, no
+	// SessionUpdate expected -- their absence from the mock is
+	// enforced by gomock failing on any unexpected call.
+
+	res, err := h.Create(ctx, customerID, widgetID)
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	if res.WelcomeMessage != w.WelcomeMessage {
+		t.Errorf("Wrong match. expect: %s, got: %s", w.WelcomeMessage, res.WelcomeMessage)
+	}
+}
+
+// Test_Create_SessionFlowConfigured_TriggersFlow verifies session
+// creation when the Widget has a SessionFlowID configured: the
+// conversation-manager CreateAndExecuteFlow RPC is called with a
+// self=Widget.ID/peer=Session.ID address pair, and Session.ActiveflowID
+// is recorded from the resulting Conversation.
+func Test_Create_SessionFlowConfigured_TriggersFlow(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	customerID := uuid.FromStringOrNil("c1b2c3d4-0000-0000-0000-000000000001")
+	widgetID := uuid.FromStringOrNil("876defde-ad5e-11ed-a8c3-7bc19647b03f")
+	sessionID := uuid.FromStringOrNil("aa847807-6cc4-4713-9dec-53a42840e74c")
+	sessionFlowID := uuid.FromStringOrNil("2b5bc824-2066-11f0-81b0-672de53dec30")
+	conversationID := uuid.FromStringOrNil("44ebbd2e-82d8-11eb-8a4e-f7957fea9f50")
+
+	sess := &session.Session{
+		Identity: commonidentity.Identity{ID: sessionID, CustomerID: customerID},
+		WidgetID: widgetID,
+		Status:   session.StatusActive,
+	}
+
+	w := &widget.Widget{
+		Identity:       commonidentity.Identity{ID: widgetID, CustomerID: customerID},
+		WelcomeMessage: "Hello, welcome!",
+		SessionFlowID:  sessionFlowID,
+	}
+
+	cv := &cvconversation.Conversation{
+		Identity: commonidentity.Identity{ID: conversationID, CustomerID: customerID},
+	}
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockWidget := widgethandler.NewMockWidgetHandler(mc)
+	h := &sessionHandler{
+		utilHandler:   mockUtil,
+		db:            mockDB,
+		reqHandler:    mockReq,
+		widgetHandler: mockWidget,
+	}
+	ctx := context.Background()
+
+	mockUtil.EXPECT().UUIDCreate().Return(sessionID)
+	mockDB.EXPECT().SessionCreate(ctx, gomock.Any()).Return(nil)
+	mockDB.EXPECT().SessionGet(ctx, sessionID).Return(sess, nil)
+	mockWidget.EXPECT().Get(ctx, widgetID).Return(w, nil)
+
+	mockReq.EXPECT().ConversationV1ConversationCreateAndExecuteFlow(
+		ctx,
+		customerID,
+		sessionFlowID,
+		cvconversation.TypeWebchat,
+		"",
+		commonaddress.Address{Type: commonaddress.TypeWebchat, Target: widgetID.String()},
+		commonaddress.Address{Type: commonaddress.TypeWebchat, Target: sessionID.String()},
+	).Return(cv, nil)
+
+	mockDB.EXPECT().SessionUpdate(ctx, sessionID, map[session.Field]any{
+		session.FieldActiveflowID: cv.ID,
+	}).Return(nil)
+
+	res, err := h.Create(ctx, customerID, widgetID)
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	if res.WelcomeMessage != w.WelcomeMessage {
+		t.Errorf("Wrong match. expect: %s, got: %s", w.WelcomeMessage, res.WelcomeMessage)
+	}
+}
+
+// Test_Create_WidgetFetchFails_SessionStillSucceeds verifies a Widget
+// fetch failure does not fail Session creation -- best-effort.
+func Test_Create_WidgetFetchFails_SessionStillSucceeds(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	customerID := uuid.FromStringOrNil("c1b2c3d4-0000-0000-0000-000000000001")
+	widgetID := uuid.FromStringOrNil("876defde-ad5e-11ed-a8c3-7bc19647b03f")
+	sessionID := uuid.FromStringOrNil("aa847807-6cc4-4713-9dec-53a42840e74c")
+
+	sess := &session.Session{
+		Identity: commonidentity.Identity{ID: sessionID, CustomerID: customerID},
+		WidgetID: widgetID,
+		Status:   session.StatusActive,
+	}
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockWidget := widgethandler.NewMockWidgetHandler(mc)
+	h := &sessionHandler{
+		utilHandler:   mockUtil,
+		db:            mockDB,
+		reqHandler:    requesthandler.NewMockRequestHandler(mc),
+		widgetHandler: mockWidget,
+	}
+	ctx := context.Background()
+
+	mockUtil.EXPECT().UUIDCreate().Return(sessionID)
+	mockDB.EXPECT().SessionCreate(ctx, gomock.Any()).Return(nil)
+	mockDB.EXPECT().SessionGet(ctx, sessionID).Return(sess, nil)
+	mockWidget.EXPECT().Get(ctx, widgetID).Return(nil, dbhandler.ErrNotFound)
+
+	res, err := h.Create(ctx, customerID, widgetID)
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	if res.WelcomeMessage != "" {
+		t.Errorf("Wrong match. expect: empty welcome_message, got: %s", res.WelcomeMessage)
+	}
+	if !reflect.DeepEqual(res, sess) {
+		t.Errorf("Wrong match.\nexpect: %v\ngot: %v", sess, res)
 	}
 }

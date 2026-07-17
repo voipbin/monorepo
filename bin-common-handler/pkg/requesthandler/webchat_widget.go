@@ -19,7 +19,8 @@ func (r *requestHandler) WebchatV1WidgetCreate(
 	customerID uuid.UUID,
 	name string,
 	welcomeMessage string,
-	flowID uuid.UUID,
+	sessionFlowID uuid.UUID,
+	messageFlowID uuid.UUID,
 	sessionIdleTimeout int,
 	themeConfig *wcwidget.ThemeConfig,
 ) (*wcwidget.Widget, error) {
@@ -29,7 +30,8 @@ func (r *requestHandler) WebchatV1WidgetCreate(
 		CustomerID:         customerID,
 		Name:                name,
 		WelcomeMessage:      welcomeMessage,
-		FlowID:              flowID,
+		SessionFlowID:       sessionFlowID,
+		MessageFlowID:       messageFlowID,
 		SessionIdleTimeout:  sessionIdleTimeout,
 		ThemeConfig:         themeConfig,
 	}
@@ -97,7 +99,8 @@ func (r *requestHandler) WebchatV1WidgetUpdate(
 	id uuid.UUID,
 	name string,
 	welcomeMessage string,
-	flowID uuid.UUID,
+	sessionFlowID uuid.UUID,
+	messageFlowID uuid.UUID,
 	sessionIdleTimeout int,
 	themeConfig *wcwidget.ThemeConfig,
 ) (*wcwidget.Widget, error) {
@@ -106,7 +109,8 @@ func (r *requestHandler) WebchatV1WidgetUpdate(
 	data := &wcrequest.V1DataWidgetsIDPut{
 		Name:               name,
 		WelcomeMessage:     welcomeMessage,
-		FlowID:             flowID,
+		SessionFlowID:      sessionFlowID,
+		MessageFlowID:      messageFlowID,
 		SessionIdleTimeout: sessionIdleTimeout,
 		ThemeConfig:        themeConfig,
 	}

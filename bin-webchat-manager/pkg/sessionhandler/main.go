@@ -13,6 +13,7 @@ import (
 
 	"monorepo/bin-webchat-manager/models/session"
 	"monorepo/bin-webchat-manager/pkg/dbhandler"
+	"monorepo/bin-webchat-manager/pkg/widgethandler"
 )
 
 // SessionHandler interface
@@ -29,6 +30,7 @@ type sessionHandler struct {
 	reqHandler    requesthandler.RequestHandler
 	notifyHandler notifyhandler.NotifyHandler
 	db            dbhandler.DBHandler
+	widgetHandler widgethandler.WidgetHandler
 }
 
 // NewSessionHandler returns SessionHandler interface
@@ -36,11 +38,13 @@ func NewSessionHandler(
 	reqHandler requesthandler.RequestHandler,
 	notifyHandler notifyhandler.NotifyHandler,
 	dbHandler dbhandler.DBHandler,
+	widgetHandler widgethandler.WidgetHandler,
 ) SessionHandler {
 	return &sessionHandler{
 		utilHandler:   utilhandler.NewUtilHandler(),
 		reqHandler:    reqHandler,
 		notifyHandler: notifyHandler,
 		db:            dbHandler,
+		widgetHandler: widgetHandler,
 	}
 }

@@ -57,12 +57,18 @@ put:
               type: string
               description: The message shown to the visitor when the widget loads.
               example: "Hi! How can we help you today?"
-            flow_id:
+            session_flow_id:
               type: string
               format: uuid
               x-go-type: string
-              description: "The flow to trigger on the visitor's first inbound message. Returned from the `POST /flows` or `GET /flows` response."
+              description: "Fires once per Session, at session creation/start. Returned from the `POST /flows` or `GET /flows` response."
               example: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
+            message_flow_id:
+              type: string
+              format: uuid
+              x-go-type: string
+              description: "Optional. Fires on every inbound message, independently. Returned from the `POST /flows` or `GET /flows` response."
+              example: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"
             session_idle_timeout:
               type: integer
               description: Session idle timeout in seconds before the session is automatically ended.
@@ -72,7 +78,7 @@ put:
           required:
             - name
             - welcome_message
-            - flow_id
+            - session_flow_id
   responses:
     '200':
       description: Details of the updated widget.

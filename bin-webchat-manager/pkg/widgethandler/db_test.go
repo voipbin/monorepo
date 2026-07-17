@@ -135,7 +135,8 @@ func Test_UpdateBasicInfo(t *testing.T) {
 		id                 uuid.UUID
 		widgetName         string
 		welcomeMessage     string
-		flowID             uuid.UUID
+		sessionFlowID      uuid.UUID
+		messageFlowID      uuid.UUID
 		sessionIdleTimeout int
 		themeConfig        *widget.ThemeConfig
 
@@ -147,7 +148,8 @@ func Test_UpdateBasicInfo(t *testing.T) {
 			id:                 uuid.FromStringOrNil("876defde-ad5e-11ed-a8c3-7bc19647b03f"),
 			widgetName:         "updated widget",
 			welcomeMessage:     "Hi there!",
-			flowID:             uuid.FromStringOrNil("2b5bc824-2066-11f0-81b0-672de53dec30"),
+			sessionFlowID:      uuid.FromStringOrNil("2b5bc824-2066-11f0-81b0-672de53dec30"),
+			messageFlowID:      uuid.FromStringOrNil("3a3e5e9a-2077-11f0-8dc2-fb5b62d502fe"),
 			sessionIdleTimeout: 3600,
 			themeConfig:        &widget.ThemeConfig{PrimaryColor: "#ff0000"},
 
@@ -180,7 +182,7 @@ func Test_UpdateBasicInfo(t *testing.T) {
 			mockDB.EXPECT().WidgetUpdate(ctx, tt.id, gomock.Any()).Return(nil)
 			mockDB.EXPECT().WidgetGet(ctx, tt.id).Return(tt.responseWidget, nil)
 
-			res, err := h.UpdateBasicInfo(ctx, tt.id, tt.widgetName, tt.welcomeMessage, tt.flowID, tt.sessionIdleTimeout, tt.themeConfig)
+			res, err := h.UpdateBasicInfo(ctx, tt.id, tt.widgetName, tt.welcomeMessage, tt.sessionFlowID, tt.messageFlowID, tt.sessionIdleTimeout, tt.themeConfig)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

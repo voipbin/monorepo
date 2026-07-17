@@ -884,7 +884,8 @@ type ServiceHandler interface {
 		a *auth.AuthIdentity,
 		name string,
 		welcomeMessage string,
-		flowID uuid.UUID,
+		sessionFlowID uuid.UUID,
+		messageFlowID uuid.UUID,
 		sessionIdleTimeout int,
 		themeConfig *wcwidget.ThemeConfig,
 	) (*wcwidget.WebhookMessage, error)
@@ -894,7 +895,8 @@ type ServiceHandler interface {
 		widgetID uuid.UUID,
 		name string,
 		welcomeMessage string,
-		flowID uuid.UUID,
+		sessionFlowID uuid.UUID,
+		messageFlowID uuid.UUID,
 		sessionIdleTimeout int,
 		themeConfig *wcwidget.ThemeConfig,
 	) (*wcwidget.WebhookMessage, error)

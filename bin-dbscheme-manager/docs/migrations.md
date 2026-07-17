@@ -121,3 +121,34 @@ def downgrade():
 - `downgrade()` always mirrors `upgrade()` — drop what was created, remove what was added.
 - Raw SQL via `op.execute()` is the project convention (not SQLAlchemy DDL helpers).
 - Soft-delete sentinel: `tm_delete DEFAULT '9999-01-01 00:00:00.000000'` is the standard pattern.
+
+## CI: `migration-lint` (automatic, every branch)
+
+Every branch/PR that touches `bin-dbscheme-manager/**` runs a CircleCI job
+called `migration-lint`, with no approval gate. It does **not** require the
+main-only `migration-applied-checkpoint` approval and runs independently of
+it.
+
+**What it checks**, for both migration streams (`bin-manager/` for the
+`voipbin` database, `asterisk_config/` for the `asterisk` database):
+
+1. Python syntax/import validity of every migration file in `versions/`.
+2. Exactly one head per stream (`alembic heads`) — more than one head means
+   two migrations were authored against the same `down_revision` without one
+   rebasing onto the other (see "Check there is exactly one head before
+   pushing" above).
+3. No unresolvable `down_revision` references (`alembic history` walks the
+   full chain from base to head).
+
+This is a **metadata-only** check — `alembic heads`/`alembic history` never
+open a database connection, so `migration-lint` needs no DB, no Docker, no
+secrets. It cannot and does not apply any migration to any database; that
+remains a manual, VPN-only, human-only procedure gated by
+`migration-applied-checkpoint` (main-only, see `docs/operations.md`).
+
+**Where to look when `migration-lint` fails**: the CircleCI job's own log
+output names the specific problem — a multiple-heads error (pointing back to
+this document), a Python import/syntax traceback from `alembic heads`, or an
+`alembic.util.exc.CommandError` citing the broken `down_revision` reference.
+No VPN access or database credential is needed to diagnose any of these; fix
+the migration file(s) locally and push again.

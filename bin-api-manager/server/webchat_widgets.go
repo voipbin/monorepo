@@ -79,7 +79,12 @@ func (h *server) PostWebchatWidgets(c *gin.Context) {
 		return
 	}
 
-	flowID := uuid.FromStringOrNil(req.FlowId)
+	sessionFlowID := uuid.FromStringOrNil(req.SessionFlowId)
+
+	messageFlowID := uuid.Nil
+	if req.MessageFlowId != nil {
+		messageFlowID = uuid.FromStringOrNil(*req.MessageFlowId)
+	}
 
 	sessionIdleTimeout := 0
 	if req.SessionIdleTimeout != nil {
@@ -91,7 +96,8 @@ func (h *server) PostWebchatWidgets(c *gin.Context) {
 		a,
 		req.Name,
 		req.WelcomeMessage,
-		flowID,
+		sessionFlowID,
+		messageFlowID,
 		sessionIdleTimeout,
 		convertWebchatThemeConfig(req.ThemeConfig),
 	)
@@ -197,7 +203,12 @@ func (h *server) PutWebchatWidgetsId(c *gin.Context, id openapi_types.UUID) {
 		return
 	}
 
-	flowID := uuid.FromStringOrNil(req.FlowId)
+	sessionFlowID := uuid.FromStringOrNil(req.SessionFlowId)
+
+	messageFlowID := uuid.Nil
+	if req.MessageFlowId != nil {
+		messageFlowID = uuid.FromStringOrNil(*req.MessageFlowId)
+	}
 
 	sessionIdleTimeout := 0
 	if req.SessionIdleTimeout != nil {
@@ -210,7 +221,8 @@ func (h *server) PutWebchatWidgetsId(c *gin.Context, id openapi_types.UUID) {
 		target,
 		req.Name,
 		req.WelcomeMessage,
-		flowID,
+		sessionFlowID,
+		messageFlowID,
 		sessionIdleTimeout,
 		convertWebchatThemeConfig(req.ThemeConfig),
 	)
