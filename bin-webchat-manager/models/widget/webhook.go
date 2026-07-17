@@ -46,8 +46,8 @@ func (h *Widget) ConvertWebhookMessage() *WebhookMessage {
 		Name:   h.Name,
 		Status: h.Status,
 
-		SessionFlowID:  h.SessionFlowID.String(),
-		MessageFlowID:  h.MessageFlowID.String(),
+		SessionFlowID: h.SessionFlowID.String(),
+		MessageFlowID: h.MessageFlowID.String(),
 
 		SessionIdleTimeout: h.SessionIdleTimeout,
 

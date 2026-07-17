@@ -23,12 +23,12 @@ func Test_Create(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID          uuid.UUID
-		widgetName          string
-		sessionFlowID       uuid.UUID
-		messageFlowID       uuid.UUID
-		sessionIdleTimeout  int
-		themeConfig         *widget.ThemeConfig
+		customerID         uuid.UUID
+		widgetName         string
+		sessionFlowID      uuid.UUID
+		messageFlowID      uuid.UUID
+		sessionIdleTimeout int
+		themeConfig        *widget.ThemeConfig
 
 		responseUUID   uuid.UUID
 		responseWidget *widget.Widget

@@ -61,8 +61,8 @@ func (h *widgetHandler) Create(
 		DirectID: d.ID,
 		Hash:     d.Hash,
 
-		SessionFlowID:  sessionFlowID,
-		MessageFlowID:  messageFlowID,
+		SessionFlowID: sessionFlowID,
+		MessageFlowID: messageFlowID,
 
 		SessionIdleTimeout: sessionIdleTimeout,
 
