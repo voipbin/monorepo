@@ -204,7 +204,7 @@ to implementation as a nice-to-have, not a hard requirement.
 | `bin-webchat-manager/models/widget/widget_test.go` | Add field assertions |
 | `bin-openapi-manager/openapi/openapi.yaml` | Add 6 properties to `WebchatManagerWidgetThemeConfig`, add `WebchatManagerWidgetThemeMode` enum schema |
 | `bin-api-manager/server/webchat_widgets.go` | Extend `convertWebchatThemeConfig()` to map 6 new fields |
-| `bin-api-manager/server/webchat_widgets_test.go` | Add conversion test cases |
+| `bin-api-manager/server/webchat_widgets_test.go` | Create conversion test cases (file does not exist yet under `server/`) |
 | `monorepo-javascript/square-admin/src/webchat-widget-runtime/render.js` | Extend `applyWidgetTheme()` to apply 6 new style properties + header title/subtitle text. **Must become `theme_mode`-aware** for header background/text/secondary-color default resolution (see §3's precedence rule) — it computes and sets these INLINE per the resolution order in §3, it does not delegate to a CSS class for any property it already sets inline today |
 | `monorepo-javascript/square-admin/src/webchat-widget-runtime/widget.js` | `buildWidgetDom()`: add a `headerSubtitle` element (currently only `headerTitle` exists); `WIDGET_CSS`: `.vb-theme-dark` class rules ONLY for properties `applyWidgetTheme()` does not set inline (panel/messages background, message bubble colors) — NOT for header/bubble/send-button background or header text color, which `render.js` must set inline per §3; L183's hardcoded `headerTitle.textContent = 'Chat with us'` becomes the fallback default applied by `render.js`, not a permanent hardcode in this file |
 | `monorepo-javascript/square-admin/src/webchat-widget-runtime/__tests__/render.test.js` | Add test cases for 6 new fields. **Requires a `window.matchMedia` mock in test setup** — jsdom does not implement `matchMedia` natively, and the new `theme_mode=auto` branch will throw `TypeError` in Jest without one (standard jsdom workaround: add a mock in `square-admin/src/setupTests.js` or per-test) |
@@ -270,4 +270,11 @@ separate CI).
 
 ## 8. Approval status
 
-Draft → pending Design Review loop (min 2, 2-consecutive-APPROVED).
+Design Review loop: Round 1 CHANGES_REQUESTED (5 issues, fixed), Round
+2 APPROVED (no findings), Round 3 CHANGES_REQUESTED (dark-mode
+CSS-class/inline-style architectural collision, fixed by making
+`applyWidgetTheme()` `theme_mode`-aware), Round 4 APPROVED (traced
+the fix concretely, confirmed genuine; 2 non-blocking gaps
+documented), Round 5 APPROVED (final independent re-verification, 1
+cosmetic wording nit fixed) — loop closed at 2 consecutive APPROVED
+(rounds 4-5). Ready for implementation.
