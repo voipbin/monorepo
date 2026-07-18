@@ -81,10 +81,26 @@ const (
 // settings. All fields are optional; a nil ThemeConfig or empty field
 // falls back to the platform default (blue bubble, no logo, bottom-right).
 type ThemeConfig struct {
-	PrimaryColor string         `json:"primary_color,omitempty"` // hex "#RRGGBB"
-	LogoURL      string         `json:"logo_url,omitempty"`      // https URL only
-	Position     WidgetPosition `json:"position,omitempty"`      // default: bottom_right
+	PrimaryColor          string         `json:"primary_color,omitempty"`           // hex "#RRGGBB"
+	SecondaryColor        string         `json:"secondary_color,omitempty"`         // hex "#RRGGBB"
+	HeaderBackgroundColor string         `json:"header_background_color,omitempty"` // hex "#RRGGBB"
+	HeaderTextColor       string         `json:"header_text_color,omitempty"`       // hex "#RRGGBB"
+	LogoURL               string         `json:"logo_url,omitempty"`                // https URL only
+	Position              WidgetPosition `json:"position,omitempty"`                // default: bottom_right
+	ThemeMode             ThemeMode      `json:"theme_mode,omitempty"`              // default: light
+	HeaderTitle           string         `json:"header_title,omitempty"`            // default: "Chat with us"
+	HeaderSubtitle        string         `json:"header_subtitle,omitempty"`         // default: none
 }
+
+// ThemeMode controls light/dark/auto rendering of the widget panel.
+type ThemeMode string
+
+// list of theme modes
+const (
+	ThemeModeLight ThemeMode = "light" // default
+	ThemeModeDark  ThemeMode = "dark"
+	ThemeModeAuto  ThemeMode = "auto" // follows prefers-color-scheme
+)
 
 // DefaultSessionIdleTimeout is the default session idle timeout in seconds (30m).
 const DefaultSessionIdleTimeout = 1800
