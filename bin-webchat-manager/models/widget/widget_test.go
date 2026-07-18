@@ -21,9 +21,15 @@ func TestWidgetStruct(t *testing.T) {
 		MessageFlowID:      messageFlowID,
 		SessionIdleTimeout: 1800,
 		ThemeConfig: &ThemeConfig{
-			PrimaryColor: "#112233",
-			LogoURL:      "https://example.com/logo.png",
-			Position:     WidgetPositionBottomLeft,
+			PrimaryColor:          "#112233",
+			SecondaryColor:        "#445566",
+			HeaderBackgroundColor: "#778899",
+			HeaderTextColor:       "#aabbcc",
+			LogoURL:               "https://example.com/logo.png",
+			Position:              WidgetPositionBottomLeft,
+			ThemeMode:             ThemeModeDark,
+			HeaderTitle:           "Support",
+			HeaderSubtitle:        "We usually reply in a few minutes",
 		},
 	}
 	w.ID = id
@@ -56,8 +62,46 @@ func TestWidgetStruct(t *testing.T) {
 	if w.ThemeConfig.PrimaryColor != "#112233" {
 		t.Errorf("Widget.ThemeConfig.PrimaryColor = %v, expected %v", w.ThemeConfig.PrimaryColor, "#112233")
 	}
+	if w.ThemeConfig.SecondaryColor != "#445566" {
+		t.Errorf("Widget.ThemeConfig.SecondaryColor = %v, expected %v", w.ThemeConfig.SecondaryColor, "#445566")
+	}
+	if w.ThemeConfig.HeaderBackgroundColor != "#778899" {
+		t.Errorf("Widget.ThemeConfig.HeaderBackgroundColor = %v, expected %v", w.ThemeConfig.HeaderBackgroundColor, "#778899")
+	}
+	if w.ThemeConfig.HeaderTextColor != "#aabbcc" {
+		t.Errorf("Widget.ThemeConfig.HeaderTextColor = %v, expected %v", w.ThemeConfig.HeaderTextColor, "#aabbcc")
+	}
 	if w.ThemeConfig.Position != WidgetPositionBottomLeft {
 		t.Errorf("Widget.ThemeConfig.Position = %v, expected %v", w.ThemeConfig.Position, WidgetPositionBottomLeft)
+	}
+	if w.ThemeConfig.ThemeMode != ThemeModeDark {
+		t.Errorf("Widget.ThemeConfig.ThemeMode = %v, expected %v", w.ThemeConfig.ThemeMode, ThemeModeDark)
+	}
+	if w.ThemeConfig.HeaderTitle != "Support" {
+		t.Errorf("Widget.ThemeConfig.HeaderTitle = %v, expected %v", w.ThemeConfig.HeaderTitle, "Support")
+	}
+	if w.ThemeConfig.HeaderSubtitle != "We usually reply in a few minutes" {
+		t.Errorf("Widget.ThemeConfig.HeaderSubtitle = %v, expected %v", w.ThemeConfig.HeaderSubtitle, "We usually reply in a few minutes")
+	}
+}
+
+func TestThemeModeConstants(t *testing.T) {
+	tests := []struct {
+		name     string
+		constant ThemeMode
+		expected string
+	}{
+		{"theme_mode_light", ThemeModeLight, "light"},
+		{"theme_mode_dark", ThemeModeDark, "dark"},
+		{"theme_mode_auto", ThemeModeAuto, "auto"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if string(tt.constant) != tt.expected {
+				t.Errorf("Wrong constant value. expect: %s, got: %s", tt.expected, tt.constant)
+			}
+		})
 	}
 }
 
