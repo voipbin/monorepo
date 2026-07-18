@@ -227,11 +227,10 @@ activeflow rows only`.
 
 `bin-webchat-manager` and `bin-conversation-manager` are two
 independently deployed services (separate k8s rolling deploys). This
-design is NOT a single atomic commit across both — it is two
-service-level diffs (§4) landing as separate PRs/deploys. Because of
-this, the deploy ORDER between the two creates two distinct
-transitional-window risks that must be handled explicitly, not left
-implicit:
+design is NOT a single atomic commit across both in effect — deploying
+one service's change does not deploy the other's. Because of this, the
+deploy ORDER between the two creates two distinct transitional-window
+risks that must be handled explicitly, not left implicit:
 
 1. **conversation-manager's new trigger deploys BEFORE
    webchat-manager's old trigger is removed** → during the window where
@@ -245,19 +244,38 @@ implicit:
    gap — no error, just a missing Flow execution for any customer with
    `MessageFlowID` configured).
 
-**Resolution: land and deploy conversation-manager's `execute_mode.go`
-change FIRST, verify it in production, THEN land and deploy the
-webchat-manager `triggerMessageFlow` removal as a separate, later PR.**
+**Resolution: land BOTH service-level diffs (§4) in a single PR/commit
+(simpler review, simpler squash-merge history), but deploy them
+sequentially using this repo's existing CI/CD sequencing mechanism —
+`bin-conversation-manager`'s change deploys FIRST, is verified in
+production, THEN `bin-webchat-manager`'s trigger removal deploys
+second.** This is enforced via `.circleci/config.yml`'s
+`path-filtering` orb (triggers one independent pipeline per changed
+`bin-*-manager/` directory) combined with each service pipeline's own
+manual `build-approval` gate (`type: approval`, gating
+`<service>-test`/`-build`/`-release` in `config_work.yml`) — merging
+this single PR triggers BOTH the `bin-conversation-manager` and
+`bin-webchat-manager` pipelines, but neither proceeds past its
+`build-approval` step without an explicit manual click. The rollout
+operator approves `bin-conversation-manager`'s gate first, verifies in
+production (the REDUCED criterion below), THEN approves
+`bin-webchat-manager`'s gate. No code-level PR split is needed — the
+existing per-service approval gate already provides the sequencing
+control this design requires. (An earlier draft of this design
+required splitting this migration into two separate PRs; that
+requirement is superseded by this section once the CI/CD mechanism
+above was verified to already provide equivalent sequencing control
+without a PR split.)
+
 This accepts window (1) — a bounded period of double-triggering — over
 window (2) — a silent gap — because a double bot-reply/duplicate Case
 is visibly wrong and immediately noticeable (customer complaint, log
 volume spike), whereas a silent no-trigger gap can go unnoticed for an
 arbitrary period. Concretely:
 
-- PR/deploy 1 (`bin-conversation-manager`): add
-  `runExecuteModeFlowWebchat`, wire the switch case, update the stale
-  §16.5 comment (§4). Deploy. **Verification at this stage is NOT the
-  full §5 smoke test** — §5's "exactly ONE activeflow, not two" success
+- Approval 1 (`bin-conversation-manager`'s `build-approval` gate):
+  approve first. Deploy. **Verification at this stage is NOT the full
+  §5 smoke test** — §5's "exactly ONE activeflow, not two" success
   criterion only holds once BOTH deploys have landed. At this
   intermediate stage, the correct (and only) check is a REDUCED
   criterion: confirm that a fresh inbound webchat message with
@@ -276,12 +294,12 @@ arbitrary period. Concretely:
   guidance below; that guidance is aimed at customer-facing widget
   configuration during the window, not at this design's own required
   verification step.
-- PR/deploy 2 (`bin-webchat-manager`): remove `triggerMessageFlow` and
-  its callers (§4). Deploy. Double-triggering ends; only the
-  `conversation`-typed activeflow is produced from this point forward.
-  **§5's full smoke test ("exactly ONE activeflow, not two") is the
-  correct and only point to run it — it is deploy-2's acceptance
-  criterion, not deploy-1's.**
+- Approval 2 (`bin-webchat-manager`'s `build-approval` gate): approve
+  only after Approval 1's verification has passed. Deploy.
+  Double-triggering ends; only the `conversation`-typed activeflow is
+  produced from this point forward. **§5's full smoke test ("exactly
+  ONE activeflow, not two") is the correct and only point to run it —
+  it is Approval-2's acceptance criterion, not Approval-1's.**
 - Between the two deploys, avoid configuring NEW customer-facing
   widgets with `MessageFlowID` if practical (existing widgets with it
   already set will double-trigger for the duration of the window
@@ -293,13 +311,13 @@ arbitrary period. Concretely:
   complexity for this migration, on the following honestly-stated
   basis (correcting an earlier draft of this section that understated
   the window): the double-trigger window is NOT bounded merely by
-  ordinary single-PR merge-to-deploy latency — it spans deploy 1's
+  ordinary single-PR merge-to-deploy latency — it spans Approval 1's
   rollout, an UNBOUNDED production-verification step this design itself
-  requires before starting deploy 2's PR, and deploy 2's own
-  merge-to-deploy latency. This window could plausibly span hours to a
-  few days if verification is not prioritized promptly, not merely
-  minutes. The rejection of a feature flag stands anyway, because blast
-  radius (not window duration) is the controlling factor here: query
+  requires before clicking Approval 2's gate, and Approval 2's own
+  rollout. This window could plausibly span hours to a few days if
+  verification is not prioritized promptly, not merely minutes. The
+  rejection of a feature flag stands anyway, because blast radius (not
+  window duration) is the controlling factor here: query
   `bin-webchat-manager`'s `webchat_widgets` table for `COUNT(*) WHERE
   message_flow_id IS NOT NULL` before starting the rollout to confirm
   the actual number of exposed customers (expected to be zero or
