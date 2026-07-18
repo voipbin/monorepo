@@ -277,11 +277,29 @@ func convertWebchatThemeConfig(req *openapi_server.WebchatManagerWidgetThemeConf
 	if req.PrimaryColor != nil {
 		res.PrimaryColor = *req.PrimaryColor
 	}
+	if req.SecondaryColor != nil {
+		res.SecondaryColor = *req.SecondaryColor
+	}
+	if req.HeaderBackgroundColor != nil {
+		res.HeaderBackgroundColor = *req.HeaderBackgroundColor
+	}
+	if req.HeaderTextColor != nil {
+		res.HeaderTextColor = *req.HeaderTextColor
+	}
 	if req.LogoUrl != nil {
 		res.LogoURL = *req.LogoUrl
 	}
 	if req.Position != nil {
 		res.Position = wcwidget.WidgetPosition(*req.Position)
+	}
+	if req.ThemeMode != nil {
+		res.ThemeMode = wcwidget.ThemeMode(*req.ThemeMode)
+	}
+	if req.HeaderTitle != nil {
+		res.HeaderTitle = *req.HeaderTitle
+	}
+	if req.HeaderSubtitle != nil {
+		res.HeaderSubtitle = *req.HeaderSubtitle
 	}
 
 	return res

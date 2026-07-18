@@ -26100,15 +26100,48 @@
         ],
         "example": "bottom_right"
       },
+      "WebchatManagerWidgetThemeMode": {
+        "type": "string",
+        "description": "Controls light/dark/auto rendering of the widget panel.",
+        "enum": [
+          "light",
+          "dark",
+          "auto"
+        ],
+        "x-enum-varnames": [
+          "WebchatManagerWidgetThemeModeLight",
+          "WebchatManagerWidgetThemeModeDark",
+          "WebchatManagerWidgetThemeModeAuto"
+        ],
+        "example": "light"
+      },
       "WebchatManagerWidgetThemeConfig": {
         "type": "object",
-        "description": "Cosmetic, customer-editable widget appearance settings. All fields are optional; omitted fields fall back to the platform default (blue bubble, no logo, bottom-right).",
+        "description": "Cosmetic, customer-editable widget appearance settings. All fields are optional; omitted fields fall back to the platform default (blue bubble, no logo, bottom-right, light mode). An explicit color field always wins over the theme_mode-resolved default.",
         "properties": {
           "primary_color": {
             "type": "string",
             "description": "Hex color code for the widget's primary color.",
             "pattern": "^#[0-9a-fA-F]{6}$",
             "example": "#1a73e8"
+          },
+          "secondary_color": {
+            "type": "string",
+            "description": "Hex color code for the widget's accent/text-contrast color.",
+            "pattern": "^#[0-9a-fA-F]{6}$",
+            "example": "#f5f5f5"
+          },
+          "header_background_color": {
+            "type": "string",
+            "description": "Hex color code for the widget header bar's background. Falls back to primary_color (light mode) or a dark surface color (dark mode) when unset.",
+            "pattern": "^#[0-9a-fA-F]{6}$",
+            "example": "#1a73e8"
+          },
+          "header_text_color": {
+            "type": "string",
+            "description": "Hex color code for the widget header bar's text.",
+            "pattern": "^#[0-9a-fA-F]{6}$",
+            "example": "#ffffff"
           },
           "logo_url": {
             "type": "string",
@@ -26120,6 +26153,23 @@
             "$ref": "#/components/schemas/WebchatManagerWidgetPosition",
             "description": "Where the floating bubble/panel renders on the customer's page.",
             "example": "bottom_right"
+          },
+          "theme_mode": {
+            "$ref": "#/components/schemas/WebchatManagerWidgetThemeMode",
+            "description": "Light/dark/auto rendering of the widget panel.",
+            "example": "light"
+          },
+          "header_title": {
+            "type": "string",
+            "maxLength": 100,
+            "description": "Widget header text. Defaults to \"Chat with us\" when unset.",
+            "example": "Support"
+          },
+          "header_subtitle": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "Widget header subtext, shown below header_title. No subtitle row rendered when unset.",
+            "example": "We usually reply in a few minutes"
           }
         }
       },

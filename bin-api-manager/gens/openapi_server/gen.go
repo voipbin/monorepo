@@ -1038,6 +1038,13 @@ const (
 	WebchatManagerWidgetStatusInactive WebchatManagerWidgetStatus = "inactive"
 )
 
+// Defines values for WebchatManagerWidgetThemeMode.
+const (
+	WebchatManagerWidgetThemeModeAuto  WebchatManagerWidgetThemeMode = "auto"
+	WebchatManagerWidgetThemeModeDark  WebchatManagerWidgetThemeMode = "dark"
+	WebchatManagerWidgetThemeModeLight WebchatManagerWidgetThemeMode = "light"
+)
+
 // Defines values for PostAisJSONBodyType.
 const (
 	PostAisJSONBodyTypeInsight PostAisJSONBodyType = "insight"
@@ -5215,7 +5222,7 @@ type WebchatManagerWidget struct {
 	// Status The status of the widget.
 	Status WebchatManagerWidgetStatus `json:"status"`
 
-	// ThemeConfig Cosmetic, customer-editable widget appearance settings. All fields are optional; omitted fields fall back to the platform default (blue bubble, no logo, bottom-right).
+	// ThemeConfig Cosmetic, customer-editable widget appearance settings. All fields are optional; omitted fields fall back to the platform default (blue bubble, no logo, bottom-right, light mode). An explicit color field always wins over the theme_mode-resolved default.
 	ThemeConfig *WebchatManagerWidgetThemeConfig `json:"theme_config,omitempty"`
 
 	// TmCreate Timestamp when the widget was created.
@@ -5234,8 +5241,20 @@ type WebchatManagerWidgetPosition string
 // WebchatManagerWidgetStatus The status of the widget.
 type WebchatManagerWidgetStatus string
 
-// WebchatManagerWidgetThemeConfig Cosmetic, customer-editable widget appearance settings. All fields are optional; omitted fields fall back to the platform default (blue bubble, no logo, bottom-right).
+// WebchatManagerWidgetThemeConfig Cosmetic, customer-editable widget appearance settings. All fields are optional; omitted fields fall back to the platform default (blue bubble, no logo, bottom-right, light mode). An explicit color field always wins over the theme_mode-resolved default.
 type WebchatManagerWidgetThemeConfig struct {
+	// HeaderBackgroundColor Hex color code for the widget header bar's background. Falls back to primary_color (light mode) or a dark surface color (dark mode) when unset.
+	HeaderBackgroundColor *string `json:"header_background_color,omitempty"`
+
+	// HeaderSubtitle Widget header subtext, shown below header_title. No subtitle row rendered when unset.
+	HeaderSubtitle *string `json:"header_subtitle,omitempty"`
+
+	// HeaderTextColor Hex color code for the widget header bar's text.
+	HeaderTextColor *string `json:"header_text_color,omitempty"`
+
+	// HeaderTitle Widget header text. Defaults to "Chat with us" when unset.
+	HeaderTitle *string `json:"header_title,omitempty"`
+
 	// LogoUrl HTTPS URL of the logo image displayed in the widget header.
 	LogoUrl *string `json:"logo_url,omitempty"`
 
@@ -5244,7 +5263,16 @@ type WebchatManagerWidgetThemeConfig struct {
 
 	// PrimaryColor Hex color code for the widget's primary color.
 	PrimaryColor *string `json:"primary_color,omitempty"`
+
+	// SecondaryColor Hex color code for the widget's accent/text-contrast color.
+	SecondaryColor *string `json:"secondary_color,omitempty"`
+
+	// ThemeMode Controls light/dark/auto rendering of the widget panel.
+	ThemeMode *WebchatManagerWidgetThemeMode `json:"theme_mode,omitempty"`
 }
+
+// WebchatManagerWidgetThemeMode Controls light/dark/auto rendering of the widget panel.
+type WebchatManagerWidgetThemeMode string
 
 // PageSize defines model for PageSize.
 type PageSize = int
@@ -7927,7 +7955,7 @@ type PostWebchatWidgetsJSONBody struct {
 	// SessionIdleTimeout Session idle timeout in seconds before the session is automatically ended. Defaults to 1800 (30 minutes) when omitted.
 	SessionIdleTimeout *int `json:"session_idle_timeout,omitempty"`
 
-	// ThemeConfig Cosmetic, customer-editable widget appearance settings. All fields are optional; omitted fields fall back to the platform default (blue bubble, no logo, bottom-right).
+	// ThemeConfig Cosmetic, customer-editable widget appearance settings. All fields are optional; omitted fields fall back to the platform default (blue bubble, no logo, bottom-right, light mode). An explicit color field always wins over the theme_mode-resolved default.
 	ThemeConfig *WebchatManagerWidgetThemeConfig `json:"theme_config,omitempty"`
 }
 
@@ -7945,7 +7973,7 @@ type PutWebchatWidgetsIdJSONBody struct {
 	// SessionIdleTimeout Session idle timeout in seconds before the session is automatically ended.
 	SessionIdleTimeout *int `json:"session_idle_timeout,omitempty"`
 
-	// ThemeConfig Cosmetic, customer-editable widget appearance settings. All fields are optional; omitted fields fall back to the platform default (blue bubble, no logo, bottom-right).
+	// ThemeConfig Cosmetic, customer-editable widget appearance settings. All fields are optional; omitted fields fall back to the platform default (blue bubble, no logo, bottom-right, light mode). An explicit color field always wins over the theme_mode-resolved default.
 	ThemeConfig *WebchatManagerWidgetThemeConfig `json:"theme_config,omitempty"`
 }
 
