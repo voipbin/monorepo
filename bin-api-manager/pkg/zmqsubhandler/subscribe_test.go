@@ -175,6 +175,52 @@ func Test_Unsubscribe(t *testing.T) {
 				"world",
 			},
 		},
+		{
+			// Regression test for a production panic (prod api-manager crash-loop,
+			// 2026-07-18): slices.Delete(s, idx, 1) is only valid when idx <= 1, because
+			// the second argument is an end-index, not a count. Unsubscribing a topic
+			// held at index >= 2 previously panicked with
+			// "slice bounds out of range [idx:1]". This case deletes the topic at
+			// index 4 (5 topics total) to guard against that regression.
+			"unsubscribe a topic beyond index 1 (regression: slices.Delete end-index bug)",
+
+			[]string{
+				"topic0",
+				"topic1",
+				"topic2",
+				"topic3",
+				"topic4",
+			},
+
+			"topic4",
+
+			[]string{
+				"topic0",
+				"topic1",
+				"topic2",
+				"topic3",
+			},
+		},
+		{
+			"unsubscribe a topic in the middle of a longer list",
+
+			[]string{
+				"topic0",
+				"topic1",
+				"topic2",
+				"topic3",
+				"topic4",
+			},
+
+			"topic2",
+
+			[]string{
+				"topic0",
+				"topic1",
+				"topic3",
+				"topic4",
+			},
+		},
 	}
 
 	for _, tt := range tests {

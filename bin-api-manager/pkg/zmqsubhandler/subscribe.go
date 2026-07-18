@@ -72,7 +72,7 @@ func (h *zmqSubHandler) Unsubscribe(topic string) error {
 		// nothing to unsubscribe
 		return nil
 	}
-	h.topics = slices.Delete(h.topics, idx, 1)
+	h.topics = slices.Delete(h.topics, idx, idx+1)
 
 	if errSub := h.sock.Unsubscribe(topic); errSub != nil {
 		log.Errorf("Could not unsubscribe the topic. err: %v", errSub)
