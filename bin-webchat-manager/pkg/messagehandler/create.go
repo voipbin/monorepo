@@ -4,37 +4,25 @@ import (
 	"context"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-webchat-manager/models/message"
-	"monorepo/bin-webchat-manager/models/widget"
 )
 
-// Create creates a new message. If this is an INBOUND message AND the
-// owning Widget has a MessageFlowID configured, this also triggers a
-// brand-new, independent activeflow for THIS message -- unconditionally,
-// on every inbound message, with no "already triggered" gate and no
-// per-session lock. This mirrors bin-conversation-manager's existing
-// Account.MessageFlowID/Number.MessageFlowID pattern (SMS/LINE/WhatsApp)
-// exactly. See design doc
-// 2026-07-17-webchat-widget-session-message-flow-split-design.md §2.3, §5.
+// Create creates a new message. Flow-triggering for inbound messages
+// (MessageFlowID) is no longer this function's concern -- that is now
+// owned entirely by bin-conversation-manager's runExecuteModeFlowWebchat,
+// triggered asynchronously off the existing webchat_message_created
+// event this function already publishes (via h.create below). See
+// design doc 2026-07-18-webchat-message-flow-owner-migration-design.md.
 //
 // SessionFlowID's trigger (fires once per Session, at session-create
-// time) is NOT this function's concern -- that is owned by
+// time) is likewise not this function's concern -- that is owned by
 // bin-conversation-manager's CreateAndExecuteFlow, called from
-// bin-webchat-manager's sessionhandler.Create. See design doc §3.
-//
-// Accepted risk (design doc §4): with no per-session lock, rapid
-// consecutive inbound messages can each trigger their own concurrent
-// activeflow. This is the same shape of risk
-// bin-conversation-manager's SMS/LINE/WhatsApp executeActiveflow
-// already lives with (no per-conversation lock there either) --
-// applying an existing, already-accepted platform risk to a channel
-// with a higher realistic message frequency, not introducing a new
-// class of risk.
+// bin-webchat-manager's sessionhandler.Create. See design doc
+// 2026-07-17-webchat-widget-session-message-flow-split-design.md §3.
 func (h *messageHandler) Create(
 	ctx context.Context,
 	customerID uuid.UUID,
@@ -62,33 +50,6 @@ func (h *messageHandler) Create(
 		return nil, err
 	}
 
-	// Only inbound (visitor -> VoIPbin) messages can trigger
-	// MessageFlowID. Outbound (VoIPbin -> visitor, e.g. an agent reply
-	// or a Flow-delivered response) never does -- matches
-	// conversation-manager's MessageEventSent never calling
-	// runExecuteModeFlow.
-	if direction != message.DirectionInbound {
-		return res, nil
-	}
-
-	w, err := h.db.WidgetGet(ctx, sess.WidgetID)
-	if err != nil {
-		log.Errorf("Could not get widget. widget_id: %s, err: %v", sess.WidgetID, err)
-		// The message itself was already created successfully; a Flow-
-		// trigger failure must not fail the visitor-facing send.
-		return res, nil
-	}
-
-	if w.MessageFlowID == uuid.Nil {
-		log.Debugf("Widget has no message flow configured. Skipping activeflow. widget_id: %s", w.ID)
-		return res, nil
-	}
-
-	if errFlow := h.triggerMessageFlow(ctx, customerID, sessionID, w, res); errFlow != nil {
-		log.Errorf("Could not trigger the message activeflow. err: %v", errFlow)
-		// Best-effort: the message send itself already succeeded.
-	}
-
 	return res, nil
 }
 
@@ -97,7 +58,9 @@ func (h *messageHandler) Create(
 // Publishes EventTypeMessageCreated to both the webhook and event queue
 // on every successful create (design doc §16: conversation-manager
 // subscribes to this event to build its own independent
-// Conversation/Message records, message-manager pattern).
+// Conversation/Message records, message-manager pattern, AND -- as of
+// the message-flow-owner-migration design -- to trigger MessageFlowID's
+// activeflow for inbound messages).
 func (h *messageHandler) create(
 	ctx context.Context,
 	customerID uuid.UUID,
@@ -138,54 +101,4 @@ func (h *messageHandler) create(
 	}
 
 	return res, nil
-}
-
-// triggerMessageFlow creates and executes a brand-new activeflow for
-// THIS inbound message, unconditionally -- no "already triggered"
-// bookkeeping, no cross-message state. Mirrors
-// bin-conversation-manager's executeActiveflow for SMS/LINE/WhatsApp's
-// MessageFlowID exactly.
-func (h *messageHandler) triggerMessageFlow(
-	ctx context.Context,
-	customerID uuid.UUID,
-	sessionID uuid.UUID,
-	w *widget.Widget,
-	m *message.Message,
-) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func":            "triggerMessageFlow",
-		"session_id":      sessionID,
-		"widget_id":       w.ID,
-		"message_flow_id": w.MessageFlowID,
-	})
-
-	variables := map[string]string{
-		"voipbin.webchat.session.id":        sessionID.String(),
-		"voipbin.webchat.session.widget_id": w.ID.String(),
-		"voipbin.webchat.message.text":      m.Text,
-	}
-
-	af, err := h.reqHandler.FlowV1ActiveflowCreate(
-		ctx,
-		uuid.Nil,
-		customerID,
-		w.MessageFlowID,
-		fmactiveflow.ReferenceTypeWebchat,
-		sessionID,
-		uuid.Nil,
-		variables,
-		"",
-		fmactiveflow.WebhookMethodNone,
-	)
-	if err != nil {
-		return err
-	}
-	log.WithField("activeflow_id", af.ID).Debug("Created activeflow.")
-
-	if err := h.reqHandler.FlowV1ActiveflowExecute(ctx, af.ID); err != nil {
-		return err
-	}
-	log.Debug("Executed activeflow.")
-
-	return nil
 }

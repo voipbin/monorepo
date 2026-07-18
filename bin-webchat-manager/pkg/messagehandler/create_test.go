@@ -10,14 +10,11 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
-	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
-
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 
 	"monorepo/bin-webchat-manager/models/message"
 	"monorepo/bin-webchat-manager/models/session"
-	"monorepo/bin-webchat-manager/models/widget"
 	"monorepo/bin-webchat-manager/pkg/dbhandler"
 )
 
@@ -38,151 +35,15 @@ func newTestMessageHandler(mc *gomock.Controller) (*messageHandler, *utilhandler
 	return h, mockUtil, mockReq, mockDB
 }
 
-// Test_Create_Inbound_MessageFlowConfigured_TriggersFlow verifies EVERY
-// inbound message on a Widget with MessageFlowID configured triggers
-// its own independent activeflow -- unconditionally, with no
-// "already triggered" gate.
-func Test_Create_Inbound_MessageFlowConfigured_TriggersFlow(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	h, mockUtil, mockReq, mockDB := newTestMessageHandler(mc)
-	ctx := context.Background()
-
-	customerID := uuid.FromStringOrNil("c1b2c3d4-0000-0000-0000-000000000001")
-	sessionID := uuid.FromStringOrNil("876defde-ad5e-11ed-a8c3-7bc19647b03f")
-	widgetID := uuid.FromStringOrNil("aa847807-6cc4-4713-9dec-53a42840e74c")
-	messageFlowID := uuid.FromStringOrNil("2b5bc824-2066-11f0-81b0-672de53dec30")
-	messageID := uuid.FromStringOrNil("db596422-07f5-11f0-9afe-e7cd6b75aeac")
-	activeflowID := uuid.FromStringOrNil("44ebbd2e-82d8-11eb-8a4e-f7957fea9f50")
-
-	sess := &session.Session{
-		Identity: commonidentity.Identity{ID: sessionID, CustomerID: customerID},
-		WidgetID: widgetID,
-		Status:   session.StatusActive,
-	}
-
-	w := &widget.Widget{
-		Identity:      commonidentity.Identity{ID: widgetID, CustomerID: customerID},
-		MessageFlowID: messageFlowID,
-	}
-
-	msg := &message.Message{
-		Identity:  commonidentity.Identity{ID: messageID, CustomerID: customerID},
-		SessionID: sessionID,
-		Direction: message.DirectionInbound,
-		Status:    message.StatusSent,
-		Text:      "hello",
-	}
-
-	mockDB.EXPECT().SessionGet(ctx, sessionID).Return(sess, nil)
-	mockUtil.EXPECT().UUIDCreate().Return(messageID)
-	mockDB.EXPECT().MessageCreate(ctx, gomock.Any()).Return(nil)
-	mockDB.EXPECT().MessageGet(ctx, messageID).Return(msg, nil)
-	mockDB.EXPECT().WidgetGet(ctx, widgetID).Return(w, nil)
-
-	mockReq.EXPECT().FlowV1ActiveflowCreate(
-		ctx,
-		uuid.Nil,
-		customerID,
-		messageFlowID,
-		fmactiveflow.ReferenceTypeWebchat,
-		sessionID,
-		uuid.Nil,
-		gomock.Any(),
-		"",
-		fmactiveflow.WebhookMethodNone,
-	).Return(&fmactiveflow.Activeflow{
-		Identity: commonidentity.Identity{ID: activeflowID},
-	}, nil)
-
-	mockReq.EXPECT().FlowV1ActiveflowExecute(ctx, activeflowID).Return(nil)
-
-	res, err := h.Create(ctx, customerID, sessionID, message.DirectionInbound, uuid.Nil, "hello")
-	if err != nil {
-		t.Fatalf("Wrong match. expect: ok, got: %v", err)
-	}
-	if !reflect.DeepEqual(res, msg) {
-		t.Errorf("Wrong match.\nexpect: %v\ngot: %v", msg, res)
-	}
-}
-
-// Test_Create_Inbound_MessageFlowConfigured_TriggersFlowEveryTime
-// verifies a SECOND inbound message on the same Session ALSO triggers
-// its own independent activeflow -- MessageFlowID never gates on prior
-// messages, unlike the old FlowID-on-first-message behavior.
-func Test_Create_Inbound_MessageFlowConfigured_TriggersFlowEveryTime(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	h, mockUtil, mockReq, mockDB := newTestMessageHandler(mc)
-	ctx := context.Background()
-
-	customerID := uuid.FromStringOrNil("c1b2c3d4-0000-0000-0000-000000000001")
-	sessionID := uuid.FromStringOrNil("876defde-ad5e-11ed-a8c3-7bc19647b03f")
-	widgetID := uuid.FromStringOrNil("aa847807-6cc4-4713-9dec-53a42840e74c")
-	messageFlowID := uuid.FromStringOrNil("2b5bc824-2066-11f0-81b0-672de53dec30")
-	messageID := uuid.FromStringOrNil("db596422-07f5-11f0-9afe-e7cd6b75aeac")
-	activeflowID := uuid.FromStringOrNil("44ebbd2e-82d8-11eb-8a4e-f7957fea9f50")
-
-	// ActiveflowID is already set on the Session (from a prior
-	// SessionFlowID trigger at session-create time, or a prior
-	// MessageFlowID trigger) -- this must NOT gate MessageFlowID at all.
-	sess := &session.Session{
-		Identity:     commonidentity.Identity{ID: sessionID, CustomerID: customerID},
-		WidgetID:     widgetID,
-		Status:       session.StatusActive,
-		ActiveflowID: uuid.FromStringOrNil("11111111-0000-0000-0000-000000000001"),
-	}
-
-	w := &widget.Widget{
-		Identity:      commonidentity.Identity{ID: widgetID, CustomerID: customerID},
-		MessageFlowID: messageFlowID,
-	}
-
-	msg := &message.Message{
-		Identity:  commonidentity.Identity{ID: messageID, CustomerID: customerID},
-		SessionID: sessionID,
-		Direction: message.DirectionInbound,
-		Status:    message.StatusSent,
-		Text:      "follow-up",
-	}
-
-	mockDB.EXPECT().SessionGet(ctx, sessionID).Return(sess, nil)
-	mockUtil.EXPECT().UUIDCreate().Return(messageID)
-	mockDB.EXPECT().MessageCreate(ctx, gomock.Any()).Return(nil)
-	mockDB.EXPECT().MessageGet(ctx, messageID).Return(msg, nil)
-	mockDB.EXPECT().WidgetGet(ctx, widgetID).Return(w, nil)
-
-	mockReq.EXPECT().FlowV1ActiveflowCreate(
-		ctx,
-		uuid.Nil,
-		customerID,
-		messageFlowID,
-		fmactiveflow.ReferenceTypeWebchat,
-		sessionID,
-		uuid.Nil,
-		gomock.Any(),
-		"",
-		fmactiveflow.WebhookMethodNone,
-	).Return(&fmactiveflow.Activeflow{
-		Identity: commonidentity.Identity{ID: activeflowID},
-	}, nil)
-
-	mockReq.EXPECT().FlowV1ActiveflowExecute(ctx, activeflowID).Return(nil)
-
-	res, err := h.Create(ctx, customerID, sessionID, message.DirectionInbound, uuid.Nil, "follow-up")
-	if err != nil {
-		t.Fatalf("Wrong match. expect: ok, got: %v", err)
-	}
-	if !reflect.DeepEqual(res, msg) {
-		t.Errorf("Wrong match.\nexpect: %v\ngot: %v", msg, res)
-	}
-}
-
-// Test_Create_Inbound_NoMessageFlowConfigured verifies a Widget with no
-// MessageFlowID never triggers an activeflow.
-func Test_Create_Inbound_NoMessageFlowConfigured(t *testing.T) {
+// Test_Create_Inbound_NeverFetchesWidgetOrTriggersFlow verifies an
+// inbound message never fetches the Widget and never calls any
+// FlowV1* RPC -- MessageFlowID's Flow-trigger is no longer this
+// package's concern (moved to bin-conversation-manager's
+// runExecuteModeFlowWebchat, triggered async off the
+// webchat_message_created event this Create already publishes). Any
+// unexpected WidgetGet/FlowV1* call on mockDB/mockReq fails this test
+// via gomock.
+func Test_Create_Inbound_NeverFetchesWidgetOrTriggersFlow(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -200,11 +61,6 @@ func Test_Create_Inbound_NoMessageFlowConfigured(t *testing.T) {
 		Status:   session.StatusActive,
 	}
 
-	w := &widget.Widget{
-		Identity:      commonidentity.Identity{ID: widgetID, CustomerID: customerID},
-		MessageFlowID: uuid.Nil, // no message flow configured
-	}
-
 	msg := &message.Message{
 		Identity:  commonidentity.Identity{ID: messageID, CustomerID: customerID},
 		SessionID: sessionID,
@@ -217,10 +73,10 @@ func Test_Create_Inbound_NoMessageFlowConfigured(t *testing.T) {
 	mockUtil.EXPECT().UUIDCreate().Return(messageID)
 	mockDB.EXPECT().MessageCreate(ctx, gomock.Any()).Return(nil)
 	mockDB.EXPECT().MessageGet(ctx, messageID).Return(msg, nil)
-	mockDB.EXPECT().WidgetGet(ctx, widgetID).Return(w, nil)
 
-	// No FlowV1ActiveflowCreate/Execute expected -- their absence from
-	// the mock is enforced by gomock failing on any unexpected call.
+	// No WidgetGet, no FlowV1ActiveflowCreate/Execute expected -- their
+	// absence from the mock is enforced by gomock failing on any
+	// unexpected call.
 
 	res, err := h.Create(ctx, customerID, sessionID, message.DirectionInbound, uuid.Nil, "hello")
 	if err != nil {
@@ -231,11 +87,10 @@ func Test_Create_Inbound_NoMessageFlowConfigured(t *testing.T) {
 	}
 }
 
-// Test_Create_Outbound_NeverTriggersFlow verifies an outbound message
-// (agent reply or Flow-delivered response) never checks/triggers
-// MessageFlowID -- matches conversation-manager's MessageEventSent
-// never calling runExecuteModeFlow.
-func Test_Create_Outbound_NeverTriggersFlow(t *testing.T) {
+// Test_Create_Outbound_NeverFetchesWidgetOrTriggersFlow verifies an
+// outbound message (agent reply or Flow-delivered response) likewise
+// never fetches the Widget or triggers a Flow.
+func Test_Create_Outbound_NeverFetchesWidgetOrTriggersFlow(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 

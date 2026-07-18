@@ -18,6 +18,7 @@ import (
 	"monorepo/bin-conversation-manager/pkg/accounthandler"
 	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
 	nmnumber "monorepo/bin-number-manager/models/number"
+	wcwidget "monorepo/bin-webchat-manager/models/widget"
 )
 
 func Test_getExecuteMode(t *testing.T) {
@@ -450,6 +451,119 @@ func Test_runExecuteModeFlowWhatsApp(t *testing.T) {
 			tt.setup(mockAccount, mockReq)
 
 			err := h.runExecuteModeFlowWhatsApp(context.Background(), tt.cv, tt.m)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("got err = %v, wantErr = %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func Test_runExecuteModeFlowWebchat(t *testing.T) {
+	widgetID := uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
+	flowID := uuid.FromStringOrNil("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb")
+	convID := uuid.FromStringOrNil("cccccccc-cccc-cccc-cccc-cccccccccccc")
+	custID := uuid.FromStringOrNil("dddddddd-dddd-dddd-dddd-dddddddddddd")
+	msgID := uuid.FromStringOrNil("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee")
+	afID := uuid.FromStringOrNil("ffffffff-ffff-ffff-ffff-ffffffffffff")
+
+	tests := []struct {
+		name    string
+		cv      *conversation.Conversation
+		m       *message.Message
+		setup   func(mockReq *requesthandler.MockRequestHandler)
+		wantErr bool
+	}{
+		{
+			name: "valid webchat conversation with flow id -> executeActiveflow called",
+			cv: &conversation.Conversation{
+				Identity: commonidentity.Identity{ID: convID, CustomerID: custID},
+				Type:     conversation.TypeWebchat,
+				Self:     commonaddress.Address{Type: commonaddress.TypeWebchat, Target: widgetID.String()},
+			},
+			m: &message.Message{
+				Identity:       commonidentity.Identity{ID: msgID, CustomerID: custID},
+				ConversationID: convID,
+			},
+			setup: func(mockReq *requesthandler.MockRequestHandler) {
+				mockReq.EXPECT().WebchatV1WidgetGet(gomock.Any(), widgetID).Return(&wcwidget.Widget{
+					Identity:      commonidentity.Identity{ID: widgetID, CustomerID: custID},
+					MessageFlowID: flowID,
+				}, nil)
+				mockReq.EXPECT().FlowV1ActiveflowCreate(
+					gomock.Any(), uuid.Nil, custID, flowID,
+					fmactiveflow.ReferenceTypeConversation, convID, uuid.Nil,
+					nil,
+					gomock.Any(),
+					gomock.Any(),
+				).Return(&fmactiveflow.Activeflow{Identity: commonidentity.Identity{ID: afID}}, nil)
+				mockReq.EXPECT().FlowV1VariableSetVariable(gomock.Any(), afID, gomock.Any()).Times(2).Return(nil)
+				mockReq.EXPECT().FlowV1ActiveflowExecute(gomock.Any(), afID).Return(nil)
+			},
+			wantErr: false,
+		},
+		{
+			name: "webchat conversation, widget fetch fails -> error wrapped and returned",
+			cv: &conversation.Conversation{
+				Identity: commonidentity.Identity{ID: convID, CustomerID: custID},
+				Type:     conversation.TypeWebchat,
+				Self:     commonaddress.Address{Type: commonaddress.TypeWebchat, Target: widgetID.String()},
+			},
+			m: &message.Message{
+				Identity:       commonidentity.Identity{ID: msgID, CustomerID: custID},
+				ConversationID: convID,
+			},
+			setup: func(mockReq *requesthandler.MockRequestHandler) {
+				mockReq.EXPECT().WebchatV1WidgetGet(gomock.Any(), widgetID).Return(nil, errors.New("widget-manager down"))
+			},
+			wantErr: true,
+		},
+		{
+			name: "webchat conversation, widget has no flow id -> no activeflow created, no error",
+			cv: &conversation.Conversation{
+				Identity: commonidentity.Identity{ID: convID, CustomerID: custID},
+				Type:     conversation.TypeWebchat,
+				Self:     commonaddress.Address{Type: commonaddress.TypeWebchat, Target: widgetID.String()},
+			},
+			m: &message.Message{
+				Identity:       commonidentity.Identity{ID: msgID, CustomerID: custID},
+				ConversationID: convID,
+			},
+			setup: func(mockReq *requesthandler.MockRequestHandler) {
+				mockReq.EXPECT().WebchatV1WidgetGet(gomock.Any(), widgetID).Return(&wcwidget.Widget{
+					Identity:      commonidentity.Identity{ID: widgetID, CustomerID: custID},
+					MessageFlowID: uuid.Nil,
+				}, nil)
+			},
+			wantErr: false,
+		},
+		{
+			name: "webchat conversation, malformed self target -> error, no RPC calls",
+			cv: &conversation.Conversation{
+				Identity: commonidentity.Identity{ID: convID, CustomerID: custID},
+				Type:     conversation.TypeWebchat,
+				Self:     commonaddress.Address{Type: commonaddress.TypeWebchat, Target: "not-a-uuid"},
+			},
+			m: &message.Message{
+				Identity:       commonidentity.Identity{ID: msgID, CustomerID: custID},
+				ConversationID: convID,
+			},
+			setup:   func(mockReq *requesthandler.MockRequestHandler) {},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			h := &conversationHandler{
+				reqHandler: mockReq,
+			}
+			tt.setup(mockReq)
+
+			err := h.runExecuteModeFlowWebchat(context.Background(), tt.cv, tt.m)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("got err = %v, wantErr = %v", err, tt.wantErr)
 			}

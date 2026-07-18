@@ -85,7 +85,12 @@ const (
 	ReferenceTypeConversation ReferenceType = "conversation" // conversation
 	ReferenceTypeTranscribe   ReferenceType = "transcribe"   // transcribe
 	ReferenceTypeRecording    ReferenceType = "recording"    // recording
-	ReferenceTypeWebchat      ReferenceType = "webchat"      // webchat
+	// ReferenceTypeWebchat is no longer produced by any current code
+	// path (webchat's MessageFlowID trigger moved to
+	// bin-conversation-manager, using ReferenceTypeConversation instead
+	// -- see docs/plans/2026-07-18-webchat-message-flow-owner-migration-design.md).
+	// Retained for historical activeflow rows only.
+	ReferenceTypeWebchat ReferenceType = "webchat" // webchat
 )
 
 // Matches return true if the given items are the same

@@ -79,7 +79,6 @@ require (
 	monorepo/bin-common-handler v0.0.0-20240408033155-50f0cd082334
 	monorepo/bin-conversation-manager v0.0.0-20231117134833-7918f76572d4
 	monorepo/bin-direct-manager v0.0.0-00010101000000-000000000000
-	monorepo/bin-flow-manager v0.0.0-20240403034140-ce82222fe7f4
 )
 
 require (
@@ -123,6 +122,7 @@ require (
 	monorepo/bin-contact-manager v0.0.0-00010101000000-000000000000 // indirect
 	monorepo/bin-customer-manager v0.0.0-20240408042746-c45b2b5aa984 // indirect
 	monorepo/bin-email-manager v0.0.0-00010101000000-000000000000 // indirect
+	monorepo/bin-flow-manager v0.0.0-20240403034140-ce82222fe7f4 // indirect
 	monorepo/bin-hook-manager v0.0.0-20240313052650-d3e4c79af4c0 // indirect
 	monorepo/bin-message-manager v0.0.0-20240328053936-9008e28c2268 // indirect
 	monorepo/bin-number-manager v0.0.0-20240328055052-ec1c723aa183 // indirect
