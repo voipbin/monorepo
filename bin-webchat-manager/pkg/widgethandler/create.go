@@ -18,7 +18,6 @@ func (h *widgetHandler) Create(
 	ctx context.Context,
 	customerID uuid.UUID,
 	name string,
-	welcomeMessage string,
 	sessionFlowID uuid.UUID,
 	messageFlowID uuid.UUID,
 	sessionIdleTimeout int,
@@ -28,7 +27,6 @@ func (h *widgetHandler) Create(
 		"func":                 "Create",
 		"customer_id":          customerID,
 		"name":                 name,
-		"welcome_message":      welcomeMessage,
 		"session_flow_id":      sessionFlowID,
 		"message_flow_id":      messageFlowID,
 		"session_idle_timeout": sessionIdleTimeout,
@@ -63,9 +61,8 @@ func (h *widgetHandler) Create(
 		DirectID: d.ID,
 		Hash:     d.Hash,
 
-		WelcomeMessage: welcomeMessage,
-		SessionFlowID:  sessionFlowID,
-		MessageFlowID:  messageFlowID,
+		SessionFlowID: sessionFlowID,
+		MessageFlowID: messageFlowID,
 
 		SessionIdleTimeout: sessionIdleTimeout,
 

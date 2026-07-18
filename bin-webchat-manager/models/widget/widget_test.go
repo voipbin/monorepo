@@ -17,7 +17,6 @@ func TestWidgetStruct(t *testing.T) {
 		Name:               "test widget",
 		Status:             StatusActive,
 		DirectID:           directID,
-		WelcomeMessage:     "welcome!",
 		SessionFlowID:      sessionFlowID,
 		MessageFlowID:      messageFlowID,
 		SessionIdleTimeout: 1800,
@@ -44,9 +43,6 @@ func TestWidgetStruct(t *testing.T) {
 	}
 	if w.DirectID != directID {
 		t.Errorf("Widget.DirectID = %v, expected %v", w.DirectID, directID)
-	}
-	if w.WelcomeMessage != "welcome!" {
-		t.Errorf("Widget.WelcomeMessage = %v, expected %v", w.WelcomeMessage, "welcome!")
 	}
 	if w.SessionFlowID != sessionFlowID {
 		t.Errorf("Widget.SessionFlowID = %v, expected %v", w.SessionFlowID, sessionFlowID)

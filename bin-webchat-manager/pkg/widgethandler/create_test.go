@@ -23,13 +23,12 @@ func Test_Create(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID          uuid.UUID
-		widgetName          string
-		welcomeMessage      string
-		sessionFlowID       uuid.UUID
-		messageFlowID       uuid.UUID
-		sessionIdleTimeout  int
-		themeConfig         *widget.ThemeConfig
+		customerID         uuid.UUID
+		widgetName         string
+		sessionFlowID      uuid.UUID
+		messageFlowID      uuid.UUID
+		sessionIdleTimeout int
+		themeConfig        *widget.ThemeConfig
 
 		responseUUID   uuid.UUID
 		responseWidget *widget.Widget
@@ -41,7 +40,6 @@ func Test_Create(t *testing.T) {
 
 			customerID:         uuid.FromStringOrNil("1ed812a6-7f56-11ec-82c1-8bb47b0f9d98"),
 			widgetName:         "test widget",
-			welcomeMessage:     "Hello!",
 			sessionFlowID:      uuid.FromStringOrNil("2b5bc824-2066-11f0-81b0-672de53dec30"),
 			messageFlowID:      uuid.FromStringOrNil("3a3e5e9a-2077-11f0-8dc2-fb5b62d502fe"),
 			sessionIdleTimeout: 1800,
@@ -94,7 +92,6 @@ func Test_Create(t *testing.T) {
 				ctx,
 				tt.customerID,
 				tt.widgetName,
-				tt.welcomeMessage,
 				tt.sessionFlowID,
 				tt.messageFlowID,
 				tt.sessionIdleTimeout,

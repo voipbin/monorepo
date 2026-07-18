@@ -119,7 +119,6 @@ func (h *serviceHandler) WebchatWidgetCreate(
 	ctx context.Context,
 	a *auth.AuthIdentity,
 	name string,
-	welcomeMessage string,
 	sessionFlowID uuid.UUID,
 	messageFlowID uuid.UUID,
 	sessionIdleTimeout int,
@@ -176,7 +175,7 @@ func (h *serviceHandler) WebchatWidgetCreate(
 		}
 	}
 
-	tmp, err := h.reqHandler.WebchatV1WidgetCreate(ctx, a.CustomerID, name, welcomeMessage, sessionFlowID, messageFlowID, sessionIdleTimeout, themeConfig)
+	tmp, err := h.reqHandler.WebchatV1WidgetCreate(ctx, a.CustomerID, name, sessionFlowID, messageFlowID, sessionIdleTimeout, themeConfig)
 	if err != nil {
 		log.Errorf("Could not create the widget. err: %v", err)
 		return nil, err
@@ -193,7 +192,6 @@ func (h *serviceHandler) WebchatWidgetUpdate(
 	a *auth.AuthIdentity,
 	widgetID uuid.UUID,
 	name string,
-	welcomeMessage string,
 	sessionFlowID uuid.UUID,
 	messageFlowID uuid.UUID,
 	sessionIdleTimeout int,
@@ -261,7 +259,7 @@ func (h *serviceHandler) WebchatWidgetUpdate(
 		}
 	}
 
-	tmp, err := h.reqHandler.WebchatV1WidgetUpdate(ctx, widgetID, name, welcomeMessage, sessionFlowID, messageFlowID, sessionIdleTimeout, themeConfig)
+	tmp, err := h.reqHandler.WebchatV1WidgetUpdate(ctx, widgetID, name, sessionFlowID, messageFlowID, sessionIdleTimeout, themeConfig)
 	if err != nil {
 		log.Errorf("Could not update the widget. err: %v", err)
 		return nil, err

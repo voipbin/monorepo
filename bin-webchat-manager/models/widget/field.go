@@ -13,9 +13,8 @@ const (
 	FieldDirectID Field = "direct_id"
 	FieldHash     Field = "direct_hash"
 
-	FieldWelcomeMessage Field = "welcome_message"
-	FieldSessionFlowID  Field = "session_flow_id"
-	FieldMessageFlowID  Field = "message_flow_id"
+	FieldSessionFlowID Field = "session_flow_id"
+	FieldMessageFlowID Field = "message_flow_id"
 
 	FieldSessionIdleTimeout Field = "session_idle_timeout"
 

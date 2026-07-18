@@ -41,10 +41,6 @@ post:
               type: string
               description: Name of the widget.
               example: "Support Widget"
-            welcome_message:
-              type: string
-              description: The message shown to the visitor when the widget loads.
-              example: "Hi! How can we help you today?"
             session_flow_id:
               type: string
               format: uuid
@@ -65,7 +61,6 @@ post:
               $ref: '#/components/schemas/WebchatManagerWidgetThemeConfig'
           required:
             - name
-            - welcome_message
             - session_flow_id
   responses:
     '200':

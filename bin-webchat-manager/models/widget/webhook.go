@@ -24,9 +24,8 @@ type WebhookMessage struct {
 	Name   string `json:"name"`
 	Status Status `json:"status"`
 
-	WelcomeMessage string `json:"welcome_message"`
-	SessionFlowID  string `json:"session_flow_id"`
-	MessageFlowID  string `json:"message_flow_id"`
+	SessionFlowID string `json:"session_flow_id"`
+	MessageFlowID string `json:"message_flow_id"`
 
 	SessionIdleTimeout int `json:"session_idle_timeout"`
 
@@ -47,9 +46,8 @@ func (h *Widget) ConvertWebhookMessage() *WebhookMessage {
 		Name:   h.Name,
 		Status: h.Status,
 
-		WelcomeMessage: h.WelcomeMessage,
-		SessionFlowID:  h.SessionFlowID.String(),
-		MessageFlowID:  h.MessageFlowID.String(),
+		SessionFlowID: h.SessionFlowID.String(),
+		MessageFlowID: h.MessageFlowID.String(),
 
 		SessionIdleTimeout: h.SessionIdleTimeout,
 

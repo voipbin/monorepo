@@ -35,7 +35,6 @@ func (h *widgetHandler) UpdateBasicInfo(
 	ctx context.Context,
 	id uuid.UUID,
 	name string,
-	welcomeMessage string,
 	sessionFlowID uuid.UUID,
 	messageFlowID uuid.UUID,
 	sessionIdleTimeout int,
@@ -53,7 +52,6 @@ func (h *widgetHandler) UpdateBasicInfo(
 
 	fields := map[widget.Field]any{
 		widget.FieldName:               name,
-		widget.FieldWelcomeMessage:     welcomeMessage,
 		widget.FieldSessionFlowID:      sessionFlowID,
 		widget.FieldMessageFlowID:      messageFlowID,
 		widget.FieldSessionIdleTimeout: sessionIdleTimeout,

@@ -18,7 +18,6 @@ func (r *requestHandler) WebchatV1WidgetCreate(
 	ctx context.Context,
 	customerID uuid.UUID,
 	name string,
-	welcomeMessage string,
 	sessionFlowID uuid.UUID,
 	messageFlowID uuid.UUID,
 	sessionIdleTimeout int,
@@ -29,7 +28,6 @@ func (r *requestHandler) WebchatV1WidgetCreate(
 	data := &wcrequest.V1DataWidgetsPost{
 		CustomerID:         customerID,
 		Name:                name,
-		WelcomeMessage:      welcomeMessage,
 		SessionFlowID:       sessionFlowID,
 		MessageFlowID:       messageFlowID,
 		SessionIdleTimeout:  sessionIdleTimeout,
@@ -98,7 +96,6 @@ func (r *requestHandler) WebchatV1WidgetUpdate(
 	ctx context.Context,
 	id uuid.UUID,
 	name string,
-	welcomeMessage string,
 	sessionFlowID uuid.UUID,
 	messageFlowID uuid.UUID,
 	sessionIdleTimeout int,
@@ -108,7 +105,6 @@ func (r *requestHandler) WebchatV1WidgetUpdate(
 
 	data := &wcrequest.V1DataWidgetsIDPut{
 		Name:               name,
-		WelcomeMessage:     welcomeMessage,
 		SessionFlowID:      sessionFlowID,
 		MessageFlowID:      messageFlowID,
 		SessionIdleTimeout: sessionIdleTimeout,

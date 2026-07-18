@@ -15,7 +15,7 @@ Domain model
 ------------
 Three resources work together:
 
-* **Widget** -- a customer's chat widget configuration (name, welcome message, the Flow to trigger, appearance theme). Created and managed via customer-JWT authenticated admin endpoints. Also issues a **direct hash**, used to authenticate anonymous visitors.
+* **Widget** -- a customer's chat widget configuration (name, the Flow to trigger, appearance theme). Created and managed via customer-JWT authenticated admin endpoints. Also issues a **direct hash**, used to authenticate anonymous visitors.
 * **Session** -- a single visitor's continuity token for one browsing session. ``Session.id`` is the value your frontend uses to send/receive messages for that visitor.
 * **Message** -- an individual chat message, either ``inbound`` (from the visitor) or ``outbound`` (from your Flow, an AI, or a human agent).
 
@@ -40,15 +40,13 @@ The visitor-facing flow never uses a customer JWT. Instead:
                                                                   +------------------+
                                                                   | POST /webchat_    |
                                                                   | sessions           |
-                                                                  | (creates Session,  |
-                                                                  |  returns welcome_  |
-                                                                  |  message)          |
+                                                                  | (creates Session)  |
                                                                   +------------------+
 
 1. The widget embed script (delivered by your site) carries the widget's ``direct_hash``.
 2. On page load, the script calls ``POST /auth/boot`` with the hash to exchange it for a short-lived, widget-scoped JWT.
 3. That JWT authorizes exactly one resource type (``webchat_session``) and is scoped to the specific Widget it was issued for -- it cannot be reused to access a different widget's sessions, nor can it read the Widget's admin configuration.
-4. The script then calls ``POST /webchat_sessions`` with the JWT to create a Session and receive the widget's ``welcome_message``.
+4. The script then calls ``POST /webchat_sessions`` with the JWT to create a Session. If the widget has ``session_flow_id`` configured, that Flow fires as part of Session creation and can deliver a greeting via a message-send action; a widget with no ``session_flow_id`` sends no automatic greeting.
 5. Subsequent messages are sent via ``POST /webchat_messages`` using the same JWT, referencing the created ``session_id``.
 
 .. note:: **AI Implementation Hint**

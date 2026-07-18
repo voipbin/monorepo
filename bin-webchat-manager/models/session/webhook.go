@@ -16,10 +16,6 @@ type WebhookMessage struct {
 	WidgetID uuid.UUID `json:"widget_id"`
 	Status   Status    `json:"status"`
 
-	// WelcomeMessage: see Session.WelcomeMessage's doc comment --
-	// populated only on the Create response.
-	WelcomeMessage string `json:"welcome_message,omitempty"`
-
 	TMLastActivity *time.Time `json:"tm_last_activity,omitempty"`
 	TMCreate       *time.Time `json:"tm_create,omitempty"`
 	TMUpdate       *time.Time `json:"tm_update,omitempty"`
@@ -33,8 +29,6 @@ func (h *Session) ConvertWebhookMessage() *WebhookMessage {
 
 		WidgetID: h.WidgetID,
 		Status:   h.Status,
-
-		WelcomeMessage: h.WelcomeMessage,
 
 		TMLastActivity: h.TMLastActivity,
 		TMCreate:       h.TMCreate,

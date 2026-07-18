@@ -21,12 +21,11 @@ import (
 // activeflow (design doc
 // 2026-07-17-webchat-widget-session-message-flow-split-design.md §3).
 //
-// The single WidgetGet call below serves TWO purposes: (1) read
-// Widget.WelcomeMessage to attach to the response (§6), (2) read
-// Widget.SessionFlowID to decide whether to trigger anything. A Widget
-// fetch failure, or a SessionFlowID-trigger failure, must NOT fail
-// Session creation itself -- both are best-effort (the Session row is
-// already committed by the time either is attempted).
+// The single WidgetGet call below reads Widget.SessionFlowID to
+// decide whether to trigger anything. A Widget fetch failure, or a
+// SessionFlowID-trigger failure, must NOT fail Session creation
+// itself -- both are best-effort (the Session row is already
+// committed by the time either is attempted).
 func (h *sessionHandler) Create(ctx context.Context, customerID uuid.UUID, widgetID uuid.UUID) (*session.Session, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "Create",
@@ -65,12 +64,10 @@ func (h *sessionHandler) Create(ctx context.Context, customerID uuid.UUID, widge
 		log.Errorf("Could not get widget. widget_id: %s, err: %v", widgetID, err)
 		// The Session itself was already created successfully; a
 		// Widget-fetch failure must not fail the visitor-facing
-		// session-creation response. welcome_message stays empty and
-		// SessionFlowID is simply skipped below.
+		// session-creation response. SessionFlowID is simply
+		// skipped below.
 		return res, nil
 	}
-
-	res.WelcomeMessage = w.WelcomeMessage
 
 	if w.SessionFlowID == uuid.Nil {
 		log.Debugf("Widget has no session flow configured. Skipping activeflow. widget_id: %s", w.ID)
