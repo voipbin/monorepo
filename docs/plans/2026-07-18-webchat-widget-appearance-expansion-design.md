@@ -133,7 +133,16 @@ never render. Therefore:
   2. Else resolve from `theme_mode`: `light` → existing light
      defaults (below); `dark` → dark-mode defaults (below); `auto` →
      evaluate `window.matchMedia('(prefers-color-scheme: dark)')` at
-     render time, same as light/dark branch.
+     render time, same as light/dark branch. This always executes in
+     a real, non-sandboxed `window` context: the real widget runs
+     directly on the host page, and `WidgetPreview.js` runs
+     `applyWidgetTheme()` in the ADMIN'S OWN parent React
+     component/window (via `buildWidgetDom(document)` against the
+     real global `document`) — only the resulting serialized HTML
+     string with inline styles already baked in is injected into the
+     sandboxed `srcdoc` iframe afterward. `matchMedia` is therefore
+     never actually evaluated inside a sandboxed iframe in either
+     consumption path.
   3. `secondary_color`: light default `#fff` / dark default `#1f2937`
      (existing hardcoded default in `WIDGET_CSS` for light; dark is
      new)
@@ -143,6 +152,13 @@ never render. Therefore:
      since forcing a bright `primary_color` as a dark-mode header
      background would defeat the point of dark mode
   5. `header_text_color`: light default `#fff`; dark default `#f9fafb`
+- Accepted, non-blocking limitation: `theme_mode=auto` is resolved
+  ONCE, at `applyWidgetTheme()` call time (`widget.js`'s constructor
+  calls it once on mount, no `matchMedia(...).addEventListener('change', ...)`
+  wired up). If the visitor's OS theme changes while the widget is
+  already mounted, it will not live-re-theme without a page reload.
+  Same severity tier as the header-contrast gap noted in §4 — deferred
+  as a future polish item, not required for this design to ship.
 - `theme_mode`: default `light`
 - `header_title`: `"Chat with us"` (existing hardcoded default,
   currently NOT configurable — `widget.js` L183 hardcodes this
@@ -191,7 +207,7 @@ to implementation as a nice-to-have, not a hard requirement.
 | `bin-api-manager/server/webchat_widgets_test.go` | Add conversion test cases |
 | `monorepo-javascript/square-admin/src/webchat-widget-runtime/render.js` | Extend `applyWidgetTheme()` to apply 6 new style properties + header title/subtitle text. **Must become `theme_mode`-aware** for header background/text/secondary-color default resolution (see §3's precedence rule) — it computes and sets these INLINE per the resolution order in §3, it does not delegate to a CSS class for any property it already sets inline today |
 | `monorepo-javascript/square-admin/src/webchat-widget-runtime/widget.js` | `buildWidgetDom()`: add a `headerSubtitle` element (currently only `headerTitle` exists); `WIDGET_CSS`: `.vb-theme-dark` class rules ONLY for properties `applyWidgetTheme()` does not set inline (panel/messages background, message bubble colors) — NOT for header/bubble/send-button background or header text color, which `render.js` must set inline per §3; L183's hardcoded `headerTitle.textContent = 'Chat with us'` becomes the fallback default applied by `render.js`, not a permanent hardcode in this file |
-| `monorepo-javascript/square-admin/src/webchat-widget-runtime/__tests__/render.test.js` | Add test cases for 6 new fields |
+| `monorepo-javascript/square-admin/src/webchat-widget-runtime/__tests__/render.test.js` | Add test cases for 6 new fields. **Requires a `window.matchMedia` mock in test setup** — jsdom does not implement `matchMedia` natively, and the new `theme_mode=auto` branch will throw `TypeError` in Jest without one (standard jsdom workaround: add a mock in `square-admin/src/setupTests.js` or per-test) |
 | `monorepo-javascript/square-admin/src/views/webchat_widgets/{create,detail}.js` | Add 6 new `useState` hooks (mirroring the existing `primaryColor`/`logoUrl` pattern), 6 new form fields (Appearance block: 3 color pickers, theme_mode select, header_title/subtitle inputs), and include the new keys in the `themeConfig` object literal passed to `WidgetPreview` and in the PUT/POST request body |
 | `monorepo-javascript/square-admin/src/views/webchat_widgets/WidgetPreview.js` | **Real logic change, not just PropTypes**: `WidgetPreview.js:42` unconditionally overwrites `dom.headerTitle.textContent = 'Chat with us'` AFTER `applyWidgetTheme()` runs (line 38) — this line must be removed/changed to let `render.js`'s `header_title` handling (with its own default fallback) take effect, otherwise the live preview will never reflect a custom `header_title`. Also extend `PropTypes.shape` (L95-99) and the `useMemo` dependency array (L81) to include all 6 new fields |
 | `monorepo-javascript/square-admin/src/views/webchat_widgets/__tests__/{create,detail,WidgetPreview}.test.js` | Extend existing test coverage |
