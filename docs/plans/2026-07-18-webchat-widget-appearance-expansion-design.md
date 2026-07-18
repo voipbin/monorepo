@@ -98,16 +98,52 @@ const (
 )
 ```
 
-Defaults (applied in `render.js`, matching the existing
-`primary_color`/`position` fallback pattern — NOT baked into the Go
-struct's zero value, consistent with current design):
-- `secondary_color`: none — when unset, header/bubble text stays
-  `#fff` (existing hardcoded default in `WIDGET_CSS`)
-- `header_background_color`: falls back to `primary_color` (existing
-  behavior — header currently uses `primary_color` for its
-  background; this is now overridable independently)
-- `header_text_color`: `#fff` (existing hardcoded default)
-- `theme_mode`: `light`
+Defaults and dark-mode precedence (applied entirely in `render.js`'s
+`applyWidgetTheme()` — NOT via CSS class rules, and NOT baked into the
+Go struct's zero value):
+
+**Critical architectural constraint** (found in round-3 design
+review): `render.js`'s `applyWidgetTheme()` sets `els.header.style.background`
+(and bubble/sendButton) as an inline style, UNCONDITIONALLY, on every
+call — see current code, `render.js:51-53`. Inline styles always win
+the CSS cascade over stylesheet class rules with no exception. This
+means dark mode CANNOT be implemented as passive CSS class rules for
+any property `applyWidgetTheme()` already sets inline (header/bubble/
+send-button background, header text color) — a `.vb-theme-dark` CSS
+class rule for `header background` would be silently shadowed and
+never render. Therefore:
+
+- `applyWidgetTheme()` itself MUST become `theme_mode`-aware: when
+  computing the effective header background/text/secondary color, it
+  must branch on `themeConfig.theme_mode` and compute the correct
+  dark-vs-light default INLINE, not delegate default-selection to a
+  stylesheet. CSS classes (`vb-theme-dark` on the root) remain valid
+  ONLY for properties `applyWidgetTheme()` does NOT set inline today
+  (e.g. panel/messages background, message bubble colors) — those may
+  still use the class-based approach originally sketched in §5's
+  `widget.js` row.
+- Precedence rule (previously unspecified, now locked): an explicit
+  `header_background_color`/`header_text_color`/`secondary_color`
+  ALWAYS wins over the `theme_mode` default, regardless of
+  light/dark/auto. `theme_mode` only selects which DEFAULT applies
+  when the corresponding color field is unset.
+- Effective default resolution order per color field, evaluated in
+  `applyWidgetTheme()`:
+  1. Explicit `theme_config.<field>` value, if set → use as-is.
+  2. Else resolve from `theme_mode`: `light` → existing light
+     defaults (below); `dark` → dark-mode defaults (below); `auto` →
+     evaluate `window.matchMedia('(prefers-color-scheme: dark)')` at
+     render time, same as light/dark branch.
+  3. `secondary_color`: light default `#fff` / dark default `#1f2937`
+     (existing hardcoded default in `WIDGET_CSS` for light; dark is
+     new)
+  4. `header_background_color`: light default = resolved
+     `primary_color` (existing behavior); dark default = a fixed dark
+     surface color (e.g. `#111827`), independent of `primary_color`,
+     since forcing a bright `primary_color` as a dark-mode header
+     background would defeat the point of dark mode
+  5. `header_text_color`: light default `#fff`; dark default `#f9fafb`
+- `theme_mode`: default `light`
 - `header_title`: `"Chat with us"` (existing hardcoded default,
   currently NOT configurable — `widget.js` L183 hardcodes this
   string; this design makes it configurable)
@@ -134,6 +170,16 @@ at 100 chars (title) / 200 chars (subtitle) — enforced with a
 backend-enforced (matches the existing precedent: `Widget.Name` has no
 backend length validation either).
 
+`header_background_color`/`header_text_color` contrast: no validation
+anywhere (frontend or backend) prevents an admin from picking colors
+that make header text unreadable (e.g. white-on-white). This is a
+cosmetic UX gap, not a security concern (per round-3 review: CSSOM
+style assignment silently ignores malformed values, no injection
+vector). Recommended lightweight mitigation, non-blocking for this
+design: the frontend form shows a live contrast warning (e.g. compute
+relative luminance client-side and flag low-contrast pairs) — deferred
+to implementation as a nice-to-have, not a hard requirement.
+
 ## 5. Affected files
 
 | File | Change |
@@ -143,8 +189,8 @@ backend length validation either).
 | `bin-openapi-manager/openapi/openapi.yaml` | Add 6 properties to `WebchatManagerWidgetThemeConfig`, add `WebchatManagerWidgetThemeMode` enum schema |
 | `bin-api-manager/server/webchat_widgets.go` | Extend `convertWebchatThemeConfig()` to map 6 new fields |
 | `bin-api-manager/server/webchat_widgets_test.go` | Add conversion test cases |
-| `monorepo-javascript/square-admin/src/webchat-widget-runtime/render.js` | Extend `applyWidgetTheme()` to apply 6 new style properties + header title/subtitle text |
-| `monorepo-javascript/square-admin/src/webchat-widget-runtime/widget.js` | `buildWidgetDom()`: add a `headerSubtitle` element (currently only `headerTitle` exists); `WIDGET_CSS`: theme_mode dark-mode base rules; L183's hardcoded `headerTitle.textContent = 'Chat with us'` becomes the fallback default applied by `render.js`, not a permanent hardcode in this file |
+| `monorepo-javascript/square-admin/src/webchat-widget-runtime/render.js` | Extend `applyWidgetTheme()` to apply 6 new style properties + header title/subtitle text. **Must become `theme_mode`-aware** for header background/text/secondary-color default resolution (see §3's precedence rule) — it computes and sets these INLINE per the resolution order in §3, it does not delegate to a CSS class for any property it already sets inline today |
+| `monorepo-javascript/square-admin/src/webchat-widget-runtime/widget.js` | `buildWidgetDom()`: add a `headerSubtitle` element (currently only `headerTitle` exists); `WIDGET_CSS`: `.vb-theme-dark` class rules ONLY for properties `applyWidgetTheme()` does not set inline (panel/messages background, message bubble colors) — NOT for header/bubble/send-button background or header text color, which `render.js` must set inline per §3; L183's hardcoded `headerTitle.textContent = 'Chat with us'` becomes the fallback default applied by `render.js`, not a permanent hardcode in this file |
 | `monorepo-javascript/square-admin/src/webchat-widget-runtime/__tests__/render.test.js` | Add test cases for 6 new fields |
 | `monorepo-javascript/square-admin/src/views/webchat_widgets/{create,detail}.js` | Add 6 new `useState` hooks (mirroring the existing `primaryColor`/`logoUrl` pattern), 6 new form fields (Appearance block: 3 color pickers, theme_mode select, header_title/subtitle inputs), and include the new keys in the `themeConfig` object literal passed to `WidgetPreview` and in the PUT/POST request body |
 | `monorepo-javascript/square-admin/src/views/webchat_widgets/WidgetPreview.js` | **Real logic change, not just PropTypes**: `WidgetPreview.js:42` unconditionally overwrites `dom.headerTitle.textContent = 'Chat with us'` AFTER `applyWidgetTheme()` runs (line 38) — this line must be removed/changed to let `render.js`'s `header_title` handling (with its own default fallback) take effect, otherwise the live preview will never reflect a custom `header_title`. Also extend `PropTypes.shape` (L95-99) and the `useMemo` dependency array (L81) to include all 6 new fields |
@@ -170,13 +216,21 @@ the fields the backend does know about. Safe either deploy order.
 
 ## 6. UX: Appearance tab (square-admin)
 
-Current `create.js`/`detail.js` render Appearance fields inline,
-unnamed as a distinct section. This design does NOT introduce a new
-tab structure (avoiding a UI-restructure PR); the 6 new fields are
-added to the existing appearance block using the same
-`Label`+`Input`/`Select` pattern as `primary_color`/`logo_url`/`position`
-today. If the form grows unwieldy this becomes a legitimate follow-up
-(tab split), but is out of scope here per the "avoid overclaiming
+Current `create.js`/`detail.js` render Appearance fields inline as a
+single `Card` (verified: today's block is exactly 3 fields /
+`primary_color` + `logo_url` + `position`, `create.js:182-231`, ~2
+visual rows). This design does NOT introduce a new tab structure
+(avoiding a UI-restructure PR) — but per round-3 review, adding 6 more
+fields to that same `Card` triples the field count to 9 and will read
+as an undifferentiated wall of labeled rows without at least visual
+sub-grouping. Committed mitigation (does not violate the "no new tab"
+scope boundary): the Appearance `Card` gets 3 mini sub-headings within
+its existing single-Card layout — "Colors" (primary/secondary/header
+background/header text, 4 fields), "Header text" (title/subtitle, 2
+fields), "Layout" (logo, position, theme_mode, 3 fields) — plain
+`<h4>`-style section labels, no new `Card`/`Tabs` component, no new
+navigation. If this still proves unwieldy in practice, a full tab
+split remains a legitimate follow-up per the "avoid overclaiming
 scope" principle from `design-first-with-review-loops`.
 
 Live preview (`WidgetPreview.js`) already re-renders on every
