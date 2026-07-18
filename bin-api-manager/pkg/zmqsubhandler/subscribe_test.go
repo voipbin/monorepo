@@ -221,6 +221,29 @@ func Test_Unsubscribe(t *testing.T) {
 				"topic4",
 			},
 		},
+		{
+			// Regression test for the idx == 1 boundary. Under the old buggy code,
+			// slices.Delete(s, 1, 1) is a VALID but EMPTY range -- it does not panic,
+			// it silently deletes nothing. That means unsubscribing the topic at
+			// index 1 used to leave it in h.topics forever (a silent local-state
+			// leak/correctness bug distinct from the panic at idx >= 2, caught during
+			// PR #1119 review). The fixed slices.Delete(s, 1, 2) must actually remove
+			// the element at index 1.
+			"unsubscribe the topic at index 1 (regression: old code silently deleted nothing here)",
+
+			[]string{
+				"topic0",
+				"topic1",
+				"topic2",
+			},
+
+			"topic1",
+
+			[]string{
+				"topic0",
+				"topic2",
+			},
+		},
 	}
 
 	for _, tt := range tests {
