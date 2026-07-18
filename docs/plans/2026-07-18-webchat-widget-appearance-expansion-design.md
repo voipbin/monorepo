@@ -5,7 +5,7 @@ Status: Draft
 ## 1. Scope (locked with CEO/CTO)
 
 Expand `Widget.ThemeConfig` from 3 fields (`primary_color`, `logo_url`,
-`position`) to 6 fields, adding:
+`position`) to 9 fields (adding 6), adding:
 
 - `secondary_color` (hex `#RRGGBB`) — accent/text-contrast color
 - `header_background_color` (hex `#RRGGBB`) — widget header bar background
@@ -144,16 +144,29 @@ backend length validation either).
 | `bin-api-manager/server/webchat_widgets.go` | Extend `convertWebchatThemeConfig()` to map 6 new fields |
 | `bin-api-manager/server/webchat_widgets_test.go` | Add conversion test cases |
 | `monorepo-javascript/square-admin/src/webchat-widget-runtime/render.js` | Extend `applyWidgetTheme()` to apply 6 new style properties + header title/subtitle text |
-| `monorepo-javascript/square-admin/src/webchat-widget-runtime/widget.js` | `buildWidgetDom()`: add a `headerSubtitle` element (currently only `headerTitle` exists); `WIDGET_CSS`: theme_mode dark-mode base rules |
+| `monorepo-javascript/square-admin/src/webchat-widget-runtime/widget.js` | `buildWidgetDom()`: add a `headerSubtitle` element (currently only `headerTitle` exists); `WIDGET_CSS`: theme_mode dark-mode base rules; L183's hardcoded `headerTitle.textContent = 'Chat with us'` becomes the fallback default applied by `render.js`, not a permanent hardcode in this file |
 | `monorepo-javascript/square-admin/src/webchat-widget-runtime/__tests__/render.test.js` | Add test cases for 6 new fields |
-| `monorepo-javascript/square-admin/src/views/webchat_widgets/{create,detail}.js` | Add form fields (Appearance tab: 3 new color pickers, theme_mode select, header_title/subtitle inputs) |
-| `monorepo-javascript/square-admin/src/views/webchat_widgets/WidgetPreview.js` | Pass new `themeConfig` fields through (already passthrough — no logic change, just extend PropTypes) |
+| `monorepo-javascript/square-admin/src/views/webchat_widgets/{create,detail}.js` | Add 6 new `useState` hooks (mirroring the existing `primaryColor`/`logoUrl` pattern), 6 new form fields (Appearance block: 3 color pickers, theme_mode select, header_title/subtitle inputs), and include the new keys in the `themeConfig` object literal passed to `WidgetPreview` and in the PUT/POST request body |
+| `monorepo-javascript/square-admin/src/views/webchat_widgets/WidgetPreview.js` | **Real logic change, not just PropTypes**: `WidgetPreview.js:42` unconditionally overwrites `dom.headerTitle.textContent = 'Chat with us'` AFTER `applyWidgetTheme()` runs (line 38) — this line must be removed/changed to let `render.js`'s `header_title` handling (with its own default fallback) take effect, otherwise the live preview will never reflect a custom `header_title`. Also extend `PropTypes.shape` (L95-99) and the `useMemo` dependency array (L81) to include all 6 new fields |
 | `monorepo-javascript/square-admin/src/views/webchat_widgets/__tests__/{create,detail,WidgetPreview}.test.js` | Extend existing test coverage |
+| `bin-api-manager/docsdev/source/webchat_struct_widget.rst` | **Required, not conditional**: add the 6 new `theme_config` fields to the struct doc (lines 22-26 code sample, ~L40 field list) and rewrite/remove line 79's now-stale "only the three fields above are configurable" sentence |
 
-No Alembic migration (additive JSON column fields). No `bin-common-handler`
-change (ThemeConfig is already passed as an opaque struct through the
-RPC layer — no field-by-field parameter threading like `welcomeMessage`
-had, because it was never split into positional args in the first place).
+No Alembic migration (additive JSON column fields — confirmed: the
+`theme_config` column is a plain `json` type with no
+`GENERATED ALWAYS AS` virtual/generated column indexing into it
+anywhere in the Alembic history). No `bin-common-handler` change
+(ThemeConfig is already passed as an opaque `*widget.ThemeConfig`
+pointer through the RPC layer at every hop — `widgethandler` →
+`bin-common-handler/requesthandler` → `bin-api-manager/servicehandler`
+— never split into positional args like `welcomeMessage` had been).
+
+**Forward-compat note**: `WebchatManagerWidgetThemeConfig` has no
+`additionalProperties: false`, so if square-admin ships new
+`theme_config` keys ahead of the Go backend/OpenAPI spec adding them
+(deploy-ordering skew across the two independently-deployed repos),
+the extra JSON keys are silently dropped by Go's JSON unmarshal into
+the (older) generated struct — no request rejection, no data loss for
+the fields the backend does know about. Safe either deploy order.
 
 ## 6. UX: Appearance tab (square-admin)
 
