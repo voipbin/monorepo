@@ -94,4 +94,4 @@ Optional, customer-editable appearance settings for the floating chat bubble and
 
 .. note:: **AI Implementation Hint**
 
-   Arbitrary CSS injection is deliberately not supported -- only the nine fields above are configurable. This keeps the widget's attack surface bounded, since it renders on customer-controlled third-party pages. Hex color fields (``primary_color``, ``secondary_color``, ``header_background_color``, ``header_text_color``) are validated client-side only; the backend accepts any string in these fields without server-side format validation.
+   Arbitrary CSS injection is deliberately not supported -- only the nine fields above are configurable. This keeps the widget's attack surface bounded, since it renders on customer-controlled third-party pages. Hex color fields (``primary_color``, ``secondary_color``, ``header_background_color``, ``header_text_color``) and the ``theme_mode`` enum are validated server-side (regex/enum check) at the ``bin-api-manager`` handler boundary before persistence; requests with malformed values are rejected with ``INVALID_THEME_CONFIG``.

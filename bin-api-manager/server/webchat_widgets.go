@@ -1,6 +1,8 @@
 package server
 
 import (
+	"regexp"
+
 	"monorepo/bin-api-manager/gens/openapi_server"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonoutline "monorepo/bin-common-handler/models/outline"
@@ -10,6 +12,19 @@ import (
 	"github.com/gofrs/uuid"
 	openapi_types "github.com/oapi-codegen/runtime/types"
 	"github.com/sirupsen/logrus"
+)
+
+// regexHexColor matches the OpenAPI-declared theme_config hex color pattern
+// (`^#[0-9a-fA-F]{6}$`). The OpenAPI spec only documents this constraint for
+// client-side tooling/codegen; it is not enforced at runtime by the
+// generated server code, so it must be checked explicitly here before the
+// value is persisted and later rendered, unsanitized, into third-party
+// pages via the embeddable widget.
+var regexHexColor = regexp.MustCompile(`^#[0-9a-fA-F]{6}$`)
+
+const (
+	maxHeaderTitleLength    = 100
+	maxHeaderSubtitleLength = 200
 )
 
 func (h *server) GetWebchatWidgets(c *gin.Context, params openapi_server.GetWebchatWidgetsParams) {
@@ -91,6 +106,13 @@ func (h *server) PostWebchatWidgets(c *gin.Context) {
 		sessionIdleTimeout = *req.SessionIdleTimeout
 	}
 
+	themeConfig, themeErr := convertWebchatThemeConfig(req.ThemeConfig)
+	if themeErr != nil {
+		log.Infof("Invalid theme_config in request. err: %v", themeErr)
+		abortWithError(c, themeErr)
+		return
+	}
+
 	res, err := h.serviceHandler.WebchatWidgetCreate(
 		c.Request.Context(),
 		a,
@@ -98,7 +120,7 @@ func (h *server) PostWebchatWidgets(c *gin.Context) {
 		sessionFlowID,
 		messageFlowID,
 		sessionIdleTimeout,
-		convertWebchatThemeConfig(req.ThemeConfig),
+		themeConfig,
 	)
 	if err != nil {
 		log.Errorf("Could not create a webchat widget. err: %v", err)
@@ -214,6 +236,13 @@ func (h *server) PutWebchatWidgetsId(c *gin.Context, id openapi_types.UUID) {
 		sessionIdleTimeout = *req.SessionIdleTimeout
 	}
 
+	themeConfig, themeErr := convertWebchatThemeConfig(req.ThemeConfig)
+	if themeErr != nil {
+		log.Infof("Invalid theme_config in request. err: %v", themeErr)
+		abortWithError(c, themeErr)
+		return
+	}
+
 	res, err := h.serviceHandler.WebchatWidgetUpdate(
 		c.Request.Context(),
 		a,
@@ -222,7 +251,7 @@ func (h *server) PutWebchatWidgetsId(c *gin.Context, id openapi_types.UUID) {
 		sessionFlowID,
 		messageFlowID,
 		sessionIdleTimeout,
-		convertWebchatThemeConfig(req.ThemeConfig),
+		themeConfig,
 	)
 	if err != nil {
 		log.Errorf("Could not update the webchat widget. err: %v", err)
@@ -268,22 +297,43 @@ func (h *server) PostWebchatWidgetsIdDirectHashRegenerate(c *gin.Context, id ope
 // convertWebchatThemeConfig converts the OpenAPI-generated theme_config
 // request shape to the internal wcwidget.ThemeConfig, or nil when the
 // request omitted it (all Widget theming fields stay optional end to end).
-func convertWebchatThemeConfig(req *openapi_server.WebchatManagerWidgetThemeConfig) *wcwidget.ThemeConfig {
+//
+// Also enforces, at this handler boundary, the format constraints the
+// OpenAPI spec documents (hex color pattern, theme_mode enum, header
+// title/subtitle max lengths) but which the generated server code does
+// NOT validate at runtime on its own. This matters because theme_config
+// values are customer-controlled and get rendered, largely unsanitized,
+// into the embeddable widget on third-party pages -- accepting arbitrary
+// strings here would let a customer persist malformed or oversized values
+// that downstream rendering code does not expect.
+func convertWebchatThemeConfig(req *openapi_server.WebchatManagerWidgetThemeConfig) (*wcwidget.ThemeConfig, *cerrors.VoipbinError) {
 	if req == nil {
-		return nil
+		return nil, nil
 	}
 
 	res := &wcwidget.ThemeConfig{}
 	if req.PrimaryColor != nil {
+		if !regexHexColor.MatchString(*req.PrimaryColor) {
+			return nil, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_THEME_CONFIG", "primary_color must match ^#[0-9a-fA-F]{6}$.")
+		}
 		res.PrimaryColor = *req.PrimaryColor
 	}
 	if req.SecondaryColor != nil {
+		if !regexHexColor.MatchString(*req.SecondaryColor) {
+			return nil, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_THEME_CONFIG", "secondary_color must match ^#[0-9a-fA-F]{6}$.")
+		}
 		res.SecondaryColor = *req.SecondaryColor
 	}
 	if req.HeaderBackgroundColor != nil {
+		if !regexHexColor.MatchString(*req.HeaderBackgroundColor) {
+			return nil, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_THEME_CONFIG", "header_background_color must match ^#[0-9a-fA-F]{6}$.")
+		}
 		res.HeaderBackgroundColor = *req.HeaderBackgroundColor
 	}
 	if req.HeaderTextColor != nil {
+		if !regexHexColor.MatchString(*req.HeaderTextColor) {
+			return nil, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_THEME_CONFIG", "header_text_color must match ^#[0-9a-fA-F]{6}$.")
+		}
 		res.HeaderTextColor = *req.HeaderTextColor
 	}
 	if req.LogoUrl != nil {
@@ -293,14 +343,26 @@ func convertWebchatThemeConfig(req *openapi_server.WebchatManagerWidgetThemeConf
 		res.Position = wcwidget.WidgetPosition(*req.Position)
 	}
 	if req.ThemeMode != nil {
-		res.ThemeMode = wcwidget.ThemeMode(*req.ThemeMode)
+		mode := wcwidget.ThemeMode(*req.ThemeMode)
+		switch mode {
+		case wcwidget.ThemeModeLight, wcwidget.ThemeModeDark, wcwidget.ThemeModeAuto:
+			res.ThemeMode = mode
+		default:
+			return nil, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_THEME_CONFIG", "theme_mode must be one of light, dark, auto.")
+		}
 	}
 	if req.HeaderTitle != nil {
+		if len(*req.HeaderTitle) > maxHeaderTitleLength {
+			return nil, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_THEME_CONFIG", "header_title must be at most 100 characters.")
+		}
 		res.HeaderTitle = *req.HeaderTitle
 	}
 	if req.HeaderSubtitle != nil {
+		if len(*req.HeaderSubtitle) > maxHeaderSubtitleLength {
+			return nil, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_THEME_CONFIG", "header_subtitle must be at most 200 characters.")
+		}
 		res.HeaderSubtitle = *req.HeaderSubtitle
 	}
 
-	return res
+	return res, nil
 }
