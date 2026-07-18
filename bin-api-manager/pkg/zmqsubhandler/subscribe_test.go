@@ -175,6 +175,75 @@ func Test_Unsubscribe(t *testing.T) {
 				"world",
 			},
 		},
+		{
+			// Regression test for a production panic (prod api-manager crash-loop,
+			// 2026-07-18): slices.Delete(s, idx, 1) is only valid when idx <= 1, because
+			// the second argument is an end-index, not a count. Unsubscribing a topic
+			// held at index >= 2 previously panicked with
+			// "slice bounds out of range [idx:1]". This case deletes the topic at
+			// index 4 (5 topics total) to guard against that regression.
+			"unsubscribe a topic beyond index 1 (regression: slices.Delete end-index bug)",
+
+			[]string{
+				"topic0",
+				"topic1",
+				"topic2",
+				"topic3",
+				"topic4",
+			},
+
+			"topic4",
+
+			[]string{
+				"topic0",
+				"topic1",
+				"topic2",
+				"topic3",
+			},
+		},
+		{
+			"unsubscribe a topic in the middle of a longer list",
+
+			[]string{
+				"topic0",
+				"topic1",
+				"topic2",
+				"topic3",
+				"topic4",
+			},
+
+			"topic2",
+
+			[]string{
+				"topic0",
+				"topic1",
+				"topic3",
+				"topic4",
+			},
+		},
+		{
+			// Regression test for the idx == 1 boundary. Under the old buggy code,
+			// slices.Delete(s, 1, 1) is a VALID but EMPTY range -- it does not panic,
+			// it silently deletes nothing. That means unsubscribing the topic at
+			// index 1 used to leave it in h.topics forever (a silent local-state
+			// leak/correctness bug distinct from the panic at idx >= 2, caught during
+			// PR #1119 review). The fixed slices.Delete(s, 1, 2) must actually remove
+			// the element at index 1.
+			"unsubscribe the topic at index 1 (regression: old code silently deleted nothing here)",
+
+			[]string{
+				"topic0",
+				"topic1",
+				"topic2",
+			},
+
+			"topic1",
+
+			[]string{
+				"topic0",
+				"topic2",
+			},
+		},
 	}
 
 	for _, tt := range tests {
