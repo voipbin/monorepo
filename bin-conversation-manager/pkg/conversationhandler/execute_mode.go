@@ -58,7 +58,7 @@ func (h *conversationHandler) runExecuteModeAgent(ctx context.Context, cv *conve
 }
 
 // runExecuteModeFlow dispatches by conversation type. Each per-type runner fetches the type-specific
-// flow source (account for LINE/WhatsApp, number for SMS) and calls executeActiveflow with the resolved flow id.
+// flow source (account for LINE/WhatsApp, number for SMS, widget for Webchat) and calls executeActiveflow with the resolved flow id.
 func (h *conversationHandler) runExecuteModeFlow(ctx context.Context, cv *conversation.Conversation, m *message.Message) error {
 	switch cv.Type {
 	case conversation.TypeLine:
@@ -67,6 +67,8 @@ func (h *conversationHandler) runExecuteModeFlow(ctx context.Context, cv *conver
 		return h.runExecuteModeFlowMessage(ctx, cv, m)
 	case conversation.TypeWhatsApp:
 		return h.runExecuteModeFlowWhatsApp(ctx, cv, m)
+	case conversation.TypeWebchat:
+		return h.runExecuteModeFlowWebchat(ctx, cv, m)
 	default:
 		logrus.WithFields(logrus.Fields{
 			"func":            "runExecuteModeFlow",
@@ -118,6 +120,31 @@ func (h *conversationHandler) runExecuteModeFlowWhatsApp(ctx context.Context, cv
 	}
 	if errExecute := h.executeActiveflow(ctx, cv, m, ac.MessageFlowID); errExecute != nil {
 		return errors.Wrapf(errExecute, "could not execute activeflow. account_id: %s", ac.ID)
+	}
+	return nil
+}
+
+// runExecuteModeFlowWebchat fetches the Widget by cv.Self.Target (the
+// Widget's own UUID, per messageEventReceivedWebchat's Self=Widget.ID
+// address construction) and triggers an activeflow using
+// Widget.MessageFlowID. Mirrors runExecuteModeFlowLine/WhatsApp's shape
+// exactly, except the flow source is a Widget (via WebchatV1WidgetGet)
+// rather than an Account -- webchat conversations never have an
+// AccountID. See design doc
+// 2026-07-18-webchat-message-flow-owner-migration-design.md §3: this
+// moves MessageFlowID's Flow-trigger ownership here from
+// bin-webchat-manager, matching every other channel.
+func (h *conversationHandler) runExecuteModeFlowWebchat(ctx context.Context, cv *conversation.Conversation, m *message.Message) error {
+	widgetID, errParse := uuid.FromString(cv.Self.Target)
+	if errParse != nil {
+		return errors.Wrapf(errParse, "invalid widget id in conversation self target: %s", cv.Self.Target)
+	}
+	w, errGet := h.reqHandler.WebchatV1WidgetGet(ctx, widgetID)
+	if errGet != nil {
+		return errors.Wrapf(errGet, "could not get widget. widget_id: %s", widgetID)
+	}
+	if errExecute := h.executeActiveflow(ctx, cv, m, w.MessageFlowID); errExecute != nil {
+		return errors.Wrapf(errExecute, "could not execute activeflow. widget_id: %s", w.ID)
 	}
 	return nil
 }

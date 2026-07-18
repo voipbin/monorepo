@@ -121,13 +121,15 @@ func (h *conversationHandler) messageEventReceivedWebchat(ctx context.Context, w
 	}
 	log.WithField("message", convMsg).Debugf("Create a message. message_id: %s", convMsg.ID)
 
-	// B안 (confirmed, design doc §16.5): webchat-manager alone owns the
-	// real-time Flow trigger on Widget.FlowID. This subscriber path must
-	// NEVER trigger a Flow of its own. getExecuteMode/runExecuteModeFlow
-	// already default-case no-op on an unrecognized/unconfigured
-	// Account for TypeWebchat (no Account is ever created for webchat --
-	// see GetOrCreateBySelfAndPeer's Account-less resolution above), so
-	// this is enforced structurally, not by an explicit skip here.
+	// MessageFlowID's Flow-trigger (design doc
+	// 2026-07-18-webchat-message-flow-owner-migration-design.md):
+	// this subscriber path NOW owns the Flow trigger for TypeWebchat
+	// conversations, via ExecuteModeFlow -> runExecuteModeFlowWebchat,
+	// exactly mirroring SMS/LINE/WhatsApp's own inbound path. This
+	// reverses the prior "B안" behavior (webchat-manager alone owned
+	// the trigger) -- webchat-manager no longer triggers any
+	// activeflow of its own; this event handler is now the SOLE
+	// trigger point for MessageFlowID.
 	mode := h.getExecuteMode(cv)
 	switch mode {
 	case ExecuteModeAgent:
@@ -135,12 +137,6 @@ func (h *conversationHandler) messageEventReceivedWebchat(ctx context.Context, w
 			return errors.Wrapf(errAgent, "could not run agent mode. message_id: %s", convMsg.ID)
 		}
 	case ExecuteModeFlow:
-		// Structurally unreachable for TypeWebchat conversations today
-		// (no Account, hence no Account.MessageFlowID, hence
-		// getExecuteMode never returns ExecuteModeFlow here) -- kept for
-		// interface completeness / future-proofing against
-		// getExecuteMode's own evolution, exactly mirroring eventSMS's
-		// switch shape.
 		if errFlow := h.runExecuteModeFlow(ctx, cv, convMsg); errFlow != nil {
 			return errors.Wrapf(errFlow, "could not run flow mode. message_id: %s", convMsg.ID)
 		}
