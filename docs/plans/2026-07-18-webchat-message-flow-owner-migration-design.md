@@ -254,8 +254,12 @@ second.** This is enforced via `.circleci/config.yml`'s
 `bin-*-manager/` directory) combined with each service pipeline's own
 manual `build-approval` gate (`type: approval`, gating
 `<service>-test`/`-build`/`-release` in `config_work.yml`) — merging
-this single PR triggers BOTH the `bin-conversation-manager` and
-`bin-webchat-manager` pipelines, but neither proceeds past its
+this single PR triggers the `bin-conversation-manager` and
+`bin-webchat-manager` pipelines (and, incidentally, `bin-flow-manager`'s
+pipeline too, for the comment-only change in §4 — that pipeline's
+approval can be clicked at any time, since it carries no behavioral
+change and has no sequencing dependency on the other two), but neither
+of the two SEQUENCING-RELEVANT pipelines proceeds past its
 `build-approval` step without an explicit manual click. The rollout
 operator approves `bin-conversation-manager`'s gate first, verifies in
 production (the REDUCED criterion below), THEN approves
