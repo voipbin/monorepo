@@ -1,6 +1,6 @@
 # Webchat Widget: Connecting/Typing Indicators + Shape/Font Options: Design
 
-Status: Draft (Round 2 review: 3/3 APPROVE — see §9)
+Status: APPROVED (3 rounds, rounds 2-3 consecutive 3/3 + 1/1 APPROVE — see §9-§10). Ready for implementation.
 
 ## 1. Scope (locked with CEO/CTO)
 
@@ -288,6 +288,18 @@ No Alembic migration needed — `theme_config` remains a single opaque
 JSON column, same precedent as the prior three ThemeConfig expansion
 rounds.
 
+**Forward-compat / deploy-order note:** this change is purely additive
+JSON (5 new optional keys on an existing opaque `theme_config` column,
+no renames/removals). Matching the deploy-order precedent from the
+prior three ThemeConfig rounds, either PR (backend schema/validation
+in `monorepo`, or frontend consumption/appearance-form in
+`monorepo-javascript`) is safe to land first: an old frontend talking
+to a new backend simply never sends the 5 new keys (backend defaults
+apply); a new frontend talking to an old backend has its new keys
+silently accepted-and-ignored by the backend's existing "unknown JSON
+keys in an opaque column" tolerance (no strict-schema rejection at
+that layer). No coordinated/simultaneous-deploy requirement.
+
 `bin-openapi-manager` + `bin-api-manager`: mirror the 5 new fields in
 the `ThemeConfig` schema/conversion code, same mechanical pattern as
 the prior round (schema field + Go struct field + validation, no new
@@ -465,3 +477,22 @@ the implementer, not requiring further design-doc iteration: prefer
 `useRef` over `useState` for the frontend `touched` flag (avoids an
 unnecessary re-render on toggle; either is correct given this
 codebase's routing/remount pattern).
+
+## 10. Round 3 review disposition
+
+Round 3 rotated to a fresh angle not covered in rounds 1-2:
+implementation-readiness / scope-discipline / cross-repo-sequencing.
+Verdict: APPROVE. Findings: §4's Go struct diff and §5's frontend
+detail were both confirmed sufficiently concrete for an implementer to
+proceed without further clarification; no scope-exclusion (§1) was
+quietly reintroduced; §6's out-of-scope checklist remains accurate
+given all round-1/2 additions. One non-blocking suggestion applied:
+§4 gained an explicit forward-compat/deploy-order note (additive-JSON
+change, either repo's PR safe to land first, no coordinated-deploy
+requirement) mirroring the equivalent note in the prior appearance-
+expansion round's design doc.
+
+Design review loop closed: 3 rounds total, rounds 2 and 3 both
+unanimous APPROVE (2 consecutive), satisfying the platform's minimum-3-
+round / 2-consecutive-APPROVE closing rule. Status: APPROVED, ready for
+implementation.
