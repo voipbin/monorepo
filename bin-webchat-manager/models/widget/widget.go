@@ -90,7 +90,52 @@ type ThemeConfig struct {
 	ThemeMode             ThemeMode      `json:"theme_mode,omitempty"`              // default: light
 	HeaderTitle           string         `json:"header_title,omitempty"`            // default: "Chat with us"
 	HeaderSubtitle        string         `json:"header_subtitle,omitempty"`         // default: none
+
+	// ConnectingIndicatorEnabled/ConnectingIndicatorText: shown in the
+	// panel while the visitor's session is being created (between
+	// widget open and POST /webchat_sessions completing). *bool (not
+	// bool) because the default is true -- omitempty on a plain bool
+	// could not distinguish "never set" from "explicitly false" on a
+	// read-modify-write round-trip, silently flipping an existing
+	// widget's default-on indicator off. nil/absent = enabled (true).
+	ConnectingIndicatorEnabled *bool  `json:"connecting_indicator_enabled,omitempty"`
+	ConnectingIndicatorText    string `json:"connecting_indicator_text,omitempty"` // default: "Connecting…", max 100 chars
+
+	// TypingIndicatorEnabled: pure on/off gate over the existing
+	// three-dot "waiting for response" animation. No text-label
+	// variant is supported. nil/absent = enabled (true). Same *bool
+	// reasoning as ConnectingIndicatorEnabled above.
+	TypingIndicatorEnabled *bool `json:"typing_indicator_enabled,omitempty"`
+
+	// BorderRadius/FontSize: bounded enum presets applied across the
+	// bubble/panel/message-bubbles/input/send-button as a coordinated
+	// set. See BorderRadius/FontSize type docs below.
+	BorderRadius BorderRadius `json:"border_radius,omitempty"` // default: rounded
+	FontSize     FontSize     `json:"font_size,omitempty"`     // default: default
 }
+
+// BorderRadius controls corner rounding across the widget's bubble,
+// panel, message bubbles, input field, and send button as a
+// coordinated set.
+type BorderRadius string
+
+// list of border radius presets
+const (
+	BorderRadiusSharp   BorderRadius = "sharp"
+	BorderRadiusRounded BorderRadius = "rounded" // default
+	BorderRadiusPill    BorderRadius = "pill"
+)
+
+// FontSize controls the base font-size scale applied to the widget's
+// header text and message text.
+type FontSize string
+
+// list of font size presets
+const (
+	FontSizeCompact FontSize = "compact"
+	FontSizeDefault FontSize = "default" // default
+	FontSizeLarge   FontSize = "large"
+)
 
 // ThemeMode controls light/dark/auto rendering of the widget panel.
 type ThemeMode string

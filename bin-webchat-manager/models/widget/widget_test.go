@@ -1,6 +1,7 @@
 package widget
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -82,6 +83,139 @@ func TestWidgetStruct(t *testing.T) {
 	}
 	if w.ThemeConfig.HeaderSubtitle != "We usually reply in a few minutes" {
 		t.Errorf("Widget.ThemeConfig.HeaderSubtitle = %v, expected %v", w.ThemeConfig.HeaderSubtitle, "We usually reply in a few minutes")
+	}
+}
+
+func TestThemeConfigIndicatorAndShapeFields(t *testing.T) {
+	connectingEnabled := true
+	typingEnabled := false
+
+	tc := ThemeConfig{
+		ConnectingIndicatorEnabled: &connectingEnabled,
+		ConnectingIndicatorText:    "Please wait…",
+		TypingIndicatorEnabled:     &typingEnabled,
+		BorderRadius:               BorderRadiusPill,
+		FontSize:                   FontSizeLarge,
+	}
+
+	if tc.ConnectingIndicatorEnabled == nil || *tc.ConnectingIndicatorEnabled != true {
+		t.Errorf("ThemeConfig.ConnectingIndicatorEnabled = %v, expected pointer to true", tc.ConnectingIndicatorEnabled)
+	}
+	if tc.ConnectingIndicatorText != "Please wait…" {
+		t.Errorf("ThemeConfig.ConnectingIndicatorText = %v, expected %v", tc.ConnectingIndicatorText, "Please wait…")
+	}
+	if tc.TypingIndicatorEnabled == nil || *tc.TypingIndicatorEnabled != false {
+		t.Errorf("ThemeConfig.TypingIndicatorEnabled = %v, expected pointer to false", tc.TypingIndicatorEnabled)
+	}
+	if tc.BorderRadius != BorderRadiusPill {
+		t.Errorf("ThemeConfig.BorderRadius = %v, expected %v", tc.BorderRadius, BorderRadiusPill)
+	}
+	if tc.FontSize != FontSizeLarge {
+		t.Errorf("ThemeConfig.FontSize = %v, expected %v", tc.FontSize, FontSizeLarge)
+	}
+}
+
+// TestThemeConfigBoolOmittedVsFalseRoundTrip verifies the specific
+// *bool/omitempty behavior the design doc calls out as the highest-risk
+// regression: a nil (never-set) *bool field must marshal as an ABSENT
+// JSON key (falls back to the platform default of "enabled" at render
+// time), while an explicit false must marshal as a present "false" key
+// -- these two states must remain distinguishable through a full
+// marshal/unmarshal round-trip, or an unrelated field edit could
+// silently flip an existing widget's default-on indicator off.
+func TestThemeConfigBoolOmittedVsFalseRoundTrip(t *testing.T) {
+	explicitFalse := false
+
+	tests := []struct {
+		name           string
+		tc             ThemeConfig
+		wantKeyPresent bool
+	}{
+		{
+			name:           "nil (never set) omits the key entirely",
+			tc:             ThemeConfig{ConnectingIndicatorEnabled: nil},
+			wantKeyPresent: false,
+		},
+		{
+			name:           "explicit false keeps the key present",
+			tc:             ThemeConfig{ConnectingIndicatorEnabled: &explicitFalse},
+			wantKeyPresent: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			data, err := json.Marshal(tt.tc)
+			if err != nil {
+				t.Fatalf("json.Marshal() error = %v", err)
+			}
+
+			var raw map[string]any
+			if errUnmarshal := json.Unmarshal(data, &raw); errUnmarshal != nil {
+				t.Fatalf("json.Unmarshal() error = %v", errUnmarshal)
+			}
+
+			_, keyPresent := raw["connecting_indicator_enabled"]
+			if keyPresent != tt.wantKeyPresent {
+				t.Errorf("connecting_indicator_enabled key present = %v, expected %v (marshaled: %s)", keyPresent, tt.wantKeyPresent, string(data))
+			}
+
+			// Round-trip back into a fresh struct and confirm the
+			// nil-vs-false distinction survives unmarshal too.
+			var roundTripped ThemeConfig
+			if errUnmarshal := json.Unmarshal(data, &roundTripped); errUnmarshal != nil {
+				t.Fatalf("json.Unmarshal() into ThemeConfig error = %v", errUnmarshal)
+			}
+			if tt.tc.ConnectingIndicatorEnabled == nil {
+				if roundTripped.ConnectingIndicatorEnabled != nil {
+					t.Errorf("round-tripped ConnectingIndicatorEnabled = %v, expected nil", roundTripped.ConnectingIndicatorEnabled)
+				}
+			} else {
+				if roundTripped.ConnectingIndicatorEnabled == nil || *roundTripped.ConnectingIndicatorEnabled != *tt.tc.ConnectingIndicatorEnabled {
+					t.Errorf("round-tripped ConnectingIndicatorEnabled = %v, expected pointer to %v", roundTripped.ConnectingIndicatorEnabled, *tt.tc.ConnectingIndicatorEnabled)
+				}
+			}
+		})
+	}
+}
+
+func TestBorderRadiusConstants(t *testing.T) {
+	tests := []struct {
+		name     string
+		constant BorderRadius
+		expected string
+	}{
+		{"border_radius_sharp", BorderRadiusSharp, "sharp"},
+		{"border_radius_rounded", BorderRadiusRounded, "rounded"},
+		{"border_radius_pill", BorderRadiusPill, "pill"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if string(tt.constant) != tt.expected {
+				t.Errorf("Wrong constant value. expect: %s, got: %s", tt.expected, tt.constant)
+			}
+		})
+	}
+}
+
+func TestFontSizeConstants(t *testing.T) {
+	tests := []struct {
+		name     string
+		constant FontSize
+		expected string
+	}{
+		{"font_size_compact", FontSizeCompact, "compact"},
+		{"font_size_default", FontSizeDefault, "default"},
+		{"font_size_large", FontSizeLarge, "large"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if string(tt.constant) != tt.expected {
+				t.Errorf("Wrong constant value. expect: %s, got: %s", tt.expected, tt.constant)
+			}
+		})
 	}
 }
 

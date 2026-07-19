@@ -30,7 +30,7 @@ func Test_convertWebchatThemeConfig(t *testing.T) {
 		}
 	})
 
-	t.Run("all 9 fields map through correctly", func(t *testing.T) {
+	t.Run("all 14 fields map through correctly", func(t *testing.T) {
 		primaryColor := "#1a73e8"
 		secondaryColor := "#f5f5f5"
 		headerBackgroundColor := "#111827"
@@ -40,17 +40,27 @@ func Test_convertWebchatThemeConfig(t *testing.T) {
 		themeMode := openapi_server.WebchatManagerWidgetThemeMode("dark")
 		headerTitle := "Support"
 		headerSubtitle := "We usually reply in a few minutes"
+		connectingEnabled := true
+		connectingText := "Please wait…"
+		typingEnabled := false
+		borderRadius := openapi_server.WebchatManagerWidgetThemeConfigBorderRadius("pill")
+		fontSize := openapi_server.WebchatManagerWidgetThemeConfigFontSize("large")
 
 		req := &openapi_server.WebchatManagerWidgetThemeConfig{
-			PrimaryColor:          &primaryColor,
-			SecondaryColor:        &secondaryColor,
-			HeaderBackgroundColor: &headerBackgroundColor,
-			HeaderTextColor:       &headerTextColor,
-			LogoUrl:               &logoURL,
-			Position:              &position,
-			ThemeMode:             &themeMode,
-			HeaderTitle:           &headerTitle,
-			HeaderSubtitle:        &headerSubtitle,
+			PrimaryColor:               &primaryColor,
+			SecondaryColor:             &secondaryColor,
+			HeaderBackgroundColor:      &headerBackgroundColor,
+			HeaderTextColor:            &headerTextColor,
+			LogoUrl:                    &logoURL,
+			Position:                   &position,
+			ThemeMode:                  &themeMode,
+			HeaderTitle:                &headerTitle,
+			HeaderSubtitle:             &headerSubtitle,
+			ConnectingIndicatorEnabled: &connectingEnabled,
+			ConnectingIndicatorText:    &connectingText,
+			TypingIndicatorEnabled:     &typingEnabled,
+			BorderRadius:               &borderRadius,
+			FontSize:                   &fontSize,
 		}
 
 		got, err := convertWebchatThemeConfig(req)
@@ -61,19 +71,25 @@ func Test_convertWebchatThemeConfig(t *testing.T) {
 			t.Fatalf("expected non-nil ThemeConfig, got nil")
 		}
 
-		expect := &wcwidget.ThemeConfig{
-			PrimaryColor:          primaryColor,
-			SecondaryColor:        secondaryColor,
-			HeaderBackgroundColor: headerBackgroundColor,
-			HeaderTextColor:       headerTextColor,
-			LogoURL:               logoURL,
-			Position:              wcwidget.WidgetPositionBottomLeft,
-			ThemeMode:             wcwidget.ThemeModeDark,
-			HeaderTitle:           headerTitle,
-			HeaderSubtitle:        headerSubtitle,
+		if got.PrimaryColor != primaryColor ||
+			got.SecondaryColor != secondaryColor ||
+			got.HeaderBackgroundColor != headerBackgroundColor ||
+			got.HeaderTextColor != headerTextColor ||
+			got.LogoURL != logoURL ||
+			got.Position != wcwidget.WidgetPositionBottomLeft ||
+			got.ThemeMode != wcwidget.ThemeModeDark ||
+			got.HeaderTitle != headerTitle ||
+			got.HeaderSubtitle != headerSubtitle ||
+			got.ConnectingIndicatorText != connectingText ||
+			got.BorderRadius != wcwidget.BorderRadiusPill ||
+			got.FontSize != wcwidget.FontSizeLarge {
+			t.Errorf("wrong conversion for one of the string/enum fields, got: %+v", got)
 		}
-		if *got != *expect {
-			t.Errorf("wrong conversion.\nexpect: %+v\ngot: %+v", expect, got)
+		if got.ConnectingIndicatorEnabled == nil || *got.ConnectingIndicatorEnabled != true {
+			t.Errorf("ConnectingIndicatorEnabled = %v, expected pointer to true", got.ConnectingIndicatorEnabled)
+		}
+		if got.TypingIndicatorEnabled == nil || *got.TypingIndicatorEnabled != false {
+			t.Errorf("TypingIndicatorEnabled = %v, expected pointer to false", got.TypingIndicatorEnabled)
 		}
 	})
 
@@ -193,6 +209,113 @@ func Test_convertWebchatThemeConfig(t *testing.T) {
 
 		if _, err := convertWebchatThemeConfig(req); err == nil {
 			t.Fatalf("expected an error for header_subtitle exceeding 200 chars, got nil")
+		}
+	})
+
+	t.Run("connecting_indicator_text over 100 characters is rejected", func(t *testing.T) {
+		tooLong := make([]byte, 101)
+		for i := range tooLong {
+			tooLong[i] = 'a'
+		}
+		bad := string(tooLong)
+		req := &openapi_server.WebchatManagerWidgetThemeConfig{ConnectingIndicatorText: &bad}
+
+		if _, err := convertWebchatThemeConfig(req); err == nil {
+			t.Fatalf("expected an error for connecting_indicator_text exceeding 100 chars, got nil")
+		}
+	})
+
+	t.Run("invalid border_radius enum value is rejected", func(t *testing.T) {
+		bad := openapi_server.WebchatManagerWidgetThemeConfigBorderRadius("oval")
+		req := &openapi_server.WebchatManagerWidgetThemeConfig{BorderRadius: &bad}
+
+		got, err := convertWebchatThemeConfig(req)
+		if err == nil {
+			t.Fatalf("expected an error for invalid border_radius, got nil")
+		}
+		if got != nil {
+			t.Errorf("expected nil ThemeConfig on validation failure, got %+v", got)
+		}
+	})
+
+	t.Run("invalid font_size enum value is rejected", func(t *testing.T) {
+		bad := openapi_server.WebchatManagerWidgetThemeConfigFontSize("huge")
+		req := &openapi_server.WebchatManagerWidgetThemeConfig{FontSize: &bad}
+
+		got, err := convertWebchatThemeConfig(req)
+		if err == nil {
+			t.Fatalf("expected an error for invalid font_size, got nil")
+		}
+		if got != nil {
+			t.Errorf("expected nil ThemeConfig on validation failure, got %+v", got)
+		}
+	})
+
+	// connecting_indicator_enabled/typing_indicator_enabled *bool
+	// omitted-vs-false distinction: the highest-risk regression this
+	// design doc identifies. A nil request pointer (field never sent)
+	// must produce a nil ThemeConfig field (falls back to the platform
+	// default of enabled=true at render time); an explicit false must
+	// be preserved as an explicit false, not silently dropped to nil.
+	t.Run("connecting_indicator_enabled: request omits the field -> result stays nil (not false)", func(t *testing.T) {
+		req := &openapi_server.WebchatManagerWidgetThemeConfig{}
+
+		got, err := convertWebchatThemeConfig(req)
+		if err != nil {
+			t.Errorf("expected no error, got %v", err)
+		}
+		if got == nil {
+			t.Fatalf("expected non-nil ThemeConfig, got nil")
+		}
+		if got.ConnectingIndicatorEnabled != nil {
+			t.Errorf("ConnectingIndicatorEnabled = %v, expected nil when the request never sent the field", got.ConnectingIndicatorEnabled)
+		}
+	})
+
+	t.Run("connecting_indicator_enabled: request explicitly sends false -> result preserves false (not dropped to nil)", func(t *testing.T) {
+		explicitFalse := false
+		req := &openapi_server.WebchatManagerWidgetThemeConfig{ConnectingIndicatorEnabled: &explicitFalse}
+
+		got, err := convertWebchatThemeConfig(req)
+		if err != nil {
+			t.Errorf("expected no error, got %v", err)
+		}
+		if got == nil {
+			t.Fatalf("expected non-nil ThemeConfig, got nil")
+		}
+		if got.ConnectingIndicatorEnabled == nil || *got.ConnectingIndicatorEnabled != false {
+			t.Errorf("ConnectingIndicatorEnabled = %v, expected pointer to false", got.ConnectingIndicatorEnabled)
+		}
+	})
+
+	t.Run("typing_indicator_enabled: request omits the field -> result stays nil (not false)", func(t *testing.T) {
+		req := &openapi_server.WebchatManagerWidgetThemeConfig{}
+
+		got, err := convertWebchatThemeConfig(req)
+		if err != nil {
+			t.Errorf("expected no error, got %v", err)
+		}
+		if got == nil {
+			t.Fatalf("expected non-nil ThemeConfig, got nil")
+		}
+		if got.TypingIndicatorEnabled != nil {
+			t.Errorf("TypingIndicatorEnabled = %v, expected nil when the request never sent the field", got.TypingIndicatorEnabled)
+		}
+	})
+
+	t.Run("typing_indicator_enabled: request explicitly sends false -> result preserves false (not dropped to nil)", func(t *testing.T) {
+		explicitFalse := false
+		req := &openapi_server.WebchatManagerWidgetThemeConfig{TypingIndicatorEnabled: &explicitFalse}
+
+		got, err := convertWebchatThemeConfig(req)
+		if err != nil {
+			t.Errorf("expected no error, got %v", err)
+		}
+		if got == nil {
+			t.Fatalf("expected non-nil ThemeConfig, got nil")
+		}
+		if got.TypingIndicatorEnabled == nil || *got.TypingIndicatorEnabled != false {
+			t.Errorf("TypingIndicatorEnabled = %v, expected pointer to false", got.TypingIndicatorEnabled)
 		}
 	})
 }
