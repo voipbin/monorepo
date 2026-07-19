@@ -1,6 +1,6 @@
 # Webchat Widget: Connecting/Typing Indicators + Shape/Font Options: Design
 
-Status: Draft
+Status: Draft (Round 1 review addressed — see §8)
 
 ## 1. Scope (locked with CEO/CTO)
 
@@ -89,6 +89,21 @@ Frontend (`monorepo-javascript/square-admin/src/webchat-widget-runtime/`):
 
 - Trigger: `WebchatWidget.open()`, for the duration between the panel
   becoming visible and `client.start()` resolving (success or error).
+- **Scope: fires at most once per `WebchatWidget` instance lifetime,
+  on the FIRST `open()` call only.** `client.start()` is already gated
+  on `if (!this.client.sessionId)` (existing code, `widget.js:507`),
+  and `client.js`'s `sessionId` is never cleared by `end()`/`close()`.
+  A visitor who closes and reopens the panel within the same page load
+  therefore never re-invokes `client.start()`, so the connecting
+  indicator cannot fire again on reopen under the CURRENT session
+  lifecycle. This design does NOT change that lifecycle (out of
+  scope — resetting `sessionId` on `end()` is a separate, unrelated
+  behavior change with its own blast radius, e.g. whether a closed-
+  then-reopened session should be a genuinely new server-side
+  `webchat_session` or not, which touches session-continuity semantics
+  this pass does not intend to revisit). Documented explicitly as an
+  accepted limitation: the connecting indicator is a first-load
+  affordance, not a per-open one.
 - Rendering: reuses the EXISTING system-message pattern already used
   for `"Reconnecting…"` (`appendMessageEl(doc, messages, { text,
   direction: 'outbound' })`) — no new DOM/CSS component, just a new
@@ -97,17 +112,41 @@ Frontend (`monorepo-javascript/square-admin/src/webchat-widget-runtime/`):
   `appendMessageEl` already uses `textContent`-only assignment, so the
   customer-supplied `connecting_indicator_text` string is safe to reuse
   as-is with no new sanitization work).
-- Removal: the element is removed the moment `client.start()` settles
-  (success -> proceed to render; error -> existing
-  `console.error('WebchatWidget: failed to start session:', err)` path
-  unchanged, indicator still clears so the visitor is not left staring
-  at a stale "Connecting…" forever).
+- **Element lifecycle (element created inside `open()`, tracked on the
+  instance, torn down defensively):** the element reference MUST be
+  stored on a new instance field `this._connectingEl` (mirroring the
+  existing `_typingEl`/`_reconnectingEl` pattern), not a local
+  variable inside `open()`. Two teardown paths are required, not just
+  the happy-path "removed when `client.start()` settles":
+  1. **Normal settle path:** when `client.start()` resolves (success
+     or error), remove `this._connectingEl` and null it out — but ONLY
+     if `this.isOpen` is still `true` at that point. If the visitor
+     called `close()` while `client.start()` was still pending,
+     `close()` (see below) has already removed and nulled the element;
+     the late-resolving settle handler must be a no-op in that case
+     (check `this._connectingEl` for `null` before touching it, same
+     idempotency guard `_clearTypingIndicator()` already uses).
+  2. **Early-close path:** `close()` and `destroy()` must both clear
+     `this._connectingEl` (remove from DOM if present, null the
+     reference) unconditionally, the same way they already clear
+     `_typingEl` via `_clearTypingIndicator()`. This guarantees a
+     visitor who closes the panel mid-connect never leaves a stale
+     "Connecting…" bubble sitting in a closed panel, and a subsequent
+     `open()` call (on the rare path where `sessionId` was somehow
+     cleared/a new instance is created) never operates on a dangling
+     reference from a previous cycle.
 - `connecting_indicator_enabled: false` skips rendering the element
   entirely — no timing/animation change, purely a presence toggle.
 - Default text `"Connecting…"` matches the existing `"Reconnecting…"`
   wording convention (ellipsis character, present participle).
 - Validation: `connecting_indicator_text` max 100 chars, matching
   `header_title`'s existing length cap precedent.
+- **Multi-tab note:** each browser tab runs a fully independent
+  `WebchatWidget` instance with its own `client`/`sessionId`/DOM — two
+  tabs each showing their own "Connecting…" independently is expected
+  and not a race; VoIPBin webchat sessions are tab-scoped, not
+  visitor-scoped (pre-existing characteristic, unrelated to this
+  design).
 
 ### 3.2 `typing_indicator_enabled`
 
@@ -120,6 +159,17 @@ Frontend (`monorepo-javascript/square-admin/src/webchat-widget-runtime/`):
 - Default `true` preserves current (pre-this-design) behavior exactly
   — this field is additive/opt-out, not a behavior change for existing
   widgets that don't set it.
+- **Accepted limitation, not implemented this pass:** `themeConfig` is
+  read once at `WebchatWidget` construction time and there is no
+  live-theme-refetch mechanism in the runtime, so
+  `typing_indicator_enabled` cannot actually flip mid-session under
+  the current architecture (matches §1's "live re-theming... deferred"
+  exclusion) — a config edit by the admin only takes effect on the
+  visitor's NEXT fresh page load, not the current session. Documented
+  here explicitly so this is not mistaken for an oversight: no code is
+  needed to handle a retroactive disable clearing an already-visible
+  indicator, because that scenario cannot occur given the current
+  theme-loading model.
 
 ### 3.3 `border_radius`
 
@@ -137,8 +187,22 @@ Frontend (`monorepo-javascript/square-admin/src/webchat-widget-runtime/`):
   button) and as max-rounded to rectangular ones (panel, input, message
   bubbles)).
 - Implementation: `render.js` gets a `BORDER_RADIUS_PRESETS` map (enum
-  value -> a small object of per-element px/percent values), consumed
-  by `applyWidgetTheme()` the same way `DEFAULT_PRIMARY_COLOR` is today.
+  value -> a small object of per-element px values), consumed by
+  `applyWidgetTheme()` the same way `DEFAULT_PRIMARY_COLOR` is today.
+  **Concrete CSS strategy (resolves the "geometrically sane" hand-wave
+  above):** use a large fixed px value (`border-radius: 999px`) for the
+  `pill` preset on ALL elements, not percent-based math. CSS
+  `border-radius` is well-defined to clamp automatically at 50% of an
+  element's shorter dimension — a 999px radius on a circular
+  bubble/send-button renders as a perfect circle, and the same 999px
+  value on a rectangular panel/input/message-bubble renders as a fully
+  rounded (stadium-shaped) rectangle, with no clipping or unpredictable
+  overflow at any panel size. This is the same technique already
+  common for "pill button" CSS elsewhere; no per-element special-casing
+  or percent calculation is needed. `sharp` = `2px` (all elements,
+  avoids a literally-0px jarring corner on the floating bubble while
+  reading as "sharp" against the `rounded` default), `rounded` =
+  current hardcoded per-element values (unchanged default).
 
 ### 3.4 `font_size`
 
@@ -252,10 +316,63 @@ documentation format (name, type, default, behavior).
   fields conditionally appear); two new select dropdowns
   (`border_radius`, `font_size`) alongside the existing `position`/
   `theme_mode` selects.
-- `WidgetPreview.js`: extend to reflect border_radius/font_size (and,
-  where feasible without over-engineering the preview, a static
-  "Connecting…" preview state) — matches the existing "live preview
-  reflects uncommitted edits" pattern (design doc G3, prior round).
+- **Explicit tri-state form contract for the two new bool toggles
+  (resolves the round-1 review's highest-severity finding — a naive
+  controlled checkbox would silently convert "field never set" into an
+  explicit `false` on save, permanently disabling an existing widget's
+  default-on indicator the next time an admin edits any unrelated
+  field):**
+  - **`create.js`** (new widget, no prior `theme_config`): no ambiguity
+    exists yet. Default the toggle's displayed state to checked
+    (`true`), matching the field's platform default. On submit,
+    include the key in `body.theme_config` ONLY if the admin actively
+    toggled it to `false` (i.e. away from the default) — mirrors the
+    existing pattern in this file where color/text fields are only
+    added to `body.theme_config` when non-empty/non-default (see
+    current `create.js:112-127`). An untouched toggle contributes
+    nothing to the request body, so the field is correctly absent
+    server-side (falls back to the Go struct default at read time).
+  - **`detail.js`** (editing an existing widget): on load, read the
+    RAW fetched value for each field —
+    `widget.theme_config?.connecting_indicator_enabled` and
+    `...typing_indicator_enabled` — which is one of `true`, `false`,
+    or `undefined` (server omits the key entirely when never set, per
+    §4's `*bool`/`omitempty` contract). Store this raw value alongside
+    a separate `touched` flag per toggle (starts `false`, flips to
+    `true` only inside the toggle's own `onChange` handler — never set
+    by any other field's edit). Render the toggle's CHECKED state as
+    `rawValue !== false` (so `undefined` displays as checked, matching
+    the `true` default). On submit, include the key in
+    `body.theme_config` if EITHER `touched === true` (admin explicitly
+    interacted with this specific toggle this session) OR
+    `rawValue !== undefined` (the widget already had an explicit value
+    persisted before this edit, so resubmitting the same resolved
+    value is a safe no-op, not a new false-write). An untouched toggle
+    on a widget that never had the field set contributes nothing to
+    the request body — editing `header_title` alone can never silently
+    flip `connecting_indicator_enabled` to `false` under this contract.
+  - This tri-state handling is a NEW pattern relative to the prior
+    round's string/enum fields (those have no ambiguous "unset" vs
+    "empty string" collision the way a bool has "unset" vs "false") —
+    call this out explicitly during implementation review as the one
+    genuinely new form-state class in this pass.
+- `WidgetPreview.js`: extend `applyWidgetTheme()`'s consumption of
+  `themeConfig` to cover `border_radius`/`font_size` (automatic once
+  `render.js` is updated, since `renderPreviewHtml` already forwards
+  the whole `themeConfig` object). **Required companion change:** the
+  `useMemo` recompute at `WidgetPreview.js:83-99` is keyed off an
+  explicit, hand-enumerated dependency array (not the whole
+  `themeConfig` object) — `themeConfig?.border_radius` and
+  `themeConfig?.font_size` MUST be added to that array, or the live
+  preview will not visually update when an admin changes either field
+  (silent staleness, same failure class the file's own existing
+  comment at lines 44-48 already warns about for `header_title`). The
+  "static Connecting… preview state" idea from the initial draft of
+  this design is DROPPED from scope — `WidgetPreview.js` already does
+  not simulate the reconnecting-indicator state either, and adding a
+  static connecting-state mockup would need its own element lifecycle
+  spec disproportionate to its preview value; the live preview
+  continues to show steady-state styling only, unchanged from today.
 
 ## 6. Out-of-scope confirmation checklist (per §1)
 
@@ -279,4 +396,48 @@ documentation format (name, type, default, behavior).
   connecting-indicator show/hide around `client.start()`, and
   typing-indicator suppression when `typing_indicator_enabled: false`
   — both as new test cases alongside the existing Phase 4 typing-
-  indicator test suite (`__tests__/widget.test.js`).
+  indicator test suite (`__tests__/widget.test.js`). **Additional
+  required cases per §3.1/§5's revised lifecycle spec:** (a) close()
+  called while client.start() is still pending correctly removes
+  `_connectingEl` and the LATE resolution of that same start() promise
+  is a no-op (no re-append, no error); (b) `create.js`/`detail.js` form
+  tests asserting the tri-state contract directly — an untouched
+  toggle on an existing widget with `connecting_indicator_enabled`
+  previously absent produces a submit body with the key still absent
+  (not `false`); a widget that previously had the field explicitly set
+  to `false` and is saved again with no toggle interaction still sends
+  `false` (not silently dropped back to default-true).
+
+## 8. Round 1 review disposition
+
+Three independent review angles ran against the initial draft
+(API/schema-contract: APPROVE; frontend/backend contract-parity +
+XSS: REQUEST CHANGES; negative-path/failure-mode: REQUEST CHANGES).
+All BLOCKING findings addressed in this revision:
+
+- Connecting-indicator element lifecycle now explicitly tracked on
+  `this._connectingEl`, with defined teardown on both the normal
+  settle path AND the early-close path (§3.1).
+- Connecting-indicator scope narrowed to "fires once per widget
+  instance, first `open()` only" with explicit reasoning for why
+  `sessionId`-reset (which would enable per-open re-firing) is kept
+  out of scope (§3.1).
+- Frontend tri-state bool form contract fully specified for both
+  `create.js` (default-checked, omit-unless-toggled-away-from-default)
+  and `detail.js` (raw-value + touched-flag, omit-unless-touched-or-
+  previously-explicit) (§5).
+- `WidgetPreview.js`'s `useMemo` dependency-array gap called out as a
+  required companion change, not left implicit (§5).
+- `border_radius: pill` given a concrete CSS strategy (`999px`,
+  browser-clamped) instead of hand-wavy "geometrically sane" language
+  (§3.3).
+- Typing-indicator mid-session-toggle question resolved as a genuine
+  accepted limitation (no live theme refetch exists) rather than an
+  unaddressed gap (§3.2).
+- Multi-tab behavior confirmed safe (independent per-tab instances,
+  no shared state) and documented as one sentence per reviewer
+  suggestion (§3.1).
+- "Static Connecting… preview state" dropped from `WidgetPreview.js`
+  scope — reviewer correctly noted it was underspecified relative to
+  its value; the live preview stays steady-state-only, matching
+  existing behavior for the reconnecting indicator.
