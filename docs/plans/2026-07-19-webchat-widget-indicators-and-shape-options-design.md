@@ -286,19 +286,14 @@ true` -> show; `enabled != nil && *enabled == false` -> hide.
 
 No Alembic migration needed — `theme_config` remains a single opaque
 JSON column, same precedent as the prior three ThemeConfig expansion
-rounds.
-
-**Forward-compat / deploy-order note:** this change is purely additive
-JSON (5 new optional keys on an existing opaque `theme_config` column,
-no renames/removals). Matching the deploy-order precedent from the
-prior three ThemeConfig rounds, either PR (backend schema/validation
-in `monorepo`, or frontend consumption/appearance-form in
-`monorepo-javascript`) is safe to land first: an old frontend talking
-to a new backend simply never sends the 5 new keys (backend defaults
-apply); a new frontend talking to an old backend has its new keys
-silently accepted-and-ignored by the backend's existing "unknown JSON
-keys in an opaque column" tolerance (no strict-schema rejection at
-that layer). No coordinated/simultaneous-deploy requirement.
+rounds. **Forward-compat note:** this is an additive-JSON-only change
+(new optional keys on an existing struct/schema, no field removal, no
+`additionalProperties: false` anywhere in this schema) — safe in
+EITHER backend-first or frontend-first deploy order, same as all three
+prior ThemeConfig rounds. Older code paths that haven't picked up the
+new struct fields yet simply ignore unknown JSON keys on read and omit
+them on write; no coordinated/simultaneous deploy is required between
+`bin-webchat-manager`/`bin-api-manager` and `square-admin`.
 
 `bin-openapi-manager` + `bin-api-manager`: mirror the 5 new fields in
 the `ThemeConfig` schema/conversion code, same mechanical pattern as
