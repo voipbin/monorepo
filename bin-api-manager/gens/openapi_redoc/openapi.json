@@ -26170,6 +26170,54 @@
             "maxLength": 200,
             "description": "Widget header subtext, shown below header_title. No subtitle row rendered when unset.",
             "example": "We usually reply in a few minutes"
+          },
+          "connecting_indicator_enabled": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "Whether to show a system message in the panel while the visitor's session is being created. Unset/null falls back to enabled (true); an existing widget's default is preserved by omitting this key rather than sending false.",
+            "example": true
+          },
+          "connecting_indicator_text": {
+            "type": "string",
+            "maxLength": 100,
+            "description": "Text shown while the visitor's session is being created. Defaults to \"Connecting…\" when unset.",
+            "example": "Connecting…"
+          },
+          "typing_indicator_enabled": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "Whether to show the three-dot \"waiting for response\" animation after the visitor sends a message. Unset/null falls back to enabled (true). No text-label variant is supported.",
+            "example": true
+          },
+          "border_radius": {
+            "type": "string",
+            "enum": [
+              "sharp",
+              "rounded",
+              "pill"
+            ],
+            "x-enum-varnames": [
+              "WebchatManagerWidgetBorderRadiusSharp",
+              "WebchatManagerWidgetBorderRadiusRounded",
+              "WebchatManagerWidgetBorderRadiusPill"
+            ],
+            "description": "Corner rounding applied to the bubble, panel, message bubbles, input field, and send button as a coordinated set. Defaults to rounded when unset.",
+            "example": "rounded"
+          },
+          "font_size": {
+            "type": "string",
+            "enum": [
+              "compact",
+              "default",
+              "large"
+            ],
+            "x-enum-varnames": [
+              "WebchatManagerWidgetFontSizeCompact",
+              "WebchatManagerWidgetFontSizeDefault",
+              "WebchatManagerWidgetFontSizeLarge"
+            ],
+            "description": "Base font-size scale applied to the widget's header text and message text. Defaults to default when unset.",
+            "example": "default"
           }
         }
       },
