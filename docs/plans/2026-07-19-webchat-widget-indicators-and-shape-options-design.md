@@ -1,6 +1,6 @@
 # Webchat Widget: Connecting/Typing Indicators + Shape/Font Options: Design
 
-Status: Draft (Round 1 review addressed — see §8)
+Status: Draft (Round 2 review: 3/3 APPROVE — see §9)
 
 ## 1. Scope (locked with CEO/CTO)
 
@@ -89,21 +89,29 @@ Frontend (`monorepo-javascript/square-admin/src/webchat-widget-runtime/`):
 
 - Trigger: `WebchatWidget.open()`, for the duration between the panel
   becoming visible and `client.start()` resolving (success or error).
-- **Scope: fires at most once per `WebchatWidget` instance lifetime,
-  on the FIRST `open()` call only.** `client.start()` is already gated
-  on `if (!this.client.sessionId)` (existing code, `widget.js:507`),
-  and `client.js`'s `sessionId` is never cleared by `end()`/`close()`.
-  A visitor who closes and reopens the panel within the same page load
-  therefore never re-invokes `client.start()`, so the connecting
-  indicator cannot fire again on reopen under the CURRENT session
-  lifecycle. This design does NOT change that lifecycle (out of
-  scope — resetting `sessionId` on `end()` is a separate, unrelated
-  behavior change with its own blast radius, e.g. whether a closed-
-  then-reopened session should be a genuinely new server-side
-  `webchat_session` or not, which touches session-continuity semantics
-  this pass does not intend to revisit). Documented explicitly as an
-  accepted limitation: the connecting indicator is a first-load
-  affordance, not a per-open one.
+- **Scope: fires until the session is created; safe across replays.**
+  `client.start()` is already gated on `if (!this.client.sessionId)`
+  (existing code, `widget.js:507`), and `client.js`'s `sessionId` is
+  never cleared by `end()`/`close()` once a session is successfully
+  created — confirmed by grep, the ONLY assignment to `sessionId` in
+  the runtime is its initial `null` at construction. A visitor who
+  closes and reopens the panel AFTER a successful `client.start()`
+  therefore never re-invokes it, so the connecting indicator does not
+  re-fire on a normal reopen. This is NOT an absolute "fires exactly
+  once" guarantee, however: if the visitor closes/reopens WHILE the
+  first `client.start()` attempt is still pending, or if that attempt
+  REJECTS (per `client.js`'s cached-promise-clears-on-reject behavior,
+  a rejected `start()` allows a later call to issue a genuinely new
+  session-creation POST), the indicator can legitimately show again on
+  a retry. This is intentional and safe — every fire/teardown cycle is
+  independently correct per the element-lifecycle spec below, so a
+  possible re-fire on retry is not a bug, just not a hard "once ever"
+  bound. This design does NOT change the underlying session-continuity
+  lifecycle (out of scope — resetting `sessionId` on `end()` for
+  UNRELATED reasons, e.g. deliberately starting a fresh server-side
+  session on every reopen, is a separate behavior change with its own
+  blast radius on session-continuity semantics this pass does not
+  intend to revisit).
 - Rendering: reuses the EXISTING system-message pattern already used
   for `"Reconnecting…"` (`appendMessageEl(doc, messages, { text,
   direction: 'outbound' })`) — no new DOM/CSS component, just a new
@@ -441,3 +449,19 @@ All BLOCKING findings addressed in this revision:
   scope — reviewer correctly noted it was underspecified relative to
   its value; the live preview stays steady-state-only, matching
   existing behavior for the reconnecting indicator.
+
+## 9. Round 2 review disposition
+
+Round 2 re-ran all three review angles against the round-1 fixes:
+API/schema-contract APPROVE, frontend/backend contract-parity + XSS
+APPROVE, negative-path/failure-mode APPROVE — 3/3, all findings this
+round were VERIFIED-FIXED or non-blocking. One cosmetic wording fix
+applied: §3.1's "eliminated entirely" language was overstated (a retry
+after a rejected/pending `client.start()` can legitimately re-show the
+indicator; this is safe, not a bug, just not a hard "fires once ever"
+bound) — reworded to "fires until the session is created; safe across
+replays." No other changes. Remaining implementation nits noted for
+the implementer, not requiring further design-doc iteration: prefer
+`useRef` over `useState` for the frontend `touched` flag (avoids an
+unnecessary re-render on toggle; either is correct given this
+codebase's routing/remount pattern).
