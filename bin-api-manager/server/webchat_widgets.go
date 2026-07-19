@@ -23,8 +23,9 @@ import (
 var regexHexColor = regexp.MustCompile(`^#[0-9a-fA-F]{6}$`)
 
 const (
-	maxHeaderTitleLength    = 100
-	maxHeaderSubtitleLength = 200
+	maxHeaderTitleLength          = 100
+	maxHeaderSubtitleLength       = 200
+	maxConnectingIndicatorTextLen = 100
 )
 
 func (h *server) GetWebchatWidgets(c *gin.Context, params openapi_server.GetWebchatWidgetsParams) {
@@ -362,6 +363,36 @@ func convertWebchatThemeConfig(req *openapi_server.WebchatManagerWidgetThemeConf
 			return nil, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_THEME_CONFIG", "header_subtitle must be at most 200 characters.")
 		}
 		res.HeaderSubtitle = *req.HeaderSubtitle
+	}
+	if req.ConnectingIndicatorEnabled != nil {
+		res.ConnectingIndicatorEnabled = req.ConnectingIndicatorEnabled
+	}
+	if req.ConnectingIndicatorText != nil {
+		if len(*req.ConnectingIndicatorText) > maxConnectingIndicatorTextLen {
+			return nil, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_THEME_CONFIG", "connecting_indicator_text must be at most 100 characters.")
+		}
+		res.ConnectingIndicatorText = *req.ConnectingIndicatorText
+	}
+	if req.TypingIndicatorEnabled != nil {
+		res.TypingIndicatorEnabled = req.TypingIndicatorEnabled
+	}
+	if req.BorderRadius != nil {
+		radius := wcwidget.BorderRadius(*req.BorderRadius)
+		switch radius {
+		case wcwidget.BorderRadiusSharp, wcwidget.BorderRadiusRounded, wcwidget.BorderRadiusPill:
+			res.BorderRadius = radius
+		default:
+			return nil, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_THEME_CONFIG", "border_radius must be one of sharp, rounded, pill.")
+		}
+	}
+	if req.FontSize != nil {
+		size := wcwidget.FontSize(*req.FontSize)
+		switch size {
+		case wcwidget.FontSizeCompact, wcwidget.FontSizeDefault, wcwidget.FontSizeLarge:
+			res.FontSize = size
+		default:
+			return nil, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_THEME_CONFIG", "font_size must be one of compact, default, large.")
+		}
 	}
 
 	return res, nil

@@ -28,7 +28,12 @@ Widget struct
             "position": "<string>",
             "theme_mode": "<string>",
             "header_title": "<string>",
-            "header_subtitle": "<string>"
+            "header_subtitle": "<string>",
+            "connecting_indicator_enabled": <boolean>,
+            "connecting_indicator_text": "<string>",
+            "typing_indicator_enabled": <boolean>,
+            "border_radius": "<string>",
+            "font_size": "<string>"
         },
         "direct_hash": "<string>",
         "tm_create": "<string>",
@@ -79,7 +84,12 @@ Optional, customer-editable appearance settings for the floating chat bubble and
         "position": "<string>",
         "theme_mode": "<string>",
         "header_title": "<string>",
-        "header_subtitle": "<string>"
+        "header_subtitle": "<string>",
+        "connecting_indicator_enabled": <boolean>,
+        "connecting_indicator_text": "<string>",
+        "typing_indicator_enabled": <boolean>,
+        "border_radius": "<string>",
+        "font_size": "<string>"
     }
 
 * ``primary_color`` (String, optional): Hex color code (e.g. ``#2563eb``) for the bubble and, in light mode with no explicit ``header_background_color``, the header background. Defaults to the platform blue when omitted.
@@ -91,7 +101,12 @@ Optional, customer-editable appearance settings for the floating chat bubble and
 * ``theme_mode`` (enum string, optional): Light/dark/auto rendering of the widget panel. One of ``light`` (default), ``dark``, or ``auto`` (follows the visitor's OS ``prefers-color-scheme``, resolved once at widget load -- not live-reactive to a mid-session OS theme change). An explicit ``header_background_color``/``header_text_color``/``secondary_color`` always wins over the ``theme_mode``-resolved default.
 * ``header_title`` (String, optional): Widget header text, max 100 characters. Defaults to ``"Chat with us"`` when omitted.
 * ``header_subtitle`` (String, optional): Widget header subtext shown below ``header_title``, max 200 characters. No subtitle row rendered when omitted.
+* ``connecting_indicator_enabled`` (Boolean, optional): Whether to show a system message in the panel while the visitor's session is being created. Omitted/``null`` falls back to enabled (``true``). To disable, the request must send an explicit ``false`` -- omitting the field never disables it.
+* ``connecting_indicator_text`` (String, optional): Text shown while the visitor's session is being created, max 100 characters. Defaults to ``"Connecting…"`` when omitted.
+* ``typing_indicator_enabled`` (Boolean, optional): Whether to show the three-dot "waiting for response" animation after the visitor sends a message. Omitted/``null`` falls back to enabled (``true``). No text-label variant is supported; this is a pure on/off toggle over the existing dot animation.
+* ``border_radius`` (enum string, optional): Corner rounding applied to the bubble, panel, message bubbles, input field, and send button as a coordinated set. One of ``sharp``, ``rounded`` (default), or ``pill``.
+* ``font_size`` (enum string, optional): Base font-size scale applied to the widget's header text and message text. One of ``compact``, ``default`` (default), or ``large``.
 
 .. note:: **AI Implementation Hint**
 
-   Arbitrary CSS injection is deliberately not supported -- only the nine fields above are configurable. This keeps the widget's attack surface bounded, since it renders on customer-controlled third-party pages. Hex color fields (``primary_color``, ``secondary_color``, ``header_background_color``, ``header_text_color``) and the ``theme_mode`` enum are validated server-side (regex/enum check) at the ``bin-api-manager`` handler boundary before persistence; requests with malformed values are rejected with ``INVALID_THEME_CONFIG``.
+   Arbitrary CSS injection is deliberately not supported -- only the fourteen fields above are configurable. This keeps the widget's attack surface bounded, since it renders on customer-controlled third-party pages. Hex color fields (``primary_color``, ``secondary_color``, ``header_background_color``, ``header_text_color``), the ``theme_mode`` enum, and the ``border_radius``/``font_size`` enums are validated server-side (regex/enum check) at the ``bin-api-manager`` handler boundary before persistence; requests with malformed values are rejected with ``INVALID_THEME_CONFIG``. ``connecting_indicator_enabled``/``typing_indicator_enabled`` are nullable booleans: omitting the field preserves the platform default (enabled) on every subsequent update, while an explicit ``false`` disables it -- clients must send ``false`` explicitly to turn an indicator off, not merely omit the field.

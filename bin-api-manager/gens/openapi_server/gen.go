@@ -1038,6 +1038,20 @@ const (
 	WebchatManagerWidgetStatusInactive WebchatManagerWidgetStatus = "inactive"
 )
 
+// Defines values for WebchatManagerWidgetThemeConfigBorderRadius.
+const (
+	WebchatManagerWidgetBorderRadiusPill    WebchatManagerWidgetThemeConfigBorderRadius = "pill"
+	WebchatManagerWidgetBorderRadiusRounded WebchatManagerWidgetThemeConfigBorderRadius = "rounded"
+	WebchatManagerWidgetBorderRadiusSharp   WebchatManagerWidgetThemeConfigBorderRadius = "sharp"
+)
+
+// Defines values for WebchatManagerWidgetThemeConfigFontSize.
+const (
+	WebchatManagerWidgetFontSizeCompact WebchatManagerWidgetThemeConfigFontSize = "compact"
+	WebchatManagerWidgetFontSizeDefault WebchatManagerWidgetThemeConfigFontSize = "default"
+	WebchatManagerWidgetFontSizeLarge   WebchatManagerWidgetThemeConfigFontSize = "large"
+)
+
 // Defines values for WebchatManagerWidgetThemeMode.
 const (
 	WebchatManagerWidgetThemeModeAuto  WebchatManagerWidgetThemeMode = "auto"
@@ -5243,6 +5257,18 @@ type WebchatManagerWidgetStatus string
 
 // WebchatManagerWidgetThemeConfig Cosmetic, customer-editable widget appearance settings. All fields are optional; omitted fields fall back to the platform default (blue bubble, no logo, bottom-right, light mode). An explicit color field always wins over the theme_mode-resolved default.
 type WebchatManagerWidgetThemeConfig struct {
+	// BorderRadius Corner rounding applied to the bubble, panel, message bubbles, input field, and send button as a coordinated set. Defaults to rounded when unset.
+	BorderRadius *WebchatManagerWidgetThemeConfigBorderRadius `json:"border_radius,omitempty"`
+
+	// ConnectingIndicatorEnabled Whether to show a system message in the panel while the visitor's session is being created. Unset/null falls back to enabled (true); an existing widget's default is preserved by omitting this key rather than sending false.
+	ConnectingIndicatorEnabled *bool `json:"connecting_indicator_enabled"`
+
+	// ConnectingIndicatorText Text shown while the visitor's session is being created. Defaults to "Connecting…" when unset.
+	ConnectingIndicatorText *string `json:"connecting_indicator_text,omitempty"`
+
+	// FontSize Base font-size scale applied to the widget's header text and message text. Defaults to default when unset.
+	FontSize *WebchatManagerWidgetThemeConfigFontSize `json:"font_size,omitempty"`
+
 	// HeaderBackgroundColor Hex color code for the widget header bar's background. Falls back to primary_color (light mode) or a dark surface color (dark mode) when unset.
 	HeaderBackgroundColor *string `json:"header_background_color,omitempty"`
 
@@ -5269,7 +5295,16 @@ type WebchatManagerWidgetThemeConfig struct {
 
 	// ThemeMode Controls light/dark/auto rendering of the widget panel.
 	ThemeMode *WebchatManagerWidgetThemeMode `json:"theme_mode,omitempty"`
+
+	// TypingIndicatorEnabled Whether to show the three-dot "waiting for response" animation after the visitor sends a message. Unset/null falls back to enabled (true). No text-label variant is supported.
+	TypingIndicatorEnabled *bool `json:"typing_indicator_enabled"`
 }
+
+// WebchatManagerWidgetThemeConfigBorderRadius Corner rounding applied to the bubble, panel, message bubbles, input field, and send button as a coordinated set. Defaults to rounded when unset.
+type WebchatManagerWidgetThemeConfigBorderRadius string
+
+// WebchatManagerWidgetThemeConfigFontSize Base font-size scale applied to the widget's header text and message text. Defaults to default when unset.
+type WebchatManagerWidgetThemeConfigFontSize string
 
 // WebchatManagerWidgetThemeMode Controls light/dark/auto rendering of the widget panel.
 type WebchatManagerWidgetThemeMode string

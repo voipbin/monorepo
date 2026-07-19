@@ -3069,6 +3069,48 @@ func (e WebchatManagerWidgetStatus) Valid() bool {
 	}
 }
 
+// Defines values for WebchatManagerWidgetThemeConfigBorderRadius.
+const (
+	WebchatManagerWidgetBorderRadiusPill    WebchatManagerWidgetThemeConfigBorderRadius = "pill"
+	WebchatManagerWidgetBorderRadiusRounded WebchatManagerWidgetThemeConfigBorderRadius = "rounded"
+	WebchatManagerWidgetBorderRadiusSharp   WebchatManagerWidgetThemeConfigBorderRadius = "sharp"
+)
+
+// Valid indicates whether the value is a known member of the WebchatManagerWidgetThemeConfigBorderRadius enum.
+func (e WebchatManagerWidgetThemeConfigBorderRadius) Valid() bool {
+	switch e {
+	case WebchatManagerWidgetBorderRadiusPill:
+		return true
+	case WebchatManagerWidgetBorderRadiusRounded:
+		return true
+	case WebchatManagerWidgetBorderRadiusSharp:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for WebchatManagerWidgetThemeConfigFontSize.
+const (
+	WebchatManagerWidgetFontSizeCompact WebchatManagerWidgetThemeConfigFontSize = "compact"
+	WebchatManagerWidgetFontSizeDefault WebchatManagerWidgetThemeConfigFontSize = "default"
+	WebchatManagerWidgetFontSizeLarge   WebchatManagerWidgetThemeConfigFontSize = "large"
+)
+
+// Valid indicates whether the value is a known member of the WebchatManagerWidgetThemeConfigFontSize enum.
+func (e WebchatManagerWidgetThemeConfigFontSize) Valid() bool {
+	switch e {
+	case WebchatManagerWidgetFontSizeCompact:
+		return true
+	case WebchatManagerWidgetFontSizeDefault:
+		return true
+	case WebchatManagerWidgetFontSizeLarge:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for WebchatManagerWidgetThemeMode.
 const (
 	WebchatManagerWidgetThemeModeAuto  WebchatManagerWidgetThemeMode = "auto"
@@ -9862,6 +9904,26 @@ type WebchatManagerWidgetStatus string
 
 // WebchatManagerWidgetThemeConfig Cosmetic, customer-editable widget appearance settings. All fields are optional; omitted fields fall back to the platform default (blue bubble, no logo, bottom-right, light mode). An explicit color field always wins over the theme_mode-resolved default.
 type WebchatManagerWidgetThemeConfig struct {
+	// BorderRadius Corner rounding applied to the bubble, panel, message bubbles, input field, and send button as a coordinated set. Defaults to rounded when unset.
+	//
+	// Example: rounded
+	BorderRadius *WebchatManagerWidgetThemeConfigBorderRadius `json:"border_radius,omitempty"`
+
+	// ConnectingIndicatorEnabled Whether to show a system message in the panel while the visitor's session is being created. Unset/null falls back to enabled (true); an existing widget's default is preserved by omitting this key rather than sending false.
+	//
+	// Example: true
+	ConnectingIndicatorEnabled *bool `json:"connecting_indicator_enabled,omitempty"`
+
+	// ConnectingIndicatorText Text shown while the visitor's session is being created. Defaults to "Connecting…" when unset.
+	//
+	// Example: Connecting…
+	ConnectingIndicatorText *string `json:"connecting_indicator_text,omitempty"`
+
+	// FontSize Base font-size scale applied to the widget's header text and message text. Defaults to default when unset.
+	//
+	// Example: default
+	FontSize *WebchatManagerWidgetThemeConfigFontSize `json:"font_size,omitempty"`
+
 	// HeaderBackgroundColor Hex color code for the widget header bar's background. Falls back to primary_color (light mode) or a dark surface color (dark mode) when unset.
 	//
 	// Example: #1a73e8
@@ -9906,7 +9968,22 @@ type WebchatManagerWidgetThemeConfig struct {
 	//
 	// Example: light
 	ThemeMode *WebchatManagerWidgetThemeMode `json:"theme_mode,omitempty"`
+
+	// TypingIndicatorEnabled Whether to show the three-dot "waiting for response" animation after the visitor sends a message. Unset/null falls back to enabled (true). No text-label variant is supported.
+	//
+	// Example: true
+	TypingIndicatorEnabled *bool `json:"typing_indicator_enabled,omitempty"`
 }
+
+// WebchatManagerWidgetThemeConfigBorderRadius Corner rounding applied to the bubble, panel, message bubbles, input field, and send button as a coordinated set. Defaults to rounded when unset.
+//
+// Example: rounded
+type WebchatManagerWidgetThemeConfigBorderRadius string
+
+// WebchatManagerWidgetThemeConfigFontSize Base font-size scale applied to the widget's header text and message text. Defaults to default when unset.
+//
+// Example: default
+type WebchatManagerWidgetThemeConfigFontSize string
 
 // WebchatManagerWidgetThemeMode Controls light/dark/auto rendering of the widget panel.
 //
