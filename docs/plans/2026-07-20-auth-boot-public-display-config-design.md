@@ -64,11 +64,16 @@ carries a `ResourceType` discriminator (`boot.go:30`) — reuse it, don't add a
 second one.
 
 **Field name: `public_display_config` (not the earlier-discussed
-`resource_data`).** This was a required change from the review loop below —
+`resource_data`)** for the DATA itself. **[Superseded by Revision 1, §10
+below — `resource_data` is reintroduced as a wrapping ENVELOPE, with
+`public_display_config` as a named key inside it, not the top-level field
+name.]** The renaming rationale below still holds for why the key itself
+must be self-documenting, not generic:
+
 a generically-named field invites a future engineer wiring a fetcher for
 `ai`/`ai_team` to stuff non-public data into it by default, since the name
 carries no boundary signal. `public_display_config` self-documents: this
-field is for data that is safe to show an anonymous, unauthenticated visitor.
+key is for data that is safe to show an anonymous, unauthenticated visitor.
 
 ### 3.2 Source discipline (mandatory, not just convention)
 
@@ -575,11 +580,202 @@ extensibility map), avoiding a breaking spec change at that point.
   ./... && go test ./... && golangci-lint run -v --timeout 5m`) in
   `bin-api-manager` before PR, per root CLAUDE.md.
 
-## 9. Round review disposition
+## 9. Wire contract Revision 1 (2026-07-20, post-8-round-closure, pchero-initiated)
 
-(Filled in after each review round — see `design-first-with-review-loops`
-skill's convention of recording verdict + disposition inside the doc
-itself, not only in the review transcript.)
+**Trigger**: after the review loop closed (Round 7/Round 8, both clean
+APPROVE), pchero reviewed a sample `/auth/boot` response and proposed
+wrapping `public_display_config` inside a named `resource_data` envelope,
+rather than having it be a top-level `BootResponse` field:
+
+```json
+{
+  "resource_data": {
+    "public_display_config": { "primary_color": "#2563eb", "...": "..." }
+  }
+}
+```
+
+**Rationale accepted**: `BootResponse` currently has a fixed set of
+top-level fields; every FUTURE kind of resource-scoped public data (not
+just cosmetic/display data) would otherwise require adding a NEW top-level
+field to `BootResponse` each time. Wrapping in a `resource_data` envelope
+means `BootResponse`'s shape never needs to change again — new kinds of
+public data become new named keys inside the envelope. This is a closer
+match to the platform's existing `Account.ProviderData` precedent (§3.1)
+than the flat-field version was: `ProviderData` is itself an envelope, not
+a single-purpose top-level field.
+
+**Confirmed NOT a regression of the §3.1 self-documentation rule**: the
+safety-boundary argument for avoiding a generic name (§3.1) applies to
+KEYS inside the envelope, not to the envelope's own name. `resource_data`
+itself is expected to be generic (it is a container, not a specific
+datum); `public_display_config` remains the specific, self-documenting KEY
+within it, and any future key added to the envelope must still carry its
+own boundary-signaling name (e.g. a hypothetical future
+`public_status_flags` key would need the same "public_" self-documentation
+discipline `public_display_config` already has).
+
+### 9.1 Updated `BootResponse` struct (supersedes §3.4)
+
+```go
+// BootResponse is the typed response for POST /auth/boot.
+type BootResponse struct {
+	Token        string      `json:"token"`
+	Type         string      `json:"type"`
+	ResourceType string      `json:"resource_type"`
+	ResourceID   uuid.UUID   `json:"resource_id"`
+	CustomerID   uuid.UUID   `json:"customer_id"`
+	Expire       string      `json:"expire"`
+
+	// ResourceData is a resource-type-scoped envelope for additional,
+	// publicly-safe data about the boot-scoped resource. Each entry is a
+	// named, self-documenting key (see design doc §3.1/§9) -- do not add
+	// bare/generic keys. Currently the only populated key is
+	// "public_display_config" (see resourceDisplayConfigFetchers).
+	// Populated best-effort: a fetch failure never fails the boot
+	// request itself (§3.3). nil/omitted entirely when no fetcher is
+	// registered for ResourceType, or when every fetcher for this
+	// resource returned nothing.
+	ResourceData map[string]interface{} `json:"resource_data,omitempty"`
+}
+```
+
+`map[string]interface{}` (not a single `interface{}`) because the envelope
+is now explicitly multi-key-capable — this is the actual mechanism that
+lets future kinds of public data ride in without another `BootResponse`
+struct change.
+
+**Typed-nil trap still applies, now one level deeper.** §3.4's typed-nil
+finding (a nil `*ThemeConfig` boxed into `interface{}` is a non-nil
+interface value) is unaffected by the envelope wrapping — the fetcher
+below still normalizes a nil `*ThemeConfig` to a true nil before assigning
+it into the map. What changes: `omitempty` on the OUTER `ResourceData`
+map only omits the whole `resource_data` key when the map itself is
+`nil` — a map containing one key with a `nil` value (e.g. `{"public_display_config":
+nil}`) is NOT empty and would still serialize (as `"resource_data":
+{"public_display_config": null}`). The wiring below must therefore only
+insert the `"public_display_config"` key into the map when the fetcher
+actually returned non-nil data, not insert-then-let-omitempty-handle-it.
+
+### 9.2 Updated fetcher wiring (supersedes §3.5)
+
+```go
+// resourceDisplayConfigFetchers maps a direct resource_type to a function
+// that resolves its public_display_config payload for the resource_data
+// envelope (§9). Add an entry here when a new resource type needs to
+// expose safe, anonymous-visitor-facing display data through /auth/boot.
+// Every fetcher MUST read from the resource's ConvertWebhookMessage()-
+// shaped external DTO (§3.2) -- never the raw internal model struct.
+// Every fetcher MUST return a true nil interface{} (not a nil-but-typed
+// pointer) when there is no data to report (§3.4/§9.1's typed-nil note).
+var resourceDisplayConfigFetchers = map[string]func(ctx context.Context, h *serviceHandler, resourceID uuid.UUID) (interface{}, error){
+	"webchat_widget": func(ctx context.Context, h *serviceHandler, resourceID uuid.UUID) (interface{}, error) {
+		w, err := h.reqHandler.WebchatV1WidgetGet(ctx, resourceID)
+		if err != nil {
+			return nil, err
+		}
+		tc := w.ConvertWebhookMessage().ThemeConfig
+		if tc == nil {
+			return nil, nil
+		}
+		return tc, nil
+	},
+}
+```
+
+Inside `AuthBoot()`, after `BootResponse` is otherwise fully built (`d` is
+the same `*dmdirect.Direct` record already resolved earlier, `boot.go:49`):
+
+```go
+if fetcher, ok := resourceDisplayConfigFetchers[d.ResourceType]; ok {
+	data, ferr := fetcher(ctx, h, d.ResourceID)
+	if ferr != nil {
+		log.Infof("Could not fetch public display config. resource_type: %s, err: %v", d.ResourceType, ferr)
+	} else if data != nil {
+		// Only allocate + populate the envelope when there is
+		// something real to put in it -- an empty non-nil map would
+		// still serialize as "resource_data": {}, which is different
+		// from (and worse than) omitting the key entirely. See §9.1's
+		// typed-nil note for why this check must be `data != nil`,
+		// not relying on omitempty to clean up after insertion.
+		res.ResourceData = map[string]interface{}{"public_display_config": data}
+	}
+}
+```
+
+### 9.3 Updated frontend consumption (supersedes §4.1's boot-response read)
+
+```js
+// client.js — _doStart(), right after the /auth/boot call resolves
+const boot = await this._fetchJson(this._apiUrl('/auth/boot'), { ... })
+this.token = boot?.token
+this.customerId = boot?.customer_id
+this.resourceId = boot?.resource_id
+const displayConfig = boot?.resource_data?.public_display_config
+if (displayConfig) {
+  this.onBootResourceData(displayConfig)
+}
+```
+
+Only this one read site changes (`boot?.public_display_config` →
+`boot?.resource_data?.public_display_config`); `onBootResourceData`'s own
+signature, the `_destroyed` teardown guard, the re-entrancy analysis
+(§4.1), and the accepted known limitations (§4.2, including the
+`sessionId`-reset rejection) are all UNCHANGED by this revision — they
+operate on the value AFTER extraction, which is unaffected by where in the
+response shape that value was nested.
+
+### 9.4 Updated OpenAPI schema (supersedes §5's snippet)
+
+```yaml
+# bin-openapi-manager/openapi/openapi.yaml — AuthBootResponse schema addition
+resource_data:
+  type: object
+  nullable: true
+  description: >
+    Resource-type-scoped envelope for additional, publicly-safe data about
+    the boot-scoped resource. Each entry is a self-documenting named key;
+    currently only "public_display_config" is populated (for
+    resource_type "webchat_widget", carrying the widget's
+    WebchatManagerWidgetThemeConfig shape). The envelope key itself, and
+    any entry inside it, is OMITTED (not present) when there is nothing
+    to report -- never present as an empty object.
+  properties:
+    public_display_config:
+      oneOf:
+        - $ref: '#/components/schemas/WebchatManagerWidgetThemeConfig'
+```
+
+The `oneOf`-for-polymorphism rule (`bin-openapi-manager/CLAUDE.md` rule
+#1, cited in §5) is applied to the envelope's `public_display_config`
+entry specifically, same as before — the envelope itself (`resource_data`)
+is deliberately left as a plain `type: object` with named `properties`
+(not `oneOf`), since it is not itself type-discriminated by
+`resource_type` — its entries are.
+
+### 9.5 Scope table and test-plan deltas from this revision
+
+- §6's `boot.go` row: implementation now touches `BootResponse.ResourceData`
+  (`map[string]interface{}`) instead of `BootResponse.PublicDisplayConfig`
+  (`interface{}`) — same file, same PR, no new files.
+- §6's `openapi.yaml` row: schema addition is `resource_data` (object with
+  named `properties`) instead of a bare `public_display_config` field —
+  same file, same PR.
+- §8's backend test (a)/(b)/(c) assertions now check
+  `res.ResourceData["public_display_config"]` instead of
+  `res.PublicDisplayConfig`; test (c)'s omitempty assertion now must also
+  cover the "envelope allocated but would otherwise be empty" case from
+  §9.1 (i.e. confirm `resource_data` is fully omitted, not `{}`, when the
+  fetcher returns nil).
+- §8's frontend tests: the `_doStart()` assertion updates to read
+  `boot.resource_data.public_display_config` in its mock response fixture,
+  per §9.3.
+
+No other section (§1, §2, §3.1-§3.3, §4.1's teardown/re-entrancy logic,
+§4.2-§4.4, §7) requires any change — this revision is confined to the
+wire-format nesting, not the underlying design decisions.
+
+## 10. Round review disposition
 
 ### Pre-draft adversarial review (3 parallel angles, run against the verbal proposal before this doc existed)
 
