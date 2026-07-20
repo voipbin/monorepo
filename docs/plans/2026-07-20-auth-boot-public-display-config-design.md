@@ -484,7 +484,6 @@ not change that pre-existing gap.
 ```yaml
 # bin-openapi-manager/openapi/openapi.yaml — AuthBootResponse schema addition
 public_display_config:
-  type: object
   nullable: true
   description: >
     Additional, publicly-safe display/cosmetic data scoped to resource_type.
@@ -494,8 +493,26 @@ public_display_config:
     registered fetcher, when the underlying lookup failed (best-effort;
     never blocks token issuance), and when the widget has no
     customer-configured theme (all fields fall back to platform defaults).
-  example: { "primary_color": "#2563eb", "position": "bottom_right" }
+  oneOf:
+    - $ref: '#/components/schemas/WebchatManagerWidgetThemeConfig'
 ```
+
+**Schema typing fix (found in review):** the concrete shape for this
+field's only currently-registered case (`webchat_widget`) already has a
+first-class named schema in this file —
+`WebchatManagerWidgetThemeConfig` (`openapi.yaml:2340-2374`, already
+`$ref`'d for the `Widget` resource's own `theme_config` field at
+`openapi.yaml:2468`). An earlier draft of this snippet used a bare `type:
+object` blob with only a hand-written example — that both discards
+real, already-defined field-level typing for external SDK/docs
+consumers, and conflicts with `bin-openapi-manager/CLAUDE.md`'s mandatory
+rule #1 ("`oneOf` for polymorphism — no `additionalProperties: true` on
+type-discriminated objects"; `public_display_config` is explicitly
+type-discriminated by `resource_type`, per §3.1). The `oneOf` wrapper
+(rather than a bare `$ref`) is deliberate even though there is currently
+only one registered fetcher — it is the correct, extensible shape for
+when a second resource type's fetcher is registered in the future (§3.5's
+extensibility map), avoiding a breaking spec change at that point.
 
 ## 6. Scope by repo
 
@@ -778,3 +795,38 @@ skeptical pass in Round 5 caught a real regression risk that neither
 Round 3 nor Round 4's narrower briefs were positioned to find. Since this
 round was not a clean APPROVE from both angles either, the
 consecutive-APPROVE counter resets again — proceeding to Round 6.
+
+### Round 6 (2 parallel angles: Round-5-revert re-verification + fresh pass, independent full-doc adversarial hunt for a new defect class)
+
+- **Round-5-revert re-verification + fresh pass: APPROVE.** Independently
+  re-confirmed the `SessionFlowID` trigger and the missing rate-limit
+  coverage on `POST /webchat_sessions` are both real (traced
+  `create.go`'s full function and `main.go`'s route registration). §4.2's
+  revert is complete and consistent — no stray references anywhere to the
+  removed `close()` mitigation. §4.1/§6/§7/§8 all confirmed consistent
+  with the reverted §4.2. No new issues found in a fresh full-document
+  pass from this angle.
+- **Independent full-doc adversarial hunt, targeting undiscovered defect
+  classes: REQUEST CHANGES.** Explicitly checked three fresh angles beyond
+  anything covered in Rounds 1-5: (a) blast radius of `AuthBoot`/
+  `BootResponse` — confirmed clean, exactly one call site and one
+  construction site, no hidden fan-out to other code paths; (b)
+  concurrency safety of the new fetcher-dispatch path — confirmed clean,
+  `serviceHandler` is an immutable singleton and `resourceDisplayConfigFetchers`
+  is a read-only map at request time; (c) whether §5's proposed OpenAPI
+  schema for `public_display_config` is correctly typed — found a real
+  gap: the snippet used a bare untyped `object` with a hand-written
+  example, when `WebchatManagerWidgetThemeConfig` (`openapi.yaml:
+  2340-2374`) already exists as a first-class named schema for exactly
+  this shape and is already `$ref`'d elsewhere in the same file for the
+  `Widget` resource's own `theme_config` field. The untyped blob both
+  discarded real field-level typing for external SDK/docs consumers and
+  conflicted with `bin-openapi-manager/CLAUDE.md`'s mandatory `oneOf`-for-
+  polymorphism rule (this field is explicitly type-discriminated by
+  `resource_type`). **Fixed** by changing §5's snippet to `oneOf: [$ref:
+  WebchatManagerWidgetThemeConfig]` — the `oneOf` wrapper (rather than a
+  bare `$ref`) is deliberately chosen to stay extensible for when a second
+  resource type's fetcher is registered in the future, without a breaking
+  spec change at that point.
+
+Not a clean APPROVE from both angles — proceeding to Round 7.
