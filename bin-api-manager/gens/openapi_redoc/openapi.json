@@ -32923,6 +32923,20 @@
             "x-go-type": "string",
             "description": "Token expiry timestamp in ISO 8601 format.",
             "example": "2026-04-07T12:00:00Z"
+          },
+          "resource_data": {
+            "type": "object",
+            "nullable": true,
+            "description": "Resource-type-scoped envelope for additional, publicly-safe data about the boot-scoped resource. Each entry is a self-documenting named key; currently only \"public_display_config\" is populated (for resource_type \"webchat_widget\", carrying the widget's WebchatManagerWidgetThemeConfig shape). The envelope key itself, and any entry inside it, is OMITTED (not present) when there is nothing to report -- never present as an empty object.\n",
+            "properties": {
+              "public_display_config": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/WebchatManagerWidgetThemeConfig"
+                  }
+                ]
+              }
+            }
           }
         }
       },

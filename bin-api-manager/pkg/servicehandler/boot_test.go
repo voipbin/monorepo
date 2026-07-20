@@ -11,6 +11,8 @@ import (
 	cscustomer "monorepo/bin-customer-manager/models/customer"
 	dmdirect "monorepo/bin-direct-manager/models/direct"
 
+	wcwidget "monorepo/bin-webchat-manager/models/widget"
+
 	"monorepo/bin-api-manager/pkg/dbhandler"
 
 	"github.com/gofrs/uuid"
@@ -31,8 +33,17 @@ func Test_AuthBoot(t *testing.T) {
 		responseCustomerErr error
 		responseCurTime     string
 
+		// webchat_widget-only: controls resourceDisplayConfigFetchers'
+		// WebchatV1WidgetGet mock, when responseDirect.ResourceType ==
+		// webchat_widget.
+		expectWidgetFetch  bool
+		responseWidget     *wcwidget.Widget
+		responseWidgetErr  error
+
 		expectErr                  bool
 		expectAllowedResourceTypes []string
+		expectResourceDataNil      bool
+		expectPublicDisplayConfig  *wcwidget.ThemeConfig
 	}{
 		{
 			name: "happy path",
@@ -166,9 +177,121 @@ func Test_AuthBoot(t *testing.T) {
 			responseCustomerErr: nil,
 			responseCurTime:     "2026-04-06T16:00:00Z",
 
+			expectWidgetFetch: true,
+			responseWidget: &wcwidget.Widget{
+				Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-000000000003"), CustomerID: uuid.FromStringOrNil("c1b2c3d4-0000-0000-0000-000000000001")},
+				ThemeConfig: &wcwidget.ThemeConfig{
+					PrimaryColor: "#2563eb",
+					HeaderTitle:  "Acme Support",
+				},
+			},
+
 			expectErr: false,
 
 			expectAllowedResourceTypes: []string{"webchat_session"},
+			expectPublicDisplayConfig: &wcwidget.ThemeConfig{
+				PrimaryColor: "#2563eb",
+				HeaderTitle:  "Acme Support",
+			},
+		},
+		{
+			// (b) WebchatV1WidgetGet RPC failure: /auth/boot must still
+			// return HTTP 200 with resource_data entirely omitted --
+			// best-effort, fail-open (design doc §3.3).
+			name: "webchat_widget - RPC failure is best-effort, still HTTP 200",
+
+			directHash: "direct.webchat124",
+
+			responseDirect: &dmdirect.Direct{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d1b2c3d4-0000-0000-0000-000000000004"),
+					CustomerID: uuid.FromStringOrNil("c1b2c3d4-0000-0000-0000-000000000001"),
+				},
+				ResourceType: dmdirect.ResourceTypeWebchatWidget,
+				ResourceID:   uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-000000000004"),
+				Hash:         "direct.webchat124",
+			},
+			responseDirectErr: nil,
+			responseCustomer: &cscustomer.Customer{
+				ID:     uuid.FromStringOrNil("c1b2c3d4-0000-0000-0000-000000000001"),
+				Status: cscustomer.StatusActive,
+			},
+			responseCustomerErr: nil,
+			responseCurTime:     "2026-04-06T16:00:00Z",
+
+			expectWidgetFetch: true,
+			responseWidgetErr: fmt.Errorf("rpc timeout"),
+
+			expectErr:             false,
+			expectResourceDataNil: true,
+		},
+		{
+			// (c) no fetcher registered for this resource_type (ai) --
+			// resource_data must be omitted entirely, and this existing
+			// consumer's response shape must be byte-identical to before
+			// this change (no WebchatV1WidgetGet call at all).
+			name: "ai - no fetcher registered, resource_data omitted",
+
+			directHash: "direct.ai125",
+
+			responseDirect: &dmdirect.Direct{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d1b2c3d4-0000-0000-0000-000000000005"),
+					CustomerID: uuid.FromStringOrNil("c1b2c3d4-0000-0000-0000-000000000001"),
+				},
+				ResourceType: dmdirect.ResourceTypeAI,
+				ResourceID:   uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-000000000005"),
+				Hash:         "direct.ai125",
+			},
+			responseDirectErr: nil,
+			responseCustomer: &cscustomer.Customer{
+				ID:     uuid.FromStringOrNil("c1b2c3d4-0000-0000-0000-000000000001"),
+				Status: cscustomer.StatusActive,
+			},
+			responseCustomerErr: nil,
+			responseCurTime:     "2026-04-06T16:00:00Z",
+
+			expectWidgetFetch: false,
+
+			expectErr:             false,
+			expectResourceDataNil: true,
+		},
+		{
+			// (d) fetcher SUCCEEDS but the widget has no
+			// customer-configured theme (ThemeConfig == nil) -- this is
+			// the exact scenario that motivated the typed-nil
+			// normalization in the fetcher (design doc §9.1/§9.2):
+			// resource_data must be omitted entirely, not present as
+			// {"public_display_config": null}.
+			name: "webchat_widget - fetcher succeeds, no theme configured, resource_data omitted",
+
+			directHash: "direct.webchat126",
+
+			responseDirect: &dmdirect.Direct{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d1b2c3d4-0000-0000-0000-000000000006"),
+					CustomerID: uuid.FromStringOrNil("c1b2c3d4-0000-0000-0000-000000000001"),
+				},
+				ResourceType: dmdirect.ResourceTypeWebchatWidget,
+				ResourceID:   uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-000000000006"),
+				Hash:         "direct.webchat126",
+			},
+			responseDirectErr: nil,
+			responseCustomer: &cscustomer.Customer{
+				ID:     uuid.FromStringOrNil("c1b2c3d4-0000-0000-0000-000000000001"),
+				Status: cscustomer.StatusActive,
+			},
+			responseCustomerErr: nil,
+			responseCurTime:     "2026-04-06T16:00:00Z",
+
+			expectWidgetFetch: true,
+			responseWidget: &wcwidget.Widget{
+				Identity:    commonidentity.Identity{ID: uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-000000000006"), CustomerID: uuid.FromStringOrNil("c1b2c3d4-0000-0000-0000-000000000001")},
+				ThemeConfig: nil,
+			},
+
+			expectErr:             false,
+			expectResourceDataNil: true,
 		},
 	}
 
@@ -199,6 +322,10 @@ func Test_AuthBoot(t *testing.T) {
 
 			if !tt.expectErr {
 				mockUtil.EXPECT().TimeGetCurTimeAdd(BootExpiration).Return(tt.responseCurTime)
+			}
+
+			if tt.expectWidgetFetch {
+				mockReq.EXPECT().WebchatV1WidgetGet(ctx, tt.responseDirect.ResourceID).Return(tt.responseWidget, tt.responseWidgetErr)
 			}
 
 			res, err := h.AuthBoot(ctx, tt.directHash)
@@ -236,6 +363,30 @@ func Test_AuthBoot(t *testing.T) {
 
 			if res.Expire != tt.responseCurTime {
 				t.Errorf("Expected expire '%s', got: %v", tt.responseCurTime, res.Expire)
+			}
+
+			if tt.expectResourceDataNil && res.ResourceData != nil {
+				t.Errorf("Expected resource_data to be omitted (nil), got: %v", res.ResourceData)
+			}
+
+			if tt.expectPublicDisplayConfig != nil {
+				if res.ResourceData == nil {
+					t.Fatalf("Expected resource_data to be populated, got nil")
+				}
+				got, ok := res.ResourceData["public_display_config"]
+				if !ok {
+					t.Fatalf("Expected resource_data to contain 'public_display_config' key, got: %v", res.ResourceData)
+				}
+				gotThemeConfig, ok := got.(*wcwidget.ThemeConfig)
+				if !ok {
+					t.Fatalf("Expected public_display_config to be *wcwidget.ThemeConfig, got: %T", got)
+				}
+				if gotThemeConfig.PrimaryColor != tt.expectPublicDisplayConfig.PrimaryColor {
+					t.Errorf("Expected primary_color '%s', got: %v", tt.expectPublicDisplayConfig.PrimaryColor, gotThemeConfig.PrimaryColor)
+				}
+				if gotThemeConfig.HeaderTitle != tt.expectPublicDisplayConfig.HeaderTitle {
+					t.Errorf("Expected header_title '%s', got: %v", tt.expectPublicDisplayConfig.HeaderTitle, gotThemeConfig.HeaderTitle)
+				}
 			}
 
 			if tt.expectAllowedResourceTypes != nil {
