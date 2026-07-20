@@ -1035,6 +1035,37 @@ angles found issues), so per the 2-consecutive-APPROVE gate this is only
 the FIRST of the 2 required consecutive clean rounds. Proceeding to Round
 F to obtain the second.**
 
+**Round F (2 parallel angles: independent fresh full-read APPROVE check,
+implementer-lens executability check — SECOND of 2 required consecutive
+full-APPROVE rounds):**
+
+- **Independent fresh full-read: APPROVE.** Verified 6 code-fact claims
+  spanning different sections than Round E's citations, including §3.2's
+  corrected text — all accurate. Confirmed §4.2's `sessionId = null`
+  reference remains correctly and solely framed as the rejected
+  mitigation, with no orphaned implementation instructions from the
+  Round 3→5 propose-then-revert cycle. Confirmed §9's revision-1 wrapping
+  is threaded consistently via superseded-markers at every relevant
+  §3-§8 location, and §10's historical round records are self-consistent
+  and clearly marked as historical, not live spec. No new defects found.
+- **Implementer-lens executability check: APPROVE.** Walked through
+  implementing every §9.1-§9.4 snippet and the corrected §3.2 checklist
+  against the current real state of `boot.go`, `widget.go`, `webhook.go`,
+  `client.js`, `widget.js`, and `openapi.yaml` (all read in full again).
+  Every insertion point, referenced line number, and described behavior
+  confirmed still accurate — zero drift on either branch since the last
+  citation was written. Confirmed an implementer could write the diff
+  today across backend, frontend, and OpenAPI with zero clarifying
+  questions.
+
+**Round E and Round F are both clean APPROVEs from every angle, satisfying
+the 2-consecutive-APPROVE gate. Revision 1's review loop is CLOSED.** The
+`resource_data` envelope wrapping (§9) is the current, final wire contract
+for `POST /auth/boot`'s new field — §3-§8's original flat-field content
+remains in the document only as superseded, cross-referenced history, and
+§10 remains as the original 8-round closure record. Ready for
+implementation-phase handoff per `design-to-implementation-handoff.md`.
+
 ## 10. Round review disposition
 
 ### Pre-draft adversarial review (3 parallel angles, run against the verbal proposal before this doc existed)
