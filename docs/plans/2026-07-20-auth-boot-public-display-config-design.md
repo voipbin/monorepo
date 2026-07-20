@@ -858,3 +858,32 @@ Not a clean APPROVE from both angles — proceeding to Round 7.
 
 This is the FIRST of the 2 required consecutive full APPROVEs. Proceeding
 to Round 8 to obtain the second, closing round.
+
+### Round 8 (2 parallel angles: independent fresh full-read APPROVE check, implementer-lens executability check — SECOND of 2 required consecutive full-APPROVE rounds)
+
+- **Independent fresh full-read: APPROVE.** Verified 8 code-fact claims
+  spanning §3.1/§3.2/§3.3/§4.1/§4.4/§5 against real files, all accurate.
+  Confirmed the document reads as a coherent, complete, implementable
+  design end to end, not a patchwork of disconnected fixes, and that §9's
+  review history contains no claims contradicting §1-§8's current state.
+- **Implementer-lens executability check: APPROVE.** Confirmed via `git
+  log` that none of the referenced files
+  (`bin-api-manager/pkg/servicehandler/boot.go`,
+  `bin-webchat-manager/models/widget/widget.go`,
+  `square-admin/src/webchat-widget-runtime/client.js`, `widget.js`) have
+  been modified on this branch since it diverged from `main`, so every
+  line-number citation accumulated across 8 review rounds is still
+  accurate against the current worktree state. Walked through
+  implementing every §3/§4 snippet mentally against the real current file
+  contents and confirmed an implementer could write the diff today with
+  zero clarifying questions — every place a prior round flagged ambiguity
+  (typed-nil handling, log level, the `_destroyed` dead-code risk, the
+  `close()`/`end()` ordering footgun) now has an explicit, unambiguous
+  resolution with a literal code snippet in the doc.
+
+**Round 7 and Round 8 are both clean APPROVEs from every angle, satisfying
+the 2-consecutive-APPROVE gate. This design doc's review loop is CLOSED.**
+Ready for implementation-phase handoff per
+`design-to-implementation-handoff.md` — a fresh worktree/branch should be
+created for the actual Go/JS implementation, separate from this design-doc
+branch, per that skill's convention.
