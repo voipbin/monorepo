@@ -830,3 +830,31 @@ consecutive-APPROVE counter resets again — proceeding to Round 6.
   spec change at that point.
 
 Not a clean APPROVE from both angles — proceeding to Round 7.
+
+### Round 7 (2 parallel angles: OpenAPI schema fix re-verification, holistic final-sign-off gate)
+
+- **OpenAPI schema fix re-verification: APPROVE.** Independently confirmed
+  `WebchatManagerWidgetThemeConfig` (`openapi.yaml:2340-2424`) has a
+  correctly-typed OpenAPI property for all 14 fields on the real
+  `ThemeConfig` Go struct (`widget.go:83-115`), with no drift in either
+  direction. Confirmed `oneOf` with a single `$ref` member is syntactically
+  valid OpenAPI 3.0 and the extensibility rationale is sound. No new issues
+  found in a fresh full-document read.
+- **Holistic final-sign-off gate, whole-document judgment: APPROVE.** No
+  remaining internal contradictions found across any two sections after
+  spot-checking 8 of §9's "required fix" claims against real code/doc
+  state. Independently assessed the core design decision: extending
+  `POST /auth/boot` with a best-effort, resource-type-scoped
+  `public_display_config` field is the right solution — 6 rounds of
+  patching found genuine implementation-detail defects (typed-nil traps,
+  a dead teardown guard, a session-amplification regression, an untyped
+  schema) but never invalidated the core architectural choice itself; each
+  defect was a fixable specification gap, not evidence the approach is
+  unsound. The final state's decision to accept a narrow, honestly
+  documented staleness limitation rather than trade it for an uncosted
+  billing-relevant amplification path (§4.2) is the correct call, with a
+  live-push WS mechanism correctly deferred as a follow-up rather than
+  gold-plating this ticket's scope.
+
+This is the FIRST of the 2 required consecutive full APPROVEs. Proceeding
+to Round 8 to obtain the second, closing round.
