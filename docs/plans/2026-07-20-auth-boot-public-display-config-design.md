@@ -82,9 +82,12 @@ resource's `WebhookMessage` / `ConvertWebhookMessage()`-shaped external DTO,
 never the raw internal domain struct. For webchat_widget specifically:
 
 ```go
-// CORRECT — external-safe DTO, already vetted (webhook.go's ThemeConfig
-// field is genuinely cosmetic-only; DirectID and other internal-only
-// fields are already excluded by ConvertWebhookMessage()).
+// CORRECT — narrows to the specifically-vetted ThemeConfig sub-field.
+// ThemeConfig itself is genuinely cosmetic-only. Note: ConvertWebhookMessage()
+// is NOT a general "safe for anonymous exposure" filter -- it still
+// includes SessionFlowID/MessageFlowID (see §3.2's scope-limit note
+// below). Safety here comes from extracting .ThemeConfig specifically,
+// not from calling ConvertWebhookMessage() alone.
 w, err := h.reqHandler.WebchatV1WidgetGet(ctx, resourceID)
 if err == nil && w != nil {
     payload = w.ConvertWebhookMessage().ThemeConfig
@@ -92,21 +95,50 @@ if err == nil && w != nil {
 
 // WRONG — never do this. The raw Widget struct is not vetted for
 // external exposure; a future field added directly to Widget (e.g. an
-// internal flag, DirectID, SessionFlowID) would leak silently through
-// this path.
+// internal flag, DirectID) would leak silently through this path.
 // payload = w.ThemeConfig
+
+// ALSO WRONG — never return the whole ConvertWebhookMessage() result.
+// WebhookMessage includes SessionFlowID/MessageFlowID, which are fine
+// for the authenticated/webhook contexts ConvertWebhookMessage() was
+// originally built for, but must never reach an anonymous /auth/boot
+// caller.
+// payload = w.ConvertWebhookMessage()
 ```
 
 This is a **required code-review checklist item** for this PR and any
 future PR adding a fetcher for another `resource_type`: reviewers must
-confirm the fetcher reads a `WebhookMessage`-shaped struct, not the internal
-model.
+confirm the fetcher extracts a specifically-vetted SUB-FIELD of
+`ConvertWebhookMessage()`'s result (like `.ThemeConfig` here), never the
+raw internal model struct AND never the entire `WebhookMessage` result
+un-narrowed — see the scope-limit note immediately below for why the
+latter is also unsafe.
 
 **Important scope limit of this rule (corrected here):**
-reading via `ConvertWebhookMessage()` protects against **Widget-level**
-internal fields leaking (`DirectID`, `SessionFlowID`, `MessageFlowID` are
-all correctly excluded by the converter). It provides **zero** protection
-against an unsafe field added directly to `ThemeConfig` itself —
+`ConvertWebhookMessage()` is **not a general-purpose "safe for anonymous
+exposure" filter** — it is the pre-existing DTO used for CRM-side webhook
+delivery and authenticated GET responses, contexts where `SessionFlowID`
+and `MessageFlowID` are legitimately visible to the resource owner.
+Verified directly against the real struct: `WebhookMessage`
+(`webhook.go:19-33`) **includes** `SessionFlowID` and `MessageFlowID` as
+plain fields, and `ConvertWebhookMessage()` (`webhook.go:42-62`) copies
+both of them (`h.SessionFlowID.String()`, `h.MessageFlowID.String()`) —
+neither is excluded. Only `DirectID` is actually excluded (per the
+struct's own doc comment, `webhook.go:11`). **The actual safety of this
+design does not come from `ConvertWebhookMessage()` excluding
+internal-only fields — it comes from the fetcher narrowing to
+`.ThemeConfig` specifically** (`webhook.go:32`'s `ThemeConfig *ThemeConfig`
+field), never returning the whole `WebhookMessage` struct. A future
+fetcher for another resource type that returned the ENTIRE
+`ConvertWebhookMessage()` result, rather than a specifically-vetted
+sub-field of it, would leak `SessionFlowID`/`MessageFlowID` to anonymous
+visitors — this is the actual risk this checklist item must guard
+against, corrected from an earlier draft's inaccurate framing that the
+converter itself filters those fields out on its own.
+
+Separately, and independent of the `SessionFlowID`/`MessageFlowID`
+correction above: reading via `.ThemeConfig` specifically provides **zero**
+protection against an unsafe field added directly to `ThemeConfig` itself —
 `Widget.ThemeConfig` (`widget.go:54`) and `WebhookMessage.ThemeConfig`
 (`webhook.go:32`) are declared as the **identical `*ThemeConfig` pointer
 type**, and `ConvertWebhookMessage()` does a bare pointer copy
@@ -533,7 +565,7 @@ public_display_config:
 **Schema typing fix (found in review):** the concrete shape for this
 field's only currently-registered case (`webchat_widget`) already has a
 first-class named schema in this file —
-`WebchatManagerWidgetThemeConfig` (`openapi.yaml:2340-2374`, already
+`WebchatManagerWidgetThemeConfig` (`openapi.yaml:2340-2424`, already
 `$ref`'d for the `Widget` resource's own `theme_config` field at
 `openapi.yaml:2468`). An earlier draft of this snippet used a bare `type:
 object` blob with only a hand-written example — that both discards
@@ -935,6 +967,42 @@ holistic final judgment):**
 Round C's trace-through angle found one real gap (now fixed) — not a clean
 APPROVE from both angles. Proceeding to Round D to obtain the second
 consecutive clean APPROVE required to re-close the loop.
+
+**Round D (2 parallel angles: verification of §8(d)/§9.5 fix + fresh full
+pass, genuinely-fresh holistic hunt for a new hidden defect):**
+
+- **Verification of §8(d)/§9.5 fix + fresh full pass: REQUEST CHANGES
+  (minor).** Confirmed §8(d) is technically accurate against §9.2's real
+  fetcher logic, and §9.5's forward-reference now matches with no
+  unfulfilled promise. Found one citation-accuracy nit unrelated to the
+  §8(d) fix: `WebchatManagerWidgetThemeConfig`'s real line range in
+  `openapi.yaml` is `2340-2424`, not `2340-2374` as one of two citations
+  in the doc stated (the other citation already had the correct range).
+  **Fixed.**
+- **Genuinely-fresh holistic hunt, targeting §9 specifically as the most-
+  patched section: REQUEST CHANGES.** Found a real, previously-missed
+  factual defect — not in §9 (which held up), but in §3.2's own
+  "corrected" scope-limit paragraph (itself a Round-1 correction that had
+  never been re-verified against the actual `WebhookMessage` struct
+  contents). The paragraph claimed `ConvertWebhookMessage()` "correctly
+  excludes" `SessionFlowID`/`MessageFlowID` alongside `DirectID` — false
+  for two of the three: `WebhookMessage` (`webhook.go:19-33`) genuinely
+  includes both `SessionFlowID` and `MessageFlowID` as plain fields, and
+  `ConvertWebhookMessage()` copies both. Only `DirectID` is actually
+  excluded. This means the design's actual safety property was
+  mis-stated for 8+ rounds: it was never "the converter filters out
+  internal fields" — it is "the fetcher narrows to `.ThemeConfig`
+  specifically, never returning the whole converted struct." **Fixed** by
+  correcting §3.2's scope-limit paragraph, the code comment/checklist
+  text immediately above it (which repeated the same inaccurate framing),
+  and adding an explicit "ALSO WRONG" example showing why returning the
+  whole `ConvertWebhookMessage()` result (not just the raw internal
+  struct) would also be unsafe — this is a genuinely new, previously
+  unstated risk class the corrected text now names explicitly for future
+  fetcher authors.
+
+Neither angle was a clean APPROVE — proceeding to Round E to obtain the
+second consecutive clean APPROVE required to re-close the loop.
 
 ## 10. Round review disposition
 
