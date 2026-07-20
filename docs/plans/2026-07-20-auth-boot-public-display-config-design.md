@@ -352,87 +352,67 @@ de-duplication (`client.js:264-273`) ensures `onBootResourceData` fires at
 most once per concurrent `start()` race — multiple callers awaiting
 `start()` before it resolves share the same in-flight `_doStart()` call, so
 the callback cannot double-fire from that path. Separately, `end()`
-(`client.js:768-785`) does not itself reset `this.sessionId` to `null` —
-but §4.2 below adopts a mitigation where `close()` explicitly resets
-`sessionId`, so `start()`'s own guard (`if (!this.client.sessionId) await
-this.client.start()`, checked at both `open()` and `_handleSend()`)
-naturally re-fires on every reopen. Net effect: `onBootResourceData` fires
-once per `start()` invocation (never double-fires within one invocation,
-per the dedup above), and — per §4.2's adopted mitigation — fires again on
-every close-then-reopen within the same page load, keeping
-`public_display_config` fresh across reopens without any live-push
-machinery. The one case that still does NOT re-fire is a visitor's
-ALREADY-OPEN session across a separate admin save (§4.2's remaining
-accepted limitation) — that case has no reopen event to hook at all.
+(`client.js:768-785`) never resets `this.sessionId` to `null`, and this
+design does NOT add such a reset either (see §4.2's explicit rejection of
+that idea, for a cost/abuse reason unrelated to re-entrancy). Combined with
+`start()`'s own guard (`if (!this.client.sessionId) await
+this.client.start()`, checked at both `open()` and `_handleSend()`), this
+means **`onBootResourceData` fires at most once ever per `WebchatWidget`
+instance** — a visitor who closes the widget and reopens it later in the
+same page load does NOT re-trigger `/auth/boot`, and therefore does not
+re-fetch or re-apply `public_display_config` on reopen. This is intentional
+and documented as an accepted limitation in §4.2, not an oversight — the
+alternative (resetting `sessionId` on `close()`) was considered and
+rejected because it would also re-trigger `Widget.SessionFlowID`'s Flow
+execution on every close/reopen cycle (§4.2).
 
-### 4.2 Known limitations: theme updates do not reach already-open sessions; reopen-within-page-load is mitigated
+### 4.2 Known limitations: theme updates do not reach already-open or reopened sessions
 
 `/auth/boot` is called exactly once per `WebchatWidget` instance, at first
 `start()` (`client.js`'s `start()`/`_doStart()`, gated by `if
-(!this.client.sessionId)`). Two related cases follow, graded by real-world
-severity (not treated as equivalent):
+(!this.client.sessionId)`). Two related cases follow, both accepted for
+this ticket's scope:
 
-- **Already-open session (separate visit) — accepted, low-severity:** a
-  visitor who already has the widget open when the customer saves a new
-  theme in square-admin will not see the update until they reload the
-  page. This is genuinely rare/low-stakes — it requires a visitor's active
-  session to overlap in time with an admin's save.
-- **Closed-then-reopened session (same page load) — a MORE common
-  interaction pattern (a visitor dismisses the bubble and comes back to it
-  minutes later without navigating away), and therefore worth actively
-  mitigating rather than silently accepting.** Left unmitigated, a stale
-  theme would persist for the entire remainder of that browser tab's
-  lifetime, not just until the visitor's next full page view — a
-  materially worse staleness story than the "already-open session" case.
+- **Already-open session (separate visit):** a visitor who already has the
+  widget open when the customer saves a new theme in square-admin will not
+  see the update until they reload the page.
+- **Closed-then-reopened session (same page load):** closing and reopening
+  the widget within the same page load does not re-trigger `/auth/boot`
+  either — only a full page reload picks up a new theme value.
 
-**Adopted mitigation for the reopen case:** `close()` (`widget.js:597-603`)
-resets `this.client.sessionId = null` — **after** its existing call to
-`this.client.end()`, not before. Order matters: `end()`
-(`client.js:768-785`) has its own early-return guard, `if (!this.sessionId)
-return`, before it fires the best-effort `POST /webchat_sessions/{id}/end`
-call. Because `close()` invokes `end()` without awaiting it, and JS
-functions execute synchronously up to their first `await`, resetting
-`sessionId` to `null` BEFORE calling `end()` would make `end()`'s guard see
-`sessionId` already null and skip the `POST .../end` call entirely — the
-webchat Session would silently never be marked ended server-side on every
-single close, for every visitor. The reset must therefore come after the
-`end()` invocation:
+**A `close()`-resets-`sessionId` mitigation was considered and explicitly
+REJECTED** (found during review): resetting `this.client.sessionId = null`
+in `close()` would make `open()`'s existing guard (`if
+(!this.client.sessionId) await this.client.start()`) re-run `start()` on
+every reopen, which does correctly re-fetch `public_display_config` — but
+it ALSO re-creates a brand-new webchat Session on the server on every
+close/reopen cycle. `bin-webchat-manager/pkg/sessionhandler/create.go:
+62-93` shows every Session creation checks `Widget.SessionFlowID`, and if
+configured, triggers `ConversationV1ConversationCreateAndExecuteFlow` — a
+new Conversation plus a full Flow execution, which can include AI Team
+calls, agent notifications, or other billing-relevant actions. Before this
+change, `open()`'s guard only fires `start()` once per page load, so
+`SessionFlowID` fires once per visit. The rejected mitigation would make a
+visitor idly toggling the chat bubble open/close re-trigger the configured
+flow on every single toggle — `POST /webchat_sessions` is not covered by
+the `/auth` group's `RateLimit(10,20)` (confirmed absent from
+`bin-api-manager/cmd/api-manager/main.go`'s rate-limited routes), so this
+is an uncosted, unbounded amplification path (repeated AI/flow spend,
+duplicate agent notifications, "why did I get 5 welcome messages"-class
+customer complaints) — a materially worse and more expensive problem than
+the cosmetic staleness bug this mitigation was meant to fix. **Do not
+implement a `sessionId` reset on `close()`.**
 
-```js
-// widget.js — close()
-close() {
-  this.isOpen = false
-  // ...existing indicator-clearing behavior...
-  this.client.end() // fire-and-forget; must run BEFORE the reset below
-  this.client.sessionId = null // reset AFTER end() has already read the
-                                // old sessionId inside its own guard --
-                                // see design doc §4.2 for why order matters
-}
-```
-
-This is a small, in-scope addition: `open()`'s existing guard
-(`if (!this.client.sessionId) await this.client.start()`) already re-runs
-`start()` — and therefore `/auth/boot` and `onBootResourceData` — whenever
-`sessionId` is falsy, so this one-line reset is sufficient to make every
-reopen re-fetch and re-apply the latest `public_display_config`, with no
-new WS/live-push machinery required. This does mean a reopen also
-re-creates a fresh webchat Session server-side (the same behavior as a
-totally new visit) rather than resuming the prior one — accepted, since
-Session continuity across a close/reopen was never guaranteed by this
-runtime to begin with (each `start()` already creates a new Session; see
-`client.js`'s `_doStart()`).
-
-**Remaining accepted limitation:** only the "already-open session, separate
-visit" case above still requires a full page reload. A live-push mechanism
-(a new WS event type + client-side re-apply, covering that remaining case)
-is a plausible follow-up but explicitly out of scope for this ticket — see
-§7.
-
-Both are still improvements over current production, where the embed path
-has **zero** theming input at all (`index.js`'s `createEmbeddableEntry()`
-passes no `themeConfig` whatsoever today), and over the rejected
-bake-into-snippet approach (§2a), which would freeze the theme permanently
-at snippet-generation time regardless of page reloads or reopens.
+Both accepted limitations above are still improvements over current
+production, where the embed path has **zero** theming input at all
+(`index.js`'s `createEmbeddableEntry()` passes no `themeConfig` whatsoever
+today), and over the rejected bake-into-snippet approach (§2a), which
+would freeze the theme permanently at snippet-generation time regardless
+of page reloads or reopens. A live-push mechanism (a new WS event type +
+client-side re-apply, which would deliver a theme update to an
+already-running client WITHOUT creating a new Session or re-triggering
+`SessionFlowID`) is the correct fix for both remaining cases and is a
+plausible follow-up, but explicitly out of scope for this ticket — see §7.
 
 ### 4.3 `index.js` still passes no `themeConfig` at construction — unchanged, intentional
 
@@ -526,14 +506,18 @@ public_display_config:
 | `monorepo` | `bin-openapi-manager/openapi/openapi.yaml`, `openapi/paths/auth/boot.yaml` | Add `public_display_config` to `AuthBootResponse` schema (docs-only, see §5); regenerate via `go generate ./...` to satisfy CI (§5) |
 | `monorepo` | `bin-api-manager/docsdev/source/` | Rebuild RST docs (`AuthBootResponse` is user-visible in Swagger/ReDoc — CLAUDE.md's RST Docs Sync rule applies) |
 | `monorepo-javascript` | `square-admin/src/webchat-widget-runtime/client.js` | `onBootResourceData` callback, fired from `_doStart()` |
-| `monorepo-javascript` | `square-admin/src/webchat-widget-runtime/widget.js` | Wire `onBootResourceData` to re-invoke `applyWidgetTheme()`, guarded against post-destroy firing (§4.1); `close()` resets `this.client.sessionId = null` so reopen re-triggers boot and re-themes (§4.2 adopted mitigation) |
-| `monorepo-javascript` | `square-admin/src/webchat-widget-runtime/__tests__/` | New tests: `onBootResourceData` fires and re-themes; destroyed-widget no-op; reopen-after-close re-fires (§4.2, §8) |
+| `monorepo-javascript` | `square-admin/src/webchat-widget-runtime/widget.js` | Wire `onBootResourceData` to re-invoke `applyWidgetTheme()`, guarded against post-destroy firing (§4.1). `close()` is NOT modified to reset `sessionId` — see §4.2's explicit rejection of that idea. |
+| `monorepo-javascript` | `square-admin/src/webchat-widget-runtime/__tests__/` | New tests: `onBootResourceData` fires and re-themes; destroyed-widget no-op; no re-fire on reopen-after-close (§4.1, §8) |
 
 ## 7. Explicitly out of scope
 
-- Live-push theme updates to an ALREADY-OPEN visitor session overlapping a
-  separate admin save (§4.2's remaining accepted limitation, after the
-  close/reopen case is mitigated by resetting `sessionId` on `close()`).
+- Live-push theme updates to already-open OR reopened-within-same-page-load
+  sessions (§4.2). A `close()`-resets-`sessionId` shortcut was considered
+  and explicitly rejected (§4.2) because it would also re-trigger
+  `Widget.SessionFlowID`'s Flow execution on every close/reopen cycle — an
+  uncosted, unbounded amplification path distinct from the theming
+  problem. A real fix requires a live-push WS mechanism that updates an
+  already-running client's theme without creating a new Session.
 - Registering fetchers for `ai`/`ai_team` resource types (no product
   requirement today; the extensibility point exists but is not populated).
 - Any change to `WebchatWidgetGet()`'s existing `IsDirect()` gate (§2b).
@@ -562,11 +546,11 @@ public_display_config:
   and a `widget.js` test confirming `applyWidgetTheme()` is re-invoked with
   the boot-delivered config, overriding any constructor-time default. Also:
   a test confirming `onBootResourceData` firing after `destroy()`/`close()`
-  is a no-op (§4.1 guard), and a test confirming `close()` resets
-  `sessionId` so a subsequent reopen DOES re-trigger `/auth/boot` and
-  re-fire `onBootResourceData` with a freshly-fetched value (§4.2 adopted
-  mitigation — note this REPLACES an earlier draft's "no re-fire on
-  reopen" expectation, now the opposite behavior is the intended one).
+  is a no-op (§4.1 guard), and a test confirming closing and reopening the
+  widget within the same page load does NOT re-trigger `/auth/boot` or
+  re-fire `onBootResourceData` (§4.1 re-entrancy finding, §4.2 documented
+  limitation — this is intentional, not a bug, per §4.2's rejection of the
+  `sessionId`-reset mitigation).
 - Manual end-to-end: save a theme change in square-admin, open the embed
   widget in a fresh browser tab (simulating a new visitor), confirm the
   updated header title/colors render without any snippet redeployment.
@@ -752,3 +736,45 @@ One required fix from this round is incorporated above (§4.2's ordering
 fix). Since this round did not achieve a clean APPROVE from both angles,
 per the 2-consecutive-APPROVE gate this is NOT yet closed — proceeding to
 Round 5 to obtain the first of the required 2 consecutive full APPROVEs.
+
+### Round 5 (2 parallel angles: ordering-fix re-verification + full adversarial pass, fresh skeptical full-doc review — restarts the consecutive-APPROVE counter)
+
+- **Ordering-fix re-verification + fresh adversarial pass: APPROVE.**
+  Independently re-traced the real `client.js` `end()` function and
+  confirmed the Round 4 ordering fix's rationale was technically accurate.
+  No new issues found in a fresh pass over the full document.
+- **Fresh skeptical full-doc review, independent of prior rounds' framing:
+  REQUEST CHANGES.** Found a genuinely serious issue Rounds 1-4 missed:
+  the §4.2 `close()`-resets-`sessionId` mitigation (adopted in Round 3,
+  ordering-fixed in Round 4) does correctly solve the theme-staleness
+  problem, but does so by making `open()`'s existing `!sessionId` guard
+  re-fire `start()` — and therefore re-create a webchat Session — on
+  every single close/reopen cycle within a page load, not just once per
+  visit as before. `bin-webchat-manager/pkg/sessionhandler/create.go:
+  62-93` confirms every Session creation checks `Widget.SessionFlowID`
+  and, if configured, executes a full Flow (AI Team calls, agent
+  notifications, potentially billing-relevant actions) via
+  `ConversationV1ConversationCreateAndExecuteFlow`. `POST
+  /webchat_sessions` is not covered by the `/auth` group's rate limit, so
+  the mitigation reintroduces an uncosted, unbounded flow-execution
+  amplification path (a visitor idly toggling the chat bubble spams flow
+  executions) in exchange for fixing a purely cosmetic staleness bug — a
+  worse trade than the problem it solved. **Fixed by reverting the
+  `close()`-resets-`sessionId` mitigation entirely**: §4.2 now explicitly
+  documents this as a REJECTED alternative with the full cost rationale,
+  restores both limitations (already-open session, closed-then-reopened
+  session) as accepted for this ticket's scope, and names a live-push WS
+  mechanism as the correct fix for both (since it updates an
+  already-running client without creating a new Session or re-triggering
+  `SessionFlowID`). §4.1's re-entrancy paragraph, §6's scope table, §7's
+  out-of-scope list, and §8's verification plan are all reverted to match
+  (no `close()` code change, no reopen-re-fires test — instead a
+  no-re-fire-on-reopen test, as originally specified before Round 3).
+
+This is exactly the value of running MULTIPLE independent review rounds
+even after a mitigation has already passed two rounds of scrutiny (Round 3
+adopted it, Round 4 only checked its ordering) — a genuinely fresh,
+skeptical pass in Round 5 caught a real regression risk that neither
+Round 3 nor Round 4's narrower briefs were positioned to find. Since this
+round was not a clean APPROVE from both angles either, the
+consecutive-APPROVE counter resets again — proceeding to Round 6.
