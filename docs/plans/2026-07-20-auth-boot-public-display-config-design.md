@@ -1004,6 +1004,37 @@ pass, genuinely-fresh holistic hunt for a new hidden defect):**
 Neither angle was a clean APPROVE — proceeding to Round E to obtain the
 second consecutive clean APPROVE required to re-close the loop.
 
+**Round E (2 parallel angles: §3.2 fix re-verification + fresh full pass,
+final holistic sign-off):**
+
+- **§3.2 fix re-verification + fresh full pass: APPROVE.** Independently
+  re-verified Round D's core correction against the real `webhook.go` —
+  confirmed accurate at the exact cited lines. Confirmed the three touched
+  paragraphs (code comment, checklist, scope-limit) are now mutually
+  consistent, and the new "ALSO WRONG" example correctly names a real,
+  previously-unstated risk. 7 additional fresh code-fact citations
+  independently verified, all accurate. No new defects found in a fresh
+  pass of §1-§10.
+- **Final holistic sign-off: APPROVE.** Confirmed no remaining internal
+  contradictions anywhere in §1-§10. Confirmed §3.2's fix introduces no
+  new inconsistency with §9's typed-nil/omitempty logic. §10's historical
+  Round-1 disposition text (which originally recorded the now-corrected
+  claim) is acceptable as an unmodified historical record — it documents
+  what Round 1 concluded at the time, not a currently-binding claim;
+  §3.2's own body text is what implementers actually read, and that is
+  now accurate. Independently assessed the core safety model across all
+  13 rounds combined: genuinely sound — the real safety property (fetcher
+  narrows to a specifically-vetted sub-field, never the raw struct or the
+  whole converted DTO) is now correctly and durably stated. Confirmed an
+  implementer reading only §1-§9 would have zero remaining ambiguity or
+  inaccuracy to trip over.
+
+**Round E is a clean APPROVE from both angles — the first such round since
+Round D found and fixed the §3.2 defect. Round D was NOT clean (both
+angles found issues), so per the 2-consecutive-APPROVE gate this is only
+the FIRST of the 2 required consecutive clean rounds. Proceeding to Round
+F to obtain the second.**
+
 ## 10. Round review disposition
 
 ### Pre-draft adversarial review (3 parallel angles, run against the verbal proposal before this doc existed)
