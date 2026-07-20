@@ -64,7 +64,7 @@ carries a `ResourceType` discriminator (`boot.go:30`) — reuse it, don't add a
 second one.
 
 **Field name: `public_display_config` (not the earlier-discussed
-`resource_data`)** for the DATA itself. **[Superseded by Revision 1, §10
+`resource_data`)** for the DATA itself. **[Superseded by Revision 1, §9
 below — `resource_data` is reintroduced as a wrapping ENVELOPE, with
 `public_display_config` as a named key inside it, not the top-level field
 name.]** The renaming rationale below still holds for why the key itself
@@ -130,14 +130,17 @@ warning comment directly on the `ThemeConfig` struct definition itself**
 (`bin-webchat-manager/models/widget/widget.go:83`, immediately above
 `type ThemeConfig struct`), since the existing comment there only
 describes the field as "cosmetic, customer-editable" with no mention of
-anonymous-visitor exposure:
+anonymous-visitor exposure. **[Text below updated per Revision 1, §9 —
+"field" corrected to "resource_data envelope's public_display_config
+key".]**
 
 ```go
 // ThemeConfig holds cosmetic, customer-editable widget appearance
 // settings. Nil/omitted fields fall back to platform defaults.
 //
 // SECURITY: this struct is serialized verbatim to ANONYMOUS website
-// visitors via POST /auth/boot's public_display_config field (see
+// visitors via POST /auth/boot's resource_data envelope's
+// public_display_config key (see
 // docs/plans/2026-07-20-auth-boot-public-display-config-design.md).
 // Any new field added here must be independently vetted as safe for
 // unauthenticated public exposure before merge -- it is NOT filtered
@@ -155,8 +158,11 @@ Widget-fetch failure during session creation is logged and swallowed, not
 propagated. Apply the same rule here:
 
 - RPC failure (network error, widget deleted mid-request, timeout): log at
-  `Warn` or `Info`, set `public_display_config = nil`, return **HTTP 200**
-  with the rest of `BootResponse` populated normally.
+  `Warn` or `Info`, omit the `public_display_config` key from the
+  response entirely (see §9.2 for the exact mechanism — the fetcher
+  returns an error, so the envelope key is simply never inserted, not
+  assigned `nil`), return **HTTP 200** with the rest of `BootResponse`
+  populated normally.
 - A visitor must never be blocked from opening the chat widget because a
   cosmetic-data lookup hiccuped.
 - `/auth/boot` is already bounded by `middleware.RateLimit(10, 20)` applied
@@ -172,6 +178,12 @@ propagated. Apply the same rule here:
   explicitly since this endpoint requires no authentication by design.
 
 ### 3.4 Type and JSON shape
+
+**[Superseded by Revision 1, §9.1 below — this field became a
+`map[string]interface{}` envelope named `resource_data`, with
+`public_display_config` nested inside it as a key, rather than a
+top-level `interface{}` field on `BootResponse`. The typed-nil trap
+described below still applies, re-derived one level deeper in §9.1.]**
 
 ```go
 // BootResponse is the typed response for POST /auth/boot.
@@ -234,6 +246,11 @@ custom theme") both correctly omit the key:
 
 ### 3.5 Fetcher registration (extensibility point)
 
+**[Superseded by Revision 1, §9.2 below — the wiring snippet's assignment
+target changed from `res.PublicDisplayConfig = data` to inserting into
+`res.ResourceData["public_display_config"]`, only when `data != nil`. The
+fetcher function signature itself is unchanged.]**
+
 ```go
 // resourceDisplayConfigFetchers maps a direct resource_type to a function
 // that resolves its public_display_config payload. Add an entry here when
@@ -286,6 +303,12 @@ if fetcher, ok := resourceDisplayConfigFetchers[d.ResourceType]; ok {
 ## 4. Frontend wiring (square-admin)
 
 ### 4.1 The originally-discussed wiring is impossible as first sketched — corrected here
+
+**[The `boot?.public_display_config` read in the snippet below is
+superseded by Revision 1, §9.3 — the boot response's read site changed to
+`boot?.resource_data?.public_display_config`. Everything else in this
+section (the callback signature, the `_destroyed` teardown guard, the
+re-entrancy analysis) is unaffected — see §9.3's own note.]**
 
 `WebchatWidget`'s constructor (`widget.js:376-392`) calls
 `applyWidgetTheme(this.themeConfig, this.dom)` **synchronously at
@@ -454,6 +477,11 @@ apply to the JS half of this fix by a different mechanism:
 
 ## 5. OpenAPI spec update (documentation-only — no runtime effect)
 
+**[The bare `public_display_config` top-level schema property below is
+superseded by Revision 1, §9.4 — it is now nested inside a `resource_data`
+envelope schema. §5's surrounding prose (dead-stub route, docs-only claim,
+CI dependency) is unaffected by the revision and still applies.]**
+
 `POST /auth/boot` is served by a **hand-wired route**
 (`bin-api-manager/lib/service/boot.go`'s `PostBoot`), not the OpenAPI-
 codegen'd strict handler. The generated `PostAuthBoot`
@@ -521,11 +549,15 @@ extensibility map), avoiding a breaking spec change at that point.
 
 ## 6. Scope by repo
 
+**[Rows below describe the pre-Revision-1 flat-field shape in places —
+see the "superseded" markers inline on the `boot.go` and `openapi.yaml`
+rows, and §9.5 for the full delta list.]**
+
 | Repo | Component | Change |
 |---|---|---|
-| `monorepo` | `bin-api-manager/pkg/servicehandler/boot.go` | `BootResponse.PublicDisplayConfig` field, `resourceDisplayConfigFetchers` map, best-effort fetch wiring in `AuthBoot()` |
+| `monorepo` | `bin-api-manager/pkg/servicehandler/boot.go` | `BootResponse.PublicDisplayConfig` field, `resourceDisplayConfigFetchers` map, best-effort fetch wiring in `AuthBoot()` **[superseded by Revision 1, §9.1/§9.2 — now `BootResponse.ResourceData map[string]interface{}`]** |
 | `monorepo` | `bin-api-manager/pkg/servicehandler/boot_test.go` | New/updated tests: happy path, RPC-failure fail-open, no-fetcher omitempty, §3.2 source-discipline assertion (payload contains only `WebhookMessage`-safe fields) |
-| `monorepo` | `bin-openapi-manager/openapi/openapi.yaml`, `openapi/paths/auth/boot.yaml` | Add `public_display_config` to `AuthBootResponse` schema (docs-only, see §5); regenerate via `go generate ./...` to satisfy CI (§5) |
+| `monorepo` | `bin-openapi-manager/openapi/openapi.yaml`, `openapi/paths/auth/boot.yaml` | Add `public_display_config` to `AuthBootResponse` schema (docs-only, see §5); regenerate via `go generate ./...` to satisfy CI (§5) **[superseded by Revision 1, §9.4 — now a `resource_data` envelope schema]** |
 | `monorepo` | `bin-api-manager/docsdev/source/` | Rebuild RST docs (`AuthBootResponse` is user-visible in Swagger/ReDoc — CLAUDE.md's RST Docs Sync rule applies) |
 | `monorepo-javascript` | `square-admin/src/webchat-widget-runtime/client.js` | `onBootResourceData` callback, fired from `_doStart()` |
 | `monorepo-javascript` | `square-admin/src/webchat-widget-runtime/widget.js` | Wire `onBootResourceData` to re-invoke `applyWidgetTheme()`, guarded against post-destroy firing (§4.1). `close()` is NOT modified to reset `sessionId` — see §4.2's explicit rejection of that idea. |
@@ -549,6 +581,12 @@ extensibility map), avoiding a breaking spec change at that point.
   `/auth/boot`'s RPC fan-out becomes a measured concern, not addressed here.
 
 ## 8. Verification plan
+
+**[Assertions below reference the pre-Revision-1 flat shape
+(`res.PublicDisplayConfig`, bare `public_display_config` in mock
+fixtures) — see §9.5 for the exact updated assertions
+(`res.ResourceData["public_display_config"]`,
+`boot.resource_data.public_display_config`).]**
 
 - `bin-api-manager`: unit test for `AuthBoot()` covering (a) `webchat_widget`
   happy path returns `public_display_config` populated from
@@ -774,6 +812,53 @@ is deliberately left as a plain `type: object` with named `properties`
 No other section (§1, §2, §3.1-§3.3, §4.1's teardown/re-entrancy logic,
 §4.2-§4.4, §7) requires any change — this revision is confined to the
 wire-format nesting, not the underlying design decisions.
+
+### 9.6 Revision 1 review disposition
+
+**Round A (2 parallel angles: correctness/feasibility, completeness/
+staleness audit):**
+
+- **Correctness/feasibility angle: APPROVE.** Independently compiled §9.1's
+  struct and §9.2's fetcher/wiring snippets standalone — valid Go, matches
+  the real `serviceHandler`/`AuthBoot()` code. Empirically verified §9.1's
+  typed-nil/`omitempty` claim by running `encoding/json.Marshal` on a map
+  containing one nil-valued key — confirmed the key is NOT dropped, exactly
+  as §9.1 states. Traced §9.2's `data != nil` guard and confirmed
+  `res.ResourceData` is never allocated at all when the fetcher returns
+  `(nil, nil)` (widget exists, no theme) — the envelope key is correctly
+  omitted, not emitted as `{}` or `{"public_display_config": null}`.
+  Confirmed §9.3's optional-chaining handles every combination without
+  throwing. Confirmed §9.4's `oneOf` nested inside `properties.
+  public_display_config` is valid OpenAPI 3.0 and correctly applies the
+  `oneOf`-for-polymorphism rule to the discriminated entry, not the
+  envelope itself.
+- **Completeness/staleness audit angle: REQUEST CHANGES.** §9 itself was
+  correct, but was applied as an appended section rather than in-place
+  edits, leaving stale/uncorrected references in §3.1-§3.5, §4.1, §5, §6,
+  and §8 that a top-to-bottom reader would hit BEFORE reaching §9's
+  corrections. Specific findings, all fixed in this revision: (1) §3.1's
+  own cross-reference pointed to the wrong section number ("§10" instead
+  of "§9"); (2) the `ThemeConfig` struct's required SECURITY comment
+  sample (§3.2, destined to ship verbatim into production Go source) still
+  said "public_display_config field" instead of "resource_data envelope's
+  public_display_config key"; (3) §3.3's failure-semantics prose said "set
+  `public_display_config = nil`", which doesn't match §9.2's actual
+  omit-the-key (not assign-nil) mechanism; (4) §3.4, §3.5, §4.1, §5, §6,
+  and §8 all presented the pre-Revision-1 flat-field shape as current spec
+  with zero inline forward marker. **Fixed** by adding explicit "[Superseded
+  by Revision 1, §9.N — ...]" markers at the exact point of staleness in
+  every one of these sections, correcting the §3.1 mispointer, correcting
+  the SECURITY comment sample text, and reconciling §3.3's wording with
+  §9.2's real mechanism — so a reader proceeding top-to-bottom is now
+  redirected to §9 at each point where the pre-revision text would
+  otherwise mislead, rather than only finding out via §9.5's appended delta
+  list after already reading the stale version.
+
+All required changes from Round A are incorporated above. Since staleness
+markers are now threaded through every affected section (not just this
+disposition), a fresh top-to-bottom read should no longer produce the
+confusion the completeness angle found — proceeding to Round B to confirm
+this and obtain the required 2nd consecutive APPROVE.
 
 ## 10. Round review disposition
 
