@@ -50,7 +50,7 @@ create table contact_addresses(
 
 create unique index idx_contact_addresses_cust_type_target on contact_addresses(customer_id, type, target);
 create unique index idx_contact_addresses_cust_primary on contact_addresses(customer_id, primary_contact_uk);
-create index idx_contact_addresses_contact_id on contact_addresses(contact_id);
+create index idx_contact_addresses_contact_type on contact_addresses(contact_id, type);
 create index idx_contact_addresses_lookup on contact_addresses(customer_id, type, target);
 
 create table contact_tag_assignments(

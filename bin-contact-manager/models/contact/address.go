@@ -34,6 +34,26 @@ const (
 	AddressTypeEmail = commonaddress.TypeEmail
 )
 
+// ReachableAddressTypes is the set of commonaddress.Type values considered
+// "reachable" (usable to contact the person) for the public
+// Contact.Addresses API field. Distinct from
+// contacthandler.isValidContactAddressType (which gates what CAN be
+// WRITTEN to contact_addresses): the two lists happen to be identical
+// today (tel, email) but are allowed to diverge -- e.g. a future
+// write-side type that is intentionally NOT surfaced as "reachable" (a
+// session/history-only address) would be added to the write whitelist
+// without being added here. See
+// Test_ReachableAddressTypes_SubsetOfWriteWhitelist in
+// pkg/contacthandler/contact_test.go, which asserts this list never
+// silently grows to include a type the write path doesn't (yet) allow --
+// the reverse direction (a type in the write whitelist but NOT in
+// ReachableAddressTypes) is a legitimate, intentional future state and is
+// NOT asserted against.
+var ReachableAddressTypes = []commonaddress.Type{
+	commonaddress.TypeTel,
+	commonaddress.TypeEmail,
+}
+
 // AddressField represents a database/update field name for Address model
 type AddressField string
 

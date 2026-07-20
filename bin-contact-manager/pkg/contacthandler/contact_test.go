@@ -2331,3 +2331,21 @@ func Test_LookupByEmail_SoftDeletedNotFound(t *testing.T) {
 		t.Errorf("expected nil result for soft-deleted contact, got %v", res)
 	}
 }
+
+// Test_ReachableAddressTypes_SubsetOfWriteWhitelist guards against
+// contact.ReachableAddressTypes silently drifting to include a type
+// isValidContactAddressType doesn't (yet) allow to be written -- a type
+// must be writable before it can be considered "reachable" for the public
+// Contact.Addresses API field. See
+// docs/plans/2026-07-21-contact-address-reachable-type-filter-design.md
+// §9 risk note. The reverse direction (a writable type NOT YET in
+// ReachableAddressTypes) is a legitimate, intentional future state and is
+// NOT asserted against here.
+func Test_ReachableAddressTypes_SubsetOfWriteWhitelist(t *testing.T) {
+	for _, rt := range contact.ReachableAddressTypes {
+		if !isValidContactAddressType(rt) {
+			t.Errorf("ReachableAddressTypes contains %q, which isValidContactAddressType rejects -- "+
+				"a type must be writable before it can be considered reachable", rt)
+		}
+	}
+}

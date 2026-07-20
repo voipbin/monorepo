@@ -93,6 +93,29 @@ func Test_AddressListByContactID(t *testing.T) {
 	if types["email"] != "test@example.com" {
 		t.Errorf("AddressListByContactID() email target = %q, want test@example.com", types["email"])
 	}
+
+	// Insert a third address of a type NOT in contact.ReachableAddressTypes
+	// (simulating a hypothetical future webchat-session address) to verify
+	// the read-side filter excludes it. insertTestAddress writes directly
+	// via raw SQL, bypassing isValidContactAddressType's write-path gate
+	// entirely -- intentional, this is testing the READ-side filter, not
+	// the write-side whitelist (which already has its own coverage
+	// elsewhere).
+	addrID3 := uuid.FromStringOrNil("ab1b2c3d-0001-0001-0001-000000000005")
+	insertTestAddress(t, dbTest, addrID3, customerID, contactID, "webchat", "session-abc123")
+
+	res, err = h.AddressListByContactID(ctx, contactID)
+	if err != nil {
+		t.Fatalf("AddressListByContactID() error = %v", err)
+	}
+	if len(res) != 2 {
+		t.Errorf("AddressListByContactID() len = %d, want exactly 2 (tel+email only, webchat excluded)", len(res))
+	}
+	for _, a := range res {
+		if string(a.Type) == "webchat" {
+			t.Errorf("AddressListByContactID() returned a webchat-type address; expected it filtered out")
+		}
+	}
 }
 
 func Test_AddressGet(t *testing.T) {
