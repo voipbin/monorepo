@@ -386,8 +386,31 @@ severity (not treated as equivalent):
   materially worse staleness story than the "already-open session" case.
 
 **Adopted mitigation for the reopen case:** `close()` (`widget.js:597-603`)
-resets `this.client.sessionId = null` (in addition to its existing
-behavior). This is a small, in-scope addition: `open()`'s existing guard
+resets `this.client.sessionId = null` — **after** its existing call to
+`this.client.end()`, not before. Order matters: `end()`
+(`client.js:768-785`) has its own early-return guard, `if (!this.sessionId)
+return`, before it fires the best-effort `POST /webchat_sessions/{id}/end`
+call. Because `close()` invokes `end()` without awaiting it, and JS
+functions execute synchronously up to their first `await`, resetting
+`sessionId` to `null` BEFORE calling `end()` would make `end()`'s guard see
+`sessionId` already null and skip the `POST .../end` call entirely — the
+webchat Session would silently never be marked ended server-side on every
+single close, for every visitor. The reset must therefore come after the
+`end()` invocation:
+
+```js
+// widget.js — close()
+close() {
+  this.isOpen = false
+  // ...existing indicator-clearing behavior...
+  this.client.end() // fire-and-forget; must run BEFORE the reset below
+  this.client.sessionId = null // reset AFTER end() has already read the
+                                // old sessionId inside its own guard --
+                                // see design doc §4.2 for why order matters
+}
+```
+
+This is a small, in-scope addition: `open()`'s existing guard
 (`if (!this.client.sessionId) await this.client.start()`) already re-runs
 `start()` — and therefore `/auth/boot` and `onBootResourceData` — whenever
 `sessionId` is falsy, so this one-line reset is sufficient to make every
@@ -695,3 +718,37 @@ has now been through 3 independent adversarial review rounds; Round 3
 found only minor/polish issues with no remaining structural, security, or
 correctness concerns. Ready for implementation-phase handoff per
 `design-to-implementation-handoff.md`.
+
+### Round 4 (2 parallel angles: re-verification + fresh look, whole-doc completeness/coherence gate — first of 2 consecutive APPROVE rounds required to close)
+
+- **Re-verification + fresh-look angle: REQUEST CHANGES.** All Round 3
+  fixes independently re-verified as landed correctly (§4.1/§4.2
+  consistency, §9's self-contradiction genuinely fixed, round-attribution
+  parentheticals confirmed stripped from §3.2/§3.4/§4.1). One new, real
+  gap found: §4.2's `close()` mitigation ("resets `this.client.sessionId =
+  null`") did not pin the ORDER relative to `close()`'s existing
+  `this.client.end()` call. Since `close()` calls `end()` without
+  awaiting it, and `end()` has its own synchronous early-return guard (`if
+  (!this.sessionId) return`) gating the best-effort `POST
+  /webchat_sessions/{id}/end` call, resetting `sessionId` to `null` BEFORE
+  invoking `end()` would make that guard fire and silently skip the
+  session-end RPC on every single close, for every visitor — a real
+  regression, arguably worse than the staleness bug this mitigation was
+  meant to fix. Fixed by explicitly pinning the reset to AFTER the `end()`
+  call, with an inline code snippet and an explanation of why order
+  matters, so an implementer cannot innocently pick the unsafe ordering.
+- **Whole-doc completeness/coherence angle: APPROVE.** Independently
+  re-derived, from scratch, that §1's problem statement is fully solved by
+  §3-§5's design (confirmed live against `index.js`, `boot.go`,
+  `client.js`, `widget.js` — the fix chain is complete and additive, no
+  gaps). Confirmed §6/§7/§8 are mutually consistent with §3/§4 after all
+  prior rounds' edits, and all code snippets are syntactically valid and
+  consistent with each other (fetcher signature matches its invocation
+  site). No structural, security, correctness, or cross-reference issues
+  found. Noted the §9-only concentration of review-attribution language is
+  intentional per the doc's own Round 3 disposition, not an inconsistency.
+
+One required fix from this round is incorporated above (§4.2's ordering
+fix). Since this round did not achieve a clean APPROVE from both angles,
+per the 2-consecutive-APPROVE gate this is NOT yet closed — proceeding to
+Round 5 to obtain the first of the required 2 consecutive full APPROVEs.
