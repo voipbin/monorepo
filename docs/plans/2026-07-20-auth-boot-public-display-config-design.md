@@ -54,13 +54,13 @@ adds zero new authentication surface.
 ### 3.1 Why a general field, not `theme_config` specifically
 
 `POST /auth/boot` is a **shared entry point for multiple resource types**
-(`bin-api-manager/pkg/servicehandler/boot.go:20-24`'s `directResourceMapping`
+(`bin-api-manager/pkg/servicehandler/boot.go:19-24`'s `directResourceMapping`
 currently registers `ai`, `ai_team`, `webchat_widget`). A field literally
 named `theme_config` would only make sense for one resource type. The
 precedent for "one field, shape varies by a type discriminator" already
 exists in this codebase: `bin-conversation-manager`'s `Account.ProviderData`
 (`json.RawMessage`, shape varies by `Account.Type`). `BootResponse` already
-carries a `ResourceType` discriminator (`boot.go:29`) — reuse it, don't add a
+carries a `ResourceType` discriminator (`boot.go:30`) — reuse it, don't add a
 second one.
 
 **Field name: `public_display_config` (not the earlier-discussed
@@ -86,8 +86,9 @@ if err == nil && w != nil {
 }
 
 // WRONG — never do this. The raw Widget struct is not vetted for
-// external exposure; a future field added to Widget (e.g. an internal
-// flag) would leak silently through this path.
+// external exposure; a future field added directly to Widget (e.g. an
+// internal flag, DirectID, SessionFlowID) would leak silently through
+// this path.
 // payload = w.ThemeConfig
 ```
 
@@ -95,6 +96,23 @@ This is a **required code-review checklist item** for this PR and any
 future PR adding a fetcher for another `resource_type`: reviewers must
 confirm the fetcher reads a `WebhookMessage`-shaped struct, not the internal
 model.
+
+**Important scope limit of this rule (found in review, corrected here):**
+reading via `ConvertWebhookMessage()` protects against **Widget-level**
+internal fields leaking (`DirectID`, `SessionFlowID`, `MessageFlowID` are
+all correctly excluded by the converter). It provides **zero** protection
+against an unsafe field added directly to `ThemeConfig` itself —
+`Widget.ThemeConfig` (`widget.go:54`) and `WebhookMessage.ThemeConfig`
+(`webhook.go:32`) are declared as the **identical `*ThemeConfig` pointer
+type**, and `ConvertWebhookMessage()` does a bare pointer copy
+(`webhook.go:54`, `ThemeConfig: h.ThemeConfig`) with no field-level
+filtering inside `ThemeConfig`. A future field added to `ThemeConfig`
+would flow through both `w.ThemeConfig` and
+`w.ConvertWebhookMessage().ThemeConfig` identically — the converter is not
+a safety boundary for `ThemeConfig`'s own contents. **Additional
+checklist item**: any new field added to `ThemeConfig` (`widget.go`) must
+be independently vetted for anonymous-visitor safety at the time it is
+added — it is not filtered by this design's fetcher pattern.
 
 ### 3.3 Failure semantics: best-effort, fail-open
 
@@ -110,6 +128,17 @@ propagated. Apply the same rule here:
   with the rest of `BootResponse` populated normally.
 - A visitor must never be blocked from opening the chat widget because a
   cosmetic-data lookup hiccuped.
+- `/auth/boot` is already bounded by `middleware.RateLimit(10, 20)` applied
+  group-wide to the `auth` route group (`bin-api-manager/cmd/api-manager/
+  main.go:236-237,245`, `bin-api-manager/lib/middleware/ratelimit.go:69-89`)
+  — 10 req/s with a burst of 20, per client IP. `AuthBoot()` today makes 2
+  backend RPCs per request (`DirectV1DirectGetByHash`, boot.go:49;
+  `CustomerV1CustomerGet`, boot.go:57); this change adds a 3rd
+  (`WebchatV1WidgetGet`), a 50% increase in backend RPC fan-out per
+  anonymous request. This is not a new class of risk — the existing
+  per-IP rate limit bounds inbound HTTP volume identically regardless of
+  how many backend RPCs each request triggers — but is worth noting
+  explicitly since this endpoint requires no authentication by design.
 
 ### 3.4 Type and JSON shape
 
@@ -156,7 +185,10 @@ var resourceDisplayConfigFetchers = map[string]func(ctx context.Context, h *serv
 }
 ```
 
-Inside `AuthBoot()`, after `BootResponse` is otherwise fully built:
+Inside `AuthBoot()`, after `BootResponse` is otherwise fully built (`d` here
+is the same `*dmdirect.Direct` record already resolved earlier in
+`AuthBoot()` via `h.reqHandler.DirectV1DirectGetByHash`, `boot.go:49`, and
+already used to build `res.ResourceType`/`res.ResourceID`):
 
 ```go
 if fetcher, ok := resourceDisplayConfigFetchers[d.ResourceType]; ok {
@@ -176,11 +208,11 @@ if fetcher, ok := resourceDisplayConfigFetchers[d.ResourceType]; ok {
 `WebchatWidget`'s constructor (`widget.js:376-392`) calls
 `applyWidgetTheme(this.themeConfig, this.dom)` **synchronously at
 construction time**. `WebchatClient` (and the `/auth/boot` call it triggers
-via `start()`) is only invoked later, from `open()`
-(`widget.js:531,579`) — well after the constructor has already returned.
-`client.js` has no back-reference to the `WebchatWidget` instance or its DOM
-today. Passing `public_display_config` "into the constructor" is therefore
-not implementable as originally sketched.
+via `start()`) is only invoked later, from `open()` (`widget.js:579`) and
+`_handleSend()` (`widget.js:531`) — well after the constructor has already
+returned. `client.js` has no back-reference to the `WebchatWidget` instance
+or its DOM today. Passing `public_display_config` "into the constructor" is
+therefore not implementable as originally sketched.
 
 **Fix**: add a new callback, mirroring the existing `onSessionStart` /
 `onReconnected` pattern (`widget.js:398-467`), fired once `_doStart()`
@@ -205,6 +237,13 @@ if (boot?.public_display_config) {
 this.client = new WebchatClient({
   ...
   onBootResourceData: (displayConfig) => {
+    // Guard against firing after the widget has been torn down: if a
+    // visitor closes/destroys the widget while /auth/boot is still
+    // in flight, _doStart() still resolves later and would otherwise
+    // call applyWidgetTheme() on a detached this.dom. Mirrors the
+    // existing this.isOpen-guard idiom already used for the
+    // connecting/typing indicators (widget.js:583-593).
+    if (this._destroyed) return
     // Re-apply theme with the server-confirmed config, overriding
     // whatever themeConfig (if any) the constructor was called with.
     this.themeConfig = displayConfig
@@ -213,22 +252,52 @@ this.client = new WebchatClient({
 })
 ```
 
-### 4.2 Known limitation: theme updates do not reach already-open sessions
+**Re-entrancy / re-fire guarantee (verified against actual code, stated
+explicitly per review round 1 finding):** `client.js`'s `_startPromise`
+de-duplication (`client.js:264-273`) ensures `onBootResourceData` fires at
+most once per concurrent `start()` race — multiple callers awaiting
+`start()` before it resolves share the same in-flight `_doStart()` call, so
+the callback cannot double-fire from that path. Separately, `end()`
+(`client.js:768-785`) never resets `this.sessionId` to `null`. Combined
+with `start()`'s own guard (`if (!this.client.sessionId) await
+this.client.start()`, checked at both `open()` and `_handleSend()`), this
+means **`onBootResourceData` fires at most once ever per `WebchatWidget`
+instance** — a visitor who closes the widget and reopens it later in the
+same page load does NOT re-trigger `/auth/boot`, and therefore does not
+re-fetch or re-apply `public_display_config` on reopen. This is a further,
+distinct limitation from §4.2's "already-open session" case (this one
+covers close-then-reopen within the SAME page load, not a separate visit) —
+documented explicitly here and in §4.2, not silently left as an implicit
+consequence of the dedup mechanism. Accepted for this ticket's scope: a
+full page reload is required to pick up a saved theme change regardless of
+whether the widget was closed and reopened first.
 
-`/auth/boot` is called exactly once, at widget boot (`client.js`'s
-`start()`/`_doStart()`, gated by `if (!this.client.sessionId)`). A visitor
-who already has the widget open when the customer saves a new theme in
-square-admin will **not** see the update until they reload the page. This
-is an accepted, explicitly-documented limitation, not an oversight:
+### 4.2 Known limitation: theme updates do not reach already-open or reopened sessions
 
-- It is a strict improvement over current production, where the embed path
-  has **zero** theming input at all (`index.js`'s `createEmbeddableEntry()`
-  passes no `themeConfig` whatsoever today).
-- It is a strict improvement over the rejected bake-into-snippet approach
-  (§2a), which would freeze the theme permanently at snippet-generation
-  time regardless of page reloads.
-- A live-push mechanism (a new WS event type + client-side re-apply) is a
-  plausible follow-up but explicitly out of scope for this ticket.
+`/auth/boot` is called exactly once per `WebchatWidget` instance, at first
+`start()` (`client.js`'s `start()`/`_doStart()`, gated by `if
+(!this.client.sessionId)`). Two related limitations follow, both accepted
+for this ticket's scope:
+
+- **Already-open session (separate visit):** a visitor who already has the
+  widget open when the customer saves a new theme in square-admin will
+  **not** see the update until they reload the page.
+- **Closed-then-reopened session (same page load):** per §4.1's re-entrancy
+  analysis, `end()` never resets `sessionId`, so closing and reopening the
+  widget within the same page load does not re-trigger `/auth/boot` either
+  — only a full page reload picks up a new theme value.
+
+Both are accepted, explicitly-documented limitations, not oversights:
+
+- Both are a strict improvement over current production, where the embed
+  path has **zero** theming input at all (`index.js`'s
+  `createEmbeddableEntry()` passes no `themeConfig` whatsoever today).
+- Both are a strict improvement over the rejected bake-into-snippet
+  approach (§2a), which would freeze the theme permanently at
+  snippet-generation time regardless of page reloads.
+- A live-push mechanism (a new WS event type + client-side re-apply,
+  covering both cases at once) is a plausible follow-up but explicitly out
+  of scope for this ticket.
 
 ### 4.3 `index.js` still passes no `themeConfig` at construction — unchanged, intentional
 
@@ -261,6 +330,20 @@ still required — it is the source of truth for `docs.voipbin.net` and the
 Swagger/ReDoc UIs, and leaving it stale would actively mislead external API
 consumers — but must not be assumed to "activate" anything.
 
+**CI dependency (build-time, not runtime):** the `bin-openapi-manager-
+validate` CI job (`.circleci/config_work.yml:1347-1372`) runs `go generate
+./...` in `bin-openapi-manager` and fails the build if the committed
+`gens/models/gen.go` doesn't match what regeneration produces
+(`config_work.yml:1369-1371`). Editing `openapi.yaml` without running `go
+generate` and committing the regenerated file **will break CI** — this is
+a real, narrow consequence distinct from the "zero runtime effect" claim
+above, and implementers must run the regen step even though the change has
+no effect on `/auth/boot`'s actual behavior. Separately, there is no
+automated check anywhere that `AuthBootResponse` (spec type) matches the
+real `BootResponse` Go struct's shape going forward — since the generated
+route is permanently dead, that drift is invisible to CI and this PR does
+not change that pre-existing gap.
+
 ```yaml
 # bin-openapi-manager/openapi/openapi.yaml — AuthBootResponse schema addition
 public_display_config:
@@ -280,10 +363,12 @@ public_display_config:
 | Repo | Component | Change |
 |---|---|---|
 | `monorepo` | `bin-api-manager/pkg/servicehandler/boot.go` | `BootResponse.PublicDisplayConfig` field, `resourceDisplayConfigFetchers` map, best-effort fetch wiring in `AuthBoot()` |
-| `monorepo` | `bin-openapi-manager/openapi/openapi.yaml`, `openapi/paths/auth/boot.yaml` | Add `public_display_config` to `AuthBootResponse` schema (docs-only, see §5) |
+| `monorepo` | `bin-api-manager/pkg/servicehandler/boot_test.go` | New/updated tests: happy path, RPC-failure fail-open, no-fetcher omitempty, §3.2 source-discipline assertion (payload contains only `WebhookMessage`-safe fields) |
+| `monorepo` | `bin-openapi-manager/openapi/openapi.yaml`, `openapi/paths/auth/boot.yaml` | Add `public_display_config` to `AuthBootResponse` schema (docs-only, see §5); regenerate via `go generate ./...` to satisfy CI (§5) |
 | `monorepo` | `bin-api-manager/docsdev/source/` | Rebuild RST docs (`AuthBootResponse` is user-visible in Swagger/ReDoc — CLAUDE.md's RST Docs Sync rule applies) |
 | `monorepo-javascript` | `square-admin/src/webchat-widget-runtime/client.js` | `onBootResourceData` callback, fired from `_doStart()` |
-| `monorepo-javascript` | `square-admin/src/webchat-widget-runtime/widget.js` | Wire `onBootResourceData` to re-invoke `applyWidgetTheme()` |
+| `monorepo-javascript` | `square-admin/src/webchat-widget-runtime/widget.js` | Wire `onBootResourceData` to re-invoke `applyWidgetTheme()`, guarded against post-destroy firing (§4.1) |
+| `monorepo-javascript` | `square-admin/src/webchat-widget-runtime/__tests__/` | New tests: `onBootResourceData` fires and re-themes; destroyed-widget no-op; no re-fire on reopen-after-close (§4.1, §8) |
 
 ## 7. Explicitly out of scope
 
@@ -303,11 +388,20 @@ public_display_config:
   `ConvertWebhookMessage().ThemeConfig`, (b) `WebchatV1WidgetGet` RPC failure
   still returns HTTP 200 with `public_display_config` nil and the rest of
   `BootResponse` populated, (c) a resource type with no registered fetcher
-  (`ai`/`ai_team`) omits the field entirely (`omitempty`).
+  (`ai`/`ai_team`) omits the field entirely (`omitempty`), (d) a regression
+  test asserting the fetcher's returned payload contains only fields present
+  on `WebhookMessage`/`ThemeConfig` as currently defined — enforcing §3.2's
+  source-discipline rule with a real test, not just a code-review checklist
+  item.
 - `square-admin`: unit test for `client.js`'s `_doStart()` confirming
   `onBootResourceData` fires with the parsed `public_display_config` value,
   and a `widget.js` test confirming `applyWidgetTheme()` is re-invoked with
-  the boot-delivered config, overriding any constructor-time default.
+  the boot-delivered config, overriding any constructor-time default. Also:
+  a test confirming `onBootResourceData` firing after `destroy()`/`close()`
+  is a no-op (§4.1 guard), and a test confirming closing and reopening the
+  widget within the same page load does NOT re-trigger `/auth/boot` or
+  re-fire `onBootResourceData` (§4.1 re-entrancy finding, §4.2 documented
+  limitation).
 - Manual end-to-end: save a theme change in square-admin, open the embed
   widget in a fresh browser tab (simulating a new visitor), confirm the
   updated header title/colors render without any snippet redeployment.
@@ -327,3 +421,40 @@ All three returned **REQUEST CHANGES**; all three sets of required changes
 are incorporated into this draft (§3.1 field rename, §3.2 source discipline,
 §3.3 failure semantics, §3.4 omitempty, §4.1 callback-based frontend wiring,
 §4.2 known-limitation callout, §5 docs-only clarification).
+
+### Round 1 (3 parallel angles: feasibility/correctness, completeness/internal-consistency, adversarial security/production-readiness)
+
+- **Feasibility/correctness angle: APPROVE** with 3 minor citation-accuracy
+  fixes (line-number off-by-ones in §3.1, a conflated function-name citation
+  in §4.1). All fixed in this revision. No structural or compile-time gaps
+  found; confirmed the proposed Go changes are buildable as described.
+- **Completeness/internal-consistency angle: REQUEST CHANGES.** Found: (1)
+  §3.5 used an undefined variable `d` without introducing it — fixed with an
+  inline clarification tying it to the existing `AuthBoot()` flow; (2) §4.1
+  never addressed `onBootResourceData` firing after widget teardown (torn-
+  down DOM) — fixed with an explicit guard + code comment; (3) §4.1 never
+  verified interaction with the existing `_startPromise` dedup and `end()`
+  never resetting `sessionId` — fixed with an explicit "Re-entrancy / re-fire
+  guarantee" paragraph and a corresponding §4.2 second bullet; (4) §8's
+  verification plan didn't cover §3.2's "mandatory" source-discipline rule
+  with an actual test, and didn't cover the two new §4.1 findings — fixed by
+  adding test requirements (d) in §8's backend list and two new bullets in
+  §8's frontend list; (5) §6's scope table omitted test files implied by §8
+  — fixed by adding two new rows.
+- **Adversarial security/production-readiness angle: REQUEST CHANGES.**
+  Found: (1) §3.2's stated safety rationale ("read via ConvertWebhookMessage,
+  never raw Widget") does not actually protect against an unsafe field added
+  directly to `ThemeConfig` itself, since `Widget.ThemeConfig` and
+  `WebhookMessage.ThemeConfig` are the identical `*ThemeConfig` pointer type
+  — fixed by adding an explicit "Important scope limit of this rule"
+  paragraph correcting the overstated claim and adding a checklist item for
+  future `ThemeConfig` field additions; (2) rate-limiting context was
+  missing — fixed by adding a paragraph in §3.3 citing the existing
+  `RateLimit(10,20)` guard and noting the RPC fan-out increase explicitly;
+  (3) the OpenAPI "zero runtime effect" claim, while true, omitted a real CI
+  dependency (`bin-openapi-manager-validate` fails if the spec change isn't
+  regenerated) — fixed by adding a "CI dependency (build-time, not runtime)"
+  paragraph in §5.
+
+All required changes from Round 1 are incorporated above. Proceeding to
+Round 2.
