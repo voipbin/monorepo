@@ -112,7 +112,33 @@ would flow through both `w.ThemeConfig` and
 a safety boundary for `ThemeConfig`'s own contents. **Additional
 checklist item**: any new field added to `ThemeConfig` (`widget.go`) must
 be independently vetted for anonymous-visitor safety at the time it is
-added — it is not filtered by this design's fetcher pattern.
+added — it is not filtered by this design's fetcher pattern. This checklist
+item will be backed by an in-code artifact, not prose alone (see the
+required `ThemeConfig` struct comment below, to be added during the
+implementation phase) — VoIPBin's `monorepo` has no `.github/
+PULL_REQUEST_TEMPLATE` to hang a checklist on, so a durable in-code warning
+is the only mechanism that will actually reach a future editor at the
+point of risk.
+
+**Required implementation-phase change (found in round 2 review): add a
+warning comment directly on the `ThemeConfig` struct definition itself**
+(`bin-webchat-manager/models/widget/widget.go:83`, immediately above
+`type ThemeConfig struct`), since the existing comment there only
+describes the field as "cosmetic, customer-editable" with no mention of
+anonymous-visitor exposure:
+
+```go
+// ThemeConfig holds cosmetic, customer-editable widget appearance
+// settings. Nil/omitted fields fall back to platform defaults.
+//
+// SECURITY: this struct is serialized verbatim to ANONYMOUS website
+// visitors via POST /auth/boot's public_display_config field (see
+// docs/plans/2026-07-20-auth-boot-public-display-config-design.md).
+// Any new field added here must be independently vetted as safe for
+// unauthenticated public exposure before merge -- it is NOT filtered
+// by ConvertWebhookMessage() or any other export boundary.
+type ThemeConfig struct {
+```
 
 ### 3.3 Failure semantics: best-effort, fail-open
 
@@ -165,6 +191,42 @@ type BootResponse struct {
 `interface{}` (not a concrete struct) because the shape genuinely varies —
 mirrors `ProviderData`'s untyped-blob precedent for the same reason (§3.1).
 
+**Typed-nil trap (found in round 2 review, must be handled explicitly):**
+Go's `encoding/json` `omitempty` only drops an `interface{}` field when the
+interface itself is a TRUE nil (no type, no value). A widget that exists
+but has no customer-configured theme has `Widget.ThemeConfig == nil` (a
+nil `*ThemeConfig`), and `ConvertWebhookMessage().ThemeConfig` returns that
+same nil `*ThemeConfig` — assigning a nil TYPED POINTER into the static
+`interface{}` field `PublicDisplayConfig` produces a NON-nil interface
+value (it carries the type `*ThemeConfig`, value nil). `omitempty` will
+NOT drop this — the JSON output would be `"public_display_config": null`,
+not an omitted key, for the extremely common "widget exists, no custom
+theme set" case.
+
+**Required fix**: the `webchat_widget` fetcher must explicitly normalize a
+nil `*ThemeConfig` to a true nil `interface{}` before returning, so the two
+cases ("no fetcher registered" and "fetcher ran but the widget has no
+custom theme") both correctly omit the key:
+
+```go
+"webchat_widget": func(ctx context.Context, h *serviceHandler, resourceID uuid.UUID) (interface{}, error) {
+	w, err := h.reqHandler.WebchatV1WidgetGet(ctx, resourceID)
+	if err != nil {
+		return nil, err
+	}
+	tc := w.ConvertWebhookMessage().ThemeConfig
+	if tc == nil {
+		// Explicit nil interface, not a nil *ThemeConfig boxed into
+		// interface{} -- see design doc's typed-nil/omitempty note.
+		// A boxed typed-nil pointer is a non-nil interface value and
+		// omitempty would otherwise serialize it as "public_display_config": null
+		// instead of omitting the key.
+		return nil, nil
+	}
+	return tc, nil
+},
+```
+
 ### 3.5 Fetcher registration (extensibility point)
 
 ```go
@@ -173,14 +235,21 @@ mirrors `ProviderData`'s untyped-blob precedent for the same reason (§3.1).
 // a new resource type needs to expose safe, anonymous-visitor-facing
 // display data through /auth/boot. Every fetcher MUST read from the
 // resource's ConvertWebhookMessage()-shaped external DTO (see design doc
-// §3.2) — never the raw internal model struct.
+// §3.2) — never the raw internal model struct. Every fetcher MUST also
+// return a true nil interface{} (not a nil-but-typed pointer) when there
+// is no data to report, so `omitempty` actually omits the key (see design
+// doc §3.4's typed-nil note).
 var resourceDisplayConfigFetchers = map[string]func(ctx context.Context, h *serviceHandler, resourceID uuid.UUID) (interface{}, error){
 	"webchat_widget": func(ctx context.Context, h *serviceHandler, resourceID uuid.UUID) (interface{}, error) {
 		w, err := h.reqHandler.WebchatV1WidgetGet(ctx, resourceID)
 		if err != nil {
 			return nil, err
 		}
-		return w.ConvertWebhookMessage().ThemeConfig, nil
+		tc := w.ConvertWebhookMessage().ThemeConfig
+		if tc == nil {
+			return nil, nil
+		}
+		return tc, nil
 	},
 }
 ```
@@ -188,13 +257,21 @@ var resourceDisplayConfigFetchers = map[string]func(ctx context.Context, h *serv
 Inside `AuthBoot()`, after `BootResponse` is otherwise fully built (`d` here
 is the same `*dmdirect.Direct` record already resolved earlier in
 `AuthBoot()` via `h.reqHandler.DirectV1DirectGetByHash`, `boot.go:49`, and
-already used to build `res.ResourceType`/`res.ResourceID`):
+already used to build `res.ResourceType`/`res.ResourceID`). Log level: use
+`Infof`, matching the file's existing convention for non-fatal
+backend-lookup outcomes (`boot.go:51,59,65,72` all use `Infof` for
+lookup-miss cases; there is no existing `Warnf` call anywhere in this
+file, and this is the same class of "backend lookup didn't come back
+cleanly, not fatal" event). Message format follows the file's existing
+terse `"Could not X. err: %v"` convention (compare `boot.go:51`'s "Could
+not get direct by hash. err: %v"), not a longer parenthetical-annotated
+variant:
 
 ```go
 if fetcher, ok := resourceDisplayConfigFetchers[d.ResourceType]; ok {
 	data, ferr := fetcher(ctx, h, d.ResourceID)
 	if ferr != nil {
-		log.Warnf("Could not fetch public display config (best-effort, continuing). resource_type: %s, err: %v", d.ResourceType, ferr)
+		log.Infof("Could not fetch public display config. resource_type: %s, err: %v", d.ResourceType, ferr)
 	} else {
 		res.PublicDisplayConfig = data
 	}
@@ -238,11 +315,14 @@ this.client = new WebchatClient({
   ...
   onBootResourceData: (displayConfig) => {
     // Guard against firing after the widget has been torn down: if a
-    // visitor closes/destroys the widget while /auth/boot is still
-    // in flight, _doStart() still resolves later and would otherwise
-    // call applyWidgetTheme() on a detached this.dom. Mirrors the
-    // existing this.isOpen-guard idiom already used for the
-    // connecting/typing indicators (widget.js:583-593).
+    // visitor destroys the widget while /auth/boot is still in flight,
+    // _doStart() still resolves later and would otherwise call
+    // applyWidgetTheme() on a detached this.dom. Mirrors the existing
+    // this.isOpen-guard idiom already used for the connecting/typing
+    // indicators (widget.js:583-593). Gated on destroy() specifically
+    // (not close()) because close() only hides the panel via CSS and
+    // leaves this.dom attached -- only destroy() actually detaches it
+    // (widget.js:605-612).
     if (this._destroyed) return
     // Re-apply theme with the server-confirmed config, overriding
     // whatever themeConfig (if any) the constructor was called with.
@@ -251,6 +331,21 @@ this.client = new WebchatClient({
   },
 })
 ```
+
+**Required wiring for the `_destroyed` flag (new in this revision — round 2
+finding: the guard above references a property that does not exist yet
+anywhere in `widget.js`, so without this explicit instruction the guard is
+dead code that never fires):**
+- Constructor: initialize `this._destroyed = false` alongside the other
+  instance fields set at construction time (`widget.js:376-392`).
+- `destroy()` (`widget.js:605-612`): set `this._destroyed = true` as its
+  FIRST statement, before any DOM teardown, so a boot response resolving
+  concurrently with `destroy()` sees the flag set no matter how the two
+  race.
+- `close()` (`widget.js:597-603`) must NOT set this flag — it only hides
+  the panel via a CSS class and leaves `this.dom` attached, so a boot
+  response resolving after `close()` should still be safe to re-theme
+  against (the visitor may reopen the same DOM later).
 
 **Re-entrancy / re-fire guarantee (verified against actual code, stated
 explicitly per review round 1 finding):** `client.js`'s `_startPromise`
@@ -310,6 +405,28 @@ flash-then-reflow is acceptable (matches the existing `_typingEl`/
 `_reconnectingEl` "transient state, reconciled asynchronously" pattern
 already used elsewhere in this runtime).
 
+### 4.4 The already-embedded widget-runtime bundle picks up this change without any customer action
+
+Confirmed the customer-facing distribution path so §2a's rejection
+rationale ("bake into snippet requires redeployment") doesn't silently
+apply to the JS half of this fix by a different mechanism:
+
+- `square-admin/nginx.conf:28-31` serves `/webchat/embed.js` as an alias to
+  `webchat-widget-runtime.bundle.js` with `Cache-Control: public,
+  max-age=300` (a 5-minute cache — deliberately shorter than the 1-year
+  immutable cache rule at `nginx.conf:20-23` used for other static assets).
+- `package.json:13` wires `build:widget` as a `prebuild` step, so every
+  `square-admin` deploy regenerates the bundle automatically.
+- **Net effect**: once this PR's `square-admin` deploy ships, an
+  already-embedded customer `<script src="https://admin.voipbin.net/
+  webchat/embed.js">` tag picks up the new runtime automatically, within
+  at most 5 minutes, on the visitor's next page load — no customer action
+  (snippet regeneration, redeployment) required. This is a structurally
+  different mechanism from the direct-hash `data-theme`-baking approach
+  rejected in §2a (which would have frozen data at snippet-generation
+  time regardless of deploys); here only the STATIC JS CODE is
+  cache-bounded, and it already refreshes on every backend deploy cadence.
+
 ## 5. OpenAPI spec update (documentation-only — no runtime effect)
 
 `POST /auth/boot` is served by a **hand-wired route**
@@ -353,8 +470,10 @@ public_display_config:
     Additional, publicly-safe display/cosmetic data scoped to resource_type.
     Present only for resource types with a registered fetcher (currently
     "webchat_widget", carrying the widget's WebchatManagerWidgetThemeConfig
-    shape). Omitted or null for resource types without one, or if the
-    underlying lookup failed (best-effort; never blocks token issuance).
+    shape). The key is OMITTED (not present) for resource types without a
+    registered fetcher, when the underlying lookup failed (best-effort;
+    never blocks token issuance), and when the widget has no
+    customer-configured theme (all fields fall back to platform defaults).
   example: { "primary_color": "#2563eb", "position": "bottom_right" }
 ```
 
@@ -458,3 +577,48 @@ are incorporated into this draft (§3.1 field rename, §3.2 source discipline,
 
 All required changes from Round 1 are incorporated above. Proceeding to
 Round 2.
+
+### Round 2 (3 parallel angles: fresh-full re-verification, implementation-readiness, fresh adversarial pass)
+
+- **Fresh-full re-verification angle: REQUEST CHANGES.** All Round 1 fixes
+  independently re-verified as landed correctly (citations, ThemeConfig
+  pointer-sharing claim, §4.1/§4.2 consistency, CI dependency accuracy, §8
+  coverage). One new finding: the `_destroyed` guard referenced in §4.1's
+  code snippet was never actually wired to a write site anywhere —
+  `destroy()` didn't set it, making the guard permanently dead code. Fixed
+  by adding explicit constructor-init and `destroy()`-sets-it instructions.
+- **Implementation-readiness angle: REQUEST CHANGES.** Found three real
+  ambiguities that would force an implementer to guess: (1) the
+  `interface{}` + `omitempty` typed-nil trap — a nil `*ThemeConfig` boxed
+  into the interface is a non-nil interface value, so `omitempty` would not
+  drop it, contradicting the doc's own "nil/omitted" framing for the common
+  "widget with no custom theme" case — fixed by adding an explicit
+  typed-nil-normalization step to the fetcher (`if tc == nil { return nil,
+  nil }`) and correcting the OpenAPI description's null/omitted framing;
+  (2) the `_destroyed` flag gap (same finding as the re-verification angle
+  above, confirmed independently); (3) `Warn`-vs-`Info` log-level ambiguity
+  with no precedent in the file for `Warnf` — fixed by pinning `Infof` and
+  matching the file's terse message-format convention. Confirmed
+  independently: the fetcher-dispatch insertion point in `boot.go` and the
+  `onBootResourceData` insertion point in `widget.js`'s constructor were
+  already concrete and copy-pasteable — no changes needed there.
+- **Fresh adversarial pass (new problems beyond Round 1's scope):
+  REQUEST CHANGES.** Found two real completeness gaps: (1) §3.2's safety
+  rationale was prose-only with no in-code enforcement artifact — fixed by
+  adding a required `SECURITY:` warning comment directly on the
+  `ThemeConfig` struct definition in `widget.go`, landed in this revision
+  (see below); (2) the design doc never addressed how an already-embedded
+  customer `<script>` tag picks up the new widget-runtime JS bundle — fixed
+  by adding §4.4, confirming via `nginx.conf`'s 5-minute cache and
+  `package.json`'s `prebuild` step that no customer action is required.
+  This angle also independently confirmed the `omitempty` behavior for
+  `ai`/`ai_team` (no registered fetcher) causes zero behavior change for
+  those existing consumers — no bug found there, contrary to what the
+  review brief hinted might be found.
+
+All required changes from Round 2 are incorporated above. Per this skill's
+own design-to-implementation-handoff convention (design-doc PRs stay pure
+prose so their diff reviews cleanly in isolation from code), the
+`ThemeConfig` struct comment change is fully specified in §3.2 above for
+the implementation phase to apply directly to `widget.go`, rather than
+mixed into this documentation-only PR's diff. Proceeding to Round 3.
