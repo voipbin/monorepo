@@ -97,7 +97,7 @@ future PR adding a fetcher for another `resource_type`: reviewers must
 confirm the fetcher reads a `WebhookMessage`-shaped struct, not the internal
 model.
 
-**Important scope limit of this rule (found in review, corrected here):**
+**Important scope limit of this rule (corrected here):**
 reading via `ConvertWebhookMessage()` protects against **Widget-level**
 internal fields leaking (`DirectID`, `SessionFlowID`, `MessageFlowID` are
 all correctly excluded by the converter). It provides **zero** protection
@@ -120,7 +120,7 @@ PULL_REQUEST_TEMPLATE` to hang a checklist on, so a durable in-code warning
 is the only mechanism that will actually reach a future editor at the
 point of risk.
 
-**Required implementation-phase change (found in round 2 review): add a
+**Required implementation-phase change: add a
 warning comment directly on the `ThemeConfig` struct definition itself**
 (`bin-webchat-manager/models/widget/widget.go:83`, immediately above
 `type ThemeConfig struct`), since the existing comment there only
@@ -191,7 +191,7 @@ type BootResponse struct {
 `interface{}` (not a concrete struct) because the shape genuinely varies —
 mirrors `ProviderData`'s untyped-blob precedent for the same reason (§3.1).
 
-**Typed-nil trap (found in round 2 review, must be handled explicitly):**
+**Typed-nil trap (must be handled explicitly):**
 Go's `encoding/json` `omitempty` only drops an `interface{}` field when the
 interface itself is a TRUE nil (no type, no value). A widget that exists
 but has no customer-configured theme has `Widget.ThemeConfig == nil` (a
@@ -332,10 +332,10 @@ this.client = new WebchatClient({
 })
 ```
 
-**Required wiring for the `_destroyed` flag (new in this revision — round 2
-finding: the guard above references a property that does not exist yet
-anywhere in `widget.js`, so without this explicit instruction the guard is
-dead code that never fires):**
+**Required wiring for the `_destroyed` flag** (the guard above references a
+property that must be introduced; without this explicit instruction, an
+implementer could add only the read-site check and leave it permanently
+dead code):
 - Constructor: initialize `this._destroyed = false` alongside the other
   instance fields set at construction time (`widget.js:376-392`).
 - `destroy()` (`widget.js:605-612`): set `this._destroyed = true` as its
@@ -347,52 +347,69 @@ dead code that never fires):**
   response resolving after `close()` should still be safe to re-theme
   against (the visitor may reopen the same DOM later).
 
-**Re-entrancy / re-fire guarantee (verified against actual code, stated
-explicitly per review round 1 finding):** `client.js`'s `_startPromise`
+**Re-entrancy / re-fire guarantee (verified against actual code):** `client.js`'s `_startPromise`
 de-duplication (`client.js:264-273`) ensures `onBootResourceData` fires at
 most once per concurrent `start()` race — multiple callers awaiting
 `start()` before it resolves share the same in-flight `_doStart()` call, so
 the callback cannot double-fire from that path. Separately, `end()`
-(`client.js:768-785`) never resets `this.sessionId` to `null`. Combined
-with `start()`'s own guard (`if (!this.client.sessionId) await
-this.client.start()`, checked at both `open()` and `_handleSend()`), this
-means **`onBootResourceData` fires at most once ever per `WebchatWidget`
-instance** — a visitor who closes the widget and reopens it later in the
-same page load does NOT re-trigger `/auth/boot`, and therefore does not
-re-fetch or re-apply `public_display_config` on reopen. This is a further,
-distinct limitation from §4.2's "already-open session" case (this one
-covers close-then-reopen within the SAME page load, not a separate visit) —
-documented explicitly here and in §4.2, not silently left as an implicit
-consequence of the dedup mechanism. Accepted for this ticket's scope: a
-full page reload is required to pick up a saved theme change regardless of
-whether the widget was closed and reopened first.
+(`client.js:768-785`) does not itself reset `this.sessionId` to `null` —
+but §4.2 below adopts a mitigation where `close()` explicitly resets
+`sessionId`, so `start()`'s own guard (`if (!this.client.sessionId) await
+this.client.start()`, checked at both `open()` and `_handleSend()`)
+naturally re-fires on every reopen. Net effect: `onBootResourceData` fires
+once per `start()` invocation (never double-fires within one invocation,
+per the dedup above), and — per §4.2's adopted mitigation — fires again on
+every close-then-reopen within the same page load, keeping
+`public_display_config` fresh across reopens without any live-push
+machinery. The one case that still does NOT re-fire is a visitor's
+ALREADY-OPEN session across a separate admin save (§4.2's remaining
+accepted limitation) — that case has no reopen event to hook at all.
 
-### 4.2 Known limitation: theme updates do not reach already-open or reopened sessions
+### 4.2 Known limitations: theme updates do not reach already-open sessions; reopen-within-page-load is mitigated
 
 `/auth/boot` is called exactly once per `WebchatWidget` instance, at first
 `start()` (`client.js`'s `start()`/`_doStart()`, gated by `if
-(!this.client.sessionId)`). Two related limitations follow, both accepted
-for this ticket's scope:
+(!this.client.sessionId)`). Two related cases follow, graded by real-world
+severity (not treated as equivalent):
 
-- **Already-open session (separate visit):** a visitor who already has the
-  widget open when the customer saves a new theme in square-admin will
-  **not** see the update until they reload the page.
-- **Closed-then-reopened session (same page load):** per §4.1's re-entrancy
-  analysis, `end()` never resets `sessionId`, so closing and reopening the
-  widget within the same page load does not re-trigger `/auth/boot` either
-  — only a full page reload picks up a new theme value.
+- **Already-open session (separate visit) — accepted, low-severity:** a
+  visitor who already has the widget open when the customer saves a new
+  theme in square-admin will not see the update until they reload the
+  page. This is genuinely rare/low-stakes — it requires a visitor's active
+  session to overlap in time with an admin's save.
+- **Closed-then-reopened session (same page load) — a MORE common
+  interaction pattern (a visitor dismisses the bubble and comes back to it
+  minutes later without navigating away), and therefore worth actively
+  mitigating rather than silently accepting.** Left unmitigated, a stale
+  theme would persist for the entire remainder of that browser tab's
+  lifetime, not just until the visitor's next full page view — a
+  materially worse staleness story than the "already-open session" case.
 
-Both are accepted, explicitly-documented limitations, not oversights:
+**Adopted mitigation for the reopen case:** `close()` (`widget.js:597-603`)
+resets `this.client.sessionId = null` (in addition to its existing
+behavior). This is a small, in-scope addition: `open()`'s existing guard
+(`if (!this.client.sessionId) await this.client.start()`) already re-runs
+`start()` — and therefore `/auth/boot` and `onBootResourceData` — whenever
+`sessionId` is falsy, so this one-line reset is sufficient to make every
+reopen re-fetch and re-apply the latest `public_display_config`, with no
+new WS/live-push machinery required. This does mean a reopen also
+re-creates a fresh webchat Session server-side (the same behavior as a
+totally new visit) rather than resuming the prior one — accepted, since
+Session continuity across a close/reopen was never guaranteed by this
+runtime to begin with (each `start()` already creates a new Session; see
+`client.js`'s `_doStart()`).
 
-- Both are a strict improvement over current production, where the embed
-  path has **zero** theming input at all (`index.js`'s
-  `createEmbeddableEntry()` passes no `themeConfig` whatsoever today).
-- Both are a strict improvement over the rejected bake-into-snippet
-  approach (§2a), which would freeze the theme permanently at
-  snippet-generation time regardless of page reloads.
-- A live-push mechanism (a new WS event type + client-side re-apply,
-  covering both cases at once) is a plausible follow-up but explicitly out
-  of scope for this ticket.
+**Remaining accepted limitation:** only the "already-open session, separate
+visit" case above still requires a full page reload. A live-push mechanism
+(a new WS event type + client-side re-apply, covering that remaining case)
+is a plausible follow-up but explicitly out of scope for this ticket — see
+§7.
+
+Both are still improvements over current production, where the embed path
+has **zero** theming input at all (`index.js`'s `createEmbeddableEntry()`
+passes no `themeConfig` whatsoever today), and over the rejected
+bake-into-snippet approach (§2a), which would freeze the theme permanently
+at snippet-generation time regardless of page reloads or reopens.
 
 ### 4.3 `index.js` still passes no `themeConfig` at construction — unchanged, intentional
 
@@ -486,12 +503,14 @@ public_display_config:
 | `monorepo` | `bin-openapi-manager/openapi/openapi.yaml`, `openapi/paths/auth/boot.yaml` | Add `public_display_config` to `AuthBootResponse` schema (docs-only, see §5); regenerate via `go generate ./...` to satisfy CI (§5) |
 | `monorepo` | `bin-api-manager/docsdev/source/` | Rebuild RST docs (`AuthBootResponse` is user-visible in Swagger/ReDoc — CLAUDE.md's RST Docs Sync rule applies) |
 | `monorepo-javascript` | `square-admin/src/webchat-widget-runtime/client.js` | `onBootResourceData` callback, fired from `_doStart()` |
-| `monorepo-javascript` | `square-admin/src/webchat-widget-runtime/widget.js` | Wire `onBootResourceData` to re-invoke `applyWidgetTheme()`, guarded against post-destroy firing (§4.1) |
-| `monorepo-javascript` | `square-admin/src/webchat-widget-runtime/__tests__/` | New tests: `onBootResourceData` fires and re-themes; destroyed-widget no-op; no re-fire on reopen-after-close (§4.1, §8) |
+| `monorepo-javascript` | `square-admin/src/webchat-widget-runtime/widget.js` | Wire `onBootResourceData` to re-invoke `applyWidgetTheme()`, guarded against post-destroy firing (§4.1); `close()` resets `this.client.sessionId = null` so reopen re-triggers boot and re-themes (§4.2 adopted mitigation) |
+| `monorepo-javascript` | `square-admin/src/webchat-widget-runtime/__tests__/` | New tests: `onBootResourceData` fires and re-themes; destroyed-widget no-op; reopen-after-close re-fires (§4.2, §8) |
 
 ## 7. Explicitly out of scope
 
-- Live-push theme updates to already-open sessions (§4.2).
+- Live-push theme updates to an ALREADY-OPEN visitor session overlapping a
+  separate admin save (§4.2's remaining accepted limitation, after the
+  close/reopen case is mitigated by resetting `sessionId` on `close()`).
 - Registering fetchers for `ai`/`ai_team` resource types (no product
   requirement today; the extensibility point exists but is not populated).
 - Any change to `WebchatWidgetGet()`'s existing `IsDirect()` gate (§2b).
@@ -507,20 +526,24 @@ public_display_config:
   `ConvertWebhookMessage().ThemeConfig`, (b) `WebchatV1WidgetGet` RPC failure
   still returns HTTP 200 with `public_display_config` nil and the rest of
   `BootResponse` populated, (c) a resource type with no registered fetcher
-  (`ai`/`ai_team`) omits the field entirely (`omitempty`), (d) a regression
-  test asserting the fetcher's returned payload contains only fields present
-  on `WebhookMessage`/`ThemeConfig` as currently defined — enforcing §3.2's
-  source-discipline rule with a real test, not just a code-review checklist
-  item.
+  (`ai`/`ai_team`) omits the field entirely (`omitempty`), (d) §3.2's
+  source-discipline rule enforced via code review against the
+  `ThemeConfig` struct's required SECURITY comment (§3.2) rather than a
+  runtime reflection-based field-diff test — this codebase has no existing
+  precedent for reflection-based struct field comparison, and inventing one
+  (embedded structs, JSON tags vs Go field names) is nontrivial enough that
+  the code-review-plus-struct-comment combination is the pragmatic choice
+  here, not a gap.
 - `square-admin`: unit test for `client.js`'s `_doStart()` confirming
   `onBootResourceData` fires with the parsed `public_display_config` value,
   and a `widget.js` test confirming `applyWidgetTheme()` is re-invoked with
   the boot-delivered config, overriding any constructor-time default. Also:
   a test confirming `onBootResourceData` firing after `destroy()`/`close()`
-  is a no-op (§4.1 guard), and a test confirming closing and reopening the
-  widget within the same page load does NOT re-trigger `/auth/boot` or
-  re-fire `onBootResourceData` (§4.1 re-entrancy finding, §4.2 documented
-  limitation).
+  is a no-op (§4.1 guard), and a test confirming `close()` resets
+  `sessionId` so a subsequent reopen DOES re-trigger `/auth/boot` and
+  re-fire `onBootResourceData` with a freshly-fetched value (§4.2 adopted
+  mitigation — note this REPLACES an earlier draft's "no re-fire on
+  reopen" expectation, now the opposite behavior is the intended one).
 - Manual end-to-end: save a theme change in square-admin, open the embed
   widget in a fresh browser tab (simulating a new visitor), confirm the
   updated header title/colors render without any snippet redeployment.
@@ -605,11 +628,13 @@ Round 2.
 - **Fresh adversarial pass (new problems beyond Round 1's scope):
   REQUEST CHANGES.** Found two real completeness gaps: (1) §3.2's safety
   rationale was prose-only with no in-code enforcement artifact — fixed by
-  adding a required `SECURITY:` warning comment directly on the
-  `ThemeConfig` struct definition in `widget.go`, landed in this revision
-  (see below); (2) the design doc never addressed how an already-embedded
-  customer `<script>` tag picks up the new widget-runtime JS bundle — fixed
-  by adding §4.4, confirming via `nginx.conf`'s 5-minute cache and
+  specifying a required `SECURITY:` warning comment on the `ThemeConfig`
+  struct definition in `widget.go`, to be added during the implementation
+  phase (per this skill's design-to-implementation-handoff convention,
+  code changes are not mixed into a documentation-only design-doc PR); (2)
+  the design doc never addressed how an already-embedded customer
+  `<script>` tag picks up the new widget-runtime JS bundle — fixed by
+  adding §4.4, confirming via `nginx.conf`'s 5-minute cache and
   `package.json`'s `prebuild` step that no customer action is required.
   This angle also independently confirmed the `omitempty` behavior for
   `ai`/`ai_team` (no registered fetcher) causes zero behavior change for
@@ -622,3 +647,51 @@ prose so their diff reviews cleanly in isolation from code), the
 `ThemeConfig` struct comment change is fully specified in §3.2 above for
 the implementation phase to apply directly to `widget.go`, rather than
 mixed into this documentation-only PR's diff. Proceeding to Round 3.
+
+### Round 3 (3 parallel angles: fresh-full re-verification, holistic readability/product-correctness, test-suite feasibility)
+
+- **Fresh-full re-verification angle: REQUEST CHANGES (minor).** All
+  substantive Round 2 fixes independently re-verified as landed correctly
+  in the doc body (typed-nil normalization, `_destroyed` flag consistency
+  with real `widget.js`, log-level match to `boot.go`'s real `Infof`
+  convention, §4.4's citation accuracy). One self-contradiction found: this
+  §9 section's own Round 2 disposition previously said the `ThemeConfig`
+  SECURITY comment was "landed in this revision," directly contradicting
+  §3.2's correct "implementation-phase" framing — fixed by rewording this
+  disposition (see the corrected paragraph above) to match.
+- **Holistic readability/product-correctness angle: REQUEST CHANGES
+  (minor).** Found: (1) several inline parentheticals citing "found in
+  round N review" read as process narration rather than design rationale —
+  fixed by stripping them from §3.2/§3.4/§4.1 (the technical content is
+  unchanged, only the review-attribution framing was removed; this §9
+  section remains the sole place review history is recorded); (2) §4.2 had
+  treated "already-open session" and "closed-then-reopened, same page
+  load" as equivalent-severity limitations, when the reopen case is a
+  materially more common visitor interaction and was worth actively
+  mitigating rather than silently accepting — fixed by adopting a
+  `close()`-resets-`sessionId` mitigation (§4.2, §4.1's re-entrancy
+  paragraph updated to match, §6 and §8 updated for the new `widget.js`
+  change and test); (3) §7 updated to precisely scope the remaining
+  out-of-scope item (live-push for the already-open case only, now that
+  reopen is mitigated).
+- **Test-suite feasibility angle: REQUEST CHANGES (minor).** Confirmed
+  `bin-api-manager/pkg/servicehandler/boot_test.go` already exists with an
+  extendable table-test shape using the exact mocking pattern needed
+  (`gomock`, `WebchatV1WidgetGet` already mocked elsewhere in the package),
+  and confirmed — contrary to an initial concern — that
+  `square-admin/src/webchat-widget-runtime/__tests__/` already has
+  extensive, actively-maintained Jest suites (`client.test.js`,
+  `widget.test.js`, `render.test.js`) with directly reusable patterns for
+  every proposed frontend test, including near-verbatim precedent for the
+  destroy-no-op and close-before-settle-reopen cases. One real gap: §8(d)'s
+  originally-proposed "reflection-based field-diff regression test" had no
+  precedent anywhere in this codebase and would require inventing a new
+  test pattern — fixed by replacing it with a code-review-plus-struct-
+  comment enforcement approach instead (§8, updated above), consistent
+  with how §3.2's rule is actually enforced.
+
+All required changes from Round 3 are incorporated above. This design doc
+has now been through 3 independent adversarial review rounds; Round 3
+found only minor/polish issues with no remaining structural, security, or
+correctness concerns. Ready for implementation-phase handoff per
+`design-to-implementation-handoff.md`.
