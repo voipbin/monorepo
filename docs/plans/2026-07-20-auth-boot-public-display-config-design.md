@@ -595,12 +595,18 @@ fixtures) — see §9.5 for the exact updated assertions
   (not `{}`, not `{"public_display_config": null}`) and the rest of
   `BootResponse` populated, (c) a resource type with no registered fetcher
   (`ai`/`ai_team`) omits `resource_data` entirely (`omitempty` on the nil
-  envelope map), distinct from (b)'s case — (b) is an envelope that could
-  have had an entry but doesn't due to fetch failure, (c) is a resource
-  type with no fetcher registered at all; both correctly result in the
-  same wire output (`resource_data` key absent) but exercise different
-  code paths per §9.2, so both need their own test case, (d) §3.2's
-  source-discipline rule enforced via code review against the
+  envelope map), (d) the fetcher SUCCEEDS but the widget has no
+  customer-configured theme (`Widget.ThemeConfig == nil`, so
+  `ConvertWebhookMessage().ThemeConfig == nil` and the fetcher returns
+  `(nil, nil)` per §9.2) — `resource_data` must ALSO be entirely omitted
+  in this case, distinct from both (b) and (c). This is the exact wire-
+  level scenario that motivated the typed-nil trap finding (§3.4/§9.1) in
+  the first place and must have its own explicit test case, not be
+  assumed covered by (b) or (c). All three of (b)/(c)/(d) result in the
+  same wire output (`resource_data` absent) but exercise three genuinely
+  different code paths per §9.2 — `ferr != nil`, the map lookup's `ok ==
+  false`, and `data != nil` evaluating false — so each needs its own test.
+  (e) §3.2's source-discipline rule enforced via code review against the
   `ThemeConfig` struct's required SECURITY comment (§3.2) rather than a
   runtime reflection-based field-diff test — this codebase has no existing
   precedent for reflection-based struct field comparison, and inventing one
@@ -807,10 +813,11 @@ is deliberately left as a plain `type: object` with named `properties`
   same file, same PR.
 - §8's backend test (a)/(b)/(c) assertions now check
   `res.ResourceData["public_display_config"]` instead of
-  `res.PublicDisplayConfig`; test (c)'s omitempty assertion now must also
-  cover the "envelope allocated but would otherwise be empty" case from
-  §9.1 (i.e. confirm `resource_data` is fully omitted, not `{}`, when the
-  fetcher returns nil).
+  `res.PublicDisplayConfig`; §8 now also has an explicit (d) test case for
+  the fetcher-succeeds-but-widget-has-no-theme scenario (the exact case
+  that motivated §9.1's typed-nil normalization), confirming
+  `resource_data` is fully omitted in that case too, not just the
+  no-fetcher-registered (c) and fetch-failure (b) cases.
 - §8's frontend tests: the `_doStart()` assertion updates to read
   `boot.resource_data.public_display_config` in its mock response fixture,
   per §9.3.
@@ -895,6 +902,39 @@ verification, implementer-lens stale-content-risk check):**
 completeness angle was REQUEST CHANGES) — Round B is the first fully clean
 round. Proceeding to Round C to obtain the second consecutive clean APPROVE
 required to re-close the loop after this revision.**
+
+**Round C (2 parallel angles: final-signoff fresh trace-through of §8/§9.2,
+holistic final judgment):**
+
+- **Final-signoff fresh trace-through: REQUEST CHANGES.** Independently
+  traced both of §8's (b)/(c) code paths against the real §9.2 wiring —
+  both confirmed technically accurate. But found a genuine gap: §8's test
+  list had NO case for the third, distinct code path that actually
+  motivated the entire typed-nil fix in the first place — fetcher runs
+  successfully, `WebchatV1WidgetGet` succeeds, but
+  `ConvertWebhookMessage().ThemeConfig == nil` (widget exists, no custom
+  theme configured), so the fetcher returns `(nil, nil)` and `data != nil`
+  evaluates false. §9.5's own forward-reference had promised this case
+  would be folded into (c), but the actual §8(c) text scoped itself only
+  to "no registered fetcher," never mentioning this case. **Fixed** by
+  adding an explicit (d) test case for exactly this scenario, and
+  correcting §9.5's forward-reference to match. 5 fresh code-fact
+  citations independently re-verified, all accurate — no other issues
+  found.
+- **Holistic final judgment: APPROVE.** Confirmed full-document coherence
+  end to end, no remaining contradictions. Independently assessed the
+  `resource_data` envelope decision itself (not just its documentation) —
+  no hidden cost found versus the flat-field version; the `map[string]
+  interface{}` wrapping doesn't lose meaningful type safety since the
+  inner value was already an untyped `interface{}` before this revision
+  too. Confirmed an implementer could extract the complete, correct
+  technical decision (what `BootResponse` looks like, how `AuthBoot()`
+  populates it) from §9 alone, without needing to read the now-superseded
+  §3-§8 content or §10's history, in well under 2 minutes.
+
+Round C's trace-through angle found one real gap (now fixed) — not a clean
+APPROVE from both angles. Proceeding to Round D to obtain the second
+consecutive clean APPROVE required to re-close the loop.
 
 ## 10. Round review disposition
 
