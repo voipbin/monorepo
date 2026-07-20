@@ -591,9 +591,15 @@ fixtures) — see §9.5 for the exact updated assertions
 - `bin-api-manager`: unit test for `AuthBoot()` covering (a) `webchat_widget`
   happy path returns `public_display_config` populated from
   `ConvertWebhookMessage().ThemeConfig`, (b) `WebchatV1WidgetGet` RPC failure
-  still returns HTTP 200 with `public_display_config` nil and the rest of
+  still returns HTTP 200 with the `resource_data` envelope entirely nil
+  (not `{}`, not `{"public_display_config": null}`) and the rest of
   `BootResponse` populated, (c) a resource type with no registered fetcher
-  (`ai`/`ai_team`) omits the field entirely (`omitempty`), (d) §3.2's
+  (`ai`/`ai_team`) omits `resource_data` entirely (`omitempty` on the nil
+  envelope map), distinct from (b)'s case — (b) is an envelope that could
+  have had an entry but doesn't due to fetch failure, (c) is a resource
+  type with no fetcher registered at all; both correctly result in the
+  same wire output (`resource_data` key absent) but exercise different
+  code paths per §9.2, so both need their own test case, (d) §3.2's
   source-discipline rule enforced via code review against the
   `ThemeConfig` struct's required SECURITY comment (§3.2) rather than a
   runtime reflection-based field-diff test — this codebase has no existing
@@ -859,6 +865,36 @@ markers are now threaded through every affected section (not just this
 disposition), a fresh top-to-bottom read should no longer produce the
 confusion the completeness angle found — proceeding to Round B to confirm
 this and obtain the required 2nd consecutive APPROVE.
+
+**Round B (2 parallel angles: fresh top-to-bottom marker-mechanism
+verification, implementer-lens stale-content-risk check):**
+
+- **Fresh top-to-bottom marker-mechanism verification: APPROVE.**
+  Independently checked every superseded marker against its target §9
+  subsection — all correct, no stray wrong-number references anywhere
+  (the old §3.1 mispointer is confirmed fixed). Confirmed the `ThemeConfig`
+  SECURITY comment sample now correctly says "envelope's ... key," not
+  "field." Confirmed §3.3's wording now correctly describes "omit the key"
+  matching §9.2's real mechanism. Confirmed a top-to-bottom reader now
+  encounters a clear forward signal at every point of staleness, not just
+  retroactively via §9.5. No new contradictions or fabricated citations
+  found in a fresh full-document adversarial pass.
+- **Implementer-lens stale-content-risk check: APPROVE.** Confirmed every
+  superseded marker sits BEFORE the stale code block it warns about, at
+  the start of the relevant paragraph — none buried mid-paragraph where a
+  skimming implementer could miss it and copy-paste the wrong (superseded)
+  snippet. Confirmed §9.5's delta list matches the now-marked §6/§8
+  correctly, with no double-counting or missing deltas. One optional,
+  non-blocking observation: §8's original omitempty test description
+  didn't distinguish "envelope nil due to fetch failure" from "no fetcher
+  registered at all" as two separate code paths worth separate test cases
+  — **incorporated as a small improvement** (§8, updated above) even though
+  the reviewer explicitly noted it doesn't block this round's closure.
+
+**Round A and Round B are not both clean APPROVE from every angle (Round A's
+completeness angle was REQUEST CHANGES) — Round B is the first fully clean
+round. Proceeding to Round C to obtain the second consecutive clean APPROVE
+required to re-close the loop after this revision.**
 
 ## 10. Round review disposition
 
