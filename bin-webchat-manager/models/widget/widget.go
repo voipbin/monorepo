@@ -80,6 +80,17 @@ const (
 // ThemeConfig holds cosmetic, customer-editable widget appearance
 // settings. All fields are optional; a nil ThemeConfig or empty field
 // falls back to the platform default (blue bubble, no logo, bottom-right).
+//
+// SECURITY: this struct is serialized verbatim to ANONYMOUS website
+// visitors via POST /auth/boot's resource_data envelope's
+// public_display_config key (see
+// docs/plans/2026-07-20-auth-boot-public-display-config-design.md).
+// Any new field added here must be independently vetted as safe for
+// unauthenticated public exposure before merge -- it is NOT filtered
+// by ConvertWebhookMessage() or any other export boundary; ThemeConfig
+// is the identical *ThemeConfig pointer type on both Widget and
+// WebhookMessage, so a field added here flows through both paths
+// identically.
 type ThemeConfig struct {
 	PrimaryColor          string         `json:"primary_color,omitempty"`           // hex "#RRGGBB"
 	SecondaryColor        string         `json:"secondary_color,omitempty"`         // hex "#RRGGBB"

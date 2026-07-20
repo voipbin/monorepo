@@ -1784,6 +1784,11 @@ type AuthBootResponse struct {
 	// Expire Token expiry timestamp in ISO 8601 format.
 	Expire *string `json:"expire,omitempty"`
 
+	// ResourceData Resource-type-scoped envelope for additional, publicly-safe data about the boot-scoped resource. Each entry is a self-documenting named key; currently only "public_display_config" is populated (for resource_type "webchat_widget", carrying the widget's WebchatManagerWidgetThemeConfig shape). The envelope key itself, and any entry inside it, is OMITTED (not present) when there is nothing to report -- never present as an empty object.
+	ResourceData *struct {
+		PublicDisplayConfig *AuthBootResponse_ResourceData_PublicDisplayConfig `json:"public_display_config,omitempty"`
+	} `json:"resource_data"`
+
 	// ResourceId The UUID of the resource this token is scoped to. Returned from the resource creation endpoint (e.g., `POST /ais`).
 	ResourceId *openapi_types.UUID `json:"resource_id,omitempty"`
 
@@ -1795,6 +1800,11 @@ type AuthBootResponse struct {
 
 	// Type Token type. Always "direct" for boot tokens.
 	Type *AuthBootResponseType `json:"type,omitempty"`
+}
+
+// AuthBootResponse_ResourceData_PublicDisplayConfig defines model for AuthBootResponse.ResourceData.PublicDisplayConfig.
+type AuthBootResponse_ResourceData_PublicDisplayConfig struct {
+	union json.RawMessage
 }
 
 // AuthBootResponseType Token type. Always "direct" for boot tokens.
@@ -8449,6 +8459,42 @@ type PostWebchatWidgetsJSONRequestBody PostWebchatWidgetsJSONBody
 
 // PutWebchatWidgetsIdJSONRequestBody defines body for PutWebchatWidgetsId for application/json ContentType.
 type PutWebchatWidgetsIdJSONRequestBody PutWebchatWidgetsIdJSONBody
+
+// AsWebchatManagerWidgetThemeConfig returns the union data inside the AuthBootResponse_ResourceData_PublicDisplayConfig as a WebchatManagerWidgetThemeConfig
+func (t AuthBootResponse_ResourceData_PublicDisplayConfig) AsWebchatManagerWidgetThemeConfig() (WebchatManagerWidgetThemeConfig, error) {
+	var body WebchatManagerWidgetThemeConfig
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromWebchatManagerWidgetThemeConfig overwrites any union data inside the AuthBootResponse_ResourceData_PublicDisplayConfig as the provided WebchatManagerWidgetThemeConfig
+func (t *AuthBootResponse_ResourceData_PublicDisplayConfig) FromWebchatManagerWidgetThemeConfig(v WebchatManagerWidgetThemeConfig) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeWebchatManagerWidgetThemeConfig performs a merge with any union data inside the AuthBootResponse_ResourceData_PublicDisplayConfig, using the provided WebchatManagerWidgetThemeConfig
+func (t *AuthBootResponse_ResourceData_PublicDisplayConfig) MergeWebchatManagerWidgetThemeConfig(v WebchatManagerWidgetThemeConfig) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t AuthBootResponse_ResourceData_PublicDisplayConfig) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *AuthBootResponse_ResourceData_PublicDisplayConfig) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
