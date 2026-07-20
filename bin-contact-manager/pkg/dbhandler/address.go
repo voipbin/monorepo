@@ -352,14 +352,26 @@ func (h *handler) AddressList(_ context.Context, customerID uuid.UUID, filters m
 	return res, nil
 }
 
-// AddressListByContactID returns all addresses for a contact.
-// contact_addresses has no soft-delete. NOT modified by this design
-// (design §6.1): shared by ContactGet/ContactList/contactUpdateToCache
-// to populate the public Contact.Addresses API field.
+// AddressListByContactID returns a contact's addresses, filtered to
+// contact.ReachableAddressTypes (today: tel, email). contact_addresses
+// has no soft-delete. Shared by ContactGet/ContactList/
+// contactUpdateToCache to populate the public Contact.Addresses API
+// field. The design §6.1 constraint this comment used to reference
+// concerns NOT reusing this function for the separate ownership-period
+// interaction-matching read path (see
+// pkg/contacthandler/interaction_read.go's own comment at that call
+// site) -- it does not mean this function's own query may never change;
+// see docs/plans/2026-07-21-contact-address-reachable-type-filter-design.md.
 func (h *handler) AddressListByContactID(_ context.Context, contactID uuid.UUID) ([]contact.Address, error) {
+	reachable := make([]string, 0, len(contact.ReachableAddressTypes))
+	for _, t := range contact.ReachableAddressTypes {
+		reachable = append(reachable, string(t))
+	}
+
 	query, args, err := sq.Select(addressRowColumns()...).
 		From(addressTable).
 		Where(sq.Eq{"contact_id": contactID.Bytes()}).
+		Where(sq.Eq{"type": reachable}).
 		OrderBy("is_primary desc", "tm_create asc").
 		ToSql()
 	if err != nil {
