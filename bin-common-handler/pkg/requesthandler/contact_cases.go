@@ -9,6 +9,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 
 	cmcasenote "monorepo/bin-contact-manager/models/casenote"
@@ -226,6 +227,47 @@ func (r *requestHandler) ContactV1CaseClose(
 	}
 
 	return res.Case, nil
+}
+
+// ContactV1CaseAssign assigns a case to an owner (agent) in
+// contact-manager (square-talk Cases menu design §3.2). ownerType is
+// NOT an exported parameter -- no caller ever needs to supply it, since
+// the only owner type this platform's Case/Conversation code supports
+// today is agent. This function's internal implementation still
+// populates V1DataCasesIDAssign.OwnerType on the wire with the
+// hardcoded literal string(commonidentity.OwnerTypeAgent), because
+// contact-manager's casehandler.Assign/CaseUpdateOwner are generic over
+// commonidentity.OwnerType and require a real, non-empty value to write
+// to the owner_type column -- omitting it would silently persist an
+// empty owner_type, not "agent".
+func (r *requestHandler) ContactV1CaseAssign(
+	ctx context.Context,
+	customerID, id, ownerID uuid.UUID,
+) (*cmkase.Case, error) {
+	uri := fmt.Sprintf("/v1/cases/%s/assign", id)
+
+	data := &cmrequest.V1DataCasesIDAssign{
+		CustomerID: customerID,
+		OwnerType:  string(commonidentity.OwnerTypeAgent),
+		OwnerID:    ownerID,
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestContact(ctx, uri, sock.RequestMethodPost, "contact/cases/<id>/assign", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
+		return nil, err
+	}
+
+	var res cmkase.Case
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
 }
 
 // ContactV1CaseContinue creates a new, open case that continues a

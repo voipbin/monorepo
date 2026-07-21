@@ -934,6 +934,7 @@ type RequestHandler interface {
 	ContactV1CaseListUnresolved(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*cmkase.Case, string, error)
 	ContactV1CaseGet(ctx context.Context, customerID, id uuid.UUID) (*cmkase.Case, error)
 	ContactV1CaseClose(ctx context.Context, customerID, id uuid.UUID, closedByType string, closedByID uuid.UUID) (*cmkase.Case, error)
+	ContactV1CaseAssign(ctx context.Context, customerID, id, ownerID uuid.UUID) (*cmkase.Case, error)
 	ContactV1CaseContinue(ctx context.Context, customerID, id uuid.UUID, callerType string, callerID uuid.UUID, callerIsAdmin bool) (*cmkase.Case, error)
 	ContactV1CaseNoteList(ctx context.Context, customerID, caseID uuid.UUID) ([]*cmcasenote.CaseNote, error)
 	ContactV1CaseNoteCreate(ctx context.Context, customerID, caseID uuid.UUID, authorType string, authorID *uuid.UUID, text string) (*cmcasenote.CaseNote, error)

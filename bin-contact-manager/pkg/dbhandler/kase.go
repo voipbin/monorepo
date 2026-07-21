@@ -374,6 +374,29 @@ func (h *handler) CaseUpdateContactID(ctx context.Context, customerID, id, conta
 	return caseUpdateContactIDExec(h.db, customerID, id, contactID)
 }
 
+// CaseUpdateOwner updates a Case's owner_type/owner_id (square-talk Cases
+// menu design §3.2). Mirrors caseUpdateContactIDExec's exact shape:
+// customer_id-scoped UPDATE as a defense-in-depth measure -- the sole
+// caller today (casehandler.Assign) already verifies case ownership via
+// CaseGetByID before calling this.
+func (h *handler) CaseUpdateOwner(ctx context.Context, customerID, id uuid.UUID, ownerType commonidentity.OwnerType, ownerID uuid.UUID) error {
+	query, args, err := sq.Update(caseTable).
+		Set("owner_type", string(ownerType)).
+		Set("owner_id", ownerID.Bytes()).
+		Where(sq.Eq{"id": id.Bytes()}).
+		Where(sq.Eq{"customer_id": customerID.Bytes()}).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("could not build query. CaseUpdateOwner. err: %v", err)
+	}
+
+	if _, err := h.db.Exec(query, args...); err != nil {
+		return fmt.Errorf("could not execute. CaseUpdateOwner. err: %v", err)
+	}
+
+	return nil
+}
+
 // caseUpdateTagIDsExec is the shared implementation for CaseUpdateTagIDs
 // (design VOIP-1254). The customer_id-scoped UPDATE structure mirrors
 // caseUpdateContactIDExec's shape, but the column-value conversion does

@@ -12206,6 +12206,23 @@ type PostServiceAgentsContactAddressesIdClaimJSONBody struct {
 	ContactId openapi_types.UUID `json:"contact_id"`
 }
 
+// GetServiceAgentsContactCasesParams defines parameters for GetServiceAgentsContactCases.
+type GetServiceAgentsContactCasesParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostServiceAgentsContactCasesIdAssignJSONBody defines parameters for PostServiceAgentsContactCasesIdAssign.
+type PostServiceAgentsContactCasesIdAssignJSONBody struct {
+	// OwnerId The agent ID to assign as the case owner. The agent ID returned from the `GET /service_agents/agents` response.
+	//
+	// Example: 2a2ec0ba-8004-11ec-aea5-439829c92a7c
+	OwnerId openapi_types.UUID `json:"owner_id"`
+}
+
 // GetServiceAgentsContactInteractionsParams defines parameters for GetServiceAgentsContactInteractions.
 type GetServiceAgentsContactInteractionsParams struct {
 	// PeerType Remote endpoint type (e.g. "tel", "email"). Required with peer_target.
@@ -13389,6 +13406,9 @@ type PutServiceAgentsContactAddressesIdJSONRequestBody PutServiceAgentsContactAd
 
 // PostServiceAgentsContactAddressesIdClaimJSONRequestBody defines body for PostServiceAgentsContactAddressesIdClaim for application/json ContentType.
 type PostServiceAgentsContactAddressesIdClaimJSONRequestBody PostServiceAgentsContactAddressesIdClaimJSONBody
+
+// PostServiceAgentsContactCasesIdAssignJSONRequestBody defines body for PostServiceAgentsContactCasesIdAssign for application/json ContentType.
+type PostServiceAgentsContactCasesIdAssignJSONRequestBody PostServiceAgentsContactCasesIdAssignJSONBody
 
 // PostServiceAgentsContactInteractionsIdResolutionsJSONRequestBody defines body for PostServiceAgentsContactInteractionsIdResolutions for application/json ContentType.
 type PostServiceAgentsContactInteractionsIdResolutionsJSONRequestBody PostServiceAgentsContactInteractionsIdResolutionsJSONBody

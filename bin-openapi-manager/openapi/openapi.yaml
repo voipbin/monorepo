@@ -8701,6 +8701,14 @@ paths:
     $ref: './paths/service_agents/conversations_id.yaml'
   /service_agents/conversations:
     $ref: './paths/service_agents/conversations.yaml'
+  /service_agents/contact_cases/{id}/close:
+    $ref: './paths/service_agents/contact_cases_id_close.yaml'
+  /service_agents/contact_cases/{id}/assign:
+    $ref: './paths/service_agents/contact_cases_id_assign.yaml'
+  /service_agents/contact_cases/{id}:
+    $ref: './paths/service_agents/contact_cases_id.yaml'
+  /service_agents/contact_cases:
+    $ref: './paths/service_agents/contact_cases.yaml'
 
   /service_agents/customer:
     $ref: './paths/service_agents/customer.yaml'

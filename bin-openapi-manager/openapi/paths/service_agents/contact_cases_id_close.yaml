@@ -1,0 +1,31 @@
+post:
+  summary: Close the case
+  description: Closes an open case by its ID.
+  tags:
+    - Service Agent
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        example: "550e8400-e29b-41d4-a716-446655440000"
+      description: "The unique identifier of the case. Returned from the `GET /service_agents/contact_cases` response."
+  responses:
+    '200':
+      description: The case after closing.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ContactManagerCase'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'

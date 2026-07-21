@@ -100,6 +100,7 @@ type DBHandler interface {
 	CaseUpdateTMUpdateTx(ctx context.Context, tx *sql.Tx, id uuid.UUID, tmUpdate *time.Time) error
 	CaseUpdateContactID(ctx context.Context, customerID, id, contactID uuid.UUID) error
 	CaseUpdateContactIDTx(ctx context.Context, tx *sql.Tx, customerID, id, contactID uuid.UUID) error
+	CaseUpdateOwner(ctx context.Context, customerID, id uuid.UUID, ownerType commonidentity.OwnerType, ownerID uuid.UUID) error
 	CaseUpdateTagIDs(ctx context.Context, customerID, id uuid.UUID, tagIDs []uuid.UUID) error
 	CaseClearContactID(ctx context.Context, customerID, id uuid.UUID) error
 	CaseClearContactIDTx(ctx context.Context, tx *sql.Tx, customerID, id uuid.UUID) error

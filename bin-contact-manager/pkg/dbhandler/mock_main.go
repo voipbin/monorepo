@@ -556,6 +556,20 @@ func (mr *MockDBHandlerMockRecorder) CaseUpdateContactIDTx(ctx, tx, customerID, 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseUpdateContactIDTx", reflect.TypeOf((*MockDBHandler)(nil).CaseUpdateContactIDTx), ctx, tx, customerID, id, contactID)
 }
 
+// CaseUpdateOwner mocks base method.
+func (m *MockDBHandler) CaseUpdateOwner(ctx context.Context, customerID, id uuid.UUID, ownerType identity.OwnerType, ownerID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CaseUpdateOwner", ctx, customerID, id, ownerType, ownerID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CaseUpdateOwner indicates an expected call of CaseUpdateOwner.
+func (mr *MockDBHandlerMockRecorder) CaseUpdateOwner(ctx, customerID, id, ownerType, ownerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseUpdateOwner", reflect.TypeOf((*MockDBHandler)(nil).CaseUpdateOwner), ctx, customerID, id, ownerType, ownerID)
+}
+
 // CaseUpdateStatusClosed mocks base method.
 func (m *MockDBHandler) CaseUpdateStatusClosed(ctx context.Context, customerID, id uuid.UUID, closedReason, closedByType string, closedByID *uuid.UUID, closedAt *time.Time) (bool, error) {
 	m.ctrl.T.Helper()

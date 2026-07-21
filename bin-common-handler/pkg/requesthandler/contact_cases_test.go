@@ -450,8 +450,81 @@ func Test_ContactV1CaseClose(t *testing.T) {
 	}
 }
 
-func Test_ContactV1CaseContinue(t *testing.T) {
+// Test_ContactV1CaseAssign verifies ContactV1CaseAssign's constructed
+// wire request body. This is the single most safety-critical
+// assertion in the square-talk Cases menu design (§3.2): the
+// V1DataCasesIDAssign.OwnerType field must be populated with the
+// hardcoded literal "agent" even though ownerType is not an exported
+// function parameter -- omitting it would silently persist an empty
+// owner_type column.
+func Test_ContactV1CaseAssign(t *testing.T) {
 
+	tests := []struct {
+		name string
+
+		customerID uuid.UUID
+		id         uuid.UUID
+		ownerID    uuid.UUID
+
+		expectTarget  string
+		expectRequest *sock.Request
+		response      *sock.Response
+
+		expectRes *cmkase.Case
+	}{
+		{
+			name: "normal",
+
+			customerID: uuid.FromStringOrNil("55ecfc4e-2c74-11ee-98fb-0762519529f3"),
+			id:         uuid.FromStringOrNil("5623e25e-2c74-11ee-87a6-bfa8ae34077f"),
+			ownerID:    uuid.FromStringOrNil("8fe6c136-2c75-11ee-a3a4-37400837e12e"),
+
+			expectTarget: "bin-manager.contact-manager.request",
+			expectRequest: &sock.Request{
+				URI:      "/v1/cases/5623e25e-2c74-11ee-87a6-bfa8ae34077f/assign",
+				Method:   sock.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data: []byte(
+					`{"customer_id":"55ecfc4e-2c74-11ee-98fb-0762519529f3","owner_type":"agent","owner_id":"8fe6c136-2c75-11ee-a3a4-37400837e12e"}`,
+				),
+			},
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"5623e25e-2c74-11ee-87a6-bfa8ae34077f"}`),
+			},
+			expectRes: &cmkase.Case{
+				ID: uuid.FromStringOrNil("5623e25e-2c74-11ee-87a6-bfa8ae34077f"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.ContactV1CaseAssign(ctx, tt.customerID, tt.id, tt.ownerID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_ContactV1CaseContinue(t *testing.T) {
 	tests := []struct {
 		name string
 

@@ -214,6 +214,39 @@ func (h *listenHandler) processV1CasesIDClosePost(ctx context.Context, req *sock
 	return &sock.Response{StatusCode: 200, DataType: "application/json", Data: data}, nil
 }
 
+// processV1CasesIDAssignPost handles POST /v1/cases/{id}/assign request.
+func (h *listenHandler) processV1CasesIDAssignPost(ctx context.Context, req *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{"func": "processV1CasesIDAssignPost"})
+	log.WithField("request", req).Debug("Received request.")
+
+	id := caseIDFromURI(req.URI)
+	if id == uuid.Nil {
+		return simpleResponse(400), nil
+	}
+
+	var body request.V1DataCasesIDAssign
+	if err := json.Unmarshal(req.Data, &body); err != nil {
+		log.Errorf("Could not unmarshal request body. err: %v", err)
+		return simpleResponse(400), nil
+	}
+	if body.CustomerID == uuid.Nil {
+		return simpleResponse(400), nil
+	}
+
+	res, err := h.caseHandler.Assign(ctx, body.CustomerID, id, commonidentity.OwnerType(body.OwnerType), body.OwnerID)
+	if err != nil {
+		log.Errorf("Could not assign case. err: %v", err)
+		return errorResponse(err), nil
+	}
+
+	data, err := json.Marshal(res)
+	if err != nil {
+		return simpleResponse(500), nil
+	}
+
+	return &sock.Response{StatusCode: 200, DataType: "application/json", Data: data}, nil
+}
+
 // processV1CasesIDContinuePost handles POST /v1/cases/{id}/continue
 // request.
 func (h *listenHandler) processV1CasesIDContinuePost(ctx context.Context, req *sock.Request) (*sock.Response, error) {
