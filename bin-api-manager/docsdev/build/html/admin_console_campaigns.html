@@ -3,11 +3,11 @@
   <head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Flow" href="flow.html"><link rel="prev" title="Error Reason Codes" href="restful_api_errors.html">
+<link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
     <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
-        <title>Admin Console Guide - VoIPBin Documentation</title>
+        <title>Campaigns &amp; Outbound Dialing - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -189,7 +189,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
         <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
       </label>
     </div>
@@ -219,8 +219,8 @@
 <li class="toctree-l1"><a class="reference internal" href="restful_api_errors.html">Error Reason Codes</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Admin Console Guide</span></p>
-<ul class="current">
-<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Admin Console Guide</a></li>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="admin_console.html">Admin Console Guide</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Core Concepts</span></p>
 <ul>
@@ -594,12 +594,12 @@
         </a>
         <div class="content-icon-container">
           <div class="view-this-page">
-  <a class="muted-link" href="https://github.com/voipbin/monorepo/blob/main/bin-api-manager/docsdev/source/admin_console.rst?plain=true" title="View this page">
+  <a class="muted-link" href="https://github.com/voipbin/monorepo/blob/main/bin-api-manager/docsdev/source/admin_console_campaigns.rst?plain=true" title="View this page">
     <svg><use href="#svg-eye"></use></svg>
     <span class="visually-hidden">View this page</span>
   </a>
 </div><div class="edit-this-page">
-  <a class="muted-link" href="https://github.com/voipbin/monorepo/edit/main/bin-api-manager/docsdev/source/admin_console.rst" rel="edit" title="Edit this page">
+  <a class="muted-link" href="https://github.com/voipbin/monorepo/edit/main/bin-api-manager/docsdev/source/admin_console_campaigns.rst" rel="edit" title="Edit this page">
     <svg><use href="#svg-pencil"></use></svg>
     <span class="visually-hidden">Edit this page</span>
   </a>
@@ -611,442 +611,14 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
             <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="admin-console-guide">
-<span id="admin-console-billing-accesskeys"></span><span id="admin-console-trunks-extensions"></span><span id="admin-console-campaigns"></span><span id="admin-console-webchat"></span><span id="admin-console-agents-queues"></span><span id="admin-console-ai"></span><span id="admin-console-numbers"></span><span id="admin-console-flows"></span><span id="admin-console-getting-started"></span><span id="admin-console-main"></span><h1>Admin Console Guide<a class="headerlink" href="#admin-console-guide" title="Link to this heading">¶</a></h1>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><strong>AI Context</strong></p>
-<p>This section documents the <strong>admin.voipbin.net</strong> web console, the
-browser-based UI for managing a VoIPBin account (flows, numbers, agents,
-AI assistants, queues, and more). It is written for day-to-day console
-users, not for developers integrating against the REST API. For the API
-itself, see the <a class="reference internal" href="quickstart.html#quickstart-main"><span class="std std-ref">Quickstart</span></a> guide and the other
-sections of this site.</p>
-</div>
-<p>The admin console is organized as a left-hand sidebar with six top-level
-groups (Voice, Messaging, AI Services, Timeline, Platform, Operations), a
-top bar with account/billing status, and a main content area that shows a
-list, detail, or editor view depending on what you selected. Every
-resource follows the same list -&gt; detail -&gt; create pattern, so once you
-learn one you can find your way around the rest.</p>
-<p>Use the search box at the top of any page in this guide (or the sidebar
-search on docs.voipbin.net) to jump straight to a topic, for example
-“flow”, “number”, or “assistant”.</p>
-<section id="getting-started">
-<h2>Getting Started<a class="headerlink" href="#getting-started" title="Link to this heading">¶</a></h2>
-<section id="signing-in">
-<span id="index-2"></span><span id="index-1"></span><span id="index-0"></span><h3>Signing in<a class="headerlink" href="#signing-in" title="Link to this heading">¶</a></h3>
-<p>Go to <a class="reference external" href="https://admin.voipbin.net">https://admin.voipbin.net</a> and sign in with your VoIPBin account
-email and password. If you just want to explore the console without
-creating an account, click <strong>Try Demo Account</strong> on the login page; this
-signs you into a shared read/write demo account so you can click around
-before committing to a real signup.</p>
-<a class="reference internal image-reference" href="_images/admin_console_getting_started_home.png"><img alt="Admin console home page after login" class="align-center" src="_images/admin_console_getting_started_home.png" style="width: 700px;" />
-</a>
-</section>
-<section id="permission-levels">
-<h3>Permission levels<a class="headerlink" href="#permission-levels" title="Link to this heading">¶</a></h3>
-<p>Every agent (user) in a VoIPBin customer account holds exactly one
-permission level, and the console hides menu items and buttons the current
-level cannot use.</p>
-<div class="table-wrapper colwidths-given docutils container">
-<table class="docutils align-default">
-<colgroup>
-<col style="width: 30.0%" />
-<col style="width: 70.0%" />
-</colgroup>
-<thead>
-<tr class="row-odd"><th class="head"><p>Level</p></th>
-<th class="head"><p>What it can do</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p><strong>Customer Agent</strong></p></td>
-<td><p>Base level. Handle calls, conversations, and messages assigned to
-the agent through the agent-facing tools (for example
-talk.voipbin.net). A Customer Agent account cannot sign in to
-admin.voipbin.net – the console blocks it with an
-“Access Denied” message and signs the account back out, since this
-guide covers manager/admin-level tooling only.</p></td>
-</tr>
-<tr class="row-odd"><td><p><strong>Customer Manager</strong></p></td>
-<td><p>Everything an Agent can do, plus manage Flows, Numbers, Agents,
-Contacts, Queues, AI Assistants, and other resource configuration
-for the account.</p></td>
-</tr>
-<tr class="row-even"><td><p><strong>Customer Admin</strong></p></td>
-<td><p>Everything a Manager can do, plus billing, access keys, and
-customer-level settings.</p></td>
-</tr>
-<tr class="row-odd"><td><p><strong>Project Admin</strong></p></td>
-<td><p>Platform operator level. Not used by customer accounts.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><strong>AI Implementation Hint</strong></p>
-<p>If a menu item or a “Create” button described in this guide does not
-appear for you, the most common cause is a permission level below what
-that page requires, not a bug. Ask your account’s Customer Admin to
-raise your permission level.</p>
-</div>
-</section>
-<section id="console-layout">
-<h3>Console layout<a class="headerlink" href="#console-layout" title="Link to this heading">¶</a></h3>
-<a class="reference internal image-reference" href="_images/admin_console_getting_started_sidebar.png"><img alt="Admin console sidebar with resource groups expanded" class="align-center" src="_images/admin_console_getting_started_sidebar.png" style="width: 700px;" />
-</a>
-<p>The left sidebar groups resources by function:</p>
-<ul class="simple">
-<li><p><strong>Voice</strong> – Calls, Conferences, Queues, Recordings, Transcribes.</p></li>
-<li><p><strong>Messaging</strong> – SMS/MMS Messages, Email, Conversations, Webchat.</p></li>
-<li><p><strong>AI Services</strong> – AI Assistants, Teams, RAGs, AI Calls, Summaries.</p></li>
-<li><p><strong>Timeline</strong> – Execution history for flows and calls.</p></li>
-<li><p><strong>Platform</strong> – Flows, Numbers, Campaigns, Agents, Contacts, Unresolved
-Cases, Extensions, Trunks, Tags, Storage Files.</p></li>
-<li><p><strong>Operations</strong> – Billing, access keys, and account-level configuration.</p></li>
-</ul>
-<p>Every list page (for example Flows or Numbers) has the same three parts:
-a <strong>Create</strong> button in the top right, a search box to filter rows, and a
-table with sortable columns. Clicking a row opens that resource’s detail
-page.</p>
-</section>
-</section>
-<section id="creating-a-flow">
-<h2>Creating a Flow<a class="headerlink" href="#creating-a-flow" title="Link to this heading">¶</a></h2>
-<p id="index-5"><span id="index-4"></span><span id="index-3"></span>Flows are VoIPBin’s programmable call-handling workflows. In the admin
-console they live under <strong>Platform -&gt; Flows</strong>.</p>
-<a class="reference internal image-reference" href="_images/admin_console_flow_list.png"><img alt="Flows list page" class="align-center" src="_images/admin_console_flow_list.png" style="width: 700px;" />
-</a>
-<p>The Flows list shows every flow saved in your account. Click <strong>Create
-Flow</strong> to start a new one.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><strong>AI Implementation Hint</strong></p>
-<p>A Flow in the console maps directly to the <code class="docutils literal notranslate"><span class="pre">flows</span></code> resource in the
-REST API (see <a class="reference internal" href="flow.html#flow-main"><span class="std std-ref">Flow</span></a>). Flows you build visually here
-can also be created or updated programmatically through
-<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1.0/flows</span></code>.</p>
-</div>
-<section id="starting-from-a-template">
-<h3>Starting from a template<a class="headerlink" href="#starting-from-a-template" title="Link to this heading">¶</a></h3>
-<a class="reference internal image-reference" href="_images/admin_console_flow_choose_template.png"><img alt="Choose a Flow Template dialog" class="align-center" src="_images/admin_console_flow_choose_template.png" style="width: 700px;" />
-</a>
-<p>Creating a flow opens a template picker so you do not have to start from
-a blank canvas. Common starting points include an IVR menu, a simple
-answer-and-play greeting, or a queue-routing flow. Pick the closest match
-and customize it, or choose <strong>Blank Flow</strong> to start empty.</p>
-</section>
-<section id="the-flow-editor-action-graph">
-<h3>The Flow editor (Action Graph)<a class="headerlink" href="#the-flow-editor-action-graph" title="Link to this heading">¶</a></h3>
-<a class="reference internal image-reference" href="_images/admin_console_flow_editor.png"><img alt="Flow editor canvas with node palette" class="align-center" src="_images/admin_console_flow_editor.png" style="width: 700px;" />
-</a>
-<p>The editor is a drag-and-drop canvas (built on top of the visual
-Action Graph). The left panel is the node palette, grouped by category:</p>
-<div class="table-wrapper colwidths-given docutils container">
-<table class="docutils align-default">
-<colgroup>
-<col style="width: 25.0%" />
-<col style="width: 75.0%" />
-</colgroup>
-<thead>
-<tr class="row-odd"><th class="head"><p>Category</p></th>
-<th class="head"><p>Example nodes</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p><strong>Call control</strong></p></td>
-<td><p>Answer, Hangup, Call, Connect, Branch, Goto, Stop</p></td>
-</tr>
-<tr class="row-odd"><td><p><strong>Media</strong></p></td>
-<td><p>Play, Beep, Echo, Recording Start/Stop, External Media Start/Stop,
-Stream Echo</p></td>
-</tr>
-<tr class="row-even"><td><p><strong>AI</strong></p></td>
-<td><p>AI Talk, AI Summary, AI Task</p></td>
-</tr>
-<tr class="row-odd"><td><p><strong>Messaging</strong></p></td>
-<td><p>Message Send, Email Send, Conversation Send</p></td>
-</tr>
-<tr class="row-even"><td><p><strong>Digits &amp; Variables</strong></p></td>
-<td><p>Digits Receive, Digits Send, Variable Set</p></td>
-</tr>
-<tr class="row-odd"><td><p><strong>Routing</strong></p></td>
-<td><p>Queue Join, Conference Join, Confbridge Join, Contact Case Create</p></td>
-</tr>
-<tr class="row-even"><td><p><strong>Transcription</strong></p></td>
-<td><p>Transcribe Start/Stop, Transcribe Recording</p></td>
-</tr>
-<tr class="row-odd"><td><p><strong>Integration</strong></p></td>
-<td><p>Fetch, Fetch Flow, Webhook Send</p></td>
-</tr>
-<tr class="row-even"><td><p><strong>Utility</strong></p></td>
-<td><p>AMD (answering machine detection), Sleep</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<p>Drag a node onto the canvas, connect it to the previous node with an
-edge, and configure its fields in the panel that opens when you click the
-node. Every flow starts from a single <strong>Start</strong> node; execution follows
-the edges you draw until it reaches a <strong>Hangup</strong> or <strong>Stop</strong> node.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>The node palette in the editor groups nodes by its own filter tags
-(<strong>AI</strong>, <strong>Voice</strong>, <strong>Messaging</strong>, <strong>Flow controls</strong>, <strong>Conference</strong>,
-<strong>CRM</strong>, <strong>Email</strong>, <strong>Media</strong>, <strong>Data handling</strong>, <strong>Connections</strong>,
-<strong>HTTP &amp; Webhooks</strong>), some nodes appear under more than one tag. The
-table above groups the same nodes by function for readability; use the
-palette’s own tag filters when looking for a node in the live editor.</p>
-</div>
-<p>Save your changes with the save action in the editor toolbar. The editor
-also persists your last canvas layout (node positions, zoom level) per
-flow, so returning to a flow later reopens it the way you left it.</p>
-</section>
-<section id="activeflows-watching-a-flow-run">
-<h3>Activeflows: watching a flow run<a class="headerlink" href="#activeflows-watching-a-flow-run" title="Link to this heading">¶</a></h3>
-<p id="index-6">Every time a flow is triggered (an inbound call, an API call, and so on),
-VoIPBin creates an <strong>Activeflow</strong>, a live execution instance of that
-flow. <strong>Platform -&gt; Flows -&gt; Activeflows</strong> lists these executions so you
-can see which flow ran, when, and its current node. This is useful for
-debugging why a call did not behave as expected: open the Activeflow tied
-to that call and step through the node history.</p>
-</section>
-</section>
-<section id="managing-numbers">
-<h2>Managing Numbers<a class="headerlink" href="#managing-numbers" title="Link to this heading">¶</a></h2>
-<p id="index-8"><span id="index-7"></span>Phone numbers are managed under <strong>Platform -&gt; Numbers</strong>.</p>
-<a class="reference internal image-reference" href="_images/admin_console_number_list.png"><img alt="Numbers list page" class="align-center" src="_images/admin_console_number_list.png" style="width: 700px;" />
-</a>
-<p>The list shows every number provisioned to your account: the E.164
-number, its Name/Detail, its assigned Call Flow and Message Flow, its
-Type, and its Status.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><strong>AI Implementation Hint</strong></p>
-<p>This maps to the <code class="docutils literal notranslate"><span class="pre">numbers</span></code> resource in the REST API (see
-<a class="reference internal" href="number.html#number-main"><span class="std std-ref">Number</span></a>). Numbers you buy here are immediately
-usable in a Flow’s Call or Connect nodes, or as the <code class="docutils literal notranslate"><span class="pre">target</span></code> of an
-API-initiated call.</p>
-</div>
-<section id="buying-a-number">
-<h3>Buying a number<a class="headerlink" href="#buying-a-number" title="Link to this heading">¶</a></h3>
-<p>Click <strong>Buy Number</strong> to open the number search. Filter by country code,
-review the available numbers (country, postal code, and features), and
-confirm the purchase. Once purchased, a number appears in the Active
-list immediately and can be assigned to a Flow from its detail page.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>Buying a number is a billed action against your account balance,
-charged immediately on purchase. The number search does not display a
-price per number, so confirm your account’s number pricing separately
-(for example through your billing dashboard or support) before
-purchasing in bulk.</p>
-</div>
-</section>
-<section id="assigning-a-number-to-a-flow">
-<h3>Assigning a number to a Flow<a class="headerlink" href="#assigning-a-number-to-a-flow" title="Link to this heading">¶</a></h3>
-<p>Open a number’s detail page and set its <strong>Flow</strong> field to route all
-inbound calls to that number through the selected Flow. Until a Flow is
-assigned, inbound calls to a newly purchased number have nowhere to go.</p>
-</section>
-</section>
-<section id="ai-assistant-team">
-<h2>AI Assistant &amp; Team<a class="headerlink" href="#ai-assistant-team" title="Link to this heading">¶</a></h2>
-<p id="index-11"><span id="index-10"></span><span id="index-9"></span>AI configuration lives under <strong>AI Services</strong> in the sidebar. It covers
-your Assistants and Teams plus supporting resources: RAGs, AI Calls,
-Summaries, Audits, and Proposals.</p>
-<section id="assistants">
-<h3>Assistants<a class="headerlink" href="#assistants" title="Link to this heading">¶</a></h3>
-<a class="reference internal image-reference" href="_images/admin_console_ai_assistants_list.png"><img alt="AI Assistants list page" class="align-center" src="_images/admin_console_ai_assistants_list.png" style="width: 700px;" />
-</a>
-<p><strong>AI Services -&gt; Engines</strong> lists your AI Assistants. An Assistant bundles
-an engine model (for example Gemini 2.5 Flash or GPT-4o), voice/TTS-STT
-settings, and the tools it is allowed to call. Click <strong>Create Assistant</strong>
-to configure a new one, or click a row to edit an existing Assistant’s
-model, prompt, and tools.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><strong>AI Implementation Hint</strong></p>
-<p>This maps to the <code class="docutils literal notranslate"><span class="pre">ais</span></code> resource in the REST API (see
-<a class="reference internal" href="ai.html#ai-main"><span class="std std-ref">AI</span></a>). A Flow’s <strong>AI Talk</strong> node references an
-Assistant by ID to hand a call over to it.</p>
-</div>
-</section>
-<section id="teams">
-<h3>Teams<a class="headerlink" href="#teams" title="Link to this heading">¶</a></h3>
-<p id="index-12"><strong>AI Services -&gt; Teams</strong> is where you compose multiple Assistants into a
-multi-agent Team using a visual graph (the Team Graph editor). Each node
-in the graph is either an AI member (with its own model/voice/tools) or a
-routing rule between members. Use a Team when a single Assistant’s tool
-set or persona is not enough to cover the whole conversation, for example
-a triage Assistant that hands off to a billing specialist Assistant.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><strong>AI Implementation Hint</strong></p>
-<p>This maps to the <code class="docutils literal notranslate"><span class="pre">teams</span></code> resource in the REST API (see
-<a class="reference internal" href="team.html#team-main"><span class="std std-ref">Team</span></a>).</p>
-</div>
-</section>
-<section id="rags">
-<h3>RAGs<a class="headerlink" href="#rags" title="Link to this heading">¶</a></h3>
-<p><strong>AI Services -&gt; RAGs</strong> manages Retrieval-Augmented Generation knowledge
-bases. Create a RAG, upload or link source documents, and attach the RAG
-to an Assistant so its responses are grounded in your own content instead
-of the model’s general knowledge.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><strong>AI Implementation Hint</strong></p>
-<p>This maps to the <code class="docutils literal notranslate"><span class="pre">rags</span></code> resource in the REST API (see
-<a class="reference internal" href="rag.html#rag-main"><span class="std std-ref">RAG</span></a>).</p>
-</div>
-</section>
-<section id="ai-calls-and-summaries">
-<h3>AI Calls and Summaries<a class="headerlink" href="#ai-calls-and-summaries" title="Link to this heading">¶</a></h3>
-<p><strong>AI Services -&gt; Calls</strong> lists past calls that were handled (fully or
-partially) by an AI Assistant, with the transcript and any tool calls the
-Assistant made during the call. <strong>AI Services -&gt; Summaries</strong> lists
-AI-generated summaries produced after a call or conversation ends, useful
-for a quick recap without replaying the whole transcript.</p>
-</section>
-<section id="audits-and-proposals">
-<h3>Audits and Proposals<a class="headerlink" href="#audits-and-proposals" title="Link to this heading">¶</a></h3>
-<p><strong>AI Services -&gt; Audits</strong> lists a history of changes made to your AI
-Assistants and Teams, useful when reviewing who changed a prompt or model
-setting and when. <strong>AI Services -&gt; Proposals</strong> lists AI-suggested prompt
-changes awaiting your review; accept a proposal to apply it to the
-Assistant, or dismiss it if it does not fit.</p>
-</section>
-</section>
-<section id="agents-queues">
-<h2>Agents &amp; Queues<a class="headerlink" href="#agents-queues" title="Link to this heading">¶</a></h2>
-<section id="agents">
-<span id="index-15"></span><span id="index-14"></span><span id="index-13"></span><h3>Agents<a class="headerlink" href="#agents" title="Link to this heading">¶</a></h3>
-<a class="reference internal image-reference" href="_images/admin_console_agent_list.png"><img alt="Agents list page" class="align-center" src="_images/admin_console_agent_list.png" style="width: 700px;" />
-</a>
-<p><strong>Platform -&gt; Agents</strong> manages the human users of your VoIPBin account:
-their username, permission level (see
-<a class="reference internal" href="#admin-console-getting-started"><span class="std std-ref">Permission levels</span></a> in Getting
-Started), ring method, and status (Available, Away, Offline). Click
-<strong>Create Agent</strong> to invite a new agent, or click a row to edit an
-existing agent’s permission level or ring settings.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><strong>AI Implementation Hint</strong></p>
-<p>This maps to the <code class="docutils literal notranslate"><span class="pre">agents</span></code> resource in the REST API (see
-<a class="reference internal" href="agent.html#agent-main"><span class="std std-ref">Agent</span></a>).</p>
-</div>
-</section>
-<section id="queues">
-<h3>Queues<a class="headerlink" href="#queues" title="Link to this heading">¶</a></h3>
-<p><strong>Voice -&gt; Queues</strong> manages call queues: ordered waiting lines that
-distribute inbound calls to available Agents according to a ring
-strategy. A Flow’s <strong>Queue Join</strong> node places a call into a named queue;
-the queue itself decides which Agent answers next.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><strong>AI Implementation Hint</strong></p>
-<p>This maps to the <code class="docutils literal notranslate"><span class="pre">queues</span></code> resource in the REST API (see
-<a class="reference internal" href="queue.html#queue-main"><span class="std std-ref">Queue</span></a>).</p>
-</div>
-</section>
-<section id="contacts">
-<h3>Contacts<a class="headerlink" href="#contacts" title="Link to this heading">¶</a></h3>
-<a class="reference internal image-reference" href="_images/admin_console_contact_list.png"><img alt="Contacts list page" class="align-center" src="_images/admin_console_contact_list.png" style="width: 700px;" />
-</a>
-<p><strong>Platform -&gt; Contacts</strong> is VoIPBin’s CRM-style contact directory, split
-into four tabs:</p>
-<div class="table-wrapper colwidths-given docutils container">
-<table class="docutils align-default">
-<colgroup>
-<col style="width: 25.0%" />
-<col style="width: 75.0%" />
-</colgroup>
-<thead>
-<tr class="row-odd"><th class="head"><p>Tab</p></th>
-<th class="head"><p>Purpose</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p><strong>Contacts</strong></p></td>
-<td><p>The directory itself: display name, company, primary address, and
-tags for each known contact.</p></td>
-</tr>
-<tr class="row-odd"><td><p><strong>Addresses</strong></p></td>
-<td><p>Every phone number, email, or other address linked to a contact,
-independent of which contact record it currently resolves to.</p></td>
-</tr>
-<tr class="row-even"><td><p><strong>Cases</strong></p></td>
-<td><p>Support/service cases opened against a contact, used to track an
-issue across multiple calls or messages until it is resolved.</p></td>
-</tr>
-<tr class="row-odd"><td><p><strong>Unresolved Interactions</strong></p></td>
-<td><p>Inbound calls or messages that arrived from an address VoIPBin
-could not automatically match to an existing contact. Resolve
-these by linking the interaction to an existing contact or
-creating a new one.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><strong>AI Implementation Hint</strong></p>
-<p>This maps to the <code class="docutils literal notranslate"><span class="pre">contacts</span></code> resource family in the REST API (see
-<a class="reference internal" href="contact.html#contact-main"><span class="std std-ref">Contact</span></a>).</p>
-</div>
-</section>
-</section>
-<section id="webchat-widgets">
-<h2>Webchat Widgets<a class="headerlink" href="#webchat-widgets" title="Link to this heading">¶</a></h2>
-<p id="index-16"><strong>Messaging -&gt; Webchat</strong> manages embeddable webchat widgets, small chat
-bubbles you place on your own website to let visitors talk to your team
-or an AI Assistant without leaving the page.</p>
-<a class="reference internal image-reference" href="_images/admin_console_webchat_list.png"><img alt="Webchat widgets list page" class="align-center" src="_images/admin_console_webchat_list.png" style="width: 700px;" />
-</a>
-<p>The page has two tabs:</p>
-<div class="table-wrapper colwidths-given docutils container">
-<table class="docutils align-default">
-<colgroup>
-<col style="width: 25.0%" />
-<col style="width: 75.0%" />
-</colgroup>
-<thead>
-<tr class="row-odd"><th class="head"><p>Tab</p></th>
-<th class="head"><p>Purpose</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p><strong>Widgets</strong></p></td>
-<td><p>Every widget configured for your account: name, status (Active or
-Inactive), and idle timeout in seconds. Click <strong>Create Widget</strong> to
-configure a new one and get its embed snippet.</p></td>
-</tr>
-<tr class="row-odd"><td><p><strong>Sessions</strong></p></td>
-<td><p>Live and past visitor chat sessions across all your widgets, for
-reviewing conversations or reopening one.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><strong>AI Implementation Hint</strong></p>
-<p>This maps to the <code class="docutils literal notranslate"><span class="pre">webchat</span></code> resource family in the REST API (see
-<a class="reference internal" href="webchat.html#webchat-main"><span class="std std-ref">Webchat</span></a>). A widget can be wired to a Flow (for
-an AI Assistant or a human agent handoff) the same way a phone number
-is.</p>
-</div>
-</section>
-<section id="campaigns-outbound-dialing">
-<h2>Campaigns &amp; Outbound Dialing<a class="headerlink" href="#campaigns-outbound-dialing" title="Link to this heading">¶</a></h2>
-<p id="index-19"><span id="index-18"></span><span id="index-17"></span><strong>Platform -&gt; Campaigns</strong> manages outbound dialing campaigns: bulk
+          <section id="campaigns-outbound-dialing">
+<h1>Campaigns &amp; Outbound Dialing<a class="headerlink" href="#campaigns-outbound-dialing" title="Link to this heading">¶</a></h1>
+<p id="index-2"><span id="index-1"></span><span id="index-0"></span><strong>Platform -&gt; Campaigns</strong> manages outbound dialing campaigns: bulk
 calling or messaging runs against a list of targets, driven by a Flow.</p>
 <a class="reference internal image-reference" href="_images/admin_console_campaign_list.png"><img alt="Campaigns list page" class="align-center" src="_images/admin_console_campaign_list.png" style="width: 700px;" />
 </a>
@@ -1100,132 +672,14 @@ calls and is a billed action. Review the target Outdial list and the
 Outplan retry settings before starting a campaign at scale.</p>
 </div>
 </section>
-<section id="trunks-extensions">
-<h2>Trunks &amp; Extensions<a class="headerlink" href="#trunks-extensions" title="Link to this heading">¶</a></h2>
-<p id="index-21"><span id="index-20"></span><strong>Platform -&gt; Trunks</strong> and <strong>Platform -&gt; Extensions</strong> connect VoIPBin to
-your own SIP infrastructure, separate from the numbers VoIPBin provisions
-for you.</p>
-<section id="trunks">
-<h3>Trunks<a class="headerlink" href="#trunks" title="Link to this heading">¶</a></h3>
-<a class="reference internal image-reference" href="_images/admin_console_trunk_list.png"><img alt="Trunks list page" class="align-center" src="_images/admin_console_trunk_list.png" style="width: 700px;" />
-</a>
-<p>A Trunk registers a SIP carrier or PBX domain so VoIPBin can send and
-receive calls through it instead of (or alongside) VoIPBin-purchased
-numbers. The list shows each trunk’s domain name, name, and
-authentication type. Click <strong>Create Trunk</strong> to register a new carrier
-domain and its credentials.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><strong>AI Implementation Hint</strong></p>
-<p>This maps to the <code class="docutils literal notranslate"><span class="pre">trunks</span></code> resource in the REST API (see
-<a class="reference internal" href="trunk.html#trunk-main"><span class="std std-ref">Trunk</span></a>).</p>
-</div>
-</section>
-<section id="extensions">
-<h3>Extensions<a class="headerlink" href="#extensions" title="Link to this heading">¶</a></h3>
-<p><strong>Platform -&gt; Extensions</strong> manages internal SIP extensions, endpoints
-that register directly to VoIPBin (for example a desk phone or a
-softphone) rather than routing through the PSTN. Use an Extension when
-you want an internal line reachable from a Flow’s Connect or Call nodes
-without going through a public phone number.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><strong>AI Implementation Hint</strong></p>
-<p>This maps to the <code class="docutils literal notranslate"><span class="pre">extensions</span></code> resource in the REST API (see
-<a class="reference internal" href="extension.html#extension-main"><span class="std std-ref">Extension</span></a>).</p>
-</div>
-</section>
-</section>
-<section id="billing-access-keys">
-<h2>Billing &amp; Access Keys<a class="headerlink" href="#billing-access-keys" title="Link to this heading">¶</a></h2>
-<p id="index-23"><span id="index-22"></span><strong>Operations</strong> in the sidebar (visible to Customer Admin and above) is
-where you manage your account’s plan, payment method, and API access
-keys.</p>
-<section id="billing-account">
-<h3>Billing Account<a class="headerlink" href="#billing-account" title="Link to this heading">¶</a></h3>
-<a class="reference internal image-reference" href="_images/admin_console_billing_account.png"><img alt="Billing account plan and payment configuration" class="align-center" src="_images/admin_console_billing_account.png" style="width: 700px;" />
-</a>
-<p><strong>Operations -&gt; Billing Account</strong> shows your current plan, token
-balance, and estimated cost, plus two configuration cards:</p>
-<div class="table-wrapper colwidths-given docutils container">
-<table class="docutils align-default">
-<colgroup>
-<col style="width: 30.0%" />
-<col style="width: 70.0%" />
-</colgroup>
-<thead>
-<tr class="row-odd"><th class="head"><p>Card</p></th>
-<th class="head"><p>What it configures</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p><strong>Plan</strong></p></td>
-<td><p>Compare the <strong>Free</strong> plan (fixed monthly token allowance, limited
-extensions/agents/queues/trunks/numbers) against <strong>Unlimited</strong>
-(custom, contact support). <strong>Manage Subscription</strong> opens your
-subscription management page; <strong>Compare plans</strong> shows the full
-feature matrix.</p></td>
-</tr>
-<tr class="row-odd"><td><p><strong>Payment Configuration</strong></p></td>
-<td><p>Payment Type (for example Prepaid) and Payment Method (for
-example Credit Card).</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<p><strong>Operations -&gt; Billing History</strong> lists past billing entries (usage
-charges, top-ups) for the account.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><strong>AI Implementation Hint</strong></p>
-<p>This maps to the <code class="docutils literal notranslate"><span class="pre">billing_accounts</span></code> resource in the REST API (see
-<a class="reference internal" href="billing_account.html#billing-account-main"><span class="std std-ref">Billing Account</span></a>). VoIPBin bills usage in
-tokens; the <strong>Top Up</strong> button in the top bar adds tokens to your
-balance.</p>
-</div>
-</section>
-<section id="access-keys">
-<h3>Access Keys<a class="headerlink" href="#access-keys" title="Link to this heading">¶</a></h3>
-<p><strong>Operations -&gt; Access Keys</strong> manages long-lived API credentials
-(accesskeys) you can use instead of a JWT to authenticate REST API
-calls, useful for server-to-server integrations. Create one, copy the
-secret shown once at creation time, and use it as described in the
-<a class="reference internal" href="quickstart.html#quickstart-main"><span class="std std-ref">Quickstart</span></a> guide’s authentication section.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><strong>AI Implementation Hint</strong></p>
-<p>This maps to the <code class="docutils literal notranslate"><span class="pre">accesskeys</span></code> resource in the REST API (see
-<a class="reference internal" href="accesskey.html#accesskey-main"><span class="std std-ref">Access Key</span></a>).</p>
-</div>
-</section>
-</section>
-</section>
 
         </article>
       </div>
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="flow.html">
-              <div class="page-info">
-                <div class="context">
-                  <span>Next</span>
-                </div>
-                <div class="title">Flow</div>
-              </div>
-              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
-            </a>
-          <a class="prev-page" href="restful_api_errors.html">
-              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
-              <div class="page-info">
-                <div class="context">
-                  <span>Previous</span>
-                </div>
-                
-                <div class="title">Error Reason Codes</div>
-                
-              </div>
-            </a>
+          
+          
         </div>
         <div class="bottom-of-page">
           <div class="left-details">
@@ -1247,69 +701,8 @@ secret shown once at creation time, and use it as described in the
         
       </footer>
     </div>
-    <aside class="toc-drawer">
+    <aside class="toc-drawer no-toc">
       
-      
-      <div class="toc-sticky toc-scroll">
-        <div class="toc-title-container">
-          <span class="toc-title">
-            On this page
-          </span>
-        </div>
-        <div class="toc-tree-container">
-          <div class="toc-tree">
-            <ul>
-<li><a class="reference internal" href="#">Admin Console Guide</a><ul>
-<li><a class="reference internal" href="#getting-started">Getting Started</a><ul>
-<li><a class="reference internal" href="#signing-in">Signing in</a></li>
-<li><a class="reference internal" href="#permission-levels">Permission levels</a></li>
-<li><a class="reference internal" href="#console-layout">Console layout</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#creating-a-flow">Creating a Flow</a><ul>
-<li><a class="reference internal" href="#starting-from-a-template">Starting from a template</a></li>
-<li><a class="reference internal" href="#the-flow-editor-action-graph">The Flow editor (Action Graph)</a></li>
-<li><a class="reference internal" href="#activeflows-watching-a-flow-run">Activeflows: watching a flow run</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#managing-numbers">Managing Numbers</a><ul>
-<li><a class="reference internal" href="#buying-a-number">Buying a number</a></li>
-<li><a class="reference internal" href="#assigning-a-number-to-a-flow">Assigning a number to a Flow</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#ai-assistant-team">AI Assistant &amp; Team</a><ul>
-<li><a class="reference internal" href="#assistants">Assistants</a></li>
-<li><a class="reference internal" href="#teams">Teams</a></li>
-<li><a class="reference internal" href="#rags">RAGs</a></li>
-<li><a class="reference internal" href="#ai-calls-and-summaries">AI Calls and Summaries</a></li>
-<li><a class="reference internal" href="#audits-and-proposals">Audits and Proposals</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#agents-queues">Agents &amp; Queues</a><ul>
-<li><a class="reference internal" href="#agents">Agents</a></li>
-<li><a class="reference internal" href="#queues">Queues</a></li>
-<li><a class="reference internal" href="#contacts">Contacts</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#webchat-widgets">Webchat Widgets</a></li>
-<li><a class="reference internal" href="#campaigns-outbound-dialing">Campaigns &amp; Outbound Dialing</a></li>
-<li><a class="reference internal" href="#trunks-extensions">Trunks &amp; Extensions</a><ul>
-<li><a class="reference internal" href="#trunks">Trunks</a></li>
-<li><a class="reference internal" href="#extensions">Extensions</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#billing-access-keys">Billing &amp; Access Keys</a><ul>
-<li><a class="reference internal" href="#billing-account">Billing Account</a></li>
-<li><a class="reference internal" href="#access-keys">Access Keys</a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-
-          </div>
-        </div>
-      </div>
       
       
     </aside>

@@ -5,6 +5,10 @@
 .. _admin-console-numbers:
 .. _admin-console-ai:
 .. _admin-console-agents-queues:
+.. _admin-console-webchat:
+.. _admin-console-campaigns:
+.. _admin-console-trunks-extensions:
+.. _admin-console-billing-accesskeys:
 
 *******************
 Admin Console Guide
@@ -35,3 +39,7 @@ search on docs.voipbin.net) to jump straight to a topic, for example
 .. include:: admin_console_numbers.rst
 .. include:: admin_console_ai.rst
 .. include:: admin_console_agents_queues.rst
+.. include:: admin_console_webchat.rst
+.. include:: admin_console_campaigns.rst
+.. include:: admin_console_trunks_extensions.rst
+.. include:: admin_console_billing_accesskeys.rst
