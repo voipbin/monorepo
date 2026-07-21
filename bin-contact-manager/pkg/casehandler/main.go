@@ -56,6 +56,14 @@ type CaseHandler interface {
 	// Case's Contact via a direct Case.contact_id write.
 	UpdateContact(ctx context.Context, customerID, caseID, contactID uuid.UUID) (*kase.Case, error)
 
+	// Assign implements the square-talk Cases menu design §3.2: writes
+	// Case.Owner (owner_type/owner_id). Tenant-checked via CaseGetByID
+	// (mirroring Continue's pattern); no authorization decision inside
+	// this function -- per §1.4 there is none to make, any caller who
+	// reaches this function (already authenticated as an agent of the
+	// tenant at the API layer) may assign to any (ownerType, ownerID).
+	Assign(ctx context.Context, customerID, id uuid.UUID, ownerType commonidentity.OwnerType, ownerID uuid.UUID) (*kase.Case, error)
+
 	// CaseListUnresolved is design §6's agent-facing unresolved queue.
 	CaseListUnresolved(ctx context.Context, customerID uuid.UUID) ([]*kase.Case, error)
 

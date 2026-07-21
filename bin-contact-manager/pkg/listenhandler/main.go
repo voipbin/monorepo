@@ -75,16 +75,17 @@ var (
 	regV1InteractionsResolutionsID = regexp.MustCompile("/v1/interactions/" + regUUID + "/resolutions/" + regUUID + "$")
 
 	// v1 cases
-	regV1CasesUnresolved      = regexp.MustCompile(`/v1/cases/unresolved(\?.*)?$`)
-	regV1Cases                = regexp.MustCompile(`/v1/cases$`)
-	regV1CasesGet             = regexp.MustCompile(`/v1/cases\?(.*)$`)
-	regV1CasesID              = regexp.MustCompile("/v1/cases/" + regUUID + "$")
-	regV1CasesIDClose         = regexp.MustCompile("/v1/cases/" + regUUID + "/close$")
-	regV1CasesIDContinue      = regexp.MustCompile("/v1/cases/" + regUUID + "/continue$")
-	regV1CasesIDNotes         = regexp.MustCompile("/v1/cases/" + regUUID + "/notes$")
-	regV1CasesIDNotesID       = regexp.MustCompile("/v1/cases/" + regUUID + "/notes/" + regUUID + "$")
-	regV1CasesIDTags          = regexp.MustCompile("/v1/cases/" + regUUID + "/tags$")
-	regV1CasesIDTagsID        = regexp.MustCompile("/v1/cases/" + regUUID + "/tags/" + regUUID + "$")
+	regV1CasesUnresolved = regexp.MustCompile(`/v1/cases/unresolved(\?.*)?$`)
+	regV1Cases           = regexp.MustCompile(`/v1/cases$`)
+	regV1CasesGet        = regexp.MustCompile(`/v1/cases\?(.*)$`)
+	regV1CasesID         = regexp.MustCompile("/v1/cases/" + regUUID + "$")
+	regV1CasesIDClose    = regexp.MustCompile("/v1/cases/" + regUUID + "/close$")
+	regV1CasesIDAssign   = regexp.MustCompile("/v1/cases/" + regUUID + "/assign$")
+	regV1CasesIDContinue = regexp.MustCompile("/v1/cases/" + regUUID + "/continue$")
+	regV1CasesIDNotes    = regexp.MustCompile("/v1/cases/" + regUUID + "/notes$")
+	regV1CasesIDNotesID  = regexp.MustCompile("/v1/cases/" + regUUID + "/notes/" + regUUID + "$")
+	regV1CasesIDTags     = regexp.MustCompile("/v1/cases/" + regUUID + "/tags$")
+	regV1CasesIDTagsID   = regexp.MustCompile("/v1/cases/" + regUUID + "/tags/" + regUUID + "$")
 )
 
 var (
@@ -361,6 +362,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1CasesIDClose.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1CasesIDClosePost(ctx, m)
 		requestType = "/v1/cases/{id}/close"
+
+	// POST /cases/{id}/assign
+	case regV1CasesIDAssign.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1CasesIDAssignPost(ctx, m)
+		requestType = "/v1/cases/{id}/assign"
 
 	// POST /cases/{id}/continue
 	case regV1CasesIDContinue.MatchString(m.URI) && m.Method == sock.RequestMethodPost:

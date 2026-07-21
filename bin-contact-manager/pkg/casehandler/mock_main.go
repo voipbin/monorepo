@@ -45,6 +45,21 @@ func (m *MockCaseHandler) EXPECT() *MockCaseHandlerMockRecorder {
 	return m.recorder
 }
 
+// Assign mocks base method.
+func (m *MockCaseHandler) Assign(ctx context.Context, customerID, id uuid.UUID, ownerType identity.OwnerType, ownerID uuid.UUID) (*kase.Case, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Assign", ctx, customerID, id, ownerType, ownerID)
+	ret0, _ := ret[0].(*kase.Case)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Assign indicates an expected call of Assign.
+func (mr *MockCaseHandlerMockRecorder) Assign(ctx, customerID, id, ownerType, ownerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Assign", reflect.TypeOf((*MockCaseHandler)(nil).Assign), ctx, customerID, id, ownerType, ownerID)
+}
+
 // CaseGet mocks base method.
 func (m *MockCaseHandler) CaseGet(ctx context.Context, customerID, id uuid.UUID) (*kase.Case, error) {
 	m.ctrl.T.Helper()

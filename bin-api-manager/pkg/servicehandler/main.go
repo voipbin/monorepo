@@ -987,6 +987,12 @@ type ServiceHandler interface {
 		medias []cvmedia.Media,
 	) (*cvmessage.WebhookMessage, error)
 
+	// service_agent case
+	ServiceAgentCaseList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*cmkase.Case, string, error)
+	ServiceAgentCaseGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cmkase.Case, error)
+	ServiceAgentCaseClose(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cmkase.Case, error)
+	ServiceAgentCaseAssign(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, ownerID uuid.UUID) (*cmkase.Case, error)
+
 	// service_agent talk chat
 	ServiceAgentTalkChatGet(ctx context.Context, a *auth.AuthIdentity, chatID uuid.UUID) (*tkchat.WebhookMessage, error)
 	ServiceAgentTalkChatList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*tkchat.WebhookMessage, error)

@@ -3478,6 +3478,21 @@ func (mr *MockRequestHandlerMockRecorder) ContactV1AddressUpdate(ctx, contactID,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactV1AddressUpdate", reflect.TypeOf((*MockRequestHandler)(nil).ContactV1AddressUpdate), ctx, contactID, addressID, fields)
 }
 
+// ContactV1CaseAssign mocks base method.
+func (m *MockRequestHandler) ContactV1CaseAssign(ctx context.Context, customerID, id, ownerID uuid.UUID) (*kase.Case, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ContactV1CaseAssign", ctx, customerID, id, ownerID)
+	ret0, _ := ret[0].(*kase.Case)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ContactV1CaseAssign indicates an expected call of ContactV1CaseAssign.
+func (mr *MockRequestHandlerMockRecorder) ContactV1CaseAssign(ctx, customerID, id, ownerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactV1CaseAssign", reflect.TypeOf((*MockRequestHandler)(nil).ContactV1CaseAssign), ctx, customerID, id, ownerID)
+}
+
 // ContactV1CaseClose mocks base method.
 func (m *MockRequestHandler) ContactV1CaseClose(ctx context.Context, customerID, id uuid.UUID, closedByType string, closedByID uuid.UUID) (*kase.Case, error) {
 	m.ctrl.T.Helper()

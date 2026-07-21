@@ -484,6 +484,101 @@ func Test_CaseUpdateContactID(t *testing.T) {
 	}
 }
 
+// Test_CaseUpdateOwner verifies the Case.Owner write helper (square-talk
+// Cases menu design §3.2): asserts the persisted owner_type column
+// equals commonidentity.OwnerTypeAgent, not merely that owner_id
+// changed.
+func Test_CaseUpdateOwner(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	h := handler{utilHandler: mockUtil, db: dbTest, cache: mockCache}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("f1b2c3d4-5020-5020-5020-000000000001")
+	caseID := uuid.FromStringOrNil("f1b2c3d4-5020-5020-5020-000000000002")
+	ownerID := uuid.FromStringOrNil("f1b2c3d4-5020-5020-5020-000000000003")
+	openedAt := timePtr(time.Date(2026, 6, 28, 10, 0, 0, 0, time.UTC))
+
+	c := &kase.Case{
+		ID:            caseID,
+		CustomerID:    customerID,
+		PeerType:      commonaddress.TypeTel,
+		PeerTarget:    "+155****0020",
+		ReferenceType: "call",
+		Status:        kase.StatusOpen,
+		OpenedAt:      openedAt,
+		TMCreate:      openedAt,
+		TMUpdate:      openedAt,
+	}
+	if err := h.CaseInsert(ctx, c); err != nil {
+		t.Fatalf("CaseInsert() error = %v", err)
+	}
+
+	if err := h.CaseUpdateOwner(ctx, customerID, caseID, commonidentity.OwnerTypeAgent, ownerID); err != nil {
+		t.Fatalf("CaseUpdateOwner() error = %v", err)
+	}
+
+	res, err := h.CaseGetByID(ctx, caseID)
+	if err != nil {
+		t.Fatalf("CaseGetByID() error = %v", err)
+	}
+	if res.OwnerType != commonidentity.OwnerTypeAgent {
+		t.Errorf("expected owner_type: %v, got: %v", commonidentity.OwnerTypeAgent, res.OwnerType)
+	}
+	if res.OwnerID != ownerID {
+		t.Errorf("expected owner_id: %v, got: %v", ownerID, res.OwnerID)
+	}
+}
+
+// Test_CaseUpdateOwner_CrossTenant verifies that a cross-tenant
+// customer_id mismatch affects 0 rows (defense-in-depth): the case's
+// owner fields are left untouched.
+func Test_CaseUpdateOwner_CrossTenant(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	h := handler{utilHandler: mockUtil, db: dbTest, cache: mockCache}
+	ctx := context.Background()
+
+	victimCustomerID := uuid.FromStringOrNil("f1b2c3d4-5021-5021-5021-000000000001")
+	attackerCustomerID := uuid.FromStringOrNil("f1b2c3d4-5021-5021-5021-000000000002")
+	caseID := uuid.FromStringOrNil("f1b2c3d4-5021-5021-5021-000000000003")
+	ownerID := uuid.FromStringOrNil("f1b2c3d4-5021-5021-5021-000000000004")
+	openedAt := timePtr(time.Date(2026, 6, 28, 10, 0, 0, 0, time.UTC))
+
+	c := &kase.Case{
+		ID:            caseID,
+		CustomerID:    victimCustomerID,
+		PeerType:      commonaddress.TypeTel,
+		PeerTarget:    "+155****0021",
+		ReferenceType: "call",
+		Status:        kase.StatusOpen,
+		OpenedAt:      openedAt,
+		TMCreate:      openedAt,
+		TMUpdate:      openedAt,
+	}
+	if err := h.CaseInsert(ctx, c); err != nil {
+		t.Fatalf("CaseInsert() error = %v", err)
+	}
+
+	if err := h.CaseUpdateOwner(ctx, attackerCustomerID, caseID, commonidentity.OwnerTypeAgent, ownerID); err != nil {
+		t.Fatalf("CaseUpdateOwner() error = %v", err)
+	}
+
+	res, err := h.CaseGetByID(ctx, caseID)
+	if err != nil {
+		t.Fatalf("CaseGetByID() error = %v", err)
+	}
+	if res.OwnerID == ownerID {
+		t.Errorf("expected owner_id unchanged (cross-tenant no-op), got: %v", res.OwnerID)
+	}
+}
+
 // Test_CaseClearContactID verifies the contact_id revert-to-NULL
 // helper (design VOIP-1253).
 func Test_CaseClearContactID(t *testing.T) {
