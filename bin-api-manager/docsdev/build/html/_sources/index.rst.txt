@@ -15,6 +15,7 @@ Start here
 ==========
 
 - :ref:`Quickstart <quickstart-main>` — Create your account, place a first call, and observe events in under 10 minutes.
+- :ref:`Admin Console Guide <admin-console-main>` — Build flows, manage numbers, agents, and AI assistants in the admin.voipbin.net web console.
 - :ref:`Flow <flow-main>` — Build programmable communication workflows with visual flows and AI-driven flows.
 - :ref:`Webhook <webhook-main>` — Receive real-time events for calls, messages, and conversations.
 - `REST API Reference <https://api.voipbin.net/redoc/index.html>`_ — Full endpoint catalog (ReDoc).
@@ -39,6 +40,13 @@ What you can build
    sdk
    restful_api
    restful_api_errors
+
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+   :caption: Admin Console Guide
+
+   admin_console
 
 .. toctree::
    :maxdepth: 2

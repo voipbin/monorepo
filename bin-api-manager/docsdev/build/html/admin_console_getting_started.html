@@ -1,14 +1,14 @@
 <!doctype html>
 <html class="no-js" lang="en" data-content_root="./">
-  <head>
-<meta charset="utf-8">
+  <head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="#">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
     <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
-<meta name="robots" content="noindex" />
-<title>Search - VoIPBin Documentation</title><link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+        <title>Getting Started - VoIPBin Documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
     
@@ -189,7 +189,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
       </label>
     </div>
@@ -204,7 +204,7 @@
   
   <span class="sidebar-brand-text">VoIPBin Documentation</span>
   
-</a><form class="sidebar-search-container" method="get" action="#" role="search">
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
   <input type="hidden" name="check_keywords" value="yes">
   <input type="hidden" name="area" value="default">
@@ -593,7 +593,17 @@
           <span>Back to top</span>
         </a>
         <div class="content-icon-container">
-          <div class="theme-toggle-container theme-toggle-content">
+          <div class="view-this-page">
+  <a class="muted-link" href="https://github.com/voipbin/monorepo/blob/main/bin-api-manager/docsdev/source/admin_console_getting_started.rst?plain=true" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div><div class="edit-this-page">
+  <a class="muted-link" href="https://github.com/voipbin/monorepo/edit/main/bin-api-manager/docsdev/source/admin_console_getting_started.rst" rel="edit" title="Edit this page">
+    <svg><use href="#svg-pencil"></use></svg>
+    <span class="visually-hidden">Edit this page</span>
+  </a>
+</div><div class="theme-toggle-container theme-toggle-content">
             <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
               <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
               <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
@@ -601,22 +611,92 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          
-<noscript>
-<div class="admonition error">
-  <p class="admonition-title">Error</p>
-  <p>
-    Please activate JavaScript to enable the search functionality.
-  </p>
+          <section id="getting-started">
+<h1>Getting Started<a class="headerlink" href="#getting-started" title="Link to this heading">¶</a></h1>
+<section id="signing-in">
+<span id="index-2"></span><span id="index-1"></span><span id="index-0"></span><h2>Signing in<a class="headerlink" href="#signing-in" title="Link to this heading">¶</a></h2>
+<p>Go to <a class="reference external" href="https://admin.voipbin.net">https://admin.voipbin.net</a> and sign in with your VoIPBin account
+email and password. If you just want to explore the console without
+creating an account, click <strong>Try Demo Account</strong> on the login page; this
+signs you into a shared read/write demo account so you can click around
+before committing to a real signup.</p>
+<a class="reference internal image-reference" href="_images/admin_console_getting_started_home.png"><img alt="Admin console home page after login" class="align-center" src="_images/admin_console_getting_started_home.png" style="width: 700px;" />
+</a>
+</section>
+<section id="permission-levels">
+<h2>Permission levels<a class="headerlink" href="#permission-levels" title="Link to this heading">¶</a></h2>
+<p>Every agent (user) in a VoIPBin customer account holds exactly one
+permission level, and the console hides menu items and buttons the current
+level cannot use.</p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 70.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Level</p></th>
+<th class="head"><p>What it can do</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>Customer Agent</strong></p></td>
+<td><p>Base level. Handle calls, conversations, and messages assigned to
+the agent through the agent-facing tools (for example
+talk.voipbin.net). A Customer Agent account cannot sign in to
+admin.voipbin.net – the console blocks it with an
+“Access Denied” message and signs the account back out, since this
+guide covers manager/admin-level tooling only.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Customer Manager</strong></p></td>
+<td><p>Everything an Agent can do, plus manage Flows, Numbers, Agents,
+Contacts, Queues, AI Assistants, and other resource configuration
+for the account.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>Customer Admin</strong></p></td>
+<td><p>Everything a Manager can do, plus billing, access keys, and
+customer-level settings.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Project Admin</strong></p></td>
+<td><p>Platform operator level. Not used by customer accounts.</p></td>
+</tr>
+</tbody>
+</table>
 </div>
-</noscript>
-
-<div id="search-results"></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>If a menu item or a “Create” button described in this guide does not
+appear for you, the most common cause is a permission level below what
+that page requires, not a bug. Ask your account’s Customer Admin to
+raise your permission level.</p>
+</div>
+</section>
+<section id="console-layout">
+<h2>Console layout<a class="headerlink" href="#console-layout" title="Link to this heading">¶</a></h2>
+<a class="reference internal image-reference" href="_images/admin_console_getting_started_sidebar.png"><img alt="Admin console sidebar with resource groups expanded" class="align-center" src="_images/admin_console_getting_started_sidebar.png" style="width: 700px;" />
+</a>
+<p>The left sidebar groups resources by function:</p>
+<ul class="simple">
+<li><p><strong>Voice</strong> – Calls, Conferences, Queues, Recordings, Transcribes.</p></li>
+<li><p><strong>Messaging</strong> – SMS/MMS Messages, Email, Conversations, Webchat.</p></li>
+<li><p><strong>AI Services</strong> – AI Assistants, Teams, RAGs, AI Calls, Summaries.</p></li>
+<li><p><strong>Timeline</strong> – Execution history for flows and calls.</p></li>
+<li><p><strong>Platform</strong> – Flows, Numbers, Campaigns, Agents, Contacts, Unresolved
+Cases, Extensions, Trunks, Tags, Storage Files.</p></li>
+<li><p><strong>Operations</strong> – Billing, access keys, and account-level configuration.</p></li>
+</ul>
+<p>Every list page (for example Flows or Numbers) has the same three parts:
+a <strong>Create</strong> button in the top right, a search box to filter rows, and a
+table with sortable columns. Clicking a row opens that resource’s detail
+page.</p>
+</section>
+</section>
 
         </article>
       </div>
@@ -646,8 +726,29 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Getting Started</a><ul>
+<li><a class="reference internal" href="#signing-in">Signing in</a></li>
+<li><a class="reference internal" href="#permission-levels">Permission levels</a></li>
+<li><a class="reference internal" href="#console-layout">Console layout</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>
@@ -656,8 +757,5 @@
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
-    
-<script src="_static/searchtools.js"></script>
-<script src="_static/language_data.js"></script>
-<script src="searchindex.js"></script></body>
+    </body>
 </html>

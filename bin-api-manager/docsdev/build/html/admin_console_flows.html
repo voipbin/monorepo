@@ -1,14 +1,14 @@
 <!doctype html>
 <html class="no-js" lang="en" data-content_root="./">
-  <head>
-<meta charset="utf-8">
+  <head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="#">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
     <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
-<meta name="robots" content="noindex" />
-<title>Search - VoIPBin Documentation</title><link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+        <title>Creating a Flow - VoIPBin Documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
     
@@ -189,7 +189,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
       </label>
     </div>
@@ -204,7 +204,7 @@
   
   <span class="sidebar-brand-text">VoIPBin Documentation</span>
   
-</a><form class="sidebar-search-container" method="get" action="#" role="search">
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
   <input type="hidden" name="check_keywords" value="yes">
   <input type="hidden" name="area" value="default">
@@ -593,7 +593,17 @@
           <span>Back to top</span>
         </a>
         <div class="content-icon-container">
-          <div class="theme-toggle-container theme-toggle-content">
+          <div class="view-this-page">
+  <a class="muted-link" href="https://github.com/voipbin/monorepo/blob/main/bin-api-manager/docsdev/source/admin_console_flows.rst?plain=true" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div><div class="edit-this-page">
+  <a class="muted-link" href="https://github.com/voipbin/monorepo/edit/main/bin-api-manager/docsdev/source/admin_console_flows.rst" rel="edit" title="Edit this page">
+    <svg><use href="#svg-pencil"></use></svg>
+    <span class="visually-hidden">Edit this page</span>
+  </a>
+</div><div class="theme-toggle-container theme-toggle-content">
             <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
               <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
               <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
@@ -601,22 +611,112 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          
-<noscript>
-<div class="admonition error">
-  <p class="admonition-title">Error</p>
-  <p>
-    Please activate JavaScript to enable the search functionality.
-  </p>
+          <section id="creating-a-flow">
+<h1>Creating a Flow<a class="headerlink" href="#creating-a-flow" title="Link to this heading">¶</a></h1>
+<p id="index-2"><span id="index-1"></span><span id="index-0"></span>Flows are VoIPBin’s programmable call-handling workflows. In the admin
+console they live under <strong>Platform -&gt; Flows</strong>.</p>
+<a class="reference internal image-reference" href="_images/admin_console_flow_list.png"><img alt="Flows list page" class="align-center" src="_images/admin_console_flow_list.png" style="width: 700px;" />
+</a>
+<p>The Flows list shows every flow saved in your account. Click <strong>Create
+Flow</strong> to start a new one.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>A Flow in the console maps directly to the <code class="docutils literal notranslate"><span class="pre">flows</span></code> resource in the
+REST API (see <a class="reference internal" href="flow.html#flow-main"><span class="std std-ref">Flow</span></a>). Flows you build visually here
+can also be created or updated programmatically through
+<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1.0/flows</span></code>.</p>
 </div>
-</noscript>
-
-<div id="search-results"></div>
+<section id="starting-from-a-template">
+<h2>Starting from a template<a class="headerlink" href="#starting-from-a-template" title="Link to this heading">¶</a></h2>
+<a class="reference internal image-reference" href="_images/admin_console_flow_choose_template.png"><img alt="Choose a Flow Template dialog" class="align-center" src="_images/admin_console_flow_choose_template.png" style="width: 700px;" />
+</a>
+<p>Creating a flow opens a template picker so you do not have to start from
+a blank canvas. Common starting points include an IVR menu, a simple
+answer-and-play greeting, or a queue-routing flow. Pick the closest match
+and customize it, or choose <strong>Blank Flow</strong> to start empty.</p>
+</section>
+<section id="the-flow-editor-action-graph">
+<h2>The Flow editor (Action Graph)<a class="headerlink" href="#the-flow-editor-action-graph" title="Link to this heading">¶</a></h2>
+<a class="reference internal image-reference" href="_images/admin_console_flow_editor.png"><img alt="Flow editor canvas with node palette" class="align-center" src="_images/admin_console_flow_editor.png" style="width: 700px;" />
+</a>
+<p>The editor is a drag-and-drop canvas (built on top of the visual
+Action Graph). The left panel is the node palette, grouped by category:</p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 25.0%" />
+<col style="width: 75.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Category</p></th>
+<th class="head"><p>Example nodes</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>Call control</strong></p></td>
+<td><p>Answer, Hangup, Call, Connect, Branch, Goto, Stop</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Media</strong></p></td>
+<td><p>Play, Beep, Echo, Recording Start/Stop, External Media Start/Stop,
+Stream Echo</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>AI</strong></p></td>
+<td><p>AI Talk, AI Summary, AI Task</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Messaging</strong></p></td>
+<td><p>Message Send, Email Send, Conversation Send</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>Digits &amp; Variables</strong></p></td>
+<td><p>Digits Receive, Digits Send, Variable Set</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Routing</strong></p></td>
+<td><p>Queue Join, Conference Join, Confbridge Join, Contact Case Create</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>Transcription</strong></p></td>
+<td><p>Transcribe Start/Stop, Transcribe Recording</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Integration</strong></p></td>
+<td><p>Fetch, Fetch Flow, Webhook Send</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>Utility</strong></p></td>
+<td><p>AMD (answering machine detection), Sleep</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Drag a node onto the canvas, connect it to the previous node with an
+edge, and configure its fields in the panel that opens when you click the
+node. Every flow starts from a single <strong>Start</strong> node; execution follows
+the edges you draw until it reaches a <strong>Hangup</strong> or <strong>Stop</strong> node.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The node palette in the editor groups nodes by its own filter tags
+(<strong>AI</strong>, <strong>Voice</strong>, <strong>Messaging</strong>, <strong>Flow controls</strong>, <strong>Conference</strong>,
+<strong>CRM</strong>, <strong>Email</strong>, <strong>Media</strong>, <strong>Data handling</strong>, <strong>Connections</strong>,
+<strong>HTTP &amp; Webhooks</strong>), some nodes appear under more than one tag. The
+table above groups the same nodes by function for readability; use the
+palette’s own tag filters when looking for a node in the live editor.</p>
+</div>
+<p>Save your changes with the save action in the editor toolbar. The editor
+also persists your last canvas layout (node positions, zoom level) per
+flow, so returning to a flow later reopens it the way you left it.</p>
+</section>
+<section id="activeflows-watching-a-flow-run">
+<h2>Activeflows: watching a flow run<a class="headerlink" href="#activeflows-watching-a-flow-run" title="Link to this heading">¶</a></h2>
+<p id="index-3">Every time a flow is triggered (an inbound call, an API call, and so on),
+VoIPBin creates an <strong>Activeflow</strong>, a live execution instance of that
+flow. <strong>Platform -&gt; Flows -&gt; Activeflows</strong> lists these executions so you
+can see which flow ran, when, and its current node. This is useful for
+debugging why a call did not behave as expected: open the Activeflow tied
+to that call and step through the node history.</p>
+</section>
+</section>
 
         </article>
       </div>
@@ -646,8 +746,29 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Creating a Flow</a><ul>
+<li><a class="reference internal" href="#starting-from-a-template">Starting from a template</a></li>
+<li><a class="reference internal" href="#the-flow-editor-action-graph">The Flow editor (Action Graph)</a></li>
+<li><a class="reference internal" href="#activeflows-watching-a-flow-run">Activeflows: watching a flow run</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>
@@ -656,8 +777,5 @@
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
-    
-<script src="_static/searchtools.js"></script>
-<script src="_static/language_data.js"></script>
-<script src="searchindex.js"></script></body>
+    </body>
 </html>
