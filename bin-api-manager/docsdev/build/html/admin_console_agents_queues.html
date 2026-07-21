@@ -1,14 +1,14 @@
 <!doctype html>
 <html class="no-js" lang="en" data-content_root="./">
-  <head>
-<meta charset="utf-8">
+  <head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="#">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
     <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
-<meta name="robots" content="noindex" />
-<title>Search - VoIPBin Documentation</title><link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+        <title>Agents &amp; Queues - VoIPBin Documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
     
@@ -189,7 +189,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
       </label>
     </div>
@@ -204,7 +204,7 @@
   
   <span class="sidebar-brand-text">VoIPBin Documentation</span>
   
-</a><form class="sidebar-search-container" method="get" action="#" role="search">
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
   <input type="hidden" name="check_keywords" value="yes">
   <input type="hidden" name="area" value="default">
@@ -593,7 +593,17 @@
           <span>Back to top</span>
         </a>
         <div class="content-icon-container">
-          <div class="theme-toggle-container theme-toggle-content">
+          <div class="view-this-page">
+  <a class="muted-link" href="https://github.com/voipbin/monorepo/blob/main/bin-api-manager/docsdev/source/admin_console_agents_queues.rst?plain=true" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div><div class="edit-this-page">
+  <a class="muted-link" href="https://github.com/voipbin/monorepo/edit/main/bin-api-manager/docsdev/source/admin_console_agents_queues.rst" rel="edit" title="Edit this page">
+    <svg><use href="#svg-pencil"></use></svg>
+    <span class="visually-hidden">Edit this page</span>
+  </a>
+</div><div class="theme-toggle-container theme-toggle-content">
             <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
               <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
               <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
@@ -601,22 +611,90 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          
-<noscript>
-<div class="admonition error">
-  <p class="admonition-title">Error</p>
-  <p>
-    Please activate JavaScript to enable the search functionality.
-  </p>
+          <section id="agents-queues">
+<h1>Agents &amp; Queues<a class="headerlink" href="#agents-queues" title="Link to this heading">¶</a></h1>
+<section id="agents">
+<span id="index-2"></span><span id="index-1"></span><span id="index-0"></span><h2>Agents<a class="headerlink" href="#agents" title="Link to this heading">¶</a></h2>
+<a class="reference internal image-reference" href="_images/admin_console_agent_list.png"><img alt="Agents list page" class="align-center" src="_images/admin_console_agent_list.png" style="width: 700px;" />
+</a>
+<p><strong>Platform -&gt; Agents</strong> manages the human users of your VoIPBin account:
+their username, permission level (see
+<a class="reference internal" href="admin_console.html#admin-console-getting-started"><span class="std std-ref">Permission levels</span></a> in Getting
+Started), ring method, and status (Available, Away, Offline). Click
+<strong>Create Agent</strong> to invite a new agent, or click a row to edit an
+existing agent’s permission level or ring settings.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>This maps to the <code class="docutils literal notranslate"><span class="pre">agents</span></code> resource in the REST API (see
+<a class="reference internal" href="agent.html#agent-main"><span class="std std-ref">Agent</span></a>).</p>
 </div>
-</noscript>
-
-<div id="search-results"></div>
+</section>
+<section id="queues">
+<h2>Queues<a class="headerlink" href="#queues" title="Link to this heading">¶</a></h2>
+<p><strong>Voice -&gt; Queues</strong> manages call queues: ordered waiting lines that
+distribute inbound calls to available Agents according to a ring
+strategy. A Flow’s <strong>Queue Join</strong> node places a call into a named queue;
+the queue itself decides which Agent answers next.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>This maps to the <code class="docutils literal notranslate"><span class="pre">queues</span></code> resource in the REST API (see
+<a class="reference internal" href="queue.html#queue-main"><span class="std std-ref">Queue</span></a>).</p>
+</div>
+</section>
+<section id="contacts">
+<h2>Contacts<a class="headerlink" href="#contacts" title="Link to this heading">¶</a></h2>
+<a class="reference internal image-reference" href="_images/admin_console_contact_list.png"><img alt="Contacts list page" class="align-center" src="_images/admin_console_contact_list.png" style="width: 700px;" />
+</a>
+<p><strong>Platform -&gt; Contacts</strong> is VoIPBin’s CRM-style contact directory, split
+into four tabs:</p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 25.0%" />
+<col style="width: 75.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Tab</p></th>
+<th class="head"><p>Purpose</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>Contacts</strong></p></td>
+<td><p>The directory itself: display name, company, primary address, and
+tags for each known contact.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Addresses</strong></p></td>
+<td><p>Every phone number, email, or other address linked to a contact,
+independent of which contact record it currently resolves to.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>Cases</strong></p></td>
+<td><p>Support/service cases opened against a contact, used to track an
+issue across multiple calls or messages until it is resolved.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Unresolved Interactions</strong></p></td>
+<td><p>Inbound calls or messages that arrived from an address VoIPBin
+could not automatically match to an existing contact. Resolve
+these by linking the interaction to an existing contact or
+creating a new one.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>This maps to the <code class="docutils literal notranslate"><span class="pre">contacts</span></code> resource family in the REST API (see
+<a class="reference internal" href="contact.html#contact-main"><span class="std std-ref">Contact</span></a>).</p>
+</div>
+</section>
+</section>
 
         </article>
       </div>
@@ -646,8 +724,29 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Agents &amp; Queues</a><ul>
+<li><a class="reference internal" href="#agents">Agents</a></li>
+<li><a class="reference internal" href="#queues">Queues</a></li>
+<li><a class="reference internal" href="#contacts">Contacts</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>
@@ -656,8 +755,5 @@
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
-    
-<script src="_static/searchtools.js"></script>
-<script src="_static/language_data.js"></script>
-<script src="searchindex.js"></script></body>
+    </body>
 </html>

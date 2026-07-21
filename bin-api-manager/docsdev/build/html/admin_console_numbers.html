@@ -1,14 +1,14 @@
 <!doctype html>
 <html class="no-js" lang="en" data-content_root="./">
-  <head>
-<meta charset="utf-8">
+  <head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="#">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
     <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
-<meta name="robots" content="noindex" />
-<title>Search - VoIPBin Documentation</title><link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+        <title>Managing Numbers - VoIPBin Documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
     
@@ -189,7 +189,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
       </label>
     </div>
@@ -204,7 +204,7 @@
   
   <span class="sidebar-brand-text">VoIPBin Documentation</span>
   
-</a><form class="sidebar-search-container" method="get" action="#" role="search">
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
   <input type="hidden" name="check_keywords" value="yes">
   <input type="hidden" name="area" value="default">
@@ -593,7 +593,17 @@
           <span>Back to top</span>
         </a>
         <div class="content-icon-container">
-          <div class="theme-toggle-container theme-toggle-content">
+          <div class="view-this-page">
+  <a class="muted-link" href="https://github.com/voipbin/monorepo/blob/main/bin-api-manager/docsdev/source/admin_console_numbers.rst?plain=true" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div><div class="edit-this-page">
+  <a class="muted-link" href="https://github.com/voipbin/monorepo/edit/main/bin-api-manager/docsdev/source/admin_console_numbers.rst" rel="edit" title="Edit this page">
+    <svg><use href="#svg-pencil"></use></svg>
+    <span class="visually-hidden">Edit this page</span>
+  </a>
+</div><div class="theme-toggle-container theme-toggle-content">
             <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
               <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
               <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
@@ -601,22 +611,45 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          
-<noscript>
-<div class="admonition error">
-  <p class="admonition-title">Error</p>
-  <p>
-    Please activate JavaScript to enable the search functionality.
-  </p>
+          <section id="managing-numbers">
+<h1>Managing Numbers<a class="headerlink" href="#managing-numbers" title="Link to this heading">¶</a></h1>
+<p id="index-1"><span id="index-0"></span>Phone numbers are managed under <strong>Platform -&gt; Numbers</strong>.</p>
+<a class="reference internal image-reference" href="_images/admin_console_number_list.png"><img alt="Numbers list page" class="align-center" src="_images/admin_console_number_list.png" style="width: 700px;" />
+</a>
+<p>The list shows every number provisioned to your account: the E.164
+number, its assigned Flow, provider, and status.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>This maps to the <code class="docutils literal notranslate"><span class="pre">numbers</span></code> resource in the REST API (see
+<a class="reference internal" href="number.html#number-main"><span class="std std-ref">Number</span></a>). Numbers you buy here are immediately
+usable in a Flow’s Call or Connect nodes, or as the <code class="docutils literal notranslate"><span class="pre">target</span></code> of an
+API-initiated call.</p>
 </div>
-</noscript>
-
-<div id="search-results"></div>
+<section id="buying-a-number">
+<h2>Buying a number<a class="headerlink" href="#buying-a-number" title="Link to this heading">¶</a></h2>
+<p>Click <strong>Buy Number</strong> to open the number search. Filter by country and
+area code/prefix, review the available numbers and their monthly cost,
+and confirm the purchase. Once purchased, a number appears in the Active
+list immediately and can be assigned to a Flow from its detail page.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Buying a number is a billed action against your account balance. There
+is no cost-free “test buy” – only purchase numbers you intend to use.</p>
+</div>
+</section>
+<section id="assigning-a-number-to-a-flow">
+<h2>Assigning a number to a Flow<a class="headerlink" href="#assigning-a-number-to-a-flow" title="Link to this heading">¶</a></h2>
+<p>Open a number’s detail page and set its <strong>Flow</strong> field to route all
+inbound calls to that number through the selected Flow. Until a Flow is
+assigned, inbound calls to a newly purchased number have nowhere to go.</p>
+</section>
+</section>
 
         </article>
       </div>
@@ -646,8 +679,28 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Managing Numbers</a><ul>
+<li><a class="reference internal" href="#buying-a-number">Buying a number</a></li>
+<li><a class="reference internal" href="#assigning-a-number-to-a-flow">Assigning a number to a Flow</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>
@@ -656,8 +709,5 @@
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
-    
-<script src="_static/searchtools.js"></script>
-<script src="_static/language_data.js"></script>
-<script src="searchindex.js"></script></body>
+    </body>
 </html>
