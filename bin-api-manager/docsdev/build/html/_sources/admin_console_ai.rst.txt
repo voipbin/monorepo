@@ -5,8 +5,9 @@ AI Assistant & Team
 .. index:: single: Admin console; Team (AI)
 .. index:: single: Admin console; RAG
 
-AI configuration lives under **AI Services** in the sidebar, split across
-five sub-pages: Engines (Assistants), Teams, RAGs, Calls, and Summaries.
+AI configuration lives under **AI Services** in the sidebar. It covers
+your Assistants and Teams plus supporting resources: RAGs, AI Calls,
+Summaries, Audits, and Proposals.
 
 Assistants
 ----------
@@ -66,3 +67,12 @@ partially) by an AI Assistant, with the transcript and any tool calls the
 Assistant made during the call. **AI Services -> Summaries** lists
 AI-generated summaries produced after a call or conversation ends, useful
 for a quick recap without replaying the whole transcript.
+
+Audits and Proposals
+----------------------
+
+**AI Services -> Audits** lists a history of changes made to your AI
+Assistants and Teams, useful when reviewing who changed a prompt or model
+setting and when. **AI Services -> Proposals** lists AI-suggested prompt
+changes awaiting your review; accept a proposal to apply it to the
+Assistant, or dismiss it if it does not fit.

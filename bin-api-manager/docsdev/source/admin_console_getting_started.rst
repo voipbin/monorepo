@@ -34,7 +34,11 @@ level cannot use.
      - What it can do
    * - **Customer Agent**
      - Base level. Handle calls, conversations, and messages assigned to
-       the agent; view (not edit) most configuration.
+       the agent through the agent-facing tools (for example
+       talk.voipbin.net). A Customer Agent account cannot sign in to
+       admin.voipbin.net -- the console blocks it with an
+       "Access Denied" message and signs the account back out, since this
+       guide covers manager/admin-level tooling only.
    * - **Customer Manager**
      - Everything an Agent can do, plus manage Flows, Numbers, Agents,
        Contacts, Queues, AI Assistants, and other resource configuration

@@ -12,7 +12,8 @@ Phone numbers are managed under **Platform -> Numbers**.
    :align: center
 
 The list shows every number provisioned to your account: the E.164
-number, its assigned Flow, provider, and status.
+number, its Name/Detail, its assigned Call Flow and Message Flow, its
+Type, and its Status.
 
 .. note:: **AI Implementation Hint**
 
@@ -24,15 +25,18 @@ number, its assigned Flow, provider, and status.
 Buying a number
 ----------------
 
-Click **Buy Number** to open the number search. Filter by country and
-area code/prefix, review the available numbers and their monthly cost,
-and confirm the purchase. Once purchased, a number appears in the Active
+Click **Buy Number** to open the number search. Filter by country code,
+review the available numbers (country, postal code, and features), and
+confirm the purchase. Once purchased, a number appears in the Active
 list immediately and can be assigned to a Flow from its detail page.
 
 .. warning::
 
-   Buying a number is a billed action against your account balance. There
-   is no cost-free "test buy" -- only purchase numbers you intend to use.
+   Buying a number is a billed action against your account balance,
+   charged immediately on purchase. The number search does not display a
+   price per number, so confirm your account's number pricing separately
+   (for example through your billing dashboard or support) before
+   purchasing in bulk.
 
 Assigning a number to a Flow
 ------------------------------

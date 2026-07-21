@@ -65,7 +65,7 @@ Action Graph). The left panel is the node palette, grouped by category:
    * - **Digits & Variables**
      - Digits Receive, Digits Send, Variable Set
    * - **Routing**
-     - Queue Join, Conference Join, Confbridge Join, Case Create
+     - Queue Join, Conference Join, Confbridge Join, Contact Case Create
    * - **Transcription**
      - Transcribe Start/Stop, Transcribe Recording
    * - **Integration**
@@ -77,6 +77,15 @@ Drag a node onto the canvas, connect it to the previous node with an
 edge, and configure its fields in the panel that opens when you click the
 node. Every flow starts from a single **Start** node; execution follows
 the edges you draw until it reaches a **Hangup** or **Stop** node.
+
+.. note::
+
+   The node palette in the editor groups nodes by its own filter tags
+   (**AI**, **Voice**, **Messaging**, **Flow controls**, **Conference**,
+   **CRM**, **Email**, **Media**, **Data handling**, **Connections**,
+   **HTTP & Webhooks**), some nodes appear under more than one tag. The
+   table above groups the same nodes by function for readability; use the
+   palette's own tag filters when looking for a node in the live editor.
 
 Save your changes with the save action in the editor toolbar. The editor
 also persists your last canvas layout (node positions, zoom level) per

@@ -676,7 +676,7 @@ Stream Echo</p></td>
 <td><p>Digits Receive, Digits Send, Variable Set</p></td>
 </tr>
 <tr class="row-odd"><td><p><strong>Routing</strong></p></td>
-<td><p>Queue Join, Conference Join, Confbridge Join, Case Create</p></td>
+<td><p>Queue Join, Conference Join, Confbridge Join, Contact Case Create</p></td>
 </tr>
 <tr class="row-even"><td><p><strong>Transcription</strong></p></td>
 <td><p>Transcribe Start/Stop, Transcribe Recording</p></td>
@@ -694,6 +694,15 @@ Stream Echo</p></td>
 edge, and configure its fields in the panel that opens when you click the
 node. Every flow starts from a single <strong>Start</strong> node; execution follows
 the edges you draw until it reaches a <strong>Hangup</strong> or <strong>Stop</strong> node.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The node palette in the editor groups nodes by its own filter tags
+(<strong>AI</strong>, <strong>Voice</strong>, <strong>Messaging</strong>, <strong>Flow controls</strong>, <strong>Conference</strong>,
+<strong>CRM</strong>, <strong>Email</strong>, <strong>Media</strong>, <strong>Data handling</strong>, <strong>Connections</strong>,
+<strong>HTTP &amp; Webhooks</strong>), some nodes appear under more than one tag. The
+table above groups the same nodes by function for readability; use the
+palette’s own tag filters when looking for a node in the live editor.</p>
+</div>
 <p>Save your changes with the save action in the editor toolbar. The editor
 also persists your last canvas layout (node positions, zoom level) per
 flow, so returning to a flow later reopens it the way you left it.</p>
