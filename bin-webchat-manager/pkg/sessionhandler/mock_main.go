@@ -43,18 +43,18 @@ func (m *MockSessionHandler) EXPECT() *MockSessionHandlerMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockSessionHandler) Create(ctx context.Context, customerID, widgetID uuid.UUID) (*session.Session, error) {
+func (m *MockSessionHandler) Create(ctx context.Context, customerID, widgetID uuid.UUID, pageURL string) (*session.Session, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, customerID, widgetID)
+	ret := m.ctrl.Call(m, "Create", ctx, customerID, widgetID, pageURL)
 	ret0, _ := ret[0].(*session.Session)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockSessionHandlerMockRecorder) Create(ctx, customerID, widgetID any) *gomock.Call {
+func (mr *MockSessionHandlerMockRecorder) Create(ctx, customerID, widgetID, pageURL any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockSessionHandler)(nil).Create), ctx, customerID, widgetID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockSessionHandler)(nil).Create), ctx, customerID, widgetID, pageURL)
 }
 
 // Delete mocks base method.

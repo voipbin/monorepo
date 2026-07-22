@@ -10,4 +10,5 @@ import (
 type V1DataSessionsPost struct {
 	CustomerID uuid.UUID `json:"customer_id,omitempty"`
 	WidgetID   uuid.UUID `json:"widget_id,omitempty"`
+	PageURL    string    `json:"page_url,omitempty"`
 }
