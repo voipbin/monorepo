@@ -33,7 +33,6 @@ func Test_isCRMEligiblePeer(t *testing.T) {
 		{"conference is ineligible", commonaddress.TypeConference, false},
 		{"extension is ineligible", commonaddress.TypeExtension, false},
 		{"sip is ineligible", commonaddress.TypeSIP, false},
-		{"web_session is ineligible", commonaddress.Type("web_session"), false},
 	}
 
 	for _, tt := range tests {
