@@ -1,6 +1,6 @@
 # bin-webchat-manager: Session Referrer + Peer/Local address capture
 
-Status: DRAFT (round 0)
+Status: DRAFT (round 1 -- resolves round 0 review findings, see docs/plans/2026-07-22-webchat-session-referrer-peer-local-design-review-round0.md)
 Author: Hermes (CPO)
 Date: 2026-07-22
 
@@ -149,8 +149,11 @@ unmodified (they test behavior, not the internal helper names).
 `bin-common-handler/models/address/main.go` gains:
 
 ```go
-TypeWebSession Type = "web_session" // target is webchat-manager's Session.ID (the visitor's continuity token)
+TypeWebSession Type = "webchat_visitor" // target is webchat-manager's Session.ID (the visitor's continuity token)
 ```
+
+**Round 1 decision (resolves round-0 open question §6.1):** the literal
+string value is `"webchat_visitor"`, NOT `"web_session"`. Rationale:
 
 **Naming collision check (mandatory per lessons from the earlier verbal
 exchange on this topic):** the literal string `"web_session"` ALREADY
@@ -166,32 +169,41 @@ map** (three independent copies, each service's own file, each commented
 `// synthetic type; not in commonaddress.Type enum`), used to decide
 whether a Call/Conversation peer address type disqualifies a
 `case_create` Flow action / AI tool from creating a CRM Case. **Confirmed
-by tracing the actual webchat data flow (see the earlier chat exchange,
-re-verified here):** these three maps operate ONLY on
-`commonaddress.Type` values that `bin-call-manager`/`bin-conversation-manager`
-attach to CALL and CONVERSATION-MESSAGE webhook payloads. Webchat
-conversations flow through `bin-conversation-manager` tagged
-`TypeWebchat` (confirmed at
-`bin-conversation-manager/pkg/conversationhandler/event.go`,
-`pkg/messagehandler/send.go`), never `"web_session"` -- so introducing a
-REAL `TypeWebSession = "web_session"` enum member here does NOT interact
-with those three maps' existing (and, per pchero's confirmation in the
-same conversation, CORRECT and intentional) behavior of letting webchat
-Conversations project into the CRM Interaction timeline. This is a
-same-string, different-namespace collision (a Go map key in three
-_-manager-local packages vs. a `commonaddress.Type` enum value in a
-shared library) -- confirmed non-interacting, not merely assumed.
+by tracing the actual webchat data flow:** these three maps operate ONLY
+on `commonaddress.Type` values that `bin-call-manager`/
+`bin-conversation-manager` attach to CALL and CONVERSATION-MESSAGE
+webhook payloads. Webchat conversations flow through
+`bin-conversation-manager` tagged `TypeWebchat` (confirmed at
+`bin-conversation-manager/pkg/conversationhandler/event.go:31`,
+`pkg/messagehandler/send.go:39,191`, `event_webchat.go:88-89` -- both
+self AND peer use `TypeWebchat`), never `"web_session"` -- so a new type
+value here would NOT interact with those maps' existing (and,
+per pchero's confirmation, correct and intentional) behavior either way.
 
-**However**, this is exactly the kind of accidental-collision risk that
-justifies flagging it explicitly rather than silently proceeding: a future
-engineer who greps for `"web_session"` and finds it already reserved in
-three `crmIneligiblePeerTypes` maps could reasonably (but incorrectly)
-conclude this new enum member conflicts with that pre-existing
-CRM-ineligibility list. **Round 0 open question for design review:**
-should this design instead pick a different string literal (e.g.
-`"webchat_visitor"`) purely to avoid this same-string confusion for future
-readers, even though the two uses are provably non-interacting? Recommend
-resolving this explicitly in round 1 rather than deferring.
+**Despite the proven non-interaction, this design picks a DIFFERENT
+literal (`"webchat_visitor"`) rather than reusing `"web_session"`
+anyway.** Reasoning: the non-interaction proof holds only for CODE THAT
+EXISTS TODAY. A future engineer grepping the codebase for `"web_session"`
+would find it already reserved in three `crmIneligiblePeerTypes` maps and
+could reasonably assume this new enum member is either (a) the same
+concept being formalized, or (b) in conflict with those maps' existing
+semantics -- neither reading is correct, but both are plausible enough to
+cost real debugging time. Avoiding the string collision entirely removes
+that ambiguity at zero cost (this is a brand-new type with no existing
+callers to migrate), which is strictly cheaper than documenting a
+non-obvious "these are unrelated despite the identical string" fact for
+every future reader. `"webchat_visitor"` was chosen over alternatives
+(`"web_visitor"`, `"webchat_session_peer"`) for readability and for
+pairing naturally with the existing `"webchat"` (`TypeWebchat`) value
+used for Local -- `webchat_visitor` reads as "the visitor side of a
+webchat interaction," `webchat` as "the webchat channel itself."
+
+Per §4.1's finding, if Case/Interaction ever adopt `TypeWebSession`
+(deferred per §4.3), the three `crmIneligiblePeerTypes` maps' existing
+`"web_session"` entries would need separate, explicit re-evaluation at
+that time -- they do NOT automatically cover `"webchat_visitor"` (a
+different string), so that future work must not assume the existing
+blacklist entries transfer.
 
 ### 4.2 Why Peer/Local now clears the earlier "zero information" bar
 
@@ -323,9 +335,7 @@ normalization / UUID-format validation) in both. Missing this update
 means `NormalizeTarget`/`ValidateTarget` return `ErrUnknownType`/"unknown
 address type" for the new type -- a silent, easy-to-miss omission since
 neither Session's own dbhandler nor sessionhandler currently calls either
-function on Peer/Local (unlike `casehandler.Create`, which does call
-`NormalizeTarget` on its Peer -- see `getorcreate.go:99`'s cited pattern
-in the earlier design doc). This design does NOT add a NormalizeTarget
+function on Peer/Local. This design does NOT add a `NormalizeTarget`
 call in `sessionhandler/create.go` (the value is already a raw UUID
 string with nothing to canonicalize, exactly like `kase.Case`'s existing
 `TypeWebchat` peer today), but the switch-exhaustiveness fix is still
@@ -338,48 +348,47 @@ with `TypeWebSession` does not hit an unexpected error.
 + `ConvertWebhookMessage()` (no `omitempty` on Peer/Local, matching the
 internal model).
 
-**Database**: `webchat_sessions` gains `peer JSON NOT NULL`, `local JSON
-NOT NULL` columns. Unlike `contact_cases`'s migration (`167bebb7c46f`),
-there is **no backfill step needed** -- `webchat_sessions` is a
-short-lived, high-churn table (sessions end/expire; the design doc for
-`page_url` noted no historical backfill was attempted for THAT column
-either), and no existing generated column depends on these new columns
-(no `open_peer_uk`-style dependency chain here, unlike Case). The
-migration is a plain `ALTER TABLE webchat_sessions ADD COLUMN peer JSON
-NOT NULL, ADD COLUMN local JSON NOT NULL` -- but see the note below on
-why `NOT NULL` needs the same nullable-then-backfill-then-tighten
-two-step as `167bebb7c46f` used, even with zero pre-existing rows to
-worry about: MySQL strict mode rejects adding a `NOT NULL` column with no
-`DEFAULT` to an ALREADY-POPULATED table regardless of whether any row
-matches -- `webchat_sessions` is not guaranteed empty in every deployed
-environment at migration time (a self-hosted VoIPBin instance could have
-live sessions), so this design REQUIRES the same three-step sequence as
-`167bebb7c46f`: add nullable, backfill (`UPDATE webchat_sessions SET peer
-= JSON_OBJECT('type', 'web_session', 'target', HEX(id)), local =
-JSON_OBJECT('type', 'webchat', 'target', HEX(widget_id)) WHERE peer IS
-NULL` -- using `HEX(id)`/`HEX(widget_id)` since `id`/`widget_id` are
-`BINARY(16)`, not human-readable UUID strings, so a raw column reference
-would produce a non-UUID-formatted Target string; this must actually
-format as a canonical UUID string, e.g. via a stored-procedure-free
-`LOWER(CONCAT_WS('-', HEX(SUBSTR(id,1,4)), ...))` UUID-formatting
-expression, or -- simpler and recommended -- accept that pre-migration
-rows get a placeholder empty-object `{}` for both and are NOT required to
-round-trip a correctly-formatted UUID retroactively, since those rows'
-Session.ID/WidgetID are still independently available as their own
-columns), then `MODIFY COLUMN ... NOT NULL`.
+**Database (Round 1 decision, resolves round-0 open question §6.3):**
+`webchat_sessions` gains `peer JSON NULL`, `local JSON NULL` columns --
+**nullable at the DB level**, diverging from the Go/JSON layer's "always
+present" contract (§4.4's Go struct has no `omitempty` on `Peer`/`Local`;
+every row created through `sessionhandler.Create()` from this point
+forward always populates both). This mirrors `kase.Case.Local`'s own
+existing precedent (nullable at the DB level via generated columns, while
+still JSON-required/non-`omitempty` at the app layer per `kase.go`'s
+comment) -- so this is not a novel pattern in this codebase, just applying
+an already-established one.
 
-**Recommendation to simplify, flagged for round 1 discussion:** given the
-backfill's UUID-formatting complexity above is disproportionate for a
-short-lived, high-churn table where old in-flight sessions naturally age
-out within the configured idle timeout (default 1800s per
-`widget.go`'s `DefaultSessionIdleTimeout`), consider making `Peer`/`Local`
-NULLABLE at the DB level (diverging from `omitempty:false` at the Go/JSON
-level, mirroring how `kase.Case.Local` is nullable at the DB level via
-generated columns while still JSON-required) rather than forcing a
-NOT NULL migration with a UUID-formatting backfill. This trades a
-theoretical "always present" DB guarantee for migration simplicity on a
-table where the tradeoff is more favorable than Case's (Case rows are
-long-lived CRM records; Session rows expire in minutes-to-hours).
+Rationale for choosing nullable over `contact_cases`'s NOT NULL +
+three-step backfill approach (`167bebb7c46f`): `id`/`widget_id` are
+`BINARY(16)` (confirmed in `sessions.sql`), so a naive backfill via
+`HEX(id)` would produce an un-dashed 32-char hex blob
+(`550e8400e29b41d4a716446655440000`), NOT a canonical UUID string
+(`550e8400-e29b-41d4-a716-446655440000`) that `uuid.FromStringOrNil`
+(used by `validateUUID` in `validate.go`) can parse -- a real formatting
+gap, not a hypothetical one. Producing a properly-dashed UUID string
+purely in SQL requires a `CONCAT_WS`/`SUBSTR` expression with no
+precedent elsewhere in this codebase's migrations. Given
+`webchat_sessions` is a short-lived, high-churn table (sessions
+end/expire; `widget.go`'s `DefaultSessionIdleTimeout` = 1800s / 30 min
+confirms in-flight sessions age out on the order of minutes-to-hours,
+unlike Case's long-lived CRM records), the correctness value of a
+NOT NULL guarantee on rows created BEFORE this migration lands is low:
+those rows will have ended/expired long before any code reads
+`Peer`/`Local` off them in anger, and the app layer (Go struct with no
+`omitempty`) already guarantees every row created AFTER this migration
+lands has both fields populated correctly. The migration is therefore a
+single, unconditional step with no backfill:
+
+```sql
+ALTER TABLE webchat_sessions
+    ADD COLUMN peer  JSON NULL AFTER widget_id,
+    ADD COLUMN local JSON NULL AFTER peer;
+```
+
+No generated column depends on `peer`/`local` here (no `open_peer_uk`-style
+dependency chain, unlike Case), so there is no drop-and-recreate ordering
+concern either.
 
 ## 5. Files touched (implementation checklist)
 
@@ -414,7 +423,7 @@ long-lived CRM records; Session rows expire in minutes-to-hours).
 - `pkg/sessionhandler/mock_main.go` (regenerated)
 - `pkg/sessionhandler/create.go`
 - `pkg/sessionhandler/create_test.go`
-- `scripts/database_scripts_test/sessions.sql` (`referrer TEXT`, `peer TEXT`/JSON, `local TEXT`/JSON per SQLite test-schema convention)
+- `scripts/database_scripts_test/sessions.sql` (`referrer TEXT`, `peer TEXT` NULL, `local TEXT` NULL -- nullable per §4.4's round-1 decision, JSON-shaped strings per SQLite test-schema convention)
 
 **bin-dbscheme-manager:**
 - `bin-manager/main/versions/<new>_webchat_sessions_add_column_referrer.py`
@@ -427,14 +436,28 @@ long-lived CRM records; Session rows expire in minutes-to-hours).
 - `src/views/webchat_widgets/__tests__/message_timeline.test.js`
 - `public/webchat-widget-runtime.bundle.js` / `.esm.js` (rebuilt via `npm run build:widget`)
 
-## 6. Open questions for round 1 review
+## 6. Round 0 open questions -- resolved in round 1
 
-1. §4.1: keep `"web_session"` as the new type's string value (provably
-   non-interacting with the three `crmIneligiblePeerTypes` maps), or pick
-   a different literal purely to avoid future-reader confusion?
-2. §4.2: is type-based dispatch for a not-yet-built shared Peer/Local
-   rendering component sufficient justification, given `Target` values
-   still carry zero new information?
-3. §4.4: NOT NULL + UUID-formatting backfill vs. nullable-at-DB-level --
-   which tradeoff is preferred given `webchat_sessions`' short-lived,
-   high-churn nature?
+For audit-trail continuity, round 0 originally left three items open;
+this revision resolves them:
+
+1. **§4.1 type-string choice**: RESOLVED -- `"webchat_visitor"`, not
+   `"web_session"`. See §4.1's "Round 1 decision" note for full rationale
+   (avoids future-reader ambiguity with the three pre-existing
+   `crmIneligiblePeerTypes` map entries, at zero migration cost since this
+   is a brand-new type with no existing callers).
+2. **§4.2 justification sufficiency**: NOT further resolved -- this
+   remains an honest, standing caveat rather than a blocking question.
+   `Peer`/`Local`'s `Target` values genuinely carry no new information
+   beyond what `Session.ID`/`Session.WidgetID` already provide; the sole
+   benefit is type-based dispatch for a not-yet-built shared rendering
+   component. This is disclosed as-is for pchero's final call, not
+   something a design review can resolve on the author's behalf --
+   product judgment on whether that single benefit justifies the schema
+   addition belongs with pchero, not with this doc's author or reviewer.
+3. **§4.4 NOT NULL vs. nullable**: RESOLVED -- nullable at the DB level.
+   See §4.4's "Round 1 decision" note (BINARY(16)-to-UUID-string backfill
+   formatting has no precedent in this codebase's migrations and is
+   disproportionate cost for a short-lived, high-churn table where the
+   app layer already guarantees non-empty values on every row created
+   going forward).
