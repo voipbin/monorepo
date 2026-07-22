@@ -47,7 +47,7 @@ func Test_Continue_ByOwningAgent_CreatesChainedCase(t *testing.T) {
 
 	source := &kase.Case{
 		ID: sourceCaseID, CustomerID: customerID,
-		PeerType: commonaddress.TypeTel, PeerTarget: "+15551400001", ReferenceType: "call",
+		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551400001"}, ReferenceType: "call",
 		ContactID: &contactID,
 		Owner:     commonidentity.Owner{OwnerType: commonidentity.OwnerTypeAgent, OwnerID: agentID},
 		Status:    kase.StatusClosed, OpenedAt: &opened, ClosedAt: &closedAt,
@@ -71,7 +71,7 @@ func Test_Continue_ByOwningAgent_CreatesChainedCase(t *testing.T) {
 	if res.PreviousCaseID == nil || *res.PreviousCaseID != sourceCaseID {
 		t.Errorf("expected previous_case_id: %s, got: %v", sourceCaseID, res.PreviousCaseID)
 	}
-	if res.PeerTarget != source.PeerTarget || res.ReferenceType != source.ReferenceType {
+	if res.Peer.Target != source.Peer.Target || res.ReferenceType != source.ReferenceType {
 		t.Errorf("expected new case to inherit peer/reference_type from source")
 	}
 	if res.ContactID == nil || *res.ContactID != contactID {
@@ -112,7 +112,7 @@ func Test_Continue_RequiresSourceClosed(t *testing.T) {
 
 	source := &kase.Case{
 		ID: openCaseID, CustomerID: customerID,
-		PeerType: commonaddress.TypeTel, PeerTarget: "+15551400002", ReferenceType: "call",
+		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551400002"}, ReferenceType: "call",
 		Owner:  commonidentity.Owner{OwnerType: commonidentity.OwnerTypeAgent, OwnerID: agentID},
 		Status: kase.StatusOpen, OpenedAt: &opened, TMCreate: &opened, TMUpdate: &opened,
 	}
@@ -154,7 +154,7 @@ func Test_Continue_RequiresOwningAgentOrAdmin(t *testing.T) {
 
 	source := &kase.Case{
 		ID: closedCaseID, CustomerID: customerID,
-		PeerType: commonaddress.TypeTel, PeerTarget: "+15551400003", ReferenceType: "call",
+		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551400003"}, ReferenceType: "call",
 		Owner:  commonidentity.Owner{OwnerType: commonidentity.OwnerTypeAgent, OwnerID: owningAgentID},
 		Status: kase.StatusClosed, OpenedAt: &opened, ClosedAt: &closedAt,
 		ClosedReason: kase.ClosedReasonAgentClosed, ClosedByType: kase.ClosedByTypeAgent, ClosedByID: &owningAgentID,

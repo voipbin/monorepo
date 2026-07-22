@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
@@ -26,10 +27,8 @@ func Test_InteractionCreate(t *testing.T) {
 				ID:            uuid.FromStringOrNil("a1b2c3d4-0001-0001-0001-000000000001"),
 				CustomerID:    uuid.FromStringOrNil("a1b2c3d4-0001-0001-0001-000000000002"),
 				Direction:     "incoming",
-				PeerType:      "tel",
-				PeerTarget:    "peerTarget-call-incoming",
-				LocalType:     "tel",
-				LocalTarget:   "localTarget-call-incoming",
+				Peer: commonaddress.Address{Type: "tel", Target: "peerTarget-call-incoming"},
+				Local: commonaddress.Address{Type: "tel", Target: "localTarget-call-incoming"},
 				ReferenceType: "call",
 				ReferenceID:   uuid.FromStringOrNil("a1b2c3d4-0001-0001-0001-000000000003"),
 				TMCreate:      func() *time.Time { t := time.Date(2026, 6, 28, 10, 0, 0, 0, time.UTC); return &t }(),
@@ -42,10 +41,8 @@ func Test_InteractionCreate(t *testing.T) {
 				ID:            uuid.FromStringOrNil("b1b2c3d4-0002-0002-0002-000000000001"),
 				CustomerID:    uuid.FromStringOrNil("b1b2c3d4-0002-0002-0002-000000000002"),
 				Direction:     "outgoing",
-				PeerType:      "line",
-				PeerTarget:    "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-				LocalType:     "line",
-				LocalTarget:   "",
+				Peer: commonaddress.Address{Type: "line", Target: "Ud871bcaf7c3ad13d2a0b0d78a42a287f"},
+				Local: commonaddress.Address{Type: "line", Target: ""},
 				ReferenceType: "conversation_message",
 				ReferenceID:   uuid.FromStringOrNil("b1b2c3d4-0002-0002-0002-000000000003"),
 				TMCreate:      func() *time.Time { t := time.Date(2026, 6, 28, 11, 0, 0, 0, time.UTC); return &t }(),
@@ -92,10 +89,8 @@ func Test_InteractionCreate_duplicate(t *testing.T) {
 		ID:            uuid.FromStringOrNil("c1b2c3d4-0003-0003-0003-000000000001"),
 		CustomerID:    uuid.FromStringOrNil("c1b2c3d4-0003-0003-0003-000000000002"),
 		Direction:     "incoming",
-		PeerType:      "tel",
-		PeerTarget:    "uniquePeerTarget-idem-001",
-		LocalType:     "tel",
-		LocalTarget:   "uniqueLocalTarget-idem-001",
+		Peer: commonaddress.Address{Type: "tel", Target: "uniquePeerTarget-idem-001"},
+		Local: commonaddress.Address{Type: "tel", Target: "uniqueLocalTarget-idem-001"},
 		ReferenceType: "call",
 		ReferenceID:   uuid.FromStringOrNil("c1b2c3d4-0003-0003-0003-000000000003"),
 		TMCreate:      func() *time.Time { t := time.Date(2026, 6, 28, 12, 0, 0, 0, time.UTC); return &t }(),
@@ -130,10 +125,8 @@ func Test_InteractionGet(t *testing.T) {
 		ID:            uuid.FromStringOrNil("e1b2c3d4-0001-0001-0001-000000000001"),
 		CustomerID:    uuid.FromStringOrNil("e1b2c3d4-0001-0001-0001-000000000002"),
 		Direction:     "incoming",
-		PeerType:      "tel",
-		PeerTarget:    "+15550001001",
-		LocalType:     "tel",
-		LocalTarget:   "+15559990001",
+		Peer: commonaddress.Address{Type: "tel", Target: "+15550001001"},
+		Local: commonaddress.Address{Type: "tel", Target: "+15559990001"},
 		ReferenceType: "call",
 		ReferenceID:   uuid.FromStringOrNil("e1b2c3d4-0001-0001-0001-000000000003"),
 		TMCreate:      tm,
@@ -151,8 +144,8 @@ func Test_InteractionGet(t *testing.T) {
 	if got.ID != i.ID {
 		t.Errorf("InteractionGet() ID = %v, want %v", got.ID, i.ID)
 	}
-	if got.PeerTarget != i.PeerTarget {
-		t.Errorf("InteractionGet() PeerTarget = %v, want %v", got.PeerTarget, i.PeerTarget)
+	if got.Peer.Target != i.Peer.Target {
+		t.Errorf("InteractionGet() PeerTarget = %v, want %v", got.Peer.Target, i.Peer.Target)
 	}
 	if got.Direction != i.Direction {
 		t.Errorf("InteractionGet() Direction = %v, want %v", got.Direction, i.Direction)
@@ -179,17 +172,15 @@ func Test_InteractionList_byPeer(t *testing.T) {
 	ctx := context.Background()
 
 	customerID := uuid.FromStringOrNil("e1b2c3d4-0002-0002-0002-000000000001")
-	peerType := "tel"
+	peerType := commonaddress.TypeTel
 	peerTarget := "+15550002001"
 
 	i1 := &interaction.Interaction{
 		ID:            uuid.FromStringOrNil("e1b2c3d4-0002-0002-0002-000000000002"),
 		CustomerID:    customerID,
 		Direction:     "incoming",
-		PeerType:      peerType,
-		PeerTarget:    peerTarget,
-		LocalType:     "tel",
-		LocalTarget:   "+15559990002",
+		Peer: commonaddress.Address{Type: peerType, Target: peerTarget},
+		Local: commonaddress.Address{Type: "tel", Target: "+15559990002"},
 		ReferenceType: "call",
 		ReferenceID:   uuid.FromStringOrNil("e1b2c3d4-0002-0002-0002-000000000003"),
 		TMCreate:      func() *time.Time { t := time.Date(2026, 6, 28, 15, 0, 0, 0, time.UTC); return &t }(),
@@ -198,10 +189,8 @@ func Test_InteractionList_byPeer(t *testing.T) {
 		ID:            uuid.FromStringOrNil("e1b2c3d4-0002-0002-0002-000000000004"),
 		CustomerID:    customerID,
 		Direction:     "outgoing",
-		PeerType:      peerType,
-		PeerTarget:    peerTarget,
-		LocalType:     "tel",
-		LocalTarget:   "+15559990002",
+		Peer: commonaddress.Address{Type: peerType, Target: peerTarget},
+		Local: commonaddress.Address{Type: "tel", Target: "+15559990002"},
 		ReferenceType: "call",
 		ReferenceID:   uuid.FromStringOrNil("e1b2c3d4-0002-0002-0002-000000000005"),
 		TMCreate:      func() *time.Time { t := time.Date(2026, 6, 28, 16, 0, 0, 0, time.UTC); return &t }(),
@@ -215,7 +204,7 @@ func Test_InteractionList_byPeer(t *testing.T) {
 	}
 
 	// InteractionList with peerType+peerTarget → both returned
-	res, err := h.InteractionList(ctx, customerID, 10, "", peerType, peerTarget, nil, time.Time{})
+	res, err := h.InteractionList(ctx, customerID, 10, "", string(peerType), peerTarget, nil, time.Time{})
 	if err != nil {
 		t.Fatalf("InteractionList() error = %v", err)
 	}
@@ -224,7 +213,7 @@ func Test_InteractionList_byPeer(t *testing.T) {
 	}
 
 	// InteractionList with wrong peer → empty
-	res, err = h.InteractionList(ctx, customerID, 10, "", peerType, "+19990000000", nil, time.Time{})
+	res, err = h.InteractionList(ctx, customerID, 10, "", string(peerType), "+19990000000", nil, time.Time{})
 	if err != nil {
 		t.Fatalf("InteractionList() wrong peer error = %v", err)
 	}
@@ -252,10 +241,8 @@ func Test_InteractionList_byAddressSet(t *testing.T) {
 		ID:            uuid.FromStringOrNil("e1b2c3d4-0003-0003-0003-000000000002"),
 		CustomerID:    customerID,
 		Direction:     "incoming",
-		PeerType:      "tel",
-		PeerTarget:    "+15550003001",
-		LocalType:     "tel",
-		LocalTarget:   "+15559990003",
+		Peer: commonaddress.Address{Type: "tel", Target: "+15550003001"},
+		Local: commonaddress.Address{Type: "tel", Target: "+15559990003"},
 		ReferenceType: "call",
 		ReferenceID:   uuid.FromStringOrNil("e1b2c3d4-0003-0003-0003-000000000003"),
 		TMCreate:      func() *time.Time { t := time.Date(2026, 6, 28, 17, 0, 0, 0, time.UTC); return &t }(),
@@ -264,10 +251,8 @@ func Test_InteractionList_byAddressSet(t *testing.T) {
 		ID:            uuid.FromStringOrNil("e1b2c3d4-0003-0003-0003-000000000004"),
 		CustomerID:    customerID,
 		Direction:     "outgoing",
-		PeerType:      "line",
-		PeerTarget:    "Ufake12345",
-		LocalType:     "line",
-		LocalTarget:   "",
+		Peer: commonaddress.Address{Type: "line", Target: "Ufake12345"},
+		Local: commonaddress.Address{Type: "line", Target: ""},
 		ReferenceType: "conversation_message",
 		ReferenceID:   uuid.FromStringOrNil("e1b2c3d4-0003-0003-0003-000000000005"),
 		TMCreate:      func() *time.Time { t := time.Date(2026, 6, 28, 18, 0, 0, 0, time.UTC); return &t }(),
@@ -359,10 +344,8 @@ func Test_InteractionList_unfiltered_since(t *testing.T) {
 		ID:            uuid.FromStringOrNil("e1b2c3d4-0006-0006-0006-000000000002"),
 		CustomerID:    customerID,
 		Direction:     "incoming",
-		PeerType:      "tel",
-		PeerTarget:    "+155****6001",
-		LocalType:     "tel",
-		LocalTarget:   "+155****0006",
+		Peer: commonaddress.Address{Type: "tel", Target: "+155****6001"},
+		Local: commonaddress.Address{Type: "tel", Target: "+155****0006"},
 		ReferenceType: "call",
 		ReferenceID:   uuid.FromStringOrNil("e1b2c3d4-0006-0006-0006-000000000003"),
 		TMCreate:      &recent,
@@ -371,10 +354,8 @@ func Test_InteractionList_unfiltered_since(t *testing.T) {
 		ID:            uuid.FromStringOrNil("e1b2c3d4-0006-0006-0006-000000000004"),
 		CustomerID:    customerID,
 		Direction:     "incoming",
-		PeerType:      "tel",
-		PeerTarget:    "+155****6002",
-		LocalType:     "tel",
-		LocalTarget:   "+155****0006",
+		Peer: commonaddress.Address{Type: "tel", Target: "+155****6002"},
+		Local: commonaddress.Address{Type: "tel", Target: "+155****0006"},
 		ReferenceType: "call",
 		ReferenceID:   uuid.FromStringOrNil("e1b2c3d4-0006-0006-0006-000000000005"),
 		TMCreate:      &old,
@@ -383,10 +364,8 @@ func Test_InteractionList_unfiltered_since(t *testing.T) {
 		ID:            uuid.FromStringOrNil("e1b2c3d4-0006-0006-0006-000000000006"),
 		CustomerID:    otherCustomerID,
 		Direction:     "incoming",
-		PeerType:      "tel",
-		PeerTarget:    "+155****6003",
-		LocalType:     "tel",
-		LocalTarget:   "+155****0006",
+		Peer: commonaddress.Address{Type: "tel", Target: "+155****6003"},
+		Local: commonaddress.Address{Type: "tel", Target: "+155****0006"},
 		ReferenceType: "call",
 		ReferenceID:   uuid.FromStringOrNil("e1b2c3d4-0006-0006-0006-000000000007"),
 		TMCreate:      &recent,
@@ -430,10 +409,8 @@ func Test_InteractionListByIDs(t *testing.T) {
 		ID:            uuid.FromStringOrNil("e1b2c3d4-0005-0005-0005-000000000002"),
 		CustomerID:    customerID,
 		Direction:     "incoming",
-		PeerType:      "tel",
-		PeerTarget:    "+15550005001",
-		LocalType:     "tel",
-		LocalTarget:   "+15559990005",
+		Peer: commonaddress.Address{Type: "tel", Target: "+15550005001"},
+		Local: commonaddress.Address{Type: "tel", Target: "+15559990005"},
 		ReferenceType: "call",
 		ReferenceID:   uuid.FromStringOrNil("e1b2c3d4-0005-0005-0005-000000000003"),
 		TMCreate:      func() *time.Time { t := time.Date(2026, 6, 28, 19, 0, 0, 0, time.UTC); return &t }(),
@@ -442,10 +419,8 @@ func Test_InteractionListByIDs(t *testing.T) {
 		ID:            uuid.FromStringOrNil("e1b2c3d4-0005-0005-0005-000000000004"),
 		CustomerID:    customerID,
 		Direction:     "outgoing",
-		PeerType:      "tel",
-		PeerTarget:    "+15550005002",
-		LocalType:     "tel",
-		LocalTarget:   "+15559990005",
+		Peer: commonaddress.Address{Type: "tel", Target: "+15550005002"},
+		Local: commonaddress.Address{Type: "tel", Target: "+15559990005"},
 		ReferenceType: "call",
 		ReferenceID:   uuid.FromStringOrNil("e1b2c3d4-0005-0005-0005-000000000005"),
 		TMCreate:      func() *time.Time { t := time.Date(2026, 6, 28, 20, 0, 0, 0, time.UTC); return &t }(),
@@ -524,10 +499,8 @@ func Test_InteractionList_pagination(t *testing.T) {
 			ID:            r.id,
 			CustomerID:    customerID,
 			Direction:     "incoming",
-			PeerType:      "tel",
-			PeerTarget:    "+15550001111",
-			LocalType:     "tel",
-			LocalTarget:   "+15559999",
+			Peer: commonaddress.Address{Type: "tel", Target: "+15550001111"},
+			Local: commonaddress.Address{Type: "tel", Target: "+15559999"},
 			ReferenceType: "call",
 			ReferenceID:   r.refID,
 			TMCreate:      &tm,

@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"time"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
+
 	commonaddress "monorepo/bin-common-handler/models/address"
 
 	"github.com/gofrs/uuid"
@@ -62,12 +65,19 @@ var ErrDeadlockExhausted = fmt.Errorf("could not get-or-create case: exhausted r
 func (h *caseHandler) GetOrCreate(
 	ctx context.Context,
 	customerID uuid.UUID,
-	self commonaddress.Address,
-	peerType commonaddress.Type,
-	peerTarget, referenceType string,
+	self, peer commonaddress.Address,
+	referenceType string,
 	caseIDHint *uuid.UUID,
 ) (*kase.Case, error) {
-	lockKey := peerLockKey(customerID, peerType, peerTarget, referenceType)
+	if peer.Type == "" || peer.Target == "" {
+		return nil, cerrors.InvalidArgument(
+			commonoutline.ServiceNameContactManager,
+			"CASE_PEER_REQUIRED",
+			"peer.type and peer.target are required and cannot be empty.",
+		)
+	}
+
+	lockKey := peerLockKey(customerID, peer.Type, peer.Target, referenceType)
 	release, err := h.acquirePeerLock(ctx, lockKey)
 	if err != nil {
 		promPeerLockTimeoutTotal.Inc()
@@ -85,7 +95,7 @@ func (h *caseHandler) GetOrCreate(
 
 	var lastErr error
 	for attempt := 0; attempt < maxDeadlockRetries; attempt++ {
-		res, isNewCase, err := h.getOrCreateAttempt(ctx, customerID, self, peerType, peerTarget, referenceType, caseIDHint)
+		res, isNewCase, err := h.getOrCreateAttempt(ctx, customerID, self, peer, referenceType, caseIDHint)
 		if err == nil {
 			// Release the peer lock immediately after a successful commit,
 			// strictly BEFORE linkSiblingConversation's cross-service RPCs
@@ -97,7 +107,7 @@ func (h *caseHandler) GetOrCreate(
 			locked = false
 
 			if isNewCase && referenceType != "conversation_message" && self.Type != "" {
-				h.linkSiblingConversation(ctx, customerID, self, peerType, peerTarget, res.ID)
+				h.linkSiblingConversation(ctx, customerID, self, peer, res.ID)
 			}
 
 			return res, nil
@@ -124,9 +134,8 @@ func (h *caseHandler) GetOrCreate(
 func (h *caseHandler) getOrCreateAttempt(
 	ctx context.Context,
 	customerID uuid.UUID,
-	self commonaddress.Address,
-	peerType commonaddress.Type,
-	peerTarget, referenceType string,
+	self, peer commonaddress.Address,
+	referenceType string,
 	caseIDHint *uuid.UUID,
 ) (*kase.Case, bool, error) {
 	now := h.utilHandler.TimeNow()
@@ -142,7 +151,7 @@ func (h *caseHandler) getOrCreateAttempt(
 		}
 	}()
 
-	res, isNewCase, err := h.getOrCreateInTx(ctx, tx, customerID, peerType, peerTarget, referenceType, caseIDHint, now)
+	res, isNewCase, err := h.getOrCreateInTx(ctx, tx, customerID, self, peer, referenceType, caseIDHint, now)
 	if err != nil {
 		return nil, false, err
 	}
@@ -171,13 +180,9 @@ func (h *caseHandler) getOrCreateAttempt(
 func (h *caseHandler) linkSiblingConversation(
 	ctx context.Context,
 	customerID uuid.UUID,
-	self commonaddress.Address,
-	peerType commonaddress.Type,
-	peerTarget string,
+	self, peer commonaddress.Address,
 	caseID uuid.UUID,
 ) {
-	peer := commonaddress.Address{Type: peerType, Target: peerTarget}
-
 	conv, err := h.reqHandler.ConversationV1ConversationGetBySelfAndPeer(ctx, self, peer)
 	if err != nil || conv == nil {
 		// Not found (or lookup failed) -- no further RPC, nothing created.
@@ -200,8 +205,8 @@ func (h *caseHandler) getOrCreateInTx(
 	ctx context.Context,
 	tx *sql.Tx,
 	customerID uuid.UUID,
-	peerType commonaddress.Type,
-	peerTarget, referenceType string,
+	self, peer commonaddress.Address,
+	referenceType string,
 	caseIDHint *uuid.UUID,
 	now *time.Time,
 ) (*kase.Case, bool, error) {
@@ -224,7 +229,7 @@ func (h *caseHandler) getOrCreateInTx(
 	}
 
 	// Step 1b: peer/reference_type resolution.
-	found, err := h.db.CaseGetOpenByPeer(ctx, tx, customerID, peerType, peerTarget, referenceType)
+	found, err := h.db.CaseGetOpenByPeer(ctx, tx, customerID, peer.Type, peer.Target, referenceType)
 	if err != nil {
 		if err == dbhandler.ErrDeadlock {
 			return nil, false, dbhandler.ErrDeadlock
@@ -248,12 +253,12 @@ func (h *caseHandler) getOrCreateInTx(
 			}
 			return nil, false, fmt.Errorf("could not close timed-out case. GetOrCreate. err: %v", err)
 		}
-		return h.insertWithRetry(ctx, tx, customerID, peerType, peerTarget, referenceType, &found.ID, now)
+		return h.insertWithRetry(ctx, tx, customerID, self, peer, referenceType, &found.ID, now)
 	}
 
 	// Step 1c: no open case at all -- fresh insert, chained to the last
 	// closed case for this peer (if any) via previous_case_id.
-	lastClosed, err := h.db.CaseGetLastClosedByPeerTx(ctx, tx, customerID, peerType, peerTarget, referenceType)
+	lastClosed, err := h.db.CaseGetLastClosedByPeerTx(ctx, tx, customerID, peer.Type, peer.Target, referenceType)
 	if err != nil {
 		if err == dbhandler.ErrDeadlock {
 			return nil, false, dbhandler.ErrDeadlock
@@ -264,7 +269,7 @@ func (h *caseHandler) getOrCreateInTx(
 	if lastClosed != nil {
 		previousCaseID = &lastClosed.ID
 	}
-	return h.insertWithRetry(ctx, tx, customerID, peerType, peerTarget, referenceType, previousCaseID, now)
+	return h.insertWithRetry(ctx, tx, customerID, self, peer, referenceType, previousCaseID, now)
 }
 
 // insertWithRetry implements design §4.2's bounded retry loop: attempt an
@@ -277,8 +282,8 @@ func (h *caseHandler) insertWithRetry(
 	ctx context.Context,
 	tx *sql.Tx,
 	customerID uuid.UUID,
-	peerType commonaddress.Type,
-	peerTarget, referenceType string,
+	self, peer commonaddress.Address,
+	referenceType string,
 	previousCaseID *uuid.UUID,
 	now *time.Time,
 ) (*kase.Case, bool, error) {
@@ -286,8 +291,8 @@ func (h *caseHandler) insertWithRetry(
 		newCase := &kase.Case{
 			ID:             h.utilHandler.UUIDCreate(),
 			CustomerID:     customerID,
-			PeerType:       peerType,
-			PeerTarget:     peerTarget,
+			Peer:           peer,
+			Local:          self,
 			ReferenceType:  referenceType,
 			Status:         kase.StatusOpen,
 			OpenedAt:       now,
@@ -308,7 +313,7 @@ func (h *caseHandler) insertWithRetry(
 		}
 
 		// Conflict: another transaction won. Re-select the winner, locked.
-		winner, selErr := h.db.CaseGetOpenByPeer(ctx, tx, customerID, peerType, peerTarget, referenceType)
+		winner, selErr := h.db.CaseGetOpenByPeer(ctx, tx, customerID, peer.Type, peer.Target, referenceType)
 		if selErr != nil {
 			if selErr == dbhandler.ErrDeadlock {
 				return nil, false, dbhandler.ErrDeadlock

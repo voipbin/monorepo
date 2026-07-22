@@ -29,8 +29,7 @@ func Test_ProcessV1CasesPost_CreatesCase(t *testing.T) {
 	reqBody := map[string]any{
 		"customer_id": customerID.String(),
 		"self":        map[string]any{"type": "tel", "target": "+155****0101"},
-		"peer_type":   "tel",
-		"peer_target": "+155****9101",
+		"peer":        map[string]any{"type": "tel", "target": "+155****9101"},
 		"reference_type": "call",
 		"name":   "VIP",
 		"detail": "escalated",
@@ -45,7 +44,7 @@ func Test_ProcessV1CasesPost_CreatesCase(t *testing.T) {
 	mockCase.EXPECT().Create(
 		ctx, customerID,
 		commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****0101"},
-		commonaddress.TypeTel, "+155****9101", "call", "VIP", "escalated",
+		commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****9101"}, "call", "VIP", "escalated",
 	).Return(&kase.Case{ID: caseID, CustomerID: customerID}, nil)
 
 	res, err := h.processV1CasesPost(ctx, req)

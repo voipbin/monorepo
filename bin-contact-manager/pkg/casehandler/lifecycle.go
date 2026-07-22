@@ -8,6 +8,8 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	commonoutline "monorepo/bin-common-handler/models/outline"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+
 	"github.com/gofrs/uuid"
 
 	"monorepo/bin-contact-manager/models/kase"
@@ -154,7 +156,7 @@ func (h *caseHandler) Continue(ctx context.Context, customerID, id uuid.UUID, ca
 		}
 	}()
 
-	res, _, err := h.insertWithRetry(ctx, tx, customerID, source.PeerType, source.PeerTarget, source.ReferenceType, &source.ID, now)
+	res, _, err := h.insertWithRetry(ctx, tx, customerID, commonaddress.Address{}, source.Peer, source.ReferenceType, &source.ID, now)
 	if err != nil {
 		return nil, err
 	}

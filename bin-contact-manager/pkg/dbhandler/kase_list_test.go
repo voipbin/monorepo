@@ -38,13 +38,13 @@ func Test_CaseList_FiltersByCustomerStatusAndOwner(t *testing.T) {
 	cases := []*kase.Case{
 		{
 			ID: openOwnedCaseID, CustomerID: customerID,
-			PeerType: commonaddress.TypeTel, PeerTarget: "+155****1010", ReferenceType: "call",
+			Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****1010"}, ReferenceType: "call",
 			Owner:  commonidentity.Owner{OwnerType: commonidentity.OwnerTypeAgent, OwnerID: ownerID},
 			Status: kase.StatusOpen, OpenedAt: &opened, TMCreate: &opened, TMUpdate: &opened,
 		},
 		{
 			ID: closedOwnedCaseID, CustomerID: customerID,
-			PeerType: commonaddress.TypeTel, PeerTarget: "+155****1011", ReferenceType: "call",
+			Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****1011"}, ReferenceType: "call",
 			Owner:  commonidentity.Owner{OwnerType: commonidentity.OwnerTypeAgent, OwnerID: ownerID},
 			Status: kase.StatusClosed, OpenedAt: &opened, ClosedAt: &closed,
 			ClosedReason: kase.ClosedReasonAgentClosed, ClosedByType: kase.ClosedByTypeAgent,
@@ -52,13 +52,13 @@ func Test_CaseList_FiltersByCustomerStatusAndOwner(t *testing.T) {
 		},
 		{
 			ID: openOtherOwnerCaseID, CustomerID: customerID,
-			PeerType: commonaddress.TypeTel, PeerTarget: "+155****1012", ReferenceType: "call",
+			Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****1012"}, ReferenceType: "call",
 			Owner:  commonidentity.Owner{OwnerType: commonidentity.OwnerTypeAgent, OwnerID: otherOwnerID},
 			Status: kase.StatusOpen, OpenedAt: &opened, TMCreate: &opened, TMUpdate: &opened,
 		},
 		{
 			ID: otherCustomerCaseID, CustomerID: otherCustomerID,
-			PeerType: commonaddress.TypeTel, PeerTarget: "+155****1013", ReferenceType: "call",
+			Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****1013"}, ReferenceType: "call",
 			Owner:  commonidentity.Owner{OwnerType: commonidentity.OwnerTypeAgent, OwnerID: ownerID},
 			Status: kase.StatusOpen, OpenedAt: &opened, TMCreate: &opened, TMUpdate: &opened,
 		},
@@ -123,7 +123,7 @@ func Test_CaseList_FiltersByCustomerStatusAndOwner(t *testing.T) {
 	contactAttributedCaseID := uuid.FromStringOrNil("f1b2c3d4-9601-9601-9601-000000000014")
 	if err := h.CaseInsert(ctx, &kase.Case{
 		ID: contactAttributedCaseID, CustomerID: customerID,
-		PeerType: commonaddress.TypeTel, PeerTarget: "+155****1014", ReferenceType: "call",
+		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****1014"}, ReferenceType: "call",
 		ContactID: &contactID,
 		Status:    kase.StatusOpen, OpenedAt: &opened, TMCreate: &opened, TMUpdate: &opened,
 	}); err != nil {
@@ -164,9 +164,9 @@ func Test_CaseList_OrderedAndPaginated(t *testing.T) {
 	id3 := uuid.FromStringOrNil("f1b2c3d4-9601-9601-9601-000000000033")
 
 	for _, c := range []*kase.Case{
-		{ID: id1, CustomerID: customerID, PeerType: commonaddress.TypeTel, PeerTarget: "+155****2001", ReferenceType: "call", Status: kase.StatusOpen, OpenedAt: &t1, TMCreate: &t1, TMUpdate: &t1},
-		{ID: id2, CustomerID: customerID, PeerType: commonaddress.TypeTel, PeerTarget: "+155****2002", ReferenceType: "call", Status: kase.StatusOpen, OpenedAt: &t2, TMCreate: &t2, TMUpdate: &t2},
-		{ID: id3, CustomerID: customerID, PeerType: commonaddress.TypeTel, PeerTarget: "+155****2003", ReferenceType: "call", Status: kase.StatusOpen, OpenedAt: &t3, TMCreate: &t3, TMUpdate: &t3},
+		{ID: id1, CustomerID: customerID, Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****2001"}, ReferenceType: "call", Status: kase.StatusOpen, OpenedAt: &t1, TMCreate: &t1, TMUpdate: &t1},
+		{ID: id2, CustomerID: customerID, Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****2002"}, ReferenceType: "call", Status: kase.StatusOpen, OpenedAt: &t2, TMCreate: &t2, TMUpdate: &t2},
+		{ID: id3, CustomerID: customerID, Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****2003"}, ReferenceType: "call", Status: kase.StatusOpen, OpenedAt: &t3, TMCreate: &t3, TMUpdate: &t3},
 	} {
 		if err := h.CaseInsert(ctx, c); err != nil {
 			t.Fatalf("CaseInsert(%s) error = %v", c.ID, err)

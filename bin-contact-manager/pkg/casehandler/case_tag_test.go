@@ -45,7 +45,7 @@ func Test_CaseTagAdd_ValidatesTagExistsThenAssigns(t *testing.T) {
 
 	c := &kase.Case{
 		ID: caseID, CustomerID: customerID,
-		PeerType: commonaddress.TypeTel, PeerTarget: "+15551110001", ReferenceType: "call",
+		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551110001"}, ReferenceType: "call",
 		Status: kase.StatusOpen, OpenedAt: &opened, TMCreate: &opened, TMUpdate: &opened,
 	}
 	if err := db.CaseInsert(ctx, c); err != nil {
@@ -90,7 +90,7 @@ func Test_CaseTagAdd_RejectsNonExistentTag(t *testing.T) {
 
 	c := &kase.Case{
 		ID: caseID, CustomerID: customerID,
-		PeerType: commonaddress.TypeTel, PeerTarget: "+15551110002", ReferenceType: "call",
+		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551110002"}, ReferenceType: "call",
 		Status: kase.StatusOpen, OpenedAt: &opened, TMCreate: &opened, TMUpdate: &opened,
 	}
 	if err := db.CaseInsert(ctx, c); err != nil {
@@ -135,7 +135,7 @@ func Test_CaseTagAdd_Idempotent_AlreadyTagged(t *testing.T) {
 
 	c := &kase.Case{
 		ID: caseID, CustomerID: customerID,
-		PeerType: commonaddress.TypeTel, PeerTarget: "+15551110007", ReferenceType: "call",
+		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551110007"}, ReferenceType: "call",
 		Status: kase.StatusOpen, OpenedAt: &opened, TMCreate: &opened, TMUpdate: &opened,
 	}
 	if err := db.CaseInsert(ctx, c); err != nil {
@@ -188,7 +188,7 @@ func Test_CaseTagRemove_DeletesAssignment(t *testing.T) {
 
 	c := &kase.Case{
 		ID: caseID, CustomerID: customerID,
-		PeerType: commonaddress.TypeTel, PeerTarget: "+15551110003", ReferenceType: "call",
+		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551110003"}, ReferenceType: "call",
 		Status: kase.StatusOpen, OpenedAt: &opened, TMCreate: &opened, TMUpdate: &opened,
 	}
 	if err := db.CaseInsert(ctx, c); err != nil {
@@ -237,7 +237,7 @@ func Test_CaseTagRemove_Idempotent_NotTagged(t *testing.T) {
 
 	c := &kase.Case{
 		ID: caseID, CustomerID: customerID,
-		PeerType: commonaddress.TypeTel, PeerTarget: "+15551110008", ReferenceType: "call",
+		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551110008"}, ReferenceType: "call",
 		Status: kase.StatusOpen, OpenedAt: &opened, TMCreate: &opened, TMUpdate: &opened,
 	}
 	if err := db.CaseInsert(ctx, c); err != nil {
@@ -285,7 +285,7 @@ func Test_CaseTagAdd_CrossTenant_MustNotAssignToOtherTenantsCase(t *testing.T) {
 
 	victimCase := &kase.Case{
 		ID: caseID, CustomerID: victimCustomerID,
-		PeerType: commonaddress.TypeTel, PeerTarget: "+15551110004", ReferenceType: "call",
+		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551110004"}, ReferenceType: "call",
 		Status: kase.StatusOpen, OpenedAt: &opened, TMCreate: &opened, TMUpdate: &opened,
 	}
 	if err := db.CaseInsert(ctx, victimCase); err != nil {

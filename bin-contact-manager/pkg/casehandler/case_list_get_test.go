@@ -42,12 +42,12 @@ func Test_CaseList_ScopesToCustomerAndAppliesFilters(t *testing.T) {
 
 	c := &kase.Case{
 		ID: caseID, CustomerID: customerID,
-		PeerType: commonaddress.TypeTel, PeerTarget: "+155****2001", ReferenceType: "call",
+		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****2001"}, ReferenceType: "call",
 		Status: kase.StatusOpen, OpenedAt: &opened, TMCreate: &opened, TMUpdate: &opened,
 	}
 	other := &kase.Case{
 		ID: otherCaseID, CustomerID: otherCustomerID,
-		PeerType: commonaddress.TypeTel, PeerTarget: "+155****2002", ReferenceType: "call",
+		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****2002"}, ReferenceType: "call",
 		Status: kase.StatusOpen, OpenedAt: &opened, TMCreate: &opened, TMUpdate: &opened,
 	}
 	if err := db.CaseInsert(ctx, c); err != nil {
@@ -96,8 +96,8 @@ func Test_CaseList_DefaultSizeAndNextToken(t *testing.T) {
 	id2 := uuid.FromStringOrNil("f1b2c3d4-9712-9712-9712-000000000012")
 
 	for _, c := range []*kase.Case{
-		{ID: id1, CustomerID: customerID, PeerType: commonaddress.TypeTel, PeerTarget: "+155****2011", ReferenceType: "call", Status: kase.StatusOpen, OpenedAt: &t1, TMCreate: &t1, TMUpdate: &t1},
-		{ID: id2, CustomerID: customerID, PeerType: commonaddress.TypeTel, PeerTarget: "+155****2012", ReferenceType: "call", Status: kase.StatusOpen, OpenedAt: &t2, TMCreate: &t2, TMUpdate: &t2},
+		{ID: id1, CustomerID: customerID, Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****2011"}, ReferenceType: "call", Status: kase.StatusOpen, OpenedAt: &t1, TMCreate: &t1, TMUpdate: &t1},
+		{ID: id2, CustomerID: customerID, Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****2012"}, ReferenceType: "call", Status: kase.StatusOpen, OpenedAt: &t2, TMCreate: &t2, TMUpdate: &t2},
 	} {
 		if err := db.CaseInsert(ctx, c); err != nil {
 			t.Fatalf("CaseInsert(%s) error = %v", c.ID, err)
@@ -152,7 +152,7 @@ func Test_CaseGet_ScopesToCustomer(t *testing.T) {
 
 	c := &kase.Case{
 		ID: caseID, CustomerID: victimCustomerID,
-		PeerType: commonaddress.TypeTel, PeerTarget: "+155****2003", ReferenceType: "call",
+		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****2003"}, ReferenceType: "call",
 		Status: kase.StatusOpen, OpenedAt: &opened, TMCreate: &opened, TMUpdate: &opened,
 	}
 	if err := db.CaseInsert(ctx, c); err != nil {

@@ -43,7 +43,7 @@ func Test_UpdateContact_Attach(t *testing.T) {
 
 	c := &kase.Case{
 		ID: caseID, CustomerID: customerID,
-		PeerType: commonaddress.TypeTel, PeerTarget: "+155****0801", ReferenceType: "call",
+		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****0801"}, ReferenceType: "call",
 		Status: kase.StatusOpen, OpenedAt: &now, TMCreate: &now, TMUpdate: &now,
 	}
 	if err := db.CaseInsert(ctx, c); err != nil {
@@ -95,7 +95,7 @@ func Test_UpdateContact_Detach(t *testing.T) {
 
 	c := &kase.Case{
 		ID: caseID, CustomerID: customerID,
-		PeerType: commonaddress.TypeTel, PeerTarget: "+155****0802", ReferenceType: "call",
+		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****0802"}, ReferenceType: "call",
 		Status: kase.StatusOpen, OpenedAt: &now, TMCreate: &now, TMUpdate: &now,
 	}
 	if err := db.CaseInsert(ctx, c); err != nil {
@@ -144,7 +144,7 @@ func Test_UpdateContact_CaseOwnershipFailure(t *testing.T) {
 
 	victimCase := &kase.Case{
 		ID: caseID, CustomerID: victimCustomerID,
-		PeerType: commonaddress.TypeTel, PeerTarget: "+155****0803", ReferenceType: "call",
+		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****0803"}, ReferenceType: "call",
 		Status: kase.StatusOpen, OpenedAt: &now, TMCreate: &now, TMUpdate: &now,
 	}
 	if err := db.CaseInsert(ctx, victimCase); err != nil {
@@ -187,7 +187,7 @@ func Test_UpdateContact_ContactNotFound(t *testing.T) {
 
 	c := &kase.Case{
 		ID: caseID, CustomerID: customerID,
-		PeerType: commonaddress.TypeTel, PeerTarget: "+155****0807", ReferenceType: "call",
+		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****0807"}, ReferenceType: "call",
 		Status: kase.StatusOpen, OpenedAt: &now, TMCreate: &now, TMUpdate: &now,
 	}
 	if err := db.CaseInsert(ctx, c); err != nil {
@@ -234,7 +234,7 @@ func Test_UpdateContact_ContactCrossTenant(t *testing.T) {
 
 	c := &kase.Case{
 		ID: caseID, CustomerID: customerID,
-		PeerType: commonaddress.TypeTel, PeerTarget: "+155****0805", ReferenceType: "call",
+		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****0805"}, ReferenceType: "call",
 		Status: kase.StatusOpen, OpenedAt: &now, TMCreate: &now, TMUpdate: &now,
 	}
 	if err := db.CaseInsert(ctx, c); err != nil {
@@ -290,7 +290,7 @@ func Test_UpdateContact_NeverUsesPublishWebhookEvent(t *testing.T) {
 
 	c := &kase.Case{
 		ID: caseID, CustomerID: customerID,
-		PeerType: commonaddress.TypeTel, PeerTarget: "+155****0806", ReferenceType: "call",
+		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****0806"}, ReferenceType: "call",
 		Status: kase.StatusOpen, OpenedAt: &now, TMCreate: &now, TMUpdate: &now,
 	}
 	if err := db.CaseInsert(ctx, c); err != nil {

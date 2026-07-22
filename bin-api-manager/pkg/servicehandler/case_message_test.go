@@ -128,7 +128,7 @@ func Test_CaseMessageSend_DestinationBindingFailure_NoContactID(t *testing.T) {
 			CustomerID: customerID,
 			Status:     cmkase.StatusOpen,
 			ContactID:  nil,
-			PeerTarget: "+15550001111",
+			Peer: commonaddress.Address{Target: "+15550001111"},
 		}, nil)
 
 	_, err := h.CaseMessageSend(ctx, a, caseID, "+15551234567", "+15559999999", "hello")
@@ -170,7 +170,7 @@ func Test_CaseMessageSend_DestinationBindingFailure_HasContactID(t *testing.T) {
 			CustomerID: customerID,
 			Status:     cmkase.StatusOpen,
 			ContactID:  &contactID,
-			PeerTarget: "+15550001111",
+			Peer: commonaddress.Address{Target: "+15550001111"},
 		}, nil)
 
 	mockReq.EXPECT().
@@ -225,7 +225,7 @@ func Test_CaseMessageSend_AntiOracle(t *testing.T) {
 			CustomerID: customerID,
 			Status:     cmkase.StatusOpen,
 			ContactID:  nil,
-			PeerTarget: "+15550001111",
+			Peer: commonaddress.Address{Target: "+15550001111"},
 		}, nil)
 	_, err1 := h.CaseMessageSend(ctx, a, caseIDNoContact, "+15551234567", "+15559999999", "hello")
 
@@ -237,7 +237,7 @@ func Test_CaseMessageSend_AntiOracle(t *testing.T) {
 			CustomerID: customerID,
 			Status:     cmkase.StatusOpen,
 			ContactID:  &contactID,
-			PeerTarget: "+15550001111",
+			Peer: commonaddress.Address{Target: "+15550001111"},
 		}, nil)
 	mockReq.EXPECT().
 		ContactV1AddressGet(ctx, contactID).
@@ -289,7 +289,7 @@ func Test_CaseMessageSend_SourceNotOwned(t *testing.T) {
 			CustomerID: customerID,
 			Status:     cmkase.StatusOpen,
 			ContactID:  nil,
-			PeerTarget: "+15559999999",
+			Peer: commonaddress.Address{Target: "+15559999999"},
 		}, nil)
 
 	mockReq.EXPECT().
@@ -347,7 +347,7 @@ func Test_CaseMessageSend_SourceFilterMismatch_WrongCustomer(t *testing.T) {
 			CustomerID: customerID,
 			Status:     cmkase.StatusOpen,
 			ContactID:  nil,
-			PeerTarget: "+15559999999",
+			Peer: commonaddress.Address{Target: "+15559999999"},
 		}, nil)
 
 	// The RPC is expected to be called with FieldCustomerID=customerID
@@ -410,8 +410,7 @@ func Test_CaseMessageSend_FailOpen(t *testing.T) {
 			CustomerID: customerID,
 			Status:     cmkase.StatusOpen,
 			ContactID:  nil,
-			PeerTarget: "+15559999999",
-			PeerType:   commonaddress.TypeTel,
+			Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15559999999"},
 		}, nil)
 
 	mockReq.EXPECT().
@@ -493,8 +492,7 @@ func Test_CaseMessageSend_HappyPath_And_CaseIDEchoRead(t *testing.T) {
 			CustomerID: customerID,
 			Status:     cmkase.StatusOpen,
 			ContactID:  nil,
-			PeerTarget: "+15559999999",
-			PeerType:   commonaddress.TypeTel,
+			Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15559999999"},
 		}, nil)
 
 	mockReq.EXPECT().
@@ -610,7 +608,7 @@ func Test_CaseMessageSend_PermissionDenied(t *testing.T) {
 			ID:         caseID,
 			CustomerID: customerID,
 			Status:     cmkase.StatusOpen,
-			PeerTarget: "+155****9999",
+			Peer: commonaddress.Address{Target: "+155****9999"},
 		}, nil)
 
 	_, err := h.CaseMessageSend(ctx, a, caseID, "+155****4567", "+155****9999", "hello")
@@ -659,8 +657,7 @@ func Test_CaseMessageSend_SelfAndPeerTypeMatch_WhatsApp(t *testing.T) {
 			CustomerID: customerID,
 			Status:     cmkase.StatusOpen,
 			ContactID:  nil,
-			PeerTarget: "whatsapp-peer-id-9999",
-			PeerType:   commonaddress.TypeWhatsApp,
+			Peer: commonaddress.Address{Type: commonaddress.TypeWhatsApp, Target: "whatsapp-peer-id-9999"},
 		}, nil)
 
 	mockReq.EXPECT().
@@ -674,7 +671,7 @@ func Test_CaseMessageSend_SelfAndPeerTypeMatch_WhatsApp(t *testing.T) {
 		Return([]nmnumber.Number{{}}, nil)
 
 	// The key assertion: BOTH self and peer addresses must carry
-	// TypeWhatsApp (matching c.PeerType), not a hardcoded TypeTel on the
+	// TypeWhatsApp (matching c.Peer.Type), not a hardcoded TypeTel on the
 	// self side. gomock's exact-match EXPECT() below fails the test if
 	// selfAddr.Type reverts to TypeTel.
 	mockReq.EXPECT().

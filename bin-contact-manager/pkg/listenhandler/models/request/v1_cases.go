@@ -90,8 +90,7 @@ type V1DataCasesGet struct {
 type V1DataCasesPost struct {
 	CustomerID    uuid.UUID             `json:"customer_id"`
 	Self          commonaddress.Address `json:"self"`
-	PeerType      commonaddress.Type    `json:"peer_type"`
-	PeerTarget    string                `json:"peer_target"`
+	Peer          commonaddress.Address `json:"peer"`
 	ReferenceType string                `json:"reference_type"`
 	Name          string                `json:"name,omitempty"`
 	Detail        string                `json:"detail,omitempty"`

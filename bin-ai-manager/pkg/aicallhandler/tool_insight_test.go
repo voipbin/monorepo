@@ -10,6 +10,7 @@ import (
 
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
+	commonaddress "monorepo/bin-common-handler/models/address"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	commonoutline "monorepo/bin-common-handler/models/outline"
@@ -67,14 +68,12 @@ func Test_toolHandleGetContactInteractions(t *testing.T) {
 				ID:         caseID,
 				CustomerID: customerID,
 				ContactID:  &contactID,
-				PeerType:   "tel",
-				PeerTarget: "+15551500001",
+				Peer: commonaddress.Address{Type: "tel", Target: "+15551500001"},
 			},
 			responseInteraction: []*cminteraction.Interaction{
 				{
 					Direction:     "incoming",
-					PeerType:      "tel",
-					PeerTarget:    "+15551500001",
+					Peer: commonaddress.Address{Type: "tel", Target: "+15551500001"},
 					ReferenceType: "conversation_message",
 					ReferenceID:   uuid.FromStringOrNil("6a1f2c10-c001-11f0-9000-000000000010"),
 					TMInteraction: timePtr(time.Date(2026, 7, 1, 0, 0, 0, 0, time.UTC)),
@@ -88,14 +87,12 @@ func Test_toolHandleGetContactInteractions(t *testing.T) {
 			responseCase: &kmkase.Case{
 				ID:         caseID,
 				CustomerID: customerID,
-				PeerType:   "tel",
-				PeerTarget: "+15551500002",
+				Peer: commonaddress.Address{Type: "tel", Target: "+15551500002"},
 			},
 			responseInteraction: []*cminteraction.Interaction{
 				{
 					Direction:     "outgoing",
-					PeerType:      "tel",
-					PeerTarget:    "+15551500002",
+					Peer: commonaddress.Address{Type: "tel", Target: "+15551500002"},
 					ReferenceType: "call",
 					ReferenceID:   uuid.FromStringOrNil("6a1f2c10-c001-11f0-9000-000000000011"),
 				},
@@ -108,8 +105,7 @@ func Test_toolHandleGetContactInteractions(t *testing.T) {
 			responseCase: &kmkase.Case{
 				ID:         caseID,
 				CustomerID: customerID,
-				PeerType:   "tel",
-				PeerTarget: "+15551500003",
+				Peer: commonaddress.Address{Type: "tel", Target: "+15551500003"},
 			},
 			responseInteraction: []*cminteraction.Interaction{},
 			expectContactFilter: false,
@@ -140,8 +136,7 @@ func Test_toolHandleGetContactInteractions(t *testing.T) {
 				ID:         caseID,
 				CustomerID: customerID,
 				ContactID:  &contactID,
-				PeerType:   "tel",
-				PeerTarget: "+15551500004",
+				Peer: commonaddress.Address{Type: "tel", Target: "+15551500004"},
 			},
 			responseListErr:     cerrors.NotFound(commonoutline.ServiceNameContactManager, "CONTACT_NOT_FOUND", "The contact was not found."),
 			expectContactFilter: true,
@@ -170,7 +165,7 @@ func Test_toolHandleGetContactInteractions(t *testing.T) {
 					).Return(tt.responseInteraction, "", tt.responseListErr)
 				} else {
 					mockReq.EXPECT().ContactV1InteractionList(
-						ctx, customerID, uint64(insightDefaultListLimit), "", string(tt.responseCase.PeerType), tt.responseCase.PeerTarget, uuid.Nil, uuid.Nil, time.Time{},
+						ctx, customerID, uint64(insightDefaultListLimit), "", string(tt.responseCase.Peer.Type), tt.responseCase.Peer.Target, uuid.Nil, uuid.Nil, time.Time{},
 					).Return(tt.responseInteraction, "", tt.responseListErr)
 				}
 			}

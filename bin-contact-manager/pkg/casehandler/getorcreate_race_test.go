@@ -48,7 +48,7 @@ func Test_GetOrCreate_InsertConflict_RetrySelectsWinner(t *testing.T) {
 
 	winner := &kase.Case{
 		ID: winnerCaseID, CustomerID: customerID,
-		PeerType: commonaddress.TypeTel, PeerTarget: "+15551160001", ReferenceType: "call",
+		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551160001"}, ReferenceType: "call",
 		Status: kase.StatusOpen, OpenedAt: &winnerOpened, TMCreate: &winnerOpened, TMUpdate: &winnerOpened,
 	}
 
@@ -68,7 +68,7 @@ func Test_GetOrCreate_InsertConflict_RetrySelectsWinner(t *testing.T) {
 	mockDB.EXPECT().CaseGetOpenByPeer(ctx, realTx, customerID, commonaddress.TypeTel, "+15551160001", "call").Return(winner, nil)
 	mockDB.EXPECT().CaseUpdateTMUpdateTx(ctx, realTx, winnerCaseID, &now).Return(nil)
 
-	res, err := h.GetOrCreate(ctx, customerID, commonaddress.Address{}, commonaddress.TypeTel, "+15551160001", "call", nil)
+	res, err := h.GetOrCreate(ctx, customerID, commonaddress.Address{}, commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551160001"}, "call", nil)
 	if err != nil {
 		t.Fatalf("GetOrCreate() error = %v", err)
 	}
@@ -122,7 +122,7 @@ func Test_GetOrCreate_InsertConflict_RaceWinnerAlsoClosedBeforeReselect(t *testi
 	mockDB.EXPECT().CaseInsertTx(ctx, realTx, gomock.Any()).Return(nil)
 	mockDB.EXPECT().CaseUpdateTMUpdateTx(ctx, realTx, secondAttemptID, &now).Return(nil)
 
-	res, err := h.GetOrCreate(ctx, customerID, commonaddress.Address{}, commonaddress.TypeTel, "+15551170001", "call", nil)
+	res, err := h.GetOrCreate(ctx, customerID, commonaddress.Address{}, commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551170001"}, "call", nil)
 	if err != nil {
 		t.Fatalf("GetOrCreate() error = %v", err)
 	}
@@ -168,7 +168,7 @@ func Test_GetOrCreate_InsertConflict_LoopExhaustion_Returns5xxSignal(t *testing.
 	mockDB.EXPECT().CaseInsertTx(ctx, realTx, gomock.Any()).Return(dbhandler.ErrDuplicate).Times(maxInsertRetries)
 	mockDB.EXPECT().CaseGetOpenByPeer(ctx, realTx, customerID, commonaddress.TypeTel, "+15551180001", "call").Return(nil, nil).Times(maxInsertRetries)
 
-	_, err = h.GetOrCreate(ctx, customerID, commonaddress.Address{}, commonaddress.TypeTel, "+15551180001", "call", nil)
+	_, err = h.GetOrCreate(ctx, customerID, commonaddress.Address{}, commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551180001"}, "call", nil)
 	if err != ErrGetOrCreateExhausted {
 		t.Errorf("expected ErrGetOrCreateExhausted, got: %v", err)
 	}

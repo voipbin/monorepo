@@ -44,7 +44,7 @@ func Test_CaseNoteCreate_NeverUsesPublishWebhookEvent(t *testing.T) {
 
 	c := &kase.Case{
 		ID: caseID, CustomerID: customerID,
-		PeerType: commonaddress.TypeTel, PeerTarget: "+155****0601", ReferenceType: "call",
+		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****0601"}, ReferenceType: "call",
 		Status: kase.StatusOpen, OpenedAt: &now, TMCreate: &now, TMUpdate: &now,
 	}
 	if err := db.CaseInsert(ctx, c); err != nil {
@@ -91,7 +91,7 @@ func Test_CaseNoteDelete_PublishesCaseNoteDeletedViaPlainEvent(t *testing.T) {
 
 	c := &kase.Case{
 		ID: caseID, CustomerID: customerID,
-		PeerType: commonaddress.TypeTel, PeerTarget: "+155****0602", ReferenceType: "call",
+		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****0602"}, ReferenceType: "call",
 		Status: kase.StatusOpen, OpenedAt: &createTime, TMCreate: &createTime, TMUpdate: &createTime,
 	}
 	if err := db.CaseInsert(ctx, c); err != nil {
@@ -146,7 +146,7 @@ func Test_CaseNoteCreate_CrossTenant_MustNotAttachToOtherTenantsCase(t *testing.
 
 	victimCase := &kase.Case{
 		ID: caseID, CustomerID: victimCustomerID,
-		PeerType: commonaddress.TypeTel, PeerTarget: "+155****0603", ReferenceType: "call",
+		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****0603"}, ReferenceType: "call",
 		Status: kase.StatusOpen, OpenedAt: &now, TMCreate: &now, TMUpdate: &now,
 	}
 	if err := db.CaseInsert(ctx, victimCase); err != nil {

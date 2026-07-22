@@ -8,6 +8,7 @@ import (
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/serviceerrors"
+	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	cminteraction "monorepo/bin-contact-manager/models/interaction"
 	cmresolution "monorepo/bin-contact-manager/models/resolution"
@@ -164,15 +165,13 @@ func Test_InteractionGet(t *testing.T) {
 				ID:         interactionID,
 				CustomerID: customerID,
 				Direction:  "incoming",
-				PeerType:   "tel",
-				PeerTarget: "+155****1111",
+				Peer: commonaddress.Address{Type: "tel", Target: "+155****1111"},
 			},
 			expectRes: &cminteraction.Interaction{
 				ID:         interactionID,
 				CustomerID: customerID,
 				Direction:  "incoming",
-				PeerType:   "tel",
-				PeerTarget: "+155****1111",
+				Peer: commonaddress.Address{Type: "tel", Target: "+155****1111"},
 			},
 			expectErr: false,
 		},
@@ -191,8 +190,7 @@ func Test_InteractionGet(t *testing.T) {
 				ID:         interactionID,
 				CustomerID: customerID,
 				Direction:  "incoming",
-				PeerType:   "tel",
-				PeerTarget: "+155****1111",
+				Peer: commonaddress.Address{Type: "tel", Target: "+155****1111"},
 			},
 			expectErr: true,
 		},

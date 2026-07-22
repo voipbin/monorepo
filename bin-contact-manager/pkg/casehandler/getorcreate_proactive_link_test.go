@@ -66,7 +66,7 @@ func Test_GetOrCreate_ProactiveLink_Found(t *testing.T) {
 		mockReq.EXPECT().ConversationV1ConversationUpdateMetadata(ctx, conversationID, cvconversation.Metadata{ContactCaseID: &newCaseID}).Return(nil, nil),
 	)
 
-	res, err := h.GetOrCreate(ctx, customerID, self, peer.Type, peer.Target, "call", nil)
+	res, err := h.GetOrCreate(ctx, customerID, self, peer, "call", nil)
 	if err != nil {
 		t.Fatalf("GetOrCreate() error = %v", err)
 	}
@@ -105,7 +105,7 @@ func Test_GetOrCreate_ProactiveLink_NotFound(t *testing.T) {
 	// No ConversationV1ConversationUpdateMetadata call expected at all --
 	// gomock fails the test if it's called without a matching EXPECT.
 
-	res, err := h.GetOrCreate(ctx, customerID, self, peer.Type, peer.Target, "call", nil)
+	res, err := h.GetOrCreate(ctx, customerID, self, peer, "call", nil)
 	if err != nil {
 		t.Fatalf("GetOrCreate() error = %v", err)
 	}
@@ -142,7 +142,7 @@ func Test_GetOrCreate_ProactiveLink_RPCFailureDoesNotFailCaseOpen(t *testing.T) 
 
 	mockReq.EXPECT().ConversationV1ConversationGetBySelfAndPeer(ctx, self, peer).Return(nil, errProactiveLinkRPCTest)
 
-	res, err := h.GetOrCreate(ctx, customerID, self, peer.Type, peer.Target, "call", nil)
+	res, err := h.GetOrCreate(ctx, customerID, self, peer, "call", nil)
 	if err != nil {
 		t.Fatalf("GetOrCreate() must succeed even if the proactive-link RPC fails, got error = %v", err)
 	}
@@ -179,7 +179,7 @@ func Test_GetOrCreate_ProactiveLink_SkippedOnCacheHitReuse(t *testing.T) {
 
 	existing := &kase.Case{
 		ID: existingCaseID, CustomerID: customerID,
-		PeerType: peer.Type, PeerTarget: peer.Target, ReferenceType: "call",
+		Peer: commonaddress.Address{Type: peer.Type, Target: peer.Target}, ReferenceType: "call",
 		Status: kase.StatusOpen, OpenedAt: &opened, TMCreate: &opened, TMUpdate: &recentUpdate,
 	}
 	if err := db.CaseInsert(ctx, existing); err != nil {
@@ -190,7 +190,7 @@ func Test_GetOrCreate_ProactiveLink_SkippedOnCacheHitReuse(t *testing.T) {
 	// No ConversationV1ConversationGetBySelfAndPeer / UpdateMetadata
 	// expected -- reuse-on-open-match must not trigger the §4.4 write.
 
-	res, err := h.GetOrCreate(ctx, customerID, self, peer.Type, peer.Target, "call", nil)
+	res, err := h.GetOrCreate(ctx, customerID, self, peer, "call", nil)
 	if err != nil {
 		t.Fatalf("GetOrCreate() error = %v", err)
 	}

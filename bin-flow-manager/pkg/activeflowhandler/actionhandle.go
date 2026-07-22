@@ -1369,8 +1369,10 @@ func (h *activeflowHandler) actionHandleCaseCreate(ctx context.Context, af *acti
 		log.WithError(errNormalize).Warnf("could not normalize peer target; using raw value. peer_type: %s", peer.Type)
 		peerTarget = peer.Target
 	}
+	peerAddr := peer
+	peerAddr.Target = peerTarget // override with the normalized value; TargetName/Name/Detail pass through unchanged
 
-	res, errCreate := h.reqHandler.ContactV1CaseCreate(ctx, af.CustomerID, self, peer.Type, peerTarget, referenceType, opt.Name, opt.Detail)
+	res, errCreate := h.reqHandler.ContactV1CaseCreate(ctx, af.CustomerID, self, peerAddr, referenceType, opt.Name, opt.Detail)
 	if errCreate != nil {
 		// Covers BOTH cerrors.AlreadyExists and cerrors.Unavailable (design
 		// VOIP-1243 §3.3/§3.5/§8). Neither is escalated, retried, or

@@ -23,8 +23,7 @@ func Test_ContactV1CaseCreate(t *testing.T) {
 
 		customerID    uuid.UUID
 		self          commonaddress.Address
-		peerType      commonaddress.Type
-		peerTarget    string
+		peer          commonaddress.Address
 		referenceType string
 		caseName      string
 		detail        string
@@ -40,8 +39,7 @@ func Test_ContactV1CaseCreate(t *testing.T) {
 
 			customerID:    uuid.FromStringOrNil("55ecfc4e-2c74-11ee-98fb-0762519529f3"),
 			self:          commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****0001"},
-			peerType:      commonaddress.TypeTel,
-			peerTarget:    "+155****0002",
+			peer:          commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****0002"},
 			referenceType: "call",
 			caseName:      "VIP escalation",
 			detail:        "customer called about billing",
@@ -52,7 +50,7 @@ func Test_ContactV1CaseCreate(t *testing.T) {
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data: []byte(
-					`{"customer_id":"55ecfc4e-2c74-11ee-98fb-0762519529f3","self":{"type":"tel","target":"+155****0001"},"peer_type":"tel","peer_target":"+155****0002","reference_type":"call","name":"VIP escalation","detail":"customer called about billing"}`,
+					`{"customer_id":"55ecfc4e-2c74-11ee-98fb-0762519529f3","self":{"type":"tel","target":"+155****0001"},"peer":{"type":"tel","target":"+155****0002"},"reference_type":"call","name":"VIP escalation","detail":"customer called about billing"}`,
 				),
 			},
 			response: &sock.Response{
@@ -79,7 +77,7 @@ func Test_ContactV1CaseCreate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.ContactV1CaseCreate(ctx, tt.customerID, tt.self, tt.peerType, tt.peerTarget, tt.referenceType, tt.caseName, tt.detail)
+			res, err := reqHandler.ContactV1CaseCreate(ctx, tt.customerID, tt.self, tt.peer, tt.referenceType, tt.caseName, tt.detail)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

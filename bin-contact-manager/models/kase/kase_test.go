@@ -31,8 +31,7 @@ func Test_Case_ConstructAndMarshal(t *testing.T) {
 		ID:         id,
 		CustomerID: customerID,
 
-		PeerType:      commonaddress.TypeTel,
-		PeerTarget:    "+15551234567",
+		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551234567"},
 		ReferenceType: "call",
 
 		ContactID: &contactID,
@@ -94,8 +93,7 @@ func Test_Case_NilOptionalFields(t *testing.T) {
 	c := &Case{
 		ID:            uuid.FromStringOrNil("f1b2c3d4-3001-3001-3001-000000000007"),
 		CustomerID:    uuid.FromStringOrNil("f1b2c3d4-3001-3001-3001-000000000008"),
-		PeerType:      commonaddress.TypeTel,
-		PeerTarget:    "+15559876543",
+		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15559876543"},
 		ReferenceType: "conversation_message",
 		Status:        StatusOpen,
 	}

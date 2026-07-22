@@ -929,7 +929,7 @@ type RequestHandler interface {
 	ContactV1ResolutionDelete(ctx context.Context, customerID uuid.UUID, interactionID, resolutionID uuid.UUID) error
 
 	// contact-manager cases (Phase 5, NOJIRA-contact-case-management)
-	ContactV1CaseCreate(ctx context.Context, customerID uuid.UUID, self commonaddress.Address, peerType commonaddress.Type, peerTarget, referenceType, name, detail string) (*cmkase.Case, error)
+	ContactV1CaseCreate(ctx context.Context, customerID uuid.UUID, self, peer commonaddress.Address, referenceType, name, detail string) (*cmkase.Case, error)
 	ContactV1CaseList(ctx context.Context, customerID uuid.UUID, status, ownerType string, ownerID uuid.UUID, contactID uuid.UUID, size uint64, token string) ([]*cmkase.Case, string, error)
 	ContactV1CaseListUnresolved(ctx context.Context, customerID uuid.UUID, size uint64, token string) ([]*cmkase.Case, string, error)
 	ContactV1CaseGet(ctx context.Context, customerID, id uuid.UUID) (*cmkase.Case, error)

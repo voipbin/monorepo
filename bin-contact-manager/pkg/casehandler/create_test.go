@@ -45,7 +45,7 @@ func Test_Create_HappyPath(t *testing.T) {
 	res, err := h.Create(
 		ctx, customerID,
 		commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****0701"},
-		commonaddress.TypeTel, "+155****9701", "call",
+		commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****9701"}, "call",
 		"VIP escalation", "customer called about billing",
 	)
 	if err != nil {
@@ -102,19 +102,18 @@ func Test_Create_DuplicateOpenPeer_TranslatesToAlreadyExists(t *testing.T) {
 	now := time.Date(2026, 7, 10, 12, 0, 0, 0, time.UTC)
 
 	self := commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****0702"}
-	peerType := commonaddress.TypeTel
-	peerTarget := "+155****9702"
+	peer := commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****9702"}
 	referenceType := "call"
 
 	mockUtil.EXPECT().UUIDCreate().Return(firstCaseID)
 	mockUtil.EXPECT().TimeNow().Return(&now)
-	if _, err := h.Create(ctx, customerID, self, peerType, peerTarget, referenceType, "", ""); err != nil {
+	if _, err := h.Create(ctx, customerID, self, peer, referenceType, "", ""); err != nil {
 		t.Fatalf("first Create() error = %v", err)
 	}
 
 	mockUtil.EXPECT().UUIDCreate().Return(secondCaseID)
 	mockUtil.EXPECT().TimeNow().Return(&now)
-	_, err := h.Create(ctx, customerID, self, peerType, peerTarget, referenceType, "", "")
+	_, err := h.Create(ctx, customerID, self, peer, referenceType, "", "")
 
 	var ve *cerrors.VoipbinError
 	if err == nil {
@@ -155,7 +154,7 @@ func Test_Create_Deadlock_TranslatesToUnavailable(t *testing.T) {
 	_, err := h.Create(
 		ctx, customerID,
 		commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****0703"},
-		commonaddress.TypeTel, "+155****9703", "call", "", "",
+		commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****9703"}, "call", "", "",
 	)
 
 	var ve *cerrors.VoipbinError

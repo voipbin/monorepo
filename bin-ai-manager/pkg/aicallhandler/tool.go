@@ -560,8 +560,10 @@ func (h *aicallHandler) toolHandleCaseCreate(ctx context.Context, c *aicall.AIca
 		log.WithError(errNormalize).Warnf("could not normalize peer target; using raw value. peer_type: %s", peer.Type)
 		peerTarget = peer.Target
 	}
+	peerAddr := peer
+	peerAddr.Target = peerTarget // override with the normalized value; TargetName/Name/Detail pass through unchanged
 
-	created, errCreate := h.reqHandler.ContactV1CaseCreate(ctx, c.CustomerID, self, peer.Type, peerTarget, referenceType, tmpOpt.Name, tmpOpt.Detail)
+	created, errCreate := h.reqHandler.ContactV1CaseCreate(ctx, c.CustomerID, self, peerAddr, referenceType, tmpOpt.Name, tmpOpt.Detail)
 	if errCreate != nil {
 		fillFailed(res, errCreate)
 		return res

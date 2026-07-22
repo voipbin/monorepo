@@ -62,14 +62,26 @@ create table contact_tag_assignments(
   primary key(contact_id, tag_id)
 );
 
+-- contact_interactions mirrors migration
+-- 2026-07-22-case-interaction-peer-local-address-json-design.md §3.2:
+-- peer/local are now JSON columns holding a full commonaddress.Address
+-- (Type/Target/...); peer_type/peer_target/local_type/local_target are
+-- STORED generated columns derived from that JSON, kept ONLY for
+-- indexing/filtering -- there is no corresponding Go struct field for
+-- them anymore (see interaction.Interaction, which has Peer/Local
+-- commonaddress.Address fields, not flat Peer/Local Type/Target
+-- fields). SQLite's json_extract/json1 stands in for MySQL's
+-- JSON_UNQUOTE(JSON_EXTRACT(...)) here.
 create table contact_interactions(
   id             binary(16)    not null,
   customer_id    binary(16)    not null,
   direction      varchar(255)  not null default '',
-  peer_type      varchar(255)  not null default '',
-  peer_target    varchar(255)  not null default '',
-  local_type     varchar(255)  not null default '',
-  local_target   varchar(255)  not null default '',
+  peer           json          not null,
+  local          json,
+  peer_type      varchar(255)  generated always as (json_extract(peer, '$.type')) stored not null,
+  peer_target    varchar(255)  generated always as (json_extract(peer, '$.target')) stored not null,
+  local_type     varchar(255)  generated always as (json_extract(local, '$.type')) stored,
+  local_target   varchar(255)  generated always as (json_extract(local, '$.target')) stored,
   reference_type varchar(255)  not null default '',
   reference_id   binary(16)    not null,
   tm_interaction datetime(6),
@@ -121,12 +133,24 @@ create index idx_contact_resolutions_case
 -- motivated the hash in production (see f718e26f2c44's docstring). Same
 -- "value only when status='open', NULL otherwise" partial-unique
 -- invariant either way.
+-- contact_cases mirrors migration
+-- 2026-07-22-case-interaction-peer-local-address-json-design.md §3.1:
+-- peer/local are now JSON columns holding a full commonaddress.Address;
+-- peer_type/peer_target/local_type/local_target are STORED generated
+-- columns derived from that JSON, kept ONLY for indexing/filtering --
+-- there is no corresponding Go struct field for them anymore (see
+-- kase.Case, which has Peer/Local commonaddress.Address fields, not
+-- flat PeerType/PeerTarget/LocalType/LocalTarget fields).
 create table contact_cases (
   id                binary(16)    not null,
   customer_id       binary(16)    not null,
 
-  peer_type         varchar(255)  not null default '',
-  peer_target       varchar(255)  not null default '',
+  peer              json          not null,
+  local             json          not null,
+  peer_type         varchar(255)  generated always as (json_extract(peer, '$.type')) stored not null,
+  peer_target       varchar(255)  generated always as (json_extract(peer, '$.target')) stored not null,
+  local_type        varchar(255)  generated always as (json_extract(local, '$.type')) stored,
+  local_target      varchar(255)  generated always as (json_extract(local, '$.target')) stored,
   reference_type    varchar(255)  not null default '',
 
   name              varchar(255)  not null default '',

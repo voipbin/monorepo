@@ -55,8 +55,7 @@ func Test_GetOrCreate_ReusesOpenCase(t *testing.T) {
 	existing := &kase.Case{
 		ID:            caseID,
 		CustomerID:    customerID,
-		PeerType:      commonaddress.TypeTel,
-		PeerTarget:    "+15551120001",
+		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551120001"},
 		ReferenceType: "call",
 		Status:        kase.StatusOpen,
 		OpenedAt:      &opened,
@@ -69,7 +68,7 @@ func Test_GetOrCreate_ReusesOpenCase(t *testing.T) {
 
 	mockUtil.EXPECT().TimeNow().Return(&now)
 
-	res, err := h.GetOrCreate(ctx, customerID, commonaddress.Address{}, commonaddress.TypeTel, "+15551120001", "call", nil)
+	res, err := h.GetOrCreate(ctx, customerID, commonaddress.Address{}, commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551120001"}, "call", nil)
 	if err != nil {
 		t.Fatalf("GetOrCreate() error = %v", err)
 	}
