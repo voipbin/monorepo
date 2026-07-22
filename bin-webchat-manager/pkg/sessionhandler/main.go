@@ -18,7 +18,7 @@ import (
 
 // SessionHandler interface
 type SessionHandler interface {
-	Create(ctx context.Context, customerID uuid.UUID, widgetID uuid.UUID, pageURL string) (*session.Session, error)
+	Create(ctx context.Context, customerID uuid.UUID, widgetID uuid.UUID, pageURL string, referrer string) (*session.Session, error)
 	Get(ctx context.Context, id uuid.UUID) (*session.Session, error)
 	List(ctx context.Context, size uint64, token string, filters map[session.Field]any) ([]*session.Session, error)
 	Delete(ctx context.Context, id uuid.UUID) (*session.Session, error)

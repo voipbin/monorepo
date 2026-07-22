@@ -30,7 +30,7 @@ func (h *listenHandler) processV1SessionsPost(ctx context.Context, m *sock.Reque
 		return simpleResponse(400), nil
 	}
 
-	tmp, err := h.sessionHandler.Create(ctx, req.CustomerID, req.WidgetID, req.PageURL)
+	tmp, err := h.sessionHandler.Create(ctx, req.CustomerID, req.WidgetID, req.PageURL, req.Referrer)
 	if err != nil {
 		log.Errorf("Could not create the session. err: %v", err)
 		return errorResponse(err), nil

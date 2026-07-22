@@ -7,6 +7,9 @@ create table webchat_sessions(
   status            varchar(16),
   activeflow_id     binary(16),
   page_url          TEXT,
+  referrer          TEXT,
+  peer              TEXT NULL,
+  local             TEXT NULL,
 
   tm_last_activity  datetime(6),
   tm_create         datetime(6),

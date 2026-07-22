@@ -65,7 +65,7 @@ func Test_Create_NoSessionFlowConfigured(t *testing.T) {
 	// SessionUpdate expected -- their absence from the mock is
 	// enforced by gomock failing on any unexpected call.
 
-	res, err := h.Create(ctx, customerID, widgetID, "")
+	res, err := h.Create(ctx, customerID, widgetID, "", "")
 	if err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
@@ -146,7 +146,62 @@ func Test_Create_SessionFlowConfigured_TriggersFlow(t *testing.T) {
 		session.FieldActiveflowID: cv.ID,
 	}).Return(nil)
 
-	res, err := h.Create(ctx, customerID, widgetID, "")
+	res, err := h.Create(ctx, customerID, widgetID, "", "")
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	if !reflect.DeepEqual(res, sess) {
+		t.Errorf("Wrong match.\nexpect: %v\ngot: %v", sess, res)
+	}
+}
+
+// Test_Create_ReferrerPeerLocal verifies referrer is passed through to
+// SessionCreate and that Peer/Local are computed with the new
+// TypeWebSession (Peer) / existing TypeWebchat (Local) types -- distinct
+// from the self/peer locals used for the ConversationV1ConversationCreateAndExecuteFlow
+// call, which remain TypeWebchat/TypeWebchat unchanged (§4.3 scope boundary).
+func Test_Create_ReferrerPeerLocal(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	customerID := uuid.FromStringOrNil("c1b2c3d4-0000-0000-0000-000000000001")
+	widgetID := uuid.FromStringOrNil("876defde-ad5e-11ed-a8c3-7bc19647b03f")
+	sessionID := uuid.FromStringOrNil("aa847807-6cc4-4713-9dec-53a42840e74c")
+	referrer := "https://example.com/prior-page"
+
+	sess := &session.Session{
+		Identity: commonidentity.Identity{ID: sessionID, CustomerID: customerID},
+		WidgetID: widgetID,
+		Status:   session.StatusActive,
+		Referrer: referrer,
+		Peer:     commonaddress.Address{Type: commonaddress.TypeWebSession, Target: sessionID.String()},
+		Local:    commonaddress.Address{Type: commonaddress.TypeWebchat, Target: widgetID.String()},
+	}
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockWidget := widgethandler.NewMockWidgetHandler(mc)
+	h := &sessionHandler{
+		utilHandler:   mockUtil,
+		db:            mockDB,
+		reqHandler:    requesthandler.NewMockRequestHandler(mc),
+		widgetHandler: mockWidget,
+	}
+	ctx := context.Background()
+
+	mockUtil.EXPECT().UUIDCreate().Return(sessionID)
+	mockDB.EXPECT().SessionCreate(ctx, &session.Session{
+		Identity: commonidentity.Identity{ID: sessionID, CustomerID: customerID},
+		WidgetID: widgetID,
+		Status:   session.StatusActive,
+		Referrer: referrer,
+		Peer:     commonaddress.Address{Type: commonaddress.TypeWebSession, Target: sessionID.String()},
+		Local:    commonaddress.Address{Type: commonaddress.TypeWebchat, Target: widgetID.String()},
+	}).Return(nil)
+	mockDB.EXPECT().SessionGet(ctx, sessionID).Return(sess, nil)
+	mockWidget.EXPECT().Get(ctx, widgetID).Return(nil, dbhandler.ErrNotFound)
+
+	res, err := h.Create(ctx, customerID, widgetID, "", referrer)
 	if err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
@@ -187,7 +242,7 @@ func Test_Create_WidgetFetchFails_SessionStillSucceeds(t *testing.T) {
 	mockDB.EXPECT().SessionGet(ctx, sessionID).Return(sess, nil)
 	mockWidget.EXPECT().Get(ctx, widgetID).Return(nil, dbhandler.ErrNotFound)
 
-	res, err := h.Create(ctx, customerID, widgetID, "")
+	res, err := h.Create(ctx, customerID, widgetID, "", "")
 	if err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
