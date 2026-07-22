@@ -192,6 +192,79 @@ func Test_validatePageURL(t *testing.T) {
 	}
 }
 
+// Test_validateReferrer verifies the referrer length cap and scheme
+// allowlist, mirroring Test_validatePageURL's cases exactly.
+func Test_validateReferrer(t *testing.T) {
+	tests := []struct {
+		name      string
+		referrer  string
+		expectErr bool
+	}{
+		{
+			name:      "empty is valid",
+			referrer:  "",
+			expectErr: false,
+		},
+		{
+			name:      "normal url is valid",
+			referrer:  "https://example.com/pricing",
+			expectErr: false,
+		},
+		{
+			name:      "exactly 2048 chars is valid",
+			referrer:  "https://example.com/" + strings.Repeat("a", 2048-len("https://example.com/")),
+			expectErr: false,
+		},
+		{
+			name:      "2049 chars is invalid",
+			referrer:  strings.Repeat("a", 2049),
+			expectErr: true,
+		},
+		{
+			name:      "javascript scheme is invalid",
+			referrer:  "javascript:alert(1)",
+			expectErr: true,
+		},
+		{
+			name:      "data scheme is invalid",
+			referrer:  "data:text/html,x",
+			expectErr: true,
+		},
+		{
+			name:      "ftp scheme is invalid",
+			referrer:  "ftp://x",
+			expectErr: true,
+		},
+		{
+			name:      "http scheme is valid",
+			referrer:  "http://x",
+			expectErr: false,
+		},
+		{
+			name:      "https scheme is valid",
+			referrer:  "https://x",
+			expectErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validateReferrer(tt.referrer)
+			if tt.expectErr {
+				if err == nil {
+					t.Errorf("Wrong match. expect: error, got: ok")
+				} else if !errors.Is(err, serviceerrors.ErrInvalidArgument) {
+					t.Errorf("Wrong match. expect: ErrInvalidArgument, got: %v", err)
+				}
+			} else {
+				if err != nil {
+					t.Errorf("Wrong match. expect: ok, got: %v", err)
+				}
+			}
+		})
+	}
+}
+
 // Test_WebchatSessionList_WidgetFilter_CrossTenant is a regression guard:
 // a caller must not be able to pass another customer's widget_id to
 // enumerate that customer's sessions, even though the caller's own

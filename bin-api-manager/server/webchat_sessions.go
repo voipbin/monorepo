@@ -95,7 +95,12 @@ func (h *server) PostWebchatSessions(c *gin.Context) {
 		pageURL = *req.PageUrl
 	}
 
-	res, err := h.serviceHandler.WebchatSessionCreate(c.Request.Context(), a, widgetID, pageURL)
+	referrer := ""
+	if req.Referrer != nil {
+		referrer = *req.Referrer
+	}
+
+	res, err := h.serviceHandler.WebchatSessionCreate(c.Request.Context(), a, widgetID, pageURL, referrer)
 	if err != nil {
 		log.Errorf("Could not create a webchat session. err: %v", err)
 		abortWithServiceError(c, err)

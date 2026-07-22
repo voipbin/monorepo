@@ -5192,8 +5192,17 @@ type WebchatManagerSession struct {
 	// Id The unique identifier of the session, and the visitor's continuity token. Returned from the `POST /sessions` or `GET /sessions` response.
 	Id string `json:"id"`
 
+	// Local Contains source or destination detail info.
+	Local *CommonAddress `json:"local,omitempty"`
+
 	// PageUrl The URL of the page the widget was embedded on when this session was created. Captured client-side from window.location.href at session-creation time; not re-captured on subsequent navigation within the same session.
 	PageUrl *string `json:"page_url,omitempty"`
+
+	// Peer Contains source or destination detail info.
+	Peer *CommonAddress `json:"peer,omitempty"`
+
+	// Referrer document.referrer at session-creation time -- the page the visitor was on immediately before arriving at the page that embeds the widget. Distinct from page_url (the page the widget is currently embedded on). Captured client-side; not re-captured on subsequent navigation within the same session.
+	Referrer *string `json:"referrer,omitempty"`
 
 	// Status The status of the session.
 	Status WebchatManagerSessionStatus `json:"status"`
@@ -7987,6 +7996,9 @@ type GetWebchatSessionsParams struct {
 type PostWebchatSessionsJSONBody struct {
 	// PageUrl The URL of the page the widget was embedded on when this session was created. Captured client-side from window.location.href at session-creation time; not re-captured on subsequent navigation within the same session.
 	PageUrl *string `json:"page_url,omitempty"`
+
+	// Referrer document.referrer at session-creation time -- the page the visitor was on immediately before arriving at the page that embeds the widget. Distinct from page_url (the page the widget is currently embedded on). Captured client-side; not re-captured on subsequent navigation within the same session.
+	Referrer *string `json:"referrer,omitempty"`
 
 	// WidgetId The widget to create the session for. Returned from the `POST /widgets` or `GET /widgets` response.
 	WidgetId string `json:"widget_id"`

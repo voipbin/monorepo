@@ -903,7 +903,7 @@ type ServiceHandler interface {
 
 	WebchatSessionGet(ctx context.Context, a *auth.AuthIdentity, sessionID uuid.UUID) (*wcsession.WebhookMessage, error)
 	WebchatSessionList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, widgetID uuid.UUID) ([]*wcsession.WebhookMessage, error)
-	WebchatSessionCreate(ctx context.Context, a *auth.AuthIdentity, widgetID uuid.UUID, pageURL string) (*wcsession.WebhookMessage, error)
+	WebchatSessionCreate(ctx context.Context, a *auth.AuthIdentity, widgetID uuid.UUID, pageURL string, referrer string) (*wcsession.WebhookMessage, error)
 	WebchatSessionDelete(ctx context.Context, a *auth.AuthIdentity, sessionID uuid.UUID) (*wcsession.WebhookMessage, error)
 	WebchatSessionEnd(ctx context.Context, a *auth.AuthIdentity, sessionID uuid.UUID) (*wcsession.WebhookMessage, error)
 
