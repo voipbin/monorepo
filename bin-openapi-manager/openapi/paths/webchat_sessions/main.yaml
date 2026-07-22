@@ -51,6 +51,11 @@ post:
               x-go-type: string
               description: "The widget to create the session for. Returned from the `POST /widgets` or `GET /widgets` response."
               example: "550e8400-e29b-41d4-a716-446655440000"
+            page_url:
+              type: string
+              maxLength: 2048
+              description: "The URL of the page the widget was embedded on when this session was created. Captured client-side from window.location.href at session-creation time; not re-captured on subsequent navigation within the same session."
+              example: "https://example.com/pricing"
           required:
             - widget_id
   responses:
