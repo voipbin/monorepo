@@ -3,6 +3,7 @@ package session
 import (
 	"time"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
@@ -27,6 +28,19 @@ type Session struct {
 	// mid-session navigation -- this is a session-creation-time fact, exactly
 	// like WidgetID.
 	PageURL string `json:"page_url,omitempty" db:"page_url"`
+
+	// Referrer is document.referrer at session-creation time -- the page the
+	// visitor was on immediately before arriving at the page that embeds the
+	// widget. Distinct from PageURL (the page the widget is currently
+	// embedded on). Best-effort/absent under the same conditions as PageURL.
+	Referrer string `json:"referrer,omitempty" db:"referrer"`
+
+	// Peer/Local mirror the pattern shipped on kase.Case/interaction.Interaction,
+	// but Peer uses the new commonaddress.TypeWebSession (not TypeWebchat), so
+	// Peer is type-distinguishable from Local. Both are ALWAYS PRESENT in JSON
+	// output (no omitempty) -- computable unconditionally at Create() time.
+	Peer  commonaddress.Address `json:"peer" db:"peer,json"`
+	Local commonaddress.Address `json:"local" db:"local,json"`
 
 	ActiveflowID uuid.UUID `json:"activeflow_id,omitempty" db:"activeflow_id,uuid"`
 

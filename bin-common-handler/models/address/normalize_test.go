@@ -64,6 +64,8 @@ func TestNormalizeTarget(t *testing.T) {
 		{"conference identity", TypeConference, "34613ee5-5456-40fe-bb3b-395254270a9d", "34613ee5-5456-40fe-bb3b-395254270a9d", nil},
 		{"extension identity", TypeExtension, "2000", "2000", nil},
 		{"none identity", TypeNone, "anything", "anything", nil},
+		{"webchat identity", TypeWebchat, "07d16b0a-302f-4db8-ae4a-a2c9a65f88b7", "07d16b0a-302f-4db8-ae4a-a2c9a65f88b7", nil},
+		{"web_session identity", TypeWebSession, "07d16b0a-302f-4db8-ae4a-a2c9a65f88b7", "07d16b0a-302f-4db8-ae4a-a2c9a65f88b7", nil},
 	}
 
 	for _, tt := range tests {

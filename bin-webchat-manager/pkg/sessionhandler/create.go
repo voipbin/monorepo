@@ -26,7 +26,7 @@ import (
 // SessionFlowID-trigger failure, must NOT fail Session creation
 // itself -- both are best-effort (the Session row is already
 // committed by the time either is attempted).
-func (h *sessionHandler) Create(ctx context.Context, customerID uuid.UUID, widgetID uuid.UUID, pageURL string) (*session.Session, error) {
+func (h *sessionHandler) Create(ctx context.Context, customerID uuid.UUID, widgetID uuid.UUID, pageURL string, referrer string) (*session.Session, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "Create",
 		"customer_id": customerID,
@@ -46,6 +46,9 @@ func (h *sessionHandler) Create(ctx context.Context, customerID uuid.UUID, widge
 		WidgetID: widgetID,
 		Status:   session.StatusActive,
 		PageURL:  pageURL,
+		Referrer: referrer,
+		Peer:     commonaddress.Address{Type: commonaddress.TypeWebSession, Target: id.String()},
+		Local:    commonaddress.Address{Type: commonaddress.TypeWebchat, Target: widgetID.String()},
 	}
 
 	if err := h.db.SessionCreate(ctx, s); err != nil {

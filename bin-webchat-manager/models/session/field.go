@@ -10,6 +10,9 @@ const (
 	FieldWidgetID Field = "widget_id"
 	FieldStatus   Field = "status"
 	FieldPageURL  Field = "page_url"
+	FieldReferrer Field = "referrer"
+	FieldPeer     Field = "peer"
+	FieldLocal    Field = "local"
 
 	FieldActiveflowID Field = "activeflow_id"
 

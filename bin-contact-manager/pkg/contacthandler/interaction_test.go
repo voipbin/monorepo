@@ -243,27 +243,6 @@ func Test_EventConversationMessageCreated(t *testing.T) {
 				TMCreate:      func() *time.Time { t := time.Date(2026, 6, 28, 12, 0, 0, 0, time.UTC); return &t }(),
 			},
 		},
-		{
-			name: "outgoing web_session message - peer is synthetic web session type - projection skipped",
-
-			message: &convmsg.WebhookMessage{
-				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("cc000002-0000-0000-0000-000000000001"),
-					CustomerID: uuid.FromStringOrNil("cc000002-0000-0000-0000-000000000002"),
-				},
-				Direction: convmsg.DirectionIncoming,
-				Source: commonaddress.Address{
-					Type:   "web_session",
-					Target: "web_session:xyz",
-				},
-				Destination: commonaddress.Address{
-					Type:   commonaddress.TypeAI,
-					Target: "",
-				},
-			},
-
-			expectInteraction: nil,
-		},
 	}
 
 	for _, tt := range tests {

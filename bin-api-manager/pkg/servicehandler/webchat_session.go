@@ -137,7 +137,7 @@ func (h *serviceHandler) WebchatSessionList(ctx context.Context, a *auth.AuthIde
 // POST /auth/boot, never by a customer-JWT-authenticated agent. Also
 // reachable by an authenticated agent/accesskey for admin-side testing,
 // mirroring aicall.go's dual-path pattern.
-func (h *serviceHandler) WebchatSessionCreate(ctx context.Context, a *auth.AuthIdentity, widgetID uuid.UUID, pageURL string) (*wcsession.WebhookMessage, error) {
+func (h *serviceHandler) WebchatSessionCreate(ctx context.Context, a *auth.AuthIdentity, widgetID uuid.UUID, pageURL string, referrer string) (*wcsession.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "WebchatSessionCreate",
 		"customer_id": a.CustomerID,
@@ -146,6 +146,11 @@ func (h *serviceHandler) WebchatSessionCreate(ctx context.Context, a *auth.AuthI
 
 	if err := validatePageURL(pageURL); err != nil {
 		log.Infof("Invalid page_url. err: %v", err)
+		return nil, err
+	}
+
+	if err := validateReferrer(referrer); err != nil {
+		log.Infof("Invalid referrer. err: %v", err)
 		return nil, err
 	}
 
@@ -209,7 +214,7 @@ func (h *serviceHandler) WebchatSessionCreate(ctx context.Context, a *auth.AuthI
 		return nil, serviceerrors.ErrPermissionDenied
 	}
 
-	tmp, err := h.reqHandler.WebchatV1SessionCreate(ctx, ownerCustomerID, widgetID, pageURL)
+	tmp, err := h.reqHandler.WebchatV1SessionCreate(ctx, ownerCustomerID, widgetID, pageURL, referrer)
 	if err != nil {
 		log.Errorf("Could not create the session. err: %v", err)
 		return nil, err
@@ -252,6 +257,26 @@ func validatePageURL(pageURL string) error {
 	}
 	if !strings.HasPrefix(pageURL, "http://") && !strings.HasPrefix(pageURL, "https://") {
 		return fmt.Errorf("%w: page_url must use the http or https scheme", serviceerrors.ErrInvalidArgument)
+	}
+	return nil
+}
+
+// validateReferrer enforces the referrer length cap and scheme allowlist,
+// mirroring validatePageURL exactly -- referrer is document.referrer
+// captured client-side at session-creation time and is reachable through
+// the same a.IsDirect() HTTP boundary as page_url (see validatePageURL's
+// doc comment), so it carries the identical javascript:/data: self-XSS
+// risk and must be rejected the same way. An empty referrer is always
+// valid -- the field is optional.
+func validateReferrer(referrer string) error {
+	if len(referrer) > 2048 {
+		return fmt.Errorf("%w: referrer exceeds maximum length of 2048 characters", serviceerrors.ErrInvalidArgument)
+	}
+	if referrer == "" {
+		return nil
+	}
+	if !strings.HasPrefix(referrer, "http://") && !strings.HasPrefix(referrer, "https://") {
+		return fmt.Errorf("%w: referrer must use the http or https scheme", serviceerrors.ErrInvalidArgument)
 	}
 	return nil
 }

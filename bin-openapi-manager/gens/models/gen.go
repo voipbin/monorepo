@@ -9789,10 +9789,21 @@ type WebchatManagerSession struct {
 	// Example: 7a1bcb1a-1b8e-4f5c-9a6d-3e2f1a0b4c5d
 	Id string `json:"id"`
 
+	// Local Contains source or destination detail info.
+	Local *CommonAddress `json:"local,omitempty"`
+
 	// PageUrl The URL of the page the widget was embedded on when this session was created. Captured client-side from window.location.href at session-creation time; not re-captured on subsequent navigation within the same session.
 	//
 	// Example: https://example.com/pricing
 	PageUrl *string `json:"page_url,omitempty"`
+
+	// Peer Contains source or destination detail info.
+	Peer *CommonAddress `json:"peer,omitempty"`
+
+	// Referrer document.referrer at session-creation time -- the page the visitor was on immediately before arriving at the page that embeds the widget. Distinct from page_url (the page the widget is currently embedded on). Captured client-side; not re-captured on subsequent navigation within the same session.
+	//
+	// Example: https://example.com/blog/some-article
+	Referrer *string `json:"referrer,omitempty"`
 
 	// Status The status of the session.
 	//
@@ -13001,6 +13012,11 @@ type PostWebchatSessionsJSONBody struct {
 	//
 	// Example: https://example.com/pricing
 	PageUrl *string `json:"page_url,omitempty"`
+
+	// Referrer document.referrer at session-creation time -- the page the visitor was on immediately before arriving at the page that embeds the widget. Distinct from page_url (the page the widget is currently embedded on). Captured client-side; not re-captured on subsequent navigation within the same session.
+	//
+	// Example: https://example.com/blog/some-article
+	Referrer *string `json:"referrer,omitempty"`
 
 	// WidgetId The widget to create the session for. Returned from the `POST /widgets` or `GET /widgets` response.
 	//
