@@ -1,6 +1,6 @@
 # bin-webchat-manager: Session PageURL/Referrer capture
 
-Status: DRAFT (round 0)
+Status: DRAFT (round 1 -- fixes round 0 review findings, see docs/plans/2026-07-22-webchat-session-page-url-referrer-design-review-round0.md)
 Author: Hermes (CPO)
 Date: 2026-07-22
 
@@ -171,9 +171,57 @@ logic needed, this is inert metadata riding alongside the existing
 `widgetID` argument through the exact same call path already handling
 agent/accesskey/direct auth branches (webchat_session.go:163-203).
 
-`bin-common-handler/pkg/requesthandler`'s `WebchatV1SessionCreate` request
-struct gains the field; mock regeneration required
-(`pkg/requesthandler` mocks) per the standard verification workflow.
+**Round 1 finding (fixed):** the RPC threading path from `bin-api-manager`
+down into `bin-webchat-manager`'s RPC-receiving layer is NOT just
+`bin-common-handler/pkg/requesthandler`'s interface signature -- there are
+two additional concrete files in that chain that the original draft
+omitted entirely (found by directly reading
+`bin-common-handler/pkg/requesthandler/webchat_session.go`,
+`bin-webchat-manager/pkg/listenhandler/v1_sessions.go`, and
+`bin-webchat-manager/pkg/listenhandler/models/request/v1_sessions.go`):
+
+```
+client.js
+  -> POST /webchat_sessions (bin-api-manager)
+  -> server/webchat_sessions.go                              [in original draft]
+  -> pkg/servicehandler/webchat_session.go, main.go            [in original draft]
+  -> bin-common-handler/pkg/requesthandler/main.go             [in original draft, interface only]
+  -> bin-common-handler/pkg/requesthandler/webchat_session.go  [NEW -- actual RPC-call implementation,
+       marshals wcrequest.V1DataSessionsPost{CustomerID, WidgetID} -- must add PageURL here]
+  -> RabbitMQ RPC ("webchat/sessions")
+  -> bin-webchat-manager/pkg/listenhandler/models/request/v1_sessions.go  [NEW -- V1DataSessionsPost struct,
+       currently ONLY CustomerID/WidgetID -- must add PageURL field]
+  -> bin-webchat-manager/pkg/listenhandler/v1_sessions.go       [NEW -- processV1SessionsPost unmarshals
+       V1DataSessionsPost then calls h.sessionHandler.Create(ctx, req.CustomerID, req.WidgetID) --
+       must become Create(ctx, req.CustomerID, req.WidgetID, req.PageURL)]
+  -> pkg/sessionhandler/main.go                                 [NEW -- SessionHandler interface's
+       Create(...) signature must gain pageURL string]
+  -> pkg/sessionhandler/mock_main.go                             [NEW -- regenerate mock for the interface change]
+  -> pkg/sessionhandler/create.go                               [in original draft]
+```
+
+Concretely, `bin-common-handler/pkg/requesthandler/webchat_session.go`'s
+`WebchatV1SessionCreate` (currently `customerID, widgetID uuid.UUID`
+params only, building `&wcrequest.V1DataSessionsPost{CustomerID:
+customerID, WidgetID: widgetID}`) gains a `pageURL string` parameter and
+adds `PageURL: pageURL` to that struct literal.
+`bin-webchat-manager/pkg/listenhandler/models/request/v1_sessions.go`'s
+`V1DataSessionsPost` (currently just `CustomerID uuid.UUID` /
+`WidgetID uuid.UUID`) gains `PageURL string \`json:"page_url,omitempty"\``.
+`bin-webchat-manager/pkg/listenhandler/v1_sessions.go`'s
+`processV1SessionsPost` (currently `h.sessionHandler.Create(ctx,
+req.CustomerID, req.WidgetID)`) becomes
+`h.sessionHandler.Create(ctx, req.CustomerID, req.WidgetID, req.PageURL)`.
+`pkg/sessionhandler/main.go`'s `SessionHandler` interface's `Create(...)`
+signature (currently `Create(ctx context.Context, customerID uuid.UUID,
+widgetID uuid.UUID) (*session.Session, error)`) gains `pageURL string`,
+and `mock_main.go` is regenerated via the file's own
+`//go:generate mockgen` directive.
+
+Without every one of these intermediate files, `page_url` never reaches
+`processV1SessionsPost`'s `json.Unmarshal` target -- the value is silently
+dropped at the RPC wire boundary even if every other layer is correctly
+wired.
 
 ### 4.5 square-admin: display
 
@@ -220,14 +268,31 @@ response field.
 ## 5. Edge cases
 
 - **`window.location.href` exceeding 2048 chars** (pathological query
-  strings): client-side truncation is NOT performed (adds complexity for
-  a vanishingly rare case); instead the OpenAPI `maxLength: 2048` combined
-  with the DB column's `VARCHAR(2048)` means an oversized value is
-  rejected by request validation at `bin-api-manager`'s Gin binding layer
-  with a 400 -- and `WebchatSessionCreate`'s caller (the visitor's own
-  browser) has no error-recovery UI for a failed session-create beyond
-  what already exists for other 400s, so this is treated as an accepted,
-  rare failure mode, not specially handled.
+  strings): **Round 1 correction** -- the original draft claimed an
+  oversized value would be rejected with a 400 by "Gin binding layer"
+  validation against the OpenAPI `maxLength: 2048` constraint. This is
+  FALSE: confirmed by reading `bin-api-manager/server/webchat_sessions.go`
+  (`PostWebchatSessions` calls only `c.BindJSON(&req)`) and searching the
+  full repo for an OpenAPI request-validation middleware (e.g.
+  `oapi-codegen`'s `nethttp-middleware`/`gin-middleware`,
+  `OapiRequestValidator`) -- none exists anywhere in `bin-api-manager`.
+  `maxLength` in the OpenAPI spec is documentation-only here; nothing
+  enforces it at runtime. Fix: add an explicit length check in
+  `pkg/servicehandler/webchat_session.go`'s `WebchatSessionCreate`,
+  mirroring the existing precedent at
+  `pkg/servicehandler/auth_delegate.go`'s `validateDelegateReason` (a
+  private `validatePageURL(pageURL string) error` returning
+  `serviceerrors`-wrapped error if `len(pageURL) > 2048`, called before
+  the `h.reqHandler.WebchatV1SessionCreate(...)` call, returning the
+  existing `serviceerrors.ErrBadRequest`-style pattern rather than a new
+  error type). An oversized value is truncated to nothing further --
+  simply rejected outright, consistent with `validateDelegateReason`'s
+  reject-don't-truncate precedent (silent truncation would let the
+  stored value silently disagree with what the visitor's browser actually
+  had, which is worse for debugging than an explicit reject). The DB
+  column (`VARCHAR(2048)`) and OpenAPI `maxLength: 2048` remain as
+  defense-in-depth/documentation, but the servicehandler check above is
+  now the actual enforcement point.
 - **`javascript:`/`data:` scheme URLs**: `window.location.href` cannot
   itself be one of these (a page can't be navigated to a `javascript:`
   URL and stay loaded), so no server-side scheme allowlist is added; this
@@ -280,25 +345,43 @@ not otherwise carry, which is why it was pursued instead.
 
 ## 7. Files touched (implementation checklist)
 
-- `monorepo-javascript/square-admin/src/webchat-widget-runtime/client.js`
-- `monorepo-javascript/square-admin/src/webchat-widget-runtime/__tests__/client.test.js`
-- `monorepo-javascript/square-admin/public/webchat-widget-runtime.bundle.js` (regenerated via `npm run build:widget`, not hand-edited)
-- `monorepo-javascript/square-admin/public/webchat-widget-runtime.esm.js` (regenerated)
-- `monorepo-javascript/square-admin/src/views/webchat_widgets/message_timeline.js`
-- `monorepo-javascript/square-admin/src/views/webchat_widgets/__tests__/message_timeline.test.js`
-- `monorepo/bin-openapi-manager/openapi/paths/webchat_sessions/main.yaml`
-- `monorepo/bin-openapi-manager/openapi/openapi.yaml` (`WebchatManagerSession` schema)
-- `monorepo/bin-api-manager/server/webchat_sessions.go`
-- `monorepo/bin-api-manager/pkg/servicehandler/main.go`
-- `monorepo/bin-api-manager/pkg/servicehandler/webchat_session.go`
-- `monorepo/bin-api-manager/pkg/servicehandler/mock_main.go` (regenerated)
-- `monorepo/bin-api-manager/docsdev/source/webchat_struct_session.rst`
-- `monorepo/bin-common-handler/pkg/requesthandler/` (WebchatV1SessionCreate signature + mock)
-- `monorepo/bin-webchat-manager/models/session/session.go`
-- `monorepo/bin-webchat-manager/models/session/field.go`
-- `monorepo/bin-webchat-manager/models/session/webhook.go`
-- `monorepo/bin-webchat-manager/pkg/sessionhandler/create.go`
-- `monorepo/bin-webchat-manager/pkg/sessionhandler/create_test.go`
-- `monorepo/bin-webchat-manager/pkg/dbhandler/session.go` (no logic change expected -- `PrepareFields`/`GetDBFields` are struct-tag-driven)
-- `monorepo/bin-webchat-manager/scripts/database_scripts_test/sessions.sql`
-- `monorepo/bin-dbscheme-manager/bin-manager/main/versions/<new>_webchat_sessions_add_column_page_url.py`
+**monorepo-javascript:**
+- `square-admin/src/webchat-widget-runtime/client.js`
+- `square-admin/src/webchat-widget-runtime/__tests__/client.test.js`
+- `square-admin/public/webchat-widget-runtime.bundle.js` (regenerated via `npm run build:widget`, not hand-edited)
+- `square-admin/public/webchat-widget-runtime.esm.js` (regenerated)
+- `square-admin/src/views/webchat_widgets/message_timeline.js`
+- `square-admin/src/views/webchat_widgets/__tests__/message_timeline.test.js`
+
+**bin-openapi-manager:**
+- `openapi/paths/webchat_sessions/main.yaml`
+- `openapi/openapi.yaml` (`WebchatManagerSession` schema)
+
+**bin-api-manager:**
+- `server/webchat_sessions.go`
+- `pkg/servicehandler/main.go` (`WebchatSessionCreate` interface signature)
+- `pkg/servicehandler/webchat_session.go` (implementation + new `validatePageURL` per §5)
+- `pkg/servicehandler/webchat_session_test.go` (new validation test cases)
+- `pkg/servicehandler/mock_main.go` (regenerated)
+- `docsdev/source/webchat_struct_session.rst`
+
+**bin-common-handler** (Round 1 addition -- see §4.4's threading-path finding):
+- `pkg/requesthandler/main.go` (`WebchatV1SessionCreate` interface signature, line 1536)
+- `pkg/requesthandler/webchat_session.go` (implementation -- builds `V1DataSessionsPost`, must add `PageURL`)
+- `pkg/requesthandler/mock_main.go` (regenerated)
+
+**bin-webchat-manager:**
+- `models/session/session.go`
+- `models/session/field.go`
+- `models/session/webhook.go`
+- `pkg/listenhandler/models/request/v1_sessions.go` (Round 1 addition -- `V1DataSessionsPost` gains `PageURL`)
+- `pkg/listenhandler/v1_sessions.go` (Round 1 addition -- `processV1SessionsPost` threads `req.PageURL` into `Create(...)`)
+- `pkg/sessionhandler/main.go` (Round 1 addition -- `SessionHandler.Create(...)` interface signature gains `pageURL string`)
+- `pkg/sessionhandler/mock_main.go` (Round 1 addition -- regenerated via the file's own `//go:generate mockgen` directive)
+- `pkg/sessionhandler/create.go`
+- `pkg/sessionhandler/create_test.go`
+- `pkg/dbhandler/session.go` (no logic change expected -- `PrepareFields`/`GetDBFields` are struct-tag-driven)
+- `scripts/database_scripts_test/sessions.sql`
+
+**bin-dbscheme-manager:**
+- `bin-manager/main/versions/<new>_webchat_sessions_add_column_page_url.py`
