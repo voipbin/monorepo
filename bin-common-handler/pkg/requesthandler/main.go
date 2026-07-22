@@ -1533,7 +1533,7 @@ type RequestHandler interface {
 	WebchatV1WidgetDirectHashRegenerate(ctx context.Context, id uuid.UUID) (*wcwidget.Widget, error)
 
 	// webchat-manager sessions
-	WebchatV1SessionCreate(ctx context.Context, customerID uuid.UUID, widgetID uuid.UUID) (*wcsession.Session, error)
+	WebchatV1SessionCreate(ctx context.Context, customerID uuid.UUID, widgetID uuid.UUID, pageURL string) (*wcsession.Session, error)
 	WebchatV1SessionGet(ctx context.Context, id uuid.UUID) (*wcsession.Session, error)
 	WebchatV1SessionList(ctx context.Context, pageToken string, pageSize uint64, filters map[wcsession.Field]any) ([]*wcsession.Session, error)
 	WebchatV1SessionDelete(ctx context.Context, id uuid.UUID) (*wcsession.Session, error)
