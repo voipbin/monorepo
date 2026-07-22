@@ -14,12 +14,13 @@ import (
 )
 
 // WebchatV1SessionCreate sends a request to webchat-manager to create a session.
-func (r *requestHandler) WebchatV1SessionCreate(ctx context.Context, customerID uuid.UUID, widgetID uuid.UUID) (*wcsession.Session, error) {
+func (r *requestHandler) WebchatV1SessionCreate(ctx context.Context, customerID uuid.UUID, widgetID uuid.UUID, pageURL string) (*wcsession.Session, error) {
 	uri := "/v1/sessions"
 
 	data := &wcrequest.V1DataSessionsPost{
 		CustomerID: customerID,
 		WidgetID:   widgetID,
+		PageURL:    pageURL,
 	}
 
 	m, err := json.Marshal(data)

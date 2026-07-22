@@ -90,7 +90,12 @@ func (h *server) PostWebchatSessions(c *gin.Context) {
 		return
 	}
 
-	res, err := h.serviceHandler.WebchatSessionCreate(c.Request.Context(), a, widgetID)
+	pageURL := ""
+	if req.PageUrl != nil {
+		pageURL = *req.PageUrl
+	}
+
+	res, err := h.serviceHandler.WebchatSessionCreate(c.Request.Context(), a, widgetID, pageURL)
 	if err != nil {
 		log.Errorf("Could not create a webchat session. err: %v", err)
 		abortWithServiceError(c, err)

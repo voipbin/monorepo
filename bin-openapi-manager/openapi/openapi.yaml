@@ -2533,6 +2533,11 @@ components:
           $ref: '#/components/schemas/WebchatManagerSessionStatus'
           description: "The status of the session."
           example: "active"
+        page_url:
+          type: string
+          maxLength: 2048
+          description: "The URL of the page the widget was embedded on when this session was created. Captured client-side from window.location.href at session-creation time; not re-captured on subsequent navigation within the same session."
+          example: "https://example.com/pricing"
         tm_last_activity:
           type: string
           format: date-time

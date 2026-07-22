@@ -15,6 +15,7 @@ type WebhookMessage struct {
 
 	WidgetID uuid.UUID `json:"widget_id"`
 	Status   Status    `json:"status"`
+	PageURL  string    `json:"page_url,omitempty"`
 
 	TMLastActivity *time.Time `json:"tm_last_activity,omitempty"`
 	TMCreate       *time.Time `json:"tm_create,omitempty"`
@@ -29,6 +30,7 @@ func (h *Session) ConvertWebhookMessage() *WebhookMessage {
 
 		WidgetID: h.WidgetID,
 		Status:   h.Status,
+		PageURL:  h.PageURL,
 
 		TMLastActivity: h.TMLastActivity,
 		TMCreate:       h.TMCreate,

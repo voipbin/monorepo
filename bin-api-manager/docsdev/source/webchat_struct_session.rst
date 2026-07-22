@@ -15,6 +15,7 @@ Session struct
         "id": "<string>",
         "customer_id": "<string>",
         "widget_id": "<string>",
+        "page_url": "<string>",
         "status": "<string>",
         "tm_last_activity": "<string>",
         "tm_create": "<string>",
@@ -25,6 +26,7 @@ Session struct
 * ``id`` (UUID): The session's unique identifier, and the visitor's continuity token for this browsing session. Returned from ``POST /webchat_sessions`` or ``GET /webchat_sessions``.
 * ``customer_id`` (UUID): The customer who owns the parent widget. Obtained from the ``id`` field of ``GET /customers``.
 * ``widget_id`` (UUID): The widget this session belongs to. Obtained from the ``id`` field of ``GET /webchat_widgets``.
+* ``page_url`` (string, optional): The URL of the page the widget was embedded on when this session was created, captured client-side from ``window.location.href`` at session-creation time. Not re-captured on subsequent navigation within the same session. Absent for sessions created via the admin/accesskey direct-create path or by pre-upgrade embed snippets.
 * ``status`` (enum string): The session's status. See :ref:`Status <webchat-struct-session-status>`.
 * ``tm_last_activity`` (string, ISO 8601): Timestamp of the most recent message on this session. Used to determine idle timeout.
 * ``tm_create`` (string, ISO 8601): Timestamp when the session was created.

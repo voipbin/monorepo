@@ -9789,6 +9789,11 @@ type WebchatManagerSession struct {
 	// Example: 7a1bcb1a-1b8e-4f5c-9a6d-3e2f1a0b4c5d
 	Id string `json:"id"`
 
+	// PageUrl The URL of the page the widget was embedded on when this session was created. Captured client-side from window.location.href at session-creation time; not re-captured on subsequent navigation within the same session.
+	//
+	// Example: https://example.com/pricing
+	PageUrl *string `json:"page_url,omitempty"`
+
 	// Status The status of the session.
 	//
 	// Example: active
@@ -12992,6 +12997,11 @@ type GetWebchatSessionsParams struct {
 
 // PostWebchatSessionsJSONBody defines parameters for PostWebchatSessions.
 type PostWebchatSessionsJSONBody struct {
+	// PageUrl The URL of the page the widget was embedded on when this session was created. Captured client-side from window.location.href at session-creation time; not re-captured on subsequent navigation within the same session.
+	//
+	// Example: https://example.com/pricing
+	PageUrl *string `json:"page_url,omitempty"`
+
 	// WidgetId The widget to create the session for. Returned from the `POST /widgets` or `GET /widgets` response.
 	//
 	// Example: 550e8400-e29b-41d4-a716-446655440000

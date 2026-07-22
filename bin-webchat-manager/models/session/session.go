@@ -19,6 +19,15 @@ type Session struct {
 	WidgetID uuid.UUID `json:"widget_id,omitempty" db:"widget_id,uuid"`
 	Status   Status    `json:"status,omitempty" db:"status"`
 
+	// PageURL is the page the widget was embedded on when this Session was
+	// created, captured client-side from window.location.href at
+	// POST /webchat_sessions time. Best-effort: absent for pre-upgrade embed
+	// snippets and for sessions created via the admin/accesskey direct-create
+	// path (no browser page exists in that path). NEVER re-captured on
+	// mid-session navigation -- this is a session-creation-time fact, exactly
+	// like WidgetID.
+	PageURL string `json:"page_url,omitempty" db:"page_url"`
+
 	ActiveflowID uuid.UUID `json:"activeflow_id,omitempty" db:"activeflow_id,uuid"`
 
 	TMLastActivity *time.Time `json:"tm_last_activity,omitempty" db:"tm_last_activity"`

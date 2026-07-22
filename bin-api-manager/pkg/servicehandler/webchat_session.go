@@ -2,6 +2,8 @@ package servicehandler
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/serviceerrors"
@@ -135,12 +137,17 @@ func (h *serviceHandler) WebchatSessionList(ctx context.Context, a *auth.AuthIde
 // POST /auth/boot, never by a customer-JWT-authenticated agent. Also
 // reachable by an authenticated agent/accesskey for admin-side testing,
 // mirroring aicall.go's dual-path pattern.
-func (h *serviceHandler) WebchatSessionCreate(ctx context.Context, a *auth.AuthIdentity, widgetID uuid.UUID) (*wcsession.WebhookMessage, error) {
+func (h *serviceHandler) WebchatSessionCreate(ctx context.Context, a *auth.AuthIdentity, widgetID uuid.UUID, pageURL string) (*wcsession.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "WebchatSessionCreate",
 		"customer_id": a.CustomerID,
 		"widget_id":   widgetID,
 	})
+
+	if err := validatePageURL(pageURL); err != nil {
+		log.Infof("Invalid page_url. err: %v", err)
+		return nil, err
+	}
 
 	// ownerCustomerID is the customer_id the created session must be
 	// tagged with, resolved to the WIDGET's actual owner in each switch
@@ -202,7 +209,7 @@ func (h *serviceHandler) WebchatSessionCreate(ctx context.Context, a *auth.AuthI
 		return nil, serviceerrors.ErrPermissionDenied
 	}
 
-	tmp, err := h.reqHandler.WebchatV1SessionCreate(ctx, ownerCustomerID, widgetID)
+	tmp, err := h.reqHandler.WebchatV1SessionCreate(ctx, ownerCustomerID, widgetID, pageURL)
 	if err != nil {
 		log.Errorf("Could not create the session. err: %v", err)
 		return nil, err
@@ -211,6 +218,42 @@ func (h *serviceHandler) WebchatSessionCreate(ctx context.Context, a *auth.AuthI
 
 	res := tmp.ConvertWebhookMessage()
 	return res, nil
+}
+
+// validatePageURL enforces the page_url length cap (mirrors
+// validateDelegateReason's reject-don't-truncate precedent in
+// auth_delegate.go) and a scheme allowlist (mirrors
+// widget.go's ThemeConfig.LogoURL https-only precedent, relaxed to also
+// allow http since a customer's own site is not guaranteed to be TLS).
+// An empty pageURL is always valid -- the field is optional (see design
+// doc §4.2).
+//
+// PR review round-1 finding (fixed): the design doc's edge-case analysis
+// (§5) argued no scheme allowlist was needed because
+// window.location.href can never itself be a javascript:/data: URL.
+// That argument only holds for the JS embed runtime's own call site --
+// it does NOT hold at this API boundary. WebchatSessionCreate's
+// a.IsDirect() branch is reachable by ANY HTTP caller holding a widget's
+// public direct-hash (see auth.md's "Service Agent Auth" / direct-scope
+// JWT flow), not only the bundled client.js -- a crafted request can set
+// page_url to "javascript:alert(1)" directly. That value would then be
+// persisted verbatim and rendered as a clickable href in
+// message_timeline.js, which does not sanitize the scheme either --
+// together an admin-facing self-XSS vector (VoIPBin admin clicking a
+// malicious "Started from" link inside their own square-admin session).
+// Rejecting non-http(s) schemes here closes it before the value is ever
+// stored.
+func validatePageURL(pageURL string) error {
+	if len(pageURL) > 2048 {
+		return fmt.Errorf("%w: page_url exceeds maximum length of 2048 characters", serviceerrors.ErrInvalidArgument)
+	}
+	if pageURL == "" {
+		return nil
+	}
+	if !strings.HasPrefix(pageURL, "http://") && !strings.HasPrefix(pageURL, "https://") {
+		return fmt.Errorf("%w: page_url must use the http or https scheme", serviceerrors.ErrInvalidArgument)
+	}
+	return nil
 }
 
 // WebchatSessionDelete sends a request to webchat-manager to delete the session.

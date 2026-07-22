@@ -2,7 +2,9 @@ package servicehandler
 
 import (
 	"context"
+	"errors"
 	"reflect"
+	"strings"
 	"testing"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -18,6 +20,7 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 )
 
 // Test_WebchatSessionList_NoFilter verifies the existing behavior is
@@ -112,6 +115,80 @@ func Test_WebchatSessionList_WidgetFilter(t *testing.T) {
 	}
 	if len(res) != 0 {
 		t.Errorf("Wrong match. expect: empty, got: %v", res)
+	}
+}
+
+// Test_validatePageURL verifies the page_url length cap: values at or
+// under 2048 characters are accepted (including the empty/optional case),
+// values over 2048 characters are rejected with ErrInvalidArgument.
+func Test_validatePageURL(t *testing.T) {
+	tests := []struct {
+		name      string
+		pageURL   string
+		expectErr bool
+	}{
+		{
+			name:      "empty is valid",
+			pageURL:   "",
+			expectErr: false,
+		},
+		{
+			name:      "normal url is valid",
+			pageURL:   "https://example.com/pricing",
+			expectErr: false,
+		},
+		{
+			name:      "exactly 2048 chars is valid",
+			pageURL:   "https://example.com/" + strings.Repeat("a", 2048-len("https://example.com/")),
+			expectErr: false,
+		},
+		{
+			name:      "2049 chars is invalid",
+			pageURL:   strings.Repeat("a", 2049),
+			expectErr: true,
+		},
+		{
+			name:      "javascript scheme is invalid",
+			pageURL:   "javascript:alert(1)",
+			expectErr: true,
+		},
+		{
+			name:      "data scheme is invalid",
+			pageURL:   "data:text/html,x",
+			expectErr: true,
+		},
+		{
+			name:      "ftp scheme is invalid",
+			pageURL:   "ftp://x",
+			expectErr: true,
+		},
+		{
+			name:      "http scheme is valid",
+			pageURL:   "http://x",
+			expectErr: false,
+		},
+		{
+			name:      "https scheme is valid",
+			pageURL:   "https://x",
+			expectErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validatePageURL(tt.pageURL)
+			if tt.expectErr {
+				if err == nil {
+					t.Errorf("Wrong match. expect: error, got: ok")
+				} else if !errors.Is(err, serviceerrors.ErrInvalidArgument) {
+					t.Errorf("Wrong match. expect: ErrInvalidArgument, got: %v", err)
+				}
+			} else {
+				if err != nil {
+					t.Errorf("Wrong match. expect: ok, got: %v", err)
+				}
+			}
+		})
 	}
 }
 
