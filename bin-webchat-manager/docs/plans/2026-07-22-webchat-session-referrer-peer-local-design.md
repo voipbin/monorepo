@@ -1,6 +1,6 @@
 # bin-webchat-manager: Session Referrer + Peer/Local address capture
 
-Status: CLOSED (rounds 0-3, 2 consecutive APPROVE) -- see Revision 1 below for a post-closure change to §4.1's type-string decision
+Status: CLOSED (rounds 0-3, 2 consecutive APPROVE) -- see §8 Revision 1 (round 1 -- fixes revision1-round0 review findings, see docs/plans/2026-07-22-webchat-session-referrer-peer-local-design-review-revision1-round0.md) for a post-closure change to §4.1's type-string decision
 Author: Hermes (CPO)
 Date: 2026-07-22
 
@@ -147,6 +147,15 @@ unmodified (they test behavior, not the internal helper names).
 ### 4.1 New `commonaddress.Type`
 
 `bin-common-handler/models/address/main.go` gains:
+
+> **[SUPERSEDED BY §8 REVISION 1]** The code snippet and rationale
+> immediately below (through the end of §4.1) reflect this design's
+> ROUND-1 decision, `"webchat_visitor"`. **That decision was reverted by
+> §8 (Revision 1): the shipped string value is `"web_session"`, not
+> `"webchat_visitor"`.** The snippet below is kept verbatim as review
+> history (it is what rounds 0-3 actually reviewed and approved), NOT as
+> the current spec. Jump to §8.3 for the authoritative, current code
+> snippet before implementing.
 
 ```go
 TypeWebSession Type = "webchat_visitor" // target is webchat-manager's Session.ID (the visitor's continuity token)
@@ -441,11 +450,16 @@ concern either.
 For audit-trail continuity, round 0 originally left three items open;
 this revision resolves them:
 
-1. **§4.1 type-string choice**: RESOLVED -- `"webchat_visitor"`, not
-   `"web_session"`. See §4.1's "Round 1 decision" note for full rationale
-   (avoids future-reader ambiguity with the three pre-existing
+1. **§4.1 type-string choice**: RESOLVED (at round 1) -- `"webchat_visitor"`,
+   not `"web_session"`. See §4.1's "Round 1 decision" note for full
+   rationale (avoids future-reader ambiguity with the three pre-existing
    `crmIneligiblePeerTypes` map entries, at zero migration cost since this
-   is a brand-new type with no existing callers).
+   is a brand-new type with no existing callers). **[SUPERSEDED BY §8
+   REVISION 1]: this round-1 resolution was itself later reverted --
+   the shipped string value is `"web_session"`. See §8.1-§8.3 for the
+   current, authoritative decision and rationale (the three map entries
+   this item worried about are deleted by §8.3, removing the premise for
+   avoiding the string).**
 2. **§4.2 justification sufficiency**: NOT further resolved -- this
    remains an honest, standing caveat rather than a blocking question.
    `Peer`/`Local`'s `Target` values genuinely carry no new information
@@ -522,13 +536,24 @@ types that `deriveEndpointsForCase`/`deriveEndpoints` derive from
 fields). No code path anywhere in the monorepo constructs a
 `commonaddress.Address` with `Type: "web_session"` today -- confirmed by
 repo-wide search for the literal string outside these three map
-definitions and their own test files (which test the map's behavior in
-the abstract, not any real call site producing that value). Webchat
+definitions and their own test files. **Round-0 revision-review finding
+(fixed): the search initially missed one additional test file**,
+`bin-contact-manager/pkg/contacthandler/interaction_test.go`'s
+`Test_EventConversationMessageCreated` (a "web_session" case at lines
+247-266, testing `EventConversationMessageCreated`'s behavior when fed a
+`Source.Type: "web_session"` webhook payload) -- this is a test
+constructing the string as INPUT to exercise the (now-to-be-deleted)
+ineligibility check, not a real production call site, so it does not
+change the "no production caller uses this type" conclusion, but it DOES
+mean this test must be updated/removed alongside the map deletion (see
+§8.4) or it fails with a gomock panic once the entry is gone. Webchat
 Conversations specifically use `TypeWebchat` for both self and peer
 (`bin-conversation-manager/pkg/conversationhandler/event_webchat.go:88-89`,
 unchanged and reconfirmed across every prior round). **The entries are
-unreachable dead code**, not a latent behavior any caller currently
-depends on -- deleting them changes zero runtime behavior today.
+unreachable dead code in production paths**, not a latent behavior any
+REAL caller currently depends on -- deleting them changes zero
+PRODUCTION runtime behavior today, but does require updating the two
+test files (§8.4) that exercise the deleted entries directly.
 
 ### 8.3 Updated spec (supersedes §4.1's text)
 
@@ -604,6 +629,22 @@ In addition to every file already listed in §5, this revision adds:
   via direct read, line 36 -- this specific test case must be removed or
   updated, since after deletion `isCRMEligiblePeer("web_session")` returns
   `true`, the opposite of what the existing assertion expects)
+- `pkg/contacthandler/interaction_test.go` (**round-0 revision-review
+  finding, added here**: `Test_EventConversationMessageCreated`'s
+  "outgoing web_session message - peer is synthetic web session type -
+  projection skipped" case, lines 247-266, constructs a webhook message
+  with `Source: commonaddress.Address{Type: "web_session", ...}` and
+  asserts `expectInteraction: nil` -- i.e. it relies on
+  `isCRMEligiblePeer("web_session")` being `false` to assert NO
+  Interaction row gets created (no `InteractionCreate` mock expectation
+  set). After §8.3's deletion, `isCRMEligiblePeer("web_session")` returns
+  `true`, so `EventConversationMessageCreated` would proceed to call
+  `h.db.InteractionCreate` -- which this test's mock has NOT configured
+  to expect, producing a gomock unexpected-call panic, not merely a wrong
+  assertion. This test case must be removed or rewritten (e.g. renamed to
+  a genuinely-ineligible type still in the map, or deleted entirely if it
+  was solely testing the now-removed synthetic-type behavior) BEFORE the
+  map-entry deletion lands, or `go test ./...` fails immediately.)
 
 ### 8.5 Review status of this revision
 
