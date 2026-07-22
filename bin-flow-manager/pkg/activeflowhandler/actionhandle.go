@@ -1262,7 +1262,6 @@ var crmIneligiblePeerTypes = map[commonaddress.Type]struct{}{
 	commonaddress.TypeConference: {},
 	commonaddress.TypeExtension:  {},
 	commonaddress.TypeSIP:        {},
-	"web_session":                {}, // synthetic type; not in commonaddress.Type enum
 }
 
 // isCRMEligiblePeer reports whether the given peer address type can ever
