@@ -46,18 +46,18 @@ func Test_CaseListUnresolved(t *testing.T) {
 	cases := []*kase.Case{
 		{
 			ID: unresolvedCaseID, CustomerID: customerID,
-			PeerType: commonaddress.TypeTel, PeerTarget: "+15551600001", ReferenceType: "call",
+			Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551600001"}, ReferenceType: "call",
 			Status: kase.StatusOpen, OpenedAt: &opened, TMCreate: &opened, TMUpdate: &opened,
 		},
 		{
 			ID: resolvedCaseID, CustomerID: customerID,
-			PeerType: commonaddress.TypeTel, PeerTarget: "+15551600002", ReferenceType: "call",
+			Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551600002"}, ReferenceType: "call",
 			ContactID: &contactID,
 			Status:    kase.StatusOpen, OpenedAt: &opened, TMCreate: &opened, TMUpdate: &opened,
 		},
 		{
 			ID: closedUnresolvedCaseID, CustomerID: customerID,
-			PeerType: commonaddress.TypeTel, PeerTarget: "+15551600003", ReferenceType: "call",
+			Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551600003"}, ReferenceType: "call",
 			Status: kase.StatusClosed, OpenedAt: &opened, ClosedAt: &closed,
 			ClosedReason: kase.ClosedReasonAgentClosed, ClosedByType: kase.ClosedByTypeAgent,
 			TMCreate: &opened, TMUpdate: &closed,

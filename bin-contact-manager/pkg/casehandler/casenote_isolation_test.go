@@ -51,7 +51,7 @@ func Test_CaseNote_NeverLeaksIntoInteractionList(t *testing.T) {
 	// list path has at least one legitimate row to return.
 	c := &kase.Case{
 		ID: caseID, CustomerID: customerID,
-		PeerType: commonaddress.TypeTel, PeerTarget: "+155****0001", ReferenceType: "call",
+		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****0001"}, ReferenceType: "call",
 		Status: kase.StatusOpen, OpenedAt: &now, TMCreate: &now, TMUpdate: &now,
 	}
 	if err := db.CaseInsert(ctx, c); err != nil {
@@ -60,8 +60,8 @@ func Test_CaseNote_NeverLeaksIntoInteractionList(t *testing.T) {
 
 	i := &interaction.Interaction{
 		ID: interactionID, CustomerID: customerID,
-		Direction: "incoming", PeerType: "tel", PeerTarget: "+155****0001",
-		LocalType: "tel", LocalTarget: "+155****9999",
+		Direction: "incoming", Peer: commonaddress.Address{Type: "tel", Target: "+155****0001"},
+		Local: commonaddress.Address{Type: "tel", Target: "+155****9999"},
 		ReferenceType: "call", ReferenceID: uuid.Must(uuid.NewV4()),
 		TMInteraction: &now, TMCreate: &now,
 	}

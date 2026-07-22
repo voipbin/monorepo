@@ -46,7 +46,7 @@ func Test_GetOrCreate_TimedOutCase_ClosesAndReopens(t *testing.T) {
 
 	stale := &kase.Case{
 		ID: staleCaseID, CustomerID: customerID,
-		PeerType: commonaddress.TypeTel, PeerTarget: "+15551140001", ReferenceType: "call",
+		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551140001"}, ReferenceType: "call",
 		Status: kase.StatusOpen, OpenedAt: &opened, TMCreate: &opened, TMUpdate: &staleUpdate,
 	}
 	if err := db.CaseInsert(ctx, stale); err != nil {
@@ -56,7 +56,7 @@ func Test_GetOrCreate_TimedOutCase_ClosesAndReopens(t *testing.T) {
 	mockUtil.EXPECT().TimeNow().Return(&now)
 	mockUtil.EXPECT().UUIDCreate().Return(newCaseID)
 
-	res, err := h.GetOrCreate(ctx, customerID, commonaddress.Address{}, commonaddress.TypeTel, "+15551140001", "call", nil)
+	res, err := h.GetOrCreate(ctx, customerID, commonaddress.Address{}, commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551140001"}, "call", nil)
 	if err != nil {
 		t.Fatalf("GetOrCreate() error = %v", err)
 	}

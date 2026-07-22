@@ -24,17 +24,24 @@ import (
 func (h *caseHandler) Create(
 	ctx context.Context,
 	customerID uuid.UUID,
-	self commonaddress.Address,
-	peerType commonaddress.Type,
-	peerTarget, referenceType, name, detail string,
+	self, peer commonaddress.Address,
+	referenceType, name, detail string,
 ) (*kase.Case, error) {
+	if peer.Type == "" || peer.Target == "" {
+		return nil, cerrors.InvalidArgument(
+			commonoutline.ServiceNameContactManager,
+			"CASE_PEER_REQUIRED",
+			"peer.type and peer.target are required and cannot be empty.",
+		)
+	}
+
 	now := h.utilHandler.TimeNow()
 
 	newCase := &kase.Case{
 		ID:             h.utilHandler.UUIDCreate(),
 		CustomerID:     customerID,
-		PeerType:       peerType,
-		PeerTarget:     peerTarget,
+		Peer:           peer,
+		Local:          self,
 		ReferenceType:  referenceType,
 		Name:           name,
 		Detail:         detail,

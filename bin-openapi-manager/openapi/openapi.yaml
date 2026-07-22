@@ -3682,22 +3682,14 @@ components:
             - incoming
             - outgoing
           example: "incoming"
-        peer_type:
-          type: string
-          description: Remote endpoint type (e.g. "tel", "email").
-          example: "tel"
-        peer_target:
-          type: string
-          description: Remote endpoint address (normalized, e.g. "+155****4567").
-          example: "+155****4567"
-        local_type:
-          type: string
-          description: Local endpoint type (e.g. "tel").
-          example: "tel"
-        local_target:
-          type: string
-          description: Local endpoint address (e.g. the DID that received the call).
-          example: "+12025550100"
+        peer:
+          allOf:
+            - $ref: '#/components/schemas/CommonAddress'
+          description: Remote endpoint (match key for read-time contact resolution).
+        local:
+          allOf:
+            - $ref: '#/components/schemas/CommonAddress'
+          description: "The customer's own endpoint (attribution: which number/account received/sent). Always present as an object; individual fields are empty for historical rows where no local endpoint was captured (see design §4.1's note on Go's omitempty semantics for this field)."
         reference_type:
           type: string
           description: Origin channel type (e.g. "call", "conversation").
@@ -3803,14 +3795,14 @@ components:
           format: uuid
           description: Unique identifier of the associated customer.
           example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
-        peer_type:
-          type: string
-          description: Remote endpoint type (e.g. "tel", "email") this case is scoped to.
-          example: "tel"
-        peer_target:
-          type: string
-          description: Remote endpoint address (normalized, e.g. "+155****4567").
-          example: "+155****4567"
+        peer:
+          allOf:
+            - $ref: '#/components/schemas/CommonAddress'
+          description: Remote party this case is scoped to.
+        local:
+          allOf:
+            - $ref: '#/components/schemas/CommonAddress'
+          description: "The customer's own endpoint (number/channel/account) this case's interactions arrived on or were placed from. Always present as an object; individual fields (type, target, etc.) are empty/absent when no local endpoint was known at case creation time (see design §4.1's note on Go's omitempty semantics for this field)."
         reference_type:
           type: string
           description: Origin channel type (e.g. "call", "conversation_message").

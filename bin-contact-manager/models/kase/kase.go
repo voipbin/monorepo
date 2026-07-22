@@ -21,11 +21,21 @@ type Case struct {
 	ID         uuid.UUID `json:"id"          db:"id,uuid"`
 	CustomerID uuid.UUID `json:"customer_id" db:"customer_id,uuid"`
 
-	// PeerType/PeerTarget identify the remote party this Case is scoped
-	// to. PeerTarget is normalized via commonaddress.NormalizeTarget --
-	// bit-identical to contact_addresses.target and interaction.peer_target.
-	PeerType   commonaddress.Type `json:"peer_type"   db:"peer_type"`
-	PeerTarget string             `json:"peer_target" db:"peer_target"`
+	// Peer is the remote party this Case is scoped to, stored as JSON.
+	// Peer.Target is normalized via commonaddress.NormalizeTarget --
+	// bit-identical to contact_addresses.target and
+	// interaction.Peer.Target. NOT NULL: every Case has a peer by
+	// construction (Create/GetOrCreate both require it).
+	Peer commonaddress.Address `json:"peer" db:"peer,json"`
+
+	// Local is the customer's own endpoint (number/channel/account) the
+	// interaction arrived on or was placed from, first captured here by
+	// this design (previously discarded -- see docs/plans/
+	// 2026-07-22-case-interaction-peer-local-address-json-design.md §1).
+	// ALWAYS PRESENT in JSON output (no `omitempty` -- see the note
+	// below); a zero Address (no local endpoint known) serializes as
+	// `"local":{}`, never an absent key.
+	Local commonaddress.Address `json:"local" db:"local,json"`
 
 	// ReferenceType reuses contact_interactions.reference_type's EXISTING
 	// stored vocabulary ("call", "conversation_message", ...) -- NOT

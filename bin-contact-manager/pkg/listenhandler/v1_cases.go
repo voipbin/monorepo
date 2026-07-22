@@ -106,7 +106,7 @@ func (h *listenHandler) processV1CasesPost(ctx context.Context, req *sock.Reques
 		return simpleResponse(400), nil
 	}
 
-	res, err := h.caseHandler.Create(ctx, body.CustomerID, body.Self, body.PeerType, body.PeerTarget, body.ReferenceType, body.Name, body.Detail)
+	res, err := h.caseHandler.Create(ctx, body.CustomerID, body.Self, body.Peer, body.ReferenceType, body.Name, body.Detail)
 	if err != nil {
 		log.Errorf("Could not create case. err: %v", err)
 		return errorResponse(err), nil

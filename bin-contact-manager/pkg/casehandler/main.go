@@ -37,7 +37,7 @@ type CaseHandler interface {
 	// Pass a zero commonaddress.Address to opt out of this optimization
 	// entirely (e.g. reference_type == "conversation_message" itself,
 	// which never triggers this write per §4.4's scope).
-	GetOrCreate(ctx context.Context, customerID uuid.UUID, self commonaddress.Address, peerType commonaddress.Type, peerTarget, referenceType string, caseIDHint *uuid.UUID) (*kase.Case, error)
+	GetOrCreate(ctx context.Context, customerID uuid.UUID, self, peer commonaddress.Address, referenceType string, caseIDHint *uuid.UUID) (*kase.Case, error)
 
 	// Close implements design §5.1: idempotent, race-tolerant close.
 	// Returns the ACTUALLY persisted closed_reason/closed_by, never the
@@ -106,7 +106,7 @@ type CaseHandler interface {
 	// primitive and translates its sentinel errors
 	// (dbhandler.ErrDuplicate / dbhandler.ErrDeadlock) into typed
 	// cerrors.AlreadyExists / cerrors.Unavailable respectively.
-	Create(ctx context.Context, customerID uuid.UUID, self commonaddress.Address, peerType commonaddress.Type, peerTarget, referenceType, name, detail string) (*kase.Case, error)
+	Create(ctx context.Context, customerID uuid.UUID, self, peer commonaddress.Address, referenceType, name, detail string) (*kase.Case, error)
 }
 
 type caseHandler struct {

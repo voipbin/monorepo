@@ -42,7 +42,7 @@ func Test_GetOrCreate_ValidHint_UsesIt(t *testing.T) {
 
 	hinted := &kase.Case{
 		ID: hintedCaseID, CustomerID: customerID,
-		PeerType: commonaddress.TypeTel, PeerTarget: "+15551130001", ReferenceType: "conversation_message",
+		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551130001"}, ReferenceType: "conversation_message",
 		Status: kase.StatusOpen, OpenedAt: &opened, TMCreate: &opened, TMUpdate: &opened,
 	}
 	if err := db.CaseInsert(ctx, hinted); err != nil {
@@ -55,7 +55,7 @@ func Test_GetOrCreate_ValidHint_UsesIt(t *testing.T) {
 	// short-circuits peer matching entirely (if it fell through to peer
 	// matching, no open case would be found for this peer and a NEW case
 	// would be inserted instead of reusing hintedCaseID).
-	res, err := h.GetOrCreate(ctx, customerID, commonaddress.Address{}, commonaddress.TypeTel, "+19999999999", "call", &hintedCaseID)
+	res, err := h.GetOrCreate(ctx, customerID, commonaddress.Address{}, commonaddress.Address{Type: commonaddress.TypeTel, Target: "+19999999999"}, "call", &hintedCaseID)
 	if err != nil {
 		t.Fatalf("GetOrCreate() error = %v", err)
 	}
@@ -86,7 +86,7 @@ func Test_GetOrCreate_StaleHint_FallsThrough(t *testing.T) {
 				opened := now.Add(-30 * time.Minute)
 				c := &kase.Case{
 					ID: wrongTenantCaseID, CustomerID: otherTenant,
-					PeerType: commonaddress.TypeTel, PeerTarget: "+15551139999", ReferenceType: "call",
+					Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551139999"}, ReferenceType: "call",
 					Status: kase.StatusOpen, OpenedAt: &opened, TMCreate: &opened, TMUpdate: &opened,
 				}
 				if err := db.CaseInsert(ctx, c); err != nil {
@@ -104,7 +104,7 @@ func Test_GetOrCreate_StaleHint_FallsThrough(t *testing.T) {
 				closedAt := now.Add(-1 * time.Hour)
 				c := &kase.Case{
 					ID: closedCaseID, CustomerID: ownTenant,
-					PeerType: commonaddress.TypeTel, PeerTarget: "+15551130098", ReferenceType: "call",
+					Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551130098"}, ReferenceType: "call",
 					Status: kase.StatusClosed, OpenedAt: &opened, ClosedAt: &closedAt,
 					ClosedReason: kase.ClosedReasonAgentClosed, TMCreate: &opened, TMUpdate: &closedAt,
 				}
@@ -146,7 +146,7 @@ func Test_GetOrCreate_StaleHint_FallsThrough(t *testing.T) {
 
 			// No open case exists for this peer -> falls through to a
 			// fresh insert, proving the hint was NOT trusted.
-			res, err := h.GetOrCreate(ctx, customerID, commonaddress.Address{}, commonaddress.TypeTel, tt.peerTarget, "call", hint)
+			res, err := h.GetOrCreate(ctx, customerID, commonaddress.Address{}, commonaddress.Address{Type: commonaddress.TypeTel, Target: tt.peerTarget}, "call", hint)
 			if err != nil {
 				t.Fatalf("GetOrCreate() error = %v", err)
 			}
@@ -156,8 +156,8 @@ func Test_GetOrCreate_StaleHint_FallsThrough(t *testing.T) {
 			if hint != nil && res.ID == *hint {
 				t.Errorf("must NOT have used the invalid hint case %s", *hint)
 			}
-			if res.PeerTarget != tt.peerTarget {
-				t.Errorf("expected fresh case scoped to the real peer, got peer_target: %s", res.PeerTarget)
+			if res.Peer.Target != tt.peerTarget {
+				t.Errorf("expected fresh case scoped to the real peer, got peer_target: %s", res.Peer.Target)
 			}
 		})
 	}

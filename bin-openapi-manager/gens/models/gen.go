@@ -6104,6 +6104,9 @@ type ContactManagerCase struct {
 	// Example: 550e8400-e29b-41d4-a716-446655440000
 	Id *openapi_types.UUID `json:"id,omitempty"`
 
+	// Local The customer's own endpoint (number/channel/account) this case's interactions arrived on or were placed from. Always present as an object; individual fields (type, target, etc.) are empty/absent when no local endpoint was known at case creation time (see design §4.1's note on Go's omitempty semantics for this field).
+	Local *CommonAddress `json:"local,omitempty"`
+
 	// Name Optional freeform case name/title, settable only at creation time.
 	//
 	// Example: Billing dispute follow-up
@@ -6124,15 +6127,8 @@ type ContactManagerCase struct {
 	// Example: agent
 	OwnerType *string `json:"owner_type,omitempty"`
 
-	// PeerTarget Remote endpoint address (normalized, e.g. "+155****4567").
-	//
-	// Example: +155****4567
-	PeerTarget *string `json:"peer_target,omitempty"`
-
-	// PeerType Remote endpoint type (e.g. "tel", "email") this case is scoped to.
-	//
-	// Example: tel
-	PeerType *string `json:"peer_type,omitempty"`
+	// Peer Remote party this case is scoped to.
+	Peer *CommonAddress `json:"peer,omitempty"`
 
 	// PreviousCaseId ID of the prior (now-closed) case this case continues from, if any.
 	//
@@ -6338,25 +6334,11 @@ type ContactManagerInteraction struct {
 	// Example: 550e8400-e29b-41d4-a716-446655440000
 	Id *openapi_types.UUID `json:"id,omitempty"`
 
-	// LocalTarget Local endpoint address (e.g. the DID that received the call).
-	//
-	// Example: +12025550100
-	LocalTarget *string `json:"local_target,omitempty"`
+	// Local The customer's own endpoint (attribution: which number/account received/sent). Always present as an object; individual fields are empty for historical rows where no local endpoint was captured (see design §4.1's note on Go's omitempty semantics for this field).
+	Local *CommonAddress `json:"local,omitempty"`
 
-	// LocalType Local endpoint type (e.g. "tel").
-	//
-	// Example: tel
-	LocalType *string `json:"local_type,omitempty"`
-
-	// PeerTarget Remote endpoint address (normalized, e.g. "+155****4567").
-	//
-	// Example: +155****4567
-	PeerTarget *string `json:"peer_target,omitempty"`
-
-	// PeerType Remote endpoint type (e.g. "tel", "email").
-	//
-	// Example: tel
-	PeerType *string `json:"peer_type,omitempty"`
+	// Peer Remote endpoint (match key for read-time contact resolution).
+	Peer *CommonAddress `json:"peer,omitempty"`
 
 	// ReferenceId ID of the origin channel record (call_id or conversation_id).
 	//

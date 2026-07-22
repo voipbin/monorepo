@@ -41,7 +41,7 @@ func Test_Close_FirstCallSucceeds(t *testing.T) {
 
 	c := &kase.Case{
 		ID: caseID, CustomerID: customerID,
-		PeerType: commonaddress.TypeTel, PeerTarget: "+15551300001", ReferenceType: "call",
+		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551300001"}, ReferenceType: "call",
 		Status: kase.StatusOpen, OpenedAt: &opened, TMCreate: &opened, TMUpdate: &opened,
 	}
 	if err := db.CaseInsert(ctx, c); err != nil {
@@ -96,7 +96,7 @@ func Test_Close_DoubleClose_ReturnsTruthfulPersistedState(t *testing.T) {
 
 	c := &kase.Case{
 		ID: caseID, CustomerID: customerID,
-		PeerType: commonaddress.TypeTel, PeerTarget: "+15551300002", ReferenceType: "call",
+		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551300002"}, ReferenceType: "call",
 		Status: kase.StatusOpen, OpenedAt: &opened, TMCreate: &opened, TMUpdate: &opened,
 	}
 	if err := db.CaseInsert(ctx, c); err != nil {
@@ -187,7 +187,7 @@ func Test_Close_CrossTenant_MustNotMutateOtherTenantsCase(t *testing.T) {
 
 	victimCase := &kase.Case{
 		ID: caseID, CustomerID: victimCustomerID,
-		PeerType: commonaddress.TypeTel, PeerTarget: "+155****0004", ReferenceType: "call",
+		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****0004"}, ReferenceType: "call",
 		Status: kase.StatusOpen, OpenedAt: &opened, TMCreate: &opened, TMUpdate: &opened,
 	}
 	if err := db.CaseInsert(ctx, victimCase); err != nil {

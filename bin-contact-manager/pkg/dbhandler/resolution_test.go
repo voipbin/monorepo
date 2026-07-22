@@ -11,6 +11,7 @@ import (
 	"go.uber.org/mock/gomock"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-contact-manager/models/contact"
 	"monorepo/bin-contact-manager/models/interaction"
 	"monorepo/bin-contact-manager/models/resolution"
@@ -51,10 +52,8 @@ func seedResolutionParents(
 		ID:            interactionID,
 		CustomerID:    customerID,
 		Direction:     "incoming",
-		PeerType:      "tel",
-		PeerTarget:    "+155****0001",
-		LocalType:     "tel",
-		LocalTarget:   "+155****0001",
+		Peer: commonaddress.Address{Type: "tel", Target: "+155****0001"},
+		Local: commonaddress.Address{Type: "tel", Target: "+155****0001"},
 		ReferenceType: "call",
 		ReferenceID:   uuid.FromStringOrNil("f1b2c3d4-ffff-ffff-ffff-000000000001"),
 		TMCreate:      timePtr(time.Date(2026, 6, 28, 9, 0, 0, 0, time.UTC)),

@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -178,7 +179,7 @@ func Test_interactionListByContact_BoundsComposition_STEP1STEP2Wiring(t *testing
 	interactionID := uuid.FromStringOrNil("f1b2c3d4-9002-9002-9002-000000000011")
 	mockDB.EXPECT().InteractionListByOwnershipPeriods(ctx, customerID, interactionInternalCap, "", "", "", wantBounds, time.Time{}).
 		Return([]*interaction.Interaction{
-			{ID: interactionID, CustomerID: customerID, PeerType: "tel", PeerTarget: "+15559991001"},
+			{ID: interactionID, CustomerID: customerID, Peer: commonaddress.Address{Type: "tel", Target: "+15559991001"}},
 		}, nil)
 
 	mockDB.EXPECT().ResolutionListByContact(ctx, customerID, contactID).Return(nil, nil)

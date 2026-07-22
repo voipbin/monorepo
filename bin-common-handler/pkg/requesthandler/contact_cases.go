@@ -27,16 +27,15 @@ func (r *requestHandler) ContactV1CaseCreate(
 	ctx context.Context,
 	customerID uuid.UUID,
 	self commonaddress.Address,
-	peerType commonaddress.Type,
-	peerTarget, referenceType, name, detail string,
+	peer commonaddress.Address,
+	referenceType, name, detail string,
 ) (*cmkase.Case, error) {
 	uri := "/v1/cases"
 
 	data := &cmrequest.V1DataCasesPost{
 		CustomerID:    customerID,
 		Self:          self,
-		PeerType:      peerType,
-		PeerTarget:    peerTarget,
+		Peer:          peer,
 		ReferenceType: referenceType,
 		Name:          name,
 		Detail:        detail,

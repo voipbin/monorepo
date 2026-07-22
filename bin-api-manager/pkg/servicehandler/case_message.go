@@ -16,8 +16,8 @@ import (
 	nmnumber "monorepo/bin-number-manager/models/number"
 )
 
-// caseMessagePeerTypeToConversationType maps a Case's PeerType (design
-// §3.1, commonaddress.Type -- the vocabulary Case.PeerType is stored in)
+// caseMessagePeerTypeToConversationType maps a Case's Peer.Type (design
+// §3.1, commonaddress.Type -- the vocabulary Case.Peer.Type is stored in)
 // to the conversation Type ConversationV1ConversationGetOrCreateBySelfAndPeer
 // expects (design §4.5 step 1 / round-12 correction). Only the address
 // types that are actually reachable through a Case today are mapped;
@@ -118,7 +118,7 @@ func (h *serviceHandler) CaseMessageSend(
 			return nil, serviceerrors.ErrCaseDestinationNotAssociated
 		}
 	} else {
-		if destination != c.PeerTarget {
+		if destination != c.Peer.Target {
 			return nil, serviceerrors.ErrCaseDestinationNotAssociated
 		}
 	}
@@ -155,7 +155,7 @@ func (h *serviceHandler) CaseMessageSend(
 	}
 
 	// Step 4: resolve conversationID via get-or-create. self and peer must
-	// use the SAME address Type (c.PeerType) -- conversation-manager's own
+	// use the SAME address Type (c.Peer.Type) -- conversation-manager's own
 	// self/peer construction always matches both sides to the channel type
 	// (e.g. bin-conversation-manager/pkg/whatsapphandler/hook.go), and
 	// ConversationGetBySelfAndPeer's lookup matches on self.type/peer.type
@@ -163,14 +163,14 @@ func (h *serviceHandler) CaseMessageSend(
 	// conversation for non-tel channels and would create a spurious
 	// duplicate (with its own conversation_created webhook) on every send.
 	selfAddr := commonaddress.Address{
-		Type:   c.PeerType,
+		Type:   c.Peer.Type,
 		Target: source,
 	}
 	peerAddr := commonaddress.Address{
-		Type:   c.PeerType,
+		Type:   c.Peer.Type,
 		Target: destination,
 	}
-	conversationType := caseMessagePeerTypeToConversationType(c.PeerType)
+	conversationType := caseMessagePeerTypeToConversationType(c.Peer.Type)
 
 	conv, err := h.reqHandler.ConversationV1ConversationGetOrCreateBySelfAndPeer(ctx, c.CustomerID, conversationType, "", selfAddr, peerAddr)
 	if err != nil {
