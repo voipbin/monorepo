@@ -1,6 +1,6 @@
 # bin-webchat-manager: Session PageURL/Referrer capture
 
-Status: DRAFT (round 1 -- fixes round 0 review findings, see docs/plans/2026-07-22-webchat-session-page-url-referrer-design-review-round0.md)
+Status: DRAFT (round 2 -- fixes round 1 review finding, see docs/plans/2026-07-22-webchat-session-page-url-referrer-design-review-round1.md)
 Author: Hermes (CPO)
 Date: 2026-07-22
 
@@ -277,15 +277,24 @@ response field.
   `oapi-codegen`'s `nethttp-middleware`/`gin-middleware`,
   `OapiRequestValidator`) -- none exists anywhere in `bin-api-manager`.
   `maxLength` in the OpenAPI spec is documentation-only here; nothing
-  enforces it at runtime. Fix: add an explicit length check in
-  `pkg/servicehandler/webchat_session.go`'s `WebchatSessionCreate`,
-  mirroring the existing precedent at
+  enforces it at runtime.
+
+  Fix: add an explicit length check in `pkg/servicehandler/webchat_session.go`'s
+  `WebchatSessionCreate`, mirroring the existing precedent at
   `pkg/servicehandler/auth_delegate.go`'s `validateDelegateReason` (a
   private `validatePageURL(pageURL string) error` returning
-  `serviceerrors`-wrapped error if `len(pageURL) > 2048`, called before
-  the `h.reqHandler.WebchatV1SessionCreate(...)` call, returning the
-  existing `serviceerrors.ErrBadRequest`-style pattern rather than a new
-  error type). An oversized value is truncated to nothing further --
+  `serviceerrors.ErrInvalidArgument` if `len(pageURL) > 2048`).
+  **Round 2 correction:** confirmed against
+  `bin-api-manager/pkg/serviceerrors/sentinels.go` that the correct
+  sentinel is `ErrInvalidArgument = stderrors.New("invalid argument")` --
+  this is the SAME sentinel `validateDelegateReason` itself returns
+  (`auth_delegate.go`'s error messages use plain `fmt.Errorf`, but the
+  caller-facing wrap at the `servicehandler` boundary is
+  `ErrInvalidArgument`); an earlier draft of this section incorrectly
+  named a nonexistent `ErrBadRequest` symbol. The check is called before
+  the `h.reqHandler.WebchatV1SessionCreate(...)` call, returning
+  `serviceerrors.ErrInvalidArgument` rather than inventing a new error
+  type. An oversized value is truncated to nothing further --
   simply rejected outright, consistent with `validateDelegateReason`'s
   reject-don't-truncate precedent (silent truncation would let the
   stored value silently disagree with what the visitor's browser actually
