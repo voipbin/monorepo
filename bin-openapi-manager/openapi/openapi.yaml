@@ -2538,6 +2538,17 @@ components:
           maxLength: 2048
           description: "The URL of the page the widget was embedded on when this session was created. Captured client-side from window.location.href at session-creation time; not re-captured on subsequent navigation within the same session."
           example: "https://example.com/pricing"
+        referrer:
+          type: string
+          maxLength: 2048
+          description: "document.referrer at session-creation time -- the page the visitor was on immediately before arriving at the page that embeds the widget. Distinct from page_url (the page the widget is currently embedded on). Captured client-side; not re-captured on subsequent navigation within the same session."
+          example: "https://example.com/blog/some-article"
+        peer:
+          $ref: '#/components/schemas/CommonAddress'
+          description: "The visitor's own address for this session. type is always \"web_session\", target is this session's own id."
+        local:
+          $ref: '#/components/schemas/CommonAddress'
+          description: "The widget-channel address this session belongs to. type is always \"webchat\", target is the session's widget_id."
         tm_last_activity:
           type: string
           format: date-time
