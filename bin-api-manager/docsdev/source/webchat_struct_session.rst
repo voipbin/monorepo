@@ -31,8 +31,8 @@ Session struct
 * ``widget_id`` (UUID): The widget this session belongs to. Obtained from the ``id`` field of ``GET /webchat_widgets``.
 * ``page_url`` (string, optional): The URL of the page the widget was embedded on when this session was created, captured client-side from ``window.location.href`` at session-creation time. Not re-captured on subsequent navigation within the same session. Absent for sessions created via the admin/accesskey direct-create path or by pre-upgrade embed snippets.
 * ``referrer`` (string, optional): The value of ``document.referrer`` captured client-side at session-creation time -- the URL of the page that linked to (or otherwise led to) the page the widget was embedded on. Same optionality and capture semantics as ``page_url``. Absent for sessions created via the admin/accesskey direct-create path or by pre-upgrade embed snippets.
-* ``peer`` (:ref:`Address <common-struct-address>`): The visitor's address as observed by the server (remote IP/port) at session-creation time.
-* ``local`` (:ref:`Address <common-struct-address>`): The server-side address (local IP/port) that accepted the session-creation request.
+* ``peer`` (:ref:`Address <common-struct-address>`): The visitor's synthetic address for this session. ``type`` is always ``web_session`` and ``target`` is this session's own ``id`` -- it identifies the visitor's side of the webchat interaction, not a network endpoint.
+* ``local`` (:ref:`Address <common-struct-address>`): The widget's synthetic address for this session. ``type`` is always ``webchat`` and ``target`` is this session's ``widget_id`` -- it identifies the widget side of the interaction, not a network endpoint.
 * ``status`` (enum string): The session's status. See :ref:`Status <webchat-struct-session-status>`.
 * ``tm_last_activity`` (string, ISO 8601): Timestamp of the most recent message on this session. Used to determine idle timeout.
 * ``tm_create`` (string, ISO 8601): Timestamp when the session was created.
