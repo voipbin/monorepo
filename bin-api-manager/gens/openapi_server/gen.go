@@ -5192,6 +5192,9 @@ type WebchatManagerSession struct {
 	// Id The unique identifier of the session, and the visitor's continuity token. Returned from the `POST /sessions` or `GET /sessions` response.
 	Id string `json:"id"`
 
+	// PageUrl The URL of the page the widget was embedded on when this session was created. Captured client-side from window.location.href at session-creation time; not re-captured on subsequent navigation within the same session.
+	PageUrl *string `json:"page_url,omitempty"`
+
 	// Status The status of the session.
 	Status WebchatManagerSessionStatus `json:"status"`
 
@@ -7982,6 +7985,9 @@ type GetWebchatSessionsParams struct {
 
 // PostWebchatSessionsJSONBody defines parameters for PostWebchatSessions.
 type PostWebchatSessionsJSONBody struct {
+	// PageUrl The URL of the page the widget was embedded on when this session was created. Captured client-side from window.location.href at session-creation time; not re-captured on subsequent navigation within the same session.
+	PageUrl *string `json:"page_url,omitempty"`
+
 	// WidgetId The widget to create the session for. Returned from the `POST /widgets` or `GET /widgets` response.
 	WidgetId string `json:"widget_id"`
 }

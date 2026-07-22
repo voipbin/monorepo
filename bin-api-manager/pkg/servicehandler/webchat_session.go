@@ -2,6 +2,7 @@ package servicehandler
 
 import (
 	"context"
+	"fmt"
 
 	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/serviceerrors"
@@ -135,12 +136,17 @@ func (h *serviceHandler) WebchatSessionList(ctx context.Context, a *auth.AuthIde
 // POST /auth/boot, never by a customer-JWT-authenticated agent. Also
 // reachable by an authenticated agent/accesskey for admin-side testing,
 // mirroring aicall.go's dual-path pattern.
-func (h *serviceHandler) WebchatSessionCreate(ctx context.Context, a *auth.AuthIdentity, widgetID uuid.UUID) (*wcsession.WebhookMessage, error) {
+func (h *serviceHandler) WebchatSessionCreate(ctx context.Context, a *auth.AuthIdentity, widgetID uuid.UUID, pageURL string) (*wcsession.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "WebchatSessionCreate",
 		"customer_id": a.CustomerID,
 		"widget_id":   widgetID,
 	})
+
+	if err := validatePageURL(pageURL); err != nil {
+		log.Infof("Invalid page_url. err: %v", err)
+		return nil, err
+	}
 
 	// ownerCustomerID is the customer_id the created session must be
 	// tagged with, resolved to the WIDGET's actual owner in each switch
@@ -202,7 +208,7 @@ func (h *serviceHandler) WebchatSessionCreate(ctx context.Context, a *auth.AuthI
 		return nil, serviceerrors.ErrPermissionDenied
 	}
 
-	tmp, err := h.reqHandler.WebchatV1SessionCreate(ctx, ownerCustomerID, widgetID)
+	tmp, err := h.reqHandler.WebchatV1SessionCreate(ctx, ownerCustomerID, widgetID, pageURL)
 	if err != nil {
 		log.Errorf("Could not create the session. err: %v", err)
 		return nil, err
@@ -211,6 +217,18 @@ func (h *serviceHandler) WebchatSessionCreate(ctx context.Context, a *auth.AuthI
 
 	res := tmp.ConvertWebhookMessage()
 	return res, nil
+}
+
+// validatePageURL enforces the page_url length cap (mirrors
+// validateDelegateReason's reject-don't-truncate precedent in
+// auth_delegate.go). An empty pageURL is always valid -- the field is
+// optional (see design doc §4.2); this only rejects a pathologically
+// oversized value.
+func validatePageURL(pageURL string) error {
+	if len(pageURL) > 2048 {
+		return fmt.Errorf("%w: page_url exceeds maximum length of 2048 characters", serviceerrors.ErrInvalidArgument)
+	}
+	return nil
 }
 
 // WebchatSessionDelete sends a request to webchat-manager to delete the session.
