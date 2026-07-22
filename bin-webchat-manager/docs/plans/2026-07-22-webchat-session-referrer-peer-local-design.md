@@ -1,6 +1,6 @@
 # bin-webchat-manager: Session Referrer + Peer/Local address capture
 
-Status: DRAFT (round 1 -- resolves round 0 review findings, see docs/plans/2026-07-22-webchat-session-referrer-peer-local-design-review-round0.md)
+Status: DRAFT (round 2 -- fixes round 1 review finding, see docs/plans/2026-07-22-webchat-session-referrer-peer-local-design-review-round1.md)
 Author: Hermes (CPO)
 Date: 2026-07-22
 
@@ -224,12 +224,12 @@ Local commonaddress.Address `json:"local" db:"local,json"` // {Type: TypeWebchat
 This does NOT add new information content in the strict sense either --
 `Peer.Target` is still the row's own ID, `Local.Target` is still a copy of
 `WidgetID`. What changes is that **Peer is now type-distinguishable from
-Local** (`web_session` vs `webchat`), which matters for exactly one
+Local** (`webchat_visitor` vs `webchat`), which matters for exactly one
 concrete consumer: **a future cross-channel Peer/Local rendering
 component** (as originally floated in the very first exchange on this
 topic) that dispatches on `Address.Type` to decide how to render/label an
 address (e.g. `tel` -> phone icon, `email` -> envelope icon,
-`web_session` -> "Web visitor" label, vs. today where `webchat`-typed
+`webchat_visitor` -> "Web visitor" label, vs. today where `webchat`-typed
 Local/Peer are visually indistinguishable from each other without also
 inspecting which field they came from). This is a real, if narrow,
 benefit: format consistency across Voice/SMS/Email/Chat becomes
