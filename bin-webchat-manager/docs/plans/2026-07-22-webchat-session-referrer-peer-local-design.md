@@ -1,6 +1,6 @@
 # bin-webchat-manager: Session Referrer + Peer/Local address capture
 
-Status: DRAFT (round 2 -- fixes round 1 review finding, see docs/plans/2026-07-22-webchat-session-referrer-peer-local-design-review-round1.md)
+Status: CLOSED (rounds 0-3, 2 consecutive APPROVE) -- see Revision 1 below for a post-closure change to §4.1's type-string decision
 Author: Hermes (CPO)
 Date: 2026-07-22
 
@@ -461,3 +461,157 @@ this revision resolves them:
    disproportionate cost for a short-lived, high-churn table where the
    app layer already guarantees non-empty values on every row created
    going forward).
+
+## 8. Revision 1 (2026-07-22, post-closure, pchero-initiated): string value reverts to `web_session`; three dead `"web_session"` map entries deleted
+
+This design doc closed cleanly after round 3 (2 consecutive APPROVE).
+pchero then reviewed the final §4.1 decision and asked two things in the
+same follow-up conversation, both accepted as-is:
+
+1. **Delete the dead `"web_session"` entries** in the three
+   `crmIneligiblePeerTypes` maps (`bin-flow-manager`, `bin-ai-manager`,
+   `bin-contact-manager`) instead of leaving them as inert clutter.
+2. **Revert §4.1's type-string decision**: `TypeWebSession`'s underlying
+   string value goes back to `"web_session"` (NOT `"webchat_visitor"`,
+   which was this design's round-1 decision after round-0 review flagged
+   the collision risk).
+
+This section documents the accepted rationale and the concrete updated
+spec. Per this repo's post-closure-revision convention, §4.1's original
+text is NOT rewritten in place -- the original round-0-through-3 review
+history (why `"webchat_visitor"` was chosen, and that the collision-check
+proof was independently re-verified three times) has audit value and
+stays legible. This section is the CURRENT, authoritative spec; §4.1's
+body text is superseded by it.
+
+### 8.1 Rationale
+
+The original concern (§4.1, unchanged in substance) was that a future
+reader grepping for `"web_session"` would find it already reserved in
+three `crmIneligiblePeerTypes` maps and could mistakenly assume a
+collision. pchero's resolution removes the premise entirely: **delete
+those three dead map entries** (confirmed dead -- see §8.2) rather than
+picking an alternate string to avoid them. With the dead entries gone,
+there is nothing left to collide with, and `"web_session"` becomes the
+more natural, readable string value for `TypeWebSession` (it reads as
+"web session" -- the visitor's session on the web channel -- rather than
+`"webchat_visitor"`'s slightly more awkward compound).
+
+### 8.2 Confirming the three map entries are actually dead (re-verified for this revision)
+
+Re-confirmed directly against live source, same three locations §4.1
+originally cited:
+
+- `bin-flow-manager/pkg/activeflowhandler/actionhandle.go:1265`
+- `bin-ai-manager/pkg/aicallhandler/tool.go:453`
+- `bin-contact-manager/pkg/contacthandler/interaction.go:66`
+
+Each is a single map entry, `"web_session": {}, // synthetic type; not in
+commonaddress.Type enum`, inside a `crmIneligiblePeerTypes`/
+`caseCreateCRMIneligiblePeerTypes` map otherwise populated entirely with
+REAL `commonaddress.Type` constants (`TypeNone`, `TypeAgent`, `TypeAI`,
+`TypeAITeam`, `TypeConference`, `TypeExtension`, `TypeSIP`). The bare
+string literal `"web_session"` is the ONLY non-symbolic entry in all
+three maps -- every other entry references an actual enum constant.
+
+These maps are consulted only via each file's local `isCRMEligiblePeer`
+(or `bin-ai-manager`'s equivalent), which is called against peer address
+types that `deriveEndpointsForCase`/`deriveEndpoints` derive from
+**Call**/**Conversation-message** webhook payloads
+(`bin-call-manager`/`bin-conversation-manager`'s `Source`/`Destination`
+fields). No code path anywhere in the monorepo constructs a
+`commonaddress.Address` with `Type: "web_session"` today -- confirmed by
+repo-wide search for the literal string outside these three map
+definitions and their own test files (which test the map's behavior in
+the abstract, not any real call site producing that value). Webchat
+Conversations specifically use `TypeWebchat` for both self and peer
+(`bin-conversation-manager/pkg/conversationhandler/event_webchat.go:88-89`,
+unchanged and reconfirmed across every prior round). **The entries are
+unreachable dead code**, not a latent behavior any caller currently
+depends on -- deleting them changes zero runtime behavior today.
+
+### 8.3 Updated spec (supersedes §4.1's text)
+
+`bin-common-handler/models/address/main.go`:
+
+```go
+TypeWebSession Type = "web_session" // target is webchat-manager's Session.ID (the visitor's continuity token)
+```
+
+Delete the `"web_session"` entry from all three `crmIneligiblePeerTypes`-family
+maps:
+
+- `bin-flow-manager/pkg/activeflowhandler/actionhandle.go`: remove line
+  1265 (`"web_session": {}, // synthetic type; not in commonaddress.Type enum`)
+  from `crmIneligiblePeerTypes`.
+- `bin-ai-manager/pkg/aicallhandler/tool.go`: remove the equivalent line
+  453 from `caseCreateCRMIneligiblePeerTypes`.
+- `bin-contact-manager/pkg/contacthandler/interaction.go`: remove the
+  equivalent line 66 from `crmIneligiblePeerTypes`.
+
+Each file's doc-comment on its map (e.g. `interaction.go:34-57`'s
+extended comment explaining WHY each entry is CRM-ineligible) does not
+need rewriting beyond the removed line itself -- the surrounding
+rationale (agent extensions, conference legs, AI resources, PSTN
+trunk legs, TypeNone/unknown-direction) is unaffected and still accurate
+for the remaining entries.
+
+**New consideration introduced by deleting these entries, not present in
+§4.1's original analysis:** once `TypeWebSession = "web_session"` is a
+REAL, live enum value (not just a bare string), and now that the
+blacklist entries that would have excluded it are gone, if a FUTURE
+change ever causes a Call/Conversation-derived peer to legitimately carry
+`Type: TypeWebSession` (not the case today, and no such change is
+proposed by this design), that peer would now be treated as
+CRM-ELIGIBLE by `isCRMEligiblePeer` (since nothing excludes it), where
+under the pre-revision state it would have been excluded (the dead
+string literal would have matched). This is very unlikely given `Session`
+is `bin-webchat-manager`'s own resource and Call/Conversation payloads
+come from unrelated services, but is recorded here for completeness: a
+future engineer wiring `TypeWebSession` into a Call/Conversation-derived
+peer construction path should re-evaluate whether that specific case
+warrants CRM-ineligibility, rather than assuming this deletion is
+inert forever.
+
+Every other occurrence of `"webchat_visitor"` in §4.1-§4.4/§5/§6 of this
+document (the type constant's string value, the "Web visitor" render
+label example, the `webchat_visitor`/`webchat` type-pair discussion) is
+superseded by `"web_session"` per this revision. The Go symbol name
+`commonaddress.TypeWebSession` is UNCHANGED -- only its underlying string
+value reverts. §5's file checklist and §4.4's Go/DB field definitions
+are otherwise unaffected (same fields, same nullable-at-DB-level
+decision, same RPC-threading files) -- this revision changes exactly the
+literal string value and adds the three dead-code deletions to the
+implementation checklist below.
+
+### 8.4 Updated §5 file checklist addendum
+
+In addition to every file already listed in §5, this revision adds:
+
+**bin-flow-manager:**
+- `pkg/activeflowhandler/actionhandle.go` (delete the dead `"web_session"` map entry)
+- `pkg/activeflowhandler/actionhandle_case_create_test.go` (if `Test_isCRMEligiblePeer` asserts on the now-removed entry, update it)
+
+**bin-ai-manager:**
+- `pkg/aicallhandler/tool.go` (delete the dead `"web_session"` map entry)
+- `pkg/aicallhandler/tool_case_create_test.go` (same test-assertion check)
+
+**bin-contact-manager:**
+- `pkg/contacthandler/interaction.go` (delete the dead `"web_session"` map entry)
+- `pkg/contacthandler/interaction_crm_eligibility_test.go` (this file's
+  `Test_isCRMEligiblePeer` explicitly asserts `{"web_session is
+  ineligible", commonaddress.Type("web_session"), false}` -- CONFIRMED
+  via direct read, line 36 -- this specific test case must be removed or
+  updated, since after deletion `isCRMEligiblePeer("web_session")` returns
+  `true`, the opposite of what the existing assertion expects)
+
+### 8.5 Review status of this revision
+
+Per this repo's post-closure-revision convention, Revision 1 gets its own
+fresh, narrowly-scoped review loop (2 consecutive APPROVE) rather than
+inheriting the original round 0-3 closure -- a string-value change plus a
+cross-service dead-code deletion touching three OTHER services' test
+files is exactly the kind of change that needs independent
+re-verification, not an assumption that the original loop's approval
+still covers it. See round-by-round review files named
+`2026-07-22-webchat-session-referrer-peer-local-design-review-revision1-round*.md`.
