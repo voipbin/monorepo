@@ -1,6 +1,6 @@
 # bin-webchat-manager: Session Referrer + Peer/Local address capture
 
-Status: CLOSED (rounds 0-3, 2 consecutive APPROVE) -- see §8 Revision 1 (round 1 -- fixes revision1-round0 review findings, see docs/plans/2026-07-22-webchat-session-referrer-peer-local-design-review-revision1-round0.md) for a post-closure change to §4.1's type-string decision
+Status: CLOSED (rounds 0-3, 2 consecutive APPROVE) -- see §8 Revision 1 (round 2 -- fixes revision1-round1 review finding, see docs/plans/2026-07-22-webchat-session-referrer-peer-local-design-review-revision1-round1.md) for a post-closure change to §4.1's type-string decision
 Author: Hermes (CPO)
 Date: 2026-07-22
 
@@ -224,6 +224,16 @@ column.
 
 This design changes the PEER role's type to the new `TypeWebSession`,
 while Local stays `TypeWebchat`:
+
+> **[SUPERSEDED BY §8 REVISION 1]** The code snippet immediately below,
+> and every `"webchat_visitor"` mention in this §4.2 (the type-pair
+> comparison, the "Web visitor" render-label example), reflect this
+> design's ROUND-1 decision. **§8 (Revision 1) reverts the string value
+> to `"web_session"`** -- the underlying dispatch argument this section
+> makes (Peer type-distinguishable from Local) is UNCHANGED by that
+> revert (both `"web_session"` and `"webchat_visitor"` equally
+> distinguish Peer from Local's `"webchat"`), only the literal string
+> differs. See §8.3 for the current, authoritative string value.
 
 ```go
 Peer  commonaddress.Address `json:"peer"  db:"peer,json"`  // {Type: TypeWebSession, Target: Session.ID}
