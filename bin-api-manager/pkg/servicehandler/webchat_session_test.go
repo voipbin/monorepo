@@ -147,6 +147,31 @@ func Test_validatePageURL(t *testing.T) {
 			pageURL:   strings.Repeat("a", 2049),
 			expectErr: true,
 		},
+		{
+			name:      "javascript scheme is invalid",
+			pageURL:   "javascript:alert(1)",
+			expectErr: true,
+		},
+		{
+			name:      "data scheme is invalid",
+			pageURL:   "data:text/html,x",
+			expectErr: true,
+		},
+		{
+			name:      "ftp scheme is invalid",
+			pageURL:   "ftp://x",
+			expectErr: true,
+		},
+		{
+			name:      "http scheme is valid",
+			pageURL:   "http://x",
+			expectErr: false,
+		},
+		{
+			name:      "https scheme is valid",
+			pageURL:   "https://x",
+			expectErr: false,
+		},
 	}
 
 	for _, tt := range tests {
