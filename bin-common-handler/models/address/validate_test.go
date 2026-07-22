@@ -58,6 +58,15 @@ func TestValidate(t *testing.T) {
 		{"extension valid", Address{Type: TypeExtension, Target: "c5e7f18c-fc5a-4520-8326-e534e2ca0b8f"}, false},
 		{"extension invalid", Address{Type: TypeExtension, Target: "2000"}, true},
 
+		// TypeWebchat (UUID)
+		{"webchat valid", Address{Type: TypeWebchat, Target: "c5e7f18c-fc5a-4520-8326-e534e2ca0b8f"}, false},
+		{"webchat invalid", Address{Type: TypeWebchat, Target: "not-a-uuid"}, true},
+
+		// TypeWebSession (UUID)
+		{"web_session valid", Address{Type: TypeWebSession, Target: "c5e7f18c-fc5a-4520-8326-e534e2ca0b8f"}, false},
+		{"web_session invalid", Address{Type: TypeWebSession, Target: "not-a-uuid"}, true},
+		{"web_session empty", Address{Type: TypeWebSession, Target: ""}, true},
+
 		// TypeNone
 		{"none empty", Address{Type: TypeNone, Target: ""}, false},
 		{"none with target", Address{Type: TypeNone, Target: "anything"}, false},
@@ -101,6 +110,9 @@ func TestValidateTarget(t *testing.T) {
 		{"conference valid", TypeConference, "34613ee5-5456-40fe-bb3b-395254270a9d", false},
 		{"line valid", TypeLine, "07d16b0a-302f-4db8-ae4a-a2c9a65f88b7", false},
 		{"extension valid", TypeExtension, "c5e7f18c-fc5a-4520-8326-e534e2ca0b8f", false},
+		{"webchat valid", TypeWebchat, "c5e7f18c-fc5a-4520-8326-e534e2ca0b8f", false},
+		{"web_session valid", TypeWebSession, "c5e7f18c-fc5a-4520-8326-e534e2ca0b8f", false},
+		{"web_session invalid", TypeWebSession, "not-a-uuid", true},
 
 		// TypeNone
 		{"none", TypeNone, "", false},

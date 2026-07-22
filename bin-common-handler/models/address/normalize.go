@@ -47,7 +47,7 @@ func NormalizeTarget(addressType Type, target string) (string, error) {
 		return normalizeEmail(target), nil
 	case TypeSIP:
 		return normalizeSIP(target), nil
-	case TypeNone, TypeAgent, TypeAI, TypeAITeam, TypeConference, TypeExtension, TypeLine, TypeWebchat:
+	case TypeNone, TypeAgent, TypeAI, TypeAITeam, TypeConference, TypeExtension, TypeLine, TypeWebchat, TypeWebSession:
 		// Opaque identifiers (UUIDs, names) with no sub-form to canonicalize.
 		// Identity normalization keeps them unchanged and idempotent.
 		return target, nil

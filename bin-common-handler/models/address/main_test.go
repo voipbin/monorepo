@@ -44,6 +44,8 @@ func TestTypeConstants(t *testing.T) {
 		{"type_line", TypeLine, "line"},
 		{"type_sip", TypeSIP, "sip"},
 		{"type_tel", TypeTel, "tel"},
+		{"type_webchat", TypeWebchat, "webchat"},
+		{"type_web_session", TypeWebSession, "web_session"},
 	}
 
 	for _, tt := range tests {
