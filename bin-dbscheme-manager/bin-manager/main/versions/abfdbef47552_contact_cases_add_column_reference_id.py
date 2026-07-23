@@ -18,7 +18,7 @@ depends_on = None
 
 def upgrade():
     op.execute(
-        """alter table contact_cases add column reference_id varchar(255) not null default '' after detail;"""
+        """alter table contact_cases add column reference_id varchar(255) not null default '' after reference_type;"""
     )
     op.execute(
         """create index idx_case_customer_reference_id on contact_cases (customer_id, reference_id);"""
