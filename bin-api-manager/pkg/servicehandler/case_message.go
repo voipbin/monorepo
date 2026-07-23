@@ -154,16 +154,24 @@ func (h *serviceHandler) CaseMessageSend(
 		return nil, serviceerrors.ErrCaseSourceNotOwned
 	}
 
-	// Step 4: resolve conversationID via get-or-create. self and peer must
-	// use the SAME address Type (c.Peer.Type) -- conversation-manager's own
-	// self/peer construction always matches both sides to the channel type
-	// (e.g. bin-conversation-manager/pkg/whatsapphandler/hook.go), and
-	// ConversationGetBySelfAndPeer's lookup matches on self.type/peer.type
-	// exactly. A mismatched self.Type would never find an existing
-	// conversation for non-tel channels and would create a spurious
-	// duplicate (with its own conversation_created webhook) on every send.
+	// Step 4: resolve conversationID via get-or-create. self and peer each
+	// independently mirror the Case's own Local/Peer -- they are NOT
+	// required to share a Type. ConversationGetBySelfAndPeer's lookup
+	// matches self.type/target and peer.type/target as four INDEPENDENT
+	// WHERE clauses (see bin-conversation-manager/pkg/dbhandler/
+	// conversation.go), so self.Type != peer.Type is a fully supported,
+	// correct shape (webchat's own construction already proves this --
+	// bin-conversation-manager/pkg/conversationhandler/event_webchat.go
+	// builds self=TypeWebchat/peer=TypeWebSession). c.Local/c.Peer are
+	// read from the SAME Conversation-derived Case
+	// (bin-flow-manager/pkg/activeflowhandler/actionhandle.go's
+	// actionHandleCaseCreate, `peer, self = cv.Peer, cv.Self`), so they
+	// already match whatever the originating Conversation's actual
+	// self/peer types are -- the lookup hits correctly by construction,
+	// not by a hardcoded-equality trick. See design doc
+	// 2026-07-23-webchat-conversation-self-peer-type-unification-design.md §4.C.
 	selfAddr := commonaddress.Address{
-		Type:   c.Peer.Type,
+		Type:   c.Local.Type,
 		Target: source,
 	}
 	peerAddr := commonaddress.Address{
