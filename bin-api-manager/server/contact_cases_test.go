@@ -34,8 +34,9 @@ func Test_GetContactCases(t *testing.T) {
 
 		reqQuery string
 
-		expectOwnerID   uuid.UUID
-		expectContactID uuid.UUID
+		expectOwnerID     uuid.UUID
+		expectContactID   uuid.UUID
+		expectReferenceID string
 
 		responseItems    []*cmkase.Case
 		responseToken    string
@@ -69,6 +70,20 @@ func Test_GetContactCases(t *testing.T) {
 			expectStatusCode: http.StatusOK,
 		},
 		{
+			name: "reference_id filter reaches servicehandler with the exact value",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         agentID,
+					CustomerID: customerID,
+				},
+			}),
+			reqQuery:          "/contact_cases?reference_id=ORD-2026-04821",
+			expectReferenceID: "ORD-2026-04821",
+			responseItems:     []*cmkase.Case{},
+			responseToken:     "",
+			expectStatusCode:  http.StatusOK,
+		},
+		{
 			name:             "unauthenticated",
 			agent:            nil,
 			reqQuery:         "/contact_cases",
@@ -98,7 +113,7 @@ func Test_GetContactCases(t *testing.T) {
 
 			if tt.responseItems != nil && tt.agent != nil {
 				mockSvc.EXPECT().
-					CaseList(req.Context(), tt.agent, uuid.Nil, uint64(100), "", gomock.Any(), gomock.Any(), tt.expectOwnerID, tt.expectContactID, gomock.Any()).
+					CaseList(req.Context(), tt.agent, uuid.Nil, uint64(100), "", gomock.Any(), gomock.Any(), tt.expectOwnerID, tt.expectContactID, tt.expectReferenceID).
 					Return(tt.responseItems, tt.responseToken, nil)
 			}
 
