@@ -56,7 +56,7 @@ func Test_ProcessV1CasesGet_ListsWithFilters(t *testing.T) {
 		Data:   body,
 	}
 
-	mockCase.EXPECT().CaseList(ctx, customerID, uint64(50), "2026-06-28T10:00:00.000000Z", "open", commonidentity.OwnerTypeAgent, ownerID, uuid.Nil).
+	mockCase.EXPECT().CaseList(ctx, customerID, uint64(50), "2026-06-28T10:00:00.000000Z", "open", commonidentity.OwnerTypeAgent, ownerID, uuid.Nil, "").
 		Return([]*kase.Case{{ID: caseID}}, "", nil)
 
 	res, err := h.processV1CasesGet(ctx, req)
@@ -89,7 +89,7 @@ func Test_ProcessV1CasesGet_ContactIDFilter(t *testing.T) {
 		Data:   body,
 	}
 
-	mockCase.EXPECT().CaseList(ctx, customerID, uint64(0), "", "", commonidentity.OwnerType(""), uuid.Nil, contactID).
+	mockCase.EXPECT().CaseList(ctx, customerID, uint64(0), "", "", commonidentity.OwnerType(""), uuid.Nil, contactID, "").
 		Return([]*kase.Case{{ID: caseID}}, "", nil)
 
 	res, err := h.processV1CasesGet(ctx, req)

@@ -9593,7 +9593,7 @@
     "/contact_cases": {
       "get": {
         "summary": "List cases",
-        "description": "List cases for the customer, optionally filtered by status, owner_type,\nowner_id, and contact_id.\n",
+        "description": "List cases for the customer, optionally filtered by status, owner_type,\nowner_id, contact_id, and reference_id.\n",
         "tags": [
           "Case"
         ],
@@ -9609,6 +9609,15 @@
                 "closed"
               ],
               "example": "open"
+            }
+          },
+          {
+            "name": "reference_id",
+            "in": "query",
+            "description": "Filter to cases whose reference_id (the internal VoIPBin resource ID reference_type points at, e.g. a call ID) exactly matches this value.",
+            "schema": {
+              "type": "string",
+              "example": "1fe1356f-3f7f-4ff9-9d33-08136b38f506"
             }
           },
           {
@@ -28112,6 +28121,11 @@
             "type": "string",
             "description": "Origin channel type (e.g. \"call\", \"conversation_message\").",
             "example": "call"
+          },
+          "reference_id": {
+            "type": "string",
+            "description": "The internal VoIPBin resource ID that reference_type points at (the call ID when reference_type is \"call\", the conversation ID when reference_type is \"conversation_message\"), set automatically at case creation time. Never a customer- or agent-supplied value. Empty when no such internal resource ID applies.",
+            "example": "1fe1356f-3f7f-4ff9-9d33-08136b38f506"
           },
           "contact_id": {
             "type": "string",

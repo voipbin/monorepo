@@ -29,7 +29,7 @@ func (h *serviceHandler) ServiceAgentCaseList(ctx context.Context, a *auth.AuthI
 		return nil, "", serviceerrors.ErrPermissionDenied
 	}
 
-	items, nextToken, err := h.reqHandler.ContactV1CaseList(ctx, a.CustomerID, "", "", uuid.Nil, uuid.Nil, size, token)
+	items, nextToken, err := h.reqHandler.ContactV1CaseList(ctx, a.CustomerID, "", "", uuid.Nil, uuid.Nil, size, token, "")
 	if err != nil {
 		log.Errorf("Could not list cases. err: %v", err)
 		return nil, "", err

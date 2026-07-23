@@ -2,7 +2,7 @@ get:
   summary: List cases
   description: |
     List cases for the customer, optionally filtered by status, owner_type,
-    owner_id, and contact_id.
+    owner_id, contact_id, and reference_id.
   tags:
     - Case
   parameters:
@@ -15,6 +15,12 @@ get:
           - open
           - closed
         example: "open"
+    - name: reference_id
+      in: query
+      description: Filter to cases whose reference_id (the internal VoIPBin resource ID reference_type points at, e.g. a call ID) exactly matches this value.
+      schema:
+        type: string
+        example: "1fe1356f-3f7f-4ff9-9d33-08136b38f506"
     - name: owner_type
       in: query
       description: Filter by owner type.

@@ -60,12 +60,17 @@ func (h *server) GetContactCases(c *gin.Context, params openapi_server.GetContac
 		contactID = uuid.UUID(*params.ContactId)
 	}
 
+	referenceID := ""
+	if params.ReferenceId != nil {
+		referenceID = *params.ReferenceId
+	}
+
 	// targetCustomerID is always uuid.Nil here -- this endpoint has no
 	// client-supplied customer_id filter, so CaseList always resolves to
 	// the authenticated caller's own a.CustomerID (see CaseList's
 	// targetCustomerID == uuid.Nil default). customer_id is never taken
 	// from client input.
-	items, nextToken, err := h.serviceHandler.CaseList(c.Request.Context(), a, uuid.Nil, pageSize, pageToken, status, ownerType, ownerID, contactID)
+	items, nextToken, err := h.serviceHandler.CaseList(c.Request.Context(), a, uuid.Nil, pageSize, pageToken, status, ownerType, ownerID, contactID, referenceID)
 	if err != nil {
 		log.Errorf("Could not list cases. err: %v", err)
 		abortWithServiceError(c, err)

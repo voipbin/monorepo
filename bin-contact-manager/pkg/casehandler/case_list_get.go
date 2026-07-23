@@ -17,15 +17,17 @@ const defaultCaseListSize = 20
 
 // CaseList implements design §9's Phase 5 GET /v1/cases?... list
 // surface: a thin, customer-scoped delegation to dbhandler.CaseList,
-// optionally filtered by status, owner, and/or contact_id. Results are
-// ordered by tm_create DESC with a tm_create-cursor token (empty when no
-// further pages), matching InteractionList's pagination convention.
-func (h *caseHandler) CaseList(ctx context.Context, customerID uuid.UUID, size uint64, token string, status string, ownerType commonidentity.OwnerType, ownerID uuid.UUID, contactID uuid.UUID) ([]*kase.Case, string, error) {
+// optionally filtered by status, owner, contact_id, and/or reference_id
+// (docs/plans/2026-07-24-case-reference-id-design.md, exact match).
+// Results are ordered by tm_create DESC with a tm_create-cursor token
+// (empty when no further pages), matching InteractionList's pagination
+// convention.
+func (h *caseHandler) CaseList(ctx context.Context, customerID uuid.UUID, size uint64, token string, status string, ownerType commonidentity.OwnerType, ownerID uuid.UUID, contactID uuid.UUID, referenceID string) ([]*kase.Case, string, error) {
 	if size == 0 {
 		size = defaultCaseListSize
 	}
 
-	items, err := h.db.CaseList(ctx, customerID, size+1, token, status, ownerType, ownerID, contactID)
+	items, err := h.db.CaseList(ctx, customerID, size+1, token, status, ownerType, ownerID, contactID, referenceID)
 	if err != nil {
 		return nil, "", err
 	}

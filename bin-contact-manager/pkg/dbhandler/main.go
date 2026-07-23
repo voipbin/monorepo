@@ -117,11 +117,13 @@ type DBHandler interface {
 	CaseGetLastClosedByPeerTx(ctx context.Context, tx *sql.Tx, customerID uuid.UUID, peerType commonaddress.Type, peerTarget, referenceType string) (*kase.Case, error)
 
 	// CaseList returns Cases scoped to customerID, optionally filtered by
-	// status (empty string = no status filter) and/or owner
+	// status (empty string = no status filter), owner
 	// (ownerType == commonidentity.OwnerTypeNone or ownerID == uuid.Nil =
-	// no owner filter). Backs the Phase 5 RPC/REST GET /v1/cases?...
-	// list surface (design §9).
-	CaseList(ctx context.Context, customerID uuid.UUID, size uint64, token string, status string, ownerType commonidentity.OwnerType, ownerID uuid.UUID, contactID uuid.UUID) ([]*kase.Case, error)
+	// no owner filter), contactID (uuid.Nil = no filter), and/or
+	// referenceID (empty string = no filter; exact match, see
+	// docs/plans/2026-07-24-case-reference-id-design.md §5.4). Backs the
+	// Phase 5 RPC/REST GET /v1/cases?... list surface (design §9).
+	CaseList(ctx context.Context, customerID uuid.UUID, size uint64, token string, status string, ownerType commonidentity.OwnerType, ownerID uuid.UUID, contactID uuid.UUID, referenceID string) ([]*kase.Case, error)
 }
 
 // handler database handler

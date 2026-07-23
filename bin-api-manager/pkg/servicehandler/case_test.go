@@ -108,11 +108,11 @@ func Test_CaseList(t *testing.T) {
 
 			if !tt.expectErr {
 				mockReq.EXPECT().
-					ContactV1CaseList(ctx, tt.expectCustomerID, tt.status, "", uuid.Nil, uuid.Nil, tt.size, tt.token).
+					ContactV1CaseList(ctx, tt.expectCustomerID, tt.status, "", uuid.Nil, uuid.Nil, tt.size, tt.token, "").
 					Return(tt.responseItems, tt.responseToken, nil)
 			}
 
-			items, _, err := h.CaseList(ctx, tt.agent, tt.expectCustomerID, tt.size, tt.token, tt.status, "", uuid.Nil, uuid.Nil)
+			items, _, err := h.CaseList(ctx, tt.agent, tt.expectCustomerID, tt.size, tt.token, tt.status, "", uuid.Nil, uuid.Nil, "")
 			if tt.expectErr {
 				if err == nil {
 					t.Errorf("Expected error but got none")

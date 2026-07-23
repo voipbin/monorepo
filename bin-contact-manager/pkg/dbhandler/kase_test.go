@@ -270,7 +270,7 @@ func Test_CaseGetOpenByPeer(t *testing.T) {
 
 	rowColumns := []string{
 		"id", "customer_id", "peer", "local", "reference_type",
-		"name", "detail",
+		"name", "detail", "reference_id",
 		"contact_id", "owner_type", "owner_id",
 		"status", "opened_at", "closed_at", "closed_reason", "closed_by_type", "closed_by_id",
 		"previous_case_id", "tag_ids", "tm_create", "tm_update",
@@ -287,7 +287,7 @@ func Test_CaseGetOpenByPeer(t *testing.T) {
 		WithArgs(customerID.Bytes(), string(commonaddress.TypeTel), "+155****0003", "call", string(kase.StatusOpen)).
 		WillReturnRows(sqlmock.NewRows(rowColumns).AddRow(
 			caseID.Bytes(), customerID.Bytes(), `{"type":"tel","target":"+155****0003"}`, `{}`, "call",
-			"", nil,
+			"", nil, "",
 			nil, nil, nil,
 			string(kase.StatusOpen), openedAt, nil, nil, nil, nil,
 			nil, nil, openedAt, openedAt,

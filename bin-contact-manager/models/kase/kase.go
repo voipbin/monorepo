@@ -37,18 +37,33 @@ type Case struct {
 	// `"local":{}`, never an absent key.
 	Local commonaddress.Address `json:"local" db:"local,json"`
 
-	// ReferenceType reuses contact_interactions.reference_type's EXISTING
-	// stored vocabulary ("call", "conversation_message", ...) -- NOT
-	// conversation-manager's message.ReferenceType (a different, unrelated
-	// enum). Case.ReferenceType must match Interaction.ReferenceType
-	// exactly for the design §4 get-or-create join to work.
-	ReferenceType string `json:"reference_type" db:"reference_type"`
-
 	// Name/Detail are optional, freeform case metadata settable only at
 	// creation time via Create (design VOIP-1243 §3.4). Empty string is
 	// persisted as the column's default/empty value, not NULL.
 	Name   string `json:"name,omitempty"   db:"name"`
 	Detail string `json:"detail,omitempty" db:"detail"`
+
+	// ReferenceType reuses contact_interactions.reference_type's EXISTING
+	// stored vocabulary ("call", "conversation_message", ...) -- NOT
+	// conversation-manager's message.ReferenceType (a different, unrelated
+	// enum). Case.ReferenceType must match Interaction.ReferenceType
+	// exactly for the design §4 get-or-create join to work.
+	//
+	// ReferenceID is the internal VoIPBin resource id ReferenceType points
+	// at (the call id when ReferenceType="call", the conversation id when
+	// ReferenceType="conversation_message", etc.) -- the same
+	// ReferenceType+ReferenceID pairing already used by Interaction and
+	// Activeflow. It is set only at creation time via Create, derived
+	// automatically by the caller (the case_create Flow action / AI tool)
+	// from the call/conversation already in scope -- NEVER a user- or
+	// LLM-supplied value (design docs/plans/
+	// 2026-07-24-case-reference-id-design.md, corrected after an initial
+	// draft wrongly treated it as a customer-supplied external reference).
+	// Empty string when no such internal resource id applies. Not unique:
+	// multiple Cases may share the same ReferenceID (e.g. re-contact
+	// creates a new Case chained via PreviousCaseID for the same call).
+	ReferenceType string `json:"reference_type"         db:"reference_type"`
+	ReferenceID   string `json:"reference_id,omitempty" db:"reference_id"`
 
 	// ContactID is a nullable denormalized cache; single source of truth
 	// is this column itself, every write goes through

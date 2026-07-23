@@ -65,6 +65,7 @@ func (h *listenHandler) processV1CasesGet(ctx context.Context, req *sock.Request
 	if s := q.Get("contact_id"); s != "" {
 		contactID = uuid.FromStringOrNil(s)
 	}
+	referenceID := q.Get("reference_id")
 
 	var body request.V1DataCasesGet
 	if len(req.Data) > 0 {
@@ -75,7 +76,7 @@ func (h *listenHandler) processV1CasesGet(ctx context.Context, req *sock.Request
 		return simpleResponse(400), nil
 	}
 
-	res, _, err := h.caseHandler.CaseList(ctx, body.CustomerID, pageSize, pageToken, status, ownerType, ownerID, contactID)
+	res, _, err := h.caseHandler.CaseList(ctx, body.CustomerID, pageSize, pageToken, status, ownerType, ownerID, contactID, referenceID)
 	if err != nil {
 		log.Errorf("Could not list cases. err: %v", err)
 		return errorResponse(err), nil
@@ -106,7 +107,7 @@ func (h *listenHandler) processV1CasesPost(ctx context.Context, req *sock.Reques
 		return simpleResponse(400), nil
 	}
 
-	res, err := h.caseHandler.Create(ctx, body.CustomerID, body.Self, body.Peer, body.ReferenceType, body.Name, body.Detail)
+	res, err := h.caseHandler.Create(ctx, body.CustomerID, body.Self, body.Peer, body.ReferenceType, body.Name, body.Detail, body.ReferenceID)
 	if err != nil {
 		log.Errorf("Could not create case. err: %v", err)
 		return errorResponse(err), nil

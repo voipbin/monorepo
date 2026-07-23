@@ -44,7 +44,7 @@ func Test_ProcessV1CasesPost_CreatesCase(t *testing.T) {
 	mockCase.EXPECT().Create(
 		ctx, customerID,
 		commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****0101"},
-		commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****9101"}, "call", "VIP", "escalated",
+		commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****9101"}, "call", "VIP", "escalated", "",
 	).Return(&kase.Case{ID: caseID, CustomerID: customerID}, nil)
 
 	res, err := h.processV1CasesPost(ctx, req)

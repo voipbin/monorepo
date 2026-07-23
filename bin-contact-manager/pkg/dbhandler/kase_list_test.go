@@ -70,7 +70,7 @@ func Test_CaseList_FiltersByCustomerStatusAndOwner(t *testing.T) {
 	}
 
 	// No filters beyond customer_id: expect all 3 of this customer's cases.
-	all, err := h.CaseList(ctx, customerID, 100, "", "", "", uuid.Nil, uuid.Nil)
+	all, err := h.CaseList(ctx, customerID, 100, "", "", "", uuid.Nil, uuid.Nil, "")
 	if err != nil {
 		t.Fatalf("CaseList() error = %v", err)
 	}
@@ -86,7 +86,7 @@ func Test_CaseList_FiltersByCustomerStatusAndOwner(t *testing.T) {
 	}
 
 	// status=open filter.
-	openOnly, err := h.CaseList(ctx, customerID, 100, "", string(kase.StatusOpen), "", uuid.Nil, uuid.Nil)
+	openOnly, err := h.CaseList(ctx, customerID, 100, "", string(kase.StatusOpen), "", uuid.Nil, uuid.Nil, "")
 	if err != nil {
 		t.Fatalf("CaseList(status=open) error = %v", err)
 	}
@@ -102,7 +102,7 @@ func Test_CaseList_FiltersByCustomerStatusAndOwner(t *testing.T) {
 	}
 
 	// owner_type+owner_id filter.
-	ownedOnly, err := h.CaseList(ctx, customerID, 100, "", "", commonidentity.OwnerTypeAgent, ownerID, uuid.Nil)
+	ownedOnly, err := h.CaseList(ctx, customerID, 100, "", "", commonidentity.OwnerTypeAgent, ownerID, uuid.Nil, "")
 	if err != nil {
 		t.Fatalf("CaseList(owner) error = %v", err)
 	}
@@ -129,19 +129,46 @@ func Test_CaseList_FiltersByCustomerStatusAndOwner(t *testing.T) {
 	}); err != nil {
 		t.Fatalf("CaseInsert(contact-attributed) error = %v", err)
 	}
-	contactOnly, err := h.CaseList(ctx, customerID, 100, "", "", "", uuid.Nil, contactID)
+	contactOnly, err := h.CaseList(ctx, customerID, 100, "", "", "", uuid.Nil, contactID, "")
 	if err != nil {
 		t.Fatalf("CaseList(contact_id) error = %v", err)
 	}
 	if len(contactOnly) != 1 || contactOnly[0].ID != contactAttributedCaseID {
 		t.Errorf("contact_id filter = %v, want exactly [%v]", contactOnly, contactAttributedCaseID)
 	}
-	contactNoMatch, err := h.CaseList(ctx, customerID, 100, "", "", "", uuid.Nil, otherContactID)
+	contactNoMatch, err := h.CaseList(ctx, customerID, 100, "", "", "", uuid.Nil, otherContactID, "")
 	if err != nil {
 		t.Fatalf("CaseList(contact_id=other) error = %v", err)
 	}
 	if len(contactNoMatch) != 0 {
 		t.Errorf("contact_id filter for an unmatched contact = %v, want empty", contactNoMatch)
+	}
+
+	// reference_id filter.
+	referenceID := "ORD-12345"
+	otherReferenceID := "ORD-99999"
+	referenceAttributedCaseID := uuid.FromStringOrNil("f1b2c3d4-9601-9601-9601-000000000015")
+	if err := h.CaseInsert(ctx, &kase.Case{
+		ID: referenceAttributedCaseID, CustomerID: customerID,
+		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****1015"}, ReferenceType: "call",
+		ReferenceID: referenceID,
+		Status:      kase.StatusOpen, OpenedAt: &opened, TMCreate: &opened, TMUpdate: &opened,
+	}); err != nil {
+		t.Fatalf("CaseInsert(reference-attributed) error = %v", err)
+	}
+	referenceOnly, err := h.CaseList(ctx, customerID, 100, "", "", "", uuid.Nil, uuid.Nil, referenceID)
+	if err != nil {
+		t.Fatalf("CaseList(reference_id) error = %v", err)
+	}
+	if len(referenceOnly) != 1 || referenceOnly[0].ID != referenceAttributedCaseID {
+		t.Errorf("reference_id filter = %v, want exactly [%v]", referenceOnly, referenceAttributedCaseID)
+	}
+	referenceNoMatch, err := h.CaseList(ctx, customerID, 100, "", "", "", uuid.Nil, uuid.Nil, otherReferenceID)
+	if err != nil {
+		t.Fatalf("CaseList(reference_id=other) error = %v", err)
+	}
+	if len(referenceNoMatch) != 0 {
+		t.Errorf("reference_id filter for an unmatched reference = %v, want empty", referenceNoMatch)
 	}
 }
 
@@ -174,7 +201,7 @@ func Test_CaseList_OrderedAndPaginated(t *testing.T) {
 	}
 
 	// size=100, no token: expect all 3, newest (id3) first.
-	all, err := h.CaseList(ctx, customerID, 100, "", "", "", uuid.Nil, uuid.Nil)
+	all, err := h.CaseList(ctx, customerID, 100, "", "", "", uuid.Nil, uuid.Nil, "")
 	if err != nil {
 		t.Fatalf("CaseList() error = %v", err)
 	}
@@ -183,7 +210,7 @@ func Test_CaseList_OrderedAndPaginated(t *testing.T) {
 	}
 
 	// size=1: expect only the newest (id3).
-	page1, err := h.CaseList(ctx, customerID, 1, "", "", "", uuid.Nil, uuid.Nil)
+	page1, err := h.CaseList(ctx, customerID, 1, "", "", "", uuid.Nil, uuid.Nil, "")
 	if err != nil {
 		t.Fatalf("CaseList(size=1) error = %v", err)
 	}
@@ -193,7 +220,7 @@ func Test_CaseList_OrderedAndPaginated(t *testing.T) {
 
 	// token=t3 (as a cursor): expect id2, id1 (strictly older than t3).
 	token := t3.UTC().Format("2006-01-02T15:04:05.000000Z")
-	page2, err := h.CaseList(ctx, customerID, 100, token, "", "", uuid.Nil, uuid.Nil)
+	page2, err := h.CaseList(ctx, customerID, 100, token, "", "", uuid.Nil, uuid.Nil, "")
 	if err != nil {
 		t.Fatalf("CaseList(token) error = %v", err)
 	}

@@ -152,6 +152,7 @@ create table contact_cases (
   local_type        varchar(255)  generated always as (json_extract(local, '$.type')) stored,
   local_target      varchar(255)  generated always as (json_extract(local, '$.target')) stored,
   reference_type    varchar(255)  not null default '',
+  reference_id      varchar(255)  not null default '',
 
   name              varchar(255)  not null default '',
   detail            text,
