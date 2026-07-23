@@ -223,10 +223,11 @@ type OptionConnect struct {
 
 // OptionCaseCreate defines action case_create's option.
 type OptionCaseCreate struct {
-	Name   string `json:"name,omitempty"`
-	Detail string `json:"detail,omitempty"`
-	Note   string `json:"note,omitempty"`
-	Sync   bool   `json:"sync,omitempty"` // matches conversation_send/email_send's sync/async toggle
+	Name        string `json:"name,omitempty"`
+	Detail      string `json:"detail,omitempty"`
+	Note        string `json:"note,omitempty"`
+	ReferenceID string `json:"reference_id,omitempty"`
+	Sync        bool   `json:"sync,omitempty"` // matches conversation_send/email_send's sync/async toggle
 }
 
 // OptionConversationSend defines action conversation_send's optoin.

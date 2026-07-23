@@ -76,7 +76,7 @@ func Test_actionHandleCaseCreate_Call(t *testing.T) {
 
 	mockReq.EXPECT().CallV1CallGet(ctx, af.ReferenceID).Return(responseCall, nil)
 	mockReq.EXPECT().FlowV1VariableGet(ctx, af.ID).Return(responseVariable, nil)
-	mockReq.EXPECT().ContactV1CaseCreate(ctx, af.CustomerID, responseCall.Destination, commonaddress.Address{Type: commonaddress.TypeTel, Target: responseCall.Source.Target}, "call", "test case", "test detail").Return(responseCase, nil)
+	mockReq.EXPECT().ContactV1CaseCreate(ctx, af.CustomerID, responseCall.Destination, commonaddress.Address{Type: commonaddress.TypeTel, Target: responseCall.Source.Target}, "call", "test case", "test detail", "").Return(responseCase, nil)
 	mockReq.EXPECT().FlowV1VariableSetVariable(ctx, af.ID, map[string]string{"contact_case_id": responseCase.ID.String()}).Return(nil)
 	mockReq.EXPECT().ContactV1CaseNoteCreate(ctx, af.CustomerID, responseCase.ID, "system", nil, "test note").Return(nil, nil)
 
@@ -132,7 +132,7 @@ func Test_actionHandleCaseCreate_Conversation(t *testing.T) {
 
 	mockReq.EXPECT().ConversationV1ConversationGet(ctx, af.ReferenceID).Return(responseConversation, nil)
 	mockReq.EXPECT().FlowV1VariableGet(ctx, af.ID).Return(responseVariable, nil)
-	mockReq.EXPECT().ContactV1CaseCreate(ctx, af.CustomerID, responseConversation.Self, commonaddress.Address{Type: commonaddress.TypeTel, Target: responseConversation.Peer.Target}, "conversation_message", "", "").Return(responseCase, nil)
+	mockReq.EXPECT().ContactV1CaseCreate(ctx, af.CustomerID, responseConversation.Self, commonaddress.Address{Type: commonaddress.TypeTel, Target: responseConversation.Peer.Target}, "conversation_message", "", "", "").Return(responseCase, nil)
 	mockReq.EXPECT().FlowV1VariableSetVariable(ctx, af.ID, map[string]string{"contact_case_id": responseCase.ID.String()}).Return(nil)
 
 	if errAction := h.actionHandleCaseCreate(ctx, af); errAction != nil {
@@ -332,7 +332,7 @@ func Test_actionHandleCaseCreate_CreateErrorsSwallowed(t *testing.T) {
 
 			mockReq.EXPECT().CallV1CallGet(ctx, af.ReferenceID).Return(responseCall, nil)
 			mockReq.EXPECT().FlowV1VariableGet(ctx, af.ID).Return(responseVariable, nil)
-			mockReq.EXPECT().ContactV1CaseCreate(ctx, af.CustomerID, responseCall.Destination, commonaddress.Address{Type: commonaddress.TypeTel, Target: responseCall.Source.Target}, "call", "", "").Return(nil, tt.errFunc)
+			mockReq.EXPECT().ContactV1CaseCreate(ctx, af.CustomerID, responseCall.Destination, commonaddress.Address{Type: commonaddress.TypeTel, Target: responseCall.Source.Target}, "call", "", "", "").Return(nil, tt.errFunc)
 
 			if errAction := h.actionHandleCaseCreate(ctx, af); errAction != nil {
 				t.Errorf("Wrong match.\nexpect: ok\ngot: %v", errAction)

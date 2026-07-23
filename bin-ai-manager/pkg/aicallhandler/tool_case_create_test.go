@@ -391,7 +391,7 @@ func Test_toolHandleCaseCreate(t *testing.T) {
 
 			if tt.expectContactV1CaseCreate {
 				mockReq.EXPECT().ContactV1CaseCreate(
-					ctx, tt.aicall.CustomerID, gomock.Any(), gomock.Any(), "call", gomock.Any(), gomock.Any(),
+					ctx, tt.aicall.CustomerID, gomock.Any(), gomock.Any(), "call", gomock.Any(), gomock.Any(), gomock.Any(),
 				).Return(tt.responseCase, tt.responseCreateErr)
 				if tt.responseCreateErr == nil {
 					mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.aicall.ActiveflowID, map[string]string{"contact_case_id": tt.responseCase.ID.String()}).Return(nil)

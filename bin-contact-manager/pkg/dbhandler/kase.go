@@ -649,7 +649,7 @@ func (h *handler) CaseGetLastClosedByPeerTx(ctx context.Context, tx *sql.Tx, cus
 // GET /contact_cases is no longer silently ignored end-to-end and the
 // square-admin "Cases" list surfaces the most-recently-opened Cases
 // first instead of an arbitrary DB-engine row order.
-func (h *handler) CaseList(ctx context.Context, customerID uuid.UUID, size uint64, token string, status string, ownerType commonidentity.OwnerType, ownerID uuid.UUID, contactID uuid.UUID) ([]*kase.Case, error) {
+func (h *handler) CaseList(ctx context.Context, customerID uuid.UUID, size uint64, token string, status string, ownerType commonidentity.OwnerType, ownerID uuid.UUID, contactID uuid.UUID, referenceID string) ([]*kase.Case, error) {
 	columns := commondatabasehandler.GetDBFields(&kase.Case{})
 
 	builder := sq.Select(columns...).
@@ -665,6 +665,9 @@ func (h *handler) CaseList(ctx context.Context, customerID uuid.UUID, size uint6
 	}
 	if contactID != uuid.Nil {
 		builder = builder.Where(sq.Eq{"contact_id": contactID.Bytes()})
+	}
+	if referenceID != "" {
+		builder = builder.Where(sq.Eq{"reference_id": referenceID})
 	}
 
 	if token != "" {

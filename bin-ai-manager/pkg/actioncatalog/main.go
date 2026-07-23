@@ -90,6 +90,7 @@ var actionCatalog = []actionCatalogEntry{
 		{Name: "name", Type: "string", Required: false, Description: "Short case title."},
 		{Name: "detail", Type: "string", Required: false, Description: "Longer free-text description of the issue."},
 		{Name: "note", Type: "string", Required: false, Description: "An initial internal note for the agent (not shown to the customer)."},
+		{Name: "reference_id", Type: "string", Required: false, Description: "External reference id (e.g. ticket/ID from an outside system) to associate with the case."},
 		{Name: "sync", Type: "bool", Required: false, Description: "Whether to wait for the case-create RPC to complete before continuing (matches conversation_send/email_send's sync/async toggle)."},
 	}},
 	{Type: fmaction.TypeCall, Summary: "Originate one or more new outbound calls (each runs its own flow or actions).", Options: []actionOptionField{

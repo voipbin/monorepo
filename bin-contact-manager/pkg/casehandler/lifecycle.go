@@ -156,7 +156,7 @@ func (h *caseHandler) Continue(ctx context.Context, customerID, id uuid.UUID, ca
 		}
 	}()
 
-	res, _, err := h.insertWithRetry(ctx, tx, customerID, commonaddress.Address{}, source.Peer, source.ReferenceType, &source.ID, now)
+	res, _, err := h.insertWithRetry(ctx, tx, customerID, commonaddress.Address{}, source.Peer, source.ReferenceType, &source.ID, now, "")
 	if err != nil {
 		return nil, err
 	}

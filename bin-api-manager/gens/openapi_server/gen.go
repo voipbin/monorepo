@@ -2797,6 +2797,9 @@ type ContactManagerCase struct {
 	// PreviousCaseId ID of the prior (now-closed) case this case continues from, if any.
 	PreviousCaseId *openapi_types.UUID `json:"previous_case_id,omitempty"`
 
+	// ReferenceId Optional customer-supplied external reference identifier (e.g. an order number or ticket ID from the customer's own system), settable only at creation time. Distinct from reference_type, which identifies the internal VoIPBin resource kind (call, conversation message) this case originated from.
+	ReferenceId *string `json:"reference_id,omitempty"`
+
 	// ReferenceType Origin channel type (e.g. "call", "conversation_message").
 	ReferenceType *string `json:"reference_type,omitempty"`
 
@@ -6172,6 +6175,9 @@ type GetContactCasesParams struct {
 
 	// ContactId Filter to cases attributed to this Contact.
 	ContactId *openapi_types.UUID `form:"contact_id,omitempty" json:"contact_id,omitempty"`
+
+	// ReferenceId Filter to cases with this exact customer-supplied external reference identifier.
+	ReferenceId *string `form:"reference_id,omitempty" json:"reference_id,omitempty"`
 
 	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
@@ -13043,6 +13049,14 @@ func (siw *ServerInterfaceWrapper) GetContactCases(c *gin.Context) {
 	err = runtime.BindQueryParameter("form", true, false, "contact_id", c.Request.URL.Query(), &params.ContactId)
 	if err != nil {
 		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter contact_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "reference_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "reference_id", c.Request.URL.Query(), &params.ReferenceId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter reference_id: %w", err), http.StatusBadRequest)
 		return
 	}
 

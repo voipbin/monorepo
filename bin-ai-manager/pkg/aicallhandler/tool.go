@@ -562,7 +562,7 @@ func (h *aicallHandler) toolHandleCaseCreate(ctx context.Context, c *aicall.AIca
 	peerAddr := peer
 	peerAddr.Target = peerTarget // override with the normalized value; TargetName/Name/Detail pass through unchanged
 
-	created, errCreate := h.reqHandler.ContactV1CaseCreate(ctx, c.CustomerID, self, peerAddr, referenceType, tmpOpt.Name, tmpOpt.Detail)
+	created, errCreate := h.reqHandler.ContactV1CaseCreate(ctx, c.CustomerID, self, peerAddr, referenceType, tmpOpt.Name, tmpOpt.Detail, tmpOpt.ReferenceID)
 	if errCreate != nil {
 		fillFailed(res, errCreate)
 		return res

@@ -21,14 +21,14 @@ import (
 // explicit Create (design VOIP-1243 §3) -- distinct from the internal
 // GetOrCreate path. self/peerType/peerTarget/referenceType must be
 // derived by the caller from the actual call/conversation context (see
-// design §3.2); name/detail are optional (empty string persisted as
-// the column's empty default, not NULL).
+// design §3.2); name/detail/referenceID are optional (empty string
+// persisted as the column's empty default, not NULL).
 func (r *requestHandler) ContactV1CaseCreate(
 	ctx context.Context,
 	customerID uuid.UUID,
 	self commonaddress.Address,
 	peer commonaddress.Address,
-	referenceType, name, detail string,
+	referenceType, name, detail, referenceID string,
 ) (*cmkase.Case, error) {
 	uri := "/v1/cases"
 
@@ -39,6 +39,7 @@ func (r *requestHandler) ContactV1CaseCreate(
 		ReferenceType: referenceType,
 		Name:          name,
 		Detail:        detail,
+		ReferenceID:   referenceID,
 	}
 
 	m, err := json.Marshal(data)
@@ -87,6 +88,7 @@ func (r *requestHandler) ContactV1CaseList(
 	contactID uuid.UUID,
 	size uint64,
 	token string,
+	referenceID string,
 ) ([]*cmkase.Case, string, error) {
 	u := url.Values{}
 	if status != "" {
@@ -100,6 +102,9 @@ func (r *requestHandler) ContactV1CaseList(
 	}
 	if contactID != uuid.Nil {
 		u.Set("contact_id", contactID.String())
+	}
+	if referenceID != "" {
+		u.Set("reference_id", referenceID)
 	}
 	if size > 0 {
 		u.Set("page_size", fmt.Sprintf("%d", size))

@@ -44,11 +44,18 @@ type Case struct {
 	// exactly for the design §4 get-or-create join to work.
 	ReferenceType string `json:"reference_type" db:"reference_type"`
 
-	// Name/Detail are optional, freeform case metadata settable only at
-	// creation time via Create (design VOIP-1243 §3.4). Empty string is
-	// persisted as the column's default/empty value, not NULL.
-	Name   string `json:"name,omitempty"   db:"name"`
-	Detail string `json:"detail,omitempty" db:"detail"`
+	// Name/Detail/ReferenceID are optional, freeform case metadata settable
+	// only at creation time via Create (design VOIP-1243 §3.4, extended by
+	// docs/plans/2026-07-24-case-reference-id-design.md). Empty string is
+	// persisted as the column's default/empty value, not NULL. ReferenceID
+	// is a customer-supplied identifier from the customer's OWN external
+	// system (ticket/order system) -- distinct from ReferenceType, which
+	// identifies the internal VoIPBin resource kind (call, conversation
+	// message) this Case originated from. ReferenceID has no uniqueness
+	// constraint: multiple Cases may share the same external reference.
+	Name        string `json:"name,omitempty"         db:"name"`
+	Detail      string `json:"detail,omitempty"       db:"detail"`
+	ReferenceID string `json:"reference_id,omitempty" db:"reference_id"`
 
 	// ContactID is a nullable denormalized cache; single source of truth
 	// is this column itself, every write goes through

@@ -74,7 +74,7 @@ func Test_ServiceAgentCaseList(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().ContactV1CaseList(ctx, tt.agent.CustomerID, "", "", uuid.Nil, uuid.Nil, tt.pageSize, tt.pageToken).Return(tt.responseCases, tt.responseNextToken, nil)
+			mockReq.EXPECT().ContactV1CaseList(ctx, tt.agent.CustomerID, "", "", uuid.Nil, uuid.Nil, tt.pageSize, tt.pageToken, "").Return(tt.responseCases, tt.responseNextToken, nil)
 
 			res, nextToken, err := h.ServiceAgentCaseList(ctx, tt.agent, tt.pageSize, tt.pageToken)
 			if err != nil {

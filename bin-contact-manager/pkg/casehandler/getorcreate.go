@@ -68,6 +68,7 @@ func (h *caseHandler) GetOrCreate(
 	self, peer commonaddress.Address,
 	referenceType string,
 	caseIDHint *uuid.UUID,
+	referenceID string,
 ) (*kase.Case, error) {
 	if peer.Type == "" || peer.Target == "" {
 		return nil, cerrors.InvalidArgument(
@@ -95,7 +96,7 @@ func (h *caseHandler) GetOrCreate(
 
 	var lastErr error
 	for attempt := 0; attempt < maxDeadlockRetries; attempt++ {
-		res, isNewCase, err := h.getOrCreateAttempt(ctx, customerID, self, peer, referenceType, caseIDHint)
+		res, isNewCase, err := h.getOrCreateAttempt(ctx, customerID, self, peer, referenceType, caseIDHint, referenceID)
 		if err == nil {
 			// Release the peer lock immediately after a successful commit,
 			// strictly BEFORE linkSiblingConversation's cross-service RPCs
@@ -137,6 +138,7 @@ func (h *caseHandler) getOrCreateAttempt(
 	self, peer commonaddress.Address,
 	referenceType string,
 	caseIDHint *uuid.UUID,
+	referenceID string,
 ) (*kase.Case, bool, error) {
 	now := h.utilHandler.TimeNow()
 
@@ -151,7 +153,7 @@ func (h *caseHandler) getOrCreateAttempt(
 		}
 	}()
 
-	res, isNewCase, err := h.getOrCreateInTx(ctx, tx, customerID, self, peer, referenceType, caseIDHint, now)
+	res, isNewCase, err := h.getOrCreateInTx(ctx, tx, customerID, self, peer, referenceType, caseIDHint, now, referenceID)
 	if err != nil {
 		return nil, false, err
 	}
@@ -209,6 +211,7 @@ func (h *caseHandler) getOrCreateInTx(
 	referenceType string,
 	caseIDHint *uuid.UUID,
 	now *time.Time,
+	referenceID string,
 ) (*kase.Case, bool, error) {
 	// Step 1a: explicit case_id hint (design §4.3). Validated: correct
 	// tenant, still open. An invalid/stale/closed hint is never an error --
@@ -253,7 +256,7 @@ func (h *caseHandler) getOrCreateInTx(
 			}
 			return nil, false, fmt.Errorf("could not close timed-out case. GetOrCreate. err: %v", err)
 		}
-		return h.insertWithRetry(ctx, tx, customerID, self, peer, referenceType, &found.ID, now)
+		return h.insertWithRetry(ctx, tx, customerID, self, peer, referenceType, &found.ID, now, referenceID)
 	}
 
 	// Step 1c: no open case at all -- fresh insert, chained to the last
@@ -269,7 +272,7 @@ func (h *caseHandler) getOrCreateInTx(
 	if lastClosed != nil {
 		previousCaseID = &lastClosed.ID
 	}
-	return h.insertWithRetry(ctx, tx, customerID, self, peer, referenceType, previousCaseID, now)
+	return h.insertWithRetry(ctx, tx, customerID, self, peer, referenceType, previousCaseID, now, referenceID)
 }
 
 // insertWithRetry implements design §4.2's bounded retry loop: attempt an
@@ -286,6 +289,7 @@ func (h *caseHandler) insertWithRetry(
 	referenceType string,
 	previousCaseID *uuid.UUID,
 	now *time.Time,
+	referenceID string,
 ) (*kase.Case, bool, error) {
 	for attempt := 0; attempt < maxInsertRetries; attempt++ {
 		newCase := &kase.Case{
@@ -294,6 +298,7 @@ func (h *caseHandler) insertWithRetry(
 			Peer:           peer,
 			Local:          self,
 			ReferenceType:  referenceType,
+			ReferenceID:    referenceID,
 			Status:         kase.StatusOpen,
 			OpenedAt:       now,
 			PreviousCaseID: previousCaseID,

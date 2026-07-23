@@ -57,7 +57,7 @@ func Test_CaseList_ScopesToCustomerAndAppliesFilters(t *testing.T) {
 		t.Fatalf("CaseInsert() error = %v", err)
 	}
 
-	res, _, err := h.CaseList(ctx, customerID, 0, "", "", commonidentity.OwnerTypeNone, uuid.Nil, uuid.Nil)
+	res, _, err := h.CaseList(ctx, customerID, 0, "", "", commonidentity.OwnerTypeNone, uuid.Nil, uuid.Nil, "")
 	if err != nil {
 		t.Fatalf("CaseList() error = %v", err)
 	}
@@ -105,7 +105,7 @@ func Test_CaseList_DefaultSizeAndNextToken(t *testing.T) {
 	}
 
 	// size=1: exactly 1 item back, plus a non-empty nextToken (id1 still pending).
-	page, nextToken, err := h.CaseList(ctx, customerID, 1, "", "", commonidentity.OwnerTypeNone, uuid.Nil, uuid.Nil)
+	page, nextToken, err := h.CaseList(ctx, customerID, 1, "", "", commonidentity.OwnerTypeNone, uuid.Nil, uuid.Nil, "")
 	if err != nil {
 		t.Fatalf("CaseList(size=1) error = %v", err)
 	}
@@ -117,7 +117,7 @@ func Test_CaseList_DefaultSizeAndNextToken(t *testing.T) {
 	}
 
 	// Follow the cursor: expect id1, and an empty nextToken (no further pages).
-	page2, nextToken2, err := h.CaseList(ctx, customerID, 1, nextToken, "", commonidentity.OwnerTypeNone, uuid.Nil, uuid.Nil)
+	page2, nextToken2, err := h.CaseList(ctx, customerID, 1, nextToken, "", commonidentity.OwnerTypeNone, uuid.Nil, uuid.Nil, "")
 	if err != nil {
 		t.Fatalf("CaseList(token) error = %v", err)
 	}

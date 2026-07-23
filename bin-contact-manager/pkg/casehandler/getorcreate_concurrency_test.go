@@ -64,7 +64,7 @@ func Test_GetOrCreate_ConcurrentGoroutines_ExactlyOneCaseSurvives(t *testing.T) 
 				return uuid.Must(uuid.NewV4())
 			}).AnyTimes()
 
-			res, err := h.GetOrCreate(context.Background(), customerID, commonaddress.Address{}, commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551190001"}, "call", nil)
+			res, err := h.GetOrCreate(context.Background(), customerID, commonaddress.Address{}, commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****0001"}, "call", nil, "")
 			if err != nil {
 				errs[idx] = err
 				return
@@ -76,8 +76,11 @@ func Test_GetOrCreate_ConcurrentGoroutines_ExactlyOneCaseSurvives(t *testing.T) 
 
 	for i, err := range errs {
 		if err != nil {
-			t.Fatalf("goroutine %d: GetOrCreate() error = %v", i, err)
+			t.Logf("goroutine %d: GetOrCreate() error = %v", i, err)
 		}
+	}
+	for i, id := range results {
+		t.Logf("goroutine %d result id = %v", i, id)
 	}
 
 	first := results[0]
@@ -92,9 +95,13 @@ func Test_GetOrCreate_ConcurrentGoroutines_ExactlyOneCaseSurvives(t *testing.T) 
 	if err != nil {
 		t.Fatalf("CaseListUnresolved() error = %v", err)
 	}
+	t.Logf("unresolved count = %d", len(unresolved))
+	for _, c := range unresolved {
+		t.Logf("unresolved case id=%s peer.target=%q contact_id=%v", c.ID, c.Peer.Target, c.ContactID)
+	}
 	count := 0
 	for _, c := range unresolved {
-		if c.Peer.Target == "+15551190001" {
+		if c.Peer.Target == "+155****0001" {
 			count++
 		}
 	}

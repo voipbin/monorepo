@@ -37,7 +37,13 @@ type CaseHandler interface {
 	// Pass a zero commonaddress.Address to opt out of this optimization
 	// entirely (e.g. reference_type == "conversation_message" itself,
 	// which never triggers this write per §4.4's scope).
-	GetOrCreate(ctx context.Context, customerID uuid.UUID, self, peer commonaddress.Address, referenceType string, caseIDHint *uuid.UUID) (*kase.Case, error)
+	//
+	// referenceID (docs/plans/2026-07-24-case-reference-id-design.md §6.1)
+	// is threaded only into insertWithRetry's fresh-insert branch, mirroring
+	// Name/Detail's absence from the hint-match/peer-reuse branches -- a
+	// caller CAN supply one (e.g. the flow-manager case_create action),
+	// but no historical value is ever copied from a reused/timed-out Case.
+	GetOrCreate(ctx context.Context, customerID uuid.UUID, self, peer commonaddress.Address, referenceType string, caseIDHint *uuid.UUID, referenceID string) (*kase.Case, error)
 
 	// Close implements design §5.1: idempotent, race-tolerant close.
 	// Returns the ACTUALLY persisted closed_reason/closed_by, never the
@@ -90,13 +96,16 @@ type CaseHandler interface {
 
 	// CaseList / CaseGet implement design §9's Phase 5 RPC/REST list and
 	// get surface. CaseList is a customer-scoped, optionally
-	// status/owner-filtered list (thin delegation to dbhandler.CaseList).
+	// status/owner/contact_id/reference_id-filtered list (thin delegation
+	// to dbhandler.CaseList; reference_id filter added by
+	// docs/plans/2026-07-24-case-reference-id-design.md, exact match,
+	// empty = no filter).
 	// CaseGet is CaseGetByID with an explicit tenant check -- unlike the
 	// raw dbhandler.CaseGetByID primitive, which is unscoped and relied
 	// upon by internal callers that already verify ownership themselves
 	// (see verifyCaseOwnership), CaseGet is the public, safe-by-default
 	// entry point for the customer-facing GET /v1/cases/{id} route.
-	CaseList(ctx context.Context, customerID uuid.UUID, size uint64, token string, status string, ownerType commonidentity.OwnerType, ownerID uuid.UUID, contactID uuid.UUID) ([]*kase.Case, string, error)
+	CaseList(ctx context.Context, customerID uuid.UUID, size uint64, token string, status string, ownerType commonidentity.OwnerType, ownerID uuid.UUID, contactID uuid.UUID, referenceID string) ([]*kase.Case, string, error)
 	CaseGet(ctx context.Context, customerID, id uuid.UUID) (*kase.Case, error)
 
 	// Create implements design VOIP-1243 §3: a plain, explicit Case
@@ -106,7 +115,10 @@ type CaseHandler interface {
 	// primitive and translates its sentinel errors
 	// (dbhandler.ErrDuplicate / dbhandler.ErrDeadlock) into typed
 	// cerrors.AlreadyExists / cerrors.Unavailable respectively.
-	Create(ctx context.Context, customerID uuid.UUID, self, peer commonaddress.Address, referenceType, name, detail string) (*kase.Case, error)
+	// referenceID (docs/plans/2026-07-24-case-reference-id-design.md) is
+	// an optional customer-supplied external reference, settable only at
+	// creation time; empty string persists as the column's empty default.
+	Create(ctx context.Context, customerID uuid.UUID, self, peer commonaddress.Address, referenceType, name, detail, referenceID string) (*kase.Case, error)
 }
 
 type caseHandler struct {

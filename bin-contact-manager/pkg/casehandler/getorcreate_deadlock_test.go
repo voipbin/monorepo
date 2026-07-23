@@ -75,7 +75,7 @@ func Test_GetOrCreate_Deadlock_RetriesWithFreshBeginTx(t *testing.T) {
 	mockDB.EXPECT().CaseInsertTx(ctx, gomock.Any(), gomock.Any()).Return(nil)
 	mockDB.EXPECT().CaseUpdateTMUpdateTx(ctx, gomock.Any(), attempt2ID, &now2).Return(nil)
 
-	res, err := h.GetOrCreate(ctx, customerID, commonaddress.Address{}, commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****0001"}, "conversation_message", nil)
+	res, err := h.GetOrCreate(ctx, customerID, commonaddress.Address{}, commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****0001"}, "conversation_message", nil, "")
 	if err != nil {
 		t.Fatalf("GetOrCreate() error = %v", err)
 	}
@@ -129,7 +129,7 @@ func Test_GetOrCreate_Deadlock_ExhaustionReturnsDistinctError(t *testing.T) {
 	mockUtil.EXPECT().UUIDCreate().Return(uuid.Must(uuid.NewV4())).Times(maxDeadlockRetries)
 	mockDB.EXPECT().CaseInsertTx(ctx, gomock.Any(), gomock.Any()).Return(dbhandler.ErrDeadlock).Times(maxDeadlockRetries)
 
-	_, err := h.GetOrCreate(ctx, customerID, commonaddress.Address{}, commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****0002"}, "call", nil)
+	_, err := h.GetOrCreate(ctx, customerID, commonaddress.Address{}, commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****0002"}, "call", nil, "")
 	if !errors.Is(err, ErrDeadlockExhausted) {
 		t.Errorf("expected ErrDeadlockExhausted, got: %v", err)
 	}
@@ -226,7 +226,7 @@ func Test_GetOrCreate_PeerLock_SerializesSameTuple(t *testing.T) {
 	for i := 0; i < 2; i++ {
 		go func() {
 			defer wg.Done()
-			_, _ = h.GetOrCreate(ctx, customerID, commonaddress.Address{}, commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****0003"}, "call", nil)
+			_, _ = h.GetOrCreate(ctx, customerID, commonaddress.Address{}, commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****0003"}, "call", nil, "")
 		}()
 	}
 	wg.Wait()
@@ -296,11 +296,11 @@ func Test_GetOrCreate_PeerLock_DifferentTuplesProceedConcurrently(t *testing.T) 
 	wg.Add(2)
 	go func() {
 		defer wg.Done()
-		_, _ = h.GetOrCreate(ctx, customerID, commonaddress.Address{}, commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****0004"}, "call", nil)
+		_, _ = h.GetOrCreate(ctx, customerID, commonaddress.Address{}, commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****0004"}, "call", nil, "")
 	}()
 	go func() {
 		defer wg.Done()
-		_, _ = h.GetOrCreate(ctx, customerID, commonaddress.Address{}, commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****0005"}, "call", nil)
+		_, _ = h.GetOrCreate(ctx, customerID, commonaddress.Address{}, commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****0005"}, "call", nil, "")
 	}()
 	wg.Wait()
 

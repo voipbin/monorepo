@@ -155,6 +155,7 @@ create table contact_cases (
 
   name              varchar(255)  not null default '',
   detail            text,
+  reference_id      varchar(255)  not null default '',
 
   contact_id        binary(16),
 

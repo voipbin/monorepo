@@ -3524,18 +3524,18 @@ func (mr *MockRequestHandlerMockRecorder) ContactV1CaseContinue(ctx, customerID,
 }
 
 // ContactV1CaseCreate mocks base method.
-func (m *MockRequestHandler) ContactV1CaseCreate(ctx context.Context, customerID uuid.UUID, self, peer address.Address, referenceType, name, detail string) (*kase.Case, error) {
+func (m *MockRequestHandler) ContactV1CaseCreate(ctx context.Context, customerID uuid.UUID, self, peer address.Address, referenceType, name, detail, referenceID string) (*kase.Case, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ContactV1CaseCreate", ctx, customerID, self, peer, referenceType, name, detail)
+	ret := m.ctrl.Call(m, "ContactV1CaseCreate", ctx, customerID, self, peer, referenceType, name, detail, referenceID)
 	ret0, _ := ret[0].(*kase.Case)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ContactV1CaseCreate indicates an expected call of ContactV1CaseCreate.
-func (mr *MockRequestHandlerMockRecorder) ContactV1CaseCreate(ctx, customerID, self, peer, referenceType, name, detail any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) ContactV1CaseCreate(ctx, customerID, self, peer, referenceType, name, detail, referenceID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactV1CaseCreate", reflect.TypeOf((*MockRequestHandler)(nil).ContactV1CaseCreate), ctx, customerID, self, peer, referenceType, name, detail)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactV1CaseCreate", reflect.TypeOf((*MockRequestHandler)(nil).ContactV1CaseCreate), ctx, customerID, self, peer, referenceType, name, detail, referenceID)
 }
 
 // ContactV1CaseGet mocks base method.
@@ -3554,9 +3554,9 @@ func (mr *MockRequestHandlerMockRecorder) ContactV1CaseGet(ctx, customerID, id a
 }
 
 // ContactV1CaseList mocks base method.
-func (m *MockRequestHandler) ContactV1CaseList(ctx context.Context, customerID uuid.UUID, status, ownerType string, ownerID, contactID uuid.UUID, size uint64, token string) ([]*kase.Case, string, error) {
+func (m *MockRequestHandler) ContactV1CaseList(ctx context.Context, customerID uuid.UUID, status, ownerType string, ownerID, contactID uuid.UUID, size uint64, token, referenceID string) ([]*kase.Case, string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ContactV1CaseList", ctx, customerID, status, ownerType, ownerID, contactID, size, token)
+	ret := m.ctrl.Call(m, "ContactV1CaseList", ctx, customerID, status, ownerType, ownerID, contactID, size, token, referenceID)
 	ret0, _ := ret[0].([]*kase.Case)
 	ret1, _ := ret[1].(string)
 	ret2, _ := ret[2].(error)
@@ -3564,9 +3564,9 @@ func (m *MockRequestHandler) ContactV1CaseList(ctx context.Context, customerID u
 }
 
 // ContactV1CaseList indicates an expected call of ContactV1CaseList.
-func (mr *MockRequestHandlerMockRecorder) ContactV1CaseList(ctx, customerID, status, ownerType, ownerID, contactID, size, token any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) ContactV1CaseList(ctx, customerID, status, ownerType, ownerID, contactID, size, token, referenceID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactV1CaseList", reflect.TypeOf((*MockRequestHandler)(nil).ContactV1CaseList), ctx, customerID, status, ownerType, ownerID, contactID, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactV1CaseList", reflect.TypeOf((*MockRequestHandler)(nil).ContactV1CaseList), ctx, customerID, status, ownerType, ownerID, contactID, size, token, referenceID)
 }
 
 // ContactV1CaseListUnresolved mocks base method.

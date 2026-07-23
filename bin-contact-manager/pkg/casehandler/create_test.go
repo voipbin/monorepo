@@ -46,7 +46,7 @@ func Test_Create_HappyPath(t *testing.T) {
 		ctx, customerID,
 		commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****0701"},
 		commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****9701"}, "call",
-		"VIP escalation", "customer called about billing",
+		"VIP escalation", "customer called about billing", "ORD-88123",
 	)
 	if err != nil {
 		t.Fatalf("Create() error = %v", err)
@@ -70,6 +70,9 @@ func Test_Create_HappyPath(t *testing.T) {
 	if res.Name != "VIP escalation" || res.Detail != "customer called about billing" {
 		t.Errorf("unexpected Name/Detail: %q / %q", res.Name, res.Detail)
 	}
+	if res.ReferenceID != "ORD-88123" {
+		t.Errorf("unexpected ReferenceID: %q", res.ReferenceID)
+	}
 
 	// Confirm it was actually persisted.
 	fetched, err := db.CaseGetByID(ctx, caseID)
@@ -78,6 +81,9 @@ func Test_Create_HappyPath(t *testing.T) {
 	}
 	if fetched.Name != "VIP escalation" || fetched.Detail != "customer called about billing" {
 		t.Errorf("unexpected persisted Name/Detail: %q / %q", fetched.Name, fetched.Detail)
+	}
+	if fetched.ReferenceID != "ORD-88123" {
+		t.Errorf("unexpected persisted ReferenceID: %q", fetched.ReferenceID)
 	}
 }
 
@@ -107,13 +113,13 @@ func Test_Create_DuplicateOpenPeer_TranslatesToAlreadyExists(t *testing.T) {
 
 	mockUtil.EXPECT().UUIDCreate().Return(firstCaseID)
 	mockUtil.EXPECT().TimeNow().Return(&now)
-	if _, err := h.Create(ctx, customerID, self, peer, referenceType, "", ""); err != nil {
+	if _, err := h.Create(ctx, customerID, self, peer, referenceType, "", "", ""); err != nil {
 		t.Fatalf("first Create() error = %v", err)
 	}
 
 	mockUtil.EXPECT().UUIDCreate().Return(secondCaseID)
 	mockUtil.EXPECT().TimeNow().Return(&now)
-	_, err := h.Create(ctx, customerID, self, peer, referenceType, "", "")
+	_, err := h.Create(ctx, customerID, self, peer, referenceType, "", "", "")
 
 	var ve *cerrors.VoipbinError
 	if err == nil {
@@ -154,7 +160,7 @@ func Test_Create_Deadlock_TranslatesToUnavailable(t *testing.T) {
 	_, err := h.Create(
 		ctx, customerID,
 		commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****0703"},
-		commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****9703"}, "call", "", "",
+		commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****9703"}, "call", "", "", "",
 	)
 
 	var ve *cerrors.VoipbinError

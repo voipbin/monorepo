@@ -94,4 +94,5 @@ type V1DataCasesPost struct {
 	ReferenceType string                `json:"reference_type"`
 	Name          string                `json:"name,omitempty"`
 	Detail        string                `json:"detail,omitempty"`
+	ReferenceID   string                `json:"reference_id,omitempty"`
 }

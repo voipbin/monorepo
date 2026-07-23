@@ -3875,6 +3875,10 @@ components:
           type: string
           description: Optional freeform case detail, settable only at creation time.
           example: "Customer disputes March invoice charges."
+        reference_id:
+          type: string
+          description: "Optional customer-supplied external reference identifier (e.g. an order number or ticket ID from the customer's own system), settable only at creation time. Distinct from reference_type, which identifies the internal VoIPBin resource kind (call, conversation message) this case originated from."
+          example: "ORD-2026-04821"
         previous_case_id:
           type: string
           format: uuid

@@ -1756,9 +1756,9 @@ func (mr *MockServiceHandlerMockRecorder) CaseGet(ctx, a, id any) *gomock.Call {
 }
 
 // CaseList mocks base method.
-func (m *MockServiceHandler) CaseList(ctx context.Context, a *auth.AuthIdentity, targetCustomerID uuid.UUID, size uint64, token, status, ownerType string, ownerID, contactID uuid.UUID) ([]*kase.Case, string, error) {
+func (m *MockServiceHandler) CaseList(ctx context.Context, a *auth.AuthIdentity, targetCustomerID uuid.UUID, size uint64, token, status, ownerType string, ownerID, contactID uuid.UUID, referenceID string) ([]*kase.Case, string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CaseList", ctx, a, targetCustomerID, size, token, status, ownerType, ownerID, contactID)
+	ret := m.ctrl.Call(m, "CaseList", ctx, a, targetCustomerID, size, token, status, ownerType, ownerID, contactID, referenceID)
 	ret0, _ := ret[0].([]*kase.Case)
 	ret1, _ := ret[1].(string)
 	ret2, _ := ret[2].(error)
@@ -1766,9 +1766,9 @@ func (m *MockServiceHandler) CaseList(ctx context.Context, a *auth.AuthIdentity,
 }
 
 // CaseList indicates an expected call of CaseList.
-func (mr *MockServiceHandlerMockRecorder) CaseList(ctx, a, targetCustomerID, size, token, status, ownerType, ownerID, contactID any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) CaseList(ctx, a, targetCustomerID, size, token, status, ownerType, ownerID, contactID, referenceID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseList", reflect.TypeOf((*MockServiceHandler)(nil).CaseList), ctx, a, targetCustomerID, size, token, status, ownerType, ownerID, contactID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseList", reflect.TypeOf((*MockServiceHandler)(nil).CaseList), ctx, a, targetCustomerID, size, token, status, ownerType, ownerID, contactID, referenceID)
 }
 
 // CaseListUnresolved mocks base method.

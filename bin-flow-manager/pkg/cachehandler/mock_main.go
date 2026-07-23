@@ -146,17 +146,17 @@ func (mr *MockCacheHandlerMockRecorder) FlowGet(ctx, id any) *gomock.Call {
 }
 
 // FlowSet mocks base method.
-func (m *MockCacheHandler) FlowSet(ctx context.Context, flow *flow.Flow) error {
+func (m *MockCacheHandler) FlowSet(ctx context.Context, arg1 *flow.Flow) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlowSet", ctx, flow)
+	ret := m.ctrl.Call(m, "FlowSet", ctx, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // FlowSet indicates an expected call of FlowSet.
-func (mr *MockCacheHandlerMockRecorder) FlowSet(ctx, flow any) *gomock.Call {
+func (mr *MockCacheHandlerMockRecorder) FlowSet(ctx, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowSet", reflect.TypeOf((*MockCacheHandler)(nil).FlowSet), ctx, flow)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowSet", reflect.TypeOf((*MockCacheHandler)(nil).FlowSet), ctx, arg1)
 }
 
 // VariableGet mocks base method.

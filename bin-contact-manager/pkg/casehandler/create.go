@@ -25,7 +25,7 @@ func (h *caseHandler) Create(
 	ctx context.Context,
 	customerID uuid.UUID,
 	self, peer commonaddress.Address,
-	referenceType, name, detail string,
+	referenceType, name, detail, referenceID string,
 ) (*kase.Case, error) {
 	if peer.Type == "" || peer.Target == "" {
 		return nil, cerrors.InvalidArgument(
@@ -45,6 +45,7 @@ func (h *caseHandler) Create(
 		ReferenceType:  referenceType,
 		Name:           name,
 		Detail:         detail,
+		ReferenceID:    referenceID,
 		Status:         kase.StatusOpen,
 		OpenedAt:       now,
 		PreviousCaseID: nil,

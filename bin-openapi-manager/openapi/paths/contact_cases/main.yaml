@@ -35,6 +35,12 @@ get:
         type: string
         format: uuid
         example: "b2c3d4e5-f6a7-8901-bcde-f12345678901"
+    - name: reference_id
+      in: query
+      description: Filter to cases with this exact customer-supplied external reference identifier.
+      schema:
+        type: string
+        example: "ORD-2026-04821"
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'
   responses:

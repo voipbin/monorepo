@@ -27,6 +27,7 @@ func Test_ContactV1CaseCreate(t *testing.T) {
 		referenceType string
 		caseName      string
 		detail        string
+		referenceID   string
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -43,6 +44,7 @@ func Test_ContactV1CaseCreate(t *testing.T) {
 			referenceType: "call",
 			caseName:      "VIP escalation",
 			detail:        "customer called about billing",
+			referenceID:   "ORD-12345",
 
 			expectTarget: "bin-manager.contact-manager.request",
 			expectRequest: &sock.Request{
@@ -50,7 +52,7 @@ func Test_ContactV1CaseCreate(t *testing.T) {
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data: []byte(
-					`{"customer_id":"55ecfc4e-2c74-11ee-98fb-0762519529f3","self":{"type":"tel","target":"+155****0001"},"peer":{"type":"tel","target":"+155****0002"},"reference_type":"call","name":"VIP escalation","detail":"customer called about billing"}`,
+					`{"customer_id":"55ecfc4e-2c74-11ee-98fb-0762519529f3","self":{"type":"tel","target":"+155****0001"},"peer":{"type":"tel","target":"+155****0002"},"reference_type":"call","name":"VIP escalation","detail":"customer called about billing","reference_id":"ORD-12345"}`,
 				),
 			},
 			response: &sock.Response{
@@ -77,7 +79,7 @@ func Test_ContactV1CaseCreate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.ContactV1CaseCreate(ctx, tt.customerID, tt.self, tt.peer, tt.referenceType, tt.caseName, tt.detail)
+			res, err := reqHandler.ContactV1CaseCreate(ctx, tt.customerID, tt.self, tt.peer, tt.referenceType, tt.caseName, tt.detail, tt.referenceID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -198,7 +200,7 @@ func Test_ContactV1CaseList(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, nextToken, err := reqHandler.ContactV1CaseList(ctx, tt.customerID, tt.status, tt.ownerType, tt.ownerID, tt.contactID, tt.size, tt.token)
+			res, nextToken, err := reqHandler.ContactV1CaseList(ctx, tt.customerID, tt.status, tt.ownerType, tt.ownerID, tt.contactID, tt.size, tt.token, "")
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -239,7 +241,7 @@ func Test_ContactV1CaseList_NextToken(t *testing.T) {
 		Data:       []byte(`[{"id":"5623e25e-2c74-11ee-87a6-bfa8ae34077f","tm_create":"2026-06-28T12:00:00.000000Z"},{"id":"8fe6c136-2c75-11ee-a3a4-37400837e12e","tm_create":"2026-06-28T11:00:00.000000Z"}]`),
 	}, nil)
 
-	_, nextToken, err := reqHandler.ContactV1CaseList(ctx, customerID, "", "", uuid.Nil, uuid.Nil, 0, "")
+	_, nextToken, err := reqHandler.ContactV1CaseList(ctx, customerID, "", "", uuid.Nil, uuid.Nil, 0, "", "")
 	if err != nil {
 		t.Errorf("Wrong match. expect: ok, got: %v", err)
 	}
