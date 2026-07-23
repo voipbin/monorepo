@@ -2797,7 +2797,7 @@ type ContactManagerCase struct {
 	// PreviousCaseId ID of the prior (now-closed) case this case continues from, if any.
 	PreviousCaseId *openapi_types.UUID `json:"previous_case_id,omitempty"`
 
-	// ReferenceId Optional customer-supplied external reference identifier (e.g. an order number or ticket ID from the customer's own system), settable only at creation time. Distinct from reference_type, which identifies the internal VoIPBin resource kind (call, conversation message) this case originated from.
+	// ReferenceId The internal VoIPBin resource ID that reference_type points at (the call ID when reference_type is "call", the conversation ID when reference_type is "conversation_message"), set automatically at case creation time. Never a customer- or agent-supplied value. Empty when no such internal resource ID applies.
 	ReferenceId *string `json:"reference_id,omitempty"`
 
 	// ReferenceType Origin channel type (e.g. "call", "conversation_message").
@@ -6176,7 +6176,7 @@ type GetContactCasesParams struct {
 	// ContactId Filter to cases attributed to this Contact.
 	ContactId *openapi_types.UUID `form:"contact_id,omitempty" json:"contact_id,omitempty"`
 
-	// ReferenceId Filter to cases with this exact customer-supplied external reference identifier.
+	// ReferenceId Filter to cases whose reference_id (the internal VoIPBin resource ID reference_type points at, e.g. a call ID) exactly matches this value.
 	ReferenceId *string `form:"reference_id,omitempty" json:"reference_id,omitempty"`
 
 	// PageSize Number of results to return per page.

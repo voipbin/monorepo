@@ -2,7 +2,7 @@ get:
   summary: List cases
   description: |
     List cases for the customer, optionally filtered by status, owner_type,
-    owner_id, and contact_id.
+    owner_id, contact_id, and reference_id.
   tags:
     - Case
   parameters:
@@ -37,10 +37,10 @@ get:
         example: "b2c3d4e5-f6a7-8901-bcde-f12345678901"
     - name: reference_id
       in: query
-      description: Filter to cases with this exact customer-supplied external reference identifier.
+      description: Filter to cases whose reference_id (the internal VoIPBin resource ID reference_type points at, e.g. a call ID) exactly matches this value.
       schema:
         type: string
-        example: "ORD-2026-04821"
+        example: "1fe1356f-3f7f-4ff9-9d33-08136b38f506"
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'
   responses:

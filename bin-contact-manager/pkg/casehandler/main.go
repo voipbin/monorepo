@@ -116,8 +116,11 @@ type CaseHandler interface {
 	// (dbhandler.ErrDuplicate / dbhandler.ErrDeadlock) into typed
 	// cerrors.AlreadyExists / cerrors.Unavailable respectively.
 	// referenceID (docs/plans/2026-07-24-case-reference-id-design.md) is
-	// an optional customer-supplied external reference, settable only at
-	// creation time; empty string persists as the column's empty default.
+	// the internal VoIPBin resource id referenceType points at (the call
+	// id when referenceType is "call", etc.), derived automatically by
+	// the caller from the resource already in scope -- never a
+	// customer-/agent-/LLM-supplied value; empty string persists as the
+	// column's empty default.
 	Create(ctx context.Context, customerID uuid.UUID, self, peer commonaddress.Address, referenceType, name, detail, referenceID string) (*kase.Case, error)
 }
 
