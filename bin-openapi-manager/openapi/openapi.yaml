@@ -3823,6 +3823,10 @@ components:
           type: string
           description: Origin channel type (e.g. "call", "conversation_message").
           example: "call"
+        reference_id:
+          type: string
+          description: "The internal VoIPBin resource ID that reference_type points at (the call ID when reference_type is \"call\", the conversation ID when reference_type is \"conversation_message\"), set automatically at case creation time. Never a customer- or agent-supplied value. Empty when no such internal resource ID applies."
+          example: "1fe1356f-3f7f-4ff9-9d33-08136b38f506"
         contact_id:
           type: string
           format: uuid
@@ -3875,10 +3879,6 @@ components:
           type: string
           description: Optional freeform case detail, settable only at creation time.
           example: "Customer disputes March invoice charges."
-        reference_id:
-          type: string
-          description: "The internal VoIPBin resource ID that reference_type points at (the call ID when reference_type is \"call\", the conversation ID when reference_type is \"conversation_message\"), set automatically at case creation time. Never a customer- or agent-supplied value. Empty when no such internal resource ID applies."
-          example: "1fe1356f-3f7f-4ff9-9d33-08136b38f506"
         previous_case_id:
           type: string
           format: uuid

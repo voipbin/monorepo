@@ -6167,6 +6167,9 @@ type GetContactCasesParams struct {
 	// Status Filter by case status.
 	Status *GetContactCasesParamsStatus `form:"status,omitempty" json:"status,omitempty"`
 
+	// ReferenceId Filter to cases whose reference_id (the internal VoIPBin resource ID reference_type points at, e.g. a call ID) exactly matches this value.
+	ReferenceId *string `form:"reference_id,omitempty" json:"reference_id,omitempty"`
+
 	// OwnerType Filter by owner type.
 	OwnerType *string `form:"owner_type,omitempty" json:"owner_type,omitempty"`
 
@@ -6175,9 +6178,6 @@ type GetContactCasesParams struct {
 
 	// ContactId Filter to cases attributed to this Contact.
 	ContactId *openapi_types.UUID `form:"contact_id,omitempty" json:"contact_id,omitempty"`
-
-	// ReferenceId Filter to cases whose reference_id (the internal VoIPBin resource ID reference_type points at, e.g. a call ID) exactly matches this value.
-	ReferenceId *string `form:"reference_id,omitempty" json:"reference_id,omitempty"`
 
 	// PageSize Number of results to return per page.
 	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
@@ -13028,6 +13028,14 @@ func (siw *ServerInterfaceWrapper) GetContactCases(c *gin.Context) {
 		return
 	}
 
+	// ------------- Optional query parameter "reference_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "reference_id", c.Request.URL.Query(), &params.ReferenceId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter reference_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
 	// ------------- Optional query parameter "owner_type" -------------
 
 	err = runtime.BindQueryParameter("form", true, false, "owner_type", c.Request.URL.Query(), &params.OwnerType)
@@ -13049,14 +13057,6 @@ func (siw *ServerInterfaceWrapper) GetContactCases(c *gin.Context) {
 	err = runtime.BindQueryParameter("form", true, false, "contact_id", c.Request.URL.Query(), &params.ContactId)
 	if err != nil {
 		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter contact_id: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "reference_id" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "reference_id", c.Request.URL.Query(), &params.ReferenceId)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter reference_id: %w", err), http.StatusBadRequest)
 		return
 	}
 
