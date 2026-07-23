@@ -71,7 +71,7 @@ func Test_EventWebchat_Inbound_MessageFlowConfigured(t *testing.T) {
 	}
 
 	expectSelf := commonaddress.Address{Type: commonaddress.TypeWebchat, Target: widgetID.String()}
-	expectPeer := commonaddress.Address{Type: commonaddress.TypeWebchat, Target: sessionID.String()}
+	expectPeer := commonaddress.Address{Type: commonaddress.TypeWebSession, Target: sessionID.String()}
 
 	cv := &conversation.Conversation{
 		Identity: commonidentity.Identity{ID: convID, CustomerID: customerID},
@@ -176,7 +176,7 @@ func Test_EventWebchat_Inbound_NoMessageFlowConfigured(t *testing.T) {
 	}
 
 	expectSelf := commonaddress.Address{Type: commonaddress.TypeWebchat, Target: widgetID.String()}
-	expectPeer := commonaddress.Address{Type: commonaddress.TypeWebchat, Target: sessionID.String()}
+	expectPeer := commonaddress.Address{Type: commonaddress.TypeWebSession, Target: sessionID.String()}
 
 	cv := &conversation.Conversation{
 		Identity: commonidentity.Identity{ID: convID, CustomerID: customerID},
@@ -253,7 +253,7 @@ func Test_EventWebchat_Outbound(t *testing.T) {
 	}
 
 	expectSelf := commonaddress.Address{Type: commonaddress.TypeWebchat, Target: widgetID.String()}
-	expectPeer := commonaddress.Address{Type: commonaddress.TypeWebchat, Target: sessionID.String()}
+	expectPeer := commonaddress.Address{Type: commonaddress.TypeWebSession, Target: sessionID.String()}
 
 	cv := &conversation.Conversation{
 		Identity: commonidentity.Identity{ID: convID, CustomerID: customerID},

@@ -86,7 +86,7 @@ func (h *conversationHandler) messageEventReceivedWebchat(ctx context.Context, w
 	})
 
 	self := commonaddress.Address{Type: commonaddress.TypeWebchat, Target: wm.WidgetID.String()}
-	peer := commonaddress.Address{Type: commonaddress.TypeWebchat, Target: wm.SessionID.String()}
+	peer := commonaddress.Address{Type: commonaddress.TypeWebSession, Target: wm.SessionID.String()}
 
 	cv, err := h.GetOrCreateBySelfAndPeer(
 		ctx,
@@ -158,7 +158,7 @@ func (h *conversationHandler) messageEventSentWebchat(ctx context.Context, wm *w
 	})
 
 	self := commonaddress.Address{Type: commonaddress.TypeWebchat, Target: wm.WidgetID.String()}
-	peer := commonaddress.Address{Type: commonaddress.TypeWebchat, Target: wm.SessionID.String()}
+	peer := commonaddress.Address{Type: commonaddress.TypeWebSession, Target: wm.SessionID.String()}
 
 	cv, err := h.GetOrCreateBySelfAndPeer(
 		ctx,

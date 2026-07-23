@@ -87,9 +87,12 @@ func Test_Create_NoSessionFlowConfigured(t *testing.T) {
 
 // Test_Create_SessionFlowConfigured_TriggersFlow verifies session
 // creation when the Widget has a SessionFlowID configured: the
-// conversation-manager CreateAndExecuteFlow RPC is called with a
-// self=Widget.ID/peer=Session.ID address pair, and Session.ActiveflowID
-// is recorded from the resulting Conversation.
+// conversation-manager CreateAndExecuteFlow RPC is called reusing the
+// already-computed Session.Local (self=TypeWebchat/Widget.ID) and
+// Session.Peer (peer=TypeWebSession/Session.ID) values, and
+// Session.ActiveflowID is recorded from the resulting Conversation.
+// See design doc
+// 2026-07-23-webchat-conversation-self-peer-type-unification-design.md §4.A.
 func Test_Create_SessionFlowConfigured_TriggersFlow(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
@@ -139,7 +142,7 @@ func Test_Create_SessionFlowConfigured_TriggersFlow(t *testing.T) {
 		cvconversation.TypeWebchat,
 		"",
 		commonaddress.Address{Type: commonaddress.TypeWebchat, Target: widgetID.String()},
-		commonaddress.Address{Type: commonaddress.TypeWebchat, Target: sessionID.String()},
+		commonaddress.Address{Type: commonaddress.TypeWebSession, Target: sessionID.String()},
 	).Return(cv, nil)
 
 	mockDB.EXPECT().SessionUpdate(ctx, sessionID, map[session.Field]any{
@@ -156,10 +159,11 @@ func Test_Create_SessionFlowConfigured_TriggersFlow(t *testing.T) {
 }
 
 // Test_Create_ReferrerPeerLocal verifies referrer is passed through to
-// SessionCreate and that Peer/Local are computed with the new
-// TypeWebSession (Peer) / existing TypeWebchat (Local) types -- distinct
-// from the self/peer locals used for the ConversationV1ConversationCreateAndExecuteFlow
-// call, which remain TypeWebchat/TypeWebchat unchanged (§4.3 scope boundary).
+// SessionCreate and that Peer/Local are computed with
+// TypeWebSession (Peer) / TypeWebchat (Local) -- the same self/peer
+// locals now also feed the ConversationV1ConversationCreateAndExecuteFlow
+// call (§4.A: create.go reuses s.Local/s.Peer directly, no longer a
+// separate TypeWebchat/TypeWebchat computation).
 func Test_Create_ReferrerPeerLocal(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()

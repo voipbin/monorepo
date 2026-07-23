@@ -78,17 +78,17 @@ func (h *sessionHandler) Create(ctx context.Context, customerID uuid.UUID, widge
 		return res, nil
 	}
 
-	self := commonaddress.Address{Type: commonaddress.TypeWebchat, Target: widgetID.String()}
-	peer := commonaddress.Address{Type: commonaddress.TypeWebchat, Target: id.String()}
-
+	// Reuse the already-computed, already-correct Session.Local/Session.Peer
+	// (line 50-51) instead of re-deriving self/peer here -- see design doc
+	// 2026-07-23-webchat-conversation-self-peer-type-unification-design.md §4.A.
 	cv, errFlow := h.reqHandler.ConversationV1ConversationCreateAndExecuteFlow(
 		ctx,
 		customerID,
 		w.SessionFlowID,
 		cvconversation.TypeWebchat,
 		"",
-		self,
-		peer,
+		s.Local,
+		s.Peer,
 	)
 	if errFlow != nil {
 		log.Errorf("Could not create and execute flow for the session. err: %v", errFlow)

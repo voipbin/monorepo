@@ -46,7 +46,7 @@ func Test_CreateAndExecuteFlow_Normal(t *testing.T) {
 	activeflowID := uuid.FromStringOrNil("aa847807-6cc4-4713-9dec-53a42840e74c")
 
 	self := commonaddress.Address{Type: commonaddress.TypeWebchat, Target: "widget-id"}
-	peer := commonaddress.Address{Type: commonaddress.TypeWebchat, Target: "session-id"}
+	peer := commonaddress.Address{Type: commonaddress.TypeWebSession, Target: "session-id"}
 
 	cv := &conversation.Conversation{
 		Identity: commonidentity.Identity{ID: conversationID, CustomerID: customerID},
@@ -127,7 +127,7 @@ func Test_CreateAndExecuteFlow_NoFlowID(t *testing.T) {
 	conversationID := uuid.FromStringOrNil("44ebbd2e-82d8-11eb-8a4e-f7957fea9f50")
 
 	self := commonaddress.Address{Type: commonaddress.TypeWebchat, Target: "widget-id"}
-	peer := commonaddress.Address{Type: commonaddress.TypeWebchat, Target: "session-id"}
+	peer := commonaddress.Address{Type: commonaddress.TypeWebSession, Target: "session-id"}
 
 	cv := &conversation.Conversation{
 		Identity: commonidentity.Identity{ID: conversationID, CustomerID: customerID},
@@ -178,7 +178,7 @@ func Test_CreateAndExecuteFlow_ActiveflowCreateFails(t *testing.T) {
 	conversationID := uuid.FromStringOrNil("44ebbd2e-82d8-11eb-8a4e-f7957fea9f50")
 
 	self := commonaddress.Address{Type: commonaddress.TypeWebchat, Target: "widget-id"}
-	peer := commonaddress.Address{Type: commonaddress.TypeWebchat, Target: "session-id"}
+	peer := commonaddress.Address{Type: commonaddress.TypeWebSession, Target: "session-id"}
 
 	cv := &conversation.Conversation{
 		Identity: commonidentity.Identity{ID: conversationID, CustomerID: customerID},
@@ -232,7 +232,7 @@ func Test_CreateAndExecuteFlow_SetVariablesFails(t *testing.T) {
 	activeflowID := uuid.FromStringOrNil("aa847807-6cc4-4713-9dec-53a42840e74c")
 
 	self := commonaddress.Address{Type: commonaddress.TypeWebchat, Target: "widget-id"}
-	peer := commonaddress.Address{Type: commonaddress.TypeWebchat, Target: "session-id"}
+	peer := commonaddress.Address{Type: commonaddress.TypeWebSession, Target: "session-id"}
 
 	cv := &conversation.Conversation{
 		Identity: commonidentity.Identity{ID: conversationID, CustomerID: customerID},

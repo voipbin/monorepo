@@ -410,7 +410,8 @@ func Test_CaseMessageSend_FailOpen(t *testing.T) {
 			CustomerID: customerID,
 			Status:     cmkase.StatusOpen,
 			ContactID:  nil,
-			Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15559999999"},
+			Local:      commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551234567"},
+			Peer:       commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15559999999"},
 		}, nil)
 
 	mockReq.EXPECT().
@@ -492,7 +493,8 @@ func Test_CaseMessageSend_HappyPath_And_CaseIDEchoRead(t *testing.T) {
 			CustomerID: customerID,
 			Status:     cmkase.StatusOpen,
 			ContactID:  nil,
-			Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15559999999"},
+			Local:      commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551234567"},
+			Peer:       commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15559999999"},
 		}, nil)
 
 	mockReq.EXPECT().
@@ -657,7 +659,8 @@ func Test_CaseMessageSend_SelfAndPeerTypeMatch_WhatsApp(t *testing.T) {
 			CustomerID: customerID,
 			Status:     cmkase.StatusOpen,
 			ContactID:  nil,
-			Peer: commonaddress.Address{Type: commonaddress.TypeWhatsApp, Target: "whatsapp-peer-id-9999"},
+			Local:      commonaddress.Address{Type: commonaddress.TypeWhatsApp, Target: "whatsapp-business-id-4567"},
+			Peer:       commonaddress.Address{Type: commonaddress.TypeWhatsApp, Target: "whatsapp-peer-id-9999"},
 		}, nil)
 
 	mockReq.EXPECT().
