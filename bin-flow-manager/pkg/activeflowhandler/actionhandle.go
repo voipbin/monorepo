@@ -1371,7 +1371,19 @@ func (h *activeflowHandler) actionHandleCaseCreate(ctx context.Context, af *acti
 	peerAddr := peer
 	peerAddr.Target = peerTarget // override with the normalized value; TargetName/Name/Detail pass through unchanged
 
-	res, errCreate := h.reqHandler.ContactV1CaseCreate(ctx, af.CustomerID, self, peerAddr, referenceType, opt.Name, opt.Detail, opt.ReferenceID)
+	// Case.ReferenceID is the actual internal id of the resource that
+	// af.ReferenceType points at (e.g. the call id or conversation id) --
+	// NOT a user-supplied value. It is auto-derived from the activeflow
+	// itself, mirroring the same call/conversation lookup used above to
+	// compute referenceType (design VOIP-1243 §2/§6.6, corrected). af.ReferenceID
+	// can legitimately be uuid.Nil for activeflows with no backing resource,
+	// in which case an empty string is passed rather than the zero-UUID string.
+	referenceID := ""
+	if af.ReferenceID != uuid.Nil {
+		referenceID = af.ReferenceID.String()
+	}
+
+	res, errCreate := h.reqHandler.ContactV1CaseCreate(ctx, af.CustomerID, self, peerAddr, referenceType, opt.Name, opt.Detail, referenceID)
 	if errCreate != nil {
 		// Covers BOTH cerrors.AlreadyExists and cerrors.Unavailable (design
 		// VOIP-1243 §3.3/§3.5/§8). Neither is escalated, retried, or

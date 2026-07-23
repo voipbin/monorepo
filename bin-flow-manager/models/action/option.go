@@ -222,12 +222,16 @@ type OptionConnect struct {
 }
 
 // OptionCaseCreate defines action case_create's option.
+// ReferenceID is intentionally NOT a field here: it is not a user-supplied
+// value. It is the actual VoIPBin-internal id of the resource that
+// Activeflow.ReferenceType points at (e.g. the call id or conversation id),
+// and is auto-derived from the activeflow at execution time in
+// actionHandleCaseCreate. See design VOIP-1243 §2/§6.6 (corrected).
 type OptionCaseCreate struct {
-	Name        string `json:"name,omitempty"`
-	Detail      string `json:"detail,omitempty"`
-	Note        string `json:"note,omitempty"`
-	ReferenceID string `json:"reference_id,omitempty"`
-	Sync        bool   `json:"sync,omitempty"` // matches conversation_send/email_send's sync/async toggle
+	Name   string `json:"name,omitempty"`
+	Detail string `json:"detail,omitempty"`
+	Note   string `json:"note,omitempty"`
+	Sync   bool   `json:"sync,omitempty"` // matches conversation_send/email_send's sync/async toggle
 }
 
 // OptionConversationSend defines action conversation_send's optoin.

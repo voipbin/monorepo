@@ -734,7 +734,7 @@ WHEN NOT TO USE:
 - Casual/short interactions with no follow-up need.
 - A case may already be open for this contact/channel -- creating another will fail silently (existing open case is not returned; this call will simply not create a duplicate). Do not retry on failure.
 
-Optional name/detail/note/reference_id describe the case for a human agent reviewing it later.`,
+Optional name/detail/note describe the case for a human agent reviewing it later.`,
 		Parameters: map[string]any{
 			"type": "object",
 			"properties": map[string]any{
@@ -743,10 +743,9 @@ Optional name/detail/note/reference_id describe the case for a human agent revie
 					"description": "Set true to have the assistant mention the case was created (e.g. tell the caller 'I've opened a case for this'). Set false to create silently.",
 					"default":     true,
 				},
-				"name":         map[string]any{"type": "string", "description": "Short case title (optional)."},
-				"detail":       map[string]any{"type": "string", "description": "Longer free-text description of the issue (optional)."},
-				"note":         map[string]any{"type": "string", "description": "An initial internal note for the agent (optional, not shown to the customer)."},
-				"reference_id": map[string]any{"type": "string", "description": "An external reference identifier (e.g. an order number or ticket ID) to tag this case with, if the caller supplies one (optional)."},
+				"name":   map[string]any{"type": "string", "description": "Short case title (optional)."},
+				"detail": map[string]any{"type": "string", "description": "Longer free-text description of the issue (optional)."},
+				"note":   map[string]any{"type": "string", "description": "An initial internal note for the agent (optional, not shown to the customer)."},
 			},
 		},
 		RunLLM: true,

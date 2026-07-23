@@ -4,35 +4,67 @@ Status: Draft
 Branch: `NOJIRA-Add-case-reference-id`
 Owner: CPO-directed backend feature
 
+> **CORRECTION (2026-07-24, post-approval):** The original design below
+> misinterpreted `Case.ReferenceID` as a customer-supplied external
+> reference string (order/ticket ID from the tenant's own outside system),
+> and exposed it as a freely user-settable field on `POST /v1/cases`, the
+> `case_create` Flow action, and the `case_create` AI tool. **This was
+> wrong.** 대표님 directly flagged the error; CPO confirmed against actual
+> code. The correct semantics: `Case.ReferenceID` is the actual
+> VoIPBin-**internal** id of the resource that `Case.ReferenceType` points
+> at (e.g. the call id when `reference_type="call"`, the conversation id
+> when `reference_type="conversation_message"`) — the exact same pattern
+> already used by `Interaction.ReferenceType`+`Interaction.ReferenceID`
+> and `Activeflow.ReferenceType`+`Activeflow.ReferenceID`. It is **not**
+> user input; it is auto-derived and set by the system at Case-creation
+> time, from `Activeflow.ReferenceID` (Flow path) or the AIcall's
+> `ReferenceID` (AI path). §1, §2, and §6.6 below are corrected in place
+> (struck-through reasoning kept for audit trail, corrected text follows).
+> Fix: `bin-flow-manager`'s `OptionCaseCreate.ReferenceID` field (a
+> user-settable flow-action option) was removed; `actionHandleCaseCreate`
+> now passes `af.ReferenceID` (the activeflow's own internal reference id)
+> straight through instead. `bin-ai-manager`'s `toolHandleCaseCreate` had
+> the identical bug (used `tmpOpt.ReferenceID`, from the same
+> `OptionCaseCreate` struct) and is fixed the same way, passing `c.ReferenceID`
+> (the AIcall's own reference id). The low-level `POST /v1/cases`
+> (`bin-contact-manager` listenhandler) request body still accepts a raw
+> `reference_id` string field and its own signature is UNCHANGED — see the
+> new trust-boundary note in §6.6.
+
 ## 1. Problem statement
 
-`bin-contact-manager`'s `Case` entity has no field for a customer-supplied
-external reference string. VoIPBin customers (the platform's tenants —
-"customer" in this doc always means the VoIPBin tenant/customer, not the
-tenant's own end-customer) run their own ticketing/order-management systems
-and want to tag a Case with an identifier from that external system (an
-order number, a ticket ID, a CRM record ID) so they can correlate a VoIPBin
-Case with their own record.
-
-This is explicitly distinct from `Case.ReferenceType` + the `Interaction`
-projection pipeline, which already covers **internal** VoIPBin resource
-references (call ID, conversation message ID). `ReferenceID` never points at
+~~`bin-contact-manager`'s `Case` entity has no field for a customer-supplied
+external reference string. ... `ReferenceID` never points at
 a VoIPBin-internal resource; it is an opaque string the customer defines and
-interprets.
+interprets.~~
+
+**Corrected**: `bin-contact-manager`'s `Case` entity has no field carrying
+the actual VoIPBin-internal id of the resource `Case.ReferenceType` points
+at (the call id, or the conversation/message id). `Case.ReferenceType`
+already exists and identifies the **kind** of resource ("call" /
+"conversation_message"); `Case.ReferenceID` is the missing companion field
+that identifies **which** instance of that resource, mirroring the
+existing `Interaction.ReferenceType`+`Interaction.ReferenceID` and
+`Activeflow.ReferenceType`+`Activeflow.ReferenceID` pairs elsewhere in the
+codebase. It is set automatically by the system at Case-creation time
+(from the activeflow's or aicall's own `ReferenceID`), never typed in by a
+user or an external system.
 
 This request was parked in
 `docs/plans/2026-07-07-contact-case-management-design.md` §2's Out-of-scope
 table as "Case-level custom metadata (arbitrary key/value fields per
-customer, e.g. 'order number')", re-engagement signal "A concrete
-early-adopter customization request". This design treats the current
-request as satisfying that signal, but **narrows scope**: this is a single
-freeform string field, not a general key/value metadata system. General
-metadata remains out-of-scope (see §7).
+customer, e.g. 'order number')" — **that framing is now understood to be
+unrelated to this field**; `ReferenceID` is not customer metadata, it is
+the internal companion id to the pre-existing `ReferenceType` field. The
+"order number"/external-metadata use case, if ever requested, remains a
+genuinely separate out-of-scope feature (see §7).
 
 ## 2. Goals
 
-1. Add `Case.ReferenceID` (nullable freeform string) to the `Case` model,
-   `contact_cases` table, wire request/response shapes, and OpenAPI spec.
+1. Add `Case.ReferenceID` (nullable freeform string, but in practice always
+   a UUID string of the internal resource it names, or empty) to the
+   `Case` model, `contact_cases` table, wire request/response shapes, and
+   OpenAPI spec.
 2. `ReferenceID` is settable only at Case creation time, via both
    `casehandler.Create` (used by `POST /v1/cases`, the `case_create` Flow
    action, and the `case_create` AI tool — see §6.2 for the verified call
@@ -54,6 +86,12 @@ metadata remains out-of-scope (see §7).
    (§6.1) for interface consistency and because it remains part of the
    public `CaseHandler` contract, but the operational value of Goal 2 is
    delivered entirely through `Create`.
+   **CORRECTION**: `casehandler.Create`/`GetOrCreate`'s `referenceID string`
+   parameter itself is unaffected by the design correction above — only
+   WHO supplies the value at each call site changes. `actionHandleCaseCreate`
+   and `toolHandleCaseCreate` now pass the activeflow's/aicall's own
+   internal `ReferenceID` (auto-derived), not a user-configured option
+   field.
 3. `ReferenceID` is exposed in every existing Case read surface (GET by id,
    GET list, POST/assign/close/continue responses) with no extra plumbing,
    because Case is returned as the bare internal struct today (no
@@ -63,8 +101,10 @@ metadata remains out-of-scope (see §7).
    filter's shape.
 5. `ReferenceID` is **not unique**: multiple Cases (including multiple OPEN
    Cases across different peers, and Cases chained via `PreviousCaseID`) may
-   share the same external reference. No uniqueness constraint, no schema
+   share the same internal reference id (e.g. multiple Cases opened against
+   the same long-lived conversation). No uniqueness constraint, no schema
    validation of format.
+
 
 ## 3. Non-goals (explicit scope cuts)
 
@@ -210,13 +250,13 @@ pattern for consistency with `Name`/`Detail`, confirming §3's non-goal.
 | `bin-common-handler/pkg/requesthandler/contact_cases_test.go` | Update signatures |
 | `bin-common-handler/pkg/requesthandler/main.go` (interface) | Update interface signatures |
 | `bin-common-handler/pkg/requesthandler/mock_main.go` | Regenerated |
-| `bin-flow-manager/models/action/option.go` | `OptionCaseCreate` gains `ReferenceID string \`json:"reference_id,omitempty"\`` — flow-manager's `case_create` action already exposes `Name`/`Detail`/`Note` as customer-configurable flow action params; `ReferenceID` is the same class of user-configurable metadata a flow builder may want to template in (e.g. `{{variable}}` substitution for an order number captured earlier in the flow) |
-| `bin-flow-manager/pkg/activeflowhandler/actionhandle.go` (`actionHandleCaseCreate`) | Pass `opt.ReferenceID` through to `ContactV1CaseCreate` |
-| `bin-flow-manager/pkg/activeflowhandler/actionhandle_case_create_test.go` | Update mock expectations to the new signature (adds a 9th positional arg); add `ReferenceID` pass-through coverage |
-| `bin-ai-manager/pkg/actioncatalog/main.go` | `case_create` action catalog entry gains a `reference_id` option field (mirrors `name`/`detail`/`note`'s existing entries), so the AI-generated flow-action schema documents it |
-| `bin-ai-manager/pkg/aicallhandler/tool.go` | `toolHandleCaseCreate` reads `reference_id` from the LLM tool-call arguments and threads it into the `ContactV1CaseCreate` call |
-| `bin-ai-manager/pkg/aicallhandler/tool_case_create_test.go` | Update mock expectations to the new call signature |
-| `bin-ai-manager/pkg/toolhandler/definitions.go` | `case_create` tool's JSON-schema `parameters` gains `reference_id` alongside `name`/`detail`/`note`, so the LLM knows the field exists and can populate it |
+| `bin-flow-manager/models/action/option.go` | **CORRECTED**: `OptionCaseCreate` does NOT gain a `ReferenceID` field. `Case.ReferenceID` is auto-derived from `af.ReferenceID` (the activeflow's own internal reference), never a user-configurable flow action option — see §6.6. |
+| `bin-flow-manager/pkg/activeflowhandler/actionhandle.go` (`actionHandleCaseCreate`) | **CORRECTED**: pass `af.ReferenceID` (converted to string, `""` if `uuid.Nil`) through to `ContactV1CaseCreate`, not a user-supplied option field. |
+| `bin-flow-manager/pkg/activeflowhandler/actionhandle_case_create_test.go` | Update mock expectations to the new signature (adds a 9th positional arg, now `af.ReferenceID.String()`); add regression coverage for the uuid.Nil→`""` edge case. |
+| `bin-ai-manager/pkg/actioncatalog/main.go` | **CORRECTED**: `case_create` action catalog entry does NOT gain a `reference_id` option field — none is added, matching `OptionCaseCreate`'s corrected shape. |
+| `bin-ai-manager/pkg/aicallhandler/tool.go` | **CORRECTED**: `toolHandleCaseCreate` passes `c.ReferenceID` (the aicall's own internal reference, converted to string, `""` if `uuid.Nil`) into the `ContactV1CaseCreate` call, NOT an LLM tool-call argument. |
+| `bin-ai-manager/pkg/aicallhandler/tool_case_create_test.go` | Update mock expectations to the new call signature; add regression coverage confirming a `reference_id` value in the LLM's tool-call JSON is ignored. |
+| `bin-ai-manager/pkg/toolhandler/definitions.go` | **CORRECTED**: `case_create` tool's JSON-schema `parameters` does NOT gain `reference_id` — the LLM is never asked to supply it. |
 | `bin-openapi-manager/openapi/openapi.yaml` | `ContactManagerCase` schema gains `reference_id`; `ContactManagerCaseCreateRequest`-equivalent request body schema (embedded inline in `contact_cases/main.yaml`'s POST, per §6.3 below) gains `reference_id` |
 | `bin-openapi-manager/openapi/paths/contact_cases/main.yaml` | POST request body schema gains `reference_id`; GET gains `reference_id` query parameter |
 | `bin-openapi-manager/gens/models/gen.go` | Regenerated via `go generate ./...` |
@@ -332,9 +372,9 @@ contact_cases.go`'s "PostContactCases (add)" item, and the corresponding
 `GetContactCases` (existing) still gains the `reference_id` filter
 pass-through — that part stands.
 
-### 6.6 `reference_id` exposed as an LLM-tool-configurable parameter
+### 6.6 `reference_id` is auto-derived, NOT an LLM/user-configurable parameter (CORRECTED)
 
-`ReferenceID` is exposed on the `case_create` AI tool (`bin-ai-manager`)
+~~`ReferenceID` is exposed on the `case_create` AI tool (`bin-ai-manager`)
 as a plain string parameter alongside `name`/`detail`/`note`, rather than
 being withheld from the LLM surface. Rationale: an AI agent handling a
 live conversation is frequently the first place an external ticket/order
@@ -342,7 +382,50 @@ number is mentioned by the customer, so letting the LLM populate
 `reference_id` at case-creation time (same as it already populates
 `name`/`detail`/`note`) captures the value at the point of least friction,
 consistent with treating `reference_id` as ordinary creation-time case
-metadata rather than a specially-gated field.
+metadata rather than a specially-gated field.~~
+
+**Corrected**: `reference_id` is NOT exposed as a settable parameter on
+either the `case_create` Flow action (`OptionCaseCreate`) or the
+`case_create` AI tool. It is auto-derived by the system:
+
+- **Flow path**: `actionHandleCaseCreate` (`bin-flow-manager/pkg/
+  activeflowhandler/actionhandle.go`) already resolves `referenceType`
+  ("call"/"conversation_message") from `af.ReferenceType`/`af.ReferenceID`
+  (the activeflow's own reference). It now also passes `af.ReferenceID`
+  itself (as a string, or `""` if `af.ReferenceID == uuid.Nil`) as the
+  Case's `referenceID` — the same value already used one branch earlier to
+  fetch the call/conversation via `CallV1CallGet`/`ConversationV1ConversationGet`.
+  No new option field, no user input.
+- **AI path**: `toolHandleCaseCreate` (`bin-ai-manager/pkg/aicallhandler/
+  tool.go`) had the IDENTICAL bug — it passed `tmpOpt.ReferenceID` (parsed
+  straight from the LLM's tool-call JSON arguments) instead of the
+  aicall's own `c.ReferenceID` (the actual call/conversation id the
+  aicall is attached to, already used by `deriveCaseEndpointsForAIcall`
+  one step earlier). Fixed identically: pass `c.ReferenceID.String()`
+  (or `""` if nil).
+- `bin-ai-manager/pkg/actioncatalog/main.go`'s `case_create` catalog entry
+  no longer documents a `reference_id` option (removed, matching the
+  removed `OptionCaseCreate.ReferenceID` field) — `TestActionCatalogFieldsMatchOptionStructs`
+  enforces catalog/struct parity, so this was also a correctness
+  requirement, not just a docs cleanup.
+
+**Trust boundary note**: The low-level `POST /v1/cases`
+(`bin-contact-manager`'s own listenhandler, `V1DataCasesPost`) still
+accepts a raw `reference_id` string directly in the request body and
+passes it straight to `casehandler.Create` unchanged. This is intentional
+and NOT a design regression: `POST /v1/cases` is an internal
+system-to-system RPC endpoint (invoked over RabbitMQ via
+`ContactV1CaseCreate`, not a public customer-facing REST route — see
+§6.3/§6.4), and the "ReferenceID is not user input" principle is enforced
+at the CALLER layer (`actionHandleCaseCreate`, `toolHandleCaseCreate`),
+not by stripping the parameter from the low-level RPC contract itself.
+Any future direct caller of this internal RPC is trusted to supply a
+correct value, exactly as it is already trusted to supply a correct
+`referenceType`/`peer`/`self`. If a genuinely external, less-trusted
+caller of Case creation is ever added (see §6.4's note on the currently
+nonexistent public `POST /contact_cases`), that caller boundary would need
+its own review of whether `reference_id` should be caller-suppliable at
+all — out of scope here since no such caller exists today.
 
 ## 6.5 `bin-dbscheme-manager` migration — generated
 

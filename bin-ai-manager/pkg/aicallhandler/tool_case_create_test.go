@@ -407,6 +407,76 @@ func Test_toolHandleCaseCreate(t *testing.T) {
 	}
 }
 
+// Test_toolHandleCaseCreate_ReferenceID_AutoDerived is a regression guard
+// for the corrected design (VOIP-1243 §2/§6.6, post-approval correction):
+// Case.ReferenceID must be auto-derived from the aicall's actual
+// ReferenceID (the VoIPBin-internal call/conversation id), never from a
+// user-supplied tool argument -- there is no such field on
+// OptionCaseCreate anymore.
+func Test_toolHandleCaseCreate_ReferenceID_AutoDerived(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockAI := aihandler.NewMockAIHandler(mc)
+	mockMessage := messagehandler.NewMockMessageHandler(mc)
+
+	h := &aicallHandler{
+		utilHandler:    mockUtil,
+		reqHandler:     mockReq,
+		notifyHandler:  mockNotify,
+		db:             mockDB,
+		aiHandler:      mockAI,
+		messageHandler: mockMessage,
+	}
+	ctx := context.Background()
+
+	tc := &aicall.AIcall{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("77777777-0000-11f0-8000-000000000001"),
+			CustomerID: uuid.FromStringOrNil("77777777-0000-11f0-8000-000000000002"),
+		},
+		ActiveflowID:  uuid.FromStringOrNil("77777777-0000-11f0-8000-000000000003"),
+		ReferenceType: aicall.ReferenceTypeCall,
+		ReferenceID:   uuid.FromStringOrNil("77777777-0000-11f0-8000-000000000004"),
+	}
+	tool := &message.ToolCall{
+		ID:   "77777777-0000-11f0-8000-000000000005",
+		Type: message.ToolTypeFunction,
+		Function: message.FunctionCall{
+			Name: message.FunctionCallNameCaseCreate,
+			// even if the LLM were to send a reference_id key, OptionCaseCreate
+			// no longer has that field, so it is silently ignored by unmarshal.
+			Arguments: `{"name": "test", "reference_id": "should-be-ignored"}`,
+		},
+	}
+	responseCall := &cmcall.Call{
+		Direction:   cmcall.DirectionIncoming,
+		Source:      commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****0001"},
+		Destination: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+155****0002"},
+	}
+	responseVariable := &fmvariable.Variable{Variables: map[string]string{}}
+	responseCase := &kmkase.Case{ID: uuid.FromStringOrNil("77777777-0000-11f0-8000-000000000006")}
+
+	mockReq.EXPECT().CallV1CallGet(ctx, tc.ReferenceID).Return(responseCall, nil)
+	mockReq.EXPECT().FlowV1VariableGet(ctx, tc.ActiveflowID).Return(responseVariable, nil)
+	// the referenceID arg passed to ContactV1CaseCreate MUST be tc.ReferenceID.String(),
+	// never the ignored "should-be-ignored" tool argument.
+	mockReq.EXPECT().ContactV1CaseCreate(
+		ctx, tc.CustomerID, gomock.Any(), gomock.Any(), "call", "test", "", tc.ReferenceID.String(),
+	).Return(responseCase, nil)
+	mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tc.ActiveflowID, map[string]string{"contact_case_id": responseCase.ID.String()}).Return(nil)
+
+	res := h.toolHandleCaseCreate(ctx, tc, tool)
+
+	if res.Result != "success" || res.ResourceID != responseCase.ID.String() {
+		t.Errorf("unexpected result: %v", res)
+	}
+}
+
 // Test_toolHandleCaseCreate_UnknownDirection_Skipped is a regression
 // guard (VOIP-1243 round-review fix): an unknown/unrecognized call
 // Direction makes deriveEndpointsForCase return a zero-value peer

@@ -76,7 +76,7 @@ func Test_actionHandleCaseCreate_Call(t *testing.T) {
 
 	mockReq.EXPECT().CallV1CallGet(ctx, af.ReferenceID).Return(responseCall, nil)
 	mockReq.EXPECT().FlowV1VariableGet(ctx, af.ID).Return(responseVariable, nil)
-	mockReq.EXPECT().ContactV1CaseCreate(ctx, af.CustomerID, responseCall.Destination, commonaddress.Address{Type: commonaddress.TypeTel, Target: responseCall.Source.Target}, "call", "test case", "test detail", "").Return(responseCase, nil)
+	mockReq.EXPECT().ContactV1CaseCreate(ctx, af.CustomerID, responseCall.Destination, commonaddress.Address{Type: commonaddress.TypeTel, Target: responseCall.Source.Target}, "call", "test case", "test detail", af.ReferenceID.String()).Return(responseCase, nil)
 	mockReq.EXPECT().FlowV1VariableSetVariable(ctx, af.ID, map[string]string{"contact_case_id": responseCase.ID.String()}).Return(nil)
 	mockReq.EXPECT().ContactV1CaseNoteCreate(ctx, af.CustomerID, responseCase.ID, "system", nil, "test note").Return(nil, nil)
 
@@ -132,7 +132,7 @@ func Test_actionHandleCaseCreate_Conversation(t *testing.T) {
 
 	mockReq.EXPECT().ConversationV1ConversationGet(ctx, af.ReferenceID).Return(responseConversation, nil)
 	mockReq.EXPECT().FlowV1VariableGet(ctx, af.ID).Return(responseVariable, nil)
-	mockReq.EXPECT().ContactV1CaseCreate(ctx, af.CustomerID, responseConversation.Self, commonaddress.Address{Type: commonaddress.TypeTel, Target: responseConversation.Peer.Target}, "conversation_message", "", "", "").Return(responseCase, nil)
+	mockReq.EXPECT().ContactV1CaseCreate(ctx, af.CustomerID, responseConversation.Self, commonaddress.Address{Type: commonaddress.TypeTel, Target: responseConversation.Peer.Target}, "conversation_message", "", "", af.ReferenceID.String()).Return(responseCase, nil)
 	mockReq.EXPECT().FlowV1VariableSetVariable(ctx, af.ID, map[string]string{"contact_case_id": responseCase.ID.String()}).Return(nil)
 
 	if errAction := h.actionHandleCaseCreate(ctx, af); errAction != nil {
@@ -332,12 +332,75 @@ func Test_actionHandleCaseCreate_CreateErrorsSwallowed(t *testing.T) {
 
 			mockReq.EXPECT().CallV1CallGet(ctx, af.ReferenceID).Return(responseCall, nil)
 			mockReq.EXPECT().FlowV1VariableGet(ctx, af.ID).Return(responseVariable, nil)
-			mockReq.EXPECT().ContactV1CaseCreate(ctx, af.CustomerID, responseCall.Destination, commonaddress.Address{Type: commonaddress.TypeTel, Target: responseCall.Source.Target}, "call", "", "", "").Return(nil, tt.errFunc)
+			mockReq.EXPECT().ContactV1CaseCreate(ctx, af.CustomerID, responseCall.Destination, commonaddress.Address{Type: commonaddress.TypeTel, Target: responseCall.Source.Target}, "call", "", "", af.ReferenceID.String()).Return(nil, tt.errFunc)
 
 			if errAction := h.actionHandleCaseCreate(ctx, af); errAction != nil {
 				t.Errorf("Wrong match.\nexpect: ok\ngot: %v", errAction)
 			}
 		})
+	}
+}
+
+// Test_actionHandleCaseCreate_ReferenceID_AutoDerived is a regression guard
+// for the corrected design (VOIP-1243 §2/§6.6, post-approval correction):
+// Case.ReferenceID must be auto-derived from af.ReferenceID (the actual
+// VoIPBin-internal call/conversation id), never from a user-supplied
+// option field. This also verifies the uuid.Nil edge case maps to an
+// empty string rather than the literal zero-UUID string.
+func Test_actionHandleCaseCreate_ReferenceID_AutoDerived(t *testing.T) {
+
+	af := &activeflow.Activeflow{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("99999999-0000-11f0-8000-000000000001"),
+			CustomerID: uuid.FromStringOrNil("99999999-0000-11f0-8000-000000000002"),
+		},
+		ReferenceType: activeflow.ReferenceTypeCall,
+		ReferenceID:   uuid.Nil, // zero UUID -- activeflow with no backing resource id
+		CurrentAction: action.Action{
+			ID:   uuid.FromStringOrNil("99999999-0000-11f0-8000-000000000004"),
+			Type: action.TypeCaseCreate,
+		},
+	}
+
+	responseCall := &cmcall.Call{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("99999999-0000-11f0-8000-000000000003"),
+		},
+		Direction:   cmcall.DirectionIncoming,
+		Source:      commonaddress.Address{Type: commonaddress.TypeTel, Target: "+821000000001"},
+		Destination: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+821000000002"},
+	}
+
+	responseVariable := &variable.Variable{
+		ID:        af.ID,
+		Variables: map[string]string{},
+	}
+
+	responseCase := &cmkase.Case{
+		ID: uuid.FromStringOrNil("99999999-0000-11f0-8000-000000000005"),
+	}
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+
+	h := &activeflowHandler{
+		db:         mockDB,
+		reqHandler: mockReq,
+	}
+
+	ctx := context.Background()
+
+	mockReq.EXPECT().CallV1CallGet(ctx, af.ReferenceID).Return(responseCall, nil)
+	mockReq.EXPECT().FlowV1VariableGet(ctx, af.ID).Return(responseVariable, nil)
+	// zero-UUID af.ReferenceID must map to "" -- NOT "00000000-0000-0000-0000-000000000000"
+	mockReq.EXPECT().ContactV1CaseCreate(ctx, af.CustomerID, responseCall.Destination, commonaddress.Address{Type: commonaddress.TypeTel, Target: responseCall.Source.Target}, "call", "", "", "").Return(responseCase, nil)
+	mockReq.EXPECT().FlowV1VariableSetVariable(ctx, af.ID, map[string]string{"contact_case_id": responseCase.ID.String()}).Return(nil)
+
+	if errAction := h.actionHandleCaseCreate(ctx, af); errAction != nil {
+		t.Errorf("Wrong match.\nexpect: ok\ngot: %v", errAction)
 	}
 }
 
