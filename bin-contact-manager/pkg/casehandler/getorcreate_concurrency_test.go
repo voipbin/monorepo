@@ -76,11 +76,8 @@ func Test_GetOrCreate_ConcurrentGoroutines_ExactlyOneCaseSurvives(t *testing.T) 
 
 	for i, err := range errs {
 		if err != nil {
-			t.Logf("goroutine %d: GetOrCreate() error = %v", i, err)
+			t.Fatalf("goroutine %d: GetOrCreate() error = %v", i, err)
 		}
-	}
-	for i, id := range results {
-		t.Logf("goroutine %d result id = %v", i, id)
 	}
 
 	first := results[0]
