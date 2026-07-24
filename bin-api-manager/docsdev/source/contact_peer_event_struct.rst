@@ -28,7 +28,7 @@ PeerEvent
 * ``event_type`` (String): The originating event type (e.g. ``call_hangup``, ``conversation_message_created``).
 * ``reference_id`` (UUID): The ``call_id``, ``conversation_message_id``, or ``conversation_id`` this row was projected from.
 * ``direction`` (enum string): Direction of the interaction from the platform's perspective. See :ref:`Direction <contact-peer-event-struct-direction>`. Empty string for rows with no direction concept (e.g. conversation-parent rows).
-* ``peer`` (Object): Remote endpoint, same shape as Contact's :ref:`Address <contact-struct-contact-address>` (``type``/``target``/etc.). ``type`` may be an internal-resource value (``agent``, ``ai``, ``conference``, ``sip``) not present in :ref:`Contact Interactions <contact-struct-contact>`.
+* ``peer`` (Object): Remote endpoint, structurally identical to ``commonaddress.Address``, the platform's standard cross-service address type (``type``/``target``/``target_name``/``name``/``detail``) — not the same shape as :ref:`Contact's Address <contact-struct-contact-address>` (which additionally carries ``id``/``is_primary``/``tm_create`` and lacks ``target_name``/``name``/``detail``). ``type`` may be an internal-resource value (``agent``, ``ai``, ``conference``, ``sip``) not present in Contact's address types.
 * ``local`` (Object): The customer's own endpoint, same shape as ``peer``.
 * ``data`` (Object): The original webhook payload, verbatim.
 

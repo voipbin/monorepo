@@ -1090,3 +1090,49 @@ for small/follow-up commits"). It was skipped and only caught when 대표님
 asked directly "리뷰 루프 돌렸어?" — run retroactively here. Round 2 is
 required next (minimum 3-round floor), followed by 2 consecutive
 APPROVEs to close.
+
+## 18. Round 2 PR review disposition (commit 1721b9bae, the Round 1 fixes)
+
+Round 2 adversarial PR review (independent subagent): **CHANGES_REQUESTED**,
+0 BLOCKER, 1 new MAJOR, 0 new MINOR. All of Round 1's fixes were
+independently re-verified as genuine (query-param claim, gofmt/goimports,
+`bin-timeline-manager` build/test/lint, Sphinx rebuild, `:ref:` label
+resolution) — no regressions.
+
+- **MAJOR (fixed below):** the "Request vs. Response Shape" RST note added
+  in commit 1721b9bae (and the pre-existing prose in
+  `contact_peer_event_struct.rst`, carried over unscrutinized from commit
+  44501b298) claimed `peer`/`local` match "Contact Interactions' own
+  peer/local shape" and "Contact's Address" shape. Neither claim holds up:
+  there is no dedicated "Contact Interactions" struct page anywhere in
+  `docsdev/source/` for a reader to actually check, and `Contact.Address`
+  (`contact-struct-contact-address`, fields `id`/`type`/`target`/
+  `is_primary`/`tm_create`) is a genuinely different shape from
+  `commonaddress.Address` (`type`/`target`/`target_name`/`name`/`detail`)
+  — they share only `type`/`target`. The `:ref:` links technically resolve
+  (Sphinx doesn't error), which is why this survived Round 1's own build
+  check — but they point to unrelated/nonexistent content, making the
+  claim misleading despite building cleanly. Fixed in both
+  `contact_peer_event_struct.rst` and `contact_peer_event_overview.rst`:
+  reworded to state `peer`/`local` are `commonaddress.Address`, the
+  platform's standard cross-service address type, explicitly distinct
+  from Contact's Address shape — no claim of matching an undocumented
+  Interaction struct.
+
+Round 2 also independently re-derived (no new issues): ClickHouse column
+order across migrations 000005+000006 vs. `peer_event_insert.go`'s INSERT
+list and `peer_event_read.go`'s SELECT/Scan (exact match, re-verified
+digit-by-digit, not re-trusting Round 1's claim); the OR-expansion query
+in `peer_event_read.go` uses parameterized placeholders throughout (no
+injection risk); the "exactly one filter" HTTP-layer gate in
+`contact_peer_events.go` is the sole enforcement point, with
+`resolvePeerAddresses`'s `default` branch confirmed unreachable in
+practice as documented; §17's narrative checked for internal consistency
+against its own claims (specific, non-overclaiming, self-critical about
+the missed review-loop trigger) — no issues.
+
+This confirms the value of running Round 2 independently rather than
+re-trusting Round 1's "verified clean" list: the RST accuracy problem was
+introduced in the ORIGINAL commit (44501b298) and only surfaced because
+Round 2 re-derived facts instead of accepting Round 1's summary at face
+value. Round 3 is required next (minimum 3-round floor).
