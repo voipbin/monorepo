@@ -1,8 +1,6 @@
 package server
 
 import (
-	"bytes"
-	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -11,8 +9,7 @@ import (
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/servicehandler"
-	cminteraction "monorepo/bin-contact-manager/models/interaction"
-	cmresolution "monorepo/bin-contact-manager/models/resolution"
+	tmpeerevent "monorepo/bin-timeline-manager/models/peerevent"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
@@ -31,7 +28,7 @@ func Test_GetServiceAgentsContactInteractions(t *testing.T) {
 
 		reqQuery string
 
-		responseItems []*cminteraction.Interaction
+		responseItems []*tmpeerevent.PeerEvent
 		responseToken string
 		expectStatus  int
 	}{
@@ -45,7 +42,7 @@ func Test_GetServiceAgentsContactInteractions(t *testing.T) {
 				Permission: amagent.PermissionCustomerAgent,
 			}),
 			reqQuery:      "/service_agents/contact_interactions?contact_id=11111111-0000-0000-0000-000000000001",
-			responseItems: []*cminteraction.Interaction{},
+			responseItems: []*tmpeerevent.PeerEvent{},
 			responseToken: "",
 			expectStatus:  http.StatusOK,
 		},
@@ -59,7 +56,7 @@ func Test_GetServiceAgentsContactInteractions(t *testing.T) {
 				Permission: amagent.PermissionCustomerAdmin,
 			}),
 			reqQuery:      "/service_agents/contact_interactions?contact_id=11111111-0000-0000-0000-000000000001",
-			responseItems: []*cminteraction.Interaction{},
+			responseItems: []*tmpeerevent.PeerEvent{},
 			responseToken: "",
 			expectStatus:  http.StatusOK,
 		},
@@ -73,7 +70,7 @@ func Test_GetServiceAgentsContactInteractions(t *testing.T) {
 				Permission: amagent.PermissionCustomerAgent,
 			}),
 			reqQuery:      "/service_agents/contact_interactions",
-			responseItems: []*cminteraction.Interaction{},
+			responseItems: []*tmpeerevent.PeerEvent{},
 			responseToken: "",
 			expectStatus:  http.StatusOK,
 		},
@@ -87,7 +84,7 @@ func Test_GetServiceAgentsContactInteractions(t *testing.T) {
 				Permission: amagent.PermissionCustomerAgent,
 			}),
 			reqQuery:      "/service_agents/contact_interactions?since=7d",
-			responseItems: []*cminteraction.Interaction{},
+			responseItems: []*tmpeerevent.PeerEvent{},
 			responseToken: "",
 			expectStatus:  http.StatusOK,
 		},
@@ -159,311 +156,6 @@ func Test_GetServiceAgentsContactInteractions(t *testing.T) {
 				mockSvc.EXPECT().
 					ServiceAgentInteractionList(req.Context(), tt.agent, uint64(100), "", gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 					Return(tt.responseItems, tt.responseToken, nil)
-			}
-
-			r.ServeHTTP(w, req)
-			if w.Code != tt.expectStatus {
-				t.Errorf("Wrong status. expect: %d, got: %d, body: %s", tt.expectStatus, w.Code, w.Body.String())
-			}
-		})
-	}
-}
-
-func Test_GetServiceAgentsContactInteractionsUnresolved(t *testing.T) {
-	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
-	agentID := uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c")
-
-	tests := []struct {
-		name  string
-		agent *auth.AuthIdentity
-
-		reqQuery      string
-		responseItems []*cminteraction.Interaction
-		responseToken string
-		expectStatus  int
-	}{
-		{
-			name: "normal - default since",
-			agent: auth.NewAgentIdentity(&amagent.Agent{
-				Identity: commonidentity.Identity{
-					ID:         agentID,
-					CustomerID: customerID,
-				},
-				Permission: amagent.PermissionCustomerAgent,
-			}),
-			reqQuery:      "/service_agents/contact_interactions/unresolved",
-			responseItems: []*cminteraction.Interaction{},
-			responseToken: "",
-			expectStatus:  http.StatusOK,
-		},
-		{
-			name: "bad request - invalid since format",
-			agent: auth.NewAgentIdentity(&amagent.Agent{
-				Identity: commonidentity.Identity{
-					ID:         agentID,
-					CustomerID: customerID,
-				},
-				Permission: amagent.PermissionCustomerAgent,
-			}),
-			reqQuery:     "/service_agents/contact_interactions/unresolved?since=30",
-			expectStatus: http.StatusBadRequest,
-		},
-		{
-			name:         "unauthenticated",
-			agent:        nil,
-			reqQuery:     "/service_agents/contact_interactions/unresolved",
-			expectStatus: http.StatusUnauthorized,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockSvc := servicehandler.NewMockServiceHandler(mc)
-			h := &server{serviceHandler: mockSvc}
-
-			w := httptest.NewRecorder()
-			_, r := gin.CreateTestContext(w)
-
-			r.Use(func(c *gin.Context) {
-				if tt.agent != nil {
-					c.Set("auth_identity", tt.agent)
-				}
-			})
-			openapi_server.RegisterHandlers(r, h)
-
-			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-
-			if tt.responseItems != nil && tt.agent != nil {
-				mockSvc.EXPECT().
-					ServiceAgentInteractionListUnresolved(req.Context(), tt.agent, uint64(100), "", gomock.Any()).
-					Return(tt.responseItems, tt.responseToken, nil)
-			}
-
-			r.ServeHTTP(w, req)
-			if w.Code != tt.expectStatus {
-				t.Errorf("Wrong status. expect: %d, got: %d, body: %s", tt.expectStatus, w.Code, w.Body.String())
-			}
-		})
-	}
-}
-
-func Test_GetServiceAgentsContactInteractionsId(t *testing.T) {
-	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
-	agentID := uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c")
-	interactionID := uuid.FromStringOrNil("11111111-0000-0000-0000-000000000001")
-
-	tests := []struct {
-		name  string
-		agent *auth.AuthIdentity
-
-		reqQuery            string
-		responseInteraction *cminteraction.Interaction
-		expectStatus        int
-	}{
-		{
-			name: "normal - plain agent permission",
-			agent: auth.NewAgentIdentity(&amagent.Agent{
-				Identity: commonidentity.Identity{
-					ID:         agentID,
-					CustomerID: customerID,
-				},
-				Permission: amagent.PermissionCustomerAgent,
-			}),
-			reqQuery: "/service_agents/contact_interactions/11111111-0000-0000-0000-000000000001",
-			responseInteraction: &cminteraction.Interaction{
-				ID:         interactionID,
-				CustomerID: customerID,
-				Direction:  "incoming",
-			},
-			expectStatus: http.StatusOK,
-		},
-		{
-			name:         "unauthenticated",
-			agent:        nil,
-			reqQuery:     "/service_agents/contact_interactions/11111111-0000-0000-0000-000000000001",
-			expectStatus: http.StatusUnauthorized,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockSvc := servicehandler.NewMockServiceHandler(mc)
-			h := &server{serviceHandler: mockSvc}
-
-			w := httptest.NewRecorder()
-			_, r := gin.CreateTestContext(w)
-
-			r.Use(func(c *gin.Context) {
-				if tt.agent != nil {
-					c.Set("auth_identity", tt.agent)
-				}
-			})
-			openapi_server.RegisterHandlers(r, h)
-
-			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-
-			if tt.responseInteraction != nil && tt.agent != nil {
-				mockSvc.EXPECT().
-					ServiceAgentInteractionGet(req.Context(), tt.agent, interactionID).
-					Return(tt.responseInteraction, nil)
-			}
-
-			r.ServeHTTP(w, req)
-			if w.Code != tt.expectStatus {
-				t.Errorf("Wrong status. expect: %d, got: %d, body: %s", tt.expectStatus, w.Code, w.Body.String())
-			}
-		})
-	}
-}
-
-func Test_PostServiceAgentsContactInteractionsIdResolutions(t *testing.T) {
-	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
-	agentID := uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c")
-	interactionID := uuid.FromStringOrNil("11111111-0000-0000-0000-000000000001")
-	contactID := uuid.FromStringOrNil("22222222-0000-0000-0000-000000000002")
-	resolvedByID := uuid.FromStringOrNil("33333333-0000-0000-0000-000000000003")
-
-	tests := []struct {
-		name  string
-		agent *auth.AuthIdentity
-
-		reqQuery     string
-		reqBody      map[string]string
-		responseRes  *cmresolution.Resolution
-		expectStatus int
-	}{
-		{
-			name: "normal - plain agent permission",
-			agent: auth.NewAgentIdentity(&amagent.Agent{
-				Identity: commonidentity.Identity{
-					ID:         agentID,
-					CustomerID: customerID,
-				},
-				Permission: amagent.PermissionCustomerAgent,
-			}),
-			reqQuery: "/service_agents/contact_interactions/11111111-0000-0000-0000-000000000001/resolutions",
-			reqBody: map[string]string{
-				"contact_id":       contactID.String(),
-				"resolution_type":  "positive",
-				"resolved_by_type": "agent",
-				"resolved_by_id":   resolvedByID.String(),
-			},
-			responseRes: &cmresolution.Resolution{
-				ID:            uuid.FromStringOrNil("44444444-0000-0000-0000-000000000004"),
-				CustomerID:    customerID,
-				InteractionID: &interactionID,
-				ContactID:     contactID,
-			},
-			expectStatus: http.StatusCreated,
-		},
-		{
-			name:         "unauthenticated",
-			agent:        nil,
-			reqQuery:     "/service_agents/contact_interactions/11111111-0000-0000-0000-000000000001/resolutions",
-			reqBody:      map[string]string{},
-			expectStatus: http.StatusUnauthorized,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockSvc := servicehandler.NewMockServiceHandler(mc)
-			h := &server{serviceHandler: mockSvc}
-
-			w := httptest.NewRecorder()
-			_, r := gin.CreateTestContext(w)
-
-			r.Use(func(c *gin.Context) {
-				if tt.agent != nil {
-					c.Set("auth_identity", tt.agent)
-				}
-			})
-			openapi_server.RegisterHandlers(r, h)
-
-			bodyBytes, _ := json.Marshal(tt.reqBody)
-			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(bodyBytes))
-			req.Header.Set("Content-Type", "application/json")
-
-			if tt.responseRes != nil && tt.agent != nil {
-				mockSvc.EXPECT().
-					ServiceAgentResolutionCreate(req.Context(), tt.agent, interactionID, contactID, "positive", "agent", resolvedByID).
-					Return(tt.responseRes, nil)
-			}
-
-			r.ServeHTTP(w, req)
-			if w.Code != tt.expectStatus {
-				t.Errorf("Wrong status. expect: %d, got: %d, body: %s", tt.expectStatus, w.Code, w.Body.String())
-			}
-		})
-	}
-}
-
-func Test_DeleteServiceAgentsContactInteractionsIdResolutionsRid(t *testing.T) {
-	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
-	agentID := uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c")
-	interactionID := uuid.FromStringOrNil("11111111-0000-0000-0000-000000000001")
-	resolutionID := uuid.FromStringOrNil("44444444-0000-0000-0000-000000000004")
-
-	tests := []struct {
-		name  string
-		agent *auth.AuthIdentity
-
-		reqQuery     string
-		expectStatus int
-	}{
-		{
-			name: "normal - plain agent permission",
-			agent: auth.NewAgentIdentity(&amagent.Agent{
-				Identity: commonidentity.Identity{
-					ID:         agentID,
-					CustomerID: customerID,
-				},
-				Permission: amagent.PermissionCustomerAgent,
-			}),
-			reqQuery:     "/service_agents/contact_interactions/11111111-0000-0000-0000-000000000001/resolutions/44444444-0000-0000-0000-000000000004",
-			expectStatus: http.StatusOK,
-		},
-		{
-			name:         "unauthenticated",
-			agent:        nil,
-			reqQuery:     "/service_agents/contact_interactions/11111111-0000-0000-0000-000000000001/resolutions/44444444-0000-0000-0000-000000000004",
-			expectStatus: http.StatusUnauthorized,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockSvc := servicehandler.NewMockServiceHandler(mc)
-			h := &server{serviceHandler: mockSvc}
-
-			w := httptest.NewRecorder()
-			_, r := gin.CreateTestContext(w)
-
-			r.Use(func(c *gin.Context) {
-				if tt.agent != nil {
-					c.Set("auth_identity", tt.agent)
-				}
-			})
-			openapi_server.RegisterHandlers(r, h)
-
-			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-
-			if tt.agent != nil {
-				mockSvc.EXPECT().
-					ServiceAgentResolutionDelete(req.Context(), tt.agent, interactionID, resolutionID).
-					Return(nil)
 			}
 
 			r.ServeHTTP(w, req)

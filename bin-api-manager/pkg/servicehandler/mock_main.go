@@ -39,9 +39,7 @@ import (
 	conferencecall "monorepo/bin-conference-manager/models/conferencecall"
 	casenote "monorepo/bin-contact-manager/models/casenote"
 	contact "monorepo/bin-contact-manager/models/contact"
-	interaction "monorepo/bin-contact-manager/models/interaction"
 	kase "monorepo/bin-contact-manager/models/kase"
-	resolution "monorepo/bin-contact-manager/models/resolution"
 	request "monorepo/bin-contact-manager/pkg/listenhandler/models/request"
 	account0 "monorepo/bin-conversation-manager/models/account"
 	conversation "monorepo/bin-conversation-manager/models/conversation"
@@ -3076,26 +3074,11 @@ func (mr *MockServiceHandlerMockRecorder) GroupcallList(ctx, a, size, token any)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupcallList", reflect.TypeOf((*MockServiceHandler)(nil).GroupcallList), ctx, a, size, token)
 }
 
-// InteractionGet mocks base method.
-func (m *MockServiceHandler) InteractionGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*interaction.Interaction, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "InteractionGet", ctx, a, id)
-	ret0, _ := ret[0].(*interaction.Interaction)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// InteractionGet indicates an expected call of InteractionGet.
-func (mr *MockServiceHandlerMockRecorder) InteractionGet(ctx, a, id any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InteractionGet", reflect.TypeOf((*MockServiceHandler)(nil).InteractionGet), ctx, a, id)
-}
-
 // InteractionList mocks base method.
-func (m *MockServiceHandler) InteractionList(ctx context.Context, a *auth.AuthIdentity, size uint64, token, peerType, peerTarget string, contactID, addressID uuid.UUID) ([]*interaction.Interaction, string, error) {
+func (m *MockServiceHandler) InteractionList(ctx context.Context, a *auth.AuthIdentity, size uint64, token, peerType, peerTarget string, contactID, addressID uuid.UUID) ([]*peerevent.PeerEvent, string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "InteractionList", ctx, a, size, token, peerType, peerTarget, contactID, addressID)
-	ret0, _ := ret[0].([]*interaction.Interaction)
+	ret0, _ := ret[0].([]*peerevent.PeerEvent)
 	ret1, _ := ret[1].(string)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2
@@ -3105,22 +3088,6 @@ func (m *MockServiceHandler) InteractionList(ctx context.Context, a *auth.AuthId
 func (mr *MockServiceHandlerMockRecorder) InteractionList(ctx, a, size, token, peerType, peerTarget, contactID, addressID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InteractionList", reflect.TypeOf((*MockServiceHandler)(nil).InteractionList), ctx, a, size, token, peerType, peerTarget, contactID, addressID)
-}
-
-// InteractionListUnresolved mocks base method.
-func (m *MockServiceHandler) InteractionListUnresolved(ctx context.Context, a *auth.AuthIdentity, size uint64, token, since string) ([]*interaction.Interaction, string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "InteractionListUnresolved", ctx, a, size, token, since)
-	ret0, _ := ret[0].([]*interaction.Interaction)
-	ret1, _ := ret[1].(string)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
-}
-
-// InteractionListUnresolved indicates an expected call of InteractionListUnresolved.
-func (mr *MockServiceHandlerMockRecorder) InteractionListUnresolved(ctx, a, size, token, since any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InteractionListUnresolved", reflect.TypeOf((*MockServiceHandler)(nil).InteractionListUnresolved), ctx, a, size, token, since)
 }
 
 // MessageDelete mocks base method.
@@ -4189,35 +4156,6 @@ func (mr *MockServiceHandlerMockRecorder) RecordingfileGet(ctx, a, id any) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordingfileGet", reflect.TypeOf((*MockServiceHandler)(nil).RecordingfileGet), ctx, a, id)
 }
 
-// ResolutionCreate mocks base method.
-func (m *MockServiceHandler) ResolutionCreate(ctx context.Context, a *auth.AuthIdentity, interactionID, contactID uuid.UUID, resolutionType, resolvedByType string, resolvedByID uuid.UUID) (*resolution.Resolution, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ResolutionCreate", ctx, a, interactionID, contactID, resolutionType, resolvedByType, resolvedByID)
-	ret0, _ := ret[0].(*resolution.Resolution)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ResolutionCreate indicates an expected call of ResolutionCreate.
-func (mr *MockServiceHandlerMockRecorder) ResolutionCreate(ctx, a, interactionID, contactID, resolutionType, resolvedByType, resolvedByID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResolutionCreate", reflect.TypeOf((*MockServiceHandler)(nil).ResolutionCreate), ctx, a, interactionID, contactID, resolutionType, resolvedByType, resolvedByID)
-}
-
-// ResolutionDelete mocks base method.
-func (m *MockServiceHandler) ResolutionDelete(ctx context.Context, a *auth.AuthIdentity, interactionID, resolutionID uuid.UUID) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ResolutionDelete", ctx, a, interactionID, resolutionID)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ResolutionDelete indicates an expected call of ResolutionDelete.
-func (mr *MockServiceHandlerMockRecorder) ResolutionDelete(ctx, a, interactionID, resolutionID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResolutionDelete", reflect.TypeOf((*MockServiceHandler)(nil).ResolutionDelete), ctx, a, interactionID, resolutionID)
-}
-
 // RouteCreate mocks base method.
 func (m *MockServiceHandler) RouteCreate(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID, name, detail string, providerID uuid.UUID, priority int, target string) (*route.Route, error) {
 	m.ctrl.T.Helper()
@@ -4984,26 +4922,11 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentFileList(ctx, a, size, tok
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentFileList", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentFileList), ctx, a, size, token)
 }
 
-// ServiceAgentInteractionGet mocks base method.
-func (m *MockServiceHandler) ServiceAgentInteractionGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*interaction.Interaction, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ServiceAgentInteractionGet", ctx, a, id)
-	ret0, _ := ret[0].(*interaction.Interaction)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ServiceAgentInteractionGet indicates an expected call of ServiceAgentInteractionGet.
-func (mr *MockServiceHandlerMockRecorder) ServiceAgentInteractionGet(ctx, a, id any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentInteractionGet", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentInteractionGet), ctx, a, id)
-}
-
 // ServiceAgentInteractionList mocks base method.
-func (m *MockServiceHandler) ServiceAgentInteractionList(ctx context.Context, a *auth.AuthIdentity, size uint64, token, peerType, peerTarget string, contactID, addressID uuid.UUID, since time.Time) ([]*interaction.Interaction, string, error) {
+func (m *MockServiceHandler) ServiceAgentInteractionList(ctx context.Context, a *auth.AuthIdentity, size uint64, token, peerType, peerTarget string, contactID, addressID uuid.UUID, since time.Time) ([]*peerevent.PeerEvent, string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentInteractionList", ctx, a, size, token, peerType, peerTarget, contactID, addressID, since)
-	ret0, _ := ret[0].([]*interaction.Interaction)
+	ret0, _ := ret[0].([]*peerevent.PeerEvent)
 	ret1, _ := ret[1].(string)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2
@@ -5013,22 +4936,6 @@ func (m *MockServiceHandler) ServiceAgentInteractionList(ctx context.Context, a 
 func (mr *MockServiceHandlerMockRecorder) ServiceAgentInteractionList(ctx, a, size, token, peerType, peerTarget, contactID, addressID, since any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentInteractionList", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentInteractionList), ctx, a, size, token, peerType, peerTarget, contactID, addressID, since)
-}
-
-// ServiceAgentInteractionListUnresolved mocks base method.
-func (m *MockServiceHandler) ServiceAgentInteractionListUnresolved(ctx context.Context, a *auth.AuthIdentity, size uint64, token, since string) ([]*interaction.Interaction, string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ServiceAgentInteractionListUnresolved", ctx, a, size, token, since)
-	ret0, _ := ret[0].([]*interaction.Interaction)
-	ret1, _ := ret[1].(string)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
-}
-
-// ServiceAgentInteractionListUnresolved indicates an expected call of ServiceAgentInteractionListUnresolved.
-func (mr *MockServiceHandlerMockRecorder) ServiceAgentInteractionListUnresolved(ctx, a, size, token, since any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentInteractionListUnresolved", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentInteractionListUnresolved), ctx, a, size, token, since)
 }
 
 // ServiceAgentMeGet mocks base method.
@@ -5120,35 +5027,6 @@ func (m *MockServiceHandler) ServiceAgentPeerEventList(ctx context.Context, a *a
 func (mr *MockServiceHandlerMockRecorder) ServiceAgentPeerEventList(ctx, a, contactID, peerAddress, pageToken, pageSize any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentPeerEventList", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentPeerEventList), ctx, a, contactID, peerAddress, pageToken, pageSize)
-}
-
-// ServiceAgentResolutionCreate mocks base method.
-func (m *MockServiceHandler) ServiceAgentResolutionCreate(ctx context.Context, a *auth.AuthIdentity, interactionID, contactID uuid.UUID, resolutionType, resolvedByType string, resolvedByID uuid.UUID) (*resolution.Resolution, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ServiceAgentResolutionCreate", ctx, a, interactionID, contactID, resolutionType, resolvedByType, resolvedByID)
-	ret0, _ := ret[0].(*resolution.Resolution)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ServiceAgentResolutionCreate indicates an expected call of ServiceAgentResolutionCreate.
-func (mr *MockServiceHandlerMockRecorder) ServiceAgentResolutionCreate(ctx, a, interactionID, contactID, resolutionType, resolvedByType, resolvedByID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentResolutionCreate", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentResolutionCreate), ctx, a, interactionID, contactID, resolutionType, resolvedByType, resolvedByID)
-}
-
-// ServiceAgentResolutionDelete mocks base method.
-func (m *MockServiceHandler) ServiceAgentResolutionDelete(ctx context.Context, a *auth.AuthIdentity, interactionID, resolutionID uuid.UUID) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ServiceAgentResolutionDelete", ctx, a, interactionID, resolutionID)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ServiceAgentResolutionDelete indicates an expected call of ServiceAgentResolutionDelete.
-func (mr *MockServiceHandlerMockRecorder) ServiceAgentResolutionDelete(ctx, a, interactionID, resolutionID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentResolutionDelete", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentResolutionDelete), ctx, a, interactionID, resolutionID)
 }
 
 // ServiceAgentTagGet mocks base method.
