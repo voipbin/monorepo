@@ -364,6 +364,38 @@ construction. Malformed/unparseable payloads within an eligible
 `(Publisher, EventType)` pair are logged and skipped — they still land in
 `events` (unaffected), just not in `peer_events`.
 
+**Round 3 polish notes:**
+- The snippet omits an explicit `import (...)` block for brevity (design-doc
+  convention, matches how other snippets in this doc and its cited prior art
+  are written); the real import paths are `monorepo/bin-call-manager/models/call`,
+  `monorepo/bin-conversation-manager/models/message` (aliased `convmessage`),
+  `monorepo/bin-conversation-manager/models/conversation` (aliased
+  `convconversation`), `monorepo/bin-common-handler/models/outline`,
+  `monorepo/bin-common-handler/models/address`, plus stdlib
+  `encoding/json`/`strings` — trivial for the implementer to fill in.
+- `dbhandler.PeerEventRow` (the destination struct `buildPeerEventRows`
+  constructs) is referenced but not defined in this doc, unlike the existing
+  `dbhandler.EventRow` (fully defined, `pkg/dbhandler/main.go:28-34`, 5
+  fields). `PeerEventRow.Peer`/`.Local` are implied to be full
+  `commonaddress.Address` values; whether the dbhandler layer flattens them
+  to just `(Type, Target)` for the two ClickHouse columns or drops
+  `TargetName`/`Name`/`Detail` is left to implementation. No information is
+  actually lost either way since `data` (§2.7) preserves the full original
+  payload verbatim — this is an acceptable design-level abstraction, not a
+  gap that blocks implementation.
+- **Direction-unset edge case (documented, not a defect):** `Direction` on
+  `call.WebhookMessage`/`message.WebhookMessage` may be the zero value (`""`)
+  if never explicitly set on some code path. `DeriveEndpoints`'s `default`
+  branch (§6) returns a zero `Address{}` for any non-incoming/non-outgoing
+  direction, and per §2.4's "no eligibility filter" decision, this row is
+  still inserted (not skipped, not logged) with `peer_type=""`. This is
+  intentional and matches the existing contact-manager `deriveEndpoints`
+  doc-comment contract ("unknown: both are zero values; the caller should
+  still persist the row") — flagged here only so a future consumer querying
+  `peer_events` knows a `peer_type=""` row means "direction was unset," not
+  "malformed payload" (malformed payloads are skipped entirely, never
+  inserted with empty fields).
+
 Two independent ClickHouse batch inserts per flush cycle (existing `events`
 batch + new `peer_events` batch) — not a combined statement, since they are
 different tables. This keeps the existing `events` insert path completely
@@ -526,7 +558,18 @@ than a new SQL fixture file.
 - Unit: `buildPeerEventRows` — table-driven per publisher (call, conversation,
   conversation_message), per direction (incoming/outgoing/unknown), asserting
   correct peer/local swap and that conversation parent events skip
-  `DeriveEndpoints` entirely.
+  `DeriveEndpoints` entirely. Explicit cases required (Round 3 addition):
+  - Allowlist-miss path: a `(Publisher, EventType)` pair NOT in
+    `eligiblePeerEvents` (e.g. `call-manager`/`groupcall_created`) is silently
+    skipped — no row produced, no log entry (this is the expected/steady-state
+    path, distinct from the malformed-payload path below).
+  - Malformed-payload path: one test per branch (call, conversation_message,
+    conversation) feeding an eligible `(Publisher, EventType)` pair with
+    unparseable `Data` — asserts the row is skipped AND a warning is logged
+    (distinguishing this from the silent allowlist-miss above).
+  - Direction-unset path: an eligible call/conversation_message event with
+    `Direction == ""` still produces a row with zero-value `Peer`/`Local`
+    (per §5's Round 3 note) — not skipped, not logged.
 - Unit: `DeriveEndpoints` (moved to bin-common-handler) — same cases as the
   existing contact-manager test, moved/kept in sync.
 - Unit: `PeerEventBatchInsert` dbhandler — mirrors `EventBatchInsert` tests
@@ -541,3 +584,11 @@ than a new SQL fixture file.
 - Full verification workflow (`go mod tidy && go mod vendor && go generate
   ./... && go test ./... && golangci-lint run`) in bin-common-handler,
   bin-contact-manager, AND bin-timeline-manager (three services touched).
+
+## 10. Review history
+
+| Round | Verdict | Key findings |
+|---|---|---|
+| 1 | CHANGES_REQUESTED | BLOCKER: publisher/event-type conflation (filter matched nothing). BLOCKER: call-manager's 5 incompatible webhook shapes on one queue. MAJOR: eligibility filter must not travel with the shared derive helper. |
+| 2 | CHANGES_REQUESTED | MAJOR: `publisher` storage column's synthetic 3-way label had no derivation code, risk of silent `conversation_message`/`conversation` collapse. MINOR: exclusion-list prose incomplete (`dtmf_received`/`account_*` unnamed). |
+| 3 | APPROVE | No BLOCKER/MAJOR. MINOR: missing import block (design-doc convention, non-blocking), `PeerEventRow` struct fields left to implementer, test plan needed explicit allowlist-miss/malformed-payload/direction-unset cases (added above). |
