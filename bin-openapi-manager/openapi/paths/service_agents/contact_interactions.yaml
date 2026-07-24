@@ -5,6 +5,11 @@ get:
     provided: peer_type + peer_target (remote endpoint), contact_id, or address_id.
     If no filter is provided, the full customer interaction history is returned,
     scoped to the "since" lookback window (default "30d", maximum "180d").
+
+    The response is the raw, unmodified peer_events shape (design doc
+    2026-07-25-contact-interaction-retire-to-peer-events, §8.1/§9): rows may
+    include internal-resource peer types (agent, ai, conference, sip legs)
+    with no CRM eligibility filtering or field reshaping applied.
   tags:
     - Service Agent
   parameters:
@@ -51,7 +56,7 @@ get:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ContactManagerInteractionListResponse'
+            $ref: '#/components/schemas/TimelineManagerPeerEventListResponse'
     '400':
       $ref: '#/components/responses/BadRequest'
     '401':
