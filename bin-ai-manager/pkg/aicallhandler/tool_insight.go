@@ -11,8 +11,8 @@ import (
 	"monorepo/bin-ai-manager/models/message"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	"monorepo/bin-common-handler/pkg/requesthandler"
-	cminteraction "monorepo/bin-contact-manager/models/interaction"
 	cvmessage "monorepo/bin-conversation-manager/models/message"
+	tmpeerevent "monorepo/bin-timeline-manager/models/peerevent"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -111,7 +111,7 @@ func (h *aicallHandler) toolHandleGetContactInteractions(ctx context.Context, c 
 		return res
 	}
 
-	var interactions []*cminteraction.Interaction
+	var interactions []*tmpeerevent.PeerEvent
 	if kase.ContactID != nil {
 		interactions, _, err = h.reqHandler.ContactV1InteractionList(
 			ctx, c.CustomerID, limit, "", "", "", *kase.ContactID, uuid.Nil, time.Time{})
@@ -143,13 +143,10 @@ func (h *aicallHandler) toolHandleGetContactInteractions(ctx context.Context, c 
 
 	lines := make([]string, 0, len(interactions))
 	for _, it := range interactions {
-		ts := "unknown"
-		if it.TMInteraction != nil {
-			ts = it.TMInteraction.UTC().Format(time.RFC3339)
-		}
+		ts := it.Timestamp.UTC().Format(time.RFC3339)
 		lines = append(lines, fmt.Sprintf(
 			"[%s] direction=%s peer=%s/%s reference_type=%s reference_id=%s",
-			ts, it.Direction, it.Peer.Type, it.Peer.Target, it.ReferenceType, it.ReferenceID,
+			ts, it.Direction, it.Peer.Type, it.Peer.Target, it.Publisher, it.ReferenceID,
 		))
 	}
 

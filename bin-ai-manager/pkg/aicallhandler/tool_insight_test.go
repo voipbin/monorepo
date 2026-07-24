@@ -16,9 +16,9 @@ import (
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
-	cminteraction "monorepo/bin-contact-manager/models/interaction"
 	kmkase "monorepo/bin-contact-manager/models/kase"
 	cvmessage "monorepo/bin-conversation-manager/models/message"
+	tmpeerevent "monorepo/bin-timeline-manager/models/peerevent"
 )
 
 func testAIcallForCase(customerID, caseID uuid.UUID) *aicall.AIcall {
@@ -55,7 +55,7 @@ func Test_toolHandleGetContactInteractions(t *testing.T) {
 
 		responseCase        *kmkase.Case
 		responseCaseErr     error
-		responseInteraction []*cminteraction.Interaction
+		responseInteraction []*tmpeerevent.PeerEvent
 		responseListErr     error
 
 		expectContactFilter bool // true: filter by contact_id; false: filter by peer
@@ -70,13 +70,13 @@ func Test_toolHandleGetContactInteractions(t *testing.T) {
 				ContactID:  &contactID,
 				Peer: commonaddress.Address{Type: "tel", Target: "+15551500001"},
 			},
-			responseInteraction: []*cminteraction.Interaction{
+			responseInteraction: []*tmpeerevent.PeerEvent{
 				{
-					Direction:     "incoming",
-					Peer: commonaddress.Address{Type: "tel", Target: "+15551500001"},
-					ReferenceType: "conversation_message",
-					ReferenceID:   uuid.FromStringOrNil("6a1f2c10-c001-11f0-9000-000000000010"),
-					TMInteraction: timePtr(time.Date(2026, 7, 1, 0, 0, 0, 0, time.UTC)),
+					Direction:   "incoming",
+					Peer:        commonaddress.Address{Type: "tel", Target: "+155****0001"},
+					Publisher:   "conversation_message",
+					ReferenceID: uuid.FromStringOrNil("6a1f2c10-c001-11f0-9000-000000000010"),
+					Timestamp:   time.Date(2026, 7, 1, 0, 0, 0, 0, time.UTC),
 				},
 			},
 			expectContactFilter: true,
@@ -89,12 +89,12 @@ func Test_toolHandleGetContactInteractions(t *testing.T) {
 				CustomerID: customerID,
 				Peer: commonaddress.Address{Type: "tel", Target: "+15551500002"},
 			},
-			responseInteraction: []*cminteraction.Interaction{
+			responseInteraction: []*tmpeerevent.PeerEvent{
 				{
-					Direction:     "outgoing",
-					Peer: commonaddress.Address{Type: "tel", Target: "+15551500002"},
-					ReferenceType: "call",
-					ReferenceID:   uuid.FromStringOrNil("6a1f2c10-c001-11f0-9000-000000000011"),
+					Direction:   "outgoing",
+					Peer:        commonaddress.Address{Type: "tel", Target: "+155****0002"},
+					Publisher:   "call",
+					ReferenceID: uuid.FromStringOrNil("6a1f2c10-c001-11f0-9000-000000000011"),
 				},
 			},
 			expectContactFilter: false,
@@ -107,7 +107,7 @@ func Test_toolHandleGetContactInteractions(t *testing.T) {
 				CustomerID: customerID,
 				Peer: commonaddress.Address{Type: "tel", Target: "+15551500003"},
 			},
-			responseInteraction: []*cminteraction.Interaction{},
+			responseInteraction: []*tmpeerevent.PeerEvent{},
 			expectContactFilter: false,
 			expectResult:        "success",
 			expectMessageEmpty:  true,
