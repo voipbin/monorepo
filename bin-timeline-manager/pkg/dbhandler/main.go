@@ -41,6 +41,7 @@ type DBHandler interface {
 	ResourceActiveflowIDGet(ctx context.Context, resourceID string) (string, error)
 	ResourceExists(ctx context.Context, resourceID string) (bool, error)
 	CorrelatedResourceList(ctx context.Context, activeflowID string, limit int) ([]*correlation.CorrelatedRow, error)
+	PeerEventBatchInsert(ctx context.Context, rows []PeerEventRow) error
 	WaitForConnection(ctx context.Context) error
 }
 
