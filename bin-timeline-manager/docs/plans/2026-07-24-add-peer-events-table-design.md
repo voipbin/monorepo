@@ -585,7 +585,21 @@ than a new SQL fixture file.
   ./... && go test ./... && golangci-lint run`) in bin-common-handler,
   bin-contact-manager, AND bin-timeline-manager (three services touched).
 
-## 10. Review history
+## 10. PR review addendum (Round 2)
+
+Round 2 PR review raised (non-blocking, self-resolved) whether promoting
+`DeriveEndpoints` to `bin-common-handler` violates that package's admission
+rule ("a package may only live in bin-common-handler if used by 3+
+services"). Verified: the admission rule gates NEW PACKAGES, not new
+functions added to an already-admitted package. `bin-common-handler/models/address`
+is a pre-existing package already imported by 10+ services across the
+monorepo (bin-call-manager, bin-message-manager, bin-conversation-manager,
+bin-outdial-manager, bin-contact-manager, etc., verified by grep) well before
+this PR. `DeriveEndpoints` is one new exported function inside that
+already-admitted package, not a new package needing its own admission
+review. No rule violation.
+
+## 11. Review history
 
 | Round | Verdict | Key findings |
 |---|---|---|
