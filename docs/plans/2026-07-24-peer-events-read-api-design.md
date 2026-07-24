@@ -1211,3 +1211,53 @@ and `Test_GetServiceAgentsContactPeerEvents` live in the single
 
 Round 5 is next: needs to also be a clean APPROVE to reach 2 consecutive
 and close the loop. If Round 5 finds anything, the counter resets to 0.
+
+## 21. Round 5 PR review disposition — APPROVE #2 of 2 consecutive, loop closed
+
+Round 5 adversarial PR review (independent subagent, comprehensive fresh
+pass over the full cumulative diff since base commit 5b0022820): **APPROVE**,
+0 BLOCKER, 0 MAJOR, 0 MINOR. This is **APPROVE #2 of the required 2
+consecutive APPROVEs — the review loop is closed** (minimum-3-round floor
+exceeded at 5 rounds total).
+
+Deep-dive coverage not exercised by any prior round: `peereventhandler/
+peer_event_test.go` genuinely covers the empty/nil-addrs error path,
+pagination math (`hasMore`/`NextPageToken` ISO8601 token derivation),
+page-size clamping, and DB error propagation with realistic
+`commonaddress.Address` values; `timeline_peer_events_test.go` asserts the
+exact marshaled RPC body (not `gomock.Any()`) for the `peer_addresses`
+field; `peer_event_read_test.go`'s `TestBuildPeerEventQuery_MultiPairORExpansion`
+verifies the exact OR-expanded SQL string and 6-arg ordering;
+`contact_peer_event_test.go`'s cross-tenant case correctly asserts
+`ErrNotFound` (not `ErrPermissionDenied`) for a contact belonging to a
+different customer. Design doc §1–§20 re-read fresh: headers sequential,
+no internal contradictions, §20 accurately describes current repo state.
+Full verification workflow re-run clean on all 4 services (build/test/lint);
+Sphinx rebuild clean; git hygiene confirmed (working tree clean, no
+uncommitted changes).
+
+**One non-blocking observation** (not filed as a finding): the
+`contact_id`-with-duplicate-addresses dedup branch in `resolvePeerAddresses`
+is exercised only via code inspection, not a dedicated test case with
+actual duplicate addresses in the `Contact.Addresses` fixture — a
+nice-to-have for future test coverage work, not a defect blocking this PR.
+
+**Review loop summary (5 rounds, base commit 5b0022820):**
+
+| Round | Result | Key finding |
+|---|---|---|
+| 1 | CHANGES_REQUESTED | 2 MAJOR (doc falsely claimed a `peer_address` param rename; RST asymmetry unexplained), 2 MINOR (gofmt) |
+| 2 | CHANGES_REQUESTED | 1 new MAJOR (RST claimed a nonexistent "Interaction struct" comparison) |
+| 3 | APPROVE (not counted) | 1 non-blocking MINOR (test used `gomock.Any()` instead of asserting the real `commonaddress.Address`) |
+| 4 | APPROVE | 0 findings — APPROVE #1 |
+| 5 | APPROVE | 0 findings — APPROVE #2, loop closed |
+
+This retroactive review loop (triggered by 대표님 asking "리뷰 루프
+돌렸어?" after the review was skipped before the initial push) caught 3
+real documentation-accuracy defects across Rounds 1–2 and one test-coverage
+gap in Round 3 — none were BLOCKERs (the underlying code was correct
+throughout), but all would have shipped inaccurate customer-facing docs
+and an undertested code path had the loop not run. PR #1136 (6 commits:
+44501b298, 1721b9bae, 991677f56, 50f609ffc, 7ec8cbc5f, plus this section's
+commit) is now push/merge-ready, pending 대표님's explicit authorization
+to push and, separately, to merge.
