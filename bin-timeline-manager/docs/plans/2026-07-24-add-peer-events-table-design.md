@@ -116,7 +116,14 @@ Does NOT exist yet, and is new work in this design:
 CREATE TABLE IF NOT EXISTS peer_events (
     timestamp     DateTime64(3),
     customer_id   UUID,
-    publisher     LowCardinality(String),   -- "call" | "conversation_message" | "conversation"
+    publisher     LowCardinality(String),   -- SYNTHETIC label, NOT the raw event.Publisher wire
+                                             -- value. "call" | "conversation_message" | "conversation".
+                                             -- The raw wire Publisher is only ever "call-manager" or
+                                             -- "conversation-manager"; conversation-manager's two
+                                             -- WebhookMessage shapes (message vs conversation parent)
+                                             -- share that one wire value, so buildPeerEventRows (§5)
+                                             -- derives this column from EventType, not copies Publisher
+                                             -- verbatim. See §5's Round-2 fix for the derivation code.
     event_type    LowCardinality(String),   -- e.g. call_hangup, conversation_message_created
     reference_id  UUID,                     -- call_id / conversation_message_id / conversation_id
 
@@ -208,15 +215,23 @@ parent) are in scope — NOT "every event type this service ever publishes."
 **Explicitly EXCLUDED from `peer_events` (same publisher, incompatible or
 non-webhook-message payload):** `call-manager`'s `groupcall_*`,
 `recording_*`, `confbridge_*` events (different struct shape per publisher
-census in §3), and `call.outbound_whitelist_rejected` (verified
+census in §3), `dtmf_received` (verified `bin-call-manager/models/dtmf/event.go:4`
+— `dtmf.DTMF` carries only `CallID`/`Digit`/`Duration`, no
+`Source`/`Destination`), and `call.outbound_whitelist_rejected` (verified
 `bin-call-manager/pkg/callhandler/outgoing_call.go:213` publishes a raw
 `map[string]interface{}`, not `call.WebhookMessage` — cannot be unmarshaled
-into the derivation path at all). This narrows §2.9's "ALL event types"
+into the derivation path at all); and `conversation-manager`'s
+`account_created`/`account_updated`/`account_deleted` (verified
+`bin-conversation-manager/models/account/event.go:5-7` — `account.WebhookMessage`
+carries `Type`/`Name`/`Detail`/`ProviderData`/`MessageFlowID`, no
+`Source`/`Destination`/`Self`/`Peer`). This narrows §2.9's "ALL event types"
 decision to mean "all event types of the two Webhook*Message shapes that
 actually carry peer/local data," not literally every event on the queue —
 confirmed as the correct reading of 대표님's intent (the goal was "no
 `_created`-only restriction," not "ingest structurally incompatible
-payloads").
+payloads"). The allowlist below is exhaustive over BOTH services'
+`models/*/event.go` files (every event type in both files is either in the
+allowlist or named in this exclusion paragraph — none omitted by oversight).
 
 ```go
 // eligiblePeerEvents is the exhaustive (Publisher, EventType) allowlist for
@@ -264,12 +279,90 @@ func (h *subscribeHandler) flushBatch(entries []eventEntry) {
 against `eligiblePeerEvents` FIRST; only matching entries are unmarshaled.
 Because `message.WebhookMessage` (per-message, absolute axis) and
 `conversation.WebhookMessage` (parent, relative axis) are two DIFFERENT Go
-struct shapes under the same publisher, the event-type match also selects
-which struct to unmarshal into and whether to call `DeriveEndpoints` at all
-(message path) or map `Self`/`Peer` directly (conversation-parent path, §6).
-Malformed/unparseable payloads within an eligible `(Publisher, EventType)`
-pair are logged and skipped — they still land in `events` (unaffected), just
-not in `peer_events`.
+struct shapes under the same publisher, the event-type match ALSO selects
+which struct to unmarshal into, which field pair to derive from, and what
+synthetic `publisher` label to store in `peer_events.publisher` (§4's schema
+comment documents three distinct label values —
+`"call"`/`"conversation_message"`/`"conversation"` — but the raw
+`event.Publisher` on the wire is only ever `"call-manager"` or
+`"conversation-manager"`; the two `conversation-manager` sub-cases are
+indistinguishable by `Publisher` alone and MUST be disambiguated by
+`EventType`). Round 2 review caught that this derivation was asserted in
+prose but never shown as code — the explicit dispatch below is the fix
+(replaces the prose-only description in the prior draft):
+
+```go
+// buildPeerEventRows converts each eligible entry into a PeerEventRow. The
+// EventType (already matched against eligiblePeerEvents) determines both
+// which WebhookMessage shape to unmarshal into and the synthetic
+// PeerEventRow.Publisher label — event.Publisher alone cannot distinguish
+// conversation_message_* from conversation_* (both carry the identical raw
+// "conversation-manager" wire value).
+func buildPeerEventRows(entries []eventEntry) []dbhandler.PeerEventRow {
+    var rows []dbhandler.PeerEventRow
+    for _, e := range entries {
+        types, ok := eligiblePeerEvents[e.event.Publisher]
+        if !ok {
+            continue
+        }
+        if _, ok := types[e.event.Type]; !ok {
+            continue
+        }
+
+        switch e.event.Publisher {
+        case string(commonoutline.ServiceNameCallManager):
+            var m call.WebhookMessage
+            if err := json.Unmarshal(e.event.Data, &m); err != nil {
+                log.Warnf("Could not unmarshal call webhook for peer_events. err: %v", err)
+                continue
+            }
+            peer, local := commonaddress.DeriveEndpoints(string(m.Direction), m.Source, m.Destination)
+            rows = append(rows, dbhandler.PeerEventRow{
+                Timestamp: e.receivedAt, CustomerID: m.CustomerID, Publisher: "call",
+                EventType: e.event.Type, ReferenceID: m.ID, Direction: string(m.Direction),
+                Peer: peer, Local: local, Data: string(e.event.Data),
+            })
+
+        case string(commonoutline.ServiceNameConversationManager):
+            switch {
+            case strings.HasPrefix(e.event.Type, "conversation_message_"):
+                var m convmessage.WebhookMessage
+                if err := json.Unmarshal(e.event.Data, &m); err != nil {
+                    log.Warnf("Could not unmarshal conversation message webhook for peer_events. err: %v", err)
+                    continue
+                }
+                peer, local := commonaddress.DeriveEndpoints(string(m.Direction), m.Source, m.Destination)
+                rows = append(rows, dbhandler.PeerEventRow{
+                    Timestamp: e.receivedAt, CustomerID: m.CustomerID, Publisher: "conversation_message",
+                    EventType: e.event.Type, ReferenceID: m.ID, Direction: string(m.Direction),
+                    Peer: peer, Local: local, Data: string(e.event.Data),
+                })
+            default: // "conversation_created" / "_updated" / "_deleted"
+                var m convconversation.WebhookMessage
+                if err := json.Unmarshal(e.event.Data, &m); err != nil {
+                    log.Warnf("Could not unmarshal conversation webhook for peer_events. err: %v", err)
+                    continue
+                }
+                rows = append(rows, dbhandler.PeerEventRow{
+                    Timestamp: e.receivedAt, CustomerID: m.CustomerID, Publisher: "conversation",
+                    EventType: e.event.Type, ReferenceID: m.ID, Direction: "",
+                    Peer: m.Peer, Local: m.Self, Data: string(e.event.Data),
+                })
+            }
+        }
+    }
+    return rows
+}
+```
+
+The `default` branch inside the `conversation-manager` case relies on the
+allowlist already having filtered to exactly six known event types (§5's
+table), so "not a `conversation_message_*` prefix" safely means "one of the
+three `conversation_*` parent types" — no third shape exists under this
+publisher in the allowlist, so the two-way switch is exhaustive by
+construction. Malformed/unparseable payloads within an eligible
+`(Publisher, EventType)` pair are logged and skipped — they still land in
+`events` (unaffected), just not in `peer_events`.
 
 Two independent ClickHouse batch inserts per flush cycle (existing `events`
 batch + new `peer_events` batch) — not a combined statement, since they are
@@ -331,13 +424,29 @@ already stored in the relative axis. `buildPeerEventRows` maps these directly
 the full verification workflow in all three services, not just
 timeline-manager, since bin-common-handler is a shared dependency.
 
-## 7. Open questions for review round 2 (round 1 findings resolved above)
+## 7. Open questions for review round 3 (rounds 1-2 findings resolved above)
 
 **Round 1 verdict: CHANGES_REQUESTED.** Two BLOCKERs found and fixed in §5/§2.9
 above (publisher-vs-event-type conflation; call-manager's multiple incompatible
 webhook shapes on one queue). One MAJOR clarified in §6 (eligibility filter
-does not travel with the shared helper). Remaining open items carried into
-round 2:
+does not travel with the shared helper).
+
+**Round 2 verdict: CHANGES_REQUESTED.** Round 1's fixes verified correct
+(constant names compile-accurate, no map-literal duplicate-key defect). One
+NEW MAJOR surfaced from the round-1 fix itself: §4's schema comment promised
+a synthetic 3-way `publisher` label (`"call"`/`"conversation_message"`/`"conversation"`)
+but no code showed how that label gets derived, and a naive "copy
+`event.Publisher` verbatim" implementation would have silently collapsed
+`conversation_message` and `conversation` into the same stored string. Fixed
+in §5 with an explicit `buildPeerEventRows` dispatch function and a
+corrected §4 schema comment stating this is a derived, not copied, value.
+Two MINOR documentation-completeness gaps also fixed: the "Explicitly
+EXCLUDED" list now names `dtmf_received` and `account_*` (previously
+correctly excluded by the allowlist but not named in the prose), and the
+allowlist is now stated to be exhaustive over both services' complete
+`event.go` files.
+
+Remaining open items carried into round 3:
 
 ### 7.1 No eligibility filter — confirmed noise implication
 
@@ -369,6 +478,15 @@ the same `peer_type`/`peer_target`. An address-set search will therefore
 return multiple rows per underlying call/message. This is accepted as
 consistent with `events`' own "store everything verbatim" philosophy, not
 deduplicated at write time.
+
+### 7.6 Struct-dispatch was prose-only until Round 2 (now fixed above)
+
+Round 2 review flagged that §5's original text asserted "the event-type
+match also selects which struct to unmarshal into" without ever showing the
+dispatch code. §5 now includes the explicit `buildPeerEventRows` function
+with a `switch e.event.Publisher` / nested `switch` on the
+`conversation_message_` prefix. Carried here only as a changelog entry, not
+an open item — resolved.
 
 ### 7.5 No existing address-keyed ClickHouse table to validate ORDER BY against (Round 1 MINOR)
 
