@@ -62,68 +62,15 @@ create table contact_tag_assignments(
   primary key(contact_id, tag_id)
 );
 
--- contact_interactions mirrors migration
--- 2026-07-22-case-interaction-peer-local-address-json-design.md §3.2:
--- peer/local are now JSON columns holding a full commonaddress.Address
--- (Type/Target/...); peer_type/peer_target/local_type/local_target are
--- STORED generated columns derived from that JSON, kept ONLY for
--- indexing/filtering -- there is no corresponding Go struct field for
--- them anymore (see interaction.Interaction, which has Peer/Local
--- commonaddress.Address fields, not flat Peer/Local Type/Target
--- fields). SQLite's json_extract/json1 stands in for MySQL's
--- JSON_UNQUOTE(JSON_EXTRACT(...)) here.
-create table contact_interactions(
-  id             binary(16)    not null,
-  customer_id    binary(16)    not null,
-  direction      varchar(255)  not null default '',
-  peer           json          not null,
-  local          json,
-  peer_type      varchar(255)  generated always as (json_extract(peer, '$.type')) stored not null,
-  peer_target    varchar(255)  generated always as (json_extract(peer, '$.target')) stored not null,
-  local_type     varchar(255)  generated always as (json_extract(local, '$.type')) stored,
-  local_target   varchar(255)  generated always as (json_extract(local, '$.target')) stored,
-  reference_type varchar(255)  not null default '',
-  reference_id   binary(16)    not null,
-  tm_interaction datetime(6),
-  tm_create      datetime(6),
-  primary key(id)
-);
-create unique index idx_contact_interactions_idem on contact_interactions(reference_type, reference_id, peer_target);
-create index idx_contact_interactions_peer on contact_interactions(customer_id, peer_type, peer_target);
-create index idx_contact_interactions_cursor on contact_interactions(customer_id, tm_create);
-
-create table contact_resolutions (
-  id                binary(16)    not null,
-  customer_id       binary(16)    not null,
-  contact_id        binary(16)    not null,
-  interaction_id    binary(16),
-  case_id           binary(16),
-  resolution_type   varchar(255)  not null default '',
-  resolved_by_type  varchar(255)  not null default '',
-  resolved_by_id    binary(16)    not null,
-  tm_create         datetime(6),
-  tm_update         datetime(6),
-  tm_delete         datetime(6),
-
-  -- Mirrors migration 99e7e955a149's case_positive_uk (design §3.3): at
-  -- most one active case-level positive Resolution per case. SQLite has
-  -- no IF()/SHA2; CASE WHEN over the raw case_id is equivalent here (no
-  -- truncation risk, same rationale as open_peer_uk above).
-  case_positive_uk binary(16) generated always as (
-    case when resolution_type = 'positive' and interaction_id is null and tm_delete is null
-         then case_id else null end
-  ) stored,
-
-  primary key(id)
-);
-
-create unique index uq_resolution_case_positive on contact_resolutions(case_positive_uk);
-create index idx_contact_resolutions_contact_interaction
-  on contact_resolutions(customer_id, contact_id, tm_delete);
-create index idx_contact_resolutions_interaction
-  on contact_resolutions(customer_id, interaction_id, tm_delete);
-create index idx_contact_resolutions_case
-  on contact_resolutions(customer_id, case_id, tm_delete);
+-- contact_interactions / contact_resolutions: RETIRED (PR #1137,
+-- design doc 2026-07-25-contact-interaction-retire-to-peer-events).
+-- No Go code reads or writes these tables anymore --
+-- contacthandler.InteractionList now proxies bin-timeline-manager's
+-- peer_events read API instead. The production tables themselves are
+-- dropped by dbscheme migration d8b04ef3ddd0; the CREATE TABLE
+-- statements that used to live here for the SQLite test harness were
+-- removed in the same change as the Go dbhandler.Interaction*/
+-- Resolution* primitives.
 
 -- contact_cases mirrors migration f718e26f2c44 (design §3.1). SQLite has no
 -- SHA2/UNHEXFn; the production open_peer_uk hash-digest technique is

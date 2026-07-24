@@ -18,9 +18,7 @@ import (
 
 	"monorepo/bin-contact-manager/models/casenote"
 	"monorepo/bin-contact-manager/models/contact"
-	"monorepo/bin-contact-manager/models/interaction"
 	"monorepo/bin-contact-manager/models/kase"
-	"monorepo/bin-contact-manager/models/resolution"
 	"monorepo/bin-contact-manager/pkg/cachehandler"
 )
 
@@ -58,33 +56,10 @@ type DBHandler interface {
 	AddressResetPrimaryTx(ctx context.Context, tx *sql.Tx, contactID uuid.UUID) error
 	AddressDeleteCompensating(ctx context.Context, customerID, contactID uuid.UUID, addrType commonaddress.Type, target string) error
 
-	// Address ownership-period READ operations (design §6.1/§6.2,
-	// NOJIRA-contact-address-ownership-periods Phase 2). Used exclusively
-	// by interactionListByContact's STEP1 -- AddressListByContactID above
-	// stays untouched, since it also backs the public Contact.Addresses
-	// API field via ContactGet/ContactList (design §6.1).
-	OwnershipPeriodsListByContactID(ctx context.Context, contactID uuid.UUID) ([]OwnershipPeriod, error)
-	MissingPeriodOwnedAddresses(ctx context.Context, customerID, contactID uuid.UUID) ([]MissingPeriodAddress, error)
-
 	// TagAssignment operations
 	TagAssignmentCreate(ctx context.Context, contactID, tagID uuid.UUID) error
 	TagAssignmentDelete(ctx context.Context, contactID, tagID uuid.UUID) error
 	TagAssignmentListByContactID(ctx context.Context, contactID uuid.UUID) ([]uuid.UUID, error)
-
-	// Interaction operations
-	InteractionCreate(ctx context.Context, i *interaction.Interaction) error
-	InteractionGet(ctx context.Context, id uuid.UUID) (*interaction.Interaction, error)
-	InteractionList(ctx context.Context, customerID uuid.UUID, size uint64, token string, peerType, peerTarget string, addressSet []AddressPair, since time.Time) ([]*interaction.Interaction, error)
-	InteractionListByOwnershipPeriods(ctx context.Context, customerID uuid.UUID, size uint64, token string, peerType, peerTarget string, bounds []OwnershipPeriodBound, since time.Time) ([]*interaction.Interaction, error)
-	InteractionListByIDs(ctx context.Context, customerID uuid.UUID, ids []uuid.UUID) ([]*interaction.Interaction, error)
-	InteractionListUnresolved(ctx context.Context, customerID uuid.UUID, size uint64, token string, since time.Time) ([]*interaction.Interaction, error)
-
-	// Resolution operations
-	ResolutionCreate(ctx context.Context, r *resolution.Resolution) error
-	ResolutionCreateTx(ctx context.Context, tx *sql.Tx, r *resolution.Resolution) error
-	ResolutionDelete(ctx context.Context, customerID, interactionID, id uuid.UUID) error
-	ResolutionListByInteraction(ctx context.Context, customerID, interactionID uuid.UUID) ([]*resolution.Resolution, error)
-	ResolutionListByContact(ctx context.Context, customerID, contactID uuid.UUID) ([]*resolution.Resolution, error)
 
 	// Case operations
 	BeginTx(ctx context.Context) (*sql.Tx, error)
