@@ -1182,3 +1182,32 @@ generated-vs-source drift.
 Round 4 is next: since Round 3 was a clean APPROVE, Round 4 needs to also
 be a clean APPROVE to reach 2 consecutive APPROVEs and close the loop. If
 Round 4 finds anything, the consecutive-APPROVE counter resets.
+
+## 20. Round 4 PR review disposition — APPROVE #1 of 2 consecutive
+
+Round 4 adversarial PR review (independent subagent, verifying commit
+50f609ffc's fix of Round 3's MINOR): **APPROVE**, 0 BLOCKER, 0 MAJOR, 0
+MINOR. This is genuinely clean — Round 3's own APPROVE doesn't count
+toward the consecutive-pair requirement because it carried a MINOR that
+needed fixing; Round 4 is the first fully clean round and becomes
+**APPROVE #1 of the required 2 consecutive**.
+
+Independently re-verified: both test cases' `expectContactID`/
+`expectPeerAddress` values are correct, including an independent
+`urllib.parse.unquote('%2B155****1111')` check confirming the URL-decoded
+target literal (`+155****1111`) used in the test matches what gin's
+query-param decoding actually produces; `gofmt -l`/`goimports -l` clean;
+a fresh `go clean -testcache && go test ./server/... -run PeerEvents -v`
+run shows all subtests genuinely PASS (gomock's strict argument matching
+means a wrong Address construction would produce a real test failure, not
+just a compile pass); the full `bin-api-manager` verification workflow
+passes clean (one transient `pkg/zmqsubhandler` port-race failure was
+investigated and confirmed pre-existing test-environment flakiness
+unrelated to this PR, reproduced to pass on retry and in isolation); §19
+accurately describes commit 50f609ffc; document headers `## 1`–`## 19`
+sequential with no gaps/duplicates; confirmed `Test_GetContactPeerEvents`
+and `Test_GetServiceAgentsContactPeerEvents` live in the single
+`contact_peer_events_test.go` file (no missed sibling test file).
+
+Round 5 is next: needs to also be a clean APPROVE to reach 2 consecutive
+and close the loop. If Round 5 finds anything, the counter resets to 0.
