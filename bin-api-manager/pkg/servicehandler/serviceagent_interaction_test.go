@@ -2,6 +2,7 @@ package servicehandler
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -91,6 +92,27 @@ func Test_ServiceAgentInteractionList(t *testing.T) {
 
 			expectErr: true,
 		},
+		{
+			// Round 2 PR review finding: the RPC-failure path was
+			// previously untested for this servicehandler.
+			name: "rpc error propagates",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         agentID,
+					CustomerID: customerID,
+				},
+				Permission: amagent.PermissionCustomerAgent,
+			}),
+			size:       20,
+			token:      "",
+			peerType:   "tel",
+			peerTarget: "+155****1111",
+			contactID:  uuid.Nil,
+			addressID:  uuid.Nil,
+			since:      time.Time{},
+
+			expectErr: true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -112,6 +134,10 @@ func Test_ServiceAgentInteractionList(t *testing.T) {
 				mockReq.EXPECT().
 					ContactV1InteractionList(ctx, tt.agent.CustomerID, tt.size, tt.token, tt.peerType, tt.peerTarget, tt.contactID, tt.addressID, tt.since).
 					Return(tt.responseItems, tt.responseToken, nil)
+			} else if tt.name == "rpc error propagates" {
+				mockReq.EXPECT().
+					ContactV1InteractionList(ctx, tt.agent.CustomerID, tt.size, tt.token, tt.peerType, tt.peerTarget, tt.contactID, tt.addressID, tt.since).
+					Return(nil, "", fmt.Errorf("rpc timeout"))
 			}
 
 			items, _, err := h.ServiceAgentInteractionList(ctx, tt.agent, tt.size, tt.token, tt.peerType, tt.peerTarget, tt.contactID, tt.addressID, tt.since)

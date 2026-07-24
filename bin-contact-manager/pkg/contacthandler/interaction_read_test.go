@@ -2,6 +2,7 @@ package contacthandler
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -209,5 +210,71 @@ func Test_InteractionList_SinceOnly_Error(t *testing.T) {
 	_, _, err := h.InteractionList(ctx, customerID, 10, "", "", "", uuid.Nil, uuid.Nil, time.Now().Add(-24*time.Hour))
 	if err == nil {
 		t.Errorf("Test_InteractionList_SinceOnly_Error expected error, got nil")
+	}
+}
+
+// Test_InteractionList_ByContact_NoAddresses covers the Round 2 PR review
+// finding: a contact_id filter WAS supplied, but the contact has zero
+// registered addresses. This must be distinguished from the "no filter
+// supplied at all" case (Test_InteractionList_NoFilter_Error) via a
+// different error code (CONTACT_HAS_NO_ADDRESSES vs INVALID_FILTER).
+func Test_InteractionList_ByContact_NoAddresses(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := contactHandler{
+		utilHandler: mockUtil,
+		db:          mockDB,
+		reqHandler:  mockReq,
+	}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("a082d59c-2a00-11ee-8fb1-8bbf141432f6")
+	contactID := uuid.FromStringOrNil("b082d59c-2a00-11ee-8fb1-8bbf141432f6")
+
+	responseContact := &contact.Contact{
+		Identity: commonidentity.Identity{
+			ID:         contactID,
+			CustomerID: customerID,
+		},
+		Addresses: []contact.Address{},
+	}
+
+	mockDB.EXPECT().ContactGet(ctx, contactID).Return(responseContact, nil)
+
+	_, _, err := h.InteractionList(ctx, customerID, 10, "", "", "", contactID, uuid.Nil, time.Time{})
+	if err == nil {
+		t.Errorf("Test_InteractionList_ByContact_NoAddresses expected error, got nil")
+	}
+}
+
+// Test_InteractionList_ByPeer_RPCError covers the Round 2 PR review
+// finding: the RPC-failure path was previously untested. The error from
+// reqHandler.TimelineV1PeerEventList must propagate to the caller, not be
+// swallowed or mis-wrapped.
+func Test_InteractionList_ByPeer_RPCError(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := contactHandler{
+		utilHandler: mockUtil,
+		db:          mockDB,
+		reqHandler:  mockReq,
+	}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("a082d59c-2a00-11ee-8fb1-8bbf141432f6")
+
+	mockReq.EXPECT().TimelineV1PeerEventList(ctx, gomock.Any()).Return(nil, fmt.Errorf("rpc timeout"))
+
+	_, _, err := h.InteractionList(ctx, customerID, 10, "", string(commonaddress.TypeTel), "+821****0001", uuid.Nil, uuid.Nil, time.Time{})
+	if err == nil {
+		t.Errorf("Test_InteractionList_ByPeer_RPCError expected error, got nil")
 	}
 }

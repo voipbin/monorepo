@@ -61,6 +61,18 @@ func (h *contactHandler) InteractionList(
 		for _, a := range c.Addresses {
 			addrs = append(addrs, a.Address)
 		}
+		if len(addrs) == 0 {
+			// Round 2 PR review fix: a contact_id filter WAS supplied, so
+			// this is not the same situation as "no filter at all" (the
+			// default branch below). Distinguish it with its own error
+			// code so callers don't mistake this for caller misuse of the
+			// filter contract.
+			return nil, "", cerrors.InvalidArgument(
+				commonoutline.ServiceNameContactManager,
+				"CONTACT_HAS_NO_ADDRESSES",
+				"The contact has no registered addresses to search.",
+			)
+		}
 
 	case addressID != uuid.Nil:
 		ap, err := h.db.AddressGet(ctx, customerID, addressID)
@@ -85,6 +97,9 @@ func (h *contactHandler) InteractionList(
 	}
 
 	if len(addrs) == 0 {
+		// Reachable only if a future filter branch is added above without
+		// populating addrs -- kept as a defensive fallback distinct from
+		// the contact_id-specific empty-addresses case handled above.
 		return nil, "", cerrors.InvalidArgument(
 			commonoutline.ServiceNameContactManager,
 			"INVALID_FILTER",
