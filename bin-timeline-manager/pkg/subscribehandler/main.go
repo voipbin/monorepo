@@ -252,4 +252,21 @@ func (h *subscribeHandler) flushBatch(entries []eventEntry) {
 	promSubscribeBatchInsertTime.Observe(float64(elapsed.Milliseconds()))
 
 	log.Debugf("Batch flushed %d events to ClickHouse in %v.", len(rows), elapsed)
+
+	// Additionally project call-manager / conversation-manager events into
+	// peer_events (address-searchable peer/local log, additive to the events
+	// table above; see design doc §5). Failure here does NOT affect the
+	// primary events insert already committed above — peer_events is a
+	// secondary projection, not the audit-log source of truth. Uses its own
+	// fresh timeout budget (not the events-insert ctx above) so a slow
+	// primary insert cannot starve this independent secondary write of its
+	// full 10s allowance (Round 1 PR review finding).
+	peerRows := buildPeerEventRows(entries)
+	if len(peerRows) > 0 {
+		peerCtx, peerCancel := context.WithTimeout(context.Background(), 10*time.Second)
+		if err := h.dbHandler.PeerEventBatchInsert(peerCtx, peerRows); err != nil {
+			log.Errorf("Could not batch insert peer events into ClickHouse. count: %d, err: %v", len(peerRows), err)
+		}
+		peerCancel()
+	}
 }

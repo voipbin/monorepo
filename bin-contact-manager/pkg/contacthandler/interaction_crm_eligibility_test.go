@@ -48,18 +48,20 @@ func Test_isCRMEligiblePeer(t *testing.T) {
 // Test_deriveEndpoints_UnknownDirection_YieldsIneligiblePeer verifies the
 // exact failure mode D5 fixes: an unrecognized/empty direction value
 // yields a peer whose Type is TypeNone, which isCRMEligiblePeer must now
-// reject.
+// reject. deriveEndpoints itself moved to the shared
+// commonaddress.DeriveEndpoints authority (design doc §6); this test now
+// exercises that shared function through the same call-site contract.
 func Test_deriveEndpoints_UnknownDirection_YieldsIneligiblePeer(t *testing.T) {
 	src := commonaddress.Address{Type: commonaddress.TypeTel, Target: "src"}
 	dst := commonaddress.Address{Type: commonaddress.TypeTel, Target: "dst"}
 
 	for _, direction := range []string{"", "unknown", "sideways"} {
-		peer, local := deriveEndpoints(direction, src, dst)
+		peer, local := commonaddress.DeriveEndpoints(direction, src, dst)
 		if peer.Type != commonaddress.TypeNone {
-			t.Fatalf("deriveEndpoints(%q) peer.Type = %q, want TypeNone", direction, peer.Type)
+			t.Fatalf("DeriveEndpoints(%q) peer.Type = %q, want TypeNone", direction, peer.Type)
 		}
 		if local.Type != commonaddress.TypeNone {
-			t.Fatalf("deriveEndpoints(%q) local.Type = %q, want TypeNone", direction, local.Type)
+			t.Fatalf("DeriveEndpoints(%q) local.Type = %q, want TypeNone", direction, local.Type)
 		}
 		if isCRMEligiblePeer(peer.Type) {
 			t.Errorf("isCRMEligiblePeer(peer from direction=%q) = true, want false (D5 regression)", direction)

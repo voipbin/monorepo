@@ -13,24 +13,6 @@ import (
 	"monorepo/bin-contact-manager/models/interaction"
 )
 
-// deriveEndpoints resolves which address is the remote peer and which is our
-// local endpoint based on the call/message direction.
-//
-//   - incoming: the remote party is the source (they called/wrote us)
-//   - outgoing: the remote party is the destination (we called/wrote them)
-//   - unknown:  both are zero values; the caller should still persist the row
-//     (the direction column itself carries the raw value for diagnostics).
-func deriveEndpoints(direction string, source, dest commonaddress.Address) (peer commonaddress.Address, local commonaddress.Address) {
-	switch direction {
-	case "incoming":
-		return source, dest
-	case "outgoing":
-		return dest, source
-	default:
-		return commonaddress.Address{}, commonaddress.Address{}
-	}
-}
-
 // crmIneligiblePeerTypes lists address types that never represent a
 // re-identifiable external contact (customer). Interactions whose peer
 // resolves to one of these types are internal-resource noise (agent
@@ -46,15 +28,20 @@ func deriveEndpoints(direction string, source, dest commonaddress.Address) (peer
 // bin-call-manager/pkg/callhandler), so a real external SIP trunk partner is
 // always observed here as peer_type=tel, never peer_type=sip.
 //
-// D5 fix: TypeNone ("") is also listed. deriveEndpoints returns the zero
-// commonaddress.Address (Type == TypeNone) for any direction other than
-// "incoming"/"outgoing" -- an empty or unrecognized direction value. This
-// function's own doc-comment already stated the exact rule TypeNone
+// D5 fix: TypeNone ("") is also listed. commonaddress.DeriveEndpoints returns
+// the zero commonaddress.Address (Type == TypeNone) for any direction other
+// than "incoming"/"outgoing" -- an empty or unrecognized direction value.
+// This function's own doc-comment already stated the exact rule TypeNone
 // satisfies ("these types can never legitimately resolve to a contact...
 // must not be created in the first place"), but TypeNone itself was
 // missing from the map, so an unknown-direction event silently created a
 // permanently unresolved Interaction row instead of being dropped like
 // every other ineligible type.
+//
+// This is CRM-specific eligibility judgment and stays contact-manager-private
+// -- it is NOT part of the shared commonaddress.DeriveEndpoints authority
+// (see bin-timeline-manager/docs/plans/2026-07-24-add-peer-events-table-design.md
+// §6 for the explicit scope note distinguishing the two).
 var crmIneligiblePeerTypes = map[commonaddress.Type]struct{}{
 	commonaddress.TypeNone:       {},
 	commonaddress.TypeAgent:      {},
@@ -84,7 +71,7 @@ func (h *contactHandler) EventCallCreated(ctx context.Context, m *call.WebhookMe
 		"direction": m.Direction,
 	})
 
-	peer, local := deriveEndpoints(string(m.Direction), m.Source, m.Destination)
+	peer, local := commonaddress.DeriveEndpoints(string(m.Direction), m.Source, m.Destination)
 
 	if !isCRMEligiblePeer(peer.Type) {
 		log.Debugf("Peer type is not CRM-eligible; skipping interaction projection. peer_type: %s", peer.Type)
@@ -135,7 +122,7 @@ func (h *contactHandler) EventConversationMessageCreated(ctx context.Context, m 
 		"direction":  m.Direction,
 	})
 
-	peer, local := deriveEndpoints(string(m.Direction), m.Source, m.Destination)
+	peer, local := commonaddress.DeriveEndpoints(string(m.Direction), m.Source, m.Destination)
 
 	if !isCRMEligiblePeer(peer.Type) {
 		log.Debugf("Peer type is not CRM-eligible; skipping interaction projection. peer_type: %s", peer.Type)

@@ -102,6 +102,20 @@ func (mr *MockDBHandlerMockRecorder) EventList(ctx, publisher, resourceID, event
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventList", reflect.TypeOf((*MockDBHandler)(nil).EventList), ctx, publisher, resourceID, events, pageToken, pageSize)
 }
 
+// PeerEventBatchInsert mocks base method.
+func (m *MockDBHandler) PeerEventBatchInsert(ctx context.Context, rows []PeerEventRow) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PeerEventBatchInsert", ctx, rows)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PeerEventBatchInsert indicates an expected call of PeerEventBatchInsert.
+func (mr *MockDBHandlerMockRecorder) PeerEventBatchInsert(ctx, rows any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PeerEventBatchInsert", reflect.TypeOf((*MockDBHandler)(nil).PeerEventBatchInsert), ctx, rows)
+}
+
 // ResourceActiveflowIDGet mocks base method.
 func (m *MockDBHandler) ResourceActiveflowIDGet(ctx context.Context, resourceID string) (string, error) {
 	m.ctrl.T.Helper()
