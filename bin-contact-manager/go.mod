@@ -83,6 +83,7 @@ require (
 	monorepo/bin-conversation-manager v0.0.0-20231117134833-7918f76572d4
 	monorepo/bin-customer-manager v0.0.0-20240408042746-c45b2b5aa984
 	monorepo/bin-tag-manager v0.0.0-20240313070856-7d3433af905d
+	monorepo/bin-timeline-manager v0.0.0-00010101000000-000000000000
 )
 
 require (
@@ -137,7 +138,6 @@ require (
 	monorepo/bin-route-manager v0.0.0-20240313065038-1498b922bb24 // indirect
 	monorepo/bin-storage-manager v0.0.0-20240330083852-ab008a2e3880 // indirect
 	monorepo/bin-talk-manager v0.0.0-00010101000000-000000000000 // indirect
-	monorepo/bin-timeline-manager v0.0.0-00010101000000-000000000000 // indirect
 	monorepo/bin-transcribe-manager v0.0.0-20240405044227-febd49f8b700 // indirect
 	monorepo/bin-transfer-manager v0.0.0-20230419025515-44dea928ef34 // indirect
 	monorepo/bin-tts-manager v0.0.0-20240313070648-addf67d64996 // indirect

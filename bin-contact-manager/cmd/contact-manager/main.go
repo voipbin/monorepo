@@ -160,8 +160,6 @@ func runSubscribe(sockHandler sockhandler.SockHandler, contactHandler contacthan
 
 	subscribeTargets := []string{
 		string(commonoutline.QueueNameCustomerEvent),
-		string(commonoutline.QueueNameCallEvent),         // call_created -> CRM interaction timeline
-		string(commonoutline.QueueNameConversationEvent), // conversation_message_created -> CRM interaction timeline
 	}
 	subHandler := subscribehandler.NewSubscribeHandler(sockHandler, string(commonoutline.QueueNameContactSubscribe), subscribeTargets, contactHandler)
 

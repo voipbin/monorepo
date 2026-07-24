@@ -45,9 +45,7 @@ import (
 
 	cmcasenote "monorepo/bin-contact-manager/models/casenote"
 	cmcontact "monorepo/bin-contact-manager/models/contact"
-	cminteraction "monorepo/bin-contact-manager/models/interaction"
 	cmkase "monorepo/bin-contact-manager/models/kase"
-	cmresolution "monorepo/bin-contact-manager/models/resolution"
 	cmrequest "monorepo/bin-contact-manager/pkg/listenhandler/models/request"
 	tmpeerevent "monorepo/bin-timeline-manager/models/peerevent"
 
@@ -531,15 +529,7 @@ type ServiceHandler interface {
 		token string,
 		peerType, peerTarget string,
 		contactID, addressID uuid.UUID,
-	) ([]*cminteraction.Interaction, string, error)
-	InteractionListUnresolved(
-		ctx context.Context,
-		a *auth.AuthIdentity,
-		size uint64,
-		token string,
-		since string,
-	) ([]*cminteraction.Interaction, string, error)
-	InteractionGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cminteraction.Interaction, error)
+	) ([]*tmpeerevent.PeerEvent, string, error)
 
 	// peer_events handlers (raw, unfiltered — see contact_peer_event.go)
 	PeerEventList(
@@ -559,17 +549,6 @@ type ServiceHandler interface {
 		pageSize uint64,
 	) ([]*tmpeerevent.PeerEvent, string, error)
 
-	ResolutionCreate(
-		ctx context.Context,
-		a *auth.AuthIdentity,
-		interactionID uuid.UUID,
-		contactID uuid.UUID,
-		resolutionType string,
-		resolvedByType string,
-		resolvedByID uuid.UUID,
-	) (*cmresolution.Resolution, error)
-	ResolutionDelete(ctx context.Context, a *auth.AuthIdentity, interactionID, resolutionID uuid.UUID) error
-
 	// service agent interaction handlers
 	ServiceAgentInteractionList(
 		ctx context.Context,
@@ -579,25 +558,7 @@ type ServiceHandler interface {
 		peerType, peerTarget string,
 		contactID, addressID uuid.UUID,
 		since time.Time,
-	) ([]*cminteraction.Interaction, string, error)
-	ServiceAgentInteractionListUnresolved(
-		ctx context.Context,
-		a *auth.AuthIdentity,
-		size uint64,
-		token string,
-		since string,
-	) ([]*cminteraction.Interaction, string, error)
-	ServiceAgentInteractionGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cminteraction.Interaction, error)
-	ServiceAgentResolutionCreate(
-		ctx context.Context,
-		a *auth.AuthIdentity,
-		interactionID uuid.UUID,
-		contactID uuid.UUID,
-		resolutionType string,
-		resolvedByType string,
-		resolvedByID uuid.UUID,
-	) (*cmresolution.Resolution, error)
-	ServiceAgentResolutionDelete(ctx context.Context, a *auth.AuthIdentity, interactionID, resolutionID uuid.UUID) error
+	) ([]*tmpeerevent.PeerEvent, string, error)
 
 	// conversation handlers
 	ConversationGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cvconversation.WebhookMessage, error)

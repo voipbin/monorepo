@@ -1556,63 +1556,6 @@ func (e ContactManagerContactSource) Valid() bool {
 	}
 }
 
-// Defines values for ContactManagerInteractionDirection.
-const (
-	ContactManagerInteractionDirectionIncoming ContactManagerInteractionDirection = "incoming"
-	ContactManagerInteractionDirectionOutgoing ContactManagerInteractionDirection = "outgoing"
-)
-
-// Valid indicates whether the value is a known member of the ContactManagerInteractionDirection enum.
-func (e ContactManagerInteractionDirection) Valid() bool {
-	switch e {
-	case ContactManagerInteractionDirectionIncoming:
-		return true
-	case ContactManagerInteractionDirectionOutgoing:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for ContactManagerResolutionResolutionType.
-const (
-	ContactManagerResolutionResolutionTypeNegative ContactManagerResolutionResolutionType = "negative"
-	ContactManagerResolutionResolutionTypePositive ContactManagerResolutionResolutionType = "positive"
-)
-
-// Valid indicates whether the value is a known member of the ContactManagerResolutionResolutionType enum.
-func (e ContactManagerResolutionResolutionType) Valid() bool {
-	switch e {
-	case ContactManagerResolutionResolutionTypeNegative:
-		return true
-	case ContactManagerResolutionResolutionTypePositive:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for ContactManagerResolutionResolvedByType.
-const (
-	ContactManagerResolutionResolvedByTypeAgent  ContactManagerResolutionResolvedByType = "agent"
-	ContactManagerResolutionResolvedByTypeRule   ContactManagerResolutionResolvedByType = "rule"
-	ContactManagerResolutionResolvedByTypeSystem ContactManagerResolutionResolvedByType = "system"
-)
-
-// Valid indicates whether the value is a known member of the ContactManagerResolutionResolvedByType enum.
-func (e ContactManagerResolutionResolvedByType) Valid() bool {
-	switch e {
-	case ContactManagerResolutionResolvedByTypeAgent:
-		return true
-	case ContactManagerResolutionResolvedByTypeRule:
-		return true
-	case ContactManagerResolutionResolvedByTypeSystem:
-		return true
-	default:
-		return false
-	}
-}
-
 // Defines values for ConversationManagerAccountType.
 const (
 	ConversationManagerAccountTypeLine     ConversationManagerAccountType = "line"
@@ -2791,19 +2734,19 @@ func (e TimelineManagerAnalysisStatus) Valid() bool {
 
 // Defines values for TimelineManagerPeerEventDirection.
 const (
-	TimelineManagerPeerEventDirectionEmpty    TimelineManagerPeerEventDirection = ""
-	TimelineManagerPeerEventDirectionIncoming TimelineManagerPeerEventDirection = "incoming"
-	TimelineManagerPeerEventDirectionOutgoing TimelineManagerPeerEventDirection = "outgoing"
+	Empty    TimelineManagerPeerEventDirection = ""
+	Incoming TimelineManagerPeerEventDirection = "incoming"
+	Outgoing TimelineManagerPeerEventDirection = "outgoing"
 )
 
 // Valid indicates whether the value is a known member of the TimelineManagerPeerEventDirection enum.
 func (e TimelineManagerPeerEventDirection) Valid() bool {
 	switch e {
-	case TimelineManagerPeerEventDirectionEmpty:
+	case Empty:
 		return true
-	case TimelineManagerPeerEventDirectionIncoming:
+	case Incoming:
 		return true
-	case TimelineManagerPeerEventDirectionOutgoing:
+	case Outgoing:
 		return true
 	default:
 		return false
@@ -3335,45 +3278,6 @@ func (e PostContactCasesIdNotesJSONBodyAuthorType) Valid() bool {
 	}
 }
 
-// Defines values for PostContactInteractionsIdResolutionsJSONBodyResolutionType.
-const (
-	PostContactInteractionsIdResolutionsJSONBodyResolutionTypeNegative PostContactInteractionsIdResolutionsJSONBodyResolutionType = "negative"
-	PostContactInteractionsIdResolutionsJSONBodyResolutionTypePositive PostContactInteractionsIdResolutionsJSONBodyResolutionType = "positive"
-)
-
-// Valid indicates whether the value is a known member of the PostContactInteractionsIdResolutionsJSONBodyResolutionType enum.
-func (e PostContactInteractionsIdResolutionsJSONBodyResolutionType) Valid() bool {
-	switch e {
-	case PostContactInteractionsIdResolutionsJSONBodyResolutionTypeNegative:
-		return true
-	case PostContactInteractionsIdResolutionsJSONBodyResolutionTypePositive:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for PostContactInteractionsIdResolutionsJSONBodyResolvedByType.
-const (
-	PostContactInteractionsIdResolutionsJSONBodyResolvedByTypeAgent  PostContactInteractionsIdResolutionsJSONBodyResolvedByType = "agent"
-	PostContactInteractionsIdResolutionsJSONBodyResolvedByTypeRule   PostContactInteractionsIdResolutionsJSONBodyResolvedByType = "rule"
-	PostContactInteractionsIdResolutionsJSONBodyResolvedByTypeSystem PostContactInteractionsIdResolutionsJSONBodyResolvedByType = "system"
-)
-
-// Valid indicates whether the value is a known member of the PostContactInteractionsIdResolutionsJSONBodyResolvedByType enum.
-func (e PostContactInteractionsIdResolutionsJSONBodyResolvedByType) Valid() bool {
-	switch e {
-	case PostContactInteractionsIdResolutionsJSONBodyResolvedByTypeAgent:
-		return true
-	case PostContactInteractionsIdResolutionsJSONBodyResolvedByTypeRule:
-		return true
-	case PostContactInteractionsIdResolutionsJSONBodyResolvedByTypeSystem:
-		return true
-	default:
-		return false
-	}
-}
-
 // Defines values for PostContactsJSONBodyAddressesType.
 const (
 	PostContactsJSONBodyAddressesTypeCommonAddressTypeAgent      PostContactsJSONBodyAddressesType = "agent"
@@ -3521,45 +3425,6 @@ func (e PostServiceAgentsContactAddressesJSONBodyType) Valid() bool {
 	case PostServiceAgentsContactAddressesJSONBodyTypeEmail:
 		return true
 	case PostServiceAgentsContactAddressesJSONBodyTypeTel:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolutionType.
-const (
-	PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolutionTypeNegative PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolutionType = "negative"
-	PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolutionTypePositive PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolutionType = "positive"
-)
-
-// Valid indicates whether the value is a known member of the PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolutionType enum.
-func (e PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolutionType) Valid() bool {
-	switch e {
-	case PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolutionTypeNegative:
-		return true
-	case PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolutionTypePositive:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolvedByType.
-const (
-	PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolvedByTypeAgent  PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolvedByType = "agent"
-	PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolvedByTypeRule   PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolvedByType = "rule"
-	PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolvedByTypeSystem PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolvedByType = "system"
-)
-
-// Valid indicates whether the value is a known member of the PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolvedByType enum.
-func (e PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolvedByType) Valid() bool {
-	switch e {
-	case PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolvedByTypeAgent:
-		return true
-	case PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolvedByTypeRule:
-		return true
-	case PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolvedByTypeSystem:
 		return true
 	default:
 		return false
@@ -6363,129 +6228,6 @@ type ContactManagerContact struct {
 //
 // Example: manual
 type ContactManagerContactSource string
-
-// ContactManagerInteraction defines model for ContactManagerInteraction.
-type ContactManagerInteraction struct {
-	// CustomerId Unique identifier of the associated customer.
-	//
-	// Example: 7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d
-	CustomerId *openapi_types.UUID `json:"customer_id,omitempty"`
-
-	// Direction Direction of the interaction from the platform perspective.
-	//
-	// Example: incoming
-	Direction *ContactManagerInteractionDirection `json:"direction,omitempty"`
-
-	// Id Unique identifier for the interaction.
-	//
-	// Example: 550e8400-e29b-41d4-a716-446655440000
-	Id *openapi_types.UUID `json:"id,omitempty"`
-
-	// Local The customer's own endpoint (attribution: which number/account received/sent). Always present as an object; individual fields are empty for historical rows where no local endpoint was captured (see design §4.1's note on Go's omitempty semantics for this field).
-	Local *CommonAddress `json:"local,omitempty"`
-
-	// Peer Remote endpoint (match key for read-time contact resolution).
-	Peer *CommonAddress `json:"peer,omitempty"`
-
-	// ReferenceId ID of the origin channel record (call_id or conversation_id).
-	//
-	// Example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
-	ReferenceId *openapi_types.UUID `json:"reference_id,omitempty"`
-
-	// ReferenceType Origin channel type (e.g. "call", "conversation").
-	//
-	// Example: call
-	ReferenceType *string `json:"reference_type,omitempty"`
-
-	// TmCreate Timestamp when this interaction was recorded (projection insert time, used as pagination cursor).
-	//
-	// Example: 2026-06-01T09:30:01.000000Z
-	TmCreate *time.Time `json:"tm_create,omitempty"`
-
-	// TmInteraction Origin event time (from the channel record). Nullable.
-	//
-	// Example: 2026-06-01T09:30:00.000000Z
-	TmInteraction *time.Time `json:"tm_interaction,omitempty"`
-}
-
-// ContactManagerInteractionDirection Direction of the interaction from the platform perspective.
-//
-// Example: incoming
-type ContactManagerInteractionDirection string
-
-// ContactManagerInteractionListResponse defines model for ContactManagerInteractionListResponse.
-type ContactManagerInteractionListResponse struct {
-	// NextPageToken Pagination token for the next page. Empty when no further pages exist.
-	//
-	// Example: 2026-06-01T09:30:01.000000Z
-	NextPageToken *string `json:"next_page_token,omitempty"`
-
-	// Result List of interactions.
-	Result *[]ContactManagerInteraction `json:"result,omitempty"`
-}
-
-// ContactManagerResolution defines model for ContactManagerResolution.
-type ContactManagerResolution struct {
-	// ContactId The contact this resolution is attributed to.
-	//
-	// Example: 550e8400-e29b-41d4-a716-446655440000
-	ContactId *openapi_types.UUID `json:"contact_id,omitempty"`
-
-	// CustomerId Unique identifier of the associated customer.
-	//
-	// Example: 7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d
-	CustomerId *openapi_types.UUID `json:"customer_id,omitempty"`
-
-	// Id Unique identifier for the resolution.
-	//
-	// Example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
-	Id *openapi_types.UUID `json:"id,omitempty"`
-
-	// InteractionId The interaction this resolution belongs to.
-	//
-	// Example: c3d4e5f6-a7b8-9012-cdef-345678901234
-	InteractionId *openapi_types.UUID `json:"interaction_id,omitempty"`
-
-	// ResolutionType Attribution type.
-	//
-	// Example: positive
-	ResolutionType *ContactManagerResolutionResolutionType `json:"resolution_type,omitempty"`
-
-	// ResolvedById ID of the agent, system, or rule that resolved the interaction.
-	//
-	// Example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
-	ResolvedById *openapi_types.UUID `json:"resolved_by_id,omitempty"`
-
-	// ResolvedByType Who resolved this interaction.
-	//
-	// Example: agent
-	ResolvedByType *ContactManagerResolutionResolvedByType `json:"resolved_by_type,omitempty"`
-
-	// TmCreate Timestamp when the resolution was created.
-	//
-	// Example: 2026-06-01T10:00:00.000000Z
-	TmCreate *time.Time `json:"tm_create,omitempty"`
-
-	// TmDelete Timestamp when the resolution was soft-deleted. Null if active.
-	//
-	// Example: 2026-06-02T08:00:00.000000Z
-	TmDelete *time.Time `json:"tm_delete,omitempty"`
-
-	// TmUpdate Timestamp when the resolution was last updated.
-	//
-	// Example: 2026-06-01T10:00:00.000000Z
-	TmUpdate *time.Time `json:"tm_update,omitempty"`
-}
-
-// ContactManagerResolutionResolutionType Attribution type.
-//
-// Example: positive
-type ContactManagerResolutionResolutionType string
-
-// ContactManagerResolutionResolvedByType Who resolved this interaction.
-//
-// Example: agent
-type ContactManagerResolutionResolvedByType string
 
 // ConversationManagerAccount defines model for ConversationManagerAccount.
 type ConversationManagerAccount struct {
@@ -11151,47 +10893,6 @@ type GetContactInteractionsParams struct {
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
-// GetContactInteractionsUnresolvedParams defines parameters for GetContactInteractionsUnresolved.
-type GetContactInteractionsUnresolvedParams struct {
-	// Since Lookback window in days (e.g. "7d", "30d"). Default "30d", max "180d".
-	Since *string `form:"since,omitempty" json:"since,omitempty"`
-
-	// PageSize Number of results to return per page.
-	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
-
-	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
-	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
-}
-
-// PostContactInteractionsIdResolutionsJSONBody defines parameters for PostContactInteractionsIdResolutions.
-type PostContactInteractionsIdResolutionsJSONBody struct {
-	// ContactId The contact to attach or suppress this interaction for.
-	//
-	// Example: 7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d
-	ContactId openapi_types.UUID `json:"contact_id"`
-
-	// ResolutionType Type of resolution.
-	//
-	// Example: positive
-	ResolutionType PostContactInteractionsIdResolutionsJSONBodyResolutionType `json:"resolution_type"`
-
-	// ResolvedById ID of the agent, system, or rule that resolved the interaction.
-	//
-	// Example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
-	ResolvedById openapi_types.UUID `json:"resolved_by_id"`
-
-	// ResolvedByType Who resolved this interaction.
-	//
-	// Example: agent
-	ResolvedByType PostContactInteractionsIdResolutionsJSONBodyResolvedByType `json:"resolved_by_type"`
-}
-
-// PostContactInteractionsIdResolutionsJSONBodyResolutionType defines parameters for PostContactInteractionsIdResolutions.
-type PostContactInteractionsIdResolutionsJSONBodyResolutionType string
-
-// PostContactInteractionsIdResolutionsJSONBodyResolvedByType defines parameters for PostContactInteractionsIdResolutions.
-type PostContactInteractionsIdResolutionsJSONBodyResolvedByType string
-
 // GetContactPeerEventsParams defines parameters for GetContactPeerEvents.
 type GetContactPeerEventsParams struct {
 	// ContactId Filter by all of a contact's registered addresses. Exactly one of contact_id or peer_type+peer_target is required.
@@ -12380,47 +12081,6 @@ type GetServiceAgentsContactInteractionsParams struct {
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
-// GetServiceAgentsContactInteractionsUnresolvedParams defines parameters for GetServiceAgentsContactInteractionsUnresolved.
-type GetServiceAgentsContactInteractionsUnresolvedParams struct {
-	// Since Lookback window in days (e.g. "7d", "30d"). Default "30d", max "180d".
-	Since *string `form:"since,omitempty" json:"since,omitempty"`
-
-	// PageSize Number of results to return per page.
-	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
-
-	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
-	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
-}
-
-// PostServiceAgentsContactInteractionsIdResolutionsJSONBody defines parameters for PostServiceAgentsContactInteractionsIdResolutions.
-type PostServiceAgentsContactInteractionsIdResolutionsJSONBody struct {
-	// ContactId The contact to attach or suppress this interaction for.
-	//
-	// Example: 7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d
-	ContactId openapi_types.UUID `json:"contact_id"`
-
-	// ResolutionType Type of resolution.
-	//
-	// Example: positive
-	ResolutionType PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolutionType `json:"resolution_type"`
-
-	// ResolvedById ID of the agent, system, or rule that resolved the interaction.
-	//
-	// Example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
-	ResolvedById openapi_types.UUID `json:"resolved_by_id"`
-
-	// ResolvedByType Who resolved this interaction.
-	//
-	// Example: agent
-	ResolvedByType PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolvedByType `json:"resolved_by_type"`
-}
-
-// PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolutionType defines parameters for PostServiceAgentsContactInteractionsIdResolutions.
-type PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolutionType string
-
-// PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolvedByType defines parameters for PostServiceAgentsContactInteractionsIdResolutions.
-type PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolvedByType string
-
 // GetServiceAgentsContactPeerEventsParams defines parameters for GetServiceAgentsContactPeerEvents.
 type GetServiceAgentsContactPeerEventsParams struct {
 	// ContactId Filter by all of a contact's registered addresses. Exactly one of contact_id or peer_type+peer_target is required.
@@ -13389,9 +13049,6 @@ type PostContactCasesIdMessagesJSONRequestBody PostContactCasesIdMessagesJSONBod
 // PostContactCasesIdNotesJSONRequestBody defines body for PostContactCasesIdNotes for application/json ContentType.
 type PostContactCasesIdNotesJSONRequestBody PostContactCasesIdNotesJSONBody
 
-// PostContactInteractionsIdResolutionsJSONRequestBody defines body for PostContactInteractionsIdResolutions for application/json ContentType.
-type PostContactInteractionsIdResolutionsJSONRequestBody PostContactInteractionsIdResolutionsJSONBody
-
 // PostContactsJSONRequestBody defines body for PostContacts for application/json ContentType.
 type PostContactsJSONRequestBody PostContactsJSONBody
 
@@ -13568,9 +13225,6 @@ type PostServiceAgentsContactAddressesIdClaimJSONRequestBody PostServiceAgentsCo
 
 // PostServiceAgentsContactCasesIdAssignJSONRequestBody defines body for PostServiceAgentsContactCasesIdAssign for application/json ContentType.
 type PostServiceAgentsContactCasesIdAssignJSONRequestBody PostServiceAgentsContactCasesIdAssignJSONBody
-
-// PostServiceAgentsContactInteractionsIdResolutionsJSONRequestBody defines body for PostServiceAgentsContactInteractionsIdResolutions for application/json ContentType.
-type PostServiceAgentsContactInteractionsIdResolutionsJSONRequestBody PostServiceAgentsContactInteractionsIdResolutionsJSONBody
 
 // PostServiceAgentsContactsJSONRequestBody defines body for PostServiceAgentsContacts for application/json ContentType.
 type PostServiceAgentsContactsJSONRequestBody PostServiceAgentsContactsJSONBody
