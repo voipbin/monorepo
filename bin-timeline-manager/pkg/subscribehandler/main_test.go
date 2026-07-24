@@ -7,10 +7,15 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
+
+	call "monorepo/bin-call-manager/models/call"
+
 	"monorepo/bin-timeline-manager/pkg/dbhandler"
 )
 
@@ -320,6 +325,46 @@ func Test_flushBatch_fullBatchSize(t *testing.T) {
 		gomock.Len(batchSize),
 	).Return(nil)
 
+	h.flushBatch(entries)
+}
+
+// Test_flushBatch_EventBatchInsertFailure_SkipsPeerEventProjection documents
+// and locks in the contract implicit in Test_flushBatch_error: when the
+// primary EventBatchInsert fails, flushBatch returns before reaching
+// buildPeerEventRows/PeerEventBatchInsert at all — a transient ClickHouse
+// failure on the primary `events` write also means that batch's peer_events
+// projection is silently skipped for this flush cycle (no separate retry).
+// This is intentional (events is the audit-log source of truth; peer_events
+// is a secondary projection derived from the same batch, not an independent
+// write), flagged in PR #1135 Round 1 review as worth locking in explicitly.
+// The mock's strict unexpected-call enforcement (no EXPECT() for
+// PeerEventBatchInsert) means this test fails loudly if that ordering ever
+// regresses.
+func Test_flushBatch_EventBatchInsertFailure_SkipsPeerEventProjection(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	// call_created is peer_events-eligible per eligiblePeerEvents, so if the
+	// early-return-on-error guard were ever removed, buildPeerEventRows would
+	// produce a row and PeerEventBatchInsert would be called -- which this
+	// mock does NOT expect, so gomock would fail the test.
+	entries := []eventEntry{
+		{
+			event: &sock.Event{
+				Type:      call.EventTypeCallCreated,
+				Publisher: string(commonoutline.ServiceNameCallManager),
+				DataType:  "application/json",
+				Data:      json.RawMessage(`{"id":"` + uuid.Must(uuid.NewV4()).String() + `"}`),
+			},
+			receivedAt: time.Now(),
+		},
+	}
+
+	mockDB.EXPECT().EventBatchInsert(gomock.Any(), gomock.Any()).Return(fmt.Errorf("connection lost"))
+
+	h := &subscribeHandler{dbHandler: mockDB}
 	h.flushBatch(entries)
 }
 
