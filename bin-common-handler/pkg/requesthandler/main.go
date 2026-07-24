@@ -96,6 +96,7 @@ import (
 	tmanalysis "monorepo/bin-timeline-manager/models/analysis"
 	tmcorrelation "monorepo/bin-timeline-manager/models/correlation"
 	tmevent "monorepo/bin-timeline-manager/models/event"
+	tmpeerevent "monorepo/bin-timeline-manager/models/peerevent"
 	tmsipmessage "monorepo/bin-timeline-manager/models/sipmessage"
 
 	tkchat "monorepo/bin-talk-manager/models/chat"
@@ -1481,6 +1482,9 @@ type RequestHandler interface {
 	TimelineV1EventList(ctx context.Context, req *tmevent.EventListRequest) (*tmevent.EventListResponse, error)
 	TimelineV1AggregatedEventList(ctx context.Context, req *tmevent.AggregatedEventListRequest) (*tmevent.AggregatedEventListResponse, error)
 	TimelineV1CorrelationGet(ctx context.Context, resourceID uuid.UUID) (*tmcorrelation.Correlation, error)
+
+	// timeline-manager peer_events
+	TimelineV1PeerEventList(ctx context.Context, req *tmpeerevent.PeerEventListRequest) (*tmpeerevent.PeerEventListResponse, error)
 
 	// timeline-manager analyses
 	TimelineV1AnalysisCreate(ctx context.Context, customerID uuid.UUID, activeflowID uuid.UUID, reanalyze bool) (*tmanalysis.Analysis, error)

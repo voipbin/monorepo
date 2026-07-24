@@ -49,6 +49,7 @@ import (
 	cmkase "monorepo/bin-contact-manager/models/kase"
 	cmresolution "monorepo/bin-contact-manager/models/resolution"
 	cmrequest "monorepo/bin-contact-manager/pkg/listenhandler/models/request"
+	tmpeerevent "monorepo/bin-timeline-manager/models/peerevent"
 
 	cvaccount "monorepo/bin-conversation-manager/models/account"
 	cvconversation "monorepo/bin-conversation-manager/models/conversation"
@@ -67,10 +68,10 @@ import (
 	omoutdial "monorepo/bin-outdial-manager/models/outdial"
 	omoutdialtarget "monorepo/bin-outdial-manager/models/outdialtarget"
 	qmqueue "monorepo/bin-queue-manager/models/queue"
+	qmqueuecall "monorepo/bin-queue-manager/models/queuecall"
 	wcmessage "monorepo/bin-webchat-manager/models/message"
 	wcsession "monorepo/bin-webchat-manager/models/session"
 	wcwidget "monorepo/bin-webchat-manager/models/widget"
-	qmqueuecall "monorepo/bin-queue-manager/models/queuecall"
 
 	rmextension "monorepo/bin-registrar-manager/models/extension"
 	rmsipauth "monorepo/bin-registrar-manager/models/sipauth"
@@ -539,6 +540,25 @@ type ServiceHandler interface {
 		since string,
 	) ([]*cminteraction.Interaction, string, error)
 	InteractionGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cminteraction.Interaction, error)
+
+	// peer_events handlers (raw, unfiltered — see contact_peer_event.go)
+	PeerEventList(
+		ctx context.Context,
+		a *auth.AuthIdentity,
+		contactID uuid.UUID,
+		peerType, peerTarget string,
+		pageToken string,
+		pageSize uint64,
+	) ([]*tmpeerevent.PeerEvent, string, error)
+	ServiceAgentPeerEventList(
+		ctx context.Context,
+		a *auth.AuthIdentity,
+		contactID uuid.UUID,
+		peerType, peerTarget string,
+		pageToken string,
+		pageSize uint64,
+	) ([]*tmpeerevent.PeerEvent, string, error)
+
 	ResolutionCreate(
 		ctx context.Context,
 		a *auth.AuthIdentity,

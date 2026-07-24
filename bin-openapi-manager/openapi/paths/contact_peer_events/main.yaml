@@ -1,0 +1,51 @@
+get:
+  summary: List peer_events (raw, unfiltered)
+  description: |
+    List raw peer_events rows for the customer, matching either a contact's
+    registered addresses (contact_id) or a single peer address
+    (peer_type + peer_target). Exactly one filter is required.
+
+    Unlike GET /contact_interactions, this endpoint applies NO identity
+    resolution and NO CRM eligibility filtering: rows may include
+    internal-resource peer types (agent, ai, conference, sip legs) that
+    /contact_interactions deliberately excludes. Clients are responsible for
+    any presentation-layer filtering or grouping of this noise.
+  tags:
+    - Interaction
+  parameters:
+    - name: contact_id
+      in: query
+      description: Filter by all of a contact's registered addresses. Exactly one of contact_id or peer_type+peer_target is required.
+      schema:
+        type: string
+        format: uuid
+        example: "550e8400-e29b-41d4-a716-446655440000"
+    - name: peer_type
+      in: query
+      description: Remote endpoint type (e.g. "tel", "email"). Required with peer_target.
+      schema:
+        type: string
+        example: "tel"
+    - name: peer_target
+      in: query
+      description: Remote endpoint target (e.g. "+155****4567"). Required with peer_type.
+      schema:
+        type: string
+        example: "+155****4567"
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: Successful response.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TimelineManagerPeerEventListResponse'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '500':
+      $ref: '#/components/responses/InternalError'

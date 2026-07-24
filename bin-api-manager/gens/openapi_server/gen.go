@@ -535,8 +535,8 @@ const (
 
 // Defines values for ContactManagerInteractionDirection.
 const (
-	Incoming ContactManagerInteractionDirection = "incoming"
-	Outgoing ContactManagerInteractionDirection = "outgoing"
+	ContactManagerInteractionDirectionIncoming ContactManagerInteractionDirection = "incoming"
+	ContactManagerInteractionDirectionOutgoing ContactManagerInteractionDirection = "outgoing"
 )
 
 // Defines values for ContactManagerResolutionResolutionType.
@@ -942,6 +942,20 @@ const (
 	TimelineManagerAnalysisStatusCompleted   TimelineManagerAnalysisStatus = "completed"
 	TimelineManagerAnalysisStatusFailed      TimelineManagerAnalysisStatus = "failed"
 	TimelineManagerAnalysisStatusProgressing TimelineManagerAnalysisStatus = "progressing"
+)
+
+// Defines values for TimelineManagerPeerEventDirection.
+const (
+	TimelineManagerPeerEventDirectionEmpty    TimelineManagerPeerEventDirection = ""
+	TimelineManagerPeerEventDirectionIncoming TimelineManagerPeerEventDirection = "incoming"
+	TimelineManagerPeerEventDirectionOutgoing TimelineManagerPeerEventDirection = "outgoing"
+)
+
+// Defines values for TimelineManagerPeerEventPublisher.
+const (
+	Call                TimelineManagerPeerEventPublisher = "call"
+	Conversation        TimelineManagerPeerEventPublisher = "conversation"
+	ConversationMessage TimelineManagerPeerEventPublisher = "conversation_message"
 )
 
 // Defines values for TranscribeManagerTranscribeDirection.
@@ -4967,6 +4981,57 @@ type TimelineManagerEvent struct {
 	Timestamp *time.Time `json:"timestamp,omitempty"`
 }
 
+// TimelineManagerPeerEvent A single raw peer_events row: an unfiltered, address-searchable peer/local event log entry from call-manager or conversation-manager, with NO identity resolution and NO CRM eligibility filtering applied. May include internal-resource peer types (agent, ai, conference, sip) that ContactManagerInteraction deliberately excludes; the caller is responsible for any presentation-layer filtering of this noise.
+type TimelineManagerPeerEvent struct {
+	// CustomerId Unique identifier of the associated customer.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Data The original webhook payload, verbatim.
+	Data *map[string]interface{} `json:"data,omitempty"`
+
+	// Direction Direction of the interaction from the platform perspective. Empty for the conversation-parent shape, which has no direction concept.
+	Direction *TimelineManagerPeerEventDirection `json:"direction,omitempty"`
+
+	// EventType The originating event type.
+	EventType *string `json:"event_type,omitempty"`
+
+	// LocalTarget The customer's own endpoint target, raw (not normalized).
+	LocalTarget *string `json:"local_target,omitempty"`
+
+	// LocalType The customer's own endpoint type.
+	LocalType *string `json:"local_type,omitempty"`
+
+	// PeerTarget Remote endpoint target, raw (not normalized).
+	PeerTarget *string `json:"peer_target,omitempty"`
+
+	// PeerType Remote endpoint type. May be an internal-resource type (agent/ai/conference/sip) not present in ContactManagerInteraction.
+	PeerType *string `json:"peer_type,omitempty"`
+
+	// Publisher Synthetic derived label, not the raw wire publisher value.
+	Publisher *TimelineManagerPeerEventPublisher `json:"publisher,omitempty"`
+
+	// ReferenceId The call_id / conversation_message_id / conversation_id this row was projected from.
+	ReferenceId *string `json:"reference_id,omitempty"`
+
+	// Timestamp The event's origin timestamp.
+	Timestamp *string `json:"timestamp,omitempty"`
+}
+
+// TimelineManagerPeerEventDirection Direction of the interaction from the platform perspective. Empty for the conversation-parent shape, which has no direction concept.
+type TimelineManagerPeerEventDirection string
+
+// TimelineManagerPeerEventPublisher Synthetic derived label, not the raw wire publisher value.
+type TimelineManagerPeerEventPublisher string
+
+// TimelineManagerPeerEventListResponse defines model for TimelineManagerPeerEventListResponse.
+type TimelineManagerPeerEventListResponse struct {
+	// NextPageToken Pagination token for the next page. Empty when no further pages exist.
+	NextPageToken *string `json:"next_page_token,omitempty"`
+
+	// Result List of peer_events rows.
+	Result *[]TimelineManagerPeerEvent `json:"result,omitempty"`
+}
+
 // TranscribeManagerSpeechWebhookMessage Webhook payload for speech recognition events (transcribe_speech_started, transcribe_speech_interim, transcribe_speech_ended). Delivered when voice activity is detected during a streaming transcription session.
 type TranscribeManagerSpeechWebhookMessage struct {
 	// CustomerId The unique identifier of the customer who owns this transcription session. Returned from the `GET /customers` response.
@@ -6285,6 +6350,24 @@ type PostContactInteractionsIdResolutionsJSONBodyResolutionType string
 // PostContactInteractionsIdResolutionsJSONBodyResolvedByType defines parameters for PostContactInteractionsIdResolutions.
 type PostContactInteractionsIdResolutionsJSONBodyResolvedByType string
 
+// GetContactPeerEventsParams defines parameters for GetContactPeerEvents.
+type GetContactPeerEventsParams struct {
+	// ContactId Filter by all of a contact's registered addresses. Exactly one of contact_id or peer_type+peer_target is required.
+	ContactId *openapi_types.UUID `form:"contact_id,omitempty" json:"contact_id,omitempty"`
+
+	// PeerType Remote endpoint type (e.g. "tel", "email"). Required with peer_target.
+	PeerType *string `form:"peer_type,omitempty" json:"peer_type,omitempty"`
+
+	// PeerTarget Remote endpoint target (e.g. "+155****4567"). Required with peer_type.
+	PeerTarget *string `form:"peer_target,omitempty" json:"peer_target,omitempty"`
+
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
 // GetContactsParams defines parameters for GetContacts.
 type GetContactsParams struct {
 	// PageSize Number of results to return per page.
@@ -7366,6 +7449,24 @@ type PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolutionType str
 
 // PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolvedByType defines parameters for PostServiceAgentsContactInteractionsIdResolutions.
 type PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolvedByType string
+
+// GetServiceAgentsContactPeerEventsParams defines parameters for GetServiceAgentsContactPeerEvents.
+type GetServiceAgentsContactPeerEventsParams struct {
+	// ContactId Filter by all of a contact's registered addresses. Exactly one of contact_id or peer_type+peer_target is required.
+	ContactId *openapi_types.UUID `form:"contact_id,omitempty" json:"contact_id,omitempty"`
+
+	// PeerType Remote endpoint type (e.g. "tel", "email"). Required with peer_target.
+	PeerType *string `form:"peer_type,omitempty" json:"peer_type,omitempty"`
+
+	// PeerTarget Remote endpoint target (e.g. "+155****4567"). Required with peer_type.
+	PeerTarget *string `form:"peer_target,omitempty" json:"peer_target,omitempty"`
+
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
 
 // GetServiceAgentsContactsParams defines parameters for GetServiceAgentsContacts.
 type GetServiceAgentsContactsParams struct {
@@ -8960,6 +9061,9 @@ type ServerInterface interface {
 	// Delete a resolution
 	// (DELETE /contact_interactions/{id}/resolutions/{rid})
 	DeleteContactInteractionsIdResolutionsRid(c *gin.Context, id openapi_types.UUID, rid openapi_types.UUID)
+	// List peer_events (raw, unfiltered)
+	// (GET /contact_peer_events)
+	GetContactPeerEvents(c *gin.Context, params GetContactPeerEventsParams)
 	// List contacts
 	// (GET /contacts)
 	GetContacts(c *gin.Context, params GetContactsParams)
@@ -9425,6 +9529,9 @@ type ServerInterface interface {
 	// Delete a resolution
 	// (DELETE /service_agents/contact_interactions/{id}/resolutions/{rid})
 	DeleteServiceAgentsContactInteractionsIdResolutionsRid(c *gin.Context, id openapi_types.UUID, rid openapi_types.UUID)
+	// List peer_events (raw, unfiltered)
+	// (GET /service_agents/contact_peer_events)
+	GetServiceAgentsContactPeerEvents(c *gin.Context, params GetServiceAgentsContactPeerEventsParams)
 	// List contacts
 	// (GET /service_agents/contacts)
 	GetServiceAgentsContacts(c *gin.Context, params GetServiceAgentsContactsParams)
@@ -13510,6 +13617,64 @@ func (siw *ServerInterfaceWrapper) DeleteContactInteractionsIdResolutionsRid(c *
 	siw.Handler.DeleteContactInteractionsIdResolutionsRid(c, id, rid)
 }
 
+// GetContactPeerEvents operation middleware
+func (siw *ServerInterfaceWrapper) GetContactPeerEvents(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetContactPeerEventsParams
+
+	// ------------- Optional query parameter "contact_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "contact_id", c.Request.URL.Query(), &params.ContactId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter contact_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "peer_type" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "peer_type", c.Request.URL.Query(), &params.PeerType)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter peer_type: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "peer_target" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "peer_target", c.Request.URL.Query(), &params.PeerTarget)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter peer_target: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetContactPeerEvents(c, params)
+}
+
 // GetContacts operation middleware
 func (siw *ServerInterfaceWrapper) GetContacts(c *gin.Context) {
 
@@ -17445,6 +17610,64 @@ func (siw *ServerInterfaceWrapper) DeleteServiceAgentsContactInteractionsIdResol
 	siw.Handler.DeleteServiceAgentsContactInteractionsIdResolutionsRid(c, id, rid)
 }
 
+// GetServiceAgentsContactPeerEvents operation middleware
+func (siw *ServerInterfaceWrapper) GetServiceAgentsContactPeerEvents(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetServiceAgentsContactPeerEventsParams
+
+	// ------------- Optional query parameter "contact_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "contact_id", c.Request.URL.Query(), &params.ContactId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter contact_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "peer_type" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "peer_type", c.Request.URL.Query(), &params.PeerType)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter peer_type: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "peer_target" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "peer_target", c.Request.URL.Query(), &params.PeerTarget)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter peer_target: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetServiceAgentsContactPeerEvents(c, params)
+}
+
 // GetServiceAgentsContacts operation middleware
 func (siw *ServerInterfaceWrapper) GetServiceAgentsContacts(c *gin.Context) {
 
@@ -20486,6 +20709,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.GET(options.BaseURL+"/contact_interactions/:id", wrapper.GetContactInteractionsId)
 	router.POST(options.BaseURL+"/contact_interactions/:id/resolutions", wrapper.PostContactInteractionsIdResolutions)
 	router.DELETE(options.BaseURL+"/contact_interactions/:id/resolutions/:rid", wrapper.DeleteContactInteractionsIdResolutionsRid)
+	router.GET(options.BaseURL+"/contact_peer_events", wrapper.GetContactPeerEvents)
 	router.GET(options.BaseURL+"/contacts", wrapper.GetContacts)
 	router.POST(options.BaseURL+"/contacts", wrapper.PostContacts)
 	router.GET(options.BaseURL+"/contacts/lookup", wrapper.GetContactsLookup)
@@ -20641,6 +20865,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.GET(options.BaseURL+"/service_agents/contact_interactions/:id", wrapper.GetServiceAgentsContactInteractionsId)
 	router.POST(options.BaseURL+"/service_agents/contact_interactions/:id/resolutions", wrapper.PostServiceAgentsContactInteractionsIdResolutions)
 	router.DELETE(options.BaseURL+"/service_agents/contact_interactions/:id/resolutions/:rid", wrapper.DeleteServiceAgentsContactInteractionsIdResolutionsRid)
+	router.GET(options.BaseURL+"/service_agents/contact_peer_events", wrapper.GetServiceAgentsContactPeerEvents)
 	router.GET(options.BaseURL+"/service_agents/contacts", wrapper.GetServiceAgentsContacts)
 	router.POST(options.BaseURL+"/service_agents/contacts", wrapper.PostServiceAgentsContacts)
 	router.GET(options.BaseURL+"/service_agents/contacts/lookup", wrapper.GetServiceAgentsContactsLookup)
@@ -28923,6 +29148,59 @@ func (response DeleteContactInteractionsIdResolutionsRid404JSONResponse) VisitDe
 type DeleteContactInteractionsIdResolutionsRid500JSONResponse struct{ InternalErrorJSONResponse }
 
 func (response DeleteContactInteractionsIdResolutionsRid500JSONResponse) VisitDeleteContactInteractionsIdResolutionsRidResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetContactPeerEventsRequestObject struct {
+	Params GetContactPeerEventsParams
+}
+
+type GetContactPeerEventsResponseObject interface {
+	VisitGetContactPeerEventsResponse(w http.ResponseWriter) error
+}
+
+type GetContactPeerEvents200JSONResponse TimelineManagerPeerEventListResponse
+
+func (response GetContactPeerEvents200JSONResponse) VisitGetContactPeerEventsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetContactPeerEvents400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetContactPeerEvents400JSONResponse) VisitGetContactPeerEventsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetContactPeerEvents401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetContactPeerEvents401JSONResponse) VisitGetContactPeerEventsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetContactPeerEvents403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetContactPeerEvents403JSONResponse) VisitGetContactPeerEventsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetContactPeerEvents500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetContactPeerEvents500JSONResponse) VisitGetContactPeerEventsResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(500)
 
@@ -37705,6 +37983,59 @@ func (response DeleteServiceAgentsContactInteractionsIdResolutionsRid500JSONResp
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetServiceAgentsContactPeerEventsRequestObject struct {
+	Params GetServiceAgentsContactPeerEventsParams
+}
+
+type GetServiceAgentsContactPeerEventsResponseObject interface {
+	VisitGetServiceAgentsContactPeerEventsResponse(w http.ResponseWriter) error
+}
+
+type GetServiceAgentsContactPeerEvents200JSONResponse TimelineManagerPeerEventListResponse
+
+func (response GetServiceAgentsContactPeerEvents200JSONResponse) VisitGetServiceAgentsContactPeerEventsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetServiceAgentsContactPeerEvents400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetServiceAgentsContactPeerEvents400JSONResponse) VisitGetServiceAgentsContactPeerEventsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetServiceAgentsContactPeerEvents401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetServiceAgentsContactPeerEvents401JSONResponse) VisitGetServiceAgentsContactPeerEventsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetServiceAgentsContactPeerEvents403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetServiceAgentsContactPeerEvents403JSONResponse) VisitGetServiceAgentsContactPeerEventsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetServiceAgentsContactPeerEvents500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetServiceAgentsContactPeerEvents500JSONResponse) VisitGetServiceAgentsContactPeerEventsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type GetServiceAgentsContactsRequestObject struct {
 	Params GetServiceAgentsContactsParams
 }
@@ -44388,6 +44719,9 @@ type StrictServerInterface interface {
 	// Delete a resolution
 	// (DELETE /contact_interactions/{id}/resolutions/{rid})
 	DeleteContactInteractionsIdResolutionsRid(ctx context.Context, request DeleteContactInteractionsIdResolutionsRidRequestObject) (DeleteContactInteractionsIdResolutionsRidResponseObject, error)
+	// List peer_events (raw, unfiltered)
+	// (GET /contact_peer_events)
+	GetContactPeerEvents(ctx context.Context, request GetContactPeerEventsRequestObject) (GetContactPeerEventsResponseObject, error)
 	// List contacts
 	// (GET /contacts)
 	GetContacts(ctx context.Context, request GetContactsRequestObject) (GetContactsResponseObject, error)
@@ -44853,6 +45187,9 @@ type StrictServerInterface interface {
 	// Delete a resolution
 	// (DELETE /service_agents/contact_interactions/{id}/resolutions/{rid})
 	DeleteServiceAgentsContactInteractionsIdResolutionsRid(ctx context.Context, request DeleteServiceAgentsContactInteractionsIdResolutionsRidRequestObject) (DeleteServiceAgentsContactInteractionsIdResolutionsRidResponseObject, error)
+	// List peer_events (raw, unfiltered)
+	// (GET /service_agents/contact_peer_events)
+	GetServiceAgentsContactPeerEvents(ctx context.Context, request GetServiceAgentsContactPeerEventsRequestObject) (GetServiceAgentsContactPeerEventsResponseObject, error)
 	// List contacts
 	// (GET /service_agents/contacts)
 	GetServiceAgentsContacts(ctx context.Context, request GetServiceAgentsContactsRequestObject) (GetServiceAgentsContactsResponseObject, error)
@@ -49417,6 +49754,33 @@ func (sh *strictHandler) DeleteContactInteractionsIdResolutionsRid(ctx *gin.Cont
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(DeleteContactInteractionsIdResolutionsRidResponseObject); ok {
 		if err := validResponse.VisitDeleteContactInteractionsIdResolutionsRidResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetContactPeerEvents operation middleware
+func (sh *strictHandler) GetContactPeerEvents(ctx *gin.Context, params GetContactPeerEventsParams) {
+	var request GetContactPeerEventsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetContactPeerEvents(ctx, request.(GetContactPeerEventsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetContactPeerEvents")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetContactPeerEventsResponseObject); ok {
+		if err := validResponse.VisitGetContactPeerEventsResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {
@@ -54033,6 +54397,33 @@ func (sh *strictHandler) DeleteServiceAgentsContactInteractionsIdResolutionsRid(
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(DeleteServiceAgentsContactInteractionsIdResolutionsRidResponseObject); ok {
 		if err := validResponse.VisitDeleteServiceAgentsContactInteractionsIdResolutionsRidResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetServiceAgentsContactPeerEvents operation middleware
+func (sh *strictHandler) GetServiceAgentsContactPeerEvents(ctx *gin.Context, params GetServiceAgentsContactPeerEventsParams) {
+	var request GetServiceAgentsContactPeerEventsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetServiceAgentsContactPeerEvents(ctx, request.(GetServiceAgentsContactPeerEventsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetServiceAgentsContactPeerEvents")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetServiceAgentsContactPeerEventsResponseObject); ok {
+		if err := validResponse.VisitGetServiceAgentsContactPeerEventsResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

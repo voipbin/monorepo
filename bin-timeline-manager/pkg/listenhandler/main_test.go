@@ -19,6 +19,7 @@ import (
 	"monorepo/bin-timeline-manager/pkg/eventhandler"
 	"monorepo/bin-timeline-manager/pkg/listenhandler/models/request"
 	"monorepo/bin-timeline-manager/pkg/listenhandler/models/response"
+	"monorepo/bin-timeline-manager/pkg/peereventhandler"
 	"monorepo/bin-timeline-manager/pkg/siphandler"
 )
 
@@ -28,10 +29,11 @@ func TestNewListenHandler(t *testing.T) {
 
 	mockSock := sockhandler.NewMockSockHandler(ctrl)
 	mockEvent := eventhandler.NewMockEventHandler(ctrl)
+	mockPeerEvent := peereventhandler.NewMockPeerEventHandler(ctrl)
 	mockSIP := siphandler.NewMockSIPHandler(ctrl)
 	mockAnalysis := analysishandler.NewMockAnalysisHandler(ctrl)
 
-	handler := NewListenHandler(mockSock, mockEvent, mockSIP, mockAnalysis)
+	handler := NewListenHandler(mockSock, mockEvent, mockPeerEvent, mockSIP, mockAnalysis)
 	if handler == nil {
 		t.Error("NewListenHandler() returned nil")
 	}
@@ -243,10 +245,11 @@ func TestRun_QueueCreateError(t *testing.T) {
 
 	mockSock := sockhandler.NewMockSockHandler(ctrl)
 	mockEvent := eventhandler.NewMockEventHandler(ctrl)
+	mockPeerEvent := peereventhandler.NewMockPeerEventHandler(ctrl)
 	mockSIP := siphandler.NewMockSIPHandler(ctrl)
 	mockAnalysis := analysishandler.NewMockAnalysisHandler(ctrl)
 
-	handler := NewListenHandler(mockSock, mockEvent, mockSIP, mockAnalysis)
+	handler := NewListenHandler(mockSock, mockEvent, mockPeerEvent, mockSIP, mockAnalysis)
 
 	mockSock.EXPECT().
 		QueueCreate("test-queue", "normal").
@@ -264,10 +267,11 @@ func TestRun_Success(t *testing.T) {
 
 	mockSock := sockhandler.NewMockSockHandler(ctrl)
 	mockEvent := eventhandler.NewMockEventHandler(ctrl)
+	mockPeerEvent := peereventhandler.NewMockPeerEventHandler(ctrl)
 	mockSIP := siphandler.NewMockSIPHandler(ctrl)
 	mockAnalysis := analysishandler.NewMockAnalysisHandler(ctrl)
 
-	handler := NewListenHandler(mockSock, mockEvent, mockSIP, mockAnalysis)
+	handler := NewListenHandler(mockSock, mockEvent, mockPeerEvent, mockSIP, mockAnalysis)
 
 	mockSock.EXPECT().
 		QueueCreate("test-queue", "normal").
@@ -1228,10 +1232,11 @@ func TestRun_ConsumeError(t *testing.T) {
 
 	mockSock := sockhandler.NewMockSockHandler(ctrl)
 	mockEvent := eventhandler.NewMockEventHandler(ctrl)
+	mockPeerEvent := peereventhandler.NewMockPeerEventHandler(ctrl)
 	mockSIP := siphandler.NewMockSIPHandler(ctrl)
 	mockAnalysis := analysishandler.NewMockAnalysisHandler(ctrl)
 
-	handler := NewListenHandler(mockSock, mockEvent, mockSIP, mockAnalysis)
+	handler := NewListenHandler(mockSock, mockEvent, mockPeerEvent, mockSIP, mockAnalysis)
 
 	mockSock.EXPECT().
 		QueueCreate("test-queue", "normal").

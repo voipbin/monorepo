@@ -10,10 +10,10 @@ import (
 	"time"
 
 	"cloud.google.com/go/storage"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/clickhouse"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
-	_ "github.com/go-sql-driver/mysql"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
@@ -32,6 +32,7 @@ import (
 	"monorepo/bin-timeline-manager/pkg/eventhandler"
 	"monorepo/bin-timeline-manager/pkg/homerhandler"
 	"monorepo/bin-timeline-manager/pkg/listenhandler"
+	"monorepo/bin-timeline-manager/pkg/peereventhandler"
 	"monorepo/bin-timeline-manager/pkg/siphandler"
 	"monorepo/bin-timeline-manager/pkg/subscribehandler"
 )
@@ -166,6 +167,7 @@ func runServices(ctx context.Context) (<-chan struct{}, error) {
 	sockHandler.Connect()
 
 	evtHandler := eventhandler.NewEventHandler(db)
+	peerEvtHandler := peereventhandler.NewPeerEventHandler(db)
 
 	homerH := homerhandler.NewHomerHandler(config.Get().HomerAPIAddress, config.Get().HomerAuthToken)
 
@@ -211,7 +213,7 @@ func runServices(ctx context.Context) (<-chan struct{}, error) {
 		logrus.Warn("DATABASE_DSN not configured; analysis endpoints are disabled.")
 	}
 
-	if errListen := runListen(sockHandler, evtHandler, sipH, analysisH); errListen != nil {
+	if errListen := runListen(sockHandler, evtHandler, peerEvtHandler, sipH, analysisH); errListen != nil {
 		return nil, errors.Wrapf(errListen, "failed to run service listen")
 	}
 
@@ -224,10 +226,10 @@ func runServices(ctx context.Context) (<-chan struct{}, error) {
 	return subscribeDone, nil
 }
 
-func runListen(sockListen sockhandler.SockHandler, evtHandler eventhandler.EventHandler, sipH siphandler.SIPHandler, analysisH analysishandler.AnalysisHandler) error {
+func runListen(sockListen sockhandler.SockHandler, evtHandler eventhandler.EventHandler, peerEvtHandler peereventhandler.PeerEventHandler, sipH siphandler.SIPHandler, analysisH analysishandler.AnalysisHandler) error {
 	log := logrus.WithField("func", "runListen")
 
-	listenHdlr := listenhandler.NewListenHandler(sockListen, evtHandler, sipH, analysisH)
+	listenHdlr := listenhandler.NewListenHandler(sockListen, evtHandler, peerEvtHandler, sipH, analysisH)
 
 	if errRun := listenHdlr.Run(string(commonoutline.QueueNameTimelineRequest)); errRun != nil {
 		log.Errorf("Error occurred in listen handler. err: %v", errRun)

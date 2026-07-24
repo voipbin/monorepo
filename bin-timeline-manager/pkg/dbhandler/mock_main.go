@@ -13,6 +13,7 @@ import (
 	context "context"
 	correlation "monorepo/bin-timeline-manager/models/correlation"
 	event "monorepo/bin-timeline-manager/models/event"
+	peerevent "monorepo/bin-timeline-manager/models/peerevent"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -114,6 +115,21 @@ func (m *MockDBHandler) PeerEventBatchInsert(ctx context.Context, rows []PeerEve
 func (mr *MockDBHandlerMockRecorder) PeerEventBatchInsert(ctx, rows any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PeerEventBatchInsert", reflect.TypeOf((*MockDBHandler)(nil).PeerEventBatchInsert), ctx, rows)
+}
+
+// PeerEventList mocks base method.
+func (m *MockDBHandler) PeerEventList(ctx context.Context, customerID uuid.UUID, pairs []PeerPairFilter, pageToken string, pageSize int) ([]*peerevent.PeerEvent, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PeerEventList", ctx, customerID, pairs, pageToken, pageSize)
+	ret0, _ := ret[0].([]*peerevent.PeerEvent)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PeerEventList indicates an expected call of PeerEventList.
+func (mr *MockDBHandlerMockRecorder) PeerEventList(ctx, customerID, pairs, pageToken, pageSize any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PeerEventList", reflect.TypeOf((*MockDBHandler)(nil).PeerEventList), ctx, customerID, pairs, pageToken, pageSize)
 }
 
 // ResourceActiveflowIDGet mocks base method.

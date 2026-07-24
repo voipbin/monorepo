@@ -9590,6 +9590,75 @@
         }
       }
     },
+    "/contact_peer_events": {
+      "get": {
+        "summary": "List peer_events (raw, unfiltered)",
+        "description": "List raw peer_events rows for the customer, matching either a contact's\nregistered addresses (contact_id) or a single peer address\n(peer_type + peer_target). Exactly one filter is required.\n\nUnlike GET /contact_interactions, this endpoint applies NO identity\nresolution and NO CRM eligibility filtering: rows may include\ninternal-resource peer types (agent, ai, conference, sip legs) that\n/contact_interactions deliberately excludes. Clients are responsible for\nany presentation-layer filtering or grouping of this noise.\n",
+        "tags": [
+          "Interaction"
+        ],
+        "parameters": [
+          {
+            "name": "contact_id",
+            "in": "query",
+            "description": "Filter by all of a contact's registered addresses. Exactly one of contact_id or peer_type+peer_target is required.",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "550e8400-e29b-41d4-a716-446655440000"
+            }
+          },
+          {
+            "name": "peer_type",
+            "in": "query",
+            "description": "Remote endpoint type (e.g. \"tel\", \"email\"). Required with peer_target.",
+            "schema": {
+              "type": "string",
+              "example": "tel"
+            }
+          },
+          {
+            "name": "peer_target",
+            "in": "query",
+            "description": "Remote endpoint target (e.g. \"+155****4567\"). Required with peer_type.",
+            "schema": {
+              "type": "string",
+              "example": "+155****4567"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          },
+          {
+            "$ref": "#/components/parameters/PageToken"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TimelineManagerPeerEventListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
     "/contact_cases": {
       "get": {
         "summary": "List cases",
@@ -21187,6 +21256,75 @@
         }
       }
     },
+    "/service_agents/contact_peer_events": {
+      "get": {
+        "summary": "List peer_events (raw, unfiltered)",
+        "description": "List raw peer_events rows for the service agent's customer, matching\neither a contact's registered addresses (contact_id) or a single peer\naddress (peer_type + peer_target). Exactly one filter is required.\n\nUnlike GET /service_agents/contact_interactions, this endpoint applies NO\nidentity resolution and NO CRM eligibility filtering: rows may include\ninternal-resource peer types (agent, ai, conference, sip legs) that\n/service_agents/contact_interactions deliberately excludes. Clients are\nresponsible for any presentation-layer filtering or grouping of this\nnoise.\n",
+        "tags": [
+          "Service Agent"
+        ],
+        "parameters": [
+          {
+            "name": "contact_id",
+            "in": "query",
+            "description": "Filter by all of a contact's registered addresses. Exactly one of contact_id or peer_type+peer_target is required.",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "550e8400-e29b-41d4-a716-446655440000"
+            }
+          },
+          {
+            "name": "peer_type",
+            "in": "query",
+            "description": "Remote endpoint type (e.g. \"tel\", \"email\"). Required with peer_target.",
+            "schema": {
+              "type": "string",
+              "example": "tel"
+            }
+          },
+          {
+            "name": "peer_target",
+            "in": "query",
+            "description": "Remote endpoint target (e.g. \"+155****4567\"). Required with peer_type.",
+            "schema": {
+              "type": "string",
+              "example": "+155****4567"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          },
+          {
+            "$ref": "#/components/parameters/PageToken"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TimelineManagerPeerEventListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
     "/service_agents/transcribes": {
       "get": {
         "summary": "List transcribes",
@@ -32450,6 +32588,103 @@
             "nullable": true,
             "description": "Timestamp when the analysis was last updated.",
             "example": "2026-01-15T09:30:05.000000Z"
+          }
+        }
+      },
+      "TimelineManagerPeerEvent": {
+        "type": "object",
+        "description": "A single raw peer_events row: an unfiltered, address-searchable peer/local event log entry from call-manager or conversation-manager, with NO identity resolution and NO CRM eligibility filtering applied. May include internal-resource peer types (agent, ai, conference, sip) that ContactManagerInteraction deliberately excludes; the caller is responsible for any presentation-layer filtering of this noise.\n",
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "x-go-type": "string",
+            "description": "The event's origin timestamp.",
+            "example": "2026-01-15T10:30:00.123000Z"
+          },
+          "customer_id": {
+            "type": "string",
+            "format": "uuid",
+            "x-go-type": "string",
+            "description": "Unique identifier of the associated customer.",
+            "example": "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
+          },
+          "publisher": {
+            "type": "string",
+            "description": "Synthetic derived label, not the raw wire publisher value.",
+            "enum": [
+              "call",
+              "conversation_message",
+              "conversation"
+            ],
+            "example": "call"
+          },
+          "event_type": {
+            "type": "string",
+            "description": "The originating event type.",
+            "example": "call_hangup"
+          },
+          "reference_id": {
+            "type": "string",
+            "format": "uuid",
+            "x-go-type": "string",
+            "description": "The call_id / conversation_message_id / conversation_id this row was projected from.",
+            "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+          },
+          "direction": {
+            "type": "string",
+            "description": "Direction of the interaction from the platform perspective. Empty for the conversation-parent shape, which has no direction concept.",
+            "enum": [
+              "incoming",
+              "outgoing",
+              ""
+            ],
+            "example": "incoming"
+          },
+          "peer_type": {
+            "type": "string",
+            "description": "Remote endpoint type. May be an internal-resource type (agent/ai/conference/sip) not present in ContactManagerInteraction.",
+            "example": "tel"
+          },
+          "peer_target": {
+            "type": "string",
+            "description": "Remote endpoint target, raw (not normalized).",
+            "example": "+155****4567"
+          },
+          "local_type": {
+            "type": "string",
+            "description": "The customer's own endpoint type.",
+            "example": "tel"
+          },
+          "local_target": {
+            "type": "string",
+            "description": "The customer's own endpoint target, raw (not normalized).",
+            "example": "+155****7890"
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "The original webhook payload, verbatim.",
+            "example": {
+              "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+            }
+          }
+        }
+      },
+      "TimelineManagerPeerEventListResponse": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "array",
+            "description": "List of peer_events rows.",
+            "items": {
+              "$ref": "#/components/schemas/TimelineManagerPeerEvent"
+            }
+          },
+          "next_page_token": {
+            "type": "string",
+            "description": "Pagination token for the next page. Empty when no further pages exist.",
+            "example": "2026-01-15T10:30:00.123000Z"
           }
         }
       },

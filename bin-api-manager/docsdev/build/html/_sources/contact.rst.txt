@@ -13,3 +13,5 @@ Manage contacts with phone numbers, names, and tags for use in campaigns and cal
    contact_overview
    contact_struct_contact
    contact_tutorial
+   contact_peer_event_overview
+   contact_peer_event_struct

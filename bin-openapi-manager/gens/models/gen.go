@@ -1558,16 +1558,16 @@ func (e ContactManagerContactSource) Valid() bool {
 
 // Defines values for ContactManagerInteractionDirection.
 const (
-	Incoming ContactManagerInteractionDirection = "incoming"
-	Outgoing ContactManagerInteractionDirection = "outgoing"
+	ContactManagerInteractionDirectionIncoming ContactManagerInteractionDirection = "incoming"
+	ContactManagerInteractionDirectionOutgoing ContactManagerInteractionDirection = "outgoing"
 )
 
 // Valid indicates whether the value is a known member of the ContactManagerInteractionDirection enum.
 func (e ContactManagerInteractionDirection) Valid() bool {
 	switch e {
-	case Incoming:
+	case ContactManagerInteractionDirectionIncoming:
 		return true
-	case Outgoing:
+	case ContactManagerInteractionDirectionOutgoing:
 		return true
 	default:
 		return false
@@ -2783,6 +2783,48 @@ func (e TimelineManagerAnalysisStatus) Valid() bool {
 	case TimelineManagerAnalysisStatusFailed:
 		return true
 	case TimelineManagerAnalysisStatusProgressing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TimelineManagerPeerEventDirection.
+const (
+	TimelineManagerPeerEventDirectionEmpty    TimelineManagerPeerEventDirection = ""
+	TimelineManagerPeerEventDirectionIncoming TimelineManagerPeerEventDirection = "incoming"
+	TimelineManagerPeerEventDirectionOutgoing TimelineManagerPeerEventDirection = "outgoing"
+)
+
+// Valid indicates whether the value is a known member of the TimelineManagerPeerEventDirection enum.
+func (e TimelineManagerPeerEventDirection) Valid() bool {
+	switch e {
+	case TimelineManagerPeerEventDirectionEmpty:
+		return true
+	case TimelineManagerPeerEventDirectionIncoming:
+		return true
+	case TimelineManagerPeerEventDirectionOutgoing:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TimelineManagerPeerEventPublisher.
+const (
+	Call                TimelineManagerPeerEventPublisher = "call"
+	Conversation        TimelineManagerPeerEventPublisher = "conversation"
+	ConversationMessage TimelineManagerPeerEventPublisher = "conversation_message"
+)
+
+// Valid indicates whether the value is a known member of the TimelineManagerPeerEventPublisher enum.
+func (e TimelineManagerPeerEventPublisher) Valid() bool {
+	switch e {
+	case Call:
+		return true
+	case Conversation:
+		return true
+	case ConversationMessage:
 		return true
 	default:
 		return false
@@ -9432,6 +9474,85 @@ type TimelineManagerEvent struct {
 	Timestamp *time.Time `json:"timestamp,omitempty"`
 }
 
+// TimelineManagerPeerEvent A single raw peer_events row: an unfiltered, address-searchable peer/local event log entry from call-manager or conversation-manager, with NO identity resolution and NO CRM eligibility filtering applied. May include internal-resource peer types (agent, ai, conference, sip) that ContactManagerInteraction deliberately excludes; the caller is responsible for any presentation-layer filtering of this noise.
+type TimelineManagerPeerEvent struct {
+	// CustomerId Unique identifier of the associated customer.
+	//
+	// Example: 7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Data The original webhook payload, verbatim.
+	//
+	// Example: {"id":"a1b2c3d4-e5f6-7890-abcd-ef1234567890"}
+	Data *map[string]interface{} `json:"data,omitempty"`
+
+	// Direction Direction of the interaction from the platform perspective. Empty for the conversation-parent shape, which has no direction concept.
+	//
+	// Example: incoming
+	Direction *TimelineManagerPeerEventDirection `json:"direction,omitempty"`
+
+	// EventType The originating event type.
+	//
+	// Example: call_hangup
+	EventType *string `json:"event_type,omitempty"`
+
+	// LocalTarget The customer's own endpoint target, raw (not normalized).
+	//
+	// Example: +155****7890
+	LocalTarget *string `json:"local_target,omitempty"`
+
+	// LocalType The customer's own endpoint type.
+	//
+	// Example: tel
+	LocalType *string `json:"local_type,omitempty"`
+
+	// PeerTarget Remote endpoint target, raw (not normalized).
+	//
+	// Example: +155****4567
+	PeerTarget *string `json:"peer_target,omitempty"`
+
+	// PeerType Remote endpoint type. May be an internal-resource type (agent/ai/conference/sip) not present in ContactManagerInteraction.
+	//
+	// Example: tel
+	PeerType *string `json:"peer_type,omitempty"`
+
+	// Publisher Synthetic derived label, not the raw wire publisher value.
+	//
+	// Example: call
+	Publisher *TimelineManagerPeerEventPublisher `json:"publisher,omitempty"`
+
+	// ReferenceId The call_id / conversation_message_id / conversation_id this row was projected from.
+	//
+	// Example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+	ReferenceId *string `json:"reference_id,omitempty"`
+
+	// Timestamp The event's origin timestamp.
+	//
+	// Example: 2026-01-15T10:30:00.123000Z
+	Timestamp *string `json:"timestamp,omitempty"`
+}
+
+// TimelineManagerPeerEventDirection Direction of the interaction from the platform perspective. Empty for the conversation-parent shape, which has no direction concept.
+//
+// Example: incoming
+type TimelineManagerPeerEventDirection string
+
+// TimelineManagerPeerEventPublisher Synthetic derived label, not the raw wire publisher value.
+//
+// Example: call
+type TimelineManagerPeerEventPublisher string
+
+// TimelineManagerPeerEventListResponse defines model for TimelineManagerPeerEventListResponse.
+type TimelineManagerPeerEventListResponse struct {
+	// NextPageToken Pagination token for the next page. Empty when no further pages exist.
+	//
+	// Example: 2026-01-15T10:30:00.123000Z
+	NextPageToken *string `json:"next_page_token,omitempty"`
+
+	// Result List of peer_events rows.
+	Result *[]TimelineManagerPeerEvent `json:"result,omitempty"`
+}
+
 // TranscribeManagerSpeechWebhookMessage Webhook payload for speech recognition events (transcribe_speech_started, transcribe_speech_interim, transcribe_speech_ended). Delivered when voice activity is detected during a streaming transcription session.
 type TranscribeManagerSpeechWebhookMessage struct {
 	// CustomerId The unique identifier of the customer who owns this transcription session. Returned from the `GET /customers` response.
@@ -11085,6 +11206,24 @@ type PostContactInteractionsIdResolutionsJSONBodyResolutionType string
 // PostContactInteractionsIdResolutionsJSONBodyResolvedByType defines parameters for PostContactInteractionsIdResolutions.
 type PostContactInteractionsIdResolutionsJSONBodyResolvedByType string
 
+// GetContactPeerEventsParams defines parameters for GetContactPeerEvents.
+type GetContactPeerEventsParams struct {
+	// ContactId Filter by all of a contact's registered addresses. Exactly one of contact_id or peer_type+peer_target is required.
+	ContactId *openapi_types.UUID `form:"contact_id,omitempty" json:"contact_id,omitempty"`
+
+	// PeerType Remote endpoint type (e.g. "tel", "email"). Required with peer_target.
+	PeerType *string `form:"peer_type,omitempty" json:"peer_type,omitempty"`
+
+	// PeerTarget Remote endpoint target (e.g. "+155****4567"). Required with peer_type.
+	PeerTarget *string `form:"peer_target,omitempty" json:"peer_target,omitempty"`
+
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
 // GetContactsParams defines parameters for GetContacts.
 type GetContactsParams struct {
 	// PageSize Number of results to return per page.
@@ -12295,6 +12434,24 @@ type PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolutionType str
 
 // PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolvedByType defines parameters for PostServiceAgentsContactInteractionsIdResolutions.
 type PostServiceAgentsContactInteractionsIdResolutionsJSONBodyResolvedByType string
+
+// GetServiceAgentsContactPeerEventsParams defines parameters for GetServiceAgentsContactPeerEvents.
+type GetServiceAgentsContactPeerEventsParams struct {
+	// ContactId Filter by all of a contact's registered addresses. Exactly one of contact_id or peer_type+peer_target is required.
+	ContactId *openapi_types.UUID `form:"contact_id,omitempty" json:"contact_id,omitempty"`
+
+	// PeerType Remote endpoint type (e.g. "tel", "email"). Required with peer_target.
+	PeerType *string `form:"peer_type,omitempty" json:"peer_type,omitempty"`
+
+	// PeerTarget Remote endpoint target (e.g. "+155****4567"). Required with peer_type.
+	PeerTarget *string `form:"peer_target,omitempty" json:"peer_target,omitempty"`
+
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
 
 // GetServiceAgentsContactsParams defines parameters for GetServiceAgentsContacts.
 type GetServiceAgentsContactsParams struct {

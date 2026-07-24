@@ -92,6 +92,7 @@ import (
 	analysis0 "monorepo/bin-timeline-manager/models/analysis"
 	correlation "monorepo/bin-timeline-manager/models/correlation"
 	event "monorepo/bin-timeline-manager/models/event"
+	peerevent "monorepo/bin-timeline-manager/models/peerevent"
 	sipmessage "monorepo/bin-timeline-manager/models/sipmessage"
 	transcribe "monorepo/bin-transcribe-manager/models/transcribe"
 	transcript "monorepo/bin-transcribe-manager/models/transcript"
@@ -7415,6 +7416,21 @@ func (m *MockRequestHandler) TimelineV1EventList(ctx context.Context, req *event
 func (mr *MockRequestHandlerMockRecorder) TimelineV1EventList(ctx, req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TimelineV1EventList", reflect.TypeOf((*MockRequestHandler)(nil).TimelineV1EventList), ctx, req)
+}
+
+// TimelineV1PeerEventList mocks base method.
+func (m *MockRequestHandler) TimelineV1PeerEventList(ctx context.Context, req *peerevent.PeerEventListRequest) (*peerevent.PeerEventListResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TimelineV1PeerEventList", ctx, req)
+	ret0, _ := ret[0].(*peerevent.PeerEventListResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TimelineV1PeerEventList indicates an expected call of TimelineV1PeerEventList.
+func (mr *MockRequestHandlerMockRecorder) TimelineV1PeerEventList(ctx, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TimelineV1PeerEventList", reflect.TypeOf((*MockRequestHandler)(nil).TimelineV1PeerEventList), ctx, req)
 }
 
 // TimelineV1SIPAnalysisGet mocks base method.
