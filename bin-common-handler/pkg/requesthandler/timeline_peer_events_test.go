@@ -9,6 +9,7 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	tmpeerevent "monorepo/bin-timeline-manager/models/peerevent"
@@ -32,8 +33,8 @@ func Test_TimelineV1PeerEventList(t *testing.T) {
 
 			req: &tmpeerevent.PeerEventListRequest{
 				CustomerID: uuid.FromStringOrNil("55ecfc4e-2c74-11ee-98fb-0762519529f3"),
-				PeerPairs: []tmpeerevent.PeerPair{
-					{PeerType: "tel", PeerTarget: "+15551234567"},
+				PeerAddresses: []commonaddress.Address{
+					{Type: commonaddress.TypeTel, Target: "+15551234567"},
 				},
 				PageToken: "",
 				PageSize:  10,
@@ -44,12 +45,12 @@ func Test_TimelineV1PeerEventList(t *testing.T) {
 				URI:      "/v1/peer-events?customer_id=55ecfc4e-2c74-11ee-98fb-0762519529f3&page_token=&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"peer_pairs":[{"peer_type":"tel","peer_target":"+15551234567"}]}`),
+				Data:     []byte(`{"peer_addresses":[{"type":"tel","target":"+15551234567"}]}`),
 			},
 			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"result":[{"timestamp":"2026-01-15T10:00:00Z","customer_id":"55ecfc4e-2c74-11ee-98fb-0762519529f3","publisher":"call","event_type":"call_hangup","reference_id":"55ecfc4e-2c74-11ee-98fb-0762519529f3","direction":"outgoing","peer_type":"tel","peer_target":"+15551234567","local_type":"tel","local_target":"+15559876543","data":{"id":"55ecfc4e-2c74-11ee-98fb-0762519529f3"}}],"next_page_token":"token123"}`),
+				Data:       []byte(`{"result":[{"timestamp":"2026-01-15T10:00:00Z","customer_id":"55ecfc4e-2c74-11ee-98fb-0762519529f3","publisher":"call","event_type":"call_hangup","reference_id":"55ecfc4e-2c74-11ee-98fb-0762519529f3","direction":"outgoing","peer":{"type":"tel","target":"+15551234567"},"local":{"type":"tel","target":"+15559876543"},"data":{"id":"55ecfc4e-2c74-11ee-98fb-0762519529f3"}}],"next_page_token":"token123"}`),
 			},
 			expectRes: &tmpeerevent.PeerEventListResponse{
 				Result: []*tmpeerevent.PeerEvent{
@@ -60,10 +61,8 @@ func Test_TimelineV1PeerEventList(t *testing.T) {
 						EventType:   "call_hangup",
 						ReferenceID: uuid.FromStringOrNil("55ecfc4e-2c74-11ee-98fb-0762519529f3"),
 						Direction:   "outgoing",
-						PeerType:    "tel",
-						PeerTarget:  "+15551234567",
-						LocalType:   "tel",
-						LocalTarget: "+15559876543",
+						Peer:        commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551234567"},
+						Local:       commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15559876543"},
 						Data:        []byte(`{"id":"55ecfc4e-2c74-11ee-98fb-0762519529f3"}`),
 					},
 				},

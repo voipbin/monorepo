@@ -78,21 +78,21 @@ Internal-Resource Noise
 
 Because this endpoint applies no filtering, ``peer_type`` may be a value your application does not otherwise expect from customer-facing endpoints, such as:
 
-+-------------+------------------------------------------------------------------+
-| peer_type   | Description                                                       |
-+=============+====================================================================+
-| tel         | A phone number (customer-facing, same as Contact Interactions)   |
-+-------------+------------------------------------------------------------------+
-| email       | An email address (customer-facing, same as Contact Interactions) |
-+-------------+------------------------------------------------------------------+
-| agent       | An internal agent extension leg                                  |
-+-------------+------------------------------------------------------------------+
-| ai          | An AI participant leg                                            |
-+-------------+------------------------------------------------------------------+
-| conference  | A conference bridge leg                                          |
-+-------------+------------------------------------------------------------------+
-| sip         | A raw SIP trunk leg                                               |
-+-------------+------------------------------------------------------------------+
++------------+------------------------------------------------------------------+
+| peer_type  | Description                                                      |
++------------+------------------------------------------------------------------+
+| tel        | A phone number (customer-facing, same as Contact Interactions)   |
++------------+------------------------------------------------------------------+
+| email      | An email address (customer-facing, same as Contact Interactions) |
++------------+------------------------------------------------------------------+
+| agent      | An internal agent extension leg                                  |
++------------+------------------------------------------------------------------+
+| ai         | An AI participant leg                                            |
++------------+------------------------------------------------------------------+
+| conference | A conference bridge leg                                          |
++------------+------------------------------------------------------------------+
+| sip        | A raw SIP trunk leg                                              |
++------------+------------------------------------------------------------------+
 
 Applications displaying this data to end users are responsible for filtering or clearly labeling non-customer-facing rows themselves.
 

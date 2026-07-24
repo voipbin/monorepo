@@ -7,10 +7,10 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
 	commonutil "monorepo/bin-common-handler/pkg/utilhandler"
 
 	"monorepo/bin-timeline-manager/models/peerevent"
-	"monorepo/bin-timeline-manager/pkg/dbhandler"
 )
 
 // Pagination bounds for list-style queries, same clamp policy as
@@ -20,12 +20,12 @@ const (
 	MaxPageSize     = 1000
 )
 
-// List returns peer_events rows matching the given (peer_type, peer_target)
-// pairs, scoped to customerID.
+// List returns peer_events rows matching any of the given addresses'
+// (Type, Target) pairs, scoped to customerID.
 func (h *peerEventHandler) List(
 	ctx context.Context,
 	customerID uuid.UUID,
-	pairs []PeerPair,
+	addrs []commonaddress.Address,
 	pageToken string,
 	pageSize int,
 ) (*peerevent.PeerEventListResponse, error) {
@@ -37,8 +37,8 @@ func (h *peerEventHandler) List(
 	if customerID == uuid.Nil {
 		return nil, errors.New("customer_id is required")
 	}
-	if len(pairs) == 0 {
-		return nil, errors.New("at least one peer_type+peer_target pair is required")
+	if len(addrs) == 0 {
+		return nil, errors.New("at least one peer address is required")
 	}
 
 	if pageSize <= 0 {
@@ -48,12 +48,7 @@ func (h *peerEventHandler) List(
 		pageSize = MaxPageSize
 	}
 
-	dbPairs := make([]dbhandler.PeerPairFilter, len(pairs))
-	for i, p := range pairs {
-		dbPairs[i] = dbhandler.PeerPairFilter{PeerType: p.PeerType, PeerTarget: p.PeerTarget}
-	}
-
-	rows, err := h.db.PeerEventList(ctx, customerID, dbPairs, pageToken, pageSize+1)
+	rows, err := h.db.PeerEventList(ctx, customerID, addrs, pageToken, pageSize+1)
 	if err != nil {
 		log.Errorf("Could not list peer events. err: %v", err)
 		return nil, errors.Wrap(err, "could not list peer events")

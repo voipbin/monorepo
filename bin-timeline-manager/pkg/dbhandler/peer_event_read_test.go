@@ -6,13 +6,15 @@ import (
 	"testing"
 
 	"github.com/gofrs/uuid"
+
+	commonaddress "monorepo/bin-common-handler/models/address"
 )
 
 func TestBuildPeerEventQuery_SinglePair(t *testing.T) {
 	testID := uuid.Must(uuid.NewV4())
-	pairs := []PeerPairFilter{{PeerType: "tel", PeerTarget: "+15551234567"}}
+	addrs := []commonaddress.Address{{Type: commonaddress.TypeTel, Target: "+15551234567"}}
 
-	query, args := buildPeerEventQuery(testID, pairs, "", 10)
+	query, args := buildPeerEventQuery(testID, addrs, "", 10)
 
 	if !strings.Contains(query, "FROM peer_events") {
 		t.Error("Query missing FROM clause")
@@ -47,12 +49,12 @@ func TestBuildPeerEventQuery_SinglePair(t *testing.T) {
 
 func TestBuildPeerEventQuery_MultiPairORExpansion(t *testing.T) {
 	testID := uuid.Must(uuid.NewV4())
-	pairs := []PeerPairFilter{
-		{PeerType: "tel", PeerTarget: "+15551234567"},
-		{PeerType: "email", PeerTarget: "test@example.com"},
+	addrs := []commonaddress.Address{
+		{Type: commonaddress.TypeTel, Target: "+15551234567"},
+		{Type: commonaddress.TypeEmail, Target: "test@example.com"},
 	}
 
-	query, args := buildPeerEventQuery(testID, pairs, "", 10)
+	query, args := buildPeerEventQuery(testID, addrs, "", 10)
 
 	if !strings.Contains(query, "(peer_type = ? AND peer_target = ?) OR (peer_type = ? AND peer_target = ?)") {
 		t.Error("Query missing OR-expanded multi-pair condition")
@@ -66,10 +68,10 @@ func TestBuildPeerEventQuery_MultiPairORExpansion(t *testing.T) {
 
 func TestBuildPeerEventQuery_WithPageToken(t *testing.T) {
 	testID := uuid.Must(uuid.NewV4())
-	pairs := []PeerPairFilter{{PeerType: "tel", PeerTarget: "+15551234567"}}
+	addrs := []commonaddress.Address{{Type: commonaddress.TypeTel, Target: "+15551234567"}}
 	pageToken := "2026-01-15T10:29:00.123000Z"
 
-	query, args := buildPeerEventQuery(testID, pairs, pageToken, 10)
+	query, args := buildPeerEventQuery(testID, addrs, pageToken, 10)
 
 	if !strings.Contains(query, "AND timestamp < ?") {
 		t.Error("Query missing pagination condition")
@@ -108,7 +110,7 @@ func TestPeerEventList_NoConnection(t *testing.T) {
 	ctx := context.Background()
 	testID := uuid.Must(uuid.NewV4())
 
-	_, err := handler.PeerEventList(ctx, testID, []PeerPairFilter{{PeerType: "tel", PeerTarget: "+15551234567"}}, "", 10)
+	_, err := handler.PeerEventList(ctx, testID, []commonaddress.Address{{Type: commonaddress.TypeTel, Target: "+15551234567"}}, "", 10)
 	if err == nil {
 		t.Error("PeerEventList() expected error when conn is nil, got nil")
 	}

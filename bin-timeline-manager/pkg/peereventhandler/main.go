@@ -7,22 +7,24 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+
 	"monorepo/bin-timeline-manager/models/peerevent"
 	"monorepo/bin-timeline-manager/pkg/dbhandler"
 )
 
-// PeerPair is peereventhandler's own primitive pair type — intentionally NOT
-// dbhandler.PeerPairFilter (no dbhandler.* type leaks into this package's
-// public interface) and NOT models/peerevent.PeerPair (the wire DTO belongs
-// to the listenhandler/transport boundary, not the business logic layer).
-type PeerPair struct {
-	PeerType   string
-	PeerTarget string
-}
-
 // PeerEventHandler interface for peer_events read operations.
+//
+// List takes commonaddress.Address values directly -- there is no
+// peereventhandler-local pair type here. dbhandler.PeerEventList already
+// accepts commonaddress.Address (only .Type/.Target are used internally
+// for the search columns), so there is nothing left to translate at this
+// layer; this mirrors eventhandler.EventHandler.List's "primitives only,
+// no unnecessary wrapper type" shape while reusing the shared Address type
+// (which, unlike dbhandler.PeerPairFilter previously, is meant to be a
+// public, cross-package type).
 type PeerEventHandler interface {
-	List(ctx context.Context, customerID uuid.UUID, pairs []PeerPair, pageToken string, pageSize int) (*peerevent.PeerEventListResponse, error)
+	List(ctx context.Context, customerID uuid.UUID, addrs []commonaddress.Address, pageToken string, pageSize int) (*peerevent.PeerEventListResponse, error)
 }
 
 type peerEventHandler struct {

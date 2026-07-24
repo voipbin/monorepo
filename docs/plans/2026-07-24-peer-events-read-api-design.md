@@ -932,3 +932,96 @@ independent adversarial pass — confirming the value of the 3-round floor
 even when Rounds 1/2 were otherwise clean. Round 4 is required next: this
 was NOT an APPROVE, so the "2 consecutive APPROVEs" counter has not yet
 started.
+
+## 15. Round 4 and Round 5 review disposition — loop closed
+
+- **Round 4:** APPROVE, 0 findings. Independently re-verified the Round 3
+  regex fix against both real input shapes (`/v1/peer-events` and
+  `/v1/peer-events?customer_id=...&page_token=...&page_size=...`), checked
+  for collisions against every other route in
+  `bin-timeline-manager/pkg/listenhandler/main.go`, and confirmed the
+  `nil`-guard and DTO struct fixes were genuinely present in code (not just
+  re-asserted in prose). This was APPROVE #1 of the required 2 consecutive
+  APPROVEs.
+- **Round 5:** APPROVE, 0 findings. Independent fresh pass over the entire
+  document (all 14 sections at the time), with explicit spot-checks not
+  covered by Rounds 1–4: the OR-expansion SQL pattern (§4/§5.2) against real
+  precedent in `bin-contact-manager/pkg/dbhandler/interaction.go` and
+  `bin-timeline-manager/pkg/dbhandler/event.go`; the `models/peerevent`
+  package-split rationale (§5.1) against real `models/event/*.go` shapes;
+  the `DBHandler` interface insertion point (§5.2) against the live
+  interface in `pkg/dbhandler/main.go`. This was APPROVE #2 — the loop
+  closed (minimum 3-round floor exceeded, 2 consecutive APPROVEs reached).
+  The design was implementation-ready as of this point.
+
+## 16. Post-approval redesign — `peer`/`local` as `commonaddress.Address`, filter unified to `contact_id`/`peer_address`
+
+During implementation (after the design loop closed), 대표님 raised three
+follow-up questions that led to a real redesign of the response shape and
+filter contract described in §3/§4/§5.1–§5.3 above. **This section is the
+authoritative record of what actually shipped; §3/§4/§5.1–§5.3's flat
+`peer_type`/`peer_target` response fields and `PeerPairFilter`/`PeerPair`
+plumbing are superseded by what follows.**
+
+**What changed and why:**
+
+1. **Response shape:** `PeerEvent.Peer` / `.Local` are now the full
+   `commonaddress.Address` struct (`Type`/`Target`/`TargetName`/`Name`/
+   `Detail`), JSON-serialized, exactly mirroring `contact_interactions`'
+   own `Interaction.Peer`/`.Local` shape — not flat `peer_type`/
+   `peer_target` strings. Rationale: this is a JSON+generated-column split
+   identical in spirit to `contact_interactions`' MySQL STORED GENERATED
+   COLUMN pattern (`bin-contact-manager/scripts/database_scripts_test/
+   contacts.sql`), just implemented in Go at insert time since ClickHouse
+   has no generated-column equivalent. Consumers get a structurally
+   consistent `Address` object across both `contact_interactions` and this
+   new endpoint, instead of two different filter/response shapes for
+   conceptually the same "who is this" data.
+2. **Storage:** ClickHouse `peer_events` gained two new physical `String`
+   columns, `peer` and `local` (migration
+   `000006_add_peer_events_address_json_columns`), holding the
+   JSON-marshaled `Address`. The original `peer_type`/`peer_target`/
+   `local_type`/`local_target` columns are UNCHANGED and remain — they stay
+   internal-only, used solely for the `ORDER BY`/`WHERE` index (see
+   `dbhandler.PeerEventRow`'s doc comment); they are populated by the same
+   `buildPeerEventRows`/`newPeerEventRow` insert-time logic (added by this
+   migration) that also marshals the JSON columns, from the exact same
+   `commonaddress.Address` value — no drift possible between the search
+   columns and the response JSON since both are derived from one value in
+   one place.
+3. **Filter contract simplified:** the 3-layer `PeerPair`/`PeerPairFilter`
+   primitive-type plumbing described in §5.2/§5.3 (`peer_type string` +
+   `peer_target string` at every layer) is gone. Every layer now passes
+   `commonaddress.Address` (or `[]commonaddress.Address`) end-to-end:
+   `bin-api-manager`'s `resolvePeerAddresses` (renamed from
+   `resolvePeerPairs`) returns `[]commonaddress.Address` directly from
+   `Contact.Addresses` or the single-address filter;
+   `PeerEventListRequest.PeerAddresses` (renamed from `PeerPairs`) carries
+   `[]commonaddress.Address`; `peereventhandler.List` and
+   `dbhandler.PeerEventList` both take `addrs []commonaddress.Address`
+   and read `.Type`/`.Target` only where the SQL `WHERE` clause needs flat
+   values. This removes a full type-conversion layer (wire DTO →
+   handler-local primitive → dbhandler-local filter) that existed only to
+   avoid leaking `dbhandler.PeerPairFilter` up the stack — moot now that no
+   dbhandler-local type exists to leak; `commonaddress.Address` is already
+   the platform's standard cross-service filter/response type (used
+   unchanged by `contact_interactions` today).
+4. **API filter parameter renamed accordingly:** the single-pair filter
+   mode is now `peer_address` (a `commonaddress.Address`-shaped query
+   parameter: `type`/`target`), not two separate `peer_type`+`peer_target`
+   query params. `contact_id` filter mode is unchanged in behavior (§3),
+   only in the internal plumbing that carries its resolved result forward.
+
+**Why this was not caught in Rounds 1–5:** those rounds reviewed the
+design as originally drafted (flat `peer_type`/`peer_target` throughout,
+per §3/§4/§5.1–§5.3), which was internally consistent and passed 2
+consecutive APPROVEs on its own terms. The redesign is a scope change
+made during implementation in response to 대표님's direct review of the
+shipped response/request shapes, not a defect the review loop missed. No
+new review round was run for this section; the actual code (cross-checked
+against this section during r13a/r13b) is the source of truth going
+forward. §3/§4/§5.1–§5.3 are left as-is above for historical record of the
+original design rationale (filter contract structure, ClickHouse ORDER BY
+choice, pagination convention all remain valid and unchanged); readers
+implementing against this doc should treat §16 as overriding the specific
+field names and type signatures in those earlier sections.

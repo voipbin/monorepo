@@ -11,6 +11,7 @@ package peereventhandler
 
 import (
 	context "context"
+	address "monorepo/bin-common-handler/models/address"
 	peerevent "monorepo/bin-timeline-manager/models/peerevent"
 	reflect "reflect"
 
@@ -43,16 +44,16 @@ func (m *MockPeerEventHandler) EXPECT() *MockPeerEventHandlerMockRecorder {
 }
 
 // List mocks base method.
-func (m *MockPeerEventHandler) List(ctx context.Context, customerID uuid.UUID, pairs []PeerPair, pageToken string, pageSize int) (*peerevent.PeerEventListResponse, error) {
+func (m *MockPeerEventHandler) List(ctx context.Context, customerID uuid.UUID, addrs []address.Address, pageToken string, pageSize int) (*peerevent.PeerEventListResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "List", ctx, customerID, pairs, pageToken, pageSize)
+	ret := m.ctrl.Call(m, "List", ctx, customerID, addrs, pageToken, pageSize)
 	ret0, _ := ret[0].(*peerevent.PeerEventListResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // List indicates an expected call of List.
-func (mr *MockPeerEventHandlerMockRecorder) List(ctx, customerID, pairs, pageToken, pageSize any) *gomock.Call {
+func (mr *MockPeerEventHandlerMockRecorder) List(ctx, customerID, addrs, pageToken, pageSize any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockPeerEventHandler)(nil).List), ctx, customerID, pairs, pageToken, pageSize)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockPeerEventHandler)(nil).List), ctx, customerID, addrs, pageToken, pageSize)
 }

@@ -14,6 +14,7 @@ import (
 	"monorepo/bin-timeline-manager/models/correlation"
 	"monorepo/bin-timeline-manager/models/event"
 	"monorepo/bin-timeline-manager/models/peerevent"
+	commonaddress "monorepo/bin-common-handler/models/address"
 )
 
 const clickhouseRetryInterval = 30 * time.Second
@@ -43,7 +44,7 @@ type DBHandler interface {
 	ResourceExists(ctx context.Context, resourceID string) (bool, error)
 	CorrelatedResourceList(ctx context.Context, activeflowID string, limit int) ([]*correlation.CorrelatedRow, error)
 	PeerEventBatchInsert(ctx context.Context, rows []PeerEventRow) error
-	PeerEventList(ctx context.Context, customerID uuid.UUID, pairs []PeerPairFilter, pageToken string, pageSize int) ([]*peerevent.PeerEvent, error)
+	PeerEventList(ctx context.Context, customerID uuid.UUID, addrs []commonaddress.Address, pageToken string, pageSize int) ([]*peerevent.PeerEvent, error)
 	WaitForConnection(ctx context.Context) error
 }
 

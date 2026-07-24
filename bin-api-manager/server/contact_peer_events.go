@@ -6,6 +6,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-api-manager/gens/openapi_server"
+	commonaddress "monorepo/bin-common-handler/models/address"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonoutline "monorepo/bin-common-handler/models/outline"
 )
@@ -74,7 +75,12 @@ func (h *server) GetContactPeerEvents(c *gin.Context, params openapi_server.GetC
 		return
 	}
 
-	items, nextToken, err := h.serviceHandler.PeerEventList(c.Request.Context(), a, contactID, peerType, peerTarget, pageToken, pageSize)
+	var peerAddress *commonaddress.Address
+	if peerType != "" || peerTarget != "" {
+		peerAddress = &commonaddress.Address{Type: commonaddress.Type(peerType), Target: peerTarget}
+	}
+
+	items, nextToken, err := h.serviceHandler.PeerEventList(c.Request.Context(), a, contactID, peerAddress, pageToken, pageSize)
 	if err != nil {
 		log.Errorf("Could not list peer events. err: %v", err)
 		abortWithServiceError(c, err)

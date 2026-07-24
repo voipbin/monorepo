@@ -4995,17 +4995,11 @@ type TimelineManagerPeerEvent struct {
 	// EventType The originating event type.
 	EventType *string `json:"event_type,omitempty"`
 
-	// LocalTarget The customer's own endpoint target, raw (not normalized).
-	LocalTarget *string `json:"local_target,omitempty"`
+	// Local The customer's own endpoint.
+	Local *CommonAddress `json:"local,omitempty"`
 
-	// LocalType The customer's own endpoint type.
-	LocalType *string `json:"local_type,omitempty"`
-
-	// PeerTarget Remote endpoint target, raw (not normalized).
-	PeerTarget *string `json:"peer_target,omitempty"`
-
-	// PeerType Remote endpoint type. May be an internal-resource type (agent/ai/conference/sip) not present in ContactManagerInteraction.
-	PeerType *string `json:"peer_type,omitempty"`
+	// Peer Remote endpoint. May be an internal-resource type (agent/ai/conference/sip) not present in ContactManagerInteraction's Peer.
+	Peer *CommonAddress `json:"peer,omitempty"`
 
 	// Publisher Synthetic derived label, not the raw wire publisher value.
 	Publisher *TimelineManagerPeerEventPublisher `json:"publisher,omitempty"`

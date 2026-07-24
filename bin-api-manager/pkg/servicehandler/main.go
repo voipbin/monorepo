@@ -546,7 +546,7 @@ type ServiceHandler interface {
 		ctx context.Context,
 		a *auth.AuthIdentity,
 		contactID uuid.UUID,
-		peerType, peerTarget string,
+		peerAddress *commonaddress.Address,
 		pageToken string,
 		pageSize uint64,
 	) ([]*tmpeerevent.PeerEvent, string, error)
@@ -554,7 +554,7 @@ type ServiceHandler interface {
 		ctx context.Context,
 		a *auth.AuthIdentity,
 		contactID uuid.UUID,
-		peerType, peerTarget string,
+		peerAddress *commonaddress.Address,
 		pageToken string,
 		pageSize uint64,
 	) ([]*tmpeerevent.PeerEvent, string, error)

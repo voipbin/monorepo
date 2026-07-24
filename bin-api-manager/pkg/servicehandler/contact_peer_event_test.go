@@ -44,15 +44,16 @@ func Test_PeerEventList_ByPeerType(t *testing.T) {
 	expectRes := []*tmpeerevent.PeerEvent{
 		{EventType: "call_hangup"},
 	}
+	peerAddress := &commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551234567"}
 
 	mockReq.EXPECT().TimelineV1PeerEventList(ctx, &tmpeerevent.PeerEventListRequest{
-		CustomerID: a.CustomerID,
-		PeerPairs:  []tmpeerevent.PeerPair{{PeerType: "tel", PeerTarget: "+15551234567"}},
-		PageToken:  "",
-		PageSize:   10,
+		CustomerID:    a.CustomerID,
+		PeerAddresses: []commonaddress.Address{{Type: commonaddress.TypeTel, Target: "+15551234567"}},
+		PageToken:     "",
+		PageSize:      10,
 	}).Return(&tmpeerevent.PeerEventListResponse{Result: expectRes, NextPageToken: "next-token"}, nil)
 
-	res, next, err := h.PeerEventList(ctx, a, uuid.Nil, "tel", "+15551234567", "", 10)
+	res, next, err := h.PeerEventList(ctx, a, uuid.Nil, peerAddress, "", 10)
 	if err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
@@ -104,15 +105,15 @@ func Test_PeerEventList_ByContactID(t *testing.T) {
 	expectRes := []*tmpeerevent.PeerEvent{{EventType: "call_hangup"}}
 	mockReq.EXPECT().TimelineV1PeerEventList(ctx, &tmpeerevent.PeerEventListRequest{
 		CustomerID: customerID,
-		PeerPairs: []tmpeerevent.PeerPair{
-			{PeerType: "tel", PeerTarget: "+15551234567"},
-			{PeerType: "email", PeerTarget: "test@example.com"},
+		PeerAddresses: []commonaddress.Address{
+			{Type: commonaddress.TypeTel, Target: "+15551234567"},
+			{Type: commonaddress.TypeEmail, Target: "test@example.com"},
 		},
 		PageToken: "",
 		PageSize:  10,
 	}).Return(&tmpeerevent.PeerEventListResponse{Result: expectRes, NextPageToken: ""}, nil)
 
-	res, _, err := h.PeerEventList(ctx, a, contactID, "", "", "", 10)
+	res, _, err := h.PeerEventList(ctx, a, contactID, nil, "", 10)
 	if err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
@@ -156,7 +157,7 @@ func Test_PeerEventList_ByContactID_ZeroAddresses(t *testing.T) {
 	mockReq.EXPECT().ContactV1ContactGet(ctx, contactID).Return(responseContact, nil)
 	// No TimelineV1PeerEventList call expected: zero addresses short-circuits.
 
-	res, next, err := h.PeerEventList(ctx, a, contactID, "", "", "", 10)
+	res, next, err := h.PeerEventList(ctx, a, contactID, nil, "", 10)
 	if err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
@@ -201,7 +202,7 @@ func Test_PeerEventList_ByContactID_CrossTenant(t *testing.T) {
 
 	mockReq.EXPECT().ContactV1ContactGet(ctx, contactID).Return(responseContact, nil)
 
-	_, _, err := h.PeerEventList(ctx, a, contactID, "", "", "", 10)
+	_, _, err := h.PeerEventList(ctx, a, contactID, nil, "", 10)
 	if err != serviceerrors.ErrNotFound {
 		t.Errorf("Expected ErrNotFound (anti-enumeration), got: %v", err)
 	}
@@ -228,7 +229,7 @@ func Test_PeerEventList_NoFilter(t *testing.T) {
 		Permission: amagent.PermissionCustomerAdmin,
 	})
 
-	_, _, err := h.PeerEventList(ctx, a, uuid.Nil, "", "", "", 10)
+	_, _, err := h.PeerEventList(ctx, a, uuid.Nil, nil, "", 10)
 	if err == nil {
 		t.Fatal("Expected error when no filter is provided, got nil")
 	}
@@ -255,7 +256,8 @@ func Test_PeerEventList_PermissionDenied(t *testing.T) {
 		Permission: amagent.PermissionCustomerAgent,
 	})
 
-	_, _, err := h.PeerEventList(ctx, a, uuid.Nil, "tel", "+15551234567", "", 10)
+	peerAddress := &commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551234567"}
+	_, _, err := h.PeerEventList(ctx, a, uuid.Nil, peerAddress, "", 10)
 	if err != serviceerrors.ErrPermissionDenied {
 		t.Errorf("Expected ErrPermissionDenied, got: %v", err)
 	}
@@ -283,14 +285,15 @@ func Test_ServiceAgentPeerEventList_ByPeerType(t *testing.T) {
 	})
 
 	expectRes := []*tmpeerevent.PeerEvent{{EventType: "call_hangup"}}
+	peerAddress := &commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551234567"}
 	mockReq.EXPECT().TimelineV1PeerEventList(ctx, &tmpeerevent.PeerEventListRequest{
-		CustomerID: a.CustomerID,
-		PeerPairs:  []tmpeerevent.PeerPair{{PeerType: "tel", PeerTarget: "+15551234567"}},
-		PageToken:  "",
-		PageSize:   10,
+		CustomerID:    a.CustomerID,
+		PeerAddresses: []commonaddress.Address{{Type: commonaddress.TypeTel, Target: "+15551234567"}},
+		PageToken:     "",
+		PageSize:      10,
 	}).Return(&tmpeerevent.PeerEventListResponse{Result: expectRes}, nil)
 
-	res, _, err := h.ServiceAgentPeerEventList(ctx, a, uuid.Nil, "tel", "+15551234567", "", 10)
+	res, _, err := h.ServiceAgentPeerEventList(ctx, a, uuid.Nil, peerAddress, "", 10)
 	if err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
@@ -315,7 +318,8 @@ func Test_ServiceAgentPeerEventList_NotAgent(t *testing.T) {
 	// A non-agent identity (e.g. an accesskey identity) should be rejected.
 	a := &auth.AuthIdentity{}
 
-	_, _, err := h.ServiceAgentPeerEventList(ctx, a, uuid.Nil, "tel", "+15551234567", "", 10)
+	peerAddress := &commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551234567"}
+	_, _, err := h.ServiceAgentPeerEventList(ctx, a, uuid.Nil, peerAddress, "", 10)
 	if err != serviceerrors.ErrAuthenticationRequired {
 		t.Errorf("Expected ErrAuthenticationRequired, got: %v", err)
 	}

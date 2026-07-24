@@ -7571,22 +7571,14 @@ components:
             - outgoing
             - ""
           example: "incoming"
-        peer_type:
-          type: string
-          description: "Remote endpoint type. May be an internal-resource type (agent/ai/conference/sip) not present in ContactManagerInteraction."
-          example: "tel"
-        peer_target:
-          type: string
-          description: "Remote endpoint target, raw (not normalized)."
-          example: "+155****4567"
-        local_type:
-          type: string
-          description: "The customer's own endpoint type."
-          example: "tel"
-        local_target:
-          type: string
-          description: "The customer's own endpoint target, raw (not normalized)."
-          example: "+155****7890"
+        peer:
+          allOf:
+            - $ref: '#/components/schemas/CommonAddress'
+          description: "Remote endpoint. May be an internal-resource type (agent/ai/conference/sip) not present in ContactManagerInteraction's Peer."
+        local:
+          allOf:
+            - $ref: '#/components/schemas/CommonAddress'
+          description: "The customer's own endpoint."
         data:
           type: object
           additionalProperties: true

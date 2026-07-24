@@ -9,6 +9,7 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/models/sock"
 
 	"monorepo/bin-timeline-manager/models/peerevent"
@@ -16,32 +17,6 @@ import (
 	"monorepo/bin-timeline-manager/pkg/listenhandler/models/response"
 	"monorepo/bin-timeline-manager/pkg/peereventhandler"
 )
-
-func TestToPeerEventHandlerPairs(t *testing.T) {
-	in := []request.PeerPair{
-		{PeerType: "tel", PeerTarget: "+15551234567"},
-		{PeerType: "email", PeerTarget: "test@example.com"},
-	}
-
-	out := toPeerEventHandlerPairs(in)
-
-	if len(out) != 2 {
-		t.Fatalf("toPeerEventHandlerPairs() len = %d, want 2", len(out))
-	}
-	if out[0] != (peereventhandler.PeerPair{PeerType: "tel", PeerTarget: "+15551234567"}) {
-		t.Errorf("toPeerEventHandlerPairs()[0] = %+v, want tel pair", out[0])
-	}
-	if out[1] != (peereventhandler.PeerPair{PeerType: "email", PeerTarget: "test@example.com"}) {
-		t.Errorf("toPeerEventHandlerPairs()[1] = %+v, want email pair", out[1])
-	}
-}
-
-func TestToPeerEventHandlerPairs_Empty(t *testing.T) {
-	out := toPeerEventHandlerPairs(nil)
-	if len(out) != 0 {
-		t.Errorf("toPeerEventHandlerPairs(nil) len = %d, want 0", len(out))
-	}
-}
 
 func TestProcessRequest_V1PeerEventsGet(t *testing.T) {
 	ctrl := gomock.NewController(t)
@@ -55,7 +30,7 @@ func TestProcessRequest_V1PeerEventsGet(t *testing.T) {
 
 	testCustomerID := uuid.Must(uuid.NewV4())
 	body := &request.V1DataPeerEventsGet{
-		PeerPairs: []request.PeerPair{{PeerType: "tel", PeerTarget: "+15551234567"}},
+		PeerAddresses: []commonaddress.Address{{Type: commonaddress.TypeTel, Target: "+15551234567"}},
 	}
 	reqData, _ := json.Marshal(body)
 
@@ -67,7 +42,7 @@ func TestProcessRequest_V1PeerEventsGet(t *testing.T) {
 	}
 
 	mockPeerEvent.EXPECT().
-		List(gomock.Any(), testCustomerID, gomock.Any(), "", 10).
+		List(gomock.Any(), testCustomerID, body.PeerAddresses, "", 10).
 		Return(expectedResponse, nil)
 
 	sockReq := &sock.Request{
@@ -159,12 +134,12 @@ func TestProcessRequest_V1PeerEventsGet_HandlerError(t *testing.T) {
 
 	testCustomerID := uuid.Must(uuid.NewV4())
 	body := &request.V1DataPeerEventsGet{
-		PeerPairs: []request.PeerPair{{PeerType: "tel", PeerTarget: "+15551234567"}},
+		PeerAddresses: []commonaddress.Address{{Type: commonaddress.TypeTel, Target: "+15551234567"}},
 	}
 	reqData, _ := json.Marshal(body)
 
 	mockPeerEvent.EXPECT().
-		List(gomock.Any(), testCustomerID, gomock.Any(), "", 10).
+		List(gomock.Any(), testCustomerID, body.PeerAddresses, "", 10).
 		Return(nil, errors.New("handler error"))
 
 	sockReq := &sock.Request{

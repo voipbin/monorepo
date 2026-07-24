@@ -3664,9 +3664,9 @@ func (mr *MockServiceHandlerMockRecorder) OutplanUpdateDialInfo(ctx, a, id, sour
 }
 
 // PeerEventList mocks base method.
-func (m *MockServiceHandler) PeerEventList(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, peerType, peerTarget, pageToken string, pageSize uint64) ([]*peerevent.PeerEvent, string, error) {
+func (m *MockServiceHandler) PeerEventList(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, peerAddress *address.Address, pageToken string, pageSize uint64) ([]*peerevent.PeerEvent, string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PeerEventList", ctx, a, contactID, peerType, peerTarget, pageToken, pageSize)
+	ret := m.ctrl.Call(m, "PeerEventList", ctx, a, contactID, peerAddress, pageToken, pageSize)
 	ret0, _ := ret[0].([]*peerevent.PeerEvent)
 	ret1, _ := ret[1].(string)
 	ret2, _ := ret[2].(error)
@@ -3674,9 +3674,9 @@ func (m *MockServiceHandler) PeerEventList(ctx context.Context, a *auth.AuthIden
 }
 
 // PeerEventList indicates an expected call of PeerEventList.
-func (mr *MockServiceHandlerMockRecorder) PeerEventList(ctx, a, contactID, peerType, peerTarget, pageToken, pageSize any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) PeerEventList(ctx, a, contactID, peerAddress, pageToken, pageSize any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PeerEventList", reflect.TypeOf((*MockServiceHandler)(nil).PeerEventList), ctx, a, contactID, peerType, peerTarget, pageToken, pageSize)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PeerEventList", reflect.TypeOf((*MockServiceHandler)(nil).PeerEventList), ctx, a, contactID, peerAddress, pageToken, pageSize)
 }
 
 // ProviderCallCreate mocks base method.
@@ -5107,9 +5107,9 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentMeUpdateStatus(ctx, a, sta
 }
 
 // ServiceAgentPeerEventList mocks base method.
-func (m *MockServiceHandler) ServiceAgentPeerEventList(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, peerType, peerTarget, pageToken string, pageSize uint64) ([]*peerevent.PeerEvent, string, error) {
+func (m *MockServiceHandler) ServiceAgentPeerEventList(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, peerAddress *address.Address, pageToken string, pageSize uint64) ([]*peerevent.PeerEvent, string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ServiceAgentPeerEventList", ctx, a, contactID, peerType, peerTarget, pageToken, pageSize)
+	ret := m.ctrl.Call(m, "ServiceAgentPeerEventList", ctx, a, contactID, peerAddress, pageToken, pageSize)
 	ret0, _ := ret[0].([]*peerevent.PeerEvent)
 	ret1, _ := ret[1].(string)
 	ret2, _ := ret[2].(error)
@@ -5117,9 +5117,9 @@ func (m *MockServiceHandler) ServiceAgentPeerEventList(ctx context.Context, a *a
 }
 
 // ServiceAgentPeerEventList indicates an expected call of ServiceAgentPeerEventList.
-func (mr *MockServiceHandlerMockRecorder) ServiceAgentPeerEventList(ctx, a, contactID, peerType, peerTarget, pageToken, pageSize any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentPeerEventList(ctx, a, contactID, peerAddress, pageToken, pageSize any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentPeerEventList", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentPeerEventList), ctx, a, contactID, peerType, peerTarget, pageToken, pageSize)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentPeerEventList", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentPeerEventList), ctx, a, contactID, peerAddress, pageToken, pageSize)
 }
 
 // ServiceAgentResolutionCreate mocks base method.

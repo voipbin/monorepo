@@ -113,7 +113,7 @@ func Test_GetContactPeerEvents(t *testing.T) {
 
 			if tt.expectMockCalled && tt.agent != nil {
 				mockSvc.EXPECT().
-					PeerEventList(req.Context(), tt.agent, gomock.Any(), gomock.Any(), gomock.Any(), "", uint64(100)).
+					PeerEventList(req.Context(), tt.agent, gomock.Any(), gomock.Any(), "", uint64(100)).
 					Return(tt.responseItems, tt.responseToken, nil)
 			}
 
@@ -195,7 +195,7 @@ func Test_GetServiceAgentsContactPeerEvents(t *testing.T) {
 
 			if tt.expectMockCalled && tt.agent != nil {
 				mockSvc.EXPECT().
-					ServiceAgentPeerEventList(req.Context(), tt.agent, gomock.Any(), gomock.Any(), gomock.Any(), "", uint64(100)).
+					ServiceAgentPeerEventList(req.Context(), tt.agent, gomock.Any(), gomock.Any(), "", uint64(100)).
 					Return(tt.responseItems, tt.responseToken, nil)
 			}
 

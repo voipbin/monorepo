@@ -9,6 +9,8 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+
 	"monorepo/bin-timeline-manager/models/peerevent"
 	"monorepo/bin-timeline-manager/pkg/dbhandler"
 )
@@ -40,36 +42,36 @@ func TestList_Validation(t *testing.T) {
 	tests := []struct {
 		name       string
 		customerID uuid.UUID
-		pairs      []PeerPair
+		addrs      []commonaddress.Address
 		wantErr    bool
 		errMsg     string
 	}{
 		{
 			name:       "missing customer_id",
 			customerID: uuid.Nil,
-			pairs:      []PeerPair{{PeerType: "tel", PeerTarget: "+15551234567"}},
+			addrs:      []commonaddress.Address{{Type: commonaddress.TypeTel, Target: "+15551234567"}},
 			wantErr:    true,
 			errMsg:     "customer_id is required",
 		},
 		{
-			name:       "missing pairs",
+			name:       "missing addresses",
 			customerID: uuid.Must(uuid.NewV4()),
-			pairs:      nil,
+			addrs:      nil,
 			wantErr:    true,
-			errMsg:     "at least one peer_type+peer_target pair is required",
+			errMsg:     "at least one peer address is required",
 		},
 		{
-			name:       "empty pairs slice",
+			name:       "empty addresses slice",
 			customerID: uuid.Must(uuid.NewV4()),
-			pairs:      []PeerPair{},
+			addrs:      []commonaddress.Address{},
 			wantErr:    true,
-			errMsg:     "at least one peer_type+peer_target pair is required",
+			errMsg:     "at least one peer address is required",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := handler.List(context.Background(), tt.customerID, tt.pairs, "", 0)
+			_, err := handler.List(context.Background(), tt.customerID, tt.addrs, "", 0)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("List() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -88,8 +90,7 @@ func TestList_Success(t *testing.T) {
 	handler := NewPeerEventHandler(mockDB)
 
 	testID := uuid.Must(uuid.NewV4())
-	pairs := []PeerPair{{PeerType: "tel", PeerTarget: "+15551234567"}}
-	dbPairs := []dbhandler.PeerPairFilter{{PeerType: "tel", PeerTarget: "+15551234567"}}
+	addrs := []commonaddress.Address{{Type: commonaddress.TypeTel, Target: "+15551234567"}}
 
 	ts1 := time.Date(2026, 1, 15, 10, 30, 0, 123000000, time.UTC)
 	ts2 := time.Date(2026, 1, 15, 10, 29, 0, 123000000, time.UTC)
@@ -99,10 +100,10 @@ func TestList_Success(t *testing.T) {
 	}
 
 	mockDB.EXPECT().
-		PeerEventList(gomock.Any(), testID, dbPairs, "", 11).
+		PeerEventList(gomock.Any(), testID, addrs, "", 11).
 		Return(expectedRows, nil)
 
-	result, err := handler.List(context.Background(), testID, pairs, "", 10)
+	result, err := handler.List(context.Background(), testID, addrs, "", 10)
 	if err != nil {
 		t.Fatalf("List() error = %v", err)
 	}
@@ -123,8 +124,7 @@ func TestList_Pagination_HasMore(t *testing.T) {
 	handler := NewPeerEventHandler(mockDB)
 
 	testID := uuid.Must(uuid.NewV4())
-	pairs := []PeerPair{{PeerType: "tel", PeerTarget: "+15551234567"}}
-	dbPairs := []dbhandler.PeerPairFilter{{PeerType: "tel", PeerTarget: "+15551234567"}}
+	addrs := []commonaddress.Address{{Type: commonaddress.TypeTel, Target: "+15551234567"}}
 
 	ts1 := time.Date(2026, 1, 15, 10, 30, 0, 123000000, time.UTC)
 	ts2 := time.Date(2026, 1, 15, 10, 29, 0, 123000000, time.UTC)
@@ -136,10 +136,10 @@ func TestList_Pagination_HasMore(t *testing.T) {
 	}
 
 	mockDB.EXPECT().
-		PeerEventList(gomock.Any(), testID, dbPairs, "", 3).
+		PeerEventList(gomock.Any(), testID, addrs, "", 3).
 		Return(expectedRows, nil)
 
-	result, err := handler.List(context.Background(), testID, pairs, "", 2)
+	result, err := handler.List(context.Background(), testID, addrs, "", 2)
 	if err != nil {
 		t.Fatalf("List() error = %v", err)
 	}
@@ -160,20 +160,19 @@ func TestList_DefaultAndMaxPageSize(t *testing.T) {
 	handler := NewPeerEventHandler(mockDB)
 
 	testID := uuid.Must(uuid.NewV4())
-	pairs := []PeerPair{{PeerType: "tel", PeerTarget: "+15551234567"}}
-	dbPairs := []dbhandler.PeerPairFilter{{PeerType: "tel", PeerTarget: "+15551234567"}}
+	addrs := []commonaddress.Address{{Type: commonaddress.TypeTel, Target: "+15551234567"}}
 
 	mockDB.EXPECT().
-		PeerEventList(gomock.Any(), testID, dbPairs, "", DefaultPageSize+1).
+		PeerEventList(gomock.Any(), testID, addrs, "", DefaultPageSize+1).
 		Return([]*peerevent.PeerEvent{}, nil)
-	if _, err := handler.List(context.Background(), testID, pairs, "", 0); err != nil {
+	if _, err := handler.List(context.Background(), testID, addrs, "", 0); err != nil {
 		t.Fatalf("List() error = %v", err)
 	}
 
 	mockDB.EXPECT().
-		PeerEventList(gomock.Any(), testID, dbPairs, "", MaxPageSize+1).
+		PeerEventList(gomock.Any(), testID, addrs, "", MaxPageSize+1).
 		Return([]*peerevent.PeerEvent{}, nil)
-	if _, err := handler.List(context.Background(), testID, pairs, "", 5000); err != nil {
+	if _, err := handler.List(context.Background(), testID, addrs, "", 5000); err != nil {
 		t.Fatalf("List() error = %v", err)
 	}
 }
@@ -186,14 +185,13 @@ func TestList_DatabaseError(t *testing.T) {
 	handler := NewPeerEventHandler(mockDB)
 
 	testID := uuid.Must(uuid.NewV4())
-	pairs := []PeerPair{{PeerType: "tel", PeerTarget: "+15551234567"}}
-	dbPairs := []dbhandler.PeerPairFilter{{PeerType: "tel", PeerTarget: "+15551234567"}}
+	addrs := []commonaddress.Address{{Type: commonaddress.TypeTel, Target: "+15551234567"}}
 
 	mockDB.EXPECT().
-		PeerEventList(gomock.Any(), testID, dbPairs, "", 11).
+		PeerEventList(gomock.Any(), testID, addrs, "", 11).
 		Return(nil, errors.New("clickhouse error"))
 
-	_, err := handler.List(context.Background(), testID, pairs, "", 10)
+	_, err := handler.List(context.Background(), testID, addrs, "", 10)
 	if err == nil {
 		t.Fatal("List() expected error, got nil")
 	}
