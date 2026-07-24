@@ -3,7 +3,9 @@ package subscribehandler
 import (
 	"encoding/json"
 	"strings"
+	"time"
 
+	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
@@ -79,19 +81,7 @@ func buildPeerEventRows(entries []eventEntry) []dbhandler.PeerEventRow {
 				continue
 			}
 			peer, local := commonaddress.DeriveEndpoints(string(m.Direction), m.Source, m.Destination)
-			rows = append(rows, dbhandler.PeerEventRow{
-				Timestamp:   e.receivedAt,
-				CustomerID:  m.CustomerID,
-				Publisher:   "call",
-				EventType:   e.event.Type,
-				ReferenceID: m.ID,
-				Direction:   string(m.Direction),
-				PeerType:    string(peer.Type),
-				PeerTarget:  peer.Target,
-				LocalType:   string(local.Type),
-				LocalTarget: local.Target,
-				Data:        string(e.event.Data),
-			})
+			rows = append(rows, newPeerEventRow(e.receivedAt, m.CustomerID, "call", e.event.Type, m.ID, string(m.Direction), peer, local, e.event.Data))
 
 		case string(commonoutline.ServiceNameConversationManager):
 			switch {
@@ -102,40 +92,60 @@ func buildPeerEventRows(entries []eventEntry) []dbhandler.PeerEventRow {
 					continue
 				}
 				peer, local := commonaddress.DeriveEndpoints(string(m.Direction), m.Source, m.Destination)
-				rows = append(rows, dbhandler.PeerEventRow{
-					Timestamp:   e.receivedAt,
-					CustomerID:  m.CustomerID,
-					Publisher:   "conversation_message",
-					EventType:   e.event.Type,
-					ReferenceID: m.ID,
-					Direction:   string(m.Direction),
-					PeerType:    string(peer.Type),
-					PeerTarget:  peer.Target,
-					LocalType:   string(local.Type),
-					LocalTarget: local.Target,
-					Data:        string(e.event.Data),
-				})
+				rows = append(rows, newPeerEventRow(e.receivedAt, m.CustomerID, "conversation_message", e.event.Type, m.ID, string(m.Direction), peer, local, e.event.Data))
 			default: // "conversation_created" / "_updated" / "_deleted"
 				var m convconversation.WebhookMessage
 				if err := json.Unmarshal(e.event.Data, &m); err != nil {
 					log.Warnf("Could not unmarshal conversation webhook for peer_events. err: %v", err)
 					continue
 				}
-				rows = append(rows, dbhandler.PeerEventRow{
-					Timestamp:   e.receivedAt,
-					CustomerID:  m.CustomerID,
-					Publisher:   "conversation",
-					EventType:   e.event.Type,
-					ReferenceID: m.ID,
-					Direction:   "",
-					PeerType:    string(m.Peer.Type),
-					PeerTarget:  m.Peer.Target,
-					LocalType:   string(m.Self.Type),
-					LocalTarget: m.Self.Target,
-					Data:        string(e.event.Data),
-				})
+				rows = append(rows, newPeerEventRow(e.receivedAt, m.CustomerID, "conversation", e.event.Type, m.ID, "", m.Peer, m.Self, e.event.Data))
 			}
 		}
 	}
 	return rows
+}
+
+// newPeerEventRow serializes peer/local into their JSON (response-facing)
+// form AND flattens Type/Target into the internal-only search columns, in
+// one place -- the Go-level equivalent of contact_interactions' MySQL
+// STORED GENERATED COLUMN (see PeerEventRow's doc comment). If JSON
+// marshaling somehow fails (it practically never does for this struct),
+// the row is still inserted with an empty peer/local JSON string rather
+// than being dropped -- the flat search columns are unaffected either way.
+func newPeerEventRow(
+	timestamp time.Time,
+	customerID uuid.UUID,
+	publisher, eventType string,
+	referenceID uuid.UUID,
+	direction string,
+	peer, local commonaddress.Address,
+	data json.RawMessage,
+) dbhandler.PeerEventRow {
+	peerJSON, err := json.Marshal(peer)
+	if err != nil {
+		logrus.WithField("func", "newPeerEventRow").Warnf("Could not marshal peer address. err: %v", err)
+		peerJSON = []byte{}
+	}
+	localJSON, err := json.Marshal(local)
+	if err != nil {
+		logrus.WithField("func", "newPeerEventRow").Warnf("Could not marshal local address. err: %v", err)
+		localJSON = []byte{}
+	}
+
+	return dbhandler.PeerEventRow{
+		Timestamp:   timestamp,
+		CustomerID:  customerID,
+		Publisher:   publisher,
+		EventType:   eventType,
+		ReferenceID: referenceID,
+		Direction:   direction,
+		Peer:        string(peerJSON),
+		Local:       string(localJSON),
+		PeerType:    string(peer.Type),
+		PeerTarget:  peer.Target,
+		LocalType:   string(local.Type),
+		LocalTarget: local.Target,
+		Data:        string(data),
+	}
 }

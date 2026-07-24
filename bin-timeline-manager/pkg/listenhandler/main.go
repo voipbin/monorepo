@@ -19,6 +19,7 @@ import (
 	"monorepo/bin-timeline-manager/pkg/analysishandler"
 	"monorepo/bin-timeline-manager/pkg/dbhandler"
 	"monorepo/bin-timeline-manager/pkg/eventhandler"
+	"monorepo/bin-timeline-manager/pkg/peereventhandler"
 	"monorepo/bin-timeline-manager/pkg/siphandler"
 )
 
@@ -28,6 +29,7 @@ var (
 	regV1Events           = regexp.MustCompile("/v1/events$")
 	regV1AggregatedEvents = regexp.MustCompile("/v1/aggregated-events$")
 	regV1Correlations     = regexp.MustCompile("/v1/correlations/" + regUUID + "$")
+	regV1PeerEvents       = regexp.MustCompile(`/v1/peer-events(\?|$)`)
 	regV1SIPAnalysis      = regexp.MustCompile("/v1/sip/analysis$")
 	regV1SIPPcap          = regexp.MustCompile("/v1/sip/pcap$")
 
@@ -61,24 +63,27 @@ type ListenHandler interface {
 }
 
 type listenHandler struct {
-	sockHandler     sockhandler.SockHandler
-	eventHandler    eventhandler.EventHandler
-	sipHandler      siphandler.SIPHandler
-	analysisHandler analysishandler.AnalysisHandler
+	sockHandler      sockhandler.SockHandler
+	eventHandler     eventhandler.EventHandler
+	peerEventHandler peereventhandler.PeerEventHandler
+	sipHandler       siphandler.SIPHandler
+	analysisHandler  analysishandler.AnalysisHandler
 }
 
 // NewListenHandler creates a new ListenHandler.
 func NewListenHandler(
 	sockHandler sockhandler.SockHandler,
 	eventHandler eventhandler.EventHandler,
+	peerEventHandler peereventhandler.PeerEventHandler,
 	sipHandler siphandler.SIPHandler,
 	analysisHandler analysishandler.AnalysisHandler,
 ) ListenHandler {
 	return &listenHandler{
-		sockHandler:     sockHandler,
-		eventHandler:    eventHandler,
-		sipHandler:      sipHandler,
-		analysisHandler: analysisHandler,
+		sockHandler:      sockHandler,
+		eventHandler:     eventHandler,
+		peerEventHandler: peerEventHandler,
+		sipHandler:       sipHandler,
+		analysisHandler:  analysisHandler,
 	}
 }
 
@@ -162,6 +167,10 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1AggregatedEvents.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		requestType = "/aggregated-events"
 		response, err = h.v1AggregatedEventsPost(ctx, m)
+
+	case regV1PeerEvents.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		requestType = "/peer-events"
+		response, err = h.v1PeerEventsGet(ctx, m)
 
 	case regV1Correlations.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		requestType = "/correlations"

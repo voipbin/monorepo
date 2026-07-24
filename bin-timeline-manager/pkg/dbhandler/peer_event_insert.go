@@ -21,7 +21,7 @@ func (h *dbHandler) PeerEventBatchInsert(ctx context.Context, rows []PeerEventRo
 		return nil
 	}
 
-	batch, err := h.conn.PrepareBatch(ctx, "INSERT INTO peer_events (timestamp, customer_id, publisher, event_type, reference_id, direction, peer_type, peer_target, local_type, local_target, data)")
+	batch, err := h.conn.PrepareBatch(ctx, "INSERT INTO peer_events (timestamp, customer_id, publisher, event_type, reference_id, direction, peer, local, peer_type, peer_target, local_type, local_target, data)")
 	if err != nil {
 		return errors.Wrap(err, "could not prepare ClickHouse batch")
 	}
@@ -34,6 +34,8 @@ func (h *dbHandler) PeerEventBatchInsert(ctx context.Context, rows []PeerEventRo
 			r.EventType,
 			r.ReferenceID,
 			r.Direction,
+			r.Peer,
+			r.Local,
 			r.PeerType,
 			r.PeerTarget,
 			r.LocalType,

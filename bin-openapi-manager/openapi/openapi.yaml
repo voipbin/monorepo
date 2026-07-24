@@ -7523,6 +7523,82 @@ components:
           description: "Timestamp when the analysis was last updated."
           example: "2026-01-15T09:30:05.000000Z"
 
+    TimelineManagerPeerEvent:
+      type: object
+      description: >
+        A single raw peer_events row: an unfiltered, address-searchable
+        peer/local event log entry from call-manager or conversation-manager,
+        with NO identity resolution and NO CRM eligibility filtering applied.
+        May include internal-resource peer types (agent, ai, conference, sip)
+        that ContactManagerInteraction deliberately excludes; the caller is
+        responsible for any presentation-layer filtering of this noise.
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          x-go-type: string
+          description: "The event's origin timestamp."
+          example: "2026-01-15T10:30:00.123000Z"
+        customer_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "Unique identifier of the associated customer."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
+        publisher:
+          type: string
+          description: "Synthetic derived label, not the raw wire publisher value."
+          enum:
+            - "call"
+            - "conversation_message"
+            - "conversation"
+          example: "call"
+        event_type:
+          type: string
+          description: "The originating event type."
+          example: "call_hangup"
+        reference_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "The call_id / conversation_message_id / conversation_id this row was projected from."
+          example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+        direction:
+          type: string
+          description: "Direction of the interaction from the platform perspective. Empty for the conversation-parent shape, which has no direction concept."
+          enum:
+            - incoming
+            - outgoing
+            - ""
+          example: "incoming"
+        peer:
+          allOf:
+            - $ref: '#/components/schemas/CommonAddress'
+          description: "Remote endpoint. May be an internal-resource type (agent/ai/conference/sip) not present in ContactManagerInteraction's Peer."
+        local:
+          allOf:
+            - $ref: '#/components/schemas/CommonAddress'
+          description: "The customer's own endpoint."
+        data:
+          type: object
+          additionalProperties: true
+          description: "The original webhook payload, verbatim."
+          example:
+            id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+
+    TimelineManagerPeerEventListResponse:
+      type: object
+      properties:
+        result:
+          type: array
+          description: List of peer_events rows.
+          items:
+            $ref: '#/components/schemas/TimelineManagerPeerEvent'
+        next_page_token:
+          type: string
+          description: Pagination token for the next page. Empty when no further pages exist.
+          example: "2026-01-15T10:30:00.123000Z"
+
 
 #########################################
 # Tag Manager
@@ -8513,6 +8589,8 @@ paths:
     $ref: './paths/contact_interactions/id_resolutions.yaml'
   /contact_interactions/{id}/resolutions/{rid}:
     $ref: './paths/contact_interactions/id_resolutions_id.yaml'
+  /contact_peer_events:
+    $ref: './paths/contact_peer_events/main.yaml'
   /contact_cases:
     $ref: './paths/contact_cases/main.yaml'
   /contact_cases/unresolved:
@@ -8808,6 +8886,8 @@ paths:
     $ref: './paths/service_agents/contact_interactions_id_resolutions.yaml'
   /service_agents/contact_interactions/{id}/resolutions/{rid}:
     $ref: './paths/service_agents/contact_interactions_id_resolutions_id.yaml'
+  /service_agents/contact_peer_events:
+    $ref: './paths/service_agents/contact_peer_events.yaml'
 
   /service_agents/transcribes:
     $ref: './paths/service_agents/transcribes.yaml'
