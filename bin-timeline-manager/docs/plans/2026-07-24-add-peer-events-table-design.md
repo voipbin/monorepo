@@ -58,6 +58,15 @@ conversation are already subscribed).
 9. Event-type scope: ALL event types from call-manager and conversation-manager
    (not just `*_created`). A single call or conversation_message therefore
    produces multiple `peer_events` rows across its lifecycle (§7.3).
+   **ROUND 1 CLARIFICATION** (see §5): "all event types" means all event
+   types whose payload shape actually carries a peer/local pair (the
+   `call.WebhookMessage`, `message.WebhookMessage`, and
+   `conversation.WebhookMessage` shapes) — NOT literally every event a
+   service ever publishes. `call-manager` also publishes `groupcall_*`,
+   `recording_*`, `confbridge_*`, and a raw-map whitelist-rejection event on
+   the SAME queue/publisher, none of which carry a compatible payload; these
+   are out of scope by construction (§5's explicit allowlist), not by
+   omission.
 
 ## 3. What already exists (verified) and what does not
 
@@ -155,15 +164,90 @@ trade-off per 대표님's explicit choice in §2.7.
 
 ## 5. Ingestion path (extends existing subscribe pipeline, no new queue)
 
-`pkg/subscribehandler/main.go` already subscribes to
-`QueueNameCallEvent` and `QueueNameConversationEvent` (both in
-`subscribeTargets`, unchanged). The insertion point is `flushBatch`:
+**ROUND 1 CORRECTION (BLOCKER fix):** the original draft filtered on
+`publisher in {"call", "conversation_message", "conversation"}`. This is
+wrong and would match nothing: `Publisher` is fixed per-SERVICE at
+`NewNotifyHandler` construction time (verified
+`bin-call-manager/cmd/call-manager/main.go:143` passes `common.Servicename`;
+verified `bin-common-handler/models/outline/servicename.go:17,21` — the real
+values are `ServiceNameCallManager = "call-manager"` and
+`ServiceNameConversationManager = "conversation-manager"`). There is no
+`"conversation_message"` or `"call"` publisher value anywhere. Worse, a
+single service's `Publisher` value covers MULTIPLE structurally different
+webhook shapes: `call-manager` alone publishes `call.WebhookMessage`,
+`groupcall.WebhookMessage` (verified `bin-call-manager/models/groupcall/webhook.go` —
+`Source *Address` pointer + `Destinations []Address` PLURAL, no `Direction`
+field at all), `recording.WebhookMessage`, and `confbridge.WebhookMessage`
+(verified: neither carries `Source`/`Destination`/`Direction`), all on the
+same `QueueNameCallEvent` queue. A publisher-only filter would either produce
+`peer_type=""` garbage rows or fail to unmarshal for every non-call
+call-manager event.
+
+**Corrected design: filter on the `(Publisher, EventType)` PAIR, against an
+explicit allowlist**, mirroring the proven pattern already in
+`bin-contact-manager/pkg/subscribehandler/main.go:147,155`
+(`case m.Publisher == publisherCallManager && m.Type == call.EventTypeCallCreated:`).
+Only event types whose payload is verified (§3) to carry
+`Source`/`Destination`/`Direction` (call) or `Self`/`Peer` (conversation
+parent) are in scope — NOT "every event type this service ever publishes."
+
+**Allowlist (exhaustive, verified against each service's `models/*/event.go`):**
+
+| Publisher | Event types (all share the `call.WebhookMessage` shape) |
+|---|---|
+| `call-manager` | `call_created`, `call_updated`, `call_deleted`, `call_dialing`, `call_ringing`, `call_progressing`, `call_terminating`, `call_canceling`, `call_hangup` (verified `bin-call-manager/models/call/event.go:5-14`) |
+
+| Publisher | Event types (all share `message.WebhookMessage` shape, `Source`/`Destination`/`Direction`) |
+|---|---|
+| `conversation-manager` | `conversation_message_created`, `conversation_message_updated`, `conversation_message_deleted` (verified `bin-conversation-manager/models/message/event.go:5-7`) |
+
+| Publisher | Event types (share the `conversation.WebhookMessage` shape, `Self`/`Peer`, no direction) |
+|---|---|
+| `conversation-manager` | `conversation_created`, `conversation_updated`, `conversation_deleted` (verified `bin-conversation-manager/models/conversation/event.go:5-7`) |
+
+**Explicitly EXCLUDED from `peer_events` (same publisher, incompatible or
+non-webhook-message payload):** `call-manager`'s `groupcall_*`,
+`recording_*`, `confbridge_*` events (different struct shape per publisher
+census in §3), and `call.outbound_whitelist_rejected` (verified
+`bin-call-manager/pkg/callhandler/outgoing_call.go:213` publishes a raw
+`map[string]interface{}`, not `call.WebhookMessage` — cannot be unmarshaled
+into the derivation path at all). This narrows §2.9's "ALL event types"
+decision to mean "all event types of the two Webhook*Message shapes that
+actually carry peer/local data," not literally every event on the queue —
+confirmed as the correct reading of 대표님's intent (the goal was "no
+`_created`-only restriction," not "ingest structurally incompatible
+payloads").
 
 ```go
+// eligiblePeerEvents is the exhaustive (Publisher, EventType) allowlist for
+// projection into peer_events. Any (Publisher, EventType) pair not in this
+// set is left in `events` only — never attempted for peer/local derivation.
+var eligiblePeerEvents = map[string]map[string]struct{}{
+    string(commonoutline.ServiceNameCallManager): {
+        call.EventTypeCallCreated:     {},
+        call.EventTypeCallUpdated:     {},
+        call.EventTypeCallDeleted:     {},
+        call.EventTypeCallDialing:     {},
+        call.EventTypeCallRinging:     {},
+        call.EventTypeCallProgressing: {},
+        call.EventTypeCallTerminating: {},
+        call.EventTypeCallCanceling:   {},
+        call.EventTypeCallHangup:      {},
+    },
+    string(commonoutline.ServiceNameConversationManager): {
+        convmessage.EventTypeMessageCreated:      {}, // message.WebhookMessage shape
+        convmessage.EventTypeMessageUpdated:      {},
+        convmessage.EventTypeMessageDeleted:      {},
+        convconversation.EventTypeConversationCreated: {}, // conversation.WebhookMessage shape (different struct!)
+        convconversation.EventTypeConversationUpdated: {},
+        convconversation.EventTypeConversationDeleted: {},
+    },
+}
+
 func (h *subscribeHandler) flushBatch(entries []eventEntry) {
     // existing: build `rows []dbhandler.EventRow` for the `events` table (unchanged)
 
-    // NEW: additionally build peer rows for call/conversation_message publishers
+    // NEW: additionally build peer rows, filtered by the (Publisher, EventType) allowlist above
     peerRows := buildPeerEventRows(entries)   // new pure function, see §6
     if len(peerRows) > 0 {
         if err := h.dbHandler.PeerEventBatchInsert(ctx, peerRows); err != nil {
@@ -176,20 +260,25 @@ func (h *subscribeHandler) flushBatch(entries []eventEntry) {
 }
 ```
 
-`buildPeerEventRows` filters `entries` to `publisher in {"call",
-"conversation_message", "conversation"}` (checked against the existing
-`event.Publisher` string, same values already used in `groupByPublisher`
-elsewhere in this service), unmarshals just the fields needed for derivation
-(`source`, `destination`, `direction`, or `self`/`peer` for the conversation
-parent event), and calls the shared derive helper (§6). Malformed/unparseable
-payloads are logged and skipped — they still land in `events` (unaffected),
-just not in `peer_events`.
+`buildPeerEventRows` checks each entry's `(event.Publisher, event.Type)`
+against `eligiblePeerEvents` FIRST; only matching entries are unmarshaled.
+Because `message.WebhookMessage` (per-message, absolute axis) and
+`conversation.WebhookMessage` (parent, relative axis) are two DIFFERENT Go
+struct shapes under the same publisher, the event-type match also selects
+which struct to unmarshal into and whether to call `DeriveEndpoints` at all
+(message path) or map `Self`/`Peer` directly (conversation-parent path, §6).
+Malformed/unparseable payloads within an eligible `(Publisher, EventType)`
+pair are logged and skipped — they still land in `events` (unaffected), just
+not in `peer_events`.
 
 Two independent ClickHouse batch inserts per flush cycle (existing `events`
 batch + new `peer_events` batch) — not a combined statement, since they are
 different tables. This keeps the existing `events` insert path completely
 unmodified (§2.2 additive constraint) and isolates any `peer_events`-path
-failure from the audit-log write.
+failure from the audit-log write. Both run sequentially inside the single
+`flushWorker` goroutine (verified `pkg/subscribehandler/main.go:178-218` —
+`flushWorker` is never invoked concurrently with itself), so there is no
+ordering/race concern between the two inserts.
 
 ## 6. Peer/local derivation (shared helper, not contact-manager-private)
 
@@ -223,6 +312,15 @@ func DeriveEndpoints(direction string, source, destination Address) (peer, local
 function for `buildPeerEventRows`. This closes the "two services drifting on
 the same rule" risk flagged earlier in this thread.
 
+**ROUND 1 CLARIFICATION:** only the bare direction-switch (`DeriveEndpoints`
+itself) moves to `bin-common-handler`. `crmIneligiblePeerTypes` and
+`isCRMEligiblePeer` (`bin-contact-manager/pkg/contacthandler/interaction.go:34-77`)
+are CRM-specific eligibility judgment, not part of the derivation rule, and
+stay contact-manager-private — this is what makes §2.4's "no eligibility
+filter for peer_events" decision correct without any code duplication of the
+filter logic (there is nothing to duplicate; timeline-manager simply never
+imports it).
+
 For the `conversation` parent event (`conversation_created` /
 `_updated`/`_deleted`), there is no `direction` field — `Self`/`Peer` are
 already stored in the relative axis. `buildPeerEventRows` maps these directly
@@ -233,7 +331,13 @@ already stored in the relative axis. `buildPeerEventRows` maps these directly
 the full verification workflow in all three services, not just
 timeline-manager, since bin-common-handler is a shared dependency.
 
-## 7. Open questions for review round 1
+## 7. Open questions for review round 2 (round 1 findings resolved above)
+
+**Round 1 verdict: CHANGES_REQUESTED.** Two BLOCKERs found and fixed in §5/§2.9
+above (publisher-vs-event-type conflation; call-manager's multiple incompatible
+webhook shapes on one queue). One MAJOR clarified in §6 (eligibility filter
+does not travel with the shared helper). Remaining open items carried into
+round 2:
 
 ### 7.1 No eligibility filter — confirmed noise implication
 
@@ -265,6 +369,17 @@ the same `peer_type`/`peer_target`. An address-set search will therefore
 return multiple rows per underlying call/message. This is accepted as
 consistent with `events`' own "store everything verbatim" philosophy, not
 deduplicated at write time.
+
+### 7.5 No existing address-keyed ClickHouse table to validate ORDER BY against (Round 1 MINOR)
+
+`events` (the only existing ClickHouse table in this service) uses
+`ORDER BY (event_type, timestamp)` — a type-scoped access pattern, not an
+address-scoped one. There is no precedent in this codebase for the
+`(customer_id, peer_type, peer_target, timestamp)` ordering proposed in §4.
+The reasoning in §4 is sound on ClickHouse sparse-index mechanics generally,
+but should be spot-checked with an `EXPLAIN`/query-plan pass once a
+throwaway table is populated at implementation time, not just asserted from
+first principles.
 
 ### 7.4 ClickHouse test-fixture convention
 
