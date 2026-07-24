@@ -50,9 +50,7 @@ import (
 
 	cmcasenote "monorepo/bin-contact-manager/models/casenote"
 	cmcontact "monorepo/bin-contact-manager/models/contact"
-	cminteraction "monorepo/bin-contact-manager/models/interaction"
 	cmkase "monorepo/bin-contact-manager/models/kase"
-	cmresolution "monorepo/bin-contact-manager/models/resolution"
 	cmrequest "monorepo/bin-contact-manager/pkg/listenhandler/models/request"
 
 	cvaccount "monorepo/bin-conversation-manager/models/account"
@@ -922,12 +920,9 @@ type RequestHandler interface {
 	ContactV1TagAdd(ctx context.Context, contactID uuid.UUID, tagID uuid.UUID) (*cmcontact.Contact, error)
 	ContactV1TagRemove(ctx context.Context, contactID uuid.UUID, tagID uuid.UUID) (*cmcontact.Contact, error)
 
-	// contact-manager interactions (CRM v1 read API, VOIP-1209)
-	ContactV1InteractionGet(ctx context.Context, customerID, id uuid.UUID) (*cminteraction.Interaction, error)
-	ContactV1InteractionList(ctx context.Context, customerID uuid.UUID, size uint64, token string, peerType, peerTarget string, contactID, addressID uuid.UUID, since time.Time) ([]*cminteraction.Interaction, string, error)
-	ContactV1InteractionListUnresolved(ctx context.Context, customerID uuid.UUID, size uint64, token string, since string) ([]*cminteraction.Interaction, string, error)
-	ContactV1ResolutionCreate(ctx context.Context, customerID, contactID, interactionID uuid.UUID, resolutionType, resolvedByType string, resolvedByID uuid.UUID) (*cmresolution.Resolution, error)
-	ContactV1ResolutionDelete(ctx context.Context, customerID uuid.UUID, interactionID, resolutionID uuid.UUID) error
+	// contact-manager interactions (CRM v1 read API, VOIP-1209; response shape
+	// migrated to peerevent.PeerEvent, design doc 2026-07-25-contact-interaction-retire-to-peer-events §8.1/§9)
+	ContactV1InteractionList(ctx context.Context, customerID uuid.UUID, size uint64, token string, peerType, peerTarget string, contactID, addressID uuid.UUID, since time.Time) ([]*tmpeerevent.PeerEvent, string, error)
 
 	// contact-manager cases (Phase 5, NOJIRA-contact-case-management)
 	ContactV1CaseCreate(ctx context.Context, customerID uuid.UUID, self, peer commonaddress.Address, referenceType, name, detail, referenceID string) (*cmkase.Case, error)

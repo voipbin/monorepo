@@ -2,59 +2,32 @@ package contacthandler
 
 import (
 	"context"
+	stderrors "errors"
 	"fmt"
-	"sort"
 	"time"
 
-	stderrors "errors"
-
 	cerrors "monorepo/bin-common-handler/models/errors"
+	commonaddress "monorepo/bin-common-handler/models/address"
 	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	"github.com/gofrs/uuid"
-	"github.com/sirupsen/logrus"
 
-	"monorepo/bin-contact-manager/models/interaction"
-	"monorepo/bin-contact-manager/models/resolution"
 	"monorepo/bin-contact-manager/pkg/dbhandler"
+	tmpeerevent "monorepo/bin-timeline-manager/models/peerevent"
 )
 
-// interactionInternalCap is the maximum number of automatic peer-match
-// interactions fetched per contactID read path (STEP 2 of set-MINUS algorithm).
-// Contacts with >5000 automatic interactions may see incomplete results on the
-// ?contact_id= path in v1; a cursor-walk implementation is the M2 solution.
-const interactionInternalCap uint64 = 5000
-
-// InteractionGet returns a single interaction, scoped to customerID.
-func (h *contactHandler) InteractionGet(ctx context.Context, customerID, id uuid.UUID) (*interaction.Interaction, error) {
-	res, err := h.db.InteractionGet(ctx, id)
-	if err != nil {
-		if stderrors.Is(err, dbhandler.ErrNotFound) {
-			return nil, cerrors.NotFound(
-				commonoutline.ServiceNameContactManager,
-				"INTERACTION_NOT_FOUND",
-				"The interaction was not found.",
-			).Wrap(err)
-		}
-		return nil, err
-	}
-
-	// Tenant guard: never expose another customer's data.
-	if res.CustomerID != customerID {
-		return nil, cerrors.NotFound(
-			commonoutline.ServiceNameContactManager,
-			"INTERACTION_NOT_FOUND",
-			"The interaction was not found.",
-		)
-	}
-
-	return res, nil
-}
-
-// InteractionList is the main timeline read path.
-// Exactly one of (peerType+peerTarget), contactID, or addressID must be non-zero,
-// UNLESS since is non-zero, in which case zero filters is allowed (unfiltered, time-scoped mode).
-// Returns the interaction slice and a next-page token (empty when no further pages).
+// InteractionList is the main timeline read path. It proxies
+// bin-timeline-manager's peer_events read API (design doc
+// 2026-07-25-contact-interaction-retire-to-peer-events, §8.1/§9).
+//
+// Exactly one of (peerType+peerTarget), contactID, or addressID must be
+// non-zero -- peer_events requires at least one address filter, unlike the
+// old contact_interactions InteractionList, which additionally supported an
+// unfiltered/since-only mode. That mode has no peer_events equivalent and is
+// rejected here.
+//
+// Returns the response without reshaping (§8.1 item 1 / §9.1 item 1):
+// []*peerevent.PeerEvent, plus a next-page token (empty when no further pages).
 func (h *contactHandler) InteractionList(
 	ctx context.Context,
 	customerID uuid.UUID,
@@ -64,38 +37,44 @@ func (h *contactHandler) InteractionList(
 	contactID uuid.UUID,
 	addressID uuid.UUID,
 	since time.Time,
-) ([]*interaction.Interaction, string, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":       "InteractionList",
-		"customerID": customerID,
-	})
-
-	if size == 0 {
-		size = 20
-	}
+) ([]*tmpeerevent.PeerEvent, string, error) {
+	var addrs []commonaddress.Address
 
 	switch {
 	case peerType != "" || peerTarget != "":
-		// Direct peer path
-		items, err := h.db.InteractionList(ctx, customerID, size+1, token, peerType, peerTarget, nil, time.Time{})
-		if err != nil {
-			return nil, "", fmt.Errorf("could not list interactions by peer. InteractionList. err: %v", err)
+		addrs = []commonaddress.Address{
+			{
+				Type:   commonaddress.Type(peerType),
+				Target: peerTarget,
+			},
 		}
-		return buildPagedResult(items, size)
 
 	case contactID != uuid.Nil:
-		return h.interactionListByContact(ctx, log, customerID, contactID, size, token)
+		c, err := h.db.ContactGet(ctx, contactID)
+		if err != nil || c == nil || c.TMDelete != nil || c.CustomerID != customerID {
+			return nil, "", cerrors.NotFound(
+				commonoutline.ServiceNameContactManager,
+				"CONTACT_NOT_FOUND",
+				"The contact was not found.",
+			)
+		}
+		for _, a := range c.Addresses {
+			addrs = append(addrs, a.Address)
+		}
 
 	case addressID != uuid.Nil:
-		return h.interactionListByAddress(ctx, customerID, addressID, size, token)
-
-	case !since.IsZero():
-		// Unfiltered mode: scope by customer_id + tm_create >= since only.
-		items, err := h.db.InteractionList(ctx, customerID, size+1, token, "", "", nil, since)
+		ap, err := h.db.AddressGet(ctx, customerID, addressID)
 		if err != nil {
-			return nil, "", fmt.Errorf("could not list all interactions. InteractionList. err: %v", err)
+			if stderrors.Is(err, dbhandler.ErrNotFound) {
+				return nil, "", cerrors.NotFound(
+					commonoutline.ServiceNameContactManager,
+					"ADDRESS_NOT_FOUND",
+					"The address was not found.",
+				)
+			}
+			return nil, "", fmt.Errorf("could not get address. InteractionList. err: %v", err)
 		}
-		return buildPagedResult(items, size)
+		addrs = []commonaddress.Address{ap.Address}
 
 	default:
 		return nil, "", cerrors.InvalidArgument(
@@ -104,265 +83,26 @@ func (h *contactHandler) InteractionList(
 			"At least one filter (peer_type+peer_target, contact_id, or address_id) is required.",
 		)
 	}
-}
 
-// interactionListByContact implements the set-MINUS algorithm (design §7.1).
-func (h *contactHandler) interactionListByContact(
-	ctx context.Context,
-	log *logrus.Entry,
-	customerID, contactID uuid.UUID,
-	size uint64,
-	token string,
-) ([]*interaction.Interaction, string, error) {
-	// STEP 0: Existence + tenant check.
-	c, err := h.db.ContactGet(ctx, contactID)
-	if err != nil || c == nil || c.TMDelete != nil || c.CustomerID != customerID {
-		return nil, "", cerrors.NotFound(
-			commonoutline.ServiceNameContactManager,
-			"CONTACT_NOT_FOUND",
-			"The contact was not found.",
-		)
-	}
-
-	// STEP 1: Expand the ownership-period set (design §6.2). Replaces
-	// the old "currently-live contact_addresses rows only" expansion:
-	// OwnershipPeriodsListByContactID returns every period (open and
-	// closed) this Contact has ever held, so a target's PAST owner era
-	// still resolves correctly after the target is reassigned away or
-	// the row is deleted -- the core defect this design exists to fix.
-	// AddressListByContactID (dbhandler/address.go) is intentionally
-	// NOT used here (design §6.1): it also backs the public
-	// Contact.Addresses API field via ContactGet/ContactList, and
-	// widening its semantics would leak closed/historical addresses
-	// into GET /v1/contacts/{id}.
-	periods, err := h.db.OwnershipPeriodsListByContactID(ctx, contactID)
-	if err != nil {
-		return nil, "", fmt.Errorf("could not get ownership periods. interactionListByContact. err: %v", err)
-	}
-	// Missing-period-skew guard (design §6.2 round-41-43/47): a target
-	// this Contact currently, live-owns but that has zero period rows
-	// (an old-binary pod's AddressCreate ran before this rewire and
-	// skipped the period write) would otherwise contribute NO bound to
-	// STEP2 at all -- not unbounded, none -- silently vanishing every
-	// interaction for that target from the Contact's OWN timeline.
-	// Reproduces today's time-agnostic value-match for exactly this
-	// transient population until the next write gives the row a real
-	// period.
-	skewed, err := h.db.MissingPeriodOwnedAddresses(ctx, customerID, contactID)
-	if err != nil {
-		return nil, "", fmt.Errorf("could not get missing-period-skew addresses. interactionListByContact. err: %v", err)
-	}
-	bounds := make([]dbhandler.OwnershipPeriodBound, 0, len(periods)+len(skewed))
-	for _, p := range periods {
-		bounds = append(bounds, dbhandler.OwnershipPeriodBound{Type: p.Type, Target: p.Target, ValidFrom: p.ValidFrom, ValidTo: p.ValidTo})
-	}
-	for _, s := range skewed {
-		bounds = append(bounds, dbhandler.OwnershipPeriodBound{Type: s.Type, Target: s.Target, ValidFrom: nil, ValidTo: nil}) // unbounded
-	}
-
-	// STEP 2: Fetch ALL automatic peer matches (internal cap, not caller page size).
-	var automatic []*interaction.Interaction
-	if len(bounds) > 0 {
-		automatic, err = h.db.InteractionListByOwnershipPeriods(ctx, customerID, interactionInternalCap, "", "", "", bounds, time.Time{})
-		if err != nil {
-			return nil, "", fmt.Errorf("could not list interactions by ownership periods. interactionListByContact. err: %v", err)
-		}
-	}
-	// If bounds is empty → automatic stays nil (short-circuit, no OR-expanded query).
-
-	// STEP 3: Fetch active resolutions.
-	resolutions, err := h.db.ResolutionListByContact(ctx, customerID, contactID)
-	if err != nil {
-		return nil, "", fmt.Errorf("could not list resolutions. interactionListByContact. err: %v", err)
-	}
-
-	// STEP 4: Set-MINUS combination.
-	positiveIDs := make(map[uuid.UUID]bool)
-	negativeIDs := make(map[uuid.UUID]bool)
-	for _, r := range resolutions {
-		// Case-level Resolutions (InteractionID nil, CaseID set --
-		// contact-case-management design §3.3) carry no interaction to
-		// key this Interaction-timeline set-MINUS map by; skip them
-		// here rather than incorrectly keying/dedupe-ing against a
-		// zero-UUID (which could otherwise collide with a real,
-		// legitimately-zero interaction reference in a future schema).
-		if r.InteractionID == nil {
-			continue
-		}
-		switch r.ResolutionType {
-		case resolution.ResolutionTypePositive:
-			positiveIDs[*r.InteractionID] = true
-		case resolution.ResolutionTypeNegative:
-			negativeIDs[*r.InteractionID] = true
-		}
-	}
-
-	automaticIDs := make(map[uuid.UUID]bool)
-	merged := make(map[uuid.UUID]*interaction.Interaction)
-	for _, i := range automatic {
-		automaticIDs[i.ID] = true
-		merged[i.ID] = i
-	}
-
-	// include = (automaticIDs | positiveIDs) - negativeIDs
-	for id := range negativeIDs {
-		delete(merged, id)
-	}
-
-	// STEP 5: Load positive-only interactions not in automatic set.
-	var missingIDs []uuid.UUID
-	for id := range positiveIDs {
-		if !automaticIDs[id] {
-			missingIDs = append(missingIDs, id)
-		}
-	}
-	if len(missingIDs) > 0 {
-		extra, extraErr := h.db.InteractionListByIDs(ctx, customerID, missingIDs)
-		if extraErr != nil {
-			return nil, "", fmt.Errorf("could not list interactions by IDs. interactionListByContact. err: %v", extraErr)
-		}
-		for _, i := range extra {
-			if !negativeIDs[i.ID] {
-				merged[i.ID] = i
-			}
-		}
-	}
-
-	// STEP 6: Sort, apply caller cursor, slice.
-	all := make([]*interaction.Interaction, 0, len(merged))
-	for _, i := range merged {
-		all = append(all, i)
-	}
-	sort.Slice(all, func(a, b int) bool {
-		ta := all[a].TMCreate
-		tb := all[b].TMCreate
-		if ta == nil && tb == nil {
-			return all[a].ID.String() > all[b].ID.String()
-		}
-		if ta == nil {
-			return false
-		}
-		if tb == nil {
-			return true
-		}
-		if ta.Equal(*tb) {
-			return all[a].ID.String() > all[b].ID.String()
-		}
-		return ta.After(*tb)
-	})
-
-	// Apply cursor if provided.
-	if token != "" {
-		cursorTime, err := time.Parse("2006-01-02T15:04:05.000000Z", token)
-		if err != nil {
-			// Try RFC3339Nano as fallback for forward compatibility.
-			cursorTime, err = time.Parse(time.RFC3339Nano, token)
-		}
-		if err != nil {
-			log.WithError(err).Warn("invalid page token; starting from head")
-		} else {
-			found := false
-			for i, item := range all {
-				if item.TMCreate == nil {
-					// nil-TMCreate items sort last. When a cursor is active and
-					// we encounter a nil-TMCreate item, we have passed all
-					// timestamped items. The nil-TMCreate tail is beyond the
-					// cursor position (latest = head), so start from this point.
-					all = all[i:]
-					found = true
-					break
-				}
-				if item.TMCreate.Before(cursorTime) {
-					all = all[i:]
-					found = true
-					break
-				}
-			}
-			if !found {
-				// All items are newer than or equal to cursor, with valid timestamps.
-				// No items remain past the cursor — return empty.
-				all = nil
-			}
-		}
-	}
-
-	return buildPagedResult(all, size)
-}
-
-// interactionListByAddress implements the ?address_id= filter path.
-func (h *contactHandler) interactionListByAddress(
-	ctx context.Context,
-	customerID, addressID uuid.UUID,
-	size uint64,
-	token string,
-) ([]*interaction.Interaction, string, error) {
-	ap, err := h.db.AddressGet(ctx, customerID, addressID)
-	if err != nil {
-		if stderrors.Is(err, dbhandler.ErrNotFound) {
-			return nil, "", cerrors.NotFound(
-				commonoutline.ServiceNameContactManager,
-				"ADDRESS_NOT_FOUND",
-				"The address was not found.",
-			)
-		}
-		return nil, "", fmt.Errorf("could not get address. interactionListByAddress. err: %v", err)
-	}
-
-	items, err := h.db.InteractionList(ctx, customerID, size+1, token, "", "", []dbhandler.AddressPair{{Type: string(ap.Type), Target: ap.Target}}, time.Time{})
-	if err != nil {
-		return nil, "", fmt.Errorf("could not list interactions by address. interactionListByAddress. err: %v", err)
-	}
-	return buildPagedResult(items, size)
-}
-
-// buildPagedResult slices items to size and computes the next-page token.
-// Returns (items, nextToken, nil). nextToken is "" when no further pages exist.
-// cursor token = last.TMCreate formatted as ISO8601 microsecond UTC string.
-// This follows the platform-wide convention (calls, messages, emails, etc.).
-func buildPagedResult(items []*interaction.Interaction, size uint64) ([]*interaction.Interaction, string, error) {
-	hasMore := uint64(len(items)) > size
-	if hasMore {
-		items = items[:size]
-	}
-
-	var nextToken string
-	if hasMore && len(items) > 0 {
-		last := items[len(items)-1]
-		if last.TMCreate != nil {
-			nextToken = last.TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z")
-		}
-		// If TMCreate is nil, cursor cannot be encoded — pagination stops here.
-		// In production this should not occur (InteractionCreate always sets TMCreate).
-	}
-
-	return items, nextToken, nil
-}
-
-// InteractionListUnresolved returns interactions with zero-contact attribution.
-// Predicate: NOT auto-matched to any address AND NOT positive-resolved AND peer_type != web_session.
-// Supports pagination (size + token).
-// Returns the interaction slice and a next-page token (empty when no further pages).
-func (h *contactHandler) InteractionListUnresolved(
-	ctx context.Context,
-	customerID uuid.UUID,
-	size uint64,
-	token string,
-	since time.Time,
-) ([]*interaction.Interaction, string, error) {
-	if size == 0 {
-		size = 100
-	}
-	if size > 500 {
+	if len(addrs) == 0 {
 		return nil, "", cerrors.InvalidArgument(
 			commonoutline.ServiceNameContactManager,
-			"INVALID_PAGE_SIZE",
-			"page_size must be at most 500 for the unresolved endpoint.",
+			"INVALID_FILTER",
+			"At least one filter (peer_type+peer_target, contact_id, or address_id) is required.",
 		)
 	}
 
-	items, err := h.db.InteractionListUnresolved(ctx, customerID, size+1, token, since)
-	if err != nil {
-		return nil, "", fmt.Errorf("could not list unresolved interactions. InteractionListUnresolved. err: %v", err)
+	req := &tmpeerevent.PeerEventListRequest{
+		CustomerID:    customerID,
+		PeerAddresses: addrs,
+		PageToken:     token,
+		PageSize:      int(size),
 	}
-	return buildPagedResult(items, size)
+
+	res, err := h.reqHandler.TimelineV1PeerEventList(ctx, req)
+	if err != nil {
+		return nil, "", fmt.Errorf("could not list peer events. InteractionList. err: %v", err)
+	}
+
+	return res.Result, res.NextPageToken, nil
 }

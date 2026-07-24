@@ -11,12 +11,9 @@ package contacthandler
 
 import (
 	context "context"
-	call "monorepo/bin-call-manager/models/call"
 	contact "monorepo/bin-contact-manager/models/contact"
-	interaction "monorepo/bin-contact-manager/models/interaction"
-	resolution "monorepo/bin-contact-manager/models/resolution"
-	message "monorepo/bin-conversation-manager/models/message"
 	customer "monorepo/bin-customer-manager/models/customer"
+	peerevent "monorepo/bin-timeline-manager/models/peerevent"
 	reflect "reflect"
 	time "time"
 
@@ -138,34 +135,6 @@ func (mr *MockContactHandlerMockRecorder) Delete(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockContactHandler)(nil).Delete), ctx, id)
 }
 
-// EventCallCreated mocks base method.
-func (m_2 *MockContactHandler) EventCallCreated(ctx context.Context, m *call.WebhookMessage) error {
-	m_2.ctrl.T.Helper()
-	ret := m_2.ctrl.Call(m_2, "EventCallCreated", ctx, m)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// EventCallCreated indicates an expected call of EventCallCreated.
-func (mr *MockContactHandlerMockRecorder) EventCallCreated(ctx, m any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCallCreated", reflect.TypeOf((*MockContactHandler)(nil).EventCallCreated), ctx, m)
-}
-
-// EventConversationMessageCreated mocks base method.
-func (m_2 *MockContactHandler) EventConversationMessageCreated(ctx context.Context, m *message.WebhookMessage) error {
-	m_2.ctrl.T.Helper()
-	ret := m_2.ctrl.Call(m_2, "EventConversationMessageCreated", ctx, m)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// EventConversationMessageCreated indicates an expected call of EventConversationMessageCreated.
-func (mr *MockContactHandlerMockRecorder) EventConversationMessageCreated(ctx, m any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventConversationMessageCreated", reflect.TypeOf((*MockContactHandler)(nil).EventConversationMessageCreated), ctx, m)
-}
-
 // EventCustomerDeleted mocks base method.
 func (m *MockContactHandler) EventCustomerDeleted(ctx context.Context, c *customer.Customer) error {
 	m.ctrl.T.Helper()
@@ -195,26 +164,11 @@ func (mr *MockContactHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockContactHandler)(nil).Get), ctx, id)
 }
 
-// InteractionGet mocks base method.
-func (m *MockContactHandler) InteractionGet(ctx context.Context, customerID, id uuid.UUID) (*interaction.Interaction, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "InteractionGet", ctx, customerID, id)
-	ret0, _ := ret[0].(*interaction.Interaction)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// InteractionGet indicates an expected call of InteractionGet.
-func (mr *MockContactHandlerMockRecorder) InteractionGet(ctx, customerID, id any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InteractionGet", reflect.TypeOf((*MockContactHandler)(nil).InteractionGet), ctx, customerID, id)
-}
-
 // InteractionList mocks base method.
-func (m *MockContactHandler) InteractionList(ctx context.Context, customerID uuid.UUID, size uint64, token, peerType, peerTarget string, contactID, addressID uuid.UUID, since time.Time) ([]*interaction.Interaction, string, error) {
+func (m *MockContactHandler) InteractionList(ctx context.Context, customerID uuid.UUID, size uint64, token, peerType, peerTarget string, contactID, addressID uuid.UUID, since time.Time) ([]*peerevent.PeerEvent, string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "InteractionList", ctx, customerID, size, token, peerType, peerTarget, contactID, addressID, since)
-	ret0, _ := ret[0].([]*interaction.Interaction)
+	ret0, _ := ret[0].([]*peerevent.PeerEvent)
 	ret1, _ := ret[1].(string)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2
@@ -224,22 +178,6 @@ func (m *MockContactHandler) InteractionList(ctx context.Context, customerID uui
 func (mr *MockContactHandlerMockRecorder) InteractionList(ctx, customerID, size, token, peerType, peerTarget, contactID, addressID, since any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InteractionList", reflect.TypeOf((*MockContactHandler)(nil).InteractionList), ctx, customerID, size, token, peerType, peerTarget, contactID, addressID, since)
-}
-
-// InteractionListUnresolved mocks base method.
-func (m *MockContactHandler) InteractionListUnresolved(ctx context.Context, customerID uuid.UUID, size uint64, token string, since time.Time) ([]*interaction.Interaction, string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "InteractionListUnresolved", ctx, customerID, size, token, since)
-	ret0, _ := ret[0].([]*interaction.Interaction)
-	ret1, _ := ret[1].(string)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
-}
-
-// InteractionListUnresolved indicates an expected call of InteractionListUnresolved.
-func (mr *MockContactHandlerMockRecorder) InteractionListUnresolved(ctx, customerID, size, token, since any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InteractionListUnresolved", reflect.TypeOf((*MockContactHandler)(nil).InteractionListUnresolved), ctx, customerID, size, token, since)
 }
 
 // List mocks base method.
@@ -315,35 +253,6 @@ func (m *MockContactHandler) RemoveTag(ctx context.Context, contactID, tagID uui
 func (mr *MockContactHandlerMockRecorder) RemoveTag(ctx, contactID, tagID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveTag", reflect.TypeOf((*MockContactHandler)(nil).RemoveTag), ctx, contactID, tagID)
-}
-
-// ResolutionCreate mocks base method.
-func (m *MockContactHandler) ResolutionCreate(ctx context.Context, customerID, contactID, interactionID uuid.UUID, resolutionType, resolvedByType string, resolvedByID uuid.UUID) (*resolution.Resolution, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ResolutionCreate", ctx, customerID, contactID, interactionID, resolutionType, resolvedByType, resolvedByID)
-	ret0, _ := ret[0].(*resolution.Resolution)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ResolutionCreate indicates an expected call of ResolutionCreate.
-func (mr *MockContactHandlerMockRecorder) ResolutionCreate(ctx, customerID, contactID, interactionID, resolutionType, resolvedByType, resolvedByID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResolutionCreate", reflect.TypeOf((*MockContactHandler)(nil).ResolutionCreate), ctx, customerID, contactID, interactionID, resolutionType, resolvedByType, resolvedByID)
-}
-
-// ResolutionDelete mocks base method.
-func (m *MockContactHandler) ResolutionDelete(ctx context.Context, customerID, interactionID, id uuid.UUID) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ResolutionDelete", ctx, customerID, interactionID, id)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ResolutionDelete indicates an expected call of ResolutionDelete.
-func (mr *MockContactHandlerMockRecorder) ResolutionDelete(ctx, customerID, interactionID, id any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResolutionDelete", reflect.TypeOf((*MockContactHandler)(nil).ResolutionDelete), ctx, customerID, interactionID, id)
 }
 
 // Update mocks base method.

@@ -14,13 +14,10 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	callmodel "monorepo/bin-call-manager/models/call"
 	"monorepo/bin-contact-manager/models/contact"
-	"monorepo/bin-contact-manager/models/interaction"
-	"monorepo/bin-contact-manager/models/resolution"
 	"monorepo/bin-contact-manager/pkg/casehandler"
 	"monorepo/bin-contact-manager/pkg/dbhandler"
-	convmsg "monorepo/bin-conversation-manager/models/message"
+	tmpeerevent "monorepo/bin-timeline-manager/models/peerevent"
 )
 
 // ContactHandler interface for contact business logic operations
@@ -48,20 +45,11 @@ type ContactHandler interface {
 	// Event handlers
 	EventCustomerDeleted(ctx context.Context, c *cmcustomer.Customer) error
 
-	// Projection event handlers (CRM interaction timeline)
-	EventCallCreated(ctx context.Context, m *callmodel.WebhookMessage) error
-	EventConversationMessageCreated(ctx context.Context, m *convmsg.WebhookMessage) error
-
-	// Interaction read operations (CRM v1 read API, VOIP-1209)
-	InteractionGet(ctx context.Context, customerID, id uuid.UUID) (*interaction.Interaction, error)
+	// Interaction read operations (CRM v1 read API, VOIP-1209).
+	// Proxies bin-timeline-manager's peer_events read API (design doc
+	// 2026-07-25-contact-interaction-retire-to-peer-events, §8.1/§9).
 	InteractionList(ctx context.Context, customerID uuid.UUID, size uint64, token string,
-		peerType, peerTarget string, contactID uuid.UUID, addressID uuid.UUID, since time.Time) ([]*interaction.Interaction, string, error)
-	InteractionListUnresolved(ctx context.Context, customerID uuid.UUID, size uint64, token string, since time.Time) ([]*interaction.Interaction, string, error)
-
-	// Resolution operations (CRM v1 attribution, VOIP-1209)
-	ResolutionCreate(ctx context.Context, customerID, contactID, interactionID uuid.UUID,
-		resolutionType, resolvedByType string, resolvedByID uuid.UUID) (*resolution.Resolution, error)
-	ResolutionDelete(ctx context.Context, customerID, interactionID, id uuid.UUID) error
+		peerType, peerTarget string, contactID uuid.UUID, addressID uuid.UUID, since time.Time) ([]*tmpeerevent.PeerEvent, string, error)
 }
 
 type contactHandler struct {
