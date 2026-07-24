@@ -11,6 +11,7 @@ import (
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	tmpeerevent "monorepo/bin-timeline-manager/models/peerevent"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gin-gonic/gin"
@@ -21,6 +22,7 @@ import (
 func Test_GetContactPeerEvents(t *testing.T) {
 	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
 	agentID := uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c")
+	filterContactID := uuid.FromStringOrNil("11111111-0000-0000-0000-000000000001")
 
 	tests := []struct {
 		name  string
@@ -28,10 +30,12 @@ func Test_GetContactPeerEvents(t *testing.T) {
 
 		reqQuery string
 
-		expectMockCalled bool
-		responseItems    []*tmpeerevent.PeerEvent
-		responseToken    string
-		expectStatus     int
+		expectMockCalled  bool
+		expectContactID   uuid.UUID
+		expectPeerAddress *commonaddress.Address
+		responseItems     []*tmpeerevent.PeerEvent
+		responseToken     string
+		expectStatus      int
 	}{
 		{
 			name: "normal - filter by contact_id",
@@ -41,11 +45,13 @@ func Test_GetContactPeerEvents(t *testing.T) {
 					CustomerID: customerID,
 				},
 			}),
-			reqQuery:         "/contact_peer_events?contact_id=11111111-0000-0000-0000-000000000001",
-			expectMockCalled: true,
-			responseItems:    []*tmpeerevent.PeerEvent{},
-			responseToken:    "",
-			expectStatus:     http.StatusOK,
+			reqQuery:          "/contact_peer_events?contact_id=11111111-0000-0000-0000-000000000001",
+			expectMockCalled:  true,
+			expectContactID:   filterContactID,
+			expectPeerAddress: nil,
+			responseItems:     []*tmpeerevent.PeerEvent{},
+			responseToken:     "",
+			expectStatus:      http.StatusOK,
 		},
 		{
 			name: "normal - filter by peer_type+peer_target",
@@ -55,11 +61,13 @@ func Test_GetContactPeerEvents(t *testing.T) {
 					CustomerID: customerID,
 				},
 			}),
-			reqQuery:         "/contact_peer_events?peer_type=tel&peer_target=%2B155****1111",
-			expectMockCalled: true,
-			responseItems:    []*tmpeerevent.PeerEvent{{EventType: "call_hangup"}},
-			responseToken:    "",
-			expectStatus:     http.StatusOK,
+			reqQuery:          "/contact_peer_events?peer_type=tel&peer_target=%2B155****1111",
+			expectMockCalled:  true,
+			expectContactID:   uuid.Nil,
+			expectPeerAddress: &commonaddress.Address{Type: commonaddress.Type("tel"), Target: "+155****1111"},
+			responseItems:     []*tmpeerevent.PeerEvent{{EventType: "call_hangup"}},
+			responseToken:     "",
+			expectStatus:      http.StatusOK,
 		},
 		{
 			name: "bad request - no filter",
@@ -113,7 +121,7 @@ func Test_GetContactPeerEvents(t *testing.T) {
 
 			if tt.expectMockCalled && tt.agent != nil {
 				mockSvc.EXPECT().
-					PeerEventList(req.Context(), tt.agent, gomock.Any(), gomock.Any(), "", uint64(100)).
+					PeerEventList(req.Context(), tt.agent, tt.expectContactID, tt.expectPeerAddress, "", uint64(100)).
 					Return(tt.responseItems, tt.responseToken, nil)
 			}
 
@@ -135,10 +143,12 @@ func Test_GetServiceAgentsContactPeerEvents(t *testing.T) {
 
 		reqQuery string
 
-		expectMockCalled bool
-		responseItems    []*tmpeerevent.PeerEvent
-		responseToken    string
-		expectStatus     int
+		expectMockCalled  bool
+		expectContactID   uuid.UUID
+		expectPeerAddress *commonaddress.Address
+		responseItems     []*tmpeerevent.PeerEvent
+		responseToken     string
+		expectStatus      int
 	}{
 		{
 			name: "normal - filter by peer_type+peer_target",
@@ -148,11 +158,13 @@ func Test_GetServiceAgentsContactPeerEvents(t *testing.T) {
 					CustomerID: customerID,
 				},
 			}),
-			reqQuery:         "/service_agents/contact_peer_events?peer_type=tel&peer_target=%2B155****1111",
-			expectMockCalled: true,
-			responseItems:    []*tmpeerevent.PeerEvent{},
-			responseToken:    "",
-			expectStatus:     http.StatusOK,
+			reqQuery:          "/service_agents/contact_peer_events?peer_type=tel&peer_target=%2B155****1111",
+			expectMockCalled:  true,
+			expectContactID:   uuid.Nil,
+			expectPeerAddress: &commonaddress.Address{Type: commonaddress.Type("tel"), Target: "+155****1111"},
+			responseItems:     []*tmpeerevent.PeerEvent{},
+			responseToken:     "",
+			expectStatus:      http.StatusOK,
 		},
 		{
 			name: "bad request - no filter",
@@ -195,7 +207,7 @@ func Test_GetServiceAgentsContactPeerEvents(t *testing.T) {
 
 			if tt.expectMockCalled && tt.agent != nil {
 				mockSvc.EXPECT().
-					ServiceAgentPeerEventList(req.Context(), tt.agent, gomock.Any(), gomock.Any(), "", uint64(100)).
+					ServiceAgentPeerEventList(req.Context(), tt.agent, tt.expectContactID, tt.expectPeerAddress, "", uint64(100)).
 					Return(tt.responseItems, tt.responseToken, nil)
 			}
 

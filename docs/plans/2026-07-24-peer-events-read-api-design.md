@@ -1136,3 +1136,49 @@ re-trusting Round 1's "verified clean" list: the RST accuracy problem was
 introduced in the ORIGINAL commit (44501b298) and only surfaced because
 Round 2 re-derived facts instead of accepting Round 1's summary at face
 value. Round 3 is required next (minimum 3-round floor).
+
+## 19. Round 3 PR review disposition (final minimum-floor round) — APPROVE #1
+
+Round 3 adversarial PR review (independent subagent): **APPROVE**, 0
+BLOCKER, 0 MAJOR, 1 MINOR (non-blocking). This is APPROVE #1 of the
+required 2 consecutive APPROVEs — the loop does not close on this round
+alone.
+
+Independently re-verified (not re-trusting Rounds 1–2's summaries): the
+Round 2 RST wording fix is genuinely correct and no other `.rst` file in
+`docsdev/source/` repeats the stale "Interaction struct" claim; a fresh
+Sphinx rebuild is clean and the rendered HTML's only "Interaction"
+mentions are legitimate links to the real Contact Interactions feature;
+`commonaddress.Address`'s actual Go struct (read directly from
+`bin-common-handler/models/address/main.go`) matches both RST files'
+claimed field list exactly; all 4 touched services (`bin-timeline-manager`,
+`bin-common-handler`, `bin-openapi-manager`, `bin-api-manager`) pass
+build/test/lint fresh; §16–18 are internally consistent with no
+contradictions and §18's disposition record matches the current RST text;
+the migration's `down.sql` correctly reverses the `up.sql` (drops `local`
+then `peer`, mirroring add order in reverse); the OpenAPI-generated
+`CommonAddress` type used by `TimelineManagerPeerEvent.Peer`/`.Local` has
+identical fields/json tags to the Go source `commonaddress.Address` — no
+generated-vs-source drift.
+
+- **MINOR (fixed below):** `contact_peer_events_test.go`'s and
+  `service_agents_contact_peer_events_test.go`'s "filter by
+  peer_type+peer_target" test cases asserted `gomock.Any()` for the
+  constructed `commonaddress.Address` argument rather than asserting its
+  actual value, leaving the two-query-param → `commonaddress.Address`
+  construction in `contact_peer_events.go:78-81` /
+  `service_agents_contact_peer_events.go` unverified by the test suite
+  (only the HTTP status code was checked). Fixed: both test tables now
+  carry an `expectContactID`/`expectPeerAddress` field per case and assert
+  the exact `&commonaddress.Address{Type: "tel", Target: "+155****1111"}`
+  value on the mock expectation, for both the `contact_id` case
+  (`expectPeerAddress: nil`, `expectContactID: <uuid>`) and the
+  `peer_type`+`peer_target` case (`expectContactID: uuid.Nil`,
+  `expectPeerAddress: &commonaddress.Address{...}`). Verified passing with
+  `go test ./server/... -run PeerEvents -v` and the full `bin-api-manager`
+  verification workflow (`go mod tidy && go mod vendor && go test ./...
+  && golangci-lint run`), all clean.
+
+Round 4 is next: since Round 3 was a clean APPROVE, Round 4 needs to also
+be a clean APPROVE to reach 2 consecutive APPROVEs and close the loop. If
+Round 4 finds anything, the consecutive-APPROVE counter resets.
