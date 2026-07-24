@@ -954,7 +954,7 @@ started.
   closed (minimum 3-round floor exceeded, 2 consecutive APPROVEs reached).
   The design was implementation-ready as of this point.
 
-## 16. Post-approval redesign — `peer`/`local` as `commonaddress.Address`, filter unified to `contact_id`/`peer_address`
+## 16. Post-approval redesign — `peer`/`local` response as `commonaddress.Address`; internal filter plumbing unified (external `peer_type`/`peer_target` query params UNCHANGED)
 
 During implementation (after the design loop closed), 대표님 raised three
 follow-up questions that led to a real redesign of the response shape and
@@ -1006,11 +1006,26 @@ plumbing are superseded by what follows.**
    dbhandler-local type exists to leak; `commonaddress.Address` is already
    the platform's standard cross-service filter/response type (used
    unchanged by `contact_interactions` today).
-4. **API filter parameter renamed accordingly:** the single-pair filter
-   mode is now `peer_address` (a `commonaddress.Address`-shaped query
-   parameter: `type`/`target`), not two separate `peer_type`+`peer_target`
-   query params. `contact_id` filter mode is unchanged in behavior (§3),
-   only in the internal plumbing that carries its resolved result forward.
+4. **API filter parameter NOT renamed — corrected from an earlier draft of
+   this section.** The external HTTP query contract is UNCHANGED: the
+   single-pair filter mode is still two separate `peer_type`+`peer_target`
+   query params (`bin-api-manager/server/contact_peer_events.go`,
+   `service_agents_contact_peer_events.go` — `params.PeerType`/
+   `params.PeerTarget`), NOT a single `peer_address`-shaped parameter. The
+   OpenAPI spec (`openapi/paths/contact_peer_events/main.yaml`,
+   `openapi/paths/service_agents/contact_peer_events.yaml`) and generated
+   types (`GetContactPeerEventsParams.PeerType`/`.PeerTarget`) reflect this
+   — no `peer_address` param exists anywhere in the spec or generated code.
+   Only the code ONE LAYER IN from the HTTP boundary changed: the handler
+   still parses two query params, then immediately constructs a single
+   `*commonaddress.Address{Type, Target}` from them (line ~78-81 of
+   `contact_peer_events.go`) before calling `resolvePeerAddresses`/
+   `PeerEventList` — i.e. the `commonaddress.Address` unification described
+   in point 3 starts at the servicehandler boundary, not the HTTP query
+   string. `contact_id` filter mode is unchanged in behavior (§3).
+   (An earlier draft of this point incorrectly claimed the query param
+   itself was renamed to `peer_address` — caught and corrected in Round 1
+   PR review, see §17.)
 
 **Why this was not caught in Rounds 1–5:** those rounds reviewed the
 design as originally drafted (flat `peer_type`/`peer_target` throughout,
@@ -1025,3 +1040,53 @@ original design rationale (filter contract structure, ClickHouse ORDER BY
 choice, pagination convention all remain valid and unchanged); readers
 implementing against this doc should treat §16 as overriding the specific
 field names and type signatures in those earlier sections.
+
+## 17. Round 1 PR review disposition (commit 44501b298, the §16 redesign)
+
+Round 1 adversarial PR review (independent subagent, run retroactively
+after the commit was already pushed to open PR #1136 — see the process
+note below): **CHANGES_REQUESTED**, 0 BLOCKER, 2 MAJOR, 2 MINOR.
+
+- **MAJOR #1 (fixed above in §16 point 4):** the commit message and this
+  doc's original §16 point 4 both claimed the external API filter param
+  was renamed to `peer_address`. This was false — the shipped code keeps
+  `peer_type`+`peer_target` as two separate query params at the HTTP
+  boundary; only the servicehandler layer, one hop in, unifies them into
+  `commonaddress.Address`. §16 point 4 corrected to state this accurately.
+- **MAJOR #2 (fixed below):** `contact_peer_event_overview.rst` was only
+  reformatted (table border widths) in the r13a pass, not actually
+  updated for the redesign — it happened to still read correctly for the
+  request/filter side (since, per MAJOR #1, that side didn't change), but
+  the doc never explained why the response side (`peer`/`local`, now
+  Address objects) and the request side (`peer_type`/`peer_target`, still
+  flat strings) are asymmetric. Fixed by adding an explicit note.
+- **MINOR (fixed above):** `gofmt` was not clean on
+  `bin-timeline-manager/models/peerevent/peerevent.go` (struct tag
+  alignment) and `bin-timeline-manager/pkg/dbhandler/main.go` (import
+  grouping). Both fixed with `gofmt -w`; `golangci-lint` was already 0
+  issues on both (gofmt isn't in the configured linter set here), but repo
+  hygiene expects clean `gofmt` regardless.
+- **MINOR (no action needed):** the error message string in
+  `contact_peer_events.go`/`service_agents_contact_peer_events.go`
+  ("Exactly one filter is required: contact_id, or
+  peer_type+peer_target.") is accurate given MAJOR #1's resolution — no
+  change needed.
+
+Round 1 also independently re-verified (no regressions found): ClickHouse
+migration `000006`'s column order matches `peer_event_insert.go`'s INSERT
+list and `peer_event_read.go`'s SELECT/Scan exactly; `newPeerEventRow()`'s
+3 call sites in `subscribehandler/peer_event.go` all pass arguments in
+identical order with correct JSON-marshal-failure fallback; `DBHandler`
+interface + mock, `peereventhandler.List` + mock, and the
+`bin-common-handler` RPC wire shape are all internally consistent;
+`resolvePeerPairs → resolvePeerAddresses` rename is complete with zero
+live references to the old name remaining anywhere in the 4 services;
+`go build`/`go test`/`golangci-lint` pass clean on all 4 touched services.
+
+**Process note:** this Round 1 review should have run BEFORE the commit
+was pushed to PR #1136, per the design-first-with-review-loops convention
+("every push to an open PR branch is a review-loop trigger, no exception
+for small/follow-up commits"). It was skipped and only caught when 대표님
+asked directly "리뷰 루프 돌렸어?" — run retroactively here. Round 2 is
+required next (minimum 3-round floor), followed by 2 consecutive
+APPROVEs to close.

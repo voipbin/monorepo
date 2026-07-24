@@ -11,10 +11,10 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-timeline-manager/models/correlation"
 	"monorepo/bin-timeline-manager/models/event"
 	"monorepo/bin-timeline-manager/models/peerevent"
-	commonaddress "monorepo/bin-common-handler/models/address"
 )
 
 const clickhouseRetryInterval = 30 * time.Second

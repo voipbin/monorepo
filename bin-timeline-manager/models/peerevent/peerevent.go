@@ -23,13 +23,13 @@ import (
 // pattern (interaction.Interaction has Peer/Local commonaddress.Address
 // fields, not flat Type/Target fields).
 type PeerEvent struct {
-	Timestamp   time.Time         `json:"timestamp"`
-	CustomerID  uuid.UUID         `json:"customer_id"`
-	Publisher   string            `json:"publisher"`
-	EventType   string            `json:"event_type"`
-	ReferenceID uuid.UUID         `json:"reference_id"`
-	Direction   string            `json:"direction"`
+	Timestamp   time.Time             `json:"timestamp"`
+	CustomerID  uuid.UUID             `json:"customer_id"`
+	Publisher   string                `json:"publisher"`
+	EventType   string                `json:"event_type"`
+	ReferenceID uuid.UUID             `json:"reference_id"`
+	Direction   string                `json:"direction"`
 	Peer        commonaddress.Address `json:"peer"`
 	Local       commonaddress.Address `json:"local"`
-	Data        json.RawMessage   `json:"data"`
+	Data        json.RawMessage       `json:"data"`
 }

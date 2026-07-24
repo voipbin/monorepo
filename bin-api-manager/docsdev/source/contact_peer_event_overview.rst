@@ -72,6 +72,10 @@ Returns activity for a single address directly, without needing a resolved conta
 
    As with Contact lookups, URL-encode ``+`` as ``%2B`` in ``peer_target`` when the type is ``tel``.
 
+.. note:: **Request vs. Response Shape**
+
+   The filter query parameters (``peer_type`` / ``peer_target``) are two flat strings, but each returned row's ``peer`` and ``local`` fields are full :ref:`Address <contact-peer-event-struct-peerevent>` objects (``type``/``target``/``target_name``/``name``/``detail``), not flat strings. This is intentional: the query-string filter stays simple (matching how you already search Contact Interactions), while the response gives you the complete address record for display, matching :ref:`Contact Interactions <contact-struct-contact>`'s own ``peer``/``local`` shape. See :ref:`Structures <contact-peer-event-struct-peerevent>` for the full response field list.
+
 
 Internal-Resource Noise
 ------------------------
