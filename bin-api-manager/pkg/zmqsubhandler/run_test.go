@@ -196,7 +196,10 @@ func Test_recevieMessage_context_canceled(t *testing.T) {
 			}
 
 			t.Logf("Receiving the message.")
+			done := make(chan struct{})
 			go func() {
+				defer close(done)
+
 				t.Logf("Receiving message")
 				time.Sleep(time.Millisecond * 1000)
 
@@ -230,7 +233,18 @@ func Test_recevieMessage_context_canceled(t *testing.T) {
 			t.Logf("Closing the socket.")
 			cancel()
 
-			time.Sleep(time.Millisecond * 1000)
+			// wait for the receiveMessage goroutine to actually observe the
+			// cancellation and return before the deferred sockSub.Terminate()
+			// closes the socket underneath it. Without this synchronization, the
+			// goroutine could still be inside sock.ReceiveNoBlock() when the
+			// socket gets terminated, racing Close() against RecvMessage()
+			// (caught by go test -race; this was the root cause of the flaky
+			// Test_recevieMessage_context_canceled failures).
+			select {
+			case <-done:
+			case <-time.After(time.Second * 5):
+				t.Errorf("Timed out waiting for receiveMessage to return after context cancellation")
+			}
 		})
 	}
 }
