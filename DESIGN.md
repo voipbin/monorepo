@@ -2,11 +2,14 @@
 
 **Issue:** VOIP-1270
 **Branch:** VOIP-1270-case-peer-address-contact-claim
-**Status:** DRAFT v6 — 대표님 지시로 백엔드 설계 단순화(release/reassign
-POST 엔드포인트 폐기 → 기존 `PUT /contact_addresses/{id}`에 `contact_id`
-필드 추가로 통합, 경합 검증 없이 last-write-wins). v5(§4~§10, 8라운드
-독립 리뷰 완료분)는 **SUPERSEDED** — 리뷰 이력은 §10에 그대로 보존하되
-"v5 전용"으로 표기. v6 변경분은 아직 리뷰 루프를 거치지 않음(§11 참조).
+**Status:** DRAFT v7 — 대표님 지시로 백엔드 설계 재변경. v6(기존 PUT
+에 `contact_id` 필드 추가)을 **SUPERSEDED**하고, 대신 기존 `POST
+/contact_addresses/{id}/claim`에 `force`(boolean, optional) 파라미터를
+추가해 이미 다른 Contact가 소유한 주소도 덮어쓸 수 있게 확장한다.
+`force` 없이는 기존 계약(unresolved 전용, 충돌 시 409) 그대로
+유지 — 하위 호환 보장. v5(§4~§10, 8라운드 독립 리뷰 완료분)와 v6은
+모두 SUPERSEDED, 리뷰 이력은 §10에 "v5 전용"으로 보존. v7 변경분은
+아직 리뷰 루프를 거치지 않음(§11 참조).
 
 ---
 
@@ -102,14 +105,18 @@ Case의 `Peer.Type`+`Peer.Target`으로 `contact_addresses`를 조회하여
 - 버튼: 확인 / 취소
 - 체크박스: "결정 기억하기" (**시나리오 1과 별도 키로 관리** — 재할당은
   위험도가 다르다는 것을 사용자가 명시적으로 선택할 수 있어야 함)
-- 확인 시: **`PUT /contact_addresses/{id}` (body: `{"contact_id":
-  "<이번 Contact ID>"}`)를 호출해 소유권을 재할당한다(v6, §4 참조).**
-  기존 소유자 검증 없이 last-write-wins로 덮어쓴다 — `contact_cases/
-  {id}`의 `contact_id` 필드 갱신 컨벤션과 동일한 단순 방식이다.
-- v5(SUPERSEDED, §10)에서는 이 재할당을 `release`+`claim`을 원자적
-  트랜잭션으로 묶는 신규 `reassign` 엔드포인트로 설계했으나, 대표님
-  지시로 그 복잡도(경합 검증, ownership-period 안전망 등)를 걷어내고
-  기존 PUT 하나로 단순화했다(§4/§11 참조).
+- 확인 시: **`POST /contact_addresses/{id}/claim` (body:
+  `{"contact_id": "<이번 Contact ID>", "force": true}`)를 호출해
+  소유권을 강제 재할당한다(v7, §4 참조).** `force: true`가 있으면
+  이미 다른 살아있는 Contact가 소유 중이어도 409를 반환하지 않고
+  그 소유자로부터 조용히 빼앗아 재할당한다.
+- v5(SUPERSEDED, §10)에서는 신규 `reassign` 엔드포인트로,
+  v6(SUPERSEDED)에서는 기존 PUT에 `contact_id` 필드를 추가하는
+  방식으로 설계했으나, 대표님 지시로 두 방향 모두 걷어내고
+  **기존 `claim`을 확장**하는 방향(v7)으로 재정리했다. 근거:
+  claim이 이미 갖고 있는 ownership-period 서브시스템 연동(§4
+  참조)을 그대로 재사용할 수 있어 v6이 §4.4에서 명시했던
+  "이력 테이블과의 의도적 비대칭" 문제 자체가 사라진다.
 
 ### Case-Contact 연결과 주소 연동의 순서
 
@@ -159,105 +166,121 @@ Agent별로 키를 분리하는 이유: 같은 브라우저 프로필을 여러 
 개발자 도구로 localStorage를 지우거나, 향후 필요 시 설정 화면에
 "이 확인 모달 다시 보기" 버튼을 추가할 수 있다는 점만 남겨둔다.
 
-## 4. 백엔드 변경 (v6) — 기존 `PUT /contact_addresses/{id}`에 `contact_id` 확장
+## 4. 백엔드 변경 (v7) — 기존 `POST .../claim`에 `force` 파라미터 확장
 
-> **v5 SUPERSEDED 고지:** 이 섹션은 원래 신규 `POST .../release` +
-> `POST .../reassign` 2개 엔드포인트(ownership-period 서브시스템 재사용,
-> 경합 시 409, 8라운드 독립 리뷰를 거쳐 완성)로 설계되어 있었다.
-> 대표님이 이 복잡도를 걷어내고 기존 PUT 하나로 단순화하도록 지시하여
-> 전면 교체한다. v5의 전체 pseudocode/리뷰 상세는 git 히스토리(커밋
-> `bf5d150c2` ~ `c2df95890`)에 그대로 보존되어 있다 — 필요 시 그
-> 범위에서 ownership-period 서브시스템 재사용 방식, race condition
-> 처리 세부는 여전히 유효한 참고 자료다. §10에 라운드별 요약이 남아
-> 있다.
+> **v5/v6 SUPERSEDED 고지:** v5는 신규 `POST .../release` +
+> `POST .../reassign` 2개 엔드포인트(8라운드 독립 리뷰 완료)로,
+> v6은 기존 `PUT /contact_addresses/{id}`에 `contact_id` 필드를
+> 추가하는 방식으로 설계했었다. 대표님이 두 방향 모두 걷어내고
+> 기존 `claim`을 확장하는 쪽으로 재차 지시하여 v7로 전면 교체한다.
+> v5의 pseudocode/리뷰 상세는 git 히스토리(`bf5d150c2` ~
+> `c2df95890`)에, v6은 `c2df95890` ~ `b59fc428c`에 보존되어 있다.
+> §10에 v5 라운드별 요약이 남아 있다.
 
 ### 4.1 현재 상태 재확인
 
-- `contact_addresses`는 **hard-delete** 테이블이다(§0-3). 메타데이터
-  소실 문제로 DELETE는 재할당 용도로 못 쓴다는 사실은 여전히 유효
-  — 다만 v6은 애초에 DELETE를 쓰지 않으므로 이 제약이 v6 설계
-  자체에 직접 영향을 주지는 않는다(참고용으로만 남김).
-- `POST /contact_addresses/{id}/claim`은 **그대로 유지한다.**
-  실제 프로덕션에서 이미 사용 중이다 — `square-admin/src/views/
-  contacts/contacts_detail.js`(263행)의 "Unresolved Address Picker"
-  기능(2026-07-02 설계, 이미 배포)이 이 엔드포인트를 호출한다.
-  이 기능은 unresolved 주소(아직 아무 Contact도 소유하지 않은 상태)
-  전용이고, VOIP-1270의 재할당(이미 다른 Contact가 소유한 주소)
-  시나리오와 겹치지 않으므로 폐기하지 않는다.
-- `bin-contact-manager`에 이미 존재하는 `contact_address_ownership_
-  periods` 서브시스템(§0 v5 참고 사실)은 **v6 설계에서 다루지
-  않는다** — release/reassign 전용 안전장치(경합 검증, TOCTOU 방어)
-  자체를 걷어냈으므로, 이 ownership-period 테이블과의 연동 로직도
-  이번 스코프에서는 만들지 않는다. **주의: 이 서브시스템은
-  `AddressCreateTx`/`AddressUpdateTx`/`AddressDeleteTx`/
-  `AddressClaimTx`가 이미 갱신하고 있다.** v6의 `PUT
-  /contact_addresses/{id}`가 `contact_id` 필드 변경 시 이
-  서브시스템을 갱신하지 않으면, 이 PUT으로 바뀐 소유권만 이력에서
-  누락되는 **의도적 비대칭**이 생긴다(§4.4 참조 — 리뷰에서 반드시
-  검증할 지점으로 남긴다).
+- `POST /contact_addresses/{id}/claim`은 unresolved(contact_id IS
+  NULL) 주소에만 성공하고, 이미 살아있는 Contact 소유면
+  `ErrConflict` → HTTP 409를 반환한다(`contacthandler.ClaimAddress`,
+  contact.go:470-514). **이 기본 계약은 v7에서도 그대로 유지한다**
+  — `force` 파라미터가 없으면(또는 `false`면) 지금과 동일하게
+  동작한다. `contacts_detail.js`의 Unresolved Address Picker(이미
+  프로덕션 사용 중, §0/v6 참고 사실)를 포함한 기존 모든 호출자는
+  영향받지 않는다.
+- **대표님 확인: 현재 이 엔드포인트를 호출하는 외부(square-admin
+  이외) 소비자는 없다.** 이 전제 위에서 기본 계약을 깨는 것(예:
+  409를 완전히 제거)도 검토했으나, "하위 호환 유지 + 옵트인
+  파라미터"가 더 안전한 선택이라 최종적으로 이 방향(§4.2)으로
+  확정했다 — 외부 소비자가 없다는 확인이 이 방향의 위험을 낮추긴
+  했지만, 그렇다고 기본 계약을 깰 이유가 되는 것은 아니다(향후
+  square-admin 내 다른 화면이나 신규 통합이 기존 409 계약에
+  의존하는 코드를 작성할 가능성은 여전히 남아있다).
+- 정확한 확장 지점은 `AddressClaimTx`가 내부에서 호출하는
+  `OwnershipPeriodsLockAndResolveTx`의 **Step 1**이다
+  (`bin-contact-manager/pkg/dbhandler/address_ownership.go:220-245`):
+  다른 살아있는 Contact가 이 target에 대해 open period를 갖고
+  있으면 `live == true`일 때 `ErrConflict`를 반환하는 지점(233-235행).
+  바로 다음 줄(236-245행)에 이미 "orphan(tombstone된 소유자)이면
+  `ownershipPeriodCloseByIDTx`로 닫고 계속 진행"하는 코드가 있다 —
+  **`force`는 이 orphan-close 분기와 동일한 코드 경로를 살아있는
+  소유자에게도 적용하는 것**이다. 새로운 로직을 발명하지 않고,
+  이미 있는 "닫고 계속 진행" 패턴을 조건 하나(`live && !force` →
+  conflict, `live && force` → close-and-continue)로 확장한다.
 
 ### 4.2 확정된 API 표면
 
-**신규 필드가 아니라, 기존 `PUT /contact_addresses/{id}`에 `contact_id`
-필드를 추가한다.** 신규 엔드포인트를 만들지 않는다.
+**신규 엔드포인트 없음.** 기존 `POST /contact_addresses/{id}/claim`
+요청 바디에 `force`(boolean, optional, 기본값 false)를 추가한다.
 
 ```
-PUT /v1/contact_addresses/{id}
-Body: { "contact_id": "<uuid>" }   // 재할당
-Body: { "contact_id": "" }         // 해제(unresolved로 되돌림)
+POST /v1/contact_addresses/{id}/claim
+Body: { "contact_id": "<uuid>" }                    // 기존과 동일 — unresolved만 성공, 아니면 409
+Body: { "contact_id": "<uuid>", "force": true }     // 신규 — 다른 살아있는 Contact 소유여도 덮어씀
 ```
 
-`contact_cases/{id}` PUT의 기존 컨벤션(빈 문자열 = 해제, 값 = 배정)을
-그대로 미러링한다(`bin-openapi-manager/openapi/paths/contact_cases/
-id.yaml:66-77` 참고 — 오는 HTTP 레이어에서는 `format: uuid`를 붙이지
-않은 plain string으로 받고, 내부 RPC 구조체에서 `""` → `uuid.Nil`
-변환을 명시적으로 처리하는 패턴. 이 패턴을 그대로 재사용한다).
+- `force`가 없거나 `false`: 기존 계약 그대로(§4.1) — 하위 호환.
+- `force: true`: `OwnershipPeriodsLockAndResolveTx`의 Step 1에서
+  다른 살아있는 Contact의 open period를 만나도 `ErrConflict`를
+  반환하지 않고, 그 period를 `ownershipPeriodCloseByIDTx`로 닫은
+  뒤(기존 orphan-close 코드 경로 재사용, §4.1) 정상적으로
+  claim을 계속 진행한다. **이력 테이블(`contact_address_
+  ownership_periods`)에는 "기존 소유자의 period가 닫히고 새
+  소유자의 period가 열리는" 정상적인 흐름이 그대로 남는다** — 이게
+  v6 대비 이 방향의 핵심 이점이다(§0/v6 SUPERSEDED 고지가 지적한
+  이력 비대칭 문제가 원천적으로 발생하지 않는다).
 
-**경합 검증 없음(last-write-wins).** 대표님 확정 사항 — release/
-reassign처럼 "기대하는 현재 소유자"를 body에 실어 서버가 검증하고
-다르면 409로 거부하는 방식은 채택하지 않는다. `contact_cases.
-contact_id` PUT과 동일하게, 마지막 요청이 그대로 반영된다. 동시에
-같은 주소를 서로 다른 Contact로 옮기려는 경쟁 상태가 생겨도 조용히
-나중 요청이 이긴다 — 이 리스크를 감수하기로 결정했다.
+**응답:** 200 + 갱신된 `ContactManagerAddress`. `force: true`일 때도
+404(주소 없음)는 그대로 유지된다. 409는 `force`가 없을 때만
+발생한다.
 
-**응답:** 200 + 갱신된 `ContactManagerAddress`.
-- 400: 잘못된 요청.
-- 404: 주소 없음 또는 customer 불일치.
-- 409는 없음(경합 검증을 하지 않으므로 이 케이스 자체가 발생하지
-  않는다).
+### 4.3 dbhandler/OpenAPI 변경 지점
 
-### 4.3 기존 PUT 핸들러 확장 지점
+- `bin-openapi-manager/openapi/paths/contact_addresses/id_claim.yaml`
+  에 `force`(boolean, optional) 필드 추가, description에 하위 호환
+  기본 동작과 `force: true`의 의미를 명시.
+- `bin-contact-manager/pkg/dbhandler/address_ownership.go`의
+  `OwnershipPeriodsLockAndResolveTx` 시그니처에 `force bool` 파라미터
+  추가(또는 별도 `*TxWithForce` 변형 — 구현 단계에서 기존 호출자
+  전부(`AddressCreateTx`, `AddressUpdateTx`, `AddressDeleteTx`)에게
+  `force=false`를 명시적으로 넘기도록 호출부를 함께 갱신해야 한다는
+  점을 여기 명시해둔다. **이 함수는 claim 전용이 아니라 여러
+  쓰기 경로가 공유하는 헬퍼이므로, 시그니처 변경의 영향 범위를
+  구현 착수 전 반드시 재확인해야 한다** — create/update/delete가
+  실수로 강제 덮어쓰기를 상속받으면 안 된다).
+- 233-235행의 `if live { return 0, nil, ErrConflict }`를
+  `if live && !force { return 0, nil, ErrConflict }`로 바꾸고,
+  `live && force`인 경우 236-245행의 기존 orphan-close 코드를
+  그대로 재사용(별도 분기 불필요 — orphan이든 강제 해제든 이후
+  코드는 동일하게 "닫고 진행"이면 된다).
+- `contacthandler.ClaimAddress`(servicehandler 상위 레이어)가
+  `force` 파라미터를 받아 `AddressClaimTx`까지 전달하도록 시그니처
+  확장.
 
-`PUT /contact_addresses/{id}`는 이미 `target`/`name`/`detail`/
-`is_primary` 갱신을 지원한다(`bin-openapi-manager/openapi/paths/
-contact_addresses/id.yaml:33-86`). `contact_id` 필드를 이 스키마에
-추가하고, `bin-contact-manager`의 `contacthandler.UpdateAddress`
-(또는 그 대응 handler — 정확한 함수명은 구현 착수 시 재확인)가
-`contact_id` 필드가 요청에 포함되어 있으면 단순 `UPDATE
-contact_addresses SET contact_id = ?`를 실행하도록 확장한다.
-검증/조건절 없음 — 다른 필드(target/name/detail/is_primary) 갱신과
-동일한 "그냥 반영" 방식이다.
+### 4.4 이력 서브시스템 — v6과 달리 정합성 유지
 
-### 4.4 이력(ownership-period) 서브시스템과의 비대칭 — 명시적 트레이드오프
+v6(SUPERSEDED, §0)에서 지적했던 "PUT으로 바뀐 소유권이 이력
+테이블에 반영되지 않는 비대칭" 문제가 v7에서는 발생하지 않는다.
+`force: true`도 결국 `AddressClaimTx`의 기존 경로(§4.1)를 그대로
+타므로, ownership-period 테이블은 항상 정확하게 갱신된다.
 
-이 PUT으로 바뀐 소유권은 `contact_address_ownership_periods` 테이블에
-반영되지 않는다(§4.1). 반면 같은 리소스의 `claim`(POST, 유지됨)은
-여전히 이 테이블을 갱신한다. 즉 **같은 `contact_addresses.contact_id`
-컬럼을 두 가지 다른 API 경로로 바꿀 수 있는데, 한쪽(claim)은 이력에
-남고 다른 쪽(PUT)은 안 남는 비대칭이 생긴다.** 이건 구현자가 놓치기
-쉬운 지점이라 여기 명시적으로 남긴다 — 대표님이 복잡도 절감을 위해
-의도적으로 받아들인 트레이드오프이며, 향후 이 비대칭이 실제 문제가
-되면(예: 소유권 이력 조회가 이 PUT으로 바뀐 소유권을 놓침) 별도
-티켓으로 다시 열 수 있다.
+### 4.5 Race condition — 기존 claim 정책 그대로 상속
 
-### 4.5 Race condition — 정책 없음(명시적 수용)
-
-동시에 여러 상담사가 같은 주소를 서로 다른 Contact로 재할당해도
-서버는 이를 구분하지 않는다. 나중 요청이 그대로 반영되고, 앞선
-요청을 보낸 상담사는 자신의 변경이 덮어써졌다는 걸 알 방법이 없다
-(§4.2). 이 리스크는 대표님이 명시적으로 받아들인 결정이다 —
-`contact_cases.contact_id`가 오늘도 이미 이 정책으로 운영되고 있고,
-실무상 문제가 되지 않았다는 것이 근거다.
+`force` 유무와 무관하게, 동시성 처리는 `AddressClaimTx`/
+`addressClaimAttempt`의 기존 패턴(`bin-contact-manager/pkg/
+dbhandler/address.go`)을 그대로 따른다 — pre-lock 읽기로 idempotent
+조기 반환, `ErrStaleTarget`/`ErrDeadlock`은 기존 재시도 루프로 흡수.
+v5가 설계했던 "release/reassign 전용 즉시 409" 정책은 v7에는
+해당하지 않는다 — v7은 새 엔드포인트가 아니라 기존 claim의
+파라미터 확장이므로, claim이 이미 갖고 있는 동시성 정책을 그대로
+상속받는다. 다만 **`force: true`로 두 상담사가 동시에 같은 주소를
+서로 다른 Contact로 강제 claim하는 경쟁 상태**는 새로운 시나리오다
+— `OwnershipPeriodsLockAndResolveTx`가 `SELECT ... FOR UPDATE`로
+잠그므로 DB 레벨에서 직렬화되지만, 사용자 입장에서는 "내가 먼저
+확인 버튼을 눌렀는데 나중에 요청한 상담사가 이겼다"는 결과가 나올
+수 있다(둘 다 `force: true`이므로 둘 다 성공하고, 마지막 커밋이
+최종 소유자가 된다) — 이건 §4.2에서 이미 명시한 "last-write-wins를
+사용자가 명시적으로 요청한 것"이므로 별도 안전장치를 추가하지
+않는다.
 
 
 ## 6. 프론트엔드(square-admin) 반영 범위
@@ -266,7 +289,7 @@ contact_addresses SET contact_id = ?`를 실행하도록 확장한다.
 의 `CaseContactAttributionPanel` 컴포넌트, 트리거 지점은 기존
 `handleAttach` 함수(339-353행).
 
-### 6.1 `handleAttach` 흐름 재설계 (v6)
+### 6.1 `handleAttach` 흐름 재설계 (v7)
 
 현재 `handleAttach`는 `PUT contact_cases/{caseId}` 한 번으로 끝난다.
 새 흐름:
@@ -277,7 +300,7 @@ handleAttach:
      실패 시 → 기존과 동일하게 에러 표시, 이후 단계 진행 안 함.
   2. 성공 시 → 이 Case의 Peer(type, target)로
      GET contact_addresses?type=<Peer.Type>&target=<Peer.Target>&customer_id=... 조회
-     (§5의 신규 target 필터 사용 — v6에서도 이 조회는 그대로 필요)
+     (§5의 신규 target 필터 사용 — v7에서도 이 조회는 그대로 필요)
   3. 조회 결과로 분기:
      a) 0건 → localStorage[rememberNewAddress] 확인.
         - "항상 예" 저장돼 있으면 즉시 POST /contact_addresses
@@ -288,23 +311,25 @@ handleAttach:
      b) 1건, contact_id === selectedContact.id → 아무 것도 안 함(시나리오 2).
      c) 1건, contact_id !== selectedContact.id (다른 살아있는 Contact) →
         localStorage[rememberReassignAddress] 확인.
-        - "항상 예" → 즉시 **PUT /contact_addresses/{id}
-          {contact_id: selectedContact.id}** 실행(v6, §4.2 — 단순
-          필드 교체, 경합 검증 없음).
+        - "항상 예" → 즉시 **POST /contact_addresses/{id}/claim
+          {contact_id: selectedContact.id, force: true}** 실행(v7,
+          §4.2).
         - "항상 아니오" → 아무 것도 안 함.
         - 저장된 결정 없으면 모달 B 표시(기존 소유 Contact의
           display_name 조회 필요 — GET contacts/{contact_id}) →
-          확인 시 위 PUT 호출 (+ 체크박스 켜져 있으면 저장).
+          확인 시 위 claim(force: true) 호출 (+ 체크박스 켜져
+          있으면 저장).
   4. 2~3단계(주소 연동)의 성공/실패와 무관하게, 1단계가 이미
      성공했으면 onAttributionChange()는 호출한다(주 동작은 이미
      완료됨). 주소 연동 실패는 별도의 (덜 위협적인) 에러/경고로
      표시한다 — 전체 handleAttach 실패로 취급하지 않는다.
 ```
 
-**v5(SUPERSEDED)와의 차이:** 시나리오 c에서 `POST .../reassign`
-호출이 `PUT /contact_addresses/{id} {contact_id}` 호출로 바뀐 것
-외에는 흐름이 동일하다. `from_contact_id`를 body에 실을 필요가
-없다(v6은 경합 검증을 하지 않으므로, §4.2 참조).
+**v6(SUPERSEDED)와의 차이:** 시나리오 c에서 `PUT /contact_addresses/
+{id} {contact_id}` 호출이 `POST /contact_addresses/{id}/claim
+{contact_id, force: true}` 호출로 바뀐 것 외에는 흐름이 동일하다.
+시나리오 a(모달 A, 신규 생성)는 v6/v7 공통으로 변화 없음 — 여전히
+`POST /contact_addresses`(생성+귀속)를 그대로 쓴다.
 
 ### 6.2 신규 컴포넌트(설계만, 목업 없음)
 
@@ -328,54 +353,63 @@ handleAttach:
 유틸 모듈에 get/set 함수를 두어 컴포넌트에서 직접 `localStorage.
 getItem/setItem`을 흩어놓지 않는다. 키 네이밍은 §3 참조.
 
-## 7. 동시성 / 에러 처리 요약 (v6)
+## 7. 동시성 / 에러 처리 요약 (v7)
 
-- 백엔드: **경합 검증 없음(§4.5).** 동시에 여러 상담사가 같은 주소를
-  서로 다른 Contact로 재할당해도 나중 요청이 조용히 이긴다.
-  409/재시도 로직 자체가 존재하지 않는다 — v5의 ownership-period
-  안전망, `ErrConflict`/`ErrStaleTarget` 재시도 정책은 모두 이번
-  스코프에서 제거됐다(§4 SUPERSEDED 고지 참조).
+- 백엔드: §4.5 참조 — `force` 유무와 무관하게 claim의 기존 동시성
+  정책(pre-lock 읽기 + `ErrStaleTarget`/`ErrDeadlock` 재시도 루프)을
+  그대로 상속받는다. v6이 채택했던 "경합 검증 완전 제거"와 달리,
+  v7은 claim이 이미 가진 `SELECT ... FOR UPDATE` 기반 직렬화를
+  유지한다 — 다만 두 상담사가 모두 `force: true`로 요청하면 DB
+  레벨에서는 순서대로 처리되지만 결과적으로 나중 요청이 이긴다
+  (§4.5, 사용자가 명시적으로 요청한 동작으로 간주).
 - 프론트: 주 동작(Case-Contact 연결)과 부가 동작(주소 연동) 실패를
   분리해서 표시(§2, §6.1-4). 부가 동작 실패는 주 동작 롤백을
   유발하지 않는다.
 - 동일 Case에 대한 동시 `UpdateContact` 호출 경쟁은 이번 설계가 새로
   만드는 문제가 아니다(기존 gap, 별도 티켓).
 
-## 8. 테스트 계획 (구현 단계에서 상세화, v6)
+## 8. 테스트 계획 (구현 단계에서 상세화, v7)
 
 **백엔드:**
-- `PUT /contact_addresses/{id}` `contact_id` 필드: unresolved →
-  특정 Contact로 배정 성공 / 이미 다른 Contact 소유 상태에서
-  다른 Contact로 재배정(그냥 덮어써짐, 에러 없음) / 빈 문자열로
-  해제 시 unresolved로 되돌아감 / 존재하지 않는 주소 404.
+- `POST /contact_addresses/{id}/claim` `force` 파라미터:
+  - `force` 없음/`false`: 기존 계약 100% 유지 확인(회귀 테스트) —
+    unresolved 성공, 이미 소유 시 409.
+  - `force: true`, 대상이 unresolved: 기존과 동일하게 성공(force가
+    무해한 no-op으로 동작하는지).
+  - `force: true`, 대상이 다른 살아있는 Contact 소유: 409 없이
+    성공, 기존 소유자의 ownership period가 닫히고 새 소유자의
+    period가 열리는지 **DB 레벨로 직접 검증**(§4.4의 "이력 정합성
+    유지" 주장을 실제로 고정하는 핵심 테스트).
+  - `force: true`, 대상이 tombstone(soft-delete)된 Contact 소유:
+    기존 orphan-close 경로와 결과가 동일한지(§4.1 — 두 분기가
+    같은 코드를 타므로 당연히 같아야 하지만 회귀로 고정).
+  - `OwnershipPeriodsLockAndResolveTx`의 다른 호출자
+    (`AddressCreateTx`/`AddressUpdateTx`/`AddressDeleteTx`)가
+    `force=false`로 호출되어 동작 변화가 없는지(§4.3의 "시그니처
+    확장 영향 범위" 우려를 테스트로 고정).
 - `AddressList` `target` 필터: 단위 테스트 + OpenAPI 스펙 검증(§5).
-- listenhandler: 기존 `PUT /contact_addresses/{id}` 핸들러에
-  `contact_id` 필드 처리 추가 테스트(400/404 라우팅, 기존
-  target/name/detail/is_primary 갱신 테스트와 동일 패턴 재사용).
-- **비대칭 검증(§4.4):** 이 PUT으로 `contact_id`를 바꾼 뒤
-  `contact_address_ownership_periods` 테이블에 해당 변경이
-  반영되지 않는다는 것을 테스트로 명시적으로 확인(의도된 동작임을
-  회귀 테스트로 고정 — 나중에 누군가 "왜 이력이 안 남지"라고
-  실수로 "고치는" 것을 막기 위함).
+- listenhandler: `processV1ContactAddressesIDClaim`에 `force` 필드
+  파싱 추가 테스트(기존 400/404/409 라우팅 테스트에 `force` 케이스
+  추가).
 
 **프론트:**
 - `handleAttach`의 3가지 분기(시나리오 1/2/3) 각각에 대해 올바른
-  API 호출이 발생하는지(특히 시나리오 3에서 PUT body가 v6대로
-  `{contact_id}`만 담고 `from_contact_id`가 없는지).
+  API 호출이 발생하는지(특히 시나리오 3에서 claim body가 v7대로
+  `{contact_id, force: true}`인지).
 - localStorage "기억하기" 저장 후 재진입 시 모달 스킵 및 자동 적용
   검증(시나리오 1/3 키가 서로 간섭하지 않는지 포함).
 - 주소 연동 API 실패 시에도 Case-Contact 연결(주 동작)의 UI 상태가
   성공으로 유지되는지.
 
-## 9. Out of Scope (YAGNI, v6)
+## 9. Out of Scope (YAGNI, v7)
 
 - localStorage 결정 리셋 UI(§3) — 향후 설정 화면에 추가 가능.
 - 고객사 단위 정책 플래그(예: 이 확인 흐름 자체를 끄는 옵션).
-- 경합 검증/409 처리(§4.5) — v5에서 설계했던 것을 대표님 지시로
-  명시적으로 제거. 향후 실무상 문제가 되면 재검토.
-- `PUT`으로 바뀐 소유권과 `contact_address_ownership_periods`
-  이력 테이블의 동기화(§4.4) — 의도적 비대칭으로 수용, 향후 필요
-  시 별도 티켓.
+- `claim`의 409를 완전히 제거하는 것(대안으로 검토했으나 §4.1에서
+  기각 — 기본 계약은 하위 호환 유지).
+- `unclaim`(재배정 없이 unresolved로만 되돌리는 액션) — VOIP-1270의
+  Case 할당 화면에는 이 액션을 트리거할 UI가 없다(대표님과의 논의로
+  확인). Contact 상세 화면 등 다른 곳에서 필요해지면 별도 티켓.
 
 ## 10. 독립 디자인 리뷰 루프 기록 (v5 전용, SUPERSEDED)
 
@@ -406,18 +440,19 @@ APPROVE로 종료. 매 라운드는 별도의 신선한 서브에이전트(독�
 (ownership-period 재사용, 에러 타입, 트랜잭션 원자성 등)는 v6에는
 더 이상 적용되지 않는다.
 
-## 11. v6 상태 및 다음 단계
+## 11. v7 상태 및 다음 단계
 
-v6(현재 §2~§9 본문)은 대표님과의 대화에서 직접 확정된 방향이며,
+v6에서 v7로의 전환은 대표님과의 대화에서 직접 확정된 방향이며,
 **아직 design-first-with-review-loops의 독립 리뷰 루프를 거치지
-않았다.** v5와 달리 복잡도가 크게 낮아졌지만(신규 엔드포인트 없음,
-경합 검증 없음, ownership-period 연동 없음), §4.4에 명시한
-"이력 테이블과의 의도적 비대칭" 같은 트레이드오프는 실제 구현
-착수 전에 최소 1~2라운드의 독립 검토를 받는 것을 권장한다 — 특히
-"이 비대칭이 실무에서 정말 무해한지"는 코드만 봐서는 판단하기
-어렵고 도메인 지식(Contact 이력 조회가 실제로 이 경로를 타는지)이
-필요하다.
+않았다.** v7은 v5/v6보다 API 표면이 더 작지만(신규 엔드포인트 없음,
+기존 claim의 파라미터 확장뿐), §4.3에서 명시한 대로
+`OwnershipPeriodsLockAndResolveTx`가 claim 전용이 아니라
+create/update/delete가 공유하는 헬퍼라는 점 때문에 시그니처 변경의
+영향 범위를 실제 코드로 재확인하는 최소 1라운드의 독립 검토를
+권장한다 — 특히 "force=false가 기존 호출자 전부에 올바르게
+전파되는지"는 실제 호출부 코드를 하나하나 대조해야 확신할 수 있는
+지점이다.
 
 **현재 상태: DRAFT (리뷰 미완료).** 대표님이 "리뷰 루프 돌려"를
-다시 지시하시면 v6 전용으로 새 라운드를 시작한다.
+다시 지시하시면 v7 전용으로 새 라운드를 시작한다.
 
