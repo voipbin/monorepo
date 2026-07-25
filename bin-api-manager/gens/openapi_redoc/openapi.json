@@ -8148,7 +8148,8 @@
               "type": "string",
               "enum": [
                 "tel",
-                "email"
+                "email",
+                "web_session"
               ],
               "example": "tel"
             }
@@ -8235,9 +8236,10 @@
                     "type": "string",
                     "enum": [
                       "tel",
-                      "email"
+                      "email",
+                      "web_session"
                     ],
-                    "description": "Address type. 'tel' for phone numbers, 'email' for email addresses.",
+                    "description": "Address type. 'tel' for phone numbers, 'email' for email addresses, 'web_session' for a webchat visitor's continuity token (temporary/internal attribution address; not exposed on the Contact.Addresses field).",
                     "example": "tel"
                   },
                   "target": {
@@ -27262,7 +27264,8 @@
               "extension",
               "line",
               "sip",
-              "tel"
+              "tel",
+              "web_session"
             ],
             "x-enum-varnames": [
               "CommonAddressTypeNone",
@@ -27272,7 +27275,8 @@
               "CommonAddressTypeExtension",
               "CommonAddressTypeLine",
               "CommonAddressTypeSIP",
-              "CommonAddressTypeTel"
+              "CommonAddressTypeTel",
+              "CommonAddressTypeWebSession"
             ]
           },
           "target": {

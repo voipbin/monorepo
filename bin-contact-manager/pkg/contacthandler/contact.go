@@ -30,15 +30,24 @@ func normalizeE164(e164, number string) string {
 	return out
 }
 
-// isValidContactAddressType reports whether t is one of the two
-// commonaddress.Type values contact.Address supports. Embedding
+// isValidContactAddressType reports whether t is one of the
+// commonaddress.Type values contact.Address supports writing. Embedding
 // commonaddress.Address widened contact.Address.Type's declared range to
 // all 10 commonaddress.Type values, so write entry points must explicitly
-// reject anything other than tel/email rather than relying on the switch
-// statements below to silently no-op on an unrecognized type.
+// reject anything else rather than relying on the switch statements
+// below to silently no-op on an unrecognized type.
+//
+// web_session (VOIP-1270 follow-up, 대표님 지시) is intentionally
+// writable here but deliberately NOT added to contact.ReachableAddressTypes
+// -- it functions as a temporary/internal attribution address (a webchat
+// visitor's continuity token) that lets a Case's Peer be reconciled into
+// contact_addresses like tel/email, but must never surface on the public
+// Contact.Addresses API field. See contact.ReachableAddressTypes's own
+// comment, which documents this exact "writable but not reachable" split
+// as an intentional, allowed divergence.
 func isValidContactAddressType(t commonaddress.Type) bool {
 	switch t {
-	case commonaddress.TypeTel, commonaddress.TypeEmail:
+	case commonaddress.TypeTel, commonaddress.TypeEmail, commonaddress.TypeWebSession:
 		return true
 	default:
 		return false

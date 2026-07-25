@@ -470,6 +470,7 @@ const (
 	CommonAddressTypeCommonAddressTypeNone       CommonAddressType = ""
 	CommonAddressTypeCommonAddressTypeSIP        CommonAddressType = "sip"
 	CommonAddressTypeCommonAddressTypeTel        CommonAddressType = "tel"
+	CommonAddressTypeCommonAddressTypeWebSession CommonAddressType = "web_session"
 )
 
 // Defines values for ConferenceManagerConferenceStatus.
@@ -511,6 +512,7 @@ const (
 	ContactManagerAddressTypeCommonAddressTypeNone       ContactManagerAddressType = ""
 	ContactManagerAddressTypeCommonAddressTypeSIP        ContactManagerAddressType = "sip"
 	ContactManagerAddressTypeCommonAddressTypeTel        ContactManagerAddressType = "tel"
+	ContactManagerAddressTypeCommonAddressTypeWebSession ContactManagerAddressType = "web_session"
 )
 
 // Defines values for ContactManagerCaseStatus.
@@ -1085,14 +1087,16 @@ const (
 
 // Defines values for GetContactAddressesParamsType.
 const (
-	GetContactAddressesParamsTypeEmail GetContactAddressesParamsType = "email"
-	GetContactAddressesParamsTypeTel   GetContactAddressesParamsType = "tel"
+	GetContactAddressesParamsTypeEmail      GetContactAddressesParamsType = "email"
+	GetContactAddressesParamsTypeTel        GetContactAddressesParamsType = "tel"
+	GetContactAddressesParamsTypeWebSession GetContactAddressesParamsType = "web_session"
 )
 
 // Defines values for PostContactAddressesJSONBodyType.
 const (
-	PostContactAddressesJSONBodyTypeEmail PostContactAddressesJSONBodyType = "email"
-	PostContactAddressesJSONBodyTypeTel   PostContactAddressesJSONBodyType = "tel"
+	PostContactAddressesJSONBodyTypeEmail      PostContactAddressesJSONBodyType = "email"
+	PostContactAddressesJSONBodyTypeTel        PostContactAddressesJSONBodyType = "tel"
+	PostContactAddressesJSONBodyTypeWebSession PostContactAddressesJSONBodyType = "web_session"
 )
 
 // Defines values for GetContactCasesParamsStatus.
@@ -1117,6 +1121,7 @@ const (
 	PostContactsJSONBodyAddressesTypeCommonAddressTypeNone       PostContactsJSONBodyAddressesType = ""
 	PostContactsJSONBodyAddressesTypeCommonAddressTypeSIP        PostContactsJSONBodyAddressesType = "sip"
 	PostContactsJSONBodyAddressesTypeCommonAddressTypeTel        PostContactsJSONBodyAddressesType = "tel"
+	PostContactsJSONBodyAddressesTypeCommonAddressTypeWebSession PostContactsJSONBodyAddressesType = "web_session"
 )
 
 // Defines values for PostContactsJSONBodySource.
@@ -1168,6 +1173,7 @@ const (
 	PostServiceAgentsContactsJSONBodyAddressesTypeCommonAddressTypeNone       PostServiceAgentsContactsJSONBodyAddressesType = ""
 	PostServiceAgentsContactsJSONBodyAddressesTypeCommonAddressTypeSIP        PostServiceAgentsContactsJSONBodyAddressesType = "sip"
 	PostServiceAgentsContactsJSONBodyAddressesTypeCommonAddressTypeTel        PostServiceAgentsContactsJSONBodyAddressesType = "tel"
+	PostServiceAgentsContactsJSONBodyAddressesTypeCommonAddressTypeWebSession PostServiceAgentsContactsJSONBodyAddressesType = "web_session"
 )
 
 // Defines values for PostServiceAgentsContactsJSONBodySource.
@@ -6071,7 +6077,7 @@ type PostContactAddressesJSONBody struct {
 	// Target The address value. E.164 format for tel, email address for email.
 	Target string `json:"target"`
 
-	// Type Address type. 'tel' for phone numbers, 'email' for email addresses.
+	// Type Address type. 'tel' for phone numbers, 'email' for email addresses, 'web_session' for a webchat visitor's continuity token (temporary/internal attribution address; not exposed on the Contact.Addresses field).
 	Type PostContactAddressesJSONBodyType `json:"type"`
 }
 

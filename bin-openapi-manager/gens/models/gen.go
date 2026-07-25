@@ -1347,6 +1347,7 @@ const (
 	CommonAddressTypeCommonAddressTypeNone       CommonAddressType = ""
 	CommonAddressTypeCommonAddressTypeSIP        CommonAddressType = "sip"
 	CommonAddressTypeCommonAddressTypeTel        CommonAddressType = "tel"
+	CommonAddressTypeCommonAddressTypeWebSession CommonAddressType = "web_session"
 )
 
 // Valid indicates whether the value is a known member of the CommonAddressType enum.
@@ -1367,6 +1368,8 @@ func (e CommonAddressType) Valid() bool {
 	case CommonAddressTypeCommonAddressTypeSIP:
 		return true
 	case CommonAddressTypeCommonAddressTypeTel:
+		return true
+	case CommonAddressTypeCommonAddressTypeWebSession:
 		return true
 	default:
 		return false
@@ -1470,6 +1473,7 @@ const (
 	ContactManagerAddressTypeCommonAddressTypeNone       ContactManagerAddressType = ""
 	ContactManagerAddressTypeCommonAddressTypeSIP        ContactManagerAddressType = "sip"
 	ContactManagerAddressTypeCommonAddressTypeTel        ContactManagerAddressType = "tel"
+	ContactManagerAddressTypeCommonAddressTypeWebSession ContactManagerAddressType = "web_session"
 )
 
 // Valid indicates whether the value is a known member of the ContactManagerAddressType enum.
@@ -1490,6 +1494,8 @@ func (e ContactManagerAddressType) Valid() bool {
 	case ContactManagerAddressTypeCommonAddressTypeSIP:
 		return true
 	case ContactManagerAddressTypeCommonAddressTypeTel:
+		return true
+	case ContactManagerAddressTypeCommonAddressTypeWebSession:
 		return true
 	default:
 		return false
@@ -3208,8 +3214,9 @@ func (e PostConferencesIdRecordingStartJSONBodyFormat) Valid() bool {
 
 // Defines values for GetContactAddressesParamsType.
 const (
-	GetContactAddressesParamsTypeEmail GetContactAddressesParamsType = "email"
-	GetContactAddressesParamsTypeTel   GetContactAddressesParamsType = "tel"
+	GetContactAddressesParamsTypeEmail      GetContactAddressesParamsType = "email"
+	GetContactAddressesParamsTypeTel        GetContactAddressesParamsType = "tel"
+	GetContactAddressesParamsTypeWebSession GetContactAddressesParamsType = "web_session"
 )
 
 // Valid indicates whether the value is a known member of the GetContactAddressesParamsType enum.
@@ -3219,6 +3226,8 @@ func (e GetContactAddressesParamsType) Valid() bool {
 		return true
 	case GetContactAddressesParamsTypeTel:
 		return true
+	case GetContactAddressesParamsTypeWebSession:
+		return true
 	default:
 		return false
 	}
@@ -3226,8 +3235,9 @@ func (e GetContactAddressesParamsType) Valid() bool {
 
 // Defines values for PostContactAddressesJSONBodyType.
 const (
-	PostContactAddressesJSONBodyTypeEmail PostContactAddressesJSONBodyType = "email"
-	PostContactAddressesJSONBodyTypeTel   PostContactAddressesJSONBodyType = "tel"
+	PostContactAddressesJSONBodyTypeEmail      PostContactAddressesJSONBodyType = "email"
+	PostContactAddressesJSONBodyTypeTel        PostContactAddressesJSONBodyType = "tel"
+	PostContactAddressesJSONBodyTypeWebSession PostContactAddressesJSONBodyType = "web_session"
 )
 
 // Valid indicates whether the value is a known member of the PostContactAddressesJSONBodyType enum.
@@ -3236,6 +3246,8 @@ func (e PostContactAddressesJSONBodyType) Valid() bool {
 	case PostContactAddressesJSONBodyTypeEmail:
 		return true
 	case PostContactAddressesJSONBodyTypeTel:
+		return true
+	case PostContactAddressesJSONBodyTypeWebSession:
 		return true
 	default:
 		return false
@@ -3288,6 +3300,7 @@ const (
 	PostContactsJSONBodyAddressesTypeCommonAddressTypeNone       PostContactsJSONBodyAddressesType = ""
 	PostContactsJSONBodyAddressesTypeCommonAddressTypeSIP        PostContactsJSONBodyAddressesType = "sip"
 	PostContactsJSONBodyAddressesTypeCommonAddressTypeTel        PostContactsJSONBodyAddressesType = "tel"
+	PostContactsJSONBodyAddressesTypeCommonAddressTypeWebSession PostContactsJSONBodyAddressesType = "web_session"
 )
 
 // Valid indicates whether the value is a known member of the PostContactsJSONBodyAddressesType enum.
@@ -3308,6 +3321,8 @@ func (e PostContactsJSONBodyAddressesType) Valid() bool {
 	case PostContactsJSONBodyAddressesTypeCommonAddressTypeSIP:
 		return true
 	case PostContactsJSONBodyAddressesTypeCommonAddressTypeTel:
+		return true
+	case PostContactsJSONBodyAddressesTypeCommonAddressTypeWebSession:
 		return true
 	default:
 		return false
@@ -3441,6 +3456,7 @@ const (
 	PostServiceAgentsContactsJSONBodyAddressesTypeCommonAddressTypeNone       PostServiceAgentsContactsJSONBodyAddressesType = ""
 	PostServiceAgentsContactsJSONBodyAddressesTypeCommonAddressTypeSIP        PostServiceAgentsContactsJSONBodyAddressesType = "sip"
 	PostServiceAgentsContactsJSONBodyAddressesTypeCommonAddressTypeTel        PostServiceAgentsContactsJSONBodyAddressesType = "tel"
+	PostServiceAgentsContactsJSONBodyAddressesTypeCommonAddressTypeWebSession PostServiceAgentsContactsJSONBodyAddressesType = "web_session"
 )
 
 // Valid indicates whether the value is a known member of the PostServiceAgentsContactsJSONBodyAddressesType enum.
@@ -3461,6 +3477,8 @@ func (e PostServiceAgentsContactsJSONBodyAddressesType) Valid() bool {
 	case PostServiceAgentsContactsJSONBodyAddressesTypeCommonAddressTypeSIP:
 		return true
 	case PostServiceAgentsContactsJSONBodyAddressesTypeCommonAddressTypeTel:
+		return true
+	case PostServiceAgentsContactsJSONBodyAddressesTypeCommonAddressTypeWebSession:
 		return true
 	default:
 		return false
@@ -10754,7 +10772,7 @@ type PostContactAddressesJSONBody struct {
 	// Example: +155****4567
 	Target string `json:"target"`
 
-	// Type Address type. 'tel' for phone numbers, 'email' for email addresses.
+	// Type Address type. 'tel' for phone numbers, 'email' for email addresses, 'web_session' for a webchat visitor's continuity token (temporary/internal attribution address; not exposed on the Contact.Addresses field).
 	//
 	// Example: tel
 	Type PostContactAddressesJSONBodyType `json:"type"`

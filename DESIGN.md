@@ -422,6 +422,56 @@ v5가 설계했던 "release/reassign 전용 즉시 409" 정책은 v7에는
   v7에서 무효화됐을 뿐, target 필터 부분은 v5→v6→v7 전체에서
   일관되게 필요했던 독립적인 변경 사항이다.
 
+### 4.7 `web_session` 타입 지원 — writable, NOT reachable (Post-approval follow-up, 대표님 지시)
+
+> **배경:** `commonaddress.Type`은 10개 값을 정의하지만
+> `contact_addresses`는 원래 `tel`/`email` 두 개만 쓰기 허용하는
+> 화이트리스트(`isValidContactAddressType`)를 두고 있었다. Case는
+> 채널 무관하게 생성되므로, 웹챗(webchat) 발 Case의 `Peer.Type`은
+> `web_session`(방문자 연속성 토큰, UUID 형태)일 수 있다 — 이
+> 화이트리스트 때문에 웹챗 Case는 이번 기능(§2/§6)의 시나리오 1
+> (신규 주소 생성)에서 `POST /contact_addresses`가 무조건
+> `ADDRESS_TYPE_INVALID`로 실패했을 것이다.
+
+- **결정: `web_session`을 claim할 수 있어야 한다(대표님 지시).** 다만
+  **`Contact.Addresses` 공개 API 필드에는 절대 노출되면 안 된다** —
+  세션 토큰은 tel/email과 달리 영속적인 연락처가 아니라 "이번
+  방문/대화 한정으로 이 Case가 누구에게서 왔는지"를 나타내는 임시
+  귀속 정보이기 때문이다.
+- **구현: write whitelist(`isValidContactAddressType`)에는 추가,
+  read whitelist(`contact.ReachableAddressTypes`)에는 추가하지
+  않는다.** 이 두 리스트를 의도적으로 분리하는 패턴은 이미
+  `ReachableAddressTypes`의 기존 코드 주석이 "미래에 write
+  whitelist에는 있지만 reachable에는 없는 타입이 생길 수 있다"고
+  명시적으로 예견해둔 것과 정확히 일치한다 — 새 메커니즘을 발명하는
+  게 아니라 이미 있던 분리 지점을 사용하는 것이다.
+  - `bin-contact-manager/models/contact/address.go`:
+    `AddressTypeWebSession = commonaddress.TypeWebSession` 상수
+    추가, `ReachableAddressTypes`에는 추가하지 않음.
+  - `bin-contact-manager/pkg/contacthandler/contact.go`:
+    `isValidContactAddressType`의 switch문에 `commonaddress.TypeWebSession`
+    추가. `Create`/`AddAddress`/`UpdateAddress` 3개 write 진입점이
+    모두 이 함수 하나를 공유하므로 별도 수정 불필요.
+  - `AddressListByContactID`(`dbhandler/address.go`)는
+    `ReachableAddressTypes`로만 필터링해 `Contact.Addresses` 필드를
+    채운다 — `web_session`을 그 목록에 넣지 않는 것만으로 노출 차단이
+    자동 성립한다(별도 필터링 로직 추가 불필요).
+  - `bin-openapi-manager`: `contact_addresses/main.yaml`의 GET
+    `type` 필터와 POST body `type` enum에 `web_session` 추가.
+    `openapi.yaml`의 `CommonAddress.type` enum에도 `web_session`
+    추가(기존에 `webchat`/`ai`/`ai_team` 등 다른 타입들도 이
+    enum에서 빠져 있었으나, 그건 이 PR과 무관한 기존 갭이므로
+    손대지 않는다 — `web_session`만 이번 스코프에서 실제로 응답에
+    등장하게 되므로 이것만 추가).
+- **`ClaimAddress`(재할당, force 경로)는 이 화이트리스트를 타지
+  않는다** — 이미 DB에 존재하는 행의 소유자만 바꾸는 것이라 타입
+  검증이 필요 없다. 이번 변경으로 `POST /contact_addresses`(신규
+  생성, 시나리오 1)의 타입 검증만 영향을 받는다.
+- **회귀 테스트:** `pkg/contacthandler/contact_test.go`에
+  `Test_IsValidContactAddressType_WebSession_WritableButNotReachable`
+  추가 — write는 허용, `ReachableAddressTypes`에는 없음을 양방향
+  모두 명시적으로 고정.
+
 
 ## 6. 프론트엔드(square-admin) 반영 범위
 
