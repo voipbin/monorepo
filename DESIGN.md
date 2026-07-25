@@ -244,23 +244,47 @@ func (h *handler) AddressReleaseTx(
     }
 
     // 2. contact_addresses.contact_id를 NULL로 되돌린다.
-    return h.addressSetContactIDTx(ctx, tx, addressID, nil)
+    //    WHERE 절에 contact_id = fromContactID를 반드시 포함하고,
+    //    RowsAffected == 0이면 ErrConflict를 반환한다 (Round 2 리뷰
+    //    수정 — 아래 "스큐 케이스 안전망" 참조. id만으로 조건 없이
+    //    UPDATE하지 않는다).
+    return h.addressSetContactIDTx(ctx, tx, addressID, fromContactID, nil)
 }
 ```
 
-- **post-lock 재확인 로직을 별도로 구현하지 않는다.**
+- **post-lock 재확인 로직을 별도로 구현하지 않는다 — 단, 이는
+  lockedRows가 비어있지 않은 경우에만 온전히 성립한다.**
   `closeOwnOpenPeriodTx`는 내부적으로
   `OwnershipPeriodsLockAndResolveTx`를 호출해 `SELECT ... FOR UPDATE`
   로 행을 잠그고, 그 잠금 하에서 `fromContactID`가 실제로 열린
-  period를 소유하고 있는지 검증한다. 소유하고 있지 않으면(경쟁
-  상태로 이미 다른 곳에서 release/reassign됐거나, 애초에 기대와
-  다른 소유자였던 경우) `ErrConflict`를 반환한다 — 이것이 곧 §4.2가
-  요구하는 "기대한 소유자와 다르면 실패"를 그대로 만족시킨다. v1
-  설계가 상상했던 "`addressTypeTargetContactByID`로 별도 post-lock
-  재확인" 로직은 **불필요하다** — `closeOwnOpenPeriodTx`가 이미 그
+  period를 소유하고 있는지 검증한다. lockedRows가 비어있지 않으면
+  소유하고 있지 않은 경우(경쟁 상태로 이미 다른 곳에서
+  release/reassign됐거나, 애초에 기대와 다른 소유자였던 경우)
+  `ErrConflict`를 반환한다 — 이것이 §4.2가 요구하는 "기대한 소유자와
+  다르면 실패"를 만족시킨다. v1 설계가 상상했던
+  "`addressTypeTargetContactByID`로 별도 post-lock 재확인" 로직은
+  **이 경우에는 불필요하다** — `closeOwnOpenPeriodTx`가 이미 그
   역할을 겸한다.
-- lockedRows가 비어있는(스큐) 경우 `closeOwnOpenPeriodTx`는 에러 없이
-  스킵한다 — 이 동작을 그대로 신뢰한다(재구현하지 않음).
+- **스큐 케이스 안전망(Round 2 리뷰에서 발견된 TOCTOU 결함 수정):**
+  lockedRows가 비어있는(스큐) 경우 `closeOwnOpenPeriodTx`는 **아무
+  검증도 하지 않고** 에러 없이 성공 반환한다
+  (`address_ownership_write.go:625-629`, 롤링 배포 버전 스큐 상태를
+  전제로 한 의도적 동작). 이 분기에서는 `fromContactID`가 실제
+  소유자인지 검증되지 않은 채로 통과하므로, §4.2의 "기대한 소유자와
+  다르면 실패"가 이 경로에서는 **성립하지 않는다** — 1단계만으로는
+  release/reassign 요청을 안전하게 승인할 수 없다.
+  `AddressDeleteTx`(`address_ownership_write.go:591-605`)는 이
+  구조적 gap을 알고, 자신의 최종 DELETE에서 `RowsAffected == 0`이면
+  `ErrStaleTarget`을 반환하는 안전망을 별도로 둔다("B5 fix" 주석).
+  `AddressReleaseTx`/`AddressReassignTx`도 동일한 안전망을 최종
+  쓰기에 반드시 둔다: **`addressSetContactIDTx`는 `UPDATE
+  contact_addresses SET contact_id = ? WHERE id = ? AND contact_id =
+  <expected-from-value>`로 조건을 걸고, `RowsAffected == 0`이면
+  `ErrConflict`(또는 `ErrStaleTarget`)를 반환한다.** id만으로
+  조건 없이 UPDATE하지 않는다 — 이 조건절이 스큐 케이스에서
+  `closeOwnOpenPeriodTx`가 놓친 소유자 검증을 최종 쓰기 시점에 대신
+  수행하여, "스큐 상태에서 오래된 화면을 본 상담사가 방금 다른
+  Contact가 획득한 소유권을 조용히 덮어쓰는" 실패 모드를 차단한다.
 - 이미 unresolved(`contact_id IS NULL`)인 idempotent 케이스는
   pre-lock 읽기(`AddressGet`) 단계에서 조기 반환한다(claim의 "이미
   이 contact 소유면 no-op" 패턴과 대칭).
@@ -330,8 +354,10 @@ func (h *handler) AddressReassignTx(
     }
 
     // 5. 최종 상태를 한 번만 쓴다 — 중간에 NULL을 거치는 별도 UPDATE는
-    //    불필요.
-    return h.addressSetContactIDTx(ctx, tx, addressID, &newContactID)
+    //    불필요. §4.3과 동일한 스큐 케이스 안전망: WHERE 절에
+    //    contact_id = fromContactID를 포함하고 RowsAffected == 0이면
+    //    ErrConflict (Round 2 리뷰 수정).
+    return h.addressSetContactIDTx(ctx, tx, addressID, fromContactID, &newContactID)
 }
 ```
 
