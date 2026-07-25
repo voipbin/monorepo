@@ -370,6 +370,33 @@ v5가 설계했던 "release/reassign 전용 즉시 409" 정책은 v7에는
 명시한 "last-write-wins를 사용자가 명시적으로 요청한 것"이므로
 별도 안전장치를 추가하지 않는다.
 
+### 4.6 선결 작업: `GET /contact_addresses`의 `target` 쿼리 필터 (Round 4 리뷰로 복원)
+
+> **Round 4 리뷰 발견:** v6→v7 전환 과정에서 원래 "§5. API/OpenAPI
+> 변경 요약" 섹션이 통째로 삭제되면서, 그 안에 있던 이 필터 사양도
+> 함께 사라졌다. 본문(§6.1, §8)은 여전히 `target` 필터가 존재하는
+> 것처럼 그 사용을 전제하고 있었으나, 실제 코드에는 없다
+> (`AddressList`, `bin-contact-manager/pkg/dbhandler/address.go:
+> 288-327`은 현재 `contact_id`/`type`/`unresolved` 필터만 지원).
+> 신규 엔드포인트가 없는 v7이라 해도 **이 필터는 여전히 필요한
+> 선결 작업**이다 — §6.1의 프론트 흐름이 Peer(type, target)로
+> `contact_addresses`를 조회해 3-분기(신규/일치/재할당)를 판단해야
+> 하는데, 그 조회 자체가 이 필터 없이는 불가능하다.
+
+- `GET /v1/contact_addresses`에 `target`(string, optional) 쿼리
+  파라미터를 추가한다.
+- `bin-openapi-manager/openapi/paths/contact_addresses/main.yaml`의
+  GET 파라미터 목록에 `target` 추가.
+- `dbhandler.AddressList`(`address.go:288-327`)에
+  `filters["target"]` 처리를 추가한다(`sq.Eq{"target": t}`, 기존
+  `type` 필터와 동일한 패턴).
+- `listenhandler/v1_contact_addresses.go`의
+  `processV1ContactAddressesGet`에 `target` 쿼리 파싱을 추가한다.
+- **이 변경은 v5(§10, SUPERSEDED)의 §5가 이미 동일하게 설계해뒀던
+  내용과 같다** — release/reassign 관련 부분(v5 §5의 나머지 항목)만
+  v7에서 무효화됐을 뿐, target 필터 부분은 v5→v6→v7 전체에서
+  일관되게 필요했던 독립적인 변경 사항이다.
+
 
 ## 6. 프론트엔드(square-admin) 반영 범위
 
@@ -388,7 +415,7 @@ handleAttach:
      실패 시 → 기존과 동일하게 에러 표시, 이후 단계 진행 안 함.
   2. 성공 시 → 이 Case의 Peer(type, target)로
      GET contact_addresses?type=<Peer.Type>&target=<Peer.Target>&customer_id=... 조회
-     (§5의 신규 target 필터 사용 — v7에서도 이 조회는 그대로 필요)
+     (§4.6의 신규 target 필터 사용 — v7에서도 이 조회는 그대로 필요)
   3. 조회 결과로 분기:
      a) 0건 → localStorage[rememberNewAddress] 확인.
         - "항상 예" 저장돼 있으면 즉시 POST /contact_addresses
@@ -478,7 +505,7 @@ getItem/setItem`을 흩어놓지 않는다. 키 네이밍은 §3 참조.
     `addressClaimAttempt`에만 배선되고 `OwnershipPeriodsLockAndResolveTx`
     자체는 건드리지 않으므로, 이 항목은 "회귀 없음"을 확인하는
     네거티브 테스트다).
-- `AddressList` `target` 필터: 단위 테스트 + OpenAPI 스펙 검증(§5).
+- `AddressList` `target` 필터: 단위 테스트 + OpenAPI 스펙 검증(§4.6).
 - listenhandler: `processV1ContactAddressesIDClaim`에 `force` 필드
   파싱 추가 테스트(기존 400/404/409 라우팅 테스트에 `force` 케이스
   추가).
@@ -541,9 +568,10 @@ APPROVE)에 따라 독립 리뷰를 진행 중이다.
 |---|---|---|---|
 | R1 | CHANGES_REQUESTED | §4.1/§4.3이 지목한 확장 지점(`OwnershipPeriodsLockAndResolveTx` Step 1)이 틀렸다 — 실제로는 `addressClaimAttempt`(`address.go:226-244`)가 더 앞단에서 살아있는 소유자를 만나면 `AddressClaimTx` 호출 전에 즉시 `ErrConflict`를 반환한다. `force`를 문서가 지목한 지점에만 배선하면 시나리오 3(재할당)의 핵심 유스케이스가 그대로 실패한다. §4.1/§4.2/§4.3/§4.5/§8을 `addressClaimAttempt` 기준으로 전면 정정 | `6f5e83b90` |
 | R2 | CHANGES_REQUESTED | 확장 지점(`addressClaimAttempt`) 식별은 옳았으나, R1이 채택한 구현(`staleRowRepairTx` 재사용)이 틀렸다 — 이 함수는 살아있는 소유자에 대해 의도적으로 no-op(아무 것도 갱신하지 않고 `(false, nil)` 반환)이라서, `force:true`로 이 경로를 타도 이전 소유자의 open ownership period가 닫히지 않은 채 `AddressClaimTx`가 호출되고, 그 안에서 무조건 호출되는 `OwnershipPeriodsLockAndResolveTx`가 독립적으로 같은 충돌을 재검사해 `ErrConflict`가 재발한다. `closeOwnOpenPeriodTx`(v5가 이미 검증한 CLOSE 헬퍼)로 교체, tombstone/force 분기를 명시적으로 분리. 부차: listenhandler 계층이 §4.3 변경 지점 목록에서 누락됐던 것도 보완 | `309fd839e` |
-| R3 | CHANGES_REQUESTED | **핵심 로직(§4.3 pseudocode)은 코드로 재검증한 결과 정확함** — `closeOwnOpenPeriodTx`가 이전 소유자 ID로 호출되면 Step 1 충돌에 걸리지 않고 실제 UPDATE로 period를 닫는다는 것을 코드 추적으로 확인. 다만 R2 수정 시 §4.2와 §8에 R1 시절(`staleRowRepairTx` 기반) 서술이 그대로 남아 §4.3과 모순되는 잔재 발견 — 두 곳 모두 `closeOwnOpenPeriodTx` 기준으로 재정정 | 본 커밋 |
+| R3 | CHANGES_REQUESTED | **핵심 로직(§4.3 pseudocode)은 코드로 재검증한 결과 정확함** — `closeOwnOpenPeriodTx`가 이전 소유자 ID로 호출되면 Step 1 충돌에 걸리지 않고 실제 UPDATE로 period를 닫는다는 것을 코드 추적으로 확인. 다만 R2 수정 시 §4.2와 §8에 R1 시절(`staleRowRepairTx` 기반) 서술이 그대로 남아 §4.3과 모순되는 잔재 발견 — 두 곳 모두 `closeOwnOpenPeriodTx` 기준으로 재정정 | `8620b1e2c` |
+| R4 | CHANGES_REQUESTED | v6→v7 전환 시 "§5. API/OpenAPI 변경 요약" 헤더 전체가 실수로 삭제되면서, 그 안에 있던 `GET /contact_addresses`의 `target` 쿼리 필터 사양(구현 자체가 아직 안 된 선결 작업)이 통째로 유실됨 — §6.1/§8은 여전히 존재하지 않는 §5를 참조하고 있었고, 이 필터 없이는 §6.1의 프론트 3-분기 조회 자체가 동작하지 않음. §4.6으로 target 필터 사양을 복원(v5 §10 SUPERSEDED에서 동일 내용 확인 후 재사용), §6.1/§8의 참조를 §4.6으로 정정. §4 핵심 로직은 재검증에서도 이상 없음 확인 | 본 커밋 |
 
-**현재 상태: DRAFT (리뷰 진행 중, R1~R3 CHANGES_REQUESTED 모두 수정
-완료, R4 대기 — R3에서 핵심 로직 자체는 처음으로 코드 검증까지
-통과했으나, 문서 표현 정합성 이슈로 CHANGES_REQUESTED 유지).**
+**현재 상태: DRAFT (리뷰 진행 중, R1~R4 CHANGES_REQUESTED 모두 수정
+완료, R5 대기 — §4 핵심 로직은 R3/R4에서 연속 검증 통과, 남은 리스크는
+문서 구조적 정합성).**
 
