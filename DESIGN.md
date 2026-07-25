@@ -195,17 +195,26 @@ Agent별로 키를 분리하는 이유: 같은 브라우저 프로필을 여러 
   했지만, 그렇다고 기본 계약을 깰 이유가 되는 것은 아니다(향후
   square-admin 내 다른 화면이나 신규 통합이 기존 409 계약에
   의존하는 코드를 작성할 가능성은 여전히 남아있다).
-- 정확한 확장 지점은 `AddressClaimTx`가 내부에서 호출하는
-  `OwnershipPeriodsLockAndResolveTx`의 **Step 1**이다
-  (`bin-contact-manager/pkg/dbhandler/address_ownership.go:220-245`):
-  다른 살아있는 Contact가 이 target에 대해 open period를 갖고
-  있으면 `live == true`일 때 `ErrConflict`를 반환하는 지점(233-235행).
-  바로 다음 줄(236-245행)에 이미 "orphan(tombstone된 소유자)이면
-  `ownershipPeriodCloseByIDTx`로 닫고 계속 진행"하는 코드가 있다 —
-  **`force`는 이 orphan-close 분기와 동일한 코드 경로를 살아있는
-  소유자에게도 적용하는 것**이다. 새로운 로직을 발명하지 않고,
-  이미 있는 "닫고 계속 진행" 패턴을 조건 하나(`live && !force` →
-  conflict, `live && force` → close-and-continue)로 확장한다.
+- **정확한 확장 지점(Round 1 리뷰로 수정): `AddressClaimTx`/
+  `OwnershipPeriodsLockAndResolveTx`가 아니라 `addressClaimAttempt`
+  (`bin-contact-manager/pkg/dbhandler/address.go:204-255`)다.** 이
+  함수가 `AddressClaimTx`를 호출하기 **이전에** 먼저 소유자 검사를
+  하는 앞단 게이트를 갖고 있다(226-244행): 이미 다른 Contact
+  소유(`current.ContactID != contactID`)면 `contactTombstoneTx`로
+  살아있는지 확인하고, **살아있으면(`tmDelete == nil`) 그 자리에서
+  즉시 `ErrConflict`를 반환하며 `AddressClaimTx` 호출까지 가지도
+  않는다**(236행). tombstone된 경우에만 `staleRowRepairTx`(238행,
+  `address_ownership_write.go:224`)로 행을 unresolved로 리셋한 뒤
+  `AddressClaimTx`를 호출한다. **`force`는 이 앞단 게이트(226-244행)
+  에서 분기해야 한다** — `OwnershipPeriodsLockAndResolveTx`의 Step 1
+  (`address_ownership.go:220-245`)은 이 지점보다 더 안쪽(`AddressClaimTx`
+  내부)이라, 살아있는 소유자 케이스에서는 애초에 도달하지 못한다.
+- `force: true`일 때의 정확한 동작: `tmDelete == nil`(살아있는
+  소유자)이어도 `ErrConflict`를 반환하지 않고, tombstone 케이스와
+  **동일한** `staleRowRepairTx(ctx, tx, customerID, addrType, target,
+  true)` 호출로 행을 unresolved로 리셋한 뒤 `AddressClaimTx`로
+  진행한다. 새로운 로직을 발명하지 않고, 이미 있는 "리셋 후 정상
+  claim 진행" 패턴을 살아있는 소유자 케이스까지 확장하는 것이다.
 
 ### 4.2 확정된 API 표면
 
@@ -219,42 +228,61 @@ Body: { "contact_id": "<uuid>", "force": true }     // 신규 — 다른 살아�
 ```
 
 - `force`가 없거나 `false`: 기존 계약 그대로(§4.1) — 하위 호환.
-- `force: true`: `OwnershipPeriodsLockAndResolveTx`의 Step 1에서
-  다른 살아있는 Contact의 open period를 만나도 `ErrConflict`를
-  반환하지 않고, 그 period를 `ownershipPeriodCloseByIDTx`로 닫은
-  뒤(기존 orphan-close 코드 경로 재사용, §4.1) 정상적으로
-  claim을 계속 진행한다. **이력 테이블(`contact_address_
-  ownership_periods`)에는 "기존 소유자의 period가 닫히고 새
-  소유자의 period가 열리는" 정상적인 흐름이 그대로 남는다** — 이게
-  v6 대비 이 방향의 핵심 이점이다(§0/v6 SUPERSEDED 고지가 지적한
-  이력 비대칭 문제가 원천적으로 발생하지 않는다).
+- `force: true`: `addressClaimAttempt`의 앞단 소유자 검사(§4.1,
+  226-244행)에서 살아있는 소유자를 만나도 `ErrConflict`를 반환하지
+  않고, `staleRowRepairTx`로 행을 unresolved로 리셋한 뒤
+  `AddressClaimTx`로 정상 진행한다(§4.1). **이력 테이블(`contact_
+  address_ownership_periods`)에는 "기존 소유자의 period가 닫히고
+  새 소유자의 period가 열리는" 정상적인 흐름이 그대로 남는다**
+  — `AddressClaimTx`가 내부적으로 `OwnershipPeriodsLockAndResolveTx`
+  /`applyOpenResolutionTx`를 그대로 타기 때문이다. 이게 v6 대비
+  이 방향의 핵심 이점이다(§0/v6 SUPERSEDED 고지가 지적한 이력
+  비대칭 문제가 원천적으로 발생하지 않는다).
 
 **응답:** 200 + 갱신된 `ContactManagerAddress`. `force: true`일 때도
 404(주소 없음)는 그대로 유지된다. 409는 `force`가 없을 때만
 발생한다.
 
-### 4.3 dbhandler/OpenAPI 변경 지점
+### 4.3 dbhandler/OpenAPI 변경 지점 (Round 1 리뷰로 전면 수정)
 
 - `bin-openapi-manager/openapi/paths/contact_addresses/id_claim.yaml`
   에 `force`(boolean, optional) 필드 추가, description에 하위 호환
   기본 동작과 `force: true`의 의미를 명시.
-- `bin-contact-manager/pkg/dbhandler/address_ownership.go`의
-  `OwnershipPeriodsLockAndResolveTx` 시그니처에 `force bool` 파라미터
-  추가(또는 별도 `*TxWithForce` 변형 — 구현 단계에서 기존 호출자
-  전부(`AddressCreateTx`, `AddressUpdateTx`, `AddressDeleteTx`)에게
-  `force=false`를 명시적으로 넘기도록 호출부를 함께 갱신해야 한다는
-  점을 여기 명시해둔다. **이 함수는 claim 전용이 아니라 여러
-  쓰기 경로가 공유하는 헬퍼이므로, 시그니처 변경의 영향 범위를
-  구현 착수 전 반드시 재확인해야 한다** — create/update/delete가
-  실수로 강제 덮어쓰기를 상속받으면 안 된다).
-- 233-235행의 `if live { return 0, nil, ErrConflict }`를
-  `if live && !force { return 0, nil, ErrConflict }`로 바꾸고,
-  `live && force`인 경우 236-245행의 기존 orphan-close 코드를
-  그대로 재사용(별도 분기 불필요 — orphan이든 강제 해제든 이후
-  코드는 동일하게 "닫고 진행"이면 된다).
+- **`OwnershipPeriodsLockAndResolveTx`는 건드리지 않는다.** 이
+  함수는 claim 전용이 아니라 create/update/delete가 공유하는
+  헬퍼이고(§4.1 정정 사항), 애초에 살아있는 소유자 케이스에서는
+  이 함수에 도달하지도 못하므로 여기에 `force`를 배선해도 아무
+  효과가 없다.
+- 시그니처 확장은 다음 체인을 관통해야 한다(바깥→안쪽 순):
+  `contacthandler.ClaimAddress(force bool)` →
+  `dbhandler.AddressClaim(..., force bool)` →
+  `addressClaimAttempt(..., force bool)`. `AddressClaimTx` 자체는
+  시그니처 변경이 필요 없다 — force 분기는 `addressClaimAttempt`
+  안에서 `AddressClaimTx` 호출 이전에 끝난다.
+- `addressClaimAttempt`(`address.go:226-244`)의 정확한 수정:
+  ```go
+  if current.ContactID != uuid.Nil && current.ContactID != contactID {
+      tmDelete, tombErr := contactTombstoneTx(ctx, tx, current.ContactID)
+      if tombErr != nil { return tombErr }
+      if tmDelete == nil && !force {           // 살아있는 소유자 + force 없음
+          return ErrConflict
+      }
+      // tmDelete != nil(tombstone)이거나 force:true(살아있어도 강제)면
+      // 동일하게 아래 리셋 경로로 합류 -- 새 분기를 추가하지 않는다.
+      if _, repairErr := h.staleRowRepairTx(ctx, tx, customerID, addrType, target, true); repairErr != nil {
+          return repairErr
+      }
+  }
+  ```
+  즉 `tmDelete == nil && !force`일 때만 conflict, 그 외(tombstone
+  이거나 force:true)는 기존에 이미 있던 리셋 경로 하나로 합류한다
+  — tombstone 전용 분기와 force 전용 분기를 별도로 만들지 않는다.
+- `AddressClaim`(`address.go:165-202`)이 `force`를
+  `addressClaimAttempt` 호출부(184행)까지 그대로 전달하도록 파라미터
+  추가.
 - `contacthandler.ClaimAddress`(servicehandler 상위 레이어)가
-  `force` 파라미터를 받아 `AddressClaimTx`까지 전달하도록 시그니처
-  확장.
+  `force` 파라미터를 받아 `dbhandler.AddressClaim`까지 전달하도록
+  시그니처 확장.
 
 ### 4.4 이력 서브시스템 — v6과 달리 정합성 유지
 
@@ -274,13 +302,14 @@ v5가 설계했던 "release/reassign 전용 즉시 409" 정책은 v7에는
 파라미터 확장이므로, claim이 이미 갖고 있는 동시성 정책을 그대로
 상속받는다. 다만 **`force: true`로 두 상담사가 동시에 같은 주소를
 서로 다른 Contact로 강제 claim하는 경쟁 상태**는 새로운 시나리오다
-— `OwnershipPeriodsLockAndResolveTx`가 `SELECT ... FOR UPDATE`로
-잠그므로 DB 레벨에서 직렬화되지만, 사용자 입장에서는 "내가 먼저
-확인 버튼을 눌렀는데 나중에 요청한 상담사가 이겼다"는 결과가 나올
-수 있다(둘 다 `force: true`이므로 둘 다 성공하고, 마지막 커밋이
-최종 소유자가 된다) — 이건 §4.2에서 이미 명시한 "last-write-wins를
-사용자가 명시적으로 요청한 것"이므로 별도 안전장치를 추가하지
-않는다.
+— `addressClaimAttempt`가 매 시도마다 새 트랜잭션을 열고
+`addressTypeTargetContactByID`로 post-lock 재확인(§4.3의
+`current` 조회)을 하므로 DB 레벨에서 순서가 보장되지만, 사용자
+입장에서는 "내가 먼저 확인 버튼을 눌렀는데 나중에 요청한 상담사가
+이겼다"는 결과가 나올 수 있다(둘 다 `force: true`이므로 둘 다
+성공하고, 마지막 커밋이 최종 소유자가 된다) — 이건 §4.2에서 이미
+명시한 "last-write-wins를 사용자가 명시적으로 요청한 것"이므로
+별도 안전장치를 추가하지 않는다.
 
 
 ## 6. 프론트엔드(square-admin) 반영 범위
@@ -381,12 +410,14 @@ getItem/setItem`을 흩어놓지 않는다. 키 네이밍은 §3 참조.
     period가 열리는지 **DB 레벨로 직접 검증**(§4.4의 "이력 정합성
     유지" 주장을 실제로 고정하는 핵심 테스트).
   - `force: true`, 대상이 tombstone(soft-delete)된 Contact 소유:
-    기존 orphan-close 경로와 결과가 동일한지(§4.1 — 두 분기가
-    같은 코드를 타므로 당연히 같아야 하지만 회귀로 고정).
-  - `OwnershipPeriodsLockAndResolveTx`의 다른 호출자
-    (`AddressCreateTx`/`AddressUpdateTx`/`AddressDeleteTx`)가
-    `force=false`로 호출되어 동작 변화가 없는지(§4.3의 "시그니처
-    확장 영향 범위" 우려를 테스트로 고정).
+    기존 orphan-close 경로와 결과가 동일한지(§4.1/§4.3 — 두
+    분기가 같은 `staleRowRepairTx` 리셋 경로로 합류하므로 당연히
+    같아야 하지만 회귀로 고정).
+  - `force`가 `AddressCreate`/`AddressUpdate`/`AddressDelete`
+    경로에는 전혀 영향을 주지 않는지(§4.3 정정 — `force`는
+    `addressClaimAttempt`에만 배선되고 `OwnershipPeriodsLockAndResolveTx`
+    자체는 건드리지 않으므로, 이 항목은 "회귀 없음"을 확인하는
+    네거티브 테스트다).
 - `AddressList` `target` 필터: 단위 테스트 + OpenAPI 스펙 검증(§5).
 - listenhandler: `processV1ContactAddressesIDClaim`에 `force` 필드
   파싱 추가 테스트(기존 400/404/409 라우팅 테스트에 `force` 케이스
@@ -440,19 +471,16 @@ APPROVE로 종료. 매 라운드는 별도의 신선한 서브에이전트(독�
 (ownership-period 재사용, 에러 타입, 트랜잭션 원자성 등)는 v6에는
 더 이상 적용되지 않는다.
 
-## 11. v7 상태 및 다음 단계
+## 11. v7 독립 디자인 리뷰 루프 기록
 
 v6에서 v7로의 전환은 대표님과의 대화에서 직접 확정된 방향이며,
-**아직 design-first-with-review-loops의 독립 리뷰 루프를 거치지
-않았다.** v7은 v5/v6보다 API 표면이 더 작지만(신규 엔드포인트 없음,
-기존 claim의 파라미터 확장뿐), §4.3에서 명시한 대로
-`OwnershipPeriodsLockAndResolveTx`가 claim 전용이 아니라
-create/update/delete가 공유하는 헬퍼라는 점 때문에 시그니처 변경의
-영향 범위를 실제 코드로 재확인하는 최소 1라운드의 독립 검토를
-권장한다 — 특히 "force=false가 기존 호출자 전부에 올바르게
-전파되는지"는 실제 호출부 코드를 하나하나 대조해야 확신할 수 있는
-지점이다.
+design-first-with-review-loops 정책(최소 3라운드, 이후 연속 2회
+APPROVE)에 따라 독립 리뷰를 진행 중이다.
 
-**현재 상태: DRAFT (리뷰 미완료).** 대표님이 "리뷰 루프 돌려"를
-다시 지시하시면 v7 전용으로 새 라운드를 시작한다.
+| 라운드 | 판정 | 핵심 발견 | 수정 반영 |
+|---|---|---|---|
+| R1 | CHANGES_REQUESTED | §4.1/§4.3이 지목한 확장 지점(`OwnershipPeriodsLockAndResolveTx` Step 1)이 틀렸다 — 실제로는 `addressClaimAttempt`(`address.go:226-244`)가 더 앞단에서 살아있는 소유자를 만나면 `AddressClaimTx` 호출 전에 즉시 `ErrConflict`를 반환한다. `force`를 문서가 지목한 지점에만 배선하면 시나리오 3(재할당)의 핵심 유스케이스가 그대로 실패한다. §4.1/§4.2/§4.3/§4.5/§8을 `addressClaimAttempt` 기준으로 전면 정정 | 본 커밋 |
+
+**현재 상태: DRAFT (리뷰 진행 중, R1 CHANGES_REQUESTED 수정 완료,
+R2 대기).**
 
