@@ -204,15 +204,22 @@ Agent별로 키를 분리하는 이유: 같은 브라우저 프로필을 여러 
 
 **신규로 도입하는 헬퍼 (기존 코드베이스에 없음, 이번 설계가 처음
 제안):**
-- `addressSetContactIDTx(ctx, tx, addressID, expectedCurrentContactID
-  *uuid.UUID, newContactID *uuid.UUID) error` — `contact_addresses.
-  contact_id`만 갱신하는 단순 UPDATE 래퍼. `WHERE id = ? AND
-  contact_id <=> <expectedCurrentContactID>`(NULL 허용 비교)로 조건을
-  걸고, `RowsAffected == 0`이면 `ErrConflict`를 반환한다(Round 2/3
-  리뷰로 확정된 스큐 케이스 안전망, §4.3/§4.4 참조). 위 세 헬퍼가
-  "소유권 검증/변경"을 담당하는 것과 달리, 이 함수는 그 검증이 이미
-  끝난 뒤의 단순 컬럼 쓰기 + 최종 안전망 역할만 한다 — "소유권 검증
-  자체를 새로 만들지 않는다"는 원칙과 모순되지 않는다.
+- `addressSetContactIDTx(ctx, tx, addressID uuid.UUID,
+  expectedCurrentContactID uuid.UUID, newContactID *uuid.UUID) error`
+  — `contact_addresses.contact_id`만 갱신하는 단순 UPDATE 래퍼.
+  `expectedCurrentContactID`는 값 타입이다(release/reassign 양쪽
+  호출부 모두 "현재 소유자로 기대하는 Contact"가 항상 확정된
+  non-nil 값이므로 포인터로 감쌀 이유가 없다 — release는
+  unresolved가 아니라 살아있는 소유자로부터의 해제만 다루고,
+  reassign도 마찬가지다). `newContactID`만 포인터다 — release는
+  `nil`(NULL로 되돌림), reassign은 `&newContactID`(새 소유자로
+  갱신)를 넘긴다. `WHERE id = ? AND contact_id =
+  expectedCurrentContactID`로 조건을 걸고, `RowsAffected == 0`이면
+  `ErrConflict`를 반환한다(Round 2/3 리뷰로 확정된 스큐 케이스
+  안전망, §4.3/§4.4 참조). 위 세 헬퍼가 "소유권 검증/변경"을
+  담당하는 것과 달리, 이 함수는 그 검증이 이미 끝난 뒤의 단순 컬럼
+  쓰기 + 최종 안전망 역할만 한다 — "소유권 검증 자체를 새로 만들지
+  않는다"는 원칙과 모순되지 않는다.
 
 ### 4.2 신규 엔드포인트: `POST /contact_addresses/{id}/release`
 
