@@ -81,8 +81,21 @@ func (h *zmqSubHandler) receiveMessage(ctx context.Context) (string, string, err
 		if err != nil {
 			if err.Error() == syscall.EAGAIN.Error() {
 				// no received message
-				// wait for 1 second and try again
-				time.Sleep(time.Millisecond * 1000)
+				// wait for 1 second and try again, but return immediately if the
+				// context gets canceled while waiting. Without this, a canceled
+				// context could go unnoticed for up to 1 second, which races with
+				// callers that close/terminate the socket shortly after cancel()
+				// (this was the root cause of the flaky
+				// Test_recevieMessage_context_canceled test: -race detected a
+				// concurrent Close()/RecvMessage() when the goroutine was still
+				// asleep past the point where the test canceled the context and
+				// terminated the socket).
+				select {
+				case <-ctx.Done():
+					log.Infof("The context is canceled while waiting to retry. err: %v", ctx.Err())
+					return "", "", ctx.Err()
+				case <-time.After(time.Millisecond * 1000):
+				}
 				continue
 			}
 
