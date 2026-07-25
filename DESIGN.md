@@ -165,12 +165,46 @@ Agent별로 키를 분리하는 이유: 같은 브라우저 프로필을 여러 
   (`contacthandler.ClaimAddress`, contact.go:470-514).
 - **살아있는 소유자로부터 주소를 "놓아주는"(레코드는 유지, contact_id만
   NULL로 되돌리는) 대칭 오퍼레이션이 없다.**
+- **중요(Round 1 리뷰 반영): `contact_addresses.contact_id`는
+  단독으로 소유권의 진실 소스가 아니다.** `bin-contact-manager`에는
+  이미 `contact_address_ownership_periods` 테이블을 관리하는 별도
+  서브시스템(`pkg/dbhandler/address_ownership.go`,
+  `address_ownership_write.go`)이 존재하며, `contact_id`를 변경하는
+  모든 기존 쓰기 경로(`AddressClaimTx`, `AddressDeleteTx`,
+  `AddressUpdateTx`, `AddressCreateTx`)가 예외 없이 이 period
+  테이블을 함께 갱신한다. 아래 4.3/4.4의 release/reassign 설계는
+  `contact_addresses.contact_id`만 UPDATE하는 것이 아니라, 이
+  서브시스템이 이미 제공하는 헬퍼(`closeOwnOpenPeriodTx`,
+  `OwnershipPeriodsLockAndResolveTx`, `applyOpenResolutionTx`)를
+  그대로 재사용해 period 테이블도 함께 갱신하는 것을 전제로 한다.
+  이 헬퍼들을 우회하고 `contact_id` 컬럼만 UPDATE하면 소유권 이력
+  데이터가 깨지는 실제 버그가 된다.
+
+**재사용할 기존 헬퍼(재구현 금지):**
+- `OwnershipPeriodsLockAndResolveTx(ctx, tx, customerID, contactID,
+  addrType, target) (step int, lockedRows []OwnershipPeriod, err
+  error)` — 해당 target(type+target)의 period 행들을 `SELECT ... FOR
+  UPDATE`로 잠그고, 다른 살아있는 Contact가 이미 open period를
+  갖고 있으면 `ErrConflict`를 반환한다(orphan/tombstone이면 자동으로
+  닫고 계속 진행). 그 외에는 `StepOpenReuse` /
+  `StepReopen` / `StepInsertAfterIntervening` / `StepReassign` /
+  `StepFirstRegistration` 중 하나의 step을 반환한다.
+- `applyOpenResolutionTx(ctx, tx, step, lockedRows, customerID,
+  contactID, addrType, target, validFromOnInsert) error` — 위 step에
+  따라 실제 open/reopen/insert를 수행하는 "OPEN하는 쪽" 헬퍼.
+  `AddressClaimTx`가 이미 사용 중.
+- `closeOwnOpenPeriodTx(ctx, tx, customerID, contactID, addrType,
+  target) error` — `OwnershipPeriodsLockAndResolveTx`를 내부에서
+  호출해 lockedRows를 얻고, 그중 `contactID`가 소유한 열린 row를
+  찾아 닫는 "CLOSE하는 쪽" 헬퍼. `AddressDeleteTx`가 이미 "먼저
+  닫고 나서 지운다" 패턴으로 사용 중(address_ownership_write.go:
+  573-576).
 
 ### 4.2 신규 엔드포인트: `POST /contact_addresses/{id}/release`
 
 `claim`의 대칭 오퍼레이션. 요청자가 지정한 `contact_id`(현재 소유자와
 일치하는지 서버에서 검증)로부터 해당 주소를 unresolved(`contact_id =
-NULL`) 상태로 되돌린다.
+NULL`) 상태로 되돌리고, 대응하는 ownership period도 함께 닫는다.
 
 **요청:**
 ```
@@ -185,79 +219,136 @@ Body: { "contact_id": "<현재 소유자로 기대되는 Contact ID>" }
 **응답:** 200 + 갱신된 `ContactManagerAddress`(contact_id: null).
 - 404: 주소 없음 또는 customer 불일치.
 - 409: `contact_id`가 현재 소유자와 다름(이미 release/reassign됨,
-  또는 애초에 unresolved였음).
+  또는 애초에 unresolved였음) — `closeOwnOpenPeriodTx`가 반환하는
+  `ErrConflict`가 그대로 이 케이스에 해당한다(4.3 참조).
 
 ### 4.3 dbhandler 레이어 구현 방향
 
-`bin-contact-manager/pkg/dbhandler/address.go`의 기존 `AddressClaim`
-(157-202행) / `addressClaimAttempt`(204-255행) 패턴을 그대로 거울처럼
-따르는 `AddressRelease` / `addressReleaseAttempt`를 신설한다.
+`AddressDeleteTx`가 "닫고 나서 지운다"인 것과 대칭으로, `AddressRelease
+Tx`는 **"닫고 나서 NULL로 되돌린다"**로 설계한다. `AddressClaim`
+(157-202행)/`addressClaimAttempt`(204-255행)의 tx 안전성 패턴(pre-lock
+읽기로 idempotent 조기 반환 + deadlock 재시도 루프)은 그대로 거울처럼
+따르되, 소유권 검증/변경 자체는 새로 만들지 않고 4.1의 기존 헬퍼에
+위임한다.
 
-`AddressClaim`이 이미 갖춘 tx 안전성 패턴을 재사용:
-- Pre-lock 읽기(`AddressGet`)로 현재 상태를 먼저 확인 후, 이미
-  기대한 대로 unresolved라면 idempotent 성공으로 조기 반환(claim의
-  "이미 이 contact 소유면 no-op" 패턴과 대칭 — release는 "이미
-  unresolved면 no-op").
-- 트랜잭션 내부에서 `addressTypeTargetContactByID`로 **post-lock
-  재확인**: 이 주소가 여전히 기대한 `contact_id`에 묶여 있는지 확인
-  (claim의 `ErrStaleTarget` 검사와 동일한 목적 — 락을 잡기 전에 읽은
-  상태가 락을 잡는 사이 바뀌었을 가능성 배제).
-  - 기대한 `contact_id`와 다르면 → `ErrConflict`(경쟁 상태 — 이미 다른
-    요청이 release/reassign함, 또는 애초에 다른 곳에 소유됨).
-  - 이미 unresolved(`contact_id IS NULL`)면 → 성공(idempotent no-op).
-- 재확인 통과 시 `UPDATE contact_addresses SET contact_id = NULL WHERE
-  id = ?`를 같은 트랜잭션에서 실행 후 commit.
+```go
+func (h *handler) AddressReleaseTx(
+    ctx context.Context, tx *sql.Tx,
+    customerID uuid.UUID, addressID uuid.UUID,
+    fromContactID uuid.UUID, addrType string, target string,
+) error {
+    // 1. CLOSE: fromContactID가 실제로 이 target에 대한 open period를
+    //    갖고 있는지 검증하면서 동시에 닫는다.
+    if err := h.closeOwnOpenPeriodTx(ctx, tx, customerID, fromContactID, addrType, target); err != nil {
+        return err // ErrConflict: fromContactID 소유 아님 → 그대로 상위로 전파, 409
+    }
+
+    // 2. contact_addresses.contact_id를 NULL로 되돌린다.
+    return h.addressSetContactIDTx(ctx, tx, addressID, nil)
+}
+```
+
+- **post-lock 재확인 로직을 별도로 구현하지 않는다.**
+  `closeOwnOpenPeriodTx`는 내부적으로
+  `OwnershipPeriodsLockAndResolveTx`를 호출해 `SELECT ... FOR UPDATE`
+  로 행을 잠그고, 그 잠금 하에서 `fromContactID`가 실제로 열린
+  period를 소유하고 있는지 검증한다. 소유하고 있지 않으면(경쟁
+  상태로 이미 다른 곳에서 release/reassign됐거나, 애초에 기대와
+  다른 소유자였던 경우) `ErrConflict`를 반환한다 — 이것이 곧 §4.2가
+  요구하는 "기대한 소유자와 다르면 실패"를 그대로 만족시킨다. v1
+  설계가 상상했던 "`addressTypeTargetContactByID`로 별도 post-lock
+  재확인" 로직은 **불필요하다** — `closeOwnOpenPeriodTx`가 이미 그
+  역할을 겸한다.
+- lockedRows가 비어있는(스큐) 경우 `closeOwnOpenPeriodTx`는 에러 없이
+  스킵한다 — 이 동작을 그대로 신뢰한다(재구현하지 않음).
+- 이미 unresolved(`contact_id IS NULL`)인 idempotent 케이스는
+  pre-lock 읽기(`AddressGet`) 단계에서 조기 반환한다(claim의 "이미
+  이 contact 소유면 no-op" 패턴과 대칭).
 - `AddressClaimTx`가 사용하는 것과 동일한 deadlock 재시도 루프
   (`addressMaxDeadlockRetries`)를 그대로 재사용한다 — 새 상수를
   만들지 않는다.
 
-**Tombstone 케이스는 release에 해당 없음:** `AddressClaim`의
-`staleRowRepairTx`(tombstoned 소유자 복구)는 claim이 "새 소유자로
-넘어갈 때 기존 소유자가 이미 soft-delete된 경우"를 다루는 로직이다.
-release는 반대로 "살아있는 소유자로부터 놓아주는" 것이 전제(§요구사항
-원문: "살아있는 Contact 소유")이므로, 소유자가 이미 tombstone된
-케이스는 release가 아니라 claim의 repair-in-place 경로가 이미
-처리한다(§0-4 재인용). **release 구현 시 tombstone 복구 로직을
-중복 구현하지 않는다** — release는 "현재 소유자가 기대값과 일치하는
-살아있는 Contact인지"만 확인하면 충분하다.
+**Tombstone 케이스는 release에 해당 없음:** 소유자가 이미
+tombstone된(soft-delete) 상태의 orphan period는
+`OwnershipPeriodsLockAndResolveTx`가 자동으로 닫고 넘어가는 내부
+로직이 이미 처리한다(claim의 repair-in-place 경로와 공유). release
+는 "살아있는 소유자로부터 놓아주는" 것이 전제이므로 이 케이스를
+별도로 다룰 필요가 없다 — `closeOwnOpenPeriodTx`가 이미 위임받은
+`OwnershipPeriodsLockAndResolveTx`를 통해 처리한다.
 
 ### 4.4 재할당(release → claim) 흐름: 원자적 단일 엔드포인트로 묶는다
 
 **결론: `POST /contact_addresses/{id}/reassign` (body:
-`{new_contact_id}`)을 신설하여 release+claim을 하나의 DB 트랜잭션으로
-묶는다.** 프론트가 release 호출 후 claim을 순차 호출하는 2-step
-방식은 채택하지 않는다.
+`{new_contact_id}`)을 신설하여 release(CLOSE)+claim(OPEN)을 하나의 DB
+트랜잭션으로 묶는다.** 프론트가 release 호출 후 claim을 순차 호출하는
+2-step 방식은 채택하지 않는다.
 
 근거:
-- `AddressClaim`/`AddressRelease` 둘 다 이미 "BeginTx → post-lock
-  재확인 → UPDATE → Commit"의 단일 트랜잭션 패턴을 갖고 있다(§4.3).
-  reassign은 이 두 트랜잭션을 **하나의 트랜잭션**으로 합치기만 하면
-  된다 — release의 UPDATE(contact_id → NULL)와 claim의 UPDATE
-  (contact_id → new_contact_id)를 같은 tx 안에서 순서대로 실행하고
-  한 번에 commit. 새로운 트랜잭션 패턴을 발명하지 않는다.
+- `AddressReleaseTx`(§4.3)는 `closeOwnOpenPeriodTx` 호출로 끝나고,
+  `AddressClaimTx`는 `OwnershipPeriodsLockAndResolveTx` +
+  `applyOpenResolutionTx` 호출로 시작한다 — 둘 다 이미 "tx 인자를
+  받는" 형태로 분리되어 있으므로, reassign은 이 두 시퀀스를 **하나의
+  트랜잭션 안에서 순서대로 호출**하기만 하면 된다. 새로운 트랜잭션
+  패턴이나 새로운 잠금 로직을 발명하지 않는다.
 - 2-step(프론트가 release 다음 claim을 별도 HTTP 호출)으로 두면,
   release는 성공했는데 claim이 실패하는 중간 상태("해제됐는데
   재할당 안 됨" — 그 사이 주소는 unresolved로 노출되어 제3의
   프로세스가 먼저 claim해갈 수도 있음)가 구조적으로 가능해진다. 이는
   요구사항 원문이 명시적으로 우려한 실패 모드다. 원자적 단일
   엔드포인트는 이 창(window)을 원천 차단한다.
-- 구현 비용은 크지 않다 — `AddressReleaseTx`와 `AddressClaimTx`를
-  각각 tx 인자를 받는 형태로 이미 분리 가능한 헬퍼로 만들어 두면
-  (release는 신규, claim은 이미 `AddressClaimTx`로 분리되어 있음),
-  `AddressReassignTx`는 단순히 두 헬퍼를 같은 tx 안에서 순서대로
-  호출하는 조합 함수가 된다.
 
 **`AddressReassignTx` 내부 순서(단일 tx):**
-1. Post-lock 재확인: 주소가 여전히 `from_contact_id`(현재 알려진
-   소유자) 소유인지 확인. 다르면 `ErrConflict`(경쟁 상태 — §4.5).
-2. `UPDATE contact_addresses SET contact_id = NULL WHERE id = ?`
-   (release 단계, 요구사항 원문의 "해제 먼저" 순서 반영).
-3. 새 소유 Contact(`new_contact_id`)가 살아있고 같은 customer인지
-   검증(`ContactGet`, claim의 기존 tenant 검사 재사용).
-4. `UPDATE contact_addresses SET contact_id = ? WHERE id = ?`
-   (claim 단계).
-5. Commit. 실패 시 전체 rollback — "해제됐는데 재할당 안 됨" 상태가
-   DB에 절대 남지 않는다.
+```go
+func (h *handler) AddressReassignTx(
+    ctx context.Context, tx *sql.Tx,
+    customerID uuid.UUID, addressID uuid.UUID,
+    fromContactID uuid.UUID, newContactID uuid.UUID,
+    addrType string, target string,
+) error {
+    // 1. CLOSE: fromContactID 소유 검증 + period 닫기.
+    //    (§4.3과 동일한 이유로 이것이 "기대한 소유자 검증"을 대신한다.)
+    if err := h.closeOwnOpenPeriodTx(ctx, tx, customerID, fromContactID, addrType, target); err != nil {
+        return err // ErrConflict → 409 (§4.5)
+    }
+
+    // 2. OPEN: newContactID에 대해 다시 잠금+상태 조회.
+    //    1단계에서 fromContactID의 open period를 이미 닫았으므로,
+    //    여기서 "다른 살아있는 Contact 소유" 충돌(ErrConflict)에
+    //    걸리지 않는다 — 방금 우리가 닫았기 때문이다.
+    step, lockedRows, err := h.OwnershipPeriodsLockAndResolveTx(ctx, tx, customerID, newContactID, addrType, target)
+    if err != nil {
+        return err
+    }
+
+    // 3. validFrom 계산은 AddressClaimTx와 동일한 로직(step에 따라
+    //    reopen/insert 시 사용할 valid_from을 결정).
+    validFrom := computeValidFromForStep(step, lockedRows)
+
+    // 4. OPEN 실행.
+    if err := h.applyOpenResolutionTx(ctx, tx, step, lockedRows, customerID, newContactID, addrType, target, validFrom); err != nil {
+        return err
+    }
+
+    // 5. 최종 상태를 한 번만 쓴다 — 중간에 NULL을 거치는 별도 UPDATE는
+    //    불필요.
+    return h.addressSetContactIDTx(ctx, tx, addressID, &newContactID)
+}
+```
+
+**설계 근거 메모(리뷰 대비 명시):**
+- 2단계에서 `OwnershipPeriodsLockAndResolveTx`를 **다시 호출**하는
+  것이 맞다 — 1단계의 lockedRows를 재사용하지 않는다. 이유: 두
+  호출은 서로 다른 대상(`fromContactID` vs `newContactID`)에 대한
+  잠금/상태 질의이며, 1단계에서 이미 해당 트랜잭션 내에서 UPDATE
+  (period close)를 실행했으므로 1단계 시점에 읽은 lockedRows는
+  이제 stale하다. 같은 tx 내 `SELECT ... FOR UPDATE`는 재호출
+  비용이 낮고(동일 tx이므로 추가 락 대기 없음), stale 데이터로
+  `applyOpenResolutionTx`를 호출하는 위험을 피하는 것이 안전하다.
+- `contact_addresses.contact_id`의 UPDATE는 **1회만** 실행한다(최종
+  값 `newContactID`로 직접). v1 설계가 "release 먼저 UPDATE NULL,
+  그 다음 claim UPDATE new_contact_id"의 2회 UPDATE로 설계했던 것을
+  1회로 단순화한다 — 같은 트랜잭션 안에서 중간값을 거칠 이유가 없고,
+  ownership period 쪽의 CLOSE/OPEN 시퀀스만 순서가 의미 있다.
 
 **엔드포인트 표면:** `POST /v1/contact_addresses/{id}/reassign`,
 body `{"from_contact_id": "<현재 소유자, 경쟁 상태 검증용>",
@@ -275,19 +366,34 @@ release의 것과 동일 — 클라이언트가 관찰한 소유자와 서버 �
 ### 4.5 Race condition 처리 방침
 
 동시에 여러 상담사가 같은 주소를 서로 다른 Contact로 재할당 시도하는
-경쟁 상태:
+경쟁 상태.
 
-- `AddressClaim`의 기존 경합 처리 패턴(`ErrStaleTarget`→재시도,
-  `ErrDeadlock`→`addressMaxDeadlockRetries`까지 재시도)을 `reassign`
-  에도 그대로 적용한다. Post-lock 재확인에서 `from_contact_id`가
-  기대와 다르면(다른 상담사가 먼저 reassign/release 성공) 재시도하지
-  않고 즉시 `ErrConflict`(409)로 실패시킨다 — "누가 먼저 확인 화면을
-  봤는지"는 재시도로 해결할 문제가 아니라, 나중에 요청한 상담사에게
-  최신 상태를 다시 보여주고 재확인받아야 하는 UX 문제이기 때문이다
-  (claim의 기존 정책과 동일: 진짜 충돌은 재시도로 덮지 않고 표면화).
+**claim의 실제 경합 처리 패턴 재확인:** `bin-contact-manager/pkg/
+dbhandler/address.go`의 `AddressClaim`/`addressClaimAttempt`는
+"즉시 409"가 아니라, `ErrStaleTarget`을 받으면 **재시도**하는
+for 루프 패턴이다(pre-lock에서 읽은 상태와 락 하에서 재확인한 상태가
+다르면 재시도해서 최신 상태로 다시 시도 — 즉 "누가 먼저 요청했는지"의
+경합은 재시도로 흡수하고, 사용자에게는 최종 결과만 보여준다).
+
+release/reassign은 이와 **다른 정책을 채택한다**:
+- `closeOwnOpenPeriodTx`가 반환하는 `ErrConflict`(fromContactID가
+  기대한 open period를 소유하고 있지 않음)는 **재시도하지 않고 즉시
+  409로 표면화**한다. 근거: claim의 `ErrStaleTarget` 재시도는 "같은
+  목표(이 주소를 내가 갖는다)를 향한 낙관적 재확인"이므로 재시도가
+  타당하지만, release/reassign의 `from_contact_id`는 "사용자가 화면에서
+  본 현재 소유자"에 대한 **명시적 사용자 입력 검증**이다. 이 값이
+  서버 상태와 다르다는 것은 "그 사이 다른 상담사가 이미 이 주소를
+  움직였다"는 뜻이며, 재시도로 자동 흡수하면 사용자가 화면에서 본 것과
+  다른 대상에 대해 조용히 성공해버리는(silent takeover) 위험이 있다.
+  따라서 claim과 달리 즉시 409로 실패시키고, 사용자가 최신 상태를
+  다시 확인한 뒤 재시도하도록 한다.
+- 반면 2단계(`OwnershipPeriodsLockAndResolveTx(newContactID, ...)`)가
+  반환할 수 있는 `ErrConflict`(newContactID로 열려는 시점에 또 다른
+  제3의 Contact가 끼어들어 이미 open period를 가진 경우)도 동일하게
+  즉시 409로 처리한다 — 같은 이유(사용자 입력 검증 실패로 취급).
 - `ErrDeadlock`(DB 레벨 잠금 경합, 신원 충돌과 무관)은 기존
-  `addressMaxDeadlockRetries` 루프로 그대로 재시도한다 — claim/update
-  가 이미 쓰는 패턴을 재사용, 새 정책을 만들지 않는다.
+  `addressMaxDeadlockRetries` 루프로 그대로 재시도한다 — claim이
+  이미 쓰는 패턴을 그대로 재사용, 새 정책을 만들지 않는다.
 - 프론트 UX: 409를 받으면 "다른 상담사가 방금 이 주소를 변경했습니다.
   최신 상태를 다시 확인해주세요"류의 에러를 보여주고, 모달을 닫은 뒤
   Case-Contact 연결(주 동작)은 이미 완료되었음을 유지한다(§2의
@@ -299,10 +405,17 @@ release의 것과 동일 — 클라이언트가 관찰한 소유자와 서버 �
   — `POST /contact_addresses/{id}/release`. `id_claim.yaml`의 구조를
   그대로 미러링(요청 바디만 `contact_id` 시맨틱이 "해제 대상"으로
   달라짐, 응답/에러 코드 형태는 동일 200/400/401/403/404/409/500).
+  내부적으로 ownership period 서브시스템(§4.1/§4.3)의
+  `closeOwnOpenPeriodTx`를 재사용하므로 API 계약 자체는 v1과 동일 —
+  변경은 dbhandler 내부 구현에 국한된다.
 - **신규:** `bin-openapi-manager/openapi/paths/contact_addresses/id_reassign.yaml`
   — `POST /contact_addresses/{id}/reassign`, body
   `{from_contact_id, new_contact_id}`. 이번 VOIP-1270 스코프에서
-  실제로 프론트가 호출하는 것은 이 엔드포인트다(§4.4).
+  실제로 프론트가 호출하는 것은 이 엔드포인트다(§4.4). 내부적으로
+  ownership period CLOSE(fromContactID)→OPEN(newContactID)을 단일
+  트랜잭션에서 수행하며(§4.4), `contact_addresses.contact_id`는
+  1회만 UPDATE한다 — API 계약은 v1과 동일, 변경은 dbhandler 내부
+  구현에 국한된다.
 - **기존 재사용, 변경 없음:** `POST /contact_addresses` — 이미
   `contact_id`(optional)를 받아 생성과 동시에 귀속시키는 것을
   지원한다(`bin-openapi-manager/openapi/paths/contact_addresses/main.yaml:74-81`,
