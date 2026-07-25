@@ -569,9 +569,10 @@ APPROVE)에 따라 독립 리뷰를 진행 중이다.
 | R1 | CHANGES_REQUESTED | §4.1/§4.3이 지목한 확장 지점(`OwnershipPeriodsLockAndResolveTx` Step 1)이 틀렸다 — 실제로는 `addressClaimAttempt`(`address.go:226-244`)가 더 앞단에서 살아있는 소유자를 만나면 `AddressClaimTx` 호출 전에 즉시 `ErrConflict`를 반환한다. `force`를 문서가 지목한 지점에만 배선하면 시나리오 3(재할당)의 핵심 유스케이스가 그대로 실패한다. §4.1/§4.2/§4.3/§4.5/§8을 `addressClaimAttempt` 기준으로 전면 정정 | `6f5e83b90` |
 | R2 | CHANGES_REQUESTED | 확장 지점(`addressClaimAttempt`) 식별은 옳았으나, R1이 채택한 구현(`staleRowRepairTx` 재사용)이 틀렸다 — 이 함수는 살아있는 소유자에 대해 의도적으로 no-op(아무 것도 갱신하지 않고 `(false, nil)` 반환)이라서, `force:true`로 이 경로를 타도 이전 소유자의 open ownership period가 닫히지 않은 채 `AddressClaimTx`가 호출되고, 그 안에서 무조건 호출되는 `OwnershipPeriodsLockAndResolveTx`가 독립적으로 같은 충돌을 재검사해 `ErrConflict`가 재발한다. `closeOwnOpenPeriodTx`(v5가 이미 검증한 CLOSE 헬퍼)로 교체, tombstone/force 분기를 명시적으로 분리. 부차: listenhandler 계층이 §4.3 변경 지점 목록에서 누락됐던 것도 보완 | `309fd839e` |
 | R3 | CHANGES_REQUESTED | **핵심 로직(§4.3 pseudocode)은 코드로 재검증한 결과 정확함** — `closeOwnOpenPeriodTx`가 이전 소유자 ID로 호출되면 Step 1 충돌에 걸리지 않고 실제 UPDATE로 period를 닫는다는 것을 코드 추적으로 확인. 다만 R2 수정 시 §4.2와 §8에 R1 시절(`staleRowRepairTx` 기반) 서술이 그대로 남아 §4.3과 모순되는 잔재 발견 — 두 곳 모두 `closeOwnOpenPeriodTx` 기준으로 재정정 | `8620b1e2c` |
-| R4 | CHANGES_REQUESTED | v6→v7 전환 시 "§5. API/OpenAPI 변경 요약" 헤더 전체가 실수로 삭제되면서, 그 안에 있던 `GET /contact_addresses`의 `target` 쿼리 필터 사양(구현 자체가 아직 안 된 선결 작업)이 통째로 유실됨 — §6.1/§8은 여전히 존재하지 않는 §5를 참조하고 있었고, 이 필터 없이는 §6.1의 프론트 3-분기 조회 자체가 동작하지 않음. §4.6으로 target 필터 사양을 복원(v5 §10 SUPERSEDED에서 동일 내용 확인 후 재사용), §6.1/§8의 참조를 §4.6으로 정정. §4 핵심 로직은 재검증에서도 이상 없음 확인 | 본 커밋 |
+| R4 | CHANGES_REQUESTED | v6→v7 전환 시 "§5. API/OpenAPI 변경 요약" 헤더 전체가 실수로 삭제되면서, 그 안에 있던 `GET /contact_addresses`의 `target` 쿼리 필터 사양(구현 자체가 아직 안 된 선결 작업)이 통째로 유실됨 — §6.1/§8은 여전히 존재하지 않는 §5를 참조하고 있었고, 이 필터 없이는 §6.1의 프론트 3-분기 조회 자체가 동작하지 않음. §4.6으로 target 필터 사양을 복원(v5 §10 SUPERSEDED에서 동일 내용 확인 후 재사용), §6.1/§8의 참조를 §4.6으로 정정. §4 핵심 로직은 재검증에서도 이상 없음 확인 | `6c5e7f966` |
+| R5 | **APPROVED** | §0~§11 전체 정독 + §4의 모든 pseudocode 시그니처(5개 함수)를 실제 소스와 재대조, 리뷰 이력 테이블의 모든 커밋 해시가 실제 git log에 존재함까지 확인. R1~R4가 지적했던 카테고리(확장 지점, 함수 선택, 섹션 유실, 타입/시그니처)의 잔재 전수 재확인 — 새 결함 없음 | — |
 
 **현재 상태: DRAFT (리뷰 진행 중, R1~R4 CHANGES_REQUESTED 모두 수정
-완료, R5 대기 — §4 핵심 로직은 R3/R4에서 연속 검증 통과, 남은 리스크는
-문서 구조적 정합성).**
+완료, R5 첫 APPROVE 획득 — 연속 2회 APPROVE 요건 충족을 위해 R6
+대기).**
 
