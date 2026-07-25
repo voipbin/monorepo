@@ -99,9 +99,11 @@ Case의 `Peer.Type`+`Peer.Target`으로 `contact_addresses`를 조회하여
 - 버튼: 확인 / 취소
 - 체크박스: "결정 기억하기" (**시나리오 1과 별도 키로 관리** — 재할당은
   위험도가 다르다는 것을 사용자가 명시적으로 선택할 수 있어야 함)
-- 확인 시: 기존 Contact로부터 이 주소의 소유권을 **해제(release)**한
-  뒤, 이번 Contact로 **재할당(claim)**한다. 순서를 반드시 지킨다 —
-  release 먼저, claim 그 다음(§4).
+- 확인 시: 기존 Contact로부터 이 주소의 소유권을 해제하고 이번
+  Contact로 재할당한다(**단일 `reassign` API 호출로 원자적 처리** —
+  프론트가 release와 claim을 별도 API로 순차 호출하는 것이 아니다.
+  release/claim은 백엔드 내부에서 하나의 트랜잭션 안에 있는
+  CLOSE→OPEN 순서일 뿐이다. 상세: §4.4).
 
 ### Case-Contact 연결과 주소 연동의 순서
 
@@ -590,8 +592,10 @@ getItem/setItem`을 흩어놓지 않는다. 키 네이밍은 §3 참조.
   성공 / 기대 소유자와 일치 시 성공 / 기대 소유자와 불일치 시
   `ErrConflict` / 존재하지 않는 주소 `ErrNotFound`.
 - `AddressReassignTx`: 정상 재할당(release+claim 원자적 성공) /
-  중간에 `from_contact_id` 불일치로 전체 rollback / 대상 Contact가
-  soft-delete되어 있으면 실패 / deadlock 재시도 후 성공.
+  중간에 `from_contact_id` 불일치로 전체 rollback / `new_contact_id`
+  쪽에서 제3자가 이미 open period를 가진 경우(§4.5 에러 발생 지점
+  ②) `ErrConflict`로 rollback / 대상 Contact가 soft-delete되어
+  있으면 실패 / deadlock 재시도 후 성공.
 - `AddressList` `target` 필터: 단위 테스트 + OpenAPI 스펙 검증(§5).
 - listenhandler: `processV1ContactAddressesIDRelease`,
   `processV1ContactAddressesIDReassign`의 400/404/409 라우팅 테스트
