@@ -2,14 +2,14 @@
 
 **Issue:** VOIP-1270
 **Branch:** VOIP-1270-case-peer-address-contact-claim
-**Status:** DRAFT v7 — 대표님 지시로 백엔드 설계 재변경. v6(기존 PUT
-에 `contact_id` 필드 추가)을 **SUPERSEDED**하고, 대신 기존 `POST
-/contact_addresses/{id}/claim`에 `force`(boolean, optional) 파라미터를
-추가해 이미 다른 Contact가 소유한 주소도 덮어쓸 수 있게 확장한다.
-`force` 없이는 기존 계약(unresolved 전용, 충돌 시 409) 그대로
-유지 — 하위 호환 보장. v5(§4~§10, 8라운드 독립 리뷰 완료분)와 v6은
-모두 SUPERSEDED, 리뷰 이력은 §10에 "v5 전용"으로 보존. v7 변경분은
-아직 리뷰 루프를 거치지 않음(§11 참조).
+**Status:** APPROVED FOR IMPLEMENTATION — v7(기존 `POST
+/contact_addresses/{id}/claim`에 `force` 파라미터 확장) 독립 디자인
+리뷰 루프 6라운드 완료(§11 참조). Round 1~4는 CHANGES_REQUESTED(전부
+실제 결함 — 확장 지점 오류 2회, 문서 섹션 유실 1회 등, 매 라운드
+수정 반영), Round 5·6 연속 APPROVE로 종료 기준 충족(최소 3라운드
+floor + 연속 2회 APPROVE). v5(release/reassign 신규 엔드포인트,
+8라운드 리뷰 완료)와 v6(PUT 필드 확장)은 모두 SUPERSEDED, 리뷰
+이력은 §10에 "v5 전용"으로 보존.
 
 ---
 
@@ -117,6 +117,15 @@ Case의 `Peer.Type`+`Peer.Target`으로 `contact_addresses`를 조회하여
   claim이 이미 갖고 있는 ownership-period 서브시스템 연동(§4
   참조)을 그대로 재사용할 수 있어 v6이 §4.4에서 명시했던
   "이력 테이블과의 의도적 비대칭" 문제 자체가 사라진다.
+- **모달 B의 tombstone 이전 소유자 폴백(Round 6 리뷰, 비차단
+  관찰):** `AddressList`는 소유 Contact가 soft-delete(tombstone)
+  됐는지와 무관하게 행을 반환하므로, 시나리오 3으로 분류된 주소의
+  `contact_id`가 실제로는 tombstone된 Contact일 수 있다. 이 경우
+  모달 B의 display_name 조회(`GET contacts/{contact_id}`)는 404를
+  반환한다(§6.1 step 3c) — 백엔드의 claim 경로 자체는 이 상태를
+  `staleRowRepairTx`로 이미 우아하게 처리하는 것과 대비된다(§4.3).
+  구현 단계에서 404 시 "삭제된 컨택트"류의 폴백 텍스트로 모달 B를
+  표시한다(정확한 이전 소유자 이름 대신).
 
 ### Case-Contact 연결과 주소 연동의 순서
 
@@ -350,6 +359,22 @@ v6(SUPERSEDED, §0)에서 지적했던 "PUT으로 바뀐 소유권이 이력
 `force: true`도 결국 `AddressClaimTx`의 기존 경로(§4.1)를 그대로
 타므로, ownership-period 테이블은 항상 정확하게 갱신된다.
 
+**감사 이벤트의 편측성(Round 6 리뷰, 비차단 관찰):**
+`contacthandler.ClaimAddress`(`contact.go:511`)는 성공 시
+`EventTypeContactUpdated`를 **새 소유 Contact에 대해서만** 발행하고,
+`force:true`로 소유권을 빼앗기는 이전 소유자 Contact에는 아무
+이벤트도 발행하지 않는다. 지금까지는 "살아있는 이전 소유자가
+존재"하는 상황 자체가 claim에서 도달 불가능했으므로(항상 409) 이
+편측성이 드러나지 않았지만, `force`가 처음으로 이 경로에 도달
+가능하게 만든다. `contact_address_ownership_periods` 테이블에는
+이력이 정확히 남으므로 데이터 유실은 아니지만, 소유권을 잃는 쪽
+Contact를 구독 중인 webhook에는 알림이 가지 않는다. 이 기존
+패턴(`ClaimAddress`가 원래도 이랬음)을 그대로 상속하는 것으로
+받아들이고, 이번 스코프에서 새로 고치지 않는다(§9 Out of Scope에
+추가) — 다만 향후 이 방향으로 개선한다면 이전 소유자에게도 별도
+이벤트(예: `EventTypeContactAddressReleased`)를 발행하는 것이
+후보가 될 수 있다.
+
 ### 4.5 Race condition — 기존 claim 정책 그대로 상속
 
 `force` 유무와 무관하게, 동시성 처리는 `AddressClaimTx`/
@@ -528,6 +553,11 @@ getItem/setItem`을 흩어놓지 않는다. 키 네이밍은 §3 참조.
 - `unclaim`(재배정 없이 unresolved로만 되돌리는 액션) — VOIP-1270의
   Case 할당 화면에는 이 액션을 트리거할 UI가 없다(대표님과의 논의로
   확인). Contact 상세 화면 등 다른 곳에서 필요해지면 별도 티켓.
+- `force:true`로 소유권을 잃는 이전 Contact에 대한 별도 감사
+  이벤트 발행(§4.4, Round 6 리뷰) — 기존 `ClaimAddress`가 원래
+  새 소유자에게만 이벤트를 발행하는 패턴을 그대로 상속. 이력
+  테이블에는 정확히 남으므로 데이터 유실은 아님, 필요해지면 별도
+  티켓.
 
 ## 10. 독립 디자인 리뷰 루프 기록 (v5 전용, SUPERSEDED)
 
@@ -571,8 +601,8 @@ APPROVE)에 따라 독립 리뷰를 진행 중이다.
 | R3 | CHANGES_REQUESTED | **핵심 로직(§4.3 pseudocode)은 코드로 재검증한 결과 정확함** — `closeOwnOpenPeriodTx`가 이전 소유자 ID로 호출되면 Step 1 충돌에 걸리지 않고 실제 UPDATE로 period를 닫는다는 것을 코드 추적으로 확인. 다만 R2 수정 시 §4.2와 §8에 R1 시절(`staleRowRepairTx` 기반) 서술이 그대로 남아 §4.3과 모순되는 잔재 발견 — 두 곳 모두 `closeOwnOpenPeriodTx` 기준으로 재정정 | `8620b1e2c` |
 | R4 | CHANGES_REQUESTED | v6→v7 전환 시 "§5. API/OpenAPI 변경 요약" 헤더 전체가 실수로 삭제되면서, 그 안에 있던 `GET /contact_addresses`의 `target` 쿼리 필터 사양(구현 자체가 아직 안 된 선결 작업)이 통째로 유실됨 — §6.1/§8은 여전히 존재하지 않는 §5를 참조하고 있었고, 이 필터 없이는 §6.1의 프론트 3-분기 조회 자체가 동작하지 않음. §4.6으로 target 필터 사양을 복원(v5 §10 SUPERSEDED에서 동일 내용 확인 후 재사용), §6.1/§8의 참조를 §4.6으로 정정. §4 핵심 로직은 재검증에서도 이상 없음 확인 | `6c5e7f966` |
 | R5 | **APPROVED** | §0~§11 전체 정독 + §4의 모든 pseudocode 시그니처(5개 함수)를 실제 소스와 재대조, 리뷰 이력 테이블의 모든 커밋 해시가 실제 git log에 존재함까지 확인. R1~R4가 지적했던 카테고리(확장 지점, 함수 선택, 섹션 유실, 타입/시그니처)의 잔재 전수 재확인 — 새 결함 없음 | — |
+| R6 | **APPROVED** | 프로덕트/비즈니스 로직 관점(엣지 케이스, 권한, 감사, UX, force 위험성) 검토. Peer 빈값 케이스는 도메인 모델이 이미 봉쇄, force 재사용 권한 게이트도 이미 최상위 티어임을 코드로 확인해 별도 조치 불필요. 실질적 결함 없음, 비차단 관찰 2건(force로 소유권 잃는 이전 Contact에 감사 이벤트 미발행, 모달 B의 tombstone 이전 소유자 404 폴백 미명시) — CPO가 §4.4/§2/§9에 문서화로 보완 | 본 커밋 |
 
-**현재 상태: DRAFT (리뷰 진행 중, R1~R4 CHANGES_REQUESTED 모두 수정
-완료, R5 첫 APPROVE 획득 — 연속 2회 APPROVE 요건 충족을 위해 R6
-대기).**
+**종료 조건 충족:** 최소 3라운드 floor(6라운드로 초과 충족) + 연속
+2회 APPROVE(R5, R6). 리뷰 루프 종료, 구현 착수 가능 상태.
 
