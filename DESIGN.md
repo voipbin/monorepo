@@ -200,6 +200,18 @@ Agent별로 키를 분리하는 이유: 같은 브라우저 프로필을 여러 
   닫고 나서 지운다" 패턴으로 사용 중(address_ownership_write.go:
   573-576).
 
+**신규로 도입하는 헬퍼 (기존 코드베이스에 없음, 이번 설계가 처음
+제안):**
+- `addressSetContactIDTx(ctx, tx, addressID, expectedCurrentContactID
+  *uuid.UUID, newContactID *uuid.UUID) error` — `contact_addresses.
+  contact_id`만 갱신하는 단순 UPDATE 래퍼. `WHERE id = ? AND
+  contact_id <=> <expectedCurrentContactID>`(NULL 허용 비교)로 조건을
+  걸고, `RowsAffected == 0`이면 `ErrConflict`를 반환한다(Round 2/3
+  리뷰로 확정된 스큐 케이스 안전망, §4.3/§4.4 참조). 위 세 헬퍼가
+  "소유권 검증/변경"을 담당하는 것과 달리, 이 함수는 그 검증이 이미
+  끝난 뒤의 단순 컬럼 쓰기 + 최종 안전망 역할만 한다 — "소유권 검증
+  자체를 새로 만들지 않는다"는 원칙과 모순되지 않는다.
+
 ### 4.2 신규 엔드포인트: `POST /contact_addresses/{id}/release`
 
 `claim`의 대칭 오퍼레이션. 요청자가 지정한 `contact_id`(현재 소유자와
@@ -276,15 +288,19 @@ func (h *handler) AddressReleaseTx(
   `AddressDeleteTx`(`address_ownership_write.go:591-605`)는 이
   구조적 gap을 알고, 자신의 최종 DELETE에서 `RowsAffected == 0`이면
   `ErrStaleTarget`을 반환하는 안전망을 별도로 둔다("B5 fix" 주석).
-  `AddressReleaseTx`/`AddressReassignTx`도 동일한 안전망을 최종
-  쓰기에 반드시 둔다: **`addressSetContactIDTx`는 `UPDATE
+  `AddressReleaseTx`/`AddressReassignTx`도 **동일한 구조**(조건부
+  WHERE + RowsAffected 체크)의 안전망을 최종 쓰기에 두되, **반환
+  에러 타입은 `AddressDeleteTx`와 다르게 `ErrConflict`로 확정한다**
+  (Round 3 리뷰로 확정 — 이유는 아래 §4.5 참조, `ErrStaleTarget`을
+  쓰면 claim의 재시도 루프가 이 실패를 자동 재시도해버려 §4.5의
+  "즉시 409" 정책과 충돌한다): **`addressSetContactIDTx`는 `UPDATE
   contact_addresses SET contact_id = ? WHERE id = ? AND contact_id =
   <expected-from-value>`로 조건을 걸고, `RowsAffected == 0`이면
-  `ErrConflict`(또는 `ErrStaleTarget`)를 반환한다.** id만으로
-  조건 없이 UPDATE하지 않는다 — 이 조건절이 스큐 케이스에서
-  `closeOwnOpenPeriodTx`가 놓친 소유자 검증을 최종 쓰기 시점에 대신
-  수행하여, "스큐 상태에서 오래된 화면을 본 상담사가 방금 다른
-  Contact가 획득한 소유권을 조용히 덮어쓰는" 실패 모드를 차단한다.
+  `ErrConflict`를 반환한다.** id만으로 조건 없이 UPDATE하지 않는다
+  — 이 조건절이 스큐 케이스에서 `closeOwnOpenPeriodTx`가 놓친
+  소유자 검증을 최종 쓰기 시점에 대신 수행하여, "스큐 상태에서
+  오래된 화면을 본 상담사가 방금 다른 Contact가 획득한 소유권을
+  조용히 덮어쓰는" 실패 모드를 차단한다.
 - 이미 unresolved(`contact_id IS NULL`)인 idempotent 케이스는
   pre-lock 읽기(`AddressGet`) 단계에서 조기 반환한다(claim의 "이미
   이 contact 소유면 no-op" 패턴과 대칭).
@@ -401,25 +417,49 @@ for 루프 패턴이다(pre-lock에서 읽은 상태와 락 하에서 재확인�
 다르면 재시도해서 최신 상태로 다시 시도 — 즉 "누가 먼저 요청했는지"의
 경합은 재시도로 흡수하고, 사용자에게는 최종 결과만 보여준다).
 
-release/reassign은 이와 **다른 정책을 채택한다**:
-- `closeOwnOpenPeriodTx`가 반환하는 `ErrConflict`(fromContactID가
-  기대한 open period를 소유하고 있지 않음)는 **재시도하지 않고 즉시
-  409로 표면화**한다. 근거: claim의 `ErrStaleTarget` 재시도는 "같은
-  목표(이 주소를 내가 갖는다)를 향한 낙관적 재확인"이므로 재시도가
-  타당하지만, release/reassign의 `from_contact_id`는 "사용자가 화면에서
-  본 현재 소유자"에 대한 **명시적 사용자 입력 검증**이다. 이 값이
-  서버 상태와 다르다는 것은 "그 사이 다른 상담사가 이미 이 주소를
-  움직였다"는 뜻이며, 재시도로 자동 흡수하면 사용자가 화면에서 본 것과
-  다른 대상에 대해 조용히 성공해버리는(silent takeover) 위험이 있다.
-  따라서 claim과 달리 즉시 409로 실패시키고, 사용자가 최신 상태를
-  다시 확인한 뒤 재시도하도록 한다.
-- 반면 2단계(`OwnershipPeriodsLockAndResolveTx(newContactID, ...)`)가
-  반환할 수 있는 `ErrConflict`(newContactID로 열려는 시점에 또 다른
-  제3의 Contact가 끼어들어 이미 open period를 가진 경우)도 동일하게
-  즉시 409로 처리한다 — 같은 이유(사용자 입력 검증 실패로 취급).
-- `ErrDeadlock`(DB 레벨 잠금 경합, 신원 충돌과 무관)은 기존
-  `addressMaxDeadlockRetries` 루프로 그대로 재시도한다 — claim이
-  이미 쓰는 패턴을 그대로 재사용, 새 정책을 만들지 않는다.
+release/reassign은 이와 **다른 정책을 채택한다** — 아래 3개 에러
+발생 지점 모두 재시도하지 않고 즉시 409로 표면화한다:
+
+1. `closeOwnOpenPeriodTx`가 반환하는 `ErrConflict`(fromContactID가
+   기대한 open period를 소유하고 있지 않음, lockedRows가 비어있지
+   않은 경우) — **즉시 409**. 근거: claim의 `ErrStaleTarget` 재시도는
+   "같은 목표(이 주소를 내가 갖는다)를 향한 낙관적 재확인"이므로
+   재시도가 타당하지만, release/reassign의 `from_contact_id`는
+   "사용자가 화면에서 본 현재 소유자"에 대한 **명시적 사용자 입력
+   검증**이다. 이 값이 서버 상태와 다르다는 것은 "그 사이 다른
+   상담사가 이미 이 주소를 움직였다"는 뜻이며, 재시도로 자동
+   흡수하면 사용자가 화면에서 본 것과 다른 대상에 대해 조용히
+   성공해버리는(silent takeover) 위험이 있다. 따라서 claim과 달리
+   즉시 409로 실패시키고, 사용자가 최신 상태를 다시 확인한 뒤
+   재시도하도록 한다.
+2. 2단계(`OwnershipPeriodsLockAndResolveTx(newContactID, ...)`)가
+   반환할 수 있는 `ErrConflict`(newContactID로 열려는 시점에 또 다른
+   제3의 Contact가 끼어들어 이미 open period를 가진 경우) — **즉시
+   409**. 동일한 이유(사용자 입력 검증 실패로 취급).
+3. **최종 `addressSetContactIDTx`의 스큐 케이스 안전망이 반환하는
+   `ErrConflict`(§4.3/§4.4, Round 2/3 리뷰로 신규 도입)** — **즉시
+   409**. 이 에러 타입을 `AddressDeleteTx`가 쓰는 `ErrStaleTarget`이
+   아니라 `ErrConflict`로 명시적으로 확정한 이유가 바로 이 정책과의
+   일관성이다: `addressClaimAttempt`의 재시도 루프
+   (`bin-contact-manager/pkg/dbhandler/address.go:189`)는 `err ==
+   ErrDeadlock || err == ErrStaleTarget`을 함께 재시도 대상으로
+   묶어 처리한다. §4.3/§4.4가 "`AddressClaimTx`가 사용하는 것과
+   동일한 deadlock 재시도 루프를 그대로 재사용한다"고 할 때, 만약
+   최종 안전망이 `ErrStaleTarget`을 반환했다면 이 루프가 그것도
+   함께 자동 재시도해버려 위 1/2번 항목이 명시한 "즉시 409" 정책과
+   직접 충돌했을 것이다(재시도 루프는 에러 타입만으로 분기하지,
+   "어느 함수가 반환했는지"는 구분하지 않는다). `ErrConflict`로
+   확정함으로써 재시도 루프의 재사용 범위를 `ErrDeadlock`(순수 DB
+   잠금 경합)에만 한정시키고, 신원/소유권 검증 실패는 항목 1/2와
+   동일하게 즉시 409로 일관되게 처리한다.
+- `ErrDeadlock`(DB 레벨 잠금 경합, 신원 충돌과 무관)만 기존
+  `addressMaxDeadlockRetries` 루프로 재시도한다 — claim이 이미
+  쓰는 패턴을 재사용하되, 재시도 대상은 `ErrDeadlock` 하나로
+  한정한다(위 3개 `ErrConflict` 발생 지점은 재시도 루프에 걸리지
+  않도록 명시적으로 구분해서 처리해야 함 — 구현 시 `addressClaim
+  Attempt`처럼 `ErrDeadlock || ErrStaleTarget`을 함께 묶지 말고,
+  `ErrDeadlock`만 단독으로 검사하는 조건으로 release/reassign
+  전용 재시도 루프를 작성한다).
 - 프론트 UX: 409를 받으면 "다른 상담사가 방금 이 주소를 변경했습니다.
   최신 상태를 다시 확인해주세요"류의 에러를 보여주고, 모달을 닫은 뒤
   Case-Contact 연결(주 동작)은 이미 완료되었음을 유지한다(§2의
