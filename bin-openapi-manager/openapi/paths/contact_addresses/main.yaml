@@ -33,6 +33,13 @@ get:
       schema:
         type: boolean
         example: true
+    - name: target
+      in: query
+      required: false
+      description: Filter by exact address target value (E.164 for tel, email address for email).
+      schema:
+        type: string
+        example: "+155****4567"
   responses:
     '200':
       description: Successful response.

@@ -46,6 +46,9 @@ func (h *listenHandler) processV1ContactAddressesGet(ctx context.Context, m *soc
 	if v := u.Query().Get("type"); v != "" {
 		filters["type"] = v
 	}
+	if v := u.Query().Get("target"); v != "" {
+		filters["target"] = v
+	}
 	if v := u.Query().Get("unresolved"); v == "true" {
 		filters["unresolved"] = true
 	}
@@ -318,7 +321,7 @@ func (h *listenHandler) processV1ContactAddressesIDClaim(ctx context.Context, m 
 		return simpleResponse(400), nil
 	}
 
-	tmp, err := h.contactHandler.ClaimAddress(ctx, customerID, id, reqData.ContactID)
+	tmp, err := h.contactHandler.ClaimAddress(ctx, customerID, id, reqData.ContactID, reqData.Force)
 	if err != nil {
 		log.Errorf("Could not claim address. err: %v", err)
 		return errorResponse(err), nil // routes cerrors.NotFound/AlreadyExists to 404/409

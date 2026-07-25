@@ -76,18 +76,18 @@ func (mr *MockContactHandlerMockRecorder) AddTag(ctx, contactID, tagID any) *gom
 }
 
 // ClaimAddress mocks base method.
-func (m *MockContactHandler) ClaimAddress(ctx context.Context, customerID, addressID, contactID uuid.UUID) (*contact.Address, error) {
+func (m *MockContactHandler) ClaimAddress(ctx context.Context, customerID, addressID, contactID uuid.UUID, force bool) (*contact.Address, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ClaimAddress", ctx, customerID, addressID, contactID)
+	ret := m.ctrl.Call(m, "ClaimAddress", ctx, customerID, addressID, contactID, force)
 	ret0, _ := ret[0].(*contact.Address)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ClaimAddress indicates an expected call of ClaimAddress.
-func (mr *MockContactHandlerMockRecorder) ClaimAddress(ctx, customerID, addressID, contactID any) *gomock.Call {
+func (mr *MockContactHandlerMockRecorder) ClaimAddress(ctx, customerID, addressID, contactID, force any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClaimAddress", reflect.TypeOf((*MockContactHandler)(nil).ClaimAddress), ctx, customerID, addressID, contactID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClaimAddress", reflect.TypeOf((*MockContactHandler)(nil).ClaimAddress), ctx, customerID, addressID, contactID, force)
 }
 
 // Create mocks base method.

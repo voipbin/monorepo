@@ -54,6 +54,7 @@ type ContactAddressCreate struct {
 // ContactAddressClaim is the body for POST /v1/contact_addresses/{id}/claim
 type ContactAddressClaim struct {
 	ContactID uuid.UUID `json:"contact_id"` // required
+	Force     bool      `json:"force"`      // optional, default false — overwrite ownership of a live different owner (design DESIGN.md §4, v7)
 }
 
 // AddressUpdate is the body for PUT /v1/contacts/{id}/addresses/{address_id}

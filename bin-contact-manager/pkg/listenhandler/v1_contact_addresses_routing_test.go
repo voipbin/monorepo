@@ -93,9 +93,27 @@ func Test_processRequest_ContactAddressesID_Routing(t *testing.T) {
 				Data:   []byte(`{"contact_id":"` + contactID.String() + `"}`),
 			},
 			setupMock: func(_ *addresshandler.MockAddressHandler, mockContact *contacthandler.MockContactHandler) {
-				mockContact.EXPECT().ClaimAddress(gomock.Any(), customerID, addressID, contactID).Return(&contact.Address{
+				mockContact.EXPECT().ClaimAddress(gomock.Any(), customerID, addressID, contactID, false).Return(&contact.Address{
 					ID:         addressID,
 					CustomerID: customerID,
+				}, nil)
+			},
+			expectCode: 200,
+		},
+		{
+			// DESIGN.md §4.2/§4.3 (v7): the request body's "force" field
+			// must parse and reach contactHandler.ClaimAddress.
+			name: "POST /contact_addresses/{id}/claim?customer_id=... with force:true parses and forwards force",
+			request: &sock.Request{
+				URI:    "/v1/contact_addresses/" + addressID.String() + "/claim?customer_id=" + customerID.String(),
+				Method: sock.RequestMethodPost,
+				Data:   []byte(`{"contact_id":"` + contactID.String() + `","force":true}`),
+			},
+			setupMock: func(_ *addresshandler.MockAddressHandler, mockContact *contacthandler.MockContactHandler) {
+				mockContact.EXPECT().ClaimAddress(gomock.Any(), customerID, addressID, contactID, true).Return(&contact.Address{
+					ID:         addressID,
+					CustomerID: customerID,
+					ContactID:  contactID,
 				}, nil)
 			},
 			expectCode: 200,

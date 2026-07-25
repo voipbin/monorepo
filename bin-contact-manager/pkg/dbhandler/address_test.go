@@ -838,7 +838,7 @@ func Test_AddressClaim(t *testing.T) {
 	// (a) claiming an unresolved address succeeds
 	mockUtil.EXPECT().TimeNow().Return(curTime).AnyTimes()
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
-	if err := h.AddressClaim(ctx, customerID, unresolvedAddrID, contactID2); err != nil {
+	if err := h.AddressClaim(ctx, customerID, unresolvedAddrID, contactID2, false); err != nil {
 		t.Fatalf("AddressClaim() error = %v", err)
 	}
 	got, err := h.AddressGet(ctx, customerID, unresolvedAddrID)
@@ -850,12 +850,12 @@ func Test_AddressClaim(t *testing.T) {
 	}
 
 	// (b) claiming an address already resolved to a DIFFERENT contact -> ErrConflict
-	if err := h.AddressClaim(ctx, customerID, resolvedAddrID, contactID2); err != ErrConflict {
+	if err := h.AddressClaim(ctx, customerID, resolvedAddrID, contactID2, false); err != ErrConflict {
 		t.Errorf("AddressClaim() cross-contact claim: expected ErrConflict, got: %v", err)
 	}
 
 	// (c) re-claiming an address already resolved to the SAME contact -> idempotent success
-	if err := h.AddressClaim(ctx, customerID, resolvedAddrID, contactID1); err != nil {
+	if err := h.AddressClaim(ctx, customerID, resolvedAddrID, contactID1, false); err != nil {
 		t.Errorf("AddressClaim() idempotent same-contact claim: expected success, got: %v", err)
 	}
 }

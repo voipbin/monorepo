@@ -1,8 +1,20 @@
 post:
   summary: Claim an unresolved contact address
-  description: Attaches a currently-unresolved contact address (contact_id
-    is NULL) to the given contact. Idempotent if already claimed by the
-    same contact; returns 409 if claimed by a different contact.
+  description: >-
+    Attaches a currently-unresolved contact address (contact_id is NULL) to
+    the given contact. Idempotent if already claimed by the same contact.
+
+    Default behavior (force absent or false): unchanged from before —
+    returns 409 (Conflict) if the address is already claimed by a
+    different, still-active (non-tombstoned) contact. Existing callers are
+    unaffected.
+
+    force: true (new): if the address is already claimed by a different,
+    still-active contact, the claim overwrites that ownership instead of
+    returning 409 — the previous owner's open ownership period is closed
+    and a new one is opened for the requesting contact. Addresses owned by
+    a tombstoned (soft-deleted) contact are repaired in place exactly as
+    before, regardless of force.
   tags:
     - Contact
   parameters:
@@ -26,6 +38,16 @@ post:
               type: string
               format: uuid
               example: 5e4a0680-eba3-4001-a000-000000000001
+            force:
+              type: boolean
+              description: >-
+                When true, overwrite ownership even if the address is
+                currently claimed by a different, still-active contact
+                (no 409). Defaults to false, which preserves the original
+                claim behavior. Has no effect when the address is
+                unresolved or already owned by the requesting contact.
+              example: false
+              default: false
   responses:
     '200':
       description: Address claimed successfully.

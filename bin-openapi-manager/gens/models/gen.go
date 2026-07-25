@@ -10719,6 +10719,9 @@ type GetContactAddressesParams struct {
 
 	// Unresolved When true, list only unresolved addresses (contact_id IS NULL) for the customer — the pool of addresses not yet attached to any contact. Mutually exclusive with contact_id; if both are given, unresolved=true wins and contact_id is ignored.
 	Unresolved *bool `form:"unresolved,omitempty" json:"unresolved,omitempty"`
+
+	// Target Filter by exact address target value (E.164 for tel, email address for email).
+	Target *string `form:"target,omitempty" json:"target,omitempty"`
 }
 
 // GetContactAddressesParamsType defines parameters for GetContactAddresses.
@@ -10787,6 +10790,11 @@ type PutContactAddressesIdJSONBody struct {
 type PostContactAddressesIdClaimJSONBody struct {
 	// ContactId Example: 5e4a0680-eba3-4001-a000-000000000001
 	ContactId openapi_types.UUID `json:"contact_id"`
+
+	// Force When true, overwrite ownership even if the address is currently claimed by a different, still-active contact (no 409). Defaults to false, which preserves the original claim behavior. Has no effect when the address is unresolved or already owned by the requesting contact.
+	//
+	// Example: false
+	Force *bool `json:"force,omitempty"`
 }
 
 // GetContactCasesParams defines parameters for GetContactCases.

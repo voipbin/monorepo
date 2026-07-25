@@ -466,8 +466,10 @@ func (h *contactHandler) CreateUnresolvedAddress(ctx context.Context, customerID
 // Publishes EventTypeContactUpdated on success (the address becomes part
 // of the contact's address set). Returns a typed conflict error (mapped to
 // 409 by the listenhandler) if the address is already resolved to a
-// DIFFERENT contact.
-func (h *contactHandler) ClaimAddress(ctx context.Context, customerID, addressID, contactID uuid.UUID) (*contact.Address, error) {
+// DIFFERENT, live contact -- unless force is true, in which case the
+// previous owner's open ownership period is closed and ownership is
+// transferred instead of returning a conflict (DESIGN.md §4, v7).
+func (h *contactHandler) ClaimAddress(ctx context.Context, customerID, addressID, contactID uuid.UUID, force bool) (*contact.Address, error) {
 	// Verify the target contact exists and belongs to this customer
 	// (defense-in-depth re-check; bin-api-manager already verified this).
 	c, err := h.db.ContactGet(ctx, contactID)
@@ -482,7 +484,7 @@ func (h *contactHandler) ClaimAddress(ctx context.Context, customerID, addressID
 		) // treat cross-tenant or soft-deleted contact as not-found, not permission-denied, to avoid leaking existence (A9-b fix: soft-deleted case)
 	}
 
-	if err := h.db.AddressClaim(ctx, customerID, addressID, contactID); err != nil {
+	if err := h.db.AddressClaim(ctx, customerID, addressID, contactID, force); err != nil {
 		if stderrors.Is(err, dbhandler.ErrConflict) {
 			return nil, cerrors.AlreadyExists(
 				commonoutline.ServiceNameContactManager,

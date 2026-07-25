@@ -3687,18 +3687,18 @@ func (mr *MockRequestHandlerMockRecorder) ContactV1CaseUpdateContact(ctx, custom
 }
 
 // ContactV1ContactAddressClaim mocks base method.
-func (m *MockRequestHandler) ContactV1ContactAddressClaim(ctx context.Context, customerID, addressID, contactID uuid.UUID) (*contact.Address, error) {
+func (m *MockRequestHandler) ContactV1ContactAddressClaim(ctx context.Context, customerID, addressID, contactID uuid.UUID, force bool) (*contact.Address, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ContactV1ContactAddressClaim", ctx, customerID, addressID, contactID)
+	ret := m.ctrl.Call(m, "ContactV1ContactAddressClaim", ctx, customerID, addressID, contactID, force)
 	ret0, _ := ret[0].(*contact.Address)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ContactV1ContactAddressClaim indicates an expected call of ContactV1ContactAddressClaim.
-func (mr *MockRequestHandlerMockRecorder) ContactV1ContactAddressClaim(ctx, customerID, addressID, contactID any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) ContactV1ContactAddressClaim(ctx, customerID, addressID, contactID, force any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactV1ContactAddressClaim", reflect.TypeOf((*MockRequestHandler)(nil).ContactV1ContactAddressClaim), ctx, customerID, addressID, contactID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactV1ContactAddressClaim", reflect.TypeOf((*MockRequestHandler)(nil).ContactV1ContactAddressClaim), ctx, customerID, addressID, contactID, force)
 }
 
 // ContactV1ContactAddressCreate mocks base method.

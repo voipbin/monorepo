@@ -129,7 +129,7 @@ func Test_processV1ContactAddressesIDClaim(t *testing.T) {
 			name: "200 claimed successfully",
 			body: []byte(`{"contact_id":"` + contactID.String() + `"}`),
 			setupMock: func(m *contacthandler.MockContactHandler) {
-				m.EXPECT().ClaimAddress(gomock.Any(), customerID, addressID, contactID).Return(&contact.Address{
+				m.EXPECT().ClaimAddress(gomock.Any(), customerID, addressID, contactID, false).Return(&contact.Address{
 					ID:         addressID,
 					CustomerID: customerID,
 					ContactID:  contactID,
