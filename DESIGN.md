@@ -249,7 +249,7 @@ Tx`는 **"닫고 나서 NULL로 되돌린다"**로 설계한다. `AddressClaim`
 func (h *handler) AddressReleaseTx(
     ctx context.Context, tx *sql.Tx,
     customerID uuid.UUID, addressID uuid.UUID,
-    fromContactID uuid.UUID, addrType string, target string,
+    fromContactID uuid.UUID, addrType commonaddress.Type, target string,
 ) error {
     // 1. CLOSE: fromContactID가 실제로 이 target에 대한 open period를
     //    갖고 있는지 검증하면서 동시에 닫는다.
@@ -345,7 +345,7 @@ func (h *handler) AddressReassignTx(
     ctx context.Context, tx *sql.Tx,
     customerID uuid.UUID, addressID uuid.UUID,
     fromContactID uuid.UUID, newContactID uuid.UUID,
-    addrType string, target string,
+    addrType commonaddress.Type, target string,
 ) error {
     // 1. CLOSE: fromContactID 소유 검증 + period 닫기.
     //    (§4.3과 동일한 이유로 이것이 "기대한 소유자 검증"을 대신한다.)
