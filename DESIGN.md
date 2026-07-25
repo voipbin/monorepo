@@ -2,8 +2,11 @@
 
 **Issue:** VOIP-1270
 **Branch:** VOIP-1270-case-peer-address-contact-claim
-**Status:** DRAFT v5 — 방향 전면 재설계 (대표님 확정 지시 반영). 이전 v1~v4
-(백엔드 자동 조건부 claim + 프론트 사후 토스트)는 폐기.
+**Status:** APPROVED FOR IMPLEMENTATION — 독립 디자인 리뷰 루프 8라운드
+완료(§10 참조). Round 1~6은 CHANGES_REQUESTED(전부 실제 결함, 매 라운드
+수정 반영), Round 7·8 연속 APPROVE로 종료 기준 충족(최소 3라운드 floor
++ 연속 2회 APPROVE). 이전 v1~v4(백엔드 자동 조건부 claim + 프론트
+사후 토스트)는 폐기됨.
 
 ---
 
@@ -104,6 +107,15 @@ Case의 `Peer.Type`+`Peer.Target`으로 `contact_addresses`를 조회하여
   프론트가 release와 claim을 별도 API로 순차 호출하는 것이 아니다.
   release/claim은 백엔드 내부에서 하나의 트랜잭션 안에 있는
   CLOSE→OPEN 순서일 뿐이다. 상세: §4.4).
+- **알려진 비치명적 UX 공백(Round 8 리뷰, 구현 단계 처리 예정):**
+  모달 B를 띄우기 위한 `GET contacts/{contact_id}`(현재 소유
+  Contact의 `display_name` 조회) 시점과, 실제 reassign 확정 시점
+  사이에는 시간차가 있다. 그 사이 소유 Contact가 soft-delete(tombstone)
+  되면 `GET contacts/{contact_id}`가 404를 반환해 `display_name`을
+  보여줄 수 없는 케이스가 발생할 수 있다(백엔드 자체의 안전성에는
+  영향 없음 — §4.3의 스큐 안전망이 실제 reassign 실행 시점의 데이터
+  정합성은 보장한다). 구현 단계에서 404 시 "삭제된 컨택트" 류의
+  폴백 텍스트로 처리한다.
 
 ### Case-Contact 연결과 주소 연동의 순서
 
@@ -517,6 +529,13 @@ release/reassign은 이와 **다른 정책을 채택한다** — 아래 3개 에
   따른 servicehandler/타입 재생성 반영. 패턴은 기존
   `ServiceHandler.AddressClaim` 래퍼(존재한다면 이를 참고)와 동일하게
   `AddressRelease`/`AddressReassign` 서비스핸들러 메서드 추가.
+  **감사 이벤트(Round 8 리뷰 명시):** `contacthandler.ClaimAddress`가
+  성공 시 `PublishEvent(ctx, contact.EventTypeContactUpdated, c)`를
+  호출하는 것과 동일하게, `contacthandler`의 release/reassign
+  래퍼도 성공 시 동일 이벤트를 발행한다 — 새 이벤트 타입을
+  신설하지 않고 기존 `EventTypeContactUpdated`를 재사용한다(주소
+  구성이 바뀐 것은 Contact의 상태 변화이므로 기존 시맨틱에
+  부합한다).
 
 ## 6. 프론트엔드(square-admin) 반영 범위
 
@@ -623,3 +642,25 @@ getItem/setItem`을 흩어놓지 않는다. 키 네이밍은 §3 참조.
 - `release`(§4.2, reassign에 종속되지 않는 단독 해제) 프론트 UI —
   이번 스코프는 reassign만 프론트에서 호출한다. release 엔드포인트
   자체는 백엔드 프리미티브로만 존재.
+
+## 10. 독립 디자인 리뷰 루프 기록
+
+정책: `design-first-with-review-loops` — 최소 3라운드, 이후 연속 2회
+APPROVE로 종료. 매 라운드는 별도의 신선한 서브에이전트(독립 컨텍스트)
+에게 위임하고, 지적된 결함의 수정은 CPO(오케스트레이터)가 직접
+적용해 커밋했다.
+
+| 라운드 | 판정 | 핵심 발견 | 커밋 |
+|---|---|---|---|
+| R1 | CHANGES_REQUESTED | §4가 기존 `contact_address_ownership_periods` 서브시스템(`OwnershipPeriodsLockAndResolveTx`/`applyOpenResolutionTx`/`closeOwnOpenPeriodTx`)을 완전히 누락 — `contact_addresses.contact_id` 컬럼만 UPDATE하는 설계였다면 소유권 이력 데이터가 깨지는 실제 버그가 됐을 것 | `bf5d150c2` |
+| R2 | CHANGES_REQUESTED | `closeOwnOpenPeriodTx`가 스큐(period 테이블 비어있음) 상황에서 소유자 검증 없이 성공 반환 — release/reassign 최종 쓰기에 `AddressDeleteTx`(B5 fix)와 동등한 `RowsAffected==0` 안전망이 없어 TOCTOU 위험 | `c99c6d28f` |
+| R3 | CHANGES_REQUESTED | R2 안전망의 반환 에러 타입이 `ErrConflict`/`ErrStaleTarget` 중 확정되지 않음 — `ErrStaleTarget`이면 claim의 기존 재시도 루프(`ErrDeadlock\|\|ErrStaleTarget`)에 자동 흡수되어 "즉시 409" 정책이 무력화됨. `ErrConflict`로 확정 | `bb609b036` |
+| R4 | CHANGES_REQUESTED | §2 시나리오3 문구("release 먼저, claim 그 다음")가 §4.4가 명시적으로 거부한 2-step 프론트 호출로 오독될 소지. 문구 수정 + §8 테스트 케이스 보강 | `aa300202b` |
+| R5 | CHANGES_REQUESTED | §4.3/§4.4 pseudocode의 `addrType`이 `string`으로 잘못 선언(실제 재사용 헬퍼는 `commonaddress.Type` 요구) — 그대로 구현 시 컴파일 실패 | `2f6ef60ff` |
+| R6 | CHANGES_REQUESTED | §4.1 신규 헬퍼 `addressSetContactIDTx`의 `expectedCurrentContactID`가 `*uuid.UUID`(포인터)로 선언됐으나 §4.3/§4.4 호출부는 값 타입을 그대로 전달 — 문서 내부 자기모순, 컴파일 실패. 시그니처를 호출부(값 타입)에 맞춰 수정 | `1b55fbfc6` |
+| R7 | **APPROVED** | §4 전체 함수 호출(선언↔호출부)을 한 줄씩 재대조, R5/R6 카테고리(타입/시그니처) 완전 해소 확인. 새 결함 없음 | — |
+| R8 | **APPROVED** | 프로덕트/비즈니스 로직 관점(엣지 케이스, 권한, 감사 추적, UX) 검토. 실질적 결함 없음. 비치명적 공백 2건(모달 B의 tombstone 소유자 404 폴백 미명시, release/reassign 감사 이벤트 발행 미명시)은 CPO가 직후 이 최종 커밋에서 문서화로 보완(§2, §5) | 본 커밋 |
+
+**종료 조건 충족:** 최소 3라운드 floor(8라운드로 초과 충족) + 연속
+2회 APPROVE(R7, R8). 리뷰 루프 종료, 구현 착수 가능 상태.
+
