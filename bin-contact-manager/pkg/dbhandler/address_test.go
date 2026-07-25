@@ -104,16 +104,29 @@ func Test_AddressListByContactID(t *testing.T) {
 	addrID3 := uuid.FromStringOrNil("ab1b2c3d-0001-0001-0001-000000000005")
 	insertTestAddress(t, dbTest, addrID3, customerID, contactID, "webchat", "session-abc123")
 
+	// Insert a fourth address of type web_session -- this one IS in the
+	// write whitelist (isValidContactAddressType, VOIP-1270 §4.7) but must
+	// still be excluded here, since it was deliberately kept OUT of
+	// contact.ReachableAddressTypes (writable-but-not-reachable). Unlike
+	// the "webchat" row above (a hypothetical type never actually
+	// writable), this exercises the exact type that real write traffic
+	// can now produce.
+	addrID4 := uuid.FromStringOrNil("ab1b2c3d-0001-0001-0001-000000000006")
+	insertTestAddress(t, dbTest, addrID4, customerID, contactID, "web_session", "web-session-token-xyz")
+
 	res, err = h.AddressListByContactID(ctx, contactID)
 	if err != nil {
 		t.Fatalf("AddressListByContactID() error = %v", err)
 	}
 	if len(res) != 2 {
-		t.Errorf("AddressListByContactID() len = %d, want exactly 2 (tel+email only, webchat excluded)", len(res))
+		t.Errorf("AddressListByContactID() len = %d, want exactly 2 (tel+email only, webchat+web_session excluded)", len(res))
 	}
 	for _, a := range res {
 		if string(a.Type) == "webchat" {
 			t.Errorf("AddressListByContactID() returned a webchat-type address; expected it filtered out")
+		}
+		if string(a.Type) == "web_session" {
+			t.Errorf("AddressListByContactID() returned a web_session-type address; expected it filtered out (writable but not reachable, §4.7)")
 		}
 	}
 }

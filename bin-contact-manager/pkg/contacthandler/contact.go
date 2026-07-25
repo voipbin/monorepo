@@ -308,7 +308,7 @@ func (h *contactHandler) AddAddress(ctx context.Context, contactID uuid.UUID, a 
 		return nil, cerrors.InvalidArgument(
 			commonoutline.ServiceNameContactManager,
 			"ADDRESS_TYPE_INVALID",
-			"The address type must be tel or email.",
+			"The address type must be tel, email, or web_session.",
 		)
 	}
 
