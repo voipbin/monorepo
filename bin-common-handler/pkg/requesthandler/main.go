@@ -914,7 +914,7 @@ type RequestHandler interface {
 	ContactV1ContactAddressGet(ctx context.Context, customerID uuid.UUID, addressID uuid.UUID) (*cmcontact.Address, error)
 	ContactV1ContactAddressUpdate(ctx context.Context, customerID uuid.UUID, contactID uuid.UUID, addressID uuid.UUID, fields map[string]any) (*cmcontact.Address, error)
 	ContactV1ContactAddressDelete(ctx context.Context, customerID uuid.UUID, contactID uuid.UUID, addressID uuid.UUID) (*cmcontact.Address, error)
-	ContactV1ContactAddressClaim(ctx context.Context, customerID uuid.UUID, addressID uuid.UUID, contactID uuid.UUID) (*cmcontact.Address, error)
+	ContactV1ContactAddressClaim(ctx context.Context, customerID uuid.UUID, addressID uuid.UUID, contactID uuid.UUID, force bool) (*cmcontact.Address, error)
 
 	// contact-manager tags
 	ContactV1TagAdd(ctx context.Context, contactID uuid.UUID, tagID uuid.UUID) (*cmcontact.Contact, error)

@@ -146,6 +146,7 @@ func (h *serviceHandler) ContactAddressClaim(
 	a *auth.AuthIdentity,
 	addressID uuid.UUID,
 	contactID uuid.UUID,
+	force bool,
 ) (*cmcontact.Address, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ContactAddressClaim",
@@ -187,7 +188,7 @@ func (h *serviceHandler) ContactAddressClaim(
 		return nil, serviceerrors.ErrNotFound
 	}
 
-	res, err := h.reqHandler.ContactV1ContactAddressClaim(ctx, a.CustomerID, addressID, contactID)
+	res, err := h.reqHandler.ContactV1ContactAddressClaim(ctx, a.CustomerID, addressID, contactID, force)
 	if err != nil {
 		log.Infof("Could not claim contact address. err: %v", err)
 		return nil, err
@@ -428,7 +429,7 @@ func (h *serviceHandler) ServiceAgentContactAddressClaim(
 		return nil, serviceerrors.ErrNotFound
 	}
 
-	res, err := h.reqHandler.ContactV1ContactAddressClaim(ctx, agent.CustomerID, addressID, contactID)
+	res, err := h.reqHandler.ContactV1ContactAddressClaim(ctx, agent.CustomerID, addressID, contactID, false)
 	if err != nil {
 		log.Infof("Could not claim contact address. err: %v", err)
 		return nil, err

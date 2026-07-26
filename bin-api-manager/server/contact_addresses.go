@@ -255,7 +255,7 @@ func (h *server) PostContactAddressesIdClaim(c *gin.Context, id openapi_types.UU
 		return
 	}
 
-	res, err := h.serviceHandler.ContactAddressClaim(c.Request.Context(), a, addressID, contactID)
+	res, err := h.serviceHandler.ContactAddressClaim(c.Request.Context(), a, addressID, contactID, req.Force != nil && *req.Force)
 	if err != nil {
 		log.Errorf("Could not claim contact address. err: %v", err)
 		abortWithServiceError(c, err)

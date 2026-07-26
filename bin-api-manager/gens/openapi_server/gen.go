@@ -470,6 +470,7 @@ const (
 	CommonAddressTypeCommonAddressTypeNone       CommonAddressType = ""
 	CommonAddressTypeCommonAddressTypeSIP        CommonAddressType = "sip"
 	CommonAddressTypeCommonAddressTypeTel        CommonAddressType = "tel"
+	CommonAddressTypeCommonAddressTypeWebSession CommonAddressType = "web_session"
 )
 
 // Defines values for ConferenceManagerConferenceStatus.
@@ -511,6 +512,7 @@ const (
 	ContactManagerAddressTypeCommonAddressTypeNone       ContactManagerAddressType = ""
 	ContactManagerAddressTypeCommonAddressTypeSIP        ContactManagerAddressType = "sip"
 	ContactManagerAddressTypeCommonAddressTypeTel        ContactManagerAddressType = "tel"
+	ContactManagerAddressTypeCommonAddressTypeWebSession ContactManagerAddressType = "web_session"
 )
 
 // Defines values for ContactManagerCaseStatus.
@@ -1085,14 +1087,16 @@ const (
 
 // Defines values for GetContactAddressesParamsType.
 const (
-	GetContactAddressesParamsTypeEmail GetContactAddressesParamsType = "email"
-	GetContactAddressesParamsTypeTel   GetContactAddressesParamsType = "tel"
+	GetContactAddressesParamsTypeEmail      GetContactAddressesParamsType = "email"
+	GetContactAddressesParamsTypeTel        GetContactAddressesParamsType = "tel"
+	GetContactAddressesParamsTypeWebSession GetContactAddressesParamsType = "web_session"
 )
 
 // Defines values for PostContactAddressesJSONBodyType.
 const (
-	PostContactAddressesJSONBodyTypeEmail PostContactAddressesJSONBodyType = "email"
-	PostContactAddressesJSONBodyTypeTel   PostContactAddressesJSONBodyType = "tel"
+	PostContactAddressesJSONBodyTypeEmail      PostContactAddressesJSONBodyType = "email"
+	PostContactAddressesJSONBodyTypeTel        PostContactAddressesJSONBodyType = "tel"
+	PostContactAddressesJSONBodyTypeWebSession PostContactAddressesJSONBodyType = "web_session"
 )
 
 // Defines values for GetContactCasesParamsStatus.
@@ -1117,6 +1121,7 @@ const (
 	PostContactsJSONBodyAddressesTypeCommonAddressTypeNone       PostContactsJSONBodyAddressesType = ""
 	PostContactsJSONBodyAddressesTypeCommonAddressTypeSIP        PostContactsJSONBodyAddressesType = "sip"
 	PostContactsJSONBodyAddressesTypeCommonAddressTypeTel        PostContactsJSONBodyAddressesType = "tel"
+	PostContactsJSONBodyAddressesTypeCommonAddressTypeWebSession PostContactsJSONBodyAddressesType = "web_session"
 )
 
 // Defines values for PostContactsJSONBodySource.
@@ -1168,6 +1173,7 @@ const (
 	PostServiceAgentsContactsJSONBodyAddressesTypeCommonAddressTypeNone       PostServiceAgentsContactsJSONBodyAddressesType = ""
 	PostServiceAgentsContactsJSONBodyAddressesTypeCommonAddressTypeSIP        PostServiceAgentsContactsJSONBodyAddressesType = "sip"
 	PostServiceAgentsContactsJSONBodyAddressesTypeCommonAddressTypeTel        PostServiceAgentsContactsJSONBodyAddressesType = "tel"
+	PostServiceAgentsContactsJSONBodyAddressesTypeCommonAddressTypeWebSession PostServiceAgentsContactsJSONBodyAddressesType = "web_session"
 )
 
 // Defines values for PostServiceAgentsContactsJSONBodySource.
@@ -6046,6 +6052,9 @@ type GetContactAddressesParams struct {
 
 	// Unresolved When true, list only unresolved addresses (contact_id IS NULL) for the customer — the pool of addresses not yet attached to any contact. Mutually exclusive with contact_id; if both are given, unresolved=true wins and contact_id is ignored.
 	Unresolved *bool `form:"unresolved,omitempty" json:"unresolved,omitempty"`
+
+	// Target Filter by exact address target value (E.164 for tel, email address for email).
+	Target *string `form:"target,omitempty" json:"target,omitempty"`
 }
 
 // GetContactAddressesParamsType defines parameters for GetContactAddresses.
@@ -6068,7 +6077,7 @@ type PostContactAddressesJSONBody struct {
 	// Target The address value. E.164 format for tel, email address for email.
 	Target string `json:"target"`
 
-	// Type Address type. 'tel' for phone numbers, 'email' for email addresses.
+	// Type Address type. 'tel' for phone numbers, 'email' for email addresses, 'web_session' for a webchat visitor's continuity token (temporary/internal attribution address; not exposed on the Contact.Addresses field).
 	Type PostContactAddressesJSONBodyType `json:"type"`
 }
 
@@ -6093,6 +6102,9 @@ type PutContactAddressesIdJSONBody struct {
 // PostContactAddressesIdClaimJSONBody defines parameters for PostContactAddressesIdClaim.
 type PostContactAddressesIdClaimJSONBody struct {
 	ContactId openapi_types.UUID `json:"contact_id"`
+
+	// Force When true, overwrite ownership even if the address is currently claimed by a different, still-active contact (no 409). Defaults to false, which preserves the original claim behavior. Has no effect when the address is unresolved or already owned by the requesting contact.
+	Force *bool `json:"force,omitempty"`
 }
 
 // GetContactCasesParams defines parameters for GetContactCases.
@@ -12769,6 +12781,14 @@ func (siw *ServerInterfaceWrapper) GetContactAddresses(c *gin.Context) {
 	err = runtime.BindQueryParameter("form", true, false, "unresolved", c.Request.URL.Query(), &params.Unresolved)
 	if err != nil {
 		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter unresolved: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "target" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "target", c.Request.URL.Query(), &params.Target)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter target: %w", err), http.StatusBadRequest)
 		return
 	}
 

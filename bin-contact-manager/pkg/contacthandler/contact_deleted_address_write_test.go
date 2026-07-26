@@ -127,6 +127,6 @@ func Test_ClaimAddress_DeletedContact_NotFound(t *testing.T) {
 
 	mockDB.EXPECT().ContactGet(ctx, contactID).Return(deletedTestContact(contactID, customerID), nil)
 
-	_, err := h.ClaimAddress(ctx, customerID, addressID, contactID)
+	_, err := h.ClaimAddress(ctx, customerID, addressID, contactID, false)
 	assertNotFound(t, err, "ClaimAddress")
 }

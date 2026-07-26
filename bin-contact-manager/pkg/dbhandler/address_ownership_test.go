@@ -636,7 +636,7 @@ func Test_StaleRowRepair_TombstonedOwner_AddressClaim(t *testing.T) {
 	}
 
 	// A different contact claims the SAME address id.
-	if err := h.AddressClaim(ctx, customerID, addrID, newContactID); err != nil {
+	if err := h.AddressClaim(ctx, customerID, addrID, newContactID, false); err != nil {
 		t.Fatalf("AddressClaim(new owner, after dead-owner repair-in-place) error = %v, want success", err)
 	}
 
@@ -869,7 +869,7 @@ func Test_AddressClaimTx_ValidFromIsLatestClosed(t *testing.T) {
 	}); err != nil {
 		t.Fatalf("AddressCreate(unresolved) error = %v", err)
 	}
-	if err := h.AddressClaim(ctx, customerID, unresolvedAddrID, claimer); err != nil {
+	if err := h.AddressClaim(ctx, customerID, unresolvedAddrID, claimer, false); err != nil {
 		t.Fatalf("AddressClaim() error = %v", err)
 	}
 

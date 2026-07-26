@@ -33,6 +33,11 @@ func (r *requestHandler) ContactV1ContactAddressList(
 			uri += fmt.Sprintf("&type=%s", t)
 		}
 	}
+	if v, ok := filters["target"]; ok {
+		if t, ok2 := v.(string); ok2 && t != "" {
+			uri += fmt.Sprintf("&target=%s", t)
+		}
+	}
 	if pageToken != "" {
 		uri += fmt.Sprintf("&page_token=%s", pageToken)
 	}
@@ -101,16 +106,19 @@ func (r *requestHandler) ContactV1ContactAddressCreate(
 }
 
 // ContactV1ContactAddressClaim sends a request to contact-manager to claim
-// an unresolved address onto a contact.
+// an unresolved address onto a contact. When force is true, the claim
+// overwrites ownership even if the address is currently held by a
+// different, still-active contact (no 409) -- design DESIGN.md §4, v7.
 func (r *requestHandler) ContactV1ContactAddressClaim(
 	ctx context.Context,
 	customerID uuid.UUID,
 	addressID uuid.UUID,
 	contactID uuid.UUID,
+	force bool,
 ) (*cmcontact.Address, error) {
 	uri := fmt.Sprintf("/v1/contact_addresses/%s/claim?customer_id=%s", addressID, customerID)
 
-	data := &cmrequest.ContactAddressClaim{ContactID: contactID}
+	data := &cmrequest.ContactAddressClaim{ContactID: contactID, Force: force}
 	m, err := json.Marshal(data)
 	if err != nil {
 		return nil, err

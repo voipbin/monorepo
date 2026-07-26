@@ -30,15 +30,24 @@ func normalizeE164(e164, number string) string {
 	return out
 }
 
-// isValidContactAddressType reports whether t is one of the two
-// commonaddress.Type values contact.Address supports. Embedding
+// isValidContactAddressType reports whether t is one of the
+// commonaddress.Type values contact.Address supports writing. Embedding
 // commonaddress.Address widened contact.Address.Type's declared range to
 // all 10 commonaddress.Type values, so write entry points must explicitly
-// reject anything other than tel/email rather than relying on the switch
-// statements below to silently no-op on an unrecognized type.
+// reject anything else rather than relying on the switch statements
+// below to silently no-op on an unrecognized type.
+//
+// web_session (VOIP-1270 follow-up, 대표님 지시) is intentionally
+// writable here but deliberately NOT added to contact.ReachableAddressTypes
+// -- it functions as a temporary/internal attribution address (a webchat
+// visitor's continuity token) that lets a Case's Peer be reconciled into
+// contact_addresses like tel/email, but must never surface on the public
+// Contact.Addresses API field. See contact.ReachableAddressTypes's own
+// comment, which documents this exact "writable but not reachable" split
+// as an intentional, allowed divergence.
 func isValidContactAddressType(t commonaddress.Type) bool {
 	switch t {
-	case commonaddress.TypeTel, commonaddress.TypeEmail:
+	case commonaddress.TypeTel, commonaddress.TypeEmail, commonaddress.TypeWebSession:
 		return true
 	default:
 		return false
@@ -299,7 +308,7 @@ func (h *contactHandler) AddAddress(ctx context.Context, contactID uuid.UUID, a 
 		return nil, cerrors.InvalidArgument(
 			commonoutline.ServiceNameContactManager,
 			"ADDRESS_TYPE_INVALID",
-			"The address type must be tel or email.",
+			"The address type must be tel, email, or web_session.",
 		)
 	}
 
@@ -466,8 +475,10 @@ func (h *contactHandler) CreateUnresolvedAddress(ctx context.Context, customerID
 // Publishes EventTypeContactUpdated on success (the address becomes part
 // of the contact's address set). Returns a typed conflict error (mapped to
 // 409 by the listenhandler) if the address is already resolved to a
-// DIFFERENT contact.
-func (h *contactHandler) ClaimAddress(ctx context.Context, customerID, addressID, contactID uuid.UUID) (*contact.Address, error) {
+// DIFFERENT, live contact -- unless force is true, in which case the
+// previous owner's open ownership period is closed and ownership is
+// transferred instead of returning a conflict (DESIGN.md §4, v7).
+func (h *contactHandler) ClaimAddress(ctx context.Context, customerID, addressID, contactID uuid.UUID, force bool) (*contact.Address, error) {
 	// Verify the target contact exists and belongs to this customer
 	// (defense-in-depth re-check; bin-api-manager already verified this).
 	c, err := h.db.ContactGet(ctx, contactID)
@@ -482,7 +493,7 @@ func (h *contactHandler) ClaimAddress(ctx context.Context, customerID, addressID
 		) // treat cross-tenant or soft-deleted contact as not-found, not permission-denied, to avoid leaking existence (A9-b fix: soft-deleted case)
 	}
 
-	if err := h.db.AddressClaim(ctx, customerID, addressID, contactID); err != nil {
+	if err := h.db.AddressClaim(ctx, customerID, addressID, contactID, force); err != nil {
 		if stderrors.Is(err, dbhandler.ErrConflict) {
 			return nil, cerrors.AlreadyExists(
 				commonoutline.ServiceNameContactManager,

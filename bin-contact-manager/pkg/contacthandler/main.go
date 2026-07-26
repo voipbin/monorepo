@@ -36,7 +36,7 @@ type ContactHandler interface {
 	UpdateAddress(ctx context.Context, contactID, addressID uuid.UUID, fields map[string]any) (*contact.Contact, error)
 	RemoveAddress(ctx context.Context, contactID, addressID uuid.UUID) (*contact.Contact, error)
 	CreateUnresolvedAddress(ctx context.Context, customerID uuid.UUID, a *contact.Address) (*contact.Address, error)
-	ClaimAddress(ctx context.Context, customerID, addressID, contactID uuid.UUID) (*contact.Address, error)
+	ClaimAddress(ctx context.Context, customerID, addressID, contactID uuid.UUID, force bool) (*contact.Address, error)
 
 	// Tag operations
 	AddTag(ctx context.Context, contactID, tagID uuid.UUID) (*contact.Contact, error)

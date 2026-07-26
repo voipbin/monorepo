@@ -219,10 +219,10 @@ func Test_ContactAddressClaim(t *testing.T) {
 				mockReq.EXPECT().ContactV1ContactGet(ctx, tt.contactID).Return(tt.responseContact, nil)
 			}
 			if tt.expectClaimCall {
-				mockReq.EXPECT().ContactV1ContactAddressClaim(ctx, tt.agent.CustomerID, tt.addressID, tt.contactID).Return(tt.responseClaimed, nil)
+				mockReq.EXPECT().ContactV1ContactAddressClaim(ctx, tt.agent.CustomerID, tt.addressID, tt.contactID, false).Return(tt.responseClaimed, nil)
 			}
 
-			res, err := h.ContactAddressClaim(ctx, tt.agent, tt.addressID, tt.contactID)
+			res, err := h.ContactAddressClaim(ctx, tt.agent, tt.addressID, tt.contactID, false)
 			if tt.expectErr != nil {
 				if err != tt.expectErr {
 					t.Errorf("Wrong match. expect: %v, got: %v", tt.expectErr, err)
@@ -369,7 +369,7 @@ func Test_ServiceAgentContactAddressClaim(t *testing.T) {
 				mockReq.EXPECT().ContactV1ContactGet(ctx, tt.contactID).Return(tt.responseContact, nil)
 			}
 			if tt.expectClaimCall {
-				mockReq.EXPECT().ContactV1ContactAddressClaim(ctx, tt.responseAgent.CustomerID, tt.addressID, tt.contactID).Return(tt.responseClaimed, nil)
+				mockReq.EXPECT().ContactV1ContactAddressClaim(ctx, tt.responseAgent.CustomerID, tt.addressID, tt.contactID, false).Return(tt.responseClaimed, nil)
 			}
 
 			res, err := h.ServiceAgentContactAddressClaim(ctx, tt.agent, tt.addressID, tt.contactID)

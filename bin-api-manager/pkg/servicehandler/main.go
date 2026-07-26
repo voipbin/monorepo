@@ -470,7 +470,7 @@ type ServiceHandler interface {
 	ContactAddressCreateIndependent(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, addrType string, target string, isPrimary bool, name string, detail string) (*cmcontact.Address, error)
 	ContactAddressUpdateIndependent(ctx context.Context, a *auth.AuthIdentity, addressID uuid.UUID, fields map[string]any) (*cmcontact.Address, error)
 	ContactAddressDeleteIndependent(ctx context.Context, a *auth.AuthIdentity, addressID uuid.UUID) (*cmcontact.Address, error)
-	ContactAddressClaim(ctx context.Context, a *auth.AuthIdentity, addressID uuid.UUID, contactID uuid.UUID) (*cmcontact.Address, error)
+	ContactAddressClaim(ctx context.Context, a *auth.AuthIdentity, addressID uuid.UUID, contactID uuid.UUID, force bool) (*cmcontact.Address, error)
 
 	ContactTagAdd(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, tagID uuid.UUID) (*cmcontact.WebhookMessage, error)
 	ContactTagRemove(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, tagID uuid.UUID) (*cmcontact.WebhookMessage, error)

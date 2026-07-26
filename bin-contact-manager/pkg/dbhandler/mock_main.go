@@ -49,17 +49,17 @@ func (m *MockDBHandler) EXPECT() *MockDBHandlerMockRecorder {
 }
 
 // AddressClaim mocks base method.
-func (m *MockDBHandler) AddressClaim(ctx context.Context, customerID, addressID, contactID uuid.UUID) error {
+func (m *MockDBHandler) AddressClaim(ctx context.Context, customerID, addressID, contactID uuid.UUID, force bool) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddressClaim", ctx, customerID, addressID, contactID)
+	ret := m.ctrl.Call(m, "AddressClaim", ctx, customerID, addressID, contactID, force)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AddressClaim indicates an expected call of AddressClaim.
-func (mr *MockDBHandlerMockRecorder) AddressClaim(ctx, customerID, addressID, contactID any) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) AddressClaim(ctx, customerID, addressID, contactID, force any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddressClaim", reflect.TypeOf((*MockDBHandler)(nil).AddressClaim), ctx, customerID, addressID, contactID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddressClaim", reflect.TypeOf((*MockDBHandler)(nil).AddressClaim), ctx, customerID, addressID, contactID, force)
 }
 
 // AddressClaimTx mocks base method.
@@ -174,6 +174,21 @@ func (m *MockDBHandler) AddressList(ctx context.Context, customerID uuid.UUID, f
 func (mr *MockDBHandlerMockRecorder) AddressList(ctx, customerID, filters, pageToken, pageSize any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddressList", reflect.TypeOf((*MockDBHandler)(nil).AddressList), ctx, customerID, filters, pageToken, pageSize)
+}
+
+// AddressListAllByContactID mocks base method.
+func (m *MockDBHandler) AddressListAllByContactID(ctx context.Context, contactID uuid.UUID) ([]contact.Address, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddressListAllByContactID", ctx, contactID)
+	ret0, _ := ret[0].([]contact.Address)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AddressListAllByContactID indicates an expected call of AddressListAllByContactID.
+func (mr *MockDBHandlerMockRecorder) AddressListAllByContactID(ctx, contactID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddressListAllByContactID", reflect.TypeOf((*MockDBHandler)(nil).AddressListAllByContactID), ctx, contactID)
 }
 
 // AddressListByContactID mocks base method.

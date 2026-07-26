@@ -3410,6 +3410,7 @@ components:
             - line
             - sip
             - tel
+            - web_session
           x-enum-varnames:
             - CommonAddressTypeNone
             - CommonAddressTypeAgent
@@ -3419,6 +3420,7 @@ components:
             - CommonAddressTypeLine
             - CommonAddressTypeSIP
             - CommonAddressTypeTel
+            - CommonAddressTypeWebSession
         target:
           type: string
           description: "The address endpoint. Format depends on type: phone number for tel (e.g. +14155551234), UUID for agent/conference/extension, email for email, SIP URI for sip."

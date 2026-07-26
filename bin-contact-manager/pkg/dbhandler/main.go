@@ -40,10 +40,11 @@ type DBHandler interface {
 	AddressGet(ctx context.Context, customerID, id uuid.UUID) (*contact.Address, error)
 	AddressList(ctx context.Context, customerID uuid.UUID, filters map[string]any, pageToken string, pageSize uint64) ([]contact.Address, error)
 	AddressListByContactID(ctx context.Context, contactID uuid.UUID) ([]contact.Address, error)
+	AddressListAllByContactID(ctx context.Context, contactID uuid.UUID) ([]contact.Address, error)
 	AddressUpdate(ctx context.Context, id uuid.UUID, fields map[string]any) error
 	AddressDelete(ctx context.Context, id uuid.UUID) error
 	AddressResetPrimary(ctx context.Context, contactID uuid.UUID) error
-	AddressClaim(ctx context.Context, customerID, addressID, contactID uuid.UUID) error
+	AddressClaim(ctx context.Context, customerID, addressID, contactID uuid.UUID, force bool) error
 
 	// Address ownership-period operations (design
 	// docs/plans/2026-07-11-contact-address-ownership-integrity-design.md

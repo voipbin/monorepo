@@ -25,13 +25,17 @@ type Address struct {
 }
 
 // Address type constants. Reuse commonaddress.Type's canonical values --
-// do not redeclare the string literals here. contact.Address intentionally
-// accepts ONLY these two of commonaddress.Type's 10 possible values (see
-// the explicit whitelist validation added to Create/AddAddress/UpdateAddress
-// in pkg/contacthandler/contact.go as part of this same change).
+// do not redeclare the string literals here. contact.Address's write path
+// (pkg/contacthandler.isValidContactAddressType) accepts three of
+// commonaddress.Type's 10 possible values: tel, email, and web_session
+// (VOIP-1270 follow-up -- webchat visitor continuity token, used as a
+// temporary/internal attribution address; deliberately excluded from
+// ReachableAddressTypes below so it never surfaces on the public
+// Contact.Addresses field).
 const (
-	AddressTypeTel   = commonaddress.TypeTel
-	AddressTypeEmail = commonaddress.TypeEmail
+	AddressTypeTel        = commonaddress.TypeTel
+	AddressTypeEmail      = commonaddress.TypeEmail
+	AddressTypeWebSession = commonaddress.TypeWebSession
 )
 
 // ReachableAddressTypes is the set of commonaddress.Type values considered

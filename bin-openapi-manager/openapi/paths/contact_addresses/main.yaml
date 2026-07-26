@@ -20,7 +20,7 @@ get:
       description: Filter by address type.
       schema:
         type: string
-        enum: [tel, email]
+        enum: [tel, email, web_session]
         example: tel
     - name: unresolved
       in: query
@@ -33,6 +33,13 @@ get:
       schema:
         type: boolean
         example: true
+    - name: target
+      in: query
+      required: false
+      description: Filter by exact address target value (E.164 for tel, email address for email).
+      schema:
+        type: string
+        example: "+155****4567"
   responses:
     '200':
       description: Successful response.
@@ -81,8 +88,12 @@ post:
               example: 5e4a0680-eba3-4001-a000-000000000001
             type:
               type: string
-              enum: [tel, email]
-              description: Address type. 'tel' for phone numbers, 'email' for email addresses.
+              enum: [tel, email, web_session]
+              description: >-
+                Address type. 'tel' for phone numbers, 'email' for email
+                addresses, 'web_session' for a webchat visitor's continuity
+                token (temporary/internal attribution address; not
+                exposed on the Contact.Addresses field).
               example: tel
             target:
               type: string

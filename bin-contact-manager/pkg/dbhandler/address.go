@@ -156,13 +156,16 @@ func (h *handler) addressCreateAttempt(ctx context.Context, a *contact.Address) 
 
 // AddressClaim attaches contact_id to a currently-unresolved address.
 // Returns ErrConflict if the address is already resolved to a DIFFERENT,
-// LIVE contact_id. No-ops (success) if already resolved to the SAME
-// contact_id. If resolved to a DIFFERENT contact_id that turns out to be
-// TOMBSTONED (an A9-b/A9-c version-skew artifact), design §4 round-27(a)/
-// 28's repair-in-place applies -- the transactional path resets the row
-// to unresolved and completes the claim, rather than a pre-lock ErrConflict.
+// LIVE contact_id -- unless force is true, in which case the previous
+// live owner's open ownership period is closed and the claim proceeds
+// (design DESIGN.md §4.2/§4.3, v7). No-ops (success) if already resolved
+// to the SAME contact_id. If resolved to a DIFFERENT contact_id that
+// turns out to be TOMBSTONED (an A9-b/A9-c version-skew artifact), design
+// §4 round-27(a)/28's repair-in-place applies regardless of force -- the
+// transactional path resets the row to unresolved and completes the
+// claim, rather than a pre-lock ErrConflict.
 // Wraps AddressClaimTx in a BeginTx/commit/retry loop (design §5.1/§5.3).
-func (h *handler) AddressClaim(ctx context.Context, customerID, addressID, contactID uuid.UUID) error {
+func (h *handler) AddressClaim(ctx context.Context, customerID, addressID, contactID uuid.UUID, force bool) error {
 	existing, err := h.AddressGet(ctx, customerID, addressID) // tenant-scoped fetch
 	if err != nil {
 		return err // ErrNotFound propagates as-is
@@ -181,7 +184,7 @@ func (h *handler) AddressClaim(ctx context.Context, customerID, addressID, conta
 
 	var lastErr error
 	for attempt := 0; attempt < addressMaxDeadlockRetries; attempt++ {
-		err := h.addressClaimAttempt(ctx, customerID, addressID, contactID, existing.Type, existing.Target)
+		err := h.addressClaimAttempt(ctx, customerID, addressID, contactID, existing.Type, existing.Target, force)
 		if err == nil {
 			lastErr = nil
 			break
@@ -201,7 +204,7 @@ func (h *handler) AddressClaim(ctx context.Context, customerID, addressID, conta
 	return nil
 }
 
-func (h *handler) addressClaimAttempt(ctx context.Context, customerID, addressID, contactID uuid.UUID, addrType commonaddress.Type, target string) error {
+func (h *handler) addressClaimAttempt(ctx context.Context, customerID, addressID, contactID uuid.UUID, addrType commonaddress.Type, target string, force bool) error {
 	tx, err := h.db.BeginTx(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("could not begin transaction. AddressClaim. err: %v", err)
@@ -224,23 +227,34 @@ func (h *handler) addressClaimAttempt(ctx context.Context, customerID, addressID
 		return ErrStaleTarget
 	}
 	if current.ContactID != uuid.Nil && current.ContactID != contactID {
-		// Design §4 round-27(a)/28's repair-in-place: the row may be
-		// held by a TOMBSTONED Contact (an A9-b/A9-c version-skew
-		// artifact), not a live conflict. Reset it to unresolved
-		// before surfacing ErrConflict.
 		tmDelete, tombErr := contactTombstoneTx(ctx, tx, current.ContactID)
 		if tombErr != nil {
 			return tombErr
 		}
 		if tmDelete == nil {
-			return ErrConflict // live owner -- lost the race, genuine conflict
+			// 살아있는 소유자
+			if !force {
+				return ErrConflict // live owner -- lost the race, genuine conflict
+			}
+			// force:true -- 이전(살아있는) 소유자의 open ownership
+			// period를 CLOSE한다. staleRowRepairTx(tombstone 전용,
+			// 살아있는 소유자에 대해 no-op)는 재사용하지 않는다
+			// (design DESIGN.md §4.3, v7 Round 2 리뷰로 확정).
+			if err := h.closeOwnOpenPeriodTx(ctx, tx, customerID, current.ContactID, addrType, target); err != nil {
+				return err
+			}
+			// contact_addresses 행 자체의 NULL 리셋은 불필요 --
+			// AddressClaimTx의 UPDATE가 id 조건만으로 곧바로 새
+			// contact_id를 덮어쓴다.
+		} else {
+			// tombstone된 소유자: 기존 repair-in-place 경로, 변경 없음.
+			if _, repairErr := h.staleRowRepairTx(ctx, tx, customerID, addrType, target, true); repairErr != nil {
+				return repairErr
+			}
+			// The row is now unresolved (contact_id reset to NULL) --
+			// AddressClaimTx's final UPDATE below proceeds exactly as the
+			// ordinary unresolved-address claim path.
 		}
-		if _, repairErr := h.staleRowRepairTx(ctx, tx, customerID, addrType, target, true); repairErr != nil {
-			return repairErr
-		}
-		// The row is now unresolved (contact_id reset to NULL) --
-		// AddressClaimTx's final UPDATE below proceeds exactly as the
-		// ordinary unresolved-address claim path.
 	}
 
 	if err := h.AddressClaimTx(ctx, tx, customerID, addressID, contactID, addrType, target); err != nil {
@@ -286,9 +300,10 @@ func (h *handler) AddressGet(ctx context.Context, customerID, id uuid.UUID) (*co
 }
 
 // AddressList returns addresses for the customer with optional filters.
-// filters keys: "contact_id" (uuid.UUID), "type" (string), "unresolved"
-// (bool — when true, restricts to rows where contact_id IS NULL and takes
-// precedence over "contact_id" if both are given).
+// filters keys: "contact_id" (uuid.UUID), "type" (string), "target"
+// (string), "unresolved" (bool — when true, restricts to rows where
+// contact_id IS NULL and takes precedence over "contact_id" if both are
+// given).
 func (h *handler) AddressList(_ context.Context, customerID uuid.UUID, filters map[string]any, pageToken string, pageSize uint64) ([]contact.Address, error) {
 	q := sq.Select(addressRowColumns()...).
 		From(addressTable).
@@ -317,6 +332,11 @@ func (h *handler) AddressList(_ context.Context, customerID uuid.UUID, filters m
 	if v, ok := filters["type"]; ok {
 		if t, ok2 := v.(string); ok2 && t != "" {
 			q = q.Where(sq.Eq{"type": t})
+		}
+	}
+	if v, ok := filters["target"]; ok {
+		if t, ok2 := v.(string); ok2 && t != "" {
+			q = q.Where(sq.Eq{"target": t})
 		}
 	}
 	if pageSize > 0 {
@@ -394,6 +414,52 @@ func (h *handler) AddressListByContactID(_ context.Context, contactID uuid.UUID)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("row iteration error. AddressListByContactID. err: %v", err)
+	}
+
+	return res, nil
+}
+
+// AddressListAllByContactID returns ALL of a contact's addresses,
+// unfiltered by contact.ReachableAddressTypes -- unlike
+// AddressListByContactID (which intentionally excludes types kept
+// writable-but-not-reachable, e.g. web_session, VOIP-1270 §4.7). This is
+// the query the ownership-period interaction-matching read path
+// (pkg/contacthandler.InteractionList's contact_id branch) must use: that
+// path needs every address genuinely owned by the contact to build its
+// peer_events search filter, not just the subset considered safe to
+// expose via the public Contact.Addresses API field. Using
+// AddressListByContactID there instead was a pre-existing bug (predates
+// VOIP-1270, silently present for every reachable type too) that
+// VOIP-1270's write/read-whitelist split exposed for web_session --
+// fixed in the same change since it directly undermines this feature's
+// purpose (attributing a web_session address to a contact so its
+// interaction history becomes visible).
+func (h *handler) AddressListAllByContactID(_ context.Context, contactID uuid.UUID) ([]contact.Address, error) {
+	query, args, err := sq.Select(addressRowColumns()...).
+		From(addressTable).
+		Where(sq.Eq{"contact_id": contactID.Bytes()}).
+		OrderBy("is_primary desc", "tm_create asc").
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. AddressListAllByContactID. err: %v", err)
+	}
+
+	rows, err := h.db.Query(query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. AddressListAllByContactID. err: %v", err)
+	}
+	defer func() { _ = rows.Close() }()
+
+	res := []contact.Address{}
+	for rows.Next() {
+		a, err := scanFullAddressRow(rows)
+		if err != nil {
+			return nil, fmt.Errorf("could not scan the row. AddressListAllByContactID. err: %v", err)
+		}
+		res = append(res, *a)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("row iteration error. AddressListAllByContactID. err: %v", err)
 	}
 
 	return res, nil

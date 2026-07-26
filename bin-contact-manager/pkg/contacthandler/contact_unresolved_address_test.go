@@ -115,11 +115,11 @@ func Test_ClaimAddress_Success(t *testing.T) {
 	}
 
 	mockDB.EXPECT().ContactGet(ctx, contactID).Return(c, nil)
-	mockDB.EXPECT().AddressClaim(ctx, customerID, addressID, contactID).Return(nil)
+	mockDB.EXPECT().AddressClaim(ctx, customerID, addressID, contactID, false).Return(nil)
 	mockDB.EXPECT().AddressGet(ctx, customerID, addressID).Return(claimed, nil)
 	mockNotify.EXPECT().PublishEvent(ctx, contact.EventTypeContactUpdated, gomock.Any())
 
-	res, err := h.ClaimAddress(ctx, customerID, addressID, contactID)
+	res, err := h.ClaimAddress(ctx, customerID, addressID, contactID, false)
 	if err != nil {
 		t.Fatalf("ClaimAddress() error = %v", err)
 	}
@@ -151,7 +151,7 @@ func Test_ClaimAddress_CrossTenantContact(t *testing.T) {
 	}
 	mockDB.EXPECT().ContactGet(ctx, contactID).Return(c, nil)
 
-	_, err := h.ClaimAddress(ctx, customerID, addressID, contactID)
+	_, err := h.ClaimAddress(ctx, customerID, addressID, contactID, false)
 	if err == nil {
 		t.Fatal("ClaimAddress() expected error for cross-tenant contact, got nil")
 	}
@@ -182,9 +182,9 @@ func Test_ClaimAddress_Conflict(t *testing.T) {
 		},
 	}
 	mockDB.EXPECT().ContactGet(ctx, contactID).Return(c, nil)
-	mockDB.EXPECT().AddressClaim(ctx, customerID, addressID, contactID).Return(dbhandler.ErrConflict)
+	mockDB.EXPECT().AddressClaim(ctx, customerID, addressID, contactID, false).Return(dbhandler.ErrConflict)
 
-	_, err := h.ClaimAddress(ctx, customerID, addressID, contactID)
+	_, err := h.ClaimAddress(ctx, customerID, addressID, contactID, false)
 	if err == nil {
 		t.Fatal("ClaimAddress() expected conflict error, got nil")
 	}
@@ -211,9 +211,9 @@ func Test_ClaimAddress_AddressNotFound(t *testing.T) {
 		},
 	}
 	mockDB.EXPECT().ContactGet(ctx, contactID).Return(c, nil)
-	mockDB.EXPECT().AddressClaim(ctx, customerID, addressID, contactID).Return(dbhandler.ErrNotFound)
+	mockDB.EXPECT().AddressClaim(ctx, customerID, addressID, contactID, false).Return(dbhandler.ErrNotFound)
 
-	_, err := h.ClaimAddress(ctx, customerID, addressID, contactID)
+	_, err := h.ClaimAddress(ctx, customerID, addressID, contactID, false)
 	if err == nil {
 		t.Fatal("ClaimAddress() expected not-found error, got nil")
 	}

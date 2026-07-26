@@ -2070,18 +2070,18 @@ func (mr *MockServiceHandlerMockRecorder) ConferencecallList(ctx, a, size, token
 }
 
 // ContactAddressClaim mocks base method.
-func (m *MockServiceHandler) ContactAddressClaim(ctx context.Context, a *auth.AuthIdentity, addressID, contactID uuid.UUID) (*contact.Address, error) {
+func (m *MockServiceHandler) ContactAddressClaim(ctx context.Context, a *auth.AuthIdentity, addressID, contactID uuid.UUID, force bool) (*contact.Address, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ContactAddressClaim", ctx, a, addressID, contactID)
+	ret := m.ctrl.Call(m, "ContactAddressClaim", ctx, a, addressID, contactID, force)
 	ret0, _ := ret[0].(*contact.Address)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ContactAddressClaim indicates an expected call of ContactAddressClaim.
-func (mr *MockServiceHandlerMockRecorder) ContactAddressClaim(ctx, a, addressID, contactID any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) ContactAddressClaim(ctx, a, addressID, contactID, force any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactAddressClaim", reflect.TypeOf((*MockServiceHandler)(nil).ContactAddressClaim), ctx, a, addressID, contactID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactAddressClaim", reflect.TypeOf((*MockServiceHandler)(nil).ContactAddressClaim), ctx, a, addressID, contactID, force)
 }
 
 // ContactAddressCreate mocks base method.

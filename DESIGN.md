@@ -1,682 +1,658 @@
-# DESIGN: Unify Contact Addresses API to Match DB Schema
+# DESIGN: Case Peer Address → Contact Attribution (명시적 모달 확인)
 
-**Issue:** #1031
-**Branch:** NOJIRA-Unify-Contact-addresses-API-to-match-DB-schema
-**Author:** Hermes (CPO)
-**Status:** DRAFT v7 — Round-6 final defect fixed — APPROVED FOR IMPLEMENTATION
+**Issue:** VOIP-1270
+**Branch:** VOIP-1270-case-peer-address-contact-claim
+**Status:** APPROVED FOR IMPLEMENTATION — v7(기존 `POST
+/contact_addresses/{id}/claim`에 `force` 파라미터 확장) 독립 디자인
+리뷰 루프 6라운드 완료(§11 참조). Round 1~4는 CHANGES_REQUESTED(전부
+실제 결함 — 확장 지점 오류 2회, 문서 섹션 유실 1회 등, 매 라운드
+수정 반영), Round 5·6 연속 APPROVE로 종료 기준 충족(최소 3라운드
+floor + 연속 2회 APPROVE). v5(release/reassign 신규 엔드포인트,
+8라운드 리뷰 완료)와 v6(PUT 필드 확장)은 모두 SUPERSEDED, 리뷰
+이력은 §10에 "v5 전용"으로 보존.
+
+---
+
+## 0. 이전 설계 폐기 및 재사용 가능한 재조사 사실
+
+이전 DESIGN.md(git history: `9c9dde230`, `3d602875f`)는 "옵션3: 백엔드가
+항상 자동으로 claim 시도 + 프론트는 결과를 사후 토스트로만 고지"하는
+방향이었다. 대표님이 이 방향을 폐기하고, **상담사가 명시적으로 확인하는
+모달 + 그 결정을 기억하는 옵션**으로 교체하라고 지시했다. 이 문서는 그
+지시를 반영한 전면 재설계다.
+
+이전 문서 §0의 재조사 사실 중 이번 설계에도 유효한 것들 (재조사 없이
+그대로 재사용):
+
+1. **`ContactV1CaseUpdateContact` RPC의 유일한 호출자는
+   `bin-api-manager/pkg/servicehandler/case.go`의 `CaseUpdateContact`다.**
+   `bin-flow-manager`에는 이 RPC를 호출하는 코드가 없다 — "호출 경로별
+   분기" 자체가 성립하지 않는다는 점은 여전히 유효하다. 이번 설계는
+   애초에 호출 경로 분기가 아니라 **프론트엔드 모달 확인**으로 문제를
+   풀기 때문에, 이 사실은 오히려 이번 설계 방향(백엔드는 단순하게
+   유지하고 확인은 콘솔 UI 레이어에서 처리)을 강화한다.
+2. **`bin-contact-manager`는 호출자 신원(`AuthIdentity`)을 모른다.**
+   `casehandler.UpdateContact(ctx, customerID, caseID, contactID)`는
+   `customerID`만 받는다 — 여전히 유효하다. 이번 설계는 신원 기반 분기를
+   요구하지 않으므로 문제가 되지 않는다.
+3. `contact_addresses`는 **hard-delete** 테이블이다(tm_delete 없음).
+   재확인: `bin-contact-manager/CLAUDE.md` — "`contact_addresses` is
+   hard-delete (no `tm_delete`), mirroring `agent_addresses`." 이 사실이
+   이번 설계의 §4(release API)의 핵심 근거다: DELETE로 "재할당용 해제"를
+   대체할 수 없다.
+4. `POST /contact_addresses/{id}/claim`
+   (`bin-openapi-manager/openapi/paths/contact_addresses/id_claim.yaml`)은
+   이미 존재하며, unresolved(contact_id IS NULL) 주소에만 성공하고
+   이미 살아있는 Contact 소유면 409(Conflict)를 반환한다. 구현:
+   `contacthandler.ClaimAddress` → `dbhandler.AddressClaim` →
+   `addressClaimAttempt`(bin-contact-manager/pkg/dbhandler/address.go:157-255).
 
 ---
 
 ## 1. Background
 
-VOIP-1207 migrated `contact_phone_numbers` + `contact_emails` to a single
-`contact_addresses` table (columns: `id`, `customer_id`, `contact_id`, `type`,
-`target`, `target_name`, `is_primary`, `tm_create`).
+Case는 생성 시 `Peer commonaddress.Address`(Target/Type)를 갖는다 — 이
+Case를 만든 원본 통신 상대방의 주소다. 상담사가 square-admin 콘솔에서
+Case 상세 화면(`contact_cases_detail.js`)의 `CaseContactAttributionPanel`
+에서 `handleAttach`를 눌러 Case를 Contact에 assign할 때, 현재는
+`PUT contact_cases/{caseId}`로 `Case.contact_id`만 갱신할 뿐,
+Peer.Target에 해당하는 `contact_addresses` 레코드는 전혀 건드리지
+않는다. 그 결과:
 
-The DB layer already uses `contact_addresses` exclusively. The API surface,
-Go model structs, OpenAPI spec, and frontend still expose the old split shape.
+- Peer 주소가 `contact_addresses`에 아직 없으면, 향후 동일 Peer로부터의
+  상호작용이 이 Contact와 자동 매칭되지 않는다(unresolved 주소만 Contact
+  매칭 대상에서 제외되는 게 아니라, 애초에 레코드 자체가 없으므로 매칭
+  불가).
+- Peer 주소가 이미 다른 Contact 소유로 존재하면, 상담사가 인지하지
+  못한 채 "두 Contact가 같은 번호/이메일을 각각 갖고 있는" 데이터
+  불일치 상태가 방치된다.
 
-This PR completes the unification by removing `phone_numbers[]`/`emails[]`
-from every layer and replacing them with a single `addresses[]` field.
+## 2. 새 설계 방향 (대표님 확정)
 
----
+**핵심 원칙: 백엔드는 자동으로 아무것도 하지 않는다. 상담사가 Case-Contact
+assign을 확정하는 시점에 명시적으로 확인받는다.**
 
-## 2. Decision: Hard Cut to Addresses (no backward compat shim)
+square-admin에서 상담사가 `handleAttach`를 눌러 assign을 확정하는
+시점(= `PUT contact_cases/{caseId}` 직전/직후)에, 프론트엔드가 그
+Case의 `Peer.Type`+`Peer.Target`으로 `contact_addresses`를 조회하여
+아래 3가지 시나리오로 분기한다.
 
-`PhoneNumbers []PhoneNumber` and `Emails []Email` are removed from:
-- `contact.Contact` model struct
-- `contact.WebhookMessage` struct
-- `ContactCreate` / `ContactUpdate` request models
-- `ContactManagerContact` OpenAPI response schema
-- All API endpoints that return a Contact
+### 시나리오 1 — Peer 주소가 `contact_addresses`에 전혀 없음 (완전 신규)
 
-The `/contacts/{id}/phone-numbers` and `/contacts/{id}/emails` endpoint
-families are **removed** (not deprecated). New unified endpoints
-`/contacts/{id}/addresses` replace them.
+→ **모달 A** 표시:
 
-This is a coordinated change across `bin-contact-manager`, `bin-common-handler`,
-`bin-api-manager`, `bin-openapi-manager` (single PR in the Go monorepo), and
-`square-admin` (**separate PR in `monorepo-javascript`** — see §5.5).
+> 아직 등록되지 않은 주소입니다. contact에 주소를 할당할까요? 주소가
+> 할당되면 interaction에서 활동 내역을 확인할 수 있습니다.
 
----
+- 버튼: 확인 / 취소
+- 체크박스: "결정 기억하기"
+- 확인 시: `POST /contact_addresses` (body: `{type, target, contact_id}`
+  — 이 엔드포인트는 이미 `contact_id`를 받아 생성과 동시에 귀속시키는
+  것을 지원함, §4 확인).
 
-## 3. Target State
+### 시나리오 2 — Peer 주소가 있고, 이번에 할당하려는 그 Contact가 이미 소유
 
-### 3.1 `Address` model (`bin-contact-manager/models/contact/address.go`)
+→ 아무 것도 하지 않는다. 모달 없이 스킵(이미 일치 상태).
 
-```go
-// Address represents a single row in contact_addresses.
-// type = "tel"   -> target holds an E.164 phone number
-// type = "email" -> target holds a lowercase email address
-type Address struct {
-    ID         uuid.UUID  `json:"id"`
-    CustomerID uuid.UUID  `json:"customer_id"`
-    ContactID  uuid.UUID  `json:"contact_id"`
-    Type       string     `json:"type"`       // "tel" | "email"
-    Target     string     `json:"target"`     // E.164 or email
-    IsPrimary  bool       `json:"is_primary"`
-    TMCreate   *time.Time `json:"tm_create"`
-}
+### 시나리오 3 — Peer 주소가 있고, 다른(살아있는) Contact가 소유
 
-const (
-    AddressTypeTel   = "tel"
-    AddressTypeEmail = "email"
-)
+→ **모달 B** 표시:
+
+> 이미 다른 컨택트({기존 소유 Contact의 display_name}, 링크: 그
+> Contact 상세 페이지로 이동)에 할당되어 있는 주소입니다. 이
+> 컨택트로 재할당할까요?
+
+- 버튼: 확인 / 취소
+- 체크박스: "결정 기억하기" (**시나리오 1과 별도 키로 관리** — 재할당은
+  위험도가 다르다는 것을 사용자가 명시적으로 선택할 수 있어야 함)
+- 확인 시: **`POST /contact_addresses/{id}/claim` (body:
+  `{"contact_id": "<이번 Contact ID>", "force": true}`)를 호출해
+  소유권을 강제 재할당한다(v7, §4 참조).** `force: true`가 있으면
+  이미 다른 살아있는 Contact가 소유 중이어도 409를 반환하지 않고
+  그 소유자로부터 조용히 빼앗아 재할당한다.
+- v5(SUPERSEDED, §10)에서는 신규 `reassign` 엔드포인트로,
+  v6(SUPERSEDED)에서는 기존 PUT에 `contact_id` 필드를 추가하는
+  방식으로 설계했으나, 대표님 지시로 두 방향 모두 걷어내고
+  **기존 `claim`을 확장**하는 방향(v7)으로 재정리했다. 근거:
+  claim이 이미 갖고 있는 ownership-period 서브시스템 연동(§4
+  참조)을 그대로 재사용할 수 있어 v6이 §4.4에서 명시했던
+  "이력 테이블과의 의도적 비대칭" 문제 자체가 사라진다.
+- **모달 B의 tombstone 이전 소유자 폴백(Round 6 리뷰, 비차단
+  관찰):** `AddressList`는 소유 Contact가 soft-delete(tombstone)
+  됐는지와 무관하게 행을 반환하므로, 시나리오 3으로 분류된 주소의
+  `contact_id`가 실제로는 tombstone된 Contact일 수 있다. 이 경우
+  모달 B의 display_name 조회(`GET contacts/{contact_id}`)는 404를
+  반환한다(§6.1 step 3c) — 백엔드의 claim 경로 자체는 이 상태를
+  `staleRowRepairTx`로 이미 우아하게 처리하는 것과 대비된다(§4.3).
+  구현 단계에서 404 시 "삭제된 컨택트"류의 폴백 텍스트로 모달 B를
+  표시한다(정확한 이전 소유자 이름 대신).
+
+### Case-Contact 연결과 주소 연동의 순서
+
+`PUT contact_cases/{caseId}`(Case.contact_id 갱신)는 상담사가 명시적으로
+요청한 **주 동작**이므로 먼저 처리하고 성공시킨다. 주소 연동(모달 확인
+후의 후속 API 호출)은 **그 다음 별도 단계**로 수행한다.
+
+- 주소 연동이 실패해도 이미 성공한 Case-Contact 연결은 **롤백하지
+  않는다**. 이전 설계(§7 폐기분)와 동일한 "주 동작/부가 동작 실패 격리"
+  원칙을 유지한다 — 다만 이번 설계에서는 부가 동작이 백엔드 자동
+  로직이 아니라 **프론트엔드가 모달 확인 후 호출하는 명시적 API 호출**
+  이라는 점이 다르다. 실패 시 프론트는 에러를 상담사에게 알리고(토스트
+  등), 재시도 수단을 제공하거나 최소한 "주소 연동은 실패했지만 Contact
+  할당 자체는 완료됨"을 명확히 전달한다(구현 단계에서 UX 상세화).
+
+## 3. "결정 기억하기" — localStorage 저장 방식
+
+**서버 저장이 아니다. 브라우저 `localStorage`에 저장한다.**
+
+이유:
+- 이 값은 "다음부터 이 모달을 다시 보여줄지"를 결정하는 순수 클라이언트
+  UX 설정이다. 서버로 전송되거나 다른 기기/세션과 동기화될 필요가 없다
+  — 서버 저장(예: Agent 설정 API)은 불필요한 백엔드 변경과 API 표면을
+  추가할 뿐이다(YAGNI).
+- 쿠키가 아니라 localStorage인 이유: 쿠키는 매 HTTP 요청에 자동
+  첨부되어 서버로 전송되는데, 이 값은 서버가 알 필요가 전혀 없다(순수
+  프론트 상태). localStorage는 전송 오버헤드 없이 브라우저에만 남는다.
+
+**시나리오 1과 시나리오 3은 완전히 별도의 localStorage 키로 각각
+기억한다** — 사용자가 위험도가 다르다고 명시적으로 결정했기 때문이다.
+
+제안 키 네이밍:
+```
+voipbin.caseContactAttribution.rememberNewAddress.<agentId>      // 시나리오 1
+voipbin.caseContactAttribution.rememberReassignAddress.<agentId> // 시나리오 3
+```
+값 형식 예: `{"decision": "always_yes" | "always_no", "setAt": "<ISO8601>"}`.
+Agent별로 키를 분리하는 이유: 같은 브라우저 프로필을 여러 상담사가
+공유하는 콘솔 환경(shared workstation)에서 한 상담사의 "항상 예"
+결정이 다른 상담사에게 새어나가지 않도록 하기 위함.
+
+"기억하기"가 켜져 있으면 다음부터는 모달을 띄우지 않고 저장된 결정을
+자동 적용한다(`always_yes`면 API 호출을 자동 실행, `always_no`면
+아무 것도 하지 않고 스킵).
+
+**리셋 수단은 이번 스코프에서 제공하지 않는다(YAGNI)** — 상담사가
+개발자 도구로 localStorage를 지우거나, 향후 필요 시 설정 화면에
+"이 확인 모달 다시 보기" 버튼을 추가할 수 있다는 점만 남겨둔다.
+
+## 4. 백엔드 변경 (v7) — 기존 `POST .../claim`에 `force` 파라미터 확장
+
+> **v5/v6 SUPERSEDED 고지:** v5는 신규 `POST .../release` +
+> `POST .../reassign` 2개 엔드포인트(8라운드 독립 리뷰 완료)로,
+> v6은 기존 `PUT /contact_addresses/{id}`에 `contact_id` 필드를
+> 추가하는 방식으로 설계했었다. 대표님이 두 방향 모두 걷어내고
+> 기존 `claim`을 확장하는 쪽으로 재차 지시하여 v7로 전면 교체한다.
+> v5의 pseudocode/리뷰 상세는 git 히스토리(`bf5d150c2` ~
+> `c2df95890`)에, v6은 `c2df95890` ~ `b59fc428c`에 보존되어 있다.
+> §10에 v5 라운드별 요약이 남아 있다.
+
+### 4.1 현재 상태 재확인
+
+- `POST /contact_addresses/{id}/claim`은 unresolved(contact_id IS
+  NULL) 주소에만 성공하고, 이미 살아있는 Contact 소유면
+  `ErrConflict` → HTTP 409를 반환한다(`contacthandler.ClaimAddress`,
+  contact.go:470-514). **이 기본 계약은 v7에서도 그대로 유지한다**
+  — `force` 파라미터가 없으면(또는 `false`면) 지금과 동일하게
+  동작한다. `contacts_detail.js`의 Unresolved Address Picker(이미
+  프로덕션 사용 중, §0/v6 참고 사실)를 포함한 기존 모든 호출자는
+  영향받지 않는다.
+- **대표님 확인: 현재 이 엔드포인트를 호출하는 외부(square-admin
+  이외) 소비자는 없다.** 이 전제 위에서 기본 계약을 깨는 것(예:
+  409를 완전히 제거)도 검토했으나, "하위 호환 유지 + 옵트인
+  파라미터"가 더 안전한 선택이라 최종적으로 이 방향(§4.2)으로
+  확정했다 — 외부 소비자가 없다는 확인이 이 방향의 위험을 낮추긴
+  했지만, 그렇다고 기본 계약을 깰 이유가 되는 것은 아니다(향후
+  square-admin 내 다른 화면이나 신규 통합이 기존 409 계약에
+  의존하는 코드를 작성할 가능성은 여전히 남아있다).
+- 확장 지점은 `AddressClaimTx`/`OwnershipPeriodsLockAndResolveTx`가
+  아니라 `addressClaimAttempt`(`bin-contact-manager/pkg/dbhandler/
+  address.go:204-255`)다(Round 1 리뷰로 확정). 이 함수가
+  `AddressClaimTx`를 호출하기 **이전에** 먼저 소유자 검사를 하는
+  앞단 게이트를 갖고 있다(226-244행): 이미 다른 Contact 소유
+  (`current.ContactID != contactID`)면 `contactTombstoneTx`로
+  살아있는지 확인하고, **살아있으면(`tmDelete == nil`) 그 자리에서
+  즉시 `ErrConflict`를 반환하며 `AddressClaimTx` 호출까지 가지도
+  않는다**(236행).
+- **`force: true`일 때의 정확한 동작(Round 2 리뷰로 재수정):**
+  `tmDelete == nil`(살아있는 소유자)이어도 `ErrConflict`를 반환하지
+  않되, tombstone 케이스가 쓰는 `staleRowRepairTx`는 재사용하지
+  않는다 — 이 함수는 살아있는 소유자에 대해 **의도적으로 아무
+  것도 갱신하지 않고** `(false, nil)`을 반환하도록 설계되어 있어서
+  (tombstone 복구 전용, `address_ownership_write.go:204-224`의
+  doc comment), 그대로 재사용하면 이전 소유자의 open ownership
+  period가 닫히지 않은 채 `AddressClaimTx`로 넘어가고,
+  `AddressClaimTx`가 내부에서 무조건 호출하는
+  `OwnershipPeriodsLockAndResolveTx`가 그 열려있는 period를 다시
+  발견해 같은 `ErrConflict`를 재반환한다(Round 2 리뷰가 실제로
+  발견한 결함 — R1 수정은 증상을 없애지 못했다). **정확한 해법은
+  `closeOwnOpenPeriodTx`(`address_ownership_write.go:619-642`)를
+  이전 소유자의 contactID로 호출해 그 open period를 먼저 명시적으로
+  닫는 것이다** — 이건 v5 설계(§10, SUPERSEDED)가 release/reassign을
+  위해 이미 검증했던 CLOSE 헬퍼와 동일한 함수다. 상세 pseudocode는
+  §4.3 참조.
+
+### 4.2 확정된 API 표면
+
+**신규 엔드포인트 없음.** 기존 `POST /contact_addresses/{id}/claim`
+요청 바디에 `force`(boolean, optional, 기본값 false)를 추가한다.
+
+```
+POST /v1/contact_addresses/{id}/claim
+Body: { "contact_id": "<uuid>" }                    // 기존과 동일 — unresolved만 성공, 아니면 409
+Body: { "contact_id": "<uuid>", "force": true }     // 신규 — 다른 살아있는 Contact 소유여도 덮어씀
 ```
 
-No sub-type field (mobile/work/home etc.). Those sub-types were never persisted
-to `contact_addresses` — the VOIP-1207 migration comment in `email.go` and
-`phone_number.go` explicitly notes "sub-type is dropped (§3.2)". The DB column
-`target_name` is always written as `""`. This design does not reintroduce them.
+- `force`가 없거나 `false`: 기존 계약 그대로(§4.1) — 하위 호환.
+- `force: true`: `addressClaimAttempt`의 앞단 소유자 검사(§4.1,
+  226-244행)에서 살아있는 소유자를 만나도 `ErrConflict`를 반환하지
+  않고, **`closeOwnOpenPeriodTx`로 이전 소유자의 open ownership
+  period를 먼저 닫은 뒤**(§4.1/§4.3, `staleRowRepairTx`가 아니다 —
+  그 함수는 살아있는 소유자에 대해 no-op이라 R2 리뷰로 폐기됨)
+  `AddressClaimTx`로 정상 진행한다(§4.3). **이력 테이블(`contact_
+  address_ownership_periods`)에는 "기존 소유자의 period가 닫히고
+  새 소유자의 period가 열리는" 정상적인 흐름이 그대로 남는다**
+  — `closeOwnOpenPeriodTx`가 CLOSE를, 그 뒤 `AddressClaimTx`
+  내부의 `OwnershipPeriodsLockAndResolveTx`/`applyOpenResolutionTx`
+  가 OPEN을 각각 명시적으로 수행하기 때문이다. 이게 v6 대비 이
+  방향의 핵심 이점이다(§0/v6 SUPERSEDED 고지가 지적한 이력 비대칭
+  문제가 원천적으로 발생하지 않는다).
 
-### 3.2 Updated `Contact` model
+**응답:** 200 + 갱신된 `ContactManagerAddress`. `force: true`일 때도
+404(주소 없음)는 그대로 유지된다. 409는 `force`가 없을 때만
+발생한다.
 
-```go
-// Before (removed):
-PhoneNumbers []PhoneNumber `json:"phone_numbers,omitempty" db:"-"`
-Emails       []Email       `json:"emails,omitempty"       db:"-"`
+### 4.3 dbhandler/OpenAPI 변경 지점 (Round 2 리뷰로 재수정)
 
-// After:
-Addresses []Address `json:"addresses,omitempty" db:"-"`
-```
+> **Round 2 리뷰가 지적한 R1 수정의 결함:** R1이 채택한
+> `staleRowRepairTx` 재사용은 틀렸다. 이 함수는 살아있는 소유자를
+> 만나면 **의도적으로 아무 것도 갱신하지 않고** `(false, nil)`을
+> 반환한다(tombstone 복구 전용 함수이기 때문 —
+> `address_ownership_write.go:204-224` 함수 자체 doc comment 참고).
+> 그래서 `force:true`로 이 경로를 타도 이전 소유자의 ownership
+> period가 전혀 닫히지 않은 채 `AddressClaimTx`가 호출되고,
+> `AddressClaimTx`가 내부적으로 무조건 호출하는
+> `OwnershipPeriodsLockAndResolveTx`의 Step 1이 **독립적으로 다시**
+> live-owner 충돌을 검사해 `ErrConflict`를 재반환한다 — 같은 증상이
+> 다른 경로에서 재발한다.
 
-### 3.3 Updated `WebhookMessage`
-
-Same replacement: `PhoneNumbers`/`Emails` removed, `Addresses []Address` added.
-`ConvertWebhookMessage()` maps `c.Addresses`.
-
-### 3.4 Request models (listenhandler)
-
-Remove `PhoneNumberCreate`, `PhoneNumberUpdate`, `EmailCreate`, `EmailUpdate`.
-Add:
-
-```go
-// AddressCreate is the body for POST /v1/contacts/{id}/addresses
-type AddressCreate struct {
-    Type      string `json:"type"`       // "tel" | "email" — required
-    Target    string `json:"target"`     // E.164 or email   — required
-    IsPrimary bool   `json:"is_primary"`
-}
-
-// AddressUpdate is the body for PUT /v1/contacts/{id}/addresses/{address_id}
-type AddressUpdate struct {
-    Target    *string `json:"target,omitempty"`
-    IsPrimary *bool   `json:"is_primary,omitempty"`
-}
-```
-
-`ContactCreate` request: remove `PhoneNumbers []PhoneNumberCreate` and
-`Emails []EmailCreate`, add `Addresses []AddressCreate`.
-
----
-
-## 4. API Changes
-
-### 4.1 New endpoints
-
-| Method | Path | Description |
-|---|---|---|
-| GET    | `/contacts/{id}/addresses`              | List all addresses for a contact |
-| POST   | `/contacts/{id}/addresses`              | Add an address (tel or email) |
-| PUT    | `/contacts/{id}/addresses/{address_id}` | Update target or is_primary |
-| DELETE | `/contacts/{id}/addresses/{address_id}` | Remove an address |
-
-**GET `/contacts/{id}/addresses`**
-
-Response uses standard list envelope consistent with other sub-resource lists:
-```json
-{
-  "result": [
-    {
-      "id": "...",
-      "customer_id": "...",
-      "contact_id": "...",
-      "type": "tel",
-      "target": "+15551234567",
-      "is_primary": true,
-      "tm_create": "2026-01-01T00:00:00Z"
-    }
-  ]
-}
-```
-
-**POST `/contacts/{id}/addresses`**
-
-Request:
-```json
-{ "type": "tel", "target": "+15556543210", "is_primary": false }
-```
-
-Response: updated `Contact` object (same as existing phone-numbers/emails POST pattern).
-
-Validation:
-- `type` must be `"tel"` or `"email"`. Any other value returns 400 `INVALID_ARGUMENT`.
-- `target` must be non-empty.
-- `"tel"`: E.164 normalization applied via `commonaddress.NormalizeTarget`.
-- `"email"`: lowercase normalization via `commonaddress.NormalizeTarget`.
-
-**PUT `/contacts/{id}/addresses/{address_id}`**
-
-Request: `{ "target": "+15559999999" }` or `{ "is_primary": true }` or both.
-
-Response: updated `Contact` object.
-
-**DELETE `/contacts/{id}/addresses/{address_id}`**
-
-Response: updated `Contact` object.
-
-### 4.2 Removed endpoints
-
-All of the following are removed (no deprecated shim):
-- `POST   /contacts/{id}/phone-numbers`
-- `PUT    /contacts/{id}/phone-numbers/{phone_number_id}`
-- `DELETE /contacts/{id}/phone-numbers/{phone_number_id}`
-- `POST   /contacts/{id}/emails`
-- `PUT    /contacts/{id}/emails/{email_id}`
-- `DELETE /contacts/{id}/emails/{email_id}`
-
-`square-admin` is updated in the same PR, so there are no in-flight consumers
-of those endpoints after merge.
-
----
-
-## 5. Implementation Plan
-
-### 5.1 `bin-contact-manager`
-
-#### New file: `models/contact/address.go`
-- `Address` struct
-- `AddressTypeTel`, `AddressTypeEmail` constants
-- `AddressField` constants with explicit DB column mapping:
-
-```go
-const (
-    AddressFieldTarget    AddressField = "target"     // maps to DB column target
-    AddressFieldIsPrimary AddressField = "is_primary" // maps to DB column is_primary
-)
-```
-
-Callers of `AddressUpdate` MUST use `AddressFieldTarget` (not `"number"` or
-`"address"`, which were the old type-specific keys).
-
-#### Modified: `models/contact/contact.go`
-- Remove `PhoneNumbers []PhoneNumber` and `Emails []Email`
-- Add `Addresses []Address`
-
-#### Modified: `models/contact/webhook.go`
-- `WebhookMessage`: remove `PhoneNumbers`/`Emails`, add `Addresses []Address`
-- `ConvertWebhookMessage()`: map `c.Addresses`
-
-#### Delete: `models/contact/phonenumber.go` and `models/contact/email.go`
-- These structs and their constants have no remaining callers after the migration.
-
-#### Modified: `models/contact/field.go`
-- Remove `PhoneNumberField` and `EmailField` constant blocks.
-- Add `AddressField` constants.
-
-#### Modified: `pkg/dbhandler/main.go` (interface)
-- Remove: `PhoneNumber*`, `Email*` method signatures
-- Add: `AddressCreate`, `AddressGet`, `AddressListByContactID`, `AddressUpdate`,
-  `AddressDelete`, `AddressResetPrimary`
-
-**Reconciliation with existing partial Address primitives:**
-
-The current interface already has two address-related methods with different names
-and return types. These are explicitly replaced as follows:
-
-| Existing method | Action | New method |
-|---|---|---|
-| `AddressGetByID(ctx, customerID, id) (AddressPair, error)` | RENAME + return type change | `AddressGet(ctx, customerID, id) (*contact.Address, error)` |
-| `AddressListByContact(ctx, customerID, contactID) ([]AddressPair, error)` | REPLACE | `AddressListByContactID(ctx, contactID) ([]contact.Address, error)` |
-
-`AddressPair` (currently defined in `interaction.go`) is kept for `InteractionList`
-which uses `(type, target)` pairs for SQL IN-list expansion — this is a separate
-concern from the public Address model. `AddressPair` is NOT deleted.
-
-**`AddressGet` signature retains `customerID`:**
-```go
-AddressGet(ctx context.Context, customerID, id uuid.UUID) (*contact.Address, error)
-```
-This preserves the cross-tenant guard that exists in the current `AddressGetByID`
-implementation (verified by `Test_AddressGetByID` cross-tenant test in
-`address_test.go`). The `contacthandler` layer passes `c.CustomerID` — obtained
-from the prior `ContactGet` — to `AddressGet` in all `UpdateAddress`/`RemoveAddress`
-calls.
-
-`AddressListByContactID` omits `customerID` (consistent with existing
-`PhoneNumberListByContactID` / `EmailListByContactID` signatures). The
-`ContactGet` that precedes it guarantees contact ownership; no additional
-DB-layer tenant filtering is needed for the list path.
-
-#### Modified: `pkg/dbhandler/address.go`
-- Extend `addressRow` to include `type` column (currently missing from scan target).
-- Implement `AddressCreate`, `AddressGet`, `AddressListByContactID`,
-  `AddressUpdate`, `AddressDelete`, `AddressResetPrimary` as first-class methods.
-- `AddressResetPrimary` replaces `addressResetPrimaryForContact` (make exported).
-- **Each mutating method (`AddressCreate`, `AddressUpdate`, `AddressDelete`,
-  `AddressResetPrimary`) MUST call `h.contactUpdateToCache(ctx, contactID)` after
-  the DB write**, matching the pattern in the deleted `phone_number.go` and
-  `email.go`. For `AddressUpdate`/`AddressDelete`, resolve `contactID` first via
-  the existing private helper `h.addressContactID(id uuid.UUID)` before the
-  mutation.
-
-#### Delete: `pkg/dbhandler/phone_number.go` and `pkg/dbhandler/email.go`
-- All logic migrated to `address.go`.
-
-#### Modified: `pkg/listenhandler/models/request/contacts.go`
-- Remove `PhoneNumberCreate`, `PhoneNumberUpdate`, `EmailCreate`, `EmailUpdate`
-- Add `AddressCreate`, `AddressUpdate`
-- `ContactCreate`: replace `PhoneNumbers []PhoneNumberCreate` and
-  `Emails []EmailCreate` with `Addresses []AddressCreate`
-
-#### Modified: `pkg/listenhandler/main.go`
-- Remove regex and routing for `/phone-numbers` and `/emails`
-- Add `regV1ContactsAddresses` and `regV1ContactsAddressesID`
-- Add routing cases: GET + POST `/addresses`, PUT + DELETE `/addresses/{id}`
-
-#### Modified: `pkg/listenhandler/v1_contacts.go`
-- `processV1ContactsPost`: replace `c.PhoneNumbers`/`c.Emails` construction
-  (iterating over `reqData.PhoneNumbers` / `reqData.Emails`) with
-  `c.Addresses` construction (iterating over `reqData.Addresses`, mapping each
-  to `contact.Address{Type: a.Type, Target: a.Target, IsPrimary: a.IsPrimary}`).
-
-#### New file: `pkg/listenhandler/v1_contacts_addresses.go`
-- `processV1ContactsAddressesGet` (GET list — returns `[]Address`, list envelope)
-- `processV1ContactsAddressesPost` (POST create — returns updated `Contact`)
-- `processV1ContactsAddressesIDPut` (PUT update — returns updated `Contact`)
-- `processV1ContactsAddressesIDDelete` (DELETE — returns updated `Contact`)
-
-#### Delete: `pkg/listenhandler/v1_contacts_phonenumbers.go`
-#### Delete: `pkg/listenhandler/v1_contacts_emails.go`
-(if these files exist; otherwise remove the functions from `v1_contacts.go`)
-
-#### Modified: `pkg/contacthandler/contact.go`
-- `Create()`: migrate inline address creation loop. Full pseudo-code:
-  ```
-  addresses := c.Addresses
-  c.PhoneNumbers = nil  // removed field — no-op in new struct, kept for clarity
-  c.Emails = nil        // removed field — no-op in new struct, kept for clarity
-  c.Addresses = nil     // MUST zero before db.ContactCreate to avoid DB write
-  c.TagIDs = nil
-
-  db.ContactCreate(ctx, c)  // inserts contact row only
-
-  for _, a := range addresses {
-      a.ID = UUIDCreate(); a.CustomerID = c.CustomerID; a.ContactID = c.ID
-      // normalize target
-      if a.Type == AddressTypeTel   { a.Target = normalizeE164("", a.Target) }
-      if a.Type == AddressTypeEmail { a.Target, _ = NormalizeTarget(TypeEmail, a.Target) }
-      if a.IsPrimary { db.AddressResetPrimary(ctx, c.ID) }  // cross-type reset
-      db.AddressCreate(ctx, &a)
+- `bin-openapi-manager/openapi/paths/contact_addresses/id_claim.yaml`
+  에 `force`(boolean, optional) 필드 추가, description에 하위 호환
+  기본 동작과 `force: true`의 의미를 명시.
+- **`OwnershipPeriodsLockAndResolveTx` 자체의 시그니처는 여전히
+  건드리지 않는다** — Round 1의 이 판단은 유지된다. 다만 Round 1이
+  "그러므로 force 처리는 이 함수와 무관하다"고 결론 낸 것은 틀렸다
+  — `AddressClaimTx`가 이 함수를 무조건 호출하므로, force:true일
+  때 이 함수의 Step 1이 통과되도록(즉 이전 소유자의 open period가
+  이미 닫혀 있도록) **사전에** 만들어둬야 한다.
+- **정확한 해법: `closeOwnOpenPeriodTx`를 재사용한다**
+  (`address_ownership_write.go:619-642` — v5 설계(§10, SUPERSEDED)가
+  release/reassign을 위해 이미 검증했던 바로 그 CLOSE 헬퍼). 이
+  함수를 **이전 소유자의 contactID**로 호출하면(새 소유자가 아니라)
+  `OwnershipPeriodsLockAndResolveTx`의 Step 1이 "이 target에 대해
+  **다른** contact_id의 open period가 있는가"를 검사할 때, 우리가
+  넘긴 contactID(이전 소유자 자신)와 open period의 contact_id가
+  일치하므로 Step 1의 충돌 분기 자체에 걸리지 않는다 — 대신 Step 2
+  (`StepOpenReuse`, 자기 자신의 open period 재사용)로 자연스럽게
+  이어지고, `closeOwnOpenPeriodTx`가 그 open period를 찾아
+  `ownershipPeriodCloseByIDTx`로 닫는다. 닫힌 뒤에 `AddressClaimTx`를
+  호출하면, 그 안의 `OwnershipPeriodsLockAndResolveTx`가 다시
+  조회했을 때 더 이상 다른 contact의 open period가 없으므로 Step 1
+  충돌 없이 정상 진행된다.
+- 시그니처 확장은 다음 체인을 관통해야 한다(바깥→안쪽 순):
+  `contacthandler.ClaimAddress(force bool)` →
+  `dbhandler.AddressClaim(..., force bool)` →
+  `addressClaimAttempt(..., force bool)`. `AddressClaimTx` 자체는
+  시그니처 변경이 필요 없다(v5 검증 시와 동일한 이유 — CLOSE를
+  먼저 끝내면 OPEN 쪽은 아무것도 몰라도 된다).
+- `addressClaimAttempt`(`address.go:226-244`)의 정확한 수정:
+  ```go
+  if current.ContactID != uuid.Nil && current.ContactID != contactID {
+      tmDelete, tombErr := contactTombstoneTx(ctx, tx, current.ContactID)
+      if tombErr != nil { return tombErr }
+      if tmDelete == nil {
+          // 살아있는 소유자
+          if !force {
+              return ErrConflict
+          }
+          // force:true -- 이전(살아있는) 소유자의 open ownership
+          // period를 CLOSE한다. staleRowRepairTx(tombstone 전용,
+          // 살아있는 소유자에 대해 no-op)는 재사용하지 않는다
+          // (Round 2 리뷰로 확정).
+          if err := h.closeOwnOpenPeriodTx(ctx, tx, customerID, current.ContactID, addrType, target); err != nil {
+              return err
+          }
+          // contact_addresses 행 자체의 NULL 리셋은 불필요 --
+          // AddressClaimTx의 UPDATE가 id 조건만으로 곧바로 새
+          // contact_id를 덮어쓴다.
+      } else {
+          // tombstone된 소유자: 기존 repair-in-place 경로, 변경 없음.
+          if _, repairErr := h.staleRowRepairTx(ctx, tx, customerID, addrType, target, true); repairErr != nil {
+              return repairErr
+          }
+      }
   }
-
-  // Tag handling: UNCHANGED — loop over tagIDs calling db.TagAssignmentCreate
-  for _, tagID := range tagIDs { db.TagAssignmentCreate(ctx, c.ID, tagID) }
+  if err := h.AddressClaimTx(ctx, tx, customerID, addressID, contactID, addrType, target); err != nil {
+      return err
+  }
   ```
-  Note: `AddressResetPrimary` is now **cross-type** — it resets all address
-  primaries for the contact (both tel and email), replacing the previous per-type
-  behavior of `PhoneNumberResetPrimary`/`EmailResetPrimary`.
+  tombstone 분기와 force 분기는 서로 다른 헬퍼(`staleRowRepairTx`
+  vs `closeOwnOpenPeriodTx`)를 쓰므로 명시적으로 분리한다 — R1이
+  시도했던 "하나의 리셋 경로로 합류"는 이 두 케이스의 실제 동작이
+  다르다는 걸 놓친 데서 비롯된 오류였다(Round 2 리뷰).
+- `AddressClaim`(`address.go:165-202`)이 `force`를
+  `addressClaimAttempt` 호출부(184행)까지 그대로 전달하도록 파라미터
+  추가.
+- `contacthandler.ClaimAddress`(servicehandler 상위 레이어)가
+  `force` 파라미터를 받아 `dbhandler.AddressClaim`까지 전달하도록
+  시그니처 확장.
+- **listenhandler 계층(Round 2 리뷰가 지적한 누락):**
+  `processV1ContactAddressesIDClaim`이 파싱하는 요청 구조체
+  (`request.ContactAddressClaim` 또는 그 대응 타입)에 `Force bool`
+  필드를 추가하고, 핸들러가 이를 `servicehandler.ClaimAddress`까지
+  전달하도록 배선한다 — §8 테스트 계획에는 이미 언급되어 있었으나
+  이 변경 지점 목록에 누락되어 있었다.
 
-- Remove `AddPhoneNumber`, `UpdatePhoneNumber`, `RemovePhoneNumber`, `AddEmail`, `UpdateEmail`, `RemoveEmail`
-- Add: `AddAddress`, `UpdateAddress`, `RemoveAddress`
+### 4.4 이력 서브시스템 — v6과 달리 정합성 유지
 
-**`AddAddress` logic:**
-```
-1. ContactGet to verify existence and get CustomerID
-2. Assign ID, CustomerID, ContactID
-3. Normalize target: tel -> E.164, email -> lowercase
-4. If IsPrimary: call AddressResetPrimary(contactID)
-5. AddressCreate(ctx, addr)
-6. ContactGet to return updated Contact
-7. publishEvent(ContactUpdated)
-```
+v6(SUPERSEDED, §0)에서 지적했던 "PUT으로 바뀐 소유권이 이력
+테이블에 반영되지 않는 비대칭" 문제가 v7에서는 발생하지 않는다.
+`force: true`도 결국 `AddressClaimTx`의 기존 경로(§4.1)를 그대로
+타므로, ownership-period 테이블은 항상 정확하게 갱신된다.
 
-**`UpdateAddress` logic:**
-```
-1. AddressGet(ctx, customerID, addressID) — returns ErrNotFound if absent or wrong tenant
-   → if ErrNotFound: return 404 CONTACT_ADDRESS_NOT_FOUND
-2. Normalize target if being updated (dispatch on type from step 1)
-3. If IsPrimary=true: AddressResetPrimary(contactID)
-4. AddressUpdate(addressID, fields)
-5. ContactGet, publishEvent
-```
+**감사 이벤트의 편측성(Round 6 리뷰, 비차단 관찰):**
+`contacthandler.ClaimAddress`(`contact.go:511`)는 성공 시
+`EventTypeContactUpdated`를 **새 소유 Contact에 대해서만** 발행하고,
+`force:true`로 소유권을 빼앗기는 이전 소유자 Contact에는 아무
+이벤트도 발행하지 않는다. 지금까지는 "살아있는 이전 소유자가
+존재"하는 상황 자체가 claim에서 도달 불가능했으므로(항상 409) 이
+편측성이 드러나지 않았지만, `force`가 처음으로 이 경로에 도달
+가능하게 만든다. `contact_address_ownership_periods` 테이블에는
+이력이 정확히 남으므로 데이터 유실은 아니지만, 소유권을 잃는 쪽
+Contact를 구독 중인 webhook에는 알림이 가지 않는다. 이 기존
+패턴(`ClaimAddress`가 원래도 이랬음)을 그대로 상속하는 것으로
+받아들이고, 이번 스코프에서 새로 고치지 않는다(§9 Out of Scope에
+추가) — 다만 향후 이 방향으로 개선한다면 이전 소유자에게도 별도
+이벤트(예: `EventTypeContactAddressReleased`)를 발행하는 것이
+후보가 될 수 있다.
 
-**`RemoveAddress` logic:**
-```
-1. AddressGet(ctx, customerID, addressID) — 404 if absent or wrong tenant
-2. AddressDelete(addressID)
-3. ContactGet, publishEvent
-```
+### 4.5 Race condition — 기존 claim 정책 그대로 상속
 
-#### Modified: `pkg/dbhandler/contact.go` — `ContactGet`
-```go
-// Before:
-res.PhoneNumbers, _ = h.PhoneNumberListByContactID(ctx, id)
-res.Emails, _ = h.EmailListByContactID(ctx, id)
+`force` 유무와 무관하게, 동시성 처리는 `AddressClaimTx`/
+`addressClaimAttempt`의 기존 패턴(`bin-contact-manager/pkg/
+dbhandler/address.go`)을 그대로 따른다 — pre-lock 읽기로 idempotent
+조기 반환, `ErrStaleTarget`/`ErrDeadlock`은 기존 재시도 루프로 흡수.
+v5가 설계했던 "release/reassign 전용 즉시 409" 정책은 v7에는
+해당하지 않는다 — v7은 새 엔드포인트가 아니라 기존 claim의
+파라미터 확장이므로, claim이 이미 갖고 있는 동시성 정책을 그대로
+상속받는다. 다만 **`force: true`로 두 상담사가 동시에 같은 주소를
+서로 다른 Contact로 강제 claim하는 경쟁 상태**는 새로운 시나리오다
+— `addressClaimAttempt`가 매 시도마다 새 트랜잭션을 열고
+`addressTypeTargetContactByID`로 post-lock 재확인(§4.3의
+`current` 조회)을 하므로 DB 레벨에서 순서가 보장되지만, 사용자
+입장에서는 "내가 먼저 확인 버튼을 눌렀는데 나중에 요청한 상담사가
+이겼다"는 결과가 나올 수 있다(둘 다 `force: true`이므로 둘 다
+성공하고, 마지막 커밋이 최종 소유자가 된다) — 이건 §4.2에서 이미
+명시한 "last-write-wins를 사용자가 명시적으로 요청한 것"이므로
+별도 안전장치를 추가하지 않는다.
 
-// After:
-res.Addresses, _ = h.AddressListByContactID(ctx, id)
-```
+### 4.6 선결 작업: `GET /contact_addresses`의 `target` 쿼리 필터 (Round 4 리뷰로 복원)
 
-#### Modified: `pkg/contacthandler/main.go` (interface)
-- Remove: `AddPhoneNumber`, `UpdatePhoneNumber`, `RemovePhoneNumber`, `AddEmail`, `UpdateEmail`, `RemoveEmail`
-- Add: `AddAddress`, `UpdateAddress`, `RemoveAddress`
+> **Round 4 리뷰 발견:** v6→v7 전환 과정에서 원래 "§5. API/OpenAPI
+> 변경 요약" 섹션이 통째로 삭제되면서, 그 안에 있던 이 필터 사양도
+> 함께 사라졌다. 본문(§6.1, §8)은 여전히 `target` 필터가 존재하는
+> 것처럼 그 사용을 전제하고 있었으나, 실제 코드에는 없다
+> (`AddressList`, `bin-contact-manager/pkg/dbhandler/address.go:
+> 288-327`은 현재 `contact_id`/`type`/`unresolved` 필터만 지원).
+> 신규 엔드포인트가 없는 v7이라 해도 **이 필터는 여전히 필요한
+> 선결 작업**이다 — §6.1의 프론트 흐름이 Peer(type, target)로
+> `contact_addresses`를 조회해 3-분기(신규/일치/재할당)를 판단해야
+> 하는데, 그 조회 자체가 이 필터 없이는 불가능하다.
 
-### 5.2 `bin-common-handler`
+- `GET /v1/contact_addresses`에 `target`(string, optional) 쿼리
+  파라미터를 추가한다.
+- `bin-openapi-manager/openapi/paths/contact_addresses/main.yaml`의
+  GET 파라미터 목록에 `target` 추가.
+- `dbhandler.AddressList`(`address.go:288-327`)에
+  `filters["target"]` 처리를 추가한다(`sq.Eq{"target": t}`, 기존
+  `type` 필터와 동일한 패턴).
+- `listenhandler/v1_contact_addresses.go`의
+  `processV1ContactAddressesGet`에 `target` 쿼리 파싱을 추가한다.
+- **이 변경은 v5(§10, SUPERSEDED)의 §5가 이미 동일하게 설계해뒀던
+  내용과 같다** — release/reassign 관련 부분(v5 §5의 나머지 항목)만
+  v7에서 무효화됐을 뿐, target 필터 부분은 v5→v6→v7 전체에서
+  일관되게 필요했던 독립적인 변경 사항이다.
 
-#### Delete: `pkg/requesthandler/contact_phonenumbers.go`
-#### Delete: `pkg/requesthandler/contact_emails.go`
+### 4.7 `web_session` 타입 지원 — writable, NOT reachable (Post-approval follow-up, 대표님 지시)
 
-#### New file: `pkg/requesthandler/contact_addresses.go`
-- `ContactV1AddressCreate(ctx, contactID, addrType, target, isPrimary) (*cmcontact.Contact, error)`
-- `ContactV1AddressUpdate(ctx, contactID, addressID, fields) (*cmcontact.Contact, error)`
-- `ContactV1AddressDelete(ctx, contactID, addressID) (*cmcontact.Contact, error)`
+> **배경:** `commonaddress.Type`은 10개 값을 정의하지만
+> `contact_addresses`는 원래 `tel`/`email` 두 개만 쓰기 허용하는
+> 화이트리스트(`isValidContactAddressType`)를 두고 있었다. Case는
+> 채널 무관하게 생성되므로, 웹챗(webchat) 발 Case의 `Peer.Type`은
+> `web_session`(방문자 연속성 토큰, UUID 형태)일 수 있다 — 이
+> 화이트리스트 때문에 웹챗 Case는 이번 기능(§2/§6)의 시나리오 1
+> (신규 주소 생성)에서 `POST /contact_addresses`가 무조건
+> `ADDRESS_TYPE_INVALID`로 실패했을 것이다.
 
-**No standalone `ContactV1AddressList` RPC.** This follows the established codebase
-pattern: sub-resource lists (tags, phone numbers, emails) are returned as part of
-`ContactGet`, not via a separate list RPC. `bin-api-manager`'s
-`GetContactsIdAddresses` handler calls `ContactV1ContactGet` and returns
-`contact.Addresses` from the response. This reuses the Redis contact body cache
-and avoids introducing a new RabbitMQ message type.
+- **결정: `web_session`을 claim할 수 있어야 한다(대표님 지시).** 다만
+  **`Contact.Addresses` 공개 API 필드에는 절대 노출되면 안 된다** —
+  세션 토큰은 tel/email과 달리 영속적인 연락처가 아니라 "이번
+  방문/대화 한정으로 이 Case가 누구에게서 왔는지"를 나타내는 임시
+  귀속 정보이기 때문이다.
+- **구현: write whitelist(`isValidContactAddressType`)에는 추가,
+  read whitelist(`contact.ReachableAddressTypes`)에는 추가하지
+  않는다.** 이 두 리스트를 의도적으로 분리하는 패턴은 이미
+  `ReachableAddressTypes`의 기존 코드 주석이 "미래에 write
+  whitelist에는 있지만 reachable에는 없는 타입이 생길 수 있다"고
+  명시적으로 예견해둔 것과 정확히 일치한다 — 새 메커니즘을 발명하는
+  게 아니라 이미 있던 분리 지점을 사용하는 것이다.
+  - `bin-contact-manager/models/contact/address.go`:
+    `AddressTypeWebSession = commonaddress.TypeWebSession` 상수
+    추가, `ReachableAddressTypes`에는 추가하지 않음.
+  - `bin-contact-manager/pkg/contacthandler/contact.go`:
+    `isValidContactAddressType`의 switch문에 `commonaddress.TypeWebSession`
+    추가. `Create`/`AddAddress`/`UpdateAddress` 3개 write 진입점이
+    모두 이 함수 하나를 공유하므로 별도 수정 불필요.
+  - `AddressListByContactID`(`dbhandler/address.go`)는
+    `ReachableAddressTypes`로만 필터링해 `Contact.Addresses` 필드를
+    채운다 — `web_session`을 그 목록에 넣지 않는 것만으로 노출 차단이
+    자동 성립한다(별도 필터링 로직 추가 불필요).
+  - `bin-openapi-manager`: `contact_addresses/main.yaml`의 GET
+    `type` 필터와 POST body `type` enum에 `web_session` 추가.
+    `openapi.yaml`의 `CommonAddress.type` enum에도 `web_session`
+    추가(기존에 `webchat`/`ai`/`ai_team` 등 다른 타입들도 이
+    enum에서 빠져 있었으나, 그건 이 PR과 무관한 기존 갭이므로
+    손대지 않는다 — `web_session`만 이번 스코프에서 실제로 응답에
+    등장하게 되므로 이것만 추가).
+- **`ClaimAddress`(재할당, force 경로)는 이 화이트리스트를 타지
+  않는다** — 이미 DB에 존재하는 행의 소유자만 바꾸는 것이라 타입
+  검증이 필요 없다. 이번 변경으로 `POST /contact_addresses`(신규
+  생성, 시나리오 1)의 타입 검증만 영향을 받는다.
+- **회귀 테스트:** `pkg/contacthandler/contact_test.go`에
+  `Test_IsValidContactAddressType_WebSession_WritableButNotReachable`
+  추가 — write는 허용, `ReachableAddressTypes`에는 없음을 양방향
+  모두 명시적으로 고정.
 
-#### Modified: `pkg/requesthandler/contact_contacts.go`
-- `ContactV1ContactCreate` signature: replace `phoneNumbers []cmrequest.PhoneNumberCreate,
-  emails []cmrequest.EmailCreate` with `addresses []cmrequest.AddressCreate`
-- Update the marshalled `request.ContactCreate` body accordingly
 
-#### Modified: `pkg/requesthandler/main.go` (interface)
-- Remove: `ContactV1PhoneNumber*`, `ContactV1Email*` method signatures
-- Update: `ContactV1ContactCreate` signature (addresses param)
-- Add: `ContactV1AddressCreate`, `ContactV1AddressUpdate`, `ContactV1AddressDelete`
+## 6. 프론트엔드(square-admin) 반영 범위
 
-### 5.3 `bin-openapi-manager`
+**대상 파일:** `square-admin/src/views/contacts/contact_cases_detail.js`
+의 `CaseContactAttributionPanel` 컴포넌트, 트리거 지점은 기존
+`handleAttach` 함수(339-353행).
 
-#### New schema: `ContactManagerAddress`
-```yaml
-ContactManagerAddress:
-  type: object
-  properties:
-    id:
-      type: string
-      format: uuid
-    customer_id:
-      type: string
-      format: uuid
-    contact_id:
-      type: string
-      format: uuid
-    type:
-      $ref: '#/components/schemas/ContactManagerAddressType'
-    target:
-      type: string
-      description: E.164 phone number (type=tel) or email address (type=email).
-    is_primary:
-      type: boolean
-    tm_create:
-      type: string
-      format: date-time
-```
+### 6.1 `handleAttach` 흐름 재설계 (v7)
 
-#### New schema: `ContactManagerAddressType`
-```yaml
-ContactManagerAddressType:
-  type: string
-  enum:
-    - tel
-    - email
-```
-
-Note: enum values are wire values (`"tel"`, `"email"`), not Go constant identifiers.
-Go code generation will produce `ContactManagerAddressTypeTel` / `ContactManagerAddressTypeEmail`
-constants mapped to these wire strings.
-
-#### Modified: `ContactManagerContact` schema
-- Remove `phone_numbers` and `emails` fields
-- Add `addresses` field: `type: array`, items `$ref: ContactManagerAddress`
-
-#### Remove schemas: `ContactManagerPhoneNumber`, `ContactManagerPhoneNumberType`, `ContactManagerEmail`, `ContactManagerEmailType`
-
-#### New path files:
-- `openapi/paths/contacts/id_addresses.yaml` (GET + POST)
-- `openapi/paths/contacts/id_addresses_id.yaml` (PUT + DELETE)
-
-#### Remove path files:
-- `openapi/paths/contacts/id_phonenumbers.yaml`
-- `openapi/paths/contacts/id_phonenumbers_id.yaml`
-- `openapi/paths/contacts/id_emails.yaml`
-- `openapi/paths/contacts/id_emails_id.yaml`
-
-#### New path files (service agents):
-- `openapi/paths/service_agents/contacts_id_addresses.yaml` (POST)
-- `openapi/paths/service_agents/contacts_id_addresses_id.yaml` (PUT + DELETE)
-
-Note: No separate GET `/service-agents/{id}/contacts/{contact_id}/addresses` path
-is added. The existing GET `/service-agents/{id}/contacts/{contact_id}` in
-`contacts_id.yaml` returns `ContactManagerContact` (via `$ref`), which already
-embeds `addresses[]` after the schema update — consumers get the full address
-list via the contact fetch automatically.
-
-#### Remove path files (service agents):
-- `openapi/paths/service_agents/contacts_id_phonenumbers.yaml`
-- `openapi/paths/service_agents/contacts_id_phonenumbers_id.yaml`
-- `openapi/paths/service_agents/contacts_id_emails.yaml`
-- `openapi/paths/service_agents/contacts_id_emails_id.yaml`
-
-#### Modified: `openapi/openapi.yaml`
-- Remove old path registrations and schemas
-- Add new path registrations and schemas
-- Update `PostContacts` request body: replace `phone_numbers`/`emails` with `addresses`
-
-### 5.4 `bin-api-manager`
-
-#### Modified: `server/contacts.go`
-- Remove: `PostContactsIdPhoneNumbers`, `PutContactsIdPhoneNumbersPhoneNumberId`,
-  `DeleteContactsIdPhoneNumbersPhoneNumberId`, `PostContactsIdEmails`,
-  `PutContactsIdEmailsEmailId`, `DeleteContactsIdEmailsEmailId`
-- Add: `GetContactsIdAddresses`, `PostContactsIdAddresses`,
-  `PutContactsIdAddressesAddressId`, `DeleteContactsIdAddressesAddressId`
-- `PostContacts`: replace the two loops over `req.PhoneNumbers`/`req.Emails` with
-  a single loop over `req.Addresses` calling `serviceHandler.ContactCreate(...)`.
-  **This is a manual handler body edit** — `go generate` updates the
-  `PostContactsJSONBody` type (from `phone_numbers`/`emails` to `addresses`) but
-  the handler iteration logic must be updated by hand.
-
-#### Modified: `server/service_agents_contacts.go`
-This file has a complete parallel phone-number/email sub-resource handler set
-for the service agents contacts resource. All must be replaced:
-- Remove: `PostServiceAgentsContactsIdPhoneNumbers`,
-  `PutServiceAgentsContactsIdPhoneNumbersPhoneNumberId`,
-  `DeleteServiceAgentsContactsIdPhoneNumbersPhoneNumberId`,
-  `PostServiceAgentsContactsIdEmails`,
-  `PutServiceAgentsContactsIdEmailsEmailId`,
-  `DeleteServiceAgentsContactsIdEmailsEmailId`
-- Add: `PostServiceAgentsContactsIdAddresses`,
-  `PutServiceAgentsContactsIdAddressesAddressId`,
-  `DeleteServiceAgentsContactsIdAddressesAddressId`
-- `PostServiceAgentsContacts` contact-create path: replace `req.PhoneNumbers` /
-  `req.Emails` inline processing with `req.Addresses`
-
-#### Modified: `pkg/servicehandler/contact.go`
-This file contains `ContactCreate` and type-specific sub-resource methods that
-are separate from the `ServiceAgentContact*` methods:
-- `ContactCreate` signature: replace `phoneNumbers []cmrequest.PhoneNumberCreate,
-  emails []cmrequest.EmailCreate` with `addresses []cmrequest.AddressCreate`
-- Update the `h.reqHandler.ContactV1ContactCreate(ctx, …, phoneNumbers, emails, tagIDs)`
-  **call site body** to pass `addresses` in place of `phoneNumbers, emails`
-- Remove: `ContactPhoneNumberCreate`, `ContactPhoneNumberUpdate`,
-  `ContactPhoneNumberDelete`, `ContactEmailCreate`, `ContactEmailUpdate`,
-  `ContactEmailDelete`
-- Add: `ContactAddressCreate`, `ContactAddressUpdate`, `ContactAddressDelete`
-  (delegate to `ContactV1AddressCreate`, `ContactV1AddressUpdate`,
-  `ContactV1AddressDelete` respectively)
-
-#### Modified: `pkg/servicehandler/serviceagent_contact.go`
-- Remove: `ServiceAgentContactPhoneNumberCreate`, `ServiceAgentContactPhoneNumberUpdate`,
-  `ServiceAgentContactPhoneNumberDelete`, `ServiceAgentContactEmailCreate`,
-  `ServiceAgentContactEmailUpdate`, `ServiceAgentContactEmailDelete`
-- Add: `ServiceAgentContactAddressCreate`, `ServiceAgentContactAddressUpdate`,
-  `ServiceAgentContactAddressDelete`
-
-#### Modified: `pkg/servicehandler/main.go` (interface)
-- Remove: `ContactPhoneNumberCreate`, `ContactPhoneNumberUpdate`,
-  `ContactPhoneNumberDelete`, `ContactEmailCreate`, `ContactEmailUpdate`,
-  `ContactEmailDelete`, `ServiceAgentContactPhoneNumber*`, `ServiceAgentContactEmail*`
-- Add: `ContactAddressCreate`, `ContactAddressUpdate`, `ContactAddressDelete`,
-  `ServiceAgentContactAddressCreate`, `ServiceAgentContactAddressUpdate`,
-  `ServiceAgentContactAddressDelete`
-- `ContactCreate` signature updated (addresses param)
-
-After `go generate ./...` on updated `bin-openapi-manager`, the generated server
-interface adds the new method signatures and drops the old ones.
-
-#### RST Docs (`bin-api-manager/docsdev/source/`)
-Per `bin-api-manager/CLAUDE.md`, all user-visible API changes require RST doc updates:
-- Remove `/phone-numbers` and `/emails` endpoint docs from the contacts section
-- Add `/addresses` endpoint docs
-- Update `ContactManagerContact` schema description (addresses[] field)
-- Rebuild HTML per CLAUDE.md workflow
-
-### 5.5 `square-admin` (`monorepo-javascript` — separate PR)
-
-`square-admin` lives in the **`monorepo-javascript`** repository, which is
-separate from the Go monorepo. This work requires a **separate PR** in
-`monorepo-javascript`, coordinated with the Go monorepo PR (merge Go PR first,
-then the JS PR).
-
-#### Modified: `square-admin/src/views/contacts/contacts_detail.js`
-- Replace `/phone-numbers` and `/emails` GET/POST/PUT/DELETE calls with `/addresses`
-- `type="tel"` rows rendered in phone section, `type="email"` in email section
-- Add/edit form adds a `type` selector (`tel` | `email`) or uses separate form paths
-
----
-
-## 6. `addressRow` Fix (Critical)
-
-`dbhandler/address.go` currently defines:
-```go
-type addressRow struct {
-    ID         uuid.UUID
-    CustomerID uuid.UUID
-    ContactID  uuid.UUID
-    Target     string
-    IsPrimary  bool
-    TMCreate   *time.Time
-}
-```
-
-The `type` column is absent. This means `scanAddressRow` cannot populate
-`Address.Type`. Must add:
-```go
-Type string `db:"type"`
-```
-
-and include `"type"` in `addressRowColumns()`. All existing callers
-(`PhoneNumberGet`, `EmailGet`, etc.) scoped their queries with a WHERE on type,
-so they do not rely on the scanned value — this addition is safe and
-non-breaking for those paths.
-
----
-
-## 7. Ripple: Other Services Consuming `contact.Contact`
-
-Services that vendor `bin-contact-manager` and access `PhoneNumbers`/`Emails`
-fields must be updated. Scan for usages:
+현재 `handleAttach`는 `PUT contact_cases/{caseId}` 한 번으로 끝난다.
+새 흐름:
 
 ```
-grep -r "\.PhoneNumbers\|\.Emails\b" --include="*.go" -l
+handleAttach:
+  1. PUT contact_cases/{caseId} { contact_id: selectedContact.id }  (주 동작, 기존과 동일)
+     실패 시 → 기존과 동일하게 에러 표시, 이후 단계 진행 안 함.
+  2. 성공 시 → 이 Case의 Peer(type, target)로
+     GET contact_addresses?type=<Peer.Type>&target=<Peer.Target>&customer_id=... 조회
+     (§4.6의 신규 target 필터 사용 — v7에서도 이 조회는 그대로 필요)
+  3. 조회 결과로 분기:
+     a) 0건 → localStorage[rememberNewAddress] 확인.
+        - "항상 예" 저장돼 있으면 즉시 POST /contact_addresses
+          {type, target, contact_id: selectedContact.id} 실행.
+        - "항상 아니오" 저장돼 있으면 아무 것도 안 함.
+        - 저장된 결정 없으면 모달 A 표시 → 확인 시 위 POST 실행 (+
+          체크박스 켜져 있으면 localStorage에 결정 저장).
+     b) 1건, contact_id === selectedContact.id → 아무 것도 안 함(시나리오 2).
+     c) 1건, contact_id !== selectedContact.id (다른 살아있는 Contact) →
+        localStorage[rememberReassignAddress] 확인.
+        - "항상 예" → 즉시 **POST /contact_addresses/{id}/claim
+          {contact_id: selectedContact.id, force: true}** 실행(v7,
+          §4.2).
+        - "항상 아니오" → 아무 것도 안 함.
+        - 저장된 결정 없으면 모달 B 표시(기존 소유 Contact의
+          display_name 조회 필요 — GET contacts/{contact_id}) →
+          확인 시 위 claim(force: true) 호출 (+ 체크박스 켜져
+          있으면 저장).
+  4. 2~3단계(주소 연동)의 성공/실패와 무관하게, 1단계가 이미
+     성공했으면 onAttributionChange()는 호출한다(주 동작은 이미
+     완료됨). 주소 연동 실패는 별도의 (덜 위협적인) 에러/경고로
+     표시한다 — 전체 handleAttach 실패로 취급하지 않는다.
 ```
 
-Known candidates from initial scan:
-- `bin-contact-manager/pkg/contacthandler/contact.go` — covered above
-- `bin-contact-manager/models/contact/webhook.go` — covered above
-- `bin-contact-manager/pkg/listenhandler/v1_contacts.go` — covered above
-- `bin-api-manager/server/contacts.go` — covered above
-- `bin-openapi-manager/gens/models/gen.go` — regenerated by `go generate`
-- `bin-api-manager/gens/openapi_server/gen.go` — regenerated by `go generate`
+**v6(SUPERSEDED)와의 차이:** 시나리오 c에서 `PUT /contact_addresses/
+{id} {contact_id}` 호출이 `POST /contact_addresses/{id}/claim
+{contact_id, force: true}` 호출로 바뀐 것 외에는 흐름이 동일하다.
+시나리오 a(모달 A, 신규 생성)는 v6/v7 공통으로 변화 없음 — 여전히
+`POST /contact_addresses`(생성+귀속)를 그대로 쓴다.
 
-Any other service vendoring `bin-contact-manager` (e.g., `bin-tag-manager`,
-`bin-email-manager`, `bin-sentinel-manager`) must run `go mod vendor` to pick
-up the updated model. If those vendor copies reference `.PhoneNumbers` or
-`.Emails` in their own source (not just vendored code), those must be patched.
+### 6.2 신규 컴포넌트(설계만, 목업 없음)
 
-Action: run the grep after implementing Step 5.1 and before committing.
+- `AddressClaimModal` (모달 A) — props: `peerTarget`, `peerType`,
+  `onConfirm`, `onCancel`, `rememberChecked`, `onRememberChange`.
+  카피는 §2 원문 그대로.
+- `AddressReassignModal` (모달 B) — props: `peerTarget`, `peerType`,
+  `currentOwnerContactId`, `currentOwnerDisplayName`, `onConfirm`,
+  `onCancel`, `rememberChecked`, `onRememberChange`. 현재 소유
+  Contact의 `display_name`과, 클릭 시 `/resources/contacts/
+  contacts_detail/{currentOwnerContactId}`로 이동하는 링크(기존
+  `CaseContactAttributionPanel`의 384-389행 링크 패턴과 동일한
+  `<Link to=...>` 사용)를 포함한다.
+- 두 모달 모두 실제 화면 목업/스크린샷은 **이번 설계 문서 스코프에서
+  만들지 않는다**. 구현 단계에서 `voipbin-frontend-visual-verification-gate`
+  스킬로 실제 렌더링을 확인한다.
 
----
+### 6.3 localStorage 유틸
 
-## 8. Files Changed Summary
+`src/utils/caseContactAttributionPrefs.js`(신규, 제안) 같은 작은
+유틸 모듈에 get/set 함수를 두어 컴포넌트에서 직접 `localStorage.
+getItem/setItem`을 흩어놓지 않는다. 키 네이밍은 §3 참조.
 
-| File | Change |
-|---|---|
-| `bin-contact-manager/models/contact/address.go` | NEW |
-| `bin-contact-manager/models/contact/contact.go` | REPLACE PhoneNumbers/Emails with Addresses |
-| `bin-contact-manager/models/contact/webhook.go` | REPLACE PhoneNumbers/Emails with Addresses |
-| `bin-contact-manager/models/contact/webhook_test.go` | UPDATE: replace PhoneNumbers/Emails assertions with Addresses |
-| `bin-contact-manager/models/contact/phonenumber.go` | DELETE |
-| `bin-contact-manager/models/contact/email.go` | DELETE |
-| `bin-contact-manager/models/contact/field.go` | REMOVE PhoneNumberField/EmailField, ADD AddressField |
-| `bin-contact-manager/pkg/dbhandler/address.go` | EXTEND: add type to addressRow, implement full Address* CRUD + contactUpdateToCache calls |
-| `bin-contact-manager/pkg/dbhandler/contact.go` | MODIFY: `ContactGet` / `ContactList` — replace `PhoneNumberListByContactID`/`EmailListByContactID` calls (3 call sites) with `AddressListByContactID`; remove `res.PhoneNumbers` / `res.Emails` assignments, add `res.Addresses` |
-| `bin-contact-manager/pkg/dbhandler/phone_number.go` | DELETE |
-| `bin-contact-manager/pkg/dbhandler/email.go` | DELETE |
-| `bin-contact-manager/pkg/dbhandler/main.go` | REPLACE PhoneNumber*/Email* interface with Address* |
-| `bin-contact-manager/pkg/dbhandler/mock_main.go` | REGENERATED by `go generate ./...` |
-| `bin-contact-manager/pkg/dbhandler/address_test.go` | UPDATE: rename `h.AddressListByContact(ctx, customerID, contactID)` → `h.AddressListByContactID(ctx, contactID)` (remove customerID arg); rename `h.AddressGetByID(ctx, customerID, id)` → `h.AddressGet(ctx, customerID, id)` (name only, signature unchanged); update return type assertions from `AddressPair` to `contact.Address`; add new tests for `AddressCreate`, `AddressUpdate`, `AddressDelete`, `AddressResetPrimary` |
-| `bin-contact-manager/pkg/dbhandler/address_migration_test.go` | REPLACE: rewrite `Test_AddressMigration_CrossTypeSinglePrimary` using `AddressCreate`(type=tel) + `AddressResetPrimary` + `AddressCreate`(type=email), verifying the cross-type single-primary invariant |
-| `bin-contact-manager/pkg/dbhandler/additional_test.go` | UPDATE: replace `PhoneNumberUpdate`/`PhoneNumberResetPrimary`/`EmailUpdate`/`EmailResetPrimary`/`PhoneNumberGet_NotFound`/`EmailGet_NotFound` test cases with `AddressUpdate`/`AddressResetPrimary`/`AddressGet_NotFound` equivalents |
-| `bin-contact-manager/pkg/dbhandler/contact_test.go` | UPDATE: replace `.PhoneNumbers`/`.Emails` struct literals and assertions with `.Addresses`; replace `Test_Multiple_PhoneNumbers_ForSameContact` / `Test_Multiple_Emails_ForSameContact` with `Test_Multiple_Addresses_ForSameContact` |
-| `bin-contact-manager/pkg/cachehandler/handler_test.go` | UPDATE: replace PhoneNumbers/Emails field assertions with Addresses |
-| `bin-contact-manager/pkg/listenhandler/models/request/contacts.go` | REPLACE PhoneNumber*/Email* with Address* |
-| `bin-contact-manager/pkg/listenhandler/main.go` | REPLACE routes |
-| `bin-contact-manager/pkg/listenhandler/v1_contacts.go` | MODIFY: `processV1ContactsPost` — replace PhoneNumbers/Emails loop with Addresses loop; remove `processV1ContactsPhoneNumbers*` / `processV1ContactsEmails*` handler functions (they live inline in this file, not in separate files) |
-| `bin-contact-manager/pkg/listenhandler/v1_contacts_test.go` | UPDATE: delete `TestProcessV1ContactsPhoneNumbers*` / `TestProcessV1ContactsEmails*` test functions; add `TestProcessV1ContactsAddresses*` covering GET/POST/DELETE; update `TestProcessV1ContactsPost` JSON body to use `addresses[]`; rename `TestProcessV1ContactsPost_WithPhoneAndEmail` → `TestProcessV1ContactsPost_WithAddresses` and rewrite its JSON payload from `phone_numbers[]/emails[]` to `addresses[]` using `type`/`target`/`is_primary` fields only (drop `"number"`, `"mobile"`, `"work"` sub-type keys which have no equivalent in `AddressCreate`) |
-| `bin-contact-manager/pkg/listenhandler/v1_contacts_update_test.go` | UPDATE: delete `TestProcessV1ContactsPhoneNumbersIDPut*` / `TestProcessV1ContactsEmailsIDPut*`; add `TestProcessV1ContactsAddressesIDPut*` |
-| `bin-contact-manager/pkg/listenhandler/v1_contacts_addresses.go` | NEW |
-| `bin-contact-manager/pkg/listenhandler/v1_contacts_phonenumbers.go` | DELETE if file exists (functions may be inline in v1_contacts.go — confirm and remove accordingly) |
-| `bin-contact-manager/pkg/listenhandler/v1_contacts_emails.go` | DELETE if file exists (same as above) |
-| `bin-contact-manager/pkg/contacthandler/contact.go` | REPLACE AddPhoneNumber/Email with AddAddress etc. |
-| `bin-contact-manager/pkg/contacthandler/contact_test.go` | UPDATE: replace `Test_AddPhoneNumber*`/`Test_AddEmail*`/`Test_RemovePhoneNumber*`/`Test_RemoveEmail*` with `Test_AddAddress*`/`Test_RemoveAddress*` |
-| `bin-contact-manager/pkg/contacthandler/contact_additional_test.go` | UPDATE: replace `Test_UpdatePhoneNumber*`/`Test_UpdateEmail*`/`Test_AddPhoneNumber_ResetPrimaryError`/`Test_AddEmail_ResetPrimaryError` with `Test_UpdateAddress*`/`Test_AddAddress_ResetPrimaryError` |
-| `bin-contact-manager/pkg/contacthandler/main.go` | REPLACE interface |
-| `bin-contact-manager/pkg/contacthandler/mock_main.go` | REGENERATED by `go generate ./...` |
-| `bin-common-handler/pkg/requesthandler/contact_phonenumbers.go` | DELETE |
-| `bin-common-handler/pkg/requesthandler/contact_emails.go` | DELETE |
-| `bin-common-handler/pkg/requesthandler/contact_contacts.go` | MODIFY: `ContactV1ContactCreate` signature (addresses param replaces phoneNumbers + emails) |
-| `bin-common-handler/pkg/requesthandler/contact_addresses.go` | NEW |
-| `bin-common-handler/pkg/requesthandler/main.go` | REPLACE interface + update `ContactV1ContactCreate` signature |
-| `bin-common-handler/pkg/requesthandler/mock_main.go` | REGENERATED by `go generate ./...` |
-| `bin-openapi-manager/openapi/openapi.yaml` | REPLACE schemas and paths |
-| `bin-openapi-manager/openapi/paths/contacts/id_phonenumbers.yaml` | DELETE |
-| `bin-openapi-manager/openapi/paths/contacts/id_phonenumbers_id.yaml` | DELETE |
-| `bin-openapi-manager/openapi/paths/contacts/id_emails.yaml` | DELETE |
-| `bin-openapi-manager/openapi/paths/contacts/id_emails_id.yaml` | DELETE |
-| `bin-openapi-manager/openapi/paths/contacts/id_addresses.yaml` | NEW |
-| `bin-openapi-manager/openapi/paths/contacts/id_addresses_id.yaml` | NEW |
-| `bin-openapi-manager/openapi/paths/service_agents/contacts_id_phonenumbers.yaml` | DELETE |
-| `bin-openapi-manager/openapi/paths/service_agents/contacts_id_phonenumbers_id.yaml` | DELETE |
-| `bin-openapi-manager/openapi/paths/service_agents/contacts_id_emails.yaml` | DELETE |
-| `bin-openapi-manager/openapi/paths/service_agents/contacts_id_emails_id.yaml` | DELETE |
-| `bin-openapi-manager/openapi/paths/service_agents/contacts_id_addresses.yaml` | NEW |
-| `bin-openapi-manager/openapi/paths/service_agents/contacts_id_addresses_id.yaml` | NEW |
-| `bin-api-manager/server/contacts.go` | REPLACE handlers |
-| `bin-api-manager/server/contacts_test.go` | UPDATE: replace `Test_PostContactsIdPhoneNumbers*`/`Test_PostContactsIdEmails*` with `Test_GetContactsIdAddresses`/`Test_PostContactsIdAddresses`/`Test_PutContactsIdAddressesAddressId`/`Test_DeleteContactsIdAddressesAddressId`; update expected JSON bodies to use `addresses[]` |
-| `bin-api-manager/server/service_agents_contacts.go` | REPLACE PhoneNumber/Email handlers with Address handlers |
-| `bin-api-manager/server/service_agents_contacts_test.go` | UPDATE: replace PhoneNumber/Email test cases with Address test cases |
-| `bin-api-manager/pkg/servicehandler/contact.go` | REPLACE ContactPhoneNumber*/Email* with ContactAddress*, update ContactCreate signature |
-| `bin-api-manager/pkg/servicehandler/contact_test.go` | UPDATE: replace Test_ContactCreate signature (addresses param), replace Test_ContactPhoneNumber*/Test_ContactEmail* with Test_ContactAddress* |
-| `bin-api-manager/pkg/servicehandler/serviceagent_contact.go` | REPLACE PhoneNumber*/Email* with Address* |
-| `bin-api-manager/pkg/servicehandler/serviceagent_contact_test.go` | UPDATE: replace test cases |
-| `bin-api-manager/pkg/servicehandler/main.go` | REPLACE interface signatures |
-| `bin-api-manager/pkg/servicehandler/mock_main.go` | REGENERATED by `go generate ./...` |
-| `monorepo-javascript/square-admin/src/views/contacts/contacts_detail.js` | UPDATE to /addresses API (separate PR in monorepo-javascript) |
+## 7. 동시성 / 에러 처리 요약 (v7)
 
----
+- 백엔드: §4.5 참조 — `force` 유무와 무관하게 claim의 기존 동시성
+  정책(pre-lock 읽기 + `ErrStaleTarget`/`ErrDeadlock` 재시도 루프)을
+  그대로 상속받는다. v6이 채택했던 "경합 검증 완전 제거"와 달리,
+  v7은 claim이 이미 가진 `SELECT ... FOR UPDATE` 기반 직렬화를
+  유지한다 — 다만 두 상담사가 모두 `force: true`로 요청하면 DB
+  레벨에서는 순서대로 처리되지만 결과적으로 나중 요청이 이긴다
+  (§4.5, 사용자가 명시적으로 요청한 동작으로 간주).
+- 프론트: 주 동작(Case-Contact 연결)과 부가 동작(주소 연동) 실패를
+  분리해서 표시(§2, §6.1-4). 부가 동작 실패는 주 동작 롤백을
+  유발하지 않는다.
+- 동일 Case에 대한 동시 `UpdateContact` 호출 경쟁은 이번 설계가 새로
+  만드는 문제가 아니다(기존 gap, 별도 티켓).
 
-## 9. Open Questions (resolved)
+## 8. 테스트 계획 (구현 단계에서 상세화, v7)
 
-| # | Question | Resolution |
-|---|---|---|
-| 1 | Backward compat shim? | No. Hard cut. Both sides updated atomically. |
-| 2 | Sub-type (mobile/work/home)? | Not reintroduced. DB never stored them (target_name always ""). |
-| 3 | GET list response envelope? | `{"result": [...]}` consistent with other list endpoints. |
-| 4 | addresses[] in ContactCreate? | Yes — replaces phone_numbers[]/emails[] inline on create. |
-| 5 | GET /addresses/{id} single-item? | Out of scope. PUT/DELETE identify the row by address_id in path; no pre-fetch needed. |
+**백엔드:**
+- `POST /contact_addresses/{id}/claim` `force` 파라미터:
+  - `force` 없음/`false`: 기존 계약 100% 유지 확인(회귀 테스트) —
+    unresolved 성공, 이미 소유 시 409.
+  - `force: true`, 대상이 unresolved: 기존과 동일하게 성공(force가
+    무해한 no-op으로 동작하는지).
+  - `force: true`, 대상이 다른 살아있는 Contact 소유: 409 없이
+    성공, 기존 소유자의 ownership period가 닫히고 새 소유자의
+    period가 열리는지 **DB 레벨로 직접 검증**(§4.4의 "이력 정합성
+    유지" 주장을 실제로 고정하는 핵심 테스트).
+  - `force: true`, 대상이 tombstone(soft-delete)된 Contact 소유:
+    이 케이스는 **`staleRowRepairTx` 경로 그대로**(force 분기와는
+    별개 — §4.3, tombstone/force 분기는 명시적으로 분리되어 있다),
+    기존 동작과 결과가 동일한지 회귀로 고정. `force`가 true든
+    false든 이 tombstone 케이스의 처리는 변화가 없어야 한다.
+  - `force`가 `AddressCreate`/`AddressUpdate`/`AddressDelete`
+    경로에는 전혀 영향을 주지 않는지(§4.3 정정 — `force`는
+    `addressClaimAttempt`에만 배선되고 `OwnershipPeriodsLockAndResolveTx`
+    자체는 건드리지 않으므로, 이 항목은 "회귀 없음"을 확인하는
+    네거티브 테스트다).
+- `AddressList` `target` 필터: 단위 테스트 + OpenAPI 스펙 검증(§4.6).
+- listenhandler: `processV1ContactAddressesIDClaim`에 `force` 필드
+  파싱 추가 테스트(기존 400/404/409 라우팅 테스트에 `force` 케이스
+  추가).
+
+**프론트:**
+- `handleAttach`의 3가지 분기(시나리오 1/2/3) 각각에 대해 올바른
+  API 호출이 발생하는지(특히 시나리오 3에서 claim body가 v7대로
+  `{contact_id, force: true}`인지).
+- localStorage "기억하기" 저장 후 재진입 시 모달 스킵 및 자동 적용
+  검증(시나리오 1/3 키가 서로 간섭하지 않는지 포함).
+- 주소 연동 API 실패 시에도 Case-Contact 연결(주 동작)의 UI 상태가
+  성공으로 유지되는지.
+
+## 9. Out of Scope (YAGNI, v7)
+
+- localStorage 결정 리셋 UI(§3) — 향후 설정 화면에 추가 가능.
+- 고객사 단위 정책 플래그(예: 이 확인 흐름 자체를 끄는 옵션).
+- `claim`의 409를 완전히 제거하는 것(대안으로 검토했으나 §4.1에서
+  기각 — 기본 계약은 하위 호환 유지).
+- `unclaim`(재배정 없이 unresolved로만 되돌리는 액션) — VOIP-1270의
+  Case 할당 화면에는 이 액션을 트리거할 UI가 없다(대표님과의 논의로
+  확인). Contact 상세 화면 등 다른 곳에서 필요해지면 별도 티켓.
+- `force:true`로 소유권을 잃는 이전 Contact에 대한 별도 감사
+  이벤트 발행(§4.4, Round 6 리뷰) — 기존 `ClaimAddress`가 원래
+  새 소유자에게만 이벤트를 발행하는 패턴을 그대로 상속. 이력
+  테이블에는 정확히 남으므로 데이터 유실은 아님, 필요해지면 별도
+  티켓.
+
+## 10. 독립 디자인 리뷰 루프 기록 (v5 전용, SUPERSEDED)
+
+**주의: 이 리뷰 기록은 v5(§4~§9의 release/reassign POST 설계)에 대한
+것이다. v6(현재 §4~§9 본문)은 대표님 지시로 v5를 전면 대체한 단순화
+설계이며, 아래 리뷰 루프를 거치지 않았다(§11 참조).** v5의 리뷰
+과정 자체는 방법론적으로 유효한 기록이므로 삭제하지 않고 보존한다.
+
+정책: `design-first-with-review-loops` — 최소 3라운드, 이후 연속 2회
+APPROVE로 종료. 매 라운드는 별도의 신선한 서브에이전트(독립 컨텍스트)
+에게 위임하고, 지적된 결함의 수정은 CPO(오케스트레이터)가 직접
+적용해 커밋했다.
+
+| 라운드 | 판정 | 핵심 발견 | 커밋 |
+|---|---|---|---|
+| R1 | CHANGES_REQUESTED | §4가 기존 `contact_address_ownership_periods` 서브시스템(`OwnershipPeriodsLockAndResolveTx`/`applyOpenResolutionTx`/`closeOwnOpenPeriodTx`)을 완전히 누락 — `contact_addresses.contact_id` 컬럼만 UPDATE하는 설계였다면 소유권 이력 데이터가 깨지는 실제 버그가 됐을 것 | `bf5d150c2` |
+| R2 | CHANGES_REQUESTED | `closeOwnOpenPeriodTx`가 스큐(period 테이블 비어있음) 상황에서 소유자 검증 없이 성공 반환 — release/reassign 최종 쓰기에 `AddressDeleteTx`(B5 fix)와 동등한 `RowsAffected==0` 안전망이 없어 TOCTOU 위험 | `c99c6d28f` |
+| R3 | CHANGES_REQUESTED | R2 안전망의 반환 에러 타입이 `ErrConflict`/`ErrStaleTarget` 중 확정되지 않음 — `ErrStaleTarget`이면 claim의 기존 재시도 루프(`ErrDeadlock\|\|ErrStaleTarget`)에 자동 흡수되어 "즉시 409" 정책이 무력화됨. `ErrConflict`로 확정 | `bb609b036` |
+| R4 | CHANGES_REQUESTED | §2 시나리오3 문구("release 먼저, claim 그 다음")가 §4.4가 명시적으로 거부한 2-step 프론트 호출로 오독될 소지. 문구 수정 + §8 테스트 케이스 보강 | `aa300202b` |
+| R5 | CHANGES_REQUESTED | §4.3/§4.4 pseudocode의 `addrType`이 `string`으로 잘못 선언(실제 재사용 헬퍼는 `commonaddress.Type` 요구) — 그대로 구현 시 컴파일 실패 | `2f6ef60ff` |
+| R6 | CHANGES_REQUESTED | §4.1 신규 헬퍼 `addressSetContactIDTx`의 `expectedCurrentContactID`가 `*uuid.UUID`(포인터)로 선언됐으나 §4.3/§4.4 호출부는 값 타입을 그대로 전달 — 문서 내부 자기모순, 컴파일 실패. 시그니처를 호출부(값 타입)에 맞춰 수정 | `1b55fbfc6` |
+| R7 | **APPROVED** | §4 전체 함수 호출(선언↔호출부)을 한 줄씩 재대조, R5/R6 카테고리(타입/시그니처) 완전 해소 확인. 새 결함 없음 | — |
+| R8 | **APPROVED** | 프로덕트/비즈니스 로직 관점(엣지 케이스, 권한, 감사 추적, UX) 검토. 실질적 결함 없음. 비치명적 공백 2건(모달 B의 tombstone 소유자 404 폴백 미명시, release/reassign 감사 이벤트 발행 미명시)은 CPO가 직후 이 최종 커밋에서 문서화로 보완(§2, §5) | 본 커밋 |
+
+**v5 종료 조건 충족(당시):** 최소 3라운드 floor(8라운드로 초과 충족)
++ 연속 2회 APPROVE(R7, R8). 그러나 이후 대표님이 방향 자체를
+단순화하도록 지시하여 v6으로 대체됐다 — 위 리뷰가 검증한 코드
+(ownership-period 재사용, 에러 타입, 트랜잭션 원자성 등)는 v6에는
+더 이상 적용되지 않는다.
+
+## 11. v7 독립 디자인 리뷰 루프 기록
+
+v6에서 v7로의 전환은 대표님과의 대화에서 직접 확정된 방향이며,
+design-first-with-review-loops 정책(최소 3라운드, 이후 연속 2회
+APPROVE)에 따라 독립 리뷰를 진행 중이다.
+
+| 라운드 | 판정 | 핵심 발견 | 수정 반영 |
+|---|---|---|---|
+| R1 | CHANGES_REQUESTED | §4.1/§4.3이 지목한 확장 지점(`OwnershipPeriodsLockAndResolveTx` Step 1)이 틀렸다 — 실제로는 `addressClaimAttempt`(`address.go:226-244`)가 더 앞단에서 살아있는 소유자를 만나면 `AddressClaimTx` 호출 전에 즉시 `ErrConflict`를 반환한다. `force`를 문서가 지목한 지점에만 배선하면 시나리오 3(재할당)의 핵심 유스케이스가 그대로 실패한다. §4.1/§4.2/§4.3/§4.5/§8을 `addressClaimAttempt` 기준으로 전면 정정 | `6f5e83b90` |
+| R2 | CHANGES_REQUESTED | 확장 지점(`addressClaimAttempt`) 식별은 옳았으나, R1이 채택한 구현(`staleRowRepairTx` 재사용)이 틀렸다 — 이 함수는 살아있는 소유자에 대해 의도적으로 no-op(아무 것도 갱신하지 않고 `(false, nil)` 반환)이라서, `force:true`로 이 경로를 타도 이전 소유자의 open ownership period가 닫히지 않은 채 `AddressClaimTx`가 호출되고, 그 안에서 무조건 호출되는 `OwnershipPeriodsLockAndResolveTx`가 독립적으로 같은 충돌을 재검사해 `ErrConflict`가 재발한다. `closeOwnOpenPeriodTx`(v5가 이미 검증한 CLOSE 헬퍼)로 교체, tombstone/force 분기를 명시적으로 분리. 부차: listenhandler 계층이 §4.3 변경 지점 목록에서 누락됐던 것도 보완 | `309fd839e` |
+| R3 | CHANGES_REQUESTED | **핵심 로직(§4.3 pseudocode)은 코드로 재검증한 결과 정확함** — `closeOwnOpenPeriodTx`가 이전 소유자 ID로 호출되면 Step 1 충돌에 걸리지 않고 실제 UPDATE로 period를 닫는다는 것을 코드 추적으로 확인. 다만 R2 수정 시 §4.2와 §8에 R1 시절(`staleRowRepairTx` 기반) 서술이 그대로 남아 §4.3과 모순되는 잔재 발견 — 두 곳 모두 `closeOwnOpenPeriodTx` 기준으로 재정정 | `8620b1e2c` |
+| R4 | CHANGES_REQUESTED | v6→v7 전환 시 "§5. API/OpenAPI 변경 요약" 헤더 전체가 실수로 삭제되면서, 그 안에 있던 `GET /contact_addresses`의 `target` 쿼리 필터 사양(구현 자체가 아직 안 된 선결 작업)이 통째로 유실됨 — §6.1/§8은 여전히 존재하지 않는 §5를 참조하고 있었고, 이 필터 없이는 §6.1의 프론트 3-분기 조회 자체가 동작하지 않음. §4.6으로 target 필터 사양을 복원(v5 §10 SUPERSEDED에서 동일 내용 확인 후 재사용), §6.1/§8의 참조를 §4.6으로 정정. §4 핵심 로직은 재검증에서도 이상 없음 확인 | `6c5e7f966` |
+| R5 | **APPROVED** | §0~§11 전체 정독 + §4의 모든 pseudocode 시그니처(5개 함수)를 실제 소스와 재대조, 리뷰 이력 테이블의 모든 커밋 해시가 실제 git log에 존재함까지 확인. R1~R4가 지적했던 카테고리(확장 지점, 함수 선택, 섹션 유실, 타입/시그니처)의 잔재 전수 재확인 — 새 결함 없음 | — |
+| R6 | **APPROVED** | 프로덕트/비즈니스 로직 관점(엣지 케이스, 권한, 감사, UX, force 위험성) 검토. Peer 빈값 케이스는 도메인 모델이 이미 봉쇄, force 재사용 권한 게이트도 이미 최상위 티어임을 코드로 확인해 별도 조치 불필요. 실질적 결함 없음, 비차단 관찰 2건(force로 소유권 잃는 이전 Contact에 감사 이벤트 미발행, 모달 B의 tombstone 이전 소유자 404 폴백 미명시) — CPO가 §4.4/§2/§9에 문서화로 보완 | 본 커밋 |
+
+**종료 조건 충족:** 최소 3라운드 floor(6라운드로 초과 충족) + 연속
+2회 APPROVE(R5, R6). 리뷰 루프 종료, 구현 착수 가능 상태.
+
