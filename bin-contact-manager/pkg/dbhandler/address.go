@@ -419,6 +419,52 @@ func (h *handler) AddressListByContactID(_ context.Context, contactID uuid.UUID)
 	return res, nil
 }
 
+// AddressListAllByContactID returns ALL of a contact's addresses,
+// unfiltered by contact.ReachableAddressTypes -- unlike
+// AddressListByContactID (which intentionally excludes types kept
+// writable-but-not-reachable, e.g. web_session, VOIP-1270 §4.7). This is
+// the query the ownership-period interaction-matching read path
+// (pkg/contacthandler.InteractionList's contact_id branch) must use: that
+// path needs every address genuinely owned by the contact to build its
+// peer_events search filter, not just the subset considered safe to
+// expose via the public Contact.Addresses API field. Using
+// AddressListByContactID there instead was a pre-existing bug (predates
+// VOIP-1270, silently present for every reachable type too) that
+// VOIP-1270's write/read-whitelist split exposed for web_session --
+// fixed in the same change since it directly undermines this feature's
+// purpose (attributing a web_session address to a contact so its
+// interaction history becomes visible).
+func (h *handler) AddressListAllByContactID(_ context.Context, contactID uuid.UUID) ([]contact.Address, error) {
+	query, args, err := sq.Select(addressRowColumns()...).
+		From(addressTable).
+		Where(sq.Eq{"contact_id": contactID.Bytes()}).
+		OrderBy("is_primary desc", "tm_create asc").
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. AddressListAllByContactID. err: %v", err)
+	}
+
+	rows, err := h.db.Query(query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. AddressListAllByContactID. err: %v", err)
+	}
+	defer func() { _ = rows.Close() }()
+
+	res := []contact.Address{}
+	for rows.Next() {
+		a, err := scanFullAddressRow(rows)
+		if err != nil {
+			return nil, fmt.Errorf("could not scan the row. AddressListAllByContactID. err: %v", err)
+		}
+		res = append(res, *a)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("row iteration error. AddressListAllByContactID. err: %v", err)
+	}
+
+	return res, nil
+}
+
 // AddressUpdate updates target and/or is_primary for an address by id.
 // fields keys: "target" (string), "is_primary" (bool). Wraps
 // AddressUpdateTx in a BeginTx/commit/retry loop (design §5.1/§5.3),

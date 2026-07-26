@@ -92,27 +92,59 @@ func Test_InteractionList_ByContact(t *testing.T) {
 			ID:         contactID,
 			CustomerID: customerID,
 		},
-		Addresses: []contact.Address{
-			{
-				Address: commonaddress.Address{
-					Type:   commonaddress.TypeTel,
-					Target: "+821100000001",
-				},
+		// Addresses is deliberately left empty here: InteractionList's
+		// contact_id branch must NOT read c.Addresses (which ContactGet
+		// populates via the reachable-types-only AddressListByContactID)
+		// -- it must call AddressListAllByContactID instead. If a future
+		// change regresses back to reading c.Addresses, this test would
+		// then see 0 peer addresses and fail via the mockReq
+		// TimelineV1PeerEventList assertion below, not silently pass.
+	}
+
+	// Includes a web_session address (VOIP-1270 §4.7): writable via
+	// contact_addresses but deliberately excluded from
+	// contact.ReachableAddressTypes / AddressListByContactID. This is the
+	// exact regression this test guards against -- using the
+	// reachable-only list here would silently drop this row and the
+	// contact's web_session interaction history would never be
+	// searchable (the real-world bug 대표님 hit against a live browser
+	// session).
+	responseAddresses := []contact.Address{
+		{
+			Address: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821****0001",
 			},
-			{
-				Address: commonaddress.Address{
-					Type:   commonaddress.TypeEmail,
-					Target: "test@test.com",
-				},
+		},
+		{
+			Address: commonaddress.Address{
+				Type:   commonaddress.TypeEmail,
+				Target: "test@test.com",
+			},
+		},
+		{
+			Address: commonaddress.Address{
+				Type:   commonaddress.TypeWebSession,
+				Target: "d082d59c-2a00-11ee-8fb1-8bbf141432f6",
 			},
 		},
 	}
 
 	mockDB.EXPECT().ContactGet(ctx, contactID).Return(responseContact, nil)
+	mockDB.EXPECT().AddressListAllByContactID(ctx, contactID).Return(responseAddresses, nil)
 	mockReq.EXPECT().TimelineV1PeerEventList(ctx, gomock.Any()).DoAndReturn(
 		func(ctx context.Context, req *tmpeerevent.PeerEventListRequest) (*tmpeerevent.PeerEventListResponse, error) {
-			if len(req.PeerAddresses) != 2 {
-				t.Errorf("wrong peer addresses count. expect: 2, got: %d", len(req.PeerAddresses))
+			if len(req.PeerAddresses) != 3 {
+				t.Errorf("wrong peer addresses count. expect: 3, got: %d", len(req.PeerAddresses))
+			}
+			var sawWebSession bool
+			for _, a := range req.PeerAddresses {
+				if a.Type == commonaddress.TypeWebSession {
+					sawWebSession = true
+				}
+			}
+			if !sawWebSession {
+				t.Errorf("expected a web_session peer address in the search filter, got: %v", req.PeerAddresses)
 			}
 			return &tmpeerevent.PeerEventListResponse{Result: []*tmpeerevent.PeerEvent{}}, nil
 		},
@@ -240,10 +272,10 @@ func Test_InteractionList_ByContact_NoAddresses(t *testing.T) {
 			ID:         contactID,
 			CustomerID: customerID,
 		},
-		Addresses: []contact.Address{},
 	}
 
 	mockDB.EXPECT().ContactGet(ctx, contactID).Return(responseContact, nil)
+	mockDB.EXPECT().AddressListAllByContactID(ctx, contactID).Return([]contact.Address{}, nil)
 
 	_, _, err := h.InteractionList(ctx, customerID, 10, "", "", "", contactID, uuid.Nil, time.Time{})
 	if err == nil {

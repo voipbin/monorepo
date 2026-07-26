@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	cerrors "monorepo/bin-common-handler/models/errors"
 	commonaddress "monorepo/bin-common-handler/models/address"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	"github.com/gofrs/uuid"
@@ -58,7 +58,21 @@ func (h *contactHandler) InteractionList(
 				"The contact was not found.",
 			)
 		}
-		for _, a := range c.Addresses {
+		// Deliberately AddressListAllByContactID, not c.Addresses (which
+		// ContactGet populates via the reachable-types-only
+		// AddressListByContactID -- VOIP-1270 §4.7). This path needs every
+		// address genuinely owned by the contact to build its peer_events
+		// search filter, including writable-but-not-reachable types like
+		// web_session; using the reachable-only list here was a
+		// pre-existing bug (silently affecting every contact_id-scoped
+		// interaction lookup, not just web_session) that VOIP-1270 fixed
+		// in the same change since it directly undermines the address
+		// attribution feature's purpose.
+		allAddrs, err := h.db.AddressListAllByContactID(ctx, contactID)
+		if err != nil {
+			return nil, "", fmt.Errorf("could not list contact addresses. InteractionList. err: %v", err)
+		}
+		for _, a := range allAddrs {
 			addrs = append(addrs, a.Address)
 		}
 		if len(addrs) == 0 {
