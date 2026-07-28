@@ -422,8 +422,15 @@ func (h *aicallHandler) startReferenceTypeContactCase(
 			if errStart != nil {
 				return nil, errors.Wrapf(errStart, "could not start pipecatcall for contact_case aicall. aicall_id: %s", res.ID)
 			}
+			log.WithField("pipecatcall", pc).Debugf("Started pipecatcall for contact_case aicall. aicall_id: %s", res.ID)
+
+			// note: the aicall is already committed at this point, so a failure to
+			// schedule termination does not undo any side effect and returning an
+			// error here would only strand the aicall at StatusInitiating. Log and
+			// continue, mirroring startReferenceTypeConversation's handling of the
+			// same call.
 			if errTerm := h.reqHandler.PipecatV1PipecatcallTerminateWithDelay(ctx, pc.HostID, pc.ID, defaultAITaskTimeout); errTerm != nil {
-				return nil, errors.Wrapf(errTerm, "could not schedule pipecatcall termination. aicall_id: %s", res.ID)
+				log.Errorf("Could not send the pipecatcall terminate request correctly. err: %v", errTerm)
 			}
 			if updated, errStatus := h.UpdateStatus(ctx, res.ID, aicall.StatusProgressing); errStatus != nil {
 				log.Warnf("Could not update status to Progressing — continuing anyway. aicall_id: %s, err: %v", res.ID, errStatus)
