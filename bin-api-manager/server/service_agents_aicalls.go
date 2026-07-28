@@ -108,7 +108,10 @@ func (h *server) PostServiceAgentsAicalls(c *gin.Context) {
 		return
 	}
 
-	assistanceID := uuid.UUID(req.AssistanceId)
+	var assistanceID uuid.UUID
+	if req.AssistanceId != nil {
+		assistanceID = uuid.UUID(*req.AssistanceId)
+	}
 	referenceID := uuid.UUID(req.ReferenceId)
 
 	res, err := h.serviceHandler.ServiceAgentAIcallCreate(

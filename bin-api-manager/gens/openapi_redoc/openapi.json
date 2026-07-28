@@ -17151,7 +17151,7 @@
                   "assistance_id": {
                     "type": "string",
                     "format": "uuid",
-                    "description": "The unique identifier of the assistance entity (AI or Team). Returned from the `POST /ais`, `GET /ais`, `POST /teams`, or `GET /teams` response.",
+                    "description": "The unique identifier of the assistance entity (AI or Team). Returned from the `POST /ais`, `GET /ais`, `POST /teams`, or `GET /teams` response. Optional when `assistance_type=ai` and `reference_type=contact_case`: if omitted, the customer's own `type=insight` AI is resolved automatically. Required for every other combination.",
                     "example": "550e8400-e29b-41d4-a716-446655440000"
                   },
                   "reference_type": {
@@ -17166,7 +17166,6 @@
                 },
                 "required": [
                   "assistance_type",
-                  "assistance_id",
                   "reference_type",
                   "reference_id"
                 ]
