@@ -414,6 +414,23 @@ func (h *aicallHandler) startReferenceTypeContactCase(
 		res, err := h.startAIcallByMessaging(ctx, a, assistanceType, assistanceID, activeflowID, aicall.ReferenceTypeContactCase, referenceID, false, teamParameter, currentMemberID)
 		if err == nil {
 			log.WithField("aicall", res).Debugf("Created aicall for contact_case. aicall_id: %s", res.ID)
+
+			// Trigger the first AI turn exactly once, only here — this branch
+			// runs only when the INSERT genuinely succeeded (no duplicate-key
+			// retry involved), so there is no risk of double-triggering.
+			pc, errStart := h.startPipecatcall(ctx, res)
+			if errStart != nil {
+				return nil, errors.Wrapf(errStart, "could not start pipecatcall for contact_case aicall. aicall_id: %s", res.ID)
+			}
+			if errTerm := h.reqHandler.PipecatV1PipecatcallTerminateWithDelay(ctx, pc.HostID, pc.ID, defaultAITaskTimeout); errTerm != nil {
+				return nil, errors.Wrapf(errTerm, "could not schedule pipecatcall termination. aicall_id: %s", res.ID)
+			}
+			if updated, errStatus := h.UpdateStatus(ctx, res.ID, aicall.StatusProgressing); errStatus != nil {
+				log.Warnf("Could not update status to Progressing — continuing anyway. aicall_id: %s, err: %v", res.ID, errStatus)
+			} else {
+				res = updated
+			}
+
 			return res, nil
 		}
 
