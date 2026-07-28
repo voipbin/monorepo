@@ -72,32 +72,32 @@ Then add this NEW test case to the `tests` table, right after the (now-updated) 
 
 			ai: &ai.AI{
 				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("40000000-0001-11f0-dddd-000000000001"),
-					CustomerID: uuid.FromStringOrNil("40000000-0002-11f0-dddd-000000000001"),
+					ID:         uuid.FromStringOrNil("45000000-0001-11f0-dddd-000000000001"),
+					CustomerID: uuid.FromStringOrNil("45000000-0002-11f0-dddd-000000000001"),
 				},
 				EngineModel: ai.EngineModelOpenaiGPT5,
 			},
 			assistanceType: aicall.AssistanceTypeAI,
-			assistanceID:   uuid.FromStringOrNil("40000000-0001-11f0-dddd-000000000001"),
-			activeflowID:   uuid.FromStringOrNil("40000000-0003-11f0-dddd-000000000001"),
-			referenceID:    uuid.FromStringOrNil("40000000-0004-11f0-dddd-000000000001"),
+			assistanceID:   uuid.FromStringOrNil("45000000-0001-11f0-dddd-000000000001"),
+			activeflowID:   uuid.FromStringOrNil("45000000-0003-11f0-dddd-000000000001"),
+			referenceID:    uuid.FromStringOrNil("45000000-0004-11f0-dddd-000000000001"),
 
 			mockSetup: func(ctx context.Context, m *mocks) {
-				pipecatcallID := uuid.FromStringOrNil("40000000-0005-11f0-dddd-000000000001")
-				aicallID := uuid.FromStringOrNil("40000000-0006-11f0-dddd-000000000001")
-				customerID := uuid.FromStringOrNil("40000000-0002-11f0-dddd-000000000001")
+				pipecatcallID := uuid.FromStringOrNil("45000000-0005-11f0-dddd-000000000001")
+				aicallID := uuid.FromStringOrNil("45000000-0006-11f0-dddd-000000000001")
+				customerID := uuid.FromStringOrNil("45000000-0002-11f0-dddd-000000000001")
 				created := &aicall.AIcall{
 					Identity: commonidentity.Identity{
 						ID:         aicallID,
 						CustomerID: customerID,
 					},
-					ActiveflowID:  uuid.FromStringOrNil("40000000-0003-11f0-dddd-000000000001"),
+					ActiveflowID:  uuid.FromStringOrNil("45000000-0003-11f0-dddd-000000000001"),
 					ReferenceType: aicall.ReferenceTypeContactCase,
-					ReferenceID:   uuid.FromStringOrNil("40000000-0004-11f0-dddd-000000000001"),
+					ReferenceID:   uuid.FromStringOrNil("45000000-0004-11f0-dddd-000000000001"),
 					Status:        aicall.StatusInitiating,
 				}
 				responsePC := &pmpipecatcall.Pipecatcall{
-					Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("40000000-0007-11f0-dddd-000000000001")},
+					Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("45000000-0007-11f0-dddd-000000000001")},
 					HostID:   "host1",
 				}
 				progressing := &aicall.AIcall{
@@ -132,12 +132,12 @@ Then add this NEW test case to the `tests` table, right after the (now-updated) 
 
 			expectRes: &aicall.AIcall{
 				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("40000000-0006-11f0-dddd-000000000001"),
-					CustomerID: uuid.FromStringOrNil("40000000-0002-11f0-dddd-000000000001"),
+					ID:         uuid.FromStringOrNil("45000000-0006-11f0-dddd-000000000001"),
+					CustomerID: uuid.FromStringOrNil("45000000-0002-11f0-dddd-000000000001"),
 				},
-				ActiveflowID:  uuid.FromStringOrNil("40000000-0003-11f0-dddd-000000000001"),
+				ActiveflowID:  uuid.FromStringOrNil("45000000-0003-11f0-dddd-000000000001"),
 				ReferenceType: aicall.ReferenceTypeContactCase,
-				ReferenceID:   uuid.FromStringOrNil("40000000-0004-11f0-dddd-000000000001"),
+				ReferenceID:   uuid.FromStringOrNil("45000000-0004-11f0-dddd-000000000001"),
 				Status:        aicall.StatusProgressing,
 			},
 		},
@@ -209,44 +209,47 @@ Add this case to `Test_startReferenceTypeContactCase`, and add `config.SetAIcall
 
 			ai: &ai.AI{
 				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("50000000-0001-11f0-eeee-000000000001"),
-					CustomerID: uuid.FromStringOrNil("50000000-0002-11f0-eeee-000000000001"),
+					ID:         uuid.FromStringOrNil("55000000-0001-11f0-eeee-000000000001"),
+					CustomerID: uuid.FromStringOrNil("55000000-0002-11f0-eeee-000000000001"),
 				},
 				EngineModel: ai.EngineModelOpenaiGPT5,
 			},
 			assistanceType: aicall.AssistanceTypeAI,
-			assistanceID:   uuid.FromStringOrNil("50000000-0001-11f0-eeee-000000000001"),
-			activeflowID:   uuid.FromStringOrNil("50000000-0003-11f0-eeee-000000000001"),
-			referenceID:    uuid.FromStringOrNil("50000000-0004-11f0-eeee-000000000001"),
+			assistanceID:   uuid.FromStringOrNil("55000000-0001-11f0-eeee-000000000001"),
+			activeflowID:   uuid.FromStringOrNil("55000000-0003-11f0-eeee-000000000001"),
+			referenceID:    uuid.FromStringOrNil("55000000-0004-11f0-eeee-000000000001"),
 
 			mockSetup: func(ctx context.Context, m *mocks) {
 				staleTM := time.Now().Add(-25 * time.Hour) // outside the 24h idle timeout
-				existingIdleID := uuid.FromStringOrNil("50000000-0009-11f0-eeee-000000000001")
+				existingIdleID := uuid.FromStringOrNil("55000000-0009-11f0-eeee-000000000001")
 				existingIdle := &aicall.AIcall{
-					Identity: commonidentity.Identity{ID: existingIdleID, CustomerID: uuid.FromStringOrNil("50000000-0002-11f0-eeee-000000000001")},
+					Identity: commonidentity.Identity{ID: existingIdleID, CustomerID: uuid.FromStringOrNil("55000000-0002-11f0-eeee-000000000001")},
 					Status:   aicall.StatusProgressing, // NOT Terminated/Terminating -- this is the bug case
 					TMUpdate: &staleTM,
 				}
 
-				pipecatcallID1 := uuid.FromStringOrNil("50000000-0005-11f0-eeee-000000000001")
-				aicallID1 := uuid.FromStringOrNil("50000000-0006-11f0-eeee-000000000001")
-				pipecatcallID2 := uuid.FromStringOrNil("50000000-0007-11f0-eeee-000000000001")
-				aicallID2 := uuid.FromStringOrNil("50000000-0008-11f0-eeee-000000000001")
+				pipecatcallID1 := uuid.FromStringOrNil("55000000-0005-11f0-eeee-000000000001")
+				aicallID1 := uuid.FromStringOrNil("55000000-0006-11f0-eeee-000000000001")
+				pipecatcallID2 := uuid.FromStringOrNil("55000000-0007-11f0-eeee-000000000001")
+				aicallID2 := uuid.FromStringOrNil("55000000-0008-11f0-eeee-000000000001")
 
 				// attempt 0: duplicate key, existing is idle-expired (Progressing, stale TMUpdate)
 				m.util.EXPECT().UUIDCreate().Return(pipecatcallID1)
 				m.util.EXPECT().UUIDCreate().Return(aicallID1)
 				m.db.EXPECT().AIcallCreate(ctx, gomock.Any()).Return(fmt.Errorf("Error 1062: Duplicate entry 'x' for key 'uq_aicall_active_reference_key'"))
-				m.db.EXPECT().AIcallGetByReferenceID(ctx, uuid.FromStringOrNil("50000000-0004-11f0-eeee-000000000001")).Return(existingIdle, nil)
+				m.db.EXPECT().AIcallGetByReferenceID(ctx, uuid.FromStringOrNil("55000000-0004-11f0-eeee-000000000001")).Return(existingIdle, nil)
 
 				// Task 2: terminate the idle row -- NO recreate-rate-limit check on this path.
 				// UpdateStatus(StatusTerminated) also sets FieldTMEnd via utilHandler.TimeNow()
 				// and publishes EventTypeStatusTerminated -- see db.go's UpdateStatus.
+				// Round-3 review finding: TimeNow() returns *time.Time, not time.Time --
+				// Return()/the update map must both use the pointer, matching the
+				// existing precedent at start_test.go:1033-1034.
 				terminatedTM := time.Now()
-				m.util.EXPECT().TimeNow().Return(terminatedTM)
+				m.util.EXPECT().TimeNow().Return(&terminatedTM)
 				m.db.EXPECT().AIcallUpdate(ctx, existingIdleID, map[aicall.Field]any{
 					aicall.FieldStatus: aicall.StatusTerminated,
-					aicall.FieldTMEnd:  terminatedTM,
+					aicall.FieldTMEnd:  &terminatedTM,
 				}).Return(nil)
 				terminatedAIcall := &aicall.AIcall{Identity: existingIdle.Identity, Status: aicall.StatusTerminated}
 				m.db.EXPECT().AIcallGet(ctx, existingIdleID).Return(terminatedAIcall, nil)
@@ -254,10 +257,10 @@ Add this case to `Test_startReferenceTypeContactCase`, and add `config.SetAIcall
 
 				// attempt 1: create succeeds (and starts pipecatcall per Task 1)
 				created := &aicall.AIcall{
-					Identity:      commonidentity.Identity{ID: aicallID2, CustomerID: uuid.FromStringOrNil("50000000-0002-11f0-eeee-000000000001")},
-					ActiveflowID:  uuid.FromStringOrNil("50000000-0003-11f0-eeee-000000000001"),
+					Identity:      commonidentity.Identity{ID: aicallID2, CustomerID: uuid.FromStringOrNil("55000000-0002-11f0-eeee-000000000001")},
+					ActiveflowID:  uuid.FromStringOrNil("55000000-0003-11f0-eeee-000000000001"),
 					ReferenceType: aicall.ReferenceTypeContactCase,
-					ReferenceID:   uuid.FromStringOrNil("50000000-0004-11f0-eeee-000000000001"),
+					ReferenceID:   uuid.FromStringOrNil("55000000-0004-11f0-eeee-000000000001"),
 					Status:        aicall.StatusInitiating,
 				}
 				m.util.EXPECT().UUIDCreate().Return(pipecatcallID2)
@@ -268,7 +271,7 @@ Add this case to `Test_startReferenceTypeContactCase`, and add `config.SetAIcall
 				m.req.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any()).Return(nil)
 				m.message.EXPECT().Create(ctx, uuid.Nil, created.CustomerID, created.ID, created.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, gomock.Any(), nil, "", gomock.Any()).Return(&message.Message{}, nil)
 				m.message.EXPECT().List(ctx, uint64(100), gomock.Any(), gomock.Any()).Return([]*message.Message{}, nil)
-				responsePC := &pmpipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("50000000-000a-11f0-eeee-000000000001")}, HostID: "host2"}
+				responsePC := &pmpipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("55000000-000a-11f0-eeee-000000000001")}, HostID: "host2"}
 				m.req.EXPECT().PipecatV1PipecatcallStart(ctx, created.PipecatcallID, created.CustomerID, created.ActiveflowID, pmpipecatcall.ReferenceTypeAICall, created.ID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(responsePC, nil)
 				m.req.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, responsePC.HostID, responsePC.ID, defaultAITaskTimeout).Return(nil)
 				m.db.EXPECT().AIcallUpdate(ctx, aicallID2, map[aicall.Field]any{aicall.FieldStatus: aicall.StatusProgressing}).Return(nil)
@@ -279,8 +282,8 @@ Add this case to `Test_startReferenceTypeContactCase`, and add `config.SetAIcall
 
 			expectRes: &aicall.AIcall{
 				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("50000000-0008-11f0-eeee-000000000001"),
-					CustomerID: uuid.FromStringOrNil("50000000-0002-11f0-eeee-000000000001"),
+					ID:         uuid.FromStringOrNil("55000000-0008-11f0-eeee-000000000001"),
+					CustomerID: uuid.FromStringOrNil("55000000-0002-11f0-eeee-000000000001"),
 				},
 				Status: aicall.StatusProgressing,
 			},
