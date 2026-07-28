@@ -146,3 +146,17 @@ Example
         "tm_update": "2024-03-01T10:00:05.000000Z",
         "tm_delete": "9999-01-01T00:00:00.000000Z"
     }
+
+Service Agent Endpoint Behavior
+-------------------------------
+
+``POST /service_agents/aicalls``: ``assistance_id`` is optional when
+``assistance_type=ai`` and ``reference_type=contact_case`` — the
+customer's own ``type=insight`` AI is resolved automatically. Returns
+``404 RESOURCE_NOT_FOUND`` if the customer has no Insight AI configured.
+Returns ``403 PERMISSION_DENIED`` if, for ``reference_type=contact_case``,
+``reference_id`` does not belong to the caller's own customer.
+
+``POST /service_agents/aimessages``: may be rejected with a cooldown
+error if called again on the same ``aicall_id`` within a short window of
+the previous send (default 3 seconds).
