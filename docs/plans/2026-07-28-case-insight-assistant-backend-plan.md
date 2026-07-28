@@ -1086,8 +1086,16 @@ func Test_FieldStruct_TypeFilterRoundTrips(t *testing.T) {
 	if !ok {
 		t.Fatalf("ConvertFilters() dropped the type filter -- FieldStruct is missing a Type field")
 	}
-	if got != ai.TypeInsight {
-		t.Errorf("ConvertFilters() type filter = %v, want %v", got, ai.TypeInsight)
+	// Round-10 review finding: ConvertFilters' string-kind branch
+	// (bin-common-handler/pkg/utilhandler/filters.go's convertValueToType)
+	// has no reflect.Convert step for named string types -- it returns the
+	// dynamic type plain `string`, not `ai.Type`, even though the FieldStruct
+	// field is typed `ai.Type`. Comparing against the named type here would
+	// always fail (different dynamic types). This is expected, harmless
+	// behavior (squirrel/ApplyFields bind the string value correctly either
+	// way) -- assert against the underlying string, not the named type.
+	if got != string(ai.TypeInsight) {
+		t.Errorf("ConvertFilters() type filter = %v, want %v", got, string(ai.TypeInsight))
 	}
 }
 ```
