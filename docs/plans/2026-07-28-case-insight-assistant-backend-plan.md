@@ -22,6 +22,9 @@
 | `bin-ai-manager/pkg/aicallhandler/send_test.go` | Tests for the above |
 | `bin-ai-manager/internal/config/main.go` | New `aicall_send_cooldown_seconds` flag — Task 3 |
 | `bin-openapi-manager/openapi/paths/service_agents/aicalls.yaml` | `assistance_id` conditionally-optional spec — Task 4 |
+| `bin-api-manager/gens/openapi_server/gen.go` | Regenerated from the above — Task 4 |
+| `bin-api-manager/server/service_agents_aicalls.go` | HTTP handler nil-safe fallout from the above — Task 4 |
+| `bin-api-manager/server/service_agents_aicalls_test.go` | Tests for the above |
 | `bin-api-manager/pkg/servicehandler/serviceagent_aicall.go` | `ServiceAgentAIcallCreate` — Tasks 5, 6, 7 |
 | `bin-api-manager/pkg/servicehandler/serviceagent_aicall_test.go` | Tests for the above |
 | `bin-api-manager/docsdev/source/` | RST doc update — Task 8 |
@@ -569,18 +572,67 @@ Add a note to the `assistance_id` property's `description` (find it just above t
 - [ ] **Step 2: Regenerate the server stubs**
 
 Run (from `bin-api-manager/`, per that service's codegen convention): `go generate ./...`
-Expected: `gens/openapi_server/gen.go`'s `PostServiceAgentsAicallsJSONBody.AssistanceId` (or equivalent) changes from a required to an optional field. Diff it to confirm.
+Expected: `gens/openapi_server/gen.go:7116`'s `PostServiceAgentsAicallsJSONBody.AssistanceId` field changes from `openapi_types.UUID` (non-pointer, `json:"assistance_id"`) to `*openapi_types.UUID` (pointer, `json:"assistance_id,omitempty"`) — the same shape already used for other optional UUID fields in this file (e.g. `AiTtsVoiceId` pattern at `gen.go:1433`). Diff it to confirm.
 
-- [ ] **Step 3: Commit**
+**Round-7 plan-review finding (blocking):** this type change breaks a real, non-test call site that neither this task nor Tasks 5-7 originally touched — `server/service_agents_aicalls.go:111` currently does `assistanceID := uuid.UUID(req.AssistanceId)`, a direct conversion that only compiles when `AssistanceId` is a bare (non-pointer) `openapi_types.UUID`. Once Step 2 regenerates it as a pointer, this line is a **compile error** — and even ignoring the compile error, this is the exact code path that has to correctly produce `uuid.Nil` when the field is omitted, which is what the whole server-side AI resolution feature (Tasks 5-7) depends on. Fix it in this task, not later:
 
-```bash
-git add bin-openapi-manager/openapi/paths/service_agents/aicalls.yaml
-git commit -m "NOJIRA-Aicalls-add-messages-endpoint: Make assistance_id conditionally optional for contact_case AI creates
+- [ ] **Step 3: Fix the now-broken call site and add a test**
 
-- bin-openapi-manager: assistance_id is no longer unconditionally required on POST /service_agents/aicalls -- omit it for assistance_type=ai + reference_type=contact_case to get server-side Insight AI resolution"
+In `bin-api-manager/server/service_agents_aicalls.go`, replace line 111:
+
+```go
+	assistanceID := uuid.UUID(req.AssistanceId)
 ```
 
-(Regenerated `bin-api-manager/gens/openapi_server/gen.go` gets committed together with Task 5-7's `bin-api-manager` changes below, since that's where the generated code is consumed.)
+with:
+
+```go
+	var assistanceID uuid.UUID
+	if req.AssistanceId != nil {
+		assistanceID = uuid.UUID(*req.AssistanceId)
+	}
+```
+
+Add this case to `Test_PostServiceAgentsAicalls` in `server/service_agents_aicalls_test.go` (`~line 221`, same `tests` table as the existing `"normal"` case):
+
+```go
+		{
+			name: "assistance_id omitted -- reaches the service handler as uuid.Nil",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4e72f3ea-8285-11ed-a55b-6bf44eeb8a87"),
+				},
+			}),
+
+			reqQuery: "/service_agents/aicalls",
+			reqBody:  []byte(`{"assistance_type":"ai","reference_type":"contact_case","reference_id":"4ecc56ec-8285-11ed-9958-8b0a60b665bf"}`),
+
+			responseAicall: &amaicall.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("82e68b78-8286-11ed-8875-378ced61c022"),
+				},
+			},
+
+			expectAssistanceType: amaicall.AssistanceTypeAI,
+			expectAssistanceID:   uuid.Nil,
+			expectReferenceType:  amaicall.ReferenceTypeContactCase,
+			expectReferenceID:    uuid.FromStringOrNil("4ecc56ec-8285-11ed-9958-8b0a60b665bf"),
+			expectRes:            `{"id":"82e68b78-8286-11ed-8875-378ced61c022","customer_id":"00000000-0000-0000-0000-000000000000","assistance_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","current_member_id":"00000000-0000-0000-0000-000000000000","tm_end":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+		},
+```
+
+Run: `go test ./server/... -run Test_PostServiceAgentsAicalls -v`
+Expected (before the line-111 fix): compile failure. After the fix: PASS, all subtests — this is the one place in either plan that proves the omitted-`assistance_id` request body (the exact shape the frontend plan's Task 2 sends) actually reaches `ServiceAgentAIcallCreate` as `uuid.Nil` end to end through the real HTTP handler, not just through the servicehandler-level tests in Tasks 5-7.
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add bin-openapi-manager/openapi/paths/service_agents/aicalls.yaml bin-api-manager/server/service_agents_aicalls.go bin-api-manager/server/service_agents_aicalls_test.go bin-api-manager/gens/openapi_server/gen.go
+git commit -m "NOJIRA-Aicalls-add-messages-endpoint: Make assistance_id conditionally optional for contact_case AI creates
+
+- bin-openapi-manager: assistance_id is no longer unconditionally required on POST /service_agents/aicalls -- omit it for assistance_type=ai + reference_type=contact_case to get server-side Insight AI resolution
+- bin-api-manager: fix the generated-type change's fallout in the HTTP handler (nil-safe assistance_id extraction) and add a request-body-level test proving the omitted field reaches the service handler as uuid.Nil"
+```
 
 ---
 
