@@ -372,7 +372,11 @@ const maxContactCaseCreateRetries = 3
 //  2. On success, return it.
 //  3. On a duplicate-key (1062) conflict, re-fetch the existing AIcall by
 //     reference_id.
-//     - If it is still active (not Terminated/Terminating), reuse it.
+//     - If it is still active (not Terminated/Terminating): if its status is
+//     Initiating, the prior attempt's startPipecatcall likely never
+//     completed (status only advances to Progressing after that succeeds) —
+//     retry the turn-start sequence on it via startContactCaseTurn instead
+//     of reusing it as-is. Otherwise, reuse it directly.
 //     - If it has since terminated, its active_reference_key is NULL (no longer
 //     occupying the unique slot). Before retrying the create, a rate-limit
 //     guard is checked (see below) — if it trips, an error is returned
