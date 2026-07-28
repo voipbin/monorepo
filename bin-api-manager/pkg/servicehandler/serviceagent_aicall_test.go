@@ -2,6 +2,7 @@ package servicehandler
 
 import (
 	"context"
+	"errors"
 	"reflect"
 	"testing"
 
@@ -294,6 +295,25 @@ func Test_ServiceAgentAIcallCreate(t *testing.T) {
 			expectErr: serviceerrors.ErrPermissionDenied,
 		},
 		{
+			name: "contact_case lookup fails -- returns lookup error, not ErrPermissionDenied",
+
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("70000000-0003-11f0-1111-000000000002"),
+				},
+				Permission: amagent.PermissionCustomerAgent,
+			}),
+			assistanceType: amaicall.AssistanceTypeAI,
+			assistanceID:   uuid.FromStringOrNil("70000000-0001-11f0-1111-000000000002"),
+			referenceType:  amaicall.ReferenceTypeContactCase,
+			referenceID:    uuid.FromStringOrNil("70000000-0002-11f0-1111-000000000002"),
+
+			responseCaseErr: errors.New("contact-manager RPC timeout"),
+
+			expectErr: errors.New("contact-manager RPC timeout"),
+		},
+		{
 			name: "Task 6: assistance_id omitted, contact_case, exactly one insight AI -- resolved",
 
 			agent: auth.NewAgentIdentity(&amagent.Agent{
@@ -423,10 +443,24 @@ func Test_ServiceAgentAIcallCreate(t *testing.T) {
 				mockReq.EXPECT().ContactV1CaseGet(ctx, tt.agent.CustomerID, tt.referenceID).Return(tt.responseCase, tt.responseCaseErr)
 			}
 
+			if tt.responseCaseErr != nil {
+				_, err := h.ServiceAgentAIcallCreate(ctx, tt.agent, tt.assistanceType, tt.assistanceID, tt.referenceType, tt.referenceID)
+				if err == nil {
+					t.Errorf("Wrong match. expect: err, got: ok")
+				}
+				if errors.Is(err, serviceerrors.ErrPermissionDenied) {
+					t.Errorf("Wrong match. expect: a non-403 lookup error (ContactV1CaseGet failure must not be classified as ErrPermissionDenied), got: %v", err)
+				}
+				return
+			}
+
 			if tt.expectErr == serviceerrors.ErrPermissionDenied && tt.responseCase.CustomerID != tt.agent.CustomerID {
 				_, err := h.ServiceAgentAIcallCreate(ctx, tt.agent, tt.assistanceType, tt.assistanceID, tt.referenceType, tt.referenceID)
 				if err == nil {
 					t.Errorf("Wrong match. expect: err, got: ok")
+				}
+				if !errors.Is(err, serviceerrors.ErrPermissionDenied) {
+					t.Errorf("Wrong match. expect: ErrPermissionDenied, got: %v", err)
 				}
 				return
 			}

@@ -160,7 +160,11 @@ func (h *serviceHandler) ServiceAgentAIcallCreate(
 	// of defense.
 	if referenceType == amaicall.ReferenceTypeContactCase {
 		kase, errCase := h.reqHandler.ContactV1CaseGet(ctx, a.CustomerID, referenceID)
-		if errCase != nil || kase.CustomerID != a.CustomerID {
+		if errCase != nil {
+			return nil, errors.Wrapf(errCase, "could not get case info")
+		}
+
+		if kase.CustomerID != a.CustomerID {
 			log.Info("The referenced case does not belong to the agent's customer.")
 			return nil, serviceerrors.ErrPermissionDenied
 		}
