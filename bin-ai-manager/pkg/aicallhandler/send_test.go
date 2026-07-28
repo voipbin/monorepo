@@ -61,6 +61,209 @@ func Test_Send(t *testing.T) {
 			expectErr:          true,
 			expectErrSubstring: "cooldown",
 		},
+		{
+			// TMUpdate is older than the configured cooldown, so the check passes
+			// and Send() dispatches through SendReferenceTypeOthers. This also
+			// exercises the new post-dispatch TMUpdate refresh in Send().
+			name:     "outside cooldown -- dispatches via SendReferenceTypeOthers and refreshes TMUpdate",
+			aicallID: uuid.FromStringOrNil("61000000-0001-11f0-ffff-000000000001"),
+
+			mockSetup: func(ctx context.Context, m *mocks) {
+				id := uuid.FromStringOrNil("61000000-0001-11f0-ffff-000000000001")
+				customerID := uuid.FromStringOrNil("61000000-0001-11f0-ffff-000000000010")
+				activeflowID := uuid.FromStringOrNil("61000000-0001-11f0-ffff-000000000030")
+				newPipecatcallID := uuid.FromStringOrNil("61000000-0001-11f0-ffff-000000000060")
+				oldTM := time.Now().Add(-10 * time.Second) // outside the 3s cooldown
+
+				c := &aicall.AIcall{
+					Identity:       commonidentity.Identity{ID: id, CustomerID: customerID},
+					AssistanceType: aicall.AssistanceTypeAI,
+					AIEngineModel:  ai.EngineModel("openai.gpt-5"),
+					ActiveflowID:   activeflowID,
+					ReferenceType:  aicall.ReferenceTypeConversation,
+					PipecatcallID:  uuid.Nil, // no previous pipecat session, interrupt step is skipped
+					TMUpdate:       &oldTM,
+				}
+				updated := &aicall.AIcall{
+					Identity:       commonidentity.Identity{ID: id, CustomerID: customerID},
+					AssistanceType: aicall.AssistanceTypeAI,
+					AIEngineModel:  ai.EngineModel("openai.gpt-5"),
+					ActiveflowID:   activeflowID,
+					ReferenceType:  aicall.ReferenceTypeConversation,
+					PipecatcallID:  newPipecatcallID,
+				}
+				sentMessage := &message.Message{
+					Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("61000000-0001-11f0-ffff-0000000000f0")},
+				}
+				pc := &pmpipecatcall.Pipecatcall{
+					Identity: commonidentity.Identity{ID: newPipecatcallID},
+					HostID:   "host-outside-cooldown",
+				}
+
+				// h.Get
+				m.db.EXPECT().AIcallGet(ctx, id).Return(c, nil)
+
+				// SendReferenceTypeOthers
+				m.message.EXPECT().Create(
+					ctx, uuid.Nil, customerID, id, activeflowID,
+					message.DirectionOutgoing, message.RoleUser, "hello", nil, "",
+					gomock.Any(),
+				).Return(sentMessage, nil)
+
+				m.util.EXPECT().UUIDCreate().Return(newPipecatcallID)
+
+				// UpdatePipecatcallID
+				m.db.EXPECT().AIcallUpdate(ctx, id, gomock.Any()).Return(nil)
+				m.db.EXPECT().AIcallGet(ctx, id).Return(updated, nil)
+
+				// startPipecatcall
+				m.message.EXPECT().List(ctx, uint64(100), gomock.Any(), gomock.Any()).Return([]*message.Message{}, nil)
+				m.req.EXPECT().PipecatV1PipecatcallStart(
+					ctx,
+					updated.PipecatcallID,
+					updated.CustomerID,
+					updated.ActiveflowID,
+					pmpipecatcall.ReferenceTypeAICall,
+					updated.ID,
+					pmpipecatcall.LLMType("openai.gpt-5"),
+					[]map[string]any{},
+					pmpipecatcall.STTTypeNone,
+					updated.STTLanguage,
+					pmpipecatcall.TTSTypeNone,
+					"",
+					"",
+				).Return(pc, nil)
+				m.req.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, pc.HostID, pc.ID, defaultAITaskTimeout).Return(nil)
+
+				// Send()'s post-dispatch TMUpdate refresh -- this is the fix under test.
+				m.db.EXPECT().AIcallUpdate(ctx, id, map[aicall.Field]any{}).Return(nil)
+			},
+		},
+		{
+			// ReferenceTypeCall never bumps tm_update on its own (SendReferenceTypeCall
+			// does not call db.AIcallUpdate anywhere). Before the fix, this meant the
+			// cooldown never engaged for live-call AIcalls. This test proves Send()
+			// itself now refreshes TMUpdate after a successful ReferenceTypeCall
+			// dispatch, closing that gap.
+			name:     "outside cooldown -- ReferenceTypeCall dispatch also refreshes TMUpdate",
+			aicallID: uuid.FromStringOrNil("62000000-0001-11f0-ffff-000000000001"),
+
+			mockSetup: func(ctx context.Context, m *mocks) {
+				id := uuid.FromStringOrNil("62000000-0001-11f0-ffff-000000000001")
+				customerID := uuid.FromStringOrNil("62000000-0001-11f0-ffff-000000000010")
+				activeflowID := uuid.FromStringOrNil("62000000-0001-11f0-ffff-000000000020")
+				pipecatcallID := uuid.FromStringOrNil("62000000-0001-11f0-ffff-000000000050")
+				oldTM := time.Now().Add(-10 * time.Second) // outside the 3s cooldown
+
+				c := &aicall.AIcall{
+					Identity:      commonidentity.Identity{ID: id, CustomerID: customerID},
+					ActiveflowID:  activeflowID,
+					ReferenceType: aicall.ReferenceTypeCall,
+					PipecatcallID: pipecatcallID,
+					TMUpdate:      &oldTM,
+				}
+				pc := &pmpipecatcall.Pipecatcall{
+					Identity: commonidentity.Identity{ID: pipecatcallID},
+					HostID:   "10.4.2.18",
+				}
+				sentMessage := &message.Message{
+					Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("62000000-0001-11f0-ffff-0000000000f0")},
+				}
+
+				// h.Get
+				m.db.EXPECT().AIcallGet(ctx, id).Return(c, nil)
+
+				// SendReferenceTypeCall
+				m.req.EXPECT().PipecatV1PipecatcallGet(ctx, c.PipecatcallID).Return(pc, nil)
+				m.req.EXPECT().PipecatV1Ping(gomock.Any(), pc.HostID).Return(nil)
+				m.message.EXPECT().Create(
+					ctx, uuid.Nil, customerID, id, activeflowID,
+					message.DirectionOutgoing, message.RoleUser, "hello", nil, "",
+					gomock.Any(),
+				).Return(sentMessage, nil)
+				m.req.EXPECT().PipecatV1MessageSend(ctx, pc.HostID, pc.ID, sentMessage.ID.String(), "hello", false, false).Return(nil, nil)
+
+				// Send()'s post-dispatch TMUpdate refresh -- proves the ReferenceTypeCall
+				// gap identified in review is closed.
+				m.db.EXPECT().AIcallUpdate(ctx, id, map[aicall.Field]any{}).Return(nil)
+			},
+		},
+		{
+			// A fresh AIcall that has never been sent to has TMUpdate == nil. The
+			// cooldown check must be skipped entirely (not treated as "just updated").
+			name:     "nil TMUpdate -- fresh aicall passes cooldown check",
+			aicallID: uuid.FromStringOrNil("63000000-0001-11f0-ffff-000000000001"),
+
+			mockSetup: func(ctx context.Context, m *mocks) {
+				id := uuid.FromStringOrNil("63000000-0001-11f0-ffff-000000000001")
+				customerID := uuid.FromStringOrNil("63000000-0001-11f0-ffff-000000000010")
+				activeflowID := uuid.FromStringOrNil("63000000-0001-11f0-ffff-000000000030")
+				newPipecatcallID := uuid.FromStringOrNil("63000000-0001-11f0-ffff-000000000060")
+
+				c := &aicall.AIcall{
+					Identity:       commonidentity.Identity{ID: id, CustomerID: customerID},
+					AssistanceType: aicall.AssistanceTypeAI,
+					AIEngineModel:  ai.EngineModel("openai.gpt-5"),
+					ActiveflowID:   activeflowID,
+					ReferenceType:  aicall.ReferenceTypeConversation,
+					PipecatcallID:  uuid.Nil, // no previous pipecat session, interrupt step is skipped
+					TMUpdate:       nil,
+				}
+				updated := &aicall.AIcall{
+					Identity:       commonidentity.Identity{ID: id, CustomerID: customerID},
+					AssistanceType: aicall.AssistanceTypeAI,
+					AIEngineModel:  ai.EngineModel("openai.gpt-5"),
+					ActiveflowID:   activeflowID,
+					ReferenceType:  aicall.ReferenceTypeConversation,
+					PipecatcallID:  newPipecatcallID,
+				}
+				sentMessage := &message.Message{
+					Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("63000000-0001-11f0-ffff-0000000000f0")},
+				}
+				pc := &pmpipecatcall.Pipecatcall{
+					Identity: commonidentity.Identity{ID: newPipecatcallID},
+					HostID:   "host-nil-tmupdate",
+				}
+
+				// h.Get
+				m.db.EXPECT().AIcallGet(ctx, id).Return(c, nil)
+
+				// SendReferenceTypeOthers
+				m.message.EXPECT().Create(
+					ctx, uuid.Nil, customerID, id, activeflowID,
+					message.DirectionOutgoing, message.RoleUser, "hello", nil, "",
+					gomock.Any(),
+				).Return(sentMessage, nil)
+
+				m.util.EXPECT().UUIDCreate().Return(newPipecatcallID)
+
+				// UpdatePipecatcallID
+				m.db.EXPECT().AIcallUpdate(ctx, id, gomock.Any()).Return(nil)
+				m.db.EXPECT().AIcallGet(ctx, id).Return(updated, nil)
+
+				// startPipecatcall
+				m.message.EXPECT().List(ctx, uint64(100), gomock.Any(), gomock.Any()).Return([]*message.Message{}, nil)
+				m.req.EXPECT().PipecatV1PipecatcallStart(
+					ctx,
+					updated.PipecatcallID,
+					updated.CustomerID,
+					updated.ActiveflowID,
+					pmpipecatcall.ReferenceTypeAICall,
+					updated.ID,
+					pmpipecatcall.LLMType("openai.gpt-5"),
+					[]map[string]any{},
+					pmpipecatcall.STTTypeNone,
+					updated.STTLanguage,
+					pmpipecatcall.TTSTypeNone,
+					"",
+					"",
+				).Return(pc, nil)
+				m.req.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, pc.HostID, pc.ID, defaultAITaskTimeout).Return(nil)
+
+				// Send()'s post-dispatch TMUpdate refresh
+				m.db.EXPECT().AIcallUpdate(ctx, id, map[aicall.Field]any{}).Return(nil)
+			},
+		},
 	}
 
 	mc := gomock.NewController(t)
