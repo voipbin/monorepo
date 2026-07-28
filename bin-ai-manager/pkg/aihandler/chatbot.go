@@ -174,6 +174,13 @@ func (h *aiHandler) Update(
 			ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled, autoAICallAuditEnabled)
 		fields[ai.FieldCurrentPromptHistoryID] = historyID
 		if err := h.db.AIUpdate(ctx, id, fields); err != nil {
+			if dbhandler.IsErrDuplicate(err) {
+				return nil, cerrors.AlreadyExists(
+					commonoutline.ServiceNameAIManager,
+					"AI_INSIGHT_ALREADY_EXISTS",
+					"This customer already has an active Insight AI. Delete it before creating another.",
+				).Wrap(err)
+			}
 			return nil, errors.Wrapf(err, "could not update ai")
 		}
 		res, err := h.db.AIGet(ctx, id)
@@ -198,6 +205,13 @@ func (h *aiHandler) Update(
 			ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled, autoAICallAuditEnabled)
 		fields[ai.FieldCurrentPromptHistoryID] = uuid.Nil
 		if err := h.db.AIUpdate(ctx, id, fields); err != nil {
+			if dbhandler.IsErrDuplicate(err) {
+				return nil, cerrors.AlreadyExists(
+					commonoutline.ServiceNameAIManager,
+					"AI_INSIGHT_ALREADY_EXISTS",
+					"This customer already has an active Insight AI. Delete it before creating another.",
+				).Wrap(err)
+			}
 			return nil, errors.Wrapf(err, "could not update ai (clear prompt)")
 		}
 		res, err := h.db.AIGet(ctx, id)

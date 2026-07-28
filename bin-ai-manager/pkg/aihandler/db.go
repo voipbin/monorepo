@@ -194,6 +194,13 @@ func (h *aiHandler) dbUpdate(
 		ttsType, ttsVoice, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled, autoAICallAuditEnabled)
 
 	if err := h.db.AIUpdate(ctx, id, fields); err != nil {
+		if dbhandler.IsErrDuplicate(err) {
+			return nil, cerrors.AlreadyExists(
+				commonoutline.ServiceNameAIManager,
+				"AI_INSIGHT_ALREADY_EXISTS",
+				"This customer already has an active Insight AI. Delete it before creating another.",
+			).Wrap(err)
+		}
 		return nil, errors.Wrapf(err, "could not update ai")
 	}
 
