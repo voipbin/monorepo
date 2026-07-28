@@ -12,6 +12,7 @@ import (
 	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/aiprompthistory"
 	"monorepo/bin-ai-manager/models/tool"
+	"monorepo/bin-ai-manager/pkg/dbhandler"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	"monorepo/bin-common-handler/models/identity"
 	commonoutline "monorepo/bin-common-handler/models/outline"
@@ -75,6 +76,13 @@ func (h *aiHandler) Create(
 		initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled,
 		autoAICallAuditEnabled, currentPromptHistoryID)
 	if err != nil {
+		if dbhandler.IsErrDuplicate(err) {
+			return nil, cerrors.AlreadyExists(
+				commonoutline.ServiceNameAIManager,
+				"AI_INSIGHT_ALREADY_EXISTS",
+				"This customer already has an active Insight AI. Delete it before creating another.",
+			).Wrap(err)
+		}
 		return nil, errors.Wrapf(err, "could not create ai")
 	}
 

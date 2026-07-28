@@ -1141,6 +1141,75 @@ func TestCreate_AllowsValidInsightAI(t *testing.T) {
 	}
 }
 
+// assertAlreadyExists fails the test unless err is a *cerrors.VoipbinError
+// with Status == cerrors.StatusAlreadyExists and the given Reason, per
+// SQUARE-23's design (a duplicate-key failure on ai_ais.active_insight_key
+// must be translated to a 409 ALREADY_EXISTS, not a raw SQL error).
+func assertAlreadyExists(t *testing.T, err error, wantReason string) {
+	t.Helper()
+	if err == nil {
+		t.Fatal("expected an error, got nil")
+	}
+	var ve *cerrors.VoipbinError
+	if !errors.As(err, &ve) {
+		t.Fatalf("expected a *cerrors.VoipbinError, got: %v (%T)", err, err)
+	}
+	if ve.Status != cerrors.StatusAlreadyExists {
+		t.Errorf("expected Status=%v, got %v (err: %v)", cerrors.StatusAlreadyExists, ve.Status, err)
+	}
+	if ve.Reason != wantReason {
+		t.Errorf("expected Reason=%v, got %v (err: %v)", wantReason, ve.Reason, err)
+	}
+}
+
+// SQUARE-23: Create must translate a duplicate-key failure on
+// ai_ais.active_insight_key into cerrors.AlreadyExists (HTTP 409), not a
+// raw wrapped SQL error.
+func TestCreate_RejectsDuplicateInsightAI(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(ctrl)
+	mockReq := requesthandler.NewMockRequestHandler(ctrl)
+	mockNotify := notifyhandler.NewMockNotifyHandler(ctrl)
+
+	mockReq.EXPECT().DirectV1DirectCreate(gomock.Any(), gomock.Any(), dmdirect.ResourceTypeAI, gomock.Any()).
+		Return(&dmdirect.Direct{Hash: "a1b2c3d4e5f6"}, nil).Times(1)
+	mockDB.EXPECT().AICreate(gomock.Any(), gomock.Any()).
+		Return(fmt.Errorf("Error 1062: Duplicate entry 'x' for key 'uq_ai_active_insight_key'")).Times(1)
+	mockReq.EXPECT().DirectV1DirectDelete(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
+
+	h := &aiHandler{
+		db:            mockDB,
+		reqHandler:    mockReq,
+		notifyHandler: mockNotify,
+		utilHandler:   utilhandler.NewUtilHandler(),
+	}
+
+	_, err := h.Create(
+		context.Background(),
+		uuid.Must(uuid.NewV4()),
+		"Insight AI",
+		"",
+		ai.TypeInsight,
+		ai.EngineModelOpenaiGPT5,
+		nil,
+		"test-key",
+		uuid.Nil,
+		"",
+		ai.TTSTypeNone,
+		"",
+		ai.STTTypeNone,
+		"",
+		[]tool.ToolName{},
+		nil,
+		false,
+		false,
+	)
+
+	assertAlreadyExists(t, err, "AI_INSIGHT_ALREADY_EXISTS")
+}
+
 func TestUpdate_RejectsInsightAIWithNormalTools(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
