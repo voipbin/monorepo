@@ -38,7 +38,9 @@ Rollout order matches the design's §7: Tasks 1-3 (`bin-ai-manager`) and 4-7 (`b
 
 - [ ] **Step 1: Write the failing test**
 
-Add this test case to the `tests` table in `Test_startReferenceTypeContactCase` (`pkg/aicallhandler/start_test.go`), right after the `"create succeeds on first attempt"` case (`~line 3663`):
+**Round-1 plan-review finding (blocking):** this task's code change moves the return point of every successful-create branch in `startReferenceTypeContactCase` — it doesn't just add a new outcome, it adds calls to the *existing* `"create succeeds on first attempt"` case (`~line 3616`) and the `"duplicate key — existing terminated, retry create succeeds"` case's second attempt (`~line 3753`), both of which currently mock only through `AIcallGet`+`PublishWebhookEvent(EventTypeStatusInitializing)` and would panic on the new unexpected calls. Update BOTH of those existing cases' `mockSetup` to append, after their existing `m.message.EXPECT().Create(...)` line, the same five calls the new test case below adds (`m.message.EXPECT().List(...)`, `PipecatV1PipecatcallStart`, `PipecatV1PipecatcallTerminateWithDelay`, `AIcallUpdate` for `StatusProgressing`, and a second `AIcallGet`) — substitute each case's own `aicallID`/`created` variables. Also update each case's `expectRes` to `Status: aicall.StatusProgressing` instead of `aicall.StatusInitiating`, since that's what the function now actually returns.
+
+Then add this NEW test case to the `tests` table, right after the (now-updated) `"create succeeds on first attempt"` case (`~line 3663`):
 
 ```go
 		{
@@ -100,6 +102,8 @@ Add this test case to the `tests` table in `Test_startReferenceTypeContactCase` 
 				m.req.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, responsePC.HostID, responsePC.ID, defaultAITaskTimeout).Return(nil)
 				m.db.EXPECT().AIcallUpdate(ctx, aicallID, map[aicall.Field]any{aicall.FieldStatus: aicall.StatusProgressing}).Return(nil)
 				m.db.EXPECT().AIcallGet(ctx, aicallID).Return(progressing, nil)
+				// UpdateStatus(StatusProgressing) also publishes this event -- see db.go's UpdateStatus.
+				m.notify.EXPECT().PublishWebhookEvent(ctx, progressing.CustomerID, aicall.EventTypeStatusProgressing, progressing)
 			},
 
 			expectRes: &aicall.AIcall{
@@ -212,10 +216,17 @@ Add this case to `Test_startReferenceTypeContactCase`, and add `config.SetAIcall
 				m.db.EXPECT().AIcallGetByReferenceID(ctx, uuid.FromStringOrNil("50000000-0004-11f0-eeee-000000000001")).Return(existingIdle, nil)
 
 				// Task 2: terminate the idle row -- NO recreate-rate-limit check on this path.
-				m.db.EXPECT().AIcallUpdate(ctx, existingIdleID, map[aicall.Field]any{aicall.FieldStatus: aicall.StatusTerminated}).Return(nil)
-				m.db.EXPECT().AIcallGet(ctx, existingIdleID).Return(&aicall.AIcall{
-					Identity: existingIdle.Identity, Status: aicall.StatusTerminated,
-				}, nil)
+				// UpdateStatus(StatusTerminated) also sets FieldTMEnd via utilHandler.TimeNow()
+				// and publishes EventTypeStatusTerminated -- see db.go's UpdateStatus.
+				terminatedTM := time.Now()
+				m.util.EXPECT().TimeNow().Return(terminatedTM)
+				m.db.EXPECT().AIcallUpdate(ctx, existingIdleID, map[aicall.Field]any{
+					aicall.FieldStatus: aicall.StatusTerminated,
+					aicall.FieldTMEnd:  terminatedTM,
+				}).Return(nil)
+				terminatedAIcall := &aicall.AIcall{Identity: existingIdle.Identity, Status: aicall.StatusTerminated}
+				m.db.EXPECT().AIcallGet(ctx, existingIdleID).Return(terminatedAIcall, nil)
+				m.notify.EXPECT().PublishWebhookEvent(ctx, terminatedAIcall.CustomerID, aicall.EventTypeStatusTerminated, terminatedAIcall)
 
 				// attempt 1: create succeeds (and starts pipecatcall per Task 1)
 				created := &aicall.AIcall{
@@ -237,7 +248,9 @@ Add this case to `Test_startReferenceTypeContactCase`, and add `config.SetAIcall
 				m.req.EXPECT().PipecatV1PipecatcallStart(ctx, created.PipecatcallID, created.CustomerID, created.ActiveflowID, pmpipecatcall.ReferenceTypeAICall, created.ID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(responsePC, nil)
 				m.req.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, responsePC.HostID, responsePC.ID, defaultAITaskTimeout).Return(nil)
 				m.db.EXPECT().AIcallUpdate(ctx, aicallID2, map[aicall.Field]any{aicall.FieldStatus: aicall.StatusProgressing}).Return(nil)
-				m.db.EXPECT().AIcallGet(ctx, aicallID2).Return(&aicall.AIcall{Identity: created.Identity, Status: aicall.StatusProgressing}, nil)
+				progressing2 := &aicall.AIcall{Identity: created.Identity, Status: aicall.StatusProgressing}
+				m.db.EXPECT().AIcallGet(ctx, aicallID2).Return(progressing2, nil)
+				m.notify.EXPECT().PublishWebhookEvent(ctx, progressing2.CustomerID, aicall.EventTypeStatusProgressing, progressing2)
 			},
 
 			expectRes: &aicall.AIcall{
@@ -544,20 +557,111 @@ git commit -m "NOJIRA-Aicalls-add-messages-endpoint: Make assistance_id conditio
 
 ---
 
-## Task 5: Case-ownership check on `ServiceAgentAIcallCreate`
+## Tasks 5-7: `ServiceAgentAIcallCreate` — ownership check, AI resolution, activeflow cleanup
+
+**Round-1 plan-review finding (blocking):** the real `Test_ServiceAgentAIcallCreate` in `bin-api-manager/pkg/servicehandler/serviceagent_aicall_test.go` (read it before starting — `~lines 189-303`) is a flat `test` struct with mocks set up **inline in the loop body** (a `switch tt.assistanceType` calling `AIV1AIGet`/`AIV1TeamGet`, then unconditional `FlowV1ActiveflowCreate` + `AIV1AIcallStart` calls) — there is no `mockSetup` closure field to hook into, and its one existing case already uses `ReferenceTypeContactCase`. `Test_ServiceAgentAIcallCreate_TenantIsolation` (a separate, non-table function, `~line 309`) also uses `ReferenceTypeContactCase`. Tasks 5-7 below replace the ENTIRE test function (not "add a case") because the loop body itself needs new conditional branches, and both pre-existing tests need a `ContactV1CaseGet` mock added or they break the moment Task 5's ownership check ships.
+
+These three tasks share one file-pair and are combined into one TDD cycle (write once, all three fixes, together) because the loop-body restructuring can't be sanely done three times over three tasks:
 
 **Files:**
-- Modify: `bin-api-manager/pkg/servicehandler/serviceagent_aicall.go:129-153`
-- Test: `bin-api-manager/pkg/servicehandler/serviceagent_aicall_test.go`
+- Modify: `bin-api-manager/pkg/servicehandler/serviceagent_aicall.go:129-215` (`ServiceAgentAIcallCreate`, plus a new `resolveInsightAIID` helper)
+- Modify: `bin-api-manager/pkg/servicehandler/serviceagent_aicall_test.go:186-344` (`Test_ServiceAgentAIcallCreate` and `Test_ServiceAgentAIcallCreate_TenantIsolation`)
 
-- [ ] **Step 1: Write the failing test**
+- [ ] **Step 1: Write the failing tests**
 
-Find (or create, if `ServiceAgentAIcallCreate` has no table-driven test yet — check the file first) the test function for `ServiceAgentAIcallCreate` in `serviceagent_aicall_test.go`, and add this case:
+Replace `Test_ServiceAgentAIcallCreate` (`~lines 189-303`) in full:
 
 ```go
-		{
-			name: "contact_case reference_id belongs to a different customer -- rejected",
+func Test_ServiceAgentAIcallCreate(t *testing.T) {
 
+	type test struct {
+		name string
+
+		agent          *auth.AuthIdentity
+		assistanceType amaicall.AssistanceType
+		assistanceID   uuid.UUID
+		referenceType  amaicall.ReferenceType
+		referenceID    uuid.UUID
+
+		// Task 5/6: only consulted when referenceType == ReferenceTypeContactCase.
+		responseCase    *cmcase.Case
+		responseCaseErr error
+
+		// Task 6: only consulted when assistanceID == uuid.Nil.
+		responseAIList []amai.AI
+
+		responseAI         *amai.AI
+		responseActiveflow *fmactiveflow.Activeflow
+		responseAIcall     *amaicall.AIcall
+
+		// Task 7: when true, AIV1AIcallStart's returned aicall's ActiveflowID
+		// is set (in the test loop below) to something other than
+		// responseActiveflow.ID, and FlowV1ActiveflowDelete(responseActiveflow.ID)
+		// must fire.
+		expectReused bool
+
+		expectErr error
+		expectRes *amaicall.WebhookMessage
+	}
+
+	tests := []test{
+		{
+			name: "agent permission, ai assistance",
+
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Permission: amagent.PermissionCustomerAgent,
+			}),
+			assistanceType: amaicall.AssistanceTypeAI,
+			assistanceID:   uuid.FromStringOrNil("3fc2c1b0-efaa-11ef-84bb-a7e8fba38e46"),
+			referenceType:  amaicall.ReferenceTypeContactCase,
+			referenceID:    uuid.FromStringOrNil("f201d402-4596-47cf-87b9-bc6d234d286a"),
+
+			// Task 5: pre-existing case, needs a same-customer responseCase now
+			// that the ownership check runs unconditionally for contact_case.
+			responseCase: &cmcase.Case{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("f201d402-4596-47cf-87b9-bc6d234d286a"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+			},
+
+			responseAI: &amai.AI{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("3fc2c1b0-efaa-11ef-84bb-a7e8fba38e46"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+			},
+			responseActiveflow: &fmactiveflow.Activeflow{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-000000000010"),
+				},
+			},
+			responseAIcall: &amaicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("407e793c-efaa-11ef-b0f4-4bdbcd626589"),
+				},
+			},
+
+			expectRes: &amaicall.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("407e793c-efaa-11ef-b0f4-4bdbcd626589"),
+				},
+			},
+		},
+		{
+			name: "Task 5: contact_case reference_id belongs to a different customer -- rejected",
+
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Permission: amagent.PermissionCustomerAgent,
+			}),
 			assistanceType: amaicall.AssistanceTypeAI,
 			assistanceID:   uuid.FromStringOrNil("70000000-0001-11f0-1111-000000000001"),
 			referenceType:  amaicall.ReferenceTypeContactCase,
@@ -572,66 +676,16 @@ Find (or create, if `ServiceAgentAIcallCreate` has no table-driven test yet — 
 
 			expectErr: serviceerrors.ErrPermissionDenied,
 		},
-```
-
-Adjust the table's field names to match whatever the existing test already uses for mocking `h.reqHandler.ContactV1CaseGet` (a `responseCase`/`responseCaseErr`-shaped field feeding a `mockSetup`, following this file's existing convention — read the file first and match its style exactly rather than introducing a new pattern).
-
-- [ ] **Step 2: Run test to verify it fails**
-
-Run: `go test ./pkg/servicehandler/... -run Test_ServiceAgentAIcallCreate -v`
-Expected: FAIL — no ownership check exists yet, so the call proceeds to `aiGet`/activeflow creation instead of returning `ErrPermissionDenied` early.
-
-- [ ] **Step 3: Write minimal implementation**
-
-In `pkg/servicehandler/serviceagent_aicall.go`, insert this block into `ServiceAgentAIcallCreate` right after the `hasPermission` check (before the `// resolve the assistance entity's customer id...` comment, `~line 153`):
-
-```go
-	// Case-ownership check (contact_case only). Rejects before touching
-	// anything else if the referenced Case doesn't belong to the caller's
-	// own customer -- fail-fast; tool_insight.go already fails closed on
-	// this independently, so this is a UX/hygiene guard, not the last line
-	// of defense (design doc §4.5).
-	if referenceType == amaicall.ReferenceTypeContactCase {
-		kase, errCase := h.reqHandler.ContactV1CaseGet(ctx, a.CustomerID, referenceID)
-		if errCase != nil || kase.CustomerID != a.CustomerID {
-			log.Info("The referenced case does not belong to the agent's customer.")
-			return nil, serviceerrors.ErrPermissionDenied
-		}
-	}
-```
-
-Add the `cmcase "monorepo/bin-contact-manager/models/case"` import if `ContactV1CaseGet`'s return type requires it and it's not already imported (check `pkg/servicehandler/case.go`'s imports for the exact alias already used elsewhere in this package, and reuse it — don't introduce a second alias for the same package).
-
-- [ ] **Step 4: Run test to verify it passes**
-
-Run: `go test ./pkg/servicehandler/... -run Test_ServiceAgentAIcallCreate -v`
-Expected: PASS (this new case; also re-run the full function's existing cases to confirm none needed a `ContactV1CaseGet` mock added — they shouldn't, since they use non-`contact_case` reference types unless the existing tests already use `contact_case`, in which case add the same-customer `responseCase` mock to each so they don't break).
-
-- [ ] **Step 5: Commit**
-
-```bash
-git add bin-api-manager/pkg/servicehandler/serviceagent_aicall.go bin-api-manager/pkg/servicehandler/serviceagent_aicall_test.go
-git commit -m "NOJIRA-Aicalls-add-messages-endpoint: Reject contact_case AIcall creation for a foreign customer's case
-
-- bin-api-manager: ServiceAgentAIcallCreate now validates reference_id's owning customer for reference_type=contact_case before proceeding"
-```
-
----
-
-## Task 6: Server-side Insight AI resolution when `assistance_id` is omitted
-
-**Files:**
-- Modify: `bin-api-manager/pkg/servicehandler/serviceagent_aicall.go` (same function, plus a new helper)
-- Test: `bin-api-manager/pkg/servicehandler/serviceagent_aicall_test.go`
-
-- [ ] **Step 1: Write the failing test**
-
-Add these two cases to the same test table as Task 5:
-
-```go
 		{
-			name: "assistance_id omitted, contact_case, exactly one insight AI -- resolved",
+			name: "Task 6: assistance_id omitted, contact_case, exactly one insight AI -- resolved",
 
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("80000000-0003-11f0-2222-000000000001"),
+				},
+				Permission: amagent.PermissionCustomerAgent,
+			}),
 			assistanceType: amaicall.AssistanceTypeAI,
 			assistanceID:   uuid.Nil,
 			referenceType:  amaicall.ReferenceTypeContactCase,
@@ -644,15 +698,36 @@ Add these two cases to the same test table as Task 5:
 				},
 			},
 			responseAIList: []amai.AI{
-				{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("80000000-0004-11f0-2222-000000000001"), CustomerID: uuid.FromStringOrNil("80000000-0003-11f0-2222-000000000001")}, Type: amai.TypeInsight},
+				{Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("80000000-0004-11f0-2222-000000000001"),
+					CustomerID: uuid.FromStringOrNil("80000000-0003-11f0-2222-000000000001"),
+				}, Type: amai.TypeInsight},
 			},
-			responseAI: &amai.AI{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("80000000-0004-11f0-2222-000000000001"), CustomerID: uuid.FromStringOrNil("80000000-0003-11f0-2222-000000000001")}},
-			// ... plus whatever this file's existing successful-create cases mock for
-			// activeflow create + AIV1AIcallStart, following their exact pattern.
+			responseAI: &amai.AI{Identity: commonidentity.Identity{
+				ID:         uuid.FromStringOrNil("80000000-0004-11f0-2222-000000000001"),
+				CustomerID: uuid.FromStringOrNil("80000000-0003-11f0-2222-000000000001"),
+			}},
+			responseActiveflow: &fmactiveflow.Activeflow{Identity: commonidentity.Identity{
+				ID: uuid.FromStringOrNil("80000000-0007-11f0-2222-000000000001"),
+			}},
+			responseAIcall: &amaicall.AIcall{Identity: commonidentity.Identity{
+				ID: uuid.FromStringOrNil("80000000-0008-11f0-2222-000000000001"),
+			}},
+
+			expectRes: &amaicall.WebhookMessage{Identity: commonidentity.Identity{
+				ID: uuid.FromStringOrNil("80000000-0008-11f0-2222-000000000001"),
+			}},
 		},
 		{
-			name: "assistance_id omitted, contact_case, zero insight AIs -- not found",
+			name: "Task 6: assistance_id omitted, contact_case, zero insight AIs -- not found",
 
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("80000000-0006-11f0-2222-000000000001"),
+				},
+				Permission: amagent.PermissionCustomerAgent,
+			}),
 			assistanceType: amaicall.AssistanceTypeAI,
 			assistanceID:   uuid.Nil,
 			referenceType:  amaicall.ReferenceTypeContactCase,
@@ -668,20 +743,155 @@ Add these two cases to the same test table as Task 5:
 
 			expectErr: serviceerrors.ErrNotFound,
 		},
+		{
+			name: "Task 7: AIV1AIcallStart returns a reused aicall -- orphaned activeflow is deleted",
+
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("90000000-0003-11f0-3333-000000000001"),
+				},
+				Permission: amagent.PermissionCustomerAgent,
+			}),
+			assistanceType: amaicall.AssistanceTypeAI,
+			assistanceID:   uuid.FromStringOrNil("90000000-0001-11f0-3333-000000000001"),
+			referenceType:  amaicall.ReferenceTypeContactCase,
+			referenceID:    uuid.FromStringOrNil("90000000-0002-11f0-3333-000000000001"),
+
+			responseCase: &cmcase.Case{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("90000000-0002-11f0-3333-000000000001"),
+					CustomerID: uuid.FromStringOrNil("90000000-0003-11f0-3333-000000000001"),
+				},
+			},
+			responseAI: &amai.AI{Identity: commonidentity.Identity{
+				ID:         uuid.FromStringOrNil("90000000-0001-11f0-3333-000000000001"),
+				CustomerID: uuid.FromStringOrNil("90000000-0003-11f0-3333-000000000001"),
+			}},
+			responseActiveflow: &fmactiveflow.Activeflow{Identity: commonidentity.Identity{
+				ID: uuid.FromStringOrNil("90000000-0004-11f0-3333-000000000001"),
+			}},
+			responseAIcall: &amaicall.AIcall{
+				Identity:     commonidentity.Identity{ID: uuid.FromStringOrNil("90000000-0005-11f0-3333-000000000001")},
+				ActiveflowID: uuid.FromStringOrNil("90000000-9999-11f0-3333-000000000001"), // a DIFFERENT, pre-existing activeflow -- NOT responseActiveflow.ID
+			},
+			expectReused: true,
+
+			expectRes: &amaicall.WebhookMessage{Identity: commonidentity.Identity{
+				ID: uuid.FromStringOrNil("90000000-0005-11f0-3333-000000000001"),
+			}},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+
+			h := &serviceHandler{
+				reqHandler:  mockReq,
+				dbHandler:   mockDB,
+				utilHandler: mockUtil,
+			}
+			ctx := context.Background()
+
+			if tt.referenceType == amaicall.ReferenceTypeContactCase {
+				mockReq.EXPECT().ContactV1CaseGet(ctx, tt.agent.CustomerID, tt.referenceID).Return(tt.responseCase, tt.responseCaseErr)
+			}
+
+			if tt.expectErr == serviceerrors.ErrPermissionDenied && tt.responseCase.CustomerID != tt.agent.CustomerID {
+				_, err := h.ServiceAgentAIcallCreate(ctx, tt.agent, tt.assistanceType, tt.assistanceID, tt.referenceType, tt.referenceID)
+				if err == nil {
+					t.Errorf("Wrong match. expect: err, got: ok")
+				}
+				return
+			}
+
+			resolvedAssistanceID := tt.assistanceID
+			if tt.assistanceType == amaicall.AssistanceTypeAI && tt.assistanceID == uuid.Nil {
+				mockReq.EXPECT().AIV1AIList(ctx, "", uint64(100), gomock.Any()).Return(tt.responseAIList, nil)
+				if len(tt.responseAIList) == 0 {
+					_, err := h.ServiceAgentAIcallCreate(ctx, tt.agent, tt.assistanceType, tt.assistanceID, tt.referenceType, tt.referenceID)
+					if err == nil {
+						t.Errorf("Wrong match. expect: err, got: ok")
+					}
+					return
+				}
+				resolvedAssistanceID = tt.responseAIList[0].ID
+			}
+
+			switch tt.assistanceType {
+			case amaicall.AssistanceTypeAI:
+				mockReq.EXPECT().AIV1AIGet(ctx, resolvedAssistanceID).Return(tt.responseAI, nil)
+			case amaicall.AssistanceTypeTeam:
+				mockReq.EXPECT().AIV1TeamGet(ctx, resolvedAssistanceID).Return(nil, nil)
+			}
+
+			mockReq.EXPECT().FlowV1ActiveflowCreate(
+				ctx, uuid.Nil, tt.agent.CustomerID, uuid.Nil, fmactiveflow.ReferenceTypeAPI,
+				uuid.Nil, uuid.Nil, gomock.Any(), gomock.Any(), gomock.Any(),
+			).Return(tt.responseActiveflow, nil)
+
+			mockReq.EXPECT().AIV1AIcallStart(
+				ctx, tt.assistanceType, resolvedAssistanceID, tt.responseActiveflow.ID, tt.referenceType, tt.referenceID,
+			).Return(tt.responseAIcall, nil)
+
+			if tt.expectReused {
+				mockReq.EXPECT().FlowV1ActiveflowDelete(ctx, tt.responseActiveflow.ID).Return(nil, nil)
+			}
+
+			res, err := h.ServiceAgentAIcallCreate(ctx, tt.agent, tt.assistanceType, tt.assistanceID, tt.referenceType, tt.referenceID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
 ```
 
-Wire `responseAIList` through `mockSetup` to `m.req.EXPECT().AIV1AIList(ctx, "", uint64(100), gomock.Any()).Return(tt.responseAIList, nil)`.
+Add the `cmcase "monorepo/bin-contact-manager/models/case"` import to the test file (check `pkg/servicehandler/case_test.go`'s imports for the exact alias already used elsewhere in this package's tests, and reuse it).
+
+Update `Test_ServiceAgentAIcallCreate_TenantIsolation` (`~line 309`) — it already uses `ReferenceTypeContactCase`, so add a `ContactV1CaseGet` mock (same-customer, so the flow reaches the tenant-isolation check this test is actually about) right before its existing `AIV1AIGet` mock:
+
+```go
+	mockReq.EXPECT().ContactV1CaseGet(ctx, agent.CustomerID, uuid.FromStringOrNil("f201d402-4596-47cf-87b9-bc6d234d286a")).Return(&cmcase.Case{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("f201d402-4596-47cf-87b9-bc6d234d286a"),
+			CustomerID: agent.CustomerID,
+		},
+	}, nil)
+```
 
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `go test ./pkg/servicehandler/... -run Test_ServiceAgentAIcallCreate -v`
-Expected: FAIL — `assistanceID=uuid.Nil` today falls into `h.aiGet(ctx, uuid.Nil)`, which errors out with a generic "not found"-shaped error rather than the resolution/empty-state behavior the test expects (and the zero-AI case doesn't return `serviceerrors.ErrNotFound` specifically).
+Expected: FAIL — none of the ownership check, AI resolution, or activeflow-reuse-cleanup exist yet. The pre-existing case and `Test_ServiceAgentAIcallCreate_TenantIsolation` also currently fail differently (unexpected `ContactV1CaseGet` call is now mocked but never invoked by the unmodified handler).
 
 - [ ] **Step 3: Write minimal implementation**
 
-In `pkg/servicehandler/serviceagent_aicall.go`, insert this block right after Task 5's ownership check, before the `// resolve the assistance entity's customer id...` switch:
+In `pkg/servicehandler/serviceagent_aicall.go`, insert both blocks into `ServiceAgentAIcallCreate` right after the `hasPermission` check (before the `// resolve the assistance entity's customer id...` comment, `~line 153`):
 
 ```go
+	// Case-ownership check (contact_case only). Rejects before touching
+	// anything else if the referenced Case doesn't belong to the caller's
+	// own customer -- fail-fast; tool_insight.go already fails closed on
+	// this independently, so this is a UX/hygiene guard, not the last line
+	// of defense (design doc §4.5).
+	if referenceType == amaicall.ReferenceTypeContactCase {
+		kase, errCase := h.reqHandler.ContactV1CaseGet(ctx, a.CustomerID, referenceID)
+		if errCase != nil || kase.CustomerID != a.CustomerID {
+			log.Info("The referenced case does not belong to the agent's customer.")
+			return nil, serviceerrors.ErrPermissionDenied
+		}
+	}
+
 	// Server-side Insight AI resolution: assistance_id may be omitted for
 	// assistance_type=ai + reference_type=contact_case (design doc §4.1,
 	// Round 9). This is the only combination the schema allows it to be
@@ -731,71 +941,7 @@ func (h *serviceHandler) resolveInsightAIID(ctx context.Context, customerID uuid
 
 Add the `amai "monorepo/bin-ai-manager/models/ai"` import (this file currently only imports `amaicall "monorepo/bin-ai-manager/models/aicall"` — a separate package, both needed).
 
-- [ ] **Step 4: Run test to verify it passes**
-
-Run: `go test ./pkg/servicehandler/... -run Test_ServiceAgentAIcallCreate -v`
-Expected: PASS.
-
-- [ ] **Step 5: Commit**
-
-```bash
-git add bin-api-manager/pkg/servicehandler/serviceagent_aicall.go bin-api-manager/pkg/servicehandler/serviceagent_aicall_test.go
-git commit -m "NOJIRA-Aicalls-add-messages-endpoint: Resolve the customer's Insight AI server-side when assistance_id is omitted
-
-- bin-api-manager: ServiceAgentAIcallCreate resolves assistance_id automatically for assistance_type=ai + reference_type=contact_case, so CustomerAgent-level callers never need the Admin/Manager-only AI list endpoint"
-```
-
----
-
-## Task 7: Delete the orphaned activeflow when `AIV1AIcallStart` returns a reused AIcall
-
-**Files:**
-- Modify: `bin-api-manager/pkg/servicehandler/serviceagent_aicall.go:179-215` (end of `ServiceAgentAIcallCreate`)
-- Test: `bin-api-manager/pkg/servicehandler/serviceagent_aicall_test.go`
-
-- [ ] **Step 1: Write the failing test**
-
-Add this case to the same test table:
-
-```go
-		{
-			name: "AIV1AIcallStart returns a reused aicall -- orphaned activeflow is deleted",
-
-			assistanceType: amaicall.AssistanceTypeAI,
-			assistanceID:   uuid.FromStringOrNil("90000000-0001-11f0-3333-000000000001"),
-			referenceType:  amaicall.ReferenceTypeContactCase,
-			referenceID:    uuid.FromStringOrNil("90000000-0002-11f0-3333-000000000001"),
-
-			responseCase: &cmcase.Case{
-				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("90000000-0002-11f0-3333-000000000001"),
-					CustomerID: uuid.FromStringOrNil("90000000-0003-11f0-3333-000000000001"),
-				},
-			},
-			responseAI: &amai.AI{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("90000000-0001-11f0-3333-000000000001"), CustomerID: uuid.FromStringOrNil("90000000-0003-11f0-3333-000000000001")}},
-
-			responseActiveflow: &fmactiveflow.Activeflow{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("90000000-0004-11f0-3333-000000000001")}},
-
-			// The reused aicall's ActiveflowID does NOT match the one just created above.
-			responseAIcallStart: &amaicall.WebhookMessage{
-				ID:           uuid.FromStringOrNil("90000000-0005-11f0-3333-000000000001"),
-				ActiveflowID: uuid.FromStringOrNil("90000000-9999-11f0-3333-000000000001"), // a DIFFERENT, pre-existing activeflow
-			},
-
-			expectActiveflowDeleted: uuid.FromStringOrNil("90000000-0004-11f0-3333-000000000001"), // the freshly-created one, not the reused one
-		},
-```
-
-Wire `expectActiveflowDeleted` through `mockSetup` to `m.req.EXPECT().FlowV1ActiveflowDelete(ctx, tt.expectActiveflowDeleted).Return(nil, nil)` when set, and assert via the existing success-path mocks (`FlowV1ActiveflowCreate` returning `responseActiveflow`, `AIV1AIcallStart` returning `responseAIcallStart`) that this delete call actually fires — it must NOT fire in the pre-existing "normal create" test cases (add `m.req.EXPECT().FlowV1ActiveflowDelete(...)` with `.Times(0)` implicitly by simply not setting it up — gomock fails on unexpected calls by default).
-
-- [ ] **Step 2: Run test to verify it fails**
-
-Run: `go test ./pkg/servicehandler/... -run Test_ServiceAgentAIcallCreate -v`
-Expected: FAIL — the current code returns right after `tmp.ConvertWebhookMessage()` with no comparison, so `FlowV1ActiveflowDelete` is never called and the test's expectation is unmet.
-
-- [ ] **Step 3: Write minimal implementation**
-
-In `pkg/servicehandler/serviceagent_aicall.go`, modify the tail of `ServiceAgentAIcallCreate` (currently ends at `res := tmp.ConvertWebhookMessage(); return res, nil`):
+Then modify the tail of `ServiceAgentAIcallCreate` (currently ends at `res := tmp.ConvertWebhookMessage(); return res, nil`) for Task 7:
 
 ```go
 	tmp, err := h.reqHandler.AIV1AIcallStart(
@@ -833,7 +979,7 @@ In `pkg/servicehandler/serviceagent_aicall.go`, modify the tail of `ServiceAgent
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `go test ./pkg/servicehandler/... -run Test_ServiceAgentAIcallCreate -v`
-Expected: PASS.
+Expected: PASS, all subtests.
 
 - [ ] **Step 5: Run the full package test suite**
 
@@ -844,9 +990,9 @@ Expected: PASS.
 
 ```bash
 git add bin-api-manager/pkg/servicehandler/serviceagent_aicall.go bin-api-manager/pkg/servicehandler/serviceagent_aicall_test.go
-git commit -m "NOJIRA-Aicalls-add-messages-endpoint: Delete the orphaned activeflow when an AIcall create call reuses an existing session
+git commit -m "NOJIRA-Aicalls-add-messages-endpoint: Add case-ownership check, server-side Insight AI resolution, and activeflow-leak cleanup
 
-- bin-api-manager: ServiceAgentAIcallCreate now cleans up its freshly-created activeflow whenever AIV1AIcallStart returns a reused (not genuinely new) AIcall, closing an activeflow leak on every reuse"
+- bin-api-manager: ServiceAgentAIcallCreate now rejects contact_case references belonging to a foreign customer, resolves assistance_id automatically when omitted for assistance_type=ai + reference_type=contact_case, and deletes its freshly-created activeflow whenever AIV1AIcallStart returns a reused aicall"
 ```
 
 ---
