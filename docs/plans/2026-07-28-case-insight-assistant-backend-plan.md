@@ -1,5 +1,7 @@
 # Case Insight Assistant — Backend Implementation Plan
 
+**Status: APPROVED** (plan-review loop, 2 consecutive approvals, rounds 12-13, after 11 rounds of substantive fixes).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Make `reference_type=contact_case` AIcalls behave correctly end-to-end through the existing `service_agents` API surface — no new endpoints — so square-admin's Case Insight Assistant panel (separate frontend plan) has a working backend to call.
@@ -32,7 +34,7 @@
 | `bin-api-manager/pkg/servicehandler/serviceagent_aicall_test.go` | Tests for the above |
 | `bin-api-manager/docsdev/source/` | RST doc update — Task 8 |
 
-Rollout order matches the design's §7: Tasks 1-3 (`bin-ai-manager`) and 4-7 (`bin-api-manager`/openapi) can land in either order relative to each other (different services, independently deployable), but Task 6 (AI resolution) has no dependency on Tasks 1-3 either. Task 8 (docs) lands with whichever PR ships last. This plan orders them 1→8 for a single linear PR; split into two PRs (one per service) if preferred — each task is self-contained enough to reorder.
+Rollout order matches the design's §7: Tasks 1-3 (`bin-ai-manager`) and 4-7 (`bin-api-manager`/openapi, plus one `bin-ai-manager` fix inside Task 6) can land in either order relative to each other (independently deployable), but Task 6 (AI resolution) has no dependency on Tasks 1-3 either. Task 8 (docs) lands with whichever PR ships last. This plan orders them 1→8 for a single linear PR; split into two PRs (one per service) if preferred — each task is self-contained enough to reorder.
 
 ---
 
