@@ -141,13 +141,19 @@ branch name might suggest. All three branches need the translation:
    type-change-while-clearing-prompt case above).
 3. `default` ("prompt unchanged") — `chatbot.go` does not call
    `h.db.AIUpdate` directly here; it returns `h.dbUpdate(ctx, ...)`, and
-   `dbUpdate` (`pkg/aihandler/db.go`) is the one that calls `h.db.AIUpdate`
-   and returns its error unwrapped. The `IsErrDuplicate` translation for
-   this branch must therefore live inside `dbUpdate` in `db.go`, not in
-   `chatbot.go`. An implementation that only edits `chatbot.go` will leave
-   this branch's duplicate-key errors as raw wrapped SQL errors, missing
-   the AC's rejection guarantee for the most common update path (type
-   unchanged, prompt unchanged).
+   `dbUpdate` (`pkg/aihandler/db.go`) is the one that calls `h.db.AIUpdate`.
+   `dbUpdate` does not return that error unwrapped, though: it wraps it via
+   `errors.Wrapf(err, "could not update ai")` (`pkg/errors`, i.e. github.com
+   /pkg/errors) before returning. That wrapping does not defeat
+   `IsErrDuplicate` — it does a substring match on `err.Error()`, and
+   `pkg/errors` wrapping preserves the original message text in `Error()`
+   — but it does mean the sentinel/type is not preserved as-is, only the
+   message text is. The `IsErrDuplicate` translation for this branch must
+   therefore live inside `dbUpdate` in `db.go`, not in `chatbot.go`. An
+   implementation that only edits `chatbot.go` will leave this branch's
+   duplicate-key errors as raw wrapped SQL errors, missing the AC's
+   rejection guarantee for the most common update path (type unchanged,
+   prompt unchanged).
 
 Concretely: add the `IsErrDuplicate` check around the `h.db.AIUpdate` call
 in each of `chatbot.go`'s `promptChanged` and `promptCleared` branches, and
@@ -176,6 +182,41 @@ prohibits AI-run schema/data changes against non-local databases):
    the migration's `CREATE UNIQUE INDEX` get applied.
 
 ### 4. Testing
+
+**Prerequisite — SQLite test-schema stand-in.** `bin-ai-manager`'s
+`dbhandler` tests (`pkg/dbhandler/main_test.go`) run against an in-memory
+SQLite database (`go-sqlite3`), loading table DDL from
+`scripts/database_scripts_test/*.sql` — they do **not** exercise the
+Alembic/MySQL migration at all. The precedent this design cites needed its
+own SQLite-compatible stand-in for exactly this reason:
+`scripts/database_scripts_test/table_ai_aicalls.sql` defines
+`active_reference_key` using `CASE WHEN` + string concatenation instead of
+MySQL's `IF(...)`, with an inline comment explaining it is a SQLite
+substitute for the real `STORED` generated column. MySQL's `IF(...)` is not
+valid SQLite syntax, so a literal copy of this design's migration DDL into
+a test script would not apply.
+
+Before the dbhandler tests below can pass, `scripts/database_scripts_test/table_ai_ais.sql`
+must be updated with an equivalent SQLite stand-in, e.g.:
+
+```sql
+active_insight_key varchar(255) GENERATED ALWAYS AS (
+  CASE WHEN type = 'insight' AND tm_delete IS NULL
+    THEN customer_id
+    ELSE NULL
+  END
+) STORED,
+```
+
+```sql
+create unique index uq_ai_active_insight_key on ai_ais(active_insight_key);
+```
+
+added alongside the existing `create table ai_ais(...)` block, mirroring
+`table_ai_aicalls.sql`'s pattern (`customer_id` is already `binary(16)`
+here, so — unlike the precedent's hash-based key — no `X'...'` hex-literal
+handling is needed). This file update is in scope for this change, not a
+follow-up; without it the test plan below is unexecutable as described.
 
 - `dbhandler`: table-driven test creating two `type=insight` AIs for the
   same `customer_id` — the first `AICreate` succeeds, the second must
