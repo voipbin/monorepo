@@ -3,6 +3,7 @@ package aicallhandler
 import (
 	"context"
 	"fmt"
+	"monorepo/bin-ai-manager/internal/config"
 	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
@@ -19,10 +20,84 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 )
+
+func Test_Send(t *testing.T) {
+	config.SetAIcallSendCooldownSecondsForTest(3)
+
+	type mocks struct {
+		util    *utilhandler.MockUtilHandler
+		req     *requesthandler.MockRequestHandler
+		db      *dbhandler.MockDBHandler
+		message *messagehandler.MockMessageHandler
+	}
+
+	tests := []struct {
+		name string
+
+		aicallID uuid.UUID
+
+		mockSetup func(ctx context.Context, m *mocks)
+
+		expectErr          bool
+		expectErrSubstring string
+	}{
+		{
+			name:     "within cooldown -- rejected before dispatch",
+			aicallID: uuid.FromStringOrNil("60000000-0001-11f0-ffff-000000000001"),
+
+			mockSetup: func(ctx context.Context, m *mocks) {
+				recentTM := time.Now().Add(-1 * time.Second) // inside the 3s cooldown
+				m.db.EXPECT().AIcallGet(ctx, uuid.FromStringOrNil("60000000-0001-11f0-ffff-000000000001")).Return(&aicall.AIcall{
+					Identity:      commonidentity.Identity{ID: uuid.FromStringOrNil("60000000-0001-11f0-ffff-000000000001")},
+					ReferenceType: aicall.ReferenceTypeContactCase,
+					TMUpdate:      &recentTM,
+				}, nil)
+			},
+			expectErr:          true,
+			expectErrSubstring: "cooldown",
+		},
+	}
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+			m := &mocks{
+				util:    utilhandler.NewMockUtilHandler(mc),
+				req:     requesthandler.NewMockRequestHandler(mc),
+				db:      dbhandler.NewMockDBHandler(mc),
+				message: messagehandler.NewMockMessageHandler(mc),
+			}
+			h := &aicallHandler{
+				utilHandler:    m.util,
+				reqHandler:     m.req,
+				db:             m.db,
+				messageHandler: m.message,
+			}
+			tt.mockSetup(ctx, m)
+
+			_, err := h.Send(ctx, tt.aicallID, message.RoleUser, "hello", false, false)
+			if tt.expectErr {
+				if err == nil {
+					t.Errorf("Send() expected error, got nil")
+				} else if tt.expectErrSubstring != "" && !strings.Contains(err.Error(), tt.expectErrSubstring) {
+					t.Errorf("Send() error = %v, want substring %q", err, tt.expectErrSubstring)
+				}
+				return
+			}
+			if err != nil {
+				t.Errorf("Send() unexpected error: %v", err)
+			}
+		})
+	}
+}
 
 func Test_SendReferenceTypeOthers(t *testing.T) {
 	tests := []struct {

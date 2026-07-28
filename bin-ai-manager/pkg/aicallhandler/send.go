@@ -2,9 +2,11 @@ package aicallhandler
 
 import (
 	"context"
+	"monorepo/bin-ai-manager/internal/config"
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
 	"monorepo/bin-ai-manager/pkg/messagehandler"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -15,6 +17,13 @@ func (h *aicallHandler) Send(ctx context.Context, id uuid.UUID, role message.Rol
 	c, err := h.Get(ctx, id)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get the aicall correctly")
+	}
+
+	if c.TMUpdate != nil {
+		cooldown := time.Duration(config.Get().AIcallSendCooldownSeconds) * time.Second
+		if elapsed := time.Since(*c.TMUpdate); elapsed < cooldown {
+			return nil, errors.Errorf("send cooldown: aicall %s was updated %s ago, minimum interval is %s", id, elapsed.Round(time.Millisecond), cooldown)
+		}
 	}
 
 	switch c.ReferenceType {
