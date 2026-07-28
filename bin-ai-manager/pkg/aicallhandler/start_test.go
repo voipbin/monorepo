@@ -3614,6 +3614,12 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 		// (promAIcallContactCaseRecreateRateLimitedTotal) MUST increment by
 		// exactly 1 across the call. When false, it is not asserted.
 		expectRateLimitedInc bool
+
+		// expectIdleExpiredInc — when true, the idle-expired counter
+		// (promAIcallIdleExpiredTotal, shared with the conversation reuse
+		// path) MUST increment by at least 1 across the call. When false,
+		// it is not asserted.
+		expectIdleExpiredInc bool
 	}{
 		{
 			name: "create succeeds on first attempt",
@@ -4316,6 +4322,7 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				Status: aicall.StatusProgressing,
 			},
 			expectRateLimitedInc: false, // the whole point of this test: NOT rate-limited
+			expectIdleExpiredInc: true,
 		},
 		{
 			name: "duplicate key — existing stuck at Initiating AND idle-expired — idle-expiry takes precedence, terminates and retries instead of resuming",
@@ -4407,6 +4414,7 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				Status: aicall.StatusProgressing,
 			},
 			expectRateLimitedInc: false, // idle-expiry path deliberately skips the recreate rate limit
+			expectIdleExpiredInc: true,
 		},
 	}
 
@@ -4438,12 +4446,22 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 			if tt.expectRateLimitedInc {
 				beforeRateLimited = testutil.ToFloat64(promAIcallContactCaseRecreateRateLimitedTotal)
 			}
+			var beforeIdleExpired float64
+			if tt.expectIdleExpiredInc {
+				beforeIdleExpired = testutil.ToFloat64(promAIcallIdleExpiredTotal)
+			}
 
 			res, err := h.startReferenceTypeContactCase(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceID, nil, uuid.Nil)
 			if tt.expectRateLimitedInc {
 				afterRateLimited := testutil.ToFloat64(promAIcallContactCaseRecreateRateLimitedTotal)
 				if afterRateLimited-beforeRateLimited < 1 {
 					t.Errorf("expected rate-limited counter to increment by at least 1, got delta=%f", afterRateLimited-beforeRateLimited)
+				}
+			}
+			if tt.expectIdleExpiredInc {
+				afterIdleExpired := testutil.ToFloat64(promAIcallIdleExpiredTotal)
+				if afterIdleExpired-beforeIdleExpired < 1 {
+					t.Errorf("expected idle-expired counter to increment by at least 1, got delta=%f", afterIdleExpired-beforeIdleExpired)
 				}
 			}
 			if tt.expectErr {
