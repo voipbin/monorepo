@@ -38,7 +38,31 @@ Rollout order matches the design's §7: Tasks 1-3 (`bin-ai-manager`) and 4-7 (`b
 
 - [ ] **Step 1: Write the failing test**
 
-**Round-1 plan-review finding (blocking):** this task's code change moves the return point of every successful-create branch in `startReferenceTypeContactCase` — it doesn't just add a new outcome, it adds calls to the *existing* `"create succeeds on first attempt"` case (`~line 3616`) and the `"duplicate key — existing terminated, retry create succeeds"` case's second attempt (`~line 3753`), both of which currently mock only through `AIcallGet`+`PublishWebhookEvent(EventTypeStatusInitializing)` and would panic on the new unexpected calls. Update BOTH of those existing cases' `mockSetup` to append, after their existing `m.message.EXPECT().Create(...)` line, the same five calls the new test case below adds (`m.message.EXPECT().List(...)`, `PipecatV1PipecatcallStart`, `PipecatV1PipecatcallTerminateWithDelay`, `AIcallUpdate` for `StatusProgressing`, and a second `AIcallGet`) — substitute each case's own `aicallID`/`created` variables. Also update each case's `expectRes` to `Status: aicall.StatusProgressing` instead of `aicall.StatusInitiating`, since that's what the function now actually returns.
+**Round-1/Round-2 plan-review finding (blocking):** this task's code change moves the return point of EVERY successful-create branch in `startReferenceTypeContactCase` — not just the new outcome below. `Test_startReferenceTypeContactCase` currently has **four** cases that end in a successful create and mock only through `m.message.EXPECT().Create(...)` + `PublishWebhookEvent(EventTypeStatusInitializing)`, all of which would panic on the new unexpected calls this task adds:
+
+| Case name | ~line | Final-attempt variables (aicallID / created / pipecatcallID) |
+|---|---|---|
+| `"create succeeds on first attempt"` | 3616 | `aicallID` / `created` / `pipecatcallID` |
+| `"duplicate key — existing terminated, retry create succeeds"` | 3709 | `aicallID2` / `created` / `pipecatcallID2` |
+| `"duplicate key — existing terminated outside rate limit window, retries successfully"` | 3900 | `aicallID2` / `created` / `pipecatcallID2` |
+| `"duplicate key — existing terminated with no TMEnd/TMUpdate, fail-open retries successfully"` | 3968 | `aicallID2` / `created` / `pipecatcallID2` |
+
+For **all four**, append this block right after the case's existing `m.message.EXPECT().Create(...)` line (substituting that case's own `aicallID`/`created`/`pipecatcallID` variable names from the table above):
+
+```go
+				m.message.EXPECT().List(ctx, uint64(100), gomock.Any(), gomock.Any()).Return([]*message.Message{}, nil)
+				responsePC := &pmpipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: uuid.Must(uuid.NewV4())}, HostID: "host-x"}
+				m.req.EXPECT().PipecatV1PipecatcallStart(ctx, created.PipecatcallID, created.CustomerID, created.ActiveflowID, pmpipecatcall.ReferenceTypeAICall, created.ID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(responsePC, nil)
+				m.req.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, responsePC.HostID, responsePC.ID, defaultAITaskTimeout).Return(nil)
+				m.db.EXPECT().AIcallUpdate(ctx, created.ID, map[aicall.Field]any{aicall.FieldStatus: aicall.StatusProgressing}).Return(nil)
+				progressingResult := &aicall.AIcall{Identity: created.Identity, ActiveflowID: created.ActiveflowID, ReferenceType: created.ReferenceType, ReferenceID: created.ReferenceID, Status: aicall.StatusProgressing}
+				m.db.EXPECT().AIcallGet(ctx, created.ID).Return(progressingResult, nil)
+				m.notify.EXPECT().PublishWebhookEvent(ctx, progressingResult.CustomerID, aicall.EventTypeStatusProgressing, progressingResult)
+```
+
+(Use a fixed, deterministic UUID literal for `responsePC`'s `ID` in each case rather than `uuid.Must(uuid.NewV4())` — the snippet above uses a random one only as shorthand; pick a next-in-sequence literal consistent with that case's existing UUID numbering scheme, matching how the new test case below does it.)
+
+Then, in each of these four cases' `expectRes`, change `Status: aicall.StatusInitiating` to `Status: aicall.StatusProgressing` — that's what the function now actually returns on every genuine-create success.
 
 Then add this NEW test case to the `tests` table, right after the (now-updated) `"create succeeds on first attempt"` case (`~line 3663`):
 
@@ -640,10 +664,14 @@ func Test_ServiceAgentAIcallCreate(t *testing.T) {
 					ID: uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-000000000010"),
 				},
 			},
+			// ActiveflowID matches responseActiveflow.ID above -- this is the
+			// genuine-create path (Round 2 review finding), so Task 7's
+			// tmp.ActiveflowID != af.ID check must evaluate false here.
 			responseAIcall: &amaicall.AIcall{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("407e793c-efaa-11ef-b0f4-4bdbcd626589"),
 				},
+				ActiveflowID: uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-000000000010"),
 			},
 
 			expectRes: &amaicall.WebhookMessage{
@@ -710,9 +738,12 @@ func Test_ServiceAgentAIcallCreate(t *testing.T) {
 			responseActiveflow: &fmactiveflow.Activeflow{Identity: commonidentity.Identity{
 				ID: uuid.FromStringOrNil("80000000-0007-11f0-2222-000000000001"),
 			}},
-			responseAIcall: &amaicall.AIcall{Identity: commonidentity.Identity{
-				ID: uuid.FromStringOrNil("80000000-0008-11f0-2222-000000000001"),
-			}},
+			// ActiveflowID matches responseActiveflow.ID above -- genuine
+			// create, not reuse (Round 2 review finding).
+			responseAIcall: &amaicall.AIcall{
+				Identity:     commonidentity.Identity{ID: uuid.FromStringOrNil("80000000-0008-11f0-2222-000000000001")},
+				ActiveflowID: uuid.FromStringOrNil("80000000-0007-11f0-2222-000000000001"),
+			},
 
 			expectRes: &amaicall.WebhookMessage{Identity: commonidentity.Identity{
 				ID: uuid.FromStringOrNil("80000000-0008-11f0-2222-000000000001"),
@@ -989,7 +1020,7 @@ Expected: PASS.
 - [ ] **Step 6: Commit**
 
 ```bash
-git add bin-api-manager/pkg/servicehandler/serviceagent_aicall.go bin-api-manager/pkg/servicehandler/serviceagent_aicall_test.go
+git add bin-api-manager/pkg/servicehandler/serviceagent_aicall.go bin-api-manager/pkg/servicehandler/serviceagent_aicall_test.go bin-api-manager/gens/openapi_server/gen.go
 git commit -m "NOJIRA-Aicalls-add-messages-endpoint: Add case-ownership check, server-side Insight AI resolution, and activeflow-leak cleanup
 
 - bin-api-manager: ServiceAgentAIcallCreate now rejects contact_case references belonging to a foreign customer, resolves assistance_id automatically when omitted for assistance_type=ai + reference_type=contact_case, and deletes its freshly-created activeflow whenever AIV1AIcallStart returns a reused aicall"
@@ -999,22 +1030,33 @@ git commit -m "NOJIRA-Aicalls-add-messages-endpoint: Add case-ownership check, s
 
 ## Task 8: RST doc sync
 
+**Round-2 plan-review finding:** `docsdev/source/` has exactly one AIcall-related page today (confirmed via `grep -rln "service_agents/aicalls\|service_agents/aimessages" bin-api-manager/docsdev/source/` returning nothing, and `ls docsdev/source | grep -i "aicall\|service_agent"` returning only `aicall_struct_aicall.rst`) — a pure struct-field reference (Assistance Type / Reference Type / Status tables + one JSON example, `~148 lines`), no prose overview page for `service_agents` endpoint behavior exists to extend. Rather than leave "find the right file" open, this task appends a new section to the END of that same file — the only real choice available today.
+
 **Files:**
-- Modify: `bin-api-manager/docsdev/source/aicall_struct_aicall.rst` (or the closest matching resource page — find it first, see Step 1)
+- Modify: `bin-api-manager/docsdev/source/aicall_struct_aicall.rst` (append after the existing JSON example, currently ending `~line 148`)
 
-- [ ] **Step 1: Find the right file**
+- [ ] **Step 1: Append the new section**
 
-Run: `grep -rln "service_agents/aicalls\|service_agents/aimessages" bin-api-manager/docsdev/source/`
+Add to the end of `aicall_struct_aicall.rst`:
 
-If a `service_agents`-specific overview page exists, edit that. If (as of this writing) only `aicall_struct_aicall.rst` documents the AIcall resource generally, add a subsection there instead — follow whatever heading/section convention that file already uses for documenting error responses (look for how other endpoints in the same file document their error conditions, and match that format exactly).
+```rst
 
-- [ ] **Step 2: Document the new behavior**
+Service Agent Endpoint Behavior
+--------------------------------
 
-Add a short section (RST format, matching the surrounding file's heading level) covering:
-1. `POST /service_agents/aicalls`: `assistance_id` is now optional when `assistance_type=ai` and `reference_type=contact_case` — the customer's own `type=insight` AI is resolved automatically. Returns `404 RESOURCE_NOT_FOUND` if the customer has no Insight AI configured. Returns `403 PERMISSION_DENIED` if `reference_id` (for `contact_case`) doesn't belong to the caller's own customer.
-2. `POST /service_agents/aimessages`: may now be rejected with a cooldown error if called again on the same `aicall_id` within a short window of the previous send (default 3 seconds).
+``POST /service_agents/aicalls``: ``assistance_id`` is optional when
+``assistance_type=ai`` and ``reference_type=contact_case`` — the
+customer's own ``type=insight`` AI is resolved automatically. Returns
+``404 RESOURCE_NOT_FOUND`` if the customer has no Insight AI configured.
+Returns ``403 PERMISSION_DENIED`` if, for ``reference_type=contact_case``,
+``reference_id`` does not belong to the caller's own customer.
 
-- [ ] **Step 3: Rebuild the docs**
+``POST /service_agents/aimessages``: may be rejected with a cooldown
+error if called again on the same ``aicall_id`` within a short window of
+the previous send (default 3 seconds).
+```
+
+- [ ] **Step 2: Rebuild the docs**
 
 Run:
 ```bash
@@ -1022,7 +1064,7 @@ cd bin-api-manager/docsdev && rm -rf build && python3 -m sphinx -M html source b
 ```
 Expected: clean build, no Sphinx errors/warnings about the new section.
 
-- [ ] **Step 4: Commit**
+- [ ] **Step 3: Commit**
 
 ```bash
 cd bin-api-manager/docsdev
