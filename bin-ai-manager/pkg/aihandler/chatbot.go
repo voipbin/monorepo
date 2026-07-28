@@ -12,7 +12,6 @@ import (
 	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/aiprompthistory"
 	"monorepo/bin-ai-manager/models/tool"
-	"monorepo/bin-ai-manager/pkg/dbhandler"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	"monorepo/bin-common-handler/models/identity"
 	commonoutline "monorepo/bin-common-handler/models/outline"
@@ -76,12 +75,8 @@ func (h *aiHandler) Create(
 		initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled,
 		autoAICallAuditEnabled, currentPromptHistoryID)
 	if err != nil {
-		if dbhandler.IsErrDuplicate(err) {
-			return nil, cerrors.AlreadyExists(
-				commonoutline.ServiceNameAIManager,
-				"AI_INSIGHT_ALREADY_EXISTS",
-				"This customer already has an active Insight AI. Delete it before creating another.",
-			).Wrap(err)
+		if dupErr := aiInsightDuplicateErr(err); dupErr != nil {
+			return nil, dupErr
 		}
 		return nil, errors.Wrapf(err, "could not create ai")
 	}
@@ -174,12 +169,8 @@ func (h *aiHandler) Update(
 			ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled, autoAICallAuditEnabled)
 		fields[ai.FieldCurrentPromptHistoryID] = historyID
 		if err := h.db.AIUpdate(ctx, id, fields); err != nil {
-			if dbhandler.IsErrDuplicate(err) {
-				return nil, cerrors.AlreadyExists(
-					commonoutline.ServiceNameAIManager,
-					"AI_INSIGHT_ALREADY_EXISTS",
-					"This customer already has an active Insight AI. Delete it before creating another.",
-				).Wrap(err)
+			if dupErr := aiInsightDuplicateErr(err); dupErr != nil {
+				return nil, dupErr
 			}
 			return nil, errors.Wrapf(err, "could not update ai")
 		}
@@ -205,12 +196,8 @@ func (h *aiHandler) Update(
 			ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled, autoAICallAuditEnabled)
 		fields[ai.FieldCurrentPromptHistoryID] = uuid.Nil
 		if err := h.db.AIUpdate(ctx, id, fields); err != nil {
-			if dbhandler.IsErrDuplicate(err) {
-				return nil, cerrors.AlreadyExists(
-					commonoutline.ServiceNameAIManager,
-					"AI_INSIGHT_ALREADY_EXISTS",
-					"This customer already has an active Insight AI. Delete it before creating another.",
-				).Wrap(err)
+			if dupErr := aiInsightDuplicateErr(err); dupErr != nil {
+				return nil, dupErr
 			}
 			return nil, errors.Wrapf(err, "could not update ai (clear prompt)")
 		}
