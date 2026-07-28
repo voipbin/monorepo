@@ -59,6 +59,31 @@ Migration file: created via `alembic revision` in `bin-dbscheme-manager`
 `_column_exists` / `_index_exists` idempotency-guard pattern already used in
 `a5a40c93d3e6_...` so a partially-applied migration can be safely re-run.
 
+**Operational cost (inherited from the precedent, not new):** the cited
+`a5a40c93d3e6_ai_aicalls_add_active_reference_key_.py` migration's own
+history documents that `ADD COLUMN ... STORED` on a populated table forces
+MySQL to rewrite the entire table in place, holding a metadata/table lock
+for the duration; that migration is the exact incident this design mirrors,
+including partial-failure retries against a stale generated-column
+definition (which is why the `_column_exists`/`_index_exists` idempotency
+guards exist at all). This design inherits the same risk class on `ai_ais`.
+Before the migration is applied to any non-local environment:
+- Confirm `ai_ais`'s current row count and expected rewrite duration are
+  acceptable for an in-place `ALTER`; if the table is large enough that the
+  lock duration would be customer-visible, use the same mitigation the
+  precedent's follow-up used (a maintenance window) or an online schema
+  tool (`pt-online-schema-change` / `gh-ost`) instead of a bare `ALTER
+  TABLE`.
+- This decision is an ops call at apply time, not something this design
+  file fixes in advance; it is called out here so it isn't missed the way
+  it was on the precedent.
+
+**Downgrade:** mirrors the precedent 1:1 — `DROP INDEX
+uq_ai_active_insight_key ON ai_ais` followed by `ALTER TABLE ai_ais DROP
+COLUMN active_insight_key`, guarded by the same `_index_exists` /
+`_column_exists` checks used on the way up so the downgrade is also safe to
+re-run against a partially-applied state.
+
 ### 2. API-level error handling
 
 Both `aihandler.Create` and `aihandler.Update` (`bin-ai-manager/pkg/aihandler`)
@@ -153,10 +178,13 @@ prohibits AI-run schema/data changes against non-local databases):
 ### 4. Testing
 
 - `dbhandler`: table-driven test creating two `type=insight` AIs for the
-  same `customer_id` — second `AICreate` must return an error satisfying
-  `IsErrDuplicate`. A third AI after soft-deleting the first two must
-  succeed. A second `type=normal` AI for the same customer must always
-  succeed (regression guard for the non-goal).
+  same `customer_id` — the first `AICreate` succeeds, the second must
+  return an error satisfying `IsErrDuplicate` (no second row is ever
+  persisted, since the unique index rejects it at insert time). A second
+  `AICreate` attempt after soft-deleting the first must then succeed,
+  proving the generated column frees the slot once the original row's
+  `tm_delete` is set. A second `type=normal` AI for the same customer must
+  always succeed (regression guard for the non-goal).
 - `aihandler`: `Create` and `Update` unit tests asserting the duplicate-key
   path returns a `cerrors.VoipbinError` with `StatusAlreadyExists` and
   reason `AI_INSIGHT_ALREADY_EXISTS`, using a mock `dbhandler` that returns
