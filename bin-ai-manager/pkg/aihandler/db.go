@@ -20,6 +20,21 @@ import (
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 )
 
+// aiInsightDuplicateErr translates a duplicate-key failure on
+// ai_ais.active_insight_key into a customer-facing 409 AlreadyExists
+// error. Returns nil if err is not a duplicate-key error, signaling the
+// caller should fall through to its own generic wrap.
+func aiInsightDuplicateErr(err error) error {
+	if !dbhandler.IsErrDuplicate(err) {
+		return nil
+	}
+	return cerrors.AlreadyExists(
+		commonoutline.ServiceNameAIManager,
+		"AI_INSIGHT_ALREADY_EXISTS",
+		"This customer already has an active Insight AI. Delete it before creating another.",
+	).Wrap(err)
+}
+
 // Create creates a new ai record.
 func (h *aiHandler) dbCreate(
 	ctx context.Context,
@@ -194,6 +209,9 @@ func (h *aiHandler) dbUpdate(
 		ttsType, ttsVoice, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled, autoAICallAuditEnabled)
 
 	if err := h.db.AIUpdate(ctx, id, fields); err != nil {
+		if dupErr := aiInsightDuplicateErr(err); dupErr != nil {
+			return nil, dupErr
+		}
 		return nil, errors.Wrapf(err, "could not update ai")
 	}
 

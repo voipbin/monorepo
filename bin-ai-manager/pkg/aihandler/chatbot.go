@@ -75,6 +75,9 @@ func (h *aiHandler) Create(
 		initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled,
 		autoAICallAuditEnabled, currentPromptHistoryID)
 	if err != nil {
+		if dupErr := aiInsightDuplicateErr(err); dupErr != nil {
+			return nil, dupErr
+		}
 		return nil, errors.Wrapf(err, "could not create ai")
 	}
 
@@ -166,6 +169,9 @@ func (h *aiHandler) Update(
 			ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled, autoAICallAuditEnabled)
 		fields[ai.FieldCurrentPromptHistoryID] = historyID
 		if err := h.db.AIUpdate(ctx, id, fields); err != nil {
+			if dupErr := aiInsightDuplicateErr(err); dupErr != nil {
+				return nil, dupErr
+			}
 			return nil, errors.Wrapf(err, "could not update ai")
 		}
 		res, err := h.db.AIGet(ctx, id)
@@ -190,6 +196,9 @@ func (h *aiHandler) Update(
 			ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled, autoAICallAuditEnabled)
 		fields[ai.FieldCurrentPromptHistoryID] = uuid.Nil
 		if err := h.db.AIUpdate(ctx, id, fields); err != nil {
+			if dupErr := aiInsightDuplicateErr(err); dupErr != nil {
+				return nil, dupErr
+			}
 			return nil, errors.Wrapf(err, "could not update ai (clear prompt)")
 		}
 		res, err := h.db.AIGet(ctx, id)
