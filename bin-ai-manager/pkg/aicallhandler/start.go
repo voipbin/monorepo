@@ -466,6 +466,12 @@ func (h *aicallHandler) startReferenceTypeContactCase(
 		}
 
 		if h.isAIcallIdleExpired(existing) {
+			// This check runs strictly before the StatusInitiating check below,
+			// so a row that is both stuck at Initiating AND idle-expired is
+			// terminated and recreated here, not resumed via startContactCaseTurn —
+			// a startPipecatcall that has been stuck for a full idle-timeout window
+			// is dead, not worth resuming.
+			//
 			// Still "live" by status, but idle past the configured timeout.
 			// Terminate it explicitly and retry — deliberately WITHOUT the
 			// recreate rate limit, which exists to bound someone else's very
