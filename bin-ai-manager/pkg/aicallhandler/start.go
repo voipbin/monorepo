@@ -372,7 +372,11 @@ const maxContactCaseCreateRetries = 3
 //  2. On success, return it.
 //  3. On a duplicate-key (1062) conflict, re-fetch the existing AIcall by
 //     reference_id.
-//     - If it is still active (not Terminated/Terminating): if its status is
+//     - If it is still active (not Terminated/Terminating): if it has been
+//     idle longer than the configured idle timeout (isAIcallIdleExpired),
+//     it is explicitly terminated and the create is retried — deliberately
+//     without the recreate rate-limit guard, which does not apply to this
+//     AIcall's own organic idle expiry. Otherwise, if its status is
 //     Initiating, the prior attempt's startPipecatcall likely never
 //     completed (status only advances to Progressing after that succeeds) —
 //     retry the turn-start sequence on it via startContactCaseTurn instead
@@ -457,6 +461,29 @@ func (h *aicallHandler) startReferenceTypeContactCase(
 			}
 
 			log.Infof("Existing AIcall for contact_case is terminated/terminating — retrying create. aicall_id: %s, attempt: %d", existing.ID, attempt+1)
+			lastErr = err
+			continue
+		}
+
+		if h.isAIcallIdleExpired(existing) {
+			// Still "live" by status, but idle past the configured timeout.
+			// Terminate it explicitly and retry — deliberately WITHOUT the
+			// recreate rate limit, which exists to bound someone else's very
+			// recent explicit termination, not this AIcall's own long idle
+			// gap. checkContactCaseRecreateRateLimit measures elapsed time
+			// from TMEnd/TMUpdate; evaluating it right after this fix's own
+			// UpdateStatus call would trip it on every idle-reopen and lock
+			// the case out for the rate-limit window right when an agent
+			// reopens a long-idle case — the opposite of the intended fix.
+			// AIcallConversationIdleTimeoutHours (hours) is expected to be
+			// far larger than AIcallContactCaseRecreateRateLimitMinutes
+			// (minutes), so an idle-expired row is, by construction,
+			// already well past any rate-limit window.
+			log.Infof("Existing AIcall for contact_case is idle-expired — terminating and retrying create. aicall_id: %s, attempt: %d", existing.ID, attempt+1)
+			promAIcallIdleExpiredTotal.Inc()
+			if _, errEnd := h.UpdateStatus(ctx, existing.ID, aicall.StatusTerminated); errEnd != nil {
+				log.Warnf("Could not terminate idle AIcall: %v", errEnd)
+			}
 			lastErr = err
 			continue
 		}
