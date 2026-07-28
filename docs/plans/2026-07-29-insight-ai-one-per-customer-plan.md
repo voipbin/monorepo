@@ -81,11 +81,17 @@ func Test_AICreate_InsightUniquePerCustomer(t *testing.T) {
 		t.Errorf("normal-type AICreate for same customer: expected ok, got: %v", err)
 	}
 
-	// soft-delete the first insight AI, freeing the slot
+	// soft-delete the first insight AI, freeing the slot.
+	// AIDelete's real cache interaction is TimeNow + aiUpdateToCache (which
+	// reads back via a DB query, not cache.AIGet, then calls cache.AISet) —
+	// see bin-ai-manager/pkg/dbhandler/ai.go:128-151 and the aiUpdateToCache
+	// helper at ai.go:87-98. The AISet call is already covered by the
+	// mockCache.EXPECT().AISet(ctx, gomock.Any()).AnyTimes() set up above;
+	// AIDelete never calls cache.AIGet, so no such expectation is set here
+	// (unlike the separate, subsequent h.AIGet call in the Test_AIDelete
+	// precedent at ai_test.go:186-192, which does call cache.AIGet).
 	t4 := time.Date(2026, 7, 29, 0, 0, 3, 0, time.UTC)
 	mockUtil.EXPECT().TimeNow().Return(&t4)
-	mockCache.EXPECT().AIGet(ctx, firstID).Return(nil, fmt.Errorf(""))
-	mockCache.EXPECT().AISet(ctx, gomock.Any())
 	if err := h.AIDelete(ctx, firstID); err != nil {
 		t.Fatalf("AIDelete(first): expected ok, got: %v", err)
 	}
@@ -225,7 +231,7 @@ Never hand-author this file's `revision`/`down_revision` IDs — always generate
 
 - [ ] **Step 3: Fill in `upgrade()` / `downgrade()`**
 
-Edit the generated file. Replace its body with (keep the auto-generated `revision`/`down_revision`/`branch_labels`/`depends_on` values at the top exactly as generated — do not edit those):
+Edit the generated file. **Do not touch the `revision`/`down_revision`/`branch_labels`/`depends_on` block that `alembic revision` already wrote at the top of the file — leave those four lines exactly as generated.** Replace everything else (the docstring and the `upgrade()`/`downgrade()` bodies) with the content below. The `revision = ...` / `down_revision = ...` lines shown in this snippet are illustrative only, marking where that existing block sits in the file — do not copy them over the real generated values:
 
 ```python
 """ai_ais_add_active_insight_key_unique
@@ -254,11 +260,12 @@ from alembic import op
 import sqlalchemy as sa
 
 
-# revision identifiers, used by Alembic.
-revision = '<KEEP THE AUTO-GENERATED VALUE>'
-down_revision = '<KEEP THE AUTO-GENERATED VALUE>'
-branch_labels = None
-depends_on = None
+# --- revision identifiers, used by Alembic. -------------------------------
+# DO NOT COPY/PASTE this block. `alembic revision` (Step 2) already wrote the
+# real `revision`, `down_revision`, `branch_labels`, and `depends_on` values
+# at the top of the generated file — leave those four lines untouched and
+# skip straight to the `def _column_exists(...)` line below when editing.
+# ---------------------------------------------------------------------------
 
 
 def _column_exists(conn, table, column):
@@ -310,7 +317,7 @@ def downgrade():
         """)
 ```
 
-Keep the `revision`/`down_revision` values exactly as `alembic revision` generated them in Step 2 — do not paste over them with the placeholder text shown above.
+Reminder: the `revision`/`down_revision`/`branch_labels`/`depends_on` block is not part of the snippet above — it must stay exactly as `alembic revision` generated it in Step 2.
 
 - [ ] **Step 4: Verify exactly one head remains**
 
