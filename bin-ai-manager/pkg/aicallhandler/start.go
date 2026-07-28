@@ -418,27 +418,17 @@ func (h *aicallHandler) startReferenceTypeContactCase(
 			// Trigger the first AI turn exactly once, only here — this branch
 			// runs only when the INSERT genuinely succeeded (no duplicate-key
 			// retry involved), so there is no risk of double-triggering.
-			pc, errStart := h.startPipecatcall(ctx, res)
-			if errStart != nil {
-				return nil, errors.Wrapf(errStart, "could not start pipecatcall for contact_case aicall. aicall_id: %s", res.ID)
-			}
-			log.WithField("pipecatcall", pc).Debugf("Started pipecatcall for contact_case aicall. aicall_id: %s", res.ID)
-
-			// note: the aicall is already committed at this point, so a failure to
-			// schedule termination does not undo any side effect and returning an
-			// error here would only strand the aicall at StatusInitiating. Log and
-			// continue, mirroring startReferenceTypeConversation's handling of the
-			// same call.
-			if errTerm := h.reqHandler.PipecatV1PipecatcallTerminateWithDelay(ctx, pc.HostID, pc.ID, defaultAITaskTimeout); errTerm != nil {
-				log.Errorf("Could not send the pipecatcall terminate request correctly. err: %v", errTerm)
-			}
-			if updated, errStatus := h.UpdateStatus(ctx, res.ID, aicall.StatusProgressing); errStatus != nil {
-				log.Warnf("Could not update status to Progressing — continuing anyway. aicall_id: %s, err: %v", res.ID, errStatus)
-			} else {
-				res = updated
+			// Status is intentionally advanced to Progressing AFTER the
+			// pipecatcall is started (not before, unlike
+			// startReferenceTypeConversation) — this leaves the row at
+			// StatusInitiating if startPipecatcall fails, which is exactly the
+			// signal the duplicate-key reuse branch below uses to retry.
+			updated, errTurn := h.startContactCaseTurn(ctx, log, res)
+			if errTurn != nil {
+				return nil, errTurn
 			}
 
-			return res, nil
+			return updated, nil
 		}
 
 		if !dbhandler.IsErrDuplicate(err) {
@@ -467,11 +457,58 @@ func (h *aicallHandler) startReferenceTypeContactCase(
 			continue
 		}
 
+		if existing.Status == aicall.StatusInitiating {
+			// A row still sitting at Initiating after a genuine create can only
+			// mean startPipecatcall never succeeded for it — the happy path
+			// above always advances to Progressing immediately after
+			// startPipecatcall succeeds. Retry the turn-starting sequence on
+			// this existing row instead of returning it stuck forever.
+			log.WithField("aicall", existing).Infof("Existing aicall for contact_case is stuck at Initiating — retrying pipecatcall start. aicall_id: %s", existing.ID)
+			updated, errTurn := h.startContactCaseTurn(ctx, log, existing)
+			if errTurn != nil {
+				return nil, errTurn
+			}
+
+			return updated, nil
+		}
+
 		log.WithField("aicall", existing).Debugf("Reusing existing active aicall for contact_case. aicall_id: %s", existing.ID)
 		return existing, nil
 	}
 
 	return nil, errors.Wrapf(lastErr, "could not create aicall for contact_case after %d retries. reference_id: %s", maxContactCaseCreateRetries, referenceID)
+}
+
+// startContactCaseTurn starts the pipecatcall for the given contact_case
+// AIcall, schedules a delayed terminate for it (log-and-continue on failure),
+// and advances the AIcall to StatusProgressing (warn-and-continue on
+// failure). Shared by both the genuine-create path and the duplicate-key
+// reuse-retry path in startReferenceTypeContactCase so the
+// start+terminate+advance sequence is defined once.
+func (h *aicallHandler) startContactCaseTurn(ctx context.Context, log *logrus.Entry, c *aicall.AIcall) (*aicall.AIcall, error) {
+	pc, errStart := h.startPipecatcall(ctx, c)
+	if errStart != nil {
+		return nil, errors.Wrapf(errStart, "could not start pipecatcall for contact_case aicall. aicall_id: %s", c.ID)
+	}
+	log.WithField("pipecatcall", pc).Debugf("Started pipecatcall for contact_case aicall. aicall_id: %s", c.ID)
+
+	// note: the aicall is already committed at this point, so a failure to
+	// schedule termination does not undo any side effect and returning an
+	// error here would only strand the aicall at StatusInitiating. Log and
+	// continue, mirroring startReferenceTypeConversation's handling of the
+	// same call.
+	if errTerm := h.reqHandler.PipecatV1PipecatcallTerminateWithDelay(ctx, pc.HostID, pc.ID, defaultAITaskTimeout); errTerm != nil {
+		log.Errorf("Could not send the pipecatcall terminate request correctly. err: %v", errTerm)
+	}
+
+	res := c
+	if updated, errStatus := h.UpdateStatus(ctx, c.ID, aicall.StatusProgressing); errStatus != nil {
+		log.Warnf("Could not update status to Progressing — continuing anyway. aicall_id: %s, err: %v", c.ID, errStatus)
+	} else {
+		res = updated
+	}
+
+	return res, nil
 }
 
 // checkContactCaseRecreateRateLimit implements the VOIP-1234 §2-1 recreate rate

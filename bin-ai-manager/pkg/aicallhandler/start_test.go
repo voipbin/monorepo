@@ -4171,6 +4171,67 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				Status:        aicall.StatusProgressing,
 			},
 		},
+		{
+			name: "duplicate key — existing stuck at Initiating, retries pipecatcall start and advances to Progressing",
+
+			ai: &ai.AI{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("92000000-0001-11f0-5555-000000000001"),
+					CustomerID: uuid.FromStringOrNil("92000000-0002-11f0-5555-000000000001"),
+				},
+				EngineModel: ai.EngineModelOpenaiGPT5,
+			},
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   uuid.FromStringOrNil("92000000-0001-11f0-5555-000000000001"),
+			activeflowID:   uuid.FromStringOrNil("92000000-0003-11f0-5555-000000000001"),
+			referenceID:    uuid.FromStringOrNil("92000000-0004-11f0-5555-000000000001"),
+
+			mockSetup: func(ctx context.Context, m *mocks) {
+				pipecatcallID := uuid.FromStringOrNil("92000000-0005-11f0-5555-000000000001")
+				aicallID := uuid.FromStringOrNil("92000000-0006-11f0-5555-000000000001")
+
+				// existing row from a prior genuine create whose startPipecatcall
+				// never succeeded — it is still sitting at StatusInitiating.
+				existingInitiating := &aicall.AIcall{
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("92000000-0007-11f0-5555-000000000001"),
+						CustomerID: uuid.FromStringOrNil("92000000-0002-11f0-5555-000000000001"),
+					},
+					ActiveflowID:  uuid.FromStringOrNil("92000000-0003-11f0-5555-000000000001"),
+					ReferenceType: aicall.ReferenceTypeContactCase,
+					ReferenceID:   uuid.FromStringOrNil("92000000-0004-11f0-5555-000000000001"),
+					Status:        aicall.StatusInitiating,
+				}
+
+				// attempt 0: duplicate key, existing is stuck at Initiating -> retry
+				// the pipecatcall-start sequence on the existing row instead of
+				// retrying the create.
+				m.util.EXPECT().UUIDCreate().Return(pipecatcallID)
+				m.util.EXPECT().UUIDCreate().Return(aicallID)
+				m.db.EXPECT().AIcallCreate(ctx, gomock.Any()).Return(fmt.Errorf("Error 1062: Duplicate entry 'x' for key 'uq_aicall_active_reference_key'"))
+				m.db.EXPECT().AIcallGetByReferenceID(ctx, uuid.FromStringOrNil("92000000-0004-11f0-5555-000000000001")).Return(existingInitiating, nil)
+
+				m.message.EXPECT().List(ctx, uint64(100), gomock.Any(), gomock.Any()).Return([]*message.Message{}, nil)
+				responsePC := &pmpipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("92000000-0008-11f0-5555-000000000001")}, HostID: "host-x"}
+				m.req.EXPECT().PipecatV1PipecatcallStart(ctx, existingInitiating.PipecatcallID, existingInitiating.CustomerID, existingInitiating.ActiveflowID, pmpipecatcall.ReferenceTypeAICall, existingInitiating.ID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(responsePC, nil)
+				m.req.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, responsePC.HostID, responsePC.ID, defaultAITaskTimeout).Return(nil)
+				m.db.EXPECT().AIcallUpdate(ctx, existingInitiating.ID, map[aicall.Field]any{aicall.FieldStatus: aicall.StatusProgressing}).Return(nil)
+				progressingResult := &aicall.AIcall{Identity: existingInitiating.Identity, ActiveflowID: existingInitiating.ActiveflowID, ReferenceType: existingInitiating.ReferenceType, ReferenceID: existingInitiating.ReferenceID, Status: aicall.StatusProgressing}
+				m.db.EXPECT().AIcallGet(ctx, existingInitiating.ID).Return(progressingResult, nil)
+				m.notify.EXPECT().PublishWebhookEvent(ctx, progressingResult.CustomerID, aicall.EventTypeStatusProgressing, progressingResult)
+			},
+
+			expectRes: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("92000000-0007-11f0-5555-000000000001"),
+					CustomerID: uuid.FromStringOrNil("92000000-0002-11f0-5555-000000000001"),
+				},
+				ActiveflowID:  uuid.FromStringOrNil("92000000-0003-11f0-5555-000000000001"),
+				ReferenceType: aicall.ReferenceTypeContactCase,
+				ReferenceID:   uuid.FromStringOrNil("92000000-0004-11f0-5555-000000000001"),
+				Status:        aicall.StatusProgressing,
+			},
+		},
 	}
 
 	for _, tt := range tests {
