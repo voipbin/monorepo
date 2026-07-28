@@ -4,7 +4,7 @@
 
 **Goal:** Make `reference_type=contact_case` AIcalls behave correctly end-to-end through the existing `service_agents` API surface — no new endpoints — so square-admin's Case Insight Assistant panel (separate frontend plan) has a working backend to call.
 
-**Architecture:** Six small, targeted fixes across two existing services in this monorepo: `bin-ai-manager` (`pkg/aicallhandler/start.go`, `send.go`) and `bin-api-manager` (`pkg/servicehandler/serviceagent_aicall.go`), plus one `bin-openapi-manager` spec edit and one RST doc update. No new files except tests.
+**Architecture:** Small, targeted fixes across two existing services in this monorepo: `bin-ai-manager` (`pkg/aicallhandler/start.go`, `send.go`, `models/ai/filters.go`) and `bin-api-manager` (`pkg/servicehandler/serviceagent_aicall.go`, `server/service_agents_aicalls.go`), plus one `bin-openapi-manager` spec edit (regenerating both its own and `bin-api-manager`'s generated code) and one RST doc update. No new files except tests.
 
 **Tech Stack:** Go, gomock (`go.uber.org/mock`), table-driven tests, squirrel (`sq`) for SQL building, MySQL.
 
@@ -26,6 +26,8 @@
 | `bin-api-manager/gens/openapi_server/gen.go` | Regenerated from the above — Task 4 |
 | `bin-api-manager/server/service_agents_aicalls.go` | HTTP handler nil-safe fallout from the above — Task 4 |
 | `bin-api-manager/server/service_agents_aicalls_test.go` | Tests for the above |
+| `bin-ai-manager/models/ai/filters.go` | Add missing `Type` filter field — Task 6 |
+| `bin-ai-manager/models/ai/filters_test.go` | Tests for the above |
 | `bin-api-manager/pkg/servicehandler/serviceagent_aicall.go` | `ServiceAgentAIcallCreate` — Tasks 5, 6, 7 |
 | `bin-api-manager/pkg/servicehandler/serviceagent_aicall_test.go` | Tests for the above |
 | `bin-api-manager/docsdev/source/` | RST doc update — Task 8 |
@@ -1036,6 +1038,65 @@ func (h *serviceHandler) resolveInsightAIID(ctx context.Context, customerID uuid
 
 Add the `amai "monorepo/bin-ai-manager/models/ai"` import (this file currently only imports `amaicall "monorepo/bin-ai-manager/models/aicall"` — a separate package, both needed).
 
+**Round-9 plan-review finding (blocking) — the `"type"` filter is silently dropped in transit, this is a `bin-ai-manager` fix, not just a `bin-api-manager` one.** `AIV1AIList`'s filter map gets re-validated on the `bin-ai-manager` side by `bin-ai-manager/pkg/listenhandler/v1_ais.go:46`'s call to `utilhandler.ConvertFilters[ai.FieldStruct, ai.Field](ai.FieldStruct{}, tmpFilters)`, which only passes through keys present in `ai.FieldStruct`'s `filter:` tags. `bin-ai-manager/models/ai/filters.go`'s current `FieldStruct` has no `Type` field, even though `ai.FieldType = "type"` and `AI.Type` (`db:"type"`) both already exist — so `resolveInsightAIID`'s `"type": string(amai.TypeInsight)` filter is silently discarded, `AIV1AIList` returns the customer's most-recently-created AI of ANY type (not just Insight), and `len(ais) == 0` never fires for a customer with a Normal AI and no Insight AI — the frontend's empty state becomes unreachable in that case, and a Normal AI (with none of the Insight tools, and a normal-purpose system prompt) gets silently bound to the Case session instead.
+
+Fix `bin-ai-manager/models/ai/filters.go`:
+
+```go
+package ai
+
+import "github.com/gofrs/uuid"
+
+// FieldStruct defines allowed filters for AI queries
+// Each field corresponds to a filterable database column
+type FieldStruct struct {
+	CustomerID  uuid.UUID   `filter:"customer_id"`
+	Name        string      `filter:"name"`
+	Detail      string      `filter:"detail"`
+	Type        Type        `filter:"type"`
+	EngineModel EngineModel `filter:"engine_model"`
+	TTSType     TTSType     `filter:"tts_type"`
+	STTType     STTType     `filter:"stt_type"`
+	STTLanguage string      `filter:"stt_language"`
+	Deleted     bool        `filter:"deleted"`
+}
+```
+
+Add `bin-ai-manager/models/ai/filters_test.go`:
+
+```go
+package ai_test
+
+import (
+	"testing"
+
+	"monorepo/bin-ai-manager/models/ai"
+	"monorepo/bin-common-handler/pkg/utilhandler"
+)
+
+func Test_FieldStruct_TypeFilterRoundTrips(t *testing.T) {
+	filters, err := utilhandler.ConvertFilters[ai.FieldStruct, ai.Field](ai.FieldStruct{}, map[string]any{
+		"type": "insight",
+	})
+	if err != nil {
+		t.Fatalf("ConvertFilters() unexpected error: %v", err)
+	}
+
+	got, ok := filters[ai.FieldType]
+	if !ok {
+		t.Fatalf("ConvertFilters() dropped the type filter -- FieldStruct is missing a Type field")
+	}
+	if got != ai.TypeInsight {
+		t.Errorf("ConvertFilters() type filter = %v, want %v", got, ai.TypeInsight)
+	}
+}
+```
+
+Run: `go test ./models/ai/... -run Test_FieldStruct_TypeFilterRoundTrips -v` (from `bin-ai-manager/`)
+Expected (before the `FieldStruct` fix): FAIL — `filters[ai.FieldType]` is missing. After: PASS.
+
+This makes Task 6 a two-service change: `bin-ai-manager/models/ai/filters.go` (+ its test) must ship in the same PR as (or before) the `bin-api-manager` change above — `resolveInsightAIID` is functionally broken without it, even though its own unit test (which mocks `AIV1AIList` directly) can't detect that.
+
 Then modify the tail of `ServiceAgentAIcallCreate` (currently ends at `res := tmp.ConvertWebhookMessage(); return res, nil`) for Task 7:
 
 ```go
@@ -1084,10 +1145,11 @@ Expected: PASS.
 - [ ] **Step 6: Commit**
 
 ```bash
-git add bin-api-manager/pkg/servicehandler/serviceagent_aicall.go bin-api-manager/pkg/servicehandler/serviceagent_aicall_test.go bin-api-manager/gens/openapi_server/gen.go
+git add bin-api-manager/pkg/servicehandler/serviceagent_aicall.go bin-api-manager/pkg/servicehandler/serviceagent_aicall_test.go bin-api-manager/gens/openapi_server/gen.go bin-ai-manager/models/ai/filters.go bin-ai-manager/models/ai/filters_test.go
 git commit -m "NOJIRA-Aicalls-add-messages-endpoint: Add case-ownership check, server-side Insight AI resolution, and activeflow-leak cleanup
 
-- bin-api-manager: ServiceAgentAIcallCreate now rejects contact_case references belonging to a foreign customer, resolves assistance_id automatically when omitted for assistance_type=ai + reference_type=contact_case, and deletes its freshly-created activeflow whenever AIV1AIcallStart returns a reused aicall"
+- bin-api-manager: ServiceAgentAIcallCreate now rejects contact_case references belonging to a foreign customer, resolves assistance_id automatically when omitted for assistance_type=ai + reference_type=contact_case, and deletes its freshly-created activeflow whenever AIV1AIcallStart returns a reused aicall
+- bin-ai-manager: ai.FieldStruct was silently dropping the type filter, which broke resolveInsightAIID's Insight-only scoping -- add it"
 ```
 
 ---
