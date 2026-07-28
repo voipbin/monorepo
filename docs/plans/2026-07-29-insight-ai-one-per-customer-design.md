@@ -89,11 +89,44 @@ if err != nil {
 `HTTPStatusFor` table (`bin-common-handler/models/errors/rpc.go`) — no new
 status code or mapping needed.
 
-The same translation is added at the two duplicate-key-reachable exit
-points in `aihandler.Update` (the `promptChanged` and default/"prompt
-unchanged" branches both call into `h.db.AIUpdate`; `promptCleared` cannot
-change `type`, since clearing the prompt is orthogonal to type, but the
-helper call is added generically so it also covers that branch defensively).
+**Limitation (inherited, not new):** `dbhandler.IsErrDuplicate`
+(`bin-ai-manager/pkg/dbhandler/main.go`) does a blunt substring match on
+`"Duplicate entry"` with no index-name scoping. Once `uq_ai_active_insight_key`
+exists on `ai_ais`, any duplicate-key error on that table — e.g. an
+extremely unlikely `id`/PK collision — would also get mapped to
+`AI_INSIGHT_ALREADY_EXISTS`, which would be a misleading message for that
+case. This weakness pre-dates this design (it already applies to the sole
+prior caller, `aicallhandler/start.go`'s internal race-detection check),
+but it now backs a customer-facing error message rather than an internal
+check, so the risk surface is different. Not fixed as part of this change;
+noted here so a future index-scoped refinement (e.g. matching the index
+name in the error text) can be tracked if it becomes a real issue.
+
+`Update` resolves `aiType` once, before the prompt-state branching
+(`pkg/aihandler/chatbot.go`, the `aiType == ai.TypeNone` fallback block),
+and passes that same resolved `aiType` into `buildUpdateFields` in all
+three branches of the `switch`. So a caller can clear the prompt **and**
+change `type` from `normal` to `insight` in the same request — the
+`promptCleared` branch's `h.db.AIUpdate` call is exactly as
+duplicate-key-reachable as the other two, not "orthogonal to type" as the
+branch name might suggest. All three branches need the translation:
+
+1. `promptChanged` — inline `h.db.AIUpdate` call in `chatbot.go`.
+2. `promptCleared` — inline `h.db.AIUpdate` call in `chatbot.go` (the
+   type-change-while-clearing-prompt case above).
+3. `default` ("prompt unchanged") — `chatbot.go` does not call
+   `h.db.AIUpdate` directly here; it returns `h.dbUpdate(ctx, ...)`, and
+   `dbUpdate` (`pkg/aihandler/db.go`) is the one that calls `h.db.AIUpdate`
+   and returns its error unwrapped. The `IsErrDuplicate` translation for
+   this branch must therefore live inside `dbUpdate` in `db.go`, not in
+   `chatbot.go`. An implementation that only edits `chatbot.go` will leave
+   this branch's duplicate-key errors as raw wrapped SQL errors, missing
+   the AC's rejection guarantee for the most common update path (type
+   unchanged, prompt unchanged).
+
+Concretely: add the `IsErrDuplicate` check around the `h.db.AIUpdate` call
+in each of `chatbot.go`'s `promptChanged` and `promptCleared` branches, and
+around the `h.db.AIUpdate` call inside `dbUpdate` in `db.go`.
 
 ### 3. Existing duplicates (AC: migration/cleanup review)
 
@@ -127,7 +160,18 @@ prohibits AI-run schema/data changes against non-local databases):
 - `aihandler`: `Create` and `Update` unit tests asserting the duplicate-key
   path returns a `cerrors.VoipbinError` with `StatusAlreadyExists` and
   reason `AI_INSIGHT_ALREADY_EXISTS`, using a mock `dbhandler` that returns
-  an error matching `IsErrDuplicate`.
+  an error matching `IsErrDuplicate`. `Update` needs one case per branch
+  that reaches `h.db.AIUpdate`, since each has a separate code path for
+  the translation (see §2):
+  - `promptChanged` with a `type` change to `insight` (duplicate exists).
+  - `promptCleared` with a `type` change to `insight` (duplicate exists)
+    — regression test for the case where clearing the prompt and changing
+    `type` happen in the same request; this is the scenario the original
+    "`promptCleared` cannot change `type`" description would have caused
+    an implementer to skip.
+  - `default` ("prompt unchanged") with a `type` change to `insight`
+    (duplicate exists) — exercises the translation inside `dbUpdate`
+    (`db.go`), not `chatbot.go`.
 
 ## Open items for the ticket's AC
 
