@@ -223,6 +223,7 @@ type RequestHandler interface {
 		autoAICallAuditEnabled bool,
 	) (*amai.AI, error)
 	AIV1AIDelete(ctx context.Context, aiID uuid.UUID) (*amai.AI, error)
+	AIV1AIActivateInsight(ctx context.Context, aiID uuid.UUID) (*amai.AI, error)
 	AIV1AIDirectHashRegenerate(ctx context.Context, aiID uuid.UUID) (*amai.AI, error)
 	AIV1AIUpdate(
 		ctx context.Context,

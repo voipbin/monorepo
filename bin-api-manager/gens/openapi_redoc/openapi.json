@@ -2209,6 +2209,58 @@
         }
       }
     },
+    "/ais/{id}/activate_insight": {
+      "post": {
+        "summary": "Activate an Insight AI",
+        "description": "Makes the specified Insight AI the customer's active one, deactivating whichever Insight AI was active before. A customer may hold any number of `type=insight` AIs, but at most one may be active at a time. The active one is what the Case Insight Assistant panel auto-attaches to a case. Newly created Insight AIs are always inactive. Returns the updated AI with `is_insight_active` set to `true`. Activating an already-active AI succeeds and changes nothing. Fails with `400` if the target AI is not `type=insight`.\n",
+        "tags": [
+          "AI"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "550e8400-e29b-41d4-a716-446655440000"
+            },
+            "description": "The unique identifier of the AI. Returned from the `GET /ais` response."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Insight AI activated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AIManagerAI"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
     "/ais/{id}/direct-hash-regenerate": {
       "post": {
         "summary": "Regenerate direct hash for AI",
@@ -25712,6 +25764,11 @@
             "description": "AI type. `normal` (default) is a general-purpose AI. `insight` restricts the AI to the Insight tool set and uses a dedicated system prompt for analyzing existing contact/conversation data.",
             "example": "normal"
           },
+          "is_insight_active": {
+            "type": "boolean",
+            "description": "Whether this is the customer's active Insight AI, i.e. the one the Case Insight Assistant panel auto-attaches to a case. Only meaningful when `type` is `insight`. A customer may hold any number of Insight AIs but at most one may be active. Newly created AIs are always inactive; use `POST /ais/{id}/activate_insight` to activate one. When no Insight AI is active, the most recently created one is used.",
+            "example": false
+          },
           "engine_model": {
             "$ref": "#/components/schemas/AIManagerAIEngineModel",
             "description": "Model of the AI engine.",
@@ -25815,7 +25872,10 @@
             "description": "Timestamp when the AI was deleted.",
             "example": "2026-01-15T09:30:00.000000Z"
           }
-        }
+        },
+        "required": [
+          "is_insight_active"
+        ]
       },
       "AIManagerTeam": {
         "type": "object",

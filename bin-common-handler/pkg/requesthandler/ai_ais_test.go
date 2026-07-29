@@ -471,3 +471,67 @@ func Test_AIV1AIUpdate(t *testing.T) {
 		})
 	}
 }
+
+func Test_AIV1AIActivateInsight(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		aiID uuid.UUID
+
+		response *sock.Response
+
+		expectTarget  string
+		expectRequest *sock.Request
+		expectRes     *amai.AI
+	}{
+		{
+			name: "normal",
+
+			aiID: uuid.FromStringOrNil("9f1e1f7a-0000-4000-8000-000000000001"),
+
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   ContentTypeJSON,
+				Data:       []byte(`{"id":"9f1e1f7a-0000-4000-8000-000000000001","type":"insight","is_insight_active":true}`),
+			},
+
+			expectTarget: string(outline.QueueNameAIRequest),
+			expectRequest: &sock.Request{
+				URI:    "/v1/ais/9f1e1f7a-0000-4000-8000-000000000001/activate_insight",
+				Method: sock.RequestMethodPost,
+			},
+			expectRes: &amai.AI{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("9f1e1f7a-0000-4000-8000-000000000001"),
+				},
+				Type:            amai.TypeInsight,
+				IsInsightActive: true,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+			ctx := context.Background()
+
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.AIV1AIActivateInsight(ctx, tt.aiID)
+			if err != nil {
+				t.Errorf("Wrong match. expect ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}

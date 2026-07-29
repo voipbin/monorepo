@@ -1237,6 +1237,9 @@ type AIManagerAI struct {
 	// InitPrompt Initial prompt to configure the AI's behavior.
 	InitPrompt *string `json:"init_prompt,omitempty"`
 
+	// IsInsightActive Whether this is the customer's active Insight AI, i.e. the one the Case Insight Assistant panel auto-attaches to a case. Only meaningful when `type` is `insight`. A customer may hold any number of Insight AIs but at most one may be active. Newly created AIs are always inactive; use `POST /ais/{id}/activate_insight` to activate one. When no Insight AI is active, the most recently created one is used.
+	IsInsightActive bool `json:"is_insight_active"`
+
 	// Name Name of the AI.
 	Name *string `json:"name,omitempty"`
 
@@ -8584,6 +8587,9 @@ type ServerInterface interface {
 	// Update a ai.
 	// (PUT /ais/{id})
 	PutAisId(c *gin.Context, id string)
+	// Activate an Insight AI
+	// (POST /ais/{id}/activate_insight)
+	PostAisIdActivateInsight(c *gin.Context, id openapi_types.UUID)
 	// Regenerate direct hash for AI
 	// (POST /ais/{id}/direct-hash-regenerate)
 	PostAisIdDirectHashRegenerate(c *gin.Context, id openapi_types.UUID)
@@ -10895,6 +10901,30 @@ func (siw *ServerInterfaceWrapper) PutAisId(c *gin.Context) {
 	}
 
 	siw.Handler.PutAisId(c, id)
+}
+
+// PostAisIdActivateInsight operation middleware
+func (siw *ServerInterfaceWrapper) PostAisIdActivateInsight(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostAisIdActivateInsight(c, id)
 }
 
 // PostAisIdDirectHashRegenerate operation middleware
@@ -20160,6 +20190,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.DELETE(options.BaseURL+"/ais/:id", wrapper.DeleteAisId)
 	router.GET(options.BaseURL+"/ais/:id", wrapper.GetAisId)
 	router.PUT(options.BaseURL+"/ais/:id", wrapper.PutAisId)
+	router.POST(options.BaseURL+"/ais/:id/activate_insight", wrapper.PostAisIdActivateInsight)
 	router.POST(options.BaseURL+"/ais/:id/direct-hash-regenerate", wrapper.PostAisIdDirectHashRegenerate)
 	router.GET(options.BaseURL+"/ais/:id/participants", wrapper.GetAisIdParticipants)
 	router.GET(options.BaseURL+"/ais/:id/prompt_histories", wrapper.GetAisIdPromptHistories)
@@ -23207,6 +23238,77 @@ func (response PutAisId404JSONResponse) VisitPutAisIdResponse(w http.ResponseWri
 type PutAisId500JSONResponse struct{ InternalErrorJSONResponse }
 
 func (response PutAisId500JSONResponse) VisitPutAisIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAisIdActivateInsightRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type PostAisIdActivateInsightResponseObject interface {
+	VisitPostAisIdActivateInsightResponse(w http.ResponseWriter) error
+}
+
+type PostAisIdActivateInsight200JSONResponse AIManagerAI
+
+func (response PostAisIdActivateInsight200JSONResponse) VisitPostAisIdActivateInsightResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAisIdActivateInsight400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostAisIdActivateInsight400JSONResponse) VisitPostAisIdActivateInsightResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAisIdActivateInsight401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostAisIdActivateInsight401JSONResponse) VisitPostAisIdActivateInsightResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAisIdActivateInsight403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostAisIdActivateInsight403JSONResponse) VisitPostAisIdActivateInsightResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAisIdActivateInsight404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostAisIdActivateInsight404JSONResponse) VisitPostAisIdActivateInsightResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAisIdActivateInsight409JSONResponse struct{ ConflictJSONResponse }
+
+func (response PostAisIdActivateInsight409JSONResponse) VisitPostAisIdActivateInsightResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAisIdActivateInsight500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostAisIdActivateInsight500JSONResponse) VisitPostAisIdActivateInsightResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(500)
 
@@ -43492,6 +43594,9 @@ type StrictServerInterface interface {
 	// Update a ai.
 	// (PUT /ais/{id})
 	PutAisId(ctx context.Context, request PutAisIdRequestObject) (PutAisIdResponseObject, error)
+	// Activate an Insight AI
+	// (POST /ais/{id}/activate_insight)
+	PostAisIdActivateInsight(ctx context.Context, request PostAisIdActivateInsightRequestObject) (PostAisIdActivateInsightResponseObject, error)
 	// Regenerate direct hash for AI
 	// (POST /ais/{id}/direct-hash-regenerate)
 	PostAisIdDirectHashRegenerate(ctx context.Context, request PostAisIdDirectHashRegenerateRequestObject) (PostAisIdDirectHashRegenerateResponseObject, error)
@@ -45955,6 +46060,33 @@ func (sh *strictHandler) PutAisId(ctx *gin.Context, id string) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PutAisIdResponseObject); ok {
 		if err := validResponse.VisitPutAisIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostAisIdActivateInsight operation middleware
+func (sh *strictHandler) PostAisIdActivateInsight(ctx *gin.Context, id openapi_types.UUID) {
+	var request PostAisIdActivateInsightRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostAisIdActivateInsight(ctx, request.(PostAisIdActivateInsightRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostAisIdActivateInsight")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostAisIdActivateInsightResponseObject); ok {
+		if err := validResponse.VisitPostAisIdActivateInsightResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

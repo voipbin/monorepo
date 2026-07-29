@@ -1,0 +1,41 @@
+post:
+  summary: Activate an Insight AI
+  description: >
+    Makes the specified Insight AI the customer's active one, deactivating
+    whichever Insight AI was active before. A customer may hold any number of
+    `type=insight` AIs, but at most one may be active at a time. The active one
+    is what the Case Insight Assistant panel auto-attaches to a case. Newly
+    created Insight AIs are always inactive. Returns the updated AI with
+    `is_insight_active` set to `true`. Activating an already-active AI succeeds
+    and changes nothing. Fails with `400` if the target AI is not
+    `type=insight`.
+  tags:
+    - AI
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        example: "550e8400-e29b-41d4-a716-446655440000"
+      description: "The unique identifier of the AI. Returned from the `GET /ais` response."
+  responses:
+    '200':
+      description: Insight AI activated successfully.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AIManagerAI'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '409':
+      $ref: '#/components/responses/Conflict'
+    '500':
+      $ref: '#/components/responses/InternalError'

@@ -31,6 +31,11 @@ func TestFieldConstants(t *testing.T) {
 			expected: "detail",
 		},
 		{
+			name:     "field_is_insight_active",
+			constant: FieldIsInsightActive,
+			expected: "is_insight_active",
+		},
+		{
 			name:     "field_engine_model",
 			constant: FieldEngineModel,
 			expected: "engine_model",

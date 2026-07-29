@@ -43,6 +43,21 @@ func (m *MockAIHandler) EXPECT() *MockAIHandlerMockRecorder {
 	return m.recorder
 }
 
+// ActivateInsight mocks base method.
+func (m *MockAIHandler) ActivateInsight(ctx context.Context, id uuid.UUID) (*ai.AI, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ActivateInsight", ctx, id)
+	ret0, _ := ret[0].(*ai.AI)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ActivateInsight indicates an expected call of ActivateInsight.
+func (mr *MockAIHandlerMockRecorder) ActivateInsight(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActivateInsight", reflect.TypeOf((*MockAIHandler)(nil).ActivateInsight), ctx, id)
+}
+
 // Create mocks base method.
 func (m *MockAIHandler) Create(ctx context.Context, customerID uuid.UUID, name, detail string, aiType ai.Type, engineModel ai.EngineModel, parameter map[string]any, engineKey string, ragID uuid.UUID, initPrompt string, ttsType ai.TTSType, ttsVoiceID string, sttType ai.STTType, sttLanguage string, toolNames []tool.ToolName, vadConfig *ai.VADConfig, smartTurnEnabled, autoAICallAuditEnabled bool) (*ai.AI, error) {
 	m.ctrl.T.Helper()

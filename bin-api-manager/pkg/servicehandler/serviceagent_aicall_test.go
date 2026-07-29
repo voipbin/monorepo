@@ -205,7 +205,11 @@ func Test_ServiceAgentAIcallCreate(t *testing.T) {
 		responseCaseErr error
 
 		// Task 6: only consulted when assistanceID == uuid.Nil.
-		responseAIList []amai.AI
+		// responseActiveAIList is what the dedicated is_insight_active=true
+		// size-1 query returns; nil/empty exercises the zero-active fallback to
+		// the most-recently-created Insight AI (responseAIList).
+		responseActiveAIList []amai.AI
+		responseAIList       []amai.AI
 
 		responseAI         *amai.AI
 		responseActiveflow *fmactiveflow.Activeflow
@@ -467,15 +471,23 @@ func Test_ServiceAgentAIcallCreate(t *testing.T) {
 
 			resolvedAssistanceID := tt.assistanceID
 			if tt.assistanceType == amaicall.AssistanceTypeAI && tt.assistanceID == uuid.Nil {
-				mockReq.EXPECT().AIV1AIList(ctx, "", uint64(100), gomock.Any()).Return(tt.responseAIList, nil)
-				if len(tt.responseAIList) == 0 {
-					_, err := h.ServiceAgentAIcallCreate(ctx, tt.agent, tt.assistanceType, tt.assistanceID, tt.referenceType, tt.referenceID)
-					if err == nil {
-						t.Errorf("Wrong match. expect: err, got: ok")
+				// Two-query resolution: the dedicated size-1 active query runs
+				// first, and only an empty result falls back to the 100-row
+				// most-recently-created query.
+				mockReq.EXPECT().AIV1AIList(ctx, "", uint64(1), gomock.Any()).Return(tt.responseActiveAIList, nil)
+				if len(tt.responseActiveAIList) > 0 {
+					resolvedAssistanceID = tt.responseActiveAIList[0].ID
+				} else {
+					mockReq.EXPECT().AIV1AIList(ctx, "", uint64(100), gomock.Any()).Return(tt.responseAIList, nil)
+					if len(tt.responseAIList) == 0 {
+						_, err := h.ServiceAgentAIcallCreate(ctx, tt.agent, tt.assistanceType, tt.assistanceID, tt.referenceType, tt.referenceID)
+						if err == nil {
+							t.Errorf("Wrong match. expect: err, got: ok")
+						}
+						return
 					}
-					return
+					resolvedAssistanceID = tt.responseAIList[0].ID
 				}
-				resolvedAssistanceID = tt.responseAIList[0].ID
 			}
 
 			switch tt.assistanceType {

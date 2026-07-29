@@ -29,6 +29,8 @@ create table ai_ais(
 
   type  varchar(255) not null default 'normal',   -- ai type: normal, insight
 
+  is_insight_active  boolean not null default 0,   -- the customer's single active insight ai
+
   tool_names  json,           -- enabled tools for this AI
 
   current_prompt_history_id  binary(16),   -- current prompt history id
@@ -43,13 +45,14 @@ create table ai_ais(
 
   -- SQLite-compatible stand-in for the MySQL STORED generated column
   -- active_insight_key (BINARY(16), see bin-dbscheme-manager migration
-  -- for SQUARE-23, mirroring the active_reference_key pattern in
-  -- table_ai_aicalls.sql). Computes customer_id only when type='insight'
-  -- and the row is not soft-deleted; NULL otherwise (any number of NULLs
-  -- may coexist under UNIQUE), enforcing "at most one active Insight AI
-  -- per customer" without affecting type='normal' rows.
+  -- 27a91e200854, mirroring the active_reference_key pattern in
+  -- table_ai_aicalls.sql). Computes customer_id only when type='insight',
+  -- the row is not soft-deleted, AND it is the customer's activated
+  -- insight ai; NULL otherwise (any number of NULLs may coexist under
+  -- UNIQUE). This lets a customer keep many insight configs while at most
+  -- one may be active, and does not affect type='normal' rows.
   active_insight_key varchar(255) GENERATED ALWAYS AS (
-    CASE WHEN type = 'insight' AND tm_delete IS NULL
+    CASE WHEN type = 'insight' AND tm_delete IS NULL AND is_insight_active = 1
       THEN customer_id
       ELSE NULL
     END

@@ -261,21 +261,60 @@ func (h *serviceHandler) ServiceAgentAIcallCreate(
 	return res, nil
 }
 
-// resolveInsightAIID looks up the caller's own customer's single
-// type=insight AI. Returns serviceerrors.ErrNotFound if none exists (the
-// square-admin panel maps this to its empty state), or the
-// most-recently-created one if 2+ exist (AIV1AIList orders tm_create desc).
+// resolveInsightAIID resolves which of the caller's customer's Insight AIs the
+// Case Insight Assistant panel should attach to.
+//
+// A customer may hold any number of type=insight AIs, at most one of which is
+// marked active (ai_ais.is_insight_active; see bin-ai-manager). Resolution is
+// therefore two queries, not one list-then-pick:
+//
+//  1. A dedicated size-1 query for the active one. A single list capped at 100
+//     rows would silently pick the wrong AI once a customer has more than 100
+//     Insight configs and the active one falls outside that page.
+//  2. If no AI is active -- a brand-new customer whose only Insight AI has never
+//     been activated, or a data anomaly -- fall back to the most recently
+//     created one. square-admin surfaces this state explicitly rather than
+//     showing the panel as unconfigured.
+//
+// Both queries filter deleted=false: soft-deleting a row frees the unique-index
+// slot, so a stale is_insight_active=true can outlive the row's usefulness.
+//
+// Returns serviceerrors.ErrNotFound when the customer has no Insight AI at all
+// (the square-admin panel maps this to its empty state).
 func (h *serviceHandler) resolveInsightAIID(ctx context.Context, customerID uuid.UUID) (uuid.UUID, error) {
-	filters, err := h.convertAIFilters(map[string]string{
+	baseFilters := map[string]string{
 		"deleted":     "false",
 		"customer_id": customerID.String(),
 		"type":        string(amai.TypeInsight),
-	})
+	}
+
+	activeFilters := make(map[string]string, len(baseFilters)+1)
+	for k, v := range baseFilters {
+		activeFilters[k] = v
+	}
+	activeFilters["is_insight_active"] = "true"
+
+	typedActiveFilters, err := h.convertAIFilters(activeFilters)
 	if err != nil {
 		return uuid.Nil, errors.Wrapf(err, "could not convert ai filters")
 	}
 
-	ais, err := h.reqHandler.AIV1AIList(ctx, "", 100, filters)
+	// At most one row can ever match, so size 1 is sufficient.
+	activeAIs, err := h.reqHandler.AIV1AIList(ctx, "", 1, typedActiveFilters)
+	if err != nil {
+		return uuid.Nil, errors.Wrapf(err, "could not list active insight ais")
+	}
+	if len(activeAIs) > 0 {
+		return activeAIs[0].ID, nil
+	}
+
+	// Fallback: no active Insight AI -- use the most recently created one.
+	typedBaseFilters, err := h.convertAIFilters(baseFilters)
+	if err != nil {
+		return uuid.Nil, errors.Wrapf(err, "could not convert ai filters")
+	}
+
+	ais, err := h.reqHandler.AIV1AIList(ctx, "", 100, typedBaseFilters)
 	if err != nil {
 		return uuid.Nil, errors.Wrapf(err, "could not list ais")
 	}

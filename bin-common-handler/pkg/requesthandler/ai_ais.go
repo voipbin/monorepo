@@ -159,6 +159,25 @@ func (r *requestHandler) AIV1AIDirectHashRegenerate(ctx context.Context, aiID uu
 	return &res, nil
 }
 
+// AIV1AIActivateInsight sends a request to ai-manager to make the given
+// Insight AI the customer's active one, deactivating whichever Insight AI was
+// active before. Returns the updated AI.
+func (r *requestHandler) AIV1AIActivateInsight(ctx context.Context, aiID uuid.UUID) (*amai.AI, error) {
+	uri := fmt.Sprintf("/v1/ais/%s/activate_insight", aiID)
+
+	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodPost, "ai/ais/<ai-id>/activate_insight", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var res amai.AI
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
+}
+
 // AIV1AIUpdate sends a request to ai-manager
 // to updating an AI.
 // it returns updated AI if it succeed.

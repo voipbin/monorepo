@@ -19,6 +19,11 @@ type WebhookMessage struct {
 	Detail string `json:"detail,omitempty"`
 	Type   Type   `json:"type,omitempty"`
 
+	// IsInsightActive is intentionally without omitempty: dropping the field
+	// when false would make "inactive" indistinguishable from "field absent"
+	// for any client parsing the JSON.
+	IsInsightActive bool `json:"is_insight_active"`
+
 	EngineModel EngineModel    `json:"engine_model,omitempty"`
 	Parameter   map[string]any `json:"parameter,omitempty"`
 	EngineKey   string         `json:"engine_key,omitempty"`
@@ -55,6 +60,8 @@ func (h *AI) ConvertWebhookMessage() *WebhookMessage {
 		Name:   h.Name,
 		Detail: h.Detail,
 		Type:   h.Type,
+
+		IsInsightActive: h.IsInsightActive,
 
 		EngineModel: h.EngineModel,
 		Parameter:   h.Parameter,

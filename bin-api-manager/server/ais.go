@@ -296,6 +296,40 @@ func (h *server) PutAisId(c *gin.Context, id string) {
 	c.JSON(200, res)
 }
 
+func (h *server) PostAisIdActivateInsight(c *gin.Context, id openapi_types.UUID) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "PostAisIdActivateInsight",
+		"request_address": c.ClientIP(),
+		"ai_id":           id,
+	})
+
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
+		return
+	}
+	log = log.WithFields(logrus.Fields{
+		"auth": a,
+	})
+
+	aiID, err := uuid.FromString(id.String())
+	if err != nil {
+		log.Errorf("Invalid AI ID format. err: %v", err)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID.").Wrap(err))
+		return
+	}
+
+	res, err := h.serviceHandler.AIActivateInsight(c.Request.Context(), a, aiID)
+	if err != nil {
+		log.Errorf("Could not activate the insight AI. err: %v", err)
+		abortWithServiceError(c, err)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
 func (h *server) PostAisIdDirectHashRegenerate(c *gin.Context, id openapi_types.UUID) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "PostAisIdDirectHashRegenerate",

@@ -325,6 +325,47 @@ Best Practices
 - Handle cases where AI may not understand the input
 - Provide clear instructions to users about what they can ask
 
+Switch the active Insight AI
+----------------------------
+
+A customer may keep several ``type=insight`` AI configurations, but only one is *active* — the one the Case Insight Assistant panel auto-attaches when an agent opens a Case. Create as many drafts as you like; each one starts inactive.
+
+.. code::
+
+    # 1. Create a second Insight AI (starts inactive -- no 409, the existing one keeps serving traffic)
+    $ curl -k --location --request POST 'https://api.voipbin.net/v1.0/ais?token=<YOUR_AUTH_TOKEN>' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "name": "Case Insight Assistant v2",
+        "detail": "Trial run with a larger model",
+        "type": "insight",
+        "engine_model": "openai.gpt-4o",
+        "engine_key": "<YOUR_OPENAI_KEY>",
+        "init_prompt": "You help agents understand the history of a support case.",
+        "tts_type": "elevenlabs",
+        "stt_type": "deepgram",
+        "tool_names": ["get_contact_interactions", "get_conversation_content"]
+    }'
+
+    # 2. Promote it once you are satisfied -- the previously active one is deactivated automatically
+    $ curl -k --location --request POST 'https://api.voipbin.net/v1.0/ais/b1c2d3e4-0000-4000-8000-000000000002/activate_insight?token=<YOUR_AUTH_TOKEN>'
+
+    {
+        "id": "b1c2d3e4-0000-4000-8000-000000000002",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "name": "Case Insight Assistant v2",
+        "type": "insight",
+        "is_insight_active": true,
+        "engine_model": "openai.gpt-4o",
+        "tm_create": "2024-02-09 07:01:35.666687",
+        "tm_update": "2024-02-09 07:05:12.123456",
+        "tm_delete": "9999-01-01 00:00:00.000000"
+    }
+
+.. note:: **AI Implementation Hint**
+
+   This endpoint requires no request body, and there is no separate "deactivate" call — activating one Insight AI deactivates the previous one in the same operation. Re-activating the already-active AI is a no-op success. To find the current one, list with the ``is_insight_active`` field in view; when none is active, the most recently created Insight AI is used instead. See :ref:`Insight AI activation <ai-struct-ai-is_insight_active>`.
+
 Regenerate direct AI hash
 --------------------------
 

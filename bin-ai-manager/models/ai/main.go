@@ -54,6 +54,14 @@ type AI struct {
 	// (see tool.AllInsightToolNames / toolhandler.AllInsightToolNames).
 	Type Type `json:"type,omitempty" db:"type"`
 
+	// IsInsightActive marks the single type=insight AI a customer's Case
+	// Insight Assistant panel auto-attaches to. A customer may keep any number
+	// of type=insight AIs, but at most one may have this set -- enforced at the
+	// DB level by the ai_ais.active_insight_key generated column and its unique
+	// index. Newly created AIs always default to false; only
+	// dbhandler.AIActivateInsight ever sets it true.
+	IsInsightActive bool `json:"is_insight_active" db:"is_insight_active"`
+
 	EngineModel EngineModel    `json:"engine_model,omitempty" db:"engine_model"` // ai(llm) model. combine with <engine model target>.<model>
 	Parameter   map[string]any `json:"parameter,omitempty" db:"parameter,json"`
 	EngineKey   string         `json:"engine_key,omitempty" db:"engine_key"` // ai(llm) service api key

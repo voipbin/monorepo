@@ -16,6 +16,7 @@ AI
         "name": "<string>",
         "detail": "<string>",
         "type": "<string>",
+        "is_insight_active": <boolean>,
         "engine_model": "<string>",
         "parameter": "<object>",
         "engine_key": "<string>",
@@ -46,6 +47,7 @@ AI
 * ``name`` (String, Required): A human-readable name for the AI configuration (e.g., ``"Sales Assistant"``).
 * ``detail`` (String, Optional): A description of the AI's purpose or additional notes.
 * ``type`` (enum string, Optional): The AI's operating mode. ``normal`` (default) is a general-purpose AI usable in calls, tasks, and conversations. ``insight`` restricts the AI to the Insight tool set (:ref:`AllInsightToolNames <ai-struct-ai-tool_names>`) and uses a dedicated system prompt tailored for agent-facing Q&A over a contact-manager Case. See :ref:`Type <ai-struct-ai-type>`.
+* ``is_insight_active`` (Boolean): Whether this is the customer's **active** Insight AI (the one the Case Insight Assistant panel auto-attaches to a Case). Only meaningful when ``type`` is ``insight``; always ``false`` for ``type=normal`` AIs. A customer may keep any number of Insight AIs (e.g. to prepare a new prompt or model before switching to it), but at most one may be active at a time. Newly created Insight AIs are always inactive. Activate one with ``POST /ais/{id}/activate_insight``. When a customer has no active Insight AI, the most recently created one is used. See :ref:`Insight AI activation <ai-struct-ai-is_insight_active>`.
 * ``engine_model`` (String, Required): The LLM provider and model. Format: ``<provider>.<model>`` (e.g., ``openai.gpt-4o``, ``anthropic.claude-3-5-sonnet``). See :ref:`Engine Models <ai-struct-ai-engine_model>`.
 * ``parameter`` (Object, Optional): Custom key-value parameter data for the AI configuration. Supports flow variable substitution at runtime. Typically left as ``{}``.
 * ``engine_key`` (String, Required): The API key for the LLM provider. Must be a valid key from the provider's dashboard.
@@ -87,6 +89,7 @@ Example
         "name": "Sales Assistant AI",
         "detail": "AI assistant for handling sales inquiries",
         "type": "normal",
+        "is_insight_active": false,
         "engine_model": "openai.gpt-4o",
         "parameter": {},
         "engine_key": "sk-...",
@@ -124,6 +127,53 @@ insight          Restricted to the Insight tool set (``get_contact_interactions`
 .. note:: **AI Implementation Hint**
 
    Updating an AI via ``PUT /ais/{id}`` without sending ``type`` leaves the existing type unchanged — it does not reset the AI to ``normal``. To change an AI's type, explicitly send the desired ``type`` value in the PUT body.
+
+.. _ai-struct-ai-is_insight_active:
+
+Insight AI activation
+---------------------
+A customer may keep **multiple** ``type=insight`` AI configurations (for example, to prepare a second Insight assistant with a different prompt, model, or tool set before switching to it), but **at most one may be active** at a time. The ``is_insight_active`` field marks which one.
+
+The active Insight AI is the one the Case Insight Assistant panel auto-attaches when an agent opens a Case. Testing an Insight AI directly (by passing its ``assistance_id`` explicitly) works against **any** Insight AI regardless of its active status, so a draft configuration can be tried out without disturbing the one in production use.
+
+**Activating one**
+
+.. code::
+
+    $ curl --location --request POST 'https://api.voipbin.net/v1.0/ais/a092c5d9-632c-48d7-b70b-499f2ca084b1/activate_insight?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+
+    {
+        "id": "a092c5d9-632c-48d7-b70b-499f2ca084b1",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "name": "Case Insight Assistant v2",
+        "type": "insight",
+        "is_insight_active": true,
+        ...
+    }
+
+Activating an AI automatically deactivates whichever Insight AI was active before. There is no separate deactivate call. Activating the already-active AI succeeds and changes nothing.
+
+**Behavior rules**
+
+=========================================== =======================================
+Event                                       Effect on ``is_insight_active``
+=========================================== =======================================
+AI created (``POST /ais``)                  Always ``false``, even for the customer's first Insight AI.
+AI activated                                Set to ``true``; the previously active one is set to ``false``.
+AI deleted (``DELETE /ais/{id}``)           Cleared to ``false``.
+AI type changed away from ``insight``       Cleared to ``false``.
+No Insight AI is active                     The Case panel falls back to the most recently created Insight AI.
+=========================================== =======================================
+
+**Errors**
+
+======================================= ============================================================
+Status / reason                         Cause
+======================================= ============================================================
+``400 AI_NOT_INSIGHT_TYPE``             The target AI is not ``type=insight``. Only Insight AIs can be activated.
+``404 AI_NOT_FOUND``                    The target AI does not exist or has been deleted.
+``409 AI_INSIGHT_ACTIVATION_CONFLICT``  Another activation for the same customer was in flight. Retry the request.
+======================================= ============================================================
 
 .. _ai-struct-ai-engine_model:
 

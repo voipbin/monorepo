@@ -6,6 +6,8 @@
 Per-customer AI agent configuration stored in MySQL. Defines which LLM engine to use, voice settings, available tools, and initial prompts.
 
 Key fields:
+- `type` — `normal` (default) or `insight`. An Insight AI uses a dedicated system prompt and is restricted to the Insight tool set.
+- `is_insight_active` — boolean; marks the single `type=insight` AI that the Case Insight Assistant panel auto-attaches to. A customer may hold any number of Insight AIs, but at most one may be active — enforced by the `ai_ais.active_insight_key` generated column and its unique index (see `bin-dbscheme-manager` migration `27a91e200854`). Creates always default to `false`; only `POST /v1/ais/<uuid>/activate_insight` (`dbhandler.AIActivateInsight`) ever sets it `true`, and it is cleared unconditionally on delete and on any update whose resolved type is not `insight`. When a customer has no active Insight AI, resolution falls back to the most recently created one.
 - `engine_type` — provider identifier (see engine list below)
 - `engine_model` — format `<target>.<model>` e.g. `openai.gpt-4o`, `grok.grok-3`, `dialogflow.cx`
 - `init_prompt` — system prompt injected at session start

@@ -312,6 +312,7 @@ Public endpoints — no authentication required.
 | GET | `/ais/:id` | bin-ai-manager | Get AI agent |
 | PUT | `/ais/:id` | bin-ai-manager | Update AI agent |
 | DELETE | `/ais/:id` | bin-ai-manager | Delete AI agent |
+| POST | `/ais/:id/activate_insight` | bin-ai-manager | Make this Insight AI the customer's active one |
 | POST | `/ais/:id/direct-hash-regenerate` | bin-ai-manager | Regenerate direct hash |
 | GET | `/aicalls` | bin-ai-manager | List AI call sessions |
 | POST | `/aicalls` | bin-ai-manager | Create AI call session |

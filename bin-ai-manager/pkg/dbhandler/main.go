@@ -32,6 +32,9 @@ type DBHandler interface {
 	AIGet(ctx context.Context, id uuid.UUID) (*ai.AI, error)
 	AIList(ctx context.Context, size uint64, token string, filters map[ai.Field]any) ([]*ai.AI, error)
 	AIUpdate(ctx context.Context, id uuid.UUID, fields map[ai.Field]any) error
+	// AIActivateInsight returns the activated AI and the AI it displaced (nil
+	// when nothing was displaced).
+	AIActivateInsight(ctx context.Context, id uuid.UUID) (*ai.AI, *ai.AI, error)
 
 	AIPromptHistoryCreate(ctx context.Context, h *aiprompthistory.AIPromptHistory) error
 	AIPromptHistoryGet(ctx context.Context, id uuid.UUID) (*aiprompthistory.AIPromptHistory, error)

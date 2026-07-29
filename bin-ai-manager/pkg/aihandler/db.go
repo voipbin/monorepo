@@ -20,21 +20,6 @@ import (
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 )
 
-// aiInsightDuplicateErr translates a duplicate-key failure on
-// ai_ais.active_insight_key into a customer-facing 409 AlreadyExists
-// error. Returns nil if err is not a duplicate-key error, signaling the
-// caller should fall through to its own generic wrap.
-func aiInsightDuplicateErr(err error) error {
-	if !dbhandler.IsErrDuplicate(err) {
-		return nil
-	}
-	return cerrors.AlreadyExists(
-		commonoutline.ServiceNameAIManager,
-		"AI_INSIGHT_ALREADY_EXISTS",
-		"This customer already has an active Insight AI. Delete it before creating another.",
-	).Wrap(err)
-}
-
 // Create creates a new ai record.
 func (h *aiHandler) dbCreate(
 	ctx context.Context,
@@ -209,9 +194,6 @@ func (h *aiHandler) dbUpdate(
 		ttsType, ttsVoice, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled, autoAICallAuditEnabled)
 
 	if err := h.db.AIUpdate(ctx, id, fields); err != nil {
-		if dupErr := aiInsightDuplicateErr(err); dupErr != nil {
-			return nil, dupErr
-		}
 		return nil, errors.Wrapf(err, "could not update ai")
 	}
 
@@ -219,6 +201,53 @@ func (h *aiHandler) dbUpdate(
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get updated ai")
 	}
+	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, ai.EventTypeUpdated, res)
+
+	return res, nil
+}
+
+// ActivateInsight makes the given Insight AI the customer's active one,
+// deactivating whichever Insight AI was active before.
+func (h *aiHandler) ActivateInsight(ctx context.Context, id uuid.UUID) (*ai.AI, error) {
+	res, previous, err := h.db.AIActivateInsight(ctx, id)
+	if err != nil {
+		switch {
+		case stderrors.Is(err, dbhandler.ErrNotFound):
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameAIManager,
+				"AI_NOT_FOUND",
+				"The AI was not found.",
+			).Wrap(err)
+
+		case stderrors.Is(err, dbhandler.ErrNotInsightAI):
+			return nil, cerrors.InvalidArgument(
+				commonoutline.ServiceNameAIManager,
+				"AI_NOT_INSIGHT_TYPE",
+				"Only an Insight AI can be activated.",
+			).Wrap(err)
+
+		case dbhandler.IsErrDuplicate(err):
+			// The unique index on ai_ais.active_insight_key rejected the write,
+			// which means another activation for this customer committed between
+			// our read and our write. Retrying resolves it.
+			return nil, cerrors.AlreadyExists(
+				commonoutline.ServiceNameAIManager,
+				"AI_INSIGHT_ACTIVATION_CONFLICT",
+				"Another activation is in progress for this customer's Insight AI; retry.",
+			).Wrap(err)
+		}
+
+		return nil, errors.Wrapf(err, "could not activate insight ai")
+	}
+
+	// The displaced AI flipped is_insight_active true -> false, which is just as
+	// user-visible as the activation itself. Without this event, subscribers
+	// keep a stale is_insight_active=true for it forever. Published first so
+	// subscribers never observe two active Insight AIs.
+	if previous != nil {
+		h.notifyHandler.PublishWebhookEvent(ctx, previous.CustomerID, ai.EventTypeUpdated, previous)
+	}
+
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, ai.EventTypeUpdated, res)
 
 	return res, nil
@@ -242,22 +271,32 @@ func (h *aiHandler) buildUpdateFields(
 	smartTurnEnabled bool,
 	autoAICallAuditEnabled bool,
 ) map[ai.Field]any {
-	return map[ai.Field]any{
-		ai.FieldName:             name,
-		ai.FieldDetail:           detail,
-		ai.FieldType:             aiType,
-		ai.FieldEngineModel:      engineModel,
-		ai.FieldParameter:        parameter,
-		ai.FieldEngineKey:        engineKey,
-		ai.FieldRagID:            ragID,
-		ai.FieldInitPrompt:       initPrompt,
-		ai.FieldTTSType:          ttsType,
-		ai.FieldTTSVoiceID:       ttsVoiceID,
-		ai.FieldSTTType:          sttType,
-		ai.FieldSTTLanguage:      sttLanguage,
-		ai.FieldToolNames:        toolNames,
-		ai.FieldVADConfig:        vadConfig,
-		ai.FieldSmartTurnEnabled: smartTurnEnabled,
+	res := map[ai.Field]any{
+		ai.FieldName:                   name,
+		ai.FieldDetail:                 detail,
+		ai.FieldType:                   aiType,
+		ai.FieldEngineModel:            engineModel,
+		ai.FieldParameter:              parameter,
+		ai.FieldEngineKey:              engineKey,
+		ai.FieldRagID:                  ragID,
+		ai.FieldInitPrompt:             initPrompt,
+		ai.FieldTTSType:                ttsType,
+		ai.FieldTTSVoiceID:             ttsVoiceID,
+		ai.FieldSTTType:                sttType,
+		ai.FieldSTTLanguage:            sttLanguage,
+		ai.FieldToolNames:              toolNames,
+		ai.FieldVADConfig:              vadConfig,
+		ai.FieldSmartTurnEnabled:       smartTurnEnabled,
 		ai.FieldAutoAICallAuditEnabled: autoAICallAuditEnabled,
 	}
+
+	// Any row that is not (or is no longer) an Insight AI must not keep an
+	// is_insight_active flag. Written unconditionally in the same UPDATE rather
+	// than "only if it was previously true": a read-then-write would race a
+	// concurrent AIActivateInsight and could silently undo a just-won activation.
+	if aiType != ai.TypeInsight {
+		res[ai.FieldIsInsightActive] = false
+	}
+
+	return res
 }

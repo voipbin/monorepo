@@ -156,6 +156,44 @@ func (h *serviceHandler) AIDirectHashRegenerate(ctx context.Context, a *auth.Aut
 	return res, nil
 }
 
+// AIActivateInsight makes the given Insight AI the customer's active one.
+func (h *serviceHandler) AIActivateInsight(ctx context.Context, a *auth.AuthIdentity, aiID uuid.UUID) (*amai.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, serviceerrors.ErrDirectAccessNotSupported
+	}
+
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "AIActivateInsight",
+		"customer_id": a.CustomerID,
+		"ai_id":       aiID,
+	})
+	log.Debug("Activating the insight ai.")
+
+	// Customer-ownership check. This is the primary authz layer: bin-ai-manager
+	// derives its transaction scope from the TARGET row's own customer_id, so
+	// without this check a cross-customer activation would be reachable at the
+	// API boundary and would clear another customer's active Insight AI.
+	c, err := h.aiGet(ctx, aiID)
+	if err != nil {
+		log.Errorf("Could not get ai info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find ai info", err)
+	}
+
+	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The user has no permission for this agent.")
+		return nil, serviceerrors.ErrPermissionDenied
+	}
+
+	tmp, err := h.reqHandler.AIV1AIActivateInsight(ctx, aiID)
+	if err != nil {
+		log.Errorf("Could not activate the insight ai. err: %v", err)
+		return nil, err
+	}
+
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
+
 // AIGetsByCustomerID gets the list of AIs of the given customer id.
 // It returns list of AIs if it succeed.
 func (h *serviceHandler) AIGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*amai.WebhookMessage, error) {
