@@ -8681,6 +8681,10 @@ paths:
     $ref: './paths/service_agents/contact_cases_id_close.yaml'
   /service_agents/contact_cases/{id}/assign:
     $ref: './paths/service_agents/contact_cases_id_assign.yaml'
+  /service_agents/contact_cases/{id}/notes:
+    $ref: './paths/service_agents/contact_cases_id_notes.yaml'
+  /service_agents/contact_cases/{id}/notes/{note_id}:
+    $ref: './paths/service_agents/contact_cases_id_notes_id.yaml'
   /service_agents/contact_cases/{id}:
     $ref: './paths/service_agents/contact_cases_id.yaml'
   /service_agents/contact_cases:

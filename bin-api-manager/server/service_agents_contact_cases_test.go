@@ -273,3 +273,84 @@ func Test_contactCasesIDAssignPOST(t *testing.T) {
 		})
 	}
 }
+
+func Test_contactCasesIDPUT(t *testing.T) {
+
+	tests := []struct {
+		name  string
+		agent *auth.AuthIdentity
+
+		reqQuery string
+		reqBody  string
+
+		responseCase    *cmkase.Case
+		expectCaseID    uuid.UUID
+		expectContactID uuid.UUID
+	}{
+		{
+			name: "attach",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
+			}),
+
+			reqQuery: "/service_agents/contact_cases/e66d1da0-3ed7-11ef-9208-4bcc069917a1",
+			reqBody:  `{"contact_id":"660e8400-e29b-41d4-a716-446655440001"}`,
+
+			responseCase: &cmkase.Case{
+				ID: uuid.FromStringOrNil("e66d1da0-3ed7-11ef-9208-4bcc069917a1"),
+			},
+
+			expectCaseID:    uuid.FromStringOrNil("e66d1da0-3ed7-11ef-9208-4bcc069917a1"),
+			expectContactID: uuid.FromStringOrNil("660e8400-e29b-41d4-a716-446655440001"),
+		},
+		{
+			name: "detach with empty contact_id",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
+			}),
+
+			reqQuery: "/service_agents/contact_cases/e66d1da0-3ed7-11ef-9208-4bcc069917a1",
+			reqBody:  `{"contact_id":""}`,
+
+			responseCase: &cmkase.Case{
+				ID: uuid.FromStringOrNil("e66d1da0-3ed7-11ef-9208-4bcc069917a1"),
+			},
+
+			expectCaseID:    uuid.FromStringOrNil("e66d1da0-3ed7-11ef-9208-4bcc069917a1"),
+			expectContactID: uuid.Nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+			h := &server{
+				serviceHandler: mockSvc,
+			}
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set("auth_identity", tt.agent)
+			})
+			openapi_server.RegisterHandlers(r, h)
+
+			req, _ := http.NewRequest("PUT", tt.reqQuery, strings.NewReader(tt.reqBody))
+			req.Header.Set("Content-Type", "application/json")
+			mockSvc.EXPECT().ServiceAgentCaseUpdateContact(req.Context(), tt.agent, tt.expectCaseID, tt.expectContactID).Return(tt.responseCase, nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d, body: %s", http.StatusOK, w.Code, w.Body.String())
+			}
+		})
+	}
+}

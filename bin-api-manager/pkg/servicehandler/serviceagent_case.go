@@ -130,3 +130,38 @@ func (h *serviceHandler) ServiceAgentCaseAssign(ctx context.Context, a *auth.Aut
 
 	return res, nil
 }
+
+// ServiceAgentCaseUpdateContact attaches or detaches a case's contact for a
+// service-agent caller. contactID == uuid.Nil clears the attribution.
+// Cross-tenant contact_id rejection is enforced at the contact-manager
+// domain layer (casehandler.UpdateContact), so no separate check is needed
+// here.
+func (h *serviceHandler) ServiceAgentCaseUpdateContact(ctx context.Context, a *auth.AuthIdentity, id, contactID uuid.UUID) (*cmkase.Case, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "ServiceAgentCaseUpdateContact",
+		"customer_id": a.CustomerID,
+		"case_id":     id,
+	})
+
+	if a.IsDirect() {
+		return nil, serviceerrors.ErrDirectAccessNotSupported
+	}
+
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionAll) {
+		log.Info("The agent has no permission.")
+		return nil, serviceerrors.ErrPermissionDenied
+	}
+
+	if _, err := h.caseGet(ctx, a.CustomerID, id); err != nil {
+		log.Errorf("Could not get the case info. err: %v", err)
+		return nil, err
+	}
+
+	res, err := h.reqHandler.ContactV1CaseUpdateContact(ctx, a.CustomerID, id, contactID)
+	if err != nil {
+		log.Errorf("Could not update case contact. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}

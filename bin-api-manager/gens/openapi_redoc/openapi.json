@@ -17949,6 +17949,182 @@
         }
       }
     },
+    "/service_agents/contact_cases/{id}/notes": {
+      "get": {
+        "summary": "List notes for a case",
+        "description": "List all notes for the case of the given ID. Notes are an internal,\nagent-facing annotation on a Case and never appear in any\ncustomer-facing webhook or response.\n",
+        "tags": [
+          "Service Agent"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "550e8400-e29b-41d4-a716-446655440000"
+            },
+            "description": "The unique identifier of the case. Returned from the `GET /service_agents/contact_cases` response."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactManagerCaseNoteListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a note on a case",
+        "description": "Create a new note on the case of the given ID, authored by the\ncalling agent. The author is derived server-side from the caller's\nown agent identity -- the request only carries the note text, so an\nagent can never author a note as another agent or as the system.\nNotes are an internal, agent-facing annotation on a Case and never\nappear in any customer-facing webhook or response.\n",
+        "tags": [
+          "Service Agent"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "550e8400-e29b-41d4-a716-446655440000"
+            },
+            "description": "The unique identifier of the case. Returned from the `GET /service_agents/contact_cases` response."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "text"
+                ],
+                "properties": {
+                  "text": {
+                    "type": "string",
+                    "description": "The note's text content.",
+                    "example": "Called the customer back, no answer."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Case note created successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactManagerCaseNote"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/service_agents/contact_cases/{id}/notes/{note_id}": {
+      "delete": {
+        "summary": "Delete a case note",
+        "description": "Delete the note of the given note ID on the case of the given case\nID. An agent may only delete a note it authored itself; notes\nauthored by another agent or by the system cannot be deleted\nthrough this endpoint.\n",
+        "tags": [
+          "Service Agent"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "550e8400-e29b-41d4-a716-446655440000"
+            },
+            "description": "The unique identifier of the case. Returned from the `GET /service_agents/contact_cases` response."
+          },
+          {
+            "name": "note_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "33333333-0000-0000-0000-000000000003"
+            },
+            "description": "The unique identifier of the note. Returned from the `GET /service_agents/contact_cases/{id}/notes` response."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Case note deleted successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
     "/service_agents/contact_cases/{id}": {
       "get": {
         "summary": "Get detailed case info",
@@ -17972,6 +18148,73 @@
         "responses": {
           "200": {
             "description": "The details of the case.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactManagerCase"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      },
+      "put": {
+        "summary": "Attach or detach a case's contact",
+        "description": "Attaches the case to a specific existing Contact, or detaches it,\nvia a direct contact_id write. Send a non-empty contact_id to\nattach; send an empty string to detach. The target contact_id must\nbelong to the same customer as the case; a cross-tenant contact_id\nis rejected as not found. Every attach/detach is recorded as a\ncase_contact_attributed/case_contact_detached event, queryable via\nbin-timeline-manager's audit log.\n",
+        "tags": [
+          "Service Agent"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "550e8400-e29b-41d4-a716-446655440000"
+            },
+            "description": "The unique identifier of the case. Returned from the `GET /service_agents/contact_cases` response."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "contact_id"
+                ],
+                "properties": {
+                  "contact_id": {
+                    "type": "string",
+                    "description": "The contact to attach. Empty string detaches. Deliberately NOT format: uuid -- the internal RPC-layer uuid.UUID field cannot unmarshal a literal empty string, so this HTTP-layer field stays a plain string and the \"\" -> uuid.Nil conversion happens explicitly in the handler.",
+                    "example": "660e8400-e29b-41d4-a716-446655440001"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The case after the contact attach/detach.",
             "content": {
               "application/json": {
                 "schema": {

@@ -12078,12 +12078,28 @@ type GetServiceAgentsContactCasesParams struct {
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
+// PutServiceAgentsContactCasesIdJSONBody defines parameters for PutServiceAgentsContactCasesId.
+type PutServiceAgentsContactCasesIdJSONBody struct {
+	// ContactId The contact to attach. Empty string detaches. Deliberately NOT format: uuid -- the internal RPC-layer uuid.UUID field cannot unmarshal a literal empty string, so this HTTP-layer field stays a plain string and the "" -> uuid.Nil conversion happens explicitly in the handler.
+	//
+	// Example: 660e8400-e29b-41d4-a716-446655440001
+	ContactId string `json:"contact_id"`
+}
+
 // PostServiceAgentsContactCasesIdAssignJSONBody defines parameters for PostServiceAgentsContactCasesIdAssign.
 type PostServiceAgentsContactCasesIdAssignJSONBody struct {
 	// OwnerId The agent ID to assign as the case owner. The agent ID returned from the `GET /service_agents/agents` response.
 	//
 	// Example: 2a2ec0ba-8004-11ec-aea5-439829c92a7c
 	OwnerId openapi_types.UUID `json:"owner_id"`
+}
+
+// PostServiceAgentsContactCasesIdNotesJSONBody defines parameters for PostServiceAgentsContactCasesIdNotes.
+type PostServiceAgentsContactCasesIdNotesJSONBody struct {
+	// Text The note's text content.
+	//
+	// Example: Called the customer back, no answer.
+	Text string `json:"text"`
 }
 
 // GetServiceAgentsContactInteractionsParams defines parameters for GetServiceAgentsContactInteractions.
@@ -13254,8 +13270,14 @@ type PutServiceAgentsContactAddressesIdJSONRequestBody PutServiceAgentsContactAd
 // PostServiceAgentsContactAddressesIdClaimJSONRequestBody defines body for PostServiceAgentsContactAddressesIdClaim for application/json ContentType.
 type PostServiceAgentsContactAddressesIdClaimJSONRequestBody PostServiceAgentsContactAddressesIdClaimJSONBody
 
+// PutServiceAgentsContactCasesIdJSONRequestBody defines body for PutServiceAgentsContactCasesId for application/json ContentType.
+type PutServiceAgentsContactCasesIdJSONRequestBody PutServiceAgentsContactCasesIdJSONBody
+
 // PostServiceAgentsContactCasesIdAssignJSONRequestBody defines body for PostServiceAgentsContactCasesIdAssign for application/json ContentType.
 type PostServiceAgentsContactCasesIdAssignJSONRequestBody PostServiceAgentsContactCasesIdAssignJSONBody
+
+// PostServiceAgentsContactCasesIdNotesJSONRequestBody defines body for PostServiceAgentsContactCasesIdNotes for application/json ContentType.
+type PostServiceAgentsContactCasesIdNotesJSONRequestBody PostServiceAgentsContactCasesIdNotesJSONBody
 
 // PostServiceAgentsContactsJSONRequestBody defines body for PostServiceAgentsContacts for application/json ContentType.
 type PostServiceAgentsContactsJSONRequestBody PostServiceAgentsContactsJSONBody

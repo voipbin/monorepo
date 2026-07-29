@@ -168,3 +168,48 @@ func (h *server) PostServiceAgentsContactCasesIdAssign(c *gin.Context, id openap
 
 	c.JSON(200, res)
 }
+
+// PutServiceAgentsContactCasesId handles PUT /service_agents/contact_cases/{id}
+func (h *server) PutServiceAgentsContactCasesId(c *gin.Context, id openapi_types.UUID) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "PutServiceAgentsContactCasesId",
+		"request_address": c.ClientIP,
+	})
+
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
+		return
+	}
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
+
+	target, err := uuid.FromString(id.String())
+	if err != nil {
+		log.Errorf("Invalid case ID format. err: %v", err)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID.").Wrap(err))
+		return
+	}
+
+	var req openapi_server.PutServiceAgentsContactCasesIdJSONRequestBody
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not bind request body. err: %v", err)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON.").Wrap(err))
+		return
+	}
+
+	// "" -> uuid.Nil (detach), anything else -> parsed UUID (attach).
+	// Mirrors admin PutContactCasesId's conversion exactly.
+	contactID := uuid.FromStringOrNil(req.ContactId)
+
+	res, err := h.serviceHandler.ServiceAgentCaseUpdateContact(c.Request.Context(), a, target, contactID)
+	if err != nil {
+		log.Errorf("Could not update case contact. err: %v", err)
+		abortWithServiceError(c, err)
+		return
+	}
+
+	c.JSON(200, res)
+}
