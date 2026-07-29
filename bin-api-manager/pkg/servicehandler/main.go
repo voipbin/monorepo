@@ -975,6 +975,12 @@ type ServiceHandler interface {
 	ServiceAgentCaseGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cmkase.Case, error)
 	ServiceAgentCaseClose(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cmkase.Case, error)
 	ServiceAgentCaseAssign(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, ownerID uuid.UUID) (*cmkase.Case, error)
+	ServiceAgentCaseUpdateContact(ctx context.Context, a *auth.AuthIdentity, id, contactID uuid.UUID) (*cmkase.Case, error)
+
+	// service_agent case note
+	ServiceAgentCaseNoteList(ctx context.Context, a *auth.AuthIdentity, caseID uuid.UUID) ([]*cmcasenote.CaseNote, error)
+	ServiceAgentCaseNoteCreate(ctx context.Context, a *auth.AuthIdentity, caseID uuid.UUID, text string) (*cmcasenote.CaseNote, error)
+	ServiceAgentCaseNoteDelete(ctx context.Context, a *auth.AuthIdentity, caseID uuid.UUID, noteID uuid.UUID) error
 
 	// service_agent talk chat
 	ServiceAgentTalkChatGet(ctx context.Context, a *auth.AuthIdentity, chatID uuid.UUID) (*tkchat.WebhookMessage, error)

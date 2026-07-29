@@ -1,6 +1,9 @@
 get:
-  summary: Get detailed case info
-  description: Retrieves detailed information about a specific case by its ID.
+  summary: List notes for a case
+  description: |
+    List all notes for the case of the given ID. Notes are an internal,
+    agent-facing annotation on a Case and never appear in any
+    customer-facing webhook or response.
   tags:
     - Service Agent
   parameters:
@@ -14,11 +17,11 @@ get:
       description: "The unique identifier of the case. Returned from the `GET /service_agents/contact_cases` response."
   responses:
     '200':
-      description: The details of the case.
+      description: Successful response.
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ContactManagerCase'
+            $ref: '#/components/schemas/ContactManagerCaseNoteListResponse'
     '400':
       $ref: '#/components/responses/BadRequest'
     '401':
@@ -29,16 +32,16 @@ get:
       $ref: '#/components/responses/NotFound'
     '500':
       $ref: '#/components/responses/InternalError'
-put:
-  summary: Attach or detach a case's contact
+
+post:
+  summary: Create a note on a case
   description: |
-    Attaches the case to a specific existing Contact, or detaches it,
-    via a direct contact_id write. Send a non-empty contact_id to
-    attach; send an empty string to detach. The target contact_id must
-    belong to the same customer as the case; a cross-tenant contact_id
-    is rejected as not found. Every attach/detach is recorded as a
-    case_contact_attributed/case_contact_detached event, queryable via
-    bin-timeline-manager's audit log.
+    Create a new note on the case of the given ID, authored by the
+    calling agent. The author is derived server-side from the caller's
+    own agent identity -- the request only carries the note text, so an
+    agent can never author a note as another agent or as the system.
+    Notes are an internal, agent-facing annotation on a Case and never
+    appear in any customer-facing webhook or response.
   tags:
     - Service Agent
   parameters:
@@ -57,24 +60,19 @@ put:
         schema:
           type: object
           required:
-            - contact_id
+            - text
           properties:
-            contact_id:
+            text:
               type: string
-              description: >-
-                The contact to attach. Empty string detaches. Deliberately
-                NOT format: uuid -- the internal RPC-layer uuid.UUID field
-                cannot unmarshal a literal empty string, so this HTTP-layer
-                field stays a plain string and the "" -> uuid.Nil
-                conversion happens explicitly in the handler.
-              example: "660e8400-e29b-41d4-a716-446655440001"
+              description: The note's text content.
+              example: "Called the customer back, no answer."
   responses:
     '200':
-      description: The case after the contact attach/detach.
+      description: Case note created successfully.
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ContactManagerCase'
+            $ref: '#/components/schemas/ContactManagerCaseNote'
     '400':
       $ref: '#/components/responses/BadRequest'
     '401':

@@ -4472,6 +4472,65 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentCaseList(ctx, a, size, tok
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentCaseList", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentCaseList), ctx, a, size, token)
 }
 
+// ServiceAgentCaseNoteCreate mocks base method.
+func (m *MockServiceHandler) ServiceAgentCaseNoteCreate(ctx context.Context, a *auth.AuthIdentity, caseID uuid.UUID, text string) (*casenote.CaseNote, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentCaseNoteCreate", ctx, a, caseID, text)
+	ret0, _ := ret[0].(*casenote.CaseNote)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceAgentCaseNoteCreate indicates an expected call of ServiceAgentCaseNoteCreate.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentCaseNoteCreate(ctx, a, caseID, text any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentCaseNoteCreate", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentCaseNoteCreate), ctx, a, caseID, text)
+}
+
+// ServiceAgentCaseNoteDelete mocks base method.
+func (m *MockServiceHandler) ServiceAgentCaseNoteDelete(ctx context.Context, a *auth.AuthIdentity, caseID, noteID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentCaseNoteDelete", ctx, a, caseID, noteID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ServiceAgentCaseNoteDelete indicates an expected call of ServiceAgentCaseNoteDelete.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentCaseNoteDelete(ctx, a, caseID, noteID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentCaseNoteDelete", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentCaseNoteDelete), ctx, a, caseID, noteID)
+}
+
+// ServiceAgentCaseNoteList mocks base method.
+func (m *MockServiceHandler) ServiceAgentCaseNoteList(ctx context.Context, a *auth.AuthIdentity, caseID uuid.UUID) ([]*casenote.CaseNote, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentCaseNoteList", ctx, a, caseID)
+	ret0, _ := ret[0].([]*casenote.CaseNote)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceAgentCaseNoteList indicates an expected call of ServiceAgentCaseNoteList.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentCaseNoteList(ctx, a, caseID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentCaseNoteList", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentCaseNoteList), ctx, a, caseID)
+}
+
+// ServiceAgentCaseUpdateContact mocks base method.
+func (m *MockServiceHandler) ServiceAgentCaseUpdateContact(ctx context.Context, a *auth.AuthIdentity, id, contactID uuid.UUID) (*kase.Case, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentCaseUpdateContact", ctx, a, id, contactID)
+	ret0, _ := ret[0].(*kase.Case)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceAgentCaseUpdateContact indicates an expected call of ServiceAgentCaseUpdateContact.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentCaseUpdateContact(ctx, a, id, contactID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentCaseUpdateContact", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentCaseUpdateContact), ctx, a, id, contactID)
+}
+
 // ServiceAgentContactAddressClaim mocks base method.
 func (m *MockServiceHandler) ServiceAgentContactAddressClaim(ctx context.Context, a *auth.AuthIdentity, addressID, contactID uuid.UUID) (*contact.Address, error) {
 	m.ctrl.T.Helper()
