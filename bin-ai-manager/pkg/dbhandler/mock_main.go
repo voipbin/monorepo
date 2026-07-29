@@ -65,6 +65,22 @@ func (mr *MockDBHandlerMockRecorder) AIAcceptProposal(ctx, proposalID, newHistor
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIAcceptProposal", reflect.TypeOf((*MockDBHandler)(nil).AIAcceptProposal), ctx, proposalID, newHistoryID, proposedPrompt)
 }
 
+// AIActivateInsight mocks base method.
+func (m *MockDBHandler) AIActivateInsight(ctx context.Context, id uuid.UUID) (*ai.AI, *ai.AI, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIActivateInsight", ctx, id)
+	ret0, _ := ret[0].(*ai.AI)
+	ret1, _ := ret[1].(*ai.AI)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// AIActivateInsight indicates an expected call of AIActivateInsight.
+func (mr *MockDBHandlerMockRecorder) AIActivateInsight(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIActivateInsight", reflect.TypeOf((*MockDBHandler)(nil).AIActivateInsight), ctx, id)
+}
+
 // AIAuditCountProgressing mocks base method.
 func (m *MockDBHandler) AIAuditCountProgressing(ctx context.Context, customerID uuid.UUID) (int64, error) {
 	m.ctrl.T.Helper()

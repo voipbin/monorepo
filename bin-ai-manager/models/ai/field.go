@@ -12,6 +12,8 @@ const (
 	FieldDetail Field = "detail"
 	FieldType   Field = "type"
 
+	FieldIsInsightActive Field = "is_insight_active"
+
 	FieldEngineModel Field = "engine_model"
 	FieldParameter   Field = "parameter"
 	FieldEngineKey   Field = "engine_key"

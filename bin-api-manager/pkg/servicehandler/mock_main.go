@@ -114,6 +114,21 @@ func (m *MockServiceHandler) EXPECT() *MockServiceHandlerMockRecorder {
 	return m.recorder
 }
 
+// AIActivateInsight mocks base method.
+func (m *MockServiceHandler) AIActivateInsight(ctx context.Context, a *auth.AuthIdentity, aiID uuid.UUID) (*ai.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIActivateInsight", ctx, a, aiID)
+	ret0, _ := ret[0].(*ai.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIActivateInsight indicates an expected call of AIActivateInsight.
+func (mr *MockServiceHandlerMockRecorder) AIActivateInsight(ctx, a, aiID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIActivateInsight", reflect.TypeOf((*MockServiceHandler)(nil).AIActivateInsight), ctx, a, aiID)
+}
+
 // AIAuditCreate mocks base method.
 func (m *MockServiceHandler) AIAuditCreate(ctx context.Context, a *auth.AuthIdentity, aicallID uuid.UUID, language string) ([]*aiaudit.WebhookMessage, error) {
 	m.ctrl.T.Helper()

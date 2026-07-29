@@ -424,7 +424,7 @@ func Test_AIUpdate(t *testing.T) {
 	}
 }
 
-func Test_AICreate_InsightUniquePerCustomer(t *testing.T) {
+func Test_AICreate_InsightMultiplePerCustomer(t *testing.T) {
 	ctx := context.Background()
 
 	mc := gomock.NewController(t)
@@ -442,7 +442,7 @@ func Test_AICreate_InsightUniquePerCustomer(t *testing.T) {
 
 	customerID := uuid.FromStringOrNil("a1a1a1a1-0000-0000-0000-000000000001")
 
-	// first insight AI for the customer succeeds
+	// First insight AI for the customer succeeds.
 	firstID := uuid.FromStringOrNil("a1a1a1a1-0000-0000-0000-000000000002")
 	t1 := time.Date(2026, 7, 29, 0, 0, 0, 0, time.UTC)
 	mockUtil.EXPECT().TimeNow().Return(&t1)
@@ -454,7 +454,9 @@ func Test_AICreate_InsightUniquePerCustomer(t *testing.T) {
 		t.Fatalf("first insight AICreate: expected ok, got: %v", err)
 	}
 
-	// second insight AI for the SAME customer must be rejected
+	// A second insight AI for the SAME customer also succeeds: the unique index
+	// now only covers the single ACTIVE insight AI, and creates always default
+	// to inactive.
 	secondID := uuid.FromStringOrNil("a1a1a1a1-0000-0000-0000-000000000003")
 	t2 := time.Date(2026, 7, 29, 0, 0, 1, 0, time.UTC)
 	mockUtil.EXPECT().TimeNow().Return(&t2)
@@ -462,15 +464,18 @@ func Test_AICreate_InsightUniquePerCustomer(t *testing.T) {
 		Identity: identity.Identity{ID: secondID, CustomerID: customerID},
 		Type:     ai.TypeInsight,
 	}
-	err := h.AICreate(ctx, second)
-	if err == nil {
-		t.Fatal("second insight AICreate: expected an error, got nil")
-	}
-	if !IsErrDuplicate(err) {
-		t.Errorf("second insight AICreate: expected IsErrDuplicate(err)=true, got err: %v", err)
+	if err := h.AICreate(ctx, second); err != nil {
+		t.Fatalf("second insight AICreate: expected ok, got: %v", err)
 	}
 
-	// a normal-type AI for the same customer is NOT affected by the constraint
+	// Neither is active.
+	for _, id := range []uuid.UUID{firstID, secondID} {
+		if got := fetchAIIsInsightActive(t, id); got {
+			t.Errorf("newly created insight ai %s: is_insight_active = true, want false", id)
+		}
+	}
+
+	// A normal-type AI for the same customer is unaffected by the constraint.
 	normalID := uuid.FromStringOrNil("a1a1a1a1-0000-0000-0000-000000000004")
 	t3 := time.Date(2026, 7, 29, 0, 0, 2, 0, time.UTC)
 	mockUtil.EXPECT().TimeNow().Return(&t3)
@@ -480,31 +485,5 @@ func Test_AICreate_InsightUniquePerCustomer(t *testing.T) {
 	}
 	if err := h.AICreate(ctx, normal); err != nil {
 		t.Errorf("normal-type AICreate for same customer: expected ok, got: %v", err)
-	}
-
-	// soft-delete the first insight AI, freeing the slot.
-	// AIDelete's real cache interaction is TimeNow + aiUpdateToCache (which
-	// reads back via a DB query, not cache.AIGet, then calls cache.AISet) —
-	// see bin-ai-manager/pkg/dbhandler/ai.go's AIDelete and aiUpdateToCache.
-	// The AISet call is already covered by the mockCache.EXPECT().AISet(...).AnyTimes()
-	// set up above; AIDelete never calls cache.AIGet, so no such expectation
-	// is set here (unlike the separate, subsequent h.AIGet call pattern used
-	// in the existing Test_AIDelete test, which does call cache.AIGet).
-	t4 := time.Date(2026, 7, 29, 0, 0, 3, 0, time.UTC)
-	mockUtil.EXPECT().TimeNow().Return(&t4)
-	if err := h.AIDelete(ctx, firstID); err != nil {
-		t.Fatalf("AIDelete(first): expected ok, got: %v", err)
-	}
-
-	// a new insight AI for the same customer now succeeds
-	thirdID := uuid.FromStringOrNil("a1a1a1a1-0000-0000-0000-000000000005")
-	t5 := time.Date(2026, 7, 29, 0, 0, 4, 0, time.UTC)
-	mockUtil.EXPECT().TimeNow().Return(&t5)
-	third := &ai.AI{
-		Identity: identity.Identity{ID: thirdID, CustomerID: customerID},
-		Type:     ai.TypeInsight,
-	}
-	if err := h.AICreate(ctx, third); err != nil {
-		t.Errorf("insight AICreate after soft-delete: expected ok, got: %v", err)
 	}
 }

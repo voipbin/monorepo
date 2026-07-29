@@ -61,6 +61,7 @@ type AIHandler interface {
 		smartTurnEnabled bool,
 		autoAICallAuditEnabled bool,
 	) (*ai.AI, error)
+	ActivateInsight(ctx context.Context, id uuid.UUID) (*ai.AI, error)
 	DirectHashRegenerate(ctx context.Context, id uuid.UUID) (*ai.AI, error)
 }
 

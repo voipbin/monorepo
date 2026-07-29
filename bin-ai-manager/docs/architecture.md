@@ -48,6 +48,7 @@ ListenHandler (`pkg/listenhandler/`) routes by regex URI pattern over the shared
 | `GET /v1/ais?` | List AI configurations (paginated) |
 | `GET/PUT/DELETE /v1/ais/<uuid>` | Get / update / delete AI config |
 | `POST /v1/ais` | Create AI configuration |
+| `POST /v1/ais/<uuid>/activate_insight` | Make this Insight AI the customer's active one |
 | `POST /v1/ais/<uuid>/direct-hash-regenerate` | Regenerate AI secret hash |
 | `GET /v1/aicalls?` | List AI call sessions (paginated) |
 | `GET /v1/aicalls/<uuid>` | Get AI call session |

@@ -3629,6 +3629,11 @@ type AIManagerAI struct {
 	// Example: You are a helpful customer support assistant.
 	InitPrompt *string `json:"init_prompt,omitempty"`
 
+	// IsInsightActive Whether this is the customer's active Insight AI, i.e. the one the Case Insight Assistant panel auto-attaches to a case. Only meaningful when `type` is `insight`. A customer may hold any number of Insight AIs but at most one may be active. Newly created AIs are always inactive; use `POST /ais/{id}/activate_insight` to activate one. When no Insight AI is active, the most recently created one is used.
+	//
+	// Example: false
+	IsInsightActive bool `json:"is_insight_active"`
+
 	// Name Name of the AI.
 	//
 	// Example: Customer Support Bot

@@ -65,3 +65,50 @@ func TestConvertWebhookMessage_CurrentPromptHistoryID(t *testing.T) {
 		})
 	}
 }
+
+// is_insight_active must be carried into WebhookMessage and must appear on the
+// wire even when false — with omitempty, "inactive" would be indistinguishable
+// from "field absent" for any client parsing the JSON. The RST struct docs for
+// /ais track WebhookMessage, so this also guards the documented contract.
+func TestConvertWebhookMessage_IsInsightActive(t *testing.T) {
+	tests := []struct {
+		name   string
+		active bool
+	}{
+		{"active_insight_ai", true},
+		{"inactive_insight_ai", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			a := &AI{
+				Identity:        commonidentity.Identity{ID: uuid.Must(uuid.NewV4())},
+				Type:            TypeInsight,
+				IsInsightActive: tt.active,
+			}
+
+			wh := a.ConvertWebhookMessage()
+			if wh.IsInsightActive != tt.active {
+				t.Errorf("IsInsightActive mismatch. expect: %v, got: %v", tt.active, wh.IsInsightActive)
+			}
+
+			data, err := json.Marshal(wh)
+			if err != nil {
+				t.Fatalf("json.Marshal failed: %v", err)
+			}
+
+			var raw map[string]any
+			if err := json.Unmarshal(data, &raw); err != nil {
+				t.Fatalf("json.Unmarshal failed: %v", err)
+			}
+
+			got, present := raw["is_insight_active"]
+			if !present {
+				t.Fatalf("expected is_insight_active to be present in JSON output even when %v", tt.active)
+			}
+			if got != tt.active {
+				t.Errorf("is_insight_active in JSON: expect %v, got %v", tt.active, got)
+			}
+		})
+	}
+}

@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Tutorial: Improve an AI Prompt from Audits" href="ai_tutorial_prompt_proposal.html"><link rel="prev" title="AI Call Participant" href="ai_struct_participant.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
         <title>Tutorial - VoIPBin Documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -918,6 +918,46 @@
 - Handle cases where AI may not understand the input
 - Provide clear instructions to users about what they can ask</p>
 </section>
+<section id="switch-the-active-insight-ai">
+<h3>Switch the active Insight AI<a class="headerlink" href="#switch-the-active-insight-ai" title="Link to this heading">¶</a></h3>
+<p>A customer may keep several <code class="docutils literal notranslate"><span class="pre">type=insight</span></code> AI configurations, but only one is <em>active</em> — the one the Case Insight Assistant panel auto-attaches when an agent opens a Case. Create as many drafts as you like; each one starts inactive.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span># 1. Create a second Insight AI (starts inactive -- no 409, the existing one keeps serving traffic)
+$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/ais?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+--header &#39;Content-Type: application/json&#39; \
+--data-raw &#39;{
+    &quot;name&quot;: &quot;Case Insight Assistant v2&quot;,
+    &quot;detail&quot;: &quot;Trial run with a larger model&quot;,
+    &quot;type&quot;: &quot;insight&quot;,
+    &quot;engine_model&quot;: &quot;openai.gpt-4o&quot;,
+    &quot;engine_key&quot;: &quot;&lt;YOUR_OPENAI_KEY&gt;&quot;,
+    &quot;init_prompt&quot;: &quot;You help agents understand the history of a support case.&quot;,
+    &quot;tts_type&quot;: &quot;elevenlabs&quot;,
+    &quot;stt_type&quot;: &quot;deepgram&quot;,
+    &quot;tool_names&quot;: [&quot;get_contact_interactions&quot;, &quot;get_conversation_content&quot;]
+}&#39;
+
+# 2. Promote it once you are satisfied -- the previously active one is deactivated automatically
+$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/ais/b1c2d3e4-0000-4000-8000-000000000002/activate_insight?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+
+{
+    &quot;id&quot;: &quot;b1c2d3e4-0000-4000-8000-000000000002&quot;,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+    &quot;name&quot;: &quot;Case Insight Assistant v2&quot;,
+    &quot;type&quot;: &quot;insight&quot;,
+    &quot;is_insight_active&quot;: true,
+    &quot;engine_model&quot;: &quot;openai.gpt-4o&quot;,
+    &quot;tm_create&quot;: &quot;2024-02-09 07:01:35.666687&quot;,
+    &quot;tm_update&quot;: &quot;2024-02-09 07:05:12.123456&quot;,
+    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+}
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>This endpoint requires no request body, and there is no separate “deactivate” call — activating one Insight AI deactivates the previous one in the same operation. Re-activating the already-active AI is a no-op success. To find the current one, list with the <code class="docutils literal notranslate"><span class="pre">is_insight_active</span></code> field in view; when none is active, the most recently created Insight AI is used instead. See <a class="reference internal" href="ai_struct_ai.html#ai-struct-ai-is-insight-active"><span class="std std-ref">Insight AI activation</span></a>.</p>
+</div>
+</section>
 <section id="regenerate-direct-ai-hash">
 <h3>Regenerate direct AI hash<a class="headerlink" href="#regenerate-direct-ai-hash" title="Link to this heading">¶</a></h3>
 <p>Regenerate the direct hash for an AI configuration. This invalidates the previous SIP URI and creates a new one. If the AI has no existing direct hash, one is created automatically.</p>
@@ -1049,6 +1089,7 @@
 <li><a class="reference internal" href="#ai-summary-for-call-transcription">AI Summary for Call Transcription</a></li>
 <li><a class="reference internal" href="#real-time-ai-summary">Real-Time AI Summary</a></li>
 <li><a class="reference internal" href="#best-practices">Best Practices</a></li>
+<li><a class="reference internal" href="#switch-the-active-insight-ai">Switch the active Insight AI</a></li>
 <li><a class="reference internal" href="#regenerate-direct-ai-hash">Regenerate direct AI hash</a></li>
 <li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
 </ul>
@@ -1065,8 +1106,8 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

@@ -303,6 +303,7 @@ type ServiceHandler interface {
 		toolNames []amtool.ToolName,
 		autoAICallAuditEnabled bool,
 	) (*amai.WebhookMessage, error)
+	AIActivateInsight(ctx context.Context, a *auth.AuthIdentity, aiID uuid.UUID) (*amai.WebhookMessage, error)
 	AIDirectHashRegenerate(ctx context.Context, a *auth.AuthIdentity, aiID uuid.UUID) (*amai.WebhookMessage, error)
 
 	// ai prompt history handlers

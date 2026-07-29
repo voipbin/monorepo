@@ -133,6 +133,21 @@ func (m *MockRequestHandler) EXPECT() *MockRequestHandlerMockRecorder {
 	return m.recorder
 }
 
+// AIV1AIActivateInsight mocks base method.
+func (m *MockRequestHandler) AIV1AIActivateInsight(ctx context.Context, aiID uuid.UUID) (*ai.AI, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIV1AIActivateInsight", ctx, aiID)
+	ret0, _ := ret[0].(*ai.AI)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIV1AIActivateInsight indicates an expected call of AIV1AIActivateInsight.
+func (mr *MockRequestHandlerMockRecorder) AIV1AIActivateInsight(ctx, aiID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIActivateInsight", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIActivateInsight), ctx, aiID)
+}
+
 // AIV1AIAuditCreate mocks base method.
 func (m *MockRequestHandler) AIV1AIAuditCreate(ctx context.Context, customerID, aicallID uuid.UUID, language string) ([]*aiaudit.AIAudit, error) {
 	m.ctrl.T.Helper()

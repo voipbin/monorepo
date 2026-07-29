@@ -2091,6 +2091,10 @@ components:
           enum: ["normal", "insight"]
           description: "AI type. `normal` (default) is a general-purpose AI. `insight` restricts the AI to the Insight tool set and uses a dedicated system prompt for analyzing existing contact/conversation data."
           example: "normal"
+        is_insight_active:
+          type: boolean
+          description: "Whether this is the customer's active Insight AI, i.e. the one the Case Insight Assistant panel auto-attaches to a case. Only meaningful when `type` is `insight`. A customer may hold any number of Insight AIs but at most one may be active. Newly created AIs are always inactive; use `POST /ais/{id}/activate_insight` to activate one. When no Insight AI is active, the most recently created one is used."
+          example: false
         engine_model:
           $ref: '#/components/schemas/AIManagerAIEngineModel'
           description: Model of the AI engine.
@@ -2177,6 +2181,12 @@ components:
           x-go-type: string
           description: Timestamp when the AI was deleted.
           example: "2026-01-15T09:30:00.000000Z"
+      required:
+        # Always emitted, never omitted: the AI webhook model deliberately
+        # carries is_insight_active without omitempty so `false` stays visible
+        # on the wire. Marking it required keeps the generated client type a
+        # plain bool and in sync with that decision.
+        - is_insight_active
 
     AIManagerTeam:
       type: object
@@ -8276,6 +8286,8 @@ paths:
 
   /ais/{id}:
     $ref: './paths/ais/id.yaml'
+  /ais/{id}/activate_insight:
+    $ref: './paths/ais/id_activate_insight.yaml'
   /ais/{id}/direct-hash-regenerate:
     $ref: './paths/ais/id_direct_hash_regenerate.yaml'
   /ais/{id}/prompt_histories:
