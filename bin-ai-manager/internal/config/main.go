@@ -34,6 +34,8 @@ type Config struct {
 
 	AIcallContactCaseRecreateRateLimitMinutes int // Rate limit window (minutes) after a contact_case-typed AIcall terminates during which recreation for the same reference_id is blocked (VOIP-1234).
 
+	AIcallSendCooldownSeconds int // Minimum seconds between two Send() calls on the same AIcall, to bound LLM spend from rapid repeated sends.
+
 	AnalysisDefaultModel    string // AnalysisDefaultModel is the default model for the generic analysis gateway.
 	AnalysisAllowedModels   string // AnalysisAllowedModels is a comma-separated allow-set of models the analysis gateway accepts.
 	AnalysisEngineBaseURL   string // AnalysisEngineBaseURL is the base URL for the analysis gateway LLM engine (Gemini OpenAI-compat by default; clear to use OpenAI).
@@ -68,6 +70,7 @@ func bindConfig(cmd *cobra.Command) error {
 	f.String("google_api_key", "", "Google API key for Gemini audit evaluation")
 	f.Int("aicall_conversation_idle_timeout_hours", 24, "Idle timeout (hours) for conversation-typed AIcalls before they expire")
 	f.Int("aicall_contact_case_recreate_rate_limit_minutes", 5, "Rate limit window (minutes) after a contact_case-typed AIcall terminates during which recreation for the same reference_id is blocked")
+	f.Int("aicall_send_cooldown_seconds", 3, "Minimum seconds between two Send() calls on the same AIcall")
 	f.String("analysis_default_model", "gemini-2.5-flash", "Default model for the generic analysis gateway")
 	f.String("analysis_allowed_models", "gemini-2.5-flash,gemini-2.5-pro", "Comma-separated allow-set of models for the analysis gateway")
 	f.String("analysis_engine_base_url", "https://generativelanguage.googleapis.com/v1beta/openai/", "Base URL for the analysis gateway LLM engine (Gemini OpenAI-compat by default; clear to use OpenAI)")
@@ -88,6 +91,7 @@ func bindConfig(cmd *cobra.Command) error {
 
 		"aicall_conversation_idle_timeout_hours":          "AICALL_CONVERSATION_IDLE_TIMEOUT_HOURS",
 		"aicall_contact_case_recreate_rate_limit_minutes": "AICALL_CONTACT_CASE_RECREATE_RATE_LIMIT_MINUTES",
+		"aicall_send_cooldown_seconds":                    "AICALL_SEND_COOLDOWN_SECONDS",
 
 		"analysis_default_model":     "ANALYSIS_DEFAULT_MODEL",
 		"analysis_allowed_models":    "ANALYSIS_ALLOWED_MODELS",
@@ -134,6 +138,8 @@ func LoadGlobalConfig() {
 
 			AIcallContactCaseRecreateRateLimitMinutes: viper.GetInt("aicall_contact_case_recreate_rate_limit_minutes"),
 
+			AIcallSendCooldownSeconds: viper.GetInt("aicall_send_cooldown_seconds"),
+
 			AnalysisDefaultModel:    viper.GetString("analysis_default_model"),
 			AnalysisAllowedModels:   viper.GetString("analysis_allowed_models"),
 			AnalysisEngineBaseURL:   viper.GetString("analysis_engine_base_url"),
@@ -163,6 +169,11 @@ func SetAIcallConversationIdleTimeoutHoursForTest(hours int) {
 // USE ONLY FROM TESTS.
 func SetAIcallContactCaseRecreateRateLimitMinutesForTest(minutes int) {
 	globalConfig.AIcallContactCaseRecreateRateLimitMinutes = minutes
+}
+
+// SetAIcallSendCooldownSecondsForTest overrides the send cooldown in tests.
+func SetAIcallSendCooldownSecondsForTest(seconds int) {
+	globalConfig.AIcallSendCooldownSeconds = seconds
 }
 
 // InitPrometheus initializes Prometheus metrics server.

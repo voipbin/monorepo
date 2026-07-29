@@ -7112,8 +7112,8 @@ type GetServiceAgentsAicallsParams struct {
 
 // PostServiceAgentsAicallsJSONBody defines parameters for PostServiceAgentsAicalls.
 type PostServiceAgentsAicallsJSONBody struct {
-	// AssistanceId The unique identifier of the assistance entity (AI or Team). Returned from the `POST /ais`, `GET /ais`, `POST /teams`, or `GET /teams` response.
-	AssistanceId openapi_types.UUID `json:"assistance_id"`
+	// AssistanceId The unique identifier of the assistance entity (AI or Team). Returned from the `POST /ais`, `GET /ais`, `POST /teams`, or `GET /teams` response. Optional when `assistance_type=ai` and `reference_type=contact_case`: if omitted, the customer's own `type=insight` AI is resolved automatically. Required for every other combination.
+	AssistanceId *openapi_types.UUID `json:"assistance_id,omitempty"`
 
 	// AssistanceType Type of assistance entity associated with the AI call.
 	AssistanceType AIManagerAIcallAssistanceType `json:"assistance_type"`

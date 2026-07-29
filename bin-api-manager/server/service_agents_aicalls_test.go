@@ -242,6 +242,29 @@ func Test_PostServiceAgentsAicalls(t *testing.T) {
 			expectReferenceID:    uuid.FromStringOrNil("4ecc56ec-8285-11ed-9958-8b0a60b665bf"),
 			expectRes:            `{"id":"72e68b78-8286-11ed-8875-378ced61c021","customer_id":"00000000-0000-0000-0000-000000000000","assistance_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","current_member_id":"00000000-0000-0000-0000-000000000000","tm_end":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
+		{
+			name: "assistance_id omitted -- reaches the service handler as uuid.Nil",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4e72f3ea-8285-11ed-a55b-6bf44eeb8a87"),
+				},
+			}),
+
+			reqQuery: "/service_agents/aicalls",
+			reqBody:  []byte(`{"assistance_type":"ai","reference_type":"contact_case","reference_id":"4ecc56ec-8285-11ed-9958-8b0a60b665bf"}`),
+
+			responseAicall: &amaicall.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("82e68b78-8286-11ed-8875-378ced61c022"),
+				},
+			},
+
+			expectAssistanceType: amaicall.AssistanceTypeAI,
+			expectAssistanceID:   uuid.Nil,
+			expectReferenceType:  amaicall.ReferenceTypeContactCase,
+			expectReferenceID:    uuid.FromStringOrNil("4ecc56ec-8285-11ed-9958-8b0a60b665bf"),
+			expectRes:            `{"id":"82e68b78-8286-11ed-8875-378ced61c022","customer_id":"00000000-0000-0000-0000-000000000000","assistance_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","current_member_id":"00000000-0000-0000-0000-000000000000","tm_end":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+		},
 	}
 
 	for _, tt := range tests {

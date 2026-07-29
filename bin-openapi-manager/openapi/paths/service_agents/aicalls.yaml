@@ -87,7 +87,10 @@ post:
               description: >-
                 The unique identifier of the assistance entity (AI or Team).
                 Returned from the `POST /ais`, `GET /ais`, `POST /teams`, or
-                `GET /teams` response.
+                `GET /teams` response. Optional when `assistance_type=ai` and
+                `reference_type=contact_case`: if omitted, the customer's own
+                `type=insight` AI is resolved automatically. Required for
+                every other combination.
               example: "550e8400-e29b-41d4-a716-446655440000"
             reference_type:
               $ref: '#/components/schemas/AIManagerAIcallReferenceType'
@@ -98,7 +101,6 @@ post:
               example: "5e4a0680-804e-11ec-8477-2fea5968d85b"
           required:
             - assistance_type
-            - assistance_id
             - reference_type
             - reference_id
   responses:

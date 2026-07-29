@@ -3580,6 +3580,9 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 	// ensure the recreate rate-limit window is set deterministically for cases
 	// that depend on it (VOIP-1234)
 	config.SetAIcallContactCaseRecreateRateLimitMinutesForTest(5)
+	// ensure the idle timeout is set deterministically for cases that depend
+	// on it (Case Insight Assistant Task 2)
+	config.SetAIcallConversationIdleTimeoutHoursForTest(24)
 
 	recentTerminatedTM := time.Now().Add(-1 * time.Minute) // inside the 5-minute rate-limit window
 	staleTerminatedTM := time.Now().Add(-10 * time.Minute) // outside the 5-minute rate-limit window
@@ -3611,6 +3614,12 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 		// (promAIcallContactCaseRecreateRateLimitedTotal) MUST increment by
 		// exactly 1 across the call. When false, it is not asserted.
 		expectRateLimitedInc bool
+
+		// expectIdleExpiredInc — when true, the idle-expired counter
+		// (promAIcallIdleExpiredTotal, shared with the conversation reuse
+		// path) MUST increment by at least 1 across the call. When false,
+		// it is not asserted.
+		expectIdleExpiredInc bool
 	}{
 		{
 			name: "create succeeds on first attempt",
@@ -3648,6 +3657,15 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				m.notify.EXPECT().PublishWebhookEvent(ctx, created.CustomerID, aicall.EventTypeStatusInitializing, created)
 				m.req.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any()).Return(nil)
 				m.message.EXPECT().Create(ctx, uuid.Nil, created.CustomerID, created.ID, created.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, gomock.Any(), nil, "", gomock.Any()).Return(&message.Message{}, nil)
+
+				m.message.EXPECT().List(ctx, uint64(100), gomock.Any(), gomock.Any()).Return([]*message.Message{}, nil)
+				responsePC := &pmpipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("10000000-0007-11f0-aaaa-000000000001")}, HostID: "host-x"}
+				m.req.EXPECT().PipecatV1PipecatcallStart(ctx, created.PipecatcallID, created.CustomerID, created.ActiveflowID, pmpipecatcall.ReferenceTypeAICall, created.ID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(responsePC, nil)
+				m.req.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, responsePC.HostID, responsePC.ID, defaultAITaskTimeout).Return(nil)
+				m.db.EXPECT().AIcallUpdate(ctx, created.ID, map[aicall.Field]any{aicall.FieldStatus: aicall.StatusProgressing}).Return(nil)
+				progressingResult := &aicall.AIcall{Identity: created.Identity, ActiveflowID: created.ActiveflowID, ReferenceType: created.ReferenceType, ReferenceID: created.ReferenceID, Status: aicall.StatusProgressing}
+				m.db.EXPECT().AIcallGet(ctx, created.ID).Return(progressingResult, nil)
+				m.notify.EXPECT().PublishWebhookEvent(ctx, progressingResult.CustomerID, aicall.EventTypeStatusProgressing, progressingResult)
 			},
 
 			expectRes: &aicall.AIcall{
@@ -3658,7 +3676,7 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				ActiveflowID:  uuid.FromStringOrNil("10000000-0003-11f0-aaaa-000000000001"),
 				ReferenceType: aicall.ReferenceTypeContactCase,
 				ReferenceID:   uuid.FromStringOrNil("10000000-0004-11f0-aaaa-000000000001"),
-				Status:        aicall.StatusInitiating,
+				Status:        aicall.StatusProgressing,
 			},
 		},
 		{
@@ -3758,6 +3776,15 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				m.notify.EXPECT().PublishWebhookEvent(ctx, created.CustomerID, aicall.EventTypeStatusInitializing, created)
 				m.req.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any()).Return(nil)
 				m.message.EXPECT().Create(ctx, uuid.Nil, created.CustomerID, created.ID, created.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, gomock.Any(), nil, "", gomock.Any()).Return(&message.Message{}, nil)
+
+				m.message.EXPECT().List(ctx, uint64(100), gomock.Any(), gomock.Any()).Return([]*message.Message{}, nil)
+				responsePC := &pmpipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("30000000-0010-11f0-cccc-000000000001")}, HostID: "host-x"}
+				m.req.EXPECT().PipecatV1PipecatcallStart(ctx, created.PipecatcallID, created.CustomerID, created.ActiveflowID, pmpipecatcall.ReferenceTypeAICall, created.ID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(responsePC, nil)
+				m.req.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, responsePC.HostID, responsePC.ID, defaultAITaskTimeout).Return(nil)
+				m.db.EXPECT().AIcallUpdate(ctx, aicallID2, map[aicall.Field]any{aicall.FieldStatus: aicall.StatusProgressing}).Return(nil)
+				progressingResult := &aicall.AIcall{Identity: created.Identity, ActiveflowID: created.ActiveflowID, ReferenceType: created.ReferenceType, ReferenceID: created.ReferenceID, Status: aicall.StatusProgressing}
+				m.db.EXPECT().AIcallGet(ctx, aicallID2).Return(progressingResult, nil)
+				m.notify.EXPECT().PublishWebhookEvent(ctx, progressingResult.CustomerID, aicall.EventTypeStatusProgressing, progressingResult)
 			},
 
 			expectRes: &aicall.AIcall{
@@ -3768,7 +3795,7 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				ActiveflowID:  uuid.FromStringOrNil("30000000-0003-11f0-cccc-000000000001"),
 				ReferenceType: aicall.ReferenceTypeContactCase,
 				ReferenceID:   uuid.FromStringOrNil("30000000-0004-11f0-cccc-000000000001"),
-				Status:        aicall.StatusInitiating,
+				Status:        aicall.StatusProgressing,
 			},
 		},
 		{
@@ -3951,6 +3978,15 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				m.notify.EXPECT().PublishWebhookEvent(ctx, created.CustomerID, aicall.EventTypeStatusInitializing, created)
 				m.req.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any()).Return(nil)
 				m.message.EXPECT().Create(ctx, uuid.Nil, created.CustomerID, created.ID, created.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, gomock.Any(), nil, "", gomock.Any()).Return(&message.Message{}, nil)
+
+				m.message.EXPECT().List(ctx, uint64(100), gomock.Any(), gomock.Any()).Return([]*message.Message{}, nil)
+				responsePC := &pmpipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("70000000-0010-11f0-1111-000000000001")}, HostID: "host-x"}
+				m.req.EXPECT().PipecatV1PipecatcallStart(ctx, created.PipecatcallID, created.CustomerID, created.ActiveflowID, pmpipecatcall.ReferenceTypeAICall, created.ID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(responsePC, nil)
+				m.req.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, responsePC.HostID, responsePC.ID, defaultAITaskTimeout).Return(nil)
+				m.db.EXPECT().AIcallUpdate(ctx, aicallID2, map[aicall.Field]any{aicall.FieldStatus: aicall.StatusProgressing}).Return(nil)
+				progressingResult := &aicall.AIcall{Identity: created.Identity, ActiveflowID: created.ActiveflowID, ReferenceType: created.ReferenceType, ReferenceID: created.ReferenceID, Status: aicall.StatusProgressing}
+				m.db.EXPECT().AIcallGet(ctx, aicallID2).Return(progressingResult, nil)
+				m.notify.EXPECT().PublishWebhookEvent(ctx, progressingResult.CustomerID, aicall.EventTypeStatusProgressing, progressingResult)
 			},
 
 			expectRes: &aicall.AIcall{
@@ -3961,7 +3997,7 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				ActiveflowID:  uuid.FromStringOrNil("70000000-0003-11f0-1111-000000000001"),
 				ReferenceType: aicall.ReferenceTypeContactCase,
 				ReferenceID:   uuid.FromStringOrNil("70000000-0004-11f0-1111-000000000001"),
-				Status:        aicall.StatusInitiating,
+				Status:        aicall.StatusProgressing,
 			},
 		},
 		{
@@ -4016,6 +4052,15 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				m.notify.EXPECT().PublishWebhookEvent(ctx, created.CustomerID, aicall.EventTypeStatusInitializing, created)
 				m.req.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any()).Return(nil)
 				m.message.EXPECT().Create(ctx, uuid.Nil, created.CustomerID, created.ID, created.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, gomock.Any(), nil, "", gomock.Any()).Return(&message.Message{}, nil)
+
+				m.message.EXPECT().List(ctx, uint64(100), gomock.Any(), gomock.Any()).Return([]*message.Message{}, nil)
+				responsePC := &pmpipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("80000000-0010-11f0-2222-000000000001")}, HostID: "host-x"}
+				m.req.EXPECT().PipecatV1PipecatcallStart(ctx, created.PipecatcallID, created.CustomerID, created.ActiveflowID, pmpipecatcall.ReferenceTypeAICall, created.ID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(responsePC, nil)
+				m.req.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, responsePC.HostID, responsePC.ID, defaultAITaskTimeout).Return(nil)
+				m.db.EXPECT().AIcallUpdate(ctx, aicallID2, map[aicall.Field]any{aicall.FieldStatus: aicall.StatusProgressing}).Return(nil)
+				progressingResult := &aicall.AIcall{Identity: created.Identity, ActiveflowID: created.ActiveflowID, ReferenceType: created.ReferenceType, ReferenceID: created.ReferenceID, Status: aicall.StatusProgressing}
+				m.db.EXPECT().AIcallGet(ctx, aicallID2).Return(progressingResult, nil)
+				m.notify.EXPECT().PublishWebhookEvent(ctx, progressingResult.CustomerID, aicall.EventTypeStatusProgressing, progressingResult)
 			},
 
 			expectRes: &aicall.AIcall{
@@ -4026,8 +4071,350 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				ActiveflowID:  uuid.FromStringOrNil("80000000-0003-11f0-2222-000000000001"),
 				ReferenceType: aicall.ReferenceTypeContactCase,
 				ReferenceID:   uuid.FromStringOrNil("80000000-0004-11f0-2222-000000000001"),
-				Status:        aicall.StatusInitiating,
+				Status:        aicall.StatusProgressing,
 			},
+		},
+		{
+			name: "create succeeds but startPipecatcall fails — returns error",
+
+			ai: &ai.AI{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("90000000-0001-11f0-3333-000000000001"),
+					CustomerID: uuid.FromStringOrNil("90000000-0002-11f0-3333-000000000001"),
+				},
+				EngineModel: ai.EngineModelOpenaiGPT5,
+			},
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   uuid.FromStringOrNil("90000000-0001-11f0-3333-000000000001"),
+			activeflowID:   uuid.FromStringOrNil("90000000-0003-11f0-3333-000000000001"),
+			referenceID:    uuid.FromStringOrNil("90000000-0004-11f0-3333-000000000001"),
+
+			mockSetup: func(ctx context.Context, m *mocks) {
+				pipecatcallID := uuid.FromStringOrNil("90000000-0005-11f0-3333-000000000001")
+				aicallID := uuid.FromStringOrNil("90000000-0006-11f0-3333-000000000001")
+				created := &aicall.AIcall{
+					Identity: commonidentity.Identity{
+						ID:         aicallID,
+						CustomerID: uuid.FromStringOrNil("90000000-0002-11f0-3333-000000000001"),
+					},
+					ActiveflowID:  uuid.FromStringOrNil("90000000-0003-11f0-3333-000000000001"),
+					ReferenceType: aicall.ReferenceTypeContactCase,
+					ReferenceID:   uuid.FromStringOrNil("90000000-0004-11f0-3333-000000000001"),
+					Status:        aicall.StatusInitiating,
+				}
+
+				m.util.EXPECT().UUIDCreate().Return(pipecatcallID)
+				m.util.EXPECT().UUIDCreate().Return(aicallID)
+				m.db.EXPECT().AIcallCreate(ctx, gomock.Any()).Return(nil)
+				m.db.EXPECT().AIcallGet(ctx, aicallID).Return(created, nil)
+				m.notify.EXPECT().PublishWebhookEvent(ctx, created.CustomerID, aicall.EventTypeStatusInitializing, created)
+				m.req.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any()).Return(nil)
+				m.message.EXPECT().Create(ctx, uuid.Nil, created.CustomerID, created.ID, created.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, gomock.Any(), nil, "", gomock.Any()).Return(&message.Message{}, nil)
+
+				m.message.EXPECT().List(ctx, uint64(100), gomock.Any(), gomock.Any()).Return([]*message.Message{}, nil)
+				m.req.EXPECT().PipecatV1PipecatcallStart(ctx, created.PipecatcallID, created.CustomerID, created.ActiveflowID, pmpipecatcall.ReferenceTypeAICall, created.ID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("pipecat host unavailable"))
+			},
+
+			expectErr: true,
+			checkErr: func(t *testing.T, err error) {
+				if !strings.Contains(err.Error(), "pipecat host unavailable") {
+					t.Errorf("expected the underlying pipecatcall start error to be wrapped, got: %v", err)
+				}
+			},
+		},
+		{
+			name: "create succeeds, pipecatcall starts, but terminate-with-delay fails — still returns success (log-and-continue)",
+
+			ai: &ai.AI{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("91000000-0001-11f0-4444-000000000001"),
+					CustomerID: uuid.FromStringOrNil("91000000-0002-11f0-4444-000000000001"),
+				},
+				EngineModel: ai.EngineModelOpenaiGPT5,
+			},
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   uuid.FromStringOrNil("91000000-0001-11f0-4444-000000000001"),
+			activeflowID:   uuid.FromStringOrNil("91000000-0003-11f0-4444-000000000001"),
+			referenceID:    uuid.FromStringOrNil("91000000-0004-11f0-4444-000000000001"),
+
+			mockSetup: func(ctx context.Context, m *mocks) {
+				pipecatcallID := uuid.FromStringOrNil("91000000-0005-11f0-4444-000000000001")
+				aicallID := uuid.FromStringOrNil("91000000-0006-11f0-4444-000000000001")
+				created := &aicall.AIcall{
+					Identity: commonidentity.Identity{
+						ID:         aicallID,
+						CustomerID: uuid.FromStringOrNil("91000000-0002-11f0-4444-000000000001"),
+					},
+					ActiveflowID:  uuid.FromStringOrNil("91000000-0003-11f0-4444-000000000001"),
+					ReferenceType: aicall.ReferenceTypeContactCase,
+					ReferenceID:   uuid.FromStringOrNil("91000000-0004-11f0-4444-000000000001"),
+					Status:        aicall.StatusInitiating,
+				}
+
+				m.util.EXPECT().UUIDCreate().Return(pipecatcallID)
+				m.util.EXPECT().UUIDCreate().Return(aicallID)
+				m.db.EXPECT().AIcallCreate(ctx, gomock.Any()).Return(nil)
+				m.db.EXPECT().AIcallGet(ctx, aicallID).Return(created, nil)
+				m.notify.EXPECT().PublishWebhookEvent(ctx, created.CustomerID, aicall.EventTypeStatusInitializing, created)
+				m.req.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any()).Return(nil)
+				m.message.EXPECT().Create(ctx, uuid.Nil, created.CustomerID, created.ID, created.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, gomock.Any(), nil, "", gomock.Any()).Return(&message.Message{}, nil)
+
+				m.message.EXPECT().List(ctx, uint64(100), gomock.Any(), gomock.Any()).Return([]*message.Message{}, nil)
+				responsePC := &pmpipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("91000000-0007-11f0-4444-000000000001")}, HostID: "host-x"}
+				m.req.EXPECT().PipecatV1PipecatcallStart(ctx, created.PipecatcallID, created.CustomerID, created.ActiveflowID, pmpipecatcall.ReferenceTypeAICall, created.ID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(responsePC, nil)
+				m.req.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, responsePC.HostID, responsePC.ID, defaultAITaskTimeout).Return(fmt.Errorf("could not schedule termination"))
+				m.db.EXPECT().AIcallUpdate(ctx, aicallID, map[aicall.Field]any{aicall.FieldStatus: aicall.StatusProgressing}).Return(nil)
+				progressingResult := &aicall.AIcall{Identity: created.Identity, ActiveflowID: created.ActiveflowID, ReferenceType: created.ReferenceType, ReferenceID: created.ReferenceID, Status: aicall.StatusProgressing}
+				m.db.EXPECT().AIcallGet(ctx, aicallID).Return(progressingResult, nil)
+				m.notify.EXPECT().PublishWebhookEvent(ctx, progressingResult.CustomerID, aicall.EventTypeStatusProgressing, progressingResult)
+			},
+
+			expectRes: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("91000000-0006-11f0-4444-000000000001"),
+					CustomerID: uuid.FromStringOrNil("91000000-0002-11f0-4444-000000000001"),
+				},
+				ActiveflowID:  uuid.FromStringOrNil("91000000-0003-11f0-4444-000000000001"),
+				ReferenceType: aicall.ReferenceTypeContactCase,
+				ReferenceID:   uuid.FromStringOrNil("91000000-0004-11f0-4444-000000000001"),
+				Status:        aicall.StatusProgressing,
+			},
+		},
+		{
+			name: "duplicate key — existing stuck at Initiating, retries pipecatcall start and advances to Progressing",
+
+			ai: &ai.AI{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("92000000-0001-11f0-5555-000000000001"),
+					CustomerID: uuid.FromStringOrNil("92000000-0002-11f0-5555-000000000001"),
+				},
+				EngineModel: ai.EngineModelOpenaiGPT5,
+			},
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   uuid.FromStringOrNil("92000000-0001-11f0-5555-000000000001"),
+			activeflowID:   uuid.FromStringOrNil("92000000-0003-11f0-5555-000000000001"),
+			referenceID:    uuid.FromStringOrNil("92000000-0004-11f0-5555-000000000001"),
+
+			mockSetup: func(ctx context.Context, m *mocks) {
+				pipecatcallID := uuid.FromStringOrNil("92000000-0005-11f0-5555-000000000001")
+				aicallID := uuid.FromStringOrNil("92000000-0006-11f0-5555-000000000001")
+
+				// existing row from a prior genuine create whose startPipecatcall
+				// never succeeded — it is still sitting at StatusInitiating.
+				existingInitiating := &aicall.AIcall{
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("92000000-0007-11f0-5555-000000000001"),
+						CustomerID: uuid.FromStringOrNil("92000000-0002-11f0-5555-000000000001"),
+					},
+					ActiveflowID:  uuid.FromStringOrNil("92000000-0003-11f0-5555-000000000001"),
+					ReferenceType: aicall.ReferenceTypeContactCase,
+					ReferenceID:   uuid.FromStringOrNil("92000000-0004-11f0-5555-000000000001"),
+					Status:        aicall.StatusInitiating,
+				}
+
+				// attempt 0: duplicate key, existing is stuck at Initiating -> retry
+				// the pipecatcall-start sequence on the existing row instead of
+				// retrying the create.
+				m.util.EXPECT().UUIDCreate().Return(pipecatcallID)
+				m.util.EXPECT().UUIDCreate().Return(aicallID)
+				m.db.EXPECT().AIcallCreate(ctx, gomock.Any()).Return(fmt.Errorf("Error 1062: Duplicate entry 'x' for key 'uq_aicall_active_reference_key'"))
+				m.db.EXPECT().AIcallGetByReferenceID(ctx, uuid.FromStringOrNil("92000000-0004-11f0-5555-000000000001")).Return(existingInitiating, nil)
+
+				m.message.EXPECT().List(ctx, uint64(100), gomock.Any(), gomock.Any()).Return([]*message.Message{}, nil)
+				responsePC := &pmpipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("92000000-0008-11f0-5555-000000000001")}, HostID: "host-x"}
+				m.req.EXPECT().PipecatV1PipecatcallStart(ctx, existingInitiating.PipecatcallID, existingInitiating.CustomerID, existingInitiating.ActiveflowID, pmpipecatcall.ReferenceTypeAICall, existingInitiating.ID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(responsePC, nil)
+				m.req.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, responsePC.HostID, responsePC.ID, defaultAITaskTimeout).Return(nil)
+				m.db.EXPECT().AIcallUpdate(ctx, existingInitiating.ID, map[aicall.Field]any{aicall.FieldStatus: aicall.StatusProgressing}).Return(nil)
+				progressingResult := &aicall.AIcall{Identity: existingInitiating.Identity, ActiveflowID: existingInitiating.ActiveflowID, ReferenceType: existingInitiating.ReferenceType, ReferenceID: existingInitiating.ReferenceID, Status: aicall.StatusProgressing}
+				m.db.EXPECT().AIcallGet(ctx, existingInitiating.ID).Return(progressingResult, nil)
+				m.notify.EXPECT().PublishWebhookEvent(ctx, progressingResult.CustomerID, aicall.EventTypeStatusProgressing, progressingResult)
+			},
+
+			expectRes: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("92000000-0007-11f0-5555-000000000001"),
+					CustomerID: uuid.FromStringOrNil("92000000-0002-11f0-5555-000000000001"),
+				},
+				ActiveflowID:  uuid.FromStringOrNil("92000000-0003-11f0-5555-000000000001"),
+				ReferenceType: aicall.ReferenceTypeContactCase,
+				ReferenceID:   uuid.FromStringOrNil("92000000-0004-11f0-5555-000000000001"),
+				Status:        aicall.StatusProgressing,
+			},
+		},
+		{
+			name: "duplicate key — existing idle-expired (not yet terminated) — terminates and retries without rate limit",
+
+			ai: &ai.AI{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("55000000-0001-11f0-eeee-000000000001"),
+					CustomerID: uuid.FromStringOrNil("55000000-0002-11f0-eeee-000000000001"),
+				},
+				EngineModel: ai.EngineModelOpenaiGPT5,
+			},
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   uuid.FromStringOrNil("55000000-0001-11f0-eeee-000000000001"),
+			activeflowID:   uuid.FromStringOrNil("55000000-0003-11f0-eeee-000000000001"),
+			referenceID:    uuid.FromStringOrNil("55000000-0004-11f0-eeee-000000000001"),
+
+			mockSetup: func(ctx context.Context, m *mocks) {
+				staleTM := time.Now().Add(-25 * time.Hour) // outside the 24h idle timeout
+				existingIdleID := uuid.FromStringOrNil("55000000-0009-11f0-eeee-000000000001")
+				existingIdle := &aicall.AIcall{
+					Identity: commonidentity.Identity{ID: existingIdleID, CustomerID: uuid.FromStringOrNil("55000000-0002-11f0-eeee-000000000001")},
+					Status:   aicall.StatusProgressing, // NOT Terminated/Terminating -- this is the bug case
+					TMUpdate: &staleTM,
+				}
+
+				pipecatcallID1 := uuid.FromStringOrNil("55000000-0005-11f0-eeee-000000000001")
+				aicallID1 := uuid.FromStringOrNil("55000000-0006-11f0-eeee-000000000001")
+				pipecatcallID2 := uuid.FromStringOrNil("55000000-0007-11f0-eeee-000000000001")
+				aicallID2 := uuid.FromStringOrNil("55000000-0008-11f0-eeee-000000000001")
+
+				// attempt 0: duplicate key, existing is idle-expired (Progressing, stale TMUpdate)
+				m.util.EXPECT().UUIDCreate().Return(pipecatcallID1)
+				m.util.EXPECT().UUIDCreate().Return(aicallID1)
+				m.db.EXPECT().AIcallCreate(ctx, gomock.Any()).Return(fmt.Errorf("Error 1062: Duplicate entry 'x' for key 'uq_aicall_active_reference_key'"))
+				m.db.EXPECT().AIcallGetByReferenceID(ctx, uuid.FromStringOrNil("55000000-0004-11f0-eeee-000000000001")).Return(existingIdle, nil)
+
+				// terminate the idle row -- NO recreate-rate-limit check on this path.
+				// UpdateStatus(StatusTerminated) also sets FieldTMEnd via utilHandler.TimeNow()
+				// and publishes EventTypeStatusTerminated -- see db.go's UpdateStatus.
+				terminatedTM := time.Now()
+				m.util.EXPECT().TimeNow().Return(&terminatedTM)
+				m.db.EXPECT().AIcallUpdate(ctx, existingIdleID, map[aicall.Field]any{
+					aicall.FieldStatus: aicall.StatusTerminated,
+					aicall.FieldTMEnd:  &terminatedTM,
+				}).Return(nil)
+				terminatedAIcall := &aicall.AIcall{Identity: existingIdle.Identity, Status: aicall.StatusTerminated}
+				m.db.EXPECT().AIcallGet(ctx, existingIdleID).Return(terminatedAIcall, nil)
+				m.notify.EXPECT().PublishWebhookEvent(ctx, terminatedAIcall.CustomerID, aicall.EventTypeStatusTerminated, terminatedAIcall)
+
+				// attempt 1: create succeeds (and starts pipecatcall per Task 1)
+				created := &aicall.AIcall{
+					Identity:      commonidentity.Identity{ID: aicallID2, CustomerID: uuid.FromStringOrNil("55000000-0002-11f0-eeee-000000000001")},
+					ActiveflowID:  uuid.FromStringOrNil("55000000-0003-11f0-eeee-000000000001"),
+					ReferenceType: aicall.ReferenceTypeContactCase,
+					ReferenceID:   uuid.FromStringOrNil("55000000-0004-11f0-eeee-000000000001"),
+					Status:        aicall.StatusInitiating,
+				}
+				m.util.EXPECT().UUIDCreate().Return(pipecatcallID2)
+				m.util.EXPECT().UUIDCreate().Return(aicallID2)
+				m.db.EXPECT().AIcallCreate(ctx, gomock.Any()).Return(nil)
+				m.db.EXPECT().AIcallGet(ctx, aicallID2).Return(created, nil)
+				m.notify.EXPECT().PublishWebhookEvent(ctx, created.CustomerID, aicall.EventTypeStatusInitializing, created)
+				m.req.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any()).Return(nil)
+				m.message.EXPECT().Create(ctx, uuid.Nil, created.CustomerID, created.ID, created.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, gomock.Any(), nil, "", gomock.Any()).Return(&message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(100), gomock.Any(), gomock.Any()).Return([]*message.Message{}, nil)
+				responsePC := &pmpipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("55000000-000a-11f0-eeee-000000000001")}, HostID: "host2"}
+				m.req.EXPECT().PipecatV1PipecatcallStart(ctx, created.PipecatcallID, created.CustomerID, created.ActiveflowID, pmpipecatcall.ReferenceTypeAICall, created.ID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(responsePC, nil)
+				m.req.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, responsePC.HostID, responsePC.ID, defaultAITaskTimeout).Return(nil)
+				m.db.EXPECT().AIcallUpdate(ctx, aicallID2, map[aicall.Field]any{aicall.FieldStatus: aicall.StatusProgressing}).Return(nil)
+				progressing2 := &aicall.AIcall{Identity: created.Identity, Status: aicall.StatusProgressing}
+				m.db.EXPECT().AIcallGet(ctx, aicallID2).Return(progressing2, nil)
+				m.notify.EXPECT().PublishWebhookEvent(ctx, progressing2.CustomerID, aicall.EventTypeStatusProgressing, progressing2)
+			},
+
+			expectRes: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("55000000-0008-11f0-eeee-000000000001"),
+					CustomerID: uuid.FromStringOrNil("55000000-0002-11f0-eeee-000000000001"),
+				},
+				Status: aicall.StatusProgressing,
+			},
+			expectRateLimitedInc: false, // the whole point of this test: NOT rate-limited
+			expectIdleExpiredInc: true,
+		},
+		{
+			name: "duplicate key — existing stuck at Initiating AND idle-expired — idle-expiry takes precedence, terminates and retries instead of resuming",
+
+			ai: &ai.AI{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("93000000-0001-11f0-6666-000000000001"),
+					CustomerID: uuid.FromStringOrNil("93000000-0002-11f0-6666-000000000001"),
+				},
+				EngineModel: ai.EngineModelOpenaiGPT5,
+			},
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   uuid.FromStringOrNil("93000000-0001-11f0-6666-000000000001"),
+			activeflowID:   uuid.FromStringOrNil("93000000-0003-11f0-6666-000000000001"),
+			referenceID:    uuid.FromStringOrNil("93000000-0004-11f0-6666-000000000001"),
+
+			mockSetup: func(ctx context.Context, m *mocks) {
+				// existing row is BOTH stuck at StatusInitiating (as in the
+				// stuck-Initiating retry test above) AND idle-expired (stale
+				// TMUpdate, as in the idle-expiry test above). Since the
+				// idle-expiry check in startReferenceTypeContactCase runs
+				// strictly before the StatusInitiating check, this row must be
+				// terminated-and-recreated, NOT resumed via startContactCaseTurn
+				// against the original row.
+				staleTM := time.Now().Add(-25 * time.Hour) // outside the 24h idle timeout
+				existingStuckAndIdleID := uuid.FromStringOrNil("93000000-0009-11f0-6666-000000000001")
+				existingStuckAndIdle := &aicall.AIcall{
+					Identity: commonidentity.Identity{ID: existingStuckAndIdleID, CustomerID: uuid.FromStringOrNil("93000000-0002-11f0-6666-000000000001")},
+					Status:   aicall.StatusInitiating, // stuck-Initiating AND (below) idle-expired
+					TMUpdate: &staleTM,
+				}
+
+				pipecatcallID1 := uuid.FromStringOrNil("93000000-0005-11f0-6666-000000000001")
+				aicallID1 := uuid.FromStringOrNil("93000000-0006-11f0-6666-000000000001")
+				pipecatcallID2 := uuid.FromStringOrNil("93000000-0007-11f0-6666-000000000001")
+				aicallID2 := uuid.FromStringOrNil("93000000-0008-11f0-6666-000000000001")
+
+				// attempt 0: duplicate key, existing is stuck-Initiating AND idle-expired
+				m.util.EXPECT().UUIDCreate().Return(pipecatcallID1)
+				m.util.EXPECT().UUIDCreate().Return(aicallID1)
+				m.db.EXPECT().AIcallCreate(ctx, gomock.Any()).Return(fmt.Errorf("Error 1062: Duplicate entry 'x' for key 'uq_aicall_active_reference_key'"))
+				m.db.EXPECT().AIcallGetByReferenceID(ctx, uuid.FromStringOrNil("93000000-0004-11f0-6666-000000000001")).Return(existingStuckAndIdle, nil)
+
+				// idle-expiry wins: terminate the existing row -- NO
+				// startPipecatcall / PipecatV1PipecatcallStart call is ever made
+				// against existingStuckAndIdle.ID (that would only happen on the
+				// stuck-Initiating resume path, which must NOT be taken here).
+				terminatedTM := time.Now()
+				m.util.EXPECT().TimeNow().Return(&terminatedTM)
+				m.db.EXPECT().AIcallUpdate(ctx, existingStuckAndIdleID, map[aicall.Field]any{
+					aicall.FieldStatus: aicall.StatusTerminated,
+					aicall.FieldTMEnd:  &terminatedTM,
+				}).Return(nil)
+				terminatedAIcall := &aicall.AIcall{Identity: existingStuckAndIdle.Identity, Status: aicall.StatusTerminated}
+				m.db.EXPECT().AIcallGet(ctx, existingStuckAndIdleID).Return(terminatedAIcall, nil)
+				m.notify.EXPECT().PublishWebhookEvent(ctx, terminatedAIcall.CustomerID, aicall.EventTypeStatusTerminated, terminatedAIcall)
+
+				// attempt 1: create succeeds against a fresh row, and pipecatcall
+				// start happens only against this fresh row's ID.
+				created := &aicall.AIcall{
+					Identity:      commonidentity.Identity{ID: aicallID2, CustomerID: uuid.FromStringOrNil("93000000-0002-11f0-6666-000000000001")},
+					ActiveflowID:  uuid.FromStringOrNil("93000000-0003-11f0-6666-000000000001"),
+					ReferenceType: aicall.ReferenceTypeContactCase,
+					ReferenceID:   uuid.FromStringOrNil("93000000-0004-11f0-6666-000000000001"),
+					Status:        aicall.StatusInitiating,
+				}
+				m.util.EXPECT().UUIDCreate().Return(pipecatcallID2)
+				m.util.EXPECT().UUIDCreate().Return(aicallID2)
+				m.db.EXPECT().AIcallCreate(ctx, gomock.Any()).Return(nil)
+				m.db.EXPECT().AIcallGet(ctx, aicallID2).Return(created, nil)
+				m.notify.EXPECT().PublishWebhookEvent(ctx, created.CustomerID, aicall.EventTypeStatusInitializing, created)
+				m.req.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any()).Return(nil)
+				m.message.EXPECT().Create(ctx, uuid.Nil, created.CustomerID, created.ID, created.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, gomock.Any(), nil, "", gomock.Any()).Return(&message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(100), gomock.Any(), gomock.Any()).Return([]*message.Message{}, nil)
+				responsePC := &pmpipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("93000000-000a-11f0-6666-000000000001")}, HostID: "host3"}
+				m.req.EXPECT().PipecatV1PipecatcallStart(ctx, created.PipecatcallID, created.CustomerID, created.ActiveflowID, pmpipecatcall.ReferenceTypeAICall, created.ID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(responsePC, nil)
+				m.req.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, responsePC.HostID, responsePC.ID, defaultAITaskTimeout).Return(nil)
+				m.db.EXPECT().AIcallUpdate(ctx, aicallID2, map[aicall.Field]any{aicall.FieldStatus: aicall.StatusProgressing}).Return(nil)
+				progressing2 := &aicall.AIcall{Identity: created.Identity, Status: aicall.StatusProgressing}
+				m.db.EXPECT().AIcallGet(ctx, aicallID2).Return(progressing2, nil)
+				m.notify.EXPECT().PublishWebhookEvent(ctx, progressing2.CustomerID, aicall.EventTypeStatusProgressing, progressing2)
+			},
+
+			expectRes: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("93000000-0008-11f0-6666-000000000001"),
+					CustomerID: uuid.FromStringOrNil("93000000-0002-11f0-6666-000000000001"),
+				},
+				Status: aicall.StatusProgressing,
+			},
+			expectRateLimitedInc: false, // idle-expiry path deliberately skips the recreate rate limit
+			expectIdleExpiredInc: true,
 		},
 	}
 
@@ -4059,12 +4446,22 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 			if tt.expectRateLimitedInc {
 				beforeRateLimited = testutil.ToFloat64(promAIcallContactCaseRecreateRateLimitedTotal)
 			}
+			var beforeIdleExpired float64
+			if tt.expectIdleExpiredInc {
+				beforeIdleExpired = testutil.ToFloat64(promAIcallIdleExpiredTotal)
+			}
 
 			res, err := h.startReferenceTypeContactCase(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceID, nil, uuid.Nil)
 			if tt.expectRateLimitedInc {
 				afterRateLimited := testutil.ToFloat64(promAIcallContactCaseRecreateRateLimitedTotal)
 				if afterRateLimited-beforeRateLimited < 1 {
 					t.Errorf("expected rate-limited counter to increment by at least 1, got delta=%f", afterRateLimited-beforeRateLimited)
+				}
+			}
+			if tt.expectIdleExpiredInc {
+				afterIdleExpired := testutil.ToFloat64(promAIcallIdleExpiredTotal)
+				if afterIdleExpired-beforeIdleExpired < 1 {
+					t.Errorf("expected idle-expired counter to increment by at least 1, got delta=%f", afterIdleExpired-beforeIdleExpired)
 				}
 			}
 			if tt.expectErr {

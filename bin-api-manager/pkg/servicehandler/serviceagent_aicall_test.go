@@ -2,6 +2,7 @@ package servicehandler
 
 import (
 	"context"
+	"errors"
 	"reflect"
 	"testing"
 
@@ -14,12 +15,14 @@ import (
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	cmkase "monorepo/bin-contact-manager/models/kase"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
 	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/dbhandler"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 )
 
 // Test_ServiceAgentAIcallList verifies a plain Agent permission (not
@@ -197,10 +200,24 @@ func Test_ServiceAgentAIcallCreate(t *testing.T) {
 		referenceType  amaicall.ReferenceType
 		referenceID    uuid.UUID
 
+		// Task 5: only consulted when referenceType == ReferenceTypeContactCase.
+		responseCase    *cmkase.Case
+		responseCaseErr error
+
+		// Task 6: only consulted when assistanceID == uuid.Nil.
+		responseAIList []amai.AI
+
 		responseAI         *amai.AI
 		responseActiveflow *fmactiveflow.Activeflow
 		responseAIcall     *amaicall.AIcall
 
+		// Task 7: when true, AIV1AIcallStart's returned aicall's ActiveflowID
+		// is set (in the test loop below) to something other than
+		// responseActiveflow.ID, and FlowV1ActiveflowDelete(responseActiveflow.ID)
+		// must fire.
+		expectReused bool
+
+		expectErr error
 		expectRes *amaicall.WebhookMessage
 	}
 
@@ -220,6 +237,13 @@ func Test_ServiceAgentAIcallCreate(t *testing.T) {
 			referenceType:  amaicall.ReferenceTypeContactCase,
 			referenceID:    uuid.FromStringOrNil("f201d402-4596-47cf-87b9-bc6d234d286a"),
 
+			// Task 5: pre-existing case, needs a same-customer responseCase now
+			// that the ownership check runs unconditionally for contact_case.
+			responseCase: &cmkase.Case{
+				ID:         uuid.FromStringOrNil("f201d402-4596-47cf-87b9-bc6d234d286a"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+			},
+
 			responseAI: &amai.AI{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("3fc2c1b0-efaa-11ef-84bb-a7e8fba38e46"),
@@ -231,16 +255,170 @@ func Test_ServiceAgentAIcallCreate(t *testing.T) {
 					ID: uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-000000000010"),
 				},
 			},
+			// ActiveflowID matches responseActiveflow.ID above -- this is the
+			// genuine-create path, so Task 7's tmp.ActiveflowID != af.ID check
+			// must evaluate false here.
 			responseAIcall: &amaicall.AIcall{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("407e793c-efaa-11ef-b0f4-4bdbcd626589"),
 				},
+				ActiveflowID: uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-000000000010"),
 			},
 
 			expectRes: &amaicall.WebhookMessage{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("407e793c-efaa-11ef-b0f4-4bdbcd626589"),
 				},
+				ActiveflowID: uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-000000000010"),
+			},
+		},
+		{
+			name: "Task 5: contact_case reference_id belongs to a different customer -- rejected",
+
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Permission: amagent.PermissionCustomerAgent,
+			}),
+			assistanceType: amaicall.AssistanceTypeAI,
+			assistanceID:   uuid.FromStringOrNil("70000000-0001-11f0-1111-000000000001"),
+			referenceType:  amaicall.ReferenceTypeContactCase,
+			referenceID:    uuid.FromStringOrNil("70000000-0002-11f0-1111-000000000001"),
+
+			responseCase: &cmkase.Case{
+				ID:         uuid.FromStringOrNil("70000000-0002-11f0-1111-000000000001"),
+				CustomerID: uuid.FromStringOrNil("70000000-9999-11f0-1111-000000000001"), // NOT the caller's customer
+			},
+
+			expectErr: serviceerrors.ErrPermissionDenied,
+		},
+		{
+			name: "contact_case lookup fails -- returns lookup error, not ErrPermissionDenied",
+
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("70000000-0003-11f0-1111-000000000002"),
+				},
+				Permission: amagent.PermissionCustomerAgent,
+			}),
+			assistanceType: amaicall.AssistanceTypeAI,
+			assistanceID:   uuid.FromStringOrNil("70000000-0001-11f0-1111-000000000002"),
+			referenceType:  amaicall.ReferenceTypeContactCase,
+			referenceID:    uuid.FromStringOrNil("70000000-0002-11f0-1111-000000000002"),
+
+			responseCaseErr: errors.New("contact-manager RPC timeout"),
+
+			expectErr: errors.New("contact-manager RPC timeout"),
+		},
+		{
+			name: "Task 6: assistance_id omitted, contact_case, exactly one insight AI -- resolved",
+
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("80000000-0003-11f0-2222-000000000001"),
+				},
+				Permission: amagent.PermissionCustomerAgent,
+			}),
+			assistanceType: amaicall.AssistanceTypeAI,
+			assistanceID:   uuid.Nil,
+			referenceType:  amaicall.ReferenceTypeContactCase,
+			referenceID:    uuid.FromStringOrNil("80000000-0002-11f0-2222-000000000001"),
+
+			responseCase: &cmkase.Case{
+				ID:         uuid.FromStringOrNil("80000000-0002-11f0-2222-000000000001"),
+				CustomerID: uuid.FromStringOrNil("80000000-0003-11f0-2222-000000000001"),
+			},
+			responseAIList: []amai.AI{
+				{Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("80000000-0004-11f0-2222-000000000001"),
+					CustomerID: uuid.FromStringOrNil("80000000-0003-11f0-2222-000000000001"),
+				}, Type: amai.TypeInsight},
+			},
+			responseAI: &amai.AI{Identity: commonidentity.Identity{
+				ID:         uuid.FromStringOrNil("80000000-0004-11f0-2222-000000000001"),
+				CustomerID: uuid.FromStringOrNil("80000000-0003-11f0-2222-000000000001"),
+			}},
+			responseActiveflow: &fmactiveflow.Activeflow{Identity: commonidentity.Identity{
+				ID: uuid.FromStringOrNil("80000000-0007-11f0-2222-000000000001"),
+			}},
+			// ActiveflowID matches responseActiveflow.ID above -- genuine
+			// create, not reuse.
+			responseAIcall: &amaicall.AIcall{
+				Identity:     commonidentity.Identity{ID: uuid.FromStringOrNil("80000000-0008-11f0-2222-000000000001")},
+				ActiveflowID: uuid.FromStringOrNil("80000000-0007-11f0-2222-000000000001"),
+			},
+
+			expectRes: &amaicall.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("80000000-0008-11f0-2222-000000000001"),
+				},
+				ActiveflowID: uuid.FromStringOrNil("80000000-0007-11f0-2222-000000000001"),
+			},
+		},
+		{
+			name: "Task 6: assistance_id omitted, contact_case, zero insight AIs -- not found",
+
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("80000000-0006-11f0-2222-000000000001"),
+				},
+				Permission: amagent.PermissionCustomerAgent,
+			}),
+			assistanceType: amaicall.AssistanceTypeAI,
+			assistanceID:   uuid.Nil,
+			referenceType:  amaicall.ReferenceTypeContactCase,
+			referenceID:    uuid.FromStringOrNil("80000000-0005-11f0-2222-000000000001"),
+
+			responseCase: &cmkase.Case{
+				ID:         uuid.FromStringOrNil("80000000-0005-11f0-2222-000000000001"),
+				CustomerID: uuid.FromStringOrNil("80000000-0006-11f0-2222-000000000001"),
+			},
+			responseAIList: []amai.AI{},
+
+			expectErr: serviceerrors.ErrNotFound,
+		},
+		{
+			name: "Task 7: AIV1AIcallStart returns a reused aicall -- orphaned activeflow is deleted",
+
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("90000000-0003-11f0-3333-000000000001"),
+				},
+				Permission: amagent.PermissionCustomerAgent,
+			}),
+			assistanceType: amaicall.AssistanceTypeAI,
+			assistanceID:   uuid.FromStringOrNil("90000000-0001-11f0-3333-000000000001"),
+			referenceType:  amaicall.ReferenceTypeContactCase,
+			referenceID:    uuid.FromStringOrNil("90000000-0002-11f0-3333-000000000001"),
+
+			responseCase: &cmkase.Case{
+				ID:         uuid.FromStringOrNil("90000000-0002-11f0-3333-000000000001"),
+				CustomerID: uuid.FromStringOrNil("90000000-0003-11f0-3333-000000000001"),
+			},
+			responseAI: &amai.AI{Identity: commonidentity.Identity{
+				ID:         uuid.FromStringOrNil("90000000-0001-11f0-3333-000000000001"),
+				CustomerID: uuid.FromStringOrNil("90000000-0003-11f0-3333-000000000001"),
+			}},
+			responseActiveflow: &fmactiveflow.Activeflow{Identity: commonidentity.Identity{
+				ID: uuid.FromStringOrNil("90000000-0004-11f0-3333-000000000001"),
+			}},
+			responseAIcall: &amaicall.AIcall{
+				Identity:     commonidentity.Identity{ID: uuid.FromStringOrNil("90000000-0005-11f0-3333-000000000001")},
+				ActiveflowID: uuid.FromStringOrNil("90000000-9999-11f0-3333-000000000001"), // a DIFFERENT, pre-existing activeflow -- NOT responseActiveflow.ID
+			},
+			expectReused: true,
+
+			expectRes: &amaicall.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("90000000-0005-11f0-3333-000000000001"),
+				},
+				ActiveflowID: uuid.FromStringOrNil("90000000-9999-11f0-3333-000000000001"),
 			},
 		},
 	}
@@ -261,40 +439,69 @@ func Test_ServiceAgentAIcallCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
+			if tt.referenceType == amaicall.ReferenceTypeContactCase {
+				mockReq.EXPECT().ContactV1CaseGet(ctx, tt.agent.CustomerID, tt.referenceID).Return(tt.responseCase, tt.responseCaseErr)
+			}
+
+			if tt.responseCaseErr != nil {
+				_, err := h.ServiceAgentAIcallCreate(ctx, tt.agent, tt.assistanceType, tt.assistanceID, tt.referenceType, tt.referenceID)
+				if err == nil {
+					t.Errorf("Wrong match. expect: err, got: ok")
+				}
+				if errors.Is(err, serviceerrors.ErrPermissionDenied) {
+					t.Errorf("Wrong match. expect: a non-403 lookup error (ContactV1CaseGet failure must not be classified as ErrPermissionDenied), got: %v", err)
+				}
+				return
+			}
+
+			if tt.expectErr == serviceerrors.ErrPermissionDenied && tt.responseCase.CustomerID != tt.agent.CustomerID {
+				_, err := h.ServiceAgentAIcallCreate(ctx, tt.agent, tt.assistanceType, tt.assistanceID, tt.referenceType, tt.referenceID)
+				if err == nil {
+					t.Errorf("Wrong match. expect: err, got: ok")
+				}
+				if !errors.Is(err, serviceerrors.ErrPermissionDenied) {
+					t.Errorf("Wrong match. expect: ErrPermissionDenied, got: %v", err)
+				}
+				return
+			}
+
+			resolvedAssistanceID := tt.assistanceID
+			if tt.assistanceType == amaicall.AssistanceTypeAI && tt.assistanceID == uuid.Nil {
+				mockReq.EXPECT().AIV1AIList(ctx, "", uint64(100), gomock.Any()).Return(tt.responseAIList, nil)
+				if len(tt.responseAIList) == 0 {
+					_, err := h.ServiceAgentAIcallCreate(ctx, tt.agent, tt.assistanceType, tt.assistanceID, tt.referenceType, tt.referenceID)
+					if err == nil {
+						t.Errorf("Wrong match. expect: err, got: ok")
+					}
+					return
+				}
+				resolvedAssistanceID = tt.responseAIList[0].ID
+			}
+
 			switch tt.assistanceType {
 			case amaicall.AssistanceTypeAI:
-				mockReq.EXPECT().AIV1AIGet(ctx, tt.assistanceID).Return(tt.responseAI, nil)
+				mockReq.EXPECT().AIV1AIGet(ctx, resolvedAssistanceID).Return(tt.responseAI, nil)
 			case amaicall.AssistanceTypeTeam:
-				mockReq.EXPECT().AIV1TeamGet(ctx, tt.assistanceID).Return(nil, nil)
+				mockReq.EXPECT().AIV1TeamGet(ctx, resolvedAssistanceID).Return(nil, nil)
 			}
 
 			mockReq.EXPECT().FlowV1ActiveflowCreate(
-				ctx,
-				uuid.Nil,
-				tt.agent.CustomerID,
-				uuid.Nil,
-				fmactiveflow.ReferenceTypeAPI,
-				uuid.Nil,
-				uuid.Nil,
-				gomock.Any(),
-				gomock.Any(),
-				gomock.Any(),
+				ctx, uuid.Nil, tt.agent.CustomerID, uuid.Nil, fmactiveflow.ReferenceTypeAPI,
+				uuid.Nil, uuid.Nil, gomock.Any(), gomock.Any(), gomock.Any(),
 			).Return(tt.responseActiveflow, nil)
 
 			mockReq.EXPECT().AIV1AIcallStart(
-				ctx,
-				tt.assistanceType,
-				tt.assistanceID,
-				tt.responseActiveflow.ID,
-				tt.referenceType,
-				tt.referenceID,
+				ctx, tt.assistanceType, resolvedAssistanceID, tt.responseActiveflow.ID, tt.referenceType, tt.referenceID,
 			).Return(tt.responseAIcall, nil)
+
+			if tt.expectReused {
+				mockReq.EXPECT().FlowV1ActiveflowDelete(ctx, tt.responseActiveflow.ID).Return(nil, nil)
+			}
 
 			res, err := h.ServiceAgentAIcallCreate(ctx, tt.agent, tt.assistanceType, tt.assistanceID, tt.referenceType, tt.referenceID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
-
 			if reflect.DeepEqual(res, tt.expectRes) != true {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
 			}
@@ -329,6 +536,11 @@ func Test_ServiceAgentAIcallCreate_TenantIsolation(t *testing.T) {
 		Permission: amagent.PermissionCustomerAgent,
 	})
 	assistanceID := uuid.FromStringOrNil("3fc2c1b0-efaa-11ef-84bb-a7e8fba38e46")
+
+	mockReq.EXPECT().ContactV1CaseGet(ctx, agent.CustomerID, uuid.FromStringOrNil("f201d402-4596-47cf-87b9-bc6d234d286a")).Return(&cmkase.Case{
+		ID:         uuid.FromStringOrNil("f201d402-4596-47cf-87b9-bc6d234d286a"),
+		CustomerID: agent.CustomerID,
+	}, nil)
 
 	mockReq.EXPECT().AIV1AIGet(ctx, assistanceID).Return(&amai.AI{
 		Identity: commonidentity.Identity{

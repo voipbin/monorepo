@@ -8,6 +8,7 @@ type FieldStruct struct {
 	CustomerID  uuid.UUID   `filter:"customer_id"`
 	Name        string      `filter:"name"`
 	Detail      string      `filter:"detail"`
+	Type        Type        `filter:"type"`
 	EngineModel EngineModel `filter:"engine_model"`
 	TTSType     TTSType     `filter:"tts_type"`
 	STTType     STTType     `filter:"stt_type"`

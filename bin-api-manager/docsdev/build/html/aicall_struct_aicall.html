@@ -8,7 +8,7 @@
 
     <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>AIcall - VoIPBin Documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
     
@@ -789,6 +789,18 @@ at call start. Zero UUID if no history entry exists yet.</p></li>
 </pre></div>
 </div>
 </section>
+<section id="service-agent-endpoint-behavior">
+<h2>Service Agent Endpoint Behavior<a class="headerlink" href="#service-agent-endpoint-behavior" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/service_agents/aicalls</span></code>: <code class="docutils literal notranslate"><span class="pre">assistance_id</span></code> is optional when
+<code class="docutils literal notranslate"><span class="pre">assistance_type=ai</span></code> and <code class="docutils literal notranslate"><span class="pre">reference_type=contact_case</span></code> — the
+customer’s own <code class="docutils literal notranslate"><span class="pre">type=insight</span></code> AI is resolved automatically. Returns
+<code class="docutils literal notranslate"><span class="pre">404</span> <span class="pre">RESOURCE_NOT_FOUND</span></code> if the customer has no Insight AI configured.
+Returns <code class="docutils literal notranslate"><span class="pre">403</span> <span class="pre">PERMISSION_DENIED</span></code> if, for <code class="docutils literal notranslate"><span class="pre">reference_type=contact_case</span></code>,
+<code class="docutils literal notranslate"><span class="pre">reference_id</span></code> does not belong to the caller’s own customer.</p>
+<p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/service_agents/aimessages</span></code>: may be rejected with a cooldown
+error if called again on the same <code class="docutils literal notranslate"><span class="pre">aicall_id</span></code> within a short window of
+the previous send (default 3 seconds).</p>
+</section>
 </section>
 
         </article>
@@ -855,6 +867,7 @@ at call start. Zero UUID if no history entry exists yet.</p></li>
 <li><a class="reference internal" href="#reference-type">Reference Type</a></li>
 <li><a class="reference internal" href="#status">Status</a></li>
 <li><a class="reference internal" href="#example">Example</a></li>
+<li><a class="reference internal" href="#service-agent-endpoint-behavior">Service Agent Endpoint Behavior</a></li>
 </ul>
 </li>
 </ul>

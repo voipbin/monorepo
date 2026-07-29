@@ -2,9 +2,11 @@ package aicallhandler
 
 import (
 	"context"
+	"monorepo/bin-ai-manager/internal/config"
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
 	"monorepo/bin-ai-manager/pkg/messagehandler"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -12,18 +14,46 @@ import (
 )
 
 func (h *aicallHandler) Send(ctx context.Context, id uuid.UUID, role message.Role, messageText string, runImmediately bool, audioResponse bool) (*message.Message, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "Send",
+		"aicall_id": id,
+	})
+
 	c, err := h.Get(ctx, id)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get the aicall correctly")
 	}
 
+	if c.TMUpdate != nil {
+		cooldown := time.Duration(config.Get().AIcallSendCooldownSeconds) * time.Second
+		if elapsed := time.Since(*c.TMUpdate); elapsed < cooldown {
+			return nil, errors.Errorf("send cooldown: aicall %s was updated %s ago, minimum interval is %s", id, elapsed.Round(time.Millisecond), cooldown)
+		}
+	}
+
+	var res *message.Message
 	switch c.ReferenceType {
 	case aicall.ReferenceTypeCall:
-		return h.SendReferenceTypeCall(ctx, c, role, messageText, runImmediately, audioResponse)
+		res, err = h.SendReferenceTypeCall(ctx, c, role, messageText, runImmediately, audioResponse)
 
 	default:
-		return h.SendReferenceTypeOthers(ctx, c, role, messageText)
+		res, err = h.SendReferenceTypeOthers(ctx, c, role, messageText)
 	}
+	if err != nil {
+		return nil, err
+	}
+
+	// Explicitly refresh TMUpdate on every successful dispatch so the send cooldown
+	// actually bounds rapid repeated sends for both reference types. SendReferenceTypeOthers
+	// happens to bump tm_update as a side effect of UpdatePipecatcallID, but
+	// SendReferenceTypeCall never writes to the aicall row on success, so without this
+	// the cooldown would be a no-op for live-call AIcalls. This is best-effort: a failure
+	// here does not roll back or fail the already-successful send.
+	if errUpdate := h.db.AIcallUpdate(ctx, id, map[aicall.Field]any{}); errUpdate != nil {
+		log.Errorf("Could not refresh tm_update after successful send. err: %v", errUpdate)
+	}
+
+	return res, nil
 }
 
 func (h *aicallHandler) SendReferenceTypeCall(ctx context.Context, c *aicall.AIcall, role message.Role, messageText string, runImmediately bool, audioResponse bool) (*message.Message, error) {
