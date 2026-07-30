@@ -915,12 +915,8 @@ Cache Miss Path: ~27ms total
 |       &quot;timestamp&quot;: &quot;2026-01-20T12:00:05.000Z&quot;  |
 |     }                                          |
 |                                                |
-|  e) Publish to ZeroMQ (fast path)              |
-|     Topic: &quot;call.state&quot;                        |
-|     {                                          |
-|       &quot;call_id&quot;: &quot;call-789&quot;,                   |
-|       &quot;status&quot;: &quot;active&quot;                       |
-|     }                                          |
+|  e) API gateway fans the event out to          |
+|     subscribed WebSocket clients (in-process)  |
 +------------------------------------------------+
     |
     |
@@ -1045,7 +1041,7 @@ Client (Browser)        API Gateway (WebSocket)    Backend Services
 
 2. Event Occurs:
 
-Call Manager                RabbitMQ/ZMQ          API Gateway (WS)      Client
+Call Manager                RabbitMQ              API Gateway (WS)      Client
     |                           |                       |                  |
     |  Call status changed      |                       |                  |
     |  (answered)               |                       |                  |

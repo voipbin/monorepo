@@ -92,7 +92,7 @@ func (h *subscribeHandler) processEventWebhookManagerWebhookPublished(ctx contex
 	log.Debugf("Created topics. topics: %s", topics)
 
 	for _, topic := range topics {
-		if errPub := h.zmqpubHandler.Publish(topic, string(data)); errPub != nil {
+		if errPub := h.pubHandler.Publish(topic, string(data)); errPub != nil {
 			log.Errorf("Could not publish the webhook. err: %v", errPub)
 			return errPub
 		}
@@ -106,7 +106,7 @@ func (h *subscribeHandler) processEventWebhookManagerWebhookPublished(ctx contex
 // processEventWebhookManagerWebhookPublished above, m.Data here is ALREADY the unwrapped resource
 // object (bin-webhook-manager did the envelope unwrap at publish time), and m.Type is the REAL
 // resource event type (e.g. "call_created"), not the fixed "webhook_published" constant. This
-// function mirrors createTopics()'s topic-string generation so ZMQ SUB clients (which subscribe
+// function mirrors createTopics()'s topic-string generation so pubsub subscribers (which subscribe
 // using the OLD-FORMAT prefix, e.g. "customer_id:<id>:call") continue to receive these events
 // exactly as they did via the old fanout path -- see this file's createTopics for the format.
 func (h *subscribeHandler) processEventWebhookManagerRoutingKeyedEvent(ctx context.Context, m *sock.Event) error {
@@ -143,7 +143,7 @@ func (h *subscribeHandler) processEventWebhookManagerRoutingKeyedEvent(ctx conte
 	log.Debugf("Created topics. topics: %s", topics)
 
 	for _, topic := range topics {
-		if errPub := h.zmqpubHandler.Publish(topic, string(m.Data)); errPub != nil {
+		if errPub := h.pubHandler.Publish(topic, string(m.Data)); errPub != nil {
 			log.Errorf("Could not publish the event. err: %v", errPub)
 			return errPub
 		}

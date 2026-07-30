@@ -13,12 +13,6 @@ RESTful API gateway for the VoIPBIN platform. Handles authentication, routing, a
 
 ## Prerequisites
 
-### System Dependencies
-```bash
-# ZMQ libraries (required for messaging)
-apt update && apt install -y pkg-config libzmq5 libzmq3-dev libczmq4 libczmq-dev
-```
-
 ### Go Setup
 ```bash
 # Configure access to private Go modules (if needed)

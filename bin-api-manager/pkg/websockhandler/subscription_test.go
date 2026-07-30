@@ -9,7 +9,7 @@ import (
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/models/hook"
-	"monorepo/bin-api-manager/pkg/zmqsubhandler"
+	"monorepo/bin-api-manager/pkg/pubsubhandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	gomock "go.uber.org/mock/gomock"
@@ -28,7 +28,7 @@ func TestSubscriptionHandleMessage_AcquiresBindingOnSubscribe(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
-	mockZMQSub := zmqsubhandler.NewMockZMQSubHandler(mc)
+	mockPubsubSub := pubsubhandler.NewMockSubHandler(mc)
 	mockSock := sockhandler.NewMockSockHandler(mc)
 
 	h := &websockHandler{
@@ -38,7 +38,7 @@ func TestSubscriptionHandleMessage_AcquiresBindingOnSubscribe(t *testing.T) {
 	a := newSuperAdminIdentity()
 	topic := "customer_id:5257dd3e-9b5d-11ea-8eda-6b53f19ec1eb"
 
-	mockZMQSub.EXPECT().Subscribe(topic).Return(nil)
+	mockPubsubSub.EXPECT().Subscribe(topic).Return(nil)
 	mockSock.EXPECT().QueueBind("pod-queue-1", "customer_id.5257dd3e-9b5d-11ea-8eda-6b53f19ec1eb.#", "bin-manager.webhook-manager.event.topic", false, nil).Return(nil)
 
 	heldPatterns := make(map[string]int)
@@ -49,7 +49,7 @@ func TestSubscriptionHandleMessage_AcquiresBindingOnSubscribe(t *testing.T) {
 		Topics: []string{topic},
 	}
 
-	err := h.subscriptionHandleMessage(context.Background(), a, mockZMQSub, m, heldPatterns, &heldMu)
+	err := h.subscriptionHandleMessage(context.Background(), a, mockPubsubSub, m, heldPatterns, &heldMu)
 	require.NoError(t, err)
 	require.Equal(t, 1, heldPatterns["customer_id.5257dd3e-9b5d-11ea-8eda-6b53f19ec1eb.#"])
 }
@@ -58,7 +58,7 @@ func TestSubscriptionHandleMessage_ReleasesBindingOnUnsubscribe(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
-	mockZMQSub := zmqsubhandler.NewMockZMQSubHandler(mc)
+	mockPubsubSub := pubsubhandler.NewMockSubHandler(mc)
 	mockSock := sockhandler.NewMockSockHandler(mc)
 
 	h := &websockHandler{
@@ -69,21 +69,21 @@ func TestSubscriptionHandleMessage_ReleasesBindingOnUnsubscribe(t *testing.T) {
 	topic := "customer_id:5257dd3e-9b5d-11ea-8eda-6b53f19ec1eb"
 	pattern := "customer_id.5257dd3e-9b5d-11ea-8eda-6b53f19ec1eb.#"
 
-	mockZMQSub.EXPECT().Subscribe(topic).Return(nil)
+	mockPubsubSub.EXPECT().Subscribe(topic).Return(nil)
 	mockSock.EXPECT().QueueBind("pod-queue-1", pattern, "bin-manager.webhook-manager.event.topic", false, nil).Return(nil)
-	mockZMQSub.EXPECT().Unsubscribe(topic).Return(nil)
+	mockPubsubSub.EXPECT().Unsubscribe(topic).Return(nil)
 	mockSock.EXPECT().QueueUnbind("pod-queue-1", pattern, "bin-manager.webhook-manager.event.topic", nil).Return(nil)
 
 	heldPatterns := make(map[string]int)
 	var heldMu sync.Mutex
 
 	subMsg := &hook.Hook{Type: hook.TypeSubscribe, Topics: []string{topic}}
-	err := h.subscriptionHandleMessage(context.Background(), a, mockZMQSub, subMsg, heldPatterns, &heldMu)
+	err := h.subscriptionHandleMessage(context.Background(), a, mockPubsubSub, subMsg, heldPatterns, &heldMu)
 	require.NoError(t, err)
 	require.Equal(t, 1, heldPatterns[pattern])
 
 	unsubMsg := &hook.Hook{Type: hook.TypeUnsubscribe, Topics: []string{topic}}
-	err = h.subscriptionHandleMessage(context.Background(), a, mockZMQSub, unsubMsg, heldPatterns, &heldMu)
+	err = h.subscriptionHandleMessage(context.Background(), a, mockPubsubSub, unsubMsg, heldPatterns, &heldMu)
 	require.NoError(t, err)
 	require.Equal(t, 0, heldPatterns[pattern])
 	_, stillPresent := heldPatterns[pattern]
@@ -102,7 +102,7 @@ func TestSubscriptionHandleMessage_DoubleSubscribeThenSingleUnsubscribeKeepsBind
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
-	mockZMQSub := zmqsubhandler.NewMockZMQSubHandler(mc)
+	mockPubsubSub := pubsubhandler.NewMockSubHandler(mc)
 	mockSock := sockhandler.NewMockSockHandler(mc)
 
 	h := &websockHandler{
@@ -116,23 +116,23 @@ func TestSubscriptionHandleMessage_DoubleSubscribeThenSingleUnsubscribeKeepsBind
 	// Only ONE QueueBind expected: scopeRefCount only binds on the 0->1 transition. The second
 	// Acquire (from the second subscribe) increments the internal refcount to 2 without a
 	// second AMQP call.
-	mockZMQSub.EXPECT().Subscribe(topic).Return(nil).Times(2)
+	mockPubsubSub.EXPECT().Subscribe(topic).Return(nil).Times(2)
 	mockSock.EXPECT().QueueBind("pod-queue-1", pattern, "bin-manager.webhook-manager.event.topic", false, nil).Return(nil).Times(1)
 
 	heldPatterns := make(map[string]int)
 	var heldMu sync.Mutex
 
 	subMsg := &hook.Hook{Type: hook.TypeSubscribe, Topics: []string{topic}}
-	require.NoError(t, h.subscriptionHandleMessage(context.Background(), a, mockZMQSub, subMsg, heldPatterns, &heldMu))
-	require.NoError(t, h.subscriptionHandleMessage(context.Background(), a, mockZMQSub, subMsg, heldPatterns, &heldMu))
+	require.NoError(t, h.subscriptionHandleMessage(context.Background(), a, mockPubsubSub, subMsg, heldPatterns, &heldMu))
+	require.NoError(t, h.subscriptionHandleMessage(context.Background(), a, mockPubsubSub, subMsg, heldPatterns, &heldMu))
 	require.Equal(t, 2, heldPatterns[pattern])
 
 	// A single unsubscribe must NOT drop the pattern from heldPatterns entirely -- the
 	// connection still holds one outstanding Acquire. No QueueUnbind expected here (internal
 	// refcount only drops from 2 to 1, still > 0).
-	mockZMQSub.EXPECT().Unsubscribe(topic).Return(nil)
+	mockPubsubSub.EXPECT().Unsubscribe(topic).Return(nil)
 	unsubMsg := &hook.Hook{Type: hook.TypeUnsubscribe, Topics: []string{topic}}
-	require.NoError(t, h.subscriptionHandleMessage(context.Background(), a, mockZMQSub, unsubMsg, heldPatterns, &heldMu))
+	require.NoError(t, h.subscriptionHandleMessage(context.Background(), a, mockPubsubSub, unsubMsg, heldPatterns, &heldMu))
 	require.Equal(t, 1, heldPatterns[pattern])
 	_, stillPresent := heldPatterns[pattern]
 	require.True(t, stillPresent, "pattern must still be tracked after only one of two Acquires was released")
@@ -203,7 +203,7 @@ func TestSubscriptionRunWebsock_ExitsOnContextCancel(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
-	mockZMQSub := zmqsubhandler.NewMockZMQSubHandler(mc)
+	mockPubsubSub := pubsubhandler.NewMockSubHandler(mc)
 	mockSock := sockhandler.NewMockSockHandler(mc)
 
 	h := &websockHandler{
@@ -225,7 +225,7 @@ func TestSubscriptionRunWebsock_ExitsOnContextCancel(t *testing.T) {
 			mu.Lock()
 			innerCancelCalled = true
 			mu.Unlock()
-		}, a, nil, mockZMQSub, heldPatterns, &heldMu)
+		}, a, nil, mockPubsubSub, heldPatterns, &heldMu)
 		close(done)
 	}()
 

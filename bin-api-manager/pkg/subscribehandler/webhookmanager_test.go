@@ -10,7 +10,7 @@ import (
 	gomock "go.uber.org/mock/gomock"
 
 	apiwebhook "monorepo/bin-api-manager/models/webhook"
-	"monorepo/bin-api-manager/pkg/zmqpubhandler"
+	"monorepo/bin-api-manager/pkg/pubsubhandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	requesthandler "monorepo/bin-common-handler/pkg/requesthandler"
@@ -278,12 +278,12 @@ func Test_processEventWebhookManagerWebhookPublished(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockZMQ := zmqpubhandler.NewMockZMQPubHandler(mc)
+			mockPub := pubsubhandler.NewMockPubHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 
 			h := &subscribeHandler{
-				zmqpubHandler: mockZMQ,
-				reqHandler:    mockReq,
+				pubHandler: mockPub,
+				reqHandler: mockReq,
 			}
 
 			// Set up participant list mock for chat events
@@ -296,7 +296,7 @@ func Test_processEventWebhookManagerWebhookPublished(t *testing.T) {
 			}
 
 			for _, topic := range tt.expectTopics {
-				mockZMQ.EXPECT().Publish(topic, tt.expectEvent)
+				mockPub.EXPECT().Publish(topic, tt.expectEvent)
 			}
 
 			ctx := context.Background()
@@ -685,10 +685,10 @@ func Test_createTopics(t *testing.T) {
 // (m.Publisher == "webhook-manager", m.Type == the REAL resource event type e.g. "call_created")
 // were silently discarded by processEvent's switch statement, which only matched
 // m.Type == "webhook_published" (the OLD fanout path's fixed constant). The AMQP message reached
-// this pod's queue correctly, but was never handed to zmqpubHandler.Publish, so it never reached
+// this pod's queue correctly, but was never handed to pubHandler.Publish, so it never reached
 // a connected websocket client. This test asserts the new case actually publishes the topics a
 // real websocket client would have subscribed to (the OLD-FORMAT prefix, e.g.
-// "customer_id:<id>:call", which zmqSub.Subscribe uses as a ZMQ prefix filter).
+// "customer_id:<id>:call", which the pubsub subscriber uses as a topic prefix filter).
 func Test_processEventWebhookManagerRoutingKeyedEvent(t *testing.T) {
 	customerID := uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b")
 	ownerID := uuid.FromStringOrNil("62005165-7592-4ff7-9076-55bf491023f2")
@@ -712,17 +712,17 @@ func Test_processEventWebhookManagerRoutingKeyedEvent(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
-	mockZMQ := zmqpubhandler.NewMockZMQPubHandler(mc)
-	h := &subscribeHandler{zmqpubHandler: mockZMQ}
+	mockPub := pubsubhandler.NewMockPubHandler(mc)
+	h := &subscribeHandler{pubHandler: mockPub}
 
 	expectedOldFormatCustomerTopic := fmt.Sprintf("customer_id:%s:call:%s", customerID, callID)
 	expectedOldFormatOwnerTopic := fmt.Sprintf("agent_id:%s:call:%s", ownerID, callID)
 
-	mockZMQ.EXPECT().Publish(expectedOldFormatCustomerTopic, string(data)).Return(nil)
-	mockZMQ.EXPECT().Publish(expectedOldFormatOwnerTopic, string(data)).Return(nil)
+	mockPub.EXPECT().Publish(expectedOldFormatCustomerTopic, string(data)).Return(nil)
+	mockPub.EXPECT().Publish(expectedOldFormatOwnerTopic, string(data)).Return(nil)
 	// NEW format topics also get published (createTopics always emits both) -- accept any
 	// remaining Publish calls for those, this test's focus is the OLD-FORMAT compatibility.
-	mockZMQ.EXPECT().Publish(gomock.Any(), string(data)).Return(nil).AnyTimes()
+	mockPub.EXPECT().Publish(gomock.Any(), string(data)).Return(nil).AnyTimes()
 
 	err := h.processEventWebhookManagerRoutingKeyedEvent(context.Background(), event)
 	if err != nil {
@@ -744,8 +744,8 @@ func Test_processEventWebhookManagerRoutingKeyedEvent_WrongEventTypeFormat(t *te
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
-	mockZMQ := zmqpubhandler.NewMockZMQPubHandler(mc)
-	h := &subscribeHandler{zmqpubHandler: mockZMQ}
+	mockPub := pubsubhandler.NewMockPubHandler(mc)
+	h := &subscribeHandler{pubHandler: mockPub}
 	// No Publish call expected at all.
 
 	err := h.processEventWebhookManagerRoutingKeyedEvent(context.Background(), event)

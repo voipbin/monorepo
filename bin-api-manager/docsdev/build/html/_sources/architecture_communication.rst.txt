@@ -5,9 +5,9 @@ Inter-Service Communication
 
 .. note:: **AI Context**
 
-   This page describes VoIPBIN's inter-service communication patterns: RabbitMQ RPC (synchronous request-response), RabbitMQ pub/sub (asynchronous events), ZeroMQ (high-performance real-time streaming), and WebSocket (client notifications). Relevant when an AI agent needs to understand how services talk to each other, message reliability guarantees, queue naming conventions, or event types.
+   This page describes VoIPBIN's inter-service communication patterns: RabbitMQ RPC (synchronous request-response), RabbitMQ pub/sub (asynchronous events), in-process event fan-out inside the API gateway, and WebSocket (client notifications). Relevant when an AI agent needs to understand how services talk to each other, message reliability guarantees, queue naming conventions, or event types.
 
-VoIPBIN's microservices communicate through multiple messaging patterns optimized for different use cases. The architecture uses RabbitMQ for RPC and pub/sub, ZeroMQ for high-performance events, and WebSocket for real-time client communication.
+VoIPBIN's microservices communicate through multiple messaging patterns optimized for different use cases. The architecture uses RabbitMQ for RPC and pub/sub, an in-process pub/sub inside the API gateway for WebSocket fan-out, and WebSocket for real-time client communication.
 
 Communication Patterns Overview
 --------------------------------
@@ -28,11 +28,11 @@ VoIPBIN uses three primary communication mechanisms:
     +---------------------------------------------------------+
 
     +---------------------------------------------------------+
-    |              ZeroMQ (High-Performance Events)           |
+    |          In-Process Pub/Sub (API Gateway)               |
     |                                                         |
-    |  o Real-time event streaming                            |
-    |  o Agent presence updates                               |
-    |  o Call state changes                                   |
+    |  o Fan-out of RabbitMQ events to WebSocket clients      |
+    |  o Topic prefix filtering per connection                |
+    |  o Pod-local, no network hop                            |
     +---------------------------------------------------------+
 
     +---------------------------------------------------------+
@@ -354,164 +354,61 @@ Services subscribe to events they're interested in:
 * **Manual ACK**: Subscriber acknowledges after processing
 * **Retry on Failure**: Redelivered if subscriber crashes
 
-ZeroMQ Event Streaming
------------------------
+In-Process Event Fan-Out (API Gateway)
+---------------------------------------
 
-For high-performance, low-latency event streaming, VoIPBIN uses ZeroMQ pub/sub sockets.
+For delivering backend events to connected WebSocket clients, the API gateway
+uses a lightweight in-process pub/sub (a pure Go broker inside the
+api-manager process). Backend events arrive at the gateway over RabbitMQ; the
+gateway then fans them out locally to every WebSocket connection whose
+subscription matches.
 
-**ZMQ Architecture**
-
-.. code::
-
-    ZeroMQ Pub/Sub Pattern:
-
-    Publishers                               Subscribers
-         |                                        |
-         |  Call Manager                          |
-         |  (publishes call events)               |
-         +----------------------+                 |
-         |  ZMQ PUB Socket      |                 |
-         |  tcp://*:5555        |                 |
-         +----------+-----------+                 |
-                    |                             |
-                    |  Event Stream               |
-                    |  (no broker)                |
-                    |                             |
-                    +---------------------------->> Agent Manager
-                    |                             | (agent presence)
-                    |                             |
-                    +---------------------------->> Webhook Manager
-                    |                             | (webhook delivery)
-                    |                             |
-                    +---------------------------->> Talk Manager
-                                                  | (agent UI updates)
-
-**Key Differences from RabbitMQ**
+**Architecture**
 
 .. code::
 
-    RabbitMQ vs ZeroMQ:
+    In-Process Fan-Out (inside api-manager pod):
 
-    RabbitMQ:                          ZeroMQ:
-    +------------+                     +------------+
-    | Publisher  |                     | Publisher  |
-    +------+-----+                     +------+-----+
-           |                                  |
-           | Reliable                         | Fast
-           | Persistent                       | In-memory
-           | Broker-based                     | Direct socket
-           v                                  v
-    +------------+                     +------------+
-    |  RabbitMQ  |                     | Subscriber |
-    |   Broker   |                     |  (Direct)  |
-    +------+-----+                     +------------+
-           |
-           | At-least-once
-           v
-    +------------+
-    | Subscriber |
-    +------------+
+    RabbitMQ Event Queue
+         |
+         |  (webhook / resource events)
+         v
+    +----------------------+
+    |  Subscribe Handler   |
+    |  (RabbitMQ consumer) |
+    +----------+-----------+
+               |
+               |  Publish(topic, event)
+               v
+    +----------------------+
+    |  In-Process Broker   |
+    |  (topic fan-out)     |
+    +----------+-----------+
+               |
+               +----------------------->> WebSocket connection A
+               |                          (topics: customer_id:123:*)
+               |
+               +----------------------->> WebSocket connection B
+               |                          (topics: customer_id:456:call)
+               |
+               +----------------------->> WebSocket connection C
 
-**RabbitMQ:**
-* Persistent, reliable
-* Guaranteed delivery
-* Message queuing
-* Higher latency (~10ms)
+**Characteristics**
 
-**ZeroMQ:**
-* In-memory, fast
-* Best-effort delivery
-* Direct sockets
-* Lower latency (<1ms)
-
-**Use Cases**
-
-VoIPBIN uses ZeroMQ for:
-
-.. code::
-
-    ZeroMQ Use Cases:
-
-    [x] Agent Presence Updates
-      o Agent login/logout
-      o Status changes (available, busy, away)
-      o Real-time UI updates
-      o High frequency, acceptable loss
-
-    [x] Call State Changes
-      o Call ringing, answered, ended
-      o Conference participant updates
-      o Duplicate with RabbitMQ (redundant)
-      o Speed over reliability
-
-    [x] Real-Time Metrics
-      o Queue statistics
-      o Active call counts
-      o System health metrics
-      o Dashboard updates
-
-    [ ] NOT Used For:
-      o Billing events (use RabbitMQ)
-      o Webhook delivery (use RabbitMQ)
-      o Critical state changes (use RabbitMQ)
-
-**ZMQ Message Format**
-
-.. code::
-
-    ZMQ Message Structure:
-
-    Topic (routing key)
-    |
-    +- "agent.presence"
-    |  {
-    |    "agent_id": "agent-123",
-    |    "status": "available",
-    |    "timestamp": "2026-01-20T12:00:00.000Z"
-    |  }
-    |
-    +- "call.state"
-    |  {
-    |    "call_id": "call-789",
-    |    "status": "answered",
-    |    "timestamp": "2026-01-20T12:00:01.000Z"
-    |  }
-    |
-    +- "queue.stats"
-       {
-         "queue_id": "queue-456",
-         "waiting": 5,
-         "active": 3
-       }
-
-**Topic Filtering**
-
-Subscribers can filter events by topic:
-
-.. code::
-
-    Topic-Based Filtering:
-
-    Subscriber A:
-    o Subscribe to: "agent.*"
-    o Receives:
-      - agent.presence
-      - agent.login
-      - agent.logout
-
-    Subscriber B:
-    o Subscribe to: "call.*"
-    o Receives:
-      - call.state
-      - call.metrics
-
-    Subscriber C:
-    o Subscribe to: ""  (empty = all)
-    o Receives: everything
+* **Pod-local**: events are fanned out inside the api-manager process, with no
+  extra network hop or broker round-trip
+* **Topic prefix filtering**: each WebSocket connection subscribes with topic
+  prefixes (for example ``customer_id:<id>:call``); an event is delivered when
+  its topic starts with a subscribed prefix, and at most once per connection
+  even if several prefixes match
+* **Best-effort delivery**: a slow WebSocket connection cannot block the
+  publisher or other connections; events beyond a connection's buffer are
+  dropped for that connection only (reliable delivery paths use webhooks over
+  RabbitMQ instead)
 
 .. note:: **AI Implementation Hint**
 
-   For real-time event notifications, subscribe via WebSocket at ``wss://api.voipbin.net/ws?token=<JWT>``. For reliable event delivery to external systems, configure webhooks via ``PUT https://api.voipbin.net/v1.0/customer``. ZeroMQ events are internal-only and not exposed to API clients.
+   For real-time event notifications, subscribe via WebSocket at ``wss://api.voipbin.net/ws?token=<JWT>``. For reliable event delivery to external systems, configure webhooks via ``PUT https://api.voipbin.net/v1.0/customer``. The in-process fan-out is internal to the API gateway and not exposed to API clients.
 
 WebSocket Communication
 -----------------------
@@ -545,7 +442,7 @@ For real-time client communication, VoIPBIN uses WebSocket connections.
          |                      |                       |
          |                      |  6. Backend Event     |
          |                      <<----------------------+
-         |                      |  (via RabbitMQ/ZMQ)   |
+         |                      |  (via RabbitMQ)       |
          |                      |                       |
          |  7. Push to Client   |                       |
          <<---------------------+                       |
@@ -708,8 +605,8 @@ Different patterns provide different reliability guarantees:
     RabbitMQ Pub/Sub At-least-once    Yes            Important events
                      (may duplicate)
 
-    ZeroMQ Pub/Sub   Best-effort      No             Real-time updates
-                     (may lose)
+    In-process       Best-effort      No             Real-time updates
+    Pub/Sub          (may lose)
 
     WebSocket        Best-effort      No             Client notifications
                      (may lose)
@@ -737,12 +634,12 @@ Different patterns provide different reliability guarantees:
     | o Deduplication in subscriber      |
     +------------------------------------+
 
-    Real-Time Updates (ZeroMQ):
+    Real-Time Updates (In-process pub/sub):
     +------------------------------------+
     | o No persistence                   |
     | o Fast delivery                    |
     | o Acceptable loss                  |
-    | o Often duplicated in RabbitMQ     |
+    | o Reliable path: webhooks (RabbitMQ)|
     +------------------------------------+
 
 Message Ordering

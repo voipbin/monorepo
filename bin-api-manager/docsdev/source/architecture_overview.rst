@@ -408,6 +408,6 @@ VoIPBIN is built on modern, proven technologies:
 **Message Queue:**
 
 * **Broker**: RabbitMQ for async messaging
-* **Event Bus**: ZeroMQ for pub/sub events
+* **Event Bus**: RabbitMQ pub/sub events; in-process fan-out inside the API gateway for WebSocket delivery
 
 This architecture enables VoIPBIN to deliver enterprise-grade communication services at scale while maintaining developer simplicity and operational excellence.

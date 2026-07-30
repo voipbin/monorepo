@@ -14,7 +14,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-api-manager/models/hook"
-	"monorepo/bin-api-manager/pkg/zmqsubhandler"
+	"monorepo/bin-api-manager/pkg/pubsubhandler"
 )
 
 const (
@@ -61,14 +61,10 @@ func (h *websockHandler) subscriptionRun(ctx context.Context, w http.ResponseWri
 		return err
 	}
 
-	// create a new subscriber zmqSub
-	zmqSub, err := zmqsubhandler.NewZMQSubHandler()
-	if err != nil {
-		log.Errorf("Could not create a new zmq subscirber handler. err: %v", err)
-		return err
-	}
-	defer zmqSub.Terminate()
-	log.Debugf("Created a new subscribe socket correctly.")
+	// create a new subscriber for the in-process pub/sub
+	pubsubSub := h.pubsubBroker.NewSubHandler()
+	defer pubsubSub.Terminate()
+	log.Debugf("Created a new pubsub subscriber correctly.")
 
 	// heldPatterns tracks, per AMQP binding pattern, how many times THIS connection has
 	// Acquire()d it (a double-subscribe to the same topic without an intervening unsubscribe
@@ -84,8 +80,8 @@ func (h *websockHandler) subscriptionRun(ctx context.Context, w http.ResponseWri
 	// we are creating a new context and cancel using the http request.
 	// we are expecting when the websocket closed, everything is closed too.
 	newCtx, newCancel := context.WithCancel(ctx)
-	go h.subscriptionRunWebsock(newCtx, newCancel, a, ws, zmqSub, heldPatterns, &heldMu)
-	go h.subscriptionRunZMQSub(newCtx, newCancel, ws, zmqSub, &writeMu)
+	go h.subscriptionRunWebsock(newCtx, newCancel, a, ws, pubsubSub, heldPatterns, &heldMu)
+	go h.subscriptionRunPubsubSub(newCtx, newCancel, ws, pubsubSub, &writeMu)
 	go h.subscriptionRunPinger(newCtx, newCancel, ws, &writeMu)
 
 	<-newCtx.Done()
@@ -108,21 +104,21 @@ func (h *websockHandler) subscriptionRun(ctx context.Context, w http.ResponseWri
 	return nil
 }
 
-// subscriptionRunZMQSub runs the zmq subscriber
-func (h *websockHandler) subscriptionRunZMQSub(
+// subscriptionRunPubsubSub runs the pubsub subscriber
+func (h *websockHandler) subscriptionRunPubsubSub(
 	ctx context.Context,
 	cancel context.CancelFunc,
 	ws *websocket.Conn,
-	zmqSub zmqsubhandler.ZMQSubHandler,
+	pubsubSub pubsubhandler.SubHandler,
 	writeMu *sync.Mutex,
 ) {
 	log := logrus.WithFields(logrus.Fields{
-		"func": "subscriptionRunZMQSub",
+		"func": "subscriptionRunPubsubSub",
 	})
 	defer cancel()
 
-	if errRun := zmqSub.RunWithMutex(ctx, ws, writeMu); errRun != nil {
-		log.Infof("The zmq subscriber run has finished. err: %v", errRun)
+	if errRun := pubsubSub.RunWithMutex(ctx, ws, writeMu); errRun != nil {
+		log.Infof("The pubsub subscriber run has finished. err: %v", errRun)
 		return
 	}
 }
@@ -133,7 +129,7 @@ func (h *websockHandler) subscriptionRunWebsock(
 	cancel context.CancelFunc,
 	a *auth.AuthIdentity,
 	ws *websocket.Conn,
-	zmqSub zmqsubhandler.ZMQSubHandler,
+	pubsubSub pubsubhandler.SubHandler,
 	heldPatterns map[string]int,
 	heldMu *sync.Mutex,
 ) {
@@ -159,7 +155,7 @@ func (h *websockHandler) subscriptionRunWebsock(
 		log.Debugf("Received subscribee/unsubscribe message from the websocket. type: %s, topics: %v", p.Type, p.Topics)
 
 		// handle the message
-		if errHandle := h.subscriptionHandleMessage(ctx, a, zmqSub, p, heldPatterns, heldMu); errHandle != nil {
+		if errHandle := h.subscriptionHandleMessage(ctx, a, pubsubSub, p, heldPatterns, heldMu); errHandle != nil {
 			log.Errorf("Could not handle the message correctly. err: %v", errHandle)
 			return
 		}
@@ -170,7 +166,7 @@ func (h *websockHandler) subscriptionRunWebsock(
 func (h *websockHandler) subscriptionHandleMessage(
 	ctx context.Context,
 	a *auth.AuthIdentity,
-	zmqSub zmqsubhandler.ZMQSubHandler,
+	pubsubSub pubsubhandler.SubHandler,
 	m *hook.Hook,
 	heldPatterns map[string]int,
 	heldMu *sync.Mutex,
@@ -190,13 +186,13 @@ func (h *websockHandler) subscriptionHandleMessage(
 	switch m.Type {
 	case hook.TypeSubscribe:
 		for _, topic := range m.Topics {
-			if errSub := zmqSub.Subscribe(topic); errSub != nil {
+			if errSub := pubsubSub.Subscribe(topic); errSub != nil {
 				log.Errorf("Could not subscribe the topic. topic: %s, err: %v", topic, errSub)
 				return errSub
 			}
 			log.Debugf("Subscribed the topic. topic: %s", topic)
 
-			// acquire the AMQP binding for this pattern. Non-fatal on error: the zmqSub
+			// acquire the AMQP binding for this pattern. Non-fatal on error: the pubsubSub
 			// subscribe above already succeeded, so local filtering still works even if
 			// broker-side AMQP scoping doesn't -- a safe degraded failure mode, not a hard
 			// failure (VOIP-1258 §9).
@@ -216,7 +212,7 @@ func (h *websockHandler) subscriptionHandleMessage(
 
 	case hook.TypeUnsubscribe:
 		for _, topic := range m.Topics {
-			if errSub := zmqSub.Unsubscribe(topic); errSub != nil {
+			if errSub := pubsubSub.Unsubscribe(topic); errSub != nil {
 				log.Errorf("Could not unsubscribe the topic. topic: %s, err: %v", topic, errSub)
 				return errSub
 			}

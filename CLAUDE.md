@@ -18,7 +18,7 @@ This is the VoIPbin monorepo - a unified backend codebase for a cloud-native CPa
 - **Monorepo architecture** - All backend services in one repository with local module replacements
 - **Microservices communication** - Services communicate via RabbitMQ RPC, not HTTP
 - **Shared infrastructure** - Common MySQL database, Redis cache, RabbitMQ message broker
-- **Event-driven architecture** - Pub/sub events via RabbitMQ and ZeroMQ
+- **Event-driven architecture** - Pub/sub events via RabbitMQ (plus an in-process pub/sub in bin-api-manager for WebSocket fan-out)
 - **Kubernetes deployment** - Services designed for GCP GKE with Prometheus monitoring
 
 ## CRITICAL: Verification before commit

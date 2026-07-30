@@ -263,7 +263,6 @@ Path filtering enables selective service testing:
 - `github.com/swaggo/swag` - Swagger documentation
 - `github.com/oapi-codegen/oapi-codegen` - OpenAPI code generation
 - `github.com/golang-jwt/jwt` - JWT authentication
-- `github.com/pebbe/zmq4` - ZeroMQ bindings
 
 ### Cloud Integration
 

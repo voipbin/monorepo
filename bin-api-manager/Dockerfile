@@ -1,16 +1,6 @@
 # base
 FROM public.ecr.aws/docker/library/golang:1.25-bookworm AS base
 
-RUN apt-get update -qq && apt-get install -y --no-install-recommends \
-    apt-utils \
-    build-essential \
-    pkg-config \
-    libzmq5 \
-    libzmq3-dev \
-    libczmq4 \
-    libczmq-dev \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
-
 # build
 FROM base AS build
 

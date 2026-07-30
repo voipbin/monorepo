@@ -1931,10 +1931,6 @@ commands:
             cd << parameters.source-directory >>
             go mod download
             go mod vendor
-      - run:
-          name: Install extra dependencies
-          command: |
-            sudo apt-get update && sudo apt install -y pkg-config libzmq5 libzmq3-dev libczmq4 libczmq-dev
       # TODO: Re-enable golangci-lint after fixing OOM on small resource_class
       # - run:
       #     name: Install golangci-lint v2.5.0
