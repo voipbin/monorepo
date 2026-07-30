@@ -23,6 +23,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2/google"
+	"google.golang.org/api/option"
 )
 
 const (
@@ -93,29 +94,45 @@ func NewFileHandler(
 ) (FileHandler, error) {
 	log := logrus.WithField("func", "NewFileHandler")
 
+	// Signing credentials are optional. Without them the handler still serves every
+	// capability that does not need a signed URL (file get/list/delete, account
+	// bookkeeping, the customer-deleted cascade) and file Create still persists the
+	// record with an empty URIDownload. Only the signed download URL paths degrade,
+	// returning a structured SIGNING_NOT_CONFIGURED error. An explicitly configured but
+	// unreadable/unparsable key file is still fatal: that is broken configuration, not
+	// an intentional keyless deployment.
+	accessID := ""
+	var privateKey []byte
+
 	envCredPath := os.Getenv("GOOGLE_APPLICATION_CREDENTIALS")
 	if envCredPath == "" {
-		return nil, errors.New("GOOGLE_APPLICATION_CREDENTIALS is not set. A service account JSON key file is required to generate GCS signed URLs")
-	}
-	log.Infof("Found GOOGLE_APPLICATION_CREDENTIALS at: %s", envCredPath)
+		log.Warn("GOOGLE_APPLICATION_CREDENTIALS is not set. GCS signed URL generation is disabled; download URI paths will report the signing capability as unavailable.")
+	} else {
+		log.Infof("Found GOOGLE_APPLICATION_CREDENTIALS at: %s", envCredPath)
 
-	jsonContent, err := os.ReadFile(envCredPath)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to read credential file")
+		jsonContent, err := os.ReadFile(envCredPath)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to read credential file")
+		}
+
+		conf, err := google.JWTConfigFromJSON(jsonContent)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to parse credential JSON")
+		}
+
+		accessID = conf.Email
+		privateKey = conf.PrivateKey
 	}
 
-	conf, err := google.JWTConfigFromJSON(jsonContent)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to parse credential JSON")
+	promSigningAvailable.Set(0)
+	if len(privateKey) > 0 && accessID != "" {
+		promSigningAvailable.Set(1)
 	}
-
-	accessID := conf.Email
-	privateKey := conf.PrivateKey
 
 	ctx := context.Background()
-	client, errClient := storage.NewClient(ctx)
+	client, errClient := newStorageClient(ctx, storage.NewClient, envCredPath == "")
 	if errClient != nil {
-		return nil, errors.Wrapf(errClient, "failed to create client")
+		return nil, errClient
 	}
 
 	log.Debugf("Checking account. project_id: %s, bucket_media: %s, bucket_tmp: %s, access_id: %s", projectID, bucketMedia, bucketTmp, accessID)
@@ -131,6 +148,50 @@ func NewFileHandler(
 		bucketTmp:   bucketTmp,
 		accessID:    accessID,
 		privateKey:  privateKey,
+	}
+
+	return res, nil
+}
+
+// newStorageClient builds the GCS client, degrading to an unauthenticated client only
+// on a deployment that declares itself keyless.
+//
+// GOOGLE_APPLICATION_CREDENTIALS is not only the signing key: it is also the primary
+// ADC source for the storage client itself. Where the variable is unset there may be no
+// credential at all, the authenticated constructor fails, and returning that error would
+// put the process straight back into the boot crash-loop this handler exists to avoid.
+// The fallback keeps it alive: everything that does not touch GCS (file get/list,
+// account bookkeeping, the customer-deleted cascade) works normally, and the GCS paths
+// fail per-request with a clear error instead.
+//
+// keyless gates the fallback deliberately. When a credential file IS configured, a
+// client-construction failure is a real fault and stays fatal, so the pod crash-loops
+// and self-heals once the underlying problem clears - silently running unauthenticated
+// forever would be strictly worse there. The residual gap is a credential-less cluster
+// relying on the GKE metadata server: a transient metadata failure at boot degrades it
+// until a restart. That is accepted because this service's k8s manifest always sets
+// GOOGLE_APPLICATION_CREDENTIALS, and the degraded state is observable through the
+// storage_manager_signing_available gauge (a keyless deployment is exactly the case
+// where it reads 0).
+//
+// newClient is injected so the fallback is testable without manipulating ambient
+// credentials.
+func newStorageClient(ctx context.Context, newClient func(context.Context, ...option.ClientOption) (*storage.Client, error), keyless bool) (*storage.Client, error) {
+	log := logrus.WithField("func", "newStorageClient")
+
+	res, err := newClient(ctx)
+	if err == nil {
+		return res, nil
+	}
+
+	if !keyless {
+		return nil, errors.Wrapf(err, "failed to create client")
+	}
+	log.Warnf("Could not create the authenticated storage client and no credential is configured. Falling back to an unauthenticated client. err: %v", err)
+
+	res, errFallback := newClient(ctx, option.WithoutAuthentication())
+	if errFallback != nil {
+		return nil, errors.Wrapf(errFallback, "failed to create client")
 	}
 
 	return res, nil

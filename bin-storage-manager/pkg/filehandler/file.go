@@ -76,12 +76,27 @@ func (h *fileHandler) Create(
 	// get dowload uri
 	expireDuration := downloadURLExpiration
 	tmExpire := time.Now().UTC().Add(expireDuration)
-	tmDownloadExpire := h.utilHandler.TimeNowAdd(expireDuration)
 
+	// A signing failure here must not fail the create. The object has already been moved
+	// to its final location above, so returning an error would break the primary write
+	// path AND orphan the moved object. This covers both a missing signing credential
+	// (structured SIGNING_NOT_CONFIGURED) and a credential the signer rejects. Persist
+	// the record with an empty download URI and no expiration instead; the URI is
+	// repopulated later by DownloadURIRefresh once a usable signing key exists.
+	var tmDownloadExpire *time.Time
 	downloadURI, err := h.bucketfileGenerateDownloadURI(h.bucketMedia, dstFilepath, tmExpire, filename)
 	if err != nil {
-		log.Errorf("Could not generate download URI. err: %v", err)
-		return nil, err
+		reason := downloadURIFailureReasonSignerError
+		if isSigningNotConfigured(err) {
+			reason = downloadURIFailureReasonNotConfigured
+		}
+		promDownloadURIFailureTotal.WithLabelValues(reason).Inc()
+		logDownloadURIFailure(log.WithField("outcome", "created without a download URI"), err)
+
+		// defensive: never persist a partial URI alongside a failure
+		downloadURI = ""
+	} else {
+		tmDownloadExpire = h.utilHandler.TimeNowAdd(expireDuration)
 	}
 
 	// create db row

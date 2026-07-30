@@ -140,6 +140,14 @@ func (h *fileHandler) bucketfileGetAttrs(ctx context.Context, bucketName string,
 // force the browser to download the file instead of displaying it.
 func (h *fileHandler) bucketfileGenerateDownloadURI(bucketName string, filepath string, expire time.Time, filename string) (string, error) {
 
+	// len/empty rather than nil: google.JWTConfigFromJSON does not validate that
+	// private_key and client_email are non-empty, so a malformed secret yields a
+	// non-nil zero-length key. Treat that as "not configured" too, otherwise it
+	// surfaces as an opaque 500 from storage.SignedURL instead of a typed 503.
+	if len(h.privateKey) == 0 || h.accessID == "" {
+		return "", newErrSigningNotConfigured()
+	}
+
 	// create opt
 	opts := &storage.SignedURLOptions{
 		Scheme:         storage.SigningSchemeV4,
@@ -153,10 +161,6 @@ func (h *fileHandler) bucketfileGenerateDownloadURI(bucketName string, filepath 
 		opts.QueryParameters = url.Values{
 			"response-content-disposition": {fmt.Sprintf(`attachment; filename="%s"`, filename)},
 		}
-	}
-
-	if opts.PrivateKey == nil {
-		return "", errors.New("No private key found. Cannot generate signed URLs.")
 	}
 
 	// get downloadable url

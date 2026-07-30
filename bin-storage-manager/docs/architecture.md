@@ -32,10 +32,16 @@ models/                 — Data structures (file, account, bucketfile, compress
 
 ### GCS Authentication
 
-`GOOGLE_APPLICATION_CREDENTIALS` must point to a service account JSON key file. The key's
+`GOOGLE_APPLICATION_CREDENTIALS` should point to a service account JSON key file. The key's
 private key is used for local GCS V4 signed-URL signing (`storage.SignedURLOptions.PrivateKey`).
-There is no in-cluster metadata-server / IAM Credentials API fallback — the env var is
-required and the handler refuses to start without it.
+There is no in-cluster metadata-server / IAM Credentials API fallback for signing.
+
+The variable is **optional**, not required. If it is unset, `NewFileHandler` logs a warning
+and returns a working handler with no private key: the service starts, and only the
+signing-dependent paths degrade (structured `UNAVAILABLE` / `SIGNING_NOT_CONFIGURED`; file
+`Create` persists an empty `uri_download`). If it is set but the file cannot be read or
+parsed, startup still fails — that is misconfiguration rather than an intentional keyless
+deployment. See [operations.md](operations.md) for the full degradation matrix.
 
 ## Request Routing
 

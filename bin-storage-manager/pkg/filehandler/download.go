@@ -31,7 +31,7 @@ func (h *fileHandler) DownloadURIRefresh(ctx context.Context, id uuid.UUID) (str
 
 	downloadURI, err := h.bucketfileGenerateDownloadURI(f.BucketName, f.Filepath, tmExpire, f.Filename)
 	if err != nil {
-		log.Errorf("Could not generate download URI. err: %v", err)
+		logDownloadURIFailure(log, err)
 		return "", err
 	}
 	log.Debugf("Generated fresh download URI. file_id: %s", f.ID)
