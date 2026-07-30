@@ -109,10 +109,12 @@ func NewStreamingHandler(
 		awsClient = nil
 	}
 
-	// At least one provider must be available
+	// No provider available: degrade instead of taking the whole service down. Every other
+	// transcribe-manager capability stays available; only the live-streaming transcribe path
+	// reports ErrSTTNotConfigured on each request.
 	if gcpClient == nil && awsClient == nil {
-		log.Error("No STT providers available. At least one provider (GCP or AWS) must be initialized.")
-		return nil
+		log.Error("No STT providers available. Streaming transcribe is disabled until GCP or AWS credentials are configured.")
+		return NewDisabledStreamingHandler()
 	}
 
 	if gcpClient != nil {

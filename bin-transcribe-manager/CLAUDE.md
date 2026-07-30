@@ -42,7 +42,9 @@ go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-l
 
 **Session map locking**: Always lock/unlock `muStreaming` when accessing `mapStreaming`. Failure to lock causes data races under concurrent streaming session operations.
 
-**Provider fallback**: Default order `gcp` → `aws`. At least one must be configured at startup. `provider` field in request overrides order.
+**Provider fallback**: Default order `gcp` → `aws`. `provider` field in request overrides order.
+
+**No STT provider is not fatal**: if neither GCP nor AWS initializes at startup, `streaminghandler.NewStreamingHandler` returns the disabled implementation (`NewDisabledStreamingHandler`) rather than `nil`. The service boots normally and every non-streaming capability (transcribe CRUD, transcript reads, listen/subscribe handlers) stays available; only `Start`/`Stop` on the streaming path fail, with `streaminghandler.ErrSTTNotConfigured` (`STT_NOT_CONFIGURED: no STT provider available`). Never reintroduce a `streamingHandler == nil` check in `cmd/transcribe-manager/main.go` — the constructor cannot return nil, and the disabled implementation's `Run()` must keep returning `nil` or startup aborts again.
 
 **Status validation**: Use `models/transcribe/transcribe.go:IsUpdatableStatus` before any status transition. `done` sessions cannot be restarted.
 
