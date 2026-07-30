@@ -11,6 +11,7 @@
 | AWS auth failure | Missing credentials | Verify `AWS_ACCESS_KEY` / `AWS_SECRET_KEY` env vars |
 | Session health-check failing | Pod hosting session is down | Session is lost; streaming cannot be resumed — client must recreate |
 | `customer_deleted` cascade not running | Subscribe handler not consuming customer-manager events | Check queue binding: `bin-manager.customer-manager.event` |
+| Transcribe start/stop returns a `STT_NOT_CONFIGURED` error (`*cerrors.VoipbinError`, status `Unavailable`) | Neither GCP nor AWS STT client initialized at startup, so the service is running with the disabled streaming handler. Common causes: an invalid or placeholder `GOOGLE_APPLICATION_CREDENTIALS` key file plus no AWS credentials | Fix the GCP key file or set `AWS_ACCESS_KEY` / `AWS_SECRET_KEY`, then restart the service. Confirm with the provider-initialization log check below — a healthy boot logs `GCP STT provider initialized` and/or `AWS STT provider initialized`; a degraded boot logs `No STT providers available. Streaming transcribe is disabled until GCP or AWS credentials are configured.` |
 
 ## Debugging Guide
 
@@ -63,7 +64,7 @@ Service uses Cobra and Viper (`internal/config/main.go`). Configuration loaded o
 | `prometheus_endpoint` / `PROMETHEUS_ENDPOINT` | Metrics HTTP path | `/metrics` |
 | `prometheus_listen_address` / `PROMETHEUS_LISTEN_ADDRESS` | Metrics listen address | `:2112` |
 
-GCP authentication uses Application Default Credentials. At least one STT provider (GCP or AWS) must be configured.
+GCP authentication uses Application Default Credentials. Neither STT provider is strictly required to boot: if neither initializes, the service starts with streaming transcribe disabled (see the failure-modes table above). Configure at least one provider for a working streaming transcribe path.
 
 ## Prometheus Metrics
 

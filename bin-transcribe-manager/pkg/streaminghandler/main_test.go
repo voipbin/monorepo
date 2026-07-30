@@ -1,11 +1,17 @@
 package streaminghandler
 
 import (
+	"context"
 	"os"
 	"testing"
 
+	"github.com/gofrs/uuid"
+
+	cerrors "monorepo/bin-common-handler/models/errors"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-transcribe-manager/models/transcribe"
+	"monorepo/bin-transcribe-manager/models/transcript"
 	"monorepo/bin-transcribe-manager/pkg/transcripthandler"
 
 	gomock "go.uber.org/mock/gomock"
@@ -41,6 +47,12 @@ func Test_NewStreamingHandler_AWSOnly(t *testing.T) {
 	}
 }
 
+// Test_NewStreamingHandler_NoProviders verifies that NewStreamingHandler never returns a nil
+// interface. Startup used to abort when neither provider could be initialized; it now degrades
+// the streaming transcribe path instead (see Test_NewDisabledStreamingHandler).
+//
+// Whether GCP actually initializes here depends on the ambient application-default
+// credentials, so this only asserts the constructor contract that holds either way.
 func Test_NewStreamingHandler_NoProviders(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
@@ -57,7 +69,34 @@ func Test_NewStreamingHandler_NoProviders(t *testing.T) {
 		"",
 	)
 
-	if handler != nil {
-		t.Error("Expected handler to be nil when no providers available")
+	if handler == nil {
+		t.Fatal("Expected handler to be non-nil when no providers available")
+	}
+}
+
+// Test_NewDisabledStreamingHandler verifies the STT-unavailable degradation contract:
+// Run() must be a no-op so the service finishes booting, and the per-request methods must
+// report ErrSTTNotConfigured instead of silently doing nothing.
+func Test_NewDisabledStreamingHandler(t *testing.T) {
+	handler := NewDisabledStreamingHandler()
+
+	if handler == nil {
+		t.Fatal("Expected handler to be non-nil")
+	}
+
+	if err := handler.Run(); err != nil {
+		t.Errorf("Run() should be a no-op when STT is disabled, got error: %v", err)
+	}
+
+	if _, err := handler.Start(context.Background(), uuid.Nil, uuid.Nil, transcribe.ReferenceTypeCall, uuid.Nil, "en-US", transcript.DirectionIn, transcribe.ProviderEmpty); err == nil {
+		t.Error("Expected an STT-not-configured error from Start(), got nil")
+	} else if ve, ok := err.(*cerrors.VoipbinError); !ok || ve.Reason != errSTTNotConfiguredReason {
+		t.Errorf("Wrong error type/reason. expect reason: %s, got: %v", errSTTNotConfiguredReason, err)
+	}
+
+	if _, err := handler.Stop(context.Background(), uuid.Nil); err == nil {
+		t.Error("Expected an STT-not-configured error from Stop(), got nil")
+	} else if ve, ok := err.(*cerrors.VoipbinError); !ok || ve.Reason != errSTTNotConfiguredReason {
+		t.Errorf("Wrong error type/reason. expect reason: %s, got: %v", errSTTNotConfiguredReason, err)
 	}
 }

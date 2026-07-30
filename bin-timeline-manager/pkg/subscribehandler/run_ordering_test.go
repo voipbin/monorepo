@@ -36,6 +36,7 @@ func Test_Run_BindsTopicExchangeBeforeConsuming(t *testing.T) {
 	callOrderCh := make(chan string, len(subscribeTargets)+10)
 
 	mockSock.EXPECT().QueueCreate(queueName, "normal").Return(nil)
+	mockSock.EXPECT().TopicCreate(string(commonoutline.QueueNameSentinelEvent)).Return(nil)
 	for _, target := range subscribeTargets {
 		mockSock.EXPECT().QueueSubscribe(queueName, string(target)).Return(nil)
 	}

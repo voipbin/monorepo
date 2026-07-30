@@ -113,3 +113,18 @@ Requests arrive via RabbitMQ queue `bin-manager.call-manager.request`. The `list
 | `/v1/recordings$` | POST | Create a recording |
 | `/v1/recordings/{{UUID}}$` | GET/DELETE | Get or delete a recording |
 | `/v1/recordings/{{UUID}}/stop$` | POST | Stop an active recording |
+
+## Event Subscriptions
+
+`pkg/subscribehandler` declares the durable queue `bin-manager.call-manager.subscribe` and binds it to each exchange in the `subscribeTargets` list built in `cmd/call-manager/main.go`:
+
+| Exchange | Publishing Service |
+|----------|--------------------|
+| `asterisk.all.event` | Asterisk media server (via asterisk-proxy) |
+| `bin-manager.customer-manager.event` | customer-manager |
+| `bin-manager.flow-manager.event` | flow-manager |
+| `bin-manager.sentinel-manager.event` | sentinel-manager |
+
+**Sentinel exchange declare before bind.** `sentinel-manager` requires the Kubernetes API and is therefore only deployed in Kubernetes environments. In every other deployment (for example Docker Compose based self-hosting) nothing declares the `bin-manager.sentinel-manager.event` exchange, so binding to it fails with an AMQP 404, which closes the channel shared by all of this queue's bindings and makes `Run()` return a fatal error at boot. To avoid that, `Run()` calls `sockHandler.TopicCreate` for the sentinel target specifically, immediately before that target's `QueueSubscribe` call. `TopicCreate` declares a durable fanout exchange, the same parameters `sentinel-manager`'s own `notifyhandler` uses, so the declare is an idempotent no-op when sentinel-manager is deployed and creates the exchange when it is not.
+
+The guard is scoped to the sentinel target only, not applied to every target. Other targets are owned by services that are always deployed, and a blanket fanout declare would silently paper over a future non-fanout (topic-kind) target rather than surface the mismatch.

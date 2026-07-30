@@ -41,6 +41,14 @@ Event ingestion path (separate from query path):
 
 The subscribe path is write-only; the listen path is read-only. They share only the ClickHouse database.
 
+### Event Subscriptions
+
+`pkg/subscribehandler` declares the durable queue `bin-manager.timeline-manager.subscribe` and binds it to every exchange in the package-level `subscribeTargets` list (see `docs/dependencies.md` for the full queue list), plus a `#` wildcard binding to the webhook topic exchange.
+
+**Sentinel exchange declare before bind.** `sentinel-manager` requires the Kubernetes API and is therefore only deployed in Kubernetes environments. In every other deployment (for example Docker Compose based self-hosting) nothing declares the `bin-manager.sentinel-manager.event` exchange, so binding to it fails with an AMQP 404, which closes the channel shared by all of this queue's bindings and makes `Run()` return a fatal error at boot. To avoid that, `Run()` calls `sockHandler.TopicCreate` for the sentinel target specifically, immediately before that target's `QueueSubscribe` call. `TopicCreate` declares a durable fanout exchange, the same parameters `sentinel-manager`'s own `notifyhandler` uses, so the declare is an idempotent no-op when sentinel-manager is deployed and creates the exchange when it is not.
+
+The guard is scoped to the sentinel target only, not applied to every target. A blanket fanout declare would silently paper over a future non-fanout (topic-kind) target rather than surface the mismatch. The remaining targets are each declared by their own owning service at that service's boot; because nothing sequences this service after its event-owning peers, an unlucky boot order can still produce a transient, self-resolving restart on those targets. That is distinct from the sustained crash loop the sentinel declare removes.
+
 **ClickHouse type constraint**: The ClickHouse Go driver only supports basic Go types (`string`, `int`, `time.Time`) for column scanning. Domain models in `models/event/` use `string` for `Publisher` and `EventType`. Conversion to richer types (e.g., `ServiceName`) happens in `eventhandler` at the API boundary.
 
 ## Request Routing

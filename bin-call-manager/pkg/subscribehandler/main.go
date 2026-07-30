@@ -127,6 +127,19 @@ func (h *subscribeHandler) Run() error {
 
 	// subscribe each targets
 	for _, target := range h.subscribeTargets {
+		// The sentinel-manager service is Kubernetes-only (it needs the Kubernetes API) and is
+		// not deployed in non-Kubernetes deployments, so its event exchange may never have been
+		// declared by its owner. Binding to a missing exchange makes QueueSubscribe fail with an
+		// AMQP 404, which closes the shared channel and takes this service down at boot. Declare
+		// it ourselves with the same fanout/durable parameters sentinel-manager's own
+		// notifyhandler uses, which makes the declare an idempotent no-op when it is deployed.
+		if target == string(commonoutline.QueueNameSentinelEvent) {
+			if errTopic := h.sockHandler.TopicCreate(target); errTopic != nil {
+				log.Errorf("Could not create the topic for the target. target: %s, err: %v", target, errTopic)
+				return errTopic
+			}
+		}
+
 		if errSubscribe := h.sockHandler.QueueSubscribe(string(h.subscribeQueue), target); errSubscribe != nil {
 			log.Errorf("Could not subscribe the target. target: %s, err: %v", target, errSubscribe)
 			return errSubscribe
