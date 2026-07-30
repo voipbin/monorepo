@@ -1,0 +1,20 @@
+version: 2
+updates:
+  # bin-openapi-manager: oapi-codegen is invoked only as a go:generate build
+  # tool (see bin-openapi-manager/configs/config_model/generate.go) and its
+  # exact version must stay in sync with the version that produced the
+  # committed gens/models/gen.go. An automated bump here silently rewrites
+  # generated identifiers (e.g. enum constant naming) referenced by every
+  # bin-*-manager service, without regenerating gen.go, and breaks the
+  # "Verify generated models match committed" CircleCI check.
+  # See PR #1146 for the incident this configuration prevents from recurring.
+  # open-pull-requests-limit is set to 0 because this repo does not use
+  # Dependabot version-update PRs; this entry exists solely to scope the
+  # ignore rule below to both version and security updates for this package.
+  - package-ecosystem: "gomod"
+    directory: "/bin-openapi-manager"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 0
+    ignore:
+      - dependency-name: "github.com/oapi-codegen/oapi-codegen/v2"
