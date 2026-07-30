@@ -2,12 +2,12 @@ package streaminghandler
 
 import (
 	"context"
-	"errors"
 	"os"
 	"testing"
 
 	"github.com/gofrs/uuid"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-transcribe-manager/models/transcribe"
@@ -88,11 +88,15 @@ func Test_NewDisabledStreamingHandler(t *testing.T) {
 		t.Errorf("Run() should be a no-op when STT is disabled, got error: %v", err)
 	}
 
-	if _, err := handler.Start(context.Background(), uuid.Nil, uuid.Nil, transcribe.ReferenceTypeCall, uuid.Nil, "en-US", transcript.DirectionIn, transcribe.ProviderEmpty); !errors.Is(err, ErrSTTNotConfigured) {
-		t.Errorf("Wrong match. expect: %v, got: %v", ErrSTTNotConfigured, err)
+	if _, err := handler.Start(context.Background(), uuid.Nil, uuid.Nil, transcribe.ReferenceTypeCall, uuid.Nil, "en-US", transcript.DirectionIn, transcribe.ProviderEmpty); err == nil {
+		t.Error("Expected an STT-not-configured error from Start(), got nil")
+	} else if ve, ok := err.(*cerrors.VoipbinError); !ok || ve.Reason != errSTTNotConfiguredReason {
+		t.Errorf("Wrong error type/reason. expect reason: %s, got: %v", errSTTNotConfiguredReason, err)
 	}
 
-	if _, err := handler.Stop(context.Background(), uuid.Nil); !errors.Is(err, ErrSTTNotConfigured) {
-		t.Errorf("Wrong match. expect: %v, got: %v", ErrSTTNotConfigured, err)
+	if _, err := handler.Stop(context.Background(), uuid.Nil); err == nil {
+		t.Error("Expected an STT-not-configured error from Stop(), got nil")
+	} else if ve, ok := err.(*cerrors.VoipbinError); !ok || ve.Reason != errSTTNotConfiguredReason {
+		t.Errorf("Wrong error type/reason. expect reason: %s, got: %v", errSTTNotConfiguredReason, err)
 	}
 }

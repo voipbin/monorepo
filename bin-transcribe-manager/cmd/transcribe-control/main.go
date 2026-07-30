@@ -69,9 +69,6 @@ func initTranscribeHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (tran
 	transcriptHandler := transcripthandler.NewTranscriptHandler(reqHandler, db, notifyHandler)
 
 	streamingHandler := streaminghandler.NewStreamingHandler(reqHandler, notifyHandler, transcriptHandler, config.Get().AWSAccessKey, config.Get().AWSSecretKey)
-	if streamingHandler == nil {
-		return nil, errors.New("failed to initialize streaming handler: no STT providers available")
-	}
 
 	hostID := uuid.Must(uuid.NewV4())
 	return transcribehandler.NewTranscribeHandler(reqHandler, db, notifyHandler, transcriptHandler, streamingHandler, hostID), nil

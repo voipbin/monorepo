@@ -2,21 +2,35 @@ package streaminghandler
 
 import (
 	"context"
-	"errors"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-transcribe-manager/models/streaming"
 	"monorepo/bin-transcribe-manager/models/transcribe"
 	"monorepo/bin-transcribe-manager/models/transcript"
 )
 
-// ErrSTTNotConfigured is returned by the disabled streaming handler's per-request methods
-// when no STT provider (GCP or AWS) could be initialized at startup. The service keeps
-// running so that every other transcribe-manager capability stays available; only the
-// live-streaming transcribe path is unavailable.
-var ErrSTTNotConfigured = errors.New("STT_NOT_CONFIGURED: no STT provider available")
+// errSTTNotConfiguredReason is the VoipbinError reason returned by the disabled streaming
+// handler's per-request methods when no STT provider (GCP or AWS) could be initialized at
+// startup. The service keeps running so that every other transcribe-manager capability
+// stays available; only the live-streaming transcribe path is unavailable. Matches this
+// codebase's structured-error convention (see pkg/transcribehandler/start.go's
+// TRANSCRIBE_ALREADY_PROGRESSING for another example) so API callers get a typed,
+// domain/reason-tagged error instead of an opaque 500.
+const errSTTNotConfiguredReason = "STT_NOT_CONFIGURED"
+
+// newErrSTTNotConfigured returns a fresh VoipbinError for the disabled handler's per-request
+// methods to return.
+func newErrSTTNotConfigured() error {
+	return cerrors.Unavailable(
+		commonoutline.ServiceNameTranscribeManager,
+		errSTTNotConfiguredReason,
+		"No STT provider (GCP or AWS) is configured on this instance. Live-streaming transcribe is unavailable; all other transcribe-manager functionality is unaffected.",
+	)
+}
 
 // disabledStreamingHandler is the StreamingHandler used when neither the GCP nor the AWS STT
 // client could be initialized. It exists so that NewStreamingHandler never returns a nil
@@ -36,22 +50,22 @@ func (h *disabledStreamingHandler) Run() error {
 	return nil
 }
 
-// Start always fails with ErrSTTNotConfigured.
+// Start always fails, reporting STT as unavailable via a structured VoipbinError.
 func (h *disabledStreamingHandler) Start(ctx context.Context, customerID uuid.UUID, transcribeID uuid.UUID, referenceType transcribe.ReferenceType, referenceID uuid.UUID, language string, direction transcript.Direction, provider transcribe.Provider) (*streaming.Streaming, error) {
 	logrus.WithFields(logrus.Fields{
 		"func":          "Start",
 		"transcribe_id": transcribeID,
 	}).Error("Could not start the streaming. No STT provider is configured.")
 
-	return nil, ErrSTTNotConfigured
+	return nil, newErrSTTNotConfigured()
 }
 
-// Stop always fails with ErrSTTNotConfigured.
+// Stop always fails, reporting STT as unavailable via a structured VoipbinError.
 func (h *disabledStreamingHandler) Stop(ctx context.Context, id uuid.UUID) (*streaming.Streaming, error) {
 	logrus.WithFields(logrus.Fields{
 		"func": "Stop",
 		"id":   id,
 	}).Error("Could not stop the streaming. No STT provider is configured.")
 
-	return nil, ErrSTTNotConfigured
+	return nil, newErrSTTNotConfigured()
 }
