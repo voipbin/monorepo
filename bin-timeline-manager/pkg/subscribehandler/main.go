@@ -122,6 +122,19 @@ func (h *subscribeHandler) Run(ctx context.Context) (<-chan struct{}, error) {
 
 	// Subscribe to all service event exchanges
 	for _, target := range subscribeTargets {
+		// The sentinel-manager service is Kubernetes-only (it needs the Kubernetes API) and is
+		// not deployed in non-Kubernetes deployments, so its event exchange may never have been
+		// declared by its owner. Binding to a missing exchange makes QueueSubscribe fail with an
+		// AMQP 404, which closes the shared channel and takes this service down at boot. Declare
+		// it ourselves with the same fanout/durable parameters sentinel-manager's own
+		// notifyhandler uses, which makes the declare an idempotent no-op when it is deployed.
+		if target == commonoutline.QueueNameSentinelEvent {
+			if errTopic := h.sockHandler.TopicCreate(string(target)); errTopic != nil {
+				log.Errorf("Could not create the topic for the target. target: %s, err: %v", target, errTopic)
+				return nil, errTopic
+			}
+		}
+
 		if errSubscribe := h.sockHandler.QueueSubscribe(subscribeQueue, string(target)); errSubscribe != nil {
 			log.Errorf("Could not subscribe to target. target: %s, err: %v", target, errSubscribe)
 			return nil, errSubscribe
