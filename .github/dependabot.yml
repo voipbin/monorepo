@@ -9,8 +9,13 @@ updates:
   # "Verify generated models match committed" CircleCI check.
   # See PR #1146 for the incident this configuration prevents from recurring.
   # open-pull-requests-limit is set to 0 because this repo does not use
-  # Dependabot version-update PRs; this entry exists solely to scope the
-  # ignore rule below to both version and security updates for this package.
+  # Dependabot version-update PRs for any service; this entry exists solely
+  # to attach the ignore rule below. Note: "ignore" and this limit only
+  # govern scheduled version-update PRs, not Dependabot security-update PRs
+  # (gated separately by the repo's "Dependabot security updates" toggle,
+  # currently disabled repo-wide). If that toggle is ever enabled, this
+  # ignore rule alone will NOT stop an automated oapi-codegen security PR --
+  # revisit this file at that time.
   - package-ecosystem: "gomod"
     directory: "/bin-openapi-manager"
     schedule:
