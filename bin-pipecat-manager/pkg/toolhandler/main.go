@@ -9,22 +9,32 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	amai "monorepo/bin-ai-manager/models/ai"
 	aitool "monorepo/bin-ai-manager/models/tool"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 )
 
-// ToolHandler manages fetching and caching tool definitions from ai-manager
+// ToolHandler manages fetching and caching tool definitions from ai-manager.
+//
+// GetAll (all cached tools, no type filtering) is intentionally NOT part of
+// this interface -- see docs/plans/
+// 2026-07-30-case-insight-assistant-tool-expansion-design.md §2.4. Every
+// caller must go through GetByNames so the AIType whitelist (models/ai.
+// AllowedToolNames) is re-applied at expansion time regardless of what a
+// stored tool_names value claims, closing both the "Normal `all` leaks
+// Insight tools" bug and a fail-open path a future caller could otherwise
+// silently reintroduce by calling an unfiltered GetAll() directly.
 type ToolHandler interface {
 	// FetchTools fetches all tools from ai-manager and caches them
 	FetchTools(ctx context.Context) error
 
-	// GetAll returns all cached tools
-	GetAll() []aitool.Tool
-
-	// GetByNames returns tools filtered by the given tool names
-	// If names contains "all", returns all tools
-	// If names is empty or nil, returns empty slice
-	GetByNames(names []aitool.ToolName) []aitool.Tool
+	// GetByNames returns the cached tools matching names, filtered through
+	// amai.AllowedToolNames(aiType) first -- a tool is only ever returned if
+	// it is both a member of the AIType's whitelist AND requested (directly
+	// by name, or via the "all" selector in names). aiType is resolved
+	// fresh by the caller from the AI record already in hand on every call,
+	// never cached across calls.
+	GetByNames(aiType amai.Type, names []aitool.ToolName) []aitool.Tool
 }
 
 type toolHandler struct {
@@ -60,42 +70,38 @@ func (h *toolHandler) FetchTools(ctx context.Context) error {
 	return nil
 }
 
-// GetAll returns all cached tools
-func (h *toolHandler) GetAll() []aitool.Tool {
-	h.mu.RLock()
-	defer h.mu.RUnlock()
-
-	result := make([]aitool.Tool, len(h.tools))
-	copy(result, h.tools)
-	return result
-}
-
-// GetByNames returns tools filtered by the given tool names
-func (h *toolHandler) GetByNames(names []aitool.ToolName) []aitool.Tool {
-	if len(names) == 0 {
-		return []aitool.Tool{}
-	}
-
-	// Check if "all" is in the names
-	for _, name := range names {
-		if name == aitool.ToolNameAll {
-			return h.GetAll()
+// containsName reports whether target is present in names.
+func containsName(names []aitool.ToolName, target aitool.ToolName) bool {
+	for _, n := range names {
+		if n == target {
+			return true
 		}
 	}
+	return false
+}
 
-	// Create a set of requested names for O(1) lookup
-	nameSet := make(map[aitool.ToolName]bool, len(names))
-	for _, name := range names {
-		nameSet[name] = true
-	}
+// GetByNames returns tools filtered by the given tool names, with the
+// AIType whitelist re-applied at expansion time regardless of what names
+// contains (defense-in-depth, design §2.3): whether names is an explicit
+// list or contains the "all" selector, every returned tool must first be a
+// member of amai.AllowedToolNames(aiType). This closes the pre-existing gap
+// where Normal AI's tool_names=["all"] returned Insight-only tools
+// alongside every Normal tool -- the type separation ValidateToolNames
+// enforces at save time was not previously re-checked here.
+func (h *toolHandler) GetByNames(aiType amai.Type, names []aitool.ToolName) []aitool.Tool {
+	allowed := amai.AllowedToolNames(aiType)
+	hasAll := containsName(names, aitool.ToolNameAll)
 
 	h.mu.RLock()
 	defer h.mu.RUnlock()
 
-	result := make([]aitool.Tool, 0, len(names))
-	for _, tool := range h.tools {
-		if nameSet[tool.Name] {
-			result = append(result, tool)
+	result := make([]aitool.Tool, 0, len(h.tools))
+	for _, t := range h.tools {
+		if !allowed[t.Name] {
+			continue // concrete-name check only; "all" is never itself checked for set membership
+		}
+		if hasAll || containsName(names, t.Name) {
+			result = append(result, t)
 		}
 	}
 

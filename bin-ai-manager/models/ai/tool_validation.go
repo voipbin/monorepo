@@ -2,60 +2,87 @@ package ai
 
 import (
 	"fmt"
-	"strings"
 
 	"monorepo/bin-ai-manager/models/tool"
+
+	"github.com/sirupsen/logrus"
 )
+
+// toSet converts a slice of tool names into a lookup set.
+func toSet(names []tool.ToolName) map[tool.ToolName]bool {
+	set := make(map[tool.ToolName]bool, len(names))
+	for _, n := range names {
+		set[n] = true
+	}
+	return set
+}
+
+// AllowedToolNames returns the tool whitelist for a given AI type -- the
+// single source of truth consumed by both ValidateToolNames (save-time
+// validation, this package) and bin-pipecat-manager's runtime tool
+// expansion (GetByNames). Unknown/future types deny-by-default (empty set)
+// rather than falling back to the widest (Normal, write-capable) set.
+//
+// tool.ToolNameAll ("all") is a SELECTOR, not a concrete tool name --
+// tool.AllToolNames / tool.AllInsightToolNames correctly do not contain it.
+// AllowedToolNames only ever answers "is this concrete tool name allowed
+// for type t"; it is never asked whether "all" itself is a member.
+//
+// See docs/plans/2026-07-30-case-insight-assistant-tool-expansion-design.md
+// §2.2 for the full rationale, including why this is keyed on the Type enum
+// (in models/ai) rather than a bool in models/tool: a bool collapses any
+// future third AIType into "Normal" (the write-capable set) by
+// construction, which is the opposite of deny-by-default.
+func AllowedToolNames(t Type) map[tool.ToolName]bool {
+	switch t {
+	case TypeNormal:
+		return toSet(tool.AllToolNames)
+	case TypeInsight:
+		return toSet(tool.AllInsightToolNames)
+	default:
+		logrus.WithField("ai_type", t).Warnf("unknown AI type encountered in tool whitelist resolution, denying all tools")
+		UnknownAITypeToolDenialTotal.Inc()
+		return map[tool.ToolName]bool{}
+	}
+}
 
 // ValidateToolNames returns an error if any name in toolNames is not
 // permitted for the given (already-resolved) Type. See
 // docs/plans/2026-07-14-insight-ai-tool-name-validation-design.md for the
-// full rationale (VOIP-1257).
+// original rationale (VOIP-1257) and
+// docs/plans/2026-07-30-case-insight-assistant-tool-expansion-design.md §2.2
+// for the AllowedToolNames-based refactor that also grants Insight AI the
+// ability to store tool_names=["all"].
 //
 // Rules:
-//   - Type = TypeInsight: every name must be a member of
-//     tool.AllInsightToolNames. tool.ToolNameAll is rejected (it currently
-//     means "all Normal tools", which has no sensible meaning for an
-//     Insight AI).
-//   - Type = TypeNormal (or resolved default): every name must be a member
-//     of tool.AllToolNames, or be tool.ToolNameAll.
-//   - Any name that is neither a known AllToolNames member, a known
-//     AllInsightToolNames member, nor ToolNameAll is rejected regardless of
-//     Type (closes a pre-existing "unknown tool name silently accepted"
-//     gap).
+//   - tool.ToolNameAll is always structurally valid input, for either Type --
+//     it is a selector expanded at runtime by bin-pipecat-manager's
+//     GetByNames against AllowedToolNames(t), never a concrete tool name
+//     checked for set membership here.
+//   - Every other name must be a member of AllowedToolNames(t) for the
+//     given Type. A name that is neither a known tool for this Type nor
+//     ToolNameAll is rejected (closes a pre-existing "unknown tool name
+//     silently accepted" gap).
 //   - nil/empty toolNames is always valid for either Type.
 //
 // The whole toolNames slice is checked (not short-circuited on the first
 // valid or invalid element), so a mixed list such as
-// ["all", "get_contact_interactions"] for an Insight AI is rejected because
-// "all" alone is invalid for Insight, and ["all", "bogus_tool"] for a
-// Normal AI is rejected because "bogus_tool" is invalid even though "all"
-// is valid.
+// ["all", "bogus_tool"] is rejected because "bogus_tool" is invalid even
+// though "all" is valid.
 func ValidateToolNames(t Type, toolNames []tool.ToolName) error {
 	if len(toolNames) == 0 {
 		return nil
 	}
 
-	allowedNormal := make(map[tool.ToolName]bool, len(tool.AllToolNames))
-	for _, n := range tool.AllToolNames {
-		allowedNormal[n] = true
-	}
-	allowedInsight := make(map[tool.ToolName]bool, len(tool.AllInsightToolNames))
-	for _, n := range tool.AllInsightToolNames {
-		allowedInsight[n] = true
-	}
+	allowed := AllowedToolNames(t)
 
-	var invalid []string
+	var invalid []tool.ToolName
 	for _, name := range toolNames {
-		switch t {
-		case TypeInsight:
-			if !allowedInsight[name] {
-				invalid = append(invalid, string(name))
-			}
-		default: // TypeNormal and any other resolved value
-			if name != tool.ToolNameAll && !allowedNormal[name] {
-				invalid = append(invalid, string(name))
-			}
+		if name == tool.ToolNameAll {
+			continue
+		}
+		if !allowed[name] {
+			invalid = append(invalid, name)
 		}
 	}
 
@@ -63,24 +90,5 @@ func ValidateToolNames(t Type, toolNames []tool.ToolName) error {
 		return nil
 	}
 
-	if t == TypeInsight {
-		valid := make([]string, 0, len(tool.AllInsightToolNames))
-		for _, n := range tool.AllInsightToolNames {
-			valid = append(valid, string(n))
-		}
-		return fmt.Errorf(
-			"invalid tool_names for type=insight: %q is not an Insight tool (valid: %s)",
-			strings.Join(invalid, ", "), strings.Join(valid, ", "),
-		)
-	}
-
-	valid := make([]string, 0, len(tool.AllToolNames)+1)
-	valid = append(valid, string(tool.ToolNameAll))
-	for _, n := range tool.AllToolNames {
-		valid = append(valid, string(n))
-	}
-	return fmt.Errorf(
-		"invalid tool_names for type=normal: %q is not a Normal tool (valid: %s)",
-		strings.Join(invalid, ", "), strings.Join(valid, ", "),
-	)
+	return fmt.Errorf("invalid tool_names for type=%s: %v is not allowed", t, invalid)
 }

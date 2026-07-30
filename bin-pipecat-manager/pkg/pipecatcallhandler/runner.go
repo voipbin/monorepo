@@ -130,22 +130,24 @@ func (h *pipecatcallHandler) runnerStartScript(pc *pipecatcall.Pipecatcall, se *
 			// Single AI: resolve tools from the AI's configuration
 			ai, errAI := h.resolveAIFromAIcall(se.Ctx, aicall)
 			if errAI != nil {
-				// Fail-open by design (VOIP-1234 §6 v4): this AI lookup failure
-				// cannot be scoped to Insight-typed AIs specifically (pipecatcall.ReferenceType
-				// only distinguishes ReferenceTypeCall/ReferenceTypeAICall, not AI.Type), and
-				// there is no observed incident motivating a fail-closed change that would
-				// affect every AICall-backed session (not just Insight). Falling back to
-				// GetAll() keeps the session usable at the cost of over-broad tool exposure
-				// on this rare error path. Metric + alert-worthy log below give operators
-				// visibility so a real incident can be detected and this decision revisited.
+				// Fail-CLOSED by design (docs/plans/
+				// 2026-07-30-case-insight-assistant-tool-expansion-design.md
+				// §2.4 -- this is an explicit reversal of the prior fail-open
+				// policy, VOIP-1234 §6 v4). Tool-access control is a case
+				// where least-privilege must outweigh availability: a
+				// degraded (tool-less) session is an acceptable outcome;
+				// silently granting write-capable tools to a session whose
+				// AI type couldn't even be determined is not. The metric +
+				// error log below give operators visibility into how often
+				// this path is hit.
 				metricsToolResolveFallbackTotal.Inc()
 				log.WithFields(logrus.Fields{
 					"aicall_id":     aicall.ID,
 					"assistance_id": aicall.AssistanceID,
-				}).WithError(errAI).Errorf("Could not resolve AI for pipecat session %s; falling back to all tools (fail-open, over-broad tool exposure)", pc.ID)
-				tools = h.toolHandler.GetAll()
+				}).WithError(errAI).Errorf("Could not resolve AI for pipecat session %s; failing closed to no tools (least-privilege over availability)", pc.ID)
+				tools = []aitool.Tool{}
 			} else {
-				tools = h.toolHandler.GetByNames(ai.ToolNames)
+				tools = h.toolHandler.GetByNames(ai.Type, ai.ToolNames)
 
 				// filter out search_knowledge if no RAG is configured
 				if ai.RagID == uuid.Nil {
@@ -160,7 +162,11 @@ func (h *pipecatcallHandler) runnerStartScript(pc *pipecatcall.Pipecatcall, se *
 			}
 		}
 	} else {
-		tools = h.toolHandler.GetAll()
+		// Non-AICall reference types are provably Normal-only by code
+		// inspection today (design §2.1) -- go through GetByNames so the
+		// AIType whitelist is still enforced rather than calling an
+		// unfiltered GetAll().
+		tools = h.toolHandler.GetByNames(amai.TypeNormal, []aitool.ToolName{aitool.ToolNameAll})
 	}
 	log.WithField("tool_count", len(tools)).Debugf("Retrieved tools for pipecat call")
 

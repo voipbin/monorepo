@@ -25,6 +25,11 @@ const (
 	// Insight AI tool set (VOIP-1234).
 	ToolNameGetContactInteractions ToolName = "get_contact_interactions"
 	ToolNameGetConversationContent ToolName = "get_conversation_content"
+
+	// Insight AI tool set expansion (NOJIRA, docs/plans/
+	// 2026-07-30-case-insight-assistant-tool-expansion-design.md §1).
+	ToolNameGetRelatedCases ToolName = "get_related_cases"
+	ToolNameGetCaseNotes    ToolName = "get_case_notes"
 )
 
 // AllToolNames returns all available tool names (excluding "all")
@@ -47,9 +52,13 @@ var AllToolNames = []ToolName{
 }
 
 // AllInsightToolNames defines the tool set available to ai.TypeInsight AIs.
+// Every entry MUST be read-only (no side effects) -- see
+// docs/plans/2026-07-30-case-insight-assistant-tool-expansion-design.md §2.6.
 var AllInsightToolNames = []ToolName{
 	ToolNameGetContactInteractions,
 	ToolNameGetConversationContent,
+	ToolNameGetRelatedCases,
+	ToolNameGetCaseNotes,
 }
 
 // Tool defines a tool with its schema for LLM function calling.

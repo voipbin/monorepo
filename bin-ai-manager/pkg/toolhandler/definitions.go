@@ -820,4 +820,59 @@ run_llm: Set true to reason about the retrieved conversation content.`,
 			"required": []string{"reference_id"},
 		},
 	},
+	{
+		Name:   tool.ToolNameGetRelatedCases,
+		RunLLM: true,
+		Description: `Lists OTHER cases belonging to the same contact as the current Case (metadata only: id/title/status/date -- never the case body or internal notes).
+
+WHEN TO USE:
+- Answering "has this contact had other cases before" / "what other issues has this customer raised".
+
+WHEN NOT TO USE:
+- You need the notes on the CURRENT case (use get_case_notes instead).
+
+Always scoped to the current Case's contact; there is no argument to target a different contact. The current case itself is never included in the results.
+
+run_llm: Set true to reason about the returned related-case history.`,
+		Parameters: map[string]any{
+			"type": "object",
+			"properties": map[string]any{
+				"run_llm": map[string]any{
+					"type":        "boolean",
+					"description": "Set true to reason about the retrieved related-case history.",
+					"default":     true,
+				},
+			},
+		},
+	},
+	{
+		Name:   tool.ToolNameGetCaseNotes,
+		RunLLM: true,
+		Description: `Returns the internal agent notes on the CURRENT Case -- useful for picking up context left by a previous agent.
+
+WHEN TO USE:
+- Answering "what did the last agent note about this case" / handing off between agents.
+
+WHEN NOT TO USE:
+- You need notes from a DIFFERENT case (not supported -- notes are always scoped to the current Case).
+
+Always scoped to the current Case; there is no argument to target a different Case.
+
+run_llm: Set true to reason about the retrieved notes.`,
+		Parameters: map[string]any{
+			"type": "object",
+			"properties": map[string]any{
+				"run_llm": map[string]any{
+					"type":        "boolean",
+					"description": "Set true to reason about the retrieved case notes.",
+					"default":     true,
+				},
+				"limit": map[string]any{
+					"type":        "integer",
+					"description": "Maximum number of most-recent notes to return (default 20, max 50).",
+					"default":     20,
+				},
+			},
+		},
+	},
 }

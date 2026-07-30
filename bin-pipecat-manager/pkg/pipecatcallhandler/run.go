@@ -175,7 +175,7 @@ func (h *pipecatcallHandler) resolveTeamForPython(
 		}
 		logrus.WithField("ai", ai).Debugf("Retrieved AI info for member. member_id: %s, ai_id: %s", m.ID, m.AIID)
 
-		tools := h.toolHandler.GetByNames(ai.ToolNames)
+		tools := h.toolHandler.GetByNames(ai.Type, ai.ToolNames)
 
 		// filter out search_knowledge if no RAG is configured
 		if ai.RagID == uuid.Nil {

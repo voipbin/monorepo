@@ -108,7 +108,7 @@ func Test_startReferenceTypeCall_externalMediaFailure(t *testing.T) {
 	).Return(nil, fmt.Errorf("external media creation failed"))
 
 	// RunnerStart goroutine may call these before context is cancelled
-	mockTool.EXPECT().GetAll().AnyTimes()
+	mockTool.EXPECT().GetByNames(gomock.Any(), gomock.Any()).AnyTimes()
 	mockPythonRunner.EXPECT().Start(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
@@ -232,7 +232,7 @@ func Test_startReferenceTypeCall_websocketDialFailure(t *testing.T) {
 		Return(&cmexternalmedia.ExternalMedia{ID: emID}, nil)
 
 	// RunnerStart goroutine may call these before context is cancelled
-	mockTool.EXPECT().GetAll().AnyTimes()
+	mockTool.EXPECT().GetByNames(gomock.Any(), gomock.Any()).AnyTimes()
 	mockPythonRunner.EXPECT().Start(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()

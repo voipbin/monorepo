@@ -34,17 +34,20 @@ var (
 	)
 
 	// metricsToolResolveFallbackTotal counts occurrences of the runnerStartScript
-	// fail-open path where resolveAIFromAIcall fails and the session falls back
-	// to GetAll() (all tools, over-broad exposure) instead of the AI's configured
-	// tool whitelist. This path is intentionally fail-open (VOIP-1234 §6 v4) since
-	// it cannot be scoped to Insight-typed AIs specifically and no incident has
-	// been observed to justify a fail-closed change affecting all AICall-backed
-	// sessions. This counter (paired with the Errorf log at the call site) exists
-	// so a real-world spike is observable and can trigger a design revisit.
+	// fail-CLOSED path where resolveAIFromAIcall fails and the session falls
+	// back to an empty tool list instead of the AI's configured tool
+	// whitelist. This was originally a fail-OPEN path (falling back to
+	// GetAll(), VOIP-1234 §6 v4); that decision was reversed (design
+	// docs/plans/2026-07-30-case-insight-assistant-tool-expansion-design.md
+	// §2.4) because tool-access control is a case where least-privilege must
+	// outweigh availability -- a degraded (tool-less) session is acceptable,
+	// silently granting write-capable tools to a session whose type couldn't
+	// be determined is not. This counter (paired with the Errorf log at the
+	// call site) exists so a real-world spike in this path is observable.
 	metricsToolResolveFallbackTotal = prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Name: "pipecat_manager_tool_resolve_fallback_total",
-			Help: "Counter of runnerStartScript falling back to GetAll() (all tools) after an AI lookup failure.",
+			Help: "Counter of runnerStartScript failing closed to an empty tool list after an AI lookup failure.",
 		},
 	)
 )
