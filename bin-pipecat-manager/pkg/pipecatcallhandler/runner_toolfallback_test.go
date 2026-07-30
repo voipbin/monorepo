@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	amaicall "monorepo/bin-ai-manager/models/aicall"
-	aitool "monorepo/bin-ai-manager/models/tool"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
@@ -17,12 +16,13 @@ import (
 	gomock "go.uber.org/mock/gomock"
 )
 
-// Test_runnerStartScript_toolResolveFallback verifies the VOIP-1234 subtask 4
-// fail-open path: when resolveAIFromAIcall fails for a non-team AICall-backed
-// session, runnerStartScript falls back to toolHandler.GetAll() (unchanged
-// behavior) AND now increments metricsToolResolveFallbackTotal so the fallback
-// is observable (see runner.go / metrics.go for the design rationale — this
-// path stays fail-open by design, but must be alertable).
+// Test_runnerStartScript_toolResolveFallback verifies the fail-CLOSED policy
+// (docs/plans/2026-07-30-case-insight-assistant-tool-expansion-design.md
+// §2.4, reversing the prior fail-open VOIP-1234 §6 v4 decision): when
+// resolveAIFromAIcall fails for a non-team AICall-backed session,
+// runnerStartScript now falls back to an EMPTY tool list (never GetByNames /
+// GetAll) AND still increments metricsToolResolveFallbackTotal so the
+// fallback stays observable.
 func Test_runnerStartScript_toolResolveFallback(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
@@ -64,7 +64,8 @@ func Test_runnerStartScript_toolResolveFallback(t *testing.T) {
 	// fail so runnerStartScript takes the fallback branch under test.
 	mockReq.EXPECT().AIV1AIGet(gomock.Any(), assistanceID).Return(nil, errors.New("boom"))
 
-	mockTool.EXPECT().GetAll().Return([]aitool.Tool{})
+	// Fail-closed: no GetByNames/GetAll call at all -- runnerStartScript must
+	// use an empty tool list directly rather than resolving any tool set.
 
 	mockPython.EXPECT().Start(
 		gomock.Any(), pc.ID, gomock.Any(), gomock.Any(), gomock.Any(),

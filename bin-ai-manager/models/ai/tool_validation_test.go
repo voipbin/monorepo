@@ -44,10 +44,10 @@ func TestValidateToolNames(t *testing.T) {
 			wantError: false,
 		},
 		{
-			name:      "insight_with_all_rejected",
+			name:      "insight_with_all_ok",
 			aiType:    TypeInsight,
 			toolNames: []tool.ToolName{tool.ToolNameAll},
-			wantError: true,
+			wantError: false,
 		},
 		{
 			name:      "insight_with_normal_tool_rejected",
@@ -80,10 +80,22 @@ func TestValidateToolNames(t *testing.T) {
 			wantError: false,
 		},
 		{
-			name:      "insight_all_mixed_with_insight_tool_rejected",
+			name:      "insight_all_mixed_with_insight_tool_ok",
 			aiType:    TypeInsight,
 			toolNames: []tool.ToolName{tool.ToolNameAll, tool.ToolNameGetContactInteractions},
+			wantError: false,
+		},
+		{
+			name:      "insight_all_mixed_with_unknown_rejected",
+			aiType:    TypeInsight,
+			toolNames: []tool.ToolName{tool.ToolNameAll, "bogus_tool"},
 			wantError: true,
+		},
+		{
+			name:      "insight_with_new_related_cases_tool_ok",
+			aiType:    TypeInsight,
+			toolNames: []tool.ToolName{tool.ToolNameGetRelatedCases, tool.ToolNameGetCaseNotes},
+			wantError: false,
 		},
 		{
 			name:      "normal_all_mixed_with_unknown_rejected",

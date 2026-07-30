@@ -476,6 +476,7 @@ func Test_resolveTeamForPython(t *testing.T) {
 					Identity: commonidentity.Identity{
 						ID: ai1ID,
 					},
+					Type:        amai.TypeNormal,
 					EngineModel: amai.EngineModelOpenaiGPT5,
 					EngineKey:   "key-1",
 					InitPrompt:  "You are a greeter",
@@ -490,6 +491,7 @@ func Test_resolveTeamForPython(t *testing.T) {
 					Identity: commonidentity.Identity{
 						ID: ai2ID,
 					},
+					Type:        amai.TypeNormal,
 					EngineModel: amai.EngineModelOpenaiGPT5Mini,
 					EngineKey:   "key-2",
 					InitPrompt:  "You are support",
@@ -499,7 +501,7 @@ func Test_resolveTeamForPython(t *testing.T) {
 					ToolNames:   []aitool.ToolName{aitool.ToolNameSendEmail},
 				}, nil)
 
-				mockTool.EXPECT().GetByNames([]aitool.ToolName{aitool.ToolNameConnectCall}).Return([]aitool.Tool{
+				mockTool.EXPECT().GetByNames(amai.TypeNormal, []aitool.ToolName{aitool.ToolNameConnectCall}).Return([]aitool.Tool{
 					{
 						Name:        aitool.ToolNameConnectCall,
 						Description: "Connect a call",
@@ -507,7 +509,7 @@ func Test_resolveTeamForPython(t *testing.T) {
 					},
 				})
 
-				mockTool.EXPECT().GetByNames([]aitool.ToolName{aitool.ToolNameSendEmail}).Return([]aitool.Tool{
+				mockTool.EXPECT().GetByNames(amai.TypeNormal, []aitool.ToolName{aitool.ToolNameSendEmail}).Return([]aitool.Tool{
 					{
 						Name:        aitool.ToolNameSendEmail,
 						Description: "Send an email",
@@ -674,7 +676,7 @@ func Test_resolveTeamForPython(t *testing.T) {
 					TTSType:     amai.TTSTypeCartesia,
 					STTType:     amai.STTTypeDeepgram,
 				}, nil)
-				mockTool.EXPECT().GetByNames(gomock.Any()).Return([]aitool.Tool{})
+				mockTool.EXPECT().GetByNames(gomock.Any(), gomock.Any()).Return([]aitool.Tool{})
 			},
 
 			validate: func(t *testing.T, result *resolvedTeamData) {
@@ -720,7 +722,7 @@ func Test_resolveTeamForPython(t *testing.T) {
 					EngineKey:   "key-2",
 					InitPrompt:  "You are support",
 				}, nil)
-				mockTool.EXPECT().GetByNames(gomock.Any()).Return([]aitool.Tool{}).Times(2)
+				mockTool.EXPECT().GetByNames(gomock.Any(), gomock.Any()).Return([]aitool.Tool{}).Times(2)
 			},
 
 			validate: func(t *testing.T, result *resolvedTeamData) {
@@ -752,7 +754,7 @@ func Test_resolveTeamForPython(t *testing.T) {
 					EngineKey:   "key-1",
 					InitPrompt:  "You are a greeter",
 				}, nil)
-				mockTool.EXPECT().GetByNames(gomock.Any()).Return([]aitool.Tool{})
+				mockTool.EXPECT().GetByNames(gomock.Any(), gomock.Any()).Return([]aitool.Tool{})
 			},
 
 			validate: func(t *testing.T, result *resolvedTeamData) {
@@ -784,7 +786,7 @@ func Test_resolveTeamForPython(t *testing.T) {
 					EngineKey:   "key-1",
 					InitPrompt:  "You are a greeter",
 				}, nil)
-				mockTool.EXPECT().GetByNames(gomock.Any()).Return([]aitool.Tool{})
+				mockTool.EXPECT().GetByNames(gomock.Any(), gomock.Any()).Return([]aitool.Tool{})
 			},
 
 			validate: func(t *testing.T, result *resolvedTeamData) {

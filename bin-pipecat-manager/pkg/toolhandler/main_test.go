@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"testing"
 
+	amai "monorepo/bin-ai-manager/models/ai"
 	aitool "monorepo/bin-ai-manager/models/tool"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
@@ -81,68 +82,13 @@ func TestToolHandler_FetchTools(t *testing.T) {
 				return
 			}
 
-			// Verify tools were cached
-			got := h.GetAll()
-			if !reflect.DeepEqual(got, tt.responseTools) {
-				t.Errorf("GetAll() = %v, want %v", got, tt.responseTools)
-			}
-		})
-	}
-}
-
-func TestToolHandler_GetAll(t *testing.T) {
-	tests := []struct {
-		name string
-
-		cachedTools []aitool.Tool
-		want        []aitool.Tool
-	}{
-		{
-			name: "returns all cached tools",
-
-			cachedTools: []aitool.Tool{
-				{
-					Name:        aitool.ToolNameConnectCall,
-					Description: "Connects to another endpoint",
-				},
-				{
-					Name:        aitool.ToolNameSendEmail,
-					Description: "Sends an email",
-				},
-			},
-			want: []aitool.Tool{
-				{
-					Name:        aitool.ToolNameConnectCall,
-					Description: "Connects to another endpoint",
-				},
-				{
-					Name:        aitool.ToolNameSendEmail,
-					Description: "Sends an email",
-				},
-			},
-		},
-		{
-			name: "empty cache returns empty slice",
-
-			cachedTools: []aitool.Tool{},
-			want:        []aitool.Tool{},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockRequest := requesthandler.NewMockRequestHandler(mc)
-			h := &toolHandler{
-				requestHandler: mockRequest,
-				tools:          tt.cachedTools,
-			}
-
-			got := h.GetAll()
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetAll() = %v, want %v", got, tt.want)
+			// Verify tools were cached: GetByNames(TypeNormal, ["all"]) returns
+			// everything cached that is also Normal-whitelisted. Both fixture
+			// tools here are in tool.AllToolNames, so this is equivalent to the
+			// old GetAll() check.
+			got := h.GetByNames(amai.TypeNormal, []aitool.ToolName{aitool.ToolNameAll})
+			if len(got) != len(tt.responseTools) {
+				t.Errorf("GetByNames(TypeNormal, [\"all\"]) returned %d tools, want %d", len(got), len(tt.responseTools))
 			}
 		})
 	}
@@ -154,12 +100,15 @@ func TestToolHandler_GetByNames(t *testing.T) {
 		{Name: aitool.ToolNameSendEmail, Description: "Send email"},
 		{Name: aitool.ToolNameSendMessage, Description: "Send message"},
 		{Name: aitool.ToolNameSetVariables, Description: "Set variables"},
+		{Name: aitool.ToolNameGetContactInteractions, Description: "Get contact interactions"},
+		{Name: aitool.ToolNameGetConversationContent, Description: "Get conversation content"},
 	}
 
 	tests := []struct {
 		name string
 
 		cachedTools []aitool.Tool
+		aiType      amai.Type
 		names       []aitool.ToolName
 
 		wantCount int
@@ -169,6 +118,7 @@ func TestToolHandler_GetByNames(t *testing.T) {
 			name: "empty names returns empty slice",
 
 			cachedTools: cachedTools,
+			aiType:      amai.TypeNormal,
 			names:       []aitool.ToolName{},
 
 			wantCount: 0,
@@ -178,24 +128,42 @@ func TestToolHandler_GetByNames(t *testing.T) {
 			name: "nil names returns empty slice",
 
 			cachedTools: cachedTools,
+			aiType:      amai.TypeNormal,
 			names:       nil,
 
 			wantCount: 0,
 			wantNames: nil,
 		},
 		{
-			name: "all returns all tools",
+			name: "normal all returns all normal tools, not insight tools",
 
 			cachedTools: cachedTools,
+			aiType:      amai.TypeNormal,
 			names:       []aitool.ToolName{aitool.ToolNameAll},
 
 			wantCount: 4,
-			wantNames: nil, // Don't check specific names, just count
+			wantNames: []aitool.ToolName{
+				aitool.ToolNameConnectCall, aitool.ToolNameSendEmail,
+				aitool.ToolNameSendMessage, aitool.ToolNameSetVariables,
+			},
+		},
+		{
+			name: "insight all returns only insight tools, never normal tools (leak regression guard)",
+
+			cachedTools: cachedTools,
+			aiType:      amai.TypeInsight,
+			names:       []aitool.ToolName{aitool.ToolNameAll},
+
+			wantCount: 2,
+			wantNames: []aitool.ToolName{
+				aitool.ToolNameGetContactInteractions, aitool.ToolNameGetConversationContent,
+			},
 		},
 		{
 			name: "single tool name",
 
 			cachedTools: cachedTools,
+			aiType:      amai.TypeNormal,
 			names:       []aitool.ToolName{aitool.ToolNameConnectCall},
 
 			wantCount: 1,
@@ -205,25 +173,61 @@ func TestToolHandler_GetByNames(t *testing.T) {
 			name: "multiple tool names",
 
 			cachedTools: cachedTools,
+			aiType:      amai.TypeNormal,
 			names:       []aitool.ToolName{aitool.ToolNameConnectCall, aitool.ToolNameSendEmail},
 
 			wantCount: 2,
 			wantNames: []aitool.ToolName{aitool.ToolNameConnectCall, aitool.ToolNameSendEmail},
 		},
 		{
-			name: "all with other names returns all",
+			name: "all with other names returns all (of the allowed type)",
 
 			cachedTools: cachedTools,
+			aiType:      amai.TypeNormal,
 			names:       []aitool.ToolName{aitool.ToolNameConnectCall, aitool.ToolNameAll},
 
 			wantCount: 4,
-			wantNames: nil, // Don't check specific names, just count
+			wantNames: []aitool.ToolName{
+				aitool.ToolNameConnectCall, aitool.ToolNameSendEmail,
+				aitool.ToolNameSendMessage, aitool.ToolNameSetVariables,
+			},
 		},
 		{
 			name: "non-existent tool name returns empty",
 
 			cachedTools: cachedTools,
+			aiType:      amai.TypeNormal,
 			names:       []aitool.ToolName{"non_existent_tool"},
+
+			wantCount: 0,
+			wantNames: nil,
+		},
+		{
+			name: "defense-in-depth: normal AI explicitly requesting an insight-only tool by name is denied",
+
+			cachedTools: cachedTools,
+			aiType:      amai.TypeNormal,
+			names:       []aitool.ToolName{aitool.ToolNameGetContactInteractions},
+
+			wantCount: 0,
+			wantNames: nil,
+		},
+		{
+			name: "defense-in-depth: insight AI explicitly requesting a normal-only tool by name is denied",
+
+			cachedTools: cachedTools,
+			aiType:      amai.TypeInsight,
+			names:       []aitool.ToolName{aitool.ToolNameConnectCall},
+
+			wantCount: 0,
+			wantNames: nil,
+		},
+		{
+			name: "unknown AI type denies everything, even with explicit names",
+
+			cachedTools: cachedTools,
+			aiType:      amai.Type("some_future_type"),
+			names:       []aitool.ToolName{aitool.ToolNameAll},
 
 			wantCount: 0,
 			wantNames: nil,
@@ -241,7 +245,7 @@ func TestToolHandler_GetByNames(t *testing.T) {
 				tools:          tt.cachedTools,
 			}
 
-			got := h.GetByNames(tt.names)
+			got := h.GetByNames(tt.aiType, tt.names)
 
 			if len(got) != tt.wantCount {
 				t.Errorf("GetByNames() returned %d tools, want %d", len(got), tt.wantCount)
