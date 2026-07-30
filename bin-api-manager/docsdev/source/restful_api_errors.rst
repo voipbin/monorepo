@@ -228,7 +228,7 @@ Admin-only reasons fired by the provisioning surfaces (``/providers``, ``/provid
 Storage Reasons
 ^^^^^^^^^^^^^^^
 
-Reasons fired by storage endpoints (``/storage-accounts/{id}``, ``/storage_files``, ``/storage_files/{id}*``, and their ``/service_agents/files*`` agent-surface counterparts).
+Reasons fired by storage endpoints (``/storage-accounts/{id}``, ``/storage_files``, ``/storage_files/{id}*``, ``/recordingfiles/{id}``, and their ``/service_agents/files*`` agent-surface counterparts).
 
 .. list-table::
    :header-rows: 1
@@ -243,6 +243,9 @@ Reasons fired by storage endpoints (``/storage-accounts/{id}``, ``/storage_files
    * - ``FILE_NOT_FOUND``
      - 404
      - Storage file ID does not exist or belongs to another customer. Fired by ``GET /storage_files/{id}``, ``DELETE /storage_files/{id}``, ``GET /storage_files/{id}/file``, and the agent-surface counterparts ``GET /service_agents/files/{id}``, ``DELETE /service_agents/files/{id}``, and ``GET /service_agents/files/{id}/file``. **Fix:** Verify the ID was obtained from a recent ``GET /storage_files`` (admin) or ``GET /service_agents/files`` (agent) list call.
+   * - ``SIGNING_NOT_CONFIGURED``
+     - 503
+     - The storage service instance has no credential for signing download URLs, so no downloadable link can be produced. Fired only by the endpoints that resolve a signed URL: ``GET /storage_files/{id}/file``, its agent-surface counterpart ``GET /service_agents/files/{id}/file``, and ``GET /recordingfiles/{id}``. Metadata and list endpoints are unaffected and still return ``200`` — a file created while signing was unavailable is stored normally but its ``uri_download`` comes back empty until a signing credential is restored. **Fix:** Operational; retry later or contact support. Listing, retrieving metadata, and deleting files continue to work.
 
 Conversation Reasons
 ^^^^^^^^^^^^^^^^^^^^

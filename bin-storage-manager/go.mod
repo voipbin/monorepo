@@ -75,7 +75,7 @@ require (
 	golang.org/x/net v0.55.0 // indirect
 	golang.org/x/oauth2 v0.36.0
 	golang.org/x/text v0.37.0 // indirect
-	google.golang.org/api v0.271.0 // indirect
+	google.golang.org/api v0.271.0
 	google.golang.org/genproto v0.0.0-20260128011058-8636f8732409 // indirect
 	google.golang.org/grpc v1.82.1 // indirect
 	monorepo/bin-call-manager v0.0.0-20240403030948-51eb7c33cf9a // indirect

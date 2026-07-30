@@ -1,7 +1,13 @@
 -- Backfill MATERIALIZED columns on existing parts. Columns added in 000002/000003
--- only auto-compute for rows inserted after the ALTER; pre-existing parts may have
+-- only auto-compute for rows inserted after the ALTER. Pre-existing parts may have
 -- empty resource_id / activeflow_id. MATERIALIZE COLUMN rewrites old parts so that
 -- historical events become correlatable.
+-- NOTE: never put a semicolon inside a comment in these migration files -
+-- golang-migrate's x-multi-statement splitting is naive about comments, and a
+-- mid-comment semicolon produces a comment-only statement chunk that ClickHouse
+-- rejects with "code: 62, Empty query", crash-looping the service at boot on
+-- every fresh install (the previous wording of this very comment did exactly
+-- that).
 ALTER TABLE events MATERIALIZE COLUMN resource_id;
 ALTER TABLE events MATERIALIZE COLUMN activeflow_id;
 

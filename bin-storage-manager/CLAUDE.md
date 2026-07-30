@@ -21,7 +21,7 @@ File and media storage service for the VoIPbin platform. Manages customer storag
 | `pkg/listenhandler` | RabbitMQ RPC router (regex dispatch) |
 | `pkg/subscribehandler` | Event consumer (customer_deleted) |
 | `pkg/storagehandler` | Core business logic |
-| `pkg/filehandler` | GCS operations and signed URL generation (requires `GOOGLE_APPLICATION_CREDENTIALS` service account key file; no in-cluster metadata-server fallback) |
+| `pkg/filehandler` | GCS operations and signed URL generation (signing needs a `GOOGLE_APPLICATION_CREDENTIALS` service account key file; no in-cluster metadata-server fallback — see [Signing degradation](#signing-degradation)) |
 | `pkg/accounthandler` | 10 GB quota enforcement |
 | `pkg/dbhandler` | MySQL reads/writes |
 | `pkg/cachehandler` | Redis cache |
@@ -67,7 +67,39 @@ golangci-lint run -v --timeout 5m
 | `GCP_PROJECT_ID` | GCP project | required |
 | `GCP_BUCKET_NAME_MEDIA` | Persistent bucket | required |
 | `GCP_BUCKET_NAME_TMP` | Temporary bucket | required |
+| `GOOGLE_APPLICATION_CREDENTIALS` | Service account JSON key path, used to sign download URLs | optional (see below) |
 | `PROMETHEUS_LISTEN_ADDRESS` | Metrics port | `:2112` |
+
+## Signing degradation
+
+`GOOGLE_APPLICATION_CREDENTIALS` is optional — the service boots without it instead of
+crash-looping.
+
+- **Unset**: `NewFileHandler` logs a warning and returns a working handler with no
+  private key. Every signing-dependent read path (`DownloadURIGet`,
+  `DownloadURIRefresh`, and their `storagehandler` consumers `CompressfileCreate` and
+  `RecordingGet`) returns a structured `*cerrors.VoipbinError` with status
+  `UNAVAILABLE` and reason `SIGNING_NOT_CONFIGURED`, which `listenhandler.errorResponse`
+  translates into a typed 503 for API callers instead of an opaque 500.
+- **Unset AND no other ADC source**: the variable is also the storage client's primary
+  application-default-credentials source, so on a deployment with no credential at all
+  (no key file, no GKE workload-identity metadata server) the authenticated client
+  cannot be built either. `newStorageClient` falls back to an unauthenticated client so
+  the process still starts; GCS calls then fail per request rather than at boot. Only
+  the non-GCS capabilities (file get/list from MySQL, account bookkeeping, the
+  `customer_deleted` cascade) are fully functional in that mode.
+- **Set but unreadable/unparsable**: still fatal. Absence of the variable is an
+  intentional keyless deployment; a broken path is misconfiguration and must be loud.
+- **File `Create`**: tolerates ANY download-URI failure — the missing-key error above
+  and a sign-time rejection of a present-but-invalid key. The GCS object has already
+  been moved to its final location by that point, so failing would break the primary
+  write path AND orphan the object. Instead the record is persisted with an empty
+  `uri_download` and a NULL `tm_download_expire`, the error is logged, and `Create`
+  succeeds. `POST /v1/files/<uuid>/download_uri_refresh` populates the URI later, once
+  a usable signing key exists.
+
+Unaffected without a key: file get/list/delete, account bookkeeping, and the
+`customer_deleted` cascade.
 
 ## Further reading
 

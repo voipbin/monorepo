@@ -22,7 +22,7 @@
 | Redis | Cache for file and account lookups; invalidated on mutation |
 | GCS bucket (`gcp_bucket_name_media`) | Persistent storage for recordings and uploaded files |
 | GCS bucket (`gcp_bucket_name_tmp`) | Transient storage for on-demand zip archives |
-| Google service account JSON key (`GOOGLE_APPLICATION_CREDENTIALS`) | Local blob signing for GCS V4 signed URLs (no in-cluster metadata-server / IAM Credentials API fallback) |
+| Google service account JSON key (`GOOGLE_APPLICATION_CREDENTIALS`) | Local blob signing for GCS V4 signed URLs (no in-cluster metadata-server / IAM Credentials API fallback). Optional: absence degrades the signing paths instead of blocking startup |
 
 ## Monorepo Module Dependencies
 
