@@ -79,6 +79,8 @@ import (
 	provider "monorepo/bin-route-manager/models/provider"
 	providercall "monorepo/bin-route-manager/models/providercall"
 	route "monorepo/bin-route-manager/models/route"
+	execution "monorepo/bin-scheduler-manager/models/execution"
+	schedule "monorepo/bin-scheduler-manager/models/schedule"
 	account1 "monorepo/bin-storage-manager/models/account"
 	bucketfile "monorepo/bin-storage-manager/models/bucketfile"
 	compress_file "monorepo/bin-storage-manager/models/compressfile"
@@ -6548,6 +6550,111 @@ func (m *MockRequestHandler) RouteV1RouteUpdate(ctx context.Context, routeID uui
 func (mr *MockRequestHandlerMockRecorder) RouteV1RouteUpdate(ctx, routeID, name, detail, providerID, priority, target any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteV1RouteUpdate", reflect.TypeOf((*MockRequestHandler)(nil).RouteV1RouteUpdate), ctx, routeID, name, detail, providerID, priority, target)
+}
+
+// SchedulerV1ExecutionGets mocks base method.
+func (m *MockRequestHandler) SchedulerV1ExecutionGets(ctx context.Context, pageToken string, pageSize uint64, filters map[execution.Field]any) ([]execution.Execution, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SchedulerV1ExecutionGets", ctx, pageToken, pageSize, filters)
+	ret0, _ := ret[0].([]execution.Execution)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SchedulerV1ExecutionGets indicates an expected call of SchedulerV1ExecutionGets.
+func (mr *MockRequestHandlerMockRecorder) SchedulerV1ExecutionGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SchedulerV1ExecutionGets", reflect.TypeOf((*MockRequestHandler)(nil).SchedulerV1ExecutionGets), ctx, pageToken, pageSize, filters)
+}
+
+// SchedulerV1ScheduleCreate mocks base method.
+func (m *MockRequestHandler) SchedulerV1ScheduleCreate(ctx context.Context, customerID uuid.UUID, name, detail, cronExpr, targetQueue, targetURI, targetMethod, targetDataType string, targetData []byte, timeoutMS, retryMax int, enabled bool) (*schedule.Schedule, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SchedulerV1ScheduleCreate", ctx, customerID, name, detail, cronExpr, targetQueue, targetURI, targetMethod, targetDataType, targetData, timeoutMS, retryMax, enabled)
+	ret0, _ := ret[0].(*schedule.Schedule)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SchedulerV1ScheduleCreate indicates an expected call of SchedulerV1ScheduleCreate.
+func (mr *MockRequestHandlerMockRecorder) SchedulerV1ScheduleCreate(ctx, customerID, name, detail, cronExpr, targetQueue, targetURI, targetMethod, targetDataType, targetData, timeoutMS, retryMax, enabled any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SchedulerV1ScheduleCreate", reflect.TypeOf((*MockRequestHandler)(nil).SchedulerV1ScheduleCreate), ctx, customerID, name, detail, cronExpr, targetQueue, targetURI, targetMethod, targetDataType, targetData, timeoutMS, retryMax, enabled)
+}
+
+// SchedulerV1ScheduleDelete mocks base method.
+func (m *MockRequestHandler) SchedulerV1ScheduleDelete(ctx context.Context, id uuid.UUID) (*schedule.Schedule, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SchedulerV1ScheduleDelete", ctx, id)
+	ret0, _ := ret[0].(*schedule.Schedule)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SchedulerV1ScheduleDelete indicates an expected call of SchedulerV1ScheduleDelete.
+func (mr *MockRequestHandlerMockRecorder) SchedulerV1ScheduleDelete(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SchedulerV1ScheduleDelete", reflect.TypeOf((*MockRequestHandler)(nil).SchedulerV1ScheduleDelete), ctx, id)
+}
+
+// SchedulerV1ScheduleExecute mocks base method.
+func (m *MockRequestHandler) SchedulerV1ScheduleExecute(ctx context.Context, id uuid.UUID) (*execution.Execution, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SchedulerV1ScheduleExecute", ctx, id)
+	ret0, _ := ret[0].(*execution.Execution)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SchedulerV1ScheduleExecute indicates an expected call of SchedulerV1ScheduleExecute.
+func (mr *MockRequestHandlerMockRecorder) SchedulerV1ScheduleExecute(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SchedulerV1ScheduleExecute", reflect.TypeOf((*MockRequestHandler)(nil).SchedulerV1ScheduleExecute), ctx, id)
+}
+
+// SchedulerV1ScheduleGet mocks base method.
+func (m *MockRequestHandler) SchedulerV1ScheduleGet(ctx context.Context, id uuid.UUID) (*schedule.Schedule, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SchedulerV1ScheduleGet", ctx, id)
+	ret0, _ := ret[0].(*schedule.Schedule)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SchedulerV1ScheduleGet indicates an expected call of SchedulerV1ScheduleGet.
+func (mr *MockRequestHandlerMockRecorder) SchedulerV1ScheduleGet(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SchedulerV1ScheduleGet", reflect.TypeOf((*MockRequestHandler)(nil).SchedulerV1ScheduleGet), ctx, id)
+}
+
+// SchedulerV1ScheduleGets mocks base method.
+func (m *MockRequestHandler) SchedulerV1ScheduleGets(ctx context.Context, pageToken string, pageSize uint64, filters map[schedule.Field]any) ([]schedule.Schedule, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SchedulerV1ScheduleGets", ctx, pageToken, pageSize, filters)
+	ret0, _ := ret[0].([]schedule.Schedule)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SchedulerV1ScheduleGets indicates an expected call of SchedulerV1ScheduleGets.
+func (mr *MockRequestHandlerMockRecorder) SchedulerV1ScheduleGets(ctx, pageToken, pageSize, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SchedulerV1ScheduleGets", reflect.TypeOf((*MockRequestHandler)(nil).SchedulerV1ScheduleGets), ctx, pageToken, pageSize, filters)
+}
+
+// SchedulerV1ScheduleUpdate mocks base method.
+func (m *MockRequestHandler) SchedulerV1ScheduleUpdate(ctx context.Context, id uuid.UUID, fields map[schedule.Field]any) (*schedule.Schedule, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SchedulerV1ScheduleUpdate", ctx, id, fields)
+	ret0, _ := ret[0].(*schedule.Schedule)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SchedulerV1ScheduleUpdate indicates an expected call of SchedulerV1ScheduleUpdate.
+func (mr *MockRequestHandlerMockRecorder) SchedulerV1ScheduleUpdate(ctx, id, fields any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SchedulerV1ScheduleUpdate", reflect.TypeOf((*MockRequestHandler)(nil).SchedulerV1ScheduleUpdate), ctx, id, fields)
 }
 
 // SendRequest mocks base method.

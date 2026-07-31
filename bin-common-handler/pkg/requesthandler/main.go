@@ -84,6 +84,9 @@ import (
 	rmprovidercall "monorepo/bin-route-manager/models/providercall"
 	rmroute "monorepo/bin-route-manager/models/route"
 
+	smexecution "monorepo/bin-scheduler-manager/models/execution"
+	smschedule "monorepo/bin-scheduler-manager/models/schedule"
+
 	smaccount "monorepo/bin-storage-manager/models/account"
 	smbucketfile "monorepo/bin-storage-manager/models/bucketfile"
 	smcompressfile "monorepo/bin-storage-manager/models/compressfile"
@@ -1346,6 +1349,31 @@ type RequestHandler interface {
 		target string,
 	) (*rmroute.Route, error)
 	RouteV1RouteList(ctx context.Context, pageToken string, pageSize uint64, filters map[rmroute.Field]any) ([]rmroute.Route, error)
+
+	// scheduler-manager schedule
+	SchedulerV1ScheduleCreate(
+		ctx context.Context,
+		customerID uuid.UUID,
+		name string,
+		detail string,
+		cronExpr string,
+		targetQueue string,
+		targetURI string,
+		targetMethod string,
+		targetDataType string,
+		targetData []byte,
+		timeoutMS int,
+		retryMax int,
+		enabled bool,
+	) (*smschedule.Schedule, error)
+	SchedulerV1ScheduleGet(ctx context.Context, id uuid.UUID) (*smschedule.Schedule, error)
+	SchedulerV1ScheduleGets(ctx context.Context, pageToken string, pageSize uint64, filters map[smschedule.Field]any) ([]smschedule.Schedule, error)
+	SchedulerV1ScheduleUpdate(ctx context.Context, id uuid.UUID, fields map[smschedule.Field]any) (*smschedule.Schedule, error)
+	SchedulerV1ScheduleDelete(ctx context.Context, id uuid.UUID) (*smschedule.Schedule, error)
+	SchedulerV1ScheduleExecute(ctx context.Context, id uuid.UUID) (*smexecution.Execution, error)
+
+	// scheduler-manager execution
+	SchedulerV1ExecutionGets(ctx context.Context, pageToken string, pageSize uint64, filters map[smexecution.Field]any) ([]smexecution.Execution, error)
 
 	// storage-manager account
 	StorageV1AccountCreate(ctx context.Context, customerID uuid.UUID) (*smaccount.Account, error)
