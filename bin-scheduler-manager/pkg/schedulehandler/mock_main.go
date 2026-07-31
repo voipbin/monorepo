@@ -12,6 +12,8 @@ package schedulehandler
 import (
 	context "context"
 	json "encoding/json"
+	customer "monorepo/bin-customer-manager/models/customer"
+	execution "monorepo/bin-scheduler-manager/models/execution"
 	schedule "monorepo/bin-scheduler-manager/models/schedule"
 	reflect "reflect"
 
@@ -71,6 +73,50 @@ func (m *MockScheduleHandler) Delete(ctx context.Context, id uuid.UUID) (*schedu
 func (mr *MockScheduleHandlerMockRecorder) Delete(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockScheduleHandler)(nil).Delete), ctx, id)
+}
+
+// EventCustomerDeleted mocks base method.
+func (m *MockScheduleHandler) EventCustomerDeleted(ctx context.Context, c *customer.Customer) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EventCustomerDeleted", ctx, c)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EventCustomerDeleted indicates an expected call of EventCustomerDeleted.
+func (mr *MockScheduleHandlerMockRecorder) EventCustomerDeleted(ctx, c any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCustomerDeleted", reflect.TypeOf((*MockScheduleHandler)(nil).EventCustomerDeleted), ctx, c)
+}
+
+// ExecutionGets mocks base method.
+func (m *MockScheduleHandler) ExecutionGets(ctx context.Context, size uint64, token string, filters map[execution.Field]any) ([]*execution.Execution, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExecutionGets", ctx, size, token, filters)
+	ret0, _ := ret[0].([]*execution.Execution)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ExecutionGets indicates an expected call of ExecutionGets.
+func (mr *MockScheduleHandlerMockRecorder) ExecutionGets(ctx, size, token, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExecutionGets", reflect.TypeOf((*MockScheduleHandler)(nil).ExecutionGets), ctx, size, token, filters)
+}
+
+// ExecutionPrune mocks base method.
+func (m *MockScheduleHandler) ExecutionPrune(ctx context.Context, retentionDays int) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExecutionPrune", ctx, retentionDays)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ExecutionPrune indicates an expected call of ExecutionPrune.
+func (mr *MockScheduleHandlerMockRecorder) ExecutionPrune(ctx, retentionDays any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExecutionPrune", reflect.TypeOf((*MockScheduleHandler)(nil).ExecutionPrune), ctx, retentionDays)
 }
 
 // Get mocks base method.

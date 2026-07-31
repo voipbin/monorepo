@@ -10,8 +10,11 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
+	cmcustomer "monorepo/bin-customer-manager/models/customer"
+
 	"github.com/gofrs/uuid"
 
+	"monorepo/bin-scheduler-manager/models/execution"
 	"monorepo/bin-scheduler-manager/models/schedule"
 	"monorepo/bin-scheduler-manager/pkg/dbhandler"
 )
@@ -37,6 +40,11 @@ type ScheduleHandler interface {
 	Gets(ctx context.Context, size uint64, token string, filters map[schedule.Field]any) ([]*schedule.Schedule, error)
 	Update(ctx context.Context, id uuid.UUID, fields map[schedule.Field]any) (*schedule.Schedule, error)
 	Delete(ctx context.Context, id uuid.UUID) (*schedule.Schedule, error)
+
+	ExecutionGets(ctx context.Context, size uint64, token string, filters map[execution.Field]any) ([]*execution.Execution, error)
+	ExecutionPrune(ctx context.Context, retentionDays int) (int64, error)
+
+	EventCustomerDeleted(ctx context.Context, c *cmcustomer.Customer) error
 }
 
 type scheduleHandler struct {
