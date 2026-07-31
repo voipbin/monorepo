@@ -1,8 +1,5 @@
-# base
-FROM public.ecr.aws/docker/library/golang:1.25-bookworm AS base
-
 # build
-FROM base AS build
+FROM public.ecr.aws/docker/library/golang:1.25-alpine AS build
 
 WORKDIR /app
 COPY ./ .
