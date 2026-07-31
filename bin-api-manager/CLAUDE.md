@@ -38,11 +38,6 @@ See also: [docs/workflows/special-cases.md](../docs/workflows/special-cases.md)
 
 ## Common Commands
 
-### Prerequisites (ZMQ native libs)
-```bash
-apt update && apt install -y pkg-config libzmq5 libzmq3-dev libczmq4 libczmq-dev
-```
-
 ### Build
 ```bash
 go mod download

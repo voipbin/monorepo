@@ -314,12 +314,8 @@ This flow shows asynchronous event publishing to multiple subscribers.
     |       "timestamp": "2026-01-20T12:00:05.000Z"  |
     |     }                                          |
     |                                                |
-    |  e) Publish to ZeroMQ (fast path)              |
-    |     Topic: "call.state"                        |
-    |     {                                          |
-    |       "call_id": "call-789",                   |
-    |       "status": "active"                       |
-    |     }                                          |
+    |  e) API gateway fans the event out to          |
+    |     subscribed WebSocket clients (in-process)  |
     +------------------------------------------------+
         |
         |
@@ -448,7 +444,7 @@ This flow shows how real-time events reach clients via WebSocket.
 
     2. Event Occurs:
 
-    Call Manager                RabbitMQ/ZMQ          API Gateway (WS)      Client
+    Call Manager                RabbitMQ              API Gateway (WS)      Client
         |                           |                       |                  |
         |  Call status changed      |                       |                  |
         |  (answered)               |                       |                  |

@@ -820,7 +820,7 @@
 <p>WebSocket connections provide real-time updates to clients:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">WebSocket</span> <span class="n">Data</span> <span class="n">Flow</span><span class="p">:</span>
 
-<span class="n">Client</span>           <span class="n">API</span> <span class="n">Gateway</span>          <span class="n">ZMQ</span> <span class="n">Publisher</span>        <span class="n">Backend</span> <span class="n">Service</span>
+<span class="n">Client</span>           <span class="n">API</span> <span class="n">Gateway</span>          <span class="n">In</span><span class="o">-</span><span class="n">Proc</span> <span class="n">Broker</span>       <span class="n">Backend</span> <span class="n">Service</span>
    <span class="o">|</span>                  <span class="o">|</span>                    <span class="o">|</span>                      <span class="o">|</span>
    <span class="o">|</span> <span class="mf">1.</span> <span class="n">WS</span> <span class="n">Connect</span>    <span class="o">|</span>                    <span class="o">|</span>                      <span class="o">|</span>
    <span class="o">+-----------------&gt;|</span>                    <span class="o">|</span>                      <span class="o">|</span>
@@ -838,7 +838,7 @@
    <span class="o">|</span>                  <span class="o">|</span>                    <span class="o">|</span>                      <span class="o">|</span>    <span class="p">(</span><span class="n">business</span> <span class="n">event</span><span class="p">)</span>
    <span class="o">|</span>                  <span class="o">|</span>                    <span class="o">|</span>                      <span class="o">|</span>
    <span class="o">|</span>                  <span class="o">|</span>                    <span class="o">|&lt;---------------------+</span>
-   <span class="o">|</span>                  <span class="o">|</span>                    <span class="o">|</span> <span class="mf">6.</span> <span class="n">ZMQ</span> <span class="n">Publish</span>       <span class="o">|</span>
+   <span class="o">|</span>                  <span class="o">|</span>                    <span class="o">|</span> <span class="mf">6.</span> <span class="n">Publish</span> <span class="p">(</span><span class="ow">in</span><span class="o">-</span><span class="n">proc</span><span class="p">)</span> <span class="o">|</span>
    <span class="o">|</span>                  <span class="o">|</span>                    <span class="o">|</span>    <span class="n">topic</span><span class="p">:</span> <span class="n">call</span><span class="o">.</span><span class="n">state</span> <span class="o">|</span>
    <span class="o">|</span>                  <span class="o">|</span>                    <span class="o">|</span>                      <span class="o">|</span>
    <span class="o">|</span>                  <span class="o">|&lt;-------------------+</span>                      <span class="o">|</span>

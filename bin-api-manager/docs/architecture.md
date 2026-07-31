@@ -20,7 +20,7 @@ graph TD
     APIMgr --> WS["WebSocket clients\n(/ws, /service_agents/ws)"]
     APIMgr --> WebhookMgr["bin-webhook-manager\n(webhook delivery)"]
     APIMgr --> AudioSock["Audiosocket listener\n(port 9000, AI audio streaming)"]
-    APIMgr --> ZMQ["ZMQ pub/sub\n(internal events)"]
+    APIMgr --> Pubsub["in-process pub/sub\n(pkg/pubsubhandler)"]
 ```
 
 ### Main Structural Packages
@@ -34,8 +34,7 @@ graph TD
 | `pkg/subscribehandler/` | Event consumption | Subscribes to backend manager event queues |
 | `pkg/websockhandler/` | WebSocket fan-out | Pushes events to authenticated WebSocket clients |
 | `pkg/streamhandler/` | Audio streaming | Audiosocket protocol handler for AI/Pipecat audio path |
-| `pkg/zmqpubhandler/` | ZMQ publish | Internal pub/sub event publishing |
-| `pkg/zmqsubhandler/` | ZMQ subscribe | Internal pub/sub event consumption |
+| `pkg/pubsubhandler/` | In-process pub/sub | Broker + per-WebSocket subscribers; prefix-matched event fan-out from subscribehandler to WebSocket connections |
 | `lib/middleware/` | HTTP middleware | JWT/accesskey authentication, customer frozen check |
 | `gens/openapi_server/` | Generated code | oapi-codegen output from `bin-openapi-manager/openapi/openapi.yaml` |
 

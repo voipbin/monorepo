@@ -220,7 +220,7 @@ WebSocket connections provide real-time updates to clients:
 
     WebSocket Data Flow:
 
-    Client           API Gateway          ZMQ Publisher        Backend Service
+    Client           API Gateway          In-Proc Broker       Backend Service
        |                  |                    |                      |
        | 1. WS Connect    |                    |                      |
        +----------------->|                    |                      |
@@ -238,7 +238,7 @@ WebSocket connections provide real-time updates to clients:
        |                  |                    |                      |    (business event)
        |                  |                    |                      |
        |                  |                    |<---------------------+
-       |                  |                    | 6. ZMQ Publish       |
+       |                  |                    | 6. Publish (in-proc) |
        |                  |                    |    topic: call.state |
        |                  |                    |                      |
        |                  |<-------------------+                      |

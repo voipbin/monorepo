@@ -4,11 +4,7 @@
 
 ## Prerequisites
 
-Some services require system libraries:
-```bash
-# ZMQ libraries (required by bin-api-manager and other services)
-apt update && apt install -y pkg-config libzmq5 libzmq3-dev libczmq4 libczmq-dev
-```
+All services are pure Go; no extra system libraries are required.
 
 ## Building Services
 

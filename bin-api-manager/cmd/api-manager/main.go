@@ -33,11 +33,11 @@ import (
 	"monorepo/bin-api-manager/models/common"
 	"monorepo/bin-api-manager/pkg/cachehandler"
 	"monorepo/bin-api-manager/pkg/dbhandler"
+	"monorepo/bin-api-manager/pkg/pubsubhandler"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	"monorepo/bin-api-manager/pkg/streamhandler"
 	"monorepo/bin-api-manager/pkg/subscribehandler"
 	"monorepo/bin-api-manager/pkg/websockhandler"
-	"monorepo/bin-api-manager/pkg/zmqpubhandler"
 	"monorepo/bin-api-manager/server"
 )
 
@@ -131,20 +131,20 @@ func run(
 
 	// create handlers
 	requestHandler := requesthandler.NewRequestHandler(sockHandler, "api_manager")
-	zmqPubHandler := zmqpubhandler.NewZMQPubHandler()
+	pubsubBroker := pubsubhandler.NewBrokerHandler()
 	streamHandler := streamhandler.NewStreamHandler(requestHandler, addressListenStream)
 
 	// per-pod subscribe queue name -- constructed here (before websockHandler) so it can be
 	// shared with websockhandler's scopeRefCount for dynamic AMQP bind/unbind (VOIP-1258 §9).
 	queueNamePod := fmt.Sprintf("%s-%s", commonoutline.QueueNameAPISubscribe, uuid.Must(uuid.NewV4()))
 
-	websockHandler := websockhandler.NewWebsockHandler(requestHandler, streamHandler, sockHandler, queueNamePod)
+	websockHandler := websockhandler.NewWebsockHandler(requestHandler, streamHandler, sockHandler, pubsubBroker, queueNamePod)
 	serviceHandler, err := servicehandler.NewServiceHandler(requestHandler, db, websockHandler, cfg.GCPProjectID, cfg.GCPBucketName, cfg.JWTKey)
 	if err != nil {
 		log.Fatalf("Could not create service handler. err: %v", err)
 	}
 
-	go runSubscribe(sockHandler, requestHandler, zmqPubHandler, queueNamePod)
+	go runSubscribe(sockHandler, requestHandler, pubsubBroker, queueNamePod)
 	go runListenHTTP(serviceHandler)
 	go runListenStreamsock(ctx, streamHandler)
 
@@ -153,7 +153,7 @@ func run(
 func runSubscribe(
 	sockHandler sockhandler.SockHandler,
 	reqHandler requesthandler.RequestHandler,
-	zmqHandler zmqpubhandler.ZMQPubHandler,
+	pubHandler pubsubhandler.PubHandler,
 	queueNamePod string,
 ) {
 	log := logrus.WithFields(logrus.Fields{
@@ -167,7 +167,7 @@ func runSubscribe(
 		queueNamePod,
 		subscribeTargets,
 
-		zmqHandler,
+		pubHandler,
 	)
 
 	// run. NOTE: the VOIP-1258 "#" wildcard binding to the new topic exchange lives INSIDE

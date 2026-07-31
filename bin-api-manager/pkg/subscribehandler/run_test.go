@@ -7,7 +7,7 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
-	"monorepo/bin-api-manager/pkg/zmqpubhandler"
+	"monorepo/bin-api-manager/pkg/pubsubhandler"
 
 	gomock "go.uber.org/mock/gomock"
 )
@@ -29,7 +29,7 @@ func Test_Run_BindsTopicExchangeBeforeReturning(t *testing.T) {
 
 	mockSock := sockhandler.NewMockSockHandler(mc)
 	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockZmq := zmqpubhandler.NewMockZMQPubHandler(mc)
+	mockPub := pubsubhandler.NewMockPubHandler(mc)
 
 	queueName := "bin-manager.api-manager.subscribe-test-pod"
 	subscribeTargets := []string{}
@@ -54,7 +54,7 @@ func Test_Run_BindsTopicExchangeBeforeReturning(t *testing.T) {
 			return nil
 		}).AnyTimes()
 
-	h := NewSubscribeHandler(mockSock, mockReq, queueName, subscribeTargets, mockZmq)
+	h := NewSubscribeHandler(mockSock, mockReq, queueName, subscribeTargets, mockPub)
 
 	if err := h.Run(); err != nil {
 		t.Fatalf("Run() returned an unexpected error: %v", err)

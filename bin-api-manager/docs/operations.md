@@ -33,6 +33,7 @@ Metrics are exposed on the configured listen address (default `:2112/metrics`).
 | `api_manager_receive_request_process_time` | Histogram | `method`, `path` | HTTP request processing latency |
 | `api_manager_subscribe_event_process_time` (equivalent: `receive_subscribe_event_process_time`) | Histogram | `publisher`, `type` | RabbitMQ event processing latency |
 | `api_manager_websocket_connections` | Gauge | — | Active WebSocket connections |
+| `api_manager_pubsub_dropped_message_total` | Counter | — | In-process pub/sub messages dropped because a subscriber buffer was full |
 
 Circuit-breaker metrics for each RabbitMQ RPC target are also registered under the `api_manager_*` namespace by `bin-common-handler/pkg/requesthandler`. See [docs/patterns/circuit-breaker.md](../docs/patterns/circuit-breaker.md).
 
@@ -162,14 +163,9 @@ echo "<jwt_token>" | cut -d. -f2 | base64 -d | jq .
 | `golang-jwt/jwt` | JWT parsing and validation |
 | `go-redis/redis` | Redis client (via cachehandler) |
 | `amqp091-go` | RabbitMQ client (via bin-common-handler) |
-| `pebbe/zmq4` | ZeroMQ bindings (requires `libzmq` system library) |
 | `cloud.google.com/go/storage` | GCS for recordings and media files |
 | `oapi-codegen` (build tool) | Generates `gens/openapi_server/gen.go` from OpenAPI spec |
 
 ### System prerequisites
 
-ZMQ requires native libraries. Install on Debian/Ubuntu:
-
-```bash
-apt update && apt install -y pkg-config libzmq5 libzmq3-dev libczmq4 libczmq-dev
-```
+None. The service is pure Go (no cgo); the internal pub/sub is the in-process `pkg/pubsubhandler` package.

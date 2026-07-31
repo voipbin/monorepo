@@ -17,7 +17,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
-	"monorepo/bin-api-manager/pkg/zmqpubhandler"
+	"monorepo/bin-api-manager/pkg/pubsubhandler"
 )
 
 // SubscribeHandler interface
@@ -32,7 +32,7 @@ type subscribeHandler struct {
 	subscribeQueueNamePod string // subscribe queue name for this pod
 	subscribeTargets      []string
 
-	zmqpubHandler zmqpubhandler.ZMQPubHandler
+	pubHandler pubsubhandler.PubHandler
 }
 
 var (
@@ -63,7 +63,7 @@ func NewSubscribeHandler(
 	reqHandler requesthandler.RequestHandler,
 	subscribeQueueName string,
 	subscribeTargets []string,
-	zmqpubHandler zmqpubhandler.ZMQPubHandler,
+	pubHandler pubsubhandler.PubHandler,
 ) SubscribeHandler {
 	h := &subscribeHandler{
 		sockHandler: sockHandler,
@@ -72,7 +72,7 @@ func NewSubscribeHandler(
 		subscribeQueueNamePod: subscribeQueueName,
 		subscribeTargets:      subscribeTargets,
 
-		zmqpubHandler: zmqpubHandler,
+		pubHandler: pubHandler,
 	}
 
 	return h
@@ -172,7 +172,7 @@ func (h *subscribeHandler) processEvent(m *sock.Event) {
 	//// resource event type (never "webhook_published"), so it always fell through to `default:
 	//// return` below and was silently discarded -- the AMQP message reached this pod's queue
 	//// correctly (confirmed via RabbitMQ queue/binding inspection) but was never handed to
-	//// zmqpubHandler.Publish, so it never reached the browser's websocket. This is why the
+	//// pubHandler.Publish, so it never reached the browser's websocket. This is why the
 	//// AMQP-level fix (envelope unwrapping in bin-webhook-manager) alone was insufficient --
 	//// the consumer side needed a matching case for the new event shape.
 	case m.Publisher == string(commonoutline.ServiceNameWebhookManager) && (m.Type != string(wmwebhook.EventTypeWebhookPublished)):
