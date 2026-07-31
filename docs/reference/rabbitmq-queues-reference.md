@@ -158,6 +158,13 @@ QueueNameRouteRequest   = "bin-manager.route-manager.request"
 QueueNameRouteSubscribe = "bin-manager.route-manager.subscribe"
 ```
 
+### Scheduler Manager
+```go
+QueueNameSchedulerEvent     = "bin-manager.scheduler-manager.event"
+QueueNameSchedulerRequest   = "bin-manager.scheduler-manager.request"
+QueueNameSchedulerSubscribe = "bin-manager.scheduler-manager.subscribe"
+```
+
 ### Sentinel Manager
 ```go
 QueueNameSentinelEvent     = "bin-manager.sentinel-manager.event"

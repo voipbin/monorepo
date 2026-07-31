@@ -4,7 +4,7 @@
 
 ## Overview
 
-The monorepo contains 34 services organized into layers:
+The monorepo contains 35 services organized into layers:
 - **Core Services** - Depended on by many services
 - **Utility Services** - Medium dependency count
 - **Leaf Services** - Consume but aren't consumed
@@ -57,6 +57,7 @@ graph TD
         SENT[bin-sentinel-manager]
         TALK[bin-talk-manager]
         AI[bin-ai-manager]
+        SCHED[bin-scheduler-manager]
     end
 
     subgraph External["External Systems"]
@@ -107,6 +108,10 @@ graph TD
     API -.-> AGENT
     API -.-> BILL
 
+    %% Scheduler dispatch (DB-driven RPC targets; Phase 1 seeds)
+    SCHED --> NUM
+    SCHED --> SCHED
+
     %% Asterisk events
     AST ==> CALL
 ```
@@ -138,6 +143,7 @@ graph TD
 | `bin-api-manager` | Gateway | REST API gateway (calls 15+ services) |
 | `bin-sentinel-manager` | Monitoring | Pod lifecycle events |
 | `bin-openapi-manager` | Tooling | OpenAPI spec (not a runtime service) |
+| `bin-scheduler-manager` | Scheduler | Platform cron dispatch engine (seeded targets: number-manager renew, self-RPC housekeeping/backup; future RPC consumers: VOIP-1280 doctor, api-manager Phase 3) |
 | `voip-asterisk-proxy` | Proxy | Asterisk ARI bridge |
 
 ## Communication Patterns
@@ -193,7 +199,7 @@ asterisk-proxy                call-manager              flow-manager
 **Impact: ALL SERVICES**
 
 ```bash
-# Must update and test all 34 services
+# Must update and test all 35 services
 ls -d bin-*/ | xargs -I {} bash -c "cd '{}' && go mod tidy && go mod vendor && go test ./..."
 ```
 

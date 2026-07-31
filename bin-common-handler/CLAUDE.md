@@ -12,7 +12,7 @@ Shared Go library used by every `bin-*-manager` service in the monorepo. Provide
 - If a package's usage later grows to 3+ services, it can be promoted here.
 - Internal plumbing packages (`rabbitmqhandler`, wrapped by `sockhandler`) are exempt.
 
-**Why:** Every change here triggers verification across all 37 consumer services. Keep the library lean.
+**Why:** Every change here triggers verification across all 38 consumer services. Keep the library lean.
 
 ## Package layout
 
