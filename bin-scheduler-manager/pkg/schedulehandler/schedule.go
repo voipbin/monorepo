@@ -28,6 +28,21 @@ func isValidTargetMethod(method string) bool {
 	}
 }
 
+// toInt normalizes the numeric representations an update-field value can
+// arrive as (native int from Go callers, float64 from JSON unmarshal).
+func toInt(v any) (int, bool) {
+	switch n := v.(type) {
+	case int:
+		return n, true
+	case int64:
+		return int(n), true
+	case float64:
+		return int(n), true
+	default:
+		return 0, false
+	}
+}
+
 // isValidTargetQueue reports whether the given queue is one of the declared
 // *.request queue constants (design §6: the allowlist cannot drift from the
 // models/outline enumeration).
@@ -116,6 +131,22 @@ func (h *scheduleHandler) Create(
 			commonoutline.ServiceNameSchedulerManager,
 			"SCHEDULE_TARGET_QUEUE_INVALID",
 			"The target queue is not a known request queue.",
+		)
+	}
+
+	if timeoutMS <= 0 {
+		return nil, cerrors.InvalidArgument(
+			commonoutline.ServiceNameSchedulerManager,
+			"SCHEDULE_TIMEOUT_INVALID",
+			"The timeout_ms must be greater than 0.",
+		)
+	}
+
+	if retryMax < 0 {
+		return nil, cerrors.InvalidArgument(
+			commonoutline.ServiceNameSchedulerManager,
+			"SCHEDULE_RETRY_MAX_INVALID",
+			"The retry_max must not be negative.",
 		)
 	}
 
@@ -270,6 +301,28 @@ func (h *scheduleHandler) validateUpdateFields(ctx context.Context, cur *schedul
 				commonoutline.ServiceNameSchedulerManager,
 				"SCHEDULE_TARGET_QUEUE_INVALID",
 				"The target queue is not a known request queue.",
+			)
+		}
+	}
+
+	if v, ok := fields[schedule.FieldTimeoutMS]; ok {
+		timeoutMS, okInt := toInt(v)
+		if !okInt || timeoutMS <= 0 {
+			return cerrors.InvalidArgument(
+				commonoutline.ServiceNameSchedulerManager,
+				"SCHEDULE_TIMEOUT_INVALID",
+				"The timeout_ms must be greater than 0.",
+			)
+		}
+	}
+
+	if v, ok := fields[schedule.FieldRetryMax]; ok {
+		retryMax, okInt := toInt(v)
+		if !okInt || retryMax < 0 {
+			return cerrors.InvalidArgument(
+				commonoutline.ServiceNameSchedulerManager,
+				"SCHEDULE_RETRY_MAX_INVALID",
+				"The retry_max must not be negative.",
 			)
 		}
 	}

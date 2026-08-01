@@ -136,11 +136,38 @@ func Test_Create_error(t *testing.T) {
 		targetQueue  string
 		targetMethod string
 
+		timeoutMS int
+		retryMax  int
+
 		responseExisting    *schedule.Schedule
 		responseExistingErr error
 
 		expectStatus cerrors.Status
 	}{
+		{
+			name: "non-positive timeout",
+
+			customerID:   uuid.FromStringOrNil("6c73ff34-7f4c-11ec-b4d5-5b94d40e4071"),
+			scheduleName: "test-schedule",
+			cronExpr:     "0 1 * * *",
+			targetQueue:  "bin-manager.number-manager.request",
+			targetMethod: "POST",
+			timeoutMS:    -5,
+
+			expectStatus: cerrors.StatusInvalidArgument,
+		},
+		{
+			name: "negative retry_max",
+
+			customerID:   uuid.FromStringOrNil("6c73ff34-7f4c-11ec-b4d5-5b94d40e4071"),
+			scheduleName: "test-schedule",
+			cronExpr:     "0 1 * * *",
+			targetQueue:  "bin-manager.number-manager.request",
+			targetMethod: "POST",
+			retryMax:     -1,
+
+			expectStatus: cerrors.StatusInvalidArgument,
+		},
 		{
 			name: "empty name",
 
@@ -247,7 +274,12 @@ func Test_Create_error(t *testing.T) {
 				mockDB.EXPECT().ScheduleGetByCustomerIDName(ctx, tt.customerID, tt.scheduleName).Return(tt.responseExisting, tt.responseExistingErr)
 			}
 
-			_, err := h.Create(ctx, tt.customerID, tt.scheduleName, "", tt.cronExpr, tt.targetQueue, "/v1/test", tt.targetMethod, "application/json", nil, 30000, 0, true)
+			timeoutMS := tt.timeoutMS
+			if timeoutMS == 0 {
+				timeoutMS = 30000
+			}
+
+			_, err := h.Create(ctx, tt.customerID, tt.scheduleName, "", tt.cronExpr, tt.targetQueue, "/v1/test", tt.targetMethod, "application/json", nil, timeoutMS, tt.retryMax, true)
 			if err == nil {
 				t.Errorf("Wrong match. expect: err, got: ok")
 				return
@@ -549,6 +581,26 @@ func Test_Update_error(t *testing.T) {
 			id: uuid.FromStringOrNil("6f24b566-1a03-11ef-9be0-cf12a2d0a5a8"),
 			fields: map[schedule.Field]any{
 				schedule.FieldType: "flow",
+			},
+
+			expectStatus: cerrors.StatusInvalidArgument,
+		},
+		{
+			name: "non-positive timeout",
+
+			id: uuid.FromStringOrNil("6f24b566-1a03-11ef-9be0-cf12a2d0a5a8"),
+			fields: map[schedule.Field]any{
+				schedule.FieldTimeoutMS: 0,
+			},
+
+			expectStatus: cerrors.StatusInvalidArgument,
+		},
+		{
+			name: "negative retry_max from json float",
+
+			id: uuid.FromStringOrNil("6f24b566-1a03-11ef-9be0-cf12a2d0a5a8"),
+			fields: map[schedule.Field]any{
+				schedule.FieldRetryMax: float64(-1),
 			},
 
 			expectStatus: cerrors.StatusInvalidArgument,

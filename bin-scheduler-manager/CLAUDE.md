@@ -108,6 +108,7 @@ The engine guarantees **at-most-once per slot** (fire-and-record, not at-least-o
 - **Catch-up is single-fire**: after downtime, one run fires and `tm_next_run` advances from now — missed slots are not replayed.
 - **Manual execute never consumes the cron slot**: `/v1/schedules/<id>/execute` touches neither `tm_next_run` nor `tm_last_run`, and works on disabled schedules. Cron and manual runs mutually exclude via the same lock + overlap guard (409 while in flight).
 - Executions past `tm_deadline` are reaped to `abandoned` (kill -9 recovery) — the run is recorded as lost, never silently retried.
+- **Shutdown is abandon-not-drain, intentionally**: the daemon cancels the dispatch loop context and exits without joining in-flight dispatch goroutines. An in-flight run that dies with the process is exactly the kill -9 case — the reaper marks it `abandoned` and the next slot proceeds. Do not add a graceful drain that delays shutdown; at-most-once semantics make it unnecessary.
 
 Full semantics with rationale: [docs/plans/2026-08-01-bin-scheduler-manager-design.md](../docs/plans/2026-08-01-bin-scheduler-manager-design.md) §5. Do not add automatic re-dispatch of failed/abandoned runs without going through a design review — destructive jobs (e.g. `number-renew`) depend on at-most-once.
 
