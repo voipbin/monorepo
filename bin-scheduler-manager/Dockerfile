@@ -27,7 +27,7 @@ FROM public.ecr.aws/docker/library/debian:bookworm-slim
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates curl gnupg \
     && export GNUPGHOME="$(mktemp -d)" \
-    && curl -fsSL https://repo.mysql.com/RPM-GPG-KEY-mysql-2023 -o /tmp/mysql-key.asc \
+    && curl -fsSL https://repo.mysql.com/RPM-GPG-KEY-mysql-2025 -o /tmp/mysql-key.asc \
     && gpg --import /tmp/mysql-key.asc \
     && gpg --fingerprint --with-colons | grep -q "^fpr:::::::::BCA43417C3B485DD128EC6D4B7B3B788A8D3785C:$" \
     && gpg --export B7B3B788A8D3785C > /usr/share/keyrings/mysql.gpg \

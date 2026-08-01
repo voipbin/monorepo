@@ -137,9 +137,12 @@ func Test_Create_error(t *testing.T) {
 		targetQueue  string
 		targetMethod string
 
-		timeoutMS  int
-		retryMax   int
-		targetData []byte
+		detail         string
+		targetURI      string
+		targetDataType string
+		timeoutMS      int
+		retryMax       int
+		targetData     []byte
 
 		responseExisting    *schedule.Schedule
 		responseExistingErr error
@@ -178,6 +181,42 @@ func Test_Create_error(t *testing.T) {
 			targetQueue:  "bin-manager.number-manager.request",
 			targetMethod: "POST",
 			targetData:   []byte("{not json"),
+
+			expectStatus: cerrors.StatusInvalidArgument,
+		},
+		{
+			name: "detail exceeds column width",
+
+			customerID:   uuid.FromStringOrNil("6c73ff34-7f4c-11ec-b4d5-5b94d40e4071"),
+			scheduleName: "test-schedule",
+			detail:       strings.Repeat("d", 1025),
+			cronExpr:     "0 1 * * *",
+			targetQueue:  "bin-manager.number-manager.request",
+			targetMethod: "POST",
+
+			expectStatus: cerrors.StatusInvalidArgument,
+		},
+		{
+			name: "target uri exceeds column width",
+
+			customerID:   uuid.FromStringOrNil("6c73ff34-7f4c-11ec-b4d5-5b94d40e4071"),
+			scheduleName: "test-schedule",
+			cronExpr:     "0 1 * * *",
+			targetQueue:  "bin-manager.number-manager.request",
+			targetMethod: "POST",
+			targetURI:    "/" + strings.Repeat("u", 1024),
+
+			expectStatus: cerrors.StatusInvalidArgument,
+		},
+		{
+			name: "target data type exceeds column width",
+
+			customerID:     uuid.FromStringOrNil("6c73ff34-7f4c-11ec-b4d5-5b94d40e4071"),
+			scheduleName:   "test-schedule",
+			cronExpr:       "0 1 * * *",
+			targetQueue:    "bin-manager.number-manager.request",
+			targetMethod:   "POST",
+			targetDataType: strings.Repeat("t", 256),
 
 			expectStatus: cerrors.StatusInvalidArgument,
 		},
@@ -303,8 +342,16 @@ func Test_Create_error(t *testing.T) {
 			if timeoutMS == 0 {
 				timeoutMS = 30000
 			}
+			targetURI := tt.targetURI
+			if targetURI == "" {
+				targetURI = "/v1/test"
+			}
+			targetDataType := tt.targetDataType
+			if targetDataType == "" {
+				targetDataType = "application/json"
+			}
 
-			_, err := h.Create(ctx, tt.customerID, tt.scheduleName, "", tt.cronExpr, tt.targetQueue, "/v1/test", tt.targetMethod, "application/json", tt.targetData, timeoutMS, tt.retryMax, true)
+			_, err := h.Create(ctx, tt.customerID, tt.scheduleName, tt.detail, tt.cronExpr, tt.targetQueue, targetURI, tt.targetMethod, targetDataType, tt.targetData, timeoutMS, tt.retryMax, true)
 			if err == nil {
 				t.Errorf("Wrong match. expect: err, got: ok")
 				return
@@ -616,6 +663,46 @@ func Test_Update_error(t *testing.T) {
 			id: uuid.FromStringOrNil("6f24b566-1a03-11ef-9be0-cf12a2d0a5a8"),
 			fields: map[schedule.Field]any{
 				schedule.FieldTimeoutMS: 0,
+			},
+
+			expectStatus: cerrors.StatusInvalidArgument,
+		},
+		{
+			name: "detail exceeds column width",
+
+			id: uuid.FromStringOrNil("6f24b566-1a03-11ef-9be0-cf12a2d0a5a8"),
+			fields: map[schedule.Field]any{
+				schedule.FieldDetail: strings.Repeat("d", 1025),
+			},
+
+			expectStatus: cerrors.StatusInvalidArgument,
+		},
+		{
+			name: "empty target uri",
+
+			id: uuid.FromStringOrNil("6f24b566-1a03-11ef-9be0-cf12a2d0a5a8"),
+			fields: map[schedule.Field]any{
+				schedule.FieldTargetURI: "",
+			},
+
+			expectStatus: cerrors.StatusInvalidArgument,
+		},
+		{
+			name: "target data type exceeds column width",
+
+			id: uuid.FromStringOrNil("6f24b566-1a03-11ef-9be0-cf12a2d0a5a8"),
+			fields: map[schedule.Field]any{
+				schedule.FieldTargetDataType: strings.Repeat("t", 256),
+			},
+
+			expectStatus: cerrors.StatusInvalidArgument,
+		},
+		{
+			name: "invalid target data json on update",
+
+			id: uuid.FromStringOrNil("6f24b566-1a03-11ef-9be0-cf12a2d0a5a8"),
+			fields: map[schedule.Field]any{
+				schedule.FieldTargetData: json.RawMessage("{not json"),
 			},
 
 			expectStatus: cerrors.StatusInvalidArgument,
