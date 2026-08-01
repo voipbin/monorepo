@@ -186,7 +186,12 @@ func writeDefaultsFile(password string) (string, error) {
 		return "", errChmod
 	}
 
-	content := fmt.Sprintf("[client]\npassword=%s\n", password)
+	// Double-quote the value and escape backslash/quote so passwords containing
+	// option-file special characters (#, ;, leading/trailing spaces) survive the
+	// MySQL option-file parser instead of being silently truncated.
+	escaped := strings.ReplaceAll(password, `\`, `\\`)
+	escaped = strings.ReplaceAll(escaped, `"`, `\"`)
+	content := fmt.Sprintf("[client]\npassword=\"%s\"\n", escaped)
 	if _, errWrite := f.WriteString(content); errWrite != nil {
 		_ = f.Close()
 		_ = os.Remove(f.Name())

@@ -121,8 +121,8 @@ func Test_Backup(t *testing.T) {
 	if defaultsModeSeen != 0o600 {
 		t.Errorf("Wrong match. expect: 0600, got: %v", defaultsModeSeen)
 	}
-	if !strings.Contains(string(defaultsContentSeen), "password=testpass") {
-		t.Errorf("Wrong match. expect: password in defaults file, got: %s", defaultsContentSeen)
+	if !strings.Contains(string(defaultsContentSeen), `password="testpass"`) {
+		t.Errorf("Wrong match. expect: quoted password in defaults file, got: %s", defaultsContentSeen)
 	}
 	if _, errStat := os.Stat(defaultsPathSeen); !os.IsNotExist(errStat) {
 		t.Errorf("Wrong match. expect: defaults file removed, got: %v", errStat)
@@ -369,6 +369,61 @@ func Test_splitHostPort(t *testing.T) {
 			}
 			if port != tt.expectPort {
 				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectPort, port)
+			}
+		})
+	}
+}
+
+func Test_writeDefaultsFile_escaping(t *testing.T) {
+	tests := []struct {
+		name string
+
+		password string
+
+		expectLine string
+	}{
+		{
+			name: "plain",
+
+			password: "testpass",
+
+			expectLine: `password="testpass"`,
+		},
+		{
+			name: "ini comment characters",
+
+			password: `pa#ss;word `,
+
+			expectLine: `password="pa#ss;word "`,
+		},
+		{
+			name: "backslash and quote",
+
+			password: `pa\ss"word`,
+
+			expectLine: `password="pa\\ss\"word"`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			path, err := writeDefaultsFile(tt.password)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+				return
+			}
+			defer func() {
+				_ = os.Remove(path)
+			}()
+
+			content, errRead := os.ReadFile(path)
+			if errRead != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", errRead)
+				return
+			}
+
+			if !strings.Contains(string(content), tt.expectLine) {
+				t.Errorf("Wrong match.\nexpect: %s\ngot: %s", tt.expectLine, content)
 			}
 		})
 	}
