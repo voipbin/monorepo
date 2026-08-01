@@ -54,7 +54,7 @@ Requests arrive on the RabbitMQ queue `bin-manager.scheduler-manager.request`. T
 | `/v1/schedules$` (POST) | `processV1SchedulesPost` | Create schedule; validates cron parse + non-zero `Next()`, method whitelist, `target_queue` against the `commonoutline` request-queue allowlist, active-name uniqueness |
 | `/v1/schedules\?(.*)$` (GET) | `processV1SchedulesGet` | List schedules with `page_size`/`page_token`/filters (customer_id, enabled, deleted) |
 | `/v1/schedules/<uuid>$` (GET) | `processV1SchedulesIDGet` | Get schedule |
-| `/v1/schedules/<uuid>$` (PUT) | `processV1SchedulesIDPut` | Update schedule; a cron change resets `tm_next_run` to NULL (recomputed next scan) |
+| `/v1/schedules/<uuid>$` (PUT) | `processV1SchedulesIDPut` | Update schedule; a cron or enabled change resets `tm_next_run` to NULL (recomputed next scan) |
 | `/v1/schedules/<uuid>$` (DELETE) | `processV1SchedulesIDDelete` | Soft-delete schedule |
 | `/v1/schedules/<uuid>/execute$` (POST) | `processV1SchedulesIDExecutePost` | Manual fire-now; never touches `tm_next_run`/`tm_last_run`; 409 while a run is in flight; works on disabled schedules |
 | `/v1/executions\?(.*)$` (GET) | `processV1ExecutionsGet` | Execution audit trail with filters (schedule_id, status) |

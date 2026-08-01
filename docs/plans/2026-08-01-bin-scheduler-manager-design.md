@@ -401,7 +401,8 @@ schedules (that is the point of a manual test-fire).
 DTOs flat per rpc.md §9.5 (`V1DataSchedulesPost` etc.). Errors: `cerrors.VoipbinError`
 envelope per listenhandler-error-mapping.md. CRUD and execution outcomes publish
 **internal** events via notifyhandler `PublishEvent`
-(`scheduler_schedule_created/updated/deleted`, `scheduler_execution_succeeded/failed`).
+(`schedule_created/updated/deleted`, `execution_succeeded/failed` — fleet event-name
+convention, publisher-scoped without a service prefix).
 Customer-visible webhook events (WebhookMessage + RST struct docs) arrive with Phase 3,
 when schedules gain real customer owners — in Phase 1 every schedule is nil-customer
 and `PublishWebhook` short-circuits on the nil customer anyway.

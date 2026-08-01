@@ -6,6 +6,9 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
+
 	"monorepo/bin-scheduler-manager/models/execution"
 )
 
@@ -39,6 +42,16 @@ func (h *scheduleHandler) ExecutionPrune(ctx context.Context, retentionDays int)
 		"func":           "ExecutionPrune",
 		"retention_days": retentionDays,
 	})
+
+	// guard against a misconfigured retention: 0 or negative days would compute
+	// a cutoff of now-or-future and hard-delete the entire audit table
+	if retentionDays <= 0 {
+		return 0, cerrors.InvalidArgument(
+			commonoutline.ServiceNameSchedulerManager,
+			"EXECUTION_RETENTION_INVALID",
+			"The execution retention days must be greater than 0.",
+		)
+	}
 
 	now := h.utilHandler.TimeNow()
 	cutoff := now.AddDate(0, 0, -retentionDays)

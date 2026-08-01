@@ -160,25 +160,20 @@ func runScheduleList(cmd *cobra.Command, args []string) error {
 
 func cmdScheduleGet() *cobra.Command {
 	return &cobra.Command{
-		Use:   "get <id>",
-		Short: "Get a schedule by ID",
+		Use:   "get <name-or-id>",
+		Short: "Get a schedule by name or ID",
 		Args:  cobra.ExactArgs(1),
 		RunE:  runScheduleGet,
 	}
 }
 
 func runScheduleGet(cmd *cobra.Command, args []string) error {
-	id := uuid.FromStringOrNil(args[0])
-	if id == uuid.Nil {
-		return fmt.Errorf("invalid format for schedule ID: '%s' is not a valid UUID", args[0])
-	}
-
 	db, err := initHandler()
 	if err != nil {
 		return errors.Wrap(err, "failed to initialize handlers")
 	}
 
-	res, err := db.ScheduleGet(context.Background(), id)
+	res, err := resolveSchedule(context.Background(), db, args[0])
 	if err != nil {
 		return errors.Wrap(err, "failed to get schedule")
 	}

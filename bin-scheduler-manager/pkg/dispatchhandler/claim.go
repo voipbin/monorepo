@@ -79,6 +79,9 @@ func (h *dispatchHandler) claimAndDispatch(ctx context.Context, s *schedule.Sche
 	}
 
 	h.clearOverlapSkip(s.ID)
+	// the slot is claimed: the schedule leaves the due scan, so reset the lag
+	// gauge here — otherwise the series stays pinned at the last overdue value
+	promScheduleLagSeconds.WithLabelValues(s.Name).Set(0)
 	h.dispatch(ctx, s, exec)
 }
 

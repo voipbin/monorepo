@@ -116,9 +116,14 @@ func (h *dispatchHandler) dispatchDue(ctx context.Context, now time.Time) {
 
 	for _, s := range schedules {
 		if s.TMNextRun != nil {
-			if lag := now.Sub(*s.TMNextRun).Seconds(); lag > 0 {
-				promScheduleLagSeconds.WithLabelValues(s.Name).Set(lag)
+			// Set the gauge on both branches: a claimed schedule leaves the due
+			// scan, so without the zero-write the series would stay pinned at the
+			// last overdue value forever (alerting reads max by (schedule_name)).
+			lag := now.Sub(*s.TMNextRun).Seconds()
+			if lag < 0 {
+				lag = 0
 			}
+			promScheduleLagSeconds.WithLabelValues(s.Name).Set(lag)
 		}
 
 		select {
