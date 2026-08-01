@@ -16,6 +16,12 @@ build time, so the UUID() values are fixed per image build).
 
 tm_next_run is seeded NULL = compute on next scan.
 
+target_data uses JSON_OBJECT()/JSON_OBJECT('days', 28) instead of a raw
+'{"days":28}' string literal: alembic op.execute() passes raw SQL through
+sqlalchemy.text(), which treats a bare colon as a bind-parameter marker
+(':28' -> "A value is required for bind parameter '28'"). JSON_OBJECT
+produces the identical JSON value with no colon in the SQL text.
+
 database-backup ships disabled (enabled=0): production uses managed
 Cloud SQL backups; self-hosted installs enable it (VOIP-1281).
 """
@@ -47,7 +53,7 @@ def upgrade():
             '/v1/numbers/renew',
             'POST',
             'application/json',
-            '{"days":28}',
+            JSON_OBJECT('days', 28),
             300000,
             0,
             1,
@@ -72,7 +78,7 @@ def upgrade():
             '/v1/backups',
             'POST',
             'application/json',
-            '{}',
+            JSON_OBJECT(),
             1800000,
             0,
             0,
@@ -97,7 +103,7 @@ def upgrade():
             '/v1/executions/prune',
             'POST',
             'application/json',
-            '{}',
+            JSON_OBJECT(),
             600000,
             0,
             1,
