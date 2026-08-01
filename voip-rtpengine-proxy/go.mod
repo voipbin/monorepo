@@ -4,6 +4,8 @@ go 1.25.3
 
 replace monorepo/bin-common-handler => ../bin-common-handler
 
+replace monorepo/bin-scheduler-manager => ../bin-scheduler-manager
+
 replace monorepo/bin-webchat-manager => ../bin-webchat-manager
 
 require (

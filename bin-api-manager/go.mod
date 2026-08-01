@@ -44,6 +44,8 @@ replace monorepo/bin-registrar-manager => ../bin-registrar-manager
 
 replace monorepo/bin-route-manager => ../bin-route-manager
 
+replace monorepo/bin-scheduler-manager => ../bin-scheduler-manager
+
 replace monorepo/bin-storage-manager => ../bin-storage-manager
 
 replace monorepo/bin-tag-manager => ../bin-tag-manager
@@ -86,6 +88,7 @@ require (
 	golang.org/x/sys v0.45.0 // indirect
 	golang.org/x/text v0.37.0 // indirect
 	golang.org/x/tools v0.44.0 // indirect
+	monorepo/bin-scheduler-manager v0.0.0-00010101000000-000000000000
 )
 
 require (
@@ -207,6 +210,7 @@ require (
 	github.com/quic-go/qpack v0.6.0 // indirect
 	github.com/quic-go/quic-go v0.59.1 // indirect
 	github.com/rabbitmq/amqp091-go v1.10.0 // indirect
+	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/sagikazarmark/locafero v0.12.0 // indirect
 	github.com/santhosh-tekuri/jsonschema/v6 v6.0.2 // indirect
 	github.com/speakeasy-api/jsonpath v0.6.3 // indirect

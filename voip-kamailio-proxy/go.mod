@@ -42,6 +42,8 @@ replace monorepo/bin-registrar-manager => ../bin-registrar-manager
 
 replace monorepo/bin-route-manager => ../bin-route-manager
 
+replace monorepo/bin-scheduler-manager => ../bin-scheduler-manager
+
 replace monorepo/bin-storage-manager => ../bin-storage-manager
 
 replace monorepo/bin-tag-manager => ../bin-tag-manager
@@ -95,7 +97,7 @@ require (
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/sys v0.45.0 // indirect
-	golang.org/x/text v0.35.0 // indirect
+	golang.org/x/text v0.37.0 // indirect
 	google.golang.org/genproto v0.0.0-20260128011058-8636f8732409 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
 )
