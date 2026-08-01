@@ -191,3 +191,45 @@ func Test_ExecutionPrune_error(t *testing.T) {
 		t.Errorf("Wrong match. expect: error, got: ok")
 	}
 }
+
+func Test_ExecutionPrune_non_positive_retention(t *testing.T) {
+	tests := []struct {
+		name string
+
+		retentionDays int
+	}{
+		{
+			name: "zero days",
+
+			retentionDays: 0,
+		},
+		{
+			name: "negative days",
+
+			retentionDays: -1,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &scheduleHandler{
+				utilHandler: mockUtil,
+				db:          mockDB,
+			}
+
+			ctx := context.Background()
+
+			// no TimeNow/ExecutionPrune expectations: the guard must refuse
+			// before touching the DB
+			if _, err := h.ExecutionPrune(ctx, tt.retentionDays); err == nil {
+				t.Errorf("Wrong match. expect: error, got: ok")
+			}
+		})
+	}
+}
