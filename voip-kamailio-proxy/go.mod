@@ -42,7 +42,7 @@ replace monorepo/bin-registrar-manager => ../bin-registrar-manager
 
 replace monorepo/bin-route-manager => ../bin-route-manager
 
-replace monorepo/bin-scheduler-manager => ../bin-scheduler-manager
+replace monorepo/bin-schedule-manager => ../bin-schedule-manager
 
 replace monorepo/bin-storage-manager => ../bin-storage-manager
 

@@ -50,7 +50,7 @@ replace monorepo/bin-registrar-manager => ../bin-registrar-manager
 
 replace monorepo/bin-route-manager => ../bin-route-manager
 
-replace monorepo/bin-scheduler-manager => ../bin-scheduler-manager
+replace monorepo/bin-schedule-manager => ../bin-schedule-manager
 
 replace monorepo/bin-storage-manager => ../bin-storage-manager
 
@@ -89,7 +89,7 @@ require (
 	google.golang.org/genproto v0.0.0-20260128011058-8636f8732409 // indirect
 	monorepo/bin-call-manager v0.0.0-20240403030948-51eb7c33cf9a
 	monorepo/bin-common-handler v0.0.0-20240408033155-50f0cd082334
-	monorepo/bin-scheduler-manager v0.0.0-00010101000000-000000000000 // indirect
+	monorepo/bin-schedule-manager v0.0.0-00010101000000-000000000000 // indirect
 	monorepo/bin-storage-manager v0.0.0-20240330083852-ab008a2e3880
 	monorepo/bin-webhook-manager v0.0.0-20240313071253-ebca1db1437c // indirect
 )

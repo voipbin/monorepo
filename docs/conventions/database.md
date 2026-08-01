@@ -15,7 +15,7 @@
 | `bin-campaign-manager` | `campaign_` | `campaign_campaigns` |
 | `bin-number-manager` | `number_` | `number_numbers` |
 | `bin-registrar-manager` | `registrar_` | `registrar_trunks` |
-| `bin-scheduler-manager` | `scheduler_` | `scheduler_schedules`, `scheduler_executions` |
+| `bin-schedule-manager` | `schedule_` | `schedule_schedules`, `schedule_executions` |
 
 Format: `<domain>_<plural-entity>` — always lowercase, words separated by underscores.
 

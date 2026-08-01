@@ -30,7 +30,7 @@
 | bin-rag-manager | A | Standard Go RPC manager |
 | bin-registrar-manager | A | Standard Go RPC manager |
 | bin-route-manager | A | Standard Go RPC manager |
-| bin-scheduler-manager | A | Standard Go RPC manager |
+| bin-schedule-manager | A | Standard Go RPC manager |
 | bin-sentinel-manager | A2 | Event-driven worker, no inbound RPC |
 | bin-storage-manager | A | Standard Go RPC manager |
 | bin-tag-manager | A | Standard Go RPC manager |

@@ -119,7 +119,7 @@ parameters:
     type: boolean
     default: false
 
-  run-bin-scheduler-manager:
+  run-bin-schedule-manager:
     type: boolean
     default: false
 
@@ -618,22 +618,22 @@ workflows:
           requires:
             - bin-route-manager-build
 
-  bin-scheduler-manager:
-    when: << pipeline.parameters.run-bin-scheduler-manager >>
+  bin-schedule-manager:
+    when: << pipeline.parameters.run-bin-schedule-manager >>
     jobs:
       - build-approval:
           type: approval
-      - bin-scheduler-manager-test:
+      - bin-schedule-manager-test:
           requires:
             - build-approval
-      - bin-scheduler-manager-build:
+      - bin-schedule-manager-build:
           <<: *context_production
           requires:
-            - bin-scheduler-manager-test
-      - bin-scheduler-manager-release:
+            - bin-schedule-manager-test
+      - bin-schedule-manager-release:
           <<: *context_production
           requires:
-            - bin-scheduler-manager-build
+            - bin-schedule-manager-build
 
   bin-sentinel-manager:
     when: << pipeline.parameters.run-bin-sentinel-manager >>
@@ -1554,32 +1554,32 @@ jobs:
           source-directory: bin-route-manager
           image-name: route-manager
 
-  # bin-scheduler-manager
-  bin-scheduler-manager-test:
+  # bin-schedule-manager
+  bin-schedule-manager-test:
     docker: *go_image
     resource_class: small
     steps:
       - go-test:
-          source-directory: bin-scheduler-manager
+          source-directory: bin-schedule-manager
 
-  bin-scheduler-manager-build:
+  bin-schedule-manager-build:
     docker: *gcp_image
     resource_class: small
     steps:
       - docker-build:
           project-id: voipbin
-          project-repository: bin-scheduler-manager
-          source-directory: bin-scheduler-manager
+          project-repository: bin-schedule-manager
+          source-directory: bin-schedule-manager
 
-  bin-scheduler-manager-release:
+  bin-schedule-manager-release:
     docker: *gcloud_image
     resource_class: small
     steps:
       - docker-release:
           project-id: voipbin
-          project-repository: bin-scheduler-manager
-          image-name: scheduler-manager
-          source-directory: bin-scheduler-manager
+          project-repository: bin-schedule-manager
+          image-name: schedule-manager
+          source-directory: bin-schedule-manager
 
   # bin-sentinel-manager
   bin-sentinel-manager-test:

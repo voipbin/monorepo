@@ -39,7 +39,7 @@ workflows:
             bin-rag-manager/.*          run-bin-rag-manager true
             bin-registrar-manager/.*    run-bin-registrar-manager true
             bin-route-manager/.*        run-bin-route-manager true
-            bin-scheduler-manager/.*    run-bin-scheduler-manager true
+            bin-schedule-manager/.*     run-bin-schedule-manager true
             bin-sentinel-manager/.*     run-bin-sentinel-manager true
             bin-storage-manager/.*      run-bin-storage-manager true
             bin-tag-manager/.*          run-bin-tag-manager true

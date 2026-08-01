@@ -31,7 +31,7 @@ func Test_QueueNameRequestAll(t *testing.T) {
 		QueueNameRagRequest,
 		QueueNameRegistrarRequest,
 		QueueNameRouteRequest,
-		QueueNameSchedulerRequest,
+		QueueNameScheduleRequest,
 		QueueNameSentinelRequest,
 		QueueNameStorageRequest,
 		QueueNameTagRequest,

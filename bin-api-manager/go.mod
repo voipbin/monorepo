@@ -44,7 +44,7 @@ replace monorepo/bin-registrar-manager => ../bin-registrar-manager
 
 replace monorepo/bin-route-manager => ../bin-route-manager
 
-replace monorepo/bin-scheduler-manager => ../bin-scheduler-manager
+replace monorepo/bin-schedule-manager => ../bin-schedule-manager
 
 replace monorepo/bin-storage-manager => ../bin-storage-manager
 
@@ -88,7 +88,7 @@ require (
 	golang.org/x/sys v0.45.0 // indirect
 	golang.org/x/text v0.37.0 // indirect
 	golang.org/x/tools v0.44.0 // indirect
-	monorepo/bin-scheduler-manager v0.0.0-00010101000000-000000000000
+	monorepo/bin-schedule-manager v0.0.0-00010101000000-000000000000
 )
 
 require (

@@ -50,7 +50,7 @@ replace monorepo/bin-registrar-manager => ../bin-registrar-manager
 
 replace monorepo/bin-route-manager => ../bin-route-manager
 
-replace monorepo/bin-scheduler-manager => ../bin-scheduler-manager
+replace monorepo/bin-schedule-manager => ../bin-schedule-manager
 
 replace monorepo/bin-storage-manager => ../bin-storage-manager
 
@@ -164,7 +164,7 @@ require (
 	monorepo/bin-rag-manager v0.0.0-00010101000000-000000000000 // indirect
 	monorepo/bin-registrar-manager v0.0.0-20240402051305-cf14186e380d // indirect
 	monorepo/bin-route-manager v0.0.0-20240313065038-1498b922bb24 // indirect
-	monorepo/bin-scheduler-manager v0.0.0-00010101000000-000000000000 // indirect
+	monorepo/bin-schedule-manager v0.0.0-00010101000000-000000000000 // indirect
 	monorepo/bin-storage-manager v0.0.0-20240330083852-ab008a2e3880 // indirect
 	monorepo/bin-tag-manager v0.0.0-20240313070856-7d3433af905d // indirect
 	monorepo/bin-talk-manager v0.0.0-00010101000000-000000000000 // indirect

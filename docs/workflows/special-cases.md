@@ -91,7 +91,7 @@ git commit -m "chore: update dependencies after bin-common-handler changes"
 - bin-webhook-manager (Webhooks)
 - bin-agent-manager (Agent management)
 - bin-customer-manager (Customer data)
-- bin-scheduler-manager (Platform cron scheduler)
+- bin-schedule-manager (Platform cron scheduler)
 - And 26+ other services...
 
 ### Why This Is Critical

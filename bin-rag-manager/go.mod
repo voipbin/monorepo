@@ -48,7 +48,7 @@ replace monorepo/bin-registrar-manager => ../bin-registrar-manager
 
 replace monorepo/bin-route-manager => ../bin-route-manager
 
-replace monorepo/bin-scheduler-manager => ../bin-scheduler-manager
+replace monorepo/bin-schedule-manager => ../bin-schedule-manager
 
 replace monorepo/bin-storage-manager => ../bin-storage-manager
 
@@ -87,7 +87,7 @@ require (
 
 require (
 	github.com/robfig/cron/v3 v3.0.1 // indirect
-	monorepo/bin-scheduler-manager v0.0.0-00010101000000-000000000000 // indirect
+	monorepo/bin-schedule-manager v0.0.0-00010101000000-000000000000 // indirect
 )
 
 require (

@@ -123,10 +123,10 @@ const (
 	QueueNameRouteRequest   QueueName = "bin-manager.route-manager.request"
 	QueueNameRouteSubscribe QueueName = "bin-manager.route-manager.subscribe"
 
-	// scheduler-manager
-	QueueNameSchedulerEvent     QueueName = "bin-manager.scheduler-manager.event"
-	QueueNameSchedulerRequest   QueueName = "bin-manager.scheduler-manager.request"
-	QueueNameSchedulerSubscribe QueueName = "bin-manager.scheduler-manager.subscribe"
+	// schedule-manager
+	QueueNameScheduleEvent     QueueName = "bin-manager.schedule-manager.event"
+	QueueNameScheduleRequest   QueueName = "bin-manager.schedule-manager.request"
+	QueueNameScheduleSubscribe QueueName = "bin-manager.schedule-manager.subscribe"
 
 	// sentinel-manager
 	QueueNameSentinelEvent     QueueName = "bin-manager.sentinel-manager.event"
@@ -186,7 +186,7 @@ const (
 )
 
 // QueueNameRequestAll returns every *Request queue name constant declared in this file.
-// The scheduler-manager uses this as the allowlist for schedule target queues,
+// The schedule-manager uses this as the allowlist for schedule target queues,
 // so the allowlist cannot silently drift from the declared constants.
 // NOTE: when adding a new *Request constant above, add it here as well;
 // queuename_test.go enforces the parity.
@@ -214,7 +214,7 @@ func QueueNameRequestAll() []QueueName {
 		QueueNameRagRequest,
 		QueueNameRegistrarRequest,
 		QueueNameRouteRequest,
-		QueueNameSchedulerRequest,
+		QueueNameScheduleRequest,
 		QueueNameSentinelRequest,
 		QueueNameStorageRequest,
 		QueueNameTagRequest,
