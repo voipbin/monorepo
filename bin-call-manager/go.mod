@@ -48,6 +48,8 @@ replace monorepo/bin-registrar-manager => ../bin-registrar-manager
 
 replace monorepo/bin-route-manager => ../bin-route-manager
 
+replace monorepo/bin-schedule-manager => ../bin-schedule-manager
+
 replace monorepo/bin-sentinel-manager => ../bin-sentinel-manager
 
 replace monorepo/bin-storage-manager => ../bin-storage-manager
@@ -122,6 +124,7 @@ require (
 	github.com/prometheus/common v0.67.5 // indirect
 	github.com/prometheus/procfs v0.19.2 // indirect
 	github.com/rabbitmq/amqp091-go v1.10.0 // indirect
+	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/sagikazarmark/locafero v0.12.0 // indirect
 	github.com/spf13/afero v1.15.0 // indirect
 	github.com/spf13/cast v1.10.0 // indirect
@@ -152,6 +155,7 @@ require (
 	monorepo/bin-pipecat-manager v0.0.0-00010101000000-000000000000 // indirect
 	monorepo/bin-queue-manager v0.0.0-20240402021210-adac880b81da // indirect
 	monorepo/bin-rag-manager v0.0.0-00010101000000-000000000000 // indirect
+	monorepo/bin-schedule-manager v0.0.0-00010101000000-000000000000 // indirect
 	monorepo/bin-tag-manager v0.0.0-20240313070856-7d3433af905d // indirect
 	monorepo/bin-talk-manager v0.0.0-00010101000000-000000000000 // indirect
 	monorepo/bin-timeline-manager v0.0.0-00010101000000-000000000000 // indirect

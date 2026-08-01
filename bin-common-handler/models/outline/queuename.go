@@ -123,6 +123,11 @@ const (
 	QueueNameRouteRequest   QueueName = "bin-manager.route-manager.request"
 	QueueNameRouteSubscribe QueueName = "bin-manager.route-manager.subscribe"
 
+	// schedule-manager
+	QueueNameScheduleEvent     QueueName = "bin-manager.schedule-manager.event"
+	QueueNameScheduleRequest   QueueName = "bin-manager.schedule-manager.request"
+	QueueNameScheduleSubscribe QueueName = "bin-manager.schedule-manager.subscribe"
+
 	// sentinel-manager
 	QueueNameSentinelEvent     QueueName = "bin-manager.sentinel-manager.event"
 	QueueNameSentinelRequest   QueueName = "bin-manager.sentinel-manager.request"
@@ -179,3 +184,47 @@ const (
 	QueueNameWebhookRequest    QueueName = "bin-manager.webhook-manager.request"
 	QueueNameWebhookSubscribe  QueueName = "bin-manager.webhook-manager.subscribe"
 )
+
+// QueueNameRequestAll returns every *Request queue name constant declared in this file.
+// The schedule-manager uses this as the allowlist for schedule target queues,
+// so the allowlist cannot silently drift from the declared constants.
+// NOTE: when adding a new *Request constant above, add it here as well;
+// queuename_test.go enforces the parity.
+func QueueNameRequestAll() []QueueName {
+	return []QueueName{
+		QueueNameAIRequest,
+		QueueNameKamailioRequest,
+		QueueNameAgentRequest,
+		QueueNameAPIRequest,
+		QueueNameBillingRequest,
+		QueueNameCallRequest,
+		QueueNameCampaignRequest,
+		QueueNameConferenceRequest,
+		QueueNameContactRequest,
+		QueueNameConversationRequest,
+		QueueNameCustomerRequest,
+		QueueNameDirectRequest,
+		QueueNameEmailRequest,
+		QueueNameFlowRequest,
+		QueueNameMessageRequest,
+		QueueNameNumberRequest,
+		QueueNameOutdialRequest,
+		QueueNamePipecatRequest,
+		QueueNameQueueRequest,
+		QueueNameRagRequest,
+		QueueNameRegistrarRequest,
+		QueueNameRouteRequest,
+		QueueNameScheduleRequest,
+		QueueNameSentinelRequest,
+		QueueNameStorageRequest,
+		QueueNameTagRequest,
+		QueueNameTalkRequest,
+		QueueNameTimelineRequest,
+		QueueNameTranscribeRequest,
+		QueueNameTransferRequest,
+		QueueNameTTSRequest,
+		QueueNameUserRequest,
+		QueueNameWebchatRequest,
+		QueueNameWebhookRequest,
+	}
+}

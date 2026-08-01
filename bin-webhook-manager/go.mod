@@ -50,6 +50,8 @@ replace monorepo/bin-registrar-manager => ../bin-registrar-manager
 
 replace monorepo/bin-route-manager => ../bin-route-manager
 
+replace monorepo/bin-schedule-manager => ../bin-schedule-manager
+
 replace monorepo/bin-storage-manager => ../bin-storage-manager
 
 replace monorepo/bin-tag-manager => ../bin-tag-manager
@@ -78,6 +80,7 @@ require (
 	golang.org/x/sys v0.45.0 // indirect
 	google.golang.org/genproto v0.0.0-20260128011058-8636f8732409 // indirect
 	monorepo/bin-common-handler v0.0.0-20240408033155-50f0cd082334
+	monorepo/bin-schedule-manager v0.0.0-00010101000000-000000000000 // indirect
 )
 
 require (
@@ -109,6 +112,7 @@ require (
 	github.com/prometheus/client_model v0.6.2 // indirect
 	github.com/prometheus/procfs v0.19.2 // indirect
 	github.com/rabbitmq/amqp091-go v1.10.0 // indirect
+	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/sagikazarmark/locafero v0.12.0 // indirect
 	github.com/spf13/afero v1.15.0 // indirect
 	github.com/spf13/cast v1.10.0 // indirect

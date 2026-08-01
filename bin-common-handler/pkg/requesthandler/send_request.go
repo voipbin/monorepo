@@ -147,6 +147,12 @@ func (r *requestHandler) sendRequestNumber(ctx context.Context, uri string, meth
 	return r.sendRequest(ctx, commonoutline.QueueNameNumberRequest, uri, method, resource, timeout, delayed, dataType, data)
 }
 
+// sendRequestSchedule send a request to the schedule-manager and return the response
+func (r *requestHandler) sendRequestSchedule(ctx context.Context, uri string, method sock.RequestMethod, resource string, timeout int, delayed int, dataType string, data []byte) (*sock.Response, error) {
+
+	return r.sendRequest(ctx, commonoutline.QueueNameScheduleRequest, uri, method, resource, timeout, delayed, dataType, data)
+}
+
 // sendRequestConference send a request to the conference-manager and return the response
 func (r *requestHandler) sendRequestConference(ctx context.Context, uri string, method sock.RequestMethod, resource string, timeout int, delayed int, dataType string, data []byte) (*sock.Response, error) {
 

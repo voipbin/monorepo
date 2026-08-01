@@ -50,6 +50,8 @@ replace monorepo/bin-registrar-manager => ../bin-registrar-manager
 
 replace monorepo/bin-route-manager => ../bin-route-manager
 
+replace monorepo/bin-schedule-manager => ../bin-schedule-manager
+
 replace monorepo/bin-storage-manager => ../bin-storage-manager
 
 replace monorepo/bin-tag-manager => ../bin-tag-manager
@@ -83,6 +85,7 @@ require (
 	monorepo/bin-flow-manager v0.0.0-20240403034140-ce82222fe7f4 // indirect
 	monorepo/bin-number-manager v0.0.0-20240328055052-ec1c723aa183 // indirect
 	monorepo/bin-registrar-manager v0.0.0-20240402051305-cf14186e380d // indirect
+	monorepo/bin-schedule-manager v0.0.0-00010101000000-000000000000 // indirect
 	monorepo/bin-storage-manager v0.0.0-20240330083852-ab008a2e3880 // indirect
 	monorepo/bin-transcribe-manager v0.0.0-20240405044227-febd49f8b700 // indirect
 	monorepo/bin-webchat-manager v0.0.0-00010101000000-000000000000 // indirect
@@ -129,6 +132,7 @@ require (
 	github.com/quic-go/qpack v0.6.0 // indirect
 	github.com/quic-go/quic-go v0.59.1 // indirect
 	github.com/rabbitmq/amqp091-go v1.10.0 // indirect
+	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/sagikazarmark/locafero v0.12.0 // indirect
 	github.com/spf13/afero v1.15.0 // indirect
 	github.com/spf13/cast v1.10.0 // indirect
