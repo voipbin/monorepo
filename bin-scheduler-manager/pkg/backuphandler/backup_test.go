@@ -145,6 +145,10 @@ func Test_Backup(t *testing.T) {
 	if res.Bytes != info.Size() || res.Bytes <= 0 {
 		t.Errorf("Wrong match. expect: %v, got: %v", info.Size(), res.Bytes)
 	}
+	// the dump carries the full platform DB — owner-only, like the credentials file
+	if info.Mode().Perm() != 0o600 {
+		t.Errorf("Wrong match. expect: 0600 dump file, got: %v", info.Mode().Perm())
+	}
 
 	// gunzip round-trip
 	f, err := os.Open(res.Path)

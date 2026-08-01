@@ -28,6 +28,71 @@ func isValidTargetMethod(method string) bool {
 	}
 }
 
+// Column-width bounds (must match the scheduler_schedules DDL).
+const (
+	maxLenName           = 255
+	maxLenDetail         = 1024
+	maxLenTargetURI      = 1024
+	maxLenTargetDataType = 255
+)
+
+// validateBounds checks the free-text/payload fields against their column
+// widths and the payload for JSON well-formedness. Empty-allowed fields pass
+// when empty.
+func validateBounds(name, detail, targetURI, targetDataType string, targetData json.RawMessage) error {
+	switch {
+	case len(name) > maxLenName:
+		return cerrors.InvalidArgument(commonoutline.ServiceNameSchedulerManager, "SCHEDULE_NAME_TOO_LONG", "The schedule name must be at most 255 characters.")
+	case len(detail) > maxLenDetail:
+		return cerrors.InvalidArgument(commonoutline.ServiceNameSchedulerManager, "SCHEDULE_DETAIL_TOO_LONG", "The schedule detail must be at most 1024 characters.")
+	case targetURI == "":
+		return cerrors.InvalidArgument(commonoutline.ServiceNameSchedulerManager, "SCHEDULE_TARGET_URI_EMPTY", "The target uri must not be empty.")
+	case len(targetURI) > maxLenTargetURI:
+		return cerrors.InvalidArgument(commonoutline.ServiceNameSchedulerManager, "SCHEDULE_TARGET_URI_TOO_LONG", "The target uri must be at most 1024 characters.")
+	case len(targetDataType) > maxLenTargetDataType:
+		return cerrors.InvalidArgument(commonoutline.ServiceNameSchedulerManager, "SCHEDULE_TARGET_DATA_TYPE_TOO_LONG", "The target data type must be at most 255 characters.")
+	case len(targetData) > 0 && !json.Valid(targetData):
+		return cerrors.InvalidArgument(commonoutline.ServiceNameSchedulerManager, "SCHEDULE_TARGET_DATA_INVALID", "The target data must be valid JSON.")
+	}
+	return nil
+}
+
+// validateUpdateBounds applies the same column-width/JSON checks as
+// validateBounds to whichever bounded fields the update carries.
+func validateUpdateBounds(fields map[schedule.Field]any) error {
+	name, detail, targetURI, targetDataType := "", "", "/", ""
+	var targetData json.RawMessage
+
+	if v, ok := fields[schedule.FieldName]; ok {
+		name, _ = v.(string)
+	}
+	if v, ok := fields[schedule.FieldDetail]; ok {
+		detail, _ = v.(string)
+	}
+	if v, ok := fields[schedule.FieldTargetURI]; ok {
+		s, okStr := v.(string)
+		if !okStr {
+			s = ""
+		}
+		targetURI = s
+	}
+	if v, ok := fields[schedule.FieldTargetDataType]; ok {
+		targetDataType, _ = v.(string)
+	}
+	if v, ok := fields[schedule.FieldTargetData]; ok {
+		switch d := v.(type) {
+		case json.RawMessage:
+			targetData = d
+		case []byte:
+			targetData = d
+		case string:
+			targetData = json.RawMessage(d)
+		}
+	}
+
+	return validateBounds(name, detail, targetURI, targetDataType, targetData)
+}
+
 // toInt normalizes the numeric representations an update-field value can
 // arrive as (native int from Go callers, float64 from JSON unmarshal).
 func toInt(v any) (int, bool) {
@@ -132,6 +197,10 @@ func (h *scheduleHandler) Create(
 			"SCHEDULE_TARGET_QUEUE_INVALID",
 			"The target queue is not a known request queue.",
 		)
+	}
+
+	if errBounds := validateBounds(name, detail, targetURI, targetDataType, targetData); errBounds != nil {
+		return nil, errBounds
 	}
 
 	if timeoutMS <= 0 {
@@ -325,6 +394,10 @@ func (h *scheduleHandler) validateUpdateFields(ctx context.Context, cur *schedul
 				"The retry_max must not be negative.",
 			)
 		}
+	}
+
+	if errBounds := validateUpdateBounds(fields); errBounds != nil {
+		return errBounds
 	}
 
 	if v, ok := fields[schedule.FieldName]; ok {

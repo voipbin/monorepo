@@ -101,7 +101,10 @@ func (h *backupHandler) Backup(ctx context.Context) (*Result, error) {
 // runDump executes mysqldump with the given args, gzip-compressing its stdout
 // into outPath. Returns the produced file's size in bytes.
 func (h *backupHandler) runDump(ctx context.Context, outPath string, args []string) (int64, error) {
-	f, err := os.Create(outPath)
+	// 0600: the dump is the full platform database (PII, credentials) and the
+	// backup dir may be a volume shared across replicas — same hygiene as the
+	// credentials file, owner-only.
+	f, err := os.OpenFile(outPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o600)
 	if err != nil {
 		return 0, errors.Wrapf(err, "could not create the backup file. path: %s", outPath)
 	}

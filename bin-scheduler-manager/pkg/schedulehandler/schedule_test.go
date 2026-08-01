@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	stderrors "errors"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -136,8 +137,9 @@ func Test_Create_error(t *testing.T) {
 		targetQueue  string
 		targetMethod string
 
-		timeoutMS int
-		retryMax  int
+		timeoutMS  int
+		retryMax   int
+		targetData []byte
 
 		responseExisting    *schedule.Schedule
 		responseExistingErr error
@@ -153,6 +155,29 @@ func Test_Create_error(t *testing.T) {
 			targetQueue:  "bin-manager.number-manager.request",
 			targetMethod: "POST",
 			timeoutMS:    -5,
+
+			expectStatus: cerrors.StatusInvalidArgument,
+		},
+		{
+			name: "name exceeds column width",
+
+			customerID:   uuid.FromStringOrNil("6c73ff34-7f4c-11ec-b4d5-5b94d40e4071"),
+			scheduleName: strings.Repeat("a", 256),
+			cronExpr:     "0 1 * * *",
+			targetQueue:  "bin-manager.number-manager.request",
+			targetMethod: "POST",
+
+			expectStatus: cerrors.StatusInvalidArgument,
+		},
+		{
+			name: "invalid target data json",
+
+			customerID:   uuid.FromStringOrNil("6c73ff34-7f4c-11ec-b4d5-5b94d40e4071"),
+			scheduleName: "test-schedule",
+			cronExpr:     "0 1 * * *",
+			targetQueue:  "bin-manager.number-manager.request",
+			targetMethod: "POST",
+			targetData:   []byte("{not json"),
 
 			expectStatus: cerrors.StatusInvalidArgument,
 		},
@@ -279,7 +304,7 @@ func Test_Create_error(t *testing.T) {
 				timeoutMS = 30000
 			}
 
-			_, err := h.Create(ctx, tt.customerID, tt.scheduleName, "", tt.cronExpr, tt.targetQueue, "/v1/test", tt.targetMethod, "application/json", nil, timeoutMS, tt.retryMax, true)
+			_, err := h.Create(ctx, tt.customerID, tt.scheduleName, "", tt.cronExpr, tt.targetQueue, "/v1/test", tt.targetMethod, "application/json", tt.targetData, timeoutMS, tt.retryMax, true)
 			if err == nil {
 				t.Errorf("Wrong match. expect: err, got: ok")
 				return

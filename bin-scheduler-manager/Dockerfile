@@ -20,16 +20,22 @@ RUN cd bin-scheduler-manager && go mod vendor && CGO_ENABLED=0 go build -o /app/
 # incompatible dump output).
 FROM public.ecr.aws/docker/library/debian:bookworm-slim
 
+# Key integrity: fetch MySQL's signing key over HTTPS from repo.mysql.com
+# itself (not an HKP keyserver lookup by short key id, which is spoofable),
+# verify its fingerprint before trusting it, and use the HTTPS repo URL —
+# closing the MITM window on both the key and the packages.
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends ca-certificates gnupg \
+    && apt-get install -y --no-install-recommends ca-certificates curl gnupg \
     && export GNUPGHOME="$(mktemp -d)" \
-    && gpg --keyserver keyserver.ubuntu.com --recv-keys B7B3B788A8D3785C \
+    && curl -fsSL https://repo.mysql.com/RPM-GPG-KEY-mysql-2023 -o /tmp/mysql-key.asc \
+    && gpg --import /tmp/mysql-key.asc \
+    && gpg --fingerprint --with-colons | grep -q "^fpr:::::::::BCA43417C3B485DD128EC6D4B7B3B788A8D3785C:$" \
     && gpg --export B7B3B788A8D3785C > /usr/share/keyrings/mysql.gpg \
-    && rm -rf "$GNUPGHOME" \
-    && echo "deb [signed-by=/usr/share/keyrings/mysql.gpg] http://repo.mysql.com/apt/debian/ bookworm mysql-8.0" > /etc/apt/sources.list.d/mysql.list \
+    && rm -rf "$GNUPGHOME" /tmp/mysql-key.asc \
+    && echo "deb [signed-by=/usr/share/keyrings/mysql.gpg] https://repo.mysql.com/apt/debian/ bookworm mysql-8.0" > /etc/apt/sources.list.d/mysql.list \
     && apt-get update \
     && apt-get install -y --no-install-recommends mysql-community-client \
-    && apt-get purge -y --auto-remove gnupg \
+    && apt-get purge -y --auto-remove curl gnupg \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app/bin/
