@@ -9,7 +9,7 @@
 | Campaigncalls created but calls not dialing | call-manager call creation failing (route not found, outbound config issue, insufficient balance) | Check call-manager logs for dial failures; verify outplan source number exists in routing config; check billing balance |
 | High retry rate per campaigncall | All destinations are busy/no-answer; network issues; time-of-day restrictions | Check outplan `dial_timeout` and `try_interval`; review destination number validity; check call-manager for dial result patterns |
 | Service level not throttling correctly | queue_id not set or queue has no agents; service_level calculation issue | Verify campaign has `queue_id` set; check queue-manager agent availability; review `service_level` value (0-100 percentage) |
-| Campaign execute total not incrementing | Campaign execute endpoint not being called by scheduler; campaign status is `stop` | Verify the execution scheduler is running and calling `POST /v1/campaigns/{id}/execute` periodically; verify campaign status is `run` |
+| Campaign execute total not incrementing | The self-scheduling execute chain stalled (campaign-manager's consumer was down when the last delayed RPC fired, or the delayed message was lost); campaign status is `stop` | Check campaign-manager pod health and RabbitMQ delayed-exchange health; verify campaign status is `run`; call `POST /v1/campaigns/{id}/execute` manually to restart the chain |
 
 ## Debugging Guide
 

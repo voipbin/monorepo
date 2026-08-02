@@ -22,7 +22,7 @@ Statuses: `initiating` → `waiting` → `connecting` → `service` → `done` |
 
 1. **Queue routing is tag-based**: Queues filter available agents by matching `tag_ids`. An agent is eligible for a queue if their tags overlap with the queue's required tags. Updating either the queue's tags or an agent's tags takes effect immediately.
 
-2. **Wait timeout triggers abandon**: If a queuecall reaches its `wait_timeout` without being connected to an agent, the `timeout_wait` endpoint is called (typically by a scheduler), which transitions the queuecall to `abandoned` and may trigger a post-queue flow.
+2. **Wait timeout triggers abandon**: If a queuecall reaches its `wait_timeout` without being connected to an agent, the `timeout_wait` endpoint is called (via the delayed RabbitMQ RPC this service fires to itself at queuecall creation, see CLAUDE.md), which transitions the queuecall to `abandoned` and may trigger a post-queue flow.
 
 3. **Service timeout caps agent time**: Once an agent is connected (status `service`), `service_timeout` limits the maximum duration. The `timeout_service` endpoint forces disconnection and cleanup when the limit is reached.
 

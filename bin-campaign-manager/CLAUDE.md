@@ -40,9 +40,9 @@
 
 ## CRITICAL Rules
 
-### Execute Loop Requires External Trigger
+### Execute Loop Is Self-Scheduling, Not Externally Triggered
 
-Campaign execution (`POST /v1/campaigns/{id}/execute`) must be called by an external scheduler to actually place calls. The service does not run an internal timer. If the scheduler stops, campaigns in `run` status will not dial.
+Campaign execution (`POST /v1/campaigns/{id}/execute`) is not called by any external scheduler or cron (verified VOIP-1282: no external scheduler or cron exists anywhere in the deployment surface, and none is needed). Instead it is a self-perpetuating chain of delayed RabbitMQ RPC calls: setting a campaign's status to `run` (`campaignRun` in `pkg/campaignhandler/status_run.go`) fires the first delayed `execute` call, and every subsequent `Execute()` (`pkg/campaignhandler/execute.go`) schedules its own successor (500ms after a successful dial, 5s after a throttle/no-target/retry-wait condition) via `CampaignV1CampaignExecute(ctx, id, delay)`. A customer only needs one API call — `PUT /v1/campaigns/{id}/status` with `{"status": "run"}` — to start a campaign; from there it is fully automatic. There is no `time.Ticker`/cron goroutine, so "no internal timer" is technically accurate, but the operationally relevant fact is that the "scheduler" this depends on is campaign-manager's own RabbitMQ consumer, not a separate external service. If campaign-manager's consumer goes down, campaigns in `run` status stop dialing until it recovers (the self-scheduling chain resumes from the pod's next successful `Execute()` — no data is lost, but progress pauses).
 
 ### Service Level Requires Queue
 
