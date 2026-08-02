@@ -13,8 +13,8 @@
 - **Routing method**: `random` — picks a random available agent whose tags overlap with the queue's required tags
 - **Tag matching**: Queue's `tag_ids` must overlap with agent's `tag_ids` for the agent to be eligible
 - **Conference connection**: When an agent is matched, a conference (in conference-manager) bridges the caller and agent
-- **Wait timeout**: Maximum time a caller waits before being abandoned; triggered by an external scheduler call
-- **Service timeout**: Maximum agent service duration; triggers forced disconnect via `timeout_service`
+- **Wait timeout**: Maximum time a caller waits before being abandoned; self-scheduled (no external scheduler — see "Timeouts Are Self-Scheduled, Not Externally Triggered" below)
+- **Service timeout**: Maximum agent service duration; self-scheduled, triggers forced disconnect via `timeout_service`
 
 ## Common Commands
 
@@ -48,6 +48,6 @@ Queue routing only considers agents whose `tag_ids` intersect with the queue's `
 
 Agent-caller connection uses conference-manager. If conference-manager is unavailable or at capacity, all queue routing will fail. Monitor conference-manager health alongside queue-manager.
 
-### Timeout Requires External Trigger
+### Timeouts Are Self-Scheduled, Not Externally Triggered
 
-Wait and service timeouts are NOT enforced internally by a timer in this service. The scheduler (flow actions or an external cron) must call `timeout_wait` / `timeout_service`. If the scheduler stops, callers may wait indefinitely.
+Wait and service timeouts are not enforced by a `time.Ticker`/cron goroutine, but they are not dormant either (verified VOIP-1282: no external scheduler or cron exists anywhere in the deployment surface, and none is needed). Instead, `bin-queue-manager` schedules its own timeout via a delayed RabbitMQ RPC to itself the instant the relevant state begins: `Create` (`pkg/queuecallhandler/db.go`) fires a delayed `QueueV1QueuecallTimeoutWait` the moment a queuecall is created (delay = `queue.WaitTimeout`), and `UpdateStatusService` fires a delayed `QueueV1QueuecallTimeoutService` the moment a call moves to `service` (delay = `queue.ServiceTimeout`). Both ride the same shared `x-delayed-message` RabbitMQ exchange every service uses for self-timers. This is fully automatic and built into the `queue_join` flow action itself (`bin-flow-manager`'s `actionHandleQueueJoin` → `QueueV1ServiceTypeQueuecallStart` → `ServiceStart` → `Create`) — a flow author does not need to add a separate wait/timer action. `TimeoutWait`/`TimeoutService` re-check the queuecall's status before acting, so a call that already left waiting/service before the delay fires is a no-op.

@@ -8,8 +8,8 @@ Inbound call queue management service for VoIPbin. Holds callers in a waiting st
 - **Queuecall**: Single call waiting in a queue; status: `initiating` → `waiting` → `connecting` → `service` → `done` / `abandoned`
 - **Routing**: `random` method picks a random available agent whose tag IDs overlap with the queue's `tag_ids`
 - **Conference bridge**: When an agent is matched, a conference in `bin-conference-manager` bridges caller and agent
-- **Wait timeout**: Maximum time a caller waits before being abandoned; triggered by external scheduler
-- **Service timeout**: Maximum agent service duration; triggers forced disconnect via `timeout_service`
+- **Wait timeout**: Maximum time a caller waits before being abandoned; self-scheduled by a delayed RabbitMQ call to `timeout_wait` the moment the queuecall is created (no external scheduler involved — see CLAUDE.md)
+- **Service timeout**: Maximum agent service duration; self-scheduled by a delayed RabbitMQ call to `timeout_service` the moment the call enters service, triggering a forced disconnect
 
 ## Public RPC Entrypoints
 
