@@ -31,6 +31,9 @@
       "pattern": "/v1/accounts\\?"
     },
     {
+      "pattern": "/v1/accounts/top_up$"
+    },
+    {
       "pattern": "/v1/billings\\?"
     },
     {
@@ -41,6 +44,9 @@
     },
     {
       "pattern": "/v1/accounts/{{UUID}}/paddle_portal_session$"
+    },
+    {
+      "pattern": "/v1/failed_events/retry$"
     }
   ],
   "events_subscribed": [
@@ -114,6 +120,10 @@
       "local_path": "../bin-flow-manager"
     },
     {
+      "module_path": "monorepo/bin-webchat-manager",
+      "local_path": "../bin-webchat-manager"
+    },
+    {
       "module_path": "monorepo/bin-hook-manager",
       "local_path": "../bin-hook-manager"
     },
@@ -148,6 +158,10 @@
     {
       "module_path": "monorepo/bin-route-manager",
       "local_path": "../bin-route-manager"
+    },
+    {
+      "module_path": "monorepo/bin-schedule-manager",
+      "local_path": "../bin-schedule-manager"
     },
     {
       "module_path": "monorepo/bin-storage-manager",

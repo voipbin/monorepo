@@ -45,6 +45,7 @@ The `listenhandler` consumes from queue `bin-manager.billing-manager.request` an
 | GET | `/v1/accounts/{uuid}` | Get account |
 | PUT | `/v1/accounts/{uuid}` | Update account |
 | DELETE | `/v1/accounts/{uuid}` | Delete account |
+| POST | `/v1/accounts/top_up` | Sweep endpoint: process due monthly top-ups (invoked by schedule-manager cron, replaces the old in-process ticker) |
 | POST | `/v1/accounts/{uuid}/balance_add_force` | Force-add balance |
 | POST | `/v1/accounts/{uuid}/balance_subtract_force` | Force-subtract balance |
 | POST | `/v1/accounts/{uuid}/is_valid_balance` | Check balance sufficiency |
@@ -56,3 +57,4 @@ The `listenhandler` consumes from queue `bin-manager.billing-manager.request` an
 | GET | `/v1/billings/{uuid}` | Get billing record |
 | POST | `/v1/accounts/is_valid_balance_by_customer_id` | Check balance by customer ID |
 | GET | `/v1/accounts/is_valid_resource_limit_by_customer_id` | Check resource limit by customer ID |
+| POST | `/v1/failed_events/retry` | Sweep endpoint: retry pending failed billing events (invoked by schedule-manager cron, replaces the old in-process ticker) |

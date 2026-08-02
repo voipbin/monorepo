@@ -34,6 +34,12 @@
       "pattern": "/v1/customers/email_verify$"
     },
     {
+      "pattern": "/v1/customers/cleanup_unverified$"
+    },
+    {
+      "pattern": "/v1/customers/cleanup_frozen_expired$"
+    },
+    {
       "pattern": "/v1/customers/{{UUID}}/freeze$"
     },
     {
@@ -103,6 +109,10 @@
       "local_path": "../bin-flow-manager"
     },
     {
+      "module_path": "monorepo/bin-webchat-manager",
+      "local_path": "../bin-webchat-manager"
+    },
+    {
       "module_path": "monorepo/bin-hook-manager",
       "local_path": "../bin-hook-manager"
     },
@@ -137,6 +147,10 @@
     {
       "module_path": "monorepo/bin-route-manager",
       "local_path": "../bin-route-manager"
+    },
+    {
+      "module_path": "monorepo/bin-schedule-manager",
+      "local_path": "../bin-schedule-manager"
     },
     {
       "module_path": "monorepo/bin-storage-manager",

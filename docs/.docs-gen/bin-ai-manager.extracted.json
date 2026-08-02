@@ -10,16 +10,31 @@
       "pattern": "/v1/ais$"
     },
     {
+      "pattern": "/v1/ais/{{UUID}}/activate_insight$"
+    },
+    {
       "pattern": "/v1/ais/{{UUID}}/direct-hash-regenerate$"
     },
     {
+      "pattern": "/v1/ais/{{UUID}}/participants(\\?|$)"
+    },
+    {
       "pattern": "/v1/ais/{{UUID}}$"
+    },
+    {
+      "pattern": "/v1/ais/{{UUID}}/prompt_histories\\?"
+    },
+    {
+      "pattern": "/v1/ais/{{UUID}}/prompt_histories/{{UUID}}$"
     },
     {
       "pattern": "/v1/aicalls\\?"
     },
     {
       "pattern": "/v1/aicalls$"
+    },
+    {
+      "pattern": "/v1/aicalls/{{UUID}}/participants(\\?|$)"
     },
     {
       "pattern": "/v1/aicalls/{{UUID}}$"
@@ -29,6 +44,33 @@
     },
     {
       "pattern": "/v1/aicalls/{{UUID}}/tool_execute$"
+    },
+    {
+      "pattern": "/v1/aiaudits\\?"
+    },
+    {
+      "pattern": "/v1/aiaudits$"
+    },
+    {
+      "pattern": "/v1/aiaudits/{{UUID}}$"
+    },
+    {
+      "pattern": "/v1/aipromptproposals\\?"
+    },
+    {
+      "pattern": "/v1/aipromptproposals$"
+    },
+    {
+      "pattern": "/v1/aipromptproposals/{{UUID}}$"
+    },
+    {
+      "pattern": "/v1/aipromptproposals/{{UUID}}/accept$"
+    },
+    {
+      "pattern": "/v1/aipromptproposals/{{UUID}}/reject$"
+    },
+    {
+      "pattern": "/v1/aipromptproposals/expire$"
     },
     {
       "pattern": "/v1/messages\\?"
@@ -47,6 +89,9 @@
     },
     {
       "pattern": "/v1/services/type/task$"
+    },
+    {
+      "pattern": "/v1/services/type/analysis$"
     },
     {
       "pattern": "/v1/summaries\\?"
@@ -162,6 +207,10 @@
       "local_path": "../bin-flow-manager"
     },
     {
+      "module_path": "monorepo/bin-webchat-manager",
+      "local_path": "../bin-webchat-manager"
+    },
+    {
       "module_path": "monorepo/bin-hook-manager",
       "local_path": "../bin-hook-manager"
     },
@@ -196,6 +245,10 @@
     {
       "module_path": "monorepo/bin-route-manager",
       "local_path": "../bin-route-manager"
+    },
+    {
+      "module_path": "monorepo/bin-schedule-manager",
+      "local_path": "../bin-schedule-manager"
     },
     {
       "module_path": "monorepo/bin-storage-manager",
@@ -252,12 +305,48 @@
       "flag": "engine_key_chatgpt"
     },
     {
+      "flag": "google_api_key"
+    },
+    {
       "flag": "aicall_conversation_idle_timeout_hours"
+    },
+    {
+      "flag": "aicall_contact_case_recreate_rate_limit_minutes"
+    },
+    {
+      "flag": "aicall_send_cooldown_seconds"
+    },
+    {
+      "flag": "analysis_default_model"
+    },
+    {
+      "flag": "analysis_allowed_models"
+    },
+    {
+      "flag": "analysis_engine_base_url"
+    },
+    {
+      "flag": "analysis_reasoning_effort"
+    },
+    {
+      "flag": "none"
+    },
+    {
+      "flag": "analysis_max_input_bytes"
+    },
+    {
+      "flag": "analysis_max_output_tokens"
     }
   ],
   "metrics": [
     {
+      "name": "actions"
+    },
+    {
       "name": "aicall_backstop_reply_total"
+    },
+    {
+      "name": "aicall_contact_case_recreate_rate_limited_total"
     },
     {
       "name": "aicall_create_total"
@@ -281,10 +370,157 @@
       "name": "aicall_tool_execute_total"
     },
     {
+      "name": "ai_id"
+    },
+    {
+      "name": "analysis_gateway_run_duration_seconds"
+    },
+    {
+      "name": "analysis_gateway_run_total"
+    },
+    {
+      "name": "anonymous"
+    },
+    {
+      "name": "assistance_id"
+    },
+    {
+      "name": "assistance_type"
+    },
+    {
+      "name": "async"
+    },
+    {
+      "name": "attachments"
+    },
+    {
+      "name": "beep_start"
+    },
+    {
+      "name": "bool"
+    },
+    {
+      "name": "chained"
+    },
+    {
+      "name": "condition"
+    },
+    {
+      "name": "confbridge_id"
+    },
+    {
+      "name": "conference_id"
+    },
+    {
       "name": "connect"
     },
     {
+      "name": "connection_type"
+    },
+    {
+      "name": "content"
+    },
+    {
+      "name": "conversation_id"
+    },
+    {
       "name": "conversation_reply_send_total"
+    },
+    {
+      "name": "data"
+    },
+    {
+      "name": "data_type"
+    },
+    {
+      "name": "day"
+    },
+    {
+      "name": "default_target_id"
+    },
+    {
+      "name": "destinations"
+    },
+    {
+      "name": "detail"
+    },
+    {
+      "name": "digits"
+    },
+    {
+      "name": "digits_handle"
+    },
+    {
+      "name": "direction"
+    },
+    {
+      "name": "direction_listen"
+    },
+    {
+      "name": "direction_speak"
+    },
+    {
+      "name": "duration"
+    },
+    {
+      "name": "early_execution"
+    },
+    {
+      "name": "early_media"
+    },
+    {
+      "name": "encapsulation"
+    },
+    {
+      "name": "end_of_key"
+    },
+    {
+      "name": "end_of_silence"
+    },
+    {
+      "name": "evaluation_response"
+    },
+    {
+      "name": "event_method"
+    },
+    {
+      "name": "event_url"
+    },
+    {
+      "name": "external_host"
+    },
+    {
+      "name": "false_target_id"
+    },
+    {
+      "name": "flow_id"
+    },
+    {
+      "name": "format"
+    },
+    {
+      "name": "hour"
+    },
+    {
+      "name": "int"
+    },
+    {
+      "name": "interval"
+    },
+    {
+      "name": "key"
+    },
+    {
+      "name": "language"
+    },
+    {
+      "name": "length"
+    },
+    {
+      "name": "loop_count"
+    },
+    {
+      "name": "machine_handle"
     },
     {
       "name": "message_create_total"
@@ -296,7 +532,64 @@
       "name": "message_send"
     },
     {
+      "name": "method"
+    },
+    {
+      "name": "minute"
+    },
+    {
+      "name": "month"
+    },
+    {
+      "name": "name"
+    },
+    {
+      "name": "note"
+    },
+    {
+      "name": "number"
+    },
+    {
+      "name": "on_end_flow_id"
+    },
+    {
+      "name": "proposal_response"
+    },
+    {
+      "name": "provider"
+    },
+    {
+      "name": "queue_id"
+    },
+    {
+      "name": "reason"
+    },
+    {
       "name": "receive_request_process_time"
+    },
+    {
+      "name": "reference_id"
+    },
+    {
+      "name": "reference_type"
+    },
+    {
+      "name": "relay_reason"
+    },
+    {
+      "name": "source"
+    },
+    {
+      "name": "status"
+    },
+    {
+      "name": "stream_urls"
+    },
+    {
+      "name": "string"
+    },
+    {
+      "name": "subject"
     },
     {
       "name": "subscribe_event_process_time"
@@ -306,6 +599,54 @@
     },
     {
       "name": "summary_start_total"
+    },
+    {
+      "name": "sync"
+    },
+    {
+      "name": "target_id"
+    },
+    {
+      "name": "target_ids"
+    },
+    {
+      "name": "text"
+    },
+    {
+      "name": "transport"
+    },
+    {
+      "name": "transport_data"
+    },
+    {
+      "name": "uri"
+    },
+    {
+      "name": "uuid"
+    },
+    {
+      "name": "value"
+    },
+    {
+      "name": "value_length"
+    },
+    {
+      "name": "value_number"
+    },
+    {
+      "name": "value_string"
+    },
+    {
+      "name": "value_type"
+    },
+    {
+      "name": "variable"
+    },
+    {
+      "name": "voice_id"
+    },
+    {
+      "name": "weekdays"
     }
   ],
   "missing_fields": []
