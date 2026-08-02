@@ -6,7 +6,7 @@
 |---------|-------------|------------|
 | ARI WebSocket connection errors in logs, events stop flowing | Asterisk not yet started or ARI service not enabled | Verify Asterisk is running; check `--ari_address`; ensure `ari.conf` enables HTTP and the correct application |
 | AMI TCP connection failures | Wrong AMI host/port/credentials; `manager.conf` not enabled | Check `--ami_host`, `--ami_port`, `--ami_username`, `--ami_password`; verify `manager.conf` in Asterisk |
-| RabbitMQ consumer not receiving requests | Wrong queue name or RabbitMQ address | Verify `--rabbitmq_queue_listen` matches what upstream services publish to; check connectivity |
+| RabbitMQ consumer not receiving requests | Wrong queue name or RabbitMQ address | Verify `--rabbitmq_queue_listen` matches what upstream services publish to; check connectivity. As of the fail-fast change (VOIP-1279), a listen-handler queue-declare or consumer-startup failure now exits the process non-zero instead of silently leaving it up with zero consumers — the expected failure signature during a topology break (e.g. a missing broker plugin/exchange) is a **crash-looping** proxy, not a silently-idle one. Check `kubectl get pods` / `docker compose ps` for a restart loop and inspect logs for the `Fatalf` message. After the underlying broker/config issue is fixed and the proxy recovers, check the permanent queue's depth (e.g. `asterisk.call.request`) for a backlog of stale, already-timed-out call requests that accumulated during the crash-loop window — its `QueueDeclare` can succeed even when later topology config fails, so the queue exists on the broker and keeps accepting publishes with zero consumers throughout the outage |
 | Pod annotation patch failing | Not running in Kubernetes or service account lacks patch permission | Set `--kubernetes_disabled=true` for non-k8s environments; grant `patch` verb on pods to service account |
 | Recording upload fails | GCS bucket not configured or ADC not available | Set `--recording_bucket_name`; ensure the pod's service account has `roles/storage.objectCreator` on the bucket |
 | Redis write errors | Wrong `--redis_address` or Redis unavailable | Verify connectivity; service continues without Redis but upstream routing by address will fail |
@@ -76,7 +76,7 @@ All parameters can be set via command-line flags or environment variables. Flags
 | `--ami_username` | `AMI_USERNAME` | `asterisk` | AMI username |
 | `--ami_password` | `AMI_PASSWORD` | `asterisk` | AMI password |
 | `--ami_event_filter` | `AMI_EVENT_FILTER` | `` | Comma-separated AMI event types to forward (empty = all) |
-| `--interface_name` | `INTERFACE_NAME` | `eth0` | Network interface for MAC-based identity |
+| `--interface_name` | `INTERFACE_NAME` | `eth0` | Network interface for MAC-based identity. A missing/misconfigured interface now causes a fatal exit (`log.Fatalf`) at startup rather than a silent no-op, since the resolved MAC feeds the volatile queue name (`asterisk.<id>.request`) that the listen handler must declare |
 | `--rabbitmq_address` | `RABBITMQ_ADDRESS` | `amqp://guest:guest@localhost:5672` | RabbitMQ server |
 | `--rabbitmq_queue_listen` | `RABBITMQ_QUEUE_LISTEN` | `asterisk.call.request` | Permanent RabbitMQ listen queue |
 | `--redis_address` | `REDIS_ADDRESS` | `localhost:6379` | Redis server |

@@ -65,3 +65,13 @@ Unmatched URIs return HTTP 400. The pattern match runs in `processRequest()` in 
 | Volatile | `asterisk.<mac-address>.request` | Instance-specific; routes requests to one specific Asterisk pod |
 
 Both queues are consumed concurrently. The volatile queue enables targeted control (e.g., hang up a specific call on a specific pod).
+
+### Startup behavior (fail-fast)
+
+`ListenHandler.Run()` (`pkg/listenhandler/main.go`) declares all listen queues (permanent + volatile) **synchronously** before starting any consumer, with no retry:
+
+1. Builds the combined permanent + volatile queue-name list and validates it: rejects if any element is an empty string (e.g. a trailing comma in `--rabbitmq_queue_listen`), and rejects if any two elements are equal — including the case where a permanent queue name collides with the derived volatile queue name `asterisk.<id>.request`. Validation failures return an error immediately with no broker call.
+2. Declares each queue via `QueueCreate` (permanent as `"normal"`, volatile as `"volatile"`). The first declaration failure returns an error immediately — no further declarations are attempted and no consumer is started.
+3. Only once every queue is declared does `Run()` start one consumer goroutine per queue (`ConsumeRPC`) and return a buffered error channel (sized to the number of listen queues) alongside a `nil` error.
+
+Each consumer goroutine sends its own `ConsumeRPC` error (if non-nil) on that channel; `cmd/asterisk-proxy/main.go` treats any error returned by `Run()` or delivered on this channel as fatal (`log.Fatalf`), so the process exits non-zero and relies on the container runtime's restart policy to recover — see `docs/operations.md` and `docs/subsystems.md` for the operational and deployment implications.

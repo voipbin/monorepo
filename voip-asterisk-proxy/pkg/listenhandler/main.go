@@ -16,7 +16,7 @@ import (
 
 // ListenHandler interface type
 type ListenHandler interface {
-	Run() error
+	Run() (<-chan error, error)
 }
 
 type listenHandler struct {
@@ -80,63 +80,77 @@ func NewListenHandler(
 	return handler
 }
 
-// Run runs the listen handler.
-func (h *listenHandler) Run() error {
-	log := logrus.New().WithField("func", "Run")
+// Run declares all listen queues (permanent + volatile) synchronously and,
+// on success, starts one consumer goroutine per queue. It returns an error
+// immediately if queue-name validation or queue declaration fails (no
+// consumer is started in that case). On success it returns a channel on
+// which each consumer goroutine reports its own (non-nil) ConsumeRPC error,
+// buffered to the number of listen queues so no goroutine blocks on send.
+func (h *listenHandler) Run() (<-chan error, error) {
+	log := logrus.WithField("func", "Run")
 
-	go func() {
-		if err := h.listenRun(); err != nil {
-			log.Errorf("Could not exeucte the listen handler: %v", err)
-		}
-	}()
-
-	return nil
-}
-
-// listenRun initiate and start to listening the request from the rabbitmq queue.
-func (h *listenHandler) listenRun() error {
-	log := logrus.WithField("func", "listenRun")
-
-	listenQueues := []string{}
+	permQueues, volQueues, err := h.buildListenQueues()
+	if err != nil {
+		return nil, fmt.Errorf("could not build the listen queue list. err: %v", err)
+	}
 
 	// queue declare for permanent
-	permQueues := strings.Split(h.rabbitQueueListenRequestPermanent, ",")
 	for _, queue := range permQueues {
+		log.Debugf("Declaring permanent request queue. queue: %s", queue)
 
-		if err := h.sockHandler.QueueCreate(queue, "normal"); err != nil {
-			return fmt.Errorf("could not declare the queue for listenHandler. err: %v", err)
+		if errCreate := h.sockHandler.QueueCreate(queue, "normal"); errCreate != nil {
+			return nil, fmt.Errorf("could not declare the permanent queue for listenHandler. queue: %s, err: %v", queue, errCreate)
 		}
-
-		// append it to listen queue
-		listenQueues = append(listenQueues, queue)
 	}
 
 	// queue declare for volatile
-	volQueues := strings.Split(h.rabbitQueueListenRequestVolatile, ",")
 	for _, queue := range volQueues {
+		log.Debugf("Declaring volatile request queue. queue: %s", queue)
 
-		// declare queue
-		log.Debugf("Declaring permenant request queue. queue: %s", queue)
-
-		if err := h.sockHandler.QueueCreate(queue, "volatile"); err != nil {
-			return fmt.Errorf("could not declare the queue for listenHandler. err: %v", err)
+		if errCreate := h.sockHandler.QueueCreate(queue, "volatile"); errCreate != nil {
+			return nil, fmt.Errorf("could not declare the volatile queue for listenHandler. queue: %s, err: %v", queue, errCreate)
 		}
-
-		// append it to liesten queue
-		listenQueues = append(listenQueues, queue)
 	}
 
-	// listening the queue
+	// all queues are declared successfully. start a consumer per queue.
+	listenQueues := append(append([]string{}, permQueues...), volQueues...)
+	chErr := make(chan error, len(listenQueues))
 	for _, listenQueue := range listenQueues {
 		log.Infof("Running the request listener. queue: %s", listenQueue)
 		go func(queue string) {
-			if errConsume := h.sockHandler.ConsumeRPC(context.Background(), queue, "asterisk-proxy", false, false, false, 10, h.processRequest); errConsume != nil {
+			errConsume := h.sockHandler.ConsumeRPC(context.Background(), queue, "asterisk-proxy", false, false, false, 10, h.processRequest)
+			if errConsume != nil {
 				log.Errorf("Could not handle the request message correctly. err: %v", errConsume)
+				chErr <- errConsume
 			}
 		}(listenQueue)
 	}
 
-	return nil
+	return chErr, nil
+}
+
+// buildListenQueues splits the permanent and volatile listen queue name
+// configuration and validates the combined list: no empty elements, no
+// duplicate elements (either within a list or across the two).
+func (h *listenHandler) buildListenQueues() (permQueues []string, volQueues []string, err error) {
+	permQueues = strings.Split(h.rabbitQueueListenRequestPermanent, ",")
+	volQueues = strings.Split(h.rabbitQueueListenRequestVolatile, ",")
+
+	listenQueues := append(append([]string{}, permQueues...), volQueues...)
+
+	seen := make(map[string]bool, len(listenQueues))
+	for _, queue := range listenQueues {
+		if queue == "" {
+			return nil, nil, fmt.Errorf("listen queue name must not be empty")
+		}
+
+		if seen[queue] {
+			return nil, nil, fmt.Errorf("duplicate listen queue name: %s", queue)
+		}
+		seen[queue] = true
+	}
+
+	return permQueues, volQueues, nil
 }
 
 func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) {

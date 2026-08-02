@@ -83,6 +83,8 @@ The Dockerfile (`voip-asterisk-proxy/Dockerfile`) builds only the Go binary. Ast
 
 In either case, the Go proxy and Asterisk must share the same network namespace so that `localhost:8088` and `127.0.0.1:5038` resolve to Asterisk.
 
+**Residual risk (VOIP-1279 fail-fast behavior):** the proxy now exits non-zero (`log.Fatalf`) when it cannot establish its RabbitMQ listen-queue topology at startup (e.g. queue declaration failure, consumer registration failure), relying on the container runtime's restart policy to recover. Under the **single-container model**, a proxy crash-loop restarts the co-located Asterisk process in the same container, dropping in-progress calls — a real, non-hypothetical consequence of this model, not just a slower recovery. Under the **sidecar model**, the proxy container restarts independently and Asterisk is unaffected, though in-progress calls still lose their ARI/AMI event relay (hangup/state-change notifications) until the proxy reconnects, since `Fatalf` also stops the event handler in the same process. Confirm which topology is actually deployed before relying on this fail-fast behavior, and treat single-container deployments as carrying materially higher blast radius per crash-loop event.
+
 ### Startup order
 
 Asterisk must be fully started and ARI/AMI must be accepting connections before the proxy's event loops can attach. The proxy handles this via auto-reconnect: it will retry every 1 second until Asterisk becomes available. No explicit init ordering (e.g., `initContainers`) is required, but Asterisk startup time should be accounted for in readiness probes.
