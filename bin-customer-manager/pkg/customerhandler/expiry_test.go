@@ -16,19 +16,22 @@ import (
 	gomock "go.uber.org/mock/gomock"
 )
 
-func Test_cleanupFrozenExpired(t *testing.T) {
+func Test_CleanupFrozenExpired(t *testing.T) {
 	tests := []struct {
 		name string
 
 		responseFrozenExpired []*customer.Customer
 		responseFrozenErr     error
 
-		expectAnonymize       bool
-		anonymizeErr          error
-		expectGet             bool
-		getResponse           *customer.Customer
-		getErr                error
-		expectPublish         bool
+		expectAnonymize bool
+		anonymizeErr    error
+		expectGet       bool
+		getResponse     *customer.Customer
+		getErr          error
+		expectPublish   bool
+
+		expectProcessed int
+		expectErr       bool
 	}{
 		{
 			name: "expired frozen customers - anonymized and event published",
@@ -47,8 +50,9 @@ func Test_cleanupFrozenExpired(t *testing.T) {
 				Name:  "deleted_user_4cd23368",
 				Email: "deleted_4cd23368@removed.voipbin.net",
 			},
-			getErr:        nil,
-			expectPublish: true,
+			getErr:          nil,
+			expectPublish:   true,
+			expectProcessed: 1,
 		},
 		{
 			name:                  "no frozen customers - no action",
@@ -57,6 +61,7 @@ func Test_cleanupFrozenExpired(t *testing.T) {
 			expectAnonymize:       false,
 			expectGet:             false,
 			expectPublish:         false,
+			expectProcessed:       0,
 		},
 		{
 			name:                  "list frozen expired error - no action",
@@ -65,6 +70,8 @@ func Test_cleanupFrozenExpired(t *testing.T) {
 			expectAnonymize:       false,
 			expectGet:             false,
 			expectPublish:         false,
+			expectProcessed:       0,
+			expectErr:             true,
 		},
 		{
 			name: "anonymize error - continues to next",
@@ -79,6 +86,22 @@ func Test_cleanupFrozenExpired(t *testing.T) {
 			anonymizeErr:      fmt.Errorf("anonymize error"),
 			expectGet:         false,
 			expectPublish:     false,
+			expectProcessed:   0,
+		},
+		{
+			name: "anonymize ErrNotFound - concurrent claimant won the guard, CAS-skip",
+			responseFrozenExpired: []*customer.Customer{
+				{
+					ID:    uuid.FromStringOrNil("4cd23368-7cb7-11ec-9466-8318ef5a7125"),
+					Email: "test@example.com",
+				},
+			},
+			responseFrozenErr: nil,
+			expectAnonymize:   true,
+			anonymizeErr:      dbhandler.ErrNotFound,
+			expectGet:         false,
+			expectPublish:     false,
+			expectProcessed:   0,
 		},
 		{
 			name: "get after anonymize error - continues to next",
@@ -95,6 +118,7 @@ func Test_cleanupFrozenExpired(t *testing.T) {
 			getResponse:       nil,
 			getErr:            fmt.Errorf("get error"),
 			expectPublish:     false,
+			expectProcessed:   0,
 		},
 	}
 
@@ -133,12 +157,22 @@ func Test_cleanupFrozenExpired(t *testing.T) {
 				mockNotify.EXPECT().PublishEvent(gomock.Any(), customer.EventTypeCustomerDeleted, tt.getResponse).Return()
 			}
 
-			h.cleanupFrozenExpired(ctx)
+			processed, err := h.CleanupFrozenExpired(ctx)
+			if tt.expectErr {
+				if err == nil {
+					t.Errorf("Expected error, got nil")
+				}
+			} else if err != nil {
+				t.Errorf("Expected no error, got: %v", err)
+			}
+			if processed != tt.expectProcessed {
+				t.Errorf("Wrong match. expect: %d, got: %d", tt.expectProcessed, processed)
+			}
 		})
 	}
 }
 
-func Test_cleanupFrozenExpired_MultipleCustomers(t *testing.T) {
+func Test_CleanupFrozenExpired_MultipleCustomers(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -184,13 +218,16 @@ func Test_cleanupFrozenExpired_MultipleCustomers(t *testing.T) {
 	mockDB.EXPECT().CustomerGet(gomock.Any(), id2).Return(anonymized2, nil)
 	mockNotify.EXPECT().PublishEvent(gomock.Any(), customer.EventTypeCustomerDeleted, anonymized2).Return()
 
-	h.cleanupFrozenExpired(ctx)
+	processed, err := h.CleanupFrozenExpired(ctx)
+	if err != nil {
+		t.Errorf("Expected no error, got: %v", err)
+	}
+	if processed != 2 {
+		t.Errorf("Wrong match. expect: 2, got: %d", processed)
+	}
 }
 
 func Test_expiryConstants(t *testing.T) {
-	if expiryCheckInterval != 24*time.Hour {
-		t.Errorf("expiryCheckInterval = %v, expected %v", expiryCheckInterval, 24*time.Hour)
-	}
 	if gracePeriod != 30*24*time.Hour {
 		t.Errorf("gracePeriod = %v, expected %v", gracePeriod, 30*24*time.Hour)
 	}

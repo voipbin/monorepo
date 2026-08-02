@@ -15,6 +15,7 @@ import (
 
 	"monorepo/bin-customer-manager/models/customer"
 	"monorepo/bin-customer-manager/pkg/listenhandler/models/request"
+	"monorepo/bin-customer-manager/pkg/listenhandler/models/response"
 )
 
 // processV1CustomersGet handles GET /v1/customers request
@@ -104,6 +105,74 @@ func (h *listenHandler) processV1CustomersPost(ctx context.Context, m *sock.Requ
 	data, err := json.Marshal(tmp)
 	if err != nil {
 		log.Debugf("Could not marshal the result data. data: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+	log.Debugf("Sending result: %v", data)
+
+	res := &sock.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1CustomersCleanupUnverifiedPost handles POST /v1/customers/cleanup_unverified request
+func (h *listenHandler) processV1CustomersCleanupUnverifiedPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1CustomersCleanupUnverifiedPost",
+		"request": m,
+	})
+	log.Debug("Executing processV1CustomersCleanupUnverifiedPost.")
+
+	expired, err := h.customerHandler.CleanupUnverified(ctx)
+	if err != nil {
+		log.Errorf("Could not cleanup unverified customers. err: %v", err)
+		return errorResponse(err), nil
+	}
+
+	tmp := &response.V1ResponseCustomersCleanupUnverified{
+		Expired: expired,
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+	log.Debugf("Sending result: %v", data)
+
+	res := &sock.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1CustomersCleanupFrozenExpiredPost handles POST /v1/customers/cleanup_frozen_expired request
+func (h *listenHandler) processV1CustomersCleanupFrozenExpiredPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1CustomersCleanupFrozenExpiredPost",
+		"request": m,
+	})
+	log.Debug("Executing processV1CustomersCleanupFrozenExpiredPost.")
+
+	processed, err := h.customerHandler.CleanupFrozenExpired(ctx)
+	if err != nil {
+		log.Errorf("Could not cleanup frozen expired customers. err: %v", err)
+		return errorResponse(err), nil
+	}
+
+	tmp := &response.V1ResponseCustomersCleanupFrozenExpired{
+		Processed: processed,
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
 		return simpleResponse(500), nil
 	}
 	log.Debugf("Sending result: %v", data)

@@ -41,7 +41,7 @@ type AIPromptProposalHandler interface {
 	Reject(ctx context.Context, customerID uuid.UUID, id uuid.UUID) (*aipromptproposal.AIPromptProposal, error)
 	Delete(ctx context.Context, id uuid.UUID) (*aipromptproposal.AIPromptProposal, error)
 	SweepStaleProposals(ctx context.Context)
-	SweepExpiredProposals(ctx context.Context)
+	SweepExpiredProposals(ctx context.Context) (int, error)
 }
 
 type aipromptproposalHandler struct {

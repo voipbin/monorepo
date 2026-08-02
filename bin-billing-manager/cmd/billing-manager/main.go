@@ -1,13 +1,10 @@
 package main
 
 import (
-	"context"
 	"database/sql"
-	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
@@ -21,7 +18,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"monorepo/bin-billing-manager/internal/config"
-	"monorepo/bin-billing-manager/models/account"
 	"monorepo/bin-billing-manager/pkg/accounthandler"
 	"monorepo/bin-billing-manager/pkg/billinghandler"
 	"monorepo/bin-billing-manager/pkg/cachehandler"
@@ -110,8 +106,6 @@ func signalHandler() {
 
 // run runs the billing-manager
 func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
-	log := logrus.WithField("func", "run")
-
 	// dbhandler
 	db := dbhandler.NewHandler(sqlDB, cache)
 
@@ -131,41 +125,32 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	accountHandler := accounthandler.NewAccountHandler(reqHandler, db, notifyHandler, paddleHandler)
 	billingHandler := billinghandler.NewBillingHandler(reqHandler, db, notifyHandler, accountHandler)
 
+	// build the subscribe handler and its failed event handler together — this must
+	// happen before runListen so the failed event handler can be wired into the
+	// listenhandler for the /v1/failed_events/retry route.
+	subHandler, failedHandler := buildFailedEventHandler(db, sockHandler, accountHandler, billingHandler)
+
 	// run listen
-	if err := runListen(sockHandler, accountHandler, billingHandler, paddleHandler); err != nil {
+	if err := runListen(sockHandler, accountHandler, billingHandler, paddleHandler, failedHandler); err != nil {
 		return err
 	}
 
-	// run subscribe (with failed event handler)
-	if err := runSubscribe(db, sockHandler, accountHandler, billingHandler); err != nil {
+	// run subscribe
+	if err := runSubscribe(subHandler); err != nil {
 		return err
 	}
-
-	// run monthly token top-up cron
-	go func() {
-		ticker := time.NewTicker(1 * time.Hour)
-		defer ticker.Stop()
-		for {
-			select {
-			case <-ticker.C:
-				if err := runMonthlyTopUp(context.Background(), db); err != nil {
-					log.Errorf("Monthly top-up failed. err: %v", err)
-				}
-			case <-chDone:
-				return
-			}
-		}
-	}()
 
 	return nil
 }
 
-// runSubscribe runs the subscribed event handler
-func runSubscribe(db dbhandler.DBHandler, sockHandler sockhandler.SockHandler, accoutHandler accounthandler.AccountHandler, billingHandler billinghandler.BillingHandler) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func": "runSubscribe",
-	})
-
+// buildFailedEventHandler constructs the subscribe handler and its failed event
+// handler together. The two have a circular dependency: the failed event handler
+// needs the subscribe handler's event processor to retry events, and the subscribe
+// handler needs the failed event handler to persist events it fails to process. The
+// subscribe handler is created first with a nil failed-event processor placeholder,
+// then the failed event handler is built from its event processor, then patched back
+// onto the subscribe handler.
+func buildFailedEventHandler(db dbhandler.DBHandler, sockHandler sockhandler.SockHandler, accoutHandler accounthandler.AccountHandler, billingHandler billinghandler.BillingHandler) (subscribehandler.SubscribeHandler, failedeventhandler.FailedEventHandler) {
 	subscribeTargets := []string{
 		string(commonoutline.QueueNameCallEvent),
 		string(commonoutline.QueueNameMessageEvent),
@@ -175,13 +160,8 @@ func runSubscribe(db dbhandler.DBHandler, sockHandler sockhandler.SockHandler, a
 		string(commonoutline.QueueNameTTSEvent),
 	}
 
-	// create subscribe handler first, then wire the failed event handler with a circular reference
-	// to the subscribe handler's processEvent
-	var subHandler subscribehandler.SubscribeHandler
-	var failedHandler failedeventhandler.FailedEventHandler
-
 	// placeholder processor — will be set after subscribe handler is created
-	subHandler = subscribehandler.NewSubscribeHandler(
+	subHandler := subscribehandler.NewSubscribeHandler(
 		sockHandler,
 		string(commonoutline.QueueNameBillingSubscribe),
 		subscribeTargets,
@@ -191,92 +171,39 @@ func runSubscribe(db dbhandler.DBHandler, sockHandler sockhandler.SockHandler, a
 	)
 
 	// create failed event handler with the subscribe handler's process function
-	failedHandler = failedeventhandler.NewFailedEventHandler(db, subscribehandler.GetEventProcessor(subHandler))
+	failedHandler := failedeventhandler.NewFailedEventHandler(db, subscribehandler.GetEventProcessor(subHandler))
 
 	// set the failed event handler on the subscribe handler
 	subscribehandler.SetFailedEventHandler(subHandler, failedHandler)
 
-	// run
+	return subHandler, failedHandler
+}
+
+// runSubscribe runs the subscribed event handler
+func runSubscribe(subHandler subscribehandler.SubscribeHandler) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "runSubscribe",
+	})
+
 	if err := subHandler.Run(); err != nil {
 		log.Errorf("Could not run the subscribe handler. err: %v", err)
 		return err
 	}
 
-	// start failed event retry loop
-	go func() {
-		ticker := time.NewTicker(60 * time.Second)
-		defer ticker.Stop()
-		for {
-			select {
-			case <-ticker.C:
-				if err := failedHandler.RetryPending(context.Background()); err != nil {
-					log.Errorf("Failed event retry error. err: %v", err)
-				}
-			case <-chDone:
-				return
-			}
-		}
-	}()
-
 	return nil
 }
 
 // runListen runs the listen handler
-func runListen(sockHandler sockhandler.SockHandler, accoutHandler accounthandler.AccountHandler, billingHandler billinghandler.BillingHandler, paddleHandler paddlehandler.PaddleHandler) error {
+func runListen(sockHandler sockhandler.SockHandler, accoutHandler accounthandler.AccountHandler, billingHandler billinghandler.BillingHandler, paddleHandler paddlehandler.PaddleHandler, failedHandler failedeventhandler.FailedEventHandler) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "runListen",
 	})
 
-	listenHandler := listenhandler.NewListenHandler(sockHandler, accoutHandler, billingHandler, paddleHandler)
+	listenHandler := listenhandler.NewListenHandler(sockHandler, accoutHandler, billingHandler, paddleHandler, failedHandler)
 
 	if err := listenHandler.Run(string(commonoutline.QueueNameBillingRequest), string(commonoutline.QueueNameDelay)); err != nil {
 		log.Errorf("Could not run the listenhandler correctly. err: %v", err)
 		return err
-	}
-
-	return nil
-}
-
-func runMonthlyTopUp(ctx context.Context, db dbhandler.DBHandler) error {
-	log := logrus.WithField("func", "runMonthlyTopUp")
-
-	now := time.Now()
-	filters := map[account.Field]any{
-		account.FieldDeleted: false,
-	}
-
-	// Paginate through all accounts
-	var pageToken string
-	for {
-		accounts, err := db.AccountList(ctx, 500, pageToken, filters)
-		if err != nil {
-			return fmt.Errorf("could not list accounts. err: %v", err)
-		}
-		if len(accounts) == 0 {
-			break
-		}
-
-		for _, a := range accounts {
-			if a.TmNextTopUp == nil || a.TmNextTopUp.After(now) {
-				continue
-			}
-
-			tokenAmount, ok := account.PlanTokenMap[a.PlanType]
-			if !ok || tokenAmount <= 0 {
-				continue
-			}
-
-			if err := db.AccountTopUpTokens(ctx, a.ID, a.CustomerID, tokenAmount, string(a.PlanType)); err != nil {
-				log.Errorf("Could not top up tokens for account. account_id: %s, err: %v", a.ID, err)
-				continue
-			}
-			log.Infof("Topped up tokens for account. account_id: %s, tokens: %d", a.ID, tokenAmount)
-		}
-
-		if len(accounts) < 500 {
-			break
-		}
-		pageToken = accounts[len(accounts)-1].TMCreate.Format(time.RFC3339Nano)
 	}
 
 	return nil

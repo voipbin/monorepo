@@ -12,6 +12,7 @@ import (
 
 	"monorepo/bin-ai-manager/models/aipromptproposal"
 	"monorepo/bin-ai-manager/pkg/listenhandler/models/request"
+	"monorepo/bin-ai-manager/pkg/listenhandler/models/response"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
@@ -49,6 +50,30 @@ func (h *listenHandler) processV1AIPromptProposalsPost(ctx context.Context, m *s
 		return simpleResponse(500), nil
 	}
 	return &sock.Response{StatusCode: 202, DataType: "application/json", Data: data}, nil
+}
+
+// processV1AIPromptProposalsExpirePost handles POST /v1/aipromptproposals/expire.
+// It sweeps completed proposals whose basis prompt has drifted, marking them expired
+// (design §4/§6: scheduled sweep, invoked by the seeded ai-proposal-expiry schedule).
+func (h *listenHandler) processV1AIPromptProposalsExpirePost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{"func": "processV1AIPromptProposalsExpirePost", "request": m})
+
+	expired, err := h.aipromptproposalHandler.SweepExpiredProposals(ctx)
+	if err != nil {
+		log.Errorf("Could not sweep expired proposals. err: %v", err)
+		return errorResponse(err), nil
+	}
+
+	tmp := &response.V1ResponseAIPromptProposalsExpire{
+		Expired: expired,
+	}
+
+	data, mErr := json.Marshal(tmp)
+	if mErr != nil {
+		log.Errorf("Could not marshal response. err: %v", mErr)
+		return simpleResponse(500), nil
+	}
+	return &sock.Response{StatusCode: 200, DataType: "application/json", Data: data}, nil
 }
 
 // processV1AIPromptProposalsGet handles GET /v1/aipromptproposals.

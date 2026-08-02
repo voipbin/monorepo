@@ -10,31 +10,16 @@ import (
 )
 
 const (
-	cleanupInterval   = 15 * time.Minute
-	unverifiedMaxAge  = time.Hour
+	unverifiedMaxAge = time.Hour
 )
 
-// RunCleanupUnverified periodically removes unverified customers older than maxAge.
-func (h *customerHandler) RunCleanupUnverified(ctx context.Context) {
-	log := logrus.WithField("func", "RunCleanupUnverified")
-	log.Info("Starting unverified customer cleanup job.")
-
-	ticker := time.NewTicker(cleanupInterval)
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-ctx.Done():
-			log.Info("Stopping unverified customer cleanup job.")
-			return
-		case <-ticker.C:
-			h.cleanupUnverified(ctx)
-		}
-	}
-}
-
-func (h *customerHandler) cleanupUnverified(ctx context.Context) {
-	log := logrus.WithField("func", "cleanupUnverified")
+// CleanupUnverified removes unverified customers older than unverifiedMaxAge.
+// Returns the number of customers actually expired. A per-row CustomerUpdate
+// failure is logged and does not abort the batch, but is excluded from the
+// returned count. A non-nil error is returned only when the initial
+// CustomerList call fails.
+func (h *customerHandler) CleanupUnverified(ctx context.Context) (int, error) {
+	log := logrus.WithField("func", "CleanupUnverified")
 	log.Debug("Running unverified customer cleanup.")
 
 	cutoff := time.Now().Add(-unverifiedMaxAge)
@@ -48,9 +33,10 @@ func (h *customerHandler) cleanupUnverified(ctx context.Context) {
 	customers, err := h.db.CustomerList(ctx, 100, cutoffStr, filters)
 	if err != nil {
 		log.Errorf("Could not list unverified customers. err: %v", err)
-		return
+		return 0, err
 	}
 
+	expired := 0
 	for _, c := range customers {
 		log.Infof("Expiring unverified customer. customer_id: %s, email: %s", c.ID, c.Email)
 
@@ -61,10 +47,14 @@ func (h *customerHandler) cleanupUnverified(ctx context.Context) {
 		}
 		if err := h.db.CustomerUpdate(ctx, c.ID, fields); err != nil {
 			log.Errorf("Could not expire customer. customer_id: %s, err: %v", c.ID, err)
+			continue
 		}
+		expired++
 	}
 
-	if len(customers) > 0 {
-		log.Infof("Cleanup completed. expired: %d", len(customers))
+	if expired > 0 {
+		log.Infof("Cleanup completed. expired: %d", expired)
 	}
+
+	return expired, nil
 }

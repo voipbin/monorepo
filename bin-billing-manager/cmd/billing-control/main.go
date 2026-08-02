@@ -740,8 +740,16 @@ func runTopUpRun(cmd *cobra.Command, args []string) error {
 			continue
 		}
 
-		if err := db.AccountTopUpTokens(context.Background(), a.ID, a.CustomerID, tokenAmount, string(a.PlanType)); err != nil {
+		applied, err := db.AccountTopUpTokens(context.Background(), a.ID, a.CustomerID, tokenAmount, string(a.PlanType))
+		if err != nil {
 			fmt.Printf("ERROR: account_id=%s err=%v\n", a.ID, err)
+			continue
+		}
+		if !applied {
+			// CAS-skip: already topped up this cycle by a concurrent claimant. This
+			// command already pre-filters by a.TmNextTopUp.After(now) above, so this
+			// only happens under a genuine race with the scheduled job.
+			fmt.Printf("SKIP: account_id=%s already topped up this cycle\n", a.ID)
 			continue
 		}
 		fmt.Printf("OK: account_id=%s tokens=%d\n", a.ID, tokenAmount)

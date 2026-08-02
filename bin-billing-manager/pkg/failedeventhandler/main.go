@@ -25,7 +25,7 @@ type EventProcessor func(m *sock.Event) error
 // FailedEventHandler manages persistence and retry of failed billing events.
 type FailedEventHandler interface {
 	Save(ctx context.Context, event *sock.Event, processingErr error) error
-	RetryPending(ctx context.Context) error
+	RetryPending(ctx context.Context) (retried int, succeeded int, exhausted int, err error)
 }
 
 type failedEventHandler struct {
@@ -127,22 +127,32 @@ func (h *failedEventHandler) Save(ctx context.Context, event *sock.Event, proces
 }
 
 // RetryPending processes all pending failed events that are due for retry.
-func (h *failedEventHandler) RetryPending(ctx context.Context) error {
+// Returns the number of events attempted (retried), the number that succeeded, and
+// the number that exhausted all retries (or had unparseable event data). A non-nil
+// err is returned only if the initial list-fetch itself fails.
+func (h *failedEventHandler) RetryPending(ctx context.Context) (int, int, int, error) {
 	log := logrus.WithField("func", "RetryPending")
 
 	now := time.Now().UTC()
 
 	events, err := h.db.FailedEventListPendingRetry(ctx, now)
 	if err != nil {
-		return fmt.Errorf("could not query failed events. err: %v", err)
+		return 0, 0, 0, fmt.Errorf("could not query failed events. err: %v", err)
 	}
 
+	retried := 0
+	succeeded := 0
+	exhausted := 0
+
 	for _, fe := range events {
+		retried++
+
 		// unmarshal the event
 		var event sock.Event
 		if err := json.Unmarshal([]byte(fe.EventData), &event); err != nil {
 			log.Errorf("Could not unmarshal failed event. err: %v", err)
 			h.markExhausted(ctx, fe)
+			exhausted++
 			continue
 		}
 
@@ -155,6 +165,7 @@ func (h *failedEventHandler) RetryPending(ctx context.Context) error {
 				log.Errorf("Failed event exhausted all retries. event_type: %s, publisher: %s", fe.EventType, fe.EventPublisher)
 				promFailedEventExhaustedTotal.WithLabelValues(fe.EventType).Inc()
 				h.markExhausted(ctx, fe)
+				exhausted++
 				continue
 			}
 
@@ -180,9 +191,10 @@ func (h *failedEventHandler) RetryPending(ctx context.Context) error {
 			log.Errorf("Could not delete retried event. err: %v", errDelete)
 		}
 		log.Infof("Successfully retried failed event. event_type: %s, publisher: %s", fe.EventType, fe.EventPublisher)
+		succeeded++
 	}
 
-	return nil
+	return retried, succeeded, exhausted, nil
 }
 
 // markExhausted marks a failed event as exhausted.

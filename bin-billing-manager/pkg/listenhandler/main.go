@@ -19,6 +19,7 @@ import (
 	"monorepo/bin-billing-manager/pkg/accounthandler"
 	"monorepo/bin-billing-manager/pkg/billinghandler"
 	"monorepo/bin-billing-manager/pkg/dbhandler"
+	"monorepo/bin-billing-manager/pkg/failedeventhandler"
 	"monorepo/bin-billing-manager/pkg/paddlehandler"
 )
 
@@ -40,10 +41,11 @@ type ListenHandler interface {
 type listenHandler struct {
 	sockHandler sockhandler.SockHandler
 
-	utilHandler    utilhandler.UtilHandler
-	accountHandler accounthandler.AccountHandler
-	billingHandler billinghandler.BillingHandler
-	paddleHandler  paddlehandler.PaddleHandler
+	utilHandler        utilhandler.UtilHandler
+	accountHandler     accounthandler.AccountHandler
+	billingHandler     billinghandler.BillingHandler
+	paddleHandler      paddlehandler.PaddleHandler
+	failedEventHandler failedeventhandler.FailedEventHandler
 }
 
 var (
@@ -64,6 +66,8 @@ var (
 
 	regV1AccountsGet = regexp.MustCompile(`/v1/accounts\?`)
 
+	regV1AccountsTopUp = regexp.MustCompile("/v1/accounts/top_up$")
+
 	// billings
 	regV1BillingsGet = regexp.MustCompile(`/v1/billings\?`)
 	regV1BillingGet  = regexp.MustCompile("/v1/billings/" + regUUID + "$")
@@ -73,6 +77,9 @@ var (
 
 	// paddle portal session
 	regV1AccountsIDPaddlePortalSession = regexp.MustCompile("/v1/accounts/" + regUUID + "/paddle_portal_session$")
+
+	// failed events
+	regV1FailedEventsRetry = regexp.MustCompile("/v1/failed_events/retry$")
 )
 
 var (
@@ -144,13 +151,15 @@ func NewListenHandler(
 	accountHandler accounthandler.AccountHandler,
 	billingHandler billinghandler.BillingHandler,
 	paddleHandler paddlehandler.PaddleHandler,
+	failedEventHandler failedeventhandler.FailedEventHandler,
 ) ListenHandler {
 	h := &listenHandler{
-		sockHandler:    sockHandler,
-		utilHandler:    utilhandler.NewUtilHandler(),
-		accountHandler: accountHandler,
-		billingHandler: billingHandler,
-		paddleHandler:  paddleHandler,
+		sockHandler:        sockHandler,
+		utilHandler:        utilhandler.NewUtilHandler(),
+		accountHandler:     accountHandler,
+		billingHandler:     billingHandler,
+		paddleHandler:      paddleHandler,
+		failedEventHandler: failedEventHandler,
 	}
 
 	return h
@@ -249,6 +258,19 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1AccountsIsValidResourceLimitByCustomerID.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1AccountsIsValidResourceLimitByCustomerIDPost(ctx, m)
 		requestType = "/v1/accounts/is_valid_resource_limit_by_customer_id"
+
+	// POST /accounts/top_up
+	case regV1AccountsTopUp.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1AccountsTopUpPost(ctx, m)
+		requestType = "/v1/accounts/top_up"
+
+	////////////////////
+	// failed events
+	////////////////////
+	// POST /failed_events/retry
+	case regV1FailedEventsRetry.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1FailedEventsRetryPost(ctx, m)
+		requestType = "/v1/failed_events/retry"
 
 	////////////////////
 	// billings

@@ -512,6 +512,81 @@ func Test_processV1AIPromptProposalsIDDelete(t *testing.T) {
 	}
 }
 
+func Test_processV1AIPromptProposalsExpirePost(t *testing.T) {
+	tests := []struct {
+		name    string
+		request *sock.Request
+
+		responseExpired int
+		responseErr     error
+
+		expectedRes *sock.Response
+	}{
+		{
+			name: "normal",
+			request: &sock.Request{
+				URI:    "/v1/aipromptproposals/expire",
+				Method: sock.RequestMethodPost,
+			},
+
+			responseExpired: 3,
+			responseErr:     nil,
+
+			expectedRes: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"expired":3}`),
+			},
+		},
+		{
+			name: "list_error_returns_500",
+			request: &sock.Request{
+				URI:    "/v1/aipromptproposals/expire",
+				Method: sock.RequestMethodPost,
+			},
+
+			responseExpired: 0,
+			responseErr:     &listFailedError{},
+
+			expectedRes: &sock.Response{
+				StatusCode: 500,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockProposal := aipromptproposalhandler.NewMockAIPromptProposalHandler(mc)
+
+			h := &listenHandler{
+				sockHandler:             mockSock,
+				aipromptproposalHandler: mockProposal,
+			}
+
+			mockProposal.EXPECT().SweepExpiredProposals(gomock.Any()).Return(tt.responseExpired, tt.responseErr)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectedRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
+			}
+		})
+	}
+}
+
+// listFailedError simulates a generic list-fetch failure from SweepExpiredProposals.
+type listFailedError struct{}
+
+func (e *listFailedError) Error() string {
+	return "could not list candidate proposals: db unavailable"
+}
+
 // proposalRateLimitError simulates a "rate limit exceeded" error from Create.
 type proposalRateLimitError struct{}
 

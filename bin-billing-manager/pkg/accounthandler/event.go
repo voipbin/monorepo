@@ -81,10 +81,13 @@ func (h *accountHandler) EventCUCustomerCreated(ctx context.Context, cu *cucusto
 	// initial token topup for new customer
 	tokenAmount, ok := account.PlanTokenMap[account.PlanTypeFree]
 	if ok && tokenAmount > 0 {
-		if errTopup := h.db.AccountTopUpTokens(ctx, b.ID, cu.ID, tokenAmount, string(account.PlanTypeFree)); errTopup != nil {
+		if _, errTopup := h.db.AccountTopUpTokens(ctx, b.ID, cu.ID, tokenAmount, string(account.PlanTypeFree)); errTopup != nil {
 			log.Errorf("Could not perform initial token topup. err: %v", errTopup)
 			// non-fatal: account is created, tokens can be topped up later
 		}
+		// applied=false here is nearly impossible (TmNextTopUp is unset on a brand-new
+		// account, so the CAS's IS NULL branch always matches) but is handled the same
+		// as the other callers for consistency: not an error, nothing further to do.
 	}
 
 	return nil

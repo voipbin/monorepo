@@ -100,6 +100,7 @@ var (
 	regV1AIPromptProposalsID       = regexp.MustCompile("/v1/aipromptproposals/" + regUUID + "$")
 	regV1AIPromptProposalsIDAccept = regexp.MustCompile("/v1/aipromptproposals/" + regUUID + "/accept$")
 	regV1AIPromptProposalsIDReject = regexp.MustCompile("/v1/aipromptproposals/" + regUUID + "/reject$")
+	regV1AIPromptProposalsExpire   = regexp.MustCompile("/v1/aipromptproposals/expire$")
 
 	// messages
 	regV1MessagesGet = regexp.MustCompile(`/v1/messages\?`)
@@ -389,6 +390,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1AIPromptProposalsIDReject.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1AIPromptProposalsIDRejectPost(ctx, m)
 		requestType = "/v1/aipromptproposals/<id>/reject"
+
+	// POST /aipromptproposals/expire
+	case regV1AIPromptProposalsExpire.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1AIPromptProposalsExpirePost(ctx, m)
+		requestType = "/v1/aipromptproposals/expire"
 
 	// GET /aipromptproposals
 	case regV1AIPromptProposalsGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:

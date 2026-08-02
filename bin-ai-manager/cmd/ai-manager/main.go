@@ -7,7 +7,6 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
-	"time"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
@@ -162,19 +161,6 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	geminiProposalHandler := geminiproposalhandler.NewGeminiProposalHandler(cfg.GoogleAPIKey)
 	aipromptproposalHandler := aipromptproposalhandler.NewAIPromptProposalHandler(db, geminiProposalHandler)
 	aipromptproposalHandler.SweepStaleProposals(context.Background())
-	go func() {
-		ctx := context.Background()
-		ticker := time.NewTicker(1 * time.Hour)
-		defer ticker.Stop()
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-ticker.C:
-				aipromptproposalHandler.SweepExpiredProposals(ctx)
-			}
-		}
-	}()
 
 	// run listen
 	if errListen := runListen(sockHandler, aiHandler, aicallHandler, aiauditHandler, aiprompthistoryHandler, aipromptproposalHandler, messageHandler, summaryHandler, teamHandler, participantHandler, analysisHandler); errListen != nil {

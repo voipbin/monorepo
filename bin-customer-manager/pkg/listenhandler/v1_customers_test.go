@@ -575,3 +575,146 @@ func Test_processV1CustomersIDMetadataPut(t *testing.T) {
 	}
 }
 
+func Test_processV1CustomersCleanupUnverifiedPost(t *testing.T) {
+
+	tests := []struct {
+		name    string
+		request *sock.Request
+
+		responseExpired int
+		responseErr     error
+
+		expectRes *sock.Response
+	}{
+		{
+			name: "normal",
+			request: &sock.Request{
+				URI:    "/v1/customers/cleanup_unverified",
+				Method: sock.RequestMethodPost,
+			},
+
+			responseExpired: 3,
+			responseErr:     nil,
+
+			expectRes: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"expired":3}`),
+			},
+		},
+		{
+			name: "handler error",
+			request: &sock.Request{
+				URI:    "/v1/customers/cleanup_unverified",
+				Method: sock.RequestMethodPost,
+			},
+
+			responseExpired: 0,
+			responseErr:     fmt.Errorf("db error"),
+
+			expectRes: &sock.Response{
+				StatusCode: 500,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockCustomer := customerhandler.NewMockCustomerHandler(mc)
+
+			h := &listenHandler{
+				sockHandler:     mockSock,
+				reqHandler:      mockReq,
+				customerHandler: mockCustomer,
+			}
+
+			mockCustomer.EXPECT().CleanupUnverified(gomock.Any()).Return(tt.responseExpired, tt.responseErr)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_processV1CustomersCleanupFrozenExpiredPost(t *testing.T) {
+
+	tests := []struct {
+		name    string
+		request *sock.Request
+
+		responseProcessed int
+		responseErr       error
+
+		expectRes *sock.Response
+	}{
+		{
+			name: "normal",
+			request: &sock.Request{
+				URI:    "/v1/customers/cleanup_frozen_expired",
+				Method: sock.RequestMethodPost,
+			},
+
+			responseProcessed: 2,
+			responseErr:       nil,
+
+			expectRes: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"processed":2}`),
+			},
+		},
+		{
+			name: "handler error",
+			request: &sock.Request{
+				URI:    "/v1/customers/cleanup_frozen_expired",
+				Method: sock.RequestMethodPost,
+			},
+
+			responseProcessed: 0,
+			responseErr:       fmt.Errorf("db error"),
+
+			expectRes: &sock.Response{
+				StatusCode: 500,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockCustomer := customerhandler.NewMockCustomerHandler(mc)
+
+			h := &listenHandler{
+				sockHandler:     mockSock,
+				reqHandler:      mockReq,
+				customerHandler: mockCustomer,
+			}
+
+			mockCustomer.EXPECT().CleanupFrozenExpired(gomock.Any()).Return(tt.responseProcessed, tt.responseErr)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}

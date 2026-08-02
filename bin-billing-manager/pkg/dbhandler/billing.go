@@ -512,10 +512,14 @@ func (h *handler) BillingDelete(ctx context.Context, id uuid.UUID) error {
 }
 
 // AccountTopUpTokens resets the account token balance and creates a ledger entry.
-func (h *handler) AccountTopUpTokens(ctx context.Context, accountID uuid.UUID, customerID uuid.UUID, tokenAmount int64, planType string) error {
+// The update is CAS-guarded on tm_next_topup so that a concurrent replica processing
+// the same due account is a no-op instead of a duplicate ledger insert. applied=false
+// with a nil error means the account was already topped up this cycle by a concurrent
+// claimant — a normal outcome, not an error.
+func (h *handler) AccountTopUpTokens(ctx context.Context, accountID uuid.UUID, customerID uuid.UUID, tokenAmount int64, planType string) (bool, error) {
 	tx, err := h.db.BeginTx(ctx, nil)
 	if err != nil {
-		return fmt.Errorf("AccountTopUpTokens: could not begin transaction. err: %v", err)
+		return false, fmt.Errorf("AccountTopUpTokens: could not begin transaction. err: %v", err)
 	}
 	defer func() { _ = tx.Rollback() }()
 
@@ -526,9 +530,9 @@ func (h *handler) AccountTopUpTokens(ctx context.Context, accountID uuid.UUID, c
 		accountID.Bytes())
 	if err := row.Scan(&currentToken, &currentCredit); err != nil {
 		if err == sql.ErrNoRows {
-			return ErrNotFound
+			return false, ErrNotFound
 		}
-		return fmt.Errorf("AccountTopUpTokens: could not read account. err: %v", err)
+		return false, fmt.Errorf("AccountTopUpTokens: could not read account. err: %v", err)
 	}
 
 	now := h.utilHandler.TimeNow()
@@ -539,17 +543,30 @@ func (h *handler) AccountTopUpTokens(ctx context.Context, accountID uuid.UUID, c
 	// Calculate next top-up date (first of next month)
 	nextMonth := time.Date(now.Year(), now.Month()+1, 1, 0, 0, 0, 0, time.UTC)
 
-	// Update account
-	_, err = tx.ExecContext(ctx,
+	// Update account. CAS guard: only apply when due (tm_next_topup unset, or already
+	// past). A concurrent claimant that already topped up this cycle leaves 0 rows
+	// affected here.
+	res, err := tx.ExecContext(ctx,
 		`UPDATE billing_accounts SET
 			balance_token = ?,
 			tm_last_topup = ?,
 			tm_next_topup = ?,
 			tm_update = ?
-		WHERE id = ?`,
-		newBalanceToken, now, nextMonth, now, accountID.Bytes())
+		WHERE id = ? AND (tm_next_topup IS NULL OR tm_next_topup <= ?)`,
+		newBalanceToken, now, nextMonth, now, accountID.Bytes(), now)
 	if err != nil {
-		return fmt.Errorf("AccountTopUpTokens: could not update account. err: %v", err)
+		return false, fmt.Errorf("AccountTopUpTokens: could not update account. err: %v", err)
+	}
+
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return false, fmt.Errorf("AccountTopUpTokens: could not read rows affected. err: %v", err)
+	}
+	if affected == 0 {
+		// CAS-skip: already topped up this cycle by a concurrent claimant. Never let
+		// the ledger insert below run on this path.
+		_ = tx.Rollback()
+		return false, nil
 	}
 
 	// Insert ledger entry for the top-up
@@ -574,27 +591,27 @@ func (h *handler) AccountTopUpTokens(ctx context.Context, accountID uuid.UUID, c
 
 	fields, err := commondatabasehandler.PrepareFields(topupBilling)
 	if err != nil {
-		return fmt.Errorf("AccountTopUpTokens: could not prepare billing fields. err: %v", err)
+		return false, fmt.Errorf("AccountTopUpTokens: could not prepare billing fields. err: %v", err)
 	}
 
 	query, args, err := sq.Insert(billingsTable).SetMap(fields).ToSql()
 	if err != nil {
-		return fmt.Errorf("AccountTopUpTokens: could not build billing insert query. err: %v", err)
+		return false, fmt.Errorf("AccountTopUpTokens: could not build billing insert query. err: %v", err)
 	}
 
 	_, err = tx.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("AccountTopUpTokens: could not insert billing record. err: %v", err)
+		return false, fmt.Errorf("AccountTopUpTokens: could not insert billing record. err: %v", err)
 	}
 
 	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("AccountTopUpTokens: could not commit. err: %v", err)
+		return false, fmt.Errorf("AccountTopUpTokens: could not commit. err: %v", err)
 	}
 
 	// Invalidate caches
 	_ = h.accountUpdateToCache(ctx, accountID)
 
-	return nil
+	return true, nil
 }
 
 // isDuplicateKeyError checks if the error is a MySQL duplicate key error (1062)

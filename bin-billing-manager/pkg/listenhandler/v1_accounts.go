@@ -392,6 +392,39 @@ func (h *listenHandler) processV1AccountsIsValidResourceLimitByCustomerIDPost(ct
 	return res, nil
 }
 
+// processV1AccountsTopUpPost handles POST /v1/accounts/top_up request
+func (h *listenHandler) processV1AccountsTopUpPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1AccountsTopUpPost",
+		"request": m,
+	})
+
+	processed, failed, err := h.accountHandler.TopUpDue(ctx)
+	if err != nil {
+		log.Errorf("Could not process monthly top-up. err: %v", err)
+		return errorResponse(err), nil
+	}
+
+	tmp := &response.V1ResponseAccountsTopUp{
+		Processed: processed,
+		Failed:    failed,
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal top-up response. err: %v", err)
+		return simpleResponse(500), nil
+	}
+
+	res := &sock.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
 // processV1AccountsIDPaymentInfoPut handles PUT /v1/accounts/<account-id>/payment_info request
 func (h *listenHandler) processV1AccountsIDPaymentInfoPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{

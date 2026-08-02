@@ -58,11 +58,14 @@ var (
 	regV1Customers                     = regexp.MustCompile("/v1/customers$")
 	regV1CustomersGet                  = regexp.MustCompile(`/v1/customers\?(.*)$`)
 	regV1CustomersID                   = regexp.MustCompile("/v1/customers/" + regUUID + "$")
-	regV1CustomersIDIsBillingAccountID              = regexp.MustCompile("/v1/customers/" + regUUID + "/billing_account_id$")
-	regV1CustomersIDIsMetadata                      = regexp.MustCompile("/v1/customers/" + regUUID + "/metadata$")
+	regV1CustomersIDIsBillingAccountID = regexp.MustCompile("/v1/customers/" + regUUID + "/billing_account_id$")
+	regV1CustomersIDIsMetadata         = regexp.MustCompile("/v1/customers/" + regUUID + "/metadata$")
 
 	regV1CustomersSignup      = regexp.MustCompile("/v1/customers/signup$")
 	regV1CustomersEmailVerify = regexp.MustCompile("/v1/customers/email_verify$")
+
+	regV1CustomersCleanupUnverified    = regexp.MustCompile("/v1/customers/cleanup_unverified$")
+	regV1CustomersCleanupFrozenExpired = regexp.MustCompile("/v1/customers/cleanup_frozen_expired$")
 
 	regV1CustomersIDFreeze          = regexp.MustCompile("/v1/customers/" + regUUID + "/freeze$")
 	regV1CustomersIDRecover         = regexp.MustCompile("/v1/customers/" + regUUID + "/recover$")
@@ -200,6 +203,16 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1CustomersEmailVerify.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1CustomersEmailVerifyPost(ctx, m)
 		requestType = "/v1/customers/email_verify"
+
+	// POST /customers/cleanup_unverified
+	case regV1CustomersCleanupUnverified.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1CustomersCleanupUnverifiedPost(ctx, m)
+		requestType = "/v1/customers/cleanup_unverified"
+
+	// POST /customers/cleanup_frozen_expired
+	case regV1CustomersCleanupFrozenExpired.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1CustomersCleanupFrozenExpiredPost(ctx, m)
+		requestType = "/v1/customers/cleanup_frozen_expired"
 
 	// GET /customers
 	case regV1CustomersGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
