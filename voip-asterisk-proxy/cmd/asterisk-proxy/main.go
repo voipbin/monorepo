@@ -82,8 +82,7 @@ func main() {
 	// get asterisk id and internal address
 	asteriskID, asteriskAddress, err := getAsteriskIDAddress(interfaceName)
 	if err != nil {
-		log.Errorf("Could not get correct asterisk-id, asterisk-address info.")
-		return
+		log.Fatalf("Could not get correct asterisk-id, asterisk-address info. err: %v", err)
 	}
 
 	if errSet := setProxyInfoRedis(redisAddress, redisPassword, redisDatabase, asteriskID, asteriskAddress); errSet != nil {
@@ -141,14 +140,18 @@ func main() {
 	)
 
 	// run listen handler
-	if err := listenHandler.Run(); err != nil {
-		log.Errorf("Could not run the listen handler correctly. err: %v", err)
-		return
+	chErr, err := listenHandler.Run()
+	if err != nil {
+		log.Fatalf("Could not run the listen handler correctly. err: %v", err)
 	}
 	log.Debugf("The listen handler is running now. id: %s, address: %v", asteriskID, asteriskAddress)
 
-	sig := <-chSigs
-	log.Infof("Terminating api-manager. sig: %v", sig)
+	select {
+	case sig := <-chSigs:
+		log.Infof("Terminating asterisk-proxy. sig: %v", sig)
+	case err := <-chErr:
+		log.Fatalf("Listen handler failed permanently. err: %v", err)
+	}
 
 }
 
