@@ -28,7 +28,7 @@ type DBHandler interface {
 	AccountAddBalance(ctx context.Context, accountID uuid.UUID, amount int64) error
 	AccountSubtractBalance(ctx context.Context, accountID uuid.UUID, amount int64) error
 	AccountSubtractBalanceWithCheck(ctx context.Context, accountID uuid.UUID, amount int64) error
-	AccountTopUpTokens(ctx context.Context, accountID uuid.UUID, customerID uuid.UUID, tokenAmount int64, planType string) error
+	AccountTopUpTokens(ctx context.Context, accountID uuid.UUID, customerID uuid.UUID, tokenAmount int64, planType string) (bool, error)
 	AccountAddTokens(ctx context.Context, accountID uuid.UUID, amount int64) error
 	AccountSubtractTokens(ctx context.Context, accountID uuid.UUID, amount int64) error
 	AccountSubtractTokensWithCheck(ctx context.Context, accountID uuid.UUID, amount int64) error

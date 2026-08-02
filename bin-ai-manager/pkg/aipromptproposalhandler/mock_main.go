@@ -133,9 +133,12 @@ func (mr *MockAIPromptProposalHandlerMockRecorder) Reject(ctx, customerID, id an
 }
 
 // SweepExpiredProposals mocks base method.
-func (m *MockAIPromptProposalHandler) SweepExpiredProposals(ctx context.Context) {
+func (m *MockAIPromptProposalHandler) SweepExpiredProposals(ctx context.Context) (int, error) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SweepExpiredProposals", ctx)
+	ret := m.ctrl.Call(m, "SweepExpiredProposals", ctx)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // SweepExpiredProposals indicates an expected call of SweepExpiredProposals.

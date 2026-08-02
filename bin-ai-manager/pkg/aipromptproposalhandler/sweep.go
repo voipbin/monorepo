@@ -2,6 +2,7 @@ package aipromptproposalhandler
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -36,8 +37,11 @@ func (h *aipromptproposalHandler) SweepStaleProposals(ctx context.Context) {
 	}
 }
 
-// SweepExpiredProposals marks completed proposals as expired when the AI's basis prompt has drifted.
-func (h *aipromptproposalHandler) SweepExpiredProposals(ctx context.Context) {
+// SweepExpiredProposals marks completed proposals as expired when the AI's basis prompt has
+// drifted. Returns the number of proposals marked expired. Non-nil err is returned only when
+// the initial list fetch fails (nothing could be attempted); per-row AIGet failures are skipped
+// and do not fail the batch or count toward expired.
+func (h *aipromptproposalHandler) SweepExpiredProposals(ctx context.Context) (int, error) {
 	cutoff := h.utilHandler.TimeGetCurTimeAdd(-proposalExpiryHours * time.Hour)
 	filters := map[aipromptproposal.Field]any{
 		aipromptproposal.FieldStatus:  aipromptproposal.StatusCompleted,
@@ -47,9 +51,10 @@ func (h *aipromptproposalHandler) SweepExpiredProposals(ctx context.Context) {
 	cand, err := h.db.AIPromptProposalList(ctx, 1000, cutoff, filters)
 	if err != nil {
 		logrus.WithError(err).Error("expiry sweep: list failed")
-		return
+		return 0, fmt.Errorf("could not list candidate proposals: %w", err)
 	}
 
+	expired := 0
 	for _, p := range cand {
 		ai, gerr := h.db.AIGet(ctx, p.AIID)
 		if gerr != nil {
@@ -60,6 +65,10 @@ func (h *aipromptproposalHandler) SweepExpiredProposals(ctx context.Context) {
 		}
 		if _, uerr := h.db.AIPromptProposalUpdateExpired(ctx, p.ID, string(aipromptproposal.ErrorPromptVersionDrifted)); uerr != nil {
 			logrus.WithError(uerr).Errorf("expiry sweep: could not mark %s expired", p.ID)
+			continue
 		}
+		expired++
 	}
+
+	return expired, nil
 }

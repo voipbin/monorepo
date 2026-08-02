@@ -79,6 +79,7 @@ ListenHandler (`pkg/listenhandler/`) routes by regex URI pattern over the shared
 | `GET /v1/aipromptproposals/<uuid>` | Get a single AI prompt improvement proposal |
 | `POST /v1/aipromptproposals/<uuid>/accept` | Accept a proposal and apply it to the AI's `init_prompt` |
 | `POST /v1/aipromptproposals/<uuid>/reject` | Reject a proposal without applying it |
+| `POST /v1/aipromptproposals/expire` | Sweep endpoint: expire completed proposals whose basis prompt has drifted (invoked by schedule-manager cron, replaces the old in-process ticker) |
 | `DELETE /v1/aipromptproposals/<uuid>` | Soft-delete an AI prompt improvement proposal |
 
 ## Event Subscriptions

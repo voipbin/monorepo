@@ -176,12 +176,21 @@ func Test_RetryPending_success(t *testing.T) {
 			mockDB.EXPECT().FailedEventListPendingRetry(ctx, gomock.Any()).Return(tt.events, nil)
 			mockDB.EXPECT().FailedEventDelete(ctx, tt.events[0].ID).Return(nil)
 
-			err := h.RetryPending(ctx)
+			retried, succeeded, exhausted, err := h.RetryPending(ctx)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 			if !processorCalled {
 				t.Errorf("Event processor was not called")
+			}
+			if retried != 1 {
+				t.Errorf("Wrong retried count. expect: 1, got: %d", retried)
+			}
+			if succeeded != 1 {
+				t.Errorf("Wrong succeeded count. expect: 1, got: %d", succeeded)
+			}
+			if exhausted != 0 {
+				t.Errorf("Wrong exhausted count. expect: 0, got: %d", exhausted)
 			}
 		})
 	}
@@ -263,9 +272,18 @@ func Test_RetryPending_failure_increments_retry(t *testing.T) {
 				},
 			)
 
-			err := h.RetryPending(ctx)
+			retried, succeeded, exhausted, err := h.RetryPending(ctx)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+			if retried != 1 {
+				t.Errorf("Wrong retried count. expect: 1, got: %d", retried)
+			}
+			if succeeded != 0 {
+				t.Errorf("Wrong succeeded count. expect: 0, got: %d", succeeded)
+			}
+			if exhausted != 0 {
+				t.Errorf("Wrong exhausted count. expect: 0, got: %d", exhausted)
 			}
 		})
 	}
@@ -320,9 +338,18 @@ func Test_RetryPending_exhausted(t *testing.T) {
 				},
 			)
 
-			err := h.RetryPending(ctx)
+			retried, succeeded, exhausted, err := h.RetryPending(ctx)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+			if retried != 1 {
+				t.Errorf("Wrong retried count. expect: 1, got: %d", retried)
+			}
+			if succeeded != 0 {
+				t.Errorf("Wrong succeeded count. expect: 0, got: %d", succeeded)
+			}
+			if exhausted != 1 {
+				t.Errorf("Wrong exhausted count. expect: 1, got: %d", exhausted)
 			}
 		})
 	}
@@ -379,12 +406,21 @@ func Test_RetryPending_unmarshal_error_marks_exhausted(t *testing.T) {
 				},
 			)
 
-			err := h.RetryPending(ctx)
+			retried, succeeded, exhausted, err := h.RetryPending(ctx)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 			if processorCalled {
 				t.Errorf("Event processor should not be called for invalid event data")
+			}
+			if retried != 1 {
+				t.Errorf("Wrong retried count. expect: 1, got: %d", retried)
+			}
+			if succeeded != 0 {
+				t.Errorf("Wrong succeeded count. expect: 0, got: %d", succeeded)
+			}
+			if exhausted != 1 {
+				t.Errorf("Wrong exhausted count. expect: 1, got: %d", exhausted)
 			}
 		})
 	}
@@ -411,12 +447,15 @@ func Test_RetryPending_empty_list(t *testing.T) {
 
 	mockDB.EXPECT().FailedEventListPendingRetry(ctx, gomock.Any()).Return(nil, nil)
 
-	err := h.RetryPending(ctx)
+	retried, succeeded, exhausted, err := h.RetryPending(ctx)
 	if err != nil {
 		t.Errorf("Wrong match. expect: ok, got: %v", err)
 	}
 	if processorCalled {
 		t.Errorf("Event processor should not be called when no events")
+	}
+	if retried != 0 || succeeded != 0 || exhausted != 0 {
+		t.Errorf("Wrong counts. expect: 0/0/0, got: %d/%d/%d", retried, succeeded, exhausted)
 	}
 }
 
@@ -435,9 +474,12 @@ func Test_RetryPending_db_list_error(t *testing.T) {
 
 	mockDB.EXPECT().FailedEventListPendingRetry(ctx, gomock.Any()).Return(nil, fmt.Errorf("db error"))
 
-	err := h.RetryPending(ctx)
+	retried, succeeded, exhausted, err := h.RetryPending(ctx)
 	if err == nil {
 		t.Errorf("Wrong match. expect: error, got: nil")
+	}
+	if retried != 0 || succeeded != 0 || exhausted != 0 {
+		t.Errorf("Wrong counts. expect: 0/0/0, got: %d/%d/%d", retried, succeeded, exhausted)
 	}
 }
 
@@ -503,7 +545,7 @@ func Test_RetryPending_backoff_calculation(t *testing.T) {
 				},
 			)
 
-			err := h.RetryPending(ctx)
+			_, _, _, err := h.RetryPending(ctx)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

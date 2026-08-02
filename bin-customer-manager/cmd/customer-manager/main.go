@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"database/sql"
 	"net/http"
 	"os"
@@ -96,12 +95,6 @@ func startServices(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	customerHandler := customerhandler.NewCustomerHandler(reqHandler, db, cache, notifyHandler, accesskeyHandler)
 
 	listenHandler := listenhandler.NewListenHandler(sockHandler, reqHandler, customerHandler, accesskeyHandler)
-
-	// start background cleanup job for expired unverified customers
-	go customerHandler.RunCleanupUnverified(context.Background())
-
-	// start background cleanup job for frozen accounts past grace period
-	go customerHandler.RunCleanupFrozenExpired(context.Background())
 
 	return listenHandler.Run(string(commonoutline.QueueNameCustomerRequest), string(commonoutline.QueueNameDelay))
 }

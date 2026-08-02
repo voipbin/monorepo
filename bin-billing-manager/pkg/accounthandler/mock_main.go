@@ -468,6 +468,22 @@ func (mr *MockAccountHandlerMockRecorder) SubtractTokensWithCheck(ctx, accountID
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubtractTokensWithCheck", reflect.TypeOf((*MockAccountHandler)(nil).SubtractTokensWithCheck), ctx, accountID, amount)
 }
 
+// TopUpDue mocks base method.
+func (m *MockAccountHandler) TopUpDue(ctx context.Context) (int, int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TopUpDue", ctx)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(int)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// TopUpDue indicates an expected call of TopUpDue.
+func (mr *MockAccountHandlerMockRecorder) TopUpDue(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TopUpDue", reflect.TypeOf((*MockAccountHandler)(nil).TopUpDue), ctx)
+}
+
 // UpdateBasicInfo mocks base method.
 func (m *MockAccountHandler) UpdateBasicInfo(ctx context.Context, id uuid.UUID, name, detail string) (*account.Account, error) {
 	m.ctrl.T.Helper()

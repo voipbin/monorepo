@@ -16,26 +16,25 @@ import (
 )
 
 func TestCleanupConstants(t *testing.T) {
-	if cleanupInterval != 15*time.Minute {
-		t.Errorf("cleanupInterval = %v, expected %v", cleanupInterval, 15*time.Minute)
-	}
 	if unverifiedMaxAge != time.Hour {
 		t.Errorf("unverifiedMaxAge = %v, expected %v", unverifiedMaxAge, time.Hour)
 	}
 }
 
-func Test_cleanupUnverified(t *testing.T) {
+func Test_CleanupUnverified(t *testing.T) {
 	tests := []struct {
 		name string
 
 		responseCustomers []*customer.Customer
 		expectUpdateCount int
+		expectExpired     int
 	}{
 		{
 			name: "no unverified customers",
 
 			responseCustomers: []*customer.Customer{},
 			expectUpdateCount: 0,
+			expectExpired:     0,
 		},
 		{
 			name: "one unverified customer - soft deleted",
@@ -49,6 +48,7 @@ func Test_cleanupUnverified(t *testing.T) {
 				},
 			},
 			expectUpdateCount: 1,
+			expectExpired:     1,
 		},
 		{
 			name: "multiple unverified customers - all soft deleted",
@@ -68,6 +68,7 @@ func Test_cleanupUnverified(t *testing.T) {
 				},
 			},
 			expectUpdateCount: 2,
+			expectExpired:     2,
 		},
 	}
 
@@ -106,12 +107,18 @@ func Test_cleanupUnverified(t *testing.T) {
 				)
 			}
 
-			h.cleanupUnverified(ctx)
+			expired, err := h.CleanupUnverified(ctx)
+			if err != nil {
+				t.Errorf("Expected no error, got: %v", err)
+			}
+			if expired != tt.expectExpired {
+				t.Errorf("Wrong match. expect: %d, got: %d", tt.expectExpired, expired)
+			}
 		})
 	}
 }
 
-func Test_cleanupUnverified_updateError(t *testing.T) {
+func Test_CleanupUnverified_updateError(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -151,11 +158,18 @@ func Test_cleanupUnverified_updateError(t *testing.T) {
 	mockUtil.EXPECT().TimeNow().Return(&now2)
 	mockDB.EXPECT().CustomerUpdate(ctx, customers[1].ID, gomock.Any()).Return(nil)
 
-	// should not panic, should process both customers
-	h.cleanupUnverified(ctx)
+	// should not panic, should process both customers, and the failed row
+	// must not be counted as expired
+	expired, err := h.CleanupUnverified(ctx)
+	if err != nil {
+		t.Errorf("Expected no error, got: %v", err)
+	}
+	if expired != 1 {
+		t.Errorf("Wrong match. expect: 1, got: %d", expired)
+	}
 }
 
-func Test_cleanupUnverified_listError(t *testing.T) {
+func Test_CleanupUnverified_listError(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -170,6 +184,12 @@ func Test_cleanupUnverified_listError(t *testing.T) {
 
 	mockDB.EXPECT().CustomerList(ctx, uint64(100), gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("db error"))
 
-	// should not panic
-	h.cleanupUnverified(ctx)
+	// should not panic, should return the list error
+	expired, err := h.CleanupUnverified(ctx)
+	if err == nil {
+		t.Errorf("Expected error, got nil")
+	}
+	if expired != 0 {
+		t.Errorf("Wrong match. expect: 0, got: %d", expired)
+	}
 }

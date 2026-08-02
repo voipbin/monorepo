@@ -42,11 +42,14 @@ func (m *MockFailedEventHandler) EXPECT() *MockFailedEventHandlerMockRecorder {
 }
 
 // RetryPending mocks base method.
-func (m *MockFailedEventHandler) RetryPending(ctx context.Context) error {
+func (m *MockFailedEventHandler) RetryPending(ctx context.Context) (int, int, int, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RetryPending", ctx)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(int)
+	ret2, _ := ret[2].(int)
+	ret3, _ := ret[3].(error)
+	return ret0, ret1, ret2, ret3
 }
 
 // RetryPending indicates an expected call of RetryPending.

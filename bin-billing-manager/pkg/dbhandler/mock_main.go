@@ -274,11 +274,12 @@ func (mr *MockDBHandlerMockRecorder) AccountSubtractTokensWithCheck(ctx, account
 }
 
 // AccountTopUpTokens mocks base method.
-func (m *MockDBHandler) AccountTopUpTokens(ctx context.Context, accountID, customerID uuid.UUID, tokenAmount int64, planType string) error {
+func (m *MockDBHandler) AccountTopUpTokens(ctx context.Context, accountID, customerID uuid.UUID, tokenAmount int64, planType string) (bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AccountTopUpTokens", ctx, accountID, customerID, tokenAmount, planType)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // AccountTopUpTokens indicates an expected call of AccountTopUpTokens.

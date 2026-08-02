@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/gofrs/uuid"
+	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
 	"monorepo/bin-ai-manager/models/ai"
@@ -56,7 +57,9 @@ func TestSweepExpiredProposals_DriftedOnly(t *testing.T) {
 	mdb.EXPECT().AIGet(gomock.Any(), aiID).Return(&ai.AI{CurrentPromptHistoryID: current}, nil)
 	mdb.EXPECT().AIPromptProposalUpdateExpired(gomock.Any(), pid, string(aipromptproposal.ErrorPromptVersionDrifted)).Return(int64(1), nil)
 
-	h.SweepExpiredProposals(context.Background())
+	expired, err := h.SweepExpiredProposals(context.Background())
+	assert.NoError(t, err)
+	assert.Equal(t, 1, expired)
 }
 
 func TestSweepExpiredProposals_NotDrifted_LeftAlone(t *testing.T) {
@@ -76,7 +79,9 @@ func TestSweepExpiredProposals_NotDrifted_LeftAlone(t *testing.T) {
 	}}, nil)
 	mdb.EXPECT().AIGet(gomock.Any(), aiID).Return(&ai.AI{CurrentPromptHistoryID: hist}, nil)
 
-	h.SweepExpiredProposals(context.Background())
+	expired, err := h.SweepExpiredProposals(context.Background())
+	assert.NoError(t, err)
+	assert.Equal(t, 0, expired)
 }
 
 func TestSweepExpiredProposals_AIGetError_SkipsSilently(t *testing.T) {
@@ -97,5 +102,43 @@ func TestSweepExpiredProposals_AIGetError_SkipsSilently(t *testing.T) {
 	mdb.EXPECT().AIGet(gomock.Any(), aiID).Return(nil, dbhandler.ErrNotFound)
 	// No UpdateExpired expected.
 
-	h.SweepExpiredProposals(context.Background())
+	expired, err := h.SweepExpiredProposals(context.Background())
+	assert.NoError(t, err)
+	assert.Equal(t, 0, expired)
+}
+
+func TestSweepExpiredProposals_UpdateExpiredError_NotCounted(t *testing.T) {
+	h, mdb, _, mc := newHandlerWithMocks(t)
+	defer mc.Finish()
+	injectRealUtilHandler(h)
+
+	pid := uuid.Must(uuid.NewV4())
+	aiID := uuid.Must(uuid.NewV4())
+	basis := uuid.Must(uuid.NewV4())
+	current := uuid.Must(uuid.NewV4())
+
+	mdb.EXPECT().AIPromptProposalList(gomock.Any(), uint64(1000), gomock.Any(), gomock.Any()).Return([]*aipromptproposal.AIPromptProposal{{
+		Identity:             commonidentity.Identity{ID: pid},
+		AIID:                 aiID,
+		BasisPromptHistoryID: basis,
+		Status:               aipromptproposal.StatusCompleted,
+	}}, nil)
+	mdb.EXPECT().AIGet(gomock.Any(), aiID).Return(&ai.AI{CurrentPromptHistoryID: current}, nil)
+	mdb.EXPECT().AIPromptProposalUpdateExpired(gomock.Any(), pid, string(aipromptproposal.ErrorPromptVersionDrifted)).Return(int64(0), dbhandler.ErrNotFound)
+
+	expired, err := h.SweepExpiredProposals(context.Background())
+	assert.NoError(t, err)
+	assert.Equal(t, 0, expired)
+}
+
+func TestSweepExpiredProposals_ListError_ReturnsError(t *testing.T) {
+	h, mdb, _, mc := newHandlerWithMocks(t)
+	defer mc.Finish()
+	injectRealUtilHandler(h)
+
+	mdb.EXPECT().AIPromptProposalList(gomock.Any(), uint64(1000), gomock.Any(), gomock.Any()).Return(nil, dbhandler.ErrNotFound)
+
+	expired, err := h.SweepExpiredProposals(context.Background())
+	assert.Error(t, err)
+	assert.Equal(t, 0, expired)
 }

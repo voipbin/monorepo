@@ -1,6 +1,7 @@
 package listenhandler
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -456,6 +457,80 @@ func Test_processV1AccountsIDIsValidResourceLimitPost(t *testing.T) {
 			}
 
 			mockAccount.EXPECT().IsValidResourceLimit(gomock.Any(), tt.expectAccountID, tt.expectResourceType).Return(tt.responseValid, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_processV1AccountsTopUpPost(t *testing.T) {
+
+	type test struct {
+		name    string
+		request *sock.Request
+
+		responseProcessed int
+		responseFailed    int
+		responseErr       error
+
+		expectRes *sock.Response
+	}
+
+	tests := []test{
+		{
+			name: "normal",
+			request: &sock.Request{
+				URI:    "/v1/accounts/top_up",
+				Method: sock.RequestMethodPost,
+			},
+
+			responseProcessed: 3,
+			responseFailed:    1,
+			responseErr:       nil,
+
+			expectRes: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"processed":3,"failed":1}`),
+			},
+		},
+		{
+			name: "handler error maps to non-2xx",
+			request: &sock.Request{
+				URI:    "/v1/accounts/top_up",
+				Method: sock.RequestMethodPost,
+			},
+
+			responseProcessed: 0,
+			responseFailed:    0,
+			responseErr:       fmt.Errorf("could not list accounts"),
+
+			expectRes: &sock.Response{
+				StatusCode: 500,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockAccount := accounthandler.NewMockAccountHandler(mc)
+
+			h := &listenHandler{
+				sockHandler:    mockSock,
+				accountHandler: mockAccount,
+			}
+
+			mockAccount.EXPECT().TopUpDue(gomock.Any()).Return(tt.responseProcessed, tt.responseFailed, tt.responseErr)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

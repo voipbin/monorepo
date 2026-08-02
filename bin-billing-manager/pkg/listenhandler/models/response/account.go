@@ -13,3 +13,11 @@ type V1ResponseAccountsIDIsValidBalance struct {
 type V1ResponseAccountsIDIsValidResourceLimit struct {
 	Valid bool `json:"valid"`
 }
+
+// V1ResponseAccountsTopUp is
+// v1 response type for
+// /v1/accounts/top_up POST
+type V1ResponseAccountsTopUp struct {
+	Processed int `json:"processed"`
+	Failed    int `json:"failed"`
+}

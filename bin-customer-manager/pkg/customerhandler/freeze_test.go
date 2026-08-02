@@ -2,7 +2,10 @@ package customerhandler
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -23,10 +26,10 @@ func Test_Freeze(t *testing.T) {
 
 		responseCustomerGet *customer.Customer
 
-		expectDBFreeze  bool
-		expectDBGet2    bool
-		expectPublish   bool
-		expectErr       bool
+		expectDBFreeze       bool
+		expectDBGet2         bool
+		expectPublish        bool
+		expectErr            bool
 		responseCustomerGet2 *customer.Customer
 	}{
 		{
@@ -86,8 +89,8 @@ func Test_Freeze(t *testing.T) {
 			expectErr:      true,
 		},
 		{
-			name: "get customer fails - error",
-			id:   uuid.FromStringOrNil("4cd23368-7cb7-11ec-9466-8318ef5a7125"),
+			name:                "get customer fails - error",
+			id:                  uuid.FromStringOrNil("4cd23368-7cb7-11ec-9466-8318ef5a7125"),
 			responseCustomerGet: nil,
 			expectDBFreeze:      false,
 			expectDBGet2:        false,
@@ -436,6 +439,126 @@ func Test_FreezeAndDelete_GetAfterAnonymizeError(t *testing.T) {
 	}
 }
 
+// Test_FreezeAndDelete_ConcurrentRace exercises the real, observable behavior
+// change design §5.5 calls out for this out-of-scope-but-affected caller:
+// today two concurrent FreezeAndDelete calls on the same customer both
+// silently succeed and both publish customer_deleted (the same duplicate-
+// cascade bug the CustomerAnonymizePII status guard fixes for the scheduled
+// sweep); after the guard, the loser receives dbhandler.ErrNotFound and does
+// not publish a second event.
+//
+// Both goroutines see the customer as already frozen, so Freeze() takes the
+// idempotent early-return path (a single Get, no DB freeze, no frozen-event
+// publish) and only CustomerAnonymizePII actually races.
+func Test_FreezeAndDelete_ConcurrentRace(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &customerHandler{
+		reqHandler:    mockReq,
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+	ctx := context.Background()
+
+	id := uuid.FromStringOrNil("4cd23368-7cb7-11ec-9466-8318ef5a7125")
+
+	frozenCustomer := &customer.Customer{
+		ID:     id,
+		Status: customer.StatusFrozen,
+	}
+	anonymizedCustomer := &customer.Customer{
+		ID:     id,
+		Status: customer.StatusDeleted,
+	}
+
+	shortID := id.String()[:8]
+	anonName := fmt.Sprintf("deleted_user_%s", shortID)
+	anonEmail := fmt.Sprintf("deleted_%s@removed.voipbin.net", shortID)
+
+	// CustomerGet must reflect whatever the (mocked) DB state actually is at
+	// call time, not call registration order — two goroutines calling
+	// Freeze()'s initial Get and the post-anonymize Get interleave
+	// unpredictably, so the response is driven off the same atomic flag that
+	// CustomerAnonymizePII flips, mirroring real DB read-your-writes
+	// semantics instead of asserting a fixed call count per response.
+	//
+	// The two pre-anonymize Get calls (one per goroutine, from Freeze()'s
+	// idempotent-check) are additionally barriered so both goroutines are
+	// guaranteed to observe "frozen" and reach FreezeAndDelete's anonymize
+	// step before either one's CustomerAnonymizePII call can flip the
+	// anonymized flag — otherwise a goroutine that runs to completion before
+	// the other even starts would make the race deterministic instead of
+	// contested, and the second goroutine would see an already-deleted
+	// customer at the Freeze() step instead of racing CustomerAnonymizePII.
+	var anonymized int32
+	var preAnonymizeGets int32
+	preAnonymizeBarrier := make(chan struct{})
+	var closeBarrierOnce sync.Once
+	mockDB.EXPECT().CustomerGet(gomock.Any(), id).DoAndReturn(
+		func(_ context.Context, _ uuid.UUID) (*customer.Customer, error) {
+			if atomic.LoadInt32(&anonymized) == 1 {
+				return anonymizedCustomer, nil
+			}
+			if atomic.AddInt32(&preAnonymizeGets, 1) >= 2 {
+				closeBarrierOnce.Do(func() { close(preAnonymizeBarrier) })
+			} else {
+				<-preAnonymizeBarrier
+			}
+			return frozenCustomer, nil
+		},
+	).AnyTimes()
+
+	var claimed int32
+	mockDB.EXPECT().CustomerAnonymizePII(gomock.Any(), id, anonName, anonEmail).DoAndReturn(
+		func(_ context.Context, _ uuid.UUID, _, _ string) error {
+			if atomic.CompareAndSwapInt32(&claimed, 0, 1) {
+				atomic.StoreInt32(&anonymized, 1)
+				return nil
+			}
+			return dbhandler.ErrNotFound
+		},
+	).Times(2)
+
+	mockNotify.EXPECT().PublishEvent(gomock.Any(), customer.EventTypeCustomerDeleted, anonymizedCustomer).Times(1).Return()
+
+	const n = 2
+	var wg sync.WaitGroup
+	results := make([]error, n)
+	for i := 0; i < n; i++ {
+		wg.Add(1)
+		go func(idx int) {
+			defer wg.Done()
+			_, err := h.FreezeAndDelete(ctx, id)
+			results[idx] = err
+		}(i)
+	}
+	wg.Wait()
+
+	winners := 0
+	losers := 0
+	for _, err := range results {
+		switch {
+		case err == nil:
+			winners++
+		case errors.Is(err, dbhandler.ErrNotFound):
+			losers++
+		default:
+			t.Errorf("Unexpected error: %v", err)
+		}
+	}
+	if winners != 1 {
+		t.Errorf("Wrong match. expect: exactly 1 winner, got: %d", winners)
+	}
+	if losers != 1 {
+		t.Errorf("Wrong match. expect: exactly 1 loser, got: %d", losers)
+	}
+}
+
 func Test_Recover(t *testing.T) {
 	tests := []struct {
 		name string
@@ -443,10 +566,10 @@ func Test_Recover(t *testing.T) {
 
 		responseCustomerGet *customer.Customer
 
-		expectDBRecover bool
-		expectDBGet2    bool
-		expectPublish   bool
-		expectErr       bool
+		expectDBRecover      bool
+		expectDBGet2         bool
+		expectPublish        bool
+		expectErr            bool
 		responseCustomerGet2 *customer.Customer
 	}{
 		{

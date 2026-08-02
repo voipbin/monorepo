@@ -427,6 +427,10 @@ func (h *handler) CustomerListFrozenExpired(ctx context.Context, expiredBefore t
 }
 
 // CustomerAnonymizePII anonymizes the customer's personally identifiable information.
+// Guarded on status='frozen' AND tm_delete IS NULL so a concurrent claimant
+// cannot double-fire the anonymization (and the customer_deleted publish that
+// follows it) — returns ErrNotFound when 0 rows are affected, whether because
+// the row genuinely does not exist or because the guard no longer matched.
 func (h *handler) CustomerAnonymizePII(ctx context.Context, id uuid.UUID, anonName, anonEmail string) error {
 	start := time.Now()
 	status := "error"
@@ -456,6 +460,8 @@ func (h *handler) CustomerAnonymizePII(ctx context.Context, id uuid.UUID, anonNa
 	sb := squirrel.Update(customerTable).
 		SetMap(tmpFields).
 		Where(squirrel.Eq{string(customer.FieldID): id.Bytes()}).
+		Where(squirrel.Eq{string(customer.FieldStatus): string(customer.StatusFrozen)}).
+		Where(squirrel.Eq{string(customer.FieldTMDelete): nil}).
 		PlaceholderFormat(squirrel.Question)
 
 	sqlStr, args, err := sb.ToSql()
