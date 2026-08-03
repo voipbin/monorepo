@@ -42,4 +42,8 @@ Extension
 
    Unlike other resources that use ``9999-01-01 00:00:00.000000`` as a sentinel for "not yet occurred" timestamps, extensions use an empty string (``""``) for ``tm_update`` and ``tm_delete`` when the event has not occurred.
 
+.. warning:: **Call routing uses ``extension``, not ``name``**
+
+   When dialing an extension via ``POST /calls`` with ``destination.type: "extension"``, set ``destination.target_name`` to the extension's ``extension`` (username) field, **not** its ``name`` (display label) field. The two are independent and often differ (e.g. ``name: "jay-home"`` vs. ``extension: "jay1"``). Routing is matched strictly against ``extension``; if ``target_name`` does not match any registered extension's ``extension`` value, the call request fails with an error rather than silently ringing nothing.
+
 

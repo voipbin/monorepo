@@ -653,6 +653,11 @@
 <p><strong>AI Implementation Hint</strong></p>
 <p>Unlike other resources that use <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> as a sentinel for “not yet occurred” timestamps, extensions use an empty string (<code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code>) for <code class="docutils literal notranslate"><span class="pre">tm_update</span></code> and <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> when the event has not occurred.</p>
 </div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p><strong>Call routing uses ``extension``, not ``name``</strong></p>
+<p>When dialing an extension via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls</span></code> with <code class="docutils literal notranslate"><span class="pre">destination.type:</span> <span class="pre">&quot;extension&quot;</span></code>, set <code class="docutils literal notranslate"><span class="pre">destination.target_name</span></code> to the extension’s <code class="docutils literal notranslate"><span class="pre">extension</span></code> (username) field, <strong>not</strong> its <code class="docutils literal notranslate"><span class="pre">name</span></code> (display label) field. The two are independent and often differ (e.g. <code class="docutils literal notranslate"><span class="pre">name:</span> <span class="pre">&quot;jay-home&quot;</span></code> vs. <code class="docutils literal notranslate"><span class="pre">extension:</span> <span class="pre">&quot;jay1&quot;</span></code>). Routing is matched strictly against <code class="docutils literal notranslate"><span class="pre">extension</span></code>; if <code class="docutils literal notranslate"><span class="pre">target_name</span></code> does not match any registered extension’s <code class="docutils literal notranslate"><span class="pre">extension</span></code> value, the call request fails with an error rather than silently ringing nothing.</p>
+</div>
 </section>
 </section>
 
