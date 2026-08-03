@@ -21,7 +21,7 @@ import (
 func (h *listenHandler) processV1ExtensionsPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ExtensionsPost",
-		"request": m,
+		"request": redactRequestForLog(m),
 	})
 
 	uriItems := strings.Split(m.URI, "/")
@@ -31,7 +31,7 @@ func (h *listenHandler) processV1ExtensionsPost(ctx context.Context, m *sock.Req
 
 	var req request.V1DataExtensionsPost
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
-		log.Debugf("Could not unmarshal the request data. data: %v, err: %v", m.Data, err)
+		log.Debugf("Could not unmarshal the request data. data: %v, err: %v", redactSensitiveJSON(m.Data), err)
 		return simpleResponse(400), nil
 	}
 
@@ -50,7 +50,7 @@ func (h *listenHandler) processV1ExtensionsPost(ctx context.Context, m *sock.Req
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Errorf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -67,7 +67,7 @@ func (h *listenHandler) processV1ExtensionsPost(ctx context.Context, m *sock.Req
 func (h *listenHandler) processV1ExtensionsIDGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ExtensionsIDGet",
-		"request": m,
+		"request": redactRequestForLog(m),
 	})
 
 	u, err := url.Parse(m.URI)
@@ -104,7 +104,7 @@ func (h *listenHandler) processV1ExtensionsIDGet(ctx context.Context, m *sock.Re
 func (h *listenHandler) processV1ExtensionsIDPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ExtensionsIDPut",
-		"Request": m,
+		"request": redactRequestForLog(m),
 	})
 
 	u, err := url.Parse(m.URI)
@@ -118,7 +118,7 @@ func (h *listenHandler) processV1ExtensionsIDPut(ctx context.Context, m *sock.Re
 
 	var req request.V1DataExtensionsIDPut
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
-		log.Debugf("Could not unmarshal the request data. data: %v, err: %v", m.Data, err)
+		log.Debugf("Could not unmarshal the request data. data: %v, err: %v", redactSensitiveJSON(m.Data), err)
 		return simpleResponse(400), nil
 	}
 
@@ -159,7 +159,7 @@ func (h *listenHandler) processV1ExtensionsIDPut(ctx context.Context, m *sock.Re
 func (h *listenHandler) processV1ExtensionsIDDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ExtensionsIDDelete",
-		"request": m,
+		"request": redactRequestForLog(m),
 	})
 
 	u, err := url.Parse(m.URI)
@@ -196,7 +196,7 @@ func (h *listenHandler) processV1ExtensionsIDDelete(ctx context.Context, m *sock
 func (h *listenHandler) processV1ExtensionsGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ExtensionsGet",
-		"request": m,
+		"request": redactRequestForLog(m),
 	})
 
 	u, err := url.Parse(m.URI)
@@ -248,7 +248,7 @@ func (h *listenHandler) processV1ExtensionsGet(ctx context.Context, m *sock.Requ
 func (h *listenHandler) processV1ExtensionsExtensionExtensionGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ExtensionsExtensionExtensionGet",
-		"request": m,
+		"request": redactRequestForLog(m),
 	})
 
 	// Parse filters from request body
@@ -271,7 +271,7 @@ func (h *listenHandler) processV1ExtensionsExtensionExtensionGet(ctx context.Con
 	log.WithFields(logrus.Fields{
 		"customer_id":      reqData.CustomerID,
 		"extension":        ext,
-		"filters_raw_data": string(m.Data),
+		"filters_raw_data": string(redactSensitiveJSON(m.Data)),
 	}).Debug("processV1ExtensionsExtensionExtensionGet: Parsed filters from request body")
 
 	tmp, err := h.extensionHandler.GetByExtension(ctx, reqData.CustomerID, ext)

@@ -22,7 +22,7 @@ func (h *listenHandler) processV1ExtensionsIDDirectHashRegenerate(ctx context.Co
 		"func":         "processV1ExtensionsIDDirectHashRegenerate",
 		"extension_id": id,
 	})
-	log.WithField("request", m).Debug("Received request.")
+	log.WithField("request", redactRequestForLog(m)).Debug("Received request.")
 
 	tmp, err := h.extensionHandler.DirectHashRegenerate(ctx, id)
 	if err != nil {

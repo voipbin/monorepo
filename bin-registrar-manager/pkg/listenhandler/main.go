@@ -175,7 +175,7 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 		"uri":       m.URI,
 		"method":    m.Method,
 		"data_type": m.DataType,
-		"data":      m.Data,
+		"data":      redactSensitiveJSON(m.Data),
 	},
 	)
 	log.Debugf("Received request. method: %s, uri: %s", m.Method, m.URI)
@@ -294,7 +294,7 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	}
 
 	log.WithFields(logrus.Fields{
-		"response": response,
+		"response": redactResponseForLog(response),
 	}).Debugf("Sending back the result. method: %s, uri: %s", m.Method, m.URI)
 
 	return response, err

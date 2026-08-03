@@ -27,6 +27,7 @@ import (
 	"monorepo/bin-registrar-manager/pkg/dbhandler"
 	"monorepo/bin-registrar-manager/pkg/extensionhandler"
 	"monorepo/bin-registrar-manager/pkg/listenhandler"
+	"monorepo/bin-registrar-manager/pkg/redacthandler"
 	"monorepo/bin-registrar-manager/pkg/subscribehandler"
 	"monorepo/bin-registrar-manager/pkg/trunkhandler"
 )
@@ -61,7 +62,19 @@ func runDaemon() error {
 	initProm(config.Get().PrometheusEndpoint, config.Get().PrometheusListenAddress)
 
 	log := logrus.WithField("func", "runDaemon")
-	log.WithField("config", config.Get()).Info("Starting registrar-manager...")
+	cfg := config.Get()
+	log.WithFields(logrus.Fields{
+		"rabbitmq_address":          redacthandler.String(cfg.RabbitMQAddress),
+		"prometheus_endpoint":       cfg.PrometheusEndpoint,
+		"prometheus_listen_address": cfg.PrometheusListenAddress,
+		"database_dsn_bin":          redacthandler.String(cfg.DatabaseDSNBin),
+		"database_dsn_asterisk":     redacthandler.String(cfg.DatabaseDSNAsterisk),
+		"redis_address":             cfg.RedisAddress,
+		"redis_password":            redacthandler.String(cfg.RedisPassword),
+		"redis_database":            cfg.RedisDatabase,
+		"domain_name_extension":     cfg.DomainNameExtension,
+		"domain_name_trunk":         cfg.DomainNameTrunk,
+	}).Info("Starting registrar-manager...")
 
 	sqlDBBin, err := commondatabasehandler.Connect(config.Get().DatabaseDSNBin)
 	if err != nil {
