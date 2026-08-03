@@ -583,7 +583,7 @@ func Test_NumberRenew(t *testing.T) {
 		tmRenew string
 
 		responseNumbers []nmnumber.Number
-		expectRes       []*nmnumber.Number
+		expectRes       []*nmnumber.WebhookMessage
 	}
 
 	tests := []test{
@@ -611,17 +611,17 @@ func Test_NumberRenew(t *testing.T) {
 					},
 				},
 			},
-			expectRes: []*nmnumber.Number{
-				{
+			expectRes: []*nmnumber.WebhookMessage{
+				(&nmnumber.Number{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("92647ae8-161d-11ee-9746-6387778bd96f"),
 					},
-				},
-				{
+				}).ConvertWebhookMessage(),
+				(&nmnumber.Number{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("92d0da8a-161d-11ee-924f-ab88344e1aa3"),
 					},
-				},
+				}).ConvertWebhookMessage(),
 			},
 		},
 	}

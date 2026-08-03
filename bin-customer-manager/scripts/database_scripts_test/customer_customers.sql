@@ -12,6 +12,7 @@ create table customer_customers(
   -- webhook info
   webhook_method  varchar(255),
   webhook_uri     varchar(1023),
+  webhook_secret  varchar(255) not null default '',
 
   billing_account_id binary(16),
 

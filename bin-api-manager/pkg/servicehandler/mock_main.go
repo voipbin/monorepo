@@ -2505,10 +2505,10 @@ func (mr *MockServiceHandlerMockRecorder) ConversationUpdate(ctx, a, conversatio
 }
 
 // CustomerCreate mocks base method.
-func (m *MockServiceHandler) CustomerCreate(ctx context.Context, a *auth.AuthIdentity, name, detail, arg4, phoneNumber, arg6 string, webhookMethod customer.WebhookMethod, webhookURI string) (*customer.Customer, error) {
+func (m *MockServiceHandler) CustomerCreate(ctx context.Context, a *auth.AuthIdentity, name, detail, arg4, phoneNumber, arg6 string, webhookMethod customer.WebhookMethod, webhookURI string) (*customer.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CustomerCreate", ctx, a, name, detail, arg4, phoneNumber, arg6, webhookMethod, webhookURI)
-	ret0, _ := ret[0].(*customer.Customer)
+	ret0, _ := ret[0].(*customer.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -2520,10 +2520,10 @@ func (mr *MockServiceHandlerMockRecorder) CustomerCreate(ctx, a, name, detail, a
 }
 
 // CustomerDelete mocks base method.
-func (m *MockServiceHandler) CustomerDelete(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID) (*customer.Customer, error) {
+func (m *MockServiceHandler) CustomerDelete(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID) (*customer.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CustomerDelete", ctx, a, customerID)
-	ret0, _ := ret[0].(*customer.Customer)
+	ret0, _ := ret[0].(*customer.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -2550,10 +2550,10 @@ func (mr *MockServiceHandlerMockRecorder) CustomerEmailVerify(ctx, token any) *g
 }
 
 // CustomerFreeze mocks base method.
-func (m *MockServiceHandler) CustomerFreeze(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID) (*customer.Customer, error) {
+func (m *MockServiceHandler) CustomerFreeze(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID) (*customer.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CustomerFreeze", ctx, a, customerID)
-	ret0, _ := ret[0].(*customer.Customer)
+	ret0, _ := ret[0].(*customer.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -2565,10 +2565,10 @@ func (mr *MockServiceHandlerMockRecorder) CustomerFreeze(ctx, a, customerID any)
 }
 
 // CustomerGet mocks base method.
-func (m *MockServiceHandler) CustomerGet(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID) (*customer.Customer, error) {
+func (m *MockServiceHandler) CustomerGet(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID) (*customer.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CustomerGet", ctx, a, customerID)
-	ret0, _ := ret[0].(*customer.Customer)
+	ret0, _ := ret[0].(*customer.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -2580,10 +2580,10 @@ func (mr *MockServiceHandlerMockRecorder) CustomerGet(ctx, a, customerID any) *g
 }
 
 // CustomerList mocks base method.
-func (m *MockServiceHandler) CustomerList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, filters map[string]string) ([]*customer.Customer, error) {
+func (m *MockServiceHandler) CustomerList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, filters map[string]string) ([]*customer.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CustomerList", ctx, a, size, token, filters)
-	ret0, _ := ret[0].([]*customer.Customer)
+	ret0, _ := ret[0].([]*customer.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -2595,10 +2595,10 @@ func (mr *MockServiceHandlerMockRecorder) CustomerList(ctx, a, size, token, filt
 }
 
 // CustomerRecover mocks base method.
-func (m *MockServiceHandler) CustomerRecover(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID) (*customer.Customer, error) {
+func (m *MockServiceHandler) CustomerRecover(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID) (*customer.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CustomerRecover", ctx, a, customerID)
-	ret0, _ := ret[0].(*customer.Customer)
+	ret0, _ := ret[0].(*customer.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -2640,10 +2640,10 @@ func (mr *MockServiceHandlerMockRecorder) CustomerSelfFreezeAndDelete(ctx, a any
 }
 
 // CustomerSelfGet mocks base method.
-func (m *MockServiceHandler) CustomerSelfGet(ctx context.Context, a *auth.AuthIdentity) (*customer.WebhookMessage, error) {
+func (m *MockServiceHandler) CustomerSelfGet(ctx context.Context, a *auth.AuthIdentity) (*customer.SelfWebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CustomerSelfGet", ctx, a)
-	ret0, _ := ret[0].(*customer.WebhookMessage)
+	ret0, _ := ret[0].(*customer.SelfWebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -2730,10 +2730,10 @@ func (mr *MockServiceHandlerMockRecorder) CustomerSignup(ctx, name, detail, arg3
 }
 
 // CustomerUpdate mocks base method.
-func (m *MockServiceHandler) CustomerUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name, detail, arg5, phoneNumber, arg7 string, webhookMethod customer.WebhookMethod, webhookURI string) (*customer.Customer, error) {
+func (m *MockServiceHandler) CustomerUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name, detail, arg5, phoneNumber, arg7 string, webhookMethod customer.WebhookMethod, webhookURI string) (*customer.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CustomerUpdate", ctx, a, id, name, detail, arg5, phoneNumber, arg7, webhookMethod, webhookURI)
-	ret0, _ := ret[0].(*customer.Customer)
+	ret0, _ := ret[0].(*customer.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -2745,10 +2745,10 @@ func (mr *MockServiceHandlerMockRecorder) CustomerUpdate(ctx, a, id, name, detai
 }
 
 // CustomerUpdateBillingAccountID mocks base method.
-func (m *MockServiceHandler) CustomerUpdateBillingAccountID(ctx context.Context, a *auth.AuthIdentity, customerID, billingAccountID uuid.UUID) (*customer.Customer, error) {
+func (m *MockServiceHandler) CustomerUpdateBillingAccountID(ctx context.Context, a *auth.AuthIdentity, customerID, billingAccountID uuid.UUID) (*customer.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CustomerUpdateBillingAccountID", ctx, a, customerID, billingAccountID)
-	ret0, _ := ret[0].(*customer.Customer)
+	ret0, _ := ret[0].(*customer.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -2760,10 +2760,10 @@ func (mr *MockServiceHandlerMockRecorder) CustomerUpdateBillingAccountID(ctx, a,
 }
 
 // CustomerUpdateMetadata mocks base method.
-func (m *MockServiceHandler) CustomerUpdateMetadata(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID, metadata customer.Metadata) (*customer.Customer, error) {
+func (m *MockServiceHandler) CustomerUpdateMetadata(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID, metadata customer.Metadata) (*customer.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CustomerUpdateMetadata", ctx, a, customerID, metadata)
-	ret0, _ := ret[0].(*customer.Customer)
+	ret0, _ := ret[0].(*customer.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -3226,10 +3226,10 @@ func (mr *MockServiceHandlerMockRecorder) NumberList(ctx, a, size, token any) *g
 }
 
 // NumberRenew mocks base method.
-func (m *MockServiceHandler) NumberRenew(ctx context.Context, a *auth.AuthIdentity, tmRenew string) ([]*number.Number, error) {
+func (m *MockServiceHandler) NumberRenew(ctx context.Context, a *auth.AuthIdentity, tmRenew string) ([]*number.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NumberRenew", ctx, a, tmRenew)
-	ret0, _ := ret[0].([]*number.Number)
+	ret0, _ := ret[0].([]*number.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

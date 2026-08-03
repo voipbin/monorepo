@@ -48,7 +48,7 @@ func (h *webhookHandler) SendWebhookToCustomer(ctx context.Context, customerID u
 	if m.WebhookURI != "" {
 		// send webhook message
 		go func() {
-			if err := h.sendMessage(m.WebhookURI, string(m.WebhookMethod), string(dataType), data); err != nil {
+			if err := h.sendMessage(m.WebhookURI, string(m.WebhookMethod), string(dataType), data, m.WebhookSecret); err != nil {
 				promDeliveryTotal.WithLabelValues("customer", "error").Inc()
 				log.Errorf("Could not send a request. err: %v", err)
 				return
@@ -70,7 +70,9 @@ func (h *webhookHandler) SendWebhookToCustomer(ctx context.Context, customerID u
 	h.publishRoutingKeyedEvent(ctx, webhook.EventTypeWebhookPublished, data)
 
 	// additionally deliver to the per-activeflow webhook destination, if any.
-	h.sendWebhookToActiveflow(ctx, dataType, data)
+	// Reuses the customer's own signing secret -- an activeflow destination has
+	// no separate secret of its own.
+	h.sendWebhookToActiveflow(ctx, dataType, data, m.WebhookSecret)
 
 	return nil
 }
@@ -78,7 +80,7 @@ func (h *webhookHandler) SendWebhookToCustomer(ctx context.Context, customerID u
 // sendWebhookToActiveflow extracts the nested activeflow_id from the data
 // envelope and, if a positive per-activeflow destination is resolved, delivers
 // the same payload there additionally. It never affects the customer delivery.
-func (h *webhookHandler) sendWebhookToActiveflow(ctx context.Context, dataType webhook.DataType, data json.RawMessage) {
+func (h *webhookHandler) sendWebhookToActiveflow(ctx context.Context, dataType webhook.DataType, data json.RawMessage, secret string) {
 	if h.activeflowHandler == nil {
 		return
 	}
@@ -112,7 +114,7 @@ func (h *webhookHandler) sendWebhookToActiveflow(ctx context.Context, dataType w
 
 	log.Debugf("Delivering webhook to the per-activeflow destination. uri: %s", dest.URI)
 	go func() {
-		if err := h.sendMessage(dest.URI, string(dest.Method), string(dataType), data); err != nil {
+		if err := h.sendMessage(dest.URI, string(dest.Method), string(dataType), data, secret); err != nil {
 			promDeliveryTotal.WithLabelValues("activeflow", "error").Inc()
 			log.Errorf("Could not send a request to the activeflow destination. err: %v", err)
 			return
@@ -133,9 +135,20 @@ func (h *webhookHandler) SendWebhookToURI(ctx context.Context, customerID uuid.U
 		"data":      data,
 	}).Debugf("Sending an webhook. customer_id: %s", customerID)
 
+	// resolve the customer's signing secret, best-effort. A lookup failure must
+	// not block delivery -- it just means the request goes out unsigned.
+	var secret string
+	if customerID != cscustomer.IDSystem {
+		if m, err := h.accoutHandler.Get(ctx, customerID); err != nil {
+			log.Errorf("Could not get account for signing. err: %v", err)
+		} else {
+			secret = m.WebhookSecret
+		}
+	}
+
 	// send message
 	go func() {
-		if err := h.sendMessage(uri, string(method), string(dataType), data); err != nil {
+		if err := h.sendMessage(uri, string(method), string(dataType), data, secret); err != nil {
 			log.Errorf("Could not send a request. err: %v", err)
 		}
 	}()

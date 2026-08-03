@@ -93,6 +93,7 @@ func Test_Signup(t *testing.T) {
 
 			// create customer
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockUtil.EXPECT().StringGenerateRandom(webhookSecretSize).Return("test-webhook-secret", nil)
 			mockDB.EXPECT().CustomerCreate(ctx, gomock.Any()).DoAndReturn(func(_ context.Context, c *customer.Customer) error {
 				if c.TermsAgreedIP != "192.168.1.1" {
 					t.Errorf("Expected TermsAgreedIP=192.168.1.1, got: %s", c.TermsAgreedIP)
@@ -246,16 +247,16 @@ func Test_EmailVerify(t *testing.T) {
 			mockCache.EXPECT().VerifyLockRelease(ctx, tt.responseCustomerID).Return(nil)
 			mockDB.EXPECT().CustomerGet(ctx, tt.responseCustomerID).Return(tt.responseCustomer, nil)
 			mockDB.EXPECT().CustomerUpdate(ctx, tt.responseCustomerID, gomock.Any()).DoAndReturn(
-			func(_ context.Context, _ uuid.UUID, fields map[customer.Field]any) error {
-				if fields[customer.FieldStatus] != string(customer.StatusActive) {
-					t.Errorf("Expected status=active, got: %v", fields[customer.FieldStatus])
-				}
-				if fields[customer.FieldEmailVerified] != true {
-					t.Errorf("Expected email_verified=true, got: %v", fields[customer.FieldEmailVerified])
-				}
-				return nil
-			},
-		)
+				func(_ context.Context, _ uuid.UUID, fields map[customer.Field]any) error {
+					if fields[customer.FieldStatus] != string(customer.StatusActive) {
+						t.Errorf("Expected status=active, got: %v", fields[customer.FieldStatus])
+					}
+					if fields[customer.FieldEmailVerified] != true {
+						t.Errorf("Expected email_verified=true, got: %v", fields[customer.FieldEmailVerified])
+					}
+					return nil
+				},
+			)
 			mockCache.EXPECT().EmailVerifyTokenDelete(ctx, tt.token).Return(nil)
 			mockDB.EXPECT().CustomerGet(ctx, tt.responseCustomerID).Return(tt.responseUpdated, nil)
 			// password reset email for browser users
@@ -377,6 +378,7 @@ func Test_Signup_customerCreateError(t *testing.T) {
 	mockReq.EXPECT().AgentV1AgentList(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return([]amagent.Agent{}, nil)
 
 	mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("a1a1a1a1-0000-0000-0000-000000000001"))
+	mockUtil.EXPECT().StringGenerateRandom(webhookSecretSize).Return("test-webhook-secret", nil)
 	mockDB.EXPECT().CustomerCreate(ctx, gomock.Any()).Return(fmt.Errorf("db create error"))
 
 	_, err := h.Signup(ctx, "test", "detail", "test@voipbin.net", "", "", "", "", "192.168.1.1")
@@ -414,6 +416,7 @@ func Test_Signup_accesskeyCreateError(t *testing.T) {
 
 	// create customer succeeds
 	mockUtil.EXPECT().UUIDCreate().Return(responseUUID)
+	mockUtil.EXPECT().StringGenerateRandom(webhookSecretSize).Return("test-webhook-secret", nil)
 	mockDB.EXPECT().CustomerCreate(ctx, gomock.Any()).Return(nil)
 	mockDB.EXPECT().CustomerGet(ctx, responseUUID).Return(&customer.Customer{ID: responseUUID}, nil)
 
@@ -455,6 +458,7 @@ func Test_Signup_emailVerifyTokenSetError(t *testing.T) {
 
 	// create customer succeeds
 	mockUtil.EXPECT().UUIDCreate().Return(responseUUID)
+	mockUtil.EXPECT().StringGenerateRandom(webhookSecretSize).Return("test-webhook-secret", nil)
 	mockDB.EXPECT().CustomerCreate(ctx, gomock.Any()).Return(nil)
 	mockDB.EXPECT().CustomerGet(ctx, responseUUID).Return(&customer.Customer{ID: responseUUID}, nil)
 
@@ -510,6 +514,7 @@ func Test_Signup_emailSendFailureNonFatal(t *testing.T) {
 
 	// create customer succeeds
 	mockUtil.EXPECT().UUIDCreate().Return(responseUUID)
+	mockUtil.EXPECT().StringGenerateRandom(webhookSecretSize).Return("test-webhook-secret", nil)
 	mockDB.EXPECT().CustomerCreate(ctx, gomock.Any()).Return(nil)
 	mockDB.EXPECT().CustomerGet(ctx, responseUUID).Return(responseCustomer, nil)
 

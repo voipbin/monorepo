@@ -72,7 +72,7 @@ func Test_ConvertFromAsterisk(t *testing.T) {
 
 			expectedData: []byte{
 				0x80,       // Version (2), no padding, no extension, 0 CSRCs
-				0x00,       // Marker (0), Payload Type (0)
+				0x60,       // Marker (0), Payload Type (96, dynamic: L16/8000/1)
 				0x00, 0x01, // Sequence Number: 1
 				0x00, 0x00, 0x00, 0x10, // Timestamp: 16
 				0x00, 0x00, 0x00, 0x00, // SSRC Identifier: 0
@@ -177,7 +177,7 @@ func Test_ConvertFromWebsocket(t *testing.T) {
 			},
 			data: []byte{
 				0x80,       // Version (2), no padding, no extension, 0 CSRCs
-				0x00,       // Marker (0), Payload Type (0)
+				0x60,       // Marker (0), Payload Type (96, dynamic: L16/8000/1)
 				0x00, 0x01, // Sequence Number: 1
 				0x00, 0x00, 0x00, 0x10, // Timestamp: 16
 				0x00, 0x00, 0x00, 0x00, // SSRC Identifier: 0
@@ -268,7 +268,7 @@ func Test_convertAudiosocketToRTP(t *testing.T) {
 				tmp := &rtp.Packet{
 					Header: rtp.Header{
 						Version:        2,
-						PayloadType:    0, // For G.711 u-law (assuming default payload type)
+						PayloadType:    96, // dynamic PT: raw 16-bit signed-linear PCM, 8kHz, mono (L16/8000/1)
 						SequenceNumber: 1001,
 						Timestamp:      516, // 500 + 16 samples
 						SSRC:           12345,

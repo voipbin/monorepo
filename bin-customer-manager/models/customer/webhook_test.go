@@ -1,7 +1,9 @@
 package customer
 
 import (
+	"encoding/json"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -78,6 +80,53 @@ func Test_ConvertWebhookMessage(t *testing.T) {
 				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectRes, res)
 			}
 		})
+	}
+}
+
+// Test_ConvertWebhookMessage_NeverIncludesSecret is a regression test for a
+// round-1 security review finding: the public conversion used for the
+// customer_updated webhook event and every non-self-facing API response must
+// never carry the webhook signing secret. WebhookMessage structurally has no
+// WebhookSecret field, so this also guards against a future field-for-field
+// copy mistake reintroducing it there.
+func Test_ConvertWebhookMessage_NeverIncludesSecret(t *testing.T) {
+	c := &Customer{
+		ID:            uuid.FromStringOrNil("81133fc8-4a01-11ee-8dbf-4bbf6dd46254"),
+		Name:          "test name",
+		WebhookSecret: "super-secret-value",
+	}
+
+	b, err := json.Marshal(c.ConvertWebhookMessage())
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	if strings.Contains(string(b), "super-secret-value") || strings.Contains(string(b), "webhook_secret") {
+		t.Errorf("Wrong match. WebhookSecret leaked via ConvertWebhookMessage: %s", b)
+	}
+}
+
+// Test_ConvertWebhookMessageSelf_IncludesSecret verifies the one sanctioned
+// path to expose the webhook signing secret: the self-view conversion used
+// by CustomerSelfGet.
+func Test_ConvertWebhookMessageSelf_IncludesSecret(t *testing.T) {
+	c := &Customer{
+		ID:            uuid.FromStringOrNil("81133fc8-4a01-11ee-8dbf-4bbf6dd46254"),
+		Name:          "test name",
+		WebhookSecret: "super-secret-value",
+	}
+
+	res := c.ConvertWebhookMessageSelf()
+	if res.WebhookSecret != "super-secret-value" {
+		t.Errorf("Wrong match. expect: super-secret-value, got: %s", res.WebhookSecret)
+	}
+
+	b, err := json.Marshal(res)
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	if !strings.Contains(string(b), `"webhook_secret":"super-secret-value"`) {
+		t.Errorf("Wrong match. expect webhook_secret in self-view JSON, got: %s", b)
 	}
 }
 

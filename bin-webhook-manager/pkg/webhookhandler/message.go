@@ -2,6 +2,9 @@ package webhookhandler
 
 import (
 	"bytes"
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"net/http"
@@ -10,8 +13,24 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// signatureHeader is the HTTP header carrying the HMAC-SHA256 signature of
+// the outbound webhook body, so receivers can verify the request originated
+// from VoIPBin and was not tampered with in transit.
+const signatureHeader = "X-VoIPBIN-Signature"
+
+// computeSignature returns the hex-encoded HMAC-SHA256 of body keyed by secret,
+// formatted as "sha256=<hex>" (mirrors the convention already used elsewhere
+// in the monorepo for verifying inbound signatures, e.g. Meta's X-Hub-Signature-256).
+func computeSignature(secret string, body []byte) string {
+	mac := hmac.New(sha256.New, []byte(secret))
+	mac.Write(body)
+	return "sha256=" + hex.EncodeToString(mac.Sum(nil))
+}
+
 // sendMessage sends the message to the given uri with the given method and data.
-func (h *webhookHandler) sendMessage(uri string, method string, dataType string, data []byte) error {
+// When secret is non-empty, the request is signed and delivered with an
+// X-VoIPBIN-Signature header so the receiver can verify authenticity.
+func (h *webhookHandler) sendMessage(uri string, method string, dataType string, data []byte, secret string) error {
 
 	log := logrus.WithFields(
 		logrus.Fields{
@@ -45,6 +64,10 @@ func (h *webhookHandler) sendMessage(uri string, method string, dataType string,
 
 		if data != nil && dataType != "" {
 			req.Header.Set("Content-Type", dataType)
+		}
+
+		if secret != "" {
+			req.Header.Set(signatureHeader, computeSignature(secret, data))
 		}
 
 		resp, err := client.Do(req)

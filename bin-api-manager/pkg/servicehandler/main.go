@@ -608,10 +608,10 @@ type ServiceHandler interface {
 		address string,
 		webhookMethod cscustomer.WebhookMethod,
 		webhookURI string,
-	) (*cscustomer.Customer, error)
-	CustomerGet(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID) (*cscustomer.Customer, error)
-	CustomerSelfGet(ctx context.Context, a *auth.AuthIdentity) (*cscustomer.WebhookMessage, error)
-	CustomerList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, filters map[string]string) ([]*cscustomer.Customer, error)
+	) (*cscustomer.WebhookMessage, error)
+	CustomerGet(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID) (*cscustomer.WebhookMessage, error)
+	CustomerSelfGet(ctx context.Context, a *auth.AuthIdentity) (*cscustomer.SelfWebhookMessage, error)
+	CustomerList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, filters map[string]string) ([]*cscustomer.WebhookMessage, error)
 	CustomerUpdate(
 		ctx context.Context,
 		a *auth.AuthIdentity,
@@ -623,7 +623,7 @@ type ServiceHandler interface {
 		address string,
 		webhookMethod cscustomer.WebhookMethod,
 		webhookURI string,
-	) (*cscustomer.Customer, error)
+	) (*cscustomer.WebhookMessage, error)
 	CustomerSelfUpdate(
 		ctx context.Context,
 		a *auth.AuthIdentity,
@@ -635,14 +635,14 @@ type ServiceHandler interface {
 		webhookMethod cscustomer.WebhookMethod,
 		webhookURI string,
 	) (*cscustomer.WebhookMessage, error)
-	CustomerDelete(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID) (*cscustomer.Customer, error)
-	CustomerFreeze(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID) (*cscustomer.Customer, error)
-	CustomerRecover(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID) (*cscustomer.Customer, error)
+	CustomerDelete(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID) (*cscustomer.WebhookMessage, error)
+	CustomerFreeze(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID) (*cscustomer.WebhookMessage, error)
+	CustomerRecover(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID) (*cscustomer.WebhookMessage, error)
 	CustomerSelfFreeze(ctx context.Context, a *auth.AuthIdentity) (*cscustomer.WebhookMessage, error)
 	CustomerSelfFreezeAndDelete(ctx context.Context, a *auth.AuthIdentity) (*cscustomer.WebhookMessage, error)
 	CustomerSelfRecover(ctx context.Context, a *auth.AuthIdentity) (*cscustomer.WebhookMessage, error)
-	CustomerUpdateBillingAccountID(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID, billingAccountID uuid.UUID) (*cscustomer.Customer, error)
-	CustomerUpdateMetadata(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID, metadata cscustomer.Metadata) (*cscustomer.Customer, error)
+	CustomerUpdateBillingAccountID(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID, billingAccountID uuid.UUID) (*cscustomer.WebhookMessage, error)
+	CustomerUpdateMetadata(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID, metadata cscustomer.Metadata) (*cscustomer.WebhookMessage, error)
 	CustomerSelfUpdateBillingAccountID(ctx context.Context, a *auth.AuthIdentity, billingAccountID uuid.UUID) (*cscustomer.WebhookMessage, error)
 	CustomerSelfUpdateMetadata(ctx context.Context, a *auth.AuthIdentity, metadata cscustomer.Metadata) (*cscustomer.WebhookMessage, error)
 	CustomerSignup(
@@ -724,7 +724,7 @@ type ServiceHandler interface {
 	NumberUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, callFlowID uuid.UUID, messageFlowID uuid.UUID, name string, detail string) (*nmnumber.WebhookMessage, error)
 	NumberUpdateFlowIDs(ctx context.Context, a *auth.AuthIdentity, id, callFlowID uuid.UUID, messageFlowID uuid.UUID) (*nmnumber.WebhookMessage, error)
 	NumberUpdateMetadata(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, metadata nmnumber.Metadata) (*nmnumber.WebhookMessage, error)
-	NumberRenew(ctx context.Context, a *auth.AuthIdentity, tmRenew string) ([]*nmnumber.Number, error)
+	NumberRenew(ctx context.Context, a *auth.AuthIdentity, tmRenew string) ([]*nmnumber.WebhookMessage, error)
 
 	// outdials
 	OutdialCreate(ctx context.Context, a *auth.AuthIdentity, campaignID uuid.UUID, name, detail, data string) (*omoutdial.WebhookMessage, error)

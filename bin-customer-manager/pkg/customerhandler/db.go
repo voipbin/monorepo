@@ -14,6 +14,10 @@ import (
 	"monorepo/bin-customer-manager/pkg/dbhandler"
 )
 
+// webhookSecretSize is the byte length used to generate a new customer's
+// HMAC-SHA256 webhook signing secret (see StringGenerateRandom).
+const webhookSecretSize = 32
+
 // List returns list of customers
 func (h *customerHandler) List(ctx context.Context, size uint64, token string, filters map[customer.Field]any) ([]*customer.Customer, error) {
 	log := logrus.WithField("func", "List")
@@ -82,6 +86,12 @@ func (h *customerHandler) Create(
 
 	id := h.utilHandler.UUIDCreate()
 
+	webhookSecret, err := h.utilHandler.StringGenerateRandom(webhookSecretSize)
+	if err != nil {
+		log.Errorf("Could not generate a webhook secret. err: %v", err)
+		return nil, err
+	}
+
 	// create customer
 	u := &customer.Customer{
 		ID: id,
@@ -95,6 +105,7 @@ func (h *customerHandler) Create(
 
 		WebhookMethod: webhookMethod,
 		WebhookURI:    webhookURI,
+		WebhookSecret: webhookSecret,
 
 		EmailVerified:              true,
 		Status:                     customer.StatusActive,

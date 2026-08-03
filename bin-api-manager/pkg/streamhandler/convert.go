@@ -9,7 +9,15 @@ import (
 )
 
 const (
-	defaultRTPPayloadType = 0 // ITU-T G.711 PCM μ-Law audio 64 kbit/s
+	// defaultRTPPayloadType is stamped on every RTP packet this stream
+	// produces/expects. The payload is always raw 16-bit signed-linear PCM,
+	// 8kHz, mono (AudioSocket's "Slin" format) -- never actually G.711
+	// mu-law -- so it cannot use the static PT 0 (PCMU) or the RFC 3551
+	// static L16 payload types (10/11, which assume 44.1kHz). RFC 3551
+	// reserves 96-127 for dynamic payload types negotiated out-of-band;
+	// since this WebSocket media-stream feature has no SDP/rtpmap
+	// negotiation channel, 96 is used as a fixed convention: L16/8000/1.
+	defaultRTPPayloadType = 96 // dynamic PT: raw 16-bit signed-linear PCM, 8kHz, mono (L16/8000/1)
 )
 
 // ConvertFromWebsocket returns converted byte for
