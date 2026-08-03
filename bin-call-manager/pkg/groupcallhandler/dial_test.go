@@ -339,6 +339,57 @@ func Test_getDialDestinationsAddressTypeExtension(t *testing.T) {
 	}
 }
 
+func Test_getDialDestinationsAddressTypeExtension_noContacts(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		cusotmerID  uuid.UUID
+		destination *commonaddress.Address
+
+		responseContacts []rmastcontact.AstContact
+	}{
+		{
+			name: "no registered contacts for the given target name",
+
+			cusotmerID: uuid.FromStringOrNil("20b8c8aa-41cd-438e-8fd3-4bb18b72db67"),
+			destination: &commonaddress.Address{
+				Type:       commonaddress.TypeExtension,
+				TargetName: "jay-home",
+				Target:     "jay-home",
+			},
+
+			responseContacts: []rmastcontact.AstContact{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &groupcallHandler{
+				utilHandler:   mockUtil,
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().RegistrarV1ContactList(ctx, gomock.Any()).Return(tt.responseContacts, nil)
+			res, err := h.getDialDestinationsAddressTypeExtension(ctx, tt.cusotmerID, tt.destination)
+			if err == nil {
+				t.Errorf("Wrong match. expect: error, got: ok, res: %v", res)
+			}
+		})
+	}
+}
+
 func Test_getDialDestinationsAddressAndRingMethodTypeAgent(t *testing.T) {
 
 	tests := []struct {

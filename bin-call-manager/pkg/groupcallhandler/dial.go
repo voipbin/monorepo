@@ -194,6 +194,11 @@ func (h *groupcallHandler) getDialDestinationsAddressTypeExtension(ctx context.C
 	}
 	log.WithField("contacts", contacts).Debugf("Found contacts info. len: %d", len(contacts))
 
+	if len(contacts) == 0 {
+		log.Errorf("Could not find any registered contact for the extension. target_name: %s", destination.TargetName)
+		return nil, fmt.Errorf("no registered contact found for extension %s", destination.TargetName)
+	}
+
 	res := []commonaddress.Address{}
 	for _, contact := range contacts {
 		uri := strings.ReplaceAll(contact.URI, "^3B", ";")

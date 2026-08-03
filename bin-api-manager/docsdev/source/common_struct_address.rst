@@ -21,7 +21,7 @@ Defines source/destination address. This structure is used throughout VoIPBIN wh
 
 * ``type`` (enum string): Address type. Determines how ``target`` is interpreted. See :ref:`Type <common-struct-address-type>`.
 * ``target`` (String): The address endpoint. Format depends on ``type``: E.164 phone number for ``tel`` (e.g., ``+15551234567``), extension number for ``extension`` (e.g., ``2001``), agent UUID for ``agent`` (obtained from ``GET /agents``), or SIP URI for ``sip`` (e.g., ``user@domain.com``).
-* ``target_name`` (String): Display name associated with the address. For ``tel`` type, this is the caller ID name. Optional.
+* ``target_name`` (String): Display name associated with the address. For ``tel`` type, this is the caller ID name. Optional. **For ``extension`` type, this is the routing key** and must be set to the target extension's ``extension`` (username) field, not its ``name`` (display label) field. See :ref:`Extension <extension-struct-extension-extension>`.
 * ``name`` (String): A human-readable label for this address. Optional.
 * ``detail`` (String): Additional description or metadata for this address. Optional.
 
@@ -83,7 +83,7 @@ ai          Address for an AI resource. ``target`` must be the AI resource's UUI
 ai_team     Address for an AI team. ``target`` must be the AI team's UUID.
 conference  Address for a conference. ``target`` must be the conference's UUID, obtained from ``GET /conferences``.
 email       Address for email. ``target`` must be a valid email address (e.g., ``user@example.com``).
-extension   Address for calling an extension number. ``target`` is the extension number string (e.g., ``2001``).
+extension   Address for calling an extension number. ``target`` is the extension number string (e.g., ``2001``). ``target_name`` must be the extension's ``extension`` (username) field, not its ``name`` (display label) field; a mismatched value causes the call request to fail.
 line        Line type address. Used for LINE messaging integrations. ``target`` is the LINE user or channel ID.
 sip         SIP protocol address. ``target`` is a SIP URI (e.g., ``user@domain.com``).
 tel         Telephone number address. ``target`` must be in E.164 format (e.g., ``+15551234567``).
