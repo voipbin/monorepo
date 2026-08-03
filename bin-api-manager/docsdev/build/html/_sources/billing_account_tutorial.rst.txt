@@ -45,7 +45,7 @@ The ``/billing_account`` endpoint (singular, no ID) auto-resolves the billing ac
         "tm_next_topup": "2024-02-01T00:00:00Z",
         "tm_create": "2024-01-01T00:00:00Z",
         "tm_update": "2024-01-15T10:30:00Z",
-        "tm_delete": "9999-01-01T00:00:00Z"
+        "tm_delete": null
     }
 
 The ``balance_credit`` field is in micros (69772630 = $69.77). The ``balance_token`` field is the current token count. The ``plan_status`` field indicates whether the subscription is ``active`` or ``canceling``.
@@ -75,7 +75,7 @@ This endpoint uses the admin-only ``/billing_accounts`` (plural) path and requir
                 "tm_next_topup": "2024-02-01T00:00:00Z",
                 "tm_create": "2024-01-01T00:00:00Z",
                 "tm_update": "2024-01-15T10:30:00Z",
-                "tm_delete": "9999-01-01T00:00:00Z"
+                "tm_delete": null
             }
         ]
     }
@@ -83,6 +83,107 @@ This endpoint uses the admin-only ``/billing_accounts`` (plural) path and requir
 .. note:: **AI Implementation Hint**
 
    Regular customer users should use ``GET /v1.0/billing_account`` (singular, no ID) to retrieve their own billing account. The plural ``/billing_accounts`` endpoint is restricted to project super admins.
+
+Update Billing Account Basic Info
+-----------------------------------
+
+Update the display name and detail of your billing account. Requires ``CustomerAdmin`` permission.
+
+.. code::
+
+    $ curl --location --request PUT 'https://api.voipbin.net/v1.0/billing_account?token=<YOUR_AUTH_TOKEN>' \
+        --header 'Content-Type: application/json' \
+        --data-raw '{
+            "name": "Production Account",
+            "detail": "Main billing account for production services"
+        }'
+
+    {
+        "id": "62918cd8-0cd7-11ee-8571-b738bed3a5c4",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "name": "Production Account",
+        "detail": "Main billing account for production services",
+        "plan_type": "free",
+        "plan_status": "active",
+        "balance_credit": 69772630,
+        "balance_token": 70,
+        "payment_type": "",
+        "payment_method": "",
+        "tm_last_topup": "2024-01-01T00:00:00Z",
+        "tm_next_topup": "2024-02-01T00:00:00Z",
+        "tm_create": "2024-01-01T00:00:00Z",
+        "tm_update": "2024-01-15T10:35:00Z",
+        "tm_delete": null
+    }
+
+Update Billing Account Payment Info
+--------------------------------------
+
+Update the payment type and method recorded for your billing account. Requires ``CustomerAdmin`` permission.
+
+.. code::
+
+    $ curl --location --request PUT 'https://api.voipbin.net/v1.0/billing_account/payment_info?token=<YOUR_AUTH_TOKEN>' \
+        --header 'Content-Type: application/json' \
+        --data-raw '{
+            "payment_type": "prepaid",
+            "payment_method": "credit card"
+        }'
+
+    {
+        "id": "62918cd8-0cd7-11ee-8571-b738bed3a5c4",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "name": "Primary Account",
+        "detail": "Main billing account",
+        "plan_type": "free",
+        "plan_status": "active",
+        "balance_credit": 69772630,
+        "balance_token": 70,
+        "payment_type": "prepaid",
+        "payment_method": "credit card",
+        "tm_last_topup": "2024-01-01T00:00:00Z",
+        "tm_next_topup": "2024-02-01T00:00:00Z",
+        "tm_create": "2024-01-01T00:00:00Z",
+        "tm_update": "2024-01-15T10:36:00Z",
+        "tm_delete": null
+    }
+
+Create a Paddle Customer Portal Session
+------------------------------------------
+
+Generate a Paddle Customer Portal URL so the customer can manage their own subscription (update card, view invoices, cancel plan). Requires ``CustomerAdmin`` permission and an active Paddle subscription already linked to the billing account.
+
+.. code::
+
+    $ curl --location --request POST 'https://api.voipbin.net/v1.0/billing_account/paddle_portal_session?token=<YOUR_AUTH_TOKEN>'
+
+    {
+        "url": "https://customer-portal.paddle.com/cpl_session_abc123"
+    }
+
+.. note:: **AI Implementation Hint**
+
+   The returned Paddle portal URL is valid for a limited time only. Redirect the user to it immediately rather than storing it for later use.
+
+Admin: Get and Update a Specific Billing Account
+----------------------------------------------------
+
+Project super admins can retrieve or update any billing account by ID using the plural ``/billing_accounts`` path.
+
+.. code::
+
+    $ curl --location --request GET 'https://api.voipbin.net/v1.0/billing_accounts/62918cd8-0cd7-11ee-8571-b738bed3a5c4?token=<YOUR_ADMIN_TOKEN>'
+
+.. code::
+
+    $ curl --location --request PUT 'https://api.voipbin.net/v1.0/billing_accounts/62918cd8-0cd7-11ee-8571-b738bed3a5c4?token=<YOUR_ADMIN_TOKEN>' \
+        --header 'Content-Type: application/json' \
+        --data-raw '{
+            "name": "Renamed Account",
+            "detail": "Updated by admin"
+        }'
+
+Admins can also update another customer's payment info via ``PUT /billing_accounts/{id}/payment_info`` with the same ``payment_type``/``payment_method`` body shown above.
 
 Understanding Service Rates
 ----------------------------

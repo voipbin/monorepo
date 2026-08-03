@@ -76,6 +76,8 @@ Example
     --header 'Content-Type: application/json' \
     --data-raw '{
         "customer_id": "00000000-0000-0000-0000-000000000001",
+        "name": "",
+        "detail": "",
         "provider_id": "4dbeabd6-f397-4375-95d2-a38411e07ed1",
         "priority": 1,
         "target": "+82"
@@ -105,7 +107,8 @@ Example
     $ curl --location --request PUT 'https://api.voipbin.net/v1.0/routes/b972b61c-59d2-4217-8fbb-a32304be5c3b?token=<YOUR_AUTH_TOKEN>' \
         --header 'Content-Type: application/json' \
         --data-raw '{
-            "customer_id": "00000000-0000-0000-0000-000000000001",
+            "name": "",
+            "detail": "",
             "provider_id": "4dbeabd6-f397-4375-95d2-a38411e07ed1",
             "priority": 2,
             "target": "+82"

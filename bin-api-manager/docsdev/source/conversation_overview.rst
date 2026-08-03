@@ -94,6 +94,10 @@ VoIPBIN supports multiple communication channels within a single conversation.
      - LINE messaging platform
    * - whatsapp
      - WhatsApp Business messaging via Meta Cloud API
+   * - email
+     - Outbound email conversations
+   * - webchat
+     - Conversations originating from an embedded webchat widget session
 
 
 **Channel Selection**
@@ -768,6 +772,7 @@ Related Documentation
 
 - :ref:`Message Overview <message-overview>` - SMS/MMS messaging
 - :ref:`Email Overview <email-overview>` - Email integration
+- :ref:`Webchat Overview <webchat-overview>` - Embedded chat widget integration
 - :ref:`Talk Overview <talk-overview>` - Internal team messaging
 - :ref:`Webhook Overview <webhook-overview>` - Webhook configuration
 - :ref:`Using AI in Conversations <ai-overview-conversation-ai>` - Run an AI agent inside an SMS or LINE conversation via the ``ai_talk`` flow action

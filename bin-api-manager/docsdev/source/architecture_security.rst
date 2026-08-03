@@ -859,7 +859,7 @@ Security standards adherence:
     PCI DSS:
     +------------------------------------------+
     | o No credit card data stored             |
-    | o Payment via Stripe (PCI compliant)     |
+    | o Payment via Paddle (PCI compliant)     |
     +------------------------------------------+
 
 Security Best Practices

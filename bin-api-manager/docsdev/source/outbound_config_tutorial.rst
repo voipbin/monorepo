@@ -30,8 +30,10 @@ Response:
      "id": "a1b2c3d4-...",
      "customer_id": "...",
      "name": "",
+     "detail": "",
      "destination_whitelist": [],
      "codecs": "",
+     "default_outgoing_source_number_id": "00000000-0000-0000-0000-000000000000",
      "tm_create": "2026-05-07T10:00:00Z",
      "tm_update": null,
      "tm_delete": null
@@ -65,8 +67,10 @@ Response:
      "id": "a1b2c3d4-...",
      "customer_id": "...",
      "name": "",
+     "detail": "",
      "destination_whitelist": ["us", "gb", "kr"],
      "codecs": "PCMU,PCMA",
+     "default_outgoing_source_number_id": "00000000-0000-0000-0000-000000000000",
      "tm_create": "2026-05-07T10:00:00Z",
      "tm_update": "2026-05-07T10:05:00Z",
      "tm_delete": null

@@ -11,7 +11,7 @@ Overview
 
 The agent, also known as the call center agent or phone agent, plays a crucial role as a representative of a company, handling calls with private or business customers on behalf of the organization. Typically, agents work in a call center environment, where multiple agents are employed to efficiently manage incoming and outgoing calls. The call center may be operated by the company itself or outsourced to an external service provider. In the case of external service providers, a single site may serve various clients from different businesses.
 
-In VoIPBIN, agents are the people (or endpoints) that receive calls from queues. They have statuses, skills (tags), and contact addresses that determine when and how they can receive calls.
+In VoIPBIN, agents are the people (or endpoints) that receive calls from queues. Their status and contact addresses determine when and how they can receive calls; skill tags are also tracked per agent but are not currently enforced during call routing (see below).
 
 
 Agent Status
@@ -55,7 +55,8 @@ Every agent has a status that reflects their current availability. The status de
               |
               | Call ends
               v
-        (returns to previous status)
+        (stays "busy" until the agent
+         manually sets a new status)
 
 **Status Descriptions**
 
@@ -93,17 +94,21 @@ Every agent has a status that reflects their current availability. The status de
     +-----------+        Call routed         +-----------+
     | available |--------------------------->|  ringing  |
     +-----------+                            +-----+-----+
-          ^                                        |
-          | Call ends                              | Agent answers
-          | (or timeout)                           v
-          |                                  +-----------+
-          +----------------------------------|   busy    |
-                                             +-----------+
+                                                    |
+                                                    | Agent answers
+                                                    v
+                                              +-----------+
+                                              |   busy    |
+                                              +-----------+
+
+    Note: there is no automatic transition back to "available" when the
+    call ends. The agent (or your application) must explicitly call
+    PUT /agents/{id}/status to become eligible for queue calls again.
 
 
 Agent Tags (Skills)
 -------------------
-Tags define what skills or groups an agent belongs to. They're used for skill-based routing from queues.
+Tags define what skills or groups an agent belongs to. They are intended for skill-based routing from queues, but this is **not currently enforced** (see below).
 
 **How Tags Work**
 
@@ -126,16 +131,23 @@ Tags define what skills or groups an agent belongs to. They're used for skill-ba
                                    |
                                    v
                           +-------------------+
-                          | Agent Smith has   |
-                          | ALL required tags |
-                          | -> Eligible!       |
+                          | Not currently      |
+                          | evaluated -- any   |
+                          | available agent of |
+                          | the customer is    |
+                          | eligible, tagged   |
+                          | or not.            |
                           +-------------------+
 
-**Tag Matching Rules**
+.. warning:: **Known Limitation: tag-based routing is not enforced**
 
-- Agent must have **ALL** tags the queue requires
-- Having extra tags is fine (agent has "vip_support" but queue doesn't require it)
-- Tags can represent anything: languages, skills, departments, locations
+   Agent tags and queue ``tag_ids`` are both stored and returned by the API, but queue call routing does not currently filter or rank agents by tag overlap -- see :ref:`Agent Searching <queue-overview>` for the full explanation. Do not rely on tags to restrict which agent receives a queue call.
+
+**Tag Field (current behavior)**
+
+- Tags are useful for organizing and auditing your agent roster in your own tooling. ``GET /agents?tag_ids=...`` does **not** filter server-side -- the parameter hits the same dropped-filter bug described above and silently returns all agents regardless of the value passed.
+- They are not consulted when a queue selects an agent for an incoming call -- any available agent belonging to the queue's customer is eligible, tagged or not.
+- Tags can represent anything: languages, skills, departments, locations -- just not (yet) a routing constraint.
 
 ::
 
@@ -375,7 +387,8 @@ The complete flow of how a call is routed from a queue to an agent:
     | SELECT agents WHERE:                                                  |
     |   o customer_id = queue's customer_id                                |
     |   o status = 'available'                                             |
-    |   o has ALL required tags (english AND billing)                      |
+    |   (tag_ids is NOT applied as a filter -- see Known Limitation in     |
+    |    the Queue Overview)                                               |
     +----------------------------------------------------------------------+
                |
                v
@@ -438,9 +451,10 @@ Agent status changes trigger events that you can subscribe to:
         "event_type": "agent_status_updated",
         "data": {
             "id": "agent-uuid",
+            "customer_id": "customer-uuid",
+            "username": "john@company.com",
             "name": "John Smith",
             "status": "available",
-            "previous_status": "offline",
             "tm_update": "2024-01-15T10:30:00Z"
         }
     }
@@ -459,24 +473,30 @@ In the VoIPBIN ecosystem, permissions play a crucial role in governing the actio
     +-----------------------------------------------------------------------------+
 
     +-----------------------------------------------------------------------------+
-    |                           ADMIN                                          |
-    |  o Full access to all APIs                                              |
-    |  o Can manage other agents                                              |
-    |  o Can view billing and account settings                                |
-    |  o Can create/delete resources                                          |
+    |                     CUSTOMER ADMIN (0x0020 / 32)                         |
+    |  o Full access to the customer's APIs                                   |
+    |  o Can manage other agents (create, update, delete, permissions)        |
+    |  o Can create/delete resources (queues, tags, etc.)                     |
     +-----------------------------------------------------------------------------+
                                     |
                                     | More restricted
                                     v
     +-----------------------------------------------------------------------------+
-    |                            USER                                          |
-    |  o Can view and use assigned resources                                  |
-    |  o Can update own status                                                |
-    |  o Cannot manage other agents                                           |
-    |  o Limited administrative access                                        |
+    |                    CUSTOMER MANAGER (0x0040 / 64)                        |
+    |  o Can manage queues and agent-facing resources                         |
+    |  o Cannot perform admin-only account operations                         |
+    +-----------------------------------------------------------------------------+
+                                    |
+                                    | More restricted
+                                    v
+    +-----------------------------------------------------------------------------+
+    |                    CUSTOMER AGENT (0x0010 / 16)                          |
+    |  o Basic agent-level access                                             |
+    |  o Can update own status and addresses                                  |
+    |  o Cannot manage other agents or customer-wide resources                |
     +-----------------------------------------------------------------------------+
 
-VoIPBIN employs a robust permission framework to regulate access to its APIs, enhancing security and preventing unauthorized actions. Agents, representing entities interacting with the system, are assigned permissions that align with their intended functionalities.
+VoIPBIN employs a bitmask permission framework to regulate access to its APIs, enhancing security and preventing unauthorized actions. Each agent's ``permission`` field is a combination of bit flags; multiple levels can be combined (e.g. ``0x0060`` = admin + manager). See :ref:`Permission <agent-struct-agent-permission>` for the full list of permission bit values, including project-level flags reserved for VoIPBIN operators.
 
 Every API in VoIPBIN is associated with granular permission limitations. These limitations are designed to:
 
@@ -529,7 +549,8 @@ Best Practices
     2. Agent sets available → Status: available
     3. Call comes in → Status: ringing (automatic)
     4. Agent answers → Status: busy (automatic)
-    5. Call ends → Status: available (if was available before)
+    5. Call ends → Status stays "busy"; the agent must manually set it
+       back to available via PUT /agents/{id}/status
     6. Agent takes break → Status: away (manual)
     7. Agent logs out → Status: offline (manual)
 
@@ -556,7 +577,9 @@ Common Scenarios
            Status: available → ringing → busy
 
     Call ends
-           Status: busy → available
+           Status stays "busy" (no automatic revert)
+
+    Agent manually sets status back to available
 
     Agent takes lunch break
            Status: available → away
@@ -571,7 +594,7 @@ Common Scenarios
 ::
 
     Agent finishes last call
-           Status: busy → available
+           Status stays "busy" until manually changed
 
     Agent logs out for the day
            Status: available → offline
@@ -586,8 +609,10 @@ Troubleshooting
 +---------------------------+------------------------------------------------+
 | Symptom                   | Solution                                       |
 +===========================+================================================+
-| Agent not receiving calls | Check status is "available"; verify agent has  |
-|                           | required tags for queue; check addresses       |
+| Agent not receiving calls | Check status is "available"; check the agent's |
+|                           | ``customer_id`` matches the queue's; check     |
+|                           | addresses (tags are not consulted -- see the   |
+|                           | Tag Issues row below)                          |
 +---------------------------+------------------------------------------------+
 | Stuck in "ringing" status | Check if call was properly terminated; may     |
 |                           | need to manually reset status                  |
@@ -616,8 +641,12 @@ Troubleshooting
 +---------------------------+------------------------------------------------+
 | Symptom                   | Solution                                       |
 +===========================+================================================+
-| Agent not matched to      | Verify agent has ALL required tags for queue;  |
-| queue                     | tags must match exactly                        |
+| Agent not matched to      | Tags are not currently used to filter agents   |
+| queue                     | for routing -- any available agent of the      |
+|                           | queue's customer is eligible regardless of     |
+|                           | tags. If an agent is unexpectedly not          |
+|                           | receiving calls, check ``status`` and          |
+|                           | ``customer_id`` instead.                       |
 +---------------------------+------------------------------------------------+
 | Tag assignment failed     | Verify tag IDs exist; check API permissions    |
 +---------------------------+------------------------------------------------+

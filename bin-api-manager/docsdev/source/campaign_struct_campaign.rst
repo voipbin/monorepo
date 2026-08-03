@@ -27,8 +27,8 @@ Campaign
         "queue_id": "<string>",
         "next_campaign_id": "<string>",
         "tm_create": "<string>",
-        "tm_update": "<string>",
-        "tm_delete": "<string>"
+        "tm_update": "<string or null>",
+        "tm_delete": "<string or null>"
     }
 
 * ``id`` (UUID): The campaign's unique identifier. Returned when creating via ``POST /campaigns`` or listing via ``GET /campaigns``.
@@ -45,12 +45,12 @@ Campaign
 * ``queue_id`` (UUID): The queue for routing answered calls to agents. Obtained from the ``id`` field of ``GET /queues``. Set to ``00000000-0000-0000-0000-000000000000`` if not assigned.
 * ``next_campaign_id`` (UUID): The campaign to chain after this one finishes. Obtained from the ``id`` field of ``GET /campaigns``. Set to ``00000000-0000-0000-0000-000000000000`` if not assigned.
 * ``tm_create`` (string, ISO 8601): Timestamp when the campaign was created.
-* ``tm_update`` (string, ISO 8601): Timestamp of the last update to any campaign property.
-* ``tm_delete`` (string, ISO 8601): Timestamp when the campaign was deleted. Set to ``9999-01-01 00:00:00.000000`` if not deleted.
+* ``tm_update`` (string, ISO 8601, nullable): Timestamp of the last update to any campaign property. ``null`` if never updated.
+* ``tm_delete`` (string, ISO 8601, nullable): Timestamp when the campaign was deleted. ``null`` if not deleted.
 
 .. note:: **AI Implementation Hint**
 
-   A ``tm_delete`` value of ``9999-01-01 00:00:00.000000`` means the resource has **not** been deleted. This is a sentinel value, not a real timestamp. When filtering active resources, check for this value.
+   ``tm_update``/``tm_delete`` are ``null`` when the corresponding event has not occurred, not a sentinel timestamp. When filtering active resources, check for ``tm_delete == null``.
 
 Example
 +++++++
@@ -83,7 +83,7 @@ Example
         "next_campaign_id": "00000000-0000-0000-0000-000000000000",
         "tm_create": "2022-04-28 02:16:39.712142",
         "tm_update": "2022-04-30 17:53:51.685259",
-        "tm_delete": "9999-01-01 00:00:00.000000"
+        "tm_delete": null
     }
 
 .. _campaign-struct-campaign-type:

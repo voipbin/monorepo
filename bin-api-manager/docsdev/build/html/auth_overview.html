@@ -1,0 +1,1451 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="./">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Contact" href="contact.html"><link rel="prev" title="Auth" href="auth.html">
+        <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
+
+    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+        <title>Overview - VoIPBin Documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  --color-brand-primary: #0066cc;
+  --color-brand-content: #0066cc;
+  --color-announcement-background: #0a2540;
+  --color-announcement-text: #ffffff;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-primary: #4da3ff;
+  --color-brand-content: #4da3ff;
+  --color-announcement-background: #0a2540;
+  --color-announcement-text: #ffffff;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-primary: #4da3ff;
+  --color-brand-content: #4da3ff;
+  --color-announcement-background: #0a2540;
+  --color-announcement-text: #ffffff;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+<div class="announcement">
+  <aside class="announcement-content">
+     VoIPBin is an opensource CPaaS platform. <a style="color: var(--color-announcement-text);" href="https://github.com/voipbin/voipbin">Star us on GitHub</a> 
+  </aside>
+</div>
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="index.html"><div class="brand">VoIPBin Documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="_static/voipbin-high-resolution-logo-white-transparent.png" alt="Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">VoIPBin Documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sdk.html">SDK(Software Development Kit)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="restful_api.html">RESTful API(Application Programming Interface)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="restful_api_errors.html">Error Reason Codes</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Core Concepts</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="flow.html">Flow</a><input aria-label="Toggle navigation of Flow" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="flow_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flow_struct_flow.html">Flow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flow_struct_action.html">Action</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flow_tutorial_basic.html">Tutorial basic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flow_tutorial_scenario.html">Tutorial scenario</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flow_execution_internals.html">Flow Execution Internals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flow_advanced_patterns.html">Advanced Flow Patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flow_debugging.html">Flow Debugging and Troubleshooting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flow_best_practices.html">Flow Best Practices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="activeflow_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="activeflow_struct_activeflow.html">Activeflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="activeflow_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="variable.html">Variable</a><input aria-label="Toggle navigation of Variable" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="variable_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="variable_overview.html#using-variables-in-flows">Using Variables in Flows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="variable_overview.html#capturing-and-setting-dynamic-values">Capturing and Setting Dynamic Values</a></li>
+<li class="toctree-l2"><a class="reference internal" href="variable_overview.html#integration-with-applications">Integration with Applications</a></li>
+<li class="toctree-l2"><a class="reference internal" href="variable_overview.html#best-practices-and-considerations">Best Practices and Considerations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="variable_overview.html#troubleshooting">Troubleshooting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="variable_variable.html">Variable</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="webhook.html">Webhook</a><input aria-label="Toggle navigation of Webhook" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="webhook_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="webhook_struct_webhook.html">Webhook</a></li>
+<li class="toctree-l2"><a class="reference internal" href="webhook_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="direct_hash.html">Direct Hash</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="common.html">Common</a><input aria-label="Toggle navigation of Common" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="common_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="common_struct_address.html">Address</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Voice &amp; Real-Time</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="call.html">Call</a><input aria-label="Toggle navigation of Call" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="call_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="call_transfer.html">Transfer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transfer_struct_transfer.html">Transfer Struct</a></li>
+<li class="toctree-l2"><a class="reference internal" href="call_groupcall.html">Groupcall</a></li>
+<li class="toctree-l2"><a class="reference internal" href="call_struct_call.html">Struct Call</a></li>
+<li class="toctree-l2"><a class="reference internal" href="call_struct_groupcall.html">Struct Groupcall</a></li>
+<li class="toctree-l2"><a class="reference internal" href="call_tutorial.html">Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="call_sequences.html">Internal Call Sequences</a></li>
+<li class="toctree-l2"><a class="reference internal" href="call_scenarios.html">Advanced Call Scenarios</a></li>
+<li class="toctree-l2"><a class="reference internal" href="call_media.html">Call Media and Codecs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="call_troubleshooting.html">Call Troubleshooting</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="conference.html">Conference</a><input aria-label="Toggle navigation of Conference" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="conference_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conference_struct_conference.html">Conference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conference_struct_conferencecall.html">conferencecall</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conference_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="queue.html">Queue</a><input aria-label="Toggle navigation of Queue" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="queue_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="queue_struct_queue.html">Queue</a></li>
+<li class="toctree-l2"><a class="reference internal" href="queue_struct_queuecall.html">Queuecall</a></li>
+<li class="toctree-l2"><a class="reference internal" href="queue_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="recording.html">Recording</a><input aria-label="Toggle navigation of Recording" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="recording_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="recording_struct_recording.html">Recording</a></li>
+<li class="toctree-l2"><a class="reference internal" href="recording_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="transcribe.html">Transcribe</a><input aria-label="Toggle navigation of Transcribe" class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="transcribe_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transcribe_tutorial.html">Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transcribe_struct.html">Transcribe</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transcribe_struct.html#transcription">Transcription</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transcribe_struct.html#speech-webhook-message">Speech Webhook Message</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transcript_struct_transcript.html">Transcript</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="speaking.html">Speaking</a><input aria-label="Toggle navigation of Speaking" class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" role="switch" type="checkbox"/><label for="toctree-checkbox-10"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="speaking_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="speaking_struct_speaking.html">Speaking</a></li>
+<li class="toctree-l2"><a class="reference internal" href="speaking_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="mediastream.html">Mediastream</a><input aria-label="Toggle navigation of Mediastream" class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" role="switch" type="checkbox"/><label for="toctree-checkbox-11"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="mediastream_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="streaming_struct_streaming.html">Streaming</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mediastream_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Messaging</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="message.html">Message</a><input aria-label="Toggle navigation of Message" class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" role="switch" type="checkbox"/><label for="toctree-checkbox-12"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="message_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="message_struct_message.html">Message</a></li>
+<li class="toctree-l2"><a class="reference internal" href="message_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="email.html">Email</a><input aria-label="Toggle navigation of Email" class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" role="switch" type="checkbox"/><label for="toctree-checkbox-13"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="email_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="email_struct_email.html">Email</a></li>
+<li class="toctree-l2"><a class="reference internal" href="email_struct_attachment.html">Attachment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="email_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="talk.html">Talk</a><input aria-label="Toggle navigation of Talk" class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" role="switch" type="checkbox"/><label for="toctree-checkbox-14"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="talk_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="talk_struct_talk.html">Talk</a></li>
+<li class="toctree-l2"><a class="reference internal" href="talk_struct_message.html">Message</a></li>
+<li class="toctree-l2"><a class="reference internal" href="talk_struct_participant.html">Participant</a></li>
+<li class="toctree-l2"><a class="reference internal" href="talk_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="conversation.html">Conversation</a><input aria-label="Toggle navigation of Conversation" class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" role="switch" type="checkbox"/><label for="toctree-checkbox-15"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="conversation_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conversation_struct_conversation.html">Conversation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conversation_struct_message.html">Message</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conversation_struct_account.html">Conversation Account</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conversation_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="webchat.html">Webchat</a><input aria-label="Toggle navigation of Webchat" class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" role="switch" type="checkbox"/><label for="toctree-checkbox-16"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="webchat_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="webchat_struct_widget.html">Widget</a></li>
+<li class="toctree-l2"><a class="reference internal" href="webchat_struct_session.html">Session</a></li>
+<li class="toctree-l2"><a class="reference internal" href="webchat_struct_message.html">Message</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">AI &amp; Automation</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="ai.html">AI</a><input aria-label="Toggle navigation of AI" class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" role="switch" type="checkbox"/><label for="toctree-checkbox-17"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#how-it-works">How it works</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#tool-functions">Tool Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#using-the-ai">Using the AI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#ai-talk">AI Talk</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#using-ai-in-conversations-sms-line">Using AI in Conversations (SMS / LINE)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#ai-summary">AI Summary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#external-ai-agent-integration">External AI Agent Integration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#common-scenarios">Common Scenarios</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#best-practices">Best Practices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#troubleshooting">Troubleshooting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#ai-prompt-history">AI Prompt History</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#ai-participants">AI Participants</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#terminate-ai-call">Terminate AI Call</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#ai-audit">AI Audit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#ai-prompt-improvement-proposals">AI Prompt Improvement Proposals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#related-documentation">Related Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_struct_ai.html">AI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_struct_aiprompthistory.html">AIPromptHistory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_struct_tool.html">Tool Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="aicall_struct_aicall.html">AIcall</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_struct_message.html">AI Message</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_struct_summary.html">AI Summary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_struct_aiaudit.html">AI Audit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_struct_aipromptproposal.html">AI Prompt Proposal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_struct_participant.html">AI Call Participant</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_tutorial.html">Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_tutorial_prompt_proposal.html">Tutorial: Improve an AI Prompt from Audits</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="ai_voice_agent_integration.html">AI Voice Agent Integration</a><input aria-label="Toggle navigation of AI Voice Agent Integration" class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" role="switch" type="checkbox"/><label for="toctree-checkbox-18"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="ai_voice_agent_integration_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_voice_agent_integration_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="rag.html">RAG</a><input aria-label="Toggle navigation of RAG" class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" role="switch" type="checkbox"/><label for="toctree-checkbox-19"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="rag_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rag_overview.html#how-it-works">How it works</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rag_overview.html#use-cases">Use Cases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rag_overview.html#troubleshooting">Troubleshooting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rag_overview.html#related-documentation">Related Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rag_struct_rag.html">RAG</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rag_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="timeline.html">Timeline</a><input aria-label="Toggle navigation of Timeline" class="toctree-checkbox" id="toctree-checkbox-20" name="toctree-checkbox-20" role="switch" type="checkbox"/><label for="toctree-checkbox-20"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="timeline_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="timeline_struct_event.html">Timeline event</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="timeline_analysis.html">Timeline analysis</a><input aria-label="Toggle navigation of Timeline analysis" class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" role="switch" type="checkbox"/><label for="toctree-checkbox-21"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="timeline_analysis_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="timeline_analysis_tutorial.html">Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="timeline_analysis_struct_timeline_analysis.html">Timeline analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="team.html">Team</a><input aria-label="Toggle navigation of Team" class="toctree-checkbox" id="toctree-checkbox-22" name="toctree-checkbox-22" role="switch" type="checkbox"/><label for="toctree-checkbox-22"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="team_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="team_overview.html#how-it-works">How it works</a></li>
+<li class="toctree-l2"><a class="reference internal" href="team_overview.html#runtime-behavior">Runtime Behavior</a></li>
+<li class="toctree-l2"><a class="reference internal" href="team_overview.html#use-cases">Use Cases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="team_overview.html#troubleshooting">Troubleshooting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="team_overview.html#related-documentation">Related Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="team_struct_team.html">Team</a></li>
+<li class="toctree-l2"><a class="reference internal" href="team_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="campaign.html">Campaign</a><input aria-label="Toggle navigation of Campaign" class="toctree-checkbox" id="toctree-checkbox-23" name="toctree-checkbox-23" role="switch" type="checkbox"/><label for="toctree-checkbox-23"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="campaign_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="campaign_struct_campaign.html">Campaign</a></li>
+<li class="toctree-l2"><a class="reference internal" href="campaign_struct_campaigncall.html">Campaigncall</a></li>
+<li class="toctree-l2"><a class="reference internal" href="campaign_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="outdial.html">Outdial</a><input aria-label="Toggle navigation of Outdial" class="toctree-checkbox" id="toctree-checkbox-24" name="toctree-checkbox-24" role="switch" type="checkbox"/><label for="toctree-checkbox-24"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="outdial_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="outdial_struct_outdial.html">Outdial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="outdial_struct_outdialtarget.html">Outdialtarget</a></li>
+<li class="toctree-l2"><a class="reference internal" href="outdial_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="outplan.html">Outplan</a><input aria-label="Toggle navigation of Outplan" class="toctree-checkbox" id="toctree-checkbox-25" name="toctree-checkbox-25" role="switch" type="checkbox"/><label for="toctree-checkbox-25"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="outplan_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="outplan_struct_outplan.html">Outplan</a></li>
+<li class="toctree-l2"><a class="reference internal" href="outplan_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Identity &amp; Contacts</span></p>
+<ul class="current">
+<li class="toctree-l1 has-children"><a class="reference internal" href="accesskey.html">Accesskey</a><input aria-label="Toggle navigation of Accesskey" class="toctree-checkbox" id="toctree-checkbox-26" name="toctree-checkbox-26" role="switch" type="checkbox"/><label for="toctree-checkbox-26"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="accesskey_overview.html">Accesskey API Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="accesskey_struct.html">Struct</a></li>
+<li class="toctree-l2"><a class="reference internal" href="accesskey_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="agent.html">Agent</a><input aria-label="Toggle navigation of Agent" class="toctree-checkbox" id="toctree-checkbox-27" name="toctree-checkbox-27" role="switch" type="checkbox"/><label for="toctree-checkbox-27"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="agent_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="agent_struct_agent.html">Struct</a></li>
+<li class="toctree-l2"><a class="reference internal" href="agent_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="auth.html">Auth</a><input aria-label="Toggle navigation of Auth" checked="" class="toctree-checkbox" id="toctree-checkbox-28" name="toctree-checkbox-28" role="switch" type="checkbox"/><label for="toctree-checkbox-28"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Overview</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="contact.html">Contact</a><input aria-label="Toggle navigation of Contact" class="toctree-checkbox" id="toctree-checkbox-29" name="toctree-checkbox-29" role="switch" type="checkbox"/><label for="toctree-checkbox-29"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="contact_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contact_struct_contact.html">Structures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contact_tutorial.html">Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contact_address_overview.html">Contact Addresses Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contact_address_struct.html">Structures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contact_case_overview.html">Case Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contact_case_struct.html">Structures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contact_peer_event_overview.html">Peer Events Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contact_peer_event_struct.html">Structures</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="customer.html">Customer</a><input aria-label="Toggle navigation of Customer" class="toctree-checkbox" id="toctree-checkbox-30" name="toctree-checkbox-30" role="switch" type="checkbox"/><label for="toctree-checkbox-30"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="customer_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="customer_struct_customer.html">Customer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="customer_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Agent Console</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="service_agent.html">Agent Console</a><input aria-label="Toggle navigation of Agent Console" class="toctree-checkbox" id="toctree-checkbox-31" name="toctree-checkbox-31" role="switch" type="checkbox"/><label for="toctree-checkbox-31"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="service_agent_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="service_agent_case_overview.html">Case Management</a></li>
+<li class="toctree-l2"><a class="reference internal" href="service_agent_case_struct.html">Structures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="service_agent_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Numbers &amp; PSTN</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="number.html">Number</a><input aria-label="Toggle navigation of Number" class="toctree-checkbox" id="toctree-checkbox-32" name="toctree-checkbox-32" role="switch" type="checkbox"/><label for="toctree-checkbox-32"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="number_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="number_struct_number.html">Number</a></li>
+<li class="toctree-l2"><a class="reference internal" href="availablenumber_struct.html">Available Number</a></li>
+<li class="toctree-l2"><a class="reference internal" href="number_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="provider.html">Provider</a><input aria-label="Toggle navigation of Provider" class="toctree-checkbox" id="toctree-checkbox-33" name="toctree-checkbox-33" role="switch" type="checkbox"/><label for="toctree-checkbox-33"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="provider_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="provider_struct_provider.html">Provider</a></li>
+<li class="toctree-l2"><a class="reference internal" href="provider_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="providercall.html">ProviderCall</a><input aria-label="Toggle navigation of ProviderCall" class="toctree-checkbox" id="toctree-checkbox-34" name="toctree-checkbox-34" role="switch" type="checkbox"/><label for="toctree-checkbox-34"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="providercall_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="providercall_struct_providercall.html">ProviderCall</a></li>
+<li class="toctree-l2"><a class="reference internal" href="providercall_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="route.html">Route</a><input aria-label="Toggle navigation of Route" class="toctree-checkbox" id="toctree-checkbox-35" name="toctree-checkbox-35" role="switch" type="checkbox"/><label for="toctree-checkbox-35"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="route_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="route_struct_route.html">Route</a></li>
+<li class="toctree-l2"><a class="reference internal" href="route_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="extension.html">Extension</a><input aria-label="Toggle navigation of Extension" class="toctree-checkbox" id="toctree-checkbox-36" name="toctree-checkbox-36" role="switch" type="checkbox"/><label for="toctree-checkbox-36"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="extension_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extension_struct_extension.html">Extension</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extension_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="trunk.html">Trunk</a><input aria-label="Toggle navigation of Trunk" class="toctree-checkbox" id="toctree-checkbox-37" name="toctree-checkbox-37" role="switch" type="checkbox"/><label for="toctree-checkbox-37"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="trunk_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="trunk_overview_trunking.html">Trunking</a></li>
+<li class="toctree-l2"><a class="reference internal" href="trunk_overview_domain_name.html">Domain name</a></li>
+<li class="toctree-l2"><a class="reference internal" href="trunk_struct_trunk.html">Trunk</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="outbound_config.html">OutboundConfig</a><input aria-label="Toggle navigation of OutboundConfig" class="toctree-checkbox" id="toctree-checkbox-38" name="toctree-checkbox-38" role="switch" type="checkbox"/><label for="toctree-checkbox-38"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="outbound_config_overview.html">OutboundConfig Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="outbound_config_tutorial.html">OutboundConfig Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="outbound_config_struct_outbound_config.html">OutboundConfig Struct</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Billing &amp; Operations</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="billing_account.html">Billing Account</a><input aria-label="Toggle navigation of Billing Account" class="toctree-checkbox" id="toctree-checkbox-39" name="toctree-checkbox-39" role="switch" type="checkbox"/><label for="toctree-checkbox-39"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="billing_account_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="billing_account_tutorial.html">Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="billing_account_struct.html">Struct</a></li>
+<li class="toctree-l2"><a class="reference internal" href="billing_struct_billing.html">Billing</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="storage.html">Storage</a><input aria-label="Toggle navigation of Storage" class="toctree-checkbox" id="toctree-checkbox-40" name="toctree-checkbox-40" role="switch" type="checkbox"/><label for="toctree-checkbox-40"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="storage_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="storage_struct_account.html">Account</a></li>
+<li class="toctree-l2"><a class="reference internal" href="storage_struct_file.html">File</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="tag.html">Tag</a><input aria-label="Toggle navigation of Tag" class="toctree-checkbox" id="toctree-checkbox-41" name="toctree-checkbox-41" role="switch" type="checkbox"/><label for="toctree-checkbox-41"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="tag_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tag_struct_tag.html">Tag</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tag_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Architecture (Deep Dive)</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="architecture.html">Architecture</a><input aria-label="Toggle navigation of Architecture" class="toctree-checkbox" id="toctree-checkbox-42" name="toctree-checkbox-42" role="switch" type="checkbox"/><label for="toctree-checkbox-42"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="architecture_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture_backend.html">Backend Microservices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture_communication.html">Inter-Service Communication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture_data.html">Data Architecture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture_dataflow.html">Data Flow Diagrams</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture_rtc.html">Real-Time Communication (RTC)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture_flow.html">System Request Flows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture_sequences.html">Call Flow Sequences</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture_deployment.html">Deployment Architecture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture_security.html">Security Architecture</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="websocket.html">Websocket</a><input aria-label="Toggle navigation of Websocket" class="toctree-checkbox" id="toctree-checkbox-43" name="toctree-checkbox-43" role="switch" type="checkbox"/><label for="toctree-checkbox-43"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="websocket_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="websocket_struct.html">Structures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="websocket_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Installation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="self_hosting.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Help &amp; Support</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="support.html">Support</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="https://github.com/voipbin/monorepo/blob/main/bin-api-manager/docsdev/source/auth_overview.rst?plain=true" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div><div class="edit-this-page">
+  <a class="muted-link" href="https://github.com/voipbin/monorepo/edit/main/bin-api-manager/docsdev/source/auth_overview.rst" rel="edit" title="Edit this page">
+    <svg><use href="#svg-pencil"></use></svg>
+    <span class="visually-hidden">Edit this page</span>
+  </a>
+</div><div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="overview">
+<span id="auth-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Link to this heading">¶</a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> Low to Medium (unregister/delegate carry authorization and lifecycle side effects)</p></li>
+<li><p><strong>Cost:</strong> Free. No auth endpoint incurs platform billing.</p></li>
+<li><p><strong>Async:</strong> No. All auth operations are synchronous, except that signup/password-forgot/unregister trigger emails sent out-of-band.</p></li>
+</ul>
+</div>
+<p>All endpoints in this group are served directly at <code class="docutils literal notranslate"><span class="pre">/auth/&lt;name&gt;</span></code> — <strong>not</strong> under the <code class="docutils literal notranslate"><span class="pre">/v1.0</span></code> prefix used by every other resource in the API. A generated stub exists for each path under <code class="docutils literal notranslate"><span class="pre">/v1.0/auth/...</span></code> that always returns <code class="docutils literal notranslate"><span class="pre">404</span> <span class="pre">ROUTE_NOT_FOUND</span></code> with a message pointing at the correct un-prefixed path; this is intentional routing scaffolding, not a bug.</p>
+<section id="endpoint-summary">
+<h2>Endpoint Summary<a class="headerlink" href="#endpoint-summary" title="Link to this heading">¶</a></h2>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 10.0%" />
+<col style="width: 22.0%" />
+<col style="width: 10.0%" />
+<col style="width: 58.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Method</p></th>
+<th class="head"><p>Path</p></th>
+<th class="head"><p>Auth</p></th>
+<th class="head"><p>Purpose</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>POST</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/auth/signup</span></code></p></td>
+<td><p>None</p></td>
+<td><p>Self-service customer registration.</p></td>
+</tr>
+<tr class="row-odd"><td><p>POST</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/auth/email-verify</span></code></p></td>
+<td><p>None</p></td>
+<td><p>Verify the signup email token; provisions the first access key.</p></td>
+</tr>
+<tr class="row-even"><td><p>GET</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/auth/email-verify</span></code></p></td>
+<td><p>None</p></td>
+<td><p>Serves an HTML page that auto-submits the verification token (link target from the verification email).</p></td>
+</tr>
+<tr class="row-odd"><td><p>POST</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/auth/login</span></code></p></td>
+<td><p>Username/password</p></td>
+<td><p>Exchange agent credentials for a 7-day JWT. See <a class="reference internal" href="quickstart.html#quickstart-authentication"><span class="std std-ref">Authentication quickstart</span></a>.</p></td>
+</tr>
+<tr class="row-even"><td><p>POST</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/auth/boot</span></code></p></td>
+<td><p>None (direct hash)</p></td>
+<td><p>Exchange a direct hash for a 4-hour resource-scoped JWT.</p></td>
+</tr>
+<tr class="row-odd"><td><p>POST</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/auth/password-forgot</span></code></p></td>
+<td><p>None</p></td>
+<td><p>Request a password reset email.</p></td>
+</tr>
+<tr class="row-even"><td><p>GET</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/auth/password-reset</span></code></p></td>
+<td><p>None</p></td>
+<td><p>Serves the HTML password reset form (link target from the reset email).</p></td>
+</tr>
+<tr class="row-odd"><td><p>POST</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/auth/password-reset</span></code></p></td>
+<td><p>None (reset token)</p></td>
+<td><p>Complete the password reset using the emailed token.</p></td>
+</tr>
+<tr class="row-even"><td><p>POST</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/auth/unregister</span></code></p></td>
+<td><p>Token or Accesskey</p></td>
+<td><p>Freeze the caller’s own account and schedule (or immediately execute) deletion.</p></td>
+</tr>
+<tr class="row-odd"><td><p>DELETE</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/auth/unregister</span></code></p></td>
+<td><p>Token or Accesskey</p></td>
+<td><p>Cancel a scheduled deletion and restore the account to <code class="docutils literal notranslate"><span class="pre">active</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p>POST</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/auth/delegate</span></code></p></td>
+<td><p>Token (ProjectSuperAdmin)</p></td>
+<td><p>Issue a short-lived support/investigation token scoped to another customer. See <a class="reference internal" href="quickstart.html#quickstart-authentication"><span class="std std-ref">Authentication quickstart</span></a>.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>All unauthenticated <code class="docutils literal notranslate"><span class="pre">/auth/*</span></code> endpoints (<code class="docutils literal notranslate"><span class="pre">login</span></code>, <code class="docutils literal notranslate"><span class="pre">signup</span></code>, <code class="docutils literal notranslate"><span class="pre">email-verify</span></code>, <code class="docutils literal notranslate"><span class="pre">boot</span></code>, <code class="docutils literal notranslate"><span class="pre">password-forgot</span></code>, <code class="docutils literal notranslate"><span class="pre">password-reset</span></code>) share a single IP-based rate limiter: <strong>10 requests/second per client IP, burst 20</strong>. Exceeding it returns <code class="docutils literal notranslate"><span class="pre">429</span></code> with reason <code class="docutils literal notranslate"><span class="pre">RATE_LIMIT_EXCEEDED</span></code> (see <a class="reference internal" href="restful_api_errors.html#error-reason-catalog"><span class="std std-ref">Error Reason Codes</span></a>). <code class="docutils literal notranslate"><span class="pre">/auth/unregister</span></code> and <code class="docutils literal notranslate"><span class="pre">/auth/delegate</span></code> require authentication first and are not subject to this limiter.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint — response body shape differs by endpoint</strong></p>
+<p><code class="docutils literal notranslate"><span class="pre">/auth/unregister</span></code> and <code class="docutils literal notranslate"><span class="pre">/auth/delegate</span></code> sit behind the shared <code class="docutils literal notranslate"><span class="pre">Authenticate()</span></code> middleware, so authentication/authorization failures at that layer (missing token, expired token, frozen account) return the standard structured error envelope described in <a class="reference internal" href="restful_api_errors.html#error-reason-catalog"><span class="std std-ref">Error Reason Codes</span></a> (<code class="docutils literal notranslate"><span class="pre">{&quot;error&quot;:</span> <span class="pre">{&quot;status&quot;,</span> <span class="pre">&quot;reason&quot;,</span> <span class="pre">&quot;message&quot;,</span> <span class="pre">&quot;request_id&quot;,</span> <span class="pre">...}}</span></code>). However, validation failures raised <em>inside</em> the auth handlers themselves — e.g. a malformed JSON body on any endpoint, a wrong password on <code class="docutils literal notranslate"><span class="pre">/auth/unregister</span></code>, an invalid <code class="docutils literal notranslate"><span class="pre">confirmation_phrase</span></code>, a bad <code class="docutils literal notranslate"><span class="pre">accepted_tos</span></code> on signup — return a bare HTTP status code (400) with an <strong>empty response body</strong>, not the JSON error envelope. Do not assume <code class="docutils literal notranslate"><span class="pre">error.reason</span></code> is present on every 4xx from this group; check for an empty body first.</p>
+</div>
+</section>
+<section id="auth-account-lifecycle">
+<h2>Auth &amp; Account Lifecycle<a class="headerlink" href="#auth-account-lifecycle" title="Link to this heading">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">signup</span>          <span class="n">email</span><span class="o">-</span><span class="n">verify</span>        <span class="p">(</span><span class="nb">set</span> <span class="n">password</span><span class="p">)</span>        <span class="n">login</span> <span class="o">/</span> <span class="n">boot</span>
+<span class="o">+----------+</span>   <span class="o">+--------------+</span>    <span class="o">+----------------+</span>    <span class="o">+--------------+</span>
+<span class="o">|</span> <span class="n">initial</span>  <span class="o">|--&gt;|</span>   <span class="n">active</span>     <span class="o">|---&gt;|</span>    <span class="n">active</span>      <span class="o">|---&gt;|</span>  <span class="n">JWT</span> <span class="o">/</span> <span class="n">key</span>   <span class="o">|</span>
+<span class="o">+----------+</span>   <span class="o">+--------------+</span>    <span class="o">+----------------+</span>    <span class="o">+--------------+</span>
+     <span class="o">|</span>                                    <span class="o">|</span>
+     <span class="o">|</span> <span class="p">(</span><span class="n">no</span> <span class="n">verification</span>                   <span class="o">|</span> <span class="n">POST</span> <span class="o">/</span><span class="n">auth</span><span class="o">/</span><span class="n">unregister</span>
+     <span class="o">|</span>  <span class="n">within</span> <span class="n">timeout</span><span class="p">)</span>                   <span class="n">v</span>
+     <span class="n">v</span>                              <span class="o">+----------------+</span>
+<span class="o">+----------+</span>                        <span class="o">|</span>    <span class="n">frozen</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="n">expired</span>  <span class="o">|</span>                        <span class="o">|</span> <span class="p">(</span><span class="mi">30</span><span class="o">-</span><span class="n">day</span> <span class="n">grace</span><span class="p">)</span> <span class="o">|</span>
+<span class="o">+----------+</span>                        <span class="o">+----------------+</span>
+                                      <span class="o">|</span>             <span class="o">|</span>
+                        <span class="n">DELETE</span> <span class="o">/</span><span class="n">auth</span><span class="o">/</span><span class="n">unregister</span>      <span class="p">(</span><span class="n">grace</span> <span class="n">expires</span><span class="p">,</span>
+                                      <span class="o">|</span>               <span class="ow">or</span> <span class="n">immediate</span><span class="p">:</span><span class="n">true</span><span class="p">)</span>
+                                      <span class="n">v</span>                       <span class="n">v</span>
+                                <span class="o">+----------------+</span>     <span class="o">+----------------+</span>
+                                <span class="o">|</span>    <span class="n">active</span>      <span class="o">|</span>     <span class="o">|</span>    <span class="n">deleted</span>     <span class="o">|</span>
+                                <span class="o">+----------------+</span>     <span class="o">+----------------+</span>
+</pre></div>
+</div>
+<p>For the full customer status lifecycle (including what gets cascade-deleted), see <a class="reference internal" href="customer.html#customer-main"><span class="std std-ref">Customer — Account Deletion Lifecycle</span></a>.</p>
+</section>
+<section id="signup-post-auth-signup">
+<h2>Signup — <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/signup</span></code><a class="headerlink" href="#signup-post-auth-signup" title="Link to this heading">¶</a></h2>
+<p>Creates an unverified customer account and triggers a verification email. See the <a class="reference internal" href="quickstart.html#quickstart-signup"><span class="std std-ref">Signup quickstart</span></a> for a walkthrough.</p>
+<p><strong>Request body</strong></p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 20.0%" />
+<col style="width: 12.0%" />
+<col style="width: 68.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Field</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">email</span></code></p></td>
+<td><p>String, Required</p></td>
+<td><p>Email address for the new account. Must be unique across all customers.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">accepted_tos</span></code></p></td>
+<td><p>Boolean, Required</p></td>
+<td><p>Must be <code class="docutils literal notranslate"><span class="pre">true</span></code>. Missing or <code class="docutils literal notranslate"><span class="pre">false</span></code> is rejected with <code class="docutils literal notranslate"><span class="pre">400</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">name</span></code></p></td>
+<td><p>String, Optional</p></td>
+<td><p>Display name for the customer account.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">detail</span></code></p></td>
+<td><p>String, Optional</p></td>
+<td><p>Additional description.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">phone_number</span></code></p></td>
+<td><p>String, Optional</p></td>
+<td><p>Contact phone number (E.164 format recommended).</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">address</span></code></p></td>
+<td><p>String, Optional</p></td>
+<td><p>Mailing address.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">webhook_method</span></code></p></td>
+<td><p>String, Optional</p></td>
+<td><p>HTTP method for webhook delivery: <code class="docutils literal notranslate"><span class="pre">POST</span></code>, <code class="docutils literal notranslate"><span class="pre">GET</span></code>, <code class="docutils literal notranslate"><span class="pre">PUT</span></code>, or <code class="docutils literal notranslate"><span class="pre">DELETE</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">webhook_uri</span></code></p></td>
+<td><p>String, Optional</p></td>
+<td><p>URI where webhook events will be delivered.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Response — 200 OK (success)</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;customer&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;...&quot;</span><span class="p">,</span> <span class="s2">&quot;email&quot;</span><span class="p">:</span> <span class="s2">&quot;...&quot;</span><span class="p">,</span> <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;initial&quot;</span><span class="p">,</span> <span class="o">...</span> <span class="p">},</span>
+    <span class="s2">&quot;accesskey&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;...&quot;</span><span class="p">,</span> <span class="s2">&quot;token&quot;</span><span class="p">:</span> <span class="s2">&quot;vb_...&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;...&quot;</span><span class="p">,</span> <span class="o">...</span> <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Response — 200 OK (silent failure, e.g. duplicate email)</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{}</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Signup always returns HTTP 200, even on failure, to prevent email-enumeration attacks — a duplicate or invalid email produces an empty <code class="docutils literal notranslate"><span class="pre">{}</span></code> body rather than an error. The only true <code class="docutils literal notranslate"><span class="pre">400</span></code> is a structurally invalid request (missing <code class="docutils literal notranslate"><span class="pre">email</span></code>, missing/false <code class="docutils literal notranslate"><span class="pre">accepted_tos</span></code>, or malformed JSON). The returned <code class="docutils literal notranslate"><span class="pre">accesskey.token</span></code> is usable immediately; no separate <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> call is required. Signup also auto-provisions an empty <code class="docutils literal notranslate"><span class="pre">OutboundConfig</span></code> (blocking all outbound PSTN calls until explicitly configured) and auto-rolls back the entire signup (deletes the customer) if that provisioning step permanently fails.</p>
+</div>
+<p><strong>Errors</strong></p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 15.0%" />
+<col style="width: 85.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Status</p></th>
+<th class="head"><p>Cause</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>400</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">email</span></code> missing, <code class="docutils literal notranslate"><span class="pre">accepted_tos</span></code> missing/<code class="docutils literal notranslate"><span class="pre">false</span></code>, or malformed JSON body.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="email-verify-post-get-auth-email-verify">
+<h2>Email Verify — <code class="docutils literal notranslate"><span class="pre">POST</span></code> / <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/auth/email-verify</span></code><a class="headerlink" href="#email-verify-post-get-auth-email-verify" title="Link to this heading">¶</a></h2>
+<p>Validates the verification token from the signup email, marks the customer’s email as verified, and transitions the account from <code class="docutils literal notranslate"><span class="pre">initial</span></code> to <code class="docutils literal notranslate"><span class="pre">active</span></code>.</p>
+<p><strong>POST request body</strong></p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 20.0%" />
+<col style="width: 12.0%" />
+<col style="width: 68.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Field</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">token</span></code></p></td>
+<td><p>String, Required</p></td>
+<td><p>64-character lowercase hex verification token from the signup email.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Response — 200 OK</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;customer&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;...&quot;</span><span class="p">,</span> <span class="s2">&quot;email&quot;</span><span class="p">:</span> <span class="s2">&quot;...&quot;</span><span class="p">,</span> <span class="s2">&quot;email_verified&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span> <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;active&quot;</span><span class="p">,</span> <span class="o">...</span> <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Errors</strong></p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 15.0%" />
+<col style="width: 85.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Status</p></th>
+<th class="head"><p>Cause</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>400</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">token</span></code> is missing, invalid, expired, or already used; or the request body is malformed JSON.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>GET /auth/email-verify</strong></p>
+<p>Serves a static HTML confirmation page (the link target embedded in the verification email). The page reads <code class="docutils literal notranslate"><span class="pre">token</span></code> from the query string and, when the visitor clicks “Verify Email”, submits it to <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/email-verify</span></code> via client-side JavaScript. This is a convenience UI for humans following the email link — API integrations should call <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/email-verify</span></code> directly with the token extracted from the email/webhook.</p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 20.0%" />
+<col style="width: 12.0%" />
+<col style="width: 68.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Location</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">token</span></code></p></td>
+<td><p>Query, Required</p></td>
+<td><p>64-character lowercase hex string. An invalid/missing token returns <code class="docutils literal notranslate"><span class="pre">400</span></code> before the page is rendered.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="login-token-post-auth-login">
+<h2>Login (Token) — <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code><a class="headerlink" href="#login-token-post-auth-login" title="Link to this heading">¶</a></h2>
+<p>Exchanges an agent’s <code class="docutils literal notranslate"><span class="pre">username</span></code>/<code class="docutils literal notranslate"><span class="pre">password</span></code> for a JWT valid for 7 days. Fully documented with request/response examples in the <a class="reference internal" href="quickstart.html#quickstart-authentication"><span class="std std-ref">Authentication quickstart</span></a>; summarized here for completeness.</p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 20.0%" />
+<col style="width: 12.0%" />
+<col style="width: 68.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Field</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">username</span></code></p></td>
+<td><p>String, Required</p></td>
+<td><p>The agent’s username.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">password</span></code></p></td>
+<td><p>String, Required</p></td>
+<td><p>The agent’s password.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Response: <code class="docutils literal notranslate"><span class="pre">{&quot;username&quot;:</span> <span class="pre">&quot;...&quot;,</span> <span class="pre">&quot;token&quot;:</span> <span class="pre">&quot;eyJ...&quot;}</span></code>. The token is also set as an <code class="docutils literal notranslate"><span class="pre">HttpOnly</span></code>, <code class="docutils literal notranslate"><span class="pre">Secure</span></code>, <code class="docutils literal notranslate"><span class="pre">SameSite=Strict</span></code> cookie named <code class="docutils literal notranslate"><span class="pre">token</span></code> on the response. Errors: <code class="docutils literal notranslate"><span class="pre">400</span></code> on missing fields, malformed JSON, or invalid credentials (login failures are not distinguished from bad requests — both return a bare <code class="docutils literal notranslate"><span class="pre">400</span></code>).</p>
+</section>
+<section id="boot-direct-token-post-auth-boot">
+<h2>Boot (Direct Token) — <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/boot</span></code><a class="headerlink" href="#boot-direct-token-post-auth-boot" title="Link to this heading">¶</a></h2>
+<p>Resolves a direct hash into a short-lived, resource-scoped JWT, for use cases where the end user has no VoIPBin account (e.g. an embedded AI voice widget on a customer’s public website). Also documented in the <a class="reference internal" href="quickstart.html#quickstart-authentication"><span class="std std-ref">Authentication quickstart</span></a>.</p>
+<p><strong>Request body</strong></p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 20.0%" />
+<col style="width: 12.0%" />
+<col style="width: 68.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Field</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">direct_hash</span></code></p></td>
+<td><p>String, Required</p></td>
+<td><p>The direct hash link, e.g. <code class="docutils literal notranslate"><span class="pre">direct.a1b2c3d4e5f6</span></code>. Obtained from a direct link URL or a resource’s <code class="docutils literal notranslate"><span class="pre">direct_hash</span></code> field (e.g. <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1.0/webchat_widgets/{id}</span></code>).</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Response — 200 OK</strong></p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 20.0%" />
+<col style="width: 12.0%" />
+<col style="width: 68.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Field</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">token</span></code></p></td>
+<td><p>String</p></td>
+<td><p>JWT for API/WebSocket use. Pass as <code class="docutils literal notranslate"><span class="pre">Bearer</span> <span class="pre">&lt;token&gt;</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">type</span></code></p></td>
+<td><p>String</p></td>
+<td><p>Always <code class="docutils literal notranslate"><span class="pre">&quot;direct&quot;</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">resource_type</span></code></p></td>
+<td><p>String</p></td>
+<td><p>The resource type this token is scoped to (e.g. <code class="docutils literal notranslate"><span class="pre">&quot;ai&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;ai_team&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;webchat_widget&quot;</span></code>).</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">resource_id</span></code></p></td>
+<td><p>UUID</p></td>
+<td><p>The scoped resource’s ID.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code></p></td>
+<td><p>UUID</p></td>
+<td><p>The owning customer’s ID.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">expire</span></code></p></td>
+<td><p>String (ISO 8601)</p></td>
+<td><p>Token expiry. Valid for 4 hours from issuance.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">resource_data</span></code></p></td>
+<td><p>Object, Optional</p></td>
+<td><p>Present only for resource types with a registered public-display fetcher (currently <code class="docutils literal notranslate"><span class="pre">webchat_widget</span></code>). Contains a <code class="docutils literal notranslate"><span class="pre">public_display_config</span></code> key with anonymous-visitor-safe display settings (e.g. theme). Omitted entirely when there is nothing to report; a fetch failure never fails the boot request itself.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Errors</strong></p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 15.0%" />
+<col style="width: 85.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Status</p></th>
+<th class="head"><p>Cause</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>400</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">direct_hash</span></code> missing/empty, does not start with <code class="docutils literal notranslate"><span class="pre">direct.</span></code>, does not resolve to any resource, resolves to an unsupported resource type, or the owning customer is not <code class="docutils literal notranslate"><span class="pre">active</span></code>.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Boot tokens are scoped: they only grant access to the resource types listed in the token (e.g. <code class="docutils literal notranslate"><span class="pre">aicall</span></code> for an <code class="docutils literal notranslate"><span class="pre">ai</span></code>/<code class="docutils literal notranslate"><span class="pre">ai_team</span></code> direct hash, <code class="docutils literal notranslate"><span class="pre">webchat_session</span></code> for a <code class="docutils literal notranslate"><span class="pre">webchat_widget</span></code> direct hash). For WebSocket subscriptions, boot tokens may only subscribe to 4-part topics (<code class="docutils literal notranslate"><span class="pre">customer_id:&lt;uuid&gt;:&lt;resource_type&gt;:&lt;resource_id&gt;</span></code>); broader topics are rejected.</p>
+</div>
+</section>
+<section id="password-forgot-post-auth-password-forgot">
+<h2>Password Forgot — <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/password-forgot</span></code><a class="headerlink" href="#password-forgot-post-auth-password-forgot" title="Link to this heading">¶</a></h2>
+<p>Generates a password reset token and emails a reset link to the agent, valid for 1 hour.</p>
+<p><strong>Request body</strong></p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 20.0%" />
+<col style="width: 12.0%" />
+<col style="width: 68.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Field</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">username</span></code></p></td>
+<td><p>String, Required</p></td>
+<td><p>The agent’s username (email address).</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Response — 200 OK</strong>: always <code class="docutils literal notranslate"><span class="pre">{}</span></code>, regardless of whether the username exists, to prevent username-enumeration attacks. The underlying call to bin-agent-manager is made best-effort; a lookup failure is logged but never surfaced to the caller.</p>
+<p><strong>Errors</strong></p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 15.0%" />
+<col style="width: 85.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Status</p></th>
+<th class="head"><p>Cause</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>400</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">username</span></code> missing or malformed JSON body.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="password-reset-get-post-auth-password-reset">
+<h2>Password Reset — <code class="docutils literal notranslate"><span class="pre">GET</span></code> / <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/password-reset</span></code><a class="headerlink" href="#password-reset-get-post-auth-password-reset" title="Link to this heading">¶</a></h2>
+<p>Completes a password reset using the token emailed by <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/password-forgot</span></code>.</p>
+<p><strong>GET /auth/password-reset</strong> — serves the HTML reset form (the link target in the reset email).</p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 20.0%" />
+<col style="width: 12.0%" />
+<col style="width: 68.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Location</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">token</span></code></p></td>
+<td><p>Query, Required</p></td>
+<td><p>64-character lowercase hex string. An invalid/missing token returns <code class="docutils literal notranslate"><span class="pre">400</span></code> before the form is rendered.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>POST /auth/password-reset</strong> — request body</p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 20.0%" />
+<col style="width: 12.0%" />
+<col style="width: 68.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Field</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">token</span></code></p></td>
+<td><p>String, Required</p></td>
+<td><p>64-character lowercase hex reset token from the email. Single-use, expires 1 hour after issuance.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">password</span></code></p></td>
+<td><p>String, Required</p></td>
+<td><p>New password. Minimum 8 characters.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Response — 200 OK</strong>: <code class="docutils literal notranslate"><span class="pre">{}</span></code>.</p>
+<p><strong>Errors</strong></p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 15.0%" />
+<col style="width: 85.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Status</p></th>
+<th class="head"><p>Cause</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>400</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">token</span></code> missing/invalid/expired, <code class="docutils literal notranslate"><span class="pre">password</span></code> missing or under 8 characters, malformed JSON body, or (per upstream agent-manager policy) the token belongs to a guest agent — guest agents cannot reset their password.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="unregister-self-service-deletion-post-delete-auth-unregister">
+<h2>Unregister (Self-Service Deletion) — <code class="docutils literal notranslate"><span class="pre">POST</span></code> / <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/auth/unregister</span></code><a class="headerlink" href="#unregister-self-service-deletion-post-delete-auth-unregister" title="Link to this heading">¶</a></h2>
+<p>Self-service account freeze/deletion and recovery. Requires authentication (Token or Accesskey) and <code class="docutils literal notranslate"><span class="pre">PermissionCustomerAdmin</span></code> on the caller’s own customer account; direct (boot) tokens cannot call this endpoint. A condensed narrative version of this section, including the full status-lifecycle diagram and the cascade-delete resource list, lives in <a class="reference internal" href="customer.html#customer-main"><span class="std std-ref">Customer — Account Deletion Lifecycle</span></a>; this section is the field-level contract.</p>
+<p><strong>POST /auth/unregister — request body</strong></p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 22.0%" />
+<col style="width: 12.0%" />
+<col style="width: 66.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Field</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">password</span></code></p></td>
+<td><p>String, Conditional</p></td>
+<td><p>Re-authentication password for password-based accounts. Mutually exclusive with <code class="docutils literal notranslate"><span class="pre">confirmation_phrase</span></code> — exactly one of the two must be supplied.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">confirmation_phrase</span></code></p></td>
+<td><p>String, Conditional</p></td>
+<td><p>Must be exactly <code class="docutils literal notranslate"><span class="pre">&quot;DELETE&quot;</span></code>. Used for SSO/accesskey-authenticated requests that have no password to re-check.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">immediate</span></code></p></td>
+<td><p>Boolean, Optional</p></td>
+<td><p>Default <code class="docutils literal notranslate"><span class="pre">false</span></code>. If <code class="docutils literal notranslate"><span class="pre">true</span></code>, skips the 30-day grace period: the account is frozen and then permanently deleted (PII anonymized, all resources cascade-deleted) in the same request. Irreversible.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Query parameters (both POST and DELETE)</strong></p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 20.0%" />
+<col style="width: 12.0%" />
+<col style="width: 68.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Location</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">accesskey</span></code></p></td>
+<td><p>Query, Optional</p></td>
+<td><p>Access-key token, as an alternative to a <code class="docutils literal notranslate"><span class="pre">Bearer</span></code> token / <code class="docutils literal notranslate"><span class="pre">token=</span></code> credential.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Response — 200 OK</strong>: the updated <code class="docutils literal notranslate"><span class="pre">Customer</span></code> object (see <a class="reference internal" href="customer.html#customer-main"><span class="std std-ref">Customer</span></a>), reflecting <code class="docutils literal notranslate"><span class="pre">status:</span> <span class="pre">&quot;frozen&quot;</span></code> (or <code class="docutils literal notranslate"><span class="pre">&quot;deleted&quot;</span></code> if <code class="docutils literal notranslate"><span class="pre">immediate</span></code> was <code class="docutils literal notranslate"><span class="pre">true</span></code>).</p>
+<p><strong>Errors</strong></p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 15.0%" />
+<col style="width: 85.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Status</p></th>
+<th class="head"><p>Cause</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>400</p></td>
+<td><p>Neither or both of <code class="docutils literal notranslate"><span class="pre">password</span></code>/<code class="docutils literal notranslate"><span class="pre">confirmation_phrase</span></code> supplied; password re-authentication failed; <code class="docutils literal notranslate"><span class="pre">confirmation_phrase</span></code> is not exactly <code class="docutils literal notranslate"><span class="pre">&quot;DELETE&quot;</span></code>; malformed JSON body; caller lacks <code class="docutils literal notranslate"><span class="pre">PermissionCustomerAdmin</span></code>; caller is authenticated via a direct (boot) token (<code class="docutils literal notranslate"><span class="pre">DIRECT_ACCESS_NOT_SUPPORTED</span></code>); or the downstream freeze/delete call failed. The handler returns a bare <code class="docutils literal notranslate"><span class="pre">400</span></code> for all of these cases — it does not distinguish permission/direct-access failures with a <code class="docutils literal notranslate"><span class="pre">403</span></code>, unlike <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/delegate</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p>401</p></td>
+<td><p>Missing/invalid/expired token or access key (returned by the shared <code class="docutils literal notranslate"><span class="pre">Authenticate()</span></code> middleware, as a structured error envelope — see the response-shape note above).</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>DELETE /auth/unregister</strong> — cancels a scheduled deletion and restores <code class="docutils literal notranslate"><span class="pre">active</span></code> status. No request body. Only works while the account is <code class="docutils literal notranslate"><span class="pre">frozen</span></code> within the 30-day grace period.</p>
+<p><strong>Response — 200 OK</strong>: the restored <code class="docutils literal notranslate"><span class="pre">Customer</span></code> object.</p>
+<p><strong>Errors</strong></p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 15.0%" />
+<col style="width: 85.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Status</p></th>
+<th class="head"><p>Cause</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>400</p></td>
+<td><p>Account is not currently in <code class="docutils literal notranslate"><span class="pre">frozen</span></code> state; caller lacks <code class="docutils literal notranslate"><span class="pre">PermissionCustomerAdmin</span></code>; or caller is authenticated via a direct (boot) token. As with <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/unregister</span></code> above, the handler returns a bare <code class="docutils literal notranslate"><span class="pre">400</span></code> for all of these cases rather than a <code class="docutils literal notranslate"><span class="pre">403</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p>401</p></td>
+<td><p>Missing/invalid/expired token or access key.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint — frozen accounts are also enforced globally</strong></p>
+<p>Once a customer account is <code class="docutils literal notranslate"><span class="pre">frozen</span></code>, every other authenticated <code class="docutils literal notranslate"><span class="pre">/v1.0/*</span></code> request from that customer (except from a <code class="docutils literal notranslate"><span class="pre">PermissionProjectSuperAdmin</span></code>, and except direct/boot tokens, which skip the check entirely) is rejected with <code class="docutils literal notranslate"><span class="pre">403</span> <span class="pre">ACCOUNT_FROZEN</span></code> by the shared authentication middleware — not just calls to resource endpoints that would otherwise mutate data. The error’s <code class="docutils literal notranslate"><span class="pre">details[0]</span></code> carries <code class="docutils literal notranslate"><span class="pre">deletion_scheduled_at</span></code>, <code class="docutils literal notranslate"><span class="pre">deletion_effective_at</span></code> (30 days after scheduling), and <code class="docutils literal notranslate"><span class="pre">recovery_endpoint:</span> <span class="pre">&quot;DELETE</span> <span class="pre">/auth/unregister&quot;</span></code> so client UIs (admin/talk consoles) can render a consistent “account frozen, recover here” screen. <code class="docutils literal notranslate"><span class="pre">POST</span></code> and <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/auth/unregister</span></code> themselves are explicitly exempted from this block so a frozen customer can still self-recover.</p>
+</div>
+</section>
+<section id="delegate-superadmin-support-access-post-auth-delegate">
+<h2>Delegate (Superadmin Support Access) — <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/delegate</span></code><a class="headerlink" href="#delegate-superadmin-support-access-post-auth-delegate" title="Link to this heading">¶</a></h2>
+<p>Lets a platform superadmin (<code class="docutils literal notranslate"><span class="pre">PermissionProjectSuperAdmin</span></code>) issue a short-lived, audit-logged token that grants <code class="docutils literal notranslate"><span class="pre">PermissionCustomerAdmin</span></code>-equivalent access scoped to a specific target customer, for support/investigation without needing that customer’s own credentials. Fully documented with request/response examples in the <a class="reference internal" href="quickstart.html#quickstart-authentication"><span class="std std-ref">Authentication quickstart</span></a>; summarized here for completeness.</p>
+<p><strong>Request body</strong></p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 20.0%" />
+<col style="width: 12.0%" />
+<col style="width: 68.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Field</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code></p></td>
+<td><p>String (UUID), Required</p></td>
+<td><p>Target customer to act on behalf of.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">reason</span></code></p></td>
+<td><p>String, Required</p></td>
+<td><p>Justification, written to the audit log. Must be 10-200 printable-ASCII characters (0x20-0x7E), no control characters.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Response — 200 OK</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;token&quot;</span><span class="p">:</span> <span class="s2">&quot;eyJ...&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;...&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;expire&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-05-19T06:00:00.000000Z&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The delegate token is valid for <strong>8 hours</strong> and grants customer-admin-equivalent access scoped only to <code class="docutils literal notranslate"><span class="pre">customer_id</span></code> — no project-level permissions are carried over.</p>
+<p><strong>Errors</strong></p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 15.0%" />
+<col style="width: 85.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Status</p></th>
+<th class="head"><p>Cause</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>400</p></td>
+<td><p>Malformed or missing request body.</p></td>
+</tr>
+<tr class="row-odd"><td><p>401</p></td>
+<td><p>Caller is not authenticated.</p></td>
+</tr>
+<tr class="row-even"><td><p>403</p></td>
+<td><p>Caller lacks <code class="docutils literal notranslate"><span class="pre">PermissionProjectSuperAdmin</span></code>; or the caller is itself authenticated via a delegate token (recursive delegation is blocked).</p></td>
+</tr>
+<tr class="row-odd"><td><p>404</p></td>
+<td><p>Target customer does not exist or is already <code class="docutils literal notranslate"><span class="pre">deleted</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p>422</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> is not a valid UUID, or <code class="docutils literal notranslate"><span class="pre">reason</span></code> fails length/character validation.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Every delegate token issuance (and denial) is written to the audit log with <code class="docutils literal notranslate"><span class="pre">audit=true</span></code>, the issuer’s agent ID, target customer, reason, and expiry — this is the audit trail for superadmin account access. Do not build tooling that calls this endpoint without a genuine, specific support reason; the <code class="docutils literal notranslate"><span class="pre">reason</span></code> field is not free-form filler, it is the compliance record.</p>
+</div>
+</section>
+<section id="related-documentation">
+<h2>Related Documentation<a class="headerlink" href="#related-documentation" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="quickstart.html#quickstart-signup"><span class="std std-ref">Signup quickstart</span></a> — narrative walkthrough with example requests</p></li>
+<li><p><a class="reference internal" href="quickstart.html#quickstart-authentication"><span class="std std-ref">Authentication quickstart</span></a> — token/accesskey/boot/delegate walkthrough</p></li>
+<li><p><a class="reference internal" href="customer.html#customer-main"><span class="std std-ref">Customer Overview</span></a> — full account status lifecycle and cascade-delete details</p></li>
+<li><p><a class="reference internal" href="accesskey.html#accesskey-main"><span class="std std-ref">Accesskey</span></a> — long-lived programmatic credentials</p></li>
+<li><p><a class="reference internal" href="restful_api_errors.html#error-reason-catalog"><span class="std std-ref">Error Reason Codes</span></a> — full catalogue of <code class="docutils literal notranslate"><span class="pre">error.reason</span></code> values</p></li>
+</ul>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="contact.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Contact</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="auth.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Auth</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2026, VoIPBIN
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              <a class="muted-link fa-brands fa-solid fa-github fa-2x" href="https://github.com/voipbin/voipbin" aria-label="GitHub"></a>
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Overview</a><ul>
+<li><a class="reference internal" href="#endpoint-summary">Endpoint Summary</a></li>
+<li><a class="reference internal" href="#auth-account-lifecycle">Auth &amp; Account Lifecycle</a></li>
+<li><a class="reference internal" href="#signup-post-auth-signup">Signup — <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/signup</span></code></a></li>
+<li><a class="reference internal" href="#email-verify-post-get-auth-email-verify">Email Verify — <code class="docutils literal notranslate"><span class="pre">POST</span></code> / <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/auth/email-verify</span></code></a></li>
+<li><a class="reference internal" href="#login-token-post-auth-login">Login (Token) — <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code></a></li>
+<li><a class="reference internal" href="#boot-direct-token-post-auth-boot">Boot (Direct Token) — <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/boot</span></code></a></li>
+<li><a class="reference internal" href="#password-forgot-post-auth-password-forgot">Password Forgot — <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/password-forgot</span></code></a></li>
+<li><a class="reference internal" href="#password-reset-get-post-auth-password-reset">Password Reset — <code class="docutils literal notranslate"><span class="pre">GET</span></code> / <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/password-reset</span></code></a></li>
+<li><a class="reference internal" href="#unregister-self-service-deletion-post-delete-auth-unregister">Unregister (Self-Service Deletion) — <code class="docutils literal notranslate"><span class="pre">POST</span></code> / <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/auth/unregister</span></code></a></li>
+<li><a class="reference internal" href="#delegate-superadmin-support-access-post-auth-delegate">Delegate (Superadmin Support Access) — <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/delegate</span></code></a></li>
+<li><a class="reference internal" href="#related-documentation">Related Documentation</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="_static/documentation_options.js?v=8a448e45"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/scripts/furo.js?v=46bd48cc"></script>
+    </body>
+</html>

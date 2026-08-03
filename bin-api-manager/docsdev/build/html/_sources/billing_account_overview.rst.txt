@@ -332,7 +332,6 @@ Check and manage your account balance.
     {
         "id": "billing-uuid-123",
         "customer_id": "customer-uuid-456",
-        "status": "active",
         "name": "My Account",
         "detail": "",
         "plan_type": "free",
@@ -345,14 +344,18 @@ Check and manage your account balance.
         "tm_next_topup": "2024-02-01T00:00:00Z",
         "tm_create": "2024-01-01T00:00:00Z",
         "tm_update": "2024-01-15T10:30:00Z",
-        "tm_delete": "9999-01-01T00:00:00Z"
+        "tm_delete": null
     }
 
 The ``balance_credit`` is in micros (150500000 = $150.50). The ``balance_token`` is the current token count.
 
-**Account Status Values**
+.. note:: **AI Implementation Hint**
 
-The ``status`` field indicates the account's operational state:
+   The ``status`` field is not present in the response of the self-service ``GET /billing_account`` (singular) endpoint. It is only visible to ``ProjectSuperAdmin`` accounts via the admin-only ``GET /billing_accounts`` (plural) or ``GET /billing_accounts/{id}`` endpoints, which return the extended admin representation.
+
+**Account Status Values (Admin Only)**
+
+The ``status`` field, returned only by the admin ``/billing_accounts`` endpoints, indicates the account's operational state:
 
 * ``active``: Account is operational and can use services.
 * ``frozen``: Account is suspended. Services are denied until reactivated.

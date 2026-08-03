@@ -37,7 +37,7 @@ Gets the list of registered flows.
                         "id": "b34aa8a4-0b30-11eb-8016-1f5bc75b1c04",
                         "type": "play",
                         "option": {
-                            "stream_url": [
+                            "stream_urls": [
                                 "https://github.com/pchero/asterisk-medias/raw/master/voipbin/welcome.wav"
                             ]
                         }
@@ -46,7 +46,7 @@ Gets the list of registered flows.
                         "id": "57a3dcd2-0b2b-11eb-94a6-a7129b64693c",
                         "type": "play",
                         "option": {
-                            "stream_url": [
+                            "stream_urls": [
                                 "https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav"
                             ]
                         }
@@ -100,7 +100,7 @@ Gets the detail of registered flows.
                 "id": "b34aa8a4-0b30-11eb-8016-1f5bc75b1c04",
                 "type": "play",
                 "option": {
-                    "stream_url": [
+                    "stream_urls": [
                         "https://github.com/pchero/asterisk-medias/raw/master/voipbin/welcome.wav"
                     ]
                 }
@@ -109,7 +109,7 @@ Gets the detail of registered flows.
                 "id": "57a3dcd2-0b2b-11eb-94a6-a7129b64693c",
                 "type": "play",
                 "option": {
-                    "stream_url": [
+                    "stream_urls": [
                         "https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav"
                     ]
                 }
@@ -201,7 +201,7 @@ This doesn't affect existing calls. Flow changes will only affect new calls.
             {
                 "type": "play",
                 "option": {
-                    "stream_url": [
+                    "stream_urls": [
                         "https://github.com/pchero/asterisk-medias/raw/master/voipbin/welcome.wav"
                     ]
                 }
@@ -209,7 +209,7 @@ This doesn't affect existing calls. Flow changes will only affect new calls.
             {
                 "type": "play",
                 "option": {
-                    "stream_url": [
+                    "stream_urls": [
                         "https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav"
                     ]
                 }
@@ -240,7 +240,7 @@ This doesn't affect existing calls. Flow changes will only affect new calls.
                 "id": "099b60c1-7b95-4d69-8cac-df11a992ee11",
                 "type": "play",
                 "option": {
-                    "stream_url": [
+                    "stream_urls": [
                         "https://github.com/pchero/asterisk-medias/raw/master/voipbin/welcome.wav"
                     ]
                 }
@@ -249,7 +249,7 @@ This doesn't affect existing calls. Flow changes will only affect new calls.
                 "id": "89fa5091-a192-4758-8a29-316776ead8fe",
                 "type": "play",
                 "option": {
-                    "stream_url": [
+                    "stream_urls": [
                         "https://github.com/pchero/asterisk-medias/raw/master/samples_codec/pcm_samples/example-mono_16bit_8khz_pcm.wav"
                     ]
                 }
@@ -273,5 +273,5 @@ This doesn't affect existing calls. Flow changes will only affect new calls.
 
 .. note:: **AI Implementation Hint**
 
-   The DELETE request uses the ``DELETE`` HTTP method, not ``GET``. A successful deletion returns HTTP 204 No Content. The flow is soft-deleted (``tm_delete`` is set) and will no longer appear in ``GET /flows`` list results, but calls already using this flow are not affected.
+   The DELETE request uses the ``DELETE`` HTTP method, not ``GET``. A successful deletion returns HTTP 200 with the deleted flow's details in the response body. The flow is soft-deleted (``tm_delete`` is set) and will no longer appear in ``GET /flows`` list results, but calls already using this flow are not affected.
 

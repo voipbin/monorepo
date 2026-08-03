@@ -7,7 +7,7 @@ Overview
 
    * **Complexity:** Low-Medium
    * **Cost:** Chargeable for normal numbers (provider purchase fee). Virtual numbers (+899 prefix) are free but subject to tier-based limits.
-   * **Async:** No. ``POST https://api.voipbin.net/v1.0/numbers`` for virtual numbers returns immediately with status ``active``. Normal number provisioning may return ``purchase-pending`` until provider confirms.
+   * **Async:** No. ``POST https://api.voipbin.net/v1.0/numbers`` returns immediately with status ``active`` for both virtual and normal numbers.
 
 VoIPBIN's Number API enables you to provision, manage, and configure phone numbers for your communication applications. Numbers serve as the entry points for inbound calls and messages, and can be configured with custom flows for automated handling.
 
@@ -121,7 +121,7 @@ Provision numbers through a two-step process: search, then provision.
 
 .. code::
 
-    $ curl -X GET 'https://api.voipbin.net/v1.0/available_numbers?token=<token>&country=US&type=local'
+    $ curl -X GET 'https://api.voipbin.net/v1.0/available_numbers?token=<token>&country_code=US'
 
 **Response:**
 
@@ -132,16 +132,16 @@ Provision numbers through a two-step process: search, then provision.
             {
                 "number": "+15551234567",
                 "country": "US",
-                "type": "local",
                 "region": "California",
-                "city": "San Francisco"
+                "postal_code": "94103",
+                "features": ["voice", "sms"]
             },
             {
                 "number": "+15551234568",
                 "country": "US",
-                "type": "local",
                 "region": "California",
-                "city": "Los Angeles"
+                "postal_code": "90001",
+                "features": ["voice", "sms", "mms"]
             }
         ]
     }
@@ -196,13 +196,13 @@ VoIPBIN's Number resource allows you to associate multiple flows with a single n
 
 .. note:: **AI Implementation Hint**
 
-   A ``call_flow_id`` or ``message_flow_id`` set to ``00000000-0000-0000-0000-000000000000`` means no flow is assigned. Inbound calls or messages to a number without an assigned flow will not be handled. Always create a flow via ``POST https://api.voipbin.net/v1.0/flows`` first, then assign it to the number via ``PUT https://api.voipbin.net/v1.0/numbers/{id}``.
+   A ``call_flow_id`` or ``message_flow_id`` set to ``00000000-0000-0000-0000-000000000000`` means no flow is assigned. Inbound calls or messages to a number without an assigned flow will not be handled. Always create a flow via ``POST https://api.voipbin.net/v1.0/flows`` first, then assign it to the number via ``PUT https://api.voipbin.net/v1.0/numbers/{id}/flow_ids``.
 
 **Configure Flows**
 
 .. code::
 
-    $ curl -X PUT 'https://api.voipbin.net/v1.0/numbers/<number-id>?token=<token>' \
+    $ curl -X PUT 'https://api.voipbin.net/v1.0/numbers/<number-id>/flow_ids?token=<token>' \
         --header 'Content-Type: application/json' \
         --data '{
             "call_flow_id": "flow-abc-123",
@@ -212,19 +212,15 @@ VoIPBIN's Number resource allows you to associate multiple flows with a single n
 
 Number Types
 ------------
-VoIPBIN supports various number types for different use cases.
+VoIPBIN supports two number types.
 
 .. list-table::
    :header-rows: 1
 
    * - Type
      - Description
-   * - local
-     - Geographic numbers tied to a specific city or region
-   * - toll-free
-     - Numbers that are free to call (e.g., 1-800)
-   * - mobile
-     - Mobile phone numbers (where available)
+   * - normal
+     - A standard phone number purchased from a provider (Telnyx or Twilio). Routed via PSTN. The provider's own inventory may include geographic (local), toll-free, or mobile numbers -- VoIPBIN does not distinguish between these sub-categories itself.
    * - virtual
      - Virtual numbers with +899 prefix. No provider purchase required. Designed for non-PSTN callers such as AI calls, WebRTC calls, and internal routing.
 
@@ -322,8 +318,8 @@ Set up a number for inbound customer calls.
 
 ::
 
-    1. Search for toll-free number
-       GET /available_numbers?country=US&type=toll_free
+    1. Search for an available number
+       GET /available_numbers?country_code=US
 
     2. Provision the number
        POST /numbers { "number": "+18005551234" }
@@ -334,7 +330,7 @@ Set up a number for inbound customer calls.
        - Route to appropriate queue
 
     4. Assign flow to number
-       PUT /numbers/{id} { "call_flow_id": "..." }
+       PUT /numbers/{id}/flow_ids { "call_flow_id": "...", "message_flow_id": "00000000-0000-0000-0000-000000000000" }
 
     Result:
     +--------------------------------------------+
@@ -359,7 +355,7 @@ Configure automatic SMS responses.
        - Forward unknown messages to agent
 
     3. Assign message flow
-       PUT /numbers/{id} { "message_flow_id": "..." }
+       PUT /numbers/{id}/flow_ids { "call_flow_id": "00000000-0000-0000-0000-000000000000", "message_flow_id": "..." }
 
     Result:
     +--------------------------------------------+
@@ -380,7 +376,7 @@ Create a virtual number for development and testing without purchasing from a pr
        POST /numbers { "number": "+899100000001" }
 
     3. Assign a call flow for testing
-       PUT /numbers/{id} { "call_flow_id": "..." }
+       PUT /numbers/{id}/flow_ids { "call_flow_id": "...", "message_flow_id": "00000000-0000-0000-0000-000000000000" }
 
     Result:
     +--------------------------------------------+

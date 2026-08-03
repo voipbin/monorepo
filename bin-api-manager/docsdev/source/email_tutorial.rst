@@ -9,12 +9,12 @@ Prerequisites
 Before working with emails, you need:
 
 * An authentication token. Obtain one via ``POST /auth/login`` or use an access key from ``GET /accesskeys``.
-* A verified sender email address (the ``source`` field must use a domain verified with VoIPBIN).
+* A verified customer identity. VoIPBIN gates email sending on your customer account's identity verification status, not on a sender domain -- unverified accounts cannot send.
 * Recipient email addresses for sending.
 
 .. note:: **AI Implementation Hint**
 
-   Sending emails incurs charges. The ``source`` address must use a domain that has been verified in VoIPBIN's system. The ``destinations`` field uses the :ref:`Address <common-struct-address-address>` format with ``type`` set to ``email``. Email status follows this lifecycle: ``initiated`` -> ``processed`` -> ``delivered``. Additional statuses include ``open``, ``click``, ``bounce``, ``dropped``, ``deferred``, ``unsubscribe``, and ``spamreport``.
+   Sending emails incurs charges. The ``source`` address is fixed to VoIPBIN's own platform address and is not set by the caller. The ``destinations`` field uses the :ref:`Address <common-struct-address-address>` format with ``type`` set to ``email``. ``content`` is plain text only. Email status follows this lifecycle: ``initiated`` -> ``processed`` -> ``delivered``. Additional statuses include ``open``, ``click``, ``bounce``, ``dropped``, ``deferred``, ``unsubscribe``, and ``spamreport``.
 
 Send an email
 -------------

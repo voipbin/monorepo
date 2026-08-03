@@ -25,10 +25,15 @@ WebSocket communication uses JSON messages for all operations.
 
     Server -> Client:
     +-----------------------------------------------------------------------+
-    | event         | Real-time event notification with resource data       |
-    | ack           | Acknowledgment of subscription changes                |
-    | error         | Error message for failed operations                   |
+    | (unwrapped webhook payload) | Real-time event notification. Pushed as |
+    |                             | the raw resource payload with no        |
+    |                             | envelope -- see "Event Message          |
+    |                             | Structure" below.                       |
     +-----------------------------------------------------------------------+
+
+.. note:: **AI Implementation Hint**
+
+   There is no server-to-client acknowledgment or error message for ``subscribe``/``unsubscribe`` requests. If a subscribed topic fails permission validation, the server closes the WebSocket connection instead of sending an error frame.
 
 
 Subscribe Message
@@ -51,7 +56,7 @@ Send a subscribe message to receive events for specific topics.
 **Fields**
 
 * ``type`` (enum string): Must be ``"subscribe"``.
-* ``topics`` (Array of String): List of topic patterns to subscribe to. Each topic follows the format ``<scope>:<scope_id>:<resource_type>:<resource_id>``. Use ``*`` for the resource_id to match all resources of a type.
+* ``topics`` (Array of String): List of topic patterns to subscribe to. Each topic follows the format ``<scope>:<scope_id>:<resource_type>:<resource_id>``. Omit the ``resource_id`` segment (and its leading colon) to match all resources of a type -- see :ref:`Topic Pattern Structure <websocket-struct>` below.
 
 **Example: Subscribe to all calls**
 
@@ -60,7 +65,7 @@ Send a subscribe message to receive events for specific topics.
     {
         "type": "subscribe",
         "topics": [
-            "customer_id:12345678-1234-1234-1234-123456789012:call:*"
+            "customer_id:12345678-1234-1234-1234-123456789012:call"
         ]
     }
 
@@ -71,9 +76,9 @@ Send a subscribe message to receive events for specific topics.
     {
         "type": "subscribe",
         "topics": [
-            "customer_id:12345678-1234-1234-1234-123456789012:call:*",
-            "customer_id:12345678-1234-1234-1234-123456789012:message:*",
-            "customer_id:12345678-1234-1234-1234-123456789012:activeflow:*"
+            "customer_id:12345678-1234-1234-1234-123456789012:call",
+            "customer_id:12345678-1234-1234-1234-123456789012:message",
+            "customer_id:12345678-1234-1234-1234-123456789012:activeflow"
         ]
     }
 
@@ -95,8 +100,8 @@ Send a subscribe message to receive events for specific topics.
     {
         "type": "subscribe",
         "topics": [
-            "agent_id:98765432-4321-4321-4321-210987654321:queue:*",
-            "agent_id:98765432-4321-4321-4321-210987654321:call:*"
+            "agent_id:98765432-4321-4321-4321-210987654321:queue",
+            "agent_id:98765432-4321-4321-4321-210987654321:call"
         ]
     }
 
@@ -130,7 +135,7 @@ Send an unsubscribe message to stop receiving events for specific topics.
     {
         "type": "unsubscribe",
         "topics": [
-            "customer_id:12345678-1234-1234-1234-123456789012:call:*"
+            "customer_id:12345678-1234-1234-1234-123456789012:call"
         ]
     }
 
@@ -159,171 +164,136 @@ Topics follow a consistent format for event filtering.
 **Topic Components**
 
 * ``scope`` (enum string): Access level. Either ``"customer_id"`` or ``"agent_id"``.
-* ``scope_id`` (UUID): The UUID of the customer or agent. Obtained from ``GET /customers`` or ``GET /agents``.
-* ``resource_type`` (enum string): Type of resource: ``call``, ``message``, ``activeflow``, ``conference``, ``queue``, ``agent``, ``recording``, ``transcription``.
-* ``resource_id`` (UUID or ``*``): UUID of a specific resource, or ``*`` to match all resources of the given type.
+* ``scope_id`` (UUID): The UUID of the customer or agent. Obtained from ``GET /customers`` or ``GET /agents``. For ``agent_id`` scope, this must match the authenticated agent's own ID.
+* ``resource_type`` (String): Type of resource, derived from the first underscore-delimited segment of the resource's webhook event type (e.g. ``call`` from ``call_created``, ``activeflow`` from ``activeflow_updated``, ``queuecall`` from ``queuecall_created``). See :ref:`Webhook Struct <webhook-struct-webhook>` for the full list of event types.
+* ``resource_id`` (UUID, optional): UUID of a specific resource. Omit this segment (and its leading colon) to match every event of the given resource type -- see "Matching All Resources of a Type" below.
+
+.. note:: **AI Implementation Hint**
+
+   There is no ``*`` wildcard character. Matching is prefix-based: the server delivers an event to a subscription whenever the event's topic string starts with the subscribed topic string. To subscribe to a single resource, use the full 4-part topic with a real UUID. To subscribe to every resource of a type, subscribe with just the 3-part prefix (no trailing resource ID).
 
 **Valid Scopes**
 
-+-------------------+------------------------------------------------------------------+
-| Scope             | Permission Required                                              |
-+===================+==================================================================+
-| customer_id       | Admin or Manager permission for the customer                     |
-+-------------------+------------------------------------------------------------------+
-| agent_id          | Must be the owner of the agent                                   |
-+-------------------+------------------------------------------------------------------+
+.. list-table::
+   :header-rows: 1
 
-**Valid Resource Types**
+   * - Scope
+     - Permission Required
+   * - customer_id
+     - Admin or Manager permission for the customer (non-Direct tokens)
+   * - agent_id
+     - ``scope_id`` must equal the authenticated agent's own ID
 
-+-------------------+------------------------------------------------------------------+
-| Resource Type     | Events                                                           |
-+===================+==================================================================+
-| call              | call.created, call.status, call.ended                            |
-+-------------------+------------------------------------------------------------------+
-| message           | message.received, message.sent, message.delivery                 |
-+-------------------+------------------------------------------------------------------+
-| activeflow        | activeflow.updated, activeflow.completed                         |
-+-------------------+------------------------------------------------------------------+
-| conference        | conference.joined, conference.left, conference.ended             |
-+-------------------+------------------------------------------------------------------+
-| queue             | queue.joined, queue.connected, queue.left                        |
-+-------------------+------------------------------------------------------------------+
-| agent             | agent.status                                                     |
-+-------------------+------------------------------------------------------------------+
-| recording         | recording.started, recording.completed                           |
-+-------------------+------------------------------------------------------------------+
-| transcription     | transcription.completed                                          |
-+-------------------+------------------------------------------------------------------+
+**Common Resource Types**
 
-**Wildcard Usage**
+.. list-table::
+   :header-rows: 1
+
+   * - Resource Type
+     - Example Events (see Webhook Struct for the full list)
+   * - call
+     - call_created, call_ringing, call_progressing, call_updated, call_hangup
+   * - message
+     - message_created, message_updated
+   * - activeflow
+     - activeflow_created, activeflow_updated, activeflow_deleted
+   * - queue
+     - queue_created, queue_updated, queue_deleted
+   * - queuecall
+     - queuecall_created, queuecall_connecting, queuecall_serviced, queuecall_done, queuecall_abandoned
+   * - agent
+     - agent_created, agent_updated, agent_status_updated
+   * - chat
+     - chat_created, chatmessage_created, chatparticipant_added
+
+**Matching All Resources of a Type**
 
 ::
 
     +-----------------------------------------------------------------------+
-    |                         Wildcard Patterns                             |
+    |                    Prefix-Based Topic Matching                        |
     +-----------------------------------------------------------------------+
 
     Specific resource:
     customer_id:abc123:call:xyz789
     -> Only events for call xyz789
 
-    All resources of type:
-    customer_id:abc123:call:*
+    All resources of type (omit the resource_id segment):
+    customer_id:abc123:call
     -> All call events for customer abc123
 
     Multiple types (separate subscriptions):
-    customer_id:abc123:call:*
-    customer_id:abc123:message:*
+    customer_id:abc123:call
+    customer_id:abc123:message
     -> All calls AND all messages
 
 
 Event Message Structure
 -----------------------
-Events are pushed from the server when subscribed resources change.
+Events are pushed from the server when subscribed resources change. The pushed text frame is **not** wrapped in a topic/timestamp envelope. The platform is currently mid-migration to a new event-routing path, so two payload shapes coexist on the same topic until the migration completes -- see :ref:`Event Message Format <websocket-overview>` for the full explanation. In short:
 
-**Structure**
+* **Wrapped (legacy)** -- the classic webhook envelope from :ref:`Webhook Struct <webhook-struct-webhook>`: an object with a ``type`` field naming the event and a ``data`` field holding the resource.
+* **Unwrapped (new)** -- just the raw resource object, with no ``type``/``data`` wrapper and no event-action indicator.
+
+**Wrapped structure**
 
 .. code::
 
     {
-        "event_type": "<event-type>",
-        "timestamp": "<ISO-8601-timestamp>",
-        "topic": "<topic-that-matched>",
+        "type": "<event-type>",
         "data": {
-            // Resource-specific payload
+            // Resource-specific payload, e.g. the Call struct for call_* events
         }
     }
 
-**Fields**
+**Unwrapped structure**
 
-* ``event_type`` (enum string): Type of event (e.g., ``"call.status"``, ``"message.received"``). See :ref:`WebSocket Overview <websocket-overview>` for the full list.
-* ``timestamp`` (string, ISO 8601): When the event occurred, in UTC format.
-* ``topic`` (String): The topic pattern that triggered this event. Matches one of your subscribed topic patterns.
-* ``data`` (Object): Resource-specific data payload. Structure varies by ``event_type`` and corresponds to the relevant resource struct (e.g., :ref:`Call <call-struct-call>` for call events).
+.. code::
+
+    {
+        // Resource-specific payload directly at the top level, e.g. the Call struct itself for call_* events
+    }
+
+**Fields (wrapped shape)**
+
+* ``type`` (enum string): The webhook event type (e.g., ``"call_created"``, ``"call_updated"``). See :ref:`Webhook Struct <webhook-struct-webhook>` for the full list.
+* ``data`` (Object): Resource-specific data payload. Structure varies by ``type`` and corresponds to the relevant resource struct (e.g., :ref:`Call <call-struct-call>` for ``call_*`` events).
 
 .. note:: **AI Implementation Hint**
 
-   Use the ``event_type`` field (not ``type``) to determine the event kind for server-pushed events. The ``type`` field is used only for client-to-server messages (``subscribe``/``unsubscribe``) and server acknowledgments (``ack``/``error``). Always check for both ``type`` and ``event_type`` in your message handler to handle all message categories.
+   Check for a top-level ``type`` field first to distinguish the two shapes: if present, unwrap ``data`` as above; if absent, treat the whole message as the raw resource. Neither shape has a separate ``event_type``, ``topic``, or ``timestamp`` field -- use the resource's own ``tm_create``/``tm_update`` fields for timing, and its own ``id``/``customer_id``/``owner_id`` fields to correlate the event. This dual-shape behavior is a temporary migration state, not a stable contract.
 
 
 Event Type Reference
 --------------------
-Complete list of event types and their data structures.
+The wrapped WebSocket event payloads are identical to the corresponding webhook payloads. Below is one representative example per resource type (wrapped shape); see :ref:`Webhook Struct <webhook-struct-webhook>` for the complete, authoritative list of event types and full field sets.
 
 **Call Events**
 
 .. code::
 
-    // call.created
+    // call_created
     {
-        "event_type": "call.created",
-        "timestamp": "2024-01-15T10:30:00.000000Z",
-        "topic": "customer_id:abc123:call:xyz789",
+        "type": "call_created",
         "data": {
-            "id": "xyz789",
-            "customer_id": "abc123",
-            "direction": "incoming",
-            "source": {
-                "type": "tel",
-                "target": "+15551234567"
-            },
-            "destination": {
-                "type": "tel",
-                "target": "+15559876543"
-            },
+            "id": "5371e9db-d035-4db6-a8d6-0994d33e744e",
+            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
             "status": "ringing",
-            "tm_create": "2024-01-15T10:30:00.000000Z"
+            "direction": "incoming",
+            "tm_create": "2022-04-11 00:23:53.636000",
+            "tm_update": "9999-01-01 00:00:00.000000"
         }
     }
 
-    // call.status
+    // call_hangup
     {
-        "event_type": "call.status",
-        "timestamp": "2024-01-15T10:30:05.000000Z",
-        "topic": "customer_id:abc123:call:xyz789",
+        "type": "call_hangup",
         "data": {
-            "id": "xyz789",
-            "status": "progressing",
-            "previous_status": "ringing",
-            "tm_update": "2024-01-15T10:30:05.000000Z"
-        }
-    }
-
-**Message Events**
-
-.. code::
-
-    // message.received
-    {
-        "event_type": "message.received",
-        "timestamp": "2024-01-15T10:30:00.000000Z",
-        "topic": "customer_id:abc123:message:msg789",
-        "data": {
-            "id": "msg789",
-            "customer_id": "abc123",
-            "direction": "inbound",
-            "source": {
-                "type": "tel",
-                "target": "+15551234567"
-            },
-            "destination": {
-                "type": "tel",
-                "target": "+15559876543"
-            },
-            "text": "Hello, I need help with my order",
-            "tm_create": "2024-01-15T10:30:00.000000Z"
-        }
-    }
-
-    // message.delivery
-    {
-        "event_type": "message.delivery",
-        "timestamp": "2024-01-15T10:30:02.000000Z",
-        "topic": "customer_id:abc123:message:msg789",
-        "data": {
-            "id": "msg789",
-            "status": "delivered",
-            "tm_update": "2024-01-15T10:30:02.000000Z"
+            "id": "5371e9db-d035-4db6-a8d6-0994d33e744e",
+            "status": "terminated",
+            "hangup_by": "remote",
+            "hangup_reason": "normal",
+            "tm_hangup": "2022-04-11 00:25:10.000000"
         }
     }
 
@@ -331,35 +301,13 @@ Complete list of event types and their data structures.
 
 .. code::
 
-    // activeflow.updated
+    // activeflow_updated
     {
-        "event_type": "activeflow.updated",
-        "timestamp": "2024-01-15T10:30:00.000000Z",
-        "topic": "customer_id:abc123:activeflow:flow789",
+        "type": "activeflow_updated",
         "data": {
             "id": "flow789",
-            "flow_id": "template123",
-            "status": "executing",
-            "current_action": {
-                "id": "action456",
-                "type": "play",
-                "name": "welcome_message"
-            },
-            "tm_update": "2024-01-15T10:30:00.000000Z"
-        }
-    }
-
-    // activeflow.completed
-    {
-        "event_type": "activeflow.completed",
-        "timestamp": "2024-01-15T10:35:00.000000Z",
-        "topic": "customer_id:abc123:activeflow:flow789",
-        "data": {
-            "id": "flow789",
-            "flow_id": "template123",
-            "status": "completed",
-            "result": "success",
-            "tm_end": "2024-01-15T10:35:00.000000Z"
+            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+            "tm_update": "2024-01-15 10:30:00.000000"
         }
     }
 
@@ -367,62 +315,15 @@ Complete list of event types and their data structures.
 
 .. code::
 
-    // queue.joined
+    // queuecall_created
     {
-        "event_type": "queue.joined",
-        "timestamp": "2024-01-15T10:30:00.000000Z",
-        "topic": "customer_id:abc123:queue:queue789",
+        "type": "queuecall_created",
         "data": {
+            "id": "queuecall789",
+            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
             "queue_id": "queue789",
-            "call_id": "call456",
-            "position": 3,
-            "estimated_wait": 120,
-            "tm_join": "2024-01-15T10:30:00.000000Z"
-        }
-    }
-
-    // queue.connected
-    {
-        "event_type": "queue.connected",
-        "timestamp": "2024-01-15T10:32:00.000000Z",
-        "topic": "customer_id:abc123:queue:queue789",
-        "data": {
-            "queue_id": "queue789",
-            "call_id": "call456",
-            "agent_id": "agent123",
-            "wait_time": 120,
-            "tm_connect": "2024-01-15T10:32:00.000000Z"
-        }
-    }
-
-**Conference Events**
-
-.. code::
-
-    // conference.joined
-    {
-        "event_type": "conference.joined",
-        "timestamp": "2024-01-15T10:30:00.000000Z",
-        "topic": "customer_id:abc123:conference:conf789",
-        "data": {
-            "conference_id": "conf789",
-            "call_id": "call456",
-            "participant_count": 3,
-            "tm_join": "2024-01-15T10:30:00.000000Z"
-        }
-    }
-
-    // conference.left
-    {
-        "event_type": "conference.left",
-        "timestamp": "2024-01-15T10:45:00.000000Z",
-        "topic": "customer_id:abc123:conference:conf789",
-        "data": {
-            "conference_id": "conf789",
-            "call_id": "call456",
-            "participant_count": 2,
-            "reason": "hangup",
-            "tm_leave": "2024-01-15T10:45:00.000000Z"
+            "reference_id": "call456",
+            "tm_create": "2024-01-15 10:30:00.000000"
         }
     }
 
@@ -430,89 +331,44 @@ Complete list of event types and their data structures.
 
 .. code::
 
-    // agent.status
+    // agent_status_updated
     {
-        "event_type": "agent.status",
-        "timestamp": "2024-01-15T10:30:00.000000Z",
-        "topic": "agent_id:agent123:agent:agent123",
+        "type": "agent_status_updated",
         "data": {
-            "agent_id": "agent123",
+            "id": "agent123",
+            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
             "status": "available",
-            "previous_status": "busy",
-            "tm_update": "2024-01-15T10:30:00.000000Z"
+            "tm_update": "2024-01-15 10:30:00.000000"
         }
     }
 
-**Recording Events**
+**Talk (Chat) Events**
 
 .. code::
 
-    // recording.completed
+    // chatmessage_created
     {
-        "event_type": "recording.completed",
-        "timestamp": "2024-01-15T10:45:00.000000Z",
-        "topic": "customer_id:abc123:recording:rec789",
+        "type": "chatmessage_created",
         "data": {
-            "id": "rec789",
-            "call_id": "call456",
-            "duration": 300,
-            "format": "wav",
-            "size": 2400000,
-            "reference_url": "https://storage.voipbin.net/recordings/rec789.wav",
-            "tm_complete": "2024-01-15T10:45:00.000000Z"
+            "id": "a3c5e8f2-4d3a-4b5c-9e7f-1a2b3c4d5e6f",
+            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+            "chat_id": "e8b2e976-f043-44c8-bb89-e214e225e813",
+            "text": "Hello team!",
+            "tm_create": "2024-01-17 10:32:00.000000"
         }
     }
 
 
 Acknowledgment Messages
 -----------------------
-Server may send acknowledgments for subscription operations.
+The server does **not** send acknowledgment or error messages for ``subscribe``/``unsubscribe`` requests. There is no ``ack`` or ``error`` message type in the current implementation.
 
-**Success Acknowledgment**
-
-.. code::
-
-    {
-        "type": "ack",
-        "action": "subscribe",
-        "topics": [
-            "customer_id:abc123:call:*"
-        ],
-        "status": "success"
-    }
-
-**Error Response**
-
-.. code::
-
-    {
-        "type": "error",
-        "action": "subscribe",
-        "topics": [
-            "customer_id:abc123:call:*"
-        ],
-        "code": "PERMISSION_DENIED",
-        "message": "You do not have permission to subscribe to this topic"
-    }
-
-**Error Codes**
-
-+-------------------------+--------------------------------------------------------+
-| Code                    | Description                                            |
-+=========================+========================================================+
-| PERMISSION_DENIED       | User lacks permission for the topic                    |
-+-------------------------+--------------------------------------------------------+
-| INVALID_TOPIC           | Topic format is invalid                                |
-+-------------------------+--------------------------------------------------------+
-| INVALID_MESSAGE         | Message structure is invalid                           |
-+-------------------------+--------------------------------------------------------+
-| RATE_LIMITED            | Too many subscription requests                         |
-+-------------------------+--------------------------------------------------------+
+If a subscribed topic fails permission validation (e.g., a ``customer_id`` that does not match the caller's own customer, or an ``agent_id`` that is not the authenticated agent), the server closes the WebSocket connection outright rather than returning an error frame. Design your client to detect an unexpected close shortly after sending a ``subscribe`` message as a signal of a permission or format problem, and to reconnect with corrected topics.
 
 
 Message Handling Examples
 -------------------------
-Code examples for processing WebSocket messages.
+Code examples for processing WebSocket messages. Since server-pushed events reuse the ``type``/``data`` shape but with resource event-type values (not ``"ack"``/``"error"``, which do not exist), a simple switch on ``type`` is enough to distinguish them from client-sent message echoes (which a well-behaved client should not receive back, since the server never echoes ``subscribe``/``unsubscribe`` messages).
 
 **JavaScript**
 
@@ -521,25 +377,21 @@ Code examples for processing WebSocket messages.
     ws.onmessage = function(event) {
         const message = JSON.parse(event.data);
 
-        switch(message.type || message.event_type) {
-            case 'ack':
-                console.log('Subscription confirmed:', message.topics);
+        switch(message.type) {
+            case 'call_created':
+            case 'call_ringing':
+            case 'call_progressing':
+            case 'call_updated':
+            case 'call_hangup':
+                handleCallEvent(message.type, message.data);
                 break;
 
-            case 'error':
-                console.error('Error:', message.code, message.message);
-                break;
-
-            case 'call.status':
-                handleCallStatus(message.data);
-                break;
-
-            case 'message.received':
+            case 'message_created':
                 handleMessage(message.data);
                 break;
 
             default:
-                console.log('Received:', message.event_type, message.data);
+                console.log('Received:', message.type, message.data);
         }
     };
 
@@ -550,18 +402,12 @@ Code examples for processing WebSocket messages.
     def on_message(ws, raw_message):
         message = json.loads(raw_message)
 
-        msg_type = message.get('type') or message.get('event_type')
+        msg_type = message.get('type')
 
-        if msg_type == 'ack':
-            print(f"Subscription confirmed: {message['topics']}")
+        if msg_type and msg_type.startswith('call_'):
+            handle_call_event(msg_type, message['data'])
 
-        elif msg_type == 'error':
-            print(f"Error: {message['code']} - {message['message']}")
-
-        elif msg_type == 'call.status':
-            handle_call_status(message['data'])
-
-        elif msg_type == 'message.received':
+        elif msg_type == 'message_created':
             handle_message(message['data'])
 
         else:
@@ -573,6 +419,7 @@ Related Documentation
 
 - :ref:`WebSocket Overview <websocket-overview>` - Connection and topic concepts
 - :ref:`WebSocket Tutorial <websocket-tutorial>` - Implementation examples
+- :ref:`Webhook Struct <webhook-struct-webhook>` - Authoritative list of event types and payload shapes (identical to what is pushed over the WebSocket)
 - :ref:`Call Struct <call-struct-call>` - Complete call data structure
 - :ref:`Message Struct <message-struct-message>` - Complete message data structure
 - :ref:`Activeflow Struct <activeflow-struct-activeflow>` - Complete activeflow data structure

@@ -548,7 +548,7 @@ VoIPBIN implements server-side keep-alive to prevent load balancer timeouts:
     Keep-Alive Configuration:
 
     +------------------------------------------------+
-    |  Ping Interval:  30 seconds                    |
+    |  Ping Interval:  10 seconds                    |
     |  Pong Wait:      60 seconds                    |
     |  Write Timeout:  10 seconds                    |
     +------------------------------------------------+
@@ -557,7 +557,7 @@ VoIPBIN implements server-side keep-alive to prevent load balancer timeouts:
 
     Server                                    Client
        |                                         |
-       |  Every 30s: Send Ping Frame             |
+       |  Every 10s: Send Ping Frame             |
        +---------------------------------------->>
        |                                         |
        |  Automatic Pong Response                |
@@ -582,7 +582,7 @@ VoIPBIN implements server-side keep-alive to prevent load balancer timeouts:
 
 **Connection Features:**
 
-* **Keepalive**: Server-side ping every 30 seconds
+* **Keepalive**: Server-side ping every 10 seconds
 * **Dead Detection**: 60-second timeout for pong response
 * **Auto-Reconnect**: Client should reconnect on disconnect
 * **Subscription Restore**: Re-subscribe after reconnect

@@ -15,6 +15,7 @@ AIPromptHistory
         "customer_id": "<string>",
         "ai_id": "<string>",
         "prompt": "<string>",
+        "proposal_id": "<string>",
         "tm_create": "<string>"
     }
 
@@ -22,6 +23,7 @@ AIPromptHistory
 * ``customer_id`` (UUID): The customer that owns this entry. Obtained from the ``id`` field of ``GET /customers``.
 * ``ai_id`` (UUID): The AI configuration this entry belongs to. Obtained from the ``id`` field of ``GET /ais``.
 * ``prompt`` (string): The ``init_prompt`` value recorded at the time of this history entry. Created automatically whenever the ``init_prompt`` of an AI changes via ``POST /ais`` or ``PUT /ais/{id}``.
+* ``proposal_id`` (UUID, optional): The :ref:`AI Prompt Proposal <ai-struct-aipromptproposal>` that generated this history entry, when it was created via ``POST /aipromptproposals/{id}/accept``. Set to ``00000000-0000-0000-0000-000000000000`` when the entry was created manually via ``POST /ais`` or ``PUT /ais/{id}``.
 * ``tm_create`` (string, ISO 8601): When this history entry was recorded.
 
 .. note:: **AI Implementation Hint**
@@ -38,5 +40,6 @@ Example
         "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
         "ai_id": "a092c5d9-632c-48d7-b70b-499f2ca084b1",
         "prompt": "You are a friendly sales assistant. Help customers find the right products.",
+        "proposal_id": "00000000-0000-0000-0000-000000000000",
         "tm_create": "2024-03-15 10:22:45.123456"
     }

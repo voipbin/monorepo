@@ -71,15 +71,25 @@ Address
 
     {
         "id": "<string>",
+        "customer_id": "<string>",
+        "contact_id": "<string>",
         "type": "<string>",
         "target": "<string>",
+        "target_name": "<string>",
+        "name": "<string>",
+        "detail": "<string>",
         "is_primary": <boolean>,
         "tm_create": "<string>"
     }
 
 * ``id`` (UUID): The address entry's unique identifier. Returned when adding via ``POST /contacts/{id}/addresses``.
+* ``customer_id`` (UUID): The customer who owns this address.
+* ``contact_id`` (UUID): The contact this address belongs to.
 * ``type`` (enum string): Address type. See :ref:`AddressType <contact-struct-contact-addresstype>`.
 * ``target`` (String): The address value. E.164 format for ``tel`` (e.g., ``+155****4567``); email address for ``email`` (e.g., ``user@example.com``).
+* ``target_name`` (String): Optional display name associated with the address (e.g., a caller-ID name reported by the network). Empty string if not set.
+* ``name`` (String): Optional human-readable label for this address (e.g., "Main Office"). Empty string if not set. There is no fixed enum of sub-types (no "mobile"/"work"/"home"/"fax"/"personal" classification) — ``name`` is a free-form label, not a typed category.
+* ``detail`` (String): Optional free-form notes about this address. Empty string if not set.
 * ``is_primary`` (Boolean): Whether this is the primary address for the given type. Only one address per type should be marked primary.
 * ``tm_create`` (string, ISO 8601): Timestamp when the address was added.
 

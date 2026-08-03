@@ -107,14 +107,12 @@ Status
 
 All possible values for the ``status`` field:
 
-================ ===========
-Status           Description
-================ ===========
-active           The number is provisioned and ready to receive inbound calls and messages. Flows assigned to this number will execute when triggered.
-purchase-pending The number purchase has been submitted to the provider but not yet confirmed. This is a transient state for normal numbers only. Poll ``GET /numbers/{id}`` until status changes to ``active``.
-suspended        The number is temporarily disabled. Inbound calls and messages will not be handled. Can be reactivated.
-deleted          The number has been released and is no longer active. Returned after calling ``DELETE /numbers/{id}``.
-================ ===========
+======= ===========
+Status  Description
+======= ===========
+active  The number is provisioned and ready to receive inbound calls and messages. Flows assigned to this number will execute when triggered.
+deleted The number has been released and is no longer active. Returned after calling ``DELETE /numbers/{id}``.
+======= ===========
 
 
 .. _number-struct-number-metadata:

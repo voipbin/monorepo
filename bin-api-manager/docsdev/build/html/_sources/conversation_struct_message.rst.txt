@@ -31,7 +31,7 @@ Message
 * ``customer_id`` (UUID): The customer's ID. Obtained from the ``id`` field of ``GET /customers``.
 * ``conversation_id`` (UUID): The parent conversation's ID. Obtained from ``GET /conversations`` or from the URL path when sending messages.
 * ``direction`` (enum string): Whether the message is incoming or outgoing. See :ref:`Direction <conversation-struct-message-direction>`.
-* ``status`` (enum string): The message's delivery status (e.g., ``sent``, ``received``, ``failed``).
+* ``status`` (enum string): The message's delivery/processing status. One of ``progressing``, ``done``, or ``failed``.
 * ``reference_type`` (enum string): The channel used for this message. See the parent conversation's ``reference_type``.
 * ``reference_id`` (UUID): An identifier associated with the channel reference.
 * ``source`` (Object): The sending party of the message as an absolute address ``{type, target}``. Direction-independent: ``source`` is always the origin.
@@ -56,7 +56,7 @@ Example
         "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
         "conversation_id": "64558b45-40a8-43db-b814-9c0dbf6d47b5",
         "direction": "incoming",
-        "status": "received",
+        "status": "done",
         "reference_type": "line",
         "reference_id": "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
         "source": {

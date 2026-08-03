@@ -71,12 +71,16 @@ Core file management operations.
 
 **Upload a File**
 
+.. note:: **AI Implementation Hint**
+
+   ``POST /storage_files`` only accepts two multipart form fields: ``file`` (the binary content) and ``type`` (required, must currently be the literal string ``rag``). Any other form field (e.g. ``name``) is ignored -- the resulting file record's ``name`` and ``detail`` fields are always empty for files created through this endpoint. The maximum upload size is 30 MB. This endpoint requires **CustomerAdmin** or **CustomerManager** permission.
+
 .. code::
 
     $ curl -X POST 'https://api.voipbin.net/v1.0/storage_files?token=<token>' \
         --header 'Content-Type: multipart/form-data' \
         --form 'file=@/path/to/file.pdf' \
-        --form 'name=document.pdf'
+        --form 'type=rag'
 
 **Response:**
 
@@ -84,11 +88,21 @@ Core file management operations.
 
     {
         "id": "file-uuid-123",
-        "name": "document.pdf",
-        "size": 102400,
-        "mime_type": "application/pdf",
-        "download_url": "https://storage.voipbin.net/...",
-        "tm_create": "2024-01-15T10:30:00Z"
+        "customer_id": "customer-uuid-456",
+        "owner_type": "agent",
+        "owner_id": "agent-uuid-789",
+        "reference_type": "",
+        "reference_id": "00000000-0000-0000-0000-000000000000",
+        "type": "rag",
+        "name": "",
+        "detail": "",
+        "filename": "file.pdf",
+        "filesize": 102400,
+        "uri_download": "https://storage.googleapis.com/bucket-name/storage/file-uuid-123?X-Goog-Signature=...",
+        "tm_download_expire": "2024-01-16T10:30:00Z",
+        "tm_create": "2024-01-15T10:30:00Z",
+        "tm_update": "9999-01-01 00:00:00.000000",
+        "tm_delete": "9999-01-01 00:00:00.000000"
     }
 
 **List All Files**
@@ -163,6 +177,10 @@ Monitor and manage your storage usage.
 
 **Get Storage Usage**
 
+.. note:: **AI Implementation Hint**
+
+   ``GET /storage_account`` (singular) always returns the storage account of the currently authenticated customer -- there is no ``id`` path parameter. It requires **CustomerAdmin** or **CustomerManager** permission. The response does not include an explicit ``quota`` field; the quota is a fixed platform default (currently 10 GB) applied server-side.
+
 .. code::
 
     $ curl -X GET 'https://api.voipbin.net/v1.0/storage_account?token=<token>'
@@ -174,11 +192,32 @@ Monitor and manage your storage usage.
     {
         "id": "storage-uuid-123",
         "customer_id": "customer-uuid-456",
-        "total_size": 524288000,
-        "file_count": 150,
-        "quota": 10737418240,
-        "tm_create": "2024-01-01T00:00:00Z"
+        "total_file_count": 150,
+        "total_file_size": 524288000,
+        "tm_create": "2024-01-01T00:00:00Z",
+        "tm_update": "2024-01-10T00:00:00Z",
+        "tm_delete": null
     }
+
+**Storage Account Administration**
+
+The ``storage_accounts`` (plural) endpoints manage storage accounts across customers. List, create, and delete require **ProjectSuperAdmin** permission (platform operators only); getting a specific storage account by id only requires **CustomerAdmin** or **CustomerManager** on the account's own customer.
+
+.. code::
+
+    # List storage accounts (ProjectSuperAdmin)
+    $ curl -X GET 'https://api.voipbin.net/v1.0/storage_accounts?token=<token>'
+
+    # Create a storage account for a customer (ProjectSuperAdmin)
+    $ curl -X POST 'https://api.voipbin.net/v1.0/storage_accounts?token=<token>' \
+        --header 'Content-Type: application/json' \
+        --data '{"customer_id": "customer-uuid-456"}'
+
+    # Get a specific storage account by id (CustomerAdmin/CustomerManager of the owning customer)
+    $ curl -X GET 'https://api.voipbin.net/v1.0/storage_accounts/<storage-account-id>?token=<token>'
+
+    # Delete a specific storage account by id (ProjectSuperAdmin)
+    $ curl -X DELETE 'https://api.voipbin.net/v1.0/storage_accounts/<storage-account-id>?token=<token>'
 
 **Usage Breakdown**
 
@@ -292,8 +331,10 @@ Store and access call recordings.
        +--------------------------------------------+
 
     2. Access recording
-       GET /storage_files?type=recording
-       -> List of recording files
+       GET /storage_files?page_size=100
+       -> List of files (filter client-side on the "type" or
+          "reference_type" field; the API does not support a
+          server-side type/reference_type query filter)
 
     3. Download recording
        GET /storage_files/{id}/file
@@ -318,11 +359,10 @@ Free up space when approaching quota.
        +--------------------------------------------+
 
     2. Identify large/old files
-       GET /storage_files?sort=size&order=desc
-       -> Find largest files
-
-       GET /storage_files?sort=tm_create&order=asc
-       -> Find oldest files
+       GET /storage_files?page_size=100
+       -> List files and sort client-side by "filesize" or
+          "tm_create"; the API does not support server-side
+          sort/order query parameters
 
     3. Delete unnecessary files
        DELETE /storage_files/{id}

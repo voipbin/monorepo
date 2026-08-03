@@ -32,7 +32,7 @@ Billing
         "tm_billing_end": "<string>",
         "tm_create": "<string>",
         "tm_update": "<string>",
-        "tm_delete": "<string>"
+        "tm_delete": null
     }
 
 * ``id`` (UUID): The billing record's unique identifier. Returned when listing via ``GET /billings``.
@@ -56,11 +56,11 @@ Billing
 * ``tm_billing_end`` (string, ISO 8601): Timestamp when the billable activity ended.
 * ``tm_create`` (string, ISO 8601): Timestamp when this billing record was created.
 * ``tm_update`` (string, ISO 8601): Timestamp of the last update to this billing record.
-* ``tm_delete`` (string, ISO 8601): Timestamp when this billing record was deleted. Set to ``9999-01-01 00:00:00.000000`` if not deleted.
+* ``tm_delete`` (string, ISO 8601, nullable): Timestamp when this billing record was deleted. ``null`` indicates the record is active (not deleted).
 
 .. note:: **AI Implementation Hint**
 
-   Timestamps set to ``9999-01-01 00:00:00.000000`` indicate the event has not yet occurred. For example, ``tm_delete`` with this value means the billing record has not been deleted.
+   ``tm_delete`` is ``null`` for active billing records and only set when the record has been (soft-)deleted. Billing records are immutable ledger entries and are essentially never deleted in normal operation.
 
 .. _billing-struct-billing-transaction-type:
 
@@ -171,5 +171,5 @@ Example
         "tm_billing_end": "2024-03-01T10:02:00.000000Z",
         "tm_create": "2024-03-01T10:02:01.000000Z",
         "tm_update": "2024-03-01T10:02:01.000000Z",
-        "tm_delete": "9999-01-01T00:00:00.000000Z"
+        "tm_delete": null
     }

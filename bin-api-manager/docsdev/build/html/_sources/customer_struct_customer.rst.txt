@@ -72,6 +72,16 @@ Customer
 
    The ``identity_verification_status`` field gates PSTN operations. Only customers with ``verified`` status can purchase non-virtual phone numbers or make outbound PSTN calls. New customers default to ``none`` and must complete identity verification before using PSTN services. Existing customers at the time of this feature launch were grandfathered to ``verified``.
 
+Admin-Only Fields
++++++++++++++++++
+
+The admin-only ``/customers`` (plural) endpoints -- which require ``ProjectSuperAdmin`` permission -- return an extended representation that includes two additional fields not present in the regular ``/customer`` (singular) response:
+
+* ``terms_agreed_version`` (String): Version identifier of the Terms of Service the customer agreed to. Format: ``YYYY-MM-DD`` date string matching a published ToS revision.
+* ``terms_agreed_ip`` (String): IPv4 address from which the customer accepted the Terms of Service. Logged for legal compliance and audit trail.
+
+These fields are never returned to regular customer accounts via the singular ``/customer`` endpoints.
+
 Example
 +++++++
 

@@ -394,13 +394,13 @@ VoIPBIN's Flow provides developers with a versatile and robust toolkit, empoweri
 +------------------+-----------------------------------------------+------------------------+
 | Input            | digits_receive, transcribe_start              | Wait for input         |
 +------------------+-----------------------------------------------+------------------------+
-| Control          | goto, branch, condition_*, stop, empty        | Immediate              |
+| Control          | goto, branch, condition_*, stop, block        | Immediate              |
 +------------------+-----------------------------------------------+------------------------+
 | Communication    | message_send, email_send, webhook_send        | Fire and forget        |
 +------------------+-----------------------------------------------+------------------------+
 | Nested           | queue_join, ai_talk, conference_join, fetch   | Push stack, return     |
 +------------------+-----------------------------------------------+------------------------+
-| Call Control     | answer, hangup, hold, mute, connect, transfer | Immediate or wait      |
+| Call Control     | answer, hangup, mute, connect                 | Immediate or wait      |
 +------------------+-----------------------------------------------+------------------------+
 
 .. _flow-overview-flow_execution:

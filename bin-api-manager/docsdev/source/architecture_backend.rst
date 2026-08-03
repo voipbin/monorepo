@@ -295,7 +295,7 @@ HTTP Endpoint                    Backend Service
 /v1.0/calls                      bin-call-manager
 /v1.0/conferences                bin-conference-manager
 /v1.0/messages                   bin-message-manager
-/v1.0/talks                      bin-talk-manager
+/v1.0/service_agents/talk_chats  bin-talk-manager
 /v1.0/emails                     bin-email-manager
 /v1.0/agents                     bin-agent-manager
 /v1.0/queues                     bin-queue-manager
@@ -305,14 +305,17 @@ HTTP Endpoint                    Backend Service
 /v1.0/conversations              bin-conversation-manager
 /v1.0/billings                   bin-billing-manager
 /v1.0/customers                  bin-customer-manager
-/v1.0/webhooks                   bin-webhook-manager
 /v1.0/transcribes                bin-transcribe-manager
 /v1.0/numbers                    bin-number-manager
 /v1.0/routes                     bin-route-manager
 /v1.0/tags                       bin-tag-manager
-/v1.0/storage                    bin-storage-manager
+/v1.0/storage_accounts           bin-storage-manager
 /v1.0/transfers                  bin-transfer-manager
 ===============================  ===========================
+
+.. note::
+
+   Webhook event delivery does not have a dedicated ``/v1.0/webhooks`` CRUD endpoint. Webhook URL and method are configured on the customer resource (``PUT /v1.0/customer``), and bin-webhook-manager handles asynchronous delivery of events to that configured endpoint. See :ref:`Webhook Overview <webhook-overview>`.
 
 .. note:: **AI Implementation Hint**
 

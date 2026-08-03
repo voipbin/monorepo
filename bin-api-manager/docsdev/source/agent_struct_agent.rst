@@ -39,9 +39,9 @@ Agent
 * ``ring_method`` (enum string): The method used to ring the agent's addresses when a call is routed. See :ref:`Ring method <agent-struct-agent-ring_method>`.
 * ``status`` (enum string): The agent's current availability status. See :ref:`Status <agent-struct-agent-status>`.
 * ``permission`` (Integer): The agent's permission level as a bitmask value. See :ref:`Permission <agent-struct-agent-permission>`.
-* ``tag_ids`` (Array of UUID): List of tag IDs assigned to this agent for skill-based routing. Each ID is obtained from the ``id`` field of ``GET /tags``.
+* ``tag_ids`` (Array of UUID): List of tag IDs intended as a skill-based filter for this agent. Each ID is obtained from the ``id`` field of ``GET /tags``. **Not currently enforced** at agent-selection time -- see the Known Limitation in :ref:`Agent Overview <agent-overview>` for details.
 * ``addresses`` (Array of Object): List of contact addresses where calls are delivered to this agent. See :ref:`Address <common-struct-address-address>`.
-* ``direct_hash`` (String): Hash for direct agent access. Empty string when direct access is disabled. When enabled, this hash forms the direct SIP URI: ``sip:direct.<hash>@sip.voipbin.net``. Regenerate via ``POST /agents/{id}/direct-hash-regenerate``.
+* ``direct_hash`` (String): Hash for direct agent access, already prefixed with ``direct.`` (e.g. ``direct.a8f3b2c1d4e5``). Empty string when direct access is disabled. When enabled, this value forms the direct SIP URI directly: ``sip:<direct_hash>@sip.voipbin.net``. Regenerate via ``POST /agents/{id}/direct-hash-regenerate``.
 * ``tm_create`` (string, ISO 8601): Timestamp when the agent was created.
 * ``tm_update`` (string, ISO 8601): Timestamp when the agent was last updated.
 * ``tm_delete`` (string, ISO 8601): Timestamp when the agent was deleted, if applicable.
@@ -60,7 +60,7 @@ The method used to ring the agent's contact addresses when a call is routed.
 Type       Description
 ========== ============
 ringall    Dial all of the agent's addresses simultaneously. The first address to answer is connected; the rest are cancelled.
-linear     Reserved. Dial the agent's addresses one at a time, in order. Defined in the API but not yet supported at runtime (currently only ``ringall`` is honored).
+linear     Dial the agent's addresses one at a time, in order. If one address doesn't answer, the next address is dialed.
 ========== ============
 
 .. _agent-struct-agent-status:

@@ -17,8 +17,8 @@ Conferencecall
         "reference_id": "<string>",
         "status": "<string>",
         "tm_create": "<string>",
-        "tm_update": "<string>",
-        "tm_delete": "<string>"
+        "tm_update": "<string or null>",
+        "tm_delete": "<string or null>"
     }
 
 * ``id`` (UUID): The conferencecall's unique identifier. Returned when a participant joins a conference or when listing via ``GET /conferencecalls``.
@@ -29,12 +29,12 @@ Conferencecall
 * ``reference_id`` (UUID): The ID of the referenced resource (e.g., a call ID). Obtained from ``GET /calls/{id}`` when ``reference_type`` is ``call``.
 * ``status`` (enum string): The conferencecall's current status. See :ref:`Status <conference-struct-conferencecall-status>`.
 * ``tm_create`` (String, ISO 8601): Timestamp when the conferencecall was created.
-* ``tm_update`` (String, ISO 8601): Timestamp of the last update to any conferencecall property.
-* ``tm_delete`` (String, ISO 8601): Timestamp when the conferencecall was deleted.
+* ``tm_update`` (String, ISO 8601, nullable): Timestamp of the last update to any conferencecall property. ``null`` if never updated.
+* ``tm_delete`` (String, ISO 8601, nullable): Timestamp when the conferencecall was deleted. ``null`` if the participant record still exists.
 
 .. note:: **AI Implementation Hint**
 
-   Timestamps set to ``9999-01-01 00:00:00.000000`` indicate the event has not yet occurred. For example, ``tm_delete`` with this value means the participant record still exists. To remove a participant from a conference, use ``DELETE /conferencecalls/{id}``.
+   ``tm_update``/``tm_delete`` are ``null`` when the corresponding event has not yet occurred. A ``null`` ``tm_delete`` means the participant record still exists. To remove a participant from a conference, use ``DELETE /conferencecalls/{id}``.
 
 
 Example
@@ -52,7 +52,7 @@ Example
         "status": "leaved",
         "tm_create": "2022-08-06 16:57:12.247946",
         "tm_update": "2022-08-06 19:09:47.349667",
-        "tm_delete": "9999-01-01 00:00:00.000000"
+        "tm_delete": null
     }
 
 .. _conference-struct-conferencecall-reference_type:

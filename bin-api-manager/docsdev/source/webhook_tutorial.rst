@@ -14,7 +14,7 @@ Before configuring webhooks, you need:
 
 .. note:: **AI Implementation Hint**
 
-   Webhooks are configured at the **customer account level**, not as separate resources. Use ``PUT https://api.voipbin.net/v1.0/customer`` to set the ``webhook_uri`` and ``webhook_method`` fields on your customer profile. There is no ``/webhooks`` CRUD endpoint. Your webhook endpoint must be publicly reachable from the internet and respond with HTTP 200 within 5 seconds. For local development, use tools like ngrok to expose a local server.
+   Webhooks are configured at the **customer account level**, not as separate resources. Use ``PUT https://api.voipbin.net/v1.0/customer`` to set the ``webhook_uri`` and ``webhook_method`` fields on your customer profile. There is no ``/webhooks`` CRUD endpoint. Your webhook endpoint must be publicly reachable from the internet; VoIPBIN retries up to 3 times (1 second apart) on a connection failure or a ``5xx`` response, with roughly 30 seconds allowed per attempt. For local development, use tools like ngrok to expose a local server.
 
 Configure Webhook Endpoint
 --------------------------
@@ -297,9 +297,9 @@ Best Practices
 --------------
 
 **1. Acknowledge Quickly:**
-- Return 200 OK immediately upon receiving the webhook
+- Return a non-5xx status (e.g. 200 OK) immediately upon receiving the webhook
 - Process time-consuming tasks asynchronously (queue jobs, background workers)
-- VoIPBIN expects a response within 5 seconds
+- VoIPBIN retries up to 3 times (1 second apart) on connection failure or a 5xx response
 
 **2. Handle Duplicates:**
 - Webhooks may be delivered more than once

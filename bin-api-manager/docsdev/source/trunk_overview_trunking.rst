@@ -19,10 +19,10 @@ Once you created trunk, the voipbin generates the trunk server address for you.
 
 Authentication
 --------------
-Currently, The VoIPBIN's trunking authentication supports only the Basic authentication.
+VoIPBIN's trunking authentication supports two methods, which can be enabled independently or together on the same trunk:
 
-* Basic authentication
-* IP-based authentication (coming soon)
+* Basic authentication (SIP username/password)
+* IP-based authentication (allowed source IP list)
 
 Basic authentication
 ++++++++++++++++++++
@@ -67,9 +67,20 @@ By following these steps, you can make a SIP outgoing call through VoIPBIN using
     |<------------- 200 OK ------------------|                                        |
 
 
+IP-based authentication
++++++++++++++++++++++++
+Instead of (or in addition to) a username and password, a trunk can authorize calls based on the source IP address of the INVITE request.
+
+1. Set ``auth_types`` to include ``ip`` when creating or updating the trunk.
+2. Add the SIP client's or PBX's public IP address to the trunk's ``allowed_ips`` list.
+3. Point the SIP client at the trunk server address. No credentials are required in the INVITE.
+4. VoIPBIN checks the source IP of the INVITE against ``allowed_ips`` and, if it matches, authorizes the call without a 407 challenge.
+
+This method is useful for devices with a static, known IP address, since it avoids storing SIP credentials on the device.
+
 .. note:: **AI Implementation Hint**
 
-   The trunk server address format is ``sip:{your-domain}.trunk.voipbin.net``. When configuring a SIP client for trunking, use the extension's ``username`` and ``password`` for authentication, and set the SIP proxy/outbound-proxy to the trunk server address. VoIPBIN uses 407 Proxy Authentication (not 401 WWW-Authenticate), so ensure your SIP client supports proxy authentication.
+   The trunk server address format is ``sip:{your-domain}.trunk.voipbin.net``. When configuring a SIP client for basic authentication, use the trunk's ``username`` and ``password``, and set the SIP proxy/outbound-proxy to the trunk server address. VoIPBIN uses 407 Proxy Authentication (not 401 WWW-Authenticate), so ensure your SIP client supports proxy authentication. For IP-based authentication, no credentials are sent; VoIPBIN authorizes the call by matching the source IP against ``allowed_ips``.
 
 Call handle
 -------------------

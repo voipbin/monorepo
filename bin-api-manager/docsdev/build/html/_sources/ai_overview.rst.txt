@@ -307,6 +307,7 @@ Available Tools
 Tool                      Description
 ========================= ===================================================
 connect_call              Transfer or connect to another endpoint
+create_call               Place a new, independent outbound call
 send_email                Send an email message
 send_message              Send an SMS text message
 stop_media                Stop currently playing media
@@ -315,7 +316,19 @@ stop_flow                 Terminate entire flow (hard stop, call ends)
 set_variables             Save data to flow context
 get_variables             Retrieve data from flow context
 get_aicall_messages       Get message history from an AI call
+search_knowledge          Search the configured knowledge base (RAG)
+get_correlation           List resources linked to an activeflow (diagnostic)
+get_resource              Fetch the content of a related resource (diagnostic)
+describe_action           Look up a flow action's option schema
+case_create               Create a CRM case for the current contact
 ========================= ===================================================
+
+.. note:: **AI Implementation Hint**
+
+   ``type=insight`` AIs use a separate, smaller tool set instead of the tools
+   above: ``get_contact_interactions``, ``get_conversation_content``,
+   ``get_related_cases``, and ``get_case_notes``. See
+   :ref:`Insight Tools <ai-struct-tool-insight>`.
 
 For detailed documentation on each tool, see :ref:`Tool Functions <ai-struct-tool>`.
 
@@ -488,11 +501,21 @@ Tool                      Conversation   Notes
 ------------------------- -------------- -----------------------------------------
 ``search_knowledge``      Supported      Context-neutral
 ------------------------- -------------- -----------------------------------------
+``describe_action``       Supported      Read-only schema lookup, channel-agnostic
+------------------------- -------------- -----------------------------------------
+``case_create``           Supported      Channel-agnostic
+------------------------- -------------- -----------------------------------------
 ``connect_call``          Avoid          Requires a live phone call
+------------------------- -------------- -----------------------------------------
+``create_call``           Avoid          Not on the conversation-safe whitelist today
 ------------------------- -------------- -----------------------------------------
 ``stop_media``            Avoid          No media playback in chat
 ------------------------- -------------- -----------------------------------------
 ``stop_flow``             Avoid          Per-message flow already short
+------------------------- -------------- -----------------------------------------
+``get_correlation``       Avoid          Not on the conversation-safe whitelist today
+------------------------- -------------- -----------------------------------------
+``get_resource``          Avoid          Not on the conversation-safe whitelist today
 ========================= ============== =========================================
 
 .. note:: **AI Implementation Hint**

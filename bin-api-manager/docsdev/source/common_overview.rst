@@ -171,6 +171,10 @@ All API requests and responses use JSON format.
     Content-Type: application/json
     Authorization: Bearer <YOUR_ACCESS_TOKEN>
 
+.. note:: **AI Implementation Hint**
+
+   Besides the ``Authorization: Bearer <token>`` header, VoIPBIN also accepts the token as a ``token`` query parameter (e.g., ``?token=<token>``, used throughout this documentation for ``curl`` examples and required for the WebSocket endpoint since it cannot send custom headers) or as a ``token`` cookie.
+
 **Single resource response:**
 
 .. code::
@@ -199,18 +203,24 @@ All API requests and responses use JSON format.
 Rate Limiting
 -------------
 
-VoIPBIN applies rate limits to protect service stability. When you exceed the rate limit, the API returns a ``429 Too Many Requests`` response.
-
-**Rate limit headers:**
+VoIPBIN currently applies a per-client-IP rate limit (10 requests/second, burst of 20) only to the unauthenticated ``/auth/*`` endpoints (signup, login/boot, password reset, etc.) — see :ref:`Auth <auth-main>` for the full list. The authenticated ``/v1.0/*`` resource endpoints (calls, messages, and the rest of the platform API) have no rate limiting applied today. When the ``/auth/*`` limit is exceeded, the API returns a ``429 Too Many Requests`` response using the same canonical error envelope described in :ref:`error-response-envelope`, with reason code ``RATE_LIMIT_EXCEEDED``.
 
 .. code::
 
-    X-RateLimit-Limit: 100
-    X-RateLimit-Remaining: 45
-    X-RateLimit-Reset: 1609459200
+    {
+        "error": {
+            "status": "RESOURCE_EXHAUSTED",
+            "reason": "RATE_LIMIT_EXCEEDED",
+            "message": "Too many requests. Please try again later."
+        }
+    }
+
+.. note:: **AI Implementation Hint**
+
+   The rate limit response does **not** include ``X-RateLimit-*`` or ``Retry-After`` headers -- there is no way to read the remaining quota or reset time from the response. Detect rate limiting purely from the ``429`` status code and ``RATE_LIMIT_EXCEEDED`` reason, and back off blindly (exponential backoff) rather than relying on a reset timestamp.
 
 **Handling rate limits:**
 
-1. Check the ``Retry-After`` header for when to retry
-2. Implement exponential backoff for retries
+1. Detect the ``429`` status code and ``RATE_LIMIT_EXCEEDED`` reason
+2. Implement exponential backoff for retries (no reset time is provided)
 3. Cache responses when possible to reduce API calls

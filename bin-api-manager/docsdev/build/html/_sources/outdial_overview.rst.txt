@@ -15,9 +15,9 @@ With the Outdial API you can:
 
 - Create and manage dial target lists
 - Track dial attempts and outcomes
-- Configure per-target retry counts
+- Configure per-target retry counts (via the attached :ref:`Outplan <outplan-overview>`)
 - Monitor target status in real-time
-- Import targets in bulk
+- Add targets one at a time via repeated ``POST /outdials/{id}/targets`` calls (there is no bulk-import endpoint)
 
 
 How Outdials Work
@@ -261,7 +261,7 @@ Import and manage a sales prospect list.
 
     1. Create outdial: "Q1 Sales Leads"
 
-    2. Bulk import targets:
+    2. Add targets one by one (repeated POST /outdials/{id}/targets calls):
        +--------------------------------------------+
        | +15551234567 | John Smith   | 3 retries   |
        | +15552345678 | Jane Doe     | 3 retries   |
@@ -328,7 +328,7 @@ Best Practices
 
 **2. Retry Configuration**
 
-- Set try_count_max based on campaign urgency
+- Set ``max_try_count_0``..``max_try_count_4`` (on the outplan) based on campaign urgency
 - Sales: 3-5 retries over multiple days
 - Reminders: 1-2 retries within hours
 - Emergencies: 5+ retries with short intervals
@@ -362,7 +362,7 @@ Troubleshooting
 | All targets failing       | Validate phone number format; check carrier    |
 |                           | routing; verify source number                  |
 +---------------------------+------------------------------------------------+
-| Retries not happening     | Check try_count_max > try_count_current;       |
+| Retries not happening     | Check try_count_N < max_try_count_N (outplan); |
 |                           | verify outplan retry settings                  |
 +---------------------------+------------------------------------------------+
 

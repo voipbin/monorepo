@@ -48,6 +48,14 @@ Both endpoints return the identical unfiltered response shape and can be filtere
    Prefer ``GET /contact_peer_events`` for new integrations. ``GET /contact_interactions`` remains available for existing callers but returns the same raw data — it is not a filtered/curated alternative.
 
 
+Agent console equivalents
+---------------------------
+Agent-facing consoles use ``GET /service_agents/contact_interactions`` and ``GET /service_agents/contact_peer_events`` instead of the top-level paths documented on this page -- see :ref:`Agent Console <service_agent-overview>` for the authentication model shared by all ``/service_agents/*`` endpoints. The response shape is identical (:ref:`TimelineManagerPeerEventListResponse <contact-peer-event-struct>`), with two differences specific to the agent-console variant:
+
+- ``GET /service_agents/contact_interactions`` does **not** require a filter. If ``peer_type``/``peer_target``, ``contact_id``, and ``address_id`` are all omitted, it returns the full customer interaction history instead, scoped to a ``since`` lookback window (query parameter, default ``30d``, maximum ``180d``). The top-level ``GET /contact_interactions`` has no such fallback and requires exactly one filter.
+- ``GET /service_agents/contact_peer_events`` still requires exactly one of ``contact_id`` or ``peer_type``+``peer_target``, matching the top-level ``GET /contact_peer_events`` behavior.
+
+
 Filtering
 ---------
 

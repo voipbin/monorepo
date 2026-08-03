@@ -38,13 +38,16 @@ Type
 ======================= ==========================================================================
 type                    Description
 ======================= ==========================================================================
-agent_call              **Deprecated**. Use ``connect`` instead. Creates a call to the agent and connects.
+ai_summary              Generate an AI summary of the call or conversation reference.
+ai_talk                 Start an interactive AI-powered conversation using STT/TTS.
+ai_task                 Execute an AI-driven task (e.g., an autonomous AI assistant/team action).
 amd                     Answering machine detection. Detects whether the call was answered by a human or machine.
 answer                  Answer an incoming call. Required before media actions (``talk``, ``play``) on inbound calls.
 beep                    Play a beep sound. Commonly used before recording to signal the caller.
+block                   Block (pause) action execution until an external "continue" request resumes the flow.
 branch                  Read a variable value and jump to a matching target action ID. Use for IVR menu routing.
 call                    Start a new independent outgoing call with its own flow. Does not block the current flow.
-chatbot_talk            Start an interactive chatbot conversation using STT/TTS.
+case_create             Create a CRM case for the current call/conversation reference.
 condition_call_digits   **Deprecated**. Use ``condition_variable`` instead. Condition check on received digits.
 condition_call_status   **Deprecated**. Use ``condition_variable`` instead. Condition check on call status.
 condition_datetime      Condition check on current UTC time. Useful for business hours routing.
@@ -56,14 +59,15 @@ conversation_send       Send a text message to an existing conversation.
 digits_receive          Wait for DTMF digit input from the caller. Sets ``voipbin.call.digits`` variable.
 digits_send             Send DTMF tones to the call.
 echo                    Echo the call's audio stream back to the caller. Useful for testing.
+email_send              Send an email to one or more destinations. Fire-and-forget or synchronous.
 external_media_start    Start an external media stream (RTP) to/from an external host.
 external_media_stop     Stop the external media stream.
 fetch                   Fetch actions from a remote URL endpoint. Forks the flow with the fetched actions.
 fetch_flow              Fetch actions from an existing VoIPBIN flow by ID. Forks the flow.
 goto                    Jump to another action by ID. Use ``loop_count`` to prevent infinite loops.
 hangup                  Hang up the current call.
-hangup_relay            Hang up the call and relay the hangup cause to the referenced call.
 message_send            Send an SMS/message to one or more destinations. Fire-and-forget.
+mute                    Mute the call.
 play                    Play audio file(s) from the given URL(s). Waits for playback to complete.
 queue_join              Join the caller to a queue. Nested action -- flow forks into the queue's wait flow.
 recording_start         Start recording the call audio. Sets ``voipbin.recording.id`` variable.
@@ -79,36 +83,95 @@ variable_set            Set a custom variable value for use in subsequent action
 webhook_send            Send an HTTP request to an external URL. Can be sync (wait for response) or async.
 ======================= ==========================================================================
 
-.. _flow-struct-action-agent_call:
+.. note::
 
-Agent Call
+   ``agent_call``, ``chatbot_talk``, and ``hangup_relay`` are not valid action types in the current
+   platform. Use ``connect`` in place of ``agent_call``, ``ai_talk`` in place of ``chatbot_talk``, and
+   ``hangup`` (with the ``reference_id`` option) in place of ``hangup_relay``.
+
+.. _flow-struct-action-ai_summary:
+
+AI Summary
 ----------
-Calling the agent.
-The agent may have various types of addresses or phone numbers, such as a desk phone, mobile phone, or softphone application.
+Generate an AI summary of the current call or conversation reference.
 
 Parameters
 ++++++++++
 .. code::
 
     {
-        "type": "agent_call",
+        "type": "ai_summary",
         "option": {
-            "agent_id": "<string>"
+            "on_end_flow_id": "<string>",
+            "reference_type": "<string>",
+            "reference_id": "<string>",
+            "language": "<string>"
         }
     }
 
-* ``agent_id`` (UUID): Target agent ID. Obtained from ``GET /agents``.
+* ``on_end_flow_id`` (UUID, optional): Flow to execute when the summary finishes.
+* ``reference_type`` (enum string, optional): Type of the resource being summarized (e.g. ``call``).
+* ``reference_id`` (UUID, optional): ID of the resource being summarized. If omitted, the current activeflow's reference is used.
+* ``language`` (String, optional): Language in BCP47 format (e.g., ``en-US``).
+
+.. _flow-struct-action-ai_talk:
+
+AI Talk
+-------
+Start an interactive AI-powered conversation using STT/TTS.
+
+Parameters
+++++++++++
+.. code::
+
+    {
+        "type": "ai_talk",
+        "option": {
+            "assistance_type": "<string>",
+            "assistance_id": "<string>",
+            "duration": <number>
+        }
+    }
+
+* ``assistance_type`` (enum string): Type of assistance to use. One of ``ai``, ``team``.
+* ``assistance_id`` (UUID): ID of the AI or team providing the assistance.
+* ``duration`` (Integer): Maximum duration for the AI talk session, in seconds.
+* ``ai_id`` (UUID): **Deprecated**. Use ``assistance_type``/``assistance_id`` instead. Kept for backward compatibility with existing flows.
 
 Example
 +++++++
 .. code::
 
     {
-        "type": "agent_call",
+        "type": "ai_talk",
         "option": {
-            "agent_id": "eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b"
+            "assistance_type": "ai",
+            "assistance_id": "eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b",
+            "duration": 300
         }
     }
+
+.. _flow-struct-action-ai_task:
+
+AI Task
+-------
+Execute an AI-driven task (e.g., an autonomous AI assistant/team action).
+
+Parameters
+++++++++++
+.. code::
+
+    {
+        "type": "ai_task",
+        "option": {
+            "assistance_type": "<string>",
+            "assistance_id": "<string>"
+        }
+    }
+
+* ``assistance_type`` (enum string): Type of assistance to use. One of ``ai``, ``team``.
+* ``assistance_id`` (UUID): ID of the AI or team executing the task.
+* ``ai_id`` (UUID): **Deprecated**. Use ``assistance_type``/``assistance_id`` instead. Kept for backward compatibility with existing flows.
 
 .. _flow-struct-action-amd:
 
@@ -196,6 +259,29 @@ Example
 
     {
         "type": "beep"
+    }
+
+
+.. _flow-struct-action-block:
+
+Block
+------
+Block (pause) action execution until an external request resumes the flow.
+
+Parameters
+++++++++++
+.. code::
+
+    {
+        "type": "block"
+    }
+
+Example
++++++++
+.. code::
+
+    {
+        "type": "block"
     }
 
 
@@ -317,30 +403,34 @@ Example
         }
     }
 
-.. _flow-struct-action-chatbot_talk:
+.. _flow-struct-action-case_create:
 
-Chatbot Talk
-----------------
-Start the chatbot talk.
+Case Create
+-----------
+Create a CRM case for the current call/conversation reference.
 
 Parameters
 ++++++++++
 .. code::
 
     {
-        "type": "chatbot_talk",
+        "type": "case_create",
         "option": {
-            "chatbot_id": "<string>",
-            "language": "<string>",
-            "duration": <number>
+            "name": "<string>",
+            "detail": "<string>",
+            "note": "<string>",
+            "sync": <boolean>
         }
     }
 
-* ``chatbot_id`` (UUID): Chatbot ID. Obtained from the chatbot management API.
-* ``language`` (String): Language in BCP47 format (e.g., ``en-US``).
-* ``duration`` (Integer): Maximum duration for the chatbot session, in seconds.
+* ``name`` (String): Case name.
+* ``detail`` (String): Case detail/description.
+* ``note`` (String): Additional note for the case.
+* ``sync`` (Boolean): If ``true``, the flow waits for the case creation to complete before continuing. Default: ``false``.
 
+.. note::
 
+   The case is automatically linked to the reference (e.g., the call or conversation) of the current activeflow. There is no ``reference_id`` option -- it cannot be set explicitly.
 
 .. _flow-struct-action-confbridge_join:
 
@@ -517,7 +607,7 @@ Parameters
 * ``variable`` (String): Variable name to check. Available variables are listed :ref:`here <variable-variable>`.
 * ``value_type`` (enum string): Type of comparison value. One of ``string``, ``number``, ``length``.
 * ``value_string`` (String): Comparison value when ``value_type`` is ``string``.
-* ``value_number`` (Integer): Comparison value when ``value_type`` is ``number``.
+* ``value_number`` (Number): Comparison value when ``value_type`` is ``number``.
 * ``value_length`` (Integer): Comparison value when ``value_type`` is ``length``. Compares the character length of the variable's value.
 * ``false_target_id`` (UUID): Action ID to jump to when the condition is not met. Must reference an ``id`` of another action in the same flow.
 
@@ -753,6 +843,41 @@ Example
         }
     }
 
+.. _flow-struct-action-email_send:
+
+Email send
+----------
+Send an email.
+
+Parameters
+++++++++++
+.. code::
+
+    {
+        "type": "email_send",
+        "option": {
+            "destinations": [
+                {
+                    ...
+                },
+                ...
+            ],
+            "subject": "<string>",
+            "content": "<string>",
+            "attachments": [
+                {
+                    ...
+                },
+                ...
+            ]
+        }
+    }
+
+* ``destinations`` (Array of Object): Array of destination addresses. See :ref:`Address <common-struct-address-address>`.
+* ``subject`` (String): Email subject line.
+* ``content`` (String): Email body content. Supports ``${variable}`` substitution.
+* ``attachments`` (Array of Object, optional): Attachments to include with the email.
+
 .. _flow-struct-action-external_media_start:
 
 External Media Start
@@ -769,9 +894,11 @@ Parameters
             "external_host": "<string>",
             "encapsulation": "<string>",
             "transport": "<string>",
+            "transport_data": "<string>",
             "connection_type": "<string>",
             "format": "<string>",
-            "direction": "<string>",
+            "direction_listen": "<string>",
+            "direction_speak": "<string>",
             "data": "<string>"
         }
     }
@@ -779,9 +906,11 @@ Parameters
 * ``external_host`` (String): External media target host address (e.g., ``192.168.1.100:8000``).
 * ``encapsulation`` (String): Media encapsulation protocol. Default: ``rtp``.
 * ``transport`` (String): Network transport protocol. Default: ``udp``.
+* ``transport_data`` (String): Transport-specific data.
 * ``connection_type`` (String): Connection type. Default: ``client``.
 * ``format`` (String): Audio codec format. Default: ``ulaw``.
-* ``direction`` (enum string): Media direction. Default: ``both``. Values: ``both``, ``send``, ``receive``.
+* ``direction_listen`` (String): Direction to listen for incoming external media.
+* ``direction_speak`` (String): Direction to send outgoing external media.
 * ``data`` (String): Reserved for future use.
 
 .. _flow-struct-action-external_media_stop:
@@ -905,45 +1034,22 @@ Parameters
 .. code::
 
     {
-        "type": "hangup"
-    }
-
-Example
-+++++++
-.. code::
-
-    {
-        "type": "hangup"
-    }
-
-.. _flow-struct-action-hangup_relay:
-
-Hangup Relay
--------------
-Hangup the call and relay the hangup cause to the reference id.
-
-Parameters
-++++++++++
-.. code::
-
-    {
-        "type": "hangup_relay",
+        "type": "hangup",
         "option": {
+            "reason": "<string>",
             "reference_id": "<string>"
         }
     }
 
-* ``reference_id`` (UUID): The call ID whose hangup reason should be relayed. Obtained from ``GET /calls`` or a call-related variable (e.g., ``${voipbin.call.id}``).
+* ``reason`` (String, optional): Hangup reason code. See :ref:`Call hangup reason <call-struct-call-hangupreason>`.
+* ``reference_id`` (UUID, optional): If set, hangs up the call with the same reason as this referenced call ID. This overwrites the ``reason`` option. Obtained from ``GET /calls`` or a call-related variable (e.g., ``${voipbin.call.id}``).
 
 Example
 +++++++
 .. code::
 
     {
-        "type": "hangup_relay",
-        "option": {
-            "reference_id": "b8573f30-b031-11ed-ac05-3bc9a62e64c3"
-        }
+        "type": "hangup"
     }
 
 .. _flow-struct-action-message_send:
@@ -975,6 +1081,28 @@ Parameters
 * ``source`` (Object): Source address for the message. See :ref:`Address <common-struct-address-address>`. Must be a number you own, obtained from ``GET /numbers``.
 * ``destinations`` (Array of Object): Array of destination addresses. See :ref:`Address <common-struct-address-address>`.
 * ``text`` (String): Message text content. Supports ``${variable}`` substitution.
+
+.. _flow-struct-action-mute:
+
+Mute
+----
+Mute the call.
+
+Parameters
+++++++++++
+.. code::
+
+    {
+        "type": "mute"
+    }
+
+Example
++++++++
+.. code::
+
+    {
+        "type": "mute"
+    }
 
 .. _flow-struct-action-play:
 
@@ -1058,7 +1186,8 @@ Parameters
             "end_of_silence": <integer>,
             "end_of_key": "<string>",
             "duration": <integer>,
-            "beep_start": <boolean>
+            "beep_start": <boolean>,
+            "on_end_flow_id": "<string>"
         }
     }
 
@@ -1067,6 +1196,7 @@ Parameters
 * ``end_of_key`` (enum string): DTMF key that stops the recording. Values: ``none``, ``any``, ``*``, ``#``.
 * ``duration`` (Integer): Maximum recording duration in seconds. Set to ``0`` for no limit.
 * ``beep_start`` (Boolean): If ``true``, play a beep tone when recording begins.
+* ``on_end_flow_id`` (UUID, optional): Flow to execute when the recording ends.
 
 Example
 +++++++
@@ -1167,7 +1297,8 @@ Parameters
             "language": "<string>",
             "provider": "<string>",
             "voice_id": "<string>",
-            "digits_handle": "<string>"
+            "digits_handle": "<string>",
+            "async": <boolean>
         }
     }
 
@@ -1176,6 +1307,7 @@ Parameters
 * ``provider`` (enum string): TTS provider. Optional. Values: ``gcp`` (Google Cloud TTS), ``aws`` (AWS Polly). Default: ``gcp``. If the selected provider fails, the system automatically falls back to the alternative provider with the default voice for the language.
 * ``voice_id`` (String): Provider-specific voice identifier. Optional. Examples: ``en-US-Wavenet-D`` (GCP), ``Joanna`` (AWS). On fallback, the voice_id is reset to the alternative provider's default voice.
 * ``digits_handle`` (enum string): How to handle DTMF input received during playback. See :ref:`Digits handle <flow-struct-action-talk-digits_handle>`. Optional.
+* ``async`` (Boolean): If ``true``, the flow continues immediately without waiting for the talk to complete. If ``false``, the flow waits until playback is done. Default: ``false``.
 
 .. _flow-struct-action-talk-digits_handle:
 
@@ -1215,13 +1347,15 @@ Parameters
         "option": {
             "language": "<string>",
             "provider": "<string>",
-            "direction": "<string>"
+            "direction": "<string>",
+            "on_end_flow_id": "<string>"
         }
     }
 
 * ``language`` (String): Language in BCP47 format (e.g., ``en-US``).
 * ``provider`` (String, optional): STT provider to use: ``gcp`` or ``aws``. If omitted, VoIPBIN selects the best available provider automatically.
 * ``direction`` (String, optional): Audio direction to transcribe: ``in``, ``out``, or ``both``. Defaults to ``both``.
+* ``on_end_flow_id`` (UUID, optional): Flow to execute when the transcription ends.
 
 Example
 +++++++
@@ -1251,13 +1385,15 @@ Parameters
         "option": {
             "language": "<string>",
             "provider": "<string>",
-            "direction": "<string>"
+            "direction": "<string>",
+            "on_end_flow_id": "<string>"
         }
     }
 
 * ``language`` (String): Language in BCP47 format. Examples: ``en-US``, ``ko-KR``. The value may be a two-letter language code (e.g., ``en``) or language code with country/region (e.g., ``en-US``).
 * ``provider`` (String, optional): STT provider to use: ``gcp`` or ``aws``. If omitted, VoIPBIN selects the best available provider automatically.
 * ``direction`` (String, optional): Audio direction to transcribe: ``in``, ``out``, or ``both``. Defaults to ``both``.
+* ``on_end_flow_id`` (UUID, optional): Flow to execute when the transcription ends.
 
 Example
 +++++++

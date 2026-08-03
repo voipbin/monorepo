@@ -97,6 +97,7 @@ Type           Description
 call           The AI call is attached to a phone call
 conversation   The AI call is attached to a chat conversation
 task           The AI call is running as a background task
+contact_case   The AI call is attached to a contact-manager Case (Insight AI / Case Insight Assistant)
 ============== ===========
 
 .. _aicall-struct-aicall-status:

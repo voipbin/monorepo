@@ -180,7 +180,7 @@ Create and manage extensions for your SIP endpoints.
         --data '{
             "name": "office-phone-1",
             "detail": "Main office IP phone",
-            "username": "office1",
+            "extension": "office1",
             "password": "secure-password-123"
         }'
 
@@ -193,8 +193,14 @@ Create and manage extensions for your SIP endpoints.
         "customer_id": "customer-uuid-456",
         "name": "office-phone-1",
         "detail": "Main office IP phone",
+        "extension": "office1",
+        "domain_name": "customer-uuid-456.registrar.voipbin.net",
         "username": "office1",
-        "tm_create": "2024-01-15T10:30:00Z"
+        "password": "secure-password-123",
+        "direct_hash": "a8f3b2c1d4e5",
+        "tm_create": "2024-01-15T10:30:00Z",
+        "tm_update": "",
+        "tm_delete": ""
     }
 
 **List Extensions**

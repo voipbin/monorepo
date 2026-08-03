@@ -54,6 +54,109 @@ Create a new agent.
     }
 
 
+Get list of agents
+-------------------
+Gets the list of agents. Supports filtering by ``status``. A ``tag_ids`` query parameter is accepted but currently has no effect -- see the Known Limitation in :ref:`Agent Overview <agent-overview>`.
+
+.. code::
+
+    $ curl --location --request GET 'https://api.voipbin.net/v1.0/agents?token=<YOUR_AUTH_TOKEN>'
+
+    {
+        "result": [
+            {
+                "id": "f1a2b3c4-d5e6-7890-abcd-ef1234567890",
+                "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+                "username": "test2",
+                "name": "test tag",
+                "detail": "test tag example",
+                "ring_method": "ringall",
+                "status": "offline",
+                "permission": 0,
+                "tag_ids": ["d7450dda-21e0-4611-b09a-8d771c50a5e6"],
+                "addresses": [],
+                "direct_hash": "",
+                "tm_create": "2022-10-22T16:16:16Z",
+                "tm_update": null,
+                "tm_delete": null
+            }
+        ],
+        "next_page_token": "2022-10-22T16:16:16Z"
+    }
+
+Get an agent
+------------
+Get the details of an agent by its ID.
+
+.. code::
+
+    $ curl --location --request GET 'https://api.voipbin.net/v1.0/agents/f1a2b3c4-d5e6-7890-abcd-ef1234567890?token=<YOUR_AUTH_TOKEN>'
+
+Update an agent
+----------------
+Update an agent's name, detail, and ring method.
+
+.. code::
+
+    $ curl --location --request PUT 'https://api.voipbin.net/v1.0/agents/f1a2b3c4-d5e6-7890-abcd-ef1234567890?token=<YOUR_AUTH_TOKEN>' \
+        --header 'Content-Type: application/json' \
+        --data-raw '{
+            "name": "updated name",
+            "detail": "updated detail",
+            "ring_method": "linear"
+        }'
+
+Update agent's tag IDs
+------------------------
+Replace the full list of tag IDs assigned to the agent.
+
+.. code::
+
+    $ curl --location --request PUT 'https://api.voipbin.net/v1.0/agents/f1a2b3c4-d5e6-7890-abcd-ef1234567890/tag_ids?token=<YOUR_AUTH_TOKEN>' \
+        --header 'Content-Type: application/json' \
+        --data-raw '{
+            "tag_ids": [
+                "d7450dda-21e0-4611-b09a-8d771c50a5e6",
+                "b1a2c3d4-e5f6-7890-abcd-ef1234567890"
+            ]
+        }'
+
+Update agent's permission
+----------------------------
+Update an agent's permission bitmask. See :ref:`Permission <agent-struct-agent-permission>` for valid values.
+
+.. code::
+
+    $ curl --location --request PUT 'https://api.voipbin.net/v1.0/agents/f1a2b3c4-d5e6-7890-abcd-ef1234567890/permission?token=<YOUR_AUTH_TOKEN>' \
+        --header 'Content-Type: application/json' \
+        --data-raw '{
+            "permission": 32
+        }'
+
+.. note:: **AI Implementation Hint**
+
+   Setting a project-level permission bit (part of the ``0x000F`` / ``15`` project mask) requires the caller to already hold project-level permission. Customer-level permission changes (agent/admin/manager bits) require the caller to have customer admin or manager permission.
+
+Update agent's password
+--------------------------
+Update an agent's password.
+
+.. code::
+
+    $ curl --location --request PUT 'https://api.voipbin.net/v1.0/agents/f1a2b3c4-d5e6-7890-abcd-ef1234567890/password?token=<YOUR_AUTH_TOKEN>' \
+        --header 'Content-Type: application/json' \
+        --data-raw '{
+            "password": "new_secure_password"
+        }'
+
+Delete an agent
+----------------
+Delete an agent by its ID.
+
+.. code::
+
+    $ curl --location --request DELETE 'https://api.voipbin.net/v1.0/agents/f1a2b3c4-d5e6-7890-abcd-ef1234567890?token=<YOUR_AUTH_TOKEN>'
+
 Update agent's status
 ---------------------
 Update agent's status to the available.
@@ -109,7 +212,7 @@ Regenerate the direct hash for an agent. This invalidates the previous SIP URI a
         "permission": 0,
         "tag_ids": [],
         "addresses": [],
-        "direct_hash": "e9f0a1b2c3d4",
+        "direct_hash": "direct.e9f0a1b2c3d4",
         "tm_create": "2022-10-22T16:16:16Z",
         "tm_update": "2022-10-22T16:20:00Z",
         "tm_delete": null
@@ -117,4 +220,4 @@ Regenerate the direct hash for an agent. This invalidates the previous SIP URI a
 
 .. note:: **AI Implementation Hint**
 
-   This endpoint requires no request body. The ``direct_hash`` in the response is the new hash — the previous hash is permanently invalidated. The direct SIP URI format is ``sip:direct.<hash>@sip.voipbin.net``.
+   This endpoint requires no request body. The ``direct_hash`` in the response is the new hash (already prefixed with ``direct.``) — the previous hash is permanently invalidated. The direct SIP URI is formed directly from it: ``sip:<direct_hash>@sip.voipbin.net``.

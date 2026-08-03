@@ -32,8 +32,8 @@ Queuecall struct
 * ``reference_id`` (UUID): The ID of the referenced resource (e.g., the call). Obtained from ``GET /calls`` when reference_type is ``call``.
 * ``status`` (enum string): The queuecall's current status. See :ref:`Status <queue-struct-queuecall-type>`.
 * ``service_agent_id`` (UUID): The ID of the agent connected to this queuecall. Obtained from ``GET /agents``. Set to ``00000000-0000-0000-0000-000000000000`` if no agent is connected yet.
-* ``duration_waiting`` (Integer): Duration in seconds the caller waited in the queue before being connected to an agent or leaving.
-* ``duration_service`` (Integer): Duration in seconds the caller was being serviced by an agent.
+* ``duration_waiting`` (Integer): Duration in **milliseconds** the caller waited in the queue before being connected to an agent or leaving.
+* ``duration_service`` (Integer): Duration in **milliseconds** the caller was being serviced by an agent.
 * ``tm_create`` (string, ISO 8601): Timestamp when the queuecall was created (call entered the queue).
 * ``tm_service`` (string, ISO 8601): Timestamp when the agent was connected and service began. Set to ``9999-01-01 00:00:00.000000`` if service has not started.
 * ``tm_update`` (string, ISO 8601): Timestamp of the last update to this queuecall.
@@ -41,7 +41,7 @@ Queuecall struct
 
 .. note:: **AI Implementation Hint**
 
-   To calculate a caller's wait time, subtract ``tm_create`` from ``tm_service``. Timestamps set to ``9999-01-01 00:00:00.000000`` indicate the event has not yet occurred.
+   ``duration_waiting`` and ``duration_service`` are in **milliseconds**, not seconds. To calculate a caller's wait time, subtract ``tm_create`` from ``tm_service``. Timestamps set to ``9999-01-01 00:00:00.000000`` indicate the event has not yet occurred.
 
 Example
 +++++++
@@ -55,8 +55,8 @@ Example
         "reference_id": "1fe1356f-3f7f-4ff9-9d33-08136b38f506",
         "status": "done",
         "service_agent_id": "eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b",
-        "duration_waiting": 18,
-        "duration_service": 21,
+        "duration_waiting": 18000,
+        "duration_service": 21000,
         "tm_create": "2022-03-29 15:07:46.111715",
         "tm_service": "2022-03-29 15:08:04.811442",
         "tm_update": "2022-03-29 15:08:25.814885",

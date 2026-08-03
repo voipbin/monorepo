@@ -35,8 +35,8 @@ Example
                 "detail": "outdial for test use.",
                 "data": "",
                 "tm_create": "2022-04-28 01:41:40.503790",
-                "tm_update": "9999-01-01 00:00:00.000000",
-                "tm_delete": "9999-01-01 00:00:00.000000"
+                "tm_update": null,
+                "tm_delete": null
             }
         ],
         "next_page_token": "2022-04-28 01:41:40.503790"
@@ -57,8 +57,8 @@ Get a detail of outdial
         "detail": "outdial for test use.",
         "data": "",
         "tm_create": "2022-04-28 01:41:40.503790",
-        "tm_update": "9999-01-01 00:00:00.000000",
-        "tm_delete": "9999-01-01 00:00:00.000000"
+        "tm_update": null,
+        "tm_delete": null
     }
 
 Create a new outdial
@@ -84,10 +84,107 @@ Example
         "detail": "outdial for test use.",
         "data": "test data",
         "tm_create": "2022-04-28 01:41:40.503790",
-        "tm_update": "9999-01-01 00:00:00.000000",
-        "tm_delete": "9999-01-01 00:00:00.000000"
+        "tm_update": null,
+        "tm_delete": null
     }
 
+
+Update an outdial's basic info
+-------------------------------
+
+Example
+
+.. code::
+
+    $ curl --location --request PUT 'https://api.voipbin.net/v1.0/outdials/40bea034-1d17-474d-a5de-da00d0861c69?token=<YOUR_AUTH_TOKEN>' \
+        --header 'Content-Type: application/json' \
+        --data-raw '{
+            "name": "test outdial updated",
+            "detail": "outdial for test use, updated."
+        }'
+
+    {
+        "id": "40bea034-1d17-474d-a5de-da00d0861c69",
+        "customer_id": "7a1b2c3d-4e5f-6789-abcd-ef0123456789",
+        "campaign_id": "00000000-0000-0000-0000-000000000000",
+        "name": "test outdial updated",
+        "detail": "outdial for test use, updated.",
+        "data": "",
+        "tm_create": "2022-04-28 01:41:40.503790",
+        "tm_update": "2022-04-28 01:45:12.114552",
+        "tm_delete": null
+    }
+
+Update an outdial's campaign ID
+--------------------------------
+
+Example
+
+.. code::
+
+    $ curl --location --request PUT 'https://api.voipbin.net/v1.0/outdials/40bea034-1d17-474d-a5de-da00d0861c69/campaign_id?token=<YOUR_AUTH_TOKEN>' \
+        --header 'Content-Type: application/json' \
+        --data-raw '{
+            "campaign_id": "c3d4e5f6-a7b8-9012-3456-7890abcdef01"
+        }'
+
+    {
+        "id": "40bea034-1d17-474d-a5de-da00d0861c69",
+        "customer_id": "7a1b2c3d-4e5f-6789-abcd-ef0123456789",
+        "campaign_id": "c3d4e5f6-a7b8-9012-3456-7890abcdef01",
+        "name": "test outdial updated",
+        "detail": "outdial for test use, updated.",
+        "data": "",
+        "tm_create": "2022-04-28 01:41:40.503790",
+        "tm_update": "2022-04-28 01:46:33.881120",
+        "tm_delete": null
+    }
+
+Update an outdial's data
+--------------------------
+
+Example
+
+.. code::
+
+    $ curl --location --request PUT 'https://api.voipbin.net/v1.0/outdials/40bea034-1d17-474d-a5de-da00d0861c69/data?token=<YOUR_AUTH_TOKEN>' \
+        --header 'Content-Type: application/json' \
+        --data-raw '{
+            "data": "updated custom data"
+        }'
+
+    {
+        "id": "40bea034-1d17-474d-a5de-da00d0861c69",
+        "customer_id": "7a1b2c3d-4e5f-6789-abcd-ef0123456789",
+        "campaign_id": "c3d4e5f6-a7b8-9012-3456-7890abcdef01",
+        "name": "test outdial updated",
+        "detail": "outdial for test use, updated.",
+        "data": "updated custom data",
+        "tm_create": "2022-04-28 01:41:40.503790",
+        "tm_update": "2022-04-28 01:47:02.552310",
+        "tm_delete": null
+    }
+
+Delete an outdial
+------------------
+
+Example
+
+.. code::
+
+    $ curl --location --request DELETE 'https://api.voipbin.net/v1.0/outdials/40bea034-1d17-474d-a5de-da00d0861c69?token=<YOUR_AUTH_TOKEN>'
+
+    {
+        "id": "40bea034-1d17-474d-a5de-da00d0861c69",
+        "customer_id": "7a1b2c3d-4e5f-6789-abcd-ef0123456789",
+        "campaign_id": "c3d4e5f6-a7b8-9012-3456-7890abcdef01",
+        "name": "test outdial updated",
+        "detail": "outdial for test use, updated.",
+        "data": "updated custom data",
+        "tm_create": "2022-04-28 01:41:40.503790",
+        "tm_update": "2022-04-28 01:47:02.552310",
+        "tm_delete": "2022-04-28 01:48:19.997440"
+    }
 
 Create a new outdialtarget
 --------------------------
@@ -133,7 +230,7 @@ Example
         "try_count_4": 0,
         "tm_create": "2022-04-30 17:52:16.484341",
         "tm_update": "2022-04-30 17:52:16.484341",
-        "tm_delete": "9999-01-01 00:00:00.000000"
+        "tm_delete": null
     }
 
 Get list of outdialtargets
@@ -172,9 +269,83 @@ Example
                 "try_count_4": 0,
                 "tm_create": "2022-04-30 17:52:16.484341",
                 "tm_update": "2022-04-30 17:53:51.183345",
-                "tm_delete": "9999-01-01 00:00:00.000000"
+                "tm_delete": null
             },
             ...
         ],
         "next_page_token": "2022-04-28 01:44:07.212667"
+    }
+
+Get a detail of outdialtarget
+------------------------------
+
+Example
+
+.. code::
+
+    $ curl --location --request GET 'https://api.voipbin.net/v1.0/outdials/40bea034-1d17-474d-a5de-da00d0861c69/targets/1b3d7a92-7146-466d-90f5-4bc701ada4c0?token=<YOUR_AUTH_TOKEN>'
+
+    {
+        "id": "1b3d7a92-7146-466d-90f5-4bc701ada4c0",
+        "outdial_id": "40bea034-1d17-474d-a5de-da00d0861c69",
+        "name": "test destination 0",
+        "detail": "test detatination 0 detail",
+        "data": "test data",
+        "status": "done",
+        "destination_0": {
+            "type": "tel",
+            "target": "+15559876543",
+            "target_name": "",
+            "name": "",
+            "detail": ""
+        },
+        "destination_1": null,
+        "destination_2": null,
+        "destination_3": null,
+        "destination_4": null,
+        "try_count_0": 1,
+        "try_count_1": 0,
+        "try_count_2": 0,
+        "try_count_3": 0,
+        "try_count_4": 0,
+        "tm_create": "2022-04-30 17:52:16.484341",
+        "tm_update": "2022-04-30 17:53:51.183345",
+        "tm_delete": null
+    }
+
+Delete an outdialtarget
+-------------------------
+
+Example
+
+.. code::
+
+    $ curl --location --request DELETE 'https://api.voipbin.net/v1.0/outdials/40bea034-1d17-474d-a5de-da00d0861c69/targets/1b3d7a92-7146-466d-90f5-4bc701ada4c0?token=<YOUR_AUTH_TOKEN>'
+
+    {
+        "id": "1b3d7a92-7146-466d-90f5-4bc701ada4c0",
+        "outdial_id": "40bea034-1d17-474d-a5de-da00d0861c69",
+        "name": "test destination 0",
+        "detail": "test detatination 0 detail",
+        "data": "test data",
+        "status": "done",
+        "destination_0": {
+            "type": "tel",
+            "target": "+15559876543",
+            "target_name": "",
+            "name": "",
+            "detail": ""
+        },
+        "destination_1": null,
+        "destination_2": null,
+        "destination_3": null,
+        "destination_4": null,
+        "try_count_0": 1,
+        "try_count_1": 0,
+        "try_count_2": 0,
+        "try_count_3": 0,
+        "try_count_4": 0,
+        "tm_create": "2022-04-30 17:52:16.484341",
+        "tm_update": "2022-04-30 17:53:51.183345",
+        "tm_delete": "2022-04-30 18:02:47.336810"
     }

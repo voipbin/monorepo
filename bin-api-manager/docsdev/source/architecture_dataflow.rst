@@ -89,7 +89,9 @@ Every API request follows a consistent path through the system:
     3. Backend Service -> Database:
        +------------------------------------------+
        | Format: SQL queries (parameterized)      |
-       | ORM: Squirrel query builder              |
+       | Query building: Squirrel query builder   |
+       |   in most services; some (e.g.           |
+       |   bin-call-manager) use direct SQL       |
        +------------------------------------------+
 
     4. Backend Service -> API Gateway:
@@ -606,27 +608,22 @@ Webhooks deliver events to external systems:
          |              +--------------->|               |               |
          |              |                |               |               |
          |              |<---------------+               |               |
-         |              | Webhook URL,   |               |               |
-         |              | Secret         |               |               |
+         |              | Webhook URI,   |               |               |
+         |              | Method         |               |               |
          |              |                |               |               |
          |              | 2. Format      |               |               |
          |              |    Payload     |               |               |
+         |              |    (type/data  |               |               |
+         |              |    envelope)   |               |               |
          |              |                |               |               |
-         |              | 3. Sign        |               |               |
-         |              |    Payload     |               |               |
-         |              |    (HMAC-SHA256)|              |               |
-         |              |                |               |               |
-         |              | 4. Create      |               |               |
-         |              |    Delivery    |               |               |
-         |              |    Record      |               |               |
-         |              +--------------->|               |               |
-         |              |                |               |               |
-         |              | 5. POST        |               |               |
+         |              | 3. POST        |               |               |
          |              |    Webhook     |               |               |
          |              +------------------------------>|               |
          |              |                |               |               |
          |              |                |               +-------------->|
          |              |                |               | HTTPS POST    |
+         |              |                |               | (up to 3      |
+         |              |                |               |  attempts)    |
          |              |                |               |               |
          |              |                |               |<--------------+
          |              |                |               | 200 OK        |
@@ -634,11 +631,10 @@ Webhooks deliver events to external systems:
          |              |<------------------------------+               |
          |              | Success        |               |               |
          |              |                |               |               |
-         |              | 6. Update      |               |               |
-         |              |    Delivery    |               |               |
-         |              |    Status      |               |               |
-         |              +--------------->|               |               |
-         |              |                |               |               |
+
+.. note::
+
+   Webhook delivery does not currently sign the payload or send a signature header. Only ``Content-Type`` is set on the outgoing request. Do not implement HMAC signature verification on the receiving side based on this diagram; there is no signing secret to verify against. See ``bin-webhook-manager/pkg/webhookhandler/message.go`` and :ref:`Webhook Overview <webhook-overview>`.
 
 **Webhook Payload:**
 
@@ -648,14 +644,9 @@ Webhooks deliver events to external systems:
 
     POST https://customer.example.com/webhook
     Content-Type: application/json
-    X-VoIPBIN-Signature: sha256=abc123...
-    X-VoIPBIN-Timestamp: 2026-01-20T12:00:00.000Z
-    X-VoIPBIN-Event: call_hangup
 
     {
-      "id": "event-uuid",
       "type": "call_hangup",
-      "created": "2026-01-20T12:00:00.000Z",
       "data": {
         "id": "call-uuid",
         "customer_id": "customer-uuid",
@@ -667,27 +658,7 @@ Webhooks deliver events to external systems:
       }
     }
 
-**Signature Verification (Customer Side):**
-
-.. code::
-
-    Signature Verification:
-
-    1. Extract signature from header:
-       X-VoIPBIN-Signature: sha256=abc123...
-
-    2. Compute expected signature:
-       expected = HMAC-SHA256(
-         secret = "webhook_secret",
-         message = timestamp + "." + body
-       )
-
-    3. Compare:
-       if (signature == expected) {
-         // Valid webhook
-       } else {
-         // Reject - possible tampering
-       }
+The envelope has exactly two top-level fields, ``type`` and ``data``; resource fields are always nested inside ``data``, never at the top level.
 
 Data Synchronization Patterns
 -----------------------------

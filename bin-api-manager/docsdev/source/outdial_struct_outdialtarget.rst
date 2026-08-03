@@ -38,8 +38,8 @@ Outdialtarget
         "try_count_3": <number>,
         "try_count_4": <number>,
         "tm_create": "<string>",
-        "tm_update": "<string>",
-        "tm_delete": "<string>"
+        "tm_update": "<string or null>",
+        "tm_delete": "<string or null>"
     }
 
 * ``id`` (UUID): The outdialtarget's unique identifier. Returned when creating via ``POST /outdials/{id}/targets`` or listing via ``GET /outdials/{id}/targets``.
@@ -59,12 +59,12 @@ Outdialtarget
 * ``try_count_3`` (Integer): Current number of dial attempts made to ``destination_3``. Read-only.
 * ``try_count_4`` (Integer): Current number of dial attempts made to ``destination_4``. Read-only.
 * ``tm_create`` (string, ISO 8601): Timestamp when the outdialtarget was created.
-* ``tm_update`` (string, ISO 8601): Timestamp of the last update to any outdialtarget property.
-* ``tm_delete`` (string, ISO 8601): Timestamp when the outdialtarget was deleted. Set to ``9999-01-01 00:00:00.000000`` if not deleted.
+* ``tm_update`` (string, ISO 8601, nullable): Timestamp of the last update to any outdialtarget property. ``null`` if never updated.
+* ``tm_delete`` (string, ISO 8601, nullable): Timestamp when the outdialtarget was deleted. ``null`` if not deleted.
 
 .. note:: **AI Implementation Hint**
 
-   Each outdialtarget supports up to 5 destinations (``destination_0`` through ``destination_4``). The campaign dials destinations in order, starting with ``destination_0``. When all retries for a destination are exhausted (``try_count_N`` reaches the outplan's ``max_try_count_N``), it moves to the next destination. A ``tm_delete`` value of ``9999-01-01 00:00:00.000000`` is a sentinel meaning the resource has **not** been deleted.
+   Each outdialtarget supports up to 5 destinations (``destination_0`` through ``destination_4``). The campaign dials destinations in order, starting with ``destination_0``. When all retries for a destination are exhausted (``try_count_N`` reaches the outplan's ``max_try_count_N``), it moves to the next destination. ``tm_update``/``tm_delete`` are ``null`` when the corresponding event has not occurred, not a sentinel timestamp.
 
 Example
 +++++++
@@ -96,7 +96,7 @@ Example
         "try_count_4": 0,
         "tm_create": "2022-04-30 17:52:16.484341",
         "tm_update": "2022-04-30 17:53:51.183345",
-        "tm_delete": "9999-01-01 00:00:00.000000"
+        "tm_delete": null
     }
 
 .. _outdial-struct-outdialtarget-status:

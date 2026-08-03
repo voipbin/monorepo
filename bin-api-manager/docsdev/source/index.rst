@@ -83,6 +83,7 @@ What you can build
    ai
    ai_voice_agent_integration
    rag
+   timeline
    timeline_analysis
    team
    campaign
@@ -96,8 +97,16 @@ What you can build
 
    accesskey
    agent
+   auth
    contact
    customer
+
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+   :caption: Agent Console
+
+   service_agent
 
 .. toctree::
    :maxdepth: 2

@@ -253,7 +253,6 @@ The activeflow includes essential status information that allows users to monito
     +-- View current state
     +-- See current_action
     +-- Review executed_actions
-    +-- Check variables
 
     POST https://api.voipbin.net/v1.0/activeflows/{id}/stop
     +-- Immediately stop execution
@@ -313,9 +312,9 @@ Each activeflow maintains its own set of variables that persist throughout execu
     | voipbin.activeflow.id           | "abc-123-def"                     |
     | voipbin.activeflow.reference_id | "call-456"                        |
     | voipbin.call.digits             | "2"                               |
-    | voipbin.call.caller_id          | "+14155551234"                    |
-    | customer.language               | "en-US"                           |
-    | customer.tier                   | "premium"                         |
+    | voipbin.call.source.target      | "+14155551234"                    |
+    | campaign_id                     | "summer-2026"                     |
+    | customer_name                   | "Jane Doe"                        |
     +---------------------------------+-------------------------------------+
 
 **Variable Lifecycle:**
@@ -335,6 +334,10 @@ Each activeflow maintains its own set of variables that persist throughout execu
           |
           v
     5. Preserved in database when activeflow ends
+
+.. note:: **Variables are not part of the activeflow response**
+
+   Variables are tracked internally against the activeflow ID, but they are not a field on the ``Activeflow`` object and are not returned by ``GET /activeflows`` or ``GET /activeflows/{id}``. There is no public endpoint to read or modify an activeflow's variables directly. The only externally-facing entry point is the optional ``variables`` field accepted by ``POST /activeflows`` (and ``POST /calls``) to seed initial values; from then on, variables are read and written only from within the flow itself (e.g., ``${key}`` substitution, the ``variable_set`` action, or actions that store their own results as variables). See :ref:`Variable <variable-main>` for the full reference.
 
 
 Executed Actions
@@ -524,13 +527,12 @@ Common Use Cases
         "executed_actions": [
             { "type": "answer", ... },
             { "type": "talk", "option": { "text": "Welcome" } }
-        ],
-        "variables": {
-            "voipbin.call.caller_id": "+14155551234"
-        }
+        ]
     }
 
-    -> You can see exactly where the flow is and what has happened
+    -> You can see exactly where the flow is and what has happened.
+       Note: variables themselves are not included in this response --
+       see the note above.
 
 
 Troubleshooting

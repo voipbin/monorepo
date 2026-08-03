@@ -46,13 +46,13 @@ Queue struct
 * ``name`` (String): Human-readable name for the queue.
 * ``detail`` (String): Detailed description of the queue's purpose.
 * ``routing_method`` (enum string): The queue's call routing method for selecting agents. See :ref:`Routing Method <queue-struct-queue-routing-method>`.
-* ``tag_ids`` (Array of UUID): List of tag IDs that agents must match to receive calls from this queue. Each ID is obtained from ``GET /tags``. Agents must have **all** listed tags (AND logic).
+* ``tag_ids`` (Array of UUID): Tag IDs intended as a skill-based filter for this queue. Each ID is obtained from ``GET /tags``. **Not currently enforced** at agent-selection time -- see :ref:`Agent Searching <queue-overview>` for the known limitation. Any available agent belonging to the queue's customer is eligible regardless of tags.
 * ``wait_flow_id`` (UUID): The flow to execute while callers wait in the queue. Obtained from the ``id`` field of ``GET /flows``. Set to ``00000000-0000-0000-0000-000000000000`` if no wait flow is assigned.
 * ``wait_timeout`` (Integer): Maximum time in milliseconds a caller can wait in the queue before being removed. Set to ``0`` for no timeout (wait indefinitely).
 * ``service_timeout`` (Integer): Maximum time in milliseconds a caller and agent can talk before the call is ended. Set to ``0`` for no timeout (talk indefinitely).
 * ``wait_queuecall_ids`` (Array of UUID): List of queuecall IDs currently in the waiting state. Each ID can be used with ``GET /queuecalls/{id}`` to retrieve details. Read-only, managed by the system.
 * ``service_queuecall_ids`` (Array of UUID): List of queuecall IDs currently in the service state (connected to an agent). Each ID can be used with ``GET /queuecalls/{id}``. Read-only, managed by the system.
-* ``direct_hash`` (String): Hash for direct queue access. Empty string when direct access is disabled. When enabled, this hash forms the direct SIP URI: ``sip:direct.<hash>@sip.voipbin.net``. Regenerate via ``POST /queues/{id}/direct-hash-regenerate``.
+* ``direct_hash`` (String): Hash for direct queue access, already prefixed with ``direct.`` (e.g. ``direct.a8f3b2c1d4e5``). Empty string when direct access is disabled. When enabled, this value forms the direct SIP URI directly: ``sip:<direct_hash>@sip.voipbin.net``. Regenerate via ``POST /queues/{id}/direct-hash-regenerate``.
 * ``total_incoming_count`` (Integer): Total number of calls that have entered this queue. Read-only.
 * ``total_serviced_count`` (Integer): Total number of calls that were successfully connected to an agent. Read-only.
 * ``total_abandoned_count`` (Integer): Total number of calls that left the queue without being serviced. Read-only.
@@ -73,6 +73,6 @@ Defines how the queue selects an agent when multiple matching agents are availab
 ======== ================
 Type     Description
 ======== ================
-random   Selects a random agent from the pool of available agents that match all required tags.
+random   Selects a random agent from all available agents belonging to the queue's customer. ``tag_ids`` is not currently applied as a filter -- see :ref:`Agent Searching <queue-overview>`.
 ======== ================
 

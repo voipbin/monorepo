@@ -34,6 +34,8 @@ Try VoIPBIN's core communication APIs:
 
 .. include:: quickstart_sandbox.rst
 
+Additional standalone walkthroughs are also available: :ref:`Send an SMS <quickstart-message>`, :ref:`Send an Email <quickstart_email>`, :ref:`Transcribe a Call <quickstart-transcribe>`, and :ref:`Queue a Call <quickstart-queue>`.
+
 .. _quickstart-next:
 
 What's Next

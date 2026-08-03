@@ -132,7 +132,7 @@ When you create an outbound call or receive an inbound call, the call enters the
 
     Your App                    VoIPBIN                    Destination
        |                           |                            |
-       |  POST /v1/calls           |                            |
+       |  POST /calls              |                            |
        +-------------------------->|                            |
        |                           |  SIP INVITE                |
        |                           +--------------------------->|
@@ -573,6 +573,9 @@ Not all failures trigger failover. VoIPBIN only tries the next route when recove
    * - failed
      - Yes
      - Network issue - another route might work
+   * - dialout
+     - Yes
+     - VoIPBIN's own dialing timeout expired before an answer - another route might succeed
    * - busy
      - No
      - The person is busy - trying again won't help
@@ -585,6 +588,12 @@ Not all failures trigger failover. VoIPBIN only tries the next route when recove
    * - normal
      - No
      - Call succeeded - nothing to retry
+   * - timeout
+     - No
+     - The call was already answered and reached max duration - nothing to retry
+   * - amd
+     - No
+     - The call was already answered; AMD ended it per your settings - nothing to retry
 
 
 **No Failover Cases**
@@ -787,7 +796,7 @@ Once the outgoing call request is initiated, the VoIPBIN system starts the proce
 
     Your Application               VoIPBIN                    Destination
           |                           |                           |
-          |  POST /v1/calls           |                           |
+          |  POST /calls              |                           |
           |  (with flow actions)      |                           |
           +-------------------------->|                           |
           |                           |  INVITE                   |

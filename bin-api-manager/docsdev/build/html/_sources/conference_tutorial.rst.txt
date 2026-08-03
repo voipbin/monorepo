@@ -9,7 +9,7 @@ Prerequisites
 Before working with conferences, you need:
 
 * An authentication token. Obtain one via ``POST /auth/login`` or use an access key from ``GET /accesskeys``.
-* (Optional) A flow ID (UUID) for ``pre_actions`` or ``post_actions``. Create one via ``POST /flows`` or obtain from ``GET /flows``.
+* (Optional) A flow ID (UUID) for ``pre_flow_id`` or ``post_flow_id``. Create one via ``POST /flows`` or obtain from ``GET /flows``.
 * (Optional) To add participants, you need an active call. Create one via ``POST /calls`` or obtain from ``GET /calls``.
 
 .. note:: **AI Implementation Hint**
@@ -35,14 +35,18 @@ Example
                 "status": "progressing",
                 "name": "team standup",
                 "detail": "Daily standup conference",
+                "pre_flow_id": "00000000-0000-0000-0000-000000000000",
+                "post_flow_id": "00000000-0000-0000-0000-000000000000",
                 "conferencecall_ids": [],
+                "recording_id": "00000000-0000-0000-0000-000000000000",
                 "recording_ids": [],
+                "transcribe_id": "00000000-0000-0000-0000-000000000000",
                 "transcribe_ids": [],
                 "direct_hash": "",
                 "tm_end": null,
                 "tm_create": "2021-02-04 02:55:39.659316",
                 "tm_update": "2021-02-04 02:56:07.525985",
-                "tm_delete": "9999-01-01 00:00:00.000000"
+                "tm_delete": null
             },
             ...
         ],
@@ -67,14 +71,18 @@ Example
         "status": "progressing",
         "name": "team standup",
         "detail": "Daily standup conference",
+        "pre_flow_id": "00000000-0000-0000-0000-000000000000",
+        "post_flow_id": "00000000-0000-0000-0000-000000000000",
         "conferencecall_ids": [],
+        "recording_id": "00000000-0000-0000-0000-000000000000",
         "recording_ids": [],
+        "transcribe_id": "00000000-0000-0000-0000-000000000000",
         "transcribe_ids": [],
         "direct_hash": "",
         "tm_end": null,
         "tm_create": "2021-02-03 10:44:42.163464",
         "tm_update": "2021-02-03 10:52:08.488301",
-        "tm_delete": "9999-01-01 00:00:00.000000"
+        "tm_delete": null
     }
 
 
@@ -101,14 +109,63 @@ Example
         "status": "starting",
         "name": "test conference",
         "detail": "test conference for example",
+        "pre_flow_id": "00000000-0000-0000-0000-000000000000",
+        "post_flow_id": "00000000-0000-0000-0000-000000000000",
         "conferencecall_ids": [],
+        "recording_id": "00000000-0000-0000-0000-000000000000",
         "recording_ids": [],
+        "transcribe_id": "00000000-0000-0000-0000-000000000000",
         "transcribe_ids": [],
         "direct_hash": "",
         "tm_end": null,
         "tm_create": "2021-02-04 03:05:57.710583",
         "tm_update": "2021-02-04 03:05:57.710583",
-        "tm_delete": "9999-01-01 00:00:00.000000"
+        "tm_delete": null
+    }
+
+Update a conference
+--------------------
+
+.. note:: **AI Implementation Hint**
+
+   ``PUT /conferences/{id}`` replaces ``name``, ``detail``, ``data``, ``timeout``, ``pre_flow_id``, and ``post_flow_id`` in a single call. ``type`` cannot be changed after creation. Fields you omit from the request body are reset to their zero value, so send the full set of fields you want to keep, not just the ones you're changing.
+
+Example
++++++++
+
+.. code::
+
+    $ curl -k --location --request PUT 'https://api.voipbin.net/v1.0/conferences/85252d7b-777b-4580-9420-4df8c6adfc30?token=<YOUR_AUTH_TOKEN>' \
+        --header 'Content-Type: application/json' \
+        --data-raw '{
+            "name": "test conference (renamed)",
+            "detail": "updated conference detail",
+            "data": {},
+            "timeout": 3600,
+            "pre_flow_id": "00000000-0000-0000-0000-000000000000",
+            "post_flow_id": "00000000-0000-0000-0000-000000000000"
+        }'
+
+    {
+        "id": "85252d7b-777b-4580-9420-4df8c6adfc30",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "type": "conference",
+        "status": "progressing",
+        "name": "test conference (renamed)",
+        "detail": "updated conference detail",
+        "timeout": 3600,
+        "pre_flow_id": "00000000-0000-0000-0000-000000000000",
+        "post_flow_id": "00000000-0000-0000-0000-000000000000",
+        "conferencecall_ids": [],
+        "recording_id": "00000000-0000-0000-0000-000000000000",
+        "recording_ids": [],
+        "transcribe_id": "00000000-0000-0000-0000-000000000000",
+        "transcribe_ids": [],
+        "direct_hash": "",
+        "tm_end": null,
+        "tm_create": "2021-02-04 03:05:57.710583",
+        "tm_update": "2021-02-04 03:07:12.881204",
+        "tm_delete": null
     }
 
 Kick the conferencecall from the conference
@@ -116,7 +173,7 @@ Kick the conferencecall from the conference
 
 .. note:: **AI Implementation Hint**
 
-   You can only kick participants whose status is ``joining`` or ``joined``. Attempting to delete a conferencecall in ``leaving`` or ``leaved`` status will fail. Obtain the conferencecall ID from the conference's ``conferencecall_ids`` array (via ``GET /conferences/{id}``) or from ``GET /conferencecalls``.
+   Kicking is only meaningful for participants whose status is ``joining`` or ``joined``. If the conferencecall is already ``leaving`` or ``leaved``, ``DELETE /conferencecalls/{id}`` is a no-op: it returns ``200`` with the conferencecall's current (unchanged) state rather than an error. Obtain the conferencecall ID from the conference's ``conferencecall_ids`` array (via ``GET /conferences/{id}``) or from ``GET /conferencecalls``.
 
 Example
 +++++++
@@ -134,7 +191,7 @@ Example
         "status": "leaving",
         "tm_create": "2022-08-09 03:53:49.142446",
         "tm_update": "2022-08-09 03:54:10.035297",
-        "tm_delete": "9999-01-01 00:00:00.000000"
+        "tm_delete": null
     }
 
 Regenerate direct conference hash
@@ -153,14 +210,18 @@ Regenerate the direct hash for a conference. This invalidates the previous SIP U
         "status": "progressing",
         "name": "test conference",
         "detail": "test conference for example.",
+        "pre_flow_id": "00000000-0000-0000-0000-000000000000",
+        "post_flow_id": "00000000-0000-0000-0000-000000000000",
         "conferencecall_ids": [],
+        "recording_id": "00000000-0000-0000-0000-000000000000",
         "recording_ids": [],
+        "transcribe_id": "00000000-0000-0000-0000-000000000000",
         "transcribe_ids": [],
         "direct_hash": "b3c4d5e6f7a8",
         "tm_end": null,
         "tm_create": "2022-02-03 06:08:56.672025",
         "tm_update": "2022-08-06 19:11:13.040418",
-        "tm_delete": "9999-01-01 00:00:00.000000"
+        "tm_delete": null
     }
 
 .. note:: **AI Implementation Hint**
@@ -178,9 +239,9 @@ Troubleshooting
     * **Cause:** The conference UUID or conferencecall UUID does not exist or belongs to a different customer.
     * **Fix:** Verify the UUID was obtained from ``GET /conferences`` or ``GET /conferencecalls``.
 
-* **409 Conflict (kick participant):**
-    * **Cause:** Attempted to kick a participant whose status is ``leaving`` or ``leaved``.
-    * **Fix:** Check participant status via ``GET /conferencecalls/{id}`` before attempting deletion. Only ``joining`` or ``joined`` participants can be kicked.
+* **Kick request succeeds but participant was already gone:**
+    * **Cause:** ``DELETE /conferencecalls/{id}`` was called on a participant whose status was already ``leaving`` or ``leaved``.
+    * **Behavior:** This is not an error. The endpoint returns ``200`` with the conferencecall's unchanged current state. Check the returned ``status`` field to confirm whether the kick had any effect.
 
 * **Conference has no participants:**
     * **Cause:** Participants join through flow actions (``conference_join``), not through the conference API.

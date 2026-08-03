@@ -44,6 +44,7 @@ Available Tools
 Tool Name                 Description                                       run_llm Default
 ========================= ================================================= ===============
 connect_call              Transfer or connect to another endpoint            ``false``
+create_call               Place a new, independent outbound call             ``true``
 send_email                Send an email message                              ``false``
 send_message              Send an SMS text message                           ``false``
 stop_media                Stop currently playing media                       ``false``
@@ -53,7 +54,15 @@ set_variables             Save data to flow context                          ``f
 get_variables             Retrieve data from flow context                    ``false``
 get_aicall_messages       Get message history from an AI call                ``false``
 search_knowledge          Search the configured knowledge base (RAG)         ``true``
+get_correlation           List resources linked to an activeflow             ``true``
+get_resource              Fetch the content of a related resource            ``true``
+describe_action           Look up a flow action's option schema              ``true``
+case_create               Create a CRM case for the current contact          ``true``
 ========================= ================================================= ===============
+
+.. note:: **AI Implementation Hint**
+
+   ``get_correlation``, ``get_resource``, and ``describe_action`` are diagnostic/orchestration tools intended for troubleshooting and assembling ``create_call`` action lists. ``create_call`` and ``case_create`` are only available for ``type=normal`` AIs (via ``tool_names``); they are not part of the Insight tool set. See :ref:`Insight Tools <ai-struct-tool-insight>` for the separate tool set used by ``type=insight`` AIs.
 
 .. _ai-struct-tool-connect_call:
 
@@ -537,6 +546,450 @@ The tool returns matching document sections with metadata:
     "How do I set up the widget?"       -> search_knowledge(query="widget setup instructions")
     "What are the pricing tiers?"       -> search_knowledge(query="pricing tiers plans")
 
+.. _ai-struct-tool-create_call:
+
+create_call
+-----------
+
+Places a **new, independent** outbound call that is **not** bridged into the current conversation. The new call runs its own flow while the current AI session continues normally (it is not ended).
+
+.. note:: **AI Implementation Hint**
+
+   Provide **either** ``flow_id`` (reuse a flow already built on the account) **or** ``actions`` (assemble the call scenario inline), never both. Use ``actions`` for ad-hoc scenarios not covered by an existing flow (e.g. "call John, say the meeting moved to 3pm, then hang up"). Use :ref:`describe_action <ai-struct-tool-describe_action>` to look up an action type's option fields before assembling an inline action.
+
+**Differs from connect_call:**
+
+::
+
+    +-------------+------------------------------------------------------+
+    | create_call | NEW independent call, NOT bridged, current            |
+    |             | AI session continues                                 |
+    +-------------+------------------------------------------------------+
+    | connect_call| Bridges another party INTO the current call,          |
+    |             | ends the AI session                                   |
+    +-------------+------------------------------------------------------+
+
+**When to use:**
+
+* Caller wants a separate call placed to someone: "call John and remind him about the meeting"
+* A callback or notification call should be triggered to a third party
+* An outbound call should run a predefined scenario (``flow_id``) or an ad-hoc one assembled inline (``actions``)
+
+**When NOT to use:**
+
+* Caller wants to be transferred/connected to someone in the current call (use ``connect_call``)
+* Caller wants to end the current call (use ``stop_flow`` / ``stop_service``)
+
+**Parameters:**
+
+.. code::
+
+    {
+        "type": "object",
+        "properties": {
+            "run_llm": {
+                "type": "boolean",
+                "description": "Set true (default) to confirm verbally after placing the call.",
+                "default": true
+            },
+            "flow_id": {
+                "type": "string",
+                "description": "UUID of a pre-existing flow the new call will execute. Provide EITHER flow_id OR actions, not both. Must belong to the account."
+            },
+            "actions": {
+                "type": "array",
+                "description": "Ordered list of inline flow actions, assembled INSTEAD OF flow_id. Each item has a 'type', optional 'id'/'next_id' for branching, and a type-specific 'option' object.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "id": { "type": "string", "description": "Optional UUID assigned to this action so other actions can target it via target_id/false_target_id/default_target_id/target_ids." },
+                        "next_id": { "type": "string", "description": "Optional UUID of the action to run next instead of the following array item." },
+                        "type": { "type": "string", "description": "Flow action type (e.g. talk, play, hangup, connect, variable_set, branch, goto, sleep, digits_receive). Use describe_action to look up option fields first." },
+                        "option": { "type": "object", "description": "Action-type-specific options; shape depends on type." }
+                    },
+                    "required": ["type"]
+                }
+            },
+            "source": {
+                "type": "object",
+                "description": "Optional source endpoint. If omitted, a default account number is used.",
+                "properties": {
+                    "type": { "type": "string", "description": "Source endpoint type: tel or sip" },
+                    "target": { "type": "string", "description": "Source address (e.g., +E.164 phone number)" },
+                    "target_name": { "type": "string", "description": "Display name (optional)" }
+                }
+            },
+            "destinations": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "type": { "type": "string", "description": "Destination type: tel, sip, extension, agent" },
+                        "target": { "type": "string", "description": "Destination address" },
+                        "target_name": { "type": "string", "description": "Display name (optional)" }
+                    },
+                    "required": ["type", "target"]
+                }
+            },
+            "anonymous": {
+                "type": "string",
+                "description": "Optional caller-ID privacy: yes | no | auto (default auto)."
+            },
+            "variables": {
+                "type": "object",
+                "description": "Optional flat key-value context seeded into the new call's flow as runtime variables (readable via ${key}). String values only. Keys starting with 'voipbin.' are reserved and ignored. Max 100 keys, 64KB total.",
+                "additionalProperties": { "type": "string" }
+            }
+        },
+        "required": ["destinations"]
+    }
+
+**Examples:**
+
+::
+
+    "Call John and tell him the meeting moved to 3pm" -> actions=[talk, hangup]
+    "Run the appointment-reminder flow on +15551234567" -> flow_id=<uuid>, destinations=[{type: tel, target: "+15551234567"}]
+
+.. _ai-struct-tool-get_correlation:
+
+get_correlation
+----------------
+
+Retrieves the correlation graph for a resource: the related resources (calls, messages, recordings, transcribes, aicalls, etc.) linked to the same activeflow execution. This is an internal diagnostic tool.
+
+.. note:: **AI Implementation Hint**
+
+   An activeflow is the running instance of a flow. Its reference is not always a call — the reference type can be ``call``, ``conversation``, ``ai``, ``api``, ``campaign``, ``transcribe``, or ``recording`` (and may be unset). Do not assume the session is a phone call. Use :ref:`get_resource <ai-struct-tool-get_resource>` to fetch the content of a resource discovered via this tool.
+
+**When to use:**
+
+* Need to know what resources are linked to the current session's activeflow
+* A diagnostic question requires understanding relationships between resources of an activeflow
+* Need to discover a resource id (e.g. an aicall id) to chain into another tool
+
+**When NOT to use:**
+
+* General conversation or knowledge-base questions (use ``search_knowledge``)
+* Only a single runtime variable is needed (use ``get_variables``)
+
+**Parameters:**
+
+.. code::
+
+    {
+        "type": "object",
+        "properties": {
+            "run_llm": {
+                "type": "boolean",
+                "description": "Set true to reason about the correlation results.",
+                "default": true
+            },
+            "resource_id": {
+                "type": "string",
+                "description": "Optional resource id (UUID) to inspect. If omitted, the current session's activeflow is used. Only resources owned by the caller's own account can be inspected; others return \"No events found for this resource.\""
+            }
+        }
+    }
+
+.. _ai-struct-tool-get_resource:
+
+get_resource
+------------
+
+Retrieves the content of a single VoIPBIN resource by its id and returns a readable summary. Use this as the follow-up to :ref:`get_correlation <ai-struct-tool-get_correlation>`, which returns the ids and types of linked resources.
+
+**Supported resource types:** ``call``, ``groupcall``, ``recording``, ``transcribe``, ``summary``, ``aicall``, ``conferencecall``, ``queuecall``.
+
+.. note:: **AI Implementation Hint**
+
+   Derive the resource type from the event names shown by ``get_correlation``: the type is the leading part of the event name (``call_created`` means type ``call``, ``transcribe_done`` means type ``transcribe``, ``aicall_status_progressing`` means type ``aicall``). Not every type ``get_correlation`` lists is retrievable here; unsupported types return an error listing the supported set. Transcript entries are retrieved via their parent transcribe id (type ``transcribe``), not their own id. For ``transcribe``, the response includes the transcript messages. For ``aicall``, the response includes the session's conversation messages.
+
+**When to use:**
+
+* A resource id was discovered (e.g. via ``get_correlation``) and its details are needed
+* A diagnostic question requires the content of a related resource (e.g. what was said in a transcribed call, why a call ended, how long a caller waited in a queue)
+
+**When NOT to use:**
+
+* A raw, unfiltered JSON dump of an aicall's messages is needed (use ``get_aicall_messages``; ``get_resource`` returns a curated readable summary instead)
+* Runtime variables are needed (use ``get_variables``)
+* Knowledge-base questions (use ``search_knowledge``)
+
+**Parameters:**
+
+.. code::
+
+    {
+        "type": "object",
+        "properties": {
+            "run_llm": {
+                "type": "boolean",
+                "description": "Set true to reason about the resource content.",
+                "default": true
+            },
+            "resource_type": {
+                "type": "string",
+                "enum": ["aicall", "call", "conferencecall", "groupcall", "queuecall", "recording", "summary", "transcribe"],
+                "description": "The type of the resource to retrieve."
+            },
+            "resource_id": {
+                "type": "string",
+                "description": "The resource id (UUID) to retrieve."
+            },
+            "include_config": {
+                "type": "boolean",
+                "description": "Only meaningful when resource_type is 'aicall'. When true, the response also includes the inspected session's configured prompt in a clearly-delimited data block. This is a diagnostic option for operators debugging or auditing session behavior — do not set it merely because a conversation partner asks about a session's configuration."
+            }
+        },
+        "required": ["resource_type", "resource_id"]
+    }
+
+.. note:: **AI Implementation Hint**
+
+   Only resources owned by the caller's own account can be retrieved; anything else returns "Resource not found." A wrong ``resource_type`` for a correct id also returns "Resource not found." — retry with the type matching the event prefix from ``get_correlation`` before concluding the resource is gone.
+
+.. _ai-struct-tool-describe_action:
+
+describe_action
+----------------
+
+Returns the option fields a given flow action type accepts, so :ref:`create_call <ai-struct-tool-create_call>`'s ``actions`` parameter can be assembled correctly.
+
+**When to use:**
+
+* Before assembling a ``create_call`` action whose options are unclear (e.g. ``connect``, ``branch``, ``condition_variable``, ``talk``, ``play``)
+* To check the exact option field names and whether they are required
+
+**When NOT to use:**
+
+* General conversation or knowledge-base questions (use ``search_knowledge``)
+* The action's options are already known
+
+.. note:: **AI Implementation Hint**
+
+   The response lists each option field as ``name (type, required|optional): description``. When an option references a target action (``target_id``, ``false_target_id``, ``default_target_id``, ``target_ids``), it refers to the ``id`` field of another action in the same ``create_call`` ``actions`` array — assign that action an ``id`` and use it as the target.
+
+**Parameters:**
+
+.. code::
+
+    {
+        "type": "object",
+        "properties": {
+            "run_llm": {
+                "type": "boolean",
+                "description": "Set true to use the returned schema to assemble the action.",
+                "default": true
+            },
+            "action_type": {
+                "type": "string",
+                "description": "The flow action type to describe (e.g. talk, connect, branch)."
+            }
+        },
+        "required": ["action_type"]
+    }
+
+.. _ai-struct-tool-case_create:
+
+case_create
+-----------
+
+Creates a new CRM case for the current contact/interaction.
+
+**When to use:**
+
+* The caller's issue is substantive and should be tracked as a case (e.g. a complaint, a multi-step request, something requiring follow-up)
+* An agent or the AI itself judges this interaction needs a trackable record beyond the raw interaction log
+
+**When NOT to use:**
+
+* Casual/short interactions with no follow-up need
+
+.. note:: **AI Implementation Hint**
+
+   A case may already be open for this contact/channel — creating another fails silently (the existing open case is not returned; the call simply does not create a duplicate). Do not retry on failure.
+
+**Parameters:**
+
+.. code::
+
+    {
+        "type": "object",
+        "properties": {
+            "run_llm": {
+                "type": "boolean",
+                "description": "Set true to have the assistant mention the case was created. Set false to create silently.",
+                "default": true
+            },
+            "name": { "type": "string", "description": "Short case title (optional)." },
+            "detail": { "type": "string", "description": "Longer free-text description of the issue (optional)." },
+            "note": { "type": "string", "description": "An initial internal note for the agent (optional, not shown to the customer)." }
+        }
+    }
+
+.. _ai-struct-tool-insight:
+
+Insight Tools
+-------------
+
+The following tools are exclusive to ``type=insight`` AIs (see :ref:`Type <ai-struct-ai-type>`) and are not selectable by ``type=normal`` AIs. They are always scoped to the Case the Insight AI session was opened for; none of them accept an argument to target a different Case or contact.
+
+========================== ================================================= ===============
+Tool Name                  Description                                       run_llm Default
+========================== ================================================= ===============
+get_contact_interactions   List past interactions with the Case's contact     ``true``
+get_conversation_content   Retrieve a conversation's message transcript       ``true``
+get_related_cases          List the contact's other cases                     ``true``
+get_case_notes             Retrieve internal agent notes on the current Case  ``true``
+========================== ================================================= ===============
+
+.. _ai-struct-tool-get_contact_interactions:
+
+get_contact_interactions
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Lists past interactions (calls, conversation messages) with the contact/peer of the Case this Insight AI was opened for.
+
+**When to use:**
+
+* Answering "has this customer contacted us before" / "what's the interaction history"
+* Discovering candidate conversation message ids to pass into ``get_conversation_content``
+
+**When NOT to use:**
+
+* The actual message text is needed (use ``get_conversation_content`` with a ``reference_id`` from this tool's output)
+
+**Parameters:**
+
+.. code::
+
+    {
+        "type": "object",
+        "properties": {
+            "run_llm": {
+                "type": "boolean",
+                "description": "Set true to reason about the retrieved interaction history.",
+                "default": true
+            },
+            "limit": {
+                "type": "integer",
+                "description": "Maximum number of interactions to return (default 20, max 50).",
+                "default": 20
+            }
+        }
+    }
+
+.. _ai-struct-tool-get_conversation_content:
+
+get_conversation_content
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Retrieves the message transcript of a conversation, given the ``reference_id`` of a ``conversation_message``-type interaction returned by :ref:`get_contact_interactions <ai-struct-tool-get_contact_interactions>`.
+
+**When to use:**
+
+* The actual text of what was said is needed, not just that an interaction happened
+* A ``reference_id`` from ``get_contact_interactions`` is already available for the conversation to read
+
+**When NOT to use:**
+
+* ``get_contact_interactions`` has not been called yet — call it first to discover candidate ``reference_id`` values
+
+.. note:: **AI Implementation Hint**
+
+   Only conversations owned by the caller's own account can be retrieved; anything else returns "Resource not found."
+
+**Parameters:**
+
+.. code::
+
+    {
+        "type": "object",
+        "properties": {
+            "run_llm": {
+                "type": "boolean",
+                "description": "Set true to reason about the retrieved conversation content.",
+                "default": true
+            },
+            "reference_id": {
+                "type": "string",
+                "description": "The reference id of a conversation_message-type interaction, as returned by get_contact_interactions."
+            },
+            "limit": {
+                "type": "integer",
+                "description": "Maximum number of messages to return from the resolved conversation (default 20, max 50).",
+                "default": 20
+            }
+        },
+        "required": ["reference_id"]
+    }
+
+.. _ai-struct-tool-get_related_cases:
+
+get_related_cases
+~~~~~~~~~~~~~~~~~~
+
+Lists other cases belonging to the same contact as the current Case (metadata only: id/title/status/date, never the case body or internal notes). The current case itself is never included in the results.
+
+**When to use:**
+
+* Answering "has this contact had other cases before" / "what other issues has this customer raised"
+
+**When NOT to use:**
+
+* Notes on the CURRENT case are needed (use ``get_case_notes`` instead)
+
+**Parameters:**
+
+.. code::
+
+    {
+        "type": "object",
+        "properties": {
+            "run_llm": {
+                "type": "boolean",
+                "description": "Set true to reason about the retrieved related-case history.",
+                "default": true
+            }
+        }
+    }
+
+.. _ai-struct-tool-get_case_notes:
+
+get_case_notes
+~~~~~~~~~~~~~~~
+
+Returns the internal agent notes on the current Case, useful for picking up context left by a previous agent.
+
+**When to use:**
+
+* Answering "what did the last agent note about this case" / handing off between agents
+
+**When NOT to use:**
+
+* Notes from a different case are needed (not supported — notes are always scoped to the current Case)
+
+**Parameters:**
+
+.. code::
+
+    {
+        "type": "object",
+        "properties": {
+            "run_llm": {
+                "type": "boolean",
+                "description": "Set true to reason about the retrieved case notes.",
+                "default": true
+            },
+            "limit": {
+                "type": "integer",
+                "description": "Maximum number of most-recent notes to return (default 20, max 50).",
+                "default": 20
+            }
+        }
+    }
+
 
 run_llm Parameter
 -----------------
@@ -559,20 +1012,29 @@ Each tool has a platform-set default (shown in the table below). This value is *
 
 **Per-tool defaults:**
 
-========================= ============= =====================================================
-Tool Name                 run_llm       Why
-========================= ============= =====================================================
-``connect_call``          ``false``     Silent transfer — caller hears ringing, not LLM narration.
-``send_email``            ``false``     Background action — email sent without verbal confirmation.
-``send_message``          ``false``     Background action — SMS sent without verbal confirmation.
-``stop_media``            ``false``     Infrastructure action — stops playback silently.
-``stop_service``          ``false``     Ends AI session — no response needed after termination.
-``stop_flow``             ``false``     Ends entire flow — no response possible after termination.
-``set_variables``         ``false``     Internal data storage — no verbal confirmation needed.
-``get_variables``         ``false``     Internal data retrieval — data used by next tool, not spoken.
-``get_aicall_messages``   ``false``     Internal data retrieval — messages used by next tool, not spoken.
-``search_knowledge``      ``true``      **Must speak** — caller asked a question, LLM must answer using the retrieved knowledge.
-========================= ============= =====================================================
+============================ ========= ========================================================================================
+Tool Name                    run_llm   Why
+============================ ========= ========================================================================================
+``connect_call``             ``false`` Silent transfer — caller hears ringing, not LLM narration.
+``create_call``              ``true``  Confirms verbally that the new outbound call was placed.
+``send_email``               ``false`` Background action — email sent without verbal confirmation.
+``send_message``             ``false`` Background action — SMS sent without verbal confirmation.
+``stop_media``               ``false`` Infrastructure action — stops playback silently.
+``stop_service``             ``false`` Ends AI session — no response needed after termination.
+``stop_flow``                ``false`` Ends entire flow — no response possible after termination.
+``set_variables``            ``false`` Internal data storage — no verbal confirmation needed.
+``get_variables``            ``false`` Internal data retrieval — data used by next tool, not spoken.
+``get_aicall_messages``      ``false`` Internal data retrieval — messages used by next tool, not spoken.
+``search_knowledge``         ``true``  **Must speak** — caller asked a question, LLM must answer using the retrieved knowledge.
+``get_correlation``          ``true``  Diagnostic tool — LLM reasons about and summarizes the correlated resources.
+``get_resource``             ``true``  Diagnostic tool — LLM reasons about the retrieved resource content.
+``describe_action``          ``true``  LLM uses the returned schema to assemble a create_call action.
+``case_create``              ``true``  LLM confirms the case was created for the caller.
+``get_contact_interactions`` ``true``  Insight tool — LLM reasons about the retrieved interaction history.
+``get_conversation_content`` ``true``  Insight tool — LLM reasons about the retrieved conversation content.
+``get_related_cases``        ``true``  Insight tool — LLM reasons about the retrieved related-case history.
+``get_case_notes``           ``true``  Insight tool — LLM reasons about the retrieved case notes.
+============================ ========= ========================================================================================
 
 .. note:: **AI Implementation Hint**
 

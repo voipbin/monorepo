@@ -3,7 +3,7 @@
 ****************
 Email
 ****************
-Emails allow you to send messages programmatically via the VoIPBIN API, with support for attachments and HTML content.
+Emails allow you to send plain-text messages programmatically via the VoIPBIN API, with support for attaching existing VoIPBIN resources (e.g. call recordings).
 
 **API Reference:** `Email endpoints <https://api.voipbin.net/redoc/#tag/Email>`_
 

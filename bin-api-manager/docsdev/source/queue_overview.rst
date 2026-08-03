@@ -133,60 +133,62 @@ Every call in a queue moves through a series of states:
 
 Agent Searching
 ---------------
-While the call is in the queue, the queue continuously searches for available agents to handle the call. Each queue has tags associated with it that determine which agents can receive calls from that queue.
+While the call is in the queue, the queue continuously searches for available agents to handle the call. Each queue has a ``tag_ids`` field intended as a skill-based filter, but as documented below, tag matching is **not currently enforced** at agent-selection time.
 
-**How Agent Matching Works**
+**How Agent Matching Currently Works**
 
 ::
 
     +--------------------------------------------------------------------------+
-    |                      Agent Matching Process                              |
+    |                      Agent Matching Process (current behavior)           |
     +--------------------------------------------------------------------------+
 
-    Queue Configuration:                    Agent Pool:
+    Queue Configuration:                    Agent Pool (same customer):
     +------------------------+             +--------------------------------+
-    | Tag IDs:               |             | Agent A                        |
-    |  * "english"           |             |  Tags: english, billing, vip   |
-    |  * "billing"           |             |  Status: available             |
-    |                        |             |  --------------------------    |
-    +------------------------+             | Agent B                        |
-              |                            |  Tags: english                 |
-              |                            |  Status: available             |
-              |                            |  --------------------------    |
-              v                            | Agent C                        |
-    +------------------------+             |  Tags: english, billing        |
-    | Search for agents with |             |  Status: busy                  |
-    | ALL of these tags:     |             |  --------------------------    |
-    |  * english [x]         |             | Agent D                        |
-    |  * billing [x]         |             |  Tags: spanish, billing        |
-    +------------------------+             |  Status: available             |
-              |                            +--------------------------------+
+    | customer_id: <id>      |             | Agent A - Tags: english, vip   |
+    | Tag IDs: english,      |             |   Status: available            |
+    |          billing       |             | Agent B - Tags: spanish        |
+    | (not applied as a      |             |   Status: available            |
+    |  filter, see below)    |             | Agent C - Tags: english        |
+    +------------------------+             |   Status: busy                 |
+              |                            | Agent D - Tags: (none)         |
+              v                            |   Status: available            |
+    +------------------------+             +--------------------------------+
+    | Filter agents by:      |
+    |  * customer_id         |
+    |  * status = available  |
+    | (tag_ids is NOT        |
+    |  applied as a filter)  |
+    +------------------------+
               |
               v
     +--------------------------------------------------------------------------+
-    | Results:                                                                 |
-    |  [x] Agent A - Has english + billing + vip, is available                 |
-    |  [ ] Agent B - Missing "billing" tag                                     |
-    |  [ ] Agent C - Has tags but is busy                                      |
-    |  [ ] Agent D - Missing "english" tag                                     |
+    | Results (tags ignored):                                                  |
+    |  [x] Agent A - available, regardless of tags                             |
+    |  [x] Agent B - available, regardless of tags                             |
+    |  [ ] Agent C - busy, excluded (status filter, not tag filter)            |
+    |  [x] Agent D - available, even with no tags at all                       |
     |                                                                          |
-    |  -> Agent A is selected!                                                 |
+    |  -> One of the available agents is selected at random                   |
     +--------------------------------------------------------------------------+
 
 .. image:: _static/images/queue_overview_agent.png
 
-**Tag Requirements**
+.. warning:: **Known Limitation: tag-based routing is not enforced**
 
-Tags work as a skill-based filter:
+   ``Queue.tag_ids`` and ``Agent`` tags are both stored and returned by the API, but the current implementation does **not** use them to filter or rank agents during selection. Tracing ``bin-queue-manager/pkg/queuehandler/agent.go:GetAgents`` -> ``bin-agent-manager``'s agent-list filter conversion shows that ``agent.FieldStruct`` (the allow-list of filterable agent columns) does not include a ``tag_ids`` entry, so the tag filter the queue sends is silently dropped before the database query runs. ``bin-queue-manager/pkg/queuehandler/execute.go`` then selects uniformly at random from *every* available agent belonging to the queue's customer, with no client-side tag re-filtering.
 
-- Agents must have **ALL** tags the queue requires (AND logic)
-- Having extra tags is fine (Agent A has "vip" but queue doesn't require it)
-- If an agent is missing even one required tag, they're excluded
-- Tags define skills, languages, departments, or any grouping you need
+   In practice this means: an agent with **no tags at all** is just as eligible for a queue as one whose tags exactly match the queue's ``tag_ids``, and there is currently no way to build skill-based routing (language, department, tier, etc.) that actually restricts which agent receives a call. Treat ``tag_ids`` on a queue as informational/organizational only until this is implemented -- do not rely on it for routing decisions in production.
+
+**Tag Field (as currently returned by the API)**
+
+- ``Queue.tag_ids`` and each agent's tags are both real, queryable fields -- useful for organizing and auditing your setup -- but they are not consulted when the queue picks an agent for an incoming call.
+- Any available agent belonging to the queue's customer is eligible, regardless of tags.
+- Tags are still useful for reporting or grouping agents in your own tooling (e.g. by fetching ``GET /agents`` and filtering client-side). Note that ``GET /agents?tag_ids=...`` does **not** filter server-side either -- it hits the same dropped-filter bug described above, so it silently returns all agents regardless of the ``tag_ids`` query value.
 
 .. note:: **AI Implementation Hint**
 
-   Before creating a queue, you must have tags and agents already set up. Create tags via ``POST /tags``, assign them to agents via ``PUT /agents/{id}``, then reference the tag IDs in the queue's ``tag_ids`` field. Agents must have **all** tags the queue requires (AND logic), so verify agent tags with ``GET /agents/{id}`` before expecting queue routing to work.
+   Do not build product logic that assumes queue call routing respects agent tags -- it currently does not. If you need guaranteed skill-based routing today, route calls to separate queues per skill/tag combination instead, since queue selection itself only filters on ``customer_id`` and ``status``.
 
 **Agent Status**
 
@@ -195,12 +197,12 @@ The agent's status must be "available" to receive queue calls:
 ::
 
     Agent Statuses and Queue Eligibility:
-    .. list-table::
 
-       * - Status
-         - Can receive queue calls?
-       * - available busy wrap-up away offline
-         - [x] Yes - Agent is ready to take calls [ ] No - Agent is handling another call [ ] No - Agent is finishing previous cal [ ] No - Agent is temporarily away [ ] No - Agent is not logged in
+    available  [x] Yes - Agent is ready to take calls
+    ringing    [ ] No  - A call is currently being delivered to the agent
+    busy       [ ] No  - Agent is already handling another call
+    away       [ ] No  - Agent is temporarily away
+    offline    [ ] No  - Agent is not logged in
 
 
 **Selection Method**
@@ -236,25 +238,28 @@ Agents move through a lifecycle as they handle queue calls.
     |  offline |-------- login -------->| available|
     +----------+                        +-----+----+
          ^                                    |
-         |                              receive call
+         |                              call routed (automatic)
+         |                                    |
+         |                                    v
+         |                              +----------+
+         |                              | ringing  |
+         |                              +-----+----+
+         |                                    |
+         |                              agent answers (automatic)
          |                                    |
          |                                    v
          |                              +----------+
          +--------- logout -------------|   busy   |
-         |                              +-----+----+
-         |                                    |
-         |                               call ends
-         |                                    |
-         |                                    v
-         |                              +----------+
-         +--------- logout -------------|  wrap-up |
                                         +-----+----+
                                               |
-                                         wrap-up done
+                                    call ends -- status stays "busy";
+                                    agent must manually set a new status
                                               |
                                               v
                                         +----------+
                                         | available|
+                                        |(if agent |
+                                        | sets it) |
                                         +----------+
 
 **Status Behaviors**
@@ -266,12 +271,12 @@ Agents move through a lifecycle as they handle queue calls.
      - What happens
    * - login
      - Agent becomes available to receive queue calls
-   * - receive call
-     - Queue connects agent to caller; status becomes busy
+   * - call routed
+     - Queue connects an available agent to a caller; status becomes ringing (automatic)
+   * - agent answers
+     - Status becomes busy (automatic)
    * - call ends
-     - Conversation finished; agent enters wrap-up for post-call work
-   * - wrap-up done
-     - Agent returns to available; ready for next call
+     - Status remains busy; the agent (or your application) must call ``PUT /agents/{id}/status`` to set it back to available
    * - logout
      - Agent goes offline; removed from queue matching
 
@@ -279,22 +284,21 @@ Agents move through a lifecycle as they handle queue calls.
 
 Multi-Queue Agent Scenarios
 ---------------------------
-Agents can belong to multiple queues simultaneously based on their tags.
+Since agent selection is not currently filtered by tags (see :ref:`Agent Searching <queue-overview>`), any available agent belonging to a customer is a candidate for every one of that customer's queues, not just queues whose tags happen to match the agent's.
 
 **Single Agent, Multiple Queues**
 
 ::
 
-    Agent A's Tags: [english, billing, tech_support]
+    Agent A (available, same customer as both queues below)
 
     +------------------------+     +------------------------+
     | Queue: English Billing |     | Queue: Tech Support    |
-    | Required: english,     |     | Required: tech_support |
-    |           billing      |     |                        |
     +------------------------+     +------------------------+
               |                              |
               +--------- Agent A ------------+
-              |     (matches both)           |
+              |  (eligible for both, tags    |
+              |   are not evaluated)         |
               v                              v
     Agent A can receive calls from EITHER queue
 
@@ -495,8 +499,8 @@ Each call in the queue tracks:
          - 2024-01-15 10:30:00 (entered queue
        * - tm_service
          - 2024-01-15 10:30:45 (agent connect
-       * - tm_end
-         - 2024-01-15 10:33:45 (call ended)
+       * - tm_update
+         - 2024-01-15 10:33:45 (last update)
 
 
 **Calculating Service Levels**
@@ -721,19 +725,15 @@ See :ref:`Flow Actions <flow-struct-action-queue_join>` for queue-related flow a
 
 **Agent Management**
 
-Configure agents with tags to control which queues they serve.
+Agent tags do not currently gate which queues an agent serves -- any available agent belonging to a queue's customer is eligible for that queue, tagged or not (see the Known Limitation in :ref:`Agent Searching <queue-overview>`).
 
 ::
 
-    Agent                             Queues
+    Agent (available, customer X)     Queues (customer X)
     +-------------+                   +---------------+
-    | tags:       |--matches--------->| Queue A       |
-    | [english,   |                   | (english,     |
-    |  billing]   |                   |  billing)     |
-    +-------------+                   +---------------+
-                                      | Queue B       |
-                  --does not match--->| (spanish,     |
-                                      |  billing)     |
+    | status:     |----eligible------>| Queue A       |
+    | available   |                   +---------------+
+    +-------------+----eligible------>| Queue B       |
                                       +---------------+
 
 See :ref:`Agent Overview <agent-overview>` for agent configuration and status management.

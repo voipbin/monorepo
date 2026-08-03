@@ -336,7 +336,7 @@ How recording starts and stops:
     flow-manager    call-manager     Asterisk      storage-manager    GCS
          |               |               |               |              |
          | Action:       |               |               |              |
-         | record_start  |               |               |              |
+         | recording_start|              |               |              |
          |               |               |               |              |
          | RPC: Start    |               |               |              |
          | Recording     |               |               |              |
@@ -359,7 +359,7 @@ How recording starts and stops:
          |               |               | (Call continues...)          |
          |               |               |               |              |
          | Action:       |               |               |              |
-         | record_stop   |               |               |              |
+         | recording_stop|               |               |              |
          | (or hangup)   |               |               |              |
          |               |               |               |              |
          | RPC: Stop     |               |               |              |
@@ -395,7 +395,7 @@ How recording starts and stops:
 
 .. note:: **AI Implementation Hint**
 
-   Recording upload to cloud storage is asynchronous -- the recording URL is not available immediately after the call ends. Poll ``GET /recordings/{recording-id}`` until the ``url`` field is populated. Signed URLs expire after 1 hour; fetch a fresh URL from the API each time you need to download. If the call hangs up before ``record_stop`` executes, the recording is stopped and uploaded automatically.
+   Recording upload to cloud storage is asynchronous -- the recording URL is not available immediately after the call ends. Poll ``GET /recordings/{recording-id}`` until the ``url`` field is populated. Signed URLs expire after 1 hour; fetch a fresh URL from the API each time you need to download. If the call hangs up before ``recording_stop`` executes, the recording is stopped and uploaded automatically.
 
 **Recording File Lifecycle:**
 
@@ -412,16 +412,15 @@ How recording starts and stops:
 
     2. After Call Ends:
        +------------------------------------------+
-       | Action: Convert to final format          |
-       | Format: MP3 or WAV (configurable)        |
-       | Compress for storage efficiency          |
+       | Format: WAV (only supported format)      |
+       | Uploaded as-is, no transcoding            |
        +------------------------------------------+
 
     3. Upload to Cloud:
        +------------------------------------------+
        | Destination: Google Cloud Storage        |
        | Bucket: recordings-<customer-id>         |
-       | Path: /<date>/<recording-id>.mp3         |
+       | Path: /<date>/<recording-id>.wav         |
        | Access: Signed URLs (time-limited)       |
        +------------------------------------------+
 
@@ -698,5 +697,7 @@ How call events propagate through the system:
     call_hangup         webhook-manager, billing-manager,
                         campaign-manager, queue-manager,
                         transfer-manager, ai-manager
-    call_recording      webhook-manager, storage-manager
-    call_transcribing   webhook-manager, transcribe-manager
+    recording_started,  webhook-manager
+    recording_finished
+    transcribe_created, webhook-manager
+    transcribe_done

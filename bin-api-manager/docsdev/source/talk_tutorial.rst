@@ -28,17 +28,17 @@ Create a new talk conversation:
     $ curl --location --request POST 'https://api.voipbin.net/v1.0/service_agents/talk_chats?token=<YOUR_AUTH_TOKEN>' \
     --header 'Content-Type: application/json' \
     --data-raw '{
-        "type": "normal"
+        "type": "group"
     }'
 
     {
         "id": "e8b2e976-f043-44c8-bb89-e214e225e813",
         "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
-        "type": "normal",
-        "member_count": 0,
+        "type": "group",
+        "member_count": 1,
         "tm_create": "2024-01-17 10:30:00.000000",
         "tm_update": "2024-01-17 10:30:00.000000",
-        "tm_delete": "9999-01-01 00:00:00.000000"
+        "tm_delete": null
     }
 
 Add Participants
@@ -93,7 +93,7 @@ Send a message to the talk:
         },
         "tm_create": "2024-01-17 10:32:00.000000",
         "tm_update": "2024-01-17 10:32:00.000000",
-        "tm_delete": "9999-01-01 00:00:00.000000"
+        "tm_delete": null
     }
 
 Reply to a Message (Threading)
@@ -127,7 +127,7 @@ Reply to an existing message by specifying the parent_id:
         },
         "tm_create": "2024-01-17 10:33:00.000000",
         "tm_update": "2024-01-17 10:33:00.000000",
-        "tm_delete": "9999-01-01 00:00:00.000000"
+        "tm_delete": null
     }
 
 Add a Reaction
@@ -165,7 +165,7 @@ Add an emoji reaction to a message:
         },
         "tm_create": "2024-01-17 10:33:00.000000",
         "tm_update": "2024-01-17 10:34:00.000000",
-        "tm_delete": "9999-01-01 00:00:00.000000"
+        "tm_delete": null
     }
 
 List Messages
@@ -193,7 +193,7 @@ Retrieve messages from a talk with pagination:
                 },
                 "tm_create": "2024-01-17 10:32:00.000000",
                 "tm_update": "2024-01-17 10:32:00.000000",
-                "tm_delete": "9999-01-01 00:00:00.000000"
+                "tm_delete": null
             },
             {
                 "id": "b2d4f7a1-3c2e-4f5a-8d9c-2e3f4a5b6c7d",
@@ -217,7 +217,7 @@ Retrieve messages from a talk with pagination:
                 },
                 "tm_create": "2024-01-17 10:33:00.000000",
                 "tm_update": "2024-01-17 10:34:00.000000",
-                "tm_delete": "9999-01-01 00:00:00.000000"
+                "tm_delete": null
             }
         ],
         "next_page_token": "2024-01-17 10:33:00.000000"
@@ -253,8 +253,8 @@ Delete a talk (soft delete):
     {
         "id": "e8b2e976-f043-44c8-bb89-e214e225e813",
         "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
-        "type": "normal",
-        "member_count": 0,
+        "type": "group",
+        "member_count": 1,
         "tm_create": "2024-01-17 10:30:00.000000",
         "tm_update": "2024-01-17 10:35:00.000000",
         "tm_delete": "2024-01-17 10:35:00.000000"

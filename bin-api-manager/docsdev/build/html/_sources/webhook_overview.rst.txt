@@ -7,7 +7,7 @@ Overview
 
    * **Complexity:** Low
    * **Cost:** Free -- Webhook delivery does not incur charges. Events are pushed to your configured endpoint at no cost.
-   * **Async:** No. Webhook configuration is set on the customer resource via ``PUT https://api.voipbin.net/v1.0/customer`` (fields ``webhook_url`` and ``webhook_method``). Event delivery to your endpoint happens asynchronously as events occur.
+   * **Async:** No. Webhook configuration is set on the customer resource via ``PUT https://api.voipbin.net/v1.0/customer`` (fields ``webhook_uri`` and ``webhook_method``). Event delivery to your endpoint happens asynchronously as events occur.
 
 Webhooks, a robust feature offered by VoIPBIN, empower users to receive real-time event data for their calls and associated resources directly on their servers. By establishing custom endpoints, users can seamlessly configure their servers to receive timely notifications and updates related to VoIPBIN resources, thereby enhancing control, customization, and real-time visibility within their communication workflows.
 
@@ -27,7 +27,7 @@ To harness webhooks, users must configure custom webhook endpoints on their serv
 
 .. note:: **AI Implementation Hint**
 
-   Your webhook endpoint must respond with HTTP 200 within 5 seconds. VoIPBIN may retry delivery if your server is unreachable. Webhooks may be delivered more than once, so implement idempotent processing using the event type and resource ID to deduplicate.
+   VoIPBIN retries delivery up to 3 times (1 second apart) when the request fails outright (e.g. connection error) or your endpoint returns a ``5xx`` status; any other response (including ``4xx``) is treated as delivered and is not retried. The delivery HTTP client allows up to ~30 seconds per attempt. Webhooks may still be delivered more than once, so implement idempotent processing using the event type and resource ID to deduplicate.
 
 Webhook Event Types
 -------------------
@@ -41,6 +41,9 @@ Resource Type             Events
 ``conference``            Conference lifecycle events
 ``conferencecall``        Participant join/leave events
 ``message``               Message sent/received/delivered events
+``email``                 Email created/status-updated/deleted events
+``webchat``               Webchat message created and session ended events
+``conversation``          Conversation and conversation-message created/updated/deleted events
 ``recording``             Recording started/completed events
 ``transcribe``            Transcription completed, speech started/interim/ended events
 ``queue``                 Queue events
@@ -89,15 +92,15 @@ Troubleshooting
 
 * **Webhooks not being received:**
     * **Cause:** Your webhook endpoint URL is incorrect, unreachable, or not responding with HTTP 200.
-    * **Fix:** Verify the endpoint URL via ``GET https://api.voipbin.net/v1.0/customer`` (check ``webhook_url`` field). Ensure your server is publicly accessible and responds with ``200 OK`` within 5 seconds.
+    * **Fix:** Verify the endpoint URL via ``GET https://api.voipbin.net/v1.0/customer`` (check ``webhook_uri`` field). Ensure your server is publicly accessible and does not return a ``5xx`` status.
 
 * **Duplicate webhook events:**
-    * **Cause:** VoIPBIN retries delivery if your endpoint did not respond in time.
+    * **Cause:** VoIPBIN retries delivery (up to 3 attempts) when a request fails outright or your endpoint returns a ``5xx`` status.
     * **Fix:** Implement idempotent processing. Use the combination of resource ``id`` and ``status`` to deduplicate events.
 
 * **400 Bad Request (updating webhook configuration):**
-    * **Cause:** Invalid URL format in ``webhook_url``.
-    * **Fix:** Ensure the ``webhook_url`` field is a valid HTTPS URL when updating via ``PUT https://api.voipbin.net/v1.0/customer``.
+    * **Cause:** Invalid URL format in ``webhook_uri``.
+    * **Fix:** Ensure the ``webhook_uri`` field is a valid HTTPS URL when updating via ``PUT https://api.voipbin.net/v1.0/customer``.
 
 
 Related Documentation

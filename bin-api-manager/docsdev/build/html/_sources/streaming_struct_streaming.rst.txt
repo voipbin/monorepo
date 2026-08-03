@@ -26,7 +26,7 @@ Streaming
 * ``streaming_id`` (UUID): The streaming session that produced this event.
 * ``transcribe_id`` (UUID): The transcription session associated with this streaming event. Obtained from the ``id`` field of ``GET /transcribes``.
 * ``direction`` (enum string): The audio direction being streamed. Possible values: ``in`` (inbound audio), ``out`` (outbound audio), ``both`` (both directions).
-* ``message`` (string): The real-time transcribed text content of this streaming event. May be empty for intermediate events.
+* ``message`` (string, optional): The real-time transcribed text content of this streaming event. Omitted entirely from the JSON (not an empty string) when there is no text for this event.
 * ``tm_event`` (string, ISO 8601): Timestamp when this streaming speech event occurred.
 * ``tm_create`` (string, ISO 8601): Timestamp when this streaming record was created.
 
