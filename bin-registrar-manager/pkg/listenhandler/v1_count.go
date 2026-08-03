@@ -22,7 +22,7 @@ type countByCustomerResponse struct {
 func (h *listenHandler) processV1ExtensionsCountByCustomerGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ExtensionsCountByCustomerGet",
-		"request": m,
+		"request": redactRequestForLog(m),
 	})
 
 	var req countByCustomerRequest
@@ -54,7 +54,7 @@ func (h *listenHandler) processV1ExtensionsCountByCustomerGet(ctx context.Contex
 func (h *listenHandler) processV1TrunksCountByCustomerGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1TrunksCountByCustomerGet",
-		"request": m,
+		"request": redactRequestForLog(m),
 	})
 
 	var req countByCustomerRequest

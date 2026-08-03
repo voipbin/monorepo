@@ -38,7 +38,7 @@ func (h *extensionHandler) EventCUCustomerDeleted(ctx context.Context, cu *cucus
 			log.Errorf("Could not delete extension info. err: %v", err)
 			continue
 		}
-		log.WithField("extension", tmp).Debugf("Deleted extension info. extension_id: %s", tmp.ID)
+		log.Debugf("Deleted extension info. extension_id: %s", tmp.ID)
 	}
 
 	return nil

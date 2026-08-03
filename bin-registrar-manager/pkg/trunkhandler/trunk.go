@@ -17,6 +17,7 @@ import (
 	"monorepo/bin-registrar-manager/models/sipauth"
 	"monorepo/bin-registrar-manager/models/trunk"
 	"monorepo/bin-registrar-manager/pkg/dbhandler"
+	"monorepo/bin-registrar-manager/pkg/redacthandler"
 )
 
 // Create creates a new trunk and returns a created trunk info
@@ -169,7 +170,7 @@ func (h *trunkHandler) Update(ctx context.Context, id uuid.UUID, fields map[trun
 	log := logrus.WithFields(logrus.Fields{
 		"func":     "Update",
 		"trunk_id": id,
-		"fields":   fields,
+		"fields":   redacthandler.Fields(fields),
 	})
 
 	// update

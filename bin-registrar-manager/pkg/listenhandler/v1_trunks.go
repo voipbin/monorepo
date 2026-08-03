@@ -30,7 +30,7 @@ func (h *listenHandler) processV1TrunksPost(ctx context.Context, m *sock.Request
 
 	var req request.V1DataTrunksPost
 	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
-		log.Debugf("Could not unmarshal the request data. data: %v, err: %v", m.Data, err)
+		log.Debugf("Could not unmarshal the request data. data: %v, err: %v", redactSensitiveJSON(m.Data), err)
 		return simpleResponse(400), nil
 	}
 
@@ -42,7 +42,7 @@ func (h *listenHandler) processV1TrunksPost(ctx context.Context, m *sock.Request
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.Errorf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
@@ -167,7 +167,7 @@ func (h *listenHandler) processV1TrunksIDPut(ctx context.Context, req *sock.Requ
 
 	var reqData request.V1DataTrunksIDPut
 	if err := json.Unmarshal([]byte(req.Data), &reqData); err != nil {
-		log.Debugf("Could not unmarshal the request data. data: %v, err: %v", req.Data, err)
+		log.Debugf("Could not unmarshal the request data. data: %v, err: %v", redactSensitiveJSON(req.Data), err)
 		return simpleResponse(400), nil
 	}
 

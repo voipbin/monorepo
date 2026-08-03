@@ -38,7 +38,7 @@ func (h *trunkHandler) EventCUCustomerDeleted(ctx context.Context, cu *cucustome
 			log.Errorf("Could not delete trunk info. err: %v", err)
 			continue
 		}
-		log.WithField("trunk", tmp).Debugf("Deleted trunk info. trunk_id: %s", tmp.ID)
+		log.Debugf("Deleted trunk info. trunk_id: %s", tmp.ID)
 	}
 
 	return nil

@@ -14,7 +14,7 @@ import (
 func (h *listenHandler) processV1ContactsGet(ctx context.Context, req *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ContactsGet",
-		"request": req,
+		"request": redactRequestForLog(req),
 	})
 
 	// Parse filters from request body
@@ -29,7 +29,7 @@ func (h *listenHandler) processV1ContactsGet(ctx context.Context, req *sock.Requ
 	log.WithFields(logrus.Fields{
 		"customer_id":      reqData.CustomerID,
 		"extension":        reqData.Extension,
-		"filters_raw_data": string(req.Data),
+		"filters_raw_data": string(redactSensitiveJSON(req.Data)),
 	}).Debug("processV1ContactsGet: Parsed filters from request body")
 
 	resContacts, err := h.contactHandler.ContactGetsByExtension(ctx, reqData.CustomerID, reqData.Extension)
@@ -57,7 +57,7 @@ func (h *listenHandler) processV1ContactsGet(ctx context.Context, req *sock.Requ
 func (h *listenHandler) processV1ContactsPut(ctx context.Context, req *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "processV1ContactsPut",
-		"request": req,
+		"request": redactRequestForLog(req),
 	})
 
 	// Parse filters from request body
@@ -72,7 +72,7 @@ func (h *listenHandler) processV1ContactsPut(ctx context.Context, req *sock.Requ
 	log.WithFields(logrus.Fields{
 		"customer_id":      reqData.CustomerID,
 		"extension":        reqData.Extension,
-		"filters_raw_data": string(req.Data),
+		"filters_raw_data": string(redactSensitiveJSON(req.Data)),
 	}).Debug("processV1ContactsPut: Parsed filters from request body")
 
 	if err := h.contactHandler.ContactRefreshByEndpoint(ctx, reqData.CustomerID, reqData.Extension); err != nil {

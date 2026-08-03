@@ -20,6 +20,7 @@ import (
 	"monorepo/bin-registrar-manager/models/extension"
 	"monorepo/bin-registrar-manager/models/sipauth"
 	"monorepo/bin-registrar-manager/pkg/dbhandler"
+	"monorepo/bin-registrar-manager/pkg/redacthandler"
 )
 
 // Create creates a new extension
@@ -36,7 +37,7 @@ func (h *extensionHandler) Create(
 		"func":        "Create",
 		"customer_id": customerID,
 		"extension":   ext,
-		"password":    password,
+		"password":    redacthandler.String(password),
 	})
 
 	// check resource limit
@@ -103,7 +104,7 @@ func (h *extensionHandler) Create(
 		log.Errorf("Could not create direct hash. err: %v", err)
 		return nil, fmt.Errorf("could not create direct hash: %w", err)
 	}
-	log.WithField("direct", d).Debugf("Created direct hash. direct_id: %s", d.ID)
+	log.WithField("direct_id", d.ID).Debug("Created direct hash.")
 
 	// create a new extension
 	e := &extension.Extension{
@@ -212,7 +213,7 @@ func (h *extensionHandler) List(ctx context.Context, token string, limit uint64,
 func (h *extensionHandler) Update(ctx context.Context, id uuid.UUID, fields map[extension.Field]any) (*extension.Extension, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"extension_id": id,
-		"fields":       fields,
+		"fields":       redacthandler.Fields(fields),
 	})
 
 	// create a update extension
@@ -344,7 +345,7 @@ func (h *extensionHandler) DirectHashRegenerate(ctx context.Context, id uuid.UUI
 		log.Errorf("Could not get extension. err: %v", err)
 		return nil, fmt.Errorf("could not get extension: %w", err)
 	}
-	log.WithField("extension", ext).Debugf("Retrieved extension info. extension_id: %s", ext.ID)
+	log.Debugf("Retrieved extension info. extension_id: %s", ext.ID)
 
 	// regenerate or create direct
 	var d *dmdirect.Direct
@@ -361,7 +362,7 @@ func (h *extensionHandler) DirectHashRegenerate(ctx context.Context, id uuid.UUI
 			return nil, fmt.Errorf("could not create direct hash: %w", err)
 		}
 	}
-	log.WithField("direct", d).Debugf("Direct hash regenerated. direct_id: %s, hash: %s", d.ID, d.Hash)
+	log.WithField("direct_id", d.ID).Debug("Direct hash regenerated.")
 
 	// update extension with new direct info
 	fields := map[extension.Field]any{
