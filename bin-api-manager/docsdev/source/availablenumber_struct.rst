@@ -26,7 +26,7 @@ Available Number
 
 .. note:: **AI Implementation Hint**
 
-   Available numbers are returned by ``GET /available-numbers``. To purchase a number, use ``POST /numbers`` with the ``number`` value from this response. Not all numbers support all features — check the ``features`` array before purchasing if specific capabilities (e.g., SMS, MMS) are required.
+   Available numbers are returned by ``GET /available_numbers``. To purchase a number, use ``POST /numbers`` with the ``number`` value from this response. Not all numbers support all features — check the ``features`` array before purchasing if specific capabilities (e.g., SMS, MMS) are required.
 
 .. _availablenumber-struct-features:
 

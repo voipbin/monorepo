@@ -14,7 +14,7 @@ Before working with recordings, you need:
 
 .. note:: **AI Implementation Hint**
 
-   Recording files are only available for download after the recording reaches ``ended`` status. If you attempt to download immediately after stopping a recording, the file may not be ready. Poll ``GET /recordings/{id}`` and check for ``status: "ended"`` before calling ``GET /recordingfiles/{id}``.
+   Recording files are only available for download after the recording reaches ``ended`` status. If you attempt to download immediately after stopping a recording, the file may not be ready. Poll ``GET /recordings/{id}`` and check for ``status: "ended"`` before calling ``GET /recordingfiles/{id}``. Note that ``POST /calls/{id}/recording_start`` and ``POST /calls/{id}/recording_stop`` return the updated **call** resource, not a recording resource directly -- get the new recording's ID from the call's ``recording_ids`` field, then fetch it via ``GET /recordings/{id}``. Also note that ``owner_type`` is currently always an empty string for recordings created this way (no owner is ever assigned).
 
 Get list of recordings
 ----------------------
@@ -30,7 +30,7 @@ Example
             {
                 "id": "348d988b-2ac9-4702-84f0-ae81301ad349",
                 "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
-                "owner_type": "customer",
+                "owner_type": "",
                 "owner_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
                 "activeflow_id": "00000000-0000-0000-0000-000000000000",
                 "reference_type": "call",
@@ -41,13 +41,12 @@ Example
                 "tm_start": "2021-01-29 05:31:47.870000",
                 "tm_end": "2021-01-29 05:31:58.932000",
                 "tm_create": "2021-01-29 05:31:45.051136",
-                "tm_update": "2021-01-29 05:31:58.943456",
-                "tm_delete": ""
+                "tm_update": "2021-01-29 05:31:58.943456"
             },
             {
                 "id": "142e8ef8-392c-4514-abf0-8656da5d2fdf",
                 "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
-                "owner_type": "customer",
+                "owner_type": "",
                 "owner_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
                 "activeflow_id": "00000000-0000-0000-0000-000000000000",
                 "reference_type": "call",
@@ -58,13 +57,12 @@ Example
                 "tm_start": "2021-01-29 03:18:10.790000",
                 "tm_end": "2021-01-29 03:18:22.131000",
                 "tm_create": "2021-01-29 03:18:07.950164",
-                "tm_update": "2021-01-29 03:18:22.144432",
-                "tm_delete": ""
+                "tm_update": "2021-01-29 03:18:22.144432"
             },
             {
                 "id": "f27d65bc-2f10-49e1-a49d-a7762965df13",
                 "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
-                "owner_type": "customer",
+                "owner_type": "",
                 "owner_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
                 "activeflow_id": "00000000-0000-0000-0000-000000000000",
                 "reference_type": "call",
@@ -75,8 +73,7 @@ Example
                 "tm_start": "2021-01-28 09:17:00.814000",
                 "tm_end": "2021-01-28 09:17:11.883000",
                 "tm_create": "2021-01-28 09:16:58.076735",
-                "tm_update": "2021-01-28 09:17:11.890500",
-                "tm_delete": ""
+                "tm_update": "2021-01-28 09:17:11.890500"
             }
         ],
         "next_page_token": "2021-01-28 09:16:58.076735"
@@ -95,7 +92,7 @@ Example
     {
         "id": "f27d65bc-2f10-49e1-a49d-a7762965df13",
         "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
-        "owner_type": "customer",
+        "owner_type": "",
         "owner_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
         "activeflow_id": "00000000-0000-0000-0000-000000000000",
         "reference_type": "call",
@@ -106,8 +103,7 @@ Example
         "tm_start": "2021-01-28 09:17:00.814000",
         "tm_end": "2021-01-28 09:17:11.883000",
         "tm_create": "2021-01-28 09:16:58.076735",
-        "tm_update": "2021-01-28 09:17:11.890500",
-        "tm_delete": ""
+        "tm_update": "2021-01-28 09:17:11.890500"
     }
 
 

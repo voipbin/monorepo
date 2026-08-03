@@ -30,11 +30,11 @@ Talk
 * ``member_count`` (Integer): The number of members currently in the talk.
 * ``tm_create`` (string, ISO 8601): Timestamp when the talk was created.
 * ``tm_update`` (string, ISO 8601): Timestamp when the talk was last updated.
-* ``tm_delete`` (string, ISO 8601): Timestamp when the talk was deleted (soft delete).
+* ``tm_delete`` (string, ISO 8601, nullable): Timestamp when the talk was deleted (soft delete).
 
 .. note:: **AI Implementation Hint**
 
-   A ``tm_delete`` value of ``9999-01-01 00:00:00.000000`` means the talk has not been deleted. An empty string ``""`` also indicates the talk is active.
+   A ``tm_delete`` value of ``null`` means the talk has not been deleted. Once the talk is deleted, ``tm_delete`` is set to the deletion timestamp.
 
 Example
 +++++++
@@ -50,7 +50,7 @@ Example
         "member_count": 3,
         "tm_create": "2024-01-17 10:30:00.000000",
         "tm_update": "2024-01-17 10:30:00.000000",
-        "tm_delete": ""
+        "tm_delete": null
     }
 
 .. _talk-struct-talk-type:

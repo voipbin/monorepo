@@ -13,7 +13,7 @@ Call transfer is just one of many features available in CPaaS technology, which 
 
 .. note:: **AI Implementation Hint**
 
-   Call transfers involve active calls, which are chargeable. A transfer creates a new outbound call to the transfer destination. Initiate a transfer via ``POST /v1/transfers`` with the ``transferer_call_id`` (UUID, obtained from ``GET /v1/calls``) of an active call in ``progressing`` status, along with ``transferee_addresses`` (array of addresses) and ``transfer_type`` (enum: ``attended`` or ``blind``).
+   Call transfers involve active calls, which are chargeable. A transfer creates a new outbound call to the transfer destination. Initiate a transfer via ``POST /transfers`` with the ``transferer_call_id`` (UUID, obtained from ``GET /calls``) of an active call in ``progressing`` status, along with ``transferee_addresses`` (array of addresses) and ``transfer_type`` (enum: ``attended`` or ``blind``).
 
 .. _call-transfer-blind_transfer:
 
@@ -33,14 +33,14 @@ Blind transfer is the simplest type of call transfer. In this type of transfer, 
     |                  | Request        |                |
     |                  |<---------------|                |
     |                  |                |                |
-    |                  | Dial           |                |
-    |                  |-------------------------------->|
+    |                  | Hangup         |                |
+    |                  |--------------->|                |
     |                  |                |                |
     |   Ring           |                |                |
     |<-----------------|                |                |
     |                  |                |                |
-    |                  | Hangup         |                |
-    |                  |--------------->|                |
+    |                  | Dial           |                |
+    |                  |-------------------------------->|
     |                  |                |                |
     |                  |                |     Answer     |
     |                  |<--------------------------------|
@@ -51,8 +51,8 @@ Blind transfer is the simplest type of call transfer. In this type of transfer, 
 * The Caller initiates a call to the VoIPBIN and the call is in progress.
 * The Transferer, who is already on a call, decides to transfer the Caller to the Transferee.
 * The Transferer sends a transfer request to the VoIPBIN, indicating the Transferee's number.
-* The VoIPBIN dials to the Transferee.
-* The VoIPBIN hangs up the transferer right after dials to the transferee.
+* The VoIPBIN immediately hangs up the Transferer's call.
+* The VoIPBIN rings the Caller (who now hears ringback) and dials the Transferee.
 * The Transferee answers the call and is connected to the Caller.
 
 This is the basic process of an blind transfer using a CPaaS like VoIPBIN.
@@ -79,11 +79,11 @@ Attended transfer, also known as consultative transfer, involves the person init
     |                  | Request        |                |
     |                  |<---------------|                |
     |                  |                |                |
-    |                  | Dial           |                |
-    |                  |-------------------------------->|
-    |                  |                |                |
     |   MOH/Mute       |                |                |
     |<-----------------|                |                |
+    |                  |                |                |
+    |                  | Dial           |                |
+    |                  |-------------------------------->|
     |                  |                |                |
     |                  |                |    Answer      |
     |                  |<--------------------------------|
@@ -109,8 +109,8 @@ Attended transfer, also known as consultative transfer, involves the person init
 * The Caller initiates a call to the VoIPBIN, and the call is in progress with transferer.
 * The Transferer, who is already on a call, decides to transfer the Caller to the Transferee.
 * The Transferer sends a transfer request to the VoIPBIN, indicating the Transferee's number.
+* The VoIPBIN puts the Caller on music on hold and mute (direction ``in``).
 * The VoIPBIN dials to the Transferee.
-* The VoIPBIN puts the Caller on music on hold and mute.
 * The Transferee answers the call and is connected to the Transferer and talk to each other.
 * The Transferer drops out of the call.
 * The VoIPBIN turn off the Caller's Music on hold and the Caller and Transferee can now hear each other.

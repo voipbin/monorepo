@@ -40,7 +40,7 @@ Team
 * ``id`` (UUID): The team's unique identifier. Returned when creating a team via ``POST /teams`` or when listing teams via ``GET /teams``.
 * ``customer_id`` (UUID): The customer that owns this team. Obtained from the ``id`` field of ``GET /customer``.
 * ``name`` (String, Required): A human-readable name for the team (e.g., ``"Customer Service Team"``).
-* ``detail`` (String, Optional): A description of the team's purpose or additional notes.
+* ``detail`` (String, Required): A description of the team's purpose or additional notes.
 * ``start_member_id`` (UUID, Required): The member where the conversation begins. Must match one of the ``id`` values in the ``members`` array.
 * ``members`` (Array of Member, Required): The list of members (nodes) in the team graph. At least one member is required. See :ref:`Member <team-struct-team-member>`.
 * ``parameter`` (Object, Optional): Custom key-value parameter data for the team. Supports flow variable substitution at runtime.

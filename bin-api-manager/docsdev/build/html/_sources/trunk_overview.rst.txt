@@ -5,24 +5,26 @@ Overview
 
 .. note:: **AI Context**
 
-   * **Complexity:** High. Trunking involves coordinating providers, routes, and extensions together.
-   * **Cost:** Outbound calls through trunking incur per-call charges based on the provider. Inbound call registration (extensions) is free.
-   * **Async:** No. Trunk configuration (providers, routes, extensions) is synchronous. The actual call flow is asynchronous and can be tracked via ``GET https://api.voipbin.net/v1.0/calls/{id}``.
+   * **Complexity:** Low. A trunk is a single, standalone resource: create it with a domain name and authentication, then point your SIP device or PBX at it.
+   * **Cost:** Free to create and manage. Outbound calls placed through the trunk incur per-call charges based on the destination.
+   * **Async:** No. ``POST https://api.voipbin.net/v1.0/trunks`` returns immediately with the created trunk.
 
-VoIPBIN's Trunk system provides the infrastructure for SIP-based voice communication, supporting both outbound calls (trunking) and inbound calls (registration). Trunks connect VoIPBIN to the PSTN and enable SIP endpoints to communicate with external networks.
+VoIPBIN's Trunk API lets you connect your own SIP device or PBX to VoIPBIN as a SIP trunk, so it can place outbound calls to the PSTN through VoIPBIN. Creating a trunk reserves a dedicated SIP domain address (``{domain_name}.trunk.voipbin.net``) and configures how VoIPBIN authenticates INVITE requests arriving at that address.
 
-The Trunk system provides:
+The Trunk API provides:
 
-- SIP trunking for outbound call routing
-- Registration services for inbound call delivery
-- Connection between VoIPBIN and external providers
-- Integration with on-premise PBX systems
-- Flexible routing through providers
+- A dedicated, auto-generated SIP domain address for outbound trunking
+- Basic authentication (SIP username/password)
+- IP-based authentication (allowed source IP list)
+- Support for both authentication methods on the same trunk at once
+- Standard CRUD management (create, list, retrieve, update, delete)
+
+A trunk is a standalone resource. It does not require a :ref:`Provider <provider-overview>`, :ref:`Route <route-overview>`, or :ref:`Extension <extension-overview>` to be created first, and it is not used to configure any of those resources. See `Trunking vs Other Resources`_ below for how it relates to them.
 
 
 How Trunks Work
 ---------------
-The trunk system handles bidirectional call flow between VoIPBIN and external networks.
+A trunk lets an external SIP device authenticate against VoIPBIN and place outbound calls through it.
 
 **Trunk Architecture**
 
@@ -32,437 +34,258 @@ The trunk system handles bidirectional call flow between VoIPBIN and external ne
     |                          Trunk System                                 |
     +-----------------------------------------------------------------------+
 
-                         +-------------------+
-                         |     VoIPBIN       |
-                         |     Platform      |
-                         +--------+----------+
-                                  |
-              +-------------------+-------------------+
-              |                                       |
-              v                                       v
-    +-------------------+                   +-------------------+
-    |    Trunking       |                   |   Registration    |
-    | (Outbound Calls)  |                   | (Inbound Calls)   |
-    +--------+----------+                   +--------+----------+
-             |                                       |
-             v                                       v
-    +-------------------+                   +-------------------+
-    |     Providers     |                   |   SIP Endpoints   |
-    | (Telnyx, Twilio)  |                   | (Phones, PBX)     |
-    +--------+----------+                   +--------+----------+
-             |                                       |
-             v                                       v
-    +-------------------+                   +-------------------+
-    |       PSTN        |                   |  Registered       |
-    |   (Phone Network) |                   |  Devices          |
-    +-------------------+                   +-------------------+
+    +-------------------+
+    |   Your SIP Device |
+    |   or PBX (UA)      |
+    +--------+----------+
+             |
+             | INVITE to {domain_name}.trunk.voipbin.net
+             | (authenticated via username/password or source IP)
+             v
+    +-------------------+
+    |     VoIPBIN       |
+    |   Trunk Endpoint  |
+    +--------+----------+
+             |
+             v
+    +-------------------+
+    |       PSTN         |
+    |  (Phone Network)   |
+    +-------------------+
 
 **Key Components**
 
-- **Trunk**: Connection to external SIP provider for outbound calls
-- **Registration**: Service for SIP endpoints to receive inbound calls
-- **Provider**: External SIP service (Telnyx, Twilio, etc.)
-- **PSTN**: Public Switched Telephone Network
+- **Trunk**: The resource that defines the SIP domain and authentication for your device
+- **Domain name**: The unique subdomain, reachable at ``{domain_name}.trunk.voipbin.net``
+- **Auth types**: ``basic`` (username/password) and/or ``ip`` (allowed source IPs)
+- **PSTN**: Public Switched Telephone Network, reached once the INVITE is authenticated
 
 
-Trunking vs Registration
-------------------------
-Understanding the difference between these two services is essential.
+Trunking vs Other Resources
+----------------------------
+"SIP trunking" appears in several related but independent VoIPBIN resources. A trunk is not built from these other resources, and they are not built from a trunk.
 
-**Comparison**
++-----------------------+---------------------------------------------+------------------------------------------------+
+| Resource              | Direction                                   | Purpose                                        |
++=======================+=============================================+================================================+
+| Trunk (this API)      | Your device -> VoIPBIN -> PSTN              | Lets your own SIP device/PBX                   |
+|                       | (outbound)                                  | authenticate into VoIPBIN and place            |
+|                       |                                             | outbound calls                                 |
++-----------------------+---------------------------------------------+------------------------------------------------+
+| Provider              | VoIPBIN -> Carrier -> PSTN                  | Configures the upstream carrier                |
+|                       | (outbound)                                  | VoIPBIN itself uses to place                   |
+|                       |                                             | outbound calls                                 |
++-----------------------+---------------------------------------------+------------------------------------------------+
+| Route                 | VoIPBIN -> Provider selection               | Chooses which Provider handles an              |
+|                       |                                             | outbound call, with failover                   |
++-----------------------+---------------------------------------------+------------------------------------------------+
+| Extension             | PSTN -> VoIPBIN -> your device              | Registers your SIP device to receive           |
+|                       | (inbound)                                   | inbound calls                                  |
++-----------------------+---------------------------------------------+------------------------------------------------+
 
-::
-
-    +-----------------------------------------------------------------------+
-    |                    Trunking vs Registration                           |
-    +-----------------------------------------------------------------------+
-
-    TRUNKING (Outbound):
-    +--------------------------------------------+
-    | Purpose: Make calls to external numbers    |
-    | Direction: VoIPBIN -> Provider -> PSTN     |
-    | Uses: Provider configuration               |
-    | Example: Call +1-555-123-4567              |
-    +--------------------------------------------+
-
-    REGISTRATION (Inbound):
-    +--------------------------------------------+
-    | Purpose: Receive calls on SIP devices      |
-    | Direction: PSTN -> VoIPBIN -> Device       |
-    | Uses: Extension configuration              |
-    | Example: IP phone receives incoming call   |
-    +--------------------------------------------+
-
-**When to Use Each**
-
-+----------------------+----------------------------------+----------------------------------+
-| Capability           | Trunking                         | Registration                     |
-+======================+==================================+==================================+
-| Direction            | Outbound calls                   | Inbound calls                    |
-+----------------------+----------------------------------+----------------------------------+
-| Configuration        | Provider + Route                 | Extension                        |
-+----------------------+----------------------------------+----------------------------------+
-| Endpoint             | External phone number            | SIP device/softphone             |
-+----------------------+----------------------------------+----------------------------------+
-| Authentication       | Provider credentials             | Extension credentials            |
-+----------------------+----------------------------------+----------------------------------+
-
-
-Outbound Call Flow (Trunking)
------------------------------
-Outbound calls route through providers to reach external numbers.
-
-**Trunking Flow**
-
-::
-
-    VoIPBIN                    Provider                      PSTN
-
-    |                             |                             |
-    | 1. Initiate call            |                             |
-    |    to +1-555-1234           |                             |
-    +---+                         |                             |
-        |                         |                             |
-        v                         |                             |
-    +-------+                     |                             |
-    | Route |                     |                             |
-    | Engine|                     |                             |
-    +---+---+                     |                             |
-        |                         |                             |
-        | 2. Select provider      |                             |
-        |    based on route       |                             |
-        |                         |                             |
-        | 3. INVITE               |                             |
-        +------------------------>|                             |
-        |                         |                             |
-        |                         | 4. Route to PSTN            |
-        |                         +----------------------------->|
-        |                         |                             |
-        |                         |     5. 180 Ringing          |
-        |                         |<----------------------------+
-        |     6. Ringing          |                             |
-        |<------------------------+                             |
-        |                         |                             |
-        |                         |     7. 200 OK (Answer)      |
-        |                         |<----------------------------+
-        |     8. Connected        |                             |
-        |<------------------------+                             |
-        |                         |                             |
-        |         Media (RTP) <-------------------------------> |
-
-
-Inbound Call Flow (Registration)
---------------------------------
-Inbound calls reach registered SIP devices.
-
-**Registration Flow**
-
-::
-
-    PSTN                       VoIPBIN                    SIP Device
-
-    |                             |                             |
-    | 1. Call to VoIPBIN number   |                             |
-    +----------------------------->|                             |
-    |                             |                             |
-    |                             | 2. Flow execution           |
-    |                             |    (dial extension)         |
-    |                             +---+                         |
-    |                             |   |                         |
-    |                             |   v                         |
-    |                             | +-------+                   |
-    |                             | |Lookup |                   |
-    |                             | |Reg.   |                   |
-    |                             | +---+---+                   |
-    |                             |     |                       |
-    |                             | 3. INVITE to registered IP  |
-    |                             +----------------------------->|
-    |                             |                             |
-    |                             |     4. 180 Ringing          |
-    |                             |<----------------------------+
-    |     5. Ringback             |                             |
-    |<----------------------------+                             |
-    |                             |                             |
-    |                             |     6. 200 OK               |
-    |                             |<----------------------------+
-    |     7. Connected            |                             |
-    |<----------------------------+                             |
-    |                             |                             |
-    |         Media (RTP) <-------------------------------------> |
+See :ref:`Trunk Overview <trunk-overview-trunking>` for the authentication and call-handling details of this Trunk API.
 
 
 .. note:: **AI Implementation Hint**
 
-   Setting up a complete trunk system requires three resources created in this order: (1) a provider via ``POST https://api.voipbin.net/v1.0/providers``, (2) a route via ``POST https://api.voipbin.net/v1.0/routes`` referencing the provider ID, and (3) extensions via ``POST https://api.voipbin.net/v1.0/extensions`` for inbound registration. The provider and route handle outbound calls; extensions handle inbound calls. These are separate APIs, not a single trunk creation endpoint.
+   A trunk is created with a single call to ``POST https://api.voipbin.net/v1.0/trunks``. There is no separate provider, route, or extension setup required. Choose ``auth_types: ["basic"]`` and supply ``username``/``password``, or ``auth_types: ["ip"]`` and supply ``allowed_ips``, or both.
 
-Trunk Configuration
--------------------
-Configure the trunk system through providers, routes, and extensions.
 
-**Provider Configuration (for Trunking)**
+Managing Trunks
+----------------
+Trunks are managed through the ``/v1.0/trunks`` endpoints.
 
-See :ref:`Provider Overview <provider-overview>` for detailed configuration.
-
-.. code::
-
-    $ curl -X POST 'https://api.voipbin.net/v1.0/providers?token=<token>' \
-        --header 'Content-Type: application/json' \
-        --data '{
-            "name": "Primary SIP Provider",
-            "type": "sip",
-            "hostname": "sip.provider.com"
-        }'
-
-**Route Configuration (for Trunking)**
-
-See :ref:`Route Overview <route-overview>` for detailed configuration.
+**Get list of trunks**
 
 .. code::
 
-    $ curl -X POST 'https://api.voipbin.net/v1.0/routes?token=<token>' \
-        --header 'Content-Type: application/json' \
-        --data '{
-            "name": "Default Outbound Route",
-            "provider_id": "provider-uuid-123",
-            "priority": 1
-        }'
+    $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/trunks?token=<YOUR_AUTH_TOKEN>'
 
-**Extension Configuration (for Registration)**
+    {
+        "result": [
+            {
+                "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+                "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+                "name": "Primary Carrier",
+                "detail": "Main PSTN trunk for outbound calls",
+                "domain_name": "carrier.example.com",
+                "auth_types": ["basic"],
+                "username": "trunk_user",
+                "password": "trunk_pass",
+                "allowed_ips": [],
+                "tm_create": "2024-03-01T10:00:00.000000Z",
+                "tm_update": "2024-03-01T10:00:00.000000Z",
+                "tm_delete": "9999-01-01T00:00:00.000000Z"
+            }
+        ],
+        "next_page_token": "2024-03-01T10:00:00.000000Z"
+    }
 
-See :ref:`Extension Overview <extension-overview>` for detailed configuration.
+**Get trunk detail**
 
 .. code::
 
-    $ curl -X POST 'https://api.voipbin.net/v1.0/extensions?token=<token>' \
+    $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/trunks/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=<YOUR_AUTH_TOKEN>'
+
+**Create a trunk**
+
+``name``, ``detail``, ``domain_name``, ``auth_types``, ``username``, ``password``, and ``allowed_ips`` are all required.
+
+.. code::
+
+    $ curl -k --location --request POST 'https://api.voipbin.net/v1.0/trunks?token=<YOUR_AUTH_TOKEN>' \
         --header 'Content-Type: application/json' \
         --data '{
-            "name": "office-phone",
-            "username": "office1",
-            "password": "secure-password"
+            "name": "Primary Carrier",
+            "detail": "Main PSTN trunk for outbound calls",
+            "domain_name": "carrier.example.com",
+            "auth_types": ["basic"],
+            "username": "trunk_user",
+            "password": "trunk_pass",
+            "allowed_ips": []
         }'
 
+    {
+        "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "name": "Primary Carrier",
+        "detail": "Main PSTN trunk for outbound calls",
+        "domain_name": "carrier.example.com",
+        "auth_types": ["basic"],
+        "username": "trunk_user",
+        "password": "trunk_pass",
+        "allowed_ips": [],
+        "tm_create": "2024-03-01T10:00:00.000000Z",
+        "tm_update": "",
+        "tm_delete": ""
+    }
 
-Complete Setup Example
-----------------------
-Set up a complete trunk system for bidirectional calling.
+**Update a trunk**
 
-**Setup Steps**
+``name``, ``detail``, ``auth_types``, ``username``, ``password``, and ``allowed_ips`` are all required. The ``domain_name`` cannot be changed after creation.
 
-::
+.. code::
 
-    Step 1: Configure Provider (Outbound)
-    +--------------------------------------------+
-    | Provider: "Telnyx Production"              |
-    | Hostname: sip.telnyx.com                   |
-    | Type: sip                                  |
-    +--------------------------------------------+
-              |
-              v
-    Step 2: Configure Route (Outbound)
-    +--------------------------------------------+
-    | Route: "Default Route"                     |
-    | Provider: Telnyx Production                |
-    | Priority: 1                                |
-    +--------------------------------------------+
-              |
-              v
-    Step 3: Create Extensions (Inbound)
-    +--------------------------------------------+
-    | Extension: "office-main"                   |
-    | Username: office-main                      |
-    | Password: ********                         |
-    +--------------------------------------------+
-              |
-              v
-    Step 4: Register SIP Devices
-    +--------------------------------------------+
-    | Device registers to:                       |
-    | office-main@{id}.registrar.voipbin.net    |
-    +--------------------------------------------+
-              |
-              v
-    Step 5: Configure Number Flow
-    +--------------------------------------------+
-    | Number: +1-555-123-4567                    |
-    | Flow: Dial extension "office-main"         |
-    +--------------------------------------------+
+    $ curl -k --location --request PUT 'https://api.voipbin.net/v1.0/trunks/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=<YOUR_AUTH_TOKEN>' \
+        --header 'Content-Type: application/json' \
+        --data '{
+            "name": "Primary Carrier (updated)",
+            "detail": "Main PSTN trunk for outbound calls",
+            "auth_types": ["basic", "ip"],
+            "username": "trunk_user",
+            "password": "trunk_pass",
+            "allowed_ips": ["203.0.113.1", "203.0.113.2"]
+        }'
 
-    Result:
-    - Outbound: Make calls via Telnyx
-    - Inbound: Calls to +1-555-123-4567 ring office phone
+**Delete a trunk**
+
+.. code::
+
+    $ curl -k --location --request DELETE 'https://api.voipbin.net/v1.0/trunks/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=<YOUR_AUTH_TOKEN>'
 
 
 Common Scenarios
 ----------------
 
-**Scenario 1: Basic Office Phone System**
+**Scenario 1: PBX with basic authentication**
 
-Set up a simple office with outbound and inbound calling.
+Point an on-premise PBX at VoIPBIN using a username and password.
 
 ::
 
     Configuration:
     +--------------------------------------------+
-    | Provider: Telnyx (for outbound)            |
-    | Route: Default -> Telnyx                   |
-    | Extensions: office-1, office-2, office-3   |
-    | Number: +1-555-OFFICE                      |
+    | Trunk: "Office PBX"                        |
+    | domain_name: office-pbx.example.com        |
+    | auth_types: ["basic"]                      |
+    | username / password: PBX SIP credentials   |
     +--------------------------------------------+
 
-    Call Flows:
+    Call Flow:
     +--------------------------------------------+
-    | Outbound: Any extension can dial out       |
-    |   -> Routes through Telnyx to PSTN         |
-    |                                            |
-    | Inbound: Calls to +1-555-OFFICE            |
-    |   -> IVR: "Press 1 for Sales..."          |
-    |   -> Routes to appropriate extension       |
+    | PBX sends INVITE with credentials          |
+    |   -> office-pbx.example.com.trunk.voipbin.net |
+    |   -> VoIPBIN authenticates and connects    |
+    |      the call to the PSTN                  |
     +--------------------------------------------+
 
-**Scenario 2: Multi-Provider Failover**
+**Scenario 2: Fixed-IP device with IP-based authentication**
 
-Configure redundant providers for reliability.
+Allow a device with a known static IP to place calls without credentials.
 
 ::
 
-    Provider Configuration:
+    Configuration:
     +--------------------------------------------+
-    | Primary: Telnyx                            |
-    |   Route Priority: 1                        |
-    |                                            |
-    | Secondary: Twilio                          |
-    |   Route Priority: 2                        |
-    |                                            |
-    | Tertiary: Bandwidth                        |
-    |   Route Priority: 3                        |
+    | Trunk: "Static Gateway"                    |
+    | domain_name: gateway.example.com           |
+    | auth_types: ["ip"]                         |
+    | allowed_ips: ["203.0.113.10"]              |
     +--------------------------------------------+
 
-    Failover Behavior:
-    +--------------------------------------------+
-    | 1. Try Telnyx first                        |
-    | 2. If Telnyx fails (5xx) -> try Twilio    |
-    | 3. If Twilio fails -> try Bandwidth        |
-    | 4. All fail -> return error to caller      |
-    +--------------------------------------------+
+**Scenario 3: Both authentication methods**
 
-**Scenario 3: Remote Worker Setup**
-
-Enable remote workers with softphones.
+Enable basic and IP-based authentication on the same trunk at once, so either method authorizes the call.
 
 ::
 
-    Setup:
+    Configuration:
     +--------------------------------------------+
-    | Extension per worker:                      |
-    |   - remote-john                            |
-    |   - remote-jane                            |
-    |   - remote-bob                             |
-    +--------------------------------------------+
-
-    Worker Configuration:
-    +--------------------------------------------+
-    | Softphone App: Zoiper, Linphone, etc.      |
-    | Server: registrar.voipbin.net              |
-    | Username: remote-john                      |
-    | Domain: {customer-id}.registrar.voipbin.net|
-    +--------------------------------------------+
-
-    Benefits:
-    +--------------------------------------------+
-    | - Work from anywhere with internet         |
-    | - Same extension travels with worker       |
-    | - Company number for outbound caller ID    |
-    | - Inbound calls reach worker globally      |
+    | Trunk: "Hybrid Trunk"                      |
+    | auth_types: ["basic", "ip"]                |
+    | username / password: set                   |
+    | allowed_ips: ["203.0.113.1"]               |
     +--------------------------------------------+
 
 
 Best Practices
 --------------
 
-**1. Provider Management**
+**1. Authentication**
 
-- Configure at least two providers for failover
-- Test provider connectivity regularly
-- Monitor call success rates per provider
-- Choose providers with coverage in your regions
-
-**2. Route Configuration**
-
-- Set up priority-based routing
-- Configure failover for all routes
-- Test failover scenarios periodically
-- Document routing logic
-
-**3. Extension Security**
-
-- Use strong, unique passwords
+- Use strong, unique passwords for basic authentication
+- Prefer IP-based authentication for devices with a static, known IP
+- Combine both methods only when needed; each accepted method widens the attack surface
 - Rotate credentials periodically
-- Monitor for unauthorized registrations
-- Enable TLS when possible
 
-**4. Monitoring**
+**2. Domain Naming**
 
-- Track call success/failure rates
-- Monitor provider latency and quality
-- Set up alerts for registration failures
-- Review call logs regularly
+- Choose a ``domain_name`` that is easy to identify in logs (e.g. per office or per device)
+- Remember ``domain_name`` cannot be changed after creation; delete and recreate the trunk if it must change
+
+**3. Monitoring**
+
+- Track call success/failure rates on calls placed through the trunk
+- Review call logs regularly for unexpected source IPs or authentication failures
 
 
 Troubleshooting
 ---------------
 
-**Outbound (Trunking) Issues**
-
-+---------------------------+------------------------------------------------+
-| Symptom                   | Solution                                       |
-+===========================+================================================+
-| Calls not connecting      | Check provider is configured; verify route     |
-|                           | exists; confirm provider credentials           |
-+---------------------------+------------------------------------------------+
-| Wrong provider used       | Review route priorities; check for             |
-|                           | destination-specific routes                    |
-+---------------------------+------------------------------------------------+
-| All providers failing     | Check provider status; verify network          |
-|                           | connectivity; test each provider independently |
-+---------------------------+------------------------------------------------+
-
-**Inbound (Registration) Issues**
-
-+---------------------------+------------------------------------------------+
-| Symptom                   | Solution                                       |
-+===========================+================================================+
-| Device not receiving      | Verify registration is active; check           |
-| calls                     | extension in flow; confirm device is online    |
-+---------------------------+------------------------------------------------+
-| Registration failing      | Check credentials; verify registrar address;   |
-|                           | confirm firewall allows SIP traffic            |
-+---------------------------+------------------------------------------------+
-| Intermittent registration | Check NAT settings; enable keep-alives;        |
-|                           | increase registration expiry                   |
-+---------------------------+------------------------------------------------+
-
-**Audio Issues**
-
-+---------------------------+------------------------------------------------+
-| Symptom                   | Solution                                       |
-+===========================+================================================+
-| No audio                  | Check RTP ports; verify NAT traversal;         |
-|                           | confirm media IP is reachable                  |
-+---------------------------+------------------------------------------------+
-| One-way audio             | Enable STUN/TURN; check symmetric RTP;         |
-|                           | verify both endpoints can send/receive         |
-+---------------------------+------------------------------------------------+
-| Poor audio quality        | Check network bandwidth; reduce jitter;        |
-|                           | consider QoS configuration                     |
-+---------------------------+------------------------------------------------+
++---------------------------+--------------------------------------------------+
+| Symptom                   | Solution                                         |
++===========================+==================================================+
+| 407 loop / auth failure   | Confirm the SIP client sends credentials in      |
+|                           | response to the 407 challenge; verify            |
+|                           | username/password match the trunk                |
++---------------------------+--------------------------------------------------+
+| INVITE rejected           | Confirm the source IP is in ``allowed_ips``      |
+|                           | when using IP-based authentication               |
++---------------------------+--------------------------------------------------+
+| Calls not connecting      | Confirm the ``domain_name`` in the INVITE        |
+|                           | request-URI matches the trunk's domain           |
++---------------------------+--------------------------------------------------+
+| No audio / one-way audio  | Check RTP ports, NAT traversal, and that both    |
+|                           | endpoints can send/receive media                 |
++---------------------------+--------------------------------------------------+
 
 
 Related Documentation
 ---------------------
 
-- :ref:`Provider Overview <provider-overview>` - Provider configuration for trunking
-- :ref:`Route Overview <route-overview>` - Call routing and failover
-- :ref:`Extension Overview <extension-overview>` - SIP endpoint registration
+- :ref:`Trunk Overview <trunk-overview-trunking>` - Authentication and call handling details
+- :ref:`Domain name <trunk-overview-domain_name>` - How the SIP domain address works
+- :ref:`Provider Overview <provider-overview>` - VoIPBIN's own outbound carrier configuration
+- :ref:`Route Overview <route-overview>` - Call routing and failover between providers
+- :ref:`Extension Overview <extension-overview>` - SIP endpoint registration for inbound calls
 - :ref:`Call Overview <call-overview>` - Making and receiving calls
-- :ref:`Flow Overview <flow-overview>` - Call flow configuration
-

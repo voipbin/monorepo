@@ -34,7 +34,7 @@ Campaigncall
         "try_count": <number>,
         "tm_create": "<string>",
         "tm_update": "<string>",
-        "tm_delete": "<string>"
+        "tm_delete": "<string or null>"
     }
 
 * ``id`` (UUID): The campaigncall's unique identifier. Returned when listing via ``GET /campaigncalls``.
@@ -47,7 +47,7 @@ Campaigncall
 * ``flow_id`` (UUID): The flow ID associated with this campaign call. Obtained from the ``id`` field of ``GET /flows``. Set to ``00000000-0000-0000-0000-000000000000`` if not assigned.
 * ``activeflow_id`` (UUID): The activeflow executing the call actions. Obtained from the ``id`` field of ``GET /activeflows``.
 * ``reference_type`` (enum string): The type of resource this campaigncall is linked to. See :ref:`Reference Type <campaign-struct-campaigncall-reference_type>`.
-* ``reference_id`` (UUID): The ID of the referenced resource (e.g., the call ID when ``reference_type`` is ``call``).
+* ``reference_id`` (UUID): The ID of the referenced resource (e.g., the call ID when ``reference_type`` is ``call``). Not populated (``00000000-0000-0000-0000-000000000000``) when ``reference_type`` is ``flow`` or ``none``.
 * ``status`` (enum string): The campaigncall's current status. See :ref:`Status <campaign-struct-campaigncall-status>`.
 * ``result`` (enum string): The campaigncall's outcome after completion. See :ref:`Result <campaign-struct-campaigncall-result>`.
 * ``source`` (Object): Source address used for the dial attempt. See :ref:`Address <common-struct-address-address>`.
@@ -56,7 +56,7 @@ Campaigncall
 * ``try_count`` (Integer): The current attempt number for this destination.
 * ``tm_create`` (string, ISO 8601): Timestamp when the campaigncall was created.
 * ``tm_update`` (string, ISO 8601): Timestamp of the last update to the campaigncall.
-* ``tm_delete`` (string, ISO 8601, nullable): Timestamp when the campaigncall was deleted. Set to ``9999-01-01 00:00:00.000000`` if not deleted.
+* ``tm_delete`` (string, ISO 8601, nullable): Timestamp when the campaigncall was deleted. ``null`` if not deleted.
 
 Example
 +++++++
@@ -95,7 +95,7 @@ Example
         "try_count": 1,
         "tm_create": "2022-04-29 07:01:45.808944",
         "tm_update": "2022-04-29 07:02:48.304704",
-        "tm_delete": "9999-01-01 00:00:00.000000"
+        "tm_delete": null
     }
 
 .. _campaign-struct-campaigncall-reference_type:
@@ -109,6 +109,7 @@ Type        Description
 =========== ============
 none        No associated resource. The campaigncall has not yet created a reference.
 call        The campaigncall is associated with a voice call. The ``reference_id`` is the call's UUID, retrievable via ``GET /calls/{reference_id}``.
+flow        The campaigncall executes a flow directly against the destination without an explicit voice call (campaign ``type`` is ``flow``). The ``reference_id`` is not populated (``00000000-0000-0000-0000-000000000000``); use ``activeflow_id`` to look up the executing activeflow via ``GET /activeflows/{activeflow_id}``.
 =========== ============
 
 .. _campaign-struct-campaigncall-status:

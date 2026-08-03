@@ -126,7 +126,7 @@ still running. Wait for it and rerun the stage:
 
     gcloud compute ssh kamailio-0 --tunnel-through-iap \
       -- 'cloud-init status --wait'
-    ./voipbin-install apply --stage ansible
+    ./voipbin-install apply --stage ansible_run
 
 Kubernetes: pod in CrashLoopBackOff
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

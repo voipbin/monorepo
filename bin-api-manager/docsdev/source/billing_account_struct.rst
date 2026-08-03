@@ -38,8 +38,8 @@ Billing account
 * ``plan_status`` (enum string): The account plan status. Values: ``active`` (plan is active and operational), ``canceling`` (plan cancellation has been requested but is not yet effective).
 * ``balance_credit`` (Integer, int64 micros): Credit balance in micros. 1 USD = 1,000,000 micros. Example: ``69772630`` = $69.77. Used for PSTN calls, number purchases, and token overflow charges.
 * ``balance_token`` (Integer, int64): Current token balance. Tokens are consumed by VN calls (1 token/minute) and TTS (3 tokens/minute). Replenished monthly via automated top-up.
-* ``payment_type`` (String): Payment type. Reserved for future use.
-* ``payment_method`` (String): Payment method. Reserved for future use.
+* ``payment_type`` (enum string): The type of payment associated with the account. Values: ``""`` (none set), ``prepaid``. Updatable via ``PUT /billing_account/payment_info`` (self-service) or ``PUT /billing_accounts/{id}/payment_info`` (admin).
+* ``payment_method`` (enum string): The method of payment used for the account. Values: ``""`` (none set), ``credit card``. Updatable via the same payment_info endpoints as ``payment_type``.
 * ``paddle_subscription_id`` (String): The Paddle subscription identifier. Populated automatically when a Paddle subscription is created via Paddle webhook processing. Read-only. Omitted from the response when not set (no Paddle subscription).
 * ``paddle_customer_id`` (String): The Paddle customer identifier. Populated automatically when a Paddle customer record is created via Paddle webhook processing. Read-only. Omitted from the response when not set (no Paddle customer).
 * ``tm_last_topup`` (string, ISO 8601): Timestamp of the last token top-up.
@@ -51,6 +51,12 @@ Billing account
 .. note:: **AI Implementation Hint**
 
    Unlike other VoIPBIN resources that use ``9999-01-01 00:00:00.000000`` as the sentinel for "not deleted," the billing account's ``tm_delete`` field uses ``null`` to indicate an active account. Always check for ``null`` rather than the sentinel timestamp when determining if a billing account is active. The ``balance_credit`` field is in micros (int64) -- divide by 1,000,000 to get USD.
+
+**Admin-Only Fields**
+
+The admin-only ``/billing_accounts`` (plural) endpoints -- which require ``ProjectSuperAdmin`` permission -- return an extended representation that additionally includes:
+
+* ``status`` (enum string): The account's operational status. Values: ``active``, ``frozen``, ``deleted``. Not present in the regular self-service ``GET /billing_account`` (singular) response.
 
 .. _billing_account-struct-billing:
 
@@ -91,7 +97,7 @@ Each billing record is an immutable ledger entry recording a single transaction.
 * ``account_id`` (UUID): The billing account this entry belongs to. Obtained from the ``id`` field of ``GET /billing_accounts``.
 * ``transaction_type`` (enum string): The nature of the transaction. Values: ``usage`` (service consumption), ``top_up`` (token replenishment), ``adjustment`` (manual correction), ``refund`` (credit return).
 * ``status`` (enum string): The billing entry status. Values: ``progressing`` (in progress), ``end`` (completed), ``pending`` (awaiting processing), ``finished`` (finalized).
-* ``reference_type`` (enum string): The source of the transaction. Values: ``call``, ``call_extension``, ``sms``, ``email``, ``number``, ``number_renew``, ``credit_free_tier``, ``monthly_allowance``.
+* ``reference_type`` (enum string): The source of the transaction. See :ref:`Billing's Reference Type <billing-struct-billing-reference-type>` for the complete, authoritative list of values.
 * ``reference_id`` (UUID): The ID of the originating resource (e.g., call ID, number ID). Obtained from the ``id`` field of the corresponding resource endpoint (e.g., ``GET /calls/{id}``).
 * ``cost_type`` (enum string): Classification of the billing cost. Values include: ``call_pstn_outgoing``, ``call_pstn_incoming``, ``call_vn``, ``call_extension``, ``call_direct_ext``, ``sms``, ``email``, ``number``, ``number_renew``.
 * ``usage_duration`` (Integer): Actual usage duration in seconds (for calls). Not applicable for non-call services.

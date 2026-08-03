@@ -33,10 +33,10 @@ Conference
             ...
         ],
         "direct_hash": "<string>",
-        "tm_end": "<string>",
+        "tm_end": "<string or null>",
         "tm_create": "<string>",
-        "tm_update": "<string>",
-        "tm_delete": "<string>"
+        "tm_update": "<string or null>",
+        "tm_delete": "<string or null>"
     }
 
 * ``id`` (UUID): The conference's unique identifier. Returned when creating via ``POST /conferences`` or listing via ``GET /conferences``.
@@ -46,7 +46,7 @@ Conference
 * ``name`` (String): Human-readable name for the conference.
 * ``detail`` (String): Detailed description of the conference.
 * ``data`` (Object): Reserved for future use.
-* ``timeout`` (Integer): Conference auto-termination timeout in seconds. Set to ``0`` for no timeout.
+* ``timeout`` (Integer): Conference auto-termination timeout in seconds. Set to ``0`` for no timeout. If a value between ``1`` and ``59`` is given, it is silently replaced with the default timeout of ``86400`` seconds (24 hours) instead of being honored as-is; use ``0`` or a value of ``60`` or greater to get the timeout you expect.
 * ``pre_flow_id`` (UUID): The flow to execute before the conference starts (e.g., greeting message). Obtained from the ``id`` field of ``GET /flows``. Set to ``00000000-0000-0000-0000-000000000000`` if no pre-conference flow is assigned.
 * ``post_flow_id`` (UUID): The flow to execute after the conference ends. Obtained from the ``id`` field of ``GET /flows``. Set to ``00000000-0000-0000-0000-000000000000`` if no post-conference flow is assigned.
 * ``conferencecall_ids`` (Array of UUID): List of participant IDs currently in the conference. Each ID can be used with ``GET /conferencecalls/{id}`` to retrieve participant details.
@@ -57,12 +57,12 @@ Conference
 * ``direct_hash`` (String): Hash for direct conference access. Empty string when direct access is disabled. When enabled, this hash forms the direct SIP URI: ``sip:direct.<hash>@sip.voipbin.net``. Regenerate via ``POST /conferences/{id}/direct-hash-regenerate``.
 * ``tm_end`` (String, ISO 8601, nullable): Timestamp when the conference ended. ``null`` if the conference is still active.
 * ``tm_create`` (String, ISO 8601): Timestamp when the conference was created.
-* ``tm_update`` (String, ISO 8601): Timestamp of the last update to any conference property.
-* ``tm_delete`` (String, ISO 8601): Timestamp when the conference was deleted.
+* ``tm_update`` (String, ISO 8601, nullable): Timestamp of the last update to any conference property. ``null`` if never updated.
+* ``tm_delete`` (String, ISO 8601, nullable): Timestamp when the conference was deleted. ``null`` if not deleted.
 
 .. note:: **AI Implementation Hint**
 
-   Timestamps set to ``9999-01-01 00:00:00.000000`` indicate the event has not yet occurred. For example, ``tm_delete`` with this value means the conference is still active.
+   ``tm_update``/``tm_delete``/``tm_end`` are ``null`` when the corresponding event has not yet occurred, not a sentinel timestamp.
 
 
 Example
@@ -90,7 +90,7 @@ Example
         "tm_end": null,
         "tm_create": "2022-02-03 06:08:56.672025",
         "tm_update": "2022-08-06 19:11:13.040418",
-        "tm_delete": "9999-01-01 00:00:00.000000"
+        "tm_delete": null
     }
 
 .. _conference-struct-conference-type:
@@ -104,6 +104,7 @@ Type       Description
 ========== ==============
 conference Multi-party conference room. Supports 2+ participants. Remains active even with 0 or 1 participant. Only terminates when explicitly deleted or timeout expires.
 connect    Two-party bridge. Designed for exactly 2 participants (e.g., customer-agent). Auto-ejects the remaining participant when one leaves, then terminates.
+queue      Conference room backed by a queue. Created and managed internally by the queue system (see :ref:`Queue Overview <queue-overview>`) rather than created directly by API users.
 ========== ==============
 
 .. _conference-struct-conference-status:

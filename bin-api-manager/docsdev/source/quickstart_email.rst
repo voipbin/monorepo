@@ -10,12 +10,12 @@ Prerequisites
 +++++++++++++
 
 * A valid authentication token (String) or accesskey (String). See :ref:`Authentication <quickstart-authentication>`.
-* A sending domain verified with VoIPBIN. The sender address is configured on your account and applied automatically; you do not set it in the request.
+* A verified customer identity. Sending is gated on your customer account's identity verification status, not on a sender domain; unverified accounts cannot send.
 * A destination email address.
 
 .. note:: **AI Implementation Hint**
 
-   The sender address is determined by your account's verified sending domain and is not part of the request body. The request body has no ``source`` field. The ``destinations`` field uses the Address format with ``type`` set to ``email``. The ``attachments`` field is required (send an empty array ``[]`` when there is nothing to attach). Sending emails incurs charges per email sent.
+   The sender address is always VoIPBIN's own platform address (``service@voipbin.net``) -- it is fixed and not configurable per request. The request body has no ``source`` field. The ``destinations`` field uses the Address format with ``type`` set to ``email``. The ``attachments`` field is required (send an empty array ``[]`` when there is nothing to attach). ``content`` is plain text only. Sending emails incurs charges per email sent.
 
 Send an email
 ~~~~~~~~~~~~~
@@ -57,8 +57,8 @@ Response:
         "customer_id": "550e8400-e29b-41d4-a716-446655440000",
         "source": {
             "type": "email",
-            "target": "service@yourdomain.com",
-            "target_name": "Your Service"
+            "target": "service@voipbin.net",
+            "target_name": "voipbin service"
         },
         "destinations": [
             {
@@ -75,7 +75,7 @@ Response:
 
 .. note:: **AI Implementation Hint**
 
-   The email ``id`` (UUID) can be used to check delivery status via ``GET /emails/{id}``. The ``status`` starts as ``initiated`` and transitions to ``processed`` then ``delivered``. The response includes the ``source`` address (sender) that VoIPBIN applied from your account's verified sending domain. For the full email lifecycle and advanced scenarios (such as HTML content), see :ref:`Email overview <email-overview>`.
+   The email ``id`` (UUID) can be used to check delivery status via ``GET /emails/{id}``. The ``status`` starts as ``initiated`` and transitions to ``processed`` then ``delivered``. The response's ``source`` is always ``service@voipbin.net``. For the full email lifecycle and advanced scenarios, see :ref:`Email overview <email-overview>`.
 
 Troubleshooting
 +++++++++++++++
@@ -84,10 +84,14 @@ Troubleshooting
     * **Cause:** Missing required fields (``destinations``, ``subject``, ``content``, ``attachments``), or a destination address type is not ``email``.
     * **Fix:** Ensure all required fields are present (send ``attachments`` as an empty array ``[]`` if there is nothing to attach) and each ``destinations[].type`` is ``"email"``.
 
+* **Email status stuck at "initiated":**
+    * **Cause:** Your customer account's identity is not verified.
+    * **Fix:** Verify your customer account's identity before sending.
+
 * **Email status shows "bounce":**
     * **Cause:** The destination email address is invalid, the mailbox does not exist, or the mailbox is full.
     * **Fix:** Verify the destination email address. Check the email details via ``GET /emails/{id}`` for bounce details.
 
 * **Email not arriving (status shows "delivered"):**
-    * **Cause:** The email may be in the recipient's spam folder, or the sender domain lacks proper DNS records (SPF, DKIM).
-    * **Fix:** Ask the recipient to check spam. Verify your sender domain has SPF and DKIM configured correctly.
+    * **Cause:** The email may be in the recipient's spam folder.
+    * **Fix:** Ask the recipient to check spam.

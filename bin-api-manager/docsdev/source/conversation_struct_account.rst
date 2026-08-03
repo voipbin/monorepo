@@ -23,7 +23,7 @@ Account
         "tm_delete": "<string>"
     }
 
-* ``id`` (UUID): The conversation account's unique identifier. Returned when creating via ``POST /conversation-accounts`` or listing via ``GET /conversation-accounts``.
+* ``id`` (UUID): The conversation account's unique identifier. Returned when creating via ``POST /conversation_accounts`` or listing via ``GET /conversation_accounts``.
 * ``customer_id`` (UUID): The customer who owns this conversation account. Obtained from the ``id`` field of ``GET /customers``.
 * ``type`` (enum string): The messaging platform type. See :ref:`Type <conversation-struct-account-type>`.
 * ``name`` (string): A human-readable name for this conversation account.

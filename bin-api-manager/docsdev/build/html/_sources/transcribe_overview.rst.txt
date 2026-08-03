@@ -56,6 +56,8 @@ When you start transcription, VoIPBIN captures audio from the call or conference
      - Transcribes a single call with direction detection
    * - Conference Transcription
      - Transcribes all participants (direction indicates speaker relative to conference)
+   * - Recording Transcription
+     - Transcribes a previously recorded audio file (post-call)
 
 
 
@@ -199,9 +201,9 @@ Start transcription on an active call or conference programmatically.
    * - Parameter
      - Description
    * - reference_type
-     - Type of resource: ``call`` or ``conference``
+     - Type of resource: ``call``, ``confbridge`` (conference), or ``recording``
    * - reference_id
-     - UUID of the call or conference
+     - UUID of the call, conference, or recording
    * - language
      - Language code (e.g., ``en-US``, ``ko-KR``)
    * - direction

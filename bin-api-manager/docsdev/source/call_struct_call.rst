@@ -73,16 +73,16 @@ Call
 * ``mute_direction`` (enum string): Which direction is muted. One of: ``""`` (none), ``in`` (inbound muted), ``out`` (outbound muted), ``both`` (both directions muted).
 * ``hangup_by`` (enum string): Which endpoint initiated the hangup. See :ref:`Hangup by <call-struct-call-hangupby>`.
 * ``hangup_reason`` (enum string): The reason the call ended. See :ref:`Hangup reason <call-struct-call-hangupreason>`.
-* ``tm_progressing`` (string, ISO 8601): Timestamp when the call was answered.
-* ``tm_ringing`` (string, ISO 8601): Timestamp when the destination started ringing.
-* ``tm_hangup`` (string, ISO 8601): Timestamp when the call ended.
+* ``tm_progressing`` (string, ISO 8601, optional): Timestamp when the call was answered. Absent from the response if the call hasn't been answered yet.
+* ``tm_ringing`` (string, ISO 8601, optional): Timestamp when the destination started ringing. Absent from the response if the call hasn't reached ringing yet.
+* ``tm_hangup`` (string, ISO 8601, optional): Timestamp when the call ended. Absent from the response if the call is still in progress.
 * ``tm_create`` (string, ISO 8601): Timestamp when the call was created.
-* ``tm_update`` (string, ISO 8601): Timestamp of the last update to any call property.
-* ``tm_delete`` (string, ISO 8601): Timestamp when the call was deleted, if applicable.
+* ``tm_update`` (string, ISO 8601, optional): Timestamp of the last update to any call property. Absent if never updated.
+* ``tm_delete`` (string, ISO 8601, optional): Timestamp when the call was deleted, if applicable. Absent from the response if not deleted.
 
 .. note:: **AI Implementation Hint**
 
-   Timestamps set to ``9999-01-01 00:00:00.000000`` indicate the event has not yet occurred. For example, ``tm_hangup`` with this value means the call is still in progress.
+   Unlike most other VoIPBIN resources, the Call struct's timestamp fields (``tm_progressing``, ``tm_ringing``, ``tm_hangup``, ``tm_update``, ``tm_delete``) are omitted from the JSON response entirely when unset, rather than using a ``9999-01-01 00:00:00.000000`` sentinel or a ``null`` value. Check for the field's presence (e.g. ``"tm_hangup" in response``) rather than comparing its value against a sentinel.
 
 Example
 +++++++
@@ -136,8 +136,7 @@ Example
         "tm_ringing": "2022-05-01 15:10:26.978000",
         "tm_hangup": "2022-05-01 15:10:44.781000",
         "tm_create": "2022-05-01 15:10:23.414798",
-        "tm_update": "2022-05-01 15:10:44.781000",
-        "tm_delete": "9999-01-01 00:00:00.000000"
+        "tm_update": "2022-05-01 15:10:44.781000"
     }
 
 .. _call-struct-call-type:
@@ -232,14 +231,16 @@ The map is a JSON object of the form ``{"<key>": <value>}``. Keys not listed bel
 Supported keys
 ++++++++++++++
 
-================== ========================= ============
-Key                Type                      Description
-================== ========================= ============
-route_provider_ids Array of UUID             Ordered list of provider UUIDs to force routing through when placing the outgoing leg of a call. Set by internal admin test flows only; never populated for normal customer traffic. When present, VoIPBIN attempts the listed providers in order and bypasses the default customer provider selection.
-rtp_debug          Boolean                   When true, RTPEngine is capturing RTP traffic for this call for debugging. Inherited from the source customer or destination number metadata at call-creation time.
-================== ========================= ============
+======================= ========================= ============
+Key                     Type                      Description
+======================= ========================= ============
+route_provider_ids      Array of UUID             Ordered list of provider UUIDs to force routing through when placing the outgoing leg of a call. Set by internal admin test flows only; never populated for normal customer traffic. When present, VoIPBIN attempts the listed providers in order and bypasses the default customer provider selection.
+rtp_debug               Boolean                   When true, RTPEngine is capturing RTP traffic for this call for debugging. Inherited from the source customer or destination number metadata at call-creation time.
+skip_source_validation  Boolean                   When true, VoIPBIN uses the caller-supplied ``source`` address for the outgoing leg verbatim, skipping customer-ownership validation and the ``OutboundConfig`` default-source fallback. Set by internal admin test flows only, to preserve a source number a carrier has pre-authorized that is not owned by any VoIPBIN customer. Never populated for normal customer traffic.
+codecs                  String                    Comma-separated outbound codec preference for the call (e.g. ``PCMU,PCMA,G729``). When present, overrides the customer-level ``OutboundConfig`` codec setting for this call only. Set at call-creation time by internal/trusted callers; not settable via ``POST /calls``.
+======================= ========================= ============
 
 .. note:: **AI Implementation Hint**
 
-   Do not include a ``metadata`` field in the request body when calling ``POST https://api.voipbin.net/v1.0/calls``. The field is read-only from a customer's perspective and is managed entirely by VoIPBIN's internal services. Treat ``metadata`` in API responses and webhook payloads as informational: use ``rtp_debug`` to surface RTP capture status in admin UIs, but do not depend on ``route_provider_ids`` being present — it only appears on internal admin test calls.
+   Do not include a ``metadata`` field in the request body when calling ``POST https://api.voipbin.net/v1.0/calls``. The field is read-only from a customer's perspective and is managed entirely by VoIPBIN's internal services. Treat ``metadata`` in API responses and webhook payloads as informational: use ``rtp_debug`` to surface RTP capture status in admin UIs, but do not depend on ``route_provider_ids``, ``skip_source_validation``, or ``codecs`` being present — they only appear on internal admin test calls or calls created by trusted internal callers.
 

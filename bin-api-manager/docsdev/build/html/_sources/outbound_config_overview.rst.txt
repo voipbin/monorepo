@@ -19,13 +19,13 @@ There is exactly one OutboundConfig per customer. It is **automatically created*
 
 API endpoints follow the billing-account pattern — singular path for self-service, plural path for admin:
 
-* ``GET https://api.voipbin.net/v1.0/outbound_config`` — Retrieve own OutboundConfig (authenticated customer, no ID required).
-* ``PUT https://api.voipbin.net/v1.0/outbound_config`` — Update own OutboundConfig (authenticated customer, no ID required).
-* ``GET https://api.voipbin.net/v1.0/outbound_configs`` — Admin only: list all configs.
-* ``GET https://api.voipbin.net/v1.0/outbound_configs/{id}`` — Admin only: get by ID.
-* ``PUT https://api.voipbin.net/v1.0/outbound_configs/{id}`` — Admin only: update by ID.
-* ``DELETE https://api.voipbin.net/v1.0/outbound_configs/{id}`` — Admin only: delete by ID.
-* ``POST https://api.voipbin.net/v1.0/outbound_configs`` — Admin only: create for a specific customer (for cases where auto-create did not fire).
+* ``GET https://api.voipbin.net/v1.0/outbound_config`` — Retrieve own OutboundConfig (authenticated customer, no ID required). Requires ``PermissionCustomerAdmin``.
+* ``PUT https://api.voipbin.net/v1.0/outbound_config`` — Update own OutboundConfig (authenticated customer, no ID required). Requires ``PermissionCustomerAdmin``.
+* ``GET https://api.voipbin.net/v1.0/outbound_configs`` — ``ProjectSuperAdmin`` only: list all configs (optionally filtered by ``customer_id``).
+* ``GET https://api.voipbin.net/v1.0/outbound_configs/{id}`` — ``ProjectSuperAdmin`` only: get by ID.
+* ``PUT https://api.voipbin.net/v1.0/outbound_configs/{id}`` — ``ProjectSuperAdmin`` only: update by ID.
+* ``DELETE https://api.voipbin.net/v1.0/outbound_configs/{id}`` — ``ProjectSuperAdmin`` only: delete by ID.
+* ``POST https://api.voipbin.net/v1.0/outbound_configs`` — ``ProjectSuperAdmin`` only: create for a specific customer (for cases where auto-create did not fire).
 
 .. note::
 

@@ -86,6 +86,7 @@ Example
 
     {
         "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
         "number": "+899100000001",
         "type": "virtual",
         "call_flow_id": "00000000-0000-0000-0000-000000000000",
@@ -95,6 +96,11 @@ Example
         "status": "active",
         "t38_enabled": false,
         "emergency_enabled": false,
+        "metadata": {
+            "rtp_debug": false
+        },
+        "tm_purchase": "",
+        "tm_renew": "",
         "tm_create": "2024-01-15 10:30:00.000000",
         "tm_update": "",
         "tm_delete": ""
@@ -124,7 +130,9 @@ Example
                 "status": "active",
                 "t38_enabled": true,
                 "emergency_enabled": false,
-                "metadata": {},
+                "metadata": {
+                    "rtp_debug": false
+                },
                 "tm_purchase": "2021-03-03 06:34:09.000000",
                 "tm_renew": "",
                 "tm_create": "2021-03-03 06:34:09.733751",
@@ -143,7 +151,9 @@ Example
                 "status": "active",
                 "t38_enabled": false,
                 "emergency_enabled": false,
-                "metadata": {},
+                "metadata": {
+                    "rtp_debug": false
+                },
                 "tm_purchase": "",
                 "tm_renew": "",
                 "tm_create": "2020-10-11 01:00:00.000001",
@@ -176,7 +186,9 @@ Example
         "status": "active",
         "t38_enabled": false,
         "emergency_enabled": false,
-        "metadata": {},
+        "metadata": {
+            "rtp_debug": false
+        },
         "tm_purchase": "",
         "tm_renew": "",
         "tm_create": "2020-10-11 01:00:00.000001",
@@ -205,7 +217,9 @@ Example
         "status": "deleted",
         "t38_enabled": true,
         "emergency_enabled": false,
-        "metadata": {},
+        "metadata": {
+            "rtp_debug": false
+        },
         "tm_purchase": "2021-03-03 06:34:09.000000",
         "tm_renew": "",
         "tm_create": "2021-03-03 06:34:09.733751",
@@ -237,6 +251,7 @@ Example
 
     {
         "id": "d5532488-0b2d-11eb-b18c-172ab8f2d3d8",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
         "number": "+16195734778",
         "type": "normal",
         "call_flow_id": "decc2634-0b2a-11eb-b38d-87a8f1051188",
@@ -249,6 +264,8 @@ Example
         "metadata": {
             "rtp_debug": true
         },
+        "tm_purchase": "",
+        "tm_renew": "",
         "tm_create": "2020-10-11 01:00:00.000001",
         "tm_update": "2026-03-12 10:30:00.000000",
         "tm_delete": "9999-01-01 00:00:00.000000"
@@ -283,10 +300,129 @@ Example
         "status": "active",
         "t38_enabled": true,
         "emergency_enabled": false,
-        "metadata": {},
+        "metadata": {
+            "rtp_debug": false
+        },
         "tm_purchase": "2021-03-03 18:41:23.000000",
         "tm_renew": "",
         "tm_create": "2021-03-03 18:41:24.657788",
         "tm_update": "",
         "tm_delete": ""
     }
+
+Update number
+-------------
+
+Update the number's name, detail, and flow assignments. All four fields are required.
+
+Example
+
+.. code::
+
+    $ curl -k --location --request PUT 'https://api.voipbin.net/v1.0/numbers/d5532488-0b2d-11eb-b18c-172ab8f2d3d8?token=<YOUR_AUTH_TOKEN>' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "call_flow_id": "decc2634-0b2a-11eb-b38d-87a8f1051188",
+        "message_flow_id": "00000000-0000-0000-0000-000000000000",
+        "name": "Support Line",
+        "detail": "Primary inbound number for customer support"
+    }'
+
+    {
+        "id": "d5532488-0b2d-11eb-b18c-172ab8f2d3d8",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "number": "+16195734778",
+        "type": "normal",
+        "call_flow_id": "decc2634-0b2a-11eb-b38d-87a8f1051188",
+        "message_flow_id": "00000000-0000-0000-0000-000000000000",
+        "name": "Support Line",
+        "detail": "Primary inbound number for customer support",
+        "status": "active",
+        "t38_enabled": false,
+        "emergency_enabled": false,
+        "metadata": {
+            "rtp_debug": false
+        },
+        "tm_purchase": "",
+        "tm_renew": "",
+        "tm_create": "2020-10-11 01:00:00.000001",
+        "tm_update": "2026-03-12 10:35:00.000000",
+        "tm_delete": "9999-01-01 00:00:00.000000"
+    }
+
+Update number flow IDs
+-----------------------
+
+Update only the ``call_flow_id`` and ``message_flow_id`` of a number without touching its name or detail. Both fields are required; use ``00000000-0000-0000-0000-000000000000`` to unassign a flow.
+
+Example
+
+.. code::
+
+    $ curl -k --location --request PUT 'https://api.voipbin.net/v1.0/numbers/d5532488-0b2d-11eb-b18c-172ab8f2d3d8/flow_ids?token=<YOUR_AUTH_TOKEN>' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "call_flow_id": "decc2634-0b2a-11eb-b38d-87a8f1051188",
+        "message_flow_id": "00000000-0000-0000-0000-000000000000"
+    }'
+
+    {
+        "id": "d5532488-0b2d-11eb-b18c-172ab8f2d3d8",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "number": "+16195734778",
+        "type": "normal",
+        "call_flow_id": "decc2634-0b2a-11eb-b38d-87a8f1051188",
+        "message_flow_id": "00000000-0000-0000-0000-000000000000",
+        "name": "Support Line",
+        "detail": "",
+        "status": "active",
+        "t38_enabled": false,
+        "emergency_enabled": false,
+        "metadata": {
+            "rtp_debug": false
+        },
+        "tm_purchase": "",
+        "tm_renew": "",
+        "tm_create": "2020-10-11 01:00:00.000001",
+        "tm_update": "2026-03-12 10:40:00.000000",
+        "tm_delete": "9999-01-01 00:00:00.000000"
+    }
+
+Renew numbers
+-------------
+
+Renew the numbers whose ``tm_renew`` matches the provided timestamp. Requires ``ProjectSuperAdmin`` permission; this is an administrative, platform-wide operation rather than a per-customer one.
+
+Example
+
+.. code::
+
+    $ curl -k --location --request POST 'https://api.voipbin.net/v1.0/numbers/renew?token=<YOUR_AUTH_TOKEN>' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "tm_renew": "2023-02-01 00:00:00.000000"
+    }'
+
+    [
+        {
+            "id": "0b266038-844b-11ec-97d8-63ba531361ce",
+            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+            "number": "+821100000001",
+            "type": "normal",
+            "call_flow_id": "d157ce07-0360-4cad-9007-c8ab89fccf9c",
+            "message_flow_id": "00000000-0000-0000-0000-000000000000",
+            "name": "test talk",
+            "detail": "simple number for talk flow",
+            "status": "active",
+            "t38_enabled": false,
+            "emergency_enabled": false,
+            "metadata": {
+                "rtp_debug": false
+            },
+            "tm_purchase": "2022-02-01 00:00:00.000000",
+            "tm_renew": "2026-03-12 00:00:00.000000",
+            "tm_create": "2022-02-01 00:00:00.000000",
+            "tm_update": "2026-03-12 00:00:00.000000",
+            "tm_delete": "9999-01-01 00:00:00.000000"
+        }
+    ]

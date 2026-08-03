@@ -533,9 +533,9 @@ Making an outbound call. After answer the call, it will play the TTS and then se
                 }
             },
             {
-                "type": "dtmf_send",
+                "type": "digits_send",
                 "option": {
-                    "dtmfs": "1234567890",
+                    "digits": "1234567890",
                     "duration": 500,
                     "interval": 500
                 }
@@ -967,6 +967,225 @@ Make a groupcall to the multiple destinations.
         "tm_update": null,
         "tm_delete": null
     }
+
+Get groupcall list
+-------------------
+
+Getting a list of groupcalls.
+
+.. code::
+
+    $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/groupcalls?token=<YOUR_AUTH_TOKEN>'
+
+    {
+        "result": [
+            {
+                "id": "d8596b14-4d8e-4a86-afde-642b46d59ac7",
+                "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+                "status": "hangup",
+                "flow_id": "00000000-0000-0000-0000-000000000000",
+                "source": {
+                    "type": "tel",
+                    "target": "+15551234567",
+                    "target_name": "",
+                    "name": "",
+                    "detail": ""
+                },
+                "destinations": [
+                    {
+                        "type": "tel",
+                        "target": "+155****1111",
+                        "target_name": "",
+                        "name": "",
+                        "detail": ""
+                    }
+                ],
+                "master_call_id": "00000000-0000-0000-0000-000000000000",
+                "master_groupcall_id": "00000000-0000-0000-0000-000000000000",
+                "ring_method": "ring_all",
+                "answer_method": "hangup_others",
+                "answer_call_id": "3c77eb43-2098-4890-bb6c-5af0707ba4a6",
+                "call_ids": [
+                    "3c77eb43-2098-4890-bb6c-5af0707ba4a6"
+                ],
+                "answer_groupcall_id": "00000000-0000-0000-0000-000000000000",
+                "groupcall_ids": [],
+                "call_count": 0,
+                "groupcall_count": 0,
+                "dial_index": 0,
+                "tm_create": "2023-04-21T15:33:28Z",
+                "tm_update": "2023-04-21T15:34:02Z",
+                "tm_delete": null
+            },
+            ...
+        ],
+        "next_page_token": "2023-04-21T15:33:28Z"
+    }
+
+Get specific groupcall
+------------------------
+
+Getting a given groupcall uuid's info.
+
+.. code::
+
+    $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/groupcalls/d8596b14-4d8e-4a86-afde-642b46d59ac7?token=<YOUR_AUTH_TOKEN>'
+
+    {
+        "id": "d8596b14-4d8e-4a86-afde-642b46d59ac7",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "status": "progressing",
+        "flow_id": "00000000-0000-0000-0000-000000000000",
+        "source": {
+            "type": "tel",
+            "target": "+15551234567",
+            "target_name": "",
+            "name": "",
+            "detail": ""
+        },
+        "destinations": [
+            {
+                "type": "tel",
+                "target": "+155****1111",
+                "target_name": "",
+                "name": "",
+                "detail": ""
+            }
+        ],
+        "master_call_id": "00000000-0000-0000-0000-000000000000",
+        "master_groupcall_id": "00000000-0000-0000-0000-000000000000",
+        "ring_method": "ring_all",
+        "answer_method": "hangup_others",
+        "answer_call_id": "00000000-0000-0000-0000-000000000000",
+        "call_ids": [
+            "3c77eb43-2098-4890-bb6c-5af0707ba4a6"
+        ],
+        "answer_groupcall_id": "00000000-0000-0000-0000-000000000000",
+        "groupcall_ids": [],
+        "call_count": 1,
+        "groupcall_count": 0,
+        "dial_index": 0,
+        "tm_create": "2023-04-21T15:33:28Z",
+        "tm_update": null,
+        "tm_delete": null
+    }
+
+Hangup a groupcall
+--------------------
+
+Ends every call currently belonging to the groupcall.
+
+.. code::
+
+    $ curl -k --location --request POST 'https://api.voipbin.net/v1.0/groupcalls/d8596b14-4d8e-4a86-afde-642b46d59ac7/hangup?token=<YOUR_AUTH_TOKEN>'
+
+    {
+        "id": "d8596b14-4d8e-4a86-afde-642b46d59ac7",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "status": "hangingup",
+        ...
+    }
+
+.. note:: **AI Implementation Hint**
+
+   Hangup transitions the groupcall to ``hangingup`` while VoIPBIN ends each individual call in ``call_ids`` (and, for nested groupcalls, each entry in ``groupcall_ids``); the groupcall reaches ``hangup`` once all of them have ended. Poll ``GET /groupcalls/{id}`` or watch the groupcall webhook events to confirm the final state.
+
+Delete a groupcall
+--------------------
+
+Deletes the groupcall record. This does not hang up any calls that are still active — hang up the groupcall first if any destination may still be ringing or connected.
+
+.. code::
+
+    $ curl -k --location --request DELETE 'https://api.voipbin.net/v1.0/groupcalls/d8596b14-4d8e-4a86-afde-642b46d59ac7?token=<YOUR_AUTH_TOKEN>'
+
+    {
+        "id": "d8596b14-4d8e-4a86-afde-642b46d59ac7",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "status": "hangup",
+        ...
+        "tm_delete": "2023-04-21T16:00:00Z"
+    }
+
+Hold and unhold a call
+-------------------------
+
+Put an answered call on hold, or resume it. See :ref:`Media Control Operations <call-overview>` for hold behavior.
+
+.. code::
+
+    $ curl -k --location --request POST 'https://api.voipbin.net/v1.0/calls/<call-id>/hold?token=<YOUR_AUTH_TOKEN>'
+
+    $ curl -k --location --request DELETE 'https://api.voipbin.net/v1.0/calls/<call-id>/hold?token=<YOUR_AUTH_TOKEN>'
+
+.. note:: **AI Implementation Hint**
+
+   Both requests return ``200 OK`` with no response body. Confirm the effect by fetching ``GET /calls/{id}`` or by listening for the corresponding call webhook event.
+
+Mute and unmute a call
+-------------------------
+
+Mute or unmute one or both directions of an answered call's audio, independent of hold.
+
+.. code::
+
+    $ curl -k --location --request POST 'https://api.voipbin.net/v1.0/calls/<call-id>/mute?token=<YOUR_AUTH_TOKEN>' \
+        --header 'Content-Type: application/json' \
+        --data-raw '{
+            "direction": "both"
+        }'
+
+    $ curl -k --location --request DELETE 'https://api.voipbin.net/v1.0/calls/<call-id>/mute?token=<YOUR_AUTH_TOKEN>' \
+        --header 'Content-Type: application/json' \
+        --data-raw '{
+            "direction": "both"
+        }'
+
+.. note:: **AI Implementation Hint**
+
+   ``direction`` accepts ``in`` (the call cannot hear incoming audio), ``out`` (the call's audio is not sent to others), or ``both``. Both requests return ``200 OK`` with no response body; check the call's ``mute_direction`` field via ``GET /calls/{id}`` to confirm the current state.
+
+Music on hold (MOH)
+----------------------
+
+Play music (instead of silence) while a call is on hold.
+
+.. code::
+
+    $ curl -k --location --request POST 'https://api.voipbin.net/v1.0/calls/<call-id>/moh?token=<YOUR_AUTH_TOKEN>'
+
+    $ curl -k --location --request DELETE 'https://api.voipbin.net/v1.0/calls/<call-id>/moh?token=<YOUR_AUTH_TOKEN>'
+
+Silence a call
+-----------------
+
+Mute the call's audio stream without changing its hold state.
+
+.. code::
+
+    $ curl -k --location --request POST 'https://api.voipbin.net/v1.0/calls/<call-id>/silence?token=<YOUR_AUTH_TOKEN>'
+
+    $ curl -k --location --request DELETE 'https://api.voipbin.net/v1.0/calls/<call-id>/silence?token=<YOUR_AUTH_TOKEN>'
+
+Talk to an active call
+-------------------------
+
+Inject a TTS message into an already-answered call at any time, independent of the flow's own ``talk`` action.
+
+.. code::
+
+    $ curl -k --location --request POST 'https://api.voipbin.net/v1.0/calls/<call-id>/talk?token=<YOUR_AUTH_TOKEN>' \
+        --header 'Content-Type: application/json' \
+        --data-raw '{
+            "text": "Please hold while we transfer your call.",
+            "language": "en-US",
+            "provider": "gcp",
+            "voice_id": ""
+        }'
+
+.. note:: **AI Implementation Hint**
+
+   ``provider`` accepts ``gcp`` or ``aws``; if omitted, VoIPBIN defaults to GCP. If the selected provider's TTS call fails, VoIPBIN falls back to the other provider using its default voice for the language. ``voice_id`` is provider-specific; leave it empty to use the default voice for ``language``.
 
 Troubleshooting
 ---------------

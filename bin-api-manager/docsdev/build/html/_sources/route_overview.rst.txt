@@ -176,10 +176,12 @@ Configure routes with priorities and providers.
     $ curl -X POST 'https://api.voipbin.net/v1.0/routes?token=<token>' \
         --header 'Content-Type: application/json' \
         --data '{
+            "customer_id": "00000000-0000-0000-0000-000000000001",
             "name": "US Primary Route",
+            "detail": "Primary route for US outbound calls",
             "provider_id": "provider-uuid-123",
             "priority": 1,
-            "detail": "Primary route for US outbound calls"
+            "target": "+1"
         }'
 
 **Route Configuration Example**

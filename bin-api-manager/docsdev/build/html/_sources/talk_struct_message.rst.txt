@@ -21,7 +21,11 @@ Message
         "text": "<string>",
         "medias": [
             {
-                "type": "<string>"
+                "type": "<string>",
+                "address": "<object>",
+                "agent_id": "<string>",
+                "file_id": "<string>",
+                "link_url": "<string>"
             }
         ],
         "metadata": {
@@ -47,15 +51,15 @@ Message
 * ``parent_id`` (UUID, optional): Parent message ID for threaded replies. Must be the ``id`` of an existing message in the same talk. Omit or set to empty string for top-level messages.
 * ``type`` (enum string): Message type. See :ref:`Type <talk-struct-message-type>`.
 * ``text`` (String): Message text content.
-* ``medias`` (Array of Object): Array of media attachments. Each object contains ``type`` (MIME type string), ``url`` (String), and ``name`` (String).
+* ``medias`` (Array of Object): Array of media attachments. Each object contains ``type`` (enum string: ``address``, ``agent``, ``file``, or ``link``) and exactly one corresponding value field: ``address`` (Object, set only when ``type`` is ``address``), ``agent_id`` (UUID, set only when ``type`` is ``agent``), ``file_id`` (UUID, set only when ``type`` is ``file``), or ``link_url`` (String, set only when ``type`` is ``link``).
 * ``metadata`` (Object): Message metadata including reactions. Contains a ``reactions`` array.
 * ``tm_create`` (string, ISO 8601): Timestamp when the message was created.
 * ``tm_update`` (string, ISO 8601): Timestamp when the message was last updated.
-* ``tm_delete`` (string, ISO 8601): Timestamp when the message was deleted (soft delete).
+* ``tm_delete`` (string, ISO 8601, nullable): Timestamp when the message was deleted (soft delete).
 
 .. note:: **AI Implementation Hint**
 
-   A ``tm_delete`` value of empty string ``""`` means the message has not been deleted. To create a threaded reply, set ``parent_id`` to the ``id`` of the message you want to reply to. The parent message must exist in the same talk.
+   A ``tm_delete`` value of ``null`` means the message has not been deleted. To create a threaded reply, set ``parent_id`` to the ``id`` of the message you want to reply to. The parent message must exist in the same talk.
 
 Example
 +++++++
@@ -84,7 +88,7 @@ Example
         },
         "tm_create": "2024-01-17 10:32:00.000000",
         "tm_update": "2024-01-17 10:32:00.000000",
-        "tm_delete": ""
+        "tm_delete": null
     }
 
 .. _talk-struct-message-type:

@@ -6,7 +6,7 @@ Overview
 .. note:: **AI Context**
 
    * **Complexity:** Medium
-   * **Cost:** Chargeable (recording duration contributes to call costs; storage charged per GB)
+   * **Cost:** Chargeable. Billing runs for the duration between the recording's ``tm_start`` and ``tm_end`` (a separate billing line item from the underlying call/conference). There is currently no separate per-GB storage charge.
    * **Async:** Yes. Recordings transition through states: ``initiating`` -> ``recording`` -> ``stopping`` -> ``ended``. Poll ``GET https://api.voipbin.net/v1.0/recordings/{id}`` to check for ``ended`` status before downloading.
 
 VoIPBIN's Recording API enables you to capture, store, and manage audio from calls and conferences. Whether you need recordings for compliance, quality assurance, training, or analytics, the Recording API provides a complete solution for managing call audio throughout its lifecycle.
@@ -107,7 +107,7 @@ Every recording moves through a predictable set of states from creation to avail
 - States only move forward, never backward
 - A recording in ``ended`` state cannot be modified
 - If the call/conference ends, active recordings automatically stop
-- Maximum recording duration is 24 hours
+- There is no fixed platform-wide maximum recording duration; pass the ``duration`` field to ``recording_start`` to cap a given recording, or leave it unset (``0``) for no automatic cap
 
 
 Starting and Stopping Recordings
@@ -186,6 +186,13 @@ Start or stop recording on an active call or conference programmatically.
             "format": "wav"
         }'
 
+The request body also accepts these optional fields (all default to their zero value -- ``0``/empty -- when omitted, which disables the corresponding limit):
+
+* ``end_of_silence`` (Integer): Stop the recording automatically after this many seconds of silence.
+* ``end_of_key`` (String): A DTMF digit that, when pressed on the call, stops the recording.
+* ``duration`` (Integer): Maximum recording duration in seconds. The recording stops automatically once reached.
+* ``on_end_flow_id`` (UUID): A flow to execute automatically once the recording ends.
+
 **Stop recording on a call:**
 
 .. code::
@@ -255,17 +262,19 @@ Recordings are stored securely in Google Cloud Storage and accessible via the Vo
 
 **Storage Details**
 
-+---------------------+----------------------------------------------------------+
-| Aspect              | Details                                                  |
-+=====================+==========================================================+
-| Storage Location    | Google Cloud Storage (GCS)                               |
-+---------------------+----------------------------------------------------------+
-| Retention Period    | Configurable per customer (default: 30 days)             |
-+---------------------+----------------------------------------------------------+
-| Maximum Duration    | 24 hours per recording                                   |
-+---------------------+----------------------------------------------------------+
-| File Size           | ~1 MB per minute (8 kHz mono WAV)                        |
-+---------------------+----------------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Aspect
+     - Details
+   * - Storage Location
+     - Google Cloud Storage (GCS)
+   * - Retention Period
+     - No automatic expiry/retention policy. Use ``DELETE /recordings/{id}`` to remove a recording explicitly when you no longer need it.
+   * - Maximum Duration
+     - No fixed platform-wide cap. Optionally bounded per recording via the ``duration`` field on ``recording_start``.
+   * - File Size
+     - ~1 MB per minute (8 kHz mono WAV)
 
 Recording and Calls/Conferences
 -------------------------------
@@ -421,7 +430,7 @@ Best Practices
 
 **3. Storage Management**
 
-- Set appropriate retention periods for your use case
+- The platform does not auto-delete recordings, so build your own retention/cleanup process for your compliance needs, calling ``DELETE /recordings/{id}`` on a schedule that fits your policy
 - Use bulk export for long-term archival
 - Monitor storage usage to manage costs
 - Delete recordings that are no longer needed
@@ -467,18 +476,17 @@ Troubleshooting
 
 **Download Failures**
 
-+---------------------------+------------------------------------------------+
-| Symptom                   | Solution                                       |
-+===========================+================================================+
-| 404 Not Found             | Recording may still be processing. Wait for    |
-|                           | ``ended`` status before downloading.           |
-+---------------------------+------------------------------------------------+
-| Timeout on large files    | Use streaming download with Range headers      |
-|                           | for large recordings.                          |
-+---------------------------+------------------------------------------------+
-| Recording expired         | Recording exceeded retention period. Check     |
-|                           | your retention settings.                       |
-+---------------------------+------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Symptom
+     - Solution
+   * - 404 Not Found
+     - Recording may still be processing. Wait for ``ended`` status before downloading.
+   * - Timeout on large files
+     - Use streaming download with Range headers for large recordings.
+   * - Recording not found
+     - The recording may have been explicitly deleted via ``DELETE /recordings/{id}``. There is no automatic expiry, so a missing recording means it was deleted or the ID is wrong.
 
 
 Related Documentation

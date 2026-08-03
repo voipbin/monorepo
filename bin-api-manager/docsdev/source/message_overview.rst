@@ -9,12 +9,11 @@ Overview
    * **Cost:** Chargeable (per message segment sent)
    * **Async:** Yes. ``POST https://api.voipbin.net/v1.0/messages`` returns immediately with target status ``queued``. Poll ``GET https://api.voipbin.net/v1.0/messages/{id}`` or use webhooks to track delivery status changes.
 
-VoIPBIN's Message API enables you to send and receive SMS (Short Message Service) and MMS (Multimedia Messaging Service) globally. Whether you need to send notifications, alerts, verification codes, or marketing messages, the Message API provides a reliable solution for text-based communication.
+VoIPBIN's Message API enables you to send and receive SMS (Short Message Service) messages globally. Whether you need to send notifications, alerts, verification codes, or marketing messages, the Message API provides a reliable solution for text-based communication.
 
 With the Message API you can:
 
 - Send SMS messages to phone numbers worldwide
-- Send MMS messages with images, videos, and other media
 - Receive inbound messages via webhooks
 - Track message delivery status
 - Integrate messaging into automated workflows
@@ -42,7 +41,7 @@ When you send a message, VoIPBIN routes it through carrier networks to reach the
 **Key Components**
 
 - **Message Hub**: Routes messages to appropriate carriers based on destination
-- **Carrier Network**: Delivers messages to recipient devices (SMS/MMS)
+- **Carrier Network**: Delivers SMS messages to recipient devices
 - **Webhooks**: Notify your application of delivery status and inbound messages
 
 **Message Types**
@@ -54,8 +53,10 @@ When you send a message, VoIPBIN routes it through carrier networks to reach the
      - Description
    * - SMS
      - Text-only messages up to 160 characters (or 70 for Unicode). Longer messages are split and reassembled by the recipient.
-   * - MMS
-     - Multimedia messages supporting images, videos, audio, and text. Subject line and multiple media attachments supported.
+
+.. note:: **AI Implementation Hint**
+
+   VoIPBIN's Message API currently supports SMS only. The public ``POST /messages`` endpoint accepts ``source``, ``destinations``, and ``text`` -- there is no ``medias``/MMS parameter.
 
 
 
@@ -130,7 +131,7 @@ Every message moves through a predictable set of states from sending to delivery
 
     Sender Device        Carrier Network           VoIPBIN              Your App
          |                     |                      |                    |
-         | SMS/MMS             |                      |                    |
+         | SMS                 |                      |                    |
          +------------------->|                      |                    |
          |                     | Forward message      |                    |
          |                     +-------------------->|                    |
@@ -176,7 +177,10 @@ Send messages directly using the REST API.
     $ curl -X POST 'https://api.voipbin.net/v1.0/messages?token=<token>' \
         --header 'Content-Type: application/json' \
         --data '{
-            "source": "+15551234567",
+            "source": {
+                "type": "tel",
+                "target": "+15551234567"
+            },
             "destinations": [
                 {
                     "type": "tel",
@@ -184,29 +188,6 @@ Send messages directly using the REST API.
                 }
             ],
             "text": "Your verification code is 123456"
-        }'
-
-**Send MMS Example:**
-
-.. code::
-
-    $ curl -X POST 'https://api.voipbin.net/v1.0/messages?token=<token>' \
-        --header 'Content-Type: application/json' \
-        --data '{
-            "source": "+15551234567",
-            "destinations": [
-                {
-                    "type": "tel",
-                    "target": "+15559876543"
-                }
-            ],
-            "text": "Check out this image!",
-            "medias": [
-                {
-                    "type": "image/jpeg",
-                    "url": "https://example.com/image.jpg"
-                }
-            ]
         }'
 
 **Method 2: Via Flow Action**
@@ -336,23 +317,6 @@ Understanding message limits and encoding helps optimize delivery.
     | Recipient's phone reassembles into single message                 |
     +-------------------------------------------------------------------+
 
-**MMS Media Types**
-
-.. list-table::
-   :header-rows: 1
-
-   * - Media Type
-     - Supported Formats
-   * - Images
-     - JPEG, PNG, GIF
-   * - Video
-     - MP4, 3GP
-   * - Audio
-     - MP3, WAV
-   * - Documents
-     - PDF, vCard
-
-
 
 Common Scenarios
 ----------------
@@ -417,26 +381,6 @@ Enable customers to reply to messages.
         +--------------------->+----------------------->|
         |                      |                        |
 
-**Scenario 4: MMS Marketing**
-
-Send promotional messages with images.
-
-::
-
-    +------------------------------------------+
-    | POST /messages                           |
-    | {                                        |
-    |   "text": "Summer sale! 50% off!",       |
-    |   "medias": [                            |
-    |     {"url": "https://.../promo.jpg"}     |
-    |   ]                                      |
-    | }                                        |
-    +------------------------------------------+
-                      |
-                      v
-    Customer receives image + text message
-
-
 Best Practices
 --------------
 
@@ -475,7 +419,7 @@ Troubleshooting
 
    * - Symptom
      - Solution
-   * - Status stays "sending"
+   * - Status stays "queued"
      - Check carrier connectivity; verify destination number format (+E.164)
    * - Status "failed"
      - Check error code; common issues: invalid number, carrier rejection, insufficient credit

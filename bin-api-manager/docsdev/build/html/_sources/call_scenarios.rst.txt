@@ -201,7 +201,7 @@ Combine AI voice assistant with human escalation:
 
 .. code::
 
-    POST /v1/calls
+    POST /calls
     {
         "source": {"type": "tel", "target": "+15551234567"},
         "destinations": [{"type": "tel", "target": "+15559876543"}],
@@ -252,7 +252,7 @@ Automated calling campaign that detects answering machines:
        |<-------------------+                       |
        |                    |                       |
        | AMD Analysis       |                       |
-       | (first 3 seconds)  |                       |
+       | (first few seconds)|                       |
        |                    |                       |
        +--- Human detected --+                      |
        |                    |                       |
@@ -266,10 +266,6 @@ Automated calling campaign that detects answering machines:
        |                    |                       |
        +--- Machine detected ------------------------>|
        |                    |                       |
-       | Leave voicemail    |                       |
-       | message            |                       |
-       +-------------------------------------->|    |
-       |                    |                       |
        | Hangup             |                       |
        +-------------------------------------->|    |
        |                    |                       |
@@ -278,30 +274,22 @@ Automated calling campaign that detects answering machines:
 
 .. code::
 
-    POST /v1/campaigns
+    POST /campaigns
     {
         "name": "Customer Reminder Campaign",
+        "detail": "Automated reminder calls before appointments",
+        "type": "call",
+        "service_level": 100,
+        "end_handle": "stop",
         "outplan_id": "outplan-uuid",
-        "flow_id": "campaign-flow-uuid",
-        "dial_timeout": 30000,
-        "max_concurrent_calls": 10,
-        "schedule": {
-            "timezone": "America/New_York",
-            "start_time": "09:00",
-            "end_time": "17:00",
-            "days": ["mon", "tue", "wed", "thu", "fri"]
-        }
-    }
-
-    Campaign Flow:
-    {
+        "outdial_id": "outdial-uuid",
+        "queue_id": "queue-uuid",
         "actions": [
             {
                 "type": "amd",
                 "option": {
-                    "machine_action": "voicemail",
-                    "human_action": "continue",
-                    "timeout": 3000
+                    "machine_handle": "hangup",
+                    "async": false
                 }
             },
             {
@@ -343,14 +331,6 @@ Automated calling campaign that detects answering machines:
                 }
             },
             {
-                "id": "voicemail",
-                "type": "talk",
-                "option": {
-                    "text": "Hello, this is Acme Corp reminding you of your upcoming appointment. Please call us back at 555-123-4567 to confirm. Thank you."
-                }
-            },
-            {"type": "hangup"},
-            {
                 "id": "no_response",
                 "type": "goto",
                 "option": {"target_id": "human_path", "loop_count": 2}
@@ -361,7 +341,7 @@ Automated calling campaign that detects answering machines:
 
 .. note:: **AI Implementation Hint**
 
-   The ``outplan_id`` and ``flow_id`` must be valid UUIDs obtained from ``GET /outplans`` and ``GET /flows`` respectively. Each call placed by the campaign is individually chargeable. The ``amd`` (Answering Machine Detection) action analyzes the first few seconds of audio after answer -- if it detects a voicemail greeting, execution jumps to the action with ``id`` matching ``machine_action``. The ``max_concurrent_calls`` limits how many calls the campaign places at the same time.
+   ``outplan_id``, ``outdial_id``, and ``queue_id`` must be valid UUIDs obtained from ``GET /outplans``, ``GET /outdials``, and ``GET /queues`` respectively -- all three are required to create a campaign. Each call placed by the campaign is individually chargeable. The ``amd`` (Answering Machine Detection) action analyzes the first few seconds of audio after answer and only supports two outcomes via ``machine_handle``: ``"hangup"`` (immediately end the call if a machine answered, recorded with ``hangup_reason: "amd"``) or ``"continue"`` (proceed to the next action regardless of who answered). The ``amd`` action does not branch to different action ``id`` values for human vs. machine -- with ``machine_handle: "hangup"``, only calls answered by a person survive past the ``amd`` action, so the flow can safely assume a live person from that point on. Set ``async: false`` to pause the flow until AMD analysis completes before executing the next action.
 
 Click-to-Call with Recording
 ----------------------------
@@ -405,7 +385,7 @@ Website visitor clicks to call, conversation is recorded:
 
 .. code::
 
-    POST /v1/calls
+    POST /calls
     {
         "source": {
             "type": "tel",
@@ -418,7 +398,6 @@ Website visitor clicks to call, conversation is recorded:
                 "target": "+15559876543"
             }
         ],
-        "early_execution": false,
         "actions": [
             {
                 "type": "talk",
@@ -428,10 +407,9 @@ Website visitor clicks to call, conversation is recorded:
                 }
             },
             {
-                "type": "record_start",
+                "type": "recording_start",
                 "option": {
-                    "direction": "both",
-                    "format": "mp3"
+                    "format": "wav"
                 }
             },
             {
@@ -440,19 +418,18 @@ Website visitor clicks to call, conversation is recorded:
                     "source": {"type": "tel", "target": "+15551234567"},
                     "destinations": [
                         {"type": "tel", "target": "+15552222222"}
-                    ],
-                    "ring_timeout": 30000
+                    ]
                 }
             },
             {
-                "type": "record_stop"
+                "type": "recording_stop"
             }
         ]
     }
 
 .. note:: **AI Implementation Hint**
 
-   The ``source.target`` in ``POST /v1/calls`` must be a phone number you own, verified via ``GET /numbers``. The ``early_execution: false`` setting (default) ensures actions execute only after the destination answers. The ``record_start`` action must be placed before ``connect`` in the action list to capture the full conversation. After the call ends, retrieve the recording via ``GET /recordings/{recording-id}`` using the ID from the call's ``recording_ids`` array.
+   The ``source.target`` in ``POST /calls`` must be a phone number you own, verified via ``GET /numbers``. Flow actions execute only after the destination answers (this is always the case for calls created via ``POST /calls`` -- there is no way to opt into early execution from the public API). The ``recording_start`` action must be placed before ``connect`` in the action list to capture the full conversation, and only ``format: "wav"`` is currently supported. After the call ends, retrieve the recording via ``GET /recordings/{recording-id}`` using the ID from the call's ``recording_ids`` array.
 
 **Webhook Integration:**
 
@@ -471,7 +448,7 @@ Website visitor clicks to call, conversation is recorded:
     }
 
     Your Server Response:
-    1. Fetch recording: GET /v1/recordings/{recording-uuid}
+    1. Fetch recording: GET /recordings/{recording-uuid}
     2. Download audio: GET {recording.url}
     3. Store in your CRM
     4. Update call log with recording link
@@ -535,7 +512,7 @@ Create a conference with multiple participants joining at different times:
 .. code::
 
     Step 1: Create Conference
-    POST /v1/conferences
+    POST /conferences
     {
         "name": "Weekly Team Sync",
         "customer_id": "customer-uuid"
@@ -550,7 +527,7 @@ Create a conference with multiple participants joining at different times:
     }
 
     Step 2: Add Organizer via Dial-in
-    POST /v1/calls
+    POST /calls
     {
         "source": {"type": "tel", "target": "+15551111111"},
         "destinations": [{"type": "tel", "target": "+15550000000"}],
@@ -567,7 +544,7 @@ Create a conference with multiple participants joining at different times:
     }
 
     Step 3: Dial Out to Participants
-    POST /v1/calls
+    POST /calls
     {
         "source": {"type": "tel", "target": "+15551111111", "name": "Team Sync"},
         "destinations": [{"type": "tel", "target": "+15552222222"}],
@@ -591,108 +568,7 @@ Create a conference with multiple participants joining at different times:
 
 .. note:: **AI Implementation Hint**
 
-   The ``conference_id`` in ``conference_join`` must be obtained from the ``id`` field in the ``POST /v1/conferences`` response or from ``GET /v1/conferences``. The ``customer_id`` in the conference creation request must match your authenticated customer ID. Each dial-out to a participant creates a separate billable call. The ``role`` field controls permissions: ``moderator`` can mute/unmute others, while ``participant`` can only control their own audio.
-
-Call Screening with Whisper
----------------------------
-
-Screen calls before connecting to agent:
-
-.. code::
-
-    Call Screening Flow:
-
-    Caller             VoIPBIN            Agent
-       |                  |                  |
-       | Incoming call    |                  |
-       +----------------->|                  |
-       |                  |                  |
-       |<-----------------+                  |
-       | "Please state    |                  |
-       |  your name"      |                  |
-       |                  |                  |
-       | "John Smith"     |                  |
-       +----------------->|                  |
-       |                  |                  |
-       | (Record name)    |                  |
-       |                  |                  |
-       |<-----------------+                  |
-       | "Please hold"    |                  |
-       |                  |                  |
-       | (Hold music)     | Dial agent       |
-       |                  +----------------->|
-       |                  |                  |
-       |                  |<-----------------+
-       |                  | Agent answers    |
-       |                  |                  |
-       |                  | Whisper to agent |
-       |                  | (caller can't hear)
-       |                  +----------------->|
-       |                  | "You have a call |
-       |                  |  from John Smith"|
-       |                  +----------------->|
-       |                  | "Press 1 accept, |
-       |                  |  2 to reject"    |
-       |                  +----------------->|
-       |                  |                  |
-       |                  |<-----------------+
-       |                  | Press 1          |
-       |                  |                  |
-       |<=================>==================>|
-       | Connected        |                  |
-       |                  |                  |
-
-**Flow Configuration:**
-
-.. code::
-
-    {
-        "actions": [
-            {
-                "type": "talk",
-                "option": {
-                    "text": "Please state your name after the beep."
-                }
-            },
-            {
-                "type": "record_voice",
-                "option": {
-                    "duration": 5000,
-                    "silence_timeout": 2000,
-                    "variable_name": "caller_name_recording"
-                }
-            },
-            {
-                "type": "talk",
-                "option": {
-                    "text": "Thank you. Please hold while we connect you."
-                }
-            },
-            {
-                "type": "moh_start",
-                "option": {
-                    "music_class": "default"
-                }
-            },
-            {
-                "type": "connect",
-                "option": {
-                    "destinations": [{"type": "tel", "target": "+15552222222"}],
-                    "whisper": {
-                        "enabled": true,
-                        "message": "You have a call from:",
-                        "play_recording": "{{caller_name_recording}}",
-                        "accept_key": "1",
-                        "reject_key": "2"
-                    }
-                }
-            }
-        ]
-    }
-
-.. note:: **AI Implementation Hint**
-
-   The ``whisper`` feature in the ``connect`` action plays a message only to the agent (the caller cannot hear it). The ``record_voice`` action stores the recording in a flow variable (``caller_name_recording``) that can be referenced later using ``{{variable_name}}`` syntax. If the agent presses the ``reject_key``, the connect action fails and flow execution continues to the next action -- add a fallback (e.g., try another agent or go to voicemail).
+   The ``conference_id`` in ``conference_join`` must be obtained from the ``id`` field in the ``POST /conferences`` response or from ``GET /conferences``. The ``customer_id`` in the conference creation request must match your authenticated customer ID. Each dial-out to a participant creates a separate billable call. The ``role`` field controls permissions: ``moderator`` can mute/unmute others, while ``participant`` can only control their own audio.
 
 Warm Transfer with Context
 --------------------------
@@ -740,7 +616,7 @@ Transfer call with context passed to the receiving agent:
 .. code::
 
     Step 1: Agent A initiates transfer
-    POST /v1/transfers
+    POST /transfers
     {
         "transfer_type": "attended",
         "transferer_call_id": "call-uuid-of-agent-a",
@@ -770,7 +646,7 @@ Transfer call with context passed to the receiving agent:
 
 .. note:: **AI Implementation Hint**
 
-   The ``transferer_call_id`` in ``POST /v1/transfers`` must be the UUID of an active call in ``progressing`` status, obtained from ``GET /v1/calls``. The ``transfer_type`` is an enum: ``attended`` or ``blind``. The ``transferee_addresses`` array must contain at least one address (E.164 phone number or extension). The response includes a ``transferee_call_id`` (UUID) for the new outbound call to the transfer destination. The consult call to Agent B is a separate billable call.
+   The ``transferer_call_id`` in ``POST /transfers`` must be the UUID of an active call in ``progressing`` status, obtained from ``GET /calls``. The ``transfer_type`` is an enum: ``attended`` or ``blind``. The ``transferee_addresses`` array must contain at least one address (E.164 phone number or extension). The response includes a ``transferee_call_id`` (UUID) for the new outbound call to the transfer destination. The consult call to Agent B is a separate billable call.
 
 Call with Real-time Transcription
 ---------------------------------
@@ -815,7 +691,7 @@ Transcribe call in real-time for live captioning or analysis:
 
 .. code::
 
-    POST /v1/calls
+    POST /calls
     {
         "source": {"type": "tel", "target": "+15551234567"},
         "destinations": [{"type": "tel", "target": "+15559876543"}],

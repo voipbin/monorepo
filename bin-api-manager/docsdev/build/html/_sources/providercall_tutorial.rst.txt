@@ -114,7 +114,7 @@ The ProviderCall record is an audit summary — it does not update as the call p
 Get list of providercalls
 -------------------------
 
-Returns records scoped to the authenticated admin's own customer. Optional ``provider_id`` filter narrows to a single provider.
+Because this endpoint is gated by ``PermissionProjectSuperAdmin`` — a platform-level role — the list is **cross-customer**, not scoped to the authenticated admin's own customer (this matches ``GET /v1/providercalls/{id}`` and ``DELETE /v1/providercalls/{id}``, which are also not customer-scoped). Optional ``provider_id`` filter narrows to a single provider.
 
 .. code::
 
@@ -162,7 +162,7 @@ Troubleshooting
     * **Cause:** Token belongs to a customer-tier user. ProviderCalls require ``PermissionProjectSuperAdmin``.
     * **Fix:** Log in as a platform super-admin or use an admin access key.
 
-* **400 Bad Request — provider not found:**
+* **404 Not Found — provider not found:**
     * **Cause:** The supplied ``provider_id`` does not exist, or has been soft-deleted.
     * **Fix:** List providers with ``GET /v1/providers`` and choose a current ID.
 

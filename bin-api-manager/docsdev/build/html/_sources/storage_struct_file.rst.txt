@@ -85,6 +85,7 @@ All possible values for the ``reference_type`` field:
 Reference Type Description
 ============== ==============================
 none           The file has no associated resource. Typically for manually uploaded files. The ``reference_id`` will be ``00000000-0000-0000-0000-000000000000``.
+normal         The file is associated with a normal (non-recording) resource.
 recording      The file is associated with a recording. The ``reference_id`` is a recording ID from ``GET /recordings``.
 ============== ==============================
 

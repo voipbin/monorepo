@@ -14,11 +14,11 @@ Before working with contacts, you need:
 
 .. note:: **AI Implementation Hint**
 
-   Phone numbers are automatically normalized to E.164 format and stored in the ``number`` field. When using the phone lookup endpoint (``GET /contacts/lookup?phone=...``), the ``+`` character must be URL-encoded as ``%2B``. Contact operations are free and synchronous.
+   Contacts store a single unified ``addresses`` array (each entry has ``type``: ``tel`` or ``email``) rather than separate phone-number and email collections. Phone numbers are automatically normalized to E.164 format and stored in the address's ``target`` field. When using the phone lookup endpoint (``GET /contacts/lookup?phone=...``), the ``+`` character must be URL-encoded as ``%2B``. Contact operations are free and synchronous.
 
 Create a contact
 ----------------
-Create a new contact with phone numbers, emails, and tags.
+Create a new contact with addresses (phone numbers and/or emails) and tags.
 
 .. code::
 
@@ -32,22 +32,23 @@ Create a new contact with phone numbers, emails, and tags.
             "job_title": "Account Manager",
             "source": "manual",
             "notes": "Key enterprise customer contact",
-            "phone_numbers": [
+            "addresses": [
                 {
-                    "number": "+15551234567",
-                    "type": "mobile",
+                    "type": "tel",
+                    "target": "+15551234567",
+                    "name": "Mobile",
                     "is_primary": true
                 },
                 {
-                    "number": "+15559876543",
-                    "type": "work",
+                    "type": "tel",
+                    "target": "+15559876543",
+                    "name": "Work",
                     "is_primary": false
-                }
-            ],
-            "emails": [
+                },
                 {
-                    "address": "john@acme.com",
-                    "type": "work",
+                    "type": "email",
+                    "target": "john@acme.com",
+                    "name": "Work",
                     "is_primary": true
                 }
             ],
@@ -68,27 +69,40 @@ Create a new contact with phone numbers, emails, and tags.
         "source": "manual",
         "external_id": "",
         "notes": "Key enterprise customer contact",
-        "phone_numbers": [
+        "addresses": [
             {
                 "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
-                "number": "+15551234567",
-                "type": "mobile",
+                "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+                "contact_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+                "type": "tel",
+                "target": "+15551234567",
+                "target_name": "",
+                "name": "Mobile",
+                "detail": "",
                 "is_primary": true,
                 "tm_create": "2026-02-07T14:45:59.038962Z"
             },
             {
                 "id": "c3d4e5f6-a7b8-9012-cdef-123456789012",
-                "number": "+15559876543",
-                "type": "work",
+                "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+                "contact_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+                "type": "tel",
+                "target": "+15559876543",
+                "target_name": "",
+                "name": "Work",
+                "detail": "",
                 "is_primary": false,
                 "tm_create": "2026-02-07T14:45:59.038962Z"
-            }
-        ],
-        "emails": [
+            },
             {
                 "id": "d4e5f6a7-b8c9-0123-defa-234567890123",
-                "address": "john@acme.com",
-                "type": "work",
+                "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+                "contact_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+                "type": "email",
+                "target": "john@acme.com",
+                "target_name": "",
+                "name": "Work",
+                "detail": "",
                 "is_primary": true,
                 "tm_create": "2026-02-07T14:45:59.038962Z"
             }
@@ -123,20 +137,28 @@ Retrieve all contacts. Supports pagination with ``page_size`` and ``page_token``
                 "source": "manual",
                 "external_id": "",
                 "notes": "Key enterprise customer contact",
-                "phone_numbers": [
+                "addresses": [
                     {
                         "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
-                        "number": "+15551234567",
-                        "type": "mobile",
+                        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+                        "contact_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+                        "type": "tel",
+                        "target": "+15551234567",
+                        "target_name": "",
+                        "name": "Mobile",
+                        "detail": "",
                         "is_primary": true,
                         "tm_create": "2026-02-07T14:45:59.038962Z"
-                    }
-                ],
-                "emails": [
+                    },
                     {
                         "id": "d4e5f6a7-b8c9-0123-defa-234567890123",
-                        "address": "john@acme.com",
-                        "type": "work",
+                        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+                        "contact_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+                        "type": "email",
+                        "target": "john@acme.com",
+                        "target_name": "",
+                        "name": "Work",
+                        "detail": "",
                         "is_primary": true,
                         "tm_create": "2026-02-07T14:45:59.038962Z"
                     }
@@ -203,75 +225,47 @@ Find a contact by email address. Matching is case-insensitive.
 
     $ curl -X GET 'https://api.voipbin.net/v1.0/contacts/lookup?token=<YOUR_AUTH_TOKEN>&email=john@acme.com'
 
-Add a phone number
-------------------
-Add a new phone number to an existing contact.
+Add an address to a contact
+----------------------------
+Add a new phone number or email address to an existing contact. ``type`` must be ``tel`` or ``email``.
 
 .. code::
 
-    $ curl -X POST 'https://api.voipbin.net/v1.0/contacts/<contact-id>/phone-numbers?token=<YOUR_AUTH_TOKEN>' \
+    $ curl -X POST 'https://api.voipbin.net/v1.0/contacts/<contact-id>/addresses?token=<YOUR_AUTH_TOKEN>' \
         --header 'Content-Type: application/json' \
         --data '{
-            "number": "+15553334444",
-            "type": "home",
+            "type": "tel",
+            "target": "+15553334444",
+            "name": "Home",
             "is_primary": false
         }'
 
-Update a phone number
----------------------
-Update an existing phone number's details.
+The response is the full updated :ref:`Contact <contact-struct-contact-contact>` object, including the newly added entry in ``addresses``.
+
+Update an address on a contact
+--------------------------------
+Update an existing address's details. The address ID comes from a prior ``POST /contacts/{id}/addresses`` call or from the contact's ``addresses`` array.
 
 .. code::
 
-    $ curl -X PUT 'https://api.voipbin.net/v1.0/contacts/<contact-id>/phone-numbers/<phone-number-id>?token=<YOUR_AUTH_TOKEN>' \
+    $ curl -X PUT 'https://api.voipbin.net/v1.0/contacts/<contact-id>/addresses/<address-id>?token=<YOUR_AUTH_TOKEN>' \
         --header 'Content-Type: application/json' \
         --data '{
-            "number": "+15553334444",
-            "type": "mobile",
+            "target": "+15553334444",
+            "name": "Mobile",
             "is_primary": true
         }'
 
-Remove a phone number
----------------------
+Remove an address from a contact
+-----------------------------------
 
 .. code::
 
-    $ curl -X DELETE 'https://api.voipbin.net/v1.0/contacts/<contact-id>/phone-numbers/<phone-number-id>?token=<YOUR_AUTH_TOKEN>'
+    $ curl -X DELETE 'https://api.voipbin.net/v1.0/contacts/<contact-id>/addresses/<address-id>?token=<YOUR_AUTH_TOKEN>'
 
-Add an email address
---------------------
-Add a new email address to an existing contact.
+.. note:: **AI Implementation Hint**
 
-.. code::
-
-    $ curl -X POST 'https://api.voipbin.net/v1.0/contacts/<contact-id>/emails?token=<YOUR_AUTH_TOKEN>' \
-        --header 'Content-Type: application/json' \
-        --data '{
-            "address": "john.smith@gmail.com",
-            "type": "personal",
-            "is_primary": false
-        }'
-
-Update an email address
------------------------
-Update an existing email address's details.
-
-.. code::
-
-    $ curl -X PUT 'https://api.voipbin.net/v1.0/contacts/<contact-id>/emails/<email-id>?token=<YOUR_AUTH_TOKEN>' \
-        --header 'Content-Type: application/json' \
-        --data '{
-            "address": "john.smith@gmail.com",
-            "type": "personal",
-            "is_primary": true
-        }'
-
-Remove an email address
------------------------
-
-.. code::
-
-    $ curl -X DELETE 'https://api.voipbin.net/v1.0/contacts/<contact-id>/emails/<email-id>?token=<YOUR_AUTH_TOKEN>'
+   These ``/contacts/{id}/addresses`` endpoints always require an existing, known ``contact_id`` in the path. To create or manage addresses that are not yet attached to any contact (an "unresolved" pool, e.g. for inbound-call address capture before identity resolution), or to search/filter addresses across all contacts, use the standalone :ref:`Contact Addresses <contact-address-overview>` resource instead.
 
 Add a tag
 ---------

@@ -5,7 +5,7 @@ Talk
 ***********
 Real-time chat and messaging between agents and customers, with support for multiple participants and message history.
 
-**API Reference:** `Talk endpoints <https://api.voipbin.net/redoc/#tag/Talk>`_
+**API Reference:** `Service Agent endpoints <https://api.voipbin.net/redoc/#tag/Service-Agent>`_ (Talk is exposed under the ``service_agents/talk_*`` routes, backed by ``bin-talk-manager``)
 
 .. toctree::
    :maxdepth: 2

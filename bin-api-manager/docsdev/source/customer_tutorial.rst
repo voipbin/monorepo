@@ -84,6 +84,8 @@ Example
 Create a new customer
 ---------------------
 
+Requires ``ProjectSuperAdmin`` permission. ``name``, ``detail``, ``email``, ``phone_number``, ``address``, ``webhook_method``, and ``webhook_uri`` are all required. There is no ``username``/``password`` field on this endpoint -- agent credentials are created separately via the Agent API (a guest agent with admin permission is auto-created for the new customer).
+
 Example
 
 .. code::
@@ -91,11 +93,11 @@ Example
     $ curl --location --request POST 'https://api.voipbin.net/v1.0/customers?token=<YOUR_AUTH_TOKEN>' \
         --header 'Content-Type: application/json' \
         --data-raw '{
-            "username": "test1",
-            "password": "ee5f3d14-5ac6-11ed-808e-6f7d676a444b",
             "name": "Test Company",
             "detail": "Test customer account",
             "email": "admin@test-company.com",
+            "phone_number": "",
+            "address": "",
             "webhook_method": "POST",
             "webhook_uri": "https://webhooks.test-company.com/voipbin"
         }'
@@ -196,6 +198,98 @@ Example
         "tm_delete": null
     }
 
+Update customer's default billing account
+-------------------------------------------
+
+Change the default billing account used for your customer account. Requires ``CustomerAdmin`` permission. The billing account must exist and be validated before the update is applied.
+
+Example
+
+.. code::
+
+    $ curl --location --request PUT 'https://api.voipbin.net/v1.0/customer/billing_account_id?token=<YOUR_AUTH_TOKEN>' \
+        --header 'Content-Type: application/json' \
+        --data-raw '{
+            "billing_account_id": "b8c9d0e1-f2a3-4567-8901-23456789abcd"
+        }'
+
+    {
+        "id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "name": "Acme Corporation",
+        "detail": "Enterprise customer account",
+        "email": "admin@acme-corp.com",
+        "phone_number": "+15551234567",
+        "address": "123 Main St, San Francisco, CA 94105",
+        "webhook_method": "POST",
+        "webhook_uri": "https://webhooks.acme-corp.com/voipbin",
+        "billing_account_id": "b8c9d0e1-f2a3-4567-8901-23456789abcd",
+        "metadata": {
+            "rtp_debug": false
+        },
+        "email_verified": true,
+        "status": "active",
+        "identity_verification_status": "verified",
+        "tm_deletion_scheduled": null,
+        "tm_create": "2024-01-15T10:30:00Z",
+        "tm_update": "2024-06-20T14:31:00Z",
+        "tm_delete": null
+    }
+
+Admin-only customer operations
+-------------------------------
+
+The following endpoints require ``ProjectSuperAdmin`` permission and are intended for platform operators, not regular customer accounts. They act on any customer by ``id`` (obtained from ``GET /customers``) and return the extended ``CustomerAdmin`` representation, which additionally includes ``terms_agreed_version`` and ``terms_agreed_ip`` (see :ref:`Customer Struct <customer-struct-customer>`).
+
+**Freeze a customer account (schedule deletion)**
+
+.. code::
+
+    $ curl --location --request POST 'https://api.voipbin.net/v1.0/customers/5e4a0680-804e-11ec-8477-2fea5968d85b/freeze?token=<YOUR_ADMIN_TOKEN>'
+
+    {
+        "id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "status": "frozen",
+        "tm_deletion_scheduled": "2024-07-20T14:22:35Z",
+        "...": "..."
+    }
+
+**Recover a frozen customer account**
+
+.. code::
+
+    $ curl --location --request POST 'https://api.voipbin.net/v1.0/customers/5e4a0680-804e-11ec-8477-2fea5968d85b/recover?token=<YOUR_ADMIN_TOKEN>'
+
+    {
+        "id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "status": "active",
+        "tm_deletion_scheduled": null,
+        "...": "..."
+    }
+
+**Update a customer's billing account ID (admin)**
+
+.. code::
+
+    $ curl --location --request PUT 'https://api.voipbin.net/v1.0/customers/5e4a0680-804e-11ec-8477-2fea5968d85b/billing_account_id?token=<YOUR_ADMIN_TOKEN>' \
+        --header 'Content-Type: application/json' \
+        --data-raw '{
+            "billing_account_id": "b8c9d0e1-f2a3-4567-8901-23456789abcd"
+        }'
+
+**Update a customer's internal metadata (admin)**
+
+.. code::
+
+    $ curl --location --request PUT 'https://api.voipbin.net/v1.0/customers/5e4a0680-804e-11ec-8477-2fea5968d85b/metadata?token=<YOUR_ADMIN_TOKEN>' \
+        --header 'Content-Type: application/json' \
+        --data-raw '{
+            "rtp_debug": true
+        }'
+
+.. note:: **AI Implementation Hint**
+
+   Regular agents (even ``CustomerAdmin``) receive ``403 Permission Denied`` on all ``/customers`` (plural) endpoints. Only accounts with ``ProjectSuperAdmin`` permission may list, create, update, delete, freeze, recover, or manage another customer's billing account or metadata this way. Regular customers use the singular ``/customer`` endpoints instead (``GET /customer``, ``PUT /customer``, ``PUT /customer/metadata``, ``PUT /customer/billing_account_id``), and self-service deletion via ``POST /auth/unregister`` / ``DELETE /auth/unregister``.
+
 Unregister account (schedule deletion)
 ---------------------------------------
 
@@ -237,9 +331,9 @@ Example
 Unregister account immediately
 ------------------------------
 
-Skip the 30-day grace period and permanently delete the account immediately. Requires a confirmation phrase and password.
+Skip the 30-day grace period and permanently delete the account immediately. ``password`` and ``confirmation_phrase`` are mutually exclusive -- provide exactly one: ``password`` for password-based accounts, or ``confirmation_phrase`` set to ``"DELETE"`` for SSO or API-key authenticated requests.
 
-Example
+Example (SSO / API-key authenticated request)
 
 .. code::
 
@@ -247,7 +341,6 @@ Example
         --header 'Content-Type: application/json' \
         --header 'Authorization: Bearer <YOUR_AUTH_TOKEN>' \
         --data-raw '{
-            "password": "yourPassword",
             "confirmation_phrase": "DELETE",
             "immediate": true
         }'

@@ -21,7 +21,7 @@ OutboundConfig Struct
 Fields
 ------
 
-* ``id`` (UUID): Server-generated unique identifier. Obtained from ``POST /v1/outbound_configs`` or ``GET /v1/outbound_configs``.
+* ``id`` (UUID): Server-generated unique identifier. Obtained from ``POST /v1.0/outbound_configs`` or ``GET /v1.0/outbound_configs``.
 * ``customer_id`` (UUID): The customer this config belongs to. Obtained from ``GET https://api.voipbin.net/v1.0/customer``.
 * ``name`` (String, Optional): Human-readable label.
 * ``detail`` (String, Optional): Extended description.

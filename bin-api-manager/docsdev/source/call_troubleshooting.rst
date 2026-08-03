@@ -7,7 +7,7 @@ This guide helps you diagnose and resolve common call issues. Each problem inclu
 
 .. note:: **AI Implementation Hint**
 
-   When troubleshooting, always start by fetching the call details: ``GET /v1/calls/{call-id}``. The ``status``, ``hangup_by``, ``hangup_reason``, and timestamp fields provide the primary diagnostic information. If the call has an associated ``flow_id``, also check ``GET /v1/activeflows/{activeflow-id}`` for flow execution errors.
+   When troubleshooting, always start by fetching the call details: ``GET /calls/{call-id}``. The ``status``, ``hangup_by``, ``hangup_reason``, and timestamp fields provide the primary diagnostic information. If the call has an associated ``flow_id``, also check ``GET /activeflows/{activeflow-id}`` for flow execution errors.
 
 Debugging Tools
 ---------------
@@ -19,20 +19,20 @@ Before troubleshooting, understand the tools available:
 .. code::
 
     Get call details:
-    GET /v1/calls/{call-id}
+    GET /calls/{call-id}
 
     Get activeflow status:
-    GET /v1/activeflows/{activeflow-id}
+    GET /activeflows/{activeflow-id}
 
     Get recordings (use recording_ids from the call object):
-    GET /v1/recordings/{recording-id}
+    GET /recordings/{recording-id}
 
     List all recordings:
-    GET /v1/recordings
+    GET /recordings
 
 .. note:: **AI Implementation Hint**
 
-   The ``call-id`` is a UUID returned when creating a call via ``POST /v1/calls`` or from webhook events. The ``activeflow-id`` is obtained from the call's ``activeflow_id`` field. The ``recording-id`` is obtained from the call's ``recording_ids`` array. All debugging endpoints require a valid authentication token (JWT or access key).
+   The ``call-id`` is a UUID returned when creating a call via ``POST /calls`` or from webhook events. The ``activeflow-id`` is obtained from the call's ``activeflow_id`` field. The ``recording-id`` is obtained from the call's ``recording_ids`` array. All debugging endpoints require a valid authentication token (JWT or access key).
 
 **WebSocket for Real-time Monitoring:**
 
@@ -52,26 +52,26 @@ Before troubleshooting, understand the tools available:
     - call_ringing
     - call_progressing
     - call_hangup
-    - call_recording_started
-    - call_transcribing
+    - recording_started / recording_finished
+    - transcribe_created / transcribe_progressing / transcribe_done
 
 Call Never Connects
 -------------------
 
-**Symptom:** Call status goes directly from ``dialing`` to ``hangup``. The ``hangup_reason`` is ``failed``. No ringing ever occurred (``tm_ringing`` is ``9999-01-01 00:00:00.000000``).
+**Symptom:** Call status goes directly from ``dialing`` to ``hangup``. The ``hangup_reason`` is ``failed``. No ringing ever occurred (``tm_ringing`` is absent from the response).
 
 **Diagnostic API call:**
 
 .. code::
 
-    GET /v1/calls/{call-id}
+    GET /calls/{call-id}
 
     Look for:
     {
       "status": "hangup",
       "hangup_reason": "failed",
-      "hangup_by": "remote",
-      "tm_ringing": "9999-01-01 00:00:00.000000"
+      "hangup_by": "remote"
+      // "tm_ringing" is absent -- the destination never rang
     }
 
 **Cause 1: Invalid Phone Number Format**
@@ -92,13 +92,13 @@ Call Never Connects
     Source number not in your account, or is a virtual number.
 
     Diagnostic:
-    GET /v1/numbers
+    GET /numbers
     Verify the source number appears in the response with:
     - type: "normal" (not "virtual")
     - status: "active"
 
     Fix:
-    Purchase a number via POST /v1/numbers or use a normal,
+    Purchase a number via POST /numbers or use a normal,
     active number you already own. Virtual numbers cannot be
     used as the source for outgoing PSTN calls.
 
@@ -119,7 +119,7 @@ Call Never Connects
     Account balance too low for call.
 
     Diagnostic:
-    GET /v1/billing-accounts
+    GET /billing-accounts
     Check that balance > 0 and status = "active".
 
     Fix:
@@ -149,7 +149,7 @@ Source Number / Caller ID Issues
 
 .. code::
 
-    GET /v1/calls/{call-id}
+    GET /calls/{call-id}
 
     Check the source field in the response:
     {
@@ -185,7 +185,7 @@ Source Number / Caller ID Issues
     Only "normal" type numbers can be used as source for PSTN calls.
 
     Diagnostic:
-    GET /v1/numbers
+    GET /numbers
     Find the number and check its "type" field.
 
     Fix:
@@ -200,11 +200,11 @@ Source Number / Caller ID Issues
     has been deleted.
 
     Diagnostic:
-    GET /v1/numbers
+    GET /numbers
     Verify the source number appears with status: "active".
 
     Fix:
-    Purchase the number via POST /v1/numbers or use one
+    Purchase the number via POST /numbers or use one
     you already own.
 
 **Cause 4: Default Number Fallback**
@@ -215,7 +215,7 @@ Source Number / Caller ID Issues
     OutboundConfig for ``default_outgoing_source_number_id``.
 
     If set: The call uses that number as caller ID (after re-validation
-            against ``GET /v1/numbers`` filters: customer-owned, normal,
+            against ``GET /numbers`` filters: customer-owned, normal,
             active, not soft-deleted).
     If unset (uuid.Nil) or the validated number is no longer valid:
             The call is rejected with no fallback.
@@ -226,7 +226,7 @@ Source Number / Caller ID Issues
       "default_outgoing_source_number_id": "<number-uuid>"
     }
 
-    The number-uuid must be from GET /v1/numbers (an active
+    The number-uuid must be from GET /numbers (an active
     normal number you own). The default is re-validated at
     call time, so a number that was valid when configured but
     later released or deactivated will fail.
@@ -279,7 +279,7 @@ Call Rings But No Answer
 
     Increase dial_timeout in your call request:
 
-    POST /v1/calls
+    POST /calls
     {
       "dial_timeout": 45000,
       "destinations": [...]
@@ -297,7 +297,7 @@ Call Answers But No Audio
 
 .. code::
 
-    GET /v1/calls/{call-id}
+    GET /calls/{call-id}
 
     Check these fields:
     - status: should be "progressing"
@@ -338,16 +338,16 @@ Call Answers But No Audio
     - One party can hear, other cannot
 
     Diagnostic:
-    GET /v1/calls/{call-id}
+    GET /calls/{call-id}
     {
       "mute_direction": "both"
     }
 
     Fix (unhold the call):
-    DELETE /v1/calls/{call-id}/hold
+    DELETE /calls/{call-id}/hold
 
     Fix (unmute the call):
-    DELETE /v1/calls/{call-id}/mute
+    DELETE /calls/{call-id}/mute
 
 .. note:: **AI Implementation Hint**
 
@@ -362,7 +362,7 @@ Flow Actions Not Executing
 
 .. code::
 
-    GET /v1/activeflows/{activeflow-id}
+    GET /activeflows/{activeflow-id}
 
     Look for error in current_action:
     {
@@ -394,7 +394,7 @@ Flow Actions Not Executing
     An action fails and flow stops.
 
     Diagnostic:
-    GET /v1/activeflows/{activeflow-id}
+    GET /activeflows/{activeflow-id}
 
     Fix:
     Check the error message in current_action.
@@ -419,11 +419,11 @@ Flow Actions Not Executing
 
     Fix:
     Verify all target_ids match an action "id" in the same flow.
-    Use GET /v1/flows/{flow-id} to inspect the flow definition.
+    Use GET /flows/{flow-id} to inspect the flow definition.
 
 .. note:: **AI Implementation Hint**
 
-   If flow actions are not executing at all, verify that the call has a ``flow_id`` set (not ``00000000-0000-0000-0000-000000000000``). For outbound calls, you must either provide ``actions`` inline in ``POST /v1/calls`` or reference an existing flow via ``flow_id``. For inbound calls, the flow is determined by the phone number configuration -- check ``GET /v1/numbers/{number-id}`` for the ``flow_id`` assignment.
+   If flow actions are not executing at all, verify that the call has a ``flow_id`` set (not ``00000000-0000-0000-0000-000000000000``). For outbound calls, you must either provide ``actions`` inline in ``POST /calls`` or reference an existing flow via ``flow_id``. For inbound calls, the flow is determined by the phone number configuration -- check ``GET /numbers/{number-id}`` for the ``flow_id`` assignment.
 
 Webhooks Not Received
 ---------------------
@@ -435,7 +435,7 @@ Webhooks Not Received
 .. code::
 
     1. Verify webhook configuration on your customer profile:
-    GET /v1/customer
+    GET /customer
 
     Check the webhook_method and webhook_uri fields:
     {
@@ -444,7 +444,7 @@ Webhooks Not Received
     }
 
     If webhook_uri is empty, webhooks are not configured.
-    Update via PUT /v1/customer with webhook_method and webhook_uri.
+    Update via PUT /customer with webhook_method and webhook_uri.
 
 **Cause 1: Endpoint not accessible**
 
@@ -480,12 +480,12 @@ Webhooks Not Received
     - No webhooks received at all
 
     Diagnostic:
-    GET /v1/customer
+    GET /customer
     Check that webhook_method is "post" and webhook_uri
     is set to your endpoint URL.
 
     Fix:
-    PUT /v1/customer
+    PUT /customer
     {
       "webhook_method": "post",
       "webhook_uri": "https://your-server.com/webhook"
@@ -493,7 +493,7 @@ Webhooks Not Received
 
 .. note:: **AI Implementation Hint**
 
-   Webhook delivery is retried up to 3 times with exponential backoff. If all retries fail, the event is dropped. Always return HTTP 200 immediately and process asynchronously. Webhook configuration is managed via the customer profile: use ``GET /v1/customer`` to check ``webhook_method`` and ``webhook_uri``, and ``PUT /v1/customer`` to update them. VoIPBIN sends all event types to your configured endpoint -- there is no per-event subscription.
+   Webhook delivery is retried up to 3 times with exponential backoff. If all retries fail, the event is dropped. Always return HTTP 200 immediately and process asynchronously. Webhook configuration is managed via the customer profile: use ``GET /customer`` to check ``webhook_method`` and ``webhook_uri``, and ``PUT /customer`` to update them. VoIPBIN sends all event types to your configured endpoint -- there is no per-event subscription.
 
 Recording Issues
 ----------------
@@ -504,7 +504,7 @@ Recording Issues
 
 .. code::
 
-    GET /v1/calls/{call-id}
+    GET /calls/{call-id}
     Check the recording_ids array:
     {
       "recording_ids": []
@@ -524,7 +524,7 @@ Recording Issues
 
     Fix:
     Verify flow has record_start action.
-    Check GET /v1/activeflows/{activeflow-id} for errors.
+    Check GET /activeflows/{activeflow-id} for errors.
 
 **Cause 2: Recording Empty (duration 0)**
 
@@ -546,7 +546,7 @@ Recording Issues
 .. code::
 
     Symptoms:
-    - GET /v1/recordings/{id} returns a URL
+    - GET /recordings/{id} returns a URL
     - Downloading the URL fails with HTTP 403
 
     Cause:
@@ -554,12 +554,12 @@ Recording Issues
 
     Fix:
     Fetch a fresh URL from the API:
-    GET /v1/recordings/{recording-id}
+    GET /recordings/{recording-id}
     Download immediately after getting the URL.
 
 .. note:: **AI Implementation Hint**
 
-   Recording upload to cloud storage is asynchronous. After a call ends, the recording may take a few seconds to become available. If ``GET /v1/recordings/{recording-id}`` returns a recording without a ``url``, the upload is still in progress. Poll the endpoint until ``url`` is populated. Cloud storage retention is 90 days by default -- download recordings before they expire.
+   Recording upload to cloud storage is asynchronous. After a call ends, the recording may take a few seconds to become available. If ``GET /recordings/{recording-id}`` returns a recording without a ``url``, the upload is still in progress. Poll the endpoint until ``url`` is populated. Cloud storage retention is 90 days by default -- download recordings before they expire.
 
 Transfer Problems
 -----------------
@@ -574,7 +574,7 @@ Transfer Problems
     to look up the transfer object and inspect its state.
 
     List transfers:
-    GET /v1/transfers
+    GET /transfers
 
 **Cause 1: Blind Transfer Fails**
 
@@ -599,7 +599,7 @@ Transfer Problems
     - Agent A cannot reach Agent B
 
     Diagnostic:
-    Check the transfer via GET /v1/transfers to find
+    Check the transfer via GET /transfers to find
     the transfer and its associated call IDs.
 
     Fix:
@@ -619,12 +619,12 @@ Transfer Problems
 
     Fix:
     Put the caller on hold before initiating the transfer:
-    POST /v1/calls/{call-id}/hold
-    POST /v1/calls/{call-id}/moh
+    POST /calls/{call-id}/hold
+    POST /calls/{call-id}/moh
 
 .. note:: **AI Implementation Hint**
 
-   Transfers are initiated via ``POST /v1/transfers`` with ``transferer_call_id`` (UUID, obtained from ``GET /v1/calls``) and ``transferee_addresses`` in the request body. The ``transfer_type`` field specifies ``attended`` or ``blind``. The response includes a ``transfer_id`` (UUID) and associated call/groupcall IDs. If a blind transfer fails, the caller may be disconnected with no way to recover. For critical calls, always prefer attended transfer.
+   Transfers are initiated via ``POST /transfers`` with ``transferer_call_id`` (UUID, obtained from ``GET /calls``) and ``transferee_addresses`` in the request body. The ``transfer_type`` field specifies ``attended`` or ``blind``. The response includes a ``transfer_id`` (UUID) and associated call/groupcall IDs. If a blind transfer fails, the caller may be disconnected with no way to recover. For critical calls, always prefer attended transfer.
 
 Queue Problems
 --------------
@@ -636,14 +636,14 @@ Queue Problems
 .. code::
 
     Check queue status:
-    GET /v1/queues/{queue-id}
+    GET /queues/{queue-id}
     {
       "wait_queuecall_ids": ["uuid-1", "uuid-2"],
       "service_queuecall_ids": []
     }
 
     Check agent status:
-    GET /v1/agents
+    GET /agents
     Verify agents have status: "available"
 
 **Cause 1: No Available Agents**
@@ -660,7 +660,7 @@ Queue Problems
     - Agent status not updated after previous call
 
     Fix:
-    Verify agent status via GET /v1/agents.
+    Verify agent status via GET /agents.
     Ensure agents set their status to "available" after calls.
 
 **Cause 2: Calls Timing Out in Queue**
@@ -671,7 +671,7 @@ Queue Problems
     - Calls hang up after short wait
 
     Diagnostic:
-    GET /v1/queues/{queue-id}
+    GET /queues/{queue-id}
     {
       "wait_timeout": 30000,
       "service_timeout": 60000
@@ -679,7 +679,7 @@ Queue Problems
 
     Fix:
     Increase wait_timeout to give agents more time to answer:
-    PUT /v1/queues/{queue-id}
+    PUT /queues/{queue-id}
     {
       "wait_timeout": 300000,
       "wait_flow_id": "voicemail-flow-uuid"
@@ -687,7 +687,7 @@ Queue Problems
 
 .. note:: **AI Implementation Hint**
 
-   The ``queue-id`` is a UUID obtained from ``GET /v1/queues``. The ``wait_flow_id`` must reference a valid flow (obtained from ``GET /v1/flows``) that handles the fallback (e.g., play a message and take a voicemail). Agent status is managed via ``PUT /v1/agents/{agent-id}`` with the ``status`` field. Common agent statuses are ``available``, ``busy``, ``away``, and ``offline``.
+   The ``queue-id`` is a UUID obtained from ``GET /queues``. The ``wait_flow_id`` must reference a valid flow (obtained from ``GET /flows``) that handles the fallback (e.g., play a message and take a voicemail). Agent status is managed via ``PUT /agents/{agent-id}`` with the ``status`` field. Common agent statuses are ``available``, ``busy``, ``away``, and ``offline``.
 
 Error Reference
 ---------------
@@ -744,7 +744,7 @@ Error Reference
 
 .. note:: **AI Implementation Hint**
 
-   For HTTP 400 errors, the response body contains a detailed error message describing which field is invalid. For HTTP 404, always verify the resource ID by calling the corresponding list endpoint first (e.g., ``GET /v1/calls`` to verify a call-id exists before operating on it). For HTTP 429, implement exponential backoff starting at 1 second. For HTTP 500, include the ``x-request-id`` response header when contacting support.
+   For HTTP 400 errors, the response body contains a detailed error message describing which field is invalid. For HTTP 404, always verify the resource ID by calling the corresponding list endpoint first (e.g., ``GET /calls`` to verify a call-id exists before operating on it). For HTTP 429, implement exponential backoff starting at 1 second. For HTTP 500, include the ``x-request-id`` response header when contacting support.
 
 Getting Help
 ------------

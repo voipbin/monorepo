@@ -56,7 +56,7 @@ All Go microservices run in Kubernetes:
     |                     GKE Cluster                                 |
     +----------------------------------------------------------------+
     |                                                                  |
-    |  Namespace: production                                           |
+    |  Namespace: bin-manager                                          |
     |  +-----------------------------------------------------------+  |
     |  |                                                           |  |
     |  |  Deployment: bin-api-manager (2 replicas)                 |  |
@@ -79,9 +79,15 @@ All Go microservices run in Kubernetes:
     |                                                                  |
     +----------------------------------------------------------------+
 
-**Standard Deployment Pattern:**
+**Standard Deployment Pattern (illustrative shape):**
 
-All services follow the same deployment pattern:
+All backend services follow a similar deployment pattern; ``replicas: 2``
+and the ``2112`` Prometheus metrics port are consistent across services in
+their real manifests (see e.g. ``bin-call-manager/k8s/deployment.yml``).
+The rest of the fields below (image path, resource limits, and especially
+the liveness/readiness probes) are illustrative -- most backend service
+manifests today only declare the metrics container port and do not define
+``livenessProbe``/``readinessProbe`` at all:
 
 .. code::
 
@@ -100,7 +106,6 @@ All services follow the same deployment pattern:
           - name: bin-call-manager
             image: gcr.io/voipbin/bin-call-manager:latest
             ports:
-            - containerPort: 8080      # Health check
             - containerPort: 2112      # Prometheus metrics
             resources:
               requests:
@@ -109,29 +114,17 @@ All services follow the same deployment pattern:
               limits:
                 memory: "512Mi"
                 cpu: "500m"
-            livenessProbe:
-              httpGet:
-                path: /health
-                port: 8080
-              initialDelaySeconds: 30
-              periodSeconds: 10
-            readinessProbe:
-              httpGet:
-                path: /ready
-                port: 8080
-              initialDelaySeconds: 5
-              periodSeconds: 5
             env:
-            - name: DSN
+            - name: DATABASE_DSN
               valueFrom:
                 secretKeyRef:
-                  name: db-credentials
-                  key: dsn
-            - name: RABBIT_ADDR
+                  name: voipbin
+                  key: DATABASE_DSN_BIN
+            - name: RABBITMQ_ADDRESS
               valueFrom:
-                configMapKeyRef:
-                  name: app-config
-                  key: rabbit_addr
+                secretKeyRef:
+                  name: voipbin
+                  key: RABBITMQ_ADDRESS
 
 **Pod Ports:**
 
@@ -146,11 +139,13 @@ All services follow the same deployment pattern:
     | Port 2112  - Prometheus metrics          |
     +------------------------------------------+
 
-    Other Services:
+    Other Services (typical):
     +------------------------------------------+
-    | Port 8080  - Health/Ready endpoints      |
     | Port 2112  - Prometheus metrics          |
     +------------------------------------------+
+
+    A minority of services expose an additional port for their own
+    purposes (for example bin-flow-manager also exposes port 80).
 
 .. note:: **AI Implementation Hint**
 
@@ -158,6 +153,17 @@ All services follow the same deployment pattern:
 
 Service Scaling
 ---------------
+
+.. note::
+
+   The HPA configuration, scaling triggers, and per-service min/max replica
+   limits below describe a target autoscaling design, not the current
+   state of the manifests in this repository. Every ``bin-*-manager``
+   deployment manifest under ``k8s/deployment.yml`` in this monorepo
+   currently sets a fixed ``replicas: 2`` with no
+   ``HorizontalPodAutoscaler`` resource defined alongside it. Today,
+   scaling beyond the fixed replica count is a manual operation (edit
+   ``replicas`` and re-apply), not automatic.
 
 VoIPBIN scales services based on demand:
 

@@ -102,7 +102,7 @@ Asterisk-specific protocol for simple audio streaming.
 - Low-overhead streaming
 - Simple audio applications
 
-**Codec:** All formats use **16-bit, 8kHz, mono** audio (ulaw for RTP/SLN, PCM little-endian for AudioSocket)
+**Codec:** All three encapsulations carry the same underlying audio: **16-bit signed linear PCM, 8kHz, mono**. For ``rtp``, the RTP header advertises payload type 0 (normally G.711 µ-law/PCMU), but the actual payload bytes are raw 16-bit PCM, not µ-law-encoded -- decode every encapsulation as raw 16-bit PCM regardless of what the RTP payload type field claims.
 
 WebSocket Client Examples
 --------------------------
@@ -224,7 +224,7 @@ WebSocket Client Examples
     function generateAudio() {
         // Generate audio to send
         // Returns ArrayBuffer with RTP packets
-        return new ArrayBuffer(172); // RTP packet size
+        return new ArrayBuffer(332); // RTP packet size (12-byte header + 320-byte 16-bit PCM payload, 20ms)
     }
 
 **Node.js Example (AudioSocket):**

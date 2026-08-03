@@ -110,7 +110,7 @@ The resource type that triggered the activeflow execution.
 Type         Description
 ============ ================================================
 call         Incoming or outgoing call triggered the flow.
-message      Incoming SMS/MMS message triggered the flow.
+conversation A message in a conversation (SMS, chat, etc.) triggered the flow.
 api          Flow started via API call.
 campaign     Outbound campaign triggered the flow.
 transcribe   Transcription service triggered the flow.

@@ -203,6 +203,27 @@ Create chats and manage participants through the Talk API.
     $ curl -X DELETE 'https://api.voipbin.net/v1.0/service_agents/talk_chats/<chat-id>/participants/<participant-id>?token=<token>'
 
 
+Discovering and Joining Public Channels
+----------------------------------------
+Public ``talk`` type chats (e.g., ``#general``) work differently from ``direct`` and ``group`` chats: any agent in the customer can discover and join them without an invitation.
+
+**List Public Channels**
+
+``GET /service_agents/talk_channels`` returns every public ``talk`` type channel for the customer, regardless of whether the requesting agent has joined it. This differs from ``GET /service_agents/talk_chats``, which only returns chats the agent already participates in.
+
+.. code::
+
+    $ curl -X GET 'https://api.voipbin.net/v1.0/service_agents/talk_channels?token=<token>'
+
+**Join a Public Channel**
+
+``POST /service_agents/talk_chats/{id}/join`` adds the authenticated agent as a participant of a ``talk`` type chat in a single call, without needing to know another participant's ID. This endpoint only works for ``talk`` type chats; use the participants endpoint above for ``direct``/``group`` chats.
+
+.. code::
+
+    $ curl -X POST 'https://api.voipbin.net/v1.0/service_agents/talk_chats/<chat-id>/join?token=<token>'
+
+
 Sending Messages
 ----------------
 Send messages within talks with support for threading and media.

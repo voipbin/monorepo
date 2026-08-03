@@ -20,7 +20,7 @@ Defines source/destination address. This structure is used throughout VoIPBIN wh
     }
 
 * ``type`` (enum string): Address type. Determines how ``target`` is interpreted. See :ref:`Type <common-struct-address-type>`.
-* ``target`` (String): The address endpoint. Format depends on ``type``: E.164 phone number for ``tel`` (e.g., ``+15551234567``), extension number for ``extension`` (e.g., ``2001``), agent UUID for ``agent`` (obtained from ``GET /agents``), or SIP URI for ``sip`` (e.g., ``user@domain.com``).
+* ``target`` (String): The address endpoint. Format depends on ``type``: E.164 phone number for ``tel`` (e.g., ``+15551234567``), extension number for ``extension`` (e.g., ``2001``), agent UUID for ``agent`` (obtained from ``GET /agents``), SIP URI for ``sip`` (e.g., ``user@domain.com``), WhatsApp phone number for ``whatsapp``, webchat widget UUID for ``webchat``, or webchat session UUID for ``web_session``.
 * ``target_name`` (String): Display name associated with the address. For ``tel`` type, this is the caller ID name. Optional. **For ``extension`` type, this is the routing key** and must be set to the target extension's ``extension`` (username) field, not its ``name`` (display label) field. See :ref:`Extension <extension-struct-extension-extension>`.
 * ``name`` (String): A human-readable label for this address. Optional.
 * ``detail`` (String): Additional description or metadata for this address. Optional.
@@ -87,5 +87,8 @@ extension   Address for calling an extension number. ``target`` is the extension
 line        Line type address. Used for LINE messaging integrations. ``target`` is the LINE user or channel ID.
 sip         SIP protocol address. ``target`` is a SIP URI (e.g., ``user@domain.com``).
 tel         Telephone number address. ``target`` must be in E.164 format (e.g., ``+15551234567``).
+webchat     Address for a webchat widget (the customer/agent side of a webchat conversation). ``target`` is the webchat widget's UUID.
+web_session Address for a webchat visitor session (the visitor side of a webchat conversation). ``target`` is the webchat session's UUID -- the visitor's continuity token.
+whatsapp    Address for a WhatsApp conversation. ``target`` is the WhatsApp phone number.
 =========== =====================================================================
 

@@ -892,3 +892,437 @@ Example
             "tm_delete": "9999-01-01 00:00:00.000000"
         }
     }
+
+.. _webhook-struct-webhook-message_created:
+
+message_created
+----------------
+The notification message for a new SMS message (sent or received).
+
+.. code::
+
+    {
+        "type": "message_created",
+        "data": {
+            ...
+        }
+    }
+
+* ``type`` (enum string): The webhook type. Value: ``"message_created"``.
+* ``data`` (Object): The detail of the message. See detail :ref:`here <message-struct-message>`.
+
+Example
++++++++
+
+.. code::
+
+    {
+        "type": "message_created",
+        "data": {
+            "id": "a5d2114a-8e84-48cd-8bb2-c406eeb08cd1",
+            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+            "type": "sms",
+            "source": {
+                "type": "tel",
+                "target": "+15551234567",
+                "target_name": "",
+                "name": "",
+                "detail": ""
+            },
+            "targets": [
+                {
+                    "destination": {
+                        "type": "tel",
+                        "target": "+15559876543",
+                        "target_name": "",
+                        "name": "",
+                        "detail": ""
+                    },
+                    "status": "queued",
+                    "parts": 1,
+                    "tm_update": "2022-03-13 15:11:06.497184"
+                }
+            ],
+            "text": "Hello, this is test message.",
+            "direction": "outbound",
+            "tm_create": "2022-03-13 15:11:05.235717",
+            "tm_update": "2022-03-13 15:11:05.235717",
+            "tm_delete": "9999-01-01 00:00:00.000000"
+        }
+    }
+
+.. _webhook-struct-webhook-message_updated:
+
+message_updated
+----------------
+The notification message for an SMS message's delivery status update.
+
+.. code::
+
+    {
+        "type": "message_updated",
+        "data": {
+            ...
+        }
+    }
+
+* ``type`` (enum string): The webhook type. Value: ``"message_updated"``.
+* ``data`` (Object): The detail of the message. See detail :ref:`here <message-struct-message>`.
+
+.. _webhook-struct-webhook-email_created:
+
+email_created
+--------------
+The notification message for a new email (sent or received).
+
+.. code::
+
+    {
+        "type": "email_created",
+        "data": {
+            ...
+        }
+    }
+
+* ``type`` (enum string): The webhook type. Value: ``"email_created"``.
+* ``data`` (Object): The detail of the email. See detail :ref:`here <email-struct-email>`.
+
+Example
++++++++
+
+.. code::
+
+    {
+        "type": "email_created",
+        "data": {
+            "id": "1f25e6c9-6709-44d1-b93e-a5f1c5f80411",
+            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+            "source": {
+                "type": "email",
+                "target": "service@voipbin.net",
+                "target_name": "voipbin service",
+                "name": "",
+                "detail": ""
+            },
+            "destinations": [
+                {
+                    "type": "email",
+                    "target": "recipient@example.com",
+                    "target_name": "",
+                    "name": "",
+                    "detail": ""
+                }
+            ],
+            "status": "initiated",
+            "subject": "Hello from VoIPBIN",
+            "content": "This is a test email sent via the VoIPBIN API.",
+            "attachments": [],
+            "tm_create": "2025-03-14 19:04:01.160250",
+            "tm_update": "2025-03-14 19:04:01.160250",
+            "tm_delete": "9999-01-01 00:00:00.000000"
+        }
+    }
+
+.. _webhook-struct-webhook-email_updated:
+
+email_updated
+--------------
+The notification message for an email's delivery status update (e.g. ``processed``, ``delivered``, ``bounce``).
+
+.. code::
+
+    {
+        "type": "email_updated",
+        "data": {
+            ...
+        }
+    }
+
+* ``type`` (enum string): The webhook type. Value: ``"email_updated"``.
+* ``data`` (Object): The detail of the email. See detail :ref:`here <email-struct-email>`.
+
+.. _webhook-struct-webhook-email_deleted:
+
+email_deleted
+--------------
+The notification message for an email delete.
+
+.. code::
+
+    {
+        "type": "email_deleted",
+        "data": {
+            ...
+        }
+    }
+
+* ``type`` (enum string): The webhook type. Value: ``"email_deleted"``.
+* ``data`` (Object): The detail of the email. See detail :ref:`here <email-struct-email>`.
+
+.. _webhook-struct-webhook-webchat_message_created:
+
+webchat_message_created
+------------------------
+The notification message for a new webchat message (inbound from the visitor or outbound from Flow/AI/an agent).
+
+.. code::
+
+    {
+        "type": "webchat_message_created",
+        "data": {
+            ...
+        }
+    }
+
+* ``type`` (enum string): The webhook type. Value: ``"webchat_message_created"``.
+* ``data`` (Object): The detail of the webchat message. See detail :ref:`here <webchat-struct-message>`.
+
+Example
++++++++
+
+.. code::
+
+    {
+        "type": "webchat_message_created",
+        "data": {
+            "id": "b1c2d3e4-f5a6-7890-bcde-f12345678901",
+            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+            "widget_id": "550e8400-e29b-41d4-a716-446655440000",
+            "session_id": "7a1bcb1a-1b8e-4f5c-9a6d-3e2f1a0b4c5d",
+            "direction": "inbound",
+            "status": "sent",
+            "text": "Hi, I need help with my order",
+            "tm_create": "2025-03-14 19:04:01.160250",
+            "tm_delete": "9999-01-01 00:00:00.000000"
+        }
+    }
+
+.. _webhook-struct-webhook-webchat_session_ended:
+
+webchat_session_ended
+-----------------------
+The notification message for a webchat session ending (explicitly or via idle timeout).
+
+.. code::
+
+    {
+        "type": "webchat_session_ended",
+        "data": {
+            ...
+        }
+    }
+
+* ``type`` (enum string): The webhook type. Value: ``"webchat_session_ended"``.
+* ``data`` (Object): The detail of the webchat session. See detail :ref:`here <webchat-struct-session>`.
+
+.. _webhook-struct-webhook-conversation_created:
+
+conversation_created
+----------------------
+The notification message for a new conversation.
+
+.. code::
+
+    {
+        "type": "conversation_created",
+        "data": {
+            ...
+        }
+    }
+
+* ``type`` (enum string): The webhook type. Value: ``"conversation_created"``.
+* ``data`` (Object): The detail of the conversation. See detail :ref:`here <conversation-struct-conversation>`.
+
+Example
++++++++
+
+.. code::
+
+    {
+        "type": "conversation_created",
+        "data": {
+            "id": "bdc9d9f5-706c-4e2d-9be7-7dc1e5fd45a0",
+            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+            "owner_type": "",
+            "owner_id": "00000000-0000-0000-0000-000000000000",
+            "account_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+            "name": "conversation",
+            "detail": "conversation detail",
+            "type": "message",
+            "dialog_id": "+673802",
+            "self": {
+                "type": "tel",
+                "target": "+14703298699",
+                "target_name": "",
+                "name": "",
+                "detail": ""
+            },
+            "peer": {
+                "type": "tel",
+                "target": "+673802",
+                "target_name": "",
+                "name": "",
+                "detail": ""
+            },
+            "tm_create": "2022-06-23 05:05:40.950834",
+            "tm_update": "2022-06-23 05:05:40.950842",
+            "tm_delete": "9999-01-01 00:00:00.000000"
+        }
+    }
+
+.. _webhook-struct-webhook-conversation_updated:
+
+conversation_updated
+----------------------
+The notification message for a conversation update (e.g. assignment to an agent).
+
+.. code::
+
+    {
+        "type": "conversation_updated",
+        "data": {
+            ...
+        }
+    }
+
+* ``type`` (enum string): The webhook type. Value: ``"conversation_updated"``.
+* ``data`` (Object): The detail of the conversation. See detail :ref:`here <conversation-struct-conversation>`.
+
+.. _webhook-struct-webhook-conversation_message_created:
+
+conversation_message_created
+-------------------------------
+The notification message for a new message within a conversation.
+
+.. code::
+
+    {
+        "type": "conversation_message_created",
+        "data": {
+            ...
+        }
+    }
+
+* ``type`` (enum string): The webhook type. Value: ``"conversation_message_created"``.
+* ``data`` (Object): The detail of the conversation message. See detail :ref:`here <conversation-struct-message>`.
+
+Example
++++++++
+
+.. code::
+
+    {
+        "type": "conversation_message_created",
+        "data": {
+            "id": "cc46341b-f00a-452f-b527-19c85d030eaf",
+            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+            "conversation_id": "64558b45-40a8-43db-b814-9c0dbf6d47b5",
+            "direction": "incoming",
+            "status": "done",
+            "reference_type": "line",
+            "reference_id": "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
+            "source": {
+                "type": "line",
+                "target": "Ud871bcaf7c3ad13d2a0b0d78a42a287f"
+            },
+            "destination": {
+                "type": "line",
+                "target": ""
+            },
+            "text": "안녕",
+            "medias": [],
+            "tm_create": "2022-06-24 04:28:51.558082",
+            "tm_update": "2022-06-24 04:28:51.558090",
+            "tm_delete": "9999-01-01 00:00:00.000000"
+        }
+    }
+
+.. _webhook-struct-webhook-conversation_message_updated:
+
+conversation_message_updated
+-------------------------------
+The notification message for a conversation message's status update.
+
+.. code::
+
+    {
+        "type": "conversation_message_updated",
+        "data": {
+            ...
+        }
+    }
+
+* ``type`` (enum string): The webhook type. Value: ``"conversation_message_updated"``.
+* ``data`` (Object): The detail of the conversation message. See detail :ref:`here <conversation-struct-message>`.
+
+.. _webhook-struct-webhook-conversation_message_deleted:
+
+conversation_message_deleted
+-------------------------------
+The notification message for a conversation message delete.
+
+.. code::
+
+    {
+        "type": "conversation_message_deleted",
+        "data": {
+            ...
+        }
+    }
+
+* ``type`` (enum string): The webhook type. Value: ``"conversation_message_deleted"``.
+* ``data`` (Object): The detail of the conversation message. See detail :ref:`here <conversation-struct-message>`.
+
+.. _webhook-struct-webhook-account_created:
+
+account_created
+-----------------
+The notification message for a new conversation account.
+
+.. code::
+
+    {
+        "type": "account_created",
+        "data": {
+            ...
+        }
+    }
+
+* ``type`` (enum string): The webhook type. Value: ``"account_created"``.
+* ``data`` (Object): The detail of the conversation account. See detail :ref:`here <conversation-struct-account>`.
+
+.. _webhook-struct-webhook-account_updated:
+
+account_updated
+-----------------
+The notification message for a conversation account update.
+
+.. code::
+
+    {
+        "type": "account_updated",
+        "data": {
+            ...
+        }
+    }
+
+* ``type`` (enum string): The webhook type. Value: ``"account_updated"``.
+* ``data`` (Object): The detail of the conversation account. See detail :ref:`here <conversation-struct-account>`.
+
+.. _webhook-struct-webhook-account_deleted:
+
+account_deleted
+-----------------
+The notification message for a conversation account delete.
+
+.. code::
+
+    {
+        "type": "account_deleted",
+        "data": {
+            ...
+        }
+    }
+
+* ``type`` (enum string): The webhook type. Value: ``"account_deleted"``.
+* ``data`` (Object): The detail of the conversation account. See detail :ref:`here <conversation-struct-account>`.

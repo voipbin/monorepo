@@ -3,7 +3,7 @@
 **************
 Tag
 **************
-Attach key-value tags to VoIPBIN resources for organization, filtering, and categorization.
+Attach named tags to VoIPBIN resources for organization, filtering, and categorization.
 
 **API Reference:** `Tag endpoints <https://api.voipbin.net/redoc/#tag/Tag>`_
 

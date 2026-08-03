@@ -80,7 +80,7 @@ VoIPBIN supports two streaming modes based on your application's needs.
 
 .. note:: **AI Implementation Hint**
 
-   Media streaming requires the call or conference to be in ``progressing`` status (answered). The ``GET https://api.voipbin.net/v1.0/calls/{id}/media_stream`` endpoint is a WebSocket upgrade, not a regular HTTP GET. Use a WebSocket client library, not a standard HTTP client. Audio must be sent as binary WebSocket frames in consistent 20ms chunks matching the selected encapsulation format.
+   Media streaming requires the call or conference to be in ``progressing`` status (answered). The ``GET https://api.voipbin.net/v1.0/calls/{id}/media_stream`` endpoint is a WebSocket upgrade, not a regular HTTP GET. Use a WebSocket client library, not a standard HTTP client. Audio must be sent as binary WebSocket frames in consistent 20ms chunks matching the selected encapsulation format. Although the ``encapsulation`` query parameter is technically optional in the API schema, it must be set to one of ``rtp``, ``sln``, or ``audiosocket`` -- omitting it (or passing an unrecognized value) causes the connection to fail with an "unsupported encapsulation" error as soon as the first audio frame needs conversion, so treat it as required.
 
 **Bi-Directional Streaming**
 
@@ -193,7 +193,7 @@ VoIPBIN supports three encapsulation types for different integration scenarios.
           v           +---------------------------+
     [AudioSocket]                 |
                                   v
-                            [RTP default]
+                                [SLN]
 
 **RTP (Real-time Transport Protocol)**
 
@@ -201,10 +201,9 @@ The standard protocol for audio/video over IP networks.
 
 ::
 
-    .. list-table::
-
-       * - RTP Header (12 bytes)
-         - Audio Paylo (160 bytes)
+    +-------------------------+------------------------------+
+    | RTP Header (12 bytes)   | Audio Payload (160 bytes)    |
+    +-------------------------+------------------------------+
 
 
 .. list-table::
@@ -214,8 +213,10 @@ The standard protocol for audio/video over IP networks.
      - Value
    * - Protocol
      - RTP over WebSocket
-   * - Codec
-     - G.711 μ-law (ulaw)
+   * - Payload Type
+     - 0 (the RTP header advertises PCMU / G.711 µ-law), but the payload
+       bytes are actually raw 16-bit signed linear PCM, not µ-law encoded --
+       decode it as raw 16-bit PCM regardless of the advertised payload type
    * - Sample Rate
      - 8 kHz
    * - Bit Depth
@@ -223,10 +224,14 @@ The standard protocol for audio/video over IP networks.
    * - Channels
      - Mono
    * - Packet Size
-     - 172 bytes (12 header + 160 payload = 20ms)
+     - 332 bytes (12-byte RTP header + 320-byte payload = 160 samples x 2 bytes/sample, 20ms)
 
 
 **Best for:** Standard VoIP tools, industry compatibility, existing RTP processing pipelines.
+
+.. note:: **AI Implementation Hint**
+
+   Do not rely on the RTP payload type field for this stream -- treat every packet's payload as raw 16-bit signed linear PCM (little-endian, matching AudioSocket's "Slin" format) regardless of what the header claims.
 
 **SLN (Signed Linear)**
 
@@ -264,10 +269,9 @@ Asterisk-specific protocol designed for simple audio streaming.
 
 ::
 
-    .. list-table::
-
-       * - AudioSocket H
-         - r  |   PCM Audio
+    +----------------------+---------------------------------+
+    | AudioSocket Header   | PCM Audio Payload                |
+    +----------------------+---------------------------------+
 
 
 .. list-table::

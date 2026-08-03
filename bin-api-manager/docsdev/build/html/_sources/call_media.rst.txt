@@ -310,7 +310,8 @@ Dual-Tone Multi-Frequency (DTMF) for IVR input:
         "type": "digits_send",
         "option": {
             "digits": "1234#",
-            "duration": 250       // ms per digit
+            "duration": 250,      // ms per digit tone (100-1000)
+            "interval": 100       // ms between digits (0-5000)
         }
     }
 
@@ -318,20 +319,20 @@ Dual-Tone Multi-Frequency (DTMF) for IVR input:
     {
         "type": "digits_receive",
         "option": {
-            "length": 4,          // Expected digits
+            "length": 4,          // Number of DTMF events to gather before continuing
             "duration": 10000,    // Timeout ms
-            "terminator": "#"     // Optional end char
+            "key": "#"            // DTMF that ends collection early and triggers the next step
         }
     }
 
 .. note:: **AI Implementation Hint**
 
-   DTMF is handled via flow actions (``digits_send`` and ``digits_receive``), not via a direct API endpoint. Include these actions in the ``actions`` array when creating a call via ``POST /calls`` or in a flow via ``POST /flows``. The ``digits`` field accepts ``0-9``, ``*``, and ``#``. The ``duration`` controls how long each tone plays (in milliseconds). Use ``digits_receive`` to collect caller input for IVR menus.
+   DTMF is handled via flow actions (``digits_send`` and ``digits_receive``), not via a direct API endpoint. Include these actions in the ``actions`` array when creating a call via ``POST /calls`` or in a flow via ``POST /flows``. The ``digits`` field accepts ``0-9``, ``A-D``, ``*``, and ``#``, up to 100 keys. The ``duration`` controls how long each tone plays (in milliseconds). Use ``digits_receive`` to collect caller input for IVR menus; its ``key`` option (not ``terminator``) is the DTMF digit that ends collection early.
 
 Recording Formats
 -----------------
 
-VoIPBIN supports multiple recording formats:
+VoIPBIN currently supports a single recording format:
 
 .. code::
 
@@ -341,53 +342,35 @@ VoIPBIN supports multiple recording formats:
     | Format | Codec      | Quality   | File Size        |
     +--------+------------+-----------+------------------+
     | WAV    | PCM        | Lossless  | ~960 KB/min      |
-    | MP3    | MP3        | Good      | ~128 KB/min      |
-    | OGG    | Opus       | Excellent | ~96 KB/min       |
     +--------+------------+-----------+------------------+
 
-    Default: MP3 (balance of quality and size)
+    Default and only supported value: wav
 
 **Recording Configuration:**
 
 .. code::
 
-    Recording Options:
+    Recording Options (flow action):
 
     {
-        "type": "record_start",
+        "type": "recording_start",
         "option": {
-            "direction": "both",    // "in", "out", "both"
-            "format": "mp3",        // "wav", "mp3", "ogg"
-            "channels": "mixed",    // "mixed", "stereo"
-            "sample_rate": 16000    // Hz
+            "format": "wav",           // only "wav" is currently supported
+            "end_of_silence": 0,       // seconds of silence before auto-stop. 0 = no limit
+            "end_of_key": "none",      // DTMF that stops the recording: "none", "any", "*", "#"
+            "duration": 0,             // maximum recording duration in seconds. 0 = no limit
+            "beep_start": false,       // play a beep when the recording begins
+            "on_end_flow_id": ""       // flow to execute when the recording ends
         }
     }
 
-    Direction Explained:
-    +------------------------------------------+
-    | "in":   Record only incoming audio       |
-    |         (what caller says)               |
-    |                                          |
-    | "out":  Record only outgoing audio       |
-    |         (what system/agent says)         |
-    |                                          |
-    | "both": Record entire conversation       |
-    |         (default, recommended)           |
-    +------------------------------------------+
-
-    Channels:
-    +------------------------------------------+
-    | "mixed":  Single track, both parties     |
-    |           combined. Smaller file.        |
-    |                                          |
-    | "stereo": Two tracks, parties separated  |
-    |           Left = inbound, Right = outbound|
-    |           Better for analysis/transcription|
-    +------------------------------------------+
+    {
+        "type": "recording_stop"
+    }
 
 .. note:: **AI Implementation Hint**
 
-   Recording must be started with a ``record_start`` flow action and stopped with ``record_stop`` or automatically when the call hangs up. Recordings are uploaded to cloud storage asynchronously after the call ends. The recording URL obtained from ``GET /recordings/{id}`` uses signed URLs that expire after 1 hour. Fetch a fresh URL each time you need to download.
+   Recording must be started with a ``recording_start`` flow action (or via ``POST /calls/{id}/recording_start``) and stopped with a ``recording_stop`` flow action, ``POST /calls/{id}/recording_stop``, or automatically when the call hangs up. Only ``format: "wav"`` is currently supported — other values are not processed by the recording pipeline. Recordings are uploaded to cloud storage asynchronously after the call ends. The recording URL obtained from ``GET /recordings/{id}`` uses signed URLs that expire after 1 hour. Fetch a fresh URL each time you need to download. See :ref:`Recording Overview <recording-overview>` for the full recording lifecycle.
 
 Text-to-Speech (TTS)
 --------------------
@@ -468,8 +451,9 @@ Real-time transcription of audio:
         "type": "transcribe_start",
         "option": {
             "language": "en-US",
-            "direction": "both",      // "in", "out", "both"
-            "interim_results": false  // Real-time partials
+            "direction": "both",         // "in", "out", "both". default: "both"
+            "provider": "gcp",           // "gcp" or "aws"
+            "on_end_flow_id": ""         // Optional: flow to execute when transcription ends
         }
     }
 

@@ -13,10 +13,9 @@ VoIPBIN's Email API provides a reliable and scalable email delivery service for 
 
 With the Email API you can:
 
-- Send emails with HTML and plain text content
-- Attach files to your emails
+- Send plain-text emails to one or more recipients
+- Attach existing VoIPBIN resources (e.g. call recordings) to your emails
 - Track email delivery status
-- Manage mailboxes for receiving emails
 - Integrate email into automated workflows
 
 
@@ -138,7 +137,7 @@ Send emails through the VoIPBIN API with full control over content and formattin
 
 .. note:: **AI Implementation Hint**
 
-   The ``source`` email address must be from a domain you have verified with VoIPBIN. Using an unverified domain will cause delivery failures. The ``destinations`` field accepts an array of address objects, not plain email strings.
+   The sender (``source``) is always VoIPBIN's own platform address (``service@voipbin.net``) -- it is not configurable per request and there is no sender-domain verification step. Sending is gated instead on your customer account's identity verification status; unverified customer accounts cannot send email. The ``destinations`` field accepts an array of :ref:`Address <common-struct-address-address>` objects with ``type`` set to ``email``, not plain email strings. ``content`` is plain text only -- there is no separate HTML body.
 
 **Basic Email Example:**
 
@@ -147,49 +146,37 @@ Send emails through the VoIPBIN API with full control over content and formattin
     $ curl -X POST 'https://api.voipbin.net/v1.0/emails?token=<token>' \
         --header 'Content-Type: application/json' \
         --data '{
-            "from": {
-                "email": "noreply@yourcompany.com",
-                "name": "Your Company"
-            },
-            "to": [
+            "destinations": [
                 {
-                    "email": "customer@example.com",
-                    "name": "John Doe"
+                    "type": "email",
+                    "target": "customer@example.com"
                 }
             ],
             "subject": "Your Order Confirmation",
-            "content": {
-                "text": "Thank you for your order #12345.",
-                "html": "<h1>Thank you!</h1><p>Your order #12345 has been confirmed.</p>"
-            }
+            "content": "Thank you for your order #12345."
         }'
 
 **Email with Attachment:**
+
+Attachments reference an existing VoIPBIN resource by ``reference_type`` and ``reference_id`` (for example a call recording) -- you cannot upload arbitrary file content.
 
 .. code::
 
     $ curl -X POST 'https://api.voipbin.net/v1.0/emails?token=<token>' \
         --header 'Content-Type: application/json' \
         --data '{
-            "from": {
-                "email": "billing@yourcompany.com",
-                "name": "Billing Department"
-            },
-            "to": [
+            "destinations": [
                 {
-                    "email": "customer@example.com"
+                    "type": "email",
+                    "target": "customer@example.com"
                 }
             ],
-            "subject": "Your Invoice",
-            "content": {
-                "text": "Please find your invoice attached.",
-                "html": "<p>Please find your invoice attached.</p>"
-            },
+            "subject": "Your Call Recording",
+            "content": "Please find your call recording attached.",
             "attachments": [
                 {
-                    "filename": "invoice-12345.pdf",
-                    "content": "<base64-encoded-content>",
-                    "type": "application/pdf"
+                    "reference_type": "recording",
+                    "reference_id": "1f25e6c9-6709-44d1-b93e-a5f1c5f80411"
                 }
             ]
         }'
@@ -206,21 +193,16 @@ Understanding email structure helps you create effective messages.
     +---------------------------------------------------------------+
     |                         Email                                 |
     +---------------------------------------------------------------+
-    | From: sender@company.com (Sender Name)                        |
+    | Source (fixed): service@voipbin.net (voipbin service)         |
     +---------------------------------------------------------------+
-    | To: recipient@example.com                                     |
-    | CC: copy@example.com                                          |
-    | BCC: hidden@example.com                                       |
+    | Destinations: recipient@example.com, ...                      |
     +---------------------------------------------------------------+
-    | Subject: Your Order Confirmation                              |
+    | Subject: Your Order Confirmation                               |
     +---------------------------------------------------------------+
-    | Content:                                                      |
-    |   - Plain text version (for simple clients)                   |
-    |   - HTML version (for rich formatting)                        |
+    | Content: plain text body                                      |
     +---------------------------------------------------------------+
     | Attachments:                                                  |
-    |   - invoice.pdf                                               |
-    |   - receipt.png                                               |
+    |   - reference_type: recording, reference_id: <uuid>           |
     +---------------------------------------------------------------+
 
 **Email Fields**
@@ -230,50 +212,22 @@ Understanding email structure helps you create effective messages.
 
    * - Field
      - Description
-   * - from
-     - Sender email address and optional display name
-   * - to
-     - List of recipient email addresses
-   * - cc
-     - Carbon copy recipients (visible to all)
-   * - bcc
-     - Blind carbon copy recipients (hidden from others)
+   * - source
+     - Fixed VoIPBIN platform address (``service@voipbin.net``). Not set by the caller.
+   * - destinations
+     - List of recipient email addresses (:ref:`Address <common-struct-address-address>` objects, ``type`` ``email``). No ``cc``/``bcc`` support.
    * - subject
      - Email subject line
-   * - content.text
-     - Plain text version of the email body
-   * - content.html
-     - HTML version of the email body
+   * - content
+     - Plain text body of the email. There is no separate HTML body.
    * - attachments
-     - List of file attachments
+     - List of attachments referencing existing VoIPBIN resources. See :ref:`Attachment <email-struct-attachment>`.
 
 
 
 Content Best Practices
 ----------------------
-Create emails that render well and avoid spam filters.
-
-**HTML Email Structure**
-
-.. code::
-
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    </head>
-    <body style="font-family: Arial, sans-serif; margin: 0; padding: 20px;">
-        <table width="100%" cellpadding="0" cellspacing="0">
-            <tr>
-                <td align="center">
-                    <h1 style="color: #333;">Welcome!</h1>
-                    <p>Your email content here.</p>
-                </td>
-            </tr>
-        </table>
-    </body>
-    </html>
+The ``content`` field is sent as plain text (there is no HTML body option), so write copy that reads clearly without formatting.
 
 **Content Guidelines**
 
@@ -282,14 +236,12 @@ Create emails that render well and avoid spam filters.
 
    * - Do
      - Don't
-   * - Use inline CSS styles
-     - Use external stylesheets
-   * - Use table-based layouts
-     - Rely on CSS floats or flexbox
-   * - Include plain text version
-     - Send HTML-only emails
-   * - Test across email clients
-     - Assume all clients render the same
+   * - Keep lines short and scannable
+     - Rely on HTML markup or inline styling (it is not rendered)
+   * - Spell out links in full (``https://...``)
+     - Assume clickable rich-text links
+   * - Keep messages concise and actionable
+     - Send long, densely formatted content meant for HTML rendering
 
 
 
@@ -339,26 +291,26 @@ Send security-related emails.
                  v
     User receives reset email
 
-**Scenario 3: Invoice Delivery**
+**Scenario 3: Call Recording Delivery**
 
-Send emails with attachments.
+Send a customer their call recording by referencing it as an attachment.
 
 ::
 
-    Invoice generated
+    Recording completed
          |
          v
-    +------------------------+
-    | Create PDF invoice     |
-    | Base64 encode content  |
-    +------------+-----------+
+    +--------------------------+
+    | Look up recording ID     |
+    | via GET /recordings      |
+    +------------+-------------+
                  |
                  v
     POST /emails
-    Attachment: invoice.pdf
+    attachments: [{"reference_type": "recording", "reference_id": "<uuid>"}]
                  |
                  v
-    Customer receives invoice
+    Customer receives email referencing the recording
 
 **Scenario 4: Marketing Newsletter**
 
@@ -371,9 +323,11 @@ Send bulk marketing emails.
     |                                          |
     | POST /emails                             |
     | {                                        |
-    |   "to": [{"email": subscriber}],         |
+    |   "destinations": [                      |
+    |     {"type": "email", "target": sub}     |
+    |   ],                                     |
     |   "subject": "Weekly Newsletter",        |
-    |   "content": {...}                       |
+    |   "content": "..."                       |
     | }                                        |
     +------------------------------------------+
                       |
@@ -386,13 +340,13 @@ Best Practices
 
 **1. Sender Reputation**
 
-- Use a consistent "from" address for each email type
-- Authenticate your domain (SPF, DKIM, DMARC)
+- The sending address is fixed to VoIPBIN's platform address; you cannot set a custom "from" or authenticate your own domain
+- Keep your customer account's identity verification current -- sending is rejected for unverified accounts
 - Maintain low bounce and complaint rates
 
 **2. Content Quality**
 
-- Always include both HTML and plain text versions
+- Remember content is plain text only -- no HTML rendering
 - Keep subject lines concise and relevant
 - Avoid spam trigger words and excessive punctuation
 
@@ -404,9 +358,8 @@ Best Practices
 
 **4. Deliverability**
 
-- Warm up new sending domains gradually
-- Monitor delivery metrics and adjust as needed
-- Use dedicated IP addresses for high-volume sending
+- Monitor delivery metrics and adjust content/timing as needed
+- Keep recipient lists clean and remove bounced addresses promptly
 
 
 Troubleshooting
@@ -427,21 +380,6 @@ Troubleshooting
      - Check sending rate; verify no throttling
 
 
-**Rendering Issues**
-
-.. list-table::
-   :header-rows: 1
-
-   * - Symptom
-     - Solution
-   * - HTML not displaying
-     - Use inline CSS; avoid external resources
-   * - Images not showing
-     - Use absolute URLs; include alt text
-   * - Layout broken
-     - Use table-based layouts; test across clients
-
-
 **Attachment Issues**
 
 .. list-table::
@@ -449,10 +387,10 @@ Troubleshooting
 
    * - Symptom
      - Solution
-   * - Attachment blocked
-     - Avoid executable files; use common formats
-   * - File too large
-     - Compress files; use file hosting links
+   * - Attachment missing from email
+     - Verify ``reference_type``/``reference_id`` point to an existing, accessible resource (e.g. a recording owned by the same customer)
+   * - Request rejected
+     - Attachments only support referencing existing VoIPBIN resources; arbitrary file uploads are not supported
 
 
 

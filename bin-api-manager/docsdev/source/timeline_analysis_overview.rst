@@ -83,3 +83,8 @@ You can re-run an analysis with ``reanalyze: true``. To control cost, VoIPBIN ap
 - A per-customer cap on the number of analyses running at once (triggering past the cap returns HTTP ``429``).
 
 When you re-analyze, the previous verdict is discarded and the analysis is replaced in place by the new run.
+
+Access Control
+--------------
+
+Reading analyses (``GET /timeline-analyses`` and ``GET /timeline-analyses/{id}``) is available to any agent with ``customer_agent``, ``customer_admin``, or ``customer_manager`` permission. Triggering an analysis, re-analyzing, and deleting an analysis are billable or destructive actions and require ``customer_admin`` or ``customer_manager`` permission. Direct/API-key access is not supported for any Timeline Analysis endpoint.

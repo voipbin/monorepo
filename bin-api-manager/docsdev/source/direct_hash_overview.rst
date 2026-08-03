@@ -11,7 +11,7 @@ Overview
 
 Direct hash provides simplified public SIP URIs for VoIPBIN resources. Instead of requiring callers to know a customer-specific domain (e.g., ``sip:office1@abc123.registrar.voipbin.net``), direct hash exposes a short, unique address on a shared domain: ``sip:direct.<hash>@sip.voipbin.net``. This allows external SIP devices, trunks, and partners to reach your resources without any customer-specific configuration.
 
-Seven resource types support direct hash: **extensions**, **agents**, **conferences**, **queues**, **flows**, **AIs**, and **teams**.
+Eight resource types support direct hash: **extensions**, **agents**, **conferences**, **queues**, **flows**, **AIs**, **teams**, and **webchat widgets**. For seven of these, the ``direct_hash`` resolves to a SIP URI as described above. For **webchat widgets** the same underlying hash mechanism is reused for a different purpose: the embed script uses the widget's ``direct_hash`` to authenticate anonymous visitors via ``POST /auth/boot`` rather than to route a SIP call. See :doc:`Webchat Overview <webchat_overview>` for details on that flow.
 
 .. note:: **AI Implementation Hint**
 
@@ -63,6 +63,8 @@ The activeflow action depends on the resource type:
 - **AI**: The activeflow starts an AI voice agent conversation with the caller.
 - **Team**: The activeflow starts a multi-agent AI team conversation with the caller.
 
+**Webchat Widget** does not participate in this SIP routing flow at all — it uses the same ``direct_hash`` mechanism purely to authenticate anonymous website visitors when the embed script calls ``POST /auth/boot``. There is no SIP URI or activeflow involved for this resource type.
+
 **Comparison with Standard Access**
 
 In both cases, VoIPBIN internally creates an activeflow and executes it. The difference is how the caller reaches the resource — not what happens after.
@@ -98,8 +100,14 @@ Supported Resources
 +---------------+----------------+------------------------------------------------------------------------------------+-------------------------------------------+
 | AI            | No             | ``POST https://api.voipbin.net/v1.0/ais/{id}/direct-hash-regenerate``              | :ref:`ai-overview`                        |
 +---------------+----------------+------------------------------------------------------------------------------------+-------------------------------------------+
+| Webchat Widget| Yes            | ``POST https://api.voipbin.net/v1.0/webchat_widgets/{id}/direct_hash_regenerate``  | :doc:`Webchat Overview <webchat_overview>`|
++---------------+----------------+------------------------------------------------------------------------------------+-------------------------------------------+
 
 **Auto-Created** means the ``direct_hash`` field is populated automatically when the resource is created. For resources marked **No**, call the regenerate endpoint to create the initial hash.
+
+.. note::
+
+   The Webchat Widget regenerate endpoint uses an underscore (``direct_hash_regenerate``), while every other resource in this table uses a hyphen (``direct-hash-regenerate``). This is not a typo — it reflects the actual path exposed by each resource's API.
 
 
 Managing Direct Hashes
@@ -107,7 +115,7 @@ Managing Direct Hashes
 
 **Creating a Direct Hash**
 
-For extensions, conferences, teams, queues, and flows, a direct hash is generated automatically when the resource is created. For agents and AIs, call the regenerate endpoint to create one:
+For extensions, conferences, teams, queues, flows, and webchat widgets, a direct hash is generated automatically when the resource is created. For agents and AIs, call the regenerate endpoint to create one:
 
 .. code::
 
@@ -184,3 +192,4 @@ Related Documentation
 - :ref:`AI Tutorial <ai-tutorial>` — AI direct hash regeneration example
 - :ref:`Team Tutorial <team-tutorial>` — Team direct hash regeneration example
 - :ref:`Flow Tutorial <flow-tutorial-basic>` — Flow CRUD and direct hash regeneration example
+- :doc:`Webchat Overview <webchat_overview>` — Webchat widget direct hash usage for anonymous visitor authentication

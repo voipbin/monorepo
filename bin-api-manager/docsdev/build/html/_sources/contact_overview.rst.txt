@@ -56,8 +56,7 @@ Contacts act as the central identity record for people your platform communicate
 **Key Components**
 
 - **Contact**: A person or entity with name, company, and job title
-- **Phone Numbers**: Multiple numbers per contact with type (mobile, work, home, fax, other) and E.164 normalization
-- **Emails**: Multiple addresses per contact with type (work, personal, other)
+- **Addresses**: A unified list of phone numbers and email addresses per contact. Each address has a ``type`` of either ``tel`` (E.164-normalized phone number) or ``email``, an optional free-form ``name`` label (e.g. "Mobile", "Work") and ``detail`` note, and an ``is_primary`` flag. There is no fixed enum of address sub-types beyond ``tel``/``email`` — labels like "mobile" or "work" are just optional free text, not a constrained category.
 - **Tags**: Labels for categorization and skill-based routing
 - **Source**: How the contact was created (manual, import, api, sync)
 - **External ID**: Reference to an external CRM record for deduplication
@@ -190,8 +189,11 @@ Contacts support various communication and organizational workflows.
     | Contact Tags: [enterprise, spanish]        |
     |                                            |
     | Route to: Enterprise Spanish Support Queue |
-    | Required agent tags: [enterprise, spanish] |
     +--------------------------------------------+
+
+.. note:: **Known Limitation**
+
+   You can use a contact's tags in your own flow logic (e.g. a ``condition_variable`` action) to route the call to a *specific queue* dedicated to that skill combination, as shown above. However, once the call reaches a queue, agent selection itself does not filter by agent tags -- any available agent belonging to the queue's customer may be picked, regardless of the agent's own tags. See the Known Limitation in :ref:`Queue Overview <queue-overview>` for details. To guarantee skill-matched agents, use one queue per skill combination and staff each queue only with agents who have that skill, rather than relying on agent tag matching.
 
 **Multi-Channel Contact History**
 
@@ -199,13 +201,11 @@ Contacts support various communication and organizational workflows.
 
     Contact: John Smith
     +--------------------------------------------+
-    | Phone Numbers:                             |
-    |   +15551234567 (mobile, primary)          |
-    |   +15559876543 (work)                     |
-    |                                            |
-    | Emails:                                    |
-    |   john@acme.com (work, primary)           |
-    |   john.smith@gmail.com (personal)         |
+    | Addresses:                                  |
+    |   +15551234567 (tel, "Mobile", primary)    |
+    |   +15559876543 (tel, "Work")               |
+    |   john@acme.com (email, "Work", primary)   |
+    |   john.smith@gmail.com (email, "Personal") |
     |                                            |
     | All channels linked to one identity        |
     +--------------------------------------------+
@@ -235,7 +235,7 @@ Best Practices
 **4. Data Quality**
 
 - Keep display names consistent (first + last name)
-- Assign email types (work, personal) for proper channel selection
+- Use the address ``name`` label (e.g. "Work", "Personal") to help distinguish multiple addresses of the same ``type``
 - Remove outdated phone numbers and emails regularly
 
 
@@ -262,6 +262,9 @@ Troubleshooting
 Related Documentation
 ---------------------
 
+- :ref:`Contact Addresses Overview <contact-address-overview>` - Standalone address resource: unresolved addresses, cross-contact search, and claiming
+- :ref:`Contact Cases Overview <contact-case-overview>` - Case management for grouping and tracking related interactions with a contact
+- :ref:`Peer Events Overview <contact-peer-event-overview>` - Raw interaction/activity log for a contact's addresses
 - :ref:`Tag Overview <tag-overview>` - Tag management for contact categorization
 - :ref:`Agent Overview <agent-overview>` - Agents that interact with contacts
 - :ref:`Queue Overview <queue-overview>` - Routing based on contact attributes

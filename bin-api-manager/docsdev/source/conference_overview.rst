@@ -518,6 +518,7 @@ Conferences can be configured to automatically terminate after a period.
 - When timeout expires, conference moves to "terminating"
 - All remaining participants are kicked
 - Conference transitions to "terminated"
+- A ``timeout`` between 1 and 59 seconds is silently replaced with the default of 86400 seconds (24 hours); use ``0`` for no timeout, or 60 seconds or more for an explicit timeout
 
 **Auto-Cleanup When Empty**
 

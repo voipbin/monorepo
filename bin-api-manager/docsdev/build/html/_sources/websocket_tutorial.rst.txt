@@ -53,8 +53,8 @@ After connecting, send a subscription message to receive events for specific res
     {
         "type": "subscribe",
         "topics": [
-            "customer_id:12345678-1234-1234-1234-123456789012:call:*",
-            "customer_id:12345678-1234-1234-1234-123456789012:message:*"
+            "customer_id:12345678-1234-1234-1234-123456789012:call",
+            "customer_id:12345678-1234-1234-1234-123456789012:message"
         ]
     }
 
@@ -70,7 +70,7 @@ Stop receiving events for specific topics by sending an unsubscribe message.
     {
         "type": "unsubscribe",
         "topics": [
-            "customer_id:12345678-1234-1234-1234-123456789012:call:*"
+            "customer_id:12345678-1234-1234-1234-123456789012:call"
         ]
     }
 
@@ -90,22 +90,22 @@ Using the ``websocket-client`` library:
     def on_message(ws, message):
         """Handle incoming WebSocket messages"""
         data = json.loads(message)
-        event_type = data.get('event_type')
+        event_type = data.get('type')
         resource_data = data.get('data')
 
         print(f"Received event: {event_type}")
 
-        if event_type == 'call.status':
+        if event_type == 'call_updated':
             call_id = resource_data['id']
             status = resource_data['status']
             print(f"Call {call_id} status: {status}")
 
-        elif event_type == 'message.received':
+        elif event_type == 'message_created':
             message_text = resource_data['text']
             from_number = resource_data['source']['target']
             print(f"Message from {from_number}: {message_text}")
 
-        elif event_type == 'activeflow.updated':
+        elif event_type == 'activeflow_updated':
             activeflow_id = resource_data['id']
             current_action = resource_data['current_action']['type']
             print(f"Activeflow {activeflow_id} executing: {current_action}")
@@ -126,9 +126,9 @@ Using the ``websocket-client`` library:
         subscription = {
             "type": "subscribe",
             "topics": [
-                "customer_id:12345678-1234-1234-1234-123456789012:call:*",
-                "customer_id:12345678-1234-1234-1234-123456789012:message:*",
-                "customer_id:12345678-1234-1234-1234-123456789012:activeflow:*"
+                "customer_id:12345678-1234-1234-1234-123456789012:call",
+                "customer_id:12345678-1234-1234-1234-123456789012:message",
+                "customer_id:12345678-1234-1234-1234-123456789012:activeflow"
             ]
         }
         ws.send(json.dumps(subscription))
@@ -168,8 +168,8 @@ Using the ``websocket-client`` library:
         const subscription = {
             type: 'subscribe',
             topics: [
-                'customer_id:12345678-1234-1234-1234-123456789012:call:*',
-                'customer_id:12345678-1234-1234-1234-123456789012:message:*'
+                'customer_id:12345678-1234-1234-1234-123456789012:call',
+                'customer_id:12345678-1234-1234-1234-123456789012:message'
             ]
         };
         ws.send(JSON.stringify(subscription));
@@ -178,18 +178,18 @@ Using the ``websocket-client`` library:
 
     ws.onmessage = function(event) {
         const data = JSON.parse(event.data);
-        const eventType = data.event_type;
+        const eventType = data.type;
 
         console.log(`Received event: ${eventType}`);
 
         switch(eventType) {
-            case 'call.status':
+            case 'call_updated':
                 handleCallStatus(data.data);
                 break;
-            case 'message.received':
+            case 'message_created':
                 handleMessageReceived(data.data);
                 break;
-            case 'activeflow.updated':
+            case 'activeflow_updated':
                 handleActiveflowUpdate(data.data);
                 break;
             default:
@@ -252,9 +252,9 @@ Using the ``ws`` library:
         const subscription = {
             type: 'subscribe',
             topics: [
-                'customer_id:12345678-1234-1234-1234-123456789012:call:*',
-                'customer_id:12345678-1234-1234-1234-123456789012:message:*',
-                'customer_id:12345678-1234-1234-1234-123456789012:queue:*'
+                'customer_id:12345678-1234-1234-1234-123456789012:call',
+                'customer_id:12345678-1234-1234-1234-123456789012:message',
+                'customer_id:12345678-1234-1234-1234-123456789012:queue'
             ]
         };
         ws.send(JSON.stringify(subscription));
@@ -263,23 +263,23 @@ Using the ``ws`` library:
 
     ws.on('message', function(data) {
         const message = JSON.parse(data);
-        const eventType = message.event_type;
+        const eventType = message.type;
 
         console.log(`Received event: ${eventType}`);
 
         // Process events
         switch(eventType) {
-            case 'call.status':
+            case 'call_updated':
                 console.log(`Call ${message.data.id}: ${message.data.status}`);
                 break;
 
-            case 'queue.joined':
+            case 'queuecall_created':
                 console.log(`Caller ${message.data.call_id} joined queue ${message.data.queue_id}`);
                 // Notify agents
                 notifyAgents(message.data);
                 break;
 
-            case 'message.received':
+            case 'message_created':
                 console.log(`Message: ${message.data.text}`);
                 // Process message
                 processIncomingMessage(message.data);
@@ -314,7 +314,7 @@ Using the ``ws`` library:
 Topic Pattern Matching
 -----------------------
 
-WebSocket supports wildcard subscriptions using ``*`` to match multiple resources.
+Topic matching is prefix-based (there is no ``*`` wildcard character): a subscribed topic matches every delivered event whose topic starts with it. Omit the trailing ``resource_id`` segment to match multiple resources of the same type.
 
 **Subscribe to all calls:**
 
@@ -323,7 +323,7 @@ WebSocket supports wildcard subscriptions using ``*`` to match multiple resource
     {
         "type": "subscribe",
         "topics": [
-            "customer_id:12345678-1234-1234-1234-123456789012:call:*"
+            "customer_id:12345678-1234-1234-1234-123456789012:call"
         ]
     }
 
@@ -345,10 +345,10 @@ WebSocket supports wildcard subscriptions using ``*`` to match multiple resource
     {
         "type": "subscribe",
         "topics": [
-            "customer_id:12345678-1234-1234-1234-123456789012:call:*",
-            "customer_id:12345678-1234-1234-1234-123456789012:message:*",
-            "customer_id:12345678-1234-1234-1234-123456789012:conference:*",
-            "customer_id:12345678-1234-1234-1234-123456789012:queue:*"
+            "customer_id:12345678-1234-1234-1234-123456789012:call",
+            "customer_id:12345678-1234-1234-1234-123456789012:message",
+            "customer_id:12345678-1234-1234-1234-123456789012:conference",
+            "customer_id:12345678-1234-1234-1234-123456789012:queue"
         ]
     }
 
@@ -359,8 +359,8 @@ WebSocket supports wildcard subscriptions using ``*`` to match multiple resource
     {
         "type": "subscribe",
         "topics": [
-            "agent_id:98765432-4321-4321-4321-210987654321:queue:*",
-            "agent_id:98765432-4321-4321-4321-210987654321:call:*"
+            "agent_id:98765432-4321-4321-4321-210987654321:queue",
+            "agent_id:98765432-4321-4321-4321-210987654321:call"
         ]
     }
 
@@ -388,23 +388,19 @@ Only the owner of the agent can subscribe:
 Event Message Format
 --------------------
 
-All WebSocket events follow this structure:
+All WebSocket events follow this structure -- the exact same payload as the corresponding webhook (see :ref:`Webhook Struct <webhook-struct-webhook>`), with no extra topic/timestamp envelope:
 
 .. code::
 
     {
-        "event_type": "call.status",
-        "timestamp": "2026-01-20T10:30:00.000000Z",
-        "topic": "customer_id:12345678-1234-1234-1234-123456789012:call:a1b2c3d4",
+        "type": "call_updated",
         "data": {
             // Event-specific resource data
         }
     }
 
 **Fields:**
-- ``event_type``: Type of event (e.g., ``call.status``, ``message.received``)
-- ``timestamp``: When the event occurred (ISO 8601 in UTC)
-- ``topic``: The topic that triggered this event
+- ``type``: The webhook event type (e.g., ``call_updated``, ``message_created``) -- see :ref:`Webhook Struct <webhook-struct-webhook>`
 - ``data``: Resource-specific data (call, message, activeflow, etc.)
 
 Common Use Cases
@@ -420,7 +416,7 @@ Monitor all active calls in real-time:
     def on_message(ws, message):
         data = json.loads(message)
 
-        if data['event_type'] == 'call.status':
+        if data['type'] == 'call_updated':
             call = data['data']
 
             if call['status'] == 'answered':
@@ -442,14 +438,14 @@ Update agent status and queue information in real-time:
     ws.onmessage = function(event) {
         const data = JSON.parse(event.data);
 
-        if (data.event_type === 'queue.joined') {
+        if (data.type === 'queuecall_created') {
             // Update queue count
             updateQueueCount(data.data.queue_id, '+1');
             // Show notification to agents
             notifyAgents(`New caller in queue`);
         }
 
-        if (data.event_type === 'agent.status') {
+        if (data.type === 'agent_status_updated') {
             // Update agent availability display
             updateAgentStatus(data.data.agent_id, data.data.status);
         }
@@ -465,7 +461,7 @@ Visualize flow execution in real-time:
     ws.on('message', function(data) {
         const message = JSON.parse(data);
 
-        if (message.event_type === 'activeflow.updated') {
+        if (message.type === 'activeflow_updated') {
             const activeflow = message.data;
 
             // Update flow diagram
@@ -489,7 +485,7 @@ Respond to messages immediately when received:
     def on_message(ws, message):
         data = json.loads(message)
 
-        if data['event_type'] == 'message.received':
+        if data['type'] == 'message_created':
             msg = data['data']
 
             # Auto-reply logic
@@ -509,7 +505,7 @@ Best Practices
 
 **2. Subscription Management:**
 - Subscribe only to events you need
-- Use wildcards (``*``) for broad monitoring
+- Omit the resource ID segment of a topic for broad, resource-type-wide monitoring
 - Unsubscribe from unused topics to reduce load
 
 **3. Error Handling:**
@@ -548,7 +544,7 @@ Connection Lifecycle
     ws.onopen = function() {
         ws.send(JSON.stringify({
             type: 'subscribe',
-            topics: ['customer_id:<id>:call:*']
+            topics: ['customer_id:<id>:call']
         }));
     };
 
@@ -578,7 +574,7 @@ Connection Lifecycle
     // Unsubscribe before closing
     ws.send(JSON.stringify({
         type: 'unsubscribe',
-        topics: ['customer_id:<id>:call:*']
+        topics: ['customer_id:<id>:call']
     }));
 
     // Close connection

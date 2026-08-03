@@ -13,7 +13,7 @@ A **Team** models a multi-agent conversation as a directed graph. Each node in t
 
 .. note:: **AI Implementation Hint**
 
-   A Team is a configuration resource, not a runtime entity. You create a Team via ``POST https://api.voipbin.net/v1.0/teams``, then reference it in a flow action (e.g., ``ai_talk`` with ``team_id``) to activate it during a call. The Team itself does not start conversations — it defines the graph that the flow engine traverses.
+   A Team is a configuration resource, not a runtime entity. You create a Team via ``POST https://api.voipbin.net/v1.0/teams``, then reference it in a flow action (e.g., ``ai_talk`` or ``ai_task`` with ``assistance_type: "team"`` and ``assistance_id: <team_id>``) to activate it during a call. The Team itself does not start conversations — it defines the graph that the flow engine traverses.
 
 How it works
 ============

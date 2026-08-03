@@ -80,7 +80,7 @@ Target struct
     }
 
 * ``destination`` (Object): Destination address info. See :ref:`Address <common-struct-address-address>`.
-* ``status`` (enum string): Delivery status for this specific destination (e.g., ``sending``, ``sent``, ``delivered``, ``failed``).
+* ``status`` (enum string): Delivery status for this specific destination. One of ``queued``, ``sent``, ``delivered``, ``gw_timeout``, ``dlr_timeout``, ``failed`` (outbound) or ``received``, ``delivered`` (inbound).
 * ``parts`` (Integer): Number of message segments. Long SMS messages are split into multiple parts (153 characters each for GSM-7 encoding).
 * ``tm_update`` (string, ISO 8601): Timestamp of the last status update for this target.
 

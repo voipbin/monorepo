@@ -185,6 +185,22 @@ Update configuration flags for your customer account. Requires CustomerAdmin per
 
 The default caller ID used for outgoing PSTN calls when no explicit source number is specified in the call request is now managed via the OutboundConfig API. See the :ref:`OutboundConfig Overview <outbound-config-overview>` for details.
 
+**Update Default Billing Account**
+
+Change the billing account used to fund the customer's usage. Requires CustomerAdmin permission. The target billing account must already exist.
+
+.. code::
+
+    $ curl -X PUT 'https://api.voipbin.net/v1.0/customer/billing_account_id?token=<token>' \
+        --header 'Content-Type: application/json' \
+        --data '{
+            "billing_account_id": "b8c9d0e1-f2a3-4567-8901-23456789abcd"
+        }'
+
+**Admin-Only Customer Management**
+
+VoIPBIN staff with ``ProjectSuperAdmin`` permission can manage any customer account via the plural ``/customers`` endpoints (list, create, get by ID, update, delete, freeze, recover, and manage another customer's billing account ID or metadata). Regular customer accounts always receive ``403 Permission Denied`` on these endpoints and should use the singular ``/customer`` endpoints documented above instead. See the :ref:`Customer Tutorial <customer-tutorial>` for admin endpoint examples.
+
 
 Account Deletion Lifecycle
 --------------------------
@@ -247,7 +263,7 @@ When an account is frozen:
 
 **Immediate Deletion**
 
-To skip the 30-day grace period and delete the account immediately, include ``"immediate": true`` and a confirmation phrase.
+To skip the 30-day grace period and delete the account immediately, include ``"immediate": true``. ``password`` and ``confirmation_phrase`` are mutually exclusive -- provide exactly one: ``password`` for password-based accounts, or ``confirmation_phrase`` set to ``"DELETE"`` for SSO or API-key authenticated requests.
 
 .. code::
 
@@ -255,7 +271,6 @@ To skip the 30-day grace period and delete the account immediately, include ``"i
         --header 'Content-Type: application/json' \
         --header 'Authorization: Bearer <token>' \
         --data '{
-            "password": "yourPassword",
             "confirmation_phrase": "DELETE",
             "immediate": true
         }'
