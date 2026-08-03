@@ -11,7 +11,7 @@ Before using media streaming, you need:
 * An authentication token. Obtain one via ``POST /auth/login`` or use an access key from ``GET /accesskeys``.
 * An active call in ``progressing`` status. Obtain the call ID via ``GET /calls``. Or an active conference via ``GET /conferences``.
 * A WebSocket client library (not a standard HTTP client). The media stream endpoint upgrades the HTTP connection to WebSocket.
-* Knowledge of the audio format for your chosen encapsulation: ``rtp`` (G.711 ulaw, 12-byte header + 160-byte payload), ``sln`` (raw PCM, no headers), or ``audiosocket`` (Asterisk AudioSocket, 320-byte chunks).
+* Knowledge of the audio format for your chosen encapsulation: ``rtp`` (16-bit signed linear PCM carried in an RTP header advertising dynamic payload type 96 / L16/8000/1, 12-byte header + 320-byte payload), ``sln`` (raw PCM, no headers), or ``audiosocket`` (Asterisk AudioSocket, 320-byte chunks).
 
 .. note:: **AI Implementation Hint**
 
@@ -102,7 +102,7 @@ Asterisk-specific protocol for simple audio streaming.
 - Low-overhead streaming
 - Simple audio applications
 
-**Codec:** All three encapsulations carry the same underlying audio: **16-bit signed linear PCM, 8kHz, mono**. For ``rtp``, the RTP header advertises payload type 0 (normally G.711 µ-law/PCMU), but the actual payload bytes are raw 16-bit PCM, not µ-law-encoded -- decode every encapsulation as raw 16-bit PCM regardless of what the RTP payload type field claims.
+**Codec:** All three encapsulations carry the same underlying audio: **16-bit signed linear PCM, 8kHz, mono**. For ``rtp``, the RTP header advertises dynamic payload type 96 (conventionally L16/8000/1), matching the actual raw 16-bit PCM payload -- there is no SDP negotiation for this feature, so treat 96 as a fixed convention rather than a negotiated codec.
 
 WebSocket Client Examples
 --------------------------
@@ -416,11 +416,11 @@ Audio Format Details
 --------------------
 
 **RTP Format:**
-- Codec: ulaw (G.711 μ-law)
+- Codec: raw 16-bit signed linear PCM, advertised as dynamic payload type 96 (L16/8000/1)
 - Sample rate: 8 kHz
 - Bits: 16-bit
 - Channels: Mono
-- Packet size: 160 bytes payload (20ms audio)
+- Packet size: 320 bytes payload (20ms audio)
 
 **SLN Format:**
 - Raw PCM audio

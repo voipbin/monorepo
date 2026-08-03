@@ -646,7 +646,7 @@
 <li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
 <li><p>An active call in <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status. Obtain the call ID via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls</span></code>. Or an active conference via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conferences</span></code>.</p></li>
 <li><p>A WebSocket client library (not a standard HTTP client). The media stream endpoint upgrades the HTTP connection to WebSocket.</p></li>
-<li><p>Knowledge of the audio format for your chosen encapsulation: <code class="docutils literal notranslate"><span class="pre">rtp</span></code> (G.711 ulaw, 12-byte header + 160-byte payload), <code class="docutils literal notranslate"><span class="pre">sln</span></code> (raw PCM, no headers), or <code class="docutils literal notranslate"><span class="pre">audiosocket</span></code> (Asterisk AudioSocket, 320-byte chunks).</p></li>
+<li><p>Knowledge of the audio format for your chosen encapsulation: <code class="docutils literal notranslate"><span class="pre">rtp</span></code> (16-bit signed linear PCM carried in an RTP header advertising dynamic payload type 96 / L16/8000/1, 12-byte header + 320-byte payload), <code class="docutils literal notranslate"><span class="pre">sln</span></code> (raw PCM, no headers), or <code class="docutils literal notranslate"><span class="pre">audiosocket</span></code> (Asterisk AudioSocket, 320-byte chunks).</p></li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -713,7 +713,7 @@
 - Asterisk integration
 - Low-overhead streaming
 - Simple audio applications</p>
-<p><strong>Codec:</strong> All three encapsulations carry the same underlying audio: <strong>16-bit signed linear PCM, 8kHz, mono</strong>. For <code class="docutils literal notranslate"><span class="pre">rtp</span></code>, the RTP header advertises payload type 0 (normally G.711 µ-law/PCMU), but the actual payload bytes are raw 16-bit PCM, not µ-law-encoded – decode every encapsulation as raw 16-bit PCM regardless of what the RTP payload type field claims.</p>
+<p><strong>Codec:</strong> All three encapsulations carry the same underlying audio: <strong>16-bit signed linear PCM, 8kHz, mono</strong>. For <code class="docutils literal notranslate"><span class="pre">rtp</span></code>, the RTP header advertises dynamic payload type 96 (conventionally L16/8000/1), matching the actual raw 16-bit PCM payload – there is no SDP negotiation for this feature, so treat 96 as a fixed convention rather than a negotiated codec.</p>
 </section>
 <section id="websocket-client-examples">
 <h3>WebSocket Client Examples<a class="headerlink" href="#websocket-client-examples" title="Link to this heading">¶</a></h3>
@@ -1002,11 +1002,11 @@ ws.on(&#39;close&#39;, function() {
 <section id="audio-format-details">
 <h3>Audio Format Details<a class="headerlink" href="#audio-format-details" title="Link to this heading">¶</a></h3>
 <p><strong>RTP Format:</strong>
-- Codec: ulaw (G.711 μ-law)
+- Codec: raw 16-bit signed linear PCM, advertised as dynamic payload type 96 (L16/8000/1)
 - Sample rate: 8 kHz
 - Bits: 16-bit
 - Channels: Mono
-- Packet size: 160 bytes payload (20ms audio)</p>
+- Packet size: 320 bytes payload (20ms audio)</p>
 <p><strong>SLN Format:</strong>
 - Raw PCM audio
 - No headers or padding

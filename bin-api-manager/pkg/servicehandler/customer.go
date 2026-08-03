@@ -46,7 +46,7 @@ func (h *serviceHandler) CustomerCreate(
 	address string,
 	webhookMethod cscustomer.WebhookMethod,
 	webhookURI string,
-) (*cscustomer.Customer, error) {
+) (*cscustomer.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"agent": a,
 		"email": email,
@@ -84,7 +84,7 @@ func (h *serviceHandler) CustomerCreate(
 		}
 	}
 
-	return res, nil
+	return res.ConvertWebhookMessage(), nil
 }
 
 // autoCreateOutboundConfigWithRetry creates an empty OutboundConfig for the given customer with
@@ -135,7 +135,7 @@ func (h *serviceHandler) autoCreateOutboundConfigWithRetry(ctx context.Context, 
 
 // CustomerGet returns customer info of given customerID.
 // Requires ProjectSuperAdmin permission.
-func (h *serviceHandler) CustomerGet(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID) (*cscustomer.Customer, error) {
+func (h *serviceHandler) CustomerGet(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID) (*cscustomer.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CustomerGet",
 		"customer_id": customerID,
@@ -157,12 +157,13 @@ func (h *serviceHandler) CustomerGet(ctx context.Context, a *auth.AuthIdentity, 
 	}
 	log.WithField("customer", tmp).Debugf("Retrieved customer info. customer_id: %s", tmp.ID)
 
-	return tmp, nil
+	return tmp.ConvertWebhookMessage(), nil
 }
 
-// CustomerSelfGet returns the authenticated agent's own customer info.
+// CustomerSelfGet returns the authenticated agent's own customer info,
+// including the webhook signing secret (visible only to the owning customer).
 // Requires CustomerAdmin or CustomerManager permission.
-func (h *serviceHandler) CustomerSelfGet(ctx context.Context, a *auth.AuthIdentity) (*cscustomer.WebhookMessage, error) {
+func (h *serviceHandler) CustomerSelfGet(ctx context.Context, a *auth.AuthIdentity) (*cscustomer.SelfWebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CustomerSelfGet",
 		"customer_id": a.CustomerID,
@@ -184,12 +185,12 @@ func (h *serviceHandler) CustomerSelfGet(ctx context.Context, a *auth.AuthIdenti
 	}
 	log.WithField("customer", tmp).Debugf("Retrieved customer info. customer_id: %s", tmp.ID)
 
-	res := tmp.ConvertWebhookMessage()
+	res := tmp.ConvertWebhookMessageSelf()
 	return res, nil
 }
 
 // CustomerGets returns list of all customers
-func (h *serviceHandler) CustomerList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, filters map[string]string) ([]*cscustomer.Customer, error) {
+func (h *serviceHandler) CustomerList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, filters map[string]string) ([]*cscustomer.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "CustomerGets",
 		"agent":   a,
@@ -228,9 +229,9 @@ func (h *serviceHandler) CustomerList(ctx context.Context, a *auth.AuthIdentity,
 		return nil, err
 	}
 
-	res := make([]*cscustomer.Customer, len(tmps))
+	res := make([]*cscustomer.WebhookMessage, len(tmps))
 	for i := range tmps {
-		res[i] = &tmps[i]
+		res[i] = tmps[i].ConvertWebhookMessage()
 	}
 
 	return res, nil
@@ -250,7 +251,7 @@ func (h *serviceHandler) CustomerUpdate(
 	address string,
 	webhookMethod cscustomer.WebhookMethod,
 	webhookURI string,
-) (*cscustomer.Customer, error) {
+) (*cscustomer.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "CustomerUpdate",
 		"customer_id":    id,
@@ -287,7 +288,7 @@ func (h *serviceHandler) CustomerUpdate(
 		return nil, err
 	}
 
-	return res, nil
+	return res.ConvertWebhookMessage(), nil
 }
 
 // CustomerSelfUpdate updates the authenticated agent's own customer info.
@@ -328,7 +329,7 @@ func (h *serviceHandler) CustomerSelfUpdate(
 
 // CustomerDelete sends a request to customer-manager
 // to delete the customer.
-func (h *serviceHandler) CustomerDelete(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID) (*cscustomer.Customer, error) {
+func (h *serviceHandler) CustomerDelete(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID) (*cscustomer.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CustomerDelete",
 		"customer_id": a.CustomerID,
@@ -358,12 +359,12 @@ func (h *serviceHandler) CustomerDelete(ctx context.Context, a *auth.AuthIdentit
 		return nil, err
 	}
 
-	return res, nil
+	return res.ConvertWebhookMessage(), nil
 }
 
 // CustomerFreeze sends a request to customer-manager
 // to freeze the customer account (schedule deletion).
-func (h *serviceHandler) CustomerFreeze(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID) (*cscustomer.Customer, error) {
+func (h *serviceHandler) CustomerFreeze(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID) (*cscustomer.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CustomerFreeze",
 		"customer_id": a.CustomerID,
@@ -393,12 +394,12 @@ func (h *serviceHandler) CustomerFreeze(ctx context.Context, a *auth.AuthIdentit
 		return nil, err
 	}
 
-	return res, nil
+	return res.ConvertWebhookMessage(), nil
 }
 
 // CustomerRecover sends a request to customer-manager
 // to recover the customer account (cancel scheduled deletion).
-func (h *serviceHandler) CustomerRecover(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID) (*cscustomer.Customer, error) {
+func (h *serviceHandler) CustomerRecover(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID) (*cscustomer.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CustomerRecover",
 		"customer_id": a.CustomerID,
@@ -428,7 +429,7 @@ func (h *serviceHandler) CustomerRecover(ctx context.Context, a *auth.AuthIdenti
 		return nil, err
 	}
 
-	return res, nil
+	return res.ConvertWebhookMessage(), nil
 }
 
 // CustomerSelfFreeze handles self-service account freeze (schedule deletion).
@@ -534,7 +535,7 @@ func (h *serviceHandler) CustomerSelfRecover(ctx context.Context, a *auth.AuthId
 // CustomerUpdateBillingAccountID sends a request to customer-manager
 // to update the customer's billing account id.
 // Requires ProjectSuperAdmin permission.
-func (h *serviceHandler) CustomerUpdateBillingAccountID(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID, billingAccountID uuid.UUID) (*cscustomer.Customer, error) {
+func (h *serviceHandler) CustomerUpdateBillingAccountID(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID, billingAccountID uuid.UUID) (*cscustomer.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":               "CustomerUpdateBillingAccountID",
 		"customer_id":        customerID,
@@ -569,12 +570,12 @@ func (h *serviceHandler) CustomerUpdateBillingAccountID(ctx context.Context, a *
 		return nil, err
 	}
 
-	return res, nil
+	return res.ConvertWebhookMessage(), nil
 }
 
 // CustomerUpdateMetadata updates the customer's internal metadata.
 // Requires ProjectSuperAdmin permission.
-func (h *serviceHandler) CustomerUpdateMetadata(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID, metadata cscustomer.Metadata) (*cscustomer.Customer, error) {
+func (h *serviceHandler) CustomerUpdateMetadata(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID, metadata cscustomer.Metadata) (*cscustomer.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CustomerUpdateMetadata",
 		"customer_id": customerID,
@@ -602,7 +603,7 @@ func (h *serviceHandler) CustomerUpdateMetadata(ctx context.Context, a *auth.Aut
 		return nil, err
 	}
 
-	return res, nil
+	return res.ConvertWebhookMessage(), nil
 }
 
 // CustomerSelfUpdateBillingAccountID updates the authenticated agent's own customer's billing account ID.

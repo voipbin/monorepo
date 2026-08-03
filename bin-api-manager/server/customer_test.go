@@ -30,7 +30,7 @@ func Test_customerGET(t *testing.T) {
 
 		reqQuery string
 
-		responseCustomer *cscustomer.WebhookMessage
+		responseCustomer *cscustomer.SelfWebhookMessage
 
 		expectedRes string
 	}{
@@ -46,11 +46,14 @@ func Test_customerGET(t *testing.T) {
 
 			reqQuery: "/customer",
 
-			responseCustomer: &cscustomer.WebhookMessage{
-				ID: uuid.FromStringOrNil("e25f1af8-c44f-11ef-9d46-bfaf61e659c2"),
+			responseCustomer: &cscustomer.SelfWebhookMessage{
+				WebhookMessage: cscustomer.WebhookMessage{
+					ID: uuid.FromStringOrNil("e25f1af8-c44f-11ef-9d46-bfaf61e659c2"),
+				},
+				WebhookSecret: "test-webhook-secret",
 			},
 
-			expectedRes: `{"id":"e25f1af8-c44f-11ef-9d46-bfaf61e659c2","billing_account_id":"00000000-0000-0000-0000-000000000000","metadata":{"rtp_debug":false},"email_verified":false,"status":"","identity_verification_status":"","tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectedRes: `{"id":"e25f1af8-c44f-11ef-9d46-bfaf61e659c2","billing_account_id":"00000000-0000-0000-0000-000000000000","metadata":{"rtp_debug":false},"email_verified":false,"status":"","identity_verification_status":"","tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null,"webhook_secret":"test-webhook-secret"}`,
 		},
 	}
 

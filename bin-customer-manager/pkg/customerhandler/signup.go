@@ -18,7 +18,7 @@ import (
 
 const (
 	emailVerifyTokenTTL    = time.Hour
-	emailVerifyTokenLen    = 32 // 32 bytes = 64 hex chars
+	emailVerifyTokenLen    = 32                   // 32 bytes = 64 hex chars
 	defaultAccesskeyExpire = 365 * 24 * time.Hour // 1 year
 )
 
@@ -49,6 +49,13 @@ func (h *customerHandler) Signup(
 
 	id := h.utilHandler.UUIDCreate()
 
+	webhookSecret, err := h.utilHandler.StringGenerateRandom(webhookSecretSize)
+	if err != nil {
+		log.Errorf("Could not generate a webhook secret. err: %v", err)
+		metricshandler.SignupTotal.WithLabelValues("error").Inc()
+		return nil, err
+	}
+
 	// create customer with email_verified = false
 	u := &customer.Customer{
 		ID: id,
@@ -62,6 +69,7 @@ func (h *customerHandler) Signup(
 
 		WebhookMethod: webhookMethod,
 		WebhookURI:    webhookURI,
+		WebhookSecret: webhookSecret,
 
 		EmailVerified:              false,
 		Status:                     customer.StatusInitial,

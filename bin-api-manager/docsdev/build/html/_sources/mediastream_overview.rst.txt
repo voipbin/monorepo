@@ -214,9 +214,10 @@ The standard protocol for audio/video over IP networks.
    * - Protocol
      - RTP over WebSocket
    * - Payload Type
-     - 0 (the RTP header advertises PCMU / G.711 µ-law), but the payload
-       bytes are actually raw 16-bit signed linear PCM, not µ-law encoded --
-       decode it as raw 16-bit PCM regardless of the advertised payload type
+     - 96 (dynamic payload type per RFC 3551, conventionally L16/8000/1 --
+       raw 16-bit signed linear PCM, 8 kHz, mono). There is no SDP/rtpmap
+       negotiation for this WebSocket media-stream feature, so 96 is a
+       fixed convention rather than a negotiated value.
    * - Sample Rate
      - 8 kHz
    * - Bit Depth
@@ -231,7 +232,7 @@ The standard protocol for audio/video over IP networks.
 
 .. note:: **AI Implementation Hint**
 
-   Do not rely on the RTP payload type field for this stream -- treat every packet's payload as raw 16-bit signed linear PCM (little-endian, matching AudioSocket's "Slin" format) regardless of what the header claims.
+   Every packet's payload is raw 16-bit signed linear PCM (little-endian, matching AudioSocket's "Slin" format), advertised with payload type 96 (L16/8000/1). There is no SDP negotiation for this value -- treat it as a fixed convention of this stream, not a negotiated codec.
 
 **SLN (Signed Linear)**
 

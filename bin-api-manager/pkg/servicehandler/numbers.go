@@ -339,7 +339,7 @@ func (h *serviceHandler) NumberUpdateMetadata(ctx context.Context, a *auth.AuthI
 // NumberRenew handles number renew request.
 // It sends a request to the number-manager to renew the numbers.
 // it returns renewed numbers information if it succeed.
-func (h *serviceHandler) NumberRenew(ctx context.Context, a *auth.AuthIdentity, tmRenew string) ([]*nmnumber.Number, error) {
+func (h *serviceHandler) NumberRenew(ctx context.Context, a *auth.AuthIdentity, tmRenew string) ([]*nmnumber.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "NumberRenew",
 		"customer_id": a.CustomerID,
@@ -363,9 +363,9 @@ func (h *serviceHandler) NumberRenew(ctx context.Context, a *auth.AuthIdentity, 
 		return nil, err
 	}
 
-	res := make([]*nmnumber.Number, len(tmps))
+	res := make([]*nmnumber.WebhookMessage, len(tmps))
 	for i := range tmps {
-		res[i] = &tmps[i]
+		res[i] = tmps[i].ConvertWebhookMessage()
 	}
 
 	return res, nil

@@ -1,58 +1,61 @@
 package webhookhandler
 
-// func Test_sendMessage(t *testing.T) {
+import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/hex"
+	"testing"
+)
 
-// 	type test struct {
-// 		name     string
-// 		uri      string
-// 		method   string
-// 		dataType string
-// 		data     []byte
-// 	}
+// Test_computeSignature verifies the HMAC-SHA256 signature computed for the
+// X-VoIPBIN-Signature header matches the standard hmac.New(sha256.New, secret)
+// construction used elsewhere in the monorepo for verifying inbound signatures.
+func Test_computeSignature(t *testing.T) {
 
-// 	tests := []test{
-// 		{
-// 			"normal",
-// 			"https://httpbin.org/post",
-// 			"POST",
-// 			"application/json",
-// 			[]byte(`{"test key":"test value"}`),
-// 		},
-// 		{
-// 			"empty data",
-// 			"https://httpbin.org/post",
-// 			"POST",
-// 			"",
-// 			nil,
-// 		},
-// 		// {
-// 		// 	"real destination",
-// 		// 	"https://eoxdgfr5e7087sf.m.pipedream.net",
-// 		// 	"POST",
-// 		// 	"application/json",
-// 		// 	[]byte(`{"type":"call_create","data":{"master_call_id":"00000000-0000-0000-0000-000000000000","direction":"outgoing","hangup_by":"","user_id":1,"id":"cdbe20b4-4f49-4a27-96d5-4dda0ec2134b","action":{"id":"00000000-0000-0000-0000-000000000001","tm_execute":"","type":""},"flow_id":"883f40c7-7f16-48fe-a404-772d9b038808","type":"flow","source":{"target":"+821028286521","name":"","type":"tel"},"tm_update":"","tm_ringing":"","data":null,"recording_id":"00000000-0000-0000-0000-000000000000","chained_call_ids":[],"hangup_reason":"","webhook_uri":"https://endxhr87aa0bkge.m.pipedream.net","tm_progressing":"","conf_id":"00000000-0000-0000-0000-000000000000","tm_hangup":"","asterisk_id":"","status":"dialing","recording_ids":[],"destination":{"name":"","target":"+821021656521","type":"tel"},"channel_id":"8edc9ed7-2ec0-4027-a7b9-3d6eced18afd","tm_create":"2021-03-13T18:18:02.489462Z"}}`),
-// 		// },
-// 	}
+	type test struct {
+		name   string
+		secret string
+		body   []byte
+	}
 
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			mc := gomock.NewController(t)
-// 			defer mc.Finish()
+	tests := []test{
+		{
+			name:   "normal",
+			secret: "test-secret",
+			body:   []byte(`{"type":"call_updated","data":{"id":"test"}}`),
+		},
+		{
+			name:   "empty body",
+			secret: "test-secret",
+			body:   nil,
+		},
+	}
 
-// 			mockDB := dbhandler.NewMockDBHandler(mc)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res := computeSignature(tt.secret, tt.body)
 
-// 			h := &webhookHandler{
-// 				db: mockDB,
-// 			}
+			mac := hmac.New(sha256.New, []byte(tt.secret))
+			mac.Write(tt.body)
+			expect := "sha256=" + hex.EncodeToString(mac.Sum(nil))
 
-// 			resp, err := h.sendMessage(tt.uri, tt.method, tt.dataType, tt.data)
-// 			if err != nil {
-// 				t.Errorf("Wrong match. expect: ok, got: %v", err)
-// 			}
+			if res != expect {
+				t.Errorf("Wrong match. expect: %s, got: %s", expect, res)
+			}
+		})
+	}
+}
 
-// 			if resp.StatusCode != 200 {
-// 				t.Errorf("Wrong match. expect: 200, got: %v", resp)
-// 			}
-// 		})
-// 	}
-// }
+// Test_computeSignature_differentSecretsDiffer ensures the signature is
+// actually keyed by the secret -- a required property for receivers to be
+// able to distinguish an authentic request from a forged one.
+func Test_computeSignature_differentSecretsDiffer(t *testing.T) {
+	body := []byte(`{"type":"call_updated"}`)
+
+	sig1 := computeSignature("secret-a", body)
+	sig2 := computeSignature("secret-b", body)
+
+	if sig1 == sig2 {
+		t.Errorf("Wrong match. expected different signatures for different secrets, got the same: %s", sig1)
+	}
+}

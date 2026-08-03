@@ -80,3 +80,26 @@ func (h *Customer) CreateWebhookEvent() ([]byte, error) {
 
 	return m, nil
 }
+
+// SelfWebhookMessage defines the shape returned only to the customer viewing
+// their own record (e.g. CustomerSelfGet). It embeds WebhookMessage plus the
+// webhook signing secret, which must never appear in the outbound
+// customer_updated webhook event or in any response about another customer.
+type SelfWebhookMessage struct {
+	WebhookMessage
+
+	// WebhookSecret is the HMAC-SHA256 key used to sign outbound webhooks
+	// (see the X-VoIPBIN-Signature header). Only the owning customer may see it.
+	WebhookSecret string `json:"webhook_secret,omitempty"`
+}
+
+// ConvertWebhookMessageSelf converts to the self-view event, including the
+// webhook signing secret. Use only for endpoints authenticated as the
+// customer themselves (e.g. CustomerSelfGet) -- never for the public
+// customer_updated webhook event or third-party-facing responses.
+func (h *Customer) ConvertWebhookMessageSelf() *SelfWebhookMessage {
+	return &SelfWebhookMessage{
+		WebhookMessage: *h.ConvertWebhookMessage(),
+		WebhookSecret:  h.WebhookSecret,
+	}
+}

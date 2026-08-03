@@ -31,6 +31,7 @@ type Customer struct {
 	// webhook info
 	WebhookMethod WebhookMethod `json:"webhook_method,omitempty" db:"webhook_method"` // webhook method
 	WebhookURI    string        `json:"webhook_uri,omitempty" db:"webhook_uri"`       // webhook uri
+	WebhookSecret string        `json:"webhook_secret,omitempty" db:"webhook_secret"` // HMAC-SHA256 signing secret for outbound webhooks. Kept on the wire JSON (not json:"-") because bin-webhook-manager depends on it crossing the internal RPC/event-bus boundary (CustomerV1CustomerGet, customer_created/customer_updated events) -- that boundary is the trusted internal service layer, not the external API. External-facing responses MUST go through ConvertWebhookMessage(), which already excludes this field; the API gateway (bin-api-manager) is the security boundary, not this struct's json tags.
 
 	BillingAccountID uuid.UUID `json:"billing_account_id,omitempty" db:"billing_account_id,uuid"` // default billing account id
 

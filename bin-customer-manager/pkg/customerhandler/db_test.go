@@ -124,8 +124,9 @@ func Test_Create(t *testing.T) {
 		webhookMethod customer.WebhookMethod
 		webhookURI    string
 
-		responseUUID uuid.UUID
-		responseHash string
+		responseUUID          uuid.UUID
+		responseHash          string
+		responseWebhookSecret string
 
 		expectedFilterCustomer map[customer.Field]any
 		expectedFilterAgent    map[amagent.Field]any
@@ -142,8 +143,9 @@ func Test_Create(t *testing.T) {
 			webhookMethod: customer.WebhookMethodPost,
 			webhookURI:    "test.com",
 
-			responseUUID: uuid.FromStringOrNil("4b9ff112-02ec-11ee-b037-5b5c308ec044"),
-			responseHash: "$2a$12$KEqTmfExiTmQ0HBspD6x7.XBkG1mVVAKidWG6J.zUeTtdgb0NXppq",
+			responseUUID:          uuid.FromStringOrNil("4b9ff112-02ec-11ee-b037-5b5c308ec044"),
+			responseHash:          "$2a$12$KEqTmfExiTmQ0HBspD6x7.XBkG1mVVAKidWG6J.zUeTtdgb0NXppq",
+			responseWebhookSecret: "test-webhook-secret",
 
 			expectedFilterCustomer: map[customer.Field]any{
 				customer.FieldDeleted: false,
@@ -162,6 +164,7 @@ func Test_Create(t *testing.T) {
 				Address:                    "somewhere",
 				WebhookMethod:              customer.WebhookMethodPost,
 				WebhookURI:                 "test.com",
+				WebhookSecret:              "test-webhook-secret",
 				BillingAccountID:           uuid.Nil,
 				EmailVerified:              true,
 				Status:                     customer.StatusActive,
@@ -193,6 +196,7 @@ func Test_Create(t *testing.T) {
 			mockReq.EXPECT().AgentV1AgentList(ctx, gomock.Any(), gomock.Any(), tt.expectedFilterAgent).Return([]amagent.Agent{}, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockUtil.EXPECT().StringGenerateRandom(webhookSecretSize).Return(tt.responseWebhookSecret, nil)
 			mockDB.EXPECT().CustomerCreate(ctx, tt.expectedCustomer).Return(nil)
 			mockDB.EXPECT().CustomerGet(ctx, tt.responseUUID).Return(&customer.Customer{}, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, customer.EventTypeCustomerCreated, gomock.Any()).Return()

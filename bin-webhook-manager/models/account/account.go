@@ -13,6 +13,7 @@ type Account struct {
 	ID            uuid.UUID          `json:"id"`
 	WebhookMethod webhook.MethodType `json:"webhook_method"`
 	WebhookURI    string             `json:"webhook_uri"`
+	WebhookSecret string             `json:"webhook_secret"` // HMAC-SHA256 signing secret, used only to compute the outbound X-VoIPBIN-Signature header. Never logged or re-exposed.
 }
 
 // CreateAccountFromCustomer creates account from the cscustomer.Customer
@@ -21,5 +22,6 @@ func CreateAccountFromCustomer(cs *cscustomer.Customer) *Account {
 		ID:            cs.ID,
 		WebhookMethod: webhook.MethodType(cs.WebhookMethod),
 		WebhookURI:    cs.WebhookURI,
+		WebhookSecret: cs.WebhookSecret,
 	}
 }

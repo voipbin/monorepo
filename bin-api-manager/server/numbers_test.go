@@ -579,7 +579,7 @@ func Test_NumbersRenewPOST(t *testing.T) {
 		reqQuery string
 		reqBody  []byte
 
-		responseNumbers []*nmnumber.Number
+		responseNumbers []*nmnumber.WebhookMessage
 
 		expectTMRenew string
 		expectRes     string
@@ -597,21 +597,21 @@ func Test_NumbersRenewPOST(t *testing.T) {
 			reqQuery: "/numbers/renew",
 			reqBody:  []byte(`{"tm_renew":"2023-04-06T14:54:24.652558Z"}`),
 
-			responseNumbers: []*nmnumber.Number{
-				{
+			responseNumbers: []*nmnumber.WebhookMessage{
+				(&nmnumber.Number{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("c2998386-1634-11ee-993a-37ac8d7a675d"),
 					},
-				},
-				{
+				}).ConvertWebhookMessage(),
+				(&nmnumber.Number{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("c2e1ff3a-1634-11ee-bcc7-9f2a231b7b8a"),
 					},
-				},
+				}).ConvertWebhookMessage(),
 			},
 
 			expectTMRenew: "2023-04-06T14:54:24.652558Z",
-			expectRes:     (`[{"id":"c2998386-1634-11ee-993a-37ac8d7a675d","customer_id":"00000000-0000-0000-0000-000000000000","number":"","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_name":"","provider_reference_id":"","status":"","t38_enabled":false,"emergency_enabled":false,"metadata":{"rtp_debug":false},"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null},{"id":"c2e1ff3a-1634-11ee-bcc7-9f2a231b7b8a","customer_id":"00000000-0000-0000-0000-000000000000","number":"","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_name":"","provider_reference_id":"","status":"","t38_enabled":false,"emergency_enabled":false,"metadata":{"rtp_debug":false},"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}]`),
+			expectRes:     (`[{"id":"c2998386-1634-11ee-993a-37ac8d7a675d","customer_id":"00000000-0000-0000-0000-000000000000","number":"","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"metadata":{"rtp_debug":false},"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null},{"id":"c2e1ff3a-1634-11ee-bcc7-9f2a231b7b8a","customer_id":"00000000-0000-0000-0000-000000000000","number":"","type":"","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","status":"","t38_enabled":false,"emergency_enabled":false,"metadata":{"rtp_debug":false},"tm_purchase":null,"tm_renew":null,"tm_create":null,"tm_update":null,"tm_delete":null}]`),
 		},
 	}
 

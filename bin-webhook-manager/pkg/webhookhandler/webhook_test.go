@@ -164,6 +164,7 @@ func Test_SendWebhookToURI(t *testing.T) {
 
 			ctx := context.Background()
 
+			mockMessageTargethandler.EXPECT().Get(ctx, tt.customerID).Return(&account.Account{ID: tt.customerID, WebhookSecret: "test-secret"}, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, webhook.EventTypeWebhookPublished, tt.expectWebhook)
 
 			err := h.SendWebhookToURI(ctx, tt.customerID, tt.uri, tt.method, tt.dataType, tt.data)
@@ -571,6 +572,7 @@ func Test_SendWebhookToURI_DualPublishesWithRoutingKey(t *testing.T) {
 
 	ctx := context.Background()
 
+	mockMessageTargethandler.EXPECT().Get(ctx, customerID).Return(&account.Account{ID: customerID, WebhookSecret: "test-secret"}, nil)
 	mockNotify.EXPECT().PublishEvent(ctx, webhook.EventTypeWebhookPublished, expectWebhook)
 	mockTopicNotify.EXPECT().PublishEventWithRoutingKey(ctx, "call_updated", expectRoutingKey, innerData)
 
@@ -621,6 +623,7 @@ func Test_SendWebhookToURI_ArbitraryFlowDesignerPayload_SkipsTopicPublishSilentl
 
 	ctx := context.Background()
 
+	mockMessageTargethandler.EXPECT().Get(ctx, customerID).Return(&account.Account{ID: customerID, WebhookSecret: "test-secret"}, nil)
 	mockNotify.EXPECT().PublishEvent(ctx, webhook.EventTypeWebhookPublished, expectWebhook)
 	// CRITICAL: no PublishEventWithRoutingKey expectation set at all -- gomock will fail the
 	// test if the topic-exchange publish path is invoked for this non-enveloped payload.
@@ -632,4 +635,3 @@ func Test_SendWebhookToURI_ArbitraryFlowDesignerPayload_SkipsTopicPublishSilentl
 
 	time.Sleep(400 * time.Millisecond)
 }
-
