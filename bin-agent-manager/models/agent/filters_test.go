@@ -22,6 +22,7 @@ func Test_FieldStruct(t *testing.T) {
 				RingMethod: RingMethodRingAll,
 				Status:     StatusAvailable,
 				Deleted:    false,
+				TagIDs:     "5d443cfe-0000-11ee-0000-000000000000,4fc21d6c-0000-11ee-0000-000000000000",
 			},
 		},
 		{

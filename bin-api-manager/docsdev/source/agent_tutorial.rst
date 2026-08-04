@@ -56,7 +56,7 @@ Create a new agent.
 
 Get list of agents
 -------------------
-Gets the list of agents. Supports filtering by ``status``. A ``tag_ids`` query parameter is accepted but currently has no effect -- see the Known Limitation in :ref:`Agent Overview <agent-overview>`.
+Gets the list of agents. Supports filtering by ``status`` and by ``tag_ids`` (comma-separated tag id list -- only agents sharing at least one of the given tags are returned; the parameter must not be empty when present).
 
 .. code::
 

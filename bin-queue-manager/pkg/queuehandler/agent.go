@@ -2,7 +2,6 @@ package queuehandler
 
 import (
 	"context"
-	"strings"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 
@@ -24,18 +23,18 @@ func (h *queueHandler) GetAgents(ctx context.Context, id uuid.UUID, status amage
 		return nil, err
 	}
 
-	// get tag ids
-	tmpIDs := []string{}
-	for _, id := range q.TagIDs {
-		tmpIDs = append(tmpIDs, id.String())
-	}
-	tagIds := strings.Join(tmpIDs, ",")
-
 	// get filters
 	filters := map[amagent.Field]any{
 		amagent.FieldDeleted:    false,
 		amagent.FieldCustomerID: q.CustomerID.String(),
-		amagent.FieldTagIDs:     tagIds,
+	}
+	// omit the key entirely when the queue has no tags, rather than sending
+	// an empty string -- an untagged queue means "no tag constraint, route
+	// to any available agent", and the key's presence/absence is what
+	// downstream layers use to distinguish that from an explicit (and
+	// therefore validated) tag filter.
+	if tagIDs := amagent.FormatTagIDsFilter(q.TagIDs); tagIDs != "" {
+		filters[amagent.FieldTagIDs] = tagIDs
 	}
 	if status != amagent.StatusNone {
 		filters[amagent.FieldStatus] = string(status)
