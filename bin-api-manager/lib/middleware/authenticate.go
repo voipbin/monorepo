@@ -203,9 +203,12 @@ func isFrozenAccountBlocked(c *gin.Context, a *auth.AuthIdentity) bool {
 		return false
 	}
 
-	// Fetch customer to check frozen status
+	// Fetch customer to check frozen status. Uses CustomerRawSelfGet (self-scoped,
+	// no permission gate) rather than CustomerGet (requires ProjectSuperAdmin) —
+	// this check must apply to every non-direct identity, not just super admins,
+	// who are already exempted above.
 	serviceHandler := c.MustGet(modelscommon.OBJServiceHandler).(servicehandler.ServiceHandler)
-	cu, err := serviceHandler.CustomerGet(c.Request.Context(), a, a.CustomerID)
+	cu, err := serviceHandler.CustomerRawSelfGet(c.Request.Context(), a)
 	if err != nil {
 		// If we can't fetch the customer, don't block (fail open)
 		return false

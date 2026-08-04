@@ -306,7 +306,7 @@ func TestAuthenticate(t *testing.T) {
 				mockSH.EXPECT().AuthJWTParse(gomock.Any(), "validToken").Return(map[string]interface{}{
 					"agent": testAgent,
 				}, nil)
-				mockSH.EXPECT().CustomerGet(gomock.Any(), gomock.Any(), testAgent.CustomerID).Return(&cscustomer.WebhookMessage{
+				mockSH.EXPECT().CustomerRawSelfGet(gomock.Any(), gomock.Any()).Return(&cscustomer.WebhookMessage{
 					Status: cscustomer.StatusActive,
 				}, nil)
 			},
@@ -468,7 +468,7 @@ func TestAuthenticate_FrozenAccountEnvelope(t *testing.T) {
 	mockSH.EXPECT().AuthJWTParse(gomock.Any(), "validToken").Return(map[string]interface{}{
 		"agent": testAgent,
 	}, nil)
-	mockSH.EXPECT().CustomerGet(gomock.Any(), gomock.Any(), testCustomerID).Return(&cscustomer.WebhookMessage{
+	mockSH.EXPECT().CustomerRawSelfGet(gomock.Any(), gomock.Any()).Return(&cscustomer.WebhookMessage{
 		Status:              cscustomer.StatusFrozen,
 		TMDeletionScheduled: &deletionTime,
 	}, nil)
@@ -569,7 +569,7 @@ func TestAuthenticateWithMalformedAgentJSON(t *testing.T) {
 		},
 	}, nil)
 	// Agent will have zero-value fields (including zero Permission), so frozen check runs
-	mockSH.EXPECT().CustomerGet(gomock.Any(), gomock.Any(), uuid.Nil).Return(&cscustomer.WebhookMessage{
+	mockSH.EXPECT().CustomerRawSelfGet(gomock.Any(), gomock.Any()).Return(&cscustomer.WebhookMessage{
 		Status: cscustomer.StatusActive,
 	}, nil)
 
@@ -737,7 +737,7 @@ func TestAuthenticateAgentStoredInContext(t *testing.T) {
 	mockSH.EXPECT().AuthJWTParse(gomock.Any(), "validToken").Return(map[string]interface{}{
 		"agent": testAgent,
 	}, nil)
-	mockSH.EXPECT().CustomerGet(gomock.Any(), gomock.Any(), testAgent.CustomerID).Return(&cscustomer.WebhookMessage{
+	mockSH.EXPECT().CustomerRawSelfGet(gomock.Any(), gomock.Any()).Return(&cscustomer.WebhookMessage{
 		Status: cscustomer.StatusActive,
 	}, nil)
 
@@ -806,7 +806,7 @@ func TestAuthenticateAccesskey(t *testing.T) {
 					CustomerID: testCustomerID,
 					Name:       "test-key",
 				}, nil)
-				mockSH.EXPECT().CustomerGet(gomock.Any(), gomock.Any(), testCustomerID).Return(&cscustomer.WebhookMessage{
+				mockSH.EXPECT().CustomerRawSelfGet(gomock.Any(), gomock.Any()).Return(&cscustomer.WebhookMessage{
 					Status: cscustomer.StatusActive,
 				}, nil)
 			},
@@ -927,7 +927,7 @@ func Test_isFrozenAccountBlocked(t *testing.T) {
 			method: http.MethodGet,
 			path:   "/v1.0/agents",
 			mockSetup: func(mockSH *servicehandler.MockServiceHandler) {
-				mockSH.EXPECT().CustomerGet(gomock.Any(), gomock.Any(), testCustomerID).Return(&cscustomer.WebhookMessage{
+				mockSH.EXPECT().CustomerRawSelfGet(gomock.Any(), gomock.Any()).Return(&cscustomer.WebhookMessage{
 					Status: cscustomer.StatusActive,
 				}, nil)
 			},
@@ -943,7 +943,47 @@ func Test_isFrozenAccountBlocked(t *testing.T) {
 			method: http.MethodGet,
 			path:   "/v1.0/agents",
 			mockSetup: func(mockSH *servicehandler.MockServiceHandler) {
-				mockSH.EXPECT().CustomerGet(gomock.Any(), gomock.Any(), testCustomerID).Return(&cscustomer.WebhookMessage{
+				mockSH.EXPECT().CustomerRawSelfGet(gomock.Any(), gomock.Any()).Return(&cscustomer.WebhookMessage{
+					Status:              cscustomer.StatusFrozen,
+					TMDeletionScheduled: &deletionTime,
+				}, nil)
+			},
+			expectBlock:  true,
+			expectStatus: 403,
+		},
+		{
+			// Regression coverage for VOIP-1292: previously CustomerGet's
+			// ProjectSuperAdmin permission gate made this fail-open for every
+			// non-super-admin caller regardless of identity type, so
+			// accesskey/delegate callers of a frozen customer were never
+			// blocked either.
+			name: "Frozen account - accesskey identity blocked",
+			agent: auth.NewAccesskeyIdentity(&csaccesskey.Accesskey{
+				ID:         uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-000000000001"),
+				CustomerID: testCustomerID,
+			}),
+			method: http.MethodGet,
+			path:   "/v1.0/agents",
+			mockSetup: func(mockSH *servicehandler.MockServiceHandler) {
+				mockSH.EXPECT().CustomerRawSelfGet(gomock.Any(), gomock.Any()).Return(&cscustomer.WebhookMessage{
+					Status:              cscustomer.StatusFrozen,
+					TMDeletionScheduled: &deletionTime,
+				}, nil)
+			},
+			expectBlock:  true,
+			expectStatus: 403,
+		},
+		{
+			name: "Frozen account - delegate identity blocked",
+			agent: auth.NewDelegateIdentity(&auth.DelegateScope{
+				CustomerID: testCustomerID,
+				IssuedBy:   uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				JTI:        "some-jti",
+			}),
+			method: http.MethodGet,
+			path:   "/v1.0/agents",
+			mockSetup: func(mockSH *servicehandler.MockServiceHandler) {
+				mockSH.EXPECT().CustomerRawSelfGet(gomock.Any(), gomock.Any()).Return(&cscustomer.WebhookMessage{
 					Status:              cscustomer.StatusFrozen,
 					TMDeletionScheduled: &deletionTime,
 				}, nil)
@@ -1002,7 +1042,7 @@ func Test_isFrozenAccountBlocked(t *testing.T) {
 			expectStatus: 200,
 		},
 		{
-			name: "CustomerGet error - fail open (not blocked)",
+			name: "CustomerRawSelfGet error - fail open (not blocked)",
 			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity:   commonidentity.Identity{CustomerID: testCustomerID},
 				Permission: amagent.PermissionCustomerAdmin,
@@ -1010,7 +1050,7 @@ func Test_isFrozenAccountBlocked(t *testing.T) {
 			method: http.MethodGet,
 			path:   "/v1.0/agents",
 			mockSetup: func(mockSH *servicehandler.MockServiceHandler) {
-				mockSH.EXPECT().CustomerGet(gomock.Any(), gomock.Any(), testCustomerID).Return(nil, fmt.Errorf("service unavailable"))
+				mockSH.EXPECT().CustomerRawSelfGet(gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("service unavailable"))
 			},
 			expectBlock:  false,
 			expectStatus: 200,
@@ -1086,7 +1126,7 @@ func TestAuthenticateFrozenAccount(t *testing.T) {
 				mockSH.EXPECT().AuthJWTParse(gomock.Any(), "validToken").Return(map[string]interface{}{
 					"agent": testAgent,
 				}, nil)
-				mockSH.EXPECT().CustomerGet(gomock.Any(), gomock.Any(), testCustomerID).Return(&cscustomer.WebhookMessage{
+				mockSH.EXPECT().CustomerRawSelfGet(gomock.Any(), gomock.Any()).Return(&cscustomer.WebhookMessage{
 					Status:              cscustomer.StatusFrozen,
 					TMDeletionScheduled: &deletionTime,
 				}, nil)

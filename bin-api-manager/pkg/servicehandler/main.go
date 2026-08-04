@@ -611,6 +611,7 @@ type ServiceHandler interface {
 	) (*cscustomer.WebhookMessage, error)
 	CustomerGet(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID) (*cscustomer.WebhookMessage, error)
 	CustomerSelfGet(ctx context.Context, a *auth.AuthIdentity) (*cscustomer.SelfWebhookMessage, error)
+	CustomerRawSelfGet(ctx context.Context, a *auth.AuthIdentity) (*cscustomer.WebhookMessage, error)
 	CustomerList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, filters map[string]string) ([]*cscustomer.WebhookMessage, error)
 	CustomerUpdate(
 		ctx context.Context,
