@@ -382,23 +382,28 @@ func (h *handler) callSetToCache(ctx context.Context, c *call.Call) error {
 	return nil
 }
 
+// buildCallAddChainedCallID builds the statement shared by CallAddChainedCallID
+// and CallTXAddChainedCallID (same SQL, different executor).
+//
+// WHY squirrel.Expr: MySQL json_array_append has no squirrel builder form; see
+// the shared rationale and precedent citations in json_expr.go.
+func buildCallAddChainedCallID(id, chainedCallID uuid.UUID, tmUpdate any) squirrel.UpdateBuilder {
+	return squirrel.
+		Update(callTable).
+		Set(string(call.FieldChainedCallIDs), exprJSONArrayAppend(string(call.FieldChainedCallIDs), chainedCallID.String())).
+		Set(string(call.FieldTMUpdate), tmUpdate).
+		Where(squirrel.Eq{string(call.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+}
+
 // CallAddChainedCallID adds the call id to the given call's chained_call_ids.
 func (h *handler) CallAddChainedCallID(ctx context.Context, id, chainedCallID uuid.UUID) error {
-	// prepare
-	q := `
-	update call_calls set
-		chained_call_ids = json_array_append(
-			chained_call_ids,
-			'$',
-			?
-		),
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, chainedCallID.String(), h.utilHandler.TimeNow(), id.Bytes())
+	q, args, err := buildCallAddChainedCallID(id, chainedCallID, h.utilHandler.TimeNow()).ToSql()
 	if err != nil {
+		return fmt.Errorf("could not build query. CallAddChainedCallID. err: %v", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, q, args...); err != nil {
 		return fmt.Errorf("could not execute. CallAddChainedCallID. err: %v", err)
 	}
 
@@ -408,29 +413,29 @@ func (h *handler) CallAddChainedCallID(ctx context.Context, id, chainedCallID uu
 	return nil
 }
 
+// buildCallRemoveChainedCallID builds the statement shared by
+// CallRemoveChainedCallID and CallTXRemoveChainedCallID.
+//
+// WHY squirrel.Expr: nested MySQL json_remove/replace/json_search has no
+// squirrel builder form; see json_expr.go. The unguarded (non-IF) form is
+// carried over from the pre-migration SQL as-is.
+func buildCallRemoveChainedCallID(id, chainedCallID uuid.UUID, tmUpdate any) squirrel.UpdateBuilder {
+	return squirrel.
+		Update(callTable).
+		Set(string(call.FieldChainedCallIDs), exprJSONArrayRemoveByValue(string(call.FieldChainedCallIDs), chainedCallID.String())).
+		Set(string(call.FieldTMUpdate), tmUpdate).
+		Where(squirrel.Eq{string(call.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+}
+
 // CallRemoveChainedCallID removes the call id from the given call's chained_call_ids.
 func (h *handler) CallRemoveChainedCallID(ctx context.Context, id, chainedCallID uuid.UUID) error {
-	// prepare
-	q := `
-	update call_calls set
-		chained_call_ids = json_remove(
-			chained_call_ids, replace(
-				json_search(
-					chained_call_ids,
-					'one',
-					?
-				),
-				'"',
-				''
-			)
-		),
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, chainedCallID.String(), h.utilHandler.TimeNow(), id.Bytes())
+	q, args, err := buildCallRemoveChainedCallID(id, chainedCallID, h.utilHandler.TimeNow()).ToSql()
 	if err != nil {
+		return fmt.Errorf("could not build query. CallRemoveChainedCallID. err: %v", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, q, args...); err != nil {
 		return fmt.Errorf("could not execute. CallRemoveChainedCallID. err: %v", err)
 	}
 
@@ -454,22 +459,27 @@ func (h *handler) CallSetRecordingID(ctx context.Context, id uuid.UUID, recordID
 	})
 }
 
+// buildCallAddExternalMediaID builds the CallAddExternalMediaID statement.
+//
+// WHY squirrel.Expr: MySQL json_array_append has no squirrel builder form; see
+// json_expr.go.
+func buildCallAddExternalMediaID(id, externalMediaID uuid.UUID, tmUpdate any) squirrel.UpdateBuilder {
+	return squirrel.
+		Update(callTable).
+		Set(string(call.FieldExternalMediaIDs), exprJSONArrayAppend(string(call.FieldExternalMediaIDs), externalMediaID.String())).
+		Set(string(call.FieldTMUpdate), tmUpdate).
+		Where(squirrel.Eq{string(call.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+}
+
 // CallAddExternalMediaID adds the external media id to the call's external_media_ids.
 func (h *handler) CallAddExternalMediaID(ctx context.Context, id, externalMediaID uuid.UUID) error {
-	q := `
-	update call_calls set
-		external_media_ids = json_array_append(
-			external_media_ids,
-			'$',
-			?
-		),
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, externalMediaID.String(), h.utilHandler.TimeNow(), id.Bytes())
+	q, args, err := buildCallAddExternalMediaID(id, externalMediaID, h.utilHandler.TimeNow()).ToSql()
 	if err != nil {
+		return fmt.Errorf("could not build query. CallAddExternalMediaID. err: %v", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, q, args...); err != nil {
 		return fmt.Errorf("could not execute. CallAddExternalMediaID. err: %v", err)
 	}
 
@@ -478,32 +488,28 @@ func (h *handler) CallAddExternalMediaID(ctx context.Context, id, externalMediaI
 	return nil
 }
 
+// buildCallRemoveExternalMediaID builds the CallRemoveExternalMediaID statement.
+//
+// WHY squirrel.Expr: the guarded IF(json_search(...) IS NOT NULL, json_remove(...), col)
+// form has no squirrel builder equivalent; see json_expr.go. The value is bound
+// twice, matching the pre-migration argument list.
+func buildCallRemoveExternalMediaID(id, externalMediaID uuid.UUID, tmUpdate any) squirrel.UpdateBuilder {
+	return squirrel.
+		Update(callTable).
+		Set(string(call.FieldExternalMediaIDs), exprJSONArrayRemoveByValueIfPresent(string(call.FieldExternalMediaIDs), externalMediaID.String())).
+		Set(string(call.FieldTMUpdate), tmUpdate).
+		Where(squirrel.Eq{string(call.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+}
+
 // CallRemoveExternalMediaID removes the external media id from the call's external_media_ids.
 func (h *handler) CallRemoveExternalMediaID(ctx context.Context, id, externalMediaID uuid.UUID) error {
-	q := `
-	update call_calls set
-		external_media_ids = IF(
-			json_search(external_media_ids, 'one', ?) IS NOT NULL,
-			json_remove(
-				external_media_ids, replace(
-					json_search(
-						external_media_ids,
-						'one',
-						?
-					),
-					'"',
-					''
-				)
-			),
-			external_media_ids
-		),
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, externalMediaID.String(), externalMediaID.String(), h.utilHandler.TimeNow(), id.Bytes())
+	q, args, err := buildCallRemoveExternalMediaID(id, externalMediaID, h.utilHandler.TimeNow()).ToSql()
 	if err != nil {
+		return fmt.Errorf("could not build query. CallRemoveExternalMediaID. err: %v", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, q, args...); err != nil {
 		return fmt.Errorf("could not execute. CallRemoveExternalMediaID. err: %v", err)
 	}
 
@@ -521,23 +527,31 @@ func (h *handler) CallSetForRouteFailover(ctx context.Context, id uuid.UUID, cha
 	})
 }
 
+// buildCallAddRecordingIDs builds the CallAddRecordingIDs statement.
+//
+// WHY squirrel.Expr: MySQL json_array_append has no squirrel builder form; see
+// json_expr.go.
+//
+// Note this site binds recordID.String(), unlike ConfbridgeAddRecordingIDs
+// which binds .Bytes(). That inconsistency is a suspected pre-existing bug in
+// the confbridge site (plan §6 item 3) and is deliberately NOT changed here.
+func buildCallAddRecordingIDs(id, recordID uuid.UUID, tmUpdate any) squirrel.UpdateBuilder {
+	return squirrel.
+		Update(callTable).
+		Set(string(call.FieldRecordingIDs), exprJSONArrayAppend(string(call.FieldRecordingIDs), recordID.String())).
+		Set(string(call.FieldTMUpdate), tmUpdate).
+		Where(squirrel.Eq{string(call.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+}
+
 // CallAddRecordingIDs adds the given recording_id into the recording_ids.
 func (h *handler) CallAddRecordingIDs(ctx context.Context, id uuid.UUID, recordID uuid.UUID) error {
-	// prepare
-	q := `
-	update call_calls set
-		recording_ids = json_array_append(
-			recording_ids,
-			'$',
-			?
-		),
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, recordID.String(), h.utilHandler.TimeNow(), id.Bytes())
+	q, args, err := buildCallAddRecordingIDs(id, recordID, h.utilHandler.TimeNow()).ToSql()
 	if err != nil {
+		return fmt.Errorf("could not build query. CallAddRecordingIDs. err: %v", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, q, args...); err != nil {
 		return fmt.Errorf("could not execute. CallAddRecordingIDs. err: %v", err)
 	}
 
@@ -600,21 +614,12 @@ func (h *handler) CallTXFinish(tx *sql.Tx, commit bool) {
 
 // CallTXAddChainedCallID adds the call id to the given call's chained_call_ids in a transaction mode.
 func (h *handler) CallTXAddChainedCallID(tx *sql.Tx, id, chainedCallID uuid.UUID) error {
-	// prepare
-	q := `
-	update call_calls set
-		chained_call_ids = json_array_append(
-			chained_call_ids,
-			'$',
-			?
-		),
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := tx.Exec(q, chainedCallID.String(), h.utilHandler.TimeNow(), id.Bytes())
+	q, args, err := buildCallAddChainedCallID(id, chainedCallID, h.utilHandler.TimeNow()).ToSql()
 	if err != nil {
+		return fmt.Errorf("could not build query. CallTXAddChainedCallID. err: %v", err)
+	}
+
+	if _, err := tx.Exec(q, args...); err != nil {
 		return fmt.Errorf("could not execute. CallAddChainedCallID. err: %v", err)
 	}
 
@@ -626,27 +631,12 @@ func (h *handler) CallTXAddChainedCallID(tx *sql.Tx, id, chainedCallID uuid.UUID
 
 // CallTXRemoveChainedCallID removes the call id from the given call's chained_call_ids in a transaction mode.
 func (h *handler) CallTXRemoveChainedCallID(tx *sql.Tx, id, chainedCallID uuid.UUID) error {
-	// prepare
-	q := `
-	update call_calls set
-		chained_call_ids = json_remove(
-			chained_call_ids, replace(
-				json_search(
-					chained_call_ids,
-					'one',
-					?
-				),
-				'"',
-				''
-			)
-		),
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := tx.Exec(q, chainedCallID.String(), h.utilHandler.TimeNow(), id.Bytes())
+	q, args, err := buildCallRemoveChainedCallID(id, chainedCallID, h.utilHandler.TimeNow()).ToSql()
 	if err != nil {
+		return fmt.Errorf("could not build query. CallTXRemoveChainedCallID. err: %v", err)
+	}
+
+	if _, err := tx.Exec(q, args...); err != nil {
 		return fmt.Errorf("could not execute. CallRemoveChainedCallID. err: %v", err)
 	}
 

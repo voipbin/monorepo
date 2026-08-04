@@ -128,3 +128,55 @@ func Test_goldenGroupcallDecreaseCountExpr(t *testing.T) {
 		},
 	})
 }
+
+func Test_goldenCallJSONExpr(t *testing.T) {
+	tmUpdate := "2026-08-04 01:02:03.000000"
+	id := uuid.FromStringOrNil("3a3b4c5d-0000-11f0-9e2b-0242ac110002")
+	other := uuid.FromStringOrNil("4a3b4c5d-0000-11f0-9e2b-0242ac110002")
+
+	addChainSQL, addChainArgs := mustToSQL(t, buildCallAddChainedCallID(id, other, tmUpdate))
+	rmChainSQL, rmChainArgs := mustToSQL(t, buildCallRemoveChainedCallID(id, other, tmUpdate))
+	addEmSQL, addEmArgs := mustToSQL(t, buildCallAddExternalMediaID(id, other, tmUpdate))
+	rmEmSQL, rmEmArgs := mustToSQL(t, buildCallRemoveExternalMediaID(id, other, tmUpdate))
+	addRecSQL, addRecArgs := mustToSQL(t, buildCallAddRecordingIDs(id, other, tmUpdate))
+
+	runGoldenCases(t, []goldenCase{
+		{
+			// also covers CallTXAddChainedCallID, which shares this builder
+			name:     "CallAddChainedCallID",
+			sql:      addChainSQL,
+			args:     addChainArgs,
+			wantSQL:  "UPDATE call_calls SET chained_call_ids = json_array_append(chained_call_ids, '$', ?), tm_update = ? WHERE id = ?",
+			wantArgs: []any{other.String(), tmUpdate, id.Bytes()},
+		},
+		{
+			// also covers CallTXRemoveChainedCallID, which shares this builder
+			name:     "CallRemoveChainedCallID",
+			sql:      rmChainSQL,
+			args:     rmChainArgs,
+			wantSQL:  `UPDATE call_calls SET chained_call_ids = json_remove(chained_call_ids, replace(json_search(chained_call_ids, 'one', ?), '"', '')), tm_update = ? WHERE id = ?`,
+			wantArgs: []any{other.String(), tmUpdate, id.Bytes()},
+		},
+		{
+			name:     "CallAddExternalMediaID",
+			sql:      addEmSQL,
+			args:     addEmArgs,
+			wantSQL:  "UPDATE call_calls SET external_media_ids = json_array_append(external_media_ids, '$', ?), tm_update = ? WHERE id = ?",
+			wantArgs: []any{other.String(), tmUpdate, id.Bytes()},
+		},
+		{
+			name:     "CallRemoveExternalMediaID",
+			sql:      rmEmSQL,
+			args:     rmEmArgs,
+			wantSQL:  `UPDATE call_calls SET external_media_ids = IF(json_search(external_media_ids, 'one', ?) IS NOT NULL, json_remove(external_media_ids, replace(json_search(external_media_ids, 'one', ?), '"', '')), external_media_ids), tm_update = ? WHERE id = ?`,
+			wantArgs: []any{other.String(), other.String(), tmUpdate, id.Bytes()},
+		},
+		{
+			name:     "CallAddRecordingIDs",
+			sql:      addRecSQL,
+			args:     addRecArgs,
+			wantSQL:  "UPDATE call_calls SET recording_ids = json_array_append(recording_ids, '$', ?), tm_update = ? WHERE id = ?",
+			wantArgs: []any{other.String(), tmUpdate, id.Bytes()},
+		},
+	})
+}

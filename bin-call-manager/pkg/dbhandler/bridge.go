@@ -294,7 +294,7 @@ func (h *handler) BridgeEnd(ctx context.Context, id string) error {
 func buildBridgeAddChannelID(id, channelID string, tmUpdate any) squirrel.UpdateBuilder {
 	return squirrel.
 		Update(bridgeTable).
-		Set(string(bridge.FieldChannelIDs), squirrel.Expr("json_array_append(channel_ids, '$', ?)", channelID)).
+		Set(string(bridge.FieldChannelIDs), exprJSONArrayAppend(string(bridge.FieldChannelIDs), channelID)).
 		Set(string(bridge.FieldTMUpdate), tmUpdate).
 		Where(squirrel.Eq{string(bridge.FieldID): id}).
 		PlaceholderFormat(squirrel.Question)
@@ -330,7 +330,7 @@ func buildBridgeRemoveChannelID(id, channelID string, tmUpdate any) squirrel.Upd
 		Update(bridgeTable).
 		Set(
 			string(bridge.FieldChannelIDs),
-			squirrel.Expr("json_remove(channel_ids, replace(json_search(channel_ids, 'one', ?), '\"', ''))", channelID),
+			exprJSONArrayRemoveByValue(string(bridge.FieldChannelIDs), channelID),
 		).
 		Set(string(bridge.FieldTMUpdate), tmUpdate).
 		Where(squirrel.Eq{string(bridge.FieldID): id}).
