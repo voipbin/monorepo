@@ -17,8 +17,8 @@ import (
 // EventCUCustomerDeleted handles the customer-manager's customer_deleted event
 func (h *transcribeHandler) EventCUCustomerDeleted(ctx context.Context, cu *cucustomer.Customer) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "EventCUCustomerDeleted",
-		"customer": cu,
+		"func":        "EventCUCustomerDeleted",
+		"customer_id": cu.ID,
 	})
 	log.Debugf("Deleting all transcribes of the customer. customer_id: %s", cu.ID)
 

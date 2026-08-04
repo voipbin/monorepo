@@ -103,7 +103,7 @@ func (h *serviceHandler) AuthBoot(ctx context.Context, directHash string) (*Boot
 		log.Infof("Could not get customer. err: %v", err)
 		return nil, fmt.Errorf("%w: customer not found", serviceerrors.ErrNotFound)
 	}
-	log.WithField("customer", cu).Debugf("Retrieved customer info. customer_id: %s", cu.ID)
+	log.WithField("customer_id", cu.ID).Debugf("Retrieved customer info. customer_id: %s", cu.ID)
 
 	if cu.Status != cscustomer.StatusActive {
 		log.Infof("Customer is not active. status: %s", cu.Status)

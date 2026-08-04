@@ -575,7 +575,7 @@ func (h *callHandler) startCallTypeFlow(ctx context.Context, cn *channel.Channel
 		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNetworkOutOfOrder)
 		return
 	}
-	log.WithField("customer", cs).Debugf("Retrieved customer info. customer_id: %s", customerID)
+	log.WithField("customer_id", customerID).Debugf("Retrieved customer info. customer_id: %s", customerID)
 
 	// validate balance
 	if validBalance := h.ValidateCustomerBalance(ctx, id, customerID, call.DirectionIncoming, *source, *destination); !validBalance {

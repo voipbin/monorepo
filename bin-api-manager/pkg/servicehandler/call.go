@@ -77,7 +77,7 @@ func (h *serviceHandler) CallCreate(ctx context.Context, a *auth.AuthIdentity, f
 			log.Errorf("Could not get customer info for verification check. err: %v", err)
 			return nil, nil, fmt.Errorf("%w: could not verify customer identity status", serviceerrors.ErrInternal)
 		}
-		log.WithField("customer", cu).Debugf("Retrieved customer info for verification check. customer_id: %s", cu.ID)
+		log.WithField("customer_id", cu.ID).Debugf("Retrieved customer info for verification check. customer_id: %s", cu.ID)
 
 		if cu.IdentityVerificationStatus != cscustomer.IdentityVerificationStatusVerified {
 			log.Infof("Customer identity verification required for PSTN calls. customer_id: %s, status: %s", a.CustomerID, cu.IdentityVerificationStatus)

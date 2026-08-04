@@ -16,8 +16,8 @@ import (
 // EventCustomerDeleted handles the customer-manager's customer_deleted event
 func (h *numberHandler) EventCustomerDeleted(ctx context.Context, cu *cmcustomer.Customer) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "EventCustomerDeleted",
-		"customer": cu,
+		"func":        "EventCustomerDeleted",
+		"customer_id": cu.ID,
 	})
 
 	// get all numbers of the given customer

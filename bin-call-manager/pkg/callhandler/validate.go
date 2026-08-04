@@ -34,7 +34,7 @@ func (h *callHandler) ValidateCustomerStatusOutgoing(ctx context.Context, custom
 		log.Errorf("Could not get customer info, failing open. err: %v", err)
 		return nil, true
 	}
-	log.WithField("customer", cu).Debugf("Retrieved customer info. customer_id: %s", cu.ID)
+	log.WithField("customer_id", cu.ID).Debugf("Retrieved customer info. customer_id: %s", cu.ID)
 
 	if cu.Status != cucustomer.StatusActive {
 		log.Infof("Customer account is not active. Rejecting outgoing call. status: %s", cu.Status)
@@ -61,7 +61,7 @@ func (h *callHandler) ValidateCustomerStatusIncoming(ctx context.Context, custom
 		log.Errorf("Could not get customer info, failing open. err: %v", err)
 		return nil, true
 	}
-	log.WithField("customer", cu).Debugf("Retrieved customer info. customer_id: %s", cu.ID)
+	log.WithField("customer_id", cu.ID).Debugf("Retrieved customer info. customer_id: %s", cu.ID)
 
 	if cu.Status != cucustomer.StatusActive && cu.Status != cucustomer.StatusInitial {
 		log.Infof("Customer account is not active or initial. Rejecting incoming call. status: %s", cu.Status)

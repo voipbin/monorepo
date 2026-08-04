@@ -14,8 +14,8 @@ import (
 // EventCustomerDeleted handles the customer-manager's customer_deleted event
 func (h *queueHandler) EventCUCustomerDeleted(ctx context.Context, cu *cucustomer.Customer) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "EventCustomerDeleted",
-		"customer": cu,
+		"func":        "EventCustomerDeleted",
+		"customer_id": cu.ID,
 	})
 	log.Debugf("Deleting all queues in customer. customer_id: %s", cu.ID)
 

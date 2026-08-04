@@ -24,7 +24,7 @@ func (h *subscribeHandler) processEventCUCustomerDeleted(ctx context.Context, m 
 		return err
 	}
 
-	log.WithField("customer", c).Debugf("Received customer deleted event. customer_id: %s", c.ID)
+	log.WithField("customer_id", c.ID).Debugf("Received customer deleted event. customer_id: %s", c.ID)
 	if errRemove := h.numberHandler.EventCustomerDeleted(ctx, c); errRemove != nil {
 		log.Errorf("Could not handle the customer deleted event. err: %v", errRemove)
 		return errors.Wrap(errRemove, "Could not handle the customer deleted event.")

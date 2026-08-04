@@ -21,14 +21,14 @@ const eventListLimit = 1000
 // Nil-customer platform schedules are never touched (design §6): a nil
 // customer id in the event is refused instead of matching the platform rows.
 func (h *scheduleHandler) EventCustomerDeleted(ctx context.Context, c *cmcustomer.Customer) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func":     "EventCustomerDeleted",
-		"customer": c,
-	})
-
 	if c == nil || c.ID == uuid.Nil {
 		return errors.New("customer id is empty — refusing to delete nil-customer platform schedules")
 	}
+
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "EventCustomerDeleted",
+		"customer_id": c.ID,
+	})
 
 	filters := map[schedule.Field]any{
 		schedule.FieldCustomerID: c.ID,

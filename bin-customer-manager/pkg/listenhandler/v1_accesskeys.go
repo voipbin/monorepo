@@ -101,10 +101,13 @@ func (h *listenHandler) processV1AccesskeysPost(ctx context.Context, m *sock.Req
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the result data. data: %v, err: %v", tmp, err)
+		log.WithField("accesskey_id", tmp.ID).Debugf("Could not marshal the result data. err: %v", err)
 		return simpleResponse(500), nil
 	}
-	log.Debugf("Sending result: %v", data)
+	// Do not log the marshaled response body here: unlike every other accesskey
+	// endpoint, tmp.RawToken is populated on create (the one-time plaintext token
+	// return), and it has no json:"-" tag since the API response must carry it.
+	log.WithField("accesskey_id", tmp.ID).Debug("Sending result.")
 
 	res := &sock.Response{
 		StatusCode: 200,
