@@ -89,6 +89,7 @@ type ConversationHandler interface {
 	HookVerify(ctx context.Context, uri string, mode string, verifyToken string, challenge string) (string, error)
 	Event(ctx context.Context, conversationType conversation.Type, data []byte) error
 	EmailEventSent(ctx context.Context, e *emmemail.Email) error
+	EmailEventUpdated(ctx context.Context, e *emmemail.Email) error
 
 	MessageSend(ctx context.Context, conversationID uuid.UUID, text string, medias []media.Media) (*message.Message, error)
 }

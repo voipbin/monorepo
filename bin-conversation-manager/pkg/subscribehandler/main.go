@@ -148,6 +148,9 @@ func (h *subscribeHandler) processEvent(m *sock.Event) {
 	case m.Publisher == publisherEmailManager && (m.Type == emmemail.EventTypeCreated):
 		err = h.processEventEmailEmailCreated(ctx, m)
 
+	case m.Publisher == publisherEmailManager && (m.Type == emmemail.EventTypeUpdated):
+		err = h.processEventEmailEmailUpdated(ctx, m)
+
 	// webchat-manager
 	case m.Publisher == publisherWebchatManager && (m.Type == wmmessage.EventTypeMessageCreated):
 		err = h.processEventWebchatMessageMessageCreated(ctx, m)

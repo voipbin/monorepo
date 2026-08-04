@@ -32,3 +32,27 @@ func (h *subscribeHandler) processEventEmailEmailCreated(ctx context.Context, m 
 
 	return nil
 }
+
+// processEventEmailEmailUpdated handles the email-manager's email_updated event.
+//
+// Reconciles the matching outgoing conversation message's status with
+// email-manager's own provider-webhook-driven status.
+func (h *subscribeHandler) processEventEmailEmailUpdated(ctx context.Context, m *sock.Event) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":  "processEventEmailEmailUpdated",
+		"event": m,
+	})
+
+	e := &emmemail.Email{}
+	if err := json.Unmarshal([]byte(m.Data), e); err != nil {
+		log.Errorf("Could not unmarshal the data. err: %v", err)
+		return err
+	}
+
+	if errEvent := h.conversationHandler.EmailEventUpdated(ctx, e); errEvent != nil {
+		log.Errorf("Could not handle the event correctly. err: %v", errEvent)
+		return errEvent
+	}
+
+	return nil
+}

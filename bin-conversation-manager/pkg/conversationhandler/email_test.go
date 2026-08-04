@@ -303,3 +303,261 @@ func Test_EmailEventSent_nilSource(t *testing.T) {
 		t.Errorf("Wrong match. expect: ok, got: %v", err)
 	}
 }
+
+func Test_EmailEventUpdated(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		email *emmemail.Email
+
+		expectStatus message.Status
+	}{
+		{
+			name: "delivered maps to done",
+
+			email: &emmemail.Email{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("66666666-6666-6666-6666-666666666666"),
+				},
+				Status: emmemail.StatusDelivered,
+				Destinations: []commonaddress.Address{
+					{Type: commonaddress.TypeEmail, Target: "customer@example.com"},
+				},
+			},
+
+			expectStatus: message.StatusDone,
+		},
+		{
+			name: "bounce maps to failed",
+
+			email: &emmemail.Email{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("77777777-7777-7777-7777-777777777777"),
+				},
+				Status: emmemail.Status("bounce"),
+				Destinations: []commonaddress.Address{
+					{Type: commonaddress.TypeEmail, Target: "customer@example.com"},
+				},
+			},
+
+			expectStatus: message.StatusFailed,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockMessage := messagehandler.NewMockMessageHandler(mc)
+			h := &conversationHandler{
+				db:             mockDB,
+				messageHandler: mockMessage,
+			}
+
+			ctx := context.Background()
+
+			normalizedPeer, _ := commonaddress.NormalizeTarget(tt.email.Destinations[0].Type, tt.email.Destinations[0].Target)
+			txID := tt.email.ID.String() + ":" + normalizedPeer
+			existing := &message.Message{
+				Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("f0000000-0000-0000-0000-000000000001")},
+				Status:   message.StatusProgressing,
+			}
+
+			mockDB.EXPECT().
+				MessageGetsByTransactionID(ctx, txID, "", uint64(1)).
+				Return([]*message.Message{existing}, nil)
+
+			mockMessage.EXPECT().UpdateStatus(ctx, existing.ID, tt.expectStatus).Return(existing, nil)
+
+			if err := h.EmailEventUpdated(ctx, tt.email); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+func Test_EmailEventUpdated_nonTerminalIsNoop(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockMessage := messagehandler.NewMockMessageHandler(mc)
+	h := &conversationHandler{
+		db:             mockDB,
+		messageHandler: mockMessage,
+	}
+
+	ctx := context.Background()
+
+	// "processed" is a non-terminal status: no DB or message-handler calls
+	// expected at all (mc.Finish asserts this).
+	e := &emmemail.Email{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("88888888-8888-8888-8888-888888888888"),
+		},
+		Status: emmemail.Status("processed"),
+		Destinations: []commonaddress.Address{
+			{Type: commonaddress.TypeEmail, Target: "customer@example.com"},
+		},
+	}
+
+	if err := h.EmailEventUpdated(ctx, e); err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+}
+
+func Test_EmailEventUpdated_messageNotYetMaterialized(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockMessage := messagehandler.NewMockMessageHandler(mc)
+	h := &conversationHandler{
+		db:             mockDB,
+		messageHandler: mockMessage,
+	}
+
+	ctx := context.Background()
+
+	e := &emmemail.Email{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("99999999-9999-9999-9999-999999999999"),
+		},
+		Status: emmemail.StatusDelivered,
+		Destinations: []commonaddress.Address{
+			{Type: commonaddress.TypeEmail, Target: "customer@example.com"},
+		},
+	}
+
+	normalizedPeer, _ := commonaddress.NormalizeTarget(e.Destinations[0].Type, e.Destinations[0].Target)
+	txID := e.ID.String() + ":" + normalizedPeer
+
+	// Raced ahead of EmailEventSent: no message exists yet. UpdateStatus must
+	// NOT be called (mc.Finish asserts this).
+	mockDB.EXPECT().MessageGetsByTransactionID(ctx, txID, "", uint64(1)).Return([]*message.Message{}, nil)
+
+	if err := h.EmailEventUpdated(ctx, e); err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+}
+
+func Test_EmailEventUpdated_alreadyReconciledIsNoop(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockMessage := messagehandler.NewMockMessageHandler(mc)
+	h := &conversationHandler{
+		db:             mockDB,
+		messageHandler: mockMessage,
+	}
+
+	ctx := context.Background()
+
+	e := &emmemail.Email{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("aaaaaaab-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+		},
+		Status: emmemail.StatusDelivered,
+		Destinations: []commonaddress.Address{
+			{Type: commonaddress.TypeEmail, Target: "customer@example.com"},
+		},
+	}
+
+	normalizedPeer, _ := commonaddress.NormalizeTarget(e.Destinations[0].Type, e.Destinations[0].Target)
+	txID := e.ID.String() + ":" + normalizedPeer
+	existing := &message.Message{
+		Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("f0000000-0000-0000-0000-000000000002")},
+		Status:   message.StatusDone,
+	}
+
+	// Already at the target status (duplicate/replayed webhook): UpdateStatus
+	// must NOT be called (mc.Finish asserts this).
+	mockDB.EXPECT().MessageGetsByTransactionID(ctx, txID, "", uint64(1)).Return([]*message.Message{existing}, nil)
+
+	if err := h.EmailEventUpdated(ctx, e); err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+}
+
+func Test_EmailEventUpdated_terminalStatusIsNotDowngraded(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockMessage := messagehandler.NewMockMessageHandler(mc)
+	h := &conversationHandler{
+		db:             mockDB,
+		messageHandler: mockMessage,
+	}
+
+	ctx := context.Background()
+
+	// A "delivered" webhook arriving after the message was already marked
+	// failed (e.g. an earlier "bounce" landed first, or webhooks arrived
+	// out of order). The already-terminal status must not be overwritten:
+	// UpdateStatus must NOT be called (mc.Finish asserts this).
+	e := &emmemail.Email{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
+		},
+		Status: emmemail.StatusDelivered,
+		Destinations: []commonaddress.Address{
+			{Type: commonaddress.TypeEmail, Target: "customer@example.com"},
+		},
+	}
+
+	normalizedPeer, _ := commonaddress.NormalizeTarget(e.Destinations[0].Type, e.Destinations[0].Target)
+	txID := e.ID.String() + ":" + normalizedPeer
+	existing := &message.Message{
+		Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("f0000000-0000-0000-0000-000000000003")},
+		Status:   message.StatusFailed,
+	}
+
+	mockDB.EXPECT().MessageGetsByTransactionID(ctx, txID, "", uint64(1)).Return([]*message.Message{existing}, nil)
+
+	if err := h.EmailEventUpdated(ctx, e); err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+}
+
+func Test_EmailEventUpdated_updateStatusErrorIsAccumulated(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockMessage := messagehandler.NewMockMessageHandler(mc)
+	h := &conversationHandler{
+		db:             mockDB,
+		messageHandler: mockMessage,
+	}
+
+	ctx := context.Background()
+
+	e := &emmemail.Email{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("cccccccc-cccc-cccc-cccc-cccccccccccc"),
+		},
+		Status: emmemail.StatusDelivered,
+		Destinations: []commonaddress.Address{
+			{Type: commonaddress.TypeEmail, Target: "customer@example.com"},
+		},
+	}
+
+	normalizedPeer, _ := commonaddress.NormalizeTarget(e.Destinations[0].Type, e.Destinations[0].Target)
+	txID := e.ID.String() + ":" + normalizedPeer
+	existing := &message.Message{
+		Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("f0000000-0000-0000-0000-000000000004")},
+		Status:   message.StatusProgressing,
+	}
+
+	mockDB.EXPECT().MessageGetsByTransactionID(ctx, txID, "", uint64(1)).Return([]*message.Message{existing}, nil)
+	mockMessage.EXPECT().UpdateStatus(ctx, existing.ID, message.StatusDone).Return(nil, fmt.Errorf("boom"))
+
+	if err := h.EmailEventUpdated(ctx, e); err == nil {
+		t.Errorf("Wrong match. expect: error, got: nil")
+	}
+}
