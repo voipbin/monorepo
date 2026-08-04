@@ -41,12 +41,17 @@ func (h *listenHandler) processV1CustomersSignupPost(ctx context.Context, m *soc
 		return simpleResponse(400), nil
 	}
 
+	// Signup creates both a customer and an accesskey; log both created resources'
+	// IDs, consistent with other creation endpoints. Neither Customer.WebhookSecret
+	// nor the freshly-issued Accesskey.RawToken (present in tmp) is logged.
+	resultLog := log.WithFields(logrus.Fields{"customer_id": tmp.Customer.ID, "accesskey_id": tmp.Accesskey.ID})
+
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the result data. data: %v, err: %v", tmp, err)
+		resultLog.Debugf("Could not marshal the result data. err: %v", err)
 		return simpleResponse(500), nil
 	}
-	log.Debugf("Sending result: %v", data)
+	resultLog.Debug("Sending result.")
 
 	res := &sock.Response{
 		StatusCode: 200,
@@ -79,10 +84,10 @@ func (h *listenHandler) processV1CustomersEmailVerifyPost(ctx context.Context, m
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the result data. data: %v, err: %v", tmp, err)
+		log.WithField("customer_id", tmp.Customer.ID).Debugf("Could not marshal the result data. err: %v", err)
 		return simpleResponse(500), nil
 	}
-	log.Debugf("Sending result: %v", data)
+	log.WithField("customer_id", tmp.Customer.ID).Debug("Sending result.")
 
 	res := &sock.Response{
 		StatusCode: 200,

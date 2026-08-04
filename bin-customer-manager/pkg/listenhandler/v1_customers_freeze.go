@@ -33,10 +33,10 @@ func (h *listenHandler) processV1CustomersIDFreezePost(ctx context.Context, m *s
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the result data. data: %v, err: %v", tmp, err)
+		log.WithField("customer_id", tmp.ID).Debugf("Could not marshal the result data. err: %v", err)
 		return simpleResponse(500), nil
 	}
-	log.Debugf("Sending result: %v", data)
+	log.WithField("customer_id", tmp.ID).Debug("Sending result.")
 
 	res := &sock.Response{
 		StatusCode: 200,
@@ -69,10 +69,10 @@ func (h *listenHandler) processV1CustomersIDFreezeAndDeletePost(ctx context.Cont
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the result data. data: %v, err: %v", tmp, err)
+		log.WithField("customer_id", tmp.ID).Debugf("Could not marshal the result data. err: %v", err)
 		return simpleResponse(500), nil
 	}
-	log.Debugf("Sending result: %v", data)
+	log.WithField("customer_id", tmp.ID).Debug("Sending result.")
 
 	res := &sock.Response{
 		StatusCode: 200,
@@ -105,10 +105,10 @@ func (h *listenHandler) processV1CustomersIDRecoverPost(ctx context.Context, m *
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the result data. data: %v, err: %v", tmp, err)
+		log.WithField("customer_id", tmp.ID).Debugf("Could not marshal the result data. err: %v", err)
 		return simpleResponse(500), nil
 	}
-	log.Debugf("Sending result: %v", data)
+	log.WithField("customer_id", tmp.ID).Debug("Sending result.")
 
 	res := &sock.Response{
 		StatusCode: 200,
