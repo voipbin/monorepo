@@ -4,5 +4,5 @@ package message
 const (
 	EventTypeMessageCreated string = "message_created" // the message has created
 	EventTypeMessageUpdated string = "message_updated" // the message's info has updated
-	EventTypeMessageDeleted string = "message_ringing" // the message is ringing
+	EventTypeMessageDeleted string = "message_deleted" // the message has been deleted
 )

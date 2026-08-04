@@ -12,7 +12,7 @@ func TestEventTypeConstants(t *testing.T) {
 	}{
 		{"event_type_message_created", EventTypeMessageCreated, "message_created"},
 		{"event_type_message_updated", EventTypeMessageUpdated, "message_updated"},
-		{"event_type_message_deleted", EventTypeMessageDeleted, "message_ringing"},
+		{"event_type_message_deleted", EventTypeMessageDeleted, "message_deleted"},
 	}
 
 	for _, tt := range tests {
