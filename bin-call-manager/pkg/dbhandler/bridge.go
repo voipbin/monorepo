@@ -6,8 +6,14 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/Masterminds/squirrel"
+
 	"monorepo/bin-call-manager/models/bridge"
 	"monorepo/bin-common-handler/pkg/utilhandler"
+)
+
+var (
+	bridgeTable = "call_bridges"
 )
 
 const (
@@ -272,23 +278,36 @@ func (h *handler) BridgeEnd(ctx context.Context, id string) error {
 	return nil
 }
 
+// buildBridgeAddChannelID builds the BridgeAddChannelID statement.
+//
+// WHY squirrel.Expr: squirrel has no builder form for MySQL JSON functions —
+// json_array_append() must be emitted as a raw expression in Set() position.
+// Sanctioned by docs/conventions/database.md §7.1 (computed expressions
+// squirrel cannot express). Precedent: bin-agent-manager/pkg/dbhandler/agent.go:709
+// (MySQL JSON function + ? arg + PlaceholderFormat(Question)) and
+// bin-rag-manager/pkg/dbhandler/document.go:355 (Expr inside Set/SetMap).
+//
+// Extracted from the method body so the golden ToSql() test (plan §5 R1) can
+// assert the generated SQL and arg order against the real builder rather than
+// a copy of it — these JSON-function sites have no other automated coverage,
+// since SQLite (the unit-test DB) does not implement json_array_append.
+func buildBridgeAddChannelID(id, channelID string, tmUpdate any) squirrel.UpdateBuilder {
+	return squirrel.
+		Update(bridgeTable).
+		Set(string(bridge.FieldChannelIDs), squirrel.Expr("json_array_append(channel_ids, '$', ?)", channelID)).
+		Set(string(bridge.FieldTMUpdate), tmUpdate).
+		Where(squirrel.Eq{string(bridge.FieldID): id}).
+		PlaceholderFormat(squirrel.Question)
+}
+
 // BridgeAddChannel adds the channel to the bridge.
 func (h *handler) BridgeAddChannelID(ctx context.Context, id, channelID string) error {
-	// prepare
-	q := `
-	update call_bridges set
-		channel_ids = json_array_append(
-			channel_ids,
-			'$',
-			?
-		),
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, channelID, h.utilHandler.TimeNow(), id)
+	q, args, err := buildBridgeAddChannelID(id, channelID, h.utilHandler.TimeNow()).ToSql()
 	if err != nil {
+		return fmt.Errorf("could not build query. BridgeAddChannelID. err: %v", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, q, args...); err != nil {
 		return fmt.Errorf("could not execute. BridgeAddChannelID. err: %v", err)
 	}
 
