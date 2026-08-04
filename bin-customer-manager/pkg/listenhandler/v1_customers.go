@@ -58,10 +58,10 @@ func (h *listenHandler) processV1CustomersGet(ctx context.Context, m *sock.Reque
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.WithField("count", len(tmp)).Debugf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
-	log.Debugf("Sending result: %v", data)
+	log.WithField("count", len(tmp)).Debug("Sending result.")
 
 	res := &sock.Response{
 		StatusCode: 200,
@@ -104,10 +104,10 @@ func (h *listenHandler) processV1CustomersPost(ctx context.Context, m *sock.Requ
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the result data. data: %v, err: %v", tmp, err)
+		log.WithField("customer_id", tmp.ID).Debugf("Could not marshal the result data. err: %v", err)
 		return simpleResponse(500), nil
 	}
-	log.Debugf("Sending result: %v", data)
+	log.WithField("customer_id", tmp.ID).Debug("Sending result.")
 
 	res := &sock.Response{
 		StatusCode: 200,
@@ -138,10 +138,10 @@ func (h *listenHandler) processV1CustomersCleanupUnverifiedPost(ctx context.Cont
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.WithField("expired", expired).Debugf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
-	log.Debugf("Sending result: %v", data)
+	log.WithField("expired", expired).Debug("Sending result.")
 
 	res := &sock.Response{
 		StatusCode: 200,
@@ -172,10 +172,10 @@ func (h *listenHandler) processV1CustomersCleanupFrozenExpiredPost(ctx context.C
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.WithField("processed", processed).Debugf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
-	log.Debugf("Sending result: %v", data)
+	log.WithField("processed", processed).Debug("Sending result.")
 
 	res := &sock.Response{
 		StatusCode: 200,
@@ -209,10 +209,10 @@ func (h *listenHandler) processV1CustomersIDGet(ctx context.Context, m *sock.Req
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the result data. data: %v, err: %v", tmp, err)
+		log.WithField("customer_id", tmp.ID).Debugf("Could not marshal the result data. err: %v", err)
 		return simpleResponse(500), nil
 	}
-	log.Debugf("Sending result: %v", data)
+	log.WithField("customer_id", tmp.ID).Debug("Sending result.")
 
 	res := &sock.Response{
 		StatusCode: 200,
@@ -246,10 +246,10 @@ func (h *listenHandler) processV1CustomersIDDelete(ctx context.Context, m *sock.
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the result data. data: %v, err: %v", tmp, err)
+		log.WithField("customer_id", tmp.ID).Debugf("Could not marshal the result data. err: %v", err)
 		return simpleResponse(500), nil
 	}
-	log.Debugf("Sending result: %v", data)
+	log.WithField("customer_id", tmp.ID).Debug("Sending result.")
 
 	res := &sock.Response{
 		StatusCode: 200,
@@ -301,10 +301,10 @@ func (h *listenHandler) processV1CustomersIDPut(ctx context.Context, m *sock.Req
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the result data. data: %v, err: %v", tmp, err)
+		log.WithField("customer_id", tmp.ID).Debugf("Could not marshal the result data. err: %v", err)
 		return simpleResponse(500), nil
 	}
-	log.Debugf("Sending result: %v", data)
+	log.WithField("customer_id", tmp.ID).Debug("Sending result.")
 
 	res := &sock.Response{
 		StatusCode: 200,
@@ -343,10 +343,10 @@ func (h *listenHandler) processV1CustomersIDBillingAccountIDPut(ctx context.Cont
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the result data. data: %v, err: %v", tmp, err)
+		log.WithField("customer_id", tmp.ID).Debugf("Could not marshal the result data. err: %v", err)
 		return simpleResponse(500), nil
 	}
-	log.Debugf("Sending result: %v", data)
+	log.WithField("customer_id", tmp.ID).Debug("Sending result.")
 
 	res := &sock.Response{
 		StatusCode: 200,
@@ -385,10 +385,10 @@ func (h *listenHandler) processV1CustomersIDMetadataPut(ctx context.Context, m *
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the result data. data: %v, err: %v", tmp, err)
+		log.WithField("customer_id", tmp.ID).Debugf("Could not marshal the result data. err: %v", err)
 		return simpleResponse(500), nil
 	}
-	log.Debugf("Sending result: %v", data)
+	log.WithField("customer_id", tmp.ID).Debug("Sending result.")
 
 	res := &sock.Response{
 		StatusCode: 200,

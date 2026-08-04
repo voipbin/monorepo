@@ -12,6 +12,7 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 
+	"monorepo/bin-customer-manager/models/accesskey"
 	"monorepo/bin-customer-manager/models/customer"
 	"monorepo/bin-customer-manager/pkg/customerhandler"
 )
@@ -34,6 +35,9 @@ func Test_processV1CustomersSignupPost(t *testing.T) {
 				Data:     []byte(`{"name":"test signup","detail":"signup detail","email":"signup@voipbin.net","phone_number":"+821100000001","address":"somewhere","webhook_method":"POST","webhook_uri":"test.com","client_ip":"10.0.0.1"}`),
 			},
 
+			// Signup always returns a populated Accesskey in production (customerHandler.Signup
+			// auto-provisions one via accesskeyHandler.Create before returning) -- this fixture
+			// mirrors that invariant so it also exercises the tmp.Accesskey.ID logging path.
 			responseSignupResult: &customer.SignupResult{
 				Customer: &customer.Customer{
 					ID:            uuid.FromStringOrNil("e1e2e3e4-0000-0000-0000-000000000001"),
@@ -45,11 +49,17 @@ func Test_processV1CustomersSignupPost(t *testing.T) {
 					WebhookMethod: "POST",
 					WebhookURI:    "test.com",
 				},
+				Accesskey: &accesskey.Accesskey{
+					ID:         uuid.FromStringOrNil("a1a2a3a4-0000-0000-0000-000000000001"),
+					CustomerID: uuid.FromStringOrNil("e1e2e3e4-0000-0000-0000-000000000001"),
+					Name:       "default",
+					Detail:     "Auto-provisioned API key",
+				},
 			},
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"customer":{"id":"e1e2e3e4-0000-0000-0000-000000000001","name":"test signup","detail":"signup detail","email":"signup@voipbin.net","phone_number":"+821100000001","address":"somewhere","webhook_method":"POST","webhook_uri":"test.com","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"status":"","identity_verification_status":"","metadata":{"rtp_debug":false},"tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}}`),
+				Data:       []byte(`{"customer":{"id":"e1e2e3e4-0000-0000-0000-000000000001","name":"test signup","detail":"signup detail","email":"signup@voipbin.net","phone_number":"+821100000001","address":"somewhere","webhook_method":"POST","webhook_uri":"test.com","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"status":"","identity_verification_status":"","metadata":{"rtp_debug":false},"tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null},"accesskey":{"id":"a1a2a3a4-0000-0000-0000-000000000001","customer_id":"e1e2e3e4-0000-0000-0000-000000000001","name":"default","detail":"Auto-provisioned API key","token_prefix":"","tm_expire":null,"tm_create":null,"tm_update":null,"tm_delete":null}}`),
 			},
 		},
 	}

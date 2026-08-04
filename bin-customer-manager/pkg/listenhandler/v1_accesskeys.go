@@ -58,10 +58,10 @@ func (h *listenHandler) processV1AccesskeysGet(ctx context.Context, m *sock.Requ
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		log.WithField("count", len(tmp)).Debugf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil
 	}
-	log.Debugf("Sending result: %v", data)
+	log.WithField("count", len(tmp)).Debug("Sending result.")
 
 	res := &sock.Response{
 		StatusCode: 200,
@@ -140,10 +140,10 @@ func (h *listenHandler) processV1AccesskeysIDGet(ctx context.Context, m *sock.Re
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the result data. data: %v, err: %v", tmp, err)
+		log.WithField("accesskey_id", tmp.ID).Debugf("Could not marshal the result data. err: %v", err)
 		return simpleResponse(500), nil
 	}
-	log.Debugf("Sending result: %v", data)
+	log.WithField("accesskey_id", tmp.ID).Debug("Sending result.")
 
 	res := &sock.Response{
 		StatusCode: 200,
@@ -175,10 +175,10 @@ func (h *listenHandler) processV1AccesskeysIDDelete(ctx context.Context, m *sock
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the result data. data: %v, err: %v", tmp, err)
+		log.WithField("accesskey_id", tmp.ID).Debugf("Could not marshal the result data. err: %v", err)
 		return simpleResponse(500), nil
 	}
-	log.Debugf("Sending result: %v", data)
+	log.WithField("accesskey_id", tmp.ID).Debug("Sending result.")
 
 	res := &sock.Response{
 		StatusCode: 200,
@@ -222,10 +222,10 @@ func (h *listenHandler) processV1AccesskeysIDPut(ctx context.Context, m *sock.Re
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		log.Debugf("Could not marshal the result data. data: %v, err: %v", tmp, err)
+		log.WithField("accesskey_id", tmp.ID).Debugf("Could not marshal the result data. err: %v", err)
 		return simpleResponse(500), nil
 	}
-	log.Debugf("Sending result: %v", data)
+	log.WithField("accesskey_id", tmp.ID).Debug("Sending result.")
 
 	res := &sock.Response{
 		StatusCode: 200,
