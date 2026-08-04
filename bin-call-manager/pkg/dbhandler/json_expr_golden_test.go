@@ -180,3 +180,56 @@ func Test_goldenCallJSONExpr(t *testing.T) {
 		},
 	})
 }
+
+func Test_goldenConfbridgeJSONExpr(t *testing.T) {
+	tmUpdate := "2026-08-04 01:02:03.000000"
+	id := uuid.FromStringOrNil("5a3b4c5d-0000-11f0-9e2b-0242ac110002")
+	other := uuid.FromStringOrNil("6a3b4c5d-0000-11f0-9e2b-0242ac110002")
+	channelID := "channel-abc"
+
+	addRecSQL, addRecArgs := mustToSQL(t, buildConfbridgeAddRecordingIDs(id, other, tmUpdate))
+	addEmSQL, addEmArgs := mustToSQL(t, buildConfbridgeAddExternalMediaID(id, other, tmUpdate))
+	rmEmSQL, rmEmArgs := mustToSQL(t, buildConfbridgeRemoveExternalMediaID(id, other, tmUpdate))
+	addCcSQL, addCcArgs := mustToSQL(t, buildConfbridgeAddChannelCallID(id, channelID, other, tmUpdate))
+	rmCcSQL, rmCcArgs := mustToSQL(t, buildConfbridgeRemoveChannelCallID(id, channelID, tmUpdate))
+
+	runGoldenCases(t, []goldenCase{
+		{
+			// NOTE: binds .Bytes(), not .String() — carried over as-is from the
+			// pre-migration SQL. Suspected pre-existing bug, plan §6 item 3.
+			name:     "ConfbridgeAddRecordingIDs",
+			sql:      addRecSQL,
+			args:     addRecArgs,
+			wantSQL:  "UPDATE call_confbridges SET recording_ids = json_array_append(recording_ids, '$', ?), tm_update = ? WHERE id = ?",
+			wantArgs: []any{other.Bytes(), tmUpdate, id.Bytes()},
+		},
+		{
+			name:     "ConfbridgeAddExternalMediaID",
+			sql:      addEmSQL,
+			args:     addEmArgs,
+			wantSQL:  "UPDATE call_confbridges SET external_media_ids = json_array_append(external_media_ids, '$', ?), tm_update = ? WHERE id = ?",
+			wantArgs: []any{other.String(), tmUpdate, id.Bytes()},
+		},
+		{
+			name:     "ConfbridgeRemoveExternalMediaID",
+			sql:      rmEmSQL,
+			args:     rmEmArgs,
+			wantSQL:  `UPDATE call_confbridges SET external_media_ids = IF(json_search(external_media_ids, 'one', ?) IS NOT NULL, json_remove(external_media_ids, replace(json_search(external_media_ids, 'one', ?), '"', '')), external_media_ids), tm_update = ? WHERE id = ?`,
+			wantArgs: []any{other.String(), other.String(), tmUpdate, id.Bytes()},
+		},
+		{
+			name:     "ConfbridgeAddChannelCallID",
+			sql:      addCcSQL,
+			args:     addCcArgs,
+			wantSQL:  "UPDATE call_confbridges SET channel_call_ids = json_insert(channel_call_ids, ?, ?), tm_update = ? WHERE id = ?",
+			wantArgs: []any{`$."channel-abc"`, other.String(), tmUpdate, id.Bytes()},
+		},
+		{
+			name:     "ConfbridgeRemoveChannelCallID",
+			sql:      rmCcSQL,
+			args:     rmCcArgs,
+			wantSQL:  "UPDATE call_confbridges SET channel_call_ids = json_remove(channel_call_ids, ?), tm_update = ? WHERE id = ?",
+			wantArgs: []any{`$."channel-abc"`, tmUpdate, id.Bytes()},
+		},
+	})
+}
