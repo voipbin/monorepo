@@ -409,17 +409,26 @@ func (e AIManagerSummaryStatus) Valid() bool {
 
 // Defines values for AIManagerToolName.
 const (
-	AIManagerToolNameAll               AIManagerToolName = "all"
-	AIManagerToolNameConnectCall       AIManagerToolName = "connect_call"
-	AIManagerToolNameGetAicallMessages AIManagerToolName = "get_aicall_messages"
-	AIManagerToolNameGetVariables      AIManagerToolName = "get_variables"
-	AIManagerToolNameSearchKnowledge   AIManagerToolName = "search_knowledge"
-	AIManagerToolNameSendEmail         AIManagerToolName = "send_email"
-	AIManagerToolNameSendMessage       AIManagerToolName = "send_message"
-	AIManagerToolNameSetVariables      AIManagerToolName = "set_variables"
-	AIManagerToolNameStopFlow          AIManagerToolName = "stop_flow"
-	AIManagerToolNameStopMedia         AIManagerToolName = "stop_media"
-	AIManagerToolNameStopService       AIManagerToolName = "stop_service"
+	AIManagerToolNameAll                    AIManagerToolName = "all"
+	AIManagerToolNameCaseCreate             AIManagerToolName = "case_create"
+	AIManagerToolNameConnectCall            AIManagerToolName = "connect_call"
+	AIManagerToolNameCreateCall             AIManagerToolName = "create_call"
+	AIManagerToolNameDescribeAction         AIManagerToolName = "describe_action"
+	AIManagerToolNameGetAicallMessages      AIManagerToolName = "get_aicall_messages"
+	AIManagerToolNameGetCaseNotes           AIManagerToolName = "get_case_notes"
+	AIManagerToolNameGetContactInteractions AIManagerToolName = "get_contact_interactions"
+	AIManagerToolNameGetConversationContent AIManagerToolName = "get_conversation_content"
+	AIManagerToolNameGetCorrelation         AIManagerToolName = "get_correlation"
+	AIManagerToolNameGetRelatedCases        AIManagerToolName = "get_related_cases"
+	AIManagerToolNameGetResource            AIManagerToolName = "get_resource"
+	AIManagerToolNameGetVariables           AIManagerToolName = "get_variables"
+	AIManagerToolNameSearchKnowledge        AIManagerToolName = "search_knowledge"
+	AIManagerToolNameSendEmail              AIManagerToolName = "send_email"
+	AIManagerToolNameSendMessage            AIManagerToolName = "send_message"
+	AIManagerToolNameSetVariables           AIManagerToolName = "set_variables"
+	AIManagerToolNameStopFlow               AIManagerToolName = "stop_flow"
+	AIManagerToolNameStopMedia              AIManagerToolName = "stop_media"
+	AIManagerToolNameStopService            AIManagerToolName = "stop_service"
 )
 
 // Valid indicates whether the value is a known member of the AIManagerToolName enum.
@@ -427,9 +436,27 @@ func (e AIManagerToolName) Valid() bool {
 	switch e {
 	case AIManagerToolNameAll:
 		return true
+	case AIManagerToolNameCaseCreate:
+		return true
 	case AIManagerToolNameConnectCall:
 		return true
+	case AIManagerToolNameCreateCall:
+		return true
+	case AIManagerToolNameDescribeAction:
+		return true
 	case AIManagerToolNameGetAicallMessages:
+		return true
+	case AIManagerToolNameGetCaseNotes:
+		return true
+	case AIManagerToolNameGetContactInteractions:
+		return true
+	case AIManagerToolNameGetConversationContent:
+		return true
+	case AIManagerToolNameGetCorrelation:
+		return true
+	case AIManagerToolNameGetRelatedCases:
+		return true
+	case AIManagerToolNameGetResource:
 		return true
 	case AIManagerToolNameGetVariables:
 		return true
@@ -1743,7 +1770,9 @@ func (e CustomerManagerCustomerIdentityVerificationStatus) Valid() bool {
 const (
 	CustomerManagerCustomerStatusActive  CustomerManagerCustomerStatus = "active"
 	CustomerManagerCustomerStatusDeleted CustomerManagerCustomerStatus = "deleted"
+	CustomerManagerCustomerStatusExpired CustomerManagerCustomerStatus = "expired"
 	CustomerManagerCustomerStatusFrozen  CustomerManagerCustomerStatus = "frozen"
+	CustomerManagerCustomerStatusInitial CustomerManagerCustomerStatus = "initial"
 )
 
 // Valid indicates whether the value is a known member of the CustomerManagerCustomerStatus enum.
@@ -1753,7 +1782,11 @@ func (e CustomerManagerCustomerStatus) Valid() bool {
 		return true
 	case CustomerManagerCustomerStatusDeleted:
 		return true
+	case CustomerManagerCustomerStatusExpired:
+		return true
 	case CustomerManagerCustomerStatusFrozen:
+		return true
+	case CustomerManagerCustomerStatusInitial:
 		return true
 	default:
 		return false
@@ -3604,9 +3637,9 @@ type AIManagerAI struct {
 	// Example: AI assistant for handling customer inquiries
 	Detail *string `json:"detail,omitempty"`
 
-	// DirectHash Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field.
+	// DirectHash The direct hash for direct access via SIP URI sip:<direct_hash>@sip.voipbin.net (the "direct." prefix is already included in the value, e.g. "direct.a1b2c3d4e5f6"). Returned from the resource's `direct_hash` field.
 	//
-	// Example: a8f3b2c1d4e5
+	// Example: direct.a1b2c3d4e5f6
 	DirectHash *string `json:"direct_hash,omitempty"`
 
 	// EngineKey API key or authentication key for the AI engine. Write-only; not returned in responses.
@@ -4250,9 +4283,9 @@ type AIManagerTeam struct {
 	// Example: Multi-agent team for handling customer inquiries
 	Detail string `json:"detail"`
 
-	// DirectHash Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field.
+	// DirectHash The direct hash for direct access via SIP URI sip:<direct_hash>@sip.voipbin.net (the "direct." prefix is already included in the value, e.g. "direct.a1b2c3d4e5f6"). Returned from the resource's `direct_hash` field.
 	//
-	// Example: a8f3b2c1d4e5
+	// Example: direct.a1b2c3d4e5f6
 	DirectHash *string `json:"direct_hash,omitempty"`
 
 	// Id The unique identifier of the team.
@@ -4376,9 +4409,9 @@ type AgentManagerAgent struct {
 	// Example: Senior support agent
 	Detail *string `json:"detail,omitempty"`
 
-	// DirectHash Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field.
+	// DirectHash The direct hash for direct access via SIP URI sip:<direct_hash>@sip.voipbin.net (the "direct." prefix is already included in the value, e.g. "direct.a1b2c3d4e5f6"). Returned from the resource's `direct_hash` field.
 	//
-	// Example: a8f3b2c1d4e5
+	// Example: direct.a1b2c3d4e5f6
 	DirectHash *string `json:"direct_hash,omitempty"`
 
 	// Id The unique identifier of the agent.
@@ -5780,9 +5813,9 @@ type ConferenceManagerConference struct {
 	// Example: Daily team standup meeting
 	Detail *string `json:"detail,omitempty"`
 
-	// DirectHash Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field.
+	// DirectHash The direct hash for direct access via SIP URI sip:<direct_hash>@sip.voipbin.net (the "direct." prefix is already included in the value, e.g. "direct.a1b2c3d4e5f6"). Returned from the resource's `direct_hash` field.
 	//
-	// Example: a8f3b2c1d4e5
+	// Example: direct.a1b2c3d4e5f6
 	DirectHash *string `json:"direct_hash,omitempty"`
 
 	// Id Unique identifier for the conference.
@@ -7636,9 +7669,9 @@ type FlowManagerFlow struct {
 	// Example: Main flow for handling inbound customer calls
 	Detail *string `json:"detail,omitempty"`
 
-	// DirectHash Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field.
+	// DirectHash The direct hash for direct access via SIP URI sip:<direct_hash>@sip.voipbin.net (the "direct." prefix is already included in the value, e.g. "direct.a1b2c3d4e5f6"). Returned from the resource's `direct_hash` field.
 	//
-	// Example: a8f3b2c1d4e5
+	// Example: direct.a1b2c3d4e5f6
 	DirectHash *string `json:"direct_hash,omitempty"`
 
 	// Id Unique identifier for the flow.
@@ -8083,9 +8116,9 @@ type QueueManagerQueue struct {
 	// Example: Handles incoming sales inquiries
 	Detail *string `json:"detail,omitempty"`
 
-	// DirectHash Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field.
+	// DirectHash The direct hash for direct access via SIP URI sip:<direct_hash>@sip.voipbin.net (the "direct." prefix is already included in the value, e.g. "direct.a1b2c3d4e5f6"). Returned from the resource's `direct_hash` field.
 	//
-	// Example: a8f3b2c1d4e5
+	// Example: direct.a1b2c3d4e5f6
 	DirectHash *string `json:"direct_hash,omitempty"`
 
 	// Id The unique identifier of the queue. Returned from the `POST /queues` or `GET /queues` response.
@@ -8326,9 +8359,9 @@ type RegistrarManagerExtension struct {
 	// Example: Main reception extension for building A
 	Detail *string `json:"detail,omitempty"`
 
-	// DirectHash Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field.
+	// DirectHash The direct hash for direct access via SIP URI sip:<direct_hash>@sip.voipbin.net (the "direct." prefix is already included in the value, e.g. "direct.a1b2c3d4e5f6"). Returned from the resource's `direct_hash` field.
 	//
-	// Example: a8f3b2c1d4e5
+	// Example: direct.a1b2c3d4e5f6
 	DirectHash *string `json:"direct_hash,omitempty"`
 
 	// DomainName Domain name, same as the customer_id, used by Kamailio's INVITE validation
@@ -8572,9 +8605,9 @@ type RouteManagerProvider struct {
 	// Example: 550e8400-e29b-41d4-a716-446655440000
 	Id *string `json:"id,omitempty"`
 
-	// Metadata Carrier-specific resource identifiers stored during automated setup. For Telnyx providers created via `POST /providers/setup`, contains `telnyx_profile_id`, `telnyx_connection_id`, and `telnyx_ip_ids`. Read-only — populated automatically by the setup endpoint. Empty object `{}` for providers created manually via `POST /providers`.
+	// Metadata Carrier-specific resource identifiers stored during automated setup. For Telnyx providers created via `POST /providers/setup`, contains `telnyx_profile_id`, `telnyx_connection_id`, `telnyx_fqdn_id`, and `telnyx_fqdn`. Read-only — populated automatically by the setup endpoint. Empty object `{}` for providers created manually via `POST /providers`.
 	//
-	// Example: {"telnyx_connection_id":"2944757397198982899","telnyx_ip_ids":["2944757397261882899"],"telnyx_profile_id":"2944757397136082899"}
+	// Example: {"telnyx_connection_id":"2944757397198982899","telnyx_fqdn":"sip.voipbin.net","telnyx_fqdn_id":"2944757397261882899","telnyx_profile_id":"2944757397136082899"}
 	Metadata *map[string]interface{} `json:"metadata,omitempty"`
 
 	// Name The name of the provider.
@@ -9725,9 +9758,9 @@ type WebchatManagerWidget struct {
 	// Example: 7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d
 	CustomerId string `json:"customer_id"`
 
-	// DirectHash Hash used by the embed script (data-hash attribute) to authenticate anonymous visitors via POST /auth/boot. Returned on every response (GET, List, Create, Update, direct_hash_regenerate) -- this value is embedded directly in the customer's public website HTML by design, so it is not a traditional secret; hiding it from GET responses would only make it harder for the customer's own admins to retrieve it.
+	// DirectHash Hash used by the embed script (data-hash attribute) to authenticate anonymous visitors via POST /auth/boot. The value already includes the "direct." prefix (e.g. "direct.a1b2c3d4e5f6"). Returned on every response (GET, List, Create, Update, direct_hash_regenerate) -- this value is embedded directly in the customer's public website HTML by design, so it is not a traditional secret; hiding it from GET responses would only make it harder for the customer's own admins to retrieve it.
 	//
-	// Example: a8f3b2c1d4e5
+	// Example: direct.a1b2c3d4e5f6
 	DirectHash *string `json:"direct_hash,omitempty"`
 
 	// Id The unique identifier of the widget. Returned from the `POST /widgets` or `GET /widgets` response.
