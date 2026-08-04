@@ -17,6 +17,8 @@ import (
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
+	csaccesskey "monorepo/bin-customer-manager/models/accesskey"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -435,6 +437,137 @@ func Test_CustomerSelfGet(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
 			}
 		})
+	}
+}
+
+func Test_CustomerRawSelfGet(t *testing.T) {
+	tests := []struct {
+		name string
+
+		agent *auth.AuthIdentity
+
+		responseCustomer *cscustomer.Customer
+		expectRes        *cscustomer.WebhookMessage
+	}{
+		{
+			name: "agent identity, no elevated permission required",
+
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("a0f4b592-837e-11ec-9f5f-2f2051d4adac"),
+				},
+				// Deliberately no permission bits set at all — this method
+				// must work for the lowest-privilege agent, since it exists
+				// specifically to let the frozen-account middleware check
+				// every non-direct caller, not just super admins.
+				Permission: amagent.Permission(0),
+			}),
+
+			responseCustomer: &cscustomer.Customer{
+				ID:            uuid.FromStringOrNil("a0f4b592-837e-11ec-9f5f-2f2051d4adac"),
+				Status:        cscustomer.StatusFrozen,
+				WebhookSecret: "test-webhook-secret",
+			},
+			expectRes: &cscustomer.WebhookMessage{
+				ID:     uuid.FromStringOrNil("a0f4b592-837e-11ec-9f5f-2f2051d4adac"),
+				Status: cscustomer.StatusFrozen,
+			},
+		},
+		{
+			name: "accesskey identity",
+
+			agent: auth.NewAccesskeyIdentity(&csaccesskey.Accesskey{
+				ID:         uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-000000000001"),
+				CustomerID: uuid.FromStringOrNil("a0f4b592-837e-11ec-9f5f-2f2051d4adac"),
+			}),
+
+			responseCustomer: &cscustomer.Customer{
+				ID:     uuid.FromStringOrNil("a0f4b592-837e-11ec-9f5f-2f2051d4adac"),
+				Status: cscustomer.StatusActive,
+			},
+			expectRes: &cscustomer.WebhookMessage{
+				ID:     uuid.FromStringOrNil("a0f4b592-837e-11ec-9f5f-2f2051d4adac"),
+				Status: cscustomer.StatusActive,
+			},
+		},
+		{
+			name: "delegate identity",
+
+			agent: auth.NewDelegateIdentity(&auth.DelegateScope{
+				CustomerID: uuid.FromStringOrNil("a0f4b592-837e-11ec-9f5f-2f2051d4adac"),
+				IssuedBy:   uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				JTI:        "some-jti",
+			}),
+
+			responseCustomer: &cscustomer.Customer{
+				ID:     uuid.FromStringOrNil("a0f4b592-837e-11ec-9f5f-2f2051d4adac"),
+				Status: cscustomer.StatusFrozen,
+			},
+			expectRes: &cscustomer.WebhookMessage{
+				ID:     uuid.FromStringOrNil("a0f4b592-837e-11ec-9f5f-2f2051d4adac"),
+				Status: cscustomer.StatusFrozen,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+
+			ctx := context.Background()
+
+			// Must always fetch by the caller's own CustomerID — never an
+			// arbitrary target — so this method cannot become a
+			// confused-deputy vector for inspecting another customer.
+			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.agent.CustomerID).Return(tt.responseCustomer, nil)
+
+			res, err := h.CustomerRawSelfGet(ctx, tt.agent)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_CustomerRawSelfGet_DirectNotSupported(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := serviceHandler{
+		reqHandler: mockReq,
+		dbHandler:  mockDB,
+	}
+
+	agent := auth.NewDirectIdentity(&auth.DirectScope{
+		CustomerID:   uuid.FromStringOrNil("a0f4b592-837e-11ec-9f5f-2f2051d4adac"),
+		ResourceType: "aicall",
+		ResourceID:   uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-000000000000"),
+	})
+
+	// No mockReq.EXPECT() — must reject before ever calling the backend.
+	res, err := h.CustomerRawSelfGet(context.Background(), agent)
+	if err != serviceerrors.ErrDirectAccessNotSupported {
+		t.Errorf("Wrong match. expect: %v, got: %v", serviceerrors.ErrDirectAccessNotSupported, err)
+	}
+	if res != nil {
+		t.Errorf("Wrong match. expect: nil, got: %v", res)
 	}
 }
 

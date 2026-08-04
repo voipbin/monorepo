@@ -2594,6 +2594,21 @@ func (mr *MockServiceHandlerMockRecorder) CustomerList(ctx, a, size, token, filt
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerList", reflect.TypeOf((*MockServiceHandler)(nil).CustomerList), ctx, a, size, token, filters)
 }
 
+// CustomerRawSelfGet mocks base method.
+func (m *MockServiceHandler) CustomerRawSelfGet(ctx context.Context, a *auth.AuthIdentity) (*customer.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CustomerRawSelfGet", ctx, a)
+	ret0, _ := ret[0].(*customer.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CustomerRawSelfGet indicates an expected call of CustomerRawSelfGet.
+func (mr *MockServiceHandlerMockRecorder) CustomerRawSelfGet(ctx, a any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerRawSelfGet", reflect.TypeOf((*MockServiceHandler)(nil).CustomerRawSelfGet), ctx, a)
+}
+
 // CustomerRecover mocks base method.
 func (m *MockServiceHandler) CustomerRecover(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID) (*customer.WebhookMessage, error) {
 	m.ctrl.T.Helper()

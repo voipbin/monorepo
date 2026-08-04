@@ -189,6 +189,28 @@ func (h *serviceHandler) CustomerSelfGet(ctx context.Context, a *auth.AuthIdenti
 	return res, nil
 }
 
+// CustomerRawSelfGet returns the authenticated identity's own customer record
+// (via ConvertWebhookMessage, which includes Status and TMDeletionScheduled)
+// without requiring any permission beyond being a non-direct authenticated
+// identity. Self-scoped only — always fetches by the caller's own
+// a.CustomerID, never an arbitrary target, so it cannot be used to inspect
+// another customer's status. Intended solely for the frozen-account auth
+// middleware, which must be able to check ANY authenticated caller (agent,
+// accesskey, or delegate — not just super admins or CustomerAdmin/Manager
+// holders, unlike CustomerSelfGet).
+func (h *serviceHandler) CustomerRawSelfGet(ctx context.Context, a *auth.AuthIdentity) (*cscustomer.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, serviceerrors.ErrDirectAccessNotSupported
+	}
+
+	tmp, err := h.customerGet(ctx, a.CustomerID)
+	if err != nil {
+		return nil, err
+	}
+
+	return tmp.ConvertWebhookMessage(), nil
+}
+
 // CustomerGets returns list of all customers
 func (h *serviceHandler) CustomerList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, filters map[string]string) ([]*cscustomer.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{

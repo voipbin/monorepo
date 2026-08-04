@@ -86,6 +86,8 @@ func (h *serviceHandler) ResourceGet(ctx context.Context, a *amagent.Agent, reso
 }
 ```
 
+**Exception:** a handful of methods intentionally skip the `hasPermission` check because they are internal-only (no public HTTP route) and self-scoped (they always operate on the caller's own `a.CustomerID`, never a caller-supplied target), making a permission gate both unnecessary and counterproductive — e.g. `CustomerRawSelfGet`, used exclusively by the frozen-account auth middleware, which must be able to check ANY authenticated non-direct identity, not just permission-holding ones. Self-scoping (no target parameter) is what keeps these safe; do not add a target-ID parameter to a permission-free method.
+
 ### Permission Levels
 
 Permissions are bit flags defined in `bin-agent-manager/models/agent/`. Key levels:
