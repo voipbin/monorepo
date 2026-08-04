@@ -206,7 +206,7 @@ func (h *serviceHandler) BillingAccountSelfGet(ctx context.Context, a *auth.Auth
 		log.Errorf("Could not get the customer info. err: %v", err)
 		return nil, err
 	}
-	log.WithField("customer", c).Debugf("Retrieved customer info. customer_id: %s", c.ID)
+	log.WithField("customer_id", c.ID).Debugf("Retrieved customer info. customer_id: %s", c.ID)
 
 	if c.BillingAccountID == uuid.Nil {
 		log.Info("Customer has no billing account.")
@@ -244,7 +244,7 @@ func (h *serviceHandler) BillingAccountSelfUpdateBasicInfo(ctx context.Context, 
 		log.Errorf("Could not get the customer info. err: %v", err)
 		return nil, err
 	}
-	log.WithField("customer", c).Debugf("Retrieved customer info. customer_id: %s", c.ID)
+	log.WithField("customer_id", c.ID).Debugf("Retrieved customer info. customer_id: %s", c.ID)
 
 	if c.BillingAccountID == uuid.Nil {
 		log.Info("Customer has no billing account.")
@@ -281,7 +281,7 @@ func (h *serviceHandler) BillingAccountSelfUpdatePaymentInfo(ctx context.Context
 		log.Errorf("Could not get the customer info. err: %v", err)
 		return nil, err
 	}
-	log.WithField("customer", c).Debugf("Retrieved customer info. customer_id: %s", c.ID)
+	log.WithField("customer_id", c.ID).Debugf("Retrieved customer info. customer_id: %s", c.ID)
 
 	if c.BillingAccountID == uuid.Nil {
 		log.Info("Customer has no billing account.")
@@ -319,7 +319,7 @@ func (h *serviceHandler) BillingAccountSelfCreatePaddlePortalSession(ctx context
 		log.Infof("Could not get customer info. err: %v", err)
 		return "", fmt.Errorf("%w: could not get customer info", serviceerrors.ErrInternal)
 	}
-	log.WithField("customer", c).Debugf("Retrieved customer info. customer_id: %s", c.ID)
+	log.WithField("customer_id", c.ID).Debugf("Retrieved customer info. customer_id: %s", c.ID)
 
 	if c.BillingAccountID == uuid.Nil {
 		log.Infof("Customer has no billing account. customer_id: %s", c.ID)

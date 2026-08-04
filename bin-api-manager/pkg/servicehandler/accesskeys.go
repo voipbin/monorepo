@@ -62,7 +62,7 @@ func (h *serviceHandler) AccesskeyCreate(ctx context.Context, a *auth.AuthIdenti
 		log.Errorf("Could not create activeflow. erR: %v", err)
 		return nil, err
 	}
-	log.WithField("accesskey", tmp).Debugf("Created accesskey. accesskey_id: %s", tmp.ID)
+	log.WithField("accesskey_id", tmp.ID).Debugf("Created accesskey. accesskey_id: %s", tmp.ID)
 
 	res := tmp.ConvertWebhookMessage()
 	return res, nil

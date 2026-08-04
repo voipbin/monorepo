@@ -28,7 +28,7 @@ func (h *customerHandler) UpdateIdentityVerificationStatus(ctx context.Context, 
 		log.Errorf("Could not get customer info. err: %v", err)
 		return nil, err
 	}
-	log.WithField("customer", c).Debugf("Retrieved customer info. customer_id: %s", c.ID)
+	log.WithFields(logrus.Fields{"customer_id": c.ID, "identity_verification_status": c.IdentityVerificationStatus}).Debugf("Retrieved customer info. customer_id: %s", c.ID)
 
 	if c.IdentityVerificationStatus == status {
 		log.Infof("Customer already has status %s. customer_id: %s", status, id)
@@ -48,7 +48,7 @@ func (h *customerHandler) UpdateIdentityVerificationStatus(ctx context.Context, 
 		log.Errorf("Could not get updated customer. err: %v", err)
 		return nil, fmt.Errorf("could not get updated customer")
 	}
-	log.WithField("customer", res).Debugf("Retrieved updated customer info. customer_id: %s", res.ID)
+	log.WithFields(logrus.Fields{"customer_id": res.ID, "identity_verification_status": res.IdentityVerificationStatus}).Debugf("Retrieved updated customer info. customer_id: %s", res.ID)
 
 	h.notifyHandler.PublishEvent(ctx, customer.EventTypeCustomerIdentityVerificationUpdated, res)
 

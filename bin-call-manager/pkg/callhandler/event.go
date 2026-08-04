@@ -16,8 +16,8 @@ import (
 // EventCUCustomerDeleted handles the customer-manager's customer_deleted event
 func (h *callHandler) EventCUCustomerDeleted(ctx context.Context, cu *cucustomer.Customer) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "EventCUCustomerDeleted",
-		"customer": cu,
+		"func":        "EventCUCustomerDeleted",
+		"customer_id": cu.ID,
 	})
 	log.Debugf("Deleting all calls of the customer. customer_id: %s", cu.ID)
 
@@ -102,8 +102,8 @@ func (h *callHandler) EventSMPodDeleted(ctx context.Context, p *smpod.Pod) error
 // EventCUCustomerFrozen handles the customer-manager's customer_frozen event
 func (h *callHandler) EventCUCustomerFrozen(ctx context.Context, cu *cucustomer.Customer) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "EventCUCustomerFrozen",
-		"customer": cu,
+		"func":        "EventCUCustomerFrozen",
+		"customer_id": cu.ID,
 	})
 	log.Debugf("Hanging up all calls for frozen customer. customer_id: %s", cu.ID)
 

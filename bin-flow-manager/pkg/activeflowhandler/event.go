@@ -34,8 +34,8 @@ func (h *activeflowHandler) EventCallHangup(ctx context.Context, c *cmcall.Call)
 // EventCustomerDeleted handles the customer-manager's customer_deleted event
 func (h *activeflowHandler) EventCustomerDeleted(ctx context.Context, cu *cmcustomer.Customer) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "EventCustomerDeleted",
-		"customer": cu,
+		"func":        "EventCustomerDeleted",
+		"customer_id": cu.ID,
 	})
 	log.Debugf("Stopping all activeflows of customer. customer_id: %s", cu.ID)
 

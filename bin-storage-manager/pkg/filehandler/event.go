@@ -13,8 +13,8 @@ import (
 // EventCustomerDeleted handles the customer-manager's customer_deleted event
 func (h *fileHandler) EventCustomerDeleted(ctx context.Context, cu *cmcustomer.Customer) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "EventCustomerDeleted",
-		"customer": cu,
+		"func":        "EventCustomerDeleted",
+		"customer_id": cu.ID,
 	})
 	log.Debugf("Deleting customer's all files. customer_id: %s", cu.ID)
 

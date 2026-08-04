@@ -92,7 +92,7 @@ func (h *customerHandler) Signup(
 		metricshandler.SignupTotal.WithLabelValues("error").Inc()
 		return nil, err
 	}
-	log.WithField("customer", res).Debugf("Created unverified customer. customer_id: %s", res.ID)
+	log.WithField("customer_id", res.ID).Debugf("Created unverified customer. customer_id: %s", res.ID)
 
 	// Create AccessKey at signup time so headless clients can authenticate immediately
 	ak, err := h.accesskeyHandler.Create(ctx, id, "default", "Auto-provisioned API key", defaultAccesskeyExpire)
@@ -101,7 +101,7 @@ func (h *customerHandler) Signup(
 		metricshandler.SignupTotal.WithLabelValues("error").Inc()
 		return nil, fmt.Errorf("could not create access key")
 	}
-	log.WithField("accesskey", ak).Debugf("Created access key. accesskey_id: %s", ak.ID)
+	log.WithField("accesskey_id", ak.ID).Debugf("Created access key. accesskey_id: %s", ak.ID)
 
 	// Publish customer_created event with headless=true at signup time.
 	// This triggers downstream resource creation (billing, agent, storage).
@@ -161,7 +161,7 @@ func (h *customerHandler) EmailVerify(ctx context.Context, token string) (*custo
 		metricshandler.EmailVerificationTotal.WithLabelValues("error").Inc()
 		return nil, fmt.Errorf("customer not found")
 	}
-	log.WithField("customer", c).Debugf("Retrieved customer info. customer_id: %s", c.ID)
+	log.WithField("customer_id", c.ID).Debugf("Retrieved customer info. customer_id: %s", c.ID)
 
 	if c.EmailVerified {
 		log.Infof("Customer already verified. customer_id: %s", c.ID)
@@ -195,7 +195,7 @@ func (h *customerHandler) EmailVerify(ctx context.Context, token string) (*custo
 		metricshandler.EmailVerificationTotal.WithLabelValues("error").Inc()
 		return nil, fmt.Errorf("could not get verified customer")
 	}
-	log.WithField("customer", updated).Debugf("Customer verified. customer_id: %s", updated.ID)
+	log.WithField("customer_id", updated.ID).Debugf("Customer verified. customer_id: %s", updated.ID)
 
 	// Send password reset email so browser users can set their admin password.
 	// Non-fatal — customer is verified even if this fails.

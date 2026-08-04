@@ -104,8 +104,8 @@ func (h *agentHandler) EventGroupcallProgressing(ctx context.Context, c *cmgroup
 // EventCustomerDeleted handles the customer-manager's customer_deleted event
 func (h *agentHandler) EventCustomerDeleted(ctx context.Context, cu *cmcustomer.Customer) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "EventCustomerDeleted",
-		"customer": cu,
+		"func":        "EventCustomerDeleted",
+		"customer_id": cu.ID,
 	})
 	log.Debugf("Deleting all agents in customer. customer_id: %s", cu.ID)
 
@@ -137,8 +137,8 @@ func (h *agentHandler) EventCustomerDeleted(ctx context.Context, cu *cmcustomer.
 // EventCustomerCreated handles the customer-manager's customer_created event
 func (h *agentHandler) EventCustomerCreated(ctx context.Context, cu *cmcustomer.Customer, headless bool) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "EventCustomerCreated",
-		"customer": cu,
+		"func":        "EventCustomerCreated",
+		"customer_id": cu.ID,
 	})
 	log.Debugf("Creating basic customer admin agent for new customer. customer_id: %s", cu.ID)
 

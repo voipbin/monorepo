@@ -13,8 +13,8 @@ import (
 // EventCustomerDeleted handles the customer-manager's customer_deleted event
 func (h *tagHandler) EventCustomerDeleted(ctx context.Context, c *cmcustomer.Customer) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "EventCustomerDeleted",
-		"customer": c,
+		"func":        "EventCustomerDeleted",
+		"customer_id": c.ID,
 	})
 
 	// build filters for the customer's tags

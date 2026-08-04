@@ -13,8 +13,8 @@ import (
 // EventCUCustomerDeleted handles the customer-manager's customer_deleted event
 func (h *accountHandler) EventCUCustomerDeleted(ctx context.Context, cu *cucustomer.Customer) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "EventCUCustomerDeleted",
-		"customer": cu,
+		"func":        "EventCUCustomerDeleted",
+		"customer_id": cu.ID,
 	})
 	log.Debugf("Deleting all accounts of the customer. customer_id: %s", cu.ID)
 
@@ -46,8 +46,8 @@ func (h *accountHandler) EventCUCustomerDeleted(ctx context.Context, cu *cucusto
 // EventCUCustomerCreated handles the customer-manager's customer_created event
 func (h *accountHandler) EventCUCustomerCreated(ctx context.Context, cu *cucustomer.Customer) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "EventCUCustomerCreated",
-		"customer": cu,
+		"func":        "EventCUCustomerCreated",
+		"customer_id": cu.ID,
 	})
 	log.Debugf("Creatinga a new billing account for new customer. customer_id: %s", cu.ID)
 
@@ -69,7 +69,7 @@ func (h *accountHandler) EventCUCustomerCreated(ctx context.Context, cu *cucusto
 		log.Errorf("Could not update customer's billing account id. err: %v", err)
 		return errors.Wrap(err, "could not update customer's billing account id")
 	}
-	log.WithField("customer", tmp).Debugf("Updated customer's billing account id. customer_id: %s, billing_account_id: %s", tmp.ID, tmp.BillingAccountID)
+	log.WithField("customer_id", tmp.ID).Debugf("Updated customer's billing account id. customer_id: %s, billing_account_id: %s", tmp.ID, tmp.BillingAccountID)
 
 	// set default plan type for new account
 	if _, errPlan := h.dbUpdatePlanType(ctx, b.ID, account.PlanTypeFree); errPlan != nil {
@@ -96,8 +96,8 @@ func (h *accountHandler) EventCUCustomerCreated(ctx context.Context, cu *cucusto
 // EventCUCustomerFrozen handles the customer-manager's customer_frozen event
 func (h *accountHandler) EventCUCustomerFrozen(ctx context.Context, cu *cucustomer.Customer) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "EventCUCustomerFrozen",
-		"customer": cu,
+		"func":        "EventCUCustomerFrozen",
+		"customer_id": cu.ID,
 	})
 	log.Debugf("Freezing all accounts of the customer. customer_id: %s", cu.ID)
 
@@ -126,8 +126,8 @@ func (h *accountHandler) EventCUCustomerFrozen(ctx context.Context, cu *cucustom
 // EventCUCustomerRecovered handles the customer-manager's customer_recovered event
 func (h *accountHandler) EventCUCustomerRecovered(ctx context.Context, cu *cucustomer.Customer) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "EventCUCustomerRecovered",
-		"customer": cu,
+		"func":        "EventCUCustomerRecovered",
+		"customer_id": cu.ID,
 	})
 	log.Debugf("Recovering frozen accounts of the customer. customer_id: %s", cu.ID)
 

@@ -154,7 +154,7 @@ func (h *callHandler) CreateCallOutgoing(
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get customer info")
 	}
-	log.WithField("customer", cu).Debugf("Retrieved customer info. customer_id: %s", cu.ID)
+	log.WithField("customer_id", cu.ID).Debugf("Retrieved customer info. customer_id: %s", cu.ID)
 
 	// embed rtp_debug in call metadata at creation time so status.go doesn't need to re-fetch the customer.
 	// guard: if rtp_debug is already set (e.g. forced by providercallhandler), preserve it even when

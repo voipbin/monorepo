@@ -12,8 +12,8 @@ import (
 // EventCustomerCreated handles the customer-manager's customer_created event
 func (h *accountHandler) EventCustomerCreated(ctx context.Context, cu *cmcustomer.Customer) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "EventCustomerCreated",
-		"customer": cu,
+		"func":        "EventCustomerCreated",
+		"customer_id": cu.ID,
 	})
 	log.Debugf("Creating a new account for customer. customer_id: %s", cu.ID)
 
@@ -30,8 +30,8 @@ func (h *accountHandler) EventCustomerCreated(ctx context.Context, cu *cmcustome
 // EventCustomerDeleted handles the customer-manager's customer_deleted event
 func (h *accountHandler) EventCustomerDeleted(ctx context.Context, cu *cmcustomer.Customer) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":     "EventCustomerDeleted",
-		"customer": cu,
+		"func":        "EventCustomerDeleted",
+		"customer_id": cu.ID,
 	})
 	log.Debugf("Deleting customer's all files. customer_id: %s", cu.ID)
 

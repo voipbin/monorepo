@@ -30,7 +30,7 @@ func (h *serviceHandler) customerGet(ctx context.Context, customerID uuid.UUID) 
 		log.Errorf("Could not get the customer. err: %v", err)
 		return nil, err
 	}
-	log.WithField("customer", res).Debug("Received result.")
+	log.WithField("customer_id", res.ID).Debug("Received result.")
 
 	return res, nil
 }
@@ -155,7 +155,7 @@ func (h *serviceHandler) CustomerGet(ctx context.Context, a *auth.AuthIdentity, 
 		log.Errorf("Could not get the customer info. err: %v", err)
 		return nil, err
 	}
-	log.WithField("customer", tmp).Debugf("Retrieved customer info. customer_id: %s", tmp.ID)
+	log.WithField("customer_id", tmp.ID).Debugf("Retrieved customer info. customer_id: %s", tmp.ID)
 
 	return tmp.ConvertWebhookMessage(), nil
 }
@@ -183,7 +183,7 @@ func (h *serviceHandler) CustomerSelfGet(ctx context.Context, a *auth.AuthIdenti
 		log.Errorf("Could not get the customer info. err: %v", err)
 		return nil, err
 	}
-	log.WithField("customer", tmp).Debugf("Retrieved customer info. customer_id: %s", tmp.ID)
+	log.WithField("customer_id", tmp.ID).Debugf("Retrieved customer info. customer_id: %s", tmp.ID)
 
 	res := tmp.ConvertWebhookMessageSelf()
 	return res, nil
@@ -301,7 +301,7 @@ func (h *serviceHandler) CustomerUpdate(
 		log.Errorf("Could not validate the customer info. err: %v", err)
 		return nil, err
 	}
-	log.WithField("customer", c).Debugf("Retrieved customer info. customer_id: %s", c.ID)
+	log.WithField("customer_id", c.ID).Debugf("Retrieved customer info. customer_id: %s", c.ID)
 
 	// send request
 	res, err := h.reqHandler.CustomerV1CustomerUpdate(ctx, id, name, detail, email, phoneNumber, address, webhookMethod, webhookURI)
@@ -617,7 +617,7 @@ func (h *serviceHandler) CustomerUpdateMetadata(ctx context.Context, a *auth.Aut
 		log.Errorf("Could not validate the customer info. err: %v", err)
 		return nil, err
 	}
-	log.WithField("customer", c).Debugf("Retrieved customer info. customer_id: %s", c.ID)
+	log.WithField("customer_id", c.ID).Debugf("Retrieved customer info. customer_id: %s", c.ID)
 
 	res, err := h.reqHandler.CustomerV1CustomerUpdateMetadata(ctx, customerID, metadata)
 	if err != nil {
@@ -688,7 +688,7 @@ func (h *serviceHandler) CustomerSelfUpdateMetadata(ctx context.Context, a *auth
 		log.Errorf("Could not update the customer's metadata. err: %v", err)
 		return nil, err
 	}
-	log.WithField("customer", res).Debugf("Updated customer metadata. customer_id: %s", res.ID)
+	log.WithField("customer_id", res.ID).Debugf("Updated customer metadata. customer_id: %s", res.ID)
 
 	return res.ConvertWebhookMessage(), nil
 }

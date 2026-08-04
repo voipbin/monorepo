@@ -258,7 +258,7 @@ func (h *customerHandler) UpdateMetadata(ctx context.Context, id uuid.UUID, meta
 		log.Errorf("Could not get updated customer. err: %v", err)
 		return nil, fmt.Errorf("could not get updated customer")
 	}
-	log.WithField("customer", res).Debugf("Retrieved updated customer info. customer_id: %s", res.ID)
+	log.WithField("customer_id", res.ID).Debugf("Retrieved updated customer info. customer_id: %s", res.ID)
 
 	// notify
 	h.notifyHandler.PublishEvent(ctx, customer.EventTypeCustomerUpdated, res)

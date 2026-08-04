@@ -124,7 +124,7 @@ func (h *serviceHandler) NumberCreate(ctx context.Context, a *auth.AuthIdentity,
 			log.Errorf("Could not get customer info for verification check. err: %v", err)
 			return nil, fmt.Errorf("%w: could not verify customer identity status", serviceerrors.ErrInternal)
 		}
-		log.WithField("customer", cu).Debugf("Retrieved customer info for verification check. customer_id: %s", cu.ID)
+		log.WithField("customer_id", cu.ID).Debugf("Retrieved customer info for verification check. customer_id: %s", cu.ID)
 
 		if cu.IdentityVerificationStatus != cscustomer.IdentityVerificationStatusVerified {
 			log.Infof("Customer identity verification required for number purchase. customer_id: %s, status: %s", a.CustomerID, cu.IdentityVerificationStatus)
