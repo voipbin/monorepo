@@ -758,7 +758,7 @@ envelope shape returned by all <code class="docutils literal notranslate"><span 
 </li>
 <li><dl class="simple">
 <dt><strong>429 Too Many Requests</strong>: Rate limit exceeded.</dt><dd><ul>
-<li><p><strong>Fix:</strong> Implement exponential backoff and retry after the duration specified in the <code class="docutils literal notranslate"><span class="pre">Retry-After</span></code> header.</p></li>
+<li><p><strong>Fix:</strong> No <code class="docutils literal notranslate"><span class="pre">Retry-After</span></code> header is returned. Implement exponential backoff and retry blindly rather than relying on a reset time. See <a class="reference internal" href="common_overview.html#rate-limiting"><span class="std std-ref">Rate Limiting</span></a> in the common overview for tier details.</p></li>
 </ul>
 </dd>
 </dl>

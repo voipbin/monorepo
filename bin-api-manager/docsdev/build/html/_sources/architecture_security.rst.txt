@@ -617,40 +617,43 @@ All inputs validated at API boundary:
 Rate Limiting
 -------------
 
-Protect against abuse:
+Protect against abuse. **The configuration below reflects what is actually implemented today** (per-client-IP, in-memory, three tiers) — it previously described an aspirational per-customer quota scheme that was never built; that richer scheme is tracked separately (see note at the end of this section).
 
-**Rate Limit Configuration:**
+**Rate Limit Configuration (as implemented):**
 
 .. code::
 
     Rate Limiting Strategy:
 
-    Global Limits (per customer):
-    +------------------------------------------+
-    | Endpoint              | Limit            |
-    +------------------------------------------+
-    | API requests          | 1000/minute      |
-    | Call creation         | 100/minute       |
-    | SMS sending           | 100/minute       |
-    | Login attempts        | 10/minute        |
-    +------------------------------------------+
-
-    Burst Handling:
-    +------------------------------------------+
-    | Token bucket algorithm                   |
-    | Bucket size: 2x rate limit               |
-    | Refill rate: Rate limit per second       |
-    +------------------------------------------+
+    Per-client-IP limits (in-memory token bucket, per server instance):
+    +------------------+-------------------------------------+-------------+
+    | Tier             | Routes                              | Limit       |
+    +------------------+-------------------------------------+-------------+
+    | auth_public      | Unauthenticated /auth/*             | 10 req/s,   |
+    |                  | (login, signup, password reset,     | burst 20    |
+    |                  | email-verify, boot)                 |             |
+    +------------------+-------------------------------------+-------------+
+    | auth_protected   | /auth/unregister, /auth/delegate    | 10 req/s,   |
+    |                  |                                     | burst 20    |
+    +------------------+-------------------------------------+-------------+
+    | v1               | Full authenticated v1.0 API         | 200 req/s,  |
+    |                  | surface (~346 routes)               | burst 400   |
+    +------------------+-------------------------------------+-------------+
 
     Response on Limit:
     +------------------------------------------+
     | Status: 429 Too Many Requests            |
-    | Header: Retry-After: 60                  |
+    | Header: (none -- no Retry-After header   |
+    |   is returned; see restful_api.rst)      |
     | Body: canonical error envelope with      |
     |   status=RESOURCE_EXHAUSTED              |
     |   reason=RATE_LIMIT_EXCEEDED             |
     | (see restful_api.rst error envelope)     |
     +------------------------------------------+
+
+.. note::
+
+   These are per-IP, per-server-instance limits, not a hard global ceiling or a per-customer quota — a client's effective limit can scale with backend replica count. They are a blast-radius safety valve against runaway or accidental traffic, not a dedicated anti-abuse control. A future per-customer/per-accesskey quota system (with shared, Redis-backed state and `Retry-After` support) is tracked separately in VOIP-1302 and is not yet implemented.
 
 **DDoS Protection:**
 
@@ -666,7 +669,7 @@ Protect against abuse:
     | Rule: rate-limit-by-ip                   |
     | - 10,000 requests/minute per IP          |
     +------------------------------------------+
-    | Rule: geo-restrict (optional)            |
+    | Rule: geo-restrict (optional)             |
     | - Allow specific countries only          |
     +------------------------------------------+
 
@@ -676,6 +679,10 @@ Protect against abuse:
     | - Automatic rule suggestions             |
     | - Alert on anomalies                     |
     +------------------------------------------+
+
+.. note::
+
+   This Cloud Armor configuration describes a separate, upstream infrastructure layer that is not implemented or verifiable from the ``bin-api-manager`` application repository (no Terraform/Kubernetes configuration for it exists in this monorepo). It should not be read as contradicting or being contradicted by the application-level rate limits documented above -- the two operate independently, at different points in the request path.
 
 Audit Logging
 -------------

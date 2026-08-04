@@ -92,7 +92,7 @@ Common HTTP Status Codes
     * **Cause:** The UUID is invalid, the resource was deleted, or it belongs to another customer.
     * **Fix:** Verify the UUID was obtained from a recent ``GET`` list call.
 * **429 Too Many Requests**: Rate limit exceeded.
-    * **Fix:** Implement exponential backoff and retry after the duration specified in the ``Retry-After`` header.
+    * **Fix:** No ``Retry-After`` header is returned. Implement exponential backoff and retry blindly rather than relying on a reset time. See :ref:`Rate Limiting <rate-limiting>` in the common overview for tier details.
 * **500 Internal Server Error**: Server-side error.
     * **Fix:** Retry the request. If the error persists, contact support with the request details.
 

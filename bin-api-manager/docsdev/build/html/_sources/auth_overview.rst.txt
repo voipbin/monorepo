@@ -69,7 +69,7 @@ Endpoint Summary
 
 .. note:: **AI Implementation Hint**
 
-   All unauthenticated ``/auth/*`` endpoints (``login``, ``signup``, ``email-verify``, ``boot``, ``password-forgot``, ``password-reset``) share a single IP-based rate limiter: **10 requests/second per client IP, burst 20**. Exceeding it returns ``429`` with reason ``RATE_LIMIT_EXCEEDED`` (see :ref:`Error Reason Codes <error-reason-catalog>`). ``/auth/unregister`` and ``/auth/delegate`` require authentication first and are not subject to this limiter.
+   All unauthenticated ``/auth/*`` endpoints (``login``, ``signup``, ``email-verify``, ``boot``, ``password-forgot``, ``password-reset``) share a single IP-based rate limiter: **up to approximately 10 requests/second per client IP, burst 20**. ``/auth/unregister`` and ``/auth/delegate`` require authentication first, then are subject to their own, separately-tracked IP-based limiter at the same approximate rate (**10 requests/second, burst 20**). Exceeding either limiter returns ``429`` with reason ``RATE_LIMIT_EXCEEDED`` (see :ref:`Error Reason Codes <error-reason-catalog>`).
 
 .. note:: **AI Implementation Hint — response body shape differs by endpoint**
 

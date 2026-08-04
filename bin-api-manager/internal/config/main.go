@@ -41,6 +41,22 @@ type Config struct {
 	SSLCertBase64           string // SSLCertBase64 is the base64-encoded SSL certificate for HTTPS connections.
 	SSLPrivKeyBase64        string // SSLPrivKeyBase64 is the base64-encoded SSL private key for HTTPS connections.
 	ListenIPAudiosock       string // ListenIPAudiosock is the IP address for audiosocket connection listening.
+
+	// Rate limiting (per-IP, in-memory token bucket -- see lib/middleware/ratelimit.go).
+	// Each pair is (requests/second, burst). A tier is disabled (unlimited
+	// pass-through) if its RPS is not a positive number or its burst <= 0 --
+	// this is the safe way to turn a tier off at runtime, since feeding 0
+	// straight into the underlying limiter would instead deny every request.
+	// NOTE: these are read from environment variables only. CLI flags for
+	// these fields (and all other fields in this struct) are inert, because
+	// LoadGlobalConfig() runs before cobra parses argv -- see Bootstrap/PostBootstrap
+	// call order in cmd/api-manager/main.go.
+	RateLimitAuthPublicRPS      float64 // RateLimitAuthPublicRPS is the per-IP request rate for the unauthenticated /auth/* routes (login, signup, password reset, etc.).
+	RateLimitAuthPublicBurst    int     // RateLimitAuthPublicBurst is the burst size for RateLimitAuthPublicRPS.
+	RateLimitAuthProtectedRPS   float64 // RateLimitAuthProtectedRPS is the per-IP request rate for the authenticated /auth/unregister and /auth/delegate routes.
+	RateLimitAuthProtectedBurst int     // RateLimitAuthProtectedBurst is the burst size for RateLimitAuthProtectedRPS.
+	RateLimitV1RPS              float64 // RateLimitV1RPS is the per-IP request rate for the full authenticated v1.0 API surface.
+	RateLimitV1Burst            int     // RateLimitV1Burst is the burst size for RateLimitV1RPS.
 }
 
 func Bootstrap(cmd *cobra.Command) error {
@@ -88,6 +104,12 @@ func bindConfig(cmd *cobra.Command) error {
 	f.String("ssl_cert_base64", "", "Base64 encoded SSL certificate")
 	f.String("ssl_privkey_base64", "", "Base64 encoded SSL private key")
 	f.String("listen_ip_audiosock", "", "Listen IP address for audiosocket connection")
+	f.Float64("rate_limit_auth_public_rps", 10, "Rate limit (requests/second per IP) for unauthenticated /auth/* routes. <=0 disables this tier. Env var only, see RATE_LIMIT_AUTH_PUBLIC_RPS.")
+	f.Int("rate_limit_auth_public_burst", 20, "Rate limit burst size for the unauthenticated /auth/* routes. <=0 disables this tier. Env var only, see RATE_LIMIT_AUTH_PUBLIC_BURST.")
+	f.Float64("rate_limit_auth_protected_rps", 10, "Rate limit (requests/second per IP) for /auth/unregister and /auth/delegate. <=0 disables this tier. Env var only, see RATE_LIMIT_AUTH_PROTECTED_RPS.")
+	f.Int("rate_limit_auth_protected_burst", 20, "Rate limit burst size for /auth/unregister and /auth/delegate. <=0 disables this tier. Env var only, see RATE_LIMIT_AUTH_PROTECTED_BURST.")
+	f.Float64("rate_limit_v1_rps", 200, "Rate limit (requests/second per IP) for the authenticated v1.0 API surface. <=0 disables this tier. Env var only, see RATE_LIMIT_V1_RPS.")
+	f.Int("rate_limit_v1_burst", 400, "Rate limit burst size for the authenticated v1.0 API surface. <=0 disables this tier. Env var only, see RATE_LIMIT_V1_BURST.")
 
 	bindings := map[string]string{
 		"rabbitmq_address":          "RABBITMQ_ADDRESS",
@@ -103,6 +125,13 @@ func bindConfig(cmd *cobra.Command) error {
 		"ssl_cert_base64":           "SSL_CERT_BASE64",
 		"ssl_privkey_base64":        "SSL_PRIVKEY_BASE64",
 		"listen_ip_audiosock":       "POD_IP",
+
+		"rate_limit_auth_public_rps":      "RATE_LIMIT_AUTH_PUBLIC_RPS",
+		"rate_limit_auth_public_burst":    "RATE_LIMIT_AUTH_PUBLIC_BURST",
+		"rate_limit_auth_protected_rps":   "RATE_LIMIT_AUTH_PROTECTED_RPS",
+		"rate_limit_auth_protected_burst": "RATE_LIMIT_AUTH_PROTECTED_BURST",
+		"rate_limit_v1_rps":               "RATE_LIMIT_V1_RPS",
+		"rate_limit_v1_burst":             "RATE_LIMIT_V1_BURST",
 	}
 
 	for flagKey, envKey := range bindings {
@@ -141,6 +170,13 @@ func LoadGlobalConfig() {
 			SSLCertBase64:           viper.GetString("ssl_cert_base64"),
 			SSLPrivKeyBase64:        viper.GetString("ssl_privkey_base64"),
 			ListenIPAudiosock:       viper.GetString("listen_ip_audiosock"),
+
+			RateLimitAuthPublicRPS:      viper.GetFloat64("rate_limit_auth_public_rps"),
+			RateLimitAuthPublicBurst:    viper.GetInt("rate_limit_auth_public_burst"),
+			RateLimitAuthProtectedRPS:   viper.GetFloat64("rate_limit_auth_protected_rps"),
+			RateLimitAuthProtectedBurst: viper.GetInt("rate_limit_auth_protected_burst"),
+			RateLimitV1RPS:              viper.GetFloat64("rate_limit_v1_rps"),
+			RateLimitV1Burst:            viper.GetInt("rate_limit_v1_burst"),
 		}
 		logrus.Debug("Configuration has been loaded and locked.")
 	})

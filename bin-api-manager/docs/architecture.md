@@ -35,7 +35,7 @@ graph TD
 | `pkg/websockhandler/` | WebSocket fan-out | Pushes events to authenticated WebSocket clients |
 | `pkg/streamhandler/` | Audio streaming | Audiosocket protocol handler for AI/Pipecat audio path |
 | `pkg/pubsubhandler/` | In-process pub/sub | Broker + per-WebSocket subscribers; prefix-matched event fan-out from subscribehandler to WebSocket connections |
-| `lib/middleware/` | HTTP middleware | JWT/accesskey authentication, customer frozen check |
+| `lib/middleware/` | HTTP middleware | Per-IP rate limiting, JWT/accesskey authentication, customer frozen check |
 | `gens/openapi_server/` | Generated code | oapi-codegen output from `bin-openapi-manager/openapi/openapi.yaml` |
 
 ### Code Generation
@@ -61,7 +61,7 @@ Requests pass through the following middleware layers before reaching a handler:
 
 3. **Request ID injection** — A unique request ID is attached to each request and propagated through logs and error envelopes.
 
-4. **Prometheus instrumentation** — Every request is timed; labels include method and path. Metric: `api_manager_receive_request_process_time`.
+4. **Rate limiting** (`lib/middleware/ratelimit.go`) — Per-IP, in-memory token-bucket limiting, applied per route group before authentication (`auth_public`, `auth_protected`, `v1` tiers). See [operations.md](operations.md#rate-limiting) for tier defaults, disable semantics, and caveats.
 
 5. **JWT / Accesskey authentication** (`lib/middleware/authenticate.go`) — Validates credentials before any protected handler runs. See [auth.md](auth.md) for details.
 
