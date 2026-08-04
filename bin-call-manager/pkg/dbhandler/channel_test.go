@@ -1638,7 +1638,7 @@ func Test_ChannelList(t *testing.T) {
 		name     string
 		channels []*channel.Channel
 
-		filters map[string]string
+		filters map[channel.Field]any
 
 		responseCurTimes []*time.Time
 
@@ -1659,9 +1659,12 @@ func Test_ChannelList(t *testing.T) {
 				},
 			},
 
-			filters: map[string]string{
-				"deleted":     "false",
-				"asterisk_id": "3e:50:6b:43:bb:31",
+			// plan §6 item 4: "deleted" must be a Go bool, not the string
+			// "false" — ApplyFields switches on the value type to translate it
+			// into tm_delete IS NULL / IS NOT NULL.
+			filters: map[channel.Field]any{
+				channel.FieldDeleted:    false,
+				channel.FieldAsteriskID: "3e:50:6b:43:bb:31",
 			},
 
 			responseCurTimes: []*time.Time{
@@ -1704,9 +1707,9 @@ func Test_ChannelList(t *testing.T) {
 			name:     "empty",
 			channels: []*channel.Channel{},
 
-			filters: map[string]string{
-				"deleted":     "true",
-				"asterisk_id": "3e:50:6b:43:bb:32",
+			filters: map[channel.Field]any{
+				channel.FieldDeleted:    true,
+				channel.FieldAsteriskID: "3e:50:6b:43:bb:32",
 			},
 
 			responseCurTimes: []*time.Time{},

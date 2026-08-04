@@ -74,7 +74,7 @@ type DBHandler interface {
 	ChannelCreate(ctx context.Context, channel *channel.Channel) error
 	ChannelEndAndDelete(ctx context.Context, id string, hangup ari.ChannelCause) error
 	ChannelGet(ctx context.Context, id string) (*channel.Channel, error)
-	ChannelList(ctx context.Context, size uint64, token string, filters map[string]string) ([]*channel.Channel, error)
+	ChannelList(ctx context.Context, size uint64, token string, filters map[channel.Field]any) ([]*channel.Channel, error)
 	ChannelGetsForRecovery(
 		ctx context.Context,
 		asteriskID string,

@@ -636,7 +636,7 @@ func (mr *MockDBHandlerMockRecorder) ChannelGetsForRecovery(ctx, asteriskID, cha
 }
 
 // ChannelList mocks base method.
-func (m *MockDBHandler) ChannelList(ctx context.Context, size uint64, token string, filters map[string]string) ([]*channel.Channel, error) {
+func (m *MockDBHandler) ChannelList(ctx context.Context, size uint64, token string, filters map[channel.Field]any) ([]*channel.Channel, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ChannelList", ctx, size, token, filters)
 	ret0, _ := ret[0].([]*channel.Channel)
