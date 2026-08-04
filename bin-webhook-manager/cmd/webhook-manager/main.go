@@ -136,7 +136,6 @@ func run(db *sql.DB, cache cachehandler.CacheHandler) error {
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameWebhookEvent, serviceName)
 
 	if err := sockHandler.TopicCreateWithKind(string(commonoutline.QueueNameWebhookEventTopic), "topic"); err != nil {
 		logrus.Errorf("Could not declare the topic exchange. err: %v", err)
@@ -153,7 +152,7 @@ func run(db *sql.DB, cache cachehandler.CacheHandler) error {
 	activeflowHandler := activeflowhandler.NewActiveflowHandler(cache, reqHandler)
 
 	// run listen
-	if err := runListen(sockHandler, reqHandler, notifyHandler, topicNotifyHandler, accountHandler, activeflowHandler, dbHandler); err != nil {
+	if err := runListen(sockHandler, reqHandler, topicNotifyHandler, accountHandler, activeflowHandler, dbHandler); err != nil {
 		return errors.Wrapf(err, "could not run listen handler")
 	}
 
@@ -167,13 +166,13 @@ func run(db *sql.DB, cache cachehandler.CacheHandler) error {
 }
 
 // runListen runs the listen handler
-func runListen(sockHandler sockhandler.SockHandler, reqHandler requesthandler.RequestHandler, notifyHandler notifyhandler.NotifyHandler, topicNotifyHandler notifyhandler.NotifyHandler, accountHandler accounthandler.AccountHandler, activeflowHandler activeflowhandler.ActiveflowHandler, db dbhandler.DBHandler) error {
+func runListen(sockHandler sockhandler.SockHandler, reqHandler requesthandler.RequestHandler, topicNotifyHandler notifyhandler.NotifyHandler, accountHandler accounthandler.AccountHandler, activeflowHandler activeflowhandler.ActiveflowHandler, db dbhandler.DBHandler) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "runListen",
 	})
 	log.Debugf("Running listen handler")
 
-	whHandler := webhookhandler.NewWebhookHandler(db, notifyHandler, topicNotifyHandler, reqHandler, accountHandler, activeflowHandler)
+	whHandler := webhookhandler.NewWebhookHandler(db, topicNotifyHandler, reqHandler, accountHandler, activeflowHandler)
 	listenHandler := listenhandler.NewListenHandler(sockHandler, whHandler)
 
 	// run

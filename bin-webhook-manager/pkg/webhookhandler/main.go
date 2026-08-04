@@ -32,7 +32,6 @@ type WebhookHandler interface {
 // webhookHandler structure for service handle
 type webhookHandler struct {
 	db                 dbhandler.DBHandler
-	notifyHandler      notifyhandler.NotifyHandler // existing fanout exchange
 	topicNotifyHandler notifyhandler.NotifyHandler // topic exchange, VOIP-1258
 	reqHandler         requesthandler.RequestHandler
 
@@ -115,7 +114,6 @@ func newSafeHTTPClient() *http.Client {
 // NewWebhookHandler returns new webhook handler
 func NewWebhookHandler(
 	db dbhandler.DBHandler,
-	notifyHandler notifyhandler.NotifyHandler,
 	topicNotifyHandler notifyhandler.NotifyHandler,
 	reqHandler requesthandler.RequestHandler,
 	messageTargetHandler accounthandler.AccountHandler,
@@ -124,7 +122,6 @@ func NewWebhookHandler(
 
 	h := &webhookHandler{
 		db:                 db,
-		notifyHandler:      notifyHandler,
 		topicNotifyHandler: topicNotifyHandler,
 		reqHandler:         reqHandler,
 

@@ -57,16 +57,7 @@ func (h *webhookHandler) SendWebhookToCustomer(ctx context.Context, customerID u
 		}()
 	}
 
-	wh := &webhook.Webhook{
-		CustomerID: customerID,
-		DataType:   dataType,
-		Data:       data,
-	}
-	h.notifyHandler.PublishEvent(ctx, webhook.EventTypeWebhookPublished, wh)
-
-	// NEW: dual-publish to the topic exchange with computed routing keys (VOIP-1258 §6/§8).
-	// This is IN ADDITION TO the existing fanout PublishEvent call above, not a replacement --
-	// dual-publish continues until Phase 4's cutover step (Task 4.6) removes the old exchange.
+	// publish to the topic exchange with computed routing keys (VOIP-1258 §6/§8, VOIP-1296 cutover).
 	h.publishRoutingKeyedEvent(ctx, webhook.EventTypeWebhookPublished, data)
 
 	// additionally deliver to the per-activeflow webhook destination, if any.
@@ -153,16 +144,7 @@ func (h *webhookHandler) SendWebhookToURI(ctx context.Context, customerID uuid.U
 		}
 	}()
 
-	wh := &webhook.Webhook{
-		CustomerID: customerID,
-		DataType:   dataType,
-		Data:       data,
-	}
-	h.notifyHandler.PublishEvent(ctx, webhook.EventTypeWebhookPublished, wh)
-
-	// NEW: dual-publish to the topic exchange with computed routing keys (VOIP-1258 §6/§8).
-	// This is IN ADDITION TO the existing fanout PublishEvent call above, not a replacement --
-	// dual-publish continues until Phase 4's cutover step (Task 4.6) removes the old exchange.
+	// publish to the topic exchange with computed routing keys (VOIP-1258 §6/§8, VOIP-1296 cutover).
 	h.publishRoutingKeyedEvent(ctx, webhook.EventTypeWebhookPublished, data)
 
 	return nil

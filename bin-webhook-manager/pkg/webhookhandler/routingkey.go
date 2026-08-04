@@ -96,8 +96,10 @@ func (h *webhookHandler) createRoutingKeysForChat(ctx context.Context, d *webhoo
 }
 
 // publishRoutingKeyedEvent computes routing keys for the given event data and publishes to the
-// new topic exchange with each key. Best-effort: logs and returns on parse/RPC failure without
-// blocking the primary (fanout) delivery path above it.
+// topic exchange with each key. Best-effort: logs and returns on parse/RPC failure without
+// blocking the caller (the customer webhook HTTP delivery, dispatched separately via goroutine
+// above). The old fanout exchange publish that used to run alongside this was removed in
+// VOIP-1296 (final cutover); this is now the sole publish path.
 //
 // CRITICAL (envelope unwrapping): `data` is the SAME json.RawMessage that
 // SendWebhookToCustomer/SendWebhookToURI receive. For the primary system-event path -- every
