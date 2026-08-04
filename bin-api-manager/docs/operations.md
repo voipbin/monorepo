@@ -2,7 +2,7 @@
 
 ## Configuration
 
-Runtime configuration is provided via CLI flags (which can also be set as environment variables). Defined in `cmd/api-manager/main.go`.
+Runtime configuration is provided via CLI flags and/or environment variables, defined in `cmd/api-manager/main.go` and `internal/config/main.go`. **The rate-limiting fields below (and only those) are environment-variable-only** — `internal/config.LoadGlobalConfig()` runs before Cobra parses `argv`, so CLI flags for those fields are inert; set them via env var.
 
 | Flag | Env Var | Required | Default | Description |
 |------|---------|----------|---------|-------------|
@@ -19,6 +19,12 @@ Runtime configuration is provided via CLI flags (which can also be set as enviro
 | `-listen_ip_audiosock` | `LISTEN_IP_AUDIOSOCK` | No | `""` | Audiosocket listener IP (AI audio streaming) |
 | `-prometheus_endpoint` | `PROMETHEUS_ENDPOINT` | No | `/metrics` | Prometheus metrics path |
 | `-prometheus_listen_address` | `PROMETHEUS_LISTEN_ADDRESS` | No | `:2112` | Prometheus listen address |
+| — (env var only) | `RATE_LIMIT_AUTH_PUBLIC_RPS` | No | `10` | Rate limit, requests/second per IP, for unauthenticated `/auth/*` routes. `<=0` disables the tier. |
+| — (env var only) | `RATE_LIMIT_AUTH_PUBLIC_BURST` | No | `20` | Burst size for `RATE_LIMIT_AUTH_PUBLIC_RPS`. `<=0` disables the tier. |
+| — (env var only) | `RATE_LIMIT_AUTH_PROTECTED_RPS` | No | `10` | Rate limit, requests/second per IP, for `/auth/unregister` and `/auth/delegate`. `<=0` disables the tier. |
+| — (env var only) | `RATE_LIMIT_AUTH_PROTECTED_BURST` | No | `20` | Burst size for `RATE_LIMIT_AUTH_PROTECTED_RPS`. `<=0` disables the tier. |
+| — (env var only) | `RATE_LIMIT_V1_RPS` | No | `200` | Rate limit, requests/second per IP, for the full authenticated `v1.0` API surface. `<=0` disables the tier. |
+| — (env var only) | `RATE_LIMIT_V1_BURST` | No | `400` | Burst size for `RATE_LIMIT_V1_RPS`. `<=0` disables the tier. |
 
 SSL certificates are passed as base64-encoded values to allow injection via Kubernetes secrets without multi-line PEM issues.
 
@@ -30,10 +36,12 @@ Metrics are exposed on the configured listen address (default `:2112/metrics`).
 
 | Metric | Type | Labels | Description |
 |--------|------|--------|-------------|
-| `api_manager_receive_request_process_time` | Histogram | `method`, `path` | HTTP request processing latency |
-| `api_manager_subscribe_event_process_time` (equivalent: `receive_subscribe_event_process_time`) | Histogram | `publisher`, `type` | RabbitMQ event processing latency |
-| `api_manager_websocket_connections` | Gauge | — | Active WebSocket connections |
+| `api_manager_receive_subscribe_event_process_time` | Histogram | `publisher`, `type` | RabbitMQ event processing latency |
 | `api_manager_pubsub_dropped_message_total` | Counter | — | In-process pub/sub messages dropped because a subscriber buffer was full |
+| `api_manager_rate_limit_allowed_total` | Counter | `tier` | Requests allowed by the rate limiter, by tier (`auth_public`, `auth_protected`, `v1`) |
+| `api_manager_rate_limit_rejected_total` | Counter | `tier` | Requests rejected (429) by the rate limiter, by tier |
+
+Note: an HTTP request-latency histogram and a WebSocket-connection-count gauge were previously (incorrectly) documented here; neither is registered anywhere in `bin-api-manager` and both have been removed from this table.
 
 Circuit-breaker metrics for each RabbitMQ RPC target are also registered under the `api_manager_*` namespace by `bin-common-handler/pkg/requesthandler`. See [docs/patterns/circuit-breaker.md](../docs/patterns/circuit-breaker.md).
 
@@ -77,7 +85,7 @@ Circuit-breaker metrics for each RabbitMQ RPC target are also registered under t
 
 **Resolution:** The response body includes `deletion_scheduled_at` and `recovery_endpoint`. The customer must use `DELETE /auth/unregister` to self-service, or contact support.
 
-### Rate Limiting / RabbitMQ Backpressure
+### RabbitMQ Backpressure
 
 **Symptom:** Requests succeed but with high latency (1-5s+); eventually timeout.
 
@@ -85,8 +93,31 @@ Circuit-breaker metrics for each RabbitMQ RPC target are also registered under t
 
 **Diagnosis:**
 - Check RabbitMQ management UI for queue depths and consumer counts.
-- Check `api_manager_receive_request_process_time` histogram for p99 latency spike.
 - Check circuit-breaker state metrics.
+
+### Rate Limiting
+
+**Symptom:** Requests return `429 RATE_LIMIT_EXCEEDED` (no `Retry-After` header is returned).
+
+**Cause:** The client IP exceeded one of three per-IP, in-memory token-bucket tiers enforced by `lib/middleware/ratelimit.go`:
+
+| Tier | Routes | Default | Runs before |
+|------|--------|---------|-------------|
+| `auth_public` | Unauthenticated `/auth/*` (login, signup, password reset, email-verify, boot) | 10 req/s, burst 20 | (no auth) |
+| `auth_protected` | `/auth/unregister`, `/auth/delegate` | 10 req/s, burst 20 | `Authenticate()` |
+| `v1` | Entire authenticated `v1.0` API surface (~346 routes) | 200 req/s, burst 400 | `Authenticate()` |
+
+Each tier is independently tunable via the `RATE_LIMIT_*` environment variables in the Configuration section above; setting a tier's RPS or burst to `<=0` disables it (unlimited pass-through) — this is the safe rollback lever if a limit turns out to be too aggressive, and does **not** require a redeploy.
+
+**Important caveats:**
+- **Per-pod, not global.** The limiter is in-memory per pod, not Redis-backed. A single client IP's effective ceiling scales with replica count and load-balancer hashing — it is not a hard global ceiling. Do not treat the documented defaults as an exact contractual number.
+- **Client IP depends on the Cloudflare header.** `c.ClientIP()` trusts `CF-Connecting-IP` (see `cmd/api-manager/main.go`). If a request reaches a pod without that header (e.g. direct access bypassing Cloudflare), the IP falls back to the raw connection IP, which could be a shared LB/node address — collapsing many distinct clients into one bucket. This is the most likely real-world trigger for an unexpected rate-limit incident from this change.
+- **This is a blast-radius safety valve, not a per-customer anti-abuse quota.** Per-IP bucketing cannot distinguish customers behind a shared NAT/proxy, and a determined abuser can rotate IPs. Real anti-abuse enforcement requires per-customer/per-accesskey quotas with shared (Redis-backed) state, which is a separate, larger initiative tracked outside this change.
+- **A disabled tier's allowed/rejected ratio reads as 0/0, not "0 = healthy."** Both `api_manager_rate_limit_allowed_total{tier}` and `api_manager_rate_limit_rejected_total{tier}` are pre-initialized to 0 at startup for every configured tier (including disabled ones), so a disabled tier shows no allowed traffic either — don't read that as "no traffic is flowing."
+
+**Diagnosis:**
+- Check `api_manager_rate_limit_rejected_total{tier=...}` and `api_manager_rate_limit_allowed_total{tier=...}` to see which tier is rejecting and how it compares to allowed volume.
+- If legitimate traffic is being rejected, raise (or temporarily disable) the affected tier's `RATE_LIMIT_*_RPS`/`RATE_LIMIT_*_BURST` env vars — no redeploy required, just a config/env change and pod restart.
 
 ### OpenAPI Schema Drift
 

@@ -200,10 +200,18 @@ All API requests and responses use JSON format.
         "next_page_token": "..."
     }
 
+.. _rate-limiting:
+
 Rate Limiting
 -------------
 
-VoIPBIN currently applies a per-client-IP rate limit (10 requests/second, burst of 20) only to the unauthenticated ``/auth/*`` endpoints (signup, login/boot, password reset, etc.) — see :ref:`Auth <auth-main>` for the full list. The authenticated ``/v1.0/*`` resource endpoints (calls, messages, and the rest of the platform API) have no rate limiting applied today. When the ``/auth/*`` limit is exceeded, the API returns a ``429 Too Many Requests`` response using the same canonical error envelope described in :ref:`error-response-envelope`, with reason code ``RATE_LIMIT_EXCEEDED``.
+VoIPBIN applies a per-client-IP rate limit to all API requests, enforced in three tiers:
+
+* Unauthenticated ``/auth/*`` endpoints (signup, login/boot, password reset, etc. — see :ref:`Auth <auth-main>` for the full list): up to approximately 10 requests/second, burst of 20.
+* Authenticated account-management endpoints (``/auth/unregister``, ``/auth/delegate``): up to approximately 10 requests/second, burst of 20.
+* The rest of the authenticated ``/v1.0/*`` API surface (calls, messages, and the rest of the platform API): up to approximately 200 requests/second, burst of 400.
+
+These figures are per-IP and per-server-instance, not an exact guaranteed ceiling — the effective limit for a given client can vary with backend scaling, so treat them as an order-of-magnitude guide rather than a fixed contract. When a limit is exceeded, the API returns a ``429 Too Many Requests`` response using the same canonical error envelope described in :ref:`error-response-envelope`, with reason code ``RATE_LIMIT_EXCEEDED``.
 
 .. code::
 

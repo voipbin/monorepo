@@ -231,10 +231,12 @@ func runListenHTTP(serviceHandler servicehandler.ServiceHandler) {
 		c.Next()
 	})
 
+	cfg := config.Get()
+
 	// register basic services
 	app.GET("/ping", service.GetPing)
 	auth := app.Group("/auth")
-	auth.Use(middleware.RateLimit(10, 20)) // 10 req/s per IP, burst of 20
+	auth.Use(middleware.RateLimit("auth_public", cfg.RateLimitAuthPublicRPS, cfg.RateLimitAuthPublicBurst))
 	auth.POST("/login", service.PostLogin)
 	auth.POST("/password-forgot", service.PostPasswordForgot)
 	auth.GET("/password-reset", service.GetPasswordReset)
@@ -245,6 +247,7 @@ func runListenHTTP(serviceHandler servicehandler.ServiceHandler) {
 	auth.POST("/boot", service.PostBoot)
 	// Authenticated auth routes (require middleware)
 	authProtected := app.Group("/auth")
+	authProtected.Use(middleware.RateLimit("auth_protected", cfg.RateLimitAuthProtectedRPS, cfg.RateLimitAuthProtectedBurst))
 	authProtected.Use(middleware.Authenticate())
 	authProtected.POST("/unregister", service.PostAuthUnregister)
 	authProtected.DELETE("/unregister", service.DeleteAuthUnregister)
@@ -253,6 +256,7 @@ func runListenHTTP(serviceHandler servicehandler.ServiceHandler) {
 	appServer := server.NewServer(serviceHandler)
 
 	v1 := app.Group("v1.0")
+	v1.Use(middleware.RateLimit("v1", cfg.RateLimitV1RPS, cfg.RateLimitV1Burst))
 	v1.Use(middleware.Authenticate())
 	openapi_server.RegisterHandlersWithOptions(v1, appServer, openapi_server.GinServerOptions{
 		ErrorHandler: server.BindingErrorHandler,

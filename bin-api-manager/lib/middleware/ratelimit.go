@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"math"
 	"sync"
 	"time"
 
@@ -9,8 +10,39 @@ import (
 	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/time/rate"
 )
+
+var (
+	metricsNamespace = "api_manager"
+
+	promRateLimitAllowedTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "rate_limit_allowed_total",
+			Help:      "Total number of requests allowed by the rate limiter, by tier",
+		},
+		[]string{"tier"},
+	)
+
+	promRateLimitRejectedTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "rate_limit_rejected_total",
+			Help:      "Total number of requests rejected by the rate limiter, by tier",
+		},
+		[]string{"tier"},
+	)
+)
+
+func init() {
+	prometheus.MustRegister(
+		promRateLimitAllowedTotal,
+		promRateLimitRejectedTotal,
+	)
+}
 
 type ipLimiter struct {
 	limiter  *rate.Limiter
@@ -64,9 +96,46 @@ func (s *rateLimitStore) cleanup() {
 	}
 }
 
-// RateLimit returns a Gin middleware that limits requests per IP address.
+// RateLimit returns a Gin middleware that limits requests per IP address,
+// tracked separately per tier for observability (metrics below).
+//
 // r is the rate in requests per second, burst is the maximum burst size.
-func RateLimit(r float64, burst int) gin.HandlerFunc {
+//
+// Disable semantics: if r is not a positive number (covers <= 0, -Inf, and
+// NaN) or burst <= 0, the tier is treated as disabled -- no per-IP store or
+// cleanup goroutine is created, and the returned middleware unconditionally
+// calls c.Next(). This makes "set to 0 to disable" a safe rollback lever:
+// the naive alternative of feeding r=0 straight into rate.NewLimiter would
+// deny every request instead of allowing them, turning an intended
+// incident-time disable into a total outage for the tier.
+//
+// +Inf is normalized to rate.Inf (the library's actual "unlimited" sentinel,
+// golang.org/x/time/rate.Inf = Limit(math.MaxFloat64), matched by an exact
+// == comparison internally) rather than passed through as IEEE +Inf, which
+// does not equal that sentinel and would fall into unspecified floating-point
+// behavior in the limiter's internal token accounting instead of the
+// library's intended fast path.
+func RateLimit(tier string, r float64, burst int) gin.HandlerFunc {
+	allowed := promRateLimitAllowedTotal.WithLabelValues(tier)
+	rejected := promRateLimitRejectedTotal.WithLabelValues(tier)
+
+	if !(r > 0) || burst <= 0 {
+		logrus.WithFields(logrus.Fields{
+			"func":  "RateLimit",
+			"tier":  tier,
+			"rate":  r,
+			"burst": burst,
+		}).Warnf("Rate limiting is disabled for this tier.")
+
+		return func(c *gin.Context) {
+			c.Next()
+		}
+	}
+
+	if math.IsInf(r, 1) {
+		r = float64(rate.Inf)
+	}
+
 	store := newRateLimitStore(rate.Limit(r), burst)
 
 	return func(c *gin.Context) {
@@ -74,8 +143,10 @@ func RateLimit(r float64, burst int) gin.HandlerFunc {
 		limiter := store.getLimiter(ip)
 
 		if !limiter.Allow() {
+			rejected.Inc()
+
 			// Build the canonical external envelope. The internal Domain
-			// field is omitted by lib/apierror — see envelope.go.
+			// field is omitted by lib/apierror -- see envelope.go.
 			e := cerrors.ResourceExhausted(commonoutline.ServiceNameAPIManager, "RATE_LIMIT_EXCEEDED", "Too many requests. Please try again later.")
 			c.AbortWithStatusJSON(
 				cerrors.HTTPStatusFor(e.Status),
@@ -84,6 +155,7 @@ func RateLimit(r float64, burst int) gin.HandlerFunc {
 			return
 		}
 
+		allowed.Inc()
 		c.Next()
 	}
 }
