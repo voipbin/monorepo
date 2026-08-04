@@ -38,7 +38,10 @@ func Test_PostAgents(t *testing.T) {
 		expectedPermission amagent.Permission
 		expectedTagIDs     []uuid.UUID
 		expectedAddresses  []commonaddress.Address
-		expectRes          string
+
+		expectCallService bool
+		expectStatus      int
+		expectRes         string
 	}{
 		{
 			name: "full data",
@@ -72,10 +75,15 @@ func Test_PostAgents(t *testing.T) {
 					Target: "+123456789",
 				},
 			},
-			expectRes: `{"id":"bd8cee04-4f21-11ec-9955-db7041b6d997","customer_id":"00000000-0000-0000-0000-000000000000","username":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"direct_hash":""}`,
+
+			expectCallService: true,
+			expectStatus:      http.StatusOK,
+			expectRes:         `{"id":"bd8cee04-4f21-11ec-9955-db7041b6d997","customer_id":"00000000-0000-0000-0000-000000000000","username":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"direct_hash":""}`,
 		},
 		{
-			name: "empty",
+			// addresses is required by the OpenAPI spec; an empty body must
+			// be rejected with 400, not silently treated as "no addresses".
+			name: "empty body -- addresses missing is rejected",
 			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("7cf444aa-8df4-11ee-abd9-b762d225dc87"),
@@ -84,21 +92,23 @@ func Test_PostAgents(t *testing.T) {
 
 			reqBody: []byte(`{}`),
 
-			responseAgent: &amagent.WebhookMessage{
+			expectCallService: false,
+			expectStatus:      http.StatusBadRequest,
+		},
+		{
+			// An explicit empty array is likewise not a valid substitute
+			// for at least one address.
+			name: "empty addresses array is rejected",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("3071bee2-79af-11ec-9f30-83b56e9d88b5"),
+					ID: uuid.FromStringOrNil("9c3d0e5c-79b0-11ec-8f88-af8a4f6b6e37"),
 				},
-			},
+			}),
 
-			expectedUsername:   "",
-			expectedPassword:   "",
-			expectedName:       "",
-			expectedDetail:     "",
-			expectedRingMethod: "",
-			expectedPermission: 0,
-			expectedTagIDs:     []uuid.UUID{},
-			expectedAddresses:  []commonaddress.Address{},
-			expectRes:          `{"id":"3071bee2-79af-11ec-9f30-83b56e9d88b5","customer_id":"00000000-0000-0000-0000-000000000000","username":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"direct_hash":""}`,
+			reqBody: []byte(`{"username":"test2","password":"password2","name":"test2 name","detail":"test2 detail","addresses":[]}`),
+
+			expectCallService: false,
+			expectStatus:      http.StatusBadRequest,
 		}}
 
 	for _, tt := range tests {
@@ -122,14 +132,16 @@ func Test_PostAgents(t *testing.T) {
 			req, _ := http.NewRequest("POST", "/agents", bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().AgentCreate(req.Context(), tt.agent, tt.expectedUsername, tt.expectedPassword, tt.expectedName, tt.expectedDetail, tt.expectedRingMethod, tt.expectedPermission, tt.expectedTagIDs, tt.expectedAddresses).Return(tt.responseAgent, nil)
-
-			r.ServeHTTP(w, req)
-			if w.Code != http.StatusOK {
-				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			if tt.expectCallService {
+				mockSvc.EXPECT().AgentCreate(req.Context(), tt.agent, tt.expectedUsername, tt.expectedPassword, tt.expectedName, tt.expectedDetail, tt.expectedRingMethod, tt.expectedPermission, tt.expectedTagIDs, tt.expectedAddresses).Return(tt.responseAgent, nil)
 			}
 
-			if w.Body.String() != tt.expectRes {
+			r.ServeHTTP(w, req)
+			if w.Code != tt.expectStatus {
+				t.Errorf("Wrong match. expect: %d, got: %d", tt.expectStatus, w.Code)
+			}
+
+			if tt.expectRes != "" && w.Body.String() != tt.expectRes {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, w.Body)
 			}
 		})

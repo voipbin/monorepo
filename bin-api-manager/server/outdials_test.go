@@ -146,7 +146,10 @@ func Test_outdialsPOST(t *testing.T) {
 		expectName       string
 		expectDetail     string
 		expectData       string
-		expectRes        string
+
+		expectCallService bool
+		expectStatus      int
+		expectRes         string
 	}{
 		{
 			name: "normal",
@@ -169,7 +172,40 @@ func Test_outdialsPOST(t *testing.T) {
 			expectName:       "test name",
 			expectDetail:     "test detail",
 			expectData:       "test data",
-			expectRes:        `{"id":"99b197a5-010e-4f4e-b9fc-aae44e241ddb","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
+
+			expectCallService: true,
+			expectStatus:      http.StatusOK,
+			expectRes:         `{"id":"99b197a5-010e-4f4e-b9fc-aae44e241ddb","customer_id":"00000000-0000-0000-0000-000000000000","campaign_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
+		},
+		{
+			// campaign_id/name/detail/data are all required by the OpenAPI
+			// spec; an empty body must be rejected with 400.
+			name: "empty body -- required fields missing is rejected",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f0e5f5d0-79b1-11ec-8a97-2b2a5c6a3f4b"),
+				},
+			}),
+
+			reqQuery: "/outdials",
+			reqBody:  []byte(`{}`),
+
+			expectCallService: false,
+			expectStatus:      http.StatusBadRequest,
+		},
+		{
+			name: "campaign_id missing is rejected",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("06f4a1c2-79b2-11ec-93c8-cf6e7f9a1d0e"),
+				},
+			}),
+
+			reqQuery: "/outdials",
+			reqBody:  []byte(`{"name":"test name","detail":"test detail","data":"test data"}`),
+
+			expectCallService: false,
+			expectStatus:      http.StatusBadRequest,
 		},
 	}
 
@@ -194,14 +230,16 @@ func Test_outdialsPOST(t *testing.T) {
 
 			req, _ := http.NewRequest("POST", "/outdials", bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().OutdialCreate(req.Context(), tt.agent, tt.expectCampaignID, tt.expectName, tt.expectDetail, tt.expectData).Return(tt.responseOutdial, nil)
-
-			r.ServeHTTP(w, req)
-			if w.Code != http.StatusOK {
-				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			if tt.expectCallService {
+				mockSvc.EXPECT().OutdialCreate(req.Context(), tt.agent, tt.expectCampaignID, tt.expectName, tt.expectDetail, tt.expectData).Return(tt.responseOutdial, nil)
 			}
 
-			if w.Body.String() != tt.expectRes {
+			r.ServeHTTP(w, req)
+			if w.Code != tt.expectStatus {
+				t.Errorf("Wrong match. expect: %d, got: %d", tt.expectStatus, w.Code)
+			}
+
+			if tt.expectRes != "" && w.Body.String() != tt.expectRes {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, w.Body)
 			}
 		})
@@ -581,7 +619,10 @@ func Test_outdialsIDTargetsPOST(t *testing.T) {
 		expectDestination2 *commonaddress.Address
 		expectDestination3 *commonaddress.Address
 		expectDestination4 *commonaddress.Address
-		expectRes          string
+
+		expectCallService bool
+		expectStatus      int
+		expectRes         string
 	}{
 		{
 			name: "normal",
@@ -622,7 +663,43 @@ func Test_outdialsIDTargetsPOST(t *testing.T) {
 				Type:   commonaddress.TypeTel,
 				Target: "+821100000005",
 			},
-			expectRes: `{"id":"e3097653-4c68-4915-add3-78b12a4ba151","outdial_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","status":"","destination_0":null,"destination_1":null,"destination_2":null,"destination_3":null,"destination_4":null,"try_count_0":0,"try_count_1":0,"try_count_2":0,"try_count_3":0,"try_count_4":0,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+
+			expectCallService: true,
+			expectStatus:      http.StatusOK,
+			expectRes:         `{"id":"e3097653-4c68-4915-add3-78b12a4ba151","outdial_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","data":"","status":"","destination_0":null,"destination_1":null,"destination_2":null,"destination_3":null,"destination_4":null,"try_count_0":0,"try_count_1":0,"try_count_2":0,"try_count_3":0,"try_count_4":0,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+		},
+		{
+			// name/detail/data and at least one destination_N target are
+			// all required by the OpenAPI spec; an empty body must be
+			// rejected with 400.
+			name: "empty body -- required fields missing is rejected",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			}),
+
+			reqQuery: "/outdials/726d6b88-2028-44fe-a415-a58067d98acf/targets",
+			reqBody:  []byte(`{}`),
+
+			expectCallService: false,
+			expectStatus:      http.StatusBadRequest,
+		},
+		{
+			// name/detail/data present, but no destination_N carries a
+			// target -- there is no reachable endpoint to dial.
+			name: "no destination target is rejected",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			}),
+
+			reqQuery: "/outdials/726d6b88-2028-44fe-a415-a58067d98acf/targets",
+			reqBody:  []byte(`{"name":"test name","detail":"test detail","data":"test data"}`),
+
+			expectCallService: false,
+			expectStatus:      http.StatusBadRequest,
 		},
 	}
 
@@ -647,14 +724,16 @@ func Test_outdialsIDTargetsPOST(t *testing.T) {
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().OutdialtargetCreate(req.Context(), tt.agent, tt.expectOutdialID, tt.expectName, tt.expectDetail, tt.expectData, tt.expectDestination0, tt.expectDestination1, tt.expectDestination2, tt.expectDestination3, tt.expectDestination4).Return(tt.responseOutdialtarget, nil)
-
-			r.ServeHTTP(w, req)
-			if w.Code != http.StatusOK {
-				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			if tt.expectCallService {
+				mockSvc.EXPECT().OutdialtargetCreate(req.Context(), tt.agent, tt.expectOutdialID, tt.expectName, tt.expectDetail, tt.expectData, tt.expectDestination0, tt.expectDestination1, tt.expectDestination2, tt.expectDestination3, tt.expectDestination4).Return(tt.responseOutdialtarget, nil)
 			}
 
-			if w.Body.String() != tt.expectRes {
+			r.ServeHTTP(w, req)
+			if w.Code != tt.expectStatus {
+				t.Errorf("Wrong match. expect: %d, got: %d", tt.expectStatus, w.Code)
+			}
+
+			if tt.expectRes != "" && w.Body.String() != tt.expectRes {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, w.Body)
 			}
 		})

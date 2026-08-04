@@ -775,7 +775,10 @@ func Test_campaignsIDNextCampaignIDPUT(t *testing.T) {
 
 		expectCampaignID     uuid.UUID
 		expectNextCampaignID uuid.UUID
-		expectRes            string
+
+		expectCallService bool
+		expectStatus      int
+		expectRes         string
 	}{
 		{
 			name: "normal",
@@ -796,7 +799,53 @@ func Test_campaignsIDNextCampaignIDPUT(t *testing.T) {
 			},
 
 			expectNextCampaignID: uuid.FromStringOrNil("b045bff6-c6b7-11ec-8d03-2f6187fcf80f"),
-			expectRes:            `{"id":"a76dcb26-c6b7-11ec-b0dc-23d4f8625f83","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","actions":null,"outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
+
+			expectCallService: true,
+			expectStatus:      http.StatusOK,
+			expectRes:         `{"id":"a76dcb26-c6b7-11ec-b0dc-23d4f8625f83","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","actions":null,"outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
+		},
+		{
+			// next_campaign_id's zero value is a valid, meaningful domain
+			// value ("unchain this campaign") -- an empty/omitted body must
+			// still be accepted and forwarded as uuid.Nil, not rejected.
+			name: "empty body -- next_campaign_id omitted means unchain, not an error",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			}),
+			expectCampaignID: uuid.FromStringOrNil("a76dcb26-c6b7-11ec-b0dc-23d4f8625f83"),
+
+			reqQuery: "/campaigns/a76dcb26-c6b7-11ec-b0dc-23d4f8625f83/next_campaign_id",
+			reqBody:  []byte(`{}`),
+
+			responseCampaign: &cacampaign.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a76dcb26-c6b7-11ec-b0dc-23d4f8625f83"),
+				},
+			},
+
+			expectNextCampaignID: uuid.Nil,
+
+			expectCallService: true,
+			expectStatus:      http.StatusOK,
+			expectRes:         `{"id":"a76dcb26-c6b7-11ec-b0dc-23d4f8625f83","customer_id":"00000000-0000-0000-0000-000000000000","type":"","name":"","detail":"","status":"","service_level":0,"end_handle":"","actions":null,"outplan_id":"00000000-0000-0000-0000-000000000000","outdial_id":"00000000-0000-0000-0000-000000000000","queue_id":"00000000-0000-0000-0000-000000000000","next_campaign_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
+		},
+		{
+			// A syntactically invalid, non-empty value IS a genuine client
+			// error and must still be rejected.
+			name: "invalid uuid next_campaign_id is rejected",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			}),
+
+			reqQuery: "/campaigns/a76dcb26-c6b7-11ec-b0dc-23d4f8625f83/next_campaign_id",
+			reqBody:  []byte(`{"next_campaign_id":"not-a-uuid"}`),
+
+			expectCallService: false,
+			expectStatus:      http.StatusBadRequest,
 		},
 	}
 
@@ -821,14 +870,16 @@ func Test_campaignsIDNextCampaignIDPUT(t *testing.T) {
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().CampaignUpdateNextCampaignID(req.Context(), tt.agent, tt.expectCampaignID, tt.expectNextCampaignID).Return(tt.responseCampaign, nil)
-
-			r.ServeHTTP(w, req)
-			if w.Code != http.StatusOK {
-				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			if tt.expectCallService {
+				mockSvc.EXPECT().CampaignUpdateNextCampaignID(req.Context(), tt.agent, tt.expectCampaignID, tt.expectNextCampaignID).Return(tt.responseCampaign, nil)
 			}
 
-			if w.Body.String() != tt.expectRes {
+			r.ServeHTTP(w, req)
+			if w.Code != tt.expectStatus {
+				t.Errorf("Wrong match. expect: %d, got: %d", tt.expectStatus, w.Code)
+			}
+
+			if tt.expectRes != "" && w.Body.String() != tt.expectRes {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, w.Body)
 			}
 		})
