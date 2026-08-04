@@ -39,7 +39,7 @@ const outboundConfigTable = "outbound_configs"        // WRONG — missing prefi
 
 When adding a new service, derive the prefix from the service name (e.g. `bin-rag-manager` → `rag_`) and add it to the table above.
 
-**Exception — `bin-call-manager`:** This service uses direct SQL (not Squirrel) per its own `CLAUDE.md`. The §7.0 prefix rule still applies; the §7.1 Squirrel rule does not.
+(`bin-call-manager` was formerly listed here as a raw-SQL exception. It was migrated to squirrel in VOIP-1078 and is no longer an exception — both the §7.0 prefix rule and the §7.1 Squirrel rule apply to it.)
 
 ---
 
@@ -83,7 +83,7 @@ h.db.QueryContext(ctx, q, id.Bytes())
 h.db.ExecContext(ctx, q, c.ID, c.CustomerID, ...)
 ```
 
-Squirrel + `commondatabasehandler.PrepareFields()` automatically calls `.Bytes()` for fields tagged `db:",uuid"` — that is the preferred pattern (§7.2). Raw SQL paths (the exception in `bin-call-manager`) must call `.Bytes()` explicitly.
+Squirrel + `commondatabasehandler.PrepareFields()` automatically calls `.Bytes()` for fields tagged `db:",uuid"` — that is the preferred pattern (§7.2). Any remaining raw-SQL path must call `.Bytes()` explicitly.
 
 **Bootstrap migrations** that copy UUIDs across tables must use the same byte representation:
 
@@ -132,7 +132,15 @@ query, args, _ := squirrel.Select(fields...).
 query := "SELECT * FROM agent_agents WHERE id = ?"
 ```
 
-**Exception:** Computed expressions that squirrel cannot express (e.g., `cost_per_unit * ?`). Document WHY with a comment.
+**Exception:** Expressions that squirrel's builder cannot express. Document WHY with a comment at every call site, and keep all operands bound as query arguments — never interpolate a value into the SQL text. Two sanctioned categories:
+
+1. **Computed/arithmetic expressions** — e.g. `cost_per_unit * ?`, or an atomic `call_count = call_count - 1` that must be evaluated by the database to avoid a lost-update race.
+   Reference: `bin-rag-manager/pkg/dbhandler/document.go:355`, `bin-call-manager/pkg/dbhandler/groupcall.go`.
+
+2. **MySQL JSON functions** — `json_array_append`, `json_insert`, `json_set`, `json_remove`, `json_search`, `JSON_CONTAINS`, `JSON_EXTRACT`. Squirrel has no builder form for any of these.
+   Reference: `bin-call-manager/pkg/dbhandler/json_expr.go` (the shared expression helpers and the largest concentration of such sites), `bin-agent-manager/pkg/dbhandler/agent.go:709`, `bin-conversation-manager/pkg/dbhandler/conversation.go:160-163`.
+
+Note these sites are usually invisible to unit tests, since SQLite (used as the in-memory test database across the monorepo) implements none of the MySQL JSON functions. Pin them with golden `ToSql()` string assertions instead — see `bin-call-manager/pkg/dbhandler/json_expr_golden_test.go`.
 
 ## 7.2 CRUD Operations
 

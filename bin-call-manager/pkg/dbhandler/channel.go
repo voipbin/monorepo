@@ -3,281 +3,118 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
-	"strconv"
 	"time"
+
+	"github.com/Masterminds/squirrel"
+	"github.com/pkg/errors"
+
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"monorepo/bin-call-manager/models/ari"
 	"monorepo/bin-call-manager/models/channel"
-	"monorepo/bin-common-handler/pkg/utilhandler"
-
-	"github.com/pkg/errors"
 )
 
-const (
-	// select query for call get
-	channelSelect = `
-	select
-		asterisk_id,
-		id,
-		name,
-		type,
-		tech,
-
-		sip_call_id,
-		sip_transport,
-		sip_data,
-
-		src_name,
-		src_number,
-		dst_name,
-		dst_number,
-
-		state,
-		data,
-		stasis_name,
-		stasis_data,
-		bridge_id,
-		playback_id,
-
-		dial_result,
-		hangup_cause,
-
-		direction,
-		mute_direction,
-
-		tm_create,
-		tm_update,
-		tm_delete,
-
-		tm_answer,
-		tm_ringing,
-		tm_end
-
-	from
-		call_channels
-	`
+var (
+	channelTable = "call_channels"
 )
 
 // channelGetFromRow gets the channel from the row.
 func (h *handler) channelGetFromRow(row *sql.Rows) (*channel.Channel, error) {
-	var data sql.NullString
-	var sipData sql.NullString
-	var stasisData sql.NullString
-	var tmCreateStr, tmUpdateStr, tmDeleteStr, tmAnswerStr, tmRingingStr, tmEndStr sql.NullString
-
 	res := &channel.Channel{}
-	if err := row.Scan(
-		&res.AsteriskID,
-		&res.ID,
-		&res.Name,
-		&res.Type,
-		&res.Tech,
 
-		&res.SIPCallID,
-		&res.SIPTransport,
-		&sipData,
-
-		&res.SourceName,
-		&res.SourceNumber,
-		&res.DestinationName,
-		&res.DestinationNumber,
-
-		&res.State,
-		&data,
-		&res.StasisName,
-		&stasisData,
-		&res.BridgeID,
-		&res.PlaybackID,
-
-		&res.DialResult,
-		&res.HangupCause,
-
-		&res.Direction,
-		&res.MuteDirection,
-
-		&tmCreateStr,
-		&tmUpdateStr,
-		&tmDeleteStr,
-
-		&tmAnswerStr,
-		&tmRingingStr,
-		&tmEndStr,
-	); err != nil {
+	if err := commondatabasehandler.ScanRow(row, res); err != nil {
 		return nil, fmt.Errorf("channelGetFromRow: Could not scan the row. err: %v", err)
 	}
 
-	// Data
-	if data.Valid {
-		if err := json.Unmarshal([]byte(data.String), &res.Data); err != nil {
-			return nil, fmt.Errorf("channelGetFromRow: Could not unmarshal the data. err: %v", err)
-		}
-	}
+	// Initialize nil maps to empty, per the R-A read table in normalization.go.
+	// ScanRow's copyJSON leaves a field nil on SQL NULL or empty, so the
+	// pre-migration normalization has to stay here.
+	//
+	// Data and StasisData normalize; SIPData deliberately does NOT — it is left
+	// nil today (channel.go had no nil guard for it) and must stay that way.
+	// Do not "tidy" this into a uniform rule for all three.
 	if res.Data == nil {
 		res.Data = map[string]interface{}{}
-	}
-
-	// SIPData
-	if sipData.Valid {
-		if err := json.Unmarshal([]byte(sipData.String), &res.SIPData); err != nil {
-			return nil, fmt.Errorf("channelGetFromRow: Could not unmarshal the sip_data. err: %v", err)
-		}
-	}
-
-	// StasisData
-	if stasisData.Valid {
-		if err := json.Unmarshal([]byte(stasisData.String), &res.StasisData); err != nil {
-			return nil, fmt.Errorf("channelGetFromRow: Could not unmarshal the stasis data. err: %v", err)
-		}
 	}
 	if res.StasisData == nil {
 		res.StasisData = map[channel.StasisDataType]string{}
 	}
 
-	// Timestamps - parse strings to time.Time pointers
-	if tmCreateStr.Valid && tmCreateStr.String != "" {
-		t := utilhandler.TimeParse(tmCreateStr.String).UTC()
-		if !t.IsZero() {
-			res.TMCreate = &t
-		}
-	}
-	if tmUpdateStr.Valid && tmUpdateStr.String != "" {
-		t := utilhandler.TimeParse(tmUpdateStr.String).UTC()
-		if !t.IsZero() {
-			res.TMUpdate = &t
-		}
-	}
-	if tmDeleteStr.Valid && tmDeleteStr.String != "" {
-		t := utilhandler.TimeParse(tmDeleteStr.String).UTC()
-		if !t.IsZero() {
-			res.TMDelete = &t
-		}
-	}
-	if tmAnswerStr.Valid && tmAnswerStr.String != "" {
-		t := utilhandler.TimeParse(tmAnswerStr.String).UTC()
-		if !t.IsZero() {
-			res.TMAnswer = &t
-		}
-	}
-	if tmRingingStr.Valid && tmRingingStr.String != "" {
-		t := utilhandler.TimeParse(tmRingingStr.String).UTC()
-		if !t.IsZero() {
-			res.TMRinging = &t
-		}
-	}
-	if tmEndStr.Valid && tmEndStr.String != "" {
-		t := utilhandler.TimeParse(tmEndStr.String).UTC()
-		if !t.IsZero() {
-			res.TMEnd = &t
-		}
+	return res, nil
+}
+
+// channelUpdate updates channel fields using a typed field map.
+//
+// This collapses the ~14 near-identical single-column setters below, each of
+// which previously carried its own hand-written UPDATE statement.
+// tm_update defaults to now unless the caller supplied it explicitly (some
+// setters write tm_update and a second timestamp column from one clock read).
+func (h *handler) channelUpdate(ctx context.Context, id string, fields map[channel.Field]any) error {
+	if len(fields) == 0 {
+		return nil
 	}
 
-	return res, nil
+	if _, ok := fields[channel.FieldTMUpdate]; !ok {
+		fields[channel.FieldTMUpdate] = h.utilHandler.TimeNow()
+	}
+
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		return fmt.Errorf("channelUpdate: prepare fields failed: %w", err)
+	}
+
+	q, args, err := squirrel.
+		Update(channelTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{string(channel.FieldID): id}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("channelUpdate: build SQL failed: %w", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, q, args...); err != nil {
+		return fmt.Errorf("channelUpdate: exec failed: %w", err)
+	}
+
+	_ = h.channelUpdateToCache(ctx, id)
+	return nil
 }
 
 // ChannelCreate creates new channel record and returns the created channel record.
 func (h *handler) ChannelCreate(ctx context.Context, c *channel.Channel) error {
-	q := `insert into call_channels(
-		asterisk_id,
-		id,
-		name,
-		type,
-		tech,
+	now := h.utilHandler.TimeNow()
 
-		sip_call_id,
-		sip_transport,
-		sip_data,
+	// Set timestamps, matching the pre-migration INSERT which wrote
+	// tm_create = now and left every other timestamp NULL. Struct-based
+	// PrepareFields emits every db-tagged field unconditionally, so these must
+	// be assigned explicitly or tm_create would be written as SQL NULL.
+	c.TMCreate = now
+	c.TMUpdate = nil
+	c.TMDelete = nil
+	c.TMAnswer = nil
+	c.TMRinging = nil
+	c.TMEnd = nil
 
-		src_name,
-		src_number,
-		dst_name,
-		dst_number,
-
-		state,
-		data,
-		stasis_name,
-		stasis_data,
-		bridge_id,
-		playback_id,
-
-		dial_result,
-		hangup_cause,
-
-		direction,
-		mute_direction,
-
-		tm_create,
-		tm_update,
-		tm_delete,
-
-		tm_answer,
-		tm_ringing,
-		tm_end
-
-	) values(
-		?, ?, ?, ?, ?,
-		?, ?, ?,
-		?, ?, ?, ?,
-		?, ?, ?, ?, ?, ?,
-		?, ?,
-		?, ?,
-		?, ?, ?,
-		?, ?, ?
-		)
-	`
-
-	data, err := json.Marshal(c.Data)
+	// R-A write table: Data / SIPData / StasisData are NOT normalized at this
+	// call site. They are map-typed, so a nil map still marshals to the JSON
+	// literal "null" here exactly as the pre-migration json.Marshal did.
+	fields, err := commondatabasehandler.PrepareFields(c)
 	if err != nil {
-		return fmt.Errorf("ChannelCreate: Could not marshal the data. err: %v", err)
-	}
-	sipData, err := json.Marshal(c.SIPData)
-	if err != nil {
-		return fmt.Errorf("ChannelCreate: Could not marshal the sip_data. err: %v", err)
-	}
-	stasisData, err := json.Marshal(c.StasisData)
-	if err != nil {
-		return fmt.Errorf("ChannelCreate: Could not marshal the stasis data. err: %v", err)
+		return fmt.Errorf("ChannelCreate: could not prepare fields. err: %v", err)
 	}
 
-	_, err = h.db.Exec(q,
-		c.AsteriskID,
-		c.ID,
-		c.Name,
-		c.Type,
-		c.Tech,
-
-		c.SIPCallID,
-		c.SIPTransport,
-		sipData,
-
-		c.SourceName,
-		c.SourceNumber,
-		c.DestinationName,
-		c.DestinationNumber,
-
-		c.State,
-		data,
-		c.StasisName,
-		stasisData,
-		c.BridgeID,
-		c.PlaybackID,
-
-		c.DialResult,
-		c.HangupCause,
-
-		c.Direction,
-		c.MuteDirection,
-
-		h.utilHandler.TimeNow(),
-		nil,
-		nil,
-
-		nil,
-		nil,
-		nil,
-	)
+	query, args, err := squirrel.
+		Insert(channelTable).
+		SetMap(fields).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
 	if err != nil {
+		return fmt.Errorf("ChannelCreate: could not build query. err: %v", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
 		return fmt.Errorf("ChannelCreate: Could not execute query. err: %v", err)
 	}
 
@@ -308,38 +145,53 @@ func (h *handler) ChannelGet(ctx context.Context, id string) (*channel.Channel, 
 
 // ChannelSetData sets the data
 func (h *handler) ChannelSetData(ctx context.Context, id string, data map[string]interface{}) error {
-	//prepare
-	q := `
-	update call_channels set
-		data = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
+	// R-A write table: Data is NOT normalized at this call site; a nil map
+	// marshals to the JSON literal "null", same as before.
+	return h.channelUpdate(ctx, id, map[channel.Field]any{
+		channel.FieldData: data,
+	})
+}
 
-	tmpData, err := json.Marshal(data)
-	if err != nil {
-		return fmt.Errorf("dbhandler: Could not marshal. ChannelSetData. err: %v", err)
-	}
-
-	_, err = h.db.Exec(q, tmpData, h.utilHandler.TimeNow(), id)
-	if err != nil {
-		return fmt.Errorf("could not execute. ChannelSetData. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.channelUpdateToCache(ctx, id)
-
-	return nil
+// buildChannelSetDataItem builds the ChannelSetDataItem statement.
+//
+// WHY squirrel.Expr: MySQL json_set has no squirrel builder form; see
+// json_expr.go for the shared rationale and precedent citations.
+//
+// SECURITY (plan §6 item 1): the pre-migration statement interpolated the key
+// straight into the SQL text via fmt.Sprintf with no escaping —
+// "json_set(data, '$.%s', ?)" — which is a SQL injection sink. The key is not a
+// trusted constant: pkg/arieventhandler/ari_channel.go:209 passes the ARI
+// ChannelVarset event's variable name straight through. The path is now bound
+// as a query argument instead, the same way ConfbridgeAddChannelCallID already
+// binds its path.
+//
+// The path is also quoted as $."key" rather than the previous bare $.key, again
+// matching ConfbridgeAddChannelCallID. For ordinary identifier keys the two are
+// equivalent. They differ only for a key containing '.' or other path
+// metacharacters, where the bare form silently addressed a NESTED path (e.g.
+// key "a.b" wrote data.a.b) while the quoted form writes the literal key "a.b"
+// — the intended meaning of "set this data item".
+func buildChannelSetDataItem(id, key string, value any, tmUpdate any) squirrel.UpdateBuilder {
+	path := fmt.Sprintf("$.%q", key)
+	return squirrel.
+		Update(channelTable).
+		Set(
+			string(channel.FieldData),
+			squirrel.Expr("json_set("+string(channel.FieldData)+", ?, ?)", path, value),
+		).
+		Set(string(channel.FieldTMUpdate), tmUpdate).
+		Where(squirrel.Eq{string(channel.FieldID): id}).
+		PlaceholderFormat(squirrel.Question)
 }
 
 // ChannelSetDataItem sets the item into the channel's data
 func (h *handler) ChannelSetDataItem(ctx context.Context, id string, key string, value interface{}) error {
-	//prepare
-	q := fmt.Sprintf("update call_channels set data = json_set(data, '$.%s', ?), tm_update = ? where id = ?", key)
-
-	_, err := h.db.Exec(q, value, h.utilHandler.TimeNow(), id)
+	q, args, err := buildChannelSetDataItem(id, key, value, h.utilHandler.TimeNow()).ToSql()
 	if err != nil {
+		return fmt.Errorf("could not build query. ChannelSetDataItem. err: %v", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, q, args...); err != nil {
 		return fmt.Errorf("could not execute. ChannelSetDataItem. err: %v", err)
 	}
 
@@ -351,299 +203,104 @@ func (h *handler) ChannelSetDataItem(ctx context.Context, id string, key string,
 
 // ChannelSetStasis sets the stasis
 func (h *handler) ChannelSetStasis(ctx context.Context, id, stasis string) error {
-	//prepare
-	q := `
-	update call_channels set
-		stasis_name = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, stasis, h.utilHandler.TimeNow(), id)
-	if err != nil {
-		return fmt.Errorf("could not execute. ChannelSetStasis. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.channelUpdateToCache(ctx, id)
-
-	return nil
+	return h.channelUpdate(ctx, id, map[channel.Field]any{
+		channel.FieldStasisName: stasis,
+	})
 }
 
 // ChannelSetStateAnswer sets the given channel's state and tm_answer
 func (h *handler) ChannelSetStateAnswer(ctx context.Context, id string, state ari.ChannelState) error {
-
-	q := `
-	update call_channels set
-		state = ?,
-		tm_update = ?,
-		tm_answer = ?
-	where
-		id = ?
-	`
-
+	// one clock read drives both tm_update and tm_answer, as before
 	ts := h.utilHandler.TimeNow()
-	_, err := h.db.Exec(q, state, ts, ts, id)
-	if err != nil {
-		return fmt.Errorf("could not execute. ChannelSetStateUp. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.channelUpdateToCache(ctx, id)
-
-	return nil
+	return h.channelUpdate(ctx, id, map[channel.Field]any{
+		channel.FieldState:    state,
+		channel.FieldTMUpdate: ts,
+		channel.FieldTMAnswer: ts,
+	})
 }
 
 // ChannelSetStateRinging sets the given channel's state and tm_ringing
 func (h *handler) ChannelSetStateRinging(ctx context.Context, id string, state ari.ChannelState) error {
-
-	q := `
-	update call_channels set
-		state = ?,
-		tm_update = ?,
-		tm_ringing = ?
-	where
-		id = ?
-	`
-
+	// one clock read drives both tm_update and tm_ringing, as before
 	ts := h.utilHandler.TimeNow()
-	_, err := h.db.Exec(q, state, ts, ts, id)
-	if err != nil {
-		return fmt.Errorf("could not execute. ChannelSetStateRinging. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.channelUpdateToCache(ctx, id)
-
-	return nil
+	return h.channelUpdate(ctx, id, map[channel.Field]any{
+		channel.FieldState:     state,
+		channel.FieldTMUpdate:  ts,
+		channel.FieldTMRinging: ts,
+	})
 }
 
 // ChannelSetBridgeID sets the bridge_id
 func (h *handler) ChannelSetBridgeID(ctx context.Context, id, bridgeID string) error {
-	//prepare
-	q := `
-	update call_channels set
-		bridge_id = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, bridgeID, h.utilHandler.TimeNow(), id)
-	if err != nil {
-		return fmt.Errorf("could not execute. ChannelSetBridgeID. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.channelUpdateToCache(ctx, id)
-
-	return nil
+	return h.channelUpdate(ctx, id, map[channel.Field]any{
+		channel.FieldBridgeID: bridgeID,
+	})
 }
 
 // ChannelSetDirection sets the channel's direction
 func (h *handler) ChannelSetDirection(ctx context.Context, id string, direction channel.Direction) error {
-	//prepare
-	q := `
-	update call_channels set
-		direction = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, direction, h.utilHandler.TimeNow(), id)
-	if err != nil {
-		return fmt.Errorf("could not execute. ChannelSetDirection. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.channelUpdateToCache(ctx, id)
-
-	return nil
+	return h.channelUpdate(ctx, id, map[channel.Field]any{
+		channel.FieldDirection: direction,
+	})
 }
 
 // ChannelSetType sets the bridge_id
 func (h *handler) ChannelSetType(ctx context.Context, id string, cType channel.Type) error {
-	//prepare
-	q := `
-	update call_channels set
-		type = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, string(cType), h.utilHandler.TimeNow(), id)
-	if err != nil {
-		return fmt.Errorf("could not execute. ChannelSetType. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.channelUpdateToCache(ctx, id)
-
-	return nil
+	return h.channelUpdate(ctx, id, map[channel.Field]any{
+		channel.FieldType: string(cType),
+	})
 }
 
 // ChannelSetSIPTransport sets the channel's sip_transport
 func (h *handler) ChannelSetSIPTransport(ctx context.Context, id string, transport channel.SIPTransport) error {
-	//prepare
-	q := `
-	update call_channels set
-		sip_transport = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, transport, h.utilHandler.TimeNow(), id)
-	if err != nil {
-		return fmt.Errorf("could not execute. ChannelSetSIPTransport. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.channelUpdateToCache(ctx, id)
-
-	return nil
+	return h.channelUpdate(ctx, id, map[channel.Field]any{
+		channel.FieldSIPTransport: transport,
+	})
 }
 
 // ChannelSetSIPCallID sets the channel's sip_call_id
 func (h *handler) ChannelSetSIPCallID(ctx context.Context, id string, sipID string) error {
-	//prepare
-	q := `
-	update call_channels set
-		sip_call_id = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, sipID, h.utilHandler.TimeNow(), id)
-	if err != nil {
-		return fmt.Errorf("could not execute. ChannelSetSIPCallID. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.channelUpdateToCache(ctx, id)
-
-	return nil
+	return h.channelUpdate(ctx, id, map[channel.Field]any{
+		channel.FieldSIPCallID: sipID,
+	})
 }
 
 // ChannelSetSIPData sets the channel's sip_data
 func (h *handler) ChannelSetSIPData(ctx context.Context, id string, sipData map[string]string) error {
-	//prepare
-	q := `
-	update call_channels set
-		sip_data = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	tmpData, err := json.Marshal(sipData)
-	if err != nil {
-		return fmt.Errorf("ChannelSetSIPData: Could not marshal the sip_data. err: %v", err)
-	}
-
-	_, err = h.db.Exec(q, tmpData, h.utilHandler.TimeNow(), id)
-	if err != nil {
-		return fmt.Errorf("could not execute. ChannelSetSIPData. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.channelUpdateToCache(ctx, id)
-
-	return nil
+	// R-A write table: SIPData is NOT normalized at this call site.
+	return h.channelUpdate(ctx, id, map[channel.Field]any{
+		channel.FieldSIPData: sipData,
+	})
 }
 
 // ChannelSetPlaybackID sets the channel's playback_id
 func (h *handler) ChannelSetPlaybackID(ctx context.Context, id string, playbackID string) error {
-	//prepare
-	q := `
-	update call_channels set
-		playback_id = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, playbackID, h.utilHandler.TimeNow(), id)
-	if err != nil {
-		return fmt.Errorf("could not execute. ChannelSetPlaybackID. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.channelUpdateToCache(ctx, id)
-
-	return nil
+	return h.channelUpdate(ctx, id, map[channel.Field]any{
+		channel.FieldPlaybackID: playbackID,
+	})
 }
 
 // ChannelEnd updates the channel end.
 func (h *handler) ChannelEndAndDelete(ctx context.Context, id string, hangup ari.ChannelCause) error {
-	// prepare
-	q := `
-	update call_channels set
-		hangup_cause = ?,
-		tm_update = ?,
-		tm_end = ?,
-		tm_delete = ?
-	where
-		id = ?
-	`
-
+	// one clock read drives tm_update, tm_end and tm_delete, as before
 	ts := h.utilHandler.TimeNow()
-	_, err := h.db.Exec(q, hangup, ts, ts, ts, id)
-	if err != nil {
-		return fmt.Errorf("could not execute. ChannelEnd. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.channelUpdateToCache(ctx, id)
-
-	return nil
+	return h.channelUpdate(ctx, id, map[channel.Field]any{
+		channel.FieldHangupCause: hangup,
+		channel.FieldTMUpdate:    ts,
+		channel.FieldTMEnd:       ts,
+		channel.FieldTMDelete:    ts,
+	})
 }
 
 // ChannelSetStasisInfoAndSIPInfo sets stasis info and SIP info
 func (h *handler) ChannelSetStasisInfo(ctx context.Context, id string, chType channel.Type, stasisName string, stasisData map[channel.StasisDataType]string, direction channel.Direction) error {
-	//prepare
-	q := `
-	update call_channels set
-		type = ?,
-
-		stasis_name = ?,
-		stasis_data = ?,
-
-		direction = ?,
-
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	tmpData, err := json.Marshal(stasisData)
-	if err != nil {
-		return fmt.Errorf("ChannelSetStasisInfo: Could not marshal the stasis_data. err: %v", err)
-	}
-
-	_, err = h.db.Exec(q,
-		chType,
-
-		stasisName,
-		tmpData,
-
-		direction,
-
-		h.utilHandler.TimeNow(),
-		id,
-	)
-	if err != nil {
-		return fmt.Errorf("could not execute. ChannelSetStasisInfo. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.channelUpdateToCache(ctx, id)
-
-	return nil
+	// R-A write table: StasisData is NOT normalized at this call site.
+	return h.channelUpdate(ctx, id, map[channel.Field]any{
+		channel.FieldType:       chType,
+		channel.FieldStasisName: stasisName,
+		channel.FieldStasisData: stasisData,
+		channel.FieldDirection:  direction,
+	})
 }
 
 // channelGetFromCache returns channel from the cache if possible.
@@ -660,10 +317,18 @@ func (h *handler) channelGetFromCache(ctx context.Context, id string) (*channel.
 
 // channelGetFromDB returns channel from the DB.
 func (h *handler) channelGetFromDB(ctx context.Context, id string) (*channel.Channel, error) {
+	fields := commondatabasehandler.GetDBFields(&channel.Channel{})
+	query, args, err := squirrel.
+		Select(fields...).
+		From(channelTable).
+		Where(squirrel.Eq{string(channel.FieldID): id}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build sql. channelGetFromDB. err: %v", err)
+	}
 
-	q := fmt.Sprintf("%s where id = ?", channelSelect)
-
-	row, err := h.db.Query(q, id)
+	row, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ChannelGet. err: %v", err)
 	}
@@ -672,6 +337,9 @@ func (h *handler) channelGetFromDB(ctx context.Context, id string) (*channel.Cha
 	}()
 
 	if !row.Next() {
+		if err := row.Err(); err != nil {
+			return nil, fmt.Errorf("row iteration error. channelGetFromDB. err: %v", err)
+		}
 		return nil, ErrNotFound
 	}
 
@@ -709,62 +377,60 @@ func (h *handler) channelSetToCache(ctx context.Context, channel *channel.Channe
 
 // ChannelSetMuteDirection sets the channel's mute_direction
 func (h *handler) ChannelSetMuteDirection(ctx context.Context, id string, muteDirection channel.MuteDirection) error {
-	//prepare
-	q := `
-	update call_channels set
-		mute_direction = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, muteDirection, h.utilHandler.TimeNow(), id)
-	if err != nil {
-		return fmt.Errorf("could not execute. ChannelSetMuteDirection. err: %v", err)
-	}
-
-	// update the cache
-	_ = h.channelUpdateToCache(ctx, id)
-
-	return nil
+	return h.channelUpdate(ctx, id, map[channel.Field]any{
+		channel.FieldMuteDirection: muteDirection,
+	})
 }
 
-func (h *handler) ChannelList(ctx context.Context, size uint64, token string, filters map[string]string) ([]*channel.Channel, error) {
-	// prepare
-	q := fmt.Sprintf(`%s
-	where
-		tm_create < ?
-	`, channelSelect)
-
+// ChannelList returns a list of channels.
+//
+// SECURITY (plan §6 item 2): the pre-migration implementation interpolated each
+// filter map key straight into the WHERE clause via
+// fmt.Sprintf("%s and %s = ?", q, k) with no validation, which is the same
+// injection class as the old ChannelSetDataItem. Filters are now applied by
+// commondatabasehandler.ApplyFields, which binds values as query arguments.
+//
+// The filter type also changes from map[string]string to
+// map[channel.Field]any (plan §6 item 4), matching every other List function in
+// this service. ApplyFields switches on the VALUE type for the "deleted" key,
+// so it must now be a Go bool, not the string "false" — a string would fall
+// through to a comparison against a literal (non-existent) "deleted" column
+// instead of being translated to tm_delete IS NULL / IS NOT NULL.
+//
+// ApplyFields's deleted handling matches this table's existing
+// tm_delete IS NULL / IS NOT NULL semantics exactly. Note it would be WRONG for
+// a table using the 9999-01-01 sentinel convention; the two conventions coexist
+// in this service and are deliberately not unified here (plan §6 item 6).
+func (h *handler) ChannelList(ctx context.Context, size uint64, token string, filters map[channel.Field]any) ([]*channel.Channel, error) {
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	values := []interface{}{
-		token,
-	}
+	dbFields := commondatabasehandler.GetDBFields(&channel.Channel{})
+	sb := squirrel.
+		Select(dbFields...).
+		From(channelTable).
+		Where(squirrel.Lt{string(channel.FieldTMCreate): token}).
+		OrderBy(string(channel.FieldTMCreate) + " DESC").
+		// plan §6 item 7: Limit takes a uint64 directly, so the previous
+		// strconv.FormatUint(size, 10) pre-formatting is dropped. Intentional
+		// simplification, not a behavior change.
+		Limit(size).
+		PlaceholderFormat(squirrel.Question)
 
-	for k, v := range filters {
-		switch k {
-		case "deleted":
-			if v == "false" {
-				q = fmt.Sprintf("%s and tm_delete IS NULL", q)
-			} else {
-				q = fmt.Sprintf("%s and tm_delete IS NOT NULL", q)
-			}
-
-		default:
-			q = fmt.Sprintf("%s and %s = ?", q, k)
-			values = append(values, v)
-		}
-	}
-
-	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
-	values = append(values, strconv.FormatUint(size, 10))
-
-	rows, err := h.db.Query(q, values...)
+	sb, err := commondatabasehandler.ApplyFields(sb, filters)
 	if err != nil {
-		return nil, errors.Wrapf(err, "could not query. ChannelGets. query: %s, err: %v", q, err)
+		return nil, fmt.Errorf("could not apply filters. ChannelList. err: %v", err)
+	}
+
+	query, args, err := sb.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. ChannelList. err: %v", err)
+	}
+
+	rows, err := h.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not query. ChannelList. query: %s, err: %v", query, err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -778,6 +444,9 @@ func (h *handler) ChannelList(ctx context.Context, size uint64, token string, fi
 		}
 
 		res = append(res, u)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error. ChannelList. err: %v", err)
 	}
 
 	return res, nil
@@ -792,28 +461,25 @@ func (h *handler) ChannelGetsForRecovery(
 	endTime *time.Time,
 	size uint64,
 ) ([]*channel.Channel, error) {
-	// prepare
-	q := fmt.Sprintf(`%s
-	where
-		asterisk_id = ?
-		and type = ?
-		and tm_create > ?
-		and tm_create < ?
-	`, channelSelect)
-
-	values := []any{
-		asteriskID,
-		channelType,
-		startTime,
-		endTime,
+	dbFields := commondatabasehandler.GetDBFields(&channel.Channel{})
+	query, args, err := squirrel.
+		Select(dbFields...).
+		From(channelTable).
+		Where(squirrel.Eq{string(channel.FieldAsteriskID): asteriskID}).
+		Where(squirrel.Eq{string(channel.FieldType): channelType}).
+		Where(squirrel.Gt{string(channel.FieldTMCreate): startTime}).
+		Where(squirrel.Lt{string(channel.FieldTMCreate): endTime}).
+		OrderBy(string(channel.FieldTMCreate) + " DESC").
+		Limit(size).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. ChannelGetsForRecovery. err: %v", err)
 	}
 
-	q = fmt.Sprintf("%s order by tm_create desc limit ?", q)
-	values = append(values, strconv.FormatUint(size, 10))
-
-	rows, err := h.db.Query(q, values...)
+	rows, err := h.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, errors.Wrapf(err, "could not query. query: %s, err: %v", q, err)
+		return nil, errors.Wrapf(err, "could not query. query: %s, err: %v", query, err)
 	}
 	defer func() {
 		_ = rows.Close()
@@ -827,6 +493,9 @@ func (h *handler) ChannelGetsForRecovery(
 		}
 
 		res = append(res, u)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error. ChannelGetsForRecovery. err: %v", err)
 	}
 
 	return res, nil

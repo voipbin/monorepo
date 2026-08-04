@@ -66,7 +66,20 @@ dbhandler
 
 ### Database Pattern
 
-This service uses **direct SQL** — no Squirrel query builder. Soft deletes use `tm_delete` timestamp (`"9999-01-01 00:00:00.000000"` for active records). Follow the existing pattern when adding queries.
+This service uses the **Squirrel query builder**, like the rest of the monorepo (migrated in VOIP-1078). Raw SQL strings are forbidden — see [docs/conventions/database.md](../docs/conventions/database.md) §7.1.
+
+- Reads go through `commondatabasehandler.ScanRow` + `GetDBFields`; writes go through `PrepareFields` + `SetMap`. Do not hand-roll column-by-column `row.Scan` or inline datetime parsing.
+- Use struct-based `PrepareFields` only for full-row INSERTs, and assign the timestamp fields explicitly first — it emits every `db`-tagged field unconditionally, so an omitted assignment writes SQL `NULL`.
+- Use map-based `PrepareFields` for partial updates. Put **dereferenced** `uuid.UUID` values in the map, never `*uuid.UUID`: the pointer is not converted and reaches the driver as a 36-char string, which does not fit a `BINARY(16)` column.
+- The one sanctioned raw-SQL escape hatch is `squirrel.Expr`, for MySQL JSON functions and atomic arithmetic. The recurring JSON shapes live in `pkg/dbhandler/json_expr.go`; every call site needs a `WHY` comment. SQLite cannot execute these, so they are pinned by golden `ToSql()` assertions in `pkg/dbhandler/json_expr_golden_test.go` rather than by round-trip tests.
+
+**Empty-collection normalization:** whether a nil slice/map is stored as `[]`/`{}`, the JSON literal `null`, or SQL `NULL` differs per field *and per call site*. The authoritative table is the doc comment at the top of `pkg/dbhandler/normalization.go` — consult it before touching any JSON column, and do not "tidy" it into a uniform rule.
+
+**Soft deletes:** this service has two co-existing conventions, and they are deliberately **not** unified:
+- `tm_delete IS NULL` for active records — used by `call_bridges`, `call_channels`, `call_outbound_configs`.
+- the `tm_delete = "9999-01-01 00:00:00.000000"` sentinel for active records — used by the other tables.
+
+Match whichever convention the table you are touching already uses. `commondatabasehandler.ApplyFields` translates a `deleted` filter to `tm_delete IS NULL` / `IS NOT NULL`, so it suits the first convention only.
 
 ### Cache Strategy
 

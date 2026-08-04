@@ -3,12 +3,10 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
 
 	"github.com/Masterminds/squirrel"
 	uuid "github.com/gofrs/uuid"
-	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
@@ -319,23 +317,35 @@ func (h *handler) ConfbridgeSetRecordingID(ctx context.Context, id uuid.UUID, re
 	})
 }
 
+// buildConfbridgeAddRecordingIDs builds the ConfbridgeAddRecordingIDs statement.
+//
+// WHY squirrel.Expr: MySQL json_array_append has no squirrel builder form; see
+// json_expr.go.
+//
+// NOTE (plan §6 item 3, suspected pre-existing bug, deliberately NOT fixed
+// here): this site binds recordingID.Bytes(), whereas the semantically
+// identical CallAddRecordingIDs and ConfbridgeAddExternalMediaID bind
+// .String(). Since recording_ids unmarshals as []uuid.UUID (a JSON string
+// array), .Bytes() likely stores a malformed element. The existing behavior is
+// carried over verbatim by this refactor; fixing it needs its own ticket plus a
+// data backfill/integrity check for rows already written this way.
+func buildConfbridgeAddRecordingIDs(id, recordingID uuid.UUID, tmUpdate any) squirrel.UpdateBuilder {
+	return squirrel.
+		Update(confbridgeTable).
+		Set(string(confbridge.FieldRecordingIDs), exprJSONArrayAppend(string(confbridge.FieldRecordingIDs), recordingID.Bytes())).
+		Set(string(confbridge.FieldTMUpdate), tmUpdate).
+		Where(squirrel.Eq{string(confbridge.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+}
+
 // ConfbridgeAddRecordingIDs adds the record file to the bridge's record_files.
 func (h *handler) ConfbridgeAddRecordingIDs(ctx context.Context, id uuid.UUID, recordingID uuid.UUID) error {
-	// Use raw SQL for JSON array append operation
-	q := `
-	update call_confbridges set
-		recording_ids = json_array_append(
-			recording_ids,
-			'$',
-			?
-		),
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, recordingID.Bytes(), h.utilHandler.TimeNow(), id.Bytes())
+	q, args, err := buildConfbridgeAddRecordingIDs(id, recordingID, h.utilHandler.TimeNow()).ToSql()
 	if err != nil {
+		return fmt.Errorf("could not build query. ConfbridgeAddRecordingIDs. err: %v", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, q, args...); err != nil {
 		return fmt.Errorf("could not execute. ConfbridgeAddRecordingIDs. err: %v", err)
 	}
 
@@ -343,22 +353,27 @@ func (h *handler) ConfbridgeAddRecordingIDs(ctx context.Context, id uuid.UUID, r
 	return nil
 }
 
+// buildConfbridgeAddExternalMediaID builds the ConfbridgeAddExternalMediaID statement.
+//
+// WHY squirrel.Expr: MySQL json_array_append has no squirrel builder form; see
+// json_expr.go.
+func buildConfbridgeAddExternalMediaID(id, externalMediaID uuid.UUID, tmUpdate any) squirrel.UpdateBuilder {
+	return squirrel.
+		Update(confbridgeTable).
+		Set(string(confbridge.FieldExternalMediaIDs), exprJSONArrayAppend(string(confbridge.FieldExternalMediaIDs), externalMediaID.String())).
+		Set(string(confbridge.FieldTMUpdate), tmUpdate).
+		Where(squirrel.Eq{string(confbridge.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+}
+
 // ConfbridgeAddExternalMediaID adds the external media id to the confbridge's external_media_ids.
 func (h *handler) ConfbridgeAddExternalMediaID(ctx context.Context, id, externalMediaID uuid.UUID) error {
-	q := `
-	update call_confbridges set
-		external_media_ids = json_array_append(
-			external_media_ids,
-			'$',
-			?
-		),
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, externalMediaID.String(), h.utilHandler.TimeNow(), id.Bytes())
+	q, args, err := buildConfbridgeAddExternalMediaID(id, externalMediaID, h.utilHandler.TimeNow()).ToSql()
 	if err != nil {
+		return fmt.Errorf("could not build query. ConfbridgeAddExternalMediaID. err: %v", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, q, args...); err != nil {
 		return fmt.Errorf("could not execute. ConfbridgeAddExternalMediaID. err: %v", err)
 	}
 
@@ -366,32 +381,28 @@ func (h *handler) ConfbridgeAddExternalMediaID(ctx context.Context, id, external
 	return nil
 }
 
+// buildConfbridgeRemoveExternalMediaID builds the ConfbridgeRemoveExternalMediaID statement.
+//
+// WHY squirrel.Expr: the guarded IF(json_search(...) IS NOT NULL, json_remove(...), col)
+// form has no squirrel builder equivalent; see json_expr.go. The value is bound
+// twice, matching the pre-migration argument list.
+func buildConfbridgeRemoveExternalMediaID(id, externalMediaID uuid.UUID, tmUpdate any) squirrel.UpdateBuilder {
+	return squirrel.
+		Update(confbridgeTable).
+		Set(string(confbridge.FieldExternalMediaIDs), exprJSONArrayRemoveByValueIfPresent(string(confbridge.FieldExternalMediaIDs), externalMediaID.String())).
+		Set(string(confbridge.FieldTMUpdate), tmUpdate).
+		Where(squirrel.Eq{string(confbridge.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+}
+
 // ConfbridgeRemoveExternalMediaID removes the external media id from the confbridge's external_media_ids.
 func (h *handler) ConfbridgeRemoveExternalMediaID(ctx context.Context, id, externalMediaID uuid.UUID) error {
-	q := `
-	update call_confbridges set
-		external_media_ids = IF(
-			json_search(external_media_ids, 'one', ?) IS NOT NULL,
-			json_remove(
-				external_media_ids, replace(
-					json_search(
-						external_media_ids,
-						'one',
-						?
-					),
-					'"',
-					''
-				)
-			),
-			external_media_ids
-		),
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, externalMediaID.String(), externalMediaID.String(), h.utilHandler.TimeNow(), id.Bytes())
+	q, args, err := buildConfbridgeRemoveExternalMediaID(id, externalMediaID, h.utilHandler.TimeNow()).ToSql()
 	if err != nil {
+		return fmt.Errorf("could not build query. ConfbridgeRemoveExternalMediaID. err: %v", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, q, args...); err != nil {
 		return fmt.Errorf("could not execute. ConfbridgeRemoveExternalMediaID. err: %v", err)
 	}
 
@@ -399,23 +410,33 @@ func (h *handler) ConfbridgeRemoveExternalMediaID(ctx context.Context, id, exter
 	return nil
 }
 
+// buildConfbridgeAddChannelCallID builds the ConfbridgeAddChannelCallID statement.
+//
+// WHY squirrel.Expr: MySQL json_insert has no squirrel builder form; see
+// json_expr.go. Both the JSON path and the value stay bound as query arguments
+// (never interpolated), which is the pattern channel.go's ChannelSetDataItem is
+// also converted to.
+func buildConfbridgeAddChannelCallID(id uuid.UUID, channelID string, callID uuid.UUID, tmUpdate any) squirrel.UpdateBuilder {
+	key := fmt.Sprintf("$.\"%s\"", channelID)
+	return squirrel.
+		Update(confbridgeTable).
+		Set(
+			string(confbridge.FieldChannelCallIDs),
+			squirrel.Expr("json_insert("+string(confbridge.FieldChannelCallIDs)+", ?, ?)", key, callID.String()),
+		).
+		Set(string(confbridge.FieldTMUpdate), tmUpdate).
+		Where(squirrel.Eq{string(confbridge.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+}
+
 // ConfbridgeAddChannelCallID adds the call/channel id info
 func (h *handler) ConfbridgeAddChannelCallID(ctx context.Context, id uuid.UUID, channelID string, callID uuid.UUID) error {
-	key := fmt.Sprintf("$.\"%s\"", channelID)
-	q := `
-	update call_confbridges set
-		channel_call_ids = json_insert(
-			channel_call_ids,
-			?,
-			?
-		),
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, key, callID.String(), h.utilHandler.TimeNow(), id.Bytes())
+	q, args, err := buildConfbridgeAddChannelCallID(id, channelID, callID, h.utilHandler.TimeNow()).ToSql()
 	if err != nil {
+		return fmt.Errorf("could not build query. ConfbridgeAddChannelCallID. err: %v", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, q, args...); err != nil {
 		return fmt.Errorf("could not execute. ConfbridgeAddChannelCallID. err: %v", err)
 	}
 
@@ -423,22 +444,32 @@ func (h *handler) ConfbridgeAddChannelCallID(ctx context.Context, id uuid.UUID, 
 	return nil
 }
 
+// buildConfbridgeRemoveChannelCallID builds the ConfbridgeRemoveChannelCallID statement.
+//
+// WHY squirrel.Expr: MySQL json_remove has no squirrel builder form; see
+// json_expr.go. This is the remove-by-path form (one bound path argument), not
+// the remove-by-value form used for the array columns.
+func buildConfbridgeRemoveChannelCallID(id uuid.UUID, channelID string, tmUpdate any) squirrel.UpdateBuilder {
+	key := fmt.Sprintf("$.\"%s\"", channelID)
+	return squirrel.
+		Update(confbridgeTable).
+		Set(
+			string(confbridge.FieldChannelCallIDs),
+			squirrel.Expr("json_remove("+string(confbridge.FieldChannelCallIDs)+", ?)", key),
+		).
+		Set(string(confbridge.FieldTMUpdate), tmUpdate).
+		Where(squirrel.Eq{string(confbridge.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+}
+
 // ConfbridgeRemoveChannelCallID removes the channel/call id info
 func (h *handler) ConfbridgeRemoveChannelCallID(ctx context.Context, id uuid.UUID, channelID string) error {
-	key := fmt.Sprintf("$.\"%s\"", channelID)
-	q := `
-	update call_confbridges set
-		channel_call_ids = json_remove(
-			channel_call_ids,
-			?
-		),
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, key, h.utilHandler.TimeNow(), id.Bytes())
+	q, args, err := buildConfbridgeRemoveChannelCallID(id, channelID, h.utilHandler.TimeNow()).ToSql()
 	if err != nil {
+		return fmt.Errorf("could not build query. ConfbridgeRemoveChannelCallID. err: %v", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, q, args...); err != nil {
 		return fmt.Errorf("could not execute. ConfbridgeRemoveChannelCallID. err: %v", err)
 	}
 
@@ -448,32 +479,14 @@ func (h *handler) ConfbridgeRemoveChannelCallID(ctx context.Context, id uuid.UUI
 
 // ConfbridgeSetFlags sets the confbridge's flags
 func (h *handler) ConfbridgeSetFlags(ctx context.Context, id uuid.UUID, flags []confbridge.Flag) error {
-	if flags == nil {
-		flags = []confbridge.Flag{}
-	}
-
-	tmp, err := json.Marshal(flags)
-	if err != nil {
-		return errors.Wrap(err, "could not marshal the flags")
-	}
-
-	q := `
-	update
-		call_confbridges
-	set
-		flags = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err = h.db.Exec(q, tmp, h.utilHandler.TimeNow(), id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. ConfbridgeSetFlags. err: %v", err)
-	}
-
-	_ = h.confbridgeUpdateToCache(ctx, id)
-	return nil
+	// normalizeSlice preserves this site's pre-migration behavior: a nil flags
+	// slice must be stored as the JSON literal "[]", not "null". See the R-A
+	// write table in normalization.go ("confbridge.Flags | ConfbridgeSetFlags |
+	// YES nil->[]"). Without it, the map-based PrepareFields path would
+	// json.Marshal the nil slice to "null".
+	return h.ConfbridgeUpdate(ctx, id, map[confbridge.Field]any{
+		confbridge.FieldFlags: normalizeSlice(flags),
+	})
 }
 
 // ConfbridgeSetStatus sets the status

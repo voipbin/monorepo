@@ -3,7 +3,6 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
 
 	"github.com/Masterminds/squirrel"
@@ -282,46 +281,51 @@ func (h *handler) GroupcallDelete(ctx context.Context, id uuid.UUID) error {
 	})
 }
 
-// GroupcallDecreaseCallCount decreases the call count
-func (h *handler) GroupcallDecreaseCallCount(ctx context.Context, id uuid.UUID) error {
-	// Use raw SQL for atomic decrement operation
-	q := `
-	update call_groupcalls set
-		call_count = call_count - 1,
-		tm_update = ?
-	where
-		id = ?
-	`
+// buildGroupcallDecreaseCount builds an atomic `<column> = <column> - 1` update.
+//
+// WHY squirrel.Expr: the decrement must be evaluated by the database so the
+// operation stays atomic — reading the value into Go and writing back value-1
+// would introduce a lost-update race. squirrel's builder has no arithmetic
+// form, so the expression is emitted raw. Sanctioned by
+// docs/conventions/database.md §7.1, whose own example is exactly this
+// arithmetic case. Precedent: bin-rag-manager/pkg/dbhandler/document.go:355
+// ("retry_count": sq.Expr("retry_count + 1") inside SetMap).
+//
+// This deliberately does NOT route through GroupcallUpdate: that helper runs
+// values through PrepareFields, which would reflect over the squirrel.Expr
+// struct and JSON-marshal it instead of inlining it as SQL.
+func buildGroupcallDecreaseCount(column string, id uuid.UUID, tmUpdate any) squirrel.UpdateBuilder {
+	return squirrel.
+		Update(groupcallTable).
+		Set(column, squirrel.Expr(column+" - 1")).
+		Set(string(groupcall.FieldTMUpdate), tmUpdate).
+		Where(squirrel.Eq{string(groupcall.FieldID): id.Bytes()}).
+		PlaceholderFormat(squirrel.Question)
+}
 
-	ts := h.utilHandler.TimeNow()
-	_, err := h.db.Exec(q, ts, id.Bytes())
+// groupcallDecreaseCount executes the atomic decrement for the given column.
+func (h *handler) groupcallDecreaseCount(ctx context.Context, column string, id uuid.UUID, funcName string) error {
+	q, args, err := buildGroupcallDecreaseCount(column, id, h.utilHandler.TimeNow()).ToSql()
 	if err != nil {
-		return fmt.Errorf("could not execute. GroupcallDecreaseCallCount. err: %v", err)
+		return fmt.Errorf("could not build query. %s. err: %v", funcName, err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, q, args...); err != nil {
+		return fmt.Errorf("could not execute. %s. err: %v", funcName, err)
 	}
 
 	_ = h.groupcallUpdateToCache(ctx, id)
 	return nil
 }
 
+// GroupcallDecreaseCallCount decreases the call count
+func (h *handler) GroupcallDecreaseCallCount(ctx context.Context, id uuid.UUID) error {
+	return h.groupcallDecreaseCount(ctx, string(groupcall.FieldCallCount), id, "GroupcallDecreaseCallCount")
+}
+
 // GroupcallDecreaseGroupcallCount decreases the groupcall count
 func (h *handler) GroupcallDecreaseGroupcallCount(ctx context.Context, id uuid.UUID) error {
-	// Use raw SQL for atomic decrement operation
-	q := `
-	update call_groupcalls set
-		groupcall_count = groupcall_count - 1,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	ts := h.utilHandler.TimeNow()
-	_, err := h.db.Exec(q, ts, id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. GroupcallDecreaseGroupcallCount. err: %v", err)
-	}
-
-	_ = h.groupcallUpdateToCache(ctx, id)
-	return nil
+	return h.groupcallDecreaseCount(ctx, string(groupcall.FieldGroupcallCount), id, "GroupcallDecreaseGroupcallCount")
 }
 
 // GroupcallSetStatus updates the status
@@ -333,60 +337,26 @@ func (h *handler) GroupcallSetStatus(ctx context.Context, id uuid.UUID, status g
 
 // GroupcallSetCallIDsAndCallCountAndDialIndex updates the call_ids and call_count and dial_index
 func (h *handler) GroupcallSetCallIDsAndCallCountAndDialIndex(ctx context.Context, id uuid.UUID, callIDs []uuid.UUID, callCount int, dialIndex int) error {
-	if callIDs == nil {
-		callIDs = []uuid.UUID{}
-	}
-	tmpCallIDs, err := json.Marshal(callIDs)
-	if err != nil {
-		return errors.Wrap(err, "could not marshal the call_ids. GroupcallSetCallIDsAndCallCountAndDialIndex.")
-	}
-
-	q := `
-	update call_groupcalls set
-		call_ids = ?,
-		call_count = ?,
-		dial_index = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	ts := h.utilHandler.TimeNow()
-	_, err = h.db.Exec(q, tmpCallIDs, callCount, dialIndex, ts, id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. GroupcallSetCallIDsAndCallCountAndDialIndex. err: %v", err)
-	}
-
-	_ = h.groupcallUpdateToCache(ctx, id)
-	return nil
+	// normalizeSlice preserves this site's pre-migration behavior: a nil callIDs
+	// slice must be stored as the JSON literal "[]", not "null". See the R-A
+	// write table in normalization.go ("groupcall.CallIDs |
+	// GroupcallSetCallIDsAndCallCountAndDialIndex | YES nil->[]").
+	return h.GroupcallUpdate(ctx, id, map[groupcall.Field]any{
+		groupcall.FieldCallIDs:   normalizeSlice(callIDs),
+		groupcall.FieldCallCount: callCount,
+		groupcall.FieldDialIndex: dialIndex,
+	})
 }
 
 // GroupcallSetGroupcallIDsAndGroupcallCountAndDialIndex updates the groupcall_ids and groupcall_count and dial_index
 func (h *handler) GroupcallSetGroupcallIDsAndGroupcallCountAndDialIndex(ctx context.Context, id uuid.UUID, groupcallIDs []uuid.UUID, groupcallCount int, dialIndex int) error {
-	if groupcallIDs == nil {
-		groupcallIDs = []uuid.UUID{}
-	}
-	tmpGroupcallIDs, err := json.Marshal(groupcallIDs)
-	if err != nil {
-		return errors.Wrap(err, "could not marshal the groupcall_ids. GroupcallSetGroupcallIDsAndGroupcallCountAndDialIndex.")
-	}
-
-	q := `
-	update call_groupcalls set
-		groupcall_ids = ?,
-		groupcall_count = ?,
-		dial_index = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	ts := h.utilHandler.TimeNow()
-	_, err = h.db.Exec(q, tmpGroupcallIDs, groupcallCount, dialIndex, ts, id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. GroupcallSetGroupcallIDsAndGroupcallCountAndDialIndex. err: %v", err)
-	}
-
-	_ = h.groupcallUpdateToCache(ctx, id)
-	return nil
+	// normalizeSlice preserves this site's pre-migration behavior: a nil
+	// groupcallIDs slice must be stored as the JSON literal "[]", not "null".
+	// See the R-A write table in normalization.go ("groupcall.GroupcallIDs |
+	// GroupcallSetGroupcallIDsAndGroupcallCountAndDialIndex | YES nil->[]").
+	return h.GroupcallUpdate(ctx, id, map[groupcall.Field]any{
+		groupcall.FieldGroupcallIDs:   normalizeSlice(groupcallIDs),
+		groupcall.FieldGroupcallCount: groupcallCount,
+		groupcall.FieldDialIndex:      dialIndex,
+	})
 }
