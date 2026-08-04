@@ -98,26 +98,13 @@ func (h *subscribeHandler) Run() error {
 		}
 	}
 
-	// baseline "#" wildcard binding to the new topic exchange (VOIP-1258 §7 round-2 finding):
-	// a topic-kind exchange's empty-key bind (what QueueSubscribe used for the old fanout
-	// exchange) only matches messages published with an empty routing key, and every
-	// VOIP-1258 publish path uses non-empty scope-first keys, so this pod would receive ZERO
-	// events without this explicit bind.
-	//
-	// CRITICAL: this MUST run synchronously here, BEFORE ConsumeMessage is started below (not
-	// after Run() returns, as it originally lived in cmd/api-manager/main.go). QueueBind and
-	// ConsumeMessage's internal channel.Consume() share the SAME underlying AMQP channel
-	// object (rabbitmqhandler's queue.channel) for a given queue name. AMQP does not allow two
-	// synchronous RPCs to race on one channel -- if ConsumeMessage's basic.consume is already
-	// in flight on another goroutine when QueueBind fires, the broker closes the channel with
-	// "unexpected command received" (503), and ConsumeMessage fails to ever start consuming on
-	// this pod. This exact race was reproduced in production in bin-agent-manager (VOIP-1258 PR
-	// #1101 round-2 post-deploy verification, 2026-07-14) via the identical after-Run() call
-	// site pattern that this file also originally used -- fixed here proactively for the same
-	// reason before it recurs on this service too.
-	if err := h.sockHandler.QueueBind(h.subscribeQueueNamePod, "#", string(commonoutline.QueueNameWebhookEventTopic), false, nil); err != nil {
-		log.Errorf("Could not bind to the topic exchange. err: %v", err)
-	}
+	// NOTE (VOIP-1296 final cutover): the unconditional "#" wildcard baseline bind to the topic
+	// exchange that used to live here has been removed. It was a rollout safety net kept
+	// alongside pkg/websockhandler's scopeRefCount mechanism (VOIP-1258 §9), which already
+	// binds/unbinds this pod's queue per active client subscription scope. Keeping both meant
+	// every event was still delivered to every pod regardless of connected client count --
+	// exactly the problem VOIP-1258 set out to fix. scopeRefCount is the sole binding mechanism
+	// for this pod's queue going forward.
 
 	// receive subscribe events
 	go func() {
@@ -153,8 +140,12 @@ func (h *subscribeHandler) processEvent(m *sock.Event) {
 	switch {
 
 	//// webhook-manager: OLD fanout path -- the wrapped {"type":"webhook_published","data":
-	//// {"type":<resource event type>,"data":{...}}} envelope, still dual-published until
-	//// Task 4.6's cutover.
+	//// {"type":<resource event type>,"data":{...}}} envelope. VOIP-1296 (Task 4.6's cutover)
+	//// removed the fanout publish in bin-webhook-manager, so this case is now unreachable in
+	//// practice (this pod's queue was already only ever bound to the topic exchange, never the
+	//// fanout one). Left in place defensively rather than deleted, to avoid scope creep in the
+	//// cutover PR; a follow-up can remove this case and processEventWebhookManagerWebhookPublished
+	//// once confirmed dead in production.
 	case m.Publisher == string(commonoutline.ServiceNameWebhookManager) && (m.Type == string(wmwebhook.EventTypeWebhookPublished)):
 		err = h.processEventWebhookManagerWebhookPublished(ctx, m)
 

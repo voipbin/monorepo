@@ -31,8 +31,6 @@ func Test_SendWebhookToCustomer(t *testing.T) {
 		data       json.RawMessage
 
 		responseAccount *account.Account
-
-		expectWebhook *webhook.Webhook
 	}{
 		{
 			"normal",
@@ -44,12 +42,6 @@ func Test_SendWebhookToCustomer(t *testing.T) {
 				ID:            uuid.FromStringOrNil("a27dc1d6-8254-11ec-8f09-e30cbed3e51e"),
 				WebhookMethod: "POST",
 				WebhookURI:    "test.com",
-			},
-
-			&webhook.Webhook{
-				CustomerID: uuid.FromStringOrNil("a27dc1d6-8254-11ec-8f09-e30cbed3e51e"),
-				DataType:   "application/json",
-				Data:       json.RawMessage([]byte(`{"type":"call_updated","data":{"type":"call"}}`)),
 			},
 		},
 		{
@@ -63,12 +55,6 @@ func Test_SendWebhookToCustomer(t *testing.T) {
 				WebhookMethod: "POST",
 				WebhookURI:    "test.com",
 			},
-
-			&webhook.Webhook{
-				CustomerID: uuid.FromStringOrNil("a27dc1d6-8254-11ec-8f09-e30cbed3e51e"),
-				DataType:   "application/json",
-				Data:       json.RawMessage([]byte(`{"type":"transcript_created","data":{"message":"안녕하세요!?"}}`)),
-			},
 		},
 	}
 
@@ -79,18 +65,20 @@ func Test_SendWebhookToCustomer(t *testing.T) {
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockMessageTargethandler := accounthandler.NewMockAccountHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockTopicNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := &webhookHandler{
-				db:            mockDB,
-				notifyHandler: mockNotify,
-				accoutHandler: mockMessageTargethandler,
+				db:                 mockDB,
+				topicNotifyHandler: mockTopicNotify,
+				accoutHandler:      mockMessageTargethandler,
 			}
 
 			ctx := context.Background()
 
 			mockMessageTargethandler.EXPECT().Get(ctx, tt.customerID).Return(tt.responseAccount, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, webhook.EventTypeWebhookPublished, tt.expectWebhook)
+			// non-enveloped test payloads carry no routing-key-bearing fields, so the topic
+			// publish path resolves zero routing keys and no PublishEventWithRoutingKey call
+			// is expected here (see the PublishesWithRoutingKey tests below for that path).
 
 			err := h.SendWebhookToCustomer(ctx, tt.customerID, tt.dataType, tt.data)
 			if err != nil {
@@ -112,8 +100,6 @@ func Test_SendWebhookToURI(t *testing.T) {
 		method     webhook.MethodType
 		dataType   webhook.DataType
 		data       json.RawMessage
-
-		expectWebhook *webhook.Webhook
 	}{
 		{
 			name: "normal",
@@ -123,12 +109,6 @@ func Test_SendWebhookToURI(t *testing.T) {
 			method:     webhook.MethodTypePOST,
 			dataType:   "application/json",
 			data:       []byte(`{"type":"call_updated","data":{"type":"call"}}`),
-
-			expectWebhook: &webhook.Webhook{
-				CustomerID: uuid.FromStringOrNil("a27dc1d6-8254-11ec-8f09-e30cbed3e51e"),
-				DataType:   "application/json",
-				Data:       json.RawMessage([]byte(`{"type":"call_updated","data":{"type":"call"}}`)),
-			},
 		},
 		{
 			name: "Korean",
@@ -138,12 +118,6 @@ func Test_SendWebhookToURI(t *testing.T) {
 			customerID: uuid.FromStringOrNil("a27dc1d6-8254-11ec-8f09-e30cbed3e51e"),
 			dataType:   "application/json",
 			data:       []byte(`{"type":"transcript_created","data":{"message":"안녕하세요!?"}}`),
-
-			expectWebhook: &webhook.Webhook{
-				CustomerID: uuid.FromStringOrNil("a27dc1d6-8254-11ec-8f09-e30cbed3e51e"),
-				DataType:   "application/json",
-				Data:       json.RawMessage([]byte(`{"type":"transcript_created","data":{"message":"안녕하세요!?"}}`)),
-			},
 		},
 	}
 
@@ -154,18 +128,17 @@ func Test_SendWebhookToURI(t *testing.T) {
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockMessageTargethandler := accounthandler.NewMockAccountHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockTopicNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := &webhookHandler{
-				db:            mockDB,
-				notifyHandler: mockNotify,
-				accoutHandler: mockMessageTargethandler,
+				db:                 mockDB,
+				topicNotifyHandler: mockTopicNotify,
+				accoutHandler:      mockMessageTargethandler,
 			}
 
 			ctx := context.Background()
 
 			mockMessageTargethandler.EXPECT().Get(ctx, tt.customerID).Return(&account.Account{ID: tt.customerID, WebhookSecret: "test-secret"}, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, webhook.EventTypeWebhookPublished, tt.expectWebhook)
 
 			err := h.SendWebhookToURI(ctx, tt.customerID, tt.uri, tt.method, tt.dataType, tt.data)
 			if err != nil {
@@ -199,12 +172,12 @@ func Test_SendWebhookToCustomerError(t *testing.T) {
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockMessageTargethandler := accounthandler.NewMockAccountHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockTopicNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := &webhookHandler{
-				db:            mockDB,
-				notifyHandler: mockNotify,
-				accoutHandler: mockMessageTargethandler,
+				db:                 mockDB,
+				topicNotifyHandler: mockTopicNotify,
+				accoutHandler:      mockMessageTargethandler,
 			}
 
 			ctx := context.Background()
@@ -226,7 +199,6 @@ func Test_SendWebhookToCustomerEmptyWebhookURI(t *testing.T) {
 		dataType        webhook.DataType
 		data            json.RawMessage
 		responseAccount *account.Account
-		expectWebhook   *webhook.Webhook
 	}{
 		{
 			"empty_webhook_uri",
@@ -238,11 +210,6 @@ func Test_SendWebhookToCustomerEmptyWebhookURI(t *testing.T) {
 				WebhookMethod: "POST",
 				WebhookURI:    "",
 			},
-			&webhook.Webhook{
-				CustomerID: uuid.FromStringOrNil("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
-				DataType:   "application/json",
-				Data:       json.RawMessage([]byte(`{"test":"value"}`)),
-			},
 		},
 	}
 
@@ -253,18 +220,17 @@ func Test_SendWebhookToCustomerEmptyWebhookURI(t *testing.T) {
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockMessageTargethandler := accounthandler.NewMockAccountHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockTopicNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := &webhookHandler{
-				db:            mockDB,
-				notifyHandler: mockNotify,
-				accoutHandler: mockMessageTargethandler,
+				db:                 mockDB,
+				topicNotifyHandler: mockTopicNotify,
+				accoutHandler:      mockMessageTargethandler,
 			}
 
 			ctx := context.Background()
 
 			mockMessageTargethandler.EXPECT().Get(ctx, tt.customerID).Return(tt.responseAccount, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, webhook.EventTypeWebhookPublished, tt.expectWebhook)
 
 			err := h.SendWebhookToCustomer(ctx, tt.customerID, tt.dataType, tt.data)
 			if err != nil {
@@ -300,17 +266,17 @@ func Test_SendWebhookToCustomer_system_customer(t *testing.T) {
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockMessageTargethandler := accounthandler.NewMockAccountHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockTopicNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := &webhookHandler{
-				db:            mockDB,
-				notifyHandler: mockNotify,
-				accoutHandler: mockMessageTargethandler,
+				db:                 mockDB,
+				topicNotifyHandler: mockTopicNotify,
+				accoutHandler:      mockMessageTargethandler,
 			}
 
 			ctx := context.Background()
 
-			// NO account Get or PublishEvent calls expected - should return early
+			// NO account Get or publish calls expected - should return early
 
 			err := h.SendWebhookToCustomer(ctx, tt.customerID, tt.dataType, tt.data)
 			if err != nil {
@@ -325,12 +291,12 @@ func Test_NewWebhookHandler(t *testing.T) {
 	defer mc.Finish()
 
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockTopicNotify := notifyhandler.NewMockNotifyHandler(mc)
 	mockAccount := accounthandler.NewMockAccountHandler(mc)
 	mockActiveflow := activeflowhandler.NewMockActiveflowHandler(mc)
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 
-	h := NewWebhookHandler(mockDB, mockNotify, mockNotify, mockReq, mockAccount, mockActiveflow)
+	h := NewWebhookHandler(mockDB, mockTopicNotify, mockReq, mockAccount, mockActiveflow)
 	if h == nil {
 		t.Errorf("Wrong match. expect: handler, got: nil")
 	}
@@ -348,7 +314,6 @@ func Test_SendWebhookToCustomer_activeflow(t *testing.T) {
 		data       json.RawMessage
 
 		responseAccount *account.Account
-		expectWebhook   *webhook.Webhook
 
 		// expectGet controls whether activeflowHandler.Get is expected at all.
 		expectGet bool
@@ -369,11 +334,6 @@ func Test_SendWebhookToCustomer_activeflow(t *testing.T) {
 				WebhookMethod: "POST",
 				WebhookURI:    "test.com",
 			},
-			expectWebhook: &webhook.Webhook{
-				CustomerID: uuid.FromStringOrNil("a27dc1d6-8254-11ec-8f09-e30cbed3e51e"),
-				DataType:   "application/json",
-				Data:       json.RawMessage([]byte(`{"type":"call_updated","data":{"activeflow_id":"11111111-1111-1111-1111-111111111111"}}`)),
-			},
 
 			expectGet:    true,
 			expectGetID:  activeflowID,
@@ -390,11 +350,6 @@ func Test_SendWebhookToCustomer_activeflow(t *testing.T) {
 				ID:            uuid.FromStringOrNil("a27dc1d6-8254-11ec-8f09-e30cbed3e51e"),
 				WebhookMethod: "POST",
 				WebhookURI:    "test.com",
-			},
-			expectWebhook: &webhook.Webhook{
-				CustomerID: uuid.FromStringOrNil("a27dc1d6-8254-11ec-8f09-e30cbed3e51e"),
-				DataType:   "application/json",
-				Data:       json.RawMessage([]byte(`{"type":"call_updated","data":{"activeflow_id":"11111111-1111-1111-1111-111111111111"}}`)),
 			},
 
 			expectGet:    true,
@@ -413,11 +368,6 @@ func Test_SendWebhookToCustomer_activeflow(t *testing.T) {
 				WebhookMethod: "POST",
 				WebhookURI:    "test.com",
 			},
-			expectWebhook: &webhook.Webhook{
-				CustomerID: uuid.FromStringOrNil("a27dc1d6-8254-11ec-8f09-e30cbed3e51e"),
-				DataType:   "application/json",
-				Data:       json.RawMessage([]byte(`{"activeflow_id":"11111111-1111-1111-1111-111111111111","data":{"type":"call"}}`)),
-			},
 
 			expectGet: false,
 		},
@@ -430,20 +380,19 @@ func Test_SendWebhookToCustomer_activeflow(t *testing.T) {
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockMessageTargethandler := accounthandler.NewMockAccountHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockTopicNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockActiveflow := activeflowhandler.NewMockActiveflowHandler(mc)
 
 			h := &webhookHandler{
-				db:                mockDB,
-				notifyHandler:     mockNotify,
-				accoutHandler:     mockMessageTargethandler,
-				activeflowHandler: mockActiveflow,
+				db:                 mockDB,
+				topicNotifyHandler: mockTopicNotify,
+				accoutHandler:      mockMessageTargethandler,
+				activeflowHandler:  mockActiveflow,
 			}
 
 			ctx := context.Background()
 
 			mockMessageTargethandler.EXPECT().Get(ctx, tt.customerID).Return(tt.responseAccount, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, webhook.EventTypeWebhookPublished, tt.expectWebhook)
 
 			if tt.expectGet {
 				mockActiveflow.EXPECT().Get(ctx, tt.expectGetID).Return(tt.responseDest, nil)
@@ -463,13 +412,11 @@ func Test_SendWebhookToCustomer_activeflow(t *testing.T) {
 	}
 }
 
-// Test_SendWebhookToCustomer_DualPublishesWithRoutingKey verifies that SendWebhookToCustomer
-// dual-publishes: the existing fanout PublishEvent call on h.notifyHandler still fires, AND
-// h.topicNotifyHandler.PublishEventWithRoutingKey fires once per generated routing key. Two
-// DISTINCT mocks are used for notifyHandler vs topicNotifyHandler so that a mixup between the
-// two fields (calling PublishEventWithRoutingKey on the fanout handler, or vice versa) would
-// fail the test -- a single shared mock would not catch this class of bug.
-func Test_SendWebhookToCustomer_DualPublishesWithRoutingKey(t *testing.T) {
+// Test_SendWebhookToCustomer_PublishesWithRoutingKey verifies that SendWebhookToCustomer
+// publishes to the topic exchange via h.topicNotifyHandler.PublishEventWithRoutingKey, once
+// per generated routing key. The fanout exchange publish was removed in VOIP-1296 (final
+// cutover); only the topic-exchange path remains.
+func Test_SendWebhookToCustomer_PublishesWithRoutingKey(t *testing.T) {
 
 	customerID := uuid.FromStringOrNil("a27dc1d6-8254-11ec-8f09-e30cbed3e51e")
 	callID := uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222")
@@ -484,12 +431,6 @@ func Test_SendWebhookToCustomer_DualPublishesWithRoutingKey(t *testing.T) {
 	// and silently published zero routing keys for every real event).
 	innerData := json.RawMessage(fmt.Sprintf(`{"id":"%s","customer_id":"%s"}`, callID, customerID))
 	data := json.RawMessage(fmt.Sprintf(`{"type":"call_updated","data":%s}`, string(innerData)))
-
-	expectWebhook := &webhook.Webhook{
-		CustomerID: customerID,
-		DataType:   "application/json",
-		Data:       data,
-	}
 
 	responseAccount := &account.Account{
 		ID:            customerID,
@@ -511,12 +452,10 @@ func Test_SendWebhookToCustomer_DualPublishesWithRoutingKey(t *testing.T) {
 
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockMessageTargethandler := accounthandler.NewMockAccountHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	mockTopicNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 	h := &webhookHandler{
 		db:                 mockDB,
-		notifyHandler:      mockNotify,
 		topicNotifyHandler: mockTopicNotify,
 		accoutHandler:      mockMessageTargethandler,
 	}
@@ -524,7 +463,6 @@ func Test_SendWebhookToCustomer_DualPublishesWithRoutingKey(t *testing.T) {
 	ctx := context.Background()
 
 	mockMessageTargethandler.EXPECT().Get(ctx, customerID).Return(responseAccount, nil)
-	mockNotify.EXPECT().PublishEvent(ctx, webhook.EventTypeWebhookPublished, expectWebhook)
 	mockTopicNotify.EXPECT().PublishEventWithRoutingKey(ctx, "call_updated", expectRoutingKey, innerData)
 
 	err := h.SendWebhookToCustomer(ctx, customerID, "application/json", data)
@@ -535,23 +473,17 @@ func Test_SendWebhookToCustomer_DualPublishesWithRoutingKey(t *testing.T) {
 	time.Sleep(400 * time.Millisecond)
 }
 
-// Test_SendWebhookToURI_DualPublishesWithRoutingKey mirrors the above for SendWebhookToURI,
+// Test_SendWebhookToURI_PublishesWithRoutingKey mirrors the above for SendWebhookToURI,
 // per the design doc §6 symmetry note: both entry points feed the same downstream path.
-func Test_SendWebhookToURI_DualPublishesWithRoutingKey(t *testing.T) {
+func Test_SendWebhookToURI_PublishesWithRoutingKey(t *testing.T) {
 
 	customerID := uuid.FromStringOrNil("a27dc1d6-8254-11ec-8f09-e30cbed3e51e")
 	callID := uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333")
 
-	// See Test_SendWebhookToCustomer_DualPublishesWithRoutingKey's comment: data is always a
+	// See Test_SendWebhookToCustomer_PublishesWithRoutingKey's comment: data is always a
 	// nested {"type":...,"data":{...}} envelope in production, never a flat resource object.
 	innerData := json.RawMessage(fmt.Sprintf(`{"id":"%s","customer_id":"%s"}`, callID, customerID))
 	data := json.RawMessage(fmt.Sprintf(`{"type":"call_updated","data":%s}`, string(innerData)))
-
-	expectWebhook := &webhook.Webhook{
-		CustomerID: customerID,
-		DataType:   "application/json",
-		Data:       data,
-	}
 
 	expectRoutingKey := fmt.Sprintf("customer_id.%s.call.call_updated.%s", customerID, callID)
 
@@ -560,12 +492,10 @@ func Test_SendWebhookToURI_DualPublishesWithRoutingKey(t *testing.T) {
 
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockMessageTargethandler := accounthandler.NewMockAccountHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	mockTopicNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 	h := &webhookHandler{
 		db:                 mockDB,
-		notifyHandler:      mockNotify,
 		topicNotifyHandler: mockTopicNotify,
 		accoutHandler:      mockMessageTargethandler,
 	}
@@ -573,7 +503,6 @@ func Test_SendWebhookToURI_DualPublishesWithRoutingKey(t *testing.T) {
 	ctx := context.Background()
 
 	mockMessageTargethandler.EXPECT().Get(ctx, customerID).Return(&account.Account{ID: customerID, WebhookSecret: "test-secret"}, nil)
-	mockNotify.EXPECT().PublishEvent(ctx, webhook.EventTypeWebhookPublished, expectWebhook)
 	mockTopicNotify.EXPECT().PublishEventWithRoutingKey(ctx, "call_updated", expectRoutingKey, innerData)
 
 	err := h.SendWebhookToURI(ctx, customerID, "test.com", webhook.MethodTypePOST, "application/json", data)
@@ -592,7 +521,7 @@ func Test_SendWebhookToURI_DualPublishesWithRoutingKey(t *testing.T) {
 // never wrapped as webhook.Data{Type,Data}. This must NOT be misinterpreted as a malformed system
 // event (no Errorf spam) and must NOT publish a routing-keyed event to the topic exchange (there
 // is no reliable customer_id/owner_id/event-type to extract from arbitrary user content) --
-// it must fail safe and silent, while the primary fanout delivery (PublishEvent) still fires.
+// it must fail safe and silent.
 func Test_SendWebhookToURI_ArbitraryFlowDesignerPayload_SkipsTopicPublishSilently(t *testing.T) {
 
 	customerID := uuid.FromStringOrNil("a27dc1d6-8254-11ec-8f09-e30cbed3e51e")
@@ -600,23 +529,15 @@ func Test_SendWebhookToURI_ArbitraryFlowDesignerPayload_SkipsTopicPublishSilentl
 	// Arbitrary flow-designer-authored payload -- NOT a {"type":...,"data":...} envelope.
 	data := json.RawMessage(`"hello world, this is my custom webhook_send body"`)
 
-	expectWebhook := &webhook.Webhook{
-		CustomerID: customerID,
-		DataType:   "application/json",
-		Data:       data,
-	}
-
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockMessageTargethandler := accounthandler.NewMockAccountHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	mockTopicNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 	h := &webhookHandler{
 		db:                 mockDB,
-		notifyHandler:      mockNotify,
 		topicNotifyHandler: mockTopicNotify,
 		accoutHandler:      mockMessageTargethandler,
 	}
@@ -624,7 +545,6 @@ func Test_SendWebhookToURI_ArbitraryFlowDesignerPayload_SkipsTopicPublishSilentl
 	ctx := context.Background()
 
 	mockMessageTargethandler.EXPECT().Get(ctx, customerID).Return(&account.Account{ID: customerID, WebhookSecret: "test-secret"}, nil)
-	mockNotify.EXPECT().PublishEvent(ctx, webhook.EventTypeWebhookPublished, expectWebhook)
 	// CRITICAL: no PublishEventWithRoutingKey expectation set at all -- gomock will fail the
 	// test if the topic-exchange publish path is invoked for this non-enveloped payload.
 
