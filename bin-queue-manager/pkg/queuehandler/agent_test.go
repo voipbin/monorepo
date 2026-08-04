@@ -107,6 +107,39 @@ func Test_GetAgents(t *testing.T) {
 				},
 			},
 		},
+		{
+			"queue has no tags -- tag_ids key is omitted entirely, not sent as an empty string",
+
+			uuid.FromStringOrNil("2a1e5b8e-0000-11ee-0000-000000000001"),
+			amagent.StatusNone,
+
+			&queue.Queue{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("2a1e5b8e-0000-11ee-0000-000000000001"),
+					CustomerID: uuid.FromStringOrNil("dd185d70-b499-11ec-a4b6-735983739876"),
+				},
+				TagIDs: []uuid.UUID{},
+			},
+			[]amagent.Agent{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("5d66c59e-b499-11ec-9109-dfdab27cf4e1"),
+					},
+				},
+			},
+
+			map[amagent.Field]any{
+				amagent.FieldDeleted:    false,
+				amagent.FieldCustomerID: "dd185d70-b499-11ec-a4b6-735983739876",
+			},
+			[]amagent.Agent{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("5d66c59e-b499-11ec-9109-dfdab27cf4e1"),
+					},
+				},
+			},
+		},
 	}
 
 	for _, tt := range tests {

@@ -11,7 +11,7 @@ Overview
 
 The agent, also known as the call center agent or phone agent, plays a crucial role as a representative of a company, handling calls with private or business customers on behalf of the organization. Typically, agents work in a call center environment, where multiple agents are employed to efficiently manage incoming and outgoing calls. The call center may be operated by the company itself or outsourced to an external service provider. In the case of external service providers, a single site may serve various clients from different businesses.
 
-In VoIPBIN, agents are the people (or endpoints) that receive calls from queues. Their status and contact addresses determine when and how they can receive calls; skill tags are also tracked per agent but are not currently enforced during call routing (see below).
+In VoIPBIN, agents are the people (or endpoints) that receive calls from queues. Their status and contact addresses determine when and how they can receive calls; skill tags determine which queues can route calls to them (see below).
 
 
 Agent Status
@@ -108,7 +108,7 @@ Every agent has a status that reflects their current availability. The status de
 
 Agent Tags (Skills)
 -------------------
-Tags define what skills or groups an agent belongs to. They are intended for skill-based routing from queues, but this is **not currently enforced** (see below).
+Tags define what skills or groups an agent belongs to, and are used for skill-based routing from queues.
 
 **How Tags Work**
 
@@ -131,23 +131,18 @@ Tags define what skills or groups an agent belongs to. They are intended for ski
                                    |
                                    v
                           +-------------------+
-                          | Not currently      |
-                          | evaluated -- any   |
-                          | available agent of |
-                          | the customer is    |
-                          | eligible, tagged   |
-                          | or not.            |
+                          | Agent is eligible  |
+                          | if it has ANY tag  |
+                          | in common with the |
+                          | queue's tag_ids.   |
                           +-------------------+
 
-.. warning:: **Known Limitation: tag-based routing is not enforced**
+**Tag Field**
 
-   Agent tags and queue ``tag_ids`` are both stored and returned by the API, but queue call routing does not currently filter or rank agents by tag overlap -- see :ref:`Agent Searching <queue-overview>` for the full explanation. Do not rely on tags to restrict which agent receives a queue call.
-
-**Tag Field (current behavior)**
-
-- Tags are useful for organizing and auditing your agent roster in your own tooling. ``GET /agents?tag_ids=...`` does **not** filter server-side -- the parameter hits the same dropped-filter bug described above and silently returns all agents regardless of the value passed.
-- They are not consulted when a queue selects an agent for an incoming call -- any available agent belonging to the queue's customer is eligible, tagged or not.
-- Tags can represent anything: languages, skills, departments, locations -- just not (yet) a routing constraint.
+- ``GET /agents?tag_ids=<comma-separated-tag-ids>`` filters server-side: only agents whose ``tag_ids`` array contains at least one of the given ids are returned. An empty ``tag_ids`` query parameter (present but with no value) is rejected as invalid input.
+- A queue whose own ``tag_ids`` is empty applies no tag constraint at all -- routing considers every available agent belonging to the queue's customer, tagged or not. This preserves the behavior existing queues rely on when they don't use skill-based routing.
+- A queue with a non-empty ``tag_ids`` only considers agents that share **at least one** tag with the queue (an overlap/"any of" match, not "all of").
+- Tags can represent anything: languages, skills, departments, locations.
 
 ::
 
@@ -387,12 +382,12 @@ The complete flow of how a call is routed from a queue to an agent:
     | SELECT agents WHERE:                                                  |
     |   o customer_id = queue's customer_id                                |
     |   o status = 'available'                                             |
-    |   (tag_ids is NOT applied as a filter -- see Known Limitation in     |
-    |    the Queue Overview)                                               |
+    |   o tag_ids overlaps queue's tag_ids (skipped if the queue has no    |
+    |     tags -- see the Queue Overview)                                  |
     +----------------------------------------------------------------------+
                |
                v
-    Step 3: Select one agent (random)
+    Step 3: Select one matching agent (random)
     +----------------------------------------------------------------------+
     | Found: Agent A, Agent C, Agent E                                      |
     | Selected: Agent C (random)                                            |

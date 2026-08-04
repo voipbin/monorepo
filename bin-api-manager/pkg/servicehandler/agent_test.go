@@ -793,3 +793,82 @@ func Test_AgentUpdatePassword(t *testing.T) {
 		})
 	}
 }
+
+func Test_convertAgentFilters_TagIDs(t *testing.T) {
+	type test struct {
+		name    string
+		filters map[string]string
+
+		expectRes map[amagent.Field]any
+		expectErr bool
+	}
+
+	tests := []test{
+		{
+			name: "tag_ids absent -- no filter, other filters pass through",
+			filters: map[string]string{
+				"deleted": "false",
+			},
+			expectRes: map[amagent.Field]any{
+				amagent.FieldDeleted: false,
+			},
+		},
+		{
+			name: "tag_ids present and normalized -- uppercase input becomes lowercase on the wire",
+			filters: map[string]string{
+				"tag_ids": "5D443CFE-0000-11EE-0000-000000000000,4FC21D6C-0000-11EE-0000-000000000000",
+				"deleted": "false",
+			},
+			expectRes: map[amagent.Field]any{
+				amagent.FieldTagIDs:  "5d443cfe-0000-11ee-0000-000000000000,4fc21d6c-0000-11ee-0000-000000000000",
+				amagent.FieldDeleted: false,
+			},
+		},
+		{
+			name: "tag_ids present but empty -- rejected",
+			filters: map[string]string{
+				"tag_ids": "",
+			},
+			expectErr: true,
+		},
+		{
+			name: "tag_ids present but garbage -- rejected",
+			filters: map[string]string{
+				"tag_ids": ",",
+			},
+			expectErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := &serviceHandler{}
+
+			// snapshot the input map so we can assert it wasn't mutated
+			inputCopy := make(map[string]string, len(tt.filters))
+			for k, v := range tt.filters {
+				inputCopy[k] = v
+			}
+
+			res, err := h.convertAgentFilters(tt.filters)
+
+			if !reflect.DeepEqual(tt.filters, inputCopy) {
+				t.Errorf("Wrong match. convertAgentFilters must not mutate the caller's filters map.\nexpect: %v\ngot: %v", inputCopy, tt.filters)
+			}
+
+			if tt.expectErr {
+				if err == nil {
+					t.Errorf("Wrong match. expect: error, got: ok (res: %v)", res)
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectRes, res)
+			}
+		})
+	}
+}

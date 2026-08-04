@@ -10,12 +10,12 @@ Before working with queues, you need:
 
 * An authentication token. Obtain one via ``POST /auth/login`` or use an access key from ``GET /accesskeys``.
 * At least one agent with ``status: available`` belonging to the same customer as the queue. Create agents via ``POST /agents``.
-* (Optional) Tag IDs (UUID) if you want to organize queues/agents by skill for your own reporting -- create tags via ``POST /tags``. Note that tags are **not** currently used to select which agent receives a call; see the Known Limitation in :ref:`Queue Overview <queue-overview>`.
+* (Optional) Tag IDs (UUID) if you want skill-based routing -- create tags via ``POST /tags``, assign them to agents, and set the same ids on the queue's ``tag_ids``. A queue only routes to agents sharing at least one of its tags; leave ``tag_ids`` empty to route to any available agent of the customer.
 * (Optional) A wait flow ID (UUID) referencing a flow that defines what callers hear while waiting. Create one via ``POST /flows`` with actions like ``talk`` (text-to-speech announcements) and ``sleep`` (pause between announcements).
 
 .. note:: **AI Implementation Hint**
 
-   Queues require at least one available agent belonging to the same customer to route calls. If you create a queue with no available agents for that customer, calls will wait indefinitely (or until ``wait_timeout``). Assigning ``tag_ids`` to a queue does **not** restrict which agent receives a call -- any available agent of the customer is eligible regardless of tags (see the Known Limitation in :ref:`Queue Overview <queue-overview>`).
+   Queues require at least one available agent belonging to the same customer to route calls. If you create a queue with no available agents for that customer, calls will wait indefinitely (or until ``wait_timeout``). Assigning ``tag_ids`` to a queue restricts routing to agents that share at least one of those tags -- if you create a queue with tags but no agent of that customer carries a matching tag, calls will also wait indefinitely. Leave ``tag_ids`` empty to route to any available agent regardless of tags (see :ref:`Queue Overview <queue-overview>`).
 
 Create a new queue
 ------------------

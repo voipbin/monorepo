@@ -6,6 +6,8 @@ import (
 	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/serviceerrors"
 	commonaddress "monorepo/bin-common-handler/models/address"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -503,9 +505,19 @@ func (h *serviceHandler) AgentDirectHashRegenerate(ctx context.Context, a *auth.
 
 // convertAgentFilters converts map[string]string to map[amagent.Field]any
 func (h *serviceHandler) convertAgentFilters(filters map[string]string) (map[amagent.Field]any, error) {
-	// Convert to map[string]any first
+	// Convert to map[string]any first, excluding tag_ids -- that filter's
+	// domain type (amagent.Agent.TagIDs []uuid.UUID) can't be produced from
+	// a comma-joined string by the reflection-based converter below, so it's
+	// validated and normalized separately.
 	srcAny := make(map[string]any, len(filters))
+	var tagIDsRaw string
+	var hasTagIDs bool
 	for k, v := range filters {
+		if k == "tag_ids" {
+			tagIDsRaw = v
+			hasTagIDs = true
+			continue
+		}
 		srcAny[k] = v
 	}
 
@@ -516,9 +528,34 @@ func (h *serviceHandler) convertAgentFilters(filters map[string]string) (map[ama
 	}
 
 	// Convert string keys to Field type
-	result := make(map[amagent.Field]any, len(typed))
+	result := make(map[amagent.Field]any, len(typed)+1)
 	for k, v := range typed {
 		result[amagent.Field(k)] = v
+	}
+
+	if hasTagIDs {
+		// The tag_ids key being present at all means the caller explicitly
+		// asked to filter by tag -- an empty value ("?tag_ids=") is just as
+		// degenerate as ",", so it's rejected here rather than silently
+		// falling through to "no filter applied".
+		if tagIDsRaw == "" {
+			return nil, cerrors.InvalidArgument(
+				commonoutline.ServiceNameAPIManager,
+				"INVALID_TAG_IDS",
+				"tag_ids must not be empty when provided.",
+			)
+		}
+
+		ids, err := amagent.ParseTagIDsFilter(tagIDsRaw)
+		if err != nil {
+			return nil, cerrors.InvalidArgument(
+				commonoutline.ServiceNameAPIManager,
+				"INVALID_TAG_IDS",
+				"tag_ids contains an invalid tag id.",
+			).Wrap(err)
+		}
+		// wire value is the normalized/canonical form, not the raw user input.
+		result[amagent.FieldTagIDs] = amagent.FormatTagIDsFilter(ids)
 	}
 
 	return result, nil

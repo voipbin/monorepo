@@ -46,7 +46,7 @@ Queue struct
 * ``name`` (String): Human-readable name for the queue.
 * ``detail`` (String): Detailed description of the queue's purpose.
 * ``routing_method`` (enum string): The queue's call routing method for selecting agents. See :ref:`Routing Method <queue-struct-queue-routing-method>`.
-* ``tag_ids`` (Array of UUID): Tag IDs intended as a skill-based filter for this queue. Each ID is obtained from ``GET /tags``. **Not currently enforced** at agent-selection time -- see :ref:`Agent Searching <queue-overview>` for the known limitation. Any available agent belonging to the queue's customer is eligible regardless of tags.
+* ``tag_ids`` (Array of UUID): Tag IDs used as a skill-based filter for this queue. Each ID is obtained from ``GET /tags``. An agent is eligible for this queue only if it shares at least one tag with these ids; an empty ``tag_ids`` applies no tag constraint (any available agent of the queue's customer is eligible). See :ref:`Agent Searching <queue-overview>`.
 * ``wait_flow_id`` (UUID): The flow to execute while callers wait in the queue. Obtained from the ``id`` field of ``GET /flows``. Set to ``00000000-0000-0000-0000-000000000000`` if no wait flow is assigned.
 * ``wait_timeout`` (Integer): Maximum time in milliseconds a caller can wait in the queue before being removed. Set to ``0`` for no timeout (wait indefinitely).
 * ``service_timeout`` (Integer): Maximum time in milliseconds a caller and agent can talk before the call is ended. Set to ``0`` for no timeout (talk indefinitely).

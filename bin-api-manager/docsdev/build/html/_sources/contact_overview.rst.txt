@@ -191,9 +191,9 @@ Contacts support various communication and organizational workflows.
     | Route to: Enterprise Spanish Support Queue |
     +--------------------------------------------+
 
-.. note:: **Known Limitation**
+.. note:: **Two independent tag mechanisms**
 
-   You can use a contact's tags in your own flow logic (e.g. a ``condition_variable`` action) to route the call to a *specific queue* dedicated to that skill combination, as shown above. However, once the call reaches a queue, agent selection itself does not filter by agent tags -- any available agent belonging to the queue's customer may be picked, regardless of the agent's own tags. See the Known Limitation in :ref:`Queue Overview <queue-overview>` for details. To guarantee skill-matched agents, use one queue per skill combination and staff each queue only with agents who have that skill, rather than relying on agent tag matching.
+   You can use a contact's tags in your own flow logic (e.g. a ``condition_variable`` action) to route the call to a *specific queue* dedicated to that skill combination, as shown above. Once the call reaches a queue, agent selection is a separate step that filters by *agent* tags against the *queue's* ``tag_ids`` (see :ref:`Agent Searching <queue-overview>`) -- contact tags themselves are not consulted at agent-selection time. To guarantee skill-matched agents, either route to a queue whose ``tag_ids`` require the matching skill, or use one queue per skill combination staffed only with agents who have that skill.
 
 **Multi-Channel Contact History**
 

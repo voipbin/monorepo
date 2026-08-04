@@ -39,7 +39,7 @@ Agent
 * ``ring_method`` (enum string): The method used to ring the agent's addresses when a call is routed. See :ref:`Ring method <agent-struct-agent-ring_method>`.
 * ``status`` (enum string): The agent's current availability status. See :ref:`Status <agent-struct-agent-status>`.
 * ``permission`` (Integer): The agent's permission level as a bitmask value. See :ref:`Permission <agent-struct-agent-permission>`.
-* ``tag_ids`` (Array of UUID): List of tag IDs intended as a skill-based filter for this agent. Each ID is obtained from the ``id`` field of ``GET /tags``. **Not currently enforced** at agent-selection time -- see the Known Limitation in :ref:`Agent Overview <agent-overview>` for details.
+* ``tag_ids`` (Array of UUID): List of tag IDs used as a skill-based filter for this agent. Each ID is obtained from the ``id`` field of ``GET /tags``. Queue call routing considers an agent eligible only if it shares at least one tag with the queue's own ``tag_ids`` (see :ref:`Agent Overview <agent-overview>`).
 * ``addresses`` (Array of Object): List of contact addresses where calls are delivered to this agent. See :ref:`Address <common-struct-address-address>`.
 * ``direct_hash`` (String): Hash for direct agent access, already prefixed with ``direct.`` (e.g. ``direct.a8f3b2c1d4e5``). Empty string when direct access is disabled. When enabled, this value forms the direct SIP URI directly: ``sip:<direct_hash>@sip.voipbin.net``. Regenerate via ``POST /agents/{id}/direct-hash-regenerate``.
 * ``tm_create`` (string, ISO 8601): Timestamp when the agent was created.

@@ -293,10 +293,43 @@ func (h *handler) AgentList(ctx context.Context, size uint64, token string, filt
 		Limit(size).
 		PlaceholderFormat(squirrel.Question)
 
-	sb, err := commondatabasehandler.ApplyFields(sb, filters)
+	var tagIDsRaw string
+	var hasTagIDs bool
+	remaining := make(map[agent.Field]any, len(filters))
+	for k, v := range filters {
+		if k == agent.FieldTagIDs {
+			s, ok := v.(string)
+			if !ok {
+				dbErr = fmt.Errorf("invalid tag_ids filter type. AgentList. type: %T", v)
+				return nil, dbErr
+			}
+			tagIDsRaw = s
+			hasTagIDs = true
+			continue
+		}
+		remaining[k] = v
+	}
+
+	sb, err := commondatabasehandler.ApplyFields(sb, remaining)
 	if err != nil {
 		dbErr = err
 		return nil, fmt.Errorf("could not apply filters. AgentList. err: %v", err)
+	}
+
+	// hasTagIDs but tagIDsRaw == "" is treated as "no filter" here, NOT an
+	// error -- unlike the API layer (bin-api-manager's convertAgentFilters),
+	// which rejects an explicitly-empty tag_ids as bad user input. This
+	// layer must stay lenient because internal RPC callers (e.g.
+	// bin-queue-manager during a rolling deploy where the producer hasn't
+	// picked up the "omit key when empty" change yet) may still send an
+	// empty string; hard-erroring here would break routing mid-deploy.
+	if hasTagIDs && tagIDsRaw != "" {
+		ids, errParse := agent.ParseTagIDsFilter(tagIDsRaw)
+		if errParse != nil {
+			dbErr = errParse
+			return nil, fmt.Errorf("invalid tag_ids filter. AgentList. err: %v", errParse)
+		}
+		sb = applyTagIDsFilter(sb, ids)
 	}
 
 	query, args, err := sb.ToSql()
@@ -655,4 +688,26 @@ func (h *handler) AgentSetAddresses(ctx context.Context, id uuid.UUID, addresses
 	}
 
 	return nil
+}
+
+// applyTagIDsFilter narrows the query to agents whose tag_ids JSON array
+// contains at least one of the given ids (OR semantics -- skill-based
+// routing means "has any matching skill", not "has all of them"). Kept as a
+// small named function rather than inlined so it's easy to promote to
+// bin-common-handler/pkg/databasehandler if a third service ever needs the
+// same "JSON array contains any of" pattern (queues.tag_ids,
+// contact_cases.tag_ids are the same shape today, but each has exactly one
+// consumer so promoting now would violate the bin-common-handler admission
+// rule).
+func applyTagIDsFilter(sb squirrel.SelectBuilder, ids []uuid.UUID) squirrel.SelectBuilder {
+	if len(ids) == 0 {
+		return sb
+	}
+
+	or := squirrel.Or{}
+	for _, id := range ids {
+		or = append(or, squirrel.Expr("JSON_CONTAINS(tag_ids, JSON_QUOTE(?))", id.String()))
+	}
+
+	return sb.Where(or)
 }

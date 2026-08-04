@@ -689,7 +689,7 @@
 </section>
 <section id="get-list-of-agents">
 <h3>Get list of agents<a class="headerlink" href="#get-list-of-agents" title="Link to this heading">¶</a></h3>
-<p>Gets the list of agents. Supports filtering by <code class="docutils literal notranslate"><span class="pre">status</span></code>. A <code class="docutils literal notranslate"><span class="pre">tag_ids</span></code> query parameter is accepted but currently has no effect – see the Known Limitation in <a class="reference internal" href="agent_overview.html#agent-overview"><span class="std std-ref">Agent Overview</span></a>.</p>
+<p>Gets the list of agents. Supports filtering by <code class="docutils literal notranslate"><span class="pre">status</span></code> and by <code class="docutils literal notranslate"><span class="pre">tag_ids</span></code> (comma-separated tag id list – only agents sharing at least one of the given tags are returned; the parameter must not be empty when present).</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/agents?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {

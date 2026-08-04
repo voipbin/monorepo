@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -11,6 +12,7 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
@@ -559,5 +561,123 @@ func Test_AgentSetAddresses(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
+	}
+}
+
+// Test_applyTagIDsFilter verifies the generated SQL shape for the tag_ids
+// JSON-array-containment filter, without executing it. The test sqlite DB
+// (dbTest) has no JSON_CONTAINS support, so this is asserted at the
+// squirrel.SelectBuilder level via ToSql() rather than end-to-end.
+func Test_applyTagIDsFilter(t *testing.T) {
+	type test struct {
+		name string
+		ids  []uuid.UUID
+
+		expectSQLContains []string
+		expectArgs        []any
+		expectUnchanged   bool
+	}
+
+	tests := []test{
+		{
+			name: "single id",
+			ids: []uuid.UUID{
+				uuid.FromStringOrNil("5d443cfe-0000-11ee-0000-000000000000"),
+			},
+			expectSQLContains: []string{"JSON_CONTAINS(tag_ids, JSON_QUOTE(?))"},
+			expectArgs:        []any{"5d443cfe-0000-11ee-0000-000000000000"},
+		},
+		{
+			name: "multiple ids OR-chained",
+			ids: []uuid.UUID{
+				uuid.FromStringOrNil("5d443cfe-0000-11ee-0000-000000000000"),
+				uuid.FromStringOrNil("4fc21d6c-0000-11ee-0000-000000000000"),
+			},
+			expectSQLContains: []string{
+				"JSON_CONTAINS(tag_ids, JSON_QUOTE(?)) OR JSON_CONTAINS(tag_ids, JSON_QUOTE(?))",
+			},
+			expectArgs: []any{
+				"5d443cfe-0000-11ee-0000-000000000000",
+				"4fc21d6c-0000-11ee-0000-000000000000",
+			},
+		},
+		{
+			name:            "empty ids leaves query unchanged",
+			ids:             []uuid.UUID{},
+			expectUnchanged: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			base := squirrel.Select("*").From(agentTable).PlaceholderFormat(squirrel.Question)
+
+			res := applyTagIDsFilter(base, tt.ids)
+
+			baseSQL, baseArgs, err := base.ToSql()
+			if err != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			resSQL, resArgs, err := res.ToSql()
+			if err != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if tt.expectUnchanged {
+				if resSQL != baseSQL || !reflect.DeepEqual(resArgs, baseArgs) {
+					t.Errorf("Wrong match. expect: unchanged query, got sql: %s args: %v", resSQL, resArgs)
+				}
+				return
+			}
+
+			for _, want := range tt.expectSQLContains {
+				if !strings.Contains(resSQL, want) {
+					t.Errorf("Wrong match. expect sql to contain: %s\ngot: %s", want, resSQL)
+				}
+			}
+			if !reflect.DeepEqual(resArgs, tt.expectArgs) {
+				t.Errorf("Wrong match. expect args: %v, got: %v", tt.expectArgs, resArgs)
+			}
+		})
+	}
+}
+
+// Test_AgentList_DoesNotMutateFiltersMap is a regression test for a design
+// review finding: AgentList must not mutate the caller-owned filters map
+// while extracting the tag_ids entry. Uses a filters map that includes
+// tag_ids so the extraction branch is actually exercised. The query is
+// expected to error (the sqlite test DB has no JSON_CONTAINS), but that's
+// irrelevant to what this test checks -- the map copy happens before the
+// query ever executes.
+func Test_AgentList_DoesNotMutateFiltersMap(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	h := handler{
+		utilHandler: mockUtil,
+		db:          dbTest,
+		cache:       mockCache,
+	}
+	ctx := context.Background()
+
+	filters := map[agent.Field]any{
+		agent.FieldCustomerID: uuid.FromStringOrNil("48788c16-7fde-11ec-80e1-33e6bbba4dac").String(),
+		agent.FieldDeleted:    false,
+		agent.FieldTagIDs:     "5d443cfe-0000-11ee-0000-000000000000",
+	}
+	expectFilters := map[agent.Field]any{
+		agent.FieldCustomerID: uuid.FromStringOrNil("48788c16-7fde-11ec-80e1-33e6bbba4dac").String(),
+		agent.FieldDeleted:    false,
+		agent.FieldTagIDs:     "5d443cfe-0000-11ee-0000-000000000000",
+	}
+
+	// error expected (sqlite has no JSON_CONTAINS) -- not asserted either way.
+	_, _ = h.AgentList(ctx, 10, utilhandler.TimeGetCurTime(), filters)
+
+	if !reflect.DeepEqual(filters, expectFilters) {
+		t.Errorf("Wrong match. AgentList must not mutate the caller's filters map.\nexpect: %v\ngot: %v", expectFilters, filters)
 	}
 }

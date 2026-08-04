@@ -133,14 +133,14 @@ Every call in a queue moves through a series of states:
 
 Agent Searching
 ---------------
-While the call is in the queue, the queue continuously searches for available agents to handle the call. Each queue has a ``tag_ids`` field intended as a skill-based filter, but as documented below, tag matching is **not currently enforced** at agent-selection time.
+While the call is in the queue, the queue continuously searches for available agents to handle the call. Each queue has a ``tag_ids`` field used as a skill-based filter: only agents that share at least one tag with the queue are eligible, unless the queue has no tags configured at all.
 
-**How Agent Matching Currently Works**
+**How Agent Matching Works**
 
 ::
 
     +--------------------------------------------------------------------------+
-    |                      Agent Matching Process (current behavior)           |
+    |                      Agent Matching Process                              |
     +--------------------------------------------------------------------------+
 
     Queue Configuration:                    Agent Pool (same customer):
@@ -148,47 +148,44 @@ While the call is in the queue, the queue continuously searches for available ag
     | customer_id: <id>      |             | Agent A - Tags: english, vip   |
     | Tag IDs: english,      |             |   Status: available            |
     |          billing       |             | Agent B - Tags: spanish        |
-    | (not applied as a      |             |   Status: available            |
-    |  filter, see below)    |             | Agent C - Tags: english        |
-    +------------------------+             |   Status: busy                 |
-              |                            | Agent D - Tags: (none)         |
-              v                            |   Status: available            |
-    +------------------------+             +--------------------------------+
-    | Filter agents by:      |
+    |                        |             |   Status: available            |
+    +------------------------+             | Agent C - Tags: english        |
+              |                            |   Status: busy                 |
+              v                            | Agent D - Tags: (none)         |
+    +------------------------+             |   Status: available            |
+    | Filter agents by:      |             +--------------------------------+
     |  * customer_id         |
     |  * status = available  |
-    | (tag_ids is NOT        |
-    |  applied as a filter)  |
+    |  * tag_ids overlaps    |
+    |    queue's tag_ids     |
     +------------------------+
               |
               v
     +--------------------------------------------------------------------------+
-    | Results (tags ignored):                                                  |
-    |  [x] Agent A - available, regardless of tags                             |
-    |  [x] Agent B - available, regardless of tags                             |
-    |  [ ] Agent C - busy, excluded (status filter, not tag filter)            |
-    |  [x] Agent D - available, even with no tags at all                       |
+    | Results:                                                                 |
+    |  [x] Agent A - available, shares "english" tag with the queue            |
+    |  [ ] Agent B - available, but no tag overlap ("spanish" only), excluded  |
+    |  [ ] Agent C - busy, excluded (status filter)                           |
+    |  [ ] Agent D - available, but has no tags, excluded (no overlap)        |
     |                                                                          |
-    |  -> One of the available agents is selected at random                   |
+    |  -> One of the matching available agents is selected at random          |
     +--------------------------------------------------------------------------+
 
 .. image:: _static/images/queue_overview_agent.png
 
-.. warning:: **Known Limitation: tag-based routing is not enforced**
+.. note:: **Queues with no tags apply no tag constraint**
 
-   ``Queue.tag_ids`` and ``Agent`` tags are both stored and returned by the API, but the current implementation does **not** use them to filter or rank agents during selection. Tracing ``bin-queue-manager/pkg/queuehandler/agent.go:GetAgents`` -> ``bin-agent-manager``'s agent-list filter conversion shows that ``agent.FieldStruct`` (the allow-list of filterable agent columns) does not include a ``tag_ids`` entry, so the tag filter the queue sends is silently dropped before the database query runs. ``bin-queue-manager/pkg/queuehandler/execute.go`` then selects uniformly at random from *every* available agent belonging to the queue's customer, with no client-side tag re-filtering.
+   If a queue's ``tag_ids`` is empty, tag matching is skipped entirely and every available agent belonging to the queue's customer is eligible, regardless of the agent's own tags. This is the default for queues that don't use skill-based routing. Tag filtering only activates once you set ``tag_ids`` on the queue.
 
-   In practice this means: an agent with **no tags at all** is just as eligible for a queue as one whose tags exactly match the queue's ``tag_ids``, and there is currently no way to build skill-based routing (language, department, tier, etc.) that actually restricts which agent receives a call. Treat ``tag_ids`` on a queue as informational/organizational only until this is implemented -- do not rely on it for routing decisions in production.
+**Tag Field**
 
-**Tag Field (as currently returned by the API)**
-
-- ``Queue.tag_ids`` and each agent's tags are both real, queryable fields -- useful for organizing and auditing your setup -- but they are not consulted when the queue picks an agent for an incoming call.
-- Any available agent belonging to the queue's customer is eligible, regardless of tags.
-- Tags are still useful for reporting or grouping agents in your own tooling (e.g. by fetching ``GET /agents`` and filtering client-side). Note that ``GET /agents?tag_ids=...`` does **not** filter server-side either -- it hits the same dropped-filter bug described above, so it silently returns all agents regardless of the ``tag_ids`` query value.
+- ``Queue.tag_ids`` and each agent's ``tag_ids`` are both real, queryable fields, and are consulted at agent-selection time: an agent is only eligible for a queue with non-empty ``tag_ids`` if it shares **at least one** tag with the queue (an overlap/"any of" match, not "all of").
+- ``GET /agents?tag_ids=...`` also filters server-side using the same overlap semantics -- only agents whose ``tag_ids`` contain at least one of the given ids are returned.
+- Selection among the matching, available agents is still random (see :ref:`Routing Methods <queue-overview>` above) -- tags narrow the eligible pool, they don't order or rank within it.
 
 .. note:: **AI Implementation Hint**
 
-   Do not build product logic that assumes queue call routing respects agent tags -- it currently does not. If you need guaranteed skill-based routing today, route calls to separate queues per skill/tag combination instead, since queue selection itself only filters on ``customer_id`` and ``status``.
+   To restrict which agents can receive calls from a queue, set the queue's ``tag_ids`` to the required skill(s) and make sure eligible agents carry at least one matching tag. Leaving a queue's ``tag_ids`` empty routes to any available agent of that customer.
 
 **Agent Status**
 
@@ -284,21 +281,22 @@ Agents move through a lifecycle as they handle queue calls.
 
 Multi-Queue Agent Scenarios
 ---------------------------
-Since agent selection is not currently filtered by tags (see :ref:`Agent Searching <queue-overview>`), any available agent belonging to a customer is a candidate for every one of that customer's queues, not just queues whose tags happen to match the agent's.
+Agent selection is filtered by tag overlap (see :ref:`Agent Searching <queue-overview>`): an available agent is a candidate for a given queue only if the queue has no ``tag_ids`` configured, or the agent shares at least one tag with the queue. An agent with the right tags can still be eligible for several queues at once.
 
 **Single Agent, Multiple Queues**
 
 ::
 
-    Agent A (available, same customer as both queues below)
+    Agent A (available, tags: english, billing, tech_support)
 
     +------------------------+     +------------------------+
     | Queue: English Billing |     | Queue: Tech Support    |
+    | Tags: english, billing |     | Tags: tech_support     |
     +------------------------+     +------------------------+
               |                              |
               +--------- Agent A ------------+
-              |  (eligible for both, tags    |
-              |   are not evaluated)         |
+              |  (eligible for both -- has   |
+              |   a matching tag for each)   |
               v                              v
     Agent A can receive calls from EITHER queue
 
@@ -725,16 +723,18 @@ See :ref:`Flow Actions <flow-struct-action-queue_join>` for queue-related flow a
 
 **Agent Management**
 
-Agent tags do not currently gate which queues an agent serves -- any available agent belonging to a queue's customer is eligible for that queue, tagged or not (see the Known Limitation in :ref:`Agent Searching <queue-overview>`).
+Which queues an agent can serve is gated by tag overlap: an available agent belonging to a queue's customer is eligible for a given queue if the queue has no ``tag_ids`` configured, or if the agent shares at least one tag with the queue's ``tag_ids`` (see :ref:`Agent Searching <queue-overview>`).
 
 ::
 
-    Agent (available, customer X)     Queues (customer X)
-    +-------------+                   +---------------+
-    | status:     |----eligible------>| Queue A       |
-    | available   |                   +---------------+
-    +-------------+----eligible------>| Queue B       |
-                                      +---------------+
+    Agent (available, customer X, tags: english)   Queues (customer X)
+    +-------------------------+                    +----------------------+
+    | status: available       |----eligible-------->| Queue A (no tags)   |
+    | tags: english           |                     +----------------------+
+    +-------------------------+----eligible-------->| Queue B (english)   |
+                               |                     +----------------------+
+                               +---not eligible----->| Queue C (spanish)   |
+                                                     +----------------------+
 
 See :ref:`Agent Overview <agent-overview>` for agent configuration and status management.
 

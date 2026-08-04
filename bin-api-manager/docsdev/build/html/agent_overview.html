@@ -649,7 +649,7 @@
 </ul>
 </div>
 <p>The agent, also known as the call center agent or phone agent, plays a crucial role as a representative of a company, handling calls with private or business customers on behalf of the organization. Typically, agents work in a call center environment, where multiple agents are employed to efficiently manage incoming and outgoing calls. The call center may be operated by the company itself or outsourced to an external service provider. In the case of external service providers, a single site may serve various clients from different businesses.</p>
-<p>In VoIPBIN, agents are the people (or endpoints) that receive calls from queues. Their status and contact addresses determine when and how they can receive calls; skill tags are also tracked per agent but are not currently enforced during call routing (see below).</p>
+<p>In VoIPBIN, agents are the people (or endpoints) that receive calls from queues. Their status and contact addresses determine when and how they can receive calls; skill tags determine which queues can route calls to them (see below).</p>
 <section id="agent-status">
 <h2>Agent Status<a class="headerlink" href="#agent-status" title="Link to this heading">¶</a></h2>
 <p>Every agent has a status that reflects their current availability. The status determines whether an agent can receive calls from queues.</p>
@@ -756,7 +756,7 @@ queue calls?</p></th>
 </section>
 <section id="agent-tags-skills">
 <h2>Agent Tags (Skills)<a class="headerlink" href="#agent-tags-skills" title="Link to this heading">¶</a></h2>
-<p>Tags define what skills or groups an agent belongs to. They are intended for skill-based routing from queues, but this is <strong>not currently enforced</strong> (see below).</p>
+<p>Tags define what skills or groups an agent belongs to, and are used for skill-based routing from queues.</p>
 <p><strong>How Tags Work</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-----------------------------------------------------------------------------+</span>
 <span class="o">|</span>                         <span class="n">Skill</span><span class="o">-</span><span class="n">Based</span> <span class="n">Routing</span>                              <span class="o">|</span>
@@ -775,25 +775,19 @@ queue calls?</p></th>
                                <span class="o">|</span>
                                <span class="n">v</span>
                       <span class="o">+-------------------+</span>
-                      <span class="o">|</span> <span class="n">Not</span> <span class="n">currently</span>      <span class="o">|</span>
-                      <span class="o">|</span> <span class="n">evaluated</span> <span class="o">--</span> <span class="nb">any</span>   <span class="o">|</span>
-                      <span class="o">|</span> <span class="n">available</span> <span class="n">agent</span> <span class="n">of</span> <span class="o">|</span>
-                      <span class="o">|</span> <span class="n">the</span> <span class="n">customer</span> <span class="ow">is</span>    <span class="o">|</span>
-                      <span class="o">|</span> <span class="n">eligible</span><span class="p">,</span> <span class="n">tagged</span>   <span class="o">|</span>
-                      <span class="o">|</span> <span class="ow">or</span> <span class="ow">not</span><span class="o">.</span>            <span class="o">|</span>
+                      <span class="o">|</span> <span class="n">Agent</span> <span class="ow">is</span> <span class="n">eligible</span>  <span class="o">|</span>
+                      <span class="o">|</span> <span class="k">if</span> <span class="n">it</span> <span class="n">has</span> <span class="n">ANY</span> <span class="n">tag</span>  <span class="o">|</span>
+                      <span class="o">|</span> <span class="ow">in</span> <span class="n">common</span> <span class="k">with</span> <span class="n">the</span> <span class="o">|</span>
+                      <span class="o">|</span> <span class="n">queue</span><span class="s1">&#39;s tag_ids.   |</span>
                       <span class="o">+-------------------+</span>
 </pre></div>
 </div>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p><strong>Known Limitation: tag-based routing is not enforced</strong></p>
-<p>Agent tags and queue <code class="docutils literal notranslate"><span class="pre">tag_ids</span></code> are both stored and returned by the API, but queue call routing does not currently filter or rank agents by tag overlap – see <a class="reference internal" href="queue_overview.html#queue-overview"><span class="std std-ref">Agent Searching</span></a> for the full explanation. Do not rely on tags to restrict which agent receives a queue call.</p>
-</div>
-<p><strong>Tag Field (current behavior)</strong></p>
+<p><strong>Tag Field</strong></p>
 <ul class="simple">
-<li><p>Tags are useful for organizing and auditing your agent roster in your own tooling. <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/agents?tag_ids=...</span></code> does <strong>not</strong> filter server-side – the parameter hits the same dropped-filter bug described above and silently returns all agents regardless of the value passed.</p></li>
-<li><p>They are not consulted when a queue selects an agent for an incoming call – any available agent belonging to the queue’s customer is eligible, tagged or not.</p></li>
-<li><p>Tags can represent anything: languages, skills, departments, locations – just not (yet) a routing constraint.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/agents?tag_ids=&lt;comma-separated-tag-ids&gt;</span></code> filters server-side: only agents whose <code class="docutils literal notranslate"><span class="pre">tag_ids</span></code> array contains at least one of the given ids are returned. An empty <code class="docutils literal notranslate"><span class="pre">tag_ids</span></code> query parameter (present but with no value) is rejected as invalid input.</p></li>
+<li><p>A queue whose own <code class="docutils literal notranslate"><span class="pre">tag_ids</span></code> is empty applies no tag constraint at all – routing considers every available agent belonging to the queue’s customer, tagged or not. This preserves the behavior existing queues rely on when they don’t use skill-based routing.</p></li>
+<li><p>A queue with a non-empty <code class="docutils literal notranslate"><span class="pre">tag_ids</span></code> only considers agents that share <strong>at least one</strong> tag with the queue (an overlap/”any of” match, not “all of”).</p></li>
+<li><p>Tags can represent anything: languages, skills, departments, locations.</p></li>
 </ul>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Example</span> <span class="n">Tag</span> <span class="n">Structure</span><span class="p">:</span>
 <span class="o">+-----------------------------------------------------------------------------+</span>
@@ -1018,12 +1012,12 @@ Queue finds Agent Smith (available)
 <span class="o">|</span> <span class="n">SELECT</span> <span class="n">agents</span> <span class="n">WHERE</span><span class="p">:</span>                                                  <span class="o">|</span>
 <span class="o">|</span>   <span class="n">o</span> <span class="n">customer_id</span> <span class="o">=</span> <span class="n">queue</span><span class="s1">&#39;s customer_id                                |</span>
 <span class="o">|</span>   <span class="n">o</span> <span class="n">status</span> <span class="o">=</span> <span class="s1">&#39;available&#39;</span>                                             <span class="o">|</span>
-<span class="o">|</span>   <span class="p">(</span><span class="n">tag_ids</span> <span class="ow">is</span> <span class="n">NOT</span> <span class="n">applied</span> <span class="k">as</span> <span class="n">a</span> <span class="nb">filter</span> <span class="o">--</span> <span class="n">see</span> <span class="n">Known</span> <span class="n">Limitation</span> <span class="ow">in</span>     <span class="o">|</span>
-<span class="o">|</span>    <span class="n">the</span> <span class="n">Queue</span> <span class="n">Overview</span><span class="p">)</span>                                               <span class="o">|</span>
+<span class="o">|</span>   <span class="n">o</span> <span class="n">tag_ids</span> <span class="n">overlaps</span> <span class="n">queue</span><span class="s1">&#39;s tag_ids (skipped if the queue has no    |</span>
+<span class="o">|</span>     <span class="n">tags</span> <span class="o">--</span> <span class="n">see</span> <span class="n">the</span> <span class="n">Queue</span> <span class="n">Overview</span><span class="p">)</span>                                  <span class="o">|</span>
 <span class="o">+----------------------------------------------------------------------+</span>
            <span class="o">|</span>
            <span class="n">v</span>
-<span class="n">Step</span> <span class="mi">3</span><span class="p">:</span> <span class="n">Select</span> <span class="n">one</span> <span class="n">agent</span> <span class="p">(</span><span class="n">random</span><span class="p">)</span>
+<span class="n">Step</span> <span class="mi">3</span><span class="p">:</span> <span class="n">Select</span> <span class="n">one</span> <span class="n">matching</span> <span class="n">agent</span> <span class="p">(</span><span class="n">random</span><span class="p">)</span>
 <span class="o">+----------------------------------------------------------------------+</span>
 <span class="o">|</span> <span class="n">Found</span><span class="p">:</span> <span class="n">Agent</span> <span class="n">A</span><span class="p">,</span> <span class="n">Agent</span> <span class="n">C</span><span class="p">,</span> <span class="n">Agent</span> <span class="n">E</span>                                      <span class="o">|</span>
 <span class="o">|</span> <span class="n">Selected</span><span class="p">:</span> <span class="n">Agent</span> <span class="n">C</span> <span class="p">(</span><span class="n">random</span><span class="p">)</span>                                            <span class="o">|</span>
