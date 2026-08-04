@@ -212,7 +212,6 @@ $ go build ./cmd/...
 
 ## action
 ```
-	TypeAgentCall           Type = "agent_call"           // agent-manager. make a all to the agent.
 	TypeAMD                 Type = "amd"                  // call-manager. answering machine detection.
 	TypeAnswer              Type = "answer"               // call-manager. answer the call.
 	TypeConfbridgeJoin      Type = "confbridge_join"      // call-manager. join to the confbridge.

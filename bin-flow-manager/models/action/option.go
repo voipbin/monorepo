@@ -65,11 +65,6 @@ func ValidateAnonymous(anonymous string) bool {
 	return validAnonymousValues[anonymous]
 }
 
-// OptionAgentCall defines action agent_call's option.
-type OptionAgentCall struct {
-	AgentID uuid.UUID `json:"agent_id"` // target agent id.
-}
-
 // OptionAISummary defines action ai_summary's option.
 type OptionAISummary struct {
 	OnEndFlowID   uuid.UUID               `json:"on_end_flow_id,omitempty"` // flow id for the end of recording.
@@ -80,10 +75,10 @@ type OptionAISummary struct {
 
 // OptionAITalk defines action ai_talk's option.
 type OptionAITalk struct {
-	AIID           uuid.UUID              `json:"ai_id,omitempty"`           // Deprecated: use AssistanceType+AssistanceID. Kept for backward compatibility with existing flows.
+	AIID           uuid.UUID               `json:"ai_id,omitempty"`           // Deprecated: use AssistanceType+AssistanceID. Kept for backward compatibility with existing flows.
 	AssistanceType amaicall.AssistanceType `json:"assistance_type,omitempty"` // "ai" or "team"
-	AssistanceID   uuid.UUID              `json:"assistance_id,omitempty"`
-	Duration       int                    `json:"duration,omitempty"` // ai talk duration. seconds
+	AssistanceID   uuid.UUID               `json:"assistance_id,omitempty"`
+	Duration       int                     `json:"duration,omitempty"` // ai talk duration. seconds
 }
 
 // GetAssistanceTypeAndID returns the resolved assistance type and ID.
@@ -97,9 +92,9 @@ func (o *OptionAITalk) GetAssistanceTypeAndID() (amaicall.AssistanceType, uuid.U
 
 // OptionAITask defines action ai_task's option
 type OptionAITask struct {
-	AIID           uuid.UUID              `json:"ai_id,omitempty"`           // Deprecated: use AssistanceType+AssistanceID. Kept for backward compatibility with existing flows.
+	AIID           uuid.UUID               `json:"ai_id,omitempty"`           // Deprecated: use AssistanceType+AssistanceID. Kept for backward compatibility with existing flows.
 	AssistanceType amaicall.AssistanceType `json:"assistance_type,omitempty"` // "ai" or "team"
-	AssistanceID   uuid.UUID              `json:"assistance_id,omitempty"`
+	AssistanceID   uuid.UUID               `json:"assistance_id,omitempty"`
 }
 
 // GetAssistanceTypeAndID returns the resolved assistance type and ID.
