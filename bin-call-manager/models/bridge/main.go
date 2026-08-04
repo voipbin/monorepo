@@ -12,30 +12,51 @@ import (
 )
 
 // Bridge struct represent asterisk's bridge information
+//
+// db tag table (VOIP-1078 squirrel migration, plan §5 B-3 / R-D):
+//
+//	Go field       | column          | conversion
+//	---------------+-----------------+-----------
+//	AsteriskID     | asterisk_id     | -
+//	ID             | id              | -          (varchar(255), NOT a uuid column)
+//	Name           | name            | -
+//	Type           | type            | -
+//	Tech           | tech            | -
+//	Class          | class           | -
+//	Creator        | creator         | -
+//	VideoMode      | video_mode      | -
+//	VideoSourceID  | video_source_id | -
+//	ChannelIDs     | channel_ids     | json       (mandatory: createScanPtr needs it for slices)
+//	ReferenceType  | reference_type  | -
+//	ReferenceID    | reference_id    | uuid       (BINARY(16); without ,uuid the write path
+//	               |                 |             sends a 36-char string, see plan R-C/R-D)
+//	TMCreate       | tm_create       | -          (*time.Time handled by ScanRow)
+//	TMUpdate       | tm_update       | -
+//	TMDelete       | tm_delete       | -
 type Bridge struct {
 	// identity
-	AsteriskID string
-	ID         string
-	Name       string
+	AsteriskID string `db:"asterisk_id"`
+	ID         string `db:"id"`
+	Name       string `db:"name"`
 
 	// info
-	Type    Type
-	Tech    Tech
-	Class   string
-	Creator string
+	Type    Type   `db:"type"`
+	Tech    Tech   `db:"tech"`
+	Class   string `db:"class"`
+	Creator string `db:"creator"`
 
-	VideoMode     string
-	VideoSourceID string
+	VideoMode     string `db:"video_mode"`
+	VideoSourceID string `db:"video_source_id"`
 
-	ChannelIDs []string
+	ChannelIDs []string `db:"channel_ids,json"`
 
 	// reference
-	ReferenceType ReferenceType
-	ReferenceID   uuid.UUID
+	ReferenceType ReferenceType `db:"reference_type"`
+	ReferenceID   uuid.UUID     `db:"reference_id,uuid"`
 
-	TMCreate *time.Time
-	TMUpdate *time.Time
-	TMDelete *time.Time
+	TMCreate *time.Time `db:"tm_create"`
+	TMUpdate *time.Time `db:"tm_update"`
+	TMDelete *time.Time `db:"tm_delete"`
 }
 
 // Matches return true if the given items are the same

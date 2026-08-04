@@ -8,45 +8,79 @@ import (
 )
 
 // Channel struct represent asterisk's channel information
+//
+// db tag table (VOIP-1078 squirrel migration, plan §5 B-3 / R-B / R-D):
+//
+//	Go field           | column        | conversion | note
+//	-------------------+---------------+------------+-----------------------------
+//	ID                 | id            | -          | varchar(255), not a uuid column
+//	AsteriskID         | asterisk_id   | -          |
+//	Name               | name          | -          |
+//	Type               | type          | -          |
+//	Tech               | tech          | -          |
+//	SIPCallID          | sip_call_id   | -          |
+//	SIPTransport       | sip_transport | -          |
+//	SIPData            | sip_data      | json       | map field; NOT normalized on read (R-A)
+//	SourceName         | src_name      | -          | R-B: column name != json tag
+//	SourceNumber       | src_number    | -          | R-B: column name != json tag
+//	DestinationName    | dst_name      | -          | R-B: column name != json tag
+//	DestinationNumber  | dst_number    | -          | R-B: column name != json tag
+//	State              | state         | -          |
+//	Data               | data          | json       | map field; normalized nil -> {} on read
+//	StasisName         | stasis_name   | -          |
+//	StasisData         | stasis_data   | json       | map field; normalized nil -> {} on read
+//	BridgeID           | bridge_id     | -          |
+//	PlaybackID         | playback_id   | -          |
+//	DialResult         | dial_result   | -          |
+//	HangupCause        | hangup_cause  | -          | int column
+//	Direction          | direction     | -          |
+//	MuteDirection      | mute_direction| -          |
+//	TMAnswer/TMRinging/TMEnd/TMCreate/TMUpdate/TMDelete -> same-named datetime(6) columns
+//
+// R-B: the four src/dst columns are historically named `src_*`/`dst_*` in
+// call_channels while the Go json tags say `source_*`/`destination_*`. The db
+// tags below are deliberately divergent from the json tags — do NOT "fix" them
+// to match, that would generate references to non-existent columns.
 type Channel struct {
 	// identity
-	ID         string `json:"id"`
-	AsteriskID string `json:"asterisk_id"`
-	Name       string `json:"name"`
-	Type       Type   `json:"type"`
-	Tech       Tech   `json:"tech"`
+	ID         string `json:"id" db:"id"`
+	AsteriskID string `json:"asterisk_id" db:"asterisk_id"`
+	Name       string `json:"name" db:"name"`
+	Type       Type   `json:"type" db:"type"`
+	Tech       Tech   `json:"tech" db:"tech"`
 
 	// sip information
-	SIPCallID    string            `json:"sip_call_id"`         // sip's call id
-	SIPTransport SIPTransport      `json:"sip_transport"`       // sip's transport
-	SIPData      map[string]string `json:"sip_data"` // sip metadata from kamailio
+	SIPCallID    string            `json:"sip_call_id" db:"sip_call_id"`     // sip's call id
+	SIPTransport SIPTransport      `json:"sip_transport" db:"sip_transport"` // sip's transport
+	SIPData      map[string]string `json:"sip_data" db:"sip_data,json"`      // sip metadata from kamailio
 
 	// source/destination
-	SourceName        string `json:"source_name"`
-	SourceNumber      string `json:"source_number"`
-	DestinationName   string `json:"destination_name"`
-	DestinationNumber string `json:"destination_number"`
+	// NOTE (R-B): db column names intentionally differ from the json tag names.
+	SourceName        string `json:"source_name" db:"src_name"`
+	SourceNumber      string `json:"source_number" db:"src_number"`
+	DestinationName   string `json:"destination_name" db:"dst_name"`
+	DestinationNumber string `json:"destination_number" db:"dst_number"`
 
-	State      ari.ChannelState          `json:"state"`
-	Data       map[string]interface{}    `json:"data"`
-	StasisName string                    `json:"stasis_name"` // stasis name
-	StasisData map[StasisDataType]string `json:"stasis_data"` // stasis data
-	BridgeID   string                    `json:"bridge_id"`
-	PlaybackID string                    `json:"playback_id"` // playback id
+	State      ari.ChannelState          `json:"state" db:"state"`
+	Data       map[string]interface{}    `json:"data" db:"data,json"`
+	StasisName string                    `json:"stasis_name" db:"stasis_name"`      // stasis name
+	StasisData map[StasisDataType]string `json:"stasis_data" db:"stasis_data,json"` // stasis data
+	BridgeID   string                    `json:"bridge_id" db:"bridge_id"`
+	PlaybackID string                    `json:"playback_id" db:"playback_id"` // playback id
 
-	DialResult  string           `json:"dial_result"`
-	HangupCause ari.ChannelCause `json:"hangup_cause"`
+	DialResult  string           `json:"dial_result" db:"dial_result"`
+	HangupCause ari.ChannelCause `json:"hangup_cause" db:"hangup_cause"`
 
-	Direction     Direction     `json:"direction"`
-	MuteDirection MuteDirection `json:"mute_direction"`
+	Direction     Direction     `json:"direction" db:"direction"`
+	MuteDirection MuteDirection `json:"mute_direction" db:"mute_direction"`
 
-	TMAnswer  *time.Time `json:"tm_answer"`
-	TMRinging *time.Time `json:"tm_ringing"`
-	TMEnd     *time.Time `json:"tm_end"`
+	TMAnswer  *time.Time `json:"tm_answer" db:"tm_answer"`
+	TMRinging *time.Time `json:"tm_ringing" db:"tm_ringing"`
+	TMEnd     *time.Time `json:"tm_end" db:"tm_end"`
 
-	TMCreate *time.Time `json:"tm_create"`
-	TMUpdate *time.Time `json:"tm_update"`
-	TMDelete *time.Time `json:"tm_delete"`
+	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
+	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`
+	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
 }
 
 // Tech represent channel's technology
