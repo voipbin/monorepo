@@ -317,29 +317,34 @@ func (h *handler) BridgeAddChannelID(ctx context.Context, id, channelID string) 
 	return nil
 }
 
+// buildBridgeRemoveChannelID builds the BridgeRemoveChannelID statement.
+//
+// WHY squirrel.Expr: squirrel has no builder form for MySQL JSON functions.
+// This site nests json_remove/replace/json_search to delete an array element by
+// value, which has no builder equivalent at all. Sanctioned by
+// docs/conventions/database.md §7.1. Precedent:
+// bin-agent-manager/pkg/dbhandler/agent.go:709 (MySQL JSON function + ? arg +
+// PlaceholderFormat(Question)).
+func buildBridgeRemoveChannelID(id, channelID string, tmUpdate any) squirrel.UpdateBuilder {
+	return squirrel.
+		Update(bridgeTable).
+		Set(
+			string(bridge.FieldChannelIDs),
+			squirrel.Expr("json_remove(channel_ids, replace(json_search(channel_ids, 'one', ?), '\"', ''))", channelID),
+		).
+		Set(string(bridge.FieldTMUpdate), tmUpdate).
+		Where(squirrel.Eq{string(bridge.FieldID): id}).
+		PlaceholderFormat(squirrel.Question)
+}
+
 // BridgeRemoveChannelID removes the channel from the bridge.
 func (h *handler) BridgeRemoveChannelID(ctx context.Context, id, channelID string) error {
-	// prepare
-	q := `
-	update call_bridges set
-		channel_ids = json_remove(
-			channel_ids, replace(
-				json_search(
-					channel_ids,
-					'one',
-					?
-				),
-				'"',
-				''
-			)
-		),
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err := h.db.Exec(q, channelID, h.utilHandler.TimeNow(), id)
+	q, args, err := buildBridgeRemoveChannelID(id, channelID, h.utilHandler.TimeNow()).ToSql()
 	if err != nil {
+		return fmt.Errorf("could not build query. BridgeRemoveChannelID. err: %v", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, q, args...); err != nil {
 		return fmt.Errorf("could not execute. BridgeRemoveChannelID. err: %v", err)
 	}
 

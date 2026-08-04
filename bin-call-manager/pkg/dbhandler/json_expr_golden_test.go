@@ -62,8 +62,23 @@ func Test_goldenBridgeJSONExpr(t *testing.T) {
 	bridgeID := "8a0c2c1a-0000-11f0-9e2b-0242ac110002"
 
 	addSQL, addArgs := mustToSQL(t, buildBridgeAddChannelID(bridgeID, channelID, tmUpdate))
+	removeSQL, removeArgs := mustToSQL(t, buildBridgeRemoveChannelID(bridgeID, channelID, tmUpdate))
 
 	runGoldenCases(t, []goldenCase{
+		{
+			name: "BridgeRemoveChannelID",
+			sql:  removeSQL,
+			args: removeArgs,
+			// pre-migration raw SQL:
+			//   update call_bridges set
+			//     channel_ids = json_remove(
+			//       channel_ids, replace(json_search(channel_ids, 'one', ?), '"', '')
+			//     ),
+			//     tm_update = ?
+			//   where id = ?
+			wantSQL:  `UPDATE call_bridges SET channel_ids = json_remove(channel_ids, replace(json_search(channel_ids, 'one', ?), '"', '')), tm_update = ? WHERE id = ?`,
+			wantArgs: []any{channelID, tmUpdate, bridgeID},
+		},
 		{
 			name: "BridgeAddChannelID",
 			sql:  addSQL,
