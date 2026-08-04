@@ -8,11 +8,17 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/Masterminds/squirrel"
+
 	"monorepo/bin-call-manager/models/ari"
 	"monorepo/bin-call-manager/models/channel"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/pkg/errors"
+)
+
+var (
+	channelTable = "call_channels"
 )
 
 const (
@@ -333,13 +339,46 @@ func (h *handler) ChannelSetData(ctx context.Context, id string, data map[string
 	return nil
 }
 
+// buildChannelSetDataItem builds the ChannelSetDataItem statement.
+//
+// WHY squirrel.Expr: MySQL json_set has no squirrel builder form; see
+// json_expr.go for the shared rationale and precedent citations.
+//
+// SECURITY (plan §6 item 1): the pre-migration statement interpolated the key
+// straight into the SQL text via fmt.Sprintf with no escaping —
+// "json_set(data, '$.%s', ?)" — which is a SQL injection sink. The key is not a
+// trusted constant: pkg/arieventhandler/ari_channel.go:209 passes the ARI
+// ChannelVarset event's variable name straight through. The path is now bound
+// as a query argument instead, the same way ConfbridgeAddChannelCallID already
+// binds its path.
+//
+// The path is also quoted as $."key" rather than the previous bare $.key, again
+// matching ConfbridgeAddChannelCallID. For ordinary identifier keys the two are
+// equivalent. They differ only for a key containing '.' or other path
+// metacharacters, where the bare form silently addressed a NESTED path (e.g.
+// key "a.b" wrote data.a.b) while the quoted form writes the literal key "a.b"
+// — the intended meaning of "set this data item".
+func buildChannelSetDataItem(id, key string, value any, tmUpdate any) squirrel.UpdateBuilder {
+	path := fmt.Sprintf("$.%q", key)
+	return squirrel.
+		Update(channelTable).
+		Set(
+			string(channel.FieldData),
+			squirrel.Expr("json_set("+string(channel.FieldData)+", ?, ?)", path, value),
+		).
+		Set(string(channel.FieldTMUpdate), tmUpdate).
+		Where(squirrel.Eq{string(channel.FieldID): id}).
+		PlaceholderFormat(squirrel.Question)
+}
+
 // ChannelSetDataItem sets the item into the channel's data
 func (h *handler) ChannelSetDataItem(ctx context.Context, id string, key string, value interface{}) error {
-	//prepare
-	q := fmt.Sprintf("update call_channels set data = json_set(data, '$.%s', ?), tm_update = ? where id = ?", key)
-
-	_, err := h.db.Exec(q, value, h.utilHandler.TimeNow(), id)
+	q, args, err := buildChannelSetDataItem(id, key, value, h.utilHandler.TimeNow()).ToSql()
 	if err != nil {
+		return fmt.Errorf("could not build query. ChannelSetDataItem. err: %v", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, q, args...); err != nil {
 		return fmt.Errorf("could not execute. ChannelSetDataItem. err: %v", err)
 	}
 

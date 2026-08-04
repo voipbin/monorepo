@@ -233,3 +233,33 @@ func Test_goldenConfbridgeJSONExpr(t *testing.T) {
 		},
 	})
 }
+
+func Test_goldenChannelSetDataItemExpr(t *testing.T) {
+	tmUpdate := "2026-08-04 01:02:03.000000"
+	id := "channel-xyz"
+
+	setSQL, setArgs := mustToSQL(t, buildChannelSetDataItem(id, "sip_pai", "alice", tmUpdate))
+
+	// The pre-migration SQL interpolated the key: "json_set(data, '$.<key>', ?)".
+	// It is now a bound argument, which is both the injection fix (plan §6
+	// item 1) and the reason the arg list gained a leading path element.
+	injectSQL, injectArgs := mustToSQL(t, buildChannelSetDataItem(id, `a'); drop table call_channels; --`, "x", tmUpdate))
+
+	runGoldenCases(t, []goldenCase{
+		{
+			name:     "ChannelSetDataItem",
+			sql:      setSQL,
+			args:     setArgs,
+			wantSQL:  "UPDATE call_channels SET data = json_set(data, ?, ?), tm_update = ? WHERE id = ?",
+			wantArgs: []any{`$."sip_pai"`, "alice", tmUpdate, id},
+		},
+		{
+			// A hostile key must not alter the SQL text at all; it stays a value.
+			name:     "ChannelSetDataItem_injectionAttemptStaysAnArgument",
+			sql:      injectSQL,
+			args:     injectArgs,
+			wantSQL:  "UPDATE call_channels SET data = json_set(data, ?, ?), tm_update = ? WHERE id = ?",
+			wantArgs: []any{`$."a'); drop table call_channels; --"`, "x", tmUpdate, id},
+		},
+	})
+}
