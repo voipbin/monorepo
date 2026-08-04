@@ -459,6 +459,33 @@ func Test_ConfbridgeSetFlags(t *testing.T) {
 				TMDelete:         nil,
 			},
 		},
+		{
+			// R-A: nil flags must be normalized to an empty, non-nil slice
+			// before being written, so the stored JSON is "[]" (matching
+			// pre-migration behavior) and not "null". Also confirms
+			// ConfbridgeGet's own nil-normalization on the read side.
+			name: "nil flags",
+			confbridge: &confbridge.Confbridge{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f3f0f2be-0a2b-11ee-9f4c-a3b1c1a0e001"),
+				},
+			},
+			flags: nil,
+
+			responseCurTime: testhelper.TimePtr("2023-01-18T03:22:18.995000Z"),
+			expectRes: &confbridge.Confbridge{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f3f0f2be-0a2b-11ee-9f4c-a3b1c1a0e001"),
+				},
+				Flags:            []confbridge.Flag{},
+				ChannelCallIDs:   map[string]uuid.UUID{},
+				RecordingIDs:     []uuid.UUID{},
+				ExternalMediaIDs: []uuid.UUID{},
+				TMCreate: testhelper.TimePtr("2023-01-18T03:22:18.995000Z"),
+				TMUpdate: testhelper.TimePtr("2023-01-18T03:22:18.995000Z"),
+				TMDelete:         nil,
+			},
+		},
 	}
 
 	for _, tt := range tests {

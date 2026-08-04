@@ -94,3 +94,16 @@ package dbhandler
 // Write sites marked "YES" above normalize through normalizeSlice below so the
 // decision is made in one named, greppable place instead of an inline nil check
 // repeated per call site.
+
+// normalizeSlice returns an empty, non-nil slice when s is nil, so the value
+// marshals to the JSON literal "[]" rather than "null" (map path) or SQL NULL
+// (struct path with a ,json tag).
+//
+// Only call this at sites marked "YES" in the write table above. Adding it to a
+// "NO" site is a behavior change, not a cleanup.
+func normalizeSlice[T any](s []T) []T {
+	if s == nil {
+		return []T{}
+	}
+	return s
+}

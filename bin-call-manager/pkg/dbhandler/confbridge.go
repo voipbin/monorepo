@@ -3,12 +3,10 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
 
 	"github.com/Masterminds/squirrel"
 	uuid "github.com/gofrs/uuid"
-	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
@@ -448,32 +446,14 @@ func (h *handler) ConfbridgeRemoveChannelCallID(ctx context.Context, id uuid.UUI
 
 // ConfbridgeSetFlags sets the confbridge's flags
 func (h *handler) ConfbridgeSetFlags(ctx context.Context, id uuid.UUID, flags []confbridge.Flag) error {
-	if flags == nil {
-		flags = []confbridge.Flag{}
-	}
-
-	tmp, err := json.Marshal(flags)
-	if err != nil {
-		return errors.Wrap(err, "could not marshal the flags")
-	}
-
-	q := `
-	update
-		call_confbridges
-	set
-		flags = ?,
-		tm_update = ?
-	where
-		id = ?
-	`
-
-	_, err = h.db.Exec(q, tmp, h.utilHandler.TimeNow(), id.Bytes())
-	if err != nil {
-		return fmt.Errorf("could not execute. ConfbridgeSetFlags. err: %v", err)
-	}
-
-	_ = h.confbridgeUpdateToCache(ctx, id)
-	return nil
+	// normalizeSlice preserves this site's pre-migration behavior: a nil flags
+	// slice must be stored as the JSON literal "[]", not "null". See the R-A
+	// write table in normalization.go ("confbridge.Flags | ConfbridgeSetFlags |
+	// YES nil->[]"). Without it, the map-based PrepareFields path would
+	// json.Marshal the nil slice to "null".
+	return h.ConfbridgeUpdate(ctx, id, map[confbridge.Field]any{
+		confbridge.FieldFlags: normalizeSlice(flags),
+	})
 }
 
 // ConfbridgeSetStatus sets the status

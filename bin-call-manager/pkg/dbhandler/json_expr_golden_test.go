@@ -3,6 +3,8 @@ package dbhandler
 import (
 	"reflect"
 	"testing"
+
+	"github.com/gofrs/uuid"
 )
 
 // Golden ToSql() tests for the MySQL JSON-function squirrel.Expr call sites
@@ -73,6 +75,41 @@ func Test_goldenBridgeJSONExpr(t *testing.T) {
 			//   where id = ?
 			wantSQL:  "UPDATE call_bridges SET channel_ids = json_array_append(channel_ids, '$', ?), tm_update = ? WHERE id = ?",
 			wantArgs: []any{channelID, tmUpdate, bridgeID},
+		},
+	})
+}
+
+func Test_goldenGroupcallDecreaseCountExpr(t *testing.T) {
+	tmUpdate := "2026-08-04 01:02:03.000000"
+	id := uuid.FromStringOrNil("2a3b4c5d-0000-11f0-9e2b-0242ac110002")
+
+	callSQL, callArgs := mustToSQL(t, buildGroupcallDecreaseCount("call_count", id, tmUpdate))
+	groupSQL, groupArgs := mustToSQL(t, buildGroupcallDecreaseCount("groupcall_count", id, tmUpdate))
+
+	runGoldenCases(t, []goldenCase{
+		{
+			name: "GroupcallDecreaseCallCount",
+			sql:  callSQL,
+			args: callArgs,
+			// pre-migration raw SQL:
+			//   update call_groupcalls set
+			//     call_count = call_count - 1,
+			//     tm_update = ?
+			//   where id = ?
+			wantSQL:  "UPDATE call_groupcalls SET call_count = call_count - 1, tm_update = ? WHERE id = ?",
+			wantArgs: []any{tmUpdate, id.Bytes()},
+		},
+		{
+			name: "GroupcallDecreaseGroupcallCount",
+			sql:  groupSQL,
+			args: groupArgs,
+			// pre-migration raw SQL:
+			//   update call_groupcalls set
+			//     groupcall_count = groupcall_count - 1,
+			//     tm_update = ?
+			//   where id = ?
+			wantSQL:  "UPDATE call_groupcalls SET groupcall_count = groupcall_count - 1, tm_update = ? WHERE id = ?",
+			wantArgs: []any{tmUpdate, id.Bytes()},
 		},
 	})
 }
