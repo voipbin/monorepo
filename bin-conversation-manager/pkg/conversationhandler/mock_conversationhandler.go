@@ -90,6 +90,20 @@ func (mr *MockConversationHandlerMockRecorder) EmailEventSent(ctx, e any) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmailEventSent", reflect.TypeOf((*MockConversationHandler)(nil).EmailEventSent), ctx, e)
 }
 
+// EmailEventUpdated mocks base method.
+func (m *MockConversationHandler) EmailEventUpdated(ctx context.Context, e *email.Email) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EmailEventUpdated", ctx, e)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EmailEventUpdated indicates an expected call of EmailEventUpdated.
+func (mr *MockConversationHandlerMockRecorder) EmailEventUpdated(ctx, e any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmailEventUpdated", reflect.TypeOf((*MockConversationHandler)(nil).EmailEventUpdated), ctx, e)
+}
+
 // Event mocks base method.
 func (m *MockConversationHandler) Event(ctx context.Context, conversationType conversation.Type, data []byte) error {
 	m.ctrl.T.Helper()

@@ -2,6 +2,7 @@ package messagehandler
 
 import (
 	"context"
+	"errors"
 	reflect "reflect"
 	"testing"
 
@@ -24,6 +25,7 @@ import (
 	"monorepo/bin-conversation-manager/pkg/smshandler"
 	"monorepo/bin-conversation-manager/pkg/whatsapphandler"
 
+	ememail "monorepo/bin-email-manager/models/email"
 	wcmessage "monorepo/bin-webchat-manager/models/message"
 )
 
@@ -238,6 +240,140 @@ func Test_Send_sendWebchat(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectMessage, res)
 			}
 		})
+	}
+}
+
+func Test_Send_sendEmail(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		conversation *conversation.Conversation
+		text         string
+
+		responseEmail *ememail.Email
+	}{
+		{
+			name: "email type",
+
+			conversation: &conversation.Conversation{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("e1a9c2d0-1234-11f0-aaaa-aaaaaaaaaaaa"),
+					CustomerID: uuid.FromStringOrNil("e2b0c3d1-1234-11f0-bbbb-bbbbbbbbbbbb"),
+				},
+				Type: conversation.TypeEmail,
+				Self: commonaddress.Address{
+					Type:   commonaddress.TypeEmail,
+					Target: "sender@voipbin.net",
+				},
+				Peer: commonaddress.Address{
+					Type:   commonaddress.TypeEmail,
+					Target: "customer@example.com",
+				},
+			},
+			text: "Hello from voipbin!",
+
+			responseEmail: &ememail.Email{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e4e2f5a3-1234-11f0-dddd-dddddddddddd"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			h := &messageHandler{
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+				reqHandler:    mockReq,
+			}
+			ctx := context.Background()
+
+			// sendEmail delegates the send to email-manager and does not touch
+			// the DB itself -- no MessageCreate/MessageGet call is expected
+			// here (mc.Finish asserts this). The durable message is created
+			// asynchronously by conversationHandler.EmailEventSent.
+			mockReq.EXPECT().EmailV1EmailSend(
+				ctx,
+				tt.conversation.CustomerID,
+				uuid.Nil,
+				[]commonaddress.Address{tt.conversation.Peer},
+				"",
+				tt.text,
+				nil,
+			).Return(tt.responseEmail, nil)
+
+			normalizedPeer, _ := commonaddress.NormalizeTarget(tt.conversation.Peer.Type, tt.conversation.Peer.Target)
+			expectMessage := &message.Message{
+				Identity: commonidentity.Identity{
+					ID:         tt.responseEmail.ID,
+					CustomerID: tt.conversation.CustomerID,
+				},
+				ConversationID: tt.conversation.ID,
+				Direction:      message.DirectionOutgoing,
+				Status:         message.StatusProgressing,
+				ReferenceType:  message.ReferenceTypeEmail,
+				ReferenceID:    tt.responseEmail.ID,
+				TransactionID:  tt.responseEmail.ID.String() + ":" + normalizedPeer,
+				Text:           tt.text,
+				Source:         tt.conversation.Self,
+				Destination:    tt.conversation.Peer,
+			}
+
+			res, err := h.Send(ctx, tt.conversation, tt.text, nil)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, expectMessage) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", expectMessage, res)
+			}
+		})
+	}
+}
+
+func Test_Send_sendEmail_sendError(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &messageHandler{
+		utilHandler:   mockUtil,
+		db:            mockDB,
+		notifyHandler: mockNotify,
+		reqHandler:    mockReq,
+	}
+	ctx := context.Background()
+
+	cv := &conversation.Conversation{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("e1a9c2d0-1234-11f0-aaaa-aaaaaaaaaaaa"),
+			CustomerID: uuid.FromStringOrNil("e2b0c3d1-1234-11f0-bbbb-bbbbbbbbbbbb"),
+		},
+		Type: conversation.TypeEmail,
+		Self: commonaddress.Address{Type: commonaddress.TypeEmail, Target: "sender@voipbin.net"},
+		Peer: commonaddress.Address{Type: commonaddress.TypeEmail, Target: "customer@example.com"},
+	}
+
+	mockReq.EXPECT().EmailV1EmailSend(
+		ctx, cv.CustomerID, uuid.Nil, []commonaddress.Address{cv.Peer}, "", "hi", nil,
+	).Return(nil, errors.New("boom"))
+
+	res, err := h.Send(ctx, cv, "hi", nil)
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: nil, res: %v", res)
 	}
 }
 

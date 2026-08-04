@@ -62,6 +62,9 @@ SubscribeHandler (`pkg/subscribehandler/`) consumes:
 | Queue | Event | Action |
 |-------|-------|--------|
 | `bin-manager.message-manager.event` | `message_created` | Create or update conversation record; create incoming message; publish conversation/message events |
+| `bin-manager.email-manager.event` | `email_created` | Record the sent email as an outgoing conversation message (status=progressing); one message per destination, keyed by a composite `email.ID + peer` transaction ID |
+| `bin-manager.email-manager.event` | `email_updated` | Reconcile the matching outgoing message's status from email-manager's own provider-webhook-driven lifecycle (`delivered`/`open`/`click`/`unsubscribe`/`spamreport` -> done; `bounce`/`dropped` -> failed); non-terminal statuses and already-terminal messages are no-ops |
+| `bin-manager.webchat-manager.event` | `webchat_message_created` | Mirror the webchat-manager message onto the conversation (mirrors the message-manager pattern; unmarshaled inside `conversationHandler.Event`) |
 
 ## Events Published
 

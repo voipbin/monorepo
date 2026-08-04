@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"strings"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
+
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -38,6 +41,9 @@ func (h *messageHandler) Send(ctx context.Context, cv *conversation.Conversation
 
 	case conversation.TypeWebchat:
 		return h.sendWebchat(ctx, cv, text)
+
+	case conversation.TypeEmail:
+		return h.sendEmail(ctx, cv, text)
 
 	default:
 		log.Errorf("Unsupported reference type. reference_type: %s", cv.Type)
@@ -209,6 +215,63 @@ func (h *messageHandler) sendWebchat(ctx context.Context, cv *conversation.Conve
 	}
 
 	return res, nil
+}
+
+// sendEmail sends the message via bin-email-manager, the sole owner of email
+// delivery, provider selection, and account credentials.
+//
+// conversation-manager is a broker for email, not a source of truth: it does
+// not create or persist the outgoing message itself here. The durable
+// conversation message is created asynchronously by
+// conversationHandler.EmailEventSent when it receives email-manager's
+// email_created event for this send, and its status is later reconciled by
+// EmailEventUpdated from email-manager's email_updated event (see
+// pkg/conversationhandler/email.go). The *message.Message returned here is a
+// non-persisted projection for the immediate caller; the durable row that
+// eventually lands in the conversation carries its own DB-assigned ID.
+//
+// Because that DB-assigned ID does not exist yet, the projection's ID is set
+// to the email's own ID (also carried in ReferenceID) rather than left as
+// the zero UUID: callers (e.g. bin-api-manager's send response) must not see
+// a "00000000-...-0000" id. This is a synthetic stand-in, not the eventual
+// message row's primary key -- look the message up via the conversation's
+// message list (or the shared TransactionID) once EmailEventSent has
+// materialized it, not by re-fetching this ID.
+func (h *messageHandler) sendEmail(ctx context.Context, cv *conversation.Conversation, text string) (*message.Message, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "sendEmail",
+		"conversation": cv,
+		"text":         text,
+	})
+
+	source, destination := DeriveEndpoints(cv, message.DirectionOutgoing)
+
+	res, err := h.reqHandler.EmailV1EmailSend(ctx, cv.CustomerID, uuid.Nil, []commonaddress.Address{destination}, "", text, nil)
+	if err != nil {
+		log.Errorf("Could not send the email. err: %v", err)
+		return nil, err
+	}
+
+	// Same composite key EmailEventSent/EmailEventUpdated use to correlate the
+	// eventually-materialized conversation message to this email.
+	normalizedPeer, _ := commonaddress.NormalizeTarget(destination.Type, destination.Target)
+	txID := res.ID.String() + ":" + normalizedPeer
+
+	return &message.Message{
+		Identity: commonidentity.Identity{
+			ID:         res.ID,
+			CustomerID: cv.CustomerID,
+		},
+		ConversationID: cv.ID,
+		Direction:      message.DirectionOutgoing,
+		Status:         message.StatusProgressing,
+		ReferenceType:  message.ReferenceTypeEmail,
+		ReferenceID:    res.ID,
+		TransactionID:  txID,
+		Text:           text,
+		Source:         source,
+		Destination:    destination,
+	}, nil
 }
 
 // sendLine sends the message to the line type of conversation.
