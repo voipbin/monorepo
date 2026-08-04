@@ -344,8 +344,8 @@ components:
           description: "Agent's endpoint addresses for receiving calls."
         direct_hash:
           type: string
-          description: "Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field."
-          example: "a8f3b2c1d4e5"
+          description: "The direct hash for direct access via SIP URI sip:<direct_hash>@sip.voipbin.net (the \"direct.\" prefix is already included in the value, e.g. \"direct.a1b2c3d4e5f6\"). Returned from the resource's `direct_hash` field."
+          example: "direct.a1b2c3d4e5f6"
         tm_create:
           type: string
           format: date-time
@@ -2161,8 +2161,8 @@ components:
           example: ["all"]
         direct_hash:
           type: string
-          description: "Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field."
-          example: "a8f3b2c1d4e5"
+          description: "The direct hash for direct access via SIP URI sip:<direct_hash>@sip.voipbin.net (the \"direct.\" prefix is already included in the value, e.g. \"direct.a1b2c3d4e5f6\"). Returned from the resource's `direct_hash` field."
+          example: "direct.a1b2c3d4e5f6"
         tm_create:
           type: string
           format: date-time
@@ -2231,8 +2231,8 @@ components:
             department: "support"
         direct_hash:
           type: string
-          description: "Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field."
-          example: "a8f3b2c1d4e5"
+          description: "The direct hash for direct access via SIP URI sip:<direct_hash>@sip.voipbin.net (the \"direct.\" prefix is already included in the value, e.g. \"direct.a1b2c3d4e5f6\"). Returned from the resource's `direct_hash` field."
+          example: "direct.a1b2c3d4e5f6"
         tm_create:
           type: string
           format: date-time
@@ -2478,8 +2478,8 @@ components:
           $ref: '#/components/schemas/WebchatManagerWidgetThemeConfig'
         direct_hash:
           type: string
-          description: "Hash used by the embed script (data-hash attribute) to authenticate anonymous visitors via POST /auth/boot. Returned on every response (GET, List, Create, Update, direct_hash_regenerate) -- this value is embedded directly in the customer's public website HTML by design, so it is not a traditional secret; hiding it from GET responses would only make it harder for the customer's own admins to retrieve it."
-          example: "a8f3b2c1d4e5"
+          description: "Hash used by the embed script (data-hash attribute) to authenticate anonymous visitors via POST /auth/boot. The value already includes the \"direct.\" prefix (e.g. \"direct.a1b2c3d4e5f6\"). Returned on every response (GET, List, Create, Update, direct_hash_regenerate) -- this value is embedded directly in the customer's public website HTML by design, so it is not a traditional secret; hiding it from GET responses would only make it harder for the customer's own admins to retrieve it."
+          example: "direct.a1b2c3d4e5f6"
         tm_create:
           type: string
           format: date-time
@@ -2802,6 +2802,7 @@ components:
       enum:
         - all
         - connect_call
+        - create_call
         - get_aicall_messages
         - get_variables
         - search_knowledge
@@ -2811,9 +2812,18 @@ components:
         - stop_flow
         - stop_media
         - stop_service
+        - get_correlation
+        - get_resource
+        - describe_action
+        - case_create
+        - get_contact_interactions
+        - get_conversation_content
+        - get_related_cases
+        - get_case_notes
       x-enum-varnames:
         - AIManagerToolNameAll
         - AIManagerToolNameConnectCall
+        - AIManagerToolNameCreateCall
         - AIManagerToolNameGetAicallMessages
         - AIManagerToolNameGetVariables
         - AIManagerToolNameSearchKnowledge
@@ -2823,6 +2833,14 @@ components:
         - AIManagerToolNameStopFlow
         - AIManagerToolNameStopMedia
         - AIManagerToolNameStopService
+        - AIManagerToolNameGetCorrelation
+        - AIManagerToolNameGetResource
+        - AIManagerToolNameDescribeAction
+        - AIManagerToolNameCaseCreate
+        - AIManagerToolNameGetContactInteractions
+        - AIManagerToolNameGetConversationContent
+        - AIManagerToolNameGetRelatedCases
+        - AIManagerToolNameGetCaseNotes
 
     AIManagerAIcall:
       type: object
@@ -3577,8 +3595,8 @@ components:
             x-go-type: string
         direct_hash:
           type: string
-          description: "Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field."
-          example: "a8f3b2c1d4e5"
+          description: "The direct hash for direct access via SIP URI sip:<direct_hash>@sip.voipbin.net (the \"direct.\" prefix is already included in the value, e.g. \"direct.a1b2c3d4e5f6\"). Returned from the resource's `direct_hash` field."
+          example: "direct.a1b2c3d4e5f6"
         tm_end:
           type: string
           format: date-time
@@ -4443,13 +4461,17 @@ components:
       description: Account lifecycle status.
       example: "active"
       enum:
+        - initial
         - active
         - frozen
         - deleted
+        - expired
       x-enum-varnames:
+        - CustomerManagerCustomerStatusInitial
         - CustomerManagerCustomerStatusActive
         - CustomerManagerCustomerStatusFrozen
         - CustomerManagerCustomerStatusDeleted
+        - CustomerManagerCustomerStatusExpired
     CustomerManagerCustomerIdentityVerificationStatus:
       type: string
       description: "Customer's identity verification status. Determines access to PSTN number purchases and outbound PSTN calls."
@@ -5657,8 +5679,8 @@ components:
             $ref: '#/components/schemas/FlowManagerAction'
         direct_hash:
           type: string
-          description: "Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field."
-          example: "a8f3b2c1d4e5"
+          description: "The direct hash for direct access via SIP URI sip:<direct_hash>@sip.voipbin.net (the \"direct.\" prefix is already included in the value, e.g. \"direct.a1b2c3d4e5f6\"). Returned from the resource's `direct_hash` field."
+          example: "direct.a1b2c3d4e5f6"
         on_complete_flow_id:
           type: string
           format: uuid
@@ -6196,8 +6218,8 @@ components:
           example: ["b1a2c3d4-e5f6-7890-abcd-ef1234567890"]
         direct_hash:
           type: string
-          description: "Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field."
-          example: "a8f3b2c1d4e5"
+          description: "The direct hash for direct access via SIP URI sip:<direct_hash>@sip.voipbin.net (the \"direct.\" prefix is already included in the value, e.g. \"direct.a1b2c3d4e5f6\"). Returned from the resource's `direct_hash` field."
+          example: "direct.a1b2c3d4e5f6"
         wait_flow_id:
           type: string
           format: uuid
@@ -6502,8 +6524,8 @@ components:
           example: "s3cur3P@ss"
         direct_hash:
           type: string
-          description: "Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field."
-          example: "a8f3b2c1d4e5"
+          description: "The direct hash for direct access via SIP URI sip:<direct_hash>@sip.voipbin.net (the \"direct.\" prefix is already included in the value, e.g. \"direct.a1b2c3d4e5f6\"). Returned from the resource's `direct_hash` field."
+          example: "direct.a1b2c3d4e5f6"
         tm_create:
           type: string
           format: date-time
@@ -6668,12 +6690,12 @@ components:
           type: object
           additionalProperties: true
           nullable: true
-          description: "Carrier-specific resource identifiers stored during automated setup. For Telnyx providers created via `POST /providers/setup`, contains `telnyx_profile_id`, `telnyx_connection_id`, and `telnyx_ip_ids`. Read-only — populated automatically by the setup endpoint. Empty object `{}` for providers created manually via `POST /providers`."
+          description: "Carrier-specific resource identifiers stored during automated setup. For Telnyx providers created via `POST /providers/setup`, contains `telnyx_profile_id`, `telnyx_connection_id`, `telnyx_fqdn_id`, and `telnyx_fqdn`. Read-only — populated automatically by the setup endpoint. Empty object `{}` for providers created manually via `POST /providers`."
           example:
             telnyx_profile_id: "2944757397136082899"
             telnyx_connection_id: "2944757397198982899"
-            telnyx_ip_ids:
-              - "2944757397261882899"
+            telnyx_fqdn_id: "2944757397261882899"
+            telnyx_fqdn: "sip.voipbin.net"
         name:
           type: string
           description: "The name of the provider."
