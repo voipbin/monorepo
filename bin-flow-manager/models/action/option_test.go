@@ -24,17 +24,6 @@ func Test_ConvertOption(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "OptionAgentCall",
-
-			option: OptionAgentCall{
-				AgentID: uuid.FromStringOrNil("35b8c7b8-111b-11f0-93a9-7b24e0bd5cb6"),
-			},
-
-			expectedRes: map[string]any{
-				"agent_id": "35b8c7b8-111b-11f0-93a9-7b24e0bd5cb6",
-			},
-		},
-		{
 			name: "OptionAISummary",
 
 			option: OptionAISummary{
@@ -116,18 +105,6 @@ func Test_ParseOption(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "OptionAgentCall",
-
-			option: map[string]any{
-				"agent_id": "d45f391c-111e-11f0-bfe0-cf4ad671ba02",
-			},
-			target: &OptionAgentCall{},
-
-			expectRes: &OptionAgentCall{
-				AgentID: uuid.FromStringOrNil("d45f391c-111e-11f0-bfe0-cf4ad671ba02"),
-			},
-		},
-		{
 			name: "OptionAISummary",
 
 			option: map[string]any{
@@ -156,42 +133,6 @@ func Test_ParseOption(t *testing.T) {
 
 			if !reflect.DeepEqual(tt.expectRes, tt.target) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, tt.target)
-			}
-		})
-	}
-}
-
-func Test_marshalOptionAgentCall(t *testing.T) {
-	type test struct {
-		name string
-
-		option []byte
-
-		expectedRes OptionAgentCall
-	}
-
-	tests := []test{
-		{
-			name: "normal",
-
-			option: []byte(`{"agent_id": "40fa82a8-951b-11ec-ace0-9fa349fe2070"}`),
-
-			expectedRes: OptionAgentCall{
-				AgentID: uuid.FromStringOrNil("40fa82a8-951b-11ec-ace0-9fa349fe2070"),
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-
-			res := OptionAgentCall{}
-			if err := json.Unmarshal(tt.option, &res); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if !reflect.DeepEqual(tt.expectedRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
 	}
