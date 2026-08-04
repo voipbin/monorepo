@@ -411,7 +411,24 @@ func (h *server) PutCampaignsIdNextCampaignId(c *gin.Context, id string) {
 		return
 	}
 
-	nextCampaignID := uuid.FromStringOrNil(req.NextCampaignId)
+	// next_campaign_id's zero value (uuid.Nil) is a valid, meaningful
+	// domain value here -- it means "unchain this campaign from any next
+	// campaign" (see bin-campaign-manager's isValidNextCampaignID, which
+	// explicitly treats uuid.Nil as valid), and this endpoint is the only
+	// way to set it. So an empty/omitted next_campaign_id must NOT be
+	// rejected -- only a syntactically invalid, non-empty value should be,
+	// since that's a genuine client error rather than an intentional
+	// unchain request.
+	nextCampaignID := uuid.Nil
+	if req.NextCampaignId != "" {
+		var errParse error
+		nextCampaignID, errParse = uuid.FromString(req.NextCampaignId)
+		if errParse != nil {
+			log.Errorf("Could not parse next_campaign_id. err: %v", errParse)
+			abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ARGUMENT", "next_campaign_id is not a valid UUID."))
+			return
+		}
+	}
 
 	res, err := h.serviceHandler.CampaignUpdateNextCampaignID(c.Request.Context(), a, target, nextCampaignID)
 	if err != nil {

@@ -32,6 +32,30 @@ func (h *server) PostOutdials(c *gin.Context) {
 	}
 
 	campaignID := uuid.FromStringOrNil(req.CampaignId)
+	// OpenAPI marks campaign_id/name/detail/data as required, but BindJSON
+	// doesn't enforce presence on string fields (an omitted field just binds
+	// to the zero value). Guard explicitly so the spec's contract is
+	// actually honored.
+	if campaignID == uuid.Nil {
+		log.Error("campaign_id is required.")
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ARGUMENT", "campaign_id is required."))
+		return
+	}
+	if req.Name == "" {
+		log.Error("name is required.")
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ARGUMENT", "name is required."))
+		return
+	}
+	if req.Detail == "" {
+		log.Error("detail is required.")
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ARGUMENT", "detail is required."))
+		return
+	}
+	if req.Data == "" {
+		log.Error("data is required.")
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ARGUMENT", "data is required."))
+		return
+	}
 
 	res, err := h.serviceHandler.OutdialCreate(c.Request.Context(), a, campaignID, req.Name, req.Detail, req.Data)
 	if err != nil {
@@ -304,6 +328,39 @@ func (h *server) PostOutdialsIdTargets(c *gin.Context, id string) {
 	destination2 := ConvertCommonAddress(req.Destination2)
 	destination3 := ConvertCommonAddress(req.Destination3)
 	destination4 := ConvertCommonAddress(req.Destination4)
+
+	// OpenAPI marks name/detail/data and all 5 destination_N fields as
+	// required, but BindJSON doesn't enforce presence on a struct field --
+	// an omitted destination_N silently binds to a zero-value CommonAddress.
+	// name/detail/data are enforced as the spec states (must be non-empty).
+	// For the 5 destination_N fields, this deliberately enforces a looser
+	// rule than the spec's literal "all 5 required" -- only that at least
+	// one destination has a target -- since the domain model treats each
+	// destination_N as an independent, nullable retry slot (see
+	// bin-outdial-manager's outdial target dbhandler) and a target-less
+	// destination has no reachable endpoint anyway. The spec's `required`
+	// list overstates the actual constraint; tracked in VOIP-1308 to relax
+	// the spec once the oapi-codegen regeneration blocker is resolved.
+	if req.Name == "" {
+		log.Error("name is required.")
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ARGUMENT", "name is required."))
+		return
+	}
+	if req.Detail == "" {
+		log.Error("detail is required.")
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ARGUMENT", "detail is required."))
+		return
+	}
+	if req.Data == "" {
+		log.Error("data is required.")
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ARGUMENT", "data is required."))
+		return
+	}
+	if destination0.Target == "" && destination1.Target == "" && destination2.Target == "" && destination3.Target == "" && destination4.Target == "" {
+		log.Error("At least one destination_N target is required.")
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ARGUMENT", "At least one destination_N target is required."))
+		return
+	}
 
 	res, err := h.serviceHandler.OutdialtargetCreate(c.Request.Context(), a, target, req.Name, req.Detail, req.Data, &destination0, &destination1, &destination2, &destination3, &destination4)
 	if err != nil {

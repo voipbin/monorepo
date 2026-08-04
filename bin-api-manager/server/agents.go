@@ -111,6 +111,14 @@ func (h *server) PostAgents(c *gin.Context) {
 			addresses = append(addresses, ConvertCommonAddress(v))
 		}
 	}
+	// OpenAPI marks addresses as required, but BindJSON doesn't enforce
+	// presence on a slice field. Guard explicitly so the spec's contract
+	// is actually honored.
+	if len(addresses) == 0 {
+		log.Error("addresses is required and must not be empty.")
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ARGUMENT", "addresses is required and must not be empty."))
+		return
+	}
 
 	res, err := h.serviceHandler.AgentCreate(c.Request.Context(), a, req.Username, req.Password, req.Name, req.Detail, amagent.RingMethod(req.RingMethod), amagent.Permission(req.Permission), tagIDs, addresses)
 	if err != nil {
