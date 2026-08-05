@@ -111,9 +111,15 @@ func (h *serviceHandler) ServiceAgentCaseAssign(ctx context.Context, a *auth.Aut
 		return nil, serviceerrors.ErrPermissionDenied
 	}
 
-	if _, err := h.caseGet(ctx, a.CustomerID, id); err != nil {
+	c, err := h.caseGet(ctx, a.CustomerID, id)
+	if err != nil {
 		log.Errorf("Could not get the case info. err: %v", err)
 		return nil, err
+	}
+
+	if c.Status == cmkase.StatusClosed {
+		log.Infof("Case is closed, status: %s", c.Status)
+		return nil, serviceerrors.ErrCaseClosed
 	}
 
 	owner, err := h.reqHandler.AgentV1AgentGet(ctx, ownerID)
