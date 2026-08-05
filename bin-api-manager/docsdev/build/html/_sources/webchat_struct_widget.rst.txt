@@ -41,7 +41,7 @@ Widget struct
         "tm_delete": "<string>"
     }
 
-* ``id`` (UUID): The widget's unique identifier. Returned when creating a widget via ``POST /webchat_widgets`` or when listing widgets via ``GET /webchat_widgets``.
+* ``id`` (UUID): The widget's unique identifier. Returned when creating a widget via ``POST /webchat-widgets`` or when listing widgets via ``GET /webchat-widgets``.
 * ``customer_id`` (UUID): The customer who owns this widget. Obtained from the ``id`` field of ``GET /customers``.
 * ``name`` (String): Human-readable name for the widget.
 * ``status`` (enum string): The widget's status. See :ref:`Status <webchat-struct-widget-status>`.
@@ -64,7 +64,7 @@ Defines the widget's operational state.
 Type          Description
 ============= ================
 active        The widget is live; visitors can create sessions and send messages.
-inactive       The widget is disabled; ``POST /webchat_sessions`` for this widget is rejected.
+inactive       The widget is disabled; ``POST /webchat-sessions`` for this widget is rejected.
 ============= ================
 
 .. _webchat-struct-widget-theme-config:

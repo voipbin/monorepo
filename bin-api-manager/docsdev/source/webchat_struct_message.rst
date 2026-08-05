@@ -24,10 +24,10 @@ Message struct
         "tm_delete": "<string>"
     }
 
-* ``id`` (UUID): The message's unique identifier. Returned from ``POST /webchat_messages`` or ``GET /webchat_messages``.
+* ``id`` (UUID): The message's unique identifier. Returned from ``POST /webchat-messages`` or ``GET /webchat-messages``.
 * ``customer_id`` (UUID): The customer who owns the parent widget. Obtained from the ``id`` field of ``GET /customers``.
-* ``widget_id`` (UUID): The widget this message belongs to (denormalized from the session). Obtained from the ``id`` field of ``GET /webchat_widgets``.
-* ``session_id`` (UUID): The session this message belongs to. Obtained from the ``id`` field of ``GET /webchat_sessions``.
+* ``widget_id`` (UUID): The widget this message belongs to (denormalized from the session). Obtained from the ``id`` field of ``GET /webchat-widgets``.
+* ``session_id`` (UUID): The session this message belongs to. Obtained from the ``id`` field of ``GET /webchat-sessions``.
 * ``direction`` (enum string): The message's direction. See :ref:`Direction <webchat-struct-message-direction>`.
 * ``status`` (enum string): The message's delivery status. See :ref:`Status <webchat-struct-message-status>`.
 * ``sender_id`` (UUID, optional): The agent ID for an agent-authored outbound reply. Empty for visitor-authored inbound messages and for Flow/AI-originated outbound messages.

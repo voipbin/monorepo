@@ -674,7 +674,7 @@
                                                                         <span class="o">|</span>
                                                                         <span class="n">v</span>
                                                               <span class="o">+------------------+</span>
-                                                              <span class="o">|</span> <span class="n">POST</span> <span class="o">/</span><span class="n">webchat_</span>    <span class="o">|</span>
+                                                              <span class="o">|</span> <span class="n">POST</span> <span class="o">/</span><span class="n">webchat</span><span class="o">-</span>    <span class="o">|</span>
                                                               <span class="o">|</span> <span class="n">sessions</span>           <span class="o">|</span>
                                                               <span class="o">|</span> <span class="p">(</span><span class="n">creates</span> <span class="n">Session</span><span class="p">)</span>  <span class="o">|</span>
                                                               <span class="o">+------------------+</span>
@@ -684,27 +684,32 @@
 <li><p>The widget embed script (delivered by your site) carries the widget’s <code class="docutils literal notranslate"><span class="pre">direct_hash</span></code>.</p></li>
 <li><p>On page load, the script calls <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/boot</span></code> with the hash to exchange it for a short-lived, widget-scoped JWT.</p></li>
 <li><p>That JWT authorizes exactly one resource type (<code class="docutils literal notranslate"><span class="pre">webchat_session</span></code>) and is scoped to the specific Widget it was issued for – it cannot be reused to access a different widget’s sessions, nor can it read the Widget’s admin configuration.</p></li>
-<li><p>The script then calls <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/webchat_sessions</span></code> with the JWT to create a Session. If the widget has <code class="docutils literal notranslate"><span class="pre">session_flow_id</span></code> configured, that Flow fires as part of Session creation and can deliver a greeting via a message-send action; a widget with no <code class="docutils literal notranslate"><span class="pre">session_flow_id</span></code> sends no automatic greeting.</p></li>
-<li><p>Subsequent messages are sent via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/webchat_messages</span></code> using the same JWT, referencing the created <code class="docutils literal notranslate"><span class="pre">session_id</span></code>.</p></li>
+<li><p>The script then calls <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/webchat-sessions</span></code> with the JWT to create a Session. If the widget has <code class="docutils literal notranslate"><span class="pre">session_flow_id</span></code> configured, that Flow fires as part of Session creation and can deliver a greeting via a message-send action; a widget with no <code class="docutils literal notranslate"><span class="pre">session_flow_id</span></code> sends no automatic greeting.</p></li>
+<li><p>Subsequent messages are sent via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/webchat-messages</span></code> using the same JWT, referencing the created <code class="docutils literal notranslate"><span class="pre">session_id</span></code>.</p></li>
 </ol>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>The direct-token JWT from <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/boot</span></code> is scoped to a single <code class="docutils literal notranslate"><span class="pre">resource_id</span></code> (the Widget) and a single allowed resource type (<code class="docutils literal notranslate"><span class="pre">webchat_session</span></code>). It cannot be used to call the admin <code class="docutils literal notranslate"><span class="pre">GET/PUT/DELETE</span> <span class="pre">/webchat_widgets/{id}</span></code> endpoints – those require a customer JWT (agent or accesskey) with Customer Admin or Customer Manager permission.</p>
+<p>The direct-token JWT from <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/boot</span></code> is scoped to a single <code class="docutils literal notranslate"><span class="pre">resource_id</span></code> (the Widget) and a single allowed resource type (<code class="docutils literal notranslate"><span class="pre">webchat_session</span></code>). It cannot be used to call the admin <code class="docutils literal notranslate"><span class="pre">GET/PUT/DELETE</span> <span class="pre">/webchat-widgets/{id}</span></code> endpoints – those require a customer JWT (agent or accesskey) with Customer Admin or Customer Manager permission.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Deprecated paths</strong></p>
+<p>The pre-rename underscore paths (<code class="docutils literal notranslate"><span class="pre">/webchat_widgets</span></code>, <code class="docutils literal notranslate"><span class="pre">/webchat_sessions</span></code>, <code class="docutils literal notranslate"><span class="pre">/webchat_messages</span></code> and their subpaths) still work but are deprecated – responses carry <code class="docutils literal notranslate"><span class="pre">Deprecation:</span> <span class="pre">true</span></code> and <code class="docutils literal notranslate"><span class="pre">Sunset</span></code> headers. Use the hyphenated paths shown in this document for all new integrations.</p>
 </div>
 </section>
 <section id="flow-trigger">
 <h2>Flow trigger<a class="headerlink" href="#flow-trigger" title="Link to this heading">¶</a></h2>
 <p>Two independent Flows can be configured per Widget:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">Widget.session_flow_id</span></code> – triggered once, at Session creation (<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/webchat_sessions</span></code>), before the visitor has sent any message. VoIPBin creates the Conversation for this Widget/Session pair up front and triggers the Flow against it; use this for routing decisions that don’t depend on message content (e.g. time-of-day routing, a proactive greeting flow).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Widget.session_flow_id</span></code> – triggered once, at Session creation (<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/webchat-sessions</span></code>), before the visitor has sent any message. VoIPBin creates the Conversation for this Widget/Session pair up front and triggers the Flow against it; use this for routing decisions that don’t depend on message content (e.g. time-of-day routing, a proactive greeting flow).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">Widget.message_flow_id</span></code> (optional) – triggered independently on every inbound message, mirroring the Flow-per-message pattern used by SMS/LINE/WhatsApp. Use this when the Flow needs to react to what the visitor actually typed (e.g. routing to a human agent when unassigned, or an AI reply per message).</p></li>
 </ul>
 <p>Both are optional and independent; a Widget can configure either, both, or neither.</p>
 </section>
 <section id="session-lifecycle">
 <h2>Session lifecycle<a class="headerlink" href="#session-lifecycle" title="Link to this heading">¶</a></h2>
-<p>A Session is <code class="docutils literal notranslate"><span class="pre">active</span></code> from creation until it is explicitly ended (<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/webchat_sessions/{id}/end</span></code>) or automatically ended after a period of inactivity (<code class="docutils literal notranslate"><span class="pre">Widget.session_idle_timeout</span></code>, default 1800 seconds). Once <code class="docutils literal notranslate"><span class="pre">ended</span></code>, a Session cannot accept new messages; the visitor’s next message triggers a new Session.</p>
+<p>A Session is <code class="docutils literal notranslate"><span class="pre">active</span></code> from creation until it is explicitly ended (<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/webchat-sessions/{id}/end</span></code>) or automatically ended after a period of inactivity (<code class="docutils literal notranslate"><span class="pre">Widget.session_idle_timeout</span></code>, default 1800 seconds). Once <code class="docutils literal notranslate"><span class="pre">ended</span></code>, a Session cannot accept new messages; the visitor’s next message triggers a new Session.</p>
 </section>
 </section>
 

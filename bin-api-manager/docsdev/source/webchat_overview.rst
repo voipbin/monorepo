@@ -38,7 +38,7 @@ The visitor-facing flow never uses a customer JWT. Instead:
                                                                             |
                                                                             v
                                                                   +------------------+
-                                                                  | POST /webchat_    |
+                                                                  | POST /webchat-    |
                                                                   | sessions           |
                                                                   | (creates Session)  |
                                                                   +------------------+
@@ -46,22 +46,26 @@ The visitor-facing flow never uses a customer JWT. Instead:
 1. The widget embed script (delivered by your site) carries the widget's ``direct_hash``.
 2. On page load, the script calls ``POST /auth/boot`` with the hash to exchange it for a short-lived, widget-scoped JWT.
 3. That JWT authorizes exactly one resource type (``webchat_session``) and is scoped to the specific Widget it was issued for -- it cannot be reused to access a different widget's sessions, nor can it read the Widget's admin configuration.
-4. The script then calls ``POST /webchat_sessions`` with the JWT to create a Session. If the widget has ``session_flow_id`` configured, that Flow fires as part of Session creation and can deliver a greeting via a message-send action; a widget with no ``session_flow_id`` sends no automatic greeting.
-5. Subsequent messages are sent via ``POST /webchat_messages`` using the same JWT, referencing the created ``session_id``.
+4. The script then calls ``POST /webchat-sessions`` with the JWT to create a Session. If the widget has ``session_flow_id`` configured, that Flow fires as part of Session creation and can deliver a greeting via a message-send action; a widget with no ``session_flow_id`` sends no automatic greeting.
+5. Subsequent messages are sent via ``POST /webchat-messages`` using the same JWT, referencing the created ``session_id``.
 
 .. note:: **AI Implementation Hint**
 
-   The direct-token JWT from ``POST /auth/boot`` is scoped to a single ``resource_id`` (the Widget) and a single allowed resource type (``webchat_session``). It cannot be used to call the admin ``GET/PUT/DELETE /webchat_widgets/{id}`` endpoints -- those require a customer JWT (agent or accesskey) with Customer Admin or Customer Manager permission.
+   The direct-token JWT from ``POST /auth/boot`` is scoped to a single ``resource_id`` (the Widget) and a single allowed resource type (``webchat_session``). It cannot be used to call the admin ``GET/PUT/DELETE /webchat-widgets/{id}`` endpoints -- those require a customer JWT (agent or accesskey) with Customer Admin or Customer Manager permission.
+
+.. note:: **Deprecated paths**
+
+   The pre-rename underscore paths (``/webchat_widgets``, ``/webchat_sessions``, ``/webchat_messages`` and their subpaths) still work but are deprecated -- responses carry ``Deprecation: true`` and ``Sunset`` headers. Use the hyphenated paths shown in this document for all new integrations.
 
 Flow trigger
 ------------
 Two independent Flows can be configured per Widget:
 
-* ``Widget.session_flow_id`` -- triggered once, at Session creation (``POST /webchat_sessions``), before the visitor has sent any message. VoIPBin creates the Conversation for this Widget/Session pair up front and triggers the Flow against it; use this for routing decisions that don't depend on message content (e.g. time-of-day routing, a proactive greeting flow).
+* ``Widget.session_flow_id`` -- triggered once, at Session creation (``POST /webchat-sessions``), before the visitor has sent any message. VoIPBin creates the Conversation for this Widget/Session pair up front and triggers the Flow against it; use this for routing decisions that don't depend on message content (e.g. time-of-day routing, a proactive greeting flow).
 * ``Widget.message_flow_id`` (optional) -- triggered independently on every inbound message, mirroring the Flow-per-message pattern used by SMS/LINE/WhatsApp. Use this when the Flow needs to react to what the visitor actually typed (e.g. routing to a human agent when unassigned, or an AI reply per message).
 
 Both are optional and independent; a Widget can configure either, both, or neither.
 
 Session lifecycle
 ------------------
-A Session is ``active`` from creation until it is explicitly ended (``POST /webchat_sessions/{id}/end``) or automatically ended after a period of inactivity (``Widget.session_idle_timeout``, default 1800 seconds). Once ``ended``, a Session cannot accept new messages; the visitor's next message triggers a new Session.
+A Session is ``active`` from creation until it is explicitly ended (``POST /webchat-sessions/{id}/end``) or automatically ended after a period of inactivity (``Widget.session_idle_timeout``, default 1800 seconds). Once ``ended``, a Session cannot accept new messages; the visitor's next message triggers a new Session.

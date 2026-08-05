@@ -12,7 +12,7 @@ get:
       schema:
         type: string
         format: uuid
-      description: "Filter messages to those belonging to this session. Returned from the `POST /webchat_sessions` or `GET /webchat_sessions` response."
+      description: "Filter messages to those belonging to this session. Returned from the `POST /webchat-sessions` or `GET /webchat-sessions` response."
       example: "7a1bcb1a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
   responses:
     '200':

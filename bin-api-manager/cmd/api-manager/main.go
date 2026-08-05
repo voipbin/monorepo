@@ -306,6 +306,43 @@ func runListenHTTP(serviceHandler servicehandler.ServiceHandler, rateLimiter rat
 		ErrorHandler: server.BindingErrorHandler,
 	})
 
+	// --- BEGIN legacy webchat_* route aliases -------------------------------
+	// TODO(Phase 3): remove after <sunset date> once Phase 2 usage monitoring
+	// confirms the legacy underscore-named routes are effectively unused.
+	// See docs/plans/2026-08-05-voip-1311-webchat-resource-path-rename-design.md.
+	//
+	// The OpenAPI spec now only declares the hyphenated /webchat-widgets,
+	// /webchat-sessions, /webchat-messages paths (oapi-codegen treats "-" and
+	// "_" as equivalent when generating operationIds, so declaring both forms
+	// in the spec would produce duplicate ServerInterface methods and fail to
+	// compile). The pre-rename underscore paths are kept working here by
+	// registering them directly on the same authenticated/rate-limited v1
+	// group and reusing the generated ServerInterfaceWrapper -- this is the
+	// only piece that knows how to bind/validate path and query parameters
+	// for each operation, so it is reused rather than hand-rolled.
+	legacyWrapper := openapi_server.ServerInterfaceWrapper{
+		Handler:      appServer,
+		ErrorHandler: server.BindingErrorHandler,
+	}
+	v1.GET("/webchat_widgets", middleware.WebchatDeprecationMarker(), legacyWrapper.GetWebchatWidgets)
+	v1.POST("/webchat_widgets", middleware.WebchatDeprecationMarker(), legacyWrapper.PostWebchatWidgets)
+	v1.GET("/webchat_widgets/:id", middleware.WebchatDeprecationMarker(), legacyWrapper.GetWebchatWidgetsId)
+	v1.PUT("/webchat_widgets/:id", middleware.WebchatDeprecationMarker(), legacyWrapper.PutWebchatWidgetsId)
+	v1.DELETE("/webchat_widgets/:id", middleware.WebchatDeprecationMarker(), legacyWrapper.DeleteWebchatWidgetsId)
+	v1.POST("/webchat_widgets/:id/direct_hash_regenerate", middleware.WebchatDeprecationMarker(), legacyWrapper.PostWebchatWidgetsIdDirectHashRegenerate)
+
+	v1.GET("/webchat_sessions", middleware.WebchatDeprecationMarker(), legacyWrapper.GetWebchatSessions)
+	v1.POST("/webchat_sessions", middleware.WebchatDeprecationMarker(), legacyWrapper.PostWebchatSessions)
+	v1.GET("/webchat_sessions/:id", middleware.WebchatDeprecationMarker(), legacyWrapper.GetWebchatSessionsId)
+	v1.DELETE("/webchat_sessions/:id", middleware.WebchatDeprecationMarker(), legacyWrapper.DeleteWebchatSessionsId)
+	v1.POST("/webchat_sessions/:id/end", middleware.WebchatDeprecationMarker(), legacyWrapper.PostWebchatSessionsIdEnd)
+
+	v1.GET("/webchat_messages", middleware.WebchatDeprecationMarker(), legacyWrapper.GetWebchatMessages)
+	v1.POST("/webchat_messages", middleware.WebchatDeprecationMarker(), legacyWrapper.PostWebchatMessages)
+	v1.GET("/webchat_messages/:id", middleware.WebchatDeprecationMarker(), legacyWrapper.GetWebchatMessagesId)
+	v1.DELETE("/webchat_messages/:id", middleware.WebchatDeprecationMarker(), legacyWrapper.DeleteWebchatMessagesId)
+	// --- END legacy webchat_* route aliases ---------------------------------
+
 	// // inject servicehandler
 	// app.Use(func(c *gin.Context) {
 	// 	c.Set(common.OBJServiceHandler, serviceHandler)

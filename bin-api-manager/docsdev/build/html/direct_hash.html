@@ -757,7 +757,7 @@
 </tr>
 <tr class="row-odd"><td><p>Webchat Widget</p></td>
 <td><p>Yes</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/webchat_widgets/{id}/direct_hash_regenerate</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/webchat-widgets/{id}/direct-hash-regenerate</span></code></p></td>
 <td><p><a class="reference internal" href="webchat_overview.html"><span class="doc">Webchat Overview</span></a></p></td>
 </tr>
 </tbody>
@@ -766,7 +766,8 @@
 <p><strong>Auto-Created</strong> means the <code class="docutils literal notranslate"><span class="pre">direct_hash</span></code> field is populated automatically when the resource is created. For resources marked <strong>No</strong>, call the regenerate endpoint to create the initial hash.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>The Webchat Widget regenerate endpoint uses an underscore (<code class="docutils literal notranslate"><span class="pre">direct_hash_regenerate</span></code>), while every other resource in this table uses a hyphen (<code class="docutils literal notranslate"><span class="pre">direct-hash-regenerate</span></code>). This is not a typo — it reflects the actual path exposed by each resource’s API.</p>
+<p><strong>Deprecated path</strong></p>
+<p>The pre-rename underscore path (<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/webchat_widgets/{id}/direct_hash_regenerate</span></code>) still works but is deprecated – responses carry <code class="docutils literal notranslate"><span class="pre">Deprecation:</span> <span class="pre">true</span></code> and <code class="docutils literal notranslate"><span class="pre">Sunset</span></code> headers. Use the hyphenated path shown above for all new integrations.</p>
 </div>
 </section>
 <section id="managing-direct-hashes">

@@ -100,14 +100,14 @@ Supported Resources
 +---------------+----------------+------------------------------------------------------------------------------------+-------------------------------------------+
 | AI            | No             | ``POST https://api.voipbin.net/v1.0/ais/{id}/direct-hash-regenerate``              | :ref:`ai-overview`                        |
 +---------------+----------------+------------------------------------------------------------------------------------+-------------------------------------------+
-| Webchat Widget| Yes            | ``POST https://api.voipbin.net/v1.0/webchat_widgets/{id}/direct_hash_regenerate``  | :doc:`Webchat Overview <webchat_overview>`|
+| Webchat Widget| Yes            | ``POST https://api.voipbin.net/v1.0/webchat-widgets/{id}/direct-hash-regenerate``  | :doc:`Webchat Overview <webchat_overview>`|
 +---------------+----------------+------------------------------------------------------------------------------------+-------------------------------------------+
 
 **Auto-Created** means the ``direct_hash`` field is populated automatically when the resource is created. For resources marked **No**, call the regenerate endpoint to create the initial hash.
 
-.. note::
+.. note:: **Deprecated path**
 
-   The Webchat Widget regenerate endpoint uses an underscore (``direct_hash_regenerate``), while every other resource in this table uses a hyphen (``direct-hash-regenerate``). This is not a typo — it reflects the actual path exposed by each resource's API.
+   The pre-rename underscore path (``POST /webchat_widgets/{id}/direct_hash_regenerate``) still works but is deprecated -- responses carry ``Deprecation: true`` and ``Sunset`` headers. Use the hyphenated path shown above for all new integrations.
 
 
 Managing Direct Hashes

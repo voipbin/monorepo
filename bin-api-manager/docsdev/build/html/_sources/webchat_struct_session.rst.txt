@@ -26,9 +26,9 @@ Session struct
         "tm_end": "<string>"
     }
 
-* ``id`` (UUID): The session's unique identifier, and the visitor's continuity token for this browsing session. Returned from ``POST /webchat_sessions`` or ``GET /webchat_sessions``.
+* ``id`` (UUID): The session's unique identifier, and the visitor's continuity token for this browsing session. Returned from ``POST /webchat-sessions`` or ``GET /webchat-sessions``.
 * ``customer_id`` (UUID): The customer who owns the parent widget. Obtained from the ``id`` field of ``GET /customers``.
-* ``widget_id`` (UUID): The widget this session belongs to. Obtained from the ``id`` field of ``GET /webchat_widgets``.
+* ``widget_id`` (UUID): The widget this session belongs to. Obtained from the ``id`` field of ``GET /webchat-widgets``.
 * ``page_url`` (string, optional): The URL of the page the widget was embedded on when this session was created, captured client-side from ``window.location.href`` at session-creation time. Not re-captured on subsequent navigation within the same session. Absent for sessions created via the admin/accesskey direct-create path or by pre-upgrade embed snippets.
 * ``referrer`` (string, optional): The value of ``document.referrer`` captured client-side at session-creation time -- the URL of the page that linked to (or otherwise led to) the page the widget was embedded on. Same optionality and capture semantics as ``page_url``. Absent for sessions created via the admin/accesskey direct-create path or by pre-upgrade embed snippets.
 * ``peer`` (:ref:`Address <common-struct-address>`): The visitor's synthetic address for this session. ``type`` is always ``web_session`` and ``target`` is this session's own ``id`` -- it identifies the visitor's side of the webchat interaction, not a network endpoint.
@@ -37,7 +37,7 @@ Session struct
 * ``tm_last_activity`` (string, ISO 8601): Timestamp of the most recent message on this session. Used to determine idle timeout.
 * ``tm_create`` (string, ISO 8601): Timestamp when the session was created.
 * ``tm_update`` (string, ISO 8601): Timestamp of the last update to any session property.
-* ``tm_end`` (string, ISO 8601): Timestamp when the session was ended (explicitly via ``POST /webchat_sessions/{id}/end`` or automatically via idle timeout).
+* ``tm_end`` (string, ISO 8601): Timestamp when the session was ended (explicitly via ``POST /webchat-sessions/{id}/end`` or automatically via idle timeout).
 
 .. note:: **AI Implementation Hint**
 
@@ -52,6 +52,6 @@ Defines the session's lifecycle state.
 ============= ================
 Type          Description
 ============= ================
-active        The session is live; ``POST /webchat_messages`` is accepted.
+active        The session is live; ``POST /webchat-messages`` is accepted.
 ended         The session has ended; a new session must be created to continue the conversation.
 ============= ================

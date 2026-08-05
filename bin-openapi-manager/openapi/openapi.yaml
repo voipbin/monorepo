@@ -2462,7 +2462,7 @@ components:
           type: string
           format: uuid
           x-go-type: string
-          description: "Fires once per Session, at session creation/start (POST /webchat_sessions) -- bin-conversation-manager owns Create+Execute for this Flow's activeflow. Returned from the `POST /flows` or `GET /flows` response."
+          description: "Fires once per Session, at session creation/start (POST /webchat-sessions) -- bin-conversation-manager owns Create+Execute for this Flow's activeflow. Returned from the `POST /flows` or `GET /flows` response."
           example: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
         message_flow_id:
           type: string
@@ -2478,7 +2478,7 @@ components:
           $ref: '#/components/schemas/WebchatManagerWidgetThemeConfig'
         direct_hash:
           type: string
-          description: "Hash used by the embed script (data-hash attribute) to authenticate anonymous visitors via POST /auth/boot. The value already includes the \"direct.\" prefix (e.g. \"direct.a1b2c3d4e5f6\"). Returned on every response (GET, List, Create, Update, direct_hash_regenerate) -- this value is embedded directly in the customer's public website HTML by design, so it is not a traditional secret; hiding it from GET responses would only make it harder for the customer's own admins to retrieve it."
+          description: "Hash used by the embed script (data-hash attribute) to authenticate anonymous visitors via POST /auth/boot. The value already includes the \"direct.\" prefix (e.g. \"direct.a1b2c3d4e5f6\"). Returned on every response (GET, List, Create, Update, direct-hash-regenerate) -- this value is embedded directly in the customer's public website HTML by design, so it is not a traditional secret; hiding it from GET responses would only make it harder for the customer's own admins to retrieve it."
           example: "direct.a1b2c3d4e5f6"
         tm_create:
           type: string
@@ -8347,24 +8347,24 @@ paths:
   /teams:
     $ref: './paths/teams/main.yaml'
 
-  /webchat_widgets:
-    $ref: './paths/webchat_widgets/main.yaml'
-  /webchat_widgets/{id}:
-    $ref: './paths/webchat_widgets/id.yaml'
-  /webchat_widgets/{id}/direct_hash_regenerate:
-    $ref: './paths/webchat_widgets/id_direct_hash_regenerate.yaml'
+  /webchat-widgets:
+    $ref: './paths/webchat-widgets/main.yaml'
+  /webchat-widgets/{id}:
+    $ref: './paths/webchat-widgets/id.yaml'
+  /webchat-widgets/{id}/direct-hash-regenerate:
+    $ref: './paths/webchat-widgets/id_direct-hash-regenerate.yaml'
 
-  /webchat_sessions:
-    $ref: './paths/webchat_sessions/main.yaml'
-  /webchat_sessions/{id}:
-    $ref: './paths/webchat_sessions/id.yaml'
-  /webchat_sessions/{id}/end:
-    $ref: './paths/webchat_sessions/id_end.yaml'
+  /webchat-sessions:
+    $ref: './paths/webchat-sessions/main.yaml'
+  /webchat-sessions/{id}:
+    $ref: './paths/webchat-sessions/id.yaml'
+  /webchat-sessions/{id}/end:
+    $ref: './paths/webchat-sessions/id_end.yaml'
 
-  /webchat_messages:
-    $ref: './paths/webchat_messages/main.yaml'
-  /webchat_messages/{id}:
-    $ref: './paths/webchat_messages/id.yaml'
+  /webchat-messages:
+    $ref: './paths/webchat-messages/main.yaml'
+  /webchat-messages/{id}:
+    $ref: './paths/webchat-messages/id.yaml'
 
   /auth/boot:
     $ref: './paths/auth/boot.yaml'

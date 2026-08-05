@@ -99,7 +99,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/gorilla/websocket v1.5.4-0.20250319132907-e064f32e3674
 	github.com/oapi-codegen/oapi-codegen/v2 v2.7.1
-	github.com/oapi-codegen/runtime v1.1.2
+	github.com/oapi-codegen/runtime v1.6.0
 	github.com/pion/rtp v1.10.0
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.10.2

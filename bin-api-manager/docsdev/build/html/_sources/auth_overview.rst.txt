@@ -260,7 +260,7 @@ Resolves a direct hash into a short-lived, resource-scoped JWT, for use cases wh
      - Description
    * - ``direct_hash``
      - String, Required
-     - The direct hash link, e.g. ``direct.a1b2c3d4e5f6``. Obtained from a direct link URL or a resource's ``direct_hash`` field (e.g. ``GET /v1.0/webchat_widgets/{id}``).
+     - The direct hash link, e.g. ``direct.a1b2c3d4e5f6``. Obtained from a direct link URL or a resource's ``direct_hash`` field (e.g. ``GET /v1.0/webchat-widgets/{id}``).
 
 **Response — 200 OK**
 

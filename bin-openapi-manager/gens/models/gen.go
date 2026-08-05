@@ -9758,7 +9758,7 @@ type WebchatManagerWidget struct {
 	// Example: 7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d
 	CustomerId string `json:"customer_id"`
 
-	// DirectHash Hash used by the embed script (data-hash attribute) to authenticate anonymous visitors via POST /auth/boot. The value already includes the "direct." prefix (e.g. "direct.a1b2c3d4e5f6"). Returned on every response (GET, List, Create, Update, direct_hash_regenerate) -- this value is embedded directly in the customer's public website HTML by design, so it is not a traditional secret; hiding it from GET responses would only make it harder for the customer's own admins to retrieve it.
+	// DirectHash Hash used by the embed script (data-hash attribute) to authenticate anonymous visitors via POST /auth/boot. The value already includes the "direct." prefix (e.g. "direct.a1b2c3d4e5f6"). Returned on every response (GET, List, Create, Update, direct-hash-regenerate) -- this value is embedded directly in the customer's public website HTML by design, so it is not a traditional secret; hiding it from GET responses would only make it harder for the customer's own admins to retrieve it.
 	//
 	// Example: direct.a1b2c3d4e5f6
 	DirectHash *string `json:"direct_hash,omitempty"`
@@ -9778,7 +9778,7 @@ type WebchatManagerWidget struct {
 	// Example: Support Widget
 	Name string `json:"name"`
 
-	// SessionFlowId Fires once per Session, at session creation/start (POST /webchat_sessions) -- bin-conversation-manager owns Create+Execute for this Flow's activeflow. Returned from the `POST /flows` or `GET /flows` response.
+	// SessionFlowId Fires once per Session, at session creation/start (POST /webchat-sessions) -- bin-conversation-manager owns Create+Execute for this Flow's activeflow. Returned from the `POST /flows` or `GET /flows` response.
 	//
 	// Example: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
 	SessionFlowId string `json:"session_flow_id"`
@@ -12863,7 +12863,7 @@ type GetWebchatMessagesParams struct {
 	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 
-	// SessionId Filter messages to those belonging to this session. Returned from the `POST /webchat_sessions` or `GET /webchat_sessions` response.
+	// SessionId Filter messages to those belonging to this session. Returned from the `POST /webchat-sessions` or `GET /webchat-sessions` response.
 	SessionId *openapi_types.UUID `form:"session_id,omitempty" json:"session_id,omitempty"`
 }
 
@@ -12893,7 +12893,7 @@ type GetWebchatSessionsParams struct {
 	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 
-	// WidgetId Filter sessions to those belonging to this widget. Returned from the `POST /webchat_widgets` or `GET /webchat_widgets` response.
+	// WidgetId Filter sessions to those belonging to this widget. Returned from the `POST /webchat-widgets` or `GET /webchat-widgets` response.
 	WidgetId *openapi_types.UUID `form:"widget_id,omitempty" json:"widget_id,omitempty"`
 }
 

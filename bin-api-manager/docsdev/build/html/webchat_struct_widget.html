@@ -674,7 +674,7 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The widget’s unique identifier. Returned when creating a widget via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/webchat_widgets</span></code> or when listing widgets via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/webchat_widgets</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The widget’s unique identifier. Returned when creating a widget via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/webchat-widgets</span></code> or when listing widgets via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/webchat-widgets</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer who owns this widget. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String): Human-readable name for the widget.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">status</span></code> (enum string): The widget’s status. See <a class="reference internal" href="#webchat-struct-widget-status"><span class="std std-ref">Status</span></a>.</p></li>
@@ -703,7 +703,7 @@
 <td><p>The widget is live; visitors can create sessions and send messages.</p></td>
 </tr>
 <tr class="row-odd"><td><p>inactive</p></td>
-<td><p>The widget is disabled; <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/webchat_sessions</span></code> for this widget is rejected.</p></td>
+<td><p>The widget is disabled; <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/webchat-sessions</span></code> for this widget is rejected.</p></td>
 </tr>
 </tbody>
 </table>
