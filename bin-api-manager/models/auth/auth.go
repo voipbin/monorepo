@@ -7,6 +7,7 @@ import (
 	csaccesskey "monorepo/bin-customer-manager/models/accesskey"
 
 	"github.com/gofrs/uuid"
+	"github.com/sirupsen/logrus"
 )
 
 // Type represents the authentication method used.
@@ -21,8 +22,8 @@ const (
 
 // AuthIdentity is the unified authentication identity for all request types.
 type AuthIdentity struct {
-	Type        Type
-	CustomerID  uuid.UUID // always set — populated from agent, accesskey, or direct scope
+	Type       Type
+	CustomerID uuid.UUID // always set — populated from agent, accesskey, or direct scope
 
 	Agent         *amagent.Agent         // non-nil for TypeAgent
 	Accesskey     *csaccesskey.Accesskey // non-nil for TypeAccesskey
@@ -148,8 +149,25 @@ func (a *AuthIdentity) DisplayName() string {
 	}
 }
 
+// warnNilCustomerID logs a warning when an identity is constructed with a
+// nil CustomerID. This is a "canary" log only — VOIP-1302 §4-4 deliberately
+// keeps these constructor signatures unchanged (no error return, no panic)
+// so authentication flow control is untouched. The final safety net against
+// a nil CustomerID reaching Redis is the skip-guard in
+// middleware.CustomerRateLimit; this log exists purely to surface the
+// upstream condition early for debugging.
+func warnNilCustomerID(constructor string, identityType Type) {
+	logrus.WithFields(logrus.Fields{
+		"func": constructor,
+		"type": identityType,
+	}).Warn("Identity constructed with nil CustomerID.")
+}
+
 // NewAgentIdentity constructs an AuthIdentity from an agent.
 func NewAgentIdentity(agent *amagent.Agent) *AuthIdentity {
+	if agent.CustomerID == uuid.Nil {
+		warnNilCustomerID("NewAgentIdentity", TypeAgent)
+	}
 	return &AuthIdentity{
 		Type:       TypeAgent,
 		CustomerID: agent.CustomerID,
@@ -159,6 +177,9 @@ func NewAgentIdentity(agent *amagent.Agent) *AuthIdentity {
 
 // NewAccesskeyIdentity constructs an AuthIdentity from an accesskey.
 func NewAccesskeyIdentity(ak *csaccesskey.Accesskey) *AuthIdentity {
+	if ak.CustomerID == uuid.Nil {
+		warnNilCustomerID("NewAccesskeyIdentity", TypeAccesskey)
+	}
 	return &AuthIdentity{
 		Type:       TypeAccesskey,
 		CustomerID: ak.CustomerID,
@@ -168,6 +189,9 @@ func NewAccesskeyIdentity(ak *csaccesskey.Accesskey) *AuthIdentity {
 
 // NewDirectIdentity constructs an AuthIdentity from a direct scope.
 func NewDirectIdentity(scope *DirectScope) *AuthIdentity {
+	if scope.CustomerID == uuid.Nil {
+		warnNilCustomerID("NewDirectIdentity", TypeDirect)
+	}
 	return &AuthIdentity{
 		Type:        TypeDirect,
 		CustomerID:  scope.CustomerID,
@@ -180,6 +204,9 @@ func NewDirectIdentity(scope *DirectScope) *AuthIdentity {
 func NewDelegateIdentity(scope *DelegateScope) *AuthIdentity {
 	if scope == nil {
 		panic("NewDelegateIdentity: scope must not be nil")
+	}
+	if scope.CustomerID == uuid.Nil {
+		warnNilCustomerID("NewDelegateIdentity", TypeDelegate)
 	}
 	return &AuthIdentity{
 		Type:          TypeDelegate,

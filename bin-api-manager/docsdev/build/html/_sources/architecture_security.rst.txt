@@ -617,7 +617,7 @@ All inputs validated at API boundary:
 Rate Limiting
 -------------
 
-Protect against abuse. **The configuration below reflects what is actually implemented today** (per-client-IP, in-memory, three tiers) — it previously described an aspirational per-customer quota scheme that was never built; that richer scheme is tracked separately (see note at the end of this section).
+Protect against abuse with two independent layers: a per-client-IP layer (in-memory, per server instance) and a per-customer layer (Redis-backed, global across all server instances).
 
 **Rate Limit Configuration (as implemented):**
 
@@ -640,20 +640,37 @@ Protect against abuse. **The configuration below reflects what is actually imple
     |                  | surface (~346 routes)               | burst 400   |
     +------------------+-------------------------------------+-------------+
 
+    Per-customer limits (Redis-backed GCRA, global across all server
+    instances -- applies only to the authenticated v1.0 API surface,
+    keyed by customer_id after authentication):
+    +------------------------+-------------------------------------+-------------+
+    | Tier                   | Applies to                          | Limit       |
+    +------------------------+-------------------------------------+-------------+
+    | v1_customer            | Agent and accesskey identities      | 16.7 req/s, |
+    |                        | (shared bucket per customer_id)     | burst 33    |
+    +------------------------+-------------------------------------+-------------+
+    | v1_customer_direct     | Direct (resource-scoped) identities | 50 req/s,   |
+    |                        |                                      | burst 100   |
+    +------------------------+-------------------------------------+-------------+
+    | v1_customer_delegate   | Delegate (superadmin-issued)        | 8.3 req/s,  |
+    |                        | identities                          | burst 16    |
+    +------------------------+-------------------------------------+-------------+
+
     Response on Limit:
     +------------------------------------------+
     | Status: 429 Too Many Requests            |
-    | Header: (none -- no Retry-After header   |
-    |   is returned; see restful_api.rst)      |
+    | Header: Retry-After: <seconds>           |
     | Body: canonical error envelope with      |
     |   status=RESOURCE_EXHAUSTED              |
     |   reason=RATE_LIMIT_EXCEEDED             |
-    | (see restful_api.rst error envelope)     |
+    |   details[0].limited_by = "ip" |         |
+    |     "customer"                           |
+    | (see restful_api_errors.rst)             |
     +------------------------------------------+
 
 .. note::
 
-   These are per-IP, per-server-instance limits, not a hard global ceiling or a per-customer quota — a client's effective limit can scale with backend replica count. They are a blast-radius safety valve against runaway or accidental traffic, not a dedicated anti-abuse control. A future per-customer/per-accesskey quota system (with shared, Redis-backed state and `Retry-After` support) is tracked separately in VOIP-1302 and is not yet implemented.
+   The per-IP tiers are per-server-instance limits, not a hard global ceiling -- a client's effective per-IP limit can scale with backend replica count. The per-customer tiers, in contrast, are enforced against shared Redis state and therefore hold as a true global ceiling regardless of how many server instances are running. Agent and accesskey identities for the same customer intentionally share one bucket (``v1_customer``) so a customer cannot double their effective quota by using both credentials at once; direct and delegate identities use their own independent buckets because they represent different trust levels and traffic profiles, not because of a uniform per-customer cap. The per-customer layer applies only to the authenticated ``v1.0`` API surface (not ``/auth/unregister`` or ``/auth/delegate``) and fails open on Redis errors or timeouts -- it is an abuse-protection safety valve, not a billing or entitlement enforcement mechanism.
 
 **DDoS Protection:**
 

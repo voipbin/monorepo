@@ -17,6 +17,7 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis/v8"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -34,6 +35,7 @@ import (
 	"monorepo/bin-api-manager/pkg/cachehandler"
 	"monorepo/bin-api-manager/pkg/dbhandler"
 	"monorepo/bin-api-manager/pkg/pubsubhandler"
+	"monorepo/bin-api-manager/pkg/ratelimithandler"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	"monorepo/bin-api-manager/pkg/streamhandler"
 	"monorepo/bin-api-manager/pkg/subscribehandler"
@@ -105,11 +107,29 @@ func runDaemon(cmd *cobra.Command, args []string) {
 	// dbhandler
 	db := dbhandler.NewHandler(sqlDB, cache)
 
+	// Dedicated Redis client for the customer rate limiter (VOIP-1302
+	// §4-1). Deliberately separate from the cachehandler's Redis client:
+	// pkg/cachehandler exposes only domain cache methods (no raw client
+	// getter, matching the monorepo-wide CacheHandler convention), and
+	// rate limiting is not a caching concern. See
+	// pkg/ratelimithandler for the local wrapper interface.
+	rateLimitRedisClient := redis.NewClient(&redis.Options{
+		Addr:     cfg.RedisAddress,
+		Password: cfg.RedisPassword,
+		DB:       cfg.RedisDatabase,
+	})
+	defer func() {
+		if errClose := rateLimitRedisClient.Close(); errClose != nil {
+			log.Errorf("Could not close rate limiter Redis client. err: %v", errClose)
+		}
+	}()
+	rateLimiter := ratelimithandler.NewHandler(rateLimitRedisClient)
+
 	// connect to rabbitmq
 	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, cfg.RabbitMQAddress)
 	sockHandler.Connect()
 
-	run(ctx, sockHandler, db)
+	run(ctx, sockHandler, db, rateLimiter)
 
 	// Wait for termination signal
 	chSigs := make(chan os.Signal, 1)
@@ -123,6 +143,7 @@ func run(
 	ctx context.Context,
 	sockHandler sockhandler.SockHandler,
 	db dbhandler.DBHandler,
+	rateLimiter ratelimithandler.RateLimiter,
 ) {
 	log := logrus.WithField("func", "run")
 
@@ -145,7 +166,7 @@ func run(
 	}
 
 	go runSubscribe(sockHandler, requestHandler, pubsubBroker, queueNamePod)
-	go runListenHTTP(serviceHandler)
+	go runListenHTTP(serviceHandler, rateLimiter)
 	go runListenStreamsock(ctx, streamHandler)
 
 }
@@ -183,7 +204,7 @@ func runSubscribe(
 	}
 }
 
-func runListenHTTP(serviceHandler servicehandler.ServiceHandler) {
+func runListenHTTP(serviceHandler servicehandler.ServiceHandler, rateLimiter ratelimithandler.RateLimiter) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "runListenHTTP",
 	})
@@ -245,19 +266,42 @@ func runListenHTTP(serviceHandler servicehandler.ServiceHandler) {
 	auth.GET("/email-verify", service.GetCustomerEmailVerify)
 	auth.POST("/email-verify", service.PostCustomerEmailVerify)
 	auth.POST("/boot", service.PostBoot)
-	// Authenticated auth routes (require middleware)
+	// Authenticated auth routes (require middleware). This group's order
+	// (Authenticate -> EnforceAccountStatus) is unchanged by VOIP-1302 and
+	// deliberately does NOT include CustomerRateLimit -- customer-tier
+	// rate limiting is scoped to the v1.0 group only (design doc §3/§4-14).
+	// Keeping this order intact preserves the existing behavior that a
+	// frozen account cannot call POST /auth/delegate.
 	authProtected := app.Group("/auth")
 	authProtected.Use(middleware.RateLimit("auth_protected", cfg.RateLimitAuthProtectedRPS, cfg.RateLimitAuthProtectedBurst))
 	authProtected.Use(middleware.Authenticate())
+	authProtected.Use(middleware.EnforceAccountStatus())
 	authProtected.POST("/unregister", service.PostAuthUnregister)
 	authProtected.DELETE("/unregister", service.DeleteAuthUnregister)
 	authProtected.POST("/delegate", service.PostDelegate)
 
 	appServer := server.NewServer(serviceHandler)
 
+	customerRateLimitConfig := middleware.CustomerRateLimitConfig{
+		CustomerRPS:   cfg.RateLimitCustomerV1RPS,
+		CustomerBurst: cfg.RateLimitCustomerV1Burst,
+		DirectRPS:     cfg.RateLimitCustomerV1DirectRPS,
+		DirectBurst:   cfg.RateLimitCustomerV1DirectBurst,
+		DelegateRPS:   cfg.RateLimitCustomerV1DelegateRPS,
+		DelegateBurst: cfg.RateLimitCustomerV1DelegateBurst,
+		RedisTimeout:  time.Duration(cfg.RateLimitCustomerRedisTimeoutMs) * time.Millisecond,
+	}
+
 	v1 := app.Group("v1.0")
 	v1.Use(middleware.RateLimit("v1", cfg.RateLimitV1RPS, cfg.RateLimitV1Burst))
+	// Order is deliberate (VOIP-1302 §4-6): Authenticate() populates
+	// auth_identity, CustomerRateLimit consumes it and can reject before
+	// the frozen-account check runs -- saving a CustomerRawSelfGet RPC on
+	// requests that are about to be rate-limited anyway. This ordering is
+	// unique to the v1.0 group; authProtected keeps the original order.
 	v1.Use(middleware.Authenticate())
+	v1.Use(middleware.CustomerRateLimit(rateLimiter, customerRateLimitConfig))
+	v1.Use(middleware.EnforceAccountStatus())
 	openapi_server.RegisterHandlersWithOptions(v1, appServer, openapi_server.GinServerOptions{
 		ErrorHandler: server.BindingErrorHandler,
 	})

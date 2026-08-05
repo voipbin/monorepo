@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"math"
+	"strconv"
 	"sync"
 	"time"
 
@@ -145,9 +146,22 @@ func RateLimit(tier string, r float64, burst int) gin.HandlerFunc {
 		if !limiter.Allow() {
 			rejected.Inc()
 
+			// Compute Retry-After without consuming additional budget.
+			// Reserve() books a token immediately (as if the request had
+			// been allowed); Cancel() undoes that booking right away. If
+			// Cancel() were omitted here, every rejected request would
+			// leave the bucket with one fewer token than it should have,
+			// so a burst of rejections would starve subsequent legitimate
+			// requests (VOIP-1302 §4-8).
+			reservation := limiter.Reserve()
+			delay := reservation.Delay()
+			reservation.Cancel()
+			c.Header("Retry-After", strconv.Itoa(int(math.Ceil(delay.Seconds()))))
+
 			// Build the canonical external envelope. The internal Domain
 			// field is omitted by lib/apierror -- see envelope.go.
 			e := cerrors.ResourceExhausted(commonoutline.ServiceNameAPIManager, "RATE_LIMIT_EXCEEDED", "Too many requests. Please try again later.")
+			e.Details = []map[string]any{{"limited_by": "ip"}}
 			c.AbortWithStatusJSON(
 				cerrors.HTTPStatusFor(e.Status),
 				apierror.EnvelopeFor(e, RequestIDFromContext(c)),

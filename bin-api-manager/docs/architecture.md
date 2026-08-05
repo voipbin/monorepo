@@ -61,13 +61,15 @@ Requests pass through the following middleware layers before reaching a handler:
 
 3. **Request ID injection** — A unique request ID is attached to each request and propagated through logs and error envelopes.
 
-4. **Rate limiting** (`lib/middleware/ratelimit.go`) — Per-IP, in-memory token-bucket limiting, applied per route group before authentication (`auth_public`, `auth_protected`, `v1` tiers). See [operations.md](operations.md#rate-limiting) for tier defaults, disable semantics, and caveats.
+4. **Rate limiting, per-IP** (`lib/middleware/ratelimit.go`) — Per-IP, in-memory token-bucket limiting, applied per route group before authentication (`auth_public`, `auth_protected`, `v1` tiers). See [operations.md](operations.md#rate-limiting) for tier defaults, disable semantics, and caveats.
 
-5. **JWT / Accesskey authentication** (`lib/middleware/authenticate.go`) — Validates credentials before any protected handler runs. See [auth.md](auth.md) for details.
+5. **JWT / Accesskey authentication** (`lib/middleware/authenticate.go`, `Authenticate()`) — Parses credentials and stores the resulting `*auth.AuthIdentity` in the gin context (`auth_identity`) before any protected handler runs. `Authenticate()` does **not** by itself enforce account status — see step 7. See [auth.md](auth.md) for details.
 
-6. **Customer frozen check** — After authentication succeeds, if the customer account status is `frozen`, all requests except `DELETE /auth/unregister` are rejected with `403 ACCOUNT_FROZEN`.
+6. **Rate limiting, per-customer** (`lib/middleware/customer_ratelimit.go`, `CustomerRateLimit()`) — **`v1` route group only** (not `authProtected`). Redis-backed GCRA limiter (`pkg/ratelimithandler`, wrapping `redis_rate`), global across all server instances, keyed by `ratelimit:{tier}:{customer_id}` using the identity populated by step 5. Tiers: `v1_customer` (agent + accesskey, shared bucket), `v1_customer_direct`, `v1_customer_delegate`. Fails open on a Redis error/timeout (50ms budget) — abuse protection only, not billing/entitlement enforcement. Runs *before* the frozen-account check (step 7) so a rate-limited request never pays for the `CustomerRawSelfGet` RPC. See [operations.md](operations.md#rate-limiting) for tier defaults.
 
-7. **Handler dispatch** — Routes to the concrete `server/` handler, which calls `pkg/servicehandler/`.
+7. **Customer frozen check** (`lib/middleware/authenticate.go`, `EnforceAccountStatus()`) — After authentication (and, for the `v1` group, after per-customer rate limiting), if the customer account status is `frozen`, all requests except `DELETE /auth/unregister` are rejected with `403 ACCOUNT_FROZEN`. `authProtected` chains `Authenticate() → EnforceAccountStatus()` directly (unchanged order); `v1` chains `Authenticate() → CustomerRateLimit() → EnforceAccountStatus()`.
+
+8. **Handler dispatch** — Routes to the concrete `server/` handler, which calls `pkg/servicehandler/`.
 
 Public endpoints (no authentication required):
 - `POST /auth/signup`

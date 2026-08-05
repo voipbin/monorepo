@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/testutil"
@@ -273,6 +274,94 @@ func TestRateLimit_DisabledMetricsPreInitialized(t *testing.T) {
 	}
 	if v := testutil.ToFloat64(promRateLimitRejectedTotal.WithLabelValues("test_disabled_metrics")); v != 0 {
 		t.Errorf("expected pre-initialized rejected series at 0, got %v", v)
+	}
+}
+
+// TestRateLimit_RetryAfterHeaderOnReject verifies a rejected IP-tier request
+// carries a Retry-After header (VOIP-1302 §4-8) and the "limited_by": "ip"
+// detail in the error envelope.
+func TestRateLimit_RetryAfterHeaderOnReject(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	r.Use(RateLimit("test_retry_after_ip", 1, 1))
+	r.GET("/", func(c *gin.Context) { c.Status(200) })
+
+	// First request consumes the sole burst token.
+	w1 := httptest.NewRecorder()
+	r.ServeHTTP(w1, httptest.NewRequest(http.MethodGet, "/", nil))
+	if w1.Code != http.StatusOK {
+		t.Fatalf("first request: expected 200, got %d", w1.Code)
+	}
+
+	// Second request is rejected and must carry Retry-After + limited_by.
+	w2 := httptest.NewRecorder()
+	r.ServeHTTP(w2, httptest.NewRequest(http.MethodGet, "/", nil))
+	if w2.Code != http.StatusTooManyRequests {
+		t.Fatalf("second request: expected 429, got %d", w2.Code)
+	}
+
+	retryAfter := w2.Header().Get("Retry-After")
+	if retryAfter == "" {
+		t.Error("Retry-After header missing on rejected IP-tier request")
+	}
+
+	var body struct {
+		Error struct {
+			Details []map[string]any `json:"details"`
+		} `json:"error"`
+	}
+	if err := json.Unmarshal(w2.Body.Bytes(), &body); err != nil {
+		t.Fatalf("unmarshal: %v; body: %s", err, w2.Body.String())
+	}
+	if len(body.Error.Details) != 1 || body.Error.Details[0]["limited_by"] != "ip" {
+		t.Errorf("expected details=[{limited_by: ip}], got %+v", body.Error.Details)
+	}
+}
+
+// TestRateLimit_RepeatedRejectionsDoNotConsumeExtraBudget is the mandatory
+// regression test from VOIP-1302 design §4-8: repeated rejected requests
+// must not further deplete the token bucket beyond the single burst-worth
+// of tokens already consumed by the requests that were actually allowed.
+// Without Reserve()+Cancel(), every rejected Allow() call would still leave
+// the bucket in a state as if it had additional debt, starving legitimate
+// traffic once the bucket is allowed to refill.
+func TestRateLimit_RepeatedRejectionsDoNotConsumeExtraBudget(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	// 1 req/sec, burst 2: two requests are allowed immediately, then a
+	// steady stream of rejections should NOT push the bucket further into
+	// debt -- once ~1 second has passed, exactly one more request should
+	// be allowed (not zero, which would indicate extra consumption).
+	r.Use(RateLimit("test_repeated_rejections", 1, 2))
+	r.GET("/", func(c *gin.Context) { c.Status(200) })
+
+	// Exhaust the burst of 2.
+	for i := 0; i < 2; i++ {
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/", nil))
+		if w.Code != http.StatusOK {
+			t.Fatalf("warm-up request %d: expected 200, got %d", i, w.Code)
+		}
+	}
+
+	// Hammer the limiter with rejected requests. If Cancel() were missing,
+	// each of these would add further debt to the bucket.
+	for i := 0; i < 20; i++ {
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/", nil))
+		if w.Code != http.StatusTooManyRequests {
+			t.Fatalf("rejection burst request %d: expected 429, got %d", i, w.Code)
+		}
+	}
+
+	// Wait for the bucket to refill by ~1 token (rate = 1/sec) plus a
+	// small margin for scheduling jitter.
+	time.Sleep(1100 * time.Millisecond)
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/", nil))
+	if w.Code != http.StatusOK {
+		t.Errorf("after refill: expected 200 (bucket should have exactly one token available), got %d -- this indicates rejected requests consumed extra budget", w.Code)
 	}
 }
 

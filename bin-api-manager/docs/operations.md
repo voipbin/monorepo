@@ -25,8 +25,17 @@ Runtime configuration is provided via CLI flags and/or environment variables, de
 | — (env var only) | `RATE_LIMIT_AUTH_PROTECTED_BURST` | No | `20` | Burst size for `RATE_LIMIT_AUTH_PROTECTED_RPS`. `<=0` disables the tier. |
 | — (env var only) | `RATE_LIMIT_V1_RPS` | No | `200` | Rate limit, requests/second per IP, for the full authenticated `v1.0` API surface. `<=0` disables the tier. |
 | — (env var only) | `RATE_LIMIT_V1_BURST` | No | `400` | Burst size for `RATE_LIMIT_V1_RPS`. `<=0` disables the tier. |
+| — (env var only) | `RATE_LIMIT_CUSTOMER_V1_RPS` | No | `16.7` | Redis-backed rate limit, requests/second per customer, shared by agent and accesskey identities (tier `v1_customer`, `v1` route group only). `<=0` disables the tier. |
+| — (env var only) | `RATE_LIMIT_CUSTOMER_V1_BURST` | No | `33` | Burst size for `RATE_LIMIT_CUSTOMER_V1_RPS`. `<=0` disables the tier. |
+| — (env var only) | `RATE_LIMIT_CUSTOMER_V1_DIRECT_RPS` | No | `50` | Redis-backed rate limit, requests/second per customer, for direct (resource-scoped) identities (tier `v1_customer_direct`). `<=0` disables the tier. |
+| — (env var only) | `RATE_LIMIT_CUSTOMER_V1_DIRECT_BURST` | No | `100` | Burst size for `RATE_LIMIT_CUSTOMER_V1_DIRECT_RPS`. `<=0` disables the tier. |
+| — (env var only) | `RATE_LIMIT_CUSTOMER_V1_DELEGATE_RPS` | No | `8.3` | Redis-backed rate limit, requests/second per customer, for delegate identities (tier `v1_customer_delegate`). `<=0` disables the tier. |
+| — (env var only) | `RATE_LIMIT_CUSTOMER_V1_DELEGATE_BURST` | No | `16` | Burst size for `RATE_LIMIT_CUSTOMER_V1_DELEGATE_RPS`. `<=0` disables the tier. |
+| — (env var only) | `RATE_LIMIT_CUSTOMER_REDIS_TIMEOUT_MS` | No | `50` | Timeout budget, in milliseconds, for the customer rate limiter's Redis round trip. On timeout the request fails open (proceeds). This is a jitter-tolerant starting value, not a measured p99 — tune after observing production latency. |
 
 SSL certificates are passed as base64-encoded values to allow injection via Kubernetes secrets without multi-line PEM issues.
+
+The per-customer rate limiter uses a dedicated `*redis.Client` (`cmd/api-manager/main.go`, `runDaemon`), constructed from the same `REDIS_ADDRESS`/`REDIS_PASSWORD`/`REDIS_DATABASE` values as the cache client but connected separately — `pkg/cachehandler` is intentionally not reused for this (see `pkg/ratelimithandler`). On Kubernetes, ensure the Redis instance's `maxmemory-policy` is `noeviction` or `volatile-*`; an `allkeys-lru` policy can cause rate-limit keys to be evicted under memory pressure, which degrades to the same fail-open behavior as a Redis timeout.
 
 ---
 

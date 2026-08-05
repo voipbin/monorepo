@@ -1210,7 +1210,7 @@ query := sq.Select(&quot;*&quot;).
 </section>
 <section id="rate-limiting">
 <h2>Rate Limiting<a class="headerlink" href="#rate-limiting" title="Link to this heading">¶</a></h2>
-<p>Protect against abuse. <strong>The configuration below reflects what is actually implemented today</strong> (per-client-IP, in-memory, three tiers) — it previously described an aspirational per-customer quota scheme that was never built; that richer scheme is tracked separately (see note at the end of this section).</p>
+<p>Protect against abuse with two independent layers: a per-client-IP layer (in-memory, per server instance) and a per-customer layer (Redis-backed, global across all server instances).</p>
 <p><strong>Rate Limit Configuration (as implemented):</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Rate</span> <span class="n">Limiting</span> <span class="n">Strategy</span><span class="p">:</span>
 
@@ -1229,21 +1229,38 @@ query := sq.Select(&quot;*&quot;).
 <span class="o">|</span>                  <span class="o">|</span> <span class="n">surface</span> <span class="p">(</span><span class="o">~</span><span class="mi">346</span> <span class="n">routes</span><span class="p">)</span>               <span class="o">|</span> <span class="n">burst</span> <span class="mi">400</span>   <span class="o">|</span>
 <span class="o">+------------------+-------------------------------------+-------------+</span>
 
+<span class="n">Per</span><span class="o">-</span><span class="n">customer</span> <span class="n">limits</span> <span class="p">(</span><span class="n">Redis</span><span class="o">-</span><span class="n">backed</span> <span class="n">GCRA</span><span class="p">,</span> <span class="k">global</span> <span class="n">across</span> <span class="nb">all</span> <span class="n">server</span>
+<span class="n">instances</span> <span class="o">--</span> <span class="n">applies</span> <span class="n">only</span> <span class="n">to</span> <span class="n">the</span> <span class="n">authenticated</span> <span class="n">v1</span><span class="mf">.0</span> <span class="n">API</span> <span class="n">surface</span><span class="p">,</span>
+<span class="n">keyed</span> <span class="n">by</span> <span class="n">customer_id</span> <span class="n">after</span> <span class="n">authentication</span><span class="p">):</span>
+<span class="o">+------------------------+-------------------------------------+-------------+</span>
+<span class="o">|</span> <span class="n">Tier</span>                   <span class="o">|</span> <span class="n">Applies</span> <span class="n">to</span>                          <span class="o">|</span> <span class="n">Limit</span>       <span class="o">|</span>
+<span class="o">+------------------------+-------------------------------------+-------------+</span>
+<span class="o">|</span> <span class="n">v1_customer</span>            <span class="o">|</span> <span class="n">Agent</span> <span class="ow">and</span> <span class="n">accesskey</span> <span class="n">identities</span>      <span class="o">|</span> <span class="mf">16.7</span> <span class="n">req</span><span class="o">/</span><span class="n">s</span><span class="p">,</span> <span class="o">|</span>
+<span class="o">|</span>                        <span class="o">|</span> <span class="p">(</span><span class="n">shared</span> <span class="n">bucket</span> <span class="n">per</span> <span class="n">customer_id</span><span class="p">)</span>     <span class="o">|</span> <span class="n">burst</span> <span class="mi">33</span>    <span class="o">|</span>
+<span class="o">+------------------------+-------------------------------------+-------------+</span>
+<span class="o">|</span> <span class="n">v1_customer_direct</span>     <span class="o">|</span> <span class="n">Direct</span> <span class="p">(</span><span class="n">resource</span><span class="o">-</span><span class="n">scoped</span><span class="p">)</span> <span class="n">identities</span> <span class="o">|</span> <span class="mi">50</span> <span class="n">req</span><span class="o">/</span><span class="n">s</span><span class="p">,</span>   <span class="o">|</span>
+<span class="o">|</span>                        <span class="o">|</span>                                      <span class="o">|</span> <span class="n">burst</span> <span class="mi">100</span>   <span class="o">|</span>
+<span class="o">+------------------------+-------------------------------------+-------------+</span>
+<span class="o">|</span> <span class="n">v1_customer_delegate</span>   <span class="o">|</span> <span class="n">Delegate</span> <span class="p">(</span><span class="n">superadmin</span><span class="o">-</span><span class="n">issued</span><span class="p">)</span>        <span class="o">|</span> <span class="mf">8.3</span> <span class="n">req</span><span class="o">/</span><span class="n">s</span><span class="p">,</span>  <span class="o">|</span>
+<span class="o">|</span>                        <span class="o">|</span> <span class="n">identities</span>                          <span class="o">|</span> <span class="n">burst</span> <span class="mi">16</span>    <span class="o">|</span>
+<span class="o">+------------------------+-------------------------------------+-------------+</span>
+
 <span class="n">Response</span> <span class="n">on</span> <span class="n">Limit</span><span class="p">:</span>
 <span class="o">+------------------------------------------+</span>
 <span class="o">|</span> <span class="n">Status</span><span class="p">:</span> <span class="mi">429</span> <span class="n">Too</span> <span class="n">Many</span> <span class="n">Requests</span>            <span class="o">|</span>
-<span class="o">|</span> <span class="n">Header</span><span class="p">:</span> <span class="p">(</span><span class="n">none</span> <span class="o">--</span> <span class="n">no</span> <span class="n">Retry</span><span class="o">-</span><span class="n">After</span> <span class="n">header</span>   <span class="o">|</span>
-<span class="o">|</span>   <span class="ow">is</span> <span class="n">returned</span><span class="p">;</span> <span class="n">see</span> <span class="n">restful_api</span><span class="o">.</span><span class="n">rst</span><span class="p">)</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="n">Header</span><span class="p">:</span> <span class="n">Retry</span><span class="o">-</span><span class="n">After</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">seconds</span><span class="o">&gt;</span>           <span class="o">|</span>
 <span class="o">|</span> <span class="n">Body</span><span class="p">:</span> <span class="n">canonical</span> <span class="n">error</span> <span class="n">envelope</span> <span class="k">with</span>      <span class="o">|</span>
 <span class="o">|</span>   <span class="n">status</span><span class="o">=</span><span class="n">RESOURCE_EXHAUSTED</span>              <span class="o">|</span>
 <span class="o">|</span>   <span class="n">reason</span><span class="o">=</span><span class="n">RATE_LIMIT_EXCEEDED</span>             <span class="o">|</span>
-<span class="o">|</span> <span class="p">(</span><span class="n">see</span> <span class="n">restful_api</span><span class="o">.</span><span class="n">rst</span> <span class="n">error</span> <span class="n">envelope</span><span class="p">)</span>     <span class="o">|</span>
+<span class="o">|</span>   <span class="n">details</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">limited_by</span> <span class="o">=</span> <span class="s2">&quot;ip&quot;</span> <span class="o">|</span>         <span class="o">|</span>
+<span class="o">|</span>     <span class="s2">&quot;customer&quot;</span>                           <span class="o">|</span>
+<span class="o">|</span> <span class="p">(</span><span class="n">see</span> <span class="n">restful_api_errors</span><span class="o">.</span><span class="n">rst</span><span class="p">)</span>             <span class="o">|</span>
 <span class="o">+------------------------------------------+</span>
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>These are per-IP, per-server-instance limits, not a hard global ceiling or a per-customer quota — a client’s effective limit can scale with backend replica count. They are a blast-radius safety valve against runaway or accidental traffic, not a dedicated anti-abuse control. A future per-customer/per-accesskey quota system (with shared, Redis-backed state and <cite>Retry-After</cite> support) is tracked separately in VOIP-1302 and is not yet implemented.</p>
+<p>The per-IP tiers are per-server-instance limits, not a hard global ceiling – a client’s effective per-IP limit can scale with backend replica count. The per-customer tiers, in contrast, are enforced against shared Redis state and therefore hold as a true global ceiling regardless of how many server instances are running. Agent and accesskey identities for the same customer intentionally share one bucket (<code class="docutils literal notranslate"><span class="pre">v1_customer</span></code>) so a customer cannot double their effective quota by using both credentials at once; direct and delegate identities use their own independent buckets because they represent different trust levels and traffic profiles, not because of a uniform per-customer cap. The per-customer layer applies only to the authenticated <code class="docutils literal notranslate"><span class="pre">v1.0</span></code> API surface (not <code class="docutils literal notranslate"><span class="pre">/auth/unregister</span></code> or <code class="docutils literal notranslate"><span class="pre">/auth/delegate</span></code>) and fails open on Redis errors or timeouts – it is an abuse-protection safety valve, not a billing or entitlement enforcement mechanism.</p>
 </div>
 <p><strong>DDoS Protection:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Cloud</span> <span class="n">Armor</span> <span class="n">Configuration</span><span class="p">:</span>

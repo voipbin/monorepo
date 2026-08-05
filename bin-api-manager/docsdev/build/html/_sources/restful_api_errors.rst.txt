@@ -43,7 +43,7 @@ These reasons are not tied to a specific resource and may be returned by any end
      - The endpoint requires a JWT login flow that the current direct access (access key) cannot satisfy. Re-authenticate via JWT.
    * - ``RATE_LIMIT_EXCEEDED``
      - 429
-     - Client exceeded the rate limit for this endpoint. Back off and retry with exponential delay.
+     - Client exceeded the rate limit for this endpoint. The response carries a ``Retry-After: <seconds>`` header and ``error.details[0].limited_by`` is either ``"ip"`` (per-client-IP tier) or ``"customer"`` (per-customer tier, authenticated ``v1.0`` routes only). Back off for at least ``Retry-After`` seconds and retry.
    * - ``RESOURCE_NOT_FOUND``
      - 404
      - The requested resource does not exist or does not belong to the authenticated customer. Verify the UUID was obtained from a recent ``GET`` list call. Returned when the upstream condition does not carry a more specific resource-prefixed not-found reason.

@@ -341,6 +341,7 @@ func TestAuthenticate(t *testing.T) {
 				c.Set(modelscommon.OBJServiceHandler, mockSH)
 			})
 			router.Use(Authenticate())
+			router.Use(EnforceAccountStatus())
 			router.GET("/", func(c *gin.Context) {
 				c.Status(200)
 			})
@@ -479,6 +480,7 @@ func TestAuthenticate_FrozenAccountEnvelope(t *testing.T) {
 		c.Set(modelscommon.OBJServiceHandler, mockSH)
 	})
 	r.Use(Authenticate())
+	r.Use(EnforceAccountStatus())
 	r.GET("/v1.0/agents", func(c *gin.Context) { c.String(http.StatusOK, "ok") })
 
 	req := httptest.NewRequest(http.MethodGet, "/v1.0/agents", nil)
@@ -543,6 +545,7 @@ func TestAuthenticateWithInvalidAgentData(t *testing.T) {
 		c.Set(modelscommon.OBJServiceHandler, mockSH)
 	})
 	router.Use(Authenticate())
+	router.Use(EnforceAccountStatus())
 	router.GET("/", func(c *gin.Context) {
 		c.Status(200)
 	})
@@ -583,6 +586,7 @@ func TestAuthenticateWithMalformedAgentJSON(t *testing.T) {
 		c.Set(modelscommon.OBJServiceHandler, mockSH)
 	})
 	router.Use(Authenticate())
+	router.Use(EnforceAccountStatus())
 	router.GET("/", func(c *gin.Context) {
 		c.Status(200)
 	})
@@ -752,6 +756,7 @@ func TestAuthenticateAgentStoredInContext(t *testing.T) {
 		c.Set(modelscommon.OBJServiceHandler, mockSH)
 	})
 	router.Use(Authenticate())
+	router.Use(EnforceAccountStatus())
 	router.GET("/", func(c *gin.Context) {
 		// Capture the auth identity from context
 		if tmp, exists := c.Get("auth_identity"); exists {
@@ -883,6 +888,7 @@ func TestAuthenticateAccesskey(t *testing.T) {
 				c.Set(modelscommon.OBJServiceHandler, mockSH)
 			})
 			router.Use(Authenticate())
+			router.Use(EnforceAccountStatus())
 			router.GET("/", func(c *gin.Context) {
 				if tmp, exists := c.Get("auth_identity"); exists {
 					capturedIdentity = tmp.(*auth.AuthIdentity)
@@ -1164,6 +1170,7 @@ func TestAuthenticateFrozenAccount(t *testing.T) {
 				c.Set(modelscommon.OBJServiceHandler, mockSH)
 			})
 			router.Use(Authenticate())
+			router.Use(EnforceAccountStatus())
 
 			// Register routes to match the test paths
 			handler := func(c *gin.Context) {
@@ -1179,4 +1186,123 @@ func TestAuthenticateFrozenAccount(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestEnforceAccountStatus_MissingIdentity verifies EnforceAccountStatus
+// fails closed (401) when Authenticate() has not run first and populated
+// "auth_identity" in the gin context.
+func TestEnforceAccountStatus_MissingIdentity(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	r := gin.New()
+	r.Use(EnforceAccountStatus())
+	r.GET("/", func(c *gin.Context) { c.Status(200) })
+
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusUnauthorized {
+		t.Errorf("expected 401 when auth_identity is missing, got %d", w.Code)
+	}
+}
+
+// TestEnforceAccountStatus_ActiveAccountPasses verifies EnforceAccountStatus
+// calls c.Next() and lets the request through for an active (non-frozen)
+// account, when chained directly after Authenticate().
+func TestEnforceAccountStatus_ActiveAccountPasses(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	testAgent := amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+			CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+		},
+		Permission: amagent.PermissionCustomerAdmin,
+	}
+
+	mockSH := servicehandler.NewMockServiceHandler(mc)
+	mockSH.EXPECT().AuthJWTParse(gomock.Any(), "validToken").Return(map[string]interface{}{
+		"agent": testAgent,
+	}, nil)
+	mockSH.EXPECT().CustomerRawSelfGet(gomock.Any(), gomock.Any()).Return(&cscustomer.WebhookMessage{
+		Status: cscustomer.StatusActive,
+	}, nil)
+
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	req.Header.Set("Authorization", "Bearer validToken")
+	w := httptest.NewRecorder()
+
+	r := gin.New()
+	r.Use(func(c *gin.Context) {
+		c.Set(modelscommon.OBJServiceHandler, mockSH)
+	})
+	r.Use(Authenticate())
+	r.Use(EnforceAccountStatus())
+	r.GET("/", func(c *gin.Context) { c.Status(200) })
+
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("expected 200 for active account, got %d", w.Code)
+	}
+}
+
+// TestAuthenticateThenEnforceAccountStatus_DelegateBlockedWhenFrozen is the
+// mandatory regression test from VOIP-1302 design §4-6/§4-13: it verifies
+// that splitting Authenticate() and EnforceAccountStatus() into two
+// middlewares does NOT change the existing behavior that a frozen account
+// cannot call POST /auth/delegate. This mirrors the exact middleware order
+// used by the authProtected route group in cmd/api-manager/main.go
+// (Authenticate() -> EnforceAccountStatus(), unchanged by this PR).
+func TestAuthenticateThenEnforceAccountStatus_DelegateBlockedWhenFrozen(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	testCustomerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
+	deletionTime := time.Date(2026, 3, 19, 0, 0, 0, 0, time.UTC)
+
+	testAgent := amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+			CustomerID: testCustomerID,
+		},
+		// Not a project super admin, so the frozen check is not skipped.
+		Permission: amagent.PermissionCustomerAdmin,
+	}
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSH := servicehandler.NewMockServiceHandler(mc)
+	mockSH.EXPECT().AuthJWTParse(gomock.Any(), "validToken").Return(map[string]interface{}{
+		"agent": testAgent,
+	}, nil)
+	mockSH.EXPECT().CustomerRawSelfGet(gomock.Any(), gomock.Any()).Return(&cscustomer.WebhookMessage{
+		Status:              cscustomer.StatusFrozen,
+		TMDeletionScheduled: &deletionTime,
+	}, nil)
+
+	req := httptest.NewRequest(http.MethodPost, "/auth/delegate", nil)
+	req.Header.Set("Authorization", "Bearer validToken")
+	w := httptest.NewRecorder()
+
+	r := gin.New()
+	r.Use(RequestID())
+	r.Use(func(c *gin.Context) {
+		c.Set(modelscommon.OBJServiceHandler, mockSH)
+	})
+	// Same order as the authProtected group in cmd/api-manager/main.go.
+	r.Use(Authenticate())
+	r.Use(EnforceAccountStatus())
+	r.POST("/auth/delegate", func(c *gin.Context) { c.Status(200) })
+
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusForbidden {
+		t.Fatalf("POST /auth/delegate on a frozen account: expected 403, got %d", w.Code)
+	}
+	assertAuthErrorEnvelope(t, w.Body.Bytes(), "PERMISSION_DENIED", "ACCOUNT_FROZEN")
 }
