@@ -689,7 +689,7 @@
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">RATE_LIMIT_EXCEEDED</span></code></p></td>
 <td><p>429</p></td>
-<td><p>Client exceeded the rate limit for this endpoint. Back off and retry with exponential delay.</p></td>
+<td><p>Client exceeded the rate limit for this endpoint. The response carries a <code class="docutils literal notranslate"><span class="pre">Retry-After:</span> <span class="pre">&lt;seconds&gt;</span></code> header and <code class="docutils literal notranslate"><span class="pre">error.details[0].limited_by</span></code> is either <code class="docutils literal notranslate"><span class="pre">&quot;ip&quot;</span></code> (per-client-IP tier) or <code class="docutils literal notranslate"><span class="pre">&quot;customer&quot;</span></code> (per-customer tier, authenticated <code class="docutils literal notranslate"><span class="pre">v1.0</span></code> routes only). Back off for at least <code class="docutils literal notranslate"><span class="pre">Retry-After</span></code> seconds and retry.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">RESOURCE_NOT_FOUND</span></code></p></td>
 <td><p>404</p></td>

@@ -205,13 +205,21 @@ All API requests and responses use JSON format.
 Rate Limiting
 -------------
 
-VoIPBIN applies a per-client-IP rate limit to all API requests, enforced in three tiers:
+VoIPBIN applies two independent layers of rate limiting to API requests:
 
-* Unauthenticated ``/auth/*`` endpoints (signup, login/boot, password reset, etc. — see :ref:`Auth <auth-main>` for the full list): up to approximately 10 requests/second, burst of 20.
-* Authenticated account-management endpoints (``/auth/unregister``, ``/auth/delegate``): up to approximately 10 requests/second, burst of 20.
-* The rest of the authenticated ``/v1.0/*`` API surface (calls, messages, and the rest of the platform API): up to approximately 200 requests/second, burst of 400.
+* A **per-client-IP** limit (in-memory, per server instance), enforced in three tiers:
 
-These figures are per-IP and per-server-instance, not an exact guaranteed ceiling — the effective limit for a given client can vary with backend scaling, so treat them as an order-of-magnitude guide rather than a fixed contract. When a limit is exceeded, the API returns a ``429 Too Many Requests`` response using the same canonical error envelope described in :ref:`error-response-envelope`, with reason code ``RATE_LIMIT_EXCEEDED``.
+  * Unauthenticated ``/auth/*`` endpoints (signup, login/boot, password reset, etc. — see :ref:`Auth <auth-main>` for the full list): up to approximately 10 requests/second, burst of 20.
+  * Authenticated account-management endpoints (``/auth/unregister``, ``/auth/delegate``): up to approximately 10 requests/second, burst of 20.
+  * The rest of the authenticated ``/v1.0/*`` API surface (calls, messages, and the rest of the platform API): up to approximately 200 requests/second, burst of 400.
+
+* A **per-customer** global quota (Redis-backed, shared state across all server instances — not just an order-of-magnitude guide but an actual hard ceiling), enforced only on the authenticated ``/v1.0/*`` surface after your credentials are validated:
+
+  * Agent and accesskey credentials for the same customer share one bucket: approximately 16.7 requests/second, burst of 33.
+  * Direct (resource-scoped) tokens: approximately 50 requests/second, burst of 100.
+  * Delegate tokens: approximately 8.3 requests/second, burst of 16.
+
+The per-IP figures are per-server-instance, not an exact guaranteed ceiling — the effective limit for a given client can vary with backend scaling, so treat them as an order-of-magnitude guide. The per-customer figures, by contrast, are enforced against shared state and hold as a true global ceiling for your account regardless of which server instance handles the request. When either limit is exceeded, the API returns a ``429 Too Many Requests`` response using the same canonical error envelope described in :ref:`error-response-envelope`, with reason code ``RATE_LIMIT_EXCEEDED``, a ``Retry-After`` header (seconds to wait before retrying), and ``error.details[0].limited_by`` set to ``"ip"`` or ``"customer"`` depending on which layer rejected the request.
 
 .. code::
 
@@ -219,16 +227,20 @@ These figures are per-IP and per-server-instance, not an exact guaranteed ceilin
         "error": {
             "status": "RESOURCE_EXHAUSTED",
             "reason": "RATE_LIMIT_EXCEEDED",
-            "message": "Too many requests. Please try again later."
+            "message": "Too many requests. Please try again later.",
+            "details": [
+                { "limited_by": "customer" }
+            ]
         }
     }
 
 .. note:: **AI Implementation Hint**
 
-   The rate limit response does **not** include ``X-RateLimit-*`` or ``Retry-After`` headers -- there is no way to read the remaining quota or reset time from the response. Detect rate limiting purely from the ``429`` status code and ``RATE_LIMIT_EXCEEDED`` reason, and back off blindly (exponential backoff) rather than relying on a reset timestamp.
+   The rate limit response includes a ``Retry-After: <seconds>`` header on every 429. Prefer waiting the exact number of seconds it specifies over blind exponential backoff, and fall back to exponential backoff only if the header is unexpectedly absent.
 
 **Handling rate limits:**
 
 1. Detect the ``429`` status code and ``RATE_LIMIT_EXCEEDED`` reason
-2. Implement exponential backoff for retries (no reset time is provided)
-3. Cache responses when possible to reduce API calls
+2. Read the ``Retry-After`` header and wait that many seconds before retrying (fall back to exponential backoff if the header is missing)
+3. Inspect ``error.details[0].limited_by`` to distinguish an IP-level limit from a customer-level (account-wide) limit
+4. Cache responses when possible to reduce API calls

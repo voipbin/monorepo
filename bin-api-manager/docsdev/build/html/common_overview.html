@@ -849,18 +849,32 @@ definitions, status-to-HTTP mapping, and AI implementation hints.</p>
 </section>
 <section id="rate-limiting">
 <span id="id1"></span><h2>Rate Limiting<a class="headerlink" href="#rate-limiting" title="Link to this heading">¶</a></h2>
-<p>VoIPBIN applies a per-client-IP rate limit to all API requests, enforced in three tiers:</p>
+<p>VoIPBIN applies two independent layers of rate limiting to API requests:</p>
 <ul class="simple">
+<li><p>A <strong>per-client-IP</strong> limit (in-memory, per server instance), enforced in three tiers:</p>
+<ul>
 <li><p>Unauthenticated <code class="docutils literal notranslate"><span class="pre">/auth/*</span></code> endpoints (signup, login/boot, password reset, etc. — see <a class="reference internal" href="auth.html#auth-main"><span class="std std-ref">Auth</span></a> for the full list): up to approximately 10 requests/second, burst of 20.</p></li>
 <li><p>Authenticated account-management endpoints (<code class="docutils literal notranslate"><span class="pre">/auth/unregister</span></code>, <code class="docutils literal notranslate"><span class="pre">/auth/delegate</span></code>): up to approximately 10 requests/second, burst of 20.</p></li>
 <li><p>The rest of the authenticated <code class="docutils literal notranslate"><span class="pre">/v1.0/*</span></code> API surface (calls, messages, and the rest of the platform API): up to approximately 200 requests/second, burst of 400.</p></li>
 </ul>
-<p>These figures are per-IP and per-server-instance, not an exact guaranteed ceiling — the effective limit for a given client can vary with backend scaling, so treat them as an order-of-magnitude guide rather than a fixed contract. When a limit is exceeded, the API returns a <code class="docutils literal notranslate"><span class="pre">429</span> <span class="pre">Too</span> <span class="pre">Many</span> <span class="pre">Requests</span></code> response using the same canonical error envelope described in <a class="reference internal" href="restful_api.html#error-response-envelope"><span class="std std-ref">Error Response Envelope</span></a>, with reason code <code class="docutils literal notranslate"><span class="pre">RATE_LIMIT_EXCEEDED</span></code>.</p>
+</li>
+<li><p>A <strong>per-customer</strong> global quota (Redis-backed, shared state across all server instances — not just an order-of-magnitude guide but an actual hard ceiling), enforced only on the authenticated <code class="docutils literal notranslate"><span class="pre">/v1.0/*</span></code> surface after your credentials are validated:</p>
+<ul>
+<li><p>Agent and accesskey credentials for the same customer share one bucket: approximately 16.7 requests/second, burst of 33.</p></li>
+<li><p>Direct (resource-scoped) tokens: approximately 50 requests/second, burst of 100.</p></li>
+<li><p>Delegate tokens: approximately 8.3 requests/second, burst of 16.</p></li>
+</ul>
+</li>
+</ul>
+<p>The per-IP figures are per-server-instance, not an exact guaranteed ceiling — the effective limit for a given client can vary with backend scaling, so treat them as an order-of-magnitude guide. The per-customer figures, by contrast, are enforced against shared state and hold as a true global ceiling for your account regardless of which server instance handles the request. When either limit is exceeded, the API returns a <code class="docutils literal notranslate"><span class="pre">429</span> <span class="pre">Too</span> <span class="pre">Many</span> <span class="pre">Requests</span></code> response using the same canonical error envelope described in <a class="reference internal" href="restful_api.html#error-response-envelope"><span class="std std-ref">Error Response Envelope</span></a>, with reason code <code class="docutils literal notranslate"><span class="pre">RATE_LIMIT_EXCEEDED</span></code>, a <code class="docutils literal notranslate"><span class="pre">Retry-After</span></code> header (seconds to wait before retrying), and <code class="docutils literal notranslate"><span class="pre">error.details[0].limited_by</span></code> set to <code class="docutils literal notranslate"><span class="pre">&quot;ip&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;customer&quot;</span></code> depending on which layer rejected the request.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;RESOURCE_EXHAUSTED&quot;</span><span class="p">,</span>
         <span class="s2">&quot;reason&quot;</span><span class="p">:</span> <span class="s2">&quot;RATE_LIMIT_EXCEEDED&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Too many requests. Please try again later.&quot;</span>
+        <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Too many requests. Please try again later.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span> <span class="s2">&quot;limited_by&quot;</span><span class="p">:</span> <span class="s2">&quot;customer&quot;</span> <span class="p">}</span>
+        <span class="p">]</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -868,12 +882,13 @@ definitions, status-to-HTTP mapping, and AI implementation hints.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>The rate limit response does <strong>not</strong> include <code class="docutils literal notranslate"><span class="pre">X-RateLimit-*</span></code> or <code class="docutils literal notranslate"><span class="pre">Retry-After</span></code> headers – there is no way to read the remaining quota or reset time from the response. Detect rate limiting purely from the <code class="docutils literal notranslate"><span class="pre">429</span></code> status code and <code class="docutils literal notranslate"><span class="pre">RATE_LIMIT_EXCEEDED</span></code> reason, and back off blindly (exponential backoff) rather than relying on a reset timestamp.</p>
+<p>The rate limit response includes a <code class="docutils literal notranslate"><span class="pre">Retry-After:</span> <span class="pre">&lt;seconds&gt;</span></code> header on every 429. Prefer waiting the exact number of seconds it specifies over blind exponential backoff, and fall back to exponential backoff only if the header is unexpectedly absent.</p>
 </div>
 <p><strong>Handling rate limits:</strong></p>
 <ol class="arabic simple">
 <li><p>Detect the <code class="docutils literal notranslate"><span class="pre">429</span></code> status code and <code class="docutils literal notranslate"><span class="pre">RATE_LIMIT_EXCEEDED</span></code> reason</p></li>
-<li><p>Implement exponential backoff for retries (no reset time is provided)</p></li>
+<li><p>Read the <code class="docutils literal notranslate"><span class="pre">Retry-After</span></code> header and wait that many seconds before retrying (fall back to exponential backoff if the header is missing)</p></li>
+<li><p>Inspect <code class="docutils literal notranslate"><span class="pre">error.details[0].limited_by</span></code> to distinguish an IP-level limit from a customer-level (account-wide) limit</p></li>
 <li><p>Cache responses when possible to reduce API calls</p></li>
 </ol>
 </section>

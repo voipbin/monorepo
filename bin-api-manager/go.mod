@@ -94,6 +94,8 @@ require (
 require (
 	cloud.google.com/go/storage v1.61.3
 	github.com/CyCoreSystems/audiosocket v0.3.0
+	github.com/alicebob/miniredis/v2 v2.38.0
+	github.com/go-redis/redis_rate/v9 v9.1.2
 	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/gorilla/websocket v1.5.4-0.20250319132907-e064f32e3674
 	github.com/oapi-codegen/oapi-codegen/v2 v2.7.1
@@ -223,6 +225,7 @@ require (
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.3.1 // indirect
 	github.com/vmware-labs/yaml-jsonpath v0.3.2 // indirect
+	github.com/yuin/gopher-lua v1.1.1 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/contrib/detectors/gcp v1.43.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.64.0 // indirect
