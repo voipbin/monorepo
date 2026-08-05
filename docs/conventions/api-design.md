@@ -37,9 +37,9 @@ func (h *serviceHandler) BillingGet(ctx context.Context, ...) (*BillingWithAccou
 
 **How to fetch related data:** For all other cases, clients make separate requests:
 ```
-1. GET /v1/billings/{billing-id}        → Get billing record
-2. GET /v1/billing_accounts/{account-id} → Get account details (if needed)
-3. GET /v1/calls/{call-id}              → Get call details (if needed)
+1. GET /v1/billings/{billing-id}   → Get billing record (⚠️ known naming exception, see §10.5)
+2. GET /v1/billing_accounts/{id}   → Get account details (if needed)
+3. GET /v1/calls/{id}              → Get call details (if needed)
 ```
 
 For authentication and authorization patterns, see `bin-api-manager/CLAUDE.md`.
@@ -97,5 +97,33 @@ For the complete implementation guide, see [common-workflows.md](../workflows/co
 ### 10.4 OpenAPI Schema Sync
 
 When modifying API-facing structs, update the OpenAPI schema to match `WebhookMessage` fields (not internal struct). See the [verification workflow](../../CLAUDE.md#critical-before-committing-changes) for the required regeneration steps.
+
+### 10.5 URL Path Segment Naming
+
+**CRITICAL: Public REST API path segments and path parameters (the routes `bin-api-manager`/`bin-openapi-manager` expose to clients) use underscore (`snake_case`), never hyphen (`kebab-case`).**
+
+```
+// CORRECT
+PUT  /v1/agents/{id}/tag_ids
+POST /v1/webchat_widgets/{id}/direct_hash_regenerate
+GET  /v1/contact_cases
+
+// WRONG — do not introduce new hyphenated segments or parameter names
+POST /v1/agents/{id}/tag-ids
+GET  /v1/contact-cases
+```
+
+This scopes only to the **public REST API surface**. Internal inter-service RPC `requestType` URIs (the strings passed to `bin-common-handler/pkg/requesthandler`) are a separate, unrelated contract and are not covered by this rule.
+
+**Why underscore:** it has been VoIPbin's convention since `bin-openapi-manager`'s first commit — every resource path added at that point used either underscore or a single word, with zero hyphens. Hyphenated segments only appeared during a ~5-month window (roughly Jan–Jun 2026) in the absence of a written rule, and every resource added since (`webchat_widgets`, `webchat_sessions`, `webchat_messages`, `contact_peer_events`) reverted to underscore — including `webchat_widgets` reimplementing an action that exists elsewhere as hyphenated (`direct-hash-regenerate`) using underscore (`direct_hash_regenerate`) instead.
+
+**Known exceptions (do not copy these into new work):** these hyphenated paths/parameters predate this rule and are live, in-use API surface. Renaming them is a breaking change for existing clients and is tracked separately, not covered by this convention note:
+
+- `POST /v1/auth/email-verify`, `/v1/auth/password-forgot`, `/v1/auth/password-reset`
+- `GET /v1/timelines/calls/{call_id}/sip-analysis`
+- `GET /v1/timeline-analyses`
+- `GET /v1/aggregated-events`
+- `POST /v1/{agents,ais,conferences,extensions,flows,queues,teams}/{id}/direct-hash-regenerate`
+- Path parameter `{billing-id}` on the `billings` resource
 
 ---
