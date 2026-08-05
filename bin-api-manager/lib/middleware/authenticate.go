@@ -29,6 +29,13 @@ const (
 	delegateAudience = "voipbin-api"
 )
 
+// Authenticate parses the request's credentials (JWT or accesskey) and
+// stores the resulting *auth.AuthIdentity in the gin context under
+// "auth_identity". It does NOT enforce account status (frozen check) —
+// callers that need that check must additionally chain EnforceAccountStatus()
+// after Authenticate(). This split (VOIP-1302 §4-6) lets route groups place
+// other middleware (e.g. CustomerRateLimit) between authentication and the
+// frozen-account RPC check.
 func Authenticate() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		log := logrus.WithFields(logrus.Fields{
@@ -66,6 +73,29 @@ func Authenticate() gin.HandlerFunc {
 		// For delegate tokens, annotate the request context with the JTI for audit tracing
 		if identity.IsDelegate() && identity.DelegateScope != nil {
 			c.Set("delegate_jti", identity.DelegateScope.JTI)
+		}
+
+		c.Next()
+	}
+}
+
+// EnforceAccountStatus checks whether the authenticated identity's customer
+// account is frozen and blocks the request if so. It requires Authenticate()
+// to have run earlier in the chain and populated "auth_identity" in the gin
+// context; if that identity is missing, the request is treated as
+// unauthenticated (fail closed) rather than silently passing through.
+func EnforceAccountStatus() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		v, exists := c.Get("auth_identity")
+		if !exists {
+			abortUnauthenticated(c, "AUTHENTICATION_REQUIRED", "Authentication is required.")
+			return
+		}
+
+		identity, ok := v.(*auth.AuthIdentity)
+		if !ok || identity == nil {
+			abortUnauthenticated(c, "AUTHENTICATION_REQUIRED", "Authentication is required.")
+			return
 		}
 
 		// Check if customer account is frozen
@@ -319,4 +349,3 @@ func abortUnauthenticated(c *gin.Context, reason, message string) {
 		apierror.EnvelopeFor(e, RequestIDFromContext(c)),
 	)
 }
-
