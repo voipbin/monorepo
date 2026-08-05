@@ -104,26 +104,26 @@ When modifying API-facing structs, update the OpenAPI schema to match `WebhookMe
 
 ```
 // CORRECT
-PUT  /v1/agents/{id}/tag_ids
-POST /v1/webchat_widgets/{id}/direct_hash_regenerate
-GET  /v1/contact_cases
+PUT  /v1.0/agents/{id}/tag_ids
+POST /v1.0/webchat_widgets/{id}/direct_hash_regenerate
+GET  /v1.0/contact_cases
 
 // WRONG — do not introduce new hyphenated segments or parameter names
-POST /v1/agents/{id}/tag-ids
-GET  /v1/contact-cases
+POST /v1.0/agents/{id}/tag-ids
+GET  /v1.0/contact-cases
 ```
 
 This scopes only to the **public REST API surface**. Internal inter-service RPC `requestType` URIs (the strings passed to `bin-common-handler/pkg/requesthandler`) are a separate, unrelated contract and are not covered by this rule.
 
 **Why underscore:** it has been VoIPbin's convention since `bin-openapi-manager`'s first commit — every resource path added at that point used either underscore or a single word, with zero hyphens. Hyphenated segments only appeared during a ~5-month window (roughly Jan–Jun 2026) in the absence of a written rule, and every resource added since (`webchat_widgets`, `webchat_sessions`, `webchat_messages`, `contact_peer_events`) reverted to underscore — including `webchat_widgets` reimplementing an action that exists elsewhere as hyphenated (`direct-hash-regenerate`) using underscore (`direct_hash_regenerate`) instead.
 
-**Known exceptions (do not copy these into new work):** these hyphenated paths/parameters predate this rule and are live, in-use API surface. Renaming them is a breaking change for existing clients and is tracked separately, not covered by this convention note:
+**Known exceptions (do not copy these into new work):** these hyphenated paths/parameters predate this rule and are live, in-use API surface. **Decision (VOIP-1312): these are permanent exceptions, not a pending migration.** They stay hyphenated indefinitely — renaming them is a breaking change for production email links, `voipbin-python-sdk`, `voipbin-go`, the `square-main` public API docs, and multiple `square-admin` views, and the migration cost outweighs the consistency benefit. Do not migrate these; do not reference them as "to be renamed" in other docs or tickets. The rule above applies to all work going forward — every resource added since this window (`webchat_widgets`, `webchat_sessions`, `webchat_messages`, `contact_peer_events`) has already used underscore, and that must continue:
 
-- `POST /v1/auth/email-verify`, `/v1/auth/password-forgot`, `/v1/auth/password-reset`
-- `GET /v1/timelines/calls/{call_id}/sip-analysis`
-- `GET /v1/timeline-analyses`
-- `GET /v1/aggregated-events`
-- `POST /v1/{agents,ais,conferences,extensions,flows,queues,teams}/{id}/direct-hash-regenerate`
-- Path parameter `{billing-id}` on the `billings` resource
+- `POST /auth/email-verify`, `/auth/password-forgot`, `/auth/password-reset` — no version prefix (registered outside the `v1.0` router group)
+- `GET /v1.0/timelines/calls/{call_id}/sip-analysis`
+- `GET /v1.0/timeline-analyses`
+- `GET /v1.0/aggregated-events`
+- `POST /v1.0/{agents,ais,conferences,extensions,flows,queues,teams}/{id}/direct-hash-regenerate`
+- Path parameter `{billing-id}` on the `billings` resource (`GET /v1.0/billings/{billing-id}`) — parameter name only, not exposed in the URL clients send (`/v1.0/billings/<uuid>`), so this one carries no client-migration cost either way
 
 ---
