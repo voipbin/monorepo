@@ -190,8 +190,15 @@ func CustomerRateLimit(limiter ratelimithandler.RateLimiter, cfg CustomerRateLim
 		ctx, cancel := context.WithTimeout(c.Request.Context(), cfg.RedisTimeout)
 		defer cancel()
 
+		// Clamp to a minimum of 1: rps values below 0.5 round to 0 via
+		// math.Round, and a Rate of 0 sends redis_rate's GCRA Lua script
+		// into an undefined division-by-zero state rather than a "very
+		// restrictive" but well-defined limit. The `rps > 0` check above
+		// only guards against disabling the tier, not against rounding
+		// down to zero.
+		rate := max(int(math.Round(rps)), 1)
 		limit := ratelimithandler.Limit{
-			Rate:   int(math.Round(rps)),
+			Rate:   rate,
 			Burst:  burst,
 			Period: time.Second,
 		}

@@ -320,6 +320,46 @@ func TestCustomerRateLimit_DisabledTierPassesThrough(t *testing.T) {
 	}
 }
 
+// TestCustomerRateLimit_FractionalRPSClampedToOne verifies that an rps
+// configured between 0 (exclusive, which disables the tier) and 0.5
+// (exclusive) does not round down to a GCRA Rate of 0 -- which would send
+// redis_rate's Lua script into an undefined division-by-zero state -- but
+// is instead clamped to a minimum Rate of 1.
+func TestCustomerRateLimit_FractionalRPSClampedToOne(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockLimiter := ratelimithandler.NewMockRateLimiter(mc)
+
+	var capturedLimit ratelimithandler.Limit
+	mockLimiter.EXPECT().Allow(gomock.Any(), gomock.Any(), gomock.Any()).
+		DoAndReturn(func(_ interface{}, _ string, limit ratelimithandler.Limit) (*ratelimithandler.Result, error) {
+			capturedLimit = limit
+			return &ratelimithandler.Result{Allowed: 1, Remaining: 0, RetryAfter: -1}, nil
+		})
+
+	identity := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{CustomerID: customerID},
+	})
+
+	cfg := testCustomerRateLimitConfig()
+	cfg.CustomerRPS = 0.3 // rounds to 0 via math.Round, must be clamped to 1
+
+	r := gin.New()
+	r.Use(setIdentity(identity))
+	r.Use(CustomerRateLimit(mockLimiter, cfg))
+	r.GET("/", func(c *gin.Context) { c.Status(200) })
+	r.ServeHTTP(httptest.NewRecorder(), httptest.NewRequest(http.MethodGet, "/", nil))
+
+	if capturedLimit.Rate != 1 {
+		t.Errorf("Rate = %d, want 1 (clamped from rps=0.3)", capturedLimit.Rate)
+	}
+}
+
 // TestCustomerRateLimit_AllowedPassesThrough verifies a permitted request
 // proceeds to the handler without any error response.
 func TestCustomerRateLimit_AllowedPassesThrough(t *testing.T) {
