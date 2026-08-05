@@ -23,10 +23,12 @@ var (
 	ErrServiceUnavailable           = stderrors.New("service unavailable")
 	ErrInsufficientBalance          = stderrors.New("insufficient balance")
 
-	// ErrCaseClosed is returned by Case-message-send validation (design
-	// §4.5 step 1) when the target case is not status='open'. Points the
-	// caller at POST /v1.0/contact_cases/{id}/continue.
-	ErrCaseClosed = stderrors.New("case is closed; call continue to reopen it before sending a message")
+	// ErrCaseClosed is returned whenever an operation requires the target
+	// case to be status='open' and it is not -- originally Case-message-send
+	// validation (design §4.5 step 1), now also reused by
+	// ServiceAgentCaseAssign (SQUARE-24). Points the caller at
+	// POST /v1.0/contact_cases/{id}/continue.
+	ErrCaseClosed = stderrors.New("case is closed; call continue to reopen it before performing this action")
 
 	// ErrCaseDestinationNotAssociated is the SINGLE GENERIC error for
 	// design §4.5 step 2's destination-to-case binding check. It MUST be

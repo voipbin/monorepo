@@ -2,6 +2,7 @@ package servicehandler
 
 import (
 	"context"
+	"errors"
 	"reflect"
 	"testing"
 
@@ -244,6 +245,7 @@ func Test_ServiceAgentCaseAssign(t *testing.T) {
 		expectAssignCall   bool
 		expectRes          *cmkase.Case
 		expectErr          bool
+		expectErrIs        error
 	}
 
 	agentCustomerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
@@ -344,6 +346,32 @@ func Test_ServiceAgentCaseAssign(t *testing.T) {
 			expectAssignCall:   false,
 			expectErr:          true,
 		},
+		{
+			// The case is CLOSED. Must be rejected with ErrCaseClosed before
+			// the owner agent is even looked up, and ContactV1CaseAssign
+			// must never be called.
+			name: "case is closed",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: agentCustomerID,
+				},
+				Permission: amagent.PermissionCustomerAgent,
+			}),
+			caseID:  uuid.FromStringOrNil("df394b78-8270-11ed-914d-6bceafeffecb"),
+			ownerID: uuid.FromStringOrNil("f6b8b5f0-8270-11ed-9e5a-4bcaa2b972d6"),
+
+			responseCaseGet: &cmkase.Case{
+				ID:         uuid.FromStringOrNil("df394b78-8270-11ed-914d-6bceafeffecb"),
+				CustomerID: agentCustomerID,
+				Status:     cmkase.StatusClosed,
+			},
+
+			expectAgentGetCall: false,
+			expectAssignCall:   false,
+			expectErr:          true,
+			expectErrIs:        serviceerrors.ErrCaseClosed,
+		},
 	}
 
 	for _, tt := range tests {
@@ -373,6 +401,9 @@ func Test_ServiceAgentCaseAssign(t *testing.T) {
 			if tt.expectErr {
 				if err == nil {
 					t.Errorf("Wrong match. expect: error, got: ok")
+				}
+				if tt.expectErrIs != nil && !errors.Is(err, tt.expectErrIs) {
+					t.Errorf("Wrong match. expect: %v, got: %v", tt.expectErrIs, err)
 				}
 				return
 			}
