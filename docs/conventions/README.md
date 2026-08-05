@@ -17,7 +17,7 @@ Recommended reading order for new engineers:
 7. [database.md](database.md) — squirrel + commondatabasehandler + dbhandler-only access
 8. [handlers.md](handlers.md) — handler interface + struct + constructor pattern
 9. [rpc.md](rpc.md) — inter-service RabbitMQ RPC
-10. [api-design.md](api-design.md) — atomic responses, WebhookMessage pattern reference
+10. [api-design.md](api-design.md) — atomic responses, WebhookMessage pattern reference, URL path naming convention
 11. [events.md](events.md) — pub/sub
 12. [configuration.md](configuration.md) — env vars, viper
 13. [testing.md](testing.md) — mockgen, table-driven tests, coverage targets
