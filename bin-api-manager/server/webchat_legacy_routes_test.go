@@ -6,8 +6,9 @@ package server
 // hyphenated routes (/webchat-widgets, /webchat-sessions, /webchat-messages).
 //
 // This file replicates main.go's actual v1 group wiring (RateLimit +
-// Authenticate + RegisterHandlersWithOptions + the legacy alias block) so
-// these tests exercise the real middleware chain, not a stand-in. Prometheus
+// Authenticate + CustomerRateLimit + EnforceAccountStatus +
+// RegisterHandlersWithOptions + the legacy alias block) so these tests
+// exercise the real middleware chain, not a stand-in. Prometheus
 // counter behavior for the deprecation marker is unit-tested directly in
 // lib/middleware/webchat_deprecation_test.go; this file only asserts the
 // response headers it sets, as a proxy for "the marker ran". See
@@ -37,10 +38,21 @@ import (
 
 // newWebchatLegacyRoutesTestRouter builds a gin router that mirrors the
 // relevant slice of cmd/api-manager/main.go's route wiring: a single v1
-// group carrying RateLimit + Authenticate, the generated hyphenated routes
+// group carrying RateLimit + Authenticate + CustomerRateLimit +
+// EnforceAccountStatus (VOIP-1302 order), the generated hyphenated routes
 // via RegisterHandlersWithOptions, and the 15 manually-registered legacy
 // underscore-named webchat_* aliases via the generated
 // ServerInterfaceWrapper, exactly as main.go does it.
+//
+// CustomerRateLimit is wired with an all-zero CustomerRateLimitConfig, which
+// per its documented "set to 0 to disable" convention (see
+// lib/middleware/customer_ratelimit.go) disables every tier without ever
+// touching the RateLimiter -- so a nil ratelimithandler.RateLimiter is safe
+// here and no Redis/mock double is needed. This keeps the test focused on
+// the IP-based RateLimit tier (the only one under test in this file) while
+// still exercising the real production middleware order, in particular that
+// EnforceAccountStatus() -- not Authenticate() -- is what triggers the
+// CustomerRawSelfGet frozen-account check mocked by mockValidAuth.
 //
 // rps/burst are caller-controlled so the rate-limit test can use a very
 // small budget without affecting the other tests in this file.
@@ -58,6 +70,8 @@ func newWebchatLegacyRoutesTestRouter(mockSH *servicehandler.MockServiceHandler,
 	v1 := r.Group("v1.0")
 	v1.Use(middleware.RateLimit("v1", rps, burst))
 	v1.Use(middleware.Authenticate())
+	v1.Use(middleware.CustomerRateLimit(nil, middleware.CustomerRateLimitConfig{}))
+	v1.Use(middleware.EnforceAccountStatus())
 
 	openapi_server.RegisterHandlersWithOptions(v1, appServer, openapi_server.GinServerOptions{
 		ErrorHandler: BindingErrorHandler,
