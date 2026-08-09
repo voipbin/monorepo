@@ -743,3 +743,136 @@ func Test_ServiceAgentTalkParticipantCreate(t *testing.T) {
 		})
 	}
 }
+
+func Test_ServiceAgentTalkParticipantDelete(t *testing.T) {
+	tests := []struct {
+		name string
+
+		agent         *auth.AuthIdentity
+		chatID        uuid.UUID
+		participantID uuid.UUID
+
+		responseParticipants       []*tkparticipant.Participant
+		responseDeletedParticipant *tkparticipant.Participant
+		expectError                bool
+	}{
+		{
+			// Backend returns 204 No Content on successful delete, which the RPC
+			// client (TalkV1ParticipantDelete) surfaces as (nil, nil). Regression
+			// test for VOIP-1315: must not panic on nil dereference.
+			name: "participant is removed - backend returns 204/nil - should not panic",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("a1111111-1111-1111-1111-111111111111"),
+					CustomerID: uuid.FromStringOrNil("c1111111-1111-1111-1111-111111111111"),
+				},
+			}),
+			chatID:        uuid.FromStringOrNil("d1111111-1111-1111-1111-111111111111"),
+			participantID: uuid.FromStringOrNil("p1111111-1111-1111-1111-111111111111"),
+			responseParticipants: []*tkparticipant.Participant{
+				{
+					Owner: commonidentity.Owner{
+						OwnerType: "agent",
+						OwnerID:   uuid.FromStringOrNil("a1111111-1111-1111-1111-111111111111"),
+					},
+				},
+			},
+			responseDeletedParticipant: nil,
+			expectError:                false,
+		},
+		{
+			name: "requesting agent is not a participant - should fail with permission error",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("a2222222-2222-2222-2222-222222222222"),
+					CustomerID: uuid.FromStringOrNil("c2222222-2222-2222-2222-222222222222"),
+				},
+			}),
+			chatID:                     uuid.FromStringOrNil("d2222222-2222-2222-2222-222222222222"),
+			participantID:              uuid.FromStringOrNil("p2222222-2222-2222-2222-222222222222"),
+			responseParticipants:       []*tkparticipant.Participant{},
+			responseDeletedParticipant: nil,
+			expectError:                true,
+		},
+		{
+			// Non-204 backend responses still return a populated participant body;
+			// the ConvertWebhookMessage() path (unaffected by the nil guard) must
+			// keep working for this branch.
+			name: "backend returns 200 with body - should convert and return participant",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("a3333333-3333-3333-3333-333333333333"),
+					CustomerID: uuid.FromStringOrNil("c3333333-3333-3333-3333-333333333333"),
+				},
+			}),
+			chatID:        uuid.FromStringOrNil("d3333333-3333-3333-3333-333333333333"),
+			participantID: uuid.FromStringOrNil("p3333333-3333-3333-3333-333333333333"),
+			responseParticipants: []*tkparticipant.Participant{
+				{
+					Owner: commonidentity.Owner{
+						OwnerType: "agent",
+						OwnerID:   uuid.FromStringOrNil("a3333333-3333-3333-3333-333333333333"),
+					},
+				},
+			},
+			responseDeletedParticipant: &tkparticipant.Participant{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("p3333333-3333-3333-3333-333333333333"),
+					CustomerID: uuid.FromStringOrNil("c3333333-3333-3333-3333-333333333333"),
+				},
+				ChatID: uuid.FromStringOrNil("d3333333-3333-3333-3333-333333333333"),
+				Owner: commonidentity.Owner{
+					OwnerType: "agent",
+					OwnerID:   uuid.FromStringOrNil("a3333333-3333-3333-3333-333333333333"),
+				},
+			},
+			expectError: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().TalkV1ParticipantList(ctx, tt.chatID).Return(tt.responseParticipants, nil)
+
+			if !tt.expectError {
+				mockReq.EXPECT().TalkV1ParticipantDelete(ctx, tt.chatID, tt.participantID).Return(tt.responseDeletedParticipant, nil)
+			}
+
+			res, err := h.ServiceAgentTalkParticipantDelete(ctx, tt.agent, tt.chatID, tt.participantID)
+
+			if tt.expectError {
+				if err == nil {
+					t.Errorf("Wrong match. expect: error, got: nil")
+				}
+			} else {
+				if err != nil {
+					t.Errorf("Wrong match. expect: ok, got: %v", err)
+				}
+				// Backend replies 204/nil on success, so a nil res here is the
+				// correct contract, not a leftover bug -- pin it explicitly.
+				if tt.responseDeletedParticipant == nil {
+					if res != nil {
+						t.Errorf("Wrong match. expect: nil res for 204 backend response, got: %v", res)
+					}
+				} else {
+					expectRes := tt.responseDeletedParticipant.ConvertWebhookMessage()
+					if !reflect.DeepEqual(res, expectRes) {
+						t.Errorf("Wrong match.\nexpect: %v\ngot: %v", expectRes, res)
+					}
+				}
+			}
+		})
+	}
+}
