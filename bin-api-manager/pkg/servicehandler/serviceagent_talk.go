@@ -252,10 +252,15 @@ func (h *serviceHandler) ServiceAgentTalkParticipantDelete(ctx context.Context, 
 		return nil, serviceerrors.ErrPermissionDenied
 	}
 
-	// Delete participant via RPC
+	// Delete participant via RPC.
+	// The backend replies with 204 No Content on success, which the RPC client
+	// surfaces as (nil, nil) -- there is no participant body to convert in that case.
 	tmp, err := h.reqHandler.TalkV1ParticipantDelete(ctx, chatID, participantID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not delete participant.")
+	}
+	if tmp == nil {
+		return nil, nil
 	}
 
 	res := tmp.ConvertWebhookMessage()
