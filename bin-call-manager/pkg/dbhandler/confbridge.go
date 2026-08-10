@@ -322,17 +322,12 @@ func (h *handler) ConfbridgeSetRecordingID(ctx context.Context, id uuid.UUID, re
 // WHY squirrel.Expr: MySQL json_array_append has no squirrel builder form; see
 // json_expr.go.
 //
-// NOTE (plan §6 item 3, suspected pre-existing bug, deliberately NOT fixed
-// here): this site binds recordingID.Bytes(), whereas the semantically
-// identical CallAddRecordingIDs and ConfbridgeAddExternalMediaID bind
-// .String(). Since recording_ids unmarshals as []uuid.UUID (a JSON string
-// array), .Bytes() likely stores a malformed element. The existing behavior is
-// carried over verbatim by this refactor; fixing it needs its own ticket plus a
-// data backfill/integrity check for rows already written this way.
+// recordingID.String(): fixed in VOIP-1305 (historically bound .Bytes(), which
+// stored malformed elements; see the backfill migration in bin-dbscheme-manager).
 func buildConfbridgeAddRecordingIDs(id, recordingID uuid.UUID, tmUpdate any) squirrel.UpdateBuilder {
 	return squirrel.
 		Update(confbridgeTable).
-		Set(string(confbridge.FieldRecordingIDs), exprJSONArrayAppend(string(confbridge.FieldRecordingIDs), recordingID.Bytes())).
+		Set(string(confbridge.FieldRecordingIDs), exprJSONArrayAppend(string(confbridge.FieldRecordingIDs), recordingID.String())).
 		Set(string(confbridge.FieldTMUpdate), tmUpdate).
 		Where(squirrel.Eq{string(confbridge.FieldID): id.Bytes()}).
 		PlaceholderFormat(squirrel.Question)

@@ -195,13 +195,11 @@ func Test_goldenConfbridgeJSONExpr(t *testing.T) {
 
 	runGoldenCases(t, []goldenCase{
 		{
-			// NOTE: binds .Bytes(), not .String() — carried over as-is from the
-			// pre-migration SQL. Suspected pre-existing bug, plan §6 item 3.
 			name:     "ConfbridgeAddRecordingIDs",
 			sql:      addRecSQL,
 			args:     addRecArgs,
 			wantSQL:  "UPDATE call_confbridges SET recording_ids = json_array_append(recording_ids, '$', ?), tm_update = ? WHERE id = ?",
-			wantArgs: []any{other.Bytes(), tmUpdate, id.Bytes()},
+			wantArgs: []any{other.String(), tmUpdate, id.Bytes()},
 		},
 		{
 			name:     "ConfbridgeAddExternalMediaID",
