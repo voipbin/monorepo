@@ -531,10 +531,6 @@ func (h *handler) CallSetForRouteFailover(ctx context.Context, id uuid.UUID, cha
 //
 // WHY squirrel.Expr: MySQL json_array_append has no squirrel builder form; see
 // json_expr.go.
-//
-// Note this site binds recordID.String(), unlike ConfbridgeAddRecordingIDs
-// which binds .Bytes(). That inconsistency is a suspected pre-existing bug in
-// the confbridge site (plan §6 item 3) and is deliberately NOT changed here.
 func buildCallAddRecordingIDs(id, recordID uuid.UUID, tmUpdate any) squirrel.UpdateBuilder {
 	return squirrel.
 		Update(callTable).
