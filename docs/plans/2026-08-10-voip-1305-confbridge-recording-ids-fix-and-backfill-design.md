@@ -104,13 +104,18 @@ byte identical, second run reported repaired 0 with zero data changes.
 
    ```sql
    SELECT COUNT(DISTINCT c.id) FROM call_confbridges c,
-     JSON_TABLE(c.recording_ids, '$[*]' COLUMNS (elem JSON PATH '$')) jt
+     JSON_TABLE(COALESCE(c.recording_ids, JSON_ARRAY()), '$[*]'
+       COLUMNS (elem JSON PATH '$')) jt
    WHERE JSON_TYPE(jt.elem) = 'BLOB'
       OR (JSON_TYPE(jt.elem) = 'STRING' AND LENGTH(JSON_UNQUOTE(jt.elem)) = 16);
    ```
 
-   A zero count does not block applying the migration (it is a no-op then);
-   apply anyway to keep the revision chain consistent.
+   The COALESCE guard keeps JSON_TABLE away from SQL NULL documents, which
+   some older 8.0 patch levels reject; on current 8.0 the behavior is
+   identical (verified: NULL, JSON null, and empty array rows are ignored,
+   corrupted rows are counted). A zero count does not block applying the
+   migration (it is a no-op then); apply anyway to keep the revision chain
+   consistent.
 2. Apply: a human runs `alembic upgrade head` over VPN (AI execution of
    upgrade against shared databases is prohibited). A low traffic window is
    recommended to soften the Phase 1 scan load; writers are only ever blocked
