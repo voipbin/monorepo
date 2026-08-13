@@ -259,6 +259,21 @@ workflows:
           <<: *context_production
           requires:
             - bin-call-manager-build
+      - bin-call-manager-deploy-bm-approval:
+          type: approval
+          # Restricted to main only: this deploys straight to bm-nyc-01 (the
+          # single production node) with no automated rollback, so approving
+          # it on an unmerged PR branch would ship unreviewed code to
+          # production. Mirrors migration-applied-checkpoint's filter above.
+          filters:
+            branches:
+              only: main
+          requires:
+            - bin-call-manager-build
+      - bin-call-manager-deploy-bm:
+          <<: *context_production
+          requires:
+            - bin-call-manager-deploy-bm-approval
 
   bin-campaign-manager:
     when: << pipeline.parameters.run-bin-campaign-manager >>
@@ -981,6 +996,24 @@ jobs:
           image-name: call-manager
           project-id: voipbin
           project-repository: bin-call-manager
+
+  # Pilot: direct SSH deploy to bm-nyc-01, bypassing voipbin/voipbin
+  # entirely (no PR, no git checkout of that repo). Runs the image already
+  # pushed by bin-call-manager-build; independent of and does not affect
+  # bin-call-manager-release (GKE) above.
+  bin-call-manager-deploy-bm:
+    docker:
+      - image: cimg/base:2024.02
+    resource_class: small
+    steps:
+      - checkout
+      - run:
+          name: Deploy bin-call-manager to bm-nyc-01
+          # Second arg is the docker-compose SERVICE name, which drops the
+          # 'bin-' prefix (matches docker-release's image-name convention
+          # above, e.g. "call-manager" not "bin-call-manager") - confirmed
+          # against bm-nyc-01's actual docker-compose.yml, not assumed.
+          command: .circleci/scripts/ssh-deploy-bm.sh voipbin/bin-call-manager call-manager
 
   # bin-campaign-manager
   bin-campaign-manager-test:

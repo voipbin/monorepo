@@ -1,0 +1,201 @@
+#!/usr/bin/env bats
+# Tests for .circleci/scripts/ssh-deploy-bm.sh
+
+load 'test_helper'
+
+setup() {
+    setup_test_env
+}
+
+teardown() {
+    teardown_test_env
+}
+
+run_script() {
+    bash "$SCRIPTS_DIR/ssh-deploy-bm.sh" "$@"
+}
+
+valid_env() {
+    export CC_BM_NYC_01_DEPLOY_SSH_KEY="fake-key-material"
+    export CIRCLE_SHA1="cccccccccccccccccccccccccccccccccccccccc"
+}
+
+@test "-h/--help prints usage and exits 0 without requiring any env" {
+    run run_script --help
+    [[ "$status" -eq 0 ]]
+    [[ "$output" == *"deploy one already-pushed image to bm-nyc-01"* ]]
+}
+
+@test "refuses with wrong argument count" {
+    run run_script "voipbin/bin-call-manager"
+    [[ "$status" -ne 0 ]]
+    [[ "$output" == *"Usage:"* || "$output" == *"deploy one already-pushed image"* ]]
+}
+
+@test "refuses an image-repo not shaped like voipbin/<name>" {
+    valid_env
+    run run_script "not-voipbin/bin-call-manager" "bin-call-manager"
+    [[ "$status" -ne 0 ]]
+    [[ "$output" == *"image-repo must look like"* ]]
+}
+
+@test "refuses a compose-service-name with unexpected characters" {
+    valid_env
+    run run_script "voipbin/bin-call-manager" "bin_call_manager; rm -rf /"
+    [[ "$status" -ne 0 ]]
+    [[ "$output" == *"compose-service-name must be"* ]]
+}
+
+@test "refuses to run when CC_BM_NYC_01_DEPLOY_SSH_KEY is not set" {
+    export CIRCLE_SHA1="cccccccccccccccccccccccccccccccccccccccc"
+    unset CC_BM_NYC_01_DEPLOY_SSH_KEY
+    run run_script "voipbin/bin-call-manager" "bin-call-manager"
+    [[ "$status" -ne 0 ]]
+    [[ "$output" == *"CC_BM_NYC_01_DEPLOY_SSH_KEY is not set"* ]]
+}
+
+@test "refuses to run when CIRCLE_SHA1 is not set" {
+    export CC_BM_NYC_01_DEPLOY_SSH_KEY="fake-key-material"
+    unset CIRCLE_SHA1
+    run run_script "voipbin/bin-call-manager" "bin-call-manager"
+    [[ "$status" -ne 0 ]]
+    [[ "$output" == *"CIRCLE_SHA1 is not set"* ]]
+}
+
+@test "refuses a CIRCLE_SHA1 that isn't a full 40-char SHA" {
+    valid_env
+    export CIRCLE_SHA1="abc123"
+    run run_script "voipbin/bin-call-manager" "bin-call-manager"
+    [[ "$status" -ne 0 ]]
+    [[ "$output" == *"40-char git SHA"* ]]
+}
+
+@test "happy path: succeeds and reports success when ssh exits 0" {
+    valid_env
+    install_fake_ssh 0
+    run run_script "voipbin/bin-call-manager" "bin-call-manager"
+
+    [[ "$status" -eq 0 ]]
+    [[ "$output" == *"Deploy succeeded"* ]]
+    [[ "$output" == *"bin-call-manager"* ]]
+    # exactly one ssh invocation
+    [[ "$(ssh_call_count)" -eq 1 ]]
+}
+
+@test "ssh is invoked against the correct user@host with host-key pinning (not runtime ssh-keyscan)" {
+    valid_env
+    install_fake_ssh 0
+    run run_script "voipbin/bin-call-manager" "bin-call-manager"
+
+    local args
+    args="$(ssh_call_args 1)"
+    [[ "$args" == *"deploy@104.243.38.39"* ]]
+    [[ "$args" == *"StrictHostKeyChecking=yes"* ]]
+    [[ "$args" == *"UserKnownHostsFile="* ]]
+    # No ssh-keyscan invocation anywhere - host keys are pinned, not
+    # trust-on-first-use at CI runtime.
+    [[ "$output" != *"ssh-keyscan"* ]]
+}
+
+@test "the remote command targets the LIVE versions.lock/docker-compose.yml, never the .dist templates" {
+    valid_env
+    install_fake_ssh 0
+    run run_script "voipbin/bin-call-manager" "bin-call-manager"
+
+    local remote_cmd
+    remote_cmd="$(ssh_call_remote_command 1)"
+    [[ "$remote_cmd" == *"LOCK_FILE='/opt/voipbin/install/versions.lock'"* ]]
+    [[ "$remote_cmd" == *"COMPOSE_FILE='/opt/voipbin/install/docker-compose.yml'"* ]]
+    [[ "$remote_cmd" != *"versions.lock.dist"* ]]
+    [[ "$remote_cmd" != *"docker-compose.yml.dist"* ]]
+}
+
+@test "the remote command bumps the correct image-repo, tag, and compose service" {
+    valid_env
+    install_fake_ssh 0
+    run run_script "voipbin/bin-call-manager" "bin-call-manager"
+
+    local remote_cmd
+    remote_cmd="$(ssh_call_remote_command 1)"
+    [[ "$remote_cmd" == *"bump-image-digest.sh 'voipbin/bin-call-manager' 'voipbin/bin-call-manager:cccccccccccccccccccccccccccccccccccccccc' 'cccccccccccccccccccccccccccccccccccccccc'"* ]]
+    [[ "$remote_cmd" == *"docker compose pull 'bin-call-manager'"* ]]
+    [[ "$remote_cmd" == *"docker compose up -d 'bin-call-manager'"* ]]
+}
+
+@test "a different service's arguments propagate correctly (not hardcoded to bin-call-manager)" {
+    valid_env
+    install_fake_ssh 0
+    run run_script "voipbin/bin-agent-manager" "bin-agent-manager"
+
+    local remote_cmd
+    remote_cmd="$(ssh_call_remote_command 1)"
+    [[ "$remote_cmd" == *"bump-image-digest.sh 'voipbin/bin-agent-manager' 'voipbin/bin-agent-manager:cccccccccccccccccccccccccccccccccccccccc'"* ]]
+    [[ "$remote_cmd" == *"docker compose up -d 'bin-agent-manager'"* ]]
+}
+
+@test "failure path: reports failure and manual-recovery guidance when ssh/remote exits non-zero" {
+    valid_env
+    install_fake_ssh 1
+    run run_script "voipbin/bin-call-manager" "bin-call-manager"
+
+    [[ "$status" -ne 0 ]]
+    [[ "$output" == *"Deploy failed"* ]]
+    [[ "$output" == *"does not auto-rollback"* ]]
+    # Manual recovery guidance references the actual image-repo and service
+    [[ "$output" == *"voipbin/bin-call-manager"* ]]
+    [[ "$output" == *"docker compose up -d bin-call-manager"* ]]
+}
+
+@test "SSH key value never appears in stdout/stderr output" {
+    export CC_BM_NYC_01_DEPLOY_SSH_KEY="super-secret-deploy-key-xyz789"
+    export CIRCLE_SHA1="cccccccccccccccccccccccccccccccccccccccc"
+    install_fake_ssh 0
+    run run_script "voipbin/bin-call-manager" "bin-call-manager"
+
+    [[ "$status" -eq 0 ]]
+    [[ "$output" != *"super-secret-deploy-key-xyz789"* ]]
+}
+
+@test "SSH key value never appears anywhere in the ssh invocation's argv (only the key FILE path is passed)" {
+    export CC_BM_NYC_01_DEPLOY_SSH_KEY="super-secret-deploy-key-xyz789"
+    export CIRCLE_SHA1="cccccccccccccccccccccccccccccccccccccccc"
+    install_fake_ssh 0
+    run run_script "voipbin/bin-call-manager" "bin-call-manager"
+
+    [[ "$status" -eq 0 ]]
+    local args
+    args="$(ssh_call_args 1)"
+    [[ "$args" != *"super-secret-deploy-key-xyz789"* ]]
+}
+
+@test "the SSH key temp file is removed after the script exits (success path)" {
+    valid_env
+    install_fake_ssh 0
+    # Capture the key-file path via a wrapper: run in a subshell so we can
+    # inspect $MOCK_BIN_DIR's sibling temp files before/after - simpler:
+    # assert no stray files matching the mktemp pattern remain in TMPDIR
+    # under our controlled TEST_TEMP_DIR-adjacent area is fragile, so
+    # instead assert indirectly via lsof-free approach: grep the ssh args
+    # for the -i path, then check it's gone post-run.
+    run run_script "voipbin/bin-call-manager" "bin-call-manager"
+    [[ "$status" -eq 0 ]]
+
+    local args key_file
+    args="$(ssh_call_args 1)"
+    key_file="$(echo "$args" | grep -A1 '^-i$' | tail -1)"
+    [[ -n "$key_file" ]]
+    [[ ! -f "$key_file" ]]
+}
+
+@test "the SSH key temp file is removed after the script exits (failure path)" {
+    valid_env
+    install_fake_ssh 1
+    run run_script "voipbin/bin-call-manager" "bin-call-manager"
+    [[ "$status" -ne 0 ]]
+
+    local args key_file
+    args="$(ssh_call_args 1)"
+    key_file="$(echo "$args" | grep -A1 '^-i$' | tail -1)"
+    [[ -n "$key_file" ]]
+    [[ ! -f "$key_file" ]]
+}
