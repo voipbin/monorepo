@@ -136,3 +136,13 @@ The CLI uses the same configuration flags and environment variables as `direct-m
 ## Prometheus Metrics
 
 - `direct_manager_receive_request_process_time` - Histogram of RPC request processing time (labels: type, method)
+
+# Deploy
+
+`bin-direct-manager-build` pushes the image, and a single `build-approval` gate covers
+the whole pipeline (test -> build -> deploy) through to production.
+`bin-direct-manager-deploy` runs after `bin-direct-manager-build`, bumping this service's pin on
+bm-nyc-01 and recreating the container. See
+`.circleci/scripts/ssh-deploy.sh` (this pattern was piloted with
+bin-call-manager). The previous GKE deploy path for this service has been
+removed.
