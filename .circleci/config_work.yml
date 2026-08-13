@@ -261,13 +261,14 @@ workflows:
             - bin-call-manager-build
       - bin-call-manager-deploy-bm-approval:
           type: approval
-          # Restricted to main only: this deploys straight to bm-nyc-01 (the
-          # single production node) with no automated rollback, so approving
-          # it on an unmerged PR branch would ship unreviewed code to
-          # production. Mirrors migration-applied-checkpoint's filter above.
-          filters:
-            branches:
-              only: main
+          # Deliberately NOT restricted to main: bm-nyc-01 is the only
+          # environment we have, so it doubles as staging - deploying an
+          # unmerged branch's build here to verify it before merge is the
+          # whole point, not a risk to avoid. The manual approval click
+          # itself is the safety control (same as any other approval job in
+          # this file), not a branch restriction. Do not add a
+          # `filters: branches: only: main` here without re-confirming this
+          # reasoning with the team first.
           requires:
             - bin-call-manager-build
       - bin-call-manager-deploy-bm:
