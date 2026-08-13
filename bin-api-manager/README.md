@@ -250,3 +250,13 @@ See [CLAUDE.md](./CLAUDE.md).
 Copyright © 2024 VoIPBIN. All rights reserved.
 
 <!-- Updated dependencies: 2026-04-28 -->
+
+# Deploy
+
+`bin-api-manager-build` pushes the image, and a single `build-approval` gate covers
+the whole pipeline (test -> build -> deploy) through to production.
+`bin-api-manager-deploy` runs after `bin-api-manager-build`, bumping this service's pin on
+bm-nyc-01 and recreating the container. See
+`.circleci/scripts/ssh-deploy.sh` (this pattern was piloted with
+bin-call-manager). The previous GKE deploy path for this service has been
+removed.

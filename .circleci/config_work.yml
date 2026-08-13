@@ -10,6 +10,9 @@ references:
   gcp_image: &gcp_image
     - image: cimg/gcp:2026.02
   gcloud_image: &gcloud_image
+    # Still needed: bin-sentinel-manager-release is the one remaining GKE
+    # deploy job (sentinel-manager requires the Kubernetes API and has no
+    # docker-compose equivalent on bm-nyc-01 - see that job's comment).
     - image: google/cloud-sdk:debian_component_based
 
 
@@ -203,7 +206,7 @@ workflows:
           <<: *context_production
           requires:
             - bin-agent-manager-test
-      - bin-agent-manager-release:
+      - bin-agent-manager-deploy:
           <<: *context_production
           requires:
             - bin-agent-manager-build
@@ -221,7 +224,7 @@ workflows:
           <<: *context_production
           requires:
             - bin-api-manager-test
-      - bin-api-manager-release:
+      - bin-api-manager-deploy:
           <<: *context_production
           requires:
             - bin-api-manager-build
@@ -238,7 +241,7 @@ workflows:
           <<: *context_production
           requires:
             - bin-billing-manager-test
-      - bin-billing-manager-release:
+      - bin-billing-manager-deploy:
           <<: *context_production
           requires:
             - bin-billing-manager-build
@@ -255,22 +258,19 @@ workflows:
           <<: *context_production
           requires:
             - bin-call-manager-test
-      - bin-call-manager-deploy-approval:
-          type: approval
-          # Deliberately NOT restricted to main: bm-nyc-01 is the only
-          # environment we have, so it doubles as staging - deploying an
-          # unmerged branch's build here to verify it before merge is the
-          # whole point, not a risk to avoid. The manual approval click
-          # itself is the safety control (same as any other approval job in
-          # this file), not a branch restriction. Do not add a
-          # `filters: branches: only: main` here without re-confirming this
-          # reasoning with the team first.
-          requires:
-            - bin-call-manager-build
       - bin-call-manager-deploy:
           <<: *context_production
+          # Single approval gate (build-approval, above) covers the whole
+          # pipeline including this deploy - matches the old GKE release
+          # job's convenience (build-approval alone used to be enough to
+          # reach production). A second deploy-specific approval was tried
+          # and dropped: bm-nyc-01 is the only environment we have, so it
+          # doubles as staging, and requiring two clicks per deploy added
+          # friction without a safety benefit distinct from build-approval
+          # itself. Do not add a second approval gate here without
+          # re-confirming with the team first.
           requires:
-            - bin-call-manager-deploy-approval
+            - bin-call-manager-build
 
   bin-campaign-manager:
     when: << pipeline.parameters.run-bin-campaign-manager >>
@@ -284,7 +284,7 @@ workflows:
           <<: *context_production
           requires:
             - bin-campaign-manager-test
-      - bin-campaign-manager-release:
+      - bin-campaign-manager-deploy:
           <<: *context_production
           requires:
             - bin-campaign-manager-build
@@ -301,7 +301,7 @@ workflows:
           <<: *context_production
           requires:
             - bin-ai-manager-test
-      - bin-ai-manager-release:
+      - bin-ai-manager-deploy:
           <<: *context_production
           requires:
             - bin-ai-manager-build
@@ -327,7 +327,7 @@ workflows:
           <<: *context_production
           requires:
             - bin-contact-manager-test
-      - bin-contact-manager-release:
+      - bin-contact-manager-deploy:
           <<: *context_production
           requires:
             - bin-contact-manager-build
@@ -344,7 +344,7 @@ workflows:
           <<: *context_production
           requires:
             - bin-conference-manager-test
-      - bin-conference-manager-release:
+      - bin-conference-manager-deploy:
           <<: *context_production
           requires:
             - bin-conference-manager-build
@@ -361,7 +361,7 @@ workflows:
           <<: *context_production
           requires:
             - bin-conversation-manager-test
-      - bin-conversation-manager-release:
+      - bin-conversation-manager-deploy:
           <<: *context_production
           requires:
             - bin-conversation-manager-build
@@ -378,7 +378,7 @@ workflows:
           <<: *context_production
           requires:
             - bin-customer-manager-test
-      - bin-customer-manager-release:
+      - bin-customer-manager-deploy:
           <<: *context_production
           requires:
             - bin-customer-manager-build
@@ -429,7 +429,7 @@ workflows:
           <<: *context_production
           requires:
             - bin-direct-manager-test
-      - bin-direct-manager-release:
+      - bin-direct-manager-deploy:
           <<: *context_production
           requires:
             - bin-direct-manager-build
@@ -446,7 +446,7 @@ workflows:
           <<: *context_production
           requires:
             - bin-email-manager-test
-      - bin-email-manager-release:
+      - bin-email-manager-deploy:
           <<: *context_production
           requires:
             - bin-email-manager-build
@@ -463,7 +463,7 @@ workflows:
           <<: *context_production
           requires:
             - bin-flow-manager-test
-      - bin-flow-manager-release:
+      - bin-flow-manager-deploy:
           <<: *context_production
           requires:
             - bin-flow-manager-build
@@ -480,7 +480,7 @@ workflows:
           <<: *context_production
           requires:
             - bin-hook-manager-test
-      - bin-hook-manager-release:
+      - bin-hook-manager-deploy:
           <<: *context_production
           requires:
             - bin-hook-manager-build
@@ -497,7 +497,7 @@ workflows:
           <<: *context_production
           requires:
             - bin-message-manager-test
-      - bin-message-manager-release:
+      - bin-message-manager-deploy:
           <<: *context_production
           requires:
             - bin-message-manager-build
@@ -514,7 +514,7 @@ workflows:
           <<: *context_production
           requires:
             - bin-number-manager-test
-      - bin-number-manager-release:
+      - bin-number-manager-deploy:
           <<: *context_production
           requires:
             - bin-number-manager-build
@@ -540,7 +540,7 @@ workflows:
           <<: *context_production
           requires:
             - bin-outdial-manager-test
-      - bin-outdial-manager-release:
+      - bin-outdial-manager-deploy:
           <<: *context_production
           requires:
             - bin-outdial-manager-build
@@ -557,7 +557,7 @@ workflows:
           <<: *context_production
           requires:
             - build-approval
-      - bin-pipecat-manager-release:
+      - bin-pipecat-manager-deploy:
           <<: *context_production
           requires:
             - bin-pipecat-manager-build
@@ -574,7 +574,7 @@ workflows:
           <<: *context_production
           requires:
             - bin-queue-manager-test
-      - bin-queue-manager-release:
+      - bin-queue-manager-deploy:
           <<: *context_production
           requires:
             - bin-queue-manager-build
@@ -591,7 +591,7 @@ workflows:
           <<: *context_production
           requires:
             - bin-rag-manager-test
-      - bin-rag-manager-release:
+      - bin-rag-manager-deploy:
           <<: *context_production
           requires:
             - bin-rag-manager-build
@@ -608,7 +608,7 @@ workflows:
           <<: *context_production
           requires:
             - bin-registrar-manager-test
-      - bin-registrar-manager-release:
+      - bin-registrar-manager-deploy:
           <<: *context_production
           requires:
             - bin-registrar-manager-build
@@ -625,7 +625,7 @@ workflows:
           <<: *context_production
           requires:
             - bin-route-manager-test
-      - bin-route-manager-release:
+      - bin-route-manager-deploy:
           <<: *context_production
           requires:
             - bin-route-manager-build
@@ -642,7 +642,7 @@ workflows:
           <<: *context_production
           requires:
             - bin-schedule-manager-test
-      - bin-schedule-manager-release:
+      - bin-schedule-manager-deploy:
           <<: *context_production
           requires:
             - bin-schedule-manager-build
@@ -660,6 +660,14 @@ workflows:
           requires:
             - bin-sentinel-manager-test
       - bin-sentinel-manager-release:
+          # NOT converted to ssh-deploy like the other 32 services:
+          # sentinel-manager requires the Kubernetes API
+          # (rest.InClusterConfig) and is intentionally excluded from
+          # bm-nyc-01's docker-compose.yml (see voipbin/voipbin's
+          # install/docker-compose.yml.dist and
+          # sync-compose-images.sh's LOCK_ONLY_IMAGES comment) - it has no
+          # compose service to deploy to there, so it stays on GKE until a
+          # non-Kubernetes runtime path exists for it.
           <<: *context_production
           requires:
             - bin-sentinel-manager-build
@@ -676,7 +684,7 @@ workflows:
           <<: *context_production
           requires:
             - bin-storage-manager-test
-      - bin-storage-manager-release:
+      - bin-storage-manager-deploy:
           <<: *context_production
           requires:
             - bin-storage-manager-build
@@ -693,7 +701,7 @@ workflows:
           <<: *context_production
           requires:
             - bin-tag-manager-test
-      - bin-tag-manager-release:
+      - bin-tag-manager-deploy:
           <<: *context_production
           requires:
             - bin-tag-manager-build
@@ -710,7 +718,7 @@ workflows:
           <<: *context_production
           requires:
             - bin-talk-manager-test
-      - bin-talk-manager-release:
+      - bin-talk-manager-deploy:
           <<: *context_production
           requires:
             - bin-talk-manager-build
@@ -727,7 +735,7 @@ workflows:
           <<: *context_production
           requires:
             - bin-timeline-manager-test
-      - bin-timeline-manager-release:
+      - bin-timeline-manager-deploy:
           <<: *context_production
           requires:
             - bin-timeline-manager-build
@@ -744,7 +752,7 @@ workflows:
           <<: *context_production
           requires:
             - bin-transcribe-manager-test
-      - bin-transcribe-manager-release:
+      - bin-transcribe-manager-deploy:
           <<: *context_production
           requires:
             - bin-transcribe-manager-build
@@ -761,7 +769,7 @@ workflows:
           <<: *context_production
           requires:
             - bin-transfer-manager-test
-      - bin-transfer-manager-release:
+      - bin-transfer-manager-deploy:
           <<: *context_production
           requires:
             - bin-transfer-manager-build
@@ -793,7 +801,7 @@ workflows:
           <<: *context_production
           requires:
             - bin-tts-manager-test
-      - bin-tts-manager-release:
+      - bin-tts-manager-deploy:
           <<: *context_production
           requires:
             - bin-tts-manager-build
@@ -810,7 +818,7 @@ workflows:
           <<: *context_production
           requires:
             - bin-webchat-manager-test
-      - bin-webchat-manager-release:
+      - bin-webchat-manager-deploy:
           <<: *context_production
           requires:
             - bin-webchat-manager-build
@@ -827,7 +835,7 @@ workflows:
           <<: *context_production
           requires:
             - bin-webhook-manager-test
-      - bin-webhook-manager-release:
+      - bin-webhook-manager-deploy:
           <<: *context_production
           requires:
             - bin-webhook-manager-build
@@ -903,15 +911,15 @@ jobs:
           project-id: voipbin
           project-repository: bin-agent-manager
 
-  bin-agent-manager-release:
-    docker: *gcloud_image
+  bin-agent-manager-deploy:
+    docker:
+      - image: cimg/base:2024.02
     resource_class: small
     steps:
-      - docker-release:
-          source-directory: bin-agent-manager
-          image-name: agent-manager
-          project-id: voipbin
-          project-repository: bin-agent-manager
+      - checkout
+      - run:
+          name: Deploy bin-agent-manager to bm-nyc-01
+          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-agent-manager agent-manager
 
   # bin-api-manager
   bin-api-manager-test:
@@ -930,15 +938,15 @@ jobs:
           project-id: voipbin
           project-repository: bin-api-manager
 
-  bin-api-manager-release:
-    docker: *gcloud_image
+  bin-api-manager-deploy:
+    docker:
+      - image: cimg/base:2024.02
     resource_class: small
     steps:
-      - docker-release:
-          source-directory: bin-api-manager
-          image-name: api-manager
-          project-id: voipbin
-          project-repository: bin-api-manager
+      - checkout
+      - run:
+          name: Deploy bin-api-manager to bm-nyc-01
+          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-api-manager api-manager
 
   # bin-billing-manager
   bin-billing-manager-test:
@@ -957,15 +965,15 @@ jobs:
           project-id: voipbin
           project-repository: bin-billing-manager
 
-  bin-billing-manager-release:
-    docker: *gcloud_image
+  bin-billing-manager-deploy:
+    docker:
+      - image: cimg/base:2024.02
     resource_class: small
     steps:
-      - docker-release:
-          project-id: voipbin
-          project-repository: bin-billing-manager
-          image-name: billing-manager
-          source-directory: bin-billing-manager
+      - checkout
+      - run:
+          name: Deploy bin-billing-manager to bm-nyc-01
+          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-billing-manager billing-manager
 
   # bin-call-manager
   bin-call-manager-test:
@@ -1021,15 +1029,15 @@ jobs:
           project-id: voipbin
           project-repository: bin-campaign-manager
 
-  bin-campaign-manager-release:
-    docker: *gcloud_image
+  bin-campaign-manager-deploy:
+    docker:
+      - image: cimg/base:2024.02
     resource_class: small
     steps:
-      - docker-release:
-          source-directory: bin-campaign-manager
-          image-name: campaign-manager
-          project-id: voipbin
-          project-repository: bin-campaign-manager
+      - checkout
+      - run:
+          name: Deploy bin-campaign-manager to bm-nyc-01
+          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-campaign-manager campaign-manager
 
   # bin-ai-manager
   bin-ai-manager-test:
@@ -1048,15 +1056,15 @@ jobs:
           project-id: voipbin
           project-repository: bin-ai-manager
 
-  bin-ai-manager-release:
-    docker: *gcloud_image
+  bin-ai-manager-deploy:
+    docker:
+      - image: cimg/base:2024.02
     resource_class: small
     steps:
-      - docker-release:
-          source-directory: bin-ai-manager
-          image-name: ai-manager
-          project-id: voipbin
-          project-repository: bin-ai-manager
+      - checkout
+      - run:
+          name: Deploy bin-ai-manager to bm-nyc-01
+          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-ai-manager ai-manager
 
   # bin-common-handler
   bin-common-handler-test:
@@ -1083,15 +1091,15 @@ jobs:
           project-id: voipbin
           project-repository: bin-contact-manager
 
-  bin-contact-manager-release:
-    docker: *gcloud_image
+  bin-contact-manager-deploy:
+    docker:
+      - image: cimg/base:2024.02
     resource_class: small
     steps:
-      - docker-release:
-          source-directory: bin-contact-manager
-          image-name: contact-manager
-          project-id: voipbin
-          project-repository: bin-contact-manager
+      - checkout
+      - run:
+          name: Deploy bin-contact-manager to bm-nyc-01
+          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-contact-manager contact-manager
 
   # bin-conference-manager
   bin-conference-manager-test:
@@ -1110,15 +1118,15 @@ jobs:
           project-id: voipbin
           project-repository: bin-conference-manager
 
-  bin-conference-manager-release:
-    docker: *gcloud_image
+  bin-conference-manager-deploy:
+    docker:
+      - image: cimg/base:2024.02
     resource_class: small
     steps:
-      - docker-release:
-          source-directory: bin-conference-manager
-          image-name: conference-manager
-          project-id: voipbin
-          project-repository: bin-conference-manager
+      - checkout
+      - run:
+          name: Deploy bin-conference-manager to bm-nyc-01
+          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-conference-manager conference-manager
 
   # bin-conversation-manager
   bin-conversation-manager-test:
@@ -1137,15 +1145,15 @@ jobs:
           project-id: voipbin
           project-repository: bin-conversation-manager
 
-  bin-conversation-manager-release:
-    docker: *gcloud_image
+  bin-conversation-manager-deploy:
+    docker:
+      - image: cimg/base:2024.02
     resource_class: small
     steps:
-      - docker-release:
-          source-directory: bin-conversation-manager
-          image-name: conversation-manager
-          project-id: voipbin
-          project-repository: bin-conversation-manager
+      - checkout
+      - run:
+          name: Deploy bin-conversation-manager to bm-nyc-01
+          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-conversation-manager conversation-manager
 
   # bin-customer-manager
   bin-customer-manager-test:
@@ -1164,15 +1172,15 @@ jobs:
           project-id: voipbin
           project-repository: bin-customer-manager
 
-  bin-customer-manager-release:
-    docker: *gcloud_image
+  bin-customer-manager-deploy:
+    docker:
+      - image: cimg/base:2024.02
     resource_class: small
     steps:
-      - docker-release:
-          source-directory: bin-customer-manager
-          image-name: customer-manager
-          project-id: voipbin
-          project-repository: bin-customer-manager
+      - checkout
+      - run:
+          name: Deploy bin-customer-manager to bm-nyc-01
+          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-customer-manager customer-manager
 
   # bin-dbscheme-manager has no build/deploy job -- production DB is not
   # reachable from CircleCI, so all migration application is manual/VPN.
@@ -1241,15 +1249,15 @@ jobs:
           project-id: voipbin
           project-repository: bin-direct-manager
 
-  bin-direct-manager-release:
-    docker: *gcloud_image
+  bin-direct-manager-deploy:
+    docker:
+      - image: cimg/base:2024.02
     resource_class: small
     steps:
-      - docker-release:
-          source-directory: bin-direct-manager
-          image-name: direct-manager
-          project-id: voipbin
-          project-repository: bin-direct-manager
+      - checkout
+      - run:
+          name: Deploy bin-direct-manager to bm-nyc-01
+          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-direct-manager direct-manager
 
   # bin-email-manager
   bin-email-manager-test:
@@ -1268,15 +1276,15 @@ jobs:
           project-id: voipbin
           project-repository: bin-email-manager
 
-  bin-email-manager-release:
-    docker: *gcloud_image
+  bin-email-manager-deploy:
+    docker:
+      - image: cimg/base:2024.02
     resource_class: small
     steps:
-      - docker-release:
-          source-directory: bin-email-manager
-          image-name: email-manager
-          project-id: voipbin
-          project-repository: bin-email-manager
+      - checkout
+      - run:
+          name: Deploy bin-email-manager to bm-nyc-01
+          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-email-manager email-manager
 
   # bin-flow-manager
   bin-flow-manager-test:
@@ -1295,15 +1303,15 @@ jobs:
           project-id: voipbin
           project-repository: bin-flow-manager
 
-  bin-flow-manager-release:
-    docker: *gcloud_image
+  bin-flow-manager-deploy:
+    docker:
+      - image: cimg/base:2024.02
     resource_class: small
     steps:
-      - docker-release:
-          source-directory: bin-flow-manager
-          image-name: flow-manager
-          project-id: voipbin
-          project-repository: bin-flow-manager
+      - checkout
+      - run:
+          name: Deploy bin-flow-manager to bm-nyc-01
+          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-flow-manager flow-manager
 
   # bin-hook-manager
   bin-hook-manager-test:
@@ -1322,15 +1330,15 @@ jobs:
           project-id: voipbin
           project-repository: bin-hook-manager
 
-  bin-hook-manager-release:
-    docker: *gcloud_image
+  bin-hook-manager-deploy:
+    docker:
+      - image: cimg/base:2024.02
     resource_class: small
     steps:
-      - docker-release:
-          source-directory: bin-hook-manager
-          image-name: hook-manager
-          project-id: voipbin
-          project-repository: bin-hook-manager
+      - checkout
+      - run:
+          name: Deploy bin-hook-manager to bm-nyc-01
+          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-hook-manager hook-manager
 
   # bin-message-manager
   bin-message-manager-test:
@@ -1349,15 +1357,15 @@ jobs:
           project-repository: bin-message-manager
           source-directory: bin-message-manager
 
-  bin-message-manager-release:
-    docker: *gcloud_image
+  bin-message-manager-deploy:
+    docker:
+      - image: cimg/base:2024.02
     resource_class: small
     steps:
-      - docker-release:
-          project-id: voipbin
-          project-repository: bin-message-manager
-          source-directory: bin-message-manager
-          image-name: message-manager
+      - checkout
+      - run:
+          name: Deploy bin-message-manager to bm-nyc-01
+          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-message-manager message-manager
 
   # bin-number-manager
   bin-number-manager-test:
@@ -1376,15 +1384,15 @@ jobs:
           project-repository: bin-number-manager
           source-directory: bin-number-manager
 
-  bin-number-manager-release:
-    docker: *gcloud_image
+  bin-number-manager-deploy:
+    docker:
+      - image: cimg/base:2024.02
     resource_class: small
     steps:
-      - docker-release:
-          project-id: voipbin
-          project-repository: bin-number-manager
-          source-directory: bin-number-manager
-          image-name: number-manager
+      - checkout
+      - run:
+          name: Deploy bin-number-manager to bm-nyc-01
+          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-number-manager number-manager
 
   # bin-openapi-manager
   bin-openapi-manager-validate:
@@ -1431,15 +1439,15 @@ jobs:
           project-repository: bin-outdial-manager
           source-directory: bin-outdial-manager
 
-  bin-outdial-manager-release:
-    docker: *gcloud_image
+  bin-outdial-manager-deploy:
+    docker:
+      - image: cimg/base:2024.02
     resource_class: small
     steps:
-      - docker-release:
-          project-id: voipbin
-          project-repository: bin-outdial-manager
-          source-directory: bin-outdial-manager
-          image-name: outdial-manager
+      - checkout
+      - run:
+          name: Deploy bin-outdial-manager to bm-nyc-01
+          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-outdial-manager outdial-manager
 
   # bin-pipecat-manager
   bin-pipecat-manager-test:
@@ -1458,15 +1466,15 @@ jobs:
           project-repository: bin-pipecat-manager
           source-directory: bin-pipecat-manager
 
-  bin-pipecat-manager-release:
-    docker: *gcloud_image
+  bin-pipecat-manager-deploy:
+    docker:
+      - image: cimg/base:2024.02
     resource_class: small
     steps:
-      - docker-release:
-          project-id: voipbin
-          project-repository: bin-pipecat-manager
-          source-directory: bin-pipecat-manager
-          image-name: pipecat-manager
+      - checkout
+      - run:
+          name: Deploy bin-pipecat-manager to bm-nyc-01
+          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-pipecat-manager pipecat-manager
 
   # bin-queue-manager
   bin-queue-manager-test:
@@ -1485,15 +1493,15 @@ jobs:
           project-repository: bin-queue-manager
           source-directory: bin-queue-manager
 
-  bin-queue-manager-release:
-    docker: *gcloud_image
+  bin-queue-manager-deploy:
+    docker:
+      - image: cimg/base:2024.02
     resource_class: small
     steps:
-      - docker-release:
-          project-id: voipbin
-          project-repository: bin-queue-manager
-          image-name: queue-manager
-          source-directory: bin-queue-manager
+      - checkout
+      - run:
+          name: Deploy bin-queue-manager to bm-nyc-01
+          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-queue-manager queue-manager
 
   # bin-rag-manager
   bin-rag-manager-test:
@@ -1512,15 +1520,15 @@ jobs:
           project-id: voipbin
           project-repository: bin-rag-manager
 
-  bin-rag-manager-release:
-    docker: *gcloud_image
+  bin-rag-manager-deploy:
+    docker:
+      - image: cimg/base:2024.02
     resource_class: small
     steps:
-      - docker-release:
-          source-directory: bin-rag-manager
-          image-name: rag-manager
-          project-id: voipbin
-          project-repository: bin-rag-manager
+      - checkout
+      - run:
+          name: Deploy bin-rag-manager to bm-nyc-01
+          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-rag-manager rag-manager
 
   # bin-registrar-manager
   bin-registrar-manager-test:
@@ -1539,15 +1547,15 @@ jobs:
           project-repository: bin-registrar-manager
           source-directory: bin-registrar-manager
 
-  bin-registrar-manager-release:
-    docker: *gcloud_image
+  bin-registrar-manager-deploy:
+    docker:
+      - image: cimg/base:2024.02
     resource_class: small
     steps:
-      - docker-release:
-          project-id: voipbin
-          project-repository: bin-registrar-manager
-          source-directory: bin-registrar-manager
-          image-name: registrar-manager
+      - checkout
+      - run:
+          name: Deploy bin-registrar-manager to bm-nyc-01
+          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-registrar-manager registrar-manager
 
   # bin-route-manager
   bin-route-manager-test:
@@ -1566,15 +1574,15 @@ jobs:
           project-repository: bin-route-manager
           source-directory: bin-route-manager
 
-  bin-route-manager-release:
-    docker: *gcloud_image
+  bin-route-manager-deploy:
+    docker:
+      - image: cimg/base:2024.02
     resource_class: small
     steps:
-      - docker-release:
-          project-id: voipbin
-          project-repository: bin-route-manager
-          source-directory: bin-route-manager
-          image-name: route-manager
+      - checkout
+      - run:
+          name: Deploy bin-route-manager to bm-nyc-01
+          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-route-manager route-manager
 
   # bin-schedule-manager
   bin-schedule-manager-test:
@@ -1593,15 +1601,15 @@ jobs:
           project-repository: bin-schedule-manager
           source-directory: bin-schedule-manager
 
-  bin-schedule-manager-release:
-    docker: *gcloud_image
+  bin-schedule-manager-deploy:
+    docker:
+      - image: cimg/base:2024.02
     resource_class: small
     steps:
-      - docker-release:
-          project-id: voipbin
-          project-repository: bin-schedule-manager
-          image-name: schedule-manager
-          source-directory: bin-schedule-manager
+      - checkout
+      - run:
+          name: Deploy bin-schedule-manager to bm-nyc-01
+          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-schedule-manager schedule-manager
 
   # bin-sentinel-manager
   bin-sentinel-manager-test:
@@ -1647,15 +1655,15 @@ jobs:
           project-repository: bin-storage-manager
           source-directory: bin-storage-manager
 
-  bin-storage-manager-release:
-    docker: *gcloud_image
+  bin-storage-manager-deploy:
+    docker:
+      - image: cimg/base:2024.02
     resource_class: small
     steps:
-      - docker-release:
-          project-id: voipbin
-          project-repository: bin-storage-manager
-          source-directory: bin-storage-manager
-          image-name: storage-manager
+      - checkout
+      - run:
+          name: Deploy bin-storage-manager to bm-nyc-01
+          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-storage-manager storage-manager
 
   # bin-tag-manager
   bin-tag-manager-test:
@@ -1674,15 +1682,15 @@ jobs:
           project-repository: bin-tag-manager
           source-directory: bin-tag-manager
 
-  bin-tag-manager-release:
-    docker: *gcloud_image
+  bin-tag-manager-deploy:
+    docker:
+      - image: cimg/base:2024.02
     resource_class: small
     steps:
-      - docker-release:
-          project-id: voipbin
-          project-repository: bin-tag-manager
-          image-name: tag-manager
-          source-directory: bin-tag-manager
+      - checkout
+      - run:
+          name: Deploy bin-tag-manager to bm-nyc-01
+          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-tag-manager tag-manager
 
   # bin-talk-manager
   bin-talk-manager-test:
@@ -1701,15 +1709,15 @@ jobs:
           project-repository: bin-talk-manager
           source-directory: bin-talk-manager
 
-  bin-talk-manager-release:
-    docker: *gcloud_image
+  bin-talk-manager-deploy:
+    docker:
+      - image: cimg/base:2024.02
     resource_class: small
     steps:
-      - docker-release:
-          project-id: voipbin
-          project-repository: bin-talk-manager
-          image-name: talk-manager
-          source-directory: bin-talk-manager
+      - checkout
+      - run:
+          name: Deploy bin-talk-manager to bm-nyc-01
+          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-talk-manager talk-manager
 
   # bin-timeline-manager
   bin-timeline-manager-test:
@@ -1728,15 +1736,15 @@ jobs:
           project-repository: bin-timeline-manager
           source-directory: bin-timeline-manager
 
-  bin-timeline-manager-release:
-    docker: *gcloud_image
+  bin-timeline-manager-deploy:
+    docker:
+      - image: cimg/base:2024.02
     resource_class: small
     steps:
-      - docker-release:
-          project-id: voipbin
-          project-repository: bin-timeline-manager
-          image-name: timeline-manager
-          source-directory: bin-timeline-manager
+      - checkout
+      - run:
+          name: Deploy bin-timeline-manager to bm-nyc-01
+          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-timeline-manager timeline-manager
 
   # bin-transcribe-manager
   bin-transcribe-manager-test:
@@ -1755,15 +1763,15 @@ jobs:
           project-repository: bin-transcribe-manager
           source-directory: bin-transcribe-manager
 
-  bin-transcribe-manager-release:
-    docker: *gcloud_image
+  bin-transcribe-manager-deploy:
+    docker:
+      - image: cimg/base:2024.02
     resource_class: small
     steps:
-      - docker-release:
-          project-id: voipbin
-          project-repository: bin-transcribe-manager
-          source-directory: bin-transcribe-manager
-          image-name: transcribe-manager
+      - checkout
+      - run:
+          name: Deploy bin-transcribe-manager to bm-nyc-01
+          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-transcribe-manager transcribe-manager
 
   # bin-transfer-manager
   bin-transfer-manager-test:
@@ -1782,15 +1790,15 @@ jobs:
           project-repository: bin-transfer-manager
           source-directory: bin-transfer-manager
 
-  bin-transfer-manager-release:
-    docker: *gcloud_image
+  bin-transfer-manager-deploy:
+    docker:
+      - image: cimg/base:2024.02
     resource_class: small
     steps:
-      - docker-release:
-          project-id: voipbin
-          project-repository: bin-transfer-manager
-          image-name: transfer-manager
-          source-directory: bin-transfer-manager
+      - checkout
+      - run:
+          name: Deploy bin-transfer-manager to bm-nyc-01
+          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-transfer-manager transfer-manager
 
   # bin-trigger-sender
   bin-trigger-sender-test:
@@ -1826,15 +1834,15 @@ jobs:
           project-repository: bin-tts-manager
           source-directory: bin-tts-manager
 
-  bin-tts-manager-release:
-    docker: *gcloud_image
+  bin-tts-manager-deploy:
+    docker:
+      - image: cimg/base:2024.02
     resource_class: small
     steps:
-      - docker-release:
-          project-id: voipbin
-          project-repository: bin-tts-manager
-          image-name: tts-manager
-          source-directory: bin-tts-manager
+      - checkout
+      - run:
+          name: Deploy bin-tts-manager to bm-nyc-01
+          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-tts-manager tts-manager
 
   # bin-webchat-manager
   bin-webchat-manager-test:
@@ -1853,15 +1861,15 @@ jobs:
           project-repository: bin-webchat-manager
           source-directory: bin-webchat-manager
 
-  bin-webchat-manager-release:
-    docker: *gcloud_image
+  bin-webchat-manager-deploy:
+    docker:
+      - image: cimg/base:2024.02
     resource_class: small
     steps:
-      - docker-release:
-          project-id: voipbin
-          project-repository: bin-webchat-manager
-          source-directory: bin-webchat-manager
-          image-name: webchat-manager
+      - checkout
+      - run:
+          name: Deploy bin-webchat-manager to bm-nyc-01
+          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-webchat-manager webchat-manager
 
   # bin-webhook-manager
   bin-webhook-manager-test:
@@ -1880,15 +1888,15 @@ jobs:
           project-repository: bin-webhook-manager
           source-directory: bin-webhook-manager
 
-  bin-webhook-manager-release:
-    docker: *gcloud_image
+  bin-webhook-manager-deploy:
+    docker:
+      - image: cimg/base:2024.02
     resource_class: small
     steps:
-      - docker-release:
-          project-id: voipbin
-          project-repository: bin-webhook-manager
-          source-directory: bin-webhook-manager
-          image-name: webhook-manager
+      - checkout
+      - run:
+          name: Deploy bin-webhook-manager to bm-nyc-01
+          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-webhook-manager webhook-manager
 
   ############################################
   # namespace: voip
@@ -2113,6 +2121,8 @@ commands:
 
             echo "Image pushed to << parameters.project-id >>/<< parameters.project-repository >>:$CIRCLE_SHA1"
 
+  # Still used by bin-sentinel-manager-release only - see that job's
+  # comment for why sentinel-manager stays on GKE instead of ssh-deploy.
   docker-release:
     description: "release the docker image"
     parameters:
