@@ -105,11 +105,12 @@ Notification event for call's hangup.
 # Deploy
 
 This service is the pilot for CircleCI's direct-SSH deploy to bm-nyc-01, our
-only server:
-`bin-call-manager-build` pushes the image, then `bin-call-manager-deploy-approval`
-(manual) gates `bin-call-manager-deploy`, which bumps this service's pin on
-bm-nyc-01 and recreates the container. See `.circleci/scripts/ssh-deploy.sh`.
-The previous GKE deploy path for this service has been removed.
+only server: `build-approval` gates the whole pipeline (test → build →
+deploy) with a single click, matching the old GKE release job's convenience.
+`bin-call-manager-deploy` runs after `bin-call-manager-build`, bumping this
+service's pin on bm-nyc-01 and recreating the container. See
+`.circleci/scripts/ssh-deploy.sh`. The previous GKE deploy path for this
+service has been removed.
 
 # Note
 
