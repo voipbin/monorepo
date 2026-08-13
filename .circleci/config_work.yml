@@ -255,10 +255,22 @@ workflows:
           <<: *context_production
           requires:
             - bin-call-manager-test
-      - bin-call-manager-release:
-          <<: *context_production
+      - bin-call-manager-deploy-approval:
+          type: approval
+          # Deliberately NOT restricted to main: bm-nyc-01 is the only
+          # environment we have, so it doubles as staging - deploying an
+          # unmerged branch's build here to verify it before merge is the
+          # whole point, not a risk to avoid. The manual approval click
+          # itself is the safety control (same as any other approval job in
+          # this file), not a branch restriction. Do not add a
+          # `filters: branches: only: main` here without re-confirming this
+          # reasoning with the team first.
           requires:
             - bin-call-manager-build
+      - bin-call-manager-deploy:
+          <<: *context_production
+          requires:
+            - bin-call-manager-deploy-approval
 
   bin-campaign-manager:
     when: << pipeline.parameters.run-bin-campaign-manager >>
@@ -972,15 +984,25 @@ jobs:
           project-id: voipbin
           project-repository: bin-call-manager
 
-  bin-call-manager-release:
-    docker: *gcloud_image
+  # Pilot: direct SSH deploy to bm-nyc-01, bypassing voipbin/voipbin
+  # entirely (no PR, no git checkout of that repo). Runs the image already
+  # pushed by bin-call-manager-build. The pre-existing GKE release job for
+  # this service has been removed - bm-nyc-01 is now the only deploy
+  # target, so there is no second target left to disambiguate against.
+  bin-call-manager-deploy:
+    docker:
+      - image: cimg/base:2024.02
     resource_class: small
     steps:
-      - docker-release:
-          source-directory: bin-call-manager
-          image-name: call-manager
-          project-id: voipbin
-          project-repository: bin-call-manager
+      - checkout
+      - run:
+          name: Deploy bin-call-manager to bm-nyc-01
+          # Second arg is the docker-compose SERVICE name, which drops the
+          # 'bin-' prefix (matches the image-name convention other
+          # services' release jobs use, e.g. "call-manager" not
+          # "bin-call-manager") - confirmed against bm-nyc-01's actual
+          # docker-compose.yml, not assumed.
+          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-call-manager call-manager
 
   # bin-campaign-manager
   bin-campaign-manager-test:
