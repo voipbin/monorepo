@@ -126,7 +126,18 @@ chmod 600 "$SSH_KEY_FILE"
 # it survives that input path intact. Written from a variable, never
 # logged: the key material itself never appears in this script's own
 # output (the raw decoded key isn't printed either, only validated).
-if ! printf '%s' "$CC_DEPLOY_SSH_KEY" | base64 -d > "$SSH_KEY_FILE" 2>/dev/null; then
+#
+# Strip anything outside the base64 alphabet before decoding: a copy-paste
+# into a web UI (CircleCI's context-variable field, a chat app, etc.) can
+# pick up stray characters this way - surrounding quotes, a trailing CR, an
+# invisible zero-width character - that are never part of a real base64
+# payload but would otherwise turn a byte-for-byte-correct value into a
+# decode failure. This is strictly permissive (only removes characters that
+# could not be part of valid base64 to begin with), not lenient about
+# actually-corrupted content - a truncated or reordered payload still fails
+# the PRIVATE KEY marker check below.
+CLEANED_KEY="$(printf '%s' "$CC_DEPLOY_SSH_KEY" | tr -dc 'A-Za-z0-9+/=\n')"
+if ! printf '%s' "$CLEANED_KEY" | base64 -d > "$SSH_KEY_FILE" 2>/dev/null; then
     log_error "CC_DEPLOY_SSH_KEY is not valid base64 (must be 'base64 -w0 <private-key-file>', not the raw key)"
     exit 1
 fi

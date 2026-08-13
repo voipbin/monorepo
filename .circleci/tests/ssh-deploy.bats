@@ -204,6 +204,41 @@ super-secret-deploy-key-xyz789
     [[ "$output" == *"does not look like a private key"* ]]
 }
 
+@test "tolerates a valid base64 payload wrapped in stray characters a copy-paste can introduce" {
+    # Regression test: a real CircleCI run failed on a value that decoded
+    # incorrectly after being pasted into the context-variable web UI, even
+    # though the underlying base64 payload itself was correct - surrounding
+    # whitespace/quotes/CR are exactly the kind of stray characters a
+    # copy-paste can pick up. This must still succeed, not just fail with a
+    # clearer error.
+    valid_env
+    local clean="$CC_DEPLOY_SSH_KEY"
+    export CC_DEPLOY_SSH_KEY=$'  "'"$clean"$'"\r\n\t '
+    install_fake_ssh 0
+    run run_script "voipbin/bin-call-manager" "bin-call-manager"
+
+    [[ "$status" -eq 0 ]]
+    [[ "$output" == *"Deploy succeeded"* ]]
+}
+
+@test "still rejects a base64 payload corrupted by more than stray wrapper characters" {
+    # Companion to the tolerance test above: stripping only non-base64
+    # characters must not mask a genuinely truncated/reordered payload -
+    # confirm corruption of the actual content is still caught by one of
+    # the two downstream checks (an invalid-length truncation like this one
+    # typically fails base64 decoding itself; a same-length reordering
+    # would instead fail the PRIVATE KEY marker check - either is an
+    # acceptable backstop, hence the OR below).
+    valid_env
+    # Drop the middle of the payload rather than just wrap it - this is
+    # corruption of the actual content, not incidental wrapper noise.
+    export CC_DEPLOY_SSH_KEY="${CC_DEPLOY_SSH_KEY:0:10}"
+    run run_script "voipbin/bin-call-manager" "bin-call-manager"
+
+    [[ "$status" -ne 0 ]]
+    [[ "$output" == *"not valid base64"* || "$output" == *"does not look like a private key"* ]]
+}
+
 @test "the SSH key temp file is removed after the script exits (success path)" {
     valid_env
     install_fake_ssh 0
