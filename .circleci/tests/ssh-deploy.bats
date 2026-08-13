@@ -15,8 +15,15 @@ run_script() {
     bash "$SCRIPTS_DIR/ssh-deploy.sh" "$@"
 }
 
+# A fake but well-formed OpenSSH-shaped private key, base64-encoded (as the
+# real CC_DEPLOY_SSH_KEY must be) - matches what the script now requires:
+# valid base64 that decodes to content containing a "PRIVATE KEY" marker.
+FAKE_KEY_CONTENT="-----BEGIN OPENSSH PRIVATE KEY-----
+ZmFrZS1rZXktbWF0ZXJpYWwtZm9yLXRlc3Rpbmctb25seQ==
+-----END OPENSSH PRIVATE KEY-----"
+
 valid_env() {
-    export CC_DEPLOY_SSH_KEY="fake-key-material"
+    export CC_DEPLOY_SSH_KEY="$(printf '%s' "$FAKE_KEY_CONTENT" | base64 -w0)"
     export CIRCLE_SHA1="cccccccccccccccccccccccccccccccccccccccc"
 }
 
@@ -146,19 +153,29 @@ valid_env() {
     [[ "$output" == *"docker compose up -d bin-call-manager"* ]]
 }
 
-@test "SSH key value never appears in stdout/stderr output" {
-    export CC_DEPLOY_SSH_KEY="super-secret-deploy-key-xyz789"
+secret_key_env() {
+    # The embedded marker (not just the base64 blob itself) is what these
+    # tests check never leaks - covers both "the raw CC_DEPLOY_SSH_KEY
+    # value" and "the decoded key content" leaking.
+    local content="-----BEGIN OPENSSH PRIVATE KEY-----
+super-secret-deploy-key-xyz789
+-----END OPENSSH PRIVATE KEY-----"
+    export CC_DEPLOY_SSH_KEY="$(printf '%s' "$content" | base64 -w0)"
     export CIRCLE_SHA1="cccccccccccccccccccccccccccccccccccccccc"
+}
+
+@test "SSH key value never appears in stdout/stderr output" {
+    secret_key_env
     install_fake_ssh 0
     run run_script "voipbin/bin-call-manager" "bin-call-manager"
 
     [[ "$status" -eq 0 ]]
     [[ "$output" != *"super-secret-deploy-key-xyz789"* ]]
+    [[ "$output" != *"$CC_DEPLOY_SSH_KEY"* ]]
 }
 
 @test "SSH key value never appears anywhere in the ssh invocation's argv (only the key FILE path is passed)" {
-    export CC_DEPLOY_SSH_KEY="super-secret-deploy-key-xyz789"
-    export CIRCLE_SHA1="cccccccccccccccccccccccccccccccccccccccc"
+    secret_key_env
     install_fake_ssh 0
     run run_script "voipbin/bin-call-manager" "bin-call-manager"
 
@@ -166,6 +183,25 @@ valid_env() {
     local args
     args="$(ssh_call_args 1)"
     [[ "$args" != *"super-secret-deploy-key-xyz789"* ]]
+    [[ "$args" != *"$CC_DEPLOY_SSH_KEY"* ]]
+}
+
+@test "refuses when CC_DEPLOY_SSH_KEY is not valid base64" {
+    export CC_DEPLOY_SSH_KEY="not-valid-base64!!!"
+    export CIRCLE_SHA1="cccccccccccccccccccccccccccccccccccccccc"
+    run run_script "voipbin/bin-call-manager" "bin-call-manager"
+
+    [[ "$status" -ne 0 ]]
+    [[ "$output" == *"not valid base64"* ]]
+}
+
+@test "refuses when CC_DEPLOY_SSH_KEY decodes to something without a PRIVATE KEY marker" {
+    export CC_DEPLOY_SSH_KEY="$(printf 'just some unrelated text' | base64 -w0)"
+    export CIRCLE_SHA1="cccccccccccccccccccccccccccccccccccccccc"
+    run run_script "voipbin/bin-call-manager" "bin-call-manager"
+
+    [[ "$status" -ne 0 ]]
+    [[ "$output" == *"does not look like a private key"* ]]
 }
 
 @test "the SSH key temp file is removed after the script exits (success path)" {

@@ -23,7 +23,7 @@
 #     this script was written).
 #
 # Usage:
-#   CC_DEPLOY_SSH_KEY=<private-key> ./.circleci/scripts/ssh-deploy.sh <image-repo> <compose-service-name>
+#   CC_DEPLOY_SSH_KEY=<base64-encoded-private-key> ./.circleci/scripts/ssh-deploy.sh <image-repo> <compose-service-name>
 #
 #   <image-repo>            e.g. voipbin/bin-call-manager - must already have
 #                           an entry in bm-nyc-01's live versions.lock (this
@@ -35,8 +35,11 @@
 #
 # Environment:
 #   CC_DEPLOY_SSH_KEY   Private key for the dedicated 'deploy' account on
-#                       bm-nyc-01 (required). NEVER echoed; written to a 600
-#                       temp file that is removed on exit via a trap,
+#                       bm-nyc-01, base64-encoded on ONE line (e.g.
+#                       `base64 -w0 id_ed25519`), NOT the raw multi-line
+#                       key - see the decode step below for why. Required.
+#                       NEVER echoed, decoded key never printed; written to
+#                       a 600 temp file removed on exit via a trap,
 #                       regardless of how the script exits.
 #   CIRCLE_SHA1         CircleCI's built-in full-length commit SHA
 #                       (required) - this is both the docker tag already
@@ -66,7 +69,7 @@ log_info()  { echo "[INFO] $*"; }
 log_error() { echo "[ERROR] $*" >&2; }
 
 usage() {
-    sed -n '2,55p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+    sed -n '2,59p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
 }
 
 if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
@@ -113,11 +116,24 @@ cleanup() {
     rm -f "$SSH_KEY_FILE" "$KNOWN_HOSTS_FILE"
 }
 trap cleanup EXIT
-
-# Written from a variable, never logged: the key material itself never
-# appears in this script's own output.
-printf '%s\n' "$CC_DEPLOY_SSH_KEY" > "$SSH_KEY_FILE"
 chmod 600 "$SSH_KEY_FILE"
+
+# CC_DEPLOY_SSH_KEY is the base64 encoding of the private key file (e.g.
+# `base64 -w0 id_ed25519`), NOT the raw multi-line key - CircleCI's
+# context-variable input mangles a raw key's required internal newlines,
+# which previously surfaced as an opaque `ssh`/libcrypto parse failure at
+# connect time instead of a clear error here. Base64 is a single line, so
+# it survives that input path intact. Written from a variable, never
+# logged: the key material itself never appears in this script's own
+# output (the raw decoded key isn't printed either, only validated).
+if ! printf '%s' "$CC_DEPLOY_SSH_KEY" | base64 -d > "$SSH_KEY_FILE" 2>/dev/null; then
+    log_error "CC_DEPLOY_SSH_KEY is not valid base64 (must be 'base64 -w0 <private-key-file>', not the raw key)"
+    exit 1
+fi
+if ! grep -q "PRIVATE KEY" "$SSH_KEY_FILE"; then
+    log_error "CC_DEPLOY_SSH_KEY decoded but does not look like a private key (no 'PRIVATE KEY' marker) - check the value registered in CircleCI"
+    exit 1
+fi
 
 printf '%s\n%s\n' "$KNOWN_HOSTS_LINE_RSA" "$KNOWN_HOSTS_LINE_ED25519" > "$KNOWN_HOSTS_FILE"
 
