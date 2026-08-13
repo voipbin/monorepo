@@ -10,6 +10,10 @@
 # section). No PR, no git commit anywhere - this only mutates files on the
 # remote host.
 #
+# There is only one deploy target (bm-nyc-01) - no "bm" disambiguator in
+# this script's name, job names, or variables; if a second target is ever
+# added, name things after what actually distinguishes them then.
+#
 # Preconditions (caller's responsibility):
 #   - The image at <image-repo>:<circle-sha1> has already been built and
 #     pushed to Docker Hub (this script does not build or push anything).
@@ -19,26 +23,25 @@
 #     this script was written).
 #
 # Usage:
-#   CC_BM_NYC_01_DEPLOY_SSH_KEY=<private-key> ./.circleci/scripts/ssh-deploy-bm.sh <image-repo> <compose-service-name>
+#   CC_DEPLOY_SSH_KEY=<private-key> ./.circleci/scripts/ssh-deploy.sh <image-repo> <compose-service-name>
 #
 #   <image-repo>            e.g. voipbin/bin-call-manager - must already have
 #                           an entry in bm-nyc-01's live versions.lock (this
 #                           script only bumps an existing pin, same guard as
 #                           voipbin/voipbin's bump-image-digest.sh, which it
 #                           calls on the remote side).
-#   <compose-service-name>  e.g. bin-call-manager - the docker-compose
-#                           service name to pull/recreate after the pin bump.
+#   <compose-service-name>  e.g. call-manager - the docker-compose service
+#                           name to pull/recreate after the pin bump.
 #
 # Environment:
-#   CC_BM_NYC_01_DEPLOY_SSH_KEY   Private key for the dedicated 'deploy'
-#                                 account on bm-nyc-01 (required). NEVER
-#                                 echoed; written to a 600 temp file that is
-#                                 removed on exit via a trap, regardless of
-#                                 how the script exits.
-#   CIRCLE_SHA1                   CircleCI's built-in full-length commit SHA
-#                                 (required) - this is both the docker tag
-#                                 already pushed and the source-commit
-#                                 recorded in versions.lock.
+#   CC_DEPLOY_SSH_KEY   Private key for the dedicated 'deploy' account on
+#                       bm-nyc-01 (required). NEVER echoed; written to a 600
+#                       temp file that is removed on exit via a trap,
+#                       regardless of how the script exits.
+#   CIRCLE_SHA1         CircleCI's built-in full-length commit SHA
+#                       (required) - this is both the docker tag already
+#                       pushed and the source-commit recorded in
+#                       versions.lock.
 #
 # Target host and its SSH host keys are fixed below (not resolved via a
 # runtime `ssh-keyscan`, which would trust whatever answers on first
@@ -53,17 +56,17 @@
 
 set -e
 
-BM_HOST="104.243.38.39"
-BM_USER="deploy"
-BM_KNOWN_HOSTS_LINE_RSA="104.243.38.39 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCtenMCo++fOqJ2NZiPDGlsteCEHTY5kFR7TCBpZsC/LyYaQYVeZaW+HRrhs1KS3FQhfDFSjYs6htnXoK6U8t+qiWb4c7iExQEeFgagxozIAkjmRERy5wnlH4RJ76loeKIcC/cDmW+eyASkGinCeAyT3DbYK5BVo0VnpXazNzgHzW7cK8G9w86+8gSt/G7f2e4iHk4qeXd2zMtuSXCF5L2gO0h3cfAHXecRUKMnWLPsczXJv/HlLSM3Xm7IjOVFHIZksJO/iD0kw2RN+fSehofokuc03Qq7462eZqjgsF53p4pEmNnWGDsQmdbE/e18NVsHh82I+1APaeORj2za+GCiEOUY+74oeLr1Omg5KiGEK6GagvVe8Ca/zJ19e0T+VkiIAGjZgseBOON3UyEHzEyUusfTsmBYWLubv1Fag4SP280yd+MeydCqr4IJg8jbGtQ+KWixxKDzXnIfuIk0lsyMfojVKeRkxKyxxwdEzWgX+nhtBPgHD2WKx+heCh5ri4E="
-BM_KNOWN_HOSTS_LINE_ED25519="104.243.38.39 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGU/p87VedpGVqLoASzbDGJJjoFtjmKHREQzA+9gaRzq"
+DEPLOY_HOST="104.243.38.39"
+DEPLOY_USER="deploy"
+KNOWN_HOSTS_LINE_RSA="104.243.38.39 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCtenMCo++fOqJ2NZiPDGlsteCEHTY5kFR7TCBpZsC/LyYaQYVeZaW+HRrhs1KS3FQhfDFSjYs6htnXoK6U8t+qiWb4c7iExQEeFgagxozIAkjmRERy5wnlH4RJ76loeKIcC/cDmW+eyASkGinCeAyT3DbYK5BVo0VnpXazNzgHzW7cK8G9w86+8gSt/G7f2e4iHk4qeXd2zMtuSXCF5L2gO0h3cfAHXecRUKMnWLPsczXJv/HlLSM3Xm7IjOVFHIZksJO/iD0kw2RN+fSehofokuc03Qq7462eZqjgsF53p4pEmNnWGDsQmdbE/e18NVsHh82I+1APaeORj2za+GCiEOUY+74oeLr1Omg5KiGEK6GagvVe8Ca/zJ19e0T+VkiIAGjZgseBOON3UyEHzEyUusfTsmBYWLubv1Fag4SP280yd+MeydCqr4IJg8jbGtQ+KWixxKDzXnIfuIk0lsyMfojVKeRkxKyxxwdEzWgX+nhtBPgHD2WKx+heCh5ri4E="
+KNOWN_HOSTS_LINE_ED25519="104.243.38.39 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGU/p87VedpGVqLoASzbDGJJjoFtjmKHREQzA+9gaRzq"
 REMOTE_INSTALL_DIR="/opt/voipbin/install"
 
 log_info()  { echo "[INFO] $*"; }
 log_error() { echo "[ERROR] $*" >&2; }
 
 usage() {
-    sed -n '2,52p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+    sed -n '2,55p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
 }
 
 if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
@@ -89,8 +92,8 @@ if [[ ! "$COMPOSE_SERVICE" =~ ^[a-z0-9]([a-z0-9-]*[a-z0-9])?$ ]]; then
     exit 1
 fi
 
-if [[ -z "${CC_BM_NYC_01_DEPLOY_SSH_KEY:-}" ]]; then
-    log_error "CC_BM_NYC_01_DEPLOY_SSH_KEY is not set"
+if [[ -z "${CC_DEPLOY_SSH_KEY:-}" ]]; then
+    log_error "CC_DEPLOY_SSH_KEY is not set"
     exit 1
 fi
 
@@ -113,10 +116,10 @@ trap cleanup EXIT
 
 # Written from a variable, never logged: the key material itself never
 # appears in this script's own output.
-printf '%s\n' "$CC_BM_NYC_01_DEPLOY_SSH_KEY" > "$SSH_KEY_FILE"
+printf '%s\n' "$CC_DEPLOY_SSH_KEY" > "$SSH_KEY_FILE"
 chmod 600 "$SSH_KEY_FILE"
 
-printf '%s\n%s\n' "$BM_KNOWN_HOSTS_LINE_RSA" "$BM_KNOWN_HOSTS_LINE_ED25519" > "$KNOWN_HOSTS_FILE"
+printf '%s\n%s\n' "$KNOWN_HOSTS_LINE_RSA" "$KNOWN_HOSTS_LINE_ED25519" > "$KNOWN_HOSTS_FILE"
 
 SSH_OPTS=(
     -i "$SSH_KEY_FILE"
@@ -162,7 +165,7 @@ echo \"DEPLOY_FAILED last_state=\$state\" >&2
 docker compose logs --tail 30 '$COMPOSE_SERVICE' >&2 || true
 exit 1"
 
-if ssh "${SSH_OPTS[@]}" "${BM_USER}@${BM_HOST}" "$REMOTE_CMD"; then
+if ssh "${SSH_OPTS[@]}" "${DEPLOY_USER}@${DEPLOY_HOST}" "$REMOTE_CMD"; then
     log_info "Deploy succeeded: $COMPOSE_SERVICE is running $IMAGE_REPO:$CIRCLE_SHA1"
     exit 0
 else
@@ -171,6 +174,6 @@ else
     log_error "This script does not auto-rollback - a human must decide the next step."
     log_error "To manually redeploy a known-good digest, re-run bump-image-digest.sh on bm-nyc-01"
     log_error "with that digest, e.g.:"
-    log_error "  ssh ${BM_USER}@${BM_HOST} \"cd $REMOTE_INSTALL_DIR && LOCK_FILE=./versions.lock COMPOSE_FILE=./docker-compose.yml ./scripts/bump-image-digest.sh $IMAGE_REPO <known-good-ref> <known-good-commit> && docker compose up -d $COMPOSE_SERVICE\""
+    log_error "  ssh ${DEPLOY_USER}@${DEPLOY_HOST} \"cd $REMOTE_INSTALL_DIR && LOCK_FILE=./versions.lock COMPOSE_FILE=./docker-compose.yml ./scripts/bump-image-digest.sh $IMAGE_REPO <known-good-ref> <known-good-commit> && docker compose up -d $COMPOSE_SERVICE\""
     exit "$rc"
 fi

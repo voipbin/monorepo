@@ -1,5 +1,5 @@
 #!/usr/bin/env bats
-# Tests for .circleci/scripts/ssh-deploy-bm.sh
+# Tests for .circleci/scripts/ssh-deploy.sh
 
 load 'test_helper'
 
@@ -12,11 +12,11 @@ teardown() {
 }
 
 run_script() {
-    bash "$SCRIPTS_DIR/ssh-deploy-bm.sh" "$@"
+    bash "$SCRIPTS_DIR/ssh-deploy.sh" "$@"
 }
 
 valid_env() {
-    export CC_BM_NYC_01_DEPLOY_SSH_KEY="fake-key-material"
+    export CC_DEPLOY_SSH_KEY="fake-key-material"
     export CIRCLE_SHA1="cccccccccccccccccccccccccccccccccccccccc"
 }
 
@@ -46,16 +46,16 @@ valid_env() {
     [[ "$output" == *"compose-service-name must be"* ]]
 }
 
-@test "refuses to run when CC_BM_NYC_01_DEPLOY_SSH_KEY is not set" {
+@test "refuses to run when CC_DEPLOY_SSH_KEY is not set" {
     export CIRCLE_SHA1="cccccccccccccccccccccccccccccccccccccccc"
-    unset CC_BM_NYC_01_DEPLOY_SSH_KEY
+    unset CC_DEPLOY_SSH_KEY
     run run_script "voipbin/bin-call-manager" "bin-call-manager"
     [[ "$status" -ne 0 ]]
-    [[ "$output" == *"CC_BM_NYC_01_DEPLOY_SSH_KEY is not set"* ]]
+    [[ "$output" == *"CC_DEPLOY_SSH_KEY is not set"* ]]
 }
 
 @test "refuses to run when CIRCLE_SHA1 is not set" {
-    export CC_BM_NYC_01_DEPLOY_SSH_KEY="fake-key-material"
+    export CC_DEPLOY_SSH_KEY="fake-key-material"
     unset CIRCLE_SHA1
     run run_script "voipbin/bin-call-manager" "bin-call-manager"
     [[ "$status" -ne 0 ]]
@@ -147,7 +147,7 @@ valid_env() {
 }
 
 @test "SSH key value never appears in stdout/stderr output" {
-    export CC_BM_NYC_01_DEPLOY_SSH_KEY="super-secret-deploy-key-xyz789"
+    export CC_DEPLOY_SSH_KEY="super-secret-deploy-key-xyz789"
     export CIRCLE_SHA1="cccccccccccccccccccccccccccccccccccccccc"
     install_fake_ssh 0
     run run_script "voipbin/bin-call-manager" "bin-call-manager"
@@ -157,7 +157,7 @@ valid_env() {
 }
 
 @test "SSH key value never appears anywhere in the ssh invocation's argv (only the key FILE path is passed)" {
-    export CC_BM_NYC_01_DEPLOY_SSH_KEY="super-secret-deploy-key-xyz789"
+    export CC_DEPLOY_SSH_KEY="super-secret-deploy-key-xyz789"
     export CIRCLE_SHA1="cccccccccccccccccccccccccccccccccccccccc"
     install_fake_ssh 0
     run run_script "voipbin/bin-call-manager" "bin-call-manager"
