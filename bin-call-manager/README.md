@@ -102,6 +102,14 @@ Notification event for call's status updating.
 ## call_hungup
 Notification event for call's hangup.
 
+# Deploy
+
+This service is the pilot for CircleCI's direct-SSH deploy path to bm-nyc-01:
+`bin-call-manager-build` pushes the image, then `bin-call-manager-deploy-bm-approval`
+(manual) gates `bin-call-manager-deploy-bm`, which bumps this service's pin
+on bm-nyc-01 and recreates the container. See `.circleci/scripts/ssh-deploy-bm.sh`.
+The pre-existing GKE path (`bin-call-manager-release`) is unaffected.
+
 # Note
 
 <!-- Updated dependencies: 2026-04-09 -->
