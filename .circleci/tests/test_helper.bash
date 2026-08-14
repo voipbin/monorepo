@@ -32,9 +32,17 @@ teardown_test_env() {
 # newlines (it's a multi-line shell script), which would otherwise be
 # misread as invocation boundaries. Lets tests assert on exactly what
 # remote command was constructed, without a real network call.
+#
+# Also captures whatever is piped into ssh's stdin to $SSH_STDIN_LOG,
+# one record per invocation separated by 0x1d - used by scripts (like
+# komodo-api-deploy.sh) that feed secrets to the remote side over stdin
+# rather than via argv or SendEnv. Scripts that don't pipe anything into
+# ssh (like ssh-deploy.sh) just produce empty records here; harmless.
 install_fake_ssh() {
     SSH_LOG="$TEST_TEMP_DIR/ssh_calls.log"
+    SSH_STDIN_LOG="$TEST_TEMP_DIR/ssh_stdin.log"
     : > "$SSH_LOG"
+    : > "$SSH_STDIN_LOG"
     local exit_code="${1:-0}"
     cat > "$MOCK_BIN_DIR/ssh" <<EOF
 #!/bin/bash
@@ -44,6 +52,10 @@ install_fake_ssh() {
     done
     printf '\x1d'
 } >> "$SSH_LOG"
+{
+    cat
+    printf '\x1d'
+} >> "$SSH_STDIN_LOG"
 exit $exit_code
 EOF
     chmod +x "$MOCK_BIN_DIR/ssh"
@@ -79,3 +91,36 @@ ssh_call_remote_command() {
 ssh_call_count() {
     awk -v RS='\035' 'END{print NR}' "$SSH_LOG"
 }
+
+# The Nth (1-indexed) ssh invocation's full stdin content, exactly as
+# piped in (no field splitting - callers grep/compare this as one blob).
+ssh_call_stdin() {
+    local n="$1"
+    awk -v RS='\035' -v n="$n" 'NR==n{print; exit}' "$SSH_STDIN_LOG"
+}
+
+# Extracts the body of a `VAR=$(cat <<'DELIM' ... DELIM)` quoted heredoc
+# from a script file, i.e. the remote-side script komodo-api-deploy.sh
+# builds up and ships over ssh as a single command string. Runs it as
+# real bash (with placeholders substituted) so tests can catch bugs a
+# pure string-inspection assertion on the constructed command cannot -
+# e.g. the round-2-review-caught bug where `curl -f` silently discarded
+# the HTTP response body on failure, which "looks right" in the
+# constructed command string but is wrong at actual execution time.
+# Args: script_file heredoc_delimiter
+extract_heredoc_body() {
+    local script_file="$1" delim="$2"
+    # Only treat a line as the heredoc OPENER if the start token is its
+    # actual trailing content (ignoring trailing whitespace), not merely
+    # present anywhere on the line - a prose comment elsewhere in the
+    # file may reference the same "<<'DELIM'" text without being the
+    # real heredoc, which would otherwise start extraction from the
+    # wrong place entirely.
+    awk -v start="<<'${delim}'" -v delim="$delim" '
+        { line = $0; sub(/[ \t]+$/, "", line) }
+        !flag && line ~ (start "$") { flag=1; next }
+        flag && $0 == delim { flag=0 }
+        flag { print }
+    ' "$script_file"
+}
+
