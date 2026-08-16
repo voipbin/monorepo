@@ -817,13 +817,17 @@ mechanism (Komodo returns HTTP 500, not 404, for "Stack not found").
 §7 step 2's separate manual bootstrap is removed accordingly — folded into
 step 7's own first run.
 
-**Follow-up dependency, not in this PR's scope (대표님, 2026-08-16):** a
-neutral shared network (tentatively named `production`), owned by neither
-the `install` compose project nor any Komodo Stack, is being built out in
-a separate session — this is the same "network genuinely owned by neither
-compose project" follow-up this document already flagged (see the
-`install_default` shared-network note above). Once that network exists
-and `db`/`redis`/`rabbitmq` are attached to it, `bin-call-manager/komodo/docker-compose.yml`'s
+**Follow-up dependency, not in this PR's scope (대표님, 2026-08-16), tracked
+as [VOIP-1343](https://voipbin.atlassian.net/browse/VOIP-1343):** a
+neutral shared network `production`, owned by neither the `install`
+compose project nor any Komodo Stack, was built out in a separate session
+(`NOJIRA-Add-production-network-komodo-stack`, monorepo-etc PR #92) — this
+is the same "network genuinely owned by neither compose project"
+follow-up this document already flagged (see the `install_default`
+shared-network note above). **Verified live on bm-nyc-01 (2026-08-16): the
+`production` network exists, but `db`/`redis`/`rabbitmq` are not attached
+to it yet** — `backfill-install-default.sh` (in that PR) needs to run
+first. Once that's done, `bin-call-manager/komodo/docker-compose.yml`'s
 `networks.default.name` should move from `install_default` to
 `production` — but not before, and not as part of this pilot's cutover.
 Sequencing matters: that network must exist and carry the shared infra
