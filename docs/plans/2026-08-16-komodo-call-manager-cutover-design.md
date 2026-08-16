@@ -1,9 +1,26 @@
 # Design: cut bin-call-manager over to Komodo-managed deploy (VOIP-1342)
 
-Revision 5 — incorporates round-1 (3 CRITICAL, 4 HIGH, 5 MEDIUM), round-2
+Revision 6 — incorporates round-1 (3 CRITICAL, 4 HIGH, 5 MEDIUM), round-2
 (3 HIGH, 6 MEDIUM), round-3 (1 CRITICAL, 1 HIGH, 3 MEDIUM), and round-4
-(1 CRITICAL + reference cleanups) architect review findings. See "Review
-corrections log" at the end for the full mapping.
+(1 CRITICAL + reference cleanups) architect review findings, plus a
+post-approval naming change (below). See "Review corrections log" at the
+end for the full architect-review mapping.
+
+**Naming decision (2026-08-16, post-merge-review, 대표님):** the new
+container's name is `voipbin-call-manager` — matching GKE's `call-manager`
+app name/label (verified in `bin-call-manager/k8s/deployment.yml`) rather
+than `install/`'s host-wide `voipbin-<service>-mgr` abbreviation. This is
+**deliberately different from the old container's name**,
+`voipbin-call-mgr` (unchanged, still the live pre-cutover container's real
+name throughout this document). The other 31 `bin-*-manager` services'
+eventual Komodo cutover will follow the same `voipbin-<service>-manager`
+convention, not `-mgr`, as a follow-up. **Consequence, not a footnote:**
+because the two names differ, Docker no longer refuses to run both
+containers at once the way it would if they shared a name — the
+mutual-exclusion safety net earlier revisions of this design leaned on is
+gone. §7's ordering (old removed before new deployed) still holds, but is
+now enforced only by *procedure*, not by Docker itself — §7 adds an
+explicit verification step for this.
 
 ## Goal
 
@@ -361,13 +378,13 @@ RabbitMQ entirely" was false. Two checks, both required, revised:
 # the earlier broader pattern would false-positive on unrelated transient
 # dial failures, e.g. Homer/asterisk-proxy, at DebugLevel log volume).
 # Must be empty.
-docker logs --since 2m voipbin-call-mgr | \
+docker logs --since 2m voipbin-call-manager | \
   grep -Ei 'could not connect to the database|could not initialize the cache|could not connect to rabbitmq|panic:'
 
 # (ii) Positive gate — exercises DB connectivity via the control CLI,
 # bound to a timeout since the RabbitMQ leg of initHandler retries
 # unboundedly on failure rather than erroring (round 3 C1):
-timeout 30 docker exec voipbin-call-mgr /app/bin/call-control call list \
+timeout 30 docker exec voipbin-call-manager /app/bin/call-control call list \
   --customer-id 11111111-1111-1111-1111-111111111111 --limit 1
 ```
 `initHandler` connects DB → Redis (both via a real `Ping`, per
@@ -505,6 +522,17 @@ exists to protect against.
    no longer knows about) without touching the Komodo-managed container.
    Fail-closed, not a production hazard, but keep this window short and
    expect a red CI build as the (harmless) symptom if it happens.
+   **Mandatory check before step 7 (naming decision, 대표님, 2026-08-16):**
+   confirm the old container is actually gone —
+   `docker ps -a --filter "name=^/voipbin-call-mgr$" --format '{{.Names}}'`
+   must return nothing. Because the new container's name
+   (`voipbin-call-manager`) deliberately differs from the old one
+   (`voipbin-call-mgr`), Docker will **not** refuse to start the new
+   container even if the old one is somehow still running — the
+   mutual-exclusion this design originally relied on (same name = OS-level
+   refusal to double-run) no longer applies. This check is what replaces
+   it; do not skip it because step 5 "already removed" the old container —
+   confirm, don't assume.
 7. **Run `render-image-tag.sh` + `komodo-api-deploy.sh` by hand** from a
    workstation with `CC_KOMODO_API_KEY`/`CC_KOMODO_API_SECRET` available
    locally, targeting the manually-pushed tag from step 3 — watched, not
@@ -521,7 +549,7 @@ exists to protect against.
 10. **Only after step 8 confirms success:** merge the CI wiring change
     (§4) to `main` through the normal, unmodified `build-approval` gate.
     This is no longer a risky moment — Komodo already owns
-    `voipbin-call-mgr`, so the next CI-triggered deploy is an ordinary
+    `voipbin-call-manager`, so the next CI-triggered deploy is an ordinary
     image update on an already-Komodo-managed Stack, not a name-conflict
     situation. `bin-call-manager-build` will rebuild and re-push the same
     source at a new (`main`-merge) SHA — redundant with step 3's manual
@@ -544,6 +572,16 @@ volume at the chosen swap window) and treat exceeding it as an independent
 abort trigger, not just "reconnect and move on." Schedule the swap in the
 lowest-traffic window available.
 
+**Monitoring continuity (naming decision, 대표님, 2026-08-16 — new
+concern, didn't exist while the name was unchanged):** whatever scrapes
+`:2112/metrics` for Prometheus and whatever dashboards/alerts reference
+this service by container name both need to be checked for whether they
+key on `voipbin-call-mgr` specifically (breaks at cutover, needs updating
+to `voipbin-call-manager`) or on something name-independent (compose
+service label, a static target list keyed by IP/port, etc. — unaffected).
+**Not yet checked in this design** — confirm before or immediately after
+the cutover, not as an afterthought if alerts go quiet.
+
 **Rollback — ordered, CI-wiring-first (round 1 HIGH finding: the original
 draft's rollback left the merged CI change live, so the next unrelated
 merge touching bin-call-manager would silently re-run the new path over a
@@ -558,12 +596,13 @@ Steps 2-3 below still apply.
 #    merge re-triggers komodo-api-deploy.sh against this service.
 # 2. Destroy the Komodo Stack (round 2 M1 — otherwise ANY later Deploy
 #    action against it, UI click or otherwise, recreates the
-#    container_name conflict against the container step 3 below brings
-#    back):
+#    voipbin-call-manager container step 3 below removes):
 #    DestroyStack(bin-call-manager) via the Komodo API/UI.
-# 3. On bm-nyc-01:
-docker rm -f voipbin-call-mgr 2>/dev/null || true
-# Un-comment call-manager's block in install/docker-compose.yml
+# 3. On bm-nyc-01, remove the NEW (Komodo-managed) container - note the
+#    name difference from the old one (naming decision, 대표님, 2026-08-16):
+docker rm -f voipbin-call-manager 2>/dev/null || true
+# Un-comment call-manager's block in install/docker-compose.yml, which
+# recreates the OLD container under its original name (voipbin-call-mgr):
 cd /opt/voipbin/install && docker compose -p "$LIVE_PROJECT" up -d call-manager
 ```
 
@@ -706,3 +745,25 @@ where noted):
   in the same PR since round-3's C1 established `initHandler` does dial
   RabbitMQ (with an unbounded retry loop), and gate 5b now depends on
   that corrected understanding.
+
+**Post-approval naming revision** (대표님, 2026-08-16, after PR #1188 was
+opened — not an architect-review round, but logged here for the same
+reason):
+- New container renamed `voipbin-call-mgr` → `voipbin-call-manager`,
+  matching GKE's `call-manager` app name rather than `install/`'s
+  `-mgr`-abbreviated convention (verified against
+  `bin-call-manager/k8s/deployment.yml` before accepting the change, not
+  taken on faith — GKE's actual name has no `voipbin-` prefix at all,
+  which was surfaced and 대표님 chose `voipbin-call-manager` explicitly
+  over matching GKE exactly).
+- Consequence handled: the old/new name match this design leaned on for
+  automatic Docker-level mutual exclusion no longer holds. §7 gained an
+  explicit "confirm the old container is actually gone" check before
+  deploying the new one, and a monitoring-continuity flag (container-name-keyed
+  scrape configs/dashboards/alerts, not yet checked).
+- `bin-call-manager/komodo/docker-compose.yml`, and every design-doc
+  reference to the *new* container (gate 5b's commands, the post-cutover
+  "Komodo already owns..." note, and the rollback's `docker rm`) updated
+  accordingly. References to the *old* container (pre-cutover checkpoint,
+  §6's live-host captures) correctly stay `voipbin-call-mgr` — that
+  container's real name is unchanged by this decision.

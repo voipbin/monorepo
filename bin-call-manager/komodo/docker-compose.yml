@@ -23,6 +23,18 @@
 #     container - the commented-out line below stays commented, this is
 #     not an open question anymore.
 #
+# container_name is `voipbin-call-manager`, deliberately DIFFERENT from
+# the old container's name `voipbin-call-mgr` (대표님's explicit naming
+# decision, 2026-08-16 - matches GKE's `call-manager` app label rather
+# than install/'s host-wide `-mgr`-abbreviated convention; the other 31
+# bin-*-manager services stay on the old convention until they migrate).
+# Because the names differ, Docker will NOT refuse to run both containers
+# at once the way it would if they shared a name - the mutual-exclusion
+# safety net the original cutover design relied on is gone. §7's ordering
+# (old container removed BEFORE the new one is deployed) still holds, but
+# is no longer enforced by Docker itself - see the design doc's updated
+# §7 for the explicit verification step this requires.
+#
 # No healthcheck: bin-call-manager's image is distroless
 # (gcr.io/distroless/static-debian12, no shell, no wget) - the wget-based
 # healthcheck in the live voipbin/voipbin install/ compose file has never
@@ -42,7 +54,7 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
-    container_name: voipbin-call-mgr
+    container_name: voipbin-call-manager
     restart: always
     environment:
       - DATABASE_DSN=[[BIN_MANAGER__DATABASE_DSN_BIN]]
