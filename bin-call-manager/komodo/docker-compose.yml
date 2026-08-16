@@ -1,0 +1,64 @@
+# Komodo Stack definition for bin-call-manager (VOIP-1342).
+#
+# Deployed via CircleCI's .circleci/scripts/komodo-api-deploy.sh, which
+# pushes this file's content to Komodo's `bin-call-manager` Stack
+# (file_contents mode) and triggers a deploy - git is the source of truth
+# for structure, Komodo just executes it on request. See
+# docs/plans/2026-08-16-komodo-call-manager-cutover-design.md for the full
+# design and the manual, one-time steps this file depends on:
+#
+#   - __IMAGE_TAG__ is substituted by render-image-tag.sh before every
+#     deploy - never a real value in this committed file.
+#   - __NETWORK_NAME__ must be filled in by hand, once, with the value
+#     confirmed live on bm-nyc-01 (design doc §6) - do not assume
+#     "install_default" without checking.
+#   - [[BIN_MANAGER__*]] references are resolved by Komodo itself from its
+#     global Variables store (already synced from infra-secret via PR #90
+#     in monorepo-etc) - nothing here or in CI supplies these values.
+#   - This env list is a draft authored from voipbin/voipbin install/'s
+#     docker-compose.yml.dist. Reconcile it against the live container's
+#     actual env (design doc §6) before the real cutover - in particular,
+#     confirm whether REDIS_PASSWORD (commented out below) is actually
+#     required.
+#
+# No healthcheck: bin-call-manager's image is distroless
+# (gcr.io/distroless/static-debian12, no shell, no wget) - the wget-based
+# healthcheck in the live voipbin/voipbin install/ compose file has never
+# been able to pass on this image. Deploy success is gated by CI/the
+# cutover procedure instead (design doc §5), not a Docker healthcheck.
+#
+# No depends_on: this is a standalone, single-service compose project:
+# referencing db/redis/rabbitmq here (services this file doesn't define)
+# would be a hard Compose parse error. Connectivity comes from attaching
+# to the shared network below; restart:always plus the app's own
+# reconnect handling is the operative safety net, same as today.
+services:
+  call-manager:
+    image: voipbin/bin-call-manager:__IMAGE_TAG__
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    container_name: voipbin-call-mgr
+    restart: always
+    environment:
+      - DATABASE_DSN=[[BIN_MANAGER__DATABASE_DSN_BIN]]
+      - RABBITMQ_ADDRESS=[[BIN_MANAGER__RABBITMQ_ADDRESS]]
+      - REDIS_ADDRESS=[[BIN_MANAGER__REDIS_ADDRESS]]
+      - REDIS_DATABASE=1
+      # - REDIS_PASSWORD=[[BIN_MANAGER__REDIS_PASSWORD]]  # add only if the live container's env (design doc §6) shows this set today
+      - PROMETHEUS_ENDPOINT=/metrics
+      - PROMETHEUS_LISTEN_ADDRESS=:2112
+      - PROJECT_BASE_DOMAIN=[[BIN_MANAGER__PROJECT_BASE_DOMAIN]]
+      - PROJECT_BUCKET_NAME=[[BIN_MANAGER__GCP_BUCKET_NAME_MEDIA]]
+      - HOMER_API_ADDRESS=[[BIN_MANAGER__HOMER_API_ADDRESS]]
+      - HOMER_AUTH_TOKEN=[[BIN_MANAGER__HOMER_AUTH_TOKEN]]
+      - HOMER_WHITELIST=[[BIN_MANAGER__HOMER_WHITELIST]]
+    command: ./call-manager
+    networks:
+      default: {}
+networks:
+  default:
+    name: __NETWORK_NAME__
+    external: true

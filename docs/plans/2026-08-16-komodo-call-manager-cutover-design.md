@@ -142,6 +142,18 @@ empty-string interpolation with no detectable signal), stop and redesign
 the secrets-injection mechanism — do not proceed with a design whose
 secrets path can fail silently into a running-but-broken container.
 
+**Status (code review round 1, post-implementation): NOT YET PERFORMED.**
+The scripts/compose fragment/CI wiring in this PR were implemented and
+reviewed against Komodo's published API docs/source rather than against a
+disposable Stack on the live bm-nyc-01 instance (no access to that
+instance from this session). This is safe to merge as code because: (a)
+`bin-call-manager-deploy`'s CI wiring only affects *routine* deploys that
+happen after the real cutover, which is itself a manual, watched operation
+per §7; and (b) §7 step 3 explicitly requires this Step 0 spike to be
+completed, with results recorded here, before that manual cutover
+proceeds. Do not run the actual cutover (§7) until this section is updated
+with real results.
+
 ### 1. `bin-call-manager/komodo/docker-compose.yml` (new, git-tracked)
 
 Directory named `komodo/`, sibling to `k8s/` (대표님's explicit convention
@@ -215,8 +227,10 @@ Notes:
 ### 2. `komodo-api-deploy.sh` rewrite: direct HTTPS, SSH kept as fallback
 
 **The existing SSH-tunnel `komodo-api-deploy.sh` (VOIP-1341) is not
-deleted.** It's renamed to `komodo-api-deploy-ssh-fallback.sh`, unmodified,
-and documented as the break-glass path for a production incident where
+deleted.** It's renamed to `komodo-api-deploy-ssh-fallback.sh` (code
+review round 2 also fixed one latent log-leakage gap in it — see §"Log
+leakage guard" below, otherwise functionally unchanged), and documented as
+the break-glass path for a production incident where
 `https://komodo.voipbin.net` itself is down (round 1 "no break-glass path"
 finding — this service no longer has `ssh-deploy.sh` available at all
 after cutover, so *something* manual must still work).
@@ -318,12 +332,18 @@ call-manager from one that booted with an empty/broken DSN):
 
 **a. Automated, every deploy (routine CI runs):** Komodo's own
 `GetUpdate` `Complete`+`success` (started, not necessarily healthy) plus a
-poll of Komodo's Stack/service-status read for 3 consecutive `running`
-samples ~6s apart — same numeric gate `ssh-deploy.sh` already uses, read
-via Komodo's API instead of SSH `docker inspect`. **Open item to verify
-empirically during implementation:** confirm Komodo's read API actually
-exposes per-service container state in enough detail for this poll; if it
-doesn't, SSH may need to stay in the loop for this specific check (decide
+poll of `ListStackServices` (Komodo's read endpoint for per-service
+container state, per its published API docs/source) for 3 consecutive
+`.container.state == "running"` samples, same numeric gate `ssh-deploy.sh`
+already uses, read via Komodo's API instead of SSH `docker inspect`.
+**Implemented in `komodo-api-deploy.sh` (code review round 1), but NOT YET
+empirically verified against the live Komodo instance** — confirm
+`ListStackServices`'s actual response shape on bm-nyc-01 matches what the
+script assumes; if it doesn't, this gate will consistently report
+not-running and every deploy will fail it (fail-closed, not fail-open, but
+still worth confirming before relying on it unattended). If it turns out
+Komodo's read API doesn't expose this in enough detail after all, SSH may
+need to stay in the loop for this specific check (decide
 from the real response shape, not assumed here).
 
 **b. Manual, hard-blocking, cutover only (§7). Revised again per round 3
