@@ -816,3 +816,17 @@ idempotently, reversing round-1's "does not create Stacks" finding — see
 mechanism (Komodo returns HTTP 500, not 404, for "Stack not found").
 §7 step 2's separate manual bootstrap is removed accordingly — folded into
 step 7's own first run.
+
+**Follow-up dependency, not in this PR's scope (대표님, 2026-08-16):** a
+neutral shared network (tentatively named `production`), owned by neither
+the `install` compose project nor any Komodo Stack, is being built out in
+a separate session — this is the same "network genuinely owned by neither
+compose project" follow-up this document already flagged (see the
+`install_default` shared-network note above). Once that network exists
+and `db`/`redis`/`rabbitmq` are attached to it, `bin-call-manager/komodo/docker-compose.yml`'s
+`networks.default.name` should move from `install_default` to
+`production` — but not before, and not as part of this pilot's cutover.
+Sequencing matters: that network must exist and carry the shared infra
+containers *before* any service tries to attach to it, so this is a
+prerequisite for the *next* service's Komodo migration at the earliest,
+not a same-day follow-up to this one.
