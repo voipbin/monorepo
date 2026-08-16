@@ -26,7 +26,7 @@
 | `go test -v ./pkg/callhandler/...` | Test a specific package |
 | `golangci-lint run -v --timeout 5m` | Lint |
 | `go generate ./...` | Regenerate mocks |
-| `./bin/call-control call get --id <uuid>` | Inspect a call (bypasses RabbitMQ) |
+| `./bin/call-control call get --id <uuid>` | Inspect a call (reads DB/Redis directly; still dials RabbitMQ on startup via `initHandler`, with an unbounded retry loop if unreachable — does not bypass it) |
 | `./bin/call-control call update-status --id <uuid> --status hangup` | Force-update call status |
 
 ## Architecture
