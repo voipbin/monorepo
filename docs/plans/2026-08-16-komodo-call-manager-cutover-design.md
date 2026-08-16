@@ -1,10 +1,11 @@
 # Design: cut bin-call-manager over to Komodo-managed deploy (VOIP-1342)
 
-Revision 6 — incorporates round-1 (3 CRITICAL, 4 HIGH, 5 MEDIUM), round-2
+Revision 7 — incorporates round-1 (3 CRITICAL, 4 HIGH, 5 MEDIUM), round-2
 (3 HIGH, 6 MEDIUM), round-3 (1 CRITICAL, 1 HIGH, 3 MEDIUM), and round-4
-(1 CRITICAL + reference cleanups) architect review findings, plus a
-post-approval naming change (below). See "Review corrections log" at the
-end for the full architect-review mapping.
+(1 CRITICAL + reference cleanups) architect review findings, plus two
+post-approval revisions from 대표님 (naming, and idempotent Stack
+auto-create — both below). See "Review corrections log" at the end for
+the full architect-review mapping.
 
 **Naming decision (2026-08-16, post-merge-review, 대표님):** the new
 container's name is `voipbin-call-manager` — matching GKE's `call-manager`
@@ -100,9 +101,9 @@ follow-up ticket rolls the pattern out.
 - **CI credentials already exist and are broad.** `CC_KOMODO_API_KEY`/`CC_KOMODO_API_SECRET`
   are already registered in the `production` CircleCI context, and the
   `circleci` Komodo Service User is already promoted to **Admin** (per PR
-  #90's spike). Because this is a full-admin credential, this design
-  deliberately does **not** have CI auto-create Stacks (round 1 finding —
-  see §2).
+  #90's spike). Round 1 initially had CI *not* auto-create Stacks because
+  of this — **superseded post-approval** (대표님, 2026-08-16): CI now does
+  create the Stack, idempotently, when missing — see §2 item 1.
 - `RABBITMQ_ADDRESS`/`DATABASE_DSN_BIN` in the `bin-manager` namespace are
   already full connection strings (`amqp://user:pass@host:port`,
   `user:pass@tcp(host:port)/db`), not decomposed into separate
@@ -262,14 +263,55 @@ future credential/domain change becomes a one-line edit).
 
 Interface: `komodo-api-deploy.sh <stack-name> <compose-file>`
 
-1. **Does NOT create the Stack.** Reversing VOIP-1341's original script
-   header ("Creating a Stack/granting permission is a manual, one-time
-   bootstrap step... not something this script does") was a round-1
-   finding, not adopted here: the CI credential is full Komodo **Admin**,
-   so an unattended auto-create path on a typo'd name is unnecessary blast
-   radius for a single-service pilot with an already-cheap manual bootstrap
-   step (§6). `GetStack` first; if missing, fail with a clear message
-   pointing at the manual bootstrap step, not silently create one.
+1. **Idempotent ensure-exists: `GetStack` first; if missing, `CreateStack`.**
+   Revised post-approval (대표님's explicit instruction, 2026-08-16 —
+   supersedes both this section's original text and round-1's finding
+   below, which had gone the other way for good reasons that no longer
+   win out against operational reality): a per-service *manual* bootstrap
+   step doesn't scale once this pattern rolls out to the other 31
+   `bin-*-manager` services — that would be 31 more watched, by-hand
+   Stack creations. CI now creates the Stack itself, idempotently, the
+   first time it's missing.
+   - **Detecting "missing" is by error-message match, not HTTP status.**
+     Confirmed empirically (2026-08-16, from a real CI failure, not
+     assumed): Komodo's `GetStack` returns **HTTP 500** — not 404 — with
+     body `{"error":"Did not find any Stack matching <name>","trace":[]}`
+     for a nonexistent Stack. `komodo-api-deploy.sh` matches on that exact
+     substring before deciding to create; any other failure (auth, a real
+     500, the 404/502 network-fragility modes above) still aborts without
+     attempting a create. **Unverified edge case (code-review round 5):**
+     if Komodo ever returns this same "not found" message for "exists but
+     caller lacks read permission" (a common API pattern, to avoid leaking
+     resource existence), this script would attempt `CreateStack` against
+     an already-existing name. The CI credential is Admin, not
+     read-restricted, so this is unlikely in practice — but it's untested.
+     Confirm before rolling this pattern out past this one pilot service.
+   - `CreateStack` uses `server_id` = `$KOMODO_SERVER_NAME` (default
+     `bm-nyc-01`, overridable via `CC_KOMODO_SERVER_NAME` per job) — safe
+     to pass the plain server **name**, not an internal id: Komodo's own
+     `validate_config` resolves `server_id` by name if it doesn't look
+     like an id ("in case it comes in as name", per its source), so no
+     separate `ListServers` lookup is needed to resolve bm-nyc-01's actual
+     Server resource id first. **Not yet confirmed against the live
+     instance** (code-review round 5 finding) — this specific behavior is
+     read from Komodo's source, not observed; §7 step 7 (the first real
+     bootstrap run) is effectively this assumption's first live test, so
+     watch it interactively rather than trusting it unattended the first
+     time.
+   - Same config values the (now-superseded) manual-bootstrap text always
+     specified: empty `file_contents` (the very next `UpdateStack` call
+     fills it), `poll_for_updates`/`auto_update`/`webhook_enabled` all
+     `false` — Komodo still does nothing on its own; CI is still the only
+     trigger. This did not change, only *who* performs the create did.
+   - **Round-1's original objection (recorded for the record, not
+     retracted as *wrong*, just overridden):** the CI credential is full
+     Komodo Admin, so an unattended auto-create path is real, if narrow,
+     blast radius — a typo'd `<stack-name>` argument creates a stray
+     Stack rather than failing loud. Accepted as a known, bounded
+     trade-off: `<stack-name>` is a literal string in version-controlled
+     CI config (`config_work.yml`), not attacker- or user-supplied input,
+     so the realistic failure mode is a caught-in-review typo, not a
+     runtime injection.
 2. **Before `UpdateStack`, guard against any unfilled placeholder token**
    (round 3 M3): `grep -Eq '__[A-Z_]+__' <rendered compose> && fail` — this
    catches not just a missed `__IMAGE_TAG__` substitution (already handled
@@ -481,11 +523,10 @@ exists to protect against.
    `pre-cutover-env.json`), plus the current image ref
    (`docker inspect voipbin-call-mgr --format '{{.Image}}'`) — all done
    first, well before anything below.
-2. **Manual Stack bootstrap** (watched, on bm-nyc-01 or via API by hand —
-   not CI-automated, §2 item 1): create the Komodo Stack `bin-call-manager`
-   (`server_id`=bm-nyc-01, `file_contents` mode, `poll_for_updates: false`,
-   `auto_update: false`, `webhook_enabled: false` — Komodo does nothing on
-   its own; CI is the only trigger).
+2. **Stack bootstrap — no longer a separate manual step.** §2 item 1's
+   revision means step 7 (running `komodo-api-deploy.sh` by hand) creates
+   the Stack itself, idempotently, the first time it doesn't find one.
+   Nothing to do here ahead of time.
 3. **Build and push the image by hand**, from a workstation (not via CI,
    and not tied to a `main` merge SHA — any clear, traceable tag works,
    e.g. the feature branch's current commit). Matches what CI's
@@ -767,3 +808,11 @@ reason):
   accordingly. References to the *old* container (pre-cutover checkpoint,
   §6's live-host captures) correctly stay `voipbin-call-mgr` — that
   container's real name is unchanged by this decision.
+
+**Post-approval Stack-bootstrap revision** (대표님, 2026-08-16, after the
+naming revision above): CI now creates the Komodo Stack itself,
+idempotently, reversing round-1's "does not create Stacks" finding — see
+§2 item 1 for the full reasoning and the empirically-confirmed detection
+mechanism (Komodo returns HTTP 500, not 404, for "Stack not found").
+§7 step 2's separate manual bootstrap is removed accordingly — folded into
+step 7's own first run.

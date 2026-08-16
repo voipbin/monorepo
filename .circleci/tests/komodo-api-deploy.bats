@@ -116,12 +116,54 @@ EOF
     [ "$(curl_call_count)" -eq 0 ]
 }
 
-@test "GetStack: fails clearly, without creating the Stack, on a Stack that doesn't exist" {
-    queue_curl_response 404 '{"error":"not found"}'
+@test "ensure-exists: GetStack 'not found' (HTTP 500, Komodo's actual shape) triggers an idempotent CreateStack" {
+    export CC_KOMODO_POLL_INTERVAL_S=1 CC_KOMODO_RUNNING_CHECK_INTERVAL_S=1
+    queue_curl_response 500 '{"error":"Did not find any Stack matching bin-call-manager","trace":[]}'  # GetStack
+    queue_curl_response 200 '{"name":"bin-call-manager"}'   # CreateStack
+    queue_curl_response 200 '{}'                             # UpdateStack
+    queue_curl_response 200 '{"_id":{"$oid":"update-123"}}'  # DeployStack
+    queue_curl_response 200 '{"status":"Complete","success":true}'
+    queue_running_samples 3
+    run run_deploy bin-call-manager "$COMPOSE_FILE"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"does not exist yet - creating it"* ]]
+    body="$(curl_call_body 2)"  # CreateStack is the 2nd call
+    [[ "$body" == *'"CreateStack"'* ]]
+    [[ "$body" == *'"bm-nyc-01"'* ]]
+}
+
+@test "ensure-exists: uses CC_KOMODO_SERVER_NAME when set, not the bm-nyc-01 default" {
+    export CC_KOMODO_POLL_INTERVAL_S=1 CC_KOMODO_RUNNING_CHECK_INTERVAL_S=1
+    export CC_KOMODO_SERVER_NAME=some-other-host
+    queue_curl_response 500 '{"error":"Did not find any Stack matching bin-call-manager","trace":[]}'
+    queue_curl_response 200 '{"name":"bin-call-manager"}'
+    queue_curl_response 200 '{}'
+    queue_curl_response 200 '{"_id":{"$oid":"update-123"}}'
+    queue_curl_response 200 '{"status":"Complete","success":true}'
+    queue_running_samples 3
+    run run_deploy bin-call-manager "$COMPOSE_FILE"
+    [ "$status" -eq 0 ]
+    body="$(curl_call_body 2)"
+    [[ "$body" == *'"some-other-host"'* ]]
+}
+
+@test "ensure-exists: if CreateStack itself fails, the script aborts rather than proceeding to UpdateStack/DeployStack" {
+    queue_curl_response 500 '{"error":"Did not find any Stack matching bin-call-manager","trace":[]}'  # GetStack
+    queue_curl_response 500 '{"error":"insufficient permissions"}'                                       # CreateStack fails
     run run_deploy bin-call-manager "$COMPOSE_FILE"
     [ "$status" -eq 1 ]
-    [[ "$output" == *"does not create Stacks"* ]]
-    [[ "$output" == *"bootstrap it manually"* ]]
+    [[ "$output" == *"does not exist yet - creating it"* ]]
+    # Only GetStack + the failed CreateStack - never got to UpdateStack/DeployStack.
+    [ "$(curl_call_count)" -eq 2 ]
+}
+
+@test "ensure-exists: a GetStack failure for any OTHER reason does not attempt to create a Stack" {
+    queue_curl_response 500 '{"error":"internal server error, unrelated to stack existence"}'
+    run run_deploy bin-call-manager "$COMPOSE_FILE"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"not attempting to create one"* ]]
+    # Only the one GetStack call - no CreateStack attempted.
+    [ "$(curl_call_count)" -eq 1 ]
 }
 
 @test "404 special-casing: points at the Caddy-route recovery step, not a generic message" {

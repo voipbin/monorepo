@@ -17,12 +17,15 @@
 # docs/plans/2026-08-16-komodo-call-manager-cutover-design.md §2/§3).
 #
 # What this does:
-#   1. GET (via /read GetStack) to confirm the target Stack exists. Does
-#      NOT create it - same precondition the VOIP-1341 script had:
-#      creating a Stack is a manual, one-time bootstrap step, not
-#      something this script does (see the cutover design doc §2 item 1
-#      for why CI doesn't auto-create, given the CI credential is full
-#      Komodo Admin).
+#   1. GET (via /read GetStack) to confirm the target Stack exists.
+#      Idempotent ensure-exists (대표님's explicit instruction, 2026-08-16,
+#      reversing VOIP-1341's original "never creates a Stack" precondition
+#      - manual per-service bootstrap doesn't scale to 32 services): if
+#      Komodo reports the Stack doesn't exist, CreateStack it (empty
+#      file_contents, poll_for_updates/auto_update/webhook_enabled all
+#      false, server = $KOMODO_SERVER_NAME) before continuing. Any other
+#      GetStack failure (a real API/auth/network problem) still aborts -
+#      only the specific "not found" case triggers a create.
 #   2. Guards against any unfilled `__PLACEHOLDER__`-shaped token in the
 #      rendered compose content before sending it anywhere - catches not
 #      just a missed image-tag substitution (render-image-tag.sh already
@@ -35,7 +38,10 @@
 #   6. Exits 0 only if the Update's terminal status is Complete+success.
 #
 # What this does NOT do:
-#   - Does NOT create the target Stack (see step 1 above).
+#   - Does NOT touch an EXISTING Stack's config beyond `file_contents`
+#     (UpdateStack, step 3 below, is PATCH-style) - the ensure-exists check
+#     in step 1 only ever creates a Stack that doesn't exist yet; it never
+#     modifies one that's already there.
 #   - Does NOT enable Komodo's own polling/webhook auto-deploy for the
 #     target stack - CI remains the only trigger (set at Stack bootstrap
 #     time: poll_for_updates/auto_update/webhook_enabled all false).
@@ -86,12 +92,16 @@
 #                              samples of the post-deploy 3-consecutive-
 #                              running check (design doc §5 gate a).
 #                              Default: 2.
+#   CC_KOMODO_SERVER_NAME      Optional. The Komodo Server to create the
+#                              Stack on if it doesn't exist yet (step 1
+#                              above). Default: bm-nyc-01.
 #
 # Preconditions (caller's responsibility):
 #   - The target Stack's underlying image has already been built and
 #     pushed (this script does not build or push anything).
-#   - The Stack already exists in Komodo, with the 'circleci' Service User
-#     granted Write permission on it (Write implies Execute).
+#   - The 'circleci' Komodo Service User has Write permission on the
+#     target Stack if it already exists, or Admin (to create new
+#     resources) if it doesn't yet - both already true for this account.
 #   - The rendered compose file has no unfilled `__PLACEHOLDER__` tokens
 #     left in it (checked in step 2 above, but the caller's render step -
 #     e.g. render-image-tag.sh - should already have handled the ones it
@@ -171,6 +181,12 @@ fi
 POLL_ATTEMPTS="${CC_KOMODO_POLL_ATTEMPTS:-30}"
 POLL_INTERVAL_S="${CC_KOMODO_POLL_INTERVAL_S:-2}"
 RUNNING_CHECK_INTERVAL_S="${CC_KOMODO_RUNNING_CHECK_INTERVAL_S:-2}"
+# Target Server for a Stack this script ends up creating (see the
+# ensure-exists block below) - Komodo's own CreateStack validation
+# resolves a Server by name as well as by id ("in case it comes in as
+# name", per its own source), so the plain host name is safe to pass
+# as-is. Override per-job if a service ever deploys to a different host.
+KOMODO_SERVER_NAME="${CC_KOMODO_SERVER_NAME:-bm-nyc-01}"
 if [[ ! "$POLL_ATTEMPTS" =~ ^[1-9][0-9]*$ ]]; then
   log_error "CC_KOMODO_POLL_ATTEMPTS must be a positive integer with no leading zero (got: $POLL_ATTEMPTS)"
   exit 1
@@ -214,8 +230,14 @@ COMPOSE_CONTENT="$(cat "$LOCAL_COMPOSE_FILE")"
 # drops the `docker network connect` -> 502) - a generic "non-2xx, check
 # the logs" message would leave an operator without the one piece of
 # information that actually resolves the failure.
+# LAST_ERROR_BODY is set on the generic (non-404/502) failure branch below
+# so callers that need to distinguish *why* a call failed (e.g. GetStack's
+# ensure-exists check just below) can inspect the actual response body,
+# not just the fact that call_api returned non-zero.
+LAST_ERROR_BODY=""
 call_api() {
   local endpoint="$1" body="$2" resp http_code http_body header_config
+  LAST_ERROR_BODY=""
   header_config="$(printf 'header = "X-Api-Key: %s"\nheader = "X-Api-Secret: %s"\n' \
     "$CC_KOMODO_API_KEY" "$CC_KOMODO_API_SECRET")"
   if ! resp="$(printf '%s' "$header_config" | curl -sS -K - -w '\n%{http_code}' --connect-timeout 10 --max-time 30 -X POST "$API_BASE/$endpoint" \
@@ -243,16 +265,32 @@ call_api() {
   if [[ ! "$http_code" =~ ^2[0-9][0-9]$ ]]; then
     log_error "Komodo API call to /$endpoint returned HTTP $http_code."
     log_error "Response body: $http_body"
+    LAST_ERROR_BODY="$http_body"
     return 1
   fi
   printf '%s' "$http_body"
 }
 
+# Ensure-exists (idempotent): GetStack, and if Komodo reports the Stack
+# doesn't exist, CreateStack (대표님's explicit instruction, 2026-08-16 -
+# reverses this script's original "never creates a Stack" precondition,
+# since manual per-service bootstrap doesn't scale to 32 services). Note
+# Komodo returns this as an HTTP 500 with a specific error message, NOT a
+# 404 - confirmed empirically against the live instance, not assumed - so
+# detection is by message match, not status code.
 log_info "Checking Komodo Stack '$STACK_NAME' exists..."
 get_stack_body="$(jq -n --arg stack "$STACK_NAME" '{type:"GetStack",params:{stack:$stack}}')"
 if ! call_api read "$get_stack_body" >/dev/null; then
-  log_error "GetStack failed - Stack '$STACK_NAME' may not exist yet. This script does not create Stacks (see its header) - bootstrap it manually first."
-  exit 1
+  if [[ "$LAST_ERROR_BODY" == *"Did not find any Stack matching"* ]]; then
+    log_info "Stack '$STACK_NAME' does not exist yet - creating it (idempotent bootstrap, server=$KOMODO_SERVER_NAME)."
+    create_body="$(jq -n --arg name "$STACK_NAME" --arg server "$KOMODO_SERVER_NAME" \
+      '{type:"CreateStack",params:{name:$name,config:{server_id:$server,file_contents:"",poll_for_updates:false,auto_update:false,webhook_enabled:false}}}')"
+    call_api write "$create_body" >/dev/null
+    log_info "Stack '$STACK_NAME' created."
+  else
+    log_error "GetStack failed for a reason other than 'Stack not found' - not attempting to create one. See the error above."
+    exit 1
+  fi
 fi
 
 log_info "Deploying Stack '$STACK_NAME' from local file $LOCAL_COMPOSE_FILE (content pushed via Komodo API, direct HTTPS)..."
