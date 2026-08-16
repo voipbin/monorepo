@@ -392,6 +392,18 @@ production (unchanged by this design).
 
 ### 6. Pre-cutover verification (round 1 HIGH; expanded round 2 — H2, H3)
 
+**Status: DONE (2026-08-16).** Ran against the live host after the first
+CI run correctly failed closed on the unfilled `__NETWORK_NAME__`
+placeholder (the guard doing exactly its job). Results: `com.docker.compose.project`
+= `install`, network = `install_default` (matches the pre-verification
+assumption, but was not trusted without checking — see below). Live env
+key set matches §1's draft list exactly; `REDIS_PASSWORD` confirmed **not**
+set on the live container, so it stays commented out in
+`bin-call-manager/komodo/docker-compose.yml`. `__NETWORK_NAME__` has been
+filled in with `install_default` in that file. `$LIVE_PROJECT` in §7/
+rollback below is `install` — matches what was already written there, now
+confirmed rather than assumed.
+
 Before touching anything, on bm-nyc-01, capture both the network/project
 identity and the full live env in one pass:
 ```bash

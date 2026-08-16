@@ -9,17 +9,19 @@
 #
 #   - __IMAGE_TAG__ is substituted by render-image-tag.sh before every
 #     deploy - never a real value in this committed file.
-#   - __NETWORK_NAME__ must be filled in by hand, once, with the value
-#     confirmed live on bm-nyc-01 (design doc §6) - do not assume
-#     "install_default" without checking.
+#   - Network name confirmed against the live host (2026-08-16): the
+#     `install` compose project's default network is `install_default` -
+#     verified via `docker inspect voipbin-call-mgr --format
+#     '{{index .Config.Labels "com.docker.compose.project"}}
+#     {{json .NetworkSettings.Networks}}'` on bm-nyc-01, not assumed.
 #   - [[BIN_MANAGER__*]] references are resolved by Komodo itself from its
 #     global Variables store (already synced from infra-secret via PR #90
 #     in monorepo-etc) - nothing here or in CI supplies these values.
-#   - This env list is a draft authored from voipbin/voipbin install/'s
-#     docker-compose.yml.dist. Reconcile it against the live container's
-#     actual env (design doc §6) before the real cutover - in particular,
-#     confirm whether REDIS_PASSWORD (commented out below) is actually
-#     required.
+#   - Env list confirmed against the live container's actual env
+#     (2026-08-16, same `docker inspect` session): the key set below
+#     matches exactly, and REDIS_PASSWORD is confirmed NOT set on the live
+#     container - the commented-out line below stays commented, this is
+#     not an open question anymore.
 #
 # No healthcheck: bin-call-manager's image is distroless
 # (gcr.io/distroless/static-debian12, no shell, no wget) - the wget-based
@@ -47,7 +49,7 @@ services:
       - RABBITMQ_ADDRESS=[[BIN_MANAGER__RABBITMQ_ADDRESS]]
       - REDIS_ADDRESS=[[BIN_MANAGER__REDIS_ADDRESS]]
       - REDIS_DATABASE=1
-      # - REDIS_PASSWORD=[[BIN_MANAGER__REDIS_PASSWORD]]  # add only if the live container's env (design doc §6) shows this set today
+      # - REDIS_PASSWORD=[[BIN_MANAGER__REDIS_PASSWORD]]  # confirmed NOT set on the live container (2026-08-16) - stays commented
       - PROMETHEUS_ENDPOINT=/metrics
       - PROMETHEUS_LISTEN_ADDRESS=:2112
       - PROJECT_BASE_DOMAIN=[[BIN_MANAGER__PROJECT_BASE_DOMAIN]]
@@ -60,5 +62,5 @@ services:
       default: {}
 networks:
   default:
-    name: __NETWORK_NAME__
+    name: install_default
     external: true
