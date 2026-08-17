@@ -57,6 +57,23 @@ kubectl exec -n voipbin deploy/bin-agent-manager -- curl -s localhost:9090/metri
 kubectl exec -n voipbin deploy/bin-agent-manager -- curl -s localhost:9090/metrics | grep db_operation_duration
 ```
 
+## Deployment
+
+bin-agent-manager deploys via Komodo (VOIP-1347 Tier 1 rollout, following the
+VOIP-1342/bin-call-manager pilot pattern) instead of the older SSH +
+`versions.lock` (`ssh-deploy.sh`) path.
+
+- **Stack definition:** `bin-agent-manager/komodo/docker-compose.yml` (git is
+  the source of truth for structure; Komodo only executes it on
+  request).
+- **CI path:** `.circleci/scripts/render-image-tag.sh` substitutes
+  the built image tag, then `.circleci/scripts/komodo-api-deploy.sh`
+  pushes the file's content to Komodo and triggers a deploy, gated
+  by the `bin-agent-manager-deploy` job's poll/running checks.
+- **Full design and cutover procedure:**
+  [docs/plans/2026-08-18-bin-manager-komodo-rollout-tier1-design.md](../../docs/plans/2026-08-18-bin-manager-komodo-rollout-tier1-design.md)
+  (in the monorepo root, not this service's own `docs/`).
+
 ## Configuration
 
 | Flag | Env Var | Default | Description |

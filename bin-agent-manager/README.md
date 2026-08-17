@@ -82,8 +82,7 @@ Represents agent's skills and groups.
 
 # Deploy
 
-`bin-agent-manager-build` pushes the image, and a single `build-approval` gate covers
-the test -> build pipeline. The CircleCI `bin-agent-manager-deploy` job (direct SSH
-deploy to bm-nyc-01) has been removed. Deploys to bm-nyc-01 are manual until
-this service migrates to the Komodo-managed deploy path (see bin-call-manager
-for the pattern).
+bin-agent-manager deploys via Komodo (VOIP-1347 Tier 1 rollout, following the
+VOIP-1342/bin-call-manager pilot pattern). See
+[docs/operations.md](docs/operations.md#deployment) for the Stack
+definition, CI path, and full design/cutover procedure.

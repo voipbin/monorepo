@@ -61,6 +61,31 @@ WHERE r.customer_id = '00000000-0000-0000-0000-000000000001'
 ORDER BY r.priority;
 ```
 
+## Deployment
+
+bin-route-manager deploys via Komodo (VOIP-1347 Tier 1 rollout, following the
+VOIP-1342/bin-call-manager pilot pattern) instead of the older SSH +
+`versions.lock` (`ssh-deploy.sh`) path.
+
+- **Stack definition:** `bin-route-manager/komodo/docker-compose.yml` (git is
+  the source of truth for structure; Komodo only executes it on
+  request).
+- **CI path:** `.circleci/scripts/render-image-tag.sh` substitutes
+  the built image tag, then `.circleci/scripts/komodo-api-deploy.sh`
+  pushes the file's content to Komodo and triggers a deploy, gated
+  by the `bin-route-manager-deploy` job's poll/running checks.
+- **Full design and cutover procedure:**
+  [docs/plans/2026-08-18-bin-manager-komodo-rollout-tier1-design.md](../../docs/plans/2026-08-18-bin-manager-komodo-rollout-tier1-design.md)
+  (in the monorepo root, not this service's own `docs/`).
+- **Route-manager-specific deviation:** this service runs a background
+  health-check ticker (`pkg/healthcheckhandler`) that probes every
+  configured carrier via outbound SIP OPTIONS on an interval. During
+  old/new container overlap this doubles outbound probe traffic to
+  carriers, so — unlike the other Tier 1 services — cut over **promptly**
+  once the new container is confirmed healthy at the log level; do not
+  leave both containers running for an extended soak. See the design doc's
+  cutover section for the full rationale.
+
 ## Configuration
 
 | Flag | Environment Variable | Default | Description |

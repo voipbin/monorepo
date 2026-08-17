@@ -74,9 +74,9 @@ All output is JSON (stdout); logs go to stderr.
 
 bin-call-manager is the Komodo-managed deploy pilot (VOIP-1342) — the first
 `bin-*-manager` service to move off `voipbin/voipbin`'s `install/`
-(`versions.lock`/`ssh-deploy.sh`) mechanism. The other 31 `bin-*-manager`
-services still deploy via `ssh-deploy.sh` until this pilot is verified in
-production and a follow-up ticket rolls the pattern out.
+(`versions.lock`/`ssh-deploy.sh`) mechanism. VOIP-1347 (Tier 1 rollout)
+followed with 16 more services on the same pattern; the remaining
+`bin-*-manager` services will migrate in future follow-up rollouts.
 
 - **Stack definition:** `bin-call-manager/komodo/docker-compose.yml` (git
   is the source of truth for structure; Komodo only executes it on

@@ -43,8 +43,10 @@
 # container_name is `voipbin-call-manager`, deliberately DIFFERENT from
 # the old container's name `voipbin-call-mgr` (대표님's explicit naming
 # decision, 2026-08-16 - matches GKE's `call-manager` app label rather
-# than install/'s host-wide `-mgr`-abbreviated convention; the other 31
-# bin-*-manager services stay on the old convention until they migrate).
+# than install/'s host-wide `-mgr`-abbreviated convention; VOIP-1347 (Tier 1
+# rollout) applied the same `voipbin-<short>-manager` convention to 16 more
+# services, the remaining bin-*-manager services stay on the old convention
+# until they migrate too).
 # Because the names differ, Docker will NOT refuse to run both containers
 # at once the way it would if they shared a name - the mutual-exclusion
 # safety net the original cutover design relied on is gone. §7's ordering

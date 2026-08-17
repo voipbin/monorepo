@@ -50,6 +50,23 @@ REDIS_DATABASE=1 \
 - Paddle dashboard → Notifications → Event log
 - Look for events with status `failed` and check the response body
 
+## Deployment
+
+bin-billing-manager deploys via Komodo (VOIP-1347 Tier 1 rollout, following the
+VOIP-1342/bin-call-manager pilot pattern) instead of the older SSH +
+`versions.lock` (`ssh-deploy.sh`) path.
+
+- **Stack definition:** `bin-billing-manager/komodo/docker-compose.yml` (git is
+  the source of truth for structure; Komodo only executes it on
+  request).
+- **CI path:** `.circleci/scripts/render-image-tag.sh` substitutes
+  the built image tag, then `.circleci/scripts/komodo-api-deploy.sh`
+  pushes the file's content to Komodo and triggers a deploy, gated
+  by the `bin-billing-manager-deploy` job's poll/running checks.
+- **Full design and cutover procedure:**
+  [docs/plans/2026-08-18-bin-manager-komodo-rollout-tier1-design.md](../../docs/plans/2026-08-18-bin-manager-komodo-rollout-tier1-design.md)
+  (in the monorepo root, not this service's own `docs/`).
+
 ## Configuration
 
 All flags can also be set via environment variable (uppercase, underscores). No defaults shown means the flag is required.
