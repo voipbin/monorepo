@@ -293,6 +293,10 @@ workflows:
           <<: *context_production
           requires:
             - bin-ai-manager-test
+      - bin-ai-manager-deploy:
+          <<: *context_production
+          requires:
+            - bin-ai-manager-build
   bin-common-handler:
     when: << pipeline.parameters.run-bin-common-handler >>
     jobs:
@@ -362,6 +366,10 @@ workflows:
           <<: *context_production
           requires:
             - bin-customer-manager-test
+      - bin-customer-manager-deploy:
+          <<: *context_production
+          requires:
+            - bin-customer-manager-build
   # bin-dbscheme-manager: CI does not apply migrations. The production
   # bin_manager / asterisk databases are not reachable from CircleCI's
   # executors (confirmed 2026-07-11, VOIP-1246: a read-only DSN probe on
@@ -424,6 +432,10 @@ workflows:
           <<: *context_production
           requires:
             - bin-email-manager-test
+      - bin-email-manager-deploy:
+          <<: *context_production
+          requires:
+            - bin-email-manager-build
   bin-flow-manager:
     when: << pipeline.parameters.run-bin-flow-manager >>
     jobs:
@@ -464,6 +476,10 @@ workflows:
           <<: *context_production
           requires:
             - bin-message-manager-test
+      - bin-message-manager-deploy:
+          <<: *context_production
+          requires:
+            - bin-message-manager-build
   bin-number-manager:
     when: << pipeline.parameters.run-bin-number-manager >>
     jobs:
@@ -476,6 +492,10 @@ workflows:
           <<: *context_production
           requires:
             - bin-number-manager-test
+      - bin-number-manager-deploy:
+          <<: *context_production
+          requires:
+            - bin-number-manager-build
   bin-openapi-manager:
     when: << pipeline.parameters.run-bin-openapi-manager >>
     jobs:
@@ -553,6 +573,10 @@ workflows:
           <<: *context_production
           requires:
             - bin-registrar-manager-test
+      - bin-registrar-manager-deploy:
+          <<: *context_production
+          requires:
+            - bin-registrar-manager-build
   bin-route-manager:
     when: << pipeline.parameters.run-bin-route-manager >>
     jobs:
@@ -717,6 +741,10 @@ workflows:
           <<: *context_production
           requires:
             - bin-tts-manager-test
+      - bin-tts-manager-deploy:
+          <<: *context_production
+          requires:
+            - bin-tts-manager-build
   bin-webchat-manager:
     when: << pipeline.parameters.run-bin-webchat-manager >>
     jobs:
@@ -988,6 +1016,24 @@ jobs:
           project-id: voipbin
           project-repository: bin-ai-manager
 
+  # VOIP-1348 Tier 2 rollout: Komodo-managed deploy, following the
+  # VOIP-1342/bin-call-manager and VOIP-1347/Tier 1 pattern. See
+  # docs/plans/2026-08-18-bin-manager-komodo-rollout-tier2-design.md.
+  bin-ai-manager-deploy:
+    docker:
+      - image: cimg/base:2024.02
+    resource_class: small
+    steps:
+      - checkout
+      - run:
+          name: Render image tag into Komodo compose fragment
+          command: .circleci/scripts/render-image-tag.sh bin-ai-manager/komodo/docker-compose.yml "$CIRCLE_SHA1"
+      - run:
+          name: Deploy bin-ai-manager via Komodo API
+          command: |
+            CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
+              .circleci/scripts/komodo-api-deploy.sh bin-ai-manager bin-ai-manager/komodo/docker-compose.yml
+
   # bin-common-handler
   bin-common-handler-test:
     docker: *go_image
@@ -1118,6 +1164,24 @@ jobs:
           project-id: voipbin
           project-repository: bin-customer-manager
 
+  # VOIP-1348 Tier 2 rollout: Komodo-managed deploy, following the
+  # VOIP-1342/bin-call-manager and VOIP-1347/Tier 1 pattern. See
+  # docs/plans/2026-08-18-bin-manager-komodo-rollout-tier2-design.md.
+  bin-customer-manager-deploy:
+    docker:
+      - image: cimg/base:2024.02
+    resource_class: small
+    steps:
+      - checkout
+      - run:
+          name: Render image tag into Komodo compose fragment
+          command: .circleci/scripts/render-image-tag.sh bin-customer-manager/komodo/docker-compose.yml "$CIRCLE_SHA1"
+      - run:
+          name: Deploy bin-customer-manager via Komodo API
+          command: |
+            CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
+              .circleci/scripts/komodo-api-deploy.sh bin-customer-manager bin-customer-manager/komodo/docker-compose.yml
+
   # bin-dbscheme-manager has no build/deploy job -- production DB is not
   # reachable from CircleCI, so all migration application is manual/VPN.
   # See bin-dbscheme-manager/docs/operations.md for why, and
@@ -1220,6 +1284,24 @@ jobs:
           project-id: voipbin
           project-repository: bin-email-manager
 
+  # VOIP-1348 Tier 2 rollout: Komodo-managed deploy, following the
+  # VOIP-1342/bin-call-manager and VOIP-1347/Tier 1 pattern. See
+  # docs/plans/2026-08-18-bin-manager-komodo-rollout-tier2-design.md.
+  bin-email-manager-deploy:
+    docker:
+      - image: cimg/base:2024.02
+    resource_class: small
+    steps:
+      - checkout
+      - run:
+          name: Render image tag into Komodo compose fragment
+          command: .circleci/scripts/render-image-tag.sh bin-email-manager/komodo/docker-compose.yml "$CIRCLE_SHA1"
+      - run:
+          name: Deploy bin-email-manager via Komodo API
+          command: |
+            CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
+              .circleci/scripts/komodo-api-deploy.sh bin-email-manager bin-email-manager/komodo/docker-compose.yml
+
   # bin-flow-manager
   bin-flow-manager-test:
     docker: *go_image
@@ -1289,6 +1371,24 @@ jobs:
           project-repository: bin-message-manager
           source-directory: bin-message-manager
 
+  # VOIP-1348 Tier 2 rollout: Komodo-managed deploy, following the
+  # VOIP-1342/bin-call-manager and VOIP-1347/Tier 1 pattern. See
+  # docs/plans/2026-08-18-bin-manager-komodo-rollout-tier2-design.md.
+  bin-message-manager-deploy:
+    docker:
+      - image: cimg/base:2024.02
+    resource_class: small
+    steps:
+      - checkout
+      - run:
+          name: Render image tag into Komodo compose fragment
+          command: .circleci/scripts/render-image-tag.sh bin-message-manager/komodo/docker-compose.yml "$CIRCLE_SHA1"
+      - run:
+          name: Deploy bin-message-manager via Komodo API
+          command: |
+            CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
+              .circleci/scripts/komodo-api-deploy.sh bin-message-manager bin-message-manager/komodo/docker-compose.yml
+
   # bin-number-manager
   bin-number-manager-test:
     docker: *go_image
@@ -1305,6 +1405,24 @@ jobs:
           project-id: voipbin
           project-repository: bin-number-manager
           source-directory: bin-number-manager
+
+  # VOIP-1348 Tier 2 rollout: Komodo-managed deploy, following the
+  # VOIP-1342/bin-call-manager and VOIP-1347/Tier 1 pattern. See
+  # docs/plans/2026-08-18-bin-manager-komodo-rollout-tier2-design.md.
+  bin-number-manager-deploy:
+    docker:
+      - image: cimg/base:2024.02
+    resource_class: small
+    steps:
+      - checkout
+      - run:
+          name: Render image tag into Komodo compose fragment
+          command: .circleci/scripts/render-image-tag.sh bin-number-manager/komodo/docker-compose.yml "$CIRCLE_SHA1"
+      - run:
+          name: Deploy bin-number-manager via Komodo API
+          command: |
+            CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
+              .circleci/scripts/komodo-api-deploy.sh bin-number-manager bin-number-manager/komodo/docker-compose.yml
 
   # bin-openapi-manager
   bin-openapi-manager-validate:
@@ -1454,6 +1572,24 @@ jobs:
           project-id: voipbin
           project-repository: bin-registrar-manager
           source-directory: bin-registrar-manager
+
+  # VOIP-1348 Tier 2 rollout: Komodo-managed deploy, following the
+  # VOIP-1342/bin-call-manager and VOIP-1347/Tier 1 pattern. See
+  # docs/plans/2026-08-18-bin-manager-komodo-rollout-tier2-design.md.
+  bin-registrar-manager-deploy:
+    docker:
+      - image: cimg/base:2024.02
+    resource_class: small
+    steps:
+      - checkout
+      - run:
+          name: Render image tag into Komodo compose fragment
+          command: .circleci/scripts/render-image-tag.sh bin-registrar-manager/komodo/docker-compose.yml "$CIRCLE_SHA1"
+      - run:
+          name: Deploy bin-registrar-manager via Komodo API
+          command: |
+            CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
+              .circleci/scripts/komodo-api-deploy.sh bin-registrar-manager bin-registrar-manager/komodo/docker-compose.yml
 
   # bin-route-manager
   bin-route-manager-test:
@@ -1723,6 +1859,24 @@ jobs:
           project-id: voipbin
           project-repository: bin-tts-manager
           source-directory: bin-tts-manager
+
+  # VOIP-1348 Tier 2 rollout: Komodo-managed deploy, following the
+  # VOIP-1342/bin-call-manager and VOIP-1347/Tier 1 pattern. See
+  # docs/plans/2026-08-18-bin-manager-komodo-rollout-tier2-design.md.
+  bin-tts-manager-deploy:
+    docker:
+      - image: cimg/base:2024.02
+    resource_class: small
+    steps:
+      - checkout
+      - run:
+          name: Render image tag into Komodo compose fragment
+          command: .circleci/scripts/render-image-tag.sh bin-tts-manager/komodo/docker-compose.yml "$CIRCLE_SHA1"
+      - run:
+          name: Deploy bin-tts-manager via Komodo API
+          command: |
+            CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
+              .circleci/scripts/komodo-api-deploy.sh bin-tts-manager bin-tts-manager/komodo/docker-compose.yml
 
   # bin-webchat-manager
   bin-webchat-manager-test:
