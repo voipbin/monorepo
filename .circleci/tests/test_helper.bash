@@ -99,6 +99,87 @@ ssh_call_stdin() {
     awk -v RS='\035' -v n="$n" 'NR==n{print; exit}' "$SSH_STDIN_LOG"
 }
 
+# A fake `curl` for testing komodo-api-deploy.sh's direct-HTTPS calls.
+# Pops one canned response per invocation from a queue file
+# ($CURL_QUEUE, one "http_code<TAB>body" line per response, in call
+# order), and prints it in the shape the real script expects from
+# `curl -w '\n%{http_code}'` (body, then a newline, then the bare status
+# code). Logs each invocation's URL, -d body, and -K stdin config to
+# $CURL_LOG (one record per invocation, 0x1d-separated, fields
+# 0x1e-separated: url, body, stdin-config) so tests can assert on what
+# was actually sent, same separator convention as install_fake_ssh above
+# for the same embedded-newline reason (a compose file's file_contents
+# can itself contain newlines).
+install_fake_curl() {
+    export CURL_QUEUE="$TEST_TEMP_DIR/curl_queue.tsv"
+    export CURL_LOG="$TEST_TEMP_DIR/curl_calls.log"
+    : > "$CURL_QUEUE"
+    : > "$CURL_LOG"
+    cat > "$MOCK_BIN_DIR/curl" <<'EOF'
+#!/bin/bash
+set -euo pipefail
+url="" body="" stdin_config=""
+args=("$@")
+for ((i=0; i<${#args[@]}; i++)); do
+    case "${args[$i]}" in
+        -d) body="${args[$((i+1))]}" ;;
+        -X|-H|-w|--connect-timeout|--max-time) ;; # value consumed on next iteration naturally via case above where relevant
+        http*://*) url="${args[$i]}" ;;
+    esac
+done
+stdin_config="$(cat)"
+{
+    printf '%s\x1e' "$url"
+    printf '%s\x1e' "$body"
+    printf '%s\x1e' "$stdin_config"
+    printf '\x1d'
+} >> "$CURL_LOG"
+
+if [[ ! -s "$CURL_QUEUE" ]]; then
+    echo "install_fake_curl: queue exhausted, no canned response left for this call" >&2
+    exit 1
+fi
+line="$(head -n1 "$CURL_QUEUE")"
+sed -i '1d' "$CURL_QUEUE"
+code="${line%%$'\t'*}"
+respbody="${line#*$'\t'}"
+printf '%s\n%s' "$respbody" "$code"
+EOF
+    chmod +x "$MOCK_BIN_DIR/curl"
+}
+
+# Queue one canned curl response (HTTP status code + response body) to be
+# returned on the next invocation, in the order queued.
+queue_curl_response() {
+    local code="$1" body="$2"
+    printf '%s\t%s\n' "$code" "$body" >> "$CURL_QUEUE"
+}
+
+# The Nth (1-indexed) curl invocation's URL / -d body / -K stdin config.
+# Three separate accessors (not one array-returning function) for the
+# same reason ssh_call_remote_command uses awk FS instead of a bash
+# `read -a`: the body field is real multi-line JSON (jq's pretty-printed
+# output), and `read` always stops at the first embedded newline
+# regardless of IFS - splitting bash-side would silently truncate it.
+# awk's FS, unlike `read`, does not treat embedded newlines specially.
+curl_call_url() {
+    local n="$1"
+    awk -v RS='\035' -v FS='\036' -v n="$n" 'NR==n{print $1; exit}' "$CURL_LOG"
+}
+curl_call_body() {
+    local n="$1"
+    awk -v RS='\035' -v FS='\036' -v n="$n" 'NR==n{print $2; exit}' "$CURL_LOG"
+}
+curl_call_header_config() {
+    local n="$1"
+    awk -v RS='\035' -v FS='\036' -v n="$n" 'NR==n{print $3; exit}' "$CURL_LOG"
+}
+
+# How many curl invocations were logged.
+curl_call_count() {
+    awk -v RS='\035' 'END{print NR}' "$CURL_LOG"
+}
+
 # Extracts the body of a `VAR=$(cat <<'DELIM' ... DELIM)` quoted heredoc
 # from a script file, i.e. the remote-side script komodo-api-deploy.sh
 # builds up and ships over ssh as a single command string. Runs it as

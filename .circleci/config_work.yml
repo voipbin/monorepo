@@ -992,11 +992,12 @@ jobs:
           project-id: voipbin
           project-repository: bin-call-manager
 
-  # Pilot: direct SSH deploy to bm-nyc-01, bypassing voipbin/voipbin
-  # entirely (no PR, no git checkout of that repo). Runs the image already
-  # pushed by bin-call-manager-build. The pre-existing GKE release job for
-  # this service has been removed - bm-nyc-01 is now the only deploy
-  # target, so there is no second target left to disambiguate against.
+  # VOIP-1342 pilot: Komodo-managed deploy, replacing the SSH+
+  # versions.lock path (ssh-deploy.sh) other bin-*-manager services still
+  # use. See docs/plans/2026-08-16-komodo-call-manager-cutover-design.md.
+  # This job only performs ROUTINE (post-cutover) deploys - the first,
+  # cutover deploy itself is a manual, watched operation (design doc §7),
+  # not run through this job.
   bin-call-manager-deploy:
     docker:
       - image: cimg/base:2024.02
@@ -1004,13 +1005,22 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Deploy bin-call-manager to bm-nyc-01
-          # Second arg is the docker-compose SERVICE name, which drops the
-          # 'bin-' prefix (matches the image-name convention other
-          # services' release jobs use, e.g. "call-manager" not
-          # "bin-call-manager") - confirmed against bm-nyc-01's actual
-          # docker-compose.yml, not assumed.
-          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-call-manager call-manager
+          name: Render image tag into Komodo compose fragment
+          command: .circleci/scripts/render-image-tag.sh bin-call-manager/komodo/docker-compose.yml "$CIRCLE_SHA1"
+      - run:
+          name: Deploy bin-call-manager via Komodo API
+          # CC_KOMODO_POLL_ATTEMPTS/CC_KOMODO_POLL_INTERVAL_S set explicitly
+          # per design doc §4, rather than left at the script's 60s
+          # default: bin-call-manager's image is small (distroless + one Go
+          # binary, no vendored runtime), but a cold `docker compose pull`
+          # can still be slow on a congested host/registry, and the
+          # 3-consecutive-running follow-up check (§5 gate a) adds its own
+          # fixed ~16s on top of whatever this budget covers. 180s (60x3s)
+          # is a conservative estimate, not a measured value - tighten or
+          # loosen once real deploy timings are observed.
+          command: |
+            CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
+              .circleci/scripts/komodo-api-deploy.sh bin-call-manager bin-call-manager/komodo/docker-compose.yml
 
   # bin-campaign-manager
   bin-campaign-manager-test:

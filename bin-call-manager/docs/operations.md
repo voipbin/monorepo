@@ -70,6 +70,29 @@ Direct DB/cache tool for emergency inspection or repair (bypasses RabbitMQ):
 
 All output is JSON (stdout); logs go to stderr.
 
+## Deployment
+
+bin-call-manager is the Komodo-managed deploy pilot (VOIP-1342) — the first
+`bin-*-manager` service to move off `voipbin/voipbin`'s `install/`
+(`versions.lock`/`ssh-deploy.sh`) mechanism. The other 31 `bin-*-manager`
+services still deploy via `ssh-deploy.sh` until this pilot is verified in
+production and a follow-up ticket rolls the pattern out.
+
+- **Stack definition:** `bin-call-manager/komodo/docker-compose.yml` (git
+  is the source of truth for structure; Komodo only executes it on
+  request — no polling/webhook auto-deploy).
+- **CI path:** `.circleci/scripts/render-image-tag.sh` substitutes the
+  built image tag, then `.circleci/scripts/komodo-api-deploy.sh` pushes
+  the file's content to Komodo (`UpdateStack`) and triggers a deploy
+  (`DeployStack`) over `https://komodo.voipbin.net`, gated by the
+  `bin-call-manager-deploy` job's poll/running checks.
+- **Break-glass fallback:** `.circleci/scripts/komodo-api-deploy-ssh-fallback.sh`
+  (SSH tunnel to bm-nyc-01, unchanged from VOIP-1341) for use if the public
+  HTTPS endpoint itself is unreachable.
+- **Full design, cutover sequencing, and rollback procedure:**
+  [docs/plans/2026-08-16-komodo-call-manager-cutover-design.md](../docs/plans/2026-08-16-komodo-call-manager-cutover-design.md)
+  (in the monorepo root, not this service's own `docs/`).
+
 ## Configuration
 
 | Flag | Env Var | Default | Description |
