@@ -16,9 +16,7 @@ account: sungtae@voipbin.net
 # Deploy
 
 `bin-number-manager-build` pushes the image, and a single `build-approval` gate covers
-the whole pipeline (test -> build -> deploy) through to production.
-`bin-number-manager-deploy` runs after `bin-number-manager-build`, bumping this service's pin on
-bm-nyc-01 and recreating the container. See
-`.circleci/scripts/ssh-deploy.sh` (this pattern was piloted with
-bin-call-manager). The previous GKE deploy path for this service has been
-removed.
+the test -> build pipeline. The CircleCI `bin-number-manager-deploy` job (direct SSH
+deploy to bm-nyc-01) has been removed. Deploys to bm-nyc-01 are manual until
+this service migrates to the Komodo-managed deploy path (see bin-call-manager
+for the pattern).

@@ -83,9 +83,7 @@ Represents agent's skills and groups.
 # Deploy
 
 `bin-agent-manager-build` pushes the image, and a single `build-approval` gate covers
-the whole pipeline (test -> build -> deploy) through to production.
-`bin-agent-manager-deploy` runs after `bin-agent-manager-build`, bumping this service's pin on
-bm-nyc-01 and recreating the container. See
-`.circleci/scripts/ssh-deploy.sh` (this pattern was piloted with
-bin-call-manager). The previous GKE deploy path for this service has been
-removed.
+the test -> build pipeline. The CircleCI `bin-agent-manager-deploy` job (direct SSH
+deploy to bm-nyc-01) has been removed. Deploys to bm-nyc-01 are manual until
+this service migrates to the Komodo-managed deploy path (see bin-call-manager
+for the pattern).

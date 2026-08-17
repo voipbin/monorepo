@@ -206,11 +206,6 @@ workflows:
           <<: *context_production
           requires:
             - bin-agent-manager-test
-      - bin-agent-manager-deploy:
-          <<: *context_production
-          requires:
-            - bin-agent-manager-build
-
   bin-api-manager:
     when:
       or: [<< pipeline.parameters.run-bin-api-manager >>, << pipeline.parameters.run-bin-openapi-manager >>]
@@ -224,11 +219,6 @@ workflows:
           <<: *context_production
           requires:
             - bin-api-manager-test
-      - bin-api-manager-deploy:
-          <<: *context_production
-          requires:
-            - bin-api-manager-build
-
   bin-billing-manager:
     when: << pipeline.parameters.run-bin-billing-manager >>
     jobs:
@@ -241,11 +231,6 @@ workflows:
           <<: *context_production
           requires:
             - bin-billing-manager-test
-      - bin-billing-manager-deploy:
-          <<: *context_production
-          requires:
-            - bin-billing-manager-build
-
   bin-call-manager:
     when: << pipeline.parameters.run-bin-call-manager >>
     jobs:
@@ -284,11 +269,6 @@ workflows:
           <<: *context_production
           requires:
             - bin-campaign-manager-test
-      - bin-campaign-manager-deploy:
-          <<: *context_production
-          requires:
-            - bin-campaign-manager-build
-
   bin-ai-manager:
     when: << pipeline.parameters.run-bin-ai-manager >>
     jobs:
@@ -301,11 +281,6 @@ workflows:
           <<: *context_production
           requires:
             - bin-ai-manager-test
-      - bin-ai-manager-deploy:
-          <<: *context_production
-          requires:
-            - bin-ai-manager-build
-
   bin-common-handler:
     when: << pipeline.parameters.run-bin-common-handler >>
     jobs:
@@ -327,11 +302,6 @@ workflows:
           <<: *context_production
           requires:
             - bin-contact-manager-test
-      - bin-contact-manager-deploy:
-          <<: *context_production
-          requires:
-            - bin-contact-manager-build
-
   bin-conference-manager:
     when: << pipeline.parameters.run-bin-conference-manager >>
     jobs:
@@ -344,11 +314,6 @@ workflows:
           <<: *context_production
           requires:
             - bin-conference-manager-test
-      - bin-conference-manager-deploy:
-          <<: *context_production
-          requires:
-            - bin-conference-manager-build
-
   bin-conversation-manager:
     when: << pipeline.parameters.run-bin-conversation-manager >>
     jobs:
@@ -361,11 +326,6 @@ workflows:
           <<: *context_production
           requires:
             - bin-conversation-manager-test
-      - bin-conversation-manager-deploy:
-          <<: *context_production
-          requires:
-            - bin-conversation-manager-build
-
   bin-customer-manager:
     when: << pipeline.parameters.run-bin-customer-manager >>
     jobs:
@@ -378,11 +338,6 @@ workflows:
           <<: *context_production
           requires:
             - bin-customer-manager-test
-      - bin-customer-manager-deploy:
-          <<: *context_production
-          requires:
-            - bin-customer-manager-build
-
   # bin-dbscheme-manager: CI does not apply migrations. The production
   # bin_manager / asterisk databases are not reachable from CircleCI's
   # executors (confirmed 2026-07-11, VOIP-1246: a read-only DSN probe on
@@ -429,11 +384,6 @@ workflows:
           <<: *context_production
           requires:
             - bin-direct-manager-test
-      - bin-direct-manager-deploy:
-          <<: *context_production
-          requires:
-            - bin-direct-manager-build
-
   bin-email-manager:
     when: << pipeline.parameters.run-bin-email-manager >>
     jobs:
@@ -446,11 +396,6 @@ workflows:
           <<: *context_production
           requires:
             - bin-email-manager-test
-      - bin-email-manager-deploy:
-          <<: *context_production
-          requires:
-            - bin-email-manager-build
-
   bin-flow-manager:
     when: << pipeline.parameters.run-bin-flow-manager >>
     jobs:
@@ -463,11 +408,6 @@ workflows:
           <<: *context_production
           requires:
             - bin-flow-manager-test
-      - bin-flow-manager-deploy:
-          <<: *context_production
-          requires:
-            - bin-flow-manager-build
-
   bin-hook-manager:
     when: << pipeline.parameters.run-bin-hook-manager >>
     jobs:
@@ -480,11 +420,6 @@ workflows:
           <<: *context_production
           requires:
             - bin-hook-manager-test
-      - bin-hook-manager-deploy:
-          <<: *context_production
-          requires:
-            - bin-hook-manager-build
-
   bin-message-manager:
     when: << pipeline.parameters.run-bin-message-manager >>
     jobs:
@@ -497,11 +432,6 @@ workflows:
           <<: *context_production
           requires:
             - bin-message-manager-test
-      - bin-message-manager-deploy:
-          <<: *context_production
-          requires:
-            - bin-message-manager-build
-
   bin-number-manager:
     when: << pipeline.parameters.run-bin-number-manager >>
     jobs:
@@ -514,11 +444,6 @@ workflows:
           <<: *context_production
           requires:
             - bin-number-manager-test
-      - bin-number-manager-deploy:
-          <<: *context_production
-          requires:
-            - bin-number-manager-build
-
   bin-openapi-manager:
     when: << pipeline.parameters.run-bin-openapi-manager >>
     jobs:
@@ -540,11 +465,6 @@ workflows:
           <<: *context_production
           requires:
             - bin-outdial-manager-test
-      - bin-outdial-manager-deploy:
-          <<: *context_production
-          requires:
-            - bin-outdial-manager-build
-
   bin-pipecat-manager:
     when: << pipeline.parameters.run-bin-pipecat-manager >>
     jobs:
@@ -557,11 +477,6 @@ workflows:
           <<: *context_production
           requires:
             - build-approval
-      - bin-pipecat-manager-deploy:
-          <<: *context_production
-          requires:
-            - bin-pipecat-manager-build
-
   bin-queue-manager:
     when: << pipeline.parameters.run-bin-queue-manager >>
     jobs:
@@ -574,11 +489,6 @@ workflows:
           <<: *context_production
           requires:
             - bin-queue-manager-test
-      - bin-queue-manager-deploy:
-          <<: *context_production
-          requires:
-            - bin-queue-manager-build
-
   bin-rag-manager:
     when: << pipeline.parameters.run-bin-rag-manager >>
     jobs:
@@ -591,11 +501,6 @@ workflows:
           <<: *context_production
           requires:
             - bin-rag-manager-test
-      - bin-rag-manager-deploy:
-          <<: *context_production
-          requires:
-            - bin-rag-manager-build
-
   bin-registrar-manager:
     when: << pipeline.parameters.run-bin-registrar-manager >>
     jobs:
@@ -608,11 +513,6 @@ workflows:
           <<: *context_production
           requires:
             - bin-registrar-manager-test
-      - bin-registrar-manager-deploy:
-          <<: *context_production
-          requires:
-            - bin-registrar-manager-build
-
   bin-route-manager:
     when: << pipeline.parameters.run-bin-route-manager >>
     jobs:
@@ -625,11 +525,6 @@ workflows:
           <<: *context_production
           requires:
             - bin-route-manager-test
-      - bin-route-manager-deploy:
-          <<: *context_production
-          requires:
-            - bin-route-manager-build
-
   bin-schedule-manager:
     when: << pipeline.parameters.run-bin-schedule-manager >>
     jobs:
@@ -642,11 +537,6 @@ workflows:
           <<: *context_production
           requires:
             - bin-schedule-manager-test
-      - bin-schedule-manager-deploy:
-          <<: *context_production
-          requires:
-            - bin-schedule-manager-build
-
   bin-sentinel-manager:
     when: << pipeline.parameters.run-bin-sentinel-manager >>
     jobs:
@@ -684,11 +574,6 @@ workflows:
           <<: *context_production
           requires:
             - bin-storage-manager-test
-      - bin-storage-manager-deploy:
-          <<: *context_production
-          requires:
-            - bin-storage-manager-build
-
   bin-tag-manager:
     when: << pipeline.parameters.run-bin-tag-manager >>
     jobs:
@@ -701,11 +586,6 @@ workflows:
           <<: *context_production
           requires:
             - bin-tag-manager-test
-      - bin-tag-manager-deploy:
-          <<: *context_production
-          requires:
-            - bin-tag-manager-build
-
   bin-talk-manager:
     when: << pipeline.parameters.run-bin-talk-manager >>
     jobs:
@@ -718,11 +598,6 @@ workflows:
           <<: *context_production
           requires:
             - bin-talk-manager-test
-      - bin-talk-manager-deploy:
-          <<: *context_production
-          requires:
-            - bin-talk-manager-build
-
   bin-timeline-manager:
     when: << pipeline.parameters.run-bin-timeline-manager >>
     jobs:
@@ -735,11 +610,6 @@ workflows:
           <<: *context_production
           requires:
             - bin-timeline-manager-test
-      - bin-timeline-manager-deploy:
-          <<: *context_production
-          requires:
-            - bin-timeline-manager-build
-
   bin-transcribe-manager:
     when: << pipeline.parameters.run-bin-transcribe-manager >>
     jobs:
@@ -752,11 +622,6 @@ workflows:
           <<: *context_production
           requires:
             - bin-transcribe-manager-test
-      - bin-transcribe-manager-deploy:
-          <<: *context_production
-          requires:
-            - bin-transcribe-manager-build
-
   bin-transfer-manager:
     when: << pipeline.parameters.run-bin-transfer-manager >>
     jobs:
@@ -769,11 +634,6 @@ workflows:
           <<: *context_production
           requires:
             - bin-transfer-manager-test
-      - bin-transfer-manager-deploy:
-          <<: *context_production
-          requires:
-            - bin-transfer-manager-build
-
   bin-trigger-sender:
     when: << pipeline.parameters.run-bin-trigger-sender >>
     jobs:
@@ -801,11 +661,6 @@ workflows:
           <<: *context_production
           requires:
             - bin-tts-manager-test
-      - bin-tts-manager-deploy:
-          <<: *context_production
-          requires:
-            - bin-tts-manager-build
-
   bin-webchat-manager:
     when: << pipeline.parameters.run-bin-webchat-manager >>
     jobs:
@@ -818,11 +673,6 @@ workflows:
           <<: *context_production
           requires:
             - bin-webchat-manager-test
-      - bin-webchat-manager-deploy:
-          <<: *context_production
-          requires:
-            - bin-webchat-manager-build
-
   bin-webhook-manager:
     when: << pipeline.parameters.run-bin-webhook-manager >>
     jobs:
@@ -835,12 +685,6 @@ workflows:
           <<: *context_production
           requires:
             - bin-webhook-manager-test
-      - bin-webhook-manager-deploy:
-          <<: *context_production
-          requires:
-            - bin-webhook-manager-build
-
-
   ############################################
   # namespace: voip
   ############################################
@@ -911,16 +755,6 @@ jobs:
           project-id: voipbin
           project-repository: bin-agent-manager
 
-  bin-agent-manager-deploy:
-    docker:
-      - image: cimg/base:2024.02
-    resource_class: small
-    steps:
-      - checkout
-      - run:
-          name: Deploy bin-agent-manager to bm-nyc-01
-          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-agent-manager agent-manager
-
   # bin-api-manager
   bin-api-manager-test:
     docker: *go_image
@@ -938,16 +772,6 @@ jobs:
           project-id: voipbin
           project-repository: bin-api-manager
 
-  bin-api-manager-deploy:
-    docker:
-      - image: cimg/base:2024.02
-    resource_class: small
-    steps:
-      - checkout
-      - run:
-          name: Deploy bin-api-manager to bm-nyc-01
-          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-api-manager api-manager
-
   # bin-billing-manager
   bin-billing-manager-test:
     docker: *go_image
@@ -964,16 +788,6 @@ jobs:
           source-directory: bin-billing-manager
           project-id: voipbin
           project-repository: bin-billing-manager
-
-  bin-billing-manager-deploy:
-    docker:
-      - image: cimg/base:2024.02
-    resource_class: small
-    steps:
-      - checkout
-      - run:
-          name: Deploy bin-billing-manager to bm-nyc-01
-          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-billing-manager billing-manager
 
   # bin-call-manager
   bin-call-manager-test:
@@ -1039,16 +853,6 @@ jobs:
           project-id: voipbin
           project-repository: bin-campaign-manager
 
-  bin-campaign-manager-deploy:
-    docker:
-      - image: cimg/base:2024.02
-    resource_class: small
-    steps:
-      - checkout
-      - run:
-          name: Deploy bin-campaign-manager to bm-nyc-01
-          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-campaign-manager campaign-manager
-
   # bin-ai-manager
   bin-ai-manager-test:
     docker: *go_image
@@ -1065,16 +869,6 @@ jobs:
           source-directory: bin-ai-manager
           project-id: voipbin
           project-repository: bin-ai-manager
-
-  bin-ai-manager-deploy:
-    docker:
-      - image: cimg/base:2024.02
-    resource_class: small
-    steps:
-      - checkout
-      - run:
-          name: Deploy bin-ai-manager to bm-nyc-01
-          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-ai-manager ai-manager
 
   # bin-common-handler
   bin-common-handler-test:
@@ -1101,16 +895,6 @@ jobs:
           project-id: voipbin
           project-repository: bin-contact-manager
 
-  bin-contact-manager-deploy:
-    docker:
-      - image: cimg/base:2024.02
-    resource_class: small
-    steps:
-      - checkout
-      - run:
-          name: Deploy bin-contact-manager to bm-nyc-01
-          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-contact-manager contact-manager
-
   # bin-conference-manager
   bin-conference-manager-test:
     docker: *go_image
@@ -1127,16 +911,6 @@ jobs:
           source-directory: bin-conference-manager
           project-id: voipbin
           project-repository: bin-conference-manager
-
-  bin-conference-manager-deploy:
-    docker:
-      - image: cimg/base:2024.02
-    resource_class: small
-    steps:
-      - checkout
-      - run:
-          name: Deploy bin-conference-manager to bm-nyc-01
-          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-conference-manager conference-manager
 
   # bin-conversation-manager
   bin-conversation-manager-test:
@@ -1155,16 +929,6 @@ jobs:
           project-id: voipbin
           project-repository: bin-conversation-manager
 
-  bin-conversation-manager-deploy:
-    docker:
-      - image: cimg/base:2024.02
-    resource_class: small
-    steps:
-      - checkout
-      - run:
-          name: Deploy bin-conversation-manager to bm-nyc-01
-          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-conversation-manager conversation-manager
-
   # bin-customer-manager
   bin-customer-manager-test:
     docker: *go_image
@@ -1181,16 +945,6 @@ jobs:
           source-directory: bin-customer-manager
           project-id: voipbin
           project-repository: bin-customer-manager
-
-  bin-customer-manager-deploy:
-    docker:
-      - image: cimg/base:2024.02
-    resource_class: small
-    steps:
-      - checkout
-      - run:
-          name: Deploy bin-customer-manager to bm-nyc-01
-          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-customer-manager customer-manager
 
   # bin-dbscheme-manager has no build/deploy job -- production DB is not
   # reachable from CircleCI, so all migration application is manual/VPN.
@@ -1259,16 +1013,6 @@ jobs:
           project-id: voipbin
           project-repository: bin-direct-manager
 
-  bin-direct-manager-deploy:
-    docker:
-      - image: cimg/base:2024.02
-    resource_class: small
-    steps:
-      - checkout
-      - run:
-          name: Deploy bin-direct-manager to bm-nyc-01
-          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-direct-manager direct-manager
-
   # bin-email-manager
   bin-email-manager-test:
     docker: *go_image
@@ -1285,16 +1029,6 @@ jobs:
           source-directory: bin-email-manager
           project-id: voipbin
           project-repository: bin-email-manager
-
-  bin-email-manager-deploy:
-    docker:
-      - image: cimg/base:2024.02
-    resource_class: small
-    steps:
-      - checkout
-      - run:
-          name: Deploy bin-email-manager to bm-nyc-01
-          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-email-manager email-manager
 
   # bin-flow-manager
   bin-flow-manager-test:
@@ -1313,16 +1047,6 @@ jobs:
           project-id: voipbin
           project-repository: bin-flow-manager
 
-  bin-flow-manager-deploy:
-    docker:
-      - image: cimg/base:2024.02
-    resource_class: small
-    steps:
-      - checkout
-      - run:
-          name: Deploy bin-flow-manager to bm-nyc-01
-          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-flow-manager flow-manager
-
   # bin-hook-manager
   bin-hook-manager-test:
     docker: *go_image
@@ -1339,16 +1063,6 @@ jobs:
           source-directory: bin-hook-manager
           project-id: voipbin
           project-repository: bin-hook-manager
-
-  bin-hook-manager-deploy:
-    docker:
-      - image: cimg/base:2024.02
-    resource_class: small
-    steps:
-      - checkout
-      - run:
-          name: Deploy bin-hook-manager to bm-nyc-01
-          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-hook-manager hook-manager
 
   # bin-message-manager
   bin-message-manager-test:
@@ -1367,16 +1081,6 @@ jobs:
           project-repository: bin-message-manager
           source-directory: bin-message-manager
 
-  bin-message-manager-deploy:
-    docker:
-      - image: cimg/base:2024.02
-    resource_class: small
-    steps:
-      - checkout
-      - run:
-          name: Deploy bin-message-manager to bm-nyc-01
-          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-message-manager message-manager
-
   # bin-number-manager
   bin-number-manager-test:
     docker: *go_image
@@ -1393,16 +1097,6 @@ jobs:
           project-id: voipbin
           project-repository: bin-number-manager
           source-directory: bin-number-manager
-
-  bin-number-manager-deploy:
-    docker:
-      - image: cimg/base:2024.02
-    resource_class: small
-    steps:
-      - checkout
-      - run:
-          name: Deploy bin-number-manager to bm-nyc-01
-          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-number-manager number-manager
 
   # bin-openapi-manager
   bin-openapi-manager-validate:
@@ -1449,16 +1143,6 @@ jobs:
           project-repository: bin-outdial-manager
           source-directory: bin-outdial-manager
 
-  bin-outdial-manager-deploy:
-    docker:
-      - image: cimg/base:2024.02
-    resource_class: small
-    steps:
-      - checkout
-      - run:
-          name: Deploy bin-outdial-manager to bm-nyc-01
-          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-outdial-manager outdial-manager
-
   # bin-pipecat-manager
   bin-pipecat-manager-test:
     docker: *go_image
@@ -1475,16 +1159,6 @@ jobs:
           project-id: voipbin
           project-repository: bin-pipecat-manager
           source-directory: bin-pipecat-manager
-
-  bin-pipecat-manager-deploy:
-    docker:
-      - image: cimg/base:2024.02
-    resource_class: small
-    steps:
-      - checkout
-      - run:
-          name: Deploy bin-pipecat-manager to bm-nyc-01
-          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-pipecat-manager pipecat-manager
 
   # bin-queue-manager
   bin-queue-manager-test:
@@ -1503,16 +1177,6 @@ jobs:
           project-repository: bin-queue-manager
           source-directory: bin-queue-manager
 
-  bin-queue-manager-deploy:
-    docker:
-      - image: cimg/base:2024.02
-    resource_class: small
-    steps:
-      - checkout
-      - run:
-          name: Deploy bin-queue-manager to bm-nyc-01
-          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-queue-manager queue-manager
-
   # bin-rag-manager
   bin-rag-manager-test:
     docker: *go_image
@@ -1529,16 +1193,6 @@ jobs:
           source-directory: bin-rag-manager
           project-id: voipbin
           project-repository: bin-rag-manager
-
-  bin-rag-manager-deploy:
-    docker:
-      - image: cimg/base:2024.02
-    resource_class: small
-    steps:
-      - checkout
-      - run:
-          name: Deploy bin-rag-manager to bm-nyc-01
-          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-rag-manager rag-manager
 
   # bin-registrar-manager
   bin-registrar-manager-test:
@@ -1557,16 +1211,6 @@ jobs:
           project-repository: bin-registrar-manager
           source-directory: bin-registrar-manager
 
-  bin-registrar-manager-deploy:
-    docker:
-      - image: cimg/base:2024.02
-    resource_class: small
-    steps:
-      - checkout
-      - run:
-          name: Deploy bin-registrar-manager to bm-nyc-01
-          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-registrar-manager registrar-manager
-
   # bin-route-manager
   bin-route-manager-test:
     docker: *go_image
@@ -1584,16 +1228,6 @@ jobs:
           project-repository: bin-route-manager
           source-directory: bin-route-manager
 
-  bin-route-manager-deploy:
-    docker:
-      - image: cimg/base:2024.02
-    resource_class: small
-    steps:
-      - checkout
-      - run:
-          name: Deploy bin-route-manager to bm-nyc-01
-          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-route-manager route-manager
-
   # bin-schedule-manager
   bin-schedule-manager-test:
     docker: *go_image
@@ -1610,16 +1244,6 @@ jobs:
           project-id: voipbin
           project-repository: bin-schedule-manager
           source-directory: bin-schedule-manager
-
-  bin-schedule-manager-deploy:
-    docker:
-      - image: cimg/base:2024.02
-    resource_class: small
-    steps:
-      - checkout
-      - run:
-          name: Deploy bin-schedule-manager to bm-nyc-01
-          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-schedule-manager schedule-manager
 
   # bin-sentinel-manager
   bin-sentinel-manager-test:
@@ -1665,16 +1289,6 @@ jobs:
           project-repository: bin-storage-manager
           source-directory: bin-storage-manager
 
-  bin-storage-manager-deploy:
-    docker:
-      - image: cimg/base:2024.02
-    resource_class: small
-    steps:
-      - checkout
-      - run:
-          name: Deploy bin-storage-manager to bm-nyc-01
-          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-storage-manager storage-manager
-
   # bin-tag-manager
   bin-tag-manager-test:
     docker: *go_image
@@ -1691,16 +1305,6 @@ jobs:
           project-id: voipbin
           project-repository: bin-tag-manager
           source-directory: bin-tag-manager
-
-  bin-tag-manager-deploy:
-    docker:
-      - image: cimg/base:2024.02
-    resource_class: small
-    steps:
-      - checkout
-      - run:
-          name: Deploy bin-tag-manager to bm-nyc-01
-          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-tag-manager tag-manager
 
   # bin-talk-manager
   bin-talk-manager-test:
@@ -1719,16 +1323,6 @@ jobs:
           project-repository: bin-talk-manager
           source-directory: bin-talk-manager
 
-  bin-talk-manager-deploy:
-    docker:
-      - image: cimg/base:2024.02
-    resource_class: small
-    steps:
-      - checkout
-      - run:
-          name: Deploy bin-talk-manager to bm-nyc-01
-          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-talk-manager talk-manager
-
   # bin-timeline-manager
   bin-timeline-manager-test:
     docker: *go_image
@@ -1745,16 +1339,6 @@ jobs:
           project-id: voipbin
           project-repository: bin-timeline-manager
           source-directory: bin-timeline-manager
-
-  bin-timeline-manager-deploy:
-    docker:
-      - image: cimg/base:2024.02
-    resource_class: small
-    steps:
-      - checkout
-      - run:
-          name: Deploy bin-timeline-manager to bm-nyc-01
-          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-timeline-manager timeline-manager
 
   # bin-transcribe-manager
   bin-transcribe-manager-test:
@@ -1773,16 +1357,6 @@ jobs:
           project-repository: bin-transcribe-manager
           source-directory: bin-transcribe-manager
 
-  bin-transcribe-manager-deploy:
-    docker:
-      - image: cimg/base:2024.02
-    resource_class: small
-    steps:
-      - checkout
-      - run:
-          name: Deploy bin-transcribe-manager to bm-nyc-01
-          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-transcribe-manager transcribe-manager
-
   # bin-transfer-manager
   bin-transfer-manager-test:
     docker: *go_image
@@ -1799,16 +1373,6 @@ jobs:
           project-id: voipbin
           project-repository: bin-transfer-manager
           source-directory: bin-transfer-manager
-
-  bin-transfer-manager-deploy:
-    docker:
-      - image: cimg/base:2024.02
-    resource_class: small
-    steps:
-      - checkout
-      - run:
-          name: Deploy bin-transfer-manager to bm-nyc-01
-          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-transfer-manager transfer-manager
 
   # bin-trigger-sender
   bin-trigger-sender-test:
@@ -1844,16 +1408,6 @@ jobs:
           project-repository: bin-tts-manager
           source-directory: bin-tts-manager
 
-  bin-tts-manager-deploy:
-    docker:
-      - image: cimg/base:2024.02
-    resource_class: small
-    steps:
-      - checkout
-      - run:
-          name: Deploy bin-tts-manager to bm-nyc-01
-          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-tts-manager tts-manager
-
   # bin-webchat-manager
   bin-webchat-manager-test:
     docker: *go_image
@@ -1871,16 +1425,6 @@ jobs:
           project-repository: bin-webchat-manager
           source-directory: bin-webchat-manager
 
-  bin-webchat-manager-deploy:
-    docker:
-      - image: cimg/base:2024.02
-    resource_class: small
-    steps:
-      - checkout
-      - run:
-          name: Deploy bin-webchat-manager to bm-nyc-01
-          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-webchat-manager webchat-manager
-
   # bin-webhook-manager
   bin-webhook-manager-test:
     docker: *go_image
@@ -1897,16 +1441,6 @@ jobs:
           project-id: voipbin
           project-repository: bin-webhook-manager
           source-directory: bin-webhook-manager
-
-  bin-webhook-manager-deploy:
-    docker:
-      - image: cimg/base:2024.02
-    resource_class: small
-    steps:
-      - checkout
-      - run:
-          name: Deploy bin-webhook-manager to bm-nyc-01
-          command: .circleci/scripts/ssh-deploy.sh voipbin/bin-webhook-manager webhook-manager
 
   ############################################
   # namespace: voip
