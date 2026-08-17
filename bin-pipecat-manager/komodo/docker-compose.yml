@@ -1,0 +1,47 @@
+# Komodo Stack definition for bin-pipecat-manager (VOIP-1350, Tier 4
+# rollout). See docs/plans/2026-08-18-bin-manager-komodo-rollout-tier1-design.md
+# for the shared design.
+#
+# NOTE: non-distroless (python:3.12-slim) - image has NEITHER wget nor
+# curl, so the healthcheck uses python3 directly, carried over verbatim
+# from install/docker-compose.yml.dist. POD_IP is not a Komodo Variable -
+# install/'s own default (${POD_IP:-pipecat-manager}, a literal fallback
+# string, not an actual runtime pod IP - this was written for a
+# Kubernetes downward-API value that was never wired up for Docker
+# Compose) is used as-is, matching current production behavior exactly.
+services:
+  pipecat-manager:
+    image: voipbin/bin-pipecat-manager:__IMAGE_TAG__
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    container_name: voipbin-pipecat-manager
+    restart: always
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:2112/metrics', timeout=4)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    environment:
+      - DATABASE_DSN=[[BIN_MANAGER__DATABASE_DSN_BIN]]
+      - RABBITMQ_ADDRESS=[[BIN_MANAGER__RABBITMQ_ADDRESS]]
+      - REDIS_ADDRESS=[[BIN_MANAGER__REDIS_ADDRESS]]
+      - REDIS_DATABASE=1
+      - PROMETHEUS_ENDPOINT=/metrics
+      - PROMETHEUS_LISTEN_ADDRESS=:2112
+      - CARTESIA_API_KEY=[[BIN_MANAGER__CARTESIA_API_KEY]]
+      - ELEVENLABS_API_KEY=[[BIN_MANAGER__ELEVENLABS_API_KEY]]
+      - OPENAI_API_KEY=[[BIN_MANAGER__OPENAI_API_KEY]]
+      - DEEPGRAM_API_KEY=[[BIN_MANAGER__DEEPGRAM_API_KEY]]
+      - XAI_API_KEY=[[BIN_MANAGER__XAI_API_KEY]]
+      - POD_IP=pipecat-manager
+    command: ./pipecat-manager
+    networks:
+      default: {}
+networks:
+  default:
+    name: production
+    external: true

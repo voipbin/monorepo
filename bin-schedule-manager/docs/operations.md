@@ -114,3 +114,21 @@ docker rm -f backup-smoke
 Pass criteria: restore completes without error; table sets and row counts match the source at dump time; the execution row for the backup run recorded `{"path", "bytes"}` in `result` and `backup_last_bytes` equals the file size.
 
 Credential hygiene reminder: the backup passes the DB password via a 0600 `--defaults-extra-file` temp file (never argv, never `MYSQL_PWD`); error logs are redacted. Do not "simplify" this when touching `pkg/backuphandler`.
+
+## Deployment (Komodo)
+
+Komodo-managed (VOIP-1350), same mechanism as the other `bin-*-manager` services
+(see bin-call-manager for the original pattern). Deployed via
+`.circleci/scripts/render-image-tag.sh` + `.circleci/scripts/komodo-api-deploy.sh`
+from `komodo/docker-compose.yml`.
+
+Two deviations from the Tier 1/2 template, both intentional:
+- **Non-distroless runtime** (`debian:bookworm-slim` + `mysql-community-client`,
+  see the CRITICAL note in [../CLAUDE.md](../CLAUDE.md)) — the Komodo compose
+  file keeps the same `wget`-based healthcheck as every other service, since
+  `debian:bookworm-slim` still carries `wget`.
+- **Bind-mounted backup volume**: `SCHEDULE_BACKUP_DIR=/backups` is mounted from
+  the host path `/opt/voipbin/install/backups/scheduled-db` on bm-nyc-01
+  (confirmed via `docker inspect` against the pre-cutover container), so
+  existing backup history is preserved across the cutover rather than starting
+  a new directory under Komodo's stack working dir.

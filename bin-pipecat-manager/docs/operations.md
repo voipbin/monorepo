@@ -86,7 +86,28 @@ cd scripts/pipecat && uvicorn main:app --host 0.0.0.0 --port 8000
 
 ## Deployment Notes
 
-- Both Go (port 8080) and Python (port 8000) components must be running on the same pod.
-- `POD_IP` must be set via the K8s Downward API (`status.podIP`).
+- Both Go (port 8080) and Python (port 8000) components must be running on the same pod/container.
 - The Dockerfile builds both Go and Python components; Python service is started alongside the Go binary via process supervisor.
 - Per-pod queues are declared **volatile** — they auto-delete when the pod terminates, preventing dead-letter buildup.
+
+## Deployment (Komodo)
+
+Komodo-managed (VOIP-1350), same mechanism as the other `bin-*-manager` services
+(see bin-call-manager for the original pattern). Deployed via
+`.circleci/scripts/render-image-tag.sh` + `.circleci/scripts/komodo-api-deploy.sh`
+from `komodo/docker-compose.yml`.
+
+Two deviations from the Tier 1/2 template, both intentional:
+- **Non-distroless runtime** (`python:3.12-slim`, needed to run the Python
+  Pipecat pipeline) — the healthcheck uses `python3 -c "import urllib..."`
+  instead of the fleet-standard `wget` CMD, since `python:3.12-slim` has
+  neither `wget` nor `curl`.
+- **`POD_IP` is not a Komodo Variable.** It was originally meant to be set via
+  the K8s Downward API (`status.podIP`) for per-pod queue routing, but that
+  wiring was never carried over to Docker Compose — `install/`'s own
+  `docker-compose.yml.dist` already fell back to the literal string
+  `pipecat-manager`. The Komodo compose file keeps that same literal
+  (`POD_IP=pipecat-manager`), matching current production behavior exactly.
+  A real per-container unique `HostID` (needed if this service is ever
+  scaled to multiple replicas) is a separate follow-up, not part of this
+  cutover.

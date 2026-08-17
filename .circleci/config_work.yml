@@ -537,6 +537,10 @@ workflows:
           <<: *context_production
           requires:
             - build-approval
+      - bin-pipecat-manager-deploy:
+          <<: *context_production
+          requires:
+            - bin-pipecat-manager-build
   bin-queue-manager:
     when: << pipeline.parameters.run-bin-queue-manager >>
     jobs:
@@ -609,6 +613,10 @@ workflows:
           <<: *context_production
           requires:
             - bin-schedule-manager-test
+      - bin-schedule-manager-deploy:
+          <<: *context_production
+          requires:
+            - bin-schedule-manager-build
   bin-sentinel-manager:
     when: << pipeline.parameters.run-bin-sentinel-manager >>
     jobs:
@@ -1527,6 +1535,20 @@ jobs:
           project-repository: bin-pipecat-manager
           source-directory: bin-pipecat-manager
 
+  bin-pipecat-manager-deploy:
+    docker: *gcp_image
+    resource_class: small
+    steps:
+      - checkout
+      - run:
+          name: Render image tag into Komodo compose fragment
+          command: .circleci/scripts/render-image-tag.sh bin-pipecat-manager/komodo/docker-compose.yml "$CIRCLE_SHA1"
+      - run:
+          name: Deploy bin-pipecat-manager via Komodo API
+          command: |
+            CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
+              .circleci/scripts/komodo-api-deploy.sh bin-pipecat-manager bin-pipecat-manager/komodo/docker-compose.yml
+
   # bin-queue-manager
   bin-queue-manager-test:
     docker: *go_image
@@ -1665,6 +1687,20 @@ jobs:
           project-id: voipbin
           project-repository: bin-schedule-manager
           source-directory: bin-schedule-manager
+
+  bin-schedule-manager-deploy:
+    docker: *gcp_image
+    resource_class: small
+    steps:
+      - checkout
+      - run:
+          name: Render image tag into Komodo compose fragment
+          command: .circleci/scripts/render-image-tag.sh bin-schedule-manager/komodo/docker-compose.yml "$CIRCLE_SHA1"
+      - run:
+          name: Deploy bin-schedule-manager via Komodo API
+          command: |
+            CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
+              .circleci/scripts/komodo-api-deploy.sh bin-schedule-manager bin-schedule-manager/komodo/docker-compose.yml
 
   # bin-sentinel-manager
   bin-sentinel-manager-test:
