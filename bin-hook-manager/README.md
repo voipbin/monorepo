@@ -31,8 +31,15 @@ $ cat <your cert file> | base64 -w 0
 
 # Deploy
 
-`bin-hook-manager-build` pushes the image, and a single `build-approval` gate covers
-the test -> build pipeline. The CircleCI `bin-hook-manager-deploy` job (direct SSH
-deploy to bm-nyc-01) has been removed. Deploys to bm-nyc-01 are manual until
-this service migrates to the Komodo-managed deploy path (see bin-call-manager
-for the pattern).
+Komodo-managed (VOIP-1353), same mechanism as the other `bin-*-manager` services
+(see bin-call-manager for the original pattern). `bin-hook-manager-build` pushes
+the image, then `bin-hook-manager-deploy` renders the tag into
+`komodo/docker-compose.yml` and deploys via `.circleci/scripts/komodo-api-deploy.sh`,
+gated behind a single `build-approval`.
+
+Unlike every other `bin-*-manager` service, this one has no RabbitMQ
+competing-consumer safety net — `hook.voipbin.net`'s public traffic is routed by
+`monorepo-etc/infra-caddy`'s Caddyfile, which reverse-proxies to this container by
+its fixed name (`voipbin-hook-manager`). See
+[docs/operations.md](docs/operations.md#deployment-komodo) for the full
+cutover-sequencing note and what happens if it's done out of order.
