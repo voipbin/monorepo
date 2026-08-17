@@ -464,6 +464,10 @@ workflows:
           <<: *context_production
           requires:
             - bin-hook-manager-test
+      - bin-hook-manager-deploy:
+          <<: *context_production
+          requires:
+            - bin-hook-manager-build
   bin-message-manager:
     when: << pipeline.parameters.run-bin-message-manager >>
     jobs:
@@ -1353,6 +1357,21 @@ jobs:
           source-directory: bin-hook-manager
           project-id: voipbin
           project-repository: bin-hook-manager
+
+  bin-hook-manager-deploy:
+    docker:
+      - image: cimg/base:2024.02
+    resource_class: small
+    steps:
+      - checkout
+      - run:
+          name: Render image tag into Komodo compose fragment
+          command: .circleci/scripts/render-image-tag.sh bin-hook-manager/komodo/docker-compose.yml "$CIRCLE_SHA1"
+      - run:
+          name: Deploy bin-hook-manager via Komodo API
+          command: |
+            CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
+              .circleci/scripts/komodo-api-deploy.sh bin-hook-manager bin-hook-manager/komodo/docker-compose.yml
 
   # bin-message-manager
   bin-message-manager-test:

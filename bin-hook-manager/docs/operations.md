@@ -55,3 +55,17 @@ go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-l
 - Must be accessible from external internet — DNS and firewall rules must allow inbound HTTPS
 - Logging uses logrus + joonix Stackdriver formatter
 - CORS allows all origins — expected behavior for a public webhook receiver
+
+## Deployment (Komodo)
+
+Komodo-managed (VOIP-1353), deployed via `.circleci/scripts/komodo-api-deploy.sh`
+from `komodo/docker-compose.yml` — same mechanism as the other `bin-*-manager`
+services (VOIP-1342 pilot, VOIP-1347/VOIP-1348 tiers), with one important
+difference: **this service has no RabbitMQ competing-consumer safety net.**
+`hook.voipbin.net`'s public traffic is routed by `monorepo-etc/infra-caddy`'s
+Caddyfile, which reverse-proxies to this container by its fixed name
+(`voipbin-hook-manager`) — Caddy must be pointed at that name *before* the
+old install-managed container is removed, and the new container must exist
+and be healthy *before* Caddy is pointed at it (see
+`monorepo-etc/infra-caddy` PR #109 for the sequencing this required and the
+brief outage that resulted from doing it out of order).
