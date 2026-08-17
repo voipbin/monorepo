@@ -9,11 +9,28 @@
 #
 #   - __IMAGE_TAG__ is substituted by render-image-tag.sh before every
 #     deploy - never a real value in this committed file.
-#   - Network name confirmed against the live host (2026-08-16): the
-#     `install` compose project's default network is `install_default` -
-#     verified via `docker inspect voipbin-call-mgr --format
-#     '{{index .Config.Labels "com.docker.compose.project"}}
-#     {{json .NetworkSettings.Networks}}'` on bm-nyc-01, not assumed.
+#   - Network: uses `production`, the Komodo-managed shared backbone
+#     network (monorepo-etc's infra-komodo/komodo/, Stack id
+#     `production-network`), NOT `install_default`. VOIP-1343 (filed
+#     alongside VOIP-1342) calls out this exact migration for
+#     bin-call-manager specifically; the original 2026-08-16 cutover
+#     verification against the live host predates `production`'s
+#     existence and used `install_default` (still correct for the
+#     *old*, install-owned `voipbin-call-mgr` container, which stays on
+#     `install_default` until its own retirement).
+#     Precondition: db/redis/rabbitmq (and anything else this service
+#     dials) must actually be reachable from `production` - today that
+#     means monorepo-etc/infra-komodo/komodo/backfill-install-default.sh
+#     has been run with --apply on bm-nyc-01 (it bridges existing
+#     `install_default` containers, db/redis/rabbitmq included, onto
+#     `production` without recreating them - see that script's own
+#     header for why this bridge does not survive a container
+#     recreation). If that backfill has NOT been run/re-applied since
+#     db/redis/rabbitmq were last recreated, this Stack's deploy will
+#     still report Complete+success (the container starts) but fail the
+#     3-consecutive-running gate once the app crash-loops on an
+#     unreachable DB - treat that failure mode as "re-run the backfill",
+#     not as a bug in this file or in komodo-api-deploy.sh.
 #   - [[BIN_MANAGER__*]] references are resolved by Komodo itself from its
 #     global Variables store (already synced from infra-secret via PR #90
 #     in monorepo-etc) - nothing here or in CI supplies these values.
@@ -74,5 +91,5 @@ services:
       default: {}
 networks:
   default:
-    name: install_default
+    name: production
     external: true
