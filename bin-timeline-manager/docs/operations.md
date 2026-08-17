@@ -72,3 +72,16 @@ Metrics exposed at `PROMETHEUS_LISTEN_ADDRESS` (default `:2112/metrics`):
 | `timeline_manager_receive_request_process_time` | Histogram | `type`, `method` | RPC request processing duration |
 | `timeline_manager_subscribe_batch_insert_time` | Histogram | — | ClickHouse batch insert duration |
 | `timeline_manager_subscribe_batch_size` | Histogram | — | Number of events per batch insert |
+
+## Deployment (Komodo)
+
+Komodo-managed (VOIP-1349), same mechanism as the other `bin-*-manager` services
+(see bin-call-manager for the original pattern, bin-agent-manager for the Tier 1
+template this one extends). Deployed via `.circleci/scripts/render-image-tag.sh`
++ `.circleci/scripts/komodo-api-deploy.sh` from `komodo/docker-compose.yml`.
+
+Unlike most `bin-*-manager` services, timeline-manager does not use MySQL/Redis
+at all — its Komodo Variables are `RABBITMQ_ADDRESS`, `CLICKHOUSE_ADDRESS`,
+`CLICKHOUSE_DATABASE`, `HOMER_API_ADDRESS`, `HOMER_AUTH_TOKEN`. `GCS_BUCKET_NAME`
+(PCAP archival) is optional and not currently set in production, so it is
+omitted from the Komodo compose file too.
