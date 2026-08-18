@@ -15,7 +15,7 @@ Runtime configuration is provided via CLI flags and/or environment variables, de
 | `-gcp_project_id` | `GCP_PROJECT_ID` | No | — | GCP project for storage |
 | `-gcp_bucket_name` | `GCP_BUCKET_NAME` | No | — | GCS bucket for media/recordings |
 | `-ssl_cert_base64` | `SSL_CERT_BASE64` | No | — | Base64-encoded SSL certificate |
-| `-ssl_privkey_base64` | `SSL_PRIVATE_BASE64` | No | — | Base64-encoded SSL private key |
+| `-ssl_privkey_base64` | `SSL_PRIVKEY_BASE64` | No | — | Base64-encoded SSL private key |
 | `-listen_ip_audiosock` | `LISTEN_IP_AUDIOSOCK` | No | `""` | Audiosocket listener IP (AI audio streaming) |
 | `-prometheus_endpoint` | `PROMETHEUS_ENDPOINT` | No | `/metrics` | Prometheus metrics path |
 | `-prometheus_listen_address` | `PROMETHEUS_LISTEN_ADDRESS` | No | `:2112` | Prometheus listen address |
@@ -209,3 +209,71 @@ echo "<jwt_token>" | cut -d. -f2 | base64 -d | jq .
 ### System prerequisites
 
 None. The service is pure Go (no cgo); the internal pub/sub is the in-process `pkg/pubsubhandler` package.
+
+---
+
+## Deployment (Komodo)
+
+Komodo-managed (VOIP-1362, Tier 5 — final service in the install/→Komodo
+rollout, migrated last per plan given this service's blast radius: the
+sole public HTTP/WebSocket entry point, JWT auth). Deployed via
+`.circleci/scripts/render-image-tag.sh` + `.circleci/scripts/komodo-api-deploy.sh`
+from `komodo/docker-compose.yml`.
+
+**Fundamentally different cutover from every other `bin-*-manager`
+service in this rollout**: every other service communicates purely over
+RabbitMQ RPC, so a new Komodo container and the old `install/` container
+could both run as competing consumers on the same queue simultaneously —
+zero-downtime overlap. `bin-api-manager` instead serves public HTTPS
+traffic directly; `install/`'s `docker-compose.yml.dist` publishes it to
+the host at `0.0.0.0:8443:443`. Two containers cannot both bind the same
+host port, so the RabbitMQ-style overlap trick does not apply here.
+
+**Resolution — route through Caddy instead of publishing a host port**:
+`monorepo-etc`'s `infra-caddy` already reverse-proxies `api.voipbin.net`
+to this service over the `production` network (`infra-caddy/config/Caddyfile`'s
+`reverse_proxy https://voipbin-api-mgr:443`, confirmed live). The Komodo
+compose file below therefore:
+- Has **no `ports:` block at all** — reachable only via Caddy inside
+  `production`, never a host-published port.
+- Still self-terminates TLS (`SSL_CERT_BASE64`/`SSL_PRIVKEY_BASE64` from
+  the already-existing `[[BIN_MANAGER__SSL_CERT_API_BASE64]]`/
+  `[[BIN_MANAGER__SSL_PRIVKEY_API_BASE64]]` secrets) — Caddy connects to
+  it over HTTPS, same as it already does for `voipbin-hook-manager`.
+- Uses `container_name: voipbin-api-manager` (the fleet's new-service
+  naming convention), not the old `voipbin-api-mgr` — `infra-caddy`'s
+  Caddyfile target must be updated to match in a companion
+  `monorepo-etc` PR.
+
+**Cutover sequence (short downtime, by design — see VOIP-1362)**:
+1. Deploy this Stack via CI. The new `voipbin-api-manager` container
+   starts and can be fully verified (DB/Redis/RabbitMQ connectivity, TLS
+   cert load, GCP credential load) **with zero live-traffic impact** —
+   Caddy is still pointed at the old `voipbin-api-mgr` the whole time.
+2. Once verified, get explicit go-ahead for the actual cutover window,
+   then: stop/remove the old `voipbin-api-mgr` container → merge/deploy
+   the companion `monorepo-etc` Caddyfile PR (new target
+   `voipbin-api-manager`) → confirm `api.voipbin.net` responds again.
+   The downtime window is exactly the gap between those two steps, not
+   the whole migration.
+3. Comment out (not delete) the `api-manager` block in the live
+   `install/docker-compose.yml` on bm-nyc-01, same as every other
+   migrated service, to prevent a `container_name`/host-port collision on
+   a future host rebuild.
+
+**GCP credential file**: same Docker Compose environment-sourced
+`secrets:` block as `bin-storage-manager` — see that service's
+`docs/operations.md` for the full mechanism. `GCP_SA_JSON` comes from
+`komodo/environment.env`, passed as `komodo-api-deploy.sh`'s 3rd
+argument.
+
+**`SSL_PRIVKEY_BASE64` env var name note**: the Configuration table above
+lists `SSL_PRIVATE_BASE64` — that is stale/incorrect. The actual env var
+`internal/config/main.go` binds via viper is `SSL_PRIVKEY_BASE64`,
+matching `install/`'s own `docker-compose.yml.dist`. The Komodo compose
+file uses the correct (source-verified) name.
+
+No healthcheck block: distroless (`gcr.io/distroless/static-debian12`),
+same as every other distroless `bin-*-manager` service (VOIP-1342 pilot
+established the fleet-standard `wget` healthcheck can never pass on this
+image).
