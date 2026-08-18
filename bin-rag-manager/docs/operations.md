@@ -59,3 +59,25 @@ Metrics are served at `PROMETHEUS_LISTEN_ADDRESS` (default `:2112`) on `PROMETHE
 | Metric | Type | Labels | Description |
 |--------|------|--------|-------------|
 | `rag_manager_receive_request_process_time` | Histogram | `type`, `method` | RPC request processing duration |
+
+## Deployment (Komodo)
+
+Komodo-managed (VOIP-1359, Tier 5 - second of the 4 GCP-credential-file
+services, same pattern as bin-storage-manager/VOIP-1358). Deployed via
+`.circleci/scripts/render-image-tag.sh` + `.circleci/scripts/komodo-api-deploy.sh`
+from `komodo/docker-compose.yml`.
+
+**GCP credential file**: same Docker Compose environment-sourced `secrets:`
+block as bin-storage-manager - see that service's docs/operations.md for
+the full mechanism. `GCP_SA_JSON` comes from `komodo/environment.env`,
+passed as `komodo-api-deploy.sh`'s 3rd argument.
+
+**PostgreSQL, not MySQL**: `POSTGRESQL_DSN=[[BIN_MANAGER__DATABASE_DSN_POSTGRES]]`,
+not the `DATABASE_DSN`/`DATABASE_DSN_BIN` most other services use.
+`RAG_TOP_K` is a plain literal (`5`) in the compose file, not a Komodo
+Variable - it is non-secret config, not a credential.
+
+No healthcheck block: distroless (`gcr.io/distroless/static-debian12`),
+same as every other distroless `bin-*-manager` service (VOIP-1342 pilot
+established the fleet-standard `wget` healthcheck can never pass on this
+image).

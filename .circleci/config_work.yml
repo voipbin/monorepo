@@ -569,6 +569,10 @@ workflows:
           <<: *context_production
           requires:
             - bin-rag-manager-test
+      - bin-rag-manager-deploy:
+          <<: *context_production
+          requires:
+            - bin-rag-manager-build
   bin-registrar-manager:
     when: << pipeline.parameters.run-bin-registrar-manager >>
     jobs:
@@ -1604,6 +1608,20 @@ jobs:
           source-directory: bin-rag-manager
           project-id: voipbin
           project-repository: bin-rag-manager
+
+  bin-rag-manager-deploy:
+    docker: *gcp_image
+    resource_class: small
+    steps:
+      - checkout
+      - run:
+          name: Render image tag into Komodo compose fragment
+          command: .circleci/scripts/render-image-tag.sh bin-rag-manager/komodo/docker-compose.yml "$CIRCLE_SHA1"
+      - run:
+          name: Deploy bin-rag-manager via Komodo API
+          command: |
+            CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
+              .circleci/scripts/komodo-api-deploy.sh bin-rag-manager bin-rag-manager/komodo/docker-compose.yml bin-rag-manager/komodo/environment.env
 
   # bin-registrar-manager
   bin-registrar-manager-test:
