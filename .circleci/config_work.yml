@@ -223,6 +223,10 @@ workflows:
           <<: *context_production
           requires:
             - bin-api-manager-test
+      - bin-api-manager-deploy:
+          <<: *context_production
+          requires:
+            - bin-api-manager-build
   bin-billing-manager:
     when: << pipeline.parameters.run-bin-billing-manager >>
     jobs:
@@ -909,6 +913,20 @@ jobs:
           source-directory: bin-api-manager
           project-id: voipbin
           project-repository: bin-api-manager
+
+  bin-api-manager-deploy:
+    docker: *gcp_image
+    resource_class: small
+    steps:
+      - checkout
+      - run:
+          name: Render image tag into Komodo compose fragment
+          command: .circleci/scripts/render-image-tag.sh bin-api-manager/komodo/docker-compose.yml "$CIRCLE_SHA1"
+      - run:
+          name: Deploy bin-api-manager via Komodo API
+          command: |
+            CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
+              .circleci/scripts/komodo-api-deploy.sh bin-api-manager bin-api-manager/komodo/docker-compose.yml bin-api-manager/komodo/environment.env
 
   # bin-billing-manager
   bin-billing-manager-test:
