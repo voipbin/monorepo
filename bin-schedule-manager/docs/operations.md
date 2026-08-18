@@ -124,9 +124,14 @@ from `komodo/docker-compose.yml`.
 
 Two deviations from the Tier 1/2 template, both intentional:
 - **Non-distroless runtime** (`debian:bookworm-slim` + `mysql-community-client`,
-  see the CRITICAL note in [../CLAUDE.md](../CLAUDE.md)) — the Komodo compose
-  file keeps the same `wget`-based healthcheck as every other service, since
-  `debian:bookworm-slim` still carries `wget`.
+  see the CRITICAL note in [../CLAUDE.md](../CLAUDE.md)) — but `debian:bookworm-slim`
+  ships with neither `wget` nor `curl` by default, so the fleet-standard
+  `wget` healthcheck silently fails on this image (confirmed live: the
+  pre-Komodo `install/` container had been reporting Docker-unhealthy for 5
+  days with `exec: "wget": executable file not found`). The Dockerfile keeps
+  `curl` in the runtime stage (already fetched there for the MySQL GPG key
+  step) instead of purging it, and the Komodo compose healthcheck uses
+  `curl -fsS` against `/metrics` instead of `wget`.
 - **Bind-mounted backup volume**: `SCHEDULE_BACKUP_DIR=/backups` is mounted from
   the host path `/opt/voipbin/install/backups/scheduled-db` on bm-nyc-01
   (confirmed via `docker inspect` against the pre-cutover container), so

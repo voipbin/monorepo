@@ -9,8 +9,13 @@
 # (confirmed via `docker inspect voipbin-schedule-mgr` on bm-nyc-01) - this
 # Komodo Stack uses the SAME absolute host path so existing backup history
 # is preserved across the cutover, rather than starting a new directory.
-# No image is distroless-restricted here (debian:bookworm-slim), so wget
-# healthcheck still works, same as every Tier 1/2 service.
+# debian:bookworm-slim ships with neither wget nor curl by default. The
+# fleet-standard wget healthcheck (copied verbatim from install/'s .dist,
+# which has the exact same bug) silently fails here — confirmed live on
+# bm-nyc-01: the pre-existing install/ container had been reporting
+# "unhealthy" for 5 days with `exec: "wget": executable file not found`.
+# Fixed by keeping curl in the Dockerfile's runtime stage (already fetched
+# there for the MySQL GPG key step) and using it for the healthcheck instead.
 services:
   schedule-manager:
     image: voipbin/bin-schedule-manager:__IMAGE_TAG__
@@ -22,7 +27,7 @@ services:
     container_name: voipbin-schedule-manager
     restart: always
     healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:2112/metrics"]
+      test: ["CMD", "curl", "-fsS", "-o", "/dev/null", "http://127.0.0.1:2112/metrics"]
       interval: 30s
       timeout: 5s
       retries: 3
