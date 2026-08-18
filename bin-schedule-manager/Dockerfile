@@ -35,8 +35,14 @@ RUN apt-get update \
     && echo "deb [signed-by=/usr/share/keyrings/mysql.gpg] https://repo.mysql.com/apt/debian/ bookworm mysql-8.0" > /etc/apt/sources.list.d/mysql.list \
     && apt-get update \
     && apt-get install -y --no-install-recommends mysql-community-client \
-    && apt-get purge -y --auto-remove curl gnupg \
+    && apt-get purge -y --auto-remove gnupg \
     && rm -rf /var/lib/apt/lists/*
+
+# curl is kept (not purged, unlike gnupg above): debian:bookworm-slim ships
+# with neither wget nor curl, and this image needs an HTTP client for its
+# own Docker/Komodo healthcheck (GET /metrics) — see komodo/docker-compose.yml
+# and install/docker-compose.yml.dist. It was already being fetched for the
+# MySQL GPG key step above, so reusing it here avoids adding a new package.
 
 WORKDIR /app/bin/
 COPY --from=build /app/bin /app/bin
