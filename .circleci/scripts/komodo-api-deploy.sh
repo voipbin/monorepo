@@ -38,8 +38,9 @@
 #   6. Exits 0 only if the Update's terminal status is Complete+success.
 #
 # What this does NOT do:
-#   - Does NOT touch an EXISTING Stack's config beyond `file_contents`
-#     (UpdateStack, step 3 below, is PATCH-style) - the ensure-exists check
+#   - Does NOT touch an EXISTING Stack's config beyond `file_contents` (and,
+#     when a 3rd argument is given, `environment` - see Usage below) -
+#     UpdateStack (step 3 below) is PATCH-style - the ensure-exists check
 #     in step 1 only ever creates a Stack that doesn't exist yet; it never
 #     modifies one that's already there.
 #   - Does NOT enable Komodo's own polling/webhook auto-deploy for the
@@ -56,7 +57,7 @@
 #
 # Usage:
 #   CC_KOMODO_API_KEY=<key> CC_KOMODO_API_SECRET=<secret> \
-#     ./.circleci/scripts/komodo-api-deploy.sh <stack-name> <local-compose-file>
+#     ./.circleci/scripts/komodo-api-deploy.sh <stack-name> <local-compose-file> [local-environment-file]
 #
 #   <stack-name>          The Komodo Stack resource's name (or id). Must
 #                         already exist - see Preconditions below. Must
@@ -67,6 +68,21 @@
 #                         - this is what makes the model "kustomize-style":
 #                         git is the only source of truth for deployed
 #                         content, Komodo just executes it on request.
+#   [local-environment-file]  Optional. Path to a plain KEY=VALUE env file
+#                         IN THE CI CHECKOUT (e.g. komodo/environment.env).
+#                         Its content is PATCHed into the Stack's own
+#                         `environment` config field (distinct from
+#                         file_contents' service-level `environment:`
+#                         blocks) - Komodo writes this into the Stack's
+#                         run-directory .env file before `docker compose up`
+#                         runs, which Compose can then read via `${VAR}`
+#                         substitution or (VOIP-1351) an
+#                         environment-sourced `secrets:` block. Supports the
+#                         same `[[VARIABLE]]` interpolation as
+#                         file_contents. Omit this argument entirely for a
+#                         service with no Stack-level environment need -
+#                         this preserves the exact previous behavior/request
+#                         shape for every existing call site.
 #
 # Environment:
 #   CC_KOMODO_API_KEY      Komodo API key for the 'circleci' Service User.
@@ -122,13 +138,14 @@ if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
   exit 0
 fi
 
-if [[ $# -ne 2 ]]; then
+if [[ $# -ne 2 && $# -ne 3 ]]; then
   usage
   exit 1
 fi
 
 STACK_NAME="$1"
 LOCAL_COMPOSE_FILE="$2"
+LOCAL_ENV_FILE="${3:-}"
 
 if [[ ! "$STACK_NAME" =~ ^[A-Za-z0-9._-]+$ ]]; then
   log_error "stack-name must match ^[A-Za-z0-9._-]+\$ (got: $STACK_NAME)"
@@ -137,6 +154,11 @@ fi
 
 if [[ ! -f "$LOCAL_COMPOSE_FILE" ]]; then
   log_error "local-compose-file does not exist: $LOCAL_COMPOSE_FILE"
+  exit 1
+fi
+
+if [[ -n "$LOCAL_ENV_FILE" && ! -f "$LOCAL_ENV_FILE" ]]; then
+  log_error "local-environment-file does not exist: $LOCAL_ENV_FILE"
   exit 1
 fi
 
@@ -211,8 +233,17 @@ if grep -Eq '__[A-Z_]+__' "$LOCAL_COMPOSE_FILE"; then
   grep -En '__[A-Z_]+__' "$LOCAL_COMPOSE_FILE" >&2
   exit 1
 fi
+if [[ -n "$LOCAL_ENV_FILE" ]] && grep -Eq '__[A-Z_]+__' "$LOCAL_ENV_FILE"; then
+  log_error "environment file still contains an unfilled __PLACEHOLDER__ token - refusing to deploy:"
+  grep -En '__[A-Z_]+__' "$LOCAL_ENV_FILE" >&2
+  exit 1
+fi
 
 COMPOSE_CONTENT="$(cat "$LOCAL_COMPOSE_FILE")"
+ENV_CONTENT=""
+if [[ -n "$LOCAL_ENV_FILE" ]]; then
+  ENV_CONTENT="$(cat "$LOCAL_ENV_FILE")"
+fi
 
 # Shared helper so all API calls get identical error handling: on a
 # non-2xx or a curl-level (connection) failure, print the request type and
@@ -283,8 +314,8 @@ get_stack_body="$(jq -n --arg stack "$STACK_NAME" '{type:"GetStack",params:{stac
 if ! call_api read "$get_stack_body" >/dev/null; then
   if [[ "$LAST_ERROR_BODY" == *"Did not find any Stack matching"* ]]; then
     log_info "Stack '$STACK_NAME' does not exist yet - creating it (idempotent bootstrap, server=$KOMODO_SERVER_NAME)."
-    create_body="$(jq -n --arg name "$STACK_NAME" --arg server "$KOMODO_SERVER_NAME" \
-      '{type:"CreateStack",params:{name:$name,config:{server_id:$server,file_contents:"",poll_for_updates:false,auto_update:false,webhook_enabled:false}}}')"
+    create_body="$(jq -n --arg name "$STACK_NAME" --arg server "$KOMODO_SERVER_NAME" --arg env "$ENV_CONTENT" \
+      '{type:"CreateStack",params:{name:$name,config:{server_id:$server,file_contents:"",environment:$env,poll_for_updates:false,auto_update:false,webhook_enabled:false}}}')"
     call_api write "$create_body" >/dev/null
     log_info "Stack '$STACK_NAME' created."
   else
@@ -295,8 +326,17 @@ fi
 
 log_info "Deploying Stack '$STACK_NAME' from local file $LOCAL_COMPOSE_FILE (content pushed via Komodo API, direct HTTPS)..."
 
-update_body="$(jq -n --arg id "$STACK_NAME" --arg contents "$COMPOSE_CONTENT" \
-  '{type:"UpdateStack",params:{id:$id,config:{file_contents:$contents}}}')"
+# environment is only included in the PATCH when a 3rd argument was given -
+# an existing call site that never passes one gets the exact same request
+# shape as before this option existed (see this script's "What this does
+# NOT do" header note).
+if [[ -n "$LOCAL_ENV_FILE" ]]; then
+  update_body="$(jq -n --arg id "$STACK_NAME" --arg contents "$COMPOSE_CONTENT" --arg env "$ENV_CONTENT" \
+    '{type:"UpdateStack",params:{id:$id,config:{file_contents:$contents,environment:$env}}}')"
+else
+  update_body="$(jq -n --arg id "$STACK_NAME" --arg contents "$COMPOSE_CONTENT" \
+    '{type:"UpdateStack",params:{id:$id,config:{file_contents:$contents}}}')"
+fi
 call_api write "$update_body" >/dev/null
 
 deploy_body="$(jq -n --arg stack "$STACK_NAME" \

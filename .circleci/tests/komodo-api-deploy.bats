@@ -295,3 +295,72 @@ queue_running_samples() {
     [[ "$output" == *"DEPLOY_TIMEOUT"* ]]
     [[ "$output" == *"may still land after this script gives up"* ]]
 }
+
+# --- VOIP-1358: optional 3rd argument (Stack-level environment file) ---
+
+@test "usage: exits 1 with 4+ args" {
+    run run_deploy bin-call-manager "$COMPOSE_FILE" extra1 extra2
+    [ "$status" -eq 1 ]
+}
+
+@test "validation: rejects a nonexistent environment file" {
+    run run_deploy bin-call-manager "$COMPOSE_FILE" /nonexistent/env.env
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"local-environment-file does not exist"* ]]
+}
+
+@test "placeholder guard: refuses to deploy with an unfilled __PLACEHOLDER__ token in the environment file" {
+    ENV_FILE="$TEST_TEMP_DIR/environment.env"
+    echo 'GCP_SA_JSON=__NOT_YET_RENDERED__' > "$ENV_FILE"
+    run run_deploy bin-call-manager "$COMPOSE_FILE" "$ENV_FILE"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"unfilled __PLACEHOLDER__ token"* ]]
+    [[ "$output" == *"__NOT_YET_RENDERED__"* ]]
+    [ "$(curl_call_count)" -eq 0 ]
+}
+
+@test "environment file omitted: UpdateStack body has no 'environment' key at all (existing call sites unchanged)" {
+    export CC_KOMODO_POLL_INTERVAL_S=1 CC_KOMODO_RUNNING_CHECK_INTERVAL_S=1
+    queue_curl_response 200 '{"id":"bin-call-manager"}'
+    queue_curl_response 200 '{}'
+    queue_curl_response 200 '{"_id":{"$oid":"update-123"}}'
+    queue_curl_response 200 '{"status":"Complete","success":true}'
+    queue_running_samples 3
+    run run_deploy bin-call-manager "$COMPOSE_FILE"
+    [ "$status" -eq 0 ]
+    body="$(curl_call_body 2)"  # UpdateStack is the 2nd call
+    [[ "$body" != *'"environment"'* ]]
+}
+
+@test "environment file given: UpdateStack body carries its content under 'environment'" {
+    export CC_KOMODO_POLL_INTERVAL_S=1 CC_KOMODO_RUNNING_CHECK_INTERVAL_S=1
+    ENV_FILE="$TEST_TEMP_DIR/environment.env"
+    echo 'GCP_SA_JSON=rendered-value' > "$ENV_FILE"
+    queue_curl_response 200 '{"id":"bin-storage-manager"}'
+    queue_curl_response 200 '{}'
+    queue_curl_response 200 '{"_id":{"$oid":"update-123"}}'
+    queue_curl_response 200 '{"status":"Complete","success":true}'
+    queue_running_samples 3
+    run run_deploy bin-storage-manager "$COMPOSE_FILE" "$ENV_FILE"
+    [ "$status" -eq 0 ]
+    body="$(curl_call_body 2)"  # UpdateStack is the 2nd call
+    [[ "$body" == *'"environment"'* ]]
+    [[ "$body" == *"GCP_SA_JSON=rendered-value"* ]]
+}
+
+@test "environment file given on ensure-exists path: CreateStack body also carries the environment content" {
+    export CC_KOMODO_POLL_INTERVAL_S=1 CC_KOMODO_RUNNING_CHECK_INTERVAL_S=1
+    ENV_FILE="$TEST_TEMP_DIR/environment.env"
+    echo 'GCP_SA_JSON=rendered-value' > "$ENV_FILE"
+    queue_curl_response 500 '{"error":"Did not find any Stack matching bin-storage-manager","trace":[]}'  # GetStack
+    queue_curl_response 200 '{"name":"bin-storage-manager"}'  # CreateStack
+    queue_curl_response 200 '{}'                               # UpdateStack
+    queue_curl_response 200 '{"_id":{"$oid":"update-123"}}'    # DeployStack
+    queue_curl_response 200 '{"status":"Complete","success":true}'
+    queue_running_samples 3
+    run run_deploy bin-storage-manager "$COMPOSE_FILE" "$ENV_FILE"
+    [ "$status" -eq 0 ]
+    body="$(curl_call_body 2)"  # CreateStack is the 2nd call
+    [[ "$body" == *'"CreateStack"'* ]]
+    [[ "$body" == *"GCP_SA_JSON=rendered-value"* ]]
+}
