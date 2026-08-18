@@ -654,6 +654,10 @@ workflows:
           <<: *context_production
           requires:
             - bin-storage-manager-test
+      - bin-storage-manager-deploy:
+          <<: *context_production
+          requires:
+            - bin-storage-manager-build
   bin-tag-manager:
     when: << pipeline.parameters.run-bin-tag-manager >>
     jobs:
@@ -1745,6 +1749,20 @@ jobs:
           project-id: voipbin
           project-repository: bin-storage-manager
           source-directory: bin-storage-manager
+
+  bin-storage-manager-deploy:
+    docker: *gcp_image
+    resource_class: small
+    steps:
+      - checkout
+      - run:
+          name: Render image tag into Komodo compose fragment
+          command: .circleci/scripts/render-image-tag.sh bin-storage-manager/komodo/docker-compose.yml "$CIRCLE_SHA1"
+      - run:
+          name: Deploy bin-storage-manager via Komodo API
+          command: |
+            CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
+              .circleci/scripts/komodo-api-deploy.sh bin-storage-manager bin-storage-manager/komodo/docker-compose.yml bin-storage-manager/komodo/environment.env
 
   # bin-tag-manager
   bin-tag-manager-test:

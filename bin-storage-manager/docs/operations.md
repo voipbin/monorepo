@@ -95,3 +95,47 @@ Recovery: configure a valid `GOOGLE_APPLICATION_CREDENTIALS`, restart, then call
 | `storage_manager_receive_subscribe_event_process_time` | Histogram | `publisher`, `type` | Event processing duration |
 | `storage_manager_signing_available` | Gauge | — | `1` when a GCS signing credential was loaded at startup, `0` when signed download URLs are unavailable |
 | `storage_manager_download_uri_failure_total` | Counter | `reason` | File creations persisted without a download URI. `reason=not_configured` (no credential) or `reason=signer_error` (credential present but rejected) |
+
+## Deployment (Komodo)
+
+Komodo-managed (VOIP-1358, Tier 5 - first of the 4 GCP-credential-file
+services). Deployed via `.circleci/scripts/render-image-tag.sh` +
+`.circleci/scripts/komodo-api-deploy.sh` from `komodo/docker-compose.yml`,
+same as every other migrated `bin-*-manager` service.
+
+**GCP credential file (VOIP-1351 spike conclusion)**: distroless has no
+shell, so the classic install/-style bind-mount-a-host-path trick has no
+Komodo equivalent (no host-setup-script step). Solved with Docker Compose's
+native environment-sourced `secrets:` block instead of an init container or
+an app code change:
+
+```yaml
+secrets:
+  gcp_sa_json:
+    environment: "GCP_SA_JSON"
+services:
+  storage-manager:
+    secrets:
+      - source: gcp_sa_json
+        target: google_service_account.json   # -> /run/secrets/google_service_account.json
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/run/secrets/google_service_account.json
+```
+
+`GCP_SA_JSON`'s value comes from `komodo/environment.env`
+(`GCP_SA_JSON=[[BIN_MANAGER__GOOGLE_APPLICATION_CREDENTIALS_JSON]]`), passed
+as `komodo-api-deploy.sh`'s new optional 3rd argument. Komodo writes this
+into the Stack's own `environment` config field (distinct from the compose
+file's service-level `environment:` blocks), materializing it into a
+`.env` file in the run directory before `docker compose up` - Compose then
+resolves `GCP_SA_JSON` and creates `/run/secrets/google_service_account.json`
+entirely on the Docker Engine side, no in-container tool needed. The
+`GOOGLE_APPLICATION_CREDENTIALS_JSON` secret itself already existed in
+`infra-secret`/Komodo (migrated wholesale from the old vault system) -
+no new secret had to be added for this cutover.
+
+No healthcheck block: same as every other distroless `bin-*-manager`
+service (the fleet-standard `wget` healthcheck can never pass on
+`gcr.io/distroless/static-debian12` - no `wget` binary - established by
+the VOIP-1342 pilot). Deploy success is gated by CI/the cutover procedure,
+not a Docker health check.
