@@ -78,3 +78,30 @@ Metrics registered in handler `init()` functions, exposed at `PROMETHEUS_LISTEN_
 | `transcribe_manager_ari_event_listen_total` | Counter | — | Total ARI events received |
 | `transcribe_manager_transcribe_create_total` | Counter | `type` | Transcription sessions created (by provider) |
 | `transcribe_manager_transcript_transcript_create_total` | Counter | — | Transcript segments created |
+
+## Deployment (Komodo)
+
+Komodo-managed (VOIP-1360, Tier 5 - third of the 4 GCP-credential-file
+services, same pattern as bin-storage-manager/VOIP-1358 and
+bin-rag-manager/VOIP-1359). Deployed via
+`.circleci/scripts/render-image-tag.sh` + `.circleci/scripts/komodo-api-deploy.sh`
+from `komodo/docker-compose.yml`.
+
+**GCP credential file**: same Docker Compose environment-sourced `secrets:`
+block as bin-storage-manager. `GCP_SA_JSON` comes from
+`komodo/environment.env`, passed as `komodo-api-deploy.sh`'s 3rd argument.
+
+**`POD_IP`**: not a real Komodo Variable, same as bin-pipecat-manager.
+`install/`'s own `docker-compose.yml.dist` already falls back to a
+literal (`${POD_IP:-127.0.0.1}`) since the K8s Downward API wiring this
+was meant for was never carried over to Docker Compose - the Komodo
+compose file keeps that same literal, matching current production
+behavior exactly. This service's per-pod queue routing
+(`bin-manager.transcribe-manager.request.<POD_IP>`, see this service's
+CLAUDE.md) is therefore unaffected by the cutover - it already runs as a
+single instance with this same fixed value today.
+
+No healthcheck block: distroless (`gcr.io/distroless/static-debian12`),
+same as every other distroless `bin-*-manager` service (VOIP-1342 pilot
+established the fleet-standard `wget` healthcheck can never pass on this
+image).

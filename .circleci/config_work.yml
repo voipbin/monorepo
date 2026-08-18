@@ -722,6 +722,10 @@ workflows:
           <<: *context_production
           requires:
             - bin-transcribe-manager-test
+      - bin-transcribe-manager-deploy:
+          <<: *context_production
+          requires:
+            - bin-transcribe-manager-build
   bin-transfer-manager:
     when: << pipeline.parameters.run-bin-transfer-manager >>
     jobs:
@@ -1900,6 +1904,20 @@ jobs:
           project-id: voipbin
           project-repository: bin-transcribe-manager
           source-directory: bin-transcribe-manager
+
+  bin-transcribe-manager-deploy:
+    docker: *gcp_image
+    resource_class: small
+    steps:
+      - checkout
+      - run:
+          name: Render image tag into Komodo compose fragment
+          command: .circleci/scripts/render-image-tag.sh bin-transcribe-manager/komodo/docker-compose.yml "$CIRCLE_SHA1"
+      - run:
+          name: Deploy bin-transcribe-manager via Komodo API
+          command: |
+            CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
+              .circleci/scripts/komodo-api-deploy.sh bin-transcribe-manager bin-transcribe-manager/komodo/docker-compose.yml bin-transcribe-manager/komodo/environment.env
 
   # bin-transfer-manager
   bin-transfer-manager-test:
