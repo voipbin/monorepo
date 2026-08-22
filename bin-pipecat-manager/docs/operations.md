@@ -86,8 +86,8 @@ cd scripts/pipecat && uvicorn main:app --host 0.0.0.0 --port 8000
 
 ## Deployment Notes
 
-- Both Go (port 8080) and Python (port 8000) components must be running on the same pod/container.
-- The Dockerfile builds both Go and Python components; Python service is started alongside the Go binary via process supervisor.
+- Both Go (port 8080) and Python (port 8000) components must be running in the same network namespace — the Go side drives the Python runner at `http://localhost:8000/run`.
+- The Dockerfile builds one image carrying both the Go binary and the Python pipeline (deps preinstalled); each deployment runs it twice — once as the Go service, once as the Python runner. On GKE these were two containers in one pod (`k8s/deployment.yml`); on Komodo/Compose they are the `pipecat-manager` and `pipecat-script-runner` services, the latter joined via `network_mode: "service:pipecat-manager"`.
 - Per-pod queues are declared **volatile** — they auto-delete when the pod terminates, preventing dead-letter buildup.
 
 ## Deployment (Komodo)
@@ -97,7 +97,7 @@ Komodo-managed (VOIP-1350), same mechanism as the other `bin-*-manager` services
 `.circleci/scripts/render-image-tag.sh` + `.circleci/scripts/komodo-api-deploy.sh`
 from `komodo/docker-compose.yml`.
 
-Two deviations from the Tier 1/2 template, both intentional:
+Three deviations from the Tier 1/2 template, all intentional:
 - **Non-distroless runtime** (`python:3.12-slim`, needed to run the Python
   Pipecat pipeline) — the healthcheck uses `python3 -c "import urllib..."`
   instead of the fleet-standard `wget` CMD, since `python:3.12-slim` has
@@ -111,3 +111,12 @@ Two deviations from the Tier 1/2 template, both intentional:
   A real per-container unique `HostID` (needed if this service is ever
   scaled to multiple replicas) is a separate follow-up, not part of this
   cutover.
+- **`pipecat-script-runner` sidecar** (added 2026-08-22,
+  NOJIRA-Fix-pipecat-runner-sidecar): the Python Pipecat pipeline runs as
+  a second service from the same image (`python /app/scripts/pipecat/main.py`,
+  uvicorn on 0.0.0.0:8000), sharing the Go container's network namespace
+  via `network_mode: "service:pipecat-manager"` so localhost:8000 works
+  exactly as it did in the GKE pod. It was dropped in the original Komodo
+  cutover, which made every `ai_talk` action fail with connection-refused
+  on localhost:8000 and tear the call down. It receives the same six
+  STT/LLM/TTS API-key env vars the GKE runner container had.
