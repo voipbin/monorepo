@@ -1,8 +1,26 @@
-# VOIP-1385: Short customer SIP domain — design comparison
+# VOIP-1385: Short customer SIP domain — design (rev 2, full-cutover)
 
-Date: 2026-08-23
+Date: 2026-08-23 (rev 2, same day)
 Ticket: VOIP-1385 (Support large SIP INVITE over UDP)
-Status: DRAFT for review
+Status: rev 2 for review. Rev 1 (option comparison, phased opt-in rollout)
+passed its design review loop and was then superseded by CEO/CTO decisions;
+the option analysis is retained in section 3 as the decision record.
+
+## 0. Final decisions (CEO/CTO, 2026-08-23)
+
+1. Option B (canonical short domain) — approved.
+2. FULL immediate cutover: existing customers' DB rows migrate uuid -> short
+   label in one batch. No opt-in phase, no transition deadline.
+3. Mapping owned by a NEW table `registrar_customer_domains` in
+   bin-registrar-manager.
+4. Suffix also changes: `registrar.voipbin.net` -> `reg.voipbin.net`,
+   bundled into the same cutover (single device-reconfiguration event).
+5. Label: 4-char random base36 (lowercase), auto-generated. Customer-chosen
+   vanity labels: explicitly OUT of scope (future candidate).
+
+Resulting domain: `<4 chars>.reg.voipbin.net` = 20 chars (vs 58 today).
+Byte effect on the incident INVITE: 38 chars x 5 occurrences = 190B;
+1,556B -> ~1,366B wire (~134B headroom under MTU 1,500).
 
 ## 1. Background
 
@@ -16,18 +34,9 @@ pass). Result: digest auth over UDP fails for affected clients.
 
 Goal (CEO/CTO directive): keep supporting UDP. Shrink our contribution to the
 message size so typical INVITEs stay under MTU. Shortening the customer domain
-label is the only server-side lever with meaningful savings.
+is the only server-side lever with meaningful savings.
 
-Byte math (label 36 chars -> 8 chars, suffix unchanged):
-- Occurrences: R-URI, From, To, digest uri (4x28B = 112B) + digest realm (28B when
-  realm is also short) = up to 140B.
-- 1,556B -> ~1,416B (headroom ~84B). Suffix shortening (phase 3 candidate,
-  `registrar` -> shorter label) could add ~30-45B more but requires new wildcard
-  cert + DNS; out of scope here.
-
-## 2. Dependency audit (what the current format is load-bearing for)
-
-Full audit performed 2026-08-23 across monorepo + monorepo-voip (non-vendor).
+## 2. Dependency audit (unchanged from rev 1, all claims code-verified)
 
 ### 2.1 Forward generation (single source)
 `bin-registrar-manager/models/common/common.go` — `GenerateRealmExtension`
@@ -37,301 +46,325 @@ Full audit performed 2026-08-23 across monorepo + monorepo-voip (non-vendor).
 - contacthandler/contact.go:18,36 — rebuilds endpoint string for `ps_contacts`
   lookups and Redis contact-cache keys
 
-### 2.2 Reverse parsing (the fragile part) — 3 sites, all in bin-call-manager
+### 2.2 Reverse parsing — 3 sites, all in bin-call-manager
 1. `pkg/callhandler/start_incoming_domain_type_registrar.go:30` —
    `customerID = uuid.FromStringOrNil(TrimSuffix(domain, ".registrar.<base>"))`
-   where domain = Kamailio's `VB-Domain` header via Stasis. This customerID
-   drives ALL downstream authorization for incoming registrar calls (agent
-   ownership, conference ownership, flow tenancy, extension ownership).
+   where domain = Kamailio's `VB-Domain` header via Stasis; drives ALL
+   downstream authorization for incoming registrar calls.
 2. `models/common/domain.go:22` `ParseSIPURI` + caller
    `pkg/arieventhandler/ari_contact.go:23` — parses `<ext>@<uuid>.registrar...`
-   from ARI ContactStatusChange to refresh the contact cache. Silently yields
-   uuid.Nil on non-uuid labels (stale cache, no error).
+   from ARI ContactStatusChange for contact-cache refresh; silently yields
+   uuid.Nil on non-uuid labels.
 3. `pkg/callhandler/start_incoming_domain_type_trunk.go:37` — trunk analogue,
-   but ALREADY uses a lookup (`RegistrarV1TrunkGetByDomainName`) instead of
-   parsing an id out of the label. This is the pattern to adopt.
+   ALREADY a lookup (`RegistrarV1TrunkGetByDomainName`); the pattern to adopt.
 
-Suffix-only classification (`getDomainTypeIncomingCall`, start.go:424) tolerates
-any label; it must keep the `.registrar.<base>` / `.trunk.<base>` hierarchy.
+Suffix-only classification (`getDomainTypeIncomingCall`, start.go:424) uses
+hardcoded `".registrar." + PROJECT_BASE_DOMAIN` / `".trunk." + ...` suffixes
+(`bin-call-manager/pkg/projectconfig/main.go:56-57`) — the suffix change
+touches this code (section 6).
 
 ### 2.3 Asterisk identity coupling
-All of `ps_endpoints.id/aors/auth`, `ps_aors.id`, `ps_auths.id` share the single
-string `<ext>@<uuid-domain>`; `ps_auths.realm` = `<uuid-domain>`. Asterisk
-registrar runs realtime with `identify_by` unset (default `username,ip`), so the
-From `user@domain` IS the endpoint identity for REGISTER. `ps_domain_aliases`
-is wired in sorcery.conf but unpopulated/unused (no code manages that table).
-No code path rewrites ps_* ids or realm after creation — a domain
-change for an existing extension requires delete+recreate (existing code path).
+`ps_endpoints.id/aors/auth`, `ps_aors.id`, `ps_auths.id` all share
+`<ext>@<uuid-domain>`; `ps_auths.realm` = `<uuid-domain>`. Asterisk registrar
+runs realtime with `identify_by` unset (default `username,ip`): the From
+`user@domain` IS the endpoint identity for REGISTER. `ps_domain_aliases` is
+wired in sorcery.conf but unpopulated/unused. No code path rewrites ps_* ids
+or realm after creation; a domain change requires deleting and recreating the
+ps_* rows — the migration batch does exactly that at the ps_*/sipauth level
+while PRESERVING the extension entity itself (see section 7; the extension
+Delete+Create handlers are deliberately NOT used).
 
 ### 2.4 Digest auth coupling
-Kamailio `validate_authentication` challenges with realm = `$fd` (From domain)
-and verifies via `auth_check` against `registrar_sip_auths` with
-`domain_column=realm`, `calculate_ha1=1` (plaintext password, HA1 computed at
-runtime with the realm string from the client's header). Therefore: the realm
-string is a free variable cryptographically, but `registrar_sip_auths.realm`
-must byte-match the From domain the client uses.
+Kamailio challenges with realm = `$fd` and verifies via `auth_check` against
+`registrar_sip_auths` (`domain_column=realm`, `calculate_ha1=1`, plaintext
+password, HA1 computed at runtime). The realm string is cryptographically a
+free variable, but `registrar_sip_auths.realm` must byte-match the From
+domain the client uses. REGISTER is NOT authenticated at Kamailio (auth runs
+only for new INVITEs, kamailio.cfg:1082); Asterisk performs REGISTER digest
+against `ps_auths`. Two credential stores, both provisioned by
+registrar-manager with the same realm — the single generation point keeps
+them consistent.
 
 ### 2.5 Client-visible contract
-`Extension.DomainName` is documented in the public API (bin-openapi-manager/openapi/openapi.yaml:6515) as
-"Domain name, same as the customer_id", and the code stores the bare uuid
-string. Note a PRE-EXISTING inconsistency: the RST docs
-(extension_tutorial.rst:35, extension_struct_extension.rst:19,33) show
-`domain_name` as the FULL domain (`<uuid>.registrar.voipbin.net`). This design
-must settle the semantic (see Option B change list).
+`Extension.DomainName` documented (bin-openapi-manager/openapi/openapi.yaml:6515)
+as "same as the customer_id"; code returns the bare uuid. RST docs already
+show the FULL domain (extension_tutorial.rst:35, extension_struct_extension.rst)
+— pre-existing inconsistency, settled in section 5 (full realm wins).
 
-### 2.5b Frontend constructs the domain client-side (critical)
-`monorepo-javascript/square-talk/src/config.js:13-22` (agent webphone) builds
-the WSS registrar URL and the SIP URI from the customer uuid directly
-(`wss://<customerId>.<registrar_host>`, `sip:<user>@<customerId>.<...>`), used
-for real registration in `src/lib/webphone.js:170-171`. square-admin does the
-same for the customer-facing "Registration Address"
-(`src/views/extensions/extensions_detail.js:209`:
-`${extension}@${customer_id}.${getRegistrarHostname()}` — "Use this address to
-register your SIP device"); only the Domain Name display at :196 follows the
-API value. Any change to the domain format MUST land BOTH frontend fixes
-(consume the authoritative domain from the API instead of constructing it)
-FIRST, or new-customer webphones break and admins are shown non-working
-registration addresses. Other constructors found (cosmetic/configurable):
-monorepo-monitoring/sip-validator/sip_config.py:14 (env-overridable default),
-sandbox/scripts/setup_test_customer.sh:210.
+### 2.5b Frontends construct the domain client-side (hard prerequisite)
+- `monorepo-javascript/square-talk/src/config.js:13-22` builds the WSS URL and
+  SIP URI from the customer uuid (used in webphone.js:170-171).
+- `monorepo-javascript/square-admin/src/views/extensions/extensions_detail.js:209`
+  builds the customer-facing "Registration Address" the same way (only the
+  Domain Name display at :196 follows the API).
+Both must consume the API's `domain_name` verbatim BEFORE any format change.
+Other constructors (cosmetic/configurable): monorepo-monitoring
+sip-validator/sip_config.py:14, sandbox/scripts/setup_test_customer.sh:210.
 
 ### 2.6 TLS / DNS
-Wildcard cert `*.registrar.voipbin.net` and wildcard A record match exactly one
-label: a SHORTER label is fully covered; changing the hierarchy is not. No DNS
-or cert work needed for either option below.
+Wildcard cert and wildcard A record match exactly one label. The suffix
+change to `reg.voipbin.net` therefore needs a NEW wildcard cert
+(`*.reg.voipbin.net`) and a new wildcard A record — section 6.
 
-## 3. Option A — alias + edge normalization (Kamailio rewrites)
+## 3. Decision record: option comparison (rev 1 summary)
 
-Every customer keeps the canonical uuid domain internally. A short alias domain
-per customer exists only at the network edge. Kamailio, on ingress, maps the
-short label -> customer uuid (Redis lookup provisioned by registrar-manager) and
-rewrites the SIP message to the canonical uuid domain BEFORE auth. Everything
-behind Kamailio (auth rows, Asterisk ps_*, call-manager parsing, ARI events)
-sees only uuid domains — zero Go changes, zero data migration.
+Option A (alias + Kamailio edge normalization: short domain rewritten to
+canonical uuid at ingress) was REJECTED: it concentrates risk in SIP
+dialog-state From/To rewriting (uac_replace_from restore logic) on the
+production hot path, adds a permanent dual-domain system and an ingress Redis
+dependency, keeps the long realm in Proxy-Authorization (smaller savings),
+and leaves the existing reverse-parse fragility untouched. Option B
+(canonical short domain) was chosen: zero SIP protocol risk, replaces the
+silent-uuid.Nil parsing debt with an explicit fail-closed lookup, maximum
+savings. Rev 1's phased opt-in rollout was then superseded by the
+full-cutover decision (section 0), which REMOVES the need for opt-in
+regeneration machinery entirely.
 
-What must be rewritten per message:
-- R-URI domain (covers `VB-Domain`, dispatch, dialplan)
-- To domain (REGISTER AOR identity; INVITE callee context)
-- From domain (Asterisk endpoint identification `user@domain` for REGISTER;
-  auth realm derivation `$fd`)
+## 4. New table: `registrar_customer_domains` (bin-registrar-manager)
 
-Consequences of From/To rewriting:
-- REGISTER is stateless per transaction — header rewrite is safe (textops).
-- INVITE creates a dialog: From/To URIs are dialog state. The UAS copies the
-  REWRITTEN From/To into responses and the client receives From/To differing
-  from what it sent. Kamailio's `uac` module (`uac_replace_from/to`) exists
-  precisely for this and restores originals on responses and in-dialog requests
-  via Record-Route parameters, but it adds per-dialog restore logic on the
-  hottest path, with known corner cases (strict UAs, REFER/transfer flows, WSS,
-  retransmissions during restore, interplay with our topology).
-- Digest: since From is rewritten to uuid BEFORE auth, challenge realm = uuid
-  domain; existing `registrar_sip_auths` rows match; NO new auth rows needed.
-  Cost: the client's Proxy-Authorization carries the long uuid realm again, so
-  savings drop to ~112B (result ~1,444B).
-
-Ops footprint: new Redis mapping keyspace on the ingress path (lookup for every
-request with a non-uuid label, before auth — i.e., unauthenticated traffic can
-trigger lookups; needs negative-caching), plus the uac restore state.
-
-Pros:
-- No Go/service changes, no DB migration, no API semantic change.
-- All customers (existing included) can adopt the alias immediately by
-  reconfiguring devices; old domain keeps working side by side.
-
-Cons:
-- SIP header rewriting with dialog-state restore on 100% of aliased traffic —
-  highest protocol risk category we have (the exact path where subtle bugs cost
-  production calls). uac_replace_from is proven but not free of edge cases.
-- Permanent second domain system: every future feature must consider two
-  domains per customer forever.
-- Kamailio gains a Redis dependency in the ingress hot path.
-- Smaller savings (~1,444B; only ~56B of headroom for fatter SDPs).
-- Reverse-parsing fragility in call-manager remains untouched (debt stays).
-
-## 4. Option B — canonical short domain (recommended)
-
-The customer's domain simply becomes short. registrar-manager generates a
-random short label (8 chars, base36 lowercase, collision-checked, stored) and
-uses it in `GenerateRealmExtension`; everything downstream (ps_*, auth rows,
-VB-Domain, ARI events, API responses) consistently carries the short domain.
-No Kamailio changes at all, no header rewriting, full ~140B savings (~1,416B).
-
-Required code changes (from the audit):
-0. Frontend (PREREQUISITE, must land before phase 1 — see Rollout 0b):
-   - `monorepo-javascript/square-talk`: stop constructing the domain from
-     customer uuid in config.js; consume the authoritative `domain_name`
-     (full realm) from the extension API.
-   - `monorepo-javascript/square-admin`: same fix for the "Registration
-     Address" constructor (extensions_detail.js:209).
-1. `bin-registrar-manager`:
-   - New per-customer `domain_name` (short label) storage + generation
-     (collision-checked) and inclusion in extension/trunk provisioning.
-   - New RPC `RegistrarV1CustomerGetByRealm` (mirroring the existing trunk
-     lookup pattern), backed by `registrar_extensions` — the table that holds
-     BOTH `customer_id` and `realm` per row, indexed by `idx_extensions_realm`
-     / `idx_registrar_extensions_realm`. (`registrar_sip_auths` has NO
-     customer_id column and cannot back this lookup without a join.)
-     Phase-1 semantics: a realm resolves only if the customer has at least one
-     non-deleted extension — safe, because reaching the registrar call path
-     requires digest auth, which requires a sipauth row, which only exists
-     alongside an extension.
-   - Invariant restated: `Extension.Realm` / `Trunk.Realm` columns keep their
-     existing meaning (the literal realm string Kamailio byte-matches — the
-     "DO NOT CHANGE" comments in extension.go:28 / trunk.go:21 stay honored);
-     only the generated VALUE changes for new customers.
-2. `bin-call-manager` — replace the 3 reverse-parse sites with the lookup:
-   - `start_incoming_domain_type_registrar.go:30` -> lookup by realm (adopt the
-     trunk pattern one file over). Add negative-result handling (unknown realm
-     -> reject call) — an IMPROVEMENT over today's silent uuid.Nil.
-   - `ParseSIPURI` + `ari_contact.go` -> resolve customer via the same lookup
-     (or via extension lookup by endpoint string).
-   - `getDomainTypeIncomingCall` unchanged (suffix classification intact).
-3. `bin-dbscheme-manager`: migration adding the short-label column (customer- or
-   extension-level realm already stored; only the new label store + index).
-4. API/docs — SETTLED DECISION: `Extension.DomainName` becomes the FULL
-   authoritative realm (`<label>.registrar.<base>`) for ALL customers
-   (existing customers serve their stored realm, i.e. the uuid-labeled full
-   domain). Rationale: (a) consume-verbatim frontends require a full domain
-   for every customer — a "new customers only" variant would leave existing
-   customers' value a bare uuid and break verbatim consumers for them, so it
-   is incompatible with the Phase 0 design and rejected; (b) this fixes the
-   pre-existing code-vs-RST inconsistency (openapi.yaml:6515 says "same as
-   customer_id" and code returns the bare uuid, while RST already documents
-   the full domain — RST wins); (c) known first-party consumers are safe
-   (square-admin display :196 shows it verbatim; square-talk display_name
-   fallback webphone.js:172); the residual blast radius is third-party API
-   consumers who relied on domain_name == customer_id equality — called out
-   in release notes; the uuid remains extractable from the legacy label.
-   Touch points: openapi.yaml description + gens regeneration
-   (bin-openapi-manager/gens/models/gen.go embeds the stale description;
-   bin-api-manager embeds it via openapi_redoc/api.html — both regenerate from
-   openapi.yaml), `WebhookMessage` (models/extension/webhook.go:19 — webhook
-   payloads carry domain_name too; also DELETE the stale comment "used by the
-   kamailio's INVITE validation" — Kamailio never reads domain_name), RST
-   files (extension_overview/tutorial/struct, quickstart_extension,
-   trunk_overview_domain_name, direct_hash_overview, self_hosting_envvars),
-   SDK regeneration (voipbin-go, python-sdk, vn CLI, MCP — type is plain
-   string so non-breaking; regen for the description only) + release notes.
-   api-validator verified no-impact (tests/models/extension.py:12 has no
-   format assertion).
-   Phase 0a NULL-realm rule: legacy extension rows (pre-Feb-2024) have NULL
-   realm; when serving DomainName, fall back to computing
-   `<customer_id>.registrar.<base>` for NULL realm so the API never emits an
-   empty domain (these rows cannot digest-auth anyway, so this is
-   representation-only).
-5. Caching: lookup result cached in call-manager/registrar-manager Redis (realm
-   -> customer_id), invalidated on domain change.
-
-Rollout (strict ordering — 0a before 0b before 1):
-- Phase 0a (backend API, no domain-format change): `DomainName` starts serving
-  the FULL realm for all customers (change list item 4). Existing devices are
-  unaffected (their configured domains do not change); only the API
-  representation changes.
-- Phase 0b (frontend): square-talk AND square-admin stop constructing the
-  domain from the customer uuid and consume `domain_name` verbatim. Safe only
-  AFTER 0a is live everywhere. Belt-and-braces for rollback windows: the
-  frontends may keep a fallback "value contains no dot -> append
-  `.registrar.<base>`" until 0a is confirmed stable, then remove it.
-- Deploying 0b before 0a would break ALL existing webphones (they would build
-  `wss://<bare-uuid>` with no suffix) — this ordering is a hard gate, stated
-  here so the implementation plan cannot invert it.
-- Phase 1: NEW customers get short domains. Existing customers unaffected:
-  uuid domains keep working through the SAME lookup (realm rows for uuid
-  domains resolve identically; the TrimSuffix code is deleted, both formats go
-  through the lookup uniformly). Legacy note: extension rows created before
-  the realm column existed (Feb 2024) have NULL realm and would fail the new
-  lookup — no regression, since their identically-NULL sipauth realm already
-  fails Kamailio's byte-match digest auth today.
-- Phase 2: opt-in regeneration for existing customers ("regenerate SIP domain"
-  operation = recreate extensions with new realm via the existing
-  delete+create path; customer reconfigures devices; brief re-registration
-  window). Per-customer flag day, self-serve or support-driven.
-- Phase 3 (optional, separate): shorten the `.registrar.` suffix level —
-  requires new wildcard cert + DNS + Kamailio tls.cfg; only if we need the
-  extra ~30-45B.
-
-Pros:
-- Zero SIP protocol risk: no header rewriting, no dialog-state restore, no
-  Kamailio change, no new ingress dependency.
-- Pays down existing debt: the fragile TrimSuffix+uuid.FromStringOrNil parsing
-  (which today silently produces uuid.Nil on any anomaly) is replaced by an
-  explicit lookup with error handling, unifying with the trunk pattern.
-- Full savings (~1,416B), and realm is short too.
-- One domain per customer — no permanent dual-domain system.
-- Better UX: short domains are typeable; portal/docs get simpler.
-
-Cons:
-- Go changes across 2 services + DB migration + API semantic change (docs).
-- Existing customers need opt-in regeneration (device reconfig + short
-  re-registration gap) to benefit; until then they must use TCP/TLS as the
-  workaround for the UDP issue.
-- The domain is no longer self-describing: one extra (cached) lookup per
-  incoming registrar call and per contact-status event.
-
-## 5. Comparison summary
-
-| Axis | A: alias + edge rewrite | B: canonical short domain |
+| column | type | notes |
 |---|---|---|
-| INVITE size | ~1,444B (realm stays long) | ~1,416B (full savings) |
-| SIP protocol risk | High (From/To rewrite + dialog restore on hot path) | None |
-| Backend code changes | None | registrar-manager + call-manager (3 sites) + migration |
-| Frontend changes | None (uuid stays canonical) | square-talk + square-admin domain-construction fixes (prerequisite) |
-| Kamailio changes | Significant (mapping, rewriting, uac restore) | None |
-| Provisioning work | Alias lifecycle (create/regen/delete, collision) — duplicates most of B's registrar-manager work anyway | Label lifecycle (same class of work) |
-| Data migration | None | Column add only (phase 1); per-customer regen (phase 2) |
-| Existing customers | Alias available immediately, dual domains forever | Opt-in regeneration (flag day per customer) |
-| Architectural debt | Adds permanent dual-domain + ingress Redis dependency | Removes existing reverse-parse fragility |
-| API contract | Unchanged | DomainName semantic settled (fixes existing code-vs-docs inconsistency) |
-| Blast radius on bug | Live SIP dialogs (worst case) | Call setup lookup path (fails closed) |
+| customer_id | binary(16) | PK |
+| domain_label | varchar(64) | unique index; 4-char base36 generated |
+| realm | varchar(255) | unique index; `<label>.reg.<base>` full string |
+| tm_create, tm_update | datetime(6) | standard |
 
-## 6. Recommendation
+Deviation note: no `tm_delete` (hard delete on `customer_deleted`) — a pure
+mapping row has no soft-delete consumer; deliberate deviation from sibling
+registrar tables.
 
-Option B. The decisive factors:
-1. Risk asymmetry: A concentrates risk in SIP dialog-state manipulation on the
-   production hot path, where failures are live-call-affecting and hard to
-   reproduce. B's risk is ordinary data-plumbing, fails closed, and is fully
-   unit-testable.
-2. B removes existing fragility (silent uuid.Nil parsing) instead of layering a
-   second domain system on top of it.
-3. B achieves the full byte savings; A leaves only ~56B headroom.
-4. The main advantage of A (immediate coverage of existing customers) is weaker
-   than it appears: existing customers must reconfigure devices to benefit under
-   EITHER option; B's phase 2 covers them with modest additional work.
+- Owner: bin-registrar-manager (realm generation already lives there).
+  Rejected alternatives: a column on customer records (leaks SIP concerns
+  into bin-customer-manager, adds cross-service RPC on hot lookups);
+  deriving from `registrar_extensions.realm` rows (mapping must exist before
+  the first extension; label must survive delete-all-extensions).
+- Lifecycle: rows created on `customer_created` (registrar-manager already
+  subscribes to customer-manager events for `customer_deleted` cascade —
+  same subscription gains creation), deleted on `customer_deleted`.
+  Lazy-create fallback at first extension creation for robustness.
+- Label generation: 4-char base36 lowercase, crypto-random, retry on unique
+  violation (36^4 = 1,679,616 space — see section 9 for the enumeration
+  trade-off, accepted by decision 5). Reserved labels excluded — with
+  exactly-4-char labels only `pstn` and `echo` can genuinely collide; the
+  full list (`pstn`, `sip`, `echo`, `reg`, `www`, `api`) is kept as cheap
+  future-proofing for any later length change.
+- `GenerateRealmExtension(customerID)` changes from a pure format function
+  to a table lookup. Since `models/common` must stay DB-free (monorepo
+  convention), the function MOVES to the handler layer with a ctx+error
+  signature; `GenerateEndpointExtension` follows. Both call sites
+  (extensionhandler, contacthandler) already hold dbBin. Trunk generation
+  unchanged.
+- The realm->customer lookup RPC (`RegistrarV1CustomerGetByRealm`) is backed
+  by THIS table's unique realm index (supersedes rev 1's
+  registrar_extensions-backed lookup): exactly one row per customer, exists
+  even with zero extensions. Result cached in Redis (realm -> customer_id),
+  invalidated on migration/regeneration.
+- Migration prep backfill: one row per existing customer with the CURRENT
+  uuid realm (pure additive, zero risk). After code cutover reads this table,
+  the batch (section 7) updates each row to the short realm.
 
-## 7. Risks and mitigations (Option B)
+## 5. Code changes
 
-- Lookup failure/latency on incoming calls: cache realm->customer_id in Redis
-  with invalidation on regen; unknown realm rejects the call (fail closed,
-  logged). Today's behavior on anomaly is worse (silent uuid.Nil).
-- Collision of short labels: 36^8 ~ 2.8e12 space; generation retries on the
-  unique index. uuid-format ambiguity is impossible (uuid labels are 36 chars).
-  Reserved-label exclusion (`pstn`, `sip`, `echo`, `registrar`, `trunk`) is
-  NOT needed in phases 1-2 (the `.registrar.` level keeps them from colliding
-  with Kamailio's `pstn.<base>` etc. routes) — it becomes relevant only if
-  phase 3 flattens the suffix; kept as a cheap future-proofing rule anyway.
-- Mixed formats during transition: both uuid and short realms resolve through
-  the same lookup path — no format branching in call-manager after the change.
-- Regeneration (phase 2) drops registrations until devices re-register with the
-  new domain: communicated as part of the opt-in flow.
-- RFC 3261 hard limit remains: messages can still exceed MTU with fat SDPs
-  (video, many codecs). TCP/TLS stays available and documented as the fallback;
-  this design widens the UDP-safe envelope, it cannot make it unbounded.
+0. Frontend (PREREQUISITE — deploy order in section 8):
+   - square-talk: consume API `domain_name` verbatim; the WSS URL becomes
+     `wss://<domain_name>`. Delete the `registrar.` constructors in
+     src/config/hostname.js:35,41 (the actual literal source; config.js and
+     webphone.js consume them). Scope note: this is a small API-consumption
+     refactor (plumb the extension's domain_name into webphone.js), not a
+     one-line constant edit — config.js currently receives only customerId.
+   - square-admin: same for the Registration Address
+     (extensions_detail.js:209) and its hostname helper
+     (src/config/hostname.js:35).
+1. bin-registrar-manager:
+   - New table (section 4), event-driven lifecycle, label generator.
+   - `GenerateRealmExtension` -> table lookup.
+   - New RPC `RegistrarV1CustomerGetByRealm` backed by the table.
+   - Migration batch command in registrar-control (section 7).
+   - Invariant honored: `Extension.Realm`/`Trunk.Realm` column semantics
+     unchanged (the literal string Kamailio byte-matches; "DO NOT CHANGE"
+     comments at extension.go:28 / trunk.go:21); only the generated value
+     changes.
+2. bin-call-manager — replace all 3 reverse-parse sites with the lookup:
+   - start_incoming_domain_type_registrar.go:30 -> lookup by realm; unknown
+     realm rejects the call (fail closed; improves on today's silent
+     uuid.Nil).
+   - ParseSIPURI + ari_contact.go -> same lookup.
+   - projectconfig suffix constants: `DomainRegistrarSuffix` accepts BOTH
+     `".reg."+base` (primary) and `".registrar."+base` (legacy, kept for the
+     migration window and rollback; removable later).
+3. bin-dbscheme-manager: Alembic migration adding `registrar_customer_domains`
+   (schema only; the data batch is application-level, section 7).
+4. API/docs — SETTLED: `Extension.DomainName` = FULL realm for ALL customers.
+   Touch points: openapi.yaml:6515 description (+ delete the stale "used by
+   the kamailio's INVITE validation" clause — Kamailio never reads
+   domain_name; same stale comment in models/extension/webhook.go:19),
+   bin-openapi-manager gens regeneration (gens/models/gen.go embeds the
+   description; bin-api-manager via gens/openapi_redoc/api.html), RST files
+   (extension_overview/tutorial/struct, quickstart_extension,
+   trunk_overview_domain_name, direct_hash_overview, self_hosting_envvars),
+   SDK regeneration (voipbin-go, python-sdk, vn CLI, MCP — plain string type,
+   non-breaking) + release notes. api-validator verified no-impact
+   (tests/models/extension.py:12, no format assertion). NULL-realm rule:
+   legacy pre-Feb-2024 rows with NULL realm are covered by the migration
+   batch itself (customer domain row + re-provisioned realm), so no serving
+   fallback is needed post-cutover; during the pre-batch window DomainName
+   falls back to the computed legacy value for NULL realm.
 
-## 8. Verification plan
+## 6. Suffix change: `registrar.voipbin.net` -> `reg.voipbin.net`
 
-1. Unit: registrar-manager label generation (format, collision retry, reserved
-   labels), lookup RPC; call-manager incoming-call resolution for short realm,
-   uuid realm (compat), unknown realm (reject), ARI contact refresh for both
-   formats. Aggressive coverage per house rules.
-2. Sandbox E2E: provision customer with short domain -> REGISTER (Asterisk
-   identity `<ext>@<short-domain>`), inbound + outbound calls, contact-status
-   cache refresh, digest auth over UDP with a real softphone. Frontend E2E:
-   square-talk webphone registration AND the square-admin extension detail
-   page (Registration Address shows the API-provided domain) for a
-   short-domain customer, plus an EXISTING uuid-domain customer after
-   phase 0a/0b (verbatim consumption serves the uuid-labeled full realm).
-3. Byte verification: capture the authenticated INVITE from Linphone against a
-   short-domain account; assert wire size < 1,500B and call completes over UDP
-   on the office network where the incident reproduced.
-4. Regression: existing uuid-domain customer flows unchanged (E2E on a legacy
-   account).
+Bundled into the same cutover so customers reconfigure devices exactly once.
+
+1. DNS: add wildcard A `*.reg.voipbin.net` -> 199.127.61.42 (Cloudflare).
+2. TLS: issue wildcard cert `*.reg.voipbin.net` via the existing certbot
+   DNS-01 path; deliver via Komodo Variables (VOIP-1375 mechanism); add a
+   server_name profile in Kamailio tls.cfg.
+3. Kamailio template: `validate_authentication` gate regex accepts BOTH
+   `.reg.BASE_DOMAIN` and `.registrar.BASE_DOMAIN` (legacy acceptance kept
+   as rollback safety net; removal is a later cleanup).
+4. registrar-manager env: `DOMAIN_NAME_EXTENSION=reg.voipbin.net` (config
+   only — generation code reads the base from env).
+5. call-manager: dual-suffix acceptance (section 5 item 2).
+6. Old `*.registrar.voipbin.net` DNS + cert + acceptance stay live as the
+   rollback safety net until cleanup. During the dual window tls.cfg's
+   `[server:default]` remains the legacy cert: a non-SNI SIP-TLS client
+   connecting to `<label>.reg.voipbin.net` would be served the legacy cert
+   until cleanup flips the default (browsers/WSS always send SNI; only rare
+   non-SNI native TLS clients are affected).
+7. Trunk suffix (`.trunk.`) unchanged.
+
+`sip.` was considered as the suffix (semantically broader) and rejected:
+`sip.voipbin.net` is an existing service domain matched exactly in
+`getDomainTypeIncomingCall`, and overloading it invites classification
+confusion. `reg.` has no collision.
+
+## 7. Migration batch (existing customers, uuid -> short, immediate)
+
+- Implemented as a registrar-control command in bin-registrar-manager,
+  NOT raw SQL (registrar-manager mirrors every ps_* write into Redis; raw
+  SQL would leave stale mirrors).
+- CRITICAL: the batch does NOT reuse the extension Delete+Create handlers.
+  Those would (a) generate a NEW extension UUID (Create calls UUIDCreate),
+  breaking every persisted reference to the extension id — agent address
+  bindings (bin-agent-manager agent.go:398 validates stored extension uuids),
+  flow actions targeting extensions (call-manager
+  parseAddressTypeExtension), and direct hashes (Delete removes the direct
+  hash, Create mints a new one -> every `sip:direct.<hash>@...` URI silently
+  changes); (b) fire extension_deleted/extension_created webhook storms and
+  re-run billing limit checks; (c) lose the extension if interrupted
+  between delete and create.
+- Instead: a dedicated RE-PROVISION path that PRESERVES extension id,
+  password, and direct hash. Per extension: UPDATE `registrar_extensions`
+  in place (realm, domain_name, aor_id/auth_id/endpoint_id strings);
+  delete+create ONLY the `ps_endpoints`/`ps_aors`/`ps_auths` rows and the
+  `registrar_sip_auths` row via the existing dbhandler methods (these
+  maintain the Redis mirrors); publish a single extension_updated event
+  (no deleted/created lifecycle events, no billing re-check).
+- Per customer: generate label + upsert `registrar_customer_domains` row ->
+  re-provision every extension (above) -> purge stale `ps_contacts` rows for
+  the old endpoint strings (NEW dbhandler method: row delete + contact-cache
+  invalidation — no such method exists today) -> invalidate the
+  realm->customer Redis cache entries. (Mirror scope note: the ps_*
+  dbhandler methods maintain Redis mirrors; `registrar_sip_auths` has no
+  Redis mirror — Kamailio reads it from MySQL directly — so no sipauth
+  cache work exists.)
+- The stored `registrar_extensions.domain_name` column is rewritten to the
+  FULL new realm by the batch (and the Create path writes the full realm for
+  new extensions), keeping the stored column, the API value, and the RST
+  docs consistent — no compute-on-read needed post-cutover.
+- Rollback: the batch logs old_realm <-> new_realm per customer; a reverse
+  run re-provisions back to the uuid realm. `registrar_customer_domains`
+  keeps only the current value; the log is the rollback source.
+- Effect on live devices: external SIP devices registered under the uuid
+  domain lose registration at their customer's migration moment and need
+  manual reconfiguration (portal notice + guide ship with the cutover).
+  square-talk webphones SELF-HEAL: after the step-2 frontend fix they fetch
+  the domain from the API on load, so a reload re-registers correctly.
+- Runbook notes: run in a low-traffic window (each extension has a
+  sub-second ps_* delete+create gap for incoming INVITEs, subsumed by the
+  accepted outage decision). During the window Asterisk may emit
+  ContactStatusChange events carrying OLD-realm endpoint strings for
+  just-migrated customers; the fail-closed lookup rejects them with a log
+  line — expected noise, not an alarm condition (the batch purges stale
+  ps_contacts anyway).
+- Execution: Claude authors the batch + Alembic schema migration; the batch
+  run against production is executed by the CEO/CTO (same policy as Alembic
+  upgrades).
+
+## 8. Deploy order (hard gates)
+
+1. Backend code — internally sequenced (the call-manager cutover fails
+   CLOSED on unknown realms, so its prerequisites are hard sub-gates):
+   1a. Alembic: create `registrar_customer_domains`.
+   1b. registrar-manager deploy: lookup RPC + event lifecycle +
+       generation-from-table (+ pre-batch NULL-realm serving fallback).
+   1c. Backfill current realms; reconcile row count against customer count
+       (100% coverage required before 1d).
+   1d. call-manager deploy: lookup cutover (TrimSuffix deleted; unknown
+       realm rejects) + dual-suffix acceptance.
+   (Everything still uuid-domain; zero behavior change for clients — both
+   uuid and future short realms resolve through the same lookup.)
+2. Frontend: square-talk + square-admin consume `domain_name` verbatim.
+   (Gate: MUST follow step 1 — deploying frontends first would break all
+   existing webphones, which would build `wss://<bare-uuid>`.)
+3. Infra: DNS wildcard + `*.reg.voipbin.net` cert + Kamailio tls.cfg/regex
+   deploy (accepting both suffixes; no traffic on `.reg.` yet).
+4. registrar-manager env flip: new provisioning uses `reg.voipbin.net`.
+5. Migration batch run (CEO/CTO executes): all existing customers ->
+   `<4ch>.reg.voipbin.net`. Portal notice + reconfiguration guide go out
+   simultaneously.
+6. Later cleanup (separate change, after stability): remove `.registrar.`
+   acceptance, DNS, cert; remove legacy-suffix code path.
+
+## 9. Risks
+
+- Device outage at migration: accepted by decision 2 (immediate cutover);
+  bounded by comms + self-healing webphones; rollback via section 7 log.
+- Lookup failure on incoming calls: fail closed (reject + log); Redis-cached;
+  strictly better than today's silent uuid.Nil.
+- 4-char label enumeration: 36^4 = 1.68M combinations IS sweepable by a
+  determined scanner (flagged during design; accepted by CEO/CTO decision 5).
+  Mitigations: the Kamailio pike/ban ingress gate rate-limits and bans
+  scanning sources; a discovered domain still requires digest auth for every
+  INVITE and REGISTER; domains are not treated as secrets. Revisit label
+  length if scanning telemetry shows targeted enumeration.
+- Wrong-order deploy: hard gates in section 8; the step-2 gate is documented
+  in both this doc and the implementation plan.
+- RFC 3261 hard limit remains: fat SDPs (video, many codecs) can exceed MTU
+  regardless; TCP/TLS stays documented as the fallback. This design widens
+  the UDP-safe envelope (~134B headroom on the incident INVITE), it cannot
+  make it unbounded.
+- api-validator / sip-validator configs reference uuid domains
+  (env-overridable defaults) — update alongside step 5.
+
+## 10. Verification plan
+
+1. Unit (aggressive coverage per house rules): label generation (charset,
+   length, reserved list, collision retry), table lifecycle on customer
+   events, lookup RPC (hit, miss, cache), call-manager resolution (short
+   realm, legacy uuid realm via lookup, unknown realm rejects), ARI contact
+   refresh both formats, dual-suffix classification, AND the re-provision
+   path itself: asserts extension `id`, `password`, `direct_id` are
+   unchanged across a re-provision, ps_*/sipauth rows carry the new realm,
+   exactly one extension_updated event is published (zero deleted/created),
+   no billing limit RPC is called, and interruption mid-extension leaves a
+   recoverable state (idempotent re-run).
+2. Sandbox E2E: full migration dry-run — provision uuid-domain customer
+   (with an agent bound to an extension and a flow targeting it), run the
+   batch, verify: REGISTER under `<label>.reg.<base>` (Asterisk identity),
+   inbound + outbound calls, contact cache, digest auth over UDP, stale
+   ps_contacts purged. IDENTITY INVARIANT (the round-1 MAJOR defect class):
+   across the batch, each extension's `id`, `password`, and
+   `direct_id`/direct hash are byte-identical, `sip:direct.<hash>@...`
+   still resolves, the agent's extension address binding still validates,
+   and the event stream contains ONLY extension_updated (no
+   extension_deleted/extension_created). Rollback run restores the uuid
+   realm with the SAME identity assertions.
+3. Frontend E2E: square-talk webphone self-heal after migration (reload ->
+   re-register on new domain); square-admin Registration Address shows the
+   API value.
+4. Byte verification: capture the authenticated INVITE from Linphone against
+   a migrated account; assert wire size < 1,500B (expected ~1,366B) and the
+   call completes over UDP on the office network where the incident
+   reproduced.
+5. TLS: WSS + TLS registration against `<label>.reg.voipbin.net` validates
+   against the new wildcard cert.
