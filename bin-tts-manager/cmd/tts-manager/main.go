@@ -126,6 +126,14 @@ func run(db *sql.DB) error {
 	podID := os.Getenv("HOSTNAME")
 
 	ttsHandler := ttshandler.NewTTSHandler(config.Get().AWSAccessKey, config.Get().AWSSecretKey, config.Get().GCPTTSEndpoint, "/shared-data", localAddress, reqHandler, notifyHandler)
+	if ttsHandler == nil {
+		// Fail fast: a nil handler would otherwise sit in the listener and
+		// nil-panic on the first /v1/speeches request (the 2026-08-22
+		// missing-GCP-credentials incident surfaced exactly this way -
+		// 10s RPC timeouts on every TTS request while the container
+		// crash-looped per request instead of failing at startup).
+		logrus.Fatalf("Could not create the tts handler. Check TTS provider credentials (e.g. GOOGLE_APPLICATION_CREDENTIALS).")
+	}
 	streamingHandler := streaminghandler.NewStreamingHandler(reqHandler, notifyHandler, podID, config.Get().ElevenlabsAPIKey, config.Get().AWSAccessKey, config.Get().AWSSecretKey)
 
 	// initialize cache and db handlers

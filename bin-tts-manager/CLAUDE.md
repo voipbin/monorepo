@@ -36,7 +36,7 @@ go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-l
 
 **Per-pod queue routing uses `HOSTNAME`** (not `POD_IP`): The `HostID` for the per-pod queue is `HOSTNAME` (Kubernetes pod name). Streaming control RPCs (`say_init`, `say_add`, `say_stop`, `say_finish`) must be routed to `bin-manager.tts-manager.request.<HOSTNAME>`.
 
-**`POD_IP` is for AudioSocket advertising**: `POD_IP` (Kubernetes Downward API) is used to tell Asterisk where to dial for audio frames — it is NOT the queue host ID.
+**`POD_IP` is the batch-TTS media URL host**: `POD_IP` feeds `buckethandler`'s media URL (`http://<host>/<file>`, fetched by Asterisk) — it is NOT the queue host ID. On GKE it is the pod IP (Downward API), rewritten to the pod-DNS form; on Docker Compose (bm-nyc-01) it is the media http sidecar's container name (`voipbin-tts-manager-http`), used verbatim. It is the only `POD_IP` consumer in this service (`cmd/tts-manager/main.go`).
 
 **Provider fallback order**: GCP Cloud TTS (primary) → AWS Polly (fallback). GCP uses ADC; fallback is tracked by `speech_fallback_total` metric.
 

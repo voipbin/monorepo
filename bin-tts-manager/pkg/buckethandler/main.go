@@ -5,6 +5,7 @@ package buckethandler
 import (
 	"context"
 	"fmt"
+	"net"
 	"strings"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -65,8 +66,18 @@ func NewBucketHandler(osMediaBucketDirectory string, osAddress string) BucketHan
 	})
 	log.Debugf("Creating a new bucket handler.")
 
-	tmpAddress := strings.ReplaceAll(osAddress, ".", "-")
-	osLocalAddress := fmt.Sprintf("%s.bin-manager.pod.cluster.local", tmpAddress)
+	// osAddress is the address other services use to fetch the generated
+	// media over HTTP (the media http sidecar). On Kubernetes it is the
+	// pod IP (Downward API) and must be converted to the GKE pod DNS
+	// form. On Docker Compose deployments (bm-nyc-01) it is already a
+	// resolvable hostname - the media http sidecar's container name on
+	// the shared Docker network - so it is used verbatim; appending the
+	// GKE suffix there would produce a hostname that resolves nowhere.
+	osLocalAddress := osAddress
+	if ip := net.ParseIP(osAddress); ip != nil {
+		tmpAddress := strings.ReplaceAll(osAddress, ".", "-")
+		osLocalAddress = fmt.Sprintf("%s.bin-manager.pod.cluster.local", tmpAddress)
+	}
 	log.Debugf("Generated os local address. os_local_address: %s", osLocalAddress)
 
 	h := &bucketHandler{
