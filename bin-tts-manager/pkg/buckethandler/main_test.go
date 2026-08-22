@@ -26,6 +26,30 @@ func Test_NewBucketHandler(t *testing.T) {
 			expectedOsBucketDir:     "/var/media",
 			expectedOsLocalAddress:  "192-168-1-100.bin-manager.pod.cluster.local",
 		},
+		{
+			// Docker Compose deployments (bm-nyc-01) set POD_IP to the media
+			// http sidecar's container name - a hostname must be used
+			// verbatim, never rewritten into the GKE pod DNS form.
+			name:                    "hostname is used verbatim",
+			osMediaBucketDirectory:  "/shared-data",
+			osAddress:               "voipbin-tts-manager-http",
+			expectedOsBucketDir:     "/shared-data",
+			expectedOsLocalAddress:  "voipbin-tts-manager-http",
+		},
+		{
+			name:                    "empty address stays empty",
+			osMediaBucketDirectory:  "/shared-data",
+			osAddress:               "",
+			expectedOsBucketDir:     "/shared-data",
+			expectedOsLocalAddress:  "",
+		},
+		{
+			name:                    "ipv6 address gets the gke pod dns form",
+			osMediaBucketDirectory:  "/shared-data",
+			osAddress:               "fd00::1",
+			expectedOsBucketDir:     "/shared-data",
+			expectedOsLocalAddress:  "fd00::1.bin-manager.pod.cluster.local",
+		},
 	}
 
 	for _, tt := range tests {

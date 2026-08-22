@@ -5,6 +5,35 @@
 # pkg/streaminghandler (websocket keepalive/write pacing) are scoped to
 # individual streaming sessions, not a global background loop -- see the
 # design doc's ticker/cron audit.
+#
+# GCP service-account credential materialization: same mechanism as
+# bin-storage-manager (VOIP-1358, first user of the pattern) - see the
+# comment at the top of that service's komodo/docker-compose.yml for the
+# full explanation. tts-manager was missed in the original "GCP
+# credential file services" rollout (its GCP Cloud TTS client relied on
+# GKE workload-identity ADC, which does not exist on bm-nyc-01), so
+# every TTS request nil-panicked until this was added - see
+# NOJIRA-Fix-tts-manager-gcp-credentials.
+#
+# Batch-TTS media delivery (shared-data volume + tts-manager-http +
+# POD_IP): the GKE pod ran the Go service next to a python http.server
+# sidecar over a shared emptyDir (k8s/deployment.yml), and Asterisk
+# fetched the generated wav from
+# http://<pod-ip-dashed>.bin-manager.pod.cluster.local/<file>. None of
+# that survived the Komodo migration - no /shared-data volume (both TTS
+# providers ENOENT'd on write), no http sidecar, and no POD_IP (the
+# media URL degenerated to an empty-host GKE DNS name). Here the two
+# containers share a named volume, and POD_IP carries the sidecar's
+# container name, which buckethandler now uses verbatim as the media URL
+# host (Docker's embedded DNS resolves it for every container on the
+# `production` network, including Asterisk).
+secrets:
+  gcp_sa_json:
+    environment: "GCP_SA_JSON"
+
+volumes:
+  shared-data: {}
+
 services:
   tts-manager:
     image: voipbin/bin-tts-manager:__IMAGE_TAG__
@@ -15,6 +44,11 @@ services:
         max-file: "3"
     container_name: voipbin-tts-manager
     restart: always
+    secrets:
+      - source: gcp_sa_json
+        target: google_service_account.json
+    volumes:
+      - shared-data:/shared-data
     environment:
       - DATABASE_DSN=[[BIN_MANAGER__DATABASE_DSN_BIN]]
       - RABBITMQ_ADDRESS=[[BIN_MANAGER__RABBITMQ_ADDRESS]]
@@ -25,7 +59,28 @@ services:
       - AWS_ACCESS_KEY=[[BIN_MANAGER__AWS_ACCESS_KEY]]
       - AWS_SECRET_KEY=[[BIN_MANAGER__AWS_SECRET_KEY]]
       - ELEVENLABS_API_KEY=[[BIN_MANAGER__ELEVENLABS_API_KEY]]
+      - GOOGLE_APPLICATION_CREDENTIALS=/run/secrets/google_service_account.json
+      - POD_IP=voipbin-tts-manager-http
     command: ./tts-manager
+    networks:
+      default: {}
+
+  # Media http sidecar: serves the batch-TTS wav files the Go service
+  # writes into /shared-data. Same image and command as the GKE pod's
+  # http-server container (k8s/deployment.yml). bin-tts-manager/CLAUDE.md:
+  # "Do not serve files directly from the Go service."
+  tts-manager-http:
+    image: python:3.9-bookworm
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    container_name: voipbin-tts-manager-http
+    restart: always
+    volumes:
+      - shared-data:/shared-data
+    command: ["sh", "-c", "python3 -m http.server 80 -d /shared-data 2>&1"]
     networks:
       default: {}
 networks:
