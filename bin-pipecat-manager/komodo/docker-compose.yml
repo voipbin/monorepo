@@ -9,6 +9,16 @@
 # string, not an actual runtime pod IP - this was written for a
 # Kubernetes downward-API value that was never wired up for Docker
 # Compose) is used as-is, matching current production behavior exactly.
+#
+# pipecat-script-runner: the Python Pipecat pipeline sidecar (FastAPI/
+# uvicorn on 0.0.0.0:8000) the Go service drives via
+# http://localhost:8000/run. On GKE this was a second container in the
+# same pod (k8s/deployment.yml's pipecat-script-runner); it was dropped
+# in the Komodo migration, so every ai_talk action failed with
+# "connection refused" on localhost:8000 and the flow tore the call
+# down (2026-08-22 incident, NOJIRA-Fix-pipecat-runner-sidecar). Same
+# image (all Python deps are baked in), network_mode
+# "service:pipecat-manager" reproduces the GKE pod's shared localhost.
 services:
   pipecat-manager:
     image: voipbin/bin-pipecat-manager:__IMAGE_TAG__
@@ -41,6 +51,33 @@ services:
     command: ./pipecat-manager
     networks:
       default: {}
+
+  pipecat-script-runner:
+    image: voipbin/bin-pipecat-manager:__IMAGE_TAG__
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    container_name: voipbin-pipecat-script-runner
+    restart: always
+    # Shares the Go service's network namespace so the Go side reaches
+    # uvicorn at localhost:8000, exactly like the GKE pod. A container in
+    # another container's netns cannot declare its own networks/ports.
+    network_mode: "service:pipecat-manager"
+    depends_on:
+      - pipecat-manager
+    # Same env set the GKE pipecat-script-runner container received
+    # (k8s/deployment.yml) - the Python side calls the STT/LLM/TTS APIs
+    # directly.
+    environment:
+      - CARTESIA_API_KEY=[[BIN_MANAGER__CARTESIA_API_KEY]]
+      - ELEVENLABS_API_KEY=[[BIN_MANAGER__ELEVENLABS_API_KEY]]
+      - OPENAI_API_KEY=[[BIN_MANAGER__OPENAI_API_KEY]]
+      - DEEPGRAM_API_KEY=[[BIN_MANAGER__DEEPGRAM_API_KEY]]
+      - XAI_API_KEY=[[BIN_MANAGER__XAI_API_KEY]]
+      - GOOGLE_API_KEY=[[BIN_MANAGER__GOOGLE_API_KEY]]
+    command: ["python", "/app/scripts/pipecat/main.py"]
 networks:
   default:
     name: production
