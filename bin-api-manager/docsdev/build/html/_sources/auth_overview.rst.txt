@@ -455,9 +455,11 @@ Self-service account freeze/deletion and recovery. Requires authentication (Toke
    * - 401
      - Missing/invalid/expired token or access key.
 
-.. note:: **AI Implementation Hint — frozen accounts are also enforced globally**
+.. note:: **AI Implementation Hint — frozen and deleted accounts are also enforced globally**
 
    Once a customer account is ``frozen``, every other authenticated ``/v1.0/*`` request from that customer (except from a ``PermissionProjectSuperAdmin``, and except direct/boot tokens, which skip the check entirely) is rejected with ``403 ACCOUNT_FROZEN`` by the shared authentication middleware — not just calls to resource endpoints that would otherwise mutate data. The error's ``details[0]`` carries ``deletion_scheduled_at``, ``deletion_effective_at`` (30 days after scheduling), and ``recovery_endpoint: "DELETE /auth/unregister"`` so client UIs (admin/talk consoles) can render a consistent "account frozen, recover here" screen. ``POST`` and ``DELETE /auth/unregister`` themselves are explicitly exempted from this block so a frozen customer can still self-recover.
+
+   The same middleware also rejects any authenticated request from a ``deleted`` customer with ``403 ACCOUNT_DELETED``. In the steady state this is unreachable — a deleted customer's agents/access keys should already have been soft-deleted by the ``customer_deleted`` cascade and fail earlier at authentication — but this is a deliberate second layer in case that cascade misses a resource, so credentials belonging to a deleted account can never keep working indefinitely. Unlike ``frozen``, ``deleted`` is not recoverable via ``/auth/unregister``.
 
 
 Delegate (Superadmin Support Access) — ``POST /auth/delegate``

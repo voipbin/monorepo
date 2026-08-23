@@ -35,6 +35,9 @@ These reasons are not tied to a specific resource and may be returned by any end
    * - ``ACCOUNT_FROZEN``
      - 403
      - The customer account is frozen (typically because unregister was scheduled). Inspect ``error.details[0].recovery_endpoint`` and call it to restore the account, or wait past ``deletion_effective_at``.
+   * - ``ACCOUNT_DELETED``
+     - 403
+     - The customer account has already been deleted. This is unrecoverable; the credentials used to authenticate can no longer be used. Contact support if this is unexpected.
    * - ``PERMISSION_DENIED``
      - 403
      - The authenticated user does not have permission for this resource.
