@@ -158,6 +158,55 @@ Regenerate the direct extension hash. This invalidates the previous SIP URI and 
 
    This endpoint requires no request body. The ``direct_hash`` in the response is the new hash — the previous hash is permanently invalidated. Update any stored SIP URIs that reference the old hash.
 
+Provision Linphone via QR code
+------------------------------
+
+Issue a short-lived provisioning token for the extension, then render the returned ``url`` as a QR code. Scanning the QR code with the Linphone mobile app configures the SIP account automatically. See :ref:`Softphone QR Provisioning <extension-overview-provisioning>` for concepts and security notes.
+
+**Step 1: Issue a provisioning token**
+
+.. code::
+
+    $ curl -k --location --request POST 'https://api.voipbin.net/v1.0/extensions/6a7934ff-0e1c-4857-857b-23c9e27d267b/provisioning-token?token=<YOUR_AUTH_TOKEN>'
+
+    {
+        "token": "3f9a1c8e5b2d7f4a6c0e9b8d1f3a5c7e2b4d6f8a0c1e3b5d7f9a2c4e6b8d0f1a",
+        "url": "https://api.voipbin.net/provisioning/extension?token=3f9a1c8e5b2d7f4a6c0e9b8d1f3a5c7e2b4d6f8a0c1e3b5d7f9a2c4e6b8d0f1a",
+        "expire": "2026-08-24T12:10:00Z"
+    }
+
+**Step 2: Render the url as a QR code and scan it with Linphone**
+
+Display the ``url`` value as a QR code (any QR library or generator works). In the Linphone mobile app, choose the QR code scan option on the account setup screen and scan the code. Linphone fetches the URL and applies the SIP account settings, then registers.
+
+The URL serves the following Linphone configuration XML (``application/xml``). You do not need to handle this content yourself; Linphone consumes it directly:
+
+.. code::
+
+    <?xml version="1.0" encoding="UTF-8"?>
+    <config xmlns="http://www.linphone.org/xsds/lpconfig.xsd">
+      <section name="misc">
+        <entry name="transient_provisioning" overwrite="true">1</entry>
+      </section>
+      <section name="proxy_0">
+        <entry name="reg_proxy" overwrite="true">&lt;sip:ab12.reg.voipbin.net;transport=udp&gt;</entry>
+        <entry name="reg_identity" overwrite="true">sip:test12@ab12.reg.voipbin.net</entry>
+        <entry name="reg_expires" overwrite="true">3600</entry>
+        <entry name="reg_sendregister" overwrite="true">1</entry>
+        <entry name="publish" overwrite="true">0</entry>
+      </section>
+      <section name="auth_info_0">
+        <entry name="username" overwrite="true">test12</entry>
+        <entry name="domain" overwrite="true">ab12.reg.voipbin.net</entry>
+        <entry name="passwd" overwrite="true">5316382a-757c-11eb-9348-bb32547e99c4</entry>
+        <entry name="realm" overwrite="true">ab12.reg.voipbin.net</entry>
+      </section>
+    </config>
+
+.. note:: **AI Implementation Hint**
+
+   The issuing endpoint requires no request body and needs admin or manager permission. The returned ``url`` is complete; do not reassemble it from the ``token``. The token expires 10 minutes after issuance (``expire``, RFC 3339) and may be fetched multiple times within that window. The public ``GET /provisioning/extension`` endpoint has no ``/v1.0`` prefix and no authentication; any invalid or expired token returns a bare ``400`` with an empty body. The QR code works only with the Linphone app, and scanning on an app that already has a SIP account replaces account 0.
+
 Delete the extension
 --------------------
 

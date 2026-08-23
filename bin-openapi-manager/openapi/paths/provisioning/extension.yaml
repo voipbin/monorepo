@@ -1,0 +1,50 @@
+get:
+  summary: Serve Linphone remote provisioning XML for an extension (QR code target).
+  description: |
+    Returns Linphone lpconfig provisioning XML (`Content-Type: application/xml`) containing
+    the SIP account configuration for the extension bound to the given provisioning token.
+    This endpoint is the target of the QR code generated via
+    `POST /extensions/{id}/provisioning-token`; the Linphone mobile app fetches it when the
+    QR code is scanned.
+
+    This endpoint is unauthenticated. The provisioning token acts as proof of authorization.
+
+    Note: unlike the other endpoints in this specification, this endpoint is served at
+    `/provisioning/extension` WITHOUT the `/v1.0` prefix.
+
+    The `token` query parameter must be a 64-character lowercase hex string issued by
+    `POST /extensions/{id}/provisioning-token`. Tokens expire 10 minutes after issuance.
+    Any invalid, expired, or unknown token returns HTTP 400.
+  tags:
+    - Extension
+  operationId: getProvisioningExtension
+  parameters:
+    - name: token
+      in: query
+      required: true
+      schema:
+        type: string
+        pattern: "^[0-9a-f]{64}$"
+        example: "3f7a1c9e5b2d8f04a6c1e9b3d7f2a58c0e4b6d19f83c25a7e1b09d4f6a2c8e35"
+      description: "64-character lowercase hexadecimal provisioning token. Returned from the `POST /extensions/{id}/provisioning-token` response."
+  responses:
+    '200':
+      description: Linphone lpconfig provisioning XML rendered successfully.
+      content:
+        application/xml:
+          schema:
+            type: string
+            example: |
+              <?xml version="1.0" encoding="UTF-8"?>
+              <config xmlns="http://www.linphone.org/xsds/lpconfig.xsd">
+                <section name="proxy_0">
+                  <entry name="reg_proxy" overwrite="true">&lt;sip:test.reg.voipbin.net;transport=udp&gt;</entry>
+                  <entry name="reg_identity" overwrite="true">sip:2001@test.reg.voipbin.net</entry>
+                </section>
+                <section name="auth_info_0">
+                  <entry name="username" overwrite="true">2001</entry>
+                  <entry name="domain" overwrite="true">test.reg.voipbin.net</entry>
+                </section>
+              </config>
+    '400':
+      description: Token is missing, malformed, unknown, or expired (tokens expire after 10 minutes). All failure cases return the same empty 400 response.

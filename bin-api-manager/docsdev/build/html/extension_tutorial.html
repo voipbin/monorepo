@@ -784,6 +784,49 @@
 <p>This endpoint requires no request body. The <code class="docutils literal notranslate"><span class="pre">direct_hash</span></code> in the response is the new hash — the previous hash is permanently invalidated. Update any stored SIP URIs that reference the old hash.</p>
 </div>
 </section>
+<section id="provision-linphone-via-qr-code">
+<h3>Provision Linphone via QR code<a class="headerlink" href="#provision-linphone-via-qr-code" title="Link to this heading">¶</a></h3>
+<p>Issue a short-lived provisioning token for the extension, then render the returned <code class="docutils literal notranslate"><span class="pre">url</span></code> as a QR code. Scanning the QR code with the Linphone mobile app configures the SIP account automatically. See <a class="reference internal" href="extension_overview.html#extension-overview-provisioning"><span class="std std-ref">Softphone QR Provisioning</span></a> for concepts and security notes.</p>
+<p><strong>Step 1: Issue a provisioning token</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/extensions/6a7934ff-0e1c-4857-857b-23c9e27d267b/provisioning-token?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+
+{
+    &quot;token&quot;: &quot;3f9a1c8e5b2d7f4a6c0e9b8d1f3a5c7e2b4d6f8a0c1e3b5d7f9a2c4e6b8d0f1a&quot;,
+    &quot;url&quot;: &quot;https://api.voipbin.net/provisioning/extension?token=3f9a1c8e5b2d7f4a6c0e9b8d1f3a5c7e2b4d6f8a0c1e3b5d7f9a2c4e6b8d0f1a&quot;,
+    &quot;expire&quot;: &quot;2026-08-24T12:10:00Z&quot;
+}
+</pre></div>
+</div>
+<p><strong>Step 2: Render the url as a QR code and scan it with Linphone</strong></p>
+<p>Display the <code class="docutils literal notranslate"><span class="pre">url</span></code> value as a QR code (any QR library or generator works). In the Linphone mobile app, choose the QR code scan option on the account setup screen and scan the code. Linphone fetches the URL and applies the SIP account settings, then registers.</p>
+<p>The URL serves the following Linphone configuration XML (<code class="docutils literal notranslate"><span class="pre">application/xml</span></code>). You do not need to handle this content yourself; Linphone consumes it directly:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;config xmlns=&quot;http://www.linphone.org/xsds/lpconfig.xsd&quot;&gt;
+  &lt;section name=&quot;misc&quot;&gt;
+    &lt;entry name=&quot;transient_provisioning&quot; overwrite=&quot;true&quot;&gt;1&lt;/entry&gt;
+  &lt;/section&gt;
+  &lt;section name=&quot;proxy_0&quot;&gt;
+    &lt;entry name=&quot;reg_proxy&quot; overwrite=&quot;true&quot;&gt;&amp;lt;sip:ab12.reg.voipbin.net;transport=udp&amp;gt;&lt;/entry&gt;
+    &lt;entry name=&quot;reg_identity&quot; overwrite=&quot;true&quot;&gt;sip:test12@ab12.reg.voipbin.net&lt;/entry&gt;
+    &lt;entry name=&quot;reg_expires&quot; overwrite=&quot;true&quot;&gt;3600&lt;/entry&gt;
+    &lt;entry name=&quot;reg_sendregister&quot; overwrite=&quot;true&quot;&gt;1&lt;/entry&gt;
+    &lt;entry name=&quot;publish&quot; overwrite=&quot;true&quot;&gt;0&lt;/entry&gt;
+  &lt;/section&gt;
+  &lt;section name=&quot;auth_info_0&quot;&gt;
+    &lt;entry name=&quot;username&quot; overwrite=&quot;true&quot;&gt;test12&lt;/entry&gt;
+    &lt;entry name=&quot;domain&quot; overwrite=&quot;true&quot;&gt;ab12.reg.voipbin.net&lt;/entry&gt;
+    &lt;entry name=&quot;passwd&quot; overwrite=&quot;true&quot;&gt;5316382a-757c-11eb-9348-bb32547e99c4&lt;/entry&gt;
+    &lt;entry name=&quot;realm&quot; overwrite=&quot;true&quot;&gt;ab12.reg.voipbin.net&lt;/entry&gt;
+  &lt;/section&gt;
+&lt;/config&gt;
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The issuing endpoint requires no request body and needs admin or manager permission. The returned <code class="docutils literal notranslate"><span class="pre">url</span></code> is complete; do not reassemble it from the <code class="docutils literal notranslate"><span class="pre">token</span></code>. The token expires 10 minutes after issuance (<code class="docutils literal notranslate"><span class="pre">expire</span></code>, RFC 3339) and may be fetched multiple times within that window. The public <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/provisioning/extension</span></code> endpoint has no <code class="docutils literal notranslate"><span class="pre">/v1.0</span></code> prefix and no authentication; any invalid or expired token returns a bare <code class="docutils literal notranslate"><span class="pre">400</span></code> with an empty body. The QR code works only with the Linphone app, and scanning on an app that already has a SIP account replaces account 0.</p>
+</div>
+</section>
 <section id="delete-the-extension">
 <h3>Delete the extension<a class="headerlink" href="#delete-the-extension" title="Link to this heading">¶</a></h3>
 <p>Delete the existing extension of given id.</p>
@@ -859,6 +902,7 @@
 <li><a class="reference internal" href="#create-a-extension">Create a extension</a></li>
 <li><a class="reference internal" href="#update-the-extension">Update the extension</a></li>
 <li><a class="reference internal" href="#regenerate-direct-extension-hash">Regenerate direct extension hash</a></li>
+<li><a class="reference internal" href="#provision-linphone-via-qr-code">Provision Linphone via QR code</a></li>
 <li><a class="reference internal" href="#delete-the-extension">Delete the extension</a></li>
 </ul>
 </li>

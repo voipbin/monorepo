@@ -61,7 +61,7 @@ Requests pass through the following middleware layers before reaching a handler:
 
 3. **Request ID injection** — A unique request ID is attached to each request and propagated through logs and error envelopes.
 
-4. **Rate limiting, per-IP** (`lib/middleware/ratelimit.go`) — Per-IP, in-memory token-bucket limiting, applied per route group before authentication (`auth_public`, `auth_protected`, `v1` tiers). See [operations.md](operations.md#rate-limiting) for tier defaults, disable semantics, and caveats.
+4. **Rate limiting, per-IP** (`lib/middleware/ratelimit.go`) — Per-IP, in-memory token-bucket limiting, applied per route group before authentication (`auth_public`, `auth_protected`, `v1`, `provisioning_public` tiers). See [operations.md](operations.md#rate-limiting) for tier defaults, disable semantics, and caveats.
 
 5. **JWT / Accesskey authentication** (`lib/middleware/authenticate.go`, `Authenticate()`) — Parses credentials and stores the resulting `*auth.AuthIdentity` in the gin context (`auth_identity`) before any protected handler runs. `Authenticate()` does **not** by itself enforce account status — see step 7. See [auth.md](auth.md) for details.
 
@@ -77,6 +77,13 @@ Public endpoints (no authentication required):
 - `POST /auth/email-verify`
 - `POST /auth/password-forgot`
 - `GET/POST /auth/password-reset`
+- `GET /provisioning/extension` — SIP softphone (Linphone) remote-provisioning XML, redeemed by a
+  short-lived token issued from `POST /v1.0/extensions/:id/provisioning-token`. Registered on the
+  same shared engine as every other route, but `gin.Default()` was replaced with `gin.New()` +
+  `gin.LoggerWithConfig(SkipPaths: [...])` + `gin.Recovery()` so this path's `token` query parameter
+  is excluded from the access log; the handler emits its own token-free structured log line instead.
+  See [routing.md](routing.md#provisioning) and [operations.md](operations.md#rate-limiting)
+  (`provisioning_public` tier).
 
 ---
 

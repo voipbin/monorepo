@@ -1,0 +1,39 @@
+post:
+  summary: Issue a provisioning token for extension
+  description: |
+    Issues a short-lived (10 minute) provisioning token for SIP softphone auto-configuration
+    (Linphone remote provisioning). The response contains the token, the complete public
+    provisioning URL (rendered as a QR code by the admin console), and the expiration timestamp.
+
+    Scanning the returned URL with the Linphone mobile app fetches the extension's SIP
+    credentials automatically via `GET /provisioning/extension`.
+
+    Requires CustomerAdmin or CustomerManager permission.
+  tags:
+    - Extension
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        example: "550e8400-e29b-41d4-a716-446655440000"
+      description: "The unique identifier of the extension. Returned from the `GET /extensions` response."
+  responses:
+    '200':
+      description: Provisioning token issued successfully.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiManagerExtensionProvisioningToken'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'

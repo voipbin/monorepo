@@ -4,8 +4,10 @@ package cachehandler
 
 import (
 	"context"
+	"time"
 
 	"github.com/go-redis/redis/v8"
+	"github.com/gofrs/uuid"
 )
 
 type handler struct {
@@ -19,6 +21,9 @@ type handler struct {
 // CacheHandler interface
 type CacheHandler interface {
 	Connect() error
+
+	ProvisioningTokenSet(ctx context.Context, token string, extensionID uuid.UUID, ttl time.Duration) error
+	ProvisioningTokenGet(ctx context.Context, token string) (uuid.UUID, error)
 }
 
 // NewHandler creates DBHandler

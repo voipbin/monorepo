@@ -682,6 +682,27 @@
 <p>When dialing an extension via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls</span></code> with <code class="docutils literal notranslate"><span class="pre">destination.type:</span> <span class="pre">&quot;extension&quot;</span></code>, set <code class="docutils literal notranslate"><span class="pre">destination.target_name</span></code> to the extension’s <code class="docutils literal notranslate"><span class="pre">extension</span></code> (username) field, <strong>not</strong> its <code class="docutils literal notranslate"><span class="pre">name</span></code> (display label) field. The two are independent and often differ (e.g. <code class="docutils literal notranslate"><span class="pre">name:</span> <span class="pre">&quot;jay-home&quot;</span></code> vs. <code class="docutils literal notranslate"><span class="pre">extension:</span> <span class="pre">&quot;jay1&quot;</span></code>). Routing is matched strictly against <code class="docutils literal notranslate"><span class="pre">extension</span></code>; if <code class="docutils literal notranslate"><span class="pre">target_name</span></code> does not match any registered extension’s <code class="docutils literal notranslate"><span class="pre">extension</span></code> value, the call request fails with an error rather than silently ringing nothing.</p>
 </div>
 </section>
+<section id="provisioning-token">
+<span id="extension-struct-extension-provisioning-token"></span><h2>Provisioning Token<a class="headerlink" href="#provisioning-token" title="Link to this heading">¶</a></h2>
+<p>Returned by <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/extensions/{id}/provisioning-token</span></code>. See <a class="reference internal" href="extension_overview.html#extension-overview-provisioning"><span class="std std-ref">Softphone QR Provisioning</span></a>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;token&quot;</span><span class="p">:</span> <span class="s2">&quot;3f9a1c8e5b2d7f4a6c0e9b8d1f3a5c7e2b4d6f8a0c1e3b5d7f9a2c4e6b8d0f1a&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://api.voipbin.net/provisioning/extension?token=3f9a1c8e5b2d7f4a6c0e9b8d1f3a5c7e2b4d6f8a0c1e3b5d7f9a2c4e6b8d0f1a&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;expire&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-08-24T12:10:00Z&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">token</span></code> (String): The provisioning token. A random 64-character lowercase hex string. Valid for 10 minutes after issuance and usable multiple times within that window.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">url</span></code> (String): The complete public provisioning URL. Render this value as a QR code for the Linphone mobile app to scan. Use it verbatim; do not reassemble it from <code class="docutils literal notranslate"><span class="pre">token</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">expire</span></code> (String, RFC 3339): Timestamp when the token expires. After this time the <code class="docutils literal notranslate"><span class="pre">url</span></code> returns <code class="docutils literal notranslate"><span class="pre">400</span></code>.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Treat <code class="docutils literal notranslate"><span class="pre">url</span></code> as a credential: it serves the extension’s SIP password in plain text to any holder of the token until <code class="docutils literal notranslate"><span class="pre">expire</span></code>. The endpoint requires admin or manager permission and no request body. To refresh an expired QR code, call the endpoint again for a new token.</p>
+</div>
+</section>
 </section>
 
         </article>
@@ -744,6 +765,7 @@
             <ul>
 <li><a class="reference internal" href="#">Extension</a><ul>
 <li><a class="reference internal" href="#extension-struct-extension-extension">Extension</a></li>
+<li><a class="reference internal" href="#provisioning-token">Provisioning Token</a></li>
 </ul>
 </li>
 </ul>

@@ -2924,6 +2924,36 @@ func (mr *MockServiceHandlerMockRecorder) ExtensionList(ctx, a, size, token any)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionList", reflect.TypeOf((*MockServiceHandler)(nil).ExtensionList), ctx, a, size, token)
 }
 
+// ExtensionProvisioningTokenCreate mocks base method.
+func (m *MockServiceHandler) ExtensionProvisioningTokenCreate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*ExtensionProvisioningToken, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExtensionProvisioningTokenCreate", ctx, a, id)
+	ret0, _ := ret[0].(*ExtensionProvisioningToken)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ExtensionProvisioningTokenCreate indicates an expected call of ExtensionProvisioningTokenCreate.
+func (mr *MockServiceHandlerMockRecorder) ExtensionProvisioningTokenCreate(ctx, a, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionProvisioningTokenCreate", reflect.TypeOf((*MockServiceHandler)(nil).ExtensionProvisioningTokenCreate), ctx, a, id)
+}
+
+// ExtensionProvisioningXMLGet mocks base method.
+func (m *MockServiceHandler) ExtensionProvisioningXMLGet(ctx context.Context, token string) ([]byte, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExtensionProvisioningXMLGet", ctx, token)
+	ret0, _ := ret[0].([]byte)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ExtensionProvisioningXMLGet indicates an expected call of ExtensionProvisioningXMLGet.
+func (mr *MockServiceHandlerMockRecorder) ExtensionProvisioningXMLGet(ctx, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtensionProvisioningXMLGet", reflect.TypeOf((*MockServiceHandler)(nil).ExtensionProvisioningXMLGet), ctx, token)
+}
+
 // ExtensionUpdate mocks base method.
 func (m *MockServiceHandler) ExtensionUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name, detail, password string) (*extension.WebhookMessage, error) {
 	m.ctrl.T.Helper()

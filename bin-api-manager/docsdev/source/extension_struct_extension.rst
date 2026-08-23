@@ -46,4 +46,27 @@ Extension
 
    When dialing an extension via ``POST /calls`` with ``destination.type: "extension"``, set ``destination.target_name`` to the extension's ``extension`` (username) field, **not** its ``name`` (display label) field. The two are independent and often differ (e.g. ``name: "jay-home"`` vs. ``extension: "jay1"``). Routing is matched strictly against ``extension``; if ``target_name`` does not match any registered extension's ``extension`` value, the call request fails with an error rather than silently ringing nothing.
 
+.. _extension-struct-extension-provisioning-token:
+
+Provisioning Token
+------------------
+
+Returned by ``POST /extensions/{id}/provisioning-token``. See :ref:`Softphone QR Provisioning <extension-overview-provisioning>`.
+
+.. code::
+
+    {
+        "token": "3f9a1c8e5b2d7f4a6c0e9b8d1f3a5c7e2b4d6f8a0c1e3b5d7f9a2c4e6b8d0f1a",
+        "url": "https://api.voipbin.net/provisioning/extension?token=3f9a1c8e5b2d7f4a6c0e9b8d1f3a5c7e2b4d6f8a0c1e3b5d7f9a2c4e6b8d0f1a",
+        "expire": "2026-08-24T12:10:00Z"
+    }
+
+* ``token`` (String): The provisioning token. A random 64-character lowercase hex string. Valid for 10 minutes after issuance and usable multiple times within that window.
+* ``url`` (String): The complete public provisioning URL. Render this value as a QR code for the Linphone mobile app to scan. Use it verbatim; do not reassemble it from ``token``.
+* ``expire`` (String, RFC 3339): Timestamp when the token expires. After this time the ``url`` returns ``400``.
+
+.. note:: **AI Implementation Hint**
+
+   Treat ``url`` as a credential: it serves the extension's SIP password in plain text to any holder of the token until ``expire``. The endpoint requires admin or manager permission and no request body. To refresh an expired QR code, call the endpoint again for a new token.
+
 
