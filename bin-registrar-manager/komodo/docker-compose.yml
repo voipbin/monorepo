@@ -26,6 +26,9 @@ services:
       - PROMETHEUS_LISTEN_ADDRESS=:2112
       - DOMAIN_NAME_EXTENSION=[[BIN_MANAGER__DOMAIN_NAME_EXTENSION]]
       - DOMAIN_NAME_TRUNK=[[BIN_MANAGER__DOMAIN_NAME_TRUNK]]
+      # VOIP-1385: short customer domain labels; flip the Komodo variable to
+      # true at cutover deploy step 4 (default false = legacy uuid labels)
+      - DOMAIN_SHORT_LABEL_ENABLED=[[BIN_MANAGER__DOMAIN_SHORT_LABEL_ENABLED]]
     command: ./registrar-manager
     networks:
       default: {}
