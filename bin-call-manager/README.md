@@ -3,6 +3,12 @@ Manage the call resource.
 Handling the call.
 Execute the atomic call actions.
 
+Incoming customer (registrar) calls are classified by the `.reg.<base>`
+domain suffix and resolved to a customer via registrar-manager's
+realm lookup (fail-closed: unknown realms are rejected). The legacy
+`.registrar.<base>` suffix is not accepted since the VOIP-1385 short
+domain cutover. See docs/architecture.md for details.
+
 grpc, pubsub
 
 # Usage
