@@ -279,7 +279,10 @@ confusion. `reg.` has no collision.
   manual reconfiguration (portal notice + guide ship with the cutover).
   square-talk webphones SELF-HEAL: after the step-2 frontend fix they fetch
   the domain from the API on load, so a reload re-registers correctly.
-- Runbook notes: run in a low-traffic window (each extension has a
+- Runbook notes: the batch lists extensions with a 1000-per-customer page
+  limit without pagination loops (mirrors the existing customer_deleted
+  cascade pattern); verify no customer exceeds 1000 extensions before the
+  run (trivially true today). Run in a low-traffic window (each extension has a
   sub-second ps_* delete+create gap for incoming INVITEs, subsumed by the
   accepted outage decision). During the window Asterisk may emit
   ContactStatusChange events carrying OLD-realm endpoint strings for
@@ -301,14 +304,21 @@ confusion. `reg.` has no collision.
        (100% coverage required before 1d).
    1d. call-manager deploy: lookup cutover (TrimSuffix deleted; unknown
        realm rejects) + dual-suffix acceptance.
-   (Everything still uuid-domain; zero behavior change for clients — both
-   uuid and future short realms resolve through the same lookup.)
+   (Existing customers stay uuid-domain. NEW customers created in this
+   window also get uuid-format rows: short-label generation is gated behind
+   the registrar-manager env flag `DOMAIN_SHORT_LABEL_ENABLED` (default
+   false), so pre-cutover signups remain constructible by the not-yet-updated
+   frontends. Both uuid and future short realms resolve through the same
+   lookup. The migration batch generates short labels regardless of the
+   flag.)
 2. Frontend: square-talk + square-admin consume `domain_name` verbatim.
    (Gate: MUST follow step 1 — deploying frontends first would break all
    existing webphones, which would build `wss://<bare-uuid>`.)
 3. Infra: DNS wildcard + `*.reg.voipbin.net` cert + Kamailio tls.cfg/regex
    deploy (accepting both suffixes; no traffic on `.reg.` yet).
-4. registrar-manager env flip: new provisioning uses `reg.voipbin.net`.
+4. registrar-manager env flip: `DOMAIN_NAME_EXTENSION=reg.voipbin.net` AND
+   `DOMAIN_SHORT_LABEL_ENABLED=true` — from here, new provisioning uses
+   short labels under `reg.voipbin.net`.
 5. Migration batch run (CEO/CTO executes): all existing customers ->
    `<4ch>.reg.voipbin.net`. Portal notice + reconfiguration guide go out
    simultaneously.

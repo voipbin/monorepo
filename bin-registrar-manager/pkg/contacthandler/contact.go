@@ -8,14 +8,19 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-registrar-manager/models/astcontact"
-	"monorepo/bin-registrar-manager/models/common"
 )
 
 // ContactGetsByExtension returns list of contacts
 func (h *contactHandler) ContactGetsByExtension(ctx context.Context, customerID uuid.UUID, ext string) ([]*astcontact.AstContact, error) {
 	logrus.Debugf("Getting a contact info. endpoint: %s", ext)
 
-	endpoint := common.GenerateEndpointExtension(customerID, ext)
+	// read path: lookup-only endpoint reconstruction (never creates a domain row)
+	endpoint, err := h.customerDomainHandler.EndpointGet(ctx, customerID, ext)
+	if err != nil {
+		logrus.Errorf("Could not get endpoint info. extension: %s, err: %v", ext, err)
+		return nil, errors.Wrap(err, "could not get endpoint")
+	}
+
 	contacts, err := h.dbAst.AstContactGetsByEndpoint(ctx, endpoint)
 	if err != nil {
 		logrus.Errorf("Could not get contacts info. endpoint: %s, target_endpoint: %s, err: %v", ext, endpoint, err)
@@ -33,7 +38,12 @@ func (h *contactHandler) ContactRefreshByEndpoint(ctx context.Context, customerI
 		"extension":   ext,
 	})
 
-	endpoint := common.GenerateEndpointExtension(customerID, ext)
+	// read path: lookup-only endpoint reconstruction (never creates a domain row)
+	endpoint, err := h.customerDomainHandler.EndpointGet(ctx, customerID, ext)
+	if err != nil {
+		log.Errorf("Could not get endpoint info. err: %v", err)
+		return errors.Wrap(err, "could not get endpoint")
+	}
 	log.Debugf("Refreshing the contacts of the endpoint. endpoint: %s", endpoint)
 
 	if err := h.dbAst.AstContactDeleteFromCache(ctx, endpoint); err != nil {

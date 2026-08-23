@@ -10,11 +10,12 @@ import (
 	bmbilling "monorepo/bin-billing-manager/models/billing"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	cucustomer "monorepo/bin-customer-manager/models/customer"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	cfconference "monorepo/bin-conference-manager/models/conference"
+	cucustomer "monorepo/bin-customer-manager/models/customer"
+	rmcustomerdomain "monorepo/bin-registrar-manager/models/customerdomain"
 	rmextension "monorepo/bin-registrar-manager/models/extension"
 
 	fmaction "monorepo/bin-flow-manager/models/action"
@@ -25,6 +26,7 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 
+	"monorepo/bin-call-manager/models/ari"
 	"monorepo/bin-call-manager/models/call"
 	"monorepo/bin-call-manager/models/channel"
 	"monorepo/bin-call-manager/pkg/bridgehandler"
@@ -106,6 +108,65 @@ func Test_startIncomingDomainTypeRegistrar_DestinationTypeAgent(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "normal short realm",
+
+			channel: &channel.Channel{
+				ID: "asterisk-call-58f54b64c7-2kwmb-1675216038.171",
+
+				DestinationName:   "",
+				DestinationNumber: "agent%3Aeb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b",
+				SourceName:        "",
+				SourceNumber:      "test-exten",
+
+				StasisData: map[channel.StasisDataType]string{
+					"context": "call-in",
+					"domain":  "ab12.reg.voipbin.net",
+					"source":  "222.112.233.190",
+				},
+			},
+
+			responseSource: &commonaddress.Address{
+				Type:   commonaddress.TypeExtension,
+				Target: "test-exten",
+			},
+			responseDestination: &commonaddress.Address{
+				Type:   commonaddress.TypeAgent,
+				Target: "eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b",
+			},
+			responseAgent: &amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b"),
+					CustomerID: uuid.FromStringOrNil("a7be89e0-8170-4f48-ac01-a81a31c6e344"),
+				},
+			},
+			responseFlow: &fmflow.Flow{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("1d82f6c0-e6a6-4718-8f23-720f845a8fbe"),
+				},
+			},
+
+			expectCustomerID: uuid.FromStringOrNil("a7be89e0-8170-4f48-ac01-a81a31c6e344"),
+			expectAgentID:    uuid.FromStringOrNil("eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b"),
+			expectActions: []fmaction.Action{
+				{
+					Type: fmaction.TypeConnect,
+					Option: map[string]any{
+						"source": map[string]any{
+							"type":   "extension",
+							"target": "test-exten",
+						},
+						"destinations": []map[string]any{
+							{
+								"type":   "agent",
+								"target": "eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b",
+							},
+						},
+						"anonymous": string(call.AnonymousOptionAuto),
+					},
+				},
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -131,6 +192,7 @@ func Test_startIncomingDomainTypeRegistrar_DestinationTypeAgent(t *testing.T) {
 
 			ctx := context.Background()
 
+			mockReq.EXPECT().RegistrarV1CustomerDomainGetByRealm(ctx, tt.channel.StasisData[channel.StasisDataTypeDomain]).Return(&rmcustomerdomain.CustomerDomain{CustomerID: tt.expectCustomerID}, nil)
 			mockChannel.EXPECT().AddressGetSource(tt.channel, commonaddress.TypeExtension).Return(tt.responseSource)
 			mockReq.EXPECT().RegistrarV1ExtensionList(ctx, "", uint64(1), gomock.Any()).Return([]rmextension.Extension{}, nil)
 			mockChannel.EXPECT().AddressGetDestinationWithoutSpecificType(tt.channel).Return(tt.responseDestination)
@@ -286,6 +348,7 @@ func Test_startIncomingDomainTypeRegistrar_DestinationTypeConference(t *testing.
 
 			ctx := context.Background()
 
+			mockReq.EXPECT().RegistrarV1CustomerDomainGetByRealm(ctx, tt.channel.StasisData[channel.StasisDataTypeDomain]).Return(&rmcustomerdomain.CustomerDomain{CustomerID: tt.expectCustomerID}, nil)
 			mockChannel.EXPECT().AddressGetSource(tt.channel, commonaddress.TypeExtension).Return(tt.responseSource)
 			mockReq.EXPECT().RegistrarV1ExtensionList(ctx, "", uint64(1), gomock.Any()).Return(tt.responseExtensions, nil)
 			mockChannel.EXPECT().AddressGetDestinationWithoutSpecificType(tt.channel).Return(tt.responseDestination)
@@ -409,6 +472,7 @@ func Test_startIncomingDomainTypeRegistrar_DestinationTypeTel(t *testing.T) {
 
 			ctx := context.Background()
 
+			mockReq.EXPECT().RegistrarV1CustomerDomainGetByRealm(ctx, tt.channel.StasisData[channel.StasisDataTypeDomain]).Return(&rmcustomerdomain.CustomerDomain{CustomerID: tt.expectCustomerID}, nil)
 			mockChannel.EXPECT().AddressGetSource(tt.channel, commonaddress.TypeExtension).Return(tt.responseSource)
 
 			// parseAddressTypeExtension
@@ -574,6 +638,7 @@ func Test_startIncomingDomainTypeRegistrarDestinationTypeExtension(t *testing.T)
 
 			ctx := context.Background()
 
+			mockReq.EXPECT().RegistrarV1CustomerDomainGetByRealm(ctx, tt.channel.StasisData[channel.StasisDataTypeDomain]).Return(&rmcustomerdomain.CustomerDomain{CustomerID: tt.expectCustomerID}, nil)
 			mockChannel.EXPECT().AddressGetSource(tt.channel, commonaddress.TypeExtension).Return(tt.responseSource)
 
 			mockReq.EXPECT().RegistrarV1ExtensionList(ctx, "", uint64(1), gomock.Any()).Return([]rmextension.Extension{}, nil)
@@ -739,6 +804,103 @@ func Test_parseAddressTypeExtension(t *testing.T) {
 
 			if !reflect.DeepEqual(tt.expectRes, res) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_startIncomingDomainTypeRegistrar_customerDomainLookupFail(t *testing.T) {
+	tests := []struct {
+		name string
+
+		channel *channel.Channel
+
+		responseError error
+
+		expectDomain string
+	}{
+		{
+			name: "unknown short realm rejects the call",
+
+			channel: &channel.Channel{
+				ID: "asterisk-call-58f54b64c7-2kwmb-1675216038.171",
+
+				StasisData: map[channel.StasisDataType]string{
+					"context": "call-in",
+					"domain":  "zzzz.reg.voipbin.net",
+					"source":  "222.112.233.190",
+				},
+			},
+
+			responseError: fmt.Errorf("not found"),
+
+			expectDomain: "zzzz.reg.voipbin.net",
+		},
+		{
+			name: "unknown legacy realm rejects the call",
+
+			channel: &channel.Channel{
+				ID: "asterisk-call-58f54b64c7-2kwmb-1675216038.172",
+
+				StasisData: map[channel.StasisDataType]string{
+					"context": "call-in",
+					"domain":  "a7be89e0-8170-4f48-ac01-a81a31c6e344.registrar.voipbin.net",
+					"source":  "222.112.233.190",
+				},
+			},
+
+			responseError: fmt.Errorf("not found"),
+
+			expectDomain: "a7be89e0-8170-4f48-ac01-a81a31c6e344.registrar.voipbin.net",
+		},
+		{
+			name: "rpc error rejects the call",
+
+			channel: &channel.Channel{
+				ID: "asterisk-call-58f54b64c7-2kwmb-1675216038.173",
+
+				StasisData: map[channel.StasisDataType]string{
+					"context": "call-in",
+					"domain":  "ab12.reg.voipbin.net",
+					"source":  "222.112.233.190",
+				},
+			},
+
+			responseError: fmt.Errorf("rpc timeout"),
+
+			expectDomain: "ab12.reg.voipbin.net",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
+
+			h := &callHandler{
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				channelHandler: mockChannel,
+				bridgeHandler:  mockBridge,
+			}
+
+			ctx := context.Background()
+
+			// fail closed: the call must be hung up and no flow may be created.
+			mockReq.EXPECT().RegistrarV1CustomerDomainGetByRealm(ctx, tt.expectDomain).Return(nil, tt.responseError)
+			mockChannel.EXPECT().HangingUp(ctx, tt.channel.ID, ari.ChannelCauseNoRouteDestination).Return(&channel.Channel{}, nil)
+
+			if err := h.startIncomingDomainTypeRegistrar(ctx, tt.channel); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}

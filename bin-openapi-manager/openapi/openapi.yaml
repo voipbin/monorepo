@@ -6512,8 +6512,8 @@ components:
           example: "1001"
         domain_name:
           type: string
-          description: "Domain name, same as the customer_id, used by Kamailio's INVITE validation"
-          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
+          description: "The full SIP domain (realm) of the extension. e.g. ab12.reg.voipbin.net"
+          example: "ab12.reg.voipbin.net"
         username:
           type: string
           description: "Username, same as the Extension, used by Kamailio's INVITE validation"

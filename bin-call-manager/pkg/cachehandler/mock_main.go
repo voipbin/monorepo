@@ -81,17 +81,17 @@ func (mr *MockCacheHandlerMockRecorder) BridgeGet(ctx, id any) *gomock.Call {
 }
 
 // BridgeSet mocks base method.
-func (m *MockCacheHandler) BridgeSet(ctx context.Context, bridge *bridge.Bridge) error {
+func (m *MockCacheHandler) BridgeSet(ctx context.Context, arg1 *bridge.Bridge) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BridgeSet", ctx, bridge)
+	ret := m.ctrl.Call(m, "BridgeSet", ctx, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // BridgeSet indicates an expected call of BridgeSet.
-func (mr *MockCacheHandlerMockRecorder) BridgeSet(ctx, bridge any) *gomock.Call {
+func (mr *MockCacheHandlerMockRecorder) BridgeSet(ctx, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BridgeSet", reflect.TypeOf((*MockCacheHandler)(nil).BridgeSet), ctx, bridge)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BridgeSet", reflect.TypeOf((*MockCacheHandler)(nil).BridgeSet), ctx, arg1)
 }
 
 // CallAppAMDGet mocks base method.
@@ -139,17 +139,17 @@ func (mr *MockCacheHandlerMockRecorder) CallGet(ctx, id any) *gomock.Call {
 }
 
 // CallSet mocks base method.
-func (m *MockCacheHandler) CallSet(ctx context.Context, call *call.Call) error {
+func (m *MockCacheHandler) CallSet(ctx context.Context, arg1 *call.Call) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallSet", ctx, call)
+	ret := m.ctrl.Call(m, "CallSet", ctx, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CallSet indicates an expected call of CallSet.
-func (mr *MockCacheHandlerMockRecorder) CallSet(ctx, call any) *gomock.Call {
+func (mr *MockCacheHandlerMockRecorder) CallSet(ctx, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSet", reflect.TypeOf((*MockCacheHandler)(nil).CallSet), ctx, call)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallSet", reflect.TypeOf((*MockCacheHandler)(nil).CallSet), ctx, arg1)
 }
 
 // ChannelGet mocks base method.
@@ -168,17 +168,17 @@ func (mr *MockCacheHandlerMockRecorder) ChannelGet(ctx, id any) *gomock.Call {
 }
 
 // ChannelSet mocks base method.
-func (m *MockCacheHandler) ChannelSet(ctx context.Context, channel *channel.Channel) error {
+func (m *MockCacheHandler) ChannelSet(ctx context.Context, arg1 *channel.Channel) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChannelSet", ctx, channel)
+	ret := m.ctrl.Call(m, "ChannelSet", ctx, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ChannelSet indicates an expected call of ChannelSet.
-func (mr *MockCacheHandlerMockRecorder) ChannelSet(ctx, channel any) *gomock.Call {
+func (mr *MockCacheHandlerMockRecorder) ChannelSet(ctx, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSet", reflect.TypeOf((*MockCacheHandler)(nil).ChannelSet), ctx, channel)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChannelSet", reflect.TypeOf((*MockCacheHandler)(nil).ChannelSet), ctx, arg1)
 }
 
 // ConfbridgeGet mocks base method.

@@ -19,6 +19,7 @@ func TestConfig(t *testing.T) {
 		RedisDatabase:           0,
 		DomainNameExtension:     "ext.example.com",
 		DomainNameTrunk:         "trunk.example.com",
+		DomainShortLabelEnabled: true,
 	}
 
 	if cfg.RabbitMQAddress != "amqp://localhost:5672" {
@@ -32,6 +33,15 @@ func TestConfig(t *testing.T) {
 	}
 	if cfg.RedisDatabase != 0 {
 		t.Errorf("Expected RedisDatabase 0, got %d", cfg.RedisDatabase)
+	}
+	if cfg.DomainShortLabelEnabled != true {
+		t.Errorf("Expected DomainShortLabelEnabled true, got %v", cfg.DomainShortLabelEnabled)
+	}
+
+	// zero value: short labels are DISABLED by default (deploy-order gate)
+	zero := &Config{}
+	if zero.DomainShortLabelEnabled {
+		t.Error("Expected DomainShortLabelEnabled to default to false")
 	}
 }
 
@@ -61,6 +71,12 @@ func TestBindConfig(t *testing.T) {
 	}
 	if flags.Lookup("domain_name_extension") == nil {
 		t.Error("domain_name_extension flag not registered")
+	}
+	if flags.Lookup("domain_short_label_enabled") == nil {
+		t.Error("domain_short_label_enabled flag not registered")
+	}
+	if flags.Lookup("domain_short_label_enabled").DefValue != "false" {
+		t.Errorf("domain_short_label_enabled must default to false, got %s", flags.Lookup("domain_short_label_enabled").DefValue)
 	}
 }
 

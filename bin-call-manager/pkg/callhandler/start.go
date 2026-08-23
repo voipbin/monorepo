@@ -435,7 +435,7 @@ func getDomainTypeIncomingCall(domain string) string {
 		return domainTypeSIP
 	}
 
-	if strings.HasSuffix(domain, common.DomainRegistrarSuffix) {
+	if strings.HasSuffix(domain, common.DomainRegistrarSuffix) || strings.HasSuffix(domain, common.DomainRegistrarSuffixLegacy) {
 		return domainTypeRegistrar
 	}
 

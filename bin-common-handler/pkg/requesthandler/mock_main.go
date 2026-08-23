@@ -73,6 +73,7 @@ import (
 	query "monorepo/bin-rag-manager/models/query"
 	rag "monorepo/bin-rag-manager/models/rag"
 	astcontact "monorepo/bin-registrar-manager/models/astcontact"
+	customerdomain "monorepo/bin-registrar-manager/models/customerdomain"
 	extension "monorepo/bin-registrar-manager/models/extension"
 	sipauth "monorepo/bin-registrar-manager/models/sipauth"
 	trunk "monorepo/bin-registrar-manager/models/trunk"
@@ -6100,6 +6101,21 @@ func (m *MockRequestHandler) RegistrarV1ContactRefresh(ctx context.Context, filt
 func (mr *MockRequestHandlerMockRecorder) RegistrarV1ContactRefresh(ctx, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1ContactRefresh", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1ContactRefresh), ctx, filters)
+}
+
+// RegistrarV1CustomerDomainGetByRealm mocks base method.
+func (m *MockRequestHandler) RegistrarV1CustomerDomainGetByRealm(ctx context.Context, realm string) (*customerdomain.CustomerDomain, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RegistrarV1CustomerDomainGetByRealm", ctx, realm)
+	ret0, _ := ret[0].(*customerdomain.CustomerDomain)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RegistrarV1CustomerDomainGetByRealm indicates an expected call of RegistrarV1CustomerDomainGetByRealm.
+func (mr *MockRequestHandlerMockRecorder) RegistrarV1CustomerDomainGetByRealm(ctx, realm any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegistrarV1CustomerDomainGetByRealm", reflect.TypeOf((*MockRequestHandler)(nil).RegistrarV1CustomerDomainGetByRealm), ctx, realm)
 }
 
 // RegistrarV1ExtensionCountByCustomerID mocks base method.

@@ -7,20 +7,21 @@ import (
 	"log"
 	"strings"
 
-	"monorepo/bin-registrar-manager/internal/config"
-	"monorepo/bin-registrar-manager/models/extension"
-	"monorepo/bin-registrar-manager/models/sipauth"
-	"monorepo/bin-registrar-manager/models/trunk"
-	"monorepo/bin-registrar-manager/pkg/cachehandler"
-	"monorepo/bin-registrar-manager/pkg/dbhandler"
-	"monorepo/bin-registrar-manager/pkg/extensionhandler"
-	"monorepo/bin-registrar-manager/pkg/trunkhandler"
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
+	"monorepo/bin-registrar-manager/internal/config"
+	"monorepo/bin-registrar-manager/models/extension"
+	"monorepo/bin-registrar-manager/models/sipauth"
+	"monorepo/bin-registrar-manager/models/trunk"
+	"monorepo/bin-registrar-manager/pkg/cachehandler"
+	"monorepo/bin-registrar-manager/pkg/customerdomainhandler"
+	"monorepo/bin-registrar-manager/pkg/dbhandler"
+	"monorepo/bin-registrar-manager/pkg/extensionhandler"
+	"monorepo/bin-registrar-manager/pkg/trunkhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -67,6 +68,11 @@ func initCommand() *cobra.Command {
 	cmdTrunk.AddCommand(cmdTrunkDelete())
 	cmdRoot.AddCommand(cmdTrunk)
 
+	// Domain migration subcommands (VOIP-1385)
+	cmdRoot.AddCommand(cmdDomainBackfill())
+	cmdRoot.AddCommand(cmdDomainMigrate())
+	cmdRoot.AddCommand(cmdDomainMigrateRollback())
+
 	return cmdRoot
 }
 
@@ -102,8 +108,55 @@ func initExtensionHandler() (extensionhandler.ExtensionHandler, error) {
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameRegistrarEvent, serviceName)
+	customerDomainHandler := customerdomainhandler.NewCustomerDomainHandler(dbBin, config.Get().DomainShortLabelEnabled)
 
-	return extensionhandler.NewExtensionHandler(reqHandler, dbAst, dbBin, notifyHandler), nil
+	return extensionhandler.NewExtensionHandler(reqHandler, dbAst, dbBin, notifyHandler, customerDomainHandler), nil
+}
+
+// domainMigrationDeps bundles the handlers the domain migration batch needs.
+type domainMigrationDeps struct {
+	reqHandler            requesthandler.RequestHandler
+	notifyHandler         notifyhandler.NotifyHandler
+	dbAst                 dbhandler.DBHandler
+	dbBin                 dbhandler.DBHandler
+	customerDomainHandler customerdomainhandler.CustomerDomainHandler
+}
+
+// initDomainMigrationDeps wires the handlers for the domain migration batch,
+// mirroring how registrar-control wires handlers for the other commands.
+func initDomainMigrationDeps() (*domainMigrationDeps, error) {
+	sqlBin, err := commondatabasehandler.Connect(config.Get().DatabaseDSNBin)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not connect to bin database")
+	}
+
+	sqlAsterisk, err := commondatabasehandler.Connect(config.Get().DatabaseDSNAsterisk)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not connect to asterisk database")
+	}
+
+	cache, err := initCache()
+	if err != nil {
+		return nil, errors.Wrap(err, "could not initialize cache")
+	}
+
+	dbAst := dbhandler.NewHandler(sqlAsterisk, cache)
+	dbBin := dbhandler.NewHandler(sqlBin, cache)
+
+	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, config.Get().RabbitMQAddress)
+	sockHandler.Connect()
+
+	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameRegistrarEvent, serviceName)
+	customerDomainHandler := customerdomainhandler.NewCustomerDomainHandler(dbBin, config.Get().DomainShortLabelEnabled)
+
+	return &domainMigrationDeps{
+		reqHandler:            reqHandler,
+		notifyHandler:         notifyHandler,
+		dbAst:                 dbAst,
+		dbBin:                 dbBin,
+		customerDomainHandler: customerDomainHandler,
+	}, nil
 }
 
 func initTrunkHandler() (trunkhandler.TrunkHandler, error) {

@@ -152,17 +152,26 @@ const (
 
 // Defines values for AIManagerToolName.
 const (
-	AIManagerToolNameAll               AIManagerToolName = "all"
-	AIManagerToolNameConnectCall       AIManagerToolName = "connect_call"
-	AIManagerToolNameGetAicallMessages AIManagerToolName = "get_aicall_messages"
-	AIManagerToolNameGetVariables      AIManagerToolName = "get_variables"
-	AIManagerToolNameSearchKnowledge   AIManagerToolName = "search_knowledge"
-	AIManagerToolNameSendEmail         AIManagerToolName = "send_email"
-	AIManagerToolNameSendMessage       AIManagerToolName = "send_message"
-	AIManagerToolNameSetVariables      AIManagerToolName = "set_variables"
-	AIManagerToolNameStopFlow          AIManagerToolName = "stop_flow"
-	AIManagerToolNameStopMedia         AIManagerToolName = "stop_media"
-	AIManagerToolNameStopService       AIManagerToolName = "stop_service"
+	AIManagerToolNameAll                    AIManagerToolName = "all"
+	AIManagerToolNameCaseCreate             AIManagerToolName = "case_create"
+	AIManagerToolNameConnectCall            AIManagerToolName = "connect_call"
+	AIManagerToolNameCreateCall             AIManagerToolName = "create_call"
+	AIManagerToolNameDescribeAction         AIManagerToolName = "describe_action"
+	AIManagerToolNameGetAicallMessages      AIManagerToolName = "get_aicall_messages"
+	AIManagerToolNameGetCaseNotes           AIManagerToolName = "get_case_notes"
+	AIManagerToolNameGetContactInteractions AIManagerToolName = "get_contact_interactions"
+	AIManagerToolNameGetConversationContent AIManagerToolName = "get_conversation_content"
+	AIManagerToolNameGetCorrelation         AIManagerToolName = "get_correlation"
+	AIManagerToolNameGetRelatedCases        AIManagerToolName = "get_related_cases"
+	AIManagerToolNameGetResource            AIManagerToolName = "get_resource"
+	AIManagerToolNameGetVariables           AIManagerToolName = "get_variables"
+	AIManagerToolNameSearchKnowledge        AIManagerToolName = "search_knowledge"
+	AIManagerToolNameSendEmail              AIManagerToolName = "send_email"
+	AIManagerToolNameSendMessage            AIManagerToolName = "send_message"
+	AIManagerToolNameSetVariables           AIManagerToolName = "set_variables"
+	AIManagerToolNameStopFlow               AIManagerToolName = "stop_flow"
+	AIManagerToolNameStopMedia              AIManagerToolName = "stop_media"
+	AIManagerToolNameStopService            AIManagerToolName = "stop_service"
 )
 
 // Defines values for AgentManagerAgentPermission.
@@ -598,7 +607,9 @@ const (
 const (
 	CustomerManagerCustomerStatusActive  CustomerManagerCustomerStatus = "active"
 	CustomerManagerCustomerStatusDeleted CustomerManagerCustomerStatus = "deleted"
+	CustomerManagerCustomerStatusExpired CustomerManagerCustomerStatus = "expired"
 	CustomerManagerCustomerStatusFrozen  CustomerManagerCustomerStatus = "frozen"
+	CustomerManagerCustomerStatusInitial CustomerManagerCustomerStatus = "initial"
 )
 
 // Defines values for CustomerManagerCustomerWebhookMethod.
@@ -1222,7 +1233,7 @@ type AIManagerAI struct {
 	// Detail Detailed information about the AI.
 	Detail *string `json:"detail,omitempty"`
 
-	// DirectHash Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field.
+	// DirectHash The direct hash for direct access via SIP URI sip:<direct_hash>@sip.voipbin.net (the "direct." prefix is already included in the value, e.g. "direct.a1b2c3d4e5f6"). Returned from the resource's `direct_hash` field.
 	DirectHash *string `json:"direct_hash,omitempty"`
 
 	// EngineKey API key or authentication key for the AI engine. Write-only; not returned in responses.
@@ -1627,7 +1638,7 @@ type AIManagerTeam struct {
 	// Detail Detailed description of the team.
 	Detail string `json:"detail"`
 
-	// DirectHash Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field.
+	// DirectHash The direct hash for direct access via SIP URI sip:<direct_hash>@sip.voipbin.net (the "direct." prefix is already included in the value, e.g. "direct.a1b2c3d4e5f6"). Returned from the resource's `direct_hash` field.
 	DirectHash *string `json:"direct_hash,omitempty"`
 
 	// Id The unique identifier of the team.
@@ -1711,7 +1722,7 @@ type AgentManagerAgent struct {
 	// Detail Additional detail or notes about the agent.
 	Detail *string `json:"detail,omitempty"`
 
-	// DirectHash Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field.
+	// DirectHash The direct hash for direct access via SIP URI sip:<direct_hash>@sip.voipbin.net (the "direct." prefix is already included in the value, e.g. "direct.a1b2c3d4e5f6"). Returned from the resource's `direct_hash` field.
 	DirectHash *string `json:"direct_hash,omitempty"`
 
 	// Id The unique identifier of the agent.
@@ -2598,7 +2609,7 @@ type ConferenceManagerConference struct {
 	// Detail Detailed information about the conference.
 	Detail *string `json:"detail,omitempty"`
 
-	// DirectHash Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field.
+	// DirectHash The direct hash for direct access via SIP URI sip:<direct_hash>@sip.voipbin.net (the "direct." prefix is already included in the value, e.g. "direct.a1b2c3d4e5f6"). Returned from the resource's `direct_hash` field.
 	DirectHash *string `json:"direct_hash,omitempty"`
 
 	// Id Unique identifier for the conference.
@@ -3836,7 +3847,7 @@ type FlowManagerFlow struct {
 	// Detail Detailed description of the flow.
 	Detail *string `json:"detail,omitempty"`
 
-	// DirectHash Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field.
+	// DirectHash The direct hash for direct access via SIP URI sip:<direct_hash>@sip.voipbin.net (the "direct." prefix is already included in the value, e.g. "direct.a1b2c3d4e5f6"). Returned from the resource's `direct_hash` field.
 	DirectHash *string `json:"direct_hash,omitempty"`
 
 	// Id Unique identifier for the flow.
@@ -4128,7 +4139,7 @@ type QueueManagerQueue struct {
 	// Detail Detailed description of the queue.
 	Detail *string `json:"detail,omitempty"`
 
-	// DirectHash Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field.
+	// DirectHash The direct hash for direct access via SIP URI sip:<direct_hash>@sip.voipbin.net (the "direct." prefix is already included in the value, e.g. "direct.a1b2c3d4e5f6"). Returned from the resource's `direct_hash` field.
 	DirectHash *string `json:"direct_hash,omitempty"`
 
 	// Id The unique identifier of the queue. Returned from the `POST /queues` or `GET /queues` response.
@@ -4281,10 +4292,10 @@ type RegistrarManagerExtension struct {
 	// Detail Detailed description of the extension.
 	Detail *string `json:"detail,omitempty"`
 
-	// DirectHash Hash for direct access via SIP URI sip:direct.<hash>@sip.voipbin.net. Returned from the resource's `direct_hash` field.
+	// DirectHash The direct hash for direct access via SIP URI sip:<direct_hash>@sip.voipbin.net (the "direct." prefix is already included in the value, e.g. "direct.a1b2c3d4e5f6"). Returned from the resource's `direct_hash` field.
 	DirectHash *string `json:"direct_hash,omitempty"`
 
-	// DomainName Domain name, same as the customer_id, used by Kamailio's INVITE validation
+	// DomainName The full SIP domain (realm) of the extension. e.g. ab12.reg.voipbin.net
 	DomainName *string `json:"domain_name,omitempty"`
 
 	// Extension The SIP extension number.
@@ -4438,7 +4449,7 @@ type RouteManagerProvider struct {
 	// Id The unique identifier of the provider. Returned from the `POST /providers` or `GET /providers` response.
 	Id *string `json:"id,omitempty"`
 
-	// Metadata Carrier-specific resource identifiers stored during automated setup. For Telnyx providers created via `POST /providers/setup`, contains `telnyx_profile_id`, `telnyx_connection_id`, and `telnyx_ip_ids`. Read-only — populated automatically by the setup endpoint. Empty object `{}` for providers created manually via `POST /providers`.
+	// Metadata Carrier-specific resource identifiers stored during automated setup. For Telnyx providers created via `POST /providers/setup`, contains `telnyx_profile_id`, `telnyx_connection_id`, `telnyx_fqdn_id`, and `telnyx_fqdn`. Read-only — populated automatically by the setup endpoint. Empty object `{}` for providers created manually via `POST /providers`.
 	Metadata *map[string]interface{} `json:"metadata"`
 
 	// Name The name of the provider.
@@ -5176,7 +5187,7 @@ type WebchatManagerWidget struct {
 	// CustomerId The unique identifier of the associated customer. Returned from the `GET /customers` response.
 	CustomerId string `json:"customer_id"`
 
-	// DirectHash Hash used by the embed script (data-hash attribute) to authenticate anonymous visitors via POST /auth/boot. Returned on every response (GET, List, Create, Update, direct_hash_regenerate) -- this value is embedded directly in the customer's public website HTML by design, so it is not a traditional secret; hiding it from GET responses would only make it harder for the customer's own admins to retrieve it.
+	// DirectHash Hash used by the embed script (data-hash attribute) to authenticate anonymous visitors via POST /auth/boot. The value already includes the "direct." prefix (e.g. "direct.a1b2c3d4e5f6"). Returned on every response (GET, List, Create, Update, direct_hash_regenerate) -- this value is embedded directly in the customer's public website HTML by design, so it is not a traditional secret; hiding it from GET responses would only make it harder for the customer's own admins to retrieve it.
 	DirectHash *string `json:"direct_hash,omitempty"`
 
 	// Id The unique identifier of the widget. Returned from the `POST /widgets` or `GET /widgets` response.

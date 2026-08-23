@@ -15,6 +15,7 @@ import (
 	astauth "monorepo/bin-registrar-manager/models/astauth"
 	astcontact "monorepo/bin-registrar-manager/models/astcontact"
 	astendpoint "monorepo/bin-registrar-manager/models/astendpoint"
+	customerdomain "monorepo/bin-registrar-manager/models/customerdomain"
 	extension "monorepo/bin-registrar-manager/models/extension"
 	sipauth "monorepo/bin-registrar-manager/models/sipauth"
 	trunk "monorepo/bin-registrar-manager/models/trunk"
@@ -148,6 +149,20 @@ func (mr *MockDBHandlerMockRecorder) AstAuthUpdate(ctx, auth any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstAuthUpdate", reflect.TypeOf((*MockDBHandler)(nil).AstAuthUpdate), ctx, auth)
 }
 
+// AstContactDeleteByEndpoint mocks base method.
+func (m *MockDBHandler) AstContactDeleteByEndpoint(ctx context.Context, endpoint string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AstContactDeleteByEndpoint", ctx, endpoint)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AstContactDeleteByEndpoint indicates an expected call of AstContactDeleteByEndpoint.
+func (mr *MockDBHandlerMockRecorder) AstContactDeleteByEndpoint(ctx, endpoint any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstContactDeleteByEndpoint", reflect.TypeOf((*MockDBHandler)(nil).AstContactDeleteByEndpoint), ctx, endpoint)
+}
+
 // AstContactDeleteFromCache mocks base method.
 func (m *MockDBHandler) AstContactDeleteFromCache(ctx context.Context, endpoint string) error {
 	m.ctrl.T.Helper()
@@ -247,6 +262,93 @@ func (m *MockDBHandler) AstEndpointGet(ctx context.Context, id string) (*astendp
 func (mr *MockDBHandlerMockRecorder) AstEndpointGet(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AstEndpointGet", reflect.TypeOf((*MockDBHandler)(nil).AstEndpointGet), ctx, id)
+}
+
+// CustomerDomainCreate mocks base method.
+func (m *MockDBHandler) CustomerDomainCreate(ctx context.Context, cd *customerdomain.CustomerDomain) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CustomerDomainCreate", ctx, cd)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CustomerDomainCreate indicates an expected call of CustomerDomainCreate.
+func (mr *MockDBHandlerMockRecorder) CustomerDomainCreate(ctx, cd any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerDomainCreate", reflect.TypeOf((*MockDBHandler)(nil).CustomerDomainCreate), ctx, cd)
+}
+
+// CustomerDomainDelete mocks base method.
+func (m *MockDBHandler) CustomerDomainDelete(ctx context.Context, customerID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CustomerDomainDelete", ctx, customerID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CustomerDomainDelete indicates an expected call of CustomerDomainDelete.
+func (mr *MockDBHandlerMockRecorder) CustomerDomainDelete(ctx, customerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerDomainDelete", reflect.TypeOf((*MockDBHandler)(nil).CustomerDomainDelete), ctx, customerID)
+}
+
+// CustomerDomainGet mocks base method.
+func (m *MockDBHandler) CustomerDomainGet(ctx context.Context, customerID uuid.UUID) (*customerdomain.CustomerDomain, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CustomerDomainGet", ctx, customerID)
+	ret0, _ := ret[0].(*customerdomain.CustomerDomain)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CustomerDomainGet indicates an expected call of CustomerDomainGet.
+func (mr *MockDBHandlerMockRecorder) CustomerDomainGet(ctx, customerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerDomainGet", reflect.TypeOf((*MockDBHandler)(nil).CustomerDomainGet), ctx, customerID)
+}
+
+// CustomerDomainGetByRealm mocks base method.
+func (m *MockDBHandler) CustomerDomainGetByRealm(ctx context.Context, realm string) (*customerdomain.CustomerDomain, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CustomerDomainGetByRealm", ctx, realm)
+	ret0, _ := ret[0].(*customerdomain.CustomerDomain)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CustomerDomainGetByRealm indicates an expected call of CustomerDomainGetByRealm.
+func (mr *MockDBHandlerMockRecorder) CustomerDomainGetByRealm(ctx, realm any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerDomainGetByRealm", reflect.TypeOf((*MockDBHandler)(nil).CustomerDomainGetByRealm), ctx, realm)
+}
+
+// CustomerDomainList mocks base method.
+func (m *MockDBHandler) CustomerDomainList(ctx context.Context, size uint64, token string, filters map[customerdomain.Field]any) ([]*customerdomain.CustomerDomain, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CustomerDomainList", ctx, size, token, filters)
+	ret0, _ := ret[0].([]*customerdomain.CustomerDomain)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CustomerDomainList indicates an expected call of CustomerDomainList.
+func (mr *MockDBHandlerMockRecorder) CustomerDomainList(ctx, size, token, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerDomainList", reflect.TypeOf((*MockDBHandler)(nil).CustomerDomainList), ctx, size, token, filters)
+}
+
+// CustomerDomainUpdate mocks base method.
+func (m *MockDBHandler) CustomerDomainUpdate(ctx context.Context, customerID uuid.UUID, fields map[customerdomain.Field]any) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CustomerDomainUpdate", ctx, customerID, fields)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CustomerDomainUpdate indicates an expected call of CustomerDomainUpdate.
+func (mr *MockDBHandlerMockRecorder) CustomerDomainUpdate(ctx, customerID, fields any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerDomainUpdate", reflect.TypeOf((*MockDBHandler)(nil).CustomerDomainUpdate), ctx, customerID, fields)
 }
 
 // ExtensionCountByCustomerID mocks base method.

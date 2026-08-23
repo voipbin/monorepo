@@ -16,9 +16,35 @@ Variable                    Value                              Location
 ==========================  =================================  ===========================================
 ``DOMAIN``                  ``voipbin.example.com``            ``k8s/backend/configmap.yaml``
 ``BASE_DOMAIN``             ``voipbin.example.com``            Kamailio VM ``/opt/kamailio-docker/.env``
-``DOMAIN_NAME_EXTENSION``   ``registrar.voipbin.example.com``  Kamailio VM ``.env``
+``DOMAIN_NAME_EXTENSION``   ``reg.voipbin.example.com``        Kamailio VM ``.env``
 ``DOMAIN_NAME_TRUNK``       ``trunk.voipbin.example.com``      Kamailio VM ``.env``
 ==========================  =================================  ===========================================
+
+``DOMAIN_NAME_EXTENSION`` sets the base domain suffix for
+customer-specific SIP registration domains: each customer's realm is
+``<customer-label>.<DOMAIN_NAME_EXTENSION>``. The public voipbin.net
+deployment uses ``reg.voipbin.net`` since the short-domain cutover; the
+table above shows the matching ``reg.`` prefix as the example value.
+
+How the ``<customer-label>`` part is generated is controlled by a
+separate registrar-manager setting:
+
+- ``DOMAIN_SHORT_LABEL_ENABLED`` (registrar-manager backend deployment
+  env, defined under ``k8s/backend/services/``): defaults to ``false``.
+  With the default, newly created customers get the legacy label, the
+  customer uuid, producing long realms such as
+  ``550e8400-e29b-41d4-a716-446655440000.reg.voipbin.example.com``.
+  Set it to ``true`` to have registrar-manager assign a short
+  4-character label to each newly created customer instead
+  (e.g. ``ab12.reg.voipbin.example.com``).
+
+Self-hosters are recommended to set ``DOMAIN_SHORT_LABEL_ENABLED=true``
+together with a short ``DOMAIN_NAME_EXTENSION`` so SIP messages stay
+under the UDP MTU. The flag only affects customers created after it is
+enabled; existing customers' domains are only changed by running the
+``registrar-control`` domain-migrate batch (which assigns short labels
+regardless of the flag). Kamailio's configuration accepts both the
+``reg.`` and legacy ``registrar.`` suffixes during a migration window.
 
 To change the base domain after install, edit ``domain`` in
 ``config.yaml`` and rerun ``./voipbin-install apply``. Both the Ansible

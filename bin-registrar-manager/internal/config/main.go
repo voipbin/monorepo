@@ -29,6 +29,7 @@ type Config struct {
 	RedisDatabase           int    // RedisDatabase is the numeric Redis logical database index to select, not a name.
 	DomainNameExtension     string // DomainNameExtension is the base domain name for extension realm.
 	DomainNameTrunk         string // DomainNameTrunk is the base domain name for trunk realm.
+	DomainShortLabelEnabled bool   // DomainShortLabelEnabled enables short 4-char domain label generation for NEW customer domains (VOIP-1385). Default false: new customers get the legacy uuid label/realm so pre-cutover frontends (which build the domain from the customer uuid) keep working; flip to true together with the frontend deploy. The migration batch generates short labels regardless of this flag.
 }
 
 func Bootstrap(cmd *cobra.Command) error {
@@ -62,18 +63,20 @@ func bindConfig(cmd *cobra.Command) error {
 	f.Int("redis_database", 0, "Redis database index")
 	f.String("domain_name_extension", "", "Base domain name for extension realm")
 	f.String("domain_name_trunk", "", "Base domain name for trunk realm")
+	f.Bool("domain_short_label_enabled", false, "Generate short 4-char domain labels for new customer domains (default false: legacy uuid labels)")
 
 	bindings := map[string]string{
-		"rabbitmq_address":          "RABBITMQ_ADDRESS",
-		"prometheus_endpoint":       "PROMETHEUS_ENDPOINT",
-		"prometheus_listen_address": "PROMETHEUS_LISTEN_ADDRESS",
-		"database_dsn_bin":          "DATABASE_DSN_BIN",
-		"database_dsn_asterisk":     "DATABASE_DSN_ASTERISK",
-		"redis_address":             "REDIS_ADDRESS",
-		"redis_password":            "REDIS_PASSWORD",
-		"redis_database":            "REDIS_DATABASE",
-		"domain_name_extension":     "DOMAIN_NAME_EXTENSION",
-		"domain_name_trunk":         "DOMAIN_NAME_TRUNK",
+		"rabbitmq_address":           "RABBITMQ_ADDRESS",
+		"prometheus_endpoint":        "PROMETHEUS_ENDPOINT",
+		"prometheus_listen_address":  "PROMETHEUS_LISTEN_ADDRESS",
+		"database_dsn_bin":           "DATABASE_DSN_BIN",
+		"database_dsn_asterisk":      "DATABASE_DSN_ASTERISK",
+		"redis_address":              "REDIS_ADDRESS",
+		"redis_password":             "REDIS_PASSWORD",
+		"redis_database":             "REDIS_DATABASE",
+		"domain_name_extension":      "DOMAIN_NAME_EXTENSION",
+		"domain_name_trunk":          "DOMAIN_NAME_TRUNK",
+		"domain_short_label_enabled": "DOMAIN_SHORT_LABEL_ENABLED",
 	}
 
 	for flagKey, envKey := range bindings {
@@ -109,6 +112,7 @@ func loadGlobalConfig() {
 			RedisDatabase:           viper.GetInt("redis_database"),
 			DomainNameExtension:     viper.GetString("domain_name_extension"),
 			DomainNameTrunk:         viper.GetString("domain_name_trunk"),
+			DomainShortLabelEnabled: viper.GetBool("domain_short_label_enabled"),
 		}
 		logrus.Debug("Configuration has been loaded and locked.")
 	})

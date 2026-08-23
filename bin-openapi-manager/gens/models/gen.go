@@ -8364,9 +8364,9 @@ type RegistrarManagerExtension struct {
 	// Example: direct.a1b2c3d4e5f6
 	DirectHash *string `json:"direct_hash,omitempty"`
 
-	// DomainName Domain name, same as the customer_id, used by Kamailio's INVITE validation
+	// DomainName The full SIP domain (realm) of the extension. e.g. ab12.reg.voipbin.net
 	//
-	// Example: 7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d
+	// Example: ab12.reg.voipbin.net
 	DomainName *string `json:"domain_name,omitempty"`
 
 	// Extension The SIP extension number.

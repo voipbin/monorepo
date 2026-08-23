@@ -9,7 +9,7 @@ Overview
    * **Cost:** Free. Direct hash creation and regeneration incur no charges.
    * **Async:** No. Regenerate returns immediately with the updated resource.
 
-Direct hash provides simplified public SIP URIs for VoIPBIN resources. Instead of requiring callers to know a customer-specific domain (e.g., ``sip:office1@abc123.registrar.voipbin.net``), direct hash exposes a short, unique address on a shared domain: ``sip:direct.<hash>@sip.voipbin.net``. This allows external SIP devices, trunks, and partners to reach your resources without any customer-specific configuration.
+Direct hash provides simplified public SIP URIs for VoIPBIN resources. Instead of requiring callers to know a customer-specific domain (e.g., ``sip:office1@ab12.reg.voipbin.net``), direct hash exposes a short, unique address on a shared domain: ``sip:direct.<hash>@sip.voipbin.net``. This allows external SIP devices, trunks, and partners to reach your resources without any customer-specific configuration.
 
 Eight resource types support direct hash: **extensions**, **agents**, **conferences**, **queues**, **flows**, **AIs**, **teams**, and **webchat widgets**. For seven of these, the ``direct_hash`` resolves to a SIP URI as described above. For **webchat widgets** the same underlying hash mechanism is reused for a different purpose: the embed script uses the widget's ``direct_hash`` to authenticate anonymous visitors via ``POST /auth/boot`` rather than to route a SIP call. See :doc:`Webchat Overview <webchat_overview>` for details on that flow.
 

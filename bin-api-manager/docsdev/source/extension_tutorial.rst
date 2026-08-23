@@ -13,7 +13,7 @@ Before working with extensions, you need:
 
 .. note:: **AI Implementation Hint**
 
-   When creating an extension, the ``extension`` field and ``username`` field are typically set to the same value. The ``password`` is used for SIP device authentication. After creation, configure SIP devices with the ``username``, ``password``, and the domain ``{customer-id}.registrar.voipbin.net``.
+   When creating an extension, the ``extension`` field and ``username`` field are typically set to the same value. The ``password`` is used for SIP device authentication. After creation, configure SIP devices with the ``username``, ``password``, and the ``domain_name`` returned in the extension response (e.g. ``ab12.reg.voipbin.net``). Always use the returned ``domain_name`` verbatim — do not construct the domain from other fields.
 
 Get list of extensions
 ----------------------
@@ -32,7 +32,7 @@ Gets the list of registered extensions for your account.
                 "name": "test domain",
                 "detail": "test domain creation",
                 "extension": "test11",
-                "domain_name": "5e4a0680-804e-11ec-8477-2fea5968d85b.registrar.voipbin.net",
+                "domain_name": "ab12.reg.voipbin.net",
                 "username": "test11",
                 "password": "bad79bd2-71e6-11eb-9577-c756bf092a88",
                 "direct_hash": "",
@@ -59,7 +59,7 @@ Gets the detail of registered extension.
         "name": "test domain",
         "detail": "test domain creation",
         "extension": "test11",
-        "domain_name": "5e4a0680-804e-11ec-8477-2fea5968d85b.registrar.voipbin.net",
+        "domain_name": "ab12.reg.voipbin.net",
         "username": "test11",
         "password": "bad79bd2-71e6-11eb-9577-c756bf092a88",
         "direct_hash": "",
@@ -91,7 +91,7 @@ Create a new extension.
         "name": "test domain",
         "detail": "test domain creation",
         "extension": "test12",
-        "domain_name": "5e4a0680-804e-11ec-8477-2fea5968d85b.registrar.voipbin.net",
+        "domain_name": "ab12.reg.voipbin.net",
         "username": "test12",
         "password": "27a4d0f2-757c-11eb-bc8f-4f045857b89c",
         "direct_hash": "",
@@ -121,7 +121,7 @@ Update the existing extension with given info.
         "name": "update test extension name",
         "detail": "update test extension detail",
         "extension": "test12",
-        "domain_name": "5e4a0680-804e-11ec-8477-2fea5968d85b.registrar.voipbin.net",
+        "domain_name": "ab12.reg.voipbin.net",
         "username": "test12",
         "password": "5316382a-757c-11eb-9348-bb32547e99c4",
         "direct_hash": "",
@@ -145,7 +145,7 @@ Regenerate the direct extension hash. This invalidates the previous SIP URI and 
         "name": "update test extension name",
         "detail": "update test extension detail",
         "extension": "test12",
-        "domain_name": "5e4a0680-804e-11ec-8477-2fea5968d85b.registrar.voipbin.net",
+        "domain_name": "ab12.reg.voipbin.net",
         "username": "test12",
         "password": "5316382a-757c-11eb-9348-bb32547e99c4",
         "direct_hash": "f7e8d9c0b1a2",

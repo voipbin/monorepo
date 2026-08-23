@@ -15,6 +15,7 @@ import (
 	"monorepo/bin-registrar-manager/models/astauth"
 	"monorepo/bin-registrar-manager/models/astcontact"
 	"monorepo/bin-registrar-manager/models/astendpoint"
+	"monorepo/bin-registrar-manager/models/customerdomain"
 	"monorepo/bin-registrar-manager/models/extension"
 	"monorepo/bin-registrar-manager/models/sipauth"
 	"monorepo/bin-registrar-manager/models/trunk"
@@ -35,6 +36,7 @@ type DBHandler interface {
 	AstAuthUpdate(ctx context.Context, auth *astauth.AstAuth) error
 
 	// AstContact
+	AstContactDeleteByEndpoint(ctx context.Context, endpoint string) error
 	AstContactDeleteFromCache(ctx context.Context, endpoint string) error
 	AstContactGetsByEndpoint(ctx context.Context, endpoint string) ([]*astcontact.AstContact, error)
 	AstContactGetsFromCache(ctx context.Context, endpoint string) ([]*astcontact.AstContact, error)
@@ -44,6 +46,14 @@ type DBHandler interface {
 	AstEndpointCreate(ctx context.Context, b *astendpoint.AstEndpoint) error
 	AstEndpointDelete(ctx context.Context, id string) error
 	AstEndpointGet(ctx context.Context, id string) (*astendpoint.AstEndpoint, error)
+
+	// CustomerDomain
+	CustomerDomainCreate(ctx context.Context, cd *customerdomain.CustomerDomain) error
+	CustomerDomainGet(ctx context.Context, customerID uuid.UUID) (*customerdomain.CustomerDomain, error)
+	CustomerDomainGetByRealm(ctx context.Context, realm string) (*customerdomain.CustomerDomain, error)
+	CustomerDomainList(ctx context.Context, size uint64, token string, filters map[customerdomain.Field]any) ([]*customerdomain.CustomerDomain, error)
+	CustomerDomainUpdate(ctx context.Context, customerID uuid.UUID, fields map[customerdomain.Field]any) error
+	CustomerDomainDelete(ctx context.Context, customerID uuid.UUID) error
 
 	// Extension
 	ExtensionCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error)
@@ -80,7 +90,8 @@ type handler struct {
 
 // handler errors
 var (
-	ErrNotFound = errors.New("record not found")
+	ErrNotFound  = errors.New("record not found")
+	ErrDuplicate = errors.New("duplicate record") // unique-key violation (used for label collision retry)
 )
 
 // NewHandler creates DBHandler

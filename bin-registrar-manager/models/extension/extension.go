@@ -23,7 +23,7 @@ type Extension struct {
 
 	Extension string `json:"extension" db:"extension"`
 
-	DomainName string `json:"domain_name" db:"domain_name"`
+	DomainName string `json:"domain_name" db:"domain_name"` // full SIP domain (realm). New rows store the full realm; legacy pre-Feb-2024 rows hold a bare customer uuid until the migration batch rewrites them (never served raw — see ConvertWebhookMessage)
 
 	Realm    string `json:"realm" db:"realm"`       // DO NOT CHANGE. This used by the kamailio's INVITE validation
 	Username string `json:"username" db:"username"` // DO NOT CHANGE. This used by the kamailio's INVITE validation

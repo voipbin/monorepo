@@ -42,7 +42,7 @@ Response:
         "extension": "quickstart1",
         "username": "quickstart1",
         "password": "your-secure-password-here",
-        "domain_name": "550e8400-e29b-41d4-a716-446655440000",
+        "domain_name": "ab12.reg.voipbin.net",
         "direct_hash": "a8f3b2c1d4e5",
         "tm_create": "2026-02-21T10:00:00.000000Z",
         "tm_update": "",
@@ -68,12 +68,13 @@ Configure your Linphone softphone to register with VoIPBIN using the extension c
 +-------------------+------------------------------------------------------------+
 | Password          | The password you set when creating the extension           |
 +-------------------+------------------------------------------------------------+
-| Domain            | ``<your-customer-id>.registrar.voipbin.net``               |
+| Domain            | The ``domain_name`` from the extension response            |
+|                   | (e.g. ``ab12.reg.voipbin.net``)                            |
 +-------------------+------------------------------------------------------------+
-| Transport         | UDP                                                        |
+| Transport         | UDP (use TCP or TLS if SIP messages are too large for UDP) |
 +-------------------+------------------------------------------------------------+
 
-Replace ``<your-customer-id>`` with your customer ID (UUID) obtained from ``GET https://api.voipbin.net/v1.0/customer``. For example, if your customer ID is ``550e8400-e29b-41d4-a716-446655440000``, the domain is ``550e8400-e29b-41d4-a716-446655440000.registrar.voipbin.net``.
+Use the ``domain_name`` value returned when you created the extension (also visible via ``GET https://api.voipbin.net/v1.0/extensions``). It is your customer-specific SIP domain in the format ``<label>.reg.voipbin.net`` (a short 4-character label, e.g. ``ab12.reg.voipbin.net``). Do not construct the domain yourself. Always copy it from the API response. Accounts created before the domain migration may still receive the legacy ``<customer-id>.registrar.voipbin.net`` format, which remains valid until the migration completes.
 
 **Setup steps (Linphone desktop):**
 
@@ -92,5 +93,5 @@ Troubleshooting
     * **Fix:** Ensure all four fields are present in the request body.
 
 * **Linphone shows "Registration failed" or "408 Timeout":**
-    * **Cause:** Incorrect domain, extension/username, or password. The domain must include your customer ID.
-    * **Fix:** Verify the domain is ``<your-customer-id>.registrar.voipbin.net``. Double-check the ``extension`` and ``password`` match exactly what was set when creating the extension. Ensure UDP port 5060 is not blocked by your firewall.
+    * **Cause:** Incorrect domain, extension/username, or password. The domain must be the extension's ``domain_name``.
+    * **Fix:** Verify the domain matches the ``domain_name`` field from the extension response exactly (e.g. ``ab12.reg.voipbin.net``). Double-check the ``extension`` and ``password`` match exactly what was set when creating the extension. Ensure UDP port 5060 is not blocked by your firewall. If SIP messages are too large for a single UDP datagram, switch the transport to TCP or TLS.

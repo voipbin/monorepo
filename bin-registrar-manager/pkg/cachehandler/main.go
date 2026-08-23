@@ -12,6 +12,7 @@ import (
 	"monorepo/bin-registrar-manager/models/astauth"
 	"monorepo/bin-registrar-manager/models/astcontact"
 	"monorepo/bin-registrar-manager/models/astendpoint"
+	"monorepo/bin-registrar-manager/models/customerdomain"
 	"monorepo/bin-registrar-manager/models/extension"
 	"monorepo/bin-registrar-manager/models/trunk"
 )
@@ -43,6 +44,10 @@ type CacheHandler interface {
 	AstEndpointDel(ctx context.Context, id string) error
 	AstEndpointGet(ctx context.Context, id string) (*astendpoint.AstEndpoint, error)
 	AstEndpointSet(ctx context.Context, e *astendpoint.AstEndpoint) error
+
+	CustomerDomainGetByRealm(ctx context.Context, realm string) (*customerdomain.CustomerDomain, error)
+	CustomerDomainSet(ctx context.Context, cd *customerdomain.CustomerDomain) error
+	CustomerDomainDelByRealm(ctx context.Context, realm string) error
 
 	ExtensionGet(ctx context.Context, id uuid.UUID) (*extension.Extension, error)
 	ExtensionGetByEndpointID(ctx context.Context, endpointID string) (*extension.Extension, error)

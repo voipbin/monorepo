@@ -81,6 +81,7 @@ DSNs).
 | `--redis_database` | `REDIS_DATABASE` | `` | Redis DB index |
 | `--domain_name_extension` | `DOMAIN_NAME_EXTENSION` | required | Base domain for SIP extensions (e.g., `ext.voipbin.net`) |
 | `--domain_name_trunk` | `DOMAIN_NAME_TRUNK` | required | Base domain for SIP trunks |
+| `--domain_short_label_enabled` | `DOMAIN_SHORT_LABEL_ENABLED` | `false` | Generate short 4-char labels for NEW customer domains (VOIP-1385). Keep `false` until the frontends consume the API `domain_name` verbatim (deploy step 2): while `false`, new customers get the legacy `<uuid>.<base>` realm so pre-cutover webphones (which build the domain from the customer uuid) keep registering. The `domain-migrate` batch always produces short labels regardless of this flag |
 | `--prometheus_endpoint` | `PROMETHEUS_ENDPOINT` | `/metrics` | Metrics path |
 | `--prometheus_listen_address` | `PROMETHEUS_LISTEN_ADDRESS` | `:2112` | Metrics listen address |
 

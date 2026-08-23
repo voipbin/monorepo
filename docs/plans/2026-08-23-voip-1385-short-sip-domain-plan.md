@@ -35,10 +35,15 @@ New package layout (follows existing per-entity conventions):
   Redis cache (realm -> row) with invalidation on Update/Delete. Table const
   `registrar_customer_domains`.
 - `pkg/customerdomainhandler`:
-  - `EnsureByCustomerID(ctx, customerID)` — idempotent get-or-create;
-    label = 4-char base36 lowercase via crypto/rand; retry on duplicate-key;
-    reserved list {pstn, sip, echo, reg, www, api}; realm =
-    label + "." + baseDomainExtension.
+  - `EnsureByCustomerID(ctx, customerID)` — idempotent get-or-create.
+    Label shape is gated by registrar-manager env
+    `DOMAIN_SHORT_LABEL_ENABLED` (default false, added in code review
+    round 3 to close the 1b->step-2 deploy window): flag false -> legacy
+    label = customer uuid string (same shape as backfill); flag true ->
+    4-char base36 lowercase via crypto/rand, retry on duplicate-key,
+    reserved list {pstn, sip, echo, reg, www, api}. realm =
+    label + "." + baseDomainExtension. The migration batch generates short
+    labels regardless of the flag. Flag flips at deploy step 4.
   - `GetByCustomerID(ctx, customerID)` — lookup-only (no side effects).
   - `GetByRealm(ctx, realm)` — cache-backed, lookup-only.
   - `DeleteByCustomerID(ctx, customerID)`.

@@ -20,9 +20,9 @@ import (
 	"monorepo/bin-registrar-manager/models/astaor"
 	"monorepo/bin-registrar-manager/models/astauth"
 	"monorepo/bin-registrar-manager/models/astendpoint"
-	"monorepo/bin-registrar-manager/models/common"
 	"monorepo/bin-registrar-manager/models/extension"
 	"monorepo/bin-registrar-manager/models/sipauth"
+	"monorepo/bin-registrar-manager/pkg/customerdomainhandler"
 	"monorepo/bin-registrar-manager/pkg/dbhandler"
 )
 
@@ -108,7 +108,8 @@ func Test_Create(t *testing.T) {
 				AORID:      "ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4@0040713e-7fed-11ec-954b-ff6d17e2a264.registrar.voipbin.net",
 				AuthID:     "ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4@0040713e-7fed-11ec-954b-ff6d17e2a264.registrar.voipbin.net",
 				Extension:  "ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4",
-				DomainName: "0040713e-7fed-11ec-954b-ff6d17e2a264",
+				// new creates store the FULL realm as domain_name (VOIP-1385)
+				DomainName: "0040713e-7fed-11ec-954b-ff6d17e2a264.registrar.voipbin.net",
 				Realm:      "0040713e-7fed-11ec-954b-ff6d17e2a264.registrar.voipbin.net",
 				Username:   "ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4",
 				Password:   "cf6917ba-6ec1-11eb-8810-e3829c2dfab8",
@@ -138,21 +139,21 @@ func Test_Create(t *testing.T) {
 		mockDBAst := dbhandler.NewMockDBHandler(mc)
 		mockDBBin := dbhandler.NewMockDBHandler(mc)
 		mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+		mockCustomerDomain := customerdomainhandler.NewMockCustomerDomainHandler(mc)
 		h := &extensionHandler{
-			utilHandler:   mockUtil,
-			reqHandler:    mockReq,
-			dbAst:         mockDBAst,
-			dbBin:         mockDBBin,
-			notifyHandler: mockNotify,
+			utilHandler:           mockUtil,
+			reqHandler:            mockReq,
+			dbAst:                 mockDBAst,
+			dbBin:                 mockDBBin,
+			notifyHandler:         mockNotify,
+			customerDomainHandler: mockCustomerDomain,
 		}
 		ctx := context.Background()
 
-		defer common.ResetBaseDomainNamesForTest()
-		if errSet := common.SetBaseDomainNames("registrar.voipbin.net", "trunk.voipbin.net"); errSet != nil {
-			t.Errorf("Wrong match. expect: ok, got: %v", errSet)
-		}
-
 		mockReq.EXPECT().BillingV1AccountIsValidResourceLimitByCustomerID(ctx, tt.customerID, bmaccount.ResourceTypeExtension).Return(true, nil)
+		// create path: lazy-create via RealmGet, then lookup-only EndpointGet
+		mockCustomerDomain.EXPECT().RealmGet(ctx, tt.customerID).Return(tt.responseExtension.Realm, nil)
+		mockCustomerDomain.EXPECT().EndpointGet(ctx, tt.customerID, tt.ext).Return(*tt.expectAOR.ID, nil)
 		mockDBAst.EXPECT().AstAORCreate(ctx, tt.expectAOR).Return(nil)
 		mockDBAst.EXPECT().AstAuthCreate(ctx, tt.expectAuth).Return(nil)
 		mockDBAst.EXPECT().AstEndpointCreate(ctx, tt.expectEndpoint).Return(nil)
