@@ -59,7 +59,7 @@ The customer's SIP domain mapping (VOIP-1385): one row per customer linking the 
 
 No `tm_delete`: rows are hard-deleted on `customer_deleted` (deliberate deviation from sibling registrar tables — a pure mapping row has no soft-delete consumer).
 
-**Lifecycle:** created on `customer_created` (idempotent ensure), lazily at the first extension create as a fallback, deleted on `customer_deleted`. New-row shape follows `domain_short_label_enabled` (default `false`: legacy uuid label/realm, so pre-cutover frontends that build the domain from the customer uuid keep working; flip together with the frontend deploy). Label collisions on the unique index are retried with a freshly generated label. The `domain-migrate` batch always writes short labels, independent of the flag.
+**Lifecycle:** created on `customer_created` (idempotent ensure), lazily at the first extension create as a fallback, deleted on `customer_deleted`. New-row shape follows `domain_short_label_enabled` (default `false`: uuid label/realm; `true` — the production setting since the short-domain cutover — a fresh 4-char base36 label). Label collisions on the unique index are retried with a freshly generated label. The `domain-migrate` batch always writes short labels, independent of the flag.
 
 ### Contact (SIP Registration)
 
@@ -80,7 +80,7 @@ A read-only view of an active SIP registration. Sourced from Asterisk `ps_contac
 
 2. **Domain name assignment**: Extensions use the customer's CustomerDomain realm (`<label>.<domain_name_extension>`, table-backed via `customerdomainhandler`). Trunks use a custom domain validated by regex. Base domain names are set globally at startup via `common.SetBaseDomainNames()`.
 
-2a. **Extension `domain_name` serving rule (VOIP-1385)**: the exposed `domain_name` is always the FULL realm. The read path serves `realm` when set; for legacy pre-Feb-2024 rows with a NULL realm it serves the computed legacy realm (`<customer_id>.<base>`) — never the raw stored column, which holds a bare customer uuid until the migration batch rewrites it. New creates store the full realm in the column.
+2a. **Extension `domain_name` serving rule (VOIP-1385, post-cutover)**: the exposed `domain_name` is always the FULL realm. The read path serves `realm` when set, otherwise the stored `domain_name` column as-is. Every active row carries a realm since the short-domain cutover; NULL-realm rows belong to deleted/expired customers only, so there is no computed fallback. New creates store the full realm in the column.
 
 3. **Trunk domain uniqueness**: Each trunk's `domain_name` must be unique within the platform (used as an Asterisk endpoint identifier).
 

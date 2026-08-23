@@ -21,20 +21,16 @@ import (
 	"os"
 	"strings"
 
-	cucustomer "monorepo/bin-customer-manager/models/customer"
-
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
-	"monorepo/bin-common-handler/pkg/requesthandler"
 
 	"monorepo/bin-registrar-manager/models/astaor"
 	"monorepo/bin-registrar-manager/models/astauth"
 	"monorepo/bin-registrar-manager/models/astendpoint"
-	"monorepo/bin-registrar-manager/models/common"
 	"monorepo/bin-registrar-manager/models/customerdomain"
 	"monorepo/bin-registrar-manager/models/extension"
 	"monorepo/bin-registrar-manager/models/sipauth"
@@ -150,123 +146,6 @@ func writeMigrationLogLine(w io.Writer, record *migrationRecord) error {
 	}
 
 	return nil
-}
-
-// ============================================================================
-// domain-backfill
-// ============================================================================
-
-func cmdDomainBackfill() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "domain-backfill",
-		Short: "Insert registrar_customer_domains rows for all existing customers with their CURRENT uuid realm",
-		Long: "Pure additive backfill (VOIP-1385 deploy gate 1c): one row per existing customer with " +
-			"label = the customer uuid string and realm = the current legacy uuid realm. Run BEFORE the " +
-			"call-manager lookup cutover deploy. Idempotent: customers that already have a row are skipped.\n\n" +
-			"Defaults to a dry-run preview. Pass --execute to apply.",
-		RunE: runDomainBackfill,
-	}
-
-	cmd.Flags().Bool("execute", false, "Apply the backfill (default: dry-run preview)")
-
-	return cmd
-}
-
-func runDomainBackfill(cmd *cobra.Command, args []string) error {
-	execute := viper.GetBool("execute")
-
-	deps, err := initDomainMigrationDeps()
-	if err != nil {
-		return errors.Wrap(err, "failed to initialize handlers")
-	}
-
-	created, skipped, err := domainBackfill(context.Background(), deps.reqHandler, deps.dbBin, execute, os.Stdout)
-	if err != nil {
-		return errors.Wrap(err, "domain backfill failed")
-	}
-
-	mode := "DRY-RUN"
-	if execute {
-		mode = "EXECUTE"
-	}
-	fmt.Printf("domain-backfill [%s] done. created: %d, skipped(existing): %d\n", mode, created, skipped)
-	fmt.Printf("Reconcile: created+skipped (%d) must equal the active customer count before deploy gate 1d.\n", created+skipped)
-
-	return nil
-}
-
-// domainBackfill inserts a customer domain row (label = customer uuid string,
-// realm = current legacy uuid realm) for every active customer without one.
-func domainBackfill(ctx context.Context, reqHandler requesthandler.RequestHandler, dbBin dbhandler.DBHandler, execute bool, out io.Writer) (int, int, error) {
-	created := 0
-	skipped := 0
-
-	token := ""
-	for {
-		filters := map[cucustomer.Field]any{
-			cucustomer.FieldDeleted: false,
-		}
-		customers, err := reqHandler.CustomerV1CustomerList(ctx, token, migrationPageSize, filters)
-		if err != nil {
-			return created, skipped, errors.Wrap(err, "could not list customers")
-		}
-
-		for _, cu := range customers {
-			if cu.ID == uuid.Nil {
-				continue
-			}
-
-			_, errGet := dbBin.CustomerDomainGet(ctx, cu.ID)
-			if errGet == nil {
-				skipped++
-				continue
-			}
-			if !stderrors.Is(errGet, dbhandler.ErrNotFound) {
-				return created, skipped, errors.Wrapf(errGet, "could not get customer domain. customer_id: %s", cu.ID)
-			}
-
-			realm := common.GenerateRealmExtensionLegacy(cu.ID)
-			if realm == "" {
-				return created, skipped, fmt.Errorf("base domain name is not configured")
-			}
-
-			if !execute {
-				_, _ = fmt.Fprintf(out, "[dry-run] would create domain row. customer_id: %s, label: %s, realm: %s\n", cu.ID, cu.ID.String(), realm)
-				created++
-				continue
-			}
-
-			cd := &customerdomain.CustomerDomain{
-				CustomerID:  cu.ID,
-				DomainLabel: cu.ID.String(),
-				Realm:       realm,
-			}
-			if errCreate := dbBin.CustomerDomainCreate(ctx, cd); errCreate != nil {
-				if stderrors.Is(errCreate, dbhandler.ErrDuplicate) {
-					// concurrent create (e.g. customer_created event) won the race
-					skipped++
-					continue
-				}
-				return created, skipped, errors.Wrapf(errCreate, "could not create customer domain. customer_id: %s", cu.ID)
-			}
-
-			_, _ = fmt.Fprintf(out, "created domain row. customer_id: %s, realm: %s\n", cu.ID, realm)
-			created++
-		}
-
-		if uint64(len(customers)) < migrationPageSize {
-			break
-		}
-
-		last := customers[len(customers)-1]
-		if last.TMCreate == nil {
-			_, _ = fmt.Fprintf(out, "warning: customer %s has a nil tm_create; stopping scan early (reconcile the counts)\n", last.ID)
-			break
-		}
-		token = last.TMCreate.UTC().Format(migrationTokenLayout)
-	}
-
-	return created, skipped, nil
 }
 
 // ============================================================================
@@ -485,7 +364,25 @@ func migrateCustomerDomain(
 	}
 
 	if oldRealm == "" {
-		oldRealm = common.GenerateRealmExtensionLegacy(customerID)
+		// no domain row: post-cutover there is no computed legacy fallback, so
+		// the only source for the customer's current realm is the STORED
+		// extension data (stored realm, else the endpoint id's domain part)
+		for _, e := range exts {
+			if e.Realm != "" {
+				oldRealm = e.Realm
+			} else {
+				oldRealm = extensionLegacyRealm(e)
+			}
+			if oldRealm != "" {
+				oldLabel = firstDomainLabel(oldRealm)
+				break
+			}
+		}
+	}
+	if oldRealm == "" && len(exts) > 0 {
+		// extensions exist but none carries a recoverable realm: refuse rather
+		// than write a rollback record that cannot restore them
+		return nil, false, fmt.Errorf("could not determine the current realm from the stored extension data. customer_id: %s", customerID)
 	}
 
 	if !execute {
@@ -528,8 +425,11 @@ func migrateCustomerDomain(
 	}
 
 	// 3. LOG BEFORE EXECUTE: append + flush the record so a crash during the
-	//    re-provision loop below never loses rollback coverage
-	if logWriter != nil {
+	//    re-provision loop below never loses rollback coverage. A customer with
+	//    no previous domain state at all (no row, no extensions: oldRealm is
+	//    empty) gets no rollback record — there is nothing to restore, and an
+	//    empty old_realm would fail the rollback replay validation.
+	if logWriter != nil && oldRealm != "" {
 		if errLog := writeMigrationLogLine(logWriter, record); errLog != nil {
 			return nil, false, errors.Wrap(errLog, "could not write the migration log record")
 		}
@@ -858,15 +758,16 @@ func domainMigrateRollback(
 // helpers
 // ============================================================================
 
-// extensionLegacyRealm recovers the realm of a legacy NULL-realm extension row:
-// prefer the domain part of the stored endpoint id (<ext>@<realm>), falling
-// back to the computed legacy realm.
+// extensionLegacyRealm recovers the realm of a NULL-realm extension row from
+// its STORED fields only: the domain part of the stored endpoint id
+// (<ext>@<realm>). Returns "" when the endpoint id carries no domain part —
+// post-cutover there is no computed fallback anymore.
 func extensionLegacyRealm(ext *extension.Extension) string {
 	if idx := strings.LastIndex(ext.EndpointID, "@"); idx >= 0 && idx < len(ext.EndpointID)-1 {
 		return ext.EndpointID[idx+1:]
 	}
 
-	return common.GenerateRealmExtensionLegacy(ext.CustomerID)
+	return ""
 }
 
 // firstDomainLabel returns the first dot-separated label of the given realm.

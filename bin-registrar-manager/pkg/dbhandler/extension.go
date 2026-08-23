@@ -10,7 +10,6 @@ import (
 
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
-	"monorepo/bin-registrar-manager/models/common"
 	"monorepo/bin-registrar-manager/models/extension"
 )
 
@@ -31,21 +30,15 @@ func (h *handler) extensionGetFromRow(row *sql.Rows) (*extension.Extension, erro
 	return res, nil
 }
 
-// extensionNormalizeDomainName applies the domain_name SERVING RULE (VOIP-1385)
-// before the model leaves the dbhandler: serve Realm when set; when Realm is
-// empty (legacy pre-Feb-2024 rows) serve the computed legacy realm
-// (<customer_id>.<base>). The raw stored domain_name column holds a bare
-// customer uuid on legacy rows until the migration batch rewrites it and must
-// never be served. The stored column is left untouched — only the in-memory
-// model is normalized.
+// extensionNormalizeDomainName applies the domain_name SERVING RULE (VOIP-1385,
+// post-cutover) before the model leaves the dbhandler: serve Realm when set,
+// otherwise serve the stored domain_name column as-is. Every active row carries
+// a realm since the short-domain cutover; NULL-realm rows belong to
+// deleted/expired customers only, so no computed fallback exists anymore.
+// The stored column is left untouched — only the in-memory model is normalized.
 func extensionNormalizeDomainName(e *extension.Extension) {
 	if e.Realm != "" {
 		e.DomainName = e.Realm
-		return
-	}
-
-	if legacy := common.GenerateRealmExtensionLegacy(e.CustomerID); legacy != "" {
-		e.DomainName = legacy
 	}
 }
 

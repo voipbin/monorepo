@@ -11,9 +11,9 @@ import (
 )
 
 // Test_ConvertWebhookMessage_domainNameServingRule covers the VOIP-1385
-// serving rule at the webhook conversion point: serve Realm when set; fall
-// back to the (registrar-manager-normalized) DomainName only when Realm is
-// empty.
+// post-cutover serving rule at the webhook conversion point: serve Realm when
+// set; serve the stored DomainName as-is only when Realm is empty
+// (deleted-customer orphan rows).
 func Test_ConvertWebhookMessage_domainNameServingRule(t *testing.T) {
 
 	customerID := uuid.FromStringOrNil("a0b1c2d3-7f84-11ee-8f5a-1b2c3d4e5f60")
@@ -48,15 +48,15 @@ func Test_ConvertWebhookMessage_domainNameServingRule(t *testing.T) {
 			expectDomainName: "cd34.reg.voipbin.net",
 		},
 		{
-			name: "realm empty: normalized domain_name is served (legacy fallback)",
+			name: "realm empty (orphan row): stored domain_name is served as-is",
 
 			ext: &Extension{
 				Identity:   commonidentity.Identity{CustomerID: customerID},
-				DomainName: customerID.String() + ".registrar.voipbin.net", // normalized by the registrar-manager read path
+				DomainName: customerID.String(), // whatever is stored; representation no longer matters
 				Realm:      "",
 			},
 
-			expectDomainName: customerID.String() + ".registrar.voipbin.net",
+			expectDomainName: customerID.String(),
 		},
 	}
 

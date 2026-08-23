@@ -362,7 +362,6 @@ func Test_EndpointGet(t *testing.T) {
 
 		responseDomain *customerdomain.CustomerDomain
 		responseErr    error
-		setBaseDomain  bool
 
 		expectRes string
 		expectErr bool
@@ -382,21 +381,10 @@ func Test_EndpointGet(t *testing.T) {
 			expectRes: "1001@gh78.reg.voipbin.net",
 		},
 		{
-			name: "no row: legacy computed fallback (pre-backfill window, read-only)",
+			name: "no row: error (post-cutover, no computed fallback)",
 
 			customerID: uuid.FromStringOrNil("cccccccc-7f82-11ee-8f5a-1b2c3d4e5f60"),
 			extension:  "1002",
-
-			responseErr:   dbhandler.ErrNotFound,
-			setBaseDomain: true,
-
-			expectRes: "1002@cccccccc-7f82-11ee-8f5a-1b2c3d4e5f60.reg.voipbin.net",
-		},
-		{
-			name: "no row and no base domain: error",
-
-			customerID: uuid.FromStringOrNil("dddddddd-7f82-11ee-8f5a-1b2c3d4e5f60"),
-			extension:  "1003",
 
 			responseErr: dbhandler.ErrNotFound,
 
@@ -416,11 +404,6 @@ func Test_EndpointGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			common.ResetBaseDomainNamesForTest()
-			if tt.setBaseDomain {
-				setTestBaseDomains(t)
-			}
-
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 

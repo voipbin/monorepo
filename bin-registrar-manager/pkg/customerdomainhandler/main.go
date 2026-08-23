@@ -41,8 +41,8 @@ type CustomerDomainHandler interface {
 
 	// EndpointGet returns the endpoint string (<extension>@<realm>) of the
 	// given customer and extension. Lookup-only: it never creates a domain
-	// row; when no row exists yet (pre-backfill window) it falls back to the
-	// computed legacy realm so contact lookups keep working.
+	// row; a missing row is an error (post-cutover every active customer has
+	// a domain row).
 	EndpointGet(ctx context.Context, customerID uuid.UUID, extension string) (string, error)
 
 	// MigrateToShortDomain moves the customer's domain row to a fresh 4-char

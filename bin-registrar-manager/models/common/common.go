@@ -6,7 +6,6 @@ import (
 	"regexp"
 	"sync"
 
-	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 )
 
@@ -91,21 +90,6 @@ func ResetBaseDomainNamesForTest() {
 // handler layer can compose realms without models/common touching the DB.
 func BaseDomainNameExtension() string {
 	return getBaseDomainNameExtension()
-}
-
-// GenerateRealmExtensionLegacy returns the computed legacy realm of the given
-// customer (<customer_id>.<base domain name extension>). It is the SERVING
-// fallback for pre-Feb-2024 extension rows whose realm column is NULL; those
-// rows keep a bare customer uuid in the stored domain_name column until the
-// migration batch rewrites them, and that raw value must never be served.
-// Unlike BaseDomainNameExtension this NEVER panics: it returns "" when the
-// base domain names have not been initialized (unit tests that never call
-// SetBaseDomainNames); production initializes them at startup.
-func GenerateRealmExtensionLegacy(customerID uuid.UUID) string {
-	if baseDomainNameExtension == "" {
-		return ""
-	}
-	return fmt.Sprintf("%s.%s", customerID.String(), baseDomainNameExtension)
 }
 
 // GenerateRealmTrunkDomain returns the realm of the given trunk's domain name

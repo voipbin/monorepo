@@ -13,15 +13,14 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	gomock "go.uber.org/mock/gomock"
 
-	"monorepo/bin-registrar-manager/models/common"
 	"monorepo/bin-registrar-manager/models/extension"
 	"monorepo/bin-registrar-manager/pkg/cachehandler"
 )
 
-// Test_extensionNormalizeDomainName_servingRule covers the VOIP-1385 SERVING
-// RULE at the dbhandler read path: serve Realm when set; when Realm is empty
-// (legacy pre-Feb-2024 rows) serve the computed legacy realm; never the raw
-// stored bare-uuid domain_name.
+// Test_extensionNormalizeDomainName_servingRule covers the VOIP-1385
+// post-cutover SERVING RULE at the dbhandler read path: serve Realm when set;
+// when Realm is empty (deleted-customer orphan rows only) serve the stored
+// domain_name column as-is. There is no computed fallback anymore.
 func Test_extensionNormalizeDomainName_servingRule(t *testing.T) {
 
 	customerID := uuid.FromStringOrNil("d1e2f3a4-7f81-11ee-8f5a-1b2c3d4e5f60")
@@ -29,39 +28,35 @@ func Test_extensionNormalizeDomainName_servingRule(t *testing.T) {
 	tests := []struct {
 		name string
 
-		setBaseDomain bool
-		ext           *extension.Extension
+		ext *extension.Extension
 
 		expectDomainName string
 	}{
 		{
-			name: "realm set: serve realm",
+			name: "realm set: serve realm over the stored domain_name",
 
-			setBaseDomain: true,
 			ext: &extension.Extension{
 				Identity:   commonidentity.Identity{CustomerID: customerID},
-				DomainName: customerID.String(), // raw legacy bare uuid
+				DomainName: customerID.String(), // stale stored value
 				Realm:      "ab12.reg.voipbin.net",
 			},
 
 			expectDomainName: "ab12.reg.voipbin.net",
 		},
 		{
-			name: "realm empty (legacy row): serve computed legacy realm, never the raw bare uuid",
+			name: "realm set and equal to domain_name (post-cutover row)",
 
-			setBaseDomain: true,
 			ext: &extension.Extension{
 				Identity:   commonidentity.Identity{CustomerID: customerID},
-				DomainName: customerID.String(),
-				Realm:      "",
+				DomainName: "cd34.reg.voipbin.net",
+				Realm:      "cd34.reg.voipbin.net",
 			},
 
-			expectDomainName: customerID.String() + ".registrar.voipbin.net",
+			expectDomainName: "cd34.reg.voipbin.net",
 		},
 		{
-			name: "realm empty and base uninitialized: stored value left as-is (unit-test safety)",
+			name: "realm empty (orphan row): stored domain_name served as-is",
 
-			setBaseDomain: false,
 			ext: &extension.Extension{
 				Identity:   commonidentity.Identity{CustomerID: customerID},
 				DomainName: customerID.String(),
@@ -70,18 +65,19 @@ func Test_extensionNormalizeDomainName_servingRule(t *testing.T) {
 
 			expectDomainName: customerID.String(),
 		},
+		{
+			name: "realm empty and domain_name empty: stays empty",
+
+			ext: &extension.Extension{
+				Identity: commonidentity.Identity{CustomerID: customerID},
+			},
+
+			expectDomainName: "",
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			common.ResetBaseDomainNamesForTest()
-			if tt.setBaseDomain {
-				if errSet := common.SetBaseDomainNames("registrar.voipbin.net", "trunk.voipbin.net"); errSet != nil {
-					t.Fatalf("Wrong match. expect: ok, got: %v", errSet)
-				}
-				defer common.ResetBaseDomainNamesForTest()
-			}
-
 			extensionNormalizeDomainName(tt.ext)
 
 			if tt.ext.DomainName != tt.expectDomainName {
@@ -91,16 +87,10 @@ func Test_extensionNormalizeDomainName_servingRule(t *testing.T) {
 	}
 }
 
-// Test_ExtensionGet_legacyDomainNameServing exercises the serving rule through
-// the real sqlite read path: a legacy row (NULL realm, bare uuid domain_name)
-// must come back with the computed legacy realm as domain_name.
-func Test_ExtensionGet_legacyDomainNameServing(t *testing.T) {
-	common.ResetBaseDomainNamesForTest()
-	if errSet := common.SetBaseDomainNames("registrar.voipbin.net", "trunk.voipbin.net"); errSet != nil {
-		t.Fatalf("Wrong match. expect: ok, got: %v", errSet)
-	}
-	defer common.ResetBaseDomainNamesForTest()
-
+// Test_ExtensionGet_domainNameServing exercises the serving rule through the
+// real sqlite read path: a row with a realm must come back with the realm as
+// domain_name while the stored column stays untouched.
+func Test_ExtensionGet_domainNameServing(t *testing.T) {
 	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
 
 	mc := gomock.NewController(t)
@@ -118,39 +108,39 @@ func Test_ExtensionGet_legacyDomainNameServing(t *testing.T) {
 	ctx := context.Background()
 
 	customerID := uuid.FromStringOrNil("e2f3a4b5-7f81-11ee-8f5a-1b2c3d4e5f60")
-	legacy := &extension.Extension{
+	realm := "ab12.reg.voipbin.net"
+	row := &extension.Extension{
 		Identity: commonidentity.Identity{
 			ID:         uuid.FromStringOrNil("f3a4b5c6-7f81-11ee-8f5a-1b2c3d4e5f60"),
 			CustomerID: customerID,
 		},
 
-		EndpointID: "1001@" + customerID.String() + ".registrar.voipbin.net",
-		AORID:      "1001@" + customerID.String() + ".registrar.voipbin.net",
-		AuthID:     "1001@" + customerID.String() + ".registrar.voipbin.net",
+		EndpointID: "1001@" + realm,
+		AORID:      "1001@" + realm,
+		AuthID:     "1001@" + realm,
 
 		Extension:  "1001",
-		DomainName: customerID.String(), // legacy: bare uuid in the stored column
-		Realm:      "",                  // legacy: NULL realm
+		DomainName: customerID.String(), // stale stored column value
+		Realm:      realm,
 		Username:   "1001",
 		Password:   "secret",
 	}
 
 	mockUtil.EXPECT().TimeNow().Return(curTime)
 	mockCache.EXPECT().ExtensionSet(ctx, gomock.Any())
-	if err := h.ExtensionCreate(ctx, legacy); err != nil {
+	if err := h.ExtensionCreate(ctx, row); err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
 
-	mockCache.EXPECT().ExtensionGet(ctx, legacy.ID).Return(nil, fmt.Errorf("cache miss"))
+	mockCache.EXPECT().ExtensionGet(ctx, row.ID).Return(nil, fmt.Errorf("cache miss"))
 	mockCache.EXPECT().ExtensionSet(ctx, gomock.Any())
-	res, err := h.ExtensionGet(ctx, legacy.ID)
+	res, err := h.ExtensionGet(ctx, row.ID)
 	if err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
 
-	expectDomainName := customerID.String() + ".registrar.voipbin.net"
-	if res.DomainName != expectDomainName {
-		t.Errorf("Wrong match.\nexpect: %s\ngot: %s", expectDomainName, res.DomainName)
+	if res.DomainName != realm {
+		t.Errorf("Wrong match.\nexpect: %s\ngot: %s", realm, res.DomainName)
 	}
 
 	// the stored column stays untouched (only the in-memory model is normalized)

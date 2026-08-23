@@ -74,7 +74,7 @@ Configure your Linphone softphone to register with VoIPBIN using the extension c
 | Transport         | UDP (use TCP or TLS if SIP messages are too large for UDP) |
 +-------------------+------------------------------------------------------------+
 
-Use the ``domain_name`` value returned when you created the extension (also visible via ``GET https://api.voipbin.net/v1.0/extensions``). It is your customer-specific SIP domain in the format ``<label>.reg.voipbin.net`` (a short 4-character label, e.g. ``ab12.reg.voipbin.net``). Do not construct the domain yourself. Always copy it from the API response. Accounts created before the domain migration may still receive the legacy ``<customer-id>.registrar.voipbin.net`` format; such domains are still accepted for SIP registration during the migration window, but inbound calls are only routed to the current ``domain_name`` served by the API, so always configure your softphone with that value.
+Use the ``domain_name`` value returned when you created the extension (also visible via ``GET https://api.voipbin.net/v1.0/extensions``). It is your customer-specific SIP domain in the format ``<label>.reg.voipbin.net`` (a short 4-character label, e.g. ``ab12.reg.voipbin.net``). Do not construct the domain yourself. Always copy it from the API response.
 
 **Setup steps (Linphone desktop):**
 

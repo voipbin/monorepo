@@ -5,7 +5,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 )
 
@@ -49,51 +48,6 @@ func Test_BaseDomainNameExtension(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
-	}
-}
-
-func Test_GenerateRealmExtensionLegacy(t *testing.T) {
-
-	tests := []struct {
-		name string
-
-		customerID uuid.UUID
-
-		expectRes string
-	}{
-		{
-			name: "normal",
-
-			customerID: uuid.FromStringOrNil("bc22cc08-570a-11ee-acf3-537a646d5f2f"),
-			expectRes:  "bc22cc08-570a-11ee-acf3-537a646d5f2f.registrar.voipbin.net",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			if errSet := SetBaseDomainNames("registrar.voipbin.net", "trunk.voipbin.net"); errSet != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", errSet)
-			}
-			defer ResetBaseDomainNamesForTest()
-
-			res := GenerateRealmExtensionLegacy(tt.customerID)
-			if reflect.DeepEqual(tt.expectRes, res) == false {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-			}
-		})
-
-	}
-}
-
-func Test_GenerateRealmExtensionLegacy_uninitialized(t *testing.T) {
-	ResetBaseDomainNamesForTest()
-
-	res := GenerateRealmExtensionLegacy(uuid.FromStringOrNil("bc22cc08-570a-11ee-acf3-537a646d5f2f"))
-	if res != "" {
-		t.Errorf("Wrong match. expect: empty, got: %v", res)
 	}
 }
 
