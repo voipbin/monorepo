@@ -31,11 +31,11 @@ const (
 
 // Authenticate parses the request's credentials (JWT or accesskey) and
 // stores the resulting *auth.AuthIdentity in the gin context under
-// "auth_identity". It does NOT enforce account status (frozen check) —
+// "auth_identity". It does NOT enforce account status (frozen/deleted check) —
 // callers that need that check must additionally chain EnforceAccountStatus()
 // after Authenticate(). This split (VOIP-1302 §4-6) lets route groups place
 // other middleware (e.g. CustomerRateLimit) between authentication and the
-// frozen-account RPC check.
+// account-status RPC check.
 func Authenticate() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		log := logrus.WithFields(logrus.Fields{
@@ -80,7 +80,7 @@ func Authenticate() gin.HandlerFunc {
 }
 
 // EnforceAccountStatus checks whether the authenticated identity's customer
-// account is frozen and blocks the request if so. It requires Authenticate()
+// account is frozen or deleted and blocks the request if so. It requires Authenticate()
 // to have run earlier in the chain and populated "auth_identity" in the gin
 // context; if that identity is missing, the request is treated as
 // unauthenticated (fail closed) rather than silently passing through.
@@ -98,9 +98,9 @@ func EnforceAccountStatus() gin.HandlerFunc {
 			return
 		}
 
-		// Check if customer account is frozen
-		if isFrozenAccountBlocked(c, identity) {
-			return // response already sent by isFrozenAccountBlocked
+		// Check if customer account is frozen or deleted
+		if isBlockedAccountStatus(c, identity) {
+			return // response already sent by isBlockedAccountStatus
 		}
 
 		c.Next()
@@ -212,11 +212,19 @@ func authenticateAccesskey(c *gin.Context, log *logrus.Entry, sh servicehandler.
 	return auth.NewAccesskeyIdentity(ak), nil
 }
 
-// isFrozenAccountBlocked checks if a customer's account is frozen and blocks
-// non-allowed requests with a 403 DELETION_SCHEDULED response.
+// isBlockedAccountStatus checks if a customer's account is frozen or deleted
+// and blocks non-allowed requests with a 403 response.
+//
+// This is a defense-in-depth gate: the customer_deleted event cascade is
+// expected to soft-delete every downstream resource (agents, flows, ...) for
+// a deleted customer, but that cascade has been observed to fail silently
+// for a subset of customers (VOIP-1395), leaving live agent credentials that
+// can still authenticate. Blocking on StatusDeleted here closes the
+// authentication bypass regardless of whether the cascade itself is fixed.
+//
 // Returns true if the request was blocked, false if it should proceed.
-func isFrozenAccountBlocked(c *gin.Context, a *auth.AuthIdentity) bool {
-	// Direct tokens skip frozen check
+func isBlockedAccountStatus(c *gin.Context, a *auth.AuthIdentity) bool {
+	// Direct tokens skip this check
 	if a.IsDirect() {
 		return false
 	}
@@ -233,7 +241,7 @@ func isFrozenAccountBlocked(c *gin.Context, a *auth.AuthIdentity) bool {
 		return false
 	}
 
-	// Fetch customer to check frozen status. Uses CustomerRawSelfGet (self-scoped,
+	// Fetch customer to check account status. Uses CustomerRawSelfGet (self-scoped,
 	// no permission gate) rather than CustomerGet (requires ProjectSuperAdmin) —
 	// this check must apply to every non-direct identity, not just super admins,
 	// who are already exempted above.
@@ -244,37 +252,52 @@ func isFrozenAccountBlocked(c *gin.Context, a *auth.AuthIdentity) bool {
 		return false
 	}
 
-	if cu.Status != cscustomer.StatusFrozen {
+	switch cu.Status {
+	case cscustomer.StatusFrozen:
+		// Account is frozen — return 403 with PERMISSION_DENIED envelope.
+		//
+		// Self-service recovery clients (admin.voipbin.net, talk.voipbin.net) rely
+		// on the deletion schedule and recovery endpoint to render the "account
+		// frozen" UX, so these fields are carried in the envelope's details array
+		// while keeping the overall error shape consistent with the rest of the
+		// API.
+		var deletionEffectiveAt *time.Time
+		if cu.TMDeletionScheduled != nil {
+			t := cu.TMDeletionScheduled.Add(30 * 24 * time.Hour)
+			deletionEffectiveAt = &t
+		}
+		details := []map[string]any{
+			{
+				"deletion_scheduled_at": cu.TMDeletionScheduled,
+				"deletion_effective_at": deletionEffectiveAt,
+				"recovery_endpoint":     "DELETE /auth/unregister",
+			},
+		}
+
+		e := cerrors.PermissionDenied(commonoutline.ServiceNameAPIManager, "ACCOUNT_FROZEN", "This account is frozen. Contact support.")
+		e.Details = details
+		c.AbortWithStatusJSON(
+			cerrors.HTTPStatusFor(e.Status),
+			apierror.EnvelopeFor(e, RequestIDFromContext(c)),
+		)
+		return true
+
+	case cscustomer.StatusDeleted:
+		// Account is deleted. This should be unreachable in the steady state —
+		// a deleted customer's agents/accesskeys should already be soft-deleted
+		// by the customer_deleted cascade and fail earlier in Authenticate() —
+		// but the cascade is known to miss some customers (VOIP-1395), so this
+		// is a deliberate second layer, not redundant defense.
+		e := cerrors.PermissionDenied(commonoutline.ServiceNameAPIManager, "ACCOUNT_DELETED", "This account has been deleted.")
+		c.AbortWithStatusJSON(
+			cerrors.HTTPStatusFor(e.Status),
+			apierror.EnvelopeFor(e, RequestIDFromContext(c)),
+		)
+		return true
+
+	default:
 		return false
 	}
-
-	// Account is frozen — return 403 with PERMISSION_DENIED envelope.
-	//
-	// Self-service recovery clients (admin.voipbin.net, talk.voipbin.net) rely
-	// on the deletion schedule and recovery endpoint to render the "account
-	// frozen" UX, so these fields are carried in the envelope's details array
-	// while keeping the overall error shape consistent with the rest of the
-	// API.
-	var deletionEffectiveAt *time.Time
-	if cu.TMDeletionScheduled != nil {
-		t := cu.TMDeletionScheduled.Add(30 * 24 * time.Hour)
-		deletionEffectiveAt = &t
-	}
-	details := []map[string]any{
-		{
-			"deletion_scheduled_at": cu.TMDeletionScheduled,
-			"deletion_effective_at": deletionEffectiveAt,
-			"recovery_endpoint":     "DELETE /auth/unregister",
-		},
-	}
-
-	e := cerrors.PermissionDenied(commonoutline.ServiceNameAPIManager, "ACCOUNT_FROZEN", "This account is frozen. Contact support.")
-	e.Details = details
-	c.AbortWithStatusJSON(
-		cerrors.HTTPStatusFor(e.Status),
-		apierror.EnvelopeFor(e, RequestIDFromContext(c)),
-	)
-	return true
 }
 
 func getAuthString(c *gin.Context) (string, string, error) {
