@@ -923,6 +923,10 @@ func Test_isBlockedAccountStatus(t *testing.T) {
 		mockSetup    func(mockSH *servicehandler.MockServiceHandler)
 		expectBlock  bool
 		expectStatus int
+		// customerStatus is only used by the assertion for blocked cases to
+		// pick the expected error code (ACCOUNT_FROZEN vs ACCOUNT_DELETED).
+		// Leave zero-value for cases that don't reach the blocked assertion.
+		customerStatus cscustomer.Status
 	}{
 		{
 			name: "Active account - not blocked",
@@ -954,8 +958,9 @@ func Test_isBlockedAccountStatus(t *testing.T) {
 					TMDeletionScheduled: &deletionTime,
 				}, nil)
 			},
-			expectBlock:  true,
-			expectStatus: 403,
+			expectBlock:    true,
+			expectStatus:   403,
+			customerStatus: cscustomer.StatusFrozen,
 		},
 		{
 			// Regression coverage for VOIP-1292: previously CustomerGet's
@@ -976,8 +981,9 @@ func Test_isBlockedAccountStatus(t *testing.T) {
 					TMDeletionScheduled: &deletionTime,
 				}, nil)
 			},
-			expectBlock:  true,
-			expectStatus: 403,
+			expectBlock:    true,
+			expectStatus:   403,
+			customerStatus: cscustomer.StatusFrozen,
 		},
 		{
 			name: "Frozen account - delegate identity blocked",
@@ -994,8 +1000,9 @@ func Test_isBlockedAccountStatus(t *testing.T) {
 					TMDeletionScheduled: &deletionTime,
 				}, nil)
 			},
-			expectBlock:  true,
-			expectStatus: 403,
+			expectBlock:    true,
+			expectStatus:   403,
+			customerStatus: cscustomer.StatusFrozen,
 		},
 		{
 			name: "Frozen account - DELETE /auth/unregister allowed",
@@ -1065,8 +1072,9 @@ func Test_isBlockedAccountStatus(t *testing.T) {
 					Status: cscustomer.StatusDeleted,
 				}, nil)
 			},
-			expectBlock:  true,
-			expectStatus: 403,
+			expectBlock:    true,
+			expectStatus:   403,
+			customerStatus: cscustomer.StatusDeleted,
 		},
 		{
 			name: "Deleted account - accesskey identity blocked",
@@ -1081,8 +1089,9 @@ func Test_isBlockedAccountStatus(t *testing.T) {
 					Status: cscustomer.StatusDeleted,
 				}, nil)
 			},
-			expectBlock:  true,
-			expectStatus: 403,
+			expectBlock:    true,
+			expectStatus:   403,
+			customerStatus: cscustomer.StatusDeleted,
 		},
 		{
 			name: "Deleted account - delegate identity blocked",
@@ -1098,8 +1107,9 @@ func Test_isBlockedAccountStatus(t *testing.T) {
 					Status: cscustomer.StatusDeleted,
 				}, nil)
 			},
-			expectBlock:  true,
-			expectStatus: 403,
+			expectBlock:    true,
+			expectStatus:   403,
+			customerStatus: cscustomer.StatusDeleted,
 		},
 		{
 			name: "Deleted account - DELETE /auth/unregister allowed",
@@ -1189,6 +1199,15 @@ func Test_isBlockedAccountStatus(t *testing.T) {
 				}
 				if _, hasDomain := errObj["domain"]; hasDomain {
 					t.Errorf("domain key MUST be absent from external response; body=%s", w.Body.String())
+				}
+
+				wantCode := "ACCOUNT_FROZEN"
+				if tt.customerStatus == cscustomer.StatusDeleted {
+					wantCode = "ACCOUNT_DELETED"
+				}
+				gotCode, _ := errObj["reason"].(string)
+				if gotCode != wantCode {
+					t.Errorf("Wrong error code. expect: %s, got: %s; body=%s", wantCode, gotCode, w.Body.String())
 				}
 			}
 		})
