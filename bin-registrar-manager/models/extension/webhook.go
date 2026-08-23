@@ -29,12 +29,10 @@ type WebhookMessage struct {
 
 // ConvertWebhookMessage converts to the event
 func (h *Extension) ConvertWebhookMessage() *WebhookMessage {
-	// SERVING RULE (VOIP-1385): the exposed domain_name is the full realm.
-	// Serve Realm when set; when Realm is empty (legacy pre-Feb-2024 rows) the
-	// stored DomainName column holds a bare customer uuid until the migration
-	// batch rewrites it — registrar-manager's read path already normalizes it
-	// to the computed legacy realm before the model leaves the service, so the
-	// fallback below never serves the raw bare uuid.
+	// SERVING RULE (VOIP-1385, post-cutover): the exposed domain_name is the
+	// full realm. Serve Realm when set, otherwise the stored DomainName as-is.
+	// Every active row carries a realm since the short-domain cutover;
+	// realm-less rows belong to deleted/expired customers only.
 	domainName := h.DomainName
 	if h.Realm != "" {
 		domainName = h.Realm

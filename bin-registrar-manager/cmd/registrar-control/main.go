@@ -69,7 +69,6 @@ func initCommand() *cobra.Command {
 	cmdRoot.AddCommand(cmdTrunk)
 
 	// Domain migration subcommands (VOIP-1385)
-	cmdRoot.AddCommand(cmdDomainBackfill())
 	cmdRoot.AddCommand(cmdDomainMigrate())
 	cmdRoot.AddCommand(cmdDomainMigrateRollback())
 
@@ -115,7 +114,6 @@ func initExtensionHandler() (extensionhandler.ExtensionHandler, error) {
 
 // domainMigrationDeps bundles the handlers the domain migration batch needs.
 type domainMigrationDeps struct {
-	reqHandler            requesthandler.RequestHandler
 	notifyHandler         notifyhandler.NotifyHandler
 	dbAst                 dbhandler.DBHandler
 	dbBin                 dbhandler.DBHandler
@@ -151,7 +149,6 @@ func initDomainMigrationDeps() (*domainMigrationDeps, error) {
 	customerDomainHandler := customerdomainhandler.NewCustomerDomainHandler(dbBin, config.Get().DomainShortLabelEnabled)
 
 	return &domainMigrationDeps{
-		reqHandler:            reqHandler,
 		notifyHandler:         notifyHandler,
 		dbAst:                 dbAst,
 		dbBin:                 dbBin,

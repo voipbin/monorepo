@@ -10,9 +10,6 @@ import (
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
-	"monorepo/bin-common-handler/pkg/requesthandler"
-
-	cucustomer "monorepo/bin-customer-manager/models/customer"
 
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -20,131 +17,12 @@ import (
 	"monorepo/bin-registrar-manager/models/astaor"
 	"monorepo/bin-registrar-manager/models/astauth"
 	"monorepo/bin-registrar-manager/models/astendpoint"
-	"monorepo/bin-registrar-manager/models/common"
 	"monorepo/bin-registrar-manager/models/customerdomain"
 	"monorepo/bin-registrar-manager/models/extension"
 	"monorepo/bin-registrar-manager/models/sipauth"
 	"monorepo/bin-registrar-manager/pkg/customerdomainhandler"
 	"monorepo/bin-registrar-manager/pkg/dbhandler"
 )
-
-func setTestBaseDomains(t *testing.T) {
-	t.Helper()
-
-	common.ResetBaseDomainNamesForTest()
-	if errSet := common.SetBaseDomainNames("registrar.voipbin.net", "trunk.voipbin.net"); errSet != nil {
-		t.Fatalf("Wrong match. expect: ok, got: %v", errSet)
-	}
-	t.Cleanup(common.ResetBaseDomainNamesForTest)
-}
-
-// ============================================================================
-// domain-backfill
-// ============================================================================
-
-func Test_domainBackfill(t *testing.T) {
-	setTestBaseDomains(t)
-
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDBBin := dbhandler.NewMockDBHandler(mc)
-	ctx := context.Background()
-
-	customerWithRow := cucustomer.Customer{ID: uuid.FromStringOrNil("11111111-7f85-11ee-8f5a-1b2c3d4e5f60")}
-	customerWithoutRow := cucustomer.Customer{ID: uuid.FromStringOrNil("22222222-7f85-11ee-8f5a-1b2c3d4e5f60")}
-
-	mockReq.EXPECT().CustomerV1CustomerList(ctx, "", uint64(migrationPageSize), map[cucustomer.Field]any{
-		cucustomer.FieldDeleted: false,
-	}).Return([]cucustomer.Customer{customerWithRow, customerWithoutRow}, nil)
-
-	mockDBBin.EXPECT().CustomerDomainGet(ctx, customerWithRow.ID).Return(&customerdomain.CustomerDomain{CustomerID: customerWithRow.ID}, nil)
-	mockDBBin.EXPECT().CustomerDomainGet(ctx, customerWithoutRow.ID).Return(nil, dbhandler.ErrNotFound)
-
-	var created *customerdomain.CustomerDomain
-	mockDBBin.EXPECT().CustomerDomainCreate(ctx, gomock.Any()).DoAndReturn(func(_ context.Context, cd *customerdomain.CustomerDomain) error {
-		created = cd
-		return nil
-	})
-
-	out := &bytes.Buffer{}
-	createdCount, skippedCount, err := domainBackfill(ctx, mockReq, mockDBBin, true, out)
-	if err != nil {
-		t.Fatalf("Wrong match. expect: ok, got: %v", err)
-	}
-
-	if createdCount != 1 || skippedCount != 1 {
-		t.Errorf("Wrong match. expect: created=1 skipped=1, got: created=%d skipped=%d", createdCount, skippedCount)
-	}
-
-	// backfill row: label = customer uuid string, realm = CURRENT legacy uuid realm
-	if created == nil {
-		t.Fatalf("Wrong match. expect: created row, got: nil")
-	}
-	if created.DomainLabel != customerWithoutRow.ID.String() {
-		t.Errorf("Wrong match. expect: %s, got: %s", customerWithoutRow.ID.String(), created.DomainLabel)
-	}
-	expectRealm := customerWithoutRow.ID.String() + ".registrar.voipbin.net"
-	if created.Realm != expectRealm {
-		t.Errorf("Wrong match. expect: %s, got: %s", expectRealm, created.Realm)
-	}
-}
-
-func Test_domainBackfill_dryRun(t *testing.T) {
-	setTestBaseDomains(t)
-
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDBBin := dbhandler.NewMockDBHandler(mc)
-	ctx := context.Background()
-
-	customer := cucustomer.Customer{ID: uuid.FromStringOrNil("33333333-7f85-11ee-8f5a-1b2c3d4e5f60")}
-
-	mockReq.EXPECT().CustomerV1CustomerList(ctx, "", uint64(migrationPageSize), gomock.Any()).Return([]cucustomer.Customer{customer}, nil)
-	mockDBBin.EXPECT().CustomerDomainGet(ctx, customer.ID).Return(nil, dbhandler.ErrNotFound)
-	// NO CustomerDomainCreate expectation: a create call fails the test
-
-	out := &bytes.Buffer{}
-	createdCount, skippedCount, err := domainBackfill(ctx, mockReq, mockDBBin, false, out)
-	if err != nil {
-		t.Fatalf("Wrong match. expect: ok, got: %v", err)
-	}
-	if createdCount != 1 || skippedCount != 0 {
-		t.Errorf("Wrong match. expect: created=1 skipped=0, got: created=%d skipped=%d", createdCount, skippedCount)
-	}
-	if !strings.Contains(out.String(), "[dry-run]") {
-		t.Errorf("Wrong match. expect: dry-run output, got: %s", out.String())
-	}
-}
-
-func Test_domainBackfill_duplicateRaceIsSkipped(t *testing.T) {
-	setTestBaseDomains(t)
-
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockReq := requesthandler.NewMockRequestHandler(mc)
-	mockDBBin := dbhandler.NewMockDBHandler(mc)
-	ctx := context.Background()
-
-	customer := cucustomer.Customer{ID: uuid.FromStringOrNil("44444444-7f85-11ee-8f5a-1b2c3d4e5f60")}
-
-	mockReq.EXPECT().CustomerV1CustomerList(ctx, "", uint64(migrationPageSize), gomock.Any()).Return([]cucustomer.Customer{customer}, nil)
-	mockDBBin.EXPECT().CustomerDomainGet(ctx, customer.ID).Return(nil, dbhandler.ErrNotFound)
-	mockDBBin.EXPECT().CustomerDomainCreate(ctx, gomock.Any()).Return(fmt.Errorf("wrap: %w", dbhandler.ErrDuplicate))
-
-	out := &bytes.Buffer{}
-	createdCount, skippedCount, err := domainBackfill(ctx, mockReq, mockDBBin, true, out)
-	if err != nil {
-		t.Fatalf("Wrong match. expect: ok, got: %v", err)
-	}
-	if createdCount != 0 || skippedCount != 1 {
-		t.Errorf("Wrong match. expect: created=0 skipped=1, got: created=%d skipped=%d", createdCount, skippedCount)
-	}
-}
 
 // ============================================================================
 // reprovisionExtension — identity invariants
@@ -368,8 +246,6 @@ func Test_reprovisionExtension_legacyNullRealmRow(t *testing.T) {
 // ============================================================================
 
 func Test_migrateCustomerDomain_execute(t *testing.T) {
-	setTestBaseDomains(t)
-
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -481,8 +357,6 @@ func Test_migrateCustomerDomain_alreadyMigratedIsSkipped(t *testing.T) {
 }
 
 func Test_migrateCustomerDomain_resumeRecoversOldRealmFromExtension(t *testing.T) {
-	setTestBaseDomains(t)
-
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -543,8 +417,6 @@ func Test_migrateCustomerDomain_resumeRecoversOldRealmFromExtension(t *testing.T
 }
 
 func Test_migrateCustomerDomain_dryRunMakesNoWrites(t *testing.T) {
-	setTestBaseDomains(t)
-
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -587,9 +459,151 @@ func Test_migrateCustomerDomain_dryRunMakesNoWrites(t *testing.T) {
 	}
 }
 
-func Test_domainMigrate_writesJSONLinesLog(t *testing.T) {
-	setTestBaseDomains(t)
+// Test_migrateCustomerDomain_noRowDerivesOldRealmFromStoredFields: with no
+// domain row, the customer's old realm comes from the STORED extension fields
+// (post-cutover there is no computed legacy fallback).
+func Test_migrateCustomerDomain_noRowDerivesOldRealmFromStoredFields(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
 
+	mockDBAst := dbhandler.NewMockDBHandler(mc)
+	mockDBBin := dbhandler.NewMockDBHandler(mc)
+	mockCD := customerdomainhandler.NewMockCustomerDomainHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("dedede00-7f85-11ee-8f5a-1b2c3d4e5f60")
+	oldRealm := customerID.String() + ".registrar.voipbin.net" // stored on the extension row
+	newRealm := "zz88.reg.voipbin.net"
+
+	migratedRow := &customerdomain.CustomerDomain{
+		CustomerID:  customerID,
+		DomainLabel: "zz88",
+		Realm:       newRealm,
+	}
+	ext := testExtension(customerID, "1001", oldRealm)
+
+	mockDBBin.EXPECT().CustomerDomainGet(ctx, customerID).Return(nil, dbhandler.ErrNotFound)
+	mockDBBin.EXPECT().ExtensionList(ctx, uint64(migrationExtensionListLimit), "", gomock.Any()).Return([]*extension.Extension{ext}, nil)
+	mockCD.EXPECT().MigrateToShortDomain(ctx, customerID).Return(migratedRow, nil)
+
+	mockDBAst.EXPECT().AstEndpointDelete(ctx, gomock.Any()).Return(nil).Times(2)
+	mockDBAst.EXPECT().AstAuthDelete(ctx, gomock.Any()).Return(nil).Times(2)
+	mockDBAst.EXPECT().AstAORDelete(ctx, gomock.Any()).Return(nil).Times(2)
+	mockDBAst.EXPECT().AstAORCreate(ctx, gomock.Any()).Return(nil)
+	mockDBAst.EXPECT().AstAuthCreate(ctx, gomock.Any()).Return(nil)
+	mockDBAst.EXPECT().AstEndpointCreate(ctx, gomock.Any()).Return(nil)
+	mockDBBin.EXPECT().SIPAuthUpdate(ctx, ext.ID, gomock.Any()).Return(nil)
+	mockDBAst.EXPECT().AstContactDeleteByEndpoint(ctx, ext.EndpointID).Return(nil)
+	mockDBBin.EXPECT().ExtensionUpdate(ctx, ext.ID, gomock.Any()).Return(nil)
+	updated := testExtension(customerID, "1001", newRealm)
+	mockDBBin.EXPECT().ExtensionGet(ctx, ext.ID).Return(updated, nil)
+	mockNotify.EXPECT().PublishEvent(ctx, extension.EventTypeExtensionUpdated, updated).Times(1)
+
+	out := &bytes.Buffer{}
+	logBuf := &bytes.Buffer{}
+	record, skipped, err := migrateCustomerDomain(ctx, mockDBAst, mockDBBin, mockCD, mockNotify, customerID, true, logBuf, out)
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	if skipped {
+		t.Fatalf("Wrong match. expect: migrated, got: skipped")
+	}
+
+	// old realm/label recovered from the extension's STORED realm
+	if record.OldRealm != oldRealm {
+		t.Errorf("Wrong match. expect: %s, got: %s", oldRealm, record.OldRealm)
+	}
+	if record.OldLabel != customerID.String() {
+		t.Errorf("Wrong match. expect: %s, got: %s", customerID.String(), record.OldLabel)
+	}
+}
+
+// Test_migrateCustomerDomain_noRowNoRecoverableRealm_errors: extensions exist
+// but carry no recoverable realm (no stored realm, endpoint id without a
+// domain part) — the batch refuses instead of writing a rollback record that
+// cannot restore them.
+func Test_migrateCustomerDomain_noRowNoRecoverableRealm_errors(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDBAst := dbhandler.NewMockDBHandler(mc)
+	mockDBBin := dbhandler.NewMockDBHandler(mc)
+	mockCD := customerdomainhandler.NewMockCustomerDomainHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("fafafa00-7f85-11ee-8f5a-1b2c3d4e5f60")
+
+	ext := testExtension(customerID, "1001", "")
+	ext.Realm = ""
+	ext.EndpointID = "1001" // no domain part
+
+	mockDBBin.EXPECT().CustomerDomainGet(ctx, customerID).Return(nil, dbhandler.ErrNotFound)
+	mockDBBin.EXPECT().ExtensionList(ctx, uint64(migrationExtensionListLimit), "", gomock.Any()).Return([]*extension.Extension{ext}, nil)
+	// no MigrateToShortDomain / write expectations: any mutation fails the test
+
+	out := &bytes.Buffer{}
+	logBuf := &bytes.Buffer{}
+	if _, _, err := migrateCustomerDomain(ctx, mockDBAst, mockDBBin, mockCD, mockNotify, customerID, true, logBuf, out); err == nil {
+		t.Fatalf("Wrong match. expect: error, got: ok")
+	}
+	if logBuf.Len() != 0 {
+		t.Errorf("Wrong match. expect: no log writes, got: %s", logBuf.String())
+	}
+}
+
+// Test_migrateCustomerDomain_noRowNoExtensions_noRollbackRecord: a customer
+// with no previous domain state at all gets a fresh short row and NO rollback
+// record (there is nothing to restore); only the completion marker is logged.
+func Test_migrateCustomerDomain_noRowNoExtensions_noRollbackRecord(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDBAst := dbhandler.NewMockDBHandler(mc)
+	mockDBBin := dbhandler.NewMockDBHandler(mc)
+	mockCD := customerdomainhandler.NewMockCustomerDomainHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("bcbcbc00-7f85-11ee-8f5a-1b2c3d4e5f60")
+	shortRow := &customerdomain.CustomerDomain{
+		CustomerID:  customerID,
+		DomainLabel: "yy77",
+		Realm:       "yy77.reg.voipbin.net",
+	}
+
+	mockDBBin.EXPECT().CustomerDomainGet(ctx, customerID).Return(nil, dbhandler.ErrNotFound)
+	mockDBBin.EXPECT().ExtensionList(ctx, uint64(migrationExtensionListLimit), "", gomock.Any()).Return([]*extension.Extension{}, nil)
+	mockCD.EXPECT().MigrateToShortDomain(ctx, customerID).Return(shortRow, nil)
+
+	out := &bytes.Buffer{}
+	logBuf := &bytes.Buffer{}
+	record, skipped, err := migrateCustomerDomain(ctx, mockDBAst, mockDBBin, mockCD, mockNotify, customerID, true, logBuf, out)
+	if err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	if skipped {
+		t.Fatalf("Wrong match. expect: migrated, got: skipped")
+	}
+	if record.NewRealm != shortRow.Realm {
+		t.Errorf("Wrong match. expect: %s, got: %s", shortRow.Realm, record.NewRealm)
+	}
+
+	// the completion marker is present but the rollback parser sees NO records
+	if !strings.Contains(logBuf.String(), `"status":"completed"`) {
+		t.Errorf("Wrong match. expect: completion marker, got: %s", logBuf.String())
+	}
+	records, errParse := parseMigrationLog(bytes.NewReader(logBuf.Bytes()))
+	if errParse != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", errParse)
+	}
+	if len(records) != 0 {
+		t.Errorf("Wrong match. expect: 0 rollback records, got: %+v", records)
+	}
+}
+
+func Test_domainMigrate_writesJSONLinesLog(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -865,8 +879,6 @@ func Test_domainMigrateRollback_invalidRecord(t *testing.T) {
 // ============================================================================
 
 func Test_extensionLegacyRealm(t *testing.T) {
-	setTestBaseDomains(t)
-
 	customerID := uuid.FromStringOrNil("5e5e5e00-7f86-11ee-8f5a-1b2c3d4e5f60")
 
 	tests := []struct {
@@ -887,13 +899,23 @@ func Test_extensionLegacyRealm(t *testing.T) {
 			expectRes: "old.registrar.voipbin.net",
 		},
 		{
-			name: "no endpoint id: computed legacy realm",
+			name: "no endpoint id: empty (stored fields only, no computed fallback)",
 
 			ext: &extension.Extension{
 				Identity: commonidentity.Identity{CustomerID: customerID},
 			},
 
-			expectRes: customerID.String() + ".registrar.voipbin.net",
+			expectRes: "",
+		},
+		{
+			name: "endpoint id without domain part: empty",
+
+			ext: &extension.Extension{
+				Identity:   commonidentity.Identity{CustomerID: customerID},
+				EndpointID: "1001",
+			},
+
+			expectRes: "",
 		},
 	}
 
@@ -944,8 +966,6 @@ func testExtensionWithID(id uuid.UUID, customerID uuid.UUID, ext string, realm s
 // fails mid-run, the log ALREADY holds the full record covering every pending
 // extension (including the ones that were never touched).
 func Test_migrateCustomerDomain_logIsWrittenBeforeExecution(t *testing.T) {
-	setTestBaseDomains(t)
-
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -1074,8 +1094,6 @@ func Test_domainMigrateRollback_preLoggedNeverMigratedExtension(t *testing.T) {
 // the resume run pre-logs the remaining 2; a rollback over the ACCUMULATED log
 // restores all 5 extensions and the customer domain row.
 func Test_domainMigrate_interruptedThenResumed_rollbackRestoresAll(t *testing.T) {
-	setTestBaseDomains(t)
-
 	ctx := context.Background()
 
 	customerID := uuid.FromStringOrNil("8b8b8b00-7f86-11ee-8f5a-1b2c3d4e5f60")

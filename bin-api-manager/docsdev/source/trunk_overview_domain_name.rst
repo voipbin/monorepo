@@ -15,4 +15,4 @@ This pivotal component facilitates the management of SIP traffic within your VoI
 
 .. note:: **AI Implementation Hint**
 
-   VoIPBIN uses two domain patterns: ``{label}.reg.voipbin.net`` for SIP device registration (extensions, where ``{label}`` is a short customer-specific identifier returned in the extension's ``domain_name`` field, e.g. ``ab12.reg.voipbin.net``; the legacy ``{customer-id}.registrar.voipbin.net`` form is still accepted for SIP registration during the migration window, but inbound calls are only routed to the current domain returned in ``domain_name``), and ``{domain-name}.trunk.voipbin.net`` for SIP trunking (outbound calls). The domain is auto-generated -- you do not need to create or manage DNS records yourself.
+   VoIPBIN uses two domain patterns: ``{label}.reg.voipbin.net`` for SIP device registration (extensions, where ``{label}`` is a short customer-specific identifier returned in the extension's ``domain_name`` field, e.g. ``ab12.reg.voipbin.net``), and ``{domain-name}.trunk.voipbin.net`` for SIP trunking (outbound calls). The domain is auto-generated -- you do not need to create or manage DNS records yourself.

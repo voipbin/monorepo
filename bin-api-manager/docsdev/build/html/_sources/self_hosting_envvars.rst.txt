@@ -43,8 +43,7 @@ together with a short ``DOMAIN_NAME_EXTENSION`` so SIP messages stay
 under the UDP MTU. The flag only affects customers created after it is
 enabled; existing customers' domains are only changed by running the
 ``registrar-control`` domain-migrate batch (which assigns short labels
-regardless of the flag). Kamailio's configuration accepts both the
-``reg.`` and legacy ``registrar.`` suffixes during a migration window.
+regardless of the flag).
 
 To change the base domain after install, edit ``domain`` in
 ``config.yaml`` and rerun ``./voipbin-install apply``. Both the Ansible

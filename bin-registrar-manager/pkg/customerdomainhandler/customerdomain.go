@@ -185,30 +185,15 @@ func (h *customerDomainHandler) RealmGet(ctx context.Context, customerID uuid.UU
 
 // EndpointGet returns the endpoint string (<extension>@<realm>) of the given
 // customer and extension. Lookup-only: a contact lookup must never create a
-// domain row as a side effect. When no row exists yet (pre-backfill window)
-// it falls back to the computed legacy realm so existing contact lookups keep
-// resolving the endpoints provisioned under the legacy uuid realm.
+// domain row as a side effect. Post-cutover every active customer has a domain
+// row (backfill + create paths guarantee it), so a missing row is an error.
 func (h *customerDomainHandler) EndpointGet(ctx context.Context, customerID uuid.UUID, extension string) (string, error) {
 	res, err := h.GetByCustomerID(ctx, customerID)
-	if err == nil {
-		return fmt.Sprintf("%s@%s", extension, res.Realm), nil
-	}
-
-	if !stderrors.Is(err, dbhandler.ErrNotFound) {
+	if err != nil {
 		return "", fmt.Errorf("could not get customer domain: %w", err)
 	}
 
-	legacy := common.GenerateRealmExtensionLegacy(customerID)
-	if legacy == "" {
-		return "", fmt.Errorf("could not get endpoint: no customer domain row and no base domain configured. customer_id: %s", customerID)
-	}
-
-	logrus.WithFields(logrus.Fields{
-		"func":        "EndpointGet",
-		"customer_id": customerID,
-	}).Debugf("No customer domain row. Falling back to the legacy computed realm. realm: %s", legacy)
-
-	return fmt.Sprintf("%s@%s", extension, legacy), nil
+	return fmt.Sprintf("%s@%s", extension, res.Realm), nil
 }
 
 // MigrateToShortDomain moves the customer's domain row to a fresh 4-char label.

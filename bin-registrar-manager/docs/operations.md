@@ -11,6 +11,48 @@
 | `customer_deleted` cascade not completing | Subscribe consumer stopped | Check `subscribehandler` logs; verify RabbitMQ queue binding |
 | Domain names not set at startup | `domain_name_extension` or `domain_name_trunk` config missing | Set both flags; service will fail to create extensions/trunks without them |
 | Contact count mismatch | Redis vs Asterisk DB divergence | Invalidate Redis key for the endpoint; contact list re-reads from DB on miss |
+| Contact/endpoint lookups fail for ONE customer | Missing `registrar_customer_domains` row | See [Runbook: missing customer domain row](#runbook-missing-customer-domain-row) |
+
+## Runbook: Missing Customer Domain Row
+
+**Invariant:** every ACTIVE customer has exactly one `registrar_customer_domains`
+row; `EndpointGet` and the realm lookup fail-close when the row is missing
+(the legacy computed-realm fallback was removed post-cutover, VOIP-1385
+step 6). Verified in production at cleanup time (2026-08-23): active
+extensions with a NULL/empty realm = 0; active extensions lacking a
+`registrar_customer_domains` row = 13, ALL belonging to deleted/expired
+customers (0 for non-deleted customers). The hard-error path therefore
+affects only orphan data — if it ever fires for an active customer, the
+invariant has been broken and needs manual recovery.
+
+**Symptom:** for a single customer only — `EndpointGet`/contact lookups
+return `could not get customer domain: not found`, and incoming-call realm
+lookups (`GET /v1/customer_domains/realm/{realm}`) miss. Other customers are
+unaffected.
+
+**Recovery (preferred, one command):**
+
+```bash
+./bin/registrar-control domain-migrate --customer-id <uuid> --execute --log /var/tmp/domain-recover-<uuid>.jsonl
+```
+
+`domain-migrate` handles the no-row case directly: it creates a fresh
+4-char base36 short-label row (`MigrateToShortDomain` → `createShortDomain`,
+unique-index collision retry included) and re-provisions the customer's
+extensions (ps_* rows, sipauth realm, extension row) consistently under the
+new realm — recovering each extension's previous realm from its STORED
+fields (stored `realm`, else the endpoint id's domain part). Run with
+`--dry-run` first to preview. Keep the `--log` journal; it is the rollback
+source for `domain-migrate-rollback`.
+
+**Background (why not raw SQL):** the equivalent manual fix would be an
+INSERT into `registrar_customer_domains` with a fresh 4-char base36
+`domain_label` and `realm = '<label>.reg.voipbin.net'`, respecting the
+unique indexes on `customer_id`, `domain_label`, and `realm` — followed by
+re-provisioning every extension of that customer by hand. `domain-migrate
+--customer-id` performs exactly that sequence atomically per extension and
+idempotently (safe to re-run), so prefer the command; use SQL only to
+inspect, not to repair.
 
 ## Debugging Guide
 
@@ -81,7 +123,7 @@ DSNs).
 | `--redis_database` | `REDIS_DATABASE` | `` | Redis DB index |
 | `--domain_name_extension` | `DOMAIN_NAME_EXTENSION` | required | Base domain for SIP extensions (e.g., `ext.voipbin.net`) |
 | `--domain_name_trunk` | `DOMAIN_NAME_TRUNK` | required | Base domain for SIP trunks |
-| `--domain_short_label_enabled` | `DOMAIN_SHORT_LABEL_ENABLED` | `false` | Generate short 4-char labels for NEW customer domains (VOIP-1385). Keep `false` until the frontends consume the API `domain_name` verbatim (deploy step 2): while `false`, new customers get the legacy `<uuid>.<base>` realm so pre-cutover webphones (which build the domain from the customer uuid) keep registering. The `domain-migrate` batch always produces short labels regardless of this flag |
+| `--domain_short_label_enabled` | `DOMAIN_SHORT_LABEL_ENABLED` | `false` | Generate short 4-char labels for NEW customer domains (VOIP-1385). Production runs `true` since the short-domain cutover; while `false`, new customers get a `<uuid>.<base>` realm (uuid label shape). The `domain-migrate` batch always produces short labels regardless of this flag |
 | `--prometheus_endpoint` | `PROMETHEUS_ENDPOINT` | `/metrics` | Metrics path |
 | `--prometheus_listen_address` | `PROMETHEUS_LISTEN_ADDRESS` | `:2112` | Metrics listen address |
 

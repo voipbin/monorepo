@@ -1343,8 +1343,7 @@ together with a short <code class="docutils literal notranslate"><span class="pr
 under the UDP MTU. The flag only affects customers created after it is
 enabled; existing customers’ domains are only changed by running the
 <code class="docutils literal notranslate"><span class="pre">registrar-control</span></code> domain-migrate batch (which assigns short labels
-regardless of the flag). Kamailio’s configuration accepts both the
-<code class="docutils literal notranslate"><span class="pre">reg.</span></code> and legacy <code class="docutils literal notranslate"><span class="pre">registrar.</span></code> suffixes during a migration window.</p>
+regardless of the flag).</p>
 <p>To change the base domain after install, edit <code class="docutils literal notranslate"><span class="pre">domain</span></code> in
 <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> and rerun <code class="docutils literal notranslate"><span class="pre">./voipbin-install</span> <span class="pre">apply</span></code>. Both the Ansible
 env template and the Kubernetes ConfigMap regenerate consistently.</p>
