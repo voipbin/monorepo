@@ -85,10 +85,10 @@ golangci-lint run -v --timeout 5m
 The fleet standard runtime image is distroless static. This service's runtime stage is **`debian:bookworm-slim` + `mysql-community-client` 8.0 from MySQL's official APT repo** — a sanctioned deviation (design §7, same status as bin-call-manager's raw-SQL exception):
 
 - The scheduled DB backup executes `mysqldump` as a subprocess, which needs a binary-carrying base image.
-- The client must be **genuine MySQL 8.0**, not MariaDB: alpine's `mysql-client` and debian's `default-mysql-client` are MariaDB aliases, an unsupported pairing against the MySQL 8.0 platform DB (`caching_sha2_password` auth, incompatible dump output).
-- Client pin follows the platform DB server version. When the platform migrates to MySQL 8.4/9.x, bumping this package is part of that migration's checklist.
+- The platform DB is migrating from MySQL 8.0 to **MariaDB 12.3 LTS (VOIP-1386)**. The `mysqldump` 8.0 client is kept through that migration: with `--column-statistics=0` (set in `backuphandler`) it is empirically validated against BOTH server states — MySQL 8.0 (flag is a no-op) and MariaDB 12.3 (without the flag the dump aborts with `Unknown table 'COLUMN_STATISTICS'`, error 1109). This makes the backup deploy-order-independent of the cutover.
+- Do not swap in debian's `default-mysql-client`/alpine's `mysql-client` (MariaDB alias clients) as a drive-by "fix": switching to `mariadb-dump` requires reworking the flag set (`--set-gtid-purged` is MySQL-only) and is tracked as a separate follow-up ticket after the VOIP-1386 cutover stabilizes.
 
-Do NOT "fix" the Dockerfile back to distroless or swap in a MariaDB client.
+Do NOT "fix" the Dockerfile back to distroless. The mariadb-client switch happens only in its own dedicated change, not opportunistically.
 
 ## CRITICAL: DB-driven `target_queue` — sanctioned exception to two conventions
 
