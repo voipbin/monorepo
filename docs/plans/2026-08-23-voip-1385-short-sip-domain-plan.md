@@ -121,11 +121,12 @@ New package layout (follows existing per-entity conventions):
   (domain models preferred over DTOs per layering exception note). Mock
   regeneration via go generate.
 
-## Task 5 — bin-call-manager: reverse-parse removal + dual suffix
+## Task 5 — bin-call-manager: reverse-parse removal + .reg.-only classification
 
-- projectconfig: add `DomainRegistrarSuffixLegacy = ".registrar." + base`;
-  `DomainRegistrarSuffix` becomes `".reg." + base`. getDomainTypeIncomingCall
-  accepts BOTH (registrar type). models/common/domain.go exposes both.
+- projectconfig: `DomainRegistrarSuffix` becomes `".reg." + base` ONLY —
+  no legacy constant (CEO/CTO decision: window downtime accepted;
+  `.registrar.` domains classify as none/rejected). Kamailio keeps its
+  `.registrar.` auth-gate regex (security, removed in cleanup step 6).
 - start_incoming_domain_type_registrar.go: replace TrimSuffix+FromStringOrNil
   with `RegistrarV1CustomerDomainGetByRealm(ctx, domain)`; on error/miss ->
   log + reject the call (fail closed; mirror trunk file's error handling).
@@ -142,7 +143,7 @@ New package layout (follows existing per-entity conventions):
   (new listenhandler route + customer_created event), domain.md
   (CustomerDomain entity), operations.md if config-affecting.
 - bin-call-manager docs: architecture.md/domain.md for the lookup change
-  and dual-suffix constants.
+  and the `.reg.`-only classification (legacy rejection pinned by test).
 - Run `bash docs/reference/extractor.sh <service>` where applicable.
 
 ## Task 6 — docs/openapi (monorepo)

@@ -9,12 +9,11 @@ import (
 
 // Domain variables initialized once from project config
 var (
-	DomainConference            = projectconfig.Get().DomainConference
-	DomainPSTN                  = projectconfig.Get().DomainPSTN
-	DomainSIP                   = projectconfig.Get().DomainSIP
-	DomainTrunkSuffix           = projectconfig.Get().DomainTrunkSuffix
-	DomainRegistrarSuffix       = projectconfig.Get().DomainRegistrarSuffix
-	DomainRegistrarSuffixLegacy = projectconfig.Get().DomainRegistrarSuffixLegacy
+	DomainConference      = projectconfig.Get().DomainConference
+	DomainPSTN            = projectconfig.Get().DomainPSTN
+	DomainSIP             = projectconfig.Get().DomainSIP
+	DomainTrunkSuffix     = projectconfig.Get().DomainTrunkSuffix
+	DomainRegistrarSuffix = projectconfig.Get().DomainRegistrarSuffix
 )
 
 // ParseSIPURI splits the given sip uri(<extension>@<domain>) into

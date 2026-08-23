@@ -68,9 +68,12 @@ func Test_GetTypeContextIncomingCall(t *testing.T) {
 			domainTypeRegistrar,
 		},
 		{
-			"registrar with legacy suffix",
+			// regression pin: legacy suffix acceptance was removed on purpose
+			// (VOIP-1385 cutover, downtime accepted). A legacy uuid realm no
+			// longer classifies as registrar and gets rejected.
+			"legacy registrar suffix with uuid label is rejected",
 			"a7be89e0-8170-4f48-ac01-a81a31c6e344.registrar.voipbin.net",
-			domainTypeRegistrar,
+			domainTypeNone,
 		},
 		{
 			"trunk",
@@ -83,9 +86,9 @@ func Test_GetTypeContextIncomingCall(t *testing.T) {
 			domainTypeNone,
 		},
 		{
-			"legacy registrar suffix with non-uuid label is still registrar type",
+			"legacy registrar suffix with non-uuid label is rejected",
 			"whatever.registrar.voipbin.net",
-			domainTypeRegistrar,
+			domainTypeNone,
 		},
 		{
 			"bare base domain is none",

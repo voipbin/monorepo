@@ -68,9 +68,9 @@ Incoming calls all hit the same Asterisk context; the requested SIP domain (Kama
 | `pstn.{base}` (exact) | pstn |
 | `sip.{base}` (exact) | sip |
 | `*.trunk.{base}` (suffix) | trunk |
-| `*.reg.{base}` (suffix, primary) / `*.registrar.{base}` (suffix, legacy) | registrar |
+| `*.reg.{base}` (suffix) | registrar |
 
-Both registrar suffixes classify as registrar during the VOIP-1385 short-domain migration window; the legacy `.registrar.{base}` suffix is kept for rollback and is removable after cleanup.
+The old `*.registrar.{base}` suffix is NOT accepted: the VOIP-1385 cutover removed legacy acceptance deliberately (downtime during the cutover window was accepted), so such domains classify as none and are rejected.
 
 `common.ParseSIPURI` is a pure `<extension>@<domain>` textual split; it carries no uuid parsing and no suffix knowledge. Callers resolve the domain (realm) to a customer via registrar-manager.
 

@@ -66,6 +66,10 @@ func Test_EventHandlerContactStatusChange(t *testing.T) {
 			},
 		},
 		{
+			// the realm lookup itself is suffix-agnostic: a legacy realm
+			// string still resolves when a customer domain row exists for it.
+			// (incoming-call CLASSIFICATION of .registrar.{base} domains was
+			// removed separately; see pkg/callhandler getDomainTypeIncomingCall.)
 			name: "legacy uuid realm",
 			event: &ari.ContactStatusChange{
 				Event: ari.Event{

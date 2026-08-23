@@ -189,9 +189,13 @@ registrar tables.
      realm rejects the call (fail closed; improves on today's silent
      uuid.Nil).
    - ParseSIPURI + ari_contact.go -> same lookup.
-   - projectconfig suffix constants: `DomainRegistrarSuffix` accepts BOTH
-     `".reg."+base` (primary) and `".registrar."+base` (legacy, kept for the
-     migration window and rollback; removable later).
+   - projectconfig suffix constant: `DomainRegistrarSuffix` = `".reg."+base`
+     ONLY. Legacy `.registrar.` classification is NOT accepted (CEO/CTO
+     decision 2026-08-23: downtime during the deploy->batch window is
+     accepted; a `.registrar.` domain classifies as none and the call is
+     rejected). Kamailio's `.registrar.` auth-gate regex is kept — that one
+     is a security gate (fail-early digest challenge at the edge), not
+     compatibility, and is removed with the old DNS/cert in cleanup step 6.
 3. bin-dbscheme-manager: Alembic migration adding `registrar_customer_domains`
    (schema only; the data batch is application-level, section 7).
 4. API/docs — SETTLED: `Extension.DomainName` = FULL realm for ALL customers.
@@ -223,7 +227,7 @@ Bundled into the same cutover so customers reconfigure devices exactly once.
    as rollback safety net; removal is a later cleanup).
 4. registrar-manager env: `DOMAIN_NAME_EXTENSION=reg.voipbin.net` (config
    only — generation code reads the base from env).
-5. call-manager: dual-suffix acceptance (section 5 item 2).
+5. call-manager: `.reg.`-only classification; legacy `.registrar.` rejected (section 5 item 2).
 6. Old `*.registrar.voipbin.net` DNS + cert + acceptance stay live as the
    rollback safety net until cleanup. During the dual window tls.cfg's
    `[server:default]` remains the legacy cert: a non-SNI SIP-TLS client
@@ -303,14 +307,16 @@ confusion. `reg.` has no collision.
    1c. Backfill current realms; reconcile row count against customer count
        (100% coverage required before 1d).
    1d. call-manager deploy: lookup cutover (TrimSuffix deleted; unknown
-       realm rejects) + dual-suffix acceptance.
-   (Existing customers stay uuid-domain. NEW customers created in this
-   window also get uuid-format rows: short-label generation is gated behind
-   the registrar-manager env flag `DOMAIN_SHORT_LABEL_ENABLED` (default
-   false), so pre-cutover signups remain constructible by the not-yet-updated
-   frontends. Both uuid and future short realms resolve through the same
-   lookup. The migration batch generates short labels regardless of the
-   flag.)
+       realm rejects) + `.reg.`-ONLY classification.
+   ACCEPTED DOWNTIME (CEO/CTO 2026-08-23): from 1d until the migration
+   batch (step 5) completes, incoming calls to legacy `.registrar.` customer
+   domains are REJECTED at classification. Run 1d through step 5 as one
+   compressed maintenance window. (NEW customers created in this window get
+   uuid-format rows via the `DOMAIN_SHORT_LABEL_ENABLED=false` gate — their
+   webphone display/config stays constructible by not-yet-updated frontends,
+   but their inbound calls are equally affected until step 5. Both uuid and
+   short realms resolve through the same lookup; the migration batch
+   generates short labels regardless of the flag.)
 2. Frontend: square-talk + square-admin consume `domain_name` verbatim.
    (Gate: MUST follow step 1 — deploying frontends first would break all
    existing webphones, which would build `wss://<bare-uuid>`.)
@@ -322,8 +328,10 @@ confusion. `reg.` has no collision.
 5. Migration batch run (CEO/CTO executes): all existing customers ->
    `<4ch>.reg.voipbin.net`. Portal notice + reconfiguration guide go out
    simultaneously.
-6. Later cleanup (separate change, after stability): remove `.registrar.`
-   acceptance, DNS, cert; remove legacy-suffix code path.
+6. Later cleanup (separate change, after stability): remove Kamailio's
+   `.registrar.` auth-gate regex, old DNS wildcard, old cert, and the
+   NULL-realm legacy serving fallback. (call-manager has no legacy suffix
+   code to remove — dropped pre-merge by decision above.)
 
 ## 9. Risks
 
@@ -352,7 +360,8 @@ confusion. `reg.` has no collision.
    length, reserved list, collision retry), table lifecycle on customer
    events, lookup RPC (hit, miss, cache), call-manager resolution (short
    realm, legacy uuid realm via lookup, unknown realm rejects), ARI contact
-   refresh both formats, dual-suffix classification, AND the re-provision
+   realm lookup for both uuid and short-label realms, legacy-suffix
+   classification REJECTION (pinned test), AND the re-provision
    path itself: asserts extension `id`, `password`, `direct_id` are
    unchanged across a re-provision, ps_*/sipauth rows carry the new realm,
    exactly one extension_updated event is published (zero deleted/created),

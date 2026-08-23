@@ -22,12 +22,11 @@ type ProjectConfig struct {
 	ProjectBaseDomain string
 
 	// SIP Domains (derived from ProjectBaseDomain)
-	DomainConference            string // conference.{base}
-	DomainPSTN                  string // pstn.{base}
-	DomainSIP                   string // sip.{base}
-	DomainTrunkSuffix           string // .trunk.{base}
-	DomainRegistrarSuffix       string // .reg.{base}
-	DomainRegistrarSuffixLegacy string // .registrar.{base}. legacy suffix. kept for the migration window and rollback. removable later.
+	DomainConference      string // conference.{base}
+	DomainPSTN            string // pstn.{base}
+	DomainSIP             string // sip.{base}
+	DomainTrunkSuffix     string // .trunk.{base}
+	DomainRegistrarSuffix string // .reg.{base}
 
 	// Storage
 	ProjectBucketName string
@@ -51,12 +50,11 @@ func load() *ProjectConfig {
 		ProjectBaseDomain: baseDomain,
 
 		// SIP domains derived from base domain
-		DomainConference:            "conference." + baseDomain,
-		DomainPSTN:                  "pstn." + baseDomain,
-		DomainSIP:                   "sip." + baseDomain,
-		DomainTrunkSuffix:           ".trunk." + baseDomain,
-		DomainRegistrarSuffix:       ".reg." + baseDomain,
-		DomainRegistrarSuffixLegacy: ".registrar." + baseDomain,
+		DomainConference:      "conference." + baseDomain,
+		DomainPSTN:            "pstn." + baseDomain,
+		DomainSIP:             "sip." + baseDomain,
+		DomainTrunkSuffix:     ".trunk." + baseDomain,
+		DomainRegistrarSuffix: ".reg." + baseDomain,
 
 		// Storage
 		ProjectBucketName: bucketName,

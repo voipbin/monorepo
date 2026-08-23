@@ -168,7 +168,7 @@ The nonce value prevents replay attacks by ensuring each authentication attempt 
 
 .. note:: **AI Implementation Hint**
 
-   The SIP registration domain is customer-specific and follows the pattern ``{label}.reg.voipbin.net``, where ``{label}`` is a short identifier (4 characters) assigned to your account. Do not construct the domain yourself. Always use the ``domain_name`` field returned by the extension API verbatim. When configuring SIP devices, use the ``username`` and ``password`` from the extension, and the ``domain_name`` from the API response. The legacy format ``{customer-id}.registrar.voipbin.net`` remains valid during the migration window; the extension API always returns the current domain for your account.
+   The SIP registration domain is customer-specific and follows the pattern ``{label}.reg.voipbin.net``, where ``{label}`` is a short identifier (4 characters) assigned to your account. Do not construct the domain yourself. Always use the ``domain_name`` field returned by the extension API verbatim. When configuring SIP devices, use the ``username`` and ``password`` from the extension, and the ``domain_name`` from the API response. The legacy format ``{customer-id}.registrar.voipbin.net`` is still accepted for SIP registration and authentication during the migration window, but inbound calls are only routed to the current domain returned in ``domain_name``; calls to legacy-format domains are rejected. The extension API always returns the current domain for your account.
 
 Extension Configuration
 -----------------------

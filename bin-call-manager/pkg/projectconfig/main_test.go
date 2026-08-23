@@ -58,69 +58,64 @@ func Test_getEnv(t *testing.T) {
 
 func Test_load(t *testing.T) {
 	tests := []struct {
-		name                          string
-		envBaseDomain                 string
-		envBucketName                 string
-		expectedBaseDomain            string
-		expectedDomainConference      string
-		expectedDomainPSTN            string
-		expectedDomainSIP             string
-		expectedDomainTrunk           string
-		expectedDomainRegistrar       string
-		expectedDomainRegistrarLegacy string
-		expectedBucketName            string
+		name                     string
+		envBaseDomain            string
+		envBucketName            string
+		expectedBaseDomain       string
+		expectedDomainConference string
+		expectedDomainPSTN       string
+		expectedDomainSIP        string
+		expectedDomainTrunk      string
+		expectedDomainRegistrar  string
+		expectedBucketName       string
 	}{
 		{
-			name:                          "uses defaults when no env vars set",
-			envBaseDomain:                 "",
-			envBucketName:                 "",
-			expectedBaseDomain:            "voipbin.net",
-			expectedDomainConference:      "conference.voipbin.net",
-			expectedDomainPSTN:            "pstn.voipbin.net",
-			expectedDomainSIP:             "sip.voipbin.net",
-			expectedDomainTrunk:           ".trunk.voipbin.net",
-			expectedDomainRegistrar:       ".reg.voipbin.net",
-			expectedDomainRegistrarLegacy: ".registrar.voipbin.net",
-			expectedBucketName:            "voipbin-voip-media-bucket-europe-west4",
+			name:                     "uses defaults when no env vars set",
+			envBaseDomain:            "",
+			envBucketName:            "",
+			expectedBaseDomain:       "voipbin.net",
+			expectedDomainConference: "conference.voipbin.net",
+			expectedDomainPSTN:       "pstn.voipbin.net",
+			expectedDomainSIP:        "sip.voipbin.net",
+			expectedDomainTrunk:      ".trunk.voipbin.net",
+			expectedDomainRegistrar:  ".reg.voipbin.net",
+			expectedBucketName:       "voipbin-voip-media-bucket-europe-west4",
 		},
 		{
-			name:                          "uses custom domain when env var set",
-			envBaseDomain:                 "example.com",
-			envBucketName:                 "",
-			expectedBaseDomain:            "example.com",
-			expectedDomainConference:      "conference.example.com",
-			expectedDomainPSTN:            "pstn.example.com",
-			expectedDomainSIP:             "sip.example.com",
-			expectedDomainTrunk:           ".trunk.example.com",
-			expectedDomainRegistrar:       ".reg.example.com",
-			expectedDomainRegistrarLegacy: ".registrar.example.com",
-			expectedBucketName:            "voipbin-voip-media-bucket-europe-west4",
+			name:                     "uses custom domain when env var set",
+			envBaseDomain:            "example.com",
+			envBucketName:            "",
+			expectedBaseDomain:       "example.com",
+			expectedDomainConference: "conference.example.com",
+			expectedDomainPSTN:       "pstn.example.com",
+			expectedDomainSIP:        "sip.example.com",
+			expectedDomainTrunk:      ".trunk.example.com",
+			expectedDomainRegistrar:  ".reg.example.com",
+			expectedBucketName:       "voipbin-voip-media-bucket-europe-west4",
 		},
 		{
-			name:                          "uses custom bucket when env var set",
-			envBaseDomain:                 "",
-			envBucketName:                 "custom-bucket-name",
-			expectedBaseDomain:            "voipbin.net",
-			expectedDomainConference:      "conference.voipbin.net",
-			expectedDomainPSTN:            "pstn.voipbin.net",
-			expectedDomainSIP:             "sip.voipbin.net",
-			expectedDomainTrunk:           ".trunk.voipbin.net",
-			expectedDomainRegistrar:       ".reg.voipbin.net",
-			expectedDomainRegistrarLegacy: ".registrar.voipbin.net",
-			expectedBucketName:            "custom-bucket-name",
+			name:                     "uses custom bucket when env var set",
+			envBaseDomain:            "",
+			envBucketName:            "custom-bucket-name",
+			expectedBaseDomain:       "voipbin.net",
+			expectedDomainConference: "conference.voipbin.net",
+			expectedDomainPSTN:       "pstn.voipbin.net",
+			expectedDomainSIP:        "sip.voipbin.net",
+			expectedDomainTrunk:      ".trunk.voipbin.net",
+			expectedDomainRegistrar:  ".reg.voipbin.net",
+			expectedBucketName:       "custom-bucket-name",
 		},
 		{
-			name:                          "uses all custom values when both env vars set",
-			envBaseDomain:                 "localhost",
-			envBucketName:                 "local-bucket",
-			expectedBaseDomain:            "localhost",
-			expectedDomainConference:      "conference.localhost",
-			expectedDomainPSTN:            "pstn.localhost",
-			expectedDomainSIP:             "sip.localhost",
-			expectedDomainTrunk:           ".trunk.localhost",
-			expectedDomainRegistrar:       ".reg.localhost",
-			expectedDomainRegistrarLegacy: ".registrar.localhost",
-			expectedBucketName:            "local-bucket",
+			name:                     "uses all custom values when both env vars set",
+			envBaseDomain:            "localhost",
+			envBucketName:            "local-bucket",
+			expectedBaseDomain:       "localhost",
+			expectedDomainConference: "conference.localhost",
+			expectedDomainPSTN:       "pstn.localhost",
+			expectedDomainSIP:        "sip.localhost",
+			expectedDomainTrunk:      ".trunk.localhost",
+			expectedDomainRegistrar:  ".reg.localhost",
+			expectedBucketName:       "local-bucket",
 		},
 	}
 
@@ -157,9 +152,6 @@ func Test_load(t *testing.T) {
 			}
 			if result.DomainRegistrarSuffix != tt.expectedDomainRegistrar {
 				t.Errorf("DomainRegistrarSuffix = %v, want %v", result.DomainRegistrarSuffix, tt.expectedDomainRegistrar)
-			}
-			if result.DomainRegistrarSuffixLegacy != tt.expectedDomainRegistrarLegacy {
-				t.Errorf("DomainRegistrarSuffixLegacy = %v, want %v", result.DomainRegistrarSuffixLegacy, tt.expectedDomainRegistrarLegacy)
 			}
 			if result.ProjectBucketName != tt.expectedBucketName {
 				t.Errorf("ProjectBucketName = %v, want %v", result.ProjectBucketName, tt.expectedBucketName)
