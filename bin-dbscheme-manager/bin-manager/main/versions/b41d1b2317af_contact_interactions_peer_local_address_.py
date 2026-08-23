@@ -116,20 +116,29 @@ def upgrade():
             DROP COLUMN local_target;
     """)
 
+    # peer_type/peer_target are STORED (not "STORED NOT NULL") -- MariaDB
+    # rejects NOT NULL on a generated column outright (error 1064). See
+    # 167bebb7c46f's identical fix comment (VOIP-1386/VOIP-1387) for the
+    # full rationale; the NOT NULL guarantee is restored via CHECK
+    # constraints in the same statement.
     op.execute("""
         ALTER TABLE contact_interactions
             ADD COLUMN peer_type VARCHAR(255)
-                GENERATED ALWAYS AS (JSON_UNQUOTE(JSON_EXTRACT(peer, '$.type'))) STORED NOT NULL
+                GENERATED ALWAYS AS (JSON_UNQUOTE(JSON_EXTRACT(peer, '$.type'))) STORED
                 AFTER peer,
             ADD COLUMN peer_target VARCHAR(255)
-                GENERATED ALWAYS AS (JSON_UNQUOTE(JSON_EXTRACT(peer, '$.target'))) STORED NOT NULL
+                GENERATED ALWAYS AS (JSON_UNQUOTE(JSON_EXTRACT(peer, '$.target'))) STORED
                 AFTER peer_type,
             ADD COLUMN local_type VARCHAR(255)
                 GENERATED ALWAYS AS (JSON_UNQUOTE(JSON_EXTRACT(local, '$.type'))) STORED
                 AFTER local,
             ADD COLUMN local_target VARCHAR(255)
                 GENERATED ALWAYS AS (JSON_UNQUOTE(JSON_EXTRACT(local, '$.target'))) STORED
-                AFTER local_type;
+                AFTER local_type,
+            ADD CONSTRAINT chk_contact_interactions_peer_type_not_null
+                CHECK (peer_type IS NOT NULL),
+            ADD CONSTRAINT chk_contact_interactions_peer_target_not_null
+                CHECK (peer_target IS NOT NULL);
     """)
 
     # Restore idx_contact_interactions_idem/idx_contact_interactions_peer to
@@ -194,6 +203,15 @@ def downgrade():
             peer_target_plain = peer_target,
             local_type_plain = IFNULL(local_type, ''),
             local_target_plain = IFNULL(local_target, '');
+    """)
+
+    # DROP CONSTRAINT before DROP COLUMN: MariaDB refuses to drop a
+    # column referenced by a CHECK constraint (same requirement 99e7e955a149
+    # already documents for chk_resolution_case_or_interaction / case_id).
+    op.execute("""
+        ALTER TABLE contact_interactions
+            DROP CONSTRAINT chk_contact_interactions_peer_type_not_null,
+            DROP CONSTRAINT chk_contact_interactions_peer_target_not_null;
     """)
 
     op.execute("""

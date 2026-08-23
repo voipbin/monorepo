@@ -86,9 +86,9 @@ def downgrade():
             local JSON NULL,
 
             peer_type VARCHAR(255)
-                GENERATED ALWAYS AS (JSON_UNQUOTE(JSON_EXTRACT(peer, '$.type'))) STORED NOT NULL,
+                GENERATED ALWAYS AS (JSON_UNQUOTE(JSON_EXTRACT(peer, '$.type'))) STORED,
             peer_target VARCHAR(255)
-                GENERATED ALWAYS AS (JSON_UNQUOTE(JSON_EXTRACT(peer, '$.target'))) STORED NOT NULL,
+                GENERATED ALWAYS AS (JSON_UNQUOTE(JSON_EXTRACT(peer, '$.target'))) STORED,
             local_type VARCHAR(255)
                 GENERATED ALWAYS AS (JSON_UNQUOTE(JSON_EXTRACT(local, '$.type'))) STORED,
             local_target VARCHAR(255)
@@ -101,6 +101,15 @@ def downgrade():
             tm_create      DATETIME(6),
 
             PRIMARY KEY (id),
+            -- peer_type/peer_target are STORED, not "STORED NOT NULL" --
+            -- MariaDB rejects NOT NULL on a generated column outright
+            -- (error 1064). See 167bebb7c46f's identical fix comment
+            -- (VOIP-1386/VOIP-1387). The NOT NULL guarantee is restored
+            -- via explicit CHECK constraints below.
+            CONSTRAINT chk_contact_interactions_peer_type_not_null
+                CHECK (peer_type IS NOT NULL),
+            CONSTRAINT chk_contact_interactions_peer_target_not_null
+                CHECK (peer_target IS NOT NULL),
             UNIQUE INDEX idx_contact_interactions_idem (reference_type, reference_id, peer_target),
             INDEX        idx_contact_interactions_peer (customer_id, peer_type, peer_target),
             INDEX        idx_contact_interactions_cursor (customer_id, tm_create)
