@@ -103,6 +103,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-api-manager/pkg/cachehandler"
 	"monorepo/bin-api-manager/pkg/dbhandler"
 	"monorepo/bin-api-manager/pkg/websockhandler"
 
@@ -666,6 +667,8 @@ type ServiceHandler interface {
 	ExtensionList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*rmextension.WebhookMessage, error)
 	ExtensionUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name, detail, password string) (*rmextension.WebhookMessage, error)
 	ExtensionDirectHashRegenerate(ctx context.Context, a *auth.AuthIdentity, extensionID uuid.UUID) (*rmextension.WebhookMessage, error)
+	ExtensionProvisioningTokenCreate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*ExtensionProvisioningToken, error)
+	ExtensionProvisioningXMLGet(ctx context.Context, token string) ([]byte, error)
 
 	// email handlers
 	EmailSend(
@@ -1194,6 +1197,7 @@ type serviceHandler struct {
 	utilHandler    utilhandler.UtilHandler
 	reqHandler     requesthandler.RequestHandler
 	dbHandler      dbhandler.DBHandler
+	cacheHandler   cachehandler.CacheHandler
 	websockHandler websockhandler.WebsockHandler
 
 	// storage information
@@ -1203,18 +1207,25 @@ type serviceHandler struct {
 
 	// etc
 	jwtKey []byte
+
+	// publicBaseURL is the public base URL of this API (config
+	// public_base_url), used to build absolute URLs handed to external
+	// clients (e.g. the extension provisioning URL).
+	publicBaseURL string
 }
 
 // NewServiceHandler return ServiceHandler interface
 func NewServiceHandler(
 	reqHandler requesthandler.RequestHandler,
 	dbHandler dbhandler.DBHandler,
+	cacheHandler cachehandler.CacheHandler,
 	websockHandler websockhandler.WebsockHandler,
 
 	projectID string,
 	bucketName string,
 
 	jwtKey string,
+	publicBaseURL string,
 ) (ServiceHandler, error) {
 	log := logrus.WithField("func", "NewServiceHandler")
 
@@ -1229,6 +1240,7 @@ func NewServiceHandler(
 		utilHandler:    utilhandler.NewUtilHandler(),
 		reqHandler:     reqHandler,
 		dbHandler:      dbHandler,
+		cacheHandler:   cacheHandler,
 		websockHandler: websockHandler,
 
 		storageClient: storageClient,
@@ -1236,6 +1248,8 @@ func NewServiceHandler(
 		bucketName:    bucketName,
 
 		jwtKey: []byte(jwtKey),
+
+		publicBaseURL: publicBaseURL,
 	}, nil
 }
 

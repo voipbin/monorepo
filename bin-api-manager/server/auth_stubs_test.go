@@ -47,3 +47,35 @@ func TestAuthStubs_ReturnRouteNotFound(t *testing.T) {
 		})
 	}
 }
+
+func TestProvisioningStub_ReturnRouteNotFound(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	tests := []struct {
+		name    string
+		method  string
+		path    string
+		handler func(h *server, c *gin.Context)
+	}{
+		{"provisioning_extension", http.MethodGet, "/v1.0/provisioning/extension", func(h *server, c *gin.Context) {
+			h.GetProvisioningExtension(c, openapi_server.GetProvisioningExtensionParams{})
+		}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := &server{}
+			r := gin.New()
+			r.Use(middleware.RequestID())
+			r.Any(tt.path, func(c *gin.Context) {
+				tt.handler(h, c)
+			})
+
+			w := httptest.NewRecorder()
+			req := httptest.NewRequest(tt.method, tt.path, nil)
+			r.ServeHTTP(w, req)
+
+			assertErrorResponse(t, w, cerrors.StatusNotFound, "ROUTE_NOT_FOUND")
+		})
+	}
+}

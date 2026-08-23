@@ -18,6 +18,7 @@ With the Extension API you can:
 - Manage multiple endpoints per customer
 - Route inbound calls to registered devices
 - Enable direct extension access via public SIP URI
+- Provision the Linphone softphone via QR code
 - Monitor registration status
 
 
@@ -333,6 +334,65 @@ The ``direct_hash`` field in the extension response contains the current hash.
 - Share a simple SIP address with external partners or customers
 - Allow inbound calls from SIP trunks that cannot be configured with customer-specific domains
 - Provide a stable public contact point that can be regenerated if compromised
+
+
+.. _extension-overview-provisioning:
+
+Softphone QR Provisioning
+-------------------------
+Softphone QR provisioning lets a user configure the Linphone mobile app for an extension without typing any credentials. An administrator requests a short-lived provisioning token for the extension, renders the returned URL as a QR code, and the user scans the code with Linphone. Linphone fetches the provisioning URL and applies the SIP account settings (domain, username, password, transport) automatically. This uses Linphone's standard remote provisioning mechanism (lpconfig XML).
+
+**Provisioning Flow**
+
+::
+
+    Admin (API)                    VoIPBIN                     Linphone App
+
+    |                                 |                             |
+    | 1. POST /extensions/{id}/       |                             |
+    |    provisioning-token           |                             |
+    +-------------------------------->|                             |
+    |                                 |                             |
+    |    2. { token, url, expire }    |                             |
+    |<--------------------------------+                             |
+    |                                 |                             |
+    | 3. Render url as QR code        |                             |
+    |    (user scans it with          |                             |
+    |     the Linphone app)           |                             |
+    |                                 |                             |
+    |                                 |   4. GET /provisioning/     |
+    |                                 |      extension?token=...    |
+    |                                 |<----------------------------+
+    |                                 |                             |
+    |                                 |   5. lpconfig XML           |
+    |                                 |      (SIP account settings) |
+    |                                 +---------------------------->|
+    |                                 |                             |
+    |                                 |   6. REGISTER               |
+    |                                 |<----------------------------+
+    |                                 |                             |
+    |                                 |   Account configured and    |
+    |                                 |   registered                |
+
+**Endpoints**
+
+- **Issue a token** (authenticated, admin or manager permission): ``POST /v1.0/extensions/{id}/provisioning-token`` returns a ``token``, a ready-to-use ``url``, and an ``expire`` timestamp. See :ref:`Provisioning Token <extension-struct-extension-provisioning-token>` for the response structure.
+- **Fetch the configuration** (public, no authentication): ``GET https://api.voipbin.net/provisioning/extension?token=<token>`` returns the Linphone configuration XML (``application/xml``). This is the URL encoded in the QR code. Note that this public endpoint has no ``/v1.0`` prefix. Any invalid, expired, or unknown token receives a bare ``400`` response.
+
+**Token Lifetime and Security**
+
+- The provisioning token is a random 64-character hex string and expires **10 minutes** after issuance.
+- The token can be used multiple times within its lifetime. Linphone may re-fetch the URL (e.g. on a retry or after an app restart), so the token is not consumed on first use.
+- The provisioning URL serves the extension's SIP password in plain text to whoever holds the token. Treat the QR code and the URL like a credential: show the QR code only to the intended user, and do not send the URL over untrusted channels.
+- After the 10-minute window, the URL stops working. Issue a new token to generate a fresh QR code.
+- If the extension's password changes while a token is still valid, re-issue the token; a previously issued URL may serve the old credentials until it expires.
+
+**Behavior Notes**
+
+- **Linphone only.** The served XML is Linphone's lpconfig format. Other softphones (e.g. Zoiper, Grandstream) use proprietary QR provisioning formats and cannot consume this URL.
+- **Account 0 replacement.** Scanning on a Linphone app that already has a SIP account configured replaces account 0 (the first account) with the provisioned one.
+- **Older Linphone versions.** The configuration marks itself as transient so recent Linphone versions do not re-fetch the URL after it expires. Older versions may show a one-time provisioning warning after an app restart once the token has expired. The registered account keeps working; the warning can be dismissed.
+- **Transport.** The provisioned account uses SIP over UDP.
 
 
 Common Scenarios

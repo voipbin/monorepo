@@ -1,0 +1,21 @@
+package server
+
+import (
+	"monorepo/bin-api-manager/gens/openapi_server"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
+
+	"github.com/gin-gonic/gin"
+)
+
+// GetProvisioningExtension is a stub to satisfy the generated ServerInterface.
+// The actual handler is registered directly on the Gin router at
+// /provisioning/extension (not under the /v1.0 prefix), so this generated
+// route is never called.
+func (h *server) GetProvisioningExtension(c *gin.Context, params openapi_server.GetProvisioningExtensionParams) {
+	abortWithError(c, cerrors.NotFound(
+		commonoutline.ServiceNameAPIManager,
+		"ROUTE_NOT_FOUND",
+		"The requested endpoint does not exist on this path; use /provisioning/extension (no /v1.0 prefix).",
+	))
+}

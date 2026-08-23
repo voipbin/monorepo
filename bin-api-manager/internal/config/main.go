@@ -41,6 +41,7 @@ type Config struct {
 	SSLCertBase64           string // SSLCertBase64 is the base64-encoded SSL certificate for HTTPS connections.
 	SSLPrivKeyBase64        string // SSLPrivKeyBase64 is the base64-encoded SSL private key for HTTPS connections.
 	ListenIPAudiosock       string // ListenIPAudiosock is the IP address for audiosocket connection listening.
+	PublicBaseURL           string // PublicBaseURL is the public base URL of this API (e.g. "https://api.voipbin.net"), used to build absolute URLs handed to external clients (extension provisioning). Env var only (API_PUBLIC_BASE_URL) -- see the NOTE below about inert CLI flags.
 
 	// Rate limiting (per-IP, in-memory token bucket -- see lib/middleware/ratelimit.go).
 	// Each pair is (requests/second, burst). A tier is disabled (unlimited
@@ -57,6 +58,9 @@ type Config struct {
 	RateLimitAuthProtectedBurst int     // RateLimitAuthProtectedBurst is the burst size for RateLimitAuthProtectedRPS.
 	RateLimitV1RPS              float64 // RateLimitV1RPS is the per-IP request rate for the full authenticated v1.0 API surface.
 	RateLimitV1Burst            int     // RateLimitV1Burst is the burst size for RateLimitV1RPS.
+
+	RateLimitProvisioningPublicRPS   float64 // RateLimitProvisioningPublicRPS is the per-IP request rate for the unauthenticated /provisioning/* routes (extension QR provisioning).
+	RateLimitProvisioningPublicBurst int     // RateLimitProvisioningPublicBurst is the burst size for RateLimitProvisioningPublicRPS.
 
 	// Customer-scoped rate limiting (Redis-backed, cross-pod global -- see
 	// lib/middleware/customer_ratelimit.go and VOIP-1302 design doc §4-9).
@@ -117,12 +121,15 @@ func bindConfig(cmd *cobra.Command) error {
 	f.String("ssl_cert_base64", "", "Base64 encoded SSL certificate")
 	f.String("ssl_privkey_base64", "", "Base64 encoded SSL private key")
 	f.String("listen_ip_audiosock", "", "Listen IP address for audiosocket connection")
+	f.String("public_base_url", "https://api.voipbin.net", "Public base URL of this API, used to build absolute URLs handed to external clients. Env var only, see API_PUBLIC_BASE_URL.")
 	f.Float64("rate_limit_auth_public_rps", 10, "Rate limit (requests/second per IP) for unauthenticated /auth/* routes. <=0 disables this tier. Env var only, see RATE_LIMIT_AUTH_PUBLIC_RPS.")
 	f.Int("rate_limit_auth_public_burst", 20, "Rate limit burst size for the unauthenticated /auth/* routes. <=0 disables this tier. Env var only, see RATE_LIMIT_AUTH_PUBLIC_BURST.")
 	f.Float64("rate_limit_auth_protected_rps", 10, "Rate limit (requests/second per IP) for /auth/unregister and /auth/delegate. <=0 disables this tier. Env var only, see RATE_LIMIT_AUTH_PROTECTED_RPS.")
 	f.Int("rate_limit_auth_protected_burst", 20, "Rate limit burst size for /auth/unregister and /auth/delegate. <=0 disables this tier. Env var only, see RATE_LIMIT_AUTH_PROTECTED_BURST.")
 	f.Float64("rate_limit_v1_rps", 200, "Rate limit (requests/second per IP) for the authenticated v1.0 API surface. <=0 disables this tier. Env var only, see RATE_LIMIT_V1_RPS.")
 	f.Int("rate_limit_v1_burst", 400, "Rate limit burst size for the authenticated v1.0 API surface. <=0 disables this tier. Env var only, see RATE_LIMIT_V1_BURST.")
+	f.Float64("rate_limit_provisioning_public_rps", 5, "Rate limit (requests/second per IP) for unauthenticated /provisioning/* routes. <=0 disables this tier. Env var only, see RATE_LIMIT_PROVISIONING_PUBLIC_RPS.")
+	f.Int("rate_limit_provisioning_public_burst", 10, "Rate limit burst size for the unauthenticated /provisioning/* routes. <=0 disables this tier. Env var only, see RATE_LIMIT_PROVISIONING_PUBLIC_BURST.")
 	f.Float64("rate_limit_customer_v1_rps", 16.7, "Redis-backed per-customer request rate (agent+accesskey, tier v1_customer). <=0 disables this tier. Env var only, see RATE_LIMIT_CUSTOMER_V1_RPS.")
 	f.Int("rate_limit_customer_v1_burst", 33, "Burst size for RATE_LIMIT_CUSTOMER_V1_RPS. <=0 disables this tier.")
 	f.Float64("rate_limit_customer_v1_direct_rps", 50, "Redis-backed per-customer request rate for direct identities (tier v1_customer_direct). <=0 disables this tier. Env var only, see RATE_LIMIT_CUSTOMER_V1_DIRECT_RPS.")
@@ -145,13 +152,16 @@ func bindConfig(cmd *cobra.Command) error {
 		"ssl_cert_base64":           "SSL_CERT_BASE64",
 		"ssl_privkey_base64":        "SSL_PRIVKEY_BASE64",
 		"listen_ip_audiosock":       "POD_IP",
+		"public_base_url":           "API_PUBLIC_BASE_URL",
 
-		"rate_limit_auth_public_rps":      "RATE_LIMIT_AUTH_PUBLIC_RPS",
-		"rate_limit_auth_public_burst":    "RATE_LIMIT_AUTH_PUBLIC_BURST",
-		"rate_limit_auth_protected_rps":   "RATE_LIMIT_AUTH_PROTECTED_RPS",
-		"rate_limit_auth_protected_burst": "RATE_LIMIT_AUTH_PROTECTED_BURST",
-		"rate_limit_v1_rps":               "RATE_LIMIT_V1_RPS",
-		"rate_limit_v1_burst":             "RATE_LIMIT_V1_BURST",
+		"rate_limit_auth_public_rps":           "RATE_LIMIT_AUTH_PUBLIC_RPS",
+		"rate_limit_auth_public_burst":         "RATE_LIMIT_AUTH_PUBLIC_BURST",
+		"rate_limit_auth_protected_rps":        "RATE_LIMIT_AUTH_PROTECTED_RPS",
+		"rate_limit_auth_protected_burst":      "RATE_LIMIT_AUTH_PROTECTED_BURST",
+		"rate_limit_v1_rps":                    "RATE_LIMIT_V1_RPS",
+		"rate_limit_v1_burst":                  "RATE_LIMIT_V1_BURST",
+		"rate_limit_provisioning_public_rps":   "RATE_LIMIT_PROVISIONING_PUBLIC_RPS",
+		"rate_limit_provisioning_public_burst": "RATE_LIMIT_PROVISIONING_PUBLIC_BURST",
 
 		"rate_limit_customer_v1_rps":            "RATE_LIMIT_CUSTOMER_V1_RPS",
 		"rate_limit_customer_v1_burst":          "RATE_LIMIT_CUSTOMER_V1_BURST",
@@ -198,6 +208,7 @@ func LoadGlobalConfig() {
 			SSLCertBase64:           viper.GetString("ssl_cert_base64"),
 			SSLPrivKeyBase64:        viper.GetString("ssl_privkey_base64"),
 			ListenIPAudiosock:       viper.GetString("listen_ip_audiosock"),
+			PublicBaseURL:           viper.GetString("public_base_url"),
 
 			RateLimitAuthPublicRPS:      viper.GetFloat64("rate_limit_auth_public_rps"),
 			RateLimitAuthPublicBurst:    viper.GetInt("rate_limit_auth_public_burst"),
@@ -205,6 +216,9 @@ func LoadGlobalConfig() {
 			RateLimitAuthProtectedBurst: viper.GetInt("rate_limit_auth_protected_burst"),
 			RateLimitV1RPS:              viper.GetFloat64("rate_limit_v1_rps"),
 			RateLimitV1Burst:            viper.GetInt("rate_limit_v1_burst"),
+
+			RateLimitProvisioningPublicRPS:   viper.GetFloat64("rate_limit_provisioning_public_rps"),
+			RateLimitProvisioningPublicBurst: viper.GetInt("rate_limit_provisioning_public_burst"),
 
 			RateLimitCustomerV1RPS:           viper.GetFloat64("rate_limit_customer_v1_rps"),
 			RateLimitCustomerV1Burst:         viper.GetInt("rate_limit_customer_v1_burst"),

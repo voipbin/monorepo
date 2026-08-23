@@ -2,7 +2,7 @@
 
 ## Configuration
 
-Runtime configuration is provided via CLI flags and/or environment variables, defined in `cmd/api-manager/main.go` and `internal/config/main.go`. **The rate-limiting fields below (and only those) are environment-variable-only** — `internal/config.LoadGlobalConfig()` runs before Cobra parses `argv`, so CLI flags for those fields are inert; set them via env var.
+Runtime configuration is provided via CLI flags and/or environment variables, defined in `cmd/api-manager/main.go` and `internal/config/main.go`. **The fields marked "(env var only)" below are environment-variable-only** — `internal/config.LoadGlobalConfig()` runs before Cobra parses `argv`, so CLI flags for those fields are inert; set them via env var.
 
 | Flag | Env Var | Required | Default | Description |
 |------|---------|----------|---------|-------------|
@@ -25,6 +25,9 @@ Runtime configuration is provided via CLI flags and/or environment variables, de
 | — (env var only) | `RATE_LIMIT_AUTH_PROTECTED_BURST` | No | `20` | Burst size for `RATE_LIMIT_AUTH_PROTECTED_RPS`. `<=0` disables the tier. |
 | — (env var only) | `RATE_LIMIT_V1_RPS` | No | `200` | Rate limit, requests/second per IP, for the full authenticated `v1.0` API surface. `<=0` disables the tier. |
 | — (env var only) | `RATE_LIMIT_V1_BURST` | No | `400` | Burst size for `RATE_LIMIT_V1_RPS`. `<=0` disables the tier. |
+| — (env var only) | `RATE_LIMIT_PROVISIONING_PUBLIC_RPS` | No | `5` | Rate limit, requests/second per IP, for unauthenticated `/provisioning/*` routes (extension QR provisioning). `<=0` disables the tier. |
+| — (env var only) | `RATE_LIMIT_PROVISIONING_PUBLIC_BURST` | No | `10` | Burst size for `RATE_LIMIT_PROVISIONING_PUBLIC_RPS`. `<=0` disables the tier. |
+| — (env var only) | `API_PUBLIC_BASE_URL` | No | `https://api.voipbin.net` | Public base URL of this API, used to build absolute URLs handed to external clients (e.g. the extension provisioning URL). Override for self-hosted deployments. |
 | — (env var only) | `RATE_LIMIT_CUSTOMER_V1_RPS` | No | `16.7` | Redis-backed rate limit, requests/second per customer, shared by agent and accesskey identities (tier `v1_customer`, `v1` route group only). `<=0` disables the tier. |
 | — (env var only) | `RATE_LIMIT_CUSTOMER_V1_BURST` | No | `33` | Burst size for `RATE_LIMIT_CUSTOMER_V1_RPS`. `<=0` disables the tier. |
 | — (env var only) | `RATE_LIMIT_CUSTOMER_V1_DIRECT_RPS` | No | `50` | Redis-backed rate limit, requests/second per customer, for direct (resource-scoped) identities (tier `v1_customer_direct`). `<=0` disables the tier. |
@@ -47,7 +50,7 @@ Metrics are exposed on the configured listen address (default `:2112/metrics`).
 |--------|------|--------|-------------|
 | `api_manager_receive_subscribe_event_process_time` | Histogram | `publisher`, `type` | RabbitMQ event processing latency |
 | `api_manager_pubsub_dropped_message_total` | Counter | — | In-process pub/sub messages dropped because a subscriber buffer was full |
-| `api_manager_rate_limit_allowed_total` | Counter | `tier` | Requests allowed by the rate limiter, by tier (`auth_public`, `auth_protected`, `v1`) |
+| `api_manager_rate_limit_allowed_total` | Counter | `tier` | Requests allowed by the rate limiter, by tier (`auth_public`, `auth_protected`, `v1`, `provisioning_public`) |
 | `api_manager_rate_limit_rejected_total` | Counter | `tier` | Requests rejected (429) by the rate limiter, by tier |
 
 Note: an HTTP request-latency histogram and a WebSocket-connection-count gauge were previously (incorrectly) documented here; neither is registered anywhere in `bin-api-manager` and both have been removed from this table.
@@ -108,13 +111,14 @@ Circuit-breaker metrics for each RabbitMQ RPC target are also registered under t
 
 **Symptom:** Requests return `429 RATE_LIMIT_EXCEEDED` (no `Retry-After` header is returned).
 
-**Cause:** The client IP exceeded one of three per-IP, in-memory token-bucket tiers enforced by `lib/middleware/ratelimit.go`:
+**Cause:** The client IP exceeded one of four per-IP, in-memory token-bucket tiers enforced by `lib/middleware/ratelimit.go`:
 
 | Tier | Routes | Default | Runs before |
 |------|--------|---------|-------------|
 | `auth_public` | Unauthenticated `/auth/*` (login, signup, password reset, email-verify, boot) | 10 req/s, burst 20 | (no auth) |
 | `auth_protected` | `/auth/unregister`, `/auth/delegate` | 10 req/s, burst 20 | `Authenticate()` |
 | `v1` | Entire authenticated `v1.0` API surface (~346 routes) | 200 req/s, burst 400 | `Authenticate()` |
+| `provisioning_public` | Unauthenticated `/provisioning/*` (extension QR provisioning) | 5 req/s, burst 10 | (no auth) |
 
 Each tier is independently tunable via the `RATE_LIMIT_*` environment variables in the Configuration section above; setting a tier's RPS or burst to `<=0` disables it (unlimited pass-through) — this is the safe rollback lever if a limit turns out to be too aggressive, and does **not** require a redeploy.
 

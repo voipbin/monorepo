@@ -85,6 +85,10 @@ Use the ``domain_name`` value returned when you created the extension (also visi
 
 If registration succeeds, the status indicator turns green. If it fails, see Troubleshooting below.
 
+.. tip::
+
+   Instead of typing the credentials, you can also provision the Linphone mobile app by scanning a QR code: issue a short-lived provisioning URL via ``POST /extensions/{id}/provisioning-token`` and render it as a QR code. See :ref:`Softphone QR Provisioning <extension-overview-provisioning>`.
+
 Troubleshooting
 ~~~~~~~~~~~~~~~
 

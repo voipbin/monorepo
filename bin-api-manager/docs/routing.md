@@ -74,6 +74,17 @@ Public endpoints — no authentication required.
 | PUT | `/extensions/:id` | bin-agent-manager | Update extension |
 | DELETE | `/extensions/:id` | bin-agent-manager | Delete extension |
 | POST | `/extensions/:id/direct-hash-regenerate` | bin-agent-manager | Regenerate direct hash |
+| POST | `/extensions/:id/provisioning-token` | bin-registrar-manager | Issue a 10-minute SIP softphone provisioning token (QR code) |
+
+---
+
+## Provisioning
+
+Public endpoint — no authentication required. Redeems a token issued by `POST /extensions/:id/provisioning-token`.
+
+| HTTP Method | Path | Backend Service | Notes |
+|------------|------|----------------|-------|
+| GET | `/provisioning/extension` | bin-registrar-manager | Serves Linphone remote-provisioning XML for a token. No `/v1.0` prefix. |
 
 ---
 

@@ -2,7 +2,10 @@ package servicehandler
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"fmt"
+	"time"
 
 	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/serviceerrors"
@@ -14,6 +17,24 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 )
+
+const (
+	// ProvisioningTokenTTL is the lifetime of an extension provisioning token.
+	ProvisioningTokenTTL = 10 * time.Minute
+
+	// provisioningTokenLen is the number of random bytes used for a
+	// provisioning token (hex-encoded to twice this length).
+	provisioningTokenLen = 32
+)
+
+// ExtensionProvisioningToken is the response for an extension provisioning
+// token creation. The URL is the complete public provisioning URL for the
+// softphone (Linphone) to fetch its configuration from.
+type ExtensionProvisioningToken struct {
+	Token  string `json:"token"`
+	URL    string `json:"url"`
+	Expire string `json:"expire"`
+}
 
 // extensionGet validates the extension's ownership and returns the extension info.
 func (h *serviceHandler) extensionGet(ctx context.Context, id uuid.UUID) (*rmextension.Extension, error) {
@@ -244,6 +265,94 @@ func (h *serviceHandler) ExtensionDirectHashRegenerate(ctx context.Context, a *a
 	}
 
 	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}
+
+// ExtensionProvisioningTokenCreate creates a short-lived provisioning token
+// for the extension and returns the complete public provisioning URL for the
+// softphone (Linphone) QR code.
+func (h *serviceHandler) ExtensionProvisioningTokenCreate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*ExtensionProvisioningToken, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":         "ExtensionProvisioningTokenCreate",
+		"customer_id":  a.CustomerID,
+		"extension_id": id,
+	})
+	log.Debug("Creating extension provisioning token.")
+
+	if a.IsDirect() {
+		return nil, serviceerrors.ErrDirectAccessNotSupported
+	}
+
+	e, err := h.extensionGet(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get extension info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find extension info", err)
+	}
+
+	if !h.hasPermission(ctx, a, e.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		log.Info("The user has no permission.")
+		return nil, serviceerrors.ErrPermissionDenied
+	}
+
+	tokenBytes := make([]byte, provisioningTokenLen)
+	if _, errRead := rand.Read(tokenBytes); errRead != nil {
+		log.Errorf("Could not generate provisioning token. err: %v", errRead)
+		return nil, fmt.Errorf("could not generate provisioning token: %w", errRead)
+	}
+	token := hex.EncodeToString(tokenBytes)
+
+	if errSet := h.cacheHandler.ProvisioningTokenSet(ctx, token, id, ProvisioningTokenTTL); errSet != nil {
+		log.Errorf("Could not store provisioning token. err: %v", errSet)
+		return nil, fmt.Errorf("could not store provisioning token: %w", errSet)
+	}
+
+	res := &ExtensionProvisioningToken{
+		Token:  token,
+		URL:    h.publicBaseURL + "/provisioning/extension?token=" + token,
+		Expire: time.Now().UTC().Add(ProvisioningTokenTTL).Format(time.RFC3339),
+	}
+	return res, nil
+}
+
+// ExtensionProvisioningXMLGet resolves a provisioning token and returns the
+// Linphone remote-provisioning (lpconfig) XML for the associated extension.
+// It is served on the unauthenticated public provisioning route; the token is
+// the sole credential.
+func (h *serviceHandler) ExtensionProvisioningXMLGet(ctx context.Context, token string) ([]byte, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "ExtensionProvisioningXMLGet",
+	})
+
+	extensionID, err := h.cacheHandler.ProvisioningTokenGet(ctx, token)
+	if err != nil {
+		// missing or expired token. Do not log the token itself.
+		log.Infof("Could not resolve provisioning token. err: %v", err)
+		return nil, fmt.Errorf("could not resolve provisioning token: %w", err)
+	}
+	log = log.WithField("extension_id", extensionID)
+
+	e, err := h.extensionGet(ctx, extensionID)
+	if err != nil {
+		log.Errorf("Could not get extension info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find extension info", err)
+	}
+
+	if e.TMDelete != nil {
+		log.Info("The extension has been deleted.")
+		return nil, serviceerrors.ErrNotFound
+	}
+
+	// SERVING RULE: never read DomainName from the internal model directly --
+	// legacy rows carry a customer UUID there. ConvertWebhookMessage applies
+	// the Realm-first rule.
+	wm := e.ConvertWebhookMessage()
+
+	res, err := renderExtensionProvisioningXML(wm)
+	if err != nil {
+		log.Errorf("Could not render provisioning XML. err: %v", err)
+		return nil, fmt.Errorf("could not render provisioning xml: %w", err)
+	}
+
 	return res, nil
 }
 

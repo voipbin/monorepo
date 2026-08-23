@@ -10,8 +10,11 @@
 package cachehandler
 
 import (
+	context "context"
 	reflect "reflect"
+	time "time"
 
+	uuid "github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -51,4 +54,33 @@ func (m *MockCacheHandler) Connect() error {
 func (mr *MockCacheHandlerMockRecorder) Connect() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Connect", reflect.TypeOf((*MockCacheHandler)(nil).Connect))
+}
+
+// ProvisioningTokenGet mocks base method.
+func (m *MockCacheHandler) ProvisioningTokenGet(ctx context.Context, token string) (uuid.UUID, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ProvisioningTokenGet", ctx, token)
+	ret0, _ := ret[0].(uuid.UUID)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ProvisioningTokenGet indicates an expected call of ProvisioningTokenGet.
+func (mr *MockCacheHandlerMockRecorder) ProvisioningTokenGet(ctx, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProvisioningTokenGet", reflect.TypeOf((*MockCacheHandler)(nil).ProvisioningTokenGet), ctx, token)
+}
+
+// ProvisioningTokenSet mocks base method.
+func (m *MockCacheHandler) ProvisioningTokenSet(ctx context.Context, token string, extensionID uuid.UUID, ttl time.Duration) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ProvisioningTokenSet", ctx, token, extensionID, ttl)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ProvisioningTokenSet indicates an expected call of ProvisioningTokenSet.
+func (mr *MockCacheHandlerMockRecorder) ProvisioningTokenSet(ctx, token, extensionID, ttl any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProvisioningTokenSet", reflect.TypeOf((*MockCacheHandler)(nil).ProvisioningTokenSet), ctx, token, extensionID, ttl)
 }

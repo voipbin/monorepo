@@ -395,6 +395,84 @@ func TestExtensionsIDDELETE(t *testing.T) {
 	}
 }
 
+func Test_ExtensionsIDProvisioningTokenPOST(t *testing.T) {
+
+	type test struct {
+		name  string
+		agent *auth.AuthIdentity
+
+		reqQuery string
+
+		responseToken *servicehandler.ExtensionProvisioningToken
+
+		expectExtensionID uuid.UUID
+		expectRes         string
+	}
+
+	tests := []test{
+		{
+			name: "normal",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			}),
+
+			reqQuery: "/extensions/16aa2a2e-80f4-11f0-a53f-8feed1c9c793/provisioning-token",
+
+			responseToken: &servicehandler.ExtensionProvisioningToken{
+				Token:  "f14a4d0cf5b4bd1de3b03fcc7728ff2fdc826b3aad86ce6ecc4d46b643f2c5a1",
+				URL:    "https://api.voipbin.net/provisioning/extension?token=f14a4d0cf5b4bd1de3b03fcc7728ff2fdc826b3aad86ce6ecc4d46b643f2c5a1",
+				Expire: "2026-08-24T00:10:00Z",
+			},
+
+			expectExtensionID: uuid.FromStringOrNil("16aa2a2e-80f4-11f0-a53f-8feed1c9c793"),
+			expectRes:         `{"token":"f14a4d0cf5b4bd1de3b03fcc7728ff2fdc826b3aad86ce6ecc4d46b643f2c5a1","url":"https://api.voipbin.net/provisioning/extension?token=f14a4d0cf5b4bd1de3b03fcc7728ff2fdc826b3aad86ce6ecc4d46b643f2c5a1","expire":"2026-08-24T00:10:00Z"}`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// create mock
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+			h := &server{
+				serviceHandler: mockSvc,
+			}
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set("auth_identity", tt.agent)
+			})
+			openapi_server.RegisterHandlers(r, h)
+
+			req, _ := http.NewRequest("POST", tt.reqQuery, nil)
+			mockSvc.EXPECT().ExtensionProvisioningTokenCreate(req.Context(), tt.agent, tt.expectExtensionID).Return(tt.responseToken, nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+
+			if w.Body.String() != tt.expectRes {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, w.Body)
+			}
+		})
+	}
+}
+
+// Test_extensionsIDProvisioningTokenPost_MissingAuthIdentity verifies
+// PostExtensionsIdProvisioningToken emits the canonical UNAUTHENTICATED /
+// AUTHENTICATION_REQUIRED envelope when auth_identity is missing from the gin
+// context.
+func Test_extensionsIDProvisioningTokenPost_MissingAuthIdentity(t *testing.T) {
+	assertMissingAuthIdentity(t, http.MethodPost, "/extensions/16aa2a2e-80f4-11f0-a53f-8feed1c9c793/provisioning-token", nil)
+}
+
 // Test_extensionsIDPut_InvalidID verifies PutExtensionsId rejects a malformed
 // UUID in the path with INVALID_ARGUMENT / INVALID_ID before the
 // servicehandler is consulted.

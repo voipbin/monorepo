@@ -222,3 +222,36 @@ func (h *server) PostExtensionsIdDirectHashRegenerate(c *gin.Context, id openapi
 
 	c.JSON(200, res)
 }
+
+func (h *server) PostExtensionsIdProvisioningToken(c *gin.Context, id openapi_types.UUID) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "PostExtensionsIdProvisioningToken",
+		"request_address": c.ClientIP(),
+		"extension_id":    id,
+	})
+
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
+		return
+	}
+	log = log.WithField("agent", a)
+
+	// Convert openapi_types.UUID to uuid.UUID
+	extensionID, err := uuid.FromString(id.String())
+	if err != nil {
+		log.Errorf("Invalid extension ID format. err: %v", err)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID.").Wrap(err))
+		return
+	}
+
+	res, err := h.serviceHandler.ExtensionProvisioningTokenCreate(c.Request.Context(), a, extensionID)
+	if err != nil {
+		log.Errorf("Could not create extension provisioning token. err: %v", err)
+		abortWithServiceError(c, err)
+		return
+	}
+
+	c.JSON(200, res)
+}

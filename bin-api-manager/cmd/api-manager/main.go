@@ -129,7 +129,7 @@ func runDaemon(cmd *cobra.Command, args []string) {
 	sockHandler := sockhandler.NewSockHandler(sock.TypeRabbitMQ, cfg.RabbitMQAddress)
 	sockHandler.Connect()
 
-	run(ctx, sockHandler, db, rateLimiter)
+	run(ctx, sockHandler, db, cache, rateLimiter)
 
 	// Wait for termination signal
 	chSigs := make(chan os.Signal, 1)
@@ -143,6 +143,7 @@ func run(
 	ctx context.Context,
 	sockHandler sockhandler.SockHandler,
 	db dbhandler.DBHandler,
+	cache cachehandler.CacheHandler,
 	rateLimiter ratelimithandler.RateLimiter,
 ) {
 	log := logrus.WithField("func", "run")
@@ -160,7 +161,7 @@ func run(
 	queueNamePod := fmt.Sprintf("%s-%s", commonoutline.QueueNameAPISubscribe, uuid.Must(uuid.NewV4()))
 
 	websockHandler := websockhandler.NewWebsockHandler(requestHandler, streamHandler, sockHandler, pubsubBroker, queueNamePod)
-	serviceHandler, err := servicehandler.NewServiceHandler(requestHandler, db, websockHandler, cfg.GCPProjectID, cfg.GCPBucketName, cfg.JWTKey)
+	serviceHandler, err := servicehandler.NewServiceHandler(requestHandler, db, cache, websockHandler, cfg.GCPProjectID, cfg.GCPBucketName, cfg.JWTKey, cfg.PublicBaseURL)
 	if err != nil {
 		log.Fatalf("Could not create service handler. err: %v", err)
 	}
@@ -209,7 +210,19 @@ func runListenHTTP(serviceHandler servicehandler.ServiceHandler, rateLimiter rat
 		"func": "runListenHTTP",
 	})
 
-	app := gin.Default()
+	// Equivalent to gin.Default() (Logger + Recovery), except the access
+	// logger skips the provisioning paths: their token query parameter is a
+	// short-lived SIP credential-fetch secret and must never reach stdout.
+	// gin.Default() is Logger() + Recovery(), and Logger() is
+	// LoggerWithConfig(LoggerConfig{}), so an empty config plus SkipPaths
+	// keeps the exact same log format for every other route.
+	// The public handler (lib/service.GetProvisioningExtension) emits its own
+	// structured log line to preserve observability for the skipped paths.
+	app := gin.New()
+	app.Use(gin.LoggerWithConfig(gin.LoggerConfig{
+		SkipPaths: []string{"/provisioning/extension", "/v1.0/provisioning/extension"},
+	}))
+	app.Use(gin.Recovery())
 	app.Use(middleware.RequestID()) // NEW — tag every request with a correlation ID first.
 	app.NoRoute(server.NoRoute())   // Emit the canonical error envelope for unrouted paths.
 
@@ -253,6 +266,13 @@ func runListenHTTP(serviceHandler servicehandler.ServiceHandler, rateLimiter rat
 	})
 
 	cfg := config.Get()
+
+	// Public (unauthenticated) SIP softphone provisioning. Registered after
+	// the global servicehandler-injection app.Use above, which already covers
+	// this group — do not add a duplicate injection middleware here.
+	provisioning := app.Group("/provisioning")
+	provisioning.Use(middleware.RateLimit("provisioning_public", cfg.RateLimitProvisioningPublicRPS, cfg.RateLimitProvisioningPublicBurst))
+	provisioning.GET("/extension", service.GetProvisioningExtension)
 
 	// register basic services
 	app.GET("/ping", service.GetPing)
