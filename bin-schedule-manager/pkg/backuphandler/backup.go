@@ -73,6 +73,12 @@ func (h *backupHandler) Backup(ctx context.Context) (*Result, error) {
 		"--routines",
 		"--triggers",
 		"--set-gtid-purged=OFF",
+		// mysqldump 8.0 defaults to querying
+		// information_schema.COLUMN_STATISTICS, which does not exist on
+		// MariaDB (the platform DB as of VOIP-1386) and aborts the dump
+		// with error 1109. Disabling it is a no-op against MySQL 8, so
+		// this flag is safe in both server states.
+		"--column-statistics=0",
 		cfg.DBName,
 	}
 

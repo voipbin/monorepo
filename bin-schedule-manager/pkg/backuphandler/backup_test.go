@@ -111,6 +111,7 @@ func Test_Backup(t *testing.T) {
 		"--routines",
 		"--triggers",
 		"--set-gtid-purged=OFF",
+		"--column-statistics=0",
 		"voipbin",
 	}
 	if !reflect.DeepEqual(runner.capturedArgs[1:], expectArgs) {

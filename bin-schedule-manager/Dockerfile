@@ -12,12 +12,14 @@ RUN cd bin-schedule-manager && go mod vendor && CGO_ENABLED=0 go build -o /app/b
 #
 # Deviation from the fleet-standard distroless static runtime (design §7,
 # documented in this service's CLAUDE.md): the scheduled DB backup runs
-# genuine mysqldump 8.0 as a subprocess against the MySQL 8.0 platform
-# database, so the runtime image must carry the MySQL client binaries.
-# mysql-community-client comes from MySQL's official APT repository —
-# alpine/debian "mysql-client"/"default-mysql-client" are MariaDB aliases,
-# an unsupported pairing against MySQL 8.0 (caching_sha2_password auth,
-# incompatible dump output).
+# mysqldump 8.0 as a subprocess against the platform database, so the
+# runtime image must carry the client binaries. The platform DB is
+# migrating from MySQL 8.0 to MariaDB 12.3 (VOIP-1386); this client is
+# validated against both server states via --column-statistics=0 set in
+# backuphandler (see CLAUDE.md "Runtime image deviation"). Switching to
+# mariadb-client is a separate post-cutover follow-up, not a drive-by
+# edit here. mysql-community-client comes from MySQL's official APT
+# repository.
 FROM public.ecr.aws/docker/library/debian:bookworm-slim
 
 # Key integrity: fetch MySQL's signing key over HTTPS from repo.mysql.com
