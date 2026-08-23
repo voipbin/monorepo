@@ -909,7 +909,7 @@ func TestAuthenticateAccesskey(t *testing.T) {
 	}
 }
 
-func Test_isFrozenAccountBlocked(t *testing.T) {
+func Test_isBlockedAccountStatus(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
 	testCustomerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
@@ -1048,6 +1048,98 @@ func Test_isFrozenAccountBlocked(t *testing.T) {
 			expectStatus: 200,
 		},
 		{
+			// Regression coverage for VOIP-1395: the customer_deleted cascade
+			// has been observed to leave live agent credentials for deleted
+			// customers, so this gate must independently block on
+			// StatusDeleted rather than passing everything through except
+			// StatusFrozen.
+			name: "Deleted account - blocked",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity:   commonidentity.Identity{CustomerID: testCustomerID},
+				Permission: amagent.PermissionCustomerAdmin,
+			}),
+			method: http.MethodGet,
+			path:   "/v1.0/agents",
+			mockSetup: func(mockSH *servicehandler.MockServiceHandler) {
+				mockSH.EXPECT().CustomerRawSelfGet(gomock.Any(), gomock.Any()).Return(&cscustomer.WebhookMessage{
+					Status: cscustomer.StatusDeleted,
+				}, nil)
+			},
+			expectBlock:  true,
+			expectStatus: 403,
+		},
+		{
+			name: "Deleted account - accesskey identity blocked",
+			agent: auth.NewAccesskeyIdentity(&csaccesskey.Accesskey{
+				ID:         uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-000000000002"),
+				CustomerID: testCustomerID,
+			}),
+			method: http.MethodGet,
+			path:   "/v1.0/agents",
+			mockSetup: func(mockSH *servicehandler.MockServiceHandler) {
+				mockSH.EXPECT().CustomerRawSelfGet(gomock.Any(), gomock.Any()).Return(&cscustomer.WebhookMessage{
+					Status: cscustomer.StatusDeleted,
+				}, nil)
+			},
+			expectBlock:  true,
+			expectStatus: 403,
+		},
+		{
+			name: "Deleted account - delegate identity blocked",
+			agent: auth.NewDelegateIdentity(&auth.DelegateScope{
+				CustomerID: testCustomerID,
+				IssuedBy:   uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+				JTI:        "some-jti",
+			}),
+			method: http.MethodGet,
+			path:   "/v1.0/agents",
+			mockSetup: func(mockSH *servicehandler.MockServiceHandler) {
+				mockSH.EXPECT().CustomerRawSelfGet(gomock.Any(), gomock.Any()).Return(&cscustomer.WebhookMessage{
+					Status: cscustomer.StatusDeleted,
+				}, nil)
+			},
+			expectBlock:  true,
+			expectStatus: 403,
+		},
+		{
+			name: "Deleted account - DELETE /auth/unregister allowed",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity:   commonidentity.Identity{CustomerID: testCustomerID},
+				Permission: amagent.PermissionCustomerAdmin,
+			}),
+			method:       http.MethodDelete,
+			path:         "/auth/unregister",
+			mockSetup:    func(mockSH *servicehandler.MockServiceHandler) {},
+			expectBlock:  false,
+			expectStatus: 200,
+		},
+		{
+			name: "Project super admin - not blocked even if deleted",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity:   commonidentity.Identity{CustomerID: testCustomerID},
+				Permission: amagent.PermissionProjectSuperAdmin,
+			}),
+			method:       http.MethodGet,
+			path:         "/v1.0/agents",
+			mockSetup:    func(mockSH *servicehandler.MockServiceHandler) {},
+			expectBlock:  false,
+			expectStatus: 200,
+		},
+		{
+			name: "Direct token - skip deleted check",
+			agent: auth.NewDirectIdentity(&auth.DirectScope{
+				CustomerID:           testCustomerID,
+				ResourceType:         "aicall",
+				ResourceID:           uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-000000000000"),
+				AllowedResourceTypes: []string{"aicall"},
+			}),
+			method:       http.MethodGet,
+			path:         "/v1.0/aicalls",
+			mockSetup:    func(mockSH *servicehandler.MockServiceHandler) {},
+			expectBlock:  false,
+			expectStatus: 200,
+		},
+		{
 			name: "CustomerRawSelfGet error - fail open (not blocked)",
 			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity:   commonidentity.Identity{CustomerID: testCustomerID},
@@ -1077,7 +1169,7 @@ func Test_isFrozenAccountBlocked(t *testing.T) {
 			c.Request = req
 			c.Set(modelscommon.OBJServiceHandler, mockSH)
 
-			blocked := isFrozenAccountBlocked(c, tt.agent)
+			blocked := isBlockedAccountStatus(c, tt.agent)
 			if blocked != tt.expectBlock {
 				t.Errorf("Wrong blocked result. expect: %v, got: %v", tt.expectBlock, blocked)
 			}
