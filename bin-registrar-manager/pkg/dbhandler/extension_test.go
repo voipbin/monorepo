@@ -68,8 +68,9 @@ func Test_ExtensionCreate(t *testing.T) {
 				AORID:      "608cbfae-6ebc-11eb-a74b-671d17dda173@test.sip.voipbin.net",
 				AuthID:     "608cbfae-6ebc-11eb-a74b-671d17dda173@test.sip.voipbin.net",
 
-				Extension:  "608cbfae-6ebc-11eb-a74b-671d17dda173",
-				DomainName: "83db3318-7fec-11ec-a205-736ad70c9180",
+				Extension: "608cbfae-6ebc-11eb-a74b-671d17dda173",
+				// serving rule (VOIP-1385): the read path serves Realm as domain_name
+				DomainName: "83db3318-7fec-11ec-a205-736ad70c9180.registrar.voipbin.net",
 
 				Realm:    "83db3318-7fec-11ec-a205-736ad70c9180.registrar.voipbin.net",
 				Username: "608cbfae-6ebc-11eb-a74b-671d17dda173",

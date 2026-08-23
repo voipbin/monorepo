@@ -76,6 +76,7 @@ import (
 	qmqueuecall "monorepo/bin-queue-manager/models/queuecall"
 
 	rmastcontact "monorepo/bin-registrar-manager/models/astcontact"
+	rmcustomerdomain "monorepo/bin-registrar-manager/models/customerdomain"
 	rmextension "monorepo/bin-registrar-manager/models/extension"
 	rmsipauth "monorepo/bin-registrar-manager/models/sipauth"
 	rmtrunk "monorepo/bin-registrar-manager/models/trunk"
@@ -1265,6 +1266,9 @@ type RequestHandler interface {
 	// registrar-manager contact
 	RegistrarV1ContactList(ctx context.Context, filters map[string]any) ([]rmastcontact.AstContact, error)
 	RegistrarV1ContactRefresh(ctx context.Context, filters map[string]any) error
+
+	// registrar-manager customer domain
+	RegistrarV1CustomerDomainGetByRealm(ctx context.Context, realm string) (*rmcustomerdomain.CustomerDomain, error)
 
 	// registrar-manager extension
 	RegistrarV1ExtensionCreate(ctx context.Context, customerID uuid.UUID, ext string, password string, name string, detail string) (*rmextension.Extension, error)

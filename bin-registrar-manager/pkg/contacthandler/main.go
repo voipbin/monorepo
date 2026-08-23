@@ -11,6 +11,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 
 	"monorepo/bin-registrar-manager/models/astcontact"
+	"monorepo/bin-registrar-manager/pkg/customerdomainhandler"
 	"monorepo/bin-registrar-manager/pkg/dbhandler"
 )
 
@@ -22,9 +23,10 @@ type ContactHandler interface {
 
 // contactHandler structure for service handle
 type contactHandler struct {
-	reqHandler requesthandler.RequestHandler
-	dbAst      dbhandler.DBHandler
-	dbBin      dbhandler.DBHandler
+	reqHandler            requesthandler.RequestHandler
+	dbAst                 dbhandler.DBHandler
+	dbBin                 dbhandler.DBHandler
+	customerDomainHandler customerdomainhandler.CustomerDomainHandler
 }
 
 func init() {
@@ -32,12 +34,13 @@ func init() {
 }
 
 // NewContactHandler returns new service handler
-func NewContactHandler(r requesthandler.RequestHandler, dbAst dbhandler.DBHandler, dbBin dbhandler.DBHandler) ContactHandler {
+func NewContactHandler(r requesthandler.RequestHandler, dbAst dbhandler.DBHandler, dbBin dbhandler.DBHandler, customerDomainHandler customerdomainhandler.CustomerDomainHandler) ContactHandler {
 
 	h := &contactHandler{
-		reqHandler: r,
-		dbAst:      dbAst,
-		dbBin:      dbBin,
+		reqHandler:            r,
+		dbAst:                 dbAst,
+		dbBin:                 dbBin,
+		customerDomainHandler: customerDomainHandler,
 	}
 
 	return h

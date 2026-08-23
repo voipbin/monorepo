@@ -45,6 +45,22 @@ A SIP trunk for carrier or provider connections. Supports basic authentication (
 | `tm_update` | timestamp | |
 | `tm_delete` | timestamp | Soft-delete sentinel |
 
+### CustomerDomain
+
+The customer's SIP domain mapping (VOIP-1385): one row per customer linking the customer to its domain label and full realm (`<label>.<domain_name_extension>`). Owned table: `registrar_customer_domains`. Internal-only entity — no WebhookMessage; users see the domain only through `Extension.domain_name`.
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `customer_id` | UUID | Primary key (bin-manager DB) |
+| `domain_label` | string | Unique. Short form: 4-char base36 lowercase, crypto-random; reserved labels (`pstn`, `sip`, `echo`, `reg`, `www`, `api`) excluded. Legacy form: the 36-char customer uuid string (backfilled rows, and NEW rows while `domain_short_label_enabled` is `false`) until the migration batch rewrites them |
+| `realm` | string | Unique. Full SIP realm, e.g. `ab12.reg.voipbin.net`. Redis-cached (realm -> row) for the incoming-call lookup |
+| `tm_create` | timestamp | |
+| `tm_update` | timestamp | |
+
+No `tm_delete`: rows are hard-deleted on `customer_deleted` (deliberate deviation from sibling registrar tables — a pure mapping row has no soft-delete consumer).
+
+**Lifecycle:** created on `customer_created` (idempotent ensure), lazily at the first extension create as a fallback, deleted on `customer_deleted`. New-row shape follows `domain_short_label_enabled` (default `false`: legacy uuid label/realm, so pre-cutover frontends that build the domain from the customer uuid keep working; flip together with the frontend deploy). Label collisions on the unique index are retried with a freshly generated label. The `domain-migrate` batch always writes short labels, independent of the flag.
+
 ### Contact (SIP Registration)
 
 A read-only view of an active SIP registration. Sourced from Asterisk `ps_contacts` and cached in Redis.
@@ -62,7 +78,9 @@ A read-only view of an active SIP registration. Sourced from Asterisk `ps_contac
 
 1. **Two-database atomicity**: Creating or deleting an extension touches the bin-manager DB and three Asterisk tables (`ps_endpoints`, `ps_aors`, `ps_auths`). All operations must clean up all records on failure — partial states cause Asterisk to malfunction.
 
-2. **Domain name assignment**: Extensions use a subdomain of `domain_name_extension` config value. Trunks use a custom domain validated by regex. Domain names are set globally at startup via `common.SetBaseDomainNames()`.
+2. **Domain name assignment**: Extensions use the customer's CustomerDomain realm (`<label>.<domain_name_extension>`, table-backed via `customerdomainhandler`). Trunks use a custom domain validated by regex. Base domain names are set globally at startup via `common.SetBaseDomainNames()`.
+
+2a. **Extension `domain_name` serving rule (VOIP-1385)**: the exposed `domain_name` is always the FULL realm. The read path serves `realm` when set; for legacy pre-Feb-2024 rows with a NULL realm it serves the computed legacy realm (`<customer_id>.<base>`) — never the raw stored column, which holds a bare customer uuid until the migration batch rewrites it. New creates store the full realm in the column.
 
 3. **Trunk domain uniqueness**: Each trunk's `domain_name` must be unique within the platform (used as an Asterisk endpoint identifier).
 
@@ -70,7 +88,7 @@ A read-only view of an active SIP registration. Sourced from Asterisk `ps_contac
 
 5. **Contact caching**: Active SIP registrations from `ps_contacts` are cached in Redis. Cache is invalidated when the corresponding extension or trunk is deleted.
 
-6. **Cascading delete**: When a `customer_deleted` event is received, all extensions and trunks for that customer are deleted along with their Asterisk resources.
+6. **Cascading delete**: When a `customer_deleted` event is received, all extensions and trunks for that customer are deleted along with their Asterisk resources, and the customer's CustomerDomain row is hard-deleted afterwards.
 
 7. **Soft deletes on bin-manager tables**: The `extensions` and `trunks` tables use `tm_delete` sentinel. Asterisk tables do not use soft deletes — Asterisk records are hard-deleted.
 

@@ -3,7 +3,6 @@ package callhandler
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"monorepo/bin-call-manager/models/call"
 	commonaddress "monorepo/bin-common-handler/models/address"
@@ -16,7 +15,6 @@ import (
 
 	"monorepo/bin-call-manager/models/ari"
 	"monorepo/bin-call-manager/models/channel"
-	"monorepo/bin-call-manager/models/common"
 )
 
 // startIncomingDomainTypeRegistrar handles registrar incoming doamin type.
@@ -26,9 +24,16 @@ func (h *callHandler) startIncomingDomainTypeRegistrar(ctx context.Context, cn *
 		"channel_id": cn.ID,
 	})
 
-	// get customer
-	tmpCustomerID := strings.TrimSuffix(cn.StasisData[channel.StasisDataTypeDomain], common.DomainRegistrarSuffix)
-	customerID := uuid.FromStringOrNil(tmpCustomerID)
+	// get customer domain info
+	domain := cn.StasisData[channel.StasisDataTypeDomain]
+	cd, err := h.reqHandler.RegistrarV1CustomerDomainGetByRealm(ctx, domain)
+	if err != nil {
+		log.Errorf("Could not get customer domain info. domain: %s, err: %v", domain, err)
+		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNoRouteDestination) // return 404. destination not found
+		return nil
+	}
+	log.WithField("customer_domain", cd).Debugf("Found customer domain info. customer_id: %s", cd.CustomerID)
+	customerID := cd.CustomerID
 
 	// get default source/destination info
 	source := h.channelHandler.AddressGetSource(cn, commonaddress.TypeExtension)

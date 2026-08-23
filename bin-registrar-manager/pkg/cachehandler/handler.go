@@ -12,6 +12,7 @@ import (
 	"monorepo/bin-registrar-manager/models/astauth"
 	"monorepo/bin-registrar-manager/models/astcontact"
 	"monorepo/bin-registrar-manager/models/astendpoint"
+	"monorepo/bin-registrar-manager/models/customerdomain"
 	"monorepo/bin-registrar-manager/models/extension"
 	"monorepo/bin-registrar-manager/models/trunk"
 )
@@ -233,6 +234,35 @@ func (h *handler) AstContactsSet(ctx context.Context, endpoint string, contacts 
 // AstContactsDel deletes the contacts info from the cache.
 func (h *handler) AstContactsDel(ctx context.Context, endpoint string) error {
 	key := fmt.Sprintf("ast_contacts:%s", endpoint)
+
+	return h.delKey(ctx, key)
+}
+
+// CustomerDomainGetByRealm returns cached CustomerDomain info of the given realm
+func (h *handler) CustomerDomainGetByRealm(ctx context.Context, realm string) (*customerdomain.CustomerDomain, error) {
+	key := fmt.Sprintf("registrar:customer_domain_realm:%s", realm)
+
+	var res customerdomain.CustomerDomain
+	if err := h.getSerialize(ctx, key, &res); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+// CustomerDomainSet sets the CustomerDomain info into the cache (keyed by realm).
+func (h *handler) CustomerDomainSet(ctx context.Context, cd *customerdomain.CustomerDomain) error {
+	key := fmt.Sprintf("registrar:customer_domain_realm:%s", cd.Realm)
+	if err := h.setSerialize(ctx, key, cd); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// CustomerDomainDelByRealm deletes the CustomerDomain info of the given realm from the cache.
+func (h *handler) CustomerDomainDelByRealm(ctx context.Context, realm string) error {
+	key := fmt.Sprintf("registrar:customer_domain_realm:%s", realm)
 
 	return h.delKey(ctx, key)
 }

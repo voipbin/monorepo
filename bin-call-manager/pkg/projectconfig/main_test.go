@@ -78,7 +78,7 @@ func Test_load(t *testing.T) {
 			expectedDomainPSTN:       "pstn.voipbin.net",
 			expectedDomainSIP:        "sip.voipbin.net",
 			expectedDomainTrunk:      ".trunk.voipbin.net",
-			expectedDomainRegistrar:  ".registrar.voipbin.net",
+			expectedDomainRegistrar:  ".reg.voipbin.net",
 			expectedBucketName:       "voipbin-voip-media-bucket-europe-west4",
 		},
 		{
@@ -90,7 +90,7 @@ func Test_load(t *testing.T) {
 			expectedDomainPSTN:       "pstn.example.com",
 			expectedDomainSIP:        "sip.example.com",
 			expectedDomainTrunk:      ".trunk.example.com",
-			expectedDomainRegistrar:  ".registrar.example.com",
+			expectedDomainRegistrar:  ".reg.example.com",
 			expectedBucketName:       "voipbin-voip-media-bucket-europe-west4",
 		},
 		{
@@ -102,7 +102,7 @@ func Test_load(t *testing.T) {
 			expectedDomainPSTN:       "pstn.voipbin.net",
 			expectedDomainSIP:        "sip.voipbin.net",
 			expectedDomainTrunk:      ".trunk.voipbin.net",
-			expectedDomainRegistrar:  ".registrar.voipbin.net",
+			expectedDomainRegistrar:  ".reg.voipbin.net",
 			expectedBucketName:       "custom-bucket-name",
 		},
 		{
@@ -114,7 +114,7 @@ func Test_load(t *testing.T) {
 			expectedDomainPSTN:       "pstn.localhost",
 			expectedDomainSIP:        "sip.localhost",
 			expectedDomainTrunk:      ".trunk.localhost",
-			expectedDomainRegistrar:  ".registrar.localhost",
+			expectedDomainRegistrar:  ".reg.localhost",
 			expectedBucketName:       "local-bucket",
 		},
 	}

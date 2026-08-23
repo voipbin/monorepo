@@ -16,7 +16,7 @@ type WebhookMessage struct {
 
 	Extension string `json:"extension"`
 
-	DomainName string `json:"domain_name"` // same as the CustomerID. This used by the kamailio's INVITE validation
+	DomainName string `json:"domain_name"` // full SIP domain (realm) of the extension. e.g. ab12.reg.voipbin.net
 	Username   string `json:"username"`    // same as the Extension. This used by the kamailio's INVITE validation
 	Password   string `json:"password"`
 
@@ -29,6 +29,17 @@ type WebhookMessage struct {
 
 // ConvertWebhookMessage converts to the event
 func (h *Extension) ConvertWebhookMessage() *WebhookMessage {
+	// SERVING RULE (VOIP-1385): the exposed domain_name is the full realm.
+	// Serve Realm when set; when Realm is empty (legacy pre-Feb-2024 rows) the
+	// stored DomainName column holds a bare customer uuid until the migration
+	// batch rewrites it — registrar-manager's read path already normalizes it
+	// to the computed legacy realm before the model leaves the service, so the
+	// fallback below never serves the raw bare uuid.
+	domainName := h.DomainName
+	if h.Realm != "" {
+		domainName = h.Realm
+	}
+
 	return &WebhookMessage{
 		Identity: h.Identity,
 
@@ -37,7 +48,7 @@ func (h *Extension) ConvertWebhookMessage() *WebhookMessage {
 
 		Extension: h.Extension,
 
-		DomainName: h.DomainName,
+		DomainName: domainName,
 		Username:   h.Username,
 		Password:   h.Password,
 

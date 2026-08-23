@@ -84,17 +84,28 @@ func ResetBaseDomainNamesForTest() {
 	initOnce = sync.Once{}
 }
 
-// GenerateEndpointExtension returns the endpoint of the given customer with extension
-func GenerateEndpointExtension(customerID uuid.UUID, extension string) string {
-	realm := GenerateRealmExtension(customerID)
-	res := fmt.Sprintf("%s@%s", extension, realm)
-	return res
+// BaseDomainNameExtension returns the configured base domain name for extension
+// realms. It panics when SetBaseDomainNames has not been called (matches the
+// behavior of the internal accessor). Extension realm/endpoint generation lives
+// in pkg/customerdomainhandler (table-backed); this accessor exists so the
+// handler layer can compose realms without models/common touching the DB.
+func BaseDomainNameExtension() string {
+	return getBaseDomainNameExtension()
 }
 
-// GenerateRealmExtension returns the realm of the given customer
-func GenerateRealmExtension(customerID uuid.UUID) string {
-	res := fmt.Sprintf("%s.%s", customerID.String(), getBaseDomainNameExtension())
-	return res
+// GenerateRealmExtensionLegacy returns the computed legacy realm of the given
+// customer (<customer_id>.<base domain name extension>). It is the SERVING
+// fallback for pre-Feb-2024 extension rows whose realm column is NULL; those
+// rows keep a bare customer uuid in the stored domain_name column until the
+// migration batch rewrites them, and that raw value must never be served.
+// Unlike BaseDomainNameExtension this NEVER panics: it returns "" when the
+// base domain names have not been initialized (unit tests that never call
+// SetBaseDomainNames); production initializes them at startup.
+func GenerateRealmExtensionLegacy(customerID uuid.UUID) string {
+	if baseDomainNameExtension == "" {
+		return ""
+	}
+	return fmt.Sprintf("%s.%s", customerID.String(), baseDomainNameExtension)
 }
 
 // GenerateRealmTrunkDomain returns the realm of the given trunk's domain name

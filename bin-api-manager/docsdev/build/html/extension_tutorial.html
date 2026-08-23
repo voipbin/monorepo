@@ -649,7 +649,7 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>When creating an extension, the <code class="docutils literal notranslate"><span class="pre">extension</span></code> field and <code class="docutils literal notranslate"><span class="pre">username</span></code> field are typically set to the same value. The <code class="docutils literal notranslate"><span class="pre">password</span></code> is used for SIP device authentication. After creation, configure SIP devices with the <code class="docutils literal notranslate"><span class="pre">username</span></code>, <code class="docutils literal notranslate"><span class="pre">password</span></code>, and the domain <code class="docutils literal notranslate"><span class="pre">{customer-id}.registrar.voipbin.net</span></code>.</p>
+<p>When creating an extension, the <code class="docutils literal notranslate"><span class="pre">extension</span></code> field and <code class="docutils literal notranslate"><span class="pre">username</span></code> field are typically set to the same value. The <code class="docutils literal notranslate"><span class="pre">password</span></code> is used for SIP device authentication. After creation, configure SIP devices with the <code class="docutils literal notranslate"><span class="pre">username</span></code>, <code class="docutils literal notranslate"><span class="pre">password</span></code>, and the <code class="docutils literal notranslate"><span class="pre">domain_name</span></code> returned in the extension response (e.g. <code class="docutils literal notranslate"><span class="pre">ab12.reg.voipbin.net</span></code>). Always use the returned <code class="docutils literal notranslate"><span class="pre">domain_name</span></code> verbatim — do not construct the domain from other fields.</p>
 </div>
 <section id="get-list-of-extensions">
 <h3>Get list of extensions<a class="headerlink" href="#get-list-of-extensions" title="Link to this heading">¶</a></h3>
@@ -664,7 +664,7 @@
             &quot;name&quot;: &quot;test domain&quot;,
             &quot;detail&quot;: &quot;test domain creation&quot;,
             &quot;extension&quot;: &quot;test11&quot;,
-            &quot;domain_name&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b.registrar.voipbin.net&quot;,
+            &quot;domain_name&quot;: &quot;ab12.reg.voipbin.net&quot;,
             &quot;username&quot;: &quot;test11&quot;,
             &quot;password&quot;: &quot;bad79bd2-71e6-11eb-9577-c756bf092a88&quot;,
             &quot;direct_hash&quot;: &quot;&quot;,
@@ -689,7 +689,7 @@
     &quot;name&quot;: &quot;test domain&quot;,
     &quot;detail&quot;: &quot;test domain creation&quot;,
     &quot;extension&quot;: &quot;test11&quot;,
-    &quot;domain_name&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b.registrar.voipbin.net&quot;,
+    &quot;domain_name&quot;: &quot;ab12.reg.voipbin.net&quot;,
     &quot;username&quot;: &quot;test11&quot;,
     &quot;password&quot;: &quot;bad79bd2-71e6-11eb-9577-c756bf092a88&quot;,
     &quot;direct_hash&quot;: &quot;&quot;,
@@ -718,7 +718,7 @@
     &quot;name&quot;: &quot;test domain&quot;,
     &quot;detail&quot;: &quot;test domain creation&quot;,
     &quot;extension&quot;: &quot;test12&quot;,
-    &quot;domain_name&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b.registrar.voipbin.net&quot;,
+    &quot;domain_name&quot;: &quot;ab12.reg.voipbin.net&quot;,
     &quot;username&quot;: &quot;test12&quot;,
     &quot;password&quot;: &quot;27a4d0f2-757c-11eb-bc8f-4f045857b89c&quot;,
     &quot;direct_hash&quot;: &quot;&quot;,
@@ -746,7 +746,7 @@
     &quot;name&quot;: &quot;update test extension name&quot;,
     &quot;detail&quot;: &quot;update test extension detail&quot;,
     &quot;extension&quot;: &quot;test12&quot;,
-    &quot;domain_name&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b.registrar.voipbin.net&quot;,
+    &quot;domain_name&quot;: &quot;ab12.reg.voipbin.net&quot;,
     &quot;username&quot;: &quot;test12&quot;,
     &quot;password&quot;: &quot;5316382a-757c-11eb-9348-bb32547e99c4&quot;,
     &quot;direct_hash&quot;: &quot;&quot;,
@@ -768,7 +768,7 @@
     &quot;name&quot;: &quot;update test extension name&quot;,
     &quot;detail&quot;: &quot;update test extension detail&quot;,
     &quot;extension&quot;: &quot;test12&quot;,
-    &quot;domain_name&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b.registrar.voipbin.net&quot;,
+    &quot;domain_name&quot;: &quot;ab12.reg.voipbin.net&quot;,
     &quot;username&quot;: &quot;test12&quot;,
     &quot;password&quot;: &quot;5316382a-757c-11eb-9348-bb32547e99c4&quot;,
     &quot;direct_hash&quot;: &quot;f7e8d9c0b1a2&quot;,

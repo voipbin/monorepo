@@ -18,6 +18,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-registrar-manager/pkg/contacthandler"
+	"monorepo/bin-registrar-manager/pkg/customerdomainhandler"
 	"monorepo/bin-registrar-manager/pkg/dbhandler"
 	"monorepo/bin-registrar-manager/pkg/extensionhandler"
 	"monorepo/bin-registrar-manager/pkg/trunkhandler"
@@ -37,11 +38,12 @@ type ListenHandler interface {
 type listenHandler struct {
 	sockHandler sockhandler.SockHandler
 
-	reqHandler       requesthandler.RequestHandler
-	utilHandler      utilhandler.UtilHandler
-	trunkHandler     trunkhandler.TrunkHandler
-	extensionHandler extensionhandler.ExtensionHandler
-	contactHandler   contacthandler.ContactHandler
+	reqHandler            requesthandler.RequestHandler
+	utilHandler           utilhandler.UtilHandler
+	trunkHandler          trunkhandler.TrunkHandler
+	extensionHandler      extensionhandler.ExtensionHandler
+	contactHandler        contacthandler.ContactHandler
+	customerDomainHandler customerdomainhandler.CustomerDomainHandler
 }
 
 var (
@@ -52,10 +54,13 @@ var (
 	// contacts
 	regV1ContactsGet = regexp.MustCompile(`/v1/contacts(\?.*)?$`)
 
+	// customer_domains
+	regV1CustomerDomainsRealm = regexp.MustCompile("/v1/customer_domains/realm/" + regAny + "$")
+
 	// extensions
-	regV1ExtensionsCountByCustomer = regexp.MustCompile("/v1/extensions/count_by_customer$")
-	regV1Extensions                = regexp.MustCompile("/v1/extensions$")
-	regV1ExtensionsGet             = regexp.MustCompile(`/v1/extensions\?`)
+	regV1ExtensionsCountByCustomer        = regexp.MustCompile("/v1/extensions/count_by_customer$")
+	regV1Extensions                       = regexp.MustCompile("/v1/extensions$")
+	regV1ExtensionsGet                    = regexp.MustCompile(`/v1/extensions\?`)
 	regV1ExtensionsIDDirectHashRegenerate = regexp.MustCompile("/v1/extensions/" + regUUID + "/direct-hash-regenerate$")
 	regV1ExtensionsID                     = regexp.MustCompile("/v1/extensions/" + regUUID + "$")
 	// regV1ExtensionsExtensionEndpoint     = regexp.MustCompile("/v1/extensions/endpoint/" + regAny + "$")
@@ -131,14 +136,16 @@ func NewListenHandler(
 	trunkHandler trunkhandler.TrunkHandler,
 	extensionHandler extensionhandler.ExtensionHandler,
 	contactHandler contacthandler.ContactHandler,
+	customerDomainHandler customerdomainhandler.CustomerDomainHandler,
 ) ListenHandler {
 	h := &listenHandler{
-		sockHandler:      sockHandler,
-		reqHandler:       reqHandler,
-		utilHandler:      utilhandler.NewUtilHandler(),
-		trunkHandler:     trunkHandler,
-		extensionHandler: extensionHandler,
-		contactHandler:   contactHandler,
+		sockHandler:           sockHandler,
+		reqHandler:            reqHandler,
+		utilHandler:           utilhandler.NewUtilHandler(),
+		trunkHandler:          trunkHandler,
+		extensionHandler:      extensionHandler,
+		contactHandler:        contactHandler,
+		customerDomainHandler: customerDomainHandler,
 	}
 
 	return h
@@ -196,6 +203,13 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1ContactsGet.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		response, err = h.processV1ContactsPut(ctx, m)
 		requestType = "/v1/contacts"
+
+	///////////////////
+	// customer_domains
+	///////////////////
+	case regV1CustomerDomainsRealm.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1CustomerDomainsRealmGet(ctx, m)
+		requestType = "/v1/customer_domains/realm/<realm>"
 
 	/////////////
 	// extensions

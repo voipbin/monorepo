@@ -26,7 +26,7 @@ type ProjectConfig struct {
 	DomainPSTN            string // pstn.{base}
 	DomainSIP             string // sip.{base}
 	DomainTrunkSuffix     string // .trunk.{base}
-	DomainRegistrarSuffix string // .registrar.{base}
+	DomainRegistrarSuffix string // .reg.{base}
 
 	// Storage
 	ProjectBucketName string
@@ -54,7 +54,7 @@ func load() *ProjectConfig {
 		DomainPSTN:            "pstn." + baseDomain,
 		DomainSIP:             "sip." + baseDomain,
 		DomainTrunkSuffix:     ".trunk." + baseDomain,
-		DomainRegistrarSuffix: ".registrar." + baseDomain,
+		DomainRegistrarSuffix: ".reg." + baseDomain,
 
 		// Storage
 		ProjectBucketName: bucketName,

@@ -1,9 +1,9 @@
 package callhandler
 
 import (
-	"monorepo/bin-call-manager/pkg/testhelper"
 	"context"
 	"fmt"
+	"monorepo/bin-call-manager/pkg/testhelper"
 	"testing"
 	"time"
 
@@ -11,11 +11,11 @@ import (
 	bmbilling "monorepo/bin-billing-manager/models/billing"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	cucustomer "monorepo/bin-customer-manager/models/customer"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	cfconference "monorepo/bin-conference-manager/models/conference"
+	cucustomer "monorepo/bin-customer-manager/models/customer"
 
 	fmaction "monorepo/bin-flow-manager/models/action"
 	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
@@ -63,8 +63,36 @@ func Test_GetTypeContextIncomingCall(t *testing.T) {
 			domainTypeSIP,
 		},
 		{
+			"registrar with short suffix",
+			"ab12.reg.voipbin.net",
+			domainTypeRegistrar,
+		},
+		{
+			// regression pin: legacy suffix acceptance was removed on purpose
+			// (VOIP-1385 cutover, downtime accepted). A legacy uuid realm no
+			// longer classifies as registrar and gets rejected.
+			"legacy registrar suffix with uuid label is rejected",
+			"a7be89e0-8170-4f48-ac01-a81a31c6e344.registrar.voipbin.net",
+			domainTypeNone,
+		},
+		{
+			"trunk",
+			"test.trunk.voipbin.net",
+			domainTypeTrunk,
+		},
+		{
 			"None type",
 			"randome-invalid-domain.voipbin.net",
+			domainTypeNone,
+		},
+		{
+			"legacy registrar suffix with non-uuid label is rejected",
+			"whatever.registrar.voipbin.net",
+			domainTypeNone,
+		},
+		{
+			"bare base domain is none",
+			"voipbin.net",
 			domainTypeNone,
 		},
 	}
@@ -191,8 +219,8 @@ func Test_Start_incoming_typeConferenceStart(t *testing.T) {
 				ActiveflowID: uuid.FromStringOrNil("29c62b5e-a7b9-11ec-be7e-97f9236c5bb9"),
 				Type:         call.TypeFlow,
 
-				ChainedCallIDs:  []uuid.UUID{},
-				RecordingIDs:    []uuid.UUID{},
+				ChainedCallIDs:   []uuid.UUID{},
+				RecordingIDs:     []uuid.UUID{},
 				ExternalMediaIDs: []uuid.UUID{},
 
 				Source: commonaddress.Address{
@@ -211,7 +239,7 @@ func Test_Start_incoming_typeConferenceStart(t *testing.T) {
 				Direction:  call.DirectionIncoming,
 				Dialroutes: []rmroute.Route{},
 
-				TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMCreate:      testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 				TMUpdate:      nil,
 				TMProgressing: nil,
 				TMRinging:     nil,
@@ -387,8 +415,8 @@ func Test_StartCallHandle_IncomingTypeFlow(t *testing.T) {
 				ActiveflowID: uuid.FromStringOrNil("38d55728-a7b9-11ec-9409-b77946009116"),
 				Type:         call.TypeFlow,
 
-				ChainedCallIDs:  []uuid.UUID{},
-				RecordingIDs:    []uuid.UUID{},
+				ChainedCallIDs:   []uuid.UUID{},
+				RecordingIDs:     []uuid.UUID{},
 				ExternalMediaIDs: []uuid.UUID{},
 
 				Source: commonaddress.Address{
@@ -407,7 +435,7 @@ func Test_StartCallHandle_IncomingTypeFlow(t *testing.T) {
 				Direction:  call.DirectionIncoming,
 				Dialroutes: []rmroute.Route{},
 
-				TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMCreate:      testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 				TMUpdate:      nil,
 				TMProgressing: nil,
 				TMRinging:     nil,
@@ -581,8 +609,8 @@ func Test_StartCallHandle_IncomingTypeSIP(t *testing.T) {
 				ActiveflowID: uuid.FromStringOrNil("38d55728-a7b9-11ec-9409-b77946009116"),
 				Type:         call.TypeFlow,
 
-				ChainedCallIDs:  []uuid.UUID{},
-				RecordingIDs:    []uuid.UUID{},
+				ChainedCallIDs:   []uuid.UUID{},
+				RecordingIDs:     []uuid.UUID{},
 				ExternalMediaIDs: []uuid.UUID{},
 
 				Source: commonaddress.Address{
@@ -601,7 +629,7 @@ func Test_StartCallHandle_IncomingTypeSIP(t *testing.T) {
 				Direction:  call.DirectionIncoming,
 				Dialroutes: []rmroute.Route{},
 
-				TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+				TMCreate:      testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
 				TMUpdate:      nil,
 				TMProgressing: nil,
 				TMRinging:     nil,

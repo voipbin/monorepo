@@ -83,6 +83,24 @@ func (h *handler) AstContactDeleteFromCache(ctx context.Context, endpoint string
 	return h.cache.AstContactsDel(ctx, endpoint)
 }
 
+// AstContactDeleteByEndpoint deletes the ps_contacts rows of the given
+// endpoint and invalidates the contact cache. Used by the domain migration
+// batch to purge stale registrations recorded under a customer's old realm.
+func (h *handler) AstContactDeleteByEndpoint(ctx context.Context, endpoint string) error {
+	q := "delete from ps_contacts where endpoint = ?"
+
+	if _, err := h.db.ExecContext(ctx, q, endpoint); err != nil {
+		return fmt.Errorf("could not execute query. AstContactDeleteByEndpoint. err: %v", err)
+	}
+
+	// invalidate the contact cache
+	if err := h.cache.AstContactsDel(ctx, endpoint); err != nil {
+		return fmt.Errorf("could not delete the contact cache. AstContactDeleteByEndpoint. err: %v", err)
+	}
+
+	return nil
+}
+
 // AstContactGetsByEndpoint returns AstContact from the DB.
 func (h *handler) AstContactGetsByEndpoint(ctx context.Context, endpoint string) ([]*astcontact.AstContact, error) {
 	// get from cache

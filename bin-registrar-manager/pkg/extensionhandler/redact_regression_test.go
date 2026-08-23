@@ -19,8 +19,8 @@ import (
 	logrustest "github.com/sirupsen/logrus/hooks/test"
 	gomock "go.uber.org/mock/gomock"
 
-	"monorepo/bin-registrar-manager/models/common"
 	"monorepo/bin-registrar-manager/models/extension"
+	"monorepo/bin-registrar-manager/pkg/customerdomainhandler"
 	"monorepo/bin-registrar-manager/pkg/dbhandler"
 )
 
@@ -64,19 +64,16 @@ func Test_Create_neverLogsPlaintextPassword(t *testing.T) {
 	mockDBAst := dbhandler.NewMockDBHandler(mc)
 	mockDBBin := dbhandler.NewMockDBHandler(mc)
 	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockCustomerDomain := customerdomainhandler.NewMockCustomerDomainHandler(mc)
 	h := &extensionHandler{
-		utilHandler:   mockUtil,
-		reqHandler:    mockReq,
-		dbAst:         mockDBAst,
-		dbBin:         mockDBBin,
-		notifyHandler: mockNotify,
+		utilHandler:           mockUtil,
+		reqHandler:            mockReq,
+		dbAst:                 mockDBAst,
+		dbBin:                 mockDBBin,
+		notifyHandler:         mockNotify,
+		customerDomainHandler: mockCustomerDomain,
 	}
 	ctx := context.Background()
-
-	defer common.ResetBaseDomainNamesForTest()
-	if errSet := common.SetBaseDomainNames("registrar.voipbin.net", "trunk.voipbin.net"); errSet != nil {
-		t.Fatalf("Wrong match. expect: ok, got: %v", errSet)
-	}
 
 	responseDirect := &dmdirect.Direct{
 		Identity:     commonidentity.Identity{ID: directID, CustomerID: customerID},
@@ -95,6 +92,8 @@ func Test_Create_neverLogsPlaintextPassword(t *testing.T) {
 	}
 
 	mockReq.EXPECT().BillingV1AccountIsValidResourceLimitByCustomerID(ctx, customerID, bmaccount.ResourceTypeExtension).Return(true, nil)
+	mockCustomerDomain.EXPECT().RealmGet(ctx, customerID).Return(responseExtension.Realm, nil)
+	mockCustomerDomain.EXPECT().EndpointGet(ctx, customerID, "ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4").Return("ce4f2a40-6ec1-11eb-a84c-2bb788ac26e4@"+responseExtension.Realm, nil)
 	mockDBAst.EXPECT().AstAORCreate(ctx, gomock.Any()).Return(nil)
 	mockDBAst.EXPECT().AstAuthCreate(ctx, gomock.Any()).Return(nil)
 	mockDBAst.EXPECT().AstEndpointCreate(ctx, gomock.Any()).Return(nil)

@@ -15,6 +15,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 
 	"monorepo/bin-registrar-manager/models/extension"
+	"monorepo/bin-registrar-manager/pkg/customerdomainhandler"
 	"monorepo/bin-registrar-manager/pkg/dbhandler"
 )
 
@@ -41,11 +42,12 @@ type ExtensionHandler interface {
 
 // extensionHandler structure for service handle
 type extensionHandler struct {
-	utilHandler   utilhandler.UtilHandler
-	reqHandler    requesthandler.RequestHandler
-	dbAst         dbhandler.DBHandler
-	dbBin         dbhandler.DBHandler
-	notifyHandler notifyhandler.NotifyHandler
+	utilHandler           utilhandler.UtilHandler
+	reqHandler            requesthandler.RequestHandler
+	dbAst                 dbhandler.DBHandler
+	dbBin                 dbhandler.DBHandler
+	notifyHandler         notifyhandler.NotifyHandler
+	customerDomainHandler customerdomainhandler.CustomerDomainHandler
 }
 
 var (
@@ -76,14 +78,15 @@ func init() {
 }
 
 // NewExtensionHandler returns new service handler
-func NewExtensionHandler(r requesthandler.RequestHandler, dbAst dbhandler.DBHandler, dbBin dbhandler.DBHandler, notifyHandler notifyhandler.NotifyHandler) ExtensionHandler {
+func NewExtensionHandler(r requesthandler.RequestHandler, dbAst dbhandler.DBHandler, dbBin dbhandler.DBHandler, notifyHandler notifyhandler.NotifyHandler, customerDomainHandler customerdomainhandler.CustomerDomainHandler) ExtensionHandler {
 
 	h := &extensionHandler{
-		utilHandler:   utilhandler.NewUtilHandler(),
-		reqHandler:    r,
-		dbAst:         dbAst,
-		dbBin:         dbBin,
-		notifyHandler: notifyHandler,
+		utilHandler:           utilhandler.NewUtilHandler(),
+		reqHandler:            r,
+		dbAst:                 dbAst,
+		dbBin:                 dbBin,
+		notifyHandler:         notifyHandler,
+		customerDomainHandler: customerDomainHandler,
 	}
 
 	return h

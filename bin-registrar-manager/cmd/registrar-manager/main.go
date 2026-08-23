@@ -24,6 +24,7 @@ import (
 	"monorepo/bin-registrar-manager/internal/config"
 	"monorepo/bin-registrar-manager/pkg/cachehandler"
 	"monorepo/bin-registrar-manager/pkg/contacthandler"
+	"monorepo/bin-registrar-manager/pkg/customerdomainhandler"
 	"monorepo/bin-registrar-manager/pkg/dbhandler"
 	"monorepo/bin-registrar-manager/pkg/extensionhandler"
 	"monorepo/bin-registrar-manager/pkg/listenhandler"
@@ -145,18 +146,19 @@ func run(sqlAst *sql.DB, sqlBin *sql.DB, cache cachehandler.CacheHandler) error 
 	// create handlers
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameRegistrarEvent, serviceName)
-	extensionHandler := extensionhandler.NewExtensionHandler(reqHandler, dbAst, dbBin, notifyHandler)
+	customerDomainHandler := customerdomainhandler.NewCustomerDomainHandler(dbBin, config.Get().DomainShortLabelEnabled)
+	extensionHandler := extensionhandler.NewExtensionHandler(reqHandler, dbAst, dbBin, notifyHandler, customerDomainHandler)
 	trunkHandler := trunkhandler.NewTrunkHandler(reqHandler, dbBin, notifyHandler)
-	contactHandler := contacthandler.NewContactHandler(reqHandler, dbAst, dbBin)
+	contactHandler := contacthandler.NewContactHandler(reqHandler, dbAst, dbBin, customerDomainHandler)
 
 	// run listen
-	if errListen := runListen(sockHandler, reqHandler, trunkHandler, extensionHandler, contactHandler); errListen != nil {
+	if errListen := runListen(sockHandler, reqHandler, trunkHandler, extensionHandler, contactHandler, customerDomainHandler); errListen != nil {
 		log.Errorf("Could not run the listener. err: %v", errListen)
 		return errListen
 	}
 
 	// run subscriber
-	if errSubscribe := runSubscribe(sockHandler, extensionHandler, trunkHandler); errSubscribe != nil {
+	if errSubscribe := runSubscribe(sockHandler, extensionHandler, trunkHandler, customerDomainHandler); errSubscribe != nil {
 		log.Errorf("Could not run the subscriber. err: %v", errSubscribe)
 		return errSubscribe
 	}
@@ -165,12 +167,12 @@ func run(sqlAst *sql.DB, sqlBin *sql.DB, cache cachehandler.CacheHandler) error 
 }
 
 // runListen runs the listen service
-func runListen(sockHandler sockhandler.SockHandler, reqHandler requesthandler.RequestHandler, trunkHandler trunkhandler.TrunkHandler, extensionHandler extensionhandler.ExtensionHandler, contactHandler contacthandler.ContactHandler) error {
+func runListen(sockHandler sockhandler.SockHandler, reqHandler requesthandler.RequestHandler, trunkHandler trunkhandler.TrunkHandler, extensionHandler extensionhandler.ExtensionHandler, contactHandler contacthandler.ContactHandler, customerDomainHandler customerdomainhandler.CustomerDomainHandler) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "runListen",
 	})
 
-	listenHandler := listenhandler.NewListenHandler(sockHandler, reqHandler, trunkHandler, extensionHandler, contactHandler)
+	listenHandler := listenhandler.NewListenHandler(sockHandler, reqHandler, trunkHandler, extensionHandler, contactHandler, customerDomainHandler)
 
 	// run
 	if err := listenHandler.Run(string(commonoutline.QueueNameRegistrarRequest), string(commonoutline.QueueNameDelay)); err != nil {
@@ -181,7 +183,7 @@ func runListen(sockHandler sockhandler.SockHandler, reqHandler requesthandler.Re
 }
 
 // runSubscribe runs the subscribed event handler
-func runSubscribe(sockHandler sockhandler.SockHandler, extensionHandler extensionhandler.ExtensionHandler, trunkHandler trunkhandler.TrunkHandler) error {
+func runSubscribe(sockHandler sockhandler.SockHandler, extensionHandler extensionhandler.ExtensionHandler, trunkHandler trunkhandler.TrunkHandler, customerDomainHandler customerdomainhandler.CustomerDomainHandler) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "runSubscribe",
 	})
@@ -191,7 +193,7 @@ func runSubscribe(sockHandler sockhandler.SockHandler, extensionHandler extensio
 	}
 	log.WithField("subscribe_targets", subscribeTargets).Debugf("Subscribe target details. len: %d", len(subscribeTargets))
 
-	subHandler := subscribehandler.NewSubscribeHandler(sockHandler, string(commonoutline.QueueNameRegistrarSubscribe), subscribeTargets, extensionHandler, trunkHandler)
+	subHandler := subscribehandler.NewSubscribeHandler(sockHandler, string(commonoutline.QueueNameRegistrarSubscribe), subscribeTargets, extensionHandler, trunkHandler, customerDomainHandler)
 
 	// run
 	if err := subHandler.Run(); err != nil {

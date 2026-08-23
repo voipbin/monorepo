@@ -58,6 +58,22 @@ Statuses: `progressing`, `hangingup`, `hangup`.
 
 Per-customer configuration for outbound dialing: source number override, permitted codec list, and SIP-provider constraints. Looked up at call creation time.
 
+### SIP Domains (incoming call classification)
+
+Incoming calls all hit the same Asterisk context; the requested SIP domain (Kamailio's `VB-Domain`, delivered via Stasis data) determines the incoming call type. Domain values derive from `PROJECT_BASE_DOMAIN` (`pkg/projectconfig`, exposed through `models/common`):
+
+| Domain pattern | Incoming call type |
+|----------------|--------------------|
+| `conference.{base}` (exact) | conference |
+| `pstn.{base}` (exact) | pstn |
+| `sip.{base}` (exact) | sip |
+| `*.trunk.{base}` (suffix) | trunk |
+| `*.reg.{base}` (suffix) | registrar |
+
+The old `*.registrar.{base}` suffix is NOT accepted: the VOIP-1385 cutover removed legacy acceptance deliberately (downtime during the cutover window was accepted), so such domains classify as none and are rejected.
+
+`common.ParseSIPURI` is a pure `<extension>@<domain>` textual split; it carries no uuid parsing and no suffix knowledge. Callers resolve the domain (realm) to a customer via registrar-manager.
+
 ## Key Business Rules
 
 1. **Call status transitions are one-directional**: calls progress through `dialing → ringing → progressing → terminating/canceling → hangup`. The `IsUpdatableStatus` function enforces valid transitions; backwards or lateral jumps are rejected.
@@ -79,6 +95,8 @@ Per-customer configuration for outbound dialing: source number override, permitt
 9. **Outbound calls use dial routes with failover**: outgoing calls carry a `dialroutes` list ordered by preference. The `dialroute_id` field tracks which route is currently active. If a route fails, the next route is tried until the list is exhausted.
 
 10. **Recovery from Homer**: the `/v1/recovery` endpoint reconstructs call state by replaying SIP messages from the Homer SIP capture system. This is a last-resort operation for recovering orphaned calls when Asterisk state is lost (e.g., after an Asterisk crash).
+
+11. **Registrar/trunk customer resolution is lookup-based and fail-closed**: an incoming registrar-domain call resolves its customer via registrar-manager (`RegistrarV1CustomerDomainGetByRealm` with the full realm); trunk-domain calls resolve via `RegistrarV1TrunkGetByDomainName`. No customer uuid is ever parsed out of the domain string. An unknown realm or a lookup failure rejects the call (hangup with no-route-destination). The `ContactStatusChange` ARI handler resolves the customer through the same realm lookup; an unknown realm there logs a warning and skips the contact refresh instead of failing the event loop.
 
 ## State Machines
 

@@ -20,14 +20,23 @@ func (h *eventHandler) EventHandlerContactStatusChange(ctx context.Context, evt 
 	})
 	log.Debugf("Received ContactStatusChange event: %v", e)
 
-	customerID, ext, err := common.ParseSIPURI(e.Endpoint.Resource)
+	ext, domain, err := common.ParseSIPURI(e.Endpoint.Resource)
 	if err != nil {
 		return fmt.Errorf("could not parse the endpoint")
 	}
 
+	// resolve the customer from the realm(domain)
+	cd, err := h.reqHandler.RegistrarV1CustomerDomainGetByRealm(ctx, domain)
+	if err != nil {
+		// unknown realm. skip the contact refresh explicitly without failing
+		// the event loop.
+		log.Warnf("Could not get customer domain info. Skipping the contact refresh. domain: %s, err: %v", domain, err)
+		return nil
+	}
+
 	// send refresh
 	filters := map[string]any{
-		"customer_id": customerID,
+		"customer_id": cd.CustomerID,
 		"extension":   ext,
 	}
 	if err := h.reqHandler.RegistrarV1ContactRefresh(ctx, filters); err != nil {

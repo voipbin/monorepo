@@ -16,6 +16,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-registrar-manager/pkg/customerdomainhandler"
 	"monorepo/bin-registrar-manager/pkg/extensionhandler"
 	"monorepo/bin-registrar-manager/pkg/trunkhandler"
 )
@@ -31,8 +32,9 @@ type subscribeHandler struct {
 	subscribeQueue    string
 	subscribesTargets []string
 
-	extensionHandler extensionhandler.ExtensionHandler
-	trunkHandler     trunkhandler.TrunkHandler
+	extensionHandler      extensionhandler.ExtensionHandler
+	trunkHandler          trunkhandler.TrunkHandler
+	customerDomainHandler customerdomainhandler.CustomerDomainHandler
 }
 
 var (
@@ -64,13 +66,15 @@ func NewSubscribeHandler(
 	subscribeTargets []string,
 	extensionHandler extensionhandler.ExtensionHandler,
 	trunkHandler trunkhandler.TrunkHandler,
+	customerDomainHandler customerdomainhandler.CustomerDomainHandler,
 ) SubscribeHandler {
 	h := &subscribeHandler{
-		sockHandler:       sockHandler,
-		subscribeQueue:    subscribeQueue,
-		subscribesTargets: subscribeTargets,
-		extensionHandler:  extensionHandler,
-		trunkHandler:      trunkHandler,
+		sockHandler:           sockHandler,
+		subscribeQueue:        subscribeQueue,
+		subscribesTargets:     subscribeTargets,
+		extensionHandler:      extensionHandler,
+		trunkHandler:          trunkHandler,
+		customerDomainHandler: customerDomainHandler,
 	}
 
 	return h
@@ -125,6 +129,9 @@ func (h *subscribeHandler) processEvent(m *sock.Event) {
 
 	//// customer-manager
 	// customer
+	case m.Publisher == string(commonoutline.ServiceNameCustomerManager) && (m.Type == string(cucustomer.EventTypeCustomerCreated)):
+		err = h.processEventCMCustomerCreated(ctx, m)
+
 	case m.Publisher == string(commonoutline.ServiceNameCustomerManager) && (m.Type == string(cucustomer.EventTypeCustomerDeleted)):
 		err = h.processEventCMCustomerDeleted(ctx, m)
 

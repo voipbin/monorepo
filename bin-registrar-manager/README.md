@@ -45,6 +45,36 @@ $ ./registrar-manager \
     -redis_db 1
 ```
 
+# Customer SIP domains (VOIP-1385)
+
+Each customer gets one SIP domain, stored in `registrar_customer_domains`
+(customer_id, domain_label, realm). Label generation is gated by
+`DOMAIN_SHORT_LABEL_ENABLED` (env, default `false`):
+
+- `false` (pre-cutover default): new customers get the legacy label, the
+  customer uuid, e.g. `<uuid>.registrar.voipbin.net`
+- `true` (flipped at cutover deploy): new customers get a random 4-char
+  base36 label, e.g. `ab12.reg.voipbin.net`
+
+The base suffix comes from `DOMAIN_NAME_EXTENSION`. The extension API's
+`domain_name` always serves the full realm. Realm-to-customer lookup:
+`GET /v1/customer_domains/realm/{realm}` (used by bin-call-manager).
+
+## registrar-control domain migration commands
+
+```
+registrar-control domain-backfill [--execute]
+registrar-control domain-migrate [--dry-run|--execute] [--customer-id <uuid>] --log <path>
+registrar-control domain-migrate-rollback --log <path> [--execute]
+```
+
+`domain-backfill` seeds one row per existing customer with its current uuid
+realm. `domain-migrate` re-provisions every extension to a short label under
+the configured base, preserving extension id/password/direct hash, and writes
+a JSON-lines rollback journal BEFORE mutating (log-before-execute).
+`domain-migrate-rollback` replays the journal in reverse. Production runs are
+executed by the operator, not CI.
+
 # RabbitMQ queues
 ## Request Listen Queue
 bin-manager.registrar-manager.request

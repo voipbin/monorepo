@@ -15,6 +15,7 @@ import (
 	astauth "monorepo/bin-registrar-manager/models/astauth"
 	astcontact "monorepo/bin-registrar-manager/models/astcontact"
 	astendpoint "monorepo/bin-registrar-manager/models/astendpoint"
+	customerdomain "monorepo/bin-registrar-manager/models/customerdomain"
 	extension "monorepo/bin-registrar-manager/models/extension"
 	trunk "monorepo/bin-registrar-manager/models/trunk"
 	reflect "reflect"
@@ -231,6 +232,49 @@ func (m *MockCacheHandler) Connect() error {
 func (mr *MockCacheHandlerMockRecorder) Connect() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Connect", reflect.TypeOf((*MockCacheHandler)(nil).Connect))
+}
+
+// CustomerDomainDelByRealm mocks base method.
+func (m *MockCacheHandler) CustomerDomainDelByRealm(ctx context.Context, realm string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CustomerDomainDelByRealm", ctx, realm)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CustomerDomainDelByRealm indicates an expected call of CustomerDomainDelByRealm.
+func (mr *MockCacheHandlerMockRecorder) CustomerDomainDelByRealm(ctx, realm any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerDomainDelByRealm", reflect.TypeOf((*MockCacheHandler)(nil).CustomerDomainDelByRealm), ctx, realm)
+}
+
+// CustomerDomainGetByRealm mocks base method.
+func (m *MockCacheHandler) CustomerDomainGetByRealm(ctx context.Context, realm string) (*customerdomain.CustomerDomain, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CustomerDomainGetByRealm", ctx, realm)
+	ret0, _ := ret[0].(*customerdomain.CustomerDomain)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CustomerDomainGetByRealm indicates an expected call of CustomerDomainGetByRealm.
+func (mr *MockCacheHandlerMockRecorder) CustomerDomainGetByRealm(ctx, realm any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerDomainGetByRealm", reflect.TypeOf((*MockCacheHandler)(nil).CustomerDomainGetByRealm), ctx, realm)
+}
+
+// CustomerDomainSet mocks base method.
+func (m *MockCacheHandler) CustomerDomainSet(ctx context.Context, cd *customerdomain.CustomerDomain) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CustomerDomainSet", ctx, cd)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CustomerDomainSet indicates an expected call of CustomerDomainSet.
+func (mr *MockCacheHandlerMockRecorder) CustomerDomainSet(ctx, cd any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerDomainSet", reflect.TypeOf((*MockCacheHandler)(nil).CustomerDomainSet), ctx, cd)
 }
 
 // ExtensionGet mocks base method.

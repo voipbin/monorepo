@@ -13,14 +13,15 @@ This service is unique in using **two separate databases**: the Asterisk DB (`ps
 | Package | Role |
 |---------|------|
 | `cmd/registrar-manager` | Daemon entry point; establishes both DB connections |
-| `cmd/registrar-control` | CLI tool for direct management (bypasses RabbitMQ) |
+| `cmd/registrar-control` | CLI tool for direct management (bypasses RabbitMQ); hosts the VOIP-1385 domain migration batch (`domain-backfill`, `domain-migrate`, `domain-migrate-rollback`) |
 | `pkg/listenhandler` | RabbitMQ RPC request handler with regex URI routing |
-| `pkg/subscribehandler` | Event subscriber for cascading customer deletes |
+| `pkg/subscribehandler` | Event subscriber: customer domain provisioning on create, cascading cleanup on delete |
 | `pkg/extensionhandler` | Business logic for SIP extension lifecycle |
 | `pkg/trunkhandler` | Business logic for SIP trunk lifecycle |
+| `pkg/customerdomainhandler` | Customer SIP domain (label/realm) lifecycle: get-or-create with 4-char base36 label generation, realm lookup, endpoint composition |
 | `pkg/contacthandler` | Reads active SIP contacts from Asterisk DB; Redis-cached |
 | `pkg/dbhandler` | Unified DB abstraction over both MySQL databases |
-| `pkg/cachehandler` | Redis-backed contact cache |
+| `pkg/cachehandler` | Redis-backed contact cache + realm -> customer-domain cache |
 
 ## Layer Responsibilities
 
@@ -39,17 +40,25 @@ RabbitMQ
    │       │       └── dbhandler ← bin-manager DB (trunks table)
    │       │                       + Asterisk DB (ps_endpoints, ps_aors, ps_auths)
    │       │
-   │       └── contacthandler    ← Active SIP registrations (read-only)
+   │       ├── contacthandler    ← Active SIP registrations (read-only)
+   │       │       │
+   │       │       └── dbhandler + cachehandler ← Asterisk ps_contacts + Redis
+   │       │
+   │       └── customerdomainhandler ← customer SIP domain (label/realm)
    │               │
-   │               └── dbhandler + cachehandler ← Asterisk ps_contacts + Redis
+   │               └── dbhandler ← bin-manager DB (registrar_customer_domains)
+   │                               + Redis (realm -> row cache)
    │
-   └── subscribehandler    ← customer_deleted → cleanup extensions + trunks
+   └── subscribehandler    ← customer_created → ensure customer domain row
+                             customer_deleted → cleanup extensions + trunks
+                                                + customer domain row
 ```
 
 - **listenhandler**: URI regex routing; no business logic.
 - **extensionhandler**: Creates/deletes extension records in bin-manager DB AND corresponding `ps_endpoints`/`ps_aors`/`ps_auths` entries in Asterisk DB atomically.
 - **trunkhandler**: Same pattern for trunks; supports basic (user/pass) and IP-based authentication modes.
-- **contacthandler**: Read-only view of active registrations from Asterisk `ps_contacts` table; Redis-cached.
+- **contacthandler**: Read-only view of active registrations from Asterisk `ps_contacts` table; Redis-cached. Endpoint strings are reconstructed via `customerdomainhandler.EndpointGet` (lookup-only — read paths never create a domain row).
+- **customerdomainhandler**: Owns the `registrar_customer_domains` mapping (one row per customer: `domain_label` + full `realm`). Rows are created on the `customer_created` event, lazily on the first extension create (`EnsureByCustomerID`), and hard-deleted on `customer_deleted`. New-row shape is gated by `domain_short_label_enabled` (default `false`): legacy `<uuid>.<base>` rows during the VOIP-1385 deploy window, 4-char base36 short labels after the frontend cutover; the `domain-migrate` batch generates short labels regardless of the flag. The realm lookup backs the `/v1/customer_domains/realm/{realm}` RPC used by bin-call-manager's incoming-call resolution and is Redis-cached (realm -> row).
 - **dbhandler**: Abstracts both DB connections; uses `Masterminds/squirrel` for query building.
 
 ## Request Routing
@@ -59,6 +68,7 @@ Requests arrive via RabbitMQ queue `bin-manager.registrar-manager.request`. The 
 | Pattern | Methods | Description |
 |---------|---------|-------------|
 | `/v1/contacts(\?.*)?$` | GET | List active SIP contacts (from Asterisk ps_contacts) |
+| `/v1/customer_domains/realm/{realm}$` | GET | Get customer domain (customer mapping) by SIP realm |
 | `/v1/extensions/count_by_customer$` | GET | Count extensions per customer |
 | `/v1/extensions$` | POST | Create SIP extension |
 | `/v1/extensions\?` | GET | List extensions with filters |

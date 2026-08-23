@@ -54,7 +54,10 @@ Extensions provide address endpoints for SIP device registration.
 
     Registration Address Format:
     +-----------------------------------------------------------------------+
-    | {extension}@{customer-id}.registrar.voipbin.net                       |
+    | {extension}@{domain_name}                                             |
+    |                                                                       |
+    | domain_name is returned by the extension API,                         |
+    | e.g. ab12.reg.voipbin.net                                             |
     +-----------------------------------------------------------------------+
 
 **Key Components**
@@ -148,13 +151,13 @@ VoIPBIN uses digest authentication for secure registration.
 
     Client Response:
     +-----------------------------------------------------------------------+
-    | REGISTER sip:registrar.voipbin.net                                    |
+    | REGISTER sip:ab12.reg.voipbin.net                                     |
     +-----------------------------------------------------------------------+
     | Authorization: Digest                                                 |
     |   username="extension-name",                                         |
     |   realm="voipbin.net",                                               |
     |   nonce="unique-random-string",                                       |
-    |   uri="sip:registrar.voipbin.net",                                   |
+    |   uri="sip:ab12.reg.voipbin.net",                                    |
     |   response="calculated-hash"                                          |
     +-----------------------------------------------------------------------+
 
@@ -165,7 +168,7 @@ The nonce value prevents replay attacks by ensuring each authentication attempt 
 
 .. note:: **AI Implementation Hint**
 
-   The SIP registration domain follows the pattern ``{customer-id}.registrar.voipbin.net``. The ``customer_id`` is part of your account, not the extension ID. When configuring SIP devices, use the ``username`` and ``password`` from the extension, and the domain derived from your ``customer_id``.
+   The SIP registration domain is customer-specific and follows the pattern ``{label}.reg.voipbin.net``, where ``{label}`` is a short identifier (4 characters) assigned to your account. Do not construct the domain yourself. Always use the ``domain_name`` field returned by the extension API verbatim. When configuring SIP devices, use the ``username`` and ``password`` from the extension, and the ``domain_name`` from the API response. The legacy format ``{customer-id}.registrar.voipbin.net`` is still accepted for SIP registration and authentication during the migration window, but inbound calls are only routed to the current domain returned in ``domain_name``; calls to legacy-format domains are rejected. The extension API always returns the current domain for your account.
 
 Extension Configuration
 -----------------------
@@ -194,7 +197,7 @@ Create and manage extensions for your SIP endpoints.
         "name": "office-phone-1",
         "detail": "Main office IP phone",
         "extension": "office1",
-        "domain_name": "customer-uuid-456.registrar.voipbin.net",
+        "domain_name": "ab12.reg.voipbin.net",
         "username": "office1",
         "password": "secure-password-123",
         "direct_hash": "a8f3b2c1d4e5",
@@ -232,12 +235,12 @@ Inbound calls reach registered devices via the extension address.
 
     Full SIP URI:
     +-----------------------------------------------------------------------+
-    | sip:{extension}@{customer-id}.registrar.voipbin.net                   |
+    | sip:{extension}@{domain_name}                                         |
     +-----------------------------------------------------------------------+
 
     Example:
     +-----------------------------------------------------------------------+
-    | sip:office1@abc123-def456.registrar.voipbin.net                       |
+    | sip:office1@ab12.reg.voipbin.net                                      |
     +-----------------------------------------------------------------------+
 
 **Inbound Call Flow**
@@ -277,7 +280,8 @@ Direct extensions provide a public SIP URI that allows external callers to reach
 
     Standard extension address (requires customer domain knowledge):
     +-----------------------------------------------------------------------+
-    | sip:{extension}@{customer-id}.registrar.voipbin.net                   |
+    | sip:{extension}@{domain_name}                                         |
+    | e.g. sip:office1@ab12.reg.voipbin.net                                 |
     +-----------------------------------------------------------------------+
 
     Direct extension address (public, simplified):
@@ -342,10 +346,11 @@ Configure a hardware IP phone to register with VoIPBIN.
 
     IP Phone Configuration:
     +--------------------------------------------+
-    | SIP Server: registrar.voipbin.net          |
+    | SIP Server: ab12.reg.voipbin.net           |
     | Username: office-phone-1                   |
     | Password: ********                         |
-    | Domain: {customer-id}.registrar.voipbin.net|
+    | Domain: ab12.reg.voipbin.net               |
+    | (use the extension's domain_name)          |
     +--------------------------------------------+
 
     Registration Result:
@@ -356,7 +361,7 @@ Configure a hardware IP phone to register with VoIPBIN.
     +--------------------------------------------+
 
     The phone can now receive inbound calls
-    at: sip:office-phone-1@{customer-id}.registrar.voipbin.net
+    at: sip:office-phone-1@ab12.reg.voipbin.net
 
 **Scenario 2: Softphone on Mobile**
 
@@ -369,10 +374,11 @@ Register a mobile softphone for remote workers.
     | App: Any SIP-compatible softphone          |
     | Account Name: Work Mobile                  |
     |                                            |
-    | Server: registrar.voipbin.net              |
+    | Server: ab12.reg.voipbin.net               |
     | User: mobile-user-john                     |
     | Password: ********                         |
-    | Domain: {customer-id}.registrar.voipbin.net|
+    | Domain: ab12.reg.voipbin.net               |
+    | (use the extension's domain_name)          |
     +--------------------------------------------+
 
     Use Case:
@@ -395,10 +401,11 @@ Connect an on-premise PBX to VoIPBIN for inbound calls.
     |                                            |
     | SIP Trunk to VoIPBIN:                      |
     | - Register: Yes                            |
-    | - Host: registrar.voipbin.net              |
+    | - Host: ab12.reg.voipbin.net               |
     | - Username: pbx-main                       |
     | - Password: ********                       |
-    | - From Domain: {customer-id}.registrar...  |
+    | - From Domain: ab12.reg.voipbin.net        |
+    |   (use the extension's domain_name)        |
     +--------------------------------------------+
 
     Inbound Call Flow:
@@ -426,6 +433,8 @@ Best Practices
 - Handle re-registration before expiry
 - Implement registration failure handling
 - Use keep-alive mechanisms for NAT traversal
+
+**Transport note:** SIP over UDP is the default. If a SIP message grows too large for a single UDP datagram (e.g. many headers or a large SDP body), switch the device transport to TCP or TLS. Both are fully supported and remain the recommended fallback for oversized SIP messages.
 
 **3. Extension Naming**
 
@@ -480,8 +489,9 @@ Troubleshooting
 +---------------------------+------------------------------------------------+
 | Symptom                   | Solution                                       |
 +===========================+================================================+
-| Extension not found       | Verify extension ID; check customer ID in      |
-|                           | domain; ensure extension exists                |
+| Extension not found       | Verify extension ID; check the domain matches  |
+|                           | the extension's domain_name; ensure extension  |
+|                           | exists                                         |
 +---------------------------+------------------------------------------------+
 | Duplicate registration    | Only one device per extension; use unique      |
 | error                     | extensions for each device                     |

@@ -114,6 +114,12 @@ Requests arrive via RabbitMQ queue `bin-manager.call-manager.request`. The `list
 | `/v1/recordings/{{UUID}}$` | GET/DELETE | Get or delete a recording |
 | `/v1/recordings/{{UUID}}/stop$` | POST | Stop an active recording |
 
+## Incoming Call Domain Classification
+
+Incoming calls arrive in a single Asterisk context; `getDomainTypeIncomingCall` (`pkg/callhandler/start.go`) classifies them by the requested SIP domain: exact matches for `conference.{base}` / `pstn.{base}` / `sip.{base}`, suffix matches for `.trunk.{base}` (trunk) and `.reg.{base}` (registrar). The old `.registrar.{base}` suffix is NOT accepted: the VOIP-1385 cutover removed legacy acceptance deliberately (downtime during the cutover window was accepted), so a `.registrar.{base}` domain classifies as none and the call is rejected.
+
+Customer resolution for registrar calls is a registrar-manager lookup (`RegistrarV1CustomerDomainGetByRealm` with the full realm) mirroring the trunk path (`RegistrarV1TrunkGetByDomainName`). Unknown realm or lookup error hangs the call up fail-closed (no-route-destination). The same realm lookup resolves the customer in `pkg/arieventhandler`'s `ContactStatusChange` handler; there an unknown realm logs a warning and skips the contact refresh without erroring the event loop.
+
 ## Event Subscriptions
 
 `pkg/subscribehandler` declares the durable queue `bin-manager.call-manager.subscribe` and binds it to each exchange in the `subscribeTargets` list built in `cmd/call-manager/main.go`:

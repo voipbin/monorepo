@@ -16,7 +16,6 @@ import (
 	"monorepo/bin-registrar-manager/models/astaor"
 	"monorepo/bin-registrar-manager/models/astauth"
 	"monorepo/bin-registrar-manager/models/astendpoint"
-	"monorepo/bin-registrar-manager/models/common"
 	"monorepo/bin-registrar-manager/models/extension"
 	"monorepo/bin-registrar-manager/models/sipauth"
 	"monorepo/bin-registrar-manager/pkg/dbhandler"
@@ -51,11 +50,20 @@ func (h *extensionHandler) Create(
 		return nil, fmt.Errorf("resource limit exceeded")
 	}
 
-	// create realm
-	realm := common.GenerateRealmExtension(customerID)
+	// get realm (lazy-creates the customer domain row when the
+	// customer_created event was missed)
+	realm, err := h.customerDomainHandler.RealmGet(ctx, customerID)
+	if err != nil {
+		log.Errorf("Could not get realm. err: %v", err)
+		return nil, fmt.Errorf("could not get realm: %w", err)
+	}
 
-	// create aor id
-	aorID := common.GenerateEndpointExtension(customerID, ext)
+	// create aor id (<extension>@<realm>; the domain row exists after RealmGet)
+	aorID, err := h.customerDomainHandler.EndpointGet(ctx, customerID, ext)
+	if err != nil {
+		log.Errorf("Could not get endpoint. err: %v", err)
+		return nil, fmt.Errorf("could not get endpoint: %w", err)
+	}
 
 	// create aor
 	maxContacts := defaultMaxContacts
@@ -121,7 +129,7 @@ func (h *extensionHandler) Create(
 		AuthID:     *auth.ID,
 
 		Extension:  ext,
-		DomainName: customerID.String(),
+		DomainName: realm, // full realm (VOIP-1385); legacy rows hold a bare uuid until the migration batch
 
 		Realm:    realm,
 		Username: ext,
@@ -253,9 +261,9 @@ func (h *extensionHandler) Update(ctx context.Context, id uuid.UUID, fields map[
 	sip := res.GenerateSIPAuth()
 	sipFields := map[sipauth.Field]any{
 		sipauth.FieldAuthTypes:  sip.AuthTypes,
-		sipauth.FieldRealm:     sip.Realm,
+		sipauth.FieldRealm:      sip.Realm,
 		sipauth.FieldUsername:   sip.Username,
-		sipauth.FieldPassword:  sip.Password,
+		sipauth.FieldPassword:   sip.Password,
 		sipauth.FieldAllowedIPs: sip.AllowedIPs,
 	}
 	if err := h.dbBin.SIPAuthUpdate(ctx, sip.ID, sipFields); err != nil {

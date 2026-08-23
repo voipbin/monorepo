@@ -9,47 +9,50 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func Test_GenerateEndpointExtension(t *testing.T) {
+func Test_BaseDomainNameExtension(t *testing.T) {
 
-	type test struct {
+	tests := []struct {
 		name string
 
-		customerID uuid.UUID
-		extension  string
+		extBase   string
+		trunkBase string
 
 		expectRes string
-	}
-
-	tests := []test{
+	}{
 		{
 			name: "normal",
 
-			customerID: uuid.FromStringOrNil("685c675e-5706-11ee-87d5-9bb214c12c41"),
-			extension:  "testexten",
-			expectRes:  "testexten@685c675e-5706-11ee-87d5-9bb214c12c41.registrar.voipbin.net",
+			extBase:   "registrar.voipbin.net",
+			trunkBase: "trunk.voipbin.net",
+
+			expectRes: "registrar.voipbin.net",
+		},
+		{
+			name: "new short base",
+
+			extBase:   "reg.voipbin.net",
+			trunkBase: "trunk.voipbin.net",
+
+			expectRes: "reg.voipbin.net",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			if errSet := SetBaseDomainNames("registrar.voipbin.net", "trunk.voipbin.net"); errSet != nil {
+			if errSet := SetBaseDomainNames(tt.extBase, tt.trunkBase); errSet != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errSet)
 			}
 			defer ResetBaseDomainNamesForTest()
 
-			res := GenerateEndpointExtension(tt.customerID, tt.extension)
+			res := BaseDomainNameExtension()
 			if reflect.DeepEqual(tt.expectRes, res) == false {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
-
 	}
 }
 
-func Test_GenerateRealmExtension(t *testing.T) {
+func Test_GenerateRealmExtensionLegacy(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -76,12 +79,21 @@ func Test_GenerateRealmExtension(t *testing.T) {
 			}
 			defer ResetBaseDomainNamesForTest()
 
-			res := GenerateRealmExtension(tt.customerID)
+			res := GenerateRealmExtensionLegacy(tt.customerID)
 			if reflect.DeepEqual(tt.expectRes, res) == false {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 
+	}
+}
+
+func Test_GenerateRealmExtensionLegacy_uninitialized(t *testing.T) {
+	ResetBaseDomainNamesForTest()
+
+	res := GenerateRealmExtensionLegacy(uuid.FromStringOrNil("bc22cc08-570a-11ee-acf3-537a646d5f2f"))
+	if res != "" {
+		t.Errorf("Wrong match. expect: empty, got: %v", res)
 	}
 }
 

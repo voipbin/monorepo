@@ -131,17 +131,17 @@ func (mr *MockChannelHandlerMockRecorder) Answer(ctx, id any) *gomock.Call {
 }
 
 // Continue mocks base method.
-func (m *MockChannelHandler) Continue(ctx context.Context, id, context, exten string, priority int, label string) error {
+func (m *MockChannelHandler) Continue(ctx context.Context, id, arg2, exten string, priority int, label string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Continue", ctx, id, context, exten, priority, label)
+	ret := m.ctrl.Call(m, "Continue", ctx, id, arg2, exten, priority, label)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Continue indicates an expected call of Continue.
-func (mr *MockChannelHandlerMockRecorder) Continue(ctx, id, context, exten, priority, label any) *gomock.Call {
+func (mr *MockChannelHandlerMockRecorder) Continue(ctx, id, arg2, exten, priority, label any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Continue", reflect.TypeOf((*MockChannelHandler)(nil).Continue), ctx, id, context, exten, priority, label)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Continue", reflect.TypeOf((*MockChannelHandler)(nil).Continue), ctx, id, arg2, exten, priority, label)
 }
 
 // Create mocks base method.
@@ -430,17 +430,17 @@ func (mr *MockChannelHandlerMockRecorder) Record(ctx, id, filename, format, dura
 }
 
 // Redirect mocks base method.
-func (m *MockChannelHandler) Redirect(ctx context.Context, id, context, exten, priority string) error {
+func (m *MockChannelHandler) Redirect(ctx context.Context, id, arg2, exten, priority string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Redirect", ctx, id, context, exten, priority)
+	ret := m.ctrl.Call(m, "Redirect", ctx, id, arg2, exten, priority)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Redirect indicates an expected call of Redirect.
-func (mr *MockChannelHandlerMockRecorder) Redirect(ctx, id, context, exten, priority any) *gomock.Call {
+func (mr *MockChannelHandlerMockRecorder) Redirect(ctx, id, arg2, exten, priority any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Redirect", reflect.TypeOf((*MockChannelHandler)(nil).Redirect), ctx, id, context, exten, priority)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Redirect", reflect.TypeOf((*MockChannelHandler)(nil).Redirect), ctx, id, arg2, exten, priority)
 }
 
 // Ring mocks base method.
