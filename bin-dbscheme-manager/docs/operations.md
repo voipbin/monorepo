@@ -128,10 +128,12 @@ alembic -c alembic.ini downgrade <target_revision_id>
 
 ---
 
-### Collation mismatch after dump import
+### Collation mismatch importing a MariaDB dump into MySQL 8.0
 
-**Symptom:** Importing the Docker schema dump fails with `Unknown collation: 'utf8mb4_uca1400_ai_ci'`.
+**Retired (VOIP-1398):** this entry described a `sed` patch baked into this project's now-deleted `Dockerfile`/`k8s/` image-build path, which had no live consumer (no CI job built/pushed it, and `voipbin/voipbin`'s install path never referenced it). The underlying MariaDB-vs-MySQL-8.0 collation incompatibility itself is unrelated to that dead path and can still occur if you manually dump a MariaDB database and import it into MySQL 8.0:
 
-**Cause:** The dump was exported from MariaDB (which uses `utf8mb4_uca1400_ai_ci`) but imported into MySQL 8.0 (which does not support that collation).
+**Symptom:** `Unknown collation: 'utf8mb4_uca1400_ai_ci'`.
 
-**Fix:** The Dockerfile already applies a `sed` patch to rewrite `utf8mb4_uca1400_ai_ci` → `utf8mb4_general_ci` during export. If the issue appears outside the Docker build, apply the same substitution manually to the dump file before importing.
+**Cause:** MariaDB's default `utf8mb4` collation (`utf8mb4_uca1400_ai_ci`) does not exist in MySQL 8.0.
+
+**Fix:** `sed 's/utf8mb4_uca1400_ai_ci/utf8mb4_general_ci/g'` the dump file before importing.
