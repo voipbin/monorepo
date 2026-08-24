@@ -20,11 +20,11 @@ Platform-internal cron scheduler for VoIPbin. Stores schedules in MySQL, scans t
 | `POST /v1/schedules/<id>/execute` | Manual fire-now (never consumes the cron slot) |
 | `GET /v1/executions` | Execution audit trail |
 | `POST /v1/executions/prune` | Retention pruning (internal; fired by the `execution-retention` schedule) |
-| `POST /v1/backups` | Database backup via mysqldump (internal; fired by the `database-backup` schedule) |
+| `POST /v1/backups` | Database backup via mariadb-dump (internal; fired by the `database-backup` schedule) |
 
 ## Dependencies
 
-- **MySQL** — `schedule_schedules`, `schedule_executions` (soft-delete via `tm_delete`); also the backup target for mysqldump
+- **MySQL** — `schedule_schedules`, `schedule_executions` (soft-delete via `tm_delete`); also the backup target for mariadb-dump
 - **Redis** — per-schedule claim locks (redsync)
 - **RabbitMQ** — listen queue `bin-manager.schedule-manager.request`; subscribes to `bin-manager.customer-manager.event`; publishes internal events on `bin-manager.schedule-manager.event`
 

@@ -23,7 +23,7 @@ graph TD
 
     DH -- "SendRequest(target_queue, ...)" --> MQ[(RabbitMQ)]
     SCH -- "PublishEvent (internal)" --> MQ
-    BH -- "mysqldump subprocess" --> MYSQL[(MySQL 8.0)]
+    BH -- "mariadb-dump subprocess" --> MYSQL[(MariaDB 12.3)]
     DB --> MYSQL
     CACHE --> REDIS[(Redis / redsync locks)]
 ```
@@ -39,7 +39,7 @@ graph TD
 | `pkg/subscribehandler` | Subscribes `bin-manager.customer-manager.event`; `customer_deleted` cascade | `SubscribeHandler` |
 | `pkg/schedulehandler` | Schedule CRUD, cron/method/target-queue validation, name uniqueness, next-run computation, internal event publishing | `ScheduleHandler` |
 | `pkg/dispatchhandler` | Tick loop: reap abandoned → refresh gauges → init `tm_next_run` → claim + dispatch due slots; manual execute | `DispatchHandler` |
-| `pkg/backuphandler` | `mysqldump --single-transaction` subprocess, gzip to `SCHEDULE_BACKUP_DIR`, retention pruning | `BackupHandler` |
+| `pkg/backuphandler` | `mariadb-dump --single-transaction` subprocess, gzip to `SCHEDULE_BACKUP_DIR`, retention pruning | `BackupHandler` |
 | `pkg/dbhandler` | MySQL via squirrel; CAS claim transaction; sqlite-backed tests | `DBHandler` |
 | `pkg/cachehandler` | Redis + redsync try-once claim locks (`schedule:lock:<id>`) | `CacheHandler` |
 | `models/schedule` | Schedule entity, cron helpers, filters, internal event type constants | `schedule.Schedule` |

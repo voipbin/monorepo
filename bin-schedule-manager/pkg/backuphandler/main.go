@@ -21,7 +21,7 @@ type BackupHandler interface {
 
 // commandRunner abstracts subprocess execution so unit tests can assert the
 // exact argv (incl. the no-password-in-argv guarantee) without running
-// mysqldump.
+// mariadb-dump.
 type commandRunner interface {
 	Run(ctx context.Context, stdout io.Writer, name string, args ...string) (stderr string, err error)
 }

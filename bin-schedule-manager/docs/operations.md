@@ -48,7 +48,7 @@ Tracing a run: find the execution row (`execution list` or `GET /v1/executions?f
 | `rabbitmq_address` | `RABBITMQ_ADDRESS` | (required) | RabbitMQ server address |
 | `prometheus_endpoint` | `PROMETHEUS_ENDPOINT` | `/metrics` | Prometheus metrics endpoint path |
 | `prometheus_listen_address` | `PROMETHEUS_LISTEN_ADDRESS` | `:2112` | Prometheus metrics listen address |
-| `database_dsn` | `DATABASE_DSN` | (required) | MySQL connection DSN (also the mysqldump target) |
+| `database_dsn` | `DATABASE_DSN` | (required) | MySQL connection DSN (also the mariadb-dump target) |
 | `redis_address` | `REDIS_ADDRESS` | (required) | Redis server address |
 | `redis_password` | `REDIS_PASSWORD` | empty | Redis password |
 | `redis_database` | `REDIS_DATABASE` | `1` | Redis logical database index |
@@ -79,7 +79,7 @@ Label-cardinality note: `schedule_name` labels are acceptable while all schedule
 
 ## Backup Runbook — dump-and-restore smoke test
 
-Verifies that a dump produced by the backup job actually restores. Run against a scratch MySQL 8.0 (never production). Automated as part of VOIP-1281's sandbox onboarding; manual procedure:
+Verifies that a dump produced by the backup job actually restores. Run against a scratch MariaDB 12.3 (never production) — matches the platform DB engine since VOIP-1386, and the client since VOIP-1397. Automated as part of VOIP-1281's sandbox onboarding; manual procedure:
 
 ```bash
 # 0. Fire the backup now (or take the newest existing dump)
@@ -89,21 +89,21 @@ Verifies that a dump produced by the backup job actually restores. Run against a
 DUMP=$(ls -t "$SCHEDULE_BACKUP_DIR"/voipbin-*.sql.gz | head -1)
 echo "testing: $DUMP"
 
-# 1. Scratch MySQL 8.0
-docker run -d --name backup-smoke -e MYSQL_ROOT_PASSWORD=smoke \
-  -p 33061:3306 mysql:8.0
-until docker exec backup-smoke mysqladmin ping -uroot -psmoke --silent; do sleep 2; done
+# 1. Scratch MariaDB 12.3
+docker run -d --name backup-smoke -e MARIADB_ROOT_PASSWORD=smoke \
+  -p 33061:3306 mariadb:12.3
+until docker exec backup-smoke mariadb-admin ping -uroot -psmoke --silent; do sleep 2; done
 
 # 2. Restore
-gunzip -c "$DUMP" | docker exec -i backup-smoke mysql -uroot -psmoke
+gunzip -c "$DUMP" | docker exec -i backup-smoke mariadb -uroot -psmoke
 
 # 3. Diff table counts against the source (spot-check the schedule tables
 #    plus a few high-traffic tables)
-docker exec backup-smoke mysql -uroot -psmoke -e \
+docker exec backup-smoke mariadb -uroot -psmoke -e \
   "SELECT table_schema, COUNT(*) AS tables FROM information_schema.tables
    WHERE table_schema NOT IN ('mysql','sys','information_schema','performance_schema')
    GROUP BY table_schema;"
-docker exec backup-smoke mysql -uroot -psmoke -e \
+docker exec backup-smoke mariadb -uroot -psmoke -e \
   "SELECT COUNT(*) FROM voipbin.schedule_schedules; SELECT COUNT(*) FROM voipbin.schedule_executions;"
 # Compare with the same queries on the source DB — counts must match the dump time.
 
@@ -123,15 +123,15 @@ Komodo-managed (VOIP-1350), same mechanism as the other `bin-*-manager` services
 from `komodo/docker-compose.yml`.
 
 Two deviations from the Tier 1/2 template, both intentional:
-- **Non-distroless runtime** (`debian:bookworm-slim` + `mysql-community-client`,
-  see the CRITICAL note in [../CLAUDE.md](../CLAUDE.md)) — but `debian:bookworm-slim`
-  ships with neither `wget` nor `curl` by default, so the fleet-standard
-  `wget` healthcheck silently fails on this image (confirmed live: the
-  pre-Komodo `install/` container had been reporting Docker-unhealthy for 5
-  days with `exec: "wget": executable file not found`). The Dockerfile keeps
-  `curl` in the runtime stage (already fetched there for the MySQL GPG key
-  step) instead of purging it, and the Komodo compose healthcheck uses
-  `curl -fsS` against `/metrics` instead of `wget`.
+- **Non-distroless runtime** (`debian:bookworm-slim` + `default-mysql-client`
+  (→ mariadb-client, VOIP-1397), see the CRITICAL note in
+  [../CLAUDE.md](../CLAUDE.md)) — but `debian:bookworm-slim` ships with
+  neither `wget` nor `curl` by default, so the fleet-standard `wget`
+  healthcheck silently fails on this image (confirmed live: the pre-Komodo
+  `install/` container had been reporting Docker-unhealthy for 5 days with
+  `exec: "wget": executable file not found`). The Dockerfile keeps `curl`
+  in the runtime stage instead of purging it, and the Komodo compose
+  healthcheck uses `curl -fsS` against `/metrics` instead of `wget`.
 - **Bind-mounted backup volume**: `SCHEDULE_BACKUP_DIR=/backups` is mounted from
   the host path `/opt/voipbin/install/backups/scheduled-db` on bm-nyc-01
   (confirmed via `docker inspect` against the pre-cutover container), so
