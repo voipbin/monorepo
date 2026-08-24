@@ -90,7 +90,7 @@ alembic -c alembic.ini downgrade -1
 
 Never mix migrations between the two streams. Always `cd` into the correct subdirectory and pass `-c alembic.ini`.
 
-**Docker build:** The production image applies migrations against a temporary local MariaDB during build and exports schema dumps. Schema dumps are imported at container startup via `/docker-entrypoint-initdb.d/`. See the Dockerfile for details.
+**No packaged/deployed image.** This project previously shipped a `Dockerfile` that baked a temporary-MariaDB-built schema dump into a `mysql:8.0`-based image via `/docker-entrypoint-initdb.d/`, plus a `k8s/` Job manifest to run it — both removed in VOIP-1398 as dead: no CircleCI job ever built or pushed the image, and `voipbin/voipbin`'s `install/scripts/migrate.sh` never referenced it (it sparse-checks-out this directory's alembic *source* at a pinned commit and runs `alembic upgrade head` directly, in its own container). This directory's actual consumers are: `migrate.sh` (source checkout), CircleCI's `migration-lint` job (structural validation only), and humans running `alembic` manually per `docs/operations.md`.
 
 ## CRITICAL: UUID columns must be `BINARY(16)`
 
