@@ -14,8 +14,9 @@
 # which has the exact same bug) silently fails here — confirmed live on
 # bm-nyc-01: the pre-existing install/ container had been reporting
 # "unhealthy" for 5 days with `exec: "wget": executable file not found`.
-# Fixed by keeping curl in the Dockerfile's runtime stage (already fetched
-# there for the MySQL GPG key step) and using it for the healthcheck instead.
+# Fixed by keeping curl in the Dockerfile's runtime stage (installed
+# alongside the mariadb-dump client, VOIP-1397) and using it for the
+# healthcheck instead.
 services:
   schedule-manager:
     image: voipbin/bin-schedule-manager:__IMAGE_TAG__

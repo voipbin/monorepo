@@ -23,12 +23,12 @@ const (
 	backupFileSuffix = ".sql.gz"
 	backupTimeLayout = "20060102T150405Z"
 
-	// stderrLimitBytes bounds the captured mysqldump stderr carried in error
+	// stderrLimitBytes bounds the captured mariadb-dump stderr carried in error
 	// messages.
 	stderrLimitBytes = 4096
 )
 
-// Backup runs mysqldump against the DSN's database, gzips the dump into the
+// Backup runs mariadb-dump against the DSN's database, gzips the dump into the
 // backup directory, prunes old dumps to the retention count, and returns the
 // produced file's path and size (design §7).
 //
@@ -63,7 +63,18 @@ func (h *backupHandler) Backup(ctx context.Context) (*Result, error) {
 	}()
 
 	// --defaults-extra-file MUST be the first argument (mysql client
-	// requirement); host/port/user/dbname go as flags (design §7)
+	// requirement); host/port/user/dbname go as flags (design §7).
+	//
+	// mariadb-dump (VOIP-1397, switched from mysqldump 8.0 now that the
+	// platform DB is MariaDB 12.3 per VOIP-1386): --single-transaction/
+	// --routines/--triggers/--events are all supported. --set-gtid-purged
+	// and --column-statistics were MySQL-8-only flags used as temporary
+	// compatibility shims during the VOIP-1386 cutover (VOIP-1387) —
+	// mariadb-dump doesn't recognize either (empirically confirmed via
+	// `mariadb-dump --help`, would fail as unknown options), so both are
+	// dropped here. --events is new: it was missing even under mysqldump
+	// (a pre-existing gap, unrelated to the client switch) and is added
+	// now while the arg list is already being normalized.
 	args := []string{
 		"--defaults-extra-file=" + defaultsPath,
 		"-h", host,
@@ -72,13 +83,7 @@ func (h *backupHandler) Backup(ctx context.Context) (*Result, error) {
 		"--single-transaction",
 		"--routines",
 		"--triggers",
-		"--set-gtid-purged=OFF",
-		// mysqldump 8.0 defaults to querying
-		// information_schema.COLUMN_STATISTICS, which does not exist on
-		// MariaDB (the platform DB as of VOIP-1386) and aborts the dump
-		// with error 1109. Disabling it is a no-op against MySQL 8, so
-		// this flag is safe in both server states.
-		"--column-statistics=0",
+		"--events",
 		cfg.DBName,
 	}
 
@@ -104,8 +109,8 @@ func (h *backupHandler) Backup(ctx context.Context) (*Result, error) {
 	return &Result{Path: outPath, Bytes: size}, nil
 }
 
-// runDump executes mysqldump with the given args, gzip-compressing its stdout
-// into outPath. Returns the produced file's size in bytes.
+// runDump executes mariadb-dump with the given args, gzip-compressing its
+// stdout into outPath. Returns the produced file's size in bytes.
 func (h *backupHandler) runDump(ctx context.Context, outPath string, args []string) (int64, error) {
 	// 0600: the dump is the full platform database (PII, credentials) and the
 	// backup dir may be a volume shared across replicas — same hygiene as the
@@ -117,13 +122,13 @@ func (h *backupHandler) runDump(ctx context.Context, outPath string, args []stri
 
 	gz := gzip.NewWriter(f)
 
-	stderr, errRun := h.runner.Run(ctx, gz, "mysqldump", args...)
+	stderr, errRun := h.runner.Run(ctx, gz, "mariadb-dump", args...)
 	if errRun != nil {
 		_ = gz.Close()
 		_ = f.Close()
 		// args carry no password material (defaults-extra-file), so the argv
 		// is safe to include
-		return 0, errors.Wrapf(errRun, "mysqldump failed. argv: mysqldump %s, stderr: %s", strings.Join(args, " "), truncateStderr(stderr))
+		return 0, errors.Wrapf(errRun, "mariadb-dump failed. argv: mariadb-dump %s, stderr: %s", strings.Join(args, " "), truncateStderr(stderr))
 	}
 
 	if errClose := gz.Close(); errClose != nil {

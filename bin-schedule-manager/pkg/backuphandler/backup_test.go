@@ -49,7 +49,7 @@ func (r *fakeRunner) Run(_ context.Context, stdout io.Writer, name string, args 
 func Test_Backup(t *testing.T) {
 	dir := t.TempDir()
 
-	payload := []byte("-- fake mysqldump output\nCREATE TABLE t (id INT);\n")
+	payload := []byte("-- fake mariadb-dump output\nCREATE TABLE t (id INT);\n")
 
 	var defaultsPathSeen string
 	var defaultsContentSeen []byte
@@ -86,8 +86,8 @@ func Test_Backup(t *testing.T) {
 	}
 
 	// command name
-	if runner.capturedName != "mysqldump" {
-		t.Errorf("Wrong match. expect: mysqldump, got: %v", runner.capturedName)
+	if runner.capturedName != "mariadb-dump" {
+		t.Errorf("Wrong match. expect: mariadb-dump, got: %v", runner.capturedName)
 	}
 
 	// --defaults-extra-file MUST be the first argument
@@ -110,8 +110,7 @@ func Test_Backup(t *testing.T) {
 		"--single-transaction",
 		"--routines",
 		"--triggers",
-		"--set-gtid-purged=OFF",
-		"--column-statistics=0",
+		"--events",
 		"voipbin",
 	}
 	if !reflect.DeepEqual(runner.capturedArgs[1:], expectArgs) {
@@ -207,16 +206,16 @@ func Test_Backup_error(t *testing.T) {
 			expectNotContains: "secretpw",
 		},
 		{
-			name: "mysqldump failure carries stderr but no password",
+			name: "mariadb-dump failure carries stderr but no password",
 
 			dsn:       "testuser:testpass@tcp(127.0.0.1:3306)/voipbin",
 			backupDir: "PLACEHOLDER_TMPDIR",
 			runner: &fakeRunner{
-				stderr: "mysqldump: Got error: 2003",
+				stderr: "mariadb-dump: Got error: 2003",
 				runErr: stderrors.New("exit status 2"),
 			},
 
-			expectContains:    "mysqldump: Got error: 2003",
+			expectContains:    "mariadb-dump: Got error: 2003",
 			expectNotContains: "testpass",
 		},
 	}
