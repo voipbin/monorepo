@@ -4,7 +4,7 @@
 
 | Symptom | Likely Cause | Resolution |
 |---------|-------------|------------|
-| Session stuck in `progressing` | `call_hangup` event not received or not processed | Check subscribe handler queue; manually stop via `POST /v1/transcribes/{id}/stop` |
+| Session stuck in `progressing` | `call_hangup` event not received or not processed. **Also**: the zombie-session invariant (see [Zombie-Session Invariant and Recovery](#zombie-session-invariant-and-recovery) below) deliberately refuses to move a transcribe to `done` while any of its streaming sessions genuinely failed to stop | Check subscribe handler queue; manually stop via `POST /v1/transcribes/{id}/stop`. See the section below for the full mitigation picture, including a current limitation that prevents automatic retry today |
 | STT RPC routed to wrong pod | Stale `host_id` after pod restart (Calico POD_IP recycle) | See [per-pod-queues.md](../../docs/patterns/per-pod-queues.md) for known limitation; session must be recreated |
 | No transcripts appearing | WebSocket to Asterisk not established | Check `streaming_handler` logs for dial errors; verify `MediaURI` from `ExternalMediaStart` |
 | GCP auth failure | ADC not configured | Check `GOOGLE_APPLICATION_CREDENTIALS` points to a valid mounted service account key file |
@@ -12,6 +12,23 @@
 | Session health-check failing | Pod hosting session is down | Session is lost; streaming cannot be resumed — client must recreate |
 | `customer_deleted` cascade not running | Subscribe handler not consuming customer-manager events | Check queue binding: `bin-manager.customer-manager.event` |
 | Transcribe start/stop returns a `STT_NOT_CONFIGURED` error (`*cerrors.VoipbinError`, status `Unavailable`) | Neither GCP nor AWS STT client initialized at startup, so the service is running with the disabled streaming handler. Common causes: an invalid or placeholder `GOOGLE_APPLICATION_CREDENTIALS` key file plus no AWS credentials | Fix the GCP key file or set `AWS_ACCESS_KEY` / `AWS_SECRET_KEY`, then restart the service. Confirm with the provider-initialization log check below — a healthy boot logs `GCP STT provider initialized` and/or `AWS STT provider initialized`; a degraded boot logs `No STT providers available. Streaming transcribe is disabled until GCP or AWS credentials are configured.` |
+
+## Zombie-Session Invariant and Recovery
+
+`pkg/transcribehandler/stop.go`'s zombie-session invariant deliberately refuses to move a transcribe to `done` while any of its streaming sessions genuinely failed to stop (e.g. a transient call-manager RPC failure). This correctly prevents an orphaned live session from being marked done, but leaves the transcribe in `progressing` until the stop actually succeeds.
+
+Current mitigations, and their limits:
+
+- `streamingHandler.Stop` removes the entry from the in-memory session map as soon as the external media is actually stopped, so a retried stop never re-attempts an already-stopped streaming.
+- `pkg/transcribehandler/health.go`'s `stopOrReschedule` will requeue another health check (up to `defaultStopRescheduleMaxRetryCount` attempts) when `Stop` fails with the specific `STREAMING_STOP_FAILED` error — any other failure (e.g. an invalid reference type) is treated as permanent and is not retried.
+- **This reschedule mechanism is currently dormant.** Nothing in the codebase schedules the *first* health check for a transcribe: `startLive` never calls `TranscribeV1TranscribeHealthCheck`, and no other service, `cmd`, or subscribe handler does either. The only callers of that RPC are `health.go`'s own reschedule calls. In practice, the periodic health check does **not** currently retry a stuck stop on its own — bootstrapping the first health check (e.g. scheduling one from `startLive`) is a separate follow-up that has not been implemented yet.
+- `Delete` on a non-`done` transcribe still proceeds even if `Stop` fails, so a stuck session never blocks the customer-deletion cascade — but this only means the record is removed; the streaming session itself may still be live on Asterisk with no VoIPbin record left to stop it (see the log line `Could not stop the transcribe before delete; streaming may still be active on Asterisk...`).
+
+**Until the health-check bootstrap lands, the only real recovery paths for a transcribe stuck in `progressing` after a genuine stop failure are:**
+1. A manual `POST /v1/transcribes/{id}/stop` retry.
+2. `Delete`, which proceeds regardless of stop failure (see above) — but does not itself confirm the streaming session was actually stopped, so treat it as record cleanup, not confirmed session teardown.
+
+**These recovery paths, and the manual-retry framing above, assume this service is running with `replicas: 1` (see `k8s/deployment.yml`).** `pkg/transcribehandler/stop.go`'s `isSafeToConsiderStopped` treats a `NotFound` from the in-memory session lookup as proof the session cannot possibly still be alive — which is only true when a single pod owns every session. `TranscribeV1TranscribeStop` and `TranscribeV1TranscribeHealthCheck` are both routed through the shared `QueueNameTranscribeRequest` queue rather than a per-pod queue, so if `replicas` is ever raised above 1 without first fixing that routing gap, a "manual stop RPC retry" against a non-owning pod would return `NotFound` and be treated as a confirmed stop instead of a recovery attempt — silently completing the zombie session rather than recovering it. See the comment on `isSafeToConsiderStopped` for the full explanation.
 
 ## Debugging Guide
 

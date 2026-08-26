@@ -35,5 +35,13 @@ func (h *streamingHandler) Stop(ctx context.Context, id uuid.UUID) (*streaming.S
 		_ = st.ConnAst.Close()
 	}
 
+	// Remove the entry from the in-memory session map now that the external
+	// media has actually been stopped. Without this, a retried Stop (e.g. after
+	// a sibling streaming in the same transcribe failed and the caller retries
+	// the whole transcribe stop) would call CallV1ExternalMediaStop again for an
+	// external media that call-manager no longer has any record of, turning a
+	// once-successful stop into a permanent failure on every subsequent retry.
+	h.Delete(ctx, st.ID)
+
 	return st, nil
 }

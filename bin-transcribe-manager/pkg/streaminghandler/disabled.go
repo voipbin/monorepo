@@ -13,21 +13,30 @@ import (
 	"monorepo/bin-transcribe-manager/models/transcript"
 )
 
-// errSTTNotConfiguredReason is the VoipbinError reason returned by the disabled streaming
+// ErrSTTNotConfiguredReason is the VoipbinError reason returned by the disabled streaming
 // handler's per-request methods when no STT provider (GCP or AWS) could be initialized at
 // startup. The service keeps running so that every other transcribe-manager capability
 // stays available; only the live-streaming transcribe path is unavailable. Matches this
 // codebase's structured-error convention (see pkg/transcribehandler/start.go's
 // TRANSCRIBE_ALREADY_PROGRESSING for another example) so API callers get a typed,
 // domain/reason-tagged error instead of an opaque 500.
-const errSTTNotConfiguredReason = "STT_NOT_CONFIGURED"
+//
+// Exported so that other packages can match on this specific reason instead of on
+// Status alone. In particular, pkg/transcribehandler/stop.go's isSafeToConsiderStopped
+// checks Status == StatusUnavailable && Reason == ErrSTTNotConfiguredReason before
+// treating a streamingHandler.Stop failure as "safe to consider already stopped" -
+// StatusUnavailable by itself is a general-purpose "transient, retry later" status
+// that other call paths (e.g. a future typed-error migration of call-manager's
+// CallV1ExternalMediaStop) could also return for genuinely transient failures, so the
+// Reason match is required to avoid misclassifying a live session as already gone.
+const ErrSTTNotConfiguredReason = "STT_NOT_CONFIGURED"
 
 // newErrSTTNotConfigured returns a fresh VoipbinError for the disabled handler's per-request
 // methods to return.
 func newErrSTTNotConfigured() error {
 	return cerrors.Unavailable(
 		commonoutline.ServiceNameTranscribeManager,
-		errSTTNotConfiguredReason,
+		ErrSTTNotConfiguredReason,
 		"No STT provider (GCP or AWS) is configured on this instance. Live-streaming transcribe is unavailable; all other transcribe-manager functionality is unaffected.",
 	)
 }

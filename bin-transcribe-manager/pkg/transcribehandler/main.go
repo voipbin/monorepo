@@ -81,6 +81,17 @@ var (
 const (
 	defaultHealthMaxRetryCount = 2
 	defaultHealthDelay         = 10000 // 10 seconds
+
+	// defaultStopRescheduleMaxRetryCount bounds how many times
+	// health.go's stopOrReschedule will requeue itself after Stop() keeps
+	// failing with the one specific retryable error
+	// (reasonStreamingStopFailed). It is independent of
+	// defaultHealthMaxRetryCount, which only gates how long the
+	// reference-liveness loop runs before HealthCheck ever reaches
+	// stopOrReschedule. This bound exists purely so a persistent stop
+	// failure (e.g. call-manager unreachable indefinitely) eventually stops
+	// rescheduling instead of retrying forever.
+	defaultStopRescheduleMaxRetryCount = defaultHealthMaxRetryCount + 5
 )
 
 const (

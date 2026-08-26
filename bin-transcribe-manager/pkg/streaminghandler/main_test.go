@@ -90,13 +90,13 @@ func Test_NewDisabledStreamingHandler(t *testing.T) {
 
 	if _, err := handler.Start(context.Background(), uuid.Nil, uuid.Nil, transcribe.ReferenceTypeCall, uuid.Nil, "en-US", transcript.DirectionIn, transcribe.ProviderEmpty); err == nil {
 		t.Error("Expected an STT-not-configured error from Start(), got nil")
-	} else if ve, ok := err.(*cerrors.VoipbinError); !ok || ve.Reason != errSTTNotConfiguredReason {
-		t.Errorf("Wrong error type/reason. expect reason: %s, got: %v", errSTTNotConfiguredReason, err)
+	} else if ve, ok := err.(*cerrors.VoipbinError); !ok || ve.Reason != ErrSTTNotConfiguredReason {
+		t.Errorf("Wrong error type/reason. expect reason: %s, got: %v", ErrSTTNotConfiguredReason, err)
 	}
 
 	if _, err := handler.Stop(context.Background(), uuid.Nil); err == nil {
 		t.Error("Expected an STT-not-configured error from Stop(), got nil")
-	} else if ve, ok := err.(*cerrors.VoipbinError); !ok || ve.Reason != errSTTNotConfiguredReason {
-		t.Errorf("Wrong error type/reason. expect reason: %s, got: %v", errSTTNotConfiguredReason, err)
+	} else if ve, ok := err.(*cerrors.VoipbinError); !ok || ve.Reason != ErrSTTNotConfiguredReason {
+		t.Errorf("Wrong error type/reason. expect reason: %s, got: %v", ErrSTTNotConfiguredReason, err)
 	}
 }
