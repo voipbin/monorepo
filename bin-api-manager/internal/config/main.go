@@ -40,8 +40,17 @@ type Config struct {
 	GCPBucketName           string // GCPBucketName is the name of the GCP storage bucket for temporary storage.
 	SSLCertBase64           string // SSLCertBase64 is the base64-encoded SSL certificate for HTTPS connections.
 	SSLPrivKeyBase64        string // SSLPrivKeyBase64 is the base64-encoded SSL private key for HTTPS connections.
-	ListenIPAudiosock       string // ListenIPAudiosock is the IP address for audiosocket connection listening.
 	PublicBaseURL           string // PublicBaseURL is the public base URL of this API (e.g. "https://api.voipbin.net"), used to build absolute URLs handed to external clients (extension provisioning). Env var only (API_PUBLIC_BASE_URL) -- see the NOTE below about inert CLI flags.
+
+	// NOTE: there used to be a "ListenIPAudiosock" field here, bound to the
+	// POD_IP env var, that was shared by BOTH the AudioSocket listener's
+	// bind address and the advertise address handed to Asterisk for
+	// dial-back. That conflation was a bug: the listen socket now always
+	// binds to all interfaces (a hardcoded ":9000" in cmd/api-manager), and
+	// the advertise address is resolved separately via
+	// internal/nethandler.AdvertiseIP() (POD_IP override,
+	// falling back to auto-detecting a non-loopback IPv4 address, and
+	// failing fast if neither is available) -- see cmd/api-manager/main.go.
 
 	// Rate limiting (per-IP, in-memory token bucket -- see lib/middleware/ratelimit.go).
 	// Each pair is (requests/second, burst). A tier is disabled (unlimited
@@ -120,7 +129,6 @@ func bindConfig(cmd *cobra.Command) error {
 	f.String("gcp_bucket_name", "", "GCP bucket name for temporary storage")
 	f.String("ssl_cert_base64", "", "Base64 encoded SSL certificate")
 	f.String("ssl_privkey_base64", "", "Base64 encoded SSL private key")
-	f.String("listen_ip_audiosock", "", "Listen IP address for audiosocket connection")
 	f.String("public_base_url", "https://api.voipbin.net", "Public base URL of this API, used to build absolute URLs handed to external clients. Env var only, see API_PUBLIC_BASE_URL.")
 	f.Float64("rate_limit_auth_public_rps", 10, "Rate limit (requests/second per IP) for unauthenticated /auth/* routes. <=0 disables this tier. Env var only, see RATE_LIMIT_AUTH_PUBLIC_RPS.")
 	f.Int("rate_limit_auth_public_burst", 20, "Rate limit burst size for the unauthenticated /auth/* routes. <=0 disables this tier. Env var only, see RATE_LIMIT_AUTH_PUBLIC_BURST.")
@@ -151,7 +159,6 @@ func bindConfig(cmd *cobra.Command) error {
 		"gcp_bucket_name":           "GCP_BUCKET_NAME",
 		"ssl_cert_base64":           "SSL_CERT_BASE64",
 		"ssl_privkey_base64":        "SSL_PRIVKEY_BASE64",
-		"listen_ip_audiosock":       "POD_IP",
 		"public_base_url":           "API_PUBLIC_BASE_URL",
 
 		"rate_limit_auth_public_rps":           "RATE_LIMIT_AUTH_PUBLIC_RPS",
@@ -207,7 +214,6 @@ func LoadGlobalConfig() {
 			GCPBucketName:           viper.GetString("gcp_bucket_name"),
 			SSLCertBase64:           viper.GetString("ssl_cert_base64"),
 			SSLPrivKeyBase64:        viper.GetString("ssl_privkey_base64"),
-			ListenIPAudiosock:       viper.GetString("listen_ip_audiosock"),
 			PublicBaseURL:           viper.GetString("public_base_url"),
 
 			RateLimitAuthPublicRPS:      viper.GetFloat64("rate_limit_auth_public_rps"),

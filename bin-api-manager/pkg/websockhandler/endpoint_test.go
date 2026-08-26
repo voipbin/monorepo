@@ -1,7 +1,6 @@
 package websockhandler
 
 import (
-	"os"
 	"testing"
 	"time"
 
@@ -187,9 +186,7 @@ func Test_endpointLocalGet(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			if err := os.Setenv("POD_IP", tt.podIP); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
+			t.Setenv("POD_IP", tt.podIP)
 
 			res := endpointLocalGet(tt.callID)
 			if res != tt.expectRes {

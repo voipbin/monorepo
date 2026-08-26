@@ -40,18 +40,24 @@ type streamHandler struct {
 	utilHandler utilhandler.UtilHandler
 	reqHandler  requesthandler.RequestHandler
 
-	listenAddress string
+	// advertiseAddress is the host:port handed to Asterisk (via
+	// CallV1ExternalMediaStart) so it knows where to dial back for
+	// AudioSocket/ExternalMedia streaming. This is intentionally NOT the
+	// address this process binds its listening socket to -- the socket
+	// binds to all interfaces (see cmd/api-manager's runListenStreamsock),
+	// while this must be a concrete, routable host.
+	advertiseAddress string
 
 	streamLock sync.Mutex
 	streamData map[string]*stream.Stream
 }
 
-func NewStreamHandler(reqHandler requesthandler.RequestHandler, listenAddress string) StreamHandler {
+func NewStreamHandler(reqHandler requesthandler.RequestHandler, advertiseAddress string) StreamHandler {
 	return &streamHandler{
 		utilHandler: utilhandler.NewUtilHandler(),
 		reqHandler:  reqHandler,
 
-		listenAddress: listenAddress,
+		advertiseAddress: advertiseAddress,
 
 		streamData: make(map[string]*stream.Stream),
 	}

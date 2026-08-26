@@ -39,7 +39,7 @@ func (h *streamHandler) Start(
 		tmp.ID,
 		referenceType,
 		referenceID,
-		h.listenAddress,
+		h.advertiseAddress,
 		defaultExternalMediaEncapsulation,
 		defaultExternalMediaTransport,
 		"", // transportData

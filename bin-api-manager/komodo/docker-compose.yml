@@ -39,6 +39,19 @@
 # `secrets:` mechanism as bin-storage-manager - see that service's
 # komodo/docker-compose.yml for the full explanation.
 #
+# POD_IP is deliberately NOT set here (unlike bin-pipecat-manager/
+# bin-transcribe-manager/bin-tts-manager, which set it to a literal
+# hostname string for HTTP media URLs). This service's AudioSocket/
+# ExternalMedia advertise address - the host:port handed to Asterisk so it
+# can dial back for AI audio streaming - needs a real, routable IP, not a
+# Docker-DNS-resolvable hostname. internal/nethandler.AdvertiseIP()
+# (internal to this service) resolves it: POD_IP overrides if set, otherwise it
+# auto-detects the container's non-loopback IPv4 address on the
+# `production` network below (this container joins only that one network,
+# so auto-detection is unambiguous). If neither resolves, the service
+# fails fast at startup instead of silently advertising an empty host
+# (see cmd/api-manager/main.go's getAddressAdvertiseAudiosock).
+#
 # SSL_PRIVKEY_BASE64 (not the docs/operations.md table's "SSL_PRIVATE_
 # BASE64" - that table has a stale env var name; confirmed against
 # internal/config/main.go's actual viper binding: the real env var is

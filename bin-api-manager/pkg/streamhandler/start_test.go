@@ -64,10 +64,10 @@ func Test_Start(t *testing.T) {
 			localhost := "127.0.0.1:9000"
 
 			h := &streamHandler{
-				reqHandler:    mockReq,
-				utilHandler:   mockUtil,
-				listenAddress: localhost,
-				streamData:    make(map[string]*stream.Stream),
+				reqHandler:       mockReq,
+				utilHandler:      mockUtil,
+				advertiseAddress: localhost,
+				streamData:       make(map[string]*stream.Stream),
 			}
 			ctx := context.Background()
 

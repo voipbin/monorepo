@@ -173,9 +173,6 @@
     },
     {
       "flag": "ssl_privkey_base64"
-    },
-    {
-      "flag": "listen_ip_audiosock"
     }
   ],
   "metrics": [
