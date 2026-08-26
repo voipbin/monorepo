@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -20,6 +21,7 @@ import (
 	"github.com/go-redis/redis/v8"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	swaggerFiles "github.com/swaggo/files"
@@ -29,6 +31,7 @@ import (
 	// gin-swagger middleware
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/internal/config"
+	"monorepo/bin-api-manager/internal/nethandler"
 	"monorepo/bin-api-manager/lib/middleware"
 	"monorepo/bin-api-manager/lib/service"
 	"monorepo/bin-api-manager/models/common"
@@ -149,12 +152,30 @@ func run(
 	log := logrus.WithField("func", "run")
 
 	cfg := config.Get()
-	addressListenStream := getAddressListenAudiosock()
+	addressAdvertiseStream, err := getAddressAdvertiseAudiosock()
+	if err != nil {
+		// Fail fast: an empty/unresolvable advertise address would be
+		// silently handed to Asterisk, which would then be unable to dial
+		// back for AudioSocket/ExternalMedia streaming.
+		log.Fatalf("Could not resolve the audiosocket advertise address. err: %v", err)
+	}
+
+	// Observability: the advertise address is resolved once at startup and
+	// never logged afterward, so a misconfigured deployment (e.g. POD_IP
+	// pointing at the wrong interface) is otherwise invisible until a
+	// dial-back actually fails. addressSource is informational only -- it
+	// does not affect resolution, which always goes through
+	// nethandler.AdvertiseIP() above.
+	addressSource := "auto-detected network interface"
+	if os.Getenv(nethandler.EnvPodIP) != "" {
+		addressSource = "POD_IP override"
+	}
+	log.Infof("Resolved the audiosocket advertise address. address: %s, source: %s", addressAdvertiseStream, addressSource)
 
 	// create handlers
 	requestHandler := requesthandler.NewRequestHandler(sockHandler, "api_manager")
 	pubsubBroker := pubsubhandler.NewBrokerHandler()
-	streamHandler := streamhandler.NewStreamHandler(requestHandler, addressListenStream)
+	streamHandler := streamhandler.NewStreamHandler(requestHandler, addressAdvertiseStream)
 
 	// per-pod subscribe queue name -- constructed here (before websockHandler) so it can be
 	// shared with websockhandler's scopeRefCount for dynamic AMQP bind/unbind (VOIP-1258 §9).
@@ -390,8 +411,7 @@ func runListenStreamsock(ctx context.Context, streamHandler streamhandler.Stream
 		"func": "runListenAudiosock",
 	})
 
-	cfg := config.Get()
-	listenAddress := fmt.Sprintf("%s:%d", cfg.ListenIPAudiosock, defaultAudiosockPort)
+	listenAddress := getAddressListenAudiosock()
 	log.Debugf("Listening audiosock address. address: %s", listenAddress)
 
 	addr, err := net.ResolveTCPAddr("tcp", listenAddress)
@@ -424,9 +444,49 @@ func runListenStreamsock(ctx context.Context, streamHandler streamhandler.Stream
 	}
 }
 
+// getAddressListenAudiosock returns the address the AudioSocket listener
+// binds to. This is deliberately NOT derived from the advertise address
+// (see getAddressAdvertiseAudiosock): the socket must accept connections on
+// every interface, while the advertise address handed to Asterisk must be a
+// concrete, routable host. An empty host in "host:port" binds to all
+// interfaces (equivalent to 0.0.0.0:<port>).
 func getAddressListenAudiosock() string {
-	cfg := config.Get()
-	res := fmt.Sprintf("%s:%d", cfg.ListenIPAudiosock, defaultAudiosockPort)
+	return fmt.Sprintf(":%d", defaultAudiosockPort)
+}
 
-	return res
+// getAddressAdvertiseAudiosock returns the host:port that this process
+// hands to Asterisk (via CallV1ExternalMediaStart) so it can dial back for
+// AudioSocket/ExternalMedia streaming. This is intentionally separate from
+// the AudioSocket listen address (see runListenStreamsock), which always
+// binds to all interfaces.
+//
+// nethandler.AdvertiseIP() itself does not validate that the POD_IP
+// override is a well-formed IP address -- it returns that value verbatim so
+// it stays reusable if this package is ever promoted to serve other
+// consumers that may legitimately advertise a hostname. AudioSocket
+// specifically needs a real, dialable IP for Asterisk's dial-back, so that
+// validation belongs here, at the consumer that actually requires it.
+func getAddressAdvertiseAudiosock() (string, error) {
+	ip, err := nethandler.AdvertiseIP()
+	if err != nil {
+		return "", errors.Wrapf(err, "could not resolve the audiosocket advertise ip")
+	}
+
+	if net.ParseIP(ip) == nil {
+		// Fail fast: a non-IP POD_IP value (e.g. a hostname, as some other
+		// services set for their own advertise-style env vars) would be
+		// silently handed to Asterisk, reproducing the same dial-back
+		// failure this fix addresses.
+		return "", errors.Errorf("the resolved audiosocket advertise address is not a valid ip. ip: %s", ip)
+	}
+
+	// net.JoinHostPort (not fmt.Sprintf("%s:%d", ...)) is mandatory here:
+	// net.ParseIP above accepts IPv6 as well as IPv4, and a bare "%s:%d"
+	// join produces an unparseable string for an IPv6 host (e.g.
+	// "2001:db8::1:9000", which net.SplitHostPort/net.ResolveTCPAddr both
+	// reject as a malformed address). JoinHostPort brackets an IPv6 host
+	// automatically (e.g. "[2001:db8::1]:9000").
+	res := net.JoinHostPort(ip, strconv.Itoa(defaultAudiosockPort))
+
+	return res, nil
 }

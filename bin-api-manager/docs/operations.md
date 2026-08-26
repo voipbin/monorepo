@@ -16,7 +16,6 @@ Runtime configuration is provided via CLI flags and/or environment variables, de
 | `-gcp_bucket_name` | `GCP_BUCKET_NAME` | No | — | GCS bucket for media/recordings |
 | `-ssl_cert_base64` | `SSL_CERT_BASE64` | No | — | Base64-encoded SSL certificate |
 | `-ssl_privkey_base64` | `SSL_PRIVKEY_BASE64` | No | — | Base64-encoded SSL private key |
-| `-listen_ip_audiosock` | `LISTEN_IP_AUDIOSOCK` | No | `""` | Audiosocket listener IP (AI audio streaming) |
 | `-prometheus_endpoint` | `PROMETHEUS_ENDPOINT` | No | `/metrics` | Prometheus metrics path |
 | `-prometheus_listen_address` | `PROMETHEUS_LISTEN_ADDRESS` | No | `:2112` | Prometheus listen address |
 | — (env var only) | `RATE_LIMIT_AUTH_PUBLIC_RPS` | No | `10` | Rate limit, requests/second per IP, for unauthenticated `/auth/*` routes. `<=0` disables the tier. |
@@ -37,6 +36,18 @@ Runtime configuration is provided via CLI flags and/or environment variables, de
 | — (env var only) | `RATE_LIMIT_CUSTOMER_REDIS_TIMEOUT_MS` | No | `50` | Timeout budget, in milliseconds, for the customer rate limiter's Redis round trip. On timeout the request fails open (proceeds). This is a jitter-tolerant starting value, not a measured p99 — tune after observing production latency. |
 
 SSL certificates are passed as base64-encoded values to allow injection via Kubernetes secrets without multi-line PEM issues.
+
+### AudioSocket listen vs. advertise address
+
+The AudioSocket/ExternalMedia listener (port 9000, `pkg/streamhandler/`, `cmd/api-manager/main.go`) binds to all interfaces unconditionally (`:9000`) -- this is no longer configurable and is not part of the `Config` struct above. Separately, the *advertise* address -- the host:port handed to Asterisk via `CallV1ExternalMediaStart` so it can dial back -- is resolved by `internal/nethandler.AdvertiseIP()` (a package internal to this service -- see the bin-common-handler admission rule in the root CLAUDE.md for why it is not a shared library package):
+
+1. `POD_IP` env var, if set -- returned verbatim (Kubernetes Downward API `status.podIP`, or an explicit Docker Compose override).
+2. Otherwise, auto-detected as the first non-loopback IPv4 address found on the host's network interfaces (in Komodo/Compose deployments, the container's `production` network interface).
+3. If neither resolves, the service fails fast at startup (`log.Fatalf`) rather than advertising an empty/unusable host.
+
+`cmd/api-manager/main.go`'s `getAddressAdvertiseAudiosock()` additionally validates the resolved value is a well-formed IP (`net.ParseIP`) and joins it with the port via `net.JoinHostPort` -- not a bare `fmt.Sprintf("%s:%d", ...)` -- so an IPv6 `POD_IP` is bracketed correctly (e.g. `[2001:db8::1]:9000`) instead of producing an unparseable string.
+
+This replaces the old `listen_ip_audiosock` flag (bound to `POD_IP`), which incorrectly fed the same value into both the listen and advertise addresses -- see `pkg/streamhandler/main.go`'s `advertiseAddress` field and `cmd/api-manager/main.go`'s `getAddressListenAudiosock`/`getAddressAdvertiseAudiosock`.
 
 The per-customer rate limiter uses a dedicated `*redis.Client` (`cmd/api-manager/main.go`, `runDaemon`), constructed from the same `REDIS_ADDRESS`/`REDIS_PASSWORD`/`REDIS_DATABASE` values as the cache client but connected separately — `pkg/cachehandler` is intentionally not reused for this (see `pkg/ratelimithandler`). On Kubernetes, ensure the Redis instance's `maxmemory-policy` is `noeviction` or `volatile-*`; an `allkeys-lru` policy can cause rate-limit keys to be evicted under memory pressure, which degrades to the same fail-open behavior as a Redis timeout.
 
@@ -60,6 +71,20 @@ Circuit-breaker metrics for each RabbitMQ RPC target are also registered under t
 ---
 
 ## Common Failure Modes
+
+### AudioSocket Advertise Address Resolution Failure (startup crash loop)
+
+**Symptom:** The container crashes immediately after starting and enters a restart/crash loop -- it never reaches a healthy state, so no other failure mode below applies.
+
+**Cause:** `POD_IP` is set to a value that is not a valid IP address (e.g. a hostname string), or (with `POD_IP` unset) no non-loopback IPv4 address could be auto-detected on any network interface. Either way, `internal/nethandler.AdvertiseIP()` / `cmd/api-manager/main.go`'s `getAddressAdvertiseAudiosock()` cannot resolve a usable AudioSocket advertise address, and the service fails fast rather than silently handing Asterisk an empty or unusable host (see the "AudioSocket listen vs. advertise address" subsection above).
+
+**Log signal:** `log.Fatalf` in `cmd/api-manager/main.go`'s `run()` prints, then the process exits:
+```
+Could not resolve the audiosocket advertise address. err: the resolved audiosocket advertise address is not a valid ip. ip: <value>
+```
+(or, when no address could be auto-detected at all: `err: could not resolve the audiosocket advertise ip: could not auto-detect advertise ip: no non-loopback ipv4 address found on any network interface`)
+
+**Resolution:** Either unset `POD_IP` so the service auto-detects an address from the container's network interfaces, or set `POD_IP` to a valid, routable IPv4/IPv6 address (not a hostname).
 
 ### Backend Service Unavailable
 

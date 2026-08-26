@@ -44,7 +44,6 @@ func TestBootstrap(t *testing.T) {
 		{"gcp_bucket_name", "gcp_bucket_name"},
 		{"ssl_cert_base64", "ssl_cert_base64"},
 		{"ssl_privkey_base64", "ssl_privkey_base64"},
-		{"listen_ip_audiosock", "listen_ip_audiosock"},
 	}
 
 	for _, tt := range tests {
@@ -54,6 +53,14 @@ func TestBootstrap(t *testing.T) {
 				t.Errorf("Flag %s was not registered", tt.flagName)
 			}
 		})
+	}
+
+	// The AudioSocket listener now always binds to all interfaces and the
+	// advertise address is resolved via internal/nethandler.AdvertiseIP(),
+	// so the old listen_ip_audiosock flag (bound to POD_IP)
+	// must not be registered anymore.
+	if flag := flags.Lookup("listen_ip_audiosock"); flag != nil {
+		t.Errorf("Flag listen_ip_audiosock should no longer be registered, got: %v", flag)
 	}
 }
 
@@ -71,7 +78,6 @@ func TestConfigStruct(t *testing.T) {
 		GCPBucketName:           "test-bucket",
 		SSLCertBase64:           "dGVzdA==",
 		SSLPrivKeyBase64:        "dGVzdA==",
-		ListenIPAudiosock:       "0.0.0.0",
 	}
 
 	tests := []struct {
@@ -91,7 +97,6 @@ func TestConfigStruct(t *testing.T) {
 		{"GCPBucketName", cfg.GCPBucketName, "test-bucket"},
 		{"SSLCertBase64", cfg.SSLCertBase64, "dGVzdA=="},
 		{"SSLPrivKeyBase64", cfg.SSLPrivKeyBase64, "dGVzdA=="},
-		{"ListenIPAudiosock", cfg.ListenIPAudiosock, "0.0.0.0"},
 	}
 
 	for _, tt := range tests {
