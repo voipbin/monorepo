@@ -70,4 +70,4 @@ This service uses two queues simultaneously:
 
 Asterisk dials into the Go service on TCP port 8080 (AudioSocket protocol) for media delivery to active streaming sessions.
 
-See [docs/patterns/per-pod-queues.md](../docs/patterns/per-pod-queues.md) for the canonical per-pod queue pattern. Note: `bin-tts-manager` uses `HOSTNAME` as `HostID`, while `bin-transcribe-manager` uses `POD_IP`.
+See [docs/patterns/per-pod-queues.md](../docs/patterns/per-pod-queues.md) for the canonical per-pod queue pattern. Note: `bin-tts-manager` uses `HOSTNAME` as `HostID`, while `bin-transcribe-manager` uses a random UUID generated fresh at each process start (not `POD_IP`).

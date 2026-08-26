@@ -15,7 +15,7 @@ A transcription session associating a call/conference/recording with an STT prov
 | `language` | string | BCP47 language code (e.g., `en-US`, `ko-KR`) |
 | `direction` | enum | Audio direction: `in`, `out`, or `both` |
 | `status` | enum | `progressing` or `done` |
-| `host_id` | string | `POD_IP` of the owning pod — used for per-pod queue routing |
+| `host_id` | UUID | Random UUID generated at process startup (`uuid.NewV4()`), not `POD_IP` — used for per-pod queue routing; changes on every process restart |
 | `tm_create` | timestamp | Creation time |
 | `tm_update` | timestamp | Last update time |
 | `tm_delete` | timestamp | Soft-delete marker |
@@ -50,7 +50,7 @@ Both providers use 8 kHz, 16-bit mono signed linear PCM (slin) audio:
 
 ### Per-Pod Session Anchoring
 
-Streaming sessions live in memory on the pod that created them (`mapStreaming`, mutex-protected via `muStreaming`). The session's `host_id = POD_IP` is persisted to MySQL so follow-up RPCs (`stop`, `health-check`) can be routed to the correct pod.
+Streaming sessions live in memory on the pod that created them (`mapStreaming`, mutex-protected via `muStreaming`). The session's `host_id` — a random UUID generated once when the process starts, not `POD_IP` — is persisted to MySQL so follow-up RPCs (`stop`, `health-check`) can be routed to the correct process. Because `host_id` is regenerated on every restart, a restart invalidates routing to any of that process's prior sessions, independent of whether the pod's IP changed.
 
 Always lock/unlock the session map when accessing it. Implement proper cleanup in `Stop()` to prevent goroutine and WebSocket leaks.
 
