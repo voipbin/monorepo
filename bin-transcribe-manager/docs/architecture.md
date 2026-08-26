@@ -54,13 +54,13 @@ This service uses two queues simultaneously:
 | GET | `/v1/transcribes/{uuid}` | `v1TranscribesIDGet` — get session by ID |
 | GET | `/v1/transcripts?` | `v1TranscriptsGet` — list transcript segments |
 
-**Per-pod queue** `bin-manager.transcribe-manager.request.<host_id>` — must reach the pod owning the session:
+**Per-pod queue** `bin-manager.transcribe-manager-<host_id>.request` — must reach the pod owning the session:
 
 | Method | URI Pattern | Handler |
 |--------|-------------|---------|
 | GET | `/v1/transcribes/{uuid}/health-check` | Session liveness check |
 | POST | `/v1/transcribes/{uuid}/stop` | Stop active streaming session |
 
-The `host_id` is `POD_IP` (from Kubernetes Downward API), stored on the session record. Callers route per-pod RPCs using this value.
+The `host_id` is a random UUID (`uuid.Must(uuid.NewV4())`) generated fresh in `cmd/transcribe-manager/main.go` each time the process starts — it is not `POD_IP` or any other pod identity. It is stored on the session record so callers can route per-pod RPCs using this value, but it changes on every process restart, not just when the underlying pod IP changes.
 
-See [docs/patterns/per-pod-queues.md](../docs/patterns/per-pod-queues.md) for the canonical per-pod queue pattern (queue naming, identity source, Calico POD_IP recycle limitation).
+See [docs/patterns/per-pod-queues.md](../docs/patterns/per-pod-queues.md) for the general per-pod queue pattern (naming convention, volatile queue declaration). That doc's example identity source is `POD_IP`; this service instead uses a process-lifetime random UUID as its identity source.

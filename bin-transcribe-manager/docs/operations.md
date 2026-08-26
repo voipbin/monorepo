@@ -5,7 +5,7 @@
 | Symptom | Likely Cause | Resolution |
 |---------|-------------|------------|
 | Session stuck in `progressing` | `call_hangup` event not received or not processed. **Also**: the zombie-session invariant (see [Zombie-Session Invariant and Recovery](#zombie-session-invariant-and-recovery) below) deliberately refuses to move a transcribe to `done` while any of its streaming sessions genuinely failed to stop | Check subscribe handler queue; manually stop via `POST /v1/transcribes/{id}/stop`. See the section below for the full mitigation picture, including a current limitation that prevents automatic retry today |
-| STT RPC routed to wrong pod | Stale `host_id` after pod restart (Calico POD_IP recycle) | See [per-pod-queues.md](../../docs/patterns/per-pod-queues.md) for known limitation; session must be recreated |
+| STT RPC routed to wrong/nonexistent pod | Stale `host_id` after any process restart — `host_id` is a random UUID generated fresh at startup (not derived from `POD_IP` or pod identity), so it changes every time the process restarts, not only when the pod IP changes | Session must be recreated; see [docs/architecture.md](architecture.md) for per-pod queue naming |
 | No transcripts appearing | WebSocket to Asterisk not established | Check `streaming_handler` logs for dial errors; verify `MediaURI` from `ExternalMediaStart` |
 | GCP auth failure | ADC not configured | Check `GOOGLE_APPLICATION_CREDENTIALS` points to a valid mounted service account key file |
 | AWS auth failure | Missing credentials | Verify `AWS_ACCESS_KEY` / `AWS_SECRET_KEY` env vars |
@@ -76,7 +76,7 @@ Service uses Cobra and Viper (`internal/config/main.go`). Configuration loaded o
 | `redis_database` / `REDIS_DATABASE` | Redis DB index | optional |
 | `aws_access_key` / `AWS_ACCESS_KEY` | AWS Transcribe access key | optional (if GCP configured) |
 | `aws_secret_key` / `AWS_SECRET_KEY` | AWS Transcribe secret key | optional (if GCP configured) |
-| `pod_ip` / `POD_IP` | Pod IP (Kubernetes Downward API) — used as `HostID` for per-pod queue | required |
+| `pod_ip` / `POD_IP` | Pod IP (Kubernetes Downward API); config field is intended for the AudioSocket streaming listener bind address — **not** the per-pod queue `host_id`, which is a random UUID generated at process startup independent of `POD_IP` | required |
 | `streaming_listen_port` / `STREAMING_LISTEN_PORT` | Port for WebSocket streaming connections | required |
 | `prometheus_endpoint` / `PROMETHEUS_ENDPOINT` | Metrics HTTP path | `/metrics` |
 | `prometheus_listen_address` / `PROMETHEUS_LISTEN_ADDRESS` | Metrics listen address | `:2112` |
@@ -113,10 +113,13 @@ block as bin-storage-manager. `GCP_SA_JSON` comes from
 literal (`${POD_IP:-127.0.0.1}`) since the K8s Downward API wiring this
 was meant for was never carried over to Docker Compose - the Komodo
 compose file keeps that same literal, matching current production
-behavior exactly. This service's per-pod queue routing
-(`bin-manager.transcribe-manager.request.<POD_IP>`, see this service's
-CLAUDE.md) is therefore unaffected by the cutover - it already runs as a
-single instance with this same fixed value today.
+behavior exactly. Note that this service's per-pod queue routing does
+not actually key off `POD_IP` at all - the per-pod queue name is
+`bin-manager.transcribe-manager-<host_id>.request`, where `<host_id>`
+is a random UUID generated fresh at each process start (see this
+service's CLAUDE.md), so the queue name already changes on every
+restart regardless of `POD_IP`. The Komodo cutover is therefore
+unaffected either way - it already runs as a single instance today.
 
 No healthcheck block: distroless (`gcr.io/distroless/static-debian12`),
 same as every other distroless `bin-*-manager` service (VOIP-1342 pilot

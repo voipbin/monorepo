@@ -36,9 +36,9 @@ go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-l
 
 ## Critical Implementation Notes
 
-**Per-pod queue routing uses `POD_IP`**: The `HostID` for per-pod queue is `POD_IP` (Kubernetes Downward API `status.podIP`). Control RPCs targeting an active session (`stop`, `health-check`) must be routed to `bin-manager.transcribe-manager.request.<POD_IP>`. Contrast with `bin-tts-manager` which uses `HOSTNAME`.
+**Per-pod queue routing uses a random `HostID` UUID**: `cmd/transcribe-manager/main.go` generates `hostID := uuid.Must(uuid.NewV4())` once at process startup — it is not `POD_IP` or any other pod identity. Control RPCs targeting an active session (`stop`, `health-check`) must be routed to `bin-manager.transcribe-manager-<host_id>.request` (note the hyphen before the UUID and the `.request` suffix at the end, not a dot-suffixed `<host_id>` after `.request`). Contrast with `bin-tts-manager` which uses `HOSTNAME`.
 
-**Calico POD_IP recycle limitation**: If a pod restarts and gets a new IP, sessions from the old pod are orphaned. See [docs/patterns/per-pod-queues.md](../docs/patterns/per-pod-queues.md).
+**HostID changes on every restart**: Because `hostID` is a fresh random UUID generated each time the process starts (not tied to pod IP or hostname), the per-pod queue name changes on every restart, not only when the underlying pod IP changes. Sessions from before a restart are orphaned — the old queue is gone and any caller still holding the old `host_id` must treat it as unreachable. See [docs/patterns/per-pod-queues.md](../docs/patterns/per-pod-queues.md) for the general per-pod queue pattern (used there with a `POD_IP`-based identity by other services; transcribe-manager instead uses a process-lifetime random UUID).
 
 **Session map locking**: Always lock/unlock `muStreaming` when accessing `mapStreaming`. Failure to lock causes data races under concurrent streaming session operations.
 

@@ -48,4 +48,4 @@ go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-l
 
 ## Per-Pod Queue Pattern
 
-See [docs/patterns/per-pod-queues.md](../docs/patterns/per-pod-queues.md) for the canonical pattern. Note: `bin-tts-manager` differs from `bin-transcribe-manager` in that it uses `HOSTNAME` (not `POD_IP`) as the HostID.
+See [docs/patterns/per-pod-queues.md](../docs/patterns/per-pod-queues.md) for the canonical pattern. Note: `bin-tts-manager` uses `HOSTNAME` as the HostID, while `bin-transcribe-manager` uses a random UUID generated fresh at each process start (not `POD_IP`).
