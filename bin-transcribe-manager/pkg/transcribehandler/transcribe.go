@@ -146,12 +146,24 @@ func (h *transcribeHandler) Delete(ctx context.Context, id uuid.UUID) (*transcri
 	}
 
 	if tr.Status != transcribe.StatusDone {
-		// transcribe is ongoing. need to stop the first.
+		// transcribe is ongoing. try to stop it first, but do not let a stop
+		// failure block the delete: Stop() deliberately refuses to mark a
+		// transcribe done when a streaming session could not genuinely be
+		// stopped(see pkg/transcribehandler/stop.go's zombie-session
+		// invariant), and if we returned here on that error, this transcribe
+		// could never be deleted at all - which would turn every genuine stop
+		// failure into a permanently undeletable record (e.g. a new source of
+		// orphaned data in the customer-deletion cascade). Deletion integrity
+		// takes priority over this one field's consistency, so log loudly and
+		// proceed with delete regardless. This exception is intentionally
+		// scoped to the delete path; HealthCheck and the explicit stop RPC
+		// must still surface Stop failures normally.
 		tmp, err := h.Stop(ctx, tr.ID)
 		if err != nil {
-			return nil, errors.Wrapf(err, "could not stop the transcribing. transcribe_id: %s", tr.ID)
+			log.Errorf("Could not stop the transcribe before delete; streaming may still be active on Asterisk and external media was not confirmed stopped. Proceeding with delete anyway so the deletion cascade is not blocked, but this may leave a live streaming session with no VoIPbin record to stop it. transcribe_id: %s, err: %v", tr.ID, err)
+		} else {
+			log.WithField("transcribe", tmp).Debugf("Stopped transcribe. transcribe_id: %s", tr.ID)
 		}
-		log.WithField("transcribe", tmp).Debugf("Stopped transcribe. transcribe_id: %s", tr.ID)
 	}
 
 	// delete transcripts
