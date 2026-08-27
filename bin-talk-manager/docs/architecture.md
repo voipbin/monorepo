@@ -23,7 +23,11 @@ Key packages:
 | `pkg/participanthandler` | Chat membership UPSERT operations |
 | `pkg/reactionhandler` | Atomic emoji reaction management |
 | `pkg/dbhandler` | MySQL + Redis persistence |
-| `pkg/notifyhandler` | Event publishing to `bin-manager.talk-manager.event` |
+| `pkg/notifyhandler` (shared) | Event publishing to `bin-manager.talk-manager.event` and, since VOIP-1405, dual publishing to the global topic exchange `bin-manager.event` |
+
+`cmd/talk-manager` constructs its NotifyHandler with `commonnotify.WithGlobalTopicPublish()`, so every event is published twice: once to the per-service fanout exchange `bin-manager.talk-manager.event` (unchanged, still the system of record) and once to the global topic exchange `bin-manager.event` with the routing key `talk-manager.<resource>.<chat-id>.<action>`. A topic publish failure never propagates to the caller and never affects the fanout publish.
+
+`cmd/talk-control` deliberately does NOT get the option in this change: it constructs its NotifyHandler with an empty `queueEvent` and a nil `reqHandler`, a pre-existing defect tracked as a separate ticket (VOIP-1405 §7). The option is to be added there only after that defect is fixed. See [docs/domain.md](domain.md) for the per-event routing keys and the monorepo `docs/plans/2026-08-27-voip-1404-global-topic-exchange-design.md` for the schema.
 
 ## Layer Responsibilities
 

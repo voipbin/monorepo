@@ -69,13 +69,17 @@ Self-RPC note: `/v1/executions/prune` and `/v1/backups` arrive on the service's 
 
 CRUD and execution outcomes publish internal events via notifyhandler on `bin-manager.schedule-manager.event`:
 
-| Event | Trigger |
-|-------|---------|
-| `schedule_created` | Successful `POST /v1/schedules` |
-| `schedule_updated` | Successful `PUT /v1/schedules/<id>` |
-| `schedule_deleted` | Successful `DELETE /v1/schedules/<id>` or customer-deleted cascade |
-| `execution_succeeded` | Dispatch completed with a success response |
-| `execution_failed` | Dispatch exhausted its retry budget with failures |
+| Event | Data | Trigger | Topic routing key |
+|-------|------|---------|-------------------|
+| `schedule_created` | `schedule.Schedule` | Successful `POST /v1/schedules` | `schedule-manager.schedule.<schedule-id>.created` |
+| `schedule_updated` | `schedule.Schedule` | Successful `PUT /v1/schedules/<id>` | `schedule-manager.schedule.<schedule-id>.updated` |
+| `schedule_deleted` | `schedule.Schedule` | Successful `DELETE /v1/schedules/<id>` or customer-deleted cascade | `schedule-manager.schedule.<schedule-id>.deleted` |
+| `execution_succeeded` | `execution.Execution` | Dispatch completed with a success response | `schedule-manager.execution.<schedule-id>.succeeded` |
+| `execution_failed` | `execution.Execution` | Dispatch exhausted its retry budget with failures | `schedule-manager.execution.<schedule-id>.failed` |
+
+Since VOIP-1405, `cmd/schedule-manager` constructs its NotifyHandler with `notifyhandler.WithGlobalTopicPublish()`, so each of the events above is published twice: once to the per-service fanout exchange `bin-manager.schedule-manager.event` (unchanged, still the system of record) and once to the global topic exchange `bin-manager.event` with the routing key in the last column. `cmd/schedule-control` builds no NotifyHandler at all, so there is no second wiring site to keep in lockstep. A topic publish failure never propagates to the caller and never affects the fanout publish. The third key segment is the *subscription address* — always the schedule-id, in both namespaces; see [docs/domain.md](domain.md) and the monorepo `docs/plans/2026-08-27-voip-1404-global-topic-exchange-design.md` for the schema.
+
+The `execution_succeeded` / `execution_failed` split is decided at publish time by `dispatchhandler.notifyExecutionCompleted` from the finalized row's status, but both branches carry the same `execution.Execution` payload and resolve to the same schedule address.
 
 Every Phase 1 schedule is nil-customer, so `PublishWebhook` short-circuits — there is deliberately no `WebhookMessage` and no RST struct documentation until Phase 3 exposes customer-owned schedules.
 

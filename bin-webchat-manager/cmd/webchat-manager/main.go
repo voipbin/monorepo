@@ -118,7 +118,7 @@ func run(db dbhandler.DBHandler) error {
 
 	// create handlers
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameWebchatEvent, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameWebchatEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 	widgetHandler := widgethandler.NewWidgetHandler(reqHandler, db)
 	sessionHandler := sessionhandler.NewSessionHandler(reqHandler, notifyHandler, db, widgetHandler)
 	messageHandler := messagehandler.NewMessageHandler(reqHandler, notifyHandler, db)

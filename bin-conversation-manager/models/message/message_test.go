@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	"monorepo/bin-common-handler/models/eventtopic"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
@@ -383,5 +384,85 @@ func TestReferenceTypeConstants(t *testing.T) {
 				t.Errorf("Wrong constant value. expect: %s, got: %s", tt.expected, tt.constant)
 			}
 		})
+	}
+}
+
+// Message overrides the subscription address of the global topic exchange (VOIP-1404/1405). The
+// assertion pins the POINTER receiver: notifyhandler asserts on the dynamic type of the event
+// data, which is always a pointer, so a value receiver would silently never be picked up.
+var _ eventtopic.SubscriptionIdentifier = (*Message)(nil)
+
+func Test_MessageEventSubscriptionID(t *testing.T) {
+	conversationID := uuid.FromStringOrNil("6b0d9f70-0000-4000-8000-000000000001")
+
+	tests := []struct {
+		name    string
+		message *Message
+		expect  string
+	}{
+		{
+			name: "normal",
+			message: &Message{
+				Identity: commonidentity.Identity{
+					ID:         uuid.Must(uuid.NewV4()),
+					CustomerID: uuid.Must(uuid.NewV4()),
+				},
+				ConversationID: conversationID,
+				Direction:      DirectionIncoming,
+				Status:         StatusDone,
+				Text:           "hello",
+			},
+			expect: conversationID.String(),
+		},
+		{
+			name:    "empty conversation id",
+			message: &Message{},
+			expect:  uuid.Nil.String(),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res := tt.message.EventSubscriptionID()
+			if res != tt.expect {
+				t.Errorf("Wrong match. expect: %s, got: %s", tt.expect, res)
+			}
+		})
+	}
+}
+
+// Test_MessageEventSubscriptionIDIsNotOwnID is the load-bearing half of the pair: a Message DOES
+// carry a stable own id, so an override that accidentally returned it would still look
+// well-formed and would still pass Test_MessageEventSubscriptionID's "normal" row if the two ids
+// happened to be equal. Two distinct messages of ONE conversation must resolve to the same
+// address, and that address must not be either message's own id.
+func Test_MessageEventSubscriptionIDIsNotOwnID(t *testing.T) {
+	conversationID := uuid.Must(uuid.NewV4())
+
+	first := &Message{
+		Identity: commonidentity.Identity{
+			ID:         uuid.Must(uuid.NewV4()),
+			CustomerID: uuid.Must(uuid.NewV4()),
+		},
+		ConversationID: conversationID,
+	}
+	second := &Message{
+		Identity: commonidentity.Identity{
+			ID:         uuid.Must(uuid.NewV4()),
+			CustomerID: first.CustomerID,
+		},
+		ConversationID: conversationID,
+	}
+
+	if first.ID == second.ID {
+		t.Fatalf("Message ids are expected to differ per message. id: %s", first.ID)
+	}
+
+	if first.EventSubscriptionID() == first.ID.String() {
+		t.Errorf("Subscription address must not be the message's own id. id: %s", first.ID)
+	}
+
+	if first.EventSubscriptionID() != second.EventSubscriptionID() {
+		t.Errorf("Wrong match. expect: %s, got: %s", first.EventSubscriptionID(), second.EventSubscriptionID())
 	}
 }

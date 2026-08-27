@@ -37,6 +37,23 @@ type Message struct {
 	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
 }
 
+// EventSubscriptionID returns the subscription address of the global topic exchange
+// `bin-manager.event` (VOIP-1404/1405 §2.3). It is the parent ChatID, not the message's own ID.
+//
+// The message id is stable and persisted, so this is a Category B override: the id first appears
+// in the message's own `chatmessage_created` event, which means nobody can pre-bind to it, while
+// every real consumption pattern follows a chat. Addressing by the parent makes
+// `talk-manager.chatmessage.<chat-id>.#` deliver the whole conversation. Single-message retrieval
+// stays available over RPC. The production webhook path already addresses chat children by their
+// chat id (bin-webhook-manager/pkg/webhookhandler/routingkey.go), so this matches the existing
+// contract rather than inventing one.
+//
+// The receiver is a pointer because the event data reaches notifyhandler as a pointer and the
+// eventtopic.SubscriptionIdentifier assertion matches the dynamic type.
+func (m *Message) EventSubscriptionID() string {
+	return m.ChatID.String()
+}
+
 // WebhookMessage is the webhook payload for message events
 type WebhookMessage struct {
 	commonidentity.Identity

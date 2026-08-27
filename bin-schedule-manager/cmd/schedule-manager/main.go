@@ -132,7 +132,7 @@ func runServices(ctx context.Context, sqlDB *sql.DB, cache cachehandler.CacheHan
 	// create handlers
 	db := dbhandler.NewHandler(sqlDB, cache)
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameScheduleEvent, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameScheduleEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 
 	scheduleHandler := schedulehandler.NewScheduleHandler(reqHandler, db, notifyHandler)
 	backupHandler := backuphandler.NewBackupHandler(cfg.DatabaseDSN, cfg.ScheduleBackupDir, cfg.ScheduleBackupRetentionCount)

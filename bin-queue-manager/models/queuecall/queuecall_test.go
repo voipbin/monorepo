@@ -4,6 +4,9 @@ import (
 	"testing"
 
 	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/models/eventtopic"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 )
 
 func TestQueuecallStruct(t *testing.T) {
@@ -89,5 +92,77 @@ func TestStatusConstants(t *testing.T) {
 				t.Errorf("Wrong constant value. expect: %s, got: %s", tt.expected, tt.constant)
 			}
 		})
+	}
+}
+
+// Queuecall overrides the subscription address of the global topic exchange (VOIP-1404/1405).
+// The assertion pins the POINTER receiver: notifyhandler asserts on the dynamic type of the event
+// data, which is always a pointer, so a value receiver would silently never be picked up.
+var _ eventtopic.SubscriptionIdentifier = (*Queuecall)(nil)
+
+func TestQueuecallEventSubscriptionID(t *testing.T) {
+	queueID := uuid.Must(uuid.NewV4())
+
+	tests := []struct {
+		name      string
+		queuecall *Queuecall
+		expect    string
+	}{
+		{
+			"normal",
+			&Queuecall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.Must(uuid.NewV4()),
+					CustomerID: uuid.Must(uuid.NewV4()),
+				},
+				QueueID: queueID,
+				Status:  StatusWaiting,
+			},
+			queueID.String(),
+		},
+		{
+			"empty queue id",
+			&Queuecall{},
+			uuid.Nil.String(),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res := tt.queuecall.EventSubscriptionID()
+			if res != tt.expect {
+				t.Errorf("Wrong match. expect: %s, got: %s", tt.expect, res)
+			}
+		})
+	}
+}
+
+// TestQueuecallEventSubscriptionIDIsNotOwnID pins the property the override exists for: every
+// queuecall of one queue resolves to the SAME address, and that address is never the queuecall's
+// own id. Two distinct queuecalls of one queue must converge, so a consumer binds
+// `queue-manager.queuecall.<queue-id>.#` once and follows the whole queue.
+func TestQueuecallEventSubscriptionIDIsNotOwnID(t *testing.T) {
+	queueID := uuid.Must(uuid.NewV4())
+
+	first := &Queuecall{
+		Identity: commonidentity.Identity{ID: uuid.Must(uuid.NewV4())},
+		QueueID:  queueID,
+	}
+	second := &Queuecall{
+		Identity: commonidentity.Identity{ID: uuid.Must(uuid.NewV4())},
+		QueueID:  queueID,
+	}
+
+	if first.ID == second.ID {
+		t.Fatalf("Queuecall ids are expected to differ. id: %s", first.ID)
+	}
+	if first.EventSubscriptionID() != second.EventSubscriptionID() {
+		t.Errorf("Wrong match. expect: %s, got: %s", first.EventSubscriptionID(), second.EventSubscriptionID())
+	}
+	if first.EventSubscriptionID() != queueID.String() {
+		t.Errorf("Wrong match. expect: %s, got: %s", queueID.String(), first.EventSubscriptionID())
+	}
+	if first.EventSubscriptionID() == first.ID.String() {
+		t.Errorf("Subscription address must not be the queuecall own id. id: %s", first.ID)
 	}
 }

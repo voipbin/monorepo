@@ -52,6 +52,24 @@ type Message struct {
 	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
 }
 
+// EventSubscriptionID returns the subscription address of the global topic exchange
+// `bin-manager.event` (VOIP-1404/1405). It is the parent ConversationID, not the message's own
+// ID: a message id is stable, but nobody can bind to it in advance because the id first appears
+// in the very event that announces the message. The consumption axis is the conversation — an
+// agent UI, a bot, or an integration follows one conversation and wants every message of it — so
+// the conversation-id is the address. Single-message retrieval stays available over RPC.
+//
+// Because the `conversation_message_*` event types split into resource `conversation` + action
+// `message_*`, this override also makes the message stream converge onto the very same
+// `conversation-manager.conversation.<conversation-id>.#` pattern that carries the conversation
+// lifecycle events. One binding follows a whole conversation.
+//
+// The receiver is a pointer because the event data reaches notifyhandler as a pointer and the
+// eventtopic.SubscriptionIdentifier assertion matches the dynamic type.
+func (h *Message) EventSubscriptionID() string {
+	return h.ConversationID.String()
+}
+
 // Field defines the fields for the Message entity.
 type Field string
 

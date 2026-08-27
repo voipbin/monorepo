@@ -27,6 +27,11 @@ Key packages:
 | `pkg/dbhandler` | MySQL persistence |
 | `models/tts` | Batch TTS structs |
 | `models/streaming` | Streaming session structs |
+| `pkg/notifyhandler` (shared) | Publishes events to the fanout exchange `bin-manager.tts-manager.event` and, since VOIP-1405, dual-publishes the same payload to the global topic exchange `bin-manager.event` |
+
+`cmd/tts-manager` constructs its NotifyHandler with `notifyhandler.WithGlobalTopicPublish()`, so every event is published twice: once to the per-service fanout exchange `bin-manager.tts-manager.event` (unchanged, still the system of record) and once to the global topic exchange `bin-manager.event` with the routing key `tts-manager.<resource>.<subscription-id>.<action>`. A topic publish failure never propagates to the caller and never affects the fanout publish.
+
+`cmd/tts-control` deliberately does NOT get the option: its NotifyHandler is injected only into `pkg/ttshandler`, which has zero publish sites, so there is no live publish path to mirror (VOIP-1405 §1.1; the dead dependency itself is tracked as a separate cleanup). See [docs/domain.md](domain.md) for the per-event routing keys and the monorepo `docs/plans/2026-08-27-voip-1404-global-topic-exchange-design.md` for the schema.
 
 ## Layer Responsibilities
 

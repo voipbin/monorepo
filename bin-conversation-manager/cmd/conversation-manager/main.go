@@ -120,7 +120,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler, cfg *config.Config) err
 
 	// create handlers
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameConversationEvent, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameConversationEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 
 	lineHandler := linehandler.NewLineHandler(reqHandler)
 	whatsAppHandler := whatsapphandler.NewWhatsAppHandler(reqHandler)

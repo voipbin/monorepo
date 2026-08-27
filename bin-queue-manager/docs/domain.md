@@ -34,6 +34,24 @@ Statuses: `initiating` → `waiting` → `connecting` → `service` → `done` |
 
 7. **Kick removes a queuecall from the queue**: Either by UUID or by reference call ID. This is used when a caller hangs up while waiting, or when an operator removes a caller manually.
 
+## Published Events
+
+Every event below is published to the per-service fanout exchange `bin-manager.queue-manager.event`, and — since VOIP-1405 — also to the global topic exchange `bin-manager.event` with the routing key `queue-manager.<resource>.<queue-id>.<action>`. The third key segment is the *subscription address*: it is always the queue-id, across both resource namespaces, so one queue (including every queuecall's events) is followed with `queue-manager.queue.<id>.#` and `queue-manager.queuecall.<id>.#`.
+
+| Event | Data | Topic routing key |
+|---|---|---|
+| `queue_updated` | `queue.Queue` | `queue-manager.queue.<queue-id>.updated` |
+| `queue_deleted` | `queue.Queue` | `queue-manager.queue.<queue-id>.deleted` |
+| `queuecall_created` | `queuecall.Queuecall` | `queue-manager.queuecall.<queue-id>.created` |
+| `queuecall_waiting` | `queuecall.Queuecall` | `queue-manager.queuecall.<queue-id>.waiting` |
+| `queuecall_connecting` | `queuecall.Queuecall` | `queue-manager.queuecall.<queue-id>.connecting` |
+| `queuecall_serviced` | `queuecall.Queuecall` | `queue-manager.queuecall.<queue-id>.serviced` |
+| `queuecall_abandoned` | `queuecall.Queuecall` | `queue-manager.queuecall.<queue-id>.abandoned` |
+| `queuecall_done` | `queuecall.Queuecall` | `queue-manager.queuecall.<queue-id>.done` |
+| `queuecall_deleted` | `queuecall.Queuecall` | `queue-manager.queuecall.<queue-id>.deleted` |
+
+`Queuecall` implements `eventtopic.SubscriptionIdentifier` (pointer receiver) returning `QueueID`: its own id is stable but is not a subscription axis — it first becomes known inside its own `queuecall_created` event, and every real consumption pattern follows a queue rather than an individual call in it. `Queue` needs no override — its own id already is the subscription address. The `queue_created` constant in `models/queue` has no publish site (queue creation does not notify) and is therefore not part of either stream.
+
 ## State Machines
 
 ### Queuecall Lifecycle
