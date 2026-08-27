@@ -3,6 +3,7 @@
 - Date: 2026-08-27
 - Ticket: VOIP-1404
 - Status: Approved (design review: 5 rounds, 2 consecutive approvals)
+- rev.5: §4.1 publisher normalization amended to match implementation (code-review round 1)
 - Prerequisite reading: issue analysis (VOIP-1404 ticket description), `docs/plans/2026-07-12-voip-1233-rabbitmq-ack-after-process-design.md`, `bin-webhook-manager/pkg/webhookhandler/routingkey.go` (VOIP-1258/VOIP-1296 precedent)
 
 ## 1. Problem
@@ -57,7 +58,7 @@ transcribe-manager.transcribe.9f01c3d2-....speech_interim   # subscription-id = 
 
 | Segment | Source | Rule |
 |---|---|---|
-| publisher | `notifyhandler.publisher` (service name, set at construction) | verbatim |
+| publisher | `notifyhandler.publisher` (service name, set at construction) | normalized (shared `normalizeSegment` — key↔pattern match invariant; no-op for all real service names) |
 | resource | normalized `EventType` | first segment of `strings.SplitN(normalized, "_", 2)` |
 | subscription-id | event data (§4.2) | UUID string, or `-` placeholder |
 | action | normalized `EventType` | remainder after the first `_`; if no `_` exists, the whole normalized type is the action and resource is `-` |

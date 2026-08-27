@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"time"
 
 	wmwebhook "monorepo/bin-webhook-manager/models/webhook"
@@ -61,9 +62,9 @@ func (h *notifyHandler) PublishWebhook(ctx context.Context, customerID uuid.UUID
 
 // PublishEventRaw publishes the raw event to the event queue.
 //
-// NOTE (VOIP-1404): the subscription id is always passed as "" here -- a []byte payload cannot
-// satisfy the eventtopic.SubscriptionIdentifier assertion -- so the global topic publish falls
-// back to the top-level "id" of the payload, if any.
+// NOTE (VOIP-1404): no subscription-address override exists here -- a []byte payload cannot
+// satisfy the eventtopic.SubscriptionIdentifier assertion -- so hasOverride is false and the
+// global topic publish falls back to the top-level "id" of the payload, if any.
 func (h *notifyHandler) PublishEventRaw(ctx context.Context, eventType string, dataType string, data []byte) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "PublishEventRaw",
@@ -71,7 +72,7 @@ func (h *notifyHandler) PublishEventRaw(ctx context.Context, eventType string, d
 		"data_type":  dataType,
 	})
 
-	if err := h.publishEvent(eventType, dataType, data, requestTimeoutDefault, 0, ""); err != nil {
+	if err := h.publishEvent(eventType, dataType, data, requestTimeoutDefault, 0, "", false); err != nil {
 		log.Errorf("Could not publish the call event. err: %v", err)
 		return
 	}
@@ -93,24 +94,53 @@ func (h *notifyHandler) PublishEvent(ctx context.Context, eventType string, data
 
 	// VOIP-1404: resolve the subscription address here, while the data is still a typed value.
 	// publishEvent only sees the marshaled bytes, so the opt-in override cannot be resolved there.
-	// The assertion matches a pointer dynamic type -- implementations use pointer receivers.
+	// Gated on topicEnabled: with the option off, nothing about the pre-VOIP-1404 fanout path may
+	// change -- not even a type assertion on the caller's data.
 	subscriptionID := ""
-	if identifier, ok := data.(eventtopic.SubscriptionIdentifier); ok {
-		subscriptionID = identifier.EventSubscriptionID()
+	hasOverride := false
+	if h.topicEnabled {
+		subscriptionID, hasOverride = resolveSubscriptionOverride(data)
 	}
 
-	if err := h.publishEvent(string(eventType), string(wmwebhook.DataTypeJSON), m, requestTimeoutDefault, 0, subscriptionID); err != nil {
+	if err := h.publishEvent(string(eventType), string(wmwebhook.DataTypeJSON), m, requestTimeoutDefault, 0, subscriptionID, hasOverride); err != nil {
 		log.Errorf("Could not publish the call event. err: %v", err)
 		return
 	}
 }
 
+// resolveSubscriptionOverride resolves the opt-in subscription-address override of the given event
+// data (VOIP-1404 design §4.2). The second return value reports whether an override EXISTS, which
+// is deliberately independent of the value it produced: an override that returns "" or uuid.Nil
+// still suppresses the JSON `id` fallback, because the type has declared that its top-level id is
+// not a subscription address. Falling back behind its back would resurrect exactly the
+// meaningless-but-well-formed address the interface exists to prevent.
+//
+// The assertion matches a pointer dynamic type -- implementations use pointer receivers.
+func resolveSubscriptionOverride(data interface{}) (string, bool) {
+	identifier, ok := data.(eventtopic.SubscriptionIdentifier)
+	if !ok {
+		return "", false
+	}
+
+	// typed-nil guard. A nil pointer whose type implements the interface satisfies the assertion,
+	// and every real implementation dereferences its receiver -- calling the method would panic on
+	// the caller's goroutine. Such a payload marshals to `null`, so the JSON fallback finds no id
+	// either: reporting "no override" routes it to the `-` placeholder, the correct address for a
+	// payload that carries nothing.
+	if v := reflect.ValueOf(data); v.Kind() == reflect.Ptr && v.IsNil() {
+		return "", false
+	}
+
+	return identifier.EventSubscriptionID(), true
+}
+
 // publishEvent publishes a event to the event queue.
 //
-// subscriptionID is the resolved subscription address of the event, or "" when the caller could
-// not resolve one (VOIP-1404). It is only used by the global topic publish, which falls back to
-// the payload's top-level "id" when it is empty.
-func (h *notifyHandler) publishEvent(eventType string, dataType string, data json.RawMessage, timeout int, delay int, subscriptionID string) error {
+// subscriptionID is the subscription address produced by the event data's opt-in override, and
+// hasOverride reports whether that override exists at all (VOIP-1404). Both are only used by the
+// global topic publish: without an override it falls back to the payload's top-level "id", with
+// one it never does -- see resolveSubscriptionOverride.
+func (h *notifyHandler) publishEvent(eventType string, dataType string, data json.RawMessage, timeout int, delay int, subscriptionID string, hasOverride bool) error {
 
 	// create a event
 	evt := &sock.Event{
@@ -148,7 +178,7 @@ func (h *notifyHandler) publishEvent(eventType string, dataType string, data jso
 
 	// VOIP-1404: dual publish. Reached only when delay == 0 -- the delayed branch above returns
 	// early, since delayed-event topic semantics are deferred to the follow-up.
-	h.publishTopicEvent(evt, subscriptionID)
+	h.publishTopicEvent(evt, subscriptionID, hasOverride)
 
 	return nil
 }
@@ -163,7 +193,7 @@ func (h *notifyHandler) publishEvent(eventType string, dataType string, data jso
 // publish nor the caller in any way. It deliberately calls sockHandler.EventPublish directly
 // instead of reusing publishDirectEvent/publishDirectEventWithKey, both of which observe
 // promNotifyProcessTime -- reusing them would pollute the existing fanout metrics.
-func (h *notifyHandler) publishTopicEvent(evt *sock.Event, subscriptionID string) {
+func (h *notifyHandler) publishTopicEvent(evt *sock.Event, subscriptionID string, hasOverride bool) {
 	if !h.topicEnabled {
 		return
 	}
@@ -180,7 +210,12 @@ func (h *notifyHandler) publishTopicEvent(evt *sock.Event, subscriptionID string
 		return
 	}
 
-	if subscriptionID == "" {
+	if !hasOverride {
+		// no opt-in override on this event data (every PublishEventRaw payload included): the
+		// subscription address defaults to the payload's top-level "id" (design §4.2). With an
+		// override present the fallback is skipped entirely, even when the override produced an
+		// empty value -- that is a deliberate "this type has no subscription address", not a
+		// missing one.
 		subscriptionID = parseSubscriptionID(evt.Data)
 	}
 	if subscriptionID == "" || subscriptionID == uuid.Nil.String() {

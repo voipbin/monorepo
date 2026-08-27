@@ -420,11 +420,24 @@ func Test_PublishEvent_globalTopicPublish(t *testing.T) {
 			)
 
 			beforeOK := topicPublishCount(tt.eventType, topicPublishResultOK)
+			beforeNotify := notifyTotalCount(tt.eventType)
+			beforeProcessTime := notifyProcessTimeCount(tt.eventType)
 
 			h.PublishEvent(context.Background(), tt.eventType, tt.event)
 
 			if afterOK := topicPublishCount(tt.eventType, topicPublishResultOK); afterOK != beforeOK+1 {
 				t.Errorf("Wrong match. expect: %f, got: %f", beforeOK+1, afterOK)
+			}
+
+			// metric isolation: the dual publish issues TWO broker publishes but only ONE of them
+			// is the fanout publish, so promNotifyTotal must grow by exactly 1. A topic publish
+			// that reused publishDirectEvent would double this and silently corrupt the existing
+			// fanout metrics (VOIP-1404 code-review round 1, F6).
+			if afterNotify := notifyTotalCount(tt.eventType); afterNotify != beforeNotify+1 {
+				t.Errorf("Wrong match. expect: %f, got: %f", beforeNotify+1, afterNotify)
+			}
+			if afterProcessTime := notifyProcessTimeCount(tt.eventType); afterProcessTime != beforeProcessTime+1 {
+				t.Errorf("Wrong match. expect: %d, got: %d", beforeProcessTime+1, afterProcessTime)
 			}
 		})
 	}
@@ -502,10 +515,10 @@ func Test_PublishEvent_globalTopicPublishPlaceholderMetric(t *testing.T) {
 	}
 }
 
-// Test_PublishEvent_globalTopicPublishFailureIsolated verifies the failure-isolation contract: a
+// Test_publishEvent_globalTopicPublishFailureIsolated verifies the failure-isolation contract: a
 // topic publish failure must not affect the fanout publish, must not reach the caller, and must
 // be counted as an error.
-func Test_PublishEvent_globalTopicPublishFailureIsolated(t *testing.T) {
+func Test_publishEvent_globalTopicPublishFailureIsolated(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -537,7 +550,7 @@ func Test_PublishEvent_globalTopicPublishFailureIsolated(t *testing.T) {
 
 	// the private path is used here so the caller-visible error can be asserted directly --
 	// PublishEvent itself swallows it.
-	if errPublish := h.publishEvent(eventType, dataTypeJSON, m, requestTimeoutDefault, 0, ""); errPublish != nil {
+	if errPublish := h.publishEvent(eventType, dataTypeJSON, m, requestTimeoutDefault, 0, "", false); errPublish != nil {
 		t.Errorf("Wrong match. expected no error from the caller path. err: %v", errPublish)
 	}
 
@@ -567,7 +580,7 @@ func Test_publishEvent_fanoutFailureSkipsTopic(t *testing.T) {
 	mockSock.EXPECT().EventPublish(string(h.queueNotify), "", gomock.Any()).Return(fmt.Errorf("connection closed"))
 	mockSock.EXPECT().EventPublish(string(commonoutline.QueueNameEvent), gomock.Any(), gomock.Any()).Times(0)
 
-	err := h.publishEvent("test_fanoutfailed", dataTypeJSON, []byte(`{"id":"d3454367-a1bc-11f1-92ef-60452e5e40a2"}`), requestTimeoutDefault, 0, "")
+	err := h.publishEvent("test_fanoutfailed", dataTypeJSON, []byte(`{"id":"d3454367-a1bc-11f1-92ef-60452e5e40a2"}`), requestTimeoutDefault, 0, "", false)
 	if err == nil {
 		t.Error("Wrong match. expected an error from the fanout publish.")
 	}
@@ -612,7 +625,7 @@ func Test_publishEvent_delayedSkipsTopic(t *testing.T) {
 	mockSock.EXPECT().EventPublishWithDelay(string(commonoutline.QueueNameDelay), string(h.queueNotify), gomock.Any(), DelaySecond).Return(nil)
 	mockSock.EXPECT().EventPublish(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 
-	if err := h.publishEvent("test_delayed", dataTypeJSON, []byte(`{"id":"f5676589-a1bc-11f1-92ef-60452e5e40a2"}`), requestTimeoutDefault, DelaySecond, ""); err != nil {
+	if err := h.publishEvent("test_delayed", dataTypeJSON, []byte(`{"id":"f5676589-a1bc-11f1-92ef-60452e5e40a2"}`), requestTimeoutDefault, DelaySecond, "", false); err != nil {
 		t.Errorf("Wrong match. expected no error. err: %v", err)
 	}
 }
@@ -689,6 +702,148 @@ func Test_PublishEventRaw_globalTopicPublish(t *testing.T) {
 			)
 
 			h.PublishEventRaw(context.Background(), tt.eventType, tt.dataType, tt.data)
+		})
+	}
+}
+
+// Test_PublishEvent_typedNilSubscriptionIdentifier pins the typed-nil contract (VOIP-1404
+// code-review round 1, F1). A nil pointer whose type implements SubscriptionIdentifier satisfies
+// the type assertion, and calling the method on it dereferences a nil receiver. Neither the
+// option-off path (which must not assert at all) nor the option-on path (which guards the nil
+// before calling) may panic; with the option on the payload marshals to `null`, so the key falls
+// on the `-` placeholder.
+func Test_PublishEvent_typedNilSubscriptionIdentifier(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		topicEnabled bool
+		eventType    string
+
+		expectTopicPublish     bool
+		expectRoutingKey       string
+		expectPlaceholderDelta float64
+	}{
+		{
+			name: "option off",
+
+			topicEnabled: false,
+			eventType:    "transcribe_typedniloff",
+
+			expectTopicPublish:     false,
+			expectPlaceholderDelta: 0,
+		},
+		{
+			name: "option on",
+
+			topicEnabled: true,
+			eventType:    "transcribe_typednilon",
+
+			expectTopicPublish:     true,
+			expectRoutingKey:       "transcribe-manager.transcribe.-.typednilon",
+			expectPlaceholderDelta: 1,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+
+			h := &notifyHandler{
+				sockHandler:  mockSock,
+				queueNotify:  commonoutline.QueueNameTranscribeEvent,
+				publisher:    "transcribe-manager",
+				topicEnabled: tt.topicEnabled,
+			}
+
+			// a typed nil: the interface value is non-nil, but the pointer inside it is.
+			var event *testStreamEvent
+
+			mockSock.EXPECT().EventPublish(string(h.queueNotify), "", gomock.Any()).Return(nil)
+			if tt.expectTopicPublish {
+				mockSock.EXPECT().EventPublish(string(commonoutline.QueueNameEvent), tt.expectRoutingKey, gomock.Any()).Return(nil)
+			} else {
+				mockSock.EXPECT().EventPublish(string(commonoutline.QueueNameEvent), gomock.Any(), gomock.Any()).Times(0)
+			}
+
+			before := topicPlaceholderCount(tt.eventType)
+
+			// a panic here fails the test -- the fanout publish would never happen either.
+			h.PublishEvent(context.Background(), tt.eventType, event)
+
+			if after := topicPlaceholderCount(tt.eventType); after != before+tt.expectPlaceholderDelta {
+				t.Errorf("Wrong match. expect: %f, got: %f", before+tt.expectPlaceholderDelta, after)
+			}
+		})
+	}
+}
+
+// Test_PublishEvent_overrideSuppressesJSONFallback pins design §4.2 (VOIP-1404 code-review round
+// 1, F2): when the event data implements SubscriptionIdentifier, that override is authoritative
+// even if it produces an empty or uuid.Nil value. The payload here deliberately carries a valid
+// top-level "id" -- if the JSON fallback leaked through, the key would carry that id and the
+// placeholder counter would stay flat.
+func Test_PublishEvent_overrideSuppressesJSONFallback(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		eventType string
+		event     interface{}
+
+		expectRoutingKey string
+	}{
+		{
+			name: "override returns an empty value",
+
+			eventType: "transcribe_overrideempty",
+			event: &testEmptyOverrideEvent{
+				ID: "17898701-a1bc-11f1-92ef-60452e5e40a2",
+			},
+
+			expectRoutingKey: "transcribe-manager.transcribe.-.overrideempty",
+		},
+		{
+			name: "override returns the nil uuid",
+
+			eventType: "transcribe_overridenil",
+			event: &testNilOverrideEvent{
+				ID: "289a9812-a1bc-11f1-92ef-60452e5e40a2",
+			},
+
+			expectRoutingKey: "transcribe-manager.transcribe.-.overridenil",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+
+			h := &notifyHandler{
+				sockHandler:  mockSock,
+				queueNotify:  commonoutline.QueueNameTranscribeEvent,
+				publisher:    "transcribe-manager",
+				topicEnabled: true,
+			}
+
+			gomock.InOrder(
+				mockSock.EXPECT().EventPublish(string(h.queueNotify), "", gomock.Any()).Return(nil),
+				mockSock.EXPECT().EventPublish(string(commonoutline.QueueNameEvent), tt.expectRoutingKey, gomock.Any()).Return(nil),
+			)
+
+			before := topicPlaceholderCount(tt.eventType)
+
+			h.PublishEvent(context.Background(), tt.eventType, tt.event)
+
+			if after := topicPlaceholderCount(tt.eventType); after != before+1 {
+				t.Errorf("Wrong match. expect: %f, got: %f", before+1, after)
+			}
 		})
 	}
 }

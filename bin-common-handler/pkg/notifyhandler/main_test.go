@@ -7,6 +7,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 	dto "github.com/prometheus/client_model/go"
 	"go.uber.org/mock/gomock"
@@ -54,6 +55,32 @@ func (h *testStreamEvent) EventSubscriptionID() string {
 
 var _ eventtopic.SubscriptionIdentifier = (*testStreamEvent)(nil)
 
+// testEmptyOverrideEvent implements the override but returns an empty subscription address, while
+// its payload still carries a perfectly valid top-level "id". It pins design §4.2: an override
+// that EXISTS is authoritative, so the JSON `id` fallback must not run behind its back (VOIP-1404
+// code-review round 1, F2).
+type testEmptyOverrideEvent struct {
+	ID string `json:"id"`
+}
+
+func (h *testEmptyOverrideEvent) EventSubscriptionID() string {
+	return ""
+}
+
+var _ eventtopic.SubscriptionIdentifier = (*testEmptyOverrideEvent)(nil)
+
+// testNilOverrideEvent is the uuid.Nil variant of testEmptyOverrideEvent -- an all-zero address is
+// the same "nothing to bind to" as an empty one, and must not fall back either.
+type testNilOverrideEvent struct {
+	ID string `json:"id"`
+}
+
+func (h *testNilOverrideEvent) EventSubscriptionID() string {
+	return uuid.Nil.String()
+}
+
+var _ eventtopic.SubscriptionIdentifier = (*testNilOverrideEvent)(nil)
+
 // counterValue reads the current value of the given counter.
 func counterValue(c prometheus.Counter) float64 {
 	m := &dto.Metric{}
@@ -73,6 +100,28 @@ func topicPublishCount(eventType string, result string) float64 {
 
 func topicPlaceholderCount(eventType string) float64 {
 	return counterValue(promTopicPlaceholderTotal.WithLabelValues(eventType))
+}
+
+// notifyTotalCount reads the current value of the pre-VOIP-1404 fanout publish counter. Used to
+// pin the metric-isolation contract: the topic publish path must never touch it.
+func notifyTotalCount(eventType string) float64 {
+	return counterValue(promNotifyTotal.WithLabelValues(eventType))
+}
+
+// notifyProcessTimeCount reads the observation count of the pre-VOIP-1404 fanout process-time
+// histogram. Same isolation contract as notifyTotalCount.
+func notifyProcessTimeCount(eventType string) uint64 {
+	observer, ok := promNotifyProcessTime.WithLabelValues(eventType).(prometheus.Metric)
+	if !ok {
+		return 0
+	}
+
+	m := &dto.Metric{}
+	if err := observer.Write(m); err != nil {
+		return 0
+	}
+
+	return m.GetHistogram().GetSampleCount()
 }
 
 func TestMain(m *testing.M) {

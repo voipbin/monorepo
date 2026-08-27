@@ -37,10 +37,15 @@ import (
 var transcribeID = uuid.FromStringOrNil("9f01c3d2-0000-4000-8000-000000000001")
 
 // resolveSubscriptionID mirrors the resolution notifyhandler performs on the publish path
-// (design §4.2 / §5.2): the opt-in interface first, then the top-level "id" of the marshaled
-// payload. Keeping it here rather than reaching into notifyhandler internals is deliberate -- the
-// golden table must fail when a model stops implementing the interface, which is exactly what
-// this two-step reproduction detects.
+// (design §4.2 / §5.2): the opt-in interface first, then -- ONLY when no override exists -- the
+// top-level "id" of the marshaled payload. Keeping it here rather than reaching into notifyhandler
+// internals is deliberate -- the golden table must fail when a model stops implementing the
+// interface, which is exactly what this two-step reproduction detects.
+//
+// The early return below is the load-bearing half: an override that EXISTS is authoritative even
+// when it yields "" or uuid.Nil, so the JSON fallback must never run behind it. This matches
+// notifyhandler.resolveSubscriptionOverride's hasOverride semantics exactly; if the two ever
+// diverge, this table stops reproducing what the publish path actually generates.
 func resolveSubscriptionID(t *testing.T, data any) string {
 	t.Helper()
 
