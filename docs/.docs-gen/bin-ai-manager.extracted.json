@@ -340,9 +340,6 @@
   ],
   "metrics": [
     {
-      "name": "actions"
-    },
-    {
       "name": "aicall_backstop_reply_total"
     },
     {
@@ -370,157 +367,13 @@
       "name": "aicall_tool_execute_total"
     },
     {
-      "name": "ai_id"
-    },
-    {
       "name": "analysis_gateway_run_duration_seconds"
     },
     {
       "name": "analysis_gateway_run_total"
     },
     {
-      "name": "anonymous"
-    },
-    {
-      "name": "assistance_id"
-    },
-    {
-      "name": "assistance_type"
-    },
-    {
-      "name": "async"
-    },
-    {
-      "name": "attachments"
-    },
-    {
-      "name": "beep_start"
-    },
-    {
-      "name": "bool"
-    },
-    {
-      "name": "chained"
-    },
-    {
-      "name": "condition"
-    },
-    {
-      "name": "confbridge_id"
-    },
-    {
-      "name": "conference_id"
-    },
-    {
-      "name": "connect"
-    },
-    {
-      "name": "connection_type"
-    },
-    {
-      "name": "content"
-    },
-    {
-      "name": "conversation_id"
-    },
-    {
       "name": "conversation_reply_send_total"
-    },
-    {
-      "name": "data"
-    },
-    {
-      "name": "data_type"
-    },
-    {
-      "name": "day"
-    },
-    {
-      "name": "default_target_id"
-    },
-    {
-      "name": "destinations"
-    },
-    {
-      "name": "detail"
-    },
-    {
-      "name": "digits"
-    },
-    {
-      "name": "digits_handle"
-    },
-    {
-      "name": "direction"
-    },
-    {
-      "name": "direction_listen"
-    },
-    {
-      "name": "direction_speak"
-    },
-    {
-      "name": "duration"
-    },
-    {
-      "name": "early_execution"
-    },
-    {
-      "name": "early_media"
-    },
-    {
-      "name": "encapsulation"
-    },
-    {
-      "name": "end_of_key"
-    },
-    {
-      "name": "end_of_silence"
-    },
-    {
-      "name": "evaluation_response"
-    },
-    {
-      "name": "event_method"
-    },
-    {
-      "name": "event_url"
-    },
-    {
-      "name": "external_host"
-    },
-    {
-      "name": "false_target_id"
-    },
-    {
-      "name": "flow_id"
-    },
-    {
-      "name": "format"
-    },
-    {
-      "name": "hour"
-    },
-    {
-      "name": "int"
-    },
-    {
-      "name": "interval"
-    },
-    {
-      "name": "key"
-    },
-    {
-      "name": "language"
-    },
-    {
-      "name": "length"
-    },
-    {
-      "name": "loop_count"
-    },
-    {
-      "name": "machine_handle"
     },
     {
       "name": "message_create_total"
@@ -529,67 +382,7 @@
       "name": "message_delivery_status_update_failed_total"
     },
     {
-      "name": "message_send"
-    },
-    {
-      "name": "method"
-    },
-    {
-      "name": "minute"
-    },
-    {
-      "name": "month"
-    },
-    {
-      "name": "name"
-    },
-    {
-      "name": "note"
-    },
-    {
-      "name": "number"
-    },
-    {
-      "name": "on_end_flow_id"
-    },
-    {
-      "name": "proposal_response"
-    },
-    {
-      "name": "provider"
-    },
-    {
-      "name": "queue_id"
-    },
-    {
-      "name": "reason"
-    },
-    {
       "name": "receive_request_process_time"
-    },
-    {
-      "name": "reference_id"
-    },
-    {
-      "name": "reference_type"
-    },
-    {
-      "name": "relay_reason"
-    },
-    {
-      "name": "source"
-    },
-    {
-      "name": "status"
-    },
-    {
-      "name": "stream_urls"
-    },
-    {
-      "name": "string"
-    },
-    {
-      "name": "subject"
     },
     {
       "name": "subscribe_event_process_time"
@@ -599,54 +392,6 @@
     },
     {
       "name": "summary_start_total"
-    },
-    {
-      "name": "sync"
-    },
-    {
-      "name": "target_id"
-    },
-    {
-      "name": "target_ids"
-    },
-    {
-      "name": "text"
-    },
-    {
-      "name": "transport"
-    },
-    {
-      "name": "transport_data"
-    },
-    {
-      "name": "uri"
-    },
-    {
-      "name": "uuid"
-    },
-    {
-      "name": "value"
-    },
-    {
-      "name": "value_length"
-    },
-    {
-      "name": "value_number"
-    },
-    {
-      "name": "value_string"
-    },
-    {
-      "name": "value_type"
-    },
-    {
-      "name": "variable"
-    },
-    {
-      "name": "voice_id"
-    },
-    {
-      "name": "weekdays"
     }
   ],
   "missing_fields": []

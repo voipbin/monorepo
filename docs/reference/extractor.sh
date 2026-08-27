@@ -50,6 +50,39 @@ EVENTS_SUB="[]"
 SUB_MAIN_GO=$(grep -rl 'subscribeTargets' "$SVC_DIR/cmd/" 2>/dev/null | { grep 'main\.go' || true; } | head -1 || true)
 SUB_PKG_GO="$SVC_DIR/pkg/subscribehandler/main.go"
 
+# Extract a `{ ... }` block starting at the first line matching open_regex,
+# using brace-depth tracking instead of an awk range (`/open/,/close/`).
+# A range pattern can't close correctly on an inline/empty literal such as
+# `subscribeTargets := []string{}`: the opening pattern matches, but there is
+# no later line consisting only of `}` to match the closing pattern, so the
+# range never turns off and the scan spills into unrelated code (e.g. the
+# enclosing function's body) until it happens to hit some other line that
+# starts with `}`. Depth tracking closes on the same line when a literal
+# opens and closes inline, and still spans multiple lines correctly for the
+# non-empty case.
+# LIMITATION: depth is counted from raw text (gsub over `{`/`}`), not a real
+# parser, so an unbalanced brace inside a string literal or comment within
+# the block could still mis-close. Acceptable for this best-effort doc
+# extraction tool; the source patterns it targets (subscribeTargets slice
+# literals) don't contain such braces in practice.
+extract_brace_block() {
+  local file="$1" open_regex="$2"
+  # NOTE: the open regex is passed via the environment (ENVIRON), not `awk -v`.
+  # `awk -v var=value` runs C-style backslash-escape processing on `value`,
+  # which silently turns `\[`, `\]`, `\{` into `[`, `]`, `{` and produces an
+  # invalid dynamic regex (this was tried and broke the multi-line case).
+  # ENVIRON values are passed through verbatim.
+  EXTRACT_OPEN_RE="$open_regex" awk '
+    $0 ~ ENVIRON["EXTRACT_OPEN_RE"] { in_block = 1; depth = 0 }
+    in_block {
+      print
+      depth += gsub(/\{/, "{")
+      depth -= gsub(/\}/, "}")
+      if (depth <= 0) in_block = 0
+    }
+  ' "$file" 2>/dev/null || true
+}
+
 # Resolve QueueName constants to their string values
 resolve_const_names() {
   local const_names="$1"
@@ -67,7 +100,7 @@ resolve_const_names() {
 if [ -n "$SUB_MAIN_GO" ]; then
   # Pattern 1: subscribeTargets = []string{...} or []string{} — multi-event list
   CONST_NAMES=$(
-    { awk '/subscribeTargets.*:?=.*\[\]string\{/,/^\s*\}/' "$SUB_MAIN_GO" 2>/dev/null || true; } \
+    extract_brace_block "$SUB_MAIN_GO" 'subscribeTargets.*:?=.*\[\]string\{' \
     | { grep -oP 'QueueName\w+' || true; }
   )
   if [ -n "$CONST_NAMES" ]; then
@@ -79,7 +112,7 @@ if [ -n "$SUB_MAIN_GO" ]; then
   # Fallback: try raw string literals from []string{} block
   if [ "$EVENTS_SUB" = "[]" ]; then
     EVENTS_SUB=$(
-      { awk '/subscribeTargets.*:?=.*\[\]string\{/,/^\s*\}/' "$SUB_MAIN_GO" 2>/dev/null || true; } \
+      extract_brace_block "$SUB_MAIN_GO" 'subscribeTargets.*:?=.*\[\]string\{' \
       | { grep -oP '"[^"]*"' || true; } | tr -d '"' \
       | { grep -v '^$' || true; } \
       | jq -R '{queue_symbol: .}' | jq -s '.'
@@ -106,7 +139,7 @@ fi
 if [ "$EVENTS_SUB" = "[]" ] && [ -f "$SUB_PKG_GO" ]; then
   # Look for: var subscribeTargets = []commonoutline.QueueName{ ... } or []QueueName{ ... }
   CONST_NAMES=$(
-    { awk '/var\s+subscribeTargets\s*=\s*\[\](commonoutline\.)?QueueName\{/,/^\}/' "$SUB_PKG_GO" 2>/dev/null || true; } \
+    extract_brace_block "$SUB_PKG_GO" 'var\s+subscribeTargets\s*=\s*\[\](commonoutline\.)?QueueName\{' \
     | { grep -oP 'QueueName\w+' || true; }
   )
   if [ -n "$CONST_NAMES" ]; then
@@ -166,15 +199,28 @@ if [ -n "$CONFIG_SRC" ]; then
 fi
 
 # --- Prometheus metrics (Name: "..." in opts blocks near prometheus.New*) ---
+# Scoped to the prometheus.New*/promauto.New* constructor call itself (via
+# paren-depth tracking, same rationale and limitation as extract_brace_block
+# above) so an unrelated struct literal that happens to have a "Name" field
+# (e.g. a SIP provisioning XML entry list) doesn't get misattributed as a
+# metric name.
 METRICS="[]"
 METRIC_DIRS=""
 [ -d "$SVC_DIR/pkg" ] && METRIC_DIRS="${METRIC_DIRS:+$METRIC_DIRS }$SVC_DIR/pkg"
 [ -d "$SVC_DIR/internal" ] && METRIC_DIRS="${METRIC_DIRS:+$METRIC_DIRS }$SVC_DIR/internal"
 if [ -n "$METRIC_DIRS" ]; then
   METRICS=$(
-    { find $METRIC_DIRS -name "*.go" ! -name "*_test.go" 2>/dev/null \
-      | xargs grep -hn 'Name:\s*"[a-z]' 2>/dev/null || true; } \
-    | { grep -oP '"[a-z][a-z_0-9]+"' || true; } | tr -d '"' \
+    { find $METRIC_DIRS -name "*.go" ! -name "*_test.go" -print0 2>/dev/null \
+      | xargs -0 -I{} awk '
+          /(prometheus|promauto)\.New(Counter|Gauge|Histogram|Summary)(Vec)?\(/ { in_block = 1; depth = 0 }
+          in_block {
+            print
+            depth += gsub(/\(/, "(")
+            depth -= gsub(/\)/, ")")
+            if (depth <= 0) in_block = 0
+          }
+        ' {} 2>/dev/null || true; } \
+    | { grep -oP 'Name:\s*"\K[a-z][a-z_0-9]*(?=")' || true; } \
     | { grep -v '^$' || true; } \
     | sort -u \
     | jq -R '{name: .}' | jq -s '.'

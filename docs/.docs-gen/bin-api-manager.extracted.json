@@ -3,17 +3,7 @@
   "service_name": "bin-api-manager",
   "service_class": "B",
   "routing_table": [],
-  "events_subscribed": [
-    {
-      "queue_symbol": "bin-manager.webhook-manager.event"
-    },
-    {
-      "queue_symbol": "bin-manager.agent-manager.event"
-    },
-    {
-      "queue_symbol": "bin-manager.talk-manager.event"
-    }
-  ],
+  "events_subscribed": [],
   "events_published": [],
   "dependencies": [
     {
@@ -101,6 +91,10 @@
       "local_path": "../bin-route-manager"
     },
     {
+      "module_path": "monorepo/bin-schedule-manager",
+      "local_path": "../bin-schedule-manager"
+    },
+    {
       "module_path": "monorepo/bin-storage-manager",
       "local_path": "../bin-storage-manager"
     },
@@ -131,6 +125,10 @@
     {
       "module_path": "monorepo/bin-webhook-manager",
       "local_path": "../bin-webhook-manager"
+    },
+    {
+      "module_path": "monorepo/bin-webchat-manager",
+      "local_path": "../bin-webchat-manager"
     },
     {
       "module_path": "monorepo/bin-customer-manager",
@@ -173,9 +171,42 @@
     },
     {
       "flag": "ssl_privkey_base64"
+    },
+    {
+      "flag": "public_base_url"
+    },
+    {
+      "flag": "rate_limit_auth_public_burst"
+    },
+    {
+      "flag": "rate_limit_auth_protected_burst"
+    },
+    {
+      "flag": "rate_limit_v1_burst"
+    },
+    {
+      "flag": "rate_limit_provisioning_public_burst"
+    },
+    {
+      "flag": "rate_limit_customer_v1_burst"
+    },
+    {
+      "flag": "rate_limit_customer_v1_direct_burst"
+    },
+    {
+      "flag": "rate_limit_customer_v1_delegate_burst"
+    },
+    {
+      "flag": "rate_limit_customer_redis_timeout_ms"
     }
   ],
   "metrics": [
+    {
+      "name": "auth_delegate_token_issued_total"
+    },
+    {
+      "name": "pubsub_dropped_message_total"
+    },
     {
       "name": "receive_subscribe_event_process_time"
     }
