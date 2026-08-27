@@ -36,6 +36,14 @@ Supporting binary:
 | Models | `models/availablenumber` | AvailableNumber (search results from providers) |
 | Models | `models/providernumber` | ProviderNumber (internal provider-to-number mapping) |
 
+## Event Publishing
+
+Both `cmd/number-manager` and `cmd/number-control` construct their NotifyHandler with `notifyhandler.WithGlobalTopicPublish()`, so every event is published twice: once to the per-service fanout exchange `bin-manager.number-manager.event` (unchanged, still the system of record) and once to the global topic exchange `bin-manager.event` with the routing key `number-manager.number.<number-id>.<action>`. The two cmds must stay in lockstep on this option — enabling it in only one would leave consumers with gaps depending on which process published. A topic publish failure never propagates to the caller and never affects the fanout publish.
+
+`numberhandler.dbUpdate` picks its publish call from the event type: `number_renewed` goes out through `PublishEvent` (internal bookkeeping, no customer webhook) while `number_updated` goes out through `PublishWebhookEvent`. Both paths generate the same topic routing-key shape with the same `*number.Number` payload, so one instance binding `number-manager.number.<number-id>.#` follows the whole lifecycle.
+
+The third routing-key segment is the *subscription address* — the id consumers bind to. `number.Number` deliberately carries no `eventtopic.SubscriptionIdentifier` override: a number is an independent persistent resource, so its own id is the address and the default JSON `id` extraction covers it. `models/number/routingkey_golden_test.go` pins the exact key of every published event type (`number_created`, `number_deleted`, and both `dbUpdate` branches) plus the deliberate absence of that override. See the monorepo `docs/plans/2026-08-27-voip-1404-global-topic-exchange-design.md` for the schema and `docs/plans/2026-08-27-voip-1405-topic-publisher-rollout-design.md` §2.4 for the address mapping.
+
 ## Request Routing
 
 The `listenhandler` consumes from queue `bin-manager.number-manager.request` and dispatches by regex-matching the request URI:

@@ -145,7 +145,7 @@ func run(sqlAst *sql.DB, sqlBin *sql.DB, cache cachehandler.CacheHandler) error 
 
 	// create handlers
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameRegistrarEvent, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameRegistrarEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 	customerDomainHandler := customerdomainhandler.NewCustomerDomainHandler(dbBin, config.Get().DomainShortLabelEnabled)
 	extensionHandler := extensionhandler.NewExtensionHandler(reqHandler, dbAst, dbBin, notifyHandler, customerDomainHandler)
 	trunkHandler := trunkhandler.NewTrunkHandler(reqHandler, dbBin, notifyHandler)

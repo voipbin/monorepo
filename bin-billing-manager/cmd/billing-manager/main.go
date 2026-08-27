@@ -114,7 +114,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameBillingEvent, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameBillingEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 
 	paddleHandler := paddlehandler.NewPaddleHandler(
 		config.Get().PaddleAPIKey,

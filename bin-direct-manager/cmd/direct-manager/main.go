@@ -124,7 +124,7 @@ func runService(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	// create handlers
 	db := dbhandler.NewHandler(sqlDB)
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameDirectEvent, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameDirectEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 	directHandler := directhandler.NewDirectHandler(reqHandler, db, notifyHandler, cache)
 
 	if err := runListen(sockHandler, directHandler); err != nil {

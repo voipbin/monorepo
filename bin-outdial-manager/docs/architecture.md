@@ -43,6 +43,12 @@ RabbitMQ
 - **outdialtargetcallhandler**: Tracks each call attempt against a target for retry accounting.
 - **dbhandler**: SQLite-compatible schema for tests; MySQL in production.
 
+## Event Publishing
+
+Both NotifyHandler construction sites — `cmd/outdial-manager` and `cmd/outdial-control` — are built with `notifyhandler.WithGlobalTopicPublish()`, so every event is published twice: once to the per-service fanout exchange `bin-manager.outdial-manager.event` (unchanged, still the system of record) and once to the global topic exchange `bin-manager.event` with the routing key `outdial-manager.outdial.<outdial-id>.<action>`. The two sites must stay in lockstep on this option — enabling it in only one would leave consumers with gaps depending on which process published. A topic publish failure never propagates to the caller and never affects the fanout publish.
+
+The subscription address (third key segment) is the outdial's own id, resolved by the default JSON `id` fallback: this service declares no `eventtopic.SubscriptionIdentifier` override. `models/outdial/routingkey_golden_test.go` pins the exact key of every published event type and asserts that absence. The `outdialtarget_*` constants in `models/outdialtarget` are dead (never published) and are deliberately outside that table. See the monorepo `docs/plans/2026-08-27-voip-1404-global-topic-exchange-design.md` for the key schema.
+
 ## Request Routing
 
 Requests arrive via RabbitMQ queue `bin-manager.outdial-manager.request`. The `listenhandler` matches URI against compiled regex patterns:

@@ -67,7 +67,9 @@ func initAccountHandler() (accounthandler.AccountHandler, error) {
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameStorageEvent, serviceName)
+	// VOIP-1405: same global topic exchange opt-in as cmd/storage-manager. This CLI path
+	// publishes account events directly, so it must dual publish or consumers would see gaps.
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameStorageEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 
 	return accounthandler.NewAccountHandler(notifyHandler, dbHandler), nil
 }
@@ -86,7 +88,9 @@ func initHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (storagehandler
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameStorageEvent, serviceName)
+	// VOIP-1405: same global topic exchange opt-in as cmd/storage-manager. This CLI path
+	// publishes both file and account events, so it must dual publish as well.
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameStorageEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 	accountHandler := accounthandler.NewAccountHandler(notifyHandler, db)
 	fileHandler, errFileHandler := filehandler.NewFileHandler(
 		notifyHandler,

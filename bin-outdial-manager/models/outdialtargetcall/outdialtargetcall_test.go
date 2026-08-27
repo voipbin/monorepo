@@ -1,6 +1,7 @@
 package outdialtargetcall
 
 import (
+	"encoding/json"
 	"testing"
 	"time"
 
@@ -63,20 +64,30 @@ func TestOutdialTargetCall(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if tt.call.ID != tt.call.ID {
-				t.Errorf("ID mismatch")
+			data, err := json.Marshal(tt.call)
+			if err != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", err)
 			}
-			if tt.call.CampaignID != tt.call.CampaignID {
-				t.Errorf("CampaignID mismatch")
+
+			res := &OutdialTargetCall{}
+			if errUnmarshal := json.Unmarshal(data, res); errUnmarshal != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", errUnmarshal)
 			}
-			if tt.call.OutdialID != tt.call.OutdialID {
-				t.Errorf("OutdialID mismatch")
+
+			if res.ID != tt.call.ID {
+				t.Errorf("ID mismatch. expect: %v, got: %v", tt.call.ID, res.ID)
 			}
-			if tt.call.OutdialTargetID != tt.call.OutdialTargetID {
-				t.Errorf("OutdialTargetID mismatch")
+			if res.CampaignID != tt.call.CampaignID {
+				t.Errorf("CampaignID mismatch. expect: %v, got: %v", tt.call.CampaignID, res.CampaignID)
 			}
-			if tt.call.Status != tt.call.Status {
-				t.Errorf("Status mismatch")
+			if res.OutdialID != tt.call.OutdialID {
+				t.Errorf("OutdialID mismatch. expect: %v, got: %v", tt.call.OutdialID, res.OutdialID)
+			}
+			if res.OutdialTargetID != tt.call.OutdialTargetID {
+				t.Errorf("OutdialTargetID mismatch. expect: %v, got: %v", tt.call.OutdialTargetID, res.OutdialTargetID)
+			}
+			if res.Status != tt.call.Status {
+				t.Errorf("Status mismatch. expect: %v, got: %v", tt.call.Status, res.Status)
 			}
 		})
 	}

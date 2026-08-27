@@ -44,7 +44,7 @@ go generate ./pkg/cachehandler/...
 ## Key Facts
 
 - **Queue (listen):** `bin-manager.route-manager.request`
-- **No event subscriptions, no events published**
+- **No event subscriptions.** Events published: route_*, provider_*, providercall_* — dual-published to the fanout exchange and the global topic exchange `bin-manager.event` (see docs/architecture.md)
 - **Dialroute merge**: customer routes + `CustomerIDBasicRoute` (`00000000-0000-0000-0000-000000000001`) defaults — customer wins on provider overlap
 - **Target values:** country code string (e.g., `"1"` for US) or `"all"` for catch-all
 - **Route priority:** lower integer = higher priority

@@ -64,3 +64,37 @@ Context cancellation propagates via a `stopCh` channel into `podInformer.Run(sto
 ### What it produces
 
 All outputs are RabbitMQ events published to `QueueNameSentinelEvent`. The payload is the full `corev1.Pod` struct serialized by `notifyhandler.PublishEvent`. Downstream consumers (e.g., `bin-call-manager`) match pods to active calls and perform cleanup when an Asterisk pod disappears unexpectedly.
+
+### Global topic exchange (VOIP-1404 / VOIP-1405)
+
+`cmd/sentinel-manager/main.go` — the service's only NotifyHandler construction site — constructs
+its NotifyHandler with `notifyhandler.WithGlobalTopicPublish()`. Every event is therefore published
+twice: once to the per-service fanout exchange `bin-manager.sentinel-manager.event` (unchanged,
+still the system of record) and once to the global topic exchange `bin-manager.event`. A topic
+publish failure never propagates to the caller and never affects the fanout publish.
+
+**sentinel-manager is the one documented placeholder-by-design publisher.** The published payload
+is the raw `*corev1.Pod` handed over by the informer, and a `corev1.Pod` carries no top-level `id`
+in its JSON form (its identity lives under `metadata`). The subscription-address segment therefore
+collapses to the `-` placeholder for every event:
+
+| Event | Routing key |
+|-------|-------------|
+| `pod_updated` | `sentinel-manager.pod.-.updated` |
+| `pod_deleted` | `sentinel-manager.pod.-.deleted` |
+
+Consequences, all intentional (design §2.4):
+
+- **Instance subscription of pod events is not supported.** Consumers bind at the type level
+  (`sentinel-manager.pod.#`) and filter on the payload.
+- **`sentinel_manager_topic_placeholder_total` grows in step with every publish.** For this service
+  the healthy invariant is `placeholder_total ≈ topic_publish_total{result="ok"}` — that is not an
+  alert condition, but the ratio still detects publish regressions and must not be ignored outright.
+- **Do not attach a subscription-id override to `*corev1.Pod`** (external type) and do not wrap the
+  payload in `models/pod.Pod` at the publish site — that would change the payload shape for every
+  existing fanout consumer.
+
+`pod_added` is declared in `models/pod` but never published: the informer's `AddFunc` is an
+intentional no-op. The golden table pinning both keys is `models/pod/routingkey_golden_test.go`;
+the schema is defined in monorepo
+`docs/plans/2026-08-27-voip-1404-global-topic-exchange-design.md`.

@@ -106,7 +106,7 @@ func initExtensionHandler() (extensionhandler.ExtensionHandler, error) {
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameRegistrarEvent, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameRegistrarEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 	customerDomainHandler := customerdomainhandler.NewCustomerDomainHandler(dbBin, config.Get().DomainShortLabelEnabled)
 
 	return extensionhandler.NewExtensionHandler(reqHandler, dbAst, dbBin, notifyHandler, customerDomainHandler), nil
@@ -145,7 +145,7 @@ func initDomainMigrationDeps() (*domainMigrationDeps, error) {
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameRegistrarEvent, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameRegistrarEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 	customerDomainHandler := customerdomainhandler.NewCustomerDomainHandler(dbBin, config.Get().DomainShortLabelEnabled)
 
 	return &domainMigrationDeps{
@@ -173,7 +173,7 @@ func initTrunkHandler() (trunkhandler.TrunkHandler, error) {
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameRegistrarEvent, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameRegistrarEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 
 	return trunkhandler.NewTrunkHandler(reqHandler, dbBin, notifyHandler), nil
 }

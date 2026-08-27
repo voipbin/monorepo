@@ -63,7 +63,7 @@ func initAgentHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (agenthand
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameAgentEvent, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameAgentEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 
 	return agenthandler.NewAgentHandler(reqHandler, db, notifyHandler, cache), nil
 }

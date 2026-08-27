@@ -82,3 +82,36 @@ RabbitMQ → listenhandler (regex dispatch)
 | `gcp_bucket_name_tmp` | `tmp/` | Compressed zip archives (transient, SHA-1 named) |
 
 Download URLs are GCS signed URLs with a default 24-hour expiration.
+
+## Events Published
+
+State changes emit events on the fanout exchange `bin-manager.storage-manager.event`:
+
+| Event | Payload | Trigger |
+|-------|---------|---------|
+| `Account_created` | `*account.Account` | Account create (`pkg/accounthandler`) |
+| `Account_updated` | `*account.Account` | Quota counters changed by `IncreaseFileInfo` / `DecreaseFileInfo` |
+| `Account_deleted` | `*account.Account` | Account delete |
+| `file_created` | `*file.File` | File record create (`pkg/filehandler`) |
+| `file_deleted` | `*file.File` | File delete |
+
+`file_updated` is declared in `models/file` but has no publish site.
+
+### Global topic exchange (VOIP-1404 / VOIP-1405)
+
+All three NotifyHandler construction sites — `cmd/storage-manager/main.go`, and both
+`cmd/storage-control/main.go` sites (`initAccountHandler` for the account-only CLI path and
+`initHandler` for the full storage path) — construct their NotifyHandler with
+`notifyhandler.WithGlobalTopicPublish()`. Every event is therefore published twice: once to the
+per-service fanout exchange above (unchanged, still the system of record) and once to the global
+topic exchange `bin-manager.event` with the routing key
+`storage-manager.<resource>.<id>.<action>`. The three sites must stay in lockstep on this option —
+enabling it in only some would leave consumers with gaps depending on which process published. A
+topic publish failure never propagates to the caller and never affects the fanout publish.
+
+storage-manager uses no subscription-id override: both `account.Account` and `file.File` are
+addressed by their own `id`. Note that the account event-type constants are capitalized
+(`Account_created`, …); `eventtopic.RoutingKey` lowercases every segment, so the wire keys still
+read `storage-manager.account.<account-id>.created`. The golden table pinning every key is
+`models/account/routingkey_golden_test.go`; the schema is defined in monorepo
+`docs/plans/2026-08-27-voip-1404-global-topic-exchange-design.md`.

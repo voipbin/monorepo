@@ -124,7 +124,11 @@ func runService(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	// create handlers
 	db := dbhandler.NewHandler(sqlDB, cache)
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameTagEvent, serviceName)
+	// VOIP-1405: dual-publish every tag-manager event to the global topic exchange
+	// `bin-manager.event` (VOIP-1404 skeleton). cmd/tag-control enables the same option, so the
+	// "tag-manager events exist on the topic exchange" contract holds regardless of which
+	// process published.
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameTagEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 	tagHandler := taghandler.NewTagHandler(reqHandler, db, notifyHandler)
 
 	if err := runListen(sockHandler, tagHandler); err != nil {

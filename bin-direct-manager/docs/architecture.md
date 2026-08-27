@@ -54,3 +54,17 @@ Requests arrive via RabbitMQ queue `bin-manager.direct-manager.request`. The `li
 | `/v1/directs/{uuid}$` | GET, DELETE | Get or delete direct by ID |
 
 Unmatched URIs return `404`. Mismatched HTTP methods return `405`.
+
+## Events Published
+
+Exchange: `bin-manager.direct-manager.event` (fanout, system of record) and — since VOIP-1405 — the global topic exchange `bin-manager.event`.
+
+Both `cmd/direct-manager` and `cmd/direct-control` construct their NotifyHandler with `notifyhandler.WithGlobalTopicPublish()`, so every event is published twice: once to the per-service fanout exchange (unchanged) and once to the global topic exchange with the routing key `direct-manager.<resource>.<subscription-id>.<action>`. Both construction sites must stay in lockstep on this option — enabling it in only one would leave consumers with gaps depending on which process published. A topic publish failure never propagates to the caller and never affects the fanout publish.
+
+Every direct event is addressed by the direct's OWN id (the default top-level `id` fallback; no `eventtopic.SubscriptionIdentifier` override exists in this service) — never by the `resource_id` of the agent/queue/conference/... it fronts. A consumer following one direct binds `direct-manager.direct.<direct-id>.#`; a regenerate keeps the same id and only rotates the hash, so an instance binding survives regeneration. The exact keys are pinned by `models/direct/routingkey_golden_test.go`; the schema lives in the monorepo `docs/plans/2026-08-27-voip-1404-global-topic-exchange-design.md`.
+
+| Event type | Trigger |
+|-----------|---------|
+| `direct.EventTypeDirectCreated` | Direct hash created |
+| `direct.EventTypeDirectDeleted` | Direct deleted |
+| `direct.EventTypeDirectRegenerated` | Direct hash regenerated (same direct id) |
