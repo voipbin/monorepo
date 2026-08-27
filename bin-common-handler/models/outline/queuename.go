@@ -12,6 +12,11 @@ const (
 	// common use
 	QueueNameDelay QueueName = "bin-manager.delay" // queue name for delayed requests
 
+	// QueueNameEvent is the global topic exchange for service-to-service events (VOIP-1404).
+	// Unlike the per-service fanout exchanges above, this is a single topic-kind exchange shared
+	// by every publisher. Declare it only through sockhandler.TopicCreateWithKind(name, "topic").
+	QueueNameEvent QueueName = "bin-manager.event"
+
 	// ai-manager
 	QueueNameAIEvent     QueueName = "bin-manager.ai-manager.event"
 	QueueNameAIRequest   QueueName = "bin-manager.ai-manager.request"

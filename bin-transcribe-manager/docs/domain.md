@@ -71,8 +71,21 @@ Only valid status transitions are allowed. See `models/transcribe/transcribe.go:
 
 ### Events Published
 
-| Event | Trigger |
-|-------|---------|
-| `transcribe.EventTypeTranscribeCreated` | Session successfully created |
-| `transcribe.EventTypeTranscribeDone` | Session finalized/stopped |
-| `transcribe.EventTypeTranscribeProgressing` | Transcription is actively processing audio |
+Every event below is published to the per-service fanout exchange `bin-manager.transcribe-manager.event`, and — since VOIP-1404 — also to the global topic exchange `bin-manager.event` with the routing key `transcribe-manager.<resource>.<transcribe-id>.<action>`. The third key segment is the *subscription address*: it is always the transcribe-id, across all three resource namespaces, so one transcription session is followed with `transcribe-manager.transcribe.<id>.#`, `transcribe-manager.transcript.<id>.#`, and `transcribe-manager.streaming.<id>.#`.
+
+| Event | Data | Trigger | Topic routing key |
+|-------|------|---------|-------------------|
+| `transcribe.EventTypeTranscribeCreated` | `*transcribe.Transcribe` | Session successfully created | `transcribe-manager.transcribe.<transcribe-id>.created` |
+| `transcribe.EventTypeTranscribeProgressing` | `*transcribe.Transcribe` | Transcription is actively processing audio | `transcribe-manager.transcribe.<transcribe-id>.progressing` |
+| `transcribe.EventTypeTranscribeDone` | `*transcribe.Transcribe` | Session finalized/stopped | `transcribe-manager.transcribe.<transcribe-id>.done` |
+| `transcribe.EventTypeTranscribeDeleted` | `*transcribe.Transcribe` | Session deleted | `transcribe-manager.transcribe.<transcribe-id>.deleted` |
+| `streaming.EventTypeSpeechStarted` | `*streaming.Speech` | Voice activity started on a streaming leg | `transcribe-manager.transcribe.<transcribe-id>.speech_started` |
+| `streaming.EventTypeSpeechInterim` | `*streaming.Speech` | Interim (non-final) STT result | `transcribe-manager.transcribe.<transcribe-id>.speech_interim` |
+| `streaming.EventTypeSpeechEnded` | `*streaming.Speech` | Voice activity ended on a streaming leg | `transcribe-manager.transcribe.<transcribe-id>.speech_ended` |
+| `streaming.EventTypeStreamingStarted` | `*streaming.Streaming` | Streaming leg registered in the session map | `transcribe-manager.streaming.<transcribe-id>.started` |
+| `streaming.EventTypeStreamingStopped` | `*streaming.Streaming` | Streaming leg removed from the session map | `transcribe-manager.streaming.<transcribe-id>.stopped` |
+| `transcript.EventTypeTranscriptCreated` | `*transcript.Transcript` | Final STT result persisted | `transcribe-manager.transcript.<transcribe-id>.created` |
+
+`Speech`, `Streaming`, and `Transcript` all implement `eventtopic.SubscriptionIdentifier` (pointer receiver) returning `TranscribeID`, because their own ids are either regenerated per event (`Speech`, `Transcript`) or address the wrong resource (`Streaming`). `Transcribe` needs no override — its own id already is the subscription address.
+
+`transcript.EventTypeTranscriptDeleted` is defined but never published: `pkg/transcripthandler/db.go:33` publishes `transcript_created` on the delete path. This is a known bug tracked separately; the golden routing-key table in `models/transcribe/routingkey_golden_test.go` pins the current behavior and must be updated together with the fix.

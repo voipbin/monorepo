@@ -21,6 +21,7 @@ Shared Go library used by every `bin-*-manager` service in the monorepo. Provide
 | `models/identity` | Common `Identity` struct (ID, CustomerID) embedded in all resources |
 | `models/sock` | Wire types: `sock.Request`, `sock.Response`, `sock.Event` |
 | `models/outline` | Canonical service names and queue name constants |
+| `models/eventtopic` | Routing-key schema and binding-pattern builders of the global topic exchange `bin-manager.event` (internal plumbing of `notifyhandler`, admission-rule exempt) |
 | `models/address` | Address-related models |
 | `models/service` | Service definition types |
 | `pkg/requesthandler` | Typed inter-service RPC client; all calls go through `sendRequest()` |

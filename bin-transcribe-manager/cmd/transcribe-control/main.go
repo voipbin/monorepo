@@ -64,7 +64,9 @@ func initTranscribeHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (tran
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameTranscribeEvent, serviceName)
+	// VOIP-1404: same global topic exchange opt-in as cmd/transcribe-manager. Both processes
+	// publish to the same logical stream, so both must dual publish or consumers would see gaps.
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameTranscribeEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 
 	transcriptHandler := transcripthandler.NewTranscriptHandler(reqHandler, db, notifyHandler)
 

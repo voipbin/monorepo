@@ -21,6 +21,17 @@ type Streaming struct {
 	ConnAst *websocket.Conn `json:"-"` // WebSocket connection to Asterisk
 }
 
+// EventSubscriptionID returns the subscription address of the global topic exchange
+// `bin-manager.event` (VOIP-1404). It is the parent TranscribeID, not the streaming's own ID:
+// the streaming-id is stable but addresses the wrong thing, since a subscriber follows a
+// transcription session rather than the individual streaming leg carrying it.
+//
+// The receiver is a pointer because the event data reaches notifyhandler as a pointer and the
+// eventtopic.SubscriptionIdentifier assertion matches the dynamic type.
+func (h *Streaming) EventSubscriptionID() string {
+	return h.TranscribeID.String()
+}
+
 // NewSpeech creates a Speech event from the streaming session and per-event data.
 func (h *Streaming) NewSpeech(message string, tmEvent *time.Time) *Speech {
 	return &Speech{

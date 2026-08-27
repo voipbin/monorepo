@@ -6,8 +6,14 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	"monorepo/bin-common-handler/models/eventtopic"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 )
+
+// Transcript overrides the subscription address of the global topic exchange (VOIP-1404). The
+// assertion pins the POINTER receiver: notifyhandler asserts on the dynamic type of the event
+// data, which is always a pointer, so a value receiver would silently never be picked up.
+var _ eventtopic.SubscriptionIdentifier = (*Transcript)(nil)
 
 func TestTranscriptStruct(t *testing.T) {
 	id := uuid.Must(uuid.NewV4())
@@ -47,6 +53,51 @@ func TestTranscriptStruct(t *testing.T) {
 	}
 	if tr.TMTranscript == nil || !tr.TMTranscript.Equal(tmTranscript) {
 		t.Errorf("Transcript.TMTranscript = %v, expected %v", tr.TMTranscript, tmTranscript)
+	}
+}
+
+func TestTranscriptEventSubscriptionID(t *testing.T) {
+	transcribeID := uuid.Must(uuid.NewV4())
+	transcriptID := uuid.Must(uuid.NewV4())
+
+	tests := []struct {
+		name       string
+		transcript *Transcript
+		expect     string
+	}{
+		{
+			"normal",
+			&Transcript{
+				Identity: commonidentity.Identity{
+					ID:         transcriptID,
+					CustomerID: uuid.Must(uuid.NewV4()),
+				},
+				TranscribeID: transcribeID,
+				Direction:    DirectionIn,
+				Message:      "hello",
+			},
+			transcribeID.String(),
+		},
+		{
+			"empty transcribe id",
+			&Transcript{},
+			uuid.Nil.String(),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res := tt.transcript.EventSubscriptionID()
+			if res != tt.expect {
+				t.Errorf("Wrong match. expect: %s, got: %s", tt.expect, res)
+			}
+		})
+	}
+
+	// every final result gets a new transcript-id, so the own id must never become the address.
+	tr := tests[0].transcript
+	if tr.EventSubscriptionID() == tr.ID.String() {
+		t.Errorf("Subscription address must not be the transcript own id. id: %s", tr.ID)
 	}
 }
 
