@@ -27,8 +27,10 @@ import (
 // (different struct shape — groupcall.WebhookMessage has a pointer Source
 // and a plural Destinations, no Direction field at all), dtmf_received
 // (dtmf.DTMF carries only CallID/Digit/Duration), and
-// call.outbound_whitelist_rejected (publishes a raw map[string]interface{},
-// not call.WebhookMessage); conversation-manager's account_created/
+// call.outbound_whitelist_rejected (publishes
+// *call.OutboundWhitelistRejectedEvent -- a struct since VOIP-1405, but one
+// that carries only call_id/customer_id/destination_country, not
+// call.WebhookMessage); conversation-manager's account_created/
 // account_updated/account_deleted (account.WebhookMessage carries no
 // Source/Destination/Self/Peer). See the design doc for full details:
 // bin-timeline-manager/docs/plans/2026-07-24-add-peer-events-table-design.md

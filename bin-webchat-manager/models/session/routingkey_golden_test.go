@@ -25,6 +25,7 @@ package session_test
 
 import (
 	"encoding/json"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -56,7 +57,15 @@ func resolveSubscriptionID(t *testing.T, data any) string {
 	t.Helper()
 
 	if identifier, ok := data.(eventtopic.SubscriptionIdentifier); ok {
-		return identifier.EventSubscriptionID()
+		// typed-nil guard, mirroring notifyhandler.resolveSubscriptionOverride: a nil pointer whose
+		// type implements the interface still SATISFIES the assertion, and every real implementation
+		// dereferences its receiver -- calling the method would panic. Production reports "no
+		// override" for such a payload, so this guard falls through to the JSON half below rather
+		// than returning early; `null` carries no top-level `id` either, so both halves agree on the
+		// `-` placeholder.
+		if v := reflect.ValueOf(data); v.Kind() != reflect.Ptr || !v.IsNil() {
+			return identifier.EventSubscriptionID()
+		}
 	}
 
 	m, err := json.Marshal(data)

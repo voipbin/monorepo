@@ -24,9 +24,9 @@ type DTMF struct {
 // the own ID is not an address anybody could bind to in advance. Subscribers follow one call, and
 // every digit of that call carries the same call-id.
 //
-// The receiver is a pointer because the event data reaches notifyhandler as a pointer and the
-// eventtopic.SubscriptionIdentifier assertion matches the dynamic type -- a value receiver would
-// silently never be picked up.
+// The receiver is a pointer because the event data reaches notifyhandler as a POINTER and the
+// eventtopic.SubscriptionIdentifier assertion matches the dynamic type; a VALUE of this
+// pointer-receiver type would fail the assertion (the exact pipecat defect this ticket fixed).
 func (h *DTMF) EventSubscriptionID() string {
 	return h.CallID.String()
 }

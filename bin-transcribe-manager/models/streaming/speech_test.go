@@ -12,8 +12,9 @@ import (
 )
 
 // Speech overrides the subscription address of the global topic exchange (VOIP-1404). The
-// assertion pins the POINTER receiver: notifyhandler asserts on the dynamic type of the event
-// data, which is always a pointer, so a value receiver would silently never be picked up.
+// assertion pins the POINTER type: the event data reaches notifyhandler as a POINTER and the
+// assertion matches the dynamic type; a VALUE of this pointer-receiver type would fail the
+// assertion (the exact pipecat defect this ticket fixed).
 var _ eventtopic.SubscriptionIdentifier = (*Speech)(nil)
 
 func TestSpeechEventSubscriptionID(t *testing.T) {

@@ -9,10 +9,10 @@ import (
 	"monorepo/bin-common-handler/models/eventtopic"
 )
 
-// CaseTagEvent and CaseContactEvent override the subscription address of the global topic
-// exchange (VOIP-1404/1405). Both assertions pin the POINTER receiver: notifyhandler asserts on
-// the dynamic type of the event data, which is always a pointer, so a value receiver would
-// silently never be picked up.
+// CaseTagEvent and CaseContactEvent override the subscription address of the global topic exchange
+// (VOIP-1404/1405). Both assertions pin the POINTER type: the event data reaches notifyhandler as
+// a POINTER and the assertion matches the dynamic type; a VALUE of this pointer-receiver type
+// would fail the assertion (the exact pipecat defect this ticket fixed).
 var (
 	_ eventtopic.SubscriptionIdentifier = (*CaseTagEvent)(nil)
 	_ eventtopic.SubscriptionIdentifier = (*CaseContactEvent)(nil)

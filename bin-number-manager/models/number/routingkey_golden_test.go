@@ -34,6 +34,8 @@ package number_test
 
 import (
 	"encoding/json"
+	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -61,7 +63,15 @@ func resolveSubscriptionID(t *testing.T, data any) string {
 	t.Helper()
 
 	if identifier, ok := data.(eventtopic.SubscriptionIdentifier); ok {
-		return identifier.EventSubscriptionID()
+		// typed-nil guard, mirroring notifyhandler.resolveSubscriptionOverride: a nil pointer whose
+		// type implements the interface still SATISFIES the assertion, and every real implementation
+		// dereferences its receiver -- calling the method would panic. Production reports "no
+		// override" for such a payload, so this guard falls through to the JSON half below rather
+		// than returning early; `null` carries no top-level `id` either, so both halves agree on the
+		// `-` placeholder.
+		if v := reflect.ValueOf(data); v.Kind() != reflect.Ptr || !v.IsNil() {
+			return identifier.EventSubscriptionID()
+		}
 	}
 
 	m, err := json.Marshal(data)
@@ -149,9 +159,12 @@ func TestGoldenRoutingKeys(t *testing.T) {
 // TestGoldenRoutingKeysDbUpdateBranchesShareOneAddress pins the property the two dbUpdate rows
 // above exist to protect: the publish path taken (PublishEvent vs PublishWebhookEvent) changes
 // nothing about the subscription address, so one instance binding
-// `number-manager.number.<number-id>.#` receives the update AND the renew stream. If a future
-// change routes the renew branch through a different payload type, this test catches the
-// divergence.
+// `number-manager.number.<number-id>.#` receives the update AND the renew stream.
+//
+// Scope: this pins the KEY-DERIVATION property for the shared *number.Number payload -- that both
+// event types resolve to the same address and land under one binding. It does NOT observe the
+// publish sites, so a future change that routes the renew branch through a different payload type
+// is caught by the golden table above (whose rows name the real publish sites), not here.
 func TestGoldenRoutingKeysDbUpdateBranchesShareOneAddress(t *testing.T) {
 	publisher := string(commonoutline.ServiceNameNumberManager)
 	numberData := &number.Number{Identity: commonidentity.Identity{ID: numberID}}
@@ -166,23 +179,21 @@ func TestGoldenRoutingKeysDbUpdateBranchesShareOneAddress(t *testing.T) {
 		t.Errorf("Wrong match. expect: number-manager.number.e5c93a71-0000-4000-8000-000000000001.#, got: %s", pattern)
 	}
 
+	// Every branch's key must fall UNDER that one binding (same prefix, only the trailing event-type
+	// segment varies), and the two branches must still be distinguishable by event type -- one
+	// address, two streams.
+	prefix := strings.TrimSuffix(pattern, "#")
+	keys := map[string]string{}
 	for _, eventType := range []string{number.EventTypeNumberUpdated, number.EventTypeNumberRenewed} {
 		res := eventtopic.RoutingKey(publisher, eventType, subscriptionID)
-		if eventtopic.IsPlaceholderSubscriptionID(subscriptionID) {
-			t.Errorf("The number subscription address must not collapse to the placeholder. event_type: %s, key: %s", eventType, res)
+		if !strings.HasPrefix(res, prefix) {
+			t.Errorf("The routing key must be matched by the instance binding. pattern: %s, event_type: %s, key: %s", pattern, eventType, res)
 		}
+		keys[eventType] = res
 	}
-}
 
-// TestGoldenRoutingKeyDataTypeIsPointer pins the data type actually handed to notifyhandler at
-// every publish site. The SubscriptionIdentifier assertion is made against the DYNAMIC type, so a
-// value publish would silently bypass any future override; asserting the pointer type here keeps
-// the golden table reproducing the real publish path rather than a convenient stand-in.
-func TestGoldenRoutingKeyDataTypeIsPointer(t *testing.T) {
-	var data any = &number.Number{Identity: commonidentity.Identity{ID: numberID}}
-
-	if _, ok := data.(*number.Number); !ok {
-		t.Errorf("The published event data must be *number.Number. got: %T", data)
+	if keys[number.EventTypeNumberUpdated] == keys[number.EventTypeNumberRenewed] {
+		t.Errorf("The two dbUpdate branches must stay distinguishable by event type. key: %s", keys[number.EventTypeNumberUpdated])
 	}
 }
 

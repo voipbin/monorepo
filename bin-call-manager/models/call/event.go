@@ -42,9 +42,9 @@ type OutboundWhitelistRejectedEvent struct {
 // `bin-manager.event` (VOIP-1404 §4.2, VOIP-1405 §2.2). It is the rejected call's id: subscribers
 // follow the call, and this event carries no id of its own to fall back to.
 //
-// The receiver is a pointer because the event data reaches notifyhandler as a pointer and the
-// eventtopic.SubscriptionIdentifier assertion matches the dynamic type -- a value receiver would
-// silently never be picked up.
+// The receiver is a pointer because the event data reaches notifyhandler as a POINTER and the
+// eventtopic.SubscriptionIdentifier assertion matches the dynamic type; a VALUE of this
+// pointer-receiver type would fail the assertion (the exact pipecat defect this ticket fixed).
 func (h *OutboundWhitelistRejectedEvent) EventSubscriptionID() string {
 	return h.CallID.String()
 }
