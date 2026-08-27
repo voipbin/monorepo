@@ -53,7 +53,7 @@ func Test_CaseTagAdd_ValidatesTagExistsThenAssigns(t *testing.T) {
 	}
 
 	mockReq.EXPECT().TagV1TagGet(ctx, tagID).Return(&tmtag.Tag{}, nil)
-	mockNotify.EXPECT().PublishEvent(ctx, "case_tag_added", gomock.Any())
+	mockNotify.EXPECT().PublishEvent(ctx, kase.EventTypeCaseTagAdded, gomock.Any())
 
 	if err := h.CaseTagAdd(ctx, customerID, caseID, tagID); err != nil {
 		t.Fatalf("CaseTagAdd() error = %v", err)
@@ -144,7 +144,7 @@ func Test_CaseTagAdd_Idempotent_AlreadyTagged(t *testing.T) {
 
 	// First add: real write + event.
 	mockReq.EXPECT().TagV1TagGet(ctx, tagID).Return(&tmtag.Tag{}, nil)
-	mockNotify.EXPECT().PublishEvent(ctx, "case_tag_added", gomock.Any()).Times(1)
+	mockNotify.EXPECT().PublishEvent(ctx, kase.EventTypeCaseTagAdded, gomock.Any()).Times(1)
 	if err := h.CaseTagAdd(ctx, customerID, caseID, tagID); err != nil {
 		t.Fatalf("CaseTagAdd() (first) error = %v", err)
 	}
@@ -196,12 +196,12 @@ func Test_CaseTagRemove_DeletesAssignment(t *testing.T) {
 	}
 
 	mockReq.EXPECT().TagV1TagGet(ctx, tagID).Return(&tmtag.Tag{}, nil)
-	mockNotify.EXPECT().PublishEvent(ctx, "case_tag_added", gomock.Any())
+	mockNotify.EXPECT().PublishEvent(ctx, kase.EventTypeCaseTagAdded, gomock.Any())
 	if err := h.CaseTagAdd(ctx, customerID, caseID, tagID); err != nil {
 		t.Fatalf("CaseTagAdd() error = %v", err)
 	}
 
-	mockNotify.EXPECT().PublishEvent(ctx, "case_tag_removed", gomock.Any())
+	mockNotify.EXPECT().PublishEvent(ctx, kase.EventTypeCaseTagRemoved, gomock.Any())
 	if err := h.CaseTagRemove(ctx, customerID, caseID, tagID); err != nil {
 		t.Fatalf("CaseTagRemove() error = %v", err)
 	}

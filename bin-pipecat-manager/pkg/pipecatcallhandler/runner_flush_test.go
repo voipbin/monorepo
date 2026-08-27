@@ -46,11 +46,11 @@ func Test_runLLMIntermediateFlush(t *testing.T) {
 
 		// Track published events.
 		var mu sync.Mutex
-		var intermediates []message.Message
+		var intermediates []*message.Message
 		var finalEvt *message.Message
 
 		mockNotify.EXPECT().PublishEvent(gomock.Any(), gomock.Eq(message.EventTypeBotLLMIntermediate), gomock.Any()).DoAndReturn(
-			func(_ any, _ any, evt message.Message) {
+			func(_ any, _ any, evt *message.Message) {
 				mu.Lock()
 				defer mu.Unlock()
 				intermediates = append(intermediates, evt)
@@ -58,10 +58,10 @@ func Test_runLLMIntermediateFlush(t *testing.T) {
 		).AnyTimes()
 
 		mockNotify.EXPECT().PublishEvent(gomock.Any(), gomock.Eq(message.EventTypeBotLLM), gomock.Any()).DoAndReturn(
-			func(_ any, _ any, evt message.Message) {
+			func(_ any, _ any, evt *message.Message) {
 				mu.Lock()
 				defer mu.Unlock()
-				finalEvt = &evt
+				finalEvt = evt
 			},
 		).Times(1)
 
@@ -138,7 +138,7 @@ func Test_runLLMIntermediateFlush(t *testing.T) {
 		var finalText string
 
 		mockNotify.EXPECT().PublishEvent(gomock.Any(), gomock.Eq(message.EventTypeBotLLMIntermediate), gomock.Any()).DoAndReturn(
-			func(_ any, _ any, evt message.Message) {
+			func(_ any, _ any, evt *message.Message) {
 				mu.Lock()
 				defer mu.Unlock()
 				intermediateCount++
@@ -146,7 +146,7 @@ func Test_runLLMIntermediateFlush(t *testing.T) {
 		).AnyTimes()
 
 		mockNotify.EXPECT().PublishEvent(gomock.Any(), gomock.Eq(message.EventTypeBotLLM), gomock.Any()).DoAndReturn(
-			func(_ any, _ any, evt message.Message) {
+			func(_ any, _ any, evt *message.Message) {
 				mu.Lock()
 				defer mu.Unlock()
 				finalText = evt.Text
@@ -204,7 +204,7 @@ func Test_runLLMIntermediateFlush(t *testing.T) {
 		mockNotify.EXPECT().PublishEvent(gomock.Any(), gomock.Eq(message.EventTypeBotLLMIntermediate), gomock.Any()).AnyTimes()
 
 		mockNotify.EXPECT().PublishEvent(gomock.Any(), gomock.Eq(message.EventTypeBotLLM), gomock.Any()).DoAndReturn(
-			func(_ any, _ any, evt message.Message) {
+			func(_ any, _ any, evt *message.Message) {
 				mu.Lock()
 				defer mu.Unlock()
 				finalText = evt.Text
@@ -303,7 +303,7 @@ func Test_runLLMIntermediateFlush(t *testing.T) {
 
 		// Expect two final events (one per generation).
 		gen1Final := mockNotify.EXPECT().PublishEvent(gomock.Any(), gomock.Eq(message.EventTypeBotLLM), gomock.Any()).DoAndReturn(
-			func(_ any, _ any, evt message.Message) {
+			func(_ any, _ any, evt *message.Message) {
 				mu.Lock()
 				defer mu.Unlock()
 				gen1FinalText = evt.Text
@@ -326,7 +326,7 @@ func Test_runLLMIntermediateFlush(t *testing.T) {
 		se.LLMFlushing.Store(true)
 
 		mockNotify.EXPECT().PublishEvent(gomock.Any(), gomock.Eq(message.EventTypeBotLLM), gomock.Any()).DoAndReturn(
-			func(_ any, _ any, evt message.Message) {
+			func(_ any, _ any, evt *message.Message) {
 				mu.Lock()
 				defer mu.Unlock()
 				gen2FinalText = evt.Text
@@ -388,11 +388,11 @@ func Test_runLLMIntermediateFlush(t *testing.T) {
 		var capturedIntermediate *message.Message
 
 		mockNotify.EXPECT().PublishEvent(gomock.Any(), gomock.Eq(message.EventTypeBotLLMIntermediate), gomock.Any()).DoAndReturn(
-			func(_ any, _ any, evt message.Message) {
+			func(_ any, _ any, evt *message.Message) {
 				mu.Lock()
 				defer mu.Unlock()
 				if capturedIntermediate == nil {
-					capturedIntermediate = &evt
+					capturedIntermediate = evt
 				}
 			},
 		).AnyTimes()
@@ -627,7 +627,7 @@ func TestRunLLMIntermediateFlush_publishesAfterCtxCancel(t *testing.T) {
 	)
 
 	mockNotify.EXPECT().PublishEvent(gomock.Any(), gomock.Eq(message.EventTypeBotLLMIntermediate), gomock.Any()).DoAndReturn(
-		func(c context.Context, _ any, _ message.Message) {
+		func(c context.Context, _ any, _ *message.Message) {
 			mu.Lock()
 			defer mu.Unlock()
 			intermediateCtxs = append(intermediateCtxs, c)
@@ -636,7 +636,7 @@ func TestRunLLMIntermediateFlush_publishesAfterCtxCancel(t *testing.T) {
 	).AnyTimes()
 
 	mockNotify.EXPECT().PublishEvent(gomock.Any(), gomock.Eq(message.EventTypeBotLLM), gomock.Any()).DoAndReturn(
-		func(c context.Context, _ any, evt message.Message) {
+		func(c context.Context, _ any, evt *message.Message) {
 			mu.Lock()
 			defer mu.Unlock()
 			finalCalled = true
@@ -921,7 +921,7 @@ func TestBotLLMText_inReplyToMessageID_snapshotsAtGenerationStart(t *testing.T) 
 	finalInReplyTo := make(chan uuid.UUID, 2)
 	mockNotify.EXPECT().
 		PublishEvent(gomock.Any(), gomock.Eq(message.EventTypeBotLLM), gomock.Any()).
-		DoAndReturn(func(_ any, _ any, evt message.Message) {
+		DoAndReturn(func(_ any, _ any, evt *message.Message) {
 			finalInReplyTo <- evt.InReplyToMessageID
 		}).
 		Times(2)
@@ -1163,7 +1163,7 @@ func TestBotLLMText_armNewGeneration_resetsOncePrimitives(t *testing.T) {
 	finalCount := make(chan uuid.UUID, 2)
 	mockNotify.EXPECT().
 		PublishEvent(gomock.Any(), gomock.Eq(message.EventTypeBotLLM), gomock.Any()).
-		DoAndReturn(func(_ any, _ any, evt message.Message) {
+		DoAndReturn(func(_ any, _ any, evt *message.Message) {
 			finalCount <- evt.ID
 		}).
 		Times(2)

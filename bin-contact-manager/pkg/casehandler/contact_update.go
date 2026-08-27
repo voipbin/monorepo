@@ -30,7 +30,7 @@ func (h *caseHandler) UpdateContact(ctx context.Context, customerID, caseID, con
 		return nil, err
 	}
 
-	eventType := "case_contact_detached"
+	eventType := kase.EventTypeCaseContactDetached
 	if contactID != uuid.Nil {
 		ct, err := h.db.ContactGet(ctx, contactID)
 		if err != nil {
@@ -54,7 +54,7 @@ func (h *caseHandler) UpdateContact(ctx context.Context, customerID, caseID, con
 		if err := h.db.CaseUpdateContactID(ctx, customerID, caseID, contactID); err != nil {
 			return nil, fmt.Errorf("could not update case contact_id. UpdateContact. err: %v", err)
 		}
-		eventType = "case_contact_attributed"
+		eventType = kase.EventTypeCaseContactAttributed
 	} else {
 		if err := h.db.CaseClearContactID(ctx, customerID, caseID); err != nil {
 			return nil, fmt.Errorf("could not clear case contact_id. UpdateContact. err: %v", err)
@@ -73,9 +73,9 @@ func (h *caseHandler) UpdateContact(ctx context.Context, customerID, caseID, con
 	// Mirrors casenote.go's PublishEvent-only precedent -- this is an
 	// internal state-change event, not a customer-facing webhook, so
 	// PublishEvent (never PublishWebhookEvent) is correct here too.
-	h.notifyHandler.PublishEvent(ctx, eventType, map[string]uuid.UUID{
-		"case_id":    caseID,
-		"contact_id": contactID, // uuid.Nil on detach -- consumer reads eventType to disambiguate
+	h.notifyHandler.PublishEvent(ctx, eventType, &kase.CaseContactEvent{
+		CaseID:    caseID,
+		ContactID: contactID, // uuid.Nil on detach -- consumer reads eventType to disambiguate
 	})
 
 	return c, nil

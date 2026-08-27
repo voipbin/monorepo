@@ -66,6 +66,23 @@ Many-to-many link between contacts and tags managed by `bin-tag-manager`.
 
 Table: `contact_tag_assignments`
 
+### Case event payloads (`models/kase`, `models/casenote`)
+
+Internal, agent-facing state changes on a Case are published through the plain `PublishEvent()` primitive (never `PublishWebhookEvent()` — a CaseNote must never reach a customer-facing webhook). VOIP-1405 replaced the ad-hoc `map[string]uuid.UUID` payloads of these sites with named structs; the JSON key SET is unchanged (only field order differs, which is JSON-semantically irrelevant), so fanout consumers see no change.
+
+| Event type | Constant | Payload type | JSON keys | Subscription address |
+|---|---|---|---|---|
+| `case_note_created` | `casenote.EventTypeCaseNoteCreated` | `*casenote.CaseNote` | full note | `case_id` (override) |
+| `case_note_deleted` | `casenote.EventTypeCaseNoteDeleted` | `*casenote.CaseNoteDeletedEvent` | `id`, `case_id`, `customer_id` | `case_id` (override) |
+| `case_tag_added` | `kase.EventTypeCaseTagAdded` | `*kase.CaseTagEvent` | `case_id`, `tag_id` | `case_id` (override) |
+| `case_tag_removed` | `kase.EventTypeCaseTagRemoved` | `*kase.CaseTagEvent` | `case_id`, `tag_id` | `case_id` (override) |
+| `case_contact_attributed` | `kase.EventTypeCaseContactAttributed` | `*kase.CaseContactEvent` | `case_id`, `contact_id` | `case_id` (override) |
+| `case_contact_detached` | `kase.EventTypeCaseContactDetached` | `*kase.CaseContactEvent` | `case_id`, `contact_id` (`uuid.Nil`) | `case_id` (override) |
+
+`EventSubscriptionID()` is implemented with a POINTER receiver on all four payload types (`*CaseNote`, `*CaseNoteDeletedEvent`, `*CaseTagEvent`, `*CaseContactEvent`): the event data reaches `notifyhandler` as a pointer and the interface assertion matches the dynamic type, so a value receiver would silently never be picked up. `kase.Case` itself deliberately carries NO override — its own id already is the address.
+
+`CaseNote` and `CaseNoteDeletedEvent` both carry their own top-level `id`; the override is what keeps the address on the case axis instead of that note id. Without it the events would publish under a well-formed but unbindable address that no runtime metric can flag, which is why `models/kase/routingkey_golden_test.go` pins the `case_note_deleted` address explicitly.
+
 ## Key Business Rules
 
 1. **Tenant isolation**: All queries filter by `customer_id`. A contact is never visible to another customer.
@@ -82,4 +99,6 @@ Table: `contact_tag_assignments`
 
 7. **Multiple addresses**: A single contact may have multiple phone numbers and emails. These are managed as independent child records with their own UUIDs.
 
-8. **Event publishing**: Create, update, and delete operations publish `contact_created`, `contact_updated`, and `contact_deleted` events to `QueueNameContactEvent`. Downstream services (e.g., call flows) can subscribe to keep caller-ID caches current.
+8. **Event publishing**: Create, update, and delete operations publish `contact_created`, `contact_updated`, and `contact_deleted` events to `QueueNameContactEvent`. Downstream services (e.g., call flows) can subscribe to keep caller-ID caches current. The payload is the `*contact.WebhookMessage` value produced by `ConvertWebhookMessage()`. **VOIP-1405 payload change**: this used to be the `[]byte` returned by `CreateWebhookEvent()`, which `PublishEvent` then marshaled a second time, storing the event as a base64 JSON *string*. The published payload is now a JSON object. This is an intended, independent improvement and is NOT reverted by disabling the global topic exchange option.
+
+9. **Case events**: see the "Case event payloads" table above for the six internal case events, their named constants, and their subscription addresses on the global topic exchange.

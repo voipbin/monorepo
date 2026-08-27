@@ -140,7 +140,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 
 	// create handlers
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, common.Servicename)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameCallEvent, common.Servicename)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameCallEvent, common.Servicename, notifyhandler.WithGlobalTopicPublish())
 	channelHandler := channelhandler.NewChannelHandler(reqHandler, notifyHandler, db, cache)
 	bridgeHandler := bridgehandler.NewBridgeHandler(reqHandler, notifyHandler, db)
 	externalMediaHandler := externalmediahandler.NewExternalMediaHandler(reqHandler, notifyHandler, db, channelHandler, bridgeHandler, cache, cfg.AsteriskWSPort)

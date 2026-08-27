@@ -27,7 +27,7 @@ func Test_receiveMessageFrameTypeMessage(t *testing.T) {
 
 		responseUUID  uuid.UUID
 		expectEvent   string
-		expectMessage message.Message
+		expectMessage *message.Message
 	}{
 		{
 			name: "bot-transcription",
@@ -47,7 +47,7 @@ func Test_receiveMessageFrameTypeMessage(t *testing.T) {
 
 			responseUUID: uuid.FromStringOrNil("c15f98f8-af1f-11f0-b009-535ac8cbc876"),
 			expectEvent:  message.EventTypeBotTranscription,
-			expectMessage: message.Message{
+			expectMessage: &message.Message{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("c15f98f8-af1f-11f0-b009-535ac8cbc876"),
 					CustomerID: uuid.FromStringOrNil("546f7606-af23-11f0-a7ca-c32fd2659ee7"),
@@ -74,7 +74,7 @@ func Test_receiveMessageFrameTypeMessage(t *testing.T) {
 			responseUUID: uuid.FromStringOrNil("54eb0456-af23-11f0-986c-4bb2d9cd75de"),
 			expectEvent:  message.EventTypeUserTranscription,
 
-			expectMessage: message.Message{
+			expectMessage: &message.Message{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("54eb0456-af23-11f0-986c-4bb2d9cd75de"),
 					CustomerID: uuid.FromStringOrNil("54c1efee-af23-11f0-af7c-a7f393ea7de5"),

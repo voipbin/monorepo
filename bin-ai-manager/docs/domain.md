@@ -72,6 +72,25 @@ Key fields:
 ### Team
 AI team configuration grouping multiple AI agents for routing or escalation scenarios.
 
+## Topic Exchange Subscription Addresses
+
+Since VOIP-1405 every event is also published to the global topic exchange `bin-manager.event` with the routing key `ai-manager.<resource>.<subscription-id>.<action>` (see [docs/architecture.md](architecture.md) for the wiring). The third key segment is the *subscription address* — the id by which a consumer addresses the stream, which is not always the payload's own id.
+
+| Event | Data | Subscription address | Topic routing key |
+|-------|------|----------------------|-------------------|
+| `ai.EventTypeCreated` / `Updated` / `Deleted` | `*ai.AI` | own id | `ai-manager.ai.<ai-id>.created` / `.updated` / `.deleted` |
+| `aicall.EventTypeStatus*` (6 statuses) | `*aicall.AIcall` | own id | `ai-manager.aicall.<aicall-id>.status_<state>` |
+| `message.EventTypeMessageCreated` | `*message.Message` | `AIcallID` | `ai-manager.aimessage.<aicall-id>.created` |
+| `message.EventTypeMessageIntermediate` | `*message.IntermediateWebhookMessage` | `AIcallID` | `ai-manager.aimessage.<aicall-id>.intermediate` |
+| `summary.EventTypeCreated` / `Updated` / `Deleted` | `*summary.Summary` | own id | `ai-manager.summary.<summary-id>.created` / `.updated` / `.deleted` |
+| `team.EventTypeCreated` / `Updated` / `Deleted` | `*team.Team` | own id | `ai-manager.team.<team-id>.created` / `.updated` / `.deleted` |
+
+`Message` and `IntermediateWebhookMessage` implement `eventtopic.SubscriptionIdentifier` (pointer receiver) returning `AIcallID`. `Message` has a stable persisted id, but that id first reaches a subscriber inside the `aimessage_created` event itself, so it cannot be pre-bound; `IntermediateWebhookMessage` is a non-persisted streaming fragment whose id changes per delta (ordered by `sequence`), so its own id is not an address at all. Both therefore address the parent AIcall, which means one conversation is followed with `ai-manager.aicall.<aicall-id>.#` plus `ai-manager.aimessage.<aicall-id>.#`. Single-message retrieval stays available over RPC.
+
+`AI`, `AIcall`, `Summary`, and `Team` need no override — their own ids already are the subscription addresses.
+
+The routing keys above are pinned by the golden table in `models/ai/routingkey_golden_test.go`, which must be updated in the same change as any event-type or address change.
+
 ## LLM Engine Providers
 
 `bin-ai-manager` supports 18+ providers via `engine_type`:

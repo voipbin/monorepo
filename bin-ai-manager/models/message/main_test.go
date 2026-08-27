@@ -7,7 +7,93 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/models/eventtopic"
+	"monorepo/bin-common-handler/models/identity"
 )
+
+// Message overrides the subscription address of the global topic exchange (VOIP-1404/1405). The
+// assertion pins the POINTER receiver: notifyhandler asserts on the dynamic type of the event
+// data, which is always a pointer, so a value receiver would silently never be picked up.
+var _ eventtopic.SubscriptionIdentifier = (*Message)(nil)
+
+func TestMessageEventSubscriptionID(t *testing.T) {
+	aicallID := uuid.Must(uuid.NewV4())
+
+	tests := []struct {
+		name    string
+		message *Message
+		expect  string
+	}{
+		{
+			"normal",
+			&Message{
+				Identity: identity.Identity{
+					ID:         uuid.Must(uuid.NewV4()),
+					CustomerID: uuid.Must(uuid.NewV4()),
+				},
+				AIcallID:  aicallID,
+				Direction: DirectionIncoming,
+				Role:      RoleAssistant,
+				Content:   "hello",
+			},
+			aicallID.String(),
+		},
+		{
+			"empty aicall id",
+			&Message{},
+			uuid.Nil.String(),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res := tt.message.EventSubscriptionID()
+			if res != tt.expect {
+				t.Errorf("Wrong match. expect: %s, got: %s", tt.expect, res)
+			}
+		})
+	}
+}
+
+func TestMessageEventSubscriptionIDIsNotOwnID(t *testing.T) {
+	aicallID := uuid.Must(uuid.NewV4())
+
+	first := &Message{
+		Identity: identity.Identity{
+			ID:         uuid.Must(uuid.NewV4()),
+			CustomerID: uuid.Must(uuid.NewV4()),
+		},
+		AIcallID: aicallID,
+		Role:     RoleUser,
+		Content:  "first",
+	}
+	second := &Message{
+		Identity: identity.Identity{
+			ID:         uuid.Must(uuid.NewV4()),
+			CustomerID: first.CustomerID,
+		},
+		AIcallID: aicallID,
+		Role:     RoleAssistant,
+		Content:  "second",
+	}
+
+	// Every message of one AIcall carries its own persisted id, which is exactly why the own id
+	// must not be the subscription address: a subscriber following the conversation cannot know
+	// those ids in advance. Both messages must resolve to the same address.
+	if first.ID == second.ID {
+		t.Fatalf("Message ids are expected to differ per message. id: %s", first.ID)
+	}
+	if first.EventSubscriptionID() != second.EventSubscriptionID() {
+		t.Errorf("Wrong match. expect: %s, got: %s", first.EventSubscriptionID(), second.EventSubscriptionID())
+	}
+	if first.EventSubscriptionID() != aicallID.String() {
+		t.Errorf("Wrong match. expect: %s, got: %s", aicallID.String(), first.EventSubscriptionID())
+	}
+	if first.EventSubscriptionID() == first.ID.String() {
+		t.Errorf("Subscription address must not be the message own id. id: %s", first.ID)
+	}
+}
 
 func TestMessage_hasPipecatcallIDAndDeliveryStatus(t *testing.T) {
 	m := Message{

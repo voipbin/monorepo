@@ -98,6 +98,36 @@ The old `*.registrar.{base}` suffix is NOT accepted: the VOIP-1385 cutover remov
 
 11. **Registrar/trunk customer resolution is lookup-based and fail-closed**: an incoming registrar-domain call resolves its customer via registrar-manager (`RegistrarV1CustomerDomainGetByRealm` with the full realm); trunk-domain calls resolve via `RegistrarV1TrunkGetByDomainName`. No customer uuid is ever parsed out of the domain string. An unknown realm or a lookup failure rejects the call (hangup with no-route-destination). The `ContactStatusChange` ARI handler resolves the customer through the same realm lookup; an unknown realm there logs a warning and skips the contact refresh instead of failing the event loop.
 
+## Published Events
+
+Every event below is published to the per-service fanout exchange `bin-manager.call-manager.event`, and — since VOIP-1405 — also to the global topic exchange `bin-manager.event` with the routing key `call-manager.<resource>.<subscription-id>.<action>`. The third key segment is the *subscription address*: the id by which subscribers address the stream, which is not always the payload's own id.
+
+| Event | Data type | Subscription address |
+|---|---|---|
+| `call_created` / `call_updated` / `call_deleted` / `call_hangup` | `*call.Call` | own id |
+| `call_dialing` / `call_ringing` / `call_progressing` / `call_terminating` / `call_canceling` | `*call.Call` | own id |
+| `call.outbound_whitelist_rejected` | `*call.OutboundWhitelistRejectedEvent` | `call_id` (override) |
+| `dtmf_received` | `*dtmf.DTMF` | `call_id` (override) |
+| `confbridge_created` / `confbridge_deleted` / `confbridge_terminating` / `confbridge_terminated` | `*confbridge.Confbridge` | own id |
+| `confbridge_joined` / `confbridge_leaved` | `*confbridge.EventConfbridgeJoined` / `*confbridge.EventConfbridgeLeaved` | confbridge id (promoted from the anonymous embed) |
+| `groupcall_created` / `groupcall_progressing` / `groupcall_hangup` / `groupcall_deleted` | `*groupcall.Groupcall` | own id |
+| `recording_started` / `recording_finished` | `*recording.Recording` | own id |
+
+The `call_dialing` … `call_canceling` group is emitted from the `mapEvt` status→event table in `pkg/callhandler/db.go`; the event type is chosen at runtime from the updated call status, so all five branches share one payload type and differ only in the key's action segment.
+
+`call.outbound_whitelist_rejected` is the one dot-separated event type. `eventtopic.RoutingKey` rewrites every `.` to `_` before splitting, so it normalizes to resource `call` + action `outbound_whitelist_rejected` and lands in the same namespace as the call lifecycle events — it does not leak an extra key segment.
+
+### Subscription-address overrides
+
+`DTMF` and `OutboundWhitelistRejectedEvent` implement `eventtopic.SubscriptionIdentifier` (pointer receiver) returning `CallID`:
+
+- **`dtmf.DTMF`** — `pkg/callhandler.digitNotifyDTMFEvent` mints a fresh uuid for every digit event, so the own id is a well-formed but unbindable address. Falling back to it would produce keys no instance binding ever matches, with no runtime metric able to detect it.
+- **`call.OutboundWhitelistRejectedEvent`** — carries no top-level `id` at all. It replaced an inline `map[string]interface{}` in VOIP-1405 with an identical JSON key set; a map can never satisfy the pointer-receiver assertion, so the map form could only ever resolve to the `-` placeholder.
+
+Everything else keeps its own id as the address deliberately. `Recording` in particular: the download/stop APIs are recording-id keyed and the id returns from the start RPC, so it is pre-bindable; call-axis followers use the type-level pattern instead. Confbridge, groupcall and recording are independently addressable resources, so `call-manager` does not collapse its namespaces onto a single address the way `transcribe-manager` does.
+
+The exact key for every event type above is pinned by `models/call/routingkey_golden_test.go`.
+
 ## State Machines
 
 ### Call Lifecycle

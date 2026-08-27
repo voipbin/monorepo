@@ -37,7 +37,7 @@ func (h *caseHandler) CaseNoteCreate(ctx context.Context, customerID, caseID uui
 		return nil, fmt.Errorf("could not create case note. CaseNoteCreate. err: %v", err)
 	}
 
-	h.notifyHandler.PublishEvent(ctx, "case_note_created", n)
+	h.notifyHandler.PublishEvent(ctx, casenote.EventTypeCaseNoteCreated, n)
 
 	return n, nil
 }
@@ -50,10 +50,10 @@ func (h *caseHandler) CaseNoteDelete(ctx context.Context, customerID, caseID, id
 		return err
 	}
 
-	h.notifyHandler.PublishEvent(ctx, "case_note_deleted", map[string]uuid.UUID{
-		"id":          id,
-		"case_id":     caseID,
-		"customer_id": customerID,
+	h.notifyHandler.PublishEvent(ctx, casenote.EventTypeCaseNoteDeleted, &casenote.CaseNoteDeletedEvent{
+		ID:         id,
+		CaseID:     caseID,
+		CustomerID: customerID,
 	})
 
 	return nil

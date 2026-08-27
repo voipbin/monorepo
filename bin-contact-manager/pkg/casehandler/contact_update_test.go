@@ -59,9 +59,9 @@ func Test_UpdateContact_Attach(t *testing.T) {
 		t.Fatalf("ContactCreate() error = %v", err)
 	}
 
-	mockNotify.EXPECT().PublishEvent(ctx, "case_contact_attributed", map[string]uuid.UUID{
-		"case_id":    caseID,
-		"contact_id": contactID,
+	mockNotify.EXPECT().PublishEvent(ctx, kase.EventTypeCaseContactAttributed, &kase.CaseContactEvent{
+		CaseID:    caseID,
+		ContactID: contactID,
 	}).Times(1)
 
 	res, err := h.UpdateContact(ctx, customerID, caseID, contactID)
@@ -107,9 +107,9 @@ func Test_UpdateContact_Detach(t *testing.T) {
 		t.Fatalf("CaseUpdateContactID() error = %v", err)
 	}
 
-	mockNotify.EXPECT().PublishEvent(ctx, "case_contact_detached", map[string]uuid.UUID{
-		"case_id":    caseID,
-		"contact_id": uuid.Nil,
+	mockNotify.EXPECT().PublishEvent(ctx, kase.EventTypeCaseContactDetached, &kase.CaseContactEvent{
+		CaseID:    caseID,
+		ContactID: uuid.Nil,
 	}).Times(1)
 
 	res, err := h.UpdateContact(ctx, customerID, caseID, uuid.Nil)
@@ -310,7 +310,7 @@ func Test_UpdateContact_NeverUsesPublishWebhookEvent(t *testing.T) {
 	// PublishWebhookEvent NEVER. gomock fails the test if
 	// PublishWebhookEvent is called without a matching EXPECT (Times(0)
 	// makes any call a hard failure, not just an unasserted no-op).
-	mockNotify.EXPECT().PublishEvent(ctx, "case_contact_attributed", gomock.Any()).Times(1)
+	mockNotify.EXPECT().PublishEvent(ctx, kase.EventTypeCaseContactAttributed, gomock.Any()).Times(1)
 	mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 
 	if _, err := h.UpdateContact(ctx, customerID, caseID, contactID); err != nil {

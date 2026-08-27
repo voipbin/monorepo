@@ -127,7 +127,10 @@ func runService(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	// create handlers
 	db := dbhandler.NewHandler(sqlDB, cache)
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameContactEvent, serviceName)
+	// VOIP-1405: opt into the global topic exchange `bin-manager.event`. contact-control enables
+	// the same option, so the "contact-manager events exist on the topic exchange" contract holds
+	// regardless of which process published.
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameContactEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 	caseHandler := casehandler.NewCaseHandler(reqHandler, db, notifyHandler)
 	contactHandler := contacthandler.NewContactHandler(reqHandler, db, notifyHandler, caseHandler)
 	addrHandler := addresshandler.NewAddressHandler(db)

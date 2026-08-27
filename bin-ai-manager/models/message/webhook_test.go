@@ -6,8 +6,97 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	"monorepo/bin-common-handler/models/eventtopic"
 	"monorepo/bin-common-handler/models/identity"
 )
+
+// IntermediateWebhookMessage overrides the subscription address of the global topic exchange
+// (VOIP-1404/1405). The assertion pins the POINTER receiver: notifyhandler asserts on the dynamic
+// type of the event data, which is always a pointer, so a value receiver would silently never be
+// picked up.
+var _ eventtopic.SubscriptionIdentifier = (*IntermediateWebhookMessage)(nil)
+
+func TestIntermediateWebhookMessageEventSubscriptionID(t *testing.T) {
+	aicallID := uuid.Must(uuid.NewV4())
+
+	tests := []struct {
+		name    string
+		message *IntermediateWebhookMessage
+		expect  string
+	}{
+		{
+			"normal",
+			&IntermediateWebhookMessage{
+				Identity: identity.Identity{
+					ID:         uuid.Must(uuid.NewV4()),
+					CustomerID: uuid.Must(uuid.NewV4()),
+				},
+				AIcallID:  aicallID,
+				Role:      RoleAssistant,
+				Content:   "hel",
+				Direction: DirectionIncoming,
+				Sequence:  1,
+			},
+			aicallID.String(),
+		},
+		{
+			"empty aicall id",
+			&IntermediateWebhookMessage{},
+			uuid.Nil.String(),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res := tt.message.EventSubscriptionID()
+			if res != tt.expect {
+				t.Errorf("Wrong match. expect: %s, got: %s", tt.expect, res)
+			}
+		})
+	}
+}
+
+func TestIntermediateWebhookMessageEventSubscriptionIDIsNotOwnID(t *testing.T) {
+	aicallID := uuid.Must(uuid.NewV4())
+	customerID := uuid.Must(uuid.NewV4())
+
+	// Consecutive deltas of ONE utterance: each carries the per-delta id echoed from
+	// bin-pipecat-manager and is ordered by Sequence. The id changes per event, so it is not an
+	// address anybody could bind to -- the AIcall is.
+	first := &IntermediateWebhookMessage{
+		Identity: identity.Identity{
+			ID:         uuid.Must(uuid.NewV4()),
+			CustomerID: customerID,
+		},
+		AIcallID: aicallID,
+		Role:     RoleAssistant,
+		Content:  "hel",
+		Sequence: 1,
+	}
+	second := &IntermediateWebhookMessage{
+		Identity: identity.Identity{
+			ID:         uuid.Must(uuid.NewV4()),
+			CustomerID: customerID,
+		},
+		AIcallID: aicallID,
+		Role:     RoleAssistant,
+		Content:  "lo",
+		Sequence: 2,
+	}
+
+	if first.ID == second.ID {
+		t.Fatalf("Intermediate message ids are expected to differ per event. id: %s", first.ID)
+	}
+	if first.EventSubscriptionID() != second.EventSubscriptionID() {
+		t.Errorf("Wrong match. expect: %s, got: %s", first.EventSubscriptionID(), second.EventSubscriptionID())
+	}
+	if first.EventSubscriptionID() != aicallID.String() {
+		t.Errorf("Wrong match. expect: %s, got: %s", aicallID.String(), first.EventSubscriptionID())
+	}
+	if first.EventSubscriptionID() == first.ID.String() {
+		t.Errorf("Subscription address must not be the intermediate message own id. id: %s", first.ID)
+	}
+}
 
 func TestConvertWebhookMessage(t *testing.T) {
 	tests := []struct {

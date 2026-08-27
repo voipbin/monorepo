@@ -32,5 +32,5 @@ func (h *pipecatcallHandler) SendMessage(ctx context.Context, id uuid.UUID, mess
 		return nil, errors.Wrapf(errSend, "could not send the message to pipecatcall")
 	}
 
-	return &res, nil
+	return res, nil
 }

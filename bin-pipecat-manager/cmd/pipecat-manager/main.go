@@ -118,7 +118,11 @@ func run() error {
 		return fmt.Errorf("could not get the listen ip address")
 	}
 	requestHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, requestHandler, commonoutline.QueueNamePipecatEvent, serviceName)
+	// VOIP-1405: dual-publish every event to the global topic exchange `bin-manager.event`
+	// alongside the per-service fanout exchange. cmd/pipecat-control enables the same option, so
+	// the "pipecat-manager events exist on the topic exchange" contract holds regardless of which
+	// process published.
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, requestHandler, commonoutline.QueueNamePipecatEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 
 	// Create tool handler and fetch tools from ai-manager
 	toolHandler := toolhandler.NewToolHandler(requestHandler)

@@ -420,7 +420,9 @@ func initAIHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (aihandler.AI
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameAIEvent, serviceName)
+	// VOIP-1405: same global topic exchange opt-in as cmd/ai-manager. Both processes publish to
+	// the same logical stream, so both must dual publish or consumers would see gaps.
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameAIEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 
 	return aihandler.NewAIHandler(reqHandler, notifyHandler, db), nil
 }
@@ -466,7 +468,9 @@ func initAIcallHandler() (aicallhandler.AIcallHandler, error) {
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameAIEvent, serviceName)
+	// VOIP-1405: same global topic exchange opt-in as cmd/ai-manager. Both processes publish to
+	// the same logical stream, so both must dual publish or consumers would see gaps.
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameAIEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 
 	// For these operations, we don't need aiHandler, messageHandler, or participantHandler
 	return aicallhandler.NewAIcallHandler(reqHandler, notifyHandler, dbHandler, nil, nil, nil, nil), nil
