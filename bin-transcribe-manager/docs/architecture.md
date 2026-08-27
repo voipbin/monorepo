@@ -24,7 +24,7 @@ Key packages:
 | `pkg/streaminghandler` | WebSocket connections to Asterisk; in-memory session map |
 | `pkg/transcribehandler` | Core business logic — session creation, status transitions |
 | `pkg/dbhandler` | MySQL + Redis persistence |
-| `pkg/notifyhandler` | Publishes events to `bin-manager.transcribe-manager.event` |
+| `pkg/notifyhandler` | Publishes events to the fanout exchange `bin-manager.transcribe-manager.event` and, since VOIP-1404, dual-publishes the same payload to the global topic exchange `bin-manager.event` |
 | `models/transcribe` | Transcribe session struct, status enum |
 | `internal/config` | Cobra + Viper configuration (singleton pattern) |
 
@@ -40,6 +40,8 @@ subscribehandler     — call_hangup → finalize session; customer_deleted → 
             ├─ streaminghandler — in-memory session map (mutex-protected)
             └─ notifyhandler   — publishes events on state changes
 ```
+
+Both `cmd/transcribe-manager` and `cmd/transcribe-control` construct their NotifyHandler with `notifyhandler.WithGlobalTopicPublish()`, so every event is published twice: once to the per-service fanout exchange `bin-manager.transcribe-manager.event` (unchanged, still the system of record) and once to the global topic exchange `bin-manager.event` with the routing key `transcribe-manager.<resource>.<transcribe-id>.<action>`. The two cmds must stay in lockstep on this option — enabling it in only one would leave consumers with gaps depending on which process published. A topic publish failure never propagates to the caller and never affects the fanout publish. See [docs/domain.md](domain.md) for the per-event routing keys and `docs/plans/` (monorepo `docs/plans/2026-08-27-voip-1404-global-topic-exchange-design.md`) for the schema.
 
 ## Request Routing
 

@@ -26,3 +26,15 @@ type Speech struct {
 
 	TMCreate *time.Time `json:"tm_create"`
 }
+
+// EventSubscriptionID returns the subscription address of the global topic exchange
+// `bin-manager.event` (VOIP-1404). It is the parent TranscribeID, not the speech's own ID:
+// NewSpeech generates a fresh random ID for every single event, so the own ID is not an address
+// anybody could bind to in advance. Subscribers follow one transcription session, and every event
+// of that session carries the same transcribe-id.
+//
+// The receiver is a pointer because the event data reaches notifyhandler as a pointer and the
+// eventtopic.SubscriptionIdentifier assertion matches the dynamic type.
+func (h *Speech) EventSubscriptionID() string {
+	return h.TranscribeID.String()
+}

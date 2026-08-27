@@ -11,6 +11,7 @@ bin-common-handler/
 │   ├── sock/           — message broker types (Request, Response, Event)
 │   ├── address/        — address-related models
 │   ├── service/        — service definitions
+│   ├── eventtopic/     — global topic exchange routing-key schema and pattern builders
 │   └── outline/        — service names and canonical queue names
 └── pkg/
     ├── requesthandler/         — typed inter-service RPC client
@@ -40,6 +41,14 @@ Wire types for the RabbitMQ RPC transport:
 ### models/outline
 Canonical constants for service names and queue names. Services look up their request queue and event queue names from this package — no hardcoded queue strings in individual services.
 
+### models/eventtopic
+Routing-key schema of the global topic exchange `bin-manager.event` (VOIP-1404):
+- `RoutingKey(publisher, eventType, subscriptionID)` — builds `<publisher>.<resource>.<subscription-id>.<action>`
+- `PatternAll` / `PatternResource` / `PatternInstance` / `PatternAction` — binding patterns for `sockhandler.QueueBind`
+- `SubscriptionIdentifier` — opt-in interface (pointer receiver) letting a stream-child resource override the third segment with its parent stream id
+
+Pure functions only. Admitted to `bin-common-handler` despite the 3+-services rule because it is internal plumbing of `notifyhandler` itself — see the package doc comment.
+
 ### pkg/requesthandler
 The canonical inter-service RPC client. Provides typed methods for every manager service:
 - Example: `BillingV1BillingGets`, `CallV1CallCreate`, `FlowV1ActiveflowGet`
@@ -51,9 +60,11 @@ This is the only correct way for one service to call another. Adding side-channe
 
 ### pkg/notifyhandler
 Event publishing and webhook delivery:
-- `PublishEvent` — publishes to RabbitMQ topic exchange
+- `PublishEvent` — publishes to the service's own fanout event exchange
+- `PublishEventWithRoutingKey` — publishes with an explicit routing key, for the webhook-manager scope-first topic exchange
 - `PublishWebhook` — delivers HTTP webhook notifications to customer endpoints
 - Supports delayed delivery via RabbitMQ delay exchange
+- **Dual publish (VOIP-1404)** — with the `WithGlobalTopicPublish()` constructor option, every non-delayed event is additionally published to the global topic exchange `bin-manager.event` with a `models/eventtopic` routing key. Opt-in per handler instance, default off. The fanout publish stays the system of record: it runs first, a fanout failure skips the topic publish, and a topic failure is logged plus counted but never propagated to the caller. A failed exchange declare degrades the handler (topic publish suppressed and counted) instead of returning `nil`.
 
 ### pkg/sockhandler
 Abstract message-broker interface. Currently backed by RabbitMQ. Consumer services receive this as a dependency injection and should not depend on `rabbitmqhandler` directly.
@@ -95,13 +106,15 @@ Every change to `bin-common-handler` triggers verification across all 37 consume
 
 ## Prometheus Metrics
 
-`bin-common-handler` does not register metrics in its own namespace. When a consumer service constructs a `requesthandler.RequestHandler`, the constructor registers metrics scoped to the consumer:
+`bin-common-handler` does not register metrics in its own namespace. Its constructors register metrics scoped to the consumer service instead: `requesthandler.NewRequestHandler` registers the request/circuit-breaker counters, and `notifyhandler.initPrometheus` (called from both NotifyHandler constructors) registers the notify and topic counters. `<ns>` is the consumer's metric namespace (`commonoutline.GetMetricNameSpace(publisher)`, e.g. `transcribe_manager`):
 
 | Metric pattern | Type | Description |
 |---------------|------|-------------|
 | `<ns>_request_process_time` | Histogram | RPC request duration |
 | `<ns>_event_publish_total{type}` | Counter | Events published |
-| `<ns>_notify_total` / `<ns>_notify_process_time` | Counter/Histogram | Webhook delivery |
+| `<ns>_notify_total{type}` / `<ns>_notify_process_time{type}` | Counter/Histogram | Events published by `notifyhandler` to the fanout exchange (count and duration) |
+| `<ns>_topic_publish_total{type,result}` | Counter | Events published to the global topic exchange `bin-manager.event`; `result` is `ok` or `error` (VOIP-1404) |
+| `<ns>_topic_placeholder_total{type}` | Counter | Topic publishes whose subscription id fell back to the `-` placeholder (VOIP-1404) |
 | `<ns>_circuitbreaker_state{target}` | Gauge | 0=closed, 1=open, 2=half-open |
 | `<ns>_circuitbreaker_state_transitions_total{target,from,to}` | Counter | CB state transitions |
 | `<ns>_circuitbreaker_rejected_total{target}` | Counter | Open-state rejections |
