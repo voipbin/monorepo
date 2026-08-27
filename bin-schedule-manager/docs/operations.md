@@ -122,7 +122,7 @@ Komodo-managed (VOIP-1350), same mechanism as the other `bin-*-manager` services
 `.circleci/scripts/render-image-tag.sh` + `.circleci/scripts/komodo-api-deploy.sh`
 from `komodo/docker-compose.yml`.
 
-Two deviations from the Tier 1/2 template, both intentional:
+Three deviations from the Tier 1/2 template, all intentional:
 - **Non-distroless runtime** (`debian:bookworm-slim` + `default-mysql-client`
   (→ mariadb-client, VOIP-1397), see the CRITICAL note in
   [../CLAUDE.md](../CLAUDE.md)) — but `debian:bookworm-slim` ships with
@@ -137,3 +137,55 @@ Two deviations from the Tier 1/2 template, both intentional:
   (confirmed via `docker inspect` against the pre-cutover container), so
   existing backup history is preserved across the cutover rather than starting
   a new directory under Komodo's stack working dir.
+- **`deploy: replicas: 2`, no `container_name`** (NOJIRA-Schedule-manager-scale-poc):
+  this service is the fleet's pilot for the bin-*-manager 1→2 replica
+  rollout. Compose rejects a fixed `container_name` together with
+  `deploy.replicas > 1` ("container name must be unique"), so
+  `container_name: voipbin-schedule-manager` was removed; Komodo is
+  expected to name the containers from the compose project/service (e.g.
+  `bin-schedule-manager-schedule-manager-1`/`-2`) — **not yet confirmed
+  against a live deploy on bm-nyc-01** (`komodo-api-deploy.sh` itself notes
+  its container-state read is unverified against the live instance). Update
+  this once the PoC actually deploys.
+  - **Backup path is the one genuinely new surface** (dispatch-loop replica
+    safety already ran on GKE; the bind-mounted backup path did not). It
+    remains safe: the mount is a host bind mount on a single bare-metal
+    node, which is exactly the ReadWriteMany semantics this doc already
+    requires ("any replica may run the job"), and double-execution is
+    prevented at two layers — `bin-manager.schedule-manager.request` is a
+    shared competing-consumer queue (only one replica receives the RPC),
+    and the design §5.3 claim (Redis lock + DB CAS + unique execution row)
+    prevents double-dispatch. `pkg/backuphandler` itself has no file-level
+    lock (writes straight to `outPath`, prunes by directory listing) — this
+    is fine only as long as the claim machinery above keeps two replicas
+    from running the backup job concurrently; do not weaken that guarantee
+    without revisiting this note.
+  - **CI deploy gate has a known blind spot with replicas > 1**:
+    `.circleci/scripts/komodo-api-deploy.sh`'s `check_stack_running` reads
+    `.container.state` per compose *service*, not per container. With 2
+    replicas it can report healthy on a 1-of-2 state — a green deploy does
+    not by itself prove both replicas are up. **Manual verification is
+    required after every deploy of this service until the gate is fixed
+    fleet-wide:**
+    ```bash
+    # On bm-nyc-01: expect exactly 2 running containers
+    docker ps --filter name=schedule-manager --format '{{.Names}}\t{{.Status}}'
+    ```
+    ```promql
+    # In Prometheus: expect 2 up series
+    count(up{job="voipbin-managers", service="schedule-manager"})
+    ```
+  - **Alerting blind spot**: `InstanceDown` (`up == 0`) cannot catch a lost
+    replica under DNS SD (the target goes stale, not to 0), and
+    `ManagerServiceGone` only fires at zero surviving replicas — a 1-of-2
+    degraded state is silently invisible today. No `count by (service)(up{...}) < 2`-style
+    alert exists yet; tracked as a follow-up for the fleet rollout, not
+    blocking this PoC.
+  - **Runbook naming drift**: alert runbooks in `monorepo-etc`'s
+    `alert-rules.yml` assume containers are named `voipbin-<service>` (used
+    for `docker ps --filter name=...` substring matching). This service no
+    longer has that name. The substring filter still happens to match
+    (`schedule-manager` is contained in the new Komodo-generated names), so
+    nothing breaks operationally, but this is an undocumented exception
+    that will multiply as more services join the rollout — flag it in the
+    fleet rollout design doc rather than fixing per-service.
