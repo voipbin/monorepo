@@ -257,7 +257,7 @@ call-manager.call.4a539340-….created
 
 | Segment | Source | Rule |
 |---------|--------|------|
-| publisher | the publishing service name | verbatim, lowercased |
+| publisher | the publishing service name | normalized: lowercased, `.`/`*`/`#` → `_`, empty → `-` (no-op for all real service names) |
 | resource | normalized `EventType` | first segment of `SplitN(type, "_", 2)`; `-` when the type has no `_` |
 | subscription-id | the event data | the **subscription address** — see below; `-` when absent or `uuid.Nil` |
 | action | normalized `EventType` | the remainder after the first `_` |

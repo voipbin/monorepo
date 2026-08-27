@@ -3,7 +3,7 @@
 - Date: 2026-08-27
 - Ticket: VOIP-1404
 - Status: Approved (design review: 5 rounds, 2 consecutive approvals)
-- rev.5: §4.1 publisher normalization amended to match implementation (code-review round 1)
+- rev.5: §4.1 publisher normalization amended to match implementation (code-review round 1); rev.6: §5.2 hasOverride threading + option-gated/nil-guarded resolution amended to match implementation (code-review round 2)
 - Prerequisite reading: issue analysis (VOIP-1404 ticket description), `docs/plans/2026-07-12-voip-1233-rabbitmq-ack-after-process-design.md`, `bin-webhook-manager/pkg/webhookhandler/routingkey.go` (VOIP-1258/VOIP-1296 precedent)
 
 ## 1. Problem
@@ -151,12 +151,12 @@ When enabled, the constructor declares `bin-manager.event` via the shared helper
 
 The private common path `publishEvent(eventType, dataType string, data json.RawMessage, timeout, delay int)` receives **already-marshaled bytes**, so the `SubscriptionIdentifier` type assertion cannot happen there. Resolution — split responsibilities:
 
-1. **Subscription-id resolution happens in the public methods that still hold `data interface{}`** (`PublishEvent`; `PublishWebhookEvent` delegates via `go h.PublishEvent(...)` unchanged). The resolved id (possibly `""`) is threaded into `publishEvent` as a new parameter: `publishEvent(eventType, dataType string, data json.RawMessage, timeout, delay int, subscriptionID string)`.
-2. **The topic publish itself happens inside `publishEvent`**, after the fanout publish attempt, guarded by the option flag and `delay == 0`. If `subscriptionID == ""`, `publishEvent` performs the JSON `"id"` fallback on the marshaled bytes (§4.2); empty/Nil results become the `-` placeholder.
+1. **Subscription-id resolution happens in the public methods that still hold `data interface{}`** (`PublishEvent`; `PublishWebhookEvent` delegates via `go h.PublishEvent(...)` unchanged). Resolution distinguishes *override exists* from *override value*: the pair is threaded into `publishEvent` as new parameters: `publishEvent(eventType, dataType string, data json.RawMessage, timeout, delay int, subscriptionID string, hasOverride bool)`. The resolution is gated on the option being enabled (option off ⇒ no type assertion at all), and a typed-nil pointer never has its method called (reflect nil-guard) — it resolves as no-override.
+2. **The topic publish itself happens inside `publishEvent`**, after the fanout publish attempt, guarded by the option flag and `delay == 0`. The JSON `"id"` fallback on the marshaled bytes (§4.2) runs **only when no override exists** (`hasOverride == false`); an existing override is authoritative — if its value is empty or `uuid.Nil`, the key goes straight to the `-` placeholder (never the fallback). Fallback results that are empty/Nil likewise become `-`.
 
 | Public API | Subscription-id source | Topic publish |
 |---|---|---|
-| `PublishEvent` | type assertion in `PublishEvent`, else `""` → JSON fallback in `publishEvent` | **yes** |
+| `PublishEvent` | type assertion in `PublishEvent` (option-gated, nil-guarded); no override → JSON fallback in `publishEvent` | **yes** |
 | `PublishWebhookEvent` | via `PublishEvent` — no separate handling | **yes** (via PublishEvent) |
 | `PublishEventRaw` | passes `""` — `data []byte` cannot satisfy the assertion; JSON fallback only. Contract documented in code. Sole caller today: voip-asterisk-proxy's ARI relay (`ari_handler.go:76`), which is permanently excluded from topic opt-in (§2 Non-Goals) — so this row is future-proofing, not an active path. | **yes** (when option enabled) |
 | delay>0 path (`publishDelayedEvent`) | n/a | **no** — note: no public API produces delay>0 today (both `publishEvent` call sites pass literal `0`); the guard is defensive. Delayed-event topic semantics are deferred to Follow-up A. The §8 test for this branch targets the private function; rationale is this defensiveness. |
@@ -203,6 +203,7 @@ The highest-frequency pilot event is `transcribe_speech_interim` (published per 
 - `rabbitmqhandler.publishExchange` opens and closes an AMQP channel **per publish** (pre-existing behavior, flagged as an open question in the VOIP-1233 design §8-5). Dual publish therefore doubles channel open/close churn for transcribe-manager events, not just broker ingress.
 - Routing itself is near-no-op while no bindings exist.
 - Mitigations in this ticket: (1) measure before/after — current per-type publish rate is available from `transcribe_manager_notify_total{type}` in Prometheus (metric namespace = service name with `-`→`_` via `commonoutline.GetMetricNameSpace`; the bare name is `notify_total`); capture a baseline during design sign-off and compare post-deploy channel churn via RabbitMQ `channel_created` stats; (2) rollback is a single-line option removal per cmd; (3) channel reuse in `publishExchange` is the structural fix and stays a tracked library follow-up (Non-Goals) — if post-deploy churn is problematic, that follow-up is the remedy, not schema changes.
+- Lock-hold interaction: `streaminghandler`'s Create/Delete call `PublishEvent` synchronously while holding the handler mutex, so dual publish doubles the channel open/close performed under that lock. Accepted: these are per-streaming-leg lifecycle events (low frequency, unlike the per-interim-result stream above), and the added hold time is one channel round-trip. Observation needs no separate instrument — it is already covered by the channel-churn comparison above.
 - Scale context: single-broker bm-nyc-01, transcribe traffic is bounded by concurrent transcribing calls; expected absolute rates are well within RabbitMQ channel-churn capacity. The measurement exists to verify, not to gate.
 
 ## 6. Constants

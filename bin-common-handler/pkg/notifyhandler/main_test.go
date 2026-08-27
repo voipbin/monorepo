@@ -81,6 +81,25 @@ func (h *testNilOverrideEvent) EventSubscriptionID() string {
 
 var _ eventtopic.SubscriptionIdentifier = (*testNilOverrideEvent)(nil)
 
+// testSpyEvent records whether EventSubscriptionID was invoked. It exists to pin the topicEnabled
+// gate in PublishEvent directly (VOIP-1404 code-review round 2, F11): the typed-nil guard makes
+// the gate's REMOVAL invisible to every other test, since a well-formed payload resolves happily
+// either way. Only an observation of the call itself distinguishes "gated" from "guarded".
+type testSpyEvent struct {
+	ID           string `json:"id"`
+	TranscribeID string `json:"transcribe_id"`
+
+	// called is unexported, so encoding/json ignores it and the marshaled payload is unaffected.
+	called bool
+}
+
+func (h *testSpyEvent) EventSubscriptionID() string {
+	h.called = true
+	return h.TranscribeID
+}
+
+var _ eventtopic.SubscriptionIdentifier = (*testSpyEvent)(nil)
+
 // counterValue reads the current value of the given counter.
 func counterValue(c prometheus.Counter) float64 {
 	m := &dto.Metric{}

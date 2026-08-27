@@ -218,9 +218,11 @@ func (h *notifyHandler) publishTopicEvent(evt *sock.Event, subscriptionID string
 		// missing one.
 		subscriptionID = parseSubscriptionID(evt.Data)
 	}
-	if subscriptionID == "" || subscriptionID == uuid.Nil.String() {
+	if eventtopic.IsPlaceholderSubscriptionID(subscriptionID) {
 		// no valid subscription address exists. the routing key falls back to the placeholder,
-		// which type-level bindings still match. metered so absent-id drift stays visible.
+		// which type-level bindings still match. metered so absent-id drift stays visible. the
+		// predicate lives in eventtopic so this counter can never disagree with the key the very
+		// next line generates.
 		promTopicPlaceholderTotal.WithLabelValues(evt.Type).Inc()
 	}
 

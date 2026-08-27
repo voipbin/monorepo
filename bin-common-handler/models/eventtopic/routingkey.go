@@ -14,6 +14,14 @@ const (
 	// (`<publisher>.<resource>.#`) still match a placeholder key; instance bindings never do,
 	// which is correct because no valid subscription address exists.
 	placeholder = "-"
+
+	// subscriptionIDMaxLen bounds the subscription-address segment. AMQP caps a whole routing key
+	// at 255 bytes and the broker rejects a publish that exceeds it, so an unbounded address turns
+	// a routing concern into a publish failure. Every address today is a 36-byte uuid; 64 leaves
+	// generous headroom for a future publisher that addresses its stream by some other stable id,
+	// while keeping the worst-case key far below the AMQP limit. An address longer than this is
+	// treated exactly like an absent one -- see normalizeSubscriptionID.
+	subscriptionIDMaxLen = 64
 )
 
 // segmentReplacer removes every AMQP-significant character from a computed segment. `.` would
@@ -100,10 +108,24 @@ func normalizeSegment(segment string) string {
 // all-zero uuid are the same thing to a subscriber -- there is nothing to bind to -- so both
 // become the placeholder. Mapping uuid.Nil to the placeholder is what makes the VOIP-1258 all-Nil
 // failure mode observable through the placeholder metric.
+//
+// An address longer than subscriptionIDMaxLen becomes the placeholder too. No publisher produces
+// one today (every address is a uuid), but the guard keeps a future non-uuid address from pushing
+// the key past the AMQP 255-byte limit, where the broker would reject the publish outright. A
+// placeholder key is a degraded routing outcome; a failed publish is a lost event.
 func normalizeSubscriptionID(subscriptionID string) string {
-	if subscriptionID == "" || subscriptionID == uuid.Nil.String() {
+	if subscriptionID == "" || subscriptionID == uuid.Nil.String() || len(subscriptionID) > subscriptionIDMaxLen {
 		return placeholder
 	}
 
 	return normalizeSegment(subscriptionID)
+}
+
+// IsPlaceholderSubscriptionID reports whether the given subscription address collapses to the `-`
+// placeholder segment. Publishers meter their placeholder rate through this helper so the rules
+// that produce a placeholder (absent, uuid.Nil, oversized) stay owned by this package alone --
+// duplicating them at the call site is how an address silently becomes a placeholder without ever
+// incrementing the metric that exists to make exactly that visible (design §4.2).
+func IsPlaceholderSubscriptionID(subscriptionID string) bool {
+	return normalizeSubscriptionID(subscriptionID) == placeholder
 }

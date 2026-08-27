@@ -847,3 +847,78 @@ func Test_PublishEvent_overrideSuppressesJSONFallback(t *testing.T) {
 		})
 	}
 }
+
+// Test_PublishEvent_optionOffSkipsSubscriptionIdentifier pins the topicEnabled gate itself
+// (VOIP-1404 code-review round 2, F11). With the option off, PublishEvent must not touch the
+// caller's data at all -- no type assertion, no EventSubscriptionID call. Asserting only on the
+// resulting routing key cannot detect a missing gate, because the resolution succeeds harmlessly
+// either way; the spy observes the call directly, so removing the gate fails this test.
+func Test_PublishEvent_optionOffSkipsSubscriptionIdentifier(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		topicEnabled bool
+		eventType    string
+
+		expectTopicPublish bool
+		expectRoutingKey   string
+		expectCalled       bool
+	}{
+		{
+			name: "option off",
+
+			topicEnabled: false,
+			eventType:    "transcribe_spyoff",
+
+			expectTopicPublish: false,
+			expectCalled:       false,
+		},
+		{
+			// the positive control: without it, a spy that never fires would pass the case above
+			// even if EventSubscriptionID had been silently unwired everywhere.
+			name: "option on",
+
+			topicEnabled: true,
+			eventType:    "transcribe_spyon",
+
+			expectTopicPublish: true,
+			expectRoutingKey:   "transcribe-manager.transcribe.9f01c3d2-a1bc-11f1-92ef-60452e5e40a2.spyon",
+			expectCalled:       true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+
+			h := &notifyHandler{
+				sockHandler:  mockSock,
+				queueNotify:  commonoutline.QueueNameTranscribeEvent,
+				publisher:    "transcribe-manager",
+				topicEnabled: tt.topicEnabled,
+			}
+
+			event := &testSpyEvent{
+				ID:           "a0121e34-a1bc-11f1-92ef-60452e5e40a2",
+				TranscribeID: "9f01c3d2-a1bc-11f1-92ef-60452e5e40a2",
+			}
+
+			mockSock.EXPECT().EventPublish(string(h.queueNotify), "", gomock.Any()).Return(nil)
+			if tt.expectTopicPublish {
+				mockSock.EXPECT().EventPublish(string(commonoutline.QueueNameEvent), tt.expectRoutingKey, gomock.Any()).Return(nil)
+			} else {
+				mockSock.EXPECT().EventPublish(string(commonoutline.QueueNameEvent), gomock.Any(), gomock.Any()).Times(0)
+			}
+
+			h.PublishEvent(context.Background(), tt.eventType, event)
+
+			if event.called != tt.expectCalled {
+				t.Errorf("Wrong match. expect: %t, got: %t", tt.expectCalled, event.called)
+			}
+		})
+	}
+}

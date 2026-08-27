@@ -1,6 +1,7 @@
 package eventtopic
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -133,6 +134,24 @@ func Test_RoutingKey(t *testing.T) {
 			subscriptionID: "27575A56-A1BC-11F1-92EF-60452E5E40A2",
 
 			expectRes: "transcribe-manager.transcript.27575a56-a1bc-11f1-92ef-60452e5e40a2.created",
+		},
+		{
+			name: "subscription id is exactly at the length limit",
+
+			publisher:      "call-manager",
+			eventType:      "call_created",
+			subscriptionID: strings.Repeat("a", subscriptionIDMaxLen),
+
+			expectRes: "call-manager.call." + strings.Repeat("a", subscriptionIDMaxLen) + ".created",
+		},
+		{
+			name: "subscription id exceeds the length limit",
+
+			publisher:      "call-manager",
+			eventType:      "call_created",
+			subscriptionID: strings.Repeat("a", subscriptionIDMaxLen+1),
+
+			expectRes: "call-manager.call.-.created",
 		},
 	}
 
@@ -371,5 +390,103 @@ func Test_PatternInstance_matchesRoutingKey(t *testing.T) {
 				t.Errorf("Wrong match. the key does not match the pattern. pattern: %s, key: %s", pattern, key)
 			}
 		})
+	}
+}
+
+// Test_IsPlaceholderSubscriptionID pins the predicate publishers meter with. It must agree with
+// the key RoutingKey actually generates for the same address -- an address that silently becomes a
+// placeholder without incrementing the placeholder metric is the exact blind spot design §4.2
+// calls out (VOIP-1404 code-review round 2, F10).
+func Test_IsPlaceholderSubscriptionID(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		subscriptionID string
+
+		expectRes bool
+	}{
+		{
+			name: "valid uuid",
+
+			subscriptionID: "4a539340-a1bc-11f1-92ef-60452e5e40a2",
+
+			expectRes: false,
+		},
+		{
+			name: "empty",
+
+			subscriptionID: "",
+
+			expectRes: true,
+		},
+		{
+			name: "nil uuid",
+
+			subscriptionID: uuid.Nil.String(),
+
+			expectRes: true,
+		},
+		{
+			name: "at the length limit",
+
+			subscriptionID: strings.Repeat("a", subscriptionIDMaxLen),
+
+			expectRes: false,
+		},
+		{
+			name: "over the length limit",
+
+			subscriptionID: strings.Repeat("a", subscriptionIDMaxLen+1),
+
+			expectRes: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res := IsPlaceholderSubscriptionID(tt.subscriptionID)
+			if res != tt.expectRes {
+				t.Errorf("Wrong match. expect: %t, got: %t", tt.expectRes, res)
+			}
+
+			// the predicate and the generated key must never disagree.
+			key := RoutingKey("call-manager", "call_created", tt.subscriptionID)
+			if hasPlaceholderAddress := key == "call-manager.call.-.created"; hasPlaceholderAddress != tt.expectRes {
+				t.Errorf("Wrong match. the predicate disagrees with the generated key. key: %s, predicate: %t", key, tt.expectRes)
+			}
+		})
+	}
+}
+
+// Test_PatternInstance_lengthGuardMatchesRoutingKey pins the key<->pattern invariant across the
+// length guard: a subscriber that builds an instance binding from an oversized address must get
+// the same placeholder segment the publisher puts in the key, not a pattern that matches nothing.
+func Test_PatternInstance_lengthGuardMatchesRoutingKey(t *testing.T) {
+	subscriptionID := strings.Repeat("b", subscriptionIDMaxLen+1)
+
+	key := RoutingKey("transcribe-manager", "transcribe_created", subscriptionID)
+	pattern := PatternInstance("transcribe-manager", "transcribe", subscriptionID)
+
+	prefix := pattern[:len(pattern)-1] // drop the trailing "#"
+	if len(key) < len(prefix) || key[:len(prefix)] != prefix {
+		t.Errorf("Wrong match. the key does not match the pattern. pattern: %s, key: %s", pattern, key)
+	}
+}
+
+// Test_RoutingKey_staysWithinAmqpLimit pins the reason the length guard exists: AMQP rejects a
+// publish whose routing key exceeds 255 bytes, so no input may produce one.
+func Test_RoutingKey_staysWithinAmqpLimit(t *testing.T) {
+	const amqpRoutingKeyMaxLen = 255
+
+	// a pathological address plus a long publisher and event type.
+	res := RoutingKey(
+		"some-very-long-publisher-service-name",
+		"resource_"+strings.Repeat("action_", 10),
+		strings.Repeat("c", 4096),
+	)
+
+	if len(res) > amqpRoutingKeyMaxLen {
+		t.Errorf("Wrong match. the routing key exceeds the amqp limit. len: %d, key: %s", len(res), res)
 	}
 }
