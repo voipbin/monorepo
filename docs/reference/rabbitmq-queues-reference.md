@@ -266,6 +266,30 @@ Normalization lowercases the event type and replaces `.` with `_` before splitti
 
 **Subscription address (third segment).** It answers "by which id will subscribers address this stream?", which is not always the resource's own id. The default is the top-level `id` of the event payload. A resource whose own id is regenerated per event (or addresses the wrong thing) overrides it by implementing `eventtopic.SubscriptionIdentifier` with a **pointer receiver**. Example: every transcribe-manager event — `transcribe`, `streaming`, and `transcript` alike — carries the transcribe-id, so one session is followed across three namespaces. A non-Nil-but-meaningless id is worse than no id: it produces well-formed keys that match nothing and evades the placeholder metric, so each publisher pins its keys with a golden-key test (`bin-transcribe-manager/models/transcribe/routingkey_golden_test.go` is the template).
 
+**Per-publisher subscription-address overrides (VOIP-1405).** Every type not listed here uses the default top-level `id`. Two override categories (design: `docs/plans/2026-08-27-voip-1405-topic-publisher-rollout-design.md` §2):
+
+| Publisher | Type(s) | Address | Category |
+|---|---|---|---|
+| ai-manager | `message.Message`, `message.IntermediateWebhookMessage` | AIcallID | B / A |
+| call-manager | `dtmf.DTMF`, `call.OutboundWhitelistRejectedEvent` | CallID | A |
+| campaign-manager | `campaigncall.Campaigncall` | CampaignID | B |
+| conference-manager | `conferencecall.Conferencecall` | ConferenceID | B |
+| contact-manager | `casenote.CaseNote`, `casenote.CaseNoteDeletedEvent`, `kase.CaseTagEvent`, `kase.CaseContactEvent` | CaseID | B / B / A / A |
+| conversation-manager | `message.Message` | ConversationID | B |
+| pipecat-manager | `message.Message`, `message.MemberSwitchedEvent` | PipecatcallID | A |
+| queue-manager | `queuecall.Queuecall` | QueueID | B |
+| schedule-manager | `execution.Execution` | ScheduleID | B |
+| talk-manager | `message.Message`, `participant.Participant` | ChatID | B |
+| transcribe-manager | `streaming.Speech`, `streaming.Streaming`, `transcript.Transcript` | TranscribeID | A/A/B (pilot) |
+| tts-manager | `message.Message` | StreamingID | A |
+| webchat-manager | `message.Message` | SessionID | B |
+
+Category A = own id structurally unusable (per-event/stale/absent). Category B = own id stable but the parent stream is the natural consumption axis; adopting the parent address deliberately forfeits own-id instance subscription for that child (the child id first appears in its `created` event, so own-id pre-binding has no value; single-item retrieval stays available via RPC).
+
+**Address-convergence (what one pattern set follows):** tts `streaming`+`message` → one streaming-id; contact `case` namespace (`contact-manager.case.<case-id>.#`) → whole case lifecycle; pipecat `pipecatcall`+`message`+`team` → one pipecatcall-id; webchat — both event types collapse to resource `webchat` with the session address, so `webchat-manager.webchat.<session-id>.#` follows a whole session; talk `chat`+`chatmessage`+`chatparticipant` → one chat-id; conversation lifecycle + messages → one conversation-id.
+
+**Deliberate non-overrides (do not "fix" these):** `customer.Customer` (a method would promote into the anonymous `*Customer` embed of `CustomerCreatedEvent`), `activeflow.Activeflow` (ReferenceID can be Nil), `billing.Billing`, `accesskey.Accesskey`, `recording.Recording` (own id is pre-bindable from the start RPC), and sentinel's `*corev1.Pod` (external type, no top-level id) — **sentinel publishes placeholder addresses by design**, so its healthy metric invariant is `sentinel_manager_topic_placeholder_total ≈ sentinel_manager_topic_publish_total{result="ok"}` (≈100% placeholder), which still detects publish regressions; instance subscription of pod events is not supported.
+
 **Declaration invariant.**
 
 - Declare **only** through the shared helper: `sockHandler.TopicCreateWithKind(string(commonoutline.QueueNameEvent), "topic")`. `durable=true` / `autoDelete=false` are hardcoded in `rabbitmqhandler/topic.go`. Hand-rolled declarations are forbidden — an AMQP redeclare is idempotent only when every parameter matches, and a mismatch closes the channel with `406 PRECONDITION_FAILED`.
@@ -292,7 +316,7 @@ Introduced by VOIP-1258. Different audience, different key shape, and it is **no
 
 ### `bin-manager.delay` — delayed delivery
 
-Not a routing exchange in the content sense: it exists so a message can be published now and delivered later (`publishDelayedEvent`). It is the precedent for a two-segment, service-agnostic global exchange name, which is why the new global exchange is `bin-manager.event` rather than a three-segment per-service name. Delayed publishes do **not** dual-publish to `bin-manager.event`; delayed-event topic semantics are deferred to the follow-up that opts the remaining publishers in.
+Not a routing exchange in the content sense: it exists so a message can be published now and delivered later (`publishDelayedEvent`). It is the precedent for a two-segment, service-agnostic global exchange name, which is why the new global exchange is `bin-manager.event` rather than a three-segment per-service name. Delayed publishes do **not** dual-publish to `bin-manager.event`. VOIP-1405 closed the deferred question as **not applicable**: no public API produces `delay>0` today, so the `delay == 0` guard in the topic publish path is purely defensive.
 
 ## Usage Examples
 
