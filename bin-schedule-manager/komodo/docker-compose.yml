@@ -3,12 +3,31 @@
 # for the shared design (pattern proven by VOIP-1342/bin-call-manager and
 # VOIP-1347/VOIP-1348).
 #
-# NOTE: unlike every other bin-*-manager service so far, this one has a
-# real bind-mount volume for scheduled DB backups (VOIP-1281). The install/
-# live host resolves it to /opt/voipbin/install/backups/scheduled-db
-# (confirmed via `docker inspect voipbin-schedule-mgr` on bm-nyc-01) - this
-# Komodo Stack uses the SAME absolute host path so existing backup history
-# is preserved across the cutover, rather than starting a new directory.
+# NOJIRA-Schedule-manager-scale-poc: this is the fleet's PoC for the
+# bin-*-manager 1->2 replica rollout (the shared design/rollout plan for
+# that effort has not been committed to docs/plans/ yet - do not assume it
+# exists elsewhere). schedule-manager was chosen as the pilot because its
+# dispatch loop is already replica-safe by design (Redis lock + DB CAS
+# claim, see this service's own CLAUDE.md "replicas: 2 by design") and it
+# does not use a per-pod queue, so it cannot be affected by the
+# per-pod-queue-routing blocker tracked separately for
+# pipecat/api/transcribe-manager. `container_name` is removed below because
+# Compose rejects a fixed container_name together with `deploy.replicas > 1`
+# ("container name must be unique" - docker/compose#3722).
+#
+# Everything else this PoC touches - backup-path safety reasoning, the CI
+# deploy gate's single-container blind spot + manual verification
+# procedure, the alerting blind spot, and the container-naming/runbook
+# drift - is documented once in docs/operations.md#deployment-komodo
+# rather than duplicated here; read that section, not this comment, for
+# the full picture.
+#
+# NOTE: this one has a real bind-mount volume for scheduled DB backups
+# (VOIP-1281). The install/ live host resolves it to
+# /opt/voipbin/install/backups/scheduled-db (confirmed via `docker inspect
+# voipbin-schedule-mgr` on bm-nyc-01) - this Komodo Stack uses the SAME
+# absolute host path so existing backup history is preserved across the
+# cutover, rather than starting a new directory.
 # debian:bookworm-slim ships with neither wget nor curl by default. The
 # fleet-standard wget healthcheck (copied verbatim from install/'s .dist,
 # which has the exact same bug) silently fails here — confirmed live on
@@ -25,8 +44,13 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
-    container_name: voipbin-schedule-manager
+    # container_name intentionally removed (was voipbin-schedule-manager) -
+    # Docker Compose rejects a fixed container_name together with
+    # deploy.replicas > 1 ("container name must be unique"). See the PoC
+    # note above the services: block.
     restart: always
+    deploy:
+      replicas: 2
     healthcheck:
       test: ["CMD", "curl", "-fsS", "-o", "/dev/null", "http://127.0.0.1:2112/metrics"]
       interval: 30s
