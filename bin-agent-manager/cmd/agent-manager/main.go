@@ -69,6 +69,7 @@ func runDaemon() error {
 	if err != nil {
 		return errors.Wrapf(err, "could not connect to the database")
 	}
+	commondatabasehandler.RegisterDBStatsCollector(sqlDB, "main")
 	defer commondatabasehandler.Close(sqlDB)
 
 	cache, err := initCache()

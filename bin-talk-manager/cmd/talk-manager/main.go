@@ -70,6 +70,7 @@ func runDaemon() error {
 		logrus.Fatalf("Could not connect to the database: %v", err)
 	}
 	defer commondb.Close(db)
+	commondb.RegisterDBStatsCollector(db, "main")
 
 	// Initialize RabbitMQ
 	sockHandler := commonsock.NewSockHandler(sock.TypeRabbitMQ, cfg.RabbitMQAddress)

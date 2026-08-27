@@ -80,6 +80,7 @@ func runDaemon() error {
 		logrus.Errorf("Could not access to database. err: %v", err)
 		return err
 	}
+	commondatabasehandler.RegisterDBStatsCollector(sqlDB, "main")
 	defer commondatabasehandler.Close(sqlDB)
 
 	// connect to cache

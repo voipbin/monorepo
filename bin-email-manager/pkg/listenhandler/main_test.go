@@ -59,7 +59,7 @@ func TestSimpleResponse(t *testing.T) {
 			resp := simpleResponse(tt.statusCode)
 
 			if resp == nil {
-				t.Errorf("Expected non-nil response")
+				t.Fatalf("Expected non-nil response")
 			}
 
 			if resp.StatusCode != tt.statusCode {

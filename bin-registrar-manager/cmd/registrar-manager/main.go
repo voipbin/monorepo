@@ -82,12 +82,14 @@ func runDaemon() error {
 		return errors.Wrapf(err, "could not connect to the voipbin database")
 	}
 	defer commondatabasehandler.Close(sqlDBBin)
+	commondatabasehandler.RegisterDBStatsCollector(sqlDBBin, "bin")
 
 	sqlDBAsterisk, err := commondatabasehandler.Connect(config.Get().DatabaseDSNAsterisk)
 	if err != nil {
 		return errors.Wrapf(err, "could not connect to the asterisk database")
 	}
 	defer commondatabasehandler.Close(sqlDBAsterisk)
+	commondatabasehandler.RegisterDBStatsCollector(sqlDBAsterisk, "asterisk")
 
 	cache, err := initCache()
 	if err != nil {

@@ -66,17 +66,11 @@ func TestOutdialTarget(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if tt.target.ID != tt.target.ID {
-				t.Errorf("ID mismatch")
+			if tt.target == nil {
+				t.Fatalf("Expected non-nil target")
 			}
-			if tt.target.OutdialID != tt.target.OutdialID {
-				t.Errorf("OutdialID mismatch")
-			}
-			if tt.target.Name != tt.target.Name {
-				t.Errorf("Name mismatch")
-			}
-			if tt.target.Status != tt.target.Status {
-				t.Errorf("Status mismatch")
+			if tt.target.Status != StatusIdle {
+				t.Errorf("Status mismatch. expect: %v, got: %v", StatusIdle, tt.target.Status)
 			}
 		})
 	}

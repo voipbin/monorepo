@@ -124,6 +124,7 @@ func createDBHandler() (dbhandler.DBHandler, error) {
 		logrus.Errorf("Could not access to database. err: %v", err)
 		return nil, err
 	}
+	commondatabasehandler.RegisterDBStatsCollector(db, "main")
 
 	// connect to cache
 	cache := cachehandler.NewHandler(cfg.RedisAddress, cfg.RedisPassword, cfg.RedisDatabase)

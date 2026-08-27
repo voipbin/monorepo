@@ -102,6 +102,7 @@ func runService(cmd *cobra.Command, args []string) {
 		log.Errorf("Could not access to database. err: %v", err)
 		return
 	}
+	commondatabasehandler.RegisterDBStatsCollector(sqlDB, "main")
 	defer commondatabasehandler.Close(sqlDB)
 
 	// connect to rabbitmq

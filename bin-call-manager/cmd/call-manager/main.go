@@ -79,6 +79,7 @@ func runCommand(cmd *cobra.Command, args []string) error {
 		log.Errorf("Could not access to database. err: %v", err)
 		return errors.Wrapf(err, "could not connect to database")
 	}
+	commondatabasehandler.RegisterDBStatsCollector(sqlDB, "main")
 	defer commondatabasehandler.Close(sqlDB)
 
 	// connect to cache

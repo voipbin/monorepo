@@ -5,11 +5,14 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"sync"
 
 	"github.com/Masterminds/squirrel"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -25,6 +28,34 @@ func Connect(dsn string) (*sql.DB, error) {
 	}
 
 	return res, nil
+}
+
+// registerDBStatsMu/registerDBStatsDone guard against duplicate MustRegister
+// panics when RegisterDBStatsCollector is called more than once for the same
+// dbName in one process (same pattern as notifyhandler's initPrometheusMu/
+// initPrometheusDone, VOIP-1258).
+var (
+	registerDBStatsMu   sync.Mutex
+	registerDBStatsDone = map[string]bool{}
+)
+
+// RegisterDBStatsCollector registers a Prometheus collector that exposes
+// db.Stats() (open/in-use/idle connections, wait count/duration) on the
+// default registry. Call once per *sql.DB after Connect() succeeds, from a
+// process that actually serves /metrics (bin-*-manager daemons, not
+// *-control CLIs). dbName distinguishes multiple DBs in one process (e.g.
+// registrar-manager's "bin"/"asterisk"). A duplicate call with the same
+// dbName is a silent no-op rather than a panic.
+func RegisterDBStatsCollector(db *sql.DB, dbName string) {
+	registerDBStatsMu.Lock()
+	defer registerDBStatsMu.Unlock()
+
+	if registerDBStatsDone[dbName] {
+		return
+	}
+	registerDBStatsDone[dbName] = true
+
+	prometheus.MustRegister(collectors.NewDBStatsCollector(db, dbName))
 }
 
 func Close(db *sql.DB) {

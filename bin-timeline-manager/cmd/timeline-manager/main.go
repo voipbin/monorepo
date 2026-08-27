@@ -199,6 +199,7 @@ func runServices(ctx context.Context) (<-chan struct{}, error) {
 		if err != nil {
 			return nil, errors.Wrapf(err, "could not connect to analysis MySQL store")
 		}
+		commondatabasehandler.RegisterDBStatsCollector(sqlDB, "analysis")
 
 		analysisDB := analysisdbhandler.NewAnalysisDBHandler(sqlDB)
 		reqHandler := requesthandler.NewRequestHandler(sockHandler, commonoutline.ServiceNameTimelineManager)

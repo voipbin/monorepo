@@ -98,6 +98,7 @@ func runDaemon() error {
 		return errors.Wrapf(err, "could not connect to the database")
 	}
 	defer commondatabasehandler.Close(sqlDB)
+	commondatabasehandler.RegisterDBStatsCollector(sqlDB, "main")
 
 	if errRun := run(sqlDB); errRun != nil {
 		return errors.Wrapf(errRun, "could not run tts-manager")

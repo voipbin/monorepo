@@ -67,6 +67,7 @@ func runDaemon() error {
 		return errors.Wrapf(err, "could not connect to database")
 	}
 	defer commondatabasehandler.Close(sqlDB)
+	commondatabasehandler.RegisterDBStatsCollector(sqlDB, "main")
 
 	// connect to cache
 	cache := cachehandler.NewHandler(config.Get().RedisAddress, config.Get().RedisPassword, config.Get().RedisDatabase)
