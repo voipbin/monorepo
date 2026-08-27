@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 
@@ -481,6 +482,19 @@ func Test_PublishEvent_globalTopicPublishPlaceholderMetric(t *testing.T) {
 			eventType: "test_placeholdernil",
 			event: &testIDEvent{
 				ID: uuid.Nil.String(),
+			},
+
+			expectPlaceholderDelta: 1,
+		},
+		{
+			// pins that the publish path meters an oversized address as a placeholder via
+			// eventtopic.IsPlaceholderSubscriptionID -- an inline empty/nil check would let an
+			// oversized id produce a "-" key while the placeholder counter stays flat.
+			name: "oversized subscription id",
+
+			eventType: "test_placeholderoversized",
+			event: &testIDEvent{
+				ID: strings.Repeat("a", 65),
 			},
 
 			expectPlaceholderDelta: 1,

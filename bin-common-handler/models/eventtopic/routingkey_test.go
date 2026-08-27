@@ -475,7 +475,9 @@ func Test_PatternInstance_lengthGuardMatchesRoutingKey(t *testing.T) {
 }
 
 // Test_RoutingKey_staysWithinAmqpLimit pins the reason the length guard exists: AMQP rejects a
-// publish whose routing key exceeds 255 bytes, so no input may produce one.
+// publish whose routing key exceeds 255 bytes. The guard bounds only the subscription-id segment
+// (the sole runtime-derived input); publisher and event type are compile-time constants in
+// practice, so an oversized address is the only realistic way to blow the limit.
 func Test_RoutingKey_staysWithinAmqpLimit(t *testing.T) {
 	const amqpRoutingKeyMaxLen = 255
 

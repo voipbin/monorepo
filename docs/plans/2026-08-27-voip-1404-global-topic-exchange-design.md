@@ -3,7 +3,7 @@
 - Date: 2026-08-27
 - Ticket: VOIP-1404
 - Status: Approved (design review: 5 rounds, 2 consecutive approvals)
-- rev.5: §4.1 publisher normalization amended to match implementation (code-review round 1); rev.6: §5.2 hasOverride threading + option-gated/nil-guarded resolution amended to match implementation (code-review round 2)
+- rev.5: §4.1 publisher normalization amended to match implementation (code-review round 1); rev.6: §5.2 hasOverride threading + option-gated/nil-guarded resolution amended to match implementation (code-review round 2); rev.7: §4.1/§4.2/§4.3 subscription-id 64-byte length cap and IsPlaceholderSubscriptionID amended to match implementation (code-review round 3)
 - Prerequisite reading: issue analysis (VOIP-1404 ticket description), `docs/plans/2026-07-12-voip-1233-rabbitmq-ack-after-process-design.md`, `bin-webhook-manager/pkg/webhookhandler/routingkey.go` (VOIP-1258/VOIP-1296 precedent)
 
 ## 1. Problem
@@ -70,7 +70,7 @@ transcribe-manager.transcribe.9f01c3d2-....speech_interim   # subscription-id = 
 
 The split is otherwise purely mechanical, mirroring `webhookhandler.routingkey.go`. Multi-underscore types (e.g. `customer_balance_updated`) split as `customer` / `balance_updated`. This is accepted: what matters for binding is that generated keys are deterministic and stable, not that segments are semantically perfect. The reference doc lists the generated shape per event family; per-publisher golden-key tests (§8) pin the actual output.
 
-Constraint check: max routing key length is 255 bytes; worst case here is ~91 bytes (publisher ≤20 + uuid 36 + normalized type ≤32 + 3 dots).
+Constraint check: max routing key length is 255 bytes; worst case here is ~119 bytes (publisher ≤20 + subscription-id ≤64 (§4.2 length cap; UUIDs are 36) + normalized type ≤32 + 3 dots).
 
 ### 4.2 subscription-id: "subscription address", not "own id"
 
@@ -93,7 +93,7 @@ type SubscriptionIdentifier interface {
 
 - If the data implements `SubscriptionIdentifier`, use it.
 - Else, marshal-then-extract the top-level `"id"` JSON field (this is the same marshal already performed for the fanout publish; the extraction reuses those bytes, one extra small unmarshal into a `struct{ ID string }`).
-- If the result is empty or `uuid.Nil` ("00000000-..."): use placeholder `-`. Type-level bindings (`<publisher>.<resource>.#`) still match; instance bindings never match, which is correct because no valid address exists. The placeholder rate is metered (§7) so absent-id drift is visible. (`uuid.Nil` → placeholder specifically makes the VOIP-1258 all-Nil failure mode observable.)
+- If the result is empty, `uuid.Nil` ("00000000-..."), **or longer than 64 bytes**: use placeholder `-`. Type-level bindings (`<publisher>.<resource>.#`) still match; instance bindings never match, which is correct because no valid address exists. The placeholder rate is metered (§7) so absent-id drift is visible. (`uuid.Nil` → placeholder specifically makes the VOIP-1258 all-Nil failure mode observable. The 64-byte cap protects the AMQP 255-byte routing-key limit against a future publisher whose address is not a UUID — an oversized address degrades to a placeholder key rather than a rejected publish, i.e. a lost event. `PatternInstance` applies the same cap, so keys and instance patterns stay consistent; the exported predicate `IsPlaceholderSubscriptionID` is the single owner of all three placeholder rules and is what the publish path uses to meter the placeholder counter. Subscribers must know: an address over 64 bytes cannot be instance-subscribed.)
 
 #### Pilot mapping table (exhaustive for transcribe-manager)
 
@@ -117,6 +117,7 @@ func PatternAll(publisher string) string                     // "<p>.#"
 func PatternResource(publisher, resource string) string      // "<p>.<r>.#"
 func PatternInstance(publisher, resource, id string) string  // "<p>.<r>.<id>.#"
 func PatternAction(publisher, resource, action string) string // "<p>.<r>.*.<action>"
+func IsPlaceholderSubscriptionID(id string) bool // single owner of the placeholder rules (empty / uuid.Nil / >64 bytes)
 ```
 
 Consumers combine these with the existing `sockhandler.QueueBind/QueueUnbind`. No new consumer framework in this ticket.
@@ -233,7 +234,7 @@ VOIP-1258 shipped a topic publisher that silently published nothing for a month 
 
 ## 8. Testing
 
-- `models/eventtopic`: table-driven unit tests for `RoutingKey` and every pattern builder — normal, no-underscore type, multi-underscore, **dot-containing type (`call.outbound_whitelist_rejected`)**, **uppercase type (`Account_created`)**, empty type, nil-UUID → placeholder, empty id → placeholder, `SubscriptionIdentifier` override (pointer receiver, asserted against pointer dynamic type), fallback `"id"` JSON extraction, non-JSON data.
+- `models/eventtopic`: table-driven unit tests for `RoutingKey` and every pattern builder — normal, no-underscore type, multi-underscore, **dot-containing type (`call.outbound_whitelist_rejected`)**, **uppercase type (`Account_created`)**, empty type, nil-UUID → placeholder, empty id → placeholder, oversized id (>64 bytes) → placeholder (64 bytes passes), `SubscriptionIdentifier` override (pointer receiver, asserted against pointer dynamic type), fallback `"id"` JSON extraction, non-JSON data.
 - **Golden routing-key test (pilot)**: one table covering *every* event type transcribe-manager publishes (per §4.2 mapping table — transcribe/speech/transcript/streaming families) asserting the exact generated key shape. This is the primary defense against the "wrong id space under a resource namespace" defect class; the table doubles as the Follow-up A template. Note: the golden table pins *current* behavior, including the known `db.go:33` bug (delete path publishes `transcript_created`); the entry must be updated together with that bug's fix ticket.
 - `notifyhandler` internal: subscription-id resolution threading — `PublishEvent` resolves via assertion; `publishEvent` receives `""` from `PublishEventRaw` and performs JSON fallback; declare-failure degradation (topic disabled, fanout alive, handler non-nil).
 - `notifyhandler`: gomock `SockHandler` tests — dual publish ordering; topic failure isolation (fanout still succeeds, no error to caller); option off ⇒ zero topic publishes; `PublishEventRaw` ⇒ JSON-fallback key; delay>0 ⇒ no topic publish; **`promNotifyTotal`/`promNotifyProcessTime` unchanged by the topic path** (assert via metric read or by construction — topic path calls neither helper); new counters increment.
