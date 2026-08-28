@@ -4,7 +4,44 @@ import (
 	"testing"
 
 	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/models/eventtopic"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 )
+
+// Outdial is published on the global topic exchange `bin-manager.event` and must carry an
+// explicit subscription address (VOIP-1419). The assertion pins the POINTER type: the event data
+// reaches notifyhandler as a pointer and the interface check matches the dynamic type.
+var _ eventtopic.SubscriptionIdentifier = (*Outdial)(nil)
+
+// TestOutdialEventSubscriptionID asserts the subscription address is the outdial's OWN id — not
+// any of the other uuid-typed fields a wrong implementation could plausibly return. Every uuid is
+// distinct, so returning the wrong field fails loudly (mutation check).
+func TestOutdialEventSubscriptionID(t *testing.T) {
+	outdialID := uuid.Must(uuid.NewV4())
+	customerID := uuid.Must(uuid.NewV4())
+	campaignID := uuid.Must(uuid.NewV4())
+
+	data := &Outdial{
+		Identity: commonidentity.Identity{
+			ID:         outdialID,
+			CustomerID: customerID,
+		},
+		CampaignID: campaignID,
+		Name:       "test outdial",
+	}
+
+	res := data.EventSubscriptionID()
+	if res != outdialID.String() {
+		t.Errorf("Wrong match. expect: %s, got: %s", outdialID.String(), res)
+	}
+	if res == customerID.String() {
+		t.Errorf("Outdial must not be addressed by its customer id. got: %s", res)
+	}
+	if res == campaignID.String() {
+		t.Errorf("Outdial must not be addressed by its campaign id. got: %s", res)
+	}
+}
 
 func TestOutdial(t *testing.T) {
 	tests := []struct {
