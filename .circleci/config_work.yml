@@ -9,11 +9,6 @@ references:
     - image: cimg/go:1.25.3
   gcp_image: &gcp_image
     - image: cimg/gcp:2026.02
-  gcloud_image: &gcloud_image
-    # Still needed: bin-sentinel-manager-release is the one remaining GKE
-    # deploy job (sentinel-manager requires the Kubernetes API and has no
-    # docker-compose equivalent on bm-nyc-01 - see that job's comment).
-    - image: google/cloud-sdk:debian_component_based
 
 
 parameters:
@@ -637,18 +632,13 @@ workflows:
           <<: *context_production
           requires:
             - bin-sentinel-manager-test
-      - bin-sentinel-manager-release:
-          # NOT converted to ssh-deploy like the other 32 services:
-          # sentinel-manager requires the Kubernetes API
-          # (rest.InClusterConfig) and is intentionally excluded from
-          # bm-nyc-01's docker-compose.yml (see voipbin/voipbin's
-          # install/docker-compose.yml.dist and
-          # sync-compose-images.sh's LOCK_ONLY_IMAGES comment) - it has no
-          # compose service to deploy to there, so it stays on GKE until a
-          # non-Kubernetes runtime path exists for it.
-          <<: *context_production
-          requires:
-            - bin-sentinel-manager-build
+      # bin-sentinel-manager-release removed (VOIP-1405): it was the last
+      # remaining GKE deploy job, and GCP/GKE was fully dismantled on
+      # 2026-08-20. The target registry/cluster no longer exists, so the job
+      # can only fail. sentinel-manager is NOT retired: it needs a new runtime
+      # path (it requires the Kubernetes API via rest.InClusterConfig and has
+      # no docker-compose equivalent on bm-nyc-01). Reintegration into CI/CD
+      # is tracked as VOIP-1418; test/build stay as code-quality gates.
 
   bin-storage-manager:
     when: << pipeline.parameters.run-bin-storage-manager >>
@@ -1763,15 +1753,8 @@ jobs:
           project-repository: bin-sentinel-manager
           source-directory: bin-sentinel-manager
 
-  bin-sentinel-manager-release:
-    docker: *gcloud_image
-    resource_class: small
-    steps:
-      - docker-release:
-          project-id: voipbin
-          project-repository: bin-sentinel-manager
-          image-name: sentinel-manager
-          source-directory: bin-sentinel-manager
+  # bin-sentinel-manager-release job removed (VOIP-1405) - see the comment in
+  # the bin-sentinel-manager workflow; reintegration tracked as VOIP-1418.
 
   # bin-storage-manager
   bin-storage-manager-test:
@@ -2316,80 +2299,3 @@ commands:
             fi
 
             echo "Image pushed to << parameters.project-id >>/<< parameters.project-repository >>:$CIRCLE_SHA1"
-
-  # Still used by bin-sentinel-manager-release only - see that job's
-  # comment for why sentinel-manager stays on GKE instead of ssh-deploy.
-  docker-release:
-    description: "release the docker image"
-    parameters:
-      source-directory:
-        type: string
-        default: "none"
-      image-name:
-        type: string
-        default: "none"
-      project-id:
-        type: string
-        default: "none"
-      project-repository:
-        type: string
-        default: "none"
-    steps:
-      - run: echo working on << parameters.source-directory >>
-      - checkout
-      - run:
-          name: Config service account
-          command: |
-            echo $CC_GCP_SERVICE_ACCOUNT > ./google_service_account.json
-            gcloud auth activate-service-account --key-file=./google_service_account.json
-            gcloud config set project $CC_GCP_PROJECT_ID
-            gcloud container clusters get-credentials $CC_GCP_CLUSTER_NAME --zone $CC_GCP_CLUSTER_ZONE --project $CC_GCP_PROJECT_ID
-
-      - run:
-          name: Release
-          command: |
-            cd << parameters.source-directory >>/k8s
-            find . -type f -exec sed -i -e "s|\${AUTHTOKEN_MESSAGEBIRD}|$CC_AUTHTOKEN_MESSAGEBIRD|g" {} +
-            find . -type f -exec sed -i -e "s|\${AUTHTOKEN_OPENAI}|$CC_AUTHTOKEN_OPENAI|g" {} +
-            find . -type f -exec sed -i -e "s|\${DATABASE_DSN}|$CC_DATABASE_DSN|g" {} +
-            find . -type f -exec sed -i -e "s|\${DATABASE_DSN_ASTERISK}|$CC_DATABASE_DSN_ASTERISK|g" {} +
-            find . -type f -exec sed -i -e "s|\${GCP_BUCKET_NAME_MEDIA}|$CC_GCP_BUCKET_NAME_MEDIA|g" {} +
-            find . -type f -exec sed -i -e "s|\${GCP_BUCKET_NAME_TMP}|$CC_GCP_BUCKET_NAME_TMP|g" {} +
-            find . -type f -exec sed -i -e "s|\${GCP_CLUSTER_NAME}|$CC_GCP_CLUSTER_NAME|g" {} +
-            find . -type f -exec sed -i -e "s|\${GCP_CLUSTER_REGION}|$CC_GCP_CLUSTER_REGION|g" {} +
-            find . -type f -exec sed -i -e "s|\${GCP_CLUSTER_ZONE}|$CC_GCP_CLUSTER_ZONE|g" {} +
-            find . -type f -exec sed -i -e "s|\${GCP_PROJECT_ID}|$CC_GCP_PROJECT_ID|g" {} +
-            find . -type f -exec sed -i -e "s|\${JWT_KEY}|$CC_JWT_KEY|g" {} +
-            find . -type f -exec sed -i -e "s|\${PROMETHEUS_ENDPOINT}|$CC_PROMETHEUS_ENDPOINT|g" {} +
-            find . -type f -exec sed -i -e "s|\${PROMETHEUS_LISTEN_ADDRESS}|$CC_PROMETHEUS_LISTEN_ADDRESS|g" {} +
-            find . -type f -exec sed -i -e "s|\${RABBITMQ_ADDRESS}|$CC_RABBITMQ_ADDRESS|g" {} +
-            find . -type f -exec sed -i -e "s|\${REDIS_ADDRESS}|$CC_REDIS_ADDRESS|g" {} +
-            find . -type f -exec sed -i -e "s|\${REDIS_PASSWORD}|$CC_REDIS_PASSWORD|g" {} +
-            find . -type f -exec sed -i -e "s|\${REDIS_DATABASE}|$CC_REDIS_DATABASE|g" {} +
-            find . -type f -exec sed -i -e "s|\${SSL_PRIVKEY_API_BASE64}|$CC_SSL_PRIVKEY_API_BASE64|g" {} +
-            find . -type f -exec sed -i -e "s|\${SSL_CERT_API_BASE64}|$CC_SSL_CERT_API_BASE64|g" {} +
-            find . -type f -exec sed -i -e "s|\${SSL_PRIVKEY_HOOK_BASE64}|$CC_SSL_PRIVKEY_HOOK_BASE64|g" {} +
-            find . -type f -exec sed -i -e "s|\${SSL_CERT_HOOK_BASE64}|$CC_SSL_CERT_HOOK_BASE64|g" {} +
-            find . -type f -exec sed -i -e "s|\${TELNYX_CONNECTION_ID}|$CC_TELNYX_CONNECTION_ID|g" {} +
-            find . -type f -exec sed -i -e "s|\${TELNYX_PROFILE_ID}|$CC_TELNYX_PROFILE_ID|g" {} +
-            find . -type f -exec sed -i -e "s|\${TELNYX_TOKEN}|$CC_TELNYX_TOKEN|g" {} +
-            find . -type f -exec sed -i -e "s|\${TWILIO_SID}|$CC_TWILIO_SID|g" {} +
-            find . -type f -exec sed -i -e "s|\${TWILIO_TOKEN}|$CC_TWILIO_TOKEN|g" {} +
-            find . -type f -exec sed -i -e "s|\${AWS_ACCESS_KEY}|$CC_AWS_ACCESS_KEY|g" {} +
-            find . -type f -exec sed -i -e "s|\${AWS_SECRET_KEY}|$CC_AWS_SECRET_KEY|g" {} +
-            find . -type f -exec sed -i -e "s|\${SENDGRID_API_KEY}|$CC_SENDGRID_API_KEY|g" {} +
-            find . -type f -exec sed -i -e "s|\${HOMER_API_ADDRESS}|$CC_HOMER_API_ADDRESS|g" {} +
-            find . -type f -exec sed -i -e "s|\${HOMER_AUTH_TOKEN}|$CC_HOMER_AUTH_TOKEN|g" {} +
-            find . -type f -exec sed -i -e "s|\${HOMER_WHITELIST}|$CC_HOMER_WHITELIST|g" {} +
-            find . -type f -exec sed -i -e "s|\${ELEVENLABS_API_KEY}|$CC_ELEVENLABS_API_KEY|g" {} +
-            find . -type f -exec sed -i -e "s|\${CARTESIA_API_KEY}|$CC_CARTESIA_API_KEY|g" {} +
-            find . -type f -exec sed -i -e "s|\${CLICKHOUSE_ADDRESS}|$CC_CLICKHOUSE_ADDRESS|g" {} +
-            find . -type f -exec sed -i -e "s|\${CLICKHOUSE_DATABASE}|$CC_CLICKHOUSE_DATABASE|g" {} +
-            find . -type f -exec sed -i -e "s|\${DEEPGRAM_API_KEY}|$CC_DEEPGRAM_API_KEY|g" {} +
-            find . -type f -exec sed -i -e "s|\${XAI_API_KEY}|$CC_XAI_API_KEY|g" {} +
-            find . -type f -exec sed -i -e "s|\${GOOGLE_API_KEY}|$CC_GOOGLE_API_KEY|g" {} +
-            find . -type f -exec sed -i -e "s|\${MAILGUN_API_KEY}|$CC_MAILGUN_API_KEY|g" {} +
-            find . -type f -exec sed -i -e "s|\${DOMAIN_NAME_EXTENSION}|$CC_DOMAIN_NAME_EXTENSION|g" {} +
-            find . -type f -exec sed -i -e "s|\${DOMAIN_NAME_TRUNK}|$CC_DOMAIN_NAME_TRUNK|g" {} +
-            kustomize edit set image << parameters.image-name >>-image=docker.io/<< parameters.project-id >>/<< parameters.project-repository >>:$CIRCLE_SHA1
-            kubectl apply -k ./ -v6
