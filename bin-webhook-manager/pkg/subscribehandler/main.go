@@ -35,11 +35,11 @@ const (
 // uses to build routing keys. The binding golden test (binding_golden_test.go) pins this list
 // byte-for-byte against the design's normative bind set.
 var topicPatterns = []string{
-	eventtopic.PatternAction(string(commonoutline.ServiceNameCustomerManager), "customer", "created"),
-	eventtopic.PatternAction(string(commonoutline.ServiceNameCustomerManager), "customer", "updated"),
-	eventtopic.PatternAction(string(commonoutline.ServiceNameFlowManager), "activeflow", "created"),
-	eventtopic.PatternAction(string(commonoutline.ServiceNameFlowManager), "activeflow", "updated"),
-	eventtopic.PatternAction(string(commonoutline.ServiceNameFlowManager), "activeflow", "deleted"),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCustomerManager), cscustomer.EventTypeCustomerCreated),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCustomerManager), cscustomer.EventTypeCustomerUpdated),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameFlowManager), fmactiveflow.EventTypeActiveflowCreated),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameFlowManager), fmactiveflow.EventTypeActiveflowUpdated),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameFlowManager), fmactiveflow.EventTypeActiveflowDeleted),
 }
 
 // fanoutUnbindTargets is the set of legacy per-service fanout event exchanges this queue

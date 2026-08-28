@@ -27,9 +27,9 @@ import (
 // (VOIP-1406, design §5): one pattern per dispatched (publisher, event-type) pair.
 // Pinned by the binding golden test.
 var topicPatterns = []string{
-	eventtopic.PatternAction(string(commonoutline.ServiceNameCallManager), "call", "hangup"),
-	eventtopic.PatternAction(string(commonoutline.ServiceNameCallManager), "confbridge", "terminated"),
-	eventtopic.PatternAction(string(commonoutline.ServiceNameCustomerManager), "customer", "deleted"),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCallManager), cmcall.EventTypeCallHangup),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCallManager), cmconfbridge.EventTypeConfbridgeTerminated),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCustomerManager), cucustomer.EventTypeCustomerDeleted),
 }
 
 // fanoutUnbindTargets lists the old per-service fanout event exchanges to unbind once

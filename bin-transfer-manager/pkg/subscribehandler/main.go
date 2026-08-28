@@ -30,9 +30,9 @@ const (
 // (VOIP-1406, design §5): one pattern per dispatched (publisher, event-type) pair.
 // Pinned by the binding golden test.
 var topicPatterns = []string{
-	eventtopic.PatternAction(string(commonoutline.ServiceNameCallManager), "groupcall", "progressing"),
-	eventtopic.PatternAction(string(commonoutline.ServiceNameCallManager), "groupcall", "hangup"),
-	eventtopic.PatternAction(string(commonoutline.ServiceNameCallManager), "call", "hangup"),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCallManager), cmgroupcall.EventTypeGroupcallProgressing),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCallManager), cmgroupcall.EventTypeGroupcallHangup),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCallManager), cmcall.EventTypeCallHangup),
 }
 
 // fanoutUnbindTargets lists the old per-service fanout event exchanges to unbind once
