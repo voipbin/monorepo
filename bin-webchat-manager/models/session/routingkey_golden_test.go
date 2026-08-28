@@ -8,9 +8,9 @@
 //
 // webchat-manager is the sharpest case of resource collapse in the rollout: BOTH of its event
 // types (`webchat_message_created`, `webchat_session_ended`) split on the first `_` into resource
-// `webchat`, and the `*message.Message` override points its address at the parent SessionID, so
-// both land on one key space. TestGoldenRoutingKeysWebchatResourceCollapse below asserts exactly
-// that -- one binding, the whole session.
+// `webchat`, and `*message.Message`'s EventSubscriptionID points its address at the parent
+// SessionID, so both land on one key space. TestGoldenRoutingKeysWebchatResourceCollapse below
+// asserts exactly that -- one binding, the whole session.
 //
 // The file lives in models/session because the session is the address every event of this service
 // resolves to; it is an external test package so it can import the sibling model packages without
@@ -24,7 +24,6 @@
 package session_test
 
 import (
-	"encoding/json"
 	"reflect"
 	"strings"
 	"testing"
@@ -44,43 +43,30 @@ import (
 var sessionID = uuid.FromStringOrNil("3c7f21a4-0000-4000-8000-000000000001")
 
 // resolveSubscriptionID mirrors the resolution notifyhandler performs on the publish path
-// (1404 design §4.2 / §5.2): the opt-in interface first, then -- ONLY when no override exists --
-// the top-level "id" of the marshaled payload. Keeping it here rather than reaching into
-// notifyhandler internals is deliberate -- the golden table must fail when a model stops
-// implementing the interface, which is exactly what this two-step reproduction detects.
+// (VOIP-1404 §4.2, VOIP-1419): the subscription address comes ONLY from the type's explicit
+// EventSubscriptionID method -- implementation is mandatory (the narrowed publish signature
+// enforces it at compile time), and an empty address degrades to the `-` placeholder.
+// Keeping the reproduction here rather than reaching into notifyhandler internals is
+// deliberate -- the golden table must fail when a model's method stops returning the pinned
+// address.
 //
-// The early return below is the load-bearing half: an override that EXISTS is authoritative even
-// when it yields "" or uuid.Nil, so the JSON fallback must never run behind it. This matches
-// notifyhandler.resolveSubscriptionOverride's hasOverride semantics exactly; if the two ever
-// diverge, this table stops reproducing what the publish path actually generates.
+// The parameter stays `any` so a non-implementing payload still resolves (to "", hence the
+// placeholder) instead of failing to compile. The typed-nil guard mirrors production: a nil
+// pointer whose type implements the interface still SATISFIES the assertion, but every real
+// implementation dereferences its receiver -- calling the method would panic -- so such a
+// payload resolves to the placeholder without the call.
 func resolveSubscriptionID(t *testing.T, data any) string {
 	t.Helper()
 
-	if identifier, ok := data.(eventtopic.SubscriptionIdentifier); ok {
-		// typed-nil guard, mirroring notifyhandler.resolveSubscriptionOverride: a nil pointer whose
-		// type implements the interface still SATISFIES the assertion, and every real implementation
-		// dereferences its receiver -- calling the method would panic. Production reports "no
-		// override" for such a payload, so this guard falls through to the JSON half below rather
-		// than returning early; `null` carries no top-level `id` either, so both halves agree on the
-		// `-` placeholder.
-		if v := reflect.ValueOf(data); v.Kind() != reflect.Ptr || !v.IsNil() {
-			return identifier.EventSubscriptionID()
-		}
+	identifier, ok := data.(eventtopic.SubscriptionIdentifier)
+	if !ok {
+		return ""
 	}
-
-	m, err := json.Marshal(data)
-	if err != nil {
-		t.Fatalf("Could not marshal the event data. err: %v", err)
-	}
-
-	d := struct {
-		ID string `json:"id"`
-	}{}
-	if errUnmarshal := json.Unmarshal(m, &d); errUnmarshal != nil {
+	if v := reflect.ValueOf(data); v.Kind() == reflect.Ptr && v.IsNil() {
 		return ""
 	}
 
-	return d.ID
+	return identifier.EventSubscriptionID()
 }
 
 func TestGoldenRoutingKeys(t *testing.T) {
@@ -113,8 +99,8 @@ func TestGoldenRoutingKeys(t *testing.T) {
 		data      any
 		expect    string
 	}{
-		// message event -- resource `webchat`, action `message_created`, address supplied by the
-		// *message.Message override (the parent SessionID, not the message's own id).
+		// message event -- resource `webchat`, action `message_created`, address supplied by
+		// *message.Message's EventSubscriptionID (the parent SessionID, not the message's own id).
 		{
 			"webchat_message_created",
 			message.EventTypeMessageCreated,
@@ -123,8 +109,8 @@ func TestGoldenRoutingKeys(t *testing.T) {
 		},
 
 		// session end -- resource `webchat`, action `session_ended`. The Session's own id IS the
-		// address here, resolved by the default JSON fallback, and it is the SAME id the message
-		// override points at.
+		// address here, returned by its explicit EventSubscriptionID, and it is the SAME id the
+		// message's method points at.
 		{
 			"webchat_session_ended",
 			session.EventTypeSessionEnded,
@@ -150,12 +136,13 @@ func TestGoldenRoutingKeys(t *testing.T) {
 //
 //	(1) every event type collapses to the resource segment `webchat` (they all start with the
 //	    `webchat_` prefix, and RoutingKey splits on the FIRST underscore), and
-//	(2) every event carries the same session address (Session by its own id, Message by its
-//	    override),
+//	(2) every event carries the same session address (Session's method returns its own id,
+//	    Message's method returns its parent SessionID),
 //
 // which together mean ONE binding pattern -- `webchat-manager.webchat.<session-id>.#` -- delivers
-// the entire session. Dropping the Message override, or renaming an event type so it no longer
-// splits to `webchat`, breaks this test even if the per-key table above were updated to match.
+// the entire session. Repointing the Message method at its own id, or renaming an event type so it
+// no longer splits to `webchat`, breaks this test even if the per-key table above were updated to
+// match.
 func TestGoldenRoutingKeysWebchatResourceCollapse(t *testing.T) {
 	publisher := string(commonoutline.ServiceNameWebchatManager)
 	pattern := eventtopic.PatternInstance(publisher, "webchat", sessionID.String())
@@ -214,16 +201,5 @@ func TestGoldenRoutingKeysWebchatResourceCollapse(t *testing.T) {
 				t.Errorf("Wrong match. expect: %s, got: %s", sessionID.String(), segments[2])
 			}
 		})
-	}
-}
-
-// TestSessionUsesDefaultSubscriptionID pins the deliberate ABSENCE of an override on Session: its
-// own id IS the address, so implementing the interface would be redundant and the default JSON
-// `id` extraction must keep covering it.
-func TestSessionUsesDefaultSubscriptionID(t *testing.T) {
-	var data any = &session.Session{Identity: commonidentity.Identity{ID: sessionID}}
-
-	if _, ok := data.(eventtopic.SubscriptionIdentifier); ok {
-		t.Errorf("Session must not implement SubscriptionIdentifier. its own id is the subscription address.")
 	}
 }
