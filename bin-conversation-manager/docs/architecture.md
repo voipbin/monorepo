@@ -57,14 +57,26 @@ ListenHandler routes over `bin-manager.conversation-manager.request`:
 
 ## Event Subscriptions
 
-SubscribeHandler (`pkg/subscribehandler/`) consumes:
+Since VOIP-1406, SubscribeHandler (`pkg/subscribehandler/`) receives its events through
+pattern bindings on the global topic exchange `bin-manager.event`: at boot, Run() binds
+the subscribe queue with one pattern per dispatch pair (all-or-nothing; on any bind
+failure it rolls back the partial topic binds and stays fully on the fanout
+subscriptions) and then unbinds the old per-service fanout exchanges. The fanout
+`QueueSubscribe` calls stay in the code as the rollback surface, and fanout publishing
+continues everywhere, until VOIP-1407. The exact bind set is pinned by
+`pkg/subscribehandler/binding_golden_test.go`:
 
-| Queue | Event | Action |
+| Topic pattern (on `bin-manager.event`) | Event | Action |
 |-------|-------|--------|
-| `bin-manager.message-manager.event` | `message_created` | Create or update conversation record; create incoming message; publish conversation/message events |
-| `bin-manager.email-manager.event` | `email_created` | Record the sent email as an outgoing conversation message (status=progressing); one message per destination, keyed by a composite `email.ID + peer` transaction ID |
-| `bin-manager.email-manager.event` | `email_updated` | Reconcile the matching outgoing message's status from email-manager's own provider-webhook-driven lifecycle (`delivered`/`open`/`click`/`unsubscribe`/`spamreport` -> done; `bounce`/`dropped` -> failed); non-terminal statuses and already-terminal messages are no-ops |
-| `bin-manager.webchat-manager.event` | `webchat_message_created` | Mirror the webchat-manager message onto the conversation (mirrors the message-manager pattern; unmarshaled inside `conversationHandler.Event`) |
+| `message-manager.message.*.created` | `message_created` | Create or update conversation record; create incoming message; publish conversation/message events |
+| `email-manager.email.*.created` | `email_created` | Record the sent email as an outgoing conversation message (status=progressing); one message per destination, keyed by a composite `email.ID + peer` transaction ID |
+| `email-manager.email.*.updated` | `email_updated` | Reconcile the matching outgoing message's status from email-manager's own provider-webhook-driven lifecycle (`delivered`/`open`/`click`/`unsubscribe`/`spamreport` -> done; `bounce`/`dropped` -> failed); non-terminal statuses and already-terminal messages are no-ops |
+| `webchat-manager.webchat.*.message_created` | `webchat_message_created` | Mirror the webchat-manager message onto the conversation (mirrors the message-manager pattern; unmarshaled inside `conversationHandler.Event`) |
+
+Legacy fanout legs (`bin-manager.message-manager.event`,
+`bin-manager.email-manager.event`, `bin-manager.webchat-manager.event`) are unbound on a
+successful topic binding; the subscriptions are retained in code as the rollback surface
+until VOIP-1407.
 
 ## Events Published
 
