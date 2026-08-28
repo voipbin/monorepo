@@ -39,41 +39,46 @@ These gate the **actual replica-scaling PRs** for the remaining
 services. This design document itself, and the doc-only companion edits
 that landed with it, are not gated (no code, no deploy).
 
-1. **BLOCKING — app-side connection-pool caps must be DEPLOYED (not
-   merely merged) before any fleet-wide scale-out.**
-   `bin-common-handler/pkg/databasehandler`'s `Connect()` sets no pool
-   limit (`SetMaxOpenConns` is never called), and `bin-rag-manager`
-   opens its own PostgreSQL pool (`sql.Open("postgres", ...)` in
-   `cmd/rag-manager/main.go`) with the same unbounded default — so
-   every service's connection count is bounded only by load. Doubling
-   replicas doubles the theoretical draw against the shared MariaDB.
-   `max_connections=220` (raised from the 151 default in monorepo-etc,
-   2026-08-27) is headroom, not a fix. Until the pool-cap change is
-   verified deployed — check the running images' commit, not the merge
-   — scale at most a handful of low-traffic services at a time, never
-   the full fleet.
-2. **Advisory — a 1-of-2 degradation alert does not exist yet.** With
-   replicas, `InstanceDown` (`up == 0`) cannot fire for a lost replica
-   (its DNS-SD target simply disappears) and `ManagerServiceGone` fires
-   only when *zero* replicas survive. A service silently running 1-of-2
-   is invisible today. A `count by (service)
-   (up{job="voipbin-managers"}) < 2`-style rule in monorepo-etc's
-   alert-rules.yml closes this; land it as the rollout proceeds. Until
-   then, the post-deploy manual verification in the workflows doc is
-   the only 2-of-2 check.
+1. **RESOLVED by decision (2026-08-28) — app-side pool caps will NOT
+   ship; monitoring is the standing defense line.** The original
+   condition blocked fleet-wide scale-out until an app-side pool cap
+   (`SetMaxOpenConns` in `bin-common-handler/pkg/databasehandler`'s
+   `Connect()`, plus `bin-rag-manager`'s own PostgreSQL pool) was
+   deployed — pools are unbounded, so doubling replicas doubles the
+   theoretical draw on the shared MariaDB. On 2026-08-28 대표님 decided
+   to skip the app-side cap entirely. The replacement gate, measured
+   the same day: `max_connections=220` with a 7-day peak of 61
+   connections (current 39, 24h avg ~37) — a full 2x of the whole
+   fleet's peak lands at ~122/220 (55%), and the deployed
+   `MySQLConnectionsHigh` (>80% warn, 5m) / `MySQLConnectionsCritical`
+   (>90% crit, 2m) → Discord alarm chain catches runaway growth. This
+   unblocks the full-fleet P11 rollout; connection headroom is now a
+   monitored budget, not a code precondition.
+2. **Advisory — a 1-of-2 degradation alert lands WITH the P11 rollout
+   window.** With replicas, `InstanceDown` (`up == 0`) cannot fire for
+   a lost replica (its DNS-SD target simply disappears) and
+   `ManagerServiceGone` fires only when *zero* replicas survive. The
+   `ReplicaDegraded` rule (`count by (service) (up{...}) < 2`, warning,
+   for 10m, enumerating the replica-scaled services) ships in
+   monorepo-etc's alert-rules.yml as P11's companion PR, deployed
+   before the compose changes with a pre-created Alertmanager silence
+   during the rollout. Until that deploy is verified, the post-deploy
+   manual verification in the workflows doc is the only 2-of-2 check.
 
 ## Per-service tracker
 
-32 Komodo stacks. States: **done** (scaled and verified live),
-**ready** (no blocker; still subject to gating condition 1), **blocked**
-(a concrete obstacle must be cleared first), **paced** (safe, but
-deliberately scheduled late as a canary).
+32 Komodo stacks. States: **done** (scaled and verified live; the
+variant "done (P11; deploy verification pending)" means the compose
+change is merged but the live 2-of-2 verification has not been recorded
+yet), **ready** (no blocker), **blocked** (a concrete obstacle must be
+cleared first), **paced** (safe, but deliberately scheduled late as a
+canary).
 
 | Service | State | Blocker / notes |
 |---|---|---|
 | schedule | **done** | PR #1212, live-verified 2026-08-27 |
-| agent, ai, billing, call, campaign, conference, conversation, customer, direct, email, message, number, outdial, queue, registrar, storage, tag, talk, transfer, webchat, webhook | ready | No per-pod queue, no naming dependency, no unguarded global state. Subject to gating condition 1 |
-| flow | ready | Has a global mutex map, but it wraps redsync (Redis distributed locks) — replica-safe. Subject to gating condition 1 |
+| agent, ai, billing, call, campaign, conference, conversation, customer, direct, email, message, number, outdial, queue, registrar, storage, tag, talk, transfer, webchat, webhook | **done (P11; deploy verification pending)** | Scaled in one batch (P11) after gating condition 1 was resolved by the 2026-08-28 no-app-cap decision. No per-pod queue, no naming dependency, no unguarded global state. No resource limits (deliberate: cAdvisor exposes no per-container series to size them from, and measured footprints are 16-69MiB against ~240GB free) |
+| flow | ready | Has a global mutex map, but it wraps redsync (Redis distributed locks) — replica-safe. Excluded from the P11 batch only as a P12 batching choice (paired with hook), not a blocker — gating condition 1 is resolved fleet-wide |
 | hook | **blocked** | Caddy naming: monorepo-etc `infra-caddy/config/Caddyfile:77-82` targets the `voipbin-hook-manager` container name literally as its reverse_proxy upstream. Removing `container_name` breaks it. Needs the Caddy retarget companion work first — do NOT fold into the ready batch |
 | api | **blocked** (two distinct blockers) | (i) Caddy naming: Caddyfile:17-22 targets `voipbin-api-manager` (retargeted from the old install/-era `voipbin-api-mgr` in VOIP-1362 — cite the current name). (ii) Per-pod `streamData` process-local state needs a code redesign; the Caddy fix alone does not make api scalable. The AudioSocket advertise-address defect is already fixed (`internal/nethandler.AdvertiseIP()`, PR #1209) |
 | pipecat | **blocked** | Per-pod queue routing redesign needed; also shares a network namespace 1:1 with its sidecar (`network_mode: service:...`) — the heaviest case in the fleet |
@@ -82,7 +87,7 @@ deliberately scheduled late as a canary).
 | timeline | **blocked** (instrumentation landed — P8a) | The intake channel (`pkg/subscribehandler`, 1000-slot buffered channel) drops events silently when full. P8a added drop/occupancy metrics; re-evaluate when a 24h single-replica baseline shows `increase(timeline_manager_subscribe_event_dropped_total[24h]) == 0` AND `histogram_quantile(0.99, rate(timeline_manager_subscribe_event_channel_usage_bucket[24h])) < 0.5`. Rationale: 24h covers one full daily traffic cycle; zero drops because a drop is permanently lost customer timeline data (no recovery path); p99 < 50% because a rolling restart or unbalanced routing can route the full event stream to one replica — headroom for the worst case must exist at single-replica load |
 | route | **blocked** | Global provider healthcheck loop has no cross-replica lock — 2 replicas would double-probe every SIP provider |
 | contact | **blocked** | In-process lock needs a Redis distributed-lock (or equivalent) decision first |
-| rag | **paced** (not blocked) | Already replica-safe: `DocumentClaimForProcessing` claims work via an atomic CAS UPDATE (same class of safety as schedule's claim machinery). Gating condition 1 applies via rag's own pool-cap fix (it bypasses `databasehandler.Connect()`). Deliberately scheduled as a late canary — this is pacing, not a code defect; do not group it with timeline/route/contact |
+| rag | **paced** (not blocked) | Already replica-safe: `DocumentClaimForProcessing` claims work via an atomic CAS UPDATE (same class of safety as schedule's claim machinery). Its own unbounded PostgreSQL pool (it bypasses `databasehandler.Connect()`) is covered by the same 2026-08-28 no-app-cap decision that resolved gating condition 1 — no pool-cap fix is planned. Deliberately scheduled as a late canary — this is pacing, not a code defect; do not group it with timeline/route/contact |
 
 ## References
 
