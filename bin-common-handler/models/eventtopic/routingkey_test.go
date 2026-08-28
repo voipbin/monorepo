@@ -346,6 +346,152 @@ func Test_PatternAction(t *testing.T) {
 	}
 }
 
+func Test_PatternForEventType(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		publisher string
+		eventType string
+
+		expectRes string
+	}{
+		{
+			name: "single underscore",
+
+			publisher: "call-manager",
+			eventType: "call_hangup",
+
+			expectRes: "call-manager.call.*.hangup",
+		},
+		{
+			name: "multi-underscore action",
+
+			publisher: "pipecat-manager",
+			eventType: "message_bot_llm_intermediate",
+
+			expectRes: "pipecat-manager.message.*.bot_llm_intermediate",
+		},
+		{
+			name: "no underscore -- resource degrades to the placeholder",
+
+			publisher: "flow-manager",
+			eventType: "created",
+
+			expectRes: "flow-manager.-.*.created",
+		},
+		{
+			name: "dot-containing type",
+
+			publisher: "call-manager",
+			eventType: "call.outbound_whitelist_rejected",
+
+			expectRes: "call-manager.call.*.outbound_whitelist_rejected",
+		},
+		{
+			name: "empty type",
+
+			publisher: "storage-manager",
+			eventType: "",
+
+			expectRes: "storage-manager.-.*.-",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res := PatternForEventType(tt.publisher, tt.eventType)
+			if res != tt.expectRes {
+				t.Errorf("Wrong match. expect: %s, got: %s", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+// Test_PatternForEventType_matchesRoutingKey pins the load-bearing invariant: for every event type
+// a publisher actually emits, the pattern PatternForEventType derives from that type's own
+// resource/action segments must agree with what RoutingKey derives from the same type -- a pattern
+// that disagrees with the key it is meant to match binds to nothing. This is stronger than a
+// literal-parity check against PatternAction (which PatternForEventType simply delegates to): it
+// proves the SHARED split, not just that the new function agrees with the function it calls.
+func Test_PatternForEventType_matchesRoutingKey(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		publisher      string
+		eventType      string
+		subscriptionID string
+	}{
+		{
+			name: "real production type -- single underscore",
+
+			publisher:      "call-manager",
+			eventType:      "call_hangup",
+			subscriptionID: "9f01c3d2-a1bc-11f1-92ef-60452e5e40a2",
+		},
+		{
+			name: "real production type -- multi-underscore action",
+
+			publisher:      "webchat-manager",
+			eventType:      "webchat_message_created",
+			subscriptionID: "9f01c3d2-a1bc-11f1-92ef-60452e5e40a2",
+		},
+		{
+			name: "real production type -- resource segment differs from the constant's own package name",
+
+			publisher:      "pipecat-manager",
+			eventType:      "team_member_switched",
+			subscriptionID: "9f01c3d2-a1bc-11f1-92ef-60452e5e40a2",
+		},
+		{
+			name: "real production type -- multi-underscore action, second example",
+
+			publisher:      "pipecat-manager",
+			eventType:      "message_bot_llm_intermediate",
+			subscriptionID: "9f01c3d2-a1bc-11f1-92ef-60452e5e40a2",
+		},
+		{
+			name: "real publisher-side dot-typed event, not one of the bound pairs",
+
+			publisher:      "call-manager",
+			eventType:      "call.outbound_whitelist_rejected",
+			subscriptionID: "9f01c3d2-a1bc-11f1-92ef-60452e5e40a2",
+		},
+		{
+			name: "degenerate shape -- no underscore",
+
+			publisher:      "flow-manager",
+			eventType:      "created",
+			subscriptionID: "9f01c3d2-a1bc-11f1-92ef-60452e5e40a2",
+		},
+		{
+			name: "degenerate shape -- empty type",
+
+			publisher:      "storage-manager",
+			eventType:      "",
+			subscriptionID: "9f01c3d2-a1bc-11f1-92ef-60452e5e40a2",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			key := RoutingKey(tt.publisher, tt.eventType, tt.subscriptionID)
+			pattern := PatternForEventType(tt.publisher, tt.eventType)
+
+			keySegments := strings.Split(key, ".")
+			patternSegments := strings.Split(pattern, ".")
+
+			// segment 0 (publisher), 1 (resource), 3 (action) must agree; segment 2 (subscription
+			// ID vs. the "*" wildcard) is deliberately excluded -- that is what PatternAction's
+			// wildcard is for.
+			if keySegments[0] != patternSegments[0] || keySegments[1] != patternSegments[1] || keySegments[3] != patternSegments[3] {
+				t.Errorf("Pattern does not match the key it is meant to bind. key: %s, pattern: %s", key, pattern)
+			}
+		})
+	}
+}
+
 // Test_PatternInstance_matchesRoutingKey pins the invariant that the pattern builders and
 // RoutingKey normalize identically -- a binding built for a resource instance must match the key
 // the publisher actually generates for it.

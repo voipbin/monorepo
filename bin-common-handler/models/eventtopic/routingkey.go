@@ -33,24 +33,10 @@ var segmentReplacer = strings.NewReplacer(".", "_", "*", "_", "#", "_")
 //	<publisher>.<resource>.<subscription-id>.<action>
 //	transcribe-manager.transcript.9f01c3d2-....created
 //
-// The event type is normalized first (lowercased, every `.` replaced with `_`) and then split on
-// the first `_` into resource and action. A type without any `_` becomes the action, and the
-// resource falls back to the placeholder. An empty or uuid.Nil subscriptionID becomes the
-// placeholder as well.
-//
-// The split is purely mechanical, mirroring bin-webhook-manager's routingkey.go: a
-// multi-underscore type such as `customer_balance_updated` splits into `customer` /
-// `balance_updated`. What matters for binding is that the generated keys are deterministic and
-// stable, not that every segment is semantically perfect.
+// The event type is normalized and split into resource/action by splitEventType -- see there for
+// the exact rule. An empty or uuid.Nil subscriptionID becomes the placeholder as well.
 func RoutingKey(publisher string, eventType string, subscriptionID string) string {
-	normalized := strings.ReplaceAll(strings.ToLower(eventType), ".", "_")
-
-	resource := ""
-	action := normalized
-	if tmps := strings.SplitN(normalized, "_", 2); len(tmps) == 2 {
-		resource = tmps[0]
-		action = tmps[1]
-	}
+	resource, action := splitEventType(eventType)
 
 	return strings.Join([]string{
 		normalizeSegment(publisher),
@@ -58,6 +44,28 @@ func RoutingKey(publisher string, eventType string, subscriptionID string) strin
 		normalizeSubscriptionID(subscriptionID),
 		normalizeSegment(action),
 	}, separator)
+}
+
+// splitEventType normalizes an event type (lowercased, every `.` replaced with `_`) and splits it
+// on the first `_` into resource and action. A type without any `_` becomes the action, with the
+// resource left empty (normalizeSegment turns that into the placeholder downstream).
+//
+// The split is purely mechanical, mirroring bin-webhook-manager's routingkey.go: a
+// multi-underscore type such as `customer_balance_updated` splits into `customer` /
+// `balance_updated`. What matters for binding is that the generated keys are deterministic and
+// stable, not that every segment is semantically perfect.
+//
+// RoutingKey and PatternForEventType MUST derive resource/action identically -- a pattern that
+// splits differently from the key it is meant to match binds to nothing -- so both call this
+// single shared helper rather than each inlining their own copy.
+func splitEventType(eventType string) (resource string, action string) {
+	normalized := strings.ReplaceAll(strings.ToLower(eventType), ".", "_")
+
+	if tmps := strings.SplitN(normalized, "_", 2); len(tmps) == 2 {
+		return tmps[0], tmps[1]
+	}
+
+	return "", normalized
 }
 
 // PatternAll returns the binding pattern for every event of the given publisher.
@@ -90,6 +98,17 @@ func PatternAction(publisher string, resource string, action string) string {
 		"*",
 		normalizeSegment(action),
 	}, separator)
+}
+
+// PatternForEventType returns the binding pattern for one publisher event, derived directly from
+// the publisher's own canonical event-type constant using the same normalize+split RoutingKey
+// uses. Callers pass the owning package's EventType constant (e.g. groupcall.EventTypeGroupcallCreated)
+// instead of hand-splitting it into resource/action string literals -- duplicating that split at
+// each call site is exactly the drift risk this function exists to remove: a hand-typed literal
+// does not follow the owning constant if its VALUE ever changes, while this derivation always does.
+func PatternForEventType(publisher string, eventType string) string {
+	resource, action := splitEventType(eventType)
+	return PatternAction(publisher, resource, action)
 }
 
 // normalizeSegment makes the given value safe and deterministic as a single routing-key segment.

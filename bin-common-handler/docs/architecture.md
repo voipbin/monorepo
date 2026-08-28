@@ -45,6 +45,7 @@ Canonical constants for service names and queue names. Services look up their re
 Routing-key schema of the global topic exchange `bin-manager.event` (VOIP-1404):
 - `RoutingKey(publisher, eventType, subscriptionID)` — builds `<publisher>.<resource>.<subscription-id>.<action>`
 - `PatternAll` / `PatternResource` / `PatternInstance` / `PatternAction` — binding patterns for `sockhandler.QueueBind`
+- `PatternForEventType(publisher, eventType)` — derives a `PatternAction` binding directly from the publisher's own canonical `EventType*` constant, using the same normalize+split as `RoutingKey`; the preferred call form for consumer `topicPatterns` (VOIP-1406) so the binding pattern can never drift from a hand-typed resource/action literal
 - `SubscriptionIdentifier` — opt-in interface (pointer receiver) letting a stream-child resource override the third segment with its parent stream id
 
 Pure functions only. Admitted to `bin-common-handler` despite the 3+-services rule because it is internal plumbing of `notifyhandler` itself — see the package doc comment.

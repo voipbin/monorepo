@@ -243,3 +243,181 @@ normalization that builds publish keys builds the bindings.
   dispatch cases (ai conference_updated, queue customer_deleted, flow call_hangup)" --
   the latter two are latent-bug candidates (missing cleanup on customer delete / call
   hangup) and should lead the ticket.
+
+## 9. Amendment (post-PR review, before merge): eliminate magic-string pattern literals
+
+**This amendment supersedes, for the 19 services it touches:** §2's "**No
+bin-common-handler changes.**" (:96) and "built from `eventtopic.PatternAction(...)`
+calls at init" (:100-102); §5's "generated in code via `eventtopic.PatternAction(...)`"
+(:185-187); §6's "No bch tests to change (no bch code changes)" (:206); and §7's "no
+cross-service compile risk (no shared-code change)" (:210-211). Those statements were
+true through W1-W3 and become false as of this amendment; the verification obligation
+below extends §7 rather than editing it in place, to keep the original approved text
+intact as history. §3:111-113 (naming `PatternAction` as the per-pair mechanism) is NOT
+superseded in substance -- one pattern per dispatch pair, same normalization as the
+publish side, still holds, and `PatternForEventType` sits in front of `PatternAction`
+rather than replacing it. Only the illustrated call form moves behind
+`PatternForEventType`; §3's literal `eventtopic.PatternAction(publisher, resource,
+action)` text is no longer what any production call site writes.
+
+**Finding:** every `topicPatterns` entry across 19 of the 20 services (all except
+timeline-manager, which binds a single `"#"` wildcard and has no `PatternAction` calls)
+calls `eventtopic.PatternAction(publisher, "resource", "action")` with `resource`/
+`action` as hand-typed string literals -- e.g. `PatternAction(ServiceNameCallManager,
+"groupcall", "created")`. Each of those two literals is a manual re-split of the SAME
+event-type string that the owning package already exports as a single canonical
+constant (e.g. `groupcall.EventTypeGroupcallCreated = "groupcall_created"`), which the
+same file's dispatch `switch` already imports and compares against (`m.Type ==
+cmgroupcall.EventTypeGroupcallCreated`). The pattern and the dispatch case are two
+independent, hand-written encodings of the same fact with no compiler link between
+them. The real risk is not an identifier rename (Go would refuse to compile the
+dispatch case against a renamed constant, so a rename cannot silently desync anything);
+it is a **value** change -- e.g. `EventTypeGroupcallCreated`'s string content changing
+from `"groupcall_created"` to `"groupcall_started"`. The dispatch case follows the
+constant automatically and keeps compiling; the hand-typed pattern literal does not
+follow it, and the binding silently stops matching the routing keys the publisher now
+emits. Every existing test still passes, because each service's `binding_golden_test.go`
+pins the same stale literal the production code hand-typed -- the golden test guards
+against a typo at write time, not against the production and publish sides drifting
+apart later. Deriving the pattern from the constant closes exactly that gap: after this
+change, a value edit to the constant flows into the pattern automatically, and if the
+golden test's OWN pinned literal is now stale relative to that constant, the golden test
+fails loudly instead of passing on stale agreement.
+
+**Audit (2026-08-29):** all 65 `PatternAction` call sites across the 19 services were
+enumerated and cross-checked against their owning package's `EventType*` constants.
+100% resolve cleanly: every `resource`/`action` pair is the exact `strings.SplitN(type,
+"_", 2)` decomposition of an existing exported constant, and -- because every one of
+those owning packages is already imported into the same file for the dispatch switch --
+**zero new imports are required anywhere.** No exceptions found. Two derivations are
+non-obvious and are recorded here so a future cleanup does not "fix" them into a broken
+state: `bin-conversation-manager/pkg/subscribehandler/main.go` imports both
+`mmmessage.EventTypeMessageCreated = "message_created"` (resource `message`) and
+`wmmessage.EventTypeMessageCreated = "webchat_message_created"` (resource `webchat`) --
+same identifier name, different resource segment, same file; and
+`pmmessage.EventTypeTeamMemberSwitched` lives in pipecat-manager's `message` package but
+yields resource `team`, not `message`.
+
+**Fix:** factor the normalize+split that `RoutingKey` already performs into a private
+helper, and add one new exported function to `bin-common-handler/models/eventtopic`
+that reuses it -- so the split logic exists in exactly one place, not two:
+
+```go
+// splitEventType normalizes an event type and splits it into the resource/action
+// segments of the routing-key schema. RoutingKey and PatternForEventType MUST derive
+// them identically: a pattern that splits differently from the key it is meant to match
+// binds to nothing.
+func splitEventType(eventType string) (resource string, action string) {
+	normalized := strings.ReplaceAll(strings.ToLower(eventType), ".", "_")
+	if tmps := strings.SplitN(normalized, "_", 2); len(tmps) == 2 {
+		return tmps[0], tmps[1]
+	}
+	return "", normalized
+}
+
+// PatternForEventType returns the binding pattern for one publisher event, derived
+// directly from the publisher's own canonical event-type constant using the same
+// normalize+split RoutingKey uses. Callers pass the owning package's EventType constant
+// instead of hand-splitting it into resource/action string literals -- duplicating that
+// split at each call site is exactly the drift risk this function exists to remove.
+func PatternForEventType(publisher string, eventType string) string {
+	resource, action := splitEventType(eventType)
+	return PatternAction(publisher, resource, action)
+}
+```
+
+`RoutingKey` is refactored to call `splitEventType` instead of inlining the same
+`ReplaceAll`+`SplitN` logic:
+
+```go
+func RoutingKey(publisher string, eventType string, subscriptionID string) string {
+	resource, action := splitEventType(eventType)
+	return strings.Join([]string{
+		normalizeSegment(publisher),
+		normalizeSegment(resource),
+		normalizeSubscriptionID(subscriptionID),
+		normalizeSegment(action),
+	}, separator)
+}
+```
+
+Pure extraction, zero behavior change -- already pinned byte-for-byte by
+`Test_RoutingKey`'s 15-case table and every service's `routingkey_golden_test.go`.
+
+Every one of the 65 call sites is rewritten from
+`eventtopic.PatternAction(string(commonoutline.ServiceNameX), "resource", "action")` to
+`eventtopic.PatternForEventType(string(commonoutline.ServiceNameX),
+<existing-alias>.EventTypeY)`, reusing the import alias already present in that file for
+dispatch. Output is byte-identical for every existing site (same split, same inputs) --
+this is a pure derivation-source change, not a behavior change. `PatternAction` itself
+stays exported and unchanged (still called directly by `PatternForEventType`). After
+this migration `PatternAction` has no PRODUCTION call sites left, same as its sibling
+builders `PatternAll`/`PatternResource`/`PatternInstance` today -- all three already
+have zero production callers, and are only ever invoked from publisher-side
+`routingkey_golden_test.go` files (`PatternInstance` in bin-number-manager,
+bin-conversation-manager, bin-webchat-manager, and bin-agent-manager's goldens;
+`PatternResource`/`PatternAll` in bin-route-manager's golden). Keeping `PatternAction`
+exported is consistent with that existing precedent, not a hypothetical-future-caller
+argument.
+
+**Test plan:** `PatternForEventType` gets table-driven unit tests in
+`bin-common-handler/models/eventtopic/routingkey_test.go` covering: single-underscore
+type, multi-underscore action, a non-empty type with NO underscore (e.g. `"created"` --
+the production-shape case that exercises the `resource -> placeholder "-"` degrade
+without an all-empty input masking it), a dot-containing type, and an empty type. In
+place of a tautological literal-parity assertion, add
+`Test_PatternForEventType_matchesRoutingKey`, following the file's existing
+`Test_PatternInstance_matchesRoutingKey` idiom: for a table of real production event
+types (`call_hangup`, `webchat_message_created`, `team_member_switched`,
+`message_bot_llm_intermediate`, `call.outbound_whitelist_rejected` -- the last one a
+real publisher-side dot-typed event, not one of the 65 bound pairs) plus the two
+deliberate degenerate shapes (`created`, `""`), assert the generated
+`PatternForEventType` segments agree with the resource/action
+segments `RoutingKey` would generate for the same type -- the load-bearing invariant is
+pattern-matches-key agreement, not merely that the new function agrees with the old one
+it delegates to. Per-service `binding_golden_test.go` files are UNCHANGED: they pin
+literal expected pattern strings (correct testing practice -- a golden test should
+assert against a literal, not against the same derivation the production code uses) and
+continue passing unmodified since the derived output is identical.
+
+**Scope:** `bin-common-handler/models/eventtopic` (refactor `RoutingKey` to use the new
+private helper; add `PatternForEventType` + tests; this reopens the package that W1
+froze -- purely additive, no signature of any existing exported function changes, so no
+untouched consumer of `eventtopic` can break) and 19 services' (all except timeline-
+manager) `pkg/subscribehandler/main.go` (mechanical call-site substitution only -- no
+import changes, no test changes, no Run()/dispatch changes). No service's
+`docs/architecture.md` events section needs a BIND-SET edit anywhere -- the bind set
+itself is unchanged, only its derivation source -- so `scripts/check-service-docs.sh`'s
+PostToolUse warning is a known false positive for 18 of the 19 touched services. Two
+files name the builder directly and need a real name substitution (`PatternAction` ->
+`PatternForEventType`) rather than a doc-hook dismissal:
+`bin-billing-manager/docs/architecture.md:81` (the one non-false-positive among the 19;
+events section, "14 `PatternAction` bindings, one per (publisher, event type) pair") and
+`docs/reference/rabbitmq-queues-reference.md:299` (not a service doc, so outside the
+hook's scope entirely; the W2 "Consumer state (VOIP-1406)" paragraph, "now bind
+`bin-manager.event` with `eventtopic.PatternAction` patterns matching exactly their
+dispatch sets"). Separately, two LIVE doc files enumerate `eventtopic`'s exported
+function SET and need only an additive one-liner for the new function:
+`bin-common-handler/docs/architecture.md:47` and
+`docs/reference/rabbitmq-queues-reference.md:265` (same file as the :299 substitution
+above, two distinct edits). `tasks/todo.md`'s W1 description (:19) and AC1/AC3 wording
+(:55, :60, :86) are updated to reflect the new call form (:134 and
+:182 are inside the retained historical Working Notes and are deliberately left as
+written history, not updated). Dated plan docs
+(`docs/plans/2026-08-27-voip-1404-global-topic-exchange-design.md:125`, and §§1-8 above
+in this very document) are likewise deliberately left as written history, the same rule
+applied to `tasks/todo.md`'s Working Notes. Same branch, same open PR (#1222, unmerged)
+-- this is a correction to already-implemented code, not new scope.
+
+**Verification obligation (extends §7, does not replace it):** this amendment adds a
+`bin-common-handler` code change, so the full 5-step verification workflow (`go mod
+tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v
+--timeout 5m`) runs there FIRST, in addition to re-running it in each of the 19 touched
+services. §7's "no cross-service compile risk" conclusion still holds for every other
+`eventtopic` importer this amendment does not touch -- 10 further services' publisher-
+side routing-key TEST code under `models/**` (`routingkey_golden_test.go` plus assorted
+per-model `*_test.go`; none of the 10 has a non-test file importing `eventtopic`:
+customer, email, message, outdial, pipecat, route, sentinel, talk, tts, webchat), plus
+any future consumer -- precisely because the change is additive-only (no existing
+exported signature changes); but that conclusion now follows from additivity, not from
+the absence of a bch change that §7 originally assumed.
