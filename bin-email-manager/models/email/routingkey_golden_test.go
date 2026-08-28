@@ -130,18 +130,6 @@ func TestGoldenRoutingKeys(t *testing.T) {
 	}
 }
 
-// TestGoldenRoutingKeyDataTypeIsPointer pins the data type actually handed to notifyhandler at
-// every publish site. The SubscriptionIdentifier assertion is made against the DYNAMIC type, so a
-// value publish would silently bypass any future override; asserting the pointer type here keeps
-// the golden table reproducing the real publish path rather than a convenient stand-in.
-func TestGoldenRoutingKeyDataTypeIsPointer(t *testing.T) {
-	var data any = &email.Email{Identity: commonidentity.Identity{ID: emailID}}
-
-	if _, ok := data.(*email.Email); !ok {
-		t.Errorf("The published event data must be *email.Email. got: %T", data)
-	}
-}
-
 // TestEmailUsesDefaultSubscriptionID pins the deliberate ABSENCE of an override on Email
 // (design §2.4): an email is an independent persistent resource, its own id IS the subscription
 // address, so implementing SubscriptionIdentifier would be redundant and the default JSON `id`

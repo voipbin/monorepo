@@ -140,18 +140,6 @@ func TestGoldenRoutingKeys(t *testing.T) {
 	}
 }
 
-// TestGoldenRoutingKeyDataTypeIsPointer pins the data type actually handed to notifyhandler at
-// every publish site. The SubscriptionIdentifier assertion is made against the DYNAMIC type, so a
-// value publish would silently bypass any future override; asserting the pointer type here keeps
-// the golden table reproducing the real publish path rather than a convenient stand-in.
-func TestGoldenRoutingKeyDataTypeIsPointer(t *testing.T) {
-	var data any = &message.Message{Identity: commonidentity.Identity{ID: messageID}}
-
-	if _, ok := data.(*message.Message); !ok {
-		t.Errorf("The published event data must be *message.Message. got: %T", data)
-	}
-}
-
 // TestMessageUsesDefaultSubscriptionID pins the deliberate ABSENCE of an override on Message
 // (design §2.4). The name collides with the Category-B `Message` types of ai/conversation/talk/
 // webchat/tts, which DO override with a parent id -- this service's Message is the SMS resource

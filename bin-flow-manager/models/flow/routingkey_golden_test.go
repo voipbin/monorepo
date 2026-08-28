@@ -175,22 +175,6 @@ func TestGoldenRoutingKeys(t *testing.T) {
 	}
 }
 
-// TestGoldenRoutingKeyDataTypesArePointers pins the data types actually handed to notifyhandler at
-// every publish site. The SubscriptionIdentifier assertion is made against the DYNAMIC type, so a
-// value publish would silently bypass any future override; asserting the pointer types here keeps
-// the golden table reproducing the real publish path rather than a convenient stand-in.
-func TestGoldenRoutingKeyDataTypesArePointers(t *testing.T) {
-	var flowData any = &flow.Flow{Identity: commonidentity.Identity{ID: flowID}}
-	if _, ok := flowData.(*flow.Flow); !ok {
-		t.Errorf("The published flow event data must be *flow.Flow. got: %T", flowData)
-	}
-
-	var activeflowData any = &activeflow.Activeflow{Identity: commonidentity.Identity{ID: activeflowID}}
-	if _, ok := activeflowData.(*activeflow.Activeflow); !ok {
-		t.Errorf("The published activeflow event data must be *activeflow.Activeflow. got: %T", activeflowData)
-	}
-}
-
 // TestFlowUsesDefaultSubscriptionID pins the deliberate ABSENCE of an override on Flow
 // (design §2.4): a flow is an independent persistent resource, its own id IS the subscription
 // address.
