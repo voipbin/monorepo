@@ -87,7 +87,7 @@ func Test_runPodUpdated(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockNotify.EXPECT().PublishEvent(ctx, pod.EventTypePodUpdated, tt.pod)
+			mockNotify.EXPECT().PublishEvent(ctx, pod.EventTypePodUpdated, &pod.Event{Pod: tt.pod})
 			if errRun := h.runPodUpdated(ctx, tt.pod); errRun != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errRun)
 			}
@@ -181,7 +181,7 @@ func Test_runPodDeleted(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockNotify.EXPECT().PublishEvent(ctx, pod.EventTypePodDeleted, tt.pod)
+			mockNotify.EXPECT().PublishEvent(ctx, pod.EventTypePodDeleted, &pod.Event{Pod: tt.pod})
 			if errRun := h.runPodDeleted(ctx, tt.pod); errRun != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errRun)
 			}

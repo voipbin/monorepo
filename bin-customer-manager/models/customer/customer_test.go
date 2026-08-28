@@ -5,7 +5,32 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/models/eventtopic"
 )
+
+// Customer's subscription address on the global topic exchange is its own id (VOIP-1419).
+// The assertion pins the POINTER type: the event data reaches notifyhandler as a pointer and
+// the interface check matches the dynamic type.
+var _ eventtopic.SubscriptionIdentifier = (*Customer)(nil)
+
+func TestCustomerEventSubscriptionID(t *testing.T) {
+	id := uuid.Must(uuid.NewV4())
+	billingAccountID := uuid.Must(uuid.NewV4())
+
+	c := &Customer{
+		ID:               id,
+		BillingAccountID: billingAccountID,
+	}
+
+	res := c.EventSubscriptionID()
+	if res != id.String() {
+		t.Errorf("Wrong match. expect: %s, got: %s", id.String(), res)
+	}
+	if res == billingAccountID.String() {
+		t.Errorf("Customer must be addressed by its own id, not another id field. got: %s", res)
+	}
+}
 
 func TestCustomerStruct(t *testing.T) {
 	id := uuid.Must(uuid.NewV4())

@@ -16,7 +16,6 @@
 package kase_test
 
 import (
-	"encoding/json"
 	"reflect"
 	"testing"
 
@@ -36,55 +35,47 @@ import (
 var caseID = uuid.FromStringOrNil("c0a7e1d2-0000-4000-8000-000000000001")
 
 // contactID is the address of the customer-facing contact lifecycle events, whose own id IS the
-// address (default JSON fallback, no override).
+// address, returned through the payload's EventSubscriptionID promoted from the embedded
+// commonidentity.Identity (VOIP-1419).
 var contactID = uuid.FromStringOrNil("c0a7e1d2-0000-4000-8000-000000000002")
 
 // resolveSubscriptionID mirrors the resolution notifyhandler performs on the publish path
-// (design 1404 §4.2 / §5.2): the opt-in interface first, then -- ONLY when no override exists --
-// the top-level "id" of the marshaled payload. Keeping it here rather than reaching into
-// notifyhandler internals is deliberate -- the golden table must fail when a model stops
-// implementing the interface, which is exactly what this two-step reproduction detects.
+// (VOIP-1419): every published event data type satisfies the EventSubscriptionID contract
+// (own-id types via the default promoted from the embedded commonidentity.Identity, the
+// case-scoped event wrappers via their explicit case-id overrides) --
+// the contract is mandatory, enforced at compile time by the narrowed PublishEvent signature --
+// and an empty return degrades to the `-` placeholder. Keeping the reproduction here rather than
+// reaching into notifyhandler internals is deliberate -- the golden table must fail when a model's
+// method starts returning the wrong id space, which is exactly the defect class this file pins.
 //
-// The early return below is the load-bearing half: an override that EXISTS is authoritative even
-// when it yields "" or uuid.Nil, so the JSON fallback must never run behind it. This matches
-// notifyhandler.resolveSubscriptionOverride's hasOverride semantics exactly; if the two ever
-// diverge, this table stops reproducing what the publish path actually generates.
+// The parameter stays `any` so the table can also feed payloads that do not implement the
+// interface (e.g. the []byte regression row below); such data resolves to "" -> placeholder.
 func resolveSubscriptionID(t *testing.T, data any) string {
 	t.Helper()
 
-	if identifier, ok := data.(eventtopic.SubscriptionIdentifier); ok {
-		// typed-nil guard, mirroring notifyhandler.resolveSubscriptionOverride: a nil pointer whose
-		// type implements the interface still SATISFIES the assertion, and every real implementation
-		// dereferences its receiver -- calling the method would panic. Production reports "no
-		// override" for such a payload, so this guard falls through to the JSON half below rather
-		// than returning early; `null` carries no top-level `id` either, so both halves agree on the
-		// `-` placeholder.
-		if v := reflect.ValueOf(data); v.Kind() != reflect.Ptr || !v.IsNil() {
-			return identifier.EventSubscriptionID()
-		}
-	}
-
-	m, err := json.Marshal(data)
-	if err != nil {
-		t.Fatalf("Could not marshal the event data. err: %v", err)
-	}
-
-	d := struct {
-		ID string `json:"id"`
-	}{}
-	if errUnmarshal := json.Unmarshal(m, &d); errUnmarshal != nil {
+	identifier, ok := data.(eventtopic.SubscriptionIdentifier)
+	if !ok {
 		return ""
 	}
 
-	return d.ID
+	// typed-nil guard, mirroring notifyhandler.resolveSubscriptionID: a nil pointer whose type
+	// implements the interface still SATISFIES the assertion, and every real implementation
+	// dereferences its receiver -- calling the method would panic. Such a payload marshals to
+	// `null` and production resolves it to the `-` placeholder.
+	if v := reflect.ValueOf(data); v.Kind() == reflect.Ptr && v.IsNil() {
+		return ""
+	}
+
+	return identifier.EventSubscriptionID()
 }
 
 func TestGoldenRoutingKeys(t *testing.T) {
 	publisher := string(commonoutline.ServiceNameContactManager)
 
 	// contacthandler.publishEvent passes the *WebhookMessage (VOIP-1405 §3.1 -- it used to pass
-	// the []byte of CreateWebhookEvent, which double-encoded the payload and left no top-level id
-	// at all). No override: the contact's own id is the address subscribers use.
+	// the []byte of CreateWebhookEvent, which double-encoded the payload and carried no address
+	// at all). Its EventSubscriptionID method returns the contact's own id -- the address
+	// subscribers use.
 	contactData := (&contact.Contact{
 		Identity: commonidentity.Identity{
 			ID:         contactID,
@@ -137,7 +128,7 @@ func TestGoldenRoutingKeys(t *testing.T) {
 		data      any
 		expect    string
 	}{
-		// contact resource -- own id is the address, resolved by the default JSON fallback.
+		// contact resource -- own id is the address, returned through the promoted Identity default.
 		{
 			"contact_created",
 			contact.EventTypeContactCreated,
@@ -245,10 +236,10 @@ func TestGoldenRoutingKeysCaseAxisConvergence(t *testing.T) {
 }
 
 // TestGoldenRoutingKeysContactPayloadIsNotBytes pins VOIP-1405 §3.1. Before the fix,
-// contacthandler.publishEvent handed PublishEvent the []byte of CreateWebhookEvent(); marshaling
-// a []byte yields a base64 JSON *string*, which has no top-level `id` and would have published
-// every contact event under the `-` placeholder address. The row asserts what the fixed path
-// produces AND what the old one would have, so a regression cannot pass silently.
+// contacthandler.publishEvent handed PublishEvent the []byte of CreateWebhookEvent(); a []byte
+// carries no EventSubscriptionID method, so every contact event would have published under the
+// `-` placeholder address. The row asserts what the fixed path produces AND what the old one
+// would have, so a regression cannot pass silently.
 func TestGoldenRoutingKeysContactPayloadIsNotBytes(t *testing.T) {
 	c := &contact.Contact{
 		Identity: commonidentity.Identity{
@@ -271,16 +262,5 @@ func TestGoldenRoutingKeysContactPayloadIsNotBytes(t *testing.T) {
 	}
 	if key := eventtopic.RoutingKey(string(commonoutline.ServiceNameContactManager), contact.EventTypeContactCreated, ""); key != "contact-manager.contact.-.created" {
 		t.Errorf("Wrong match. expect: contact-manager.contact.-.created, got: %s", key)
-	}
-}
-
-// TestContactWebhookMessageUsesDefaultSubscriptionID pins the deliberate absence of an override
-// on the contact payload: its own id IS the address, so implementing the interface would be
-// redundant and the default JSON `id` extraction must keep covering it.
-func TestContactWebhookMessageUsesDefaultSubscriptionID(t *testing.T) {
-	var data any = (&contact.Contact{Identity: commonidentity.Identity{ID: contactID}}).ConvertWebhookMessage()
-
-	if _, ok := data.(eventtopic.SubscriptionIdentifier); ok {
-		t.Errorf("contact.WebhookMessage must not implement SubscriptionIdentifier. its own id is the subscription address.")
 	}
 }

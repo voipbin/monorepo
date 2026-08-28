@@ -7,8 +7,45 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	"monorepo/bin-common-handler/models/eventtopic"
+	commonidentity "monorepo/bin-common-handler/models/identity"
+
 	"monorepo/bin-flow-manager/models/action"
 )
+
+// Flow is published on the global topic exchange `bin-manager.event` and must carry an explicit
+// subscription address (VOIP-1419). The assertion pins the POINTER type: the event data reaches
+// notifyhandler as a pointer and the interface check matches the dynamic type.
+var _ eventtopic.SubscriptionIdentifier = (*Flow)(nil)
+
+// TestFlowEventSubscriptionID asserts the subscription address is the flow's OWN id — not any of
+// the other uuid-typed fields a wrong implementation could plausibly return. Every uuid is
+// distinct, so returning the wrong field fails loudly (mutation check).
+func TestFlowEventSubscriptionID(t *testing.T) {
+	flowID := uuid.Must(uuid.NewV4())
+	customerID := uuid.Must(uuid.NewV4())
+	onCompleteFlowID := uuid.Must(uuid.NewV4())
+
+	data := &Flow{
+		Identity: commonidentity.Identity{
+			ID:         flowID,
+			CustomerID: customerID,
+		},
+		Type:             TypeFlow,
+		OnCompleteFlowID: onCompleteFlowID,
+	}
+
+	res := data.EventSubscriptionID()
+	if res != flowID.String() {
+		t.Errorf("Wrong match. expect: %s, got: %s", flowID.String(), res)
+	}
+	if res == customerID.String() {
+		t.Errorf("Flow must not be addressed by its customer id. got: %s", res)
+	}
+	if res == onCompleteFlowID.String() {
+		t.Errorf("Flow must not be addressed by its on_complete_flow_id. got: %s", res)
+	}
+}
 
 func TestUnmarshalActionEcho(t *testing.T) {
 	type test struct {

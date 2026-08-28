@@ -5,7 +5,46 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/models/eventtopic"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 )
+
+// Compile-time proof that *Campaign carries an explicit subscription address (VOIP-1419).
+var _ eventtopic.SubscriptionIdentifier = (*Campaign)(nil)
+
+// TestCampaignEventSubscriptionID pins the subscription address to the campaign's OWN id:
+// distinct UUIDs sit on every plausible wrong-answer field, so returning any of them
+// (CustomerID, FlowID, NextCampaignID) fails the test.
+func TestCampaignEventSubscriptionID(t *testing.T) {
+	id := uuid.Must(uuid.NewV4())
+	customerID := uuid.Must(uuid.NewV4())
+	flowID := uuid.Must(uuid.NewV4())
+	nextCampaignID := uuid.Must(uuid.NewV4())
+
+	c := &Campaign{
+		Identity: commonidentity.Identity{
+			ID:         id,
+			CustomerID: customerID,
+		},
+		FlowID:         flowID,
+		NextCampaignID: nextCampaignID,
+	}
+
+	res := c.EventSubscriptionID()
+	if res != id.String() {
+		t.Errorf("Wrong match. expect: %s, got: %s", id.String(), res)
+	}
+	if res == customerID.String() {
+		t.Errorf("Campaign must not be addressed by its customer id. got: %s", res)
+	}
+	if res == flowID.String() {
+		t.Errorf("Campaign must not be addressed by its flow id. got: %s", res)
+	}
+	if res == nextCampaignID.String() {
+		t.Errorf("Campaign must not be addressed by its next campaign id. got: %s", res)
+	}
+}
 
 func TestCampaignStruct(t *testing.T) {
 	id := uuid.Must(uuid.NewV4())

@@ -21,7 +21,6 @@
 package schedule_test
 
 import (
-	"encoding/json"
 	"reflect"
 	"testing"
 
@@ -39,43 +38,30 @@ import (
 var scheduleID = uuid.FromStringOrNil("a1d40e63-0000-4000-8000-000000000001")
 
 // resolveSubscriptionID mirrors the resolution notifyhandler performs on the publish path
-// (1404 design §4.2 / §5.2): the opt-in interface first, then -- ONLY when no override exists --
-// the top-level "id" of the marshaled payload. Keeping it here rather than reaching into
-// notifyhandler internals is deliberate -- the golden table must fail when a model stops
-// implementing the interface, which is exactly what this two-step reproduction detects.
+// (VOIP-1419): every published type satisfies the mandatory EventSubscriptionID contract --
+// schedule.Schedule through the own-id default promoted from the embedded
+// commonidentity.Identity, execution.Execution through its explicit parent-schedule override;
+// the method's return is the address, and an empty return (or a non-implementing / nil payload)
+// degrades to the `-` placeholder. Reproducing it here rather than reaching into notifyhandler
+// internals is deliberate -- the golden table must fail when a model's method starts returning a
+// different id space.
 //
-// The early return below is the load-bearing half: an override that EXISTS is authoritative even
-// when it yields "" or uuid.Nil, so the JSON fallback must never run behind it. This matches
-// notifyhandler.resolveSubscriptionOverride's hasOverride semantics exactly; if the two ever
-// diverge, this table stops reproducing what the publish path actually generates.
+// The parameter stays `any` on purpose: a non-implementing payload resolves to "" (placeholder)
+// rather than failing to compile, matching the production helper's degrade path.
 func resolveSubscriptionID(t *testing.T, data any) string {
 	t.Helper()
 
 	if identifier, ok := data.(eventtopic.SubscriptionIdentifier); ok {
-		// typed-nil guard, mirroring notifyhandler.resolveSubscriptionOverride: a nil pointer whose
-		// type implements the interface still SATISFIES the assertion, and every real implementation
-		// dereferences its receiver -- calling the method would panic. Production reports "no
-		// override" for such a payload, so this guard falls through to the JSON half below rather
-		// than returning early; `null` carries no top-level `id` either, so both halves agree on the
-		// `-` placeholder.
+		// typed-nil guard, mirroring notifyhandler: a nil pointer whose type implements the
+		// interface still SATISFIES the assertion, and every real implementation dereferences its
+		// receiver -- calling the method would panic. Production resolves such a payload to the
+		// `-` placeholder instead.
 		if v := reflect.ValueOf(data); v.Kind() != reflect.Ptr || !v.IsNil() {
 			return identifier.EventSubscriptionID()
 		}
 	}
 
-	m, err := json.Marshal(data)
-	if err != nil {
-		t.Fatalf("Could not marshal the event data. err: %v", err)
-	}
-
-	d := struct {
-		ID string `json:"id"`
-	}{}
-	if errUnmarshal := json.Unmarshal(m, &d); errUnmarshal != nil {
-		return ""
-	}
-
-	return d.ID
+	return ""
 }
 
 func TestGoldenRoutingKeys(t *testing.T) {
@@ -120,7 +106,8 @@ func TestGoldenRoutingKeys(t *testing.T) {
 		data      any
 		expect    string
 	}{
-		// schedule resource -- own id is the address, resolved by the default JSON fallback.
+		// schedule resource -- own id is the address, returned through the EventSubscriptionID
+		// promoted from Schedule's embedded commonidentity.Identity (VOIP-1419).
 		{
 			"schedule_created",
 			schedule.EventTypeScheduleCreated,
@@ -191,16 +178,5 @@ func TestGoldenRoutingKeysShareOneAddress(t *testing.T) {
 				t.Errorf("Wrong match. expect: %s, got: %s", expect, res)
 			}
 		})
-	}
-}
-
-// TestScheduleUsesDefaultSubscriptionID pins the deliberate absence of an override on Schedule:
-// its own id IS the address, so implementing the interface would be redundant and the default
-// JSON `id` extraction must keep covering it.
-func TestScheduleUsesDefaultSubscriptionID(t *testing.T) {
-	var data any = &schedule.Schedule{Identity: commonidentity.Identity{ID: scheduleID}}
-
-	if _, ok := data.(eventtopic.SubscriptionIdentifier); ok {
-		t.Errorf("Schedule must not implement SubscriptionIdentifier. its own id is the subscription address.")
 	}
 }

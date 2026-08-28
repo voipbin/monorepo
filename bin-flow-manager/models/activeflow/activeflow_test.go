@@ -6,8 +6,69 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	"monorepo/bin-common-handler/models/eventtopic"
+	commonidentity "monorepo/bin-common-handler/models/identity"
+
 	"monorepo/bin-flow-manager/models/action"
 )
+
+// Activeflow is published on the global topic exchange `bin-manager.event` and must carry an
+// explicit subscription address (VOIP-1419). The assertion pins the POINTER type: the event data
+// reaches notifyhandler as a pointer and the interface check matches the dynamic type.
+var _ eventtopic.SubscriptionIdentifier = (*Activeflow)(nil)
+
+// TestActiveflowEventSubscriptionID asserts the subscription address is the activeflow's OWN id.
+// ReferenceID is the plausible wrong answer (it resembles the parent axis used elsewhere, but it
+// can be uuid.Nil, which would collapse the routing key to the `-` placeholder); FlowID is the
+// other tempting field. Every uuid is distinct, so returning the wrong field fails loudly
+// (mutation check).
+func TestActiveflowEventSubscriptionID(t *testing.T) {
+	activeflowID := uuid.Must(uuid.NewV4())
+	flowID := uuid.Must(uuid.NewV4())
+	referenceID := uuid.Must(uuid.NewV4())
+
+	data := &Activeflow{
+		Identity: commonidentity.Identity{
+			ID:         activeflowID,
+			CustomerID: uuid.Must(uuid.NewV4()),
+		},
+		FlowID:        flowID,
+		Status:        StatusRunning,
+		ReferenceType: ReferenceTypeCall,
+		ReferenceID:   referenceID,
+	}
+
+	res := data.EventSubscriptionID()
+	if res != activeflowID.String() {
+		t.Errorf("Wrong match. expect: %s, got: %s", activeflowID.String(), res)
+	}
+	if res == referenceID.String() {
+		t.Errorf("Activeflow must not be addressed by its reference_id. got: %s", res)
+	}
+	if res == flowID.String() {
+		t.Errorf("Activeflow must not be addressed by its flow_id. got: %s", res)
+	}
+}
+
+// TestActiveflowEventSubscriptionIDSurvivesNilReferenceID pins the load-bearing half of the
+// own-id decision: with an all-Nil reference the address is still the activeflow's own id and
+// never the `-` placeholder a ReferenceID-based address would degrade to.
+func TestActiveflowEventSubscriptionIDSurvivesNilReferenceID(t *testing.T) {
+	activeflowID := uuid.Must(uuid.NewV4())
+
+	data := &Activeflow{
+		Identity:    commonidentity.Identity{ID: activeflowID},
+		ReferenceID: uuid.Nil,
+	}
+
+	res := data.EventSubscriptionID()
+	if res != activeflowID.String() {
+		t.Errorf("Wrong match. expect: %s, got: %s", activeflowID.String(), res)
+	}
+	if eventtopic.IsPlaceholderSubscriptionID(res) {
+		t.Errorf("The activeflow subscription address must not collapse to the placeholder. got: %s", res)
+	}
+}
 
 func TestActiveflowStruct(t *testing.T) {
 	id := uuid.Must(uuid.NewV4())

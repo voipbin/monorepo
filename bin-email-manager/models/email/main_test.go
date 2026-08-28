@@ -5,10 +5,50 @@ import (
 	"testing"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	"monorepo/bin-common-handler/models/eventtopic"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
 )
+
+// Email publishes events on the global topic exchange `bin-manager.event` and must therefore
+// carry an explicit subscription address (VOIP-1419). The assertion pins the POINTER type: the
+// event data reaches notifyhandler as a pointer and the interface assertion matches the dynamic
+// type.
+var _ eventtopic.SubscriptionIdentifier = (*Email)(nil)
+
+// TestEmailEventSubscriptionID asserts the subscription address is the email's OWN id --
+// mutation-checked against the plausible wrong answers (CustomerID, ActiveflowID), which carry
+// distinct UUIDs so returning any of them fails the test.
+func TestEmailEventSubscriptionID(t *testing.T) {
+	emailID := uuid.Must(uuid.NewV4())
+	customerID := uuid.Must(uuid.NewV4())
+	activeflowID := uuid.Must(uuid.NewV4())
+
+	e := &Email{
+		Identity: commonidentity.Identity{
+			ID:         emailID,
+			CustomerID: customerID,
+		},
+		ActiveflowID: activeflowID,
+	}
+
+	res := e.EventSubscriptionID()
+	if res != emailID.String() {
+		t.Errorf("Wrong match. expect: %s, got: %s", emailID.String(), res)
+	}
+	if res == customerID.String() {
+		t.Errorf("Email must not be addressed by its customer id. got: %s", res)
+	}
+	if res == activeflowID.String() {
+		t.Errorf("Email must not be addressed by its activeflow id. got: %s", res)
+	}
+
+	// zero value: the address degrades to uuid.Nil, never panics.
+	if res := (&Email{}).EventSubscriptionID(); res != uuid.Nil.String() {
+		t.Errorf("Wrong match. expect: %s, got: %s", uuid.Nil.String(), res)
+	}
+}
 
 func TestEmail(t *testing.T) {
 	tests := []struct {

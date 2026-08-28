@@ -67,7 +67,7 @@ All four NotifyHandler construction sites — `cmd/registrar-manager`, and all t
 
 `initDomainMigrationDeps` is included for publisher-stream completeness rather than handler wiring: the `domain-migrate` batch publishes `extension_updated` directly from cmd code (`cmd/registrar-control/domain_migrate.go`), so leaving it fanout-only would make an extension's topic stream silently incomplete across a migration.
 
-Two resource namespaces publish: `trunk` and `extension`. Both are independent top-level resources addressed by their own id, resolved by the default JSON `id` fallback — this service declares no `eventtopic.SubscriptionIdentifier` override. `models/trunk/routingkey_golden_test.go` pins the exact key of every published event type (including the migration-batch publish path) and asserts that absence. See the monorepo `docs/plans/2026-08-27-voip-1404-global-topic-exchange-design.md` for the key schema.
+Two resource namespaces publish: `trunk` and `extension`. Both are independent top-level resources addressed by their own id, returned by each type's explicit `EventSubscriptionID()` method (`eventtopic.SubscriptionIdentifier`, mandatory since VOIP-1419 — there is no JSON fallback; an empty return degrades to the `-` placeholder). `models/trunk/routingkey_golden_test.go` pins the exact key of every published event type (including the migration-batch publish path). See the monorepo `docs/plans/2026-08-27-voip-1404-global-topic-exchange-design.md` for the key schema and `docs/plans/2026-08-28-voip-1419-explicit-subscription-id-design.md` for the resolution mechanism.
 
 ## Request Routing
 

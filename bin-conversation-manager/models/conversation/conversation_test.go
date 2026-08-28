@@ -4,7 +4,41 @@ import (
 	"testing"
 
 	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/models/eventtopic"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 )
+
+// Conversation carries an explicit subscription address on the global topic exchange
+// (VOIP-1404/1419). The assertion pins the POINTER type: the event data reaches notifyhandler
+// as a POINTER and the interface assertion matches the dynamic type.
+var _ eventtopic.SubscriptionIdentifier = (*Conversation)(nil)
+
+func Test_ConversationEventSubscriptionID(t *testing.T) {
+	conversationID := uuid.Must(uuid.NewV4())
+	customerID := uuid.Must(uuid.NewV4())
+	accountID := uuid.Must(uuid.NewV4())
+
+	h := &Conversation{
+		Identity: commonidentity.Identity{
+			ID:         conversationID,
+			CustomerID: customerID,
+		},
+		AccountID: accountID,
+		Type:      TypeLine,
+	}
+
+	res := h.EventSubscriptionID()
+	if res != conversationID.String() {
+		t.Errorf("Wrong match. expect: %s, got: %s", conversationID.String(), res)
+	}
+	if res == customerID.String() {
+		t.Errorf("Conversation must not be addressed by its customer id. got: %s", res)
+	}
+	if res == accountID.String() {
+		t.Errorf("Conversation must not be addressed by its account id. got: %s", res)
+	}
+}
 
 func TestConversation(t *testing.T) {
 	tests := []struct {

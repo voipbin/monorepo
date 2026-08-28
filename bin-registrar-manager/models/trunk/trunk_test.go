@@ -6,9 +6,38 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	"monorepo/bin-common-handler/models/eventtopic"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-registrar-manager/models/sipauth"
 )
+
+// Trunk carries an explicit subscription address on the global topic exchange
+// (VOIP-1419). The assertion pins the POINTER type: the event data reaches notifyhandler
+// as a pointer and the interface assertion matches the dynamic type.
+var _ eventtopic.SubscriptionIdentifier = (*Trunk)(nil)
+
+// TestTrunkEventSubscriptionID pins the subscription address to the trunk's OWN id,
+// mutation-checked against the most plausible wrong answer (the customer id): change the
+// method to return any other field and this test fails.
+func TestTrunkEventSubscriptionID(t *testing.T) {
+	id := uuid.Must(uuid.NewV4())
+	customerID := uuid.Must(uuid.NewV4())
+
+	tr := &Trunk{
+		Identity: commonidentity.Identity{
+			ID:         id,
+			CustomerID: customerID,
+		},
+	}
+
+	res := tr.EventSubscriptionID()
+	if res != id.String() {
+		t.Errorf("Wrong match. expect: %s, got: %s", id.String(), res)
+	}
+	if res == customerID.String() {
+		t.Errorf("Trunk must not be addressed by its customer id. got: %s", res)
+	}
+}
 
 func TestTrunkStruct(t *testing.T) {
 	id := uuid.Must(uuid.NewV4())

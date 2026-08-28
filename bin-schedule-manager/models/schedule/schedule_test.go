@@ -3,7 +3,43 @@ package schedule
 import (
 	"encoding/json"
 	"testing"
+
+	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/models/eventtopic"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 )
+
+// Schedule carries an explicit subscription address on the global topic exchange
+// (VOIP-1404/1405, mandatory since VOIP-1419). The assertion pins the POINTER type: the event
+// data reaches notifyhandler as a pointer and the interface check matches the dynamic type.
+var _ eventtopic.SubscriptionIdentifier = (*Schedule)(nil)
+
+// TestScheduleEventSubscriptionID asserts the subscription address is the schedule's OWN id —
+// not the customer id, the other uuid-typed field a wrong implementation could plausibly
+// return. Both uuids are distinct, so returning the wrong field fails loudly (mutation check).
+func TestScheduleEventSubscriptionID(t *testing.T) {
+	scheduleID := uuid.Must(uuid.NewV4())
+	customerID := uuid.Must(uuid.NewV4())
+
+	data := &Schedule{
+		Identity: commonidentity.Identity{
+			ID:         scheduleID,
+			CustomerID: customerID,
+		},
+		Type:    TypeRPC,
+		Cron:    "*/5 * * * *",
+		Enabled: true,
+	}
+
+	res := data.EventSubscriptionID()
+	if res != scheduleID.String() {
+		t.Errorf("Wrong match. expect: %s, got: %s", scheduleID.String(), res)
+	}
+	if res == customerID.String() {
+		t.Errorf("Schedule must not be addressed by its customer id. got: %s", res)
+	}
+}
 
 func TestSchedule(t *testing.T) {
 	tests := []struct {

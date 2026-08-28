@@ -6,9 +6,38 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	"monorepo/bin-common-handler/models/eventtopic"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-registrar-manager/models/sipauth"
 )
+
+// Extension carries an explicit subscription address on the global topic exchange
+// (VOIP-1419). The assertion pins the POINTER type: the event data reaches notifyhandler
+// as a pointer and the interface assertion matches the dynamic type.
+var _ eventtopic.SubscriptionIdentifier = (*Extension)(nil)
+
+// TestExtensionEventSubscriptionID pins the subscription address to the extension's OWN id,
+// mutation-checked against the most plausible wrong answer (the customer id): change the
+// method to return any other field and this test fails.
+func TestExtensionEventSubscriptionID(t *testing.T) {
+	id := uuid.Must(uuid.NewV4())
+	customerID := uuid.Must(uuid.NewV4())
+
+	ext := &Extension{
+		Identity: commonidentity.Identity{
+			ID:         id,
+			CustomerID: customerID,
+		},
+	}
+
+	res := ext.EventSubscriptionID()
+	if res != id.String() {
+		t.Errorf("Wrong match. expect: %s, got: %s", id.String(), res)
+	}
+	if res == customerID.String() {
+		t.Errorf("Extension must not be addressed by its customer id. got: %s", res)
+	}
+}
 
 func TestExtensionStruct(t *testing.T) {
 	id := uuid.Must(uuid.NewV4())

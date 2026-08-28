@@ -1,77 +1,274 @@
-# VOIP-1405 Implementation Plan (rev.9)
+# VOIP-1419: Enforce explicit EventSubscriptionID on all event types and remove JSON fallback
 
-Design: `docs/plans/2026-08-27-voip-1405-topic-publisher-rollout-design.md` (Approved). Unqualified § refs below = 1405 design; "1404 §N" = the skeleton design.
-Branch: `VOIP-1405-Topic-exchange-publisher-rollout`
+Status: PLAN (stage 3 of 4). Issue analysis APPROVED (R1+R2 Approve). Design APPROVED
+(docs/plans/2026-08-28-voip-1419-explicit-subscription-id-design.md; R1 RC, R2 RC, R3
+Approve, R4 Approve — 2 consecutive). Design review round 4 additionally verified: golden
+coverage has NO enforcement hole (all 45 new-method types map to rows in the 27 golden
+files, mutation-sensitive for the confbridge wrong-id case), the 64-byte cap and
+`.`/`*`/`#` sanitization sit downstream in `eventtopic.normalizeSubscriptionID` /
+`normalizeSegment` (a bad method cannot emit an invalid AMQP key), `WebhookEventMessage`
+has zero name collisions, and zero consumers bind `bin-manager.event` (the only QueueBind
+consumers target the VOIP-1258 `bin-manager.webhook-manager.event.topic`, a different
+exchange).
 
-## Acceptance criteria (each AC names its evidence task)
+Advisory notes carried from the analysis review into design:
+- `customer.Customer` does NOT embed `commonidentity.Identity` (own `ID uuid.UUID` field,
+  customer.go:22); a mechanical "return h.Identity.ID.String()" template will not compile
+  there — the method must use the type's own field. Key value is identical either way.
+- Under D1 option (b), `MockWebhookMessage` no longer satisfies the narrowed
+  `PublishWebhookEvent` parameter — notifyhandler mock regeneration plus fixes in tests that
+  pass it are required (e.g. bin-conversation-manager messagehandler/create_case_id_test.go:60).
+- `requesthandler.CallPublishEvent` (publish_event.go:42; sole caller call-manager
+  channelhandler/health.go:83, impersonating publisher "asterisk-proxy") bypasses
+  notifyhandler entirely (direct sock publish to a subscribe queue) — audited, out of scope.
+- The single control-CLI publish site (registrar-control domain_migrate.go:591,
+  `*extension.Extension`) is inside the counts and covered by the 45-method set.
 
-- [x] AC1: 53 wiring points across 26 services carry `WithGlobalTopicPublish()` — evidence: task 3.2 grep count == 55 (= 53 new + 2 pilot) AND talk-control/tts-control asserted absent.
-- [x] AC2: 19 override types implement `EventSubscriptionID()` (pointer receiver). Each type's OWN package `*_test.go` carries BOTH (a) `var _ eventtopic.SubscriptionIdentifier = (*T)(nil)` AND (b) a behavioral test that CALLS `EventSubscriptionID()` asserting the returned address — including an explicit "address != own ID" assertion where the type has an own id (pilot precedent: `TestSpeechEventSubscriptionIDIsNotOwnID`). This is what covers the method body in its own package (golden tests live elsewhere and contribute nothing to these packages' coverage). Evidence: task 3.2 assertion count == 26 (= 19 new + 7 baseline) + behavioral-test listing.
-- [x] AC3: 4 new structs replace map payloads with identical JSON key SETS (order differs; no byte-equality asserts) — evidence: golden tests + task 3.2.
-- [x] AC4: contact []byte publish fixed (`ConvertWebhookMessage()` — payload intentionally changes base64→object), pipecat 6 value publishes → pointers, contact case event constants named — evidence: Phase 1 tasks + code review.
-- [x] AC5: golden routing-key test per publishing service — evidence: task 3.2 file count == 27 (= 26 new + 1 pilot), per-task special-case rows (below).
-- [x] AC6: docs sync per touched service + reference doc mapping summary — evidence: per-task + 3.1.
-- [x] AC7: verification green everywhere (vendor regen first); coverage on changed `models/`/`pkg/` packages (`cmd/` exempt per AC9) is **delta-based, not absolute**: (a) NO regression vs pre-change coverage (executor records the before number in its report), (b) lines added/changed by this ticket ARE covered, (c) absolute ≥80% applies only to packages already ≥80% before. Packages measured below 80% pre-change (R6 measurements: callhandler 55.1%, pipecatcallhandler 51.4%, casehandler 58.6%, contacthandler 61.2%, models/call 60.8%, models/pipecatcall 60.0%, webchat models/message+session 0.0%, conversation models/message 7.7%, others) are OUT OF SCOPE for raising to 80% here — legacy coverage uplift goes to a follow-up ticket (3.3). Baseline rule for `[no statements]`/`[no test files]` packages (dtmf, kase, casenote, pipecat models/message today): treated as NOT already-≥80% — only criteria (a)+(b) apply, and (b) is satisfied by the AC2 behavioral tests. Phase-2 services touching only cmd/ wiring + golden file + docs have no coverage obligation (nothing in models/pkg changes there). Compile sweep 39 modules; `git diff --stat` shows zero bin-common-handler changes — evidence: per-task + 3.2.
-- [x] AC8: follow-up Jira tickets per 1405 §7 registered (English summary / Korean body) — evidence: 3.3.
-- [x] AC9: **constructor-wiring lines** in cmd/ get no unit test — most cmd/ dirs have no test seam (transcribe pilot precedent), and where cmd tests do exist (registrar-control `domain_migrate_test.go`, agent-control) they test batch logic, not constructor wiring; extending them to assert an option on a constructor call would test the plan, not behavior. Named substitute guard = AC1's grep assertions + code review. registrar-control's cmd-level PUBLISH path (domain_migrate) is still covered by its golden key expectations. Recorded in 3.2 + PR body.
+## Issue Analysis (2026-08-28)
 
-## Execution phases
+### 1. Issue validity: VALID, proceed
 
-**Service accounting: Phase 1 = 12 services in 8 groups (22 wiring points); Phase 2 = 14 services (31 points). 22+31=53, 12+14=26.**
+- The decision this ticket encodes was made explicitly by the CEO on 2026-08-28 after the
+  VOIP-1405 merge: the JSON `"id"` fallback is too implicit; every published event data type
+  must explicitly implement `eventtopic.SubscriptionIdentifier`, enforced at compile time.
+- Code re-check confirms the ticket matches reality on current `main` (post-#1217,
+  `60de2f733`): the fallback exists exactly as described, at
+  `bin-common-handler/pkg/notifyhandler/publish.go`:
+  - `subscriptionIDData` struct: publish.go:23-25
+  - `parseSubscriptionID(data json.RawMessage)`: publish.go:241-252
+  - fallback invocation: publish.go:213-220 (`if !hasOverride { subscriptionID = parseSubscriptionID(evt.Data) }`)
+- Nothing has resolved this in the meantime; no competing implementation exists.
 
-### Phase 1 — override-carrying services (12 services / 8 groups / 22 points)
-Every task below includes: wiring, golden test (external test package, ONE file per service named `routingkey_golden_test.go`, placed in the service's designated PRIMARY model package (chosen for practical anchoring, not strict aggregate semantics) — FULL enumeration, all 26: contact→kase, call→call, pipecat→pipecatcall, ai→ai, tts→streaming, talk→chat, conversation→conversation, webchat→session, campaign→campaign, conference→conference, queue→queue, schedule→schedule, agent→agent, billing→billing, customer→customer, direct→direct, email→email, flow→flow, message→message, number→number, outdial→outdial, registrar→trunk, route→route, storage→account, sentinel→pod, tag→tag; template = transcribe pilot. Override method bodies are covered by AC2 behavioral tests in their OWN packages, not by the golden file), docs sync (architecture.md for cmd; domain.md for models), 5-step verification with `go mod vendor` FIRST, `go test -cover` on changed packages.
-- [x] 1.1 **contact** (2 pts): []byte fix; new structs `kase.CaseTagEvent`/`kase.CaseContactEvent`/`casenote.CaseNoteDeletedEvent`; named constants for 6 case event literals; `CaseNote`→CaseID override. Golden MUST include: **CaseNoteDeletedEvent address == case_id row (silent-failure class — mandatory)**, contact_update dynamic 2 branches, case-axis convergence.
-- [x] 1.2 **call** (2 pts): `OutboundWhitelistRejectedEvent` struct; `dtmf.DTMF`→CallID. Golden MUST include: mapEvt 5 branches, dot-type `call.outbound_whitelist_rejected` normalization.
-- [x] 1.3 **pipecat** (2 pts): 6 pointer conversions (runner.go:510,563,576,584,865,886); `Message`/`MemberSwitchedEvent`→PipecatcallID. Golden: all message_* + team_member_switched + pipecatcall_*.
-- [x] 1.4 **ai** (3 pts): `Message`(B)/`IntermediateWebhookMessage`(A)→AIcallID. Note: ai-control has 2 instances.
-- [x] 1.5 **tts** (1 pt): `Message`→StreamingID. Golden: message_play_started/finished are LIVE; streaming_* dead trio excluded.
-- [x] 1.6 **talk** (1 pt): `Message`/`Participant`→ChatID; DO NOT rename the `commonnotify` import alias (3 files in this service use it; AC1 pattern is alias-independent, and renaming adds cosmetic diff to an already-large PR). talk-control: DO NOT TOUCH.
-- [x] 1.7 **conversation + webchat** (2+1 pts): `Message`→ConversationID / SessionID. webchat golden MUST include resource-collapse row (both events → resource `webchat`, same session address).
-- [x] 1.8 **campaign + conference + queue + schedule** (2+2+3+1 pts): `Campaigncall`→CampaignID, `Conferencecall`→ConferenceID, `Queuecall`→QueueID, `Execution`→ScheduleID. schedule golden: dispatch dynamic 2 branches.
+### 2. Code re-check: publish-surface facts (verified against source + full inventory)
 
-### Phase 2 — default-id services (14 services / 31 points)
-Same per-task inclusions as Phase 1.
-- [x] 2.1 agent(2), billing(2), customer(3 — golden MUST include CustomerCreatedEvent wrapper: id promotion AND nil-embed→placeholder rows), direct(2), email(2), flow(2), message(2), number(2 — golden: dbUpdate dynamic 2 branches)
-- [x] 2.2 outdial(2), registrar(4 — incl. domain_migrate publish path), route(2), storage(3 — golden: `Account_*` uppercase normalization rows), sentinel(1 — golden: pod placeholder rows; no override on *corev1.Pod), tag(2)
+The `NotifyHandler` interface (main.go:131-138) has 5 publish methods. What the signature
+change touches, per empirical inventory of the whole repo (prod code, vendor/.worktrees
+excluded):
 
-### Phase 3 — closure
-- [x] 3.1 Reference doc `docs/reference/rabbitmq-queues-reference.md`: Category A/B mapping summary, sentinel placeholder invariant (`placeholder_total ≈ publish_total{ok}`), address-convergence notes (tts/contact/pipecat/webchat). RST determination: expected NOT affected (internal-only; the contact []byte change alters timeline stored history, not any documented API shape) — verify and record; if the events API docs describe payload examples, update them.
-- [x] 3.2 Global assertions (AC evidence). **Run from THIS worktree root** (the main repo has sibling worktrees that pollute counts). Baselines empirically measured on main (R3): wiring 2, assertions 7, golden 1.
-  - AC1: `/usr/bin/grep -rn "WithGlobalTopicPublish()" --include="*.go" --exclude-dir=vendor --exclude-dir=.worktrees --exclude-dir=bin-common-handler . | /usr/bin/grep -v "_test.go" | wc -l` == **55** (53 new + 2 pilot). Use `/usr/bin/grep` — the rtk shell hook rewrites grep and strips `./` path prefixes, which both breaks path-anchored filters and can drop lines; `--exclude-dir=bin-common-handler` removes the option-definition lines path-independently. Pattern is unqualified (substring) because bin-talk-manager imports notifyhandler as `commonnotify` (import at cmd/talk-manager/main.go:16, constructor call at :82; alias kept — see 1.6). One option call per constructor site, never duplicated (some sites are multi-line calls). Absence assertion: `/usr/bin/grep -rn "WithGlobalTopicPublish()" --include="*.go" bin-talk-manager/cmd/talk-control bin-tts-manager/cmd/tts-control | wc -l` == 0 (do not suppress stderr).
-  - AC2: `/usr/bin/grep -rn "_ eventtopic.SubscriptionIdentifier" --include="*_test.go" --exclude-dir=vendor --exclude-dir=.worktrees . | wc -l` (/usr/bin/grep — rtk hook avoidance, same as AC1) == **26** (19 new + 7 baseline: 4 in bin-common-handler notifyhandler fixtures + 3 transcribe pilot). Placement: each override type's own package `*_test.go` (pilot precedent), NOT the golden file. ALSO list behavioral tests: `/usr/bin/grep -rln "EventSubscriptionID()" --include="*_test.go" --exclude-dir=vendor --exclude-dir=.worktrees . | /usr/bin/grep -v routingkey_golden_test.go` must show a non-golden test file in each of the **15 packages** the 19 types live in (golden files also call the helper — excluded to prevent false positives); per-type 19-count verification uses the AC2 `-rn` assertion listing where type names are visible.
-  - AC5: `find . -path ./vendor -prune -o -path ./.worktrees -prune -o -name "routingkey_golden_test.go" -print | wc -l` == **27** (26 new + 1 pilot). NOTE: the rtk shell hook rejects compound find predicates — run via `/usr/bin/find` or `rtk proxy find`.
-  - Distribution check (totals alone don't prove coverage): keep the `-print`/`-l`/`-rn` listings and verify — AC1: group the 55 lines by service and compare against the per-service point numbers in Phase 1/2 (offsetting mis-wirings keep the total at 55); AC5: 26 distinct service dirs; AC2: 19 distinct types. Note: the behavioral `-l` list also matches method DEFINITIONS (harmless here — the 15 target packages define methods in non-test source).
-  - PR body: include the site reconciliation formula (60 total constructor sites = 53 new + 2 pilot + 5 excluded [asterisk 1, talk-control 1, tts-control 1, transfer-manager dead 2]) to pre-empt the "60 vs 55" review question; note webhook-manager's 2 sites use NewNotifyHandlerForExistingExchange (option forbidden, design §1.2) and are outside the 60.
-  - Do not suppress stderr on the absence assertion (a moved path would fail silently to 0).
-  - Compile sweep 39 modules; `git diff --stat` — no bin-common-handler lines. Record AC9 decision here.
-- [x] 3.3 Follow-up Jira tickets (1405 §7; summary EN, body KR): talk-control defect (+post-fix option), dead NotifyHandlers (transfer + tts ttshandler), conversation secret stripping (PRIORITY), stream-completeness audit (incl. timeline subscribing never-published conversation_deleted), **legacy coverage uplift** for the sub-80% packages listed in AC7 (aggressive-coverage principle applied head-on in its own ticket). Also fold into VOIP-1409 (notifyhandler housekeeping): the inverted method-set comment at `bin-common-handler/models/eventtopic/identifier.go:43` — "a value receiver would silently never be picked up" is backwards (a value receiver satisfies the interface for both forms; it is a VALUE of a pointer-receiver type that fails); excluded from this PR by the zero-bch-changes rule.
+| Method | Prod call sites | Topic-publishes? | Impact of narrowing `data` |
+|---|---|---|---|
+| `PublishEvent(ctx, type, data interface{})` | 116 (115 external + 1 internal) | YES (resolves override at publish.go:99-103) | primary change target |
+| `PublishWebhookEvent(ctx, cid, type, data WebhookMessage)` | 118 | YES, indirectly: publish.go:32 does `go h.PublishEvent(ctx, eventType, data)` | **will not compile** unless the value passed also satisfies `SubscriptionIdentifier` |
+| `PublishWebhook(ctx, cid, type, data WebhookMessage)` | 1 (internal only, from PublishWebhookEvent) | no (webhook RPC path) | none needed |
+| `PublishEventRaw(ctx, type, dataType, data []byte)` | 1 (voip-asterisk-proxy ari_handler.go:76, raw ARI frames) | only if topicEnabled; asterisk-proxy is NOT topic-enabled | `[]byte` cannot implement the interface; see decision D2 |
+| `PublishEventWithRoutingKey(ctx, type, key, data interface{})` | 1 (bin-webhook-manager routingkey.go:182, `json.RawMessage` payload) | no (VOIP-1258 scoped path, caller supplies the key) | OUT of scope; see decision D3 |
 
-### Phase 4 — review & PR
-- [x] 4.1 Commits by the ORCHESTRATOR ONLY (executors never stage/commit — see delegation protocol). Title matches branch; body project-prefixed bullets; verify via git diff --cached.
-- [x] 4.2 Code review loop (min 3 rounds, 2 consecutive approvals); re-run verification in touched services after fixes.
-- [ ] 4.3 Pull main + conflict check; full re-verify if rebased.
-- [ ] 4.4 Single PR: narrative summary + `bin-<service>:` prefixed bullets (per-service table SUPPLEMENTS, not replaces, the bullets; no markdown headers); runbook (wave order low-freq→call/pipecat last, per-service metric checks, rollback = option removal per service, noting contact normalization is NOT reverted by rollback — intended independent change); AC9 substitution note; RST determination. NO merge without instruction.
+Type inventory:
+- 67 distinct data types flow into `PublishEvent` + `PublishWebhookEvent`
+  (41 + 30, minus 4 overlaps: `transcribe.Transcribe`, `transcript.Transcript`,
+  `number.Number`, `agent.Agent`).
+- 22 already implement `EventSubscriptionID()` (VOIP-1404 pilot + VOIP-1405 overrides).
+- **45 new methods needed.** All are pointer-typed at every call site (zero map, zero
+  non-pointer struct, zero nil literal, zero []byte on these two methods), so every one is
+  mechanically implementable EXCEPT:
+  - **F1** `*corev1.Pod` (bin-sentinel-manager monitoringhandler/run.go:105,117): external
+    module type; cannot add a method; needs a local wrapper type. Only genuinely
+    unfixable-in-place site in the repo.
+  - **F2** `*contact.WebhookMessage` (bin-contact-manager contacthandler/event.go:33): a
+    webhook DTO passed to `PublishEvent` (introduced by the VOIP-1405 []byte fix); needs a
+    method (its own `ID` is the correct address) or replacement with the domain type.
+- Test churn: ~658 `_test.go` publish references, but ~97% are gomock `EXPECT()` recorder
+  calls whose parameters are `any` and keep compiling. Known real test-code impact:
+  `bin-conversation-manager/pkg/messagehandler/create_case_id_test.go:60` (typed `Do`
+  callback referencing `notifyhandler.WebhookMessage`).
+- 27 golden routing-key test files contain a `resolveSubscriptionID` helper that mirrors
+  production INCLUDING the JSON half; all 27 must be simplified in the same change, and the
+  "must NOT implement SubscriptionIdentifier" negative assertions (e.g.
+  `TestTranscribeUsesDefaultSubscriptionID`) must be replaced by
+  `var _ eventtopic.SubscriptionIdentifier = (*T)(nil)` compile-time assertions, otherwise
+  they fail the moment the methods are added.
 
-## Delegation protocol (parallel executors)
+### 3. Scope decisions surfaced by the analysis (to be settled in the design stage)
 
-- Executors work ONLY inside their assigned service directory; they NEVER run `git add`/`git commit`/`git stash` (git index is shared — orchestrator owns all staging/commits).
-- Executor reports must include `git status --short -- <service-dir>` output + test/lint results; orchestrator verifies before accepting.
-- Only the orchestrator edits tasks/todo.md.
-- Hook warnings from scripts/check-service-docs.sh may be misattributed across concurrent agents — orchestrator re-checks per service at staging time. Phase 2 services: update architecture.md only; IGNORE domain.md warnings triggered by the golden _test.go file (the hook matches models/ regardless of _test.go; do not invent domain.md content).
+- **D1 — how to constrain the webhook path.** Two options:
+  (a) embed `SubscriptionIdentifier` into the `WebhookMessage` interface itself → all 55
+  `CreateWebhookEvent` implementers must add methods, including 25 types never passed to
+  `PublishWebhookEvent` in production;
+  (b) leave `WebhookMessage` untouched and change `PublishWebhookEvent`'s param to a new
+  intersection interface (`interface { WebhookMessage; eventtopic.SubscriptionIdentifier }`)
+  → only the 30 actually-published webhook types need methods.
+  Analysis leans (b): precise, 25 fewer dead methods; (a) is more uniform. Decide in design.
+- **D2 — `PublishEventRaw`.** Keep `[]byte` signature. With the fallback gone, a
+  topic-enabled service calling Raw would always get the `-` placeholder. Today the sole
+  caller (asterisk-proxy) is not topic-enabled, so nothing changes in production; document
+  the placeholder behavior in the method comment. No API change.
+- **D3 — `PublishEventWithRoutingKey`.** Out of scope: it never dual-publishes to
+  `bin-manager.event` (caller supplies its own key; VOIP-1258 path), and its only payload is
+  a `json.RawMessage` that cannot implement the interface. Signature stays `interface{}`.
+- **D4 — internal simplification.** With the interface mandatory, `hasOverride` threading
+  becomes constant-true on the PublishEvent path (typed-nil still degrades to placeholder
+  via the existing reflect guard, which must stay); `parseSubscriptionID`,
+  `subscriptionIDData`, and the `hasOverride` parameter of the internal `publishEvent` can
+  be removed/simplified. `PublishEventRaw` hard-codes the placeholder path. The delayed
+  path (`delay > 0`, publish.go:160-166) returns before any topic publish and is unaffected.
 
-## Working notes
+### 4. Proceeding rationale (priority / risk / sequencing)
 
-- vendor/ stale in EVERY service — `go mod vendor` before any test run.
-- No bin-common-handler edits; if a change seems to need one, STOP and re-plan.
-- Do NOT add override to *Customer (wrapper promotion) or *corev1.Pod (external type).
-- webhook-manager, asterisk-proxy, talk-control, tts-control: hands off.
+- Sequencing confirmed with the CEO and recorded on the ticket: VOIP-1405 merge (done,
+  deployed 2026-08-28) → **VOIP-1419** → VOIP-1406 (consumer migration). Topic-exchange
+  consumers are still ZERO, so swapping the resolution mechanism now has no subscriber
+  impact; this window closes once VOIP-1406 starts. That makes this the right time, not
+  just a valid time.
+- Routing-key VALUES must not change; the 27 golden test suites (which pin exact keys) are
+  the regression fence. The mechanism swap is invisible on the wire.
+- Cost: bin-common-handler public-surface change → all 38 services re-verify; 45 new
+  methods + wrapper type + 27 golden-helper edits + mock regeneration. Large but
+  mechanical; no data migration, no schema change, no consumer coordination.
+- Risk of NOT doing it now: every new event type added meanwhile silently relies on the
+  fallback; the longer the wait, the bigger the one-shot migration.
 
-## Results (2026-08-28)
+### 5. Acceptance criteria (draft, to be finalized in design/plan)
 
-- 26 services wired (53 sites; verified 55 = 53 + 2 pilot), 19 override types with behavioral tests in 15 packages, 27 golden files in 27 service dirs.
-- Prerequisite fixes landed: contact []byte payload, pipecat 6 pointer conversions (now compiler-enforced), 4 new structs with identical JSON key sets (byte-identical for 3; CaseNoteDeletedEvent differs in key order only — JSON-semantically equivalent, per design §3.3).
-- Drive-by fixes: outdial SA4000 tautologies -> JSON round-trips, email SA5011, registrar/route CLAUDE.md false "no events" claims, timeline stale comment.
-- Global assertions all pass: AC1 55 / absence 0 / AC2 26 / AC5 27 / compile sweep 39 modules 0 fail / bin-common-handler 0 lines.
-- Code review loop: R1 RC (4 MEDIUM, comment/test fidelity) -> R2 RC (3) -> R3 Approve -> R4 (pending). Typed-nil guard mutation-locked via pilot golden.
-- Follow-up tickets: VOIP-1412 (talk-control defect), VOIP-1413 (dead NotifyHandlers), VOIP-1414 (conversation secret stripping, priority), VOIP-1415 (stream completeness), VOIP-1416 (coverage uplift), VOIP-1417 (mockgen drift); identifier.go comment folded into VOIP-1409.
+- `PublishEvent`'s `data` parameter (and the webhook-path equivalent per D1) requires
+  `eventtopic.SubscriptionIdentifier`; the repo compiles ⇒ every published type implements.
+- `parseSubscriptionID` / `subscriptionIDData` deleted; no JSON id extraction remains in
+  notifyhandler.
+- All 27 golden routing-key suites pass UNCHANGED in their expected key strings (only the
+  resolution helper and negative assertions change).
+- 38-module verification workflow passes (tidy/vendor/generate/test/lint per service).
+- Placeholder metric semantics unchanged; typed-nil still resolves to `-` without panic.
+
+## Implementation Plan (stage 3) — rev.1
+
+Normative source: the Approved design doc. This plan adds ONLY execution mechanics.
+
+### Ordering principle (load-bearing)
+
+The signature narrowing breaks all 234 production call sites the moment it lands, so the
+branch is built in waves where **method addition (additive, compiles against the old
+signature) precedes narrowing (lands only when every type already implements)**. Every
+commit on the branch compiles and passes its touched services' tests.
+
+### Waves
+
+- [ ] **W1 — methods + tests, per service (additive; ~26 services, parallel executors).**
+  Per service: add the `EventSubscriptionID()` methods for its share of the 45 types
+  (template + special cases per design §3; placement rule: sibling file when the type
+  lives in `models/<entity>/webhook.go`); add `var _ eventtopic.SubscriptionIdentifier`
+  assertions in sibling `_test.go`; add per-type behavioral tests (address == own id,
+  mutation-checked; nil-embed `""`-no-panic tests for CustomerCreatedEvent and pod.Event);
+  invert the negative assertions **whose types gain methods (27 of the 30)** in the same
+  commit as those methods. **The 3 negatives on types that REMAIN non-implementers are NOT
+  inverted** — `*corev1.Pod` (pod golden :138), `*pod.Pod` (pod golden :159, pins the
+  promotion hazard on the OLD wrapper), and `kase.Case`
+  (bin-contact-manager/models/kase/event_test.go:207, never published, not in the 45).
+  They stay as runtime negatives with their semantics intact, but their message strings
+  are reworded to drop the exact phrase "must not implement SubscriptionIdentifier" (AC5
+  depends on it). Note kase/event_test.go is not a golden file — do not miss it.
+  **"Invert" means: DELETE the runtime negative test; the type's single compile assertion
+  lives in its sibling `_test.go`, not the golden file** (a duplicate `var _` in the
+  golden file would push AC6 past 71). While editing, also refresh prose comments that
+  describe the deleted fallback (helper doc comments, e.g. tts golden :51-56; free-standing
+  ones like tts golden :48-49 "resolves through the default JSON fallback" and the
+  surviving kase.Case test's doc comment) — cosmetic, but stale mechanism descriptions are
+  exactly what this ticket exists to kill.
+  Simplify the golden `resolveSubscriptionID` helper: drop the JSON half BUT **keep the
+  `data any` parameter signature** (assert → typed-nil guard → method, else return `""`) —
+  the pod golden legitimately feeds non-implementing payloads (bare `*corev1.Pod`);
+  typing the parameter as the interface would not compile. Valid pre-narrowing because
+  for implementing types the override already wins, so resolution results are unchanged.
+  Sentinel specifics: publish sites wrap in `pod.Event`; the pod golden's TABLE rows
+  switch from bare `*corev1.Pod` to `pod.Event` (expected keys unchanged:
+  `sentinel-manager.pod.-.updated` / `.deleted`); the two supplementary pod tests stay
+  (bare-Pod negative reworded per above; `TestPodPayloadHasNoSubscriptionAddress` keeps
+  feeding a bare `*corev1.Pod` through the `any`-typed helper and now additionally gains
+  a `pod.Event` row asserting the wrapper's explicit `""`); header comment rewritten per
+  design §3. Expect the service-docs hook to warn on the new `models/pod` type — stage the
+  corresponding `docs/domain.md` line rather than dismissing the warning.
+  Per-service verification workflow (tidy/vendor/generate/test/lint) before each commit.
+- [ ] **W2 — bin-common-handler narrowing (single commit).**
+  `WebhookEventMessage` interface; `PublishEvent` param → `eventtopic.SubscriptionIdentifier`;
+  `PublishWebhookEvent` param → `WebhookEventMessage`; `resolveSubscriptionID` two-part
+  guard (nil-interface FIRST, then typed-nil reflect guard); delete `parseSubscriptionID`
+  + `subscriptionIDData`; drop `hasOverride` threading; `PublishEventRaw` passes `""` +
+  comment; `topicEnabled` gate stays; identifier.go doc comment rewritten wholesale;
+  mock regen; bch unit tests (fixture updates, nil-interface case, typed-nil case,
+  Raw-placeholder case); conversation-manager typed callback update
+  (create_case_id_test.go:60) rides this commit because the name `WebhookEventMessage`
+  only exists from W2 — note it is a CONSISTENCY update, not compile-required (the
+  callback's `notifyhandler.WebhookMessage` param still exists post-W2 and gomock invokes
+  Do reflectively, so a green build without it is not an anomaly). bch verification +
+  compile of ALL dependents. Post-merge: comment on VOIP-1409 that its identifier.go
+  checklist item is closed by this PR (the checklist lives on the Jira ticket).
+- [ ] **W3 — docs (single commit).** rabbitmq-queues-reference.md (fallback clause removed;
+  explicit-method contract; "Deliberate non-overrides" block rewritten per design §5);
+  one-line supersession pointers in the VOIP-1404/1405 design docs.
+- [ ] **W4 — global verification + evidence.** Full 38-module compile sweep; per-service
+  verification for every touched service; AC evidence commands below; PR creation after
+  main conflict check.
+
+### Executor protocol (as VOIP-1405)
+
+Parallel executors are confined to their service directory, never touch the git index,
+and report `git status --short -- <dir>` + test output. The orchestrator owns all commits
+and re-verifies before committing. All greps use `/usr/bin/grep` with
+`--exclude-dir=vendor --exclude-dir=.worktrees`.
+
+### Acceptance criteria (evidence commands, run from worktree root)
+
+- AC1 fallback gone: `/usr/bin/grep -rn "parseSubscriptionID\|subscriptionIDData" --include="*.go" --exclude-dir=vendor --exclude-dir=.worktrees bin-common-handler/` → **0 hits**.
+- AC2 narrowing landed: `PublishEvent(ctx context.Context, eventType string, data eventtopic.SubscriptionIdentifier)` appears in notifyhandler interface + impl; `data interface{}` remains ONLY on `PublishEventWithRoutingKey` (D3).
+- AC3 implementer count: `/usr/bin/grep -rn "func (.*) EventSubscriptionID()" --include="*.go" --exclude-dir=vendor --exclude-dir=.worktrees . | /usr/bin/grep -v "_test.go" | wc -l` → **67** (22 existing + 45 new).
+- AC4 golden suites: all 27 `routingkey_golden_test.go` pass with **zero changes to any `expect` key string** — diff basis is the merge-base with main, not HEAD~: expect-line diff vs `$(git merge-base HEAD origin/main)` is empty; no golden helper contains a JSON-unmarshal half.
+- AC5 negative-assertion string retired: `/usr/bin/grep -rn "must not implement SubscriptionIdentifier" --include="*_test.go" --exclude-dir=vendor --exclude-dir=.worktrees .` → **0 hits** (27 negatives inverted; the 3 surviving runtime negatives are reworded per W1 so the sentinel string disappears while their semantics stay).
+- AC6 compile-time assertions: `/usr/bin/grep -rn "_ eventtopic.SubscriptionIdentifier = (" --include="*_test.go" --exclude-dir=vendor --exclude-dir=.worktrees . | wc -l` → **71** (26 existing incl. 4 bch test-local + 45 new). The pattern deliberately omits the `var ` prefix — 4 existing contact-manager assertions sit inside `var (...)` blocks and a `var _`-prefixed grep undercounts by 4.
+- AC7 build: 38-module `go build ./...` sweep → 0 failures; full verification workflow per touched service passes.
+- AC8 behavior: `go test ./...` green in bch including the new nil-interface, typed-nil, and Raw-placeholder cases.
+
+## Results (W1-W4 executed 2026-08-28)
+
+- **W1**: 27 services, 5 batches of parallel executors; 45 explicit methods + behavioral
+  tests + sibling `var _` assertions; 27 golden helpers simplified (JSON half dropped,
+  `data any` + typed-nil guard kept); 27 runtime negatives deleted, 3 survivors reworded
+  (bare `*corev1.Pod`, old `*pod.Pod`, `kase.Case`); pod publish sites wrapped in
+  `pod.Event`; per-service 5-step verification green everywhere; mockgen param-rename
+  drift discarded (number/agent/conference — VOIP-1417); stale-doc drive-bys accepted
+  (direct CLAUDE.md false "No events published", registrar/tag architecture.md fallback
+  prose). One sanctioned key-literal change: pipecat's supplementary value-override test
+  dropped its counterfactual fallback-demonstration key (never a production key; the 10
+  golden-table expects untouched).
+- **W2** (`1deb5b1ae`): bch narrowing + WebhookEventMessage + two-branch guard + fallback
+  deletion + identifier.go rewrite + mock regen + unit tests (nil-interface, typed-nil,
+  Raw-placeholder locks); conversation-manager typed callback updated. bch verification:
+  1671 tests, lint clean.
+- **W3** (`56f2e915b`): reference doc rewritten (resolution contract + former
+  "deliberate non-overrides" block), supersession pointers in 1404/1405 designs.
+- **W4 evidence** (all from worktree root, merge-base `60de2f733`):
+  - AC1 = 0 (fallback gone). AC2 = narrowed signatures present; `data interface{}` only on
+    PublishEventWithRoutingKey (D3).
+  - AC3 = **67 hand-written implementers** (raw grep prints 69: +2 are the regenerated
+    mock's MockWebhookEventMessage method + recorder — exclude `mock_` files when
+    re-running).
+  - AC4 = 0 changed golden expect lines. AC5 = 0 sentinel strings.
+  - AC6 = **72** (71 planned + 1 new bch fixture assertion on testIDEvent, added when the
+    fixture gained its explicit method in W2).
+  - AC7 = 39-module `go mod vendor && go build` sweep: 0 failures; plus a full
+    `go vet ./...` sweep (compiles test files): 39/39 OK.
+  - AC8 = bch `go test ./...`: 1671 passed; per-service suites green in W1.
+
+## Pivot (2026-08-29, CEO decision): Identity-promotion default
+
+Recorded in design doc §0 (amendment). Executed:
+- `commonidentity.Identity` gained `EventSubscriptionID()` + promotion-pinning tests + its own
+  `var _` assertion; `eventtopic/identifier.go` contract comment rewritten for the
+  promotion-default world.
+- 37 W1 per-type own-id methods DELETED (script-verified: only Identity-value-embed types,
+  incl. the two confbridge wrappers via depth-2 promotion and contact.WebhookMessage whose
+  now-empty subscription.go was removed). 8 explicit methods KEPT (no Identity embed):
+  Customer, CustomerCreatedEvent, Accesskey, Route, Provider, ProviderCall, storage Account,
+  pod.Event. The 22 parent-address overrides untouched (shadow the promoted default).
+- All behavioral tests, `var _` assertions, and 27 golden suites kept and pass via promotion —
+  routing-key values unchanged.
+- Post-pivot counts: hand-written implementers 31 (22+8+Identity); assertions 73 (72+Identity).
+- Verification: 24 affected services' model tests green; 39-module build+vet sweep 0 failures;
+  bch full verification re-run below.
+
+## Working Notes
+
+- Worktree: `.worktrees/VOIP-1419-Enforce-explicit-event-subscription-id` (branch same name, from `60de2f733`).
+- Full inventory (counts per service, per method, flagged sites F1/F2 above plus the Raw
+  and RoutingKey sites covered by D2/D3, 22 implementer list)
+  produced 2026-08-28 by repo-wide scan; re-runnable commands recorded in the scan report.
+- Env quirks: use `/usr/bin/grep`; exclude vendor/.worktrees; regen vendor before tests;
+  RST pre-commit hook fires on staged `models/*/webhook.go` (keep methods in sibling files,
+  e.g. `subscription.go`, as done for ai-manager in VOIP-1405).

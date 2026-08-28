@@ -5,7 +5,31 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/models/eventtopic"
 )
+
+// Accesskey's subscription address on the global topic exchange is its own id (VOIP-1419) --
+// an independent persistent resource, NOT addressed by the customer it belongs to.
+var _ eventtopic.SubscriptionIdentifier = (*Accesskey)(nil)
+
+func TestAccesskeyEventSubscriptionID(t *testing.T) {
+	id := uuid.Must(uuid.NewV4())
+	customerID := uuid.Must(uuid.NewV4())
+
+	a := &Accesskey{
+		ID:         id,
+		CustomerID: customerID,
+	}
+
+	res := a.EventSubscriptionID()
+	if res != id.String() {
+		t.Errorf("Wrong match. expect: %s, got: %s", id.String(), res)
+	}
+	if res == customerID.String() {
+		t.Errorf("Accesskey must be addressed by its own id, not its customer id. got: %s", res)
+	}
+}
 
 func TestAccesskeyStruct(t *testing.T) {
 	id := uuid.Must(uuid.NewV4())

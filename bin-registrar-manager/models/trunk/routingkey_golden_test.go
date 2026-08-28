@@ -2,11 +2,13 @@
 //
 // It covers EVERY event type registrar-manager publishes today, across both resource namespaces
 // (trunk / extension), and asserts the exact key that notifyhandler generates for the real event
-// data type of each publish site. registrar-manager is a default-id service: it declares NO
-// SubscriptionIdentifier override, so every key's third segment comes from the JSON `id` fallback
-// (design §2.4). The table is what proves that -- an override silently added later (or an `id`
-// json tag silently renamed) changes these keys, and no runtime metric would detect it because
-// the keys would still be well formed.
+// data type of each publish site. Since VOIP-1419 the subscription-id segment is resolved by the
+// mandatory `EventSubscriptionID()` contract -- for both of this service's types via the
+// own-id default promoted from the embedded commonidentity.Identity (an empty return
+// degrades to the `-` placeholder); there is no JSON fallback. Both of this service's types
+// return their own id. The table is what proves that -- a method silently changed to return a
+// different field changes these keys, and no runtime metric would detect it because the keys
+// would still be well formed.
 //
 // The file lives in models/trunk (the service's designated PRIMARY model package for this table,
 // chosen for practical anchoring rather than strict aggregate semantics -- trunk and extension
@@ -29,7 +31,6 @@
 package trunk_test
 
 import (
-	"encoding/json"
 	"reflect"
 	"testing"
 
@@ -52,43 +53,27 @@ var (
 )
 
 // resolveSubscriptionID mirrors the resolution notifyhandler performs on the publish path
-// (1404 design §4.2 / §5.2): the opt-in interface first, then -- ONLY when no override exists --
-// the top-level "id" of the marshaled payload. Keeping it here rather than reaching into
-// notifyhandler internals is deliberate -- the golden table must fail when a model starts (or
-// stops) implementing the interface, which is exactly what this two-step reproduction detects.
-//
-// The early return below is the load-bearing half: an override that EXISTS is authoritative even
-// when it yields "" or uuid.Nil, so the JSON fallback must never run behind it. This matches
-// notifyhandler.resolveSubscriptionOverride's hasOverride semantics exactly; if the two ever
-// diverge, this table stops reproducing what the publish path actually generates.
-func resolveSubscriptionID(t *testing.T, data any) string {
-	t.Helper()
-
-	if identifier, ok := data.(eventtopic.SubscriptionIdentifier); ok {
-		// typed-nil guard, mirroring notifyhandler.resolveSubscriptionOverride: a nil pointer whose
-		// type implements the interface still SATISFIES the assertion, and every real implementation
-		// dereferences its receiver -- calling the method would panic. Production reports "no
-		// override" for such a payload, so this guard falls through to the JSON half below rather
-		// than returning early; `null` carries no top-level `id` either, so both halves agree on the
-		// `-` placeholder.
-		if v := reflect.ValueOf(data); v.Kind() != reflect.Ptr || !v.IsNil() {
-			return identifier.EventSubscriptionID()
-		}
-	}
-
-	m, err := json.Marshal(data)
-	if err != nil {
-		t.Fatalf("Could not marshal the event data. err: %v", err)
-	}
-
-	d := struct {
-		ID string `json:"id"`
-	}{}
-	if errUnmarshal := json.Unmarshal(m, &d); errUnmarshal != nil {
+// (VOIP-1419): the mandatory `EventSubscriptionID()` contract (satisfied here by the method
+// promoted from the embedded commonidentity.Identity), with an empty result (or a
+// non-implementing / typed-nil payload) degrading to "" -- the `-` placeholder segment. Keeping
+// it here rather than reaching into notifyhandler internals is deliberate -- the golden table
+// must fail when a model's method starts returning a different address, which is exactly what
+// this reproduction detects. The parameter stays `any` to match the pre-narrowing publish
+// signature the table exercises.
+func resolveSubscriptionID(data any) string {
+	identifier, ok := data.(eventtopic.SubscriptionIdentifier)
+	if !ok {
 		return ""
 	}
 
-	return d.ID
+	// typed-nil guard, mirroring notifyhandler: a nil pointer whose type implements the interface
+	// still SATISFIES the assertion, and every real implementation dereferences its receiver --
+	// calling the method would panic. Such a payload resolves to the `-` placeholder.
+	if v := reflect.ValueOf(data); v.Kind() == reflect.Ptr && v.IsNil() {
+		return ""
+	}
+
+	return identifier.EventSubscriptionID()
 }
 
 func TestGoldenRoutingKeys(t *testing.T) {
@@ -118,7 +103,7 @@ func TestGoldenRoutingKeys(t *testing.T) {
 		data      any
 		expect    string
 	}{
-		// trunk resource -- own id is the address, resolved by the default JSON fallback.
+		// trunk resource -- own id is the address, returned through the promoted Identity default.
 		{
 			"trunk_created",
 			trunk.EventTypeTrunkCreated,
@@ -138,7 +123,7 @@ func TestGoldenRoutingKeys(t *testing.T) {
 			"registrar-manager.trunk.a71b3e40-0000-4000-8000-000000000001.deleted",
 		},
 
-		// extension resource -- own id is the address, resolved by the default JSON fallback.
+		// extension resource -- own id is the address, returned through the promoted Identity default.
 		{
 			"extension_created",
 			extension.EventTypeExtensionCreated,
@@ -172,7 +157,7 @@ func TestGoldenRoutingKeys(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			subscriptionID := resolveSubscriptionID(t, tt.data)
+			subscriptionID := resolveSubscriptionID(tt.data)
 
 			res := eventtopic.RoutingKey(publisher, tt.eventType, subscriptionID)
 			if res != tt.expect {
@@ -182,34 +167,12 @@ func TestGoldenRoutingKeys(t *testing.T) {
 	}
 }
 
-// TestRegistrarModelsUseDefaultSubscriptionID pins the deliberate ABSENCE of an override on both
-// published types (design §2.4): each resource's own id IS its address, so implementing
-// SubscriptionIdentifier would be redundant, and the default JSON `id` extraction must keep
-// covering them. This is the assertion that fails if somebody adds an `EventSubscriptionID()`
-// method to *Trunk or *Extension without revisiting the table above.
-func TestRegistrarModelsUseDefaultSubscriptionID(t *testing.T) {
-	tests := []struct {
-		name string
-		data any
-	}{
-		{"trunk", &trunk.Trunk{Identity: commonidentity.Identity{ID: trunkID}}},
-		{"extension", &extension.Extension{Identity: commonidentity.Identity{ID: extensionID}}},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if _, ok := tt.data.(eventtopic.SubscriptionIdentifier); ok {
-				t.Errorf("%s must not implement SubscriptionIdentifier. its own id is the subscription address.", tt.name)
-			}
-		})
-	}
-}
-
-// TestRegistrarDefaultFallbackResolvesOwnID proves the other half of the default path: with no
-// override in play, the resolved address is exactly the marshaled `id`. Together with the test
-// above, this pins BOTH "no override exists" and "the fallback yields the own id" -- either one
-// alone would still pass if the `id` json tag were renamed.
-func TestRegistrarDefaultFallbackResolvesOwnID(t *testing.T) {
+// TestRegistrarExplicitMethodResolvesOwnID pins that BOTH published types satisfy the
+// mandatory contract, via the EventSubscriptionID promoted from the embedded
+// commonidentity.Identity (a non-implementing payload would resolve to "" here, breaking the
+// expectation) AND that the method yields the resource's own id -- the same value the retired
+// JSON `id` fallback extracted, so the key strings above are unchanged by VOIP-1419.
+func TestRegistrarExplicitMethodResolvesOwnID(t *testing.T) {
 	tests := []struct {
 		name   string
 		data   any
@@ -221,7 +184,7 @@ func TestRegistrarDefaultFallbackResolvesOwnID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			res := resolveSubscriptionID(t, tt.data)
+			res := resolveSubscriptionID(tt.data)
 			if res != tt.expect {
 				t.Errorf("Wrong match. expect: %s, got: %s", tt.expect, res)
 			}

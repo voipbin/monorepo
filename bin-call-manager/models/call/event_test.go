@@ -51,10 +51,10 @@ func TestOutboundWhitelistRejectedEventEventSubscriptionID(t *testing.T) {
 	}
 }
 
-// TestOutboundWhitelistRejectedEventHasNoOwnID pins the reason the override is mandatory rather
-// than optional: the payload carries no top-level `id`, so without the override notifyhandler's
-// JSON fallback finds nothing and every one of these events would be routed to the `-` placeholder
-// address. The address must also never be the customer id.
+// TestOutboundWhitelistRejectedEventHasNoOwnID pins the reason the method must return the parent
+// call id: the payload carries no top-level `id` of its own, so any other implementation would
+// route every one of these events to the `-` placeholder address. The address must also never be
+// the customer id.
 func TestOutboundWhitelistRejectedEventHasNoOwnID(t *testing.T) {
 	e := &OutboundWhitelistRejectedEvent{
 		CallID:             uuid.Must(uuid.NewV4()),

@@ -8,11 +8,53 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	"monorepo/bin-common-handler/models/eventtopic"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 )
 
+// Chat satisfies eventtopic.SubscriptionIdentifier through the EventSubscriptionID promoted
+// from the embedded commonidentity.Identity (VOIP-1419). The assertion
+// pins the POINTER type: the event data reaches notifyhandler as a pointer and the interface
+// assertion matches the dynamic type; a VALUE of this pointer-receiver type would not satisfy
+// the interface.
+var _ eventtopic.SubscriptionIdentifier = (*Chat)(nil)
+
 func timePtr(t time.Time) *time.Time {
 	return &t
+}
+
+func Test_EventSubscriptionID(t *testing.T) {
+	chatID := uuid.Must(uuid.NewV4())
+	customerID := uuid.Must(uuid.NewV4())
+
+	c := &Chat{
+		Identity: commonidentity.Identity{
+			ID:         chatID,
+			CustomerID: customerID,
+		},
+		Type: TypeGroup,
+		Name: "release",
+	}
+
+	res := c.EventSubscriptionID()
+	if res != chatID.String() {
+		t.Errorf("Wrong match. expect: %s, got: %s", chatID.String(), res)
+	}
+
+	// The subscription address is the chat's OWN id -- not any other uuid the payload
+	// happens to carry. This assertion is the mutation check: an implementation that
+	// returns the wrong field fails here.
+	if res == customerID.String() {
+		t.Errorf("Chat must not be addressed by its customer id. got: %s", res)
+	}
+}
+
+func Test_EventSubscriptionID_zeroValue(t *testing.T) {
+	c := &Chat{}
+
+	if res := c.EventSubscriptionID(); res != uuid.Nil.String() {
+		t.Errorf("Wrong match. expect: %s, got: %s", uuid.Nil.String(), res)
+	}
 }
 
 func TestChatStruct(t *testing.T) {

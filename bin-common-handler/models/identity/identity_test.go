@@ -4,7 +4,53 @@ import (
 	"testing"
 
 	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/models/eventtopic"
 )
+
+// The pointer type carries the promotable default subscription address (VOIP-1419): every model
+// embedding Identity by value satisfies the interface through promotion.
+var _ eventtopic.SubscriptionIdentifier = (*Identity)(nil)
+
+// TestIdentityEventSubscriptionID pins the promotable default: the address IS the own id
+// (mutation-checked against CustomerID, the one plausible wrong-answer field on Identity), and a
+// zero value degrades to the uuid.Nil string, which downstream normalization turns into the `-`
+// placeholder.
+func TestIdentityEventSubscriptionID(t *testing.T) {
+	id := uuid.Must(uuid.NewV4())
+	customerID := uuid.Must(uuid.NewV4())
+
+	i := &Identity{ID: id, CustomerID: customerID}
+
+	if res := i.EventSubscriptionID(); res != id.String() {
+		t.Errorf("Wrong match. expect: %s, got: %s", id.String(), res)
+	}
+	if res := i.EventSubscriptionID(); res == customerID.String() {
+		t.Errorf("Wrong match. the address must not be the customer id. got: %s", res)
+	}
+
+	zero := &Identity{}
+	if res := zero.EventSubscriptionID(); res != uuid.Nil.String() {
+		t.Errorf("Wrong match. expect: %s, got: %s", uuid.Nil.String(), res)
+	}
+}
+
+// TestIdentityEventSubscriptionIDPromotes pins the promotion mechanism itself: a struct that
+// embeds Identity by value satisfies eventtopic.SubscriptionIdentifier through its pointer type
+// with no method of its own -- the mechanism every default published model relies on.
+func TestIdentityEventSubscriptionIDPromotes(t *testing.T) {
+	type embedding struct {
+		Identity
+	}
+
+	id := uuid.Must(uuid.NewV4())
+	e := &embedding{Identity: Identity{ID: id}}
+
+	var s eventtopic.SubscriptionIdentifier = e
+	if res := s.EventSubscriptionID(); res != id.String() {
+		t.Errorf("Wrong match. expect: %s, got: %s", id.String(), res)
+	}
+}
 
 func TestIdentityStruct(t *testing.T) {
 	id := uuid.Must(uuid.NewV4())

@@ -197,13 +197,14 @@ func Test_CaseEventTypeConstants(t *testing.T) {
 	}
 }
 
-// Test_CaseUsesDefaultSubscriptionID pins the deliberate absence of an override on Case itself:
-// its own id IS the address every case-scoped event converges on, so implementing the interface
-// would be redundant and the default JSON `id` extraction must keep covering it.
-func Test_CaseUsesDefaultSubscriptionID(t *testing.T) {
+// Test_CaseHasNoSubscriptionAddress pins that Case stays outside the published-event set: no
+// publish site hands a Case to notifyhandler, so it is not a published event type and
+// deliberately carries no subscription address of its own. Every case-scoped event addresses
+// the case id through its own event struct's EventSubscriptionID method instead.
+func Test_CaseHasNoSubscriptionAddress(t *testing.T) {
 	var data any = &Case{ID: uuid.FromStringOrNil("f1b2c3d4-4005-4005-4005-000000000001")}
 
 	if _, ok := data.(eventtopic.SubscriptionIdentifier); ok {
-		t.Errorf("Case must not implement SubscriptionIdentifier. its own id is the subscription address.")
+		t.Errorf("Case is not a published event type and deliberately carries no subscription address; it gained an EventSubscriptionID method it should not have.")
 	}
 }

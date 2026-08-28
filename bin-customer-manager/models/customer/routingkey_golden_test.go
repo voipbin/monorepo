@@ -7,25 +7,21 @@
 // resource's subscription address produces well-formed keys that no instance binding ever matches,
 // and no runtime metric can detect it. Design doc §2.4 / §4.
 //
-// customer-manager is a default-fallback service: `*customer.Customer` and
-// `*accesskey.Accesskey` are both addressed by their OWN id, so NO type here carries an
-// eventtopic.SubscriptionIdentifier override.
+// Since VOIP-1419 every published type carries an explicit `EventSubscriptionID()` method --
+// mandatory, compiler-enforced; there is no JSON fallback anymore, and an empty return is the
+// only degrade path (the `-` placeholder). `*customer.Customer` and `*accesskey.Accesskey` are
+// both addressed by their OWN id.
 //
-// THE TRAP THIS FILE EXISTS FOR (design §2.4, explicit): `customer.CustomerCreatedEvent`
-// ANONYMOUSLY EMBEDS `*Customer`. Two consequences are pinned below and must never be broken:
+// THE TRAP THIS FILE EXISTS FOR: `customer.CustomerCreatedEvent` ANONYMOUSLY EMBEDS `*Customer`,
+// so `*Customer`'s method is promoted to the wrapper -- but a promoted call on a nil embed
+// panics (the receiver chain is computed before any promoted access). The wrapper therefore
+// carries its OWN explicit shadowing method with a nil guard: non-nil embed returns the
+// embedded Customer's id (same key space as every other customer event), nil embed returns ""
+// explicitly. Both branches are pinned below and must never be broken.
 //
-//  1. The embed's `id` is PROMOTED into the wrapper's JSON, so `customer_created` resolves to the
-//     customer id through the ordinary default fallback -- no special handling anywhere.
-//  2. Because the embed is anonymous, ANY method added to `*Customer` -- including an
-//     `EventSubscriptionID()` override -- is promoted to `*CustomerCreatedEvent` too. Adding one to
-//     `*Customer` would therefore silently re-address BOTH types at once. Design §2.4 states it
-//     normatively: no override may ever be added to `*Customer`. The assertions below fail the
-//     moment either type starts satisfying the interface.
-//
-// A nil embed is the third pinned case: it marshals WITHOUT an `id` (encoding/json skips fields
-// reached through a nil anonymous pointer), so the address collapses to the `-` placeholder. That
-// is the correct outcome for a payload carrying no identity, and the row exists so the behavior is
-// a pinned fact rather than an assumption.
+// The nil-embed row is the second pinned case: the wrapper's nil guard returns "" so the
+// address collapses to the `-` placeholder. That is the correct outcome for a payload carrying
+// no identity, and the row exists so the behavior is a pinned fact rather than an assumption.
 //
 // The file lives in models/customer because customer is the service's designated PRIMARY model
 // package and the resource the wrapper addresses; it is an external test package so it can import
@@ -37,7 +33,6 @@
 package customer_test
 
 import (
-	"encoding/json"
 	"reflect"
 	"testing"
 
@@ -58,43 +53,32 @@ var (
 )
 
 // resolveSubscriptionID mirrors the resolution notifyhandler performs on the publish path
-// (1404 design §4.2 / §5.2): the opt-in interface first, then -- ONLY when no override exists --
-// the top-level "id" of the marshaled payload. Keeping it here rather than reaching into
-// notifyhandler internals is deliberate -- the golden table must fail when a model STARTS or STOPS
-// implementing the interface, which is exactly what this two-step reproduction detects.
+// (VOIP-1419): the payload's explicit `EventSubscriptionID()` method is the single source of
+// the subscription address -- implementation is mandatory (compiler-enforced at the publish
+// sites), and an empty return degrades to the `-` placeholder. Keeping the mirror here rather
+// than reaching into notifyhandler internals is deliberate -- the golden table must fail if a
+// method starts returning a different id space than the one pinned below.
 //
-// The early return below is the load-bearing half: an override that EXISTS is authoritative even
-// when it yields "" or uuid.Nil, so the JSON fallback must never run behind it. This matches
-// notifyhandler.resolveSubscriptionOverride's hasOverride semantics exactly; if the two ever
-// diverge, this table stops reproducing what the publish path actually generates.
+// The parameter stays `any` so the table can also feed values that do not implement the
+// interface; they resolve to "" (→ placeholder), matching what production's narrowed
+// signature makes unrepresentable at compile time.
 func resolveSubscriptionID(t *testing.T, data any) string {
 	t.Helper()
 
-	if identifier, ok := data.(eventtopic.SubscriptionIdentifier); ok {
-		// typed-nil guard, mirroring notifyhandler.resolveSubscriptionOverride: a nil pointer whose
-		// type implements the interface still SATISFIES the assertion, and every real implementation
-		// dereferences its receiver -- calling the method would panic. Production reports "no
-		// override" for such a payload, so this guard falls through to the JSON half below rather
-		// than returning early; `null` carries no top-level `id` either, so both halves agree on the
-		// `-` placeholder.
-		if v := reflect.ValueOf(data); v.Kind() != reflect.Ptr || !v.IsNil() {
-			return identifier.EventSubscriptionID()
-		}
-	}
-
-	m, err := json.Marshal(data)
-	if err != nil {
-		t.Fatalf("Could not marshal the event data. err: %v", err)
-	}
-
-	d := struct {
-		ID string `json:"id"`
-	}{}
-	if errUnmarshal := json.Unmarshal(m, &d); errUnmarshal != nil {
+	identifier, ok := data.(eventtopic.SubscriptionIdentifier)
+	if !ok {
 		return ""
 	}
 
-	return d.ID
+	// typed-nil guard, mirroring notifyhandler.resolveSubscriptionID: a nil pointer whose type
+	// implements the interface still SATISFIES the assertion, and every real implementation
+	// dereferences its receiver -- calling the method would panic. Production resolves such a
+	// payload to the `-` placeholder instead.
+	if v := reflect.ValueOf(data); v.Kind() == reflect.Ptr && v.IsNil() {
+		return ""
+	}
+
+	return identifier.EventSubscriptionID()
 }
 
 func TestGoldenRoutingKeys(t *testing.T) {
@@ -113,7 +97,7 @@ func TestGoldenRoutingKeys(t *testing.T) {
 	}
 
 	// A wrapper whose embed is nil -- no publish site produces this today, but the row pins what
-	// happens if one ever does: no `id` in the marshaled payload, hence the `-` placeholder.
+	// happens if one ever does: the wrapper's nil guard returns "", hence the `-` placeholder.
 	createdEventNilEmbed := &customer.CustomerCreatedEvent{
 		Headless: true,
 	}
@@ -130,17 +114,17 @@ func TestGoldenRoutingKeys(t *testing.T) {
 		data      any
 		expect    string
 	}{
-		// customer resource, created -- published as the CustomerCreatedEvent WRAPPER. The address
-		// comes from the anonymously embedded *Customer's promoted `id`, so it lands in exactly the
-		// same key space as every other customer event below.
+		// customer resource, created -- published as the CustomerCreatedEvent WRAPPER. The wrapper's
+		// explicit method returns the embedded *Customer's id, so it lands in exactly the same key
+		// space as every other customer event below.
 		{
-			"customer_created (wrapper, embedded id promoted)",
+			"customer_created (wrapper, embedded customer id)",
 			customer.EventTypeCustomerCreated,
 			createdEventData,
 			"customer-manager.customer.d5c9e720-0000-4000-8000-000000000001.created",
 		},
-		// Same wrapper with a nil embed: encoding/json skips the promoted fields, so no `id` is
-		// present and the address collapses to the `-` placeholder segment.
+		// Same wrapper with a nil embed: the wrapper's nil guard returns "", so the address
+		// collapses to the `-` placeholder segment.
 		{
 			"customer_created (wrapper, nil embed -> placeholder)",
 			customer.EventTypeCustomerCreated,
@@ -149,7 +133,7 @@ func TestGoldenRoutingKeys(t *testing.T) {
 		},
 
 		// customer resource, remaining lifecycle events -- published as the bare *Customer, own id
-		// is the address, resolved by the default JSON fallback.
+		// is the address, returned by its explicit EventSubscriptionID method.
 		{
 			"customer_updated",
 			customer.EventTypeCustomerUpdated,
@@ -218,31 +202,32 @@ func TestGoldenRoutingKeys(t *testing.T) {
 	}
 }
 
-// TestCustomerCreatedEventPromotesEmbeddedID pins the id-promotion half of the wrapper trap
-// directly, independent of the routing-key formatting above: the wrapper and the bare Customer must
-// resolve to the SAME address, so `customer-manager.customer.<customer-id>.#` delivers the created
-// event alongside every later lifecycle event.
-func TestCustomerCreatedEventPromotesEmbeddedID(t *testing.T) {
+// TestCustomerCreatedEventUsesEmbeddedID pins the address-equality half of the wrapper contract
+// directly, independent of the routing-key formatting above: the wrapper's explicit method and the
+// bare Customer's must resolve to the SAME address, so `customer-manager.customer.<customer-id>.#`
+// delivers the created event alongside every later lifecycle event.
+func TestCustomerCreatedEventUsesEmbeddedID(t *testing.T) {
 	customerData := &customer.Customer{ID: customerID}
 	wrapper := &customer.CustomerCreatedEvent{Customer: customerData, Headless: true}
 
 	bare := resolveSubscriptionID(t, customerData)
-	promoted := resolveSubscriptionID(t, wrapper)
+	wrapped := resolveSubscriptionID(t, wrapper)
 
 	if bare != customerID.String() {
 		t.Errorf("Wrong match. expect: %s, got: %s", customerID.String(), bare)
 	}
-	if promoted != bare {
-		t.Errorf("Wrong match. the wrapper must resolve to the embedded customer id. expect: %s, got: %s", bare, promoted)
+	if wrapped != bare {
+		t.Errorf("Wrong match. the wrapper must resolve to the embedded customer id. expect: %s, got: %s", bare, wrapped)
 	}
-	if eventtopic.IsPlaceholderSubscriptionID(promoted) {
-		t.Errorf("CustomerCreatedEvent with a non-nil embed must never resolve to the placeholder address. got: %s", promoted)
+	if eventtopic.IsPlaceholderSubscriptionID(wrapped) {
+		t.Errorf("CustomerCreatedEvent with a non-nil embed must never resolve to the placeholder address. got: %s", wrapped)
 	}
 }
 
-// TestCustomerCreatedEventNilEmbedIsPlaceholder pins the other half: with a nil embed there is no
-// promoted `id` at all, so the address is the `-` placeholder rather than some accidental value.
-// This is the metered, visible degradation path (topic_placeholder_total), not a silent one.
+// TestCustomerCreatedEventNilEmbedIsPlaceholder pins the other half: with a nil embed the
+// wrapper's nil guard returns "", so the address is the `-` placeholder rather than a panic or
+// some accidental value. This is the metered, visible degradation path (topic_placeholder_total),
+// not a silent one.
 func TestCustomerCreatedEventNilEmbedIsPlaceholder(t *testing.T) {
 	wrapper := &customer.CustomerCreatedEvent{Headless: true}
 
@@ -252,30 +237,6 @@ func TestCustomerCreatedEventNilEmbedIsPlaceholder(t *testing.T) {
 	}
 	if !eventtopic.IsPlaceholderSubscriptionID(res) {
 		t.Errorf("A nil-embed CustomerCreatedEvent must resolve to the placeholder address. got: %s", res)
-	}
-}
-
-// TestCustomerUsesDefaultSubscriptionID pins the normative rule of design §2.4: no override may
-// ever be added to *Customer. Because CustomerCreatedEvent anonymously embeds *Customer, a method
-// on *Customer promotes to the wrapper as well -- so BOTH types are asserted here, and both must
-// stay on the default JSON `id` fallback. *Accesskey is asserted for the same reason its own id is
-// the address: an independent persistent resource (design §2.4).
-func TestCustomerUsesDefaultSubscriptionID(t *testing.T) {
-	tests := []struct {
-		name string
-		data any
-	}{
-		{"Customer", &customer.Customer{ID: customerID}},
-		{"CustomerCreatedEvent", &customer.CustomerCreatedEvent{Customer: &customer.Customer{ID: customerID}}},
-		{"Accesskey", &accesskey.Accesskey{ID: accesskeyID, CustomerID: customerID}},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if _, ok := tt.data.(eventtopic.SubscriptionIdentifier); ok {
-				t.Errorf("%s must not implement SubscriptionIdentifier. its own id is the subscription address, and an override on *Customer would promote to *CustomerCreatedEvent (design §2.4).", tt.name)
-			}
-		})
 	}
 }
 

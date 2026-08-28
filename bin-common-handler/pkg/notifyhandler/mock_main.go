@@ -11,6 +11,7 @@ package notifyhandler
 
 import (
 	context "context"
+	eventtopic "monorepo/bin-common-handler/models/eventtopic"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -56,6 +57,59 @@ func (mr *MockWebhookMessageMockRecorder) CreateWebhookEvent() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateWebhookEvent", reflect.TypeOf((*MockWebhookMessage)(nil).CreateWebhookEvent))
 }
 
+// MockWebhookEventMessage is a mock of WebhookEventMessage interface.
+type MockWebhookEventMessage struct {
+	ctrl     *gomock.Controller
+	recorder *MockWebhookEventMessageMockRecorder
+	isgomock struct{}
+}
+
+// MockWebhookEventMessageMockRecorder is the mock recorder for MockWebhookEventMessage.
+type MockWebhookEventMessageMockRecorder struct {
+	mock *MockWebhookEventMessage
+}
+
+// NewMockWebhookEventMessage creates a new mock instance.
+func NewMockWebhookEventMessage(ctrl *gomock.Controller) *MockWebhookEventMessage {
+	mock := &MockWebhookEventMessage{ctrl: ctrl}
+	mock.recorder = &MockWebhookEventMessageMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockWebhookEventMessage) EXPECT() *MockWebhookEventMessageMockRecorder {
+	return m.recorder
+}
+
+// CreateWebhookEvent mocks base method.
+func (m *MockWebhookEventMessage) CreateWebhookEvent() ([]byte, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateWebhookEvent")
+	ret0, _ := ret[0].([]byte)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateWebhookEvent indicates an expected call of CreateWebhookEvent.
+func (mr *MockWebhookEventMessageMockRecorder) CreateWebhookEvent() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateWebhookEvent", reflect.TypeOf((*MockWebhookEventMessage)(nil).CreateWebhookEvent))
+}
+
+// EventSubscriptionID mocks base method.
+func (m *MockWebhookEventMessage) EventSubscriptionID() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EventSubscriptionID")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// EventSubscriptionID indicates an expected call of EventSubscriptionID.
+func (mr *MockWebhookEventMessageMockRecorder) EventSubscriptionID() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventSubscriptionID", reflect.TypeOf((*MockWebhookEventMessage)(nil).EventSubscriptionID))
+}
+
 // MockNotifyHandler is a mock of NotifyHandler interface.
 type MockNotifyHandler struct {
 	ctrl     *gomock.Controller
@@ -81,7 +135,7 @@ func (m *MockNotifyHandler) EXPECT() *MockNotifyHandlerMockRecorder {
 }
 
 // PublishEvent mocks base method.
-func (m *MockNotifyHandler) PublishEvent(ctx context.Context, eventType string, data any) {
+func (m *MockNotifyHandler) PublishEvent(ctx context.Context, eventType string, data eventtopic.SubscriptionIdentifier) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "PublishEvent", ctx, eventType, data)
 }
@@ -129,7 +183,7 @@ func (mr *MockNotifyHandlerMockRecorder) PublishWebhook(ctx, customerID, eventTy
 }
 
 // PublishWebhookEvent mocks base method.
-func (m *MockNotifyHandler) PublishWebhookEvent(ctx context.Context, customerID uuid.UUID, eventType string, data WebhookMessage) {
+func (m *MockNotifyHandler) PublishWebhookEvent(ctx context.Context, customerID uuid.UUID, eventType string, data WebhookEventMessage) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "PublishWebhookEvent", ctx, customerID, eventType, data)
 }

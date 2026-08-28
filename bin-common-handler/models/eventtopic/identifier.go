@@ -27,23 +27,33 @@
 // follow-up, not part of this package.
 package eventtopic
 
-// SubscriptionIdentifier is the opt-in override for the third routing-key segment.
+// SubscriptionIdentifier is the MANDATORY contract of the third routing-key segment: every event
+// data type published through notifyhandler.PublishEvent (and, via WebhookEventMessage, every
+// webhook event payload) implements it, enforced by the parameter type -- a type without the
+// method does not compile at its publish site (VOIP-1419).
 //
-// The third segment answers "by which ID will subscribers address this stream?" -- a subscription
-// address, not necessarily the resource's own id. The default (no implementation) is the
-// top-level `id` of the marshaled event payload, which is correct for a resource that subscribers
-// address by its own id. Stream-child resources must override: a per-utterance or per-result id
-// that is newly generated for every event is not an address, because nobody can bind to it in
-// advance. A non-Nil but meaningless id is worse than no id -- it produces well-formed keys that
-// match nothing and evades the placeholder metric. Example: streaming.Speech overrides with its
-// parent TranscribeID.
+// The method answers "by which ID will subscribers address this stream?" -- a subscription
+// address, not necessarily the resource's own id. Most resources use their own id, and get it
+// FOR FREE: commonidentity.Identity implements this interface, so every model embedding Identity
+// by value satisfies it through method promotion. An explicit method is written only when the
+// address is NOT the own id -- a stream child addressed by its parent (a per-utterance or
+// per-result id that is newly generated for every event is not an address, because nobody can
+// bind to it in advance; example: streaming.Speech returns its parent TranscribeID), a wrapper
+// that must guard a nil pointer embed before touching it, or a type without Identity at all. An
+// explicit method at a shallower depth always shadows the promoted default. A non-Nil but
+// meaningless id is worse than no id -- it produces well-formed keys that match nothing and
+// evades the placeholder metric.
 //
-// Implement it with a POINTER receiver. Event data reaches notifyhandler.PublishEvent as a
-// pointer (e.g. *transcript.Transcript), and the type assertion matches the dynamic type, so a
-// value receiver would silently never be picked up.
+// Explicit implementations use a POINTER receiver. Event data reaches
+// notifyhandler.PublishEvent as a pointer (e.g. *transcript.Transcript); a bare struct VALUE of
+// a pointer-receiver type does not satisfy the interface and no longer compiles at the call
+// site, which is the point of the narrowing. If two embedded types at the same depth ever both
+// carried the method, promotion would drop it from the method set -- under the narrowed
+// signature that is a compile error at every publish site, not a silent behavior change.
 //
-// An empty return value, or the uuid.Nil string, falls back to the `-` placeholder exactly like
-// an absent id.
+// An empty return value, or the uuid.Nil string, degrades to the `-` placeholder -- the ONLY
+// degrade path. There is no JSON fallback: the marshaled payload's top-level `id` plays no role
+// in routing-key resolution.
 type SubscriptionIdentifier interface {
 	EventSubscriptionID() string
 }

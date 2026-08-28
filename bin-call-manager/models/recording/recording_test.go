@@ -5,10 +5,78 @@ import (
 	"testing"
 	"time"
 
+	"monorepo/bin-common-handler/models/eventtopic"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
 )
+
+// Recording addresses the global topic exchange `bin-manager.event` by its own id, deliberately
+// (VOIP-1405 §2.4, VOIP-1419): the download and stop APIs are recording-id keyed and the id
+// returns from the start RPC, so it is pre-bindable. The assertion pins the POINTER type,
+// matching how the event data reaches notifyhandler.
+var _ eventtopic.SubscriptionIdentifier = (*Recording)(nil)
+
+func TestRecordingEventSubscriptionID(t *testing.T) {
+	id := uuid.Must(uuid.NewV4())
+
+	tests := []struct {
+		name      string
+		recording *Recording
+		expect    string
+	}{
+		{
+			"normal",
+			&Recording{
+				Identity: commonidentity.Identity{
+					ID:         id,
+					CustomerID: uuid.Must(uuid.NewV4()),
+				},
+				ReferenceType: ReferenceTypeCall,
+				ReferenceID:   uuid.Must(uuid.NewV4()),
+			},
+			id.String(),
+		},
+		{
+			"empty",
+			&Recording{},
+			uuid.Nil.String(),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res := tt.recording.EventSubscriptionID()
+			if res != tt.expect {
+				t.Errorf("Wrong match. expect: %s, got: %s", tt.expect, res)
+			}
+		})
+	}
+}
+
+// TestRecordingEventSubscriptionIDIsOwnID mutation-checks the address: the reference id (the call
+// or confbridge being recorded) is the plausible wrong answer -- call-axis followers use the
+// type-level pattern instead -- and must never become the subscription address.
+func TestRecordingEventSubscriptionIDIsOwnID(t *testing.T) {
+	r := &Recording{
+		Identity: commonidentity.Identity{
+			ID:         uuid.Must(uuid.NewV4()),
+			CustomerID: uuid.Must(uuid.NewV4()),
+		},
+		ReferenceType: ReferenceTypeCall,
+		ReferenceID:   uuid.Must(uuid.NewV4()),
+	}
+
+	if r.EventSubscriptionID() != r.ID.String() {
+		t.Errorf("Wrong match. expect: %s, got: %s", r.ID, r.EventSubscriptionID())
+	}
+	if r.EventSubscriptionID() == r.ReferenceID.String() {
+		t.Errorf("Subscription address must not be the reference id. reference_id: %s", r.ReferenceID)
+	}
+	if r.EventSubscriptionID() == r.CustomerID.String() {
+		t.Errorf("Subscription address must not be the customer id. customer_id: %s", r.CustomerID)
+	}
+}
 
 func TestRecordingStruct(t *testing.T) {
 	id := uuid.Must(uuid.NewV4())
