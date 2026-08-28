@@ -124,18 +124,26 @@ by the schedule-manager pilot — but confirm nothing renders wrong).
 
 ## 5. Known fleet-wide gaps (tracked in the rollout design doc — do not re-derive per service)
 
-- **1-of-2 degradation alert: `ReplicaDegraded`** (warning, `for: 10m`,
+- **1-of-2 degradation alert: `ReplicaDegraded`** (warning, `for: 0s`
+  since NOJIRA-Replicadegraded-fire-immediately, 2026-08-29,
   monorepo-etc alert-rules.yml) covers the replica-scaled services —
   its regex enumerates them, so **scaling a service up or down requires
-  updating that regex and its tests**. Section 4's manual check remains
-  the verification at deploy time (the alert's 10m window deliberately
-  ignores deploy churn).
+  updating that regex and its tests**. It fires immediately on any
+  1-of-2 window, including the brief dip from a normal redeploy's
+  teardown/recreate (see Section 3 — the precise blip sequencing is
+  still unmeasured) — that is expected and confirms the redeploy
+  actually recreated a replica, not a signal to silence. (Previously
+  `for: 10m` absorbed the deploy-window dip; that guard was removed by
+  CEO/CTO decision so every redeploy is visible, at the cost of an
+  alert on every one.) Section 4's manual check is still the
+  authoritative verification at deploy time — the alert is now a fast
+  confirmation signal alongside it, not a replacement for it.
 - **Runbook naming.** monorepo-etc's alert-rules.yml runbooks describe
   both container-name regimes (replica-scaled
   `bin-<svc>-manager-<svc>-manager-N`, single-replica
   `voipbin-<svc>-manager`); the `docker ps --filter name=` substring
   match works for both.
-- **Redeploy blip pattern unmeasured** (see section 3).
+- **Redeploy blip pattern unmeasured** (see Section 3).
 - **No resource limits, deliberately** (2026-08-28). cAdvisor on
   bm-nyc-01 exposes only system cgroup slices — no per-container series
   exist to size limits from — and one-shot `docker stats` shows
