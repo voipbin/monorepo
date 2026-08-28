@@ -6,8 +6,66 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	"monorepo/bin-common-handler/models/eventtopic"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 )
+
+// Transcribe carries the explicit subscription address of the global topic exchange
+// (VOIP-1404/1419). The assertion pins the POINTER type: the event data reaches notifyhandler
+// as a pointer and the eventtopic.SubscriptionIdentifier assertion matches the dynamic type.
+var _ eventtopic.SubscriptionIdentifier = (*Transcribe)(nil)
+
+func TestTranscribeEventSubscriptionID(t *testing.T) {
+	ownID := uuid.Must(uuid.NewV4())
+	customerID := uuid.Must(uuid.NewV4())
+	activeflowID := uuid.Must(uuid.NewV4())
+	onEndFlowID := uuid.Must(uuid.NewV4())
+	referenceID := uuid.Must(uuid.NewV4())
+	hostID := uuid.Must(uuid.NewV4())
+
+	tr := &Transcribe{
+		Identity: commonidentity.Identity{
+			ID:         ownID,
+			CustomerID: customerID,
+		},
+		ActiveflowID:  activeflowID,
+		OnEndFlowID:   onEndFlowID,
+		ReferenceType: ReferenceTypeCall,
+		ReferenceID:   referenceID,
+		HostID:        hostID,
+	}
+
+	res := tr.EventSubscriptionID()
+	if res != ownID.String() {
+		t.Errorf("Wrong match. expect: %s, got: %s", ownID.String(), res)
+	}
+
+	// Mutation checks: the subscription address is the transcribe's OWN id — none of the other
+	// id-shaped fields on the struct may ever leak into the routing key.
+	if res == customerID.String() {
+		t.Errorf("Subscription address must not be the customer id. id: %s", customerID)
+	}
+	if res == activeflowID.String() {
+		t.Errorf("Subscription address must not be the activeflow id. id: %s", activeflowID)
+	}
+	if res == onEndFlowID.String() {
+		t.Errorf("Subscription address must not be the on-end-flow id. id: %s", onEndFlowID)
+	}
+	if res == referenceID.String() {
+		t.Errorf("Subscription address must not be the reference id. id: %s", referenceID)
+	}
+	if res == hostID.String() {
+		t.Errorf("Subscription address must not be the host id. id: %s", hostID)
+	}
+}
+
+func TestTranscribeEventSubscriptionIDEmpty(t *testing.T) {
+	tr := &Transcribe{}
+
+	if res := tr.EventSubscriptionID(); res != uuid.Nil.String() {
+		t.Errorf("Wrong match. expect: %s, got: %s", uuid.Nil.String(), res)
+	}
+}
 
 func TestTranscribeStruct(t *testing.T) {
 	id := uuid.Must(uuid.NewV4())
