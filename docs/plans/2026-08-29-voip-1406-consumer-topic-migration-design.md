@@ -400,10 +400,11 @@ dispatch sets"). Separately, two LIVE doc files enumerate `eventtopic`'s exporte
 function SET and need only an additive one-liner for the new function:
 `bin-common-handler/docs/architecture.md:47` and
 `docs/reference/rabbitmq-queues-reference.md:265` (same file as the :299 substitution
-above, two distinct edits). `tasks/todo.md`'s W1 description (:19) and AC1/AC3 wording
-(:55, :60, :86) are updated to reflect the new call form (:134 and
-:182 are inside the retained historical Working Notes and are deliberately left as
-written history, not updated). Dated plan docs
+above, two distinct edits). `tasks/todo.md`'s W1 wave description, Status header, and
+AC1/AC3 wording are updated to reflect the new call form (exact line numbers not pinned
+here -- they shift with this very amendment's own todo.md edits; the retained
+historical Working Notes section further down the file is deliberately left as written
+history, not updated). Dated plan docs
 (`docs/plans/2026-08-27-voip-1404-global-topic-exchange-design.md:125`, and §§1-8 above
 in this very document) are likewise deliberately left as written history, the same rule
 applied to `tasks/todo.md`'s Working Notes. Same branch, same open PR (#1222, unmerged)
