@@ -29,7 +29,7 @@ import (
 // is customer-only) and keeping it unreachable is today's behavior (design §4,
 // follow-up VOIP-1422). Pinned by the binding golden test.
 var topicPatterns = []string{
-	eventtopic.PatternAction(string(commonoutline.ServiceNameCustomerManager), "customer", "deleted"),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCustomerManager), cmcustomer.EventTypeCustomerDeleted),
 }
 
 // fanoutUnbindTargets lists the old per-service fanout event exchanges to unbind

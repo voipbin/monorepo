@@ -37,10 +37,10 @@ const (
 // `bin-manager.event` (VOIP-1406): one pattern per dispatch pair handled in
 // processEvent. Pinned byte-for-byte by binding_golden_test.go.
 var topicPatterns = []string{
-	eventtopic.PatternAction(string(commonoutline.ServiceNameMessageManager), "message", "created"),
-	eventtopic.PatternAction(string(commonoutline.ServiceNameEmailManager), "email", "created"),
-	eventtopic.PatternAction(string(commonoutline.ServiceNameEmailManager), "email", "updated"),
-	eventtopic.PatternAction(string(commonoutline.ServiceNameWebchatManager), "webchat", "message_created"),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameMessageManager), mmmessage.EventTypeMessageCreated),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameEmailManager), emmemail.EventTypeCreated),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameEmailManager), emmemail.EventTypeUpdated),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameWebchatManager), wmmessage.EventTypeMessageCreated),
 }
 
 // fanoutUnbindTargets lists the per-service fanout event exchanges the subscribe

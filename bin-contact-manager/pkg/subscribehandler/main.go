@@ -32,7 +32,7 @@ const (
 // contact-manager dispatches a single pair -- customer deletion cascade. Pinned by the
 // binding golden test.
 var topicPatterns = []string{
-	eventtopic.PatternAction(string(commonoutline.ServiceNameCustomerManager), "customer", "deleted"),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCustomerManager), cmcustomer.EventTypeCustomerDeleted),
 }
 
 // fanoutUnbindTargets lists the old per-service fanout event exchanges to unbind once
