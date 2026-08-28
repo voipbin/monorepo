@@ -20,7 +20,7 @@ Key packages:
 | Package | Role |
 |---------|------|
 | `pkg/listenhandler` | RabbitMQ RPC routing (shared queue + per-pod queue) |
-| `pkg/subscribehandler` | Consumes call-manager and customer-manager events for cleanup |
+| `pkg/subscribehandler` | Consumes call-manager and customer-manager events for cleanup via pattern bindings on the global topic exchange `bin-manager.event` (VOIP-1406); fanout legs retained as rollback surface until VOIP-1407 |
 | `pkg/streaminghandler` | WebSocket connections to Asterisk; in-memory session map |
 | `pkg/transcribehandler` | Core business logic — session creation, status transitions |
 | `pkg/dbhandler` | MySQL + Redis persistence |
@@ -42,6 +42,18 @@ subscribehandler     — call_hangup → finalize session; customer_deleted → 
 ```
 
 Both `cmd/transcribe-manager` and `cmd/transcribe-control` construct their NotifyHandler with `notifyhandler.WithGlobalTopicPublish()`, so every event is published twice: once to the per-service fanout exchange `bin-manager.transcribe-manager.event` (unchanged, still the system of record) and once to the global topic exchange `bin-manager.event` with the routing key `transcribe-manager.<resource>.<transcribe-id>.<action>`. The two cmds must stay in lockstep on this option — enabling it in only one would leave consumers with gaps depending on which process published. A topic publish failure never propagates to the caller and never affects the fanout publish. See [docs/domain.md](domain.md) for the per-event routing keys and `docs/plans/` (monorepo `docs/plans/2026-08-27-voip-1404-global-topic-exchange-design.md`) for the schema.
+
+## Event Subscriptions
+
+SubscribeHandler (`pkg/subscribehandler/`) consumes from the queue `bin-manager.transcribe-manager.subscribe`. Since VOIP-1406 the queue is bound to the **global topic exchange `bin-manager.event`** with one pattern per dispatched (publisher, event-type) pair — 3 patterns total, pinned byte-for-byte by the binding golden test (`pkg/subscribehandler/binding_golden_test.go`):
+
+| Pattern | Purpose |
+|---------|---------|
+| `call-manager.call.*.hangup` | Call hangup — finalize the transcription session |
+| `call-manager.confbridge.*.terminated` | Confbridge terminated — finalize the conference transcription session |
+| `customer-manager.customer.*.deleted` | Customer deleted — cascade cleanup of the customer's transcribes |
+
+The old per-service **fanout subscriptions are retained in code as the rollback surface until VOIP-1407** (`QueueSubscribe` to `bin-manager.call-manager.event` and `bin-manager.customer-manager.event`); on each boot Run() re-subscribes them, then unbinds both again after the topic binds succeed.
 
 ## Request Routing
 

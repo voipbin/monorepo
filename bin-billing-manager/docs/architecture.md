@@ -75,3 +75,9 @@ Both published types are addressed by their OWN id (the default top-level `id` f
 | `account.EventTypeAccountUpdated` | Balance, plan, or payment info updated |
 
 `billing.EventTypeBillingDeleted` and `account.EventTypeAccountDeleted` are declared constants with NO publish site anywhere in this service — they are dead and are deliberately excluded from the golden routing-key table. (The identically named `account_deleted` in conversation-manager and storage-manager is LIVE; only billing-manager's is dead.)
+
+## Events Subscribed
+
+Since VOIP-1406, the subscribe queue `bin-manager.billing-manager.subscribe` receives its events through **pattern bindings on the global topic exchange `bin-manager.event`**: 14 `PatternForEventType` bindings, one per (publisher, event type) pair dispatched in `pkg/subscribehandler/main.go` — 4 call-manager (call progressing/hangup, recording started/finished), 1 message-manager (message created), 1 email-manager (email created), 4 customer-manager (customer created/deleted/frozen/recovered), 2 number-manager (number created/renewed), and 2 tts-manager (speaking started/stopped). Each binding pattern derives its resource/action segments directly from the publisher's own `EventType*` constant (VOIP-1406 amendment) rather than a hand-typed string literal. The exact pattern strings are pinned by `pkg/subscribehandler/binding_golden_test.go`.
+
+The old per-service **fanout subscriptions are retained as the rollback surface until VOIP-1407**: `Run()` still subscribes the 6 fanout event exchanges (call/message/email/customer/number/tts) and only unbinds them after every topic pattern is bound. If the topic-exchange declare or any pattern bind fails, the service stays fully on fanout (partial topic binds are rolled back best-effort). Billing-manager has no asterisk leg and no VOIP-1258 webhook-topic bind.

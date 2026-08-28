@@ -48,6 +48,22 @@ Requests arrive via RabbitMQ queue `bin-manager.agent-manager.request`. The `lis
 | `/v1/password-forgot$` | POST | Initiate password reset flow (send email) |
 | `/v1/password-reset$` | POST | Complete password reset with token |
 
+## Events Consumed
+
+Since VOIP-1406 the subscribe queue `bin-manager.agent-manager.subscribe` receives its service events through pattern bindings on the global topic exchange `bin-manager.event` (declared idempotently at boot), one pattern per dispatch pair:
+
+| Pattern | Dispatch |
+|---------|----------|
+| `call-manager.groupcall.*.created` | groupcall created handling |
+| `call-manager.groupcall.*.progressing` | groupcall progressing handling |
+| `customer-manager.customer.*.deleted` | customer deletion cleanup |
+| `customer-manager.customer.*.created` | customer creation handling |
+
+The exact pattern set is pinned by `pkg/subscribehandler/binding_golden_test.go`. Retained legs:
+
+- The VOIP-1258 webhook-topic bind (`#` on `bin-manager.webhook-manager.event.topic`) is unchanged and coexists with the new bindings.
+- The fanout `QueueSubscribe` calls to `bin-manager.call-manager.event` and `bin-manager.customer-manager.event` remain in `Run()` as the rollback surface until VOIP-1407; on a fully successful topic binding, the queue is unbound from both fanout exchanges at boot (bind-new-before-unbind-old, all-or-nothing with best-effort rollback).
+
 ## Events Published
 
 Exchange: `bin-manager.agent-manager.event` (fanout, system of record) and — since VOIP-1405 — the global topic exchange `bin-manager.event`.

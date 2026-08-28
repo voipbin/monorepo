@@ -21,7 +21,7 @@ models/tag/             — Data structures (Tag, event types, WebhookMessage)
 |-------|---------|---------------|
 | Entry | `cmd/tag-manager` | Configuration; starts ListenHandler and SubscribeHandler |
 | Transport | `pkg/listenhandler` | Consumes `bin-manager.tag-manager.request`; regex-routes to taghandler |
-| Events | `pkg/subscribehandler` | Subscribes to `bin-manager.customer-manager.event`; cascades customer deletes |
+| Events | `pkg/subscribehandler` | Consumes customer events via a pattern binding on the global topic exchange `bin-manager.event` (VOIP-1406); cascades customer deletes |
 | Business logic | `pkg/taghandler` | CRUD operations; publishes `tag_created`, `tag_updated`, `tag_deleted` events |
 | Persistence | `pkg/dbhandler` | MySQL writes with soft-delete (`tm_delete`); Redis cache invalidation |
 | Cache | `pkg/cachehandler` | Redis reads for fast tag lookups |
@@ -55,6 +55,16 @@ RabbitMQ → listenhandler (regex dispatch)
 Event flow:
 RabbitMQ → subscribehandler → taghandler → bulk delete
 ```
+
+### Events Subscribed
+
+SubscribeHandler (`pkg/subscribehandler/`) consumes from the queue `bin-manager.tag-manager.subscribe`. Since VOIP-1406 the queue is bound to the **global topic exchange `bin-manager.event`** with one pattern per dispatched (publisher, event-type) pair — 1 pattern total, pinned byte-for-byte by the binding golden test (`pkg/subscribehandler/binding_golden_test.go`):
+
+| Pattern | Purpose |
+|---------|---------|
+| `customer-manager.customer.*.deleted` | Customer deletion — cascading bulk tag delete |
+
+The old per-service **fanout subscription is retained in code as the rollback surface until VOIP-1407** (`QueueSubscribe` to `bin-manager.customer-manager.event`); on each boot Run() re-subscribes it, then unbinds it again after the topic bind succeeds.
 
 ### Events Published
 

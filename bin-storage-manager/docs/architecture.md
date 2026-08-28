@@ -23,7 +23,7 @@ models/                 — Data structures (file, account, bucketfile, compress
 |-------|---------|---------------|
 | Entry | `cmd/storage-manager` | Configuration; starts ListenHandler and SubscribeHandler |
 | Transport | `pkg/listenhandler` | Consumes `bin-manager.storage-manager.request`; regex-routes to storagehandler |
-| Events | `pkg/subscribehandler` | Subscribes to `bin-manager.customer-manager.event`; handles cascading deletes |
+| Events | `pkg/subscribehandler` | Consumes customer events via pattern bindings on the global topic exchange `bin-manager.event` (VOIP-1406); fanout leg retained as rollback surface until VOIP-1407; handles cascading deletes |
 | Business logic | `pkg/storagehandler` | Coordinates file lifecycle, quota checks, recording compression |
 | GCS operations | `pkg/filehandler` | Bucket CRUD, signed URL generation (service account JSON key file, local signing) |
 | Account management | `pkg/accounthandler` | 10 GB quota enforcement per customer |
@@ -82,6 +82,17 @@ RabbitMQ → listenhandler (regex dispatch)
 | `gcp_bucket_name_tmp` | `tmp/` | Compressed zip archives (transient, SHA-1 named) |
 
 Download URLs are GCS signed URLs with a default 24-hour expiration.
+
+## Event Subscriptions
+
+SubscribeHandler (`pkg/subscribehandler/`) consumes from the queue `bin-manager.storage-manager.subscribe`. Since VOIP-1406 the queue is bound to the **global topic exchange `bin-manager.event`** with one pattern per dispatched (publisher, event-type) pair — 2 patterns total, pinned byte-for-byte by the binding golden test (`pkg/subscribehandler/binding_golden_test.go`):
+
+| Pattern | Purpose |
+|---------|---------|
+| `customer-manager.customer.*.created` | Customer created — provisions the customer's storage account |
+| `customer-manager.customer.*.deleted` | Customer deleted — cascading delete of the customer's files and account |
+
+The old per-service **fanout subscription is retained in code as the rollback surface until VOIP-1407** (`QueueSubscribe` to `bin-manager.customer-manager.event`); on each boot Run() re-subscribes it, then unbinds it again after the topic binds succeed.
 
 ## Events Published
 

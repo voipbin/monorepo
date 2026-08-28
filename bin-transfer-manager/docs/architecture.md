@@ -56,5 +56,12 @@ Requests arrive on queue `bin-manager.transfer-manager.request`. The listenhandl
 
 No per-pod queue routing — all replicas share MySQL + Redis state.
 
-Event subscriptions drive state transitions:
-- `bin-manager.call-manager.event` → `subscribehandler` processes `groupcall_progressing`, `groupcall_hangup`, `call_hangup`.
+Event subscriptions drive state transitions. Since VOIP-1406 the subscribe queue (`bin-manager.transfer-manager.subscribe`) is bound to the **global topic exchange `bin-manager.event`** with one pattern per dispatched (publisher, event-type) pair — 3 patterns total, pinned byte-for-byte by the binding golden test (`pkg/subscribehandler/binding_golden_test.go`):
+
+| Pattern | Purpose |
+|---------|---------|
+| `call-manager.groupcall.*.progressing` | `groupcall_progressing` — advance attended/blind transfer state |
+| `call-manager.groupcall.*.hangup` | `groupcall_hangup` — roll back or finalize transfer |
+| `call-manager.call.*.hangup` | `call_hangup` — transferer/transferee hangup handling |
+
+The old per-service **fanout subscription is retained in code as the rollback surface until VOIP-1407** (`QueueSubscribe` to `bin-manager.call-manager.event`); on each boot Run() re-subscribes it, then unbinds it again after the topic binds succeed.

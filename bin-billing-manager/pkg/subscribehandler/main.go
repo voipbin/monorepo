@@ -10,6 +10,7 @@ import (
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmrecording "monorepo/bin-call-manager/models/recording"
 
+	"monorepo/bin-common-handler/models/eventtopic"
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
@@ -32,6 +33,40 @@ import (
 // SubscribeHandler interface
 type SubscribeHandler interface {
 	Run() error
+}
+
+// topicPatterns is this service's bind set on the global topic exchange
+// `bin-manager.event` (VOIP-1406): exactly one PatternAction per (publisher, event
+// type) pair handled in processEvent below. The exact pattern strings are pinned by
+// binding_golden_test.go.
+var topicPatterns = []string{
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCallManager), cmcall.EventTypeCallProgressing),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCallManager), cmcall.EventTypeCallHangup),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCallManager), cmrecording.EventTypeRecordingStarted),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCallManager), cmrecording.EventTypeRecordingFinished),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameMessageManager), mmmessage.EventTypeMessageCreated),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameEmailManager), ememail.EventTypeCreated),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCustomerManager), cscustomer.EventTypeCustomerDeleted),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCustomerManager), cscustomer.EventTypeCustomerCreated),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCustomerManager), cscustomer.EventTypeCustomerFrozen),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCustomerManager), cscustomer.EventTypeCustomerRecovered),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameNumberManager), nmnumber.EventTypeNumberCreated),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameNumberManager), nmnumber.EventTypeNumberRenewed),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameTTSManager), tmspeaking.EventTypeSpeakingStarted),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameTTSManager), tmspeaking.EventTypeSpeakingStopped),
+}
+
+// fanoutUnbindTargets lists the per-service fanout event exchanges this queue
+// unbinds after ALL topicPatterns are bound (VOIP-1406). It equals the cmd wiring's
+// subscribeTargets (billing has no asterisk leg). The fanout QueueSubscribe calls in
+// Run() stay in place until VOIP-1407 as the rollback/degrade surface.
+var fanoutUnbindTargets = []string{
+	string(commonoutline.QueueNameCallEvent),
+	string(commonoutline.QueueNameMessageEvent),
+	string(commonoutline.QueueNameEmailEvent),
+	string(commonoutline.QueueNameCustomerEvent),
+	string(commonoutline.QueueNameNumberEvent),
+	string(commonoutline.QueueNameTTSEvent),
 }
 
 type subscribeHandler struct {
@@ -105,6 +140,52 @@ func (h *subscribeHandler) Run() error {
 		if errSubscribe := h.sockHandler.QueueSubscribe(h.subscribeQueue, target); errSubscribe != nil {
 			log.Errorf("Could not subscribe the target. target: %s, err: %v", target, errSubscribe)
 			return errSubscribe
+		}
+	}
+
+	// Migrate this queue onto the global topic exchange `bin-manager.event`
+	// (VOIP-1406): declare the exchange (idempotent, both-sides-declare), bind every
+	// dispatch pattern, and only after ALL patterns are bound unbind the old
+	// per-service fanout exchanges. Bind-new-before-unbind-old: there is never a
+	// window bound to neither. Any bind failure rolls back the partial topic binds
+	// (best-effort) and leaves the service fully on fanout. The fanout
+	// QueueSubscribe calls above stay until VOIP-1407 as the rollback surface.
+	//
+	// CRITICAL: this MUST run synchronously here, BEFORE the ConsumeMessage
+	// goroutine below. QueueBind/QueueUnbind and ConsumeMessage's internal
+	// channel.Consume() share the same underlying AMQP channel for this queue;
+	// racing them makes the broker close the channel with a 503 "unexpected command
+	// received" (VOIP-1258 PR #1101 post-deploy incident, 2026-07-14).
+	if errDeclare := h.sockHandler.TopicCreateWithKind(string(commonoutline.QueueNameEvent), "topic"); errDeclare != nil {
+		log.Errorf("Could not declare the global topic exchange. Staying fully on fanout. exchange: %s, err: %v", string(commonoutline.QueueNameEvent), errDeclare)
+	} else {
+		bound := []string{}
+		ok := true
+		for _, pattern := range topicPatterns {
+			if errBind := h.sockHandler.QueueBind(h.subscribeQueue, pattern, string(commonoutline.QueueNameEvent), false, nil); errBind != nil {
+				log.Errorf("Could not bind the topic pattern. Staying fully on fanout. pattern: %s, err: %v", pattern, errBind)
+				ok = false
+				break
+			}
+			bound = append(bound, pattern)
+		}
+
+		if !ok {
+			// best-effort rollback of the partial topic binds, then stay fully on
+			// fanout. NO fanout exchange is unbound on this path.
+			for _, pattern := range bound {
+				if errUnbind := h.sockHandler.QueueUnbind(h.subscribeQueue, pattern, string(commonoutline.QueueNameEvent), nil); errUnbind != nil {
+					log.Errorf("CRITICAL: partial topic bind could not be rolled back. The queue keeps a stale topic binding (partial double delivery). Manual intervention required. pattern: %s, err: %v", pattern, errUnbind)
+				}
+			}
+		} else {
+			// all patterns bound -- unbind every old fanout exchange. An unbind
+			// failure is CRITICAL but not fatal: double delivery beats loss.
+			for _, target := range fanoutUnbindTargets {
+				if errUnbind := h.sockHandler.QueueUnbind(h.subscribeQueue, "", target, nil); errUnbind != nil {
+					log.Errorf("CRITICAL: still bound to BOTH exchanges (double delivery). Manual intervention required. exchange: %s, err: %v", target, errUnbind)
+				}
+			}
 		}
 	}
 

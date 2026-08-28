@@ -50,6 +50,12 @@ func Test_Run_BindsTopicExchangeBeforeConsuming(t *testing.T) {
 			callOrderCh <- "QueueUnbind"
 			return nil
 		})
+	// VOIP-1406 topic migration block (also synchronous, before ConsumeMessage).
+	mockSock.EXPECT().TopicCreateWithKind(string(commonoutline.QueueNameEvent), "topic").Return(nil)
+	mockSock.EXPECT().QueueBind(queueName, "#", string(commonoutline.QueueNameEvent), false, nil).Return(nil)
+	for _, target := range fanoutUnbindTargets {
+		mockSock.EXPECT().QueueUnbind(queueName, "", string(target), nil).Return(nil)
+	}
 	mockSock.EXPECT().ConsumeMessage(gomock.Any(), queueName, gomock.Any(), false, false, false, 10, gomock.Any()).
 		DoAndReturn(func(_, _, _ interface{}, _, _, _ bool, _ int, _ interface{}) error {
 			callOrderCh <- "ConsumeMessage"

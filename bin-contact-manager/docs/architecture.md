@@ -42,6 +42,16 @@ RabbitMQ
 - **cachehandler**: Redis hash-based index allowing O(1) lookup by E.164 phone number or email address.
 - **subscribehandler**: Handles `customer_deleted` events by removing all contacts for that customer.
 
+## Event Subscriptions
+
+SubscribeHandler (`pkg/subscribehandler/`) consumes from the queue `bin-manager.contact-manager.subscribe`. Since VOIP-1406 the queue is bound to the **global topic exchange `bin-manager.event`** with one pattern per dispatched (publisher, event-type) pair — 1 pattern total, pinned byte-for-byte by the binding golden test (`pkg/subscribehandler/binding_golden_test.go`):
+
+| Pattern | Purpose |
+|---------|---------|
+| `customer-manager.customer.*.deleted` | Customer deletion — cascade-deletes all contacts of the customer |
+
+The old per-service **fanout subscription is retained in code as the rollback surface until VOIP-1407** (`QueueSubscribe` to `bin-manager.customer-manager.event`); on each boot Run() re-subscribes it, then unbinds it again after the topic bind succeeds.
+
 ## Event Publishing — Global Topic Exchange (VOIP-1404 / VOIP-1405)
 
 Both `cmd/contact-manager` and `cmd/contact-control` construct their `NotifyHandler` with `notifyhandler.WithGlobalTopicPublish()`. On top of the existing fanout publish to `QueueNameContactEvent`, every event is therefore ALSO published to the global topic exchange `bin-manager.event` with the routing key:

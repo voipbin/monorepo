@@ -25,7 +25,7 @@ Supporting binary:
 |-------|---------|---------------|
 | Entry | `cmd/number-manager` | Cobra + Viper config, dependency wiring, daemon start |
 | Listen | `pkg/listenhandler` | RabbitMQ RPC routing; dispatches to numberhandler |
-| Subscribe | `pkg/subscribehandler` | Consumes customer/flow events; cascading deletes and flow-ref cleanup |
+| Subscribe | `pkg/subscribehandler` | Consumes customer/flow events via pattern bindings on the global topic exchange `bin-manager.event` (VOIP-1406); cascading deletes and flow-ref cleanup |
 | Business | `pkg/numberhandler` | Number CRUD, provider dispatch, billing validation |
 | Provider | `pkg/numberhandlertelnyx` | Telnyx API: purchase, release, list available numbers |
 | Provider | `pkg/numberhandlertwilio` | Twilio API: purchase, release, list available numbers |
@@ -43,6 +43,17 @@ Both `cmd/number-manager` and `cmd/number-control` construct their NotifyHandler
 `numberhandler.dbUpdate` picks its publish call from the event type: `number_renewed` goes out through `PublishEvent` (internal bookkeeping, no customer webhook) while `number_updated` goes out through `PublishWebhookEvent`. Both paths generate the same topic routing-key shape with the same `*number.Number` payload, so one instance binding `number-manager.number.<number-id>.#` follows the whole lifecycle.
 
 The third routing-key segment is the *subscription address* — the id consumers bind to. `number.Number` deliberately carries no `eventtopic.SubscriptionIdentifier` override: a number is an independent persistent resource, so its own id is the address and the default JSON `id` extraction covers it. `models/number/routingkey_golden_test.go` pins the exact key of every published event type (`number_created`, `number_deleted`, and both `dbUpdate` branches) plus the deliberate absence of that override. See the monorepo `docs/plans/2026-08-27-voip-1404-global-topic-exchange-design.md` for the schema and `docs/plans/2026-08-27-voip-1405-topic-publisher-rollout-design.md` §2.4 for the address mapping.
+
+## Event Subscriptions
+
+SubscribeHandler (`pkg/subscribehandler/`) consumes from the queue `bin-manager.number-manager.subscribe`. Since VOIP-1406 the queue is bound to the **global topic exchange `bin-manager.event`** with one pattern per dispatched (publisher, event-type) pair — 2 patterns total, pinned byte-for-byte by the binding golden test (`pkg/subscribehandler/binding_golden_test.go`):
+
+| Pattern | Purpose |
+|---------|---------|
+| `customer-manager.customer.*.deleted` | Customer deletion — releases all of the customer's numbers back to the provider |
+| `flow-manager.flow.*.deleted` | Flow deletion — clears the deleted flow's references from numbers |
+
+The old per-service **fanout subscriptions are retained in code as the rollback surface until VOIP-1407** (`QueueSubscribe` to `bin-manager.flow-manager.event` and `bin-manager.customer-manager.event`); on each boot Run() re-subscribes them, then unbinds them again after the topic binds succeed.
 
 ## Request Routing
 
