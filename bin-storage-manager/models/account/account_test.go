@@ -6,7 +6,32 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/models/eventtopic"
 )
+
+var _ eventtopic.SubscriptionIdentifier = (*Account)(nil)
+
+// TestAccountEventSubscriptionIDUsesOwnIDNotCustomerID pins the subscription address of the
+// storage account to its own id. CustomerID is the plausible wrong answer -- both fields are
+// populated with distinct UUIDs so returning the wrong one fails loudly.
+func TestAccountEventSubscriptionIDUsesOwnIDNotCustomerID(t *testing.T) {
+	id := uuid.Must(uuid.NewV4())
+	customerID := uuid.Must(uuid.NewV4())
+
+	a := &Account{
+		ID:         id,
+		CustomerID: customerID,
+	}
+
+	res := a.EventSubscriptionID()
+	if res != id.String() {
+		t.Errorf("Wrong match. expect: %s, got: %s", id.String(), res)
+	}
+	if res == customerID.String() {
+		t.Errorf("Subscription address must not be the customer id. got: %s", res)
+	}
+}
 
 func TestAccountStruct(t *testing.T) {
 	id := uuid.Must(uuid.NewV4())

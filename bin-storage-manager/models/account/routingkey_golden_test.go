@@ -2,10 +2,10 @@
 //
 // It covers EVERY event type storage-manager publishes today, across both resource namespaces
 // (account / file), and asserts the exact key that notifyhandler generates for the real event
-// data type of each publish site. storage-manager carries NO subscription-id override: both
-// published types address their own stream by their own id, so the default JSON top-level `id`
-// fallback is the whole resolution. The table exists to keep it that way -- an override silently
-// added to either type would move the address without any runtime metric noticing.
+// data type of each publish site. Both published types address their own stream by their own id,
+// stated by their explicit EventSubscriptionID methods (VOIP-1419: implementation is mandatory;
+// an empty return degrades to the `-` placeholder). The table exists to keep those addresses
+// pinned -- a change to either method would move the address without any runtime metric noticing.
 //
 // The file lives in models/account because the table spans both model packages of the service and
 // account is the designated PRIMARY package for storage-manager (1405 plan §Phase 1 anchoring
@@ -25,7 +25,6 @@
 package account_test
 
 import (
-	"encoding/json"
 	"reflect"
 	"testing"
 
@@ -48,42 +47,28 @@ var (
 )
 
 // resolveSubscriptionID mirrors the resolution notifyhandler performs on the publish path
-// (1404 design §4.2 / §5.2): the opt-in interface first, then -- ONLY when no override exists --
-// the top-level "id" of the marshaled payload. Keeping it here rather than reaching into
-// notifyhandler internals is deliberate -- the golden table must fail when a model STARTS or
-// STOPS implementing the interface, which is exactly what this two-step reproduction detects.
-//
-// The early return below is the load-bearing half: an override that EXISTS is authoritative even
-// when it yields "" or uuid.Nil, so the JSON fallback must never run behind it. This matches
-// notifyhandler.resolveSubscriptionOverride's hasOverride semantics exactly.
+// (VOIP-1419): the event data's explicit EventSubscriptionID method is the whole mechanism --
+// implementation is mandatory, and an empty result degrades to the `-` placeholder. The `data any`
+// parameter is kept so the table can also feed values that do NOT implement the interface; those
+// resolve to "" (→ placeholder), same as production. Keeping the helper here rather than reaching
+// into notifyhandler internals is deliberate -- the golden table must fail when a model's method
+// changes what it returns, which is exactly what this reproduction detects.
 func resolveSubscriptionID(t *testing.T, data any) string {
 	t.Helper()
 
-	if identifier, ok := data.(eventtopic.SubscriptionIdentifier); ok {
-		// typed-nil guard, mirroring notifyhandler.resolveSubscriptionOverride: a nil pointer whose
-		// type implements the interface still SATISFIES the assertion, and every real implementation
-		// dereferences its receiver -- calling the method would panic. Production reports "no
-		// override" for such a payload, so this guard falls through to the JSON half below rather
-		// than returning early; `null` carries no top-level `id` either, so both halves agree on the
-		// `-` placeholder.
-		if v := reflect.ValueOf(data); v.Kind() != reflect.Ptr || !v.IsNil() {
-			return identifier.EventSubscriptionID()
-		}
-	}
-
-	m, err := json.Marshal(data)
-	if err != nil {
-		t.Fatalf("Could not marshal the event data. err: %v", err)
-	}
-
-	d := struct {
-		ID string `json:"id"`
-	}{}
-	if errUnmarshal := json.Unmarshal(m, &d); errUnmarshal != nil {
+	identifier, ok := data.(eventtopic.SubscriptionIdentifier)
+	if !ok {
 		return ""
 	}
 
-	return d.ID
+	// typed-nil guard, mirroring notifyhandler: a nil pointer whose type implements the interface
+	// still SATISFIES the assertion, and every real implementation dereferences its receiver --
+	// calling the method would panic. Production resolves such a payload to the `-` placeholder.
+	if v := reflect.ValueOf(data); v.Kind() == reflect.Ptr && v.IsNil() {
+		return ""
+	}
+
+	return identifier.EventSubscriptionID()
 }
 
 func TestGoldenRoutingKeys(t *testing.T) {
@@ -181,28 +166,6 @@ func TestGoldenRoutingKeysAccountEventTypeLiterals(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.got != tt.expect {
 				t.Errorf("Wrong match. expect: %s, got: %s", tt.expect, tt.got)
-			}
-		})
-	}
-}
-
-// TestStorageTypesUseDefaultSubscriptionID pins the deliberate ABSENCE of a subscription-id
-// override on both published types (design §2.4: storage account/file address by their own id).
-// Adding an override to either would silently relocate every subscriber's binding address, and no
-// runtime metric would flag it -- the keys would stay well-formed.
-func TestStorageTypesUseDefaultSubscriptionID(t *testing.T) {
-	tests := []struct {
-		name string
-		data any
-	}{
-		{"account", &account.Account{ID: accountID}},
-		{"file", &file.File{Identity: commonidentity.Identity{ID: fileID}}},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if _, ok := tt.data.(eventtopic.SubscriptionIdentifier); ok {
-				t.Errorf("%s must not implement SubscriptionIdentifier. its own id is the subscription address.", tt.name)
 			}
 		})
 	}

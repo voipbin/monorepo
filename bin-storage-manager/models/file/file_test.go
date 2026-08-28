@@ -7,8 +7,41 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	"monorepo/bin-common-handler/models/eventtopic"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 )
+
+var _ eventtopic.SubscriptionIdentifier = (*File)(nil)
+
+// TestFileEventSubscriptionIDUsesOwnIDNotAccountID pins the subscription address of the file to
+// its own id: a file is an independent resource that does NOT collapse onto the account axis.
+// AccountID and ReferenceID are the plausible wrong answers -- all fields are populated with
+// distinct UUIDs so returning any wrong one fails loudly.
+func TestFileEventSubscriptionIDUsesOwnIDNotAccountID(t *testing.T) {
+	id := uuid.Must(uuid.NewV4())
+	accountID := uuid.Must(uuid.NewV4())
+	referenceID := uuid.Must(uuid.NewV4())
+
+	f := &File{
+		Identity: commonidentity.Identity{
+			ID:         id,
+			CustomerID: uuid.Must(uuid.NewV4()),
+		},
+		AccountID:   accountID,
+		ReferenceID: referenceID,
+	}
+
+	res := f.EventSubscriptionID()
+	if res != id.String() {
+		t.Errorf("Wrong match. expect: %s, got: %s", id.String(), res)
+	}
+	if res == accountID.String() {
+		t.Errorf("Subscription address must not be the account id. got: %s", res)
+	}
+	if res == referenceID.String() {
+		t.Errorf("Subscription address must not be the reference id. got: %s", res)
+	}
+}
 
 func TestFileStruct(t *testing.T) {
 	id := uuid.Must(uuid.NewV4())
