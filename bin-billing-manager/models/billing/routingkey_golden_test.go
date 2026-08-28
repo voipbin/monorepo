@@ -7,11 +7,12 @@
 // subscription address produces well-formed keys that no instance binding ever matches, and no
 // runtime metric can detect it. Design doc §2.4 / §4.
 //
-// billing-manager is a default-fallback service: `*billing.Billing` and `*account.Account` are
+// billing-manager is a standard own-id service: `*billing.Billing` and `*account.Account` are
 // both addressed by their OWN id (design §2.4 records this as a deliberate decision for
 // billing.Billing -- address consistency with `billing_updated`, and the id is obtainable from the
-// create response), so NO type in this service carries an eventtopic.SubscriptionIdentifier
-// override. That absence is asserted explicitly below.
+// create response). Since VOIP-1419 every published type states that address through an explicit
+// `EventSubscriptionID()` method; the compile-time assertions live in each type's sibling test
+// file (billing_test.go / account_test.go).
 //
 // The file lives in models/billing because billing is the service's designated PRIMARY model
 // package; it is an external test package so it can import the sibling model packages without any
@@ -26,7 +27,6 @@
 package billing_test
 
 import (
-	"encoding/json"
 	"reflect"
 	"testing"
 
@@ -48,43 +48,28 @@ var (
 )
 
 // resolveSubscriptionID mirrors the resolution notifyhandler performs on the publish path
-// (1404 design §4.2 / §5.2): the opt-in interface first, then -- ONLY when no override exists --
-// the top-level "id" of the marshaled payload. Keeping it here rather than reaching into
-// notifyhandler internals is deliberate -- the golden table must fail when a model STARTS or STOPS
-// implementing the interface, which is exactly what this two-step reproduction detects.
+// (VOIP-1419): every published type carries an explicit EventSubscriptionID method -- mandatory,
+// compiler-enforced at the publish call site -- and its return value IS the subscription address.
+// There is no fallback: data that does not implement the interface (unrepresentable on the
+// production path, but expressible through this `any`-typed helper) and a typed-nil pointer both
+// resolve to "", which the routing key degrades to the `-` placeholder.
 //
-// The early return below is the load-bearing half: an override that EXISTS is authoritative even
-// when it yields "" or uuid.Nil, so the JSON fallback must never run behind it. This matches
-// notifyhandler.resolveSubscriptionOverride's hasOverride semantics exactly; if the two ever
-// diverge, this table stops reproducing what the publish path actually generates.
+// The typed-nil guard is load-bearing: a nil pointer whose type implements the interface still
+// SATISFIES the assertion, and every real implementation dereferences its receiver -- calling the
+// method would panic. Production resolves such a payload to the placeholder, so this helper
+// returns "" for it too.
 func resolveSubscriptionID(t *testing.T, data any) string {
 	t.Helper()
 
-	if identifier, ok := data.(eventtopic.SubscriptionIdentifier); ok {
-		// typed-nil guard, mirroring notifyhandler.resolveSubscriptionOverride: a nil pointer whose
-		// type implements the interface still SATISFIES the assertion, and every real implementation
-		// dereferences its receiver -- calling the method would panic. Production reports "no
-		// override" for such a payload, so this guard falls through to the JSON half below rather
-		// than returning early; `null` carries no top-level `id` either, so both halves agree on the
-		// `-` placeholder.
-		if v := reflect.ValueOf(data); v.Kind() != reflect.Ptr || !v.IsNil() {
-			return identifier.EventSubscriptionID()
-		}
+	identifier, ok := data.(eventtopic.SubscriptionIdentifier)
+	if !ok {
+		return ""
 	}
-
-	m, err := json.Marshal(data)
-	if err != nil {
-		t.Fatalf("Could not marshal the event data. err: %v", err)
-	}
-
-	d := struct {
-		ID string `json:"id"`
-	}{}
-	if errUnmarshal := json.Unmarshal(m, &d); errUnmarshal != nil {
+	if v := reflect.ValueOf(data); v.Kind() == reflect.Ptr && v.IsNil() {
 		return ""
 	}
 
-	return d.ID
+	return identifier.EventSubscriptionID()
 }
 
 func TestGoldenRoutingKeys(t *testing.T) {
@@ -113,7 +98,8 @@ func TestGoldenRoutingKeys(t *testing.T) {
 		data      any
 		expect    string
 	}{
-		// billing resource -- own id is the address, resolved by the default JSON fallback.
+		// billing resource -- own id is the address, returned by the type's explicit
+		// EventSubscriptionID method.
 		// NOTE the deliberate decision recorded in design §2.4: the account-id is NOT the address
 		// here, even though a billing entry is a child of an account.
 		{
@@ -157,9 +143,9 @@ func TestGoldenRoutingKeys(t *testing.T) {
 }
 
 // TestGoldenRoutingKeysUseOwnID pins the property the table exists to protect: each resource
-// resolves to its OWN id, taken from the marshaled payload's top-level `id`. A payload that loses
-// that field (or gains an override returning something else) collapses to the `-` placeholder or a
-// foreign address, and this assertion is what catches it.
+// resolves to its OWN id, returned by its explicit EventSubscriptionID method. A method that
+// starts returning "" (or a foreign id) collapses the address to the `-` placeholder or a foreign
+// address, and this assertion is what catches it.
 func TestGoldenRoutingKeysUseOwnID(t *testing.T) {
 	tests := []struct {
 		name   string
@@ -187,28 +173,6 @@ func TestGoldenRoutingKeysUseOwnID(t *testing.T) {
 
 			if eventtopic.IsPlaceholderSubscriptionID(res) {
 				t.Errorf("%s must never resolve to the placeholder address. got: %s", tt.name, res)
-			}
-		})
-	}
-}
-
-// TestBillingAndAccountUseDefaultSubscriptionID pins the deliberate absence of an override on both
-// published types: their own ids ARE the addresses, so implementing the interface would be
-// redundant and the default JSON `id` extraction must keep covering them. billing-manager has no
-// override type at all (design §2.4).
-func TestBillingAndAccountUseDefaultSubscriptionID(t *testing.T) {
-	tests := []struct {
-		name string
-		data any
-	}{
-		{"Billing", &billing.Billing{Identity: commonidentity.Identity{ID: billingID}}},
-		{"Account", &account.Account{Identity: commonidentity.Identity{ID: accountID}}},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if _, ok := tt.data.(eventtopic.SubscriptionIdentifier); ok {
-				t.Errorf("%s must not implement SubscriptionIdentifier. its own id is the subscription address.", tt.name)
 			}
 		})
 	}

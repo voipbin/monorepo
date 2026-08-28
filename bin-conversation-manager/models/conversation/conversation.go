@@ -43,6 +43,12 @@ type Conversation struct {
 	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
 }
 
+// EventSubscriptionID returns the subscription address of this type on the global topic
+// exchange `bin-manager.event`: the resource's own id (VOIP-1404 §4.2, VOIP-1419).
+func (h *Conversation) EventSubscriptionID() string {
+	return h.ID.String()
+}
+
 type Field string
 
 const (

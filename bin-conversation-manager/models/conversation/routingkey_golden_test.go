@@ -20,7 +20,6 @@
 package conversation_test
 
 import (
-	"encoding/json"
 	"reflect"
 	"testing"
 
@@ -43,43 +42,31 @@ var conversationID = uuid.FromStringOrNil("6b0d9f70-0000-4000-8000-000000000001"
 var accountID = uuid.FromStringOrNil("6b0d9f70-0000-4000-8000-000000000002")
 
 // resolveSubscriptionID mirrors the resolution notifyhandler performs on the publish path
-// (1404 design §4.2 / §5.2): the opt-in interface first, then -- ONLY when no override exists --
-// the top-level "id" of the marshaled payload. Keeping it here rather than reaching into
-// notifyhandler internals is deliberate -- the golden table must fail when a model stops
-// implementing the interface, which is exactly what this two-step reproduction detects.
+// (VOIP-1419): every published event data type carries an explicit
+// eventtopic.SubscriptionIdentifier method -- mandatory, compiler-enforced, with no JSON
+// fallback behind it -- and an empty return degrades to the `-` placeholder. Keeping the mirror
+// here rather than reaching into notifyhandler internals is deliberate -- the golden table must
+// fail when a model's method stops returning the pinned address.
 //
-// The early return below is the load-bearing half: an override that EXISTS is authoritative even
-// when it yields "" or uuid.Nil, so the JSON fallback must never run behind it. This matches
-// notifyhandler.resolveSubscriptionOverride's hasOverride semantics exactly; if the two ever
-// diverge, this table stops reproducing what the publish path actually generates.
+// The parameter stays `any` (not the interface) so the table can also feed non-implementing
+// payloads, which resolve to "" exactly as production's placeholder path does.
 func resolveSubscriptionID(t *testing.T, data any) string {
 	t.Helper()
 
-	if identifier, ok := data.(eventtopic.SubscriptionIdentifier); ok {
-		// typed-nil guard, mirroring notifyhandler.resolveSubscriptionOverride: a nil pointer whose
-		// type implements the interface still SATISFIES the assertion, and every real implementation
-		// dereferences its receiver -- calling the method would panic. Production reports "no
-		// override" for such a payload, so this guard falls through to the JSON half below rather
-		// than returning early; `null` carries no top-level `id` either, so both halves agree on the
-		// `-` placeholder.
-		if v := reflect.ValueOf(data); v.Kind() != reflect.Ptr || !v.IsNil() {
-			return identifier.EventSubscriptionID()
-		}
-	}
-
-	m, err := json.Marshal(data)
-	if err != nil {
-		t.Fatalf("Could not marshal the event data. err: %v", err)
-	}
-
-	d := struct {
-		ID string `json:"id"`
-	}{}
-	if errUnmarshal := json.Unmarshal(m, &d); errUnmarshal != nil {
+	identifier, ok := data.(eventtopic.SubscriptionIdentifier)
+	if !ok {
 		return ""
 	}
 
-	return d.ID
+	// typed-nil guard, mirroring notifyhandler: a nil pointer whose type implements the
+	// interface still SATISFIES the assertion, and every real implementation dereferences its
+	// receiver -- calling the method would panic. Production resolves such a payload to the
+	// `-` placeholder, so the mirror returns "".
+	if v := reflect.ValueOf(data); v.Kind() == reflect.Ptr && v.IsNil() {
+		return ""
+	}
+
+	return identifier.EventSubscriptionID()
 }
 
 func TestGoldenRoutingKeys(t *testing.T) {
@@ -120,7 +107,8 @@ func TestGoldenRoutingKeys(t *testing.T) {
 		data      any
 		expect    string
 	}{
-		// conversation resource -- own id is the address, resolved by the default JSON fallback.
+		// conversation resource -- own id is the address, returned by the type's explicit
+		// EventSubscriptionID method (VOIP-1419).
 		// Two publish sites emit `conversation_created` (conversationhandler/db.go:183 and
 		// create_and_execute_flow.go:85); both carry *conversation.Conversation, so one row pins
 		// both.
@@ -235,27 +223,6 @@ func TestGoldenRoutingKeysConversationStreamConverges(t *testing.T) {
 			prefix := expect[:len(expect)-1] // drop the trailing `#`
 			if len(key) <= len(prefix) || key[:len(prefix)] != prefix {
 				t.Errorf("Wrong match. expect prefix: %s, got: %s", prefix, key)
-			}
-		})
-	}
-}
-
-// TestConversationAndAccountUseDefaultSubscriptionID pins the deliberate ABSENCE of an override on
-// the two resources whose own id is the address. Adding one to either would be the silent-failure
-// direction of the same defect the Message override fixes.
-func TestConversationAndAccountUseDefaultSubscriptionID(t *testing.T) {
-	tests := []struct {
-		name string
-		data any
-	}{
-		{"conversation", &conversation.Conversation{Identity: commonidentity.Identity{ID: conversationID}}},
-		{"account", &account.Account{Identity: commonidentity.Identity{ID: accountID}}},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if _, ok := tt.data.(eventtopic.SubscriptionIdentifier); ok {
-				t.Errorf("%s must not implement SubscriptionIdentifier. its own id is the subscription address.", tt.name)
 			}
 		})
 	}

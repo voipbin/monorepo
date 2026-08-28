@@ -5,7 +5,38 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/models/eventtopic"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 )
+
+// Billing is addressed by its OWN id on the global topic exchange (VOIP-1404/1405/1419). The
+// assertion pins the POINTER type: the event data reaches notifyhandler as a pointer and the
+// interface assertion matches the dynamic type.
+var _ eventtopic.SubscriptionIdentifier = (*Billing)(nil)
+
+func TestBillingEventSubscriptionID(t *testing.T) {
+	billingID := uuid.Must(uuid.NewV4())
+	accountID := uuid.Must(uuid.NewV4())
+
+	h := &Billing{
+		Identity: commonidentity.Identity{
+			ID:         billingID,
+			CustomerID: uuid.Must(uuid.NewV4()),
+		},
+		AccountID: accountID,
+	}
+
+	res := h.EventSubscriptionID()
+	if res != billingID.String() {
+		t.Errorf("Wrong match. expect: %s, got: %s", billingID.String(), res)
+	}
+	// A billing entry is a child of an account, which makes the account id the plausible wrong
+	// address. The own-id choice is a deliberate decision (VOIP-1404 design §2.4).
+	if res == accountID.String() {
+		t.Errorf("Billing must not be addressed by its account id. got: %s", res)
+	}
+}
 
 func TestBillingStruct(t *testing.T) {
 	id := uuid.Must(uuid.NewV4())
