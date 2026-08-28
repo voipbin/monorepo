@@ -11,8 +11,9 @@
 // keys that no instance binding ever matches, and no runtime metric can detect it. Design doc
 // §2.4 / §4.
 //
-// flow-manager is an OWN-ID service: BOTH `flow.Flow` and `activeflow.Activeflow` implement
-// eventtopic.SubscriptionIdentifier explicitly (mandatory since VOIP-1419; an empty return
+// flow-manager is an OWN-ID service: BOTH `flow.Flow` and `activeflow.Activeflow` satisfy
+// eventtopic.SubscriptionIdentifier through the method promoted from their embedded
+// commonidentity.Identity (the contract is mandatory since VOIP-1419; an empty return
 // degrades to the `-` placeholder) and return the resource's own id. The activeflow decision is
 // the load-bearing one (pinned in models/activeflow's own tests and by the table below):
 // `ReferenceID` looks like the natural parent axis, but it can be uuid.Nil, which would collapse
@@ -51,7 +52,8 @@ var (
 )
 
 // resolveSubscriptionID mirrors the resolution notifyhandler performs on the publish path
-// (VOIP-1419): every published type carries an explicit, mandatory EventSubscriptionID method;
+// (VOIP-1419): every published type satisfies the mandatory EventSubscriptionID contract (here
+// via the method promoted from the embedded commonidentity.Identity);
 // the method's return is the address, and an empty return (or a non-implementing / nil payload)
 // degrades to the `-` placeholder. Reproducing it here rather than reaching into notifyhandler
 // internals is deliberate -- the golden table must fail when a model's method starts returning a
@@ -107,7 +109,7 @@ func TestGoldenRoutingKeys(t *testing.T) {
 		data      any
 		expect    string
 	}{
-		// flow resource -- own id is the address, returned by the explicit EventSubscriptionID.
+		// flow resource -- own id is the address, returned through the promoted Identity default.
 		{
 			"flow_created",
 			flow.EventTypeFlowCreated,

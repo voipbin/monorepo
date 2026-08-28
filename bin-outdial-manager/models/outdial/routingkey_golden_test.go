@@ -2,8 +2,9 @@
 //
 // It covers EVERY event type outdial-manager publishes today and asserts the exact key that
 // notifyhandler generates for the real event data type of each publish site. outdial-manager is
-// an OWN-ID service: `outdial.Outdial` implements eventtopic.SubscriptionIdentifier explicitly
-// (mandatory since VOIP-1419; an empty return degrades to the `-` placeholder) and returns the
+// an OWN-ID service: `outdial.Outdial` satisfies eventtopic.SubscriptionIdentifier through the
+// method promoted from its embedded commonidentity.Identity
+// (the contract is mandatory since VOIP-1419; an empty return degrades to the `-` placeholder) and returns the
 // resource's own id. The table is what pins that -- an EventSubscriptionID implementation that
 // starts returning a different id space changes these keys, and no runtime metric would detect
 // it because the keys would still be well formed.
@@ -36,11 +37,12 @@ import (
 )
 
 // outdialID is the subscription address every outdial-manager event carries: the outdial's own
-// id, returned by the explicit EventSubscriptionID method.
+// id, returned through the EventSubscriptionID promoted from the embedded commonidentity.Identity.
 var outdialID = uuid.FromStringOrNil("6c14ab90-0000-4000-8000-000000000001")
 
 // resolveSubscriptionID mirrors the resolution notifyhandler performs on the publish path
-// (VOIP-1419): every published type carries an explicit, mandatory EventSubscriptionID method;
+// (VOIP-1419): every published type satisfies the mandatory EventSubscriptionID contract (here
+// via the method promoted from the embedded commonidentity.Identity);
 // the method's return is the address, and an empty return (or a non-implementing / nil payload)
 // degrades to the `-` placeholder. Reproducing it here rather than reaching into notifyhandler
 // internals is deliberate -- the golden table must fail when a model's method starts returning a
@@ -86,7 +88,7 @@ func TestGoldenRoutingKeys(t *testing.T) {
 		data      any
 		expect    string
 	}{
-		// outdial resource -- own id is the address, returned by the explicit EventSubscriptionID.
+		// outdial resource -- own id is the address, returned through the promoted Identity default.
 		{
 			"outdial_created",
 			outdial.EventTypeOutdialCreated,
@@ -122,7 +124,7 @@ func TestGoldenRoutingKeys(t *testing.T) {
 }
 
 // TestGoldenRoutingKeysUseOwnID pins the property the table exists to protect: the address is
-// the outdial's OWN id, returned by the explicit EventSubscriptionID method -- never the
+// the outdial's OWN id, returned through the promoted Identity default -- never the
 // campaign it belongs to, and never the placeholder. (The mutation-checked per-field
 // address-choice test lives in the model's own package next to the method.)
 func TestGoldenRoutingKeysUseOwnID(t *testing.T) {

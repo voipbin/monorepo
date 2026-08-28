@@ -2,10 +2,12 @@
 //
 // It covers EVERY event type storage-manager publishes today, across both resource namespaces
 // (account / file), and asserts the exact key that notifyhandler generates for the real event
-// data type of each publish site. Both published types address their own stream by their own id,
-// stated by their explicit EventSubscriptionID methods (VOIP-1419: implementation is mandatory;
-// an empty return degrades to the `-` placeholder). The table exists to keep those addresses
-// pinned -- a change to either method would move the address without any runtime metric noticing.
+// data type of each publish site. Both published types address their own stream by their own id
+// -- account.Account through its explicit EventSubscriptionID method, file.File through the
+// default promoted from the embedded commonidentity.Identity (VOIP-1419: the contract is
+// mandatory; an empty return degrades to the `-` placeholder). The table exists to keep those
+// addresses
+// pinned -- a change to either resolution would move the address without any runtime metric noticing.
 //
 // The file lives in models/account because the table spans both model packages of the service and
 // account is the designated PRIMARY package for storage-manager (1405 plan §Phase 1 anchoring
@@ -47,8 +49,9 @@ var (
 )
 
 // resolveSubscriptionID mirrors the resolution notifyhandler performs on the publish path
-// (VOIP-1419): the event data's explicit EventSubscriptionID method is the whole mechanism --
-// implementation is mandatory, and an empty result degrades to the `-` placeholder. The `data any`
+// (VOIP-1419): the event data's EventSubscriptionID method (explicit on account.Account,
+// promoted from the embedded commonidentity.Identity on file.File) is the whole mechanism --
+// the contract is mandatory, and an empty result degrades to the `-` placeholder. The `data any`
 // parameter is kept so the table can also feed values that do NOT implement the interface; those
 // resolve to "" (→ placeholder), same as production. Keeping the helper here rather than reaching
 // into notifyhandler internals is deliberate -- the golden table must fail when a model's method

@@ -8,7 +8,8 @@
 //
 // direct-manager is an OWN-ID service: every published payload is a `*direct.Direct`
 // (all three publish sites funnel through directhandler.publishEvent, which is typed to
-// `*direct.Direct`), which implements eventtopic.SubscriptionIdentifier explicitly (mandatory
+// `*direct.Direct`), which satisfies eventtopic.SubscriptionIdentifier through the method
+// promoted from its embedded commonidentity.Identity (the contract is mandatory
 // since VOIP-1419; an empty return degrades to the `-` placeholder) and returns the resource's
 // own id.
 //
@@ -46,7 +47,8 @@ var directID = uuid.FromStringOrNil("b90f6a38-0000-4000-8000-000000000001")
 var resourceID = uuid.FromStringOrNil("b90f6a38-0000-4000-8000-000000000002")
 
 // resolveSubscriptionID mirrors the resolution notifyhandler performs on the publish path
-// (VOIP-1419): every published type carries an explicit, mandatory EventSubscriptionID method;
+// (VOIP-1419): every published type satisfies the mandatory EventSubscriptionID contract (here
+// via the method promoted from the embedded commonidentity.Identity);
 // the method's return is the address, and an empty return (or a non-implementing / nil payload)
 // degrades to the `-` placeholder. Reproducing it here rather than reaching into notifyhandler
 // internals is deliberate -- the golden table must fail when a model's method starts returning a
@@ -89,7 +91,7 @@ func TestGoldenRoutingKeys(t *testing.T) {
 		data      any
 		expect    string
 	}{
-		// direct resource -- own id is the address, returned by the explicit EventSubscriptionID.
+		// direct resource -- own id is the address, returned through the promoted Identity default.
 		{
 			"direct_created",
 			direct.EventTypeDirectCreated,
@@ -125,7 +127,7 @@ func TestGoldenRoutingKeys(t *testing.T) {
 }
 
 // TestGoldenRoutingKeysUseOwnID pins the property the table exists to protect: the address is the
-// direct's OWN id, returned by the explicit EventSubscriptionID method -- never the `resource_id`
+// direct's OWN id, returned through the promoted Identity default -- never the `resource_id`
 // of the resource it fronts, and never the placeholder.
 func TestGoldenRoutingKeysUseOwnID(t *testing.T) {
 	data := &direct.Direct{

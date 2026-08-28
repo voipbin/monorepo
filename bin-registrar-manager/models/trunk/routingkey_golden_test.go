@@ -3,7 +3,8 @@
 // It covers EVERY event type registrar-manager publishes today, across both resource namespaces
 // (trunk / extension), and asserts the exact key that notifyhandler generates for the real event
 // data type of each publish site. Since VOIP-1419 the subscription-id segment is resolved by the
-// mandatory explicit `EventSubscriptionID()` method on each published type (an empty return
+// mandatory `EventSubscriptionID()` contract -- for both of this service's types via the
+// own-id default promoted from the embedded commonidentity.Identity (an empty return
 // degrades to the `-` placeholder); there is no JSON fallback. Both of this service's types
 // return their own id. The table is what proves that -- a method silently changed to return a
 // different field changes these keys, and no runtime metric would detect it because the keys
@@ -52,7 +53,8 @@ var (
 )
 
 // resolveSubscriptionID mirrors the resolution notifyhandler performs on the publish path
-// (VOIP-1419): the mandatory explicit `EventSubscriptionID()` method, with an empty result (or a
+// (VOIP-1419): the mandatory `EventSubscriptionID()` contract (satisfied here by the method
+// promoted from the embedded commonidentity.Identity), with an empty result (or a
 // non-implementing / typed-nil payload) degrading to "" -- the `-` placeholder segment. Keeping
 // it here rather than reaching into notifyhandler internals is deliberate -- the golden table
 // must fail when a model's method starts returning a different address, which is exactly what
@@ -101,7 +103,7 @@ func TestGoldenRoutingKeys(t *testing.T) {
 		data      any
 		expect    string
 	}{
-		// trunk resource -- own id is the address, returned by the explicit method.
+		// trunk resource -- own id is the address, returned through the promoted Identity default.
 		{
 			"trunk_created",
 			trunk.EventTypeTrunkCreated,
@@ -121,7 +123,7 @@ func TestGoldenRoutingKeys(t *testing.T) {
 			"registrar-manager.trunk.a71b3e40-0000-4000-8000-000000000001.deleted",
 		},
 
-		// extension resource -- own id is the address, returned by the explicit method.
+		// extension resource -- own id is the address, returned through the promoted Identity default.
 		{
 			"extension_created",
 			extension.EventTypeExtensionCreated,
@@ -165,8 +167,9 @@ func TestGoldenRoutingKeys(t *testing.T) {
 	}
 }
 
-// TestRegistrarExplicitMethodResolvesOwnID pins that BOTH published types implement the
-// mandatory explicit method (a non-implementing payload would resolve to "" here, breaking the
+// TestRegistrarExplicitMethodResolvesOwnID pins that BOTH published types satisfy the
+// mandatory contract, via the EventSubscriptionID promoted from the embedded
+// commonidentity.Identity (a non-implementing payload would resolve to "" here, breaking the
 // expectation) AND that the method yields the resource's own id -- the same value the retired
 // JSON `id` fallback extracted, so the key strings above are unchanged by VOIP-1419.
 func TestRegistrarExplicitMethodResolvesOwnID(t *testing.T) {

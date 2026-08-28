@@ -42,8 +42,10 @@ var conversationID = uuid.FromStringOrNil("6b0d9f70-0000-4000-8000-000000000001"
 var accountID = uuid.FromStringOrNil("6b0d9f70-0000-4000-8000-000000000002")
 
 // resolveSubscriptionID mirrors the resolution notifyhandler performs on the publish path
-// (VOIP-1419): every published event data type carries an explicit
-// eventtopic.SubscriptionIdentifier method -- mandatory, compiler-enforced, with no JSON
+// (VOIP-1419): every published event data type satisfies the
+// eventtopic.SubscriptionIdentifier contract (own-id types via the default promoted from the
+// embedded commonidentity.Identity, message.Message via its explicit parent-conversation
+// override) -- mandatory, compiler-enforced, with no JSON
 // fallback behind it -- and an empty return degrades to the `-` placeholder. Keeping the mirror
 // here rather than reaching into notifyhandler internals is deliberate -- the golden table must
 // fail when a model's method stops returning the pinned address.
@@ -107,8 +109,8 @@ func TestGoldenRoutingKeys(t *testing.T) {
 		data      any
 		expect    string
 	}{
-		// conversation resource -- own id is the address, returned by the type's explicit
-		// EventSubscriptionID method (VOIP-1419).
+		// conversation resource -- own id is the address, returned through the EventSubscriptionID
+		// promoted from the embedded commonidentity.Identity (VOIP-1419).
 		// Two publish sites emit `conversation_created` (conversationhandler/db.go:183 and
 		// create_and_execute_flow.go:85); both carry *conversation.Conversation, so one row pins
 		// both.

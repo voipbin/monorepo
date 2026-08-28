@@ -35,8 +35,10 @@ import (
 var campaignID = uuid.FromStringOrNil("7c41a9e0-0000-4000-8000-000000000001")
 
 // resolveSubscriptionID mirrors the resolution notifyhandler performs on the publish path
-// (VOIP-1419): every published event data type carries an explicit, mandatory
-// EventSubscriptionID method, and an empty return degrades to the `-` placeholder. There is no
+// (VOIP-1419): every published event data type satisfies the mandatory
+// EventSubscriptionID contract -- campaign.Campaign through the own-id
+// default promoted from the embedded commonidentity.Identity, campaigncall.Campaigncall through
+// its explicit parent-campaign override -- and an empty return degrades to the `-` placeholder. There is no
 // JSON fallback anymore. Keeping the reproduction here rather than reaching into notifyhandler
 // internals is deliberate -- the golden table must fail when a model's method stops returning
 // the pinned address, which is exactly what this mirror detects.
@@ -82,7 +84,7 @@ func TestGoldenRoutingKeys(t *testing.T) {
 		data      any
 		expect    string
 	}{
-		// campaign resource -- own id is the address, returned by its explicit EventSubscriptionID.
+		// campaign resource -- own id is the address, returned through the promoted Identity default.
 		{
 			"campaign_created",
 			campaign.EventTypeCampaignCreated,

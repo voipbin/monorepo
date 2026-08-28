@@ -35,8 +35,10 @@ import (
 var queueID = uuid.FromStringOrNil("5e83b6f4-0000-4000-8000-000000000001")
 
 // resolveSubscriptionID mirrors the resolution notifyhandler performs on the publish path
-// (VOIP-1419): every published event data type implements eventtopic.SubscriptionIdentifier
-// explicitly -- the method's return value IS the subscription-id segment, and an empty return
+// (VOIP-1419): every published event data type satisfies eventtopic.SubscriptionIdentifier --
+// queue.Queue through the own-id default promoted from the embedded commonidentity.Identity,
+// queuecall.Queuecall through its explicit parent-queue override
+// -- the method's return value IS the subscription-id segment, and an empty return
 // degrades to the `-` placeholder. No JSON fallback exists anymore. Keeping the mirror here
 // rather than reaching into notifyhandler internals is deliberate -- the golden table must fail
 // when a model's method stops returning the pinned address.
@@ -88,7 +90,7 @@ func TestGoldenRoutingKeys(t *testing.T) {
 		data      any
 		expect    string
 	}{
-		// queue resource -- own id is the address, returned by its explicit EventSubscriptionID.
+		// queue resource -- own id is the address, returned through the promoted Identity default.
 		{
 			"queue_updated",
 			queue.EventTypeQueueUpdated,

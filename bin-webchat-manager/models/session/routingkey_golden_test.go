@@ -43,8 +43,10 @@ import (
 var sessionID = uuid.FromStringOrNil("3c7f21a4-0000-4000-8000-000000000001")
 
 // resolveSubscriptionID mirrors the resolution notifyhandler performs on the publish path
-// (VOIP-1404 §4.2, VOIP-1419): the subscription address comes ONLY from the type's explicit
-// EventSubscriptionID method -- implementation is mandatory (the narrowed publish signature
+// (VOIP-1404 §4.2, VOIP-1419): the subscription address comes ONLY from the type's
+// EventSubscriptionID method -- session.Session's is the own-id default promoted from the
+// embedded commonidentity.Identity, message.Message's is an explicit parent-session
+// override -- the contract is mandatory (the narrowed publish signature
 // enforces it at compile time), and an empty address degrades to the `-` placeholder.
 // Keeping the reproduction here rather than reaching into notifyhandler internals is
 // deliberate -- the golden table must fail when a model's method stops returning the pinned
@@ -109,7 +111,7 @@ func TestGoldenRoutingKeys(t *testing.T) {
 		},
 
 		// session end -- resource `webchat`, action `session_ended`. The Session's own id IS the
-		// address here, returned by its explicit EventSubscriptionID, and it is the SAME id the
+		// address here, returned through the promoted Identity default, and it is the SAME id the
 		// message's method points at.
 		{
 			"webchat_session_ended",

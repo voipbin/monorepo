@@ -32,8 +32,10 @@ import (
 var conferenceID = uuid.FromStringOrNil("3b52d7c1-0000-4000-8000-000000000001")
 
 // resolveSubscriptionID mirrors the resolution notifyhandler performs on the publish path
-// (VOIP-1419): every published event data type carries an explicit
-// eventtopic.SubscriptionIdentifier method -- implementation is mandatory, and an empty return
+// (VOIP-1419): every published event data type satisfies the mandatory
+// eventtopic.SubscriptionIdentifier contract -- conference.Conference through the own-id
+// default promoted from the embedded commonidentity.Identity, conferencecall.Conferencecall
+// through its explicit parent-conference override -- and an empty return
 // degrades to the `-` placeholder. Keeping the reproduction here rather than reaching into
 // notifyhandler internals is deliberate -- the golden table must fail when a model stops
 // implementing the interface or changes what its method returns.
@@ -86,8 +88,8 @@ func TestGoldenRoutingKeys(t *testing.T) {
 		data      any
 		expect    string
 	}{
-		// conference resource -- own id is the address, returned by its explicit
-		// EventSubscriptionID method.
+		// conference resource -- own id is the address, returned through the EventSubscriptionID
+		// promoted from the embedded commonidentity.Identity (VOIP-1419).
 		{
 			"conference_created",
 			conference.EventTypeConferenceCreated,

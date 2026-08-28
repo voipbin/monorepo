@@ -18,8 +18,9 @@
 // §2.4 / §4.
 //
 // number-manager is an OWN-ID service: `number.Number` is an independent, persistent resource
-// whose own id IS the subscription address, stated by its explicit EventSubscriptionID method
-// (VOIP-1419 -- implementation is mandatory and compiler-enforced; an empty return degrades to
+// whose own id IS the subscription address, stated by the EventSubscriptionID promoted from
+// the embedded commonidentity.Identity
+// (VOIP-1419 -- the contract is mandatory and compiler-enforced; an empty return degrades to
 // the `-` placeholder). The compile-time interface assertion lives in models/number/number_test.go.
 //
 // The file lives in models/number because that is the service's PRIMARY model package and number
@@ -99,7 +100,7 @@ func TestGoldenRoutingKeys(t *testing.T) {
 		data      any
 		expect    string
 	}{
-		// number resource -- own id is the address, returned by its explicit EventSubscriptionID.
+		// number resource -- own id is the address, returned through the promoted Identity default.
 		{
 			"number_created",
 			number.EventTypeNumberCreated,

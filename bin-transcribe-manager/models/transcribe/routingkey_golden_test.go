@@ -1,6 +1,8 @@
 // Golden routing-key table of the global topic exchange `bin-manager.event` (VOIP-1404; the
-// subscription-id segment comes from each payload's explicit EventSubscriptionID method,
-// VOIP-1419).
+// subscription-id segment comes from each payload's mandatory EventSubscriptionID --
+// transcribe.Transcribe via the own-id default promoted from the embedded
+// commonidentity.Identity, the streaming/transcript types via their explicit
+// parent-transcribe overrides, VOIP-1419).
 //
 // It covers EVERY event type transcribe-manager publishes today, across all three resource
 // namespaces (transcribe / streaming / transcript), and asserts the exact key that notifyhandler
@@ -39,8 +41,9 @@ import (
 var transcribeID = uuid.FromStringOrNil("9f01c3d2-0000-4000-8000-000000000001")
 
 // resolveSubscriptionID mirrors the resolution notifyhandler performs on the publish path
-// (VOIP-1419): the payload's explicit EventSubscriptionID method is the ONLY source of the
-// subscription-id segment -- the JSON top-level-"id" fallback no longer exists. Implementation
+// (VOIP-1419): the payload's EventSubscriptionID method (promoted Identity default or explicit
+// override) is the ONLY source of the
+// subscription-id segment -- the JSON top-level-"id" fallback no longer exists. The contract
 // is mandatory for every published type (the narrowed PublishEvent signature enforces it at
 // compile time); an empty return degrades to the `-` placeholder. Keeping the reproduction here
 // rather than reaching into notifyhandler internals is deliberate -- the golden table must fail
@@ -114,8 +117,8 @@ func TestGoldenRoutingKeys(t *testing.T) {
 		data      any
 		expect    string
 	}{
-		// transcribe resource -- own id IS the address, returned by the type's explicit
-		// EventSubscriptionID method (VOIP-1419).
+		// transcribe resource -- own id IS the address, returned through the EventSubscriptionID
+		// promoted from the embedded commonidentity.Identity (VOIP-1419).
 		{
 			"transcribe_created",
 			transcribe.EventTypeTranscribeCreated,

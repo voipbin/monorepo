@@ -9,7 +9,8 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 )
 
-// Agent implements eventtopic.SubscriptionIdentifier explicitly (VOIP-1419). The assertion
+// Agent satisfies eventtopic.SubscriptionIdentifier through the EventSubscriptionID promoted
+// from the embedded commonidentity.Identity (VOIP-1419). The assertion
 // pins the POINTER type: the event data reaches notifyhandler as a pointer and the interface
 // assertion matches the dynamic type; a VALUE of this pointer-receiver type would not satisfy
 // the interface.

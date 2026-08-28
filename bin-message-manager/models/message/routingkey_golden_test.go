@@ -13,9 +13,9 @@
 // not a stream fragment of some parent session. Unlike ai/conversation/talk/webchat/tts -- where a
 // `Message` is one utterance inside a longer-lived parent and adopts the parent's id as its
 // address -- an SMS message is an independent persistent resource created and retrieved by its own
-// id, so its own id IS the subscription address. Its explicit EventSubscriptionID method
-// (mandatory for every published type since VOIP-1419; an empty return degrades to the `-`
-// placeholder) returns exactly that own id.
+// id, so its own id IS the subscription address. Its EventSubscriptionID, promoted from the
+// embedded commonidentity.Identity (the contract is mandatory for every published type since
+// VOIP-1419; an empty return degrades to the `-` placeholder), returns exactly that own id.
 //
 // The file lives in models/message because that is the service's PRIMARY model package and message
 // is the resource every published event addresses; it is an external test package
@@ -44,8 +44,9 @@ import (
 var messageID = uuid.FromStringOrNil("7d20b6e4-0000-4000-8000-000000000001")
 
 // resolveSubscriptionID mirrors the resolution notifyhandler performs on the publish path
-// (VOIP-1419): every published event data type implements eventtopic.SubscriptionIdentifier
-// explicitly -- there is no JSON fallback -- and the method's return is the subscription-id
+// (VOIP-1419): every published event data type satisfies eventtopic.SubscriptionIdentifier
+// (here via the method promoted from the embedded commonidentity.Identity) -- there is no
+// JSON fallback -- and the method's return is the subscription-id
 // segment as-is, with an empty return degrading to the `-` placeholder. Non-implementing data
 // returns "" (→ placeholder), which is why the parameter stays `any` rather than the interface.
 // Reproducing the resolution here rather than reaching into notifyhandler internals is
@@ -95,7 +96,7 @@ func TestGoldenRoutingKeys(t *testing.T) {
 		data      any
 		expect    string
 	}{
-		// message resource -- own id is the address, returned by its explicit EventSubscriptionID.
+		// message resource -- own id is the address, returned through the promoted Identity default.
 		{
 			"message_created",
 			message.EventTypeMessageCreated,

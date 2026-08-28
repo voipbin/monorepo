@@ -42,8 +42,9 @@ import (
 var aicallID = uuid.FromStringOrNil("7c31b0a4-0000-4000-8000-000000000001")
 
 // resolveSubscriptionID mirrors the resolution notifyhandler performs on the publish path
-// (VOIP-1419): the subscription address comes ONLY from the payload's explicit
-// EventSubscriptionID method -- implementation is mandatory (enforced at compile time on the
+// (VOIP-1419): the subscription address comes ONLY from the payload's EventSubscriptionID
+// method (own-id types via the default promoted from the embedded commonidentity.Identity,
+// the message types via their explicit aicall-id overrides) -- the contract is mandatory (enforced at compile time on the
 // publish call sites), and an empty return degrades to the `-` placeholder. Keeping this
 // mirror here rather than reaching into notifyhandler internals is deliberate -- the golden
 // table must keep compiling and FAIL when a model stops implementing the interface, which is
@@ -138,7 +139,7 @@ func TestGoldenRoutingKeys(t *testing.T) {
 		data      any
 		expect    string
 	}{
-		// ai resource -- own id is the address (explicit EventSubscriptionID, VOIP-1419).
+		// ai resource -- own id is the address (promoted Identity default, VOIP-1419).
 		{
 			"ai_created",
 			ai.EventTypeCreated,
@@ -212,7 +213,7 @@ func TestGoldenRoutingKeys(t *testing.T) {
 			"ai-manager.aimessage.7c31b0a4-0000-4000-8000-000000000001.intermediate",
 		},
 
-		// summary resource -- own id is the address (explicit EventSubscriptionID, VOIP-1419).
+		// summary resource -- own id is the address (promoted Identity default, VOIP-1419).
 		{
 			"summary_created",
 			summary.EventTypeCreated,
@@ -232,7 +233,7 @@ func TestGoldenRoutingKeys(t *testing.T) {
 			"ai-manager.summary.7c31b0a4-0000-4000-8000-0000000000c1.deleted",
 		},
 
-		// team resource -- own id is the address (explicit EventSubscriptionID, VOIP-1419).
+		// team resource -- own id is the address (promoted Identity default, VOIP-1419).
 		{
 			"team_created",
 			team.EventTypeCreated,

@@ -38,7 +38,9 @@ import (
 var scheduleID = uuid.FromStringOrNil("a1d40e63-0000-4000-8000-000000000001")
 
 // resolveSubscriptionID mirrors the resolution notifyhandler performs on the publish path
-// (VOIP-1419): every published type carries an explicit, mandatory EventSubscriptionID method;
+// (VOIP-1419): every published type satisfies the mandatory EventSubscriptionID contract --
+// schedule.Schedule through the own-id default promoted from the embedded
+// commonidentity.Identity, execution.Execution through its explicit parent-schedule override;
 // the method's return is the address, and an empty return (or a non-implementing / nil payload)
 // degrades to the `-` placeholder. Reproducing it here rather than reaching into notifyhandler
 // internals is deliberate -- the golden table must fail when a model's method starts returning a
@@ -104,8 +106,8 @@ func TestGoldenRoutingKeys(t *testing.T) {
 		data      any
 		expect    string
 	}{
-		// schedule resource -- own id is the address, returned by Schedule's explicit
-		// EventSubscriptionID method.
+		// schedule resource -- own id is the address, returned through the EventSubscriptionID
+		// promoted from Schedule's embedded commonidentity.Identity (VOIP-1419).
 		{
 			"schedule_created",
 			schedule.EventTypeScheduleCreated,

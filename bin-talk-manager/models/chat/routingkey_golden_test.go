@@ -44,8 +44,10 @@ import (
 var chatID = uuid.FromStringOrNil("3ac91f60-0000-4000-8000-000000000001")
 
 // resolveSubscriptionID mirrors the resolution notifyhandler performs on the publish path
-// (VOIP-1419): every published event data type implements eventtopic.SubscriptionIdentifier
-// explicitly and the method's return IS the subscription address -- there is no JSON fallback.
+// (VOIP-1419): every published event data type satisfies eventtopic.SubscriptionIdentifier --
+// chat.Chat through the own-id default promoted from the embedded commonidentity.Identity,
+// message.Message and participant.Participant through their explicit parent-chat overrides
+// -- and the method's return IS the subscription address -- there is no JSON fallback.
 // Non-implementing data (impossible on the narrowed production signature, but representable
 // through this `any`-typed helper) and typed-nil implementers resolve to "", which the key
 // builder degrades to the `-` placeholder. Keeping the reproduction here rather than reaching
@@ -107,8 +109,8 @@ func TestGoldenRoutingKeys(t *testing.T) {
 		data      any
 		expect    string
 	}{
-		// chat resource -- own id is the address, returned by its explicit EventSubscriptionID
-		// method (VOIP-1419).
+		// chat resource -- own id is the address, returned through the EventSubscriptionID
+		// promoted from the embedded commonidentity.Identity (VOIP-1419).
 		{
 			"chat_created",
 			chat.EventTypeChatCreated,

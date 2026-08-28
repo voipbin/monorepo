@@ -2,8 +2,9 @@
 //
 // It covers EVERY event type tag-manager publishes today and asserts the exact key that
 // notifyhandler generates for the real event data type of each publish site. tag-manager has a
-// single resource namespace (`tag`) and a single published type (`*tag.Tag`), whose explicit
-// `EventSubscriptionID()` returns the tag's own id (VOIP-1419): a tag is an independent
+// single resource namespace (`tag`) and a single published type (`*tag.Tag`), whose
+// `EventSubscriptionID()`, promoted from the embedded commonidentity.Identity, returns the
+// tag's own id (VOIP-1419): a tag is an independent
 // persistent resource addressed by its own id (design §2.4). The method is mandatory -- an
 // empty return degrades to the `-` placeholder -- and the table exists to keep the address
 // stable: a method change that relocated every subscriber's binding address would keep the
@@ -34,7 +35,8 @@ import (
 var tagID = uuid.FromStringOrNil("7b2e4c60-0000-4000-8000-000000000001")
 
 // resolveSubscriptionID mirrors the resolution notifyhandler performs on the publish path
-// (VOIP-1419): the explicit `EventSubscriptionID()` method is the whole mechanism -- there is no
+// (VOIP-1419): the `EventSubscriptionID()` method (for tag.Tag, the own-id default promoted
+// from the embedded commonidentity.Identity) is the whole mechanism -- there is no
 // JSON fallback. A payload that does not implement the interface, or a typed-nil pointer whose
 // method would panic on dereference, resolves to "" and thereby to the `-` placeholder segment.
 // Keeping the reproduction here rather than reaching into notifyhandler internals is deliberate --

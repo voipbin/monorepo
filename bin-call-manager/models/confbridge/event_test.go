@@ -9,9 +9,10 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 )
 
-// Both event wrappers embed Confbridge BY VALUE, so they would already satisfy the interface via
-// method promotion; the explicit wrapper methods exist deliberately (VOIP-1419) as insurance
-// against a future same-depth embed silently dropping the promoted method. The assertions pin the
+// Both event wrappers embed Confbridge BY VALUE, so they satisfy the interface via method
+// promotion through the embedded Confbridge's commonidentity.Identity (VOIP-1419); no wrapper
+// writes its own method. The assertions below are the insurance: a future same-depth embed that
+// silently dropped or ambiguated the promoted method would break them. The assertions pin the
 // POINTER types, matching how the event data reaches notifyhandler.
 var (
 	_ eventtopic.SubscriptionIdentifier = (*EventConfbridgeJoined)(nil)

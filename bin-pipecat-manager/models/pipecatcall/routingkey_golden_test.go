@@ -37,8 +37,9 @@ import (
 var pipecatcallID = uuid.FromStringOrNil("7b21d4a6-0000-4000-8000-000000000001")
 
 // resolveSubscriptionID mirrors the resolution notifyhandler performs on the publish path
-// (VOIP-1419): the payload's explicit EventSubscriptionID method is the ONLY source of the
-// subscription-id segment -- the JSON top-level-"id" fallback no longer exists. Implementation
+// (VOIP-1419): the payload's EventSubscriptionID method (promoted Identity default or explicit
+// override) is the ONLY source of the
+// subscription-id segment -- the JSON top-level-"id" fallback no longer exists. The contract
 // is mandatory for every published type (the narrowed PublishEvent signature enforces it at
 // compile time); an empty return degrades to the `-` placeholder. Keeping the reproduction here
 // rather than reaching into notifyhandler internals is deliberate -- the golden table must fail
@@ -123,8 +124,8 @@ func TestGoldenRoutingKeys(t *testing.T) {
 		data      any
 		expect    string
 	}{
-		// pipecatcall resource -- own id IS the address, returned by the type's explicit
-		// EventSubscriptionID method (VOIP-1419).
+		// pipecatcall resource -- own id IS the address, returned through the EventSubscriptionID
+		// promoted from the embedded commonidentity.Identity (VOIP-1419).
 		{
 			"pipecatcall_created",
 			pipecatcall.EventTypeCreated,

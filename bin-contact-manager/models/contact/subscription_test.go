@@ -9,7 +9,8 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 )
 
-// WebhookMessage carries an explicit subscription address on the global topic exchange
+// WebhookMessage addresses its own id on the global topic exchange via the
+// EventSubscriptionID promoted from the embedded commonidentity.Identity
 // (VOIP-1419). The assertion pins the POINTER type: the event data reaches notifyhandler as a
 // POINTER and the assertion matches the dynamic type; a VALUE of this pointer-receiver type
 // would fail the assertion.

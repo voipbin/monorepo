@@ -6,9 +6,10 @@
 // under an id that is not the resource's subscription address produces well-formed keys that no
 // instance binding ever matches, and no runtime metric can detect it. Design doc §2.4 / §4.
 //
-// Every payload agent-manager publishes is an `*agent.Agent`, whose explicit
-// EventSubscriptionID() method returns its own id -- the resource's subscription address
-// (VOIP-1419: the method is mandatory on every published type; an empty return degrades to the
+// Every payload agent-manager publishes is an `*agent.Agent`, whose EventSubscriptionID(),
+// promoted from the embedded commonidentity.Identity, returns its own id -- the resource's
+// subscription address
+// (VOIP-1419: the contract is mandatory on every published type; an empty return degrades to the
 // `-` placeholder). A method change that re-addresses the service is exactly what this table
 // catches.
 //
@@ -40,8 +41,9 @@ import (
 var agentID = uuid.FromStringOrNil("3a17b5c4-0000-4000-8000-000000000001")
 
 // resolveSubscriptionID mirrors the resolution notifyhandler performs on the publish path
-// (VOIP-1419): every published event data type implements eventtopic.SubscriptionIdentifier
-// explicitly and the method's return IS the subscription address -- there is no JSON fallback.
+// (VOIP-1419): every published event data type satisfies eventtopic.SubscriptionIdentifier
+// (here via the method promoted from the embedded commonidentity.Identity) and the method's
+// return IS the subscription address -- there is no JSON fallback.
 // Non-implementing data (impossible on the narrowed production signature, but representable
 // through this `any`-typed helper) and typed-nil implementers resolve to "", which the key
 // builder degrades to the `-` placeholder. Keeping the reproduction here rather than reaching
@@ -84,8 +86,8 @@ func TestGoldenRoutingKeys(t *testing.T) {
 		data      any
 		expect    string
 	}{
-		// agent resource -- own id is the address, returned by the explicit EventSubscriptionID
-		// method.
+		// agent resource -- own id is the address, returned through the EventSubscriptionID
+		// promoted from the embedded commonidentity.Identity (VOIP-1419).
 		{
 			"agent_created",
 			agent.EventTypeAgentCreated,
@@ -168,8 +170,8 @@ func TestGoldenRoutingKeyStatusUpdatedDecomposition(t *testing.T) {
 }
 
 // TestGoldenRoutingKeysUseOwnID pins the property the table exists to protect: the address every
-// agent-manager event resolves to is the agent's OWN id, returned by its explicit
-// EventSubscriptionID method. A method that starts returning a different field (or an empty
+// agent-manager event resolves to is the agent's OWN id, returned through the promoted
+// Identity default. A method that starts returning a different field (or an empty
 // string) collapses to a foreign address or the `-` placeholder, and this assertion is what
 // catches it.
 func TestGoldenRoutingKeysUseOwnID(t *testing.T) {

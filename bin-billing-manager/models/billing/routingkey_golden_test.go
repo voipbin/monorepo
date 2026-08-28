@@ -10,8 +10,10 @@
 // billing-manager is a standard own-id service: `*billing.Billing` and `*account.Account` are
 // both addressed by their OWN id (design §2.4 records this as a deliberate decision for
 // billing.Billing -- address consistency with `billing_updated`, and the id is obtainable from the
-// create response). Since VOIP-1419 every published type states that address through an explicit
-// `EventSubscriptionID()` method; the compile-time assertions live in each type's sibling test
+// create response). Since VOIP-1419 every published type states that address through the
+// mandatory eventtopic.SubscriptionIdentifier contract -- for both types here the own-id
+// default is the `EventSubscriptionID()` promoted from the embedded commonidentity.Identity;
+// the compile-time assertions live in each type's sibling test
 // file (billing_test.go / account_test.go).
 //
 // The file lives in models/billing because billing is the service's designated PRIMARY model
@@ -48,8 +50,9 @@ var (
 )
 
 // resolveSubscriptionID mirrors the resolution notifyhandler performs on the publish path
-// (VOIP-1419): every published type carries an explicit EventSubscriptionID method -- mandatory,
-// compiler-enforced at the publish call site -- and its return value IS the subscription address.
+// (VOIP-1419): every published type satisfies the mandatory EventSubscriptionID contract --
+// compiler-enforced at the publish call site; here via the method promoted from the embedded
+// commonidentity.Identity -- and its return value IS the subscription address.
 // There is no fallback: data that does not implement the interface (unrepresentable on the
 // production path, but expressible through this `any`-typed helper) and a typed-nil pointer both
 // resolve to "", which the routing key degrades to the `-` placeholder.
@@ -98,8 +101,8 @@ func TestGoldenRoutingKeys(t *testing.T) {
 		data      any
 		expect    string
 	}{
-		// billing resource -- own id is the address, returned by the type's explicit
-		// EventSubscriptionID method.
+		// billing resource -- own id is the address, returned through the EventSubscriptionID
+		// promoted from the embedded commonidentity.Identity (VOIP-1419).
 		// NOTE the deliberate decision recorded in design §2.4: the account-id is NOT the address
 		// here, even though a billing entry is a child of an account.
 		{
@@ -143,7 +146,7 @@ func TestGoldenRoutingKeys(t *testing.T) {
 }
 
 // TestGoldenRoutingKeysUseOwnID pins the property the table exists to protect: each resource
-// resolves to its OWN id, returned by its explicit EventSubscriptionID method. A method that
+// resolves to its OWN id, returned through the promoted Identity default. A method that
 // starts returning "" (or a foreign id) collapses the address to the `-` placeholder or a foreign
 // address, and this assertion is what catches it.
 func TestGoldenRoutingKeysUseOwnID(t *testing.T) {

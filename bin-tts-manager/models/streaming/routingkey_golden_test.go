@@ -7,8 +7,10 @@
 // produces well-formed keys that no instance binding ever matches, and no runtime metric can
 // detect it. Design doc 1405 §2.2 / §4.
 //
-// Since VOIP-1419 every published type carries an explicit `EventSubscriptionID()` method --
-// mandatory, compiler-enforced; there is no JSON fallback anymore, and an empty return is the
+// Since VOIP-1419 every published type satisfies the mandatory `EventSubscriptionID()`
+// contract -- the own-id types via the default promoted from the embedded
+// commonidentity.Identity, `*message.Message` via its explicit parent-streaming override --
+// compiler-enforced; there is no JSON fallback anymore, and an empty return is the
 // only degrade path (the `-` placeholder). `*streaming.Streaming` and `*speaking.Speaking` are
 // addressed by their OWN id; `*message.Message` is addressed by its parent streaming-id.
 //
@@ -48,12 +50,13 @@ import (
 var streamingID = uuid.FromStringOrNil("6b2d41ae-0000-4000-8000-000000000001")
 
 // speakingID is the address of the speaking resource. A speaking session is an independent
-// persistent record addressed by its own id, which its explicit method returns.
+// persistent record addressed by its own id, returned through the promoted Identity default.
 var speakingID = uuid.FromStringOrNil("6b2d41ae-0000-4000-8000-000000000002")
 
 // resolveSubscriptionID mirrors the resolution notifyhandler performs on the publish path
-// (VOIP-1419): the payload's explicit `EventSubscriptionID()` method is the single source of
-// the subscription address -- implementation is mandatory (compiler-enforced at the publish
+// (VOIP-1419): the payload's `EventSubscriptionID()` method (promoted Identity default or
+// explicit override) is the single source of
+// the subscription address -- the contract is mandatory (compiler-enforced at the publish
 // sites), and an empty return degrades to the `-` placeholder. Keeping the mirror here rather
 // than reaching into notifyhandler internals is deliberate -- the golden table must fail if a
 // method starts returning a different id space than the one pinned below.
@@ -125,7 +128,7 @@ func TestGoldenRoutingKeys(t *testing.T) {
 		data      any
 		expect    string
 	}{
-		// speaking resource -- own id is the address, returned by its explicit method.
+		// speaking resource -- own id is the address, returned through the promoted Identity default.
 		{
 			"speaking_started",
 			speaking.EventTypeSpeakingStarted,
@@ -139,7 +142,7 @@ func TestGoldenRoutingKeys(t *testing.T) {
 			"tts-manager.speaking.6b2d41ae-0000-4000-8000-000000000002.stopped",
 		},
 
-		// streaming resource -- own id is the address, returned by its explicit method.
+		// streaming resource -- own id is the address, returned through the promoted Identity default.
 		{
 			"streaming_created",
 			streaming.EventTypeStreamingCreated,

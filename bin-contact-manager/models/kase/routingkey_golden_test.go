@@ -35,12 +35,15 @@ import (
 var caseID = uuid.FromStringOrNil("c0a7e1d2-0000-4000-8000-000000000001")
 
 // contactID is the address of the customer-facing contact lifecycle events, whose own id IS the
-// address, returned by the payload's explicit EventSubscriptionID method (VOIP-1419).
+// address, returned through the payload's EventSubscriptionID promoted from the embedded
+// commonidentity.Identity (VOIP-1419).
 var contactID = uuid.FromStringOrNil("c0a7e1d2-0000-4000-8000-000000000002")
 
 // resolveSubscriptionID mirrors the resolution notifyhandler performs on the publish path
-// (VOIP-1419): every published event data type carries an explicit EventSubscriptionID method --
-// implementation is mandatory, enforced at compile time by the narrowed PublishEvent signature --
+// (VOIP-1419): every published event data type satisfies the EventSubscriptionID contract
+// (own-id types via the default promoted from the embedded commonidentity.Identity, the
+// case-scoped event wrappers via their explicit case-id overrides) --
+// the contract is mandatory, enforced at compile time by the narrowed PublishEvent signature --
 // and an empty return degrades to the `-` placeholder. Keeping the reproduction here rather than
 // reaching into notifyhandler internals is deliberate -- the golden table must fail when a model's
 // method starts returning the wrong id space, which is exactly the defect class this file pins.
@@ -125,7 +128,7 @@ func TestGoldenRoutingKeys(t *testing.T) {
 		data      any
 		expect    string
 	}{
-		// contact resource -- own id is the address, returned by the explicit method.
+		// contact resource -- own id is the address, returned through the promoted Identity default.
 		{
 			"contact_created",
 			contact.EventTypeContactCreated,

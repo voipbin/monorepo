@@ -46,7 +46,9 @@ var (
 )
 
 // resolveSubscriptionID mirrors the resolution notifyhandler performs on the publish path
-// (VOIP-1419): the explicit eventtopic.SubscriptionIdentifier method is MANDATORY -- there is no
+// (VOIP-1419): the eventtopic.SubscriptionIdentifier contract is MANDATORY (own-id types
+// satisfy it through the method promoted from the embedded commonidentity.Identity; dtmf and
+// outbound-whitelist-rejected through explicit call-id overrides) -- there is no
 // JSON fallback anymore -- and a non-implementing or nil payload resolves to "", which the
 // routing-key layer collapses to the `-` placeholder. Keeping the mirror here rather than
 // reaching into notifyhandler internals is deliberate: the golden table must fail when a model
@@ -107,8 +109,9 @@ func TestGoldenRoutingKeys(t *testing.T) {
 		},
 	}
 
-	// joined/leaved wrap the confbridge in an ANONYMOUS value embed; their explicit methods
-	// (models/confbridge/event.go) return the embedded confbridge's id -- not the joined/leaved
+	// joined/leaved wrap the confbridge in an ANONYMOUS value embed; the EventSubscriptionID
+	// promoted through that embedded Confbridge (and its commonidentity.Identity) returns the
+	// embedded confbridge's id -- not the joined/leaved
 	// call id.
 	confbridgeJoinedData := &confbridge.EventConfbridgeJoined{
 		Confbridge:   *confbridgeData,
@@ -141,8 +144,9 @@ func TestGoldenRoutingKeys(t *testing.T) {
 		data      any
 		expect    string
 	}{
-		// call resource -- own id is the address, returned by the explicit EventSubscriptionID
-		// method. pkg/callhandler/db.go, bridge.go, chained_call.go.
+		// call resource -- own id is the address, returned through the EventSubscriptionID
+		// promoted from the embedded commonidentity.Identity (VOIP-1419).
+		// pkg/callhandler/db.go, bridge.go, chained_call.go.
 		{
 			"call_created",
 			call.EventTypeCallCreated,
@@ -351,7 +355,8 @@ func TestGoldenRoutingKeysCallAxisShareOneAddress(t *testing.T) {
 
 // TestGoldenRoutingKeysConfbridgeEventWrappersPromoteConfbridgeID pins the id space the
 // joined/leaved rows above depend on. Both wrappers carry a SECOND uuid (the joined/leaved call
-// id) that is a plausible-looking but wrong address; their explicit methods must keep resolving
+// id) that is a plausible-looking but wrong address; the method promoted through the embedded
+// Confbridge must keep resolving
 // the embedded confbridge `id` instead.
 func TestGoldenRoutingKeysConfbridgeEventWrappersPromoteConfbridgeID(t *testing.T) {
 	base := confbridge.Confbridge{
@@ -381,7 +386,7 @@ func TestGoldenRoutingKeysConfbridgeEventWrappersPromoteConfbridgeID(t *testing.
 }
 
 // TestGoldenRoutingKeysPlaceholderFallbacks pins what happens when an address is absent. The
-// explicit method is the ONLY source of the address -- a Nil return is authoritative, nothing
+// EventSubscriptionID method is the ONLY source of the address -- a Nil return is authoritative, nothing
 // resurrects a different id behind it -- and every case collapses to the `-` placeholder, which
 // type-level bindings still match and instance bindings correctly never do.
 func TestGoldenRoutingKeysPlaceholderFallbacks(t *testing.T) {

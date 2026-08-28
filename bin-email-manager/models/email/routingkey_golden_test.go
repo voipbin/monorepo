@@ -8,8 +8,8 @@
 // instance binding ever matches, and no runtime metric can detect it. Design doc §2.4 / §4.
 //
 // email-manager is an OWN-ID service: `email.Email` is an independent, persistent resource whose
-// own id IS the subscription address, stated explicitly by its mandatory
-// `EventSubscriptionID()` method (VOIP-1419 -- every published type implements
+// own id IS the subscription address, stated by the mandatory `EventSubscriptionID()`
+// promoted from the embedded commonidentity.Identity (VOIP-1419 -- every published type implements
 // eventtopic.SubscriptionIdentifier; an empty return degrades to the `-` placeholder).
 //
 // The file lives in models/email because that is the service's PRIMARY model package and email is
@@ -82,7 +82,7 @@ func TestGoldenRoutingKeys(t *testing.T) {
 		data      any
 		expect    string
 	}{
-		// email resource -- own id is the address, returned by its explicit EventSubscriptionID.
+		// email resource -- own id is the address, returned through the promoted Identity default.
 		{
 			"email_created",
 			email.EventTypeCreated,
