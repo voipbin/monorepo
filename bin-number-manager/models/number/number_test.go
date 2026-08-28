@@ -4,7 +4,48 @@ import (
 	"testing"
 
 	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/models/eventtopic"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 )
+
+// Number carries an explicit subscription address on the global topic exchange
+// (VOIP-1404/1419). The assertion pins the POINTER type: the event data reaches
+// notifyhandler as a POINTER and the assertion matches the dynamic type.
+var _ eventtopic.SubscriptionIdentifier = (*Number)(nil)
+
+func TestNumberEventSubscriptionID(t *testing.T) {
+	id := uuid.Must(uuid.NewV4())
+	customerID := uuid.Must(uuid.NewV4())
+	callFlowID := uuid.Must(uuid.NewV4())
+	messageFlowID := uuid.Must(uuid.NewV4())
+
+	n := &Number{
+		Identity: commonidentity.Identity{
+			ID:         id,
+			CustomerID: customerID,
+		},
+		Number:        "+15551234567",
+		CallFlowID:    callFlowID,
+		MessageFlowID: messageFlowID,
+	}
+
+	res := n.EventSubscriptionID()
+	if res != id.String() {
+		t.Errorf("Wrong match. expect: %s, got: %s", id.String(), res)
+	}
+
+	// The address is the number's OWN id -- none of the other id-carrying fields may leak in.
+	for name, wrong := range map[string]uuid.UUID{
+		"customer_id":     customerID,
+		"call_flow_id":    callFlowID,
+		"message_flow_id": messageFlowID,
+	} {
+		if res == wrong.String() {
+			t.Errorf("Subscription address must not be the %s. got: %s", name, res)
+		}
+	}
+}
 
 func TestNumberStruct(t *testing.T) {
 	id := uuid.Must(uuid.NewV4())
