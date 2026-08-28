@@ -35,6 +35,12 @@ Supporting binary:
 | Models | `models/telnyx` | Telnyx webhook payload models |
 | Models | `models/messagebird` | MessageBird webhook payload models |
 
+## Event Publishing
+
+Both `cmd/message-manager` and `cmd/message-control` construct their NotifyHandler with `notifyhandler.WithGlobalTopicPublish()`, so every event is published twice: once to the per-service fanout exchange `bin-manager.message-manager.event` (unchanged, still the system of record) and once to the global topic exchange `bin-manager.event` with the routing key `message-manager.message.<message-id>.<action>`. The two cmds must stay in lockstep on this option — enabling it in only one would leave consumers with gaps depending on which process published. A topic publish failure never propagates to the caller and never affects the fanout publish.
+
+The third routing-key segment is the *subscription address* — the id consumers bind to. `message.Message` deliberately carries no `eventtopic.SubscriptionIdentifier` override: unlike the same-named stream-fragment types in ai/conversation/talk/webchat/tts, this service's `Message` is the SMS resource itself, so its own id is the address and the default JSON `id` extraction covers it. `models/message/routingkey_golden_test.go` pins the exact key of every published event type (`message_created`, `message_updated`, `message_deleted`) plus the deliberate absence of that override. See the monorepo `docs/plans/2026-08-27-voip-1404-global-topic-exchange-design.md` for the schema and `docs/plans/2026-08-27-voip-1405-topic-publisher-rollout-design.md` §2.4 for the address mapping.
+
 ## Request Routing
 
 The `listenhandler` consumes from queue `bin-manager.message-manager.request` and dispatches by regex-matching the request URI:

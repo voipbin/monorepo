@@ -28,6 +28,27 @@ All WebSocket messages between Go and Python use protobuf frames (`proto/frames.
 | `TranscriptionFrame` | Python → Go | STT transcript results |
 | `MessageFrame` | bidirectional | Structured message payloads |
 
+## Events Published
+
+Every event below is published to the per-service fanout exchange `bin-manager.pipecat-manager.event`, and — since VOIP-1405 — also to the global topic exchange `bin-manager.event` with the routing key `pipecat-manager.<resource>.<pipecatcall-id>.<action>`. The third key segment is the *subscription address*: it is always the pipecatcall-id, across all three resource namespaces, so one AI voice session is followed with `pipecat-manager.pipecatcall.<id>.#`, `pipecat-manager.message.<id>.#`, and `pipecat-manager.team.<id>.#`.
+
+| Event | Data | Trigger | Topic routing key |
+|-------|------|---------|-------------------|
+| `pipecatcall.EventTypeCreated` | `*pipecatcall.Pipecatcall` | Pipecatcall record created | `pipecat-manager.pipecatcall.<pipecatcall-id>.created` |
+| `pipecatcall.EventTypeInitialized` | `*pipecatcall.Pipecatcall` | Pipecat runner WebSocket connected — session ready for audio | `pipecat-manager.pipecatcall.<pipecatcall-id>.initialized` |
+| `pipecatcall.EventTypePipecatcallTerminated` | `*pipecatcall.Pipecatcall` | Session torn down (published exactly once per pipecatcall) | `pipecat-manager.pipecatcall.<pipecatcall-id>.terminated` |
+| `pipecatcall.EventTypeDeleted` | `*pipecatcall.Pipecatcall` | Pipecatcall record deleted | `pipecat-manager.pipecatcall.<pipecatcall-id>.deleted` |
+| `message.EventTypeBotTranscription` | `*message.Message` | Bot speech transcribed | `pipecat-manager.message.<pipecatcall-id>.bot_transcription` |
+| `message.EventTypeUserTranscription` | `*message.Message` | Final user STT result | `pipecat-manager.message.<pipecatcall-id>.user_transcription` |
+| `message.EventTypeUserLLM` | `*message.Message` | User text delivered to the LLM | `pipecat-manager.message.<pipecatcall-id>.user_llm` |
+| `message.EventTypeBotLLMIntermediate` | `*message.Message` | Per-tick delta of an in-flight LLM generation | `pipecat-manager.message.<pipecatcall-id>.bot_llm_intermediate` |
+| `message.EventTypeBotLLM` | `*message.Message` | Final LLM reply for one generation | `pipecat-manager.message.<pipecatcall-id>.bot_llm` |
+| `message.EventTypeTeamMemberSwitched` | `*message.MemberSwitchedEvent` | Team member transition during an AI call | `pipecat-manager.team.<pipecatcall-id>.member_switched` |
+
+`Message` and `MemberSwitchedEvent` both implement `eventtopic.SubscriptionIdentifier` (pointer receiver) returning `PipecatcallID`. `Message` needs the override because its own id is not an address: the transcription and user-llm events mint a fresh uuid per event, while the bot-llm events reuse a per-generation id that no subscriber can know in advance. `MemberSwitchedEvent` needs it because it carries no top-level `id` at all — without the override the key would degrade to the `-` placeholder. `Pipecatcall` needs no override: its own id already is the subscription address.
+
+The routing keys are pinned by `models/pipecatcall/routingkey_golden_test.go`; the override behavior (including the "address is never the own id" property) is pinned in `models/message`.
+
 ## Pipecat Pipeline
 
 Python `run.py` constructs the pipeline:

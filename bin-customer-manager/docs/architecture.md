@@ -56,3 +56,25 @@ The `listenhandler` consumes from queue `bin-manager.customer-manager.request` a
 | GET | `/v1/accesskeys/{uuid}` | Get access key |
 | PUT | `/v1/accesskeys/{uuid}` | Update access key |
 | DELETE | `/v1/accesskeys/{uuid}` | Delete access key |
+
+## Events Published
+
+Exchange: `bin-manager.customer-manager.event` (fanout, system of record) and — since VOIP-1405 — the global topic exchange `bin-manager.event`.
+
+`cmd/customer-manager` and BOTH NotifyHandler instances inside `cmd/customer-control` construct their NotifyHandler with `notifyhandler.WithGlobalTopicPublish()`, so every event is published twice: once to the per-service fanout exchange (unchanged) and once to the global topic exchange with the routing key `customer-manager.<resource>.<subscription-id>.<action>`. All three construction sites must stay in lockstep on this option — enabling it in only some would leave consumers with gaps depending on which process published. A topic publish failure never propagates to the caller and never affects the fanout publish.
+
+Both published resources are addressed by their OWN id (the default top-level `id` fallback; no `eventtopic.SubscriptionIdentifier` override exists in this service). An accesskey is an independent persistent resource and is NOT addressed by its owning customer. Consumers bind `customer-manager.customer.<customer-id>.#` and `customer-manager.accesskey.<accesskey-id>.#` as two independent streams. The exact keys are pinned by `models/customer/routingkey_golden_test.go`; the schema lives in the monorepo `docs/plans/2026-08-27-voip-1404-global-topic-exchange-design.md`.
+
+**CRITICAL — do not add an `EventSubscriptionID()` override to `*customer.Customer`.** `customer.CustomerCreatedEvent` anonymously embeds `*Customer`, so any method on `*Customer` is promoted to the wrapper as well: an override would silently re-address BOTH types at once. The wrapper works correctly today precisely because the embed's `id` is promoted into its JSON, which the default fallback picks up. A wrapper with a nil embed marshals without an `id` and correctly collapses to the `-` placeholder segment. All three facts are asserted in the golden test.
+
+| Event type | Trigger | Payload type |
+|-----------|---------|--------------|
+| `customer.EventTypeCustomerCreated` | Customer created (admin create or self-signup) | `*customer.CustomerCreatedEvent` (wraps `*Customer` + `headless`) |
+| `customer.EventTypeCustomerUpdated` | Customer info, billing account, or webhook config updated | `*customer.Customer` |
+| `customer.EventTypeCustomerDeleted` | Customer deleted, or frozen customer past the grace period | `*customer.Customer` |
+| `customer.EventTypeCustomerFrozen` | Customer account frozen | `*customer.Customer` |
+| `customer.EventTypeCustomerRecovered` | Frozen customer recovered | `*customer.Customer` |
+| `customer.EventTypeCustomerIdentityVerificationUpdated` | Identity verification status changed | `*customer.Customer` |
+| `accesskey.EventTypeAccesskeyCreated` | Access key created | `*accesskey.Accesskey` |
+| `accesskey.EventTypeAccesskeyUpdated` | Access key updated | `*accesskey.Accesskey` |
+| `accesskey.EventTypeAccesskeyDeleted` | Access key deleted | `*accesskey.Accesskey` |

@@ -27,7 +27,7 @@ cmd/conversation-manager/main.go
 |-------|---------|----------------|
 | Transport | `pkg/listenhandler` | Receives RPC requests from `bin-manager.conversation-manager.request`; routes by URI regex |
 | Transport | `pkg/subscribehandler` | Consumes `message_created` events from message-manager (inbound SMS/MMS) |
-| Transport | notifyhandler (bin-common-handler) | Publishes conversation/message events to exchange |
+| Transport | notifyhandler (bin-common-handler) | Publishes conversation/message events to the fanout exchange `bin-manager.conversation-manager.event` and, since VOIP-1405, dual-publishes the same payload to the global topic exchange `bin-manager.event` |
 | Domain | `pkg/conversationhandler` | Create/get/update conversations; process platform webhooks; execute-mode dispatch (agent vs flow); event handling |
 | Domain | `pkg/messagehandler` | Create message records; dispatch outbound messages; status tracking |
 | Domain | `pkg/accounthandler` | CRUD for platform credentials (LINE channel secret/token, SMS credentials, WhatsApp Meta credentials) |
@@ -70,16 +70,26 @@ SubscribeHandler (`pkg/subscribehandler/`) consumes:
 
 Exchange: `bin-manager.conversation-manager.event`
 
-| Event type | Trigger |
-|-----------|---------|
-| `account.EventTypeAccountCreated` | New platform account created |
-| `account.EventTypeAccountUpdated` | Account credentials/metadata updated |
-| `account.EventTypeAccountDeleted` | Account deleted |
-| `conversation.EventTypeConversationCreated` | New conversation thread created |
-| `conversation.EventTypeConversationUpdated` | Conversation metadata updated |
-| `message.EventTypeMessageCreated` | New message added to conversation |
-| `message.EventTypeMessageDeleted` | Message deleted |
-| `message.EventTypeMessageUpdated` | Message status updated |
+| Event type | Trigger | Topic routing key |
+|-----------|---------|-------------------|
+| `account.EventTypeAccountCreated` | New platform account created | `conversation-manager.account.<account-id>.created` |
+| `account.EventTypeAccountUpdated` | Account credentials/metadata updated | `conversation-manager.account.<account-id>.updated` |
+| `account.EventTypeAccountDeleted` | Account deleted | `conversation-manager.account.<account-id>.deleted` |
+| `conversation.EventTypeConversationCreated` | New conversation thread created | `conversation-manager.conversation.<conversation-id>.created` |
+| `conversation.EventTypeConversationUpdated` | Conversation metadata updated | `conversation-manager.conversation.<conversation-id>.updated` |
+| `message.EventTypeMessageCreated` | New message added to conversation | `conversation-manager.conversation.<conversation-id>.message_created` |
+| `message.EventTypeMessageDeleted` | Message deleted | `conversation-manager.conversation.<conversation-id>.message_deleted` |
+| `message.EventTypeMessageUpdated` | Message status updated | `conversation-manager.conversation.<conversation-id>.message_updated` |
+
+`conversation.EventTypeConversationDeleted` is declared but never published today (a stream-completeness follow-up is registered); it has no routing key above on purpose.
+
+### Global topic exchange (VOIP-1405)
+
+Both `cmd/conversation-manager` and `cmd/conversation-control` construct their NotifyHandler with `notifyhandler.WithGlobalTopicPublish()`, so every event is published twice: once to the per-service fanout exchange `bin-manager.conversation-manager.event` (unchanged, still the system of record) and once to the global topic exchange `bin-manager.event` with the routing key `conversation-manager.<resource>.<subscription-id>.<action>`. The two cmds must stay in lockstep on this option — enabling it in only one would leave consumers with gaps depending on which process published. A topic publish failure never propagates to the caller and never affects the fanout publish.
+
+Because `conversation_message_*` splits into resource `conversation` + action `message_*`, and `*message.Message` overrides its subscription address to the parent `ConversationID`, the conversation lifecycle events and every message of that conversation share one key space: `conversation-manager.conversation.<conversation-id>.#` follows a whole conversation. Accounts stay in their own `conversation-manager.account.<account-id>.#` namespace. See [docs/domain.md](domain.md) and the monorepo design docs `docs/plans/2026-08-27-voip-1404-global-topic-exchange-design.md` / `...-voip-1405-topic-publisher-rollout-design.md`.
+
+Note: account events carry `secret`/`token` in their payloads today, exactly as they already do on the fanout exchange. The audience is unchanged (broker access requires internal credentials), but the discovery barrier is lower on a single global exchange — a payload secret-stripping follow-up is registered as a priority item (1405 §6.3/§7).
 
 ## Inbound Dispatch: Execute Mode
 

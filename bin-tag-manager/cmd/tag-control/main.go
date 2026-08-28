@@ -63,7 +63,9 @@ func initTagHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (taghandler.
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameTagEvent, serviceName)
+	// VOIP-1405: same global topic exchange opt-in as cmd/tag-manager. Both processes publish to
+	// the same logical stream, so both must dual publish or consumers would see gaps.
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameTagEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 
 	return taghandler.NewTagHandler(reqHandler, db, notifyHandler), nil
 }

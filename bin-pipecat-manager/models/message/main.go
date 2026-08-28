@@ -30,3 +30,18 @@ type Message struct {
 	Text     string `json:"text,omitempty"`
 	Sequence int    `json:"sequence,omitempty"`
 }
+
+// EventSubscriptionID returns the subscription address of the global topic exchange
+// `bin-manager.event` (VOIP-1404 / VOIP-1405). It is the parent PipecatcallID, never the
+// message's own ID: the id-generation rule differs per publish site — the transcription and
+// user-llm events mint a fresh random uuid per event (`pkg/pipecatcallhandler/runner.go`
+// newMessageEvent), while the bot-llm intermediate/final events reuse the per-generation
+// LLMMessageID. Neither is an address a subscriber could bind to in advance. Every message event
+// of one AI voice session carries the same pipecatcall-id, so consumers follow the session with
+// `pipecat-manager.message.<pipecatcall-id>.#`.
+//
+// The receiver is a pointer because the event data reaches notifyhandler as a pointer and the
+// eventtopic.SubscriptionIdentifier assertion matches the dynamic type.
+func (h *Message) EventSubscriptionID() string {
+	return h.PipecatcallID.String()
+}

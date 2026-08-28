@@ -89,9 +89,9 @@ func (h *caseHandler) CaseTagAdd(ctx context.Context, customerID, caseID, tagID 
 		return fmt.Errorf("could not update case tag_ids. CaseTagAdd. err: %v", err)
 	}
 
-	h.notifyHandler.PublishEvent(ctx, "case_tag_added", map[string]uuid.UUID{
-		"case_id": caseID,
-		"tag_id":  tagID,
+	h.notifyHandler.PublishEvent(ctx, kase.EventTypeCaseTagAdded, &kase.CaseTagEvent{
+		CaseID: caseID,
+		TagID:  tagID,
 	})
 
 	return nil
@@ -127,9 +127,9 @@ func (h *caseHandler) CaseTagRemove(ctx context.Context, customerID, caseID, tag
 		return fmt.Errorf("could not update case tag_ids. CaseTagRemove. err: %v", err)
 	}
 
-	h.notifyHandler.PublishEvent(ctx, "case_tag_removed", map[string]uuid.UUID{
-		"case_id": caseID,
-		"tag_id":  tagID,
+	h.notifyHandler.PublishEvent(ctx, kase.EventTypeCaseTagRemoved, &kase.CaseTagEvent{
+		CaseID: caseID,
+		TagID:  tagID,
 	})
 
 	return nil

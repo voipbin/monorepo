@@ -98,3 +98,7 @@ This service does **not** subscribe to external RabbitMQ events. There is no Sub
 ## Events Published
 
 Exchange: `bin-manager.pipecat-manager.event` — pipecat session lifecycle events consumed by `bin-ai-manager`.
+
+Both `cmd/pipecat-manager` and `cmd/pipecat-control` construct their NotifyHandler with `notifyhandler.WithGlobalTopicPublish()`, so every event is published twice: once to the per-service fanout exchange `bin-manager.pipecat-manager.event` (unchanged, still the system of record) and once to the global topic exchange `bin-manager.event` with the routing key `pipecat-manager.<resource>.<pipecatcall-id>.<action>`. The two cmds must stay in lockstep on this option — enabling it in only one would leave consumers with gaps depending on which process published. A topic publish failure never propagates to the caller and never affects the fanout publish. See [docs/domain.md](domain.md) for the per-event routing keys and monorepo `docs/plans/2026-08-27-voip-1404-global-topic-exchange-design.md` for the schema.
+
+Event data is always handed to `PublishEvent` as a **pointer**. The subscription-address override (`eventtopic.SubscriptionIdentifier`) is declared on a pointer receiver, so a value payload would silently miss the assertion and fall back to the JSON `id` — the wrong address for `message.Message`, and no address at all for `message.MemberSwitchedEvent`. `pkg/pipecatcallhandler/runner.go` publishes pointers at every site for this reason.

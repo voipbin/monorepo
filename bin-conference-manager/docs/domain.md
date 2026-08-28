@@ -34,7 +34,23 @@ Statuses: `initiating`, `progressing`, `terminating`, `terminated`.
 
 6. **Health checks prevent orphaned conferencecalls**: The `health-check` endpoint on conferencecalls allows call-manager to verify that a participant is still tracked. If the conferencecall is not found, call-manager can clean up the associated channel.
 
-7. **Events published on conference state changes**: Conference created, updated, and deleted events are published to `bin-manager.conference-manager.event` for downstream consumers (e.g., webhook-manager for customer notifications).
+7. **Events published on conference state changes**: Conference created, updated, and deleted events are published to `bin-manager.conference-manager.event` for downstream consumers (e.g., webhook-manager for customer notifications). See [Published Events](#published-events) below.
+
+## Published Events
+
+Every event below is published to the per-service fanout exchange `bin-manager.conference-manager.event`, and — since VOIP-1405 — also to the global topic exchange `bin-manager.event` with the routing key `conference-manager.<resource>.<conference-id>.<action>`. The third key segment is the *subscription address*: it is always the conference-id, across both resource namespaces, so one conference session (including every participant's events) is followed with `conference-manager.conference.<id>.#` and `conference-manager.conferencecall.<id>.#`.
+
+| Event | Data | Topic routing key |
+|---|---|---|
+| `conference_created` | `conference.Conference` | `conference-manager.conference.<conference-id>.created` |
+| `conference_updated` | `conference.Conference` | `conference-manager.conference.<conference-id>.updated` |
+| `conference_deleted` | `conference.Conference` | `conference-manager.conference.<conference-id>.deleted` |
+| `conferencecall_joining` | `conferencecall.Conferencecall` | `conference-manager.conferencecall.<conference-id>.joining` |
+| `conferencecall_joined` | `conferencecall.Conferencecall` | `conference-manager.conferencecall.<conference-id>.joined` |
+| `conferencecall_leaving` | `conferencecall.Conferencecall` | `conference-manager.conferencecall.<conference-id>.leaving` |
+| `conferencecall_leaved` | `conferencecall.Conferencecall` | `conference-manager.conferencecall.<conference-id>.leaved` |
+
+`Conferencecall` implements `eventtopic.SubscriptionIdentifier` (pointer receiver) returning `ConferenceID`: its own id is stable but is not a subscription axis — it first becomes known inside its own joining event, and every real consumption pattern follows a conference session rather than an individual participant. `Conference` needs no override — its own id already is the subscription address.
 
 ## State Machines
 

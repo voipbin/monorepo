@@ -29,6 +29,10 @@ graph TD
 | `models/queue` | Queue data model, routing method constants | `queue.Queue`, `queue.RoutingMethod` |
 | `models/queuecall` | Queuecall data model, status constants | `queuecall.Queuecall`, `queuecall.Status` |
 
+## Event Publishing
+
+All three NotifyHandler construction sites — `cmd/queue-manager`, and both instances in `cmd/queue-control` — are built with `notifyhandler.WithGlobalTopicPublish()`, so every event is published twice: once to the per-service fanout exchange `bin-manager.queue-manager.event` (unchanged, still the system of record) and once to the global topic exchange `bin-manager.event` with the routing key `queue-manager.<resource>.<queue-id>.<action>`. The three sites must stay in lockstep on this option — enabling it in only some would leave consumers with gaps depending on which process published. A topic publish failure never propagates to the caller and never affects the fanout publish. See [docs/domain.md](domain.md) for the per-event routing keys and the monorepo `docs/plans/2026-08-27-voip-1404-global-topic-exchange-design.md` for the schema.
+
 ## Request Routing
 
 Requests arrive via RabbitMQ queue `bin-manager.queue-manager.request`. The `listenhandler` matches each request's URI against regex patterns and dispatches to the appropriate handler function.

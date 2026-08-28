@@ -5,6 +5,9 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/models/eventtopic"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 )
 
 func TestCampaigncallStruct(t *testing.T) {
@@ -113,4 +116,77 @@ func TestResultConstants(t *testing.T) {
 
 func ptrTime(t time.Time) *time.Time {
 	return &t
+}
+
+// Campaigncall overrides the subscription address of the global topic exchange (VOIP-1404/1405).
+// The assertion pins the POINTER type: the event data reaches notifyhandler as a POINTER and the
+// assertion matches the dynamic type; a VALUE of this pointer-receiver type would fail the
+// assertion (the exact pipecat defect this ticket fixed).
+var _ eventtopic.SubscriptionIdentifier = (*Campaigncall)(nil)
+
+func TestCampaigncallEventSubscriptionID(t *testing.T) {
+	campaignID := uuid.Must(uuid.NewV4())
+
+	tests := []struct {
+		name         string
+		campaigncall *Campaigncall
+		expect       string
+	}{
+		{
+			"normal",
+			&Campaigncall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.Must(uuid.NewV4()),
+					CustomerID: uuid.Must(uuid.NewV4()),
+				},
+				CampaignID: campaignID,
+				Status:     StatusDialing,
+			},
+			campaignID.String(),
+		},
+		{
+			"empty campaign id",
+			&Campaigncall{},
+			uuid.Nil.String(),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res := tt.campaigncall.EventSubscriptionID()
+			if res != tt.expect {
+				t.Errorf("Wrong match. expect: %s, got: %s", tt.expect, res)
+			}
+		})
+	}
+}
+
+// TestCampaigncallEventSubscriptionIDIsNotOwnID pins the property the override exists for: every
+// campaigncall of one campaign resolves to the SAME address, and that address is never the
+// campaigncall's own id. Two distinct campaigncalls of one campaign must converge, so a consumer
+// binds `campaign-manager.campaigncall.<campaign-id>.#` once and follows the whole campaign.
+func TestCampaigncallEventSubscriptionIDIsNotOwnID(t *testing.T) {
+	campaignID := uuid.Must(uuid.NewV4())
+
+	first := &Campaigncall{
+		Identity:   commonidentity.Identity{ID: uuid.Must(uuid.NewV4())},
+		CampaignID: campaignID,
+	}
+	second := &Campaigncall{
+		Identity:   commonidentity.Identity{ID: uuid.Must(uuid.NewV4())},
+		CampaignID: campaignID,
+	}
+
+	if first.ID == second.ID {
+		t.Fatalf("Campaigncall ids are expected to differ. id: %s", first.ID)
+	}
+	if first.EventSubscriptionID() != second.EventSubscriptionID() {
+		t.Errorf("Wrong match. expect: %s, got: %s", first.EventSubscriptionID(), second.EventSubscriptionID())
+	}
+	if first.EventSubscriptionID() != campaignID.String() {
+		t.Errorf("Wrong match. expect: %s, got: %s", campaignID.String(), first.EventSubscriptionID())
+	}
+	if first.EventSubscriptionID() == first.ID.String() {
+		t.Errorf("Subscription address must not be the campaigncall own id. id: %s", first.ID)
+	}
 }

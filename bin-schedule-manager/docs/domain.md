@@ -52,6 +52,10 @@ stateDiagram-v2
 
 `success`, `failed`, and `abandoned` are terminal. There is no automatic re-dispatch of `failed` or `abandoned` runs — the next cron slot is the retry (Forbid + at-most-once semantics).
 
+#### Execution as an event payload
+
+`Execution` implements `eventtopic.SubscriptionIdentifier` (pointer receiver) returning `ScheduleID`, so its events on the global topic exchange `bin-manager.event` are addressed by the owning schedule rather than by the per-run execution id. A schedule mints a new execution row every slot, so the execution id is not something a consumer can bind to in advance; watching one schedule's runs is the only real consumption pattern, and both `execution_succeeded` and `execution_failed` come from the same persisted row. `Schedule` needs no override — its own id already is the subscription address. See [docs/architecture.md](architecture.md#events) for the routing keys.
+
 ## Key Business Rules
 
 1. **At-most-once per slot.** A due slot is claimed by atomically CAS-advancing `tm_next_run` and inserting the execution row in a single DB transaction, behind a try-once Redis lock (`schedule:lock:<id>`). Losing the lock (`skipped_lock`) or the CAS (`skipped_cas`) means another replica owns the slot. The unique key on `(schedule_id, trigger_type, tm_scheduled)` is the last-resort backstop.

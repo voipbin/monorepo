@@ -152,7 +152,11 @@ func runService(dbHandler dbhandler.DBHandler) error {
 
 	// create handlers
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameStorageEvent, serviceName)
+	// VOIP-1405: dual-publish every storage-manager event to the global topic exchange
+	// `bin-manager.event` (VOIP-1404 skeleton). cmd/storage-control enables the same option on
+	// both of its constructors, so the "storage-manager events exist on the topic exchange"
+	// contract holds regardless of which process published.
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameStorageEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 	accountHandler := accounthandler.NewAccountHandler(notifyHandler, dbHandler)
 	fileHandler, errFileHandler := filehandler.NewFileHandler(notifyHandler, dbHandler, accountHandler, cfg.GCPProjectID, cfg.GCPBucketNameMedia, cfg.GCPBucketNameTmp)
 	if errFileHandler != nil {

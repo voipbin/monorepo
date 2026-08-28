@@ -47,3 +47,18 @@ Requests arrive via RabbitMQ queue `bin-manager.agent-manager.request`. The `lis
 | `/v1/login$` | POST | Global login endpoint (all agents) |
 | `/v1/password-forgot$` | POST | Initiate password reset flow (send email) |
 | `/v1/password-reset$` | POST | Complete password reset with token |
+
+## Events Published
+
+Exchange: `bin-manager.agent-manager.event` (fanout, system of record) and — since VOIP-1405 — the global topic exchange `bin-manager.event`.
+
+Both `cmd/agent-manager` and `cmd/agent-control` construct their NotifyHandler with `notifyhandler.WithGlobalTopicPublish()`, so every event is published twice: once to the per-service fanout exchange (unchanged) and once to the global topic exchange with the routing key `agent-manager.<resource>.<subscription-id>.<action>`. Both construction sites must stay in lockstep on this option — enabling it in only one would leave consumers with gaps depending on which process published. A topic publish failure never propagates to the caller and never affects the fanout publish.
+
+Every agent event is addressed by the agent's OWN id (the default top-level `id` fallback; no `eventtopic.SubscriptionIdentifier` override exists in this service), so a consumer following one agent binds `agent-manager.agent.<agent-id>.#` and receives all four event types. Note `agent_status_updated` splits on the FIRST underscore, keeping the resource segment `agent` and putting `status_updated` in the action segment. The exact keys are pinned by `models/agent/routingkey_golden_test.go`; the schema lives in the monorepo `docs/plans/2026-08-27-voip-1404-global-topic-exchange-design.md`.
+
+| Event type | Trigger | Publish path |
+|-----------|---------|--------------|
+| `agent.EventTypeAgentCreated` | Agent created | `PublishWebhookEvent` |
+| `agent.EventTypeAgentUpdated` | Agent info, addresses, tag IDs, password, or permission updated | `PublishEvent` + `PublishWebhookEvent` |
+| `agent.EventTypeAgentDeleted` | Agent deleted | `PublishWebhookEvent` |
+| `agent.EventTypeAgentStatusUpdated` | Agent status changed (available/away/busy/offline/ringing) | `PublishWebhookEvent` |

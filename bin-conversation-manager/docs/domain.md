@@ -29,6 +29,8 @@ Individual message within a conversation. Persisted in `conversation_messages` t
 - `transaction_id` — external platform message ID for dedup
 - `medias` — JSON array of media attachments
 
+`*message.Message` implements `eventtopic.SubscriptionIdentifier` (pointer receiver) returning `ConversationID`, not its own id (VOIP-1405 Category B). A message id is stable, but it first appears in the very event that announces the message, so it is not an address anybody can bind to in advance; the consumption axis is the conversation. `Conversation` and `Account` need no override — their own ids already are their subscription addresses.
+
 ### Media
 Media attachment metadata for messages. Stored in `conversation_medias` table.
 

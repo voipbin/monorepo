@@ -39,6 +39,25 @@ type Message struct {
 	TMDelete *time.Time `json:"tm_delete,omitempty" db:"tm_delete"`
 }
 
+// EventSubscriptionID returns the subscription address of the global topic exchange
+// `bin-manager.event` (VOIP-1404/1405). It is the parent SessionID, not the message's own ID: a
+// message id is stable, but it first appears in the very event that announces the message, so
+// nobody can bind to it in advance. The consumption axis is the session — an agent UI or a bot
+// follows one visitor conversation and wants every message of it — and Session.ID is also the
+// visitor's continuity token, which makes it the natural address. Single-message retrieval stays
+// available over RPC.
+//
+// Both webchat event types (`webchat_message_created`, `webchat_session_ended`) split into
+// resource `webchat`, so this override also makes them share one address: a single
+// `webchat-manager.webchat.<session-id>.#` binding catches the whole session, messages and the
+// end-of-session marker alike.
+//
+// The receiver is a pointer because the event data reaches notifyhandler as a pointer and the
+// eventtopic.SubscriptionIdentifier assertion matches the dynamic type.
+func (h *Message) EventSubscriptionID() string {
+	return h.SessionID.String()
+}
+
 // Direction type
 type Direction string
 

@@ -40,6 +40,12 @@ RabbitMQ
 - **dbhandler**: `Masterminds/squirrel` query builder; soft-delete pattern for both tables.
 - **cachehandler**: Redis cache reduces DB load for frequent dialroute lookups during call setup.
 
+## Event Publishing
+
+Both NotifyHandler construction sites — `cmd/route-manager` and `cmd/route-control` — are built with `notifyhandler.WithGlobalTopicPublish()`, so every event is published twice: once to the per-service fanout exchange `bin-manager.route-manager.event` (unchanged, still the system of record) and once to the global topic exchange `bin-manager.event` with the routing key `route-manager.<resource>.<resource-id>.<action>`. The two sites must stay in lockstep on this option — enabling it in only one would leave consumers with gaps depending on which process published. A topic publish failure never propagates to the caller and never affects the fanout publish.
+
+Three resource namespaces publish: `route`, `provider`, and `providercall`. Each is an independent top-level resource addressed by its OWN id, resolved by the default JSON `id` fallback — this service declares no `eventtopic.SubscriptionIdentifier` override, even though its models declare `ID` directly instead of embedding `commonidentity.Identity` (the fallback reads the `json:"id"` tag, so the two forms behave identically). Note that `provider` and `providercall` are separate namespaces despite the string-prefix relationship: AMQP topic matching is per-segment, so a `route-manager.provider.#` binding never receives providercall events. `models/route/routingkey_golden_test.go` pins the exact key of every published event type, that override absence, and the namespace separation. See the monorepo `docs/plans/2026-08-27-voip-1404-global-topic-exchange-design.md` for the key schema.
+
 ## Request Routing
 
 Requests arrive via RabbitMQ queue `bin-manager.route-manager.request`. The `listenhandler` matches the URI against compiled regex patterns:

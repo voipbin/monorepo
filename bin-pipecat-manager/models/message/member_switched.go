@@ -19,6 +19,19 @@ type MemberSwitchedEvent struct {
 	ToMember                 MemberInfo                `json:"to_member"`
 }
 
+// EventSubscriptionID returns the subscription address of the global topic exchange
+// `bin-manager.event` (VOIP-1404 / VOIP-1405). MemberSwitchedEvent has no top-level `id` at all,
+// so without this override the default JSON fallback would resolve to the `-` placeholder and the
+// event would be unreachable by any instance binding. The address is the PipecatcallID, the same
+// one every message event of the session carries, so `pipecat-manager.team.<pipecatcall-id>.#`
+// lands in the same address space as the message and pipecatcall namespaces.
+//
+// The receiver is a pointer because the event data reaches notifyhandler as a pointer and the
+// eventtopic.SubscriptionIdentifier assertion matches the dynamic type.
+func (h *MemberSwitchedEvent) EventSubscriptionID() string {
+	return h.PipecatcallID.String()
+}
+
 // MemberInfo holds non-sensitive details about a team member.
 type MemberInfo struct {
 	ID          uuid.UUID `json:"id,omitempty"`

@@ -12,6 +12,7 @@
 |---------|------|
 | `cmd/contact-manager` | Daemon entry point; wires config, DB, cache, and handlers |
 | `cmd/contact-control` | CLI tool for direct DB/cache management (bypasses RabbitMQ) |
+| `cmd/case-control` | CLI tool for case management (no NotifyHandler; publishes nothing) |
 | `pkg/listenhandler` | RabbitMQ RPC request handler with regex URI routing |
 | `pkg/subscribehandler` | Event subscriber for cascading deletes from customer-manager |
 | `pkg/contacthandler` | Core business logic for contacts, phone numbers, emails, tags |
@@ -40,6 +41,25 @@ RabbitMQ
 - **dbhandler**: Wraps MySQL with `Masterminds/squirrel`. Owns soft-delete (`tm_delete`) lifecycle.
 - **cachehandler**: Redis hash-based index allowing O(1) lookup by E.164 phone number or email address.
 - **subscribehandler**: Handles `customer_deleted` events by removing all contacts for that customer.
+
+## Event Publishing — Global Topic Exchange (VOIP-1404 / VOIP-1405)
+
+Both `cmd/contact-manager` and `cmd/contact-control` construct their `NotifyHandler` with `notifyhandler.WithGlobalTopicPublish()`. On top of the existing fanout publish to `QueueNameContactEvent`, every event is therefore ALSO published to the global topic exchange `bin-manager.event` with the routing key:
+
+```
+<publisher>.<resource>.<subscription-id>.<action>
+contact-manager.contact.<contact-id>.created
+contact-manager.case.<case-id>.note_deleted
+```
+
+Rules that apply to this service:
+
+- **Both binaries must carry the option.** They publish to the same logical stream, so enabling it on only one would leave consumers with gaps. `cmd/case-control` constructs no `NotifyHandler` and publishes nothing, so it is out of scope.
+- **The fanout publish stays the system of record** while dual publish lasts; a topic publish failure never propagates to the caller.
+- **Subscription addresses**: contact lifecycle events are addressed by the contact's own id (default resolution from the payload's top-level `id`). Every case-scoped event (`case_note_*`, `case_tag_*`, `case_contact_*`) is addressed by the **case id** via `EventSubscriptionID()` overrides, so one `contact-manager.case.<case-id>.#` binding follows a whole case. See [domain.md](domain.md) for the payload types.
+- **Rollback** is per binary: remove the single option argument. It does NOT revert the payload normalization described in domain.md.
+
+The golden routing-key table for every event type this service publishes lives in `models/kase/routingkey_golden_test.go`.
 
 ## Request Routing
 

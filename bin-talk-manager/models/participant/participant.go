@@ -25,6 +25,21 @@ type Participant struct {
 	TMJoined *time.Time `json:"tm_joined" db:"tm_joined"`
 }
 
+// EventSubscriptionID returns the subscription address of the global topic exchange
+// `bin-manager.event` (VOIP-1404/1405 §2.3). It is the parent ChatID, not the participant's own
+// ID.
+//
+// The participant id is stable and persisted, so this is a Category B override: the id first
+// appears in the participant's own `chatparticipant_added` event, which means nobody can pre-bind
+// to it, while every real consumption pattern follows a chat. Addressing by the parent makes
+// `talk-manager.chatparticipant.<chat-id>.#` deliver the roster changes of that conversation.
+//
+// The receiver is a pointer because the event data reaches notifyhandler as a pointer and the
+// eventtopic.SubscriptionIdentifier assertion matches the dynamic type.
+func (p *Participant) EventSubscriptionID() string {
+	return p.ChatID.String()
+}
+
 // WebhookMessage is the webhook payload for participant events
 type WebhookMessage struct {
 	commonidentity.Identity

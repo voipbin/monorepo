@@ -496,7 +496,10 @@ func (h *pipecatcallHandler) RunnerMemberSwitchedHandle(id uuid.UUID, c *gin.Con
 		return fmt.Errorf("could not bind member-switched request JSON: %w", errBind)
 	}
 
-	evt := message.MemberSwitchedEvent{
+	// Published as a pointer so notifyhandler's eventtopic.SubscriptionIdentifier assertion
+	// (pointer receiver) resolves the subscription address; a value would silently fall back to
+	// the `-` placeholder. Payload bytes are unchanged. VOIP-1405 §3.2.
+	evt := &message.MemberSwitchedEvent{
 		CustomerID:               pc.CustomerID,
 		PipecatcallID:            pc.ID,
 		PipecatcallReferenceType: pc.ReferenceType,
@@ -515,8 +518,13 @@ func (h *pipecatcallHandler) RunnerMemberSwitchedHandle(id uuid.UUID, c *gin.Con
 }
 
 // newMessageEvent creates a message.Message populated from the session and the given text.
-func (h *pipecatcallHandler) newMessageEvent(se *pipecatcall.Session, text string) message.Message {
-	return message.Message{
+//
+// Returns a pointer so every publish site hands notifyhandler a *message.Message: the
+// eventtopic.SubscriptionIdentifier override is declared on the pointer receiver, and a value
+// would never satisfy the assertion (silent `-` placeholder address). Payload bytes are
+// unchanged. VOIP-1405 §3.2.
+func (h *pipecatcallHandler) newMessageEvent(se *pipecatcall.Session, text string) *message.Message {
+	return &message.Message{
 		Identity: commonidentity.Identity{
 			ID:         h.utilHandler.UUIDCreate(),
 			CustomerID: se.CustomerID,
@@ -846,7 +854,8 @@ func (h *pipecatcallHandler) flushAndFinalize(se *pipecatcall.Session) {
 // Accepts an explicit context so callers can use context.Background() when se.Ctx is cancelled
 // (e.g. during the terminate path) and the partial reply must still reach ai-manager.
 func (h *pipecatcallHandler) publishIntermediateEvent(ctx context.Context, se *pipecatcall.Session, messageID uuid.UUID, delta string, sequence int) {
-	evt := message.Message{
+	// Pointer publish — see newMessageEvent. VOIP-1405 §3.2.
+	evt := &message.Message{
 		Identity: commonidentity.Identity{
 			ID:         messageID,
 			CustomerID: se.CustomerID,
@@ -868,7 +877,8 @@ func (h *pipecatcallHandler) publishIntermediateEvent(ctx context.Context, se *p
 // publishFinalBotLLMEvent publishes the final message_bot_llm event with the complete text.
 // Accepts an explicit context so callers can use context.Background() when se.Ctx is cancelled.
 func (h *pipecatcallHandler) publishFinalBotLLMEvent(ctx context.Context, se *pipecatcall.Session, messageID uuid.UUID, fullText string) {
-	evt := message.Message{
+	// Pointer publish — see newMessageEvent. VOIP-1405 §3.2.
+	evt := &message.Message{
 		Identity: commonidentity.Identity{
 			ID:         messageID,
 			CustomerID: se.CustomerID,

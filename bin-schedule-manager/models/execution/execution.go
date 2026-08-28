@@ -52,3 +52,18 @@ type Execution struct {
 	TMUpdate *time.Time `json:"tm_update" db:"tm_update"` // Updated timestamp.
 	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"` // Deleted timestamp.
 }
+
+// EventSubscriptionID returns the subscription address of the global topic exchange
+// `bin-manager.event` (VOIP-1404/1405). It is the parent ScheduleID, not the execution's own ID:
+// the execution id is stable, but it is not the axis anybody subscribes on. An execution id first
+// becomes known to a subscriber inside the completion event itself, so binding to it in advance
+// is impossible, while every real consumption pattern (watching one schedule's runs succeed or
+// fail) is schedule-scoped. Both `execution_succeeded` and `execution_failed` are published from
+// the same persisted row, so both resolve to the same schedule address. Single-item retrieval
+// stays available over RPC. Design §2.1/§2.3.
+//
+// The receiver is a pointer because the event data reaches notifyhandler as a pointer and the
+// eventtopic.SubscriptionIdentifier assertion matches the dynamic type.
+func (h *Execution) EventSubscriptionID() string {
+	return h.ScheduleID.String()
+}

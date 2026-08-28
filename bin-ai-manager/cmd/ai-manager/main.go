@@ -117,7 +117,10 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	sockHandler.Connect()
 
 	requestHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, requestHandler, commonoutline.QueueNameAIEvent, serviceName)
+	// VOIP-1405: opt in to the global topic exchange `bin-manager.event`. ai-control enables the
+	// same option on both of its NotifyHandler instances, so the "ai-manager events exist on the
+	// topic exchange" contract holds regardless of which process published.
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, requestHandler, commonoutline.QueueNameAIEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 
 	aiHandler := aihandler.NewAIHandler(requestHandler, notifyHandler, db)
 	teamHandler := teamhandler.NewTeamHandler(requestHandler, notifyHandler, db)

@@ -20,6 +20,7 @@ package transcribe_test
 
 import (
 	"encoding/json"
+	"reflect"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -50,7 +51,15 @@ func resolveSubscriptionID(t *testing.T, data any) string {
 	t.Helper()
 
 	if identifier, ok := data.(eventtopic.SubscriptionIdentifier); ok {
-		return identifier.EventSubscriptionID()
+		// typed-nil guard, mirroring notifyhandler.resolveSubscriptionOverride: a nil pointer whose
+		// type implements the interface still SATISFIES the assertion, and every real implementation
+		// dereferences its receiver -- calling the method would panic. Production reports "no
+		// override" for such a payload, so this guard falls through to the JSON half below rather
+		// than returning early; `null` carries no top-level `id` either, so both halves agree on the
+		// `-` placeholder.
+		if v := reflect.ValueOf(data); v.Kind() != reflect.Ptr || !v.IsNil() {
+			return identifier.EventSubscriptionID()
+		}
 	}
 
 	m, err := json.Marshal(data)
@@ -235,5 +244,29 @@ func TestTranscribeUsesDefaultSubscriptionID(t *testing.T) {
 
 	if _, ok := data.(eventtopic.SubscriptionIdentifier); ok {
 		t.Errorf("Transcribe must not implement SubscriptionIdentifier. its own id is the subscription address.")
+	}
+}
+
+// TestGoldenRoutingKeyTypedNilResolvesPlaceholder locks the typed-nil guard in
+// resolveSubscriptionID (and, by parity, in notifyhandler.resolveSubscriptionOverride): a nil
+// *transcript.Transcript still satisfies the SubscriptionIdentifier assertion, but calling the
+// method would dereference a nil receiver. The guard must fall through to the JSON half, which
+// yields no id for `null`, so the key degrades to the `-` placeholder instead of panicking.
+// Removing the guard from the helper makes this test panic — it is the mutation lock for the
+// guard itself, which no address-value row can provide.
+func TestGoldenRoutingKeyTypedNilResolvesPlaceholder(t *testing.T) {
+	publisher := string(commonoutline.ServiceNameTranscribeManager)
+
+	var data *transcript.Transcript
+
+	subscriptionID := resolveSubscriptionID(t, data)
+	if !eventtopic.IsPlaceholderSubscriptionID(subscriptionID) {
+		t.Errorf("Wrong match. expect: placeholder, got: %s", subscriptionID)
+	}
+
+	res := eventtopic.RoutingKey(publisher, transcript.EventTypeTranscriptCreated, subscriptionID)
+	expect := "transcribe-manager.transcript.-.created"
+	if res != expect {
+		t.Errorf("Wrong match. expect: %s, got: %s", expect, res)
 	}
 }

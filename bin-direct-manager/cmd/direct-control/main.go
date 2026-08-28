@@ -63,7 +63,7 @@ func initDirectHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (directha
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameDirectEvent, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameDirectEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 
 	return directhandler.NewDirectHandler(reqHandler, db, notifyHandler, cache), nil
 }

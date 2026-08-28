@@ -58,3 +58,20 @@ The `listenhandler` consumes from queue `bin-manager.billing-manager.request` an
 | POST | `/v1/accounts/is_valid_balance_by_customer_id` | Check balance by customer ID |
 | GET | `/v1/accounts/is_valid_resource_limit_by_customer_id` | Check resource limit by customer ID |
 | POST | `/v1/failed_events/retry` | Sweep endpoint: retry pending failed billing events (invoked by schedule-manager cron, replaces the old in-process ticker) |
+
+## Events Published
+
+Exchange: `bin-manager.billing-manager.event` (fanout, system of record) and — since VOIP-1405 — the global topic exchange `bin-manager.event`.
+
+Both `cmd/billing-manager` and `cmd/billing-control` construct their NotifyHandler with `notifyhandler.WithGlobalTopicPublish()`, so every event is published twice: once to the per-service fanout exchange (unchanged) and once to the global topic exchange with the routing key `billing-manager.<resource>.<subscription-id>.<action>`. Both construction sites must stay in lockstep on this option — enabling it in only one would leave consumers with gaps depending on which process published. A topic publish failure never propagates to the caller and never affects the fanout publish.
+
+Both published types are addressed by their OWN id (the default top-level `id` fallback; no `eventtopic.SubscriptionIdentifier` override exists in this service). A billing entry is deliberately NOT addressed by its parent `account_id` — the address stays consistent with `billing_updated` and the id is obtainable from the create response. Consumers therefore bind `billing-manager.billing.<billing-id>.#` and `billing-manager.account.<account-id>.#` as two independent streams. The exact keys are pinned by `models/billing/routingkey_golden_test.go`; the schema lives in the monorepo `docs/plans/2026-08-27-voip-1404-global-topic-exchange-design.md`.
+
+| Event type | Trigger |
+|-----------|---------|
+| `billing.EventTypeBillingCreated` | Billing ledger entry created |
+| `billing.EventTypeBillingUpdated` | Billing entry status/amount updated |
+| `account.EventTypeAccountCreated` | Billing account created |
+| `account.EventTypeAccountUpdated` | Balance, plan, or payment info updated |
+
+`billing.EventTypeBillingDeleted` and `account.EventTypeAccountDeleted` are declared constants with NO publish site anywhere in this service — they are dead and are deliberately excluded from the golden routing-key table. (The identically named `account_deleted` in conversation-manager and storage-manager is LIVE; only billing-manager's is dead.)

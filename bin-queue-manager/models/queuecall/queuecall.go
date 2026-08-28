@@ -44,6 +44,20 @@ type Queuecall struct {
 	TMDelete  *time.Time `json:"tm_delete" db:"tm_delete"`   // Deleted timestamp.
 }
 
+// EventSubscriptionID returns the subscription address of the global topic exchange
+// `bin-manager.event` (VOIP-1404/1405). It is the parent QueueID, not the queuecall's own ID: the
+// queuecall id is stable, but it is not the axis anybody subscribes on. A queuecall id first
+// becomes known to a subscriber inside its own `queuecall_created` event, so binding to it in
+// advance is impossible, while every real consumption pattern (following one queue's traffic
+// through its 7 lifecycle events) is queue-scoped. Single-item retrieval stays available over
+// RPC. Design §2.1/§2.3 — structural twin of campaigncall/conferencecall.
+//
+// The receiver is a pointer because the event data reaches notifyhandler as a pointer and the
+// eventtopic.SubscriptionIdentifier assertion matches the dynamic type.
+func (h *Queuecall) EventSubscriptionID() string {
+	return h.QueueID.String()
+}
+
 // ReferenceType define
 type ReferenceType string
 

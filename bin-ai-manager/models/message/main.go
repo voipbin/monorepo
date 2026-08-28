@@ -41,6 +41,19 @@ type Message struct {
 	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
 }
 
+// EventSubscriptionID returns the subscription address of the global topic exchange
+// `bin-manager.event` (VOIP-1404 / VOIP-1405 §2.3). It is the parent AIcallID, not the message's
+// own ID: a message id is stable and persisted, but it first becomes known to a subscriber in the
+// `aimessage_created` event itself, so nobody can bind to it in advance. Every real consumption
+// pattern follows the AIcall conversation, so the AIcall is the address. Single-message retrieval
+// stays available over RPC.
+//
+// The receiver is a pointer because the event data reaches notifyhandler as a pointer and the
+// eventtopic.SubscriptionIdentifier assertion matches the dynamic type.
+func (h *Message) EventSubscriptionID() string {
+	return h.AIcallID.String()
+}
+
 // Role defiens
 type Role string
 

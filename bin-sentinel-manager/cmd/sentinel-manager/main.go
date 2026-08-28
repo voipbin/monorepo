@@ -90,7 +90,12 @@ func runService(ctx context.Context, cancel context.CancelFunc) {
 
 	// create handlers
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameSentinelEvent, serviceName)
+	// VOIP-1405: dual-publish every sentinel-manager event to the global topic exchange
+	// `bin-manager.event` (VOIP-1404 skeleton). cmd/sentinel-manager is the only publisher of
+	// this service. The published payload is a raw `*corev1.Pod`, which carries no top-level
+	// `id`, so every key uses the `-` placeholder address by design (design §2.4): the healthy
+	// invariant is `sentinel_manager_topic_placeholder_total ~= topic_publish_total{ok}`.
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameSentinelEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 	utilHandler := utilhandler.NewUtilHandler()
 
 	monitoringHandler := monitoringhandler.NewMonitoringHandler(reqHandler, notifyHandler, utilHandler)

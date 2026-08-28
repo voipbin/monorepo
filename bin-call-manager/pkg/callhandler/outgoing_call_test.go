@@ -3582,3 +3582,114 @@ func Test_createChannelOutgoing_ProviderCodecs(t *testing.T) {
 	}
 }
 
+
+// Test_CreateCallOutgoing_whitelistRejectedEvent pins the payload of the
+// `call.outbound_whitelist_rejected` publish. VOIP-1405 replaced the inline
+// map[string]interface{} with *call.OutboundWhitelistRejectedEvent so the event can carry a
+// subscription address on the global topic exchange -- a map can never satisfy the pointer-receiver
+// eventtopic.SubscriptionIdentifier assertion. The gomock argument matcher below asserts the exact
+// struct, so a field rename, a dropped field, or a regression back to a map all fail here.
+func Test_CreateCallOutgoing_whitelistRejectedEvent(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id          uuid.UUID
+		customerID  uuid.UUID
+		source      commonaddress.Address
+		destination commonaddress.Address
+
+		responseConfig *outboundconfig.OutboundConfig
+
+		expectCountry string
+		expectEvent   *call.OutboundWhitelistRejectedEvent
+	}{
+		{
+			name: "us destination not in whitelist",
+
+			id:         uuid.FromStringOrNil("a2b7d2a0-0000-4000-8000-000000000001"),
+			customerID: uuid.FromStringOrNil("a2b7d2a0-0000-4000-8000-000000000002"),
+			source: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821100000001",
+			},
+			destination: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+12025550100",
+			},
+
+			responseConfig: &outboundconfig.OutboundConfig{
+				DestinationWhitelist: []string{"kr"},
+			},
+
+			expectCountry: "us",
+			expectEvent: &call.OutboundWhitelistRejectedEvent{
+				CallID:             uuid.FromStringOrNil("a2b7d2a0-0000-4000-8000-000000000001"),
+				CustomerID:         uuid.FromStringOrNil("a2b7d2a0-0000-4000-8000-000000000002"),
+				DestinationCountry: "us",
+			},
+		},
+		{
+			name: "empty whitelist denies every destination",
+
+			id:         uuid.FromStringOrNil("a2b7d2a0-0000-4000-8000-000000000003"),
+			customerID: uuid.FromStringOrNil("a2b7d2a0-0000-4000-8000-000000000004"),
+			source: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821100000001",
+			},
+			destination: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+442071234567",
+			},
+
+			responseConfig: &outboundconfig.OutboundConfig{
+				DestinationWhitelist: []string{},
+			},
+
+			expectCountry: "gb",
+			expectEvent: &call.OutboundWhitelistRejectedEvent{
+				CallID:             uuid.FromStringOrNil("a2b7d2a0-0000-4000-8000-000000000003"),
+				CustomerID:         uuid.FromStringOrNil("a2b7d2a0-0000-4000-8000-000000000004"),
+				DestinationCountry: "gb",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockOutboundConfig := outboundconfighandler.NewMockOutboundConfigHandler(mc)
+
+			h := &callHandler{
+				reqHandler:            mockReq,
+				notifyHandler:         mockNotify,
+				outboundConfigHandler: mockOutboundConfig,
+			}
+
+			ctx := context.Background()
+
+			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.customerID).Return(&cucustomer.Customer{
+				ID:                         tt.customerID,
+				Status:                     cucustomer.StatusActive,
+				IdentityVerificationStatus: cucustomer.IdentityVerificationStatusVerified,
+			}, nil)
+			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.customerID, bmbilling.ReferenceTypeCall, tt.expectCountry, 1).Return(true, nil)
+			mockOutboundConfig.EXPECT().GetByCustomerID(ctx, tt.customerID).Return(tt.responseConfig, nil)
+
+			mockNotify.EXPECT().PublishEvent(ctx, call.EventTypeCallOutboundWhitelistRejected, tt.expectEvent)
+
+			res, err := h.CreateCallOutgoing(ctx, tt.id, tt.customerID, uuid.Nil, uuid.Nil, uuid.Nil, uuid.Nil, tt.source, tt.destination, false, false, "", nil, nil)
+			if !stderrors.Is(err, outboundconfig.ErrDestinationNotWhitelisted) {
+				t.Errorf("Wrong match. expect: %v, got: %v", outboundconfig.ErrDestinationNotWhitelisted, err)
+			}
+			if res != nil {
+				t.Errorf("Wrong match. expect: nil, got: %v", res)
+			}
+		})
+	}
+}

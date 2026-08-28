@@ -70,7 +70,7 @@ func Test_CaseNote_NeverLeaksIntoInteractionList(t *testing.T) {
 
 	mockUtil.EXPECT().UUIDCreate().Return(noteID)
 	mockUtil.EXPECT().TimeNow().Return(&now)
-	mockNotify.EXPECT().PublishEvent(ctx, "case_note_created", gomock.Any())
+	mockNotify.EXPECT().PublishEvent(ctx, casenote.EventTypeCaseNoteCreated, gomock.Any())
 	note, err := h.CaseNoteCreate(ctx, customerID, caseID, casenote.AuthorTypeAgent, nil, secretText)
 	if err != nil {
 		t.Fatalf("CaseNoteCreate() error = %v", err)

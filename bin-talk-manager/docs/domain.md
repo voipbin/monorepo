@@ -81,13 +81,20 @@ Both achieve the same semantics — never create duplicate memberships.
 
 ### Events Published
 
-| Event | Trigger |
-|-------|---------|
-| `message.EventTypeMessageCreated` | Message successfully created |
-| `message.EventTypeMessageDeleted` | Message soft-deleted |
-| `message.EventTypeMessageReactionUpdated` | Reaction added or removed |
+Every event below is published to the per-service fanout exchange `bin-manager.talk-manager.event`, and — since VOIP-1405 — also to the global topic exchange `bin-manager.event` with the routing key `talk-manager.<resource>.<chat-id>.<action>`. The third key segment is the *subscription address*: it is always the chat-id, across all three resource namespaces, so one conversation is followed with `talk-manager.chat.<id>.#`, `talk-manager.chatmessage.<id>.#`, and `talk-manager.chatparticipant.<id>.#`.
 
-This service publishes no chat- or participant-level events currently.
+| Event | Data | Trigger | Topic routing key |
+|-------|------|---------|-------------------|
+| `chat.EventTypeChatCreated` | `*chat.Chat` | Chat successfully created | `talk-manager.chat.<chat-id>.created` |
+| `chat.EventTypeChatUpdated` | `*chat.Chat` | Chat updated | `talk-manager.chat.<chat-id>.updated` |
+| `chat.EventTypeChatDeleted` | `*chat.Chat` | Chat soft-deleted | `talk-manager.chat.<chat-id>.deleted` |
+| `message.EventTypeMessageCreated` | `*message.Message` | Message successfully created | `talk-manager.chatmessage.<chat-id>.created` |
+| `message.EventTypeMessageDeleted` | `*message.Message` | Message soft-deleted | `talk-manager.chatmessage.<chat-id>.deleted` |
+| `message.EventTypeMessageReactionUpdated` | `*message.Message` | Reaction added or removed | `talk-manager.chatmessage.<chat-id>.reaction_updated` |
+| `participant.EventParticipantAdded` | `*participant.Participant` | Participant added to a chat | `talk-manager.chatparticipant.<chat-id>.added` |
+| `participant.EventParticipantRemoved` | `*participant.Participant` | Participant removed from a chat | `talk-manager.chatparticipant.<chat-id>.removed` |
+
+`*message.Message` and `*participant.Participant` both implement `eventtopic.SubscriptionIdentifier` (pointer receiver) returning `ChatID`. Their own ids are stable and persisted, but each id first appears in that resource's own `created`/`added` event, so nobody can pre-bind to it, while every real consumption pattern follows a conversation; single-item retrieval stays available over RPC. `Chat` needs no override — its own id already is the subscription address. The golden routing-key table in `models/chat/routingkey_golden_test.go` pins the whole set.
 
 ### Timestamp Convention
 

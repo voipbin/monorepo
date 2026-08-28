@@ -210,10 +210,10 @@ func (h *callHandler) CreateCallOutgoing(
 		if !h.ValidateDestination(ctx, customerID, outboundCfg, destination) {
 			log.Infof("Outbound destination not in whitelist. customer_id: %s", customerID)
 			country := h.getCountry(ctx, destination.Target)
-			h.notifyHandler.PublishEvent(ctx, call.EventTypeCallOutboundWhitelistRejected, map[string]interface{}{
-				"customer_id":         customerID,
-				"call_id":             id,
-				"destination_country": country,
+			h.notifyHandler.PublishEvent(ctx, call.EventTypeCallOutboundWhitelistRejected, &call.OutboundWhitelistRejectedEvent{
+				CallID:             id,
+				CustomerID:         customerID,
+				DestinationCountry: country,
 			})
 			return nil, outboundconfig.ErrDestinationNotWhitelisted
 		}

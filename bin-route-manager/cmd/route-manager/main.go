@@ -128,7 +128,7 @@ func runService(ctx context.Context, sqlDB *sql.DB, cache cachehandler.CacheHand
 
 	// create handlers
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameRouteEvent, serviceName)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameRouteEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 
 	routeHandler := routehandler.NewRouteHandler(db, reqHandler, notifyHandler)
 	providerHandler := providerhandler.NewProviderHandler(db, reqHandler, notifyHandler, cfg.SipGatewayFQDNForPSTN)

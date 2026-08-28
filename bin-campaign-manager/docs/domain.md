@@ -36,9 +36,29 @@ Key fields: `customer_id`, `name`, `source` (caller ID to use), `dial_timeout` (
 
 5. **Next campaign chaining**: The `next_campaign_id` field enables sequential campaign execution. When a campaign finishes (all campaigncalls done), the next campaign in the chain is automatically started.
 
-6. **Events published on campaign state changes**: Campaign created, deleted, updated, and status change (run/stop/stopping) events are published to `bin-manager.campaign-manager.event` for downstream consumers.
+6. **Events published on campaign state changes**: Campaign created, deleted, updated, and status change (run/stop/stopping) events are published to `bin-manager.campaign-manager.event` for downstream consumers. See [Published Events](#published-events) below.
 
 7. **Actions define on-connect behavior**: The campaign's `actions` field specifies the flow actions to execute when a call is answered (e.g., play a message, transfer to queue). This is analogous to the flow actions in a call flow.
+
+## Published Events
+
+Every event below is published to the per-service fanout exchange `bin-manager.campaign-manager.event`, and — since VOIP-1405 — also to the global topic exchange `bin-manager.event` with the routing key `campaign-manager.<resource>.<campaign-id>.<action>`. The third key segment is the *subscription address*: it is always the campaign-id, across both resource namespaces, so one campaign is followed with `campaign-manager.campaign.<id>.#` and `campaign-manager.campaigncall.<id>.#`.
+
+| Event | Data | Topic routing key |
+|---|---|---|
+| `campaign_created` | `campaign.Campaign` | `campaign-manager.campaign.<campaign-id>.created` |
+| `campaign_updated` | `campaign.Campaign` | `campaign-manager.campaign.<campaign-id>.updated` |
+| `campaign_deleted` | `campaign.Campaign` | `campaign-manager.campaign.<campaign-id>.deleted` |
+| `campaign_status_run` | `campaign.Campaign` | `campaign-manager.campaign.<campaign-id>.status_run` |
+| `campaign_status_stopping` | `campaign.Campaign` | `campaign-manager.campaign.<campaign-id>.status_stopping` |
+| `campaign_status_stop` | `campaign.Campaign` | `campaign-manager.campaign.<campaign-id>.status_stop` |
+| `campaigncall_created` | `campaigncall.Campaigncall` | `campaign-manager.campaigncall.<campaign-id>.created` |
+| `campaigncall_updated` | `campaigncall.Campaigncall` | `campaign-manager.campaigncall.<campaign-id>.updated` |
+| `campaigncall_deleted` | `campaigncall.Campaigncall` | `campaign-manager.campaigncall.<campaign-id>.deleted` |
+
+The event type splits on its FIRST underscore into `<resource>_<action>`, which is why the status trio keeps `status_` in the action segment.
+
+`Campaigncall` implements `eventtopic.SubscriptionIdentifier` (pointer receiver) returning `CampaignID`: its own id is stable but is not a subscription axis — it first becomes known inside its own `campaigncall_created` event, and every real consumption pattern follows a campaign. `Campaign` needs no override — its own id already is the subscription address. The `outplan_created/updated/deleted` constants in `models/outplan` have no publish site and are therefore not part of either stream.
 
 ## State Machines
 

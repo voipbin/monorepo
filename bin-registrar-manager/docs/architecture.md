@@ -61,6 +61,14 @@ RabbitMQ
 - **customerdomainhandler**: Owns the `registrar_customer_domains` mapping (one row per customer: `domain_label` + full `realm`). Rows are created on the `customer_created` event, lazily on the first extension create (`EnsureByCustomerID`), and hard-deleted on `customer_deleted`. New-row shape is gated by `domain_short_label_enabled` (default `false`): `<uuid>.<base>` rows when disabled, 4-char base36 short labels when enabled (the production setting since the VOIP-1385 short-domain cutover); the `domain-migrate` batch generates short labels regardless of the flag. The realm lookup backs the `/v1/customer_domains/realm/{realm}` RPC used by bin-call-manager's incoming-call resolution and is Redis-cached (realm -> row).
 - **dbhandler**: Abstracts both DB connections; uses `Masterminds/squirrel` for query building.
 
+## Event Publishing
+
+All four NotifyHandler construction sites — `cmd/registrar-manager`, and all three in `cmd/registrar-control` (`initExtensionHandler`, `initDomainMigrationDeps`, `initTrunkHandler`) — are built with `notifyhandler.WithGlobalTopicPublish()`, so every event is published twice: once to the per-service fanout exchange `bin-manager.registrar-manager.event` (unchanged, still the system of record) and once to the global topic exchange `bin-manager.event` with the routing key `registrar-manager.<resource>.<resource-id>.<action>`. The four sites must stay in lockstep on this option — enabling it in only some would leave consumers with gaps depending on which process published. A topic publish failure never propagates to the caller and never affects the fanout publish.
+
+`initDomainMigrationDeps` is included for publisher-stream completeness rather than handler wiring: the `domain-migrate` batch publishes `extension_updated` directly from cmd code (`cmd/registrar-control/domain_migrate.go`), so leaving it fanout-only would make an extension's topic stream silently incomplete across a migration.
+
+Two resource namespaces publish: `trunk` and `extension`. Both are independent top-level resources addressed by their own id, resolved by the default JSON `id` fallback — this service declares no `eventtopic.SubscriptionIdentifier` override. `models/trunk/routingkey_golden_test.go` pins the exact key of every published event type (including the migration-batch publish path) and asserts that absence. See the monorepo `docs/plans/2026-08-27-voip-1404-global-topic-exchange-design.md` for the key schema.
+
 ## Request Routing
 
 Requests arrive via RabbitMQ queue `bin-manager.registrar-manager.request`. The `listenhandler` matches the URI against compiled regex patterns:

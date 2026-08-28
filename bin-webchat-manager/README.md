@@ -1,5 +1,30 @@
 # webchat-manager
 
+## Events Published
+
+Fanout exchange: `bin-manager.webchat-manager.event`.
+
+| Event type | Trigger | Topic routing key |
+|-----------|---------|-------------------|
+| `message.EventTypeMessageCreated` (`webchat_message_created`) | A webchat message was created, inbound or outbound (`pkg/messagehandler/create.go`) | `webchat-manager.webchat.<session-id>.message_created` |
+| `session.EventTypeSessionEnded` (`webchat_session_ended`) | A session ended, so the visitor-side WS client can close cooperatively (`pkg/sessionhandler/db.go`) | `webchat-manager.webchat.<session-id>.session_ended` |
+
+Both publish sites are guarded by `if h.notifyHandler != nil` — a handler constructed without a NotifyHandler publishes nothing at all.
+
+### Global topic exchange (VOIP-1405)
+
+`cmd/webchat-manager` (the service's only binary — there is no `webchat-control`) constructs its NotifyHandler with `notifyhandler.WithGlobalTopicPublish()`, so every event is published twice: once to the per-service fanout exchange `bin-manager.webchat-manager.event` (unchanged, still the system of record) and once to the global topic exchange `bin-manager.event` with the routing key `webchat-manager.<resource>.<subscription-id>.<action>`. A topic publish failure never propagates to the caller and never affects the fanout publish.
+
+Both event types collapse onto the **same** resource segment `webchat` (the key schema splits the event type on its first `_`), and both resolve to the **same** subscription address: `Session` by its own id, and `*message.Message` through its `eventtopic.SubscriptionIdentifier` override returning the parent `SessionID` rather than the message's own id (VOIP-1405 Category B — a message id first appears in the event that announces it, so it is not an address anyone can bind to in advance). The consequence is that a single binding pattern follows an entire visitor conversation:
+
+```
+webchat-manager.webchat.<session-id>.#
+```
+
+`models/session/routingkey_golden_test.go` pins both halves of that property. See the monorepo design docs `docs/plans/2026-08-27-voip-1404-global-topic-exchange-design.md` and `docs/plans/2026-08-27-voip-1405-topic-publisher-rollout-design.md`.
+
+This section lives in the README because this service has no `docs/architecture.md`/`docs/domain.md` yet — see the note under `## Deployment`. When [VOIP-1352](https://voipbin.atlassian.net/browse/VOIP-1352) generates the doc suite, this section moves to `docs/architecture.md` (events + cmd wiring) and `docs/domain.md` (the override rationale).
+
 ## Deployment
 
 bin-webchat-manager deploys via Komodo (VOIP-1347 Tier 1 rollout, following the

@@ -65,3 +65,21 @@ Tag state changes emit events on `bin-manager.tag-manager.event`:
 | `tag_created` | Successful POST |
 | `tag_updated` | Successful PUT |
 | `tag_deleted` | Successful DELETE or cascading customer delete |
+
+All three carry a `*tag.Tag` payload.
+
+### Global topic exchange (VOIP-1404 / VOIP-1405)
+
+Both NotifyHandler construction sites — `cmd/tag-manager/main.go` and `cmd/tag-control/main.go` —
+construct their NotifyHandler with `notifyhandler.WithGlobalTopicPublish()`. Every event is
+therefore published twice: once to the per-service fanout exchange `bin-manager.tag-manager.event`
+(unchanged, still the system of record) and once to the global topic exchange `bin-manager.event`
+with the routing key `tag-manager.tag.<tag-id>.<action>`. The two cmds must stay in lockstep on
+this option — enabling it in only one would leave consumers with gaps depending on which process
+published. A topic publish failure never propagates to the caller and never affects the fanout
+publish.
+
+tag-manager uses no subscription-id override: a tag is an independent persistent resource
+addressed by its own `id`. The golden table pinning every key is
+`models/tag/routingkey_golden_test.go`; the schema is defined in monorepo
+`docs/plans/2026-08-27-voip-1404-global-topic-exchange-design.md`.

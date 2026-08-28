@@ -58,7 +58,7 @@ func Test_CaseNoteCreate_NeverUsesPublishWebhookEvent(t *testing.T) {
 	// PublishWebhookEvent NEVER. gomock fails the test if
 	// PublishWebhookEvent is called without a matching EXPECT (Times(0)
 	// makes any call a hard failure, not just an unasserted no-op).
-	mockNotify.EXPECT().PublishEvent(ctx, "case_note_created", gomock.Any()).Times(1)
+	mockNotify.EXPECT().PublishEvent(ctx, casenote.EventTypeCaseNoteCreated, gomock.Any()).Times(1)
 	mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 
 	res, err := h.CaseNoteCreate(ctx, customerID, caseID, casenote.AuthorTypeAgent, &authorID, "customer confirmed the outage is resolved")
@@ -100,12 +100,12 @@ func Test_CaseNoteDelete_PublishesCaseNoteDeletedViaPlainEvent(t *testing.T) {
 
 	mockUtil.EXPECT().UUIDCreate().Return(noteID)
 	mockUtil.EXPECT().TimeNow().Return(&createTime)
-	mockNotify.EXPECT().PublishEvent(ctx, "case_note_created", gomock.Any())
+	mockNotify.EXPECT().PublishEvent(ctx, casenote.EventTypeCaseNoteCreated, gomock.Any())
 	if _, err := h.CaseNoteCreate(ctx, customerID, caseID, casenote.AuthorTypeAgent, nil, "note text"); err != nil {
 		t.Fatalf("CaseNoteCreate() error = %v", err)
 	}
 
-	mockNotify.EXPECT().PublishEvent(ctx, "case_note_deleted", gomock.Any()).Times(1)
+	mockNotify.EXPECT().PublishEvent(ctx, casenote.EventTypeCaseNoteDeleted, gomock.Any()).Times(1)
 	mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 
 	if err := h.CaseNoteDelete(ctx, customerID, caseID, noteID); err != nil {

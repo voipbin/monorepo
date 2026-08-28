@@ -63,7 +63,9 @@ func initPipecatcallHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (pip
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, outline.QueueNamePipecatEvent, serviceName)
+	// VOIP-1405: same global topic exchange opt-in as cmd/pipecat-manager. Both processes publish
+	// to the same logical stream, so both must dual publish or consumers would see gaps.
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, outline.QueueNamePipecatEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 	toolHandler := toolhandler.NewToolHandler(reqHandler)
 
 	return pipecatcallhandler.NewPipecatcallHandler(reqHandler, notifyHandler, db, toolHandler, "cli-host"), nil

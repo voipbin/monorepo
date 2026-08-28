@@ -28,7 +28,7 @@ cmd/ai-manager/main.go
 |-------|-----------|----------------|
 | Transport | `pkg/listenhandler` | Receives RPC requests from `bin-manager.ai-manager.request`, routes by URI regex |
 | Transport | `pkg/subscribehandler` | Consumes events from call, transcribe, tts, pipecat queues |
-| Transport | `notifyhandler` (via bin-common-handler) | Publishes events to `bin-manager.ai-manager.event` |
+| Transport | `notifyhandler` (via bin-common-handler) | Publishes events to the fanout exchange `bin-manager.ai-manager.event` and, since VOIP-1405, dual-publishes the same payload to the global topic exchange `bin-manager.event` |
 | Domain | `pkg/aihandler` | AI configuration CRUD (engine type, model, TTS/STT settings, tool list) |
 | Domain | `pkg/aicallhandler` | AIcall session lifecycle: initiating → progressing → terminating → terminated |
 | Domain | `pkg/messagehandler` | Message storage, engine selection, real-time transcript processing |
@@ -95,15 +95,29 @@ SubscribeHandler (`pkg/subscribehandler/`) consumes:
 
 ## Events Published
 
-Exchange: `bin-manager.ai-manager.event`
+Exchange: `bin-manager.ai-manager.event` (fanout, system of record) and — since VOIP-1405 — the global topic exchange `bin-manager.event`.
+
+`cmd/ai-manager` and both NotifyHandler instances inside `cmd/ai-control` construct their NotifyHandler with `notifyhandler.WithGlobalTopicPublish()`, so every event is published twice: once to the per-service fanout exchange (unchanged) and once to the global topic exchange with the routing key `ai-manager.<resource>.<subscription-id>.<action>`. All three construction sites must stay in lockstep on this option — enabling it in only some would leave consumers with gaps depending on which process published. A topic publish failure never propagates to the caller and never affects the fanout publish. See [docs/domain.md](domain.md) for the per-event routing keys and the monorepo `docs/plans/2026-08-27-voip-1404-global-topic-exchange-design.md` for the schema.
 
 | Event type | Trigger |
 |-----------|---------|
 | `ai.EventTypeCreated` | AI configuration created |
 | `ai.EventTypeUpdated` | AI configuration updated |
 | `ai.EventTypeDeleted` | AI configuration deleted |
+| `aicall.EventTypeStatusInitializing` | AIcall session created |
+| `aicall.EventTypeStatusProgressing` | AIcall started processing |
+| `aicall.EventTypeStatusPausing` | AIcall paused |
+| `aicall.EventTypeStatusResuming` | AIcall resumed |
+| `aicall.EventTypeStatusTerminating` | AIcall termination started |
+| `aicall.EventTypeStatusTerminated` | AIcall terminated |
 | `message.EventTypeMessageCreated` | New message added to conversation |
 | `message.EventTypeMessageIntermediate` | Streaming/intermediate message fragment |
+| `summary.EventTypeCreated` | Summary created |
+| `summary.EventTypeUpdated` | Summary updated |
+| `summary.EventTypeDeleted` | Summary deleted |
+| `team.EventTypeCreated` | AI team created |
+| `team.EventTypeUpdated` | AI team updated |
+| `team.EventTypeDeleted` | AI team deleted |
 
 ## AI Manager ↔ Pipecat Manager Relationship
 
