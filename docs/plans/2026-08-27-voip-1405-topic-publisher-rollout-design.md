@@ -27,6 +27,12 @@ agent(2) ai(3) billing(2) call(2) campaign(2) conference(2) contact(2) conversat
 
 ## 2. Subscription-id Mapping (NORMATIVE — source for every golden-key test)
 
+> **SUPERSEDED IN PART (VOIP-1419, 2026-08-28):** the "JSON top-level `id` fallback" defaults in
+> this section became explicit `EventSubscriptionID()` methods returning the same values; the
+> fallback itself was deleted and the interface is compile-time mandatory. The ADDRESS mapping
+> below (which id each type resolves to) is unchanged and remains normative. See
+> `2026-08-28-voip-1419-explicit-subscription-id-design.md`.
+
 Counting basis: Go types receiving `EventSubscriptionID()` (pointer receiver) = Category A 8 + Category B 11 = **19 types**, including **4 new structs** (call whitelist 1 + contact case 3). (Design review R1 moved `CaseNoteDeletedEvent` A→B and added `queuecall` to B; the issue-analysis figure of 18 predates the queuecall addition.)
 
 ### 2.1 §4.2 extension — Category B policy (amends 1404 design)

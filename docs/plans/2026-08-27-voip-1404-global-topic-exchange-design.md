@@ -74,6 +74,12 @@ Constraint check: max routing key length is 255 bytes; worst case here is ~119 b
 
 ### 4.2 subscription-id: "subscription address", not "own id"
 
+> **SUPERSEDED IN PART (VOIP-1419, 2026-08-28):** the JSON top-level-`id` fallback described in
+> this section was removed. `eventtopic.SubscriptionIdentifier` is now the MANDATORY,
+> compile-time-enforced contract of every published type; an explicit empty return -> placeholder
+> is the only degrade path. See `2026-08-28-voip-1419-explicit-subscription-id-design.md`. The
+> address semantics ("subscription address, not own id") and the key schema are unchanged.
+
 The third segment answers "by which ID will subscribers address this stream?".
 
 - Default: the resource's own top-level `id`.
