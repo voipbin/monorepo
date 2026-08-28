@@ -65,6 +65,28 @@ all commits. `/usr/bin/grep`; vendor regen before tests.
   grows; each service's subscribe-event process-time metric (name varies per service)
   continues advancing for its pairs.
 
+## Results (W1-W3 executed 2026-08-29)
+
+- W1: 20 services in 4 executor batches; every service adds package-level
+  topicPatterns/fanoutUnbindTargets + the section-2 template block + a binding golden
+  test + a Run sequencing test (failure paths in billing/contact/call/timeline);
+  section-4 extras done (number dead const deleted, campaign consumer tag fixed,
+  contact 1233 comment refreshed, three VOIP-1422 annotations); per-service docs synced;
+  per-service 5-step verification green everywhere; mockgen param-rename drift discarded
+  (agent, conference, number, transfer). Two pre-existing observations recorded for
+  follow-up, untouched per scope rules: transcribe-manager consumer tag references
+  call-manager's constant (same class as campaign's fixed bug); registrar
+  subscribesTargets field-name typo.
+- W2 (c32d14b26): reference doc gains the consumer-state note and the stale-binding
+  runbook (inspection + manual unbind commands, roll-forward alternative).
+- W3 AC evidence (from worktree root, merge-base a9c81fa0b):
+  AC1 = 20 binding_golden_test.go files; 65 PatternAction calls + timeline "#" (sum
+  matches section-5 exactly). AC2 = 20 declare files (test-excluded grep). AC3 = the 3
+  negative assertions present in ai/queue/flow goldens. AC4 = sentinel defensive
+  declares 2 (call :162, timeline :154), asterisk subscriptions 2, api-manager diff
+  EMPTY. AC5 = 20-service verification green (W1). AC6 = post-merge live checks per
+  the runbook.
+
 ## Working Notes (analysis retained below)
 
 ## Issue Analysis (2026-08-29)
