@@ -296,6 +296,21 @@ Category A = own id structurally unusable (per-event/stale/absent). Category B =
 - **Both sides declare, idempotently**: publishers declare at construction time (via `notifyhandler.WithGlobalTopicPublish()`), and subscribers declare at startup too. Subscriber-side declaration is what makes start order irrelevant — a consumer that boots before any publisher must not fail its `QueueBind`.
 - A declare failure on the publisher side degrades rather than aborts: the handler stays alive, the fanout publish is untouched, and every suppressed topic publish increments `<ns>_topic_publish_total{result="error"}`.
 
+**Consumer state (VOIP-1406).** All 20 consumer services (the 21 subscribers minus api-manager, which consumes the client-facing VOIP-1258 exchange) now bind `bin-manager.event` with `eventtopic.PatternAction` patterns matching exactly their dispatch sets (timeline-manager binds `#`), declare the exchange idempotently at startup, and unbind their old per-service fanout event exchanges after a successful full bind. Each service's exact pattern set is pinned by a `binding_golden_test.go` in its `pkg/subscribehandler`. The fanout `QueueSubscribe` calls remain in code as the rollback/degrade surface, and fanout PUBLISH stays on everywhere, until VOIP-1407 removes both. Retained fanout legs: `asterisk.all.event` in call-manager and timeline-manager (asterisk-proxy has no topic publisher -- permanent), plus the VOIP-1258 webhook topic bind in agent/timeline/api-manager.
+
+**Stale-binding runbook (rollback and rolling-deploy windows).** Two triggers, one policy: (a) rolling back a migrated service re-subscribes fanout while the topic bindings persist on the durable queue; (b) during a rolling deploy of a 2-replica service, an old-image pod hitting a broker reconnect after the new pod unbound fanout replays its tracked fanout bind. Both end states are double delivery on the shared queue, which is TOLERATED (at-least-once was always the contract). Detect and remediate from bm-nyc-01:
+
+```
+# inspect a queue's bindings (expect: topic patterns on bin-manager.event; no empty-key fanout bind post-migration)
+pass=$(docker exec infra-rabbitmq printenv RABBITMQ_DEFAULT_PASS); ip=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}} {{end}}' infra-rabbitmq | awk '{print $1}')
+curl -s -u voipbin:$pass "http://$ip:80/api/queues/%2F/bin-manager.<svc>.subscribe/bindings" | jq -r '.[] | "\(.source) \(.routing_key)"'
+
+# remove a stale fanout binding manually (empty routing key)
+curl -s -u voipbin:$pass -X DELETE "http://$ip:80/api/bindings/%2F/e/bin-manager.<publisher>.event/q/bin-manager.<svc>.subscribe/~"
+```
+
+Alternatively roll forward (redeploy the migrated image); its Run() re-unbinds fanout on the next boot.
+
 **Binding.** Consumers combine the pattern builders with the existing `sockhandler.QueueBind` / `QueueUnbind`. A broker binding is shared by every logical subscriber on the same queue+pattern: one `QueueUnbind` severs all of them. Anything multiplexing several logical subscribers over one queue must keep refcount discipline and bind/unbind only on the 0↔1 transition, the way `bin-api-manager/pkg/websockhandler/scoperefcount.go` does.
 
 **Consumer contract — the bind-after-start race.** A consumer that learns the subscription address from an RPC response can miss the first events, because the publisher may already be streaming by the time the response returns. Concretely: `transcribe start` generates the transcribe-id inside `startLive` and begins streaming before returning, and unroutable topic messages are dropped silently (`mandatory=false`). Resolution is decided per consumer at adoption time:
