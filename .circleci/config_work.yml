@@ -185,6 +185,13 @@ parameters:
     type: boolean
     default: false
 
+  ############################################
+  # namespace: tooling
+  ############################################
+  run-shell-tests:
+    type: boolean
+    default: false
+
 
 #########################################################################################################################################################################
 # workflows
@@ -851,6 +858,18 @@ workflows:
           <<: *context_production
           requires:
             - voip-kamailio-proxy-test
+
+  ############################################
+  # namespace: tooling
+  ############################################
+
+  # Runs both bats suites in the repo (.circleci/tests/*.bats,
+  # docs/reference/tests/*.bats). No approval gate: this is a read-only
+  # test run, not a deploy.
+  shell-tests:
+    when: << pipeline.parameters.run-shell-tests >>
+    jobs:
+      - shell-tests
 
 
 #########################################################################################################################################################################
@@ -2141,6 +2160,30 @@ jobs:
           project-id: voipbin
           project-repository: voip-kamailio-proxy
           source-directory: voip-kamailio-proxy
+
+  ############################################
+  # namespace: tooling
+  ############################################
+
+  # Runs the repo's bats test suites (.circleci/tests/*.bats,
+  # docs/reference/tests/*.bats). Both suites are self-contained - they
+  # mock their own external dependencies (ssh/curl in .circleci/tests,
+  # awk/mawk PATH-shimming in docs/reference/tests) - so checkout plus
+  # installing bats and mawk is the only setup needed.
+  shell-tests:
+    docker:
+      - image: cimg/base:2024.02
+    resource_class: small
+    steps:
+      - checkout
+      - run:
+          name: Install bats and mawk
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y bats mawk
+      - run:
+          name: Run shell test suites
+          command: bats .circleci/tests/*.bats docs/reference/tests/*.bats
 
 
 #########################################################################################################################################################################
