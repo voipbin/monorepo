@@ -26,8 +26,8 @@ import (
 // (VOIP-1406, design §5): one pattern per dispatched (publisher, event-type) pair.
 // Pinned by the binding golden test.
 var topicPatterns = []string{
-	eventtopic.PatternAction(string(commonoutline.ServiceNameCustomerManager), "customer", "created"),
-	eventtopic.PatternAction(string(commonoutline.ServiceNameCustomerManager), "customer", "deleted"),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCustomerManager), cucustomer.EventTypeCustomerCreated),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCustomerManager), cucustomer.EventTypeCustomerDeleted),
 }
 
 // fanoutUnbindTargets lists the old per-service fanout event exchanges to unbind once

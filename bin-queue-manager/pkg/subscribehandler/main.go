@@ -36,9 +36,9 @@ const (
 // fanout exchange) and keeping it unreachable is today's behavior (design §4,
 // follow-up VOIP-1422). Pinned by the binding golden test.
 var topicPatterns = []string{
-	eventtopic.PatternAction(string(commonoutline.ServiceNameCallManager), "call", "hangup"),
-	eventtopic.PatternAction(string(commonoutline.ServiceNameCallManager), "confbridge", "joined"),
-	eventtopic.PatternAction(string(commonoutline.ServiceNameCallManager), "confbridge", "leaved"),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCallManager), cmcall.EventTypeCallHangup),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCallManager), cmconfbridge.EventTypeConfbridgeJoined),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCallManager), cmconfbridge.EventTypeConfbridgeLeaved),
 }
 
 // fanoutUnbindTargets lists the old per-service fanout event exchanges to unbind once
