@@ -33,6 +33,17 @@ graph TD
 | `models/campaigncall` | Campaigncall data model, status constants | `campaigncall.Campaigncall`, `campaigncall.Status` |
 | `models/outplan` | Outplan and dial configuration data model | `outplan.Outplan`, `outplan.Dial` |
 
+## Events Consumed
+
+Since VOIP-1406 the subscribe queue `bin-manager.campaign-manager.subscribe` receives its service events through pattern bindings on the global topic exchange `bin-manager.event` (declared idempotently at boot), one pattern per dispatch pair:
+
+| Pattern | Dispatch |
+|---------|----------|
+| `call-manager.call.*.hangup` | campaigncall outcome tracking on call hangup |
+| `flow-manager.activeflow.*.deleted` | campaigncall completion on activeflow deletion |
+
+The exact pattern set is pinned by `pkg/subscribehandler/binding_golden_test.go`. The fanout `QueueSubscribe` calls to `bin-manager.call-manager.event` and `bin-manager.flow-manager.event` remain in `Run()` as the rollback surface until VOIP-1407; on a fully successful topic binding, the queue is unbound from both fanout exchanges at boot (bind-new-before-unbind-old, all-or-nothing with best-effort rollback).
+
 ## Event Publishing
 
 Both `cmd/campaign-manager` and `cmd/campaign-control` construct their NotifyHandler with `notifyhandler.WithGlobalTopicPublish()`, so every event is published twice: once to the per-service fanout exchange `bin-manager.campaign-manager.event` (unchanged, still the system of record) and once to the global topic exchange `bin-manager.event` with the routing key `campaign-manager.<resource>.<campaign-id>.<action>`. The two cmds must stay in lockstep on this option — enabling it in only one would leave consumers with gaps depending on which process published. A topic publish failure never propagates to the caller and never affects the fanout publish. See [docs/domain.md](domain.md) for the per-event routing keys and the monorepo `docs/plans/2026-08-27-voip-1404-global-topic-exchange-design.md` for the schema.
