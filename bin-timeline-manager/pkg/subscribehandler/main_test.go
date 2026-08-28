@@ -4,10 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
 	"testing"
 	"time"
 
 	"github.com/gofrs/uuid"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/testutil"
+	dto "github.com/prometheus/client_model/go"
 	"go.uber.org/mock/gomock"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
@@ -117,6 +121,18 @@ func Test_processEventRun_multipleSequential(t *testing.T) {
 	}
 }
 
+// histogramState reads the current sample count and sum of a package-level
+// histogram. Like the drop counter, histograms accumulate across tests in the
+// same process - always assert on deltas, never absolute values.
+func histogramState(t *testing.T, h prometheus.Histogram) (count uint64, sum float64) {
+	t.Helper()
+	pb := &dto.Metric{}
+	if err := h.Write(pb); err != nil {
+		t.Fatalf("failed to read histogram state: %v", err)
+	}
+	return pb.GetHistogram().GetSampleCount(), pb.GetHistogram().GetSampleSum()
+}
+
 func Test_processEventRun_channelFull(t *testing.T) {
 	h := &subscribeHandler{
 		eventCh: make(chan *sock.Event, 1), // buffer of 1
@@ -125,10 +141,37 @@ func Test_processEventRun_channelFull(t *testing.T) {
 	// Fill the channel
 	h.eventCh <- &sock.Event{Type: "first"}
 
+	// The drop counter is package-level and accumulates across tests in
+	// the same process - assert on the delta, never the absolute value.
+	droppedBefore := testutil.ToFloat64(promSubscribeEventDropped)
+	obsCountBefore, obsSumBefore := histogramState(t, promSubscribeEventChannelUsage)
+
 	// This should not block — it drops the event
 	err := h.processEventRun(&sock.Event{Type: "second"})
 	if err != nil {
 		t.Errorf("processEventRun() returned error: %v", err)
+	}
+
+	if delta := testutil.ToFloat64(promSubscribeEventDropped) - droppedBefore; delta != 1 {
+		t.Errorf("drop counter delta = %v, want 1", delta)
+	}
+
+	// The histogram observes occupancy BEFORE the enqueue attempt: the
+	// channel was full (len/cap = 1/1), so exactly one observation of 1.0.
+	obsCountAfter, obsSumAfter := histogramState(t, promSubscribeEventChannelUsage)
+	if countDelta := obsCountAfter - obsCountBefore; countDelta != 1 {
+		t.Errorf("usage histogram observation count delta = %d, want 1", countDelta)
+	}
+	// Epsilon compare: the histogram sum accumulates float64 observations
+	// across all tests in the process, so the delta carries rounding error.
+	if sumDelta := obsSumAfter - obsSumBefore; math.Abs(sumDelta-1.0) > 1e-9 {
+		t.Errorf("usage histogram sum delta = %v, want 1.0 (full channel at enqueue time)", sumDelta)
+	}
+
+	// The gauge is set AFTER the enqueue attempt: the drop left the channel
+	// unchanged at len/cap = 1/1.
+	if got := testutil.ToFloat64(promSubscribeEventChannelUsageRatio); got != 1.0 {
+		t.Errorf("usage gauge = %v, want 1.0 after drop on a full channel", got)
 	}
 
 	// Channel should still have only the first event
@@ -143,6 +186,45 @@ func Test_processEventRun_channelFull(t *testing.T) {
 		t.Errorf("channel should be empty, got event: %s", extra.Type)
 	default:
 		// expected
+	}
+}
+
+func Test_processEventRun_noDropOnSuccessfulEnqueue(t *testing.T) {
+	h := &subscribeHandler{
+		eventCh: make(chan *sock.Event, 2),
+	}
+
+	droppedBefore := testutil.ToFloat64(promSubscribeEventDropped)
+	obsCountBefore, obsSumBefore := histogramState(t, promSubscribeEventChannelUsage)
+
+	if err := h.processEventRun(&sock.Event{Type: "ok"}); err != nil {
+		t.Errorf("processEventRun() returned error: %v", err)
+	}
+
+	if delta := testutil.ToFloat64(promSubscribeEventDropped) - droppedBefore; delta != 0 {
+		t.Errorf("drop counter delta = %v, want 0 (successful enqueue must not count as a drop)", delta)
+	}
+
+	// Pre-enqueue occupancy was 0/2, so one observation of exactly 0.0.
+	// Combined with the channelFull test (observes 1.0 pre-enqueue), this
+	// pins the before-enqueue semantics: a regression observing the
+	// post-enqueue value would report 0.5 here and fail the sum assert.
+	obsCountAfter, obsSumAfter := histogramState(t, promSubscribeEventChannelUsage)
+	if countDelta := obsCountAfter - obsCountBefore; countDelta != 1 {
+		t.Errorf("usage histogram observation count delta = %d, want 1", countDelta)
+	}
+	if sumDelta := obsSumAfter - obsSumBefore; math.Abs(sumDelta) > 1e-9 {
+		t.Errorf("usage histogram sum delta = %v, want 0.0 (empty channel at enqueue time)", sumDelta)
+	}
+
+	// Post-enqueue occupancy is 1/2 - the gauge reflects the state AFTER
+	// the enqueue, pinning the after-enqueue semantics of the Set call.
+	if got := testutil.ToFloat64(promSubscribeEventChannelUsageRatio); got != 0.5 {
+		t.Errorf("usage gauge = %v, want 0.5 after enqueueing 1 of 2 slots", got)
+	}
+
+	if len(h.eventCh) != 1 {
+		t.Errorf("channel length = %d, want 1", len(h.eventCh))
 	}
 }
 

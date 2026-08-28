@@ -175,12 +175,26 @@ func (h *subscribeHandler) Run(ctx context.Context) (<-chan struct{}, error) {
 }
 
 // processEventRun pushes the event into the buffered channel for batch processing.
+//
+// Instrumentation note: this is called concurrently by the consumer's 10
+// worker goroutines (Run's ConsumeMessage call). len(h.eventCh) is a safe
+// snapshot read and the prometheus operations are atomic, so no extra
+// locking is needed. The drop branch deliberately still returns nil - a
+// dropped event is acked, not retried (changing that to backpressure via
+// an error return is a tracked follow-up, and this counter is the data
+// that would justify it).
 func (h *subscribeHandler) processEventRun(m *sock.Event) error {
+	// Observed BEFORE the enqueue attempt: the occupancy this event faced.
+	promSubscribeEventChannelUsage.Observe(float64(len(h.eventCh)) / float64(cap(h.eventCh)))
+
 	select {
 	case h.eventCh <- m:
 	default:
-		logrus.Warn("Event channel full, dropping event.")
+		promSubscribeEventDropped.Inc()
+		logrus.WithField("event", m).Warn("Event channel full, dropping event.")
 	}
+
+	promSubscribeEventChannelUsageRatio.Set(float64(len(h.eventCh)) / float64(cap(h.eventCh)))
 	return nil
 }
 
@@ -215,6 +229,11 @@ func (h *subscribeHandler) flushWorker(ctx context.Context) {
 
 		case m := <-h.eventCh:
 			buf = append(buf, eventEntry{event: m, receivedAt: time.Now()})
+			// Keep the usage gauge decaying as the channel drains - without
+			// this it would freeze at its last enqueue-time value once
+			// ingest goes idle. Gauge.Set is an atomic store; negligible
+			// even at full drain rate.
+			promSubscribeEventChannelUsageRatio.Set(float64(len(h.eventCh)) / float64(cap(h.eventCh)))
 			if len(buf) >= batchSize {
 				h.flushBatch(buf)
 				buf = buf[:0]

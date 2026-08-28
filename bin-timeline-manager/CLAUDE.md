@@ -39,7 +39,7 @@ converting String to *outline.ServiceName is unsupported
 
 **Read-write separation**: The RPC listen path is read-only. The subscribe handler ingests events from 27 queues into ClickHouse. These are independent code paths — do not mix.
 
-**Batch ingestion**: Subscribe handler batches ClickHouse writes. Monitor `subscribe_batch_insert_time` and `subscribe_batch_size` metrics for ingestion health.
+**Batch ingestion**: Subscribe handler batches ClickHouse writes. Monitor `subscribe_batch_insert_time` and `subscribe_batch_size` metrics for ingestion health. The intake channel drops events silently when full — watch `subscribe_event_dropped_total` (any nonzero value is permanent data loss) and `subscribe_event_channel_usage` (occupancy histogram) for backpressure.
 
 **ClickHouse migrations**: Managed via golang-migrate. Run `timeline-control migrate up` after adding new migration files in `migrations/`. File format: `NNNNNN_description.up.sql` / `NNNNNN_description.down.sql`.
 
