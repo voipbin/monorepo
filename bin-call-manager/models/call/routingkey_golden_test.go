@@ -18,7 +18,6 @@
 package call_test
 
 import (
-	"encoding/json"
 	"reflect"
 	"testing"
 
@@ -38,7 +37,7 @@ import (
 // Fixed addresses, one per resource namespace. call-manager does NOT collapse its namespaces onto
 // a single address the way transcribe-manager does: confbridge, groupcall and recording are
 // independently addressable resources whose own ids are the subscription address by design
-// (1405 §2.4). Only the two overrides (dtmf, outbound-whitelist-rejected) point at the call axis.
+// (1405 §2.4). Only two types (dtmf, outbound-whitelist-rejected) address the call axis instead.
 var (
 	callID       = uuid.FromStringOrNil("1f01c3d2-0000-4000-8000-000000000001")
 	confbridgeID = uuid.FromStringOrNil("1f01c3d2-0000-4000-8000-000000000002")
@@ -47,43 +46,29 @@ var (
 )
 
 // resolveSubscriptionID mirrors the resolution notifyhandler performs on the publish path
-// (design §4.2 / §5.2): the opt-in interface first, then -- ONLY when no override exists -- the
-// top-level "id" of the marshaled payload. Keeping it here rather than reaching into notifyhandler
-// internals is deliberate -- the golden table must fail when a model stops implementing the
-// interface, which is exactly what this two-step reproduction detects.
+// (VOIP-1419): the explicit eventtopic.SubscriptionIdentifier method is MANDATORY -- there is no
+// JSON fallback anymore -- and a non-implementing or nil payload resolves to "", which the
+// routing-key layer collapses to the `-` placeholder. Keeping the mirror here rather than
+// reaching into notifyhandler internals is deliberate: the golden table must fail when a model
+// stops implementing the interface or its method starts returning the wrong id space.
 //
-// The early return below is the load-bearing half: an override that EXISTS is authoritative even
-// when it yields "" or uuid.Nil, so the JSON fallback must never run behind it. This matches
-// notifyhandler.resolveSubscriptionOverride's hasOverride semantics exactly; if the two ever
-// diverge, this table stops reproducing what the publish path actually generates.
+// The parameter stays `any` (not the interface) so the table can also pin what production does
+// with a payload that reaches the publish path without a usable implementation (nil interface,
+// typed nil): both degrade to the same placeholder instead of panicking.
 func resolveSubscriptionID(t *testing.T, data any) string {
 	t.Helper()
 
 	if identifier, ok := data.(eventtopic.SubscriptionIdentifier); ok {
-		// typed-nil guard, mirroring notifyhandler.resolveSubscriptionOverride: a nil pointer whose
-		// type implements the interface still SATISFIES the assertion, and every real implementation
-		// dereferences its receiver -- calling the method would panic. Production reports "no
-		// override" for such a payload, so this guard falls through to the JSON half below rather
-		// than returning early; `null` carries no top-level `id` either, so both halves agree on the
-		// `-` placeholder.
+		// typed-nil guard, mirroring notifyhandler: a nil pointer whose type implements the
+		// interface still SATISFIES the assertion, and every real implementation dereferences its
+		// receiver -- calling the method would panic. Production resolves such a payload to the
+		// `-` placeholder, so this guard falls through to the empty return below instead.
 		if v := reflect.ValueOf(data); v.Kind() != reflect.Ptr || !v.IsNil() {
 			return identifier.EventSubscriptionID()
 		}
 	}
 
-	m, err := json.Marshal(data)
-	if err != nil {
-		t.Fatalf("Could not marshal the event data. err: %v", err)
-	}
-
-	d := struct {
-		ID string `json:"id"`
-	}{}
-	if errUnmarshal := json.Unmarshal(m, &d); errUnmarshal != nil {
-		return ""
-	}
-
-	return d.ID
+	return ""
 }
 
 func TestGoldenRoutingKeys(t *testing.T) {
@@ -122,9 +107,9 @@ func TestGoldenRoutingKeys(t *testing.T) {
 		},
 	}
 
-	// joined/leaved wrap the confbridge in an ANONYMOUS embed, so the embedded Identity's `id` is
-	// promoted to the top level of the marshaled payload and the default fallback keeps resolving
-	// to the confbridge id -- not to the joined/leaved call id.
+	// joined/leaved wrap the confbridge in an ANONYMOUS value embed; their explicit methods
+	// (models/confbridge/event.go) return the embedded confbridge's id -- not the joined/leaved
+	// call id.
 	confbridgeJoinedData := &confbridge.EventConfbridgeJoined{
 		Confbridge:   *confbridgeData,
 		JoinedCallID: callID,
@@ -156,8 +141,8 @@ func TestGoldenRoutingKeys(t *testing.T) {
 		data      any
 		expect    string
 	}{
-		// call resource -- own id is the address, resolved by the default JSON fallback.
-		// pkg/callhandler/db.go, bridge.go, chained_call.go.
+		// call resource -- own id is the address, returned by the explicit EventSubscriptionID
+		// method. pkg/callhandler/db.go, bridge.go, chained_call.go.
 		{
 			"call_created",
 			call.EventTypeCallCreated,
@@ -224,7 +209,8 @@ func TestGoldenRoutingKeys(t *testing.T) {
 		// `.` to `_` BEFORE splitting on the first `_`, so it normalizes to resource `call` +
 		// action `outbound_whitelist_rejected` and lands in the same namespace as the lifecycle
 		// events above -- it does NOT leak an extra key segment. The address comes from the
-		// override, because the payload has no top-level id.
+		// type's explicit method, which returns the parent call id (the payload has no id of
+		// its own).
 		{
 			"call.outbound_whitelist_rejected (dot type normalization)",
 			call.EventTypeCallOutboundWhitelistRejected,
@@ -232,7 +218,7 @@ func TestGoldenRoutingKeys(t *testing.T) {
 			"call-manager.call.1f01c3d2-0000-4000-8000-000000000001.outbound_whitelist_rejected",
 		},
 
-		// dtmf resource -- addressed by the parent call-id via the override, never by the
+		// dtmf resource -- addressed by the parent call-id via its explicit method, never by the
 		// per-digit random own id.
 		{
 			"dtmf_received",
@@ -335,8 +321,9 @@ func TestGoldenRoutingKeys(t *testing.T) {
 	}
 }
 
-// TestGoldenRoutingKeysCallAxisShareOneAddress pins the property the two overrides exist to
-// protect: every event that belongs to ONE call resolves to the same subscription address, so a
+// TestGoldenRoutingKeysCallAxisShareOneAddress pins the property the two call-axis methods
+// (dtmf, outbound-whitelist-rejected) exist to protect: every event that belongs to ONE call
+// resolves to the same subscription address, so a
 // consumer following that call binds `call-manager.call.<call-id>.#` plus
 // `call-manager.dtmf.<call-id>.#` and receives everything, regardless of the per-event ids the
 // payloads happen to carry.
@@ -362,36 +349,10 @@ func TestGoldenRoutingKeysCallAxisShareOneAddress(t *testing.T) {
 	}
 }
 
-// TestGoldenRoutingKeysDefaultIDTypes pins the deliberate ABSENCE of an override on every type
-// whose own id IS the subscription address (1405 §2.4). Implementing the interface on any of them
-// would be a silent address change for existing subscribers, so the absence is asserted, not
-// assumed. These are also the types the JSON `id` fallback path must keep covering.
-func TestGoldenRoutingKeysDefaultIDTypes(t *testing.T) {
-	tests := []struct {
-		name string
-		data any
-	}{
-		{"call", &call.Call{Identity: commonidentity.Identity{ID: callID}}},
-		{"confbridge", &confbridge.Confbridge{Identity: commonidentity.Identity{ID: confbridgeID}}},
-		{"confbridge_joined", &confbridge.EventConfbridgeJoined{Confbridge: confbridge.Confbridge{Identity: commonidentity.Identity{ID: confbridgeID}}}},
-		{"confbridge_leaved", &confbridge.EventConfbridgeLeaved{Confbridge: confbridge.Confbridge{Identity: commonidentity.Identity{ID: confbridgeID}}}},
-		{"groupcall", &groupcall.Groupcall{Identity: commonidentity.Identity{ID: groupcallID}}},
-		{"recording", &recording.Recording{Identity: commonidentity.Identity{ID: recordingID}}},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if _, ok := tt.data.(eventtopic.SubscriptionIdentifier); ok {
-				t.Errorf("%s must not implement SubscriptionIdentifier. its own id is the subscription address.", tt.name)
-			}
-		})
-	}
-}
-
-// TestGoldenRoutingKeysConfbridgeEventWrappersPromoteConfbridgeID pins the anonymous-embed
-// promotion the joined/leaved rows above depend on. Both wrappers carry a SECOND uuid (the
-// joined/leaved call id) that is a plausible-looking but wrong address; the default fallback must
-// keep resolving the promoted confbridge `id` instead.
+// TestGoldenRoutingKeysConfbridgeEventWrappersPromoteConfbridgeID pins the id space the
+// joined/leaved rows above depend on. Both wrappers carry a SECOND uuid (the joined/leaved call
+// id) that is a plausible-looking but wrong address; their explicit methods must keep resolving
+// the embedded confbridge `id` instead.
 func TestGoldenRoutingKeysConfbridgeEventWrappersPromoteConfbridgeID(t *testing.T) {
 	base := confbridge.Confbridge{
 		Identity: commonidentity.Identity{ID: confbridgeID, CustomerID: uuid.Must(uuid.NewV4())},
@@ -419,9 +380,9 @@ func TestGoldenRoutingKeysConfbridgeEventWrappersPromoteConfbridgeID(t *testing.
 	}
 }
 
-// TestGoldenRoutingKeysPlaceholderFallbacks pins what happens when an address is absent. A nil
-// address on an override type is authoritative -- notifyhandler must NOT fall back to the JSON
-// `id` behind an existing override -- and both cases collapse to the `-` placeholder, which
+// TestGoldenRoutingKeysPlaceholderFallbacks pins what happens when an address is absent. The
+// explicit method is the ONLY source of the address -- a Nil return is authoritative, nothing
+// resurrects a different id behind it -- and every case collapses to the `-` placeholder, which
 // type-level bindings still match and instance bindings correctly never do.
 func TestGoldenRoutingKeysPlaceholderFallbacks(t *testing.T) {
 	publisher := string(commonoutline.ServiceNameCallManager)
@@ -433,8 +394,8 @@ func TestGoldenRoutingKeysPlaceholderFallbacks(t *testing.T) {
 		expect    string
 	}{
 		{
-			// own id present, but the override says the call-id is the address and it is Nil:
-			// the JSON `id` must never be resurrected behind the override's back.
+			// own id present, but the method says the call-id is the address and it is Nil:
+			// the own id must never be resurrected behind the method's back.
 			"dtmf without call id",
 			dtmf.EventTypeDTMFReceived,
 			&dtmf.DTMF{Identity: commonidentity.Identity{ID: uuid.Must(uuid.NewV4())}},

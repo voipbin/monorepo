@@ -4,7 +4,75 @@ import (
 	"testing"
 
 	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/models/eventtopic"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 )
+
+// Confbridge addresses the global topic exchange `bin-manager.event` by its own id (VOIP-1419).
+// The assertion pins the POINTER type: the event data reaches notifyhandler as a POINTER and the
+// eventtopic.SubscriptionIdentifier assertion matches the dynamic type.
+var _ eventtopic.SubscriptionIdentifier = (*Confbridge)(nil)
+
+func TestConfbridgeEventSubscriptionID(t *testing.T) {
+	id := uuid.Must(uuid.NewV4())
+
+	tests := []struct {
+		name       string
+		confbridge *Confbridge
+		expect     string
+	}{
+		{
+			"normal",
+			&Confbridge{
+				Identity: commonidentity.Identity{
+					ID:         id,
+					CustomerID: uuid.Must(uuid.NewV4()),
+				},
+				ReferenceType: ReferenceTypeConference,
+				ReferenceID:   uuid.Must(uuid.NewV4()),
+			},
+			id.String(),
+		},
+		{
+			"empty",
+			&Confbridge{},
+			uuid.Nil.String(),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res := tt.confbridge.EventSubscriptionID()
+			if res != tt.expect {
+				t.Errorf("Wrong match. expect: %s, got: %s", tt.expect, res)
+			}
+		})
+	}
+}
+
+// TestConfbridgeEventSubscriptionIDIsOwnID mutation-checks the address: the reference id (the
+// call or conference this bridge serves) is the plausible wrong answer and must never become the
+// subscription address.
+func TestConfbridgeEventSubscriptionIDIsOwnID(t *testing.T) {
+	c := &Confbridge{
+		Identity: commonidentity.Identity{
+			ID:         uuid.Must(uuid.NewV4()),
+			CustomerID: uuid.Must(uuid.NewV4()),
+		},
+		ReferenceID: uuid.Must(uuid.NewV4()),
+	}
+
+	if c.EventSubscriptionID() != c.ID.String() {
+		t.Errorf("Wrong match. expect: %s, got: %s", c.ID, c.EventSubscriptionID())
+	}
+	if c.EventSubscriptionID() == c.ReferenceID.String() {
+		t.Errorf("Subscription address must not be the reference id. reference_id: %s", c.ReferenceID)
+	}
+	if c.EventSubscriptionID() == c.CustomerID.String() {
+		t.Errorf("Subscription address must not be the customer id. customer_id: %s", c.CustomerID)
+	}
+}
 
 func TestConfbridgeStruct(t *testing.T) {
 	id := uuid.Must(uuid.NewV4())

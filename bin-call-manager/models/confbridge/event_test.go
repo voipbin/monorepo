@@ -4,7 +4,77 @@ import (
 	"testing"
 
 	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/models/eventtopic"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 )
+
+// Both event wrappers embed Confbridge BY VALUE, so they would already satisfy the interface via
+// method promotion; the explicit wrapper methods exist deliberately (VOIP-1419) as insurance
+// against a future same-depth embed silently dropping the promoted method. The assertions pin the
+// POINTER types, matching how the event data reaches notifyhandler.
+var (
+	_ eventtopic.SubscriptionIdentifier = (*EventConfbridgeJoined)(nil)
+	_ eventtopic.SubscriptionIdentifier = (*EventConfbridgeLeaved)(nil)
+)
+
+// TestEventConfbridgeWrappersEventSubscriptionID mutation-checks the one WRONG implementation the
+// call-manager golden suite guards against: each wrapper carries a second uuid (the joined/leaved
+// call id) that is a plausible-looking but wrong address. The subscription address must be the
+// embedded confbridge's own id.
+func TestEventConfbridgeWrappersEventSubscriptionID(t *testing.T) {
+	confbridgeID := uuid.Must(uuid.NewV4())
+	callID := uuid.Must(uuid.NewV4())
+
+	base := Confbridge{
+		Identity: commonidentity.Identity{
+			ID:         confbridgeID,
+			CustomerID: uuid.Must(uuid.NewV4()),
+		},
+	}
+
+	tests := []struct {
+		name string
+		data eventtopic.SubscriptionIdentifier
+	}{
+		{"joined", &EventConfbridgeJoined{Confbridge: base, JoinedCallID: callID}},
+		{"leaved", &EventConfbridgeLeaved{Confbridge: base, LeavedCallID: callID}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res := tt.data.EventSubscriptionID()
+			if res != confbridgeID.String() {
+				t.Errorf("Wrong match. expect: %s, got: %s", confbridgeID, res)
+			}
+			if res == callID.String() {
+				t.Errorf("Subscription address must not be the joined/leaved call id. call_id: %s", callID)
+			}
+		})
+	}
+}
+
+// TestEventConfbridgeWrappersEventSubscriptionIDEmpty pins the zero-value degrade path: an unset
+// embedded confbridge resolves to the uuid.Nil string, which the routing-key layer collapses to
+// the `-` placeholder.
+func TestEventConfbridgeWrappersEventSubscriptionIDEmpty(t *testing.T) {
+	tests := []struct {
+		name string
+		data eventtopic.SubscriptionIdentifier
+	}{
+		{"joined", &EventConfbridgeJoined{}},
+		{"leaved", &EventConfbridgeLeaved{}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res := tt.data.EventSubscriptionID()
+			if res != uuid.Nil.String() {
+				t.Errorf("Wrong match. expect: %s, got: %s", uuid.Nil, res)
+			}
+		})
+	}
+}
 
 func TestEventTypeConstants(t *testing.T) {
 	tests := []struct {

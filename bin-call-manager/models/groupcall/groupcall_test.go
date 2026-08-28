@@ -6,10 +6,80 @@ import (
 	"time"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	"monorepo/bin-common-handler/models/eventtopic"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
 )
+
+// Groupcall addresses the global topic exchange `bin-manager.event` by its own id (VOIP-1419).
+// The assertion pins the POINTER type: the event data reaches notifyhandler as a POINTER and the
+// eventtopic.SubscriptionIdentifier assertion matches the dynamic type.
+var _ eventtopic.SubscriptionIdentifier = (*Groupcall)(nil)
+
+func TestGroupcallEventSubscriptionID(t *testing.T) {
+	id := uuid.Must(uuid.NewV4())
+
+	tests := []struct {
+		name      string
+		groupcall *Groupcall
+		expect    string
+	}{
+		{
+			"normal",
+			&Groupcall{
+				Identity: commonidentity.Identity{
+					ID:         id,
+					CustomerID: uuid.Must(uuid.NewV4()),
+				},
+				MasterCallID: uuid.Must(uuid.NewV4()),
+				AnswerCallID: uuid.Must(uuid.NewV4()),
+			},
+			id.String(),
+		},
+		{
+			"empty",
+			&Groupcall{},
+			uuid.Nil.String(),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res := tt.groupcall.EventSubscriptionID()
+			if res != tt.expect {
+				t.Errorf("Wrong match. expect: %s, got: %s", tt.expect, res)
+			}
+		})
+	}
+}
+
+// TestGroupcallEventSubscriptionIDIsOwnID mutation-checks the address: a groupcall carries
+// several other plausible-looking uuids (master call, answer call, customer), and none of them
+// may ever become the subscription address.
+func TestGroupcallEventSubscriptionIDIsOwnID(t *testing.T) {
+	g := &Groupcall{
+		Identity: commonidentity.Identity{
+			ID:         uuid.Must(uuid.NewV4()),
+			CustomerID: uuid.Must(uuid.NewV4()),
+		},
+		MasterCallID: uuid.Must(uuid.NewV4()),
+		AnswerCallID: uuid.Must(uuid.NewV4()),
+	}
+
+	if g.EventSubscriptionID() != g.ID.String() {
+		t.Errorf("Wrong match. expect: %s, got: %s", g.ID, g.EventSubscriptionID())
+	}
+	if g.EventSubscriptionID() == g.MasterCallID.String() {
+		t.Errorf("Subscription address must not be the master call id. master_call_id: %s", g.MasterCallID)
+	}
+	if g.EventSubscriptionID() == g.AnswerCallID.String() {
+		t.Errorf("Subscription address must not be the answer call id. answer_call_id: %s", g.AnswerCallID)
+	}
+	if g.EventSubscriptionID() == g.CustomerID.String() {
+		t.Errorf("Subscription address must not be the customer id. customer_id: %s", g.CustomerID)
+	}
+}
 
 func TestGroupcallStruct(t *testing.T) {
 	id := uuid.Must(uuid.NewV4())
