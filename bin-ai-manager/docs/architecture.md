@@ -27,7 +27,7 @@ cmd/ai-manager/main.go
 | Layer | Package(s) | Responsibility |
 |-------|-----------|----------------|
 | Transport | `pkg/listenhandler` | Receives RPC requests from `bin-manager.ai-manager.request`, routes by URI regex |
-| Transport | `pkg/subscribehandler` | Consumes events from call, transcribe, tts, pipecat queues |
+| Transport | `pkg/subscribehandler` | Consumes call/pipecat events via pattern bindings on the global topic exchange `bin-manager.event` (VOIP-1406); fanout legs retained as rollback surface until VOIP-1407 |
 | Transport | `notifyhandler` (via bin-common-handler) | Publishes events to the fanout exchange `bin-manager.ai-manager.event` and, since VOIP-1405, dual-publishes the same payload to the global topic exchange `bin-manager.event` |
 | Domain | `pkg/aihandler` | AI configuration CRUD (engine type, model, TTS/STT settings, tool list) |
 | Domain | `pkg/aicallhandler` | AIcall session lifecycle: initiating → progressing → terminating → terminated |
@@ -84,14 +84,20 @@ ListenHandler (`pkg/listenhandler/`) routes by regex URI pattern over the shared
 
 ## Event Subscriptions
 
-SubscribeHandler (`pkg/subscribehandler/`) consumes:
+SubscribeHandler (`pkg/subscribehandler/`) consumes from the queue `bin-manager.ai-manager.subscribe`. Since VOIP-1406 the queue is bound to the **global topic exchange `bin-manager.event`** with one pattern per dispatched (publisher, event-type) pair — 10 patterns total, pinned byte-for-byte by the binding golden test (`pkg/subscribehandler/binding_golden_test.go`):
 
-| Queue | Event types handled |
-|-------|-------------------|
-| `bin-manager.call-manager.event` | Call hangup, conference join/leave — drives AIcall state transitions |
-| `bin-manager.transcribe-manager.event` | Transcription results for non-realtime flows |
-| `bin-manager.tts-manager.event` | TTS lifecycle events |
-| `bin-manager.pipecat-manager.event` | Pipecat session initialized, message arrived — drives realtime conversation state |
+| Pattern | Purpose |
+|---------|---------|
+| `call-manager.confbridge.*.joined` / `call-manager.confbridge.*.leaved` | Confbridge join/leave — drives AIcall state transitions |
+| `call-manager.call.*.hangup` | Call hangup — terminates the AIcall |
+| `call-manager.dtmf.*.received` | DTMF input during an AIcall |
+| `pipecat-manager.message.*.user_transcription` / `.bot_llm` / `.bot_llm_intermediate` | Realtime conversation messages |
+| `pipecat-manager.pipecatcall.*.initialized` / `.terminated` | Pipecat session lifecycle |
+| `pipecat-manager.team.*.member_switched` | AI team member switch |
+
+The `conference-manager.conference.*.updated` pair is deliberately NOT bound: its dispatch case is unreachable today and stays that way (VOIP-1406 design §4; follow-up VOIP-1422 decides activate-or-delete).
+
+The old per-service **fanout subscriptions are retained in code as the rollback surface until VOIP-1407** (`QueueSubscribe` to `bin-manager.call-manager.event`, `bin-manager.transcribe-manager.event`, `bin-manager.tts-manager.event`, `bin-manager.pipecat-manager.event`); on each boot Run() re-subscribes them, then unbinds all four again after the topic binds succeed. The transcribe and tts legs were dead binds (zero dispatch cases) and are dropped the same way.
 
 ## Events Published
 
