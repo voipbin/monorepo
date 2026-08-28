@@ -6,10 +6,82 @@ import (
 	"testing"
 	"time"
 
+	"monorepo/bin-common-handler/models/eventtopic"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
 )
+
+// Conference carries an explicit subscription address for the global topic exchange
+// (VOIP-1419). The assertion pins the POINTER type: the event data reaches notifyhandler as a
+// POINTER and the assertion matches the dynamic type; a VALUE of this pointer-receiver type
+// would fail the assertion.
+var _ eventtopic.SubscriptionIdentifier = (*Conference)(nil)
+
+func TestConferenceEventSubscriptionID(t *testing.T) {
+	conferenceID := uuid.Must(uuid.NewV4())
+
+	tests := []struct {
+		name       string
+		conference *Conference
+		expect     string
+	}{
+		{
+			"normal",
+			&Conference{
+				Identity: commonidentity.Identity{
+					ID:         conferenceID,
+					CustomerID: uuid.Must(uuid.NewV4()),
+				},
+				ConfbridgeID: uuid.Must(uuid.NewV4()),
+				Status:       StatusProgressing,
+			},
+			conferenceID.String(),
+		},
+		{
+			"empty id",
+			&Conference{},
+			uuid.Nil.String(),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res := tt.conference.EventSubscriptionID()
+			if res != tt.expect {
+				t.Errorf("Wrong match. expect: %s, got: %s", tt.expect, res)
+			}
+		})
+	}
+}
+
+// TestConferenceEventSubscriptionIDIsOwnID pins the address choice with all plausible wrong
+// answers present: the subscription address is the conference's OWN id, never the customer id
+// and never the confbridge id of the call-manager bridge it wraps.
+func TestConferenceEventSubscriptionIDIsOwnID(t *testing.T) {
+	conferenceID := uuid.Must(uuid.NewV4())
+	customerID := uuid.Must(uuid.NewV4())
+	confbridgeID := uuid.Must(uuid.NewV4())
+
+	data := &Conference{
+		Identity: commonidentity.Identity{
+			ID:         conferenceID,
+			CustomerID: customerID,
+		},
+		ConfbridgeID: confbridgeID,
+	}
+
+	res := data.EventSubscriptionID()
+	if res != conferenceID.String() {
+		t.Errorf("Wrong match. expect: %s, got: %s", conferenceID.String(), res)
+	}
+	if res == customerID.String() {
+		t.Errorf("Conference must not be addressed by its customer id. got: %s", res)
+	}
+	if res == confbridgeID.String() {
+		t.Errorf("Conference must not be addressed by its confbridge id. got: %s", res)
+	}
+}
 
 func Test_Conference_MarshalUnmarshal(t *testing.T) {
 
