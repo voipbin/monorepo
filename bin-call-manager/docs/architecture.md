@@ -122,14 +122,22 @@ Customer resolution for registrar calls is a registrar-manager lookup (`Registra
 
 ## Event Subscriptions
 
-`pkg/subscribehandler` declares the durable queue `bin-manager.call-manager.subscribe` and binds it to each exchange in the `subscribeTargets` list built in `cmd/call-manager/main.go`:
+`pkg/subscribehandler` declares the durable queue `bin-manager.call-manager.subscribe`. Since VOIP-1406, inter-service events arrive via pattern bindings on the global topic exchange `bin-manager.event` (`topicPatterns` in `pkg/subscribehandler/main.go`, pinned by `binding_golden_test.go`):
 
-| Exchange | Publishing Service |
-|----------|--------------------|
+| Pattern | Publishing Service |
+|---------|--------------------|
+| `customer-manager.customer.*.deleted` | customer-manager |
+| `customer-manager.customer.*.frozen` | customer-manager |
+| `flow-manager.activeflow.*.updated` | flow-manager |
+| `sentinel-manager.pod.*.deleted` | sentinel-manager |
+
+The `asterisk.all.event` fanout subscription is permanently retained: asterisk-proxy does not publish to the topic exchange, so the Asterisk ARI leg stays on fanout.
+
+| Retained fanout exchange | Publishing Service |
+|--------------------------|--------------------|
 | `asterisk.all.event` | Asterisk media server (via asterisk-proxy) |
-| `bin-manager.customer-manager.event` | customer-manager |
-| `bin-manager.flow-manager.event` | flow-manager |
-| `bin-manager.sentinel-manager.event` | sentinel-manager |
+
+Inside `Run()`, the migration block runs synchronously after the fanout subscribes and before `ConsumeMessage`: idempotent declare of `bin-manager.event` (on failure the service stays fully on fanout), then all-or-nothing pattern binds (a partial failure rolls the topic binds back best-effort and keeps fanout), then -- only on full bind success -- unbind of each old fanout event exchange (`fanoutUnbindTargets` = the customer/flow/sentinel exchanges; unbind failure logs CRITICAL but is not fatal). The fanout `QueueSubscribe` calls for `bin-manager.customer-manager.event`, `bin-manager.flow-manager.event`, and `bin-manager.sentinel-manager.event` remain in the code as the rollback surface until VOIP-1407 removes fanout publishing.
 
 **Sentinel exchange declare before bind.** `sentinel-manager` requires the Kubernetes API and is therefore only deployed in Kubernetes environments. In every other deployment (for example Docker Compose based self-hosting) nothing declares the `bin-manager.sentinel-manager.event` exchange, so binding to it fails with an AMQP 404, which closes the channel shared by all of this queue's bindings and makes `Run()` return a fatal error at boot. To avoid that, `Run()` calls `sockHandler.TopicCreate` for the sentinel target specifically, immediately before that target's `QueueSubscribe` call. `TopicCreate` declares a durable fanout exchange, the same parameters `sentinel-manager`'s own `notifyhandler` uses, so the declare is an idempotent no-op when sentinel-manager is deployed and creates the exchange when it is not.
 

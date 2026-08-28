@@ -9,6 +9,7 @@ import (
 
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 
+	"monorepo/bin-common-handler/models/eventtopic"
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
@@ -20,6 +21,25 @@ import (
 	"monorepo/bin-agent-manager/pkg/agenthandler"
 	"monorepo/bin-agent-manager/pkg/metricshandler"
 )
+
+// topicPatterns is this service's bind set on the global topic exchange
+// `bin-manager.event` (VOIP-1406): one pattern per dispatch pair handled in
+// processEvent. Pinned byte-for-byte by binding_golden_test.go.
+var topicPatterns = []string{
+	eventtopic.PatternAction(string(commonoutline.ServiceNameCallManager), "groupcall", "created"),
+	eventtopic.PatternAction(string(commonoutline.ServiceNameCallManager), "groupcall", "progressing"),
+	eventtopic.PatternAction(string(commonoutline.ServiceNameCustomerManager), "customer", "deleted"),
+	eventtopic.PatternAction(string(commonoutline.ServiceNameCustomerManager), "customer", "created"),
+}
+
+// fanoutUnbindTargets lists the per-service fanout event exchanges the subscribe
+// queue unbinds from once every topicPatterns bind succeeded (VOIP-1406). It is
+// the service's subscribeTargets set; the fanout QueueSubscribe calls themselves
+// stay in Run() as the rollback surface until VOIP-1407.
+var fanoutUnbindTargets = []string{
+	string(commonoutline.QueueNameCallEvent),
+	string(commonoutline.QueueNameCustomerEvent),
+}
 
 // SubscribeHandler interface
 type SubscribeHandler interface {
@@ -97,6 +117,49 @@ func (h *subscribeHandler) Run() error {
 		// old exchange rather than risk ending up bound to neither.
 	} else if errUnbind := h.sockHandler.QueueUnbind(h.subscribeQueue, "", string(commonoutline.QueueNameWebhookEvent), nil); errUnbind != nil {
 		log.Errorf("CRITICAL: Could not unbind from the old fanout exchange after binding to the new topic exchange. queue: %s is now bound to BOTH exchanges (double-processing resumes). Manual intervention required. err: %v", h.subscribeQueue, errUnbind)
+	}
+
+	// VOIP-1406: migrate the subscribe queue from the per-service fanout event
+	// exchanges to pattern bindings on the global topic exchange bin-manager.event.
+	// Same ordering constraint as the VOIP-1258 block above: this MUST run
+	// synchronously here, BEFORE ConsumeMessage is started below, because the
+	// bind/unbind RPCs share the queue's AMQP channel with basic.consume.
+	// Bind new before unbinding old (no window bound to neither), all-or-nothing:
+	// any pattern bind failure rolls back the partial topic binds (best-effort)
+	// and unbinds NO fanout exchange, leaving the service fully on fanout. The
+	// fanout QueueSubscribe calls above stay as the rollback surface until
+	// VOIP-1407.
+	if errDeclare := h.sockHandler.TopicCreateWithKind(string(commonoutline.QueueNameEvent), "topic"); errDeclare != nil {
+		log.Errorf("Could not declare the global topic exchange. Staying fully on the fanout subscriptions. exchange: %s, err: %v", string(commonoutline.QueueNameEvent), errDeclare)
+	} else {
+		bound := []string{}
+		ok := true
+		for _, pattern := range topicPatterns {
+			if errBind := h.sockHandler.QueueBind(h.subscribeQueue, pattern, string(commonoutline.QueueNameEvent), false, nil); errBind != nil {
+				log.Errorf("Could not bind the topic pattern. pattern: %s, err: %v", pattern, errBind)
+				ok = false
+				break
+			}
+			bound = append(bound, pattern)
+		}
+
+		if !ok {
+			// best-effort rollback of the partial topic binds, then stay fully on
+			// fanout. An unbind failure here leaves partial double delivery.
+			for _, pattern := range bound {
+				if errUnbind := h.sockHandler.QueueUnbind(h.subscribeQueue, pattern, string(commonoutline.QueueNameEvent), nil); errUnbind != nil {
+					log.Errorf("CRITICAL: partial topic bind could not be rolled back. queue: %s, pattern: %s, err: %v", h.subscribeQueue, pattern, errUnbind)
+				}
+			}
+		} else {
+			// unbind the old fanout exchanges only after EVERY pattern bound.
+			// Unbind failure: CRITICAL log, not fatal (double delivery beats loss).
+			for _, target := range fanoutUnbindTargets {
+				if errUnbind := h.sockHandler.QueueUnbind(h.subscribeQueue, "", target, nil); errUnbind != nil {
+					log.Errorf("CRITICAL: could not unbind the old fanout exchange after the topic binds. queue: %s is now bound to BOTH exchanges (double delivery). Manual intervention required. exchange: %s, err: %v", h.subscribeQueue, target, errUnbind)
+				}
+			}
+		}
 	}
 
 	// receive subscribe events

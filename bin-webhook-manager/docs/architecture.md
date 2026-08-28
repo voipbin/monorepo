@@ -44,13 +44,23 @@ ListenHandler routes over `bin-manager.webhook-manager.request`:
 
 ## Event Subscriptions
 
-SubscribeHandler consumes:
+SubscribeHandler consumes from the global topic exchange `bin-manager.event` (VOIP-1406):
+the subscribe queue is bound with one pattern per handled event pair
+(`pkg/subscribehandler` `topicPatterns`, pinned byte-for-byte by
+`pkg/subscribehandler/binding_golden_test.go`):
 
-| Queue | Event | Action |
-|-------|-------|--------|
-| `bin-manager.customer-manager.event` | `customer_updated`, `customer_deleted` | Invalidate `pkg/accounthandler` Redis cache so next dispatch uses current URI/method |
-| `bin-manager.flow-manager.event` | `activeflow_created`, `activeflow_updated` | Pre-populate the per-activeflow webhook cache from the event payload (Option A: the event carries `webhook_uri` / `webhook_method`): a POSITIVE entry when `webhook_uri` is set, a NEGATIVE entry when empty, using the event timestamp as the monotonic Tm. The fallback path remains the lazy/miss safety net |
-| `bin-manager.flow-manager.event` | `activeflow_deleted` | Write a negative tombstone (carrying `tm_delete`) to the per-activeflow webhook cache so a deleted destination is not resurrected |
+| Binding pattern | Event | Action |
+|-----------------|-------|--------|
+| `customer-manager.customer.*.created` | `customer_created` | Refresh `pkg/accounthandler` Redis cache so next dispatch uses current URI/method |
+| `customer-manager.customer.*.updated` | `customer_updated` | Refresh `pkg/accounthandler` Redis cache so next dispatch uses current URI/method |
+| `flow-manager.activeflow.*.created` | `activeflow_created` | Pre-populate the per-activeflow webhook cache from the event payload (Option A: the event carries `webhook_uri` / `webhook_method`): a POSITIVE entry when `webhook_uri` is set, a NEGATIVE entry when empty, using the event timestamp as the monotonic Tm. The fallback path remains the lazy/miss safety net |
+| `flow-manager.activeflow.*.updated` | `activeflow_updated` | Same per-activeflow cache pre-population as `activeflow_created` |
+| `flow-manager.activeflow.*.deleted` | `activeflow_deleted` | Write a negative tombstone (carrying `tm_delete`) to the per-activeflow webhook cache so a deleted destination is not resurrected |
+
+The legacy per-service fanout subscriptions (`bin-manager.customer-manager.event`,
+`bin-manager.flow-manager.event`) are unbound at boot after the topic patterns are bound,
+but the fanout `QueueSubscribe` calls are retained in code as the rollback surface until
+VOIP-1407 removes fanout publishing.
 
 ## Events Published
 

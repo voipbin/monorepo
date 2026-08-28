@@ -47,6 +47,12 @@ func Test_Run_DeclaresSentinelTopicBeforeSubscribe(t *testing.T) {
 	}
 	mockSock.EXPECT().QueueBind(queueName, "#", string(commonoutline.QueueNameWebhookEventTopic), false, nil).Return(nil)
 	mockSock.EXPECT().QueueUnbind(queueName, "", string(commonoutline.QueueNameWebhookEvent), nil).Return(nil)
+	// VOIP-1406 topic migration block.
+	mockSock.EXPECT().TopicCreateWithKind(string(commonoutline.QueueNameEvent), "topic").Return(nil)
+	mockSock.EXPECT().QueueBind(queueName, "#", string(commonoutline.QueueNameEvent), false, nil).Return(nil)
+	for _, target := range fanoutUnbindTargets {
+		mockSock.EXPECT().QueueUnbind(queueName, "", string(target), nil).Return(nil)
+	}
 	mockSock.EXPECT().ConsumeMessage(gomock.Any(), queueName, gomock.Any(), false, false, false, 10, gomock.Any()).Return(nil).AnyTimes()
 
 	h := NewSubscribeHandler(mockSock, mockDB)

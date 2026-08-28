@@ -53,6 +53,28 @@ var subscribeTargets = []commonoutline.QueueName{
 	commonoutline.QueueNameTTSEvent,
 }
 
+// topicPatterns is the bind set on the global bin-manager.event topic exchange
+// (VOIP-1406). timeline-manager is the archive-everything service, so a single
+// catch-all "#" binding replaces the per-service fanout subscriptions: it matches
+// every current topic publisher (a superset of the old fanout set, accepted by
+// design ruling) and automatically includes any future publisher.
+var topicPatterns = []string{"#"}
+
+// fanoutUnbindTargets lists the fanout exchanges to unbind from the subscribe
+// queue once every topicPatterns bind has succeeded (VOIP-1406). It is
+// subscribeTargets minus the asterisk fanout leg, which is permanently retained
+// because asterisk-proxy does not publish to the topic exchange.
+var fanoutUnbindTargets = func() []commonoutline.QueueName {
+	res := make([]commonoutline.QueueName, 0, len(subscribeTargets)-1)
+	for _, target := range subscribeTargets {
+		if target == commonoutline.QueueNameAsteriskEventAll {
+			continue
+		}
+		res = append(res, target)
+	}
+	return res
+}()
+
 var (
 	metricsNamespace = "timeline_manager"
 
@@ -154,6 +176,47 @@ func (h *subscribeHandler) Run(ctx context.Context) (<-chan struct{}, error) {
 		// old exchange rather than risk ending up bound to neither.
 	} else if errUnbind := h.sockHandler.QueueUnbind(subscribeQueue, "", string(commonoutline.QueueNameWebhookEvent), nil); errUnbind != nil {
 		log.Errorf("CRITICAL: Could not unbind from the old fanout exchange after binding to the new topic exchange. queue: %s is now bound to BOTH exchanges (double-processing resumes). Manual intervention required. err: %v", subscribeQueue, errUnbind)
+	}
+
+	// Migrate the subscribe queue from the per-service fanout exchanges to the global
+	// bin-manager.event topic exchange (VOIP-1406). Bind new before unbinding old so
+	// there is no window where the queue is bound to neither. The declare is idempotent
+	// (kind/durable are fixed in the shared handler) and makes start order irrelevant.
+	// The asterisk fanout subscription is NOT part of this migration and stays bound.
+	if errDeclare := h.sockHandler.TopicCreateWithKind(string(commonoutline.QueueNameEvent), "topic"); errDeclare != nil {
+		log.Errorf("Could not declare the global topic exchange. Staying fully on the fanout subscriptions. exchange: %s, err: %v", commonoutline.QueueNameEvent, errDeclare)
+	} else {
+		// Bind ALL patterns -- all-or-nothing. On any bind failure, roll back the
+		// partial topic binds (best-effort) and unbind NO fanout exchange; the
+		// service keeps running fully on fanout.
+		bound := []string{}
+		ok := true
+		for _, pattern := range topicPatterns {
+			if errBind := h.sockHandler.QueueBind(subscribeQueue, pattern, string(commonoutline.QueueNameEvent), false, nil); errBind != nil {
+				log.Errorf("Could not bind the pattern to the global topic exchange. pattern: %s, err: %v", pattern, errBind)
+				ok = false
+				break
+			}
+			bound = append(bound, pattern)
+		}
+
+		if !ok {
+			// Best-effort rollback of the partial topic binds, then stay fully on
+			// fanout. An unbind failure here leaves partial double delivery.
+			for _, pattern := range bound {
+				if errUnbind := h.sockHandler.QueueUnbind(subscribeQueue, pattern, string(commonoutline.QueueNameEvent), nil); errUnbind != nil {
+					log.Errorf("CRITICAL: partial topic bind could not be rolled back. queue: %s keeps a stray topic binding (partial double delivery). Manual intervention required. pattern: %s, err: %v", subscribeQueue, pattern, errUnbind)
+				}
+			}
+		} else {
+			// Unbind ALL old fanout exchanges -- only after every pattern bound.
+			// Unbind failure: CRITICAL log, not fatal (double delivery beats loss).
+			for _, target := range fanoutUnbindTargets {
+				if errUnbind := h.sockHandler.QueueUnbind(subscribeQueue, "", string(target), nil); errUnbind != nil {
+					log.Errorf("CRITICAL: still bound to BOTH exchanges (double delivery). Manual intervention required. queue: %s, target: %s, err: %v", subscribeQueue, target, errUnbind)
+				}
+			}
+		}
 	}
 
 	// Start the batch flush worker; doneCh is closed when the worker exits.
