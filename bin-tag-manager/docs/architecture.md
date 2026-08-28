@@ -79,7 +79,8 @@ this option — enabling it in only one would leave consumers with gaps dependin
 published. A topic publish failure never propagates to the caller and never affects the fanout
 publish.
 
-tag-manager uses no subscription-id override: a tag is an independent persistent resource
-addressed by its own `id`. The golden table pinning every key is
+`*tag.Tag` carries an explicit `EventSubscriptionID()` returning the tag's own `id`
+(VOIP-1419): a tag is an independent persistent resource addressed by its own `id`.
+The golden table pinning every key is
 `models/tag/routingkey_golden_test.go`; the schema is defined in monorepo
 `docs/plans/2026-08-27-voip-1404-global-topic-exchange-design.md`.
