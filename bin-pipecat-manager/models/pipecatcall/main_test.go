@@ -4,7 +4,57 @@ import (
 	"testing"
 
 	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/models/eventtopic"
+	"monorepo/bin-common-handler/models/identity"
 )
+
+// Pipecatcall carries the explicit subscription address of the global topic exchange
+// (VOIP-1404/1419). The assertion pins the POINTER type: the event data reaches notifyhandler
+// as a pointer and the eventtopic.SubscriptionIdentifier assertion matches the dynamic type.
+var _ eventtopic.SubscriptionIdentifier = (*Pipecatcall)(nil)
+
+func TestPipecatcallEventSubscriptionID(t *testing.T) {
+	ownID := uuid.Must(uuid.NewV4())
+	customerID := uuid.Must(uuid.NewV4())
+	activeflowID := uuid.Must(uuid.NewV4())
+	referenceID := uuid.Must(uuid.NewV4())
+
+	pc := &Pipecatcall{
+		Identity: identity.Identity{
+			ID:         ownID,
+			CustomerID: customerID,
+		},
+		ActiveflowID:  activeflowID,
+		ReferenceType: ReferenceTypeAICall,
+		ReferenceID:   referenceID,
+	}
+
+	res := pc.EventSubscriptionID()
+	if res != ownID.String() {
+		t.Errorf("Wrong match. expect: %s, got: %s", ownID.String(), res)
+	}
+
+	// Mutation checks: the subscription address is the pipecatcall's OWN id — none of the other
+	// id-shaped fields on the struct may ever leak into the routing key.
+	if res == customerID.String() {
+		t.Errorf("Subscription address must not be the customer id. id: %s", customerID)
+	}
+	if res == activeflowID.String() {
+		t.Errorf("Subscription address must not be the activeflow id. id: %s", activeflowID)
+	}
+	if res == referenceID.String() {
+		t.Errorf("Subscription address must not be the reference id. id: %s", referenceID)
+	}
+}
+
+func TestPipecatcallEventSubscriptionIDEmpty(t *testing.T) {
+	pc := &Pipecatcall{}
+
+	if res := pc.EventSubscriptionID(); res != uuid.Nil.String() {
+		t.Errorf("Wrong match. expect: %s, got: %s", uuid.Nil.String(), res)
+	}
+}
 
 func TestPipecatcall(t *testing.T) {
 	tests := []struct {

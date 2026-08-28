@@ -20,7 +20,6 @@
 package pipecatcall_test
 
 import (
-	"encoding/json"
 	"reflect"
 	"testing"
 
@@ -38,43 +37,32 @@ import (
 var pipecatcallID = uuid.FromStringOrNil("7b21d4a6-0000-4000-8000-000000000001")
 
 // resolveSubscriptionID mirrors the resolution notifyhandler performs on the publish path
-// (1404 design §4.2 / §5.2): the opt-in interface first, then -- ONLY when no override exists --
-// the top-level "id" of the marshaled payload. Keeping it here rather than reaching into
-// notifyhandler internals is deliberate -- the golden table must fail when a model stops
-// implementing the interface, which is exactly what this two-step reproduction detects.
+// (VOIP-1419): the payload's explicit EventSubscriptionID method is the ONLY source of the
+// subscription-id segment -- the JSON top-level-"id" fallback no longer exists. Implementation
+// is mandatory for every published type (the narrowed PublishEvent signature enforces it at
+// compile time); an empty return degrades to the `-` placeholder. Keeping the reproduction here
+// rather than reaching into notifyhandler internals is deliberate -- the golden table must fail
+// if a model's method ever returns the wrong id space.
 //
-// The early return below is the load-bearing half: an override that EXISTS is authoritative even
-// when it yields "" or uuid.Nil, so the JSON fallback must never run behind it. This matches
-// notifyhandler.resolveSubscriptionOverride's hasOverride semantics exactly; if the two ever
-// diverge, this table stops reproducing what the publish path actually generates.
+// The parameter stays `any` (not the interface) so the supplementary tests below can feed
+// non-implementing shapes -- e.g. a VALUE copy of a pointer-receiver type -- and assert the ""
+// (→ placeholder) they degrade to.
 func resolveSubscriptionID(t *testing.T, data any) string {
 	t.Helper()
 
-	if identifier, ok := data.(eventtopic.SubscriptionIdentifier); ok {
-		// typed-nil guard, mirroring notifyhandler.resolveSubscriptionOverride: a nil pointer whose
-		// type implements the interface still SATISFIES the assertion, and every real implementation
-		// dereferences its receiver -- calling the method would panic. Production reports "no
-		// override" for such a payload, so this guard falls through to the JSON half below rather
-		// than returning early; `null` carries no top-level `id` either, so both halves agree on the
-		// `-` placeholder.
-		if v := reflect.ValueOf(data); v.Kind() != reflect.Ptr || !v.IsNil() {
-			return identifier.EventSubscriptionID()
-		}
-	}
-
-	m, err := json.Marshal(data)
-	if err != nil {
-		t.Fatalf("Could not marshal the event data. err: %v", err)
-	}
-
-	d := struct {
-		ID string `json:"id"`
-	}{}
-	if errUnmarshal := json.Unmarshal(m, &d); errUnmarshal != nil {
+	identifier, ok := data.(eventtopic.SubscriptionIdentifier)
+	if !ok {
 		return ""
 	}
 
-	return d.ID
+	// typed-nil guard, mirroring notifyhandler: a nil pointer whose type implements the interface
+	// still SATISFIES the assertion, and every real implementation dereferences its receiver --
+	// calling the method would panic. Production resolves such a payload to the `-` placeholder.
+	if v := reflect.ValueOf(data); v.Kind() == reflect.Ptr && v.IsNil() {
+		return ""
+	}
+
+	return identifier.EventSubscriptionID()
 }
 
 func TestGoldenRoutingKeys(t *testing.T) {
@@ -117,8 +105,8 @@ func TestGoldenRoutingKeys(t *testing.T) {
 		Sequence:                 1,
 	}
 
-	// MemberSwitchedEvent has NO top-level id at all -- without the override this row would be
-	// the `-` placeholder.
+	// MemberSwitchedEvent carries no id of its own -- its override returns the parent
+	// pipecatcall-id, which is the only thing keeping this row off the `-` placeholder.
 	memberSwitchedData := &message.MemberSwitchedEvent{
 		CustomerID:               uuid.Must(uuid.NewV4()),
 		PipecatcallID:            pipecatcallID,
@@ -135,7 +123,8 @@ func TestGoldenRoutingKeys(t *testing.T) {
 		data      any
 		expect    string
 	}{
-		// pipecatcall resource -- own id IS the address, resolved by the default JSON fallback.
+		// pipecatcall resource -- own id IS the address, returned by the type's explicit
+		// EventSubscriptionID method (VOIP-1419).
 		{
 			"pipecatcall_created",
 			pipecatcall.EventTypeCreated,
@@ -195,8 +184,8 @@ func TestGoldenRoutingKeys(t *testing.T) {
 
 		// team resource -- the event type is `team_member_switched`, so the mechanical split on
 		// the first `_` puts it under a THIRD namespace (`team`), addressed by the very same
-		// pipecatcall-id. The payload has no own id, so the override is what keeps this row off
-		// the `-` placeholder.
+		// pipecatcall-id. The payload has no id of its own, so its override is what keeps this
+		// row off the `-` placeholder.
 		{
 			"team_member_switched",
 			message.EventTypeTeamMemberSwitched,
@@ -244,23 +233,13 @@ func TestGoldenRoutingKeysShareOneAddress(t *testing.T) {
 	}
 }
 
-// TestPipecatcallUsesDefaultSubscriptionID pins the deliberate absence of an override on
-// Pipecatcall: its own id IS the address, so implementing the interface would be redundant and
-// the default JSON `id` extraction must keep covering it.
-func TestPipecatcallUsesDefaultSubscriptionID(t *testing.T) {
-	var data any = &pipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: pipecatcallID}}
-
-	if _, ok := data.(eventtopic.SubscriptionIdentifier); ok {
-		t.Errorf("Pipecatcall must not implement SubscriptionIdentifier. its own id is the subscription address.")
-	}
-}
-
-// TestValueEventDataLosesTheOverride reproduces the pre-VOIP-1405 defect the six pointer
-// conversions in pkg/pipecatcallhandler/runner.go fixed. The override is declared on the pointer
-// receiver (as eventtopic.SubscriptionIdentifier requires), so a VALUE handed to PublishEvent
-// fails the assertion and silently falls back to the JSON `id`: for Message that is the wrong,
-// unbindable own id; for MemberSwitchedEvent there is no `id` at all and the key degrades to the
-// `-` placeholder. If a publish site ever regresses to a value, this is the failure it produces.
+// TestValueEventDataLosesTheOverride pins the pointer-receiver semantics the six pointer
+// conversions in pkg/pipecatcallhandler/runner.go rely on. The method is declared on the pointer
+// receiver (as eventtopic.SubscriptionIdentifier requires), so a VALUE of either type does not
+// satisfy the interface and resolves to "" -- the `-` placeholder -- instead of the session
+// address. (Before VOIP-1419 a Message VALUE silently degraded to the JSON top-level id, a
+// well-formed key no instance binding matches; that fallback is gone, and once PublishEvent's
+// parameter is narrowed to the interface a value publish no longer even compiles.)
 func TestValueEventDataLosesTheOverride(t *testing.T) {
 	publisher := string(commonoutline.ServiceNamePipecatManager)
 
@@ -278,13 +257,12 @@ func TestValueEventDataLosesTheOverride(t *testing.T) {
 		t.Errorf("A MemberSwitchedEvent VALUE must not satisfy SubscriptionIdentifier. the receiver is a pointer.")
 	}
 
-	// Value publish of Message: the JSON fallback picks the per-event own id -- a well-formed key
-	// that no instance binding matches.
-	if res := eventtopic.RoutingKey(publisher, message.EventTypeBotLLM, resolveSubscriptionID(t, msg)); res != "pipecat-manager.message.7b21d4a6-0000-4000-8000-0000000000ff.bot_llm" {
-		t.Errorf("Wrong match. expect: %s, got: %s", "pipecat-manager.message.7b21d4a6-0000-4000-8000-0000000000ff.bot_llm", res)
+	// Value publish of Message: no interface satisfaction, no address -- never the own id.
+	if res := resolveSubscriptionID(t, msg); res != "" {
+		t.Errorf("Wrong match. expect: %s, got: %s", "", res)
 	}
 
-	// Value publish of MemberSwitchedEvent: no top-level id at all -- placeholder.
+	// Value publish of MemberSwitchedEvent: same degrade -- placeholder.
 	if res := eventtopic.RoutingKey(publisher, message.EventTypeTeamMemberSwitched, resolveSubscriptionID(t, evt)); res != "pipecat-manager.team.-.member_switched" {
 		t.Errorf("Wrong match. expect: %s, got: %s", "pipecat-manager.team.-.member_switched", res)
 	}
