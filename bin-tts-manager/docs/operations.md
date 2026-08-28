@@ -6,14 +6,14 @@
 |---------|-------------|------------|
 | Service exits at startup ("Could not create the tts handler") | GCP ADC credentials not available — the daemon fails fast instead of nil-panicking on the first `/v1/speeches` request | Check `GOOGLE_APPLICATION_CREDENTIALS` points to a valid credential file (`/run/secrets/google_service_account.json`, materialized by the Komodo compose `secrets:` block); verify the `BIN_MANAGER__GOOGLE_APPLICATION_CREDENTIALS_JSON` Komodo Variable is synced |
 | Batch TTS returns no audio URL | GCP request failing at runtime (quota, endpoint), or `/shared-data` not writable (volume missing from the compose stack) | Check `speech_fallback_total` metric (AWS Polly is the fallback provider); verify the `shared-data` volume is mounted in `komodo/docker-compose.yml` |
-| Call connects but TTS audio is silent while `/v1/speeches` succeeds | Asterisk cannot fetch the media URL — `voipbin-tts-manager-http` sidecar down, or `POD_IP` missing/wrong so the URL host does not resolve | Check the `tts-manager-http` container is running on the `production` network; verify `POD_IP=voipbin-tts-manager-http` in the compose stack |
+| Call connects but TTS audio is silent while `/v1/speeches` succeeds | Asterisk cannot fetch the media URL — `voipbin-tts-manager-http` sidecar down, or `POD_IP` missing/wrong so the URL host does not resolve | Check the `tts-manager-http` container is running on the `production` network; verify `POD_IP=tts-manager-http` in the compose stack |
 | AWS Polly fallback failing | Missing `aws_access_key` / `aws_secret_key` | Verify credentials in environment; check AWS Polly quotas |
 | Streaming session RPC timeout | RPC routed to wrong pod (wrong per-pod queue) | Verify `host_id` matches `HOSTNAME` of target pod; check per-pod queue binding |
 | AudioSocket connection refused | Go service port 8080 not listening | Check pod readiness; verify no port conflict with Python sidecar |
 | Audio file not served by sidecar | `/shared-data` volume not mounted or empty | Check pod volume mount; verify Go service wrote the file before sidecar serves it |
 | ElevenLabs WebSocket disconnect | Rate limit or API key invalid | Check `streaming_error_total` metric; verify `ELEVENLABS_API_KEY` |
 | Keep-alive timeout | Network issue between pod and ElevenLabs | Check `streaming_error_total`; session is cleaned up automatically |
-| `POD_IP` not set | GKE: missing Downward API configuration. Compose: env dropped from the stack | GKE: verify `k8s/deployment.yml` injects `status.podIP` as `POD_IP`. Compose: verify `POD_IP=voipbin-tts-manager-http` in `komodo/docker-compose.yml` |
+| `POD_IP` not set | GKE: missing Downward API configuration. Compose: env dropped from the stack | GKE: verify `k8s/deployment.yml` injects `status.podIP` as `POD_IP`. Compose: verify `POD_IP=tts-manager-http` in `komodo/docker-compose.yml` |
 
 ## Debugging Guide
 
@@ -74,7 +74,7 @@ instead of the older SSH + `versions.lock` (`ssh-deploy.sh`) path.
   `/shared-data`, and the `tts-manager-http` sidecar
   (`voipbin-tts-manager-http`, `python3 -m http.server 80`) serves them,
   mirroring the GKE pod's http-server container. `POD_IP` is set to the
-  sidecar's container name so the media URL host resolves via Docker DNS
+  sidecar's Compose service name so the media URL host resolves via Docker DNS
   on the `production` network (Asterisk fetches the wav from that URL).
   All three pieces (volume, sidecar, `POD_IP`) were dropped in the
   original Komodo migration, so batch TTS was silent on bm-nyc-01 even
@@ -97,7 +97,7 @@ instead of the older SSH + `versions.lock` (`ssh-deploy.sh`) path.
 | `redis_address` / `REDIS_ADDRESS` | Redis server address | required |
 | `redis_password` / `REDIS_PASSWORD` | Redis authentication | optional |
 | `redis_db` / `REDIS_DB` | Redis DB index | optional |
-| `POD_IP` | Media URL host for batch TTS. On GKE: pod IP (Downward API), rewritten to the pod-DNS form. On Docker Compose: the media http sidecar's container name (`voipbin-tts-manager-http`), used verbatim | required |
+| `POD_IP` | Media URL host for batch TTS. On GKE: pod IP (Downward API), rewritten to the pod-DNS form. On Docker Compose: the media http sidecar's Compose service name (`tts-manager-http`), used verbatim | required |
 | `HOSTNAME` | Pod hostname (Kubernetes) — used as `HostID` for per-pod queue | required |
 | `prometheus_endpoint` / `PROMETHEUS_ENDPOINT` | Metrics HTTP path | `/metrics` |
 | `prometheus_listen_address` / `PROMETHEUS_LISTEN_ADDRESS` | Metrics listen address | `:2112` |

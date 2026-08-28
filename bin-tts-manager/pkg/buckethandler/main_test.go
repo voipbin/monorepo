@@ -28,13 +28,13 @@ func Test_NewBucketHandler(t *testing.T) {
 		},
 		{
 			// Docker Compose deployments (bm-nyc-01) set POD_IP to the media
-			// http sidecar's container name - a hostname must be used
+			// http sidecar's Compose service name - a hostname must be used
 			// verbatim, never rewritten into the GKE pod DNS form.
 			name:                    "hostname is used verbatim",
 			osMediaBucketDirectory:  "/shared-data",
-			osAddress:               "voipbin-tts-manager-http",
+			osAddress:               "tts-manager-http",
 			expectedOsBucketDir:     "/shared-data",
-			expectedOsLocalAddress:  "voipbin-tts-manager-http",
+			expectedOsLocalAddress:  "tts-manager-http",
 		},
 		{
 			name:                    "empty address stays empty",

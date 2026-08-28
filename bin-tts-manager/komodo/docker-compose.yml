@@ -24,7 +24,7 @@
 # providers ENOENT'd on write), no http sidecar, and no POD_IP (the
 # media URL degenerated to an empty-host GKE DNS name). Here the two
 # containers share a named volume, and POD_IP carries the sidecar's
-# container name, which buckethandler now uses verbatim as the media URL
+# Compose service name, which buckethandler now uses verbatim as the media URL
 # host (Docker's embedded DNS resolves it for every container on the
 # `production` network, including Asterisk).
 secrets:
@@ -42,8 +42,14 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
-    container_name: voipbin-tts-manager
+    # container_name intentionally removed (was voipbin-tts-manager) -
+    # Docker Compose rejects a fixed container_name together with
+    # deploy.replicas > 1. Fleet rollout per
+    # docs/plans/2026-08-28-bin-manager-two-replica-rollout-design.md and
+    # docs/workflows/manager-replica-scaling.md.
     restart: always
+    deploy:
+      replicas: 2
     secrets:
       - source: gcp_sa_json
         target: google_service_account.json
@@ -60,7 +66,7 @@ services:
       - AWS_SECRET_KEY=[[BIN_MANAGER__AWS_SECRET_KEY]]
       - ELEVENLABS_API_KEY=[[BIN_MANAGER__ELEVENLABS_API_KEY]]
       - GOOGLE_APPLICATION_CREDENTIALS=/run/secrets/google_service_account.json
-      - POD_IP=voipbin-tts-manager-http
+      - POD_IP=tts-manager-http
     command: ./tts-manager
     networks:
       default: {}

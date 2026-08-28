@@ -70,7 +70,7 @@ func NewBucketHandler(osMediaBucketDirectory string, osAddress string) BucketHan
 	// media over HTTP (the media http sidecar). On Kubernetes it is the
 	// pod IP (Downward API) and must be converted to the GKE pod DNS
 	// form. On Docker Compose deployments (bm-nyc-01) it is already a
-	// resolvable hostname - the media http sidecar's container name on
+	// resolvable hostname - the media http sidecar's Compose service name on
 	// the shared Docker network - so it is used verbatim; appending the
 	// GKE suffix there would produce a hostname that resolves nowhere.
 	osLocalAddress := osAddress
