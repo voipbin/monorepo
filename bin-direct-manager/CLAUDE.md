@@ -42,7 +42,7 @@ go generate ./...
 
 - **Queue (listen):** `bin-manager.direct-manager.request`
 - **Queue (subscribe):** `bin-manager.customer-manager.event` → cascade delete on `customer_deleted`
-- **No events published**
+- **Events published:** `direct_created` / `direct_deleted` / `direct_regenerated` on `*direct.Direct` (see `models/direct/routingkey_golden_test.go` for the pinned routing keys)
 - **Hash lookup** (`GET /v1/directs/by-hash/<hash>`) is the hot path for SIP ingress — hits Redis first
 - **Hash regeneration**: `POST /v1/directs/{id}/regenerate` — atomically replaces hash, invalidates old cache entry
 - **Resource types:** `extension`, `conference`, `ai`, `ai_team`, `agent`

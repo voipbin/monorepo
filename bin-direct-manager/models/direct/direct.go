@@ -32,3 +32,9 @@ type Direct struct {
 	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
 	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`
 }
+
+// EventSubscriptionID returns the subscription address of this type on the global topic
+// exchange `bin-manager.event`: the resource's own id (VOIP-1404 §4.2, VOIP-1419).
+func (h *Direct) EventSubscriptionID() string {
+	return h.ID.String()
+}

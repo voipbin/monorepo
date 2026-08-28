@@ -4,7 +4,38 @@ import (
 	"testing"
 
 	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/models/eventtopic"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 )
+
+// Message carries an explicit subscription address on the global topic exchange (VOIP-1419).
+// The assertion pins the POINTER type: the event data reaches notifyhandler as a pointer and
+// the interface assertion matches the dynamic type.
+var _ eventtopic.SubscriptionIdentifier = (*Message)(nil)
+
+// TestMessageEventSubscriptionIDUsesOwnIDNotCustomerID pins the address choice: an SMS message
+// is an independent persistent resource, so its subscription address is its OWN id -- not the
+// customer id, the other plausible field on the same struct.
+func TestMessageEventSubscriptionIDUsesOwnIDNotCustomerID(t *testing.T) {
+	id := uuid.Must(uuid.NewV4())
+	customerID := uuid.Must(uuid.NewV4())
+
+	m := &Message{
+		Identity: commonidentity.Identity{
+			ID:         id,
+			CustomerID: customerID,
+		},
+	}
+
+	res := m.EventSubscriptionID()
+	if res != id.String() {
+		t.Errorf("Wrong match. expect: %s, got: %s", id.String(), res)
+	}
+	if res == customerID.String() {
+		t.Errorf("Message must not be addressed by its customer id. got: %s", res)
+	}
+}
 
 func TestMessageStruct(t *testing.T) {
 	id := uuid.Must(uuid.NewV4())

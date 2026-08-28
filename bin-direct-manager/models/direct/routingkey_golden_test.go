@@ -6,10 +6,11 @@
 // under an id that is not the resource's subscription address produces well-formed keys that no
 // instance binding ever matches, and no runtime metric can detect it. Design doc §2.4 / §4.
 //
-// direct-manager is a default-fallback service: every published payload is a `*direct.Direct`
+// direct-manager is an OWN-ID service: every published payload is a `*direct.Direct`
 // (all three publish sites funnel through directhandler.publishEvent, which is typed to
-// `*direct.Direct`), whose own id IS the subscription address, so NO type in this service carries
-// an eventtopic.SubscriptionIdentifier override. That absence is asserted explicitly below.
+// `*direct.Direct`), which implements eventtopic.SubscriptionIdentifier explicitly (mandatory
+// since VOIP-1419; an empty return degrades to the `-` placeholder) and returns the resource's
+// own id.
 //
 // The address choice worth naming: a Direct carries a `resource_id` pointing at the agent, queue,
 // conference, ... it fronts. That foreign id is NOT the address -- a consumer following one direct
@@ -26,7 +27,6 @@
 package direct_test
 
 import (
-	"encoding/json"
 	"reflect"
 	"testing"
 
@@ -46,43 +46,28 @@ var directID = uuid.FromStringOrNil("b90f6a38-0000-4000-8000-000000000001")
 var resourceID = uuid.FromStringOrNil("b90f6a38-0000-4000-8000-000000000002")
 
 // resolveSubscriptionID mirrors the resolution notifyhandler performs on the publish path
-// (1404 design §4.2 / §5.2): the opt-in interface first, then -- ONLY when no override exists --
-// the top-level "id" of the marshaled payload. Keeping it here rather than reaching into
-// notifyhandler internals is deliberate -- the golden table must fail when a model STARTS or STOPS
-// implementing the interface, which is exactly what this two-step reproduction detects.
+// (VOIP-1419): every published type carries an explicit, mandatory EventSubscriptionID method;
+// the method's return is the address, and an empty return (or a non-implementing / nil payload)
+// degrades to the `-` placeholder. Reproducing it here rather than reaching into notifyhandler
+// internals is deliberate -- the golden table must fail when a model's method starts returning a
+// different id space.
 //
-// The early return below is the load-bearing half: an override that EXISTS is authoritative even
-// when it yields "" or uuid.Nil, so the JSON fallback must never run behind it. This matches
-// notifyhandler.resolveSubscriptionOverride's hasOverride semantics exactly; if the two ever
-// diverge, this table stops reproducing what the publish path actually generates.
+// The parameter stays `any` on purpose: a non-implementing payload resolves to "" (placeholder)
+// rather than failing to compile, matching the production helper's degrade path.
 func resolveSubscriptionID(t *testing.T, data any) string {
 	t.Helper()
 
 	if identifier, ok := data.(eventtopic.SubscriptionIdentifier); ok {
-		// typed-nil guard, mirroring notifyhandler.resolveSubscriptionOverride: a nil pointer whose
-		// type implements the interface still SATISFIES the assertion, and every real implementation
-		// dereferences its receiver -- calling the method would panic. Production reports "no
-		// override" for such a payload, so this guard falls through to the JSON half below rather
-		// than returning early; `null` carries no top-level `id` either, so both halves agree on the
-		// `-` placeholder.
+		// typed-nil guard, mirroring notifyhandler: a nil pointer whose type implements the
+		// interface still SATISFIES the assertion, and every real implementation dereferences its
+		// receiver -- calling the method would panic. Production resolves such a payload to the
+		// `-` placeholder instead.
 		if v := reflect.ValueOf(data); v.Kind() != reflect.Ptr || !v.IsNil() {
 			return identifier.EventSubscriptionID()
 		}
 	}
 
-	m, err := json.Marshal(data)
-	if err != nil {
-		t.Fatalf("Could not marshal the event data. err: %v", err)
-	}
-
-	d := struct {
-		ID string `json:"id"`
-	}{}
-	if errUnmarshal := json.Unmarshal(m, &d); errUnmarshal != nil {
-		return ""
-	}
-
-	return d.ID
+	return ""
 }
 
 func TestGoldenRoutingKeys(t *testing.T) {
@@ -104,7 +89,7 @@ func TestGoldenRoutingKeys(t *testing.T) {
 		data      any
 		expect    string
 	}{
-		// direct resource -- own id is the address, resolved by the default JSON fallback.
+		// direct resource -- own id is the address, returned by the explicit EventSubscriptionID.
 		{
 			"direct_created",
 			direct.EventTypeDirectCreated,
@@ -140,8 +125,8 @@ func TestGoldenRoutingKeys(t *testing.T) {
 }
 
 // TestGoldenRoutingKeysUseOwnID pins the property the table exists to protect: the address is the
-// direct's OWN id, taken from the marshaled payload's top-level `id` -- never the `resource_id` of
-// the resource it fronts, and never the placeholder.
+// direct's OWN id, returned by the explicit EventSubscriptionID method -- never the `resource_id`
+// of the resource it fronts, and never the placeholder.
 func TestGoldenRoutingKeysUseOwnID(t *testing.T) {
 	data := &direct.Direct{
 		Identity:     commonidentity.Identity{ID: directID, CustomerID: uuid.Must(uuid.NewV4())},
@@ -158,16 +143,5 @@ func TestGoldenRoutingKeysUseOwnID(t *testing.T) {
 	}
 	if eventtopic.IsPlaceholderSubscriptionID(res) {
 		t.Errorf("Direct must never resolve to the placeholder address. got: %s", res)
-	}
-}
-
-// TestDirectUsesDefaultSubscriptionID pins the deliberate absence of an override on Direct: its own
-// id IS the address, so implementing the interface would be redundant and the default JSON `id`
-// extraction must keep covering it. direct-manager has no override type at all (design §2.4).
-func TestDirectUsesDefaultSubscriptionID(t *testing.T) {
-	var data any = &direct.Direct{Identity: commonidentity.Identity{ID: directID}}
-
-	if _, ok := data.(eventtopic.SubscriptionIdentifier); ok {
-		t.Errorf("Direct must not implement SubscriptionIdentifier. its own id is the subscription address.")
 	}
 }
