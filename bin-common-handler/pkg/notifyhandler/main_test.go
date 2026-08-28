@@ -35,12 +35,27 @@ func (h *testEvent) CreateWebhookEvent() ([]byte, error) {
 	return m, nil
 }
 
-// testIDEvent carries a top-level id, so the global topic publish resolves the subscription
-// address through the default json fallback (VOIP-1404).
+// EventSubscriptionID returns "" -- testEvent has no id at all, so it doubles as the
+// placeholder-by-design fixture on the webhook path (VOIP-1419: PublishWebhookEvent requires
+// WebhookEventMessage, so even webhook fixtures declare their address explicitly).
+func (h *testEvent) EventSubscriptionID() string {
+	return ""
+}
+
+var _ WebhookEventMessage = (*testEvent)(nil)
+
+// testIDEvent declares its own top-level id as the subscription address -- the standard own-id
+// shape every default resource uses after VOIP-1419 (no JSON fallback exists anymore).
 type testIDEvent struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
 }
+
+func (h *testIDEvent) EventSubscriptionID() string {
+	return h.ID
+}
+
+var _ eventtopic.SubscriptionIdentifier = (*testIDEvent)(nil)
 
 // testStreamEvent overrides the subscription address with its parent stream id, the way
 // streaming.Speech does. Pointer receiver, as the interface requires.

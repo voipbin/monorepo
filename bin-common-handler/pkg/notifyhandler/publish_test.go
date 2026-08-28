@@ -13,6 +13,7 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 
+	"monorepo/bin-common-handler/models/eventtopic"
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -321,13 +322,13 @@ func Test_PublishEvent_globalTopicPublish(t *testing.T) {
 
 		publisher commonoutline.ServiceName
 		eventType string
-		event     interface{}
+		event     eventtopic.SubscriptionIdentifier
 
 		expectEvent      *sock.Event
 		expectRoutingKey string
 	}{
 		{
-			name: "subscription id resolved from the top level json id",
+			name: "subscription id resolved from the own-id method",
 
 			publisher: "transcribe-manager",
 			eventType: "transcribe_created",
@@ -344,7 +345,7 @@ func Test_PublishEvent_globalTopicPublish(t *testing.T) {
 			expectRoutingKey: "transcribe-manager.transcribe.9f01c3d2-a1bc-11f1-92ef-60452e5e40a2.created",
 		},
 		{
-			name: "subscription id resolved by the subscription identifier override",
+			name: "subscription id resolved by the parent-stream address",
 
 			publisher: "transcribe-manager",
 			eventType: "transcribe_speech_interim",
@@ -361,7 +362,7 @@ func Test_PublishEvent_globalTopicPublish(t *testing.T) {
 			expectRoutingKey: "transcribe-manager.transcribe.9f01c3d2-a1bc-11f1-92ef-60452e5e40a2.speech_interim",
 		},
 		{
-			name: "no subscription id at all",
+			name: "explicit empty address degrades to the placeholder",
 
 			publisher: "transcribe-manager",
 			eventType: "transcribe_created",
@@ -452,7 +453,7 @@ func Test_PublishEvent_globalTopicPublishPlaceholderMetric(t *testing.T) {
 		name string
 
 		eventType string
-		event     interface{}
+		event     eventtopic.SubscriptionIdentifier
 
 		expectPlaceholderDelta float64
 	}{
@@ -563,8 +564,9 @@ func Test_publishEvent_globalTopicPublishFailureIsolated(t *testing.T) {
 	}
 
 	// the private path is used here so the caller-visible error can be asserted directly --
-	// PublishEvent itself swallows it.
-	if errPublish := h.publishEvent(eventType, dataTypeJSON, m, requestTimeoutDefault, 0, "", false); errPublish != nil {
+	// PublishEvent itself swallows it. The subscription id is passed pre-resolved, the way
+	// PublishEvent hands it over after calling the mandatory method (VOIP-1419).
+	if errPublish := h.publishEvent(eventType, dataTypeJSON, m, requestTimeoutDefault, 0, event.EventSubscriptionID()); errPublish != nil {
 		t.Errorf("Wrong match. expected no error from the caller path. err: %v", errPublish)
 	}
 
@@ -594,7 +596,7 @@ func Test_publishEvent_fanoutFailureSkipsTopic(t *testing.T) {
 	mockSock.EXPECT().EventPublish(string(h.queueNotify), "", gomock.Any()).Return(fmt.Errorf("connection closed"))
 	mockSock.EXPECT().EventPublish(string(commonoutline.QueueNameEvent), gomock.Any(), gomock.Any()).Times(0)
 
-	err := h.publishEvent("test_fanoutfailed", dataTypeJSON, []byte(`{"id":"d3454367-a1bc-11f1-92ef-60452e5e40a2"}`), requestTimeoutDefault, 0, "", false)
+	err := h.publishEvent("test_fanoutfailed", dataTypeJSON, []byte(`{"id":"d3454367-a1bc-11f1-92ef-60452e5e40a2"}`), requestTimeoutDefault, 0, "d3454367-a1bc-11f1-92ef-60452e5e40a2")
 	if err == nil {
 		t.Error("Wrong match. expected an error from the fanout publish.")
 	}
@@ -639,14 +641,17 @@ func Test_publishEvent_delayedSkipsTopic(t *testing.T) {
 	mockSock.EXPECT().EventPublishWithDelay(string(commonoutline.QueueNameDelay), string(h.queueNotify), gomock.Any(), DelaySecond).Return(nil)
 	mockSock.EXPECT().EventPublish(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 
-	if err := h.publishEvent("test_delayed", dataTypeJSON, []byte(`{"id":"f5676589-a1bc-11f1-92ef-60452e5e40a2"}`), requestTimeoutDefault, DelaySecond, "", false); err != nil {
+	if err := h.publishEvent("test_delayed", dataTypeJSON, []byte(`{"id":"f5676589-a1bc-11f1-92ef-60452e5e40a2"}`), requestTimeoutDefault, DelaySecond, "f5676589-a1bc-11f1-92ef-60452e5e40a2"); err != nil {
 		t.Errorf("Wrong match. expected no error. err: %v", err)
 	}
 }
 
-// Test_PublishEventRaw_globalTopicPublish verifies the raw path: a []byte payload cannot satisfy
-// the SubscriptionIdentifier assertion, so the key comes from the payload's top-level "id"
-// fallback, and a non-JSON payload lands on the placeholder.
+// Test_PublishEventRaw_globalTopicPublish verifies the raw path's placeholder contract
+// (VOIP-1419): a []byte payload cannot carry an EventSubscriptionID and there is no JSON
+// fallback, so on a topic-enabled handler EVERY Raw publish lands under the `-` placeholder --
+// including a payload whose JSON carries a perfectly valid top-level "id". The first row is the
+// mutation lock for the fallback's deletion: resurrecting it would put the payload id back into
+// the key and fail this row.
 func Test_PublishEventRaw_globalTopicPublish(t *testing.T) {
 
 	tests := []struct {
@@ -659,13 +664,13 @@ func Test_PublishEventRaw_globalTopicPublish(t *testing.T) {
 		expectRoutingKey string
 	}{
 		{
-			name: "json payload with a top level id",
+			name: "json payload with a top level id still lands on the placeholder",
 
 			eventType: "call_created",
 			dataType:  "application/json",
 			data:      []byte(`{"id":"06787690-a1bc-11f1-92ef-60452e5e40a2","name":"test"}`),
 
-			expectRoutingKey: "call-manager.call.06787690-a1bc-11f1-92ef-60452e5e40a2.created",
+			expectRoutingKey: "call-manager.call.-.created",
 		},
 		{
 			name: "json payload without an id",
@@ -795,18 +800,54 @@ func Test_PublishEvent_typedNilSubscriptionIdentifier(t *testing.T) {
 	}
 }
 
-// Test_PublishEvent_overrideSuppressesJSONFallback pins design §4.2 (VOIP-1404 code-review round
-// 1, F2): when the event data implements SubscriptionIdentifier, that override is authoritative
-// even if it produces an empty or uuid.Nil value. The payload here deliberately carries a valid
-// top-level "id" -- if the JSON fallback leaked through, the key would carry that id and the
-// placeholder counter would stay flat.
-func Test_PublishEvent_overrideSuppressesJSONFallback(t *testing.T) {
+// Test_PublishEvent_nilInterface pins guard branch 1 of resolveSubscriptionID (VOIP-1419 design
+// D4): an untyped nil argument still compiles against the interface parameter, and for a nil
+// interface reflect reports Kind Invalid -- the typed-nil branch alone would miss it and the
+// method call would panic. Pre-VOIP-1419 this input was safe only because the type assertion
+// failed first; this test is the mutation lock for the explicit `data == nil` check. The payload
+// marshals to `null`, so the key lands on the `-` placeholder.
+func Test_PublishEvent_nilInterface(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(mc)
+
+	h := &notifyHandler{
+		sockHandler:  mockSock,
+		queueNotify:  commonoutline.QueueNameTranscribeEvent,
+		publisher:    "transcribe-manager",
+		topicEnabled: true,
+	}
+
+	eventType := "transcribe_nilinterface"
+	expectRoutingKey := "transcribe-manager.transcribe.-.nilinterface"
+
+	gomock.InOrder(
+		mockSock.EXPECT().EventPublish(string(h.queueNotify), "", gomock.Any()).Return(nil),
+		mockSock.EXPECT().EventPublish(string(commonoutline.QueueNameEvent), expectRoutingKey, gomock.Any()).Return(nil),
+	)
+
+	before := topicPlaceholderCount(eventType)
+
+	// a panic here fails the test.
+	h.PublishEvent(context.Background(), eventType, nil)
+
+	if after := topicPlaceholderCount(eventType); after != before+1 {
+		t.Errorf("Wrong match. expect: %f, got: %f", before+1, after)
+	}
+}
+
+// Test_PublishEvent_emptyAddressIgnoresPayloadID pins the method's authority (VOIP-1419): an
+// explicit empty or uuid.Nil address degrades to the `-` placeholder even though the marshaled
+// payload deliberately carries a valid top-level "id". If any payload-derived resolution ever
+// leaked back in, the key would carry that id and the placeholder counter would stay flat.
+func Test_PublishEvent_emptyAddressIgnoresPayloadID(t *testing.T) {
 
 	tests := []struct {
 		name string
 
 		eventType string
-		event     interface{}
+		event     eventtopic.SubscriptionIdentifier
 
 		expectRoutingKey string
 	}{

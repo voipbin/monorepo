@@ -57,7 +57,7 @@ func Test_Create_ReattachesCaseIDAfterDBRoundTrip(t *testing.T) {
 	// The published event must carry CaseID, proving Create re-attached
 	// it after the DB round-trip.
 	mockNotify.EXPECT().PublishWebhookEvent(ctx, customerID, message.EventTypeMessageCreated, gomock.Any()).
-		Do(func(_ context.Context, _ uuid.UUID, _ string, published notifyhandler.WebhookMessage) {
+		Do(func(_ context.Context, _ uuid.UUID, _ string, published notifyhandler.WebhookEventMessage) {
 			publishedMsg, ok := published.(*message.Message)
 			if !ok {
 				t.Fatalf("expected *message.Message, got %T", published)

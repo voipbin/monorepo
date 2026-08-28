@@ -10,6 +10,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-common-handler/models/eventtopic"
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
@@ -18,6 +19,16 @@ import (
 // WebhookMessage defines
 type WebhookMessage interface {
 	CreateWebhookEvent() ([]byte, error)
+}
+
+// WebhookEventMessage is the payload contract of PublishWebhookEvent (VOIP-1419): the value is
+// both a webhook message (CreateWebhookEvent) and an event with an explicit subscription address
+// (EventSubscriptionID), because PublishWebhookEvent forwards it into PublishEvent. PublishWebhook
+// alone still accepts a plain WebhookMessage -- the webhook RPC path never touches the topic
+// exchange, so conversion-only DTOs stay out of the address contract.
+type WebhookEventMessage interface {
+	WebhookMessage
+	eventtopic.SubscriptionIdentifier
 }
 
 // Data types
@@ -129,12 +140,12 @@ func initPrometheus(namespace string) {
 
 // NotifyHandler intreface
 type NotifyHandler interface {
-	PublishEvent(ctx context.Context, eventType string, data interface{})
+	PublishEvent(ctx context.Context, eventType string, data eventtopic.SubscriptionIdentifier)
 	PublishEventRaw(ctx context.Context, eventType string, dataType string, data []byte)
 	PublishEventWithRoutingKey(ctx context.Context, eventType string, routingKey string, data interface{})
 
 	PublishWebhook(ctx context.Context, customerID uuid.UUID, eventType string, data WebhookMessage)
-	PublishWebhookEvent(ctx context.Context, customerID uuid.UUID, eventType string, data WebhookMessage)
+	PublishWebhookEvent(ctx context.Context, customerID uuid.UUID, eventType string, data WebhookEventMessage)
 }
 
 type notifyHandler struct {
