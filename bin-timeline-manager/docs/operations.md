@@ -7,6 +7,7 @@
 | Empty query results | ClickHouse not receiving events | Check subscribe handler queue consumption; verify ClickHouse connection |
 | `converting String to *ServiceName is unsupported` | Custom type in domain model scanned from ClickHouse | Ensure `models/event/` uses `string` for `Publisher`; convert at handler boundary |
 | High `subscribe_batch_insert_time` | ClickHouse write pressure | Check ClickHouse resource utilization; consider tuning batch size |
+| Suspected event loss (timeline gaps) | In-memory event channel overflow — `processEventRun` drops events silently (nil return, no retry) when the 1000-slot channel is full | Check `timeline_manager_subscribe_event_dropped_total`; any nonzero value confirms permanent loss. Correlate with `timeline_manager_subscribe_event_channel_usage` p99 and ClickHouse insert latency |
 | SIP analysis returning 503 | Homer API unreachable | Check `homer_api_address` config and Homer service health |
 | 27 queues failing to subscribe | RabbitMQ connection dropped | Check RabbitMQ connectivity; service will reconnect automatically |
 | Migration failure at startup | Missing `migrations_path` or ClickHouse unavailable | Verify `CLICKHOUSE_ADDRESS` and `MIGRATIONS_PATH` env vars |
@@ -72,6 +73,9 @@ Metrics exposed at `PROMETHEUS_LISTEN_ADDRESS` (default `:2112/metrics`):
 | `timeline_manager_receive_request_process_time` | Histogram | `type`, `method` | RPC request processing duration |
 | `timeline_manager_subscribe_batch_insert_time` | Histogram | — | ClickHouse batch insert duration |
 | `timeline_manager_subscribe_batch_size` | Histogram | — | Number of events per batch insert |
+| `timeline_manager_subscribe_event_dropped_total` | Counter | — | Events dropped because the in-memory event channel was full. Any nonzero value is permanently lost customer timeline data |
+| `timeline_manager_subscribe_event_channel_usage_ratio` | Gauge | — | Instantaneous len/cap of the in-memory event channel (0..1). Scrape-sampled; use the histogram for burst-accurate percentiles |
+| `timeline_manager_subscribe_event_channel_usage` | Histogram | — | Channel occupancy (len/cap, 0..1) observed at every enqueue attempt. `histogram_quantile(0.99, ...)` over this answers the 2-replica gate (p99 < 0.5) across sub-scrape bursts |
 
 ## Deployment (Komodo)
 
