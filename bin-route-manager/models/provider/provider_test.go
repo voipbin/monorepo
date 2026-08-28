@@ -4,7 +4,36 @@ import (
 	"testing"
 
 	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/models/eventtopic"
 )
+
+// Provider publishes on the global topic exchange (VOIP-1404/1419), so it must carry an explicit
+// subscription address. The assertion pins the POINTER type: the event data reaches
+// notifyhandler as a pointer and the interface assertion matches the dynamic type.
+var _ eventtopic.SubscriptionIdentifier = (*Provider)(nil)
+
+func TestProviderEventSubscriptionID(t *testing.T) {
+	id := uuid.Must(uuid.NewV4())
+
+	p := &Provider{
+		ID:       id,
+		Type:     TypeSIP,
+		Hostname: "sip.provider.com",
+	}
+
+	res := p.EventSubscriptionID()
+	if res != id.String() {
+		t.Errorf("Wrong match. expect: %s, got: %s", id.String(), res)
+	}
+
+	// Mutation check: a zero-id provider must resolve to the nil uuid, not to a stale or
+	// invented address.
+	empty := &Provider{}
+	if resEmpty := empty.EventSubscriptionID(); resEmpty != uuid.Nil.String() {
+		t.Errorf("Wrong match. expect: %s, got: %s", uuid.Nil.String(), resEmpty)
+	}
+}
 
 func TestProviderStruct(t *testing.T) {
 	id := uuid.Must(uuid.NewV4())

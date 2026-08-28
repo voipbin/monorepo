@@ -4,7 +4,39 @@ import (
 	"testing"
 
 	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/models/eventtopic"
 )
+
+// Route publishes on the global topic exchange (VOIP-1404/1419), so it must carry an explicit
+// subscription address. The assertion pins the POINTER type: the event data reaches
+// notifyhandler as a pointer and the interface assertion matches the dynamic type.
+var _ eventtopic.SubscriptionIdentifier = (*Route)(nil)
+
+func TestRouteEventSubscriptionID(t *testing.T) {
+	id := uuid.Must(uuid.NewV4())
+	customerID := uuid.Must(uuid.NewV4())
+	providerID := uuid.Must(uuid.NewV4())
+
+	r := &Route{
+		ID:         id,
+		CustomerID: customerID,
+		ProviderID: providerID,
+	}
+
+	res := r.EventSubscriptionID()
+	if res != id.String() {
+		t.Errorf("Wrong match. expect: %s, got: %s", id.String(), res)
+	}
+	// A route is an independent top-level resource: its address must be its own id, never the
+	// customer or provider it belongs to.
+	if res == customerID.String() {
+		t.Errorf("Route must not be addressed by its customer id. got: %s", res)
+	}
+	if res == providerID.String() {
+		t.Errorf("Route must not be addressed by its provider id. got: %s", res)
+	}
+}
 
 func TestRouteStruct(t *testing.T) {
 	id := uuid.Must(uuid.NewV4())
