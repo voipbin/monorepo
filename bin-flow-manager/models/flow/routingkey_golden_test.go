@@ -11,25 +11,24 @@
 // keys that no instance binding ever matches, and no runtime metric can detect it. Design doc
 // §2.4 / §4.
 //
-// flow-manager is a DEFAULT-ID service: BOTH `flow.Flow` and `activeflow.Activeflow` deliberately
-// carry NO eventtopic.SubscriptionIdentifier override, so the JSON `id` fallback covers them.
-// The activeflow decision is the load-bearing one and is pinned explicitly below
-// (TestActiveflowUsesDefaultSubscriptionIDNotReferenceID): `ReferenceID` looks like the natural
-// parent axis, but it can be uuid.Nil, which would collapse the key to the `-` placeholder and
-// inflate the placeholder rate. Own id wins -- design §2.4.
+// flow-manager is an OWN-ID service: BOTH `flow.Flow` and `activeflow.Activeflow` implement
+// eventtopic.SubscriptionIdentifier explicitly (mandatory since VOIP-1419; an empty return
+// degrades to the `-` placeholder) and return the resource's own id. The activeflow decision is
+// the load-bearing one (pinned in models/activeflow's own tests and by the table below):
+// `ReferenceID` looks like the natural parent axis, but it can be uuid.Nil, which would collapse
+// the key to the `-` placeholder and inflate the placeholder rate. Own id wins -- design §2.4.
 //
 // The file lives in models/flow because that is the service's PRIMARY model package; it is an
 // external test package (`flow_test`) so it can import the sibling activeflow package without any
 // import-cycle risk.
 //
 // MAINTENANCE: this table pins CURRENT behavior. A new published event type, a changed event-type
-// constant, or an override added to *Flow / *Activeflow must be reflected here in the same change
-// -- the table is not a specification of what the events ought to be, it is a lock on what they
-// are.
+// constant, or a changed EventSubscriptionID implementation on *Flow / *Activeflow must be
+// reflected here in the same change -- the table is not a specification of what the events ought
+// to be, it is a lock on what they are.
 package flow_test
 
 import (
-	"encoding/json"
 	"reflect"
 	"testing"
 
@@ -52,42 +51,28 @@ var (
 )
 
 // resolveSubscriptionID mirrors the resolution notifyhandler performs on the publish path
-// (1404 design §4.2 / §5.2): the opt-in interface first, then -- ONLY when no override exists --
-// the top-level "id" of the marshaled payload. Reproducing it here rather than reaching into
-// notifyhandler internals is deliberate -- the golden table must fail when a model starts or
-// stops implementing the interface, which is exactly what this two-step reproduction detects.
+// (VOIP-1419): every published type carries an explicit, mandatory EventSubscriptionID method;
+// the method's return is the address, and an empty return (or a non-implementing / nil payload)
+// degrades to the `-` placeholder. Reproducing it here rather than reaching into notifyhandler
+// internals is deliberate -- the golden table must fail when a model's method starts returning a
+// different id space.
 //
-// The early return below is the load-bearing half: an override that EXISTS is authoritative even
-// when it yields "" or uuid.Nil, so the JSON fallback must never run behind it. This matches
-// notifyhandler.resolveSubscriptionOverride's hasOverride semantics exactly.
+// The parameter stays `any` on purpose: a non-implementing payload resolves to "" (placeholder)
+// rather than failing to compile, matching the production helper's degrade path.
 func resolveSubscriptionID(t *testing.T, data any) string {
 	t.Helper()
 
 	if identifier, ok := data.(eventtopic.SubscriptionIdentifier); ok {
-		// typed-nil guard, mirroring notifyhandler.resolveSubscriptionOverride: a nil pointer whose
-		// type implements the interface still SATISFIES the assertion, and every real implementation
-		// dereferences its receiver -- calling the method would panic. Production reports "no
-		// override" for such a payload, so this guard falls through to the JSON half below rather
-		// than returning early; `null` carries no top-level `id` either, so both halves agree on the
-		// `-` placeholder.
+		// typed-nil guard, mirroring notifyhandler: a nil pointer whose type implements the
+		// interface still SATISFIES the assertion, and every real implementation dereferences its
+		// receiver -- calling the method would panic. Production resolves such a payload to the
+		// `-` placeholder instead.
 		if v := reflect.ValueOf(data); v.Kind() != reflect.Ptr || !v.IsNil() {
 			return identifier.EventSubscriptionID()
 		}
 	}
 
-	m, err := json.Marshal(data)
-	if err != nil {
-		t.Fatalf("Could not marshal the event data. err: %v", err)
-	}
-
-	d := struct {
-		ID string `json:"id"`
-	}{}
-	if errUnmarshal := json.Unmarshal(m, &d); errUnmarshal != nil {
-		return ""
-	}
-
-	return d.ID
+	return ""
 }
 
 func TestGoldenRoutingKeys(t *testing.T) {
@@ -102,8 +87,8 @@ func TestGoldenRoutingKeys(t *testing.T) {
 		Name: "test flow",
 	}
 
-	// ReferenceID is set to a DIFFERENT uuid on purpose: if an override were ever added that
-	// addresses activeflows by their reference, every expectation below would flip and the table
+	// ReferenceID is set to a DIFFERENT uuid on purpose: if EventSubscriptionID were ever changed
+	// to address activeflows by their reference, every expectation below would flip and the table
 	// would fail loudly instead of drifting silently.
 	activeflowData := &activeflow.Activeflow{
 		Identity: commonidentity.Identity{
@@ -122,7 +107,7 @@ func TestGoldenRoutingKeys(t *testing.T) {
 		data      any
 		expect    string
 	}{
-		// flow resource -- own id is the address, resolved by the default JSON fallback.
+		// flow resource -- own id is the address, returned by the explicit EventSubscriptionID.
 		{
 			"flow_created",
 			flow.EventTypeFlowCreated,
@@ -175,54 +160,12 @@ func TestGoldenRoutingKeys(t *testing.T) {
 	}
 }
 
-// TestFlowUsesDefaultSubscriptionID pins the deliberate ABSENCE of an override on Flow
-// (design §2.4): a flow is an independent persistent resource, its own id IS the subscription
-// address.
-func TestFlowUsesDefaultSubscriptionID(t *testing.T) {
-	var data any = &flow.Flow{Identity: commonidentity.Identity{ID: flowID}}
-
-	if _, ok := data.(eventtopic.SubscriptionIdentifier); ok {
-		t.Errorf("Flow must not implement SubscriptionIdentifier. its own id is the subscription address.")
-	}
-
-	if res := resolveSubscriptionID(t, data); res != flowID.String() {
-		t.Errorf("Wrong match. expect: %s, got: %s", flowID.String(), res)
-	}
-}
-
-// TestActiveflowUsesDefaultSubscriptionIDNotReferenceID pins the ONE deliberate design decision in
-// this service that could plausibly have gone the other way (design §2.4): Activeflow keeps the
-// DEFAULT own-id address and is explicitly NOT addressed by ReferenceID. ReferenceID resembles the
-// Category-B parent axis used elsewhere (campaigncall→CampaignID, queuecall→QueueID), but it can
-// be uuid.Nil, and normalizeSubscriptionID maps uuid.Nil to the `-` placeholder -- an override
-// there would inflate the placeholder rate for every reference-less activeflow. This test fails
-// the moment somebody "fixes" that.
-func TestActiveflowUsesDefaultSubscriptionIDNotReferenceID(t *testing.T) {
-	referenceID := uuid.Must(uuid.NewV4())
-
-	var data any = &activeflow.Activeflow{
-		Identity:      commonidentity.Identity{ID: activeflowID},
-		ReferenceType: activeflow.ReferenceTypeCall,
-		ReferenceID:   referenceID,
-	}
-
-	if _, ok := data.(eventtopic.SubscriptionIdentifier); ok {
-		t.Errorf("Activeflow must not implement SubscriptionIdentifier. its own id is the subscription address, deliberately not the reference_id.")
-	}
-
-	res := resolveSubscriptionID(t, data)
-	if res != activeflowID.String() {
-		t.Errorf("Wrong match. expect: %s, got: %s", activeflowID.String(), res)
-	}
-	if res == referenceID.String() {
-		t.Errorf("The activeflow subscription address must not be the reference_id. got: %s", res)
-	}
-}
-
-// TestActiveflowSubscriptionIDSurvivesNilReferenceID is the empirical half of the decision above:
-// with an all-Nil reference the address is still the activeflow's own id, and the resulting key
-// carries no `-` placeholder. Under a ReferenceID override this same activeflow would produce
-// `flow-manager.activeflow.-.created`, which no instance binding can ever match.
+// TestActiveflowSubscriptionIDSurvivesNilReferenceID pins the empirical half of the own-id
+// decision (design §2.4): with an all-Nil reference the address is still the activeflow's own id,
+// and the resulting key carries no `-` placeholder. An EventSubscriptionID returning ReferenceID
+// would make this same activeflow produce `flow-manager.activeflow.-.created`, which no instance
+// binding can ever match. The per-type address-choice tests (own id, not ReferenceID/FlowID) live
+// in the models' own packages next to the methods.
 func TestActiveflowSubscriptionIDSurvivesNilReferenceID(t *testing.T) {
 	var data any = &activeflow.Activeflow{
 		Identity:    commonidentity.Identity{ID: activeflowID},
