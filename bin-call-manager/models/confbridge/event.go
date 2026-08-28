@@ -18,10 +18,8 @@ type EventConfbridgeLeaved struct {
 	LeavedCallID uuid.UUID `json:"leaved_call_id"`
 }
 
-
 // EventConfbridgeJoined event struct for confbridge joined
 type EventConfbridgeJoined struct {
 	Confbridge
 	JoinedCallID uuid.UUID `json:"joined_call_id"`
 }
-

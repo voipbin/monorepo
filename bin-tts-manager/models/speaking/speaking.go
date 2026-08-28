@@ -26,4 +26,3 @@ type Speaking struct {
 	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`
 	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
 }
-

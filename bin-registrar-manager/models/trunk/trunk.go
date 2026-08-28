@@ -28,7 +28,6 @@ type Trunk struct {
 	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
 }
 
-
 // GenerateSIPAuth returns sipauth of the given trunk
 func (h *Trunk) GenerateSIPAuth() *sipauth.SIPAuth {
 	return &sipauth.SIPAuth{

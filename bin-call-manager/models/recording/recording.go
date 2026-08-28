@@ -35,7 +35,6 @@ type Recording struct {
 	TMDelete *time.Time `json:"tm_delete,omitempty" db:"tm_delete"`
 }
 
-
 // ReferenceType type
 type ReferenceType string
 

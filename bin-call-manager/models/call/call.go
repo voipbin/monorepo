@@ -69,7 +69,6 @@ type Call struct {
 	TMDelete *time.Time `json:"tm_delete,omitempty" db:"tm_delete"`
 }
 
-
 // Type type
 type Type string
 

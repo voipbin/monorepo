@@ -43,7 +43,6 @@ type Conversation struct {
 	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
 }
 
-
 type Field string
 
 const (

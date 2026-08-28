@@ -45,7 +45,6 @@ type Conference struct {
 	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
 }
 
-
 // Matches return true if the given items are the same
 func (a *Conference) Matches(x any) bool {
 	comp := x.(*Conference)

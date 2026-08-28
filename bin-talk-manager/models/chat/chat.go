@@ -40,7 +40,6 @@ type Chat struct {
 	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
 }
 
-
 // WebhookMessage is the webhook payload for chat events
 type WebhookMessage struct {
 	commonidentity.Identity

@@ -34,7 +34,6 @@ type Agent struct {
 	TMDelete *time.Time `json:"tm_delete,omitempty" db:"tm_delete"` // Deleted timestamp.
 }
 
-
 // HasPermission returns true if the user has the given permission
 func (u *Agent) HasPermission(perm Permission) bool {
 

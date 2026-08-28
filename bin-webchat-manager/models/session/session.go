@@ -51,7 +51,6 @@ type Session struct {
 	TMDelete       *time.Time `json:"-" db:"tm_delete"`             // standard soft-delete sentinel
 }
 
-
 // Status type
 type Status string
 

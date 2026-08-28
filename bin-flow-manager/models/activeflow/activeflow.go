@@ -50,7 +50,6 @@ type Activeflow struct {
 	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
 }
 
-
 // Status define
 type Status string
 

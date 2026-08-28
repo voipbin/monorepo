@@ -30,7 +30,6 @@ type Account struct {
 	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
 }
 
-
 // Field defines the fields for the Account entity.
 type Field string
 

@@ -37,7 +37,6 @@ type Extension struct {
 	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
 }
 
-
 // GenerateSIPAuth returns sipauth of the given extension
 func (h *Extension) GenerateSIPAuth() *sipauth.SIPAuth {
 	return &sipauth.SIPAuth{

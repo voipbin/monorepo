@@ -37,7 +37,6 @@ type File struct {
 	TMDelete         *time.Time `json:"tm_delete" db:"tm_delete"`
 }
 
-
 // ReferenceType define
 type ReferenceType string
 

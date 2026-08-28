@@ -42,4 +42,3 @@ type Schedule struct {
 	TMUpdate *time.Time `json:"tm_update" db:"tm_update"` // Updated timestamp.
 	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"` // Deleted timestamp.
 }
-

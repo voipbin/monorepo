@@ -43,7 +43,6 @@ type Groupcall struct {
 	TMDelete *time.Time `json:"tm_delete,omitempty" db:"tm_delete"`
 }
 
-
 // Status define
 type Status string
 

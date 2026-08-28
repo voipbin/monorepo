@@ -33,7 +33,6 @@ type Message struct {
 	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
 }
 
-
 // Type defines
 type Type string
 

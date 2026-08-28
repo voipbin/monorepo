@@ -36,7 +36,6 @@ type Streaming struct {
 	CreatedAt   time.Time       `json:"-"` // Timestamp of when the streaming was created (for metrics)
 }
 
-
 // // Direction represents the direction of the streaming in a call.
 type Direction string
 

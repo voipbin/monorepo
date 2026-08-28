@@ -32,4 +32,3 @@ type Direct struct {
 	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
 	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`
 }
-

@@ -45,7 +45,6 @@ type Queue struct {
 	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"` // Deleted timestamp.
 }
 
-
 // RoutingMethod type
 type RoutingMethod string
 

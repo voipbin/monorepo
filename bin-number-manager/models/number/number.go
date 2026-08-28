@@ -49,7 +49,6 @@ type Number struct {
 	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
 }
 
-
 // ProviderName type
 type ProviderName string
 
