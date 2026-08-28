@@ -13,6 +13,8 @@ The primary output unit. When a Kubernetes pod in a watched namespace changes st
 
 The event payload is the verbatim Kubernetes `Pod` object, giving consumers full access to pod labels, annotations, phase, and container statuses.
 
+Since VOIP-1419 the publish sites wrap the pod in `pod.Event`, a shape-preserving wrapper (anonymous `*corev1.Pod` embed, marshals byte-identically to the bare pod) whose explicit `EventSubscriptionID()` returns `""` — pod events publish under the topic-exchange `-` placeholder by design.
+
 ### Watched pod classes
 
 Sentinel's label-selector configuration determines which Asterisk pod types are monitored. The current selector set covers:
