@@ -40,19 +40,15 @@
 #     container - the commented-out line below stays commented, this is
 #     not an open question anymore.
 #
-# container_name is `voipbin-call-manager`, deliberately DIFFERENT from
-# the old container's name `voipbin-call-mgr` (대표님's explicit naming
-# decision, 2026-08-16 - matches GKE's `call-manager` app label rather
-# than install/'s host-wide `-mgr`-abbreviated convention; VOIP-1347 (Tier 1
-# rollout) applied the same `voipbin-<short>-manager` convention to 16 more
-# services, the remaining bin-*-manager services stay on the old convention
-# until they migrate too).
-# Because the names differ, Docker will NOT refuse to run both containers
-# at once the way it would if they shared a name - the mutual-exclusion
-# safety net the original cutover design relied on is gone. §7's ordering
-# (old container removed BEFORE the new one is deployed) still holds, but
-# is no longer enforced by Docker itself - see the design doc's updated
-# §7 for the explicit verification step this requires.
+# container_name history: the Komodo cutover named this container
+# `voipbin-call-manager` (2026-08-16, deliberately different from install/'s
+# `voipbin-call-mgr`; the naming rationale and the mutual-exclusion caveat it
+# carried are preserved in the VOIP-1342 cutover design doc). That fixed name
+# was removed entirely in the P11 2-replica rollout - Docker Compose rejects
+# a fixed container_name together with deploy.replicas > 1 - so replicas now
+# run as Compose-generated names (bin-call-manager-call-manager-N). See
+# docs/plans/2026-08-28-bin-manager-two-replica-rollout-design.md and
+# docs/workflows/manager-replica-scaling.md.
 #
 # No healthcheck: bin-call-manager's image is distroless
 # (gcr.io/distroless/static-debian12, no shell, no wget) - the wget-based
@@ -73,8 +69,11 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
-    container_name: voipbin-call-manager
+    # container_name intentionally removed (was voipbin-call-manager) - see
+    # the container_name history note above the services: block.
     restart: always
+    deploy:
+      replicas: 2
     environment:
       - DATABASE_DSN=[[BIN_MANAGER__DATABASE_DSN_BIN]]
       - RABBITMQ_ADDRESS=[[BIN_MANAGER__RABBITMQ_ADDRESS]]

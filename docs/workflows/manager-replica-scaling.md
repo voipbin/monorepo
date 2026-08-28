@@ -119,18 +119,30 @@ docker ps --filter name=<service> --format '{{.Names}}\t{{.Status}}'
 count(up{job="voipbin-managers", service="<service>"})
 ```
 
+Also give the service's Grafana dashboard a quick sanity pass:
+per-instance panels now show two series per service (harmless — proven
+by the schedule-manager pilot — but confirm nothing renders wrong).
+
 ## 5. Known fleet-wide gaps (tracked in the rollout design doc — do not re-derive per service)
 
-- **No 1-of-2 degradation alert.** `InstanceDown` can't see a vanished
-  DNS-SD target and `ManagerServiceGone` fires only at zero replicas.
-  Until a `count(...) < 2` rule lands, section 4's manual check is the
-  only 2-of-2 verification.
-- **Runbook naming drift.** monorepo-etc's alert-rules.yml runbooks
-  assume `voipbin-<service>` container names for
-  `docker ps --filter name=` matching. The substring still matches the
-  generated names, so nothing breaks operationally, but each scaled
-  service adds another exception to that convention.
+- **1-of-2 degradation alert: `ReplicaDegraded`** (warning, `for: 10m`,
+  monorepo-etc alert-rules.yml) covers the replica-scaled services —
+  its regex enumerates them, so **scaling a service up or down requires
+  updating that regex and its tests**. Section 4's manual check remains
+  the verification at deploy time (the alert's 10m window deliberately
+  ignores deploy churn).
+- **Runbook naming.** monorepo-etc's alert-rules.yml runbooks describe
+  both container-name regimes (replica-scaled
+  `bin-<svc>-manager-<svc>-manager-N`, single-replica
+  `voipbin-<svc>-manager`); the `docker ps --filter name=` substring
+  match works for both.
 - **Redeploy blip pattern unmeasured** (see section 3).
+- **No resource limits, deliberately** (2026-08-28). cAdvisor on
+  bm-nyc-01 exposes only system cgroup slices — no per-container series
+  exist to size limits from — and one-shot `docker stats` shows
+  16-69MiB per manager against ~240GB free host memory. Inventing
+  limits without data risks OOMKills for no benefit; revisit only after
+  cAdvisor per-container metrics are fixed (tracked separately).
 
 ## 6. Rollback
 
