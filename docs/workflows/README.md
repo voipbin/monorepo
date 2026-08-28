@@ -10,3 +10,4 @@ Process documentation for git operations, verification, common multi-service wor
 | [special-cases.md](special-cases.md) | bin-common-handler updates (cross-monorepo verification), OpenAPI sync, and other workflows that span multiple services |
 | [development-guide.md](development-guide.md) | Local build commands, testing patterns, code generation, and linting reference |
 | [common-gotchas.md](common-gotchas.md) | Hard-won production lessons: shared-library signature updates, Prometheus metric collisions, UUID `db:` tags, model/OpenAPI sync, RST docs sync |
+| [manager-replica-scaling.md](manager-replica-scaling.md) | The repeatable recipe for scaling a bin-*-manager Komodo stack to 2 replicas: eligibility checklist, the compose change, deploy verification (the CI gate can't prove 2-of-2), rollback |
