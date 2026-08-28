@@ -14,7 +14,7 @@
 | `cmd/direct-control` | CLI tool for direct DB/cache management (bypasses RabbitMQ) |
 | `pkg/config` | Configuration singleton via Cobra + Viper |
 | `pkg/listenhandler` | RabbitMQ RPC request handler with regex URI routing |
-| `pkg/subscribehandler` | Event subscriber for customer deletion cascades |
+| `pkg/subscribehandler` | Event subscriber for customer deletion cascades — consumes via a pattern binding on the global topic exchange `bin-manager.event` (VOIP-1406); the fanout leg is retained as rollback surface until VOIP-1407 |
 | `pkg/directhandler` | Core business logic for direct hash CRUD and regeneration |
 | `pkg/dbhandler` | MySQL operations via `Masterminds/squirrel` |
 | `pkg/cachehandler` | Redis cache for hash-based lookups |
@@ -54,6 +54,16 @@ Requests arrive via RabbitMQ queue `bin-manager.direct-manager.request`. The `li
 | `/v1/directs/{uuid}$` | GET, DELETE | Get or delete direct by ID |
 
 Unmatched URIs return `404`. Mismatched HTTP methods return `405`.
+
+## Event Subscriptions
+
+SubscribeHandler (`pkg/subscribehandler/`) consumes from the queue `bin-manager.direct-manager.subscribe`. Since VOIP-1406 the queue is bound to the **global topic exchange `bin-manager.event`** with one pattern per dispatched (publisher, event-type) pair — 1 pattern total, pinned byte-for-byte by the binding golden test (`pkg/subscribehandler/binding_golden_test.go`):
+
+| Pattern | Purpose |
+|---------|---------|
+| `customer-manager.customer.*.deleted` | Customer deletion — cascade-deletes all direct records of that customer |
+
+The old per-service **fanout subscription is retained in code as the rollback surface until VOIP-1407** (`QueueSubscribe` to `bin-manager.customer-manager.event`); on each boot Run() re-subscribes it, then unbinds it again after the topic bind succeeds.
 
 ## Events Published
 
