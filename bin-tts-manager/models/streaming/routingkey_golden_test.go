@@ -7,6 +7,11 @@
 // produces well-formed keys that no instance binding ever matches, and no runtime metric can
 // detect it. Design doc 1405 §2.2 / §4.
 //
+// Since VOIP-1419 every published type carries an explicit `EventSubscriptionID()` method --
+// mandatory, compiler-enforced; there is no JSON fallback anymore, and an empty return is the
+// only degrade path (the `-` placeholder). `*streaming.Streaming` and `*speaking.Speaking` are
+// addressed by their OWN id; `*message.Message` is addressed by its parent streaming-id.
+//
 // The file lives in models/streaming because the streaming session is the axis this service's
 // events converge on; it is an external test package so it can import the sibling model packages
 // without any import-cycle risk.
@@ -25,7 +30,6 @@
 package streaming_test
 
 import (
-	"encoding/json"
 	"reflect"
 	"testing"
 
@@ -44,45 +48,36 @@ import (
 var streamingID = uuid.FromStringOrNil("6b2d41ae-0000-4000-8000-000000000001")
 
 // speakingID is the address of the speaking resource. A speaking session is an independent
-// persistent record addressed by its own id, so it resolves through the default JSON fallback.
+// persistent record addressed by its own id, which its explicit method returns.
 var speakingID = uuid.FromStringOrNil("6b2d41ae-0000-4000-8000-000000000002")
 
 // resolveSubscriptionID mirrors the resolution notifyhandler performs on the publish path
-// (1404 design §4.2 / §5.2): the opt-in interface first, then -- ONLY when no override exists --
-// the top-level "id" of the marshaled payload. Keeping it here rather than reaching into
-// notifyhandler internals is deliberate -- the golden table must fail when a model stops
-// implementing the interface, which is exactly what this two-step reproduction detects.
+// (VOIP-1419): the payload's explicit `EventSubscriptionID()` method is the single source of
+// the subscription address -- implementation is mandatory (compiler-enforced at the publish
+// sites), and an empty return degrades to the `-` placeholder. Keeping the mirror here rather
+// than reaching into notifyhandler internals is deliberate -- the golden table must fail if a
+// method starts returning a different id space than the one pinned below.
 //
-// The early return below is the load-bearing half: an override that EXISTS is authoritative even
-// when it yields "" or uuid.Nil, so the JSON fallback must never run behind it.
+// The parameter stays `any` so the table can also feed values that do not implement the
+// interface; they resolve to "" (→ placeholder), matching what production's narrowed
+// signature makes unrepresentable at compile time.
 func resolveSubscriptionID(t *testing.T, data any) string {
 	t.Helper()
 
-	if identifier, ok := data.(eventtopic.SubscriptionIdentifier); ok {
-		// typed-nil guard, mirroring notifyhandler.resolveSubscriptionOverride: a nil pointer whose
-		// type implements the interface still SATISFIES the assertion, and every real implementation
-		// dereferences its receiver -- calling the method would panic. Production reports "no
-		// override" for such a payload, so this guard falls through to the JSON half below rather
-		// than returning early; `null` carries no top-level `id` either, so both halves agree on the
-		// `-` placeholder.
-		if v := reflect.ValueOf(data); v.Kind() != reflect.Ptr || !v.IsNil() {
-			return identifier.EventSubscriptionID()
-		}
-	}
-
-	m, err := json.Marshal(data)
-	if err != nil {
-		t.Fatalf("Could not marshal the event data. err: %v", err)
-	}
-
-	d := struct {
-		ID string `json:"id"`
-	}{}
-	if errUnmarshal := json.Unmarshal(m, &d); errUnmarshal != nil {
+	identifier, ok := data.(eventtopic.SubscriptionIdentifier)
+	if !ok {
 		return ""
 	}
 
-	return d.ID
+	// typed-nil guard, mirroring notifyhandler.resolveSubscriptionID: a nil pointer whose type
+	// implements the interface still SATISFIES the assertion, and every real implementation
+	// dereferences its receiver -- calling the method would panic. Production resolves such a
+	// payload to the `-` placeholder instead.
+	if v := reflect.ValueOf(data); v.Kind() == reflect.Ptr && v.IsNil() {
+		return ""
+	}
+
+	return identifier.EventSubscriptionID()
 }
 
 func TestGoldenRoutingKeys(t *testing.T) {
@@ -130,7 +125,7 @@ func TestGoldenRoutingKeys(t *testing.T) {
 		data      any
 		expect    string
 	}{
-		// speaking resource -- own id is the address, resolved by the default JSON fallback.
+		// speaking resource -- own id is the address, returned by its explicit method.
 		{
 			"speaking_started",
 			speaking.EventTypeSpeakingStarted,
@@ -144,7 +139,7 @@ func TestGoldenRoutingKeys(t *testing.T) {
 			"tts-manager.speaking.6b2d41ae-0000-4000-8000-000000000002.stopped",
 		},
 
-		// streaming resource -- own id is the address, resolved by the default JSON fallback.
+		// streaming resource -- own id is the address, returned by its explicit method.
 		{
 			"streaming_created",
 			streaming.EventTypeStreamingCreated,
@@ -222,26 +217,6 @@ func TestGoldenRoutingKeysShareOneAddress(t *testing.T) {
 			res := resolveSubscriptionID(t, tt.data)
 			if res != expect {
 				t.Errorf("Wrong match. expect: %s, got: %s", expect, res)
-			}
-		})
-	}
-}
-
-// TestDefaultSubscriptionIDTypes pins the deliberate ABSENCE of an override on the two types whose
-// own id IS the address. Adding one would silently move their whole key space.
-func TestDefaultSubscriptionIDTypes(t *testing.T) {
-	tests := []struct {
-		name string
-		data any
-	}{
-		{"streaming", &streaming.Streaming{Identity: commonidentity.Identity{ID: streamingID}}},
-		{"speaking", &speaking.Speaking{Identity: commonidentity.Identity{ID: speakingID}}},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if _, ok := tt.data.(eventtopic.SubscriptionIdentifier); ok {
-				t.Errorf("%s must not implement SubscriptionIdentifier. its own id is the subscription address.", tt.name)
 			}
 		})
 	}

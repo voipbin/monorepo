@@ -4,7 +4,50 @@ import (
 	"testing"
 
 	"github.com/gofrs/uuid"
+
+	"monorepo/bin-common-handler/models/eventtopic"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 )
+
+// Streaming publishes on the global topic exchange (VOIP-1404/1419), so it must carry an explicit
+// subscription address. The assertion pins the POINTER type: the event data reaches
+// notifyhandler as a pointer and the interface assertion matches the dynamic type.
+var _ eventtopic.SubscriptionIdentifier = (*Streaming)(nil)
+
+func TestStreamingEventSubscriptionID(t *testing.T) {
+	id := uuid.Must(uuid.NewV4())
+	customerID := uuid.Must(uuid.NewV4())
+	activeflowID := uuid.Must(uuid.NewV4())
+	referenceID := uuid.Must(uuid.NewV4())
+	messageID := uuid.Must(uuid.NewV4())
+
+	h := &Streaming{
+		Identity: commonidentity.Identity{
+			ID:         id,
+			CustomerID: customerID,
+		},
+		ActiveflowID:  activeflowID,
+		ReferenceType: ReferenceTypeCall,
+		ReferenceID:   referenceID,
+		MessageID:     messageID,
+	}
+
+	res := h.EventSubscriptionID()
+	if res != id.String() {
+		t.Errorf("Wrong match. expect: %s, got: %s", id.String(), res)
+	}
+	// The streaming session is the address axis of this service: its address must be its own id,
+	// never one of the ids it references.
+	if res == referenceID.String() {
+		t.Errorf("Streaming must not be addressed by its reference id. got: %s", res)
+	}
+	if res == activeflowID.String() {
+		t.Errorf("Streaming must not be addressed by its activeflow id. got: %s", res)
+	}
+	if res == messageID.String() {
+		t.Errorf("Streaming must not be addressed by its message id. got: %s", res)
+	}
+}
 
 func TestStreaming(t *testing.T) {
 	tests := []struct {
