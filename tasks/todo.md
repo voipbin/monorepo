@@ -70,7 +70,7 @@ Same per-task inclusions as Phase 1.
 ## Results (2026-08-28)
 
 - 26 services wired (53 sites; verified 55 = 53 + 2 pilot), 19 override types with behavioral tests in 15 packages, 27 golden files in 27 service dirs.
-- Prerequisite fixes landed: contact []byte payload, pipecat 6 pointer conversions (now compiler-enforced), 4 new structs with byte-identical JSON output (empirically compared).
+- Prerequisite fixes landed: contact []byte payload, pipecat 6 pointer conversions (now compiler-enforced), 4 new structs with identical JSON key sets (byte-identical for 3; CaseNoteDeletedEvent differs in key order only — JSON-semantically equivalent, per design §3.3).
 - Drive-by fixes: outdial SA4000 tautologies -> JSON round-trips, email SA5011, registrar/route CLAUDE.md false "no events" claims, timeline stale comment.
 - Global assertions all pass: AC1 55 / absence 0 / AC2 26 / AC5 27 / compile sweep 39 modules 0 fail / bin-common-handler 0 lines.
 - Code review loop: R1 RC (4 MEDIUM, comment/test fidelity) -> R2 RC (3) -> R3 Approve -> R4 (pending). Typed-nil guard mutation-locked via pilot golden.
