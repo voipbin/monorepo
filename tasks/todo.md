@@ -215,6 +215,37 @@ and re-verifies before committing. All greps use `/usr/bin/grep` with
 - AC7 build: 38-module `go build ./...` sweep → 0 failures; full verification workflow per touched service passes.
 - AC8 behavior: `go test ./...` green in bch including the new nil-interface, typed-nil, and Raw-placeholder cases.
 
+## Results (W1-W4 executed 2026-08-28)
+
+- **W1**: 27 services, 5 batches of parallel executors; 45 explicit methods + behavioral
+  tests + sibling `var _` assertions; 27 golden helpers simplified (JSON half dropped,
+  `data any` + typed-nil guard kept); 27 runtime negatives deleted, 3 survivors reworded
+  (bare `*corev1.Pod`, old `*pod.Pod`, `kase.Case`); pod publish sites wrapped in
+  `pod.Event`; per-service 5-step verification green everywhere; mockgen param-rename
+  drift discarded (number/agent/conference — VOIP-1417); stale-doc drive-bys accepted
+  (direct CLAUDE.md false "No events published", registrar/tag architecture.md fallback
+  prose). One sanctioned key-literal change: pipecat's supplementary value-override test
+  dropped its counterfactual fallback-demonstration key (never a production key; the 10
+  golden-table expects untouched).
+- **W2** (`1deb5b1ae`): bch narrowing + WebhookEventMessage + two-branch guard + fallback
+  deletion + identifier.go rewrite + mock regen + unit tests (nil-interface, typed-nil,
+  Raw-placeholder locks); conversation-manager typed callback updated. bch verification:
+  1671 tests, lint clean.
+- **W3** (`56f2e915b`): reference doc rewritten (resolution contract + former
+  "deliberate non-overrides" block), supersession pointers in 1404/1405 designs.
+- **W4 evidence** (all from worktree root, merge-base `60de2f733`):
+  - AC1 = 0 (fallback gone). AC2 = narrowed signatures present; `data interface{}` only on
+    PublishEventWithRoutingKey (D3).
+  - AC3 = **67 hand-written implementers** (raw grep prints 69: +2 are the regenerated
+    mock's MockWebhookEventMessage method + recorder — exclude `mock_` files when
+    re-running).
+  - AC4 = 0 changed golden expect lines. AC5 = 0 sentinel strings.
+  - AC6 = **72** (71 planned + 1 new bch fixture assertion on testIDEvent, added when the
+    fixture gained its explicit method in W2).
+  - AC7 = 39-module `go mod vendor && go build` sweep: 0 failures; plus a full
+    `go vet ./...` sweep (compiles test files): 39/39 OK.
+  - AC8 = bch `go test ./...`: 1671 passed; per-service suites green in W1.
+
 ## Working Notes
 
 - Worktree: `.worktrees/VOIP-1419-Enforce-explicit-event-subscription-id` (branch same name, from `60de2f733`).
