@@ -4,9 +4,10 @@
 # VOIP-1347/VOIP-1348).
 #
 # NOJIRA-Schedule-manager-scale-poc: this is the fleet's PoC for the
-# bin-*-manager 1->2 replica rollout (the shared design/rollout plan for
-# that effort has not been committed to docs/plans/ yet - do not assume it
-# exists elsewhere). schedule-manager was chosen as the pilot because its
+# bin-*-manager 1->2 replica rollout - see
+# docs/plans/2026-08-28-bin-manager-two-replica-rollout-design.md (gating
+# + per-service tracker) and docs/workflows/manager-replica-scaling.md
+# (the recipe). schedule-manager was chosen as the pilot because its
 # dispatch loop is already replica-safe by design (Redis lock + DB CAS
 # claim, see this service's own CLAUDE.md "replicas: 2 by design") and it
 # does not use a per-pod queue, so it cannot be affected by the
