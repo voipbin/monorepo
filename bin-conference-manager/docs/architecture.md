@@ -29,6 +29,16 @@ graph TD
 | `models/conference` | Conference data model, type/status constants, webhook types | `conference.Conference`, `conference.Type`, `conference.Status` |
 | `models/conferencecall` | Conferencecall data model, reference types, status constants | `conferencecall.Conferencecall`, `conferencecall.Status` |
 
+## Event Subscriptions
+
+SubscribeHandler (`pkg/subscribehandler/`) consumes from the queue `bin-manager.conference-manager.subscribe`. Since VOIP-1406 the queue is bound to the **global topic exchange `bin-manager.event`** with one pattern per dispatched (publisher, event-type) pair — 2 patterns total, pinned byte-for-byte by the binding golden test (`pkg/subscribehandler/binding_golden_test.go`):
+
+| Pattern | Purpose |
+|---------|---------|
+| `call-manager.confbridge.*.joined` / `call-manager.confbridge.*.leaved` | Confbridge join/leave — updates conference participant (conferencecall) state |
+
+The old per-service **fanout subscription is retained in code as the rollback surface until VOIP-1407** (`QueueSubscribe` to `bin-manager.call-manager.event`); on each boot Run() re-subscribes it, then unbinds it again after the topic binds succeed.
+
 ## Event Publishing
 
 Both `cmd/conference-manager` and `cmd/conference-control` construct their NotifyHandler with `notifyhandler.WithGlobalTopicPublish()`, so every event is published twice: once to the per-service fanout exchange `bin-manager.conference-manager.event` (unchanged, still the system of record) and once to the global topic exchange `bin-manager.event` with the routing key `conference-manager.<resource>.<conference-id>.<action>`. The two cmds must stay in lockstep on this option — enabling it in only one would leave consumers with gaps depending on which process published. A topic publish failure never propagates to the caller and never affects the fanout publish. See [docs/domain.md](domain.md) for the per-event routing keys and the monorepo `docs/plans/2026-08-27-voip-1404-global-topic-exchange-design.md` for the schema.
