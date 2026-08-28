@@ -60,12 +60,16 @@ go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-l
 
 Komodo-managed (VOIP-1353), deployed via `.circleci/scripts/komodo-api-deploy.sh`
 from `komodo/docker-compose.yml` — same mechanism as the other `bin-*-manager`
-services (VOIP-1342 pilot, VOIP-1347/VOIP-1348 tiers), with one important
-difference: **this service has no RabbitMQ competing-consumer safety net.**
+services (VOIP-1342 pilot, VOIP-1347/VOIP-1348 tiers). Runs as 2 replicas
+(P12 fleet rollout, `docs/plans/2026-08-28-bin-manager-two-replica-rollout-design.md`).
 `hook.voipbin.net`'s public traffic is routed by `monorepo-etc/infra-caddy`'s
-Caddyfile, which reverse-proxies to this container by its fixed name
-(`voipbin-hook-manager`) — Caddy must be pointed at that name *before* the
-old install-managed container is removed, and the new container must exist
-and be healthy *before* Caddy is pointed at it (see
-`monorepo-etc/infra-caddy` PR #109 for the sequencing this required and the
-brief outage that resulted from doing it out of order).
+Caddyfile, which resolves the Compose service name `hook-manager` via a
+`dynamic a` upstream and load-balances across whatever replica IPs Docker's
+embedded DNS returns (`lb_policy round_robin`) — no fixed container name is
+involved, so this service can be scaled or redeployed without any
+Caddy-side companion change. With 2 replicas, Caddy's round-robin
+distribution across them is the closest thing this service has to a
+competing-consumer safety net: unlike the other `bin-*-manager` services
+(which get that redundancy from RabbitMQ competing consumers on a request
+queue), hook-manager has no inbound RabbitMQ queue, so HTTP-layer
+load-balancing is the only redundancy mechanism it gets.

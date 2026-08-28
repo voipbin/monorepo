@@ -39,7 +39,8 @@ gated behind a single `build-approval`.
 
 Unlike every other `bin-*-manager` service, this one has no RabbitMQ
 competing-consumer safety net — `hook.voipbin.net`'s public traffic is routed by
-`monorepo-etc/infra-caddy`'s Caddyfile, which reverse-proxies to this container by
-its fixed name (`voipbin-hook-manager`). See
-[docs/operations.md](docs/operations.md#deployment-komodo) for the full
-cutover-sequencing note and what happens if it's done out of order.
+`monorepo-etc/infra-caddy`'s Caddyfile, which resolves the Compose service name
+(`hook-manager`) via a `dynamic a` upstream and round-robins across replicas.
+Runs as 2 replicas (P12); Caddy's load-balancing across them is the closest
+thing this service has to redundancy. See
+[docs/operations.md](docs/operations.md#deployment-komodo) for details.

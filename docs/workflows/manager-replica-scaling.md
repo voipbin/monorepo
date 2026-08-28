@@ -29,14 +29,13 @@ against the code, not the tracker, if any time has passed.
    container name; pipecat — `POD_IP=pipecat-manager`. transcribe's
    `${POD_IP:-127.0.0.1}` fallback looks similar but its real HostID is
    a random UUID — a different problem; see that service's docs.)
-3. **No external naming binding.** monorepo-etc's
-   `infra-caddy/config/Caddyfile` targets `voipbin-api-manager`
-   (`:17-22`, the current name since VOIP-1362 retargeted it from the
-   install/-era `voipbin-api-mgr`) and `voipbin-hook-manager`
-   (`:77-82`) literally as reverse_proxy upstreams. Scaling either
-   service requires a Caddy-side companion change first. (api
-   additionally needs a per-pod `streamData` state redesign — the Caddy
-   fix alone is not sufficient for it.)
+3. **External naming binding — resolved fleet-wide (P10).**
+   monorepo-etc's `infra-caddy/config/Caddyfile` used to target
+   `voipbin-api-manager` and `voipbin-hook-manager` literally as
+   reverse_proxy upstreams; P10 converted both to `dynamic a` upstreams
+   resolving the Compose service name instead, so neither service needs
+   a Caddy-side companion change to scale. api's remaining blocker is
+   unrelated: a per-pod `streamData` state redesign.
 4. **Per-container mutable state is concurrency-safe.** If the service
    writes to a bind mount or other shared location, confirm two
    replicas cannot corrupt it (e.g. schedule-manager's backup dir is
@@ -86,19 +85,19 @@ name, and Docker's embedded DNS returns every replica's IP.
 
 ## 3. Deploy and downtime
 
-Two distinct kinds of downtime — do not conflate them:
-
-- **Redeploy blip (applies fleet-wide).** Non-Swarm Compose does not do
-  rolling updates, so a redeploy is expected to recreate both replicas
-  together. This was accepted deliberately (CEO/CTO decision, see the
-  rollout design doc) in place of a zero-downtime A/B scheme. Schedule
-  deploys for low-traffic windows and announce them. Note the exact
-  blip pattern has not been measured yet — what the pilot verified is
-  the scale-up mechanism itself (two containers start, naming, healthy),
-  not the behavior of a subsequent redeploy.
-- **Naming-cutover downtime (service-specific).** Only services with an
-  external naming binding (checklist item 3: api, hook) additionally
-  pay a cutover window when the name their upstream targets changes.
+- **Redeploy blip (applies fleet-wide, the only downtime any service
+  pays).** Non-Swarm Compose does not do rolling updates, so a redeploy
+  is expected to recreate both replicas together. This was accepted
+  deliberately (CEO/CTO decision, see the rollout design doc) in place
+  of a zero-downtime A/B scheme. Schedule deploys for low-traffic
+  windows and announce them. Note the exact blip pattern has not been
+  measured yet — what the pilot verified is the scale-up mechanism
+  itself (two containers start, naming, healthy), not the behavior of a
+  subsequent redeploy.
+- **No naming-cutover downtime.** P10's `dynamic a` Caddy upstreams
+  resolve by Compose service name, which is stable across a
+  `container_name` removal, so there is no second downtime category to
+  budget for — the redeploy blip above is it.
 
 ## 4. Verifying a deploy — the CI gate does NOT prove 2-of-2
 
