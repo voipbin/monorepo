@@ -40,20 +40,20 @@ type SubscribeHandler interface {
 // type) pair handled in processEvent below. The exact pattern strings are pinned by
 // binding_golden_test.go.
 var topicPatterns = []string{
-	eventtopic.PatternAction(string(commonoutline.ServiceNameCallManager), "call", "progressing"),
-	eventtopic.PatternAction(string(commonoutline.ServiceNameCallManager), "call", "hangup"),
-	eventtopic.PatternAction(string(commonoutline.ServiceNameCallManager), "recording", "started"),
-	eventtopic.PatternAction(string(commonoutline.ServiceNameCallManager), "recording", "finished"),
-	eventtopic.PatternAction(string(commonoutline.ServiceNameMessageManager), "message", "created"),
-	eventtopic.PatternAction(string(commonoutline.ServiceNameEmailManager), "email", "created"),
-	eventtopic.PatternAction(string(commonoutline.ServiceNameCustomerManager), "customer", "deleted"),
-	eventtopic.PatternAction(string(commonoutline.ServiceNameCustomerManager), "customer", "created"),
-	eventtopic.PatternAction(string(commonoutline.ServiceNameCustomerManager), "customer", "frozen"),
-	eventtopic.PatternAction(string(commonoutline.ServiceNameCustomerManager), "customer", "recovered"),
-	eventtopic.PatternAction(string(commonoutline.ServiceNameNumberManager), "number", "created"),
-	eventtopic.PatternAction(string(commonoutline.ServiceNameNumberManager), "number", "renewed"),
-	eventtopic.PatternAction(string(commonoutline.ServiceNameTTSManager), "speaking", "started"),
-	eventtopic.PatternAction(string(commonoutline.ServiceNameTTSManager), "speaking", "stopped"),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCallManager), cmcall.EventTypeCallProgressing),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCallManager), cmcall.EventTypeCallHangup),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCallManager), cmrecording.EventTypeRecordingStarted),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCallManager), cmrecording.EventTypeRecordingFinished),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameMessageManager), mmmessage.EventTypeMessageCreated),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameEmailManager), ememail.EventTypeCreated),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCustomerManager), cscustomer.EventTypeCustomerDeleted),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCustomerManager), cscustomer.EventTypeCustomerCreated),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCustomerManager), cscustomer.EventTypeCustomerFrozen),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCustomerManager), cscustomer.EventTypeCustomerRecovered),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameNumberManager), nmnumber.EventTypeNumberCreated),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameNumberManager), nmnumber.EventTypeNumberRenewed),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameTTSManager), tmspeaking.EventTypeSpeakingStarted),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameTTSManager), tmspeaking.EventTypeSpeakingStopped),
 }
 
 // fanoutUnbindTargets lists the per-service fanout event exchanges this queue

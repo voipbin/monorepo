@@ -26,10 +26,10 @@ import (
 // `bin-manager.event` (VOIP-1406): one pattern per dispatch pair handled in
 // processEvent. Pinned byte-for-byte by binding_golden_test.go.
 var topicPatterns = []string{
-	eventtopic.PatternAction(string(commonoutline.ServiceNameCallManager), "groupcall", "created"),
-	eventtopic.PatternAction(string(commonoutline.ServiceNameCallManager), "groupcall", "progressing"),
-	eventtopic.PatternAction(string(commonoutline.ServiceNameCustomerManager), "customer", "deleted"),
-	eventtopic.PatternAction(string(commonoutline.ServiceNameCustomerManager), "customer", "created"),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCallManager), cmgroupcall.EventTypeGroupcallCreated),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCallManager), cmgroupcall.EventTypeGroupcallProgressing),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCustomerManager), cmcustomer.EventTypeCustomerDeleted),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCustomerManager), cmcustomer.EventTypeCustomerCreated),
 }
 
 // fanoutUnbindTargets lists the per-service fanout event exchanges the subscribe

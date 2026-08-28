@@ -34,8 +34,8 @@ const (
 // `bin-manager.event` (VOIP-1406): one pattern per dispatch pair handled in
 // processEvent. Pinned byte-for-byte by binding_golden_test.go.
 var topicPatterns = []string{
-	eventtopic.PatternAction(string(commonoutline.ServiceNameCallManager), "call", "hangup"),
-	eventtopic.PatternAction(string(commonoutline.ServiceNameFlowManager), "activeflow", "deleted"),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCallManager), cmcall.EventTypeCallHangup),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameFlowManager), fmactiveflow.EventTypeActiveflowDeleted),
 }
 
 // fanoutUnbindTargets lists the per-service fanout event exchanges the subscribe

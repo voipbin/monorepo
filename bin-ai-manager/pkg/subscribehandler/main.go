@@ -41,16 +41,16 @@ const (
 // dispatch case is unreachable today and keeping it unreachable is today's behavior
 // (design §4, follow-up VOIP-1422). Pinned by the binding golden test.
 var topicPatterns = []string{
-	eventtopic.PatternAction(string(commonoutline.ServiceNameCallManager), "confbridge", "joined"),
-	eventtopic.PatternAction(string(commonoutline.ServiceNameCallManager), "confbridge", "leaved"),
-	eventtopic.PatternAction(string(commonoutline.ServiceNameCallManager), "call", "hangup"),
-	eventtopic.PatternAction(string(commonoutline.ServiceNameCallManager), "dtmf", "received"),
-	eventtopic.PatternAction(string(commonoutline.ServiceNamePipecatManager), "message", "user_transcription"),
-	eventtopic.PatternAction(string(commonoutline.ServiceNamePipecatManager), "message", "bot_llm"),
-	eventtopic.PatternAction(string(commonoutline.ServiceNamePipecatManager), "message", "bot_llm_intermediate"),
-	eventtopic.PatternAction(string(commonoutline.ServiceNamePipecatManager), "pipecatcall", "initialized"),
-	eventtopic.PatternAction(string(commonoutline.ServiceNamePipecatManager), "pipecatcall", "terminated"),
-	eventtopic.PatternAction(string(commonoutline.ServiceNamePipecatManager), "team", "member_switched"),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCallManager), cmconfbridge.EventTypeConfbridgeJoined),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCallManager), cmconfbridge.EventTypeConfbridgeLeaved),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCallManager), cmcall.EventTypeCallHangup),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCallManager), cmdtmf.EventTypeDTMFReceived),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNamePipecatManager), pmmessage.EventTypeUserTranscription),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNamePipecatManager), pmmessage.EventTypeBotLLM),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNamePipecatManager), pmmessage.EventTypeBotLLMIntermediate),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNamePipecatManager), pmpipecatcall.EventTypeInitialized),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNamePipecatManager), pmpipecatcall.EventTypePipecatcallTerminated),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNamePipecatManager), pmmessage.EventTypeTeamMemberSwitched),
 }
 
 // fanoutUnbindTargets lists the old per-service fanout event exchanges to unbind once

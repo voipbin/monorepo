@@ -39,10 +39,10 @@ type SubscribeHandler interface {
 // `asterisk.all.event` fanout subscription is permanently retained.
 // Pinned by binding_golden_test.go.
 var topicPatterns = []string{
-	eventtopic.PatternAction(string(commonoutline.ServiceNameCustomerManager), "customer", "deleted"),
-	eventtopic.PatternAction(string(commonoutline.ServiceNameCustomerManager), "customer", "frozen"),
-	eventtopic.PatternAction(string(commonoutline.ServiceNameFlowManager), "activeflow", "updated"),
-	eventtopic.PatternAction(string(commonoutline.ServiceNameSentinelManager), "pod", "deleted"),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCustomerManager), cucustomer.EventTypeCustomerDeleted),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCustomerManager), cucustomer.EventTypeCustomerFrozen),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameFlowManager), fmactiveflow.EventTypeActiveflowUpdated),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameSentinelManager), smpod.EventTypePodDeleted),
 }
 
 // fanoutUnbindTargets are the per-service fanout event exchanges this service
