@@ -9,6 +9,39 @@
   placeholder semantics, and metrics are unchanged -- this document changes only HOW the
   subscription-id segment is resolved.
 
+## 0. Amendment (2026-08-29, CEO decision): Identity-promotion default
+
+After the per-type implementation landed, the CEO clarified the intended shape: the own-id
+default should come from ONE implementation on `commonidentity.Identity`, promoted into every
+model that embeds it by value -- not from a per-type boilerplate method. This amendment
+supersedes §3's "45 new methods" plan; everything else in this document (narrowed signatures,
+fallback deletion, invariance rule, guards, docs) stands.
+
+Why promotion is safe NOW (it was rejected pre-narrowing): under the mandatory interface
+parameter, a broken promotion (e.g. a future same-depth method collision) is a COMPILE ERROR at
+every publish site and at every `var _` assertion -- not the silent behavior change that made
+promotion dangerous in the fallback era. The nil-embed panic class does not exist on value
+embeds; the pointer-embed wrappers that need nil guards keep their explicit methods.
+
+Final architecture:
+
+- `commonidentity.Identity` implements `EventSubscriptionID()` (pointer receiver, returns own
+  id). Every value-embedding model satisfies the interface through promotion -- own id is the
+  automatic default address.
+- Explicit methods remain ONLY where promotion cannot or must not apply (31 hand-written total):
+  - the 22 parent-address overrides (VOIP-1404/1405), which shadow the promoted default;
+  - 8 types without an Identity embed: `customer.Customer`, `customer.CustomerCreatedEvent`
+    (nil-guarded wrapper), `accesskey.Accesskey`, `route.Route`, `provider.Provider`,
+    `providercall.ProviderCall`, storage `account.Account` (all own-ID-field types), and
+    sentinel `pod.Event` (explicit `""`, placeholder-by-design);
+  - plus `Identity` itself.
+- The 37 W1 per-type own-id methods were deleted. Their behavioral tests and `var _` assertions
+  STAY -- they now pin the promoted default per type, and the 27 golden suites keep pinning the
+  exact keys. Routing-key values are unchanged (promotion returns the same `Identity.ID`).
+- Trade-off accepted: a new Identity-embedding type gets the own-id address without writing
+  anything. That is the correct default; types with a different address still cannot compile
+  without a deliberate choice (non-Identity types), or express it as a shadowing override.
+
 ## 1. Goal and background
 
 VOIP-1404/1405 established the global topic exchange `bin-manager.event` with routing keys

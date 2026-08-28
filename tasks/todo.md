@@ -246,6 +246,23 @@ and re-verifies before committing. All greps use `/usr/bin/grep` with
     `go vet ./...` sweep (compiles test files): 39/39 OK.
   - AC8 = bch `go test ./...`: 1671 passed; per-service suites green in W1.
 
+## Pivot (2026-08-29, CEO decision): Identity-promotion default
+
+Recorded in design doc §0 (amendment). Executed:
+- `commonidentity.Identity` gained `EventSubscriptionID()` + promotion-pinning tests + its own
+  `var _` assertion; `eventtopic/identifier.go` contract comment rewritten for the
+  promotion-default world.
+- 37 W1 per-type own-id methods DELETED (script-verified: only Identity-value-embed types,
+  incl. the two confbridge wrappers via depth-2 promotion and contact.WebhookMessage whose
+  now-empty subscription.go was removed). 8 explicit methods KEPT (no Identity embed):
+  Customer, CustomerCreatedEvent, Accesskey, Route, Provider, ProviderCall, storage Account,
+  pod.Event. The 22 parent-address overrides untouched (shadow the promoted default).
+- All behavioral tests, `var _` assertions, and 27 golden suites kept and pass via promotion —
+  routing-key values unchanged.
+- Post-pivot counts: hand-written implementers 31 (22+8+Identity); assertions 73 (72+Identity).
+- Verification: 24 affected services' model tests green; 39-module build+vet sweep 0 failures;
+  bch full verification re-run below.
+
 ## Working Notes
 
 - Worktree: `.worktrees/VOIP-1419-Enforce-explicit-event-subscription-id` (branch same name, from `60de2f733`).

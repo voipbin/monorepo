@@ -18,12 +18,6 @@ type EventConfbridgeLeaved struct {
 	LeavedCallID uuid.UUID `json:"leaved_call_id"`
 }
 
-// EventSubscriptionID returns the subscription address of this type on the global topic
-// exchange `bin-manager.event`: the embedded Confbridge's own id (promoted) -- NOT the leaved
-// call id (VOIP-1404 §4.2, VOIP-1419).
-func (h *EventConfbridgeLeaved) EventSubscriptionID() string {
-	return h.ID.String()
-}
 
 // EventConfbridgeJoined event struct for confbridge joined
 type EventConfbridgeJoined struct {
@@ -31,9 +25,3 @@ type EventConfbridgeJoined struct {
 	JoinedCallID uuid.UUID `json:"joined_call_id"`
 }
 
-// EventSubscriptionID returns the subscription address of this type on the global topic
-// exchange `bin-manager.event`: the embedded Confbridge's own id (promoted) -- NOT the joined
-// call id (VOIP-1404 §4.2, VOIP-1419).
-func (h *EventConfbridgeJoined) EventSubscriptionID() string {
-	return h.ID.String()
-}

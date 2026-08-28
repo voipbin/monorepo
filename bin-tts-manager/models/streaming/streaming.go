@@ -36,11 +36,6 @@ type Streaming struct {
 	CreatedAt   time.Time       `json:"-"` // Timestamp of when the streaming was created (for metrics)
 }
 
-// EventSubscriptionID returns the subscription address of this type on the global topic
-// exchange `bin-manager.event`: the resource's own id (VOIP-1404 §4.2, VOIP-1419).
-func (h *Streaming) EventSubscriptionID() string {
-	return h.ID.String()
-}
 
 // // Direction represents the direction of the streaming in a call.
 type Direction string
