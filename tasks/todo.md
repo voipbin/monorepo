@@ -1,11 +1,18 @@
 # VOIP-1406: Migrate event subscribers from fanout to topic patterns
 
-Status: CODE REVIEW COMPLETE (stage 4 of 4). Issue analysis APPROVED (R1 RC, R2 RC, R3
-Approve, R4 Approve). Design APPROVED (docs/plans/2026-08-29-voip-1406-consumer-topic-migration-design.md;
+Status: POST-PR AMENDMENT IMPLEMENTED, CODE REVIEW PENDING. Issue analysis APPROVED (R1
+RC, R2 RC, R3 Approve, R4 Approve). Design APPROVED (docs/plans/2026-08-29-voip-1406-consumer-topic-migration-design.md;
 R1 RC, R2 Approve, R3 Approve with live-broker audit). Plan APPROVED (R1 RC, R2 RC, R3
-Approve, R4 Approve). Code review APPROVED (R1 Approve -- template/uniformity, R2 Approve
--- production semantics/event delivery, R3 Approve -- final-gate diff scope/hygiene; zero
-blocking findings across all 3 rounds). Ready for PR.
+Approve, R4 Approve). Code review of the original W1-W3 scope APPROVED (R1 Approve --
+template/uniformity, R2 Approve -- production semantics/event delivery, R3 Approve --
+final-gate diff scope/hygiene; zero blocking findings across all 3 rounds); PR #1222
+opened on that scope. **§9 amendment** (eliminate magic-string pattern literals -- design
+R1/R2/R3 Request Changes, R4/R5 Approve) implemented across bin-common-handler
+(`eventtopic.PatternForEventType` + shared `splitEventType`) and all 19 pattern-bearing
+services (65 call sites migrated to derive from owning `EventType*` constants); doc
+updates done (billing architecture.md, rabbitmq-queues-reference.md ×2, this file). A
+fresh code-review loop for the §9 amendment (min 3 rounds, 2 consecutive Approve) is
+still required before the amendment can be pushed/PR-updated.
 
 ## Implementation Plan (stage 3) -- rev.1
 
@@ -16,7 +23,8 @@ Normative source: the Approved design (§2 template, §4 rulings, §5 bind sets,
 
 - [x] **W1 -- per-service implementation (20 services, parallel executor batches of ~6;
   no inter-service ordering constraints -- no shared code changes).**
-  Per service: add package-level `topicPatterns` (built via `eventtopic.PatternAction`,
+  Per service: add package-level `topicPatterns` (built via `eventtopic.PatternForEventType`
+  deriving each pattern from the publisher's own `EventType*` constant -- §9 amendment;
   or `"#"` for timeline) and `fanoutUnbindTargets` vars in pkg/subscribehandler; insert
   the §2 template block into Run() (declare -> bind-all-or-nothing with best-effort
   partial rollback -> unbind fanout only on full success), strictly before the
@@ -52,12 +60,13 @@ all commits. `/usr/bin/grep`; vendor regen before tests.
 ### Acceptance criteria (evidence commands from worktree root)
 
 - AC1: binding golden tests exist and pass in all 20 subscribehandler packages; the
-  pinned pattern totals sum to **65 PatternAction patterns + 1 `#`** (agent4 ai10
+  pinned pattern totals sum to **65 PatternForEventType patterns + 1 `#`** (agent4 ai10
   billing14 call4 campaign2 conference2 contact1 conversation4 direct1 flow1 number2
   queue3 registrar2 schedule1 storage2 tag1 transcribe3 transfer3 webhook5 + timeline#).
 - AC2: `/usr/bin/grep -rl "TopicCreateWithKind(string(commonoutline.QueueNameEvent)" --include="*.go" --exclude="*_test.go" --exclude-dir=vendor --exclude-dir=.worktrees bin-*/pkg/subscribehandler/ | wc -l` -> **20 files** (one per service; test files excluded because sequencing tests repeat the literal in EXPECT calls). Services whose subscribehandler lacks a commonoutline import today (conference, conversation, transfer, webhook) add it.
 - AC3: the 3 exclusions are proven by golden-test NEGATIVE assertions, not repo greps
-  (production patterns are PatternAction calls, never literals; the negative rows
+  (production patterns are PatternForEventType calls deriving from owning EventType
+  constants, never hand-typed literals; the negative rows
   necessarily contain the literals). Evidence: `/usr/bin/grep -Fc "conference-manager.conference.*.updated" bin-ai-manager/pkg/subscribehandler/*_test.go` >= 1 (negative row) while the same literal is absent from the POSITIVE expected set; likewise `customer-manager.customer.*.deleted` negative in queue-manager's golden, `call-manager.call.*.hangup` negative in flow-manager's golden; each golden's pattern-count assertion equals its §5 number.
 - AC4: sentinel defensive declares still present (2: call, timeline); asterisk
   QueueSubscribe still present (2); `git diff --stat $(git merge-base HEAD origin/main) -- bin-api-manager/` -> empty.
@@ -83,8 +92,9 @@ all commits. `/usr/bin/grep`; vendor regen before tests.
 - W2 (c32d14b26): reference doc gains the consumer-state note and the stale-binding
   runbook (inspection + manual unbind commands, roll-forward alternative).
 - W3 AC evidence (from worktree root, merge-base a9c81fa0b):
-  AC1 = 20 binding_golden_test.go files; 65 PatternAction calls + timeline "#" (sum
-  matches section-5 exactly). AC2 = 20 declare files (test-excluded grep). AC3 = the 3
+  AC1 = 20 binding_golden_test.go files; 65 PatternForEventType calls + timeline "#" (sum
+  matches section-5 exactly; §9 amendment migrated all 65 off hand-typed literals onto
+  the owning-package EventType constants). AC2 = 20 declare files (test-excluded grep). AC3 = the 3
   negative assertions present in ai/queue/flow goldens. AC4 = sentinel defensive
   declares 2 (call :162, timeline :154), asterisk subscriptions 2, api-manager diff
   EMPTY. AC5 = 20-service verification green (W1). AC6 = post-merge live checks per
