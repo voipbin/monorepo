@@ -139,7 +139,7 @@ fi
 if [ "$EVENTS_SUB" = "[]" ] && [ -f "$SUB_PKG_GO" ]; then
   # Look for: var subscribeTargets = []commonoutline.QueueName{ ... } or []QueueName{ ... }
   CONST_NAMES=$(
-    extract_brace_block "$SUB_PKG_GO" 'var\s+subscribeTargets\s*=\s*\[\](commonoutline\.)?QueueName\{' \
+    extract_brace_block "$SUB_PKG_GO" 'var[[:space:]]+subscribeTargets[[:space:]]*=[[:space:]]*\[\](commonoutline\.)?QueueName\{' \
     | { grep -oP 'QueueName\w+' || true; }
   )
   if [ -n "$CONST_NAMES" ]; then

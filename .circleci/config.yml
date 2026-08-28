@@ -55,3 +55,8 @@ workflows:
             voip-asterisk-proxy/.*      run-voip-asterisk-proxy true
             voip-kamailio-proxy/.*      run-voip-kamailio-proxy true
             voip-rtpengine-proxy/.*     run-voip-rtpengine-proxy true
+
+            .circleci/scripts/.*        run-shell-tests true
+            .circleci/tests/.*          run-shell-tests true
+            docs/reference/extractor\.sh run-shell-tests true
+            docs/reference/tests/.*     run-shell-tests true
