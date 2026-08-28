@@ -1,8 +1,11 @@
 # VOIP-1406: Migrate event subscribers from fanout to topic patterns
 
-Status: PLAN (stage 3 of 4). Issue analysis APPROVED (R1 RC, R2 RC, R3 Approve, R4
-Approve). Design APPROVED (docs/plans/2026-08-29-voip-1406-consumer-topic-migration-design.md;
-R1 RC, R2 Approve, R3 Approve with live-broker audit).
+Status: CODE REVIEW COMPLETE (stage 4 of 4). Issue analysis APPROVED (R1 RC, R2 RC, R3
+Approve, R4 Approve). Design APPROVED (docs/plans/2026-08-29-voip-1406-consumer-topic-migration-design.md;
+R1 RC, R2 Approve, R3 Approve with live-broker audit). Plan APPROVED (R1 RC, R2 RC, R3
+Approve, R4 Approve). Code review APPROVED (R1 Approve -- template/uniformity, R2 Approve
+-- production semantics/event delivery, R3 Approve -- final-gate diff scope/hygiene; zero
+blocking findings across all 3 rounds). Ready for PR.
 
 ## Implementation Plan (stage 3) -- rev.1
 
@@ -11,7 +14,7 @@ Normative source: the Approved design (§2 template, §4 rulings, §5 bind sets,
 
 ### Waves
 
-- [ ] **W1 -- per-service implementation (20 services, parallel executor batches of ~6;
+- [x] **W1 -- per-service implementation (20 services, parallel executor batches of ~6;
   no inter-service ordering constraints -- no shared code changes).**
   Per service: add package-level `topicPatterns` (built via `eventtopic.PatternAction`,
   or `"#"` for timeline) and `fanoutUnbindTargets` vars in pkg/subscribehandler; insert
@@ -30,12 +33,12 @@ Normative source: the Approved design (§2 template, §4 rulings, §5 bind sets,
   Special: webhook string-join targets variance; agent/timeline place the new bin-manager.event block AFTER the existing 1258 webhook-topic block (both before `go ConsumeMessage`) and extend the existing InOrder chain accordingly; timeline replaces 25 subscribe calls
   with `#` (asterisk + 1258 binds untouched); call-manager keeps asterisk subscribe +
   numWorkers=20 untouched; api-manager NOT touched.
-- [ ] **W2 -- docs (single commit).** Reference doc (rabbitmq-queues-reference.md):
+- [x] **W2 -- docs (single commit).** Reference doc (rabbitmq-queues-reference.md):
   Exchanges section gains the "consumers now bind patterns; fanout publish remains until
   VOIP-1407" state note and the runbook commands (broker-binding inspection + manual
   unbind) per §7. (The unreachable-cases follow-up ticket is ALREADY registered:
   VOIP-1422.)
-- [ ] **W3 -- verification + PR.** AC evidence below; main conflict check; PR creation.
+- [x] **W3 -- verification + PR.** AC evidence below; main conflict check; PR creation.
   The PR body links the reference-doc runbook section and states that post-merge rollout
   follows design §7's wave order (low-volume -> multi-pattern -> timeline -> call-manager
   last).
