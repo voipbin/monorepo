@@ -9,11 +9,16 @@
   experiment proving `QueueUnbind` against a missing exchange is safe while
   `QueueBind`/`QueueSubscribe` against one is not -- is authoritative and not
   re-litigated here)
-- Scope decision (post-issue-analysis, by explicit user direction): `voip-asterisk-proxy`
-  is EXCLUDED from this ticket entirely. Its fanout leg to `asterisk.all.event` "operates
-  differently" and stays untouched, exactly as `asterisk.all.event` itself has been
-  treated as permanent since VOIP-1404. This resolves what the issue analysis called
-  §6 deferred item 1 and materially simplifies §1 below.
+
+## 0. Scope exclusion (post-issue-analysis, by explicit user direction)
+
+`voip-asterisk-proxy` is EXCLUDED from this ticket entirely. Its fanout leg to
+`asterisk.all.event` "operates differently" and stays untouched, exactly as
+`asterisk.all.event` itself has been treated as permanent since VOIP-1404. This resolves
+what issue analysis `tasks/todo.md` §6 lists as **resolved item 3** ("§4 item 1
+mechanism (RESOLVED rev.11, was deferred item 1)" -- `tasks/todo.md:673`; it was deferred
+item 1 in an earlier revision and was moved to the resolved list once the user's
+direction settled it) and materially simplifies §1 below.
 
 ## 1. Goal and scope
 
@@ -25,6 +30,8 @@ exchange-deletion runbook runs):
   CLIs, enumerated in issue analysis §3) stop fanout-publishing; topic becomes their
   sole delivery path. `voip-asterisk-proxy` (excluded, above) and 3 confirmed-dead
   wiring sites (`transfer-manager`/`transfer-control`/`tts-control`) are handled per §4.
+  `talk-control`'s one-line broken-exchange-name fix (§2.3.1, new -- R2 finding,
+  CRITICAL) is also handled per §4.
 - **(b) Consumer side**: 20 VOIP-1406 services delete the fanout `QueueSubscribe` loop,
   `subscribeTargets`, and `fanoutUnbindTargets`/`QueueUnbind` step from
   `pkg/subscribehandler`; call-manager and timeline-manager additionally delete the
@@ -35,13 +42,17 @@ exchange-deletion runbook runs):
 Out of scope: `voip-asterisk-proxy` and `asterisk.all.event` entirely (this revision);
 VOIP-1258's `NewNotifyHandlerForExistingExchange` runtime path (confirmed orthogonal,
 issue analysis §3.C -- its only production caller is `PublishEventWithRoutingKey`, which
-never enters the code this design touches); talk-control's pre-existing broken wiring
-(independent follow-up, not created or worsened by this ticket).
+never enters the code this design touches). **talk-control's broken wiring is NOT out of
+scope** (corrected -- R2 finding, CRITICAL; an earlier revision of this design called it
+out of scope, which was true for issue analysis but stopped being true the moment §2.3
+introduced `logrus.Fatalf`, see §2.3.1): its empty exchange name is fixed by this PR as
+a narrow, directly-motivated companion change, not left as an independent follow-up.
 
 ## 2. Publish side: `bin-common-handler/pkg/notifyhandler`
 
-### 2.1 Mechanism (issue analysis §6 deferred item 1 -- resolved pre-design by user
-direction, restated here as the binding design decision)
+### 2.1 Mechanism (issue analysis §6 resolved item 3, formerly deferred item 1 -- see
+§0 -- resolved pre-design by user direction, restated here as the binding design
+decision)
 
 `WithGlobalTopicPublish()` is NOT deleted and NOT inverted. It keeps its exact current
 shape as an `Option` that sets `h.topicEnabled = true`. Only its **meaning** changes:
@@ -55,9 +66,9 @@ This is the entire mechanism. No opt-out flag, no second constructor, no signatu
 change to `NewNotifyHandler`. `voip-asterisk-proxy/cmd/asterisk-proxy/main.go:107`'s
 call site needs zero edits and is not touched by this PR.
 
-**Two in-code comments now describe the OLD meaning and must be rewritten as part of
-this change (R1 finding 5), since they are the primary documentation a future reader
-of this package encounters:**
+**Three in-code comments now describe the OLD meaning and must be rewritten as part of
+this change (R1 finding 5, plus one more found in R2 -- finding 3), since they are the
+primary documentation a future reader of this package encounters:**
 - `WithGlobalTopicPublish()`'s doc comment (`main.go:175-186`) currently reads "on top
   of the existing fanout publish, every event is **also** published..." and "the
   fanout publish stays the system of record while dual publish lasts." Rewrite to state
@@ -69,6 +80,21 @@ of this package encounters:**
   same process" alongside their topic-only instance. Verified false (issue analysis §3,
   R2 finding 7): neither constructs anything but
   `NewNotifyHandlerForExistingExchange`. Correct the comment while touching this file.
+- **`main.go:64-66`'s comment (R2 finding 3)** on the `promTopicPublishTotal`/
+  `promTopicPlaceholderTotal` var block: "the topic publish path must **never** touch
+  `promNotifyTotal`/`promNotifyProcessTime`, otherwise the dual publish would double-
+  count the existing fanout metrics." §2.2 makes the topic-only branch increment
+  `promNotifyTotal` (it is no longer a *dual* publish, so there is nothing left to
+  double-count), and §2.5 makes `publishTopicEventOrErr` observe
+  `promNotifyProcessTime`. Both directly contradict this comment once fanout is gone;
+  rewrite it to state the new invariant (these counters/histogram are shared across
+  both paths now that there is only one active path per instance, so no double-counting
+  is possible by construction). The near-identical comment on old `publishTopicEvent`
+  itself (`publish.go:186-189`, "reusing them would pollute the existing fanout
+  metrics") describes the same now-obsolete constraint and is replaced by §2.5's
+  rewritten function, which should carry an equivalent updated doc comment explaining
+  why observing `promNotifyProcessTime` is now correct rather than a suppressed
+  earlier reason not to.
 
 ### 2.2 `publishEvent()` control flow change
 
@@ -109,8 +135,12 @@ func (h *notifyHandler) publishEvent(eventType string, dataType string, data jso
 		return nil
 	case h.topicEnabled:
 		// Topic-only path (VOIP-1407): the 55 real publishers. No fanout publish.
+		// publishTopicEventOrErr's own error already carries full context (including
+		// routing_key, §2.5) -- returned directly, not re-wrapped, to avoid a doubled
+		// "could not publish the event to the global topic exchange" prefix (R2 finding
+		// 11).
 		if err := h.publishTopicEventOrErr(ctx, evt, subscriptionID); err != nil {
-			return fmt.Errorf("could not publish the event to the global topic exchange. err: %v", err)
+			return err
 		}
 	default:
 		// Fanout-only path, UNCHANGED: voip-asterisk-proxy and the 3 dead-wiring sites.
@@ -220,6 +250,70 @@ deletes from the broker (§5), though they are still passed positionally -- are 
 separate, much narrower question, deferred to §7 item 2; the constructor parameter
 itself stays regardless of that follow-up.)
 
+### 2.3.1 Companion fix: `talk-control`'s empty exchange name (R2 finding -- CRITICAL,
+newly discovered as a direct consequence of §2.3's `logrus.Fatalf` decision)
+
+`bin-talk-manager/cmd/talk-control/main.go:57`:
+
+```go
+notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, nil, "", serviceName)
+```
+
+`queueEvent` is the empty string, and no `WithGlobalTopicPublish()` option is passed, so
+this instance is `topicEnabled=false` and enters exactly the branch §2.3 changed:
+`sockHandler.TopicCreate(string(queueEvent))` calls
+`ExchangeDeclare("", "fanout", true, false, false, false, nil)`
+(`bin-common-handler/pkg/rabbitmqhandler/topic.go:5-12`) -- declaring the AMQP *default*
+exchange (empty name), which every broker rejects
+(`ACCESS_REFUSED -- operation not permitted on the default exchange`). This declare
+already fails on every `talk-control` invocation today.
+
+**Today's actual behavior (not "boots fine," corrected)**: `talk-control`'s
+`notifyHandler` is genuinely live code -- unlike the 3 confirmed-dead sites in §4,
+`pkg/{chathandler,messagehandler,reactionhandler,participanthandler}` all call
+`h.notifyHandler.PublishWebhookEvent(...)` on their create/update/delete paths (e.g.
+`chathandler/chat.go:165,263,292`). Per §2.3's own corrected finding (the nil return is
+never checked), `talk-control` boots successfully today (`chat list`, `message list`,
+`participant list` never reach the notify call and work fine), and only the
+write-path subcommands that DO reach it (`reaction add`, per `bin-talk-manager/
+CLAUDE.md`) panic on a nil-interface method call -- but only when actually invoked.
+
+**Why §2.3 makes this materially worse, not merely "already broken"**: once the same
+declare failure calls `logrus.Fatalf` instead of logging and returning `nil`, the
+process exits during `initHandlers()`, before any subcommand runs. Every `talk-control`
+invocation breaks, including the three read-only subcommands that work perfectly today.
+This is a strictly larger blast radius than the pre-existing bug, introduced by this
+ticket's own change -- not something a "not created or worsened by this ticket" framing
+can honestly claim (§1, corrected).
+
+**Decision: fix the call site in this same PR**, following the exact precedent §2.3
+already set for the fanout-declare latent bug ("the same function, the exact same class
+of bug... discovered as a direct consequence of writing this design"). This is a
+one-line change with an existing, correct value to use --
+`bin-talk-manager/cmd/talk-manager/main.go:82-87` (the daemon) already constructs
+correctly with `commonoutline.QueueNameTalkEvent` (which has been successfully declared
+in production continuously since before VOIP-1404, per §2.4's rationale for why FATAL is
+safe):
+
+```go
+notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, nil, commonoutline.QueueNameTalkEvent, serviceName)
+```
+
+(requires adding the `monorepo/bin-common-handler/models/outline` import, aliased
+`commonoutline` to match this file's sibling services' convention -- not currently
+imported in this file). `WithGlobalTopicPublish()` is deliberately NOT added here: doing
+so would move `talk-control` from `topicEnabled=false` to `=true`, a functional scope
+expansion (this CLI would start publishing to `bin-manager.event`) this ticket does not
+need and issue analysis never characterized as one of the 55 real dual-publish sites --
+the minimal fix is exactly the exchange-name correction, nothing else.
+
+**Explicitly NOT fixed by this companion change (separate, unrelated, genuinely out of
+scope)**: the `nil` `reqHandler` argument on the same line, and `serviceName`'s type
+(untyped string constant `"talk-manager"` rather than
+`commonoutline.ServiceNameTalkManager`) -- neither interacts with the declare-failure/
+`Fatalf` mechanism this ticket touches, and fixing them is not required to prevent the
+boot-failure regression this section exists to close.
+
 ### 2.4 `initGlobalTopicExchange` failure semantics (issue analysis §6 deferred item 1)
 
 Today: `initGlobalTopicExchange()` self-guards on `!h.topicEnabled` (unchanged, §2.3),
@@ -327,8 +421,11 @@ maintainer adding `WithGlobalTopicPublish()` to this instance would not just dou
 publish (the old risk) -- since this instance's `h.queueNotify` already targets a
 topic-kind exchange (`QueueNameWebhookEventTopic`), enabling the option would ALSO
 run this instance through `publishTopicEventOrErr`'s `bin-manager.event`-targeting
-path (via `initGlobalTopicExchange`'s existing self-guard now firing for this instance
-too, §2.3), in addition to its actual traffic via `PublishEventWithRoutingKey` --
+path (via `initGlobalTopicExchange`'s existing self-guard, `main.go:270-272`, which
+fires -- returns early -- only while `topicEnabled=false`; enabling the option is
+precisely what makes the guard STOP firing and lets the declare through, §2.3, R2
+finding 12 correcting an earlier backwards phrasing here), in addition to its actual
+traffic via `PublishEventWithRoutingKey` --
 **corrected premise (R1 finding 3)**: `initGlobalTopicExchange()`'s guard means there is
 NO redundant `bin-manager.event` declare inside `NewNotifyHandlerForExistingExchange`
 TODAY (`topicEnabled=false` there, so the call at `main.go:250` is currently a no-op);
@@ -357,30 +454,38 @@ this constructor, so there is nothing to migrate, only a comment to update):
 
 ### 3.1 The change, per service
 
-In `pkg/subscribehandler/main.go`, delete:
-1. The `subscribeTargets` package-level var (or, for webhook-manager, its comma-joined-
-   string wiring at `main.go:97,105`; for timeline-manager, its package-level
-   `[]string` including `QueueNameAsteriskEventAll` -- see §3.2 for the one entry that
-   MUST survive this deletion).
+In `pkg/subscribehandler/main.go` (plus `cmd/*-manager/main.go` where item 1 below is
+constructed outside the package -- see the corrected variance table, R2 finding 2),
+delete:
+1. Whatever constructs the fanout target list feeding `Run()`'s subscribe loop --
+   concretely a `cmd/*-manager/main.go`-local slice literal passed in as a constructor
+   parameter for 18 of 20 services, but a genuine `pkg/subscribehandler`-package-level
+   `subscribeTargets` var (with no `cmd/` wiring at all) for timeline-manager, and a
+   comma-joined-string variant of the cmd-local pattern for webhook-manager -- see §3.2
+   for the one entry (`QueueNameAsteriskEventAll`) that MUST survive this deletion.
 2. The fanout `QueueSubscribe` loop in `Run()`.
 3. `fanoutUnbindTargets` and the `QueueUnbind` step that consumed it.
-4. In `cmd/*-manager/main.go`: the wiring that fed `subscribeTargets` into the
-   `subscribeHandler` constructor (dead parameter once #1 is gone).
+4. For the 18 cmd-local services: the `cmd/*-manager/main.go` slice literal and the
+   constructor-parameter wiring that passed it in (dead once #1/#2 are gone). Does NOT
+   apply to timeline-manager (no `cmd/` wiring exists to delete -- issue analysis §2b)
+   or webhook-manager (its `cmd/` deletion is the `strings.Join` construction, per the
+   table below, not a plain slice literal).
 
-`topicPatterns`/`QueueBind` (the VOIP-1406 topic-binding block) becomes the sole intake
-mechanism -- unconditional, not gated behind "if the fanout declare failed, stay on
-fanout" (that branch no longer exists, matching §3.3's failure-semantics decision).
+`topicPatterns`/`QueueBind` (the VOIP-1406 topic-binding block) becomes the sole
+consumer-side intake mechanism for 17 of 20 services -- unconditional, not gated behind
+"if the fanout declare failed, stay on fanout" (that branch no longer exists, matching
+§3.3's failure-semantics decision). The other 3 (call-manager, agent-manager,
+timeline-manager) additionally retain one or both of §3.2's exceptions.
 
-**Per-service variance in how item 1-4 above are expressed (R1 finding 4, confirmed via
-source read of all three named services)** -- the generic deletion still applies, only
-the concrete syntax at the deletion site differs:
+**Per-service variance in how item 1/4 above are expressed (R1 finding 4; corrected
+per R2 finding 2 -- the original table had the typical/atypical cases backwards and
+misidentified call-manager's citation)**:
 
 | Service | `subscribeTargets` shape | Notes |
 |---|---|---|
-| 17 of 20 (typical) | `var subscribeTargets = []string{...}` | Delete the var and the `cmd/*/main.go` wiring that passes it in, per items 1/4. |
-| timeline-manager | `var subscribeTargets = []commonoutline.QueueName{...}` (typed, not `[]string`) | Same deletion; also has a two-value `Run(ctx) (<-chan struct{}, error)` signature (not the one-value `Run(ctx) error` the rest of §3.1/§3.3 assume) -- every `return err` in §3.3's rewritten `Run()` becomes `return nil, err` for this service specifically. |
-| webhook-manager | Comma-joined `string` constructor parameter (`main.go:97`), `strings.Split(h.subscribesTargets, ",")` at the top of `Run()` (`main.go:126`); built via `strings.Join([]string{...}, ",")` in `cmd/webhook-manager/main.go:193` | Delete the `strings.Join` construction in `cmd/`, the constructor parameter, and the `strings.Split` call in `Run()` -- same net effect as item 1/4, different concrete lines. |
-| call-manager | `subscribeTargets []string` built from `string(commonoutline.QueueName*Event)` conversions (e.g. `main.go:54-56`) | Same deletion as the typical case; the `string(...)` conversions disappear along with the var, nothing extra to do. |
+| 18 of 20 (typical -- e.g. call-manager, agent-manager, tag-manager, billing-manager) | `cmd/*-manager/main.go`-local slice literal (e.g. `subscribeTargets := []string{...}`, `bin-call-manager/cmd/call-manager/main.go:180-185`), passed as a constructor parameter into a `pkg/subscribehandler` struct field (e.g. `bin-call-manager/pkg/subscribehandler/main.go:63,121,130`) | Delete the `cmd/`-local slice literal and the constructor-parameter wiring, per items 1/4. `string(commonoutline.QueueName*Event)` conversions some services use when building the slice (e.g. call-manager) disappear along with it -- nothing extra to do. |
+| timeline-manager | Genuine package-level `var subscribeTargets = []commonoutline.QueueName{...}` (`bin-timeline-manager/pkg/subscribehandler/main.go:27`, typed, not `[]string`) -- **no `cmd/` wiring exists** (`NewSubscribeHandler(sockHandler, dbHandler)` takes no targets parameter, `main.go:119-128`) | Delete the package-level var only; there is no item-4 counterpart for this service. Also has a two-value `Run(ctx) (<-chan struct{}, error)` signature (`main.go:109,134`, not the one-value `Run(ctx) error` the rest of §3.1/§3.3 assume) -- every `return err` in §3.3's rewritten `Run()` becomes `return nil, err` for this service specifically. |
+| webhook-manager | Comma-joined `string` constructor parameter (`main.go:97`), `strings.Split(h.subscribesTargets, ",")` at the top of `Run()` (`main.go:126`); built via `strings.Join([]string{...}, ",")` in `cmd/webhook-manager/main.go:193` | Delete the `strings.Join` construction in `cmd/`, the constructor parameter, and the `strings.Split` call in `Run()` -- same net effect as item 1/4, different concrete lines from the typical case. |
 
 ### 3.2 Per-service exceptions to the generic change in §3.1
 
@@ -403,8 +508,12 @@ sweep does not regress them.
   Concretely: the loop deletion in §3.1 item 2 must NOT remove the specific iteration
   that subscribes to `QueueNameAsteriskEventAll`; if the loop is deleted wholesale, this
   one `QueueSubscribe(subscribeQueue, string(commonoutline.QueueNameAsteriskEventAll))`
-  call is re-added as a standalone statement immediately before `go ConsumeMessage`, in
-  the same position the loop used to occupy.
+  call is re-added as a standalone statement **in the exact position the loop used to
+  occupy** -- immediately after `QueueCreate`, before the VOIP-1258 block and the
+  topic-declare line, matching §3.3's snippet exactly (R2 finding 6 corrected an earlier
+  version of this bullet that also said "immediately before `go ConsumeMessage`", a
+  different and wrong position for call-manager/timeline-manager's actual source
+  layout).
 
 **agent-manager and timeline-manager -- the VOIP-1258 webhook-topic-bind block:**
 
@@ -458,7 +567,7 @@ strictly worse than a loud boot failure an operator/orchestrator will notice and
 restart-loop on. Concretely, in `Run()` (the snippet below shows the union of both §3.2
 exceptions for illustration; only timeline-manager carries both -- call-manager has the
 asterisk line but not the webhook block, agent-manager has the webhook block but not the
-asterisk line, the other 18 services have neither and skip straight from `QueueCreate` to
+asterisk line, the other 17 services have neither and skip straight from `QueueCreate` to
 the topic-declare line). **timeline-manager only (§3.1's variance table)**: every
 `return fmt.Errorf(...)` below becomes `return nil, fmt.Errorf(...)`, matching its
 two-value `Run(ctx) (<-chan struct{}, error)` signature:
@@ -511,8 +620,11 @@ bindings for that service (broker-binding inspection, same technique as issue an
 `Run()` re-subscribing to fanout mid-rollout) or an image rollback could reintroduce a
 stray binding that -- once this service's fanout-unbind machinery is gone -- has no
 automatic remediation path left (issue analysis §2b's finding: VOIP-1406's
-`QueueUnbind` loop was the only automatic self-heal for this; the manual `rabbitmqadmin`
-remediation documented in VOIP-1406 §7 still works, it just needs a human to run it).
+`QueueUnbind` loop was the only automatic self-heal for this; the manual `curl`-based
+management-API remediation documented in `docs/reference/rabbitmq-queues-
+reference.md:301-312` still works, it just needs a human to run it -- **corrected per R2
+finding 5**: an earlier version of this bullet said `rabbitmqadmin`, which is not the
+tool that doc or §5's runbook actually uses on bm-nyc-01).
 
 ## 4. Per-call-site disposition (issue analysis §3's 62 sites, resolved individually)
 
@@ -522,7 +634,7 @@ remediation documented in VOIP-1406 §7 still works, it just needs a human to ru
 | 1 (`voip-asterisk-proxy/cmd/asterisk-proxy/main.go:107`) | **Excluded, zero changes** (§0/§2.1). |
 | 2 (`bin-transfer-manager/cmd/{transfer-manager,transfer-control}/main.go`) | **Deleted** (§7 item 4 -- confirmed dead: zero calls anywhere in `pkg/transferhandler`). Delete the `notifyHandler` field, its constructor parameter, and both `NewNotifyHandler` construction sites. |
 | 1 (`bin-tts-manager/cmd/tts-control/main.go:38`) | **Deleted**, same reasoning (`pkg/ttshandler` never calls it). |
-| 1 (`bin-talk-manager/cmd/talk-control/main.go:57`) | **Untouched** -- pre-existing, independent bug (empty exchange name), out of scope for this ticket, tracked separately. |
+| 1 (`bin-talk-manager/cmd/talk-control/main.go:57`) | **Fixed, one line** (§2.3.1 -- corrected from an earlier "untouched, out of scope" ruling: this ticket's own `logrus.Fatalf` change would otherwise turn a narrow pre-existing bug into a guaranteed boot crash for the whole CLI). `queueEvent` changed from `""` to `commonoutline.QueueNameTalkEvent`; `WithGlobalTopicPublish()` deliberately NOT added. |
 | 2 (`bin-webhook-manager/cmd/{webhook-manager,webhook-control}/main.go`, `NewNotifyHandlerForExistingExchange`) | **Comment-only change** (§2.6). |
 
 **Decision on the 3 dead-wiring deletions (issue analysis §6 deferred item 6,
@@ -593,7 +705,9 @@ change.
    `DelayHour` in `notifyhandler`): not touched (§2.2) -- optional follow-up.
 4. transfer-manager/transfer-control/tts-control dead-wiring deletion: **decided IN
    scope, §4** -- not actually open, listed here for completeness.
-5. talk-control's broken wiring: independent follow-up, explicitly out of scope.
+5. talk-control's broken wiring: **decided IN scope, §2.3.1/§4** -- not actually open,
+   listed here for completeness (an earlier revision called this out of scope; R2's
+   review found that stance untenable once §2.3 introduced `logrus.Fatalf`).
 6. `topicDisabled` field: not actually open, listed here for completeness -- §2.4
    already decided this (deleted entirely, along with its `promTopicPublishTotal{
    result="error"}` "suppressed publish" counting and the "degrade, don't abort" doc
@@ -613,6 +727,23 @@ change.
   `logrus.StandardLogger().ExitFunc` temporarily overridden to a non-exiting stub plus a
   hook/formatter capturing the fatal-level entry, asserting the entry was logged at
   `logrus.FatalLevel` with the expected message, rather than asserting a return value.
+- **Existing tests this design invalidates, named explicitly (R2 finding 4 -- §8
+  previously described this work only in the abstract)**:
+  - `Test_NewNotifyHandler_globalTopicDeclareFailure` (`main_test.go:258-294`) pins
+    the EXACT degrade-not-abort contract §2.4 removes: non-nil handler on declare
+    failure, `h.topicDisabled == true`, fanout `EventPublish` still firing, and
+    `topicPublishResultError` incrementing. Under `logrus.Fatalf` this test would not
+    fail -- it would terminate the whole `notifyhandler` test binary if left as-is. It
+    must be rewritten (per this bullet's `ExitFunc`-override strategy) to assert the
+    fatal-log behavior instead, not merely updated in place.
+  - `Test_WithGlobalTopicPublish_declaresGlobalExchange`'s `h.topicDisabled` assertions
+    (`main_test.go:251-253`) must be removed along with the field itself (§2.4/§7 item
+    6).
+  - `Test_NewNotifyHandler_withoutOption` (`main_test.go:296-318`) already asserts
+    `TopicCreate` is called and a non-nil handler returned for the `topicEnabled=false`
+    path -- this is the existing, already-passing form of this section's second
+    regression pin below (the `voip-asterisk-proxy` bit-identical-behavior contract);
+    cite it directly rather than writing a new test from scratch.
 - **Regression pins (R1 finding 13) -- lock in behavior this design deliberately does
   NOT change, so a future edit to the shared `initGlobalTopicExchange` doesn't silently
   break either exception**:
@@ -625,6 +756,15 @@ change.
     routes every publish through `publishDirectEvent`/`publishDirectEventWithKey`,
     bit-identical to pre-PR behavior -- confirms this ticket's publish-side change is
     inert for the one excluded caller.
+- **`bin-talk-manager/cmd/talk-control`** (§2.3.1): a build/smoke check that
+  `initHandlers()` no longer reaches `logrus.Fatalf` -- i.e. that `TopicCreate(string(
+  commonoutline.QueueNameTalkEvent))` succeeds against a real broker post-fix, where it
+  previously failed against `""`. Not a unit test target (no existing test harness
+  around `cmd/talk-control/main.go`'s `initHandlers()`); verify via the manual
+  live-broker smoke check pattern issue analysis used elsewhere (declare the exchange
+  once via the daemon, which already does so continuously in production, then run
+  `talk-control chat list` against a real environment and confirm it exits 0 instead of
+  calling `os.Exit(1)` during startup).
 - Each of the 20 consumer services: update `binding_golden_test.go` (drop
   fanout-target pins) and the `Run()` sequencing test (gomock `InOrder`: `QueueCreate`
   -> [asterisk `QueueSubscribe`, call-manager/timeline-manager only] -> [VOIP-1258
