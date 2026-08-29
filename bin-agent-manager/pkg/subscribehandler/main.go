@@ -32,15 +32,6 @@ var topicPatterns = []string{
 	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCustomerManager), cmcustomer.EventTypeCustomerCreated),
 }
 
-// fanoutUnbindTargets lists the per-service fanout event exchanges the subscribe
-// queue unbinds from once every topicPatterns bind succeeded (VOIP-1406). It is
-// the service's subscribeTargets set; the fanout QueueSubscribe calls themselves
-// stay in Run() as the rollback surface until VOIP-1407.
-var fanoutUnbindTargets = []string{
-	string(commonoutline.QueueNameCallEvent),
-	string(commonoutline.QueueNameCustomerEvent),
-}
-
 // SubscribeHandler interface
 type SubscribeHandler interface {
 	Run() error
@@ -49,8 +40,7 @@ type SubscribeHandler interface {
 type subscribeHandler struct {
 	sockHandler sockhandler.SockHandler
 
-	subscribeQueue   string
-	subscribeTargets []string
+	subscribeQueue string
 
 	agentHandler agenthandler.AgentHandler
 }
@@ -62,14 +52,12 @@ var _ = metricshandler.ReceivedSubscribeEventProcessTime
 func NewSubscribeHandler(
 	sockHandler sockhandler.SockHandler,
 	subscribeQueue string,
-	subscribeTargets []string,
 	agentHandler agenthandler.AgentHandler,
 ) SubscribeHandler {
 	h := &subscribeHandler{
-		sockHandler:      sockHandler,
-		subscribeQueue:   subscribeQueue,
-		subscribeTargets: subscribeTargets,
-		agentHandler:     agentHandler,
+		sockHandler:    sockHandler,
+		subscribeQueue: subscribeQueue,
+		agentHandler:   agentHandler,
 	}
 
 	return h
@@ -77,21 +65,12 @@ func NewSubscribeHandler(
 
 func (h *subscribeHandler) Run() error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":              "run",
-		"subscribe_targets": h.subscribeTargets,
+		"func": "run",
 	})
 	log.Info("Creating rabbitmq queue for subscribing.")
 
 	if err := h.sockHandler.QueueCreate(h.subscribeQueue, "normal"); err != nil {
 		return fmt.Errorf("could not declare the queue for listenHandler. err: %v", err)
-	}
-
-	// subscribe each targets
-	for _, target := range h.subscribeTargets {
-		if errSubscribe := h.sockHandler.QueueSubscribe(h.subscribeQueue, target); errSubscribe != nil {
-			log.Errorf("Could not subscribe the target. target: %s, err: %v", target, errSubscribe)
-			return errSubscribe
-		}
 	}
 
 	// Cut over from the old fanout QueueNameWebhookEvent exchange to the new
@@ -119,46 +98,22 @@ func (h *subscribeHandler) Run() error {
 		log.Errorf("CRITICAL: Could not unbind from the old fanout exchange after binding to the new topic exchange. queue: %s is now bound to BOTH exchanges (double-processing resumes). Manual intervention required. err: %v", h.subscribeQueue, errUnbind)
 	}
 
-	// VOIP-1406: migrate the subscribe queue from the per-service fanout event
-	// exchanges to pattern bindings on the global topic exchange bin-manager.event.
-	// Same ordering constraint as the VOIP-1258 block above: this MUST run
-	// synchronously here, BEFORE ConsumeMessage is started below, because the
-	// bind/unbind RPCs share the queue's AMQP channel with basic.consume.
-	// Bind new before unbinding old (no window bound to neither), all-or-nothing:
-	// any pattern bind failure rolls back the partial topic binds (best-effort)
-	// and unbinds NO fanout exchange, leaving the service fully on fanout. The
-	// fanout QueueSubscribe calls above stay as the rollback surface until
-	// VOIP-1407.
+	// VOIP-1406: the subscribe queue's sole intake mechanism is pattern bindings on
+	// the global topic exchange bin-manager.event -- unconditional, not gated behind
+	// "if the fanout declare failed, stay on fanout" (VOIP-1407 removed the fanout
+	// fallback entirely). Same ordering constraint as the VOIP-1258 block above: this
+	// MUST run synchronously here, BEFORE ConsumeMessage is started below, because the
+	// bind RPCs share the queue's AMQP channel with basic.consume. A declare or bind
+	// failure here is fatal: with no fanout fallback left to degrade to, the service
+	// would otherwise silently intake zero events forever, which is strictly worse
+	// than a loud boot failure the orchestrator will restart-loop on.
 	if errDeclare := h.sockHandler.TopicCreateWithKind(string(commonoutline.QueueNameEvent), "topic"); errDeclare != nil {
-		log.Errorf("Could not declare the global topic exchange. Staying fully on the fanout subscriptions. exchange: %s, err: %v", string(commonoutline.QueueNameEvent), errDeclare)
-	} else {
-		bound := []string{}
-		ok := true
-		for _, pattern := range topicPatterns {
-			if errBind := h.sockHandler.QueueBind(h.subscribeQueue, pattern, string(commonoutline.QueueNameEvent), false, nil); errBind != nil {
-				log.Errorf("Could not bind the topic pattern. pattern: %s, err: %v", pattern, errBind)
-				ok = false
-				break
-			}
-			bound = append(bound, pattern)
-		}
+		return fmt.Errorf("could not declare the global topic exchange. err: %v", errDeclare)
+	}
 
-		if !ok {
-			// best-effort rollback of the partial topic binds, then stay fully on
-			// fanout. An unbind failure here leaves partial double delivery.
-			for _, pattern := range bound {
-				if errUnbind := h.sockHandler.QueueUnbind(h.subscribeQueue, pattern, string(commonoutline.QueueNameEvent), nil); errUnbind != nil {
-					log.Errorf("CRITICAL: partial topic bind could not be rolled back. queue: %s, pattern: %s, err: %v", h.subscribeQueue, pattern, errUnbind)
-				}
-			}
-		} else {
-			// unbind the old fanout exchanges only after EVERY pattern bound.
-			// Unbind failure: CRITICAL log, not fatal (double delivery beats loss).
-			for _, target := range fanoutUnbindTargets {
-				if errUnbind := h.sockHandler.QueueUnbind(h.subscribeQueue, "", target, nil); errUnbind != nil {
-					log.Errorf("CRITICAL: could not unbind the old fanout exchange after the topic binds. queue: %s is now bound to BOTH exchanges (double delivery). Manual intervention required. exchange: %s, err: %v", h.subscribeQueue, target, errUnbind)
-				}
-			}
+	for _, pattern := range topicPatterns {
+		if errBind := h.sockHandler.QueueBind(h.subscribeQueue, pattern, string(commonoutline.QueueNameEvent), false, nil); errBind != nil {
+			return fmt.Errorf("could not bind the topic pattern. pattern: %s, err: %v", pattern, errBind)
 		}
 	}
 

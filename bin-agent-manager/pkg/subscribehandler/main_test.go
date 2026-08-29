@@ -19,11 +19,12 @@ import (
 // channel and the broker can close the channel with "unexpected command received" (503) --
 // silently preventing that pod from ever consuming events.
 //
-// Since VOIP-1406 the strict InOrder chain covers the FULL sequence:
-// QueueCreate -> fanout QueueSubscribes -> [VOIP-1258 webhook-topic bind/unbind] ->
-// TopicCreateWithKind(bin-manager.event) -> QueueBind(every topicPatterns entry) ->
-// QueueUnbind(every fanoutUnbindTargets entry) -- and the channel-based harness asserts
-// all of it completes before ConsumeMessage is observed at all.
+// Since VOIP-1407 (the fanout-dual-publish cutover), the fanout QueueSubscribe loop is gone --
+// topicPatterns/QueueBind on the global topic exchange bin-manager.event is the sole intake
+// mechanism. The strict InOrder chain now covers:
+// QueueCreate -> [VOIP-1258 webhook-topic bind/unbind, retained verbatim, log-only] ->
+// TopicCreateWithKind(bin-manager.event) -> QueueBind(every topicPatterns entry) -- and the
+// channel-based harness asserts all of it completes before ConsumeMessage is observed at all.
 func Test_Run_BindsTopicExchangeBeforeReturning(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
@@ -31,10 +32,6 @@ func Test_Run_BindsTopicExchangeBeforeReturning(t *testing.T) {
 	mockSock := sockhandler.NewMockSockHandler(mc)
 
 	queueName := string(commonoutline.QueueNameAgentSubscribe)
-	subscribeTargets := []string{
-		string(commonoutline.QueueNameCallEvent),
-		string(commonoutline.QueueNameCustomerEvent),
-	}
 
 	// callOrderCh, not a shared slice: QueueBind/QueueUnbind run synchronously on the caller's
 	// goroutine, but ConsumeMessage's callback runs on Run()'s internal goroutine. A plain
@@ -46,10 +43,9 @@ func Test_Run_BindsTopicExchangeBeforeReturning(t *testing.T) {
 	callOrderCh := make(chan string, 16)
 
 	// number of synchronous broker operations that must ALL be recorded before
-	// ConsumeMessage may fire: QueueCreate + 2 fanout QueueSubscribe + 1258
-	// QueueBind/QueueUnbind + TopicCreateWithKind + len(topicPatterns) QueueBinds +
-	// len(fanoutUnbindTargets) QueueUnbinds.
-	syncOps := 1 + len(subscribeTargets) + 2 + 1 + len(topicPatterns) + len(fanoutUnbindTargets)
+	// ConsumeMessage may fire: QueueCreate + 1258 QueueBind/QueueUnbind +
+	// TopicCreateWithKind + len(topicPatterns) QueueBinds.
+	syncOps := 1 + 2 + 1 + len(topicPatterns)
 
 	calls := []any{
 		mockSock.EXPECT().QueueCreate(queueName, "normal").
@@ -57,13 +53,6 @@ func Test_Run_BindsTopicExchangeBeforeReturning(t *testing.T) {
 				callOrderCh <- "QueueCreate"
 				return nil
 			}),
-	}
-	for _, target := range subscribeTargets {
-		calls = append(calls, mockSock.EXPECT().QueueSubscribe(queueName, target).
-			DoAndReturn(func(_, _ string) error {
-				callOrderCh <- "QueueSubscribe"
-				return nil
-			}))
 	}
 
 	// the existing VOIP-1258 webhook-topic cutover block, retained untouched.
@@ -80,8 +69,9 @@ func Test_Run_BindsTopicExchangeBeforeReturning(t *testing.T) {
 			}),
 	)
 
-	// the VOIP-1406 bin-manager.event block: declare, bind every pattern, unbind
-	// every fanout target -- strictly after the 1258 block, before ConsumeMessage.
+	// the VOIP-1406 bin-manager.event block: declare then bind every pattern --
+	// the sole intake mechanism as of VOIP-1407, strictly after the 1258 block,
+	// before ConsumeMessage.
 	calls = append(calls,
 		mockSock.EXPECT().TopicCreateWithKind(string(commonoutline.QueueNameEvent), "topic").
 			DoAndReturn(func(_, _ string) error {
@@ -96,13 +86,6 @@ func Test_Run_BindsTopicExchangeBeforeReturning(t *testing.T) {
 				return nil
 			}))
 	}
-	for _, target := range fanoutUnbindTargets {
-		calls = append(calls, mockSock.EXPECT().QueueUnbind(queueName, "", target, nil).
-			DoAndReturn(func(_, _, _ string, _ interface{}) error {
-				callOrderCh <- "QueueUnbind:fanout"
-				return nil
-			}))
-	}
 	gomock.InOrder(calls...)
 
 	// ConsumeMessage is started in a goroutine inside Run() -- allow it to be called (or not,
@@ -114,7 +97,7 @@ func Test_Run_BindsTopicExchangeBeforeReturning(t *testing.T) {
 			return nil
 		}).AnyTimes()
 
-	h := NewSubscribeHandler(mockSock, queueName, subscribeTargets, nil)
+	h := NewSubscribeHandler(mockSock, queueName, nil)
 
 	if err := h.Run(); err != nil {
 		t.Fatalf("Run() returned an unexpected error: %v", err)
@@ -155,8 +138,12 @@ func Test_Run_BindsTopicExchangeBeforeReturning(t *testing.T) {
 // Test_Run_QueueBindFailure_DoesNotUnbind verifies the safe-failure path of the retained
 // VOIP-1258 block: if QueueBind to the webhook topic exchange fails, Run() must NOT proceed
 // to QueueUnbind the old webhook fanout exchange -- staying bound to the old exchange is
-// safer than ending up bound to neither. The independent VOIP-1406 bin-manager.event block
-// still runs to completion afterwards (the two cutovers must not affect each other).
+// safer than ending up bound to neither. This block's failure semantics stay LOG-ONLY,
+// NON-FATAL (design §3.2 sub-ruling 1) -- unlike every other failure in Run(), which is now
+// fatal since VOIP-1407 removed the fanout fallback. This test is the regression guard for
+// that distinction: Run() must return nil here, and the independent VOIP-1406
+// bin-manager.event block must still run to completion afterwards (the two cutovers must not
+// affect each other).
 func Test_Run_QueueBindFailure_DoesNotUnbind(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
@@ -164,10 +151,8 @@ func Test_Run_QueueBindFailure_DoesNotUnbind(t *testing.T) {
 	mockSock := sockhandler.NewMockSockHandler(mc)
 
 	queueName := string(commonoutline.QueueNameAgentSubscribe)
-	subscribeTargets := []string{string(commonoutline.QueueNameCallEvent)}
 
 	mockSock.EXPECT().QueueCreate(queueName, "normal").Return(nil)
-	mockSock.EXPECT().QueueSubscribe(queueName, subscribeTargets[0]).Return(nil)
 	mockSock.EXPECT().QueueBind(queueName, "#", string(commonoutline.QueueNameWebhookEventTopic), false, nil).
 		Return(assertError("bind failed"))
 	// The webhook fanout QueueUnbind must NOT be called.
@@ -178,16 +163,70 @@ func Test_Run_QueueBindFailure_DoesNotUnbind(t *testing.T) {
 	for _, pattern := range topicPatterns {
 		mockSock.EXPECT().QueueBind(queueName, pattern, string(commonoutline.QueueNameEvent), false, nil).Return(nil)
 	}
-	for _, target := range fanoutUnbindTargets {
-		mockSock.EXPECT().QueueUnbind(queueName, "", target, nil).Return(nil)
-	}
 
 	mockSock.EXPECT().ConsumeMessage(gomock.Any(), queueName, gomock.Any(), false, false, false, 10, gomock.Any()).Return(nil).AnyTimes()
 
-	h := NewSubscribeHandler(mockSock, queueName, subscribeTargets, nil)
+	h := NewSubscribeHandler(mockSock, queueName, nil)
 
 	if err := h.Run(); err != nil {
-		t.Fatalf("Run() returned an unexpected error: %v", err)
+		t.Fatalf("Run() returned an unexpected error: %v -- the VOIP-1258 block's failure must stay log-only, non-fatal", err)
+	}
+}
+
+// Test_Run_TopicDeclareFailure_ReturnsErrorImmediately verifies the VOIP-1407 fatal-failure
+// ruling for the VOIP-1406 global topic exchange declare: since the fanout fallback is gone,
+// a TopicCreateWithKind failure must fail Run() outright (no more "stay fully on fanout"
+// degrade path) so the orchestrator's normal pod-restart-with-backoff handles recovery.
+func Test_Run_TopicDeclareFailure_ReturnsErrorImmediately(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(mc)
+
+	queueName := string(commonoutline.QueueNameAgentSubscribe)
+
+	mockSock.EXPECT().QueueCreate(queueName, "normal").Return(nil)
+	mockSock.EXPECT().QueueBind(queueName, "#", string(commonoutline.QueueNameWebhookEventTopic), false, nil).Return(nil)
+	mockSock.EXPECT().QueueUnbind(queueName, "", string(commonoutline.QueueNameWebhookEvent), nil).Return(nil)
+
+	mockSock.EXPECT().TopicCreateWithKind(string(commonoutline.QueueNameEvent), "topic").
+		Return(assertError("declare failed"))
+
+	// no further calls are expected: no topicPatterns QueueBind, no ConsumeMessage.
+
+	h := NewSubscribeHandler(mockSock, queueName, nil)
+
+	if err := h.Run(); err == nil {
+		t.Fatalf("Run() returned nil, expected an error when the global topic exchange declare fails")
+	}
+}
+
+// Test_Run_TopicBindFailure_ReturnsErrorImmediately verifies the VOIP-1407 fatal-failure
+// ruling for the topicPatterns QueueBind loop: a bind failure must fail Run() outright
+// (no more best-effort rollback of partial binds, no more staying fully on fanout -- that
+// machinery existed only to protect the fanout fallback, which VOIP-1407 removed).
+func Test_Run_TopicBindFailure_ReturnsErrorImmediately(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(mc)
+
+	queueName := string(commonoutline.QueueNameAgentSubscribe)
+
+	mockSock.EXPECT().QueueCreate(queueName, "normal").Return(nil)
+	mockSock.EXPECT().QueueBind(queueName, "#", string(commonoutline.QueueNameWebhookEventTopic), false, nil).Return(nil)
+	mockSock.EXPECT().QueueUnbind(queueName, "", string(commonoutline.QueueNameWebhookEvent), nil).Return(nil)
+
+	mockSock.EXPECT().TopicCreateWithKind(string(commonoutline.QueueNameEvent), "topic").Return(nil)
+	// the first topicPatterns bind fails; no rollback QueueUnbind is expected (none exists
+	// any more), and no ConsumeMessage.
+	mockSock.EXPECT().QueueBind(queueName, topicPatterns[0], string(commonoutline.QueueNameEvent), false, nil).
+		Return(assertError("bind failed"))
+
+	h := NewSubscribeHandler(mockSock, queueName, nil)
+
+	if err := h.Run(); err == nil {
+		t.Fatalf("Run() returned nil, expected an error when a topicPatterns bind fails")
 	}
 }
 

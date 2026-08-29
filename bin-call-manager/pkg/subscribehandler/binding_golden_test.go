@@ -1,6 +1,9 @@
 package subscribehandler
 
 import (
+	"go/ast"
+	"go/parser"
+	"go/token"
 	"testing"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
@@ -34,35 +37,109 @@ func Test_topicPatterns_golden(t *testing.T) {
 	}
 }
 
-// Test_fanoutUnbindTargets_golden pins the fanout event exchanges unbound after a full
-// topic-bind success, and pins the RETAINED asterisk fanout target: asterisk-proxy does
-// not publish to the topic exchange, so `asterisk.all.event` must NEVER appear in the
-// unbind set.
+// Test_fanoutUnbindTargets_golden pins the VOIP-1407 retained-asterisk invariant: this
+// service keeps exactly one fanout leg -- QueueSubscribe(asterisk.all.event) -- as a
+// standalone statement in Run(), never nested inside a loop. asterisk-proxy is excluded
+// from VOIP-1407's scope entirely and does not publish to the global topic exchange, so
+// this is the one fanout QueueSubscribe, across the whole fanout-cutover, that survives.
+//
+// Before VOIP-1407, this test pinned the `fanoutUnbindTargets`/`subscribeTargets`
+// package vars directly and asserted the asterisk target was excluded from the unbind
+// set. Both vars are now deleted (the generic fanout target loop and its unbind
+// machinery are gone), so this test is REWRITTEN -- not dropped -- to assert the same
+// retention invariant against the new source shape, via AST inspection of Run() in
+// main.go, independent of any subscribeTargets/fanoutUnbindTargets var.
 func Test_fanoutUnbindTargets_golden(t *testing.T) {
-	expectedTargets := []string{
-		"bin-manager.customer-manager.event",
-		"bin-manager.flow-manager.event",
-		"bin-manager.sentinel-manager.event",
-	}
-
-	if len(fanoutUnbindTargets) != len(expectedTargets) {
-		t.Fatalf("Wrong match. expect: %v, got: %v", expectedTargets, fanoutUnbindTargets)
-	}
-	for i, expected := range expectedTargets {
-		if fanoutUnbindTargets[i] != expected {
-			t.Errorf("Wrong target at index %d. expect: %s, got: %s", i, expected, fanoutUnbindTargets[i])
-		}
-	}
-
-	// the retained asterisk leg: pin the constant's literal value and assert it is
-	// excluded from the unbind set.
 	retained := "asterisk.all.event"
 	if string(commonoutline.QueueNameAsteriskEventAll) != retained {
-		t.Errorf("Wrong retained asterisk target. expect: %s, got: %s", retained, string(commonoutline.QueueNameAsteriskEventAll))
+		t.Fatalf("Wrong retained asterisk target. expect: %s, got: %s", retained, string(commonoutline.QueueNameAsteriskEventAll))
 	}
-	for _, target := range fanoutUnbindTargets {
-		if target == retained {
-			t.Errorf("The retained asterisk fanout target must NOT be unbound. target: %s", target)
+
+	fset := token.NewFileSet()
+	f, errParse := parser.ParseFile(fset, "main.go", nil, 0)
+	if errParse != nil {
+		t.Fatalf("could not parse main.go. err: %v", errParse)
+	}
+
+	var runFunc *ast.FuncDecl
+	for _, decl := range f.Decls {
+		fn, ok := decl.(*ast.FuncDecl)
+		if ok && fn.Name.Name == "Run" && fn.Recv != nil {
+			runFunc = fn
+			break
 		}
 	}
+	if runFunc == nil {
+		t.Fatal("could not find func (h *subscribeHandler) Run() in main.go")
+	}
+
+	foundStandalone := false
+	foundInsideLoop := false
+	var stack []ast.Node
+	ast.Inspect(runFunc.Body, func(n ast.Node) bool {
+		if n == nil {
+			if len(stack) > 0 {
+				stack = stack[:len(stack)-1]
+			}
+			return true
+		}
+
+		if isAsteriskQueueSubscribeCall(n) {
+			inLoop := false
+			for _, anc := range stack {
+				switch anc.(type) {
+				case *ast.ForStmt, *ast.RangeStmt:
+					inLoop = true
+				}
+			}
+			if inLoop {
+				foundInsideLoop = true
+			} else {
+				foundStandalone = true
+			}
+		}
+
+		stack = append(stack, n)
+		return true
+	})
+
+	if foundInsideLoop {
+		t.Error("QueueSubscribe(asterisk.all.event) must NOT be inside a for/range loop -- the generic fanout target loop was deleted by VOIP-1407; the asterisk leg is re-added as a standalone statement (design §3.2).")
+	}
+	if !foundStandalone {
+		t.Error("Run() must contain a standalone QueueSubscribe(subscribeQueue, string(commonoutline.QueueNameAsteriskEventAll)) statement -- the retained asterisk fanout leg (VOIP-1407 design §3.2).")
+	}
+}
+
+// isAsteriskQueueSubscribeCall reports whether n is a call of the shape
+// <expr>.QueueSubscribe(<any>, string(commonoutline.QueueNameAsteriskEventAll)).
+func isAsteriskQueueSubscribeCall(n ast.Node) bool {
+	call, ok := n.(*ast.CallExpr)
+	if !ok || len(call.Args) != 2 {
+		return false
+	}
+	sel, ok := call.Fun.(*ast.SelectorExpr)
+	if !ok || sel.Sel.Name != "QueueSubscribe" {
+		return false
+	}
+	return isAsteriskEventAllConversion(call.Args[1])
+}
+
+// isAsteriskEventAllConversion reports whether e is the expression
+// string(commonoutline.QueueNameAsteriskEventAll).
+func isAsteriskEventAllConversion(e ast.Expr) bool {
+	call, ok := e.(*ast.CallExpr)
+	if !ok || len(call.Args) != 1 {
+		return false
+	}
+	ident, ok := call.Fun.(*ast.Ident)
+	if !ok || ident.Name != "string" {
+		return false
+	}
+	sel, ok := call.Args[0].(*ast.SelectorExpr)
+	if !ok || sel.Sel.Name != "QueueNameAsteriskEventAll" {
+		return false
+	}
+	pkgIdent, ok := sel.X.(*ast.Ident)
+	return ok && pkgIdent.Name == "commonoutline"
 }

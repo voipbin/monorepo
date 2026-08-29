@@ -153,12 +153,8 @@ func runServiceSubscribe(
 	agentHandler agenthandler.AgentHandler,
 ) error {
 
-	subscribeTargets := []string{
-		string(commonoutline.QueueNameCallEvent),
-		string(commonoutline.QueueNameCustomerEvent),
-	}
 	queueNamePod := string(commonoutline.QueueNameAgentSubscribe)
-	subHandler := subscribehandler.NewSubscribeHandler(sockHandler, queueNamePod, subscribeTargets, agentHandler)
+	subHandler := subscribehandler.NewSubscribeHandler(sockHandler, queueNamePod, agentHandler)
 
 	// run. NOTE: the VOIP-1258 topic-exchange cutover (QueueBind/QueueUnbind) lives INSIDE
 	// subscribeHandler.Run(), sequenced before ConsumeMessage starts -- see that function's

@@ -33,13 +33,10 @@ func Test_Run_BindsTopicExchangeBeforeConsuming(t *testing.T) {
 	queueName := string(commonoutline.QueueNameTimelineSubscribe)
 
 	var callOrder []string
-	callOrderCh := make(chan string, len(subscribeTargets)+10)
+	callOrderCh := make(chan string, 10)
 
 	mockSock.EXPECT().QueueCreate(queueName, "normal").Return(nil)
-	mockSock.EXPECT().TopicCreate(string(commonoutline.QueueNameSentinelEvent)).Return(nil)
-	for _, target := range subscribeTargets {
-		mockSock.EXPECT().QueueSubscribe(queueName, string(target)).Return(nil)
-	}
+	mockSock.EXPECT().QueueSubscribe(queueName, string(commonoutline.QueueNameAsteriskEventAll)).Return(nil)
 	mockSock.EXPECT().QueueBind(queueName, "#", string(commonoutline.QueueNameWebhookEventTopic), false, nil).
 		DoAndReturn(func(_, _, _ string, _ bool, _ interface{}) error {
 			callOrderCh <- "QueueBind"
@@ -50,12 +47,9 @@ func Test_Run_BindsTopicExchangeBeforeConsuming(t *testing.T) {
 			callOrderCh <- "QueueUnbind"
 			return nil
 		})
-	// VOIP-1406 topic migration block (also synchronous, before ConsumeMessage).
+	// VOIP-1406 topic-bind block (also synchronous, before ConsumeMessage).
 	mockSock.EXPECT().TopicCreateWithKind(string(commonoutline.QueueNameEvent), "topic").Return(nil)
 	mockSock.EXPECT().QueueBind(queueName, "#", string(commonoutline.QueueNameEvent), false, nil).Return(nil)
-	for _, target := range fanoutUnbindTargets {
-		mockSock.EXPECT().QueueUnbind(queueName, "", string(target), nil).Return(nil)
-	}
 	mockSock.EXPECT().ConsumeMessage(gomock.Any(), queueName, gomock.Any(), false, false, false, 10, gomock.Any()).
 		DoAndReturn(func(_, _, _ interface{}, _, _, _ bool, _ int, _ interface{}) error {
 			callOrderCh <- "ConsumeMessage"
