@@ -136,7 +136,8 @@ func (h *notifyHandler) publishEvent(eventType string, dataType string, data jso
 		}
 		return nil
 	case h.topicEnabled:
-		// Topic-only path (VOIP-1407): the 55 real publishers. No fanout publish.
+		// Topic-only path (VOIP-1407): the 55 real publishers plus talk-control (§2.3.1),
+		// 56 total. No fanout publish.
 		// publishTopicEventOrErr's own error already carries full context (including
 		// routing_key, §2.5) -- returned directly, not re-wrapped, to avoid a doubled
 		// "could not publish the event to the global topic exchange" prefix (R2 finding
@@ -351,11 +352,19 @@ panic this section opened by describing does not disappear -- it *moves*.
 single call at `reaction.go:139` via `publishReactionUpdated`, hence 8 call sites for 9
 subcommands) satisfies. A method call on a `nil` `reqHandler` interface panics --
 *unrecovered, in a goroutine* -- which crashes the whole process instead of merely
-failing one background publish. Leaving `reqHandler` `nil` would trade "every write
-subcommand panics deterministically and immediately, in the foreground, before any DB
-write" (today) for "every write subcommand panics nondeterministically, in the
-background, after the DB write already committed" (post-fix) -- a strictly worse failure
-mode this design must not introduce. **Decision: construct `reqHandler` the same way the
+failing one background publish. **Corrected contrast (R5 finding -- MEDIUM; an earlier
+revision of this paragraph claimed today's panic happens "before any DB write," which is
+false at all 8 call sites -- every one is reached AFTER its DB mutation already commits,
+e.g. `chathandler/chat.go:165` runs after `ChatCreate` at `:109`, `reaction.go:139` after
+the atomic reaction update at `:72`/`:117`)**: in both worlds the write is already
+committed by the time the panic fires; the real, and still sufficient, delta is
+foreground/deterministic/immediately-visible (today -- the process dies synchronously,
+right where the caller can see it) versus background/nondeterministic/silently-delayed
+(post-fix without this section's remaining decision below -- the process can die at an
+arbitrary later moment, potentially after the CLI has already printed its result and the
+operator believes the command succeeded) -- still a strictly worse failure mode this
+design must not introduce, just not for the DB-commit reason an earlier revision gave.
+**Decision: construct `reqHandler` the same way the
 daemon does** (added to the snippet above) -- the identical "match the daemon exactly"
 reasoning already used for `queueEvent` and `WithGlobalTopicPublish()`, extended one
 line further because leaving it out is no longer merely orthogonal once the handler
@@ -398,7 +407,8 @@ affecting `NewNotifyHandlerForExistingExchange`'s :250 call site):
 // WithGlobalTopicPublish option is enabled (VOIP-1404 design §3/§5.2).
 //
 // VOIP-1407: a declare failure here is now FATAL for topicEnabled=true instances (55 real
-// call sites) -- there is no fanout fallback left to degrade to. logrus.Fatalf halts the
+// call sites plus talk-control, 56 total) -- there is no fanout fallback left to degrade
+// to. logrus.Fatalf halts the
 // process directly (see §2.3 for why: no caller of NewNotifyHandler/
 // NewNotifyHandlerForExistingExchange has ever checked the return value for nil).
 func (h *notifyHandler) initGlobalTopicExchange() {
@@ -812,7 +822,10 @@ change.
     cite it directly rather than writing a new test from scratch.
   - **Four more, found in R4 review -- this list was materially incomplete before**:
     - `Test_WithGlobalTopicPublish_declaresGlobalExchange`'s `"new notify handler"`
-      subtest (`main_test.go:199-210`, `expectFanoutDeclare: true` at `:232-233`)
+      subtest (`main_test.go:199-210`, the `expectFanoutDeclare: true` field at `:209`,
+      consumed by the `if tt.expectFanoutDeclare { mockSock.EXPECT().TopicCreate(...) }`
+      block at `:232-233` -- R5 finding corrected an earlier version of this citation
+      that named only the consumption site)
       expects `TopicCreate` to be called for a `topicEnabled=true` construction. §2.3
       moves that call inside `if !h.topicEnabled`, so a topic-enabled construction never
       calls it -- this expectation must be dropped, not merely have its
