@@ -1,15 +1,16 @@
 package notifyhandler
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 	dto "github.com/prometheus/client_model/go"
+	"github.com/sirupsen/logrus"
 	"go.uber.org/mock/gomock"
 
 	"monorepo/bin-common-handler/models/eventtopic"
@@ -164,6 +165,51 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
+// fatalCaptureHook records every log entry fired on the standard logger while it is attached.
+// Levels() returns logrus.AllLevels so it also captures the FatalLevel entry logrus.Fatalf emits
+// just before calling ExitFunc.
+type fatalCaptureHook struct {
+	entries []*logrus.Entry
+}
+
+func (h *fatalCaptureHook) Levels() []logrus.Level {
+	return logrus.AllLevels
+}
+
+func (h *fatalCaptureHook) Fire(e *logrus.Entry) error {
+	h.entries = append(h.entries, e)
+	return nil
+}
+
+// captureFatal runs fn with the standard logger's ExitFunc stubbed to a no-op (VOIP-1407: several
+// notifyhandler construction-time failures now call logrus.Fatalf instead of returning an error,
+// and the real os.Exit would kill the test binary) and a hook attached to capture every entry fn
+// logs. Returns the last entry logged at logrus.FatalLevel, or nil if none was logged. Both the
+// ExitFunc and the hook set are restored before returning, so this is safe to call from multiple
+// tests without cross-test interference.
+func captureFatal(t *testing.T, fn func()) *logrus.Entry {
+	t.Helper()
+
+	origExitFunc := logrus.StandardLogger().ExitFunc
+	logrus.StandardLogger().ExitFunc = func(int) {}
+	defer func() { logrus.StandardLogger().ExitFunc = origExitFunc }()
+
+	hook := &fatalCaptureHook{}
+	origHooks := logrus.StandardLogger().ReplaceHooks(logrus.LevelHooks{})
+	logrus.AddHook(hook)
+	defer func() { logrus.StandardLogger().ReplaceHooks(origHooks) }()
+
+	fn()
+
+	var last *logrus.Entry
+	for _, e := range hook.entries {
+		if e.Level == logrus.FatalLevel {
+			last = e
+		}
+	}
+	return last
+}
+
 func TestNewNotifyHandlerForExistingExchange_SkipsDeclare(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
@@ -181,9 +227,12 @@ func TestNewNotifyHandlerForExistingExchange_SkipsDeclare(t *testing.T) {
 	}
 }
 
-// Test_WithGlobalTopicPublish_declaresGlobalExchange verifies both constructors declare the
+// Test_WithGlobalTopicPublish_declaresGlobalExchange verifies both constructors declare ONLY the
 // global topic exchange -- and only through the shared helper with kind "topic" -- when the
-// option is enabled (VOIP-1404 design §3/§5.1).
+// option is enabled (VOIP-1404 design §3/§5.1). VOIP-1407: a topicEnabled=true construction never
+// declares the per-service fanout exchange either (§2.3's `if !h.topicEnabled` guard), so both
+// subtests now expect the identical "no fanout declare" shape -- there is no longer a per-subtest
+// fanout-declare distinction to parameterize.
 func Test_WithGlobalTopicPublish_declaresGlobalExchange(t *testing.T) {
 
 	tests := []struct {
@@ -193,8 +242,6 @@ func Test_WithGlobalTopicPublish_declaresGlobalExchange(t *testing.T) {
 		publisher  commonoutline.ServiceName
 
 		newHandler func(sockhandler.SockHandler, commonoutline.QueueName, commonoutline.ServiceName) NotifyHandler
-
-		expectFanoutDeclare bool
 	}{
 		{
 			name: "new notify handler",
@@ -205,8 +252,6 @@ func Test_WithGlobalTopicPublish_declaresGlobalExchange(t *testing.T) {
 			newHandler: func(s sockhandler.SockHandler, q commonoutline.QueueName, p commonoutline.ServiceName) NotifyHandler {
 				return NewNotifyHandler(s, nil, q, p, WithGlobalTopicPublish())
 			},
-
-			expectFanoutDeclare: true,
 		},
 		{
 			name: "new notify handler for existing exchange",
@@ -217,8 +262,6 @@ func Test_WithGlobalTopicPublish_declaresGlobalExchange(t *testing.T) {
 			newHandler: func(s sockhandler.SockHandler, q commonoutline.QueueName, p commonoutline.ServiceName) NotifyHandler {
 				return NewNotifyHandlerForExistingExchange(s, nil, q, p, WithGlobalTopicPublish())
 			},
-
-			expectFanoutDeclare: false,
 		},
 	}
 
@@ -229,11 +272,7 @@ func Test_WithGlobalTopicPublish_declaresGlobalExchange(t *testing.T) {
 
 			mockSock := sockhandler.NewMockSockHandler(mc)
 
-			if tt.expectFanoutDeclare {
-				mockSock.EXPECT().TopicCreate(string(tt.queueEvent)).Return(nil)
-			} else {
-				mockSock.EXPECT().TopicCreate(gomock.Any()).Times(0)
-			}
+			mockSock.EXPECT().TopicCreate(gomock.Any()).Times(0)
 			mockSock.EXPECT().TopicCreateWithKind(string(commonoutline.QueueNameEvent), topicExchangeKind).Return(nil)
 
 			res := tt.newHandler(mockSock, tt.queueEvent, tt.publisher)
@@ -248,48 +287,67 @@ func Test_WithGlobalTopicPublish_declaresGlobalExchange(t *testing.T) {
 			if !h.topicEnabled {
 				t.Error("Wrong match. expected the topic publish to be enabled.")
 			}
-			if h.topicDisabled {
-				t.Error("Wrong match. expected the topic publish not to be disabled.")
-			}
 		})
 	}
 }
 
-// Test_NewNotifyHandler_globalTopicDeclareFailure verifies the degradation contract: a failed
-// global-exchange declare must NOT nil out the handler (unlike the fanout declare failure), the
-// fanout path stays alive, and every suppressed topic publish is counted (VOIP-1404 design §5.2).
+// Test_NewNotifyHandler_globalTopicDeclareFailure verifies the VOIP-1407 fatal-on-failure
+// contract for initGlobalTopicExchange (design §2.4): a failed global-exchange declare on a
+// topicEnabled=true construction calls logrus.Fatalf, replacing the pre-VOIP-1407
+// degrade-and-continue behavior (non-nil handler, the topic publish silently suppressed while
+// fanout kept flowing) -- once
+// fanout is removed for topic-enabled instances, there is no fallback left to degrade to.
 func Test_NewNotifyHandler_globalTopicDeclareFailure(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
 	mockSock := sockhandler.NewMockSockHandler(mc)
 
-	mockSock.EXPECT().TopicCreate(string(commonoutline.QueueNameTranscribeEvent)).Return(nil)
+	// topicEnabled=true skips the fanout TopicCreate entirely (§2.3) -- only the global topic
+	// declare is exercised here.
+	mockSock.EXPECT().TopicCreate(gomock.Any()).Times(0)
 	mockSock.EXPECT().TopicCreateWithKind(string(commonoutline.QueueNameEvent), topicExchangeKind).Return(fmt.Errorf("precondition failed"))
 
-	res := NewNotifyHandler(mockSock, nil, commonoutline.QueueNameTranscribeEvent, "test-service", WithGlobalTopicPublish())
-	if res == nil {
-		t.Fatal("Expected non-nil NotifyHandler")
+	entry := captureFatal(t, func() {
+		NewNotifyHandler(mockSock, nil, commonoutline.QueueNameTranscribeEvent, "test-service", WithGlobalTopicPublish())
+	})
+
+	if entry == nil {
+		t.Fatal("Expected a logrus.Fatalf call, got none")
 	}
-
-	h, ok := res.(*notifyHandler)
-	if !ok {
-		t.Fatalf("Wrong match. unexpected handler type. handler: %T", res)
+	if entry.Level != logrus.FatalLevel {
+		t.Errorf("Wrong match. expect: %v, got: %v", logrus.FatalLevel, entry.Level)
 	}
-	if !h.topicDisabled {
-		t.Error("Wrong match. expected the topic publish to be disabled.")
+	if !strings.Contains(entry.Message, "Could not declare the global topic exchange") {
+		t.Errorf("Wrong match. unexpected fatal message: %s", entry.Message)
 	}
+}
 
-	// the fanout publish must still happen, and the topic publish must be suppressed and counted.
-	eventType := "test_declarefailed"
-	before := topicPublishCount(eventType, topicPublishResultError)
-	mockSock.EXPECT().EventPublish(string(commonoutline.QueueNameTranscribeEvent), "", gomock.Any()).Return(nil)
-	mockSock.EXPECT().EventPublish(string(commonoutline.QueueNameEvent), gomock.Any(), gomock.Any()).Times(0)
+// Test_NewNotifyHandler_fanoutDeclareFailure verifies the VOIP-1407 fatal-on-failure contract for
+// the fanout-only path's own exchange declare (design §2.3): a failed declare now calls
+// logrus.Fatalf, replacing the pre-existing latent bug (log at Error level and return a nil
+// handler that no caller ever checked for nil).
+func Test_NewNotifyHandler_fanoutDeclareFailure(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
 
-	h.PublishEvent(context.Background(), eventType, &testIDEvent{ID: "7cb7b0f8-a1bc-11f1-92ef-60452e5e40a2"})
+	mockSock := sockhandler.NewMockSockHandler(mc)
 
-	if after := topicPublishCount(eventType, topicPublishResultError); after != before+1 {
-		t.Errorf("Wrong match. expect: %f, got: %f", before+1, after)
+	mockSock.EXPECT().TopicCreate(string(commonoutline.QueueNameTranscribeEvent)).Return(fmt.Errorf("precondition failed"))
+	mockSock.EXPECT().TopicCreateWithKind(gomock.Any(), gomock.Any()).Times(0)
+
+	entry := captureFatal(t, func() {
+		NewNotifyHandler(mockSock, nil, commonoutline.QueueNameTranscribeEvent, "test-service")
+	})
+
+	if entry == nil {
+		t.Fatal("Expected a logrus.Fatalf call, got none")
+	}
+	if entry.Level != logrus.FatalLevel {
+		t.Errorf("Wrong match. expect: %v, got: %v", logrus.FatalLevel, entry.Level)
+	}
+	if !strings.Contains(entry.Message, "Could not declare the event exchange") {
+		t.Errorf("Wrong match. unexpected fatal message: %s", entry.Message)
 	}
 }
 

@@ -159,50 +159,42 @@ func (h *notifyHandler) publishEvent(eventType string, dataType string, data jso
 		}
 		return nil
 
+	case h.topicEnabled:
+		// Topic-only path (VOIP-1407): no fanout publish. publishTopicEventOrErr's own error
+		// already carries full context (including routing_key), so it is returned directly, not
+		// re-wrapped, to avoid a doubled "could not publish the event to the global topic
+		// exchange" prefix.
+		if err := h.publishTopicEventOrErr(ctx, evt, subscriptionID); err != nil {
+			return err
+		}
+
 	default:
-		err := h.publishDirectEvent(ctx, evt)
-		if err != nil {
-			// NOTE: the fanout publish is the system of record while dual publish lasts, so the
-			// global topic publish below is skipped on this path. Delivering an event on the topic
-			// exchange that the fanout consumers never saw would create divergent state.
+		// Fanout-only path, unchanged: voip-asterisk-proxy and confirmed-dead sites.
+		if err := h.publishDirectEvent(ctx, evt); err != nil {
 			return fmt.Errorf("could not publish the event. err: %v", err)
 		}
 	}
 	promNotifyTotal.WithLabelValues(evt.Type).Inc()
 
-	// VOIP-1404: dual publish. Reached only when delay == 0 -- the delayed branch above returns
-	// early, since delayed-event topic semantics are deferred to the follow-up.
-	h.publishTopicEvent(evt, subscriptionID)
-
 	return nil
 }
 
-// publishTopicEvent publishes the given event to the global topic exchange `bin-manager.event`
-// with a `<publisher>.<resource>.<subscription-id>.<action>` routing key (VOIP-1404).
+// publishTopicEventOrErr publishes the given event to the global topic exchange
+// `bin-manager.event` with a `<publisher>.<resource>.<subscription-id>.<action>` routing key
+// (VOIP-1404).
 //
-// The payload is the very same sock.Event that was just published to the fanout exchange, so a
-// consumer migrating later reuses its existing decode path unchanged.
-//
-// A failure is logged and counted, never returned: the topic publish must not affect the fanout
-// publish nor the caller in any way. It deliberately calls sockHandler.EventPublish directly
-// instead of reusing publishDirectEvent/publishDirectEventWithKey, both of which observe
-// promNotifyProcessTime -- reusing them would pollute the existing fanout metrics.
-func (h *notifyHandler) publishTopicEvent(evt *sock.Event, subscriptionID string) {
-	if !h.topicEnabled {
-		return
-	}
-
-	log := logrus.WithFields(logrus.Fields{
-		"func":       "publishTopicEvent",
-		"evnet_type": evt.Type,
-	})
-
-	if h.topicDisabled {
-		// the exchange declare failed at construction time. count every suppressed publish so the
-		// degradation stays visible: the error counter grows while the ok counter does not.
-		promTopicPublishTotal.WithLabelValues(evt.Type, topicPublishResultError).Inc()
-		return
-	}
+// VOIP-1407: this is now the primary publish path for topic-enabled instances, not a best-effort
+// secondary one, so a failure is returned to the caller instead of being logged and swallowed.
+// It observes promNotifyProcessTime under the same metric name/labels the removed fanout leg
+// used to -- with only one active publish path per instance, reusing the name cannot double-count
+// anything. The routing key is folded into the returned error string (rather than a separate
+// log call) so it survives all the way to publishEvent's caller, since this function's caller no
+// longer swallows the error.
+func (h *notifyHandler) publishTopicEventOrErr(ctx context.Context, evt *sock.Event, subscriptionID string) error {
+	start := time.Now()
+	defer func() {
+		promNotifyProcessTime.WithLabelValues(evt.Type).Observe(float64(time.Since(start).Milliseconds()))
+	}()
 
 	if eventtopic.IsPlaceholderSubscriptionID(subscriptionID) {
 		// no valid subscription address exists. the routing key falls back to the placeholder,
@@ -214,11 +206,11 @@ func (h *notifyHandler) publishTopicEvent(evt *sock.Event, subscriptionID string
 
 	key := eventtopic.RoutingKey(string(h.publisher), evt.Type, subscriptionID)
 	if err := h.sockHandler.EventPublish(string(commonoutline.QueueNameEvent), key, evt); err != nil {
-		log.Errorf("Could not publish the event to the global topic exchange. routing_key: %s, err: %v", key, err)
 		promTopicPublishTotal.WithLabelValues(evt.Type, topicPublishResultError).Inc()
-		return
+		return fmt.Errorf("could not publish the event to the global topic exchange. routing_key: %s, err: %v", key, err)
 	}
 	promTopicPublishTotal.WithLabelValues(evt.Type, topicPublishResultOK).Inc()
+	return nil
 }
 
 // PublishEventWithRoutingKey publishes event to the event queue with an explicit AMQP routing

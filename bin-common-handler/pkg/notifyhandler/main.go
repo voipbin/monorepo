@@ -61,19 +61,19 @@ var (
 	promNotifyProcessTime *prometheus.HistogramVec
 	promNotifyTotal       *prometheus.CounterVec
 
-	// global topic exchange metrics (VOIP-1404). Deliberately separate from the counters above:
-	// the topic publish path must never touch promNotifyTotal/promNotifyProcessTime, otherwise
-	// the dual publish would double-count the existing fanout metrics.
+	// global topic exchange metrics (VOIP-1404). VOIP-1407: promNotifyTotal/promNotifyProcessTime
+	// are now shared across both the fanout-only and topic-only publish paths -- there is only one
+	// active publish path per instance (topicEnabled selects which), so no double-counting is
+	// possible by construction.
 	promTopicPublishTotal     *prometheus.CounterVec
 	promTopicPlaceholderTotal *prometheus.CounterVec
 
 	// initPrometheusMu/initPrometheusDone guard against duplicate MustRegister panics when
 	// initPrometheus is called more than once for the same namespace -- e.g. VOIP-1258's
 	// second NotifyHandler instance (NewNotifyHandlerForExistingExchange, bound to the new
-	// topic exchange) is constructed for the SAME publisher/namespace as the existing
-	// fanout-bound NewNotifyHandler call in the same process (webhook-manager, webhook-control).
-	// Without this guard, the second initPrometheus call would panic with "duplicate metrics
-	// collector registration attempted" on every startup.
+	// topic exchange) is constructed for the SAME publisher/namespace as another NotifyHandler
+	// instance in the same process. Without this guard, the second initPrometheus call would
+	// panic with "duplicate metrics collector registration attempted" on every startup.
 	initPrometheusMu   sync.Mutex
 	initPrometheusDone = map[string]bool{}
 )
@@ -156,29 +156,22 @@ type notifyHandler struct {
 
 	publisher commonoutline.ServiceName
 
-	// topicEnabled reports whether this handler also publishes every event to the global topic
-	// exchange (VOIP-1404). Opt-in per handler instance via WithGlobalTopicPublish.
+	// topicEnabled reports whether this handler publishes to the global topic exchange (VOIP-1404).
+	// VOIP-1407: when true, the topic exchange is the SOLE publish target (fanout removed).
+	// Opt-in per handler instance via WithGlobalTopicPublish.
 	topicEnabled bool
-
-	// topicDisabled reports that the global topic exchange declare failed at construction time,
-	// so the topic publish is suppressed for the lifetime of this handler. Per-instance state,
-	// never a package global: a process may construct several handlers (webhook-manager does) and
-	// one instance's degradation must not silence the others. Set in the constructor only, which
-	// keeps it race-free against PublishWebhookEvent's goroutine fan-out.
-	topicDisabled bool
 }
 
 // Option customizes a NotifyHandler at construction time. Both constructors accept a variadic
 // list of them, which keeps every existing call site source-compatible (VOIP-1404 design §5.1).
 type Option func(*notifyHandler)
 
-// WithGlobalTopicPublish enables the dual publish: on top of the existing fanout publish, every
-// event is also published to the global topic exchange `bin-manager.event` with a
-// `<publisher>.<resource>.<subscription-id>.<action>` routing key (VOIP-1404).
+// WithGlobalTopicPublish makes this instance publish topic-ONLY (VOIP-1407): every event is
+// published exclusively to the global topic exchange `bin-manager.event` with a
+// `<publisher>.<resource>.<subscription-id>.<action>` routing key (VOIP-1404). No per-service
+// fanout exchange is declared or published to when this option is enabled.
 //
-// Default is off everywhere. The fanout publish stays the system of record while dual publish
-// lasts: a topic publish failure never propagates to the caller, and a fanout failure skips the
-// topic publish entirely.
+// Default (option omitted) is unchanged fanout-only behavior.
 func WithGlobalTopicPublish() Option {
 	return func(h *notifyHandler) {
 		h.topicEnabled = true
@@ -187,6 +180,10 @@ func WithGlobalTopicPublish() Option {
 
 // NewNotifyHandler create NotifyHandler
 // queueEvent: queue name for notification. the notify handler will publish the event to this queue name.
+//
+//	VOIP-1407: queueEvent is ignored on the WithGlobalTopicPublish() path -- no per-service fanout
+//	exchange is declared or published to there.
+//
 // publisher: publisher service name. the notify handler will publish the event with this publisher service name.
 // opts: optional behavior modifiers. see WithGlobalTopicPublish.
 func NewNotifyHandler(sockHandler sockhandler.SockHandler, reqHandler requesthandler.RequestHandler, queueEvent commonoutline.QueueName, publisher commonoutline.ServiceName, opts ...Option) NotifyHandler {
@@ -202,14 +199,20 @@ func NewNotifyHandler(sockHandler sockhandler.SockHandler, reqHandler requesthan
 		opt(h)
 	}
 
-	if err := sockHandler.TopicCreate(string(queueEvent)); err != nil {
-		logrus.Errorf("Could not declare the event exchange. err: %v", err)
-		return nil
+	if !h.topicEnabled {
+		// Fanout-only path, unchanged: voip-asterisk-proxy and confirmed-dead sites.
+		if err := sockHandler.TopicCreate(string(queueEvent)); err != nil {
+			logrus.Fatalf("Could not declare the event exchange. err: %v", err)
+		}
 	}
 
 	namespace := commonoutline.GetMetricNameSpace(publisher)
 	initPrometheus(namespace)
 
+	// initGlobalTopicExchange is UNCHANGED here: it keeps its existing internal
+	// `if !h.topicEnabled { return }` guard, so this call is a correct no-op for !topicEnabled
+	// instances -- no caller-side gating change, no divergent behavior at
+	// NewNotifyHandlerForExistingExchange's call site.
 	h.initGlobalTopicExchange()
 
 	return h
@@ -223,9 +226,14 @@ func NewNotifyHandler(sockHandler sockhandler.SockHandler, reqHandler requesthan
 // doc §6, implementation plan Task 3.1) to support a second NotifyHandler instance bound to a
 // topic-kind exchange, alongside the existing fanout-only NewNotifyHandler used everywhere else.
 //
-// NOTE (VOIP-1404): WithGlobalTopicPublish is valid here as well, but it must NOT be enabled for
-// webhook-manager's scope-first instance -- that would triple-publish webhook events. Nothing
-// enables it there today.
+// NOTE (VOIP-1407): WithGlobalTopicPublish is valid here in principle, but enabling it would be
+// actively harmful post-VOIP-1407: topicEnabled now means "topic-ONLY, fanout removed" (not
+// "topic added on top of fanout" as when this note was written). This instance's queueNotify
+// already targets a topic-kind exchange (QueueNameWebhookEventTopic) and its production traffic
+// already goes exclusively through PublishEventWithRoutingKey. Enabling the option would run this
+// instance through publishTopicEventOrErr's bin-manager.event path IN ADDITION, with no fanout
+// fallback to degrade to if anything about that additional path fails. Nothing enables it today
+// (verified); keep it that way.
 func NewNotifyHandlerForExistingExchange(sockHandler sockhandler.SockHandler, reqHandler requesthandler.RequestHandler, queueEvent commonoutline.QueueName, publisher commonoutline.ServiceName, opts ...Option) NotifyHandler {
 	h := &notifyHandler{
 		sockHandler: sockHandler,
@@ -259,21 +267,18 @@ func NewNotifyHandlerForExistingExchange(sockHandler sockhandler.SockHandler, re
 // are hardcoded there -- because a redeclare with mismatched parameters closes the channel with
 // 406 PRECONDITION_FAILED.
 //
-// Unlike NewNotifyHandler's fanout declare, a failure here does NOT nil out the handler: the
-// topic exchange is strictly secondary while dual publish lasts, and the fanout path stays fully
-// alive. The failure is not swallowed either (VOIP-1258 lesson): it is logged at Error level and
-// every subsequently suppressed topic publish increments the error counter, so the degradation is
-// visible both in the log and in the metrics.
+// VOIP-1407: a declare failure here is now FATAL for topicEnabled=true instances -- there is no
+// fanout fallback left to degrade to. logrus.Fatalf halts the process directly: no caller of
+// NewNotifyHandler/NewNotifyHandlerForExistingExchange has ever checked the return value for nil.
 //
-// MUST run after initPrometheus so the counters used by the suppressed-publish path are non-nil.
+// MUST run after initPrometheus so the counters used by the topic-publish path are non-nil.
 func (h *notifyHandler) initGlobalTopicExchange() {
 	if !h.topicEnabled {
 		return
 	}
 
 	if err := h.sockHandler.TopicCreateWithKind(string(commonoutline.QueueNameEvent), topicExchangeKind); err != nil {
-		logrus.Errorf("Could not declare the global topic exchange. the global topic publish has been disabled. err: %v", err)
-		h.topicDisabled = true
+		logrus.Fatalf("Could not declare the global topic exchange. err: %v", err)
 	}
 }
 
