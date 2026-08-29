@@ -487,9 +487,13 @@ source of truth):
 - **5 fanout-ONLY call sites** (no `WithGlobalTopicPublish()`), each individually
   dispositioned:
   1. `voip-asterisk-proxy/cmd/asterisk-proxy/main.go:107` (`QueueNameAsteriskEventAll`)
-     -- **the one real fanout-only publisher that must keep working**, feeding
-     `asterisk.all.event` (permanently retained, §1/§5). Sole caller of
-     `PublishEventRaw` is `voip-asterisk-proxy/pkg/eventhandler/ari_handler.go:76`.
+     -- a real fanout-only publisher, feeding `asterisk.all.event` (permanently
+     retained, §1/§5). **EXCLUDED from this ticket's scope entirely (rev.11, per
+     explicit user direction: "its fan-out operates differently, don't touch it
+     here")** -- no code change to this call site, and no mechanism design needed to
+     accommodate it (§4 item 1). Sole caller of `PublishEventRaw` is `voip-asterisk-
+     proxy/pkg/eventhandler/ari_handler.go:76`, listed here for completeness of the
+     inventory, not as an active concern for this ticket.
   2. `bin-transfer-manager/cmd/transfer-manager/main.go:137` -- dead wiring, zero
      publish-method calls anywhere in `pkg/transferhandler/*.go`.
   3. `bin-transfer-manager/cmd/transfer-control/main.go:66` -- same, CLI side.
@@ -542,11 +546,16 @@ case-control`, plus rev.2's original five (`bin-timeline-manager`, `bin-hook-man
 
 ### 4. What "remove fanout dual publish" concretely requires (scope for design stage)
 
-1. **Publish side** -- `bin-common-handler/pkg/notifyhandler`: preserve exactly one
-   fanout-publishing construction path for asterisk-proxy (§3 item 1's leg); make every
-   other instance topic-only. Design must choose the mechanism (invert `WithGlobalTopicPublish`
-   into an opt-OUT used only by asterisk-proxy; a separate constructor reserved for it;
-   or another split) -- **not yet decided, carried to design (§6)**. Failure semantics
+1. **Publish side** -- `bin-common-handler/pkg/notifyhandler`: make every publish-side
+   instance that opts into `WithGlobalTopicPublish()` topic-only (no fanout). asterisk-
+   proxy is EXCLUDED from this ticket entirely (§5, per explicit user direction) --
+   **mechanism RESOLVED (rev.11, was §6 deferred item 1)**: `WithGlobalTopicPublish()`
+   stays exactly as it is today, as an `Option`; only its MEANING changes for the 55
+   real call sites that pass it (`topicEnabled=true` -> topic-only instead of "fanout +
+   topic"). asterisk-proxy's call site does not pass it, so `topicEnabled` stays `false`
+   for that instance -- which is precisely the default, unmodified, already-existing
+   fanout-only behavior. No opt-out flag, no second constructor, no code change to
+   asterisk-proxy is needed; the existing option shape already isolates it. Failure semantics
    for the now-fanout-less instances (fatal vs. degrade on topic-declare failure) --
    **not yet decided, carried to design (§6)**. `queueEvent` parameter/`h.queueNotify`
    field's fate (drop from the topic-only constructor signature vs. keep unused for
@@ -579,10 +588,21 @@ case-control`, plus rev.2's original five (`bin-timeline-manager`, `bin-hook-man
 
 3. **`WithGlobalTopicPublish` / per-call-site disposition**: 62 total sites (§3) each
    resolved individually -- 55 lose the option (become the new topic-only default,
-   whatever shape that takes), 1 (asterisk-proxy) keeps its fanout leg via whatever
-   mechanism §4.1 lands on, 3 (transfer×2, tts-control) are dead wiring -- fix or leave,
-   design's call, 1 (talk-control) is an independent pre-existing bug, 2
-   (webhook-manager/-control) need the option-surface safeguard reviewed (§3).
+   whatever shape that takes), 1 (**asterisk-proxy: EXCLUDED from this ticket's scope
+   entirely, per explicit user direction** -- "asterisk-proxy's fan-out operates
+   differently and should not be touched here." This RESOLVES what was §6 deferred item
+   1: `WithGlobalTopicPublish()` is kept as-is, unmodified, as an Option; only its
+   MEANING changes for callers that pass it (topicEnabled=true becomes "topic-only, no
+   fanout" instead of "fanout AND topic"). Callers that do NOT pass it -- which is
+   exactly and only asterisk-proxy's call site today -- keep TODAY'S exact behavior
+   (fanout-only, no topic) with ZERO code change, because that behavior was always what
+   `topicEnabled=false` (the default) already does. No opt-out flag, no second
+   constructor, no special-casing needed: asterisk-proxy's existing `NewNotifyHandler(
+   sockHandler, reqHandler, QueueNameAsteriskEventAll, serviceName)` call, with no
+   options, is untouched by this ticket and needs no future maintenance connected to it
+   either.), 3 (transfer×2, tts-control) are dead wiring -- fix or leave, design's call,
+   1 (talk-control) is an independent pre-existing bug, 2 (webhook-manager/-control)
+   need the option-surface safeguard reviewed (§3).
 
 4. **Per-service fanout exchange deletion** (ticket step 3, R1 finding 6 + R2 finding 1
    both incorporated): a ONE-TIME documented broker-admin cleanup (`rabbitmqadmin`/
@@ -608,8 +628,13 @@ case-control`, plus rev.2's original five (`bin-timeline-manager`, `bin-hook-man
 ### 5. Scope boundary (explicit)
 
 - OUT: `asterisk.all.event` exchange itself and its two consumer bindings (permanent).
-- IN (was OUT in rev.1, corrected R1): asterisk-proxy's PUBLISH side -- the one fanout
-  leg that must be deliberately preserved.
+- OUT (rev.11, per explicit user direction, reversing R1's "IN" correction): asterisk-
+  proxy's PUBLISH side. R1 correctly caught that rev.1 had unintentionally OMITTED this
+  from the inventory; the user has since deliberately EXCLUDED it from this ticket's
+  scope for a different reason ("its fan-out operates differently, don't touch it
+  here"). The distinction matters: it is now a documented, intentional exclusion
+  matching how `asterisk.all.event` itself has been treated from the start, not an
+  oversight. See §4 item 3 for the mechanism this simplifies.
 - OUT: VOIP-1258's `NewNotifyHandlerForExistingExchange` RUNTIME path (confirmed
   orthogonal) -- but its constructor/option-surface interaction stays IN SCOPE for
   review (§3).
@@ -643,28 +668,31 @@ Genuinely resolved by this analysis (facts established, no design ruling needed)
    repository this session cannot see (e.g. `voipbin-go`, `python-sdk`, `install/`,
    `sandbox` were not independently confirmed absent-of-reference, only not found within
    reach) -- stated as the search's actual scope, not as an absolute guarantee.
+3. **§4 item 1 mechanism (RESOLVED rev.11, was deferred item 1)**: asterisk-proxy is
+   excluded from this ticket's scope entirely, per explicit user direction (§5).
+   `WithGlobalTopicPublish()` stays unmodified as an `Option`; only its meaning changes
+   for the 55 call sites that pass it. asterisk-proxy's call site, which does not pass
+   it, is untouched -- no opt-out flag, no second constructor, no design work needed.
 
 Deferred to the design stage, each requiring an explicit ruling before implementation:
-1. **§4 item 1 mechanism**: how exactly to preserve asterisk-proxy's fanout leg while
-   making every other publish-side instance topic-only (opt-out option / separate
-   constructor / other).
-2. **§4 item 1 failure semantics (publish side)**: fatal vs. degrade on topic-declare
-   failure for the now-fanout-less publish instances.
-3. **§4 item 1 constructor signature**: keep or drop `queueEvent`/`h.queueNotify` for
+1. **§4 item 1 failure semantics (publish side)**: fatal vs. degrade on topic-declare
+   failure for the now-fanout-less publish instances (the 55 real dual-publish sites --
+   no longer a question for asterisk-proxy, which is out of scope).
+2. **§4 item 1 constructor signature**: keep or drop `queueEvent`/`h.queueNotify` for
    the topic-only path.
-4. **§3 `notify_process_time` observability**: fold into `publishTopicEvent` or
+3. **§3 `notify_process_time` observability**: fold into `publishTopicEvent` or
    knowingly drop the signal.
-5. **§3 webhook-manager option-surface safeguard**: strengthen/keep the in-code warning
+4. **§3 webhook-manager option-surface safeguard**: strengthen/keep the in-code warning
    against ever opting `NewNotifyHandlerForExistingExchange` into the (redesigned)
    topic-publish option, to prevent a future triple-publish.
-6. **§2b consumer-side failure semantics**: once the fanout `QueueSubscribe` fallback is
+5. **§2b consumer-side failure semantics**: once the fanout `QueueSubscribe` fallback is
    removed, should a topic-declare/bind failure at consumer startup become fatal
-   (matching item 2's publish-side ruling, for consistency) rather than today's "stay
+   (matching item 1's publish-side ruling, for consistency) rather than today's "stay
    on fanout" degrade -- there is no fanout left to degrade to, so SOME explicit
    decision replaces today's silent-degrade branch.
-7. **Dead-wiring cleanup** (transfer-manager/-control, tts-control -- fact established
+6. **Dead-wiring cleanup** (transfer-manager/-control, tts-control -- fact established
    in "resolved" item 1 above): fix now or leave -- non-blocking either way.
-8. **Delayed-publish dead code cleanup** (§3) and **the 5 vestigial `QueueName*Event`
+7. **Delayed-publish dead code cleanup** (§3) and **the 5 vestigial `QueueName*Event`
    constants' cleanup** (§4 item 1: 4 fully-dead + 1 legacy, per §1): clean up now or
    leave -- non-blocking either way, can be decided together since both are dead-code
    removal calls of the same weight.
@@ -706,6 +734,12 @@ bridging premise (amqp091-go's `QueueBind` does take a `noWait` parameter, contr
 a prior "neither client exposes a nowait form" claim -- corrected here to the true and
 sufficient justification: every production call site passes `noWait=false`) plus two
 trivial citation/wording fixes, all applied above. All findings across all nine rounds
-are now incorporated. Eight design-stage rulings are handed off explicitly in §6, none
-of which block starting the design stage itself -- they ARE the design stage's job.
+are now incorporated, and R10/R11 approved this document with 2 consecutive Approve.
+**Post-approval (rev.11): the user directly resolved §6's former deferred item 1** --
+asterisk-proxy is excluded from this ticket's scope entirely ("its fan-out operates
+differently, don't touch it here"), which simplifies §4 item 1's mechanism decision to
+"keep `WithGlobalTopicPublish()` unmodified as an Option; asterisk-proxy's call site,
+which never passes it, needs no change" -- no opt-out flag or second constructor design
+work required. Seven design-stage rulings remain, handed off explicitly in §6, none of
+which block starting the design stage itself -- they ARE the design stage's job.
 Proceed to design.
