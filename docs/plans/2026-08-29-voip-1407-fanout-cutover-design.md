@@ -793,8 +793,13 @@ change.
    resolved.
 2. The 5 vestigial `QueueName*Event` outline constants (4 fully dead + 1 legacy,
    issue analysis §4 item 1/§1): NOT deleted in this PR. Deleting them would touch the
-   8 gomock expectations and 3 doc mentions issue analysis catalogued, for a cosmetic
-   win unrelated to this ticket's actual goal; tracked as an optional follow-up.
+   8 gomock expectations and 4 doc mentions issue analysis catalogued for the 4 dead
+   constants (`docs/reference/rabbitmq-queues-reference.md:45,220`,
+   `docs/plans/2026-03-15-centralize-clickhouse-writes-{plan,design}.md:233,83` --
+   R8 finding corrected an earlier undercount of "3"; the legacy 5th constant,
+   `QueueNameWebhookEvent`, has further doc mentions of its own, not counted here since
+   its cleanup is a narrower, separate question), for a cosmetic win unrelated to this
+   ticket's actual goal; tracked as an optional follow-up.
 3. Delayed-publish dead code (`publishDelayedEvent`, `DelaySecond`/`DelayMinute`/
    `DelayHour` in `notifyhandler`): not touched (§2.2) -- optional follow-up.
 4. transfer-manager/transfer-control/tts-control dead-wiring deletion: **decided IN
@@ -885,10 +890,19 @@ change.
         `case delay > 0` evaluated before `case h.topicEnabled` in the `switch`, so this
         fixture's `EventPublish(gomock.Any()...).Times(0)` assertion (`:642`) still
         holds unchanged.
-      - This is the complete accounting as of this design: 10 fixtures invalidated
-        across this file (the 4 already named above + these 4 mechanical + 2
-        structural), plus `:638` independently confirmed as an explicit non-change --
-        not a partial list requiring a further sweep at implementation time.
+      - This is the complete accounting as of this design (R8 finding corrected an
+        arithmetic error here: an earlier revision said "10 fixtures invalidated ...
+        the 4 already named above," but only 3 of the 4 previously-named fixtures are
+        in THIS file -- the dual-publish table test (`:413`),
+        `Test_publishEvent_globalTopicPublishFailureIsolated` (`:546`), and
+        `Test_publishEvent_fanoutFailureSkipsTopic` (`:593`); the fourth,
+        `Test_WithGlobalTopicPublish_declaresGlobalExchange`'s subtest, is in
+        `main_test.go`, not here): **9** fixtures invalidated across `publish_test.go`
+        (those 3 + these 4 mechanical + 2 structural), plus `:638` independently
+        confirmed as an explicit non-change and `:607`
+        (`Test_publishEvent_optionOffSkipsTopic`, which sets no `topicEnabled` field and
+        so stays `false`) unaffected -- not a partial list requiring a further sweep at
+        implementation time.
 - **Regression pins (R1 finding 13) -- lock in behavior this design deliberately does
   NOT change, so a future edit to the shared `initGlobalTopicExchange` doesn't silently
   break either exception**:
