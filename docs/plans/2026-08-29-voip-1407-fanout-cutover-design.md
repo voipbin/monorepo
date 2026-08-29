@@ -55,6 +55,21 @@ This is the entire mechanism. No opt-out flag, no second constructor, no signatu
 change to `NewNotifyHandler`. `voip-asterisk-proxy/cmd/asterisk-proxy/main.go:107`'s
 call site needs zero edits and is not touched by this PR.
 
+**Two in-code comments now describe the OLD meaning and must be rewritten as part of
+this change (R1 finding 5), since they are the primary documentation a future reader
+of this package encounters:**
+- `WithGlobalTopicPublish()`'s doc comment (`main.go:175-186`) currently reads "on top
+  of the existing fanout publish, every event is **also** published..." and "the
+  fanout publish stays the system of record while dual publish lasts." Rewrite to state
+  the new meaning: enabling this option makes the instance topic-ONLY (no fanout
+  publish, no fanout exchange declared); the default (option omitted) is unchanged
+  fanout-only.
+- `main.go:70-76`'s comment (on `initPrometheus`'s guard, VOIP-1258 context) claims
+  "webhook-manager, webhook-control" make "a fanout-bound `NewNotifyHandler` call in the
+  same process" alongside their topic-only instance. Verified false (issue analysis §3,
+  R2 finding 7): neither constructs anything but
+  `NewNotifyHandlerForExistingExchange`. Correct the comment while touching this file.
+
 ### 2.2 `publishEvent()` control flow change
 
 Current (`bin-common-handler/pkg/notifyhandler/publish.go`):
@@ -65,7 +80,10 @@ func (h *notifyHandler) publishEvent(eventType string, dataType string, data jso
 	...
 	switch {
 	case delay > 0:
-		return h.publishDelayedEvent(ctx, delay, evt)
+		if err := h.publishDelayedEvent(ctx, delay, evt); err != nil {
+			return fmt.Errorf("could not publish the delayed event. err: %v", err)
+		}
+		return nil
 	default:
 		if err := h.publishDirectEvent(ctx, evt); err != nil {
 			return fmt.Errorf(...)
@@ -85,7 +103,10 @@ func (h *notifyHandler) publishEvent(eventType string, dataType string, data jso
 	...
 	switch {
 	case delay > 0:
-		return h.publishDelayedEvent(ctx, delay, evt)
+		if err := h.publishDelayedEvent(ctx, delay, evt); err != nil {
+			return fmt.Errorf("could not publish the delayed event. err: %v", err)
+		}
+		return nil
 	case h.topicEnabled:
 		// Topic-only path (VOIP-1407): the 55 real publishers. No fanout publish.
 		if err := h.publishTopicEventOrErr(ctx, evt, subscriptionID); err != nil {
@@ -102,24 +123,57 @@ func (h *notifyHandler) publishEvent(eventType string, dataType string, data jso
 }
 ```
 
-`publishTopicEventOrErr` is `publishTopicEvent` (§2.4 below) refactored to return an
+`publishTopicEventOrErr` is `publishTopicEvent` (§2.5 below) refactored to return an
 `error` instead of only logging, since it is now the primary path, not a best-effort
 secondary one. `publishDirectEvent`/`publishDirectEventWithKey` (the VOIP-1258 explicit-
 routing-key path, used only by webhook-manager) are otherwise unchanged.
 
 **Delayed-publish branch**: left exactly as-is (issue analysis confirmed it is dead code
 -- zero production callers pass `delay>0` -- so its behavior under `topicEnabled=true`
-is moot; not touched in this PR, tracked as optional cleanup, §7 item 6).
+is moot; not touched in this PR, tracked as optional cleanup, §7 item 3).
 
 ### 2.3 `NewNotifyHandler` construction-time change
 
 Current: unconditionally declares the per-service fanout exchange
-(`sockHandler.TopicCreate(queueEvent)`); only additionally declares the global topic
-exchange when `topicEnabled`.
+(`sockHandler.TopicCreate(queueEvent)`); on failure, `return`s `nil` and logs. Only
+additionally declares the global topic exchange when `topicEnabled`, via
+`initGlobalTopicExchange()` -- a SHARED private method also called, unconditionally,
+from the SEPARATE `NewNotifyHandlerForExistingExchange` constructor (`main.go:250`);
+`initGlobalTopicExchange()` self-guards internally (`if !h.topicEnabled { return }`,
+`main.go:269-271`), so today it is a safe no-op for webhook-manager's `topicEnabled=false`
+`NewNotifyHandlerForExistingExchange` instance.
 
-New: declare the fanout exchange ONLY when `!topicEnabled` (preserves today's exact
-behavior for `voip-asterisk-proxy` and the 3 dead-wiring sites); declare the global
-topic exchange ONLY when `topicEnabled` (unchanged from today).
+**Corrected finding (R1 finding 1 -- CRITICAL): "return nil and let the caller's
+`== nil` check fail startup" is NOT what happens today, for either failure path.**
+Repo-wide sweep of all 62 `NewNotifyHandler(...)` and `NewNotifyHandlerForExistingExchange(...)`
+call sites: **zero** check the return value for `nil`. Every one assigns straight into
+`notifyHandler := notifyhandler.NewNotifyHandler(...)` and passes it directly into a
+downstream constructor. The REAL current behavior of a fanout-declare failure is: the
+process boots normally, and the first call to any `NotifyHandler` method (frequently
+inside `PublishWebhookEvent`'s fire-and-forget goroutine) panics on a nil-interface
+method call -- at an arbitrary later time, often under load, not at boot; for a
+`-control` binary that never happens to publish, the failure is invisible forever. This
+is a **pre-existing latent bug**, not deliberate fail-fast behavior, and this design
+must not build on top of a false premise about it.
+
+**Decision: fix both failure paths (fanout-declare in `NewNotifyHandler`, topic-declare
+in `initGlobalTopicExchange`) to call `logrus.Fatalf` directly, rather than returning
+`nil`.** This is the minimal-footprint option that genuinely halts startup without a
+62-call-site signature change to `(NotifyHandler, error)` (rejected: that ripples into
+every one of the 62 call sites' error-handling for zero behavior change beyond what
+`Fatalf` already achieves). `logrus.Fatalf`/`log.Fatalf` at process-startup failure is
+an established pattern already used elsewhere in this monorepo's `cmd/` entrypoints
+(e.g. `bin-agent-manager/cmd/agent-manager/main.go`, `bin-registrar-manager/cmd/
+registrar-manager/main.go`); using it directly inside the shared constructor is a
+narrow, deliberate exception to "handlers return errors, callers log/fatal them,"
+justified because no caller of this specific constructor has ever handled its failure
+and 62 call sites is too large a blast radius to retrofit for this ticket.
+
+Fixing the FANOUT-declare path's identical latent bug is in scope, disclosed here
+explicitly (not silent scope creep): it is the same function, the exact same class of
+bug (an unchecked `nil` return), discovered as a direct consequence of writing this
+design, and leaving it unfixed while calling the topic-declare path "matching
+precedent" would be citing a bug as the standard to match.
 
 ```go
 func NewNotifyHandler(sockHandler sockhandler.SockHandler, reqHandler requesthandler.RequestHandler, queueEvent commonoutline.QueueName, publisher commonoutline.ServiceName, opts ...Option) NotifyHandler {
@@ -131,17 +185,18 @@ func NewNotifyHandler(sockHandler sockhandler.SockHandler, reqHandler requesthan
 	if !h.topicEnabled {
 		// Fanout-only path, unchanged: voip-asterisk-proxy and 3 confirmed-dead sites.
 		if err := sockHandler.TopicCreate(string(queueEvent)); err != nil {
-			logrus.Errorf("Could not declare the event exchange. err: %v", err)
-			return nil
+			logrus.Fatalf("Could not declare the event exchange. err: %v", err)
 		}
 	}
 
 	namespace := commonoutline.GetMetricNameSpace(publisher)
 	initPrometheus(namespace)
 
-	if h.topicEnabled {
-		h.initGlobalTopicExchange() // unchanged function; see §2.4 for its failure-semantics change
-	}
+	// initGlobalTopicExchange is UNCHANGED here: it keeps its existing internal
+	// `if !h.topicEnabled { return }` guard (§2.4), so this call is a correct no-op for
+	// !topicEnabled instances -- no caller-side gating change, no divergent behavior at
+	// NewNotifyHandlerForExistingExchange's :250 call site.
+	h.initGlobalTopicExchange()
 
 	return h
 }
@@ -152,54 +207,59 @@ deferred item 2 -- resolved). Rationale: `h.queueNotify` is still read by
 `publishDirectEvent`/`publishDirectEventWithKey`/`publishDelayedEvent`, all of which
 remain live code paths (fanout-only instances still use it; webhook-manager's explicit-
 routing-key path still uses it; the dead delayed-publish path is out of scope, §2.2).
-Dropping the parameter would be a breaking signature change across all 62 call sites for
-zero behavioral gain -- the field is not vestigial, it is actively read by surviving
-code. (The 5 VESTIGIAL `QueueName*Event` outline CONSTANTS this frees up on the 55
-topic-only call sites -- since they no longer need to name a real per-service fanout
-exchange, though they still pass one positionally -- are a separate, much narrower
-question, deferred to §7 item 7; the constructor parameter itself stays.)
+Dropping the parameter would require a second constructor for the 55 topic-only call
+sites (Go has no optional positional parameters), retaining the original for the 7
+fanout-only/existing-exchange sites anyway -- for zero behavioral gain over keeping one
+constructor. **On the 55 topic-only call sites, the value passed for `queueEvent` is
+stored but never read by any code path they can reach** (R1 finding 7) -- add a doc
+comment on `NewNotifyHandler` making this explicit: "`queueEvent` is ignored on the
+`WithGlobalTopicPublish()` path -- no per-service fanout exchange is declared or
+published to there." (The 5 VESTIGIAL `QueueName*Event` outline CONSTANTS this exposes
+on those 55 call sites -- since they name a per-service fanout exchange this ticket
+deletes from the broker (§5), though they are still passed positionally -- are a
+separate, much narrower question, deferred to §7 item 2; the constructor parameter
+itself stays regardless of that follow-up.)
 
-### 2.4 Failure semantics (issue analysis §6 deferred item 1 formerly, renumbered item 1
-in the resolved list -- this is the design's item, distinct from §2.1's resolved
-mechanism item)
+### 2.4 `initGlobalTopicExchange` failure semantics (issue analysis §6 deferred item 1)
 
-Today, `initGlobalTopicExchange()`'s declare failure sets `h.topicDisabled = true` and
-degrades silently (topic publish becomes a metered no-op; fanout keeps the event
-flowing). Once fanout is removed for `topicEnabled=true` instances, there is no fallback
-left to degrade to.
+Today: `initGlobalTopicExchange()` self-guards on `!h.topicEnabled` (unchanged, §2.3),
+and on a `TopicCreateWithKind` failure sets `h.topicDisabled = true` and degrades
+silently (topic publish becomes a metered no-op; fanout keeps the event flowing). Once
+fanout is removed for `topicEnabled=true` instances, there is no fallback left to
+degrade to.
 
-**Decision: make it FATAL, matching `NewNotifyHandler`'s own existing fanout-declare
-failure precedent** (which already `return`s `nil` and lets the caller's `NewNotifyHandler
-== nil` check fail startup). Concretely:
+**Decision: FATAL, via the same `logrus.Fatalf` mechanism as §2.3's fanout-declare
+fix** (not a `bool`-returning refactor with caller-side gating -- that would require
+touching the caller-side guard, which §2.3 established must NOT change to avoid
+affecting `NewNotifyHandlerForExistingExchange`'s :250 call site):
 
 ```go
-func (h *notifyHandler) initGlobalTopicExchange() bool {
+// initGlobalTopicExchange declares the global topic exchange `bin-manager.event` when the
+// WithGlobalTopicPublish option is enabled (VOIP-1404 design §3/§5.2).
+//
+// VOIP-1407: a declare failure here is now FATAL for topicEnabled=true instances (55 real
+// call sites) -- there is no fanout fallback left to degrade to. logrus.Fatalf halts the
+// process directly (see §2.3 for why: no caller of NewNotifyHandler/
+// NewNotifyHandlerForExistingExchange has ever checked the return value for nil).
+func (h *notifyHandler) initGlobalTopicExchange() {
+	if !h.topicEnabled {
+		return
+	}
+
 	if err := h.sockHandler.TopicCreateWithKind(string(commonoutline.QueueNameEvent), topicExchangeKind); err != nil {
-		logrus.Errorf("Could not declare the global topic exchange. err: %v", err)
-		return false // caller (NewNotifyHandler) returns nil on false
+		logrus.Fatalf("Could not declare the global topic exchange. err: %v", err)
 	}
-	return true
 }
-```
-
-`NewNotifyHandler` becomes:
-
-```go
-	if h.topicEnabled {
-		if ok := h.initGlobalTopicExchange(); !ok {
-			return nil
-		}
-	}
 ```
 
 `topicDisabled` field, `promTopicPublishTotal{result="error"}`'s "suppressed publish"
 counting behavior tied to it, and the doc comments describing "degrade, don't abort" are
-all removed for the `topicEnabled=true` path (they still describe nothing, since there
-is no more silent-degrade branch to have them for). This is a deliberate behavior
-change from VOIP-1404/1405/1406's dual-publish era, consistent with this ticket's whole
-purpose: dual-publish existed BECAUSE degrade-not-abort was safe while fanout was the
-backup; once fanout is gone, a topic-exchange declare failure is exactly as serious as
-today's fanout-declare failure already is, and should fail exactly the same way.
+all removed (they described a silent-degrade branch that no longer exists). This is a
+deliberate behavior change from VOIP-1404/1405/1406's dual-publish era, consistent with
+this ticket's whole purpose: dual-publish existed BECAUSE degrade-not-abort was safe
+while fanout was the backup; once fanout is gone, a topic-exchange declare failure is
+exactly as serious as a fanout-declare failure, and now fails exactly the same way
+(§2.3) instead of differently.
 
 **Rationale for FATAL over an alternative (e.g. retry-with-backoff, or keep degrading to
 a black hole)**: `TopicCreateWithKind` is declared via the shared `sockhandler` helper
@@ -237,12 +297,21 @@ func (h *notifyHandler) publishTopicEventOrErr(ctx context.Context, evt *sock.Ev
 	key := eventtopic.RoutingKey(string(h.publisher), evt.Type, subscriptionID)
 	if err := h.sockHandler.EventPublish(string(commonoutline.QueueNameEvent), key, evt); err != nil {
 		promTopicPublishTotal.WithLabelValues(evt.Type, topicPublishResultError).Inc()
-		return err
+		return fmt.Errorf("could not publish the event to the global topic exchange. routing_key: %s, err: %v", key, err)
 	}
 	promTopicPublishTotal.WithLabelValues(evt.Type, topicPublishResultOK).Inc()
 	return nil
 }
 ```
+
+**Diagnostic-log fidelity (R1 finding 9)**: the current `publishTopicEvent`
+(`publish.go:217`) logs `routing_key` alongside the error -- the single most
+diagnostic field on this path, since it is the whole point of the topic migration.
+The refactor above preserves it by folding it into the returned error string (rather
+than a separate `log.Errorf` call, since this function's caller in §2.2 now returns the
+error onward instead of swallowing it) so the routing key survives all the way to
+`publishEvent`'s caller instead of being dropped at the `promTopicPublishTotal`
+increment point.
 
 `promTopicPublishTotal`/`promTopicPlaceholderTotal` are unchanged (they already exist
 and already correctly attribute topic-path outcomes independent of this metric).
@@ -256,16 +325,21 @@ is now materially MORE important, not less: with `topicEnabled=true` now meaning
 "fanout removed, topic only" instead of "topic added on top of fanout," a future
 maintainer adding `WithGlobalTopicPublish()` to this instance would not just double-
 publish (the old risk) -- since this instance's `h.queueNotify` already targets a
-topic-kind exchange (`QueueNameWebhookEventTopic`), enabling the option would attempt to
-ALSO run this instance through `publishTopicEventOrErr`'s `bin-manager.event`-targeting
-path, in addition to its actual traffic via `PublishEventWithRoutingKey`, on top of a
-`topicEnabled=true` handler that no longer even has a fanout declare to fall back on if
-the (redundant) `bin-manager.event` declare inside `NewNotifyHandlerForExistingExchange`
-somehow diverged. **Decision: strengthen the comment; no code-level guard is added**
-(a runtime assertion would need to fire in `NewNotifyHandlerForExistingExchange` itself,
-which is more invasive than this ticket's stated scope -- issue analysis confirmed ZERO
-current call sites pass the option to this constructor, so there is nothing to migrate,
-only a comment to update):
+topic-kind exchange (`QueueNameWebhookEventTopic`), enabling the option would ALSO
+run this instance through `publishTopicEventOrErr`'s `bin-manager.event`-targeting
+path (via `initGlobalTopicExchange`'s existing self-guard now firing for this instance
+too, §2.3), in addition to its actual traffic via `PublishEventWithRoutingKey` --
+**corrected premise (R1 finding 3)**: `initGlobalTopicExchange()`'s guard means there is
+NO redundant `bin-manager.event` declare inside `NewNotifyHandlerForExistingExchange`
+TODAY (`topicEnabled=false` there, so the call at `main.go:250` is currently a no-op);
+the hazard is not a divergent EXISTING declare, it is that enabling the option would
+newly CREATE one where none exists now, immediately upstream of the same handler's
+`publishEvent()` starting to run through the (now fatal-on-failure, §2.4) topic path in
+addition to its `PublishEventWithRoutingKey` traffic. **Decision: strengthen the
+comment; no code-level guard is added** (a runtime assertion would need to fire in
+`NewNotifyHandlerForExistingExchange` itself, which is more invasive than this ticket's
+stated scope -- issue analysis confirmed ZERO current call sites pass the option to
+this constructor, so there is nothing to migrate, only a comment to update):
 
 ```go
 // NOTE (VOIP-1407): WithGlobalTopicPublish is valid here in principle, but enabling it
@@ -297,7 +371,28 @@ In `pkg/subscribehandler/main.go`, delete:
 mechanism -- unconditional, not gated behind "if the fanout declare failed, stay on
 fanout" (that branch no longer exists, matching §3.3's failure-semantics decision).
 
-### 3.2 call-manager and timeline-manager: two exceptions, not one
+**Per-service variance in how item 1-4 above are expressed (R1 finding 4, confirmed via
+source read of all three named services)** -- the generic deletion still applies, only
+the concrete syntax at the deletion site differs:
+
+| Service | `subscribeTargets` shape | Notes |
+|---|---|---|
+| 17 of 20 (typical) | `var subscribeTargets = []string{...}` | Delete the var and the `cmd/*/main.go` wiring that passes it in, per items 1/4. |
+| timeline-manager | `var subscribeTargets = []commonoutline.QueueName{...}` (typed, not `[]string`) | Same deletion; also has a two-value `Run(ctx) (<-chan struct{}, error)` signature (not the one-value `Run(ctx) error` the rest of §3.1/§3.3 assume) -- every `return err` in §3.3's rewritten `Run()` becomes `return nil, err` for this service specifically. |
+| webhook-manager | Comma-joined `string` constructor parameter (`main.go:97`), `strings.Split(h.subscribesTargets, ",")` at the top of `Run()` (`main.go:126`); built via `strings.Join([]string{...}, ",")` in `cmd/webhook-manager/main.go:193` | Delete the `strings.Join` construction in `cmd/`, the constructor parameter, and the `strings.Split` call in `Run()` -- same net effect as item 1/4, different concrete lines. |
+| call-manager | `subscribeTargets []string` built from `string(commonoutline.QueueName*Event)` conversions (e.g. `main.go:54-56`) | Same deletion as the typical case; the `string(...)` conversions disappear along with the var, nothing extra to do. |
+
+### 3.2 Per-service exceptions to the generic change in §3.1
+
+Two independent mechanisms sit outside the generic subscribeTargets/topicPatterns
+machinery §3.1 describes, in two different (overlapping) service pairs. Neither is
+touched by this ticket. **(CRITICAL, R1 finding 2)**: an earlier draft of this design
+omitted the second one entirely; following §3.1 as originally written would have
+deleted a live, in-production binding and caused webhook-event intake loss for both
+services it applies to. Both are called out explicitly below so the implementation
+sweep does not regress them.
+
+**call-manager and timeline-manager -- the asterisk fanout leg:**
 
 - **Sentinel defensive `TopicCreate` declare**: DELETED (issue analysis §2b, design doc
   citation VOIP-1406 `:124-130`: "The declare is deleted in VOIP-1407 together with the
@@ -311,6 +406,48 @@ fanout" (that branch no longer exists, matching §3.3's failure-semantics decisi
   call is re-added as a standalone statement immediately before `go ConsumeMessage`, in
   the same position the loop used to occupy.
 
+**agent-manager and timeline-manager -- the VOIP-1258 webhook-topic-bind block:**
+
+Confirmed via source (`bin-agent-manager/pkg/subscribehandler/main.go:97-120`,
+`bin-timeline-manager/pkg/subscribehandler/main.go` -- same block) and
+`docs/reference/rabbitmq-queues-reference.md:299`: these two services (only -- not
+call-manager, not any other of the 20; `bin-api-manager` also binds
+`QueueNameWebhookEventTopic` but through an unrelated mechanism, `pkg/websockhandler`'s
+per-pod scoped-routing queue, not `pkg/subscribehandler`, so it is structurally outside
+this ticket regardless) carry a self-contained block, positioned in `Run()` BETWEEN the
+fanout `QueueSubscribe` loop (§3.1 item 2) and the VOIP-1406 topic-pattern bind block
+(§3.1's `topicPatterns`/`QueueBind`):
+
+```go
+if errBind := h.sockHandler.QueueBind(h.subscribeQueue, "#", string(commonoutline.QueueNameWebhookEventTopic), false, nil); errBind != nil {
+    log.Errorf("Could not bind to the topic exchange. err: %v", errBind)
+    // do NOT proceed to unbind the old exchange if this bind failed -- stay on the
+    // old exchange rather than risk ending up bound to neither.
+} else if errUnbind := h.sockHandler.QueueUnbind(h.subscribeQueue, "", string(commonoutline.QueueNameWebhookEvent), nil); errUnbind != nil {
+    log.Errorf("CRITICAL: Could not unbind from the old fanout exchange after binding to the new topic exchange. ... err: %v", errUnbind)
+}
+```
+
+**Ruling: RETAINED VERBATIM AND IN POSITION.** This block is not part of §3.1's generic
+deletion target -- it does not read `subscribeTargets`/`fanoutUnbindTargets`/
+`topicPatterns` and is unrelated to the fanout-vs-topic cutover this ticket performs. Two
+sub-rulings, both scope-narrowing (neither is touched by this PR):
+
+1. **Failure semantics stay log-only, NOT promoted to fatal.** §3.3's fatal-on-failure
+   ruling is scoped to the VOIP-1406 topic-pattern block specifically, because that
+   block's failure mode changes meaning once its sibling fanout loop is deleted (nothing
+   left to degrade to). This VOIP-1258 block's degrade target -- staying bound to
+   `QueueNameWebhookEvent` on a failed bind -- is a different exchange, untouched by
+   anything in §2 or §3.1, and remains a functioning fallback regardless of this ticket.
+   Making it fatal would be an unrelated behavior change outside this ticket's stated
+   scope (§0).
+2. **The legacy `QueueUnbind(..., QueueNameWebhookEvent, ...)` call is left untouched.**
+   Issue analysis established `QueueNameWebhookEvent`'s exchange is redundant/safe to
+   remove at the broker level (§1), but removing this call site -- VOIP-1258 cleanup, a
+   different ticket's concern -- is explicitly OUT of scope here; touching it adds risk
+   for zero benefit to this ticket's goal (§1's goal is the fanout-vs-topic *publish*
+   cutover, not VOIP-1258's webhook-topic migration, which already shipped).
+
 ### 3.3 Failure semantics (issue analysis §6 deferred item 5, formerly item 6 -- resolved)
 
 **Decision: FATAL, consistent with §2.4's publish-side ruling.** Today's `Run()`
@@ -318,7 +455,13 @@ degrades ("stay fully on fanout subscriptions") if the topic-exchange declare or
 `QueueBind` fails. Once the fanout `QueueSubscribe` loop is deleted, there is nothing
 left to degrade TO -- the service would silently intake zero events forever, which is
 strictly worse than a loud boot failure an operator/orchestrator will notice and
-restart-loop on. Concretely, in `Run()`:
+restart-loop on. Concretely, in `Run()` (the snippet below shows the union of both §3.2
+exceptions for illustration; only timeline-manager carries both -- call-manager has the
+asterisk line but not the webhook block, agent-manager has the webhook block but not the
+asterisk line, the other 18 services have neither and skip straight from `QueueCreate` to
+the topic-declare line). **timeline-manager only (§3.1's variance table)**: every
+`return fmt.Errorf(...)` below becomes `return nil, fmt.Errorf(...)`, matching its
+two-value `Run(ctx) (<-chan struct{}, error)` signature:
 
 ```go
 	if err := h.sockHandler.QueueCreate(h.subscribeQueue, "normal"); err != nil {
@@ -328,6 +471,15 @@ restart-loop on. Concretely, in `Run()`:
 	// call-manager/timeline-manager only: the one retained fanout leg.
 	if err := h.sockHandler.QueueSubscribe(h.subscribeQueue, string(commonoutline.QueueNameAsteriskEventAll)); err != nil {
 		return fmt.Errorf("could not subscribe to the asterisk fanout exchange. err: %v", err)
+	}
+
+	// agent-manager/timeline-manager only: the VOIP-1258 webhook-topic-bind block
+	// (§3.2). RETAINED VERBATIM, unchanged failure semantics (log-only, non-fatal --
+	// §3.2 ruling 1). Not part of this ticket's fatal-on-failure change below.
+	if errBind := h.sockHandler.QueueBind(h.subscribeQueue, "#", string(commonoutline.QueueNameWebhookEventTopic), false, nil); errBind != nil {
+		log.Errorf("Could not bind to the topic exchange. err: %v", errBind)
+	} else if errUnbind := h.sockHandler.QueueUnbind(h.subscribeQueue, "", string(commonoutline.QueueNameWebhookEvent), nil); errUnbind != nil {
+		log.Errorf("CRITICAL: Could not unbind from the old fanout exchange after binding to the new topic exchange. ... err: %v", errUnbind)
 	}
 
 	if err := h.sockHandler.TopicCreateWithKind(string(commonoutline.QueueNameEvent), "topic"); err != nil {
@@ -385,15 +537,16 @@ them.
 ## 5. Per-service fanout exchange deletion (issue analysis §4 item 4, operational
 runbook -- not application code)
 
-Exactly the 28 exchanges issue analysis §1 enumerated (`bin-manager.agent-manager.event`
-through `bin-manager.webchat-manager.event`, alphabetically -- full list in issue
-analysis §1, not repeated here since it is normative there). Explicitly NOT included:
-`asterisk.all.event` (permanent), `bin-manager.event` (the topic exchange itself),
-`bin-manager.webhook-manager.event.topic` (VOIP-1258, different exchange),
+Exactly the 28 exchanges issue analysis §1 enumerated -- full list in issue analysis §1,
+not repeated here since it is normative there; this design's §6 doc update must enumerate
+all 28 names verbatim in the runbook rather than describe them by range. Explicitly NOT
+included: `asterisk.all.event` (permanent), `bin-manager.event` (the topic exchange
+itself), `bin-manager.webhook-manager.event.topic` (VOIP-1258, different exchange),
 `bin-manager.delay` (unrelated retry exchange), and the 5 `QueueName*Event`-family
 exchanges that are already absent from the broker (`api-manager`, `rag-manager`,
-`timeline-manager`, `user-manager` -- never existed; `webhook-manager` -- already gone
-since VOIP-1296, cause unestablished but irrelevant since there is nothing to delete).
+`timeline-manager`, `user-manager` -- never existed; `webhook-manager` -- absent from the
+broker, cause unestablished (issue analysis §1), irrelevant here since there is nothing
+to delete either way).
 
 **Precondition (issue analysis §4 item 4, widened per that document's R2 finding)**:
 every publisher daemon+control binary (§2/§4 above) AND every one of the 20 consumer
@@ -401,11 +554,13 @@ services (§3) that declares, binds, or subscribes to one of these 28 exchanges 
 rebuilt/redeployed with that code removed, with a CONFIRMED restart-survival check per
 service (§3.4), before this runbook runs.
 
-**Mechanism**: a documented one-time `rabbitmqadmin`/management-API cleanup, matching
-VOIP-1406's stale-binding-runbook precedent (`docs/reference/rabbitmq-queues-
-reference.md`'s existing runbook section). Exact commands (per exchange:
-`rabbitmqadmin delete exchange name=bin-manager.<x>-manager.event`) to be added to that
-doc as part of this PR's documentation update (§6).
+**Mechanism**: a documented one-time management-API cleanup via `curl` against the
+broker's HTTP API (port 80, not 15672 on bm-nyc-01), matching the existing runbook
+pattern already in `docs/reference/rabbitmq-queues-reference.md:301-312` (NOT
+`rabbitmqadmin`, which that doc does not use). Exact commands (per exchange:
+`curl -u "$RABBITMQ_USER:$RABBITMQ_PASS" -X DELETE
+"http://<host>/api/exchanges/%2f/bin-manager.<x>-manager.event"`) to be added to that
+doc, enumerating all 28 names verbatim, as part of this PR's documentation update (§6).
 
 **Post-deletion re-check**: re-list exchanges/bindings after a defined soak window (same
 technique as issue analysis §1's live queries) to catch resurrection from an
@@ -439,24 +594,45 @@ change.
 4. transfer-manager/transfer-control/tts-control dead-wiring deletion: **decided IN
    scope, §4** -- not actually open, listed here for completeness.
 5. talk-control's broken wiring: independent follow-up, explicitly out of scope.
-6. Whether to also delete the now-unused `topicDisabled` field's remaining references
-   for the `topicEnabled=false` path (it is only ever set on the `topicEnabled=true`
-   path in current code, so this is likely a pure removal with no live-path impact --
-   confirm during implementation, not a design-level decision).
+6. `topicDisabled` field: not actually open, listed here for completeness -- §2.4
+   already decided this (deleted entirely, along with its `promTopicPublishTotal{
+   result="error"}` "suppressed publish" counting and the "degrade, don't abort" doc
+   comments), since the silent-degrade branch it existed for no longer exists once
+   `initGlobalTopicExchange`'s failure path becomes `logrus.Fatalf`. Implementation
+   should grep for any remaining reference to it after the §2.4 change and confirm
+   zero survive.
 
 ## 8. Testing
 
 - `bin-common-handler/pkg/notifyhandler`: table-driven tests for `publishEvent()`'s new
-  branch split (topicEnabled true/false × delay zero/nonzero), `NewNotifyHandler`'s new
-  conditional-declare logic (both branches), `initGlobalTopicExchange`'s fatal-on-
-  failure behavior (constructor returns nil), and `publishTopicEventOrErr`'s metric
-  observations (reuse the existing `promNotifyProcessTime`/`promTopicPublishTotal`
-  assertions, extended to the topic-only path).
+  branch split (topicEnabled true/false × delay zero/nonzero), and
+  `publishTopicEventOrErr`'s metric observations (reuse the existing
+  `promNotifyProcessTime`/`promTopicPublishTotal` assertions, extended to the
+  topic-only path). `NewNotifyHandler`'s and `initGlobalTopicExchange`'s fatal-on-
+  failure paths call `logrus.Fatalf`, not a nil return -- test via
+  `logrus.StandardLogger().ExitFunc` temporarily overridden to a non-exiting stub plus a
+  hook/formatter capturing the fatal-level entry, asserting the entry was logged at
+  `logrus.FatalLevel` with the expected message, rather than asserting a return value.
+- **Regression pins (R1 finding 13) -- lock in behavior this design deliberately does
+  NOT change, so a future edit to the shared `initGlobalTopicExchange` doesn't silently
+  break either exception**:
+  - `NewNotifyHandlerForExistingExchange` with `topicEnabled=false` (webhook-manager's
+    actual construction today) still does NOT declare `bin-manager.event` and still
+    returns a non-nil handler -- confirms §2.6's "no redundant declare exists today"
+    correction stays true after this PR.
+  - A `topicEnabled=false` `NewNotifyHandler` construction (`voip-asterisk-proxy`'s
+    only call site, excluded per §0/§2.1) still calls `TopicCreate(queueEvent)` and
+    routes every publish through `publishDirectEvent`/`publishDirectEventWithKey`,
+    bit-identical to pre-PR behavior -- confirms this ticket's publish-side change is
+    inert for the one excluded caller.
 - Each of the 20 consumer services: update `binding_golden_test.go` (drop
   fanout-target pins) and the `Run()` sequencing test (gomock `InOrder`: `QueueCreate`
-  -> [asterisk `QueueSubscribe`, call-manager/timeline-manager only] -> `TopicCreateWithKind`
-  -> `QueueBind`×N -> `ConsumeMessage`; failure-path cases updated to assert `Run()`
-  returns the error immediately, matching §3.3, replacing the old roll-back-and-degrade
-  assertions).
+  -> [asterisk `QueueSubscribe`, call-manager/timeline-manager only] -> [VOIP-1258
+  webhook-topic `QueueBind`+`QueueUnbind`, agent-manager/timeline-manager only,
+  asserting §3.2's unchanged log-only failure behavior is preserved, not just its
+  happy path] -> `TopicCreateWithKind` -> `QueueBind`×N -> `ConsumeMessage`;
+  failure-path cases updated to assert `Run()` returns the error immediately (`return
+  nil, err` for timeline-manager per §3.1's variance table, `return err` elsewhere),
+  matching §3.3, replacing the old roll-back-and-degrade assertions).
 - Live verification (post-merge, pre-deletion): the restart-survival + stale-binding
   sweep from §3.4, run per service as each is deployed.
