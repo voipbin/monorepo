@@ -10,7 +10,6 @@ import (
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -27,13 +26,11 @@ func TestTransfererHangup_BlindType(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 	h := &transferHandler{
-		utilHandler:   utilhandler.NewUtilHandler(),
-		reqHandler:    mockReq,
-		db:            mockDB,
-		notifyHandler: mockNotify,
+		utilHandler: utilhandler.NewUtilHandler(),
+		reqHandler:  mockReq,
+		db:          mockDB,
 	}
 
 	ctx := context.Background()
@@ -63,13 +60,11 @@ func TestTransfererHangup_AttendedType_NoAnswer(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 	h := &transferHandler{
-		utilHandler:   utilhandler.NewUtilHandler(),
-		reqHandler:    mockReq,
-		db:            mockDB,
-		notifyHandler: mockNotify,
+		utilHandler: utilhandler.NewUtilHandler(),
+		reqHandler:  mockReq,
+		db:          mockDB,
 	}
 
 	ctx := context.Background()
@@ -117,13 +112,11 @@ func TestTransfererHangup_AttendedType_WithAnswer(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 	h := &transferHandler{
-		utilHandler:   utilhandler.NewUtilHandler(),
-		reqHandler:    mockReq,
-		db:            mockDB,
-		notifyHandler: mockNotify,
+		utilHandler: utilhandler.NewUtilHandler(),
+		reqHandler:  mockReq,
+		db:          mockDB,
 	}
 
 	ctx := context.Background()
@@ -199,13 +192,11 @@ func TestTransfererHangup_InvalidType(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 	h := &transferHandler{
-		utilHandler:   utilhandler.NewUtilHandler(),
-		reqHandler:    mockReq,
-		db:            mockDB,
-		notifyHandler: mockNotify,
+		utilHandler: utilhandler.NewUtilHandler(),
+		reqHandler:  mockReq,
+		db:          mockDB,
 	}
 
 	ctx := context.Background()
@@ -235,13 +226,11 @@ func TestTransfererHangup_AttendedType_GroupcallGetError(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 	h := &transferHandler{
-		utilHandler:   utilhandler.NewUtilHandler(),
-		reqHandler:    mockReq,
-		db:            mockDB,
-		notifyHandler: mockNotify,
+		utilHandler: utilhandler.NewUtilHandler(),
+		reqHandler:  mockReq,
+		db:          mockDB,
 	}
 
 	ctx := context.Background()

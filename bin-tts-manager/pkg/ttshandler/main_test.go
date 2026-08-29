@@ -4,7 +4,6 @@ import (
 	"context"
 	"testing"
 
-	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-tts-manager/pkg/audiohandler"
 	"monorepo/bin-tts-manager/pkg/buckethandler"
@@ -88,13 +87,11 @@ func Test_normalizeText_invalidSSML(t *testing.T) {
 	mockAudio := audiohandler.NewMockAudioHandler(mc)
 	mockBucket := buckethandler.NewMockBucketHandler(mc)
 	mockRequest := requesthandler.NewMockRequestHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 	h := &ttsHandler{
 		audioHandler:   mockAudio,
 		bucketHandler:  mockBucket,
 		requestHandler: mockRequest,
-		notifyHandler:  mockNotify,
 	}
 
 	tests := []struct {

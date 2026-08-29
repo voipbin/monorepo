@@ -8,7 +8,6 @@ import (
 	cmcall "monorepo/bin-call-manager/models/call"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
 	fmaction "monorepo/bin-flow-manager/models/action"
@@ -66,12 +65,10 @@ func Test_serviceInit(t *testing.T) {
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := transferHandler{
-				reqHandler:    mockReq,
-				db:            mockDB,
-				notifyHandler: mockNotify,
+				reqHandler: mockReq,
+				db:         mockDB,
 			}
 			ctx := context.Background()
 
@@ -138,12 +135,10 @@ func Test_createFlow(t *testing.T) {
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := transferHandler{
-				reqHandler:    mockReq,
-				db:            mockDB,
-				notifyHandler: mockNotify,
+				reqHandler: mockReq,
+				db:         mockDB,
 			}
 			ctx := context.Background()
 

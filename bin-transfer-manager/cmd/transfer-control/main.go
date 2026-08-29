@@ -8,10 +8,8 @@ import (
 	"log"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
-	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
-	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-transfer-manager/internal/config"
@@ -63,9 +61,8 @@ func initTransferHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (transf
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameTransferEvent, serviceName)
 
-	return transferhandler.NewTransferHandler(reqHandler, notifyHandler, db), nil
+	return transferhandler.NewTransferHandler(reqHandler, db), nil
 }
 
 func initCommand() *cobra.Command {

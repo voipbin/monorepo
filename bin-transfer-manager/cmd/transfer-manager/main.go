@@ -11,7 +11,6 @@ import (
 	"monorepo/bin-common-handler/models/sock"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
-	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
@@ -134,8 +133,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 
 	// create handlers
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameTransferEvent, serviceName)
-	transferHandler := transferhandler.NewTransferHandler(reqHandler, notifyHandler, db)
+	transferHandler := transferhandler.NewTransferHandler(reqHandler, db)
 
 	// run event listener
 	if err := runSubscribe(serviceName, sockHandler, transferHandler); err != nil {
@@ -157,16 +155,7 @@ func runSubscribe(
 	sockHandler sockhandler.SockHandler,
 	transferHandler transferhandler.TransferHandler,
 ) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func": "runSubscribe",
-	})
-
-	subscribeTargets := []string{
-		string(commonoutline.QueueNameCallEvent),
-	}
-	log.WithField("subscribe_targets", subscribeTargets).Debug("Running subscribe handler")
-
-	subscribeHandler := subscribehandler.NewSubscribeHandler(serviceName, sockHandler, string(commonoutline.QueueNameTransferSubscribe), subscribeTargets, transferHandler)
+	subscribeHandler := subscribehandler.NewSubscribeHandler(serviceName, sockHandler, string(commonoutline.QueueNameTransferSubscribe), transferHandler)
 
 	// run
 	if err := subscribeHandler.Run(); err != nil {
