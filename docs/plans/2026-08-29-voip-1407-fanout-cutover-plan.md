@@ -52,7 +52,7 @@ Everything below ships in **ONE PR** (root `CLAUDE.md`: "one PR per task"; desig
 **Parallelizable:**
 
 - **B, C, D are mutually independent** (three different services, no shared files).
-- **The 20 services inside Unit E are mutually independent.** Each service's `pkg/subscribehandler/main.go` + `cmd/*-manager/main.go` + its own tests are a self-contained edit with no cross-service file overlap. They can be done in any order, or fanned out across parallel workers, with one caveat: the **3 exception services (call-manager, agent-manager, timeline-manager) must not be batched into a mechanical sweep** -- design §3.2 exists precisely because a wholesale loop deletion would destroy a live production binding in those three. Do the 17 typical services as a sweep; do the 3 exceptions individually, by hand, each with its own review pass.
+- **The 20 services inside Unit E are mutually independent.** Each service's `pkg/subscribehandler/main.go` + `cmd/*-manager/main.go` + its own tests are a self-contained edit with no cross-service file overlap. They can be done in any order, or fanned out across parallel workers, with two caveats: the **3 exception services (call-manager, agent-manager, timeline-manager) must not be batched into a mechanical sweep** -- design §3.2 exists precisely because a wholesale loop deletion would destroy a live production binding in those three; and **`bin-webhook-manager` must not be batched into the same mechanical sweep as the 16 remaining typical services either** (R1 finding MEDIUM-4) -- its comma-joined-string `subscribeTargets` shape (E2's variant row) needs three distinct deletions a uniform slice-literal sweep would miss or mishandle. Do the 16 uniform-shape typical services as a sweep; do webhook-manager's subscribe-side edit as its own pass (commit 5b, §2.2); do the 3 exceptions individually, by hand, each with its own review pass.
 - **Unit E is independent of A/B/C/D at the source level.** No file in Unit E imports anything Unit A changes in a way A's edits alter. In practice, still run Unit E's verification *after* A lands locally, so the `go mod vendor` step picks up the same `bin-common-handler` tree the PR ships.
 
 ### 2.2 Recommended commit sequence inside the single PR
@@ -62,12 +62,14 @@ Everything below ships in **ONE PR** (root `CLAUDE.md`: "one PR per task"; desig
 | 1 | `bin-common-handler` (code + tests) | A | Breaking change first; everything downstream compiles against it |
 | 2 | `bin-talk-manager` | B | Directly motivated by commit 1 |
 | 3 | `bin-transfer-manager`, `bin-tts-manager` | C | Independent deletions |
-| 4 | `bin-webhook-manager` | D | Comment-only |
-| 5 | 17 typical consumer services | E (sweep) | Mechanical, uniform |
+| 4 | `bin-webhook-manager` (comment) | D | Comment-only |
+| 5 | 16 typical consumer services (**not** including `bin-webhook-manager` -- see note below, R1 finding MEDIUM-4) | E (sweep) | Mechanical, uniform -- all 16 share the identical `cmd/`-local-slice-literal shape (E2's "Typical" row) |
+| 5b | `bin-webhook-manager` (subscribe-side: comma-joined `subscribesTargets` + `strings.Split`) | E (variant) | Structurally distinct from commit 5's 16 (E2's variant row: `strings.Join` in `cmd/`, constructor param, `strings.Split` in `Run()`) -- separated so it is not mislabeled "mechanical, uniform" alongside the 16 |
 | 6 | `bin-call-manager`, `bin-agent-manager`, `bin-timeline-manager` | E (exceptions) | Isolated so the diff for the risky three is reviewable on its own |
-| 7 | Docs (shared + per-service) | F | Reflects the final state |
+| 7 | `docs/reference/rabbitmq-queues-reference.md` + `bin-common-handler/docs/architecture.md` + F2a's per-service docs (staged with each service's own code commit above, not a separate commit) | F1/F2a/F3 | Reflects the final state of commits 1-6 |
+| 8 | F2b's 8 doc-only publisher daemons (`bin-customer-manager`, `bin-email-manager`, `bin-message-manager`, `bin-outdial-manager`, `bin-pipecat-manager`, `bin-route-manager`, `bin-sentinel-manager`, `bin-webchat-manager`) | F2b | Doc-only prose update for services with zero code change in this PR (R1 finding HIGH-2) -- kept as its own commit since it has no corresponding code commit to ride alongside |
 
-Commits 5 and 6 are deliberately separated so a reviewer can read the three exception services' diff without it being buried in a 17-service mechanical sweep. This is a *reviewability* choice inside one PR, not a PR split.
+Commits 5/5b and 6 are deliberately separated so a reviewer can read the three exception services' diff (and webhook-manager's structurally distinct edit) without either being buried in a mechanical sweep. This is a *reviewability* choice inside one PR, not a PR split. (Note: `bin-webhook-manager`'s F2a per-service doc update rides with commit 5b, its `pkg/subscribehandler` code commit -- not with commit 4's comment-only `NewNotifyHandlerForExistingExchange` change, which is a different file pair entirely.)
 
 ---
 
@@ -85,7 +87,7 @@ This is the whole behavioral change. Everything else in the PR is a consequence 
 |---|---|
 | `bin-common-handler/pkg/notifyhandler/main.go:175-186` | `WithGlobalTopicPublish()`'s doc comment. Rewrite per design §2.1 bullet 1: enabling the option makes the instance topic-ONLY (no fanout publish, no fanout exchange declared); the default (option omitted) is unchanged fanout-only. |
 | `main.go:70-76` | `initPrometheus` guard comment. The claim that webhook-manager/webhook-control make "a fanout-bound `NewNotifyHandler` call in the same process" is **false** (issue §3, design §2.1 bullet 2). Correct it. |
-| `main.go:64-66` | `promTopicPublishTotal`/`promTopicPlaceholderTotal` var-block comment ("the topic publish path must never touch `promNotifyTotal`/`promNotifyProcessTime`"). A2/A5 make both of those statements false. Rewrite to the new invariant per design §2.1 bullet 3: one active publish path per instance, so double-counting is impossible by construction. *Verified this plan:* the comment is at `main.go:65-66`; locate by content, not by line. |
+| `main.go:64-66` | `promTopicPublishTotal`/`promTopicPlaceholderTotal` var-block comment ("the topic publish path must never touch `promNotifyTotal`/`promNotifyProcessTime`"). A2/A5 make both of those statements false. Rewrite to the new invariant per design §2.1 bullet 3: one active publish path per instance, so double-counting is impossible by construction. *Verified this plan:* the comment block is at `main.go:64-66` (matching design's own citation); locate by content, not by line. |
 
 #### A2. `publish.go` -- `publishEvent()` control-flow change (design §2.2)
 
@@ -124,7 +126,7 @@ This is the whole behavioral change. Everything else in the PR is a consequence 
 
 #### A7. Test rewrites, deletions, and additions (design §8)
 
-> **Citation drift note.** Design §8's `main_test.go` line citations carry a small offset against the current worktree (*verified this plan:* `Test_NewNotifyHandler_globalTopicDeclareFailure` is at `main_test.go:261`, design cites `:258-294`; `Test_NewNotifyHandler_withoutOption` is at `:297`, design cites `:296-318`; `Test_WithGlobalTopicPublish_declaresGlobalExchange` is at `:187`). `publish_test.go`'s citations point at *fixture* lines inside tests and check out consistently. **Locate every test below by NAME, and treat the design's line numbers as a cross-check, not a lookup key.**
+> **Citation drift note.** Design §8's `main_test.go` line citations carry a small offset against the current worktree (*verified this plan:* `Test_NewNotifyHandler_globalTopicDeclareFailure` is at `main_test.go:261`, design cites `:258-294`; `Test_NewNotifyHandler_withoutOption` is at `:297`, design cites `:296-318`; `Test_WithGlobalTopicPublish_declaresGlobalExchange` is at `:187`). `publish_test.go`'s citations point at *fixture* lines inside tests and mostly check out, **but not uniformly (R1 finding LOW-5, corrected)**: for `Test_PublishEvent_typedNilSubscriptionIdentifier` (func at `:734`), design's `:778` lands on the `topicEnabled: tt.topicEnabled` table-row line, not the shared expectation to edit -- the `topicEnabled: true` arm is at `:758`, and the actual `EventPublish(string(h.queueNotify), "", gomock.Any())` expectation to split is at `:784`. `Test_PublishEvent_optionOffSkipsSubscriptionIdentifier` (func at `:911`) has the identical pattern: its `topicEnabled: true` arm is at `:937`, not design's cited `:957`. **Locate every test below by NAME, and treat every design line number -- for both files -- as a cross-check, not a lookup key.**
 
 **`main_test.go`:**
 
@@ -135,9 +137,9 @@ This is the whole behavioral change. Everything else in the PR is a consequence 
 | `Test_WithGlobalTopicPublish_declaresGlobalExchange` -- `"new notify handler"` subtest | `:199-210`, field `expectFanoutDeclare` at `:209`, consumed at `:232-233` | **DROP the `TopicCreate` expectation entirely** for the `topicEnabled=true` construction (A3 moves that call inside `if !h.topicEnabled`). Both subtests become "no fanout declare", so the `expectFanoutDeclare` table field itself is vestigial -- **remove the field from the table**, do not leave it dangling (design §8, R4 finding). |
 | `Test_NewNotifyHandler_withoutOption` | `:296-318` (actual `:297`) | **KEEP AS-IS.** Design §8 explicitly says this is the already-passing form of regression pin #2 (the `voip-asterisk-proxy` bit-identical-behavior contract) -- cite it, do not rewrite it. |
 
-**New in `main_test.go`:** a test for `initGlobalTopicExchange`'s fatal path (A4), same `ExitFunc`-override strategy, plus the two **regression pins** design §8 names:
+**New in `main_test.go`:** a test for `initGlobalTopicExchange`'s fatal path (A4). The two **regression pins** design §8 names are **both already satisfied by existing, unmodified tests -- neither needs a new test written (R1 finding LOW-6, corrected)**:
 
-- Pin 1: `NewNotifyHandlerForExistingExchange` with `topicEnabled=false` still does NOT declare `bin-manager.event` and still returns a non-nil handler.
+- Pin 1 (`NewNotifyHandlerForExistingExchange` with `topicEnabled=false` still does NOT declare `bin-manager.event` and still returns a non-nil handler): already asserted by `TestNewNotifyHandlerForExistingExchange_SkipsDeclare` (`main_test.go:167-182`) -- `TopicCreate(gomock.Any()).Times(0)` and `TopicCreateWithKind(gomock.Any(), gomock.Any()).Times(0)` at `:174-175`, non-nil handler at `:179-181`. Cite it; do not write a duplicate.
 - Pin 2: satisfied by the retained `Test_NewNotifyHandler_withoutOption` (above).
 
 **`publish_test.go` -- design §8 states this is a COMPLETE accounting (9 invalidated fixtures), not a partial list requiring a further sweep:**
@@ -289,22 +291,32 @@ Then apply design §3.3:
 
 Design §3.3's snippet is the canonical target shape; it shows the *union* of both exceptions for illustration -- only timeline-manager carries both. The other 17 services skip straight from `QueueCreate` to the topic-declare line.
 
+**E3.1 -- the 3 exception services' `binding_golden_test.go` files need REWRITE, not deletion (R1 finding HIGH-1).** These three golden files are not the generic "pin the fanout target list" shape E4 below describes for the other 17 -- each one specifically encodes the retention invariant this unit exists to protect, and each would fail to compile once E1 items 1/3 delete `subscribeTargets`/`fanoutUnbindTargets`:
+
+- `bin-call-manager/pkg/subscribehandler/binding_golden_test.go:38-66` (`Test_fanoutUnbindTargets_golden`): pins `retained := "asterisk.all.event"` (`:59`) and asserts it never appears in the fanout-unbind set (`:64-65`). **Rewrite** to assert the retained-asterisk invariant against the new shape instead: the standalone `QueueSubscribe(QueueNameAsteriskEventAll)` statement exists in `Run()`, independent of any `subscribeTargets`/`fanoutUnbindTargets` var that no longer exists.
+- `bin-timeline-manager/pkg/subscribehandler/binding_golden_test.go:79-112` (`Test_retainedFanoutTargets_golden`): pins that `subscribeTargets` retains `asterisk.all.event` (`:86-93`), a `len(subscribeTargets) == 26` count (`:95`), a `subscribeTargets - fanoutUnbindTargets == 1` arithmetic invariant (`:98`), and the VOIP-1258 exchange name (`:104`). **Rewrite** to pin the same two retained invariants (asterisk leg present, VOIP-1258 block present) against the post-E1 code shape -- the count/arithmetic assertions have no post-E1 equivalent and are dropped, not replaced.
+- `bin-agent-manager/pkg/subscribehandler/binding_golden_test.go:61-77` (`Test_fanoutUnbindTargets_Retains1258TopicBind`): pins that the VOIP-1258 topic exchange is never unbound and that `"#"` never enters `topicPatterns`. **Rewrite** to assert the same two invariants directly against the retained VOIP-1258 block's source, not via `fanoutUnbindTargets`/`topicPatterns` var inspection.
+
+The other 17 services' golden files follow E4's generic instruction below unmodified.
+
 #### E4. Per-service test work
 
 Design §8's consumer bullet specifies the target shape:
 
-- `binding_golden_test.go`: drop the fanout-target pins. *Verified this plan:* all 20 services have this file.
+- `binding_golden_test.go` (17 typical services -- the 3 exceptions are E3.1 above, not this bullet): drop the fanout-target pins. *Verified this plan:* all 20 services have this file.
 - The `Run()` sequencing test's `gomock.InOrder` becomes: `QueueCreate` -> [asterisk `QueueSubscribe`, call-manager/timeline-manager only] -> [VOIP-1258 webhook `QueueBind`+`QueueUnbind`, agent-manager/timeline-manager only, **asserting §3.2's unchanged log-only failure behavior is preserved, not just its happy path**] -> `TopicCreateWithKind` -> `QueueBind`×N -> `ConsumeMessage`.
 - Failure-path cases assert `Run()` returns the error immediately (`return nil, err` for timeline-manager, `return err` elsewhere), replacing the old roll-back-and-degrade assertions.
 
 Design §8 states this requirement generically rather than naming each service's tests. The concrete inventory below is **derived** from that requirement by locating every existing `Run()`-related test in the worktree (*verified this plan*); it introduces no new decision, and a reviewer should check the derivation rather than take it on trust (flagged as OQ-3).
 
+**This table is `Run()`-focused and does NOT separately enumerate constructor tests (R1 finding MEDIUM-3).** E1 item 4 / E2's "Typical (18)" row deletes the `subscribeTargets` constructor parameter for every typical service -- this breaks every test calling `NewSubscribeHandler(...)` with that parameter, not just `Run()`-sequencing tests. Confirmed examples not otherwise named below: `bin-tag-manager/pkg/subscribehandler/main_test.go:107` (`Test_NewSubscribeHandler`, constructing with a local `subscribeTargets := []string{...}` at `:115`), `bin-contact-manager/pkg/subscribehandler/subscribehandler_test.go:203` (`TestNewSubscribeHandler`), `bin-transfer-manager/pkg/subscribehandler/main_test.go:15` (`TestNewSubscribeHandler`). Treat this as a standing instruction for **every one of the 18 typical services**: when deleting the constructor parameter, also update that service's `NewSubscribeHandler`/`New` constructor test to drop the now-removed argument -- this is mechanical (drop one argument from one call), not optional, and not separately itemized per-service below because it is uniform across all 18.
+
 | Service | Test files / functions | Derived action |
 |---|---|---|
-| agent | `main_test.go`: `Test_Run_BindsTopicExchangeBeforeReturning:27`, `Test_Run_QueueBindFailure_DoesNotUnbind:160`; `binding_golden_test.go` | Rewrite `:27` to the new InOrder (retaining the VOIP-1258 block assertions). `:160` pins "bind failure does not unbind fanout" -- rework to "bind failure returns the error immediately" per §3.3. Add a case asserting the VOIP-1258 block's log-only behavior survives. |
+| agent | `main_test.go`: `Test_Run_BindsTopicExchangeBeforeReturning:27`, `Test_Run_QueueBindFailure_DoesNotUnbind:160`; `binding_golden_test.go` (see E3.1) | Rewrite `:27` to the new InOrder (retaining the VOIP-1258 block assertions). `:160` pins "bind failure does not unbind fanout" -- rework to "bind failure returns the error immediately" per §3.3. Add a case asserting the VOIP-1258 block's log-only behavior survives. `binding_golden_test.go`'s `Test_fanoutUnbindTargets_Retains1258TopicBind` is REWRITTEN per E3.1, not dropped. |
 | ai | `main_test.go`: `Test_Run_sequencing:23`; `binding_golden_test.go` | Mechanical rewrite. |
 | billing | `run_sequencing_test.go`: `_success:35`, `_declareFailure:73`, `_bindFailure_rollsBackPartialBinds:106`, `_fanoutUnbindFailure_continues:150`; `binding_golden_test.go` | `:35` rewrite; `:73` confirm; `:106` rework -- **no rollback exists any more**, assert immediate error return; `:150` **DELETE**. `main_test.go`'s `processEventRun*` tests untouched. |
-| call | `main_test.go`: `Test_Run:19`, `Test_Run_error:90`, `Test_Run_topicDeclareFails:161`, `Test_Run_topicBindFails:203`, `Test_Run_fanoutUnbindFails:278`; `binding_golden_test.go` | `:19` rewrite **retaining the standalone asterisk `QueueSubscribe`** in the InOrder; `:90` rewrite; `:161`/`:203` rework to assert immediate error return; `:278` **DELETE**. |
+| call | `main_test.go`: `Test_Run:19`, `Test_Run_error:90`, `Test_Run_topicDeclareFails:161`, `Test_Run_topicBindFails:203`, `Test_Run_fanoutUnbindFails:278`; `binding_golden_test.go` (see E3.1) | `:19` rewrite **retaining the standalone asterisk `QueueSubscribe`** in the InOrder; `:90` rewrite; `:161`/`:203` rework to assert immediate error return; `:278` **DELETE**. `binding_golden_test.go`'s `Test_fanoutUnbindTargets_golden` is REWRITTEN per E3.1, not dropped. |
 | campaign | `main_test.go`: `Test_Run_BindsTopicExchangeBeforeConsuming:23`; `binding_golden_test.go` | Mechanical rewrite. |
 | conference | `main_test.go`: `Test_Run_sequencing:23`; `binding_golden_test.go` | Mechanical rewrite. |
 | contact | `run_sequencing_test.go`: `_success:30`, `_declareFailure:68`, `_bindFailure_noRollbackNeeded:101`, `_fanoutUnbindFailure_continues:135`; `subscribehandler_test.go`: `Test_Run_QueueCreateError:216`, `Test_Run_SubscribeError:238`, `Test_Run_Success:261`; `binding_golden_test.go` | `:30`/`:261` rewrite; `:68` confirm; `:101` rework; `:135` **DELETE**; `:216` keep (QueueCreate unchanged); `:238` **DELETE** (fanout `QueueSubscribe` gone). |
@@ -317,7 +329,7 @@ Design §8 states this requirement generically rather than naming each service's
 | schedule | `main_test.go`: `Test_Run_sequencing:43`; `binding_golden_test.go` | Mechanical rewrite. |
 | storage | `main_test.go`: `Test_Run_sequencing:23`; `binding_golden_test.go` | Mechanical rewrite. |
 | tag | `main_test.go`: `Test_Run_sequencing:135`; `error_test.go`: `Test_Run_QueueCreateError:14`, `Test_Run_QueueSubscribeError:36`; `binding_golden_test.go` | `:135` rewrite; `error_test.go:14` keep; `error_test.go:36` **DELETE**. |
-| timeline | `run_topic_migration_test.go`: `:27`, `_DeclareFailure:94`, `_BindFailure:133`, `_FanoutUnbindFailure:172`; `run_sentinel_test.go`: `:22`, `:79`; `run_ordering_test.go`: `:26`; `binding_golden_test.go` | `:27` rewrite (**both** exceptions in the InOrder, two-value `Run()`); `:94`/`:133` rework to `return nil, err`; `:172` **DELETE**; `run_sentinel_test.go` **DELETE ENTIRELY** (the sentinel defensive declare it pins is removed by E1 item 2); `run_ordering_test.go:26` rewrite. `main_test.go`'s `processEventRun*` untouched. |
+| timeline | `run_topic_migration_test.go`: `:27`, `_DeclareFailure:94`, `_BindFailure:133`, `_FanoutUnbindFailure:172`; `run_sentinel_test.go`: `:22`, `:79`; `run_ordering_test.go`: `:26`; `binding_golden_test.go` (see E3.1) | `:27` rewrite (**both** exceptions in the InOrder, two-value `Run()`); `:94`/`:133` rework to `return nil, err`; `:172` **DELETE**; `run_sentinel_test.go` **DELETE ENTIRELY** (the sentinel defensive declare it pins is removed by E1 item 2); `run_ordering_test.go:26` rewrite. `main_test.go`'s `processEventRun*` untouched. `binding_golden_test.go`'s `Test_retainedFanoutTargets_golden` is REWRITTEN per E3.1 (asterisk + VOIP-1258 invariants only; the `len`/arithmetic assertions are dropped), not dropped wholesale. |
 | transcribe | `main_test.go`: `Test_Run_sequencing:25`; `binding_golden_test.go` | Mechanical rewrite. |
 | transfer | `main_test.go`: `Test_Run_sequencing:110` (`TestProcessEventRun:59` untouched); `binding_golden_test.go` | Mechanical rewrite. **Note:** transfer-manager is ALSO in Unit C -- keep the two edits separate. |
 | webhook | `main_test.go`: `Test_Run_TopicMigrationSequencing:23`; `binding_golden_test.go` | Rewrite, accounting for the `strings.Split` deletion from E2. |
@@ -366,20 +378,22 @@ Additionally:
 
 #### F2. Per-service docs
 
-Design §6: publish-side prose for the ~27 publisher services' `docs/architecture.md`, events-section prose for the 20 consumer services' `docs/architecture.md`, and `docs/dependencies.md` where affected -- **union, not sum**, since most services are both.
+Design §6: publish-side prose for the ~27 publisher services' `docs/architecture.md`, events-section prose for the 20 consumer services' `docs/architecture.md`, and `docs/dependencies.md` where affected -- **union, not sum**, since most services are both. Design §6 (`design:786-788`) is explicit this is a union: publisher-only services get the publish-side update even though they carry no code change in this PR.
 
-Root `CLAUDE.md`'s service-docs-sync table makes two mandatory:
-
-- `cmd/*/main.go` or `pkg/subscribehandler/main.go` (subscribeTargets) changed → `docs/architecture.md` events section MUST be updated in the same commit.
-- `go.mod` replace directives changed → `docs/dependencies.md`.
-
-Use the repo's own extractor rather than hand-editing generated sections:
+**F2a -- the 20 consumer services (+ talk/tts/transfer/webhook, all already touched by Units B/C/D/E):** docs are staged in the same commit as that service's code change, using the extractor:
 
 ```bash
 bash docs/reference/extractor.sh bin-<service>
 ```
 
-The PostToolUse hook `scripts/check-service-docs.sh` warns (does not block) when these source files change without a matching docs update -- stage the docs alongside the source, and treat any surviving warning as a missed doc.
+**F2b -- the ~8 publisher-only daemons that carry NO code change in this PR (R1 finding HIGH-2): `bin-customer-manager`, `bin-email-manager`, `bin-message-manager`, `bin-outdial-manager`, `bin-pipecat-manager`, `bin-route-manager`, `bin-sentinel-manager`, `bin-webchat-manager`** (derived: issue §3's 27-daemon list, minus the 20 consumer services, minus `talk-manager`/`tts-manager` which Units B/C already touch). These get **doc-only prose updates** describing the new topic-only publish behavior -- no code, no `go test`/`golangci-lint` run needed for them, but the doc update itself is still in scope per design §6's union framing. Add a dedicated commit for this doc-only batch (§2.2 amended below), and list each of the 8 in the PR body (§6.1) with its own `bin-<service>:` bullet, since root `CLAUDE.md` requires every touched project be listed.
+
+Root `CLAUDE.md`'s service-docs-sync table makes two things mandatory for F2a's code-touching services:
+
+- `cmd/*/main.go` or `pkg/subscribehandler/main.go` (subscribeTargets) changed → `docs/architecture.md` events section MUST be updated in the same commit.
+- `go.mod` replace directives changed → `docs/dependencies.md`.
+
+The PostToolUse hook `scripts/check-service-docs.sh` warns (does not block) when these source files change without a matching docs update -- stage the docs alongside the source, and treat any surviving warning as a missed doc. This hook has nothing to trigger on for F2b's 8 doc-only services (no source file changes), so their coverage relies on this plan's explicit checklist (§4.2), not on the hook.
 
 #### F3. `bin-common-handler/docs/architecture.md`
 
@@ -388,7 +402,7 @@ Update the `notifyhandler` section to describe the topic-only default and the `W
 #### F4. Verification for Unit F
 
 - Docs-only; no Go verification needed for F1/F3.
-- For F2, per-service docs are staged with that service's code commit, so they are covered by that service's already-run workflow.
+- For F2a's 20+4 code-touching services, per-service docs are staged with that service's code commit, so they are covered by that service's already-run workflow. **This does NOT hold for F2b's 8 doc-only publisher daemons** (R1 finding HIGH-2) -- they have no code commit in this PR, so their doc update is its own commit, verified only by review (no build/test/lint applies).
 - Confirm no RST work is triggered: this change is entirely internal message-bus plumbing with **no user-visible API/webhook/billing surface change**, so root `CLAUDE.md`'s RST-sync rule does not apply. State this explicitly in the PR body so a reviewer does not have to re-derive it.
 
 ---
@@ -397,7 +411,7 @@ Update the `notifyhandler` section to describe the topic-only default and the `W
 
 ### 4.1 Full-repo build/test/lint across every touched service
 
-Touched Go modules (23 distinct directories; `bin-transfer-manager` and `bin-webhook-manager` appear in two units each but are one module apiece):
+Touched Go modules with actual code changes (23 distinct directories; `bin-transfer-manager` and `bin-webhook-manager` appear in two units each but are one module apiece). **Additionally, 8 more modules get a doc-only prose update with no code change** (F2b, §3 F2, R1 finding HIGH-2) -- `bin-customer-manager`, `bin-email-manager`, `bin-message-manager`, `bin-outdial-manager`, `bin-pipecat-manager`, `bin-route-manager`, `bin-sentinel-manager`, `bin-webchat-manager` -- these do NOT run the Go verification workflow below (there is no code to build/test/lint), but ARE part of this PR's file set and DO appear in the PR body (§6.1) and the doc-only commit (§2.2 commit 8):
 
 ```bash
 cd ~/gitvoipbin/monorepo/.worktrees/VOIP-1407-Cutover-remove-fanout-dual-publish
@@ -421,7 +435,7 @@ done
 
 Regression pins (design §8):
 
-- [ ] Pin 1: `NewNotifyHandlerForExistingExchange` with `topicEnabled=false` still does NOT declare `bin-manager.event` and still returns a non-nil handler.
+- [ ] Pin 1: `NewNotifyHandlerForExistingExchange` with `topicEnabled=false` still does NOT declare `bin-manager.event` and still returns a non-nil handler -- already covered by `TestNewNotifyHandlerForExistingExchange_SkipsDeclare` (`main_test.go:167-182`); confirm it still passes unmodified, do not write a new test.
 - [ ] Pin 2: a `topicEnabled=false` `NewNotifyHandler` construction still calls `TopicCreate(queueEvent)` and routes every publish through `publishDirectEvent`/`publishDirectEventWithKey`, **bit-identical to pre-PR behavior** (`Test_NewNotifyHandler_withoutOption`, retained unchanged).
 
 `main_test.go` (design §8):
@@ -450,7 +464,8 @@ Regression pins (design §8):
 
 Consumer side (design §8's consumer bullet):
 
-- [ ] All 20 `binding_golden_test.go` files updated (fanout pins dropped).
+- [ ] 17 typical services' `binding_golden_test.go` files updated (fanout pins dropped).
+- [ ] The 3 exception services' `binding_golden_test.go` files REWRITTEN, not dropped (E3.1): call-manager's `Test_fanoutUnbindTargets_golden`, timeline-manager's `Test_retainedFanoutTargets_golden`, agent-manager's `Test_fanoutUnbindTargets_Retains1258TopicBind` all still exist and pin the retained asterisk/VOIP-1258 invariants against the post-cutover code shape.
 - [ ] All 20 `Run()` sequencing tests rewritten to the new InOrder shape.
 - [ ] Failure-path cases assert immediate error return (`return nil, err` for timeline-manager; `return err` for the other 19).
 - [ ] agent-manager and timeline-manager: a case asserting the VOIP-1258 block's **log-only, non-fatal** failure behavior is preserved (design §8 requires this explicitly, "not just its happy path").
@@ -461,11 +476,13 @@ Consumer side (design §8's consumer bullet):
 - [ ] Build + smoke: `talk-control chat list` exits 0.
 - [ ] Best-effort: a write subcommand produces zero new `bin-manager.talk-manager.event` bindings/messages (with retry/wait margin; not conclusive on a single fast check).
 
-Residue sweeps:
+Residue sweeps (R1 finding LOW-7 added the last two, matching §3 E5's full set):
 
 - [ ] `/usr/bin/grep -rn "topicDisabled" --include="*.go" .` returns zero (design §7 item 6).
 - [ ] `/usr/bin/grep -rn "publishTopicEvent\b" --include="*.go" .` returns zero.
 - [ ] `/usr/bin/grep -rn "fanoutUnbindTargets" --include="*.go" .` returns zero.
+- [ ] `/usr/bin/grep -rn "subscribesTargets" --include="*.go" .` returns zero (webhook-manager's comma-joined variant).
+- [ ] `/usr/bin/grep -rn "subscribeTargets" --include="*.go" .` returns **exactly one surviving family**: `bin-api-manager` (OQ-1, deliberately left alone, fed an empty slice literal). Any other survivor is a missed deletion.
 
 ---
 
@@ -552,11 +569,19 @@ unchanged.
 - bin-tag-manager: (same)
 - bin-transcribe-manager: (same)
 - bin-transfer-manager: (same)
+- bin-customer-manager: Update docs/architecture.md for the topic-only publish path (doc-only, no code change)
+- bin-email-manager: (same)
+- bin-message-manager: (same)
+- bin-outdial-manager: (same)
+- bin-pipecat-manager: (same)
+- bin-route-manager: (same)
+- bin-sentinel-manager: (same)
+- bin-webchat-manager: (same)
 - docs: Rewrite rabbitmq-queues-reference.md for a topic-only world, document
   asterisk.all.event as a permanent exception, and add the 28-exchange deletion runbook
 ```
 
-(Expand each `(same)` into its own full sentence when writing the actual PR body; it is collapsed here only for plan readability.)
+(Expand each `(same)` into its own full sentence when writing the actual PR body; it is collapsed here only for plan readability. The 8 `bin-*-manager: (same)` bullets above are F2b's doc-only publisher daemons -- R1 finding HIGH-2 -- included here because root `CLAUDE.md` requires every touched project listed, even when the "touch" is docs-only.)
 
 ### 6.2 Testing / verification section for the PR description
 
@@ -659,6 +684,7 @@ Three different failure-handling regimes now coexist. Mixing them up is silent a
 ### R8 -- docs sync hook and vendor hygiene
 
 - [ ] Every service whose `cmd/*/main.go` or `pkg/subscribehandler/main.go` changed has its `docs/architecture.md` events section staged in the same commit (`scripts/check-service-docs.sh` warns otherwise).
+- [ ] All 8 of F2b's doc-only publisher daemons (`bin-customer-manager`, `bin-email-manager`, `bin-message-manager`, `bin-outdial-manager`, `bin-pipecat-manager`, `bin-route-manager`, `bin-sentinel-manager`, `bin-webchat-manager`) have their `docs/architecture.md` publish-side prose updated -- **the hook does NOT catch this batch** (no source file changed for it to trigger on, R1 finding HIGH-2), so this checkbox is the only guard; verify it manually.
 - [ ] Vendor directories are **not** committed (`.gitignore` excludes `vendor/`; never `git add -f` them). The `go.mod`/`go.sum` changes from `go mod tidy` **are** committed.
 
 ---
@@ -684,7 +710,7 @@ Design §1 notes the publish-side and consumer-side changes "do not depend on EA
 ## 9. Definition of done for this plan's execution
 
 - [ ] All 7 commits (§2.2) on `VOIP-1407-Cutover-remove-fanout-dual-publish`.
-- [ ] §4.1's full verification workflow passes in all 23 touched modules, and the blast-radius `go build` passes repo-wide.
+- [ ] §4.1's full verification workflow passes in all 23 code-touched modules, the blast-radius `go build` passes repo-wide, and F2b's 8 doc-only modules have their doc update reviewed (no Go verification applies to them).
 - [ ] Every checkbox in §4.2 (design §8 traceability) ticked.
 - [ ] Every checkbox in §7 (risk register) ticked.
 - [ ] §8's open questions answered by the 대표님 before implementation starts.
