@@ -359,6 +359,7 @@ func Test_TranscribeStop(t *testing.T) {
 					ID:         uuid.FromStringOrNil("d86d88d8-8282-11ed-b6c2-c3ac86331ed9"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
+				HostID: uuid.FromStringOrNil("6cd6ee9c-8282-11ed-9c2d-cf1a1e4d1a37"),
 			},
 
 			expectRes: &tmtranscribe.WebhookMessage{
@@ -387,7 +388,7 @@ func Test_TranscribeStop(t *testing.T) {
 			// transcribeGet
 			mockReq.EXPECT().TranscribeV1TranscribeGet(ctx, tt.transcribeID).Return(tt.responseTranscribe, nil)
 
-			mockReq.EXPECT().TranscribeV1TranscribeStop(ctx, tt.transcribeID).Return(tt.responseTranscribe, nil)
+			mockReq.EXPECT().TranscribeV1TranscribeStop(ctx, tt.responseTranscribe.HostID, tt.transcribeID).Return(tt.responseTranscribe, nil)
 
 			res, err := h.TranscribeStop(ctx, tt.agent, tt.transcribeID)
 			if err != nil {

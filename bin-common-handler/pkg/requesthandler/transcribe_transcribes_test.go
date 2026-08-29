@@ -272,6 +272,7 @@ func Test_TranscribeV1TranscribeStop(t *testing.T) {
 	tests := []struct {
 		name string
 
+		hostID       uuid.UUID
 		transcribeID uuid.UUID
 
 		response *sock.Response
@@ -283,6 +284,7 @@ func Test_TranscribeV1TranscribeStop(t *testing.T) {
 		{
 			name: "normal",
 
+			hostID:       uuid.FromStringOrNil("6d4f1e5e-8228-11ed-8e4c-3fcb8c6d0b13"),
 			transcribeID: uuid.FromStringOrNil("2622b04a-8228-11ed-98f0-6bfc284cdb95"),
 
 			response: &sock.Response{
@@ -291,7 +293,31 @@ func Test_TranscribeV1TranscribeStop(t *testing.T) {
 				Data:       []byte(`{"id":"2622b04a-8228-11ed-98f0-6bfc284cdb95"}`),
 			},
 
-			expectedTarget: "bin-manager.transcribe-manager.request",
+			expectedTarget: "bin-manager.transcribe-manager-6d4f1e5e-8228-11ed-8e4c-3fcb8c6d0b13.request",
+			expectedRequest: &sock.Request{
+				URI:      "/v1/transcribes/2622b04a-8228-11ed-98f0-6bfc284cdb95/stop",
+				Method:   sock.RequestMethodPost,
+				DataType: ContentTypeJSON,
+			},
+			expectedRes: &tmtranscribe.Transcribe{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("2622b04a-8228-11ed-98f0-6bfc284cdb95"),
+				},
+			},
+		},
+		{
+			name: "different hostID routes to a different per-pod queue",
+
+			hostID:       uuid.FromStringOrNil("9c1e2f0a-1111-11ee-9c1e-2f0a11119c1e"),
+			transcribeID: uuid.FromStringOrNil("2622b04a-8228-11ed-98f0-6bfc284cdb95"),
+
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"2622b04a-8228-11ed-98f0-6bfc284cdb95"}`),
+			},
+
+			expectedTarget: "bin-manager.transcribe-manager-9c1e2f0a-1111-11ee-9c1e-2f0a11119c1e.request",
 			expectedRequest: &sock.Request{
 				URI:      "/v1/transcribes/2622b04a-8228-11ed-98f0-6bfc284cdb95/stop",
 				Method:   sock.RequestMethodPost,
@@ -318,7 +344,7 @@ func Test_TranscribeV1TranscribeStop(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectedTarget, tt.expectedRequest).Return(tt.response, nil)
 
-			res, err := h.TranscribeV1TranscribeStop(ctx, tt.transcribeID)
+			res, err := h.TranscribeV1TranscribeStop(ctx, tt.hostID, tt.transcribeID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -335,6 +361,7 @@ func Test_TranscribeV1TranscribeHealthCheck(t *testing.T) {
 	tests := []struct {
 		name string
 
+		hostID       uuid.UUID
 		transcribeID uuid.UUID
 		delay        int
 		retryCount   int
@@ -347,6 +374,7 @@ func Test_TranscribeV1TranscribeHealthCheck(t *testing.T) {
 		{
 			name: "normal",
 
+			hostID:       uuid.FromStringOrNil("dc9d0b6c-1111-11ee-9c1e-2f0a11119c1e"),
 			transcribeID: uuid.FromStringOrNil("273d1fa4-e9ac-46cc-920e-34e163eb0e73"),
 			delay:        0,
 			retryCount:   3,
@@ -356,12 +384,33 @@ func Test_TranscribeV1TranscribeHealthCheck(t *testing.T) {
 				DataType:   "application/json",
 			},
 
-			expectedTarget: "bin-manager.transcribe-manager.request",
+			expectedTarget: "bin-manager.transcribe-manager-dc9d0b6c-1111-11ee-9c1e-2f0a11119c1e.request",
 			expectedRequest: &sock.Request{
 				URI:      "/v1/transcribes/273d1fa4-e9ac-46cc-920e-34e163eb0e73/health-check",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"retry_count":3}`),
+			},
+		},
+		{
+			name: "different hostID routes to a different per-pod queue",
+
+			hostID:       uuid.FromStringOrNil("f1a2b3c4-2222-11ee-9c1e-2f0a11119c1e"),
+			transcribeID: uuid.FromStringOrNil("273d1fa4-e9ac-46cc-920e-34e163eb0e73"),
+			delay:        0,
+			retryCount:   1,
+
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+			},
+
+			expectedTarget: "bin-manager.transcribe-manager-f1a2b3c4-2222-11ee-9c1e-2f0a11119c1e.request",
+			expectedRequest: &sock.Request{
+				URI:      "/v1/transcribes/273d1fa4-e9ac-46cc-920e-34e163eb0e73/health-check",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"retry_count":1}`),
 			},
 		},
 	}
@@ -379,7 +428,7 @@ func Test_TranscribeV1TranscribeHealthCheck(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectedTarget, tt.expectedRequest).Return(tt.response, nil)
 
-			err := h.TranscribeV1TranscribeHealthCheck(ctx, tt.transcribeID, tt.delay, tt.retryCount)
+			err := h.TranscribeV1TranscribeHealthCheck(ctx, tt.hostID, tt.transcribeID, tt.delay, tt.retryCount)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

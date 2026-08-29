@@ -1486,7 +1486,7 @@ type RequestHandler interface {
 	// transcribe-manager
 	TranscribeV1TranscribeGet(ctx context.Context, transcribeID uuid.UUID) (*tmtranscribe.Transcribe, error)
 	TranscribeV1TranscribeList(ctx context.Context, pageToken string, pageSize uint64, filters map[tmtranscribe.Field]any) ([]tmtranscribe.Transcribe, error)
-	TranscribeV1TranscribeHealthCheck(ctx context.Context, id uuid.UUID, delay int, retryCount int) error
+	TranscribeV1TranscribeHealthCheck(ctx context.Context, hostID uuid.UUID, id uuid.UUID, delay int, retryCount int) error
 	TranscribeV1TranscribeStart(
 		ctx context.Context,
 		customerID uuid.UUID,
@@ -1499,7 +1499,7 @@ type RequestHandler interface {
 		provider tmtranscribe.Provider,
 		timeout int,
 	) (*tmtranscribe.Transcribe, error)
-	TranscribeV1TranscribeStop(ctx context.Context, transcribeID uuid.UUID) (*tmtranscribe.Transcribe, error)
+	TranscribeV1TranscribeStop(ctx context.Context, hostID uuid.UUID, transcribeID uuid.UUID) (*tmtranscribe.Transcribe, error)
 	TranscribeV1TranscribeDelete(ctx context.Context, transcribeID uuid.UUID) (*tmtranscribe.Transcribe, error)
 	TranscribeV1TranscriptList(ctx context.Context, pageToken string, pageSize uint64, filters map[tmtranscript.Field]any) ([]tmtranscript.Transcript, error)
 

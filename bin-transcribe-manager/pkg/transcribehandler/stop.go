@@ -152,28 +152,18 @@ func (h *transcribeHandler) stopLive(ctx context.Context, tr *transcribe.Transcr
 //     streaming.Get() lookup missed (see streaminghandler/streaming.go's Get),
 //     i.e. the session was already cleaned up locally.
 //
-//     IMPORTANT - deployment dependency: this branch is only safe to treat as
-//     "session cannot possibly be alive" as long as this service runs with
-//     replicas: 1 (see k8s/deployment.yml). The in-memory session map
-//     (mapStreaming) is per-pod, and a genuinely live session only exists in
-//     the memory of the one pod that owns it. With a single replica, any
-//     control RPC necessarily reaches that one pod, so a NotFound here really
-//     does mean "no such session anywhere." However, TranscribeV1TranscribeStop
-//     and TranscribeV1TranscribeHealthCheck are both sent to the shared
-//     commonoutline.QueueNameTranscribeRequest queue rather than a per-pod
-//     queue (contrast this with the per-pod request queue that does exist,
-//     bin-manager.transcribe-manager-<hostID>.request, wired up in
-//     cmd/transcribe-manager/main.go) - control RPCs are not yet routed to the
-//     owning pod the way this service's own CLAUDE.md says they must be (a
-//     known, separately tracked architecture gap, out of scope for this file).
-//     If replicas is ever raised above 1 without first fixing that routing
-//     gap, a stop/health-check request can land on a pod that does not own the
-//     session; streaming.Get() would miss on that non-owning pod and return
-//     NotFound even though the session is genuinely alive on another pod, and
-//     this branch would then misclassify a live session as already stopped -
-//     reintroducing the exact zombie-session bug this file exists to prevent.
-//     Any change to replicas in k8s/deployment.yml must re-examine this branch
-//     first.
+//     This branch is safe to treat as "session cannot possibly be alive"
+//     regardless of replica count. The in-memory session map (mapStreaming)
+//     is per-pod, and a genuinely live session only exists in the memory of
+//     the one pod that owns it - but both TranscribeV1TranscribeStop and
+//     TranscribeV1TranscribeHealthCheck are now routed directly to that
+//     owning pod's per-pod queue (bin-manager.transcribe-manager-<hostID>.
+//     request, wired up in cmd/transcribe-manager/main.go) rather than the
+//     shared commonoutline.QueueNameTranscribeRequest queue. Since the RPC
+//     can only ever reach the pod identified by the transcribe's HostID, a
+//     NotFound here always means "no session on the pod that owns this
+//     transcribe" - which is the only pod that could ever have had one -
+//     independent of how many other replicas exist.
 //   - legacy requesthandler.ErrNotFound sentinel: the call-manager RPC
 //     (CallV1ExternalMediaStop) surfaces a 404 through the older,
 //     pre-VoipbinError sentinel path instead of a typed error (call-manager's

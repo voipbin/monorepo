@@ -127,6 +127,7 @@ func Test_TranscribeStop(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("d00b7324-98c3-11ed-aa8f-0ff9d0b64c91"),
 				},
+				HostID: uuid.FromStringOrNil("e11c9c8e-98c3-11ed-9c2d-cf1a1e4d1a37"),
 			},
 		},
 	}
@@ -149,7 +150,8 @@ func Test_TranscribeStop(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().ConferenceGet(ctx, tt.id).Return(tt.responseConference, nil)
-			mockReq.EXPECT().TranscribeV1TranscribeStop(ctx, tt.responseConference.TranscribeID).Return(tt.responseTranscribe, nil)
+			mockReq.EXPECT().TranscribeV1TranscribeGet(ctx, tt.responseConference.TranscribeID).Return(tt.responseTranscribe, nil)
+			mockReq.EXPECT().TranscribeV1TranscribeStop(ctx, tt.responseTranscribe.HostID, tt.responseConference.TranscribeID).Return(tt.responseTranscribe, nil)
 			mockDB.EXPECT().ConferenceUpdate(ctx, tt.id, map[conference.Field]any{
 				conference.FieldTranscribeID: uuid.Nil,
 			}).Return(nil)
