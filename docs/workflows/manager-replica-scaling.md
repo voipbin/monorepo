@@ -24,9 +24,8 @@ against the code, not the tracker, if any time has passed.
    (Blocked today: pipecat, transcribe.)
 2. **No container-name-dependent env/DNS.** Anything that resolves the
    service's own (or a sidecar's) fixed `container_name` via Docker DNS
-   breaks when the name is removed. (Blocked today: tts —
-   `POD_IP=voipbin-tts-manager-http` points at its http sidecar's
-   container name; pipecat — `POD_IP=pipecat-manager`. transcribe's
+   breaks when the name is removed. (Blocked today: pipecat —
+   `POD_IP=pipecat-manager`. transcribe's
    `${POD_IP:-127.0.0.1}` fallback looks similar but its real HostID is
    a random UUID — a different problem; see that service's docs.)
 3. **External naming binding — resolved fleet-wide (P10).**
