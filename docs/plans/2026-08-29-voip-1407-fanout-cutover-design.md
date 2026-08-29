@@ -3,7 +3,10 @@
 - Date: 2026-08-29
 - Ticket: VOIP-1407 (Follow-up C of VOIP-1404; blocks nothing, blocked by VOIP-1404/
   1405/1406, all merged and deployed)
-- Status: Draft (design review in progress)
+- Status: **APPROVED** (design review closed -- R9/R10 consecutive Approve after a
+  10-round loop across rounds 1-8's real findings, shrinking from 2 CRITICAL to pure
+  arithmetic/citation errors, and rounds 9-10's from-scratch count re-derivation plus a
+  final fresh coherence read, both finding nothing requiring further change)
 - Depends on: `tasks/todo.md`'s issue analysis (rev.11, approved R10/R11 consecutive
   Approve after an 11-round loop; the empirical foundation -- a two-arm broker
   experiment proving `QueueUnbind` against a missing exchange is safe while
