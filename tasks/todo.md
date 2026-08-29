@@ -1,7 +1,9 @@
 # VOIP-1407: Cutover -- remove fanout dual publish and per-service event exchanges
 
-Status: ISSUE ANALYSIS APPROVED (stage 1 of 4 complete -- R10 Approve, R11 Approve,
-2 consecutive). Proceed to design stage. rev.10 after R1 Request Changes (1 CRITICAL:
+Status: DESIGN DRAFTED (stage 2 of 4). Issue analysis APPROVED (stage 1 complete --
+R10 Approve, R11 Approve, 2 consecutive). Design doc:
+docs/plans/2026-08-29-voip-1407-fanout-cutover-design.md (review in progress). rev.10
+after R1 Request Changes (1 CRITICAL:
 missing asterisk-proxy publisher), R2 Request Changes (1 CRITICAL: missing
 consumer-side fanout residue that VOIP-1406 deliberately left as rollback surface; 2
 HIGH/MEDIUM count and cross-reference errors; 2 MEDIUM scope-closure contradictions; 2
