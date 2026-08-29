@@ -31,6 +31,14 @@ func newScopeRefCount(sock sockhandler.SockHandler, queueName string, exchangeNa
 
 // Acquire increments the refcount for the given binding pattern, binding the queue on the
 // first (0->1) transition.
+//
+// OPEN QUESTION (VOIP-1431): this QueueBind runs at an arbitrary runtime moment (whenever a
+// client subscribes), against the same queue that pkg/subscribehandler's ConsumeMessage is
+// actively consuming from. QueueBind and an in-flight basic.consume share one AMQP channel per
+// queue; a historically-documented (now-removed, VOIP-1425) comment warned that calling
+// QueueBind AFTER a consumer starts on that channel can race the broker and 503 the channel
+// closed (reproduced in bin-agent-manager production, 2026-07-14). Whether that hazard applies
+// here too, or the client library serializes it safely, is unconfirmed -- see VOIP-1431.
 func (r *scopeRefCount) Acquire(pattern string) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()

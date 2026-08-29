@@ -203,23 +203,13 @@ func runSubscribe(
 		"func": "runSubscribe",
 	})
 
-	subscribeTargets := []string{}
 	subHandler := subscribehandler.NewSubscribeHandler(
 		sockHandler,
 		reqHandler,
 		queueNamePod,
-		subscribeTargets,
-
 		pubHandler,
 	)
 
-	// run. NOTE: the VOIP-1258 "#" wildcard binding to the new topic exchange lives INSIDE
-	// subscribeHandler.Run(), sequenced before ConsumeMessage starts -- see that function's
-	// doc comment for why doing it here (after Run() returns) is unsafe: Run() starts
-	// ConsumeMessage on a separate goroutine and returns immediately, so a QueueBind call
-	// here would race the in-flight basic.consume RPC on the same AMQP channel and could
-	// intermittently 503 the channel closed (reproduced in bin-agent-manager production,
-	// 2026-07-14, fixed there in commit ca8c104a9 and here proactively for the same reason).
 	if errRun := subHandler.Run(); errRun != nil {
 		log.Errorf("Could not run the subscribe handler. err: %v", errRun)
 		return
