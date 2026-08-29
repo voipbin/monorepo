@@ -27,7 +27,7 @@ type Config struct {
 	RedisDatabase           int    // RedisDatabase is the numeric Redis logical database index to select, not a name.
 	AWSAccessKey            string // AWSAccessKey is the AWS access key for AWS services.
 	AWSSecretKey            string // AWSSecretKey is the AWS secret key for AWS services.
-	PodIP                   string // PodIP is the IP address on which the AudioSocket streaming listener binds (typically the pod's IP in Kubernetes).
+	PodIP                   string // PodIP is parsed from the POD_IP env var but currently unused - no code path binds a listener to it (kept for backward compat with the K8s Downward API wiring that was never carried over to Docker Compose; see komodo/docker-compose.yml's header comment).
 	StreamingListenPort     int    // StreamingListenPort is the TCP port on which the AudioSocket streaming listener binds (default: 8080).
 }
 
