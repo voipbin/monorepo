@@ -4,7 +4,7 @@
 - Ticket: VOIP-1407
 - Stage: 3 of 4 (implementation plan). Stage 1 (issue analysis, `tasks/todo.md` rev.11) and stage 2 (design, `docs/plans/2026-08-29-voip-1407-fanout-cutover-design.md`) are both APPROVED and are the authoritative sources for every technical decision below.
 - Branch / worktree: `VOIP-1407-Cutover-remove-fanout-dual-publish`, worktree at `~/gitvoipbin/monorepo/.worktrees/VOIP-1407-Cutover-remove-fanout-dual-publish`
-- Status: DRAFT -- pending the 설계 review loop (min 2 rounds, 2 consecutive Approve)
+- Status: **APPROVED** (설계 review closed -- R4/R5 consecutive Approve after a 5-round loop across rounds 1-3's real findings, shrinking from 2 HIGH to 1 MEDIUM+3 LOW, and rounds 4-5's targeted fourth/fifth-instance passes finding nothing further requiring change). §8's open questions still require the 대표님's decision before implementation begins.
 
 **Citation convention used throughout.** `design §N` = a section of `docs/plans/2026-08-29-voip-1407-fanout-cutover-design.md`. `issue §N` = a section of `tasks/todo.md`. `path:line` = a source citation carried forward from one of those two documents, or (where marked *verified this plan*) re-confirmed against the worktree while writing this plan. **No task in this plan introduces a decision that is not already made in the design doc.** Where this plan found something the design doc does not cover, it is raised in §8 (Open questions) rather than decided here.
 
