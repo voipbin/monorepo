@@ -32,7 +32,7 @@ func (h *notifyHandler) PublishWebhook(ctx context.Context, customerID uuid.UUID
 		"func":        "PublishWebhook",
 		"customer_id": customerID,
 		"data":        data,
-		"evnet_type":  eventType,
+		"event_type":  eventType,
 	})
 
 	if customerID == uuid.Nil {
@@ -62,7 +62,7 @@ func (h *notifyHandler) PublishWebhook(ctx context.Context, customerID uuid.UUID
 func (h *notifyHandler) PublishEventRaw(ctx context.Context, eventType string, dataType string, data []byte) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "PublishEventRaw",
-		"evnet_type": eventType,
+		"event_type": eventType,
 		"data_type":  dataType,
 	})
 
@@ -81,7 +81,7 @@ func (h *notifyHandler) PublishEventRaw(ctx context.Context, eventType string, d
 func (h *notifyHandler) PublishEvent(ctx context.Context, eventType string, data eventtopic.SubscriptionIdentifier) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "PublishEvent",
-		"evnet_type": eventType,
+		"event_type": eventType,
 	})
 
 	// create event
@@ -220,7 +220,7 @@ func (h *notifyHandler) publishTopicEventOrErr(ctx context.Context, evt *sock.Ev
 func (h *notifyHandler) PublishEventWithRoutingKey(ctx context.Context, eventType string, routingKey string, data interface{}) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "PublishEventWithRoutingKey",
-		"evnet_type":  eventType,
+		"event_type":  eventType,
 		"routing_key": routingKey,
 	})
 

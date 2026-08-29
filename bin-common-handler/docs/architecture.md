@@ -79,7 +79,7 @@ Per-target circuit breaker. Default tuning: 5 consecutive failures → 30-second
 - Integrated into every `requesthandler.sendRequest()` call
 - Consumer services get CB protection for free; do not add a second CB on top
 
-See [docs/patterns/circuit-breaker.md](../docs/patterns/circuit-breaker.md) for state machine and tuning guidance.
+See [docs/patterns/circuit-breaker.md](../../docs/patterns/circuit-breaker.md) for state machine and tuning guidance.
 
 ### pkg/databasehandler
 DB helper utilities:
@@ -120,4 +120,4 @@ Every change to `bin-common-handler` triggers verification across all 37 consume
 | `<ns>_circuitbreaker_state_transitions_total{target,from,to}` | Counter | CB state transitions |
 | `<ns>_circuitbreaker_rejected_total{target}` | Counter | Open-state rejections |
 
-Consumer services must not register metrics with the same names — `prometheus.MustRegister` panics on duplicates. See [docs/workflows/common-gotchas.md](../docs/workflows/common-gotchas.md).
+Consumer services must not register metrics with the same names — `prometheus.MustRegister` panics on duplicates. See [docs/workflows/common-gotchas.md](../../docs/workflows/common-gotchas.md).
