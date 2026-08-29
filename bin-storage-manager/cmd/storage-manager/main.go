@@ -197,10 +197,7 @@ func runListen(sockHandler sockhandler.SockHandler, storageHandler storagehandle
 // runSubscribe runs the subscribed event handler
 func runSubscribe(sockHandler sockhandler.SockHandler, subscribeQueue string, accountHandler accounthandler.AccountHandler, fileHandler filehandler.FileHandler) error {
 
-	subscribeTargets := []string{
-		string(commonoutline.QueueNameCustomerEvent),
-	}
-	subHandler := subscribehandler.NewSubscribeHandler(sockHandler, subscribeQueue, subscribeTargets, accountHandler, fileHandler)
+	subHandler := subscribehandler.NewSubscribeHandler(sockHandler, subscribeQueue, accountHandler, fileHandler)
 
 	// run
 	if err := subHandler.Run(); err != nil {

@@ -141,13 +141,9 @@ func runSubscribe(
 	conferencecallHandler conferencecallhandler.ConferencecallHandler,
 ) error {
 
-	subscribeTargets := []string{
-		string(commonoutline.QueueNameCallEvent),
-	}
 	subHandler := subscribehandler.NewSubscribeHandler(
 		sockHandler,
 		string(commonoutline.QueueNameConferenceSubscribe),
-		subscribeTargets,
 		conferenceHandler,
 		conferencecallHandler,
 	)

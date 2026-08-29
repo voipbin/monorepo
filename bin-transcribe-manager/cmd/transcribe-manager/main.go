@@ -198,13 +198,7 @@ func runSubscribe(
 	})
 	log.Debugf("Running subscribe handler")
 
-	subscribeTargets := []string{
-		string(commonoutline.QueueNameCallEvent),
-		string(commonoutline.QueueNameCustomerEvent),
-	}
-	log.WithField("subscribe_targets", subscribeTargets).Debug("Running subscribe handler")
-
-	ariEventListenHandler := subscribehandler.NewSubscribeHandler(sockHandler, commonoutline.QueueNameTranscribeSubscribe, subscribeTargets, transcribeHandler)
+	ariEventListenHandler := subscribehandler.NewSubscribeHandler(sockHandler, commonoutline.QueueNameTranscribeSubscribe, transcribeHandler)
 
 	// run
 	if errRun := ariEventListenHandler.Run(); errRun != nil {

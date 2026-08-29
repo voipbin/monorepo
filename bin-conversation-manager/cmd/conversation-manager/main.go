@@ -172,16 +172,9 @@ func runSubscribe(
 	conversationHandler conversationhandler.ConversationHandler,
 ) error {
 
-	subscribeTargets := []string{
-		string(commonoutline.QueueNameMessageEvent),
-		string(commonoutline.QueueNameEmailEvent),
-		string(commonoutline.QueueNameWebchatEvent),
-	}
-
 	subHandler := subscribehandler.NewSubscribeHandler(
 		sockHandler,
 		string(commonoutline.QueueNameConversationSubscribe),
-		subscribeTargets,
 		accountHandler,
 		conversationHandler,
 	)

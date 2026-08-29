@@ -2,8 +2,6 @@ package subscribehandler
 
 import (
 	"testing"
-
-	commonoutline "monorepo/bin-common-handler/models/outline"
 )
 
 // Test_topicPatterns_golden pins the EXACT binding patterns billing-manager binds on
@@ -40,39 +38,6 @@ func Test_topicPatterns_golden(t *testing.T) {
 	for i, pattern := range expected {
 		if topicPatterns[i] != pattern {
 			t.Errorf("Wrong match. index: %d, expected: %s, got: %s", i, pattern, topicPatterns[i])
-		}
-	}
-}
-
-// Test_fanoutUnbindTargets_golden pins the fanout event exchanges billing-manager
-// unbinds after a fully successful topic-bind pass (VOIP-1406). This must equal the
-// cmd wiring's subscribeTargets: billing-manager has no asterisk leg, so ALL of its
-// fanout subscriptions are unbind targets.
-func Test_fanoutUnbindTargets_golden(t *testing.T) {
-	expected := []string{
-		"bin-manager.call-manager.event",
-		"bin-manager.message-manager.event",
-		"bin-manager.email-manager.event",
-		"bin-manager.customer-manager.event",
-		"bin-manager.number-manager.event",
-		"bin-manager.tts-manager.event",
-	}
-
-	if len(fanoutUnbindTargets) != len(expected) {
-		t.Fatalf("Wrong match. expected: %d targets, got: %d. fanoutUnbindTargets: %v", len(expected), len(fanoutUnbindTargets), fanoutUnbindTargets)
-	}
-
-	for i, target := range expected {
-		if fanoutUnbindTargets[i] != target {
-			t.Errorf("Wrong match. index: %d, expected: %s, got: %s", i, target, fanoutUnbindTargets[i])
-		}
-	}
-
-	// The asterisk fanout exchange belongs only to call-manager/timeline-manager;
-	// billing-manager must never unbind (nor bind) it.
-	for _, target := range fanoutUnbindTargets {
-		if target == string(commonoutline.QueueNameAsteriskEventAll) {
-			t.Errorf("Wrong match. fanoutUnbindTargets must not contain the asterisk exchange. got: %v", fanoutUnbindTargets)
 		}
 	}
 }

@@ -151,20 +151,10 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 // then the failed event handler is built from its event processor, then patched back
 // onto the subscribe handler.
 func buildFailedEventHandler(db dbhandler.DBHandler, sockHandler sockhandler.SockHandler, accoutHandler accounthandler.AccountHandler, billingHandler billinghandler.BillingHandler) (subscribehandler.SubscribeHandler, failedeventhandler.FailedEventHandler) {
-	subscribeTargets := []string{
-		string(commonoutline.QueueNameCallEvent),
-		string(commonoutline.QueueNameMessageEvent),
-		string(commonoutline.QueueNameEmailEvent),
-		string(commonoutline.QueueNameCustomerEvent),
-		string(commonoutline.QueueNameNumberEvent),
-		string(commonoutline.QueueNameTTSEvent),
-	}
-
 	// placeholder processor — will be set after subscribe handler is created
 	subHandler := subscribehandler.NewSubscribeHandler(
 		sockHandler,
 		string(commonoutline.QueueNameBillingSubscribe),
-		subscribeTargets,
 		accoutHandler,
 		billingHandler,
 		nil, // temporary nil — set below

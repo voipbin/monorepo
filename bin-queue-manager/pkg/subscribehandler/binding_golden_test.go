@@ -47,25 +47,3 @@ func Test_topicPatterns_excludesCustomerDeleted(t *testing.T) {
 		}
 	}
 }
-
-// Test_fanoutUnbindTargets_golden pins the fanout exchanges queue-manager unbinds after
-// a fully successful topic bind (VOIP-1406). This is the FULL subscribeTargets set wired
-// in cmd/queue-manager -- the agent and conference legs are dead binds (zero dispatch
-// cases, design §4) and are dropped together with the live call-manager leg.
-func Test_fanoutUnbindTargets_golden(t *testing.T) {
-	expected := []string{
-		"bin-manager.call-manager.event",
-		"bin-manager.agent-manager.event",
-		"bin-manager.conference-manager.event",
-	}
-
-	if len(fanoutUnbindTargets) != len(expected) {
-		t.Fatalf("fanoutUnbindTargets count mismatch. expected: %d, got: %d (%v)", len(expected), len(fanoutUnbindTargets), fanoutUnbindTargets)
-	}
-
-	for i, target := range expected {
-		if fanoutUnbindTargets[i] != target {
-			t.Errorf("fanoutUnbindTargets[%d] mismatch. expected: %q, got: %q", i, target, fanoutUnbindTargets[i])
-		}
-	}
-}

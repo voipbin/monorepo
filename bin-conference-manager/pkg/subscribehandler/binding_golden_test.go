@@ -30,23 +30,3 @@ func Test_topicPatterns_golden(t *testing.T) {
 		}
 	}
 }
-
-// Test_fanoutUnbindTargets_golden pins the fanout exchanges conference-manager unbinds
-// after a fully successful topic bind (VOIP-1406). This is the FULL subscribeTargets set
-// wired in cmd/conference-manager. The fanout QueueSubscribe calls stay in Run() until
-// VOIP-1407 as the rollback/degrade surface.
-func Test_fanoutUnbindTargets_golden(t *testing.T) {
-	expected := []string{
-		"bin-manager.call-manager.event",
-	}
-
-	if len(fanoutUnbindTargets) != len(expected) {
-		t.Fatalf("fanoutUnbindTargets count mismatch. expected: %d, got: %d (%v)", len(expected), len(fanoutUnbindTargets), fanoutUnbindTargets)
-	}
-
-	for i, target := range expected {
-		if fanoutUnbindTargets[i] != target {
-			t.Errorf("fanoutUnbindTargets[%d] mismatch. expected: %q, got: %q", i, target, fanoutUnbindTargets[i])
-		}
-	}
-}

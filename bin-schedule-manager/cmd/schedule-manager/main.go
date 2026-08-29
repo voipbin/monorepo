@@ -173,13 +173,9 @@ func runListen(
 // runSubscribe runs the subscribed event handler
 func runSubscribe(sockHandler sockhandler.SockHandler, scheduleHandler schedulehandler.ScheduleHandler) error {
 
-	subscribeTargets := []string{
-		string(commonoutline.QueueNameCustomerEvent),
-	}
 	subHandler := subscribehandler.NewSubscribeHandler(
 		sockHandler,
 		string(commonoutline.QueueNameScheduleSubscribe),
-		subscribeTargets,
 		scheduleHandler,
 	)
 
