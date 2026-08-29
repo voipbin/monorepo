@@ -1,12 +1,17 @@
 # VOIP-1407: Cutover -- remove fanout dual publish and per-service event exchanges
 
-Status: IMPLEMENTATION PLAN APPROVED (stage 3 of 4 complete -- plan review closed, R4
-Approve, R5 Approve, 2 consecutive, after a 5-round loop). Design APPROVED (stage 2
-complete -- R9 Approve, R10 Approve, 2 consecutive, after a 10-round loop). Issue
-analysis APPROVED (stage 1 complete -- R10 Approve, R11 Approve, 2 consecutive). Design
-doc: docs/plans/2026-08-29-voip-1407-fanout-cutover-design.md (APPROVED).
-Implementation plan: docs/plans/2026-08-29-voip-1407-fanout-cutover-plan.md (APPROVED,
-§8's 4 open questions pending 대표님 decision). Next: stage 4, coding. rev.10
+Status: CODING COMPLETE, PR OPEN (stage 4 of 4 -- code review closed, R2 Approve, R3
+Approve, 2 consecutive, after a 3-round loop, the mandatory minimum). PR:
+https://github.com/voipbin/monorepo/pull/1227 (NOT merged -- awaiting explicit 대표님
+authorization). Implementation plan APPROVED (stage 3 complete -- R4 Approve, R5
+Approve, 2 consecutive, after a 5-round loop; §8's OQ-1/OQ-3 resolved by 대표님, OQ-1's
+bin-api-manager follow-up filed as VOIP-1425). Design APPROVED (stage 2 complete -- R9
+Approve, R10 Approve, 2 consecutive, after a 10-round loop). Issue analysis APPROVED
+(stage 1 complete -- R10 Approve, R11 Approve, 2 consecutive). Design doc:
+docs/plans/2026-08-29-voip-1407-fanout-cutover-design.md (APPROVED). Implementation
+plan: docs/plans/2026-08-29-voip-1407-fanout-cutover-plan.md (APPROVED). Implementation:
+136 files across bin-common-handler + 21 services + 8 doc-only services, 9 substantive
+commits + 1 doc-accuracy follow-up commit. rev.10
 after R1 Request Changes (1 CRITICAL:
 missing asterisk-proxy publisher), R2 Request Changes (1 CRITICAL: missing
 consumer-side fanout residue that VOIP-1406 deliberately left as rollback surface; 2
