@@ -30,8 +30,9 @@ exchange-deletion runbook runs):
   CLIs, enumerated in issue analysis §3) stop fanout-publishing; topic becomes their
   sole delivery path. `voip-asterisk-proxy` (excluded, above) and 3 confirmed-dead
   wiring sites (`transfer-manager`/`transfer-control`/`tts-control`) are handled per §4.
-  `talk-control`'s one-line broken-exchange-name fix (§2.3.1, new -- R2 finding,
-  CRITICAL) is also handled per §4.
+  `talk-control`'s companion fix (§2.3.1, new -- R2/R3 findings, CRITICAL/HIGH) makes it
+  a 56th topic-only site -- a fix this design adds on top of issue analysis's 55, not a
+  correction to that enumeration -- also handled per §4.
 - **(b) Consumer side**: 20 VOIP-1406 services delete the fanout `QueueSubscribe` loop,
   `subscribeTargets`, and `fanoutUnbindTargets`/`QueueUnbind` step from
   `pkg/subscribehandler`; call-manager and timeline-manager additionally delete the
@@ -43,10 +44,11 @@ Out of scope: `voip-asterisk-proxy` and `asterisk.all.event` entirely (this revi
 VOIP-1258's `NewNotifyHandlerForExistingExchange` runtime path (confirmed orthogonal,
 issue analysis §3.C -- its only production caller is `PublishEventWithRoutingKey`, which
 never enters the code this design touches). **talk-control's broken wiring is NOT out of
-scope** (corrected -- R2 finding, CRITICAL; an earlier revision of this design called it
-out of scope, which was true for issue analysis but stopped being true the moment §2.3
-introduced `logrus.Fatalf`, see §2.3.1): its empty exchange name is fixed by this PR as
-a narrow, directly-motivated companion change, not left as an independent follow-up.
+scope** (corrected -- R2/R3 findings, CRITICAL/HIGH; an earlier revision of this design
+called it out of scope, which was true for issue analysis but stopped being true the
+moment §2.3 introduced `logrus.Fatalf`, see §2.3.1): its empty exchange name is fixed by
+this PR, and it is moved to `topicEnabled=true` (matching the daemon exactly), as a
+narrow, directly-motivated companion change, not left as an independent follow-up.
 
 ## 2. Publish side: `bin-common-handler/pkg/notifyhandler`
 
@@ -59,8 +61,8 @@ shape as an `Option` that sets `h.topicEnabled = true`. Only its **meaning** cha
 
 | | Today | After this design |
 |---|---|---|
-| `topicEnabled=true` (55 real call sites) | fanout AND topic (dual) | topic ONLY (fanout removed) |
-| `topicEnabled=false` (default; `voip-asterisk-proxy`'s sole non-control caller, plus the 3 dead-wiring sites and talk-control) | fanout ONLY | **unchanged** -- fanout ONLY |
+| `topicEnabled=true` (55 real call sites, **+1 talk-control per §2.3.1's companion fix**) | fanout AND topic (dual) [talk-control: N/A, newly enabled by this design, never dual] | topic ONLY (fanout removed) |
+| `topicEnabled=false` (default; `voip-asterisk-proxy`'s sole non-control caller, plus the 3 dead-wiring sites) | fanout ONLY | **unchanged** -- fanout ONLY |
 
 This is the entire mechanism. No opt-out flag, no second constructor, no signature
 change to `NewNotifyHandler`. `voip-asterisk-proxy/cmd/asterisk-proxy/main.go:107`'s
@@ -170,7 +172,7 @@ additionally declares the global topic exchange when `topicEnabled`, via
 `initGlobalTopicExchange()` -- a SHARED private method also called, unconditionally,
 from the SEPARATE `NewNotifyHandlerForExistingExchange` constructor (`main.go:250`);
 `initGlobalTopicExchange()` self-guards internally (`if !h.topicEnabled { return }`,
-`main.go:269-271`), so today it is a safe no-op for webhook-manager's `topicEnabled=false`
+`main.go:270-272`), so today it is a safe no-op for webhook-manager's `topicEnabled=false`
 `NewNotifyHandlerForExistingExchange` instance.
 
 **Corrected finding (R1 finding 1 -- CRITICAL): "return nil and let the caller's
@@ -271,48 +273,72 @@ already fails on every `talk-control` invocation today.
 **Today's actual behavior (not "boots fine," corrected)**: `talk-control`'s
 `notifyHandler` is genuinely live code -- unlike the 3 confirmed-dead sites in §4,
 `pkg/{chathandler,messagehandler,reactionhandler,participanthandler}` all call
-`h.notifyHandler.PublishWebhookEvent(...)` on their create/update/delete paths (e.g.
-`chathandler/chat.go:165,263,292`). Per §2.3's own corrected finding (the nil return is
-never checked), `talk-control` boots successfully today (`chat list`, `message list`,
-`participant list` never reach the notify call and work fine), and only the
-write-path subcommands that DO reach it (`reaction add`, per `bin-talk-manager/
-CLAUDE.md`) panic on a nil-interface method call -- but only when actually invoked.
+`h.notifyHandler.PublishWebhookEvent(...)` on their create/update/delete paths (9 call
+sites: `chathandler/chat.go:165,263,292`, `messagehandler/message.go:202,207`,
+`participanthandler/participant.go:94,213`, `reactionhandler/reaction.go:139`). Per
+§2.3's own corrected finding (the nil return is never checked), `talk-control` boots
+successfully today, and its **five** read-only subcommands (`chat get`, `chat list`,
+`message get`, `message list`, `participant list`) never reach the notify call and work
+fine; only the **nine** write-path subcommands that DO reach it (`chat create`, `chat
+update`, `chat delete`, `message create`, `message delete`, `participant add`,
+`participant remove`, `reaction add`, and whichever subcommand maps to the ninth call
+site) panic on a nil-interface method call -- but only when actually invoked (R3 finding
+3 corrected an earlier undercount here: "three read-only" / "just `reaction add`").
 
 **Why §2.3 makes this materially worse, not merely "already broken"**: once the same
 declare failure calls `logrus.Fatalf` instead of logging and returning `nil`, the
 process exits during `initHandlers()`, before any subcommand runs. Every `talk-control`
-invocation breaks, including the three read-only subcommands that work perfectly today.
+invocation breaks, including all five read-only subcommands that work perfectly today.
 This is a strictly larger blast radius than the pre-existing bug, introduced by this
 ticket's own change -- not something a "not created or worsened by this ticket" framing
 can honestly claim (§1, corrected).
 
-**Decision: fix the call site in this same PR**, following the exact precedent §2.3
-already set for the fanout-declare latent bug ("the same function, the exact same class
-of bug... discovered as a direct consequence of writing this design"). This is a
-one-line change with an existing, correct value to use --
-`bin-talk-manager/cmd/talk-manager/main.go:82-87` (the daemon) already constructs
-correctly with `commonoutline.QueueNameTalkEvent` (which has been successfully declared
-in production continuously since before VOIP-1404, per §2.4's rationale for why FATAL is
-safe):
+**Decision: fix the call site in this same PR, matching the daemon's construction
+EXACTLY -- both the exchange name AND `WithGlobalTopicPublish()` (revised, R3 finding
+1 -- HIGH; an earlier revision of this section added only the exchange-name fix and
+explicitly rejected the option, which created a NEW contradiction with §5, below)**:
 
 ```go
-notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, nil, commonoutline.QueueNameTalkEvent, serviceName)
+notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, nil, commonoutline.QueueNameTalkEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 ```
 
-(requires adding the `monorepo/bin-common-handler/models/outline` import, aliased
-`commonoutline` to match this file's sibling services' convention -- not currently
-imported in this file). `WithGlobalTopicPublish()` is deliberately NOT added here: doing
-so would move `talk-control` from `topicEnabled=false` to `=true`, a functional scope
-expansion (this CLI would start publishing to `bin-manager.event`) this ticket does not
-need and issue analysis never characterized as one of the 55 real dual-publish sites --
-the minimal fix is exactly the exchange-name correction, nothing else.
+matching `bin-talk-manager/cmd/talk-manager/main.go:82-88` (the daemon), which already
+constructs exactly this way (requires adding the `monorepo/bin-common-handler/models/
+outline` import, aliased `commonoutline` to match this file's sibling services'
+convention -- not currently imported in this file; confirmed no alias collision in the
+current import block).
+
+**Why the exchange-name fix alone is not sufficient, and the option must be added too
+(R3 finding 1)**: leaving `talk-control` at `topicEnabled=false` keeps it inside §2.3's
+`if !h.topicEnabled` branch permanently, meaning it goes on calling
+`sockHandler.TopicCreate(string(commonoutline.QueueNameTalkEvent))` -- a non-passive
+`ExchangeDeclare` that CREATES the exchange if absent, not merely asserts it -- forever,
+on every single invocation. `bin-manager.talk-manager.event` is one of the 28 exchanges
+§5 deletes. That directly breaks two of §5's own claims: its precondition ("every
+publisher daemon+control binary... must be rebuilt/redeployed with that code removed")
+would be false for this one binary by design, not by oversight; and its post-deletion
+re-check, which frames resurrection as coming only from "an un-redeployed `-control` CLI
+invocation run between deploy and deletion" (a migration-window problem), would instead
+face a redeployed, CORRECTED binary that resurrects the exchange on every run,
+permanently. Worse, since nothing would still subscribe to
+`bin-manager.talk-manager.event` after §3.1 deletes timeline-manager's fanout
+subscription to it (`bin-timeline-manager/pkg/subscribehandler/main.go:50`),
+`talk-control`'s 9 write-path publishes would silently vanish into a zero-binding
+exchange (`mandatory=false`) instead of the loud panic they produce today -- worse
+observability, not better. Adding `WithGlobalTopicPublish()` removes the `TopicCreate`
+call from `talk-control`'s path entirely (§2.3's branch is skipped when
+`topicEnabled=true`), so §5's precondition holds trivially for this binary same as every
+other real publisher, AND `talk-control`'s webhook events start reaching
+`bin-manager.event`, where timeline-manager's `#`-wildcard topic bind (VOIP-1406, kept
+by this design) picks them up -- a functional improvement (previously-undelivered events
+now delivered) that falls directly out of matching the daemon's construction, not scope
+creep.
 
 **Explicitly NOT fixed by this companion change (separate, unrelated, genuinely out of
 scope)**: the `nil` `reqHandler` argument on the same line, and `serviceName`'s type
 (untyped string constant `"talk-manager"` rather than
 `commonoutline.ServiceNameTalkManager`) -- neither interacts with the declare-failure/
-`Fatalf` mechanism this ticket touches, and fixing them is not required to prevent the
-boot-failure regression this section exists to close.
+`Fatalf` mechanism or the §5 exchange-deletion conflict this section exists to close.
 
 ### 2.4 `initGlobalTopicExchange` failure semantics (issue analysis §6 deferred item 1)
 
@@ -634,7 +660,7 @@ tool that doc or §5's runbook actually uses on bm-nyc-01).
 | 1 (`voip-asterisk-proxy/cmd/asterisk-proxy/main.go:107`) | **Excluded, zero changes** (§0/§2.1). |
 | 2 (`bin-transfer-manager/cmd/{transfer-manager,transfer-control}/main.go`) | **Deleted** (§7 item 4 -- confirmed dead: zero calls anywhere in `pkg/transferhandler`). Delete the `notifyHandler` field, its constructor parameter, and both `NewNotifyHandler` construction sites. |
 | 1 (`bin-tts-manager/cmd/tts-control/main.go:38`) | **Deleted**, same reasoning (`pkg/ttshandler` never calls it). |
-| 1 (`bin-talk-manager/cmd/talk-control/main.go:57`) | **Fixed, one line** (§2.3.1 -- corrected from an earlier "untouched, out of scope" ruling: this ticket's own `logrus.Fatalf` change would otherwise turn a narrow pre-existing bug into a guaranteed boot crash for the whole CLI). `queueEvent` changed from `""` to `commonoutline.QueueNameTalkEvent`; `WithGlobalTopicPublish()` deliberately NOT added. |
+| 1 (`bin-talk-manager/cmd/talk-control/main.go:57`) | **Fixed** (§2.3.1 -- corrected from an earlier "untouched, out of scope" ruling: this ticket's own `logrus.Fatalf` change would otherwise turn a narrow pre-existing bug into a guaranteed boot crash for the whole CLI). `queueEvent` changed from `""` to `commonoutline.QueueNameTalkEvent`, AND `WithGlobalTopicPublish()` added, matching the daemon exactly (R3 revision: an earlier version of this fix omitted the option and left talk-control permanently re-declaring an exchange §5 deletes). |
 | 2 (`bin-webhook-manager/cmd/{webhook-manager,webhook-control}/main.go`, `NewNotifyHandlerForExistingExchange`) | **Comment-only change** (§2.6). |
 
 **Decision on the 3 dead-wiring deletions (issue analysis §6 deferred item 6,
@@ -757,14 +783,19 @@ change.
     bit-identical to pre-PR behavior -- confirms this ticket's publish-side change is
     inert for the one excluded caller.
 - **`bin-talk-manager/cmd/talk-control`** (§2.3.1): a build/smoke check that
-  `initHandlers()` no longer reaches `logrus.Fatalf` -- i.e. that `TopicCreate(string(
-  commonoutline.QueueNameTalkEvent))` succeeds against a real broker post-fix, where it
-  previously failed against `""`. Not a unit test target (no existing test harness
-  around `cmd/talk-control/main.go`'s `initHandlers()`); verify via the manual
-  live-broker smoke check pattern issue analysis used elsewhere (declare the exchange
-  once via the daemon, which already does so continuously in production, then run
-  `talk-control chat list` against a real environment and confirm it exits 0 instead of
-  calling `os.Exit(1)` during startup).
+  `initHandlers()` no longer reaches `logrus.Fatalf` at all -- with `WithGlobalTopicPublish()`
+  added, this instance now skips `TopicCreate` entirely (§2.3's `!h.topicEnabled` branch
+  is not entered) and only goes through `initGlobalTopicExchange()`, which has been
+  declaring successfully in production continuously since VOIP-1404 (§2.4's rationale).
+  Not a unit test target (no existing test harness around `cmd/talk-control/main.go`'s
+  `initHandlers()`); verify via the manual live-broker smoke check pattern issue
+  analysis used elsewhere: run `talk-control chat list` against a real environment and
+  confirm it exits 0 instead of
+  calling `os.Exit(1)` during startup. Additionally, run a write subcommand (e.g.
+  `talk-control chat create`) and confirm `bin-manager.talk-manager.event` gains zero
+  new bindings/messages over time (§2.3.1's precondition-preservation claim for §5) while
+  timeline-manager's `#`-wildcard topic subscription does observe the event -- the
+  functional-improvement side of §2.3.1's ruling.
 - Each of the 20 consumer services: update `binding_golden_test.go` (drop
   fanout-target pins) and the `Run()` sequencing test (gomock `InOrder`: `QueueCreate`
   -> [asterisk `QueueSubscribe`, call-manager/timeline-manager only] -> [VOIP-1258
