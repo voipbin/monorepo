@@ -8,7 +8,6 @@ import (
 
 	"monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-tts-manager/internal/config"
@@ -35,7 +34,6 @@ func initHandler() (ttshandler.TTSHandler, error) {
 	sockHandler.Connect()
 
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, outline.QueueNameTTSEvent, serviceName)
 
 	handler := ttshandler.NewTTSHandler(
 		config.Get().AWSAccessKey,
@@ -44,7 +42,6 @@ func initHandler() (ttshandler.TTSHandler, error) {
 		"/tmp/tts-media", // Default media bucket directory for CLI
 		"localhost",      // Default local address for CLI
 		reqHandler,
-		notifyHandler,
 	)
 
 	if handler == nil {

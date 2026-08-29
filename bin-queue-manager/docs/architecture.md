@@ -23,7 +23,7 @@ graph TD
 | `pkg/queuehandler` | Queue CRUD, routing configuration, agent membership management, queue execution logic | `queue.Queue`, `queue.RoutingMethod` |
 | `pkg/queuecallhandler` | Queuecall lifecycle: create, execute, kick, timeout handling, health checks, status transitions | `queuecall.Queuecall`, `queuecall.Status` |
 | `pkg/listenhandler` | RabbitMQ RPC request router (regex pattern matching) | `sock.Request`, `sock.Response` |
-| `pkg/subscribehandler` | Consumes call-manager events via pattern bindings on the global topic exchange `bin-manager.event` (fanout legs retained until VOIP-1407) | queue event structs |
+| `pkg/subscribehandler` | Consumes call-manager events via pattern bindings on the global topic exchange `bin-manager.event` (sole intake mechanism since VOIP-1407) | queue event structs |
 | `pkg/dbhandler` | MySQL CRUD operations | all model structs |
 | `pkg/cachehandler` | Redis fast-path lookups for queues and queuecalls | `queue.Queue`, `queuecall.Queuecall` |
 | `models/queue` | Queue data model, routing method constants | `queue.Queue`, `queue.RoutingMethod` |
@@ -31,7 +31,7 @@ graph TD
 
 ## Event Subscriptions
 
-SubscribeHandler (`pkg/subscribehandler/`) consumes from the queue `bin-manager.queue-manager.subscribe`. Since VOIP-1406 the queue is bound to the **global topic exchange `bin-manager.event`** with one pattern per dispatched (publisher, event-type) pair — 3 patterns total, pinned byte-for-byte by the binding golden test (`pkg/subscribehandler/binding_golden_test.go`):
+SubscribeHandler (`pkg/subscribehandler/`) consumes from the queue `bin-manager.queue-manager.subscribe`. Since VOIP-1406 the queue is bound to the **global topic exchange `bin-manager.event`** with one pattern per dispatched (publisher, event-type) pair — 3 patterns total, pinned byte-for-byte by the binding golden test (`pkg/subscribehandler/binding_golden_test.go`). As of VOIP-1407 this topic-pattern binding is the **sole intake mechanism**; the old per-service fanout subscriptions (`QueueSubscribe` to `bin-manager.call-manager.event`, `bin-manager.agent-manager.event`, `bin-manager.conference-manager.event`) have been removed from `Run()` entirely, along with the fanout-unbind step that used to follow a successful topic bind:
 
 | Pattern | Purpose |
 |---------|---------|
@@ -40,11 +40,9 @@ SubscribeHandler (`pkg/subscribehandler/`) consumes from the queue `bin-manager.
 
 The `customer-manager.customer.*.deleted` pair is deliberately NOT bound: its dispatch case is unreachable today (the customer-manager fanout exchange was never subscribed) and stays that way (VOIP-1406 design §4; follow-up VOIP-1422 decides activate-or-delete — a latent-bug candidate, since queue records are likely meant to be cleaned on customer deletion).
 
-The old per-service **fanout subscriptions are retained in code as the rollback surface until VOIP-1407** (`QueueSubscribe` to `bin-manager.call-manager.event`, `bin-manager.agent-manager.event`, `bin-manager.conference-manager.event`); on each boot Run() re-subscribes them, then unbinds all three again after the topic binds succeed. The agent and conference legs were dead binds (zero dispatch cases) and are dropped the same way.
-
 ## Event Publishing
 
-All three NotifyHandler construction sites — `cmd/queue-manager`, and both instances in `cmd/queue-control` — are built with `notifyhandler.WithGlobalTopicPublish()`, so every event is published twice: once to the per-service fanout exchange `bin-manager.queue-manager.event` (unchanged, still the system of record) and once to the global topic exchange `bin-manager.event` with the routing key `queue-manager.<resource>.<queue-id>.<action>`. The three sites must stay in lockstep on this option — enabling it in only some would leave consumers with gaps depending on which process published. A topic publish failure never propagates to the caller and never affects the fanout publish. See [docs/domain.md](domain.md) for the per-event routing keys and the monorepo `docs/plans/2026-08-27-voip-1404-global-topic-exchange-design.md` for the schema.
+All three NotifyHandler construction sites — `cmd/queue-manager`, and both instances in `cmd/queue-control` — are built with `notifyhandler.WithGlobalTopicPublish()`. **As of VOIP-1407, this is the sole publish path** — the previous per-service fanout exchange `bin-manager.queue-manager.event` is no longer published to, and (per the operational runbook in `docs/reference/rabbitmq-queues-reference.md`) will eventually be deleted from the broker. Events publish to the global topic exchange `bin-manager.event` with the routing key `queue-manager.<resource>.<queue-id>.<action>`. This service's publish-side behavior change comes entirely from `bin-common-handler/pkg/notifyhandler`'s shared library update (its own consumer-side subscribehandler code also changed separately for VOIP-1407, see the Event Subscriptions section above). The three sites must stay in lockstep on this option — enabling it in only some would leave consumers with gaps depending on which process published. A topic publish failure now propagates to the caller as an error (previously it was swallowed silently). See [docs/domain.md](domain.md) for the per-event routing keys and the monorepo `docs/plans/2026-08-27-voip-1404-global-topic-exchange-design.md` for the schema.
 
 ## Request Routing
 

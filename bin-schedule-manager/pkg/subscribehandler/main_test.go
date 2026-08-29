@@ -23,21 +23,19 @@ func Test_NewSubscribeHandler(t *testing.T) {
 	mockSock := sockhandler.NewMockSockHandler(mc)
 	mockSchedule := schedulehandler.NewMockScheduleHandler(mc)
 
-	h := NewSubscribeHandler(mockSock, "bin-manager.schedule-manager.subscribe", []string{"bin-manager.customer-manager.event"}, mockSchedule)
+	h := NewSubscribeHandler(mockSock, "bin-manager.schedule-manager.subscribe", mockSchedule)
 	if h == nil {
 		t.Errorf("Expected handler, got nil")
 	}
 }
 
-// Test_Run_sequencing verifies the exact broker call sequence of Run() (VOIP-1406):
+// Test_Run_sequencing verifies the exact broker call sequence of Run() (VOIP-1407):
 //
-//	QueueCreate -> fanout QueueSubscribe (all subscribeTargets) -> TopicCreateWithKind
-//	-> QueueBind (every topicPatterns entry, in order) -> QueueUnbind (every
-//	fanoutUnbindTargets entry, in order).
+//	QueueCreate -> TopicCreateWithKind -> QueueBind (every topicPatterns entry, in order).
 //
 // The topic block MUST run synchronously inside Run(), before the ConsumeMessage
-// goroutine: QueueBind/QueueUnbind and ConsumeMessage's internal basic.consume share the
-// same AMQP channel, and racing them closes the channel with a 503 (production incident
+// goroutine: QueueBind and ConsumeMessage's internal basic.consume share the same AMQP
+// channel, and racing them closes the channel with a 503 (production incident
 // 2026-07-14, VOIP-1258). The strict gomock controller fails the test on any call outside
 // the expected set; gomock.InOrder fails it on any reordering.
 func Test_Run_sequencing(t *testing.T) {
@@ -48,22 +46,13 @@ func Test_Run_sequencing(t *testing.T) {
 	mockSchedule := schedulehandler.NewMockScheduleHandler(mc)
 
 	queueName := string(commonoutline.QueueNameScheduleSubscribe)
-	subscribeTargets := []string{
-		string(commonoutline.QueueNameCustomerEvent),
-	}
 
 	calls := []any{
 		mockSock.EXPECT().QueueCreate(queueName, "normal").Return(nil),
+		mockSock.EXPECT().TopicCreateWithKind(string(commonoutline.QueueNameEvent), "topic").Return(nil),
 	}
-	for _, target := range subscribeTargets {
-		calls = append(calls, mockSock.EXPECT().QueueSubscribe(queueName, target).Return(nil))
-	}
-	calls = append(calls, mockSock.EXPECT().TopicCreateWithKind(string(commonoutline.QueueNameEvent), "topic").Return(nil))
 	for _, pattern := range topicPatterns {
 		calls = append(calls, mockSock.EXPECT().QueueBind(queueName, pattern, string(commonoutline.QueueNameEvent), false, nil).Return(nil))
-	}
-	for _, target := range fanoutUnbindTargets {
-		calls = append(calls, mockSock.EXPECT().QueueUnbind(queueName, "", target, nil).Return(nil))
 	}
 	gomock.InOrder(calls...)
 
@@ -74,7 +63,6 @@ func Test_Run_sequencing(t *testing.T) {
 	h := NewSubscribeHandler(
 		mockSock,
 		queueName,
-		subscribeTargets,
 		mockSchedule,
 	)
 

@@ -3,7 +3,6 @@ package subscribehandler
 import (
 	"context"
 	"fmt"
-	"sync/atomic"
 	"testing"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
@@ -14,16 +13,15 @@ import (
 	gomock "go.uber.org/mock/gomock"
 )
 
-// Test_Run_TopicMigrationSequence pins the full VOIP-1406 call sequence inside Run()
+// Test_Run_TopicMigrationSequence pins the full VOIP-1407 call sequence inside Run()
 // with strict, ordered expectations:
 //
-//	QueueCreate -> (sentinel TopicCreate ->) each fanout QueueSubscribe ->
+//	QueueCreate -> asterisk fanout QueueSubscribe (retained leg) ->
 //	VOIP-1258 webhook-topic QueueBind + QueueUnbind ->
-//	TopicCreateWithKind(bin-manager.event) -> QueueBind("#") ->
-//	QueueUnbind of every fanoutUnbindTargets entry -> ConsumeMessage.
+//	TopicCreateWithKind(bin-manager.event) -> QueueBind("#") -> ConsumeMessage.
 //
 // ConsumeMessage runs on its own goroutine, so it is expected separately (AnyTimes)
-// with an assertion that the synchronous migration block completed first.
+// with an assertion that the synchronous startup sequence completed first.
 func Test_Run_TopicMigrationSequence(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
@@ -33,39 +31,25 @@ func Test_Run_TopicMigrationSequence(t *testing.T) {
 
 	queueName := string(commonoutline.QueueNameTimelineSubscribe)
 
-	var migrationComplete atomic.Bool
+	var sequenceComplete bool
 
-	calls := []any{
+	gomock.InOrder(
 		mockSock.EXPECT().QueueCreate(queueName, "normal").Return(nil),
-	}
-	for _, target := range subscribeTargets {
-		if target == commonoutline.QueueNameSentinelEvent {
-			calls = append(calls, mockSock.EXPECT().TopicCreate(string(target)).Return(nil))
-		}
-		calls = append(calls, mockSock.EXPECT().QueueSubscribe(queueName, string(target)).Return(nil))
-	}
-	calls = append(calls,
+		mockSock.EXPECT().QueueSubscribe(queueName, string(commonoutline.QueueNameAsteriskEventAll)).Return(nil),
 		mockSock.EXPECT().QueueBind(queueName, "#", string(commonoutline.QueueNameWebhookEventTopic), false, nil).Return(nil),
 		mockSock.EXPECT().QueueUnbind(queueName, "", string(commonoutline.QueueNameWebhookEvent), nil).Return(nil),
 		mockSock.EXPECT().TopicCreateWithKind(string(commonoutline.QueueNameEvent), "topic").Return(nil),
-		mockSock.EXPECT().QueueBind(queueName, "#", string(commonoutline.QueueNameEvent), false, nil).Return(nil),
-	)
-	for i, target := range fanoutUnbindTargets {
-		last := i == len(fanoutUnbindTargets)-1
-		calls = append(calls, mockSock.EXPECT().QueueUnbind(queueName, "", string(target), nil).
-			DoAndReturn(func(_, _, _ string, _ interface{}) error {
-				if last {
-					migrationComplete.Store(true)
-				}
+		mockSock.EXPECT().QueueBind(queueName, "#", string(commonoutline.QueueNameEvent), false, nil).
+			DoAndReturn(func(_, _, _ string, _ bool, _ interface{}) error {
+				sequenceComplete = true
 				return nil
-			}))
-	}
-	gomock.InOrder(calls...)
+			}),
+	)
 
 	mockSock.EXPECT().ConsumeMessage(gomock.Any(), queueName, gomock.Any(), false, false, false, 10, gomock.Any()).
 		DoAndReturn(func(_, _, _ interface{}, _, _, _ bool, _ int, _ interface{}) error {
-			if !migrationComplete.Load() {
-				t.Errorf("ConsumeMessage started before the topic migration block completed -- ordering regression.")
+			if !sequenceComplete {
+				t.Errorf("ConsumeMessage started before the topic-bind sequence completed -- ordering regression.")
 			}
 			return nil
 		}).AnyTimes()
@@ -79,8 +63,8 @@ func Test_Run_TopicMigrationSequence(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Run() returned an unexpected error: %v", err)
 	}
-	if !migrationComplete.Load() {
-		t.Errorf("Expected the topic migration block to complete synchronously within Run().")
+	if !sequenceComplete {
+		t.Errorf("Expected the topic-bind sequence to complete synchronously within Run().")
 	}
 
 	cancel()
@@ -88,9 +72,8 @@ func Test_Run_TopicMigrationSequence(t *testing.T) {
 }
 
 // Test_Run_TopicMigration_DeclareFailure verifies that when the global topic exchange
-// declare fails, Run() stays fully on the fanout subscriptions: zero QueueBind calls on
-// bin-manager.event and zero fanout QueueUnbind calls (strict mock -- any such call
-// fails the test), and Run() still succeeds.
+// declare fails, Run() returns the error immediately (fatal -- there is no fanout
+// fallback left to degrade to post-VOIP-1407).
 func Test_Run_TopicMigration_DeclareFailure(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
@@ -101,16 +84,12 @@ func Test_Run_TopicMigration_DeclareFailure(t *testing.T) {
 	queueName := string(commonoutline.QueueNameTimelineSubscribe)
 
 	mockSock.EXPECT().QueueCreate(queueName, "normal").Return(nil)
-	mockSock.EXPECT().TopicCreate(string(commonoutline.QueueNameSentinelEvent)).Return(nil)
-	for _, target := range subscribeTargets {
-		mockSock.EXPECT().QueueSubscribe(queueName, string(target)).Return(nil)
-	}
+	mockSock.EXPECT().QueueSubscribe(queueName, string(commonoutline.QueueNameAsteriskEventAll)).Return(nil)
 	mockSock.EXPECT().QueueBind(queueName, "#", string(commonoutline.QueueNameWebhookEventTopic), false, nil).Return(nil)
 	mockSock.EXPECT().QueueUnbind(queueName, "", string(commonoutline.QueueNameWebhookEvent), nil).Return(nil)
 	mockSock.EXPECT().TopicCreateWithKind(string(commonoutline.QueueNameEvent), "topic").Return(fmt.Errorf("declare failed"))
-	// NO QueueBind on bin-manager.event and NO fanout QueueUnbind expectations: the
-	// strict mock rejects any unexpected call, proving the whole block is skipped.
-	mockSock.EXPECT().ConsumeMessage(gomock.Any(), queueName, gomock.Any(), false, false, false, 10, gomock.Any()).Return(nil).AnyTimes()
+	// NO QueueBind on bin-manager.event and NO ConsumeMessage: the strict mock
+	// rejects any unexpected call, proving Run() returned immediately.
 
 	h := NewSubscribeHandler(mockSock, mockDB)
 
@@ -118,18 +97,16 @@ func Test_Run_TopicMigration_DeclareFailure(t *testing.T) {
 	defer cancel()
 
 	doneCh, err := h.Run(ctx)
-	if err != nil {
-		t.Fatalf("Run() must succeed when the topic declare fails (degrade to fanout), got err: %v", err)
+	if err == nil {
+		t.Fatalf("Run() must return an error immediately when the topic declare fails.")
 	}
-
-	cancel()
-	<-doneCh
+	if doneCh != nil {
+		t.Errorf("Run() must return a nil channel alongside the error. got: %v", doneCh)
+	}
 }
 
-// Test_Run_TopicMigration_BindFailure verifies the all-or-nothing rule when a pattern
-// bind fails. timeline-manager binds a single "#" pattern, so a failure of that first
-// bind means bound[0..i-1] is empty: zero rollback unbinds on bin-manager.event and
-// zero fanout unbinds (strict mock), and Run() still succeeds fully on fanout.
+// Test_Run_TopicMigration_BindFailure verifies that a pattern-bind failure returns the
+// error immediately (fatal, no rollback -- §3.3).
 func Test_Run_TopicMigration_BindFailure(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
@@ -140,17 +117,13 @@ func Test_Run_TopicMigration_BindFailure(t *testing.T) {
 	queueName := string(commonoutline.QueueNameTimelineSubscribe)
 
 	mockSock.EXPECT().QueueCreate(queueName, "normal").Return(nil)
-	mockSock.EXPECT().TopicCreate(string(commonoutline.QueueNameSentinelEvent)).Return(nil)
-	for _, target := range subscribeTargets {
-		mockSock.EXPECT().QueueSubscribe(queueName, string(target)).Return(nil)
-	}
+	mockSock.EXPECT().QueueSubscribe(queueName, string(commonoutline.QueueNameAsteriskEventAll)).Return(nil)
 	mockSock.EXPECT().QueueBind(queueName, "#", string(commonoutline.QueueNameWebhookEventTopic), false, nil).Return(nil)
 	mockSock.EXPECT().QueueUnbind(queueName, "", string(commonoutline.QueueNameWebhookEvent), nil).Return(nil)
 	mockSock.EXPECT().TopicCreateWithKind(string(commonoutline.QueueNameEvent), "topic").Return(nil)
 	mockSock.EXPECT().QueueBind(queueName, "#", string(commonoutline.QueueNameEvent), false, nil).Return(fmt.Errorf("bind failed"))
-	// NO rollback QueueUnbind on bin-manager.event (nothing was bound before the
-	// failure) and NO fanout QueueUnbind: the strict mock rejects any such call.
-	mockSock.EXPECT().ConsumeMessage(gomock.Any(), queueName, gomock.Any(), false, false, false, 10, gomock.Any()).Return(nil).AnyTimes()
+	// NO rollback QueueUnbind on bin-manager.event and NO ConsumeMessage: the strict
+	// mock rejects any such call, proving Run() returned immediately without rollback.
 
 	h := NewSubscribeHandler(mockSock, mockDB)
 
@@ -158,18 +131,17 @@ func Test_Run_TopicMigration_BindFailure(t *testing.T) {
 	defer cancel()
 
 	doneCh, err := h.Run(ctx)
-	if err != nil {
-		t.Fatalf("Run() must succeed when the pattern bind fails (degrade to fanout), got err: %v", err)
+	if err == nil {
+		t.Fatalf("Run() must return an error immediately when the pattern bind fails.")
 	}
-
-	cancel()
-	<-doneCh
+	if doneCh != nil {
+		t.Errorf("Run() must return a nil channel alongside the error. got: %v", doneCh)
+	}
 }
 
-// Test_Run_TopicMigration_FanoutUnbindFailure verifies that a single failed fanout
-// unbind is CRITICAL-logged but not fatal: every remaining fanout unbind is still
-// attempted and Run() still succeeds (double delivery beats loss).
-func Test_Run_TopicMigration_FanoutUnbindFailure(t *testing.T) {
+// Test_Run_AsteriskSubscribeFailure verifies that a failure subscribing to the
+// retained asterisk fanout leg returns the error immediately (fatal).
+func Test_Run_AsteriskSubscribeFailure(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -178,29 +150,44 @@ func Test_Run_TopicMigration_FanoutUnbindFailure(t *testing.T) {
 
 	queueName := string(commonoutline.QueueNameTimelineSubscribe)
 
-	// Fail the unbind of the third fanout target; all 25 must still be attempted.
-	failIndex := 2
-	unbindAttempts := 0
+	mockSock.EXPECT().QueueCreate(queueName, "normal").Return(nil)
+	mockSock.EXPECT().QueueSubscribe(queueName, string(commonoutline.QueueNameAsteriskEventAll)).Return(fmt.Errorf("subscribe failed"))
+	// NO further calls: the strict mock rejects any unexpected call, proving Run()
+	// returned immediately.
+
+	h := NewSubscribeHandler(mockSock, mockDB)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	doneCh, err := h.Run(ctx)
+	if err == nil {
+		t.Fatalf("Run() must return an error immediately when the asterisk fanout subscribe fails.")
+	}
+	if doneCh != nil {
+		t.Errorf("Run() must return a nil channel alongside the error. got: %v", doneCh)
+	}
+}
+
+// Test_Run_WebhookTopicBindFailure verifies the VOIP-1258 block's unchanged,
+// log-only, non-fatal failure semantics: when the webhook-topic bind fails, Run()
+// does NOT unbind the legacy fanout exchange, and Run() still succeeds.
+func Test_Run_WebhookTopicBindFailure(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	queueName := string(commonoutline.QueueNameTimelineSubscribe)
 
 	mockSock.EXPECT().QueueCreate(queueName, "normal").Return(nil)
-	mockSock.EXPECT().TopicCreate(string(commonoutline.QueueNameSentinelEvent)).Return(nil)
-	for _, target := range subscribeTargets {
-		mockSock.EXPECT().QueueSubscribe(queueName, string(target)).Return(nil)
-	}
-	mockSock.EXPECT().QueueBind(queueName, "#", string(commonoutline.QueueNameWebhookEventTopic), false, nil).Return(nil)
-	mockSock.EXPECT().QueueUnbind(queueName, "", string(commonoutline.QueueNameWebhookEvent), nil).Return(nil)
+	mockSock.EXPECT().QueueSubscribe(queueName, string(commonoutline.QueueNameAsteriskEventAll)).Return(nil)
+	mockSock.EXPECT().QueueBind(queueName, "#", string(commonoutline.QueueNameWebhookEventTopic), false, nil).Return(fmt.Errorf("bind failed"))
+	// NO QueueUnbind of QueueNameWebhookEvent: the strict mock rejects it, proving
+	// Run() stayed on the old exchange rather than unbinding after a failed bind.
 	mockSock.EXPECT().TopicCreateWithKind(string(commonoutline.QueueNameEvent), "topic").Return(nil)
 	mockSock.EXPECT().QueueBind(queueName, "#", string(commonoutline.QueueNameEvent), false, nil).Return(nil)
-	for i, target := range fanoutUnbindTargets {
-		mockSock.EXPECT().QueueUnbind(queueName, "", string(target), nil).
-			DoAndReturn(func(_, _, _ string, _ interface{}) error {
-				unbindAttempts++
-				if i == failIndex {
-					return fmt.Errorf("unbind failed")
-				}
-				return nil
-			})
-	}
 	mockSock.EXPECT().ConsumeMessage(gomock.Any(), queueName, gomock.Any(), false, false, false, 10, gomock.Any()).Return(nil).AnyTimes()
 
 	h := NewSubscribeHandler(mockSock, mockDB)
@@ -210,10 +197,41 @@ func Test_Run_TopicMigration_FanoutUnbindFailure(t *testing.T) {
 
 	doneCh, err := h.Run(ctx)
 	if err != nil {
-		t.Fatalf("Run() must succeed when a fanout unbind fails (double delivery beats loss), got err: %v", err)
+		t.Fatalf("Run() must succeed when only the VOIP-1258 webhook-topic bind fails (log-only, non-fatal). err: %v", err)
 	}
-	if unbindAttempts != len(fanoutUnbindTargets) {
-		t.Errorf("Every fanout unbind must still be attempted after one failure. expect: %d, got: %d", len(fanoutUnbindTargets), unbindAttempts)
+
+	cancel()
+	<-doneCh
+}
+
+// Test_Run_WebhookLegacyUnbindFailure verifies the VOIP-1258 block's unchanged,
+// log-only, non-fatal failure semantics on the unbind side: when the legacy fanout
+// unbind fails after a successful topic bind, Run() still proceeds and succeeds.
+func Test_Run_WebhookLegacyUnbindFailure(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	queueName := string(commonoutline.QueueNameTimelineSubscribe)
+
+	mockSock.EXPECT().QueueCreate(queueName, "normal").Return(nil)
+	mockSock.EXPECT().QueueSubscribe(queueName, string(commonoutline.QueueNameAsteriskEventAll)).Return(nil)
+	mockSock.EXPECT().QueueBind(queueName, "#", string(commonoutline.QueueNameWebhookEventTopic), false, nil).Return(nil)
+	mockSock.EXPECT().QueueUnbind(queueName, "", string(commonoutline.QueueNameWebhookEvent), nil).Return(fmt.Errorf("unbind failed"))
+	mockSock.EXPECT().TopicCreateWithKind(string(commonoutline.QueueNameEvent), "topic").Return(nil)
+	mockSock.EXPECT().QueueBind(queueName, "#", string(commonoutline.QueueNameEvent), false, nil).Return(nil)
+	mockSock.EXPECT().ConsumeMessage(gomock.Any(), queueName, gomock.Any(), false, false, false, 10, gomock.Any()).Return(nil).AnyTimes()
+
+	h := NewSubscribeHandler(mockSock, mockDB)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	doneCh, err := h.Run(ctx)
+	if err != nil {
+		t.Fatalf("Run() must succeed when only the VOIP-1258 legacy unbind fails (log-only, non-fatal). err: %v", err)
 	}
 
 	cancel()

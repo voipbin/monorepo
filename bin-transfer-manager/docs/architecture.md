@@ -19,7 +19,7 @@ Key packages:
 | Package | Role |
 |---------|------|
 | `pkg/listenhandler` | RabbitMQ RPC routing via regex patterns |
-| `pkg/subscribehandler` | Consumes call-manager events for state transitions |
+| `pkg/subscribehandler` | Consumes call-manager events for state transitions via pattern bindings on the global topic exchange `bin-manager.event` — the sole intake mechanism since VOIP-1407 removed the old per-service fanout subscription |
 | `pkg/transferhandler` | Core transfer state machine (attended + blind) |
 | `pkg/dbhandler` | MySQL persistence |
 | `pkg/cachehandler` | Redis transfer lookups by call ID |
@@ -64,4 +64,4 @@ Event subscriptions drive state transitions. Since VOIP-1406 the subscribe queue
 | `call-manager.groupcall.*.hangup` | `groupcall_hangup` — roll back or finalize transfer |
 | `call-manager.call.*.hangup` | `call_hangup` — transferer/transferee hangup handling |
 
-The old per-service **fanout subscription is retained in code as the rollback surface until VOIP-1407** (`QueueSubscribe` to `bin-manager.call-manager.event`); on each boot Run() re-subscribes it, then unbinds it again after the topic binds succeed.
+As of VOIP-1407, this topic-pattern binding is the **sole intake mechanism** — the old per-service fanout `QueueSubscribe` call (to `bin-manager.call-manager.event`) and the fanout-unbind step that used to follow a successful topic bind have both been removed. A declare or bind failure is now fatal; there is no fanout fallback left to degrade to.

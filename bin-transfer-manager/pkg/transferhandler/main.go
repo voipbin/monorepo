@@ -9,7 +9,6 @@ import (
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
-	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -33,24 +32,21 @@ type TransferHandler interface {
 }
 
 type transferHandler struct {
-	utilHandler   utilhandler.UtilHandler
-	reqHandler    requesthandler.RequestHandler
-	notifyHandler notifyhandler.NotifyHandler
-	db            dbhandler.DBHandler
+	utilHandler utilhandler.UtilHandler
+	reqHandler  requesthandler.RequestHandler
+	db          dbhandler.DBHandler
 }
 
 // NewTransferHandler return transfer handler interface
 func NewTransferHandler(
 	reqHandler requesthandler.RequestHandler,
-	notifyHandler notifyhandler.NotifyHandler,
 	db dbhandler.DBHandler,
 ) TransferHandler {
 
 	h := &transferHandler{
-		utilHandler:   utilhandler.NewUtilHandler(),
-		reqHandler:    reqHandler,
-		notifyHandler: notifyHandler,
-		db:            db,
+		utilHandler: utilhandler.NewUtilHandler(),
+		reqHandler:  reqHandler,
+		db:          db,
 	}
 
 	return h

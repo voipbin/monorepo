@@ -173,22 +173,9 @@ func runSubscribe(
 	groupcallHandler groupcallhandler.GroupcallHandler,
 	confbridgeHandler confbridgehandler.ConfbridgeHandler,
 ) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func": "runSubscribe",
-	})
-
-	subscribeTargets := []string{
-		string(commonoutline.QueueNameAsteriskEventAll),
-		string(commonoutline.QueueNameCustomerEvent),
-		string(commonoutline.QueueNameFlowEvent),
-		string(commonoutline.QueueNameSentinelEvent),
-	}
-	log.WithField("subscribe_targets", subscribeTargets).Debug("Running subscribe handler")
-
 	ariEventListenHandler := subscribehandler.NewSubscribeHandler(
 		sockHandler,
 		commonoutline.QueueNameCallSubscribe,
-		subscribeTargets,
 		ariEventHandler,
 		callHandler,
 		groupcallHandler,

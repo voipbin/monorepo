@@ -161,10 +161,7 @@ func runListen(sockHandler sockhandler.SockHandler, contactHandler contacthandle
 // runSubscribe runs the subscribed event handler
 func runSubscribe(sockHandler sockhandler.SockHandler, contactHandler contacthandler.ContactHandler) error {
 
-	subscribeTargets := []string{
-		string(commonoutline.QueueNameCustomerEvent),
-	}
-	subHandler := subscribehandler.NewSubscribeHandler(sockHandler, string(commonoutline.QueueNameContactSubscribe), subscribeTargets, contactHandler)
+	subHandler := subscribehandler.NewSubscribeHandler(sockHandler, string(commonoutline.QueueNameContactSubscribe), contactHandler)
 
 	// run
 	if err := subHandler.Run(); err != nil {

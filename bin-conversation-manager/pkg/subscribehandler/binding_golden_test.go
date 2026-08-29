@@ -29,25 +29,3 @@ func Test_topicPatterns_Golden(t *testing.T) {
 		}
 	}
 }
-
-// Test_fanoutUnbindTargets_Golden pins the fanout event exchanges the subscribe
-// queue unbinds from after a fully successful topic binding (VOIP-1406). It must
-// equal the service's fanout subscribeTargets (conversation-manager has no
-// retained asterisk leg).
-func Test_fanoutUnbindTargets_Golden(t *testing.T) {
-	expectedTargets := []string{
-		"bin-manager.message-manager.event",
-		"bin-manager.email-manager.event",
-		"bin-manager.webchat-manager.event",
-	}
-
-	if len(fanoutUnbindTargets) != len(expectedTargets) {
-		t.Fatalf("fanoutUnbindTargets count mismatch. expected: %d, got: %d (%v)", len(expectedTargets), len(fanoutUnbindTargets), fanoutUnbindTargets)
-	}
-
-	for i, expected := range expectedTargets {
-		if fanoutUnbindTargets[i] != expected {
-			t.Errorf("fanoutUnbindTargets[%d] mismatch. expected: %s, got: %s", i, expected, fanoutUnbindTargets[i])
-		}
-	}
-}

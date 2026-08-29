@@ -158,14 +158,9 @@ func runServiceListen(sockHandler sockhandler.SockHandler, numberHandler numberh
 // runServiceSubscribe runs the subscribed event handler
 func runServiceSubscribe(sockHandler sockhandler.SockHandler, numberHandler numberhandler.NumberHandler) error {
 
-	subscribeTargets := []string{
-		string(commonoutline.QueueNameFlowEvent),
-		string(commonoutline.QueueNameCustomerEvent),
-	}
 	subHandler := subscribehandler.NewSubscribeHandler(
 		sockHandler,
 		string(commonoutline.QueueNameNumberSubscribe),
-		subscribeTargets,
 		numberHandler,
 	)
 

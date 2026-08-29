@@ -50,7 +50,7 @@ Requests arrive via RabbitMQ queue `bin-manager.agent-manager.request`. The `lis
 
 ## Events Consumed
 
-Since VOIP-1406 the subscribe queue `bin-manager.agent-manager.subscribe` receives its service events through pattern bindings on the global topic exchange `bin-manager.event` (declared idempotently at boot), one pattern per dispatch pair:
+Since VOIP-1406 the subscribe queue `bin-manager.agent-manager.subscribe` receives its service events through pattern bindings on the global topic exchange `bin-manager.event` (declared idempotently at boot), one pattern per dispatch pair. Since VOIP-1407 this topic-pattern binding is the **sole intake mechanism** for these events:
 
 | Pattern | Dispatch |
 |---------|----------|
@@ -59,16 +59,16 @@ Since VOIP-1406 the subscribe queue `bin-manager.agent-manager.subscribe` receiv
 | `customer-manager.customer.*.deleted` | customer deletion cleanup |
 | `customer-manager.customer.*.created` | customer creation handling |
 
-The exact pattern set is pinned by `pkg/subscribehandler/binding_golden_test.go`. Retained legs:
+The exact pattern set is pinned by `pkg/subscribehandler/binding_golden_test.go`.
 
-- The VOIP-1258 webhook-topic bind (`#` on `bin-manager.webhook-manager.event.topic`) is unchanged and coexists with the new bindings.
-- The fanout `QueueSubscribe` calls to `bin-manager.call-manager.event` and `bin-manager.customer-manager.event` remain in `Run()` as the rollback surface until VOIP-1407; on a fully successful topic binding, the queue is unbound from both fanout exchanges at boot (bind-new-before-unbind-old, all-or-nothing with best-effort rollback).
+- The VOIP-1258 webhook-topic bind (`#` on `bin-manager.webhook-manager.event.topic`) is a separate, unrelated migration and is unchanged by VOIP-1407; it still coexists with the bindings above.
+- The old per-service fanout subscriptions (`QueueSubscribe` to `bin-manager.call-manager.event` and `bin-manager.customer-manager.event`) and the fanout-unbind step that used to follow a successful topic bind have been removed from `Run()` entirely (VOIP-1407). A topic-pattern bind failure now returns a fatal error from `Run()` immediately; there is no fanout fallback left to degrade to.
 
 ## Events Published
 
-Exchange: `bin-manager.agent-manager.event` (fanout, system of record) and — since VOIP-1405 — the global topic exchange `bin-manager.event`.
+Exchange: the global topic exchange `bin-manager.event`, routing key `agent-manager.<resource>.<subscription-id>.<action>`.
 
-Both `cmd/agent-manager` and `cmd/agent-control` construct their NotifyHandler with `notifyhandler.WithGlobalTopicPublish()`, so every event is published twice: once to the per-service fanout exchange (unchanged) and once to the global topic exchange with the routing key `agent-manager.<resource>.<subscription-id>.<action>`. Both construction sites must stay in lockstep on this option — enabling it in only one would leave consumers with gaps depending on which process published. A topic publish failure never propagates to the caller and never affects the fanout publish.
+Both `cmd/agent-manager` and `cmd/agent-control` construct their NotifyHandler with `notifyhandler.WithGlobalTopicPublish()`. **As of VOIP-1407, this is the sole publish path** — the previous per-service fanout exchange `bin-manager.agent-manager.event` is no longer published to, and (per the operational runbook in `docs/reference/rabbitmq-queues-reference.md`) will eventually be deleted from the broker. This service's publish-side behavior change comes entirely from `bin-common-handler/pkg/notifyhandler`'s shared library update (its own consumer-side subscribehandler code also changed separately for VOIP-1407, see the Events Consumed section above). Both construction sites must stay in lockstep on this option — enabling it in only one would leave consumers with gaps depending on which process published. A topic publish failure now propagates to the caller as an error (previously it was swallowed silently).
 
 Every agent event is addressed by the agent's OWN id (the default top-level `id` fallback; no `eventtopic.SubscriptionIdentifier` override exists in this service), so a consumer following one agent binds `agent-manager.agent.<agent-id>.#` and receives all four event types. Note `agent_status_updated` splits on the FIRST underscore, keeping the resource segment `agent` and putting `status_updated` in the action segment. The exact keys are pinned by `models/agent/routingkey_golden_test.go`; the schema lives in the monorepo `docs/plans/2026-08-27-voip-1404-global-topic-exchange-design.md`.
 

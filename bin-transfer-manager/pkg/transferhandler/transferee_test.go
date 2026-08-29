@@ -9,7 +9,6 @@ import (
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
 	"github.com/gofrs/uuid"
@@ -46,12 +45,10 @@ func Test_TransfereeHangup_type_blind(t *testing.T) {
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := transferHandler{
-				reqHandler:    mockReq,
-				db:            mockDB,
-				notifyHandler: mockNotify,
+				reqHandler: mockReq,
+				db:         mockDB,
 			}
 			ctx := context.Background()
 
@@ -111,12 +108,10 @@ func Test_transfereeHangupTypeAttended(t *testing.T) {
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := transferHandler{
-				reqHandler:    mockReq,
-				db:            mockDB,
-				notifyHandler: mockNotify,
+				reqHandler: mockReq,
+				db:         mockDB,
 			}
 			ctx := context.Background()
 
@@ -180,12 +175,10 @@ func Test_TransfereeAnswer_TypeBlind(t *testing.T) {
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := transferHandler{
-				reqHandler:    mockReq,
-				db:            mockDB,
-				notifyHandler: mockNotify,
+				reqHandler: mockReq,
+				db:         mockDB,
 			}
 			ctx := context.Background()
 

@@ -14,7 +14,7 @@
 | `cmd/direct-control` | CLI tool for direct DB/cache management (bypasses RabbitMQ) |
 | `pkg/config` | Configuration singleton via Cobra + Viper |
 | `pkg/listenhandler` | RabbitMQ RPC request handler with regex URI routing |
-| `pkg/subscribehandler` | Event subscriber for customer deletion cascades — consumes via a pattern binding on the global topic exchange `bin-manager.event` (VOIP-1406); the fanout leg is retained as rollback surface until VOIP-1407 |
+| `pkg/subscribehandler` | Event subscriber for customer deletion cascades — consumes via a pattern binding on the global topic exchange `bin-manager.event`, the sole intake mechanism since VOIP-1407 |
 | `pkg/directhandler` | Core business logic for direct hash CRUD and regeneration |
 | `pkg/dbhandler` | MySQL operations via `Masterminds/squirrel` |
 | `pkg/cachehandler` | Redis cache for hash-based lookups |
@@ -63,13 +63,13 @@ SubscribeHandler (`pkg/subscribehandler/`) consumes from the queue `bin-manager.
 |---------|---------|
 | `customer-manager.customer.*.deleted` | Customer deletion — cascade-deletes all direct records of that customer |
 
-The old per-service **fanout subscription is retained in code as the rollback surface until VOIP-1407** (`QueueSubscribe` to `bin-manager.customer-manager.event`); on each boot Run() re-subscribes it, then unbinds it again after the topic bind succeeds.
+As of VOIP-1407 this topic-pattern binding is the **sole intake mechanism**; the old per-service fanout subscription (`QueueSubscribe` to `bin-manager.customer-manager.event`) has been removed from `Run()` entirely, along with the fanout-unbind step that used to follow a successful topic bind. A topic bind failure is now fatal to `Run()` — there is no fanout fallback left to degrade to.
 
 ## Events Published
 
-Exchange: `bin-manager.direct-manager.event` (fanout, system of record) and — since VOIP-1405 — the global topic exchange `bin-manager.event`.
+Exchange: the global topic exchange `bin-manager.event`, routing key `direct-manager.<resource>.<subscription-id>.<action>`.
 
-Both `cmd/direct-manager` and `cmd/direct-control` construct their NotifyHandler with `notifyhandler.WithGlobalTopicPublish()`, so every event is published twice: once to the per-service fanout exchange (unchanged) and once to the global topic exchange with the routing key `direct-manager.<resource>.<subscription-id>.<action>`. Both construction sites must stay in lockstep on this option — enabling it in only one would leave consumers with gaps depending on which process published. A topic publish failure never propagates to the caller and never affects the fanout publish.
+Both `cmd/direct-manager` and `cmd/direct-control` construct their NotifyHandler with `notifyhandler.WithGlobalTopicPublish()`. **As of VOIP-1407, this is the sole publish path** — the previous per-service fanout exchange `bin-manager.direct-manager.event` is no longer published to, and (per the operational runbook in `docs/reference/rabbitmq-queues-reference.md`) will eventually be deleted from the broker. This service's publish-side behavior change comes entirely from `bin-common-handler/pkg/notifyhandler`'s shared library update (its own consumer-side subscribehandler code also changed separately for VOIP-1407, see the Event Subscriptions section above). Both construction sites must stay in lockstep on this option — enabling it in only one would leave consumers with gaps depending on which process published. A topic publish failure now propagates to the caller as an error (previously it was swallowed silently).
 
 Every direct event is addressed by the direct's OWN id (the default top-level `id` fallback; no `eventtopic.SubscriptionIdentifier` override exists in this service) — never by the `resource_id` of the agent/queue/conference/... it fronts. A consumer following one direct binds `direct-manager.direct.<direct-id>.#`; a regenerate keeps the same id and only rotates the hash, so an instance binding survives regeneration. The exact keys are pinned by `models/direct/routingkey_golden_test.go`; the schema lives in the monorepo `docs/plans/2026-08-27-voip-1404-global-topic-exchange-design.md`.
 

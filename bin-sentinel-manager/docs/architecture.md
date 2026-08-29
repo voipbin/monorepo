@@ -65,13 +65,17 @@ Context cancellation propagates via a `stopCh` channel into `podInformer.Run(sto
 
 All outputs are RabbitMQ events published to `QueueNameSentinelEvent`. The payload is the full `corev1.Pod` struct serialized by `notifyhandler.PublishEvent`. Downstream consumers (e.g., `bin-call-manager`) match pods to active calls and perform cleanup when an Asterisk pod disappears unexpectedly.
 
-### Global topic exchange (VOIP-1404 / VOIP-1405)
+### Global topic exchange (VOIP-1404 / VOIP-1405 / VOIP-1407)
 
 `cmd/sentinel-manager/main.go` — the service's only NotifyHandler construction site — constructs
-its NotifyHandler with `notifyhandler.WithGlobalTopicPublish()`. Every event is therefore published
-twice: once to the per-service fanout exchange `bin-manager.sentinel-manager.event` (unchanged,
-still the system of record) and once to the global topic exchange `bin-manager.event`. A topic
-publish failure never propagates to the caller and never affects the fanout publish.
+its NotifyHandler with `notifyhandler.WithGlobalTopicPublish()`. Every event is published to the
+global topic exchange `bin-manager.event`. **As of VOIP-1407, this is the sole publish path** — the
+previous per-service fanout exchange `bin-manager.sentinel-manager.event` is no longer published to,
+and (per the operational runbook in `docs/reference/rabbitmq-queues-reference.md`) will eventually be
+deleted from the broker. No code in this service changed for VOIP-1407; the behavior change (dual
+publish → topic-only) comes entirely from `bin-common-handler/pkg/notifyhandler`'s shared library
+update. A topic publish failure now propagates to the caller as an error (previously it was
+swallowed silently).
 
 **sentinel-manager is the one documented placeholder-by-design publisher.** The published payload
 is the raw `*corev1.Pod` handed over by the informer, and a `corev1.Pod` carries no top-level `id`

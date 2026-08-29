@@ -32,41 +32,22 @@ func Test_topicPatterns_Golden(t *testing.T) {
 	}
 }
 
-// Test_fanoutUnbindTargets_Golden pins the fanout event exchanges the subscribe
-// queue unbinds from after a fully successful topic binding (VOIP-1406). It must
-// equal the service's fanout subscribeTargets (agent-manager has no retained
-// asterisk leg).
-func Test_fanoutUnbindTargets_Golden(t *testing.T) {
-	expectedTargets := []string{
-		"bin-manager.call-manager.event",
-		"bin-manager.customer-manager.event",
-	}
-
-	if len(fanoutUnbindTargets) != len(expectedTargets) {
-		t.Fatalf("fanoutUnbindTargets count mismatch. expected: %d, got: %d (%v)", len(expectedTargets), len(fanoutUnbindTargets), fanoutUnbindTargets)
-	}
-
-	for i, expected := range expectedTargets {
-		if fanoutUnbindTargets[i] != expected {
-			t.Errorf("fanoutUnbindTargets[%d] mismatch. expected: %s, got: %s", i, expected, fanoutUnbindTargets[i])
-		}
-	}
-}
-
 // Test_fanoutUnbindTargets_Retains1258TopicBind pins that the VOIP-1258
-// webhook-topic cutover is untouched by VOIP-1406: the 1258 topic exchange the
-// queue binds with "#" inside Run() is NOT in the fanout unbind set, and its "#"
-// pattern is NOT in topicPatterns (the 1258 bind is a separate, retained bind on
-// a different exchange).
+// webhook-topic cutover is untouched by VOIP-1407/VOIP-1406: the 1258 topic
+// exchange the queue binds with "#" inside Run() is a different exchange than the
+// global topic exchange bin-manager.event, and its "#" pattern is NOT in
+// topicPatterns (the 1258 bind is a separate, retained bind on a different
+// exchange, unrelated to the fanout-vs-topic cutover VOIP-1407 performs).
 func Test_fanoutUnbindTargets_Retains1258TopicBind(t *testing.T) {
 	if string(commonoutline.QueueNameWebhookEventTopic) != "bin-manager.webhook-manager.event.topic" {
 		t.Errorf("QueueNameWebhookEventTopic value drifted. expected: bin-manager.webhook-manager.event.topic, got: %s", string(commonoutline.QueueNameWebhookEventTopic))
 	}
 
-	for _, target := range fanoutUnbindTargets {
-		if target == string(commonoutline.QueueNameWebhookEventTopic) {
-			t.Errorf("fanoutUnbindTargets must NOT contain the retained VOIP-1258 topic exchange %s", target)
-		}
+	// the VOIP-1258 topic exchange must stay distinct from the VOIP-1406 global
+	// topic exchange bin-manager.event -- the retained block binds/unbinds on its
+	// own exchange, never on bin-manager.event.
+	if string(commonoutline.QueueNameWebhookEventTopic) == string(commonoutline.QueueNameEvent) {
+		t.Errorf("QueueNameWebhookEventTopic must NOT equal the global topic exchange QueueNameEvent (%s) -- the retained VOIP-1258 block binds on a separate exchange", string(commonoutline.QueueNameEvent))
 	}
 
 	for _, pattern := range topicPatterns {

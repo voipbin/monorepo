@@ -125,7 +125,7 @@ func run(db *sql.DB) error {
 	localAddress := os.Getenv("POD_IP")
 	podID := os.Getenv("HOSTNAME")
 
-	ttsHandler := ttshandler.NewTTSHandler(config.Get().AWSAccessKey, config.Get().AWSSecretKey, config.Get().GCPTTSEndpoint, "/shared-data", localAddress, reqHandler, notifyHandler)
+	ttsHandler := ttshandler.NewTTSHandler(config.Get().AWSAccessKey, config.Get().AWSSecretKey, config.Get().GCPTTSEndpoint, "/shared-data", localAddress, reqHandler)
 	if ttsHandler == nil {
 		// Fail fast: a nil handler would otherwise sit in the listener and
 		// nil-panic on the first /v1/speeches request (the 2026-08-22
@@ -186,4 +186,3 @@ func runListenPod(sockHandler sockhandler.SockHandler, ttsHandler ttshandler.TTS
 
 	return nil
 }
-

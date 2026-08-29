@@ -188,12 +188,7 @@ func runSubscribe(sockHandler sockhandler.SockHandler, extensionHandler extensio
 		"func": "runSubscribe",
 	})
 
-	subscribeTargets := []string{
-		string(commonoutline.QueueNameCustomerEvent),
-	}
-	log.WithField("subscribe_targets", subscribeTargets).Debugf("Subscribe target details. len: %d", len(subscribeTargets))
-
-	subHandler := subscribehandler.NewSubscribeHandler(sockHandler, string(commonoutline.QueueNameRegistrarSubscribe), subscribeTargets, extensionHandler, trunkHandler, customerDomainHandler)
+	subHandler := subscribehandler.NewSubscribeHandler(sockHandler, string(commonoutline.QueueNameRegistrarSubscribe), extensionHandler, trunkHandler, customerDomainHandler)
 
 	// run
 	if err := subHandler.Run(); err != nil {

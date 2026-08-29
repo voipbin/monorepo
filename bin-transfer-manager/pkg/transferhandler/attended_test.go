@@ -11,7 +11,6 @@ import (
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -64,12 +63,10 @@ func Test_attendedInit(t *testing.T) {
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := transferHandler{
-				reqHandler:    mockReq,
-				db:            mockDB,
-				notifyHandler: mockNotify,
+				reqHandler: mockReq,
+				db:         mockDB,
 			}
 			ctx := context.Background()
 
@@ -129,12 +126,10 @@ func Test_attendedCancel(t *testing.T) {
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := transferHandler{
-				reqHandler:    mockReq,
-				db:            mockDB,
-				notifyHandler: mockNotify,
+				reqHandler: mockReq,
+				db:         mockDB,
 			}
 			ctx := context.Background()
 
@@ -246,13 +241,11 @@ func Test_attendedExecute(t *testing.T) {
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := transferHandler{
-				utilHandler:   mockUtil,
-				reqHandler:    mockReq,
-				db:            mockDB,
-				notifyHandler: mockNotify,
+				utilHandler: mockUtil,
+				reqHandler:  mockReq,
+				db:          mockDB,
 			}
 			ctx := context.Background()
 

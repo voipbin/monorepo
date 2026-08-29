@@ -7,7 +7,6 @@ import (
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -78,13 +77,11 @@ func TestCreate(t *testing.T) {
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := &transferHandler{
-				utilHandler:   utilhandler.NewUtilHandler(),
-				reqHandler:    mockReq,
-				db:            mockDB,
-				notifyHandler: mockNotify,
+				utilHandler: utilhandler.NewUtilHandler(),
+				reqHandler:  mockReq,
+				db:          mockDB,
 			}
 
 			ctx := context.Background()
@@ -164,13 +161,11 @@ func TestGet(t *testing.T) {
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := &transferHandler{
-				utilHandler:   utilhandler.NewUtilHandler(),
-				reqHandler:    mockReq,
-				db:            mockDB,
-				notifyHandler: mockNotify,
+				utilHandler: utilhandler.NewUtilHandler(),
+				reqHandler:  mockReq,
+				db:          mockDB,
 			}
 
 			ctx := context.Background()
@@ -235,13 +230,11 @@ func TestGetByGroupcallID(t *testing.T) {
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := &transferHandler{
-				utilHandler:   utilhandler.NewUtilHandler(),
-				reqHandler:    mockReq,
-				db:            mockDB,
-				notifyHandler: mockNotify,
+				utilHandler: utilhandler.NewUtilHandler(),
+				reqHandler:  mockReq,
+				db:          mockDB,
 			}
 
 			ctx := context.Background()
@@ -303,13 +296,11 @@ func TestGetByTransfererCallID(t *testing.T) {
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := &transferHandler{
-				utilHandler:   utilhandler.NewUtilHandler(),
-				reqHandler:    mockReq,
-				db:            mockDB,
-				notifyHandler: mockNotify,
+				utilHandler: utilhandler.NewUtilHandler(),
+				reqHandler:  mockReq,
+				db:          mockDB,
 			}
 
 			ctx := context.Background()
@@ -393,13 +384,11 @@ func Test_updateTransfereeCallID(t *testing.T) {
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := &transferHandler{
-				utilHandler:   utilhandler.NewUtilHandler(),
-				reqHandler:    mockReq,
-				db:            mockDB,
-				notifyHandler: mockNotify,
+				utilHandler: utilhandler.NewUtilHandler(),
+				reqHandler:  mockReq,
+				db:          mockDB,
 			}
 
 			ctx := context.Background()

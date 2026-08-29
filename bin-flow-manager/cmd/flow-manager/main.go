@@ -166,10 +166,7 @@ func runListen(
 
 // runSubscribe runs the subscribed event handler
 func runSubscribe(sockHandler sockhandler.SockHandler, flowHandler flowhandler.FlowHandler, activeflowHandler activeflowhandler.ActiveflowHandler) error {
-	subscribeTargets := []string{
-		string(commonoutline.QueueNameCustomerEvent),
-	}
-	subHandler := subscribehandler.NewSubscribeHandler(sockHandler, string(commonoutline.QueueNameFlowSubscribe), subscribeTargets, flowHandler, activeflowHandler)
+	subHandler := subscribehandler.NewSubscribeHandler(sockHandler, string(commonoutline.QueueNameFlowSubscribe), flowHandler, activeflowHandler)
 
 	if err := subHandler.Run(); err != nil {
 		return err

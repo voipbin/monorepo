@@ -31,8 +31,8 @@ func Test_topicPatterns_golden(t *testing.T) {
 }
 
 // Test_topicPatterns_excludesCallHangup is the §4 negative assertion: the
-// `call-manager/call_hangup` dispatch case is unreachable today (subscribeTargets is
-// customer-only, so EventCallHangup has NEVER run in production) and MUST stay
+// `call-manager/call_hangup` dispatch case is unreachable today (the retained intake
+// is customer-only, so EventCallHangup has NEVER run in production) and MUST stay
 // unreachable -- VOIP-1406 changes where events come from, never what is processed.
 // Binding this pattern would activate the dead case (an unreviewed behavior change;
 // activeflow cleanup on hangup is a latent-bug candidate). Follow-up VOIP-1422 decides
@@ -43,25 +43,6 @@ func Test_topicPatterns_excludesCallHangup(t *testing.T) {
 	for _, pattern := range topicPatterns {
 		if pattern == excluded {
 			t.Errorf("topicPatterns must NOT contain the excluded pattern %q (VOIP-1406 design §4, follow-up VOIP-1422)", excluded)
-		}
-	}
-}
-
-// Test_fanoutUnbindTargets_golden pins the fanout exchanges flow-manager unbinds after a
-// fully successful topic bind (VOIP-1406). This is the FULL subscribeTargets set wired in
-// cmd/flow-manager: the customer-manager event exchange only.
-func Test_fanoutUnbindTargets_golden(t *testing.T) {
-	expected := []string{
-		"bin-manager.customer-manager.event",
-	}
-
-	if len(fanoutUnbindTargets) != len(expected) {
-		t.Fatalf("fanoutUnbindTargets count mismatch. expected: %d, got: %d (%v)", len(expected), len(fanoutUnbindTargets), fanoutUnbindTargets)
-	}
-
-	for i, target := range expected {
-		if fanoutUnbindTargets[i] != target {
-			t.Errorf("fanoutUnbindTargets[%d] mismatch. expected: %q, got: %q", i, target, fanoutUnbindTargets[i])
 		}
 	}
 }

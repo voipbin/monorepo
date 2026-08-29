@@ -12,9 +12,11 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
+	commonreq "monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-talk-manager/internal/config"
@@ -54,7 +56,8 @@ func initHandlers() (chathandler.ChatHandler, messagehandler.MessageHandler, par
 
 	utilHandler := utilhandler.NewUtilHandler()
 	dbHandler := dbhandler.New(db, redisClient, utilHandler)
-	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, nil, "", serviceName)
+	reqHandler := commonreq.NewRequestHandler(sockHandler, commonoutline.ServiceNameTalkManager)
+	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameTalkEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 
 	participantHandler := participanthandler.New(dbHandler, sockHandler, notifyHandler, utilHandler)
 	chatHandler := chathandler.New(dbHandler, participantHandler, notifyHandler, utilHandler)

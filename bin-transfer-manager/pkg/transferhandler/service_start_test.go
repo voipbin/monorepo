@@ -11,7 +11,6 @@ import (
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -96,13 +95,11 @@ func TestServiceStart_BlindTransfer(t *testing.T) {
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := &transferHandler{
-				utilHandler:   utilhandler.NewUtilHandler(),
-				reqHandler:    mockReq,
-				db:            mockDB,
-				notifyHandler: mockNotify,
+				utilHandler: utilhandler.NewUtilHandler(),
+				reqHandler:  mockReq,
+				db:          mockDB,
 			}
 
 			ctx := context.Background()
@@ -212,13 +209,11 @@ func TestServiceStart_AttendedTransfer(t *testing.T) {
 
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := &transferHandler{
-				utilHandler:   utilhandler.NewUtilHandler(),
-				reqHandler:    mockReq,
-				db:            mockDB,
-				notifyHandler: mockNotify,
+				utilHandler: utilhandler.NewUtilHandler(),
+				reqHandler:  mockReq,
+				db:          mockDB,
 			}
 
 			ctx := context.Background()
@@ -274,13 +269,11 @@ func TestServiceStart_InvalidType(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 	h := &transferHandler{
-		utilHandler:   utilhandler.NewUtilHandler(),
-		reqHandler:    mockReq,
-		db:            mockDB,
-		notifyHandler: mockNotify,
+		utilHandler: utilhandler.NewUtilHandler(),
+		reqHandler:  mockReq,
+		db:          mockDB,
 	}
 
 	ctx := context.Background()
@@ -315,9 +308,8 @@ func TestNewTransferHandler(t *testing.T) {
 
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
-	h := NewTransferHandler(mockReq, mockNotify, mockDB)
+	h := NewTransferHandler(mockReq, mockDB)
 
 	if h == nil {
 		t.Error("Expected handler but got nil")

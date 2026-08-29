@@ -22,8 +22,8 @@ import (
 	"github.com/spf13/cobra"
 
 	"monorepo/bin-ai-manager/internal/config"
-	"monorepo/bin-ai-manager/pkg/aicallhandler"
 	"monorepo/bin-ai-manager/pkg/aiaudithandler"
+	"monorepo/bin-ai-manager/pkg/aicallhandler"
 	"monorepo/bin-ai-manager/pkg/aihandler"
 	"monorepo/bin-ai-manager/pkg/aiprompthistoryhandler"
 	"monorepo/bin-ai-manager/pkg/aipromptproposalhandler"
@@ -188,18 +188,10 @@ func runSubscribe(
 	messageHandler messagehandler.MessageHandler,
 ) error {
 
-	subscribeTargets := []string{
-		string(commonoutline.QueueNameCallEvent),
-		string(commonoutline.QueueNameTranscribeEvent),
-		string(commonoutline.QueueNameTTSEvent),
-		string(commonoutline.QueueNamePipecatEvent),
-	}
-
 	subHandler := subscribehandler.NewSubscribeHandler(
 		string(serviceName),
 		sockHandler,
 		string(commonoutline.QueueNameAISubscribe),
-		subscribeTargets,
 		aicallHandler,
 		summaryHandler,
 		messageHandler,

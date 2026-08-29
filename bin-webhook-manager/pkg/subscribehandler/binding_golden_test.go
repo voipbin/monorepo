@@ -28,24 +28,3 @@ func Test_BindingGolden_TopicPatterns(t *testing.T) {
 		}
 	}
 }
-
-// Test_BindingGolden_FanoutUnbindTargets pins the legacy fanout exchanges webhook-manager
-// unbinds after a full topic-bind success. webhook-manager has no retained fanout leg
-// (no asterisk subscription), so this is the complete subscribe-target set that cmd joins
-// into the comma-joined subscribeTargets string.
-func Test_BindingGolden_FanoutUnbindTargets(t *testing.T) {
-	expected := []string{
-		"bin-manager.customer-manager.event",
-		"bin-manager.flow-manager.event",
-	}
-
-	if len(fanoutUnbindTargets) != len(expected) {
-		t.Fatalf("Wrong fanoutUnbindTargets count. expect: %d, got: %d (%v)", len(expected), len(fanoutUnbindTargets), fanoutUnbindTargets)
-	}
-
-	for i, target := range expected {
-		if fanoutUnbindTargets[i] != target {
-			t.Errorf("Wrong fanoutUnbindTargets[%d]. expect: %s, got: %s", i, target, fanoutUnbindTargets[i])
-		}
-	}
-}

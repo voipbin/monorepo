@@ -214,7 +214,6 @@ func TestNewSubscribeHandler(t *testing.T) {
 	h := NewSubscribeHandler(
 		mockSock,
 		"test-queue",
-		[]string{"test-target"},
 		mockConf,
 		mockConfCall,
 	)

@@ -28,12 +28,10 @@ func Test_NewSubscribeHandler(t *testing.T) {
 	mockConversation := conversationhandler.NewMockConversationHandler(mc)
 
 	subscribeQueue := "test-queue"
-	subscribeTargets := []string{"target1", "target2"}
 
 	h := NewSubscribeHandler(
 		mockSock,
 		subscribeQueue,
-		subscribeTargets,
 		mockAccount,
 		mockConversation,
 	)
@@ -141,14 +139,12 @@ func Test_processEvent_UnknownEvent(t *testing.T) {
 	h.processEvent(event)
 }
 
-// Test_Run_BindsTopicExchangeBeforeConsuming verifies the VOIP-1406 migration
-// sequence inside Run(): QueueCreate -> every fanout QueueSubscribe ->
-// TopicCreateWithKind(bin-manager.event) -> QueueBind(every topicPatterns entry)
-// -> QueueUnbind(every fanoutUnbindTargets entry), all strictly BEFORE the
-// ConsumeMessage goroutine is observed. The bind/unbind RPCs and ConsumeMessage's
-// internal basic.consume share the queue's AMQP channel; racing them closes the
-// channel with a 503 and the pod silently never consumes (VOIP-1258 PR #1101
-// production incident, 2026-07-14).
+// Test_Run_BindsTopicExchangeBeforeConsuming verifies the VOIP-1407 sequence inside
+// Run(): QueueCreate -> TopicCreateWithKind(bin-manager.event) -> QueueBind(every
+// topicPatterns entry), all strictly BEFORE the ConsumeMessage goroutine is
+// observed. The bind RPCs and ConsumeMessage's internal basic.consume share the
+// queue's AMQP channel; racing them closes the channel with a 503 and the pod
+// silently never consumes (VOIP-1258 PR #1101 production incident, 2026-07-14).
 func Test_Run_BindsTopicExchangeBeforeConsuming(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
@@ -158,24 +154,18 @@ func Test_Run_BindsTopicExchangeBeforeConsuming(t *testing.T) {
 	mockConversation := conversationhandler.NewMockConversationHandler(mc)
 
 	queueName := string(commonoutline.QueueNameConversationSubscribe)
-	subscribeTargets := []string{
-		string(commonoutline.QueueNameMessageEvent),
-		string(commonoutline.QueueNameEmailEvent),
-		string(commonoutline.QueueNameWebchatEvent),
-	}
 
-	// callOrderCh, not a shared slice: QueueBind/QueueUnbind run synchronously on
-	// the caller's goroutine, but ConsumeMessage's callback runs on Run()'s
+	// callOrderCh, not a shared slice: QueueBind runs synchronously on the
+	// caller's goroutine, but ConsumeMessage's callback runs on Run()'s
 	// internal goroutine -- appending to a plain slice from both would be a data
 	// race. Buffered channel idiom follows bin-agent-manager's
 	// Test_Run_BindsTopicExchangeBeforeReturning.
 	callOrderCh := make(chan string, 16)
 
 	// number of synchronous broker operations that must ALL be recorded before
-	// ConsumeMessage may fire: QueueCreate + 3 fanout QueueSubscribe +
-	// TopicCreateWithKind + len(topicPatterns) QueueBinds +
-	// len(fanoutUnbindTargets) QueueUnbinds.
-	syncOps := 1 + len(subscribeTargets) + 1 + len(topicPatterns) + len(fanoutUnbindTargets)
+	// ConsumeMessage may fire: QueueCreate + TopicCreateWithKind +
+	// len(topicPatterns) QueueBinds.
+	syncOps := 1 + 1 + len(topicPatterns)
 
 	calls := []any{
 		mockSock.EXPECT().QueueCreate(queueName, "normal").
@@ -183,35 +173,16 @@ func Test_Run_BindsTopicExchangeBeforeConsuming(t *testing.T) {
 				callOrderCh <- "QueueCreate"
 				return nil
 			}),
-	}
-	for _, target := range subscribeTargets {
-		calls = append(calls, mockSock.EXPECT().QueueSubscribe(queueName, target).
-			DoAndReturn(func(_, _ string) error {
-				callOrderCh <- "QueueSubscribe"
-				return nil
-			}))
-	}
-
-	// the VOIP-1406 bin-manager.event block: declare, bind every pattern, unbind
-	// every fanout target -- strictly before ConsumeMessage.
-	calls = append(calls,
 		mockSock.EXPECT().TopicCreateWithKind(string(commonoutline.QueueNameEvent), "topic").
 			DoAndReturn(func(_, _ string) error {
 				callOrderCh <- "TopicCreateWithKind"
 				return nil
 			}),
-	)
+	}
 	for _, pattern := range topicPatterns {
 		calls = append(calls, mockSock.EXPECT().QueueBind(queueName, pattern, string(commonoutline.QueueNameEvent), false, nil).
 			DoAndReturn(func(_, _, _ string, _ bool, _ interface{}) error {
 				callOrderCh <- "QueueBind:topic"
-				return nil
-			}))
-	}
-	for _, target := range fanoutUnbindTargets {
-		calls = append(calls, mockSock.EXPECT().QueueUnbind(queueName, "", target, nil).
-			DoAndReturn(func(_, _, _ string, _ interface{}) error {
-				callOrderCh <- "QueueUnbind:fanout"
 				return nil
 			}))
 	}
@@ -227,7 +198,7 @@ func Test_Run_BindsTopicExchangeBeforeConsuming(t *testing.T) {
 			return nil
 		}).AnyTimes()
 
-	h := NewSubscribeHandler(mockSock, queueName, subscribeTargets, mockAccount, mockConversation)
+	h := NewSubscribeHandler(mockSock, queueName, mockAccount, mockConversation)
 
 	if err := h.Run(); err != nil {
 		t.Fatalf("Run() returned an unexpected error: %v", err)
@@ -255,7 +226,7 @@ func Test_Run_BindsTopicExchangeBeforeConsuming(t *testing.T) {
 		// before the full synchronous chain completed, the ordering bug is back.
 		if c == "ConsumeMessage" {
 			if seenSync < syncOps {
-				t.Fatalf("ConsumeMessage was observed before the synchronous bind/unbind chain completed (%d/%d) -- ordering regression. callOrder: %v", seenSync, syncOps, callOrder)
+				t.Fatalf("ConsumeMessage was observed before the synchronous bind chain completed (%d/%d) -- ordering regression. callOrder: %v", seenSync, syncOps, callOrder)
 			}
 			continue
 		}

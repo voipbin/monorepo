@@ -9,7 +9,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
-	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-tts-manager/models/tts"
 	"monorepo/bin-tts-manager/pkg/audiohandler"
@@ -26,7 +25,6 @@ type ttsHandler struct {
 	bucketHandler buckethandler.BucketHandler
 
 	requestHandler requesthandler.RequestHandler
-	notifyHandler  notifyhandler.NotifyHandler
 }
 
 var (
@@ -104,7 +102,6 @@ func NewTTSHandler(
 	mediaBucketDirectory string,
 	localAddress string,
 	requestHandler requesthandler.RequestHandler,
-	notifyHandler notifyhandler.NotifyHandler,
 ) TTSHandler {
 	log := logrus.WithFields(logrus.Fields{
 		"func":                   "NewTTSHandler",
@@ -131,7 +128,6 @@ func NewTTSHandler(
 		bucketHandler: bucketHandler,
 
 		requestHandler: requestHandler,
-		notifyHandler:  notifyHandler,
 	}
 
 	return h

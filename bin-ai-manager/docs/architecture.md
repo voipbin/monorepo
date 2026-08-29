@@ -27,8 +27,8 @@ cmd/ai-manager/main.go
 | Layer | Package(s) | Responsibility |
 |-------|-----------|----------------|
 | Transport | `pkg/listenhandler` | Receives RPC requests from `bin-manager.ai-manager.request`, routes by URI regex |
-| Transport | `pkg/subscribehandler` | Consumes call/pipecat events via pattern bindings on the global topic exchange `bin-manager.event` (VOIP-1406); fanout legs retained as rollback surface until VOIP-1407 |
-| Transport | `notifyhandler` (via bin-common-handler) | Publishes events to the fanout exchange `bin-manager.ai-manager.event` and, since VOIP-1405, dual-publishes the same payload to the global topic exchange `bin-manager.event` |
+| Transport | `pkg/subscribehandler` | Consumes call/pipecat events via pattern bindings on the global topic exchange `bin-manager.event` (VOIP-1406) — the sole intake mechanism since VOIP-1407 removed the old per-service fanout subscriptions |
+| Transport | `notifyhandler` (via bin-common-handler) | Publishes events to the global topic exchange `bin-manager.event`; as of VOIP-1407 this is the sole publish path (the fanout exchange `bin-manager.ai-manager.event` is no longer published to) |
 | Domain | `pkg/aihandler` | AI configuration CRUD (engine type, model, TTS/STT settings, tool list) |
 | Domain | `pkg/aicallhandler` | AIcall session lifecycle: initiating → progressing → terminating → terminated |
 | Domain | `pkg/messagehandler` | Message storage, engine selection, real-time transcript processing |
@@ -84,7 +84,7 @@ ListenHandler (`pkg/listenhandler/`) routes by regex URI pattern over the shared
 
 ## Event Subscriptions
 
-SubscribeHandler (`pkg/subscribehandler/`) consumes from the queue `bin-manager.ai-manager.subscribe`. Since VOIP-1406 the queue is bound to the **global topic exchange `bin-manager.event`** with one pattern per dispatched (publisher, event-type) pair — 10 patterns total, pinned byte-for-byte by the binding golden test (`pkg/subscribehandler/binding_golden_test.go`):
+SubscribeHandler (`pkg/subscribehandler/`) consumes from the queue `bin-manager.ai-manager.subscribe`. Since VOIP-1406 the queue is bound to the **global topic exchange `bin-manager.event`** with one pattern per dispatched (publisher, event-type) pair — 10 patterns total, pinned byte-for-byte by the binding golden test (`pkg/subscribehandler/binding_golden_test.go`). Since VOIP-1407 this topic-pattern binding is the **sole intake mechanism**:
 
 | Pattern | Purpose |
 |---------|---------|
@@ -97,13 +97,13 @@ SubscribeHandler (`pkg/subscribehandler/`) consumes from the queue `bin-manager.
 
 The `conference-manager.conference.*.updated` pair is deliberately NOT bound: its dispatch case is unreachable today and stays that way (VOIP-1406 design §4; follow-up VOIP-1422 decides activate-or-delete).
 
-The old per-service **fanout subscriptions are retained in code as the rollback surface until VOIP-1407** (`QueueSubscribe` to `bin-manager.call-manager.event`, `bin-manager.transcribe-manager.event`, `bin-manager.tts-manager.event`, `bin-manager.pipecat-manager.event`); on each boot Run() re-subscribes them, then unbinds all four again after the topic binds succeed. The transcribe and tts legs were dead binds (zero dispatch cases) and are dropped the same way.
+The old per-service fanout subscriptions (`QueueSubscribe` to `bin-manager.call-manager.event`, `bin-manager.transcribe-manager.event`, `bin-manager.tts-manager.event`, `bin-manager.pipecat-manager.event`) and the fanout-unbind step that used to follow a successful topic bind have been **removed from `Run()` entirely (VOIP-1407)**. The transcribe and tts legs were dead binds (zero dispatch cases) even before removal. A topic-pattern bind failure now returns a fatal error from `Run()` immediately; there is no fanout fallback left to degrade to.
 
 ## Events Published
 
-Exchange: `bin-manager.ai-manager.event` (fanout, system of record) and — since VOIP-1405 — the global topic exchange `bin-manager.event`.
+Exchange: the global topic exchange `bin-manager.event`, routing key `ai-manager.<resource>.<subscription-id>.<action>`.
 
-`cmd/ai-manager` and both NotifyHandler instances inside `cmd/ai-control` construct their NotifyHandler with `notifyhandler.WithGlobalTopicPublish()`, so every event is published twice: once to the per-service fanout exchange (unchanged) and once to the global topic exchange with the routing key `ai-manager.<resource>.<subscription-id>.<action>`. All three construction sites must stay in lockstep on this option — enabling it in only some would leave consumers with gaps depending on which process published. A topic publish failure never propagates to the caller and never affects the fanout publish. See [docs/domain.md](domain.md) for the per-event routing keys and the monorepo `docs/plans/2026-08-27-voip-1404-global-topic-exchange-design.md` for the schema.
+`cmd/ai-manager` and both NotifyHandler instances inside `cmd/ai-control` construct their NotifyHandler with `notifyhandler.WithGlobalTopicPublish()`. **As of VOIP-1407, this is the sole publish path** — the previous per-service fanout exchange `bin-manager.ai-manager.event` is no longer published to, and (per the operational runbook in `docs/reference/rabbitmq-queues-reference.md`) will eventually be deleted from the broker. This service's publish-side behavior change comes entirely from `bin-common-handler/pkg/notifyhandler`'s shared library update (its own consumer-side subscribehandler code also changed separately for VOIP-1407, see the Event Subscriptions section above). All three construction sites must stay in lockstep on this option — enabling it in only some would leave consumers with gaps depending on which process published. A topic publish failure now propagates to the caller as an error (previously it was swallowed silently). See [docs/domain.md](domain.md) for the per-event routing keys and the monorepo `docs/plans/2026-08-27-voip-1404-global-topic-exchange-design.md` for the schema.
 
 | Event type | Trigger |
 |-----------|---------|

@@ -25,7 +25,7 @@ Supporting binary:
 |-------|---------|---------------|
 | Entry | `cmd/number-manager` | Cobra + Viper config, dependency wiring, daemon start |
 | Listen | `pkg/listenhandler` | RabbitMQ RPC routing; dispatches to numberhandler |
-| Subscribe | `pkg/subscribehandler` | Consumes customer/flow events via pattern bindings on the global topic exchange `bin-manager.event` (VOIP-1406); cascading deletes and flow-ref cleanup |
+| Subscribe | `pkg/subscribehandler` | Consumes customer/flow events via pattern bindings on the global topic exchange `bin-manager.event` (sole intake mechanism since VOIP-1407); cascading deletes and flow-ref cleanup |
 | Business | `pkg/numberhandler` | Number CRUD, provider dispatch, billing validation |
 | Provider | `pkg/numberhandlertelnyx` | Telnyx API: purchase, release, list available numbers |
 | Provider | `pkg/numberhandlertwilio` | Twilio API: purchase, release, list available numbers |
@@ -38,7 +38,7 @@ Supporting binary:
 
 ## Event Publishing
 
-Both `cmd/number-manager` and `cmd/number-control` construct their NotifyHandler with `notifyhandler.WithGlobalTopicPublish()`, so every event is published twice: once to the per-service fanout exchange `bin-manager.number-manager.event` (unchanged, still the system of record) and once to the global topic exchange `bin-manager.event` with the routing key `number-manager.number.<number-id>.<action>`. The two cmds must stay in lockstep on this option — enabling it in only one would leave consumers with gaps depending on which process published. A topic publish failure never propagates to the caller and never affects the fanout publish.
+Both `cmd/number-manager` and `cmd/number-control` construct their NotifyHandler with `notifyhandler.WithGlobalTopicPublish()`. **As of VOIP-1407, this is the sole publish path** — the previous per-service fanout exchange `bin-manager.number-manager.event` is no longer published to, and (per the operational runbook in `docs/reference/rabbitmq-queues-reference.md`) will eventually be deleted from the broker. Events publish to the global topic exchange `bin-manager.event` with the routing key `number-manager.number.<number-id>.<action>`. This service's publish-side behavior change comes entirely from `bin-common-handler/pkg/notifyhandler`'s shared library update (its own consumer-side subscribehandler code also changed separately for VOIP-1407, see the Event Subscriptions section below). The two cmds must stay in lockstep on this option — enabling it in only one would leave consumers with gaps depending on which process published. A topic publish failure now propagates to the caller as an error (previously it was swallowed silently).
 
 `numberhandler.dbUpdate` picks its publish call from the event type: `number_renewed` goes out through `PublishEvent` (internal bookkeeping, no customer webhook) while `number_updated` goes out through `PublishWebhookEvent`. Both paths generate the same topic routing-key shape with the same `*number.Number` payload, so one instance binding `number-manager.number.<number-id>.#` follows the whole lifecycle.
 
@@ -53,7 +53,7 @@ SubscribeHandler (`pkg/subscribehandler/`) consumes from the queue `bin-manager.
 | `customer-manager.customer.*.deleted` | Customer deletion — releases all of the customer's numbers back to the provider |
 | `flow-manager.flow.*.deleted` | Flow deletion — clears the deleted flow's references from numbers |
 
-The old per-service **fanout subscriptions are retained in code as the rollback surface until VOIP-1407** (`QueueSubscribe` to `bin-manager.flow-manager.event` and `bin-manager.customer-manager.event`); on each boot Run() re-subscribes them, then unbinds them again after the topic binds succeed.
+As of VOIP-1407 this topic-pattern binding is the **sole intake mechanism**; the old per-service fanout subscriptions (`QueueSubscribe` to `bin-manager.flow-manager.event` and `bin-manager.customer-manager.event`) have been removed from `Run()` entirely, along with the fanout-unbind step that used to follow a successful topic bind.
 
 ## Request Routing
 

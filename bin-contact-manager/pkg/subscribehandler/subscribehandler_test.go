@@ -207,7 +207,7 @@ func TestNewSubscribeHandler(t *testing.T) {
 	mockSock := sockhandler.NewMockSockHandler(mc)
 	mockContact := contacthandler.NewMockContactHandler(mc)
 
-	h := NewSubscribeHandler(mockSock, "test-queue", []string{"target1", "target2"}, mockContact)
+	h := NewSubscribeHandler(mockSock, "test-queue", mockContact)
 	if h == nil {
 		t.Error("NewSubscribeHandler() returned nil")
 	}
@@ -221,10 +221,9 @@ func Test_Run_QueueCreateError(t *testing.T) {
 	mockContact := contacthandler.NewMockContactHandler(mc)
 
 	h := &subscribeHandler{
-		sockHandler:      mockSock,
-		subscribeQueue:   "test-queue",
-		subscribeTargets: []string{"target1"},
-		contactHandler:   mockContact,
+		sockHandler:    mockSock,
+		subscribeQueue: "test-queue",
+		contactHandler: mockContact,
 	}
 
 	mockSock.EXPECT().QueueCreate("test-queue", "normal").Return(fmt.Errorf("queue create error"))
@@ -235,29 +234,9 @@ func Test_Run_QueueCreateError(t *testing.T) {
 	}
 }
 
-func Test_Run_SubscribeError(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSock := sockhandler.NewMockSockHandler(mc)
-	mockContact := contacthandler.NewMockContactHandler(mc)
-
-	h := &subscribeHandler{
-		sockHandler:      mockSock,
-		subscribeQueue:   "test-queue",
-		subscribeTargets: []string{"target1"},
-		contactHandler:   mockContact,
-	}
-
-	mockSock.EXPECT().QueueCreate("test-queue", "normal").Return(nil)
-	mockSock.EXPECT().QueueSubscribe("test-queue", "target1").Return(fmt.Errorf("subscribe error"))
-
-	err := h.Run()
-	if err == nil {
-		t.Error("Run() expected error for subscribe failure")
-	}
-}
-
+// Test_Run_Success verifies the VOIP-1407 sole intake path: QueueCreate ->
+// TopicCreateWithKind -> QueueBind for every topic pattern (see
+// run_sequencing_test.go for the strict-order pins).
 func Test_Run_Success(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
@@ -266,22 +245,15 @@ func Test_Run_Success(t *testing.T) {
 	mockContact := contacthandler.NewMockContactHandler(mc)
 
 	h := &subscribeHandler{
-		sockHandler:      mockSock,
-		subscribeQueue:   "test-queue",
-		subscribeTargets: []string{"target1", "target2"},
-		contactHandler:   mockContact,
+		sockHandler:    mockSock,
+		subscribeQueue: "test-queue",
+		contactHandler: mockContact,
 	}
 
 	mockSock.EXPECT().QueueCreate("test-queue", "normal").Return(nil)
-	mockSock.EXPECT().QueueSubscribe("test-queue", "target1").Return(nil)
-	mockSock.EXPECT().QueueSubscribe("test-queue", "target2").Return(nil)
-	// VOIP-1406 topic migration block (see run_sequencing_test.go for the strict-order pins)
 	mockSock.EXPECT().TopicCreateWithKind(string(commonoutline.QueueNameEvent), "topic").Return(nil)
 	for _, pattern := range topicPatterns {
 		mockSock.EXPECT().QueueBind("test-queue", pattern, string(commonoutline.QueueNameEvent), false, nil).Return(nil)
-	}
-	for _, target := range fanoutUnbindTargets {
-		mockSock.EXPECT().QueueUnbind("test-queue", "", target, nil).Return(nil)
 	}
 	// ConsumeMessage runs in a goroutine, so we use AnyTimes() to avoid blocking
 	mockSock.EXPECT().ConsumeMessage(gomock.Any(), "test-queue", gomock.Any(), false, false, false, 10, gomock.Any()).Return(nil).AnyTimes()

@@ -23,57 +23,12 @@ const (
 	eventChBuffer = 1000
 )
 
-// subscribeTargets lists all service event exchanges to subscribe to.
-var subscribeTargets = []commonoutline.QueueName{
-	commonoutline.QueueNameAIEvent,
-	commonoutline.QueueNameAgentEvent,
-	commonoutline.QueueNameAsteriskEventAll,
-	commonoutline.QueueNameBillingEvent,
-	commonoutline.QueueNameCallEvent,
-	commonoutline.QueueNameCampaignEvent,
-	commonoutline.QueueNameConferenceEvent,
-	commonoutline.QueueNameContactEvent,
-	commonoutline.QueueNameConversationEvent,
-	commonoutline.QueueNameCustomerEvent,
-	commonoutline.QueueNameEmailEvent,
-	commonoutline.QueueNameFlowEvent,
-	commonoutline.QueueNameMessageEvent,
-	commonoutline.QueueNameNumberEvent,
-	commonoutline.QueueNameOutdialEvent,
-	commonoutline.QueueNamePipecatEvent,
-	commonoutline.QueueNameQueueEvent,
-	commonoutline.QueueNameRegistrarEvent,
-	commonoutline.QueueNameRouteEvent,
-	commonoutline.QueueNameSentinelEvent,
-	commonoutline.QueueNameStorageEvent,
-	commonoutline.QueueNameTagEvent,
-	commonoutline.QueueNameTalkEvent,
-	commonoutline.QueueNameTranscribeEvent,
-	commonoutline.QueueNameTransferEvent,
-	commonoutline.QueueNameTTSEvent,
-}
-
 // topicPatterns is the bind set on the global bin-manager.event topic exchange
 // (VOIP-1406). timeline-manager is the archive-everything service, so a single
 // catch-all "#" binding replaces the per-service fanout subscriptions: it matches
 // every current topic publisher (a superset of the old fanout set, accepted by
 // design ruling) and automatically includes any future publisher.
 var topicPatterns = []string{"#"}
-
-// fanoutUnbindTargets lists the fanout exchanges to unbind from the subscribe
-// queue once every topicPatterns bind has succeeded (VOIP-1406). It is
-// subscribeTargets minus the asterisk fanout leg, which is permanently retained
-// because asterisk-proxy does not publish to the topic exchange.
-var fanoutUnbindTargets = func() []commonoutline.QueueName {
-	res := make([]commonoutline.QueueName, 0, len(subscribeTargets)-1)
-	for _, target := range subscribeTargets {
-		if target == commonoutline.QueueNameAsteriskEventAll {
-			continue
-		}
-		res = append(res, target)
-	}
-	return res
-}()
 
 var (
 	metricsNamespace = "timeline_manager"
@@ -142,34 +97,22 @@ func (h *subscribeHandler) Run(ctx context.Context) (<-chan struct{}, error) {
 		return nil, fmt.Errorf("could not declare the queue for subscribeHandler. err: %v", err)
 	}
 
-	// Subscribe to all service event exchanges
-	for _, target := range subscribeTargets {
-		// The sentinel-manager service is Kubernetes-only (it needs the Kubernetes API) and is
-		// not deployed in non-Kubernetes deployments, so its event exchange may never have been
-		// declared by its owner. Binding to a missing exchange makes QueueSubscribe fail with an
-		// AMQP 404, which closes the shared channel and takes this service down at boot. Declare
-		// it ourselves with the same fanout/durable parameters sentinel-manager's own
-		// notifyhandler uses, which makes the declare an idempotent no-op when it is deployed.
-		if target == commonoutline.QueueNameSentinelEvent {
-			if errTopic := h.sockHandler.TopicCreate(string(target)); errTopic != nil {
-				log.Errorf("Could not create the topic for the target. target: %s, err: %v", target, errTopic)
-				return nil, errTopic
-			}
-		}
-
-		if errSubscribe := h.sockHandler.QueueSubscribe(subscribeQueue, string(target)); errSubscribe != nil {
-			log.Errorf("Could not subscribe to target. target: %s, err: %v", target, errSubscribe)
-			return nil, errSubscribe
-		}
-		log.Debugf("Subscribed to event exchange. target: %s", target)
+	// The one retained fanout leg (VOIP-1407 design §3.2): asterisk.all.event is fed
+	// by voip-asterisk-proxy, which is excluded from the fanout-vs-topic cutover
+	// entirely, so this subscription is not part of the topicPatterns migration below
+	// and stays bound permanently.
+	if err := h.sockHandler.QueueSubscribe(subscribeQueue, string(commonoutline.QueueNameAsteriskEventAll)); err != nil {
+		return nil, fmt.Errorf("could not subscribe to the asterisk fanout exchange. err: %v", err)
 	}
 
 	// Cut over from the old fanout QueueNameWebhookEvent exchange to the new
-	// QueueNameWebhookEventTopic topic exchange with a "#" wildcard binding.
-	// Bind new first, then unbind old, to avoid an event-loss window where the
-	// queue is briefly bound to neither exchange. This queue is durable and shared
-	// (not per-pod), so the old binding persists across deploys unless explicitly
-	// removed (VOIP-1258 Task 3.5).
+	// QueueNameWebhookEventTopic topic exchange with a "#" wildcard binding
+	// (VOIP-1258). Bind new first, then unbind old, to avoid an event-loss window
+	// where the queue is briefly bound to neither exchange. This queue is durable
+	// and shared (not per-pod), so the old binding persists across deploys unless
+	// explicitly removed. Retained verbatim by VOIP-1407 design §3.2: this block is
+	// unrelated to the fanout-vs-topic cutover, so its failure semantics stay
+	// log-only, non-fatal.
 	if errBind := h.sockHandler.QueueBind(subscribeQueue, "#", string(commonoutline.QueueNameWebhookEventTopic), false, nil); errBind != nil {
 		log.Errorf("Could not bind to the topic exchange. err: %v", errBind)
 		// do NOT proceed to unbind the old exchange if this bind failed -- stay on the
@@ -178,44 +121,17 @@ func (h *subscribeHandler) Run(ctx context.Context) (<-chan struct{}, error) {
 		log.Errorf("CRITICAL: Could not unbind from the old fanout exchange after binding to the new topic exchange. queue: %s is now bound to BOTH exchanges (double-processing resumes). Manual intervention required. err: %v", subscribeQueue, errUnbind)
 	}
 
-	// Migrate the subscribe queue from the per-service fanout exchanges to the global
-	// bin-manager.event topic exchange (VOIP-1406). Bind new before unbinding old so
-	// there is no window where the queue is bound to neither. The declare is idempotent
-	// (kind/durable are fixed in the shared handler) and makes start order irrelevant.
-	// The asterisk fanout subscription is NOT part of this migration and stays bound.
-	if errDeclare := h.sockHandler.TopicCreateWithKind(string(commonoutline.QueueNameEvent), "topic"); errDeclare != nil {
-		log.Errorf("Could not declare the global topic exchange. Staying fully on the fanout subscriptions. exchange: %s, err: %v", commonoutline.QueueNameEvent, errDeclare)
-	} else {
-		// Bind ALL patterns -- all-or-nothing. On any bind failure, roll back the
-		// partial topic binds (best-effort) and unbind NO fanout exchange; the
-		// service keeps running fully on fanout.
-		bound := []string{}
-		ok := true
-		for _, pattern := range topicPatterns {
-			if errBind := h.sockHandler.QueueBind(subscribeQueue, pattern, string(commonoutline.QueueNameEvent), false, nil); errBind != nil {
-				log.Errorf("Could not bind the pattern to the global topic exchange. pattern: %s, err: %v", pattern, errBind)
-				ok = false
-				break
-			}
-			bound = append(bound, pattern)
-		}
+	// VOIP-1407: topicPatterns/QueueBind is the sole intake mechanism for the rest of
+	// this service's events -- the fanout QueueSubscribe loop and the fanout-unbind
+	// step have been removed, so there is no fallback left to degrade to. Any failure
+	// here is fatal.
+	if err := h.sockHandler.TopicCreateWithKind(string(commonoutline.QueueNameEvent), "topic"); err != nil {
+		return nil, fmt.Errorf("could not declare the global topic exchange. err: %v", err)
+	}
 
-		if !ok {
-			// Best-effort rollback of the partial topic binds, then stay fully on
-			// fanout. An unbind failure here leaves partial double delivery.
-			for _, pattern := range bound {
-				if errUnbind := h.sockHandler.QueueUnbind(subscribeQueue, pattern, string(commonoutline.QueueNameEvent), nil); errUnbind != nil {
-					log.Errorf("CRITICAL: partial topic bind could not be rolled back. queue: %s keeps a stray topic binding (partial double delivery). Manual intervention required. pattern: %s, err: %v", subscribeQueue, pattern, errUnbind)
-				}
-			}
-		} else {
-			// Unbind ALL old fanout exchanges -- only after every pattern bound.
-			// Unbind failure: CRITICAL log, not fatal (double delivery beats loss).
-			for _, target := range fanoutUnbindTargets {
-				if errUnbind := h.sockHandler.QueueUnbind(subscribeQueue, "", string(target), nil); errUnbind != nil {
-					log.Errorf("CRITICAL: still bound to BOTH exchanges (double delivery). Manual intervention required. queue: %s, target: %s, err: %v", subscribeQueue, target, errUnbind)
-				}
-			}
+	for _, pattern := range topicPatterns {
+		if err := h.sockHandler.QueueBind(subscribeQueue, pattern, string(commonoutline.QueueNameEvent), false, nil); err != nil {
+			return nil, fmt.Errorf("could not bind the topic pattern. pattern: %s, err: %v", pattern, err)
 		}
 	}
 
@@ -233,7 +149,7 @@ func (h *subscribeHandler) Run(ctx context.Context) (<-chan struct{}, error) {
 		}
 	}()
 
-	log.Infof("Subscribe handler started. subscribed to %d event exchanges.", len(subscribeTargets))
+	log.Info("Subscribe handler started.")
 	return doneCh, nil
 }
 

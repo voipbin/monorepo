@@ -50,11 +50,11 @@ SubscribeHandler (`pkg/subscribehandler/`) consumes from the queue `bin-manager.
 |---------|---------|
 | `customer-manager.customer.*.deleted` | Customer deletion — cascade-deletes all contacts of the customer |
 
-The old per-service **fanout subscription is retained in code as the rollback surface until VOIP-1407** (`QueueSubscribe` to `bin-manager.customer-manager.event`); on each boot Run() re-subscribes it, then unbinds it again after the topic bind succeeds.
+As of VOIP-1407 this topic-pattern binding is the **sole intake mechanism**; the old per-service fanout subscription (`QueueSubscribe` to `bin-manager.customer-manager.event`) has been removed from `Run()` entirely, along with the fanout-unbind step that used to follow a successful topic bind. A topic bind failure is now fatal to `Run()` — there is no fanout fallback left to degrade to.
 
-## Event Publishing — Global Topic Exchange (VOIP-1404 / VOIP-1405)
+## Event Publishing — Global Topic Exchange (VOIP-1404 / VOIP-1405 / VOIP-1407)
 
-Both `cmd/contact-manager` and `cmd/contact-control` construct their `NotifyHandler` with `notifyhandler.WithGlobalTopicPublish()`. On top of the existing fanout publish to `QueueNameContactEvent`, every event is therefore ALSO published to the global topic exchange `bin-manager.event` with the routing key:
+Both `cmd/contact-manager` and `cmd/contact-control` construct their `NotifyHandler` with `notifyhandler.WithGlobalTopicPublish()`. **As of VOIP-1407, this is the sole publish path**: the previous fanout publish to `QueueNameContactEvent` is no longer made, and (per the operational runbook in `docs/reference/rabbitmq-queues-reference.md`) that exchange will eventually be deleted from the broker. Every event publishes to the global topic exchange `bin-manager.event` with the routing key:
 
 ```
 <publisher>.<resource>.<subscription-id>.<action>
@@ -65,7 +65,7 @@ contact-manager.case.<case-id>.note_deleted
 Rules that apply to this service:
 
 - **Both binaries must carry the option.** They publish to the same logical stream, so enabling it on only one would leave consumers with gaps. `cmd/case-control` constructs no `NotifyHandler` and publishes nothing, so it is out of scope.
-- **The fanout publish stays the system of record** while dual publish lasts; a topic publish failure never propagates to the caller.
+- **This service's publish-side behavior change comes entirely from `bin-common-handler/pkg/notifyhandler`'s shared library update** (its own consumer-side subscribehandler code also changed separately for VOIP-1407, see the Event Subscriptions section above); a topic publish failure now propagates to the caller as an error (previously it was swallowed silently).
 - **Subscription addresses**: contact lifecycle events are addressed by the contact's own id (default resolution from the payload's top-level `id`). Every case-scoped event (`case_note_*`, `case_tag_*`, `case_contact_*`) is addressed by the **case id** via `EventSubscriptionID()` overrides, so one `contact-manager.case.<case-id>.#` binding follows a whole case. See [domain.md](domain.md) for the payload types.
 - **Rollback** is per binary: remove the single option argument. It does NOT revert the payload normalization described in domain.md.
 

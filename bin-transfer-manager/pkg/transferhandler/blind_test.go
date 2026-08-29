@@ -11,7 +11,6 @@ import (
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -116,13 +115,11 @@ func Test_blindExecute(t *testing.T) {
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := transferHandler{
-				utilHandler:   mockUtil,
-				reqHandler:    mockReq,
-				db:            mockDB,
-				notifyHandler: mockNotify,
+				utilHandler: mockUtil,
+				reqHandler:  mockReq,
+				db:          mockDB,
 			}
 			ctx := context.Background()
 
@@ -180,13 +177,11 @@ func Test_blindBlock(t *testing.T) {
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := transferHandler{
-				utilHandler:   mockUtil,
-				reqHandler:    mockReq,
-				db:            mockDB,
-				notifyHandler: mockNotify,
+				utilHandler: mockUtil,
+				reqHandler:  mockReq,
+				db:          mockDB,
 			}
 			ctx := context.Background()
 
@@ -222,13 +217,11 @@ func Test_blindUnblock(t *testing.T) {
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			h := transferHandler{
-				utilHandler:   mockUtil,
-				reqHandler:    mockReq,
-				db:            mockDB,
-				notifyHandler: mockNotify,
+				utilHandler: mockUtil,
+				reqHandler:  mockReq,
+				db:          mockDB,
 			}
 			ctx := context.Background()
 

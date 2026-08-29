@@ -198,14 +198,9 @@ func runSubscribe(
 ) error {
 	log := logrus.WithField("func", "runSubscribe")
 
-	subscribeTargets := []string{
-		string(commonoutline.QueueNameCallEvent),
-		string(commonoutline.QueueNameFlowEvent),
-	}
 	subscribeHandler := subscribehandler.NewSubscribeHandler(
 		sockListen,
 		string(commonoutline.QueueNameCampaignSubscribe),
-		subscribeTargets,
 		campaignHandler,
 		campaigncallHandler,
 		outplanHandler,

@@ -6,9 +6,9 @@ This service makes outbound RPC calls to retrieve context for billing operations
 
 ## Events Subscribed
 
-Since VOIP-1406, delivery is primarily via 14 pattern bindings on the global topic exchange `bin-manager.event` (pinned by `pkg/subscribehandler/binding_golden_test.go`); the fanout subscriptions below are retained as the rollback surface until VOIP-1407 and are unbound at boot after the topic patterns bind. See `docs/architecture.md` — Events Subscribed.
+As of VOIP-1407, delivery is exclusively via 14 pattern bindings on the global topic exchange `bin-manager.event` (pinned by `pkg/subscribehandler/binding_golden_test.go`); the per-service fanout subscriptions that previously served as a rollback surface have been removed entirely. See `docs/architecture.md` — Events Subscribed.
 
-| Queue | Publisher | Purpose |
+| Source publisher's exchange (pre-VOIP-1407, for reference) | Publisher | Purpose |
 |-------|-----------|---------|
 | `bin-manager.call-manager.event` | bin-call-manager | Track call billing lifecycle |
 | `bin-manager.message-manager.event` | bin-message-manager | Bill SMS messages |

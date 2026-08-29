@@ -144,16 +144,9 @@ func runSubscribe(
 	queuecallHandler queuecallhandler.QueuecallHandler,
 ) error {
 
-	subscribeTargets := []string{
-		string(commonoutline.QueueNameCallEvent),
-		string(commonoutline.QueueNameAgentEvent),
-		string(commonoutline.QueueNameConferenceEvent),
-	}
-
 	subHandler := subscribehandler.NewSubscribeHandler(
 		sockHandler,
 		string(commonoutline.QueueNameQueueSubscribe),
-		subscribeTargets,
 		queueHandler,
 		queuecallHandler,
 	)
