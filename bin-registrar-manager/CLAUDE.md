@@ -46,8 +46,8 @@ go generate ./...
 ## Key Facts
 
 - **Queue (listen):** `bin-manager.registrar-manager.request`
-- **Queue (subscribe):** `bin-manager.customer-manager.event` → cascade delete on `customer_deleted`
-- **Events published**: trunk_created/updated/deleted, extension_created/updated/deleted — dual-published to the fanout exchange and the global topic exchange `bin-manager.event` (see docs/architecture.md)
+- **Queue (subscribe):** topic-pattern binding on the global topic exchange `bin-manager.event` (fanout removed as of VOIP-1407) → cascade delete on `customer_deleted`
+- **Events published**: trunk_created/updated/deleted, extension_created/updated/deleted — published solely to the global topic exchange `bin-manager.event` as of VOIP-1407 (see docs/architecture.md)
 - **Two databases**: `DATABASE_DSN_BIN` (extensions/trunks) + `DATABASE_DSN_ASTERISK` (`ps_*` tables)
 - **Asterisk tables managed:** `ps_endpoints`, `ps_aors`, `ps_auths` (create/delete); `ps_contacts` (read-only)
 - **Critical**: Extension create/delete must touch all three Asterisk tables atomically

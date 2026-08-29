@@ -2,9 +2,9 @@
 
 ## Events Subscribed
 
-Since VOIP-1406, delivery is primarily via 2 pattern bindings on the global topic exchange `bin-manager.event` (pinned by `pkg/subscribehandler/binding_golden_test.go`); the fanout subscriptions below are retained as the rollback surface until VOIP-1407 and are unbound at boot after the topic patterns bind. See `docs/architecture.md` — Event Subscriptions.
+As of VOIP-1407, delivery is exclusively via 2 pattern bindings on the global topic exchange `bin-manager.event` (pinned by `pkg/subscribehandler/binding_golden_test.go`); the per-service fanout subscriptions that previously served as a rollback surface have been removed entirely. See `docs/architecture.md` — Event Subscriptions.
 
-| Queue | Publisher | Purpose |
+| Source publisher's exchange (pre-VOIP-1407, for reference) | Publisher | Purpose |
 |-------|-----------|---------|
 | `bin-manager.customer-manager.event` | bin-customer-manager | Release all numbers when a customer is deleted |
 | `bin-manager.flow-manager.event` | bin-flow-manager | Clear flow references on numbers when a flow is deleted |

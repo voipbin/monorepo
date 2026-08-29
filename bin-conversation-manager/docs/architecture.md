@@ -27,7 +27,7 @@ cmd/conversation-manager/main.go
 |-------|---------|----------------|
 | Transport | `pkg/listenhandler` | Receives RPC requests from `bin-manager.conversation-manager.request`; routes by URI regex |
 | Transport | `pkg/subscribehandler` | Consumes `message_created` events from message-manager (inbound SMS/MMS) |
-| Transport | notifyhandler (bin-common-handler) | Publishes conversation/message events to the fanout exchange `bin-manager.conversation-manager.event` and, since VOIP-1405, dual-publishes the same payload to the global topic exchange `bin-manager.event` |
+| Transport | notifyhandler (bin-common-handler) | Publishes conversation/message events to the global topic exchange `bin-manager.event`; as of VOIP-1407 this is the sole publish path (the fanout exchange `bin-manager.conversation-manager.event` is no longer published to) |
 | Domain | `pkg/conversationhandler` | Create/get/update conversations; process platform webhooks; execute-mode dispatch (agent vs flow); event handling |
 | Domain | `pkg/messagehandler` | Create message records; dispatch outbound messages; status tracking |
 | Domain | `pkg/accounthandler` | CRUD for platform credentials (LINE channel secret/token, SMS credentials, WhatsApp Meta credentials) |
@@ -76,7 +76,7 @@ failure is now fatal to `Run()`. The exact bind set is pinned by
 
 ## Events Published
 
-Exchange: `bin-manager.conversation-manager.event`
+Exchange: the global topic exchange `bin-manager.event` (see "Global topic exchange" below).
 
 | Event type | Trigger | Topic routing key |
 |-----------|---------|-------------------|
@@ -91,13 +91,13 @@ Exchange: `bin-manager.conversation-manager.event`
 
 `conversation.EventTypeConversationDeleted` is declared but never published today (a stream-completeness follow-up is registered); it has no routing key above on purpose.
 
-### Global topic exchange (VOIP-1405)
+### Global topic exchange (VOIP-1404 / VOIP-1405 / VOIP-1407)
 
-Both `cmd/conversation-manager` and `cmd/conversation-control` construct their NotifyHandler with `notifyhandler.WithGlobalTopicPublish()`, so every event is published twice: once to the per-service fanout exchange `bin-manager.conversation-manager.event` (unchanged, still the system of record) and once to the global topic exchange `bin-manager.event` with the routing key `conversation-manager.<resource>.<subscription-id>.<action>`. The two cmds must stay in lockstep on this option — enabling it in only one would leave consumers with gaps depending on which process published. A topic publish failure never propagates to the caller and never affects the fanout publish.
+Both `cmd/conversation-manager` and `cmd/conversation-control` construct their NotifyHandler with `notifyhandler.WithGlobalTopicPublish()`. **As of VOIP-1407, this is the sole publish path** — the previous per-service fanout exchange `bin-manager.conversation-manager.event` is no longer published to, and (per the operational runbook in `docs/reference/rabbitmq-queues-reference.md`) will eventually be deleted from the broker. Events publish to the global topic exchange `bin-manager.event` with the routing key `conversation-manager.<resource>.<subscription-id>.<action>`. This service's publish-side behavior change comes entirely from `bin-common-handler/pkg/notifyhandler`'s shared library update (its own consumer-side subscribehandler code also changed separately for VOIP-1407, see the Event Subscriptions section above). The two cmds must stay in lockstep on this option — enabling it in only one would leave consumers with gaps depending on which process published. A topic publish failure now propagates to the caller as an error (previously it was swallowed silently).
 
 Because `conversation_message_*` splits into resource `conversation` + action `message_*`, and `*message.Message` overrides its subscription address to the parent `ConversationID`, the conversation lifecycle events and every message of that conversation share one key space: `conversation-manager.conversation.<conversation-id>.#` follows a whole conversation. Accounts stay in their own `conversation-manager.account.<account-id>.#` namespace. See [docs/domain.md](domain.md) and the monorepo design docs `docs/plans/2026-08-27-voip-1404-global-topic-exchange-design.md` / `...-voip-1405-topic-publisher-rollout-design.md`.
 
-Note: account events carry `secret`/`token` in their payloads today, exactly as they already do on the fanout exchange. The audience is unchanged (broker access requires internal credentials), but the discovery barrier is lower on a single global exchange — a payload secret-stripping follow-up is registered as a priority item (1405 §6.3/§7).
+Note: account events carry `secret`/`token` in their payloads today, exactly as they did on the retired fanout exchange. The audience is unchanged (broker access requires internal credentials), but the discovery barrier is lower on a single global exchange — a payload secret-stripping follow-up is registered as a priority item (1405 §6.3/§7).
 
 ## Inbound Dispatch: Execute Mode
 

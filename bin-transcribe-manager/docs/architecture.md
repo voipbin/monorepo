@@ -24,7 +24,7 @@ Key packages:
 | `pkg/streaminghandler` | WebSocket connections to Asterisk; in-memory session map |
 | `pkg/transcribehandler` | Core business logic — session creation, status transitions |
 | `pkg/dbhandler` | MySQL + Redis persistence |
-| `pkg/notifyhandler` | Publishes events to the fanout exchange `bin-manager.transcribe-manager.event` and, since VOIP-1404, dual-publishes the same payload to the global topic exchange `bin-manager.event` |
+| `pkg/notifyhandler` | Publishes events to the global topic exchange `bin-manager.event`; as of VOIP-1407 this is the sole publish path (the fanout exchange `bin-manager.transcribe-manager.event` is no longer published to) |
 | `models/transcribe` | Transcribe session struct, status enum |
 | `internal/config` | Cobra + Viper configuration (singleton pattern) |
 
@@ -41,7 +41,7 @@ subscribehandler     — call_hangup → finalize session; customer_deleted → 
             └─ notifyhandler   — publishes events on state changes
 ```
 
-Both `cmd/transcribe-manager` and `cmd/transcribe-control` construct their NotifyHandler with `notifyhandler.WithGlobalTopicPublish()`, so every event is published twice: once to the per-service fanout exchange `bin-manager.transcribe-manager.event` (unchanged, still the system of record) and once to the global topic exchange `bin-manager.event` with the routing key `transcribe-manager.<resource>.<transcribe-id>.<action>`. The two cmds must stay in lockstep on this option — enabling it in only one would leave consumers with gaps depending on which process published. A topic publish failure never propagates to the caller and never affects the fanout publish. See [docs/domain.md](domain.md) for the per-event routing keys and `docs/plans/` (monorepo `docs/plans/2026-08-27-voip-1404-global-topic-exchange-design.md`) for the schema.
+Both `cmd/transcribe-manager` and `cmd/transcribe-control` construct their NotifyHandler with `notifyhandler.WithGlobalTopicPublish()`. **As of VOIP-1407, this is the sole publish path** — the previous per-service fanout exchange `bin-manager.transcribe-manager.event` is no longer published to, and (per the operational runbook in `docs/reference/rabbitmq-queues-reference.md`) will eventually be deleted from the broker. Events publish to the global topic exchange `bin-manager.event` with the routing key `transcribe-manager.<resource>.<transcribe-id>.<action>`. This service's publish-side behavior change comes entirely from `bin-common-handler/pkg/notifyhandler`'s shared library update (its own consumer-side subscribehandler code also changed separately for VOIP-1407, see the Event Subscriptions section below). The two cmds must stay in lockstep on this option — enabling it in only one would leave consumers with gaps depending on which process published. A topic publish failure now propagates to the caller as an error (previously it was swallowed silently). See [docs/domain.md](domain.md) for the per-event routing keys and `docs/plans/` (monorepo `docs/plans/2026-08-27-voip-1404-global-topic-exchange-design.md`) for the schema.
 
 ## Event Subscriptions
 

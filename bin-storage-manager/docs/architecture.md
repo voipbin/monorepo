@@ -96,7 +96,7 @@ As of VOIP-1407 this topic-pattern binding is the **sole intake mechanism**; the
 
 ## Events Published
 
-State changes emit events on the fanout exchange `bin-manager.storage-manager.event`:
+State changes emit events on the global topic exchange `bin-manager.event` (see "Global topic exchange" below):
 
 | Event | Payload | Trigger |
 |-------|---------|---------|
@@ -108,17 +108,22 @@ State changes emit events on the fanout exchange `bin-manager.storage-manager.ev
 
 `file_updated` is declared in `models/file` but has no publish site.
 
-### Global topic exchange (VOIP-1404 / VOIP-1405)
+### Global topic exchange (VOIP-1404 / VOIP-1405 / VOIP-1407)
 
 All three NotifyHandler construction sites — `cmd/storage-manager/main.go`, and both
 `cmd/storage-control/main.go` sites (`initAccountHandler` for the account-only CLI path and
 `initHandler` for the full storage path) — construct their NotifyHandler with
-`notifyhandler.WithGlobalTopicPublish()`. Every event is therefore published twice: once to the
-per-service fanout exchange above (unchanged, still the system of record) and once to the global
-topic exchange `bin-manager.event` with the routing key
-`storage-manager.<resource>.<id>.<action>`. The three sites must stay in lockstep on this option —
-enabling it in only some would leave consumers with gaps depending on which process published. A
-topic publish failure never propagates to the caller and never affects the fanout publish.
+`notifyhandler.WithGlobalTopicPublish()`. **As of VOIP-1407, this is the sole publish path** — the
+previous per-service fanout exchange `bin-manager.storage-manager.event` is no longer published
+to, and (per the operational runbook in `docs/reference/rabbitmq-queues-reference.md`) will
+eventually be deleted from the broker. Events publish to the global topic exchange
+`bin-manager.event` with the routing key `storage-manager.<resource>.<id>.<action>`. This
+service's publish-side behavior change comes entirely from `bin-common-handler/pkg/notifyhandler`'s
+shared library update (its own consumer-side subscribehandler code also changed separately for
+VOIP-1407, see the Event Subscriptions section above). The three sites must stay in lockstep on
+this option — enabling it in only some would leave consumers with gaps depending on which process
+published. A topic publish failure now propagates to the caller as an error (previously it was
+swallowed silently).
 
 storage-manager uses no subscription-id override: both `account.Account` and `file.File` are
 addressed by their own `id`. Note that the account event-type constants are capitalized

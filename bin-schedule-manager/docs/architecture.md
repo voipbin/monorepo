@@ -67,7 +67,7 @@ Self-RPC note: `/v1/executions/prune` and `/v1/backups` arrive on the service's 
 
 ### Events Published (internal only — no customer webhooks in Phase 1)
 
-CRUD and execution outcomes publish internal events via notifyhandler on `bin-manager.schedule-manager.event`:
+CRUD and execution outcomes publish internal events via notifyhandler on the global topic exchange `bin-manager.event`:
 
 | Event | Data | Trigger | Topic routing key |
 |-------|------|---------|-------------------|
@@ -77,7 +77,7 @@ CRUD and execution outcomes publish internal events via notifyhandler on `bin-ma
 | `execution_succeeded` | `execution.Execution` | Dispatch completed with a success response | `schedule-manager.execution.<schedule-id>.succeeded` |
 | `execution_failed` | `execution.Execution` | Dispatch exhausted its retry budget with failures | `schedule-manager.execution.<schedule-id>.failed` |
 
-Since VOIP-1405, `cmd/schedule-manager` constructs its NotifyHandler with `notifyhandler.WithGlobalTopicPublish()`, so each of the events above is published twice: once to the per-service fanout exchange `bin-manager.schedule-manager.event` (unchanged, still the system of record) and once to the global topic exchange `bin-manager.event` with the routing key in the last column. `cmd/schedule-control` builds no NotifyHandler at all, so there is no second wiring site to keep in lockstep. A topic publish failure never propagates to the caller and never affects the fanout publish. The third key segment is the *subscription address* — always the schedule-id, in both namespaces; see [docs/domain.md](domain.md) and the monorepo `docs/plans/2026-08-27-voip-1404-global-topic-exchange-design.md` for the schema.
+`cmd/schedule-manager` constructs its NotifyHandler with `notifyhandler.WithGlobalTopicPublish()`. **As of VOIP-1407, this is the sole publish path** — the previous per-service fanout exchange `bin-manager.schedule-manager.event` is no longer published to, and (per the operational runbook in `docs/reference/rabbitmq-queues-reference.md`) will eventually be deleted from the broker. Each of the events above publishes to the global topic exchange `bin-manager.event` with the routing key in the last column. This service's publish-side behavior change comes entirely from `bin-common-handler/pkg/notifyhandler`'s shared library update (its own consumer-side subscribehandler code also changed separately for VOIP-1407, see the Events Subscribed section below). `cmd/schedule-control` builds no NotifyHandler at all, so there is no second wiring site to keep in lockstep. A topic publish failure now propagates to the caller as an error (previously it was swallowed silently). The third key segment is the *subscription address* — always the schedule-id; see [docs/domain.md](domain.md) and the monorepo `docs/plans/2026-08-27-voip-1404-global-topic-exchange-design.md` for the schema.
 
 The `execution_succeeded` / `execution_failed` split is decided at publish time by `dispatchhandler.notifyExecutionCompleted` from the finalized row's status, but both branches carry the same `execution.Execution` payload and resolve to the same schedule address.
 
