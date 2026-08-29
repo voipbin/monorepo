@@ -247,11 +247,19 @@ constructor. **On the 55 topic-only call sites, the value passed for `queueEvent
 stored but never read by any code path they can reach** (R1 finding 7) -- add a doc
 comment on `NewNotifyHandler` making this explicit: "`queueEvent` is ignored on the
 `WithGlobalTopicPublish()` path -- no per-service fanout exchange is declared or
-published to there." (The 5 VESTIGIAL `QueueName*Event` outline CONSTANTS this exposes
-on those 55 call sites -- since they name a per-service fanout exchange this ticket
-deletes from the broker (§5), though they are still passed positionally -- are a
-separate, much narrower question, deferred to §7 item 2; the constructor parameter
-itself stays regardless of that follow-up.)
+published to there." **(R7 finding -- LOW: corrected a false parenthetical here.
+An earlier revision claimed this doc comment "exposes" the 5 vestigial `QueueName*Event`
+constants (issue analysis §4 item 1's 4-fully-dead + 1-legacy set) on "those 55 call
+sites" and that §5 deletes their exchanges -- both wrong. The 4 fully-dead constants
+have zero references anywhere outside their own definitions in `models/outline/
+queuename.go`, so none of them is ever passed at any of the 55 call sites; the constants
+actually passed there are the ~28 live per-service ones. And §5 explicitly does NOT
+delete these 5 exchanges -- it lists all 5 as "already absent from the broker," outside
+its 28-exchange deletion set. The correct, narrower observation)**: the ~28 live
+per-service constants passed at those 55 call sites become vestigial-IN-THAT-POSITION
+once §5 deletes their exchanges from the broker -- a broader question than §7 item 2's
+5-constant cleanup, not the same one, and this design does not resolve it (the
+constructor parameter itself stays regardless, per the rationale above).
 
 ### 2.3.1 Companion fix: `talk-control`'s empty exchange name (R2 finding -- CRITICAL,
 newly discovered as a direct consequence of §2.3's `logrus.Fatalf` decision)
@@ -278,7 +286,11 @@ already fails on every `talk-control` invocation today.
 sites: `chathandler/chat.go:165,263,292`, `messagehandler/message.go:202,207`,
 `participanthandler/participant.go:94,213`, `reactionhandler/reaction.go:139` --
 `reaction.go:139`'s single call is shared by both `reaction add` and `reaction remove`
-via the helper `publishReactionUpdated`, `reaction.go:87,132`). Per §2.3's own corrected
+via the helper `publishReactionUpdated`, called from `reaction.go:52,87,132` -- `:52` is
+`ReactionAdd`'s idempotent "reaction already exists" early-return branch, which reaches
+the publish without performing any DB mutation on that path; `:87`/`:132` are the normal
+add/remove paths, R7 finding corrected an earlier citation that omitted `:52`). Per
+§2.3's own corrected
 finding (the nil return is never checked), `talk-control` boots successfully today, and
 its **five** read-only subcommands (`chat get`, `chat list`, `message get`, `message
 list`, `participant list`) never reach the notify call and work fine; only the **nine**
@@ -292,8 +304,10 @@ finding 3 then corrected R3's own 8-vs-9 call-site/subcommand conflation).
 
 **Why §2.3 makes this materially worse, not merely "already broken"**: once the same
 declare failure calls `logrus.Fatalf` instead of logging and returning `nil`, the
-process exits during `initHandlers()`, before any subcommand runs. Every `talk-control`
-invocation breaks, including all five read-only subcommands that work perfectly today.
+process exits inside `initHandlers()`, which every subcommand's `RunE` calls first
+(e.g. `main.go:203,237,278`) -- before that subcommand's own logic runs. Every
+`talk-control` invocation breaks, including all five read-only subcommands that work
+perfectly today.
 This is a strictly larger blast radius than the pre-existing bug, introduced by this
 ticket's own change -- not something a "not created or worsened by this ticket" framing
 can honestly claim (§1, corrected).
@@ -352,12 +366,16 @@ panic this section opened by describing does not disappear -- it *moves*.
 single call at `reaction.go:139` via `publishReactionUpdated`, hence 8 call sites for 9
 subcommands) satisfies. A method call on a `nil` `reqHandler` interface panics --
 *unrecovered, in a goroutine* -- which crashes the whole process instead of merely
-failing one background publish. **Corrected contrast (R5 finding -- MEDIUM; an earlier
-revision of this paragraph claimed today's panic happens "before any DB write," which is
-false at all 8 call sites -- every one is reached AFTER its DB mutation already commits,
-e.g. `chathandler/chat.go:165` runs after `ChatCreate` at `:109`, `reaction.go:139` after
-the atomic reaction update at `:72`/`:117`)**: in both worlds the write is already
-committed by the time the panic fires; the real, and still sufficient, delta is
+failing one background publish. **Corrected contrast (R5 finding -- MEDIUM, refined by
+R7 finding -- LOW; an earlier revision of this paragraph claimed today's panic happens
+"before any DB write," which is false on every path that performs a DB mutation at all
+-- e.g. `chathandler/chat.go:165` runs after `ChatCreate` at `:109`, and the normal
+`reaction.go:139` paths run after the atomic reaction update at `:72`/`:117` (the
+idempotent early-return path through `:52`, §2.3.1's earlier paragraph, performs no
+mutation at all, so "after the write" does not apply there -- it is simply the only path
+with no write to be after or before))**: on every mutating path, in both worlds the
+write is already committed by the time the panic fires; the real, and still sufficient,
+delta is
 foreground/deterministic/immediately-visible (today -- the process dies synchronously,
 right where the caller can see it) versus background/nondeterministic/silently-delayed
 (post-fix without this section's remaining decision below -- the process can die at an
@@ -846,9 +864,31 @@ change.
       "fanout failure skips the topic publish" for a `topicEnabled: true` fixture -- that
       scenario (fanout attempted at all when topic-enabled) no longer exists once §2.2
       ships; delete this test, do not attempt to adapt it.
-    - (Further `topicEnabled: true` fixtures in the same file at `~:715,819,887` follow
-      the same pattern and should be swept during implementation, not individually
-      named here.)
+    - **Complete accounting of the remaining `topicEnabled: true` fixtures in
+      `publish_test.go` (R7 finding -- LOW: an earlier revision named only three of
+      these by line and called the rest "the same pattern," which understated how many
+      remained and mischaracterized two of them)**:
+      - `Test_PublishEvent_globalTopicPublishPlaceholderMetric` (`:516`), `:715`
+        (`Test_PublishEventRaw_globalTopicPublish`), `:819`
+        (`Test_PublishEvent_nilInterface`), `:887`
+        (`Test_PublishEvent_emptyAddressIgnoresPayloadID`) -- all four are single-path
+        `gomock.InOrder(fanout, topic)` fixtures, mechanically fixed the same way as the
+        dual-publish table test above (delete the now-nonexistent fanout expectation).
+      - `Test_PublishEvent_typedNilSubscriptionIdentifier` (`:778`) and
+        `Test_PublishEvent_optionOffSkipsSubscriptionIdentifier` (`:957`) do NOT follow
+        that same pattern: both are two-arm tables whose fanout `EventPublish`
+        expectation is currently shared, unconditionally, across both arms -- post-§2.2
+        the two arms publish to different exchanges (one still fanout, the option-off
+        arm; one topic-only), so this is a structural split of the shared expectation
+        into its option-off arm only, not a one-line deletion.
+      - `Test_publishEvent_delayedSkipsTopic` (`:638`) is NOT invalidated -- §2.2 keeps
+        `case delay > 0` evaluated before `case h.topicEnabled` in the `switch`, so this
+        fixture's `EventPublish(gomock.Any()...).Times(0)` assertion (`:642`) still
+        holds unchanged.
+      - This is the complete accounting as of this design: 10 fixtures invalidated
+        across this file (the 4 already named above + these 4 mechanical + 2
+        structural), plus `:638` independently confirmed as an explicit non-change --
+        not a partial list requiring a further sweep at implementation time.
 - **Regression pins (R1 finding 13) -- lock in behavior this design deliberately does
   NOT change, so a future edit to the shared `initGlobalTopicExchange` doesn't silently
   break either exception**:
