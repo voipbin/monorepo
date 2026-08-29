@@ -373,7 +373,7 @@ Plus a residue sweep:
 /usr/bin/grep -rn "fanoutUnbindTargets\|subscribesTargets" --include="*.go" .
 # expected survivors: NONE in bin-*/pkg/subscribehandler
 /usr/bin/grep -rn "subscribeTargets" --include="*.go" .
-# expected survivors: bin-api-manager only (see OQ-1)
+# expected survivors: bin-api-manager only (see OQ-1) -- superseded by VOIP-1425, now zero
 ```
 
 ---
@@ -501,7 +501,7 @@ Residue sweeps (R1 finding LOW-7 added the last two, matching §3 E5's full set)
 - [ ] `/usr/bin/grep -rn "publishTopicEvent\b" --include="*.go" .` returns zero.
 - [ ] `/usr/bin/grep -rn "fanoutUnbindTargets" --include="*.go" .` returns zero.
 - [ ] `/usr/bin/grep -rn "subscribesTargets" --include="*.go" .` returns zero (webhook-manager's comma-joined variant).
-- [ ] `/usr/bin/grep -rn "subscribeTargets" --include="*.go" .` returns **exactly one surviving family**: `bin-api-manager` (OQ-1, deliberately left alone, fed an empty slice literal). Any other survivor is a missed deletion.
+- [ ] `/usr/bin/grep -rn "subscribeTargets" --include="*.go" .` returns **exactly one surviving family**: `bin-api-manager` (OQ-1, deliberately left alone, fed an empty slice literal). Any other survivor is a missed deletion. **Superseded by VOIP-1425**: `bin-api-manager` was subsequently removed too, so a post-VOIP-1425 sweep returns zero everywhere except two historical-comment-text hits in `bin-call-manager/pkg/subscribehandler/binding_golden_test.go`.
 
 ---
 
@@ -713,7 +713,7 @@ Three different failure-handling regimes now coexist. Mixing them up is silent a
 
 Per this plan's constraint, these are raised rather than decided.
 
-**OQ-1 -- RESOLVED (대표님 decision):** leave `bin-api-manager`'s residual machinery untouched in this PR; filed as a separate Jira cleanup follow-up, [VOIP-1425](https://voipbin.atlassian.net/browse/VOIP-1425). Matches this section's own recommendation below.
+**OQ-1 -- RESOLVED (대표님 decision):** leave `bin-api-manager`'s residual machinery untouched in this PR; filed as a separate Jira cleanup follow-up, [VOIP-1425](https://voipbin.atlassian.net/browse/VOIP-1425). Matches this section's own recommendation below. **(done in VOIP-1425.)**
 
 **OQ-1 -- `bin-api-manager`'s residual fanout-subscribe machinery.**
 *Verified this plan:* `bin-api-manager/pkg/subscribehandler/main.go` carries a `subscribeTargets []string` struct field (`:33`), constructor parameter (`:65`), and a fanout `QueueSubscribe` loop in `Run()` (`:94-95`) -- structurally identical to what design §3.1 deletes in the 20 services. It is fed an **empty** slice literal at `bin-api-manager/cmd/api-manager/main.go:206` (`subscribeTargets := []string{}`), so it binds zero fanout exchanges and design §5's exchange deletion **cannot** break it. That is presumably why it is correctly absent from the 20-service list. But the design doc does not mention this 21st instance of the same machinery at all, so it is unclear whether leaving it is intentional (genuinely harmless dead code, out of this ticket's stated scope) or an oversight (exactly the code shape this ticket exists to remove). **Recommendation: leave it, and file a separate Jira cleanup follow-up** -- deleting it adds a 21st service to an already 23-module PR for zero functional gain, and it cannot cause the outage design §5 guards against. Needs a ruling either way so a reviewer does not flag it as a miss.

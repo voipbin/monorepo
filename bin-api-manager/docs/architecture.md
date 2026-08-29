@@ -31,7 +31,7 @@ graph TD
 | `pkg/servicehandler/` | Business delegation | Auth check + RabbitMQ RPC fan-out; one file per resource type |
 | `pkg/dbhandler/` | Data access | MySQL + Redis cache (customer, accesskey, token data owned by api-manager) |
 | `pkg/cachehandler/` | Redis cache | Session and token caching |
-| `pkg/subscribehandler/` | Event consumption | Subscribes to backend manager event queues |
+| `pkg/subscribehandler/` | Event consumption | Declares this pod's queue and consumes webhook-manager-published events dispatched to it; does not itself bind any exchange |
 | `pkg/websockhandler/` | WebSocket fan-out | Pushes events to authenticated WebSocket clients |
 | `pkg/streamhandler/` | Audio streaming | Audiosocket protocol handler for AI/Pipecat audio path |
 | `pkg/pubsubhandler/` | In-process pub/sub | Broker + per-WebSocket subscribers; prefix-matched event fan-out from subscribehandler to WebSocket connections |
@@ -136,4 +136,4 @@ Each resource group in the REST API maps to one (or occasionally two) backend se
 | `/service_agents/*` | various (agent-scoped proxy) | Agent-facing subset of resources with scoped auth |
 | `/ws` | local (websockhandler) | WebSocket upgrade; real-time event push to clients |
 
-Event re-emission: `pkg/subscribehandler/` consumes events from backend queues (`bin-manager.webhook-manager.event`, `bin-manager.agent-manager.event`, `bin-manager.talk-manager.event`) and pushes them to WebSocket clients and `bin-webhook-manager` for HTTP delivery.
+Event re-emission: `pkg/subscribehandler/` only ever receives events published by `bin-webhook-manager` -- both the legacy fanout-envelope shape (`processEventWebhookManagerWebhookPublished`) and the VOIP-1258 topic-routing-keyed shape (`processEventWebhookManagerRoutingKeyedEvent`), gated on `m.Publisher == ServiceNameWebhookManager`; every other publisher is silently ignored (`default: return`). The actual topic-exchange binding is owned by `pkg/websockhandler/`'s `scopeRefCount` (VOIP-1258 §9), which dynamically `QueueBind`/`QueueUnbind`s this pod's queue against `bin-manager.webhook-manager.event.topic` per active client subscription scope -- not a static list of backend manager event queues.

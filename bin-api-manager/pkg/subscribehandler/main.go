@@ -30,7 +30,6 @@ type subscribeHandler struct {
 	reqHandler  requesthandler.RequestHandler
 
 	subscribeQueueNamePod string // subscribe queue name for this pod
-	subscribeTargets      []string
 
 	pubHandler pubsubhandler.PubHandler
 }
@@ -62,7 +61,6 @@ func NewSubscribeHandler(
 	sockHandler sockhandler.SockHandler,
 	reqHandler requesthandler.RequestHandler,
 	subscribeQueueName string,
-	subscribeTargets []string,
 	pubHandler pubsubhandler.PubHandler,
 ) SubscribeHandler {
 	h := &subscribeHandler{
@@ -70,7 +68,6 @@ func NewSubscribeHandler(
 		reqHandler:  reqHandler,
 
 		subscribeQueueNamePod: subscribeQueueName,
-		subscribeTargets:      subscribeTargets,
 
 		pubHandler: pubHandler,
 	}
@@ -90,21 +87,14 @@ func (h *subscribeHandler) Run() error {
 		return fmt.Errorf("could not declare the queue for listenHandler. err: %v", err)
 	}
 
-	// subscribe each targets
-	for _, target := range h.subscribeTargets {
-		if errSubscribe := h.sockHandler.QueueSubscribe(h.subscribeQueueNamePod, target); errSubscribe != nil {
-			log.Errorf("Could not subscribe the target. target: %s, err: %v", target, errSubscribe)
-			return errSubscribe
-		}
-	}
-
-	// NOTE (VOIP-1296 final cutover): the unconditional "#" wildcard baseline bind to the topic
-	// exchange that used to live here has been removed. It was a rollout safety net kept
-	// alongside pkg/websockhandler's scopeRefCount mechanism (VOIP-1258 §9), which already
-	// binds/unbinds this pod's queue per active client subscription scope. Keeping both meant
-	// every event was still delivered to every pod regardless of connected client count --
-	// exactly the problem VOIP-1258 set out to fix. scopeRefCount is the sole binding mechanism
-	// for this pod's queue going forward.
+	// NOTE (VOIP-1296 final cutover, VOIP-1425 cleanup): the unconditional "#" wildcard baseline
+	// bind to the topic exchange that used to live here, and the generic fanout QueueSubscribe
+	// loop that replaced it, have both been removed. The loop's subscribeTargets was populated
+	// with real queue names before VOIP-1258, which emptied it to []string{} when the
+	// topic-exchange/scopeRefCount mechanism took over -- dead ever since, not since inception.
+	// The real event intake is pkg/websockhandler's scopeRefCount (VOIP-1258 §9), which
+	// binds/unbinds this pod's queue per active client subscription scope. scopeRefCount is the
+	// sole binding mechanism for this pod's queue.
 
 	// receive subscribe events
 	go func() {
