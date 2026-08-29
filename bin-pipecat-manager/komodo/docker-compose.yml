@@ -19,15 +19,50 @@
 # down (2026-08-22 incident, NOJIRA-Fix-pipecat-runner-sidecar). Same
 # image (all Python deps are baked in), network_mode
 # "service:pipecat-manager" reproduces the GKE pod's shared localhost.
+#
+# P15+16 (NOJIRA-Scale-pipecat-manager-to-two-replicas): the single-pod
+# reproduction above is scaled to 2 replicas by hand-duplicating the
+# manager+sidecar pair into 4 named services below, instead of using
+# `deploy.replicas` (the fleet-wide recipe every other bin-*-manager
+# uses - see docs/workflows/manager-replica-scaling.md). `deploy.replicas`
+# has no way to express "pair each replica of the sidecar with the
+# matching replica of the manager" when the sidecar borrows the
+# manager's network namespace via `network_mode: service:<name>` -
+# Compose only supports naming a fixed peer service, not "my own
+# replica index's peer". Go/Python code is unchanged: per-pod queue
+# routing, liveness preflight, and the session map already work off an
+# arbitrary unique HostID string, so giving each pair's manager its own
+# POD_IP literal (pipecat-manager-1 / pipecat-manager-2) is sufficient.
+# Both managers share the `pipecat-manager` Compose network alias so
+# Prometheus's existing dns_sd_configs entry (which targets that name)
+# keeps working unchanged and now resolves to both replicas.
+#
+# IMPORTANT (2차 코드리뷰 CRITICAL): unlike the fleet-wide `deploy.replicas`
+# recipe (which keeps the same service key, so Compose recognizes old
+# containers as replicas of the same service and recreates them cleanly),
+# this PR renames the service keys themselves
+# (pipecat-manager/pipecat-script-runner -> pipecat-manager-1/-2,
+# pipecat-script-runner-1/-2). `docker compose up` without
+# `--remove-orphans` leaves the old-named containers (voipbin-pipecat-
+# manager, voipbin-pipecat-script-runner) running alongside the new 4 -
+# verified by reproducing this locally. A stray old manager still
+# carries the `pipecat-manager` alias too, so dns_sd_configs would see 3
+# targets instead of 2 and ReplicaDegraded/ManagerServiceGone's "exactly
+# 2 targets" assumption breaks. After this stack deploys, always check
+# `docker ps -a --filter name=voipbin-pipecat-manager --filter
+# name=voipbin-pipecat-script-runner` for the old un-suffixed names and
+# `docker rm -f` them if present. The same check applies when rolling
+# back this PR (reverting to the 2-service form leaves the new 4-service
+# names as orphans instead).
 services:
-  pipecat-manager:
+  pipecat-manager-1:
     image: voipbin/bin-pipecat-manager:__IMAGE_TAG__
     logging:
       driver: json-file
       options:
         max-size: "10m"
         max-file: "3"
-    container_name: voipbin-pipecat-manager
+    container_name: voipbin-pipecat-manager-1
     restart: always
     healthcheck:
       test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:2112/metrics', timeout=4)"]
@@ -47,26 +82,99 @@ services:
       - OPENAI_API_KEY=[[BIN_MANAGER__OPENAI_API_KEY]]
       - DEEPGRAM_API_KEY=[[BIN_MANAGER__DEEPGRAM_API_KEY]]
       - XAI_API_KEY=[[BIN_MANAGER__XAI_API_KEY]]
-      - POD_IP=pipecat-manager
+      - POD_IP=pipecat-manager-1
     command: ./pipecat-manager
     networks:
-      default: {}
+      default:
+        aliases: [pipecat-manager]
 
-  pipecat-script-runner:
+  pipecat-script-runner-1:
     image: voipbin/bin-pipecat-manager:__IMAGE_TAG__
     logging:
       driver: json-file
       options:
         max-size: "10m"
         max-file: "3"
-    container_name: voipbin-pipecat-script-runner
+    container_name: voipbin-pipecat-script-runner-1
     restart: always
-    # Shares the Go service's network namespace so the Go side reaches
+    # Shares pipecat-manager-1's network namespace so the Go side reaches
     # uvicorn at localhost:8000, exactly like the GKE pod. A container in
     # another container's netns cannot declare its own networks/ports.
-    network_mode: "service:pipecat-manager"
+    network_mode: "service:pipecat-manager-1"
+    # condition: service_healthy (not the default service_started) - the
+    # default only orders startup, it does not wait for the manager to
+    # actually be reachable. If the manager is mid-restart when this
+    # sidecar starts, "cannot join network namespace of container:
+    # Container is restarting" leaves this sidecar stuck in Created
+    # forever (restart: always does not apply to a container that never
+    # reached Running) - waiting on the manager's existing healthcheck
+    # (:2112/metrics) avoids that race.
     depends_on:
-      - pipecat-manager
+      pipecat-manager-1:
+        condition: service_healthy
+    # Same env set the GKE pipecat-script-runner container received
+    # (k8s/deployment.yml) - the Python side calls the STT/LLM/TTS APIs
+    # directly.
+    environment:
+      - CARTESIA_API_KEY=[[BIN_MANAGER__CARTESIA_API_KEY]]
+      - ELEVENLABS_API_KEY=[[BIN_MANAGER__ELEVENLABS_API_KEY]]
+      - OPENAI_API_KEY=[[BIN_MANAGER__OPENAI_API_KEY]]
+      - DEEPGRAM_API_KEY=[[BIN_MANAGER__DEEPGRAM_API_KEY]]
+      - XAI_API_KEY=[[BIN_MANAGER__XAI_API_KEY]]
+      - GOOGLE_API_KEY=[[BIN_MANAGER__GOOGLE_API_KEY]]
+    command: ["python", "/app/scripts/pipecat/main.py"]
+
+  pipecat-manager-2:
+    image: voipbin/bin-pipecat-manager:__IMAGE_TAG__
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    container_name: voipbin-pipecat-manager-2
+    restart: always
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:2112/metrics', timeout=4)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    environment:
+      - DATABASE_DSN=[[BIN_MANAGER__DATABASE_DSN_BIN]]
+      - RABBITMQ_ADDRESS=[[BIN_MANAGER__RABBITMQ_ADDRESS]]
+      - REDIS_ADDRESS=[[BIN_MANAGER__REDIS_ADDRESS]]
+      - REDIS_DATABASE=1
+      - PROMETHEUS_ENDPOINT=/metrics
+      - PROMETHEUS_LISTEN_ADDRESS=:2112
+      - CARTESIA_API_KEY=[[BIN_MANAGER__CARTESIA_API_KEY]]
+      - ELEVENLABS_API_KEY=[[BIN_MANAGER__ELEVENLABS_API_KEY]]
+      - OPENAI_API_KEY=[[BIN_MANAGER__OPENAI_API_KEY]]
+      - DEEPGRAM_API_KEY=[[BIN_MANAGER__DEEPGRAM_API_KEY]]
+      - XAI_API_KEY=[[BIN_MANAGER__XAI_API_KEY]]
+      - POD_IP=pipecat-manager-2
+    command: ./pipecat-manager
+    networks:
+      default:
+        aliases: [pipecat-manager]
+
+  pipecat-script-runner-2:
+    image: voipbin/bin-pipecat-manager:__IMAGE_TAG__
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    container_name: voipbin-pipecat-script-runner-2
+    restart: always
+    # Shares pipecat-manager-2's network namespace so the Go side reaches
+    # uvicorn at localhost:8000, exactly like the GKE pod. A container in
+    # another container's netns cannot declare its own networks/ports.
+    network_mode: "service:pipecat-manager-2"
+    # See pipecat-script-runner-1's depends_on comment for why this waits
+    # on service_healthy rather than the default service_started.
+    depends_on:
+      pipecat-manager-2:
+        condition: service_healthy
     # Same env set the GKE pipecat-script-runner container received
     # (k8s/deployment.yml) - the Python side calls the STT/LLM/TTS APIs
     # directly.
