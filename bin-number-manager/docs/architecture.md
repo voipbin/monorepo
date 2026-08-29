@@ -25,7 +25,7 @@ Supporting binary:
 |-------|---------|---------------|
 | Entry | `cmd/number-manager` | Cobra + Viper config, dependency wiring, daemon start |
 | Listen | `pkg/listenhandler` | RabbitMQ RPC routing; dispatches to numberhandler |
-| Subscribe | `pkg/subscribehandler` | Consumes customer/flow events via pattern bindings on the global topic exchange `bin-manager.event` (VOIP-1406); cascading deletes and flow-ref cleanup |
+| Subscribe | `pkg/subscribehandler` | Consumes customer/flow events via pattern bindings on the global topic exchange `bin-manager.event` (sole intake mechanism since VOIP-1407); cascading deletes and flow-ref cleanup |
 | Business | `pkg/numberhandler` | Number CRUD, provider dispatch, billing validation |
 | Provider | `pkg/numberhandlertelnyx` | Telnyx API: purchase, release, list available numbers |
 | Provider | `pkg/numberhandlertwilio` | Twilio API: purchase, release, list available numbers |
@@ -53,7 +53,7 @@ SubscribeHandler (`pkg/subscribehandler/`) consumes from the queue `bin-manager.
 | `customer-manager.customer.*.deleted` | Customer deletion — releases all of the customer's numbers back to the provider |
 | `flow-manager.flow.*.deleted` | Flow deletion — clears the deleted flow's references from numbers |
 
-The old per-service **fanout subscriptions are retained in code as the rollback surface until VOIP-1407** (`QueueSubscribe` to `bin-manager.flow-manager.event` and `bin-manager.customer-manager.event`); on each boot Run() re-subscribes them, then unbinds them again after the topic binds succeed.
+As of VOIP-1407 this topic-pattern binding is the **sole intake mechanism**; the old per-service fanout subscriptions (`QueueSubscribe` to `bin-manager.flow-manager.event` and `bin-manager.customer-manager.event`) have been removed from `Run()` entirely, along with the fanout-unbind step that used to follow a successful topic bind.
 
 ## Request Routing
 

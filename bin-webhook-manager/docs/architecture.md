@@ -57,10 +57,11 @@ the subscribe queue is bound with one pattern per handled event pair
 | `flow-manager.activeflow.*.updated` | `activeflow_updated` | Same per-activeflow cache pre-population as `activeflow_created` |
 | `flow-manager.activeflow.*.deleted` | `activeflow_deleted` | Write a negative tombstone (carrying `tm_delete`) to the per-activeflow webhook cache so a deleted destination is not resurrected |
 
-The legacy per-service fanout subscriptions (`bin-manager.customer-manager.event`,
-`bin-manager.flow-manager.event`) are unbound at boot after the topic patterns are bound,
-but the fanout `QueueSubscribe` calls are retained in code as the rollback surface until
-VOIP-1407 removes fanout publishing.
+As of VOIP-1407, this topic-pattern binding is the **sole intake mechanism** — the old
+per-service fanout `QueueSubscribe` calls (to `bin-manager.customer-manager.event` and
+`bin-manager.flow-manager.event`) and the fanout-unbind step that used to follow a
+successful topic bind have both been removed. A declare or bind failure is now fatal;
+there is no fanout fallback left to degrade to.
 
 ## Events Published
 

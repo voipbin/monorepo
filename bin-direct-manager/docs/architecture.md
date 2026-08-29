@@ -14,7 +14,7 @@
 | `cmd/direct-control` | CLI tool for direct DB/cache management (bypasses RabbitMQ) |
 | `pkg/config` | Configuration singleton via Cobra + Viper |
 | `pkg/listenhandler` | RabbitMQ RPC request handler with regex URI routing |
-| `pkg/subscribehandler` | Event subscriber for customer deletion cascades — consumes via a pattern binding on the global topic exchange `bin-manager.event` (VOIP-1406); the fanout leg is retained as rollback surface until VOIP-1407 |
+| `pkg/subscribehandler` | Event subscriber for customer deletion cascades — consumes via a pattern binding on the global topic exchange `bin-manager.event`, the sole intake mechanism since VOIP-1407 |
 | `pkg/directhandler` | Core business logic for direct hash CRUD and regeneration |
 | `pkg/dbhandler` | MySQL operations via `Masterminds/squirrel` |
 | `pkg/cachehandler` | Redis cache for hash-based lookups |
@@ -63,7 +63,7 @@ SubscribeHandler (`pkg/subscribehandler/`) consumes from the queue `bin-manager.
 |---------|---------|
 | `customer-manager.customer.*.deleted` | Customer deletion — cascade-deletes all direct records of that customer |
 
-The old per-service **fanout subscription is retained in code as the rollback surface until VOIP-1407** (`QueueSubscribe` to `bin-manager.customer-manager.event`); on each boot Run() re-subscribes it, then unbinds it again after the topic bind succeeds.
+As of VOIP-1407 this topic-pattern binding is the **sole intake mechanism**; the old per-service fanout subscription (`QueueSubscribe` to `bin-manager.customer-manager.event`) has been removed from `Run()` entirely, along with the fanout-unbind step that used to follow a successful topic bind. A topic bind failure is now fatal to `Run()` — there is no fanout fallback left to degrade to.
 
 ## Events Published
 

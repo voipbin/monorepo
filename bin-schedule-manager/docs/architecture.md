@@ -36,7 +36,7 @@ graph TD
 | `cmd/schedule-control` | Admin CLI over direct DB/cache (no RabbitMQ) — emergency disable path | cobra commands |
 | `internal/config` | Flag/env binding (Viper), global config singleton | `config.Config` |
 | `pkg/listenhandler` | Consumes `bin-manager.schedule-manager.request`; regex-routes to handlers; error → `cerrors.VoipbinError` envelope | `ListenHandler` |
-| `pkg/subscribehandler` | Consumes `customer_deleted` via a pattern binding on the global topic exchange `bin-manager.event` (VOIP-1406); fanout leg retained as rollback surface until VOIP-1407 | `SubscribeHandler` |
+| `pkg/subscribehandler` | Consumes `customer_deleted` via a pattern binding on the global topic exchange `bin-manager.event` (sole intake mechanism since VOIP-1407) | `SubscribeHandler` |
 | `pkg/schedulehandler` | Schedule CRUD, cron/method/target-queue validation, name uniqueness, next-run computation, internal event publishing | `ScheduleHandler` |
 | `pkg/dispatchhandler` | Tick loop: reap abandoned → refresh gauges → init `tm_next_run` → claim + dispatch due slots; manual execute | `DispatchHandler` |
 | `pkg/backuphandler` | `mariadb-dump --single-transaction` subprocess, gzip to `SCHEDULE_BACKUP_DIR`, retention pruning | `BackupHandler` |
@@ -91,4 +91,4 @@ SubscribeHandler (`pkg/subscribehandler/`) consumes from the queue `bin-manager.
 |---------|---------|
 | `customer-manager.customer.*.deleted` | Delete all schedules owned by the customer (Phase 1 platform schedules are nil-customer and unaffected) |
 
-The old per-service **fanout subscription is retained in code as the rollback surface until VOIP-1407** (`QueueSubscribe` to `bin-manager.customer-manager.event`); on each boot Run() re-subscribes it, then unbinds it again after the topic bind succeeds.
+As of VOIP-1407 this topic-pattern binding is the **sole intake mechanism**; the old per-service fanout subscription (`QueueSubscribe` to `bin-manager.customer-manager.event`) has been removed from `Run()` entirely, along with the fanout-unbind step that used to follow a successful topic bind.

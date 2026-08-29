@@ -61,11 +61,11 @@ This is the only correct way for one service to call another. Adding side-channe
 
 ### pkg/notifyhandler
 Event publishing and webhook delivery:
-- `PublishEvent` — publishes to the service's own fanout event exchange
+- `PublishEvent` — publishes to whichever path this handler instance is configured for: the global topic exchange (topic-only, when `WithGlobalTopicPublish()` was passed at construction) or this service's own per-service fanout exchange (fanout-only, the default when the option is omitted). Never both.
 - `PublishEventWithRoutingKey` — publishes with an explicit routing key, for the webhook-manager scope-first topic exchange
 - `PublishWebhook` — delivers HTTP webhook notifications to customer endpoints
 - Supports delayed delivery via RabbitMQ delay exchange
-- **Dual publish (VOIP-1404)** — with the `WithGlobalTopicPublish()` constructor option, every non-delayed event is additionally published to the global topic exchange `bin-manager.event` with a `models/eventtopic` routing key. Opt-in per handler instance, default off. The fanout publish stays the system of record: it runs first, a fanout failure skips the topic publish, and a topic failure is logged plus counted but never propagated to the caller. A failed exchange declare degrades the handler (topic publish suppressed and counted) instead of returning `nil`.
+- **Topic-only publish (VOIP-1404; cut over from dual-publish to topic-only by VOIP-1407)** — the `WithGlobalTopicPublish()` constructor option now makes the instance publish **exclusively** to the global topic exchange `bin-manager.event`, with a `models/eventtopic` routing key. No per-service fanout exchange is declared or published to when this option is enabled. **Meaning change from VOIP-1404-1406**: before VOIP-1407 this option added a topic publish *on top of* the existing fanout publish (dual publish); it no longer does — enabling it now removes the fanout leg entirely rather than adding to it. The option-omitted default is unchanged: fanout-only, publishing to this service's own per-service fanout exchange (`bin-manager.<service>.event`). `voip-asterisk-proxy` is the sole remaining fanout-only construction in the monorepo after VOIP-1407 — every other real publisher passes the option and is topic-only. **Failure semantics are now fatal, not degrading**: a declare failure on either path — the fanout exchange inside `NewNotifyHandler` (the `!topicEnabled` branch), or the global topic exchange inside `initGlobalTopicExchange` (the `topicEnabled` branch) — calls `logrus.Fatalf` and halts the process at startup, instead of the pre-VOIP-1407 behavior of logging and continuing with topic publish silently suppressed (`topicDisabled`). That field and its associated "suppressed publish" metric counting no longer exist: with only one active publish path per instance, there is nothing left to degrade to once a declare fails.
 
 ### pkg/sockhandler
 Abstract message-broker interface. Currently backed by RabbitMQ. Consumer services receive this as a dependency injection and should not depend on `rabbitmqhandler` directly.
@@ -113,7 +113,7 @@ Every change to `bin-common-handler` triggers verification across all 37 consume
 |---------------|------|-------------|
 | `<ns>_request_process_time` | Histogram | RPC request duration |
 | `<ns>_event_publish_total{type}` | Counter | Events published |
-| `<ns>_notify_total{type}` / `<ns>_notify_process_time{type}` | Counter/Histogram | Events published by `notifyhandler` to the fanout exchange (count and duration) |
+| `<ns>_notify_total{type}` / `<ns>_notify_process_time{type}` | Counter/Histogram | Events published by `notifyhandler` (count and duration). Shared across both the fanout-only and topic-only publish paths since VOIP-1407 — only one path is ever active per instance, so there is no double-counting to worry about |
 | `<ns>_topic_publish_total{type,result}` | Counter | Events published to the global topic exchange `bin-manager.event`; `result` is `ok` or `error` (VOIP-1404) |
 | `<ns>_topic_placeholder_total{type}` | Counter | Topic publishes whose subscription id fell back to the `-` placeholder (VOIP-1404) |
 | `<ns>_circuitbreaker_state{target}` | Gauge | 0=closed, 1=open, 2=half-open |

@@ -21,7 +21,7 @@ models/tag/             — Data structures (Tag, event types, WebhookMessage)
 |-------|---------|---------------|
 | Entry | `cmd/tag-manager` | Configuration; starts ListenHandler and SubscribeHandler |
 | Transport | `pkg/listenhandler` | Consumes `bin-manager.tag-manager.request`; regex-routes to taghandler |
-| Events | `pkg/subscribehandler` | Consumes customer events via a pattern binding on the global topic exchange `bin-manager.event` (VOIP-1406); cascades customer deletes |
+| Events | `pkg/subscribehandler` | Consumes customer events via a pattern binding on the global topic exchange `bin-manager.event` (sole intake mechanism since VOIP-1407); cascades customer deletes |
 | Business logic | `pkg/taghandler` | CRUD operations; publishes `tag_created`, `tag_updated`, `tag_deleted` events |
 | Persistence | `pkg/dbhandler` | MySQL writes with soft-delete (`tm_delete`); Redis cache invalidation |
 | Cache | `pkg/cachehandler` | Redis reads for fast tag lookups |
@@ -64,7 +64,7 @@ SubscribeHandler (`pkg/subscribehandler/`) consumes from the queue `bin-manager.
 |---------|---------|
 | `customer-manager.customer.*.deleted` | Customer deletion — cascading bulk tag delete |
 
-The old per-service **fanout subscription is retained in code as the rollback surface until VOIP-1407** (`QueueSubscribe` to `bin-manager.customer-manager.event`); on each boot Run() re-subscribes it, then unbinds it again after the topic bind succeeds.
+As of VOIP-1407 this topic-pattern binding is the **sole intake mechanism**; the old per-service fanout subscription (`QueueSubscribe` to `bin-manager.customer-manager.event`) has been removed from `Run()` entirely, along with the fanout-unbind step that used to follow a successful topic bind.
 
 ### Events Published
 

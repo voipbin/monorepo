@@ -50,7 +50,7 @@ Requests arrive via RabbitMQ queue `bin-manager.agent-manager.request`. The `lis
 
 ## Events Consumed
 
-Since VOIP-1406 the subscribe queue `bin-manager.agent-manager.subscribe` receives its service events through pattern bindings on the global topic exchange `bin-manager.event` (declared idempotently at boot), one pattern per dispatch pair:
+Since VOIP-1406 the subscribe queue `bin-manager.agent-manager.subscribe` receives its service events through pattern bindings on the global topic exchange `bin-manager.event` (declared idempotently at boot), one pattern per dispatch pair. Since VOIP-1407 this topic-pattern binding is the **sole intake mechanism** for these events:
 
 | Pattern | Dispatch |
 |---------|----------|
@@ -59,10 +59,10 @@ Since VOIP-1406 the subscribe queue `bin-manager.agent-manager.subscribe` receiv
 | `customer-manager.customer.*.deleted` | customer deletion cleanup |
 | `customer-manager.customer.*.created` | customer creation handling |
 
-The exact pattern set is pinned by `pkg/subscribehandler/binding_golden_test.go`. Retained legs:
+The exact pattern set is pinned by `pkg/subscribehandler/binding_golden_test.go`.
 
-- The VOIP-1258 webhook-topic bind (`#` on `bin-manager.webhook-manager.event.topic`) is unchanged and coexists with the new bindings.
-- The fanout `QueueSubscribe` calls to `bin-manager.call-manager.event` and `bin-manager.customer-manager.event` remain in `Run()` as the rollback surface until VOIP-1407; on a fully successful topic binding, the queue is unbound from both fanout exchanges at boot (bind-new-before-unbind-old, all-or-nothing with best-effort rollback).
+- The VOIP-1258 webhook-topic bind (`#` on `bin-manager.webhook-manager.event.topic`) is a separate, unrelated migration and is unchanged by VOIP-1407; it still coexists with the bindings above.
+- The old per-service fanout subscriptions (`QueueSubscribe` to `bin-manager.call-manager.event` and `bin-manager.customer-manager.event`) and the fanout-unbind step that used to follow a successful topic bind have been removed from `Run()` entirely (VOIP-1407). A topic-pattern bind failure now returns a fatal error from `Run()` immediately; there is no fanout fallback left to degrade to.
 
 ## Events Published
 

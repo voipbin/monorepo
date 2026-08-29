@@ -20,7 +20,7 @@ Key packages:
 | Package | Role |
 |---------|------|
 | `pkg/listenhandler` | RabbitMQ RPC routing (shared queue + per-pod queue) |
-| `pkg/subscribehandler` | Consumes call-manager and customer-manager events for cleanup via pattern bindings on the global topic exchange `bin-manager.event` (VOIP-1406); fanout legs retained as rollback surface until VOIP-1407 |
+| `pkg/subscribehandler` | Consumes call-manager and customer-manager events for cleanup via pattern bindings on the global topic exchange `bin-manager.event` — the sole intake mechanism since VOIP-1407 removed the old per-service fanout subscriptions |
 | `pkg/streaminghandler` | WebSocket connections to Asterisk; in-memory session map |
 | `pkg/transcribehandler` | Core business logic — session creation, status transitions |
 | `pkg/dbhandler` | MySQL + Redis persistence |
@@ -53,7 +53,7 @@ SubscribeHandler (`pkg/subscribehandler/`) consumes from the queue `bin-manager.
 | `call-manager.confbridge.*.terminated` | Confbridge terminated — finalize the conference transcription session |
 | `customer-manager.customer.*.deleted` | Customer deleted — cascade cleanup of the customer's transcribes |
 
-The old per-service **fanout subscriptions are retained in code as the rollback surface until VOIP-1407** (`QueueSubscribe` to `bin-manager.call-manager.event` and `bin-manager.customer-manager.event`); on each boot Run() re-subscribes them, then unbinds both again after the topic binds succeed.
+As of VOIP-1407, this topic-pattern binding is the **sole intake mechanism** — the old per-service fanout `QueueSubscribe` calls (to `bin-manager.call-manager.event` and `bin-manager.customer-manager.event`) and the fanout-unbind step that used to follow a successful topic bind have both been removed. A declare or bind failure is now fatal; there is no fanout fallback left to degrade to.
 
 ## Request Routing
 

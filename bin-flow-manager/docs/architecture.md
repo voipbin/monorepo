@@ -31,7 +31,7 @@ graph TD
 | `pkg/stackmaphandler` | Stack management: push/pop nested flow stacks for sub-flow execution | `stack.Stack` |
 | `pkg/variablehandler` | Variable resolution and substitution: replaces `{{variable}}` tokens in action parameters | `variable.Variable` |
 | `pkg/listenhandler` | RabbitMQ RPC request router (regex pattern matching) | `sock.Request`, `sock.Response` |
-| `pkg/subscribehandler` | Consumes customer-manager events via a pattern binding on the global topic exchange `bin-manager.event` (VOIP-1406); fanout leg retained as rollback surface until VOIP-1407 | queue event structs |
+| `pkg/subscribehandler` | Consumes customer-manager events via a pattern binding on the global topic exchange `bin-manager.event`, the sole intake mechanism since VOIP-1407 | queue event structs |
 | `pkg/dbhandler` | MySQL CRUD using Squirrel query builder | all model structs |
 | `pkg/cachehandler` | Redis fast-path lookups for activeflows | `activeflow.Activeflow` |
 | `models/flow` | Flow and Action data model, action types | `flow.Flow`, `flow.Action` |
@@ -54,9 +54,9 @@ SubscribeHandler (`pkg/subscribehandler/`) consumes from the queue `bin-manager.
 |---------|---------|
 | `customer-manager.customer.*.deleted` | Customer deletion — cascades cleanup to the customer's flows and activeflows |
 
-The `call-manager.call.*.hangup` pair is deliberately NOT bound: its dispatch case (`EventCallHangup` → activeflow stop) is unreachable today — the fanout subscribeTargets set has always been customer-only, so the case has never run in production — and stays unreachable (VOIP-1406 design §4; follow-up VOIP-1422 decides activate-or-delete; activeflow cleanup on hangup is a latent-bug candidate).
+The `call-manager.call.*.hangup` pair is deliberately NOT bound: its dispatch case (`EventCallHangup` → activeflow stop) is unreachable today — the intake set has always been customer-only, first as the fanout `subscribeTargets` and now as `topicPatterns`, so the case has never run in production — and stays unreachable (VOIP-1406 design §4; follow-up VOIP-1422 decides activate-or-delete; activeflow cleanup on hangup is a latent-bug candidate).
 
-The old per-service **fanout subscription is retained in code as the rollback surface until VOIP-1407** (`QueueSubscribe` to `bin-manager.customer-manager.event`); on each boot Run() re-subscribes it, then unbinds it again after the topic bind succeeds.
+As of VOIP-1407 this topic-pattern binding is the **sole intake mechanism**; the old per-service fanout subscription (`QueueSubscribe` to `bin-manager.customer-manager.event`) has been removed from `Run()` entirely, along with the fanout-unbind step that used to follow a successful topic bind. A topic bind failure is now fatal to `Run()` — there is no fanout fallback left to degrade to.
 
 ## Request Routing
 
