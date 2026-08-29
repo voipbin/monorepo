@@ -257,7 +257,7 @@ func TestNewSubscribeHandler(t *testing.T) {
 	mockAccount := accounthandler.NewMockAccountHandler(mc)
 	mockCache := cachehandler.NewMockCacheHandler(mc)
 
-	h := NewSubscribeHandler(mockSock, "test-queue", "target1,target2", mockAccount, mockCache)
+	h := NewSubscribeHandler(mockSock, "test-queue", mockAccount, mockCache)
 	if h == nil {
 		t.Errorf("Wrong match. expect: handler, got: nil")
 	}

@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
@@ -190,14 +189,9 @@ func runSubscribe(sockHandler sockhandler.SockHandler, accountHandler accounthan
 	})
 	log.Debugf("Running subscribe handler")
 
-	subscribeTargets := strings.Join([]string{
-		string(commonoutline.QueueNameCustomerEvent),
-		string(commonoutline.QueueNameFlowEvent),
-	}, ",")
 	subHandler := subscribehandler.NewSubscribeHandler(
 		sockHandler,
 		string(commonoutline.QueueNameWebhookSubscribe),
-		subscribeTargets,
 		accountHandler,
 		cache,
 	)
