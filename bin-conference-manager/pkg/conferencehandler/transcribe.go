@@ -66,7 +66,13 @@ func (h *conferenceHandler) TranscribeStop(ctx context.Context, id uuid.UUID) (*
 		return nil, fmt.Errorf("have no transcribe id")
 	}
 
-	tr, err := h.reqHandler.TranscribeV1TranscribeStop(ctx, tmp.TranscribeID)
+	transcribe, err := h.reqHandler.TranscribeV1TranscribeGet(ctx, tmp.TranscribeID)
+	if err != nil {
+		log.Errorf("Could not get the transcribe info. err: %v", err)
+		return nil, err
+	}
+
+	tr, err := h.reqHandler.TranscribeV1TranscribeStop(ctx, transcribe.HostID, tmp.TranscribeID)
 	if err != nil {
 		log.Errorf("Could not stop the transcribe. err: %v", err)
 		return nil, err

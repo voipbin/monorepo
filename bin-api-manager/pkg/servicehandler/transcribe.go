@@ -270,7 +270,7 @@ func (h *serviceHandler) TranscribeStop(ctx context.Context, a *auth.AuthIdentit
 		return nil, serviceerrors.ErrPermissionDenied
 	}
 
-	tmp, err := h.reqHandler.TranscribeV1TranscribeStop(ctx, transcribeID)
+	tmp, err := h.reqHandler.TranscribeV1TranscribeStop(ctx, t.HostID, transcribeID)
 	if err != nil {
 		log.Errorf("Could not stop the transcribe. err: %v", err)
 		return nil, err

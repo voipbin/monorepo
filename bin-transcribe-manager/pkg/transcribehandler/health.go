@@ -78,7 +78,7 @@ func (h *transcribeHandler) HealthCheck(ctx context.Context, id uuid.UUID, retry
 	}
 
 	go func() {
-		_ = h.reqHandler.TranscribeV1TranscribeHealthCheck(ctx, id, defaultHealthDelay, retryCount)
+		_ = h.reqHandler.TranscribeV1TranscribeHealthCheck(ctx, tr.HostID, id, defaultHealthDelay, retryCount)
 	}()
 }
 
@@ -105,15 +105,16 @@ func (h *transcribeHandler) HealthCheck(ctx context.Context, id uuid.UUID, retry
 // or (2) Delete, which proceeds even if Stop fails (see transcribe.go's
 // Delete). This function is still kept safe-by-construction below (narrow
 // error match, bounded retries) so it is safe to wire up later without
-// re-litigating this logic - PROVIDED this service is still running with
-// replicas: 1 (see k8s/deployment.yml) when that wiring happens. Stop()'s
-// isSafeToConsiderStopped (pkg/transcribehandler/stop.go) has a NotFound
-// branch that is only correct under that single-replica assumption, because
-// TranscribeV1TranscribeStop and TranscribeV1TranscribeHealthCheck are both
-// routed through the shared commonoutline.QueueNameTranscribeRequest queue
-// rather than a per-pod queue. If replicas is ever raised above 1, that
-// NotFound branch must be re-examined first - see the detailed comment on
-// isSafeToConsiderStopped for why.
+// re-litigating this logic. Both TranscribeV1TranscribeStop and
+// TranscribeV1TranscribeHealthCheck are now routed directly to the owner
+// pod's per-pod queue (bin-manager.transcribe-manager-<host_id>.request)
+// rather than the shared commonoutline.QueueNameTranscribeRequest queue, so
+// Stop()'s isSafeToConsiderStopped (pkg/transcribehandler/stop.go) NotFound
+// branch is safe regardless of replica count: a NotFound response always
+// means that specific pod (host_id) has no session for this transcribe,
+// which is a reliable "already stopped" signal independent of how many
+// other replicas exist. See the detailed comment on isSafeToConsiderStopped
+// for the full reasoning.
 //
 // If/when the first health check does get scheduled and this reschedule loop
 // runs, ending it here on a genuine stop failure would leave that transcribe
@@ -148,6 +149,6 @@ func (h *transcribeHandler) stopOrReschedule(ctx context.Context, tr *transcribe
 
 	log.Errorf("Could not stop the transcribe. Will retry via a future health check. transcribe_id: %s, err: %v", tr.ID, err)
 	go func() {
-		_ = h.reqHandler.TranscribeV1TranscribeHealthCheck(ctx, tr.ID, defaultHealthDelay, retryCount+1)
+		_ = h.reqHandler.TranscribeV1TranscribeHealthCheck(ctx, tr.HostID, tr.ID, defaultHealthDelay, retryCount+1)
 	}()
 }

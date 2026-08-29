@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/url"
 
+	outline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
 	tmrequest "monorepo/bin-transcribe-manager/pkg/listenhandler/models/request"
@@ -105,11 +106,15 @@ func (r *requestHandler) TranscribeV1TranscribeStart(
 
 // TranscribeV1TranscribeStop sends a request to transcribe-manager
 // to stops a live transcribe.
+// The request is routed to the owner pod's per-pod queue (hostID) rather
+// than the shared request queue, since the live transcribe session only
+// exists on that specific pod.
 // it returns stopped transcribe info if it succeed.
-func (r *requestHandler) TranscribeV1TranscribeStop(ctx context.Context, transcribeID uuid.UUID) (*tmtranscribe.Transcribe, error) {
+func (r *requestHandler) TranscribeV1TranscribeStop(ctx context.Context, hostID uuid.UUID, transcribeID uuid.UUID) (*tmtranscribe.Transcribe, error) {
 	uri := fmt.Sprintf("/v1/transcribes/%s/stop", transcribeID)
 
-	tmp, err := r.sendRequestTranscribe(ctx, uri, sock.RequestMethodPost, "transcribe/transcribes", 30000, 0, ContentTypeJSON, nil)
+	queueName := fmt.Sprintf("bin-manager.transcribe-manager-%s.request", hostID)
+	tmp, err := r.sendRequest(ctx, outline.QueueName(queueName), uri, sock.RequestMethodPost, "transcribe/transcribes", 30000, 0, ContentTypeJSON, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -140,10 +145,13 @@ func (r *requestHandler) TranscribeV1TranscribeDelete(ctx context.Context, trans
 	return &res, nil
 }
 
-// TranscribeV1TranscribeHealthCheck sends the request to the transcribe-manager for transcribe health-check
+// TranscribeV1TranscribeHealthCheck sends the request to the transcribe-manager for transcribe health-check.
+// The request is routed to the owner pod's per-pod queue (hostID) rather
+// than the shared request queue, since the live transcribe session only
+// exists on that specific pod.
 //
 // delay: milliseconds
-func (r *requestHandler) TranscribeV1TranscribeHealthCheck(ctx context.Context, id uuid.UUID, delay int, retryCount int) error {
+func (r *requestHandler) TranscribeV1TranscribeHealthCheck(ctx context.Context, hostID uuid.UUID, id uuid.UUID, delay int, retryCount int) error {
 	uri := fmt.Sprintf("/v1/transcribes/%s/health-check", id)
 
 	type Data struct {
@@ -157,7 +165,8 @@ func (r *requestHandler) TranscribeV1TranscribeHealthCheck(ctx context.Context, 
 		return err
 	}
 
-	tmp, err := r.sendRequestTranscribe(ctx, uri, sock.RequestMethodPost, "transcribe/transcribes/<transcribe-id>/health-check", requestTimeoutDefault, delay, ContentTypeJSON, m)
+	queueName := fmt.Sprintf("bin-manager.transcribe-manager-%s.request", hostID)
+	tmp, err := r.sendRequest(ctx, outline.QueueName(queueName), uri, sock.RequestMethodPost, "transcribe/transcribes/<transcribe-id>/health-check", requestTimeoutDefault, delay, ContentTypeJSON, m)
 	if err != nil {
 		return err
 	}

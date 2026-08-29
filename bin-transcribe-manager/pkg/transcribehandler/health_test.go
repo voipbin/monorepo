@@ -164,7 +164,7 @@ func Test_HealthCheck(t *testing.T) {
 				mockReq.EXPECT().CallV1ConfbridgeGet(ctx, tt.responseTranscribe.ReferenceID).Return(tt.responseConfbridge, nil)
 			}
 
-			mockReq.EXPECT().TranscribeV1TranscribeHealthCheck(ctx, tt.id, defaultHealthDelay, tt.expectRetryCount).Return(nil)
+			mockReq.EXPECT().TranscribeV1TranscribeHealthCheck(ctx, tt.responseTranscribe.HostID, tt.id, defaultHealthDelay, tt.expectRetryCount).Return(nil)
 
 			h.HealthCheck(ctx, tt.id, tt.retryCount)
 
@@ -218,7 +218,7 @@ func Test_HealthCheck_maxRetryExceeded_stopFails_reschedules(t *testing.T) {
 	// stopLive wraps this into a reasonStreamingStopFailed
 	// FailedPrecondition error, which is the one retryable case - so
 	// stopOrReschedule reschedules at retryCount+1.
-	mockReq.EXPECT().TranscribeV1TranscribeHealthCheck(ctx, id, defaultHealthDelay, retryCount+1).Return(nil)
+	mockReq.EXPECT().TranscribeV1TranscribeHealthCheck(ctx, tr.HostID, id, defaultHealthDelay, retryCount+1).Return(nil)
 
 	h.HealthCheck(ctx, id, retryCount)
 
@@ -321,7 +321,7 @@ func Test_HealthCheck_referenceGetError_stopFails_reschedules(t *testing.T) {
 	// stopLive wraps this into a reasonStreamingStopFailed FailedPrecondition
 	// error, which is the one retryable case - so stopOrReschedule
 	// reschedules at retryCount+1.
-	mockReq.EXPECT().TranscribeV1TranscribeHealthCheck(ctx, id, defaultHealthDelay, retryCount+1).Return(nil)
+	mockReq.EXPECT().TranscribeV1TranscribeHealthCheck(ctx, tr.HostID, id, defaultHealthDelay, retryCount+1).Return(nil)
 
 	h.HealthCheck(ctx, id, retryCount)
 

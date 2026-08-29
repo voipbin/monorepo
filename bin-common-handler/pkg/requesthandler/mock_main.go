@@ -7570,17 +7570,17 @@ func (mr *MockRequestHandlerMockRecorder) TranscribeV1TranscribeGet(ctx, transcr
 }
 
 // TranscribeV1TranscribeHealthCheck mocks base method.
-func (m *MockRequestHandler) TranscribeV1TranscribeHealthCheck(ctx context.Context, id uuid.UUID, delay, retryCount int) error {
+func (m *MockRequestHandler) TranscribeV1TranscribeHealthCheck(ctx context.Context, hostID, id uuid.UUID, delay, retryCount int) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TranscribeV1TranscribeHealthCheck", ctx, id, delay, retryCount)
+	ret := m.ctrl.Call(m, "TranscribeV1TranscribeHealthCheck", ctx, hostID, id, delay, retryCount)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // TranscribeV1TranscribeHealthCheck indicates an expected call of TranscribeV1TranscribeHealthCheck.
-func (mr *MockRequestHandlerMockRecorder) TranscribeV1TranscribeHealthCheck(ctx, id, delay, retryCount any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) TranscribeV1TranscribeHealthCheck(ctx, hostID, id, delay, retryCount any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscribeV1TranscribeHealthCheck", reflect.TypeOf((*MockRequestHandler)(nil).TranscribeV1TranscribeHealthCheck), ctx, id, delay, retryCount)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscribeV1TranscribeHealthCheck", reflect.TypeOf((*MockRequestHandler)(nil).TranscribeV1TranscribeHealthCheck), ctx, hostID, id, delay, retryCount)
 }
 
 // TranscribeV1TranscribeList mocks base method.
@@ -7614,18 +7614,18 @@ func (mr *MockRequestHandlerMockRecorder) TranscribeV1TranscribeStart(ctx, custo
 }
 
 // TranscribeV1TranscribeStop mocks base method.
-func (m *MockRequestHandler) TranscribeV1TranscribeStop(ctx context.Context, transcribeID uuid.UUID) (*transcribe.Transcribe, error) {
+func (m *MockRequestHandler) TranscribeV1TranscribeStop(ctx context.Context, hostID, transcribeID uuid.UUID) (*transcribe.Transcribe, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TranscribeV1TranscribeStop", ctx, transcribeID)
+	ret := m.ctrl.Call(m, "TranscribeV1TranscribeStop", ctx, hostID, transcribeID)
 	ret0, _ := ret[0].(*transcribe.Transcribe)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // TranscribeV1TranscribeStop indicates an expected call of TranscribeV1TranscribeStop.
-func (mr *MockRequestHandlerMockRecorder) TranscribeV1TranscribeStop(ctx, transcribeID any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) TranscribeV1TranscribeStop(ctx, hostID, transcribeID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscribeV1TranscribeStop", reflect.TypeOf((*MockRequestHandler)(nil).TranscribeV1TranscribeStop), ctx, transcribeID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscribeV1TranscribeStop", reflect.TypeOf((*MockRequestHandler)(nil).TranscribeV1TranscribeStop), ctx, hostID, transcribeID)
 }
 
 // TranscribeV1TranscriptList mocks base method.
