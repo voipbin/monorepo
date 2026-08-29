@@ -21,7 +21,7 @@ against the code, not the tracker, if any time has passed.
    (`bin-manager.<svc>-<host_id>.request`) means later RPCs must reach
    the *owning* replica — competing consumers on a shared queue break
    that. See [docs/patterns/per-pod-queues.md](../patterns/per-pod-queues.md).
-   (Blocked today: pipecat, transcribe.)
+   (Blocked today: pipecat. transcribe's routing gap was resolved by P17.)
 2. **No container-name-dependent env/DNS.** Anything that resolves the
    service's own (or a sidecar's) fixed `container_name` via Docker DNS
    breaks when the name is removed. (Blocked today: pipecat —
