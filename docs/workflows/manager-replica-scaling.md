@@ -21,11 +21,10 @@ against the code, not the tracker, if any time has passed.
    (`bin-manager.<svc>-<host_id>.request`) means later RPCs must reach
    the *owning* replica — competing consumers on a shared queue break
    that. See [docs/patterns/per-pod-queues.md](../patterns/per-pod-queues.md).
-   (Blocked today: pipecat. transcribe's routing gap was resolved by P17.)
+   (transcribe's routing gap was resolved by P17.)
 2. **No container-name-dependent env/DNS.** Anything that resolves the
    service's own (or a sidecar's) fixed `container_name` via Docker DNS
-   breaks when the name is removed. (Blocked today: pipecat —
-   `POD_IP=pipecat-manager`. transcribe's
+   breaks when the name is removed. (transcribe's
    `${POD_IP:-127.0.0.1}` fallback looks similar but its real HostID is
    a random UUID — a different problem; see that service's docs.)
 3. **External naming binding — resolved fleet-wide (P10).**
