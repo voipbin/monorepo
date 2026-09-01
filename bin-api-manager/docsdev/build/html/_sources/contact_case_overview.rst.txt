@@ -32,7 +32,7 @@ Case Lifecycle
 
 ::
 
-    (created by case_create Flow action / AI tool, or get-or-create on re-contact)
+    (created by case_create Flow action / AI tool)
                         |
                         v
                     +--------+
@@ -49,7 +49,7 @@ Case Lifecycle
 * ``open``: The case is active. Notes can be added, its contact attribution can change, and messages can be sent through it.
 * ``closed``: The case has been resolved. ``closed_at``, ``closed_reason``, ``closed_by_type``, and ``closed_by_id`` record how and by whom it was closed.
 
-``POST /contact_cases/{id}/close`` closes an open case. ``closed_by_id`` is always derived server-side from the authenticated caller's own agent identity — it cannot be forged by supplying an arbitrary agent ID. Closing an already-closed case is not an error: the response reflects the case's actual persisted closed state (which may have been closed by a different agent or by the system, e.g. on timeout).
+``POST /contact_cases/{id}/close`` closes an open case. ``closed_by_id`` is always derived server-side from the authenticated caller's own agent identity — it cannot be forged by supplying an arbitrary agent ID. Closing an already-closed case is not an error: the response reflects the case's actual persisted closed state (which may have been closed by a different agent).
 
 ``POST /contact_cases/{id}/continue`` creates a new, open case that continues a previously closed one, linked via ``previous_case_id``. This models a customer re-contacting about the same matter after their case was closed.
 

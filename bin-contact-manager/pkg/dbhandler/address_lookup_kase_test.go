@@ -17,10 +17,10 @@ import (
 )
 
 // Test_AddressLookupContactIDByTypeTarget verifies the generic
-// (type, target) -> contact_id lookup used by Case get-or-create's
-// contact auto-match step (design §4 step 2). Unlike ContactLookupByPhone/
-// ByEmail (tel/email specific), Case's peer_type can be any
-// commonaddress.Type (call reference_type today, others later).
+// (type, target) -> contact_id lookup used by Case creation's
+// contact auto-match step (contact-case-management design §4.4). Unlike
+// ContactLookupByPhone/ByEmail (tel/email specific), Case's peer_type can
+// be any commonaddress.Type (call reference_type today, others later).
 func Test_AddressLookupContactIDByTypeTarget(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()

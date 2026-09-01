@@ -51,7 +51,7 @@ Case
 * ``opened_at`` (string, ISO 8601, nullable): When the case was opened.
 * ``closed_at`` (string, ISO 8601, nullable): When the case was closed, if applicable.
 * ``closed_reason`` (String, optional): Why the case was closed. See :ref:`Closed reason <service_agent-case-struct-case-closed_reason>`.
-* ``closed_by_type`` (String, optional): ``agent`` or ``system``. Derived server-side from the caller that closed the case.
+* ``closed_by_type`` (String, optional): ``agent``. Derived server-side from the caller that closed the case.
 * ``closed_by_id`` (UUID, nullable): The agent that closed the case, when ``closed_by_type`` is ``agent``.
 * ``previous_case_id`` (UUID, nullable): The prior, now-closed case for the same peer, set automatically on re-contact.
 * ``tag_ids`` (Array of UUID, optional): Tag IDs assigned to the case.
@@ -79,7 +79,6 @@ Closed reason
 Type           Description
 ============== ============
 agent_closed   An agent explicitly closed the case via ``POST .../close``.
-timeout        The case was closed automatically after a period of inactivity.
 merged         Reserved for a future same-channel case-merge feature. Not yet used.
 ============== ============
 

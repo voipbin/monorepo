@@ -22,12 +22,6 @@ type Config struct {
 	RedisAddress            string
 	RedisDatabase           int
 	RedisPassword           string
-
-	// CaseTimeoutHours is the contact-case-management design §4.1
-	// CASE_TIMEOUT_HOURS: platform-wide, no per-customer override (see
-	// design §2 parked items). Follows the bin-ai-manager
-	// AIcallConversationIdleTimeoutHours precedent for config shape.
-	CaseTimeoutHours int
 }
 
 // Get returns the current configuration
@@ -47,7 +41,6 @@ func Bootstrap(cmd *cobra.Command) error {
 	f.String("redis_address", "127.0.0.1:6379", "Redis server address")
 	f.String("redis_database", "1", "Redis database index")
 	f.String("redis_password", "", "Redis password")
-	f.Int("case_timeout_hours", 24, "Case idle timeout (hours) before a peer's open case is closed as timed out")
 
 	bindings := map[string]string{
 		"database_dsn":              "DATABASE_DSN",
@@ -57,7 +50,6 @@ func Bootstrap(cmd *cobra.Command) error {
 		"redis_address":             "REDIS_ADDRESS",
 		"redis_database":            "REDIS_DATABASE",
 		"redis_password":            "REDIS_PASSWORD",
-		"case_timeout_hours":        "CASE_TIMEOUT_HOURS",
 	}
 
 	for flagKey, envKey := range bindings {
@@ -84,16 +76,8 @@ func LoadGlobalConfig() {
 			RedisAddress:            viper.GetString("redis_address"),
 			RedisDatabase:           viper.GetInt("redis_database"),
 			RedisPassword:           viper.GetString("redis_password"),
-			CaseTimeoutHours:        viper.GetInt("case_timeout_hours"),
 		}
 	})
-}
-
-// SetCaseTimeoutHoursForTest overrides the case timeout in tests, bypassing
-// the sync.Once guard (bin-ai-manager AIcallConversationIdleTimeoutHours
-// precedent).
-func SetCaseTimeoutHoursForTest(hours int) {
-	globalConfig.CaseTimeoutHours = hours
 }
 
 // InitConfig initializes the configuration with Cobra command (for daemon)
@@ -124,9 +108,6 @@ func InitConfig(cmd *cobra.Command) error {
 	if err = viper.BindPFlag("redis_password", cmd.Flags().Lookup("redis_password")); err != nil {
 		return errors.Wrapf(err, "error binding redis_password flag")
 	}
-	if err = viper.BindPFlag("case_timeout_hours", cmd.Flags().Lookup("case_timeout_hours")); err != nil {
-		return errors.Wrapf(err, "error binding case_timeout_hours flag")
-	}
 
 	// Load configuration from viper into struct
 	globalConfig = Config{
@@ -137,7 +118,6 @@ func InitConfig(cmd *cobra.Command) error {
 		RedisAddress:            viper.GetString("redis_address"),
 		RedisDatabase:           viper.GetInt("redis_database"),
 		RedisPassword:           viper.GetString("redis_password"),
-		CaseTimeoutHours:        viper.GetInt("case_timeout_hours"),
 	}
 
 	return nil

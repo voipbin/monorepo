@@ -15,12 +15,11 @@ import (
 	"monorepo/bin-contact-manager/pkg/dbhandler"
 )
 
-// Create implements design doc §3's plain Create semantics -- distinct
-// from GetOrCreate: no transaction, no peer lock, no retry loop, no
-// previous_case_id chaining, no owner auto-assignment. Inserts a single
-// new Case row via the existing dbhandler.CaseInsert primitive and
-// translates its sentinel errors to typed cerrors at this layer (design
-// §3.3 steps 1-2).
+// Create implements design doc §3's plain Create semantics: no
+// transaction, no retry loop, no previous_case_id chaining, no owner
+// auto-assignment. Inserts a single new Case row via the existing
+// dbhandler.CaseInsert primitive and translates its sentinel errors to
+// typed cerrors at this layer (design §3.3 steps 1-2).
 func (h *caseHandler) Create(
 	ctx context.Context,
 	customerID uuid.UUID,

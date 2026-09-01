@@ -68,12 +68,8 @@ type DBHandler interface {
 	CaseInsertTx(ctx context.Context, tx *sql.Tx, c *kase.Case) error
 	CaseGetByID(ctx context.Context, id uuid.UUID) (*kase.Case, error)
 	CaseGetByIDTx(ctx context.Context, tx *sql.Tx, id uuid.UUID) (*kase.Case, error)
-	CaseGetByIDForUpdate(ctx context.Context, tx *sql.Tx, customerID, id uuid.UUID) (*kase.Case, error)
 	CaseGetOpenByPeer(ctx context.Context, tx *sql.Tx, customerID uuid.UUID, peerType commonaddress.Type, peerTarget, referenceType string) (*kase.Case, error)
 	CaseUpdateStatusClosed(ctx context.Context, customerID, id uuid.UUID, closedReason, closedByType string, closedByID *uuid.UUID, closedAt *time.Time) (bool, error)
-	CaseUpdateStatusClosedTx(ctx context.Context, tx *sql.Tx, customerID, id uuid.UUID, closedReason, closedByType string, closedByID *uuid.UUID, closedAt *time.Time) (bool, error)
-	CaseUpdateTMUpdate(ctx context.Context, id uuid.UUID, tmUpdate *time.Time) error
-	CaseUpdateTMUpdateTx(ctx context.Context, tx *sql.Tx, id uuid.UUID, tmUpdate *time.Time) error
 	CaseUpdateContactID(ctx context.Context, customerID, id, contactID uuid.UUID) error
 	CaseUpdateContactIDTx(ctx context.Context, tx *sql.Tx, customerID, id, contactID uuid.UUID) error
 	CaseUpdateOwner(ctx context.Context, customerID, id uuid.UUID, ownerType commonidentity.OwnerType, ownerID uuid.UUID) error
@@ -89,8 +85,6 @@ type DBHandler interface {
 	CaseNoteListByCase(ctx context.Context, customerID, caseID uuid.UUID) ([]*casenote.CaseNote, error)
 
 	CaseListByOwner(ctx context.Context, customerID uuid.UUID, ownerType commonidentity.OwnerType, ownerID uuid.UUID) ([]*kase.Case, error)
-	CaseGetLastClosedByPeer(ctx context.Context, customerID uuid.UUID, peerType commonaddress.Type, peerTarget, referenceType string) (*kase.Case, error)
-	CaseGetLastClosedByPeerTx(ctx context.Context, tx *sql.Tx, customerID uuid.UUID, peerType commonaddress.Type, peerTarget, referenceType string) (*kase.Case, error)
 
 	// CaseList returns Cases scoped to customerID, optionally filtered by
 	// status (empty string = no status filter), owner
@@ -132,25 +126,24 @@ var (
 	// ErrDuplicate is returned by CaseInsert when the insert violates
 	// uq_case_open_peer (contact_cases' partial-unique invariant: at most
 	// one OPEN case per customer/peer/reference_type -- see
-	// contact-case-management design §3.1). Callers (the get-or-create
-	// algorithm, design §4) use this as the signal to retry with a locked
-	// re-select rather than treating it as a generic infrastructure error.
+	// contact-case-management design §3.1). Callers (Create's
+	// single-attempt path and Continue's insertWithRetry retry loop) use
+	// this as the signal to retry with a locked re-select rather than
+	// treating it as a generic infrastructure error.
 	ErrDuplicate = fmt.Errorf("an open case already exists for this customer/peer/reference_type")
 
-	// ErrDeadlock is returned by any Case* Tx-scoped operation (design §4's
-	// get-or-create transaction) when the underlying driver reports a
-	// MySQL deadlock (errno 1213, "Deadlock found when trying to get
-	// lock; try restarting transaction"). VOIP-1232: concurrent
-	// GetOrCreate calls racing to INSERT into contact_cases for the same
-	// (customer_id, peer_type, peer_target, reference_type) tuple can
-	// occasionally surface a 1213 instead of the clean 1062/ErrDuplicate
-	// path, because the collision can occur during the insert-intention
-	// gap-lock phase before either transaction commits. InnoDB
-	// auto-rolls-back the ENTIRE transaction server-side when it reports
-	// 1213 -- callers MUST NOT reuse the same *sql.Tx after seeing this
-	// error; a correct retry restarts from a fresh BeginTx (design §4.2's
-	// insert-retry loop is a different, narrower mechanism scoped to
-	// ErrDuplicate only and does not cover this).
+	// ErrDeadlock is returned by any Case* Tx-scoped operation when the
+	// underlying driver reports a MySQL deadlock (errno 1213, "Deadlock
+	// found when trying to get lock; try restarting transaction").
+	// Concurrent case inserts (Continue's insertWithRetry / Create) racing
+	// to INSERT into contact_cases for the same (customer_id, peer_type,
+	// peer_target, reference_type) tuple can occasionally surface a 1213
+	// instead of the clean 1062/ErrDuplicate path, because the collision
+	// can occur during the insert-intention gap-lock phase before either
+	// transaction commits. InnoDB auto-rolls-back the ENTIRE transaction
+	// server-side when it reports 1213 -- callers MUST NOT reuse the same
+	// *sql.Tx after seeing this error; a correct retry restarts from a
+	// fresh BeginTx.
 	ErrDeadlock = fmt.Errorf("deadlock detected; transaction was rolled back by the server")
 )
 

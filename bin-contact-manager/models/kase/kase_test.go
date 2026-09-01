@@ -140,7 +140,6 @@ func Test_ClosedReasonConstants(t *testing.T) {
 		expected string
 	}{
 		{"closed_reason_agent_closed", ClosedReasonAgentClosed, "agent_closed"},
-		{"closed_reason_timeout", ClosedReasonTimeout, "timeout"},
 		{"closed_reason_merged", ClosedReasonMerged, "merged"},
 	}
 	for _, tt := range tests {
@@ -159,7 +158,6 @@ func Test_ClosedByTypeConstants(t *testing.T) {
 		expected string
 	}{
 		{"closed_by_type_agent", ClosedByTypeAgent, "agent"},
-		{"closed_by_type_system", ClosedByTypeSystem, "system"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -303,9 +303,9 @@ func (h *handler) ContactDelete(ctx context.Context, id uuid.UUID) error {
 }
 
 // AddressLookupContactIDByTypeTarget resolves a (type, target) pair
-// directly to its associated contact_id, used by Case get-or-create's
-// contact auto-match step (design §4 step 2). Unlike ContactLookupByPhone/
-// ByEmail (tel/email specific with a hard-coded contact.AddressTypeTel/Email
+// directly to its associated contact_id, used by Case creation's
+// contact auto-match step (contact-case-management design §4.4). Unlike
+// ContactLookupByPhone/ByEmail (tel/email specific with a hard-coded contact.AddressTypeTel/Email
 // constant), this is generic over commonaddress.Type since a Case's
 // peer_type is not restricted to tel/email (today: call's tel peer_type,
 // but the mechanism is type-agnostic). Returns ErrNotFound both when no

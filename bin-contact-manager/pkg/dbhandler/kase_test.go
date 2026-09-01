@@ -246,9 +246,9 @@ func Test_CaseInsert_DuplicateOpenPeer_ReturnsConflict(t *testing.T) {
 }
 
 // Test_CaseGetOpenByPeer verifies the locked-select-for-update helper
-// (Task 3.2) used by the get-or-create step 1 lookup. Uses sqlmock (not
-// the real SQLite in-memory DB) because SQLite does not support the
-// "FOR UPDATE" locking clause -- same convention as
+// (Task 3.2) used by insertWithRetry's post-conflict re-select. Uses
+// sqlmock (not the real SQLite in-memory DB) because SQLite does not
+// support the "FOR UPDATE" locking clause -- same convention as
 // bin-billing-manager's accountAdjust*WithLedger tests.
 func Test_CaseGetOpenByPeer(t *testing.T) {
 	db, mock, err := sqlmock.New()
@@ -372,7 +372,7 @@ func Test_CaseUpdateStatusClosed(t *testing.T) {
 
 	// Double-close: WHERE status='open' guard means the second call
 	// affects 0 rows -- idempotent no-op, not an error.
-	ok2, err := h.CaseUpdateStatusClosed(ctx, customerID, caseID, kase.ClosedReasonTimeout, kase.ClosedByTypeSystem, nil, closedAt)
+	ok2, err := h.CaseUpdateStatusClosed(ctx, customerID, caseID, kase.ClosedReasonMerged, kase.ClosedByTypeAgent, nil, closedAt)
 	if err != nil {
 		t.Fatalf("CaseUpdateStatusClosed() second call error = %v", err)
 	}
@@ -388,48 +388,10 @@ func Test_CaseUpdateStatusClosed(t *testing.T) {
 	if res2.ClosedReason != kase.ClosedReasonAgentClosed {
 		t.Errorf("expected closed_reason to remain agent_closed after no-op double-close, got: %s", res2.ClosedReason)
 	}
-}
-
-// Test_CaseUpdateTMUpdate verifies the tm_update bump helper used at the
-// end of the get-or-create transaction (design §4 step 4).
-func Test_CaseUpdateTMUpdate(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockUtil := utilhandler.NewMockUtilHandler(mc)
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	h := handler{utilHandler: mockUtil, db: dbTest, cache: mockCache}
-	ctx := context.Background()
-
-	customerID := uuid.FromStringOrNil("f1b2c3d4-5005-5005-5005-000000000001")
-	caseID := uuid.FromStringOrNil("f1b2c3d4-5005-5005-5005-000000000002")
-	openedAt := timePtr(time.Date(2026, 6, 28, 10, 0, 0, 0, time.UTC))
-	newUpdateTime := timePtr(time.Date(2026, 6, 28, 13, 0, 0, 0, time.UTC))
-
-	c := &kase.Case{
-		ID:            caseID,
-		CustomerID:    customerID,
-		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551110005"},
-		ReferenceType: "call",
-		Status:        kase.StatusOpen,
-		OpenedAt:      openedAt,
-		TMCreate:      openedAt,
-		TMUpdate:      openedAt,
-	}
-	if err := h.CaseInsert(ctx, c); err != nil {
-		t.Fatalf("CaseInsert() error = %v", err)
-	}
-
-	if err := h.CaseUpdateTMUpdate(ctx, caseID, newUpdateTime); err != nil {
-		t.Fatalf("CaseUpdateTMUpdate() error = %v", err)
-	}
-
-	res, err := h.CaseGetByID(ctx, caseID)
-	if err != nil {
-		t.Fatalf("CaseGetByID() error = %v", err)
-	}
-	if res.TMUpdate == nil || !res.TMUpdate.Equal(*newUpdateTime) {
-		t.Errorf("expected tm_update: %v, got: %v", newUpdateTime, res.TMUpdate)
+	// The second call passed closed_by_id=nil. The first close's agentID
+	// must still be the persisted value.
+	if res2.ClosedByID == nil || *res2.ClosedByID != agentID {
+		t.Errorf("expected closed_by_id to remain %s after no-op double-close, got: %v", agentID, res2.ClosedByID)
 	}
 }
 
@@ -808,67 +770,3 @@ func Test_CaseListByOwner(t *testing.T) {
 	}
 }
 
-// Test_CaseGetLastClosedByPeer verifies the previous_case_id chaining
-// lookup (design §4, fresh-insert path): finds the most recently closed
-// Case for a given peer, or nil if none exists.
-func Test_CaseGetLastClosedByPeer(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockUtil := utilhandler.NewMockUtilHandler(mc)
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	h := handler{utilHandler: mockUtil, db: dbTest, cache: mockCache}
-	ctx := context.Background()
-
-	customerID := uuid.FromStringOrNil("f1b2c3d4-5011-5011-5011-000000000001")
-	olderClosedID := uuid.FromStringOrNil("f1b2c3d4-5011-5011-5011-000000000002")
-	newerClosedID := uuid.FromStringOrNil("f1b2c3d4-5011-5011-5011-000000000003")
-
-	older := &kase.Case{
-		ID:            olderClosedID,
-		CustomerID:    customerID,
-		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551110011"},
-		ReferenceType: "call",
-		Status:        kase.StatusClosed,
-		OpenedAt:      timePtr(time.Date(2026, 6, 27, 10, 0, 0, 0, time.UTC)),
-		ClosedAt:      timePtr(time.Date(2026, 6, 27, 11, 0, 0, 0, time.UTC)),
-		ClosedReason:  kase.ClosedReasonAgentClosed,
-		TMCreate:      timePtr(time.Date(2026, 6, 27, 10, 0, 0, 0, time.UTC)),
-		TMUpdate:      timePtr(time.Date(2026, 6, 27, 11, 0, 0, 0, time.UTC)),
-	}
-	newer := &kase.Case{
-		ID:            newerClosedID,
-		CustomerID:    customerID,
-		Peer: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551110011"},
-		ReferenceType: "call",
-		Status:        kase.StatusClosed,
-		OpenedAt:      timePtr(time.Date(2026, 6, 28, 10, 0, 0, 0, time.UTC)),
-		ClosedAt:      timePtr(time.Date(2026, 6, 28, 11, 0, 0, 0, time.UTC)),
-		ClosedReason:  kase.ClosedReasonAgentClosed,
-		TMCreate:      timePtr(time.Date(2026, 6, 28, 10, 0, 0, 0, time.UTC)),
-		TMUpdate:      timePtr(time.Date(2026, 6, 28, 11, 0, 0, 0, time.UTC)),
-	}
-	if err := h.CaseInsert(ctx, older); err != nil {
-		t.Fatalf("CaseInsert(older) error = %v", err)
-	}
-	if err := h.CaseInsert(ctx, newer); err != nil {
-		t.Fatalf("CaseInsert(newer) error = %v", err)
-	}
-
-	res, err := h.CaseGetLastClosedByPeer(ctx, customerID, commonaddress.TypeTel, "+15551110011", "call")
-	if err != nil {
-		t.Fatalf("CaseGetLastClosedByPeer() error = %v", err)
-	}
-	if res == nil || res.ID != newerClosedID {
-		t.Errorf("expected the more recently closed case %s, got: %v", newerClosedID, res)
-	}
-
-	// No closed case for a peer that never had one -> nil, no error.
-	none, err := h.CaseGetLastClosedByPeer(ctx, customerID, commonaddress.TypeTel, "+19999999999", "call")
-	if err != nil {
-		t.Fatalf("CaseGetLastClosedByPeer() (none) error = %v", err)
-	}
-	if none != nil {
-		t.Errorf("expected nil for a peer with no closed case, got: %v", none)
-	}
-}

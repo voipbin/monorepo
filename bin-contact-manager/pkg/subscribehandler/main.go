@@ -4,7 +4,6 @@ package subscribehandler
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
@@ -18,7 +17,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
-	"monorepo/bin-contact-manager/pkg/casehandler"
 	"monorepo/bin-contact-manager/pkg/contacthandler"
 )
 
@@ -157,25 +155,14 @@ func (h *subscribeHandler) processEvent(m *sock.Event) {
 	promEventProcessTime.WithLabelValues(m.Publisher, string(m.Type)).Observe(float64(elapsed.Milliseconds()))
 
 	if err != nil {
-		// VOIP-1232: distinctly tag the two new GetOrCreate failure modes
-		// (deadlock-retry exhaustion, peer-lock acquisition timeout) from
-		// generic GetOrCreate errors, so operators can triage which
-		// mechanism is firing. NOTE: none of these three outcomes have a
-		// recovery path yet -- the library (rabbitmqhandler) now acks based
-		// on the callback's return value (VOIP-1233 ack-after-process), but
-		// processEventRun spawns this processing in a fire-and-forget
-		// goroutine and returns nil immediately, so the message was already
-		// Ack'd before this branch runs and it can only log. VOIP-1233
-		// tracks the remaining follow-up: propagate the processing result
-		// back to the consumer callback so these failures get an actual
-		// retry/redelivery path.
-		switch {
-		case errors.Is(err, casehandler.ErrDeadlockExhausted):
-			log.Errorf("GetOrCreate exhausted all deadlock retries; event dropped (ack-before-process, no DLQ -- see VOIP-1233). publisher: %s, type: %s, err: %v", m.Publisher, m.Type, err)
-		case errors.Is(err, casehandler.ErrPeerLockTimeout):
-			log.Errorf("GetOrCreate could not acquire peer serialization lock within timeout; event dropped (ack-before-process, no DLQ -- see VOIP-1233). publisher: %s, type: %s, err: %v", m.Publisher, m.Type, err)
-		default:
-			log.Errorf("Could not process the event correctly. publisher: %s, type: %s, err: %v", m.Publisher, m.Type, err)
-		}
+		// NOTE: this outcome has no recovery path yet -- the library
+		// (rabbitmqhandler) now acks based on the callback's return value
+		// (VOIP-1233 ack-after-process), but processEventRun spawns this
+		// processing in a fire-and-forget goroutine and returns nil
+		// immediately, so the message was already Ack'd before this branch
+		// runs and it can only log. VOIP-1233 tracks the remaining
+		// follow-up: propagate the processing result back to the consumer
+		// callback so these failures get an actual retry/redelivery path.
+		log.Errorf("Could not process the event correctly. publisher: %s, type: %s, err: %v", m.Publisher, m.Type, err)
 	}
 }

@@ -5162,10 +5162,10 @@ type ContactManagerCase struct {
 	// ClosedById ID of the actor that closed the case. Nullable.
 	ClosedById *openapi_types.UUID `json:"closed_by_id,omitempty"`
 
-	// ClosedByType Type of the actor that closed the case (e.g. "agent", "system").
+	// ClosedByType Type of the actor that closed the case (e.g. "agent").
 	ClosedByType *string `json:"closed_by_type,omitempty"`
 
-	// ClosedReason Reason the case was closed (e.g. "agent_closed", "timeout").
+	// ClosedReason Reason the case was closed (e.g. "agent_closed").
 	ClosedReason *string `json:"closed_reason,omitempty"`
 
 	// ContactId The resolved contact this case is attributed to. Nullable until resolved.

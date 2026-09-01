@@ -120,10 +120,9 @@ func (h *caseHandler) Close(ctx context.Context, customerID, id uuid.UUID, close
 // (callerIsAdmin=true, decided upstream by the API layer's permission
 // gate). Creates a brand-new open Case with previous_case_id = id, using
 // the same (peer_type, peer_target, reference_type, contact_id) as the
-// source -- the source case itself is never modified. Reuses the exact
-// same insertWithRetry primitive as §4's get-or-create insert branches
-// (not a separate implementation), since /continue is subject to the
-// identical uq_case_open_peer race (§5.3).
+// source -- the source case itself is never modified. Reuses the shared
+// insertWithRetry primitive (insert.go), subject to the identical
+// uq_case_open_peer race (§5.3).
 func (h *caseHandler) Continue(ctx context.Context, customerID, id uuid.UUID, callerType commonidentity.OwnerType, callerID uuid.UUID, callerIsAdmin bool) (*kase.Case, error) {
 	source, err := h.db.CaseGetByID(ctx, id)
 	if err != nil {

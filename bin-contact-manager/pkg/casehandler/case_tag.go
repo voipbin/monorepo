@@ -14,8 +14,8 @@ import (
 // customerID, returning dbhandler.ErrNotFound if it doesn't exist or
 // belongs to a different tenant -- never leaking existence of another
 // tenant's case. This is the shared tenant-isolation choke point
-// (design §4 step 1's customer_id predicate, generalized to every
-// case-scoped mutation, not just get-or-create): round-2 review found
+// (the original design's customer_id verification pattern, generalized
+// to every case-scoped mutation): round-2 review found
 // CaseTagAdd/Remove/List, CaseNoteCreate, and UpdateContact (VOIP-1253)
 // all accepted a customerID parameter but never actually used it to
 // gate the mutation -- an attacker who knew or guessed another

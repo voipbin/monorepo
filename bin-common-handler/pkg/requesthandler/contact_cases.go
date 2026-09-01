@@ -18,11 +18,11 @@ import (
 )
 
 // ContactV1CaseCreate creates a new case in contact-manager via a plain,
-// explicit Create (design VOIP-1243 §3) -- distinct from the internal
-// GetOrCreate path. self/peerType/peerTarget/referenceType must be
-// derived by the caller from the actual call/conversation context (see
-// design §3.2); name/detail/referenceID are optional (empty string
-// persisted as the column's empty default, not NULL).
+// explicit Create (design VOIP-1243 §3). self/peerType/peerTarget/
+// referenceType must be derived by the caller from the actual
+// call/conversation context (see design §3.2); name/detail/referenceID
+// are optional (empty string persisted as the column's empty default,
+// not NULL).
 func (r *requestHandler) ContactV1CaseCreate(
 	ctx context.Context,
 	customerID uuid.UUID,

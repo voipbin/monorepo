@@ -92,8 +92,7 @@ func (h *listenHandler) processV1CasesGet(ctx context.Context, req *sock.Request
 
 // processV1CasesPost handles POST /v1/cases request. Implements design
 // VOIP-1243 §3/§4: a plain, explicit Case creation delegated to
-// casehandler.Create -- distinct from the GetOrCreate path used
-// internally by the interaction projection pipeline.
+// casehandler.Create.
 func (h *listenHandler) processV1CasesPost(ctx context.Context, req *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{"func": "processV1CasesPost"})
 	log.WithField("request", req).Debug("Received request.")

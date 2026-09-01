@@ -253,21 +253,6 @@ func (mr *MockCaseHandlerMockRecorder) Create(ctx, customerID, self, peer, refer
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockCaseHandler)(nil).Create), ctx, customerID, self, peer, referenceType, name, detail, referenceID)
 }
 
-// GetOrCreate mocks base method.
-func (m *MockCaseHandler) GetOrCreate(ctx context.Context, customerID uuid.UUID, self, peer address.Address, referenceType string, caseIDHint *uuid.UUID, referenceID string) (*kase.Case, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetOrCreate", ctx, customerID, self, peer, referenceType, caseIDHint, referenceID)
-	ret0, _ := ret[0].(*kase.Case)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetOrCreate indicates an expected call of GetOrCreate.
-func (mr *MockCaseHandlerMockRecorder) GetOrCreate(ctx, customerID, self, peer, referenceType, caseIDHint, referenceID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOrCreate", reflect.TypeOf((*MockCaseHandler)(nil).GetOrCreate), ctx, customerID, self, peer, referenceType, caseIDHint, referenceID)
-}
-
 // UpdateContact mocks base method.
 func (m *MockCaseHandler) UpdateContact(ctx context.Context, customerID, caseID, contactID uuid.UUID) (*kase.Case, error) {
 	m.ctrl.T.Helper()

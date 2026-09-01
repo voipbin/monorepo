@@ -134,8 +134,9 @@ func Test_Create_DuplicateOpenPeer_TranslatesToAlreadyExists(t *testing.T) {
 }
 
 // Test_Create_Deadlock_TranslatesToUnavailable verifies design §3.3's
-// ErrDeadlock handling: Create does NOT retry (unlike GetOrCreate); it
-// translates dbhandler.ErrDeadlock to a typed cerrors.Unavailable.
+// ErrDeadlock handling: Create does NOT retry (unlike Continue's
+// insertWithRetry); it translates dbhandler.ErrDeadlock to a typed
+// cerrors.Unavailable.
 // Simulated via a fake dbhandler.DBHandler double returning ErrDeadlock
 // directly from CaseInsert.
 func Test_Create_Deadlock_TranslatesToUnavailable(t *testing.T) {
