@@ -37,6 +37,14 @@ var rootCmd = &cobra.Command{
 	Short: "Sentinel Manager Service",
 	Long:  `Sentinel Manager is a microservice that monitors system health and manages service status.`,
 	RunE:  run,
+
+	// This is a long-running daemon, not an interactive CLI: every error reaching Execute is a
+	// RUNTIME failure, not a usage mistake. Without these, each fail-loud exit dumps the whole
+	// flag-usage blob into the crash-loop output, burying the actual error exactly when someone is
+	// reading the logs during an incident. main() already logs the error itself, so silencing
+	// cobra's own printing avoids duplicating it too.
+	SilenceUsage:  true,
+	SilenceErrors: true,
 }
 
 func init() {

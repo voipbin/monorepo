@@ -24,9 +24,14 @@ const (
 	// streamResultDelivered marks a stream attempt that delivered at least one event before
 	// ending. The stream was genuinely established; something merely interrupted it.
 	streamResultDelivered = "delivered"
-	// streamResultEmpty marks a stream attempt that ended without delivering anything -- the
-	// signature of a stream that could not be established at all.
+	// streamResultEmpty marks a SHORT-LIVED stream attempt that ended without delivering anything
+	// -- the signature of a stream that could not be established at all. Only this result counts
+	// toward the give-up budget.
 	streamResultEmpty = "empty"
+	// streamResultIdle marks a stream attempt that delivered nothing but SURVIVED long enough to
+	// prove the proxy was reachable. That is what an idle fleet's stream looks like when the proxy
+	// is restarted underneath it, so it resets the budget rather than counting against it.
+	streamResultIdle = "idle"
 )
 
 // Run performs the boot-time reconciliation, starts the background asterisk-id refresh loop, and
@@ -87,23 +92,36 @@ func (h *dockerWatchHandler) runEventLoop(ctx context.Context) error {
 
 		log.Infof("Opening the docker event stream. since: %s", since)
 
+		openedAt := time.Now()
 		next, delivered := h.consumeEvents(ctx, since)
+		lifetime := time.Since(openedAt)
 		since = next
 
 		if ctx.Err() != nil {
 			return nil
 		}
 
-		if delivered {
+		switch {
+		case delivered:
 			promContainerEventStreamReconnectCounter.WithLabelValues(streamResultDelivered).Inc()
 			consecutiveEmpty = 0
-			log.Infof("The docker event stream ended after delivering events. Reconnecting. delay: %v, since: %s", h.reconnectDelay, since)
-		} else {
+			log.Infof("The docker event stream ended after delivering events. Reconnecting. lifetime: %v, delay: %v, since: %s", lifetime, h.reconnectDelay, since)
+
+		case h.healthyStreamLifetime > 0 && lifetime >= h.healthyStreamLifetime:
+			// the stream carried no events, but it stayed open long enough to prove the proxy was
+			// reachable. On a genuinely idle fleet this is the NORMAL shape of a proxy restart, and
+			// counting it as a failure would let those endings accumulate across days until the
+			// give-up threshold fired on a perfectly healthy system.
+			promContainerEventStreamReconnectCounter.WithLabelValues(streamResultIdle).Inc()
+			consecutiveEmpty = 0
+			log.Infof("The docker event stream ended after a healthy lifetime without delivering events. Reconnecting. lifetime: %v, delay: %v, since: %s", lifetime, h.reconnectDelay, since)
+
+		default:
 			promContainerEventStreamReconnectCounter.WithLabelValues(streamResultEmpty).Inc()
 			consecutiveEmpty++
 			log.Warnf(
-				"The docker event stream ended without delivering any event. The socket proxy may be unreachable. consecutive: %d/%d, delay: %v, since: %s",
-				consecutiveEmpty, maxConsecutiveEmptyStreams, h.reconnectDelay, since,
+				"The docker event stream ended immediately without delivering any event. The socket proxy may be unreachable. consecutive: %d/%d, lifetime: %v, delay: %v, since: %s",
+				consecutiveEmpty, maxConsecutiveEmptyStreams, lifetime, h.reconnectDelay, since,
 			)
 		}
 

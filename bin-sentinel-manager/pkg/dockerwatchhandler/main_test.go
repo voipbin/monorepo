@@ -2,6 +2,7 @@ package dockerwatchhandler
 
 import (
 	"testing"
+	"time"
 
 	dockercontainer "github.com/docker/docker/api/types/container"
 	dockernetwork "github.com/docker/docker/api/types/network"
@@ -46,6 +47,17 @@ func Test_NewDockerWatchHandler(t *testing.T) {
 	}
 	if res.reconnectDelay != reconnectDelay {
 		t.Errorf("Wrong match. expect: %v, got: %v", reconnectDelay, res.reconnectDelay)
+	}
+
+	// a zero healthyStreamLifetime silently DISABLES the longevity reset, which would let an idle
+	// fleet's periodic proxy restarts accumulate into a self-inflicted exit. The constructor must
+	// always set it.
+	expectLifetime := time.Duration(healthyStreamLifetimeFactor) * reconnectDelay
+	if res.healthyStreamLifetime != expectLifetime {
+		t.Errorf("Wrong match. expect: %v, got: %v", expectLifetime, res.healthyStreamLifetime)
+	}
+	if res.healthyStreamLifetime <= res.reconnectDelay {
+		t.Errorf("Wrong match. expect: the healthy lifetime to exceed one reconnect delay, got: %v vs %v", res.healthyStreamLifetime, res.reconnectDelay)
 	}
 }
 

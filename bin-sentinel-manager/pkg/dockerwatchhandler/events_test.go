@@ -733,6 +733,9 @@ func Test_runEventLoop_exitsAfterConsecutiveEmptyStreams(t *testing.T) {
 		state:          newStateTable(),
 		flap:           newFlapTracker(flapWindow, flapThreshold),
 		reconnectDelay: time.Millisecond,
+		// a very long healthy-lifetime threshold: these instantly-closing streams can never reach
+		// it, so every attempt lands in the give-up budget. The longevity reset has its own test.
+		healthyStreamLifetime: time.Hour,
 	}
 
 	attempts := 0
@@ -782,6 +785,8 @@ func Test_runEventLoop_deliveredStreamResetsTheFailureCount(t *testing.T) {
 		state:          newStateTable(),
 		flap:           newFlapTracker(flapWindow, flapThreshold),
 		reconnectDelay: time.Millisecond,
+		// out of reach for these instant streams, so only DELIVERY can reset the budget here.
+		healthyStreamLifetime: time.Hour,
 	}
 
 	// the FIRST attempt delivers an event and then ends; every later attempt is empty. If the
@@ -849,5 +854,108 @@ func Test_runEventLoop_stopsCleanlyOnContextCancel(t *testing.T) {
 
 	if err := h.runEventLoop(ctx); err != nil {
 		t.Errorf("Wrong match. expect: nil on a clean shutdown, got: %v", err)
+	}
+}
+
+// Test_runEventLoop_longLivedStreamResetsTheFailureCount pins the second reset path.
+//
+// Counting only DELIVERIES as healthy is not enough. On a genuinely idle fleet nothing starts or
+// dies for hours, so a stream legitimately lives a long time and then ends with zero events when
+// the proxy restarts under it. Those endings must not accumulate on the give-up budget across
+// days and eventually trip a self-inflicted restart on a perfectly healthy system.
+func Test_runEventLoop_longLivedStreamResetsTheFailureCount(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDocker := NewMockdockerClient(mc)
+
+	h := &dockerWatchHandler{
+		notifyHandler:  notifyhandler.NewMockNotifyHandler(mc),
+		dockerClient:   mockDocker,
+		state:          newStateTable(),
+		flap:           newFlapTracker(flapWindow, flapThreshold),
+		reconnectDelay: time.Millisecond,
+		// tiny threshold so the "long-lived" case is reachable in a unit test.
+		healthyStreamLifetime: 20 * time.Millisecond,
+	}
+
+	// the FIRST attempt delivers nothing but SURVIVES past the threshold; every later attempt
+	// closes instantly. If the longevity reset works, the loop survives exactly one extra round.
+	attempts := 0
+	mockDocker.EXPECT().
+		Events(gomock.Any(), gomock.Any()).
+		DoAndReturn(func(context.Context, dockerevents.ListOptions) (<-chan dockerevents.Message, <-chan error) {
+			attempts++
+
+			messages := make(chan dockerevents.Message)
+			if attempts == 1 {
+				go func() {
+					time.Sleep(40 * time.Millisecond)
+					close(messages)
+				}()
+			} else {
+				close(messages)
+			}
+
+			return messages, make(chan error)
+		}).
+		Times(maxConsecutiveEmptyStreams + 1)
+
+	beforeIdle := testutil.ToFloat64(promContainerEventStreamReconnectCounter.WithLabelValues(streamResultIdle))
+
+	if err := h.runEventLoop(context.Background()); err == nil {
+		t.Fatalf("Wrong match. expect: error eventually, got: nil")
+	}
+
+	if attempts != maxConsecutiveEmptyStreams+1 {
+		t.Errorf("Wrong match. expect: %d attempts (the long-lived one resets the budget), got: %d", maxConsecutiveEmptyStreams+1, attempts)
+	}
+
+	afterIdle := testutil.ToFloat64(promContainerEventStreamReconnectCounter.WithLabelValues(streamResultIdle))
+	if delta := afterIdle - beforeIdle; delta != 1 {
+		t.Errorf("Wrong match. expect: the idle-result counter to advance by 1, got: %v", delta)
+	}
+}
+
+// Test_runEventLoop_repeatedLongLivedStreamsNeverExit pins the whole point of the longevity reset:
+// an idle fleet whose proxy restarts periodically must run indefinitely, never accumulating toward
+// the give-up threshold. Far more restarts than the threshold, and still no error.
+func Test_runEventLoop_repeatedLongLivedStreamsNeverExit(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDocker := NewMockdockerClient(mc)
+
+	h := &dockerWatchHandler{
+		notifyHandler:  notifyhandler.NewMockNotifyHandler(mc),
+		dockerClient:   mockDocker,
+		state:          newStateTable(),
+		flap:           newFlapTracker(flapWindow, flapThreshold),
+		reconnectDelay: time.Millisecond,
+		// every stream below outlives this, so none of them may count as a failure.
+		healthyStreamLifetime: time.Nanosecond,
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+
+	rounds := maxConsecutiveEmptyStreams * 3
+	attempts := 0
+	mockDocker.EXPECT().
+		Events(gomock.Any(), gomock.Any()).
+		DoAndReturn(func(context.Context, dockerevents.ListOptions) (<-chan dockerevents.Message, <-chan error) {
+			attempts++
+			if attempts >= rounds {
+				cancel()
+			}
+
+			messages := make(chan dockerevents.Message)
+			close(messages)
+
+			return messages, make(chan error)
+		}).
+		Times(rounds)
+
+	if err := h.runEventLoop(ctx); err != nil {
+		t.Errorf("Wrong match. expect: nil after %d long-lived eventless streams, got: %v", rounds, err)
 	}
 }

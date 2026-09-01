@@ -24,16 +24,19 @@ The image has no field-level or per-endpoint ACL, so **network scope is the enti
 
 If the socket proxy is unreachable at startup, `dockerwatchhandler.Run` returns an error, `runService` propagates it, and `main` exits **non-zero** so Komodo reports a crash-loop rather than a container that exited successfully. A sentinel that *looks* up but watches nothing is worse than one that is visibly down — never downgrade any of this to a warning-and-continue, and never swallow the error on the way out of `runService`.
 
-The same rule covers proxy loss *after* boot, which is the easier one to get wrong: `runEventLoop` reconnects with a `since` cursor, but only up to `maxConsecutiveEmptyStreams` attempts that deliver no events (≈1 minute). Past that it returns an error into the same exit path. Every attempt is counted on `sentinel_manager_container_event_stream_reconnect_total{result="delivered"|"empty"}`, so a stream that is flapping short of the exit threshold is still alertable. A healthy stream blocks instead of returning, so an idle fleet never increments `empty`.
+The same rule covers proxy loss *after* boot, which is the easier one to get wrong: `runEventLoop` reconnects with a `since` cursor, but only up to `maxConsecutiveEmptyStreams` attempts that end *immediately* with no events (≈1 minute). Past that it returns an error into the same exit path.
+
+Two things reset that budget, and both matter: an attempt that **delivered** events, and an attempt that delivered nothing but **survived** past `healthyStreamLifetime` (10× the reconnect delay). The second one is not optional — on a genuinely idle fleet nothing starts or dies for hours, so a long-lived eventless stream ending on a proxy restart is normal, and counting those would accumulate across days into a self-inflicted restart of a healthy system. Every attempt is counted on `sentinel_manager_container_event_stream_reconnect_total{result="delivered"|"idle"|"empty"}`; only `empty` is alertable.
 
 ## CRITICAL: the asterisk-id is resolved before the death, never at it
 
 A dying container's `inspect` response has an empty `IPAddress`, and a reverse Redis scan at die time cannot tell "the id that just died" from "the id that just took over the same static IP". So `pkg/dockerwatchhandler` keeps an in-memory state table that resolves each watched container's asterisk-id continuously, and the `die` handler only *reads* it.
 
-Two rules in that table are load-bearing and were the focus of five design-review rounds:
+Three rules in that table are load-bearing and were the focus of five design-review rounds plus the code review that followed:
 
 1. **Sticky last-known.** A refresh pass that finds no fresh candidate for an entry's IP leaves that entry's `AsteriskID` unchanged. Freshness gates *learning*, never *forgetting*. Regressing a resolved id to `""` would, combined with call-manager's empty-id guard, silently skip the exact recovery this service exists to trigger. `stateTable.Resolve` refuses an empty id structurally, so no code path can regress one.
 2. **Entry creation always starts unresolved.** Stickiness governs updates *within one container generation*. A same-name replacement container must not inherit the dead generation's id.
+3. **An id *change* on an already-resolved entry is rejected, not applied.** The id derives from a MAC that is fixed per container object, so this branch structurally cannot fire; if it does, the new value is no more trustworthy than the old one, and adopting it risks firing recovery against a different, still-live instance. The existing id is kept, logged at WARN, and counted on `sentinel_manager_container_asterisk_id_conflict_total` — the plausible real trigger is a missed die+start pair, in which case the kept id is the stale one, so this must be visible rather than silent.
 
 The freshness threshold is `remaining TTL >= 24h - 12min`, keyed to voip-asterisk-proxy's own 5-minute key-refresh cadence (not to sentinel's 10s loop).
 
@@ -68,7 +71,7 @@ Debugging tool. All output is JSON on stdout; logs go to stderr. It dials the sa
 - Address model: `models/asteriskaddress/` — key parsing and the freshness rule
 - Watched containers: compile-time name prefixes in `pkg/dockerwatchhandler/main.go` (`voip-asterisk-{call,conference,registrar}-docker-<N>`); the `-proxy` sidecars are excluded by requiring a bare replica index after the prefix
 - Published via `notifyHandler.PublishEvent()` to `QueueNameSentinelEvent`, with `WithGlobalTopicPublish()`
-- Prometheus counters: `sentinel_manager_container_state_change_total` (labels: `container_name`, `service`, `state`), `sentinel_manager_container_unresolved_asterisk_id_total`, `sentinel_manager_container_asterisk_id_refresh_miss_total`, `sentinel_manager_container_event_stream_reconnect_total` (label: `result`)
+- Prometheus counters: `sentinel_manager_container_state_change_total` (labels: `container_name`, `service`, `state`), `sentinel_manager_container_unresolved_asterisk_id_total`, `sentinel_manager_container_asterisk_id_refresh_miss_total`, `sentinel_manager_container_asterisk_id_conflict_total`, `sentinel_manager_container_event_stream_reconnect_total` (label: `result`)
 - Deployment: `komodo/docker-compose.yml`, single replica, deployed by CircleCI's `bin-sentinel-manager-deploy` job
 - `k8s/` is **dead** and intentionally left in place — its removal is deferred to a follow-up ticket (design §7). Do not delete it as drive-by cleanup.
 - Testing: `go.uber.org/mock`, table-driven, mock files co-located (`mock_*.go`); `pkg/cachehandler` tests run against in-process `miniredis`

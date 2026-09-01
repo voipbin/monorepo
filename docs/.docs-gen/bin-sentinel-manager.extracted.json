@@ -160,6 +160,9 @@
   ],
   "metrics": [
     {
+      "name": "container_asterisk_id_conflict_total"
+    },
+    {
       "name": "container_asterisk_id_refresh_miss_total"
     },
     {

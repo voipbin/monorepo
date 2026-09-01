@@ -59,11 +59,12 @@ const (
 	// maxConsecutiveEmptyStreams bounds how long sentinel will keep silently retrying a dead
 	// event stream before giving up and exiting non-zero.
 	//
-	// A HEALTHY stream never returns: the Docker Events API blocks until the context is cancelled
-	// or the connection breaks, so an idle fleet does not tick this counter. An attempt that ends
-	// WITHOUT having delivered a single message therefore means the stream could not be
-	// established (or died instantly) -- the socket proxy is gone, the ACL changed, the network
-	// is partitioned. Any attempt that delivers at least one event resets the counter to zero.
+	// The Docker Events API blocks until the context is cancelled or the connection breaks, so a
+	// SHORT-LIVED attempt that ends without delivering a single message means the stream could not
+	// be established at all -- the socket proxy is gone, the ACL changed, the network is
+	// partitioned. Two things reset the counter to zero: an attempt that delivers at least one
+	// event, and an attempt that merely SURVIVED a while (healthyStreamLifetimeFactor), which is
+	// what an idle fleet's stream looks like when the proxy is restarted underneath it.
 	//
 	// 20 attempts at reconnectDelay = roughly a minute of continuous failure, which comfortably
 	// outlasts a proxy restart or a compose redeploy while still failing fast enough that Komodo
@@ -71,6 +72,22 @@ const (
 	// forever with only a log line is exactly the failure mode design §3.2 calls worse than being
 	// visibly down.
 	maxConsecutiveEmptyStreams = 20
+
+	// healthyStreamLifetimeFactor derives, from reconnectDelay, how long a stream must survive
+	// before its ending is treated as normal rather than as a failure.
+	//
+	// Counting only deliveries as "healthy" is not enough: on a genuinely idle fleet no container
+	// starts or dies for hours, so a stream can legitimately live a long time and then end
+	// (proxy restart, daemon reload) having delivered nothing. Without this, those endings would
+	// accumulate on consecutiveEmpty across days and eventually trip the give-up exit with no
+	// ongoing fault at all -- a self-inflicted restart on a perfectly healthy system.
+	//
+	// Connection LONGEVITY is the discriminator. A stream that cannot be established fails almost
+	// immediately (connection refused, 403 from the proxy ACL), so a short-lived empty attempt is
+	// the real fault signature, while a long-lived one is just an idle watcher being interrupted.
+	// 10x reconnectDelay (30s) is comfortably longer than any failure-path round trip and far
+	// shorter than a real idle stream's lifetime, so the two cases do not overlap in practice.
+	healthyStreamLifetimeFactor = 10
 
 	// flapWindow / flapThreshold damp a crash-looping container: past flapThreshold deaths inside
 	// flapWindow, further deaths in that window are logged but NOT published. Repeatedly firing
@@ -111,6 +128,13 @@ type dockerWatchHandler struct {
 
 	refreshInterval time.Duration
 	reconnectDelay  time.Duration
+
+	// healthyStreamLifetime is how long an event stream must survive before its ending counts as
+	// normal rather than as a failed connection attempt. A zero value DISABLES the longevity
+	// reset (every eventless stream then counts toward the give-up budget); the constructor
+	// always sets it, so zero only occurs in tests that build the struct directly and do not
+	// exercise this path.
+	healthyStreamLifetime time.Duration
 }
 
 // DockerWatchHandler watches container lifecycle transitions and publishes them.
@@ -137,8 +161,9 @@ func NewDockerWatchHandler(
 		state: newStateTable(),
 		flap:  newFlapTracker(flapWindow, flapThreshold),
 
-		refreshInterval: refreshInterval,
-		reconnectDelay:  reconnectDelay,
+		refreshInterval:       refreshInterval,
+		reconnectDelay:        reconnectDelay,
+		healthyStreamLifetime: healthyStreamLifetimeFactor * reconnectDelay,
 	}
 
 	return h
@@ -282,6 +307,24 @@ var (
 		[]string{"container_name"},
 	)
 
+	// promContainerAsteriskIDConflictCounter counts refresh passes that resolved a DIFFERENT
+	// asterisk-id for a container that already had one, and kept the existing id (refresh.go).
+	//
+	// The fixed-MAC-per-generation invariant says this cannot happen, so any increment is either a
+	// real anomaly or a latent bug -- and it has a concrete, plausible trigger: a missed die+start
+	// pair (an event-stream gap, with the replacement container reusing the same static IP) leaves
+	// the entry holding the DEAD generation's id, and the next death then publishes a wrong
+	// asterisk-id. Keeping the existing id is still the right conservative default, but this
+	// branch must be alertable, not merely logged.
+	promContainerAsteriskIDConflictCounter = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "container_asterisk_id_conflict_total",
+			Help:      "Counts refresh passes that resolved a different asterisk-id for an already-resolved container and kept the existing one",
+		},
+		[]string{"container_name"},
+	)
+
 	// promContainerEventStreamReconnectCounter makes post-boot stream loss observable.
 	//
 	// The boot-time failure path is loud by construction (the process exits), but a proxy that
@@ -304,6 +347,7 @@ func init() {
 		promContainerStateChangeCounter,
 		promContainerUnresolvedAsteriskIDCounter,
 		promContainerRefreshMissCounter,
+		promContainerAsteriskIDConflictCounter,
 		promContainerEventStreamReconnectCounter,
 	)
 }

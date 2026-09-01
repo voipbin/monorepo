@@ -315,7 +315,7 @@
     },
     {
       "datasource": "${DS_PROMETHEUS}",
-      "description": "A healthy Docker event stream BLOCKS rather than returning, so an idle fleet leaves this flat at zero. result=\"empty\" means a stream attempt ended without delivering any event - the signature of an unreachable socket proxy, i.e. sentinel is up but watching nothing. 20 consecutive empty results exit the process (visible Komodo crash-loop); a sustained empty rate BELOW that threshold is a flapping stream that stays up and silently loses events in the gaps.",
+      "description": "A refresh pass resolved a DIFFERENT asterisk-id for a container that already had one, and kept the existing id. The fixed-MAC-per-generation invariant says this cannot happen, so any increment is an anomaly. The realistic cause is a MISSED die+start pair (an event stream gap, with the replacement container reusing the same static IP) - in which case the id being kept is the DEAD generation's, and the next death for this container will publish a wrong asterisk-id. Correlate with the reconnect panel below.",
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "palette-classic" },
@@ -328,7 +328,35 @@
           "unit": "short"
         }
       },
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 33 },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 33 },
+      "id": 13,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum"] }, "tooltip": { "mode": "multi" } },
+      "targets": [
+        {
+          "datasource": "${DS_PROMETHEUS}",
+          "expr": "sum by (container_name) (rate(sentinel_manager_container_asterisk_id_conflict_total[5m])) * 60",
+          "legendFormat": "{{container_name}}"
+        }
+      ],
+      "title": "asterisk-id Conflicts (kept the existing id)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "${DS_PROMETHEUS}",
+      "description": "One increment per event-stream attempt that ended. result=\"delivered\" carried events; result=\"idle\" carried none but stayed open past the healthy-lifetime threshold (30s), which is what a proxy restart looks like on an idle fleet - both are normal and both reset the give-up budget. result=\"empty\" is the alertable one: the attempt ended IMMEDIATELY without any event, the signature of an unreachable socket proxy, i.e. sentinel is up but watching nothing. 20 consecutive empty results exit the process (visible Komodo crash-loop); a sustained empty rate BELOW that threshold is a flapping stream that stays up and silently loses events in the gaps - correlate with the conflict panel, since a lost die+start pair is what strands a stale asterisk-id.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 20,
+            "spanNulls": false,
+            "stacking": { "mode": "none" }
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 33 },
       "id": 12,
       "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum"] }, "tooltip": { "mode": "multi" } },
       "targets": [

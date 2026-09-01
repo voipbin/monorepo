@@ -365,3 +365,31 @@ trust assumption (call-manager already trusted these keys); separate ticket mate
 - `cmd/` has no test files in this repo (true of both cmds before this change), so the
   `runService` → `run` → `main` wiring is covered by inspection plus the binary check above rather
   than by a unit test; `dockerwatchhandler.Run`'s own error return is unit-tested.
+
+## Code review round 2 — Approved, plus 3 non-blocking follow-ups
+
+Both reviewers Approved and verified the round-1 fixes landed in production code paths. Reviewer
+correction noted: the nil-payload guard is in `callhandler/event.go`, not
+`subscribehandler/sentinel_manager.go` — the better location, since it also covers the RPC-side
+caller. The round-1 table above has been left as written; this note is the correction.
+
+Three non-blocking items folded in. All three are sentinel-manager only; `bin-call-manager` is
+untouched by this round.
+
+| # | Severity | Fix |
+|---|---|---|
+| 1 | MEDIUM | `consecutiveEmpty` now also resets when a stream **survived** past `healthyStreamLifetime` (`healthyStreamLifetimeFactor` = 10 × `reconnectDelay` = 30s), not only when it delivered. On an idle fleet nothing starts or dies for hours, so a long-lived eventless stream ending on a proxy restart is normal; counting those would accumulate across days into a self-inflicted exit on a healthy system. Connection longevity is the discriminator: an unestablishable stream fails almost immediately, so the two cases do not overlap. New `result="idle"` label distinguishes it from the alertable `result="empty"`. |
+| 2 | MEDIUM | New counter `sentinel_manager_container_asterisk_id_conflict_total{container_name}`, incremented when the sticky-keep-old-id branch fires, plus a Grafana panel beside the other two leading indicators. The conservative keep is unchanged — but the reviewer's realistic trigger (a missed die+start pair, static IP reused, so the kept id is the *stale* one and the next death publishes a wrong id) makes this something to alert on, not just log. Panel and docs cross-reference the reconnect panel, since a lost event gap is what strands the stale id. |
+| 3 | LOW | `rootCmd` now sets `SilenceUsage` and `SilenceErrors`. This is a daemon, not an interactive CLI: every error reaching `Execute` is a runtime failure, and dumping the flag-usage blob into crash-loop output buries the real error. `main()` already logs it, so `SilenceErrors` also stops it being printed twice. |
+
+### Verification of the fixes
+
+- Mutation-checked, each confirmed failing when reverted: the longevity reset (2 tests fail), the
+  conflict counter (1 test fails).
+- Give-up tests from round 1 were pinned to `healthyStreamLifetime: time.Hour` so they still
+  exercise the budget rather than silently passing through the new reset path.
+- New `Test_runEventLoop_repeatedLongLivedStreamsNeverExit` runs 3× the give-up threshold in
+  long-lived eventless streams and asserts no error — the actual scenario item 1 protects against.
+- Constructor test asserts `healthyStreamLifetime` is set (a zero value silently disables the
+  reset) and exceeds one reconnect delay.
+- Grafana JSON re-validated; panel grid dumped to confirm no overlap or gap.

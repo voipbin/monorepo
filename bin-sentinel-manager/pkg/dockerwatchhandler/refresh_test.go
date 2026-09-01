@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"github.com/prometheus/client_golang/prometheus/testutil"
 	"go.uber.org/mock/gomock"
 
 	"monorepo/bin-sentinel-manager/models/asteriskaddress"
@@ -707,6 +708,55 @@ func Test_refreshOnce_idChangeIsStableAcrossPasses(t *testing.T) {
 		}
 	}
 
+	entry, _ := h.state.Get("voip-asterisk-call-docker-1")
+	if entry.AsteriskID != "3e:50:6b:43:bb:32" {
+		t.Errorf("Wrong match. expect: 3e:50:6b:43:bb:32, got: %q", entry.AsteriskID)
+	}
+}
+
+// Test_refreshOnce_idConflictIsCounted pins that the kept-existing-id branch is ALERTABLE, not
+// merely logged.
+//
+// The realistic trigger is a missed die+start pair (an event-stream gap, replacement container
+// reusing the same static IP): the id being kept is then the DEAD generation's, and the next death
+// publishes a wrong asterisk-id. Keeping it is still the right conservative default, but an
+// operator has to be able to see that it happened -- a WARN line alone is not something you can
+// alert on.
+func Test_refreshOnce_idConflictIsCounted(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	h, mockCache := newRefreshTestHandler(t, mc, []seededEntry{
+		{"voip-asterisk-call-docker-1", container.ServiceAsteriskCall, "172.24.0.101", "3e:50:6b:43:bb:32"},
+		{"voip-asterisk-call-docker-2", container.ServiceAsteriskCall, "172.24.0.102", ""},
+	})
+
+	ctx := context.Background()
+	mockCache.EXPECT().AsteriskAddressInternalScan(ctx).Return([]*asteriskaddress.AsteriskAddress{
+		// a conflicting fresh id for docker-1 ...
+		{ID: "ff:ff:ff:ff:ff:ff", Address: "172.24.0.101", TTL: asteriskaddress.TTL},
+		// ... and an ordinary first resolution for docker-2, which must NOT be counted.
+		{ID: "72:ce:24:e6:51:2f", Address: "172.24.0.102", TTL: asteriskaddress.TTL},
+	}, nil)
+
+	beforeConflict := testutil.ToFloat64(promContainerAsteriskIDConflictCounter.WithLabelValues("voip-asterisk-call-docker-1"))
+	beforeClean := testutil.ToFloat64(promContainerAsteriskIDConflictCounter.WithLabelValues("voip-asterisk-call-docker-2"))
+
+	if err := h.refreshOnce(ctx); err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	afterConflict := testutil.ToFloat64(promContainerAsteriskIDConflictCounter.WithLabelValues("voip-asterisk-call-docker-1"))
+	if delta := afterConflict - beforeConflict; delta != 1 {
+		t.Errorf("Wrong match. expect: the conflict counter to advance by 1, got: %v", delta)
+	}
+
+	afterClean := testutil.ToFloat64(promContainerAsteriskIDConflictCounter.WithLabelValues("voip-asterisk-call-docker-2"))
+	if delta := afterClean - beforeClean; delta != 0 {
+		t.Errorf("Wrong match. expect: a clean first resolution not to be counted as a conflict, got: %v", delta)
+	}
+
+	// and the conservative outcome still holds.
 	entry, _ := h.state.Get("voip-asterisk-call-docker-1")
 	if entry.AsteriskID != "3e:50:6b:43:bb:32" {
 		t.Errorf("Wrong match. expect: 3e:50:6b:43:bb:32, got: %q", entry.AsteriskID)

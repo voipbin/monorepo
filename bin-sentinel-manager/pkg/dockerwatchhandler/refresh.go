@@ -106,6 +106,12 @@ func (h *dockerWatchHandler) refreshOnce(ctx context.Context) error {
 				// still-live instance and redialing channels that never dropped. The WARN below
 				// makes the anomaly observable either way, which is what makes "keep" safe rather
 				// than merely silent.
+				// counted as well as logged: the most plausible real trigger is a MISSED die+start
+				// pair (an event-stream gap, replacement container reusing the same static IP), in
+				// which case the id we are keeping is the DEAD generation's and the next death will
+				// publish a wrong asterisk-id. Keeping it is still the right default, but that has
+				// to be alertable rather than buried in logs.
+				promContainerAsteriskIDConflictCounter.WithLabelValues(entry.ContainerName).Inc()
 				log.Warnf(
 					"Resolved a DIFFERENT asterisk id for a container that already had one. This contradicts the fixed-MAC-per-generation invariant. Keeping the existing id. container_name: %s, ip: %s, existing_asterisk_id: %s, rejected_asterisk_id: %s",
 					entry.ContainerName, entry.IP, entry.AsteriskID, resolved,
