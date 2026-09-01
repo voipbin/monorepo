@@ -81,9 +81,12 @@ func Test_PostAgents(t *testing.T) {
 			expectRes:         `{"id":"bd8cee04-4f21-11ec-9955-db7041b6d997","customer_id":"00000000-0000-0000-0000-000000000000","username":"","name":"","detail":"","ring_method":"","status":"","permission":0,"tag_ids":null,"addresses":null,"direct_hash":""}`,
 		},
 		{
-			// addresses is required by the OpenAPI spec; an empty body must
-			// be rejected with 400, not silently treated as "no addresses".
-			name: "empty body -- addresses missing is rejected",
+			// addresses is optional (VOIP-1437): a chat-only agent has no
+			// dial destination, and nothing in the domain/DB layer requires
+			// one. An empty body must create the agent with an empty
+			// (not nil) addresses slice, matching how tag_ids already
+			// defaults.
+			name: "empty body -- addresses optional, defaults to empty",
 			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("7cf444aa-8df4-11ee-abd9-b762d225dc87"),
@@ -92,13 +95,30 @@ func Test_PostAgents(t *testing.T) {
 
 			reqBody: []byte(`{}`),
 
-			expectCallService: false,
-			expectStatus:      http.StatusBadRequest,
+			responseAgent: &amagent.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a6d0e0e-8df5-11ee-9d5b-134eae2b3f14"),
+				},
+			},
+
+			expectedUsername:   "",
+			expectedPassword:   "",
+			expectedName:       "",
+			expectedDetail:     "",
+			expectedRingMethod: amagent.RingMethod(""),
+			expectedPermission: amagent.Permission(0),
+			expectedTagIDs:     []uuid.UUID{},
+			expectedAddresses:  []commonaddress.Address{},
+
+			expectCallService: true,
+			expectStatus:      http.StatusOK,
 		},
 		{
-			// An explicit empty array is likewise not a valid substitute
-			// for at least one address.
-			name: "empty addresses array is rejected",
+			// An explicit empty array is likewise accepted, not just a
+			// missing key -- both req.Addresses == nil (key absent) and
+			// *req.Addresses == [] (key present, empty) must produce the
+			// same empty (not nil) addresses slice passed to AgentCreate.
+			name: "empty addresses array is accepted",
 			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("9c3d0e5c-79b0-11ec-8f88-af8a4f6b6e37"),
@@ -107,8 +127,23 @@ func Test_PostAgents(t *testing.T) {
 
 			reqBody: []byte(`{"username":"test2","password":"password2","name":"test2 name","detail":"test2 detail","addresses":[]}`),
 
-			expectCallService: false,
-			expectStatus:      http.StatusBadRequest,
+			responseAgent: &amagent.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("3b7e1f1c-8df5-11ee-a3f6-9f6c3e8d5c2a"),
+				},
+			},
+
+			expectedUsername:   "test2",
+			expectedPassword:   "password2",
+			expectedName:       "test2 name",
+			expectedDetail:     "test2 detail",
+			expectedRingMethod: amagent.RingMethod(""),
+			expectedPermission: amagent.Permission(0),
+			expectedTagIDs:     []uuid.UUID{},
+			expectedAddresses:  []commonaddress.Address{},
+
+			expectCallService: true,
+			expectStatus:      http.StatusOK,
 		}}
 
 	for _, tt := range tests {

@@ -16,6 +16,8 @@ Before managing agents, you need:
 
    When creating an agent, the ``password`` field is required but is write-only and never returned in responses. The agent's initial ``status`` will be ``offline``. After creation, the agent must explicitly set their status to ``available`` via ``PUT /agents/{id}/status`` before they can receive calls from queues.
 
+   ``addresses`` is optional. An agent with no addresses can still be assigned to chat/conversation work, since those are routed by agent ID rather than by dial address -- but it cannot receive voice-queue calls (``ring_method`` ``ringall``/``linear`` dials the agent's addresses directly) until at least one address is added, e.g. via ``PUT /agents/{id}/addresses``.
+
 Create a new agent
 ------------------
 

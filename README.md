@@ -36,7 +36,7 @@ It is the only production-grade open-source CPaaS platform that you can fully se
 
 ## 🚀 What You Can Do with VoIPbin
 
-- **Agent Interfaces**: Let your agents receive calls and interact via a simple web interface.
+- **Agent Interfaces**: Let your agents receive calls and interact via a simple web interface. Agents aren't limited to voice — a chat-only agent can be created without a phone/SIP address and still handle chat/conversation work.
 - **Admin Console**: Manage flows, routing, agents, campaigns, and more.
 - **Programmable Flows**: Define rich call behaviors via flow JSON or API.
 - **AI Assistants**: Inject AI into your call flows with VoIPbin's chatbot integration.
