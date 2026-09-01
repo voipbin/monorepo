@@ -875,7 +875,9 @@ func Test_runEventLoop_longLivedStreamResetsTheFailureCount(t *testing.T) {
 		state:          newStateTable(),
 		flap:           newFlapTracker(flapWindow, flapThreshold),
 		reconnectDelay: time.Millisecond,
-		// tiny threshold so the "long-lived" case is reachable in a unit test.
+		// small threshold so the "long-lived" case is reachable in a unit test. The sleep below is
+		// 10x this, not 2x: a loaded CI box can easily add tens of milliseconds of scheduling
+		// delay, and a thin margin here would flake as a spurious "budget did not reset".
 		healthyStreamLifetime: 20 * time.Millisecond,
 	}
 
@@ -890,7 +892,7 @@ func Test_runEventLoop_longLivedStreamResetsTheFailureCount(t *testing.T) {
 			messages := make(chan dockerevents.Message)
 			if attempts == 1 {
 				go func() {
-					time.Sleep(40 * time.Millisecond)
+					time.Sleep(200 * time.Millisecond)
 					close(messages)
 				}()
 			} else {

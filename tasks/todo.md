@@ -393,3 +393,19 @@ untouched by this round.
 - Constructor test asserts `healthyStreamLifetime` is set (a zero value silently disables the
   reset) and exceeds one reconnect delay.
 - Grafana JSON re-validated; panel grid dumped to confirm no overlap or gap.
+
+## Code review round 3 — Approved (2 consecutive, loop closed)
+
+Both reviewers Approved. Round 2 + round 3 = the two consecutive approvals CLAUDE.md's code review
+loop requires. Two cosmetic nits, both explicitly non-blocking, folded in:
+
+1. Softened the "only `empty` is alertable" claim in `CLAUDE.md`, `docs/operations.md`, and the
+   Grafana panel description. It slightly overclaimed: a *hung* proxy/dockerd that accepts the
+   connection, holds it past the 30s longevity threshold, then drops without ever streaming
+   classifies as `idle` indefinitely and never trips the give-up exit. The gap is bounded (the
+   `since` cursor replays it) and visible in the panel by result, but the counter alone will not
+   fire on it. `empty` is now described as the *primary* signal, with `idle` called out as worth
+   watching.
+2. Widened `Test_runEventLoop_longLivedStreamResetsTheFailureCount`'s timing margin from 2x
+   (40ms sleep vs 20ms threshold) to 10x (200ms vs 20ms), so a loaded CI box cannot flake it into
+   a spurious "budget did not reset". Confirmed with `-count=10`.
