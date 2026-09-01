@@ -85,6 +85,19 @@ VOIP-1342/bin-call-manager pilot pattern) instead of the older SSH +
   once the new container is confirmed healthy at the log level; do not
   leave both containers running for an extended soak. See the design doc's
   cutover section for the full rationale.
+- **P23b — standing 2-replica operation:** since the fleet rollout
+  (docs/plans/2026-08-28-bin-manager-two-replica-rollout-design.md), this
+  service normally runs 2 replicas, guarded by a redsync cross-replica
+  lock around the healthcheck cycle (`pkg/healthcheckhandler/health.go`)
+  so only one replica probes carriers per tick. The lock fails **open** on
+  a Redis error (proceeds unlocked rather than skipping the cycle) — this
+  is a deliberate tradeoff, since `ProviderUpdateHealthStatus` is a blind
+  UPDATE with no CAS, so a concurrent unlocked write is harmless and the
+  only cost is the same transient doubled-probe traffic already accepted
+  above for cutover overlaps. An **extended** Redis outage would make that
+  doubled probing persist for the outage's duration rather than a brief
+  window — watch for `WARN`-level "healthcheck lock" log lines during a
+  Redis incident, which is the passive signal this is happening.
 
 ## Configuration
 

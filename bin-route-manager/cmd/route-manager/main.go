@@ -17,6 +17,9 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
+	"github.com/go-redis/redis/v8"
+	"github.com/go-redsync/redsync/v4"
+	goredisv8 "github.com/go-redsync/redsync/v4/redis/goredis/v8"
 	_ "github.com/go-sql-driver/mysql"
 	joonix "github.com/joonix/log"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -134,8 +137,19 @@ func runService(ctx context.Context, sqlDB *sql.DB, cache cachehandler.CacheHand
 	providerHandler := providerhandler.NewProviderHandler(db, reqHandler, notifyHandler, cfg.SipGatewayFQDNForPSTN)
 	providerCallHandler := providercallhandler.NewProviderCallHandler(db, reqHandler, notifyHandler)
 
-	// start background provider health check loop
-	healthChecker := healthcheckhandler.NewHealthCheckHandler(db, reqHandler)
+	// start background provider health check loop, guarded by a redsync
+	// lock so only one replica probes providers per cycle. This uses its
+	// own independent Redis client rather than the cachehandler-owned
+	// connection above - CacheHandler's interface does not expose the
+	// underlying *redis.Client, and keeping the healthcheck leader-lock
+	// concern out of the provider/route cache package is intentional.
+	healthLockClient := redis.NewClient(&redis.Options{
+		Addr:     cfg.RedisAddress,
+		Password: cfg.RedisPassword,
+		DB:       cfg.RedisDatabase,
+	})
+	healthLocker := redsync.New(goredisv8.NewPool(healthLockClient))
+	healthChecker := healthcheckhandler.NewHealthCheckHandler(db, reqHandler, healthcheckhandler.NewRedsyncLocker(healthLocker))
 	go healthChecker.Run(ctx, cfg.HealthCheckInterval)
 
 	// run request listener
