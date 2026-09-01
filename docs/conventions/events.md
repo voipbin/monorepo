@@ -22,16 +22,7 @@ go h.PublishEvent(ctx, eventType, data)      // async
 go h.PublishWebhook(ctx, customerID, eventType, data)  // async
 ```
 
-### 11.3 Delayed Events
-
-Use `EventPublishWithDelay` for events that should fire after a delay:
-
-```go
-// CORRECT — delayed event via RabbitMQ x-delayed-message plugin
-h.notifyHandler.PublishDelayedEvent(ctx, eventType, data, delaySeconds)
-```
-
-### 11.4 Event Handler Return Values
+### 11.3 Event Handler Return Values
 
 Event handlers must return `nil` to acknowledge the message. Returning an error requeues the message:
 

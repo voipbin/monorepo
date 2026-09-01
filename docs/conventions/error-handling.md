@@ -233,7 +233,7 @@ Soft-deleted rows (rows with `tm_delete IS NOT NULL`) are filtered out automatic
 
 ## Event Handler Errors
 
-For `subscribehandler` event processing, errors are logged but should never stop processing — return `nil` to acknowledge the message (see also [events.md §11.4](events.md)):
+For `subscribehandler` event processing, errors are logged but should never stop processing — return `nil` to acknowledge the message (see also [events.md §11.3](events.md)):
 
 ```go
 func (h *subscribeHandler) processEvent(e *sock.Event) error {
