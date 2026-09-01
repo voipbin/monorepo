@@ -25,7 +25,7 @@ type Case struct {
 	// Peer.Target is normalized via commonaddress.NormalizeTarget --
 	// bit-identical to contact_addresses.target and
 	// interaction.Peer.Target. NOT NULL: every Case has a peer by
-	// construction (Create/GetOrCreate both require it).
+	// construction (Create requires it).
 	Peer commonaddress.Address `json:"peer" db:"peer,json"`
 
 	// Local is the customer's own endpoint (number/channel/account) the
@@ -47,7 +47,7 @@ type Case struct {
 	// stored vocabulary ("call", "conversation_message", ...) -- NOT
 	// conversation-manager's message.ReferenceType (a different, unrelated
 	// enum). Case.ReferenceType must match Interaction.ReferenceType
-	// exactly for the design §4 get-or-create join to work.
+	// exactly for the Interaction projection join to work.
 	//
 	// ReferenceID is the internal VoIPBin resource id ReferenceType points
 	// at (the call id when ReferenceType="call", the conversation id when
@@ -112,12 +112,10 @@ const (
 // design doc §2 parked table).
 const (
 	ClosedReasonAgentClosed = "agent_closed"
-	ClosedReasonTimeout     = "timeout"
 	ClosedReasonMerged      = "merged"
 )
 
 // ClosedByType constants.
 const (
-	ClosedByTypeAgent  = "agent"
-	ClosedByTypeSystem = "system"
+	ClosedByTypeAgent = "agent"
 )

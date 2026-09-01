@@ -65,8 +65,9 @@ func scanFullAddressRow(rows *sql.Rows) (*contact.Address, error) {
 
 // AddressCreate creates a new address in contact_addresses, wrapping
 // AddressCreateTx (design §5.1) in a BeginTx/commit/retry loop. Retries
-// on ErrDeadlock up to addressMaxDeadlockRetries (design §5.3), matching
-// casehandler.getOrCreateAttempt's pattern. On ErrDuplicateTarget (design
+// on ErrDeadlock up to addressMaxDeadlockRetries (design §5.3), the same
+// 1062-classification idiom used elsewhere in this package. On
+// ErrDuplicateTarget (design
 // §4 round-27/28/32's duplicate-key path), attempts a stale-row repair in
 // its OWN fresh transaction (round-32: never inside the poisoned
 // transaction that saw the 1062), then retries the create attempt once

@@ -19,9 +19,7 @@ import (
 // Test_ConversationV1ConversationGetOrCreateBySelfAndPeer verifies the
 // get-or-create RPC client used by bin-contact-manager's agent-send
 // Case-linked messaging path (contact-case-management design §4.5,
-// round-12 correction). Distinct client method from
-// ConversationV1ConversationGetBySelfAndPeer -- must hit the
-// get_or_create_by_self_and_peer route, not self_and_peer.
+// round-12 correction).
 func Test_ConversationV1ConversationGetOrCreateBySelfAndPeer(t *testing.T) {
 	tests := []struct {
 		name string

@@ -23,16 +23,17 @@ const caseTable = "contact_cases"
 // sqlExecutor is the common subset of *sql.DB and *sql.Tx used by the
 // case* functions below, letting the same query-building logic run either
 // standalone (h.db) or inside a caller-managed transaction (a *sql.Tx from
-// BeginTx) -- needed because the design §4 get-or-create algorithm must
-// perform several of these operations atomically within one transaction.
+// BeginTx) -- needed because Continue's insertWithRetry and other
+// Tx-scoped case operations must perform several of these operations
+// atomically within one transaction.
 type sqlExecutor interface {
 	Exec(query string, args ...interface{}) (sql.Result, error)
 	Query(query string, args ...interface{}) (*sql.Rows, error)
 }
 
-// BeginTx starts a new transaction for callers (casehandler's get-or-create,
-// design §4) that need to run several Case/Interaction operations
-// atomically.
+// BeginTx starts a new transaction for callers (casehandler's Continue,
+// via insertWithRetry) that need to run several Case/Interaction
+// operations atomically.
 func (h *handler) BeginTx(ctx context.Context) (*sql.Tx, error) {
 	tx, err := h.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -96,11 +97,7 @@ func caseInsertExec(exec sqlExecutor, c *kase.Case) error {
 		}
 		// VOIP-1232: concurrent INSERTs racing on the same uq_case_open_peer
 		// value can surface as a deadlock (1213) instead of a clean 1062,
-		// per InnoDB's insert-intention gap-lock interaction. The caller
-		// (casehandler.GetOrCreate's outer retry loop) must discard the
-		// whole transaction (already server-side rolled back) and restart
-		// from a fresh BeginTx -- unlike ErrDuplicate, which is safely
-		// retryable within the SAME tx via a locked re-select.
+		// per InnoDB's insert-intention gap-lock interaction.
 		if isMySQLDeadlock(err) {
 			return ErrDeadlock
 		}
@@ -117,9 +114,9 @@ func (h *handler) CaseInsert(ctx context.Context, c *kase.Case) error {
 	return caseInsertExec(h.db, c)
 }
 
-// CaseInsertTx is CaseInsert scoped to a caller-managed transaction (design
-// §4's get-or-create insert branches, run atomically with the rest of the
-// transaction).
+// CaseInsertTx is CaseInsert scoped to a caller-managed transaction
+// (Continue's insertWithRetry retry loop, run atomically with the rest of
+// the transaction).
 func (h *handler) CaseInsertTx(ctx context.Context, tx *sql.Tx, c *kase.Case) error {
 	return caseInsertExec(tx, c)
 }
@@ -185,7 +182,7 @@ func (h *handler) CaseGetOpenByPeer(ctx context.Context, tx *sql.Tx, customerID 
 	rows, err := tx.QueryContext(ctx, query, args...)
 	if err != nil {
 		// VOIP-1232: a FOR UPDATE select can itself be the victim of an
-		// InnoDB deadlock under concurrent same-tuple GetOrCreate calls.
+		// InnoDB deadlock under concurrent same-tuple case inserts.
 		if isMySQLDeadlock(err) {
 			return nil, ErrDeadlock
 		}
@@ -200,49 +197,10 @@ func (h *handler) CaseGetOpenByPeer(ctx context.Context, tx *sql.Tx, customerID 
 	return caseGetFromRow(rows)
 }
 
-// CaseGetByIDForUpdate returns a Case by id, locked FOR UPDATE within the
-// given transaction, scoped to customerID (tenant guard). Used by design
-// §4 step 1's explicit case_id hint validation: SELECT ... WHERE id=? AND
-// customer_id=? AND status='open' FOR UPDATE. Returns (nil, nil) if not
-// found / wrong tenant / not open -- an invalid hint is never an error,
-// only a signal to fall through to the peer/reference_type path. (Not
-// used by casehandler.UpdateContact, VOIP-1253's direct contact_id
-// write path -- see caseUpdateContactIDExec's comment.)
-func (h *handler) CaseGetByIDForUpdate(ctx context.Context, tx *sql.Tx, customerID, id uuid.UUID) (*kase.Case, error) {
-	columns := commondatabasehandler.GetDBFields(&kase.Case{})
-
-	builder := sq.Select(columns...).
-		From(caseTable).
-		Where(sq.Eq{"id": id.Bytes()}).
-		Where(sq.Eq{"customer_id": customerID.Bytes()}).
-		Where(sq.Eq{"status": string(kase.StatusOpen)})
-	if h.forUpdateSuffix != "" {
-		builder = builder.Suffix(h.forUpdateSuffix)
-	}
-	query, args, err := builder.ToSql()
-	if err != nil {
-		return nil, fmt.Errorf("could not build query. CaseGetByIDForUpdate. err: %v", err)
-	}
-
-	rows, err := tx.QueryContext(ctx, query, args...)
-	if err != nil {
-		// VOIP-1232: see CaseGetOpenByPeer's identical rationale.
-		if isMySQLDeadlock(err) {
-			return nil, ErrDeadlock
-		}
-		return nil, fmt.Errorf("could not query. CaseGetByIDForUpdate. err: %v", err)
-	}
-	defer func() { _ = rows.Close() }()
-
-	if !rows.Next() {
-		return nil, nil
-	}
-
-	return caseGetFromRow(rows)
-}
-
-// caseUpdateStatusClosedExec is the shared implementation for
-// CaseUpdateStatusClosed/CaseUpdateStatusClosedTx. The customer_id
+// caseUpdateStatusClosedExec is the implementation behind
+// CaseUpdateStatusClosed, factored through the sqlExecutor interface so
+// it can run standalone or (in the future) inside a caller-managed
+// transaction. The customer_id
 // predicate is included in the same UPDATE statement as the mutation
 // itself (not checked separately afterward) so a cross-tenant caller's
 // UPDATE can never match a row at all -- there is no window where the
@@ -270,9 +228,9 @@ func caseUpdateStatusClosedExec(exec sqlExecutor, customerID, id uuid.UUID, clos
 
 	result, err := exec.Exec(query, args...)
 	if err != nil {
-		// VOIP-1232: the timeout-close UPDATE (design §4's close-and-reopen
-		// branch) can also be a deadlock victim under concurrent same-tuple
-		// GetOrCreate calls.
+		// A close UPDATE (e.g. an agent-initiated Close) can also be a
+		// deadlock victim under concurrent case mutations against the
+		// same row; the deadlock classification is kept defensive here.
 		if isMySQLDeadlock(err) {
 			return false, ErrDeadlock
 		}
@@ -299,47 +257,6 @@ func caseUpdateStatusClosedExec(exec sqlExecutor, customerID, id uuid.UUID, clos
 // their own call's arguments won.
 func (h *handler) CaseUpdateStatusClosed(ctx context.Context, customerID, id uuid.UUID, closedReason, closedByType string, closedByID *uuid.UUID, closedAt *time.Time) (bool, error) {
 	return caseUpdateStatusClosedExec(h.db, customerID, id, closedReason, closedByType, closedByID, closedAt)
-}
-
-// CaseUpdateStatusClosedTx is CaseUpdateStatusClosed scoped to a
-// caller-managed transaction (design §4's timeout-close branch).
-func (h *handler) CaseUpdateStatusClosedTx(ctx context.Context, tx *sql.Tx, customerID, id uuid.UUID, closedReason, closedByType string, closedByID *uuid.UUID, closedAt *time.Time) (bool, error) {
-	return caseUpdateStatusClosedExec(tx, customerID, id, closedReason, closedByType, closedByID, closedAt)
-}
-
-// caseUpdateTMUpdateExec is the shared implementation for
-// CaseUpdateTMUpdate/CaseUpdateTMUpdateTx.
-func caseUpdateTMUpdateExec(exec sqlExecutor, id uuid.UUID, tmUpdate *time.Time) error {
-	query, args, err := sq.Update(caseTable).
-		Set("tm_update", tmUpdate).
-		Where(sq.Eq{"id": id.Bytes()}).
-		ToSql()
-	if err != nil {
-		return fmt.Errorf("could not build query. CaseUpdateTMUpdate. err: %v", err)
-	}
-
-	if _, err := exec.Exec(query, args...); err != nil {
-		// VOIP-1232: the final tm_update bump can itself deadlock under
-		// concurrent same-tuple GetOrCreate calls.
-		if isMySQLDeadlock(err) {
-			return ErrDeadlock
-		}
-		return fmt.Errorf("could not execute. CaseUpdateTMUpdate. err: %v", err)
-	}
-
-	return nil
-}
-
-// CaseUpdateTMUpdate bumps a Case's tm_update, used at the end of the
-// get-or-create transaction (design §4 step 4).
-func (h *handler) CaseUpdateTMUpdate(ctx context.Context, id uuid.UUID, tmUpdate *time.Time) error {
-	return caseUpdateTMUpdateExec(h.db, id, tmUpdate)
-}
-
-// CaseUpdateTMUpdateTx is CaseUpdateTMUpdate scoped to a caller-managed
-// transaction.
-func (h *handler) CaseUpdateTMUpdateTx(ctx context.Context, tx *sql.Tx, id uuid.UUID, tmUpdate *time.Time) error {
-	return caseUpdateTMUpdateExec(tx, id, tmUpdate)
 }
 
 // caseUpdateContactIDExec is the shared implementation for
@@ -590,53 +507,6 @@ func (h *handler) CaseListByOwner(ctx context.Context, customerID uuid.UUID, own
 	}
 
 	return res, nil
-}
-
-// caseGetLastClosedByPeerExec is the shared implementation for
-// CaseGetLastClosedByPeer/CaseGetLastClosedByPeerTx.
-func caseGetLastClosedByPeerExec(exec sqlExecutor, customerID uuid.UUID, peerType commonaddress.Type, peerTarget, referenceType string) (*kase.Case, error) {
-	columns := commondatabasehandler.GetDBFields(&kase.Case{})
-
-	query, args, err := sq.Select(columns...).
-		From(caseTable).
-		Where(sq.Eq{"customer_id": customerID.Bytes()}).
-		Where(sq.Eq{"peer_type": string(peerType)}).
-		Where(sq.Eq{"peer_target": peerTarget}).
-		Where(sq.Eq{"reference_type": referenceType}).
-		Where(sq.Eq{"status": string(kase.StatusClosed)}).
-		OrderBy("closed_at DESC").
-		Limit(1).
-		ToSql()
-	if err != nil {
-		return nil, fmt.Errorf("could not build query. CaseGetLastClosedByPeer. err: %v", err)
-	}
-
-	rows, err := exec.Query(query, args...)
-	if err != nil {
-		return nil, fmt.Errorf("could not query. CaseGetLastClosedByPeer. err: %v", err)
-	}
-	defer func() { _ = rows.Close() }()
-
-	if !rows.Next() {
-		return nil, nil
-	}
-
-	return caseGetFromRow(rows)
-}
-
-// CaseGetLastClosedByPeer returns the most recently closed Case for a
-// given (customer_id, peer_type, peer_target, reference_type), or
-// (nil, nil) if none exists. Used for previous_case_id chaining on the
-// fresh-insert path (design §4).
-func (h *handler) CaseGetLastClosedByPeer(ctx context.Context, customerID uuid.UUID, peerType commonaddress.Type, peerTarget, referenceType string) (*kase.Case, error) {
-	return caseGetLastClosedByPeerExec(h.db, customerID, peerType, peerTarget, referenceType)
-}
-
-// CaseGetLastClosedByPeerTx is CaseGetLastClosedByPeer scoped to a
-// caller-managed transaction (design §4's fresh-insert previous_case_id
-// chaining lookup).
-func (h *handler) CaseGetLastClosedByPeerTx(ctx context.Context, tx *sql.Tx, customerID uuid.UUID, peerType commonaddress.Type, peerTarget, referenceType string) (*kase.Case, error) {
-	return caseGetLastClosedByPeerExec(tx, customerID, peerType, peerTarget, referenceType)
 }
 
 // CaseList returns Cases scoped to customerID, optionally filtered by

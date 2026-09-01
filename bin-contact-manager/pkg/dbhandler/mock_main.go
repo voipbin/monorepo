@@ -335,21 +335,6 @@ func (mr *MockDBHandlerMockRecorder) CaseGetByID(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseGetByID", reflect.TypeOf((*MockDBHandler)(nil).CaseGetByID), ctx, id)
 }
 
-// CaseGetByIDForUpdate mocks base method.
-func (m *MockDBHandler) CaseGetByIDForUpdate(ctx context.Context, tx *sql.Tx, customerID, id uuid.UUID) (*kase.Case, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CaseGetByIDForUpdate", ctx, tx, customerID, id)
-	ret0, _ := ret[0].(*kase.Case)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CaseGetByIDForUpdate indicates an expected call of CaseGetByIDForUpdate.
-func (mr *MockDBHandlerMockRecorder) CaseGetByIDForUpdate(ctx, tx, customerID, id any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseGetByIDForUpdate", reflect.TypeOf((*MockDBHandler)(nil).CaseGetByIDForUpdate), ctx, tx, customerID, id)
-}
-
 // CaseGetByIDTx mocks base method.
 func (m *MockDBHandler) CaseGetByIDTx(ctx context.Context, tx *sql.Tx, id uuid.UUID) (*kase.Case, error) {
 	m.ctrl.T.Helper()
@@ -363,36 +348,6 @@ func (m *MockDBHandler) CaseGetByIDTx(ctx context.Context, tx *sql.Tx, id uuid.U
 func (mr *MockDBHandlerMockRecorder) CaseGetByIDTx(ctx, tx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseGetByIDTx", reflect.TypeOf((*MockDBHandler)(nil).CaseGetByIDTx), ctx, tx, id)
-}
-
-// CaseGetLastClosedByPeer mocks base method.
-func (m *MockDBHandler) CaseGetLastClosedByPeer(ctx context.Context, customerID uuid.UUID, peerType address.Type, peerTarget, referenceType string) (*kase.Case, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CaseGetLastClosedByPeer", ctx, customerID, peerType, peerTarget, referenceType)
-	ret0, _ := ret[0].(*kase.Case)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CaseGetLastClosedByPeer indicates an expected call of CaseGetLastClosedByPeer.
-func (mr *MockDBHandlerMockRecorder) CaseGetLastClosedByPeer(ctx, customerID, peerType, peerTarget, referenceType any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseGetLastClosedByPeer", reflect.TypeOf((*MockDBHandler)(nil).CaseGetLastClosedByPeer), ctx, customerID, peerType, peerTarget, referenceType)
-}
-
-// CaseGetLastClosedByPeerTx mocks base method.
-func (m *MockDBHandler) CaseGetLastClosedByPeerTx(ctx context.Context, tx *sql.Tx, customerID uuid.UUID, peerType address.Type, peerTarget, referenceType string) (*kase.Case, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CaseGetLastClosedByPeerTx", ctx, tx, customerID, peerType, peerTarget, referenceType)
-	ret0, _ := ret[0].(*kase.Case)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CaseGetLastClosedByPeerTx indicates an expected call of CaseGetLastClosedByPeerTx.
-func (mr *MockDBHandlerMockRecorder) CaseGetLastClosedByPeerTx(ctx, tx, customerID, peerType, peerTarget, referenceType any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseGetLastClosedByPeerTx", reflect.TypeOf((*MockDBHandler)(nil).CaseGetLastClosedByPeerTx), ctx, tx, customerID, peerType, peerTarget, referenceType)
 }
 
 // CaseGetOpenByPeer mocks base method.
@@ -596,49 +551,6 @@ func (m *MockDBHandler) CaseUpdateStatusClosed(ctx context.Context, customerID, 
 func (mr *MockDBHandlerMockRecorder) CaseUpdateStatusClosed(ctx, customerID, id, closedReason, closedByType, closedByID, closedAt any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseUpdateStatusClosed", reflect.TypeOf((*MockDBHandler)(nil).CaseUpdateStatusClosed), ctx, customerID, id, closedReason, closedByType, closedByID, closedAt)
-}
-
-// CaseUpdateStatusClosedTx mocks base method.
-func (m *MockDBHandler) CaseUpdateStatusClosedTx(ctx context.Context, tx *sql.Tx, customerID, id uuid.UUID, closedReason, closedByType string, closedByID *uuid.UUID, closedAt *time.Time) (bool, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CaseUpdateStatusClosedTx", ctx, tx, customerID, id, closedReason, closedByType, closedByID, closedAt)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CaseUpdateStatusClosedTx indicates an expected call of CaseUpdateStatusClosedTx.
-func (mr *MockDBHandlerMockRecorder) CaseUpdateStatusClosedTx(ctx, tx, customerID, id, closedReason, closedByType, closedByID, closedAt any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseUpdateStatusClosedTx", reflect.TypeOf((*MockDBHandler)(nil).CaseUpdateStatusClosedTx), ctx, tx, customerID, id, closedReason, closedByType, closedByID, closedAt)
-}
-
-// CaseUpdateTMUpdate mocks base method.
-func (m *MockDBHandler) CaseUpdateTMUpdate(ctx context.Context, id uuid.UUID, tmUpdate *time.Time) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CaseUpdateTMUpdate", ctx, id, tmUpdate)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// CaseUpdateTMUpdate indicates an expected call of CaseUpdateTMUpdate.
-func (mr *MockDBHandlerMockRecorder) CaseUpdateTMUpdate(ctx, id, tmUpdate any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseUpdateTMUpdate", reflect.TypeOf((*MockDBHandler)(nil).CaseUpdateTMUpdate), ctx, id, tmUpdate)
-}
-
-// CaseUpdateTMUpdateTx mocks base method.
-func (m *MockDBHandler) CaseUpdateTMUpdateTx(ctx context.Context, tx *sql.Tx, id uuid.UUID, tmUpdate *time.Time) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CaseUpdateTMUpdateTx", ctx, tx, id, tmUpdate)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// CaseUpdateTMUpdateTx indicates an expected call of CaseUpdateTMUpdateTx.
-func (mr *MockDBHandlerMockRecorder) CaseUpdateTMUpdateTx(ctx, tx, id, tmUpdate any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CaseUpdateTMUpdateTx", reflect.TypeOf((*MockDBHandler)(nil).CaseUpdateTMUpdateTx), ctx, tx, id, tmUpdate)
 }
 
 // CaseUpdateTagIDs mocks base method.

@@ -63,8 +63,7 @@ var ErrStaleTarget = fmt.Errorf("target changed between pre-lock read and lock a
 
 // maxDeadlockRetries bounds the outer retry loop that restarts an entire
 // address-write transaction (fresh BeginTx) on ErrDeadlock or
-// ErrStaleTarget. Mirrors casehandler.getOrCreateAttempt's identical
-// constant (design §5.3: "reuse casehandler's exact pattern verbatim").
+// ErrStaleTarget (design §5.3).
 const addressMaxDeadlockRetries = 3
 
 // OwnershipPeriod mirrors a single contact_address_ownership_periods row.

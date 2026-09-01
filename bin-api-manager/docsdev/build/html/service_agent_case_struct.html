@@ -684,7 +684,7 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">opened_at</span></code> (string, ISO 8601, nullable): When the case was opened.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">closed_at</span></code> (string, ISO 8601, nullable): When the case was closed, if applicable.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">closed_reason</span></code> (String, optional): Why the case was closed. See <a class="reference internal" href="#service-agent-case-struct-case-closed-reason"><span class="std std-ref">Closed reason</span></a>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">closed_by_type</span></code> (String, optional): <code class="docutils literal notranslate"><span class="pre">agent</span></code> or <code class="docutils literal notranslate"><span class="pre">system</span></code>. Derived server-side from the caller that closed the case.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">closed_by_type</span></code> (String, optional): <code class="docutils literal notranslate"><span class="pre">agent</span></code>. Derived server-side from the caller that closed the case.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">closed_by_id</span></code> (UUID, nullable): The agent that closed the case, when <code class="docutils literal notranslate"><span class="pre">closed_by_type</span></code> is <code class="docutils literal notranslate"><span class="pre">agent</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">previous_case_id</span></code> (UUID, nullable): The prior, now-closed case for the same peer, set automatically on re-contact.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tag_ids</span></code> (Array of UUID, optional): Tag IDs assigned to the case.</p></li>
@@ -724,10 +724,7 @@
 <tr class="row-even"><td><p>agent_closed</p></td>
 <td><p>An agent explicitly closed the case via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">.../close</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p>timeout</p></td>
-<td><p>The case was closed automatically after a period of inactivity.</p></td>
-</tr>
-<tr class="row-even"><td><p>merged</p></td>
+<tr class="row-odd"><td><p>merged</p></td>
 <td><p>Reserved for a future same-channel case-merge feature. Not yet used.</p></td>
 </tr>
 </tbody>

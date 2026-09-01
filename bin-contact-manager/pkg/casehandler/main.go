@@ -4,7 +4,6 @@ package casehandler
 
 import (
 	"context"
-	"sync"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -20,31 +19,9 @@ import (
 	"monorepo/bin-contact-manager/pkg/dbhandler"
 )
 
-// CaseHandler interface for Case business logic operations (design §4's
-// get-or-create algorithm and §5's lifecycle).
+// CaseHandler interface for Case business logic operations (design §5's
+// Close/Continue lifecycle, plus Create/CaseList/CaseNote/CaseTag/Assign).
 type CaseHandler interface {
-	// GetOrCreate implements design doc §4 exactly: reuse an open Case for
-	// (customerID, peerType, peerTarget, referenceType) if one exists and
-	// has not timed out; otherwise close-and-reopen (timeout) or insert a
-	// fresh Case (first contact / no prior case), honoring an explicit
-	// case_id hint (§4.3) when present and valid. caseIDHint may be nil.
-	//
-	// self is the local (business-side) endpoint address for this event,
-	// used only for design §4.4's proactive-link write: when a brand-new
-	// Case opens for a non-"conversation_message" referenceType (today:
-	// "call"), GetOrCreate looks up the sibling message Conversation for
-	// (self, peer) and, if found, stamps Metadata.ContactCaseID on it.
-	// Pass a zero commonaddress.Address to opt out of this optimization
-	// entirely (e.g. reference_type == "conversation_message" itself,
-	// which never triggers this write per §4.4's scope).
-	//
-	// referenceID (docs/plans/2026-07-24-case-reference-id-design.md §6.1)
-	// is threaded only into insertWithRetry's fresh-insert branch, mirroring
-	// Name/Detail's absence from the hint-match/peer-reuse branches -- a
-	// caller CAN supply one (e.g. the flow-manager case_create action),
-	// but no historical value is ever copied from a reused/timed-out Case.
-	GetOrCreate(ctx context.Context, customerID uuid.UUID, self, peer commonaddress.Address, referenceType string, caseIDHint *uuid.UUID, referenceID string) (*kase.Case, error)
-
 	// Close implements design §5.1: idempotent, race-tolerant close.
 	// Returns the ACTUALLY persisted closed_reason/closed_by, never the
 	// caller's own intent, distinguishing a genuine close from a
@@ -54,8 +31,9 @@ type CaseHandler interface {
 	// Continue implements design §5.3: agent-initiated manual
 	// continuation for accidental-close recovery. Requires the source
 	// case closed; requires the caller be the owning agent or an
-	// admin/manager (callerIsAdmin, decided upstream). Reuses the same
-	// insertWithRetry primitive as GetOrCreate's insert branches.
+	// admin/manager (callerIsAdmin, decided upstream). Reuses the shared
+	// insertWithRetry primitive (insert.go), which is subject to the same
+	// uq_case_open_peer race.
 	Continue(ctx context.Context, customerID, id uuid.UUID, callerType commonidentity.OwnerType, callerID uuid.UUID, callerIsAdmin bool) (*kase.Case, error)
 
 	// UpdateContact implements design VOIP-1253: attaches or detaches a
@@ -109,10 +87,9 @@ type CaseHandler interface {
 	CaseGet(ctx context.Context, customerID, id uuid.UUID) (*kase.Case, error)
 
 	// Create implements design VOIP-1243 §3: a plain, explicit Case
-	// creation -- NOT get-or-create. No transaction, no peer lock, no
-	// retry loop, no previous_case_id chaining, no owner
-	// auto-assignment. Reuses the existing dbhandler.CaseInsert
-	// primitive and translates its sentinel errors
+	// creation. No transaction, no retry loop, no previous_case_id
+	// chaining, no owner auto-assignment. Reuses the existing
+	// dbhandler.CaseInsert primitive and translates its sentinel errors
 	// (dbhandler.ErrDuplicate / dbhandler.ErrDeadlock) into typed
 	// cerrors.AlreadyExists / cerrors.Unavailable respectively.
 	// referenceID (docs/plans/2026-07-24-case-reference-id-design.md) is
@@ -129,17 +106,6 @@ type caseHandler struct {
 	reqHandler    requesthandler.RequestHandler
 	db            dbhandler.DBHandler
 	notifyHandler notifyhandler.NotifyHandler
-
-	// peerLocks/peerLocksMu implement VOIP-1232's per-(customer_id,
-	// peer_type, peer_target, reference_type) in-process serialization
-	// lock: a map of buffered channels (capacity 1) used as keyed
-	// mutexes, guarded by peerLocksMu for map access. See peerlock.go.
-	// caseHandler is a process-wide singleton (constructed once by
-	// NewCaseHandler at service startup), so this map is genuinely
-	// shared across every concurrent GetOrCreate call for the life of
-	// the process.
-	peerLocks   map[string]chan struct{}
-	peerLocksMu sync.RWMutex
 }
 
 // NewCaseHandler returns CaseHandler interface
@@ -153,6 +119,5 @@ func NewCaseHandler(
 		reqHandler:    reqHandler,
 		db:            dbHandler,
 		notifyHandler: notifyHandler,
-		peerLocks:     make(map[string]chan struct{}),
 	}
 }

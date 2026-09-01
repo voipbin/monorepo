@@ -100,43 +100,11 @@ func (r *requestHandler) ConversationV1ConversationCreate(
 	return &res, nil
 }
 
-// ConversationV1ConversationGetBySelfAndPeer sends a get-only lookup
-// request to conversation-manager (never creates on a miss). Used by
-// bin-contact-manager's proactive Case-linking write path
-// (contact-case-management design §4.4).
-func (r *requestHandler) ConversationV1ConversationGetBySelfAndPeer(ctx context.Context, self address.Address, peer address.Address) (*cvconversation.Conversation, error) {
-	uri := "/v1/conversations/self_and_peer"
-
-	data := &cvrequest.V1DataConversationsSelfAndPeerGet{
-		Self: self,
-		Peer: peer,
-	}
-
-	m, err := json.Marshal(data)
-	if err != nil {
-		return nil, err
-	}
-
-	tmp, err := r.sendRequestConversation(ctx, uri, sock.RequestMethodGet, "conversation/conversations/self_and_peer", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	if err != nil {
-		return nil, err
-	}
-
-	var res cvconversation.Conversation
-	if errParse := parseResponse(tmp, &res); errParse != nil {
-		return nil, errParse
-	}
-
-	return &res, nil
-}
-
 // ConversationV1ConversationGetOrCreateBySelfAndPeer sends a
-// get-or-create request to conversation-manager. Distinct from
-// ConversationV1ConversationGetBySelfAndPeer above (round-12
-// correction, contact-case-management design §4.5): creating a
-// Conversation on a miss is correct here because this is only called
-// from the agent-send path, where a real message is genuinely about to
-// be sent.
+// get-or-create request to conversation-manager (round-12 correction,
+// contact-case-management design §4.5): creating a Conversation on a
+// miss is correct here because this is only called from the agent-send
+// path, where a real message is genuinely about to be sent.
 func (r *requestHandler) ConversationV1ConversationGetOrCreateBySelfAndPeer(
 	ctx context.Context,
 	customerID uuid.UUID,
@@ -179,8 +147,7 @@ func (r *requestHandler) ConversationV1ConversationGetOrCreateBySelfAndPeer(
 // (ReferenceType=Conversation). Distinct from
 // ConversationV1ConversationCreate above: this always fires a Flow
 // trigger, so it's a separate RPC rather than an optional-parameter
-// extension of Create (matching this file's existing
-// GetOrCreateBySelfAndPeer-vs-GetBySelfAndPeer separation pattern).
+// extension of Create.
 // Used by bin-webchat-manager's sessionhandler.Create at webchat
 // session-create time to trigger Widget.SessionFlowID (design doc
 // 2026-07-17-webchat-widget-session-message-flow-split-design.md §3.3).

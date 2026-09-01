@@ -3795,11 +3795,11 @@ components:
           example: "2026-06-02T09:30:00.000000Z"
         closed_reason:
           type: string
-          description: Reason the case was closed (e.g. "agent_closed", "timeout").
+          description: Reason the case was closed (e.g. "agent_closed").
           example: "agent_closed"
         closed_by_type:
           type: string
-          description: Type of the actor that closed the case (e.g. "agent", "system").
+          description: Type of the actor that closed the case (e.g. "agent").
           example: "agent"
         closed_by_id:
           type: string

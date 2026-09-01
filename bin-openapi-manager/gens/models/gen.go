@@ -6055,12 +6055,12 @@ type ContactManagerCase struct {
 	// Example: 2a2ec0ba-8004-11ec-aea5-439829c92a7c
 	ClosedById *openapi_types.UUID `json:"closed_by_id,omitempty"`
 
-	// ClosedByType Type of the actor that closed the case (e.g. "agent", "system").
+	// ClosedByType Type of the actor that closed the case (e.g. "agent").
 	//
 	// Example: agent
 	ClosedByType *string `json:"closed_by_type,omitempty"`
 
-	// ClosedReason Reason the case was closed (e.g. "agent_closed", "timeout").
+	// ClosedReason Reason the case was closed (e.g. "agent_closed").
 	//
 	// Example: agent_closed
 	ClosedReason *string `json:"closed_reason,omitempty"`

@@ -83,8 +83,6 @@ ClosedReason
      - Description
    * - agent_closed
      - Closed explicitly by an agent via ``POST /contact_cases/{id}/close``
-   * - timeout
-     - Closed automatically by the system after inactivity
 
 .. _contact-case-struct-closedbytype:
 
@@ -98,8 +96,6 @@ ClosedByType
      - Description
    * - agent
      - Closed by an authenticated agent
-   * - system
-     - Closed automatically by the platform
 
 .. _contact-case-struct-casenote:
 
