@@ -25,13 +25,13 @@ import (
 	dockernetwork "github.com/docker/docker/api/types/network"
 	"github.com/prometheus/client_golang/prometheus"
 
-	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	smcontainer "monorepo/bin-sentinel-manager/models/container"
 	"monorepo/bin-sentinel-manager/pkg/cachehandler"
+	"monorepo/bin-sentinel-manager/pkg/monitoringbackend"
 )
 
 // watchedContainerPrefixes maps a watched container-name prefix to the logical service behind it.
@@ -141,6 +141,9 @@ type dockerWatchHandler struct {
 type DockerWatchHandler interface {
 	Run(ctx context.Context) error
 }
+
+// this backend must satisfy the shared contract cmd/sentinel-manager selects on.
+var _ monitoringbackend.MonitoringBackend = (DockerWatchHandler)(nil)
 
 // NewDockerWatchHandler creates a DockerWatchHandler.
 func NewDockerWatchHandler(
@@ -264,35 +267,16 @@ func sortedNetworkNames(networks map[string]*dockernetwork.EndpointSettings) []s
 	return names
 }
 
+// promContainerStateChangeCounter and the unresolved-asterisk-id counter used to live here.
+// Both moved to pkg/monitoringbackend once the Kubernetes backend arrived: they describe the
+// PUBLISHED EVENT, not the runtime that produced it, so both backends must populate the same
+// series or a Kubernetes deployment's dashboards go silently blank. metricsNamespace moved with
+// them so neither backend can drift onto a different prefix (design §8.4 item 4).
+//
+// The counters BELOW stay here on purpose: each describes a mechanism that exists only on the
+// Docker side (the Redis-backed asterisk-id state table, and the Docker event stream). The
+// Kubernetes backend has no equivalent of any of them and registers its own instead.
 var (
-	metricsNamespace = commonoutline.GetMetricNameSpace(commonoutline.ServiceNameSentinelManager)
-
-	// promContainerStateChangeCounter replaces the former
-	// `sentinel_manager_pod_state_change_total`. This is a rename, not an addition: "pod" is
-	// equally misleading here, and the `namespace`/`pod` labels it carried have no Docker
-	// equivalent. monitoring/grafana/dashboards/sentinel-manager.json is updated in the same
-	// change -- a dashboard left on the old name goes silently blank rather than erroring.
-	promContainerStateChangeCounter = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Namespace: metricsNamespace,
-			Name:      "container_state_change_total",
-			Help:      "Counts the number of watched container state changes",
-		},
-		[]string{"container_name", "service", "state"},
-	)
-
-	// promContainerUnresolvedAsteriskIDCounter counts deaths published with an UNRESOLVED
-	// asterisk-id. Downstream, such an event is dropped by call-manager's empty-id guard, so this
-	// counter is the only signal that a recovery did not happen.
-	promContainerUnresolvedAsteriskIDCounter = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Namespace: metricsNamespace,
-			Name:      "container_unresolved_asterisk_id_total",
-			Help:      "Counts container_died events published without a resolved asterisk-id",
-		},
-		[]string{"container_name"},
-	)
-
 	// promContainerRefreshMissCounter counts refresh passes that found NO fresh candidate for a
 	// container whose asterisk-id was already resolved. The id is deliberately kept (sticky
 	// last-known), so this is not itself a failure -- it is the LEADING indicator that the next
@@ -300,7 +284,7 @@ var (
 	// rather than after.
 	promContainerRefreshMissCounter = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Namespace: metricsNamespace,
+			Namespace: monitoringbackend.MetricsNamespace,
 			Name:      "container_asterisk_id_refresh_miss_total",
 			Help:      "Counts refresh passes that found no fresh asterisk address for an already-resolved container",
 		},
@@ -318,7 +302,7 @@ var (
 	// branch must be alertable, not merely logged.
 	promContainerAsteriskIDConflictCounter = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Namespace: metricsNamespace,
+			Namespace: monitoringbackend.MetricsNamespace,
 			Name:      "container_asterisk_id_conflict_total",
 			Help:      "Counts refresh passes that resolved a different asterisk-id for an already-resolved container and kept the existing one",
 		},
@@ -334,7 +318,7 @@ var (
 	// those is the alert; maxConsecutiveEmptyStreams of them in a row exits the process.
 	promContainerEventStreamReconnectCounter = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Namespace: metricsNamespace,
+			Namespace: monitoringbackend.MetricsNamespace,
 			Name:      "container_event_stream_reconnect_total",
 			Help:      "Counts docker event stream attempts that ended, by whether the attempt delivered any event",
 		},
@@ -344,8 +328,6 @@ var (
 
 func init() {
 	prometheus.MustRegister(
-		promContainerStateChangeCounter,
-		promContainerUnresolvedAsteriskIDCounter,
 		promContainerRefreshMissCounter,
 		promContainerAsteriskIDConflictCounter,
 		promContainerEventStreamReconnectCounter,

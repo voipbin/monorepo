@@ -14,6 +14,7 @@ import (
 
 	"monorepo/bin-sentinel-manager/models/container"
 	"monorepo/bin-sentinel-manager/pkg/cachehandler"
+	"monorepo/bin-sentinel-manager/pkg/monitoringbackend"
 )
 
 func Test_NewDockerWatchHandler(t *testing.T) {
@@ -439,14 +440,16 @@ func Test_watchedContainerPrefixes(t *testing.T) {
 }
 
 func Test_prometheusMetrics(t *testing.T) {
-	if metricsNamespace == "" {
+	if monitoringbackend.MetricsNamespace == "" {
 		t.Errorf("Wrong match. expect: non-empty metrics namespace, got: empty")
 	}
-	if promContainerStateChangeCounter == nil {
-		t.Errorf("Wrong match. expect: initialized promContainerStateChangeCounter, got: nil")
+	// both of these now live in pkg/monitoringbackend so the K8s backend can populate the same
+	// series; assert from here anyway, since this package is still a consumer of them.
+	if monitoringbackend.PromContainerStateChangeCounter == nil {
+		t.Errorf("Wrong match. expect: initialized PromContainerStateChangeCounter, got: nil")
 	}
-	if promContainerUnresolvedAsteriskIDCounter == nil {
-		t.Errorf("Wrong match. expect: initialized promContainerUnresolvedAsteriskIDCounter, got: nil")
+	if monitoringbackend.PromContainerUnresolvedAsteriskIDCounter == nil {
+		t.Errorf("Wrong match. expect: initialized PromContainerUnresolvedAsteriskIDCounter, got: nil")
 	}
 	if promContainerRefreshMissCounter == nil {
 		t.Errorf("Wrong match. expect: initialized promContainerRefreshMissCounter, got: nil")

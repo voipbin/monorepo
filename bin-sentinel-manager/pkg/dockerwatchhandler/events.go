@@ -11,12 +11,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	smcontainer "monorepo/bin-sentinel-manager/models/container"
-)
-
-// list of the container state labels used on promContainerStateChangeCounter.
-const (
-	stateStarted = "started"
-	stateDied    = "died"
+	"monorepo/bin-sentinel-manager/pkg/monitoringbackend"
 )
 
 // list of the result labels used on promContainerEventStreamReconnectCounter.
@@ -275,7 +270,7 @@ func (h *dockerWatchHandler) handleContainerStarted(ctx context.Context, message
 		Service:       service,
 		AsteriskID:    "",
 	})
-	promContainerStateChangeCounter.WithLabelValues(containerName, service, stateStarted).Inc()
+	monitoringbackend.PromContainerStateChangeCounter.WithLabelValues(containerName, service, monitoringbackend.StateStarted).Inc()
 
 	return nil
 }
@@ -312,7 +307,7 @@ func (h *dockerWatchHandler) handleContainerDied(ctx context.Context, containerN
 	}
 
 	if asteriskID == "" {
-		promContainerUnresolvedAsteriskIDCounter.WithLabelValues(containerName).Inc()
+		monitoringbackend.PromContainerUnresolvedAsteriskIDCounter.WithLabelValues(containerName).Inc()
 		log.Warnf("Publishing a died event without a resolved asterisk id. No recovery will be triggered for this container. service: %s", service)
 	}
 
@@ -322,7 +317,7 @@ func (h *dockerWatchHandler) handleContainerDied(ctx context.Context, containerN
 		Service:       service,
 		AsteriskID:    asteriskID,
 	})
-	promContainerStateChangeCounter.WithLabelValues(containerName, service, stateDied).Inc()
+	monitoringbackend.PromContainerStateChangeCounter.WithLabelValues(containerName, service, monitoringbackend.StateDied).Inc()
 
 	return nil
 }
