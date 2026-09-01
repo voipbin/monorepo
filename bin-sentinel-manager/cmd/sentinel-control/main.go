@@ -32,7 +32,13 @@ func initCommand() *cobra.Command {
 				return errors.Wrap(errBind, "failed to bind flags")
 			}
 
-			config.LoadGlobalConfig()
+			// propagate the validation failure rather than discarding it: this CLI must fail the
+			// same way sentinel-manager does on a missing or invalid SENTINEL_BACKEND, or the two
+			// binaries' config handling diverges silently.
+			if errLoad := config.LoadGlobalConfig(); errLoad != nil {
+				return errors.Wrap(errLoad, "failed to load config")
+			}
+
 			return nil
 		},
 	}

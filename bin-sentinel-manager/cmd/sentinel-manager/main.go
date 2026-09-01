@@ -15,6 +15,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
@@ -25,6 +27,8 @@ import (
 	"monorepo/bin-sentinel-manager/internal/config"
 	"monorepo/bin-sentinel-manager/pkg/cachehandler"
 	"monorepo/bin-sentinel-manager/pkg/dockerwatchhandler"
+	"monorepo/bin-sentinel-manager/pkg/k8swatchhandler"
+	"monorepo/bin-sentinel-manager/pkg/monitoringbackend"
 )
 
 const serviceName = commonoutline.ServiceNameSentinelManager
@@ -56,6 +60,7 @@ func init() {
 	rootCmd.Flags().String("redis_address", "localhost:6379", "Address of the Redis server (e.g., localhost:6379)")
 	rootCmd.Flags().String("redis_password", "", "Password of the Redis server")
 	rootCmd.Flags().Int("redis_database", 1, "Database index of the Redis server")
+	rootCmd.Flags().String("sentinel_backend", "", "Monitoring backend to run: kubernetes | docker (required, no default)")
 
 	// Initialize logging
 	logrus.SetFormatter(joonix.NewFormatter())
@@ -118,38 +123,90 @@ func runService(ctx context.Context, cancel context.CancelFunc) error {
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameSentinelEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 	utilHandler := utilhandler.NewUtilHandler()
 
-	// docker client: talks ONLY to the read-only docker-socket-proxy, never to
-	// /var/run/docker.sock. An unreachable proxy must surface as a crash-loop rather than a
-	// sentinel that looks up but watches nothing.
-	docker, errDocker := dockerclient.NewClientWithOpts(
-		dockerclient.WithHost(cfg.DockerSocketProxyAddress),
-		dockerclient.WithAPIVersionNegotiation(),
-	)
-	if errDocker != nil {
-		return errors.Wrap(errDocker, "could not create the docker client")
+	// build whichever backend SENTINEL_BACKEND selected. Both satisfy
+	// monitoringbackend.MonitoringBackend, and everything above this point -- RabbitMQ, the notify
+	// handler, the Prometheus server -- is identical either way (design §8.3).
+	backend, cleanup, errBackend := buildBackend(cfg, reqHandler, notifyHandler, utilHandler)
+	if errBackend != nil {
+		return errors.Wrapf(errBackend, "could not create the %s monitoring backend", cfg.SentinelBackend)
 	}
-	defer func() {
-		if errClose := docker.Close(); errClose != nil {
-			log.Errorf("Could not close the docker client. err: %v", errClose)
-		}
-	}()
+	defer cleanup()
 
-	cacheHandler := cachehandler.NewHandler(cfg.RedisAddress, cfg.RedisPassword, cfg.RedisDatabase)
-	if errConnect := cacheHandler.Connect(); errConnect != nil {
-		return errors.Wrap(errConnect, "could not connect to the redis")
+	// run the watcher. This blocks until the context is cancelled or the backend hits a fatal
+	// condition; the error is propagated all the way to a non-zero process exit.
+	if errRun := backend.Run(ctx); errRun != nil {
+		return errors.Wrapf(errRun, "could not run the %s monitoring backend correctly", cfg.SentinelBackend)
 	}
 
-	dockerWatchHandler := dockerwatchhandler.NewDockerWatchHandler(reqHandler, notifyHandler, utilHandler, docker, cacheHandler)
-
-	// run the container watcher. This blocks until the context is cancelled or the watcher hits a
-	// fatal condition; the error is propagated all the way to a non-zero process exit.
-	if errRun := dockerWatchHandler.Run(ctx); errRun != nil {
-		return errors.Wrap(errRun, "could not run the docker watch handler correctly")
-	}
-
-	log.Info("The docker watch handler stopped cleanly.")
+	log.Infof("The %s monitoring backend stopped cleanly.", cfg.SentinelBackend)
 
 	return nil
+}
+
+// buildBackend constructs the monitoring backend selected by config.
+//
+// The returned cleanup is always non-nil, so the caller can defer it unconditionally.
+//
+// Config validation has already rejected an unset or unknown backend by the time this runs
+// (config.Validate, called from InitConfig), so the default branch here is a belt-and-braces
+// guard against a future selector value being added to the config layer without a matching
+// construction branch -- not a reachable path today.
+func buildBackend(
+	cfg config.Config,
+	reqHandler requesthandler.RequestHandler,
+	notifyHandler notifyhandler.NotifyHandler,
+	utilHandler utilhandler.UtilHandler,
+) (monitoringbackend.MonitoringBackend, func(), error) {
+	log := logrus.WithField("func", "buildBackend")
+	noCleanup := func() {}
+
+	switch cfg.SentinelBackend {
+	case config.BackendDocker:
+		// docker client: talks ONLY to the read-only docker-socket-proxy, never to
+		// /var/run/docker.sock. An unreachable proxy must surface as a crash-loop rather than a
+		// sentinel that looks up but watches nothing.
+		docker, errDocker := dockerclient.NewClientWithOpts(
+			dockerclient.WithHost(cfg.DockerSocketProxyAddress),
+			dockerclient.WithAPIVersionNegotiation(),
+		)
+		if errDocker != nil {
+			return nil, noCleanup, errors.Wrap(errDocker, "could not create the docker client")
+		}
+
+		cleanup := func() {
+			if errClose := docker.Close(); errClose != nil {
+				log.Errorf("Could not close the docker client. err: %v", errClose)
+			}
+		}
+
+		cacheHandler := cachehandler.NewHandler(cfg.RedisAddress, cfg.RedisPassword, cfg.RedisDatabase)
+		if errConnect := cacheHandler.Connect(); errConnect != nil {
+			cleanup()
+			return nil, noCleanup, errors.Wrap(errConnect, "could not connect to the redis")
+		}
+
+		return dockerwatchhandler.NewDockerWatchHandler(reqHandler, notifyHandler, utilHandler, docker, cacheHandler), cleanup, nil
+
+	case config.BackendKubernetes:
+		// in-cluster auth is the only supported mechanism: this backend runs as a pod and reads
+		// the service-account mount. The clientset is built HERE, at the composition root, and
+		// injected -- pkg/k8swatchhandler never constructs it, which is what lets its tests run
+		// against client-go's fake clientset.
+		k8sConfig, errConfig := rest.InClusterConfig()
+		if errConfig != nil {
+			return nil, noCleanup, errors.Wrap(errConfig, "could not create the in-cluster kubernetes config")
+		}
+
+		clientset, errClient := kubernetes.NewForConfig(k8sConfig)
+		if errClient != nil {
+			return nil, noCleanup, errors.Wrap(errClient, "could not create the kubernetes clientset")
+		}
+
+		return k8swatchhandler.NewK8sWatchHandler(reqHandler, notifyHandler, utilHandler, clientset), noCleanup, nil
+
+	default:
+		return nil, noCleanup, errors.Errorf("unsupported sentinel_backend %q", cfg.SentinelBackend)
+	}
 }
 
 // registerSignal inits sinal settings.

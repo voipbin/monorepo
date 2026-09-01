@@ -60,6 +60,14 @@ services:
     deploy:
       replicas: 1
     environment:
+      # Selects the Docker monitoring backend. Required and has no default - sentinel fails
+      # startup validation rather than guessing which runtime it is watching.
+      #
+      # Deliberately a HARDCODED literal rather than a Komodo [[VAR]]: this value never varies
+      # per deployment (it is not a secret or an environment-specific address, it is a fixed fact
+      # about which compose file this is), so a literal avoids having to pre-register a new
+      # variable in infra-secret before this Stack can deploy at all.
+      - SENTINEL_BACKEND=docker
       - RABBITMQ_ADDRESS=[[BIN_MANAGER__RABBITMQ_ADDRESS]]
       # Redis holds voip-asterisk-proxy's `asterisk.<id>.address-internal`
       # keys. Database 1 matches voip-asterisk-proxy's own default
