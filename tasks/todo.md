@@ -1,756 +1,334 @@
-# VOIP-1407: Cutover -- remove fanout dual publish and per-service event exchanges
+# VOIP-1418: Implementation plan
 
-Status: CODING COMPLETE, PR OPEN (stage 4 of 4 -- code review closed, R2 Approve, R3
-Approve, 2 consecutive, after a 3-round loop, the mandatory minimum). PR:
-https://github.com/voipbin/monorepo/pull/1227 (NOT merged -- awaiting explicit 대표님
-authorization). Implementation plan APPROVED (stage 3 complete -- R4 Approve, R5
-Approve, 2 consecutive, after a 5-round loop; §8's OQ-1/OQ-3 resolved by 대표님, OQ-1's
-bin-api-manager follow-up filed as VOIP-1425). Design APPROVED (stage 2 complete -- R9
-Approve, R10 Approve, 2 consecutive, after a 10-round loop). Issue analysis APPROVED
-(stage 1 complete -- R10 Approve, R11 Approve, 2 consecutive). Design doc:
-docs/plans/2026-08-29-voip-1407-fanout-cutover-design.md (APPROVED). Implementation
-plan: docs/plans/2026-08-29-voip-1407-fanout-cutover-plan.md (APPROVED). Implementation:
-136 files across bin-common-handler + 21 services + 8 doc-only services, 9 substantive
-commits + 1 doc-accuracy follow-up commit. rev.10
-after R1 Request Changes (1 CRITICAL:
-missing asterisk-proxy publisher), R2 Request Changes (1 CRITICAL: missing
-consumer-side fanout residue that VOIP-1406 deliberately left as rollback surface; 2
-HIGH/MEDIUM count and cross-reference errors; 2 MEDIUM scope-closure contradictions; 2
-LOW; 1 process finding), R3 Request Changes (1 HIGH: the 28-exchange deletion set was a
-placeholder, never enumerated, and its correct exclusion of
-`bin-manager.webhook-manager.event` was undocumented; 4 MEDIUM: stale-binding
-self-healing loss, a wording contradiction, dangling cross-references from
-renumbering, and failure semantics presented as both settled and open; 3 LOW; 1 process
-finding, closed with a fresh full re-verification), and R4 Request Changes (1 HIGH: the
-rev.4 "QueueUnbind against a missing exchange is safe" proof relied on pod liveness
-despite the call's own error being log-only and non-fatal to `Run()`, replaced with a
-same-channel-ordering argument already latent in §1's own data; 6 LOW: mis-numbered
-finding attribution, an over-broad stale-binding-policy citation, an unqualified "zero
-references" claim, an unexplained 36->33 constant-count derivation, two unflagged
-`subscribeTargets` structural exceptions, and one hardcoded-literal exchange-name call
-site the methodology's own grep pattern cannot see), and R5 Request Changes (1 HIGH:
-the rev.5 same-channel-ordering argument was itself invalid on two counts --
-`TopicCreateWithKind` opens a separate channel, and a binding snapshot cannot date
-which boot created a durable binding -- replaced with direct current-boot evidence, a
-live `consumers` count on the two affected queues; 1 MEDIUM: an unfounded causal claim
-about why `bin-manager.webhook-manager.event` no longer exists, corrected to an
-honestly-uncertain explanation; 6 LOW: gomock-expectation undercount [7->8], a wrong
-line citation, a doc-mention undercount, a stale round-count in the recommendation, a
-mislocated code comment, and an ambiguous metrics-impact denominator), and R6 Request
-Changes (2 HIGH: the rev.6 live-`consumers`-count proof was confounded by RabbitMQ's
-automatic reconnect path, which can re-register consumers on a fresh channel without
-ever re-running the boot-time `QueueUnbind` -- making a live count consistent with
-either a clean boot or a silently-failed one later healed by reconnect; and the
-exchange's absence was only established in the present tense, not at the time the
-pods in question actually booted -- both replaced with direct container-log evidence
-(absence of the call's own `CRITICAL` error string, and absence of any
-reconnect/redeclare log line, across each container's full lifetime from its
-`StartedAt` timestamp) plus a `docker ps` replica-count citation; 2 MEDIUM: an
-unsupported "matches replica count" claim, and an uncited bind-vs-unbind AMQP
-condition conflation; 4 LOW: a dangling cross-reference, an unqualified migration
-hypothesis, an overgeneralized restart claim, and un-elided `'...'` command output),
-and R7 Request Changes (2 CRITICAL: the rev.7 container-log-absence proof assumed
-unbounded log retention that these services' own committed Docker log-rotation config
-(`max-size: "10m"`, `max-file: "3"`) does not provide, and separately the webhook
-`QueueUnbind` call sits behind an unexamined `else if` guard on a prior `QueueBind`,
-so log-absence could not distinguish "unbind succeeded" from "unbind never executed
-because the bind failed first" -- both replaced with a direct controlled experiment: an
-isolated scratch queue on the real production broker (RabbitMQ 3.13.7), `queue.unbind`
-against a guaranteed-nonexistent exchange, observed to raise no exception with the
-channel remaining usable afterward; 1 HIGH recommending exactly this experiment as the
-fix; 2 LOW: a stale §7 recommendation and an overgeneralized restart-confirmation
-claim), and R8 Request Changes (the reviewer explicitly confirmed the rev.8 unbind
-experiment itself was sound and a genuinely different, non-inferential proof strategy
-from all four predecessors -- no further attempt needed on that specific result; 1
-HIGH: the claim is two-sided [`QueueBind` fails, `QueueUnbind` doesn't] but only the
-unbind arm was tested, with the bind arm resting on an uncorroborated source-comment
-citation, fixed by adding a second experimental arm -- a `queue.bind` against a
-missing exchange -- as a positive control in the same harness, which reproduced the
-exact 404 and channel death; 2 MEDIUM: two unstated bridging premises [Python/Go AMQP
-client equivalence; scratch-queue-property immateriality] now stated explicitly; 5
-LOW: an arithmetic slip ["five" vs "four" inference attempts], a version-string typo,
-an imprecise "no state modified" claim, reproducibility gaps in the shown commands,
-and a run-on sentence burying its own conclusion), and R9 Request Changes (the
-reviewer confirmed the two-arm experiment itself genuinely closes both halves of §1's
-claim and is substantively airtight; 1 MEDIUM: the client-equivalence bridging premise
-asserted "neither client exposes a nowait form," false for amqp091-go's `QueueBind`
-[which does take a `noWait` parameter] -- fixed by citing the true, already-verified
-justification instead [every production call site passes `noWait=false`]; 2 LOW: an
-imprecise amqp091-go line citation, and a stale "Seven review rounds" in §7 that had
-not been updated to include R8).
+Status: **PLAN APPROVED** (round 3 + round 4, 2 consecutive Approve — CLAUDE.md
+implementation-plan review loop satisfied). Round 4 implementer notes (non-blocking, apply
+during coding): (1) the Grafana file needs a full pass — beyond the enumerated lines, a
+`legendFormat: "Pod Changes/min"` literal and 5 panel titles also say "Pod"; (2) confirm
+`models/pod` has no reverse dependency from `monitoringhandler`'s replacement before W2's
+boundary, since deletion is deferred to W3; (3) call out the go.mod k8s.io/* delta
+explicitly in the PR body; (4) highest test-writing effort belongs in
+`dockerwatchhandler`'s state table, not the mechanical renames. Ready for implementation.
+Normative source: the Approved design
+(`docs/plans/2026-09-01-voip-1418-sentinel-docker-backend-design.md`, 2 consecutive Approve,
+rounds 4+5). This plan adds only execution mechanics — do not re-derive design decisions here.
 
-## Issue Analysis (2026-08-29, rev.10)
+## Scope confirmation
 
-### 1. Issue validity: VALID. Precondition evidence, and what it does and does NOT prove
+**Revised during implementation (superseding the original "two repos, two PRs" scope
+below)**: what was W0 (a standalone `monorepo-etc` Komodo Stack for docker-socket-proxy) is
+now folded into W4, entirely within `monorepo`. Discovered while implementing: the design's
+§3.2 premise ("first instance of this pattern in the fleet") was wrong — two
+docker-socket-proxy instances already exist (`infra-prometheus` VOIP-1402,
+`infra-loki` VOIP-1423), and both run the proxy as a **sidecar inside the consumer's own
+compose file** on a dedicated `internal: true` network, not as a shared Stack on
+`production`. `infra-loki` explicitly declined to reuse `infra-prometheus`'s existing proxy
+for exactly this reason (blast-radius: on `production`, `docker inspect` via the proxy would
+be reachable from any of ~50+ containers, not just the intended consumer). Design §3.2 is
+corrected to match this precedent; see that section for the full reasoning. Net effect:
+**one repository, one PR** — no monorepo-etc changes, no cross-repo sequencing.
 
-Live broker inspection on bm-nyc-01 (104.243.38.39), via SSH + RabbitMQ management API
-(port **80**), re-run fresh for this revision (2026-08-29, R3 finding 9 -- prior
-rounds' reviewers lacked shell access to independently reproduce this):
+- **`monorepo`** (this worktree, only): `bin-sentinel-manager` Docker backend rewrite
+  (including its own embedded docker-socket-proxy sidecar, W4), `bin-call-manager`
+  consumer-side change, `.circleci/config_work.yml` deploy job.
+
+## Waves
+
+### W0 — retired, folded into W4
+
+Originally: a standalone `monorepo-etc` Komodo Stack. Superseded — see "Scope confirmation"
+above. The research already done before the correction (digest pinning, the full explicit
+ACL variable enumeration including the `PING=1`/`VERSION=1` correction, the read-only socket
+mount) carries forward unchanged into W4's inline sidecar; only the deployment *shape*
+changed (embedded sidecar + internal network, not a separate Stack on `production`).
+
+### W1 — bin-sentinel-manager: new `models/container` package (additive, `models/pod` stays)
+
+**Round-1 plan review correctly caught two errors here**: (a) this wave was labeled
+"additive, no wiring yet" but originally also deleted `models/pod` — which
+`pkg/monitoringhandler/run.go` (deleted only in W2) and six `bin-call-manager` files
+(`subscribehandler/{main.go,sentinel_manager.go,sentinel_manager_test.go}`,
+`callhandler/{event.go,main.go,mock_main.go}`, all migrated in W3) still import at this
+point in the sequence; the tree would not build between W1 and W3. (b) the go.mod cleanup
+claim below was backwards. Both fixed:
+
+- `models/container/main.go`: `Event` type (design §3.5: `ContainerName`, `Service`,
+  `AsteriskID`), `EventTypeContainerStarted`/`EventTypeContainerDied` constants.
+- `EventSubscriptionID() string` on `*Event`: returns `AsteriskID` directly — **now decided
+  at the design level, not plan level**, see design §6's second resolved item (added at this
+  plan-review round: call-manager's existing subscription binds via the wildcard pattern
+  `sentinel-manager.pod.*.deleted`, verified in `binding_golden_test.go`, so populating a
+  real address here is additive and breaks nothing on the consumer side).
+- Compile-time assertion: `var _ eventtopic.SubscriptionIdentifier = (*Event)(nil)` in a
+  sibling `_test.go`.
+- Behavioral test: mutation-checked (distinct `AsteriskID` values resolve correctly; empty
+  `AsteriskID` resolves to `""`, not a panic).
+- `models/pod/` is **NOT deleted in this wave** — it stays, unmodified, until every consumer
+  (W2's `pkg/monitoringhandler`/`run_test.go`, W3's six `bin-call-manager` files) has
+  migrated off it. The delete moves to the end of W3, once nothing in either service
+  references it (verify with
+  `grep -rl "bin-sentinel-manager/models/pod" --include="*.go" --exclude-dir=vendor .`
+  returning empty before deleting).
+
+### W2 — bin-sentinel-manager: Docker Events backend (replaces `pkg/monitoringhandler`)
+
+- New dependency: `github.com/docker/docker/client` (+ its transitive deps) added via
+  `go get`, not hand-edited into `go.mod`.
+- New dependency: `github.com/go-redis/redis/v8` — **confirmed via round-1 plan review** as
+  the fleet's already-standard choice (`bin-call-manager/pkg/cachehandler/main.go`; note
+  upstream has since archived this in favor of `github.com/redis/go-redis/v9`, but matching
+  the existing in-repo convention takes precedence over adopting a newer major version in a
+  single service — a fleet-wide bump, if ever wanted, is its own separate change).
+- `internal/config/config.go`: add `DockerSocketProxyAddress`, `RedisAddress` (or reuse
+  whatever env var name convention `bin-call-manager`'s cachehandler already uses for
+  consistency — check before inventing a new one), watched container name-prefix patterns
+  (keep these as compile-time constants like today's K8s selectors, per design §3.1 — the
+  design explicitly chose not to make this runtime config).
+- `pkg/dockerwatchhandler/` (new package name — `monitoringhandler` is K8s-flavored
+  terminology, rename for clarity since this is a full rewrite, not a patch):
+  - `main.go`: interface + constructor (`requestHandler`/`notifyHandler` deps unchanged from
+    today's `monitoringHandler`, plus a new Redis client dependency).
+  - `state.go`: the per-container-name state table (design §3.3) — `map[string]*containerState`
+    guarded by a `sync.Mutex` (design §3.3's "single goroutine or mutex-per-name" — a single
+    mutex over the whole map is simpler and sufficiently fast at this cardinality;
+    per-name mutexes would be premature optimization for ~6-10 entries).
+  - `boot.go`: step 0 — list+inspect running watched containers at startup, seed the table,
+    run one immediate refresh pass (design §3.3 step 0).
+  - `refresh.go`: the 10s background loop — Redis SCAN, freshness filter
+    (`remaining >= 24h - 12min`), sticky-last-known update semantics (design §3.3 step 2,
+    the round-3/round-4-reviewed core mechanism — implement exactly as specified, this is
+    the part with the most review scrutiny already behind it).
+  - `events.go`: Docker Events API stream consumption (`type=container`,
+    `event=start,die`, name-pattern filter), `since`-cursor reconnect (design §3.4), flap
+    damping (design §3.4 — >3 restarts/60s per container name → WARN + skip), publish path
+    (`container.Event` via `notifyHandler.PublishEvent`, `WithGlobalTopicPublish()`
+    preserved from today's `cmd/sentinel-manager/main.go`).
+  - Prometheus metrics: rename `sentinel_manager_pod_state_change_total` →
+    `sentinel_manager_container_state_change_total` (labels: `container_name`, `service`,
+    `state`) — a metric rename, not additive, since "pod" is equally misleading here; add
+    the two new counters from design §3.3 (unresolved-id-published,
+    resolved-entry-lost-fresh-candidate), both labeled by `container_name` per round-4
+    review's polish item.
+  - **`monitoring/grafana/dashboards/sentinel-manager.json` — caught by round-2 plan
+    review, was missing entirely.** Four panels query the old metric name (lines 158, 192,
+    219, 246 on `main`), two of them (`by (namespace)`, `by (pod)`) grouped by labels this
+    rename deletes outright. Without updating this file in the same wave, the dashboard
+    silently goes blank the moment this PR deploys — no error, just empty panels, easy to
+    miss until someone needs it during an actual incident. Update all 4 panel queries to
+    `sentinel_manager_container_state_change_total`, and the two label-grouped panels to
+    `by (service)`/`by (container_name)` respectively (matching the new label set above).
+    While in this file, also update the two panels' `legendFormat` templates
+    (`"{{namespace}}"` → `"{{service}}"`, `"{{pod}}"` → `"{{container_name}}"` — otherwise
+    the legend renders empty even though the data itself is correct) and any panel title
+    still saying "Pod" (round-3 review flagged both as sitting immediately next to the lines
+    already being edited — cheap to catch now, easy to miss as a follow-up).
+- `cmd/sentinel-manager/main.go`: replace `runMonitoring`'s K8s selector map with the
+  Docker name-prefix list; wire the new Redis client and docker-socket-proxy HTTP client
+  into `dockerwatchhandler.NewDockerWatchHandler(...)`.
+- `cmd/sentinel-control/`: the debugging CLI's `pod list`/`pod get` subcommands become
+  `container list`/`container get` against the Docker backend (or the proxy's
+  `/containers/json` directly) — keep the CLI's existing JSON-stdout/logs-stderr contract.
+- Delete `k8s/` deployment manifests? **No — design §2 explicitly defers this to a
+  follow-up ticket.** Leave `k8s/` in place, untouched, in this PR (it's already fully dead
+  now that CI's release job is gone; removing it is cheap cleanup but out of THIS ticket's
+  scope per the design's own boundary — resist scope creep here even though it would be a
+  one-line temptation while already touching this service).
+- `go.mod`: `k8s.io/client-go`, `k8s.io/api`, `k8s.io/apimachinery` become unused once W2's
+  `pkg/monitoringhandler` and W3's final `models/pod` deletion land. **Round-1 plan review
+  correctly caught that the previous version of this bullet was factually wrong**: `go mod
+  tidy` (step 1 of root CLAUDE.md's *mandatory* verification workflow, run in W6) removes
+  unused imports from `go.mod` automatically — it is not optional and cannot be skipped to
+  "leave them in." **Accept the `go.mod`/`go.sum` delta in this PR** (these three modules
+  drop out); design §7 only defers deleting the `k8s/` *manifest directory* (`k8s/*.yml`,
+  which `go mod tidy` has no opinion on) to a follow-up, not the go.mod entries, which the
+  mandatory workflow removes as an automatic side effect of this change regardless of intent.
+  Call this out explicitly in the PR description as an expected, reviewed part of the diff.
+- **Discovered during implementation (not anticipated by this plan): adding
+  `github.com/docker/docker` bumps MVS-selected shared indirect dependencies fleet-wide**
+  (`golang.org/x/net`, `golang.org/x/crypto`, `golang.org/x/sys`, `golang.org/x/text`,
+  `google.golang.org/protobuf`, `go.yaml.in/yaml/v3`). Because every service reaches
+  `bin-sentinel-manager` through the monorepo's local `replace` directives, `go mod tidy`
+  (mandatory, per above) propagates these version bumps to all 38 services' `go.mod`/
+  `go.sum` — 36 of them otherwise fail `go mod vendor` (`"updates to go.mod needed"`), which
+  every Dockerfile runs during image build, making this a landmine for their next unrelated
+  change if left untouched. Verified empirically as newly-introduced (not pre-existing drift)
+  via a clean-worktree control comparison against `origin/main`. **Decision: keep in this
+  PR** (not split into a separate PR — a standalone tidy is meaningless without the docker
+  dependency that necessitates it, and would itself be re-reverted by the next unrelated
+  tidy; also not avoided by dropping `github.com/docker/docker` — that would reopen design
+  §3.1's already-approved library choice purely to avoid a mechanical diff). The per-service
+  diff is purely six indirect version lines plus matching `go.sum` entries — no direct
+  dependency or code changes in any of the 36 services. Call this out explicitly in the PR
+  description alongside the `k8s.io/*` removal, as its own clearly-labeled item so reviewers
+  don't mistake ~72 touched files for accidental scope.
+
+### W3 — bin-call-manager: consumer-side change
+
+- `pkg/callhandler/event.go`: `EventSMPodDeleted(ctx, p *smpod.Pod)` →
+  `EventSMContainerDied(ctx, c *smcontainer.Event)` (design §3.6 — renamed, not kept, since
+  we're touching the whole signature anyway and "pod" would be actively wrong here).
+  Filter changes from `p.Namespace == asteriskPodNamespace && p.Labels["app"] ==
+  asteriskPodLabelApp` to `c.Service == "asterisk-call"` (the `Service` field is exactly the
+  filter target now, no indirection needed). **Add the empty-id guard the design's §3.3/§3.6
+  review rounds required**: `if c.AsteriskID == "" { log...; return nil }` before calling
+  `RecoveryStart` — this is new behavior, not a preserved no-op (round-2/round-3 review
+  confirmed today's code has no such guard).
+- `pkg/subscribehandler/main.go`: update the `sentinel-manager.pod.deleted` binding pattern
+  to the new event type/routing key (design §3.5's rename); update the type-switch case
+  (`m.Publisher == ... && m.Type == smpod.EventTypePodDeleted` → the container equivalent).
+- `pkg/subscribehandler/sentinel_manager.go`: rename `processEventSMPodDeleted` →
+  `processEventSMContainerDied`, update its import/unmarshal target to `smcontainer.Event`.
+- `pkg/callhandler/main.go`, `mock_main.go`: interface method rename, mock regen
+  (`go generate`).
+- **Test files — round-1 plan review corrected this list; it was incomplete and one item
+  was mischaracterized:**
+  - `bin-call-manager/pkg/callhandler/event_test.go` currently covers only
+    `Test_EventCUCustomerFrozen`/`Test_EventCUCustomerDeleted` — `EventSMPodDeleted` has
+    **zero existing test coverage**. The new `EventSMContainerDied` test is net-new
+    coverage, not a rewrite; per CLAUDE.md's aggressive-testing convention, cover the
+    happy path, the `Service != "asterisk-call"` filter-skip, AND the new empty-id guard
+    (three cases minimum, not one).
+  - `bin-call-manager/pkg/subscribehandler/binding_golden_test.go` pins the literal
+    `"sentinel-manager.pod.*.deleted"` string — **must be updated deliberately** to
+    `"sentinel-manager.container.*.died"` in this wave, or CI fails on an intentional
+    change that looks like a regression.
+  - `bin-call-manager/pkg/subscribehandler/sentinel_manager_test.go`
+    (`Test_processEvent_processEventSMPodDeleted`) — rewrite for the renamed handler.
+  - `bin-sentinel-manager/models/pod/{event_test.go,main_test.go}` and
+    `bin-sentinel-manager/pkg/monitoringhandler/run_test.go` — deleted alongside their
+    packages in this wave (W2 already deletes `pkg/monitoringhandler`; this wave is where
+    `models/pod` — the whole directory, both test files included — and its test finally go,
+    per W1's corrected sequencing note).
+  - **`models/pod/` deletion happens HERE, at the end of W3** (not in W1 — see W1's
+    corrected note): by this point `pkg/monitoringhandler` (W2) and all six
+    `bin-call-manager` consumers (this wave, above) have migrated off it. Verify with
+    `grep -rl "bin-sentinel-manager/models/pod" --include="*.go" --exclude-dir=vendor .`
+    returning empty immediately before deleting. Move
+    `models/pod/routingkey_golden_test.go` → `models/container/routingkey_golden_test.go`
+    at this point too (W1 created the new package but intentionally left its golden test
+    for this wave, since the golden test's whole point is pinning the keys real publish
+    sites produce, and the publish sites don't exist until W2).
+
+### W4 — CI/CD
+
+- `.circleci/config_work.yml`: add `bin-sentinel-manager-deploy` job to the
+  `bin-sentinel-manager` workflow (currently ends at `build`), mirroring the
+  `komodo-api-deploy.sh` pattern used by the other 32 services (render image tag → deploy).
+  Remove the stale "release job removed (VOIP-1405)" comment block now that a real deploy
+  job is back.
+- New `bin-sentinel-manager/komodo/docker-compose.yml`: single replica (design §4) for the
+  `sentinel-manager` service itself, **plus an embedded `docker-socket-proxy` sidecar** (see
+  design §3.2's corrected reasoning and the "Scope confirmation" section above — this
+  replaces the retired W0). Concretely:
+  - New `internal: true` network in this compose file (e.g. `sentinel-docker-internal`),
+    joined only by `sentinel-manager` and the sidecar — not `production`.
+  - Sidecar service (suggested key: `docker-socket-proxy`, or
+    `sentinel-docker-socket-proxy` if a more distinctive name reads better next to
+    `infra-prometheus`'s `docker-socket-proxy`/`infra-loki`'s
+    `loki-docker-socket-proxy` in fleet-wide dashboards — implementer's call): image
+    `tecnativa/docker-socket-proxy:v0.5.0@sha256:1f5038b54f06c3e18422902cf00ba21803d1c97805aae032e5e6673d532d3459`
+    (digest independently resolved and cross-checked against `infra-loki`'s own pin during
+    the retired W0's research — reuse it rather than re-resolving). Explicit 29-variable ACL
+    (`EVENTS=1`, `CONTAINERS=1`, `PING=1`, `VERSION=1`, everything else `0` — the retired
+    W0's `komodo/docker-compose.yml` on the abandoned `monorepo-etc` branch
+    `VOIP-1418-Docker-socket-proxy` has the full enumerated list with rationale comments per
+    variable; copy the pattern). Read-only socket mount
+    (`/var/run/docker.sock:/var/run/docker.sock:ro`). On the new internal network only, no
+    published port.
+  - `sentinel-manager`'s `DockerSocketProxyAddress` config resolves to the sidecar's
+    in-compose service name over the internal network (e.g.
+    `http://docker-socket-proxy:2375`) — this needs NO Komodo `[[BIN_MANAGER__...]]`
+    variable at all, since it never leaves this one compose file.
+  - Redis address DOES need the standard `[[BIN_MANAGER__...]]` interpolation convention —
+    confirm exact variable naming against `infra-secret`'s existing
+    `bin-manager/secrets.enc.yml` schema before inventing new names.
+- `bin-sentinel-manager/Dockerfile`: confirm it doesn't assume `k8s/` RBAC-mounted service
+  account tokens at runtime (it shouldn't — that was `k8s/rbac/*.yml` cluster-side config,
+  not baked into the image — but verify).
+
+### W5 — Docs
+
+- `bin-sentinel-manager/CLAUDE.md`: replace the "CRITICAL: in-cluster only" /
+  "CRITICAL: RBAC required" sections with the Docker-backend equivalents (docker-socket-proxy
+  dependency, no RBAC concept). Update "Key implementation facts".
+- `bin-sentinel-manager/docs/architecture.md`, `docs/domain.md`, `docs/operations.md`:
+  re-extract via `docs/reference/extractor.sh bin-sentinel-manager` per root CLAUDE.md's
+  service-docs-sync rule (this PR's `pkg/listenhandler`-equivalent routing table doesn't
+  exist for this A2 service, but the events/config/domain sections do change materially).
+- `bin-call-manager/docs/architecture.md` (or wherever its subscribeTargets are documented):
+  same sync rule for the renamed event.
+- `docs/reference/rabbitmq-queues-reference.md` (root, if this queue/event is catalogued
+  there): update the sentinel-manager event-type entries.
+
+### W6 — Global verification + evidence
+
+Per root CLAUDE.md's mandatory verification workflow, run for **both** touched services
+(`bin-sentinel-manager`, `bin-call-manager`) before any commit:
 
 ```
-$ curl -s -u voipbin:$PASS http://$IP:80/api/exchanges/%2f/bin-manager.event/bindings/source
-total bindings: 66
-  agent-manager.subscribe: 4     number-manager.subscribe: 2
-  ai-manager.subscribe: 10       queue-manager.subscribe: 3
-  billing-manager.subscribe: 14  registrar-manager.subscribe: 2
-  call-manager.subscribe: 4      schedule-manager.subscribe: 1
-  campaign-manager.subscribe: 2  storage-manager.subscribe: 2
-  conference-manager.subscribe: 2  tag-manager.subscribe: 1
-  contact-manager.subscribe: 1   timeline-manager.subscribe: 1
-  conversation-manager.subscribe: 4  transcribe-manager.subscribe: 3
-  direct-manager.subscribe: 1    transfer-manager.subscribe: 3
-  flow-manager.subscribe: 1      webhook-manager.subscribe: 5
-# = 65 PatternForEventType + 1 timeline "#" -- matches VOIP-1406 design §5 exactly.
+go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m
 ```
 
-**The 28 fanout exchanges this ticket's §4.4 runbook deletes, enumerated explicitly
-(R3 finding 1 -- rev.3 used an unresolved placeholder here), each individually queried
-for existence + binding count:**
+Additional targeted checks:
+- New golden test (`models/container/routingkey_golden_test.go`) passes with the new
+  expected keys (this is an intentional key-string change per design §3.5 — do not treat a
+  diff here as a regression to "fix" back).
+- `dockerwatchhandler`'s state-table logic gets dedicated unit tests for: sticky-last-known
+  (a refresh pass with no fresh candidate does not clear a resolved id), the freshness-filter
+  boundary (`remaining` just above/below `24h-12min`), boot-time reconciliation seeding, and
+  the flap-damping threshold — this is the highest-scrutiny part of the design across 5
+  review rounds and deserves the highest test density in the implementation.
+- `bin-call-manager`'s new empty-id guard gets an explicit test (design review flagged this
+  as previously entirely absent — new coverage, not preserved coverage).
+- Full cross-service build sweep (both services + anything importing
+  `bin-sentinel-manager/models/pod` — check via `grep -rl "bin-sentinel-manager/models/pod"`
+  before deleting it at the end of **W3** (round-2 review caught this line still said "W1",
+  an orphaned reference left over from the W1/W3 resequencing fix — the deletion point is
+  W3, not W1), since a stale import elsewhere would only surface as a build failure in that
+  OTHER service, not in sentinel's own `go test`).
 
-```
-$ for ex in ai-manager agent-manager billing-manager call-manager campaign-manager \
-    conference-manager contact-manager conversation-manager customer-manager \
-    direct-manager email-manager flow-manager message-manager number-manager \
-    outdial-manager pipecat-manager queue-manager registrar-manager route-manager \
-    schedule-manager sentinel-manager storage-manager tag-manager talk-manager \
-    transcribe-manager transfer-manager tts-manager webchat-manager; do
-    code=$(curl -s -o /dev/null -w '%{http_code}' -u voipbin:$PASS \
-      "http://$IP:80/api/exchanges/%2f/bin-manager.$ex.event")
-    [ "$code" = 200 ] && curl -s -u voipbin:$PASS \
-      "http://$IP:80/api/exchanges/%2f/bin-manager.$ex.event/bindings/source" \
-      | python3 -c 'import json,sys; d=json.load(sys.stdin); print(len([b for b in d if b["destination_type"]=="queue"]))'
-  done
-# -> all 28 EXIST, all report 0 queue bindings.
-```
+## Explicitly out of scope for this PR (per design §7, restated for the implementer)
 
-**Also queried, to settle exactly which `QueueName*Event`-family exchanges are NOT in
-the 28-exchange deletion set, and why (R3 finding 1's second half):**
+- Deleting `bin-sentinel-manager/k8s/` manifests and `k8s.io/*` go.mod entries.
+- Removing the dead `ASTERISK_ID` env var (VOIP-1365).
+- Any change to `RecoveryStart`/Homer/PJSIP redial logic itself.
+- Restart-vs-recreate MAC-stability empirical test (design §3.4 — informs flap-damping
+  tuning, not a blocker; do the cheap kill-signal check early in W2 if time allows, but
+  don't let it gate the PR).
 
-```
-bin-manager.api-manager.event:      ABSENT (404) -- api-manager never published events; dead constant, never had an exchange.
-bin-manager.rag-manager.event:      ABSENT (404) -- same, rag-manager.
-bin-manager.timeline-manager.event: ABSENT (404) -- same, timeline-manager is consumer-only, never published.
-bin-manager.user-manager.event:     ABSENT (404) -- no user-manager service exists; dead constant.
-bin-manager.webhook-manager.event:  ABSENT (404) -- cause unestablished (see next paragraph);
-                                     VOIP-1296 removed the code that used to declare it, and
-                                     nothing has re-declared it since, but that alone does not
-                                     explain a durable exchange's disappearance.
-bin-manager.webhook-manager.event.topic: EXISTS -- a DIFFERENT exchange (topic-kind, VOIP-1258's mechanism,
-                                     permanently out of scope, not part of the fanout family at all).
-```
+## PR sequencing
 
-`bin-manager.webhook-manager.event` is correctly excluded from the 28-exchange deletion
-set not because deleting it would be risky, but because **it does not exist to
-delete**. Its exact CAUSE of absence is not established and this document does not
-claim one (R5 finding 2 -- an earlier draft asserted "VOIP-1296's cutover deleted it,"
-which is mechanically implausible: ceasing to DECLARE a durable exchange does not
-DELETE it -- an explicit `exchange.delete` or a broker rebuild would be required, and
-neither is evidenced). What IS verified: VOIP-1296 removed webhook-manager's own
-publish path to this exchange (`bin-webhook-manager/pkg/webhookhandler/
-routingkey.go:102`, `webhook_test.go:416-417`), and zero code anywhere in
-`bin-webhook-manager` constructs a plain `NewNotifyHandler` that would re-declare it
-(§3). Its exact cause is left unestablished deliberately -- one plausible mechanism
-(unverified, offered only as a hypothesis, not relied on by any proof below): this
-session's memory of the bare-metal migration to bm-nyc-01 (VOIP-1325) suggests a
-single fresh broker where only actively-declared exchanges exist post-migration, which
-would also explain the 4 dead constants' exchanges being absent the same way. This
-matters for the empirical proof directly below, not for §2b.
+1. W0 (monorepo-etc) — separate PR, separate repo, land or at least open first.
+2. W1 → W2 → W3 → W4 → W5 → W6 (monorepo) — one PR, per root CLAUDE.md's default
+   single-PR-per-task rule (multi-file, multi-wave, but one logical change: "give
+   sentinel-manager a working Docker backend and restore its deploy path").
 
-```
-$ curl -s -u voipbin:$PASS http://$IP:80/api/exchanges/%2f/asterisk.all.event/bindings/source \
-    | python3 -c 'import json,sys; d=json.load(sys.stdin); print([b["destination"] for b in d if b["destination_type"]=="queue"])'
-['bin-manager.call-manager.subscribe', 'bin-manager.timeline-manager.subscribe']
-```
+## Results (implementation, 2026-09-01)
 
-Sampled 5 subscribe queues' FULL binding lists individually (billing/conversation/
-transfer/storage/tag): each queue's only event source is `bin-manager.event` (plus the
-harmless default-exchange self-bind and the unrelated `bin-manager.delay` retry
-exchange). Separately, THIS session's own VOIP-1406 deploy roll-out included a real
-restart of billing-manager-1 specifically (observed "Up 8 seconds" shortly after that
-deploy, with the same clean binding state) -- scoped to that one service, not
-generalized to the other four sampled queues, which were not individually confirmed
-post-restart.
+W1-W6 implemented. W0 was re-scoped mid-implementation (see "Deviations" below).
 
-**§1's central empirical claim: `QueueBind`/`QueueSubscribe` 404 (and kill the channel)
-when the target exchange is missing, but `QueueUnbind` does NOT. Settled this revision
-with a two-arm DIRECT CONTROLLED EXPERIMENT against the real production broker,
-including a positive control, rather than any further inference from production STATE.**
-(R8 finding 1 -- four prior attempts across rev.4/5/6/7 were each inference-based and
-each rested on a premise that turned out false, unverifiable, or unproven: process
-liveness doesn't distinguish a swallowed error from success; a same-channel "ordering"
-argument used `TopicCreateWithKind`, which actually opens a SEPARATE channel; a live
-consumer-count argument is confounded by RabbitMQ's automatic reconnect path; and a
-container-log-absence argument assumed unbounded log retention that these services' own
-committed Docker log-rotation config (`max-size: "10m"`, `max-file: "3"`,
-`bin-agent-manager/komodo/docker-compose.yml` and `bin-timeline-manager/komodo/
-docker-compose.yml`) does not actually provide, while the call itself sits behind a
-conditional `else if` that a log-absence argument cannot distinguish from "never
-executed." This revision instead tests the underlying AMQP/broker-semantics question
-directly, for BOTH operations, so the null result on unbind is interpretable against a
-proven-working test harness rather than merely asserted.)
+| Wave | Outcome |
+|---|---|
+| W1 | `models/container` (Event, event-type + service constants, `EventSubscriptionID` returning the asterisk-id). Added `models/asteriskaddress` — not in the plan, see deviations. |
+| W2 | `pkg/dockerwatchhandler` (`main.go`/`state.go`/`refresh.go`/`boot.go`/`events.go`), `pkg/cachehandler` (read-only Redis reverse scan), rewritten `cmd/sentinel-manager` + `cmd/sentinel-control`, extended `internal/config`, deleted `pkg/monitoringhandler`, renamed the Prometheus counter and updated `monitoring/grafana/dashboards/sentinel-manager.json` (full grep pass: 4 queries, 3 legendFormats, 5 panel titles). |
+| W3 | `bin-call-manager`: `EventSMPodDeleted` → `EventSMContainerDied` with the new empty-id guard, subscribe dispatch + binding pattern, both golden tests, mock regen. `models/pod` deleted at the end of the wave; its golden test moved to `models/container/routingkey_golden_test.go`. |
+| W4 | `bin-sentinel-manager-deploy` job + workflow edge in `.circleci/config_work.yml`; new `bin-sentinel-manager/komodo/docker-compose.yml` (sentinel-manager + socket-proxy sidecar). Dockerfile verified to need no change. |
+| W5 | `bin-sentinel-manager/{CLAUDE.md,README.md,docs/*.md}`, `bin-call-manager/docs/architecture.md`, `docs/reference/rabbitmq-queues-reference.md`, `docs/architecture/service-dependency-graph.md`. |
+| W6 | Full 5-step workflow green for both services, 0 lint issues. Plus a fleet-wide build sweep (38 modules). |
 
-```
-$ docker exec infra-rabbitmq rabbitmqctl version
-3.13.7
-$ cat > /tmp/unbind_test.py << 'PYEOF'
-import pika
-# Client equivalence: pika's queue_unbind/queue_bind and amqp091-go's Channel.QueueUnbind
-# (bin-common-handler/pkg/rabbitmqhandler/queue.go:195-218, calling the driver at :201)/
-# QueueBind (queue.go:166-191, calling the driver at :172) emit the identical AMQP 0-9-1
-# queue.unbind/queue.bind methods. pika's BlockingChannel exposes no nowait form for
-# either; amqp091-go's Channel.QueueBind does take a noWait parameter, but every
-# production call site passes false (queue.go:159's QueueSubscribe wrapper -- the legacy
-# fanout path this experiment targets -- and each service's topicPatterns binds), and
-# Channel.QueueUnbind has no noWait parameter at all. So both calls, on both clients,
-# synchronously await the broker's -ok and surface a broker rejection as a returned
-# error -- the broker-side resolution path and the observable outcome are the same.
-creds = pika.PlainCredentials("voipbin", "<redacted, read via `docker exec infra-rabbitmq printenv RABBITMQ_DEFAULT_PASS`>")
-params = pika.ConnectionParameters(host="rabbitmq", credentials=creds)  # "rabbitmq" is
-# infra-rabbitmq's Docker network alias on the `production` network (docker inspect
-# infra-rabbitmq --format '{{json .NetworkSettings.Networks}}' confirms Aliases: [rabbitmq]).
+### Deviations from the plan
 
-# ARM 1: unbind against a missing exchange -- the claim under test.
-conn1 = pika.BlockingConnection(params)
-ch1 = conn1.channel()
-ch1.queue_declare(queue="voip1407-scratch-test-2", durable=False, auto_delete=True, exclusive=True)
-try:
-    ch1.queue_unbind(queue="voip1407-scratch-test-2",
-                      exchange="voip1407-does-not-exist-exchange-2", routing_key="")
-    print("ARM1 UNBIND-MISSING-EXCHANGE: no exception")
-except Exception as e:
-    print("ARM1 UNBIND-MISSING-EXCHANGE: EXCEPTION:", type(e).__name__, str(e))
-try:
-    ch1.queue_declare(queue="voip1407-scratch-test-2", durable=False, auto_delete=True,
-                       exclusive=True, passive=True)
-    print("ARM1 CHANNEL-STILL-ALIVE:", "yes")
-except Exception as e:
-    print("ARM1 CHANNEL-STILL-ALIVE: NO:", type(e).__name__, str(e))
-conn1.close()
+1. **W0 re-scoped by the coordinator mid-implementation.** The standalone `infra-docker-socket-proxy` Komodo Stack in monorepo-etc was cancelled. The proxy is now a sidecar inside `bin-sentinel-manager/komodo/docker-compose.yml`, on a Stack-local `internal: true` network joined only by sentinel-manager and the proxy — matching the shape monorepo-etc's `infra-prometheus` (VOIP-1402) and `infra-loki` (VOIP-1423) already use. Design §3.2's claim that this pattern had "no existing reference to copy" was factually wrong; both of those Stacks predate it and both deliberately kept their proxy OFF `production` for the blast-radius reason. No cross-repo dependency remains.
 
-# ARM 2 (positive control): bind against a missing exchange -- expected to fail and kill
-# the channel, per bin-timeline-manager/pkg/subscribehandler/main.go:147-152's own comment
-# and the 2026-07-14 VOIP-1258 production incident. Proves the harness CAN detect a broker
-# error, so ARM 1's null result is a finding, not a blind spot.
-conn2 = pika.BlockingConnection(params)
-ch2 = conn2.channel()
-ch2.queue_declare(queue="voip1407-scratch-test-3", durable=False, auto_delete=True, exclusive=True)
-try:
-    ch2.queue_bind(queue="voip1407-scratch-test-3",
-                    exchange="voip1407-does-not-exist-exchange-3", routing_key="")
-    print("ARM2 BIND-MISSING-EXCHANGE: no exception (unexpected)")
-except Exception as e:
-    print("ARM2 BIND-MISSING-EXCHANGE: EXCEPTION:", type(e).__name__, str(e))
-try:
-    ch2.queue_declare(queue="voip1407-scratch-test-3", durable=False, auto_delete=True,
-                       exclusive=True, passive=True)
-    print("ARM2 CHANNEL-STILL-ALIVE-AFTER-BIND-FAIL: yes (unexpected)")
-except Exception as e:
-    print("ARM2 CHANNEL-STILL-ALIVE-AFTER-BIND-FAIL: NO (expected):", type(e).__name__, str(e))
-conn2.close()
-PYEOF
-$ docker run --rm --network production -v /tmp/unbind_test.py:/test.py python:3-slim \
-    bash -c "pip install pika -q && python3 /test.py"
-```
-```
-ARM1 UNBIND-MISSING-EXCHANGE: no exception
-ARM1 CHANNEL-STILL-ALIVE: yes
-ARM2 BIND-MISSING-EXCHANGE: EXCEPTION: ChannelClosedByBroker (404, "NOT_FOUND - no exchange 'voip1407-does-not-exist-exchange-3' in vhost '/'")
-ARM2 CHANNEL-STILL-ALIVE-AFTER-BIND-FAIL: NO (expected): ChannelWrongStateError Channel is closed.
-```
+2. **`models/asteriskaddress` added (not in the plan).** The Redis key shape and the freshness rule (`TTL`, `RefreshInterval`, `FreshnessMargin`, `IsFresh`) needed a home shared by `pkg/cachehandler` and `pkg/dockerwatchhandler`. Putting the boundary rule in a models package makes it unit-testable in isolation, which is where the freshness-boundary tests live.
 
-**This is a direct observation with a working positive control, not an inference
-chain and not a one-sided assertion**: run against the real production broker
-(RabbitMQ 3.13.7 -- version-sensitivity matters for AMQP error-handling semantics, so
-the exact production version was used, not assumed), using `pika` in a throwaway
-container attached to the `production` Docker network, against scratch queues
-(non-durable/exclusive/auto-delete -- self-deleting on connection close, isolated from
-and never touching any real production queue, exchange, or binding; only transient
-scratch state was created, and it was gone by the time each connection closed). The
-durability/exclusivity difference between the scratch queues and the real subscribe
-queues is immaterial here: RabbitMQ resolves the SOURCE exchange named in `queue.bind`/
-`queue.unbind` before reaching any durability-dependent binding-table logic, so a
-missing exchange short-circuits identically regardless of the destination queue's
-properties -- ARM 2's exact-match 404 (`"no exchange '...' in vhost '/'"`, an
-exchange-resolution error, not a queue or binding error) confirms this directly. ARM 1:
-`queue.unbind` against a guaranteed-nonexistent exchange raised no exception, and a
-subsequent operation on the SAME channel (a passive queue-declare) succeeded, proving
-the channel was not closed. ARM 2 (the positive control): `queue.bind` against a
-guaranteed-nonexistent exchange raised `ChannelClosedByBroker (404, NOT_FOUND)`
-immediately, and the same subsequent same-channel operation then failed with
-`ChannelWrongStateError` ("Channel is closed") -- exactly the failure mode
-`bin-timeline-manager/pkg/subscribehandler/main.go:147-152`'s own comment describes
-("makes QueueSubscribe fail with an AMQP 404, which closes the shared channel and
-takes this service down at boot"), reproduced directly rather than merely cited.
+3. **`miniredis` added as a test dependency** for `pkg/cachehandler`, matching the precedent in `bin-webhook-manager`, `bin-contact-manager`, and `bin-api-manager`. The SCAN cursor loop and the TTL read are exercised against real Redis semantics rather than a mock's idea of them.
 
-Together the two arms answer the question every prior inference attempt was trying to
-indirectly establish, for BOTH halves of §1's claim, and do not depend on log
-retention, reconnect history, container uptime, or the specific conditional structure
-of any one service's `Run()`. `bin-agent-manager/pkg/subscribehandler/main.go:118-120`
-and `bin-timeline-manager/pkg/subscribehandler/main.go:177-179`'s `QueueUnbind(queue,
-"", "bin-manager.webhook-manager.event", nil)` calls -- and any other leftover
-`QueueUnbind` call anywhere in this migration referencing an absent exchange -- are
-therefore confirmed safe no-ops at the broker-protocol level; conversely, §2b's
-"deleting the exchange kills `Run()` on the next fanout `QueueSubscribe`" claim and
-§4 item 4's runbook precondition are now backed by a reproduction of the exact failure,
-not just a source-comment citation.
+4. **Fleet-wide `go.mod`/`go.sum` tidy (36 services) — the largest unplanned consequence.** `github.com/docker/docker` raises the MVS-selected versions of `golang.org/x/{net,crypto,sys,text}`, `google.golang.org/protobuf`, and `go.yaml.in/yaml/v3`, and the monorepo's local `replace` directives propagate that to every module. Left untouched, 36 services fail both `go build ./...` and `go mod vendor` — which every Dockerfile runs — so their image builds would break on their next unrelated change. Verified NOT pre-existing via a clean detached worktree at `origin/main`. The per-service diff is only those six indirect version lines plus matching `go.sum` entries; no direct dependency or code changes anywhere.
 
-(For completeness: the webhook `QueueUnbind` call in both services actually sits behind
-an `else if` guard on a prior `QueueBind` to the (existing) VOIP-1258 topic exchange, so
-it only executes when that bind succeeds -- irrelevant to the experiment above, which
-tests both operations in isolation, but worth noting for anyone reading the surrounding
-source. Also: nothing in either service's `subscribeTargets`/`fanoutUnbindTargets` lists
-re-binds `QueueNameWebhookEvent`, so the unbind call was already redundant before this
-ticket, on top of being safe.)
+5. **`k8s.io/*` removal is wider than sentinel.** `bin-call-manager` also drops `k8s.io/api`, `k8s.io/apimachinery`, `k8s.io/klog/v2`, `k8s.io/kube-openapi`, `k8s.io/utils`, and `sigs.k8s.io/*` — it was pulling them transitively through `bin-sentinel-manager/models/pod`. Expected and desirable.
 
-This distinction is the reason §2b's danger is specifically about the fanout
-`QueueSubscribe` BIND loop, not about any leftover `QueueUnbind` calls that might
-reference an already- or soon-to-be-deleted exchange.
+### Still out of scope, as planned
 
-**What this precondition proves, precisely:** every CONSUMER has migrated off the 28
-fanout exchanges onto `bin-manager.event`, for exactly the 28 exchanges enumerated
-above, with a real-restart confirmation for one sampled service (billing-manager -- R7
-finding 5, correcting an earlier overgeneralization to "every consumer"; the other
-sampled queues are point-in-time snapshots, not individually restart-confirmed).
-**What it does NOT prove, and rev.2 wrongly implied
-it did**: it says nothing about whether the CODE that produced this steady state still
-contains a live fanout `QueueSubscribe` (bind) path that would try to rebind to those
-exchanges on a FUTURE restart. It does (§2b) -- this is R2's CRITICAL finding, addressed
-below.
-
-**Rollback / point-of-no-return, corrected (R2 finding 4 -- was self-contradictory and
-mis-cited §4.2 instead of §4.3 twice):**
-
-| Action | Reversible? | How |
-|---|---|---|
-| Revert the notifyhandler/publisher code (§4 item 1) | Yes | Dual publish resumes cleanly; `TopicCreate(queueEvent)` re-declares an exchange that was never deleted. |
-| Revert the consumer-side code (§2b/§4 item 2, the fanout-`QueueSubscribe`-removal half) | Yes, UNTIL the exchanges are deleted | Re-adding the fanout subscribe loop just re-binds to exchanges that still exist. |
-| Delete the 28 exchanges (§4 item 4's runbook) | **NO, for any service whose consumer code has not yet been redeployed without the fanout QueueSubscribe loop** | A `QueueSubscribe`/`QueueBind` call to a deleted exchange 404s the channel; per the CURRENT code (`bin-tag-manager/pkg/subscribehandler/main.go:110-113` and identically in the other 19 services), that failure `return`s from `Run()` -- the subscribe handler never starts, and there is no fallback because the fanout exchange the fallback depends on is gone. **This -- not the publisher-side change -- is the actual point of no return**, and it is gated on BOTH publisher and consumer code being fully redeployed first (§4 item 4). By contrast, `QueueUnbind` calls left referencing a deleted exchange (e.g. the legacy VOIP-1258 lines in agent/timeline-manager, §1) are NOT part of this risk -- `QueueUnbind` against a missing exchange does not 404 (empirically proven, §1). |
-
-### 2. Two independent code changes required, not one -- corrects rev.1/rev.2's publish-only framing
-
-**(a) Publish side** (bin-common-handler/pkg/notifyhandler + ~62 call sites) -- unchanged
-from rev.2, detailed in §3. Its "degrade, don't abort" design intent (the reason
-`topicDisabled` exists today) is documented in the VOIP-1406/1404 design docs' own §2,
-not in this document -- see §3's failure-semantics paragraph for what changes here.
-
-**(b) Consumer side (R2 CRITICAL finding, verified against source this revision) --
-entirely missing from rev.1/rev.2, and larger in service-count than (a).** The VOIP-1406
-design doc explicitly assigns this ticket the removal of the fanout rollback surface it
-deliberately built and left in place:
-- `docs/plans/2026-08-29-voip-1406-consumer-topic-migration-design.md:90-91`: *"Fanout
-  `QueueSubscribe` calls in step 1 stay in the code during 1406 (they are the rollback
-  surface and the degrade path). **VOIP-1407 deletes them.**"*
-- Same doc, :129-130 (sentinel defensive declare, call-manager and timeline-manager
-  only): *"The declare is deleted in **VOIP-1407** together with the fanout
-  QueueSubscribe lines."*
-- Same doc, :10: *"Blocks: VOIP-1407 (Follow-up C: remove fanout publish **+
-  per-service fanout exchanges**)"*.
-
-Verified directly against `bin-tag-manager/pkg/subscribehandler/main.go` (representative
--- identical shape in the other 19 VOIP-1406 services): `Run()` does
-`QueueCreate` -> loop `QueueSubscribe(subscribeQueue, target)` over `h.subscribeTargets`
-(**a bind with no declare** -- `sockhandler.QueueSubscribe` is
-`QueueBind(name, "", exchange, false, nil)`, `bin-common-handler/pkg/rabbitmqhandler/
-queue.go:158-159`) -> `TopicCreateWithKind(bin-manager.event)` -> `QueueBind` each
-`topicPatterns` entry -> on full success, `QueueUnbind` each `fanoutUnbindTargets`
-entry -> `go ConsumeMessage(...)`. **The fanout `QueueSubscribe` loop's error path
-`return`s immediately** (`main.go:110-113`: `if errSubscribe := ...; errSubscribe != nil
-{ ... return errSubscribe }`) -- a bind to a deleted exchange kills `Run()` outright,
-with NO fallback, because the fanout leg the "stay fully on fanout" degrade path (the
-VOIP-1406 design's own intent, referenced above in (a)) depends on no longer exists.
-Verified this same shape (fanout-subscribe-loop-error-returns-immediately) in 6 services
-beyond tag-manager, spread across the list rather than assuming uniformity: agent, call,
-billing, timeline, transfer, webhook -- all six `return errSubscribe` (or the equivalent
-`return nil, errSubscribe` in a constructor-shaped `Run`) with no fallback.
-
-**Concrete consequence if §4.4's exchange deletion runs while this code is still
-deployed anywhere:** the next restart of ANY of the 20 VOIP-1406 services (pod restart,
-rolling deploy, crash recovery -- not a hypothetical, a routine operational event) fails
-to start its subscribe handler. This is a full, silent, service-wide event-intake outage
-for that service, discovered only at the next restart, potentially long after the
-exchanges were deleted.
-
-**Scope this adds** (mirrors VOIP-1406's own service list, 20 services: agent, ai,
-billing, call, campaign, conference, contact, conversation, direct, flow, number, queue,
-registrar, schedule, storage, tag, timeline, transcribe, transfer, webhook):
-- Delete the fanout `QueueSubscribe` loop and the `subscribeTargets`
-  package-level/wiring var (fed from each `cmd/*-manager/main.go`) in each service's
-  `pkg/subscribehandler/main.go`. **Two structural shape exceptions (R4 finding 6),
-  already called out by the VOIP-1406 design doc (:100-107) and worth restating here so
-  the design stage doesn't size this as 20 identical edits**: `bin-webhook-manager/pkg/
-  subscribehandler/main.go:97,105` receives `subscribeTargets` as a comma-joined
-  `string` split inside `Run()`, not a slice like the other 19; `bin-timeline-manager/
-  pkg/subscribehandler/main.go:27-54` declares it as a package-level var (`:30` is one
-  entry inside it, `QueueNameAsteriskEventAll` -- the one entry that must NOT be
-  deleted, per the bullet below) with no `cmd/` wiring at all (nothing to touch there
-  beyond the var itself).
-- Delete `fanoutUnbindTargets` (no longer meaningful once there is nothing to unbind
-  from) and the `QueueUnbind` step -- `topicPatterns`/`QueueBind` becomes the sole
-  intake mechanism. Whether a topic-declare/bind failure at startup should now be FATAL
-  (there is no fanout left to degrade to) is an explicit open ruling, tracked once in
-  §6 (deferred item 6) -- not asserted as decided here.
-- call-manager and timeline-manager: delete the sentinel defensive `TopicCreate`
-  declare (VOIP-1406 design doc :124-130 explicitly assigns this to VOIP-1407) --
-  **but do NOT touch the `asterisk.all.event` `QueueSubscribe`**, which is permanent
-  (the asterisk-proxy publish leg §3 item 1 keeps alive has no topic counterpart, so
-  its two consumers keep subscribing to it forever; this is the one fanout
-  `QueueSubscribe` line across all 20 services that must NOT be deleted).
-- Update every service's `binding_golden_test.go` (the fanout-target pins become
-  unnecessary) and `docs/architecture.md` events section.
-- **Precondition on the consumer-side change itself, not just on §4 item 4's exchange
-  deletion (R3 finding 2, citations corrected R4 finding 2)**: VOIP-1406's design doc
-  (:225-232) established a stale-binding policy that TOLERATES resurrected fanout
-  bindings from two live triggers -- an image rollback, or a 2-replica rolling-deploy
-  window where an old-image pod's `redeclareAll()` replays its tracked fanout bind
-  after the new pod already unbound it -- remediated via manual `rabbitmqadmin` unbind
-  or roll-forward ("No automated cleanup in 1406" -- the doc is explicit that this is
-  NOT automatic). The actual automatic self-heal this ticket removes lives in §2's own
-  per-boot template (:66-74) and reconnect note (:92-94): every service's `Run()`
-  already re-runs the bind-then-unbind sequence on every boot, so a stray fanout
-  binding left by either trigger above gets swept the next time that service restarts
-  for ANY reason, even without a human running the manual remediation. Removing the
-  `QueueUnbind` loop removes THIS automatic path entirely: any fanout binding stray at
-  the moment this consumer-side change deploys becomes permanent double delivery,
-  unremediable by any subsequent boot (manual remediation per :225-232 still works, it
-  is simply no longer optional), until the exchange itself is deleted (§4 item 4).
-  **This consumer-side change
-  should therefore only roll out to a service once a stale-binding sweep (the same
-  broker-binding inspection §1 already demonstrates) confirms zero stray fanout
-  bindings for that service**, not on a fixed schedule independent of that check.
-  **A pre-rollout sweep alone is insufficient (R5 finding 9)**: it cannot catch a
-  stray created DURING the rollout window itself by trigger (a) above (an old-image
-  pod's `Run()` re-subscribing to fanout during a rolling deploy) -- since the new
-  image no longer sweeps, such a stray would otherwise persist undetected until §4
-  item 4's exchange deletion. Add a POST-rollout per-service re-sweep to this
-  precondition as well, mirroring §4 item 4's own post-deletion re-check.
-- **Sequencing, corrected (R3 finding 2 -- rev.3's "can deploy independently" was too
-  strong)**: the publish-side change (§3) and this consumer-side change do not depend
-  on EACH OTHER's code being live first, and can ship in separate PRs/commits. But
-  each one has its OWN precondition before it is safe to roll out (publish-side: none
-  beyond normal deploy hygiene; consumer-side: the stale-binding sweep above), and BOTH
-  must be fully deployed to EVERY service, with a confirmed restart-survival check (not
-  just a point-in-time binding snapshot -- §1), before §4 item 4's exchange deletion
-  runs.
-
-### 3. Publish side: mechanism and call-site inventory (unchanged substance from rev.2, count corrected)
-
-`publishEvent()` ALWAYS calls `publishDirectEvent` (fanout, via `h.queueNotify`) first;
-only on success, and only if `h.topicEnabled` (opt-in via `WithGlobalTopicPublish()`,
-default off), does it call `publishTopicEvent` (global topic). Topic-publish failure is
-swallowed. `topicDisabled`: a construction-time topic-declare failure silently suppresses
-topic publish for that instance's lifetime, fanout keeps working -- this "degrade, don't
-abort" behavior must invert once fanout is gone for the paths that drop it.
-
-Delayed-publish (`delay > 0`) never reaches `publishTopicEvent`; confirmed dead code --
-`PublishEventRaw`/`PublishEvent` hardcode `delay=0`, no interface method exposes delay,
-`DelaySecond`/`DelayMinute`/`DelayHour` (notifyhandler package) have zero production
-callers. Do not confuse with `requesthandler.DelayNow`/`DelaySecond`/`DelayMinute`/
-`DelayHour` (`bin-common-handler/pkg/requesthandler/main.go:156-159`) -- different
-package; of THOSE, only `DelayNow` has any caller at all, and only in
-`requesthandler`'s own tests -- "live" was too strong a word for any of them (R2 finding
-7); none are touched by this ticket regardless.
-
-**Metrics (R2 finding 3, corrected -- rev.2's "no action needed" ruling was wrong
-scope):** `promNotifyTotal` (fires in `publishEvent()` itself, survives removing
-`publishDirectEvent`) is fine. `promNotifyProcessTime` is observed at exactly THREE call
-sites: `publishDirectEvent` (removed by this ticket for every instance except
-asterisk-proxy's), `publishDirectEventWithKey` (webhook-manager's VOIP-1258 path only),
-`publishDelayedEvent` (dead code, previous paragraph). **Removing `publishDirectEvent`
-silences `<namespace>_notify_process_time` for the 27 daemons that dual-publish via
-`publishEvent()` (§3's 27 dual-publish daemons -- the ones becoming topic-only per §4
-item 1) -- their publish-latency signal disappears entirely** (R5 finding 8,
-denominator corrected: NOT "27 of the 28 real publishers" -- of the 29 processes that
-actually publish something today (27 dual-publish daemons + asterisk-proxy +
-webhook-manager), asterisk-proxy KEEPS the metric because its fanout leg and
-`publishDirectEvent` call are deliberately preserved (§4 item 1), and webhook-manager
-was never affected in the first place, since it observes `promNotifyProcessTime` via
-the unrelated `publishDirectEventWithKey` call site) -- `publishTopicEvent` deliberately
-does not observe it today. External-consumer audit (`~/gitvoipbin/
-monorepo-etc`, all Grafana dashboards + alert rules, all four metric names): zero
-matches, so nothing breaks visibly, but the signal itself disappears platform-wide.
-**Design ruling required, not a note**: either make `publishTopicEvent` observe
-`notify_process_time` (folding topic latency into the existing histogram under its
-existing name), or explicitly accept the loss of publish-latency observability. Do not
-carry this into implementation undecided.
-
-**Call-site inventory, recount verified this revision (R2 finding 2 -- rev.2's 55 was
-undercounted by 2):**
-
-- **55 dual-publish call sites** (`WithGlobalTopicPublish()` present) across 49 files,
-verified this revision via `/usr/bin/grep -c "WithGlobalTopicPublish()"` per file (not
-reconstructed by hand -- rev.2's attempt to do so miscounted; raw counts below are the
-source of truth):
-  - **5 multi-call files**: `bin-registrar-manager/cmd/registrar-control/main.go` (3,
-    lines 109/148/176); `bin-storage-manager/cmd/storage-control/main.go` (2, lines
-    72/93); `bin-queue-manager/cmd/queue-control/main.go` (2, lines 68/513);
-    `bin-customer-manager/cmd/customer-control/main.go` (2, lines 452/511);
-    `bin-ai-manager/cmd/ai-control/main.go` (2, lines 425/473).
-  - **44 single-call files**, one each: every remaining daemon (agent/ai/billing/call/
-    campaign/conference/contact/conversation/customer/direct/email/flow/message/number/
-    outdial/pipecat/queue/registrar/route/schedule/sentinel/storage/tag/talk/transcribe/
-    tts/webchat -- 27 daemons) and every remaining `-control` binary that has one
-    (agent/billing/call/campaign/conference/contact/conversation/direct/email/flow/
-    message/number/outdial/pipecat/route/tag/transcribe -- 17 controls; schedule/
-    sentinel/talk/tts/webchat have no `-control` DUAL-PUBLISH construction -- talk-control
-    and tts-control DO construct a fanout-only `NotifyHandler`, listed separately below
-    as items 4/5 of the 5 fanout-only sites, not double-counted here).
-  - Arithmetic: (3×1) + (2×4) + (44×1) = 3 + 8 + 44 = **55**.
-- **5 fanout-ONLY call sites** (no `WithGlobalTopicPublish()`), each individually
-  dispositioned:
-  1. `voip-asterisk-proxy/cmd/asterisk-proxy/main.go:107` (`QueueNameAsteriskEventAll`)
-     -- a real fanout-only publisher, feeding `asterisk.all.event` (permanently
-     retained, §1/§5). **EXCLUDED from this ticket's scope entirely (rev.11, per
-     explicit user direction: "its fan-out operates differently, don't touch it
-     here")** -- no code change to this call site, and no mechanism design needed to
-     accommodate it (§4 item 1). Sole caller of `PublishEventRaw` is `voip-asterisk-
-     proxy/pkg/eventhandler/ari_handler.go:76`, listed here for completeness of the
-     inventory, not as an active concern for this ticket.
-  2. `bin-transfer-manager/cmd/transfer-manager/main.go:137` -- dead wiring, zero
-     publish-method calls anywhere in `pkg/transferhandler/*.go`.
-  3. `bin-transfer-manager/cmd/transfer-control/main.go:66` -- same, CLI side.
-  4. `bin-talk-manager/cmd/talk-control/main.go:57` -- pre-existing broken wiring
-     (empty exchange name), independent of this ticket.
-  5. `bin-tts-manager/cmd/tts-control/main.go:38` -- dead wiring, zero publish-method
-     calls anywhere in `pkg/ttshandler/*.go`.
-- **2 `NewNotifyHandlerForExistingExchange` call sites** (webhook-manager,
-  webhook-control; VOIP-1258's scope-based topic mechanism). Both constructed WITHOUT
-  `WithGlobalTopicPublish()`. Grepped the ENTIRE `bin-webhook-manager/pkg/webhookhandler`
-  package (not just one file): the only method ever called on this instance anywhere is
-  `PublishEventWithRoutingKey` (`routingkey.go:182`) -- confirmed genuinely orthogonal
-  to `publishEvent()`'s fanout/topic switch at the runtime level. The narrower risk is
-  at the constructor/option-surface level only: if §4.1 changes `initGlobalTopicExchange`
-  to run unconditionally (dropping the `topicEnabled` gate) instead of preserving an
-  explicit opt-out, this instance would harmlessly redeclare `bin-manager.event` a
-  second time (idempotent). **Ruling needed in design (unchanged from rev.2, not yet
-  resolved -- see §6)**: keep or strengthen the existing in-code warning at
-  `notifyhandler/main.go:226-228` against ever adding `WithGlobalTopicPublish()` to this
-  specific construction path, since a future maintainer doing so WOULD triple-publish.
-  Note also (R2 finding 7): the comment at `notifyhandler/main.go:70-76` claims
-  webhook-manager/webhook-control make "a fanout-bound `NewNotifyHandler` call in the
-  same process" -- they do not (verified: only `NewNotifyHandlerForExistingExchange`
-  anywhere in their `cmd/` trees); this stale comment should be corrected as part of
-  §4.1's edit, not left as a landmine for the next reader.
-- Total: 55 + 5 + 2 = **62**.
-
-**Search methodology, corrected (R2 finding 6):** re-swept repo-wide with `/usr/bin/grep`
-(NOT the IDE-integrated Grep tool, which R1 and R2's reviewers both independently found
-silently drops at least one match --
-`bin-pipecat-manager/cmd/pipecat-manager/main.go:125` -- from both repo-wide and
-directory-scoped searches; **any future enumeration in this ticket's implementation
-phase must use `/usr/bin/grep`, not the IDE tool, and should re-verify against this
-document's counts rather than trusting either blindly**; also note (R4 finding 7) that
-this whole 62-site count was built by grepping for `WithGlobalTopicPublish()`/
-`NewNotifyHandler`/`NewNotifyHandlerForExistingExchange` call syntax, which cannot see
-a call that hardcodes its exchange-name argument as a string literal instead of using
-the `QueueName*Event` constant --
-`bin-conversation-manager/cmd/conversation-control/main.go:58` does exactly this
-(`"bin-manager.conversation-manager.event"` inline); it IS counted here because it also
-happens to call `WithGlobalTopicPublish()`, but any FUTURE sweep keyed off the
-constants alone (e.g. for the exchange-deletion runbook's precondition check) would
-silently miss it -- worth a dedicated literal-string grep at implementation time) across
-`**/cmd/**/*.go` and
-`**/pkg/**/*.go` (not just `bin-*/cmd/*/main.go` -- the narrower glob is what produced
-R1's CRITICAL miss). Confirmed additionally clean (construct no `NotifyHandler`
-anywhere): `voip-kamailio-proxy`, `voip-rtpengine-proxy`, `bin-contact-manager/cmd/
-case-control`, plus rev.2's original five (`bin-timeline-manager`, `bin-hook-manager`,
-`bin-api-manager`, `bin-rag-manager`, `bin-trigger-sender`).
-
-### 4. What "remove fanout dual publish" concretely requires (scope for design stage)
-
-1. **Publish side** -- `bin-common-handler/pkg/notifyhandler`: make every publish-side
-   instance that opts into `WithGlobalTopicPublish()` topic-only (no fanout). asterisk-
-   proxy is EXCLUDED from this ticket entirely (§5, per explicit user direction) --
-   **mechanism RESOLVED (rev.11, was §6 deferred item 1)**: `WithGlobalTopicPublish()`
-   stays exactly as it is today, as an `Option`; only its MEANING changes for the 55
-   real call sites that pass it (`topicEnabled=true` -> topic-only instead of "fanout +
-   topic"). asterisk-proxy's call site does not pass it, so `topicEnabled` stays `false`
-   for that instance -- which is precisely the default, unmodified, already-existing
-   fanout-only behavior. No opt-out flag, no second constructor, no code change to
-   asterisk-proxy is needed; the existing option shape already isolates it. Failure semantics
-   for the now-fanout-less instances (fatal vs. degrade on topic-declare failure) --
-   **not yet decided, carried to design (§6)**. `queueEvent` parameter/`h.queueNotify`
-   field's fate (drop from the topic-only constructor signature vs. keep unused for
-   compatibility) -- **not yet decided, carried to design (§6)**. Also carried: 36
-   `bin-common-handler/models/outline/queuename.go` constants match `QueueName*Event*`;
-   excluding `QueueNameEvent` (the global topic target), `QueueNameAsteriskEventAll`
-   (permanently retained, §5), and `QueueNameWebhookEventTopic` (VOIP-1258, §1) leaves
-   the **33 per-service fanout constants**, which break down as the 28 real, deletable
-   exchanges (§1) + 4 fully dead in Go source (`QueueNameAPIEvent`/`RagEvent`/
-   `TimelineEvent`/`UserEvent` -- never had an exchange, zero non-definition references
-   in any `.go` file, though `APIEvent`/`UserEvent` still appear in
-   `docs/reference/rabbitmq-queues-reference.md:45,220` and `TimelineEvent` in the
-   2026-03-15 centralize-clickhouse-writes plan AND design docs (two, not one) -- doc
-   mentions only, no code) + 1 legacy (`QueueNameWebhookEvent` -- exchange already gone,
-   constant still referenced by the two `QueueUnbind` sites in §1 plus **8** gomock
-   expectations (`bin-agent-manager/pkg/subscribehandler/main_test.go:76,174` [2];
-   `bin-timeline-manager/pkg/subscribehandler/run_topic_migration_test.go:49,109,148,191`
-   [4]; `run_sentinel_test.go:49` [1]; `run_ordering_test.go:48` [1]), so deleting it
-   touches those tests too); design should decide whether to delete the 4-dead and 1-legacy
-   constants (and update the doc mentions and mock expectations) in this ticket or
-   leave them (non-blocking either way, §6 item 8).
-   `notify_process_time` observability (§3) -- **not yet
-   decided, carried to design (§6)**. Dead delayed-publish cleanup -- **optional, not
-   blocking, carried to design (§6)**.
-
-2. **Consumer side** -- 20 services' `pkg/subscribehandler/main.go` + `cmd/*/main.go`
-   wiring + `binding_golden_test.go` + `docs/architecture.md` (§2b, in full above).
-   call-manager/timeline-manager additionally lose the sentinel defensive declare, but
-   NOT the `asterisk.all.event` subscribe (permanent).
-
-3. **`WithGlobalTopicPublish` / per-call-site disposition**: 62 total sites (§3) each
-   resolved individually -- 55 lose the option (become the new topic-only default,
-   whatever shape that takes), 1 (**asterisk-proxy: EXCLUDED from this ticket's scope
-   entirely, per explicit user direction** -- "asterisk-proxy's fan-out operates
-   differently and should not be touched here." This RESOLVES what was §6 deferred item
-   1: `WithGlobalTopicPublish()` is kept as-is, unmodified, as an Option; only its
-   MEANING changes for callers that pass it (topicEnabled=true becomes "topic-only, no
-   fanout" instead of "fanout AND topic"). Callers that do NOT pass it -- which is
-   exactly and only asterisk-proxy's call site today -- keep TODAY'S exact behavior
-   (fanout-only, no topic) with ZERO code change, because that behavior was always what
-   `topicEnabled=false` (the default) already does. No opt-out flag, no second
-   constructor, no special-casing needed: asterisk-proxy's existing `NewNotifyHandler(
-   sockHandler, reqHandler, QueueNameAsteriskEventAll, serviceName)` call, with no
-   options, is untouched by this ticket and needs no future maintenance connected to it
-   either.), 3 (transfer×2, tts-control) are dead wiring -- fix or leave, design's call,
-   1 (talk-control) is an independent pre-existing bug, 2 (webhook-manager/-control)
-   need the option-surface safeguard reviewed (§3).
-
-4. **Per-service fanout exchange deletion** (ticket step 3, R1 finding 6 + R2 finding 1
-   both incorporated): a ONE-TIME documented broker-admin cleanup (`rabbitmqadmin`/
-   management API), matching VOIP-1406's stale-binding-runbook precedent.
-   **Precondition, corrected and widened per R2**: EVERY publisher daemon+control binary
-   (§3) AND every one of the 20 consumer services (§2b) that declares, binds, or
-   subscribes to one of the 28 exchanges must be rebuilt/redeployed with that code
-   removed, with a CONFIRMED restart-survival check per service (not a single
-   point-in-time snapshot -- §1), before deletion runs. Add a post-deletion re-check
-   (re-list exchanges/bindings after a defined soak window) to catch resurrection from
-   an un-redeployed `-control` CLI invocation (these run ad hoc, not as long-running
-   pods, so a stale binary run any time after deploy but before deletion is a live
-   resurrection risk independent of the pod-restart risk).
-
-5. **Docs**: `docs/reference/rabbitmq-queues-reference.md`'s entire dual-publish framing
-   rewritten for a topic-only world (except the permanently-retained asterisk leg,
-   documented as such, not as migration debris) + every touched service's
-   `docs/architecture.md`/`docs/dependencies.md` (publish-side prose for the ~27
-   publisher services AND events-section prose for the 20 consumer services -- union,
-   not a simple sum, since most services are both) + `bin-common-handler/docs/
-   architecture.md`'s `notifyhandler` section.
-
-### 5. Scope boundary (explicit)
-
-- OUT: `asterisk.all.event` exchange itself and its two consumer bindings (permanent).
-- OUT (rev.11, per explicit user direction, reversing R1's "IN" correction): asterisk-
-  proxy's PUBLISH side. R1 correctly caught that rev.1 had unintentionally OMITTED this
-  from the inventory; the user has since deliberately EXCLUDED it from this ticket's
-  scope for a different reason ("its fan-out operates differently, don't touch it
-  here"). The distinction matters: it is now a documented, intentional exclusion
-  matching how `asterisk.all.event` itself has been treated from the start, not an
-  oversight. See §4 item 3 for the mechanism this simplifies.
-- OUT: VOIP-1258's `NewNotifyHandlerForExistingExchange` RUNTIME path (confirmed
-  orthogonal) -- but its constructor/option-surface interaction stays IN SCOPE for
-  review (§3).
-- OUT: talk-control's pre-existing broken wiring (independent follow-up).
-- OUT (pending design ruling, low priority): fixing transfer-manager's/transfer-control's
-  and tts-control's dead `notifyHandler` construction -- cosmetic, all three confirmed
-  zero live publish calls.
-- IN: bin-common-handler/pkg/notifyhandler mechanism redesign (§4.1).
-- IN (was ENTIRELY MISSING in rev.1/rev.2, R2 CRITICAL): all 20 consumer services'
-  fanout-`QueueSubscribe`-removal (§2b/§4.2), sequenced BEFORE §4.4's exchange deletion,
-  independent of but no less mandatory than the publish-side change.
-- IN: per-call-site disposition for all 62 publish-side sites (§4.3).
-- IN: broker-side one-time exchange-deletion runbook with a WIDENED precondition
-  (publish-side AND consumer-side, all with restart-survival confirmation) and
-  post-deletion resurrection check (§4.4).
-- IN: the rabbitmq-queues-reference.md rewrite + per-service docs sync, both sides.
-
-### 6. Open items -- design-stage rulings (NOT resolved by issue analysis; consolidated
-handoff list, replacing rev.2's contradictory "all resolved" framing -- R2 finding 5)
-
-Genuinely resolved by this analysis (facts established, no design ruling needed):
-1. transfer-manager, transfer-control, and tts-control all construct a fanout-only
-   `NotifyHandler` but make zero live publish-method calls anywhere in their respective
-   handler packages -- confirmed dead wiring for all three (whether to actually DELETE
-   the dead construction, as opposed to merely knowing it's dead, is deferred item 7
-   below -- a fact being established here does not resolve what to do about it).
-2. Third-party `notifyhandler` consumer check: searched every directory reachable from
-   this session's shell access -- the full `monorepo` tree (all `**/cmd/**` and
-   `**/pkg/**`, §3's methodology paragraph) and `monorepo-etc` (infra/ops only, no Go
-   code). No third consumer found in either. This does not rule out a consumer in a
-   repository this session cannot see (e.g. `voipbin-go`, `python-sdk`, `install/`,
-   `sandbox` were not independently confirmed absent-of-reference, only not found within
-   reach) -- stated as the search's actual scope, not as an absolute guarantee.
-3. **§4 item 1 mechanism (RESOLVED rev.11, was deferred item 1)**: asterisk-proxy is
-   excluded from this ticket's scope entirely, per explicit user direction (§5).
-   `WithGlobalTopicPublish()` stays unmodified as an `Option`; only its meaning changes
-   for the 55 call sites that pass it. asterisk-proxy's call site, which does not pass
-   it, is untouched -- no opt-out flag, no second constructor, no design work needed.
-
-Deferred to the design stage, each requiring an explicit ruling before implementation:
-1. **§4 item 1 failure semantics (publish side)**: fatal vs. degrade on topic-declare
-   failure for the now-fanout-less publish instances (the 55 real dual-publish sites --
-   no longer a question for asterisk-proxy, which is out of scope).
-2. **§4 item 1 constructor signature**: keep or drop `queueEvent`/`h.queueNotify` for
-   the topic-only path.
-3. **§3 `notify_process_time` observability**: fold into `publishTopicEvent` or
-   knowingly drop the signal.
-4. **§3 webhook-manager option-surface safeguard**: strengthen/keep the in-code warning
-   against ever opting `NewNotifyHandlerForExistingExchange` into the (redesigned)
-   topic-publish option, to prevent a future triple-publish.
-5. **§2b consumer-side failure semantics**: once the fanout `QueueSubscribe` fallback is
-   removed, should a topic-declare/bind failure at consumer startup become fatal
-   (matching item 1's publish-side ruling, for consistency) rather than today's "stay
-   on fanout" degrade -- there is no fanout left to degrade to, so SOME explicit
-   decision replaces today's silent-degrade branch.
-6. **Dead-wiring cleanup** (transfer-manager/-control, tts-control -- fact established
-   in "resolved" item 1 above): fix now or leave -- non-blocking either way.
-7. **Delayed-publish dead code cleanup** (§3) and **the 5 vestigial `QueueName*Event`
-   constants' cleanup** (§4 item 1: 4 fully-dead + 1 legacy, per §1): clean up now or
-   leave -- non-blocking either way, can be decided together since both are dead-code
-   removal calls of the same weight.
-
-### 7. Recommendation
-
-Ticket is valid; the zero-fanout-binding precondition is met, evidenced with fresh raw
-broker output covering exactly the 28 deleted exchanges plus the 5 excluded ones (with
-reasons), and now explicitly scoped to what it does and does not prove (§1). Nine
-review rounds each surfaced real gaps: R1 caught a missing real publisher
-(asterisk-proxy) whose omission would have caused a full call-processing outage; R2
-caught an entirely missing half of the ticket's scope (consumer-side fanout residue
-that VOIP-1406's own design doc explicitly assigned here) whose omission would have
-caused a platform-wide subscribe-handler boot failure on the next restart after
-exchange deletion; R3 caught an unenumerated deletion set, a stale-binding self-healing
-gap, and several internal-consistency defects from the rev.2->rev.3 rewrite; R4, R5, R6,
-and R7 each caught a successive flaw in four DIFFERENT inference-based proofs of one
-specific empirical claim (that `QueueUnbind` against a missing exchange is safe, and
-`QueueBind`/`QueueSubscribe` against one is not) -- process liveness, a same-channel
-argument that used a call which actually opens a separate channel, a consumer-count
-argument confounded by RabbitMQ's automatic reconnect path, and a container-log-absence
-argument undone by these services' own committed log-rotation config and an unhandled
-conditional guard around the call being tested. Four inference attempts across four
-rounds is what it took to learn the right lesson: **§1's claim is now settled with a
-two-arm direct controlled experiment against the real production broker, including a
-positive control** (isolated scratch queues, RabbitMQ 3.13.7; `queue.unbind` against a
-guaranteed-nonexistent exchange raised no exception and left the channel alive;
-`queue.bind` against a guaranteed-nonexistent exchange, run as a control in the same
-harness, raised the exact 404 and killed the channel exactly as the codebase's own
-incident comment describes) rather than a further inference from broker or process
-state -- the standard this ticket should have held §1 to from the first round. R8
-found the experiment itself sound but the write-up one-sided (only the unbind arm was
-tested despite the claim covering both operations) plus two unstated bridging premises
-(Python/Go client equivalence, scratch-queue-property immateriality); all three are
-now addressed with the second experimental arm and explicit premise statements above.
-R9 confirmed the two-arm experiment genuinely closes both halves of the claim and is
-substantively airtight, and found only one false clause inside an otherwise-correct
-bridging premise (amqp091-go's `QueueBind` does take a `noWait` parameter, contrary to
-a prior "neither client exposes a nowait form" claim -- corrected here to the true and
-sufficient justification: every production call site passes `noWait=false`) plus two
-trivial citation/wording fixes, all applied above. All findings across all nine rounds
-are now incorporated, and R10/R11 approved this document with 2 consecutive Approve.
-**Post-approval (rev.11): the user directly resolved §6's former deferred item 1** --
-asterisk-proxy is excluded from this ticket's scope entirely ("its fan-out operates
-differently, don't touch it here"), which simplifies §4 item 1's mechanism decision to
-"keep `WithGlobalTopicPublish()` unmodified as an Option; asterisk-proxy's call site,
-which never passes it, needs no change" -- no opt-out flag or second constructor design
-work required. Seven design-stage rulings remain, handed off explicitly in §6, none of
-which block starting the design stage itself -- they ARE the design stage's job.
-Proceed to design.
+- `bin-sentinel-manager/k8s/` manifests are untouched (design §7), even though now fully dead.
+- The dead `ASTERISK_ID` env var (VOIP-1365).
+- The restart-vs-recreate MAC-stability empirical check (design §3.4) — not run; it informs flap-damping tuning only, and the shipped threshold (3 deaths / 60s) is the design's stated starting point.

@@ -4,101 +4,110 @@ Service class: **A2** (event-driven worker, no inbound RPC).
 
 ## Component Overview
 
-`bin-sentinel-manager` is an in-cluster Kubernetes pod monitoring daemon. It watches the lifecycle of Asterisk pods (call, conference, registrar) using the Kubernetes informer framework and publishes state-change events to RabbitMQ so downstream services can react to pod restarts, crashes, or deletions.
+`bin-sentinel-manager` is a Docker container lifecycle monitor. It watches the Docker Engine's event stream for the Asterisk containers (call, conference, registrar) running on bm-nyc-01 and publishes state-change events to RabbitMQ so downstream services can react to restarts, crashes, or removals.
+
+It was a Kubernetes pod monitor until VOIP-1418; GKE was dismantled on 2026-08-20 and the informer-based backend was replaced wholesale.
 
 ```
-Kubernetes API Server
-        │  (list/watch pods)
-        ▼
- monitoringhandler
-  ┌─────────────────────────────┐
-  │  SharedIndexInformer        │
-  │  (one goroutine per         │
-  │   namespace × label pair)   │
-  │                             │
-  │  AddFunc    → no-op         │
-  │  UpdateFunc → runPodUpdated │
-  │  DeleteFunc → runPodDeleted │
-  └──────────┬──────────────────┘
-             │ PublishEvent
-             ▼
-        RabbitMQ
-  (QueueNameSentinelEvent)
-             │
-             ▼
-   Downstream consumers
-   (bin-call-manager, etc.)
+        /var/run/docker.sock
+                 │ (read-only bind mount)
+                 ▼
+      docker-socket-proxy  (sidecar, private `internal: true` network)
+                 │  GET /events, /containers/json, /containers/{id}/json
+                 ▼
+        dockerwatchhandler
+  ┌────────────────────────────────────────────┐
+  │ boot.go     list+inspect running watched   │
+  │             containers, seed state table   │
+  │                                            │
+  │ refresh.go  every 10s: SCAN Redis          │      Redis
+  │             asterisk.*.address-internal, ◄──────  (written by
+  │             freshness-filter, resolve ids  │      voip-asterisk-proxy)
+  │                                            │
+  │ events.go   consume start/die events,      │
+  │             publish, flap-damp, reconnect  │
+  │                                            │
+  │ state.go    map[containerName]state        │
+  └───────────────────┬────────────────────────┘
+                      │ PublishEvent
+                      ▼
+                  RabbitMQ
+          (global topic exchange
+             `bin-manager.event`)
+                      │
+                      ▼
+            Downstream consumers
+            (bin-call-manager)
 ```
 
-There is no HTTP server, no listenhandler, and no inbound RPC queue. All inputs come from the Kubernetes watch stream; all outputs are RabbitMQ events.
+There is no HTTP server, no listenhandler, and no inbound RPC queue. All inputs come from the Docker event stream and Redis; all outputs are RabbitMQ events.
 
 ## Layer Responsibilities
 
 | Layer | Package | Responsibility |
 |-------|---------|----------------|
-| Entry point | `cmd/sentinel-manager/` | Parse config (Cobra/Viper), authenticate in-cluster, start monitoringhandler |
-| Core monitor | `pkg/monitoringhandler/` | Create `SharedIndexInformer` per namespace/selector, dispatch pod events, increment Prometheus counter |
-| Domain types | `models/pod/` | Event type constants (`EventTypePodUpdated`, `EventTypePodDeleted`) |
-| CLI tool | `pkg/sentinel-control/` | Query pod state for debugging (JSON output, uses same env vars) |
+| Entry point | `cmd/sentinel-manager/` | Parse config (Cobra/Viper), build the Docker + Redis clients, start dockerwatchhandler |
+| Core monitor | `pkg/dockerwatchhandler/` | Boot reconciliation, asterisk-id state table, Docker event stream, publish, Prometheus counters |
+| Cache access | `pkg/cachehandler/` | Read-only reverse scan of `asterisk.<id>.address-internal` (value + remaining TTL) |
+| Domain types | `models/container/` | `Event` payload, `EventTypeContainerStarted` / `EventTypeContainerDied` |
+| Domain types | `models/asteriskaddress/` | Redis key shape and the freshness rule |
+| CLI tool | `cmd/sentinel-control/` | Query container state for debugging (JSON output, same proxy endpoint) |
 
 ## Execution Model
 
 ### What triggers sentinel
 
-Sentinel does not subscribe to RabbitMQ events. Its sole input source is the Kubernetes API watch stream, obtained via `rest.InClusterConfig()`. At startup it creates one `SharedIndexInformer` goroutine for each `(namespace, label-selector)` pair:
+Sentinel does not subscribe to RabbitMQ events. Its inputs are the Docker Events API stream and periodic Redis reads.
 
-| Namespace | Label selector | Pods covered |
-|-----------|---------------|--------------|
-| `voip` | `app=asterisk-call` | Call-leg Asterisk pods |
+Watched containers are matched by compile-time name prefix, plus a bare replica index, which is what excludes the co-located `-proxy` sidecars:
 
-Additional selectors can be added by extending the `selectors` map passed to `monitoringHandler.Run()`.
+| Container name pattern | `Service` value |
+|---|---|
+| `voip-asterisk-call-docker-<N>` | `asterisk-call` |
+| `voip-asterisk-conference-docker-<N>` | `asterisk-conference` |
+| `voip-asterisk-registrar-docker-<N>` | `asterisk-registrar` |
+
+`voip-asterisk-call-docker-1-asterisk-call-proxy-1` shares the prefix but has no bare replica index after it, so it is not watched.
 
 ### What it does when triggered
 
-- **AddFunc**: intentionally a no-op. Kubernetes delivers existing pods during the initial list as Add events; these are ignored because the pod may not be fully initialized.
-- **UpdateFunc**: calls `runPodUpdated(ctx, pod)` — logs the event, publishes `EventTypePodUpdated` to RabbitMQ, increments the `pod_state_change_total` counter with `state=updated`.
-- **DeleteFunc**: calls `runPodDeleted(ctx, pod)` — logs the event, publishes `EventTypePodDeleted` to RabbitMQ, increments the counter with `state=deleted`.
+**At startup (boot reconciliation).** `GET /containers/json` lists the running containers; each watched one is inspected once to resolve its IP and seeded into the state table with an unresolved asterisk-id. One immediate refresh pass then runs before the event loop starts. Without this, a sentinel restart would leave every already-running container untracked until its *next* recreation — an indefinite blind spot, not a bounded one, since sentinel runs single-replica.
 
-Context cancellation propagates via a `stopCh` channel into `podInformer.Run(stopCh)`, ensuring all goroutines shut down cleanly.
+**Every 10 seconds (refresh loop).** `SCAN asterisk.*.address-internal`, read each key's value (an IP) and its remaining TTL, and resolve each table entry's asterisk-id from the key matching its IP. Only a key whose remaining TTL is within `24h - 12min` counts, and an id already bound to a different live container is excluded. A pass that learns nothing leaves resolved ids untouched.
+
+**On `start`.** One inspect resolves the container's IP (safe: the container is freshly running). A new table entry is created with an unresolved id, and `container_started` is published.
+
+**On `die`.** The table entry is read and deleted in one critical section, and `container_died` is published carrying whatever id had been resolved. Sentinel never inspects or scans at die time — a dead container's inspect response has an empty IP address, and a die-time reverse scan cannot distinguish the id that just died from the one that just took over the same static IP.
+
+**Flap damping.** Past 3 deaths of the same container inside 60 seconds, further deaths in that window are logged at WARN and not published: repeatedly firing recovery against a crash-looping container would spam Homer/PJSIP for channels that likely never established.
+
+**Reconnect.** On any event-stream disconnect the loop pauses briefly and re-opens with `since=<last processed event + 1ns>`, so a proxy restart or network blip leaves a bounded gap rather than silently dropping a `die`.
 
 ### What it produces
 
-All outputs are RabbitMQ events published to `QueueNameSentinelEvent`. The payload is the full `corev1.Pod` struct serialized by `notifyhandler.PublishEvent`. Downstream consumers (e.g., `bin-call-manager`) match pods to active calls and perform cleanup when an Asterisk pod disappears unexpectedly.
+RabbitMQ events published through `notifyhandler.PublishEvent`. The payload is `models/container.Event`:
 
-### Global topic exchange (VOIP-1404 / VOIP-1405 / VOIP-1407)
+```json
+{"container_name":"voip-asterisk-call-docker-2","service":"asterisk-call","asterisk_id":"3e:50:6b:43:bb:32"}
+```
 
-`cmd/sentinel-manager/main.go` — the service's only NotifyHandler construction site — constructs
-its NotifyHandler with `notifyhandler.WithGlobalTopicPublish()`. Every event is published to the
-global topic exchange `bin-manager.event`. **As of VOIP-1407, this is the sole publish path** — the
-previous per-service fanout exchange `bin-manager.sentinel-manager.event` is no longer published to,
-and (per the operational runbook in `docs/reference/rabbitmq-queues-reference.md`) will eventually be
-deleted from the broker. No code in this service changed for VOIP-1407; the behavior change (dual
-publish → topic-only) comes entirely from `bin-common-handler/pkg/notifyhandler`'s shared library
-update. A topic publish failure now propagates to the caller as an error (previously it was
-swallowed silently).
+`bin-call-manager` consumes `container_died`, filters on `service == "asterisk-call"`, and calls `RecoveryStart(asterisk_id)` — which pulls that instance's last 24h of channels, looks up each one's SIP dialog via Homer, and PJSIP-redials it onto a live instance. An event with an empty `asterisk_id` is dropped by call-manager's empty-id guard.
 
-**sentinel-manager is the one documented placeholder-by-design publisher.** The published payload
-is the raw `*corev1.Pod` handed over by the informer, and a `corev1.Pod` carries no top-level `id`
-in its JSON form (its identity lives under `metadata`). The subscription-address segment therefore
-collapses to the `-` placeholder for every event:
+### Global topic exchange (VOIP-1404 / VOIP-1405 / VOIP-1407 / VOIP-1418)
+
+`cmd/sentinel-manager/main.go` — the service's only NotifyHandler construction site — constructs its NotifyHandler with `notifyhandler.WithGlobalTopicPublish()`. Every event is published to the global topic exchange `bin-manager.event`; since VOIP-1407 this is the sole publish path, and a topic publish failure propagates to the caller as an error.
+
+**Since VOIP-1418, sentinel-manager is no longer a placeholder-by-design publisher.** The old payload was a raw `*corev1.Pod`, which carries no top-level `id`, so every key used the `-` placeholder. `container.Event.EventSubscriptionID()` now returns the resolved asterisk-id:
 
 | Event | Routing key |
 |-------|-------------|
-| `pod_updated` | `sentinel-manager.pod.-.updated` |
-| `pod_deleted` | `sentinel-manager.pod.-.deleted` |
+| `container_started` | `sentinel-manager.container.-.started` (a fresh container has no resolved id yet) |
+| `container_died` (resolved) | `sentinel-manager.container.<asterisk-id>.died` |
+| `container_died` (unresolved) | `sentinel-manager.container.-.died` |
 
-Consequences, all intentional (design §2.4):
+Consequences:
 
-- **Instance subscription of pod events is not supported.** Consumers bind at the type level
-  (`sentinel-manager.pod.#`) and filter on the payload.
-- **`sentinel_manager_topic_placeholder_total` grows in step with every publish.** For this service
-  the healthy invariant is `placeholder_total ≈ topic_publish_total{result="ok"}` — that is not an
-  alert condition, but the ratio still detects publish regressions and must not be ignored outright.
-- **Do not attach a subscription-id override to `*corev1.Pod`** (external type) and do not wrap the
-  payload in `models/pod.Pod` at the publish site — that would change the payload shape for every
-  existing fanout consumer.
+- **Instance subscription of container events is now possible.** Nothing binds that way today; `bin-call-manager` binds the wildcard `sentinel-manager.container.*.died`.
+- **`sentinel_manager_topic_placeholder_total ≈ topic_publish_total{ok}` is no longer the healthy invariant.** It was, when every pod event was a placeholder. Now the placeholder is expected for every `container_started` and for a `container_died` whose id never resolved. A *rising* placeholder rate on `died` events specifically is a degraded state — cross-check `sentinel_manager_container_unresolved_asterisk_id_total`, which counts exactly that.
 
-`pod_added` is declared in `models/pod` but never published: the informer's `AddFunc` is an
-intentional no-op. The golden table pinning both keys is `models/pod/routingkey_golden_test.go`;
-the schema is defined in monorepo
-`docs/plans/2026-08-27-voip-1404-global-topic-exchange-design.md`.
+The golden table pinning these keys is `models/container/routingkey_golden_test.go`; the schema is defined in monorepo `docs/plans/2026-08-27-voip-1404-global-topic-exchange-design.md`. The VOIP-1418 rename (`pod`/`updated`/`deleted` → `container`/`started`/`died`) was a deliberate, reviewed key-string change, safe because sentinel's only real consumer was updated in the same change; treat any future diff in that golden table as a regression unless equally deliberate.

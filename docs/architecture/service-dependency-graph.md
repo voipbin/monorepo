@@ -141,7 +141,7 @@ graph TD
 | Service | Type | Description |
 |---------|------|-------------|
 | `bin-api-manager` | Gateway | REST API gateway (calls 15+ services) |
-| `bin-sentinel-manager` | Monitoring | Pod lifecycle events |
+| `bin-sentinel-manager` | Monitoring | Container lifecycle events |
 | `bin-openapi-manager` | Tooling | OpenAPI spec (not a runtime service) |
 | `bin-schedule-manager` | Scheduler | Platform cron dispatch engine (seeded targets: number-manager renew, self-RPC housekeeping/backup; future RPC consumers: VOIP-1280 doctor, api-manager Phase 3) |
 | `voip-asterisk-proxy` | Proxy | Asterisk ARI bridge |

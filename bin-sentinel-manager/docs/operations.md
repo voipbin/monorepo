@@ -4,67 +4,84 @@
 
 | Symptom | Likely cause | Resolution |
 |---------|-------------|------------|
-| Service exits immediately at startup | `rest.InClusterConfig()` fails — not running inside a Kubernetes cluster | Deploy to cluster; do not run locally without a kubeconfig override |
-| Informer never delivers events | RBAC misconfigured — pod-reader Role or RoleBinding missing in `voip` namespace | Apply Role + RoleBinding (see Kubernetes Deployment section of CLAUDE.md) |
-| RabbitMQ publish errors in logs | RabbitMQ unreachable or wrong `RABBITMQ_ADDRESS` | Verify connectivity; check address format `amqp://user:pass@host:5672` |
-| No `pod_state_change_total` increments in Prometheus | Pods in watched namespaces are stable (no updates/deletes) — may be normal | Cross-check by triggering a pod restart and watching the counter |
-| Downstream services not cleaning up hung calls | Sentinel is running but publishing to wrong queue or consumer not subscribed | Verify queue name matches `QueueNameSentinelEvent` constant in bin-common-handler |
+| Service exits immediately at startup, crash-loops | The docker-socket-proxy sidecar is unreachable or denies `/containers/json` | Check the proxy container is running and healthy; confirm `CONTAINERS=1` in its env. This exit is intentional (fail-loud), not a bug |
+| Service exits at startup with a Redis error | `REDIS_ADDRESS` wrong, or Redis unreachable from the `production` network | Verify connectivity; `Connect()` pings before the watcher starts |
+| No events published, no errors in the log | The container-name prefixes no longer match reality (e.g. the Compose project or service was renamed) | Compare the live container names against `watchedContainerPrefixes` in `pkg/dockerwatchhandler/main.go`; the match requires a bare replica index after the prefix |
+| `container_died` events publish with an empty `asterisk_id` | The asterisk-id never resolved — most often a Redis DB mismatch, a container that never registered, or an IP that resolves from an unexpected network | Check `sentinel_manager_container_unresolved_asterisk_id_total`; confirm `REDIS_DATABASE=1` matches voip-asterisk-proxy's; verify `asterisk.*.address-internal` keys exist and their values match the containers' `production`-network IPs |
+| `sentinel_manager_container_asterisk_id_refresh_miss_total` climbing | A container's Redis key has gone stale while the container is still alive (the proxy sidecar stopped refreshing it) | Leading indicator — the id is still held (sticky last-known) but the NEXT recreation will re-resolve from nothing. Check that container's `-proxy` sidecar |
+| RabbitMQ publish errors in logs | RabbitMQ unreachable or wrong `RABBITMQ_ADDRESS` | Verify connectivity; check the address format `amqp://user:pass@host:5672` |
+| Downstream calls not recovered after an Asterisk container died | Sentinel published but call-manager filtered or guarded the event | Check the event's `service` (must be `asterisk-call`) and `asterisk_id` (must be non-empty); then check call-manager's `EventSMContainerDied` logs |
+| Repeated deaths stop producing events | Flap damping engaged (>3 deaths / 60s for that container) | Expected. Find and fix the crash-loop; the window drains on its own |
 
 ## Debugging Guide
 
-### Check that the informer started
-
-Sentinel logs `"Starting pod informer"` for each (namespace, selector) pair at startup. If these log lines are absent, the informer loop never launched.
+### Check that the watcher started
 
 ```bash
-kubectl logs -n bin-manager deploy/sentinel-manager | grep "Starting pod informer"
+docker logs bin-sentinel-manager-sentinel-manager-1 | grep "Completed the boot-time reconciliation"
+docker logs bin-sentinel-manager-sentinel-manager-1 | grep "Opening the docker event stream"
+```
+
+The reconciliation line reports how many containers were seeded. A `seeded: 0` on a host that is running Asterisk containers means the name-prefix match is failing.
+
+### Watch resolution happen
+
+```bash
+docker logs -f bin-sentinel-manager-sentinel-manager-1 | grep "Resolved the asterisk id"
 ```
 
 ### Verify events are being published
 
-Trigger a pod update (e.g., restart an asterisk-call pod) and watch for publish log lines:
-
 ```bash
-kubectl logs -n bin-manager deploy/sentinel-manager -f | grep "Pod updated\|Pod deleted"
+docker logs -f bin-sentinel-manager-sentinel-manager-1 | grep "Container started\|Container died"
 ```
 
 ### Inspect Prometheus metrics
 
 ```bash
-kubectl port-forward -n bin-manager deploy/sentinel-manager 2112:2112
-curl -s http://localhost:2112/metrics | grep pod_state_change_total
+curl -s http://<host>:2112/metrics | grep sentinel_manager_container
 ```
 
 Expected output format:
 
 ```
-sentinel_manager_pod_state_change_total{namespace="voip",pod="asterisk-call",state="updated"} 12
-sentinel_manager_pod_state_change_total{namespace="voip",pod="asterisk-call",state="deleted"} 1
+sentinel_manager_container_state_change_total{container_name="voip-asterisk-call-docker-1",service="asterisk-call",state="started"} 3
+sentinel_manager_container_state_change_total{container_name="voip-asterisk-call-docker-1",service="asterisk-call",state="died"} 3
+sentinel_manager_container_unresolved_asterisk_id_total{container_name="voip-asterisk-call-docker-1"} 1
+sentinel_manager_container_asterisk_id_refresh_miss_total{container_name="voip-asterisk-call-docker-2"} 0
 ```
 
 ### Use the sentinel-control CLI
 
-The `sentinel-control` binary can query pod state for debugging without waiting for events:
+`sentinel-control` queries the same read-only socket proxy without waiting for events. All output is JSON on stdout; logs go to stderr.
 
 ```bash
-# List monitored pods in the voip namespace
-./bin/sentinel-control pod list --namespace voip
+# list containers visible through the proxy, filtered by name substring
+./bin/sentinel-control container list --name voip-asterisk-call-docker
 
-# Get a specific pod
-./bin/sentinel-control pod get --namespace voip --name asterisk-call-abc123
+# inspect one container (includes per-network IP and MAC — the MAC is what the
+# asterisk-id derives from)
+./bin/sentinel-control container get --name voip-asterisk-call-docker-1
 ```
 
-All output is JSON on stdout; logs go to stderr.
+### Verify the socket proxy's ACL
 
-### RBAC troubleshooting
-
-If the informer fails to list pods, check the service account permissions:
+The proxy is the security boundary. A mutating call must be refused:
 
 ```bash
-kubectl auth can-i list pods -n voip --as=system:serviceaccount:bin-manager:sentinel-manager
+# from a container on the private docker-socket network
+wget -q -O - http://sentinel-docker-socket-proxy:2375/_ping           # -> OK
+wget -q -O - --post-data= http://sentinel-docker-socket-proxy:2375/containers/create   # -> 403
 ```
 
-Should return `yes`. If not, the RoleBinding is missing or points to the wrong namespace.
+### Cross-check the Redis side
+
+```bash
+redis-cli -n 1 --scan --pattern 'asterisk.*.address-internal'
+redis-cli -n 1 ttl 'asterisk.<asterisk-id>.address-internal'
+```
+
+A remaining TTL below 23h48m means the key is stale by sentinel's freshness rule and will not resolve a new id (though an already-resolved one is kept).
 
 ## Configuration
 
@@ -73,26 +90,38 @@ All parameters can be set via command-line flags or environment variables. Flags
 | Flag | Env Var | Default | Description |
 |------|---------|---------|-------------|
 | `--rabbitmq_address` | `RABBITMQ_ADDRESS` | `amqp://guest:guest@localhost:5672` | RabbitMQ server address |
+| `--docker_socket_proxy_address` | `DOCKER_SOCKET_PROXY_ADDRESS` | `tcp://sentinel-docker-socket-proxy:2375` | Read-only docker-socket-proxy endpoint. **Never** point this at `unix:///var/run/docker.sock` |
+| `--redis_address` | `REDIS_ADDRESS` | `localhost:6379` | Redis server address |
+| `--redis_password` | `REDIS_PASSWORD` | (empty) | Redis password |
+| `--redis_database` | `REDIS_DATABASE` | `1` | Redis database index. Must match voip-asterisk-proxy's |
 | `--prometheus_endpoint` | `PROMETHEUS_ENDPOINT` | `/metrics` | Prometheus metrics path |
 | `--prometheus_listen_address` | `PROMETHEUS_LISTEN_ADDRESS` | `:2112` | Address/port for Prometheus scraping |
 
-No database or Redis configuration is required — sentinel is stateless beyond the Kubernetes watch stream.
+No database configuration is required — sentinel's only persistent-store access is the read-only Redis scan.
+
+## Deployment
+
+`komodo/docker-compose.yml` defines two containers:
+
+| Service | Networks | Purpose |
+|---|---|---|
+| `sentinel-manager` | `production` + `docker-socket` | The watcher. Single replica |
+| `sentinel-docker-socket-proxy` | `docker-socket` only | Read-only Docker API proxy, digest-pinned `tecnativa/docker-socket-proxy:v0.5.0` |
+
+`docker-socket` is `internal: true` and joined by nothing else, which is what bounds the blast radius of `CONTAINERS=1` (that permission exposes container env vars through `docker inspect`). This mirrors the sidecar shape monorepo-etc's `infra-prometheus` and `infra-loki` already use; do not move the proxy onto `production`.
+
+CI deploys via the `bin-sentinel-manager-deploy` job in `.circleci/config_work.yml`, which renders the image tag and pushes the compose file through `komodo-api-deploy.sh`.
 
 ## Prometheus Metrics
 
-Metrics are served at `<prometheus_listen_address><prometheus_endpoint>` (default: `:2112/metrics`).
+Metrics are served at `<prometheus_listen_address><prometheus_endpoint>` (default `:2112/metrics`).
 
 | Metric | Type | Labels | Description |
 |--------|------|--------|-------------|
-| `sentinel_manager_pod_state_change_total` | Counter | `namespace`, `pod` (app label value), `state` (`updated`\|`deleted`) | Total number of pod state changes observed and published |
+| `sentinel_manager_container_state_change_total` | Counter | `container_name`, `service`, `state` (`started`\|`died`) | Watched container state changes observed and published |
+| `sentinel_manager_container_unresolved_asterisk_id_total` | Counter | `container_name` | `container_died` events published without a resolved asterisk-id. Each increment is one recovery that will NOT happen |
+| `sentinel_manager_container_asterisk_id_refresh_miss_total` | Counter | `container_name` | Refresh passes that found no fresh address for an already-resolved container. Leading indicator: the id is kept, but the next death may go unrecovered |
 
-The `pod` label contains the value of the Kubernetes `app` label on the pod (e.g., `asterisk-call`), not the pod name. This allows aggregation across all replicas of the same workload.
+Note the rename: `sentinel_manager_pod_state_change_total` (labels `namespace`, `pod`) is gone as of VOIP-1418. `monitoring/grafana/dashboards/sentinel-manager.json` at the repo root was updated in the same change.
 
-Scrape configuration (already set in `k8s/deployment.yml`):
-
-```yaml
-annotations:
-  prometheus.io/scrape: "true"
-  prometheus.io/port: "2112"
-  prometheus.io/path: "/metrics"
-```
+Also relevant, from the shared notifyhandler: `sentinel_manager_topic_placeholder_total` no longer tracks `topic_publish_total{ok}` one-for-one. Sentinel now publishes real subscription addresses for resolved deaths; the placeholder is expected for every `container_started` and for unresolved deaths only.
