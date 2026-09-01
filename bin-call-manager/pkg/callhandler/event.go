@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"monorepo/bin-call-manager/models/call"
-	smpod "monorepo/bin-sentinel-manager/models/pod"
+	smcontainer "monorepo/bin-sentinel-manager/models/container"
 
 	cucustomer "monorepo/bin-customer-manager/models/customer"
 	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
@@ -82,18 +82,44 @@ func (h *callHandler) EventFMActiveflowUpdated(ctx context.Context, a *fmactivef
 	return nil
 }
 
-// EventSMPodDeleted handles the sentinel-manager's pod_deleted event
-func (h *callHandler) EventSMPodDeleted(ctx context.Context, p *smpod.Pod) error {
+// EventSMContainerDied handles the sentinel-manager's container_died event.
+//
+// It replaces EventSMPodDeleted (VOIP-1418). The Kubernetes namespace/label filter and the
+// `asterisk-id` annotation lookup are gone: sentinel's Docker backend resolves the asterisk-id
+// itself and reports the logical service directly, so the filter is a plain field comparison with
+// no indirection left to replicate.
+func (h *callHandler) EventSMContainerDied(ctx context.Context, c *smcontainer.Event) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func": "EventSMPodDeleted",
-		"pod":  p,
+		"func":      "EventSMContainerDied",
+		"container": c,
 	})
 
-	if p.Namespace == asteriskPodNamespace && p.Labels["app"] == asteriskPodLabelApp {
-		log.Debugf("Received pod deleted event for asterisk-call pod. Starting call recovery. pod_name: %s, pod_namespace: %s", p.Name, p.Namespace)
-		if errRecovery := h.RecoveryStart(ctx, p.Annotations["asterisk-id"]); errRecovery != nil {
-			return errors.Wrapf(errRecovery, "failed to start recovery for pod %s/%s", p.Namespace, p.Name)
-		}
+	// `json.Unmarshal` of a literal `null` payload into a **Event succeeds and leaves the pointer
+	// nil, so a malformed or null-bodied message would panic the whole subscribe loop on the very
+	// next field read. The predecessor pod handler had the same gap; guard it here rather than
+	// carrying it forward.
+	if c == nil {
+		log.Warnf("Received a nil container died event. Skipping.")
+		return nil
+	}
+
+	if c.Service != smcontainer.ServiceAsteriskCall {
+		// conference/registrar containers carry no call legs to recover.
+		return nil
+	}
+
+	// NEW GUARD (design §3.3/§3.6): sentinel publishes an unresolved asterisk-id when a container
+	// died before its id could ever be resolved. Passing "" through to RecoveryStart would run
+	// GetChannelsForRecovery against an empty asterisk-id. The previous pod-based handler had no
+	// such guard because a pod annotation was assumed always present.
+	if c.AsteriskID == "" {
+		log.Warnf("Received a container died event without a resolved asterisk id. Skipping the recovery. container_name: %s", c.ContainerName)
+		return nil
+	}
+
+	log.Debugf("Received container died event for an asterisk-call container. Starting call recovery. container_name: %s, asterisk_id: %s", c.ContainerName, c.AsteriskID)
+	if errRecovery := h.RecoveryStart(ctx, c.AsteriskID); errRecovery != nil {
+		return errors.Wrapf(errRecovery, "failed to start recovery for container %s", c.ContainerName)
 	}
 
 	return nil

@@ -639,14 +639,10 @@ workflows:
           <<: *context_production
           requires:
             - bin-sentinel-manager-test
-      # bin-sentinel-manager-release removed (VOIP-1405): it was the last
-      # remaining GKE deploy job, and GCP/GKE was fully dismantled on
-      # 2026-08-20. The target registry/cluster no longer exists, so the job
-      # can only fail. sentinel-manager is NOT retired: it needs a new runtime
-      # path (it requires the Kubernetes API via rest.InClusterConfig and has
-      # no docker-compose equivalent on bm-nyc-01). Reintegration into CI/CD
-      # is tracked as VOIP-1418; test/build stay as code-quality gates.
-
+      - bin-sentinel-manager-deploy:
+          <<: *context_production
+          requires:
+            - bin-sentinel-manager-build
   bin-storage-manager:
     when: << pipeline.parameters.run-bin-storage-manager >>
     jobs:
@@ -1772,8 +1768,26 @@ jobs:
           project-repository: bin-sentinel-manager
           source-directory: bin-sentinel-manager
 
-  # bin-sentinel-manager-release job removed (VOIP-1405) - see the comment in
-  # the bin-sentinel-manager workflow; reintegration tracked as VOIP-1418.
+  # VOIP-1418: Komodo-managed deploy, restoring sentinel-manager's deploy path.
+  # The GKE `bin-sentinel-manager-release` job was removed in VOIP-1405 when
+  # GCP/GKE was dismantled; sentinel-manager now targets Docker on bm-nyc-01
+  # (Docker Events API backend, see
+  # docs/plans/2026-09-01-voip-1418-sentinel-docker-backend-design.md) and
+  # follows the same komodo-api-deploy.sh pattern as the other services.
+  bin-sentinel-manager-deploy:
+    docker:
+      - image: cimg/base:2024.02
+    resource_class: small
+    steps:
+      - checkout
+      - run:
+          name: Render image tag into Komodo compose fragment
+          command: .circleci/scripts/render-image-tag.sh bin-sentinel-manager/komodo/docker-compose.yml "$CIRCLE_SHA1"
+      - run:
+          name: Deploy bin-sentinel-manager via Komodo API
+          command: |
+            CC_KOMODO_POLL_ATTEMPTS=60 CC_KOMODO_POLL_INTERVAL_S=3 \
+              .circleci/scripts/komodo-api-deploy.sh bin-sentinel-manager bin-sentinel-manager/komodo/docker-compose.yml
 
   # bin-storage-manager
   bin-storage-manager-test:

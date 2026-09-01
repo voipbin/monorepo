@@ -155,18 +155,18 @@
       "targets": [
         {
           "datasource": "${DS_PROMETHEUS}",
-          "expr": "sum(rate(sentinel_manager_pod_state_change_total[5m])) * 60",
-          "legendFormat": "Pod Changes/min"
+          "expr": "sum(rate(sentinel_manager_container_state_change_total[5m])) * 60",
+          "legendFormat": "Container Changes/min"
         }
       ],
-      "title": "Pod State Changes / min",
+      "title": "Container State Changes / min",
       "type": "stat"
     },
     {
       "collapsed": false,
       "gridPos": { "h": 1, "w": 24, "x": 0, "y": 7 },
       "id": 101,
-      "title": "Pod State Changes",
+      "title": "Container State Changes",
       "type": "row"
     },
     {
@@ -189,11 +189,11 @@
       "targets": [
         {
           "datasource": "${DS_PROMETHEUS}",
-          "expr": "sum by (state) (rate(sentinel_manager_pod_state_change_total[5m])) * 60",
+          "expr": "sum by (state) (rate(sentinel_manager_container_state_change_total[5m])) * 60",
           "legendFormat": "{{state}}"
         }
       ],
-      "title": "Pod State Changes by State",
+      "title": "Container State Changes by State",
       "type": "timeseries"
     },
     {
@@ -216,11 +216,11 @@
       "targets": [
         {
           "datasource": "${DS_PROMETHEUS}",
-          "expr": "sum by (namespace) (rate(sentinel_manager_pod_state_change_total[5m])) * 60",
-          "legendFormat": "{{namespace}}"
+          "expr": "sum by (service) (rate(sentinel_manager_container_state_change_total[5m])) * 60",
+          "legendFormat": "{{service}}"
         }
       ],
-      "title": "Pod State Changes by Namespace",
+      "title": "Container State Changes by Service",
       "type": "timeseries"
     },
     {
@@ -243,16 +243,135 @@
       "targets": [
         {
           "datasource": "${DS_PROMETHEUS}",
-          "expr": "sum by (pod) (rate(sentinel_manager_pod_state_change_total[5m])) * 60",
-          "legendFormat": "{{pod}}"
+          "expr": "sum by (container_name) (rate(sentinel_manager_container_state_change_total[5m])) * 60",
+          "legendFormat": "{{container_name}}"
         }
       ],
-      "title": "Pod State Changes by Pod",
+      "title": "Container State Changes by Container",
       "type": "timeseries"
     },
     {
       "collapsed": false,
       "gridPos": { "h": 1, "w": 24, "x": 0, "y": 24 },
+      "id": 104,
+      "title": "Recovery Health (leading indicators)",
+      "type": "row"
+    },
+    {
+      "datasource": "${DS_PROMETHEUS}",
+      "description": "Each increment is one container death that will NOT trigger call recovery: call-manager's empty-id guard drops the event. Expected to sit flat at zero. A non-zero rate means the asterisk-id could not be resolved before the container died - check the Redis DB index and that the container's asterisk-proxy sidecar is writing asterisk.<id>.address-internal.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 20,
+            "spanNulls": false,
+            "stacking": { "mode": "none" }
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 25 },
+      "id": 10,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum"] }, "tooltip": { "mode": "multi" } },
+      "targets": [
+        {
+          "datasource": "${DS_PROMETHEUS}",
+          "expr": "sum by (container_name) (rate(sentinel_manager_container_unresolved_asterisk_id_total[5m])) * 60",
+          "legendFormat": "{{container_name}}"
+        }
+      ],
+      "title": "Deaths Published Without a Resolved asterisk-id",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "${DS_PROMETHEUS}",
+      "description": "LEADING INDICATOR - alert on this BEFORE a recovery is lost. A refresh pass found no fresh Redis address for a container whose id was already resolved. The id is deliberately kept (sticky last-known), so nothing has broken yet, but the NEXT recreation of this container will have to re-resolve from nothing. Usually means that container's asterisk-proxy sidecar stopped refreshing its key.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 20,
+            "spanNulls": false,
+            "stacking": { "mode": "none" }
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 25 },
+      "id": 11,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum"] }, "tooltip": { "mode": "multi" } },
+      "targets": [
+        {
+          "datasource": "${DS_PROMETHEUS}",
+          "expr": "sum by (container_name) (rate(sentinel_manager_container_asterisk_id_refresh_miss_total[5m])) * 60",
+          "legendFormat": "{{container_name}}"
+        }
+      ],
+      "title": "asterisk-id Refresh Misses",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "${DS_PROMETHEUS}",
+      "description": "A refresh pass resolved a DIFFERENT asterisk-id for a container that already had one, and kept the existing id. The fixed-MAC-per-generation invariant says this cannot happen, so any increment is an anomaly. The realistic cause is a MISSED die+start pair (an event stream gap, with the replacement container reusing the same static IP) - in which case the id being kept is the DEAD generation's, and the next death for this container will publish a wrong asterisk-id. Correlate with the reconnect panel below.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 20,
+            "spanNulls": false,
+            "stacking": { "mode": "none" }
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 33 },
+      "id": 13,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum"] }, "tooltip": { "mode": "multi" } },
+      "targets": [
+        {
+          "datasource": "${DS_PROMETHEUS}",
+          "expr": "sum by (container_name) (rate(sentinel_manager_container_asterisk_id_conflict_total[5m])) * 60",
+          "legendFormat": "{{container_name}}"
+        }
+      ],
+      "title": "asterisk-id Conflicts (kept the existing id)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "${DS_PROMETHEUS}",
+      "description": "One increment per event-stream attempt that ended. result=\"delivered\" carried events; result=\"idle\" carried none but stayed open past the healthy-lifetime threshold (30s), which is what a proxy restart looks like on an idle fleet - both are normal and both reset the give-up budget. result=\"empty\" is the primary alert: the attempt ended IMMEDIATELY without any event, the signature of an unreachable socket proxy, i.e. sentinel is up but watching nothing. 20 consecutive empty results exit the process (visible Komodo crash-loop); a sustained empty rate BELOW that threshold is a flapping stream that stays up and silently loses events in the gaps - correlate with the conflict panel, since a lost die+start pair is what strands a stale asterisk-id. Watch a sustained high idle rate as well: a HUNG proxy that accepts the connection, holds it past the threshold, then drops without streaming classifies as idle indefinitely and never trips the exit - bounded by the since-cursor replay, but this counter alone will not fire on it.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 20,
+            "spanNulls": false,
+            "stacking": { "mode": "none" }
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 33 },
+      "id": 12,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum"] }, "tooltip": { "mode": "multi" } },
+      "targets": [
+        {
+          "datasource": "${DS_PROMETHEUS}",
+          "expr": "sum by (result) (rate(sentinel_manager_container_event_stream_reconnect_total[5m])) * 60",
+          "legendFormat": "{{result}}"
+        }
+      ],
+      "title": "Docker Event Stream Reconnects",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 41 },
       "id": 102,
       "title": "API & RPC Performance",
       "type": "row"
@@ -271,7 +390,7 @@
           "unit": "ms"
         }
       },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 25 },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 42 },
       "id": 7,
       "options": { "legend": { "displayMode": "table", "placement": "bottom" }, "tooltip": { "mode": "multi" } },
       "targets": [
@@ -308,7 +427,7 @@
           "unit": "short"
         }
       },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 25 },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 42 },
       "id": 8,
       "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum"] }, "tooltip": { "mode": "multi" } },
       "targets": [
@@ -323,7 +442,7 @@
     },
     {
       "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 33 },
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 50 },
       "id": 103,
       "title": "Events",
       "type": "row"
@@ -342,7 +461,7 @@
           "unit": "short"
         }
       },
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 34 },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 51 },
       "id": 9,
       "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum"] }, "tooltip": { "mode": "multi" } },
       "targets": [
@@ -353,6 +472,69 @@
         }
       ],
       "title": "Event Publish Rate by Type",
+      "type": "timeseries"
+    }
+    ,{
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 59 },
+      "id": 105,
+      "title": "Kubernetes Backend (SENTINEL_BACKEND=kubernetes only)",
+      "type": "row"
+    },
+    {
+      "datasource": "${DS_PROMETHEUS}",
+      "description": "Flat and empty on a Docker deployment - these series only exist when SENTINEL_BACKEND=kubernetes. outcome=\"transient-error\" is ROUTINE on its own: the client-go watch error handler fires on apiserver rolling restarts, `too old resource version`, and transient connection resets. What matters is the ratio: transient-error climbing WITH matching resynced events is a flapping-but-surviving watch, while a sustained run with no resynced precedes the fatal exit. outcome=\"fatal\" means the consecutive-failure budget was exhausted and the process is exiting on purpose.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 20,
+            "spanNulls": false,
+            "stacking": { "mode": "none" }
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 60 },
+      "id": 14,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum"] }, "tooltip": { "mode": "multi" } },
+      "targets": [
+        {
+          "datasource": "${DS_PROMETHEUS}",
+          "expr": "sum by (outcome) (rate(sentinel_manager_pod_watch_health_total[5m])) * 60",
+          "legendFormat": "{{outcome}}"
+        }
+      ],
+      "title": "Pod Watch Health",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "${DS_PROMETHEUS}",
+      "description": "How each pod death was DETECTED. source=\"live\" is the healthy path. source=\"tombstone\" (a deletion missed during a watch interruption and recovered from the next relist) and source=\"uid-mismatch\" (a same-name pod replacement for which client-go never fires a delete callback at all) both still PUBLISH the death - nothing is lost - but they are direct evidence of watch instability and worth alerting on before something is. source=\"unrecoverable\" is the serious one: a death was observed and could NOT be published, so those calls will not be recovered. Correlate with the Pod Watch Health panel.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 20,
+            "spanNulls": false,
+            "stacking": { "mode": "none" }
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 60 },
+      "id": 15,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum"] }, "tooltip": { "mode": "multi" } },
+      "targets": [
+        {
+          "datasource": "${DS_PROMETHEUS}",
+          "expr": "sum by (source) (rate(sentinel_manager_pod_died_detection_total[5m])) * 60",
+          "legendFormat": "{{source}}"
+        }
+      ],
+      "title": "Pod Death Detection Source",
       "type": "timeseries"
     }
   ],

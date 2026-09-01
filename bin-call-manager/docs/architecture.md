@@ -129,7 +129,7 @@ Customer resolution for registrar calls is a registrar-manager lookup (`Registra
 | `customer-manager.customer.*.deleted` | customer-manager |
 | `customer-manager.customer.*.frozen` | customer-manager |
 | `flow-manager.activeflow.*.updated` | flow-manager |
-| `sentinel-manager.pod.*.deleted` | sentinel-manager |
+| `sentinel-manager.container.*.died` | sentinel-manager |
 
 Separately, the `asterisk.all.event` fanout subscription is permanently retained and is NOT affected by the VOIP-1407 cutover: asterisk-proxy does not publish to the global topic exchange at all, so this standalone `QueueSubscribe` is call-manager's only remaining fanout leg (design §3.2).
 

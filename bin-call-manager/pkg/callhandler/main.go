@@ -15,7 +15,7 @@ import (
 	cucustomer "monorepo/bin-customer-manager/models/customer"
 	fmaction "monorepo/bin-flow-manager/models/action"
 	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
-	smpod "monorepo/bin-sentinel-manager/models/pod"
+	smcontainer "monorepo/bin-sentinel-manager/models/container"
 
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
@@ -141,7 +141,7 @@ type CallHandler interface {
 	EventCUCustomerDeleted(ctx context.Context, cu *cucustomer.Customer) error
 	EventCUCustomerFrozen(ctx context.Context, cu *cucustomer.Customer) error
 	EventFMActiveflowUpdated(ctx context.Context, a *fmactiveflow.Activeflow) error
-	EventSMPodDeleted(ctx context.Context, p *smpod.Pod) error
+	EventSMContainerDied(ctx context.Context, c *smcontainer.Event) error
 
 	ValidateDestination(ctx context.Context, customerID uuid.UUID, config *outboundconfig.OutboundConfig, destination commonaddress.Address) bool
 }
@@ -215,11 +215,6 @@ const (
 	channelVariableRecoveryRoutes       = "PJSIP_RECOVERY_ROUTES"
 	channelVariableRecoveryRecordRoutes = "PJSIP_RECOVERY_RECORD-ROUTES"
 	channelVariableRecoveryRequestURI   = "PJSIP_RECOVERY_REQUEST_URI"
-)
-
-const (
-	asteriskPodNamespace = "voip"
-	asteriskPodLabelApp  = "asterisk-call"
 )
 
 var (

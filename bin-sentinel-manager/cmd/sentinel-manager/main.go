@@ -9,10 +9,14 @@ import (
 	"syscall"
 	"time"
 
+	dockerclient "github.com/docker/docker/client"
 	joonix "github.com/joonix/log"
+	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
@@ -21,7 +25,10 @@ import (
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-sentinel-manager/internal/config"
-	"monorepo/bin-sentinel-manager/pkg/monitoringhandler"
+	"monorepo/bin-sentinel-manager/pkg/cachehandler"
+	"monorepo/bin-sentinel-manager/pkg/dockerwatchhandler"
+	"monorepo/bin-sentinel-manager/pkg/k8swatchhandler"
+	"monorepo/bin-sentinel-manager/pkg/monitoringbackend"
 )
 
 const serviceName = commonoutline.ServiceNameSentinelManager
@@ -34,6 +41,14 @@ var rootCmd = &cobra.Command{
 	Short: "Sentinel Manager Service",
 	Long:  `Sentinel Manager is a microservice that monitors system health and manages service status.`,
 	RunE:  run,
+
+	// This is a long-running daemon, not an interactive CLI: every error reaching Execute is a
+	// RUNTIME failure, not a usage mistake. Without these, each fail-loud exit dumps the whole
+	// flag-usage blob into the crash-loop output, burying the actual error exactly when someone is
+	// reading the logs during an incident. main() already logs the error itself, so silencing
+	// cobra's own printing avoids duplicating it too.
+	SilenceUsage:  true,
+	SilenceErrors: true,
 }
 
 func init() {
@@ -41,6 +56,11 @@ func init() {
 	rootCmd.Flags().String("prometheus_endpoint", "/metrics", "URL for the Prometheus metrics endpoint")
 	rootCmd.Flags().String("prometheus_listen_address", ":2112", "Address for Prometheus to listen on (e.g., localhost:8080)")
 	rootCmd.Flags().String("rabbitmq_address", "amqp://guest:guest@localhost:5672", "Address of the RabbitMQ server (e.g., amqp://guest:guest@localhost:5672)")
+	rootCmd.Flags().String("docker_socket_proxy_address", "tcp://sentinel-docker-socket-proxy:2375", "Address of the read-only docker-socket-proxy (e.g., tcp://sentinel-docker-socket-proxy:2375)")
+	rootCmd.Flags().String("redis_address", "localhost:6379", "Address of the Redis server (e.g., localhost:6379)")
+	rootCmd.Flags().String("redis_password", "", "Password of the Redis server")
+	rootCmd.Flags().Int("redis_database", 1, "Database index of the Redis server")
+	rootCmd.Flags().String("sentinel_backend", "", "Monitoring backend to run: kubernetes | docker (required, no default)")
 
 	// Initialize logging
 	logrus.SetFormatter(joonix.NewFormatter())
@@ -55,8 +75,6 @@ func main() {
 }
 
 func run(cmd *cobra.Command, args []string) error {
-	fmt.Printf("Hello world!\n")
-
 	// Initialize configuration
 	if err := config.InitConfig(cmd); err != nil {
 		return fmt.Errorf("failed to initialize config: %w", err)
@@ -71,14 +89,20 @@ func run(cmd *cobra.Command, args []string) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	registerSignal(cancel)
 
-	// run the service
-	runService(ctx, cancel)
+	// runService blocks until the watcher stops: either because the context was cancelled
+	// (SIGTERM -> clean exit 0) or because the watcher hit a fatal condition. A fatal condition
+	// MUST leave this process with a non-zero exit status: main() turns this error into
+	// os.Exit(1), which is what makes Komodo report a crash-loop instead of a container that
+	// exited successfully. A sentinel that "looks up" but watches nothing is worse than one that
+	// is visibly down (design §3.2).
+	if errService := runService(ctx, cancel); errService != nil {
+		return errors.Wrap(errService, "the sentinel-manager service stopped with an error")
+	}
 
-	<-ctx.Done()
 	return nil
 }
 
-func runService(ctx context.Context, cancel context.CancelFunc) {
+func runService(ctx context.Context, cancel context.CancelFunc) error {
 	log := logrus.WithField("func", "runService")
 	defer cancel()
 
@@ -90,20 +114,98 @@ func runService(ctx context.Context, cancel context.CancelFunc) {
 
 	// create handlers
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	// VOIP-1405: dual-publish every sentinel-manager event to the global topic exchange
+	// VOIP-1405: every sentinel-manager event is published to the global topic exchange
 	// `bin-manager.event` (VOIP-1404 skeleton). cmd/sentinel-manager is the only publisher of
-	// this service. The published payload is a raw `*corev1.Pod`, which carries no top-level
-	// `id`, so every key uses the `-` placeholder address by design (design §2.4): the healthy
-	// invariant is `sentinel_manager_topic_placeholder_total ~= topic_publish_total{ok}`.
+	// this service. Since VOIP-1418 the payload is `container.Event`, whose
+	// EventSubscriptionID() returns the RESOLVED asterisk-id -- sentinel is no longer a
+	// placeholder-by-design publisher, though an unresolved id still degrades to the `-`
+	// placeholder through the standard path.
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameSentinelEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 	utilHandler := utilhandler.NewUtilHandler()
 
-	monitoringHandler := monitoringhandler.NewMonitoringHandler(reqHandler, notifyHandler, utilHandler)
+	// build whichever backend SENTINEL_BACKEND selected. Both satisfy
+	// monitoringbackend.MonitoringBackend, and everything above this point -- RabbitMQ, the notify
+	// handler, the Prometheus server -- is identical either way (design §8.3).
+	backend, cleanup, errBackend := buildBackend(cfg, reqHandler, notifyHandler, utilHandler)
+	if errBackend != nil {
+		return errors.Wrapf(errBackend, "could not create the %s monitoring backend", cfg.SentinelBackend)
+	}
+	defer cleanup()
 
-	// run monitoring
-	if errMonitoring := runMonitoring(ctx, monitoringHandler); errMonitoring != nil {
-		log.Errorf("Could not run the monitoring correctly. err: %v", errMonitoring)
-		return
+	// run the watcher. This blocks until the context is cancelled or the backend hits a fatal
+	// condition; the error is propagated all the way to a non-zero process exit.
+	if errRun := backend.Run(ctx); errRun != nil {
+		return errors.Wrapf(errRun, "could not run the %s monitoring backend correctly", cfg.SentinelBackend)
+	}
+
+	log.Infof("The %s monitoring backend stopped cleanly.", cfg.SentinelBackend)
+
+	return nil
+}
+
+// buildBackend constructs the monitoring backend selected by config.
+//
+// The returned cleanup is always non-nil, so the caller can defer it unconditionally.
+//
+// Config validation has already rejected an unset or unknown backend by the time this runs
+// (config.Validate, called from InitConfig), so the default branch here is a belt-and-braces
+// guard against a future selector value being added to the config layer without a matching
+// construction branch -- not a reachable path today.
+func buildBackend(
+	cfg config.Config,
+	reqHandler requesthandler.RequestHandler,
+	notifyHandler notifyhandler.NotifyHandler,
+	utilHandler utilhandler.UtilHandler,
+) (monitoringbackend.MonitoringBackend, func(), error) {
+	log := logrus.WithField("func", "buildBackend")
+	noCleanup := func() {}
+
+	switch cfg.SentinelBackend {
+	case config.BackendDocker:
+		// docker client: talks ONLY to the read-only docker-socket-proxy, never to
+		// /var/run/docker.sock. An unreachable proxy must surface as a crash-loop rather than a
+		// sentinel that looks up but watches nothing.
+		docker, errDocker := dockerclient.NewClientWithOpts(
+			dockerclient.WithHost(cfg.DockerSocketProxyAddress),
+			dockerclient.WithAPIVersionNegotiation(),
+		)
+		if errDocker != nil {
+			return nil, noCleanup, errors.Wrap(errDocker, "could not create the docker client")
+		}
+
+		cleanup := func() {
+			if errClose := docker.Close(); errClose != nil {
+				log.Errorf("Could not close the docker client. err: %v", errClose)
+			}
+		}
+
+		cacheHandler := cachehandler.NewHandler(cfg.RedisAddress, cfg.RedisPassword, cfg.RedisDatabase)
+		if errConnect := cacheHandler.Connect(); errConnect != nil {
+			cleanup()
+			return nil, noCleanup, errors.Wrap(errConnect, "could not connect to the redis")
+		}
+
+		return dockerwatchhandler.NewDockerWatchHandler(reqHandler, notifyHandler, utilHandler, docker, cacheHandler), cleanup, nil
+
+	case config.BackendKubernetes:
+		// in-cluster auth is the only supported mechanism: this backend runs as a pod and reads
+		// the service-account mount. The clientset is built HERE, at the composition root, and
+		// injected -- pkg/k8swatchhandler never constructs it, which is what lets its tests run
+		// against client-go's fake clientset.
+		k8sConfig, errConfig := rest.InClusterConfig()
+		if errConfig != nil {
+			return nil, noCleanup, errors.Wrap(errConfig, "could not create the in-cluster kubernetes config")
+		}
+
+		clientset, errClient := kubernetes.NewForConfig(k8sConfig)
+		if errClient != nil {
+			return nil, noCleanup, errors.Wrap(errClient, "could not create the kubernetes clientset")
+		}
+
+		return k8swatchhandler.NewK8sWatchHandler(reqHandler, notifyHandler, utilHandler, clientset), noCleanup, nil
+
+	default:
+		return nil, noCleanup, errors.Errorf("unsupported sentinel_backend %q", cfg.SentinelBackend)
 	}
 }
 
@@ -119,30 +221,6 @@ func signalHandler(cancel context.CancelFunc) {
 
 	sig := <-chSigs
 	logrus.Debugf("Received signal. sig: %v", sig)
-}
-
-func runMonitoring(
-	ctx context.Context,
-	monitoringHandler monitoringhandler.MonitoringHandler,
-) error {
-	log := logrus.WithField("func", "runMonitoring")
-
-	mapSelectors := map[string][]string{
-		"voip": []string{
-			"app=asterisk-call",
-			"app=asterisk-conference",
-			"app=asterisk-registrar",
-		},
-	}
-
-	// Start monitoring
-	if err := monitoringHandler.Run(ctx, mapSelectors); err != nil {
-		log.Errorf("Failed to run monitoring handler: %v", err)
-		return fmt.Errorf("failed to run monitoring handler: %w", err)
-	}
-
-	log.Info("Monitoring started successfully")
-	return nil
 }
 
 // initProm inits prometheus settings
