@@ -1,0 +1,156 @@
+# Komodo Stack definition for bin-sentinel-manager (VOIP-1418).
+#
+# Deployed via CircleCI's .circleci/scripts/komodo-api-deploy.sh, which pushes
+# this file's content to Komodo's `bin-sentinel-manager` Stack (file_contents
+# mode) and triggers a deploy - git is the source of truth for structure,
+# Komodo just executes it on request. `__IMAGE_TAG__` is substituted by
+# render-image-tag.sh before every deploy and is never a real value here.
+#
+# See docs/plans/2026-09-01-voip-1418-sentinel-docker-backend-design.md.
+#
+# WHY THIS STACK HAS TWO SERVICES AND TWO NETWORKS
+#
+# sentinel-manager watches the Docker Engine's container lifecycle events. The
+# raw socket /var/run/docker.sock grants root-equivalent host access, so it is
+# never mounted into the application container. Instead a read-only
+# docker-socket-proxy sidecar sits in front of it, and the two containers share
+# a dedicated `internal: true` network that nothing else joins.
+#
+# The sidecar shape (rather than a shared, fleet-wide proxy Stack on the
+# `production` network) follows the precedent already set by monorepo-etc's
+# infra-prometheus (VOIP-1402) and infra-loki (VOIP-1423), which both rejected
+# the shared-on-production form for the same reason: on `production`, the proxy
+# - and therefore every container's environment variables, readable through
+# `docker inspect` - becomes reachable from ANY of the ~50 containers on that
+# network. Keeping the proxy on a private network shrinks that blast radius to
+# this Stack alone. VOIP-1423 explicitly declined to reuse infra-prometheus's
+# proxy on the same grounds; do not "consolidate" these into one shared proxy
+# without revisiting that decision.
+#
+# sentinel-manager itself is on BOTH networks: `production` for RabbitMQ and
+# Redis, and the private network for the proxy. The proxy is on the private
+# network ONLY and publishes no port.
+#
+# Single replica: sentinel watches, it does not serve traffic, so it has no HA
+# need of its own. The exposure this creates is narrow and bounded - only a
+# container that both starts AND dies entirely within sentinel's own restart
+# window is missed, because boot-time reconciliation (design 3.3 step 0) seeds
+# the state table from whatever is running at startup.
+#
+# No healthcheck on sentinel-manager: its image is distroless
+# (gcr.io/distroless/static-debian12, no shell, no wget), the same constraint
+# every other bin-*-manager Stack has. The proxy image is Alpine-based and does
+# carry one.
+#
+# No depends_on: this Stack does not define db/redis/rabbitmq, so referencing
+# them would be a Compose parse error. Connectivity comes from attaching to
+# `production`; restart:always plus the app's own reconnect handling is the
+# safety net. sentinel-manager DOES fail loud (exit non-zero, crash-loop) if
+# the proxy is unreachable at startup - a sentinel that looks up but watches
+# nothing is worse than one that is visibly down.
+services:
+  sentinel-manager:
+    image: voipbin/bin-sentinel-manager:__IMAGE_TAG__
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: always
+    deploy:
+      replicas: 1
+    environment:
+      - RABBITMQ_ADDRESS=[[BIN_MANAGER__RABBITMQ_ADDRESS]]
+      # Redis holds voip-asterisk-proxy's `asterisk.<id>.address-internal`
+      # keys. Database 1 matches voip-asterisk-proxy's own default
+      # (cmd/asterisk-proxy/init.go defaultRedisDB) and the rest of the fleet;
+      # a different index here would scan an empty keyspace and silently
+      # resolve nothing.
+      - REDIS_ADDRESS=[[BIN_MANAGER__REDIS_ADDRESS]]
+      - REDIS_DATABASE=1
+      - DOCKER_SOCKET_PROXY_ADDRESS=tcp://sentinel-docker-socket-proxy:2375
+      - PROMETHEUS_ENDPOINT=/metrics
+      - PROMETHEUS_LISTEN_ADDRESS=:2112
+    command: ./sentinel-manager
+    depends_on:
+      sentinel-docker-socket-proxy:
+        condition: service_healthy
+    networks:
+      default: {}
+      docker-socket: {}
+
+  # Read-only Docker API proxy. Grants exactly the two API families sentinel
+  # needs (EVENTS for the lifecycle stream, CONTAINERS for the one inspect per
+  # start and the boot-time list), plus PING and VERSION, which the Go client's
+  # API-version negotiation and this container's own healthcheck require.
+  #
+  # Every other permission variable the v0.5.0 image documents is written out
+  # explicitly as 0 rather than left to the image defaults - upstream defaults
+  # have changed across versions, and this ACL is the entire security boundary.
+  #
+  # ACCEPTED, DOCUMENTED RESIDUAL RISK: CONTAINERS=1 exposes
+  # /containers/{id}/json, which includes container env vars (i.e. secrets in
+  # env) for anything that can reach this proxy. The image has no field-level
+  # ACL to shrink that further, so the mitigation is network scope: this proxy
+  # is reachable only from the private `docker-socket` network below.
+  sentinel-docker-socket-proxy:
+    image: tecnativa/docker-socket-proxy:v0.5.0@sha256:1f5038b54f06c3e18422902cf00ba21803d1c97805aae032e5e6673d532d3459
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: always
+    environment:
+      # --- granted ---
+      - EVENTS=1
+      - CONTAINERS=1
+      - PING=1
+      - VERSION=1
+      # --- denied: write access ---
+      - POST=0
+      - ALLOW_START=0
+      - ALLOW_STOP=0
+      - ALLOW_RESTARTS=0
+      # --- denied: every other API family ---
+      - AUTH=0
+      - BUILD=0
+      - COMMIT=0
+      - CONFIGS=0
+      - DISTRIBUTION=0
+      - EXEC=0
+      - GRPC=0
+      - IMAGES=0
+      - INFO=0
+      - NETWORKS=0
+      - NODES=0
+      - PLUGINS=0
+      - SECRETS=0
+      - SERVICES=0
+      - SESSION=0
+      - SWARM=0
+      - SYSTEM=0
+      - TASKS=0
+      - VOLUMES=0
+    volumes:
+      # read-only mount as defense in depth, even though the proxy's own ACL is
+      # the enforcement boundary.
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:2375/_ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      docker-socket: {}
+
+networks:
+  default:
+    name: production
+    external: true
+  # private, Stack-local network joined ONLY by sentinel-manager and its proxy.
+  # `internal: true` also denies it outbound access, which the proxy does not
+  # need.
+  docker-socket:
+    internal: true
