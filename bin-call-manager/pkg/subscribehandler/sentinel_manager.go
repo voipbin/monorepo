@@ -3,27 +3,31 @@ package subscribehandler
 import (
 	"context"
 	"encoding/json"
+
 	"monorepo/bin-common-handler/models/sock"
-	smpod "monorepo/bin-sentinel-manager/models/pod"
+	smcontainer "monorepo/bin-sentinel-manager/models/container"
 
 	"github.com/sirupsen/logrus"
 )
 
-// processEventSMPodDeleted handles the sentinel-manager's pod_deleted event.
-func (h *subscribeHandler) processEventSMPodDeleted(ctx context.Context, m *sock.Event) error {
+// processEventSMContainerDied handles the sentinel-manager's container_died event.
+//
+// It replaces processEventSMPodDeleted (VOIP-1418): the payload is no longer a raw Kubernetes Pod
+// but sentinel's own minimal container.Event.
+func (h *subscribeHandler) processEventSMContainerDied(ctx context.Context, m *sock.Event) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "processEventSMPodDeleted",
+		"func":    "processEventSMContainerDied",
 		"message": m,
 	})
 	log.Debugf("Executing the event handler.")
 
-	p := &smpod.Pod{}
-	if err := json.Unmarshal([]byte(m.Data), &p); err != nil {
+	c := &smcontainer.Event{}
+	if err := json.Unmarshal([]byte(m.Data), &c); err != nil {
 		log.Errorf("Could not unmarshal the data. err: %v", err)
 		return err
 	}
 
-	if errEvent := h.callHandler.EventSMPodDeleted(ctx, p); errEvent != nil {
+	if errEvent := h.callHandler.EventSMContainerDied(ctx, c); errEvent != nil {
 		log.Errorf("Could not handle the event correctly. The call handler returned an error. err: %v", errEvent)
 	}
 

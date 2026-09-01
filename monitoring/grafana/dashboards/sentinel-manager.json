@@ -155,18 +155,18 @@
       "targets": [
         {
           "datasource": "${DS_PROMETHEUS}",
-          "expr": "sum(rate(sentinel_manager_pod_state_change_total[5m])) * 60",
-          "legendFormat": "Pod Changes/min"
+          "expr": "sum(rate(sentinel_manager_container_state_change_total[5m])) * 60",
+          "legendFormat": "Container Changes/min"
         }
       ],
-      "title": "Pod State Changes / min",
+      "title": "Container State Changes / min",
       "type": "stat"
     },
     {
       "collapsed": false,
       "gridPos": { "h": 1, "w": 24, "x": 0, "y": 7 },
       "id": 101,
-      "title": "Pod State Changes",
+      "title": "Container State Changes",
       "type": "row"
     },
     {
@@ -189,11 +189,11 @@
       "targets": [
         {
           "datasource": "${DS_PROMETHEUS}",
-          "expr": "sum by (state) (rate(sentinel_manager_pod_state_change_total[5m])) * 60",
+          "expr": "sum by (state) (rate(sentinel_manager_container_state_change_total[5m])) * 60",
           "legendFormat": "{{state}}"
         }
       ],
-      "title": "Pod State Changes by State",
+      "title": "Container State Changes by State",
       "type": "timeseries"
     },
     {
@@ -216,11 +216,11 @@
       "targets": [
         {
           "datasource": "${DS_PROMETHEUS}",
-          "expr": "sum by (namespace) (rate(sentinel_manager_pod_state_change_total[5m])) * 60",
-          "legendFormat": "{{namespace}}"
+          "expr": "sum by (service) (rate(sentinel_manager_container_state_change_total[5m])) * 60",
+          "legendFormat": "{{service}}"
         }
       ],
-      "title": "Pod State Changes by Namespace",
+      "title": "Container State Changes by Service",
       "type": "timeseries"
     },
     {
@@ -243,11 +243,11 @@
       "targets": [
         {
           "datasource": "${DS_PROMETHEUS}",
-          "expr": "sum by (pod) (rate(sentinel_manager_pod_state_change_total[5m])) * 60",
-          "legendFormat": "{{pod}}"
+          "expr": "sum by (container_name) (rate(sentinel_manager_container_state_change_total[5m])) * 60",
+          "legendFormat": "{{container_name}}"
         }
       ],
-      "title": "Pod State Changes by Pod",
+      "title": "Container State Changes by Container",
       "type": "timeseries"
     },
     {

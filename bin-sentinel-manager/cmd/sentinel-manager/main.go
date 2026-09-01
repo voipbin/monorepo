@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 
+	dockerclient "github.com/docker/docker/client"
 	joonix "github.com/joonix/log"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
@@ -21,7 +22,8 @@ import (
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-sentinel-manager/internal/config"
-	"monorepo/bin-sentinel-manager/pkg/monitoringhandler"
+	"monorepo/bin-sentinel-manager/pkg/cachehandler"
+	"monorepo/bin-sentinel-manager/pkg/dockerwatchhandler"
 )
 
 const serviceName = commonoutline.ServiceNameSentinelManager
@@ -41,6 +43,10 @@ func init() {
 	rootCmd.Flags().String("prometheus_endpoint", "/metrics", "URL for the Prometheus metrics endpoint")
 	rootCmd.Flags().String("prometheus_listen_address", ":2112", "Address for Prometheus to listen on (e.g., localhost:8080)")
 	rootCmd.Flags().String("rabbitmq_address", "amqp://guest:guest@localhost:5672", "Address of the RabbitMQ server (e.g., amqp://guest:guest@localhost:5672)")
+	rootCmd.Flags().String("docker_socket_proxy_address", "tcp://sentinel-docker-socket-proxy:2375", "Address of the read-only docker-socket-proxy (e.g., tcp://sentinel-docker-socket-proxy:2375)")
+	rootCmd.Flags().String("redis_address", "localhost:6379", "Address of the Redis server (e.g., localhost:6379)")
+	rootCmd.Flags().String("redis_password", "", "Password of the Redis server")
+	rootCmd.Flags().Int("redis_database", 1, "Database index of the Redis server")
 
 	// Initialize logging
 	logrus.SetFormatter(joonix.NewFormatter())
@@ -55,8 +61,6 @@ func main() {
 }
 
 func run(cmd *cobra.Command, args []string) error {
-	fmt.Printf("Hello world!\n")
-
 	// Initialize configuration
 	if err := config.InitConfig(cmd); err != nil {
 		return fmt.Errorf("failed to initialize config: %w", err)
@@ -90,19 +94,43 @@ func runService(ctx context.Context, cancel context.CancelFunc) {
 
 	// create handlers
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
-	// VOIP-1405: dual-publish every sentinel-manager event to the global topic exchange
+	// VOIP-1405: every sentinel-manager event is published to the global topic exchange
 	// `bin-manager.event` (VOIP-1404 skeleton). cmd/sentinel-manager is the only publisher of
-	// this service. The published payload is a raw `*corev1.Pod`, which carries no top-level
-	// `id`, so every key uses the `-` placeholder address by design (design §2.4): the healthy
-	// invariant is `sentinel_manager_topic_placeholder_total ~= topic_publish_total{ok}`.
+	// this service. Since VOIP-1418 the payload is `container.Event`, whose
+	// EventSubscriptionID() returns the RESOLVED asterisk-id -- sentinel is no longer a
+	// placeholder-by-design publisher, though an unresolved id still degrades to the `-`
+	// placeholder through the standard path.
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameSentinelEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
 	utilHandler := utilhandler.NewUtilHandler()
 
-	monitoringHandler := monitoringhandler.NewMonitoringHandler(reqHandler, notifyHandler, utilHandler)
+	// docker client: talks ONLY to the read-only docker-socket-proxy, never to
+	// /var/run/docker.sock. An unreachable proxy must surface as a crash-loop rather than a
+	// sentinel that looks up but watches nothing.
+	docker, errDocker := dockerclient.NewClientWithOpts(
+		dockerclient.WithHost(cfg.DockerSocketProxyAddress),
+		dockerclient.WithAPIVersionNegotiation(),
+	)
+	if errDocker != nil {
+		log.Errorf("Could not create the docker client. err: %v", errDocker)
+		return
+	}
+	defer func() {
+		if errClose := docker.Close(); errClose != nil {
+			log.Errorf("Could not close the docker client. err: %v", errClose)
+		}
+	}()
 
-	// run monitoring
-	if errMonitoring := runMonitoring(ctx, monitoringHandler); errMonitoring != nil {
-		log.Errorf("Could not run the monitoring correctly. err: %v", errMonitoring)
+	cacheHandler := cachehandler.NewHandler(cfg.RedisAddress, cfg.RedisPassword, cfg.RedisDatabase)
+	if errConnect := cacheHandler.Connect(); errConnect != nil {
+		log.Errorf("Could not connect to the redis. err: %v", errConnect)
+		return
+	}
+
+	dockerWatchHandler := dockerwatchhandler.NewDockerWatchHandler(reqHandler, notifyHandler, utilHandler, docker, cacheHandler)
+
+	// run the container watcher
+	if errRun := dockerWatchHandler.Run(ctx); errRun != nil {
+		log.Errorf("Could not run the docker watch handler correctly. err: %v", errRun)
 		return
 	}
 }
@@ -119,30 +147,6 @@ func signalHandler(cancel context.CancelFunc) {
 
 	sig := <-chSigs
 	logrus.Debugf("Received signal. sig: %v", sig)
-}
-
-func runMonitoring(
-	ctx context.Context,
-	monitoringHandler monitoringhandler.MonitoringHandler,
-) error {
-	log := logrus.WithField("func", "runMonitoring")
-
-	mapSelectors := map[string][]string{
-		"voip": []string{
-			"app=asterisk-call",
-			"app=asterisk-conference",
-			"app=asterisk-registrar",
-		},
-	}
-
-	// Start monitoring
-	if err := monitoringHandler.Run(ctx, mapSelectors); err != nil {
-		log.Errorf("Failed to run monitoring handler: %v", err)
-		return fmt.Errorf("failed to run monitoring handler: %w", err)
-	}
-
-	log.Info("Monitoring started successfully")
-	return nil
 }
 
 // initProm inits prometheus settings

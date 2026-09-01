@@ -5,16 +5,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strings"
 
-	"monorepo/bin-sentinel-manager/internal/config"
-
+	dockercontainer "github.com/docker/docker/api/types/container"
+	dockerclient "github.com/docker/docker/client"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
+
+	"monorepo/bin-sentinel-manager/internal/config"
 )
 
 func main() {
@@ -42,161 +41,175 @@ func initCommand() *cobra.Command {
 		cobra.CheckErr(errors.Wrap(err, "failed to bootstrap config"))
 	}
 
-	cmdPod := &cobra.Command{Use: "pod", Short: "Pod monitoring operations"}
-	cmdPod.AddCommand(cmdPodList())
-	cmdPod.AddCommand(cmdPodGet())
+	cmdContainer := &cobra.Command{Use: "container", Short: "Container monitoring operations"}
+	cmdContainer.AddCommand(cmdContainerList())
+	cmdContainer.AddCommand(cmdContainerGet())
 
-	cmdRoot.AddCommand(cmdPod)
+	cmdRoot.AddCommand(cmdContainer)
 	return cmdRoot
 }
 
-func cmdPodList() *cobra.Command {
+func cmdContainerList() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
-		Short: "List monitored pods in a namespace",
-		RunE:  runPodList,
+		Short: "List containers visible through the docker-socket-proxy",
+		RunE:  runContainerList,
 	}
 
 	flags := cmd.Flags()
-	flags.String("namespace", "voip", "Kubernetes namespace to query")
-	flags.String("selector", "", "Label selector (e.g., app=asterisk-call)")
+	flags.String("name", "", "Substring filter on the container name (e.g., voip-asterisk-call-docker)")
+	flags.Bool("all", false, "Include non-running containers")
 
 	return cmd
 }
 
-func cmdPodGet() *cobra.Command {
+func cmdContainerGet() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "get",
-		Short: "Get a specific pod by name",
-		RunE:  runPodGet,
+		Short: "Inspect a specific container by name",
+		RunE:  runContainerGet,
 	}
 
 	flags := cmd.Flags()
-	flags.String("namespace", "voip", "Kubernetes namespace")
-	flags.String("name", "", "Pod name (required)")
+	flags.String("name", "", "Container name (required)")
 
 	return cmd
 }
 
-func runPodList(cmd *cobra.Command, args []string) error {
-	clientset, err := getKubernetesClient()
+// ContainerInfo is the summarized shape `container list` prints.
+type ContainerInfo struct {
+	ID        string            `json:"id"`
+	Name      string            `json:"name"`
+	Image     string            `json:"image"`
+	State     string            `json:"state"`
+	Status    string            `json:"status"`
+	Addresses map[string]string `json:"addresses"`
+}
+
+// ContainerDetailInfo is the detailed shape `container get` prints.
+type ContainerDetailInfo struct {
+	ID        string            `json:"id"`
+	Name      string            `json:"name"`
+	Image     string            `json:"image"`
+	State     string            `json:"state"`
+	StartedAt string            `json:"started_at"`
+	Addresses map[string]string `json:"addresses"`
+	MACs      map[string]string `json:"mac_addresses"`
+}
+
+func runContainerList(cmd *cobra.Command, args []string) error {
+	cli, err := newDockerClient()
 	if err != nil {
-		return errors.Wrap(err, "failed to create Kubernetes client")
+		return err
 	}
+	defer closeDockerClient(cli)
 
-	namespace := viper.GetString("namespace")
-	selector := viper.GetString("selector")
+	nameFilter := viper.GetString("name")
+	all := viper.GetBool("all")
 
-	listOptions := metav1.ListOptions{}
-	if selector != "" {
-		listOptions.LabelSelector = selector
-	}
-
-	pods, err := clientset.CoreV1().Pods(namespace).List(context.Background(), listOptions)
+	containers, err := cli.ContainerList(context.Background(), dockercontainer.ListOptions{All: all})
 	if err != nil {
-		return errors.Wrap(err, "failed to list pods")
+		return errors.Wrap(err, "failed to list containers")
 	}
 
-	// Create a simplified response with essential pod information
-	type PodInfo struct {
-		Name      string            `json:"name"`
-		Namespace string            `json:"namespace"`
-		Phase     corev1.PodPhase   `json:"phase"`
-		PodIP     string            `json:"pod_ip"`
-		HostIP    string            `json:"host_ip"`
-		Labels    map[string]string `json:"labels"`
-		NodeName  string            `json:"node_name"`
-	}
+	result := make([]ContainerInfo, 0, len(containers))
+	for _, c := range containers {
+		name := ""
+		if len(c.Names) > 0 {
+			name = strings.TrimPrefix(c.Names[0], "/")
+		}
 
-	result := make([]PodInfo, 0, len(pods.Items))
-	for _, pod := range pods.Items {
-		result = append(result, PodInfo{
-			Name:      pod.Name,
-			Namespace: pod.Namespace,
-			Phase:     pod.Status.Phase,
-			PodIP:     pod.Status.PodIP,
-			HostIP:    pod.Status.HostIP,
-			Labels:    pod.Labels,
-			NodeName:  pod.Spec.NodeName,
+		if nameFilter != "" && !strings.Contains(name, nameFilter) {
+			continue
+		}
+
+		addresses := map[string]string{}
+		if c.NetworkSettings != nil {
+			for network, endpoint := range c.NetworkSettings.Networks {
+				if endpoint == nil {
+					continue
+				}
+				addresses[network] = endpoint.IPAddress
+			}
+		}
+
+		result = append(result, ContainerInfo{
+			ID:        c.ID,
+			Name:      name,
+			Image:     c.Image,
+			State:     string(c.State),
+			Status:    c.Status,
+			Addresses: addresses,
 		})
 	}
 
 	return printJSON(result)
 }
 
-func runPodGet(cmd *cobra.Command, args []string) error {
-	clientset, err := getKubernetesClient()
-	if err != nil {
-		return errors.Wrap(err, "failed to create Kubernetes client")
-	}
-
-	namespace := viper.GetString("namespace")
+func runContainerGet(cmd *cobra.Command, args []string) error {
 	name := viper.GetString("name")
-
 	if name == "" {
-		return fmt.Errorf("pod name is required")
+		return fmt.Errorf("container name is required")
 	}
 
-	pod, err := clientset.CoreV1().Pods(namespace).Get(context.Background(), name, metav1.GetOptions{})
+	cli, err := newDockerClient()
 	if err != nil {
-		return errors.Wrap(err, "failed to get pod")
+		return err
+	}
+	defer closeDockerClient(cli)
+
+	inspect, err := cli.ContainerInspect(context.Background(), name)
+	if err != nil {
+		return errors.Wrap(err, "failed to inspect container")
 	}
 
-	// Create a detailed response with pod information
-	type ContainerInfo struct {
-		Name    string `json:"name"`
-		Image   string `json:"image"`
-		Ready   bool   `json:"ready"`
-		Started *bool  `json:"started"`
+	result := ContainerDetailInfo{
+		Addresses: map[string]string{},
+		MACs:      map[string]string{},
 	}
 
-	type PodDetailInfo struct {
-		Name       string            `json:"name"`
-		Namespace  string            `json:"namespace"`
-		Phase      corev1.PodPhase   `json:"phase"`
-		PodIP      string            `json:"pod_ip"`
-		HostIP     string            `json:"host_ip"`
-		Labels     map[string]string `json:"labels"`
-		NodeName   string            `json:"node_name"`
-		Containers []ContainerInfo   `json:"containers"`
+	if inspect.ContainerJSONBase != nil {
+		result.ID = inspect.ID
+		result.Name = strings.TrimPrefix(inspect.Name, "/")
+		if inspect.State != nil {
+			result.State = inspect.State.Status
+			result.StartedAt = inspect.State.StartedAt
+		}
 	}
-
-	containers := make([]ContainerInfo, 0, len(pod.Status.ContainerStatuses))
-	for _, cs := range pod.Status.ContainerStatuses {
-		containers = append(containers, ContainerInfo{
-			Name:    cs.Name,
-			Image:   cs.Image,
-			Ready:   cs.Ready,
-			Started: cs.Started,
-		})
+	if inspect.Config != nil {
+		result.Image = inspect.Config.Image
 	}
-
-	result := PodDetailInfo{
-		Name:       pod.Name,
-		Namespace:  pod.Namespace,
-		Phase:      pod.Status.Phase,
-		PodIP:      pod.Status.PodIP,
-		HostIP:     pod.Status.HostIP,
-		Labels:     pod.Labels,
-		NodeName:   pod.Spec.NodeName,
-		Containers: containers,
+	if inspect.NetworkSettings != nil {
+		for network, endpoint := range inspect.NetworkSettings.Networks {
+			if endpoint == nil {
+				continue
+			}
+			result.Addresses[network] = endpoint.IPAddress
+			result.MACs[network] = endpoint.MacAddress
+		}
 	}
 
 	return printJSON(result)
 }
 
-func getKubernetesClient() (*kubernetes.Clientset, error) {
-	k8sConfig, err := rest.InClusterConfig()
+// newDockerClient dials the read-only docker-socket-proxy, the same endpoint the service itself
+// uses. This CLI never touches /var/run/docker.sock directly.
+func newDockerClient() (*dockerclient.Client, error) {
+	cli, err := dockerclient.NewClientWithOpts(
+		dockerclient.WithHost(config.Get().DockerSocketProxyAddress),
+		dockerclient.WithAPIVersionNegotiation(),
+	)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to create in-cluster config")
+		return nil, errors.Wrap(err, "failed to create docker client")
 	}
 
-	clientset, err := kubernetes.NewForConfig(k8sConfig)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to create Kubernetes clientset")
-	}
+	return cli, nil
+}
 
-	return clientset, nil
+func closeDockerClient(cli *dockerclient.Client) {
+	if errClose := cli.Close(); errClose != nil {
+		log.Printf("failed to close docker client: %v", errClose)
+	}
 }
 
 func printJSON(v any) error {

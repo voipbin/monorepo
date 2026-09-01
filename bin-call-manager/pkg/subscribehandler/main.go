@@ -16,7 +16,7 @@ import (
 
 	cucustomer "monorepo/bin-customer-manager/models/customer"
 	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
-	smpod "monorepo/bin-sentinel-manager/models/pod"
+	smcontainer "monorepo/bin-sentinel-manager/models/container"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
@@ -42,7 +42,7 @@ var topicPatterns = []string{
 	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCustomerManager), cucustomer.EventTypeCustomerDeleted),
 	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCustomerManager), cucustomer.EventTypeCustomerFrozen),
 	eventtopic.PatternForEventType(string(commonoutline.ServiceNameFlowManager), fmactiveflow.EventTypeActiveflowUpdated),
-	eventtopic.PatternForEventType(string(commonoutline.ServiceNameSentinelManager), smpod.EventTypePodDeleted),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameSentinelManager), smcontainer.EventTypeContainerDied),
 }
 
 type subscribeHandler struct {
@@ -216,8 +216,8 @@ func (h *subscribeHandler) processEvent(m *sock.Event) error {
 		err = h.processEventFMActiveflowUpdated(ctx, m)
 
 	// sentinel-manager
-	case m.Publisher == string(commonoutline.ServiceNameSentinelManager) && m.Type == smpod.EventTypePodDeleted:
-		err = h.processEventSMPodDeleted(ctx, m)
+	case m.Publisher == string(commonoutline.ServiceNameSentinelManager) && m.Type == smcontainer.EventTypeContainerDied:
+		err = h.processEventSMContainerDied(ctx, m)
 
 	default:
 		// ignore the event.

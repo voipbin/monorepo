@@ -20,7 +20,7 @@ func Test_topicPatterns_golden(t *testing.T) {
 		"customer-manager.customer.*.deleted",
 		"customer-manager.customer.*.frozen",
 		"flow-manager.activeflow.*.updated",
-		"sentinel-manager.pod.*.deleted",
+		"sentinel-manager.container.*.died",
 	}
 
 	if len(topicPatterns) != 4 {

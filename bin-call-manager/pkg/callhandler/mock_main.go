@@ -23,7 +23,7 @@ import (
 	customer "monorepo/bin-customer-manager/models/customer"
 	action "monorepo/bin-flow-manager/models/action"
 	activeflow "monorepo/bin-flow-manager/models/activeflow"
-	pod "monorepo/bin-sentinel-manager/models/pod"
+	container "monorepo/bin-sentinel-manager/models/container"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -327,18 +327,18 @@ func (mr *MockCallHandlerMockRecorder) EventFMActiveflowUpdated(ctx, a any) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventFMActiveflowUpdated", reflect.TypeOf((*MockCallHandler)(nil).EventFMActiveflowUpdated), ctx, a)
 }
 
-// EventSMPodDeleted mocks base method.
-func (m *MockCallHandler) EventSMPodDeleted(ctx context.Context, p *pod.Pod) error {
+// EventSMContainerDied mocks base method.
+func (m *MockCallHandler) EventSMContainerDied(ctx context.Context, c *container.Event) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EventSMPodDeleted", ctx, p)
+	ret := m.ctrl.Call(m, "EventSMContainerDied", ctx, c)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// EventSMPodDeleted indicates an expected call of EventSMPodDeleted.
-func (mr *MockCallHandlerMockRecorder) EventSMPodDeleted(ctx, p any) *gomock.Call {
+// EventSMContainerDied indicates an expected call of EventSMContainerDied.
+func (mr *MockCallHandlerMockRecorder) EventSMContainerDied(ctx, c any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventSMPodDeleted", reflect.TypeOf((*MockCallHandler)(nil).EventSMPodDeleted), ctx, p)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventSMContainerDied", reflect.TypeOf((*MockCallHandler)(nil).EventSMContainerDied), ctx, c)
 }
 
 // ExternalMediaStart mocks base method.
