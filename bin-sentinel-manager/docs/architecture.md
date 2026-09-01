@@ -4,11 +4,18 @@ Service class: **A2** (event-driven worker, no inbound RPC).
 
 ## Component Overview
 
-`bin-sentinel-manager` is a Docker container lifecycle monitor. It watches the Docker Engine's event stream for the Asterisk containers (call, conference, registrar) running on bm-nyc-01 and publishes state-change events to RabbitMQ so downstream services can react to restarts, crashes, or removals.
+`bin-sentinel-manager` is an Asterisk container lifecycle monitor with **two peer backends**. It watches either the Docker Engine's event stream (bm-nyc-01) or the Kubernetes API (self-hosted clusters) for the Asterisk workloads (call, conference, registrar) and publishes state-change events to RabbitMQ so downstream services can react to restarts, crashes, or removals.
 
-It was a Kubernetes pod monitor until VOIP-1418; GKE was dismantled on 2026-08-20 and the informer-based backend was replaced wholesale.
+`SENTINEL_BACKEND` picks the backend at startup — `docker` or `kubernetes`, no default, no auto-detection. Exactly one runs per process. VoIPBin is a self-hostable opensource CPaaS, so both deployment shapes are first-class; neither backend is a fallback for the other.
+
+VOIP-1418 replaced the original Kubernetes-only implementation with the Docker backend after GKE was dismantled on 2026-08-20, then restored Kubernetes alongside it (design §8) once it became clear that a Docker-only service would silently regress stranded-call detection to zero for every self-hosted Kubernetes deployment.
 
 ```
+cmd/sentinel-manager  --SENTINEL_BACKEND--> one of the two backends below
+                                            (both satisfy monitoringbackend.MonitoringBackend)
+
+=== SENTINEL_BACKEND=docker ===
+
         /var/run/docker.sock
                  │ (read-only bind mount)
                  ▼
@@ -40,13 +47,44 @@ It was a Kubernetes pod monitor until VOIP-1418; GKE was dismantled on 2026-08-2
             (bin-call-manager)
 ```
 
+```
+=== SENTINEL_BACKEND=kubernetes ===
+
+      Kubernetes API server
+                 │  list/watch pods (RBAC: pod-reader on `voip`)
+                 ▼
+        k8swatchhandler
+  ┌────────────────────────────────────────────┐
+  │ run.go      one SharedIndexInformer per     │
+  │             (namespace, label-selector),    │
+  │             fanned in through an errgroup   │
+  │                                             │
+  │             AddFunc    -> no-op             │
+  │             UpdateFunc -> started           │
+  │                           (+ died on a      │
+  │                            UID mismatch)    │
+  │             DeleteFunc -> died              │
+  │                           (tombstone-aware) │
+  │                                             │
+  │ budget.go   consecutive watch-failure       │
+  │             budget -> fatal                 │
+  └───────────────────┬─────────────────────────┘
+                      │ PublishEvent (identical container.Event)
+                      ▼
+                  RabbitMQ
+```
+
+The asterisk-id needs no resolution machinery on this side: voip-asterisk-proxy self-patches its own pod's `asterisk-id` annotation through the Kubernetes API, and annotations are visible to any watcher with read RBAC. The Docker backend's entire state table exists only because a container has no equivalent place to carry that id.
+
 There is no HTTP server, no listenhandler, and no inbound RPC queue. All inputs come from the Docker event stream and Redis; all outputs are RabbitMQ events.
 
 ## Layer Responsibilities
 
 | Layer | Package | Responsibility |
 |-------|---------|----------------|
-| Entry point | `cmd/sentinel-manager/` | Parse config (Cobra/Viper), build the Docker + Redis clients, start dockerwatchhandler |
+| Entry point | `cmd/sentinel-manager/` | Parse and validate config, build the selected backend's dependencies (`buildBackend`), run it |
+| Backend contract | `pkg/monitoringbackend/` | The one-method `MonitoringBackend` interface, plus the counters both backends share |
+| Kubernetes monitor | `pkg/k8swatchhandler/` | Pod informers, callback-to-event mapping, watch-failure budget, errgroup fan-in |
 | Core monitor | `pkg/dockerwatchhandler/` | Boot reconciliation, asterisk-id state table, Docker event stream, publish, Prometheus counters |
 | Cache access | `pkg/cachehandler/` | Read-only reverse scan of `asterisk.<id>.address-internal` (value + remaining TTL) |
 | Domain types | `models/container/` | `Event` payload, `EventTypeContainerStarted` / `EventTypeContainerDied` |
@@ -55,9 +93,15 @@ There is no HTTP server, no listenhandler, and no inbound RPC queue. All inputs 
 
 ## Execution Model
 
-### What triggers sentinel
+### Backend selection
 
-Sentinel does not subscribe to RabbitMQ events. Its inputs are the Docker Events API stream and periodic Redis reads.
+`internal/config` validates `SENTINEL_BACKEND` at startup and rejects an unset or unknown value outright. Validation is backend-conditional: `DOCKER_SOCKET_PROXY_ADDRESS` and `REDIS_ADDRESS` are required only for `docker`, and nothing extra is required for `kubernetes` beyond the in-cluster service-account mount that `rest.InClusterConfig()` reads. Validating all fields unconditionally would reject a perfectly good Kubernetes deployment for not supplying Redis config it has no reason to have.
+
+Both `cmd/sentinel-manager` and `cmd/sentinel-control` enforce this, through different bootstrap entry points (`InitConfig` and `Bootstrap` + `LoadGlobalConfig` respectively). Sharing the config package is not enough to share the validation — `LoadGlobalConfig` returns an error specifically so the CLI can fail the same way the service does.
+
+### What triggers sentinel (docker backend)
+
+Sentinel does not subscribe to RabbitMQ events. On the Docker backend its inputs are the Docker Events API stream and periodic Redis reads.
 
 Watched containers are matched by compile-time name prefix, plus a bare replica index, which is what excludes the co-located `-proxy` sidecars:
 
@@ -83,6 +127,21 @@ Watched containers are matched by compile-time name prefix, plus a bare replica 
 
 **Reconnect.** On any event-stream disconnect the loop pauses briefly and re-opens with `since=<last processed event + 1ns>`, so a proxy restart or network blip leaves a bounded gap rather than silently dropping a `die`.
 
+### What triggers sentinel (kubernetes backend)
+
+One `SharedIndexInformer` per `(namespace, label-selector)` pair — namespace `voip`, selectors `app=asterisk-call`, `app=asterisk-conference`, `app=asterisk-registrar` — all fanned in through an `errgroup` so any one informer's failure propagates out of `Run` instead of leaving the others running with silently reduced coverage.
+
+The pod's `app` label is mapped to the typed `Service` constant through an explicit lookup; an unrecognized value is rejected at the publish boundary rather than passed through, because a raw passthrough would produce an event `bin-call-manager`'s filter silently never matches.
+
+**Callback mapping.** `UpdateFunc` publishes `started`; `DeleteFunc` publishes `died`; `AddFunc` is an intentional no-op (informers replay existing pods as synthetic Adds on the initial list). Two additions make this safe rather than merely restored:
+
+- `UpdateFunc` compares `oldPod.UID != newPod.UID` and publishes a `died` for the old generation first. A same-name pod replaced during a watch interruption is still present in the relist, so client-go delivers it as a `Replaced` delta and **never fires a delete callback** for the dead generation.
+- `DeleteFunc` unwraps `cache.DeletedFinalStateUnknown`, which is how a deletion missed during an interruption arrives on the next relist.
+
+**Accepted asymmetry with the Docker backend.** Because `AddFunc` is a no-op and a relist re-delivers unchanged objects through `UpdateFunc`, `started` is published *late* (on a new pod's first post-creation status transition, not at the creation instant) and *possibly more than once*. The identical-field-shape guarantee holds; `started` timing and cardinality are not part of it. Harmless today since `bin-call-manager` only consumes `died`, but a future consumer relying on `started` semantics needs to know this up front.
+
+**Fail-loud.** `SetWatchErrorHandler` feeds a consecutive-failure budget rather than being treated as fatal on the first invocation (it fires on benign conditions like an apiserver rolling restart). Recovery resets it, signalled either by a delivered event or by a changed `LastSyncResourceVersion` — the latter matters because a selector matching zero pods delivers nothing even when perfectly healthy. `WaitForCacheSync` runs under an explicit deadline, without which a missing `pod-reader` RBAC role makes client-go retry the denied list forever and the call simply blocks.
+
 ### What it produces
 
 RabbitMQ events published through `notifyhandler.PublishEvent`. The payload is `models/container.Event`:
@@ -91,7 +150,7 @@ RabbitMQ events published through `notifyhandler.PublishEvent`. The payload is `
 {"container_name":"voip-asterisk-call-docker-2","service":"asterisk-call","asterisk_id":"3e:50:6b:43:bb:32"}
 ```
 
-`bin-call-manager` consumes `container_died`, filters on `service == "asterisk-call"`, and calls `RecoveryStart(asterisk_id)` — which pulls that instance's last 24h of channels, looks up each one's SIP dialog via Homer, and PJSIP-redials it onto a live instance. An event with an empty `asterisk_id` is dropped by call-manager's empty-id guard.
+Identical on both backends. On Kubernetes, `container_name` is the pod name and `asterisk_id` comes from the pod's `asterisk-id` annotation; on Docker they come from the container name and the Redis-resolved state table. `bin-call-manager` consumes `container_died`, filters on `service == "asterisk-call"`, and calls `RecoveryStart(asterisk_id)` — which pulls that instance's last 24h of channels, looks up each one's SIP dialog via Homer, and PJSIP-redials it onto a live instance. An event with an empty `asterisk_id` is dropped by call-manager's empty-id guard.
 
 ### Global topic exchange (VOIP-1404 / VOIP-1405 / VOIP-1407 / VOIP-1418)
 

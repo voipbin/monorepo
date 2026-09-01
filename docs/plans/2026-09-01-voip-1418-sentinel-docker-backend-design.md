@@ -1,10 +1,26 @@
 # VOIP-1418: bin-sentinel-manager Docker-backend design
 
-Status: **DESIGN APPROVED** (round 4 + round 5, 2 consecutive Approve — CLAUDE.md design
-review loop satisfied). Round 5's 3 non-blocking nits (orphaned §3.4 cross-reference,
-ambiguous "refresh interval" wording, §3.2's "start-only" inspect claim) and the §3.5/§6
-open question (event wire-string rename) are folded in below. Ready for implementation
-planning.
+Status: §1-§7 **DESIGN APPROVED** (round 4 + round 5, 2 consecutive Approve — CLAUDE.md
+design review loop satisfied) and **shipped** in PR #1240 (Docker-only backend, merged
+into the branch, not yet merged to `main`). §8 is a **new addendum, DESIGN APPROVED** (round 7 + round 8, 2 consecutive Approve —
+CLAUDE.md design review loop satisfied, 8 rounds total) — added 2026-09-01 per the CEO's
+explicit direction after PR #1240 was opened. Eight rounds, several catching real
+client-go/informer correctness gaps: round 1 (fail-loud contract not inherited), round 2
+(mechanism under-specified), round 3 (`DeletedFinalStateUnknown` tombstone handling
+missing), round 4 (`UpdateFunc` UID-mismatch gap), round 5 (death-path-closure audit found
+no sixth gap, but left a duplicated paragraph and an overstated claim), round 6 (that
+overstatement's self-contradiction, corrected), rounds 7-8 (verification passes, 3 cosmetic
+nits plus a pre-existing §3.2/production-network cross-reference, all folded in). Ready for
+implementation planning. VoIPBin is a self-hostable opensource CPaaS, and a self-hosted deployment on
+Kubernetes needs sentinel-manager's stranded-call detection just as much as bm-nyc-01's
+Docker-Compose deployment does. §1-§7's "replace K8s with Docker" framing should have been
+"add Docker alongside K8s" — this was a real gap in the original design's trade-off
+analysis, not a deliberate scope decision; VOIP-1335's original ask was dual-backend
+support from the start, and this addendum is that ask, now genuinely unblocked (the
+recovery-topology blocker that put VOIP-1335 on hold was resolved by VOIP-1402, and the
+Docker backend §1-§7 already built is one of the two backends this needs — the other one,
+covered here, is restoring K8s as a peer implementation rather than something the Docker
+work replaced).
 
 ## 1. Confirmed current state (2026-09-01, live-verified)
 
@@ -119,8 +135,10 @@ per already-running container once at sentinel's own boot (§3.3 step 0). Never 
 in either case — a dying/dead container's inspect response has an empty `IPAddress`, so a
 die-time fallback inspect would silently fail and must not be relied on. This does expose
 full container config (env vars, labels — i.e. secrets-in-env) via `/containers/{id}/json`
-to anything that can reach the proxy; scope the proxy to the `production` network only (no
-public exposure) and treat this as an accepted, documented risk of the mitigation rather than
+to anything that can reach the proxy; scope the proxy to its own dedicated `internal: true`
+network only (per this section's own correction below — not `production`; corrected during
+implementation after this paragraph was first written, see the "Correction" block that
+follows) and treat this as an accepted, documented risk of the mitigation rather than
 a fully closed hole — Komodo's proxy has no finer-grained field-level ACL to shrink it
 further. sentinel-manager must fail loud if the proxy is unreachable (exit non-zero /
 crash-loop, which Komodo's own health monitoring already surfaces as an alert) rather than
@@ -369,6 +387,341 @@ not by anything about the watched containers' own behavior.
 
 ## 7. Explicitly deferred (follow-up tickets, not this one)
 
-- Deleting the now-dead `bin-sentinel-manager/k8s/` manifests and `k8s.io/*` dependencies.
-- Removing `ASTERISK_ID` dead env var repo-wide (already tracked: VOIP-1365).
+- ~~Deleting the now-dead `bin-sentinel-manager/k8s/` manifests and `k8s.io/*`
+  dependencies.~~ **Superseded by §8**: these are being restored to active use, not deleted.
+  This bullet is now moot — kept struck through rather than removed so the history of why
+  it was originally deferred (and then reversed) stays legible.
+- Removing `ASTERISK_ID` dead env var repo-wide (already tracked: VOIP-1365). Still deferred
+  — unaffected by §8; that env var was already dead before AND after this addendum (the K8s
+  backend never used it either; asterisk-id has always come from the pod annotation, not an
+  env var, on the K8s side — see §8.2).
 - Any redesign of the recovery RPC itself.
+
+## 8. Addendum: restore Kubernetes as a second, peer backend
+
+### 8.1 Why this wasn't caught in §1-§7
+
+§1's "Confirmed current state" correctly established that bm-nyc-01 has no Kubernetes and
+needed a working deploy path *now*. That framing then silently generalized into "sentinel
+only needs to run where we currently deploy it" — never stated as an explicit assumption,
+never surfaced as a trade-off for review. VoIPBin is built and marketed as a self-hostable
+opensource CPaaS (see product positioning materials); a self-hoster running Kubernetes has
+exactly the same need for stranded-call detection as bm-nyc-01 does, and the Docker-only PR
+would have silently regressed that capability to zero for that deployment shape while
+fixing it for this one. Five design-review rounds and four plan-review rounds on §1-§7 did
+not catch this because none of the reviewers were asked to check "does this design serve
+every deployment target VoIPBin supports," only "is this design internally sound for the
+target it names." That's a real process gap worth remembering for future infra tickets:
+**state the deployment-target assumption explicitly and ask a reviewer to challenge it**,
+don't let "the environment I'm looking at right now" silently become "the only environment
+that matters."
+
+### 8.2 Why the K8s backend is *simpler* to restore than the Docker backend was to build
+
+The Docker backend's hardest problem — resolving a dying container's asterisk-id, given
+that the id is derived from a container's MAC address which is not stable across
+recreation, and there is no equivalent of a Kubernetes annotation to carry it — **does not
+exist on the K8s side**. `voip-asterisk-proxy/cmd/asterisk-proxy/annotation.go` (unchanged
+by this or any recent ticket) has always self-patched its own pod's `asterisk-id`
+annotation via the K8s API at startup, using its own pod's in-cluster service account
+(`setProxyInfoAnnotation` → `patchPodAnnotation`, JSON-patch `add` on
+`/metadata/annotations/asterisk-id`). A Kubernetes Pod object's annotations are visible to
+any watcher with read RBAC on pods in that namespace — no reverse lookup, no state table, no
+freshness filter, no sticky-last-known semantics, none of §3.3's five-review-round
+machinery. This is exactly what the pre-VOIP-1418 `pkg/monitoringhandler` already did
+(`p.Annotations["asterisk-id"]`, read directly in the pod-delete handler) — restoring it is
+close to reverting §2's deletion, not building something new, modulo one adaptation (§8.3).
+
+**Caveats on this mechanism (round-1 design review found these worth stating explicitly,
+none of them block the approach, but the K8s backend's empty-`AsteriskID` path — §8.3 — is
+not a corner case, it's an expected one)**:
+- `setProxyInfoAnnotation` is gated by a `--kubernetes_disabled`-style flag on the proxy
+  side — a proxy started with K8s support disabled never patches the annotation at all.
+  Deployment config on the asterisk-proxy sidecar side must have this enabled for the
+  annotation to exist; this addendum doesn't change that flag, just depends on its correct
+  setting being a deployment precondition, same as it always was pre-VOIP-1418.
+  - JSON-Patch `add` on a nested path requires the parent map (`/metadata/annotations`) to
+  already exist — pod templates need at least one annotation present at creation time (K8s
+  manifests already set `prometheus.io/scrape` etc., so this is satisfied in practice, but
+  it's a real precondition, not automatic).
+- The proxy's own K8s service account needs `patch` RBAC on pods (its own pod only, scoped
+  by namespace/name in practice) — a separate RBAC concern from sentinel-manager's own
+  read-only `pod-reader` role (§8.4); this addendum touches neither, both already exist and
+  are unaffected by anything in this ticket.
+- **Consequence**: there is a real window between a pod starting and the proxy's patch
+  landing (network round-trip, retries up to `maxRetries`) during which the annotation is
+  genuinely absent. A pod that dies inside that window produces a `container.Event` with
+  `AsteriskID: ""` — not a bug, the correct and expected degrade path (§8.3's last bullet),
+  but implementation should not treat "empty annotation" as a scenario needing special
+  handling beyond what §3.6's existing empty-id guard already does.
+
+### 8.3 Architecture: a `MonitoringBackend` interface, two implementations, one event schema
+
+```go
+// bin-sentinel-manager/pkg/monitoringbackend (new, small — just the interface)
+type MonitoringBackend interface {
+    Run(ctx context.Context) error
+}
+```
+
+Both `dockerwatchhandler.Handler` (§2-§7, already implements a `Run(ctx) error` method) and
+a restored `pkg/k8swatchhandler.Handler` satisfy this. `cmd/sentinel-manager/main.go`
+constructs whichever one `SENTINEL_BACKEND` selects and calls `.Run(ctx)` — the rest of
+`main.go` (RabbitMQ connect, `notifyHandler` construction, Prometheus HTTP server) is
+identical regardless of backend.
+
+**Interface contract, stated explicitly (round-1 design review required this)**: `Run`
+returns `nil` **only** when `ctx` was cancelled (normal shutdown); **any other cause of the
+watch loop stopping — informer sync failure, a watch that dies and cannot be
+re-established, the client losing its connection to the API server — must return a non-nil
+error.** This is the same fail-loud contract §3.2 already established for the Docker
+backend, and it is **not automatically satisfied by restoring the old K8s code as-is** (see
+§8.4's rewrite requirement below) — the pre-VOIP-1418 implementation predates that contract
+entirely and violates it.
+
+**Backend selection**: `SENTINEL_BACKEND` env var, values `kubernetes` | `docker`, **no
+default — fail fast at startup if unset or invalid** (matches VOIP-1335's original explicit
+"config selects the backend" design over any form of auto-detection; auto-detecting "am I
+in a K8s pod or a Docker container" is exactly the kind of implicit, hard-to-audit behavior
+this whole ticket has spent many review rounds trying to eliminate elsewhere — an operator
+should have to say which one they mean).
+
+**Config validation becomes backend-conditional (round-1 design review caught this was
+missing)**: `DockerSocketProxyAddress` and the Redis address are required when
+`SENTINEL_BACKEND=docker`, irrelevant when `=kubernetes` — validate only the fields the
+selected backend actually needs, or a K8s deployment fails startup on Docker-only config it
+was never given and has no reason to provide. Symmetrically, nothing K8s-specific needs
+validating today (no equivalent required config beyond in-cluster auth, which
+`rest.InClusterConfig()` either finds or doesn't).
+
+**Unified event schema — the key simplification**: the restored K8s backend does **not**
+resurrect `models/pod` or publish a raw `*corev1.Pod`. It publishes the same
+`container.Event{ContainerName, Service, AsteriskID}` (§3.5) the Docker backend already
+publishes, mapped from the pod object:
+- `ContainerName` ← `pod.Name`
+- `Service` ← `pod.Labels["app"]`, **mapped through an explicit lookup, not assigned
+  directly** (round-1 design review caught this: `container.Event.Service` is a *typed*
+  constant on the Docker side — `ServiceAsteriskCall` etc. — not a free string; a bare label
+  passthrough means a typo'd or unexpected `app` label value silently produces an event
+  `bin-call-manager`'s filter never matches, with no signal that anything went wrong). The
+  three expected label values (`"asterisk-call"`, `"asterisk-conference"`,
+  `"asterisk-registrar"`) map 1:1 to the three typed constants; **any other label value is
+  rejected at the publish boundary** (log + skip, matching the Docker backend's
+  `matchWatchedContainer` behavior of ignoring non-watched names rather than silently
+  forwarding them unmapped).
+- `AsteriskID` ← `pod.Annotations["asterisk-id"]` directly, no resolution step. If the key is
+  absent (see §8.2's caveats on when `annotation.go` hasn't run yet), publish with `""`,
+  same degrade path §3.3/§3.6 already established for the Docker backend's unresolved case —
+  no new behavior needed on the consumer side.
+
+**This is the whole point of having unified the schema back in §3.5**: `bin-call-manager`'s
+consumer side (`EventSMContainerDied`, the empty-id guard, the subscribehandler binding)
+needs **zero changes** for this addendum. It already only knows about `container.Event`; it
+has no idea whether a given event came from Docker or Kubernetes, and should never need to.
+If §3.5 had kept the Docker backend on a Docker-specific schema, this addendum would have
+needed either a second consumer-side type switch or a K8s-specific adapter published under a
+fake "container" shape — the unification already done makes this a clean two-producers,
+one-consumer picture instead.
+
+### 8.4 What gets restored vs. rewritten
+
+- **Restored close to as-is**: `rest.InClusterConfig()` auth, the per-`(namespace,
+  label-selector)` watch structure, the `AddFunc`-is-a-no-op / no-resync pattern.
+  `bin-sentinel-manager/k8s/` manifests (deployment, service, namespace, RBAC
+  role/rolebinding) — never deleted (§7 deferred that), now become live again rather than
+  dead weight.
+- **Rewritten, not merely restored (round-1 design review — this is the substantive
+  change, not a footnote)**:
+  1. **Publish call sites**: old code published `pod.Event` (raw `*corev1.Pod` wrapper,
+     placeholder-by-design subscription id). New code builds `container.Event` from the pod
+     via the mapping in §8.3 and calls the same `notifyHandler.PublishEvent` +
+     `WithGlobalTopicPublish()` pattern `dockerwatchhandler` already uses.
+     **Callback-to-event-type mapping, pinned explicitly (round-4 design review found §8.3's
+     field mapping never stated which informer callback produces which event type)**:
+     `DeleteFunc` (including the tombstone path in item 3 below) → `EventTypeContainerDied`.
+     `UpdateFunc` → `EventTypeContainerStarted` (the direct analogue of the old code's
+     `pod_updated`, now using §3.5's renamed constant). `AddFunc` stays the established
+     no-op (informers replay existing pods as synthetic `Add`s on initial list; publishing
+     "started" for every pod already running at sentinel's own boot would misrepresent
+     long-lived pods as freshly started — same reasoning the pre-VOIP-1418 code already
+     had, unchanged by this addendum). **A real asymmetry between the two backends, worth
+     stating precisely rather than leaving implicit (round-5 design review flagged this;
+     round-6 review caught that round 5's own fix overstated it into a self-contradiction
+     with the relist bullet further down, which correctly says newly-created pods DO get a
+     `started` — fixed here)**: `AddFunc`'s no-op status means a new pod's very *first*
+     observation is dropped, but every subsequent status transition (e.g. `Pending` →
+     scheduled → `Running`/`Ready`) fires `UpdateFunc`, which publishes `started` per this
+     mapping — so the K8s backend does not *omit* `started` for a genuinely new pod, it
+     publishes it **late** (on the pod's first post-creation status update, not at creation
+     instant) **and potentially more than once** (every subsequent no-op status update also
+     re-fires it, same as the relist case below), unlike the Docker backend's single
+     at-actual-start `started` (§3.1). §8.3's "the consumer can't tell which backend
+     produced an event" claim holds for field *shapes*; it does not extend to `started`'s
+     *timing or cardinality* — harmless today since `bin-call-manager` only consumes `died`
+     (§3.6), but a future consumer relying on `started` semantics needs to know this
+     up front, not discover it by comparing behavior across deployments.
+  2. **`UpdateFunc` must detect a same-key identity change, or a death is silently dropped —
+     the direct K8s analogue of §3.3 rule 2, which round-4 design review found §8 had no
+     counterpart for (blocking: this is the same failure class as the tombstone gap round 3
+     caught, not a smaller variant of it)**: client-go's reflector only synthesizes a
+     `Deleted` callback for keys *absent* from a relist's new object set. If a pod is deleted
+     and a same-name replacement created while the watch was interrupted (stable-identity
+     workloads; plausible on a rolling update or node eviction that lands before the watch
+     recovers), the key is still present in the relist — client-go delivers this as a
+     `Replaced` delta through `UpdateFunc`, and **no delete callback ever fires for the dead
+     generation**. This drops the exact death event this service exists to detect, silently,
+     with no panic and no counter — precisely the outcome this section's own "never
+     silently skip" principle forbids, just via a different door than the tombstone one.
+     Required: `UpdateFunc` compares `oldPod.UID != newPod.UID`; on a mismatch, publish a
+     `died` for the old pod (built from the stale object client-go still hands the callback,
+     annotation and all) **before** processing the update as a normal "started" for the new
+     one. Count this path on the same observable-counter pattern as the tombstone case
+     (item 3 below, the `DeletedFinalStateUnknown` bullet) — a same-key UID change detected this way is exactly as much a
+     signal of watch instability as a tombstone is, and should be visible the same way.
+  3. **Fail-loud propagation, entirely new — the old code never had this**: the pre-existing
+     implementation (`git show origin/main:bin-sentinel-manager/pkg/monitoringhandler/run.go`)
+     spawns informers in bare goroutines with no error channel back to the caller —
+     `AddEventHandler` failure only logs from inside the goroutine, `podInformer.Run(stopCh)`
+     returning is unobserved, and the outer `Run` blocks on `<-ctx.Done()` and returns `nil`
+     unconditionally. client-go's list/watch retries internally and only logs on failure —
+     exactly the "looks up, watches nothing, exits 0" failure mode `bin-sentinel-manager/
+     CLAUDE.md` forbids, predating that rule entirely. The rewrite must close this, matching
+     §8.3's interface contract:
+     - **A consecutive-failure budget, the K8s analogue of `dockerwatchhandler`'s
+       `maxConsecutiveEmptyStreams`/`healthyStreamLifetimeFactor` pair (round-2 design
+       review required this — it is a design decision of the same weight §3.3 took five
+       rounds on, not an implementation detail left to the coder).** `SetWatchErrorHandler`
+       fires on routine, benign conditions too (apiserver rolling restart, `too old resource
+       version` forcing a relist, a transient connection reset) — wiring it straight to "this
+       is fatal" would self-restart a perfectly healthy system, and wiring it to "just log"
+       reproduces the old silent-failure behavior under a new API. The handler increments a
+       counter on each invocation; a **successful relist/resync resets it to zero** (the
+       direct analogue of "delivery resets the budget" on the Docker side); exceeding a
+       threshold (mirror the Docker side's magnitude — on the order of tens of consecutive
+       failures, tuned during implementation the same way `maxConsecutiveEmptyStreams` was)
+       is what actually converts to the fatal error `Run` returns. A three-valued outcome
+       label (`resynced` / `transient-error` / `fatal`, or equivalent) on a Prometheus
+       counter gives this the same observability `events.go`'s `result` label gives the
+       Docker side.
+     - **`WaitForCacheSync` at startup must run under an explicit bounded deadline, not a
+       bare call (round-2 design review caught this the naive spec doesn't fail loud)**:
+       `WaitForCacheSync` returns `false` only when its stop channel closes — under the
+       canonical restore-this-ticket-fixes failure (missing `pod-reader` RBAC), the reflector's
+       initial `List` is denied and the client retries with backoff *forever*, so the call
+       simply blocks and never returns `false` on its own. Wrap it in a `context.WithTimeout`
+       (a fixed startup-sync deadline, order of tens of seconds — tune during implementation)
+       and treat a deadline-exceeded as the fatal-startup case. This is also the fix for a
+       standing factual error in `bin-sentinel-manager/CLAUDE.md`'s pre-VOIP-1418 claim
+       ("RBAC required... informer fails at startup and the service exits") — that was never
+       actually true of the old code path; this rewrite is what makes it true. **While
+       touching that file (round-3 review flagged this too): its current "Service class:
+       Docker container lifecycle monitor" header and its "`k8s/` is dead and intentionally
+       left in place... do not delete it" bullet are both artifacts of §1-§7's Docker-only
+       PR and are directly reversed by this addendum — update both, not just the RBAC
+       sentence, in the same implementation pass.**
+     - Run each `(namespace, selector)` informer goroutine through an `errgroup.Group` (or
+       equivalent explicit fan-in) so any one of them failing propagates out of `Run` instead
+       of silently leaving the others running with reduced coverage and no signal. **Graceful
+       shutdown must stay graceful through this fan-in (round-4 design review flagged this
+       as worth carrying into implementation planning, non-blocking)**: each informer
+       goroutine must return `nil` on its own stop-channel closing due to *parent* `ctx`
+       cancellation — only a goroutine's own genuine failure should produce the non-nil error
+       that `errgroup`'s `Wait()` surfaces; a normal shutdown must not get misreported as one
+       sibling's failure just because `errgroup.WithContext`'s derived context also cancelled
+       the others.
+     - **A relist re-publishes `started` for every already-running watched pod, not just
+       newly-created ones (round-4 design review: state this rather than let it be an
+       unexamined side effect of round-2's own budget)**: `Replace()` delivers unchanged
+       objects through `UpdateFunc` same as a real update, and round-2's consecutive-failure
+       budget makes relists a routine, expected event rather than a rare one — so this is a
+       recurring burst pattern, not a one-off startup artifact. Non-blocking today because
+       `bin-call-manager`'s consumer only acts on `died` (§3.6), but implementation should
+       not "fix" this by trying to suppress no-op updates — that reintroduces exactly the
+       kind of unstable dependency on identity comparison this section's UID-mismatch check
+       (above) needs to get right regardless; simpler to publish and let an uninterested
+       consumer ignore it, matching how the Docker backend already treats its own `started`
+       events.
+     - **`DeleteFunc` must handle `cache.DeletedFinalStateUnknown` (round-3 design review
+       caught this — the restored-as-is code does not, and round-2's own fix makes the gap
+       worse, not incidental)**: the code this section restores "close to as-is"
+       (`DeleteFunc: func(obj any) { pod := obj.(*corev1.Pod) ... }`) bare-asserts every
+       delete callback's argument to `*corev1.Pod`. client-go delivers
+       `cache.DeletedFinalStateUnknown` instead whenever a deletion was missed while the
+       watch was interrupted and is only discovered on the next relist — a bare assertion
+       panics on that shape. The reflexive fix (type-assert with `ok`, `return` on mismatch)
+       is *wrong here*, not just incomplete: it silently drops exactly the death event this
+       whole service exists to detect, the same failure class §3.3 spent five review rounds
+       eliminating on the Docker side. Round-2's consecutive-failure budget makes this
+       reachable **by design**, not a rare edge case: the budget's whole point is keeping the
+       process alive through transient watch interruptions, and a relist after exactly such
+       an interruption is precisely when a tombstone shows up. Required handling: unwrap
+       `DeletedFinalStateUnknown.Obj` (which carries the last-known `*corev1.Pod`, annotation
+       included) and publish from it exactly as a normal delete would — never bare-assert,
+       never silently skip on the unknown-shape case — and count tombstone-recovered
+       deletions on an observable counter (a label on the same delete-path metrics
+       `dockerwatchhandler` already patterns after) so a spike in "detected via relist rather
+       than live watch" is itself a visible signal of watch instability, not just silently
+       absorbed.
+  4. **Unresolved-annotation observability — pinned, not left open (round-2 design review
+     flagged this as more than a mechanical detail)**: reuse the **identical** metric,
+     `sentinel_manager_container_unresolved_asterisk_id_total`, **no `backend` label** (a
+     given process runs exactly one backend for its lifetime, selected once at startup by
+     `SENTINEL_BACKEND` — a label that can only ever hold one value for the process's whole
+     life adds cardinality for zero discriminating power). Its Prometheus registration moves
+     out of `dockerwatchhandler`'s `init()` into a neutral home both backends can reach
+     without importing each other (`pkg/monitoringbackend`, or a small shared metrics
+     package alongside it — implementation's call which, but it must not live inside either
+     backend package once both need to increment it). `pkg/k8swatchhandler` increments the
+     same counter whenever a K8s-sourced event publishes with an empty `AsteriskID`, so this
+     failure signature is visible identically regardless of which backend produced it — one
+     Grafana panel (already shipped in PR #1240's `monitoring/grafana/dashboards/
+     sentinel-manager.json`, the "Recovery Health" row) covers both.
+  - Package name `pkg/k8swatchhandler` (not the old `pkg/monitoringhandler` — that name was
+    already identified as too generic when `dockerwatchhandler` was named; same reasoning
+    applies here for symmetry).
+- **New**: `pkg/monitoringbackend`'s one-method interface; `cmd/sentinel-manager/main.go`'s
+  backend-selection branch; `internal/config`'s `SENTINEL_BACKEND` field, its
+  fail-fast-on-invalid validation, and the backend-conditional validation split above.
+- **go.mod**: `k8s.io/client-go`, `k8s.io/api`, `k8s.io/apimachinery` return (removed by
+  §1-§7's `go mod tidy`, re-added by this addendum's). This will very likely re-ripple the
+  same fleet-wide indirect-dependency MVS resolution §1-§7 already did once — verify
+  direction (versions moving back down, or further up depending on what k8s.io/* now
+  resolves against) rather than assuming it round-trips to identical numbers. **Invariant
+  that must hold, stated explicitly per round-1 review**: `bin-sentinel-manager/models/
+  container` (the shared event schema, §3.5/§8.3) must stay free of any `k8s.io/*` import —
+  it is consumed by `bin-call-manager` (whose own go.mod must NOT reacquire a k8s.io/*
+  dependency through this addendum) and referenced via a `replace` directive by at least one
+  other module (`voip-kamailio-proxy/go.mod` also replaces `bin-sentinel-manager` directly,
+  not just `bin-call-manager` — confirm no other such reference picks up a transitive k8s.io/*
+  import either). The k8s.io/* dependency belongs to `pkg/k8swatchhandler` and `cmd/
+  sentinel-manager` alone.
+
+### 8.5 Testing
+
+`pkg/k8swatchhandler` needs its own suite using `client-go`'s fake clientset — the deleted
+`pkg/monitoringhandler/run_test.go` (recoverable from git history, same commit references as
+§8.4) is close to a direct template, adjusted for the new `container.Event` publish
+assertions instead of the old raw-pod ones. This is structurally simpler than
+`dockerwatchhandler`'s test suite (no state table, no timing-dependent freshness logic) —
+should not need anywhere near the same review scrutiny §3.3 required, but every new/changed
+function still gets tests per this repo's standing testing convention, not just the
+happy path (empty-annotation case, wrong-namespace/wrong-label filter-skip case, etc.,
+mirroring the equivalent Docker-side test shapes already in the codebase for consistency).
+
+### 8.6 Deployment packaging (no code implication, noted for completeness)
+
+A K8s deployment of sentinel-manager needs `bin-sentinel-manager/k8s/*.yml` applied with
+`SENTINEL_BACKEND=kubernetes` and does **not** need the Docker-socket-proxy sidecar or Redis
+dependency §4's `komodo/docker-compose.yml` wires up — those are Docker-backend-only. A
+Docker-Compose deployment (bm-nyc-01) needs the reverse. This is packaging, not code — the
+binary is identical either way, config picks the path. No action needed in this repo beyond
+what §4 (Docker path) and the restored `k8s/` manifests (K8s path) already provide; a
+self-hoster choosing K8s uses the `k8s/` manifests, a self-hoster choosing Docker-Compose
+uses `komodo/docker-compose.yml` as a reference (it's Komodo-specific, but the compose
+service definition itself is generic).
+
+### 8.7 Non-goals (unchanged from §2, restated for this addendum)
+
+Still out of scope: any redesign of `RecoveryStart`/Homer/PJSIP itself, removing
+`ASTERISK_ID` (VOIP-1365, unaffected either way), and auto-detection of which backend to
+run (§8.3 — explicit config only).

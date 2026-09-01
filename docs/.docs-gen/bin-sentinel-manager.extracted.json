@@ -156,6 +156,9 @@
     },
     {
       "flag": "redis_database"
+    },
+    {
+      "flag": "sentinel_backend"
     }
   ],
   "metrics": [
@@ -173,6 +176,12 @@
     },
     {
       "name": "container_unresolved_asterisk_id_total"
+    },
+    {
+      "name": "pod_died_detection_total"
+    },
+    {
+      "name": "pod_watch_health_total"
     }
   ],
   "missing_fields": []

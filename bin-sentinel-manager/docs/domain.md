@@ -35,7 +35,19 @@ The Redis key family `asterisk.<asterisk-id>.address-internal`, written by `voip
 
 `AsteriskAddress.IsFresh()` is `remaining TTL >= TTL - FreshnessMargin` (23h48m).
 
-### Watched container classes
+### Watched pod classes (kubernetes backend)
+
+Determined by compile-time `(namespace, label-selector)` pairs, not runtime configuration:
+
+| Namespace | Label selector | `Service` |
+|---|---|---|
+| `voip` | `app=asterisk-call` | `asterisk-call` |
+| `voip` | `app=asterisk-conference` | `asterisk-conference` |
+| `voip` | `app=asterisk-registrar` | `asterisk-registrar` |
+
+The `app` label is mapped to the typed constant through an explicit lookup. Any other value is rejected at the publish boundary — logged and skipped — rather than passed through as a raw string.
+
+### Watched container classes (docker backend)
 
 Determined by compile-time name prefix, not runtime configuration:
 
@@ -48,6 +60,16 @@ Determined by compile-time name prefix, not runtime configuration:
 The `<N>` must be a bare run of digits. This is what excludes the co-located `-proxy` sidecars, which share the prefix.
 
 ## Key Business Rules
+
+### Cross-backend
+
+0. **One event schema, two producers.** Both backends publish the identical `container.Event`. `bin-call-manager` cannot tell which backend produced a given event and never needs to. This is why restoring the Kubernetes backend required **zero** consumer-side changes — the unification is what makes two deployment shapes a two-producer problem instead of a two-consumer one.
+
+0b. **`Run` returns `nil` only on context cancellation.** Any other cause of a watch stopping is a non-nil error that reaches a non-zero process exit. A backend that looks up but watches nothing is worse than one that is visibly down.
+
+0c. **The backend is chosen explicitly, never detected.** `SENTINEL_BACKEND` has no default. Auto-detecting the runtime would be exactly the kind of implicit, hard-to-audit behavior this service has removed elsewhere.
+
+### Docker backend
 
 1. **The asterisk-id is resolved before the death, never at it.** A dying container's inspect response has an empty `IPAddress`, and a reverse Redis scan at die time cannot distinguish "the id that just died" from "the id that just took over the same static IP". Resolution therefore runs continuously in the background; the `die` handler only reads what is already known.
 
@@ -68,3 +90,19 @@ The `<N>` must be a bare run of digits. This is what excludes the co-located `-p
 8. **Fail loud, never watch nothing.** An unreachable socket proxy at startup exits the process rather than degrading to an idle watcher. Komodo's health monitoring surfaces the resulting crash-loop.
 
 9. **Read-only, everywhere.** Sentinel never writes to Redis and never issues a mutating Docker API call. The socket proxy enforces the latter independently of the code.
+
+### Kubernetes backend
+
+10. **The asterisk-id needs no resolution at all.** voip-asterisk-proxy self-patches its own pod's `asterisk-id` annotation via the Kubernetes API at startup, and annotations are visible to any watcher with read RBAC. Rules 1-4 above have no counterpart here: no reverse lookup, no state table, no freshness filter, no stickiness.
+
+11. **An absent annotation is expected, not exceptional.** There is a real window between a pod starting and the proxy's patch landing. A pod dying inside it genuinely never had an id, and publishes `AsteriskID: ""` — the same degrade path the Docker backend's unresolved case uses, handled by the same consumer-side guard.
+
+12. **A same-name pod replacement is a death, even though no delete callback fires.** client-go only synthesizes `Deleted` for keys absent from a relist. `UpdateFunc` compares UIDs and publishes the old generation's death before the replacement's start; without this the death is dropped silently.
+
+13. **A tombstone is a death, not a malformed payload.** `cache.DeletedFinalStateUnknown` carries the last-known pod for a deletion discovered on relist. It is unwrapped and published normally. Silently skipping it would drop exactly the event this service exists to detect.
+
+14. **`AddFunc` is deliberately a no-op**, so `started` is published late and possibly repeatedly relative to the Docker backend. The event *shape* is identical across backends; `started` *timing and cardinality* are not.
+
+15. **A watch error is not immediately fatal, but a sustained run of them is.** Benign conditions (apiserver restarts, `too old resource version`) fire the error handler routinely. Only `maxConsecutiveWatchFailures` with no intervening recovery converts to a fatal error.
+
+16. **Read-only here too.** The service needs only `get`/`list`/`watch` on pods. It never patches, creates, or deletes anything — the annotation it reads is written by voip-asterisk-proxy under that proxy's own service account.

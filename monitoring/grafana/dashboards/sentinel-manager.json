@@ -474,6 +474,69 @@
       "title": "Event Publish Rate by Type",
       "type": "timeseries"
     }
+    ,{
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 59 },
+      "id": 105,
+      "title": "Kubernetes Backend (SENTINEL_BACKEND=kubernetes only)",
+      "type": "row"
+    },
+    {
+      "datasource": "${DS_PROMETHEUS}",
+      "description": "Flat and empty on a Docker deployment - these series only exist when SENTINEL_BACKEND=kubernetes. outcome=\"transient-error\" is ROUTINE on its own: the client-go watch error handler fires on apiserver rolling restarts, `too old resource version`, and transient connection resets. What matters is the ratio: transient-error climbing WITH matching resynced events is a flapping-but-surviving watch, while a sustained run with no resynced precedes the fatal exit. outcome=\"fatal\" means the consecutive-failure budget was exhausted and the process is exiting on purpose.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 20,
+            "spanNulls": false,
+            "stacking": { "mode": "none" }
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 60 },
+      "id": 14,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum"] }, "tooltip": { "mode": "multi" } },
+      "targets": [
+        {
+          "datasource": "${DS_PROMETHEUS}",
+          "expr": "sum by (outcome) (rate(sentinel_manager_pod_watch_health_total[5m])) * 60",
+          "legendFormat": "{{outcome}}"
+        }
+      ],
+      "title": "Pod Watch Health",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "${DS_PROMETHEUS}",
+      "description": "How each pod death was DETECTED. source=\"live\" is the healthy path. source=\"tombstone\" (a deletion missed during a watch interruption and recovered from the next relist) and source=\"uid-mismatch\" (a same-name pod replacement for which client-go never fires a delete callback at all) both still PUBLISH the death - nothing is lost - but they are direct evidence of watch instability and worth alerting on before something is. source=\"unrecoverable\" is the serious one: a death was observed and could NOT be published, so those calls will not be recovered. Correlate with the Pod Watch Health panel.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 20,
+            "spanNulls": false,
+            "stacking": { "mode": "none" }
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 60 },
+      "id": 15,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum"] }, "tooltip": { "mode": "multi" } },
+      "targets": [
+        {
+          "datasource": "${DS_PROMETHEUS}",
+          "expr": "sum by (source) (rate(sentinel_manager_pod_died_detection_total[5m])) * 60",
+          "legendFormat": "{{source}}"
+        }
+      ],
+      "title": "Pod Death Detection Source",
+      "type": "timeseries"
+    }
   ],
   "schemaVersion": 30,
   "style": "dark",
