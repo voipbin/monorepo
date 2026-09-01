@@ -48,11 +48,14 @@ Services this service calls directly (from `go.mod` replace directives):
 
 ## Events Subscribed
 
-RabbitMQ queues this service consumes (from `cmd/*/main.go` subscribeTargets):
+As of VOIP-1407 this service consumes via pattern bindings on the global topic exchange
+`bin-manager.event`, not per-service fanout queues (see `pkg/subscribehandler/main.go`'s
+`topicPatterns` and `docs/architecture.md`'s Event Subscriptions section for the exact,
+byte-for-byte-pinned bind set):
 
-- `bin-manager.call-manager.event`
-- `bin-manager.agent-manager.event`
-- `bin-manager.conference-manager.event`
+- `call-manager.call.*.hangup`
+- `call-manager.confbridge.*.joined` / `call-manager.confbridge.*.leaved`
+- `customer-manager.customer.*.deleted` (VOIP-1422)
 
 ## Events Published
 

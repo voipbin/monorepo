@@ -5,8 +5,6 @@ package activeflowhandler
 import (
 	"context"
 
-	cmcall "monorepo/bin-call-manager/models/call"
-
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -104,7 +102,6 @@ type ActiveflowHandler interface {
 	ExecuteContinue(ctx context.Context, activeflowID uuid.UUID, caID uuid.UUID) error
 	ExecuteNextAction(ctx context.Context, callID uuid.UUID, caID uuid.UUID) (*action.Action, error)
 
-	EventCallHangup(ctx context.Context, c *cmcall.Call) error
 	EventCustomerDeleted(ctx context.Context, cu *cmcustomer.Customer) error
 }
 

@@ -3,6 +3,7 @@ package summaryhandler
 import (
 	"context"
 	"encoding/json"
+	stderrors "errors"
 	"monorepo/bin-ai-manager/models/summary"
 	cmcustomer "monorepo/bin-customer-manager/models/customer"
 	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
@@ -67,6 +68,11 @@ func (h *summaryHandler) contentProcessReferenceTypeCall(ctx context.Context, ca
 	log.WithField("content", content).Debugf("Parsed summary content.")
 
 	tmp, err := h.UpdateStatusDone(ctx, sm.ID, content)
+	if stderrors.Is(err, ErrSummaryAlreadyDone) {
+		// already finalized by a previous delivery -- clean no-op, not a failure.
+		log.Debugf("Summary already done, skipping reprocessing. summary_id: %s", sm.ID)
+		return nil
+	}
 	if err != nil {
 		return errors.Wrapf(err, "could not update the status")
 	}
@@ -109,6 +115,16 @@ func (h *summaryHandler) contentProcessReferenceTypeConference(ctx context.Conte
 	log.WithField("content", content).Debugf("Parsed summary content.")
 
 	tmp, err := h.UpdateStatusDone(ctx, sm.ID, content)
+	if stderrors.Is(err, ErrSummaryAlreadyDone) {
+		// bin-conference-manager can publish conference_deleted twice for the same
+		// conference (Delete()'s own publish, then Destroy()'s once the
+		// asynchronously-kicked participants actually leave) -- see
+		// ErrSummaryAlreadyDone's doc comment and EventCMConferenceUpdated's. This is
+		// the second delivery finding the first already finalized it: clean no-op,
+		// not a failure.
+		log.Debugf("Summary already done, skipping reprocessing. summary_id: %s", sm.ID)
+		return nil
+	}
 	if err != nil {
 		return errors.Wrapf(err, "could not update the status")
 	}

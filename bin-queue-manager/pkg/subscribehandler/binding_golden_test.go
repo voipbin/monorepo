@@ -15,11 +15,12 @@ func Test_topicPatterns_golden(t *testing.T) {
 		"call-manager.call.*.hangup",
 		"call-manager.confbridge.*.joined",
 		"call-manager.confbridge.*.leaved",
+		"customer-manager.customer.*.deleted",
 	}
 
-	// design §5: queue-manager binds exactly 3 patterns.
-	if len(topicPatterns) != 3 {
-		t.Fatalf("topicPatterns count mismatch. expected: 3, got: %d (%v)", len(topicPatterns), topicPatterns)
+	// design §5 + VOIP-1422: queue-manager binds exactly 4 patterns.
+	if len(topicPatterns) != 4 {
+		t.Fatalf("topicPatterns count mismatch. expected: 4, got: %d (%v)", len(topicPatterns), topicPatterns)
 	}
 	if len(topicPatterns) != len(expected) {
 		t.Fatalf("topicPatterns count mismatch. expected: %d, got: %d (%v)", len(expected), len(topicPatterns), topicPatterns)
@@ -28,22 +29,6 @@ func Test_topicPatterns_golden(t *testing.T) {
 	for i, pattern := range expected {
 		if topicPatterns[i] != pattern {
 			t.Errorf("topicPatterns[%d] mismatch. expected: %q, got: %q", i, pattern, topicPatterns[i])
-		}
-	}
-}
-
-// Test_topicPatterns_excludesCustomerDeleted is the §4 negative assertion: the
-// `customer-manager/customer_deleted` dispatch case is unreachable today (the customer
-// fanout exchange was never subscribed) and MUST stay unreachable -- VOIP-1406 changes
-// where events come from, never what is processed. Binding this pattern would activate
-// the dead case (an unreviewed behavior change; likely-latent queue cleanup on customer
-// deletion). Follow-up VOIP-1422 decides whether to activate or delete the case.
-func Test_topicPatterns_excludesCustomerDeleted(t *testing.T) {
-	excluded := "customer-manager.customer.*.deleted"
-
-	for _, pattern := range topicPatterns {
-		if pattern == excluded {
-			t.Errorf("topicPatterns must NOT contain the excluded pattern %q (VOIP-1406 design §4, follow-up VOIP-1422)", excluded)
 		}
 	}
 }

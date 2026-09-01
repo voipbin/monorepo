@@ -29,20 +29,3 @@ func Test_topicPatterns_golden(t *testing.T) {
 		}
 	}
 }
-
-// Test_topicPatterns_excludesCallHangup is the §4 negative assertion: the
-// `call-manager/call_hangup` dispatch case is unreachable today (the retained intake
-// is customer-only, so EventCallHangup has NEVER run in production) and MUST stay
-// unreachable -- VOIP-1406 changes where events come from, never what is processed.
-// Binding this pattern would activate the dead case (an unreviewed behavior change;
-// activeflow cleanup on hangup is a latent-bug candidate). Follow-up VOIP-1422 decides
-// whether to activate or delete the case.
-func Test_topicPatterns_excludesCallHangup(t *testing.T) {
-	excluded := "call-manager.call.*.hangup"
-
-	for _, pattern := range topicPatterns {
-		if pattern == excluded {
-			t.Errorf("topicPatterns must NOT contain the excluded pattern %q (VOIP-1406 design §4, follow-up VOIP-1422)", excluded)
-		}
-	}
-}

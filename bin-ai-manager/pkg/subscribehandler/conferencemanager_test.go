@@ -22,10 +22,17 @@ func TestProcessEventCMConferenceUpdated(t *testing.T) {
 		wantError bool
 	}{
 		{
-			name: "processes_conference_updated_event_successfully",
+			// VOIP-1422: the event type here is conference_deleted, not
+			// conference_updated -- see the topicPatterns doc comment in main.go and
+			// processEventCMConferenceUpdated's own doc comment for why. This test
+			// exercises the function directly (bypassing the processEvent switch), so
+			// it never actually matched on m.Type either before or after that change;
+			// updated to match production reality regardless.
+			name: "processes_conference_deleted_event_successfully",
 			event: func() *sock.Event {
 				conf := &cfconference.Conference{
-					Name: "Test Conference",
+					Name:   "Test Conference",
+					Status: cfconference.StatusTerminated,
 				}
 				conf.ID = uuid.Must(uuid.NewV4())
 				conf.CustomerID = uuid.Must(uuid.NewV4())
@@ -33,7 +40,7 @@ func TestProcessEventCMConferenceUpdated(t *testing.T) {
 				data, _ := json.Marshal(conf)
 				return &sock.Event{
 					Publisher: "conference-manager",
-					Type:      string(cfconference.EventTypeConferenceUpdated),
+					Type:      string(cfconference.EventTypeConferenceDeleted),
 					Data:      json.RawMessage(data),
 				}
 			}(),
@@ -46,7 +53,7 @@ func TestProcessEventCMConferenceUpdated(t *testing.T) {
 			name: "handles_invalid_json_data",
 			event: &sock.Event{
 				Publisher: "conference-manager",
-				Type:      string(cfconference.EventTypeConferenceUpdated),
+				Type:      string(cfconference.EventTypeConferenceDeleted),
 				Data:      json.RawMessage([]byte("invalid json")),
 			},
 			setupMock: func(m *summaryhandler.MockSummaryHandler) {

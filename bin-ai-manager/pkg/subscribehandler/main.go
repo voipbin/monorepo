@@ -37,9 +37,18 @@ const (
 
 // topicPatterns is the ruled bind set on the global topic exchange `bin-manager.event`
 // (VOIP-1406, design §5): one pattern per dispatched (publisher, event-type) pair.
-// The `conference-manager.conference.*.updated` pair is deliberately ABSENT: its
-// dispatch case is unreachable today and keeping it unreachable is today's behavior
-// (design §4, follow-up VOIP-1422). Pinned by the binding golden test.
+// The `conference-manager.conference.*.deleted` pair was added by VOIP-1422:
+// conference-type AI summaries (summary.ReferenceTypeConference) are a real,
+// publicly-reachable feature with no other way to auto-finalize when the conference
+// terminates -- leaving this unbound meant those summaries stayed stuck at
+// StatusProgressing forever. This is `conference_deleted`, not `conference_updated`,
+// deliberately: `conference_updated` is never published with Status == StatusTerminated
+// in bin-conference-manager, so it would have been a permanent no-op against a
+// status-gated handler. `conference_deleted` isn't Status-gated either way though --
+// see summaryhandler.EventCMConferenceUpdated's doc comment for why the payload's
+// Status field is never trusted (bin-conference-manager has two conference_deleted
+// publish sites and they disagree on Status at publish time). Pinned by the binding
+// golden test.
 var topicPatterns = []string{
 	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCallManager), cmconfbridge.EventTypeConfbridgeJoined),
 	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCallManager), cmconfbridge.EventTypeConfbridgeLeaved),
@@ -51,6 +60,7 @@ var topicPatterns = []string{
 	eventtopic.PatternForEventType(string(commonoutline.ServiceNamePipecatManager), pmpipecatcall.EventTypeInitialized),
 	eventtopic.PatternForEventType(string(commonoutline.ServiceNamePipecatManager), pmpipecatcall.EventTypePipecatcallTerminated),
 	eventtopic.PatternForEventType(string(commonoutline.ServiceNamePipecatManager), pmmessage.EventTypeTeamMemberSwitched),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameConferenceManager), cfconference.EventTypeConferenceDeleted),
 }
 
 // SubscribeHandler intreface for subscribed event listen handler
@@ -182,8 +192,7 @@ func (h *subscribeHandler) processEvent(m *sock.Event) {
 		err = h.processEventCMDTMFReceived(ctx, m)
 
 	// conference-manager
-	// VOIP-1422: unreachable case -- no fanout subscription and no topic pattern delivers this pair (VOIP-1406 design §4); activate or delete it there.
-	case m.Publisher == string(commonoutline.ServiceNameConferenceManager) && m.Type == string(cfconference.EventTypeConferenceUpdated):
+	case m.Publisher == string(commonoutline.ServiceNameConferenceManager) && m.Type == string(cfconference.EventTypeConferenceDeleted):
 		err = h.processEventCMConferenceUpdated(ctx, m)
 
 	// pipecat-manager

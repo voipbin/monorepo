@@ -150,14 +150,30 @@ func (h *summaryHandler) Delete(ctx context.Context, id uuid.UUID) (*summary.Sum
 	return res, nil
 }
 
-// UpdateStatusDone updates the summary status to done.
+// ErrSummaryAlreadyDone is returned by UpdateStatusDone when the conditional DB update
+// affected zero rows: either the summary was already StatusDone at write time (VOIP-
+// 1422: bin-conference-manager can publish conference_deleted twice for one
+// conference, and neither ContentProcess nor its downstream, including
+// startOnEndFlow, is safe to run twice), or -- rare, but the same WHERE clause can't
+// tell the two apart -- the summary ID no longer exists at all. Both cases are a clean
+// no-op from the caller's perspective, so this is intentionally one sentinel, not two.
+// Callers must treat this as a clean no-op, not a failure -- do not wrap it in a
+// user-facing error, do not retry, and do not run any of the on-success side effects
+// (on-end-flow trigger, caller-side notifications). Matches the same
+// conditional-update-plus-sentinel-error pattern aicallhandler.ErrAIcallNoLongerActive
+// (pkg/aicallhandler/db.go) already uses for the equivalent problem on AIcalls.
+var ErrSummaryAlreadyDone = stderrors.New("summary is already done")
+
+// UpdateStatusDone updates the summary status to done. Returns ErrSummaryAlreadyDone
+// (not a wrapped/generic error) if the summary was already done -- see that var's doc
+// comment for why this must not be raced past.
 func (h *summaryHandler) UpdateStatusDone(ctx context.Context, id uuid.UUID, content string) (*summary.Summary, error) {
-	fields := map[summary.Field]any{
-		summary.FieldStatus:  summary.StatusDone,
-		summary.FieldContent: content,
-	}
-	if err := h.db.SummaryUpdate(ctx, id, fields); err != nil {
+	rowsAffected, err := h.db.SummaryUpdateStatusDoneIfNotDone(ctx, id, content)
+	if err != nil {
 		return nil, errors.Wrapf(err, "could not update the summary")
+	}
+	if rowsAffected == 0 {
+		return nil, ErrSummaryAlreadyDone
 	}
 
 	res, err := h.db.SummaryGet(ctx, id)

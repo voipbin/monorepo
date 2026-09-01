@@ -236,3 +236,93 @@ func Test_SummaryUpdate(t *testing.T) {
 		})
 	}
 }
+
+// Test_SummaryUpdateStatusDoneIfNotDone is a VOIP-1422 regression test run against the
+// real sqlite-backed dbTest (not a mocked query builder), because the bug this method
+// exists to prevent is specifically in the SQL's WHERE clause -- a mock of this method
+// (as summaryhandler's own tests use) cannot catch a broken conditional, only a real
+// database evaluating the query can. Creates a summary at StatusProgressing, calls
+// SummaryUpdateStatusDoneIfNotDone twice with different content, and asserts: the
+// first call reports rowsAffected == 1 and the content lands; the second call reports
+// rowsAffected == 0 and the content from the first call survives unmodified -- proving
+// the "AND status != done" clause actually rejects the second write rather than
+// silently re-applying it.
+func Test_SummaryUpdateStatusDoneIfNotDone(t *testing.T) {
+	curTime := func() *time.Time { t := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC); return &t }()
+
+	sm := &summary.Summary{
+		Identity: identity.Identity{
+			ID:         uuid.FromStringOrNil("6f6e6d5c-8b8c-11f0-9d2e-4b7c8f2a5d70"),
+			CustomerID: uuid.FromStringOrNil("6f9a7e40-8b8c-11f0-8c1f-2f6e5b9a3d01"),
+		},
+
+		ActiveflowID:  uuid.FromStringOrNil("6fc2e2b4-8b8c-11f0-9a5e-7d3b8c1f6a92"),
+		ReferenceType: summary.ReferenceTypeConference,
+		ReferenceID:   uuid.FromStringOrNil("6feaa1d8-8b8c-11f0-8b6c-53c1f37f5b70"),
+
+		Status:   summary.StatusProgressing,
+		Language: "en-US",
+	}
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
+	h := handler{
+		utilHandler: mockUtil,
+		db:          dbTest,
+		cache:       mockCache,
+	}
+
+	ctx := context.Background()
+
+	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockCache.EXPECT().SummarySet(ctx, gomock.Any())
+	if err := h.SummaryCreate(ctx, sm); err != nil {
+		t.Fatalf("Unexpected error creating summary: %v", err)
+	}
+
+	// first delivery: not yet done -- must apply and report 1 row affected.
+	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockCache.EXPECT().SummarySet(ctx, gomock.Any())
+	n1, err := h.SummaryUpdateStatusDoneIfNotDone(ctx, sm.ID, "first content")
+	if err != nil {
+		t.Fatalf("Unexpected error on first update: %v", err)
+	}
+	if n1 != 1 {
+		t.Fatalf("Wrong rowsAffected on first update. expect: 1, got: %d", n1)
+	}
+
+	// second delivery (VOIP-1422's double conference_deleted scenario): already done
+	// -- must NOT apply, must report 0 rows affected, and must not touch the cache
+	// (mockCache has no SummarySet expectation left; gomock's strict controller would
+	// fail the test on an unexpected call). TimeNow() IS still expected here: field
+	// preparation (including the tm_update timestamp) happens unconditionally before
+	// the UPDATE is sent to the DB -- it's the "AND status != done" clause in the SQL,
+	// not the Go code, that rejects this write. Only the cache refresh is conditional
+	// on rowsAffected > 0.
+	mockUtil.EXPECT().TimeNow().Return(curTime)
+	n2, err := h.SummaryUpdateStatusDoneIfNotDone(ctx, sm.ID, "second content -- must be rejected")
+	if err != nil {
+		t.Fatalf("Unexpected error on second update: %v", err)
+	}
+	if n2 != 0 {
+		t.Fatalf("Wrong rowsAffected on second update. expect: 0, got: %d", n2)
+	}
+
+	// prove the first write's content survived, not the second's.
+	mockCache.EXPECT().SummaryGet(ctx, sm.ID).Return(nil, fmt.Errorf(""))
+	mockCache.EXPECT().SummarySet(ctx, gomock.Any())
+	res, err := h.SummaryGet(ctx, sm.ID)
+	if err != nil {
+		t.Fatalf("Unexpected error getting summary: %v", err)
+	}
+	if res.Content != "first content" {
+		t.Errorf("Wrong content -- the second (already-done) update must not have applied. expect: %q, got: %q", "first content", res.Content)
+	}
+	if res.Status != summary.StatusDone {
+		t.Errorf("Wrong status. expect: %q, got: %q", summary.StatusDone, res.Status)
+	}
+}

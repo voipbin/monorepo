@@ -31,14 +31,16 @@ const (
 
 // topicPatterns is the ruled bind set on the global topic exchange `bin-manager.event`
 // (VOIP-1406, design §5): one pattern per dispatched (publisher, event-type) pair.
-// The `customer-manager.customer.*.deleted` pair is deliberately ABSENT: its dispatch
-// case is unreachable today (cmd/queue-manager never subscribed the customer-manager
-// fanout exchange) and keeping it unreachable is today's behavior (design §4,
-// follow-up VOIP-1422). Pinned by the binding golden test.
+// The `customer-manager.customer.*.deleted` pair was activated by VOIP-1422: customer
+// deletion has no other cleanup path into this service (no RPC, no sweep, no TTL), so
+// leaving it unbound meant queue/queuecall records survived customer deletion
+// indefinitely -- a genuine orphaned-data gap, not a behavior-preserving default.
+// Pinned by the binding golden test.
 var topicPatterns = []string{
 	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCallManager), cmcall.EventTypeCallHangup),
 	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCallManager), cmconfbridge.EventTypeConfbridgeJoined),
 	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCallManager), cmconfbridge.EventTypeConfbridgeLeaved),
+	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCustomerManager), cucustomer.EventTypeCustomerDeleted),
 }
 
 // SubscribeHandler interface
@@ -168,7 +170,6 @@ func (h *subscribeHandler) processEvent(m *sock.Event) {
 
 	//// customer-manager
 	// customer
-	// VOIP-1422: unreachable case -- no fanout subscription and no topic pattern delivers this pair (VOIP-1406 design §4); activate or delete it there.
 	case m.Publisher == string(commonoutline.ServiceNameCustomerManager) && (m.Type == string(cucustomer.EventTypeCustomerDeleted)):
 		err = h.processEventCUCustomerDeleted(ctx, m)
 

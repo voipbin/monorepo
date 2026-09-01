@@ -60,6 +60,7 @@ type DBHandler interface {
 	SummaryDelete(ctx context.Context, id uuid.UUID) error
 	SummaryList(ctx context.Context, size uint64, token string, filters map[summary.Field]any) ([]*summary.Summary, error)
 	SummaryUpdate(ctx context.Context, id uuid.UUID, fields map[summary.Field]any) error
+	SummaryUpdateStatusDoneIfNotDone(ctx context.Context, id uuid.UUID, content string) (int64, error)
 
 	AIAuditUpsert(ctx context.Context, a *aiaudit.AIAudit) (rowsAffected int64, err error)
 	AIAuditGet(ctx context.Context, id uuid.UUID) (*aiaudit.AIAudit, error)
