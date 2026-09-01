@@ -49,10 +49,11 @@ against the code, not the tracker, if any time has passed.
    bin-common-handler.
 6. **Work is claimed, not assumed.** Background loops must coordinate
    via a shared competing-consumer queue, or Redis lock + DB CAS, or an
-   equivalent — never "I am the only instance". (Blocked today:
-   contact's in-process lock. route's provider healthcheck loop is now
-   guarded by a redsync lock (P23b) and timeline's drop-metrics gate
-   passed its 24h baseline (P23a) — both resolved.)
+   equivalent — never "I am the only instance". (route's provider
+   healthcheck loop is now guarded by a redsync lock (P23b), timeline's
+   drop-metrics gate passed its 24h baseline (P23a), and contact's
+   GetOrCreate/peerlock turned out to be dead code (VOIP-1439) — all
+   three resolved.)
 
 Not a concern: **host-port collisions** — no `bin-*-manager` compose
 publishes host ports, so replicas cannot conflict there.
