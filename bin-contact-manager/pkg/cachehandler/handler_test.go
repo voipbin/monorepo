@@ -233,6 +233,23 @@ func TestHandler_ContactSet_Error(t *testing.T) {
 	}
 }
 
+// TestHandler_setSerialize_MarshalError covers setSerialize's
+// json.Marshal error branch directly (unreachable via ContactSet, whose
+// *contact.Contact argument always marshals cleanly) by calling the
+// unexported helper with a value json.Marshal fundamentally cannot
+// encode -- a bare function.
+func TestHandler_setSerialize_MarshalError(t *testing.T) {
+	h, mr := setupTestHandler(t)
+	defer mr.Close()
+
+	ctx := context.Background()
+
+	err := h.setSerialize(ctx, "contact:unmarshalable", func() {})
+	if err == nil {
+		t.Error("setSerialize() expected an error for a value json.Marshal cannot encode")
+	}
+}
+
 func TestHandler_getSerialize_UnmarshalError(t *testing.T) {
 	h, mr := setupTestHandler(t)
 	defer mr.Close()

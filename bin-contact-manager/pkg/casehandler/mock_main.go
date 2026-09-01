@@ -17,6 +17,7 @@ import (
 	kase "monorepo/bin-contact-manager/models/kase"
 	reflect "reflect"
 
+	redsync "github.com/go-redsync/redsync/v4"
 	uuid "github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 )
@@ -281,4 +282,100 @@ func (m *MockCaseHandler) UpdateContact(ctx context.Context, customerID, caseID,
 func (mr *MockCaseHandlerMockRecorder) UpdateContact(ctx, customerID, caseID, contactID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateContact", reflect.TypeOf((*MockCaseHandler)(nil).UpdateContact), ctx, customerID, caseID, contactID)
+}
+
+// Mocklocker is a mock of locker interface.
+type Mocklocker struct {
+	ctrl     *gomock.Controller
+	recorder *MocklockerMockRecorder
+	isgomock struct{}
+}
+
+// MocklockerMockRecorder is the mock recorder for Mocklocker.
+type MocklockerMockRecorder struct {
+	mock *Mocklocker
+}
+
+// NewMocklocker creates a new mock instance.
+func NewMocklocker(ctrl *gomock.Controller) *Mocklocker {
+	mock := &Mocklocker{ctrl: ctrl}
+	mock.recorder = &MocklockerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *Mocklocker) EXPECT() *MocklockerMockRecorder {
+	return m.recorder
+}
+
+// NewMutex mocks base method.
+func (m *Mocklocker) NewMutex(name string, options ...redsync.Option) redsyncMutex {
+	m.ctrl.T.Helper()
+	varargs := []any{name}
+	for _, a := range options {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "NewMutex", varargs...)
+	ret0, _ := ret[0].(redsyncMutex)
+	return ret0
+}
+
+// NewMutex indicates an expected call of NewMutex.
+func (mr *MocklockerMockRecorder) NewMutex(name any, options ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{name}, options...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewMutex", reflect.TypeOf((*Mocklocker)(nil).NewMutex), varargs...)
+}
+
+// MockredsyncMutex is a mock of redsyncMutex interface.
+type MockredsyncMutex struct {
+	ctrl     *gomock.Controller
+	recorder *MockredsyncMutexMockRecorder
+	isgomock struct{}
+}
+
+// MockredsyncMutexMockRecorder is the mock recorder for MockredsyncMutex.
+type MockredsyncMutexMockRecorder struct {
+	mock *MockredsyncMutex
+}
+
+// NewMockredsyncMutex creates a new mock instance.
+func NewMockredsyncMutex(ctrl *gomock.Controller) *MockredsyncMutex {
+	mock := &MockredsyncMutex{ctrl: ctrl}
+	mock.recorder = &MockredsyncMutexMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockredsyncMutex) EXPECT() *MockredsyncMutexMockRecorder {
+	return m.recorder
+}
+
+// LockContext mocks base method.
+func (m *MockredsyncMutex) LockContext(ctx context.Context) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "LockContext", ctx)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// LockContext indicates an expected call of LockContext.
+func (mr *MockredsyncMutexMockRecorder) LockContext(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LockContext", reflect.TypeOf((*MockredsyncMutex)(nil).LockContext), ctx)
+}
+
+// UnlockContext mocks base method.
+func (m *MockredsyncMutex) UnlockContext(ctx context.Context) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UnlockContext", ctx)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UnlockContext indicates an expected call of UnlockContext.
+func (mr *MockredsyncMutexMockRecorder) UnlockContext(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnlockContext", reflect.TypeOf((*MockredsyncMutex)(nil).UnlockContext), ctx)
 }

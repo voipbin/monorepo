@@ -17,6 +17,9 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
+	"github.com/go-redis/redis/v8"
+	"github.com/go-redsync/redsync/v4"
+	goredisv8 "github.com/go-redsync/redsync/v4/redis/goredis/v8"
 	_ "github.com/go-sql-driver/mysql"
 	joonix "github.com/joonix/log"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -131,7 +134,19 @@ func runService(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	// the same option, so the "contact-manager events exist on the topic exchange" contract holds
 	// regardless of which process published.
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameContactEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
-	caseHandler := casehandler.NewCaseHandler(reqHandler, db, notifyHandler)
+
+	// VOIP-1438: independent Redis client dedicated to the cross-replica
+	// GetOrCreate peer lock, mirroring bin-route-manager's healthcheck
+	// lock wiring. A separate client is required (rather than reusing the
+	// cache above) because cachehandler.CacheHandler does not expose its
+	// underlying *redis.Client.
+	peerLockClient := redis.NewClient(&redis.Options{
+		Addr:     cfg.RedisAddress,
+		Password: cfg.RedisPassword,
+		DB:       cfg.RedisDatabase,
+	})
+	peerLocker := redsync.New(goredisv8.NewPool(peerLockClient))
+	caseHandler := casehandler.NewCaseHandler(reqHandler, db, notifyHandler, casehandler.NewRedsyncLocker(peerLocker))
 	contactHandler := contacthandler.NewContactHandler(reqHandler, db, notifyHandler, caseHandler)
 	addrHandler := addresshandler.NewAddressHandler(db)
 

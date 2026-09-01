@@ -2,6 +2,7 @@ package casehandler
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -18,6 +19,83 @@ import (
 	"monorepo/bin-contact-manager/pkg/cachehandler"
 	"monorepo/bin-contact-manager/pkg/dbhandler"
 )
+
+// Test_Assign_InitialGetFails covers Assign's first CaseGetByID error
+// branch (e.g. transient DB failure, distinct from the not-found case).
+func Test_Assign_InitialGetFails(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	h := &caseHandler{utilHandler: mockUtil, reqHandler: mockReq, db: mockDB, notifyHandler: mockNotify}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("f1b2c3d4-9203-9203-9203-000000000001")
+	caseID := uuid.FromStringOrNil("f1b2c3d4-9203-9203-9203-000000000002")
+	ownerID := uuid.FromStringOrNil("f1b2c3d4-9203-9203-9203-000000000003")
+
+	mockDB.EXPECT().CaseGetByID(ctx, caseID).Return(nil, errors.New("driver: bad connection"))
+
+	if _, err := h.Assign(ctx, customerID, caseID, commonidentity.OwnerTypeAgent, ownerID); err == nil {
+		t.Error("expected a non-nil error")
+	}
+}
+
+// Test_Assign_UpdateOwnerFails covers Assign's CaseUpdateOwner error
+// branch.
+func Test_Assign_UpdateOwnerFails(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	h := &caseHandler{utilHandler: mockUtil, reqHandler: mockReq, db: mockDB, notifyHandler: mockNotify}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("f1b2c3d4-9203-9203-9203-000000000004")
+	caseID := uuid.FromStringOrNil("f1b2c3d4-9203-9203-9203-000000000005")
+	ownerID := uuid.FromStringOrNil("f1b2c3d4-9203-9203-9203-000000000006")
+
+	mockDB.EXPECT().CaseGetByID(ctx, caseID).Return(&kase.Case{ID: caseID, CustomerID: customerID}, nil)
+	mockDB.EXPECT().CaseUpdateOwner(ctx, customerID, caseID, commonidentity.OwnerTypeAgent, ownerID).Return(errors.New("driver: bad connection"))
+
+	if _, err := h.Assign(ctx, customerID, caseID, commonidentity.OwnerTypeAgent, ownerID); err == nil {
+		t.Error("expected a non-nil error")
+	}
+}
+
+// Test_Assign_FinalGetFails covers Assign's re-fetch CaseGetByID error
+// branch (after a successful CaseUpdateOwner).
+func Test_Assign_FinalGetFails(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	h := &caseHandler{utilHandler: mockUtil, reqHandler: mockReq, db: mockDB, notifyHandler: mockNotify}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("f1b2c3d4-9203-9203-9203-000000000007")
+	caseID := uuid.FromStringOrNil("f1b2c3d4-9203-9203-9203-000000000008")
+	ownerID := uuid.FromStringOrNil("f1b2c3d4-9203-9203-9203-000000000009")
+
+	gomock.InOrder(
+		mockDB.EXPECT().CaseGetByID(ctx, caseID).Return(&kase.Case{ID: caseID, CustomerID: customerID}, nil),
+		mockDB.EXPECT().CaseUpdateOwner(ctx, customerID, caseID, commonidentity.OwnerTypeAgent, ownerID).Return(nil),
+		mockDB.EXPECT().CaseGetByID(ctx, caseID).Return(nil, errors.New("driver: bad connection")),
+	)
+
+	if _, err := h.Assign(ctx, customerID, caseID, commonidentity.OwnerTypeAgent, ownerID); err == nil {
+		t.Error("expected a non-nil error")
+	}
+}
 
 // Test_Assign_Success verifies the square-talk Cases menu design §3.2's
 // Assign happy path: tenant-checked via CaseGetByID, then

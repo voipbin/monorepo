@@ -1,15 +1,23 @@
 package casehandler
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"os"
 	"path/filepath"
 	"testing"
 
+	"github.com/go-redsync/redsync/v4"
 	sqlite3 "github.com/mattn/go-sqlite3"
 	"github.com/sirupsen/logrus"
 	"github.com/smotes/purse"
+	"go.uber.org/mock/gomock"
+
+	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+
+	"monorepo/bin-contact-manager/pkg/dbhandler"
 )
 
 var dbTest *sql.DB = nil // database for test
@@ -94,4 +102,67 @@ func TestMain(m *testing.M) {
 	}()
 
 	os.Exit(m.Run())
+}
+
+// Test_NewCaseHandler_wiresAllDependencies verifies NewCaseHandler's
+// constructor wiring, including the VOIP-1438 redisLocker parameter --
+// the returned CaseHandler must be a *caseHandler with every field
+// (including peerLocks' lazy-init map and redisLocker) populated exactly
+// as passed in, not silently dropped or left nil.
+func Test_NewCaseHandler_wiresAllDependencies(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockLocker := NewMocklocker(mc)
+
+	h := NewCaseHandler(mockReq, mockDB, mockNotify, mockLocker)
+
+	ch, ok := h.(*caseHandler)
+	if !ok {
+		t.Fatalf("expected NewCaseHandler to return *caseHandler, got %T", h)
+	}
+	if ch.reqHandler != mockReq {
+		t.Error("expected reqHandler to be wired to the passed-in mock")
+	}
+	if ch.db != mockDB {
+		t.Error("expected db to be wired to the passed-in mock")
+	}
+	if ch.notifyHandler != mockNotify {
+		t.Error("expected notifyHandler to be wired to the passed-in mock")
+	}
+	if ch.redisLocker != mockLocker {
+		t.Error("expected redisLocker to be wired to the passed-in mock")
+	}
+	if ch.peerLocks == nil {
+		t.Error("expected peerLocks to be initialized, got nil")
+	}
+	if ch.utilHandler == nil {
+		t.Error("expected utilHandler to be initialized via utilhandler.NewUtilHandler(), got nil")
+	}
+}
+
+// Test_NewRedsyncLocker_adaptsRealRedsync exercises the redsyncLocker
+// adapter against a genuine *redsync.Redsync (no live Redis needed --
+// built with zero backing pools) to cover the production wiring path
+// (NewRedsyncLocker / redsyncLocker.NewMutex) that every other test in
+// this package bypasses via Mocklocker. Mirrors
+// bin-route-manager/pkg/healthcheckhandler's identically-named test.
+func Test_NewRedsyncLocker_adaptsRealRedsync(t *testing.T) {
+	rs := redsync.New() // zero pools -- never actually talks to Redis
+	l := NewRedsyncLocker(rs)
+
+	mutex := l.NewMutex("contact-manager:peerlock:test", redsync.WithTries(1))
+	if mutex == nil {
+		t.Fatal("Expected a non-nil mutex from NewMutex")
+	}
+
+	// Quorum (len(pools)/2+1 = 1) can never be reached with zero backing
+	// pools, so this always fails -- confirming the adapter genuinely
+	// round-trips into a working *redsync.Mutex rather than a stub.
+	if err := mutex.LockContext(context.Background()); err == nil {
+		t.Error("Expected an error acquiring a lock with zero backing pools, got nil")
+	}
 }

@@ -2,13 +2,16 @@ package casehandler
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 
+	"github.com/go-redsync/redsync/v4"
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/sirupsen/logrus"
 )
 
 // peerLockTimeout bounds how long GetOrCreate will wait to acquire the
@@ -68,7 +71,36 @@ var (
 		prometheus.CounterOpts{
 			Namespace: metricsNamespace,
 			Name:      "case_getorcreate_peer_lock_timeout_total",
-			Help:      "Total number of GetOrCreate calls that failed to acquire the per-peer serialization lock within the timeout",
+			Help:      "Total number of GetOrCreate calls that failed to acquire the per-peer serialization lock within the timeout. VOIP-1438: as of the Redis distributed peer lock, this counter conflates two distinct causes -- the in-process 5s timeout, and the Redis lock budget (1s) being exhausted or held by another replica (ErrTaken). Cross-reference case_redis_peer_lock_fail_total (Redis-caused failures) and case_redis_peer_lock_fail_open_total (Redis outage, not counted as a failure here) to disambiguate.",
+		},
+	)
+
+	// promRedisPeerLockFailTotal counts acquirePeerLock failures caused by
+	// the Redis distributed lock layer (redisPeerLockBudget exhausted, or
+	// another replica already holding the lock via ErrTaken). Incremented
+	// exactly once per failure, from acquirePeerLock's single error branch
+	// -- tryAcquireRedisLock itself never increments this, to avoid double
+	// counting.
+	promRedisPeerLockFailTotal = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "case_redis_peer_lock_fail_total",
+			Help:      "Total number of GetOrCreate calls that failed to acquire the cross-replica Redis peer lock (budget exhausted or held by another replica)",
+		},
+	)
+
+	// promRedisPeerLockFailOpenTotal counts occasions where a Redis
+	// failure (connectivity, etc.) caused tryAcquireRedisLock to fall back
+	// to in-process-only locking rather than blocking GetOrCreate. This is
+	// NOT counted as a failure (GetOrCreate proceeds normally) -- it is an
+	// early-warning signal that Redis is unreachable and cross-pod
+	// protection is currently degraded to reliance on the MySQL unique
+	// constraint backstop alone.
+	promRedisPeerLockFailOpenTotal = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "case_redis_peer_lock_fail_open_total",
+			Help:      "Total number of GetOrCreate calls that proceeded without the cross-replica Redis peer lock because Redis was unreachable (fail-open; in-process lock and the DB unique constraint remain as backstops)",
 		},
 	)
 )
@@ -79,7 +111,44 @@ func init() {
 		promDeadlockRetryTotal,
 		promDeadlockExhaustedTotal,
 		promPeerLockTimeoutTotal,
+		promRedisPeerLockFailTotal,
+		promRedisPeerLockFailOpenTotal,
 	)
+}
+
+// VOIP-1438: Redis distributed peer lock tuning. redisPeerLockExpiry
+// bounds how long a lock may be held before Redis auto-expires it (no
+// auto-renewal -- redsyncMutex here intentionally omits ExtendContext; see
+// main.go). GetOrCreate performs at most maxDeadlockRetries (3) full
+// BeginTx-Commit cycles, so 10s gives wide margin over normal same-DC
+// MySQL round-trip latency without leaving a crashed holder's lock stuck
+// for too long.
+const redisPeerLockExpiry = 10 * time.Second
+
+// redisPeerLockTries/redisPeerLockRetryDelay configure redsync's internal
+// bounded retry loop for LockContext. Deliberately independent of the
+// in-process peerLockTimeout (5s): by the time tryAcquireRedisLock runs,
+// the in-process lock has already absorbed same-pod contention, so the
+// Redis layer only needs to wait out a peer being actively processed on a
+// DIFFERENT replica.
+const redisPeerLockTries = 5
+const redisPeerLockRetryDelay = 200 * time.Millisecond
+
+// redisPeerLockBudget is a hard, explicitly-enforced cap on
+// tryAcquireRedisLock's total wall-clock time, applied via
+// context.WithTimeout rather than relying solely on
+// redisPeerLockTries*redisPeerLockRetryDelay. redsync v4.15.0's internal
+// timeoutFactor (0.05) bounds each individual acquire attempt at
+// redisPeerLockExpiry*0.05 (500ms here), so the tries*delay math alone
+// could balloon to ~3.3s worst-case if Redis is alive but slow -- this
+// budget forces a deterministic ~1s ceiling regardless.
+const redisPeerLockBudget = 1 * time.Second
+
+// redisPeerLockName namespaces the Redis lock key by service, reusing the
+// same peerLockKey tuple the in-process lock uses so both layers guard
+// identical critical sections.
+func redisPeerLockName(key string) string {
+	return "contact-manager:peerlock:" + key
 }
 
 // metricsNamespace matches subscribehandler's own "contact_manager"
@@ -109,20 +178,22 @@ func peerLockKey(customerID uuid.UUID, peerType commonaddress.Type, peerTarget, 
 // loop, which remains the topology-independent correctness backstop
 // regardless of replica count).
 //
-// TOPOLOGY CAVEAT (must be stated in the PR body per round-4/5's
-// mandate): this lock is IN-PROCESS ONLY, not cross-pod/distributed. It
-// fully prevents the race under contact-manager's CURRENT single-replica
-// production config (confirmed replicas: 1, no HPA, in both
-// bin-contact-manager/k8s/deployment.yml and the install repo's
-// k8s/backend/services/contact-manager.yaml). Under a future multi-
-// replica deployment, RabbitMQ's plain shared-queue competing-consumers
-// model has no per-peer-tuple pod affinity, so this lock would provide
-// ZERO cross-pod protection and the fix would degrade to relying on
-// DB-level deadlock retry alone. A Redis-based distributed lock (contact-
-// manager already depends on Redis for contact-body caching) is the
-// correct upgrade path if/when replicas are ever increased -- tracked as
-// a follow-up, not built preemptively here.
+// TOPOLOGY NOTE (VOIP-1438 supersedes the single-replica caveat that used
+// to live here): this in-process lock alone is NOT cross-pod/distributed
+// -- RabbitMQ's plain shared-queue competing-consumers model has no
+// per-peer-tuple pod affinity, so under a multi-replica deployment two
+// different replicas can concurrently process the same peer tuple. As of
+// VOIP-1438, acquirePeerLock additionally acquires a Redis distributed
+// lock (tryAcquireRedisLock, below) AFTER the in-process lock succeeds,
+// closing that cross-pod gap. The two layers have non-overlapping
+// responsibilities: this in-process lock serializes goroutines within a
+// single pod (cheap, no Redis round-trip); the Redis lock serializes
+// across pods. Both remain backstopped by insertWithRetry's
+// uq_case_open_peer unique-constraint retry (getorcreate.go), which is
+// the topology-independent correctness guarantee regardless of either
+// lock's outcome.
 func (h *caseHandler) acquirePeerLock(ctx context.Context, key string) (func(), error) {
+	// 1) in-process lock (unchanged)
 	ch := h.loadOrCreatePeerLockChan(key)
 
 	lockCtx, cancel := context.WithTimeout(ctx, peerLockTimeout)
@@ -130,10 +201,107 @@ func (h *caseHandler) acquirePeerLock(ctx context.Context, key string) (func(), 
 
 	select {
 	case ch <- struct{}{}:
-		return func() { <-ch }, nil
+		// acquired
 	case <-lockCtx.Done():
 		return nil, ErrPeerLockTimeout
 	}
+	releaseLocal := func() { <-ch }
+
+	// 2) Redis distributed lock (VOIP-1438) -- only attempted once the
+	// in-process lock is held, avoiding an unnecessary Redis round-trip
+	// when local contention alone already timed out.
+	releaseRedis, err := h.tryAcquireRedisLock(ctx, key)
+	if err != nil {
+		releaseLocal()
+		promRedisPeerLockFailTotal.Inc()
+		return nil, fmt.Errorf("could not acquire distributed peer lock: %w", err)
+	}
+
+	return func() {
+		releaseRedis()
+		releaseLocal()
+	}, nil
+}
+
+// tryAcquireRedisLock acquires the cross-replica Redis lock for key,
+// bounded by redisPeerLockBudget. Returns a release func on success.
+//
+// h.redisLocker == nil is a deliberate fail-open path used by unit tests
+// that construct caseHandler as a struct literal without redsync wiring
+// (see main.go's caseHandler.redisLocker doc comment) -- production
+// callers always go through NewCaseHandler, which never leaves
+// redisLocker nil.
+func (h *caseHandler) tryAcquireRedisLock(ctx context.Context, key string) (func(), error) {
+	if h.redisLocker == nil {
+		return func() {}, nil // fail-open: no locker wired (e.g. unit tests, contact-control CLI)
+	}
+
+	mutex := h.redisLocker.NewMutex(
+		redisPeerLockName(key),
+		redsync.WithExpiry(redisPeerLockExpiry),
+		redsync.WithTries(redisPeerLockTries),
+		redsync.WithRetryDelay(redisPeerLockRetryDelay),
+	)
+
+	// redsync's internal timeoutFactor alone cannot guarantee the ~1s
+	// budget documented above (see redisPeerLockBudget's comment) -- this
+	// context.WithTimeout enforces it explicitly.
+	budgetCtx, cancel := context.WithTimeout(ctx, redisPeerLockBudget)
+	defer cancel()
+
+	err := mutex.LockContext(budgetCtx)
+	if err == nil {
+		return func() {
+			if _, errUnlock := mutex.UnlockContext(ctx); errUnlock != nil {
+				logrus.Warnf("could not release contact-manager peer lock %q. err: %v", key, errUnlock)
+			}
+		}, nil
+	}
+
+	// budgetCtx.Err() is checked BEFORE the RedisError type-assertion
+	// below, and deliberately so: redsync v4.15.0's lockContext, when
+	// budgetCtx expires mid-retry (e.g. during its final attempt), can
+	// return the failure wrapped as &redsync.RedisError{} rather than a
+	// plain context-cancellation error (actOnPoolsAsync wraps the
+	// in-flight SetNX failure this way). If the RedisError branch below
+	// ran first, that timing-dependent wrapping would misclassify a
+	// budget-exhaustion (which must fail-closed, deterministically) as a
+	// Redis-outage fail-open. Checking budgetCtx.Err() first keeps that
+	// outcome deterministic regardless of which internal error shape
+	// redsync happens to produce.
+	if budgetCtx.Err() != nil {
+		// Counter increment intentionally omitted here -- the caller
+		// (acquirePeerLock) increments promRedisPeerLockFailTotal exactly
+		// once for every non-nil error this function returns. Doing it
+		// here too would double-count.
+		return nil, fmt.Errorf("redis peer lock budget exhausted: %w", err)
+	}
+
+	var redisErr *redsync.RedisError
+	if errors.As(err, &redisErr) {
+		// Redis is unreachable (budgetCtx still live -- e.g. connection
+		// refused immediately): fail-open. This is safe for a DIFFERENT
+		// reason than bin-route-manager's healthcheck lock (which is safe
+		// because its guarded write is a CAS-free blind UPDATE):
+		// contact-manager's guarded write goes through insertWithRetry,
+		// whose uq_case_open_peer unique constraint plus
+		// re-query-and-use-the-winner logic already makes concurrent
+		// INSERTs safe. A Redis outage without this fail-open would stall
+		// GetOrCreate fleet-wide on every peer tuple; fail-open keeps
+		// case creation working (with reduced cross-pod dedup, backstopped
+		// by the unique constraint) at the cost of a possible uptick in
+		// MySQL deadlock retries.
+		logrus.Warnf("could not reach Redis for peer lock %q; proceeding with in-process lock only (fail-open). err: %v", key, err)
+		promRedisPeerLockFailOpenTotal.Inc()
+		return func() {}, nil
+	}
+
+	// Any other error (most commonly redsync.ErrTaken -- another replica
+	// currently holds this peer tuple's lock, with budgetCtx still live)
+	// fails closed: returning here would race with whichever replica
+	// actually holds the lock. Counter increment is the caller's
+	// responsibility, as above.
+	return nil, err
 }
 
 // loadOrCreatePeerLockChan returns the buffered channel (capacity 1) for

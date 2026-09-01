@@ -13,6 +13,7 @@ import (
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
+	"github.com/go-redsync/redsync/v4"
 	"github.com/gofrs/uuid"
 
 	"monorepo/bin-contact-manager/models/casenote"
@@ -124,6 +125,42 @@ type CaseHandler interface {
 	Create(ctx context.Context, customerID uuid.UUID, self, peer commonaddress.Address, referenceType, name, detail, referenceID string) (*kase.Case, error)
 }
 
+// locker is the minimal Redsync surface acquirePeerLock depends on.
+// *redsync.Redsync cannot satisfy this directly (NewMutex returns the
+// concrete *redsync.Mutex, not an interface), so redsyncLocker below
+// adapts it. Abstracting this way lets tests substitute a mock without a
+// live Redis instance -- mirrors bin-route-manager/pkg/healthcheckhandler's
+// identically-named pattern.
+type locker interface {
+	NewMutex(name string, options ...redsync.Option) redsyncMutex
+}
+
+// redsyncMutex is the subset of *redsync.Mutex's method set
+// tryAcquireRedisLock uses. Unlike bin-route-manager's healthcheckhandler
+// (which only TryLockContext/ExtendContext/UnlockContext, no retries),
+// contact-manager's GetOrCreate hot path needs bounded-retry acquisition,
+// so this interface exposes LockContext instead of TryLockContext, and
+// omits ExtendContext (GetOrCreate never renews the lock mid-hold -- see
+// peerlock.go's TTL sizing rationale).
+type redsyncMutex interface {
+	LockContext(ctx context.Context) error
+	UnlockContext(ctx context.Context) (bool, error)
+}
+
+// redsyncLocker adapts *redsync.Redsync to the locker interface.
+type redsyncLocker struct {
+	rs *redsync.Redsync
+}
+
+// NewRedsyncLocker wraps a *redsync.Redsync so it satisfies locker.
+func NewRedsyncLocker(rs *redsync.Redsync) locker { //nolint:revive // unexported return type is intentional; locker is only consumed within this package
+	return &redsyncLocker{rs: rs}
+}
+
+func (r *redsyncLocker) NewMutex(name string, options ...redsync.Option) redsyncMutex {
+	return r.rs.NewMutex(name, options...)
+}
+
 type caseHandler struct {
 	utilHandler   utilhandler.UtilHandler
 	reqHandler    requesthandler.RequestHandler
@@ -140,13 +177,25 @@ type caseHandler struct {
 	// the process.
 	peerLocks   map[string]chan struct{}
 	peerLocksMu sync.RWMutex
+
+	// redisLocker guards GetOrCreate's critical section across replicas
+	// (VOIP-1438), in addition to peerLocks, which only serializes
+	// within this process. nil is a valid value in unit tests that
+	// construct caseHandler as a struct literal without redsync wiring
+	// -- see tryAcquireRedisLock's nil-check (fail-open when unset).
+	redisLocker locker
 }
 
-// NewCaseHandler returns CaseHandler interface
+// NewCaseHandler returns CaseHandler interface. redisLocker guards
+// GetOrCreate's critical section across replicas (VOIP-1438) -- build it
+// via casehandler.NewRedsyncLocker(redsync.New(pool)) in production, or
+// pass nil for single-shot CLI callers (e.g. contact-control) that never
+// run concurrently with another replica.
 func NewCaseHandler(
 	reqHandler requesthandler.RequestHandler,
 	dbHandler dbhandler.DBHandler,
 	notifyHandler notifyhandler.NotifyHandler,
+	redisLocker locker, //nolint:revive // unexported param type is intentional; locker is only constructed within this package via NewRedsyncLocker
 ) CaseHandler {
 	return &caseHandler{
 		utilHandler:   utilhandler.NewUtilHandler(),
@@ -154,5 +203,6 @@ func NewCaseHandler(
 		db:            dbHandler,
 		notifyHandler: notifyHandler,
 		peerLocks:     make(map[string]chan struct{}),
+		redisLocker:   redisLocker,
 	}
 }

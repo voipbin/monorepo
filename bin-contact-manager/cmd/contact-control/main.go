@@ -68,7 +68,11 @@ func initContactHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (contact
 	// VOIP-1405: same global topic exchange opt-in as cmd/contact-manager. Both processes publish
 	// to the same logical stream, so both must dual publish or consumers would see gaps.
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameContactEvent, serviceName, notifyhandler.WithGlobalTopicPublish())
-	caseHandler := casehandler.NewCaseHandler(reqHandler, db, notifyHandler)
+	// VOIP-1438: this CLI runs as a single short-lived process, never
+	// concurrently with another replica of itself, so cross-pod
+	// protection is unnecessary here -- nil is casehandler's documented
+	// fail-open value for redisLocker.
+	caseHandler := casehandler.NewCaseHandler(reqHandler, db, notifyHandler, nil)
 
 	return contacthandler.NewContactHandler(reqHandler, db, notifyHandler, caseHandler), nil
 }
