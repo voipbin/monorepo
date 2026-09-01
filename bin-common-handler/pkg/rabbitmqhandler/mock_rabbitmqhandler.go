@@ -302,6 +302,20 @@ func (mr *MockamqpChannelMockRecorder) ExchangeDeclare(name, kind, durable, auto
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExchangeDeclare", reflect.TypeOf((*MockamqpChannel)(nil).ExchangeDeclare), name, kind, durable, autoDelete, internal, noWait, args)
 }
 
+// PublishWithContext mocks base method.
+func (m *MockamqpChannel) PublishWithContext(ctx context.Context, exchange, key string, mandatory, immediate bool, msg amqp091.Publishing) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PublishWithContext", ctx, exchange, key, mandatory, immediate, msg)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PublishWithContext indicates an expected call of PublishWithContext.
+func (mr *MockamqpChannelMockRecorder) PublishWithContext(ctx, exchange, key, mandatory, immediate, msg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishWithContext", reflect.TypeOf((*MockamqpChannel)(nil).PublishWithContext), ctx, exchange, key, mandatory, immediate, msg)
+}
+
 // Qos mocks base method.
 func (m *MockamqpChannel) Qos(prefetchCount, prefetchSize int, global bool) error {
 	m.ctrl.T.Helper()
@@ -399,10 +413,10 @@ func (m *MockamqpConnection) EXPECT() *MockamqpConnectionMockRecorder {
 }
 
 // Channel mocks base method.
-func (m *MockamqpConnection) Channel() (*amqp091.Channel, error) {
+func (m *MockamqpConnection) Channel() (amqpChannel, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Channel")
-	ret0, _ := ret[0].(*amqp091.Channel)
+	ret0, _ := ret[0].(amqpChannel)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

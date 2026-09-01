@@ -19,6 +19,12 @@ func (r *rabbit) queueGet(name string) *queue {
 
 // QueueDelete deletes the queue with given args.
 // returns deleted messages in the queue.
+//
+// Currently unreachable from outside this package (absent from both the Rabbit and SockHandler
+// interfaces) -- not fixed as part of VOIP-1431 for that reason, but it uses queue.channel the
+// same way QueueBind/QueueUnbind used to, and shares the same hazard class: if this is ever
+// wired up to a caller that can run at an arbitrary runtime moment (like scopeRefCount), it
+// should get the same dedicated-channel treatment QueueBind/QueueUnbind now have.
 func (r *rabbit) QueueDelete(name string, ifUnused, ifEmpty, noWait bool) (int, error) {
 	queue := r.queueGet(name)
 	if queue == nil {
@@ -141,6 +147,13 @@ func (r *rabbit) QueueDeclare(name string, durable, autoDelete, exclusive, noWai
 	return nil
 }
 
+// QueueQoS sets the queue's channel prefetch settings.
+//
+// Currently unreachable from outside this package (absent from both the Rabbit and SockHandler
+// interfaces) -- not fixed as part of VOIP-1431 for that reason, but it uses queue.channel the
+// same way QueueBind/QueueUnbind used to, and shares the same hazard class: if this is ever
+// wired up to a caller that can run at an arbitrary runtime moment (like scopeRefCount), it
+// should get the same dedicated-channel treatment QueueBind/QueueUnbind now have.
 func (r *rabbit) QueueQoS(name string, prefetchCount, prefetchSize int) error {
 	q := r.queueGet(name)
 	if q == nil {
@@ -163,13 +176,40 @@ func (h *rabbit) QueueSubscribe(name string, topic string) error {
 // queue name (does not overwrite), so redeclareAll() can restore ALL active bindings after a
 // broker reconnect, not just the most recent one (VOIP-1258 round-1 implementation-plan review
 // finding F2).
+//
+// Issues the bind on a dedicated, short-lived channel (VOIP-1431) rather than the queue's own
+// long-lived channel (queue.channel) -- queue.channel is shared with startConsumers's
+// Qos/Consume, and amqp091-go's Channel.QueueBind/Consume/Qos all route through an internal
+// call() helper with no lock and a single un-correlated reply channel (ch.rpc); calling any two
+// of them concurrently on the same *amqp.Channel can cross-deliver replies. See
+// docs/plans/2026-09-01-voip-1431-scoperefcount-amqp-safety-analysis.md and
+// docs/plans/2026-09-01-voip-1431-amqp-channel-race-design.md for the full analysis.
+// queue.bind is scoped to the queue, not the issuing channel, so this is semantically identical
+// to binding on queue.channel -- except immediately after a reconnect and before redeclareAll
+// has re-declared this queue, where the old code failed fast (ErrClosed on the dead
+// queue.channel) and this instead issues queue.bind against a queue that may not be re-declared
+// yet on the live connection: benign either way. A durable queue survives the reconnect on the
+// broker side, so the bind succeeds and is then harmlessly re-issued (idempotently, via the
+// tracked-bind-set dedup below) when redeclareAll's own replay runs. A volatile queue
+// (x-expires) may have expired, in which case the broker closes this ephemeral channel with a
+// 404 -- harmless precisely because the channel is ephemeral and nothing else is using it; the
+// caller sees the bind fail, same outcome as today's ErrClosed case, just a different error.
 func (r *rabbit) QueueBind(name, key, exchange string, noWait bool, args amqp.Table) error {
-	queue := r.queueGet(name)
-	if queue == nil {
+	if r.queueGet(name) == nil {
 		return fmt.Errorf("no queue found")
 	}
 
-	if err := queue.channel.QueueBind(name, key, exchange, noWait, args); err != nil {
+	conn := r.connectionGet()
+	if conn == nil {
+		return amqp.ErrClosed
+	}
+	channel, err := conn.Channel()
+	if err != nil {
+		return err
+	}
+	defer func() { _ = channel.Close() }()
+
+	if err := channel.QueueBind(name, key, exchange, noWait, args); err != nil {
 		return err
 	}
 
@@ -191,14 +231,25 @@ func (r *rabbit) QueueBind(name, key, exchange string, noWait bool, args amqp.Ta
 }
 
 // QueueUnbind unbinds queue and exchange with a key, removing the matching entry from the
-// tracked bind set (not the whole map key, unless the set becomes empty).
+// tracked bind set (not the whole map key, unless the set becomes empty). Issues the unbind on
+// a dedicated, short-lived channel for the same reason QueueBind does above -- see that doc
+// comment.
 func (r *rabbit) QueueUnbind(name, key, exchange string, args amqp.Table) error {
-	queue := r.queueGet(name)
-	if queue == nil {
+	if r.queueGet(name) == nil {
 		return fmt.Errorf("no queue found")
 	}
 
-	if err := queue.channel.QueueUnbind(name, key, exchange, args); err != nil {
+	conn := r.connectionGet()
+	if conn == nil {
+		return amqp.ErrClosed
+	}
+	channel, err := conn.Channel()
+	if err != nil {
+		return err
+	}
+	defer func() { _ = channel.Close() }()
+
+	if err := channel.QueueUnbind(name, key, exchange, args); err != nil {
 		return err
 	}
 

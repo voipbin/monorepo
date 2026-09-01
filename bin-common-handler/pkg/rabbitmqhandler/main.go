@@ -48,15 +48,48 @@ type amqpChannel interface {
 	QueueDelete(name string, ifUnused, ifEmpty, noWait bool) (int, error)
 	ExchangeDeclare(name, kind string, durable, autoDelete, internal, noWait bool, args amqp.Table) error
 	QueueDeclare(name string, durable, autoDelete, exclusive, noWait bool, args amqp.Table) (amqp.Queue, error)
+	// PublishWithContext is required by publishExchange/RequestPublish/publishRPCErrorResponse
+	// (consume.go, publish.go), which all open a channel via amqpConnection.Channel() and
+	// publish on it. Added alongside the VOIP-1431 widening of amqpConnection.Channel()'s
+	// return type from *amqp.Channel to amqpChannel -- see realConnection below.
+	PublishWithContext(ctx context.Context, exchange, key string, mandatory, immediate bool, msg amqp.Publishing) error
 }
 
 // amqpConnection is an interface for amqp.Connection operations.
 // This interface enables testing by allowing mock implementations.
-// *amqp.Connection implicitly satisfies this interface.
+// *amqp.Connection does NOT implicitly satisfy this interface as of VOIP-1431 -- Channel()
+// returns amqpChannel (not the concrete *amqp.Channel) so that QueueBind/QueueUnbind's
+// dedicated-channel fix (queue.go) can be exercised against a mock connection/channel pair in
+// tests. Go has no return-type covariance, so *amqp.Connection's concrete
+// `Channel() (*amqp.Channel, error)` no longer matches this signature -- realConnection below is
+// the adapter that bridges the two. See docs/plans/2026-09-01-voip-1431-amqp-channel-race-design.md
+// for the full rationale, including why this widening is a deliberate choice (to make the
+// "QueueBind/QueueUnbind don't touch queue.channel" structural property unit-testable) rather
+// than something the underlying race fix strictly requires.
 type amqpConnection interface {
-	Channel() (*amqp.Channel, error)
+	Channel() (amqpChannel, error)
 	Close() error
 	NotifyClose(receiver chan *amqp.Error) chan *amqp.Error
+}
+
+// realConnection adapts *amqp.Connection to amqpConnection's Channel() signature. Close() and
+// NotifyClose() are inherited via embedding since *amqp.Connection's own signatures for those
+// already match amqpConnection unchanged.
+type realConnection struct {
+	*amqp.Connection
+}
+
+// Channel opens a new channel and returns it as the amqpChannel interface. On error, returns an
+// explicit nil interface -- not a typed-nil *amqp.Channel boxed into amqpChannel -- as
+// defensive practice for any future caller that doesn't check err before consulting the channel
+// (amqp091-go's own Connection.Channel() never actually returns a non-nil channel alongside a
+// non-nil error, so this isn't fixing a currently-reachable bug in this package's own callers).
+func (rc *realConnection) Channel() (amqpChannel, error) {
+	ch, err := rc.Connection.Channel()
+	if err != nil {
+		return nil, err
+	}
+	return ch, nil
 }
 
 // rabbit struct for rabbitmq
@@ -218,7 +251,16 @@ func (r *rabbit) connect() {
 			time.Sleep(time.Second * 1)
 			continue
 		}
-		r.connection = conn
+
+		// r.connection is read from arbitrary caller goroutines via connectionGet()
+		// (VOIP-1431's QueueBind/QueueUnbind, in particular, called from scopeRefCount at
+		// arbitrary runtime moments). connect() itself is only ever invoked sequentially
+		// (Connect() calls it once synchronously before spawning reconnector(); reconnector()
+		// calls it one error at a time from its own single goroutine), so this lock protects
+		// the write against those other readers, not against connect() re-entering itself.
+		r.mu.Lock()
+		r.connection = &realConnection{conn}
+		r.mu.Unlock()
 
 		// set error channel
 		r.errorChannel = make(chan *amqp.Error)
@@ -227,6 +269,21 @@ func (r *rabbit) connect() {
 		log.Debug("Connection established to rabbitmq.")
 		return
 	}
+}
+
+// connectionGet returns the current AMQP connection under a read lock. Pairs with connect()'s
+// locked write above -- a read-side-only lock against an unlocked writer provides no
+// synchronization at all. Used by QueueBind/QueueUnbind (queue.go), which read r.connection from
+// arbitrary caller goroutines; this keeps that read from becoming a race in the same goroutine
+// pairing (scopeRefCount vs. the reconnector() goroutine) VOIP-1431 exists to fix. The package's
+// other nine callers of r.connection -- publishExchange, RequestPublish, executeConsumeRPC,
+// publishRPCErrorResponse, ExchangeDeclare, QueueDeclare, checkConnection, Close(), and
+// healthChecker() -- still read the field directly, not through this accessor; that remains a
+// separate, pre-existing, out-of-scope data race (see the design doc).
+func (r *rabbit) connectionGet() amqpConnection {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	return r.connection
 }
 
 // checkConnection probes the RabbitMQ connection by opening and closing a channel.

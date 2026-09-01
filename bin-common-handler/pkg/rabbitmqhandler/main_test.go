@@ -1,5 +1,14 @@
 package rabbitmqhandler
 
+// Note on realConnection (main.go): its Channel() method has no direct unit test in this file.
+// &realConnection{nil} nil-panics on the embedded *amqp.Connection.Channel() call (traced
+// through amqp091-go's openChannel()/allocateChannel(), which unconditionally locks the
+// receiver), so exercising it requires a real *amqp.Connection -- i.e. a real or fake broker,
+// not something this package's mock-based unit tests can construct. Its explicit-nil-on-error
+// behavior is covered by code review instead (VOIP-1431 design doc §4); the property it exists
+// to protect (checkConnection's `if ch != nil` check) is exercised indirectly by every test that
+// constructs a *rabbit with a mockConnection and calls checkConnection/healthChecker.
+
 import (
 	"context"
 	"errors"
@@ -33,8 +42,9 @@ type mockChannel struct {
 	qosPrefetchSize  int
 	qosGlobal        bool
 
-	mu                 sync.Mutex // guards queueBindCallCount for concurrent-access tests (VOIP-1258)
-	queueBindCallCount int         // VOIP-1258: counts QueueBind invocations, used to verify redeclareAll restores ALL tracked binds
+	mu                   sync.Mutex // guards queueBindCallCount/queueUnbindCallCount for concurrent-access tests (VOIP-1258/VOIP-1431)
+	queueBindCallCount   int        // VOIP-1258: counts QueueBind invocations, used to verify redeclareAll restores ALL tracked binds
+	queueUnbindCallCount int        // VOIP-1431: QueueBind's counter had no QueueUnbind counterpart; added for parity
 
 	// VOIP-1258 Task 1.4: captures ExchangeDeclare's actual call args for assertions.
 	exchangeDeclareName    string
@@ -77,7 +87,14 @@ func (m *mockChannel) QueueBind(name, key, exchange string, noWait bool, args am
 }
 
 func (m *mockChannel) QueueUnbind(name, key, exchange string, args amqp.Table) error {
+	m.mu.Lock()
+	m.queueUnbindCallCount++
+	m.mu.Unlock()
 	return m.queueUnbindErr
+}
+
+func (m *mockChannel) PublishWithContext(ctx context.Context, exchange, key string, mandatory, immediate bool, msg amqp.Publishing) error {
+	return nil
 }
 
 func (m *mockChannel) QueueDelete(name string, ifUnused, ifEmpty, noWait bool) (int, error) {
@@ -102,11 +119,13 @@ func (m *mockChannel) QueueDeclare(name string, durable, autoDelete, exclusive, 
 
 // mockConnection is a mock implementation of amqpConnection for testing
 type mockConnection struct {
-	channelFunc    func() (*amqp.Channel, error)
-	channelErr     error
-	closeCalled    int
-	closeErr       error
-	notifyCloseCh  chan *amqp.Error
+	channelFunc   func() (amqpChannel, error)
+	channelErr    error
+	closeCalled   int
+	closeErr      error
+	notifyCloseCh chan *amqp.Error
+
+	mu             sync.Mutex // guards channelCallCnt for concurrent-access tests (VOIP-1431)
 	channelCallCnt int
 }
 
@@ -116,16 +135,21 @@ func newMockConnection() *mockConnection {
 	}
 }
 
-func (m *mockConnection) Channel() (*amqp.Channel, error) {
+// Channel returns, in priority order: channelFunc's result if set, channelErr as an error if
+// set, or otherwise a fresh working mock channel (VOIP-1431: this used to default to (nil, nil)
+// -- callers that need that exact "success but no channel" case, or a specific mock channel to
+// assert against, should set channelFunc explicitly rather than relying on this default).
+func (m *mockConnection) Channel() (amqpChannel, error) {
+	m.mu.Lock()
 	m.channelCallCnt++
+	m.mu.Unlock()
 	if m.channelFunc != nil {
 		return m.channelFunc()
 	}
 	if m.channelErr != nil {
 		return nil, m.channelErr
 	}
-	// Return nil channel - tests should use channelMock directly
-	return nil, nil
+	return newMockChannel(), nil
 }
 
 func (m *mockConnection) Close() error {
@@ -169,6 +193,9 @@ func (m *mockChannelWithConsumeCounter) ExchangeDeclare(name, kind string, durab
 }
 func (m *mockChannelWithConsumeCounter) QueueDeclare(name string, durable, autoDelete, exclusive, noWait bool, args amqp.Table) (amqp.Queue, error) {
 	return amqp.Queue{Name: name}, nil
+}
+func (m *mockChannelWithConsumeCounter) PublishWithContext(ctx context.Context, exchange, key string, mandatory, immediate bool, msg amqp.Publishing) error {
+	return nil
 }
 
 // ============================================================================
@@ -608,11 +635,17 @@ func TestQueueBind_ReturnsErrorForNonExistent(t *testing.T) {
 }
 
 func TestQueueBind_Success(t *testing.T) {
+	// VOIP-1431: QueueBind now issues the bind on a dedicated channel obtained from
+	// r.connection, not queue.channel -- mockCh here stands in for queue.channel (still
+	// required for queueGet's existence check) and is deliberately NOT the channel QueueBind
+	// actually calls; mockConn's default Channel() supplies a separate, working mock channel.
 	mockCh := newMockChannel()
+	mockConn := newMockConnection()
 
 	r := &rabbit{
 		queues:     make(map[string]*queue),
 		queueBinds: make(map[string][]*queueBind),
+		connection: mockConn,
 	}
 	r.queues["test-queue"] = &queue{
 		name:    "test-queue",
@@ -635,19 +668,61 @@ func TestQueueBind_Success(t *testing.T) {
 	if r.queueBinds["test-queue"][0].exchange != "test-exchange" {
 		t.Errorf("Expected exchange 'test-exchange', got '%s'", r.queueBinds["test-queue"][0].exchange)
 	}
+	// mockCh (queue.channel) must never see this call -- that's the entire point of the fix.
+	if mockCh.queueBindCallCount != 0 {
+		t.Errorf("Expected QueueBind to NOT touch queue.channel, but it was called %d time(s)", mockCh.queueBindCallCount)
+	}
 }
 
-func TestQueueBind_ReturnsChannelError(t *testing.T) {
-	mockCh := newMockChannel()
-	mockCh.queueBindErr = errors.New("bind failed")
+// TestQueueBind_DoesNotUseQueueChannel pins the structural property VOIP-1431's fix relies on:
+// QueueBind must obtain its channel from the connection, never from the queue's own long-lived
+// channel (which startConsumers's Qos/Consume also uses -- sharing it is exactly the race this
+// fix removes). Asserts on the channel identity actually used, not just the end-state map.
+func TestQueueBind_DoesNotUseQueueChannel(t *testing.T) {
+	queueCh := newMockChannel() // stands in for queue.channel -- must stay untouched
+	connCh := newMockChannel()  // the channel QueueBind should actually call
+	mockConn := newMockConnection()
+	mockConn.channelFunc = func() (amqpChannel, error) { return connCh, nil }
 
 	r := &rabbit{
 		queues:     make(map[string]*queue),
 		queueBinds: make(map[string][]*queueBind),
+		connection: mockConn,
+	}
+	r.queues["test-queue"] = &queue{name: "test-queue", channel: queueCh}
+
+	if err := r.QueueBind("test-queue", "key", "exchange", false, nil); err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+
+	if queueCh.queueBindCallCount != 0 {
+		t.Errorf("Expected queue.channel.QueueBind to never be called, got %d call(s)", queueCh.queueBindCallCount)
+	}
+	if connCh.queueBindCallCount != 1 {
+		t.Errorf("Expected the connection-provided channel's QueueBind to be called exactly once, got %d", connCh.queueBindCallCount)
+	}
+	if connCh.closeCalled != 1 {
+		t.Errorf("Expected the ephemeral channel to be closed exactly once after use, got %d", connCh.closeCalled)
+	}
+}
+
+func TestQueueBind_ReturnsChannelError(t *testing.T) {
+	// VOIP-1431: the error must be injected on the channel the connection provides -- the
+	// channel QueueBind actually calls post-fix -- not on queue.channel, which QueueBind no
+	// longer touches at all.
+	connCh := newMockChannel()
+	connCh.queueBindErr = errors.New("bind failed")
+	mockConn := newMockConnection()
+	mockConn.channelFunc = func() (amqpChannel, error) { return connCh, nil }
+
+	r := &rabbit{
+		queues:     make(map[string]*queue),
+		queueBinds: make(map[string][]*queueBind),
+		connection: mockConn,
 	}
 	r.queues["test-queue"] = &queue{
 		name:    "test-queue",
-		channel: mockCh,
+		channel: newMockChannel(), // queue.channel: irrelevant to this path post-fix
 	}
 
 	err := r.QueueBind("test-queue", "key", "exchange", false, nil)
@@ -657,16 +732,123 @@ func TestQueueBind_ReturnsChannelError(t *testing.T) {
 	}
 }
 
+// TestQueueBind_ReturnsErrorWhenConnectionClosed covers the new conn == nil branch (§3 of the
+// design doc) -- previously unreachable/untested production behavior.
+func TestQueueBind_ReturnsErrorWhenConnectionClosed(t *testing.T) {
+	r := &rabbit{
+		queues:     make(map[string]*queue),
+		queueBinds: make(map[string][]*queueBind),
+		connection: nil,
+	}
+	r.queues["test-queue"] = &queue{name: "test-queue", channel: newMockChannel()}
+
+	err := r.QueueBind("test-queue", "key", "exchange", false, nil)
+
+	if !errors.Is(err, amqp.ErrClosed) {
+		t.Errorf("Expected amqp.ErrClosed, got %v", err)
+	}
+}
+
+// TestQueueBind_IdempotentRebind verifies that binding the same (key, exchange) pair twice
+// does not create a duplicate tracked entry (VOIP-1258 round-1 review, code-quality follow-up:
+// this was the single most novel piece of logic in the diff and had no direct test).
+func TestQueueBind_IdempotentRebind(t *testing.T) {
+	mockCh := newMockChannel()
+	mockConn := newMockConnection()
+
+	r := &rabbit{
+		queues:     make(map[string]*queue),
+		queueBinds: make(map[string][]*queueBind),
+		connection: mockConn,
+	}
+	r.queues["test-queue"] = &queue{
+		name:    "test-queue",
+		channel: mockCh,
+	}
+
+	if err := r.QueueBind("test-queue", "routing-key", "test-exchange", false, nil); err != nil {
+		t.Fatalf("Expected no error on first bind, got %v", err)
+	}
+	if err := r.QueueBind("test-queue", "routing-key", "test-exchange", false, nil); err != nil {
+		t.Fatalf("Expected no error on idempotent re-bind, got %v", err)
+	}
+
+	binds := r.queueBinds["test-queue"]
+	if len(binds) != 1 {
+		t.Fatalf("Expected slice to stay at length 1 after idempotent re-bind, got %d", len(binds))
+	}
+}
+
+// ============================================================================
+// connectionGet() Tests
+// ============================================================================
+
+// Test_connectionGet covers connectionGet() directly: returns nil when unset, returns the set
+// value under a read lock otherwise (VOIP-1431 -- previously untested production code).
+func Test_connectionGet(t *testing.T) {
+	r := &rabbit{}
+	if got := r.connectionGet(); got != nil {
+		t.Errorf("Expected nil for unset connection, got %v", got)
+	}
+
+	mockConn := newMockConnection()
+	r.connection = mockConn
+	if got := r.connectionGet(); got != mockConn {
+		t.Errorf("Expected connectionGet to return the set connection, got %v", got)
+	}
+}
+
+// Test_connectionGet_ConcurrentReadWrite exercises connectionGet() (r.mu.RLock-guarded read)
+// against a repeated, r.mu.Lock-guarded write to r.connection from another goroutine -- the
+// exact same field/lock pair connect()'s locked write (main.go) and QueueBind/QueueUnbind's
+// connectionGet() calls use, isolated from connect()'s own real-Dial retry-loop timing (which
+// makes triggering this scenario through connect() itself impractical to do deterministically
+// at unit-test speed -- see the VOIP-1431 design doc §4). Run with -race.
+//
+// Mutation-tested: temporarily removing the r.mu.Lock()/Unlock() pair around this test's write
+// goroutine (mirroring what an unlocked connect() write would look like) makes `go test -race`
+// report a DATA RACE on this exact test, confirming the lock pairing is what's actually being
+// verified here, not merely absence of a panic.
+func Test_connectionGet_ConcurrentReadWrite(t *testing.T) {
+	r := &rabbit{}
+
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	// writer: repeatedly replaces r.connection under r.mu.Lock(), mirroring connect()'s
+	// locked assignment.
+	go func() {
+		defer wg.Done()
+		for i := 0; i < 100; i++ {
+			r.mu.Lock()
+			r.connection = newMockConnection()
+			r.mu.Unlock()
+		}
+	}()
+
+	// reader: repeatedly reads via connectionGet(), mirroring QueueBind/QueueUnbind.
+	go func() {
+		defer wg.Done()
+		for i := 0; i < 100; i++ {
+			_ = r.connectionGet()
+		}
+	}()
+
+	wg.Wait()
+}
+
 // ============================================================================
 // QueueUnbind() Tests
 // ============================================================================
 
 func TestQueueUnbind_Success(t *testing.T) {
 	mockCh := newMockChannel()
+	mockConn := newMockConnection()
 
 	r := &rabbit{
 		queues:     make(map[string]*queue),
 		queueBinds: make(map[string][]*queueBind),
+		connection: mockConn,
 	}
 	r.queues["test-queue"] = &queue{
 		name:    "test-queue",
@@ -689,10 +871,12 @@ func TestQueueUnbind_Success(t *testing.T) {
 
 func TestQueueUnbind_KeepsOtherBinds(t *testing.T) {
 	mockCh := newMockChannel()
+	mockConn := newMockConnection()
 
 	r := &rabbit{
 		queues:     make(map[string]*queue),
 		queueBinds: make(map[string][]*queueBind),
+		connection: mockConn,
 	}
 	r.queues["test-queue"] = &queue{
 		name:    "test-queue",
@@ -733,16 +917,21 @@ func TestQueueUnbind_ReturnsErrorForNonExistent(t *testing.T) {
 }
 
 func TestQueueUnbind_ReturnsChannelError(t *testing.T) {
-	mockCh := newMockChannel()
-	mockCh.queueUnbindErr = errors.New("unbind failed")
+	// VOIP-1431: inject the error on the connection-provided channel -- QueueUnbind no longer
+	// touches queue.channel.
+	connCh := newMockChannel()
+	connCh.queueUnbindErr = errors.New("unbind failed")
+	mockConn := newMockConnection()
+	mockConn.channelFunc = func() (amqpChannel, error) { return connCh, nil }
 
 	r := &rabbit{
 		queues:     make(map[string]*queue),
 		queueBinds: make(map[string][]*queueBind),
+		connection: mockConn,
 	}
 	r.queues["test-queue"] = &queue{
 		name:    "test-queue",
-		channel: mockCh,
+		channel: newMockChannel(), // queue.channel: irrelevant to this path post-fix
 	}
 
 	err := r.QueueUnbind("test-queue", "key", "exchange", nil)
@@ -751,31 +940,49 @@ func TestQueueUnbind_ReturnsChannelError(t *testing.T) {
 	}
 }
 
-// TestQueueBind_IdempotentRebind verifies that binding the same (key, exchange) pair twice
-// does not create a duplicate tracked entry (VOIP-1258 round-1 review, code-quality follow-up:
-// this was the single most novel piece of logic in the diff and had no direct test).
-func TestQueueBind_IdempotentRebind(t *testing.T) {
-	mockCh := newMockChannel()
+// TestQueueUnbind_DoesNotUseQueueChannel is QueueBind's structural test mirrored for QueueUnbind.
+func TestQueueUnbind_DoesNotUseQueueChannel(t *testing.T) {
+	queueCh := newMockChannel()
+	connCh := newMockChannel()
+	mockConn := newMockConnection()
+	mockConn.channelFunc = func() (amqpChannel, error) { return connCh, nil }
 
 	r := &rabbit{
 		queues:     make(map[string]*queue),
 		queueBinds: make(map[string][]*queueBind),
+		connection: mockConn,
 	}
-	r.queues["test-queue"] = &queue{
-		name:    "test-queue",
-		channel: mockCh,
+	r.queues["test-queue"] = &queue{name: "test-queue", channel: queueCh}
+	r.queueBinds["test-queue"] = []*queueBind{{name: "test-queue", key: "key", exchange: "exchange"}}
+
+	if err := r.QueueUnbind("test-queue", "key", "exchange", nil); err != nil {
+		t.Fatalf("Expected no error, got %v", err)
 	}
 
-	if err := r.QueueBind("test-queue", "routing-key", "test-exchange", false, nil); err != nil {
-		t.Fatalf("Expected no error on first bind, got %v", err)
+	if queueCh.queueUnbindCallCount != 0 {
+		t.Errorf("Expected queue.channel.QueueUnbind to never be called, got %d call(s)", queueCh.queueUnbindCallCount)
 	}
-	if err := r.QueueBind("test-queue", "routing-key", "test-exchange", false, nil); err != nil {
-		t.Fatalf("Expected no error on idempotent re-bind, got %v", err)
+	if connCh.queueUnbindCallCount != 1 {
+		t.Errorf("Expected the connection-provided channel's QueueUnbind to be called exactly once, got %d", connCh.queueUnbindCallCount)
 	}
+	if connCh.closeCalled != 1 {
+		t.Errorf("Expected the ephemeral channel to be closed exactly once after use, got %d", connCh.closeCalled)
+	}
+}
 
-	binds := r.queueBinds["test-queue"]
-	if len(binds) != 1 {
-		t.Fatalf("Expected slice to stay at length 1 after idempotent re-bind, got %d", len(binds))
+// TestQueueUnbind_ReturnsErrorWhenConnectionClosed mirrors the above for QueueUnbind.
+func TestQueueUnbind_ReturnsErrorWhenConnectionClosed(t *testing.T) {
+	r := &rabbit{
+		queues:     make(map[string]*queue),
+		queueBinds: make(map[string][]*queueBind),
+		connection: nil,
+	}
+	r.queues["test-queue"] = &queue{name: "test-queue", channel: newMockChannel()}
+
+	err := r.QueueUnbind("test-queue", "key", "exchange", nil)
+
+	if !errors.Is(err, amqp.ErrClosed) {
+		t.Errorf("Expected amqp.ErrClosed, got %v", err)
 	}
 }
 
@@ -788,11 +995,18 @@ func TestQueueBind_IdempotentRebind(t *testing.T) {
 // via a live amqp connection, out of scope for this unit test).
 func TestRedeclareAll_RestoresAllBindsForSameQueue(t *testing.T) {
 	mockCh := newMockChannel()
+	// VOIP-1431: QueueBind's call count must now be observed on the connection-provided
+	// channel, not queue.channel -- fix channelFunc to a single shared instance so repeated
+	// QueueBind calls in the replay loop below accumulate on the same counter.
+	connCh := newMockChannel()
+	mockConn := newMockConnection()
+	mockConn.channelFunc = func() (amqpChannel, error) { return connCh, nil }
 
 	r := &rabbit{
 		queues:     make(map[string]*queue),
 		exchanges:  make(map[string]*exchange),
 		queueBinds: make(map[string][]*queueBind),
+		connection: mockConn,
 	}
 	r.queues["test-queue"] = &queue{
 		name:    "test-queue",
@@ -820,27 +1034,36 @@ func TestRedeclareAll_RestoresAllBindsForSameQueue(t *testing.T) {
 		t.Fatalf("Expected the bind snapshot to contain both tracked binds, got %d", len(bindsCopy))
 	}
 
-	mockCh.queueBindCallCount = 0 // reset so we only observe the replay below
+	connCh.queueBindCallCount = 0 // reset so we only observe the replay below
 	for _, qb := range bindsCopy {
 		if err := r.QueueBind(qb.name, qb.key, qb.exchange, qb.noWait, qb.args); err != nil {
 			t.Fatalf("Expected no error replaying bind %+v, got %v", qb, err)
 		}
 	}
 
-	if mockCh.queueBindCallCount != 2 {
-		t.Fatalf("Expected exactly 2 QueueBind calls when replaying all tracked binds (F2 regression), got %d", mockCh.queueBindCallCount)
+	if connCh.queueBindCallCount != 2 {
+		t.Fatalf("Expected exactly 2 QueueBind calls when replaying all tracked binds (F2 regression), got %d", connCh.queueBindCallCount)
+	}
+	if mockCh.queueBindCallCount != 0 {
+		t.Errorf("Expected queue.channel to never see a QueueBind call, got %d", mockCh.queueBindCallCount)
 	}
 }
 
 // TestQueueBindUnbind_ConcurrentAccess exercises QueueBind/QueueUnbind under concurrent access
 // on the same queue name to validate the mutex actually guards the map/slice mutations
-// (run with -race).
+// (run with -race). Deliberately does NOT fix mockConn's channelFunc to a shared instance --
+// mockConnection.Channel()'s default behavior of returning a fresh mockChannel per call means
+// each goroutine's bind/unbind gets its own channel object, so there is no cross-goroutine
+// channel-state sharing to worry about here; mockConnection.channelCallCnt itself is guarded by
+// its own mutex (VOIP-1431).
 func TestQueueBindUnbind_ConcurrentAccess(t *testing.T) {
 	mockCh := newMockChannel()
+	mockConn := newMockConnection()
 
 	r := &rabbit{
 		queues:     make(map[string]*queue),
 		queueBinds: make(map[string][]*queueBind),
+		connection: mockConn,
 	}
 	r.queues["test-queue"] = &queue{
 		name:    "test-queue",
@@ -873,10 +1096,12 @@ func TestQueueBindUnbind_ConcurrentAccess(t *testing.T) {
 
 func TestQueueSubscribe_CallsQueueBind(t *testing.T) {
 	mockCh := newMockChannel()
+	mockConn := newMockConnection()
 
 	r := &rabbit{
 		queues:     make(map[string]*queue),
 		queueBinds: make(map[string][]*queueBind),
+		connection: mockConn,
 	}
 	r.queues["test-queue"] = &queue{
 		name:    "test-queue",
@@ -1198,6 +1423,10 @@ func (m *closedCaptureMockChannel) ExchangeDeclare(name, kind string, durable, a
 
 func (m *closedCaptureMockChannel) QueueDeclare(name string, durable, autoDelete, exclusive, noWait bool, args amqp.Table) (amqp.Queue, error) {
 	return amqp.Queue{Name: name}, nil
+}
+
+func (m *closedCaptureMockChannel) PublishWithContext(ctx context.Context, exchange, key string, mandatory, immediate bool, msg amqp.Publishing) error {
+	return nil
 }
 
 func Test_queueDeclare_storesArgs(t *testing.T) {
@@ -1599,7 +1828,10 @@ func TestHealthChecker_ExitsWhenClosed(t *testing.T) {
 
 func TestHealthChecker_DoesNotCloseHealthyConnection(t *testing.T) {
 	mockConn := newMockConnection()
-	// channelErr is nil — Channel() returns nil, nil (success)
+	// channelErr and channelFunc are both unset, so Channel() falls through to its default:
+	// a fresh working mock channel, nil error (VOIP-1431 changed this default from (nil, nil)
+	// -- checkConnection's Channel() call below now genuinely opens and closes a channel, same
+	// as the real *amqp.Connection.Channel() would on a healthy connection).
 
 	r := &rabbit{
 		uri:                 "amqp://localhost",
