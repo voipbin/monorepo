@@ -388,9 +388,13 @@ not by anything about the watched containers' own behavior.
 ## 7. Explicitly deferred (follow-up tickets, not this one)
 
 - ~~Deleting the now-dead `bin-sentinel-manager/k8s/` manifests and `k8s.io/*`
-  dependencies.~~ **Superseded by §8**: these are being restored to active use, not deleted.
-  This bullet is now moot — kept struck through rather than removed so the history of why
-  it was originally deferred (and then reversed) stays legible.
+  dependencies.~~ **Superseded by §8, then re-reversed after §8 shipped**: §8 restored the
+  manifests to active use; a follow-up CEO decision then deleted them permanently (§8.4/§8.6's
+  correction notes) on the grounds that this repo should not own self-hosters' cluster
+  configuration. The `k8s.io/*` *dependencies* are unaffected by that follow-up — the
+  Kubernetes backend *code* stays, only the example deployment manifests are gone. Kept
+  struck through rather than rewritten so the full history (deferred → restored → deleted
+  again, for a different reason each time) stays legible.
 - Removing `ASTERISK_ID` dead env var repo-wide (already tracked: VOIP-1365). Still deferred
   — unaffected by §8; that env var was already dead before AND after this addendum (the K8s
   backend never used it either; asterisk-id has always come from the pod annotation, not an
@@ -527,9 +531,18 @@ one-consumer picture instead.
 
 - **Restored close to as-is**: `rest.InClusterConfig()` auth, the per-`(namespace,
   label-selector)` watch structure, the `AddFunc`-is-a-no-op / no-resync pattern.
-  `bin-sentinel-manager/k8s/` manifests (deployment, service, namespace, RBAC
-  role/rolebinding) — never deleted (§7 deferred that), now become live again rather than
-  dead weight.
+
+  **Reversed after this addendum shipped (CEO decision, post-merge)**: the paragraph below
+  originally kept `bin-sentinel-manager/k8s/` manifests (deployment, service, namespace, RBAC
+  role/rolebinding) and reactivated them alongside the code restore. That reasoning has been
+  overridden — this repository does not own or maintain example Kubernetes deployment
+  manifests for self-hosters; a self-hoster's cluster configuration (namespace, RBAC
+  conventions, service account naming) is theirs to own, not something VoIPBin keeps a
+  reference copy of and risks letting drift from the code. The `k8s/*.yml` files were
+  deleted in a follow-up (see git history around this date). The Kubernetes *backend code*
+  (§8.2-§8.4 below) is unaffected by this reversal — `SENTINEL_BACKEND=kubernetes` still
+  works exactly as designed, a self-hoster just supplies their own manifest for it instead of
+  one this repo ships.
 - **Rewritten, not merely restored (round-1 design review — this is the substantive
   change, not a footnote)**:
   1. **Publish call sites**: old code published `pod.Event` (raw `*corev1.Pod` wrapper,
@@ -718,15 +731,14 @@ mirroring the equivalent Docker-side test shapes already in the codebase for con
 
 ### 8.6 Deployment packaging (no code implication, noted for completeness)
 
-A K8s deployment of sentinel-manager needs `bin-sentinel-manager/k8s/*.yml` applied with
-`SENTINEL_BACKEND=kubernetes` and does **not** need the Docker-socket-proxy sidecar or Redis
-dependency §4's `komodo/docker-compose.yml` wires up — those are Docker-backend-only. A
-Docker-Compose deployment (bm-nyc-01) needs the reverse. This is packaging, not code — the
-binary is identical either way, config picks the path. No action needed in this repo beyond
-what §4 (Docker path) and the restored `k8s/` manifests (K8s path) already provide; a
-self-hoster choosing K8s uses the `k8s/` manifests, a self-hoster choosing Docker-Compose
-uses `komodo/docker-compose.yml` as a reference (it's Komodo-specific, but the compose
-service definition itself is generic).
+**Reversed after this addendum shipped** — see §8.4's correction note. A K8s deployment of
+sentinel-manager needs a `Deployment` setting `SENTINEL_BACKEND=kubernetes` and does **not**
+need the Docker-socket-proxy sidecar or Redis dependency §4's `komodo/docker-compose.yml`
+wires up — those are Docker-backend-only. A Docker-Compose deployment (bm-nyc-01) needs the
+reverse. This is packaging, not code — the binary is identical either way, config picks the
+path. This repo provides the Docker path (§4's `komodo/docker-compose.yml`, which bm-nyc-01
+actually runs); a self-hoster choosing the Kubernetes path supplies their own manifest for
+their own cluster — this repo does not ship or maintain one.
 
 ### 8.7 Non-goals (unchanged from §2, restated for this addendum)
 

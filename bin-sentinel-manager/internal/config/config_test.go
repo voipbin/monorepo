@@ -545,8 +545,8 @@ func Test_Bootstrap_registersSentinelBackend(t *testing.T) {
 	}
 }
 
-// Test_backendConstants pins the wire values used in both deployment descriptors
-// (k8s/deployment.yml and komodo/docker-compose.yml). Changing either constant without changing
+// Test_backendConstants pins the wire values a self-hoster's Kubernetes manifest and this
+// repo's komodo/docker-compose.yml must agree on. Changing either constant without changing
 // the matching descriptor crash-loops that deployment on startup validation.
 func Test_backendConstants(t *testing.T) {
 	if BackendKubernetes != "kubernetes" {

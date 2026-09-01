@@ -8,7 +8,7 @@ Most of this page is backend-specific. `SENTINEL_BACKEND` decides which half app
 
 | Symptom | Likely cause | Resolution |
 |---------|-------------|------------|
-| Service exits immediately at startup with a config error naming `sentinel_backend` | `SENTINEL_BACKEND` unset or not one of `docker`/`kubernetes` | Intentional: there is no default and no auto-detection. Set it in the deployment descriptor. `komodo/docker-compose.yml` sets `docker`, `k8s/deployment.yml` sets `kubernetes` — if you removed either line, that is the cause |
+| Service exits immediately at startup with a config error naming `sentinel_backend` | `SENTINEL_BACKEND` unset or not one of `docker`/`kubernetes` | Intentional: there is no default and no auto-detection. Set it in the deployment descriptor — `komodo/docker-compose.yml` sets `docker` for bm-nyc-01; a self-hosted Kubernetes deployment must set `kubernetes` on its own manifest (this repo does not ship one) |
 | Service exits at startup complaining a Docker-only field is missing, on a Kubernetes deployment | `SENTINEL_BACKEND=docker` on a cluster deployment | Validation is backend-conditional; the Docker fields are only required for the Docker backend. Check which value the descriptor actually sets |
 | `sentinel-control` fails where the service runs fine, or vice versa | The two binaries bootstrap config through different entry points | Both validate identically by design. If they diverge, that is a bug — check `InitConfig` vs `Bootstrap`+`LoadGlobalConfig` |
 
@@ -32,7 +32,7 @@ Most of this page is backend-specific. `SENTINEL_BACKEND` decides which half app
 
 | Symptom | Likely cause | Resolution |
 |---------|-------------|------------|
-| Service exits at startup: "did not complete its initial sync within 60s" | Missing or misbound `pod-reader` RBAC on the `voip` namespace | Apply `k8s/rbac/`. The initial `List` is being denied and client-go retries forever; the deadline is what turns that hang into a visible failure. Verify with `kubectl auth can-i list pods -n voip --as=system:serviceaccount:bin-manager:sentinel-manager` |
+| Service exits at startup: "did not complete its initial sync within 60s" | Missing or misbound `pod-reader` RBAC on the `voip` namespace | Bind a `Role` granting `get`/`list`/`watch` on pods in `voip` to the service account (this repo does not ship the manifest — configure it for your own cluster). The initial `List` is being denied and client-go retries forever; the deadline is what turns that hang into a visible failure. Verify with `kubectl auth can-i list pods -n voip --as=system:serviceaccount:<your-namespace>:<your-service-account>` |
 | Service exits: "the pod watch failed N consecutive times without recovering" | Sustained apiserver unreachability, or RBAC revoked while running | Intentional fail-loud. Check apiserver health and the role binding. `sentinel_manager_pod_watch_health_total{outcome="transient-error"}` shows how long it had been failing |
 | `sentinel_manager_pod_watch_health_total{outcome="transient-error"}` rising with matching `resynced` | The watch is flapping but recovering — apiserver rolling restart, or repeated `too old resource version` | Not fatal by design. Deltas can be lost in the gaps, which is why tombstone and uid-mismatch detection exist; correlate with `pod_died_detection_total` |
 | `sentinel_manager_pod_died_detection_total{source="tombstone"}` or `{source="uid-mismatch"}` climbing | Deaths are being recovered from relists rather than seen on the live watch | Nothing is lost — those events still publish — but it is direct evidence of watch instability. Investigate the apiserver connection before something *is* lost |
@@ -51,11 +51,11 @@ docker logs bin-sentinel-manager-sentinel-manager-1 | grep "Completed the boot-t
 docker logs bin-sentinel-manager-sentinel-manager-1 | grep "Opening the docker event stream"
 ```
 
-Kubernetes backend:
+Kubernetes backend (adjust namespace/deployment name to your own manifest — this repo does not fix these values):
 
 ```bash
-kubectl logs -n bin-manager deploy/sentinel-manager | grep "Started the pod informer"
-kubectl logs -n bin-manager deploy/sentinel-manager | grep "completed its initial sync"
+kubectl logs -n <your-namespace> deploy/<your-deployment-name> | grep "Started the pod informer"
+kubectl logs -n <your-namespace> deploy/<your-deployment-name> | grep "completed its initial sync"
 ```
 
 Three "Started the pod informer" lines are expected, one per watched selector. Fewer means an informer failed to start, which also fails the whole process.
@@ -142,9 +142,9 @@ The Kubernetes backend needs no configuration beyond `SENTINEL_BACKEND=kubernete
 
 ### Kubernetes
 
-Apply `k8s/*.yml`. `deployment.yml` sets `SENTINEL_BACKEND=kubernetes`; `k8s/rbac/` grants the `pod-reader` role the informer needs. Neither the docker-socket-proxy sidecar nor Redis is involved on this path.
+**This repository does not ship or maintain Kubernetes deployment manifests.** A self-hoster running the Kubernetes backend is responsible for their own `Deployment` (setting `SENTINEL_BACKEND=kubernetes`) and a `pod-reader` `Role`/`RoleBinding` granting `get`/`list`/`watch` on pods in `voip` — configuration specific to their own cluster's namespace, service account, and RBAC conventions, which VoIPBin has no way to own or keep current on their behalf. Neither the docker-socket-proxy sidecar nor Redis is involved on this path.
 
-These manifests were briefly dead — the Docker-only stage of VOIP-1418 left them in place but unused — and are live again as of the §8 addendum.
+(An earlier revision of this ticket shipped a reference `k8s/*.yml` under this directory; it was removed as out of scope for this repository — see git history around VOIP-1418 if a starting point is useful, understanding it will not be kept in sync with the code going forward.)
 
 ### Docker (bm-nyc-01)
 
