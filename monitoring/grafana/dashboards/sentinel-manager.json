@@ -253,6 +253,97 @@
     {
       "collapsed": false,
       "gridPos": { "h": 1, "w": 24, "x": 0, "y": 24 },
+      "id": 104,
+      "title": "Recovery Health (leading indicators)",
+      "type": "row"
+    },
+    {
+      "datasource": "${DS_PROMETHEUS}",
+      "description": "Each increment is one container death that will NOT trigger call recovery: call-manager's empty-id guard drops the event. Expected to sit flat at zero. A non-zero rate means the asterisk-id could not be resolved before the container died - check the Redis DB index and that the container's asterisk-proxy sidecar is writing asterisk.<id>.address-internal.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 20,
+            "spanNulls": false,
+            "stacking": { "mode": "none" }
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 25 },
+      "id": 10,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum"] }, "tooltip": { "mode": "multi" } },
+      "targets": [
+        {
+          "datasource": "${DS_PROMETHEUS}",
+          "expr": "sum by (container_name) (rate(sentinel_manager_container_unresolved_asterisk_id_total[5m])) * 60",
+          "legendFormat": "{{container_name}}"
+        }
+      ],
+      "title": "Deaths Published Without a Resolved asterisk-id",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "${DS_PROMETHEUS}",
+      "description": "LEADING INDICATOR - alert on this BEFORE a recovery is lost. A refresh pass found no fresh Redis address for a container whose id was already resolved. The id is deliberately kept (sticky last-known), so nothing has broken yet, but the NEXT recreation of this container will have to re-resolve from nothing. Usually means that container's asterisk-proxy sidecar stopped refreshing its key.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 20,
+            "spanNulls": false,
+            "stacking": { "mode": "none" }
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 25 },
+      "id": 11,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum"] }, "tooltip": { "mode": "multi" } },
+      "targets": [
+        {
+          "datasource": "${DS_PROMETHEUS}",
+          "expr": "sum by (container_name) (rate(sentinel_manager_container_asterisk_id_refresh_miss_total[5m])) * 60",
+          "legendFormat": "{{container_name}}"
+        }
+      ],
+      "title": "asterisk-id Refresh Misses",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "${DS_PROMETHEUS}",
+      "description": "A healthy Docker event stream BLOCKS rather than returning, so an idle fleet leaves this flat at zero. result=\"empty\" means a stream attempt ended without delivering any event - the signature of an unreachable socket proxy, i.e. sentinel is up but watching nothing. 20 consecutive empty results exit the process (visible Komodo crash-loop); a sustained empty rate BELOW that threshold is a flapping stream that stays up and silently loses events in the gaps.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 20,
+            "spanNulls": false,
+            "stacking": { "mode": "none" }
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 33 },
+      "id": 12,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum"] }, "tooltip": { "mode": "multi" } },
+      "targets": [
+        {
+          "datasource": "${DS_PROMETHEUS}",
+          "expr": "sum by (result) (rate(sentinel_manager_container_event_stream_reconnect_total[5m])) * 60",
+          "legendFormat": "{{result}}"
+        }
+      ],
+      "title": "Docker Event Stream Reconnects",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 41 },
       "id": 102,
       "title": "API & RPC Performance",
       "type": "row"
@@ -271,7 +362,7 @@
           "unit": "ms"
         }
       },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 25 },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 42 },
       "id": 7,
       "options": { "legend": { "displayMode": "table", "placement": "bottom" }, "tooltip": { "mode": "multi" } },
       "targets": [
@@ -308,7 +399,7 @@
           "unit": "short"
         }
       },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 25 },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 42 },
       "id": 8,
       "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum"] }, "tooltip": { "mode": "multi" } },
       "targets": [
@@ -323,7 +414,7 @@
     },
     {
       "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 33 },
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 50 },
       "id": 103,
       "title": "Events",
       "type": "row"
@@ -342,7 +433,7 @@
           "unit": "short"
         }
       },
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 34 },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 51 },
       "id": 9,
       "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum"] }, "tooltip": { "mode": "multi" } },
       "targets": [

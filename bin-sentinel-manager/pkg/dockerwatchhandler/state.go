@@ -200,13 +200,3 @@ func (h *flapTracker) Record(containerName string, now time.Time) bool {
 
 	return len(kept) <= h.threshold
 }
-
-// Forget drops a container's flap history. Nothing calls it on the hot path today; it exists so a
-// future explicit "this container is intentionally being replaced" signal can reset the window
-// without restarting the process.
-func (h *flapTracker) Forget(containerName string) {
-	h.mu.Lock()
-	defer h.mu.Unlock()
-
-	delete(h.deaths, containerName)
-}

@@ -136,7 +136,10 @@ func Test_stateTable_ResolveIsSticky(t *testing.T) {
 			expectID:     "",
 		},
 		{
-			name: "a_genuinely_new_id_does_replace_the_old_one",
+			// Resolve is the low-level primitive and DOES overwrite. The policy that refuses an
+			// unexplained id change for an already-resolved entry lives one level up, in
+			// refreshOnce -- see Test_refreshOnce_idChangeKeepsTheExistingID.
+			name: "the_primitive_itself_overwrites_a_different_id",
 
 			initialID: "3e:50:6b:43:bb:32",
 			resolveID: "72:ce:24:e6:51:2f",
@@ -423,23 +426,6 @@ func Test_flapTracker_PerContainerIsolation(t *testing.T) {
 	}
 }
 
-func Test_flapTracker_Forget(t *testing.T) {
-	base := time.Date(2026, 9, 1, 10, 0, 0, 0, time.UTC)
-	tracker := newFlapTracker(60*time.Second, 1)
-	name := "voip-asterisk-call-docker-1"
-
-	tracker.Record(name, base)
-	if res := tracker.Record(name, base.Add(time.Second)); res {
-		t.Fatalf("Wrong match. expect: damped, got: publish")
-	}
-
-	tracker.Forget(name)
-
-	if res := tracker.Record(name, base.Add(2*time.Second)); !res {
-		t.Errorf("Wrong match. expect: publish after Forget, got: damped")
-	}
-}
-
 func Test_flapTracker_ConcurrentAccess(t *testing.T) {
 	tracker := newFlapTracker(60*time.Second, flapThreshold)
 
@@ -447,7 +433,7 @@ func Test_flapTracker_ConcurrentAccess(t *testing.T) {
 	for i := 0; i < 100; i++ {
 		wg.Add(2)
 		go func() { defer wg.Done(); tracker.Record("voip-asterisk-call-docker-1", time.Now()) }()
-		go func() { defer wg.Done(); tracker.Forget("voip-asterisk-call-docker-2") }()
+		go func() { defer wg.Done(); tracker.Record("voip-asterisk-call-docker-2", time.Now()) }()
 	}
 	wg.Wait()
 }

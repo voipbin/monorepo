@@ -332,3 +332,36 @@ W1-W6 implemented. W0 was re-scoped mid-implementation (see "Deviations" below).
 - `bin-sentinel-manager/k8s/` manifests are untouched (design §7), even though now fully dead.
 - The dead `ASTERISK_ID` env var (VOIP-1365).
 - The restart-vs-recreate MAC-stability empirical check (design §3.4) — not run; it informs flap-damping tuning only, and the shipped threshold (3 deaths / 60s) is the design's stated starting point.
+
+## Code review round 1 — fixes applied
+
+code-reviewer + security-reviewer, run in parallel. Both independently flagged the same top
+finding (#1). All 8 items addressed.
+
+| # | Severity | Fix |
+|---|---|---|
+| 1 | HIGH (both) | `runService` now returns `error`; `run` propagates it; `main` turns it into `os.Exit(1)`. Docker-client-creation and Redis-connect failures return errors too, instead of log-and-return. The documented "exit non-zero / crash-loop" promise in design §3.2, `boot.go`, `events.go`, and the compose file is now actually implemented. |
+| 2 | HIGH | `runEventLoop` returns `error` and gives up after `maxConsecutiveEmptyStreams` (20 ≈ 1 min) attempts that deliver no events, feeding the same fail-loud exit path. `consumeEvents` now reports whether an attempt delivered anything; a delivering attempt resets the budget. New counter `sentinel_manager_container_event_stream_reconnect_total{result="delivered"\|"empty"}` makes sub-threshold flapping alertable. A healthy stream blocks rather than returning, so an idle fleet never increments `empty`. |
+| 3 | MEDIUM | New Grafana row "Recovery Health (leading indicators)" with three panels: unresolved-asterisk-id deaths, refresh misses, and event-stream reconnects. Each carries a `description` explaining what a non-zero value means and what to check. Existing rows shifted down; JSON re-validated. |
+| 4 | MEDIUM | The same-entry id-change branch now **keeps the existing id** and logs WARN with old/new context, instead of silently overwriting. Conservative because the old id was resolved while this generation was demonstrably alive, whereas adopting an unexplained new one risks firing recovery against a different, still-live instance. Rationale recorded in a code comment; three table cases plus a repeated-pass stability test added. |
+| 5 | MEDIUM | Residual-risk text corrected in `komodo/docker-compose.yml`, `CLAUDE.md`, and `docs/operations.md`. The proxy ACL is path-prefix based, so `CONTAINERS=1` also permits `/containers/{id}/archive`, `/export`, `/logs`, and `/attach/ws` — near-total read access to every container's data on the host, not "env vars via inspect". Network scope is stated as the entire mitigation. |
+| 6 | LOW | `EventSMContainerDied` gets a `c == nil` guard. `json.Unmarshal` of a literal `null` into a `**Event` succeeds and leaves the pointer nil, which previously panicked the subscribe loop. Covered from both sides (handler-level nil case, and a `null` payload through `processEvent`) and mutation-checked. |
+| 7 | LOW | `docs/conventions/naming.md` example updated to `smcontainer "monorepo/bin-sentinel-manager/models/container"`. Both `.docs-gen` extracts regenerated via `docs/reference/extractor.sh` — they picked up the new config flags and the renamed metric set. |
+| 8 | LOW | `flapTracker.Forget` removed along with its tests; its one concurrency-test use replaced with a second `Record` call. |
+
+Not fixed, by the reviewer's own scoping: unauthenticated Redis on the `production` network lets
+any container there write `asterisk.<id>.address-internal` and steer `RecoveryStart`. Pre-existing
+trust assumption (call-manager already trusted these keys); separate ticket material.
+
+### Verification of the fixes
+
+- Mutation-checked, each confirmed failing when the fix is reverted: the empty-id guard (#6, panics),
+  the keep-existing-id branch (#4, 4 subtests fail), the give-up condition (#2, 2 tests fail).
+- Fail-loud exit code (#1) confirmed at `exit 1` by running the built binary down the cobra
+  `RunE`/`Execute` error path — the same path `runService`'s error now takes. **Caveat:** with an
+  unreachable RabbitMQ, `sockHandler.Connect()` blocks before the docker/redis checks are reached,
+  so a full end-to-end fail-loud run needs a reachable broker. That blocking is shared
+  `bin-common-handler` behavior identical in all 38 services, not introduced here.
+- `cmd/` has no test files in this repo (true of both cmds before this change), so the
+  `runService` → `run` → `main` wiring is covered by inspection plus the binary check above rather
+  than by a unit test; `dockerwatchhandler.Run`'s own error return is unit-tested.

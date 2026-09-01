@@ -103,7 +103,7 @@ import (
     commonaddress "monorepo/bin-common-handler/models/address"
     commonidentity "monorepo/bin-common-handler/models/identity"
     commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
-    smpod "monorepo/bin-sentinel-manager/models/pod"
+    smcontainer "monorepo/bin-sentinel-manager/models/container"
 )
 
 // WRONG — unclear or inconsistent aliases

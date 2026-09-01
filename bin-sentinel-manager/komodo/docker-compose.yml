@@ -88,11 +88,34 @@ services:
   # explicitly as 0 rather than left to the image defaults - upstream defaults
   # have changed across versions, and this ACL is the entire security boundary.
   #
-  # ACCEPTED, DOCUMENTED RESIDUAL RISK: CONTAINERS=1 exposes
-  # /containers/{id}/json, which includes container env vars (i.e. secrets in
-  # env) for anything that can reach this proxy. The image has no field-level
-  # ACL to shrink that further, so the mitigation is network scope: this proxy
-  # is reachable only from the private `docker-socket` network below.
+  # ACCEPTED, DOCUMENTED RESIDUAL RISK - READ THIS BEFORE RELOCATING THE PROXY.
+  #
+  # The proxy's ACL is path-prefix based (`path_beg /containers`), NOT
+  # per-endpoint. CONTAINERS=1 therefore grants far more than the one inspect
+  # call sentinel actually makes. Anything that can reach this proxy can, for
+  # ANY container on the host:
+  #
+  #   GET /containers/{id}/json      - full config, including env vars, i.e.
+  #                                    every secret passed through the
+  #                                    environment by every service on the box
+  #   GET /containers/{id}/archive   - read ARBITRARY FILES out of the
+  #                                    container filesystem
+  #   GET /containers/{id}/export    - stream the entire container filesystem
+  #   GET /containers/{id}/logs      - read application logs
+  #   GET /containers/{id}/attach/ws - attach to container streams
+  #
+  # In other words: near-total read access to the data of every container on
+  # bm-nyc-01, not merely "env vars via inspect". It is read-only (POST and
+  # every mutating family are denied above), so it is not host code execution,
+  # but on compromise of anything that can reach this endpoint it is close to
+  # full host data disclosure.
+  #
+  # The image offers no field-level or per-endpoint ACL to shrink this, so
+  # NETWORK SCOPE IS THE ENTIRE MITIGATION: this proxy is reachable only from
+  # the private `docker-socket` network below, whose sole other member is
+  # sentinel-manager. Moving it onto `production` would expose all of the above
+  # to every one of the ~50 containers on that network. Do not "consolidate"
+  # this proxy anywhere shared believing the exposure is env-vars-only.
   sentinel-docker-socket-proxy:
     image: tecnativa/docker-socket-proxy:v0.5.0@sha256:1f5038b54f06c3e18422902cf00ba21803d1c97805aae032e5e6673d532d3459
     logging:

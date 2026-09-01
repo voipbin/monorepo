@@ -160,20 +160,7 @@
       "pattern": "/v1/recordings/{{UUID}}/stop$"
     }
   ],
-  "events_subscribed": [
-    {
-      "queue_symbol": "asterisk.all.event"
-    },
-    {
-      "queue_symbol": "bin-manager.customer-manager.event"
-    },
-    {
-      "queue_symbol": "bin-manager.flow-manager.event"
-    },
-    {
-      "queue_symbol": "bin-manager.sentinel-manager.event"
-    }
-  ],
+  "events_subscribed": [],
   "events_published": [
     {
       "event_type_symbol": "call.EventTypeCallCreated"
@@ -242,6 +229,10 @@
       "local_path": "../bin-flow-manager"
     },
     {
+      "module_path": "monorepo/bin-webchat-manager",
+      "local_path": "../bin-webchat-manager"
+    },
+    {
       "module_path": "monorepo/bin-hook-manager",
       "local_path": "../bin-hook-manager"
     },
@@ -276,6 +267,10 @@
     {
       "module_path": "monorepo/bin-route-manager",
       "local_path": "../bin-route-manager"
+    },
+    {
+      "module_path": "monorepo/bin-schedule-manager",
+      "local_path": "../bin-schedule-manager"
     },
     {
       "module_path": "monorepo/bin-sentinel-manager",
@@ -425,5 +420,7 @@
       "name": "subscribe_event_process_time"
     }
   ],
-  "missing_fields": []
+  "missing_fields": [
+    "events_subscribed"
+  ]
 }

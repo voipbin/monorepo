@@ -56,6 +56,22 @@ const (
 	// resumed with `since=<last processed event>`, so the gap is bounded rather than lossy.
 	reconnectDelay = 3 * time.Second
 
+	// maxConsecutiveEmptyStreams bounds how long sentinel will keep silently retrying a dead
+	// event stream before giving up and exiting non-zero.
+	//
+	// A HEALTHY stream never returns: the Docker Events API blocks until the context is cancelled
+	// or the connection breaks, so an idle fleet does not tick this counter. An attempt that ends
+	// WITHOUT having delivered a single message therefore means the stream could not be
+	// established (or died instantly) -- the socket proxy is gone, the ACL changed, the network
+	// is partitioned. Any attempt that delivers at least one event resets the counter to zero.
+	//
+	// 20 attempts at reconnectDelay = roughly a minute of continuous failure, which comfortably
+	// outlasts a proxy restart or a compose redeploy while still failing fast enough that Komodo
+	// shows a crash-loop rather than a container sitting "up" and watching nothing. Retrying
+	// forever with only a log line is exactly the failure mode design §3.2 calls worse than being
+	// visibly down.
+	maxConsecutiveEmptyStreams = 20
+
 	// flapWindow / flapThreshold damp a crash-looping container: past flapThreshold deaths inside
 	// flapWindow, further deaths in that window are logged but NOT published. Repeatedly firing
 	// recovery against a container stuck in a crash-loop just spams Homer/PJSIP for channels that
@@ -265,6 +281,22 @@ var (
 		},
 		[]string{"container_name"},
 	)
+
+	// promContainerEventStreamReconnectCounter makes post-boot stream loss observable.
+	//
+	// The boot-time failure path is loud by construction (the process exits), but a proxy that
+	// dies AFTER boot would otherwise only produce log lines, leaving sentinel up and watching
+	// nothing with no metric to alert on. `result="empty"` counts an attempt that ended without
+	// delivering a single event -- the signature of an unreachable stream. A sustained rate of
+	// those is the alert; maxConsecutiveEmptyStreams of them in a row exits the process.
+	promContainerEventStreamReconnectCounter = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "container_event_stream_reconnect_total",
+			Help:      "Counts docker event stream attempts that ended, by whether the attempt delivered any event",
+		},
+		[]string{"result"},
+	)
 )
 
 func init() {
@@ -272,5 +304,6 @@ func init() {
 		promContainerStateChangeCounter,
 		promContainerUnresolvedAsteriskIDCounter,
 		promContainerRefreshMissCounter,
+		promContainerEventStreamReconnectCounter,
 	)
 }

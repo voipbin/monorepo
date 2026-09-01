@@ -59,6 +59,10 @@
       "local_path": "../bin-flow-manager"
     },
     {
+      "module_path": "monorepo/bin-webchat-manager",
+      "local_path": "../bin-webchat-manager"
+    },
+    {
       "module_path": "monorepo/bin-hook-manager",
       "local_path": "../bin-hook-manager"
     },
@@ -93,6 +97,10 @@
     {
       "module_path": "monorepo/bin-route-manager",
       "local_path": "../bin-route-manager"
+    },
+    {
+      "module_path": "monorepo/bin-schedule-manager",
+      "local_path": "../bin-schedule-manager"
     },
     {
       "module_path": "monorepo/bin-storage-manager",
@@ -136,11 +144,32 @@
     },
     {
       "flag": "prometheus_listen_address"
+    },
+    {
+      "flag": "docker_socket_proxy_address"
+    },
+    {
+      "flag": "redis_address"
+    },
+    {
+      "flag": "redis_password"
+    },
+    {
+      "flag": "redis_database"
     }
   ],
   "metrics": [
     {
-      "name": "pod_state_change_total"
+      "name": "container_asterisk_id_refresh_miss_total"
+    },
+    {
+      "name": "container_event_stream_reconnect_total"
+    },
+    {
+      "name": "container_state_change_total"
+    },
+    {
+      "name": "container_unresolved_asterisk_id_total"
     }
   ],
   "missing_fields": []

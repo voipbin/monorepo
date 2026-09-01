@@ -8,6 +8,7 @@ import (
 	dockercontainer "github.com/docker/docker/api/types/container"
 	dockerevents "github.com/docker/docker/api/types/events"
 	"github.com/pkg/errors"
+	"github.com/prometheus/client_golang/prometheus/testutil"
 	"go.uber.org/mock/gomock"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
@@ -523,10 +524,13 @@ func Test_consumeEvents_advancesTheCursor(t *testing.T) {
 		Return((<-chan dockerevents.Message)(messages), (<-chan error)(errs))
 	mockNotify.EXPECT().PublishEvent(gomock.Any(), container.EventTypeContainerDied, gomock.Any())
 
-	res := h.consumeEvents(context.Background(), "")
+	res, delivered := h.consumeEvents(context.Background(), "")
 
 	if res != "1756713700.000000001" {
 		t.Errorf("Wrong match. expect: 1756713700.000000001, got: %s", res)
+	}
+	if !delivered {
+		t.Errorf("Wrong match. expect: delivered=true, got: false")
 	}
 }
 
@@ -553,10 +557,13 @@ func Test_consumeEvents_returnsOnStreamError(t *testing.T) {
 		Events(gomock.Any(), gomock.Any()).
 		Return((<-chan dockerevents.Message)(messages), (<-chan error)(errs))
 
-	res := h.consumeEvents(context.Background(), "1756713600.000000001")
+	res, delivered := h.consumeEvents(context.Background(), "1756713600.000000001")
 
 	if res != "1756713600.000000001" {
 		t.Errorf("Wrong match. expect: the cursor to survive the error, got: %s", res)
+	}
+	if delivered {
+		t.Errorf("Wrong match. expect: delivered=false on a stream that produced only an error, got: true")
 	}
 }
 
@@ -583,7 +590,10 @@ func Test_consumeEvents_returnsOnContextCancel(t *testing.T) {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	done := make(chan string, 1)
-	go func() { done <- h.consumeEvents(ctx, "cursor") }()
+	go func() {
+		res, _ := h.consumeEvents(ctx, "cursor")
+		done <- res
+	}()
 
 	cancel()
 
@@ -702,5 +712,142 @@ func Test_Run_seedsThenRefreshesThenWatches(t *testing.T) {
 
 	if err := h.Run(ctx); err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+}
+
+// Test_runEventLoop_exitsAfterConsecutiveEmptyStreams pins the post-boot fail-loud path.
+//
+// Before this guard, a socket proxy that died AFTER boot left the loop retrying forever with only
+// a log line -- sentinel "up" and watching nothing, exactly the failure mode design §3.2 calls
+// worse than being visibly down. The loop must give up and return an error, which propagates to a
+// non-zero process exit and a visible Komodo crash-loop.
+func Test_runEventLoop_exitsAfterConsecutiveEmptyStreams(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDocker := NewMockdockerClient(mc)
+
+	h := &dockerWatchHandler{
+		notifyHandler:  notifyhandler.NewMockNotifyHandler(mc),
+		dockerClient:   mockDocker,
+		state:          newStateTable(),
+		flap:           newFlapTracker(flapWindow, flapThreshold),
+		reconnectDelay: time.Millisecond,
+	}
+
+	attempts := 0
+	mockDocker.EXPECT().
+		Events(gomock.Any(), gomock.Any()).
+		DoAndReturn(func(context.Context, dockerevents.ListOptions) (<-chan dockerevents.Message, <-chan error) {
+			attempts++
+			// an immediately-closed message channel is what an unreachable proxy looks like:
+			// the attempt ends without ever delivering an event.
+			messages := make(chan dockerevents.Message)
+			close(messages)
+			return messages, make(chan error)
+		}).
+		Times(maxConsecutiveEmptyStreams)
+
+	before := testutil.ToFloat64(promContainerEventStreamReconnectCounter.WithLabelValues(streamResultEmpty))
+
+	err := h.runEventLoop(context.Background())
+	if err == nil {
+		t.Fatalf("Wrong match. expect: error after %d empty streams, got: nil", maxConsecutiveEmptyStreams)
+	}
+
+	if attempts != maxConsecutiveEmptyStreams {
+		t.Errorf("Wrong match. expect: %d attempts, got: %d", maxConsecutiveEmptyStreams, attempts)
+	}
+
+	after := testutil.ToFloat64(promContainerEventStreamReconnectCounter.WithLabelValues(streamResultEmpty))
+	if delta := after - before; delta != float64(maxConsecutiveEmptyStreams) {
+		t.Errorf("Wrong match. expect: the empty-result counter to advance by %d, got: %v", maxConsecutiveEmptyStreams, delta)
+	}
+}
+
+// Test_runEventLoop_deliveredStreamResetsTheFailureCount pins that the give-up counter tracks
+// CONSECUTIVE failures. A stream that delivers events proves the proxy is reachable, so the budget
+// must reset -- otherwise a long-lived sentinel would eventually exit from accumulated unrelated
+// blips.
+func Test_runEventLoop_deliveredStreamResetsTheFailureCount(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDocker := NewMockdockerClient(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+	h := &dockerWatchHandler{
+		notifyHandler:  mockNotify,
+		dockerClient:   mockDocker,
+		state:          newStateTable(),
+		flap:           newFlapTracker(flapWindow, flapThreshold),
+		reconnectDelay: time.Millisecond,
+	}
+
+	// the FIRST attempt delivers an event and then ends; every later attempt is empty. If the
+	// counter reset works, the loop survives exactly one extra round.
+	attempts := 0
+	mockDocker.EXPECT().
+		Events(gomock.Any(), gomock.Any()).
+		DoAndReturn(func(context.Context, dockerevents.ListOptions) (<-chan dockerevents.Message, <-chan error) {
+			attempts++
+
+			messages := make(chan dockerevents.Message, 1)
+			if attempts == 1 {
+				messages <- containerEvent(dockerevents.ActionDie, "id-1", "voip-asterisk-call-docker-1", 1756713600000000000)
+			}
+			close(messages)
+
+			return messages, make(chan error)
+		}).
+		Times(maxConsecutiveEmptyStreams + 1)
+
+	mockNotify.EXPECT().PublishEvent(gomock.Any(), container.EventTypeContainerDied, gomock.Any())
+
+	beforeDelivered := testutil.ToFloat64(promContainerEventStreamReconnectCounter.WithLabelValues(streamResultDelivered))
+
+	if err := h.runEventLoop(context.Background()); err == nil {
+		t.Fatalf("Wrong match. expect: error eventually, got: nil")
+	}
+
+	if attempts != maxConsecutiveEmptyStreams+1 {
+		t.Errorf("Wrong match. expect: %d attempts (the delivering one resets the budget), got: %d", maxConsecutiveEmptyStreams+1, attempts)
+	}
+
+	afterDelivered := testutil.ToFloat64(promContainerEventStreamReconnectCounter.WithLabelValues(streamResultDelivered))
+	if delta := afterDelivered - beforeDelivered; delta != 1 {
+		t.Errorf("Wrong match. expect: the delivered-result counter to advance by 1, got: %v", delta)
+	}
+}
+
+// Test_runEventLoop_stopsCleanlyOnContextCancel pins that a normal shutdown is NOT an error: a
+// SIGTERM must exit 0, not crash-loop.
+func Test_runEventLoop_stopsCleanlyOnContextCancel(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDocker := NewMockdockerClient(mc)
+
+	h := &dockerWatchHandler{
+		notifyHandler:  notifyhandler.NewMockNotifyHandler(mc),
+		dockerClient:   mockDocker,
+		state:          newStateTable(),
+		flap:           newFlapTracker(flapWindow, flapThreshold),
+		reconnectDelay: time.Millisecond,
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+
+	mockDocker.EXPECT().
+		Events(gomock.Any(), gomock.Any()).
+		DoAndReturn(func(context.Context, dockerevents.ListOptions) (<-chan dockerevents.Message, <-chan error) {
+			cancel()
+			messages := make(chan dockerevents.Message)
+			close(messages)
+			return messages, make(chan error)
+		})
+
+	if err := h.runEventLoop(ctx); err != nil {
+		t.Errorf("Wrong match. expect: nil on a clean shutdown, got: %v", err)
 	}
 }

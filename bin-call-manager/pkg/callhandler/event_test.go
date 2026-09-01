@@ -295,6 +295,16 @@ func Test_EventSMContainerDied(t *testing.T) {
 			expectRecovery: false,
 		},
 		{
+			// `json.Unmarshal` of a literal `null` body into a **Event succeeds and leaves the
+			// pointer nil. Without the guard this panics the whole subscribe loop on the first
+			// field read.
+			name: "nil event is skipped without panicking",
+
+			event: nil,
+
+			expectRecovery: false,
+		},
+		{
 			name: "unresolved asterisk id skips the recovery",
 
 			event: &smcontainer.Event{

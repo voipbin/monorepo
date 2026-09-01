@@ -69,6 +69,21 @@ func Test_processEvent_processEventSMContainerDied(t *testing.T) {
 			},
 		},
 		{
+			// This is the real path to a nil payload: `json.Unmarshal` of a literal `null` into a
+			// **Event SUCCEEDS and leaves the pointer nil. callhandler's EventSMContainerDied
+			// carries the nil guard that keeps this from panicking the subscribe loop.
+			name: "null payload unmarshals to a nil event",
+
+			event: &sock.Event{
+				Publisher: "sentinel-manager",
+				Type:      smcontainer.EventTypeContainerDied,
+				DataType:  "application/json",
+				Data:      []byte(`null`),
+			},
+
+			expectedContainer: nil,
+		},
+		{
 			name: "missing fields unmarshal to their zero values",
 
 			event: &sock.Event{

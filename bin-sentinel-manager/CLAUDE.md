@@ -16,9 +16,15 @@ Service class: **A2** — Docker container lifecycle monitor. No inbound RPC. No
 
 Do not add a Docker API call to `dockerwatchhandler`'s `dockerClient` interface without checking it against that ACL — a call the proxy denies fails at runtime, not at compile time.
 
+**The proxy ACL is path-prefix based, not per-endpoint, so `CONTAINERS=1` grants much more than the one inspect call this service makes.** Anything able to reach the proxy can, for *any* container on the host, read `/containers/{id}/json` (full config including every env-var secret), `/containers/{id}/archive` (arbitrary files out of the container filesystem), `/containers/{id}/export` (the whole filesystem), `/containers/{id}/logs`, and `/containers/{id}/attach/ws`. That is near-total read access to every container's data on bm-nyc-01 — not "env vars via inspect". It is read-only, so not host code execution, but on compromise it is close to full host data disclosure.
+
+The image has no field-level or per-endpoint ACL, so **network scope is the entire mitigation**: the proxy lives on a Stack-local `internal: true` network whose only other member is this service. Never move it onto `production`, and never "consolidate" it into a shared proxy Stack, believing the exposure is env-vars-only.
+
 ## CRITICAL: fail loud, never watch nothing
 
-If the socket proxy is unreachable at startup, `dockerwatchhandler.Run` returns an error and the process exits (Komodo surfaces the crash-loop). A sentinel that *looks* up but watches nothing is worse than one that is visibly down — never downgrade that to a warning-and-continue.
+If the socket proxy is unreachable at startup, `dockerwatchhandler.Run` returns an error, `runService` propagates it, and `main` exits **non-zero** so Komodo reports a crash-loop rather than a container that exited successfully. A sentinel that *looks* up but watches nothing is worse than one that is visibly down — never downgrade any of this to a warning-and-continue, and never swallow the error on the way out of `runService`.
+
+The same rule covers proxy loss *after* boot, which is the easier one to get wrong: `runEventLoop` reconnects with a `since` cursor, but only up to `maxConsecutiveEmptyStreams` attempts that deliver no events (≈1 minute). Past that it returns an error into the same exit path. Every attempt is counted on `sentinel_manager_container_event_stream_reconnect_total{result="delivered"|"empty"}`, so a stream that is flapping short of the exit threshold is still alertable. A healthy stream blocks instead of returning, so an idle fleet never increments `empty`.
 
 ## CRITICAL: the asterisk-id is resolved before the death, never at it
 
@@ -62,7 +68,7 @@ Debugging tool. All output is JSON on stdout; logs go to stderr. It dials the sa
 - Address model: `models/asteriskaddress/` — key parsing and the freshness rule
 - Watched containers: compile-time name prefixes in `pkg/dockerwatchhandler/main.go` (`voip-asterisk-{call,conference,registrar}-docker-<N>`); the `-proxy` sidecars are excluded by requiring a bare replica index after the prefix
 - Published via `notifyHandler.PublishEvent()` to `QueueNameSentinelEvent`, with `WithGlobalTopicPublish()`
-- Prometheus counters: `sentinel_manager_container_state_change_total` (labels: `container_name`, `service`, `state`), `sentinel_manager_container_unresolved_asterisk_id_total`, `sentinel_manager_container_asterisk_id_refresh_miss_total`
+- Prometheus counters: `sentinel_manager_container_state_change_total` (labels: `container_name`, `service`, `state`), `sentinel_manager_container_unresolved_asterisk_id_total`, `sentinel_manager_container_asterisk_id_refresh_miss_total`, `sentinel_manager_container_event_stream_reconnect_total` (label: `result`)
 - Deployment: `komodo/docker-compose.yml`, single replica, deployed by CircleCI's `bin-sentinel-manager-deploy` job
 - `k8s/` is **dead** and intentionally left in place — its removal is deferred to a follow-up ticket (design §7). Do not delete it as drive-by cleanup.
 - Testing: `go.uber.org/mock`, table-driven, mock files co-located (`mock_*.go`); `pkg/cachehandler` tests run against in-process `miniredis`

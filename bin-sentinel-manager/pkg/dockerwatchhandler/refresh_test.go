@@ -246,6 +246,18 @@ func Test_refreshOnce(t *testing.T) {
 			expectIDs: map[string]string{"voip-asterisk-call-docker-1": "3e:50:6b:43:bb:32"},
 		},
 		{
+			name: "a_different_fresh_id_does_not_overwrite_a_resolved_one",
+
+			entries: []seededEntry{
+				{"voip-asterisk-call-docker-1", container.ServiceAsteriskCall, "172.24.0.101", "3e:50:6b:43:bb:32"},
+			},
+			addresses: []*asteriskaddress.AsteriskAddress{
+				{ID: "ff:ff:ff:ff:ff:ff", Address: "172.24.0.101", TTL: asteriskaddress.TTL},
+			},
+
+			expectIDs: map[string]string{"voip-asterisk-call-docker-1": "3e:50:6b:43:bb:32"},
+		},
+		{
 			name: "a_re_resolution_to_the_same_id_is_stable",
 
 			entries: []seededEntry{
@@ -574,6 +586,125 @@ func Test_runRefreshLoop_survivesScanErrors(t *testing.T) {
 	case <-done:
 	case <-time.After(2 * time.Second):
 		t.Fatalf("Wrong match. expect: the refresh loop to stop on context cancel, got: still running")
+	}
+
+	entry, _ := h.state.Get("voip-asterisk-call-docker-1")
+	if entry.AsteriskID != "3e:50:6b:43:bb:32" {
+		t.Errorf("Wrong match. expect: 3e:50:6b:43:bb:32, got: %q", entry.AsteriskID)
+	}
+}
+
+// Test_refreshOnce_idChangeKeepsTheExistingID pins the conservative resolution of the one branch
+// the design's invariant says should never fire.
+//
+// The asterisk-id derives from the container's MAC, which is fixed for that container object's
+// whole lifetime, and one table entry spans exactly one container generation. So a fresh candidate
+// whose id DIFFERS from an entry's already-resolved id is either a real anomaly (a second
+// container claiming this IP) or a latent bug -- in neither case is the new value more trustworthy
+// than the old one.
+//
+// Keeping the old id is the conservative choice: it was resolved while this generation was
+// demonstrably alive, whereas adopting an unexplained new one risks firing recovery against a
+// DIFFERENT, still-live instance and redialing channels that never dropped. The WARN log is what
+// makes "keep" observable rather than merely silent.
+func Test_refreshOnce_idChangeKeepsTheExistingID(t *testing.T) {
+	tests := []struct {
+		name string
+
+		entries   []seededEntry
+		addresses []*asteriskaddress.AsteriskAddress
+
+		expectIDs map[string]string
+	}{
+		{
+			name: "single_conflicting_candidate",
+
+			entries: []seededEntry{
+				{"voip-asterisk-call-docker-1", container.ServiceAsteriskCall, "172.24.0.101", "3e:50:6b:43:bb:32"},
+			},
+			addresses: []*asteriskaddress.AsteriskAddress{
+				{ID: "ff:ff:ff:ff:ff:ff", Address: "172.24.0.101", TTL: asteriskaddress.TTL},
+			},
+
+			expectIDs: map[string]string{"voip-asterisk-call-docker-1": "3e:50:6b:43:bb:32"},
+		},
+		{
+			name: "conflicting_candidate_at_the_freshness_boundary",
+
+			entries: []seededEntry{
+				{"voip-asterisk-call-docker-1", container.ServiceAsteriskCall, "172.24.0.101", "3e:50:6b:43:bb:32"},
+			},
+			addresses: []*asteriskaddress.AsteriskAddress{
+				{ID: "ff:ff:ff:ff:ff:ff", Address: "172.24.0.101", TTL: freshTTL},
+			},
+
+			expectIDs: map[string]string{"voip-asterisk-call-docker-1": "3e:50:6b:43:bb:32"},
+		},
+		{
+			name: "the_conflict_does_not_disturb_a_healthy_sibling",
+
+			entries: []seededEntry{
+				{"voip-asterisk-call-docker-1", container.ServiceAsteriskCall, "172.24.0.101", "3e:50:6b:43:bb:32"},
+				{"voip-asterisk-call-docker-2", container.ServiceAsteriskCall, "172.24.0.102", ""},
+			},
+			addresses: []*asteriskaddress.AsteriskAddress{
+				{ID: "ff:ff:ff:ff:ff:ff", Address: "172.24.0.101", TTL: asteriskaddress.TTL},
+				{ID: "72:ce:24:e6:51:2f", Address: "172.24.0.102", TTL: asteriskaddress.TTL},
+			},
+
+			expectIDs: map[string]string{
+				"voip-asterisk-call-docker-1": "3e:50:6b:43:bb:32",
+				"voip-asterisk-call-docker-2": "72:ce:24:e6:51:2f",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			h, mockCache := newRefreshTestHandler(t, mc, tt.entries)
+
+			ctx := context.Background()
+			mockCache.EXPECT().AsteriskAddressInternalScan(ctx).Return(tt.addresses, nil)
+
+			if err := h.refreshOnce(ctx); err != nil {
+				t.Fatalf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			for containerName, expectID := range tt.expectIDs {
+				entry, ok := h.state.Get(containerName)
+				if !ok {
+					t.Fatalf("Wrong match. expect: entry %s exists, got: missing", containerName)
+				}
+				if entry.AsteriskID != expectID {
+					t.Errorf("Wrong match for %s. expect: %q, got: %q", containerName, expectID, entry.AsteriskID)
+				}
+			}
+		})
+	}
+}
+
+// Test_refreshOnce_idChangeIsStableAcrossPasses pins that the conflicting candidate is rejected
+// EVERY pass, not just the first -- a repeated anomaly must not eventually wear the old id down.
+func Test_refreshOnce_idChangeIsStableAcrossPasses(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	h, mockCache := newRefreshTestHandler(t, mc, []seededEntry{
+		{"voip-asterisk-call-docker-1", container.ServiceAsteriskCall, "172.24.0.101", "3e:50:6b:43:bb:32"},
+	})
+
+	ctx := context.Background()
+	mockCache.EXPECT().AsteriskAddressInternalScan(ctx).Return([]*asteriskaddress.AsteriskAddress{
+		{ID: "ff:ff:ff:ff:ff:ff", Address: "172.24.0.101", TTL: asteriskaddress.TTL},
+	}, nil).Times(10)
+
+	for i := 0; i < 10; i++ {
+		if err := h.refreshOnce(ctx); err != nil {
+			t.Fatalf("Wrong match at pass %d. expect: ok, got: %v", i, err)
+		}
 	}
 
 	entry, _ := h.state.Get("voip-asterisk-call-docker-1")

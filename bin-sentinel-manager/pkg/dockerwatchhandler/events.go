@@ -19,6 +19,16 @@ const (
 	stateDied    = "died"
 )
 
+// list of the result labels used on promContainerEventStreamReconnectCounter.
+const (
+	// streamResultDelivered marks a stream attempt that delivered at least one event before
+	// ending. The stream was genuinely established; something merely interrupted it.
+	streamResultDelivered = "delivered"
+	// streamResultEmpty marks a stream attempt that ended without delivering anything -- the
+	// signature of a stream that could not be established at all.
+	streamResultEmpty = "empty"
+)
+
 // Run performs the boot-time reconciliation, starts the background asterisk-id refresh loop, and
 // then consumes the Docker event stream until ctx is cancelled.
 //
@@ -42,7 +52,9 @@ func (h *dockerWatchHandler) Run(ctx context.Context) error {
 
 	go h.runRefreshLoop(ctx)
 
-	h.runEventLoop(ctx)
+	if errLoop := h.runEventLoop(ctx); errLoop != nil {
+		return errors.Wrap(errLoop, "the docker event loop stopped with an error")
+	}
 
 	log.Info("Context cancelled. Shutting down the docker watcher.")
 
@@ -56,34 +68,66 @@ func (h *dockerWatchHandler) Run(ctx context.Context) error {
 // acceptable because the recovery it feeds is already fire-and-forget and best-effort on the
 // call-manager side -- sentinel's own delivery does not need a stronger guarantee than the
 // mechanism it drives.
-func (h *dockerWatchHandler) runEventLoop(ctx context.Context) {
+//
+// Retrying is NOT unbounded. Post-boot stream loss used to be invisible: the loop would spin
+// every reconnectDelay forever with only a log line, leaving sentinel "up" while watching
+// nothing. Each attempt is now counted on promContainerEventStreamReconnectCounter, and
+// maxConsecutiveEmptyStreams attempts that deliver nothing return an error, which propagates to a
+// non-zero process exit and a visible Komodo crash-loop.
+func (h *dockerWatchHandler) runEventLoop(ctx context.Context) error {
 	log := logrus.WithField("func", "runEventLoop")
 
 	since := ""
+	consecutiveEmpty := 0
+
 	for {
 		if ctx.Err() != nil {
-			return
+			return nil
 		}
 
 		log.Infof("Opening the docker event stream. since: %s", since)
-		since = h.consumeEvents(ctx, since)
+
+		next, delivered := h.consumeEvents(ctx, since)
+		since = next
 
 		if ctx.Err() != nil {
-			return
+			return nil
 		}
 
-		log.Infof("The docker event stream ended. Reconnecting. delay: %v, since: %s", h.reconnectDelay, since)
+		if delivered {
+			promContainerEventStreamReconnectCounter.WithLabelValues(streamResultDelivered).Inc()
+			consecutiveEmpty = 0
+			log.Infof("The docker event stream ended after delivering events. Reconnecting. delay: %v, since: %s", h.reconnectDelay, since)
+		} else {
+			promContainerEventStreamReconnectCounter.WithLabelValues(streamResultEmpty).Inc()
+			consecutiveEmpty++
+			log.Warnf(
+				"The docker event stream ended without delivering any event. The socket proxy may be unreachable. consecutive: %d/%d, delay: %v, since: %s",
+				consecutiveEmpty, maxConsecutiveEmptyStreams, h.reconnectDelay, since,
+			)
+		}
+
+		if consecutiveEmpty >= maxConsecutiveEmptyStreams {
+			return errors.Errorf(
+				"the docker event stream could not be established after %d consecutive attempts. refusing to keep running blind",
+				consecutiveEmpty,
+			)
+		}
+
 		select {
 		case <-ctx.Done():
-			return
+			return nil
 		case <-time.After(h.reconnectDelay):
 		}
 	}
 }
 
-// consumeEvents reads one Docker event stream to completion (or error) and returns the `since`
-// cursor to resume from.
-func (h *dockerWatchHandler) consumeEvents(ctx context.Context, since string) string {
+// consumeEvents reads one Docker event stream to completion (or error).
+//
+// It returns the `since` cursor to resume from, and whether this attempt delivered at least one
+// message. A healthy stream blocks rather than returning, so "ended without delivering anything"
+// is the signature of a stream that could not be established -- see maxConsecutiveEmptyStreams.
+func (h *dockerWatchHandler) consumeEvents(ctx context.Context, since string) (string, bool) {
 	log := logrus.WithField("func", "consumeEvents")
 
 	messages, errs := h.dockerClient.Events(ctx, dockerevents.ListOptions{
@@ -91,21 +135,24 @@ func (h *dockerWatchHandler) consumeEvents(ctx context.Context, since string) st
 		Filters: watchedEventFilters(),
 	})
 
+	delivered := false
 	for {
 		select {
 		case <-ctx.Done():
-			return since
+			return since, delivered
 
 		case err := <-errs:
 			if err != nil {
 				log.Warnf("The docker event stream returned an error. err: %v", err)
 			}
-			return since
+			return since, delivered
 
 		case message, ok := <-messages:
 			if !ok {
-				return since
+				return since, delivered
 			}
+
+			delivered = true
 
 			// advance the cursor for EVERY message the daemon delivered, not only the ones this
 			// service acts on: resuming from an older cursor would re-deliver events already

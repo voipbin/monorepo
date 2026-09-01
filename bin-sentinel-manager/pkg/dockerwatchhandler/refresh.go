@@ -91,6 +91,28 @@ func (h *dockerWatchHandler) refreshOnce(ctx context.Context) error {
 				continue
 			}
 
+			if entry.AsteriskID != "" {
+				// A same-entry id CHANGE contradicts the invariant this whole design rests on:
+				// the asterisk-id derives from the container's MAC, which is fixed for that
+				// container object's entire lifetime, and one entry spans exactly one container
+				// generation (created on start/boot, destroyed on die). One live container writes
+				// one Redis key with one fixed id, so this branch structurally should not fire.
+				//
+				// If it does, we are looking at either a real anomaly (a second container claiming
+				// this IP) or a latent bug in the resolution path, and the new value is no more
+				// trustworthy than the old one. KEEP THE OLD ID -- the conservative choice: the
+				// old id was resolved while this generation was demonstrably alive, whereas
+				// adopting an unexplained new one risks firing recovery against a DIFFERENT,
+				// still-live instance and redialing channels that never dropped. The WARN below
+				// makes the anomaly observable either way, which is what makes "keep" safe rather
+				// than merely silent.
+				log.Warnf(
+					"Resolved a DIFFERENT asterisk id for a container that already had one. This contradicts the fixed-MAC-per-generation invariant. Keeping the existing id. container_name: %s, ip: %s, existing_asterisk_id: %s, rejected_asterisk_id: %s",
+					entry.ContainerName, entry.IP, entry.AsteriskID, resolved,
+				)
+				continue
+			}
+
 			if !h.state.Resolve(entry.ContainerName, resolved) {
 				// the entry died between List and Resolve. Nothing to do -- the die handler
 				// already consumed whatever it held.

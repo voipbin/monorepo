@@ -94,6 +94,15 @@ func (h *callHandler) EventSMContainerDied(ctx context.Context, c *smcontainer.E
 		"container": c,
 	})
 
+	// `json.Unmarshal` of a literal `null` payload into a **Event succeeds and leaves the pointer
+	// nil, so a malformed or null-bodied message would panic the whole subscribe loop on the very
+	// next field read. The predecessor pod handler had the same gap; guard it here rather than
+	// carrying it forward.
+	if c == nil {
+		log.Warnf("Received a nil container died event. Skipping.")
+		return nil
+	}
+
 	if c.Service != smcontainer.ServiceAsteriskCall {
 		// conference/registrar containers carry no call legs to recover.
 		return nil

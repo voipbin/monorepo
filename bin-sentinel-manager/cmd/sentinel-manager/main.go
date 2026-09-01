@@ -11,6 +11,7 @@ import (
 
 	dockerclient "github.com/docker/docker/client"
 	joonix "github.com/joonix/log"
+	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -75,14 +76,20 @@ func run(cmd *cobra.Command, args []string) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	registerSignal(cancel)
 
-	// run the service
-	runService(ctx, cancel)
+	// runService blocks until the watcher stops: either because the context was cancelled
+	// (SIGTERM -> clean exit 0) or because the watcher hit a fatal condition. A fatal condition
+	// MUST leave this process with a non-zero exit status: main() turns this error into
+	// os.Exit(1), which is what makes Komodo report a crash-loop instead of a container that
+	// exited successfully. A sentinel that "looks up" but watches nothing is worse than one that
+	// is visibly down (design §3.2).
+	if errService := runService(ctx, cancel); errService != nil {
+		return errors.Wrap(errService, "the sentinel-manager service stopped with an error")
+	}
 
-	<-ctx.Done()
 	return nil
 }
 
-func runService(ctx context.Context, cancel context.CancelFunc) {
+func runService(ctx context.Context, cancel context.CancelFunc) error {
 	log := logrus.WithField("func", "runService")
 	defer cancel()
 
@@ -111,8 +118,7 @@ func runService(ctx context.Context, cancel context.CancelFunc) {
 		dockerclient.WithAPIVersionNegotiation(),
 	)
 	if errDocker != nil {
-		log.Errorf("Could not create the docker client. err: %v", errDocker)
-		return
+		return errors.Wrap(errDocker, "could not create the docker client")
 	}
 	defer func() {
 		if errClose := docker.Close(); errClose != nil {
@@ -122,17 +128,20 @@ func runService(ctx context.Context, cancel context.CancelFunc) {
 
 	cacheHandler := cachehandler.NewHandler(cfg.RedisAddress, cfg.RedisPassword, cfg.RedisDatabase)
 	if errConnect := cacheHandler.Connect(); errConnect != nil {
-		log.Errorf("Could not connect to the redis. err: %v", errConnect)
-		return
+		return errors.Wrap(errConnect, "could not connect to the redis")
 	}
 
 	dockerWatchHandler := dockerwatchhandler.NewDockerWatchHandler(reqHandler, notifyHandler, utilHandler, docker, cacheHandler)
 
-	// run the container watcher
+	// run the container watcher. This blocks until the context is cancelled or the watcher hits a
+	// fatal condition; the error is propagated all the way to a non-zero process exit.
 	if errRun := dockerWatchHandler.Run(ctx); errRun != nil {
-		log.Errorf("Could not run the docker watch handler correctly. err: %v", errRun)
-		return
+		return errors.Wrap(errRun, "could not run the docker watch handler correctly")
 	}
+
+	log.Info("The docker watch handler stopped cleanly.")
+
+	return nil
 }
 
 // registerSignal inits sinal settings.
