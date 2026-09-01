@@ -6,6 +6,12 @@
 # design doc's cutover section calls out a shorter old/new overlap window
 # for this service specifically (do not leave both containers running for
 # an extended soak like the other Tier 1 services).
+#
+# P23b (fleet rollout, docs/plans/2026-08-28-bin-manager-two-replica-rollout-design.md):
+# the healthcheck ticker is now guarded by a redsync cross-replica lock
+# (pkg/healthcheckhandler) so 2 replicas don't double-probe every carrier -
+# see that package's health.go for the fail-open-on-Redis-error / skip-on-
+# peer-holds-lock semantics.
 services:
   route-manager:
     image: voipbin/bin-route-manager:__IMAGE_TAG__
@@ -14,8 +20,14 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
-    container_name: voipbin-route-manager
+    # container_name intentionally removed (was voipbin-route-manager) -
+    # Docker Compose rejects a fixed container_name together with
+    # deploy.replicas > 1. Fleet rollout per
+    # docs/plans/2026-08-28-bin-manager-two-replica-rollout-design.md and
+    # docs/workflows/manager-replica-scaling.md.
     restart: always
+    deploy:
+      replicas: 2
     environment:
       - DATABASE_DSN=[[BIN_MANAGER__DATABASE_DSN_BIN]]
       - RABBITMQ_ADDRESS=[[BIN_MANAGER__RABBITMQ_ADDRESS]]
