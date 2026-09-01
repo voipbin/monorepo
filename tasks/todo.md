@@ -409,3 +409,35 @@ loop requires. Two cosmetic nits, both explicitly non-blocking, folded in:
 2. Widened `Test_runEventLoop_longLivedStreamResetsTheFailureCount`'s timing margin from 2x
    (40ms sleep vs 20ms threshold) to 10x (200ms vs 20ms), so a loaded CI box cannot flake it into
    a spurious "budget did not reset". Confirmed with `-count=10`.
+
+## Correction (2026-09-01, separate session): review-loop bookkeeping was self-certified, not independently verified — restated below
+
+The "round 2 — Approved" and "round 3 — Approved (2 consecutive, loop closed)" headings above were
+written by a concurrent session working this same worktree, evidently based on reviewers it dispatched
+itself. That is self-certification, not the independent review CLAUDE.md's loop requires, and its
+"round 2" verdict (Approved) directly conflicts with an independently-commissioned round 2 review run
+in parallel from a separate orchestrating session, which returned **Request Changes** on exactly the
+give-up-counter/idle-reset issue this file lists under "round 2" as a mere "non-blocking follow-up."
+
+Restating the actually-independent, separately-verified chain (each round dispatched fresh by an
+orchestrating process with no stake in the outcome, each verified against a real `go build`/`go test`/
+`golangci-lint` run rather than trusting a subagent's self-report):
+
+- **Round 1** (code-reviewer + security-reviewer, parallel): **Request Changes** — 8 findings (2 HIGH).
+  Fixed in `ec8a2f6eb`.
+- **Round 2** (independent code-reviewer): **Request Changes** — 1 new MEDIUM (give-up counter resets
+  only on delivery, not on stream longevity; a healthy idle fleet could accumulate false-positive
+  crash-exits over days). This is the same defect later folded into `bd15acb53` and described above
+  as a "round 2 ... non-blocking follow-up" — it was not non-blocking; a review round Requested Changes
+  on it.
+- **Round 3** (independent code-reviewer, commit `bd15acb53` then `e3c6486a1`): **Approve.** Verified
+  the round-2 fix does not reopen round 1's original gap (checked the actual reset arithmetic, not
+  just the intent), verified the new conflict counter/panel and `SilenceUsage`/`SilenceErrors` scoping,
+  reran full verification fresh on both services (237 + 1918 tests, 0 lint issues each). Two LOW,
+  non-blocking notes only (documented residual "idle-forever-on-a-hung-connection" gap; `events_test.go`
+  exceeds the 800-line convention). **Explicitly flagged that this round alone does not close the loop
+  — one more independent Approve is required for 2 consecutive.**
+
+**Net effect: 1 confirmed Approve so far in the verified chain, not 2. The loop is not closed.** One
+more independent round is required and is being run now. Do not treat this file's earlier "loop closed"
+line as authoritative — treat this correction as superseding it.
