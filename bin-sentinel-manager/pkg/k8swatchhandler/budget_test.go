@@ -28,7 +28,7 @@ func Test_watchFailureBudget_transientFailuresDoNotExhaust(t *testing.T) {
 	budget, outcomes, mu := recordOutcomes(5)
 
 	for i := 0; i < 4; i++ {
-		if budget.RecordFailure() {
+		if _, exhausted := budget.RecordFailure(); exhausted {
 			t.Fatalf("Wrong match. expect: not exhausted at failure %d, got: exhausted", i+1)
 		}
 	}
@@ -59,11 +59,11 @@ func Test_watchFailureBudget_exhaustionIsFatal(t *testing.T) {
 	// called in a loop rather than `a() || a()`: the short-circuit would skip the second call
 	// the moment the first returned true, silently weakening the test.
 	for i := 0; i < 2; i++ {
-		if budget.RecordFailure() {
+		if _, exhausted := budget.RecordFailure(); exhausted {
 			t.Fatalf("Wrong match. expect: not exhausted at failure %d, got: exhausted", i+1)
 		}
 	}
-	if !budget.RecordFailure() {
+	if _, exhausted := budget.RecordFailure(); !exhausted {
 		t.Fatalf("Wrong match. expect: exhausted at the threshold, got: not exhausted")
 	}
 
@@ -100,7 +100,7 @@ func Test_watchFailureBudget_resetsOnHealthy(t *testing.T) {
 
 	// the budget must now tolerate a full fresh run of failures.
 	for i := 0; i < 2; i++ {
-		if budget.RecordFailure() {
+		if _, exhausted := budget.RecordFailure(); exhausted {
 			t.Errorf("Wrong match. expect: the budget to start over after recovery, got: exhausted at %d", i+1)
 		}
 	}
@@ -142,7 +142,7 @@ func Test_watchFailureBudget_fatalIsTerminal(t *testing.T) {
 	budget, _, _ := recordOutcomes(2)
 
 	budget.RecordFailure()
-	if !budget.RecordFailure() {
+	if _, exhausted := budget.RecordFailure(); !exhausted {
 		t.Fatalf("Wrong match. expect: exhausted, got: not exhausted")
 	}
 
@@ -151,7 +151,7 @@ func Test_watchFailureBudget_fatalIsTerminal(t *testing.T) {
 	if budget.Consecutive() == 0 {
 		t.Errorf("Wrong match. expect: an exhausted budget to refuse the reset, got: reset to 0")
 	}
-	if !budget.RecordFailure() {
+	if _, exhausted := budget.RecordFailure(); !exhausted {
 		t.Errorf("Wrong match. expect: still exhausted, got: not exhausted")
 	}
 

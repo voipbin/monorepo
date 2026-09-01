@@ -848,3 +848,36 @@ packages in `go list -deps ./...`.
   (`interface conversion: interface {} is cache.DeletedFinalStateUnknown, not *v1.Pod`).
 - `DeleteFunc` "assert with ok, return on mismatch" → 6 subtests fail across the tombstone and
   unrecoverable-counter tests, i.e. the silent-drop the design calls worse than the panic.
+
+## §8 addendum — code review round 1 fixes
+
+security-reviewer Approved with no blocking findings. code-reviewer confirmed all three flagged
+deviations are sound and worth keeping, and found one real gap.
+
+| Severity | Fix |
+|---|---|
+| **MEDIUM (blocking)** | `watchUntilDone` had zero coverage — the reviewer proved it by replacing the ticker branch's `budget.RecordHealthy()` with a no-op and watching all 57 tests stay green. Added `watchuntildone_test.go` covering all three branches plus the ctx-priority guard. To make the loop testable at all, the `informer` parameter was narrowed from `cache.SharedIndexInformer` to a one-method `resourceVersionReporter` — depending on the full informer interface is what made this untestable without a live apiserver. |
+| LOW | `SetWatchErrorHandler` logged `budget.Consecutive()+1` read outside the lock. `RecordFailure` now returns `(consecutive, exhausted)` so the log and the decision come from one in-lock snapshot. |
+| LOW | `watchUntilDone`'s `select` now re-checks `ctx.Err()` in the `budget.Fatal()` branch. This was **not** merely theoretical: with the guard removed, `Test_watchUntilDone_shutdownWinsOverBudgetExhaustion` fails 3/3 runs, i.e. a shutdown coinciding with exhaustion really did exit non-zero. |
+| Doc | Design §8.4 item 4's wording now states the counter's scope is `died` events only, recording that the implementation supersedes the literal text (which code review agreed is the better reading), so it does not get re-litigated later. |
+
+### Mutation checks — all four caught
+
+```
+ticker RecordHealthy -> no-op   → FAIL Test_watchUntilDone_resourceVersionChangeResetsTheBudget
+budget.Fatal -> return nil      → FAIL Test_watchUntilDone_budgetExhaustionReturnsError
+informer-stopped -> return nil  → FAIL Test_watchUntilDone_informerStoppingWithLiveContextIsAnError
+ctx-priority guard removed      → FAIL Test_watchUntilDone_shutdownWinsOverBudgetExhaustion (3/3)
+```
+
+The reset test delivers **zero events** on purpose — that is the whole point of the
+resource-version signal, since a selector matching no pods delivers nothing however healthy the
+watch is. A companion test pins the negative case: an *unchanged* resource version must NOT reset,
+or a tick-driven unconditional reset would make the budget unable to exhaust and silently disable
+the fail-loud path.
+
+### Follow-up noted, not actioned (per reviewer, non-blocking)
+
+`k8s.io/{api,apimachinery,client-go}` are pinned to `v0.36.0-alpha.0`, a pre-release. This matches
+`voip-asterisk-proxy`'s existing pin so it is not new drift, but pinning to a GA `v0.34.x`/`v0.35.x`
+deserves its own ticket.

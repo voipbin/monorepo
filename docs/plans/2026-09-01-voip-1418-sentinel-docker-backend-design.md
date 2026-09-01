@@ -672,10 +672,18 @@ one-consumer picture instead.
      without importing each other (`pkg/monitoringbackend`, or a small shared metrics
      package alongside it — implementation's call which, but it must not live inside either
      backend package once both need to increment it). `pkg/k8swatchhandler` increments the
-     same counter whenever a K8s-sourced event publishes with an empty `AsteriskID`, so this
-     failure signature is visible identically regardless of which backend produced it — one
-     Grafana panel (already shipped in PR #1240's `monitoring/grafana/dashboards/
-     sentinel-manager.json`, the "Recovery Health" row) covers both.
+     same counter whenever a K8s-sourced **`died`** event publishes with an empty `AsteriskID`, so
+     this failure signature is visible identically regardless of which backend produced it.
+     **Corrected during implementation (code review round 1 confirmed this reading is better than
+     the literal text it replaces, which said "whenever a K8s-sourced event publishes with an empty
+     `AsteriskID`")**: the scope is DEATHS ONLY, not any event. A `container_started` legitimately
+     carries an empty id on both backends — always on the Docker side (a freshly started container
+     has not been resolved yet) and throughout the annotation-patch window on the K8s side (§8.2) —
+     so counting those would swamp the signal, contradict the counter's own Help string, and make
+     the shipped Grafana panel fire constantly on a healthy cluster. That panel — already in PR
+     #1240's `monitoring/grafana/dashboards/sentinel-manager.json`, the "Recovery Health" row, and
+     described there as "one container death that will NOT trigger call recovery" — therefore
+     covers both backends unchanged.
   - Package name `pkg/k8swatchhandler` (not the old `pkg/monitoringhandler` — that name was
     already identified as too generic when `dockerwatchhandler` was named; same reasoning
     applies here for symmetry).

@@ -105,8 +105,12 @@ func (h *k8sWatchHandler) runInformer(ctx context.Context, target watchTarget) e
 	}
 
 	if err := informer.SetWatchErrorHandler(func(_ *cache.Reflector, err error) {
-		log.Warnf("The pod watch reported an error. consecutive: %d/%d, err: %v", budget.Consecutive()+1, h.maxWatchFailures, err)
-		if budget.RecordFailure() {
+		// both values come from the SAME in-lock snapshot: a separately-read count would describe
+		// a different moment than the decision it accompanies.
+		consecutive, exhausted := budget.RecordFailure()
+
+		log.Warnf("The pod watch reported an error. consecutive: %d/%d, err: %v", consecutive, h.maxWatchFailures, err)
+		if exhausted {
 			log.Errorf("The pod watch failed %d consecutive times without recovering. Giving up.", h.maxWatchFailures)
 		}
 	}); err != nil {
@@ -162,10 +166,19 @@ func (h *k8sWatchHandler) waitForCacheSync(ctx context.Context, informer cache.S
 	)
 }
 
+// resourceVersionReporter is the one method watchUntilDone needs from an informer.
+//
+// Narrowed deliberately: cache.SharedIndexInformer is a large interface, and depending on all of
+// it here would make this loop -- which carries the fail-loud decision and the budget reset --
+// effectively untestable without a live informer and a live apiserver.
+type resourceVersionReporter interface {
+	LastSyncResourceVersion() string
+}
+
 // watchUntilDone blocks until shutdown, budget exhaustion, or the informer stopping on its own.
 func (h *k8sWatchHandler) watchUntilDone(
 	ctx context.Context,
-	informer cache.SharedIndexInformer,
+	informer resourceVersionReporter,
 	budget *watchFailureBudget,
 	done <-chan struct{},
 	log *logrus.Entry,
@@ -182,6 +195,14 @@ func (h *k8sWatchHandler) watchUntilDone(
 			return nil
 
 		case <-budget.Fatal():
+			// select picks uniformly at random among ready cases, so a shutdown landing at the
+			// same moment as budget exhaustion could otherwise be reported as a failure and exit
+			// non-zero. Re-check the context first: a cancelled context always means graceful.
+			if ctx.Err() != nil {
+				<-done
+				return nil
+			}
+
 			return errors.Errorf(
 				"the pod watch failed %d consecutive times without recovering. refusing to keep running blind",
 				h.maxWatchFailures,

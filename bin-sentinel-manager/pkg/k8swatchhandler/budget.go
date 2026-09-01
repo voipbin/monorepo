@@ -41,17 +41,24 @@ func newWatchFailureBudget(threshold int, onOutcome func(outcome string)) *watch
 	}
 }
 
-// RecordFailure registers one watch error and reports whether the budget is now exhausted.
-func (h *watchFailureBudget) RecordFailure() bool {
+// RecordFailure registers one watch error.
+//
+// It returns the resulting consecutive-failure count alongside the exhausted flag so a caller can
+// LOG both from one consistent snapshot. Reading the count separately afterwards would report a
+// value from a different moment than the decision it is describing -- each informer runs its own
+// goroutines, so the handler and the health ticker touch this concurrently.
+func (h *watchFailureBudget) RecordFailure() (int, bool) {
 	h.mu.Lock()
 
 	if h.fatal {
+		consecutive := h.consecutive
 		h.mu.Unlock()
-		return true
+		return consecutive, true
 	}
 
 	h.consecutive++
-	exhausted := h.consecutive >= h.threshold
+	consecutive := h.consecutive
+	exhausted := consecutive >= h.threshold
 	if exhausted {
 		h.fatal = true
 	}
@@ -60,12 +67,12 @@ func (h *watchFailureBudget) RecordFailure() bool {
 	if exhausted {
 		h.onOutcome(watchOutcomeFatal)
 		h.closeOnce.Do(func() { close(h.fatalCh) })
-		return true
+		return consecutive, true
 	}
 
 	h.onOutcome(watchOutcomeTransientError)
 
-	return false
+	return consecutive, false
 }
 
 // RecordHealthy resets the budget after evidence the watch is working.
