@@ -7798,10 +7798,10 @@ type GetAgentsParams struct {
 
 // PostAgentsJSONBody defines parameters for PostAgents.
 type PostAgentsJSONBody struct {
-	Addresses []CommonAddress `json:"addresses"`
-	Detail    string          `json:"detail"`
-	Name      string          `json:"name"`
-	Password  string          `json:"password"`
+	Addresses *[]CommonAddress `json:"addresses,omitempty"`
+	Detail    string           `json:"detail"`
+	Name      string           `json:"name"`
+	Password  string           `json:"password"`
 
 	// Permission Permission type
 	Permission AgentManagerAgentPermission `json:"permission"`

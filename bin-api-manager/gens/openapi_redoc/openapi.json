@@ -908,8 +908,7 @@
                   "detail",
                   "ring_method",
                   "permission",
-                  "tag_ids",
-                  "addresses"
+                  "tag_ids"
                 ]
               }
             }

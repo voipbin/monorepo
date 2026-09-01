@@ -78,7 +78,6 @@ post:
             - ring_method
             - permission
             - tag_ids
-            - addresses
   responses:
     '201':
       description: Agent created successfully.
