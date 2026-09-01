@@ -48,7 +48,7 @@ const (
 // list of the supported monitoring backends, selected by SENTINEL_BACKEND.
 const (
 	// BackendKubernetes watches pods through the Kubernetes API. Used by self-hosted Kubernetes
-	// deployments via k8s/deployment.yml.
+	// deployments; this repo does not ship a manifest, the self-hoster configures their own.
 	BackendKubernetes = "kubernetes"
 	// BackendDocker watches containers through the Docker Events API. Used by the bm-nyc-01
 	// deployment via komodo/docker-compose.yml.
