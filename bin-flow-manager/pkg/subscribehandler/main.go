@@ -7,8 +7,6 @@ import (
 	"fmt"
 	"time"
 
-	cmcall "monorepo/bin-call-manager/models/call"
-
 	"monorepo/bin-common-handler/models/eventtopic"
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
@@ -24,10 +22,7 @@ import (
 
 // topicPatterns is this service's bind set on the global topic exchange
 // `bin-manager.event` (VOIP-1406, design §5): one pattern per dispatched
-// (publisher, event-type) pair. The `call-manager.call.*.hangup` pair is
-// deliberately ABSENT: its dispatch case is unreachable today (the retained
-// intake is customer-only) and keeping it unreachable is today's behavior
-// (design §4, follow-up VOIP-1422). Pinned by the binding golden test.
+// (publisher, event-type) pair. Pinned by the binding golden test.
 var topicPatterns = []string{
 	eventtopic.PatternForEventType(string(commonoutline.ServiceNameCustomerManager), cmcustomer.EventTypeCustomerDeleted),
 }
@@ -136,12 +131,6 @@ func (h *subscribeHandler) processEvent(m *sock.Event) {
 	var err error
 	start := time.Now()
 	switch {
-
-	//// call-manager
-	// call
-	// VOIP-1422: unreachable case -- no fanout subscription and no topic pattern delivers this pair (VOIP-1406 design §4); activate or delete it there.
-	case m.Publisher == string(commonoutline.ServiceNameCallManager) && (m.Type == string(cmcall.EventTypeCallHangup)):
-		err = h.processEventCMCallHangup(ctx, m)
 
 	//// customer-manager
 	// customer

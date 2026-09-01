@@ -23,7 +23,7 @@ graph TD
 | `pkg/queuehandler` | Queue CRUD, routing configuration, agent membership management, queue execution logic | `queue.Queue`, `queue.RoutingMethod` |
 | `pkg/queuecallhandler` | Queuecall lifecycle: create, execute, kick, timeout handling, health checks, status transitions | `queuecall.Queuecall`, `queuecall.Status` |
 | `pkg/listenhandler` | RabbitMQ RPC request router (regex pattern matching) | `sock.Request`, `sock.Response` |
-| `pkg/subscribehandler` | Consumes call-manager events via pattern bindings on the global topic exchange `bin-manager.event` (sole intake mechanism since VOIP-1407) | queue event structs |
+| `pkg/subscribehandler` | Consumes call-manager and customer-manager events via pattern bindings on the global topic exchange `bin-manager.event` (sole intake mechanism since VOIP-1407) | queue event structs |
 | `pkg/dbhandler` | MySQL CRUD operations | all model structs |
 | `pkg/cachehandler` | Redis fast-path lookups for queues and queuecalls | `queue.Queue`, `queuecall.Queuecall` |
 | `models/queue` | Queue data model, routing method constants | `queue.Queue`, `queue.RoutingMethod` |
@@ -31,14 +31,15 @@ graph TD
 
 ## Event Subscriptions
 
-SubscribeHandler (`pkg/subscribehandler/`) consumes from the queue `bin-manager.queue-manager.subscribe`. Since VOIP-1406 the queue is bound to the **global topic exchange `bin-manager.event`** with one pattern per dispatched (publisher, event-type) pair — 3 patterns total, pinned byte-for-byte by the binding golden test (`pkg/subscribehandler/binding_golden_test.go`). As of VOIP-1407 this topic-pattern binding is the **sole intake mechanism**; the old per-service fanout subscriptions (`QueueSubscribe` to `bin-manager.call-manager.event`, `bin-manager.agent-manager.event`, `bin-manager.conference-manager.event`) have been removed from `Run()` entirely, along with the fanout-unbind step that used to follow a successful topic bind:
+SubscribeHandler (`pkg/subscribehandler/`) consumes from the queue `bin-manager.queue-manager.subscribe`. Since VOIP-1406 the queue is bound to the **global topic exchange `bin-manager.event`** with one pattern per dispatched (publisher, event-type) pair — 4 patterns total, pinned byte-for-byte by the binding golden test (`pkg/subscribehandler/binding_golden_test.go`). As of VOIP-1407 this topic-pattern binding is the **sole intake mechanism**; the old per-service fanout subscriptions (`QueueSubscribe` to `bin-manager.call-manager.event`, `bin-manager.agent-manager.event`, `bin-manager.conference-manager.event`) have been removed from `Run()` entirely, along with the fanout-unbind step that used to follow a successful topic bind:
 
 | Pattern | Purpose |
 |---------|---------|
 | `call-manager.call.*.hangup` | Call hangup — kicks the queuecall out of the queue |
 | `call-manager.confbridge.*.joined` / `call-manager.confbridge.*.leaved` | Confbridge join/leave — drives queuecall service/done transitions |
+| `customer-manager.customer.*.deleted` | Customer deletion — cascades cleanup to the customer's queues and queuecalls |
 
-The `customer-manager.customer.*.deleted` pair is deliberately NOT bound: its dispatch case is unreachable today (the customer-manager fanout exchange was never subscribed) and stays that way (VOIP-1406 design §4; follow-up VOIP-1422 decides activate-or-delete — a latent-bug candidate, since queue records are likely meant to be cleaned on customer deletion).
+The `customer-manager.customer.*.deleted` pattern was activated by VOIP-1422: no other cleanup path into this service exists on customer deletion (no RPC, no sweep, no TTL), so leaving it unbound meant queue/queuecall records survived customer deletion indefinitely. `queuehandler.EventCUCustomerDeleted` and `queuecallhandler.EventCUCustomerDeleted` (the dispatch targets) each page through at most 1,000 undeleted rows per customer (`h.List(ctx, 1000, ...)`) — a pre-existing cap matching `bin-flow-manager`'s equivalent handler for the same event, not a new limitation introduced here. A customer with more than 1,000 live queues or queuecalls would only be partially cleaned per event; out of scope for this change.
 
 ## Event Publishing
 

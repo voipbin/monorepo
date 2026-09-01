@@ -22,11 +22,12 @@ func Test_topicPatterns_golden(t *testing.T) {
 		"pipecat-manager.pipecatcall.*.initialized",
 		"pipecat-manager.pipecatcall.*.terminated",
 		"pipecat-manager.team.*.member_switched",
+		"conference-manager.conference.*.deleted",
 	}
 
-	// design §5: ai-manager binds exactly 10 patterns.
-	if len(topicPatterns) != 10 {
-		t.Fatalf("topicPatterns count mismatch. expected: 10, got: %d (%v)", len(topicPatterns), topicPatterns)
+	// design §5 + VOIP-1422: ai-manager binds exactly 11 patterns.
+	if len(topicPatterns) != 11 {
+		t.Fatalf("topicPatterns count mismatch. expected: 11, got: %d (%v)", len(topicPatterns), topicPatterns)
 	}
 	if len(topicPatterns) != len(expected) {
 		t.Fatalf("topicPatterns count mismatch. expected: %d, got: %d (%v)", len(expected), len(topicPatterns), topicPatterns)
@@ -35,21 +36,6 @@ func Test_topicPatterns_golden(t *testing.T) {
 	for i, pattern := range expected {
 		if topicPatterns[i] != pattern {
 			t.Errorf("topicPatterns[%d] mismatch. expected: %q, got: %q", i, pattern, topicPatterns[i])
-		}
-	}
-}
-
-// Test_topicPatterns_excludesConferenceUpdated is the §4 negative assertion: the
-// `conference-manager/conference_updated` dispatch case is unreachable today and MUST
-// stay unreachable -- VOIP-1406 changes where events come from, never what is processed.
-// Binding this pattern would activate the dead case (an unreviewed behavior change).
-// Follow-up VOIP-1422 decides whether to activate or delete the case.
-func Test_topicPatterns_excludesConferenceUpdated(t *testing.T) {
-	excluded := "conference-manager.conference.*.updated"
-
-	for _, pattern := range topicPatterns {
-		if pattern == excluded {
-			t.Errorf("topicPatterns must NOT contain the excluded pattern %q (VOIP-1406 design §4, follow-up VOIP-1422)", excluded)
 		}
 	}
 }

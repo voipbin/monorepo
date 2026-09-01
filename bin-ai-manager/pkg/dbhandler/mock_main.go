@@ -709,6 +709,21 @@ func (mr *MockDBHandlerMockRecorder) SummaryUpdate(ctx, id, fields any) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SummaryUpdate", reflect.TypeOf((*MockDBHandler)(nil).SummaryUpdate), ctx, id, fields)
 }
 
+// SummaryUpdateStatusDoneIfNotDone mocks base method.
+func (m *MockDBHandler) SummaryUpdateStatusDoneIfNotDone(ctx context.Context, id uuid.UUID, content string) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SummaryUpdateStatusDoneIfNotDone", ctx, id, content)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SummaryUpdateStatusDoneIfNotDone indicates an expected call of SummaryUpdateStatusDoneIfNotDone.
+func (mr *MockDBHandlerMockRecorder) SummaryUpdateStatusDoneIfNotDone(ctx, id, content any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SummaryUpdateStatusDoneIfNotDone", reflect.TypeOf((*MockDBHandler)(nil).SummaryUpdateStatusDoneIfNotDone), ctx, id, content)
+}
+
 // TeamCreate mocks base method.
 func (m *MockDBHandler) TeamCreate(ctx context.Context, t *team.Team) error {
 	m.ctrl.T.Helper()

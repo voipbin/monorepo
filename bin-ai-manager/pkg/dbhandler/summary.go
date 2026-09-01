@@ -192,7 +192,13 @@ func (h *handler) SummaryList(ctx context.Context, size uint64, token string, fi
 	return res, nil
 }
 
-// SummaryUpdate updates the summary fields.
+// SummaryUpdate updates the summary fields unconditionally (no rows-affected check).
+// As of VOIP-1422, its only production caller (summaryhandler.UpdateStatusDone) was
+// rewired to the conditional SummaryUpdateStatusDoneIfNotDone below, since an
+// unconditional update cannot protect against bin-conference-manager's double
+// conference_deleted delivery. Retained as general-purpose infrastructure for any
+// future non-status field update that does not need that guard; currently unreferenced
+// outside its own test.
 func (h *handler) SummaryUpdate(ctx context.Context, id uuid.UUID, fields map[summary.Field]any) error {
 	updateFields := make(map[string]any)
 	for k, v := range fields {
@@ -222,4 +228,53 @@ func (h *handler) SummaryUpdate(ctx context.Context, id uuid.UUID, fields map[su
 	_ = h.summaryUpdateToCache(ctx, id)
 
 	return nil
+}
+
+// SummaryUpdateStatusDoneIfNotDone conditionally updates the summary's status to
+// done and sets its content, but ONLY if the summary is not already done (VOIP-1422:
+// bin-conference-manager can publish conference_deleted twice for one conference --
+// Delete()'s own publish, then Destroy()'s once the asynchronously-kicked participants
+// actually leave -- and neither ContentProcess nor its downstream, including
+// startOnEndFlow, is safe to run twice). Returns the number of rows actually updated:
+// 0 means the summary was already done when this write was attempted and the caller
+// MUST NOT treat this as a fresh finalization (no cache refresh, no webhook, no
+// on-end-flow trigger) -- matches the same conditional-update-plus-rows-affected
+// pattern AIcallUpdateIfActive (pkg/dbhandler/aicall.go) already uses for the
+// equivalent problem on AIcalls.
+func (h *handler) SummaryUpdateStatusDoneIfNotDone(ctx context.Context, id uuid.UUID, content string) (int64, error) {
+	updateFields := make(map[string]any)
+	updateFields[string(summary.FieldStatus)] = summary.StatusDone
+	updateFields[string(summary.FieldContent)] = content
+	updateFields["tm_update"] = h.utilHandler.TimeNow()
+
+	preparedFields, err := commondatabasehandler.PrepareFields(updateFields)
+	if err != nil {
+		return 0, fmt.Errorf("SummaryUpdateStatusDoneIfNotDone: could not prepare fields. err: %v", err)
+	}
+
+	query, args, err := sq.Update(summaryTable).
+		SetMap(preparedFields).
+		Where(sq.Eq{"id": id.Bytes()}).
+		Where(sq.NotEq{"status": string(summary.StatusDone)}).
+		ToSql()
+	if err != nil {
+		return 0, fmt.Errorf("SummaryUpdateStatusDoneIfNotDone: could not build query. err: %v", err)
+	}
+
+	res, err := h.db.Exec(query, args...)
+	if err != nil {
+		return 0, fmt.Errorf("SummaryUpdateStatusDoneIfNotDone: could not execute. err: %v", err)
+	}
+
+	n, err := res.RowsAffected()
+	if err != nil {
+		return 0, fmt.Errorf("SummaryUpdateStatusDoneIfNotDone: could not get rows affected. err: %v", err)
+	}
+
+	if n > 0 {
+		// update the cache
+		_ = h.summaryUpdateToCache(ctx, id)
+	}
+
+	return n, nil
 }

@@ -11,7 +11,6 @@ package activeflowhandler
 
 import (
 	context "context"
-	call "monorepo/bin-call-manager/models/call"
 	customer "monorepo/bin-customer-manager/models/customer"
 	action "monorepo/bin-flow-manager/models/action"
 	activeflow "monorepo/bin-flow-manager/models/activeflow"
@@ -88,20 +87,6 @@ func (m *MockActiveflowHandler) Delete(ctx context.Context, id uuid.UUID) (*acti
 func (mr *MockActiveflowHandlerMockRecorder) Delete(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockActiveflowHandler)(nil).Delete), ctx, id)
-}
-
-// EventCallHangup mocks base method.
-func (m *MockActiveflowHandler) EventCallHangup(ctx context.Context, c *call.Call) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EventCallHangup", ctx, c)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// EventCallHangup indicates an expected call of EventCallHangup.
-func (mr *MockActiveflowHandlerMockRecorder) EventCallHangup(ctx, c any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCallHangup", reflect.TypeOf((*MockActiveflowHandler)(nil).EventCallHangup), ctx, c)
 }
 
 // EventCustomerDeleted mocks base method.

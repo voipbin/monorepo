@@ -2,6 +2,7 @@ package summaryhandler
 
 import (
 	"context"
+	stderrors "errors"
 	"monorepo/bin-ai-manager/models/summary"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -396,6 +397,8 @@ func Test_UpdateStatusDone(t *testing.T) {
 		id      uuid.UUID
 		content string
 
+		rowsAffected int64
+
 		responseSummary *summary.Summary
 
 		expectedRes *summary.Summary
@@ -405,6 +408,8 @@ func Test_UpdateStatusDone(t *testing.T) {
 
 			id:      uuid.FromStringOrNil("fa821a22-0bd5-11f0-b67e-8728e18c09de"),
 			content: "Hello, world!",
+
+			rowsAffected: 1,
 
 			responseSummary: &summary.Summary{
 				Identity: commonidentity.Identity{},
@@ -436,7 +441,7 @@ func Test_UpdateStatusDone(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().SummaryUpdate(ctx, tt.id, gomock.Any()).Return(nil)
+			mockDB.EXPECT().SummaryUpdateStatusDoneIfNotDone(ctx, tt.id, tt.content).Return(tt.rowsAffected, nil)
 			mockDB.EXPECT().SummaryGet(ctx, tt.id).Return(tt.responseSummary, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseSummary.CustomerID, summary.EventTypeUpdated, tt.responseSummary)
 
@@ -449,5 +454,39 @@ func Test_UpdateStatusDone(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseSummary, res)
 			}
 		})
+	}
+}
+
+// Test_UpdateStatusDone_alreadyDone is a VOIP-1422 regression test: when the
+// conditional DB update affects zero rows (the summary was already done -- see
+// ErrSummaryAlreadyDone's doc comment for why this happens), UpdateStatusDone must
+// return that sentinel error and must NOT call SummaryGet or PublishWebhookEvent --
+// the second of two conference_deleted deliveries for one conference must be a clean,
+// side-effect-free no-op, not a re-finalization.
+func Test_UpdateStatusDone_alreadyDone(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := summaryHandler{
+		db: mockDB,
+	}
+	ctx := context.Background()
+
+	id := uuid.FromStringOrNil("fb1e6f9c-8b8c-11f0-9d3c-8b6c8f2a5d70")
+	content := "Hello, world!"
+
+	// rowsAffected == 0: no SummaryGet, no PublishWebhookEvent expected -- their
+	// absence is enforced by gomock's strict controller (mc.Finish() fails the test
+	// if either was called without a matching expectation).
+	mockDB.EXPECT().SummaryUpdateStatusDoneIfNotDone(ctx, id, content).Return(int64(0), nil)
+
+	res, err := h.UpdateStatusDone(ctx, id, content)
+	if !stderrors.Is(err, ErrSummaryAlreadyDone) {
+		t.Errorf("Wrong match. expect: ErrSummaryAlreadyDone, got: %v", err)
+	}
+	if res != nil {
+		t.Errorf("Wrong match. expect: nil, got: %v", res)
 	}
 }

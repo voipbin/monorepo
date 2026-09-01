@@ -268,7 +268,7 @@ func Test_contentProcessReferenceTypeConference(t *testing.T) {
 			mockOpenai.EXPECT().Send(ctx, gomock.Any()).Return(tt.responseSend, nil)
 
 			// UpdateStatusDone
-			mockDB.EXPECT().SummaryUpdate(ctx, tt.responseSummaries[0].ID, gomock.Any()).Return(nil)
+			mockDB.EXPECT().SummaryUpdateStatusDoneIfNotDone(ctx, tt.responseSummaries[0].ID, gomock.Any()).Return(int64(1), nil)
 			mockDB.EXPECT().SummaryGet(ctx, tt.responseSummaries[0].ID).Return(tt.responseSummaries[0], nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseSummaries[0].CustomerID, summary.EventTypeUpdated, tt.responseSummaries[0])
 
@@ -276,5 +276,139 @@ func Test_contentProcessReferenceTypeConference(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
+	}
+}
+
+// Test_contentProcessReferenceTypeConference_alreadyDone is a VOIP-1422 regression
+// test: when UpdateStatusDone returns ErrSummaryAlreadyDone (the DB-level conditional
+// update affected zero rows -- this is the losing side of bin-conference-manager's
+// double conference_deleted delivery, see ErrSummaryAlreadyDone's doc comment),
+// contentProcessReferenceTypeConference must return cleanly (nil error) WITHOUT calling
+// startOnEndFlow or its downstream (FlowV1ActiveflowExecute) or the summary_updated
+// webhook. No mock expectations are set up for any of those -- gomock's strict
+// controller fails the test on any such unexpected call, so their absence is what
+// proves this test actually exercises the guard rather than passing vacuously.
+func Test_contentProcessReferenceTypeConference_alreadyDone(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockOpenai := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
+
+	h := summaryHandler{
+		utilHandler:   mockUtil,
+		db:            mockDB,
+		notifyHandler: mockNotify,
+		reqHandler:    mockReq,
+
+		engineOpenaiHandler: mockOpenai,
+	}
+	ctx := context.Background()
+
+	conferenceID := uuid.FromStringOrNil("a1b2c3d4-8b8c-11f0-9d2e-4b7c8f2a5d70")
+	confbridgeID := uuid.FromStringOrNil("a1e01234-8b8c-11f0-9d2e-4b7c8f2a5d70")
+	activeflowID := uuid.FromStringOrNil("a2103456-8b8c-11f0-9d2e-4b7c8f2a5d70")
+
+	sm := &summary.Summary{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("a2321234-8b8c-11f0-9d2e-4b7c8f2a5d70"),
+		},
+		ActiveflowID: activeflowID,
+		ReferenceID:  conferenceID,
+	}
+	cf := &cfconference.Conference{
+		Identity: commonidentity.Identity{
+			ID: conferenceID,
+		},
+		ConfbridgeID: confbridgeID,
+	}
+	transcribes := []tmtranscribe.Transcribe{
+		{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("a2541234-8b8c-11f0-9d2e-4b7c8f2a5d70")}},
+	}
+	transcripts := []tmtranscript.Transcript{
+		{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("a2761234-8b8c-11f0-9d2e-4b7c8f2a5d70")}},
+	}
+	variable := &fmvariable.Variable{Variables: map[string]string{"key1": "value1"}}
+	openaiRes := &openai.ChatCompletionResponse{
+		Choices: []openai.ChatCompletionChoice{{Message: openai.ChatCompletionMessage{Content: "response content"}}},
+	}
+
+	mockDB.EXPECT().SummaryList(ctx, uint64(1), "", gomock.Any()).Return([]*summary.Summary{sm}, nil)
+	mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, conferenceID).Return(cf, nil)
+	mockReq.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(1), gomock.Any()).Return(transcribes, nil)
+	mockReq.EXPECT().TranscribeV1TranscriptList(ctx, "", uint64(1000), gomock.Any()).Return(transcripts, nil)
+	mockReq.EXPECT().FlowV1VariableGet(ctx, activeflowID).Return(variable, nil)
+	mockOpenai.EXPECT().Send(ctx, gomock.Any()).Return(openaiRes, nil)
+
+	// the losing delivery: DB-level guard rejects it. No SummaryGet, no
+	// PublishWebhookEvent, no startOnEndFlow-related calls may follow.
+	mockDB.EXPECT().SummaryUpdateStatusDoneIfNotDone(ctx, sm.ID, gomock.Any()).Return(int64(0), nil)
+
+	if err := h.contentProcessReferenceTypeConference(ctx, conferenceID); err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+}
+
+// Test_contentProcessReferenceTypeCall_alreadyDone mirrors
+// Test_contentProcessReferenceTypeConference_alreadyDone for the call reference type,
+// confirming contentProcessReferenceTypeCall's independent stderrors.Is(err,
+// ErrSummaryAlreadyDone) branch (content.go) also skips startOnEndFlow and the webhook
+// cleanly rather than erroring or re-finalizing.
+func Test_contentProcessReferenceTypeCall_alreadyDone(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockOpenai := engine_openai_handler.NewMockEngineOpenaiHandler(mc)
+
+	h := summaryHandler{
+		utilHandler:   mockUtil,
+		db:            mockDB,
+		notifyHandler: mockNotify,
+		reqHandler:    mockReq,
+
+		engineOpenaiHandler: mockOpenai,
+	}
+	ctx := context.Background()
+
+	callID := uuid.FromStringOrNil("a3981234-8b8c-11f0-9d2e-4b7c8f2a5d70")
+	activeflowID := uuid.FromStringOrNil("a3ba1234-8b8c-11f0-9d2e-4b7c8f2a5d70")
+
+	sm := &summary.Summary{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("a3dc1234-8b8c-11f0-9d2e-4b7c8f2a5d70"),
+		},
+		ActiveflowID: activeflowID,
+		ReferenceID:  callID,
+	}
+	transcribes := []tmtranscribe.Transcribe{
+		{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("a3fe1234-8b8c-11f0-9d2e-4b7c8f2a5d70")}},
+	}
+	transcripts := []tmtranscript.Transcript{
+		{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("a4201234-8b8c-11f0-9d2e-4b7c8f2a5d70")}},
+	}
+	variable := &fmvariable.Variable{Variables: map[string]string{"key1": "value1"}}
+	openaiRes := &openai.ChatCompletionResponse{
+		Choices: []openai.ChatCompletionChoice{{Message: openai.ChatCompletionMessage{Content: "response content"}}},
+	}
+
+	mockDB.EXPECT().SummaryList(ctx, uint64(1), "", gomock.Any()).Return([]*summary.Summary{sm}, nil)
+	mockReq.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(1), gomock.Any()).Return(transcribes, nil)
+	mockReq.EXPECT().TranscribeV1TranscriptList(ctx, "", uint64(1000), gomock.Any()).Return(transcripts, nil)
+	mockReq.EXPECT().FlowV1VariableGet(ctx, activeflowID).Return(variable, nil)
+	mockOpenai.EXPECT().Send(ctx, gomock.Any()).Return(openaiRes, nil)
+
+	// the losing delivery: DB-level guard rejects it. No SummaryGet, no
+	// PublishWebhookEvent, no startOnEndFlow-related calls may follow.
+	mockDB.EXPECT().SummaryUpdateStatusDoneIfNotDone(ctx, sm.ID, gomock.Any()).Return(int64(0), nil)
+
+	if err := h.contentProcessReferenceTypeCall(ctx, callID); err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
 	}
 }

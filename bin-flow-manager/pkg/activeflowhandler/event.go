@@ -3,7 +3,6 @@ package activeflowhandler
 import (
 	"context"
 
-	cmcall "monorepo/bin-call-manager/models/call"
 	"monorepo/bin-flow-manager/models/activeflow"
 
 	cmcustomer "monorepo/bin-customer-manager/models/customer"
@@ -11,25 +10,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
-
-// EventCallHangup handles the call-manager's call_hangup event
-func (h *activeflowHandler) EventCallHangup(ctx context.Context, c *cmcall.Call) error {
-	log := logrus.WithFields(logrus.Fields{
-		"func": "EventCallHangup",
-		"call": c,
-	})
-	log.Debugf("Handling the call_hangup event. call_id: %s", c.ID)
-
-	// stop the activeflow
-	tmp, err := h.Stop(ctx, c.ActiveflowID)
-	if err != nil {
-		log.Errorf("Could not stop the activeflow. err: %v", err)
-		return errors.Wrap(err, "Could not stop the activeflow.")
-	}
-	log.WithField("activeflow", tmp).Debugf("Stopped activeflow. activeflow_id: %s", tmp.ID)
-
-	return nil
-}
 
 // EventCustomerDeleted handles the customer-manager's customer_deleted event
 func (h *activeflowHandler) EventCustomerDeleted(ctx context.Context, cu *cmcustomer.Customer) error {
