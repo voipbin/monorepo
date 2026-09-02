@@ -34,8 +34,8 @@ const (
 // insightContactAddressLimit caps how many of a contact's reachable
 // addresses get_contact_profile renders. Deliberately NOT insightMaxListLimit
 // (50): a profile record is not a list tool, and 50 phone numbers is not a
-// plausible answer to "이 사람 전화번호가 뭐야". insightMaxListLimit stays
-// reserved for the actual list tools (interactions/related cases/notes).
+// plausible answer to "what is this person's phone number". insightMaxListLimit
+// stays reserved for the actual list tools (interactions/related cases/notes).
 // Design docs/plans/2026-09-02-insight-assistant-get-contact-profile-design.md §3.4.
 const insightContactAddressLimit = 5
 
@@ -564,7 +564,24 @@ func (h *aicallHandler) toolHandleGetContactProfile(ctx context.Context, c *aica
 		headerLines = append(headerLines, fmt.Sprintf("job_title=%q", contact.JobTitle))
 	}
 
-	addrs := contact.Addresses
+	// Defense in depth FIRST, cap SECOND (round-1 code review MEDIUM fix):
+	// filtering after capping could (a) make the truncation note below claim
+	// "showing N of M" while fewer than N lines actually render, once a
+	// capped-in row is later dropped by the tenant check, and (b) needlessly
+	// discard a valid address at position 6+ to make room for a row that gets
+	// filtered anyway. Each address row carries its own CustomerID, so skip
+	// any row that does not match rather than trusting the parent contact's
+	// tenant check to cover every nested row.
+	filtered := make([]cmcontact.Address, 0, len(contact.Addresses))
+	for _, a := range contact.Addresses {
+		if a.CustomerID != uuid.Nil && a.CustomerID != c.CustomerID {
+			log.Warnf("Skipping cross-customer contact address row. case_id: %s, address_customer_id: %s", c.ReferenceID, a.CustomerID)
+			continue
+		}
+		filtered = append(filtered, a)
+	}
+
+	addrs := filtered
 	if len(addrs) > insightContactAddressLimit {
 		// Head-cap, which is meaningful only because AddressListByContactID
 		// orders rows `is_primary desc, tm_create asc`
@@ -579,20 +596,15 @@ func (h *aicallHandler) toolHandleGetContactProfile(ctx context.Context, c *aica
 		// primary-first list, and renderBodyLines forces it whenever
 		// pagedOut=true regardless of actual overflow -- i.e. it would fire on
 		// the ordinary common path, not a rare edge case (design §3.4 rev5).
+		// len(filtered) (not len(contact.Addresses)) is the honest total: it
+		// is post-tenant-filter, so the note can never overclaim what's shown.
 		headerLines = append(headerLines, fmt.Sprintf(
-			"(showing %d of %d addresses)", len(addrs), len(contact.Addresses)))
+			"(showing %d of %d addresses)", len(addrs), len(filtered)))
 	}
 	header := strings.Join(headerLines, "\n")
 
 	addrLines := make([]string, 0, len(addrs))
 	for _, a := range addrs {
-		// Defense in depth: each address row carries its own CustomerID, so
-		// skip any row that does not match rather than trusting the parent
-		// contact's tenant check to cover every nested row.
-		if a.CustomerID != uuid.Nil && a.CustomerID != c.CustomerID {
-			log.Warnf("Skipping cross-customer contact address row. case_id: %s, address_customer_id: %s", c.ReferenceID, a.CustomerID)
-			continue
-		}
 		// Type + Target ONLY -- never the free-text Detail/Name/TargetName
 		// sub-fields (same sensitivity class as Notes; design §5).
 		addrLines = append(addrLines, fmt.Sprintf("address: type=%s target=%q", a.Type, a.Target))

@@ -30,15 +30,15 @@ change, so the two documents don't disagree.
 
 ## Steps (in order; each is a checkpoint)
 
-- [ ] 1. `bin-ai-manager/models/tool/main.go`: add
+- [x] 1. `bin-ai-manager/models/tool/main.go`: add
       `ToolNameGetContactProfile` + append to `AllInsightToolNames` (design §3.5)
-- [ ] 2. `bin-ai-manager/models/message/tool.go`: add
+- [x] 2. `bin-ai-manager/models/message/tool.go`: add
       `FunctionCallNameGetContactProfile` (design §3.5)
-- [ ] 3. `bin-ai-manager/models/ai/allowed_tools_test.go`: add
+- [x] 3. `bin-ai-manager/models/ai/allowed_tools_test.go`: add
       `tool.ToolNameGetContactProfile` to `knownReadOnly` (design §3.5 —
       this is a deliberate consent-gate test; must be updated in the same
       change, not discovered as a red test)
-- [ ] 4. `bin-ai-manager/pkg/aicallhandler/tool_insight.go`: implement
+- [x] 4. `bin-ai-manager/pkg/aicallhandler/tool_insight.go`: implement
       `toolHandleGetContactProfile` per design §3.0-§3.4 exactly (entry
       guard → Case get → nil-ContactID short-circuit → Contact get →
       mandatory tenant check w/ nil-safe forensic audit log → header/lines
@@ -46,13 +46,13 @@ change, so the two documents don't disagree.
       Includes two NEW helpers that don't exist anywhere in the repo today
       -- write them in this step: the `insightContactAddressLimit = 5`
       const, and the `contactDisplayName(contact)` fallback-name helper.
-- [ ] 5. `bin-ai-manager/pkg/aicallhandler/tool.go`: wire
+- [x] 5. `bin-ai-manager/pkg/aicallhandler/tool.go`: wire
       `FunctionCallNameGetContactProfile` into the `mapFunctions` dispatch
       map (design §3.5)
-- [ ] 6. `bin-ai-manager/pkg/toolhandler/definitions.go`: add the
+- [x] 6. `bin-ai-manager/pkg/toolhandler/definitions.go`: add the
       `ToolDefinition` (WHEN TO USE / WHEN NOT TO USE, `RunLLM: true`,
       no-argument `Parameters`) (design §3.5)
-- [ ] 7. `bin-ai-manager/pkg/aicallhandler/tool_insight_test.go`: add all
+- [x] 7. `bin-ai-manager/pkg/aicallhandler/tool_insight_test.go`: add all
       **10** table-driven test cases from design §4 (not 9 -- corrected in
       round-1 plan review):
       1. `ReferenceType` guard → `fillFailed`, zero RPC calls
@@ -71,18 +71,18 @@ change, so the two documents don't disagree.
          no panic
       10. `contact == nil` defensive branch → masked, no panic (distinct
           from #9's non-nil-but-wrong-tenant case)
-- [ ] 7a. `bin-ai-manager/docs/domain.md`: steps 1-2 touch `models/.../*.go`,
+- [x] 7a. `bin-ai-manager/docs/domain.md`: steps 1-2 touch `models/.../*.go`,
       which the repo's `check-service-docs.sh` PostToolUse hook maps to this
       file (root CLAUDE.md service-docs-sync table). The existing "LLM
       Tools" table is already stale (omits all 4 current Insight tools) --
       do NOT scope-creep into backfilling that; either add one row for
       `get_contact_profile` or record in the PR body that no doc change was
       warranted. Do not silently ignore the hook warning either way.
-- [ ] 8. `bin-openapi-manager/openapi/openapi.yaml`: add
+- [x] 8. `bin-openapi-manager/openapi/openapi.yaml`: add
       `get_contact_profile` to BOTH the `AIManagerToolName` enum values AND
       the parallel `x-enum-varnames` list (design §3.5 rev4 correction —
       both lists, in lockstep, or codegen produces a mismatched const name)
-- [ ] 8a. Decide-and-record (flagged in round-1 plan review, not in the
+- [x] 8a. Decide-and-record (flagged in round-1 plan review, not in the
       design doc): `bin-openapi-manager/openapi/paths/ais/main.yaml:86-87`
       and `id.yaml:126-127` carry a customer-visible prose sentence
       enumerating Insight tool names by name, which is ALREADY stale
@@ -91,10 +91,10 @@ change, so the two documents don't disagree.
       to enumerate all 5 tools, or explicitly note in the PR body that this
       is pre-existing staleness left out of scope. Do not leave it
       unmentioned.
-- [ ] 9. Regenerate derived artifacts, **bin-openapi-manager FIRST, then
+- [x] 9. Regenerate derived artifacts, **bin-openapi-manager FIRST, then
       bin-api-manager** (per `bin-openapi-manager/CLAUDE.md` consumer-order
       rule): `go generate ./...` in each. Do not hand-edit generated files.
-- [ ] 9a. **Inspect the generated diff before proceeding -- do not trust a
+- [x] 9a. **Inspect the generated diff before proceeding -- do not trust a
       green exit code.** `bin-api-manager/openapi/config_redoc/generate.go`
       shells out to `npx @redocly/cli`, and on any npx/network failure it
       prints "skipping generation" and **still exits 0** -- a silent no-op
@@ -115,7 +115,7 @@ change, so the two documents don't disagree.
       covered by step 12). If `golangci-lint` in step 12 surfaces
       pre-existing findings inside `gens/` (generated code), record them,
       do not fix them -- out of scope, avoid scope creep.
-- [ ] 10. RST docs (round-3 plan review: corrected file list -- one file
+- [x] 10. RST docs (round-3 plan review: corrected file list -- one file
       was missing). Update ALL THREE files in `bin-api-manager/docsdev/source/`
       that enumerate the Insight tool set by name:
       - `ai_overview.rst` (~line 329-330).
@@ -148,16 +148,16 @@ change, so the two documents don't disagree.
       **Do NOT stage `build/` yet** -- staging happens once, at step 12b,
       after verification (staging before step 11-12 risks staging
       pre-verification/pre-format content).
-- [ ] 11. Verify — run in `bin-ai-manager`:
+- [x] 11. Verify — run in `bin-ai-manager`:
       `go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m`
-- [ ] 12. Verify — run the same 5-step workflow in `bin-openapi-manager`
+- [x] 12. Verify — run the same 5-step workflow in `bin-openapi-manager`
       and `bin-api-manager` (schema/codegen changes touch both).
-- [ ] 12a. Pull main + conflict check (root CLAUDE.md, mandatory before
+- [x] 12a. Pull main + conflict check (root CLAUDE.md, mandatory before
       PR): `git fetch origin main` →
       `git merge-tree $(git merge-base HEAD origin/main) HEAD origin/main | grep -E "^(CONFLICT|changed in both)"`
       → `git log --oneline HEAD..origin/main`. If conflicts exist: resolve,
       then re-run steps 11-12 in full before continuing.
-- [ ] 12b. Stage everything, including
+- [x] 12b. Stage everything, including
       `git add -f bin-api-manager/docsdev/build/` (root `.gitignore`
       excludes `build/`). Do NOT stage `vendor/`. Verify final diff with
       `git diff --cached` (not `git status` two-letter codes -- see
@@ -165,11 +165,11 @@ change, so the two documents don't disagree.
       `NOJIRA-Add-get-contact-profile-insight-tool`, body with
       `bin-<service>:` prefixed bullets per root CLAUDE.md commit format.
       No AI attribution.
-- [ ] 13. Code review loop (min 3 rounds, 2 consecutive approvals, per
+- [x] 13. Code review loop (min 3 rounds, 2 consecutive approvals, per
       project CLAUDE.md Review Loop Policy). **Loop ends at approval --
       report the verdict and STOP. Do not merge without explicit
       instruction.**
-- [ ] 14. Push branch (`-u` if new) + create PR (title = branch name, body
+- [x] 14. Push branch (`-u` if new) + create PR (title = branch name, body
       = narrative summary + `bin-<service>:` bullets, NO markdown headers,
       NO test-plan section, NO AI attribution, per root CLAUDE.md PR format).
       Report to 대표님 with the verification story; wait for explicit
