@@ -137,7 +137,9 @@ func (m *manager) killAndUpload(id string) (string, error) {
 
 	if tracked.cmd.Process != nil {
 		log.Infof("Sending SIGTERM to pid %d", tracked.cmd.Process.Pid)
-		tracked.cmd.Process.Signal(syscall.SIGTERM)
+		if err := tracked.cmd.Process.Signal(syscall.SIGTERM); err != nil {
+			log.Warnf("Could not send SIGTERM: %v", err)
+		}
 	}
 
 	done := make(chan struct{})
@@ -153,7 +155,9 @@ func (m *manager) killAndUpload(id string) (string, error) {
 		log.Debugf("Process exited")
 	case <-time.After(5 * time.Second):
 		log.Warnf("Process did not exit after SIGTERM, sending SIGKILL")
-		tracked.cmd.Process.Kill()
+		if err := tracked.cmd.Process.Kill(); err != nil {
+			log.Warnf("Could not send SIGKILL: %v", err)
+		}
 		<-done
 	}
 
@@ -213,6 +217,8 @@ func (m *manager) CleanOrphans() {
 			continue
 		}
 		logrus.Infof("Cleaning orphaned pcap: %s", f)
-		os.Remove(f)
+		if err := os.Remove(f); err != nil && !os.IsNotExist(err) {
+			logrus.Warnf("Could not delete orphaned pcap %s: %v", f, err)
+		}
 	}
 }

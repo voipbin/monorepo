@@ -1,6 +1,6 @@
 module monorepo/voip-rtpengine-proxy
 
-go 1.25.3
+go 1.27.1
 
 replace monorepo/bin-common-handler => ../bin-common-handler
 

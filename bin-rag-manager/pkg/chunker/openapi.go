@@ -79,7 +79,7 @@ func (c *openapiChunker) Chunk(filePath string, maxTokens int) ([]Chunk, error) 
 
 func formatEndpoint(path, method string, details any) string {
 	var sb strings.Builder
-	sb.WriteString(fmt.Sprintf("Endpoint: %s %s\n", strings.ToUpper(method), path))
+	fmt.Fprintf(&sb, "Endpoint: %s %s\n", strings.ToUpper(method), path)
 
 	detailMap, ok := details.(map[string]any)
 	if !ok {
@@ -87,10 +87,10 @@ func formatEndpoint(path, method string, details any) string {
 	}
 
 	if summary, ok := detailMap["summary"].(string); ok {
-		sb.WriteString(fmt.Sprintf("Summary: %s\n", summary))
+		fmt.Fprintf(&sb, "Summary: %s\n", summary)
 	}
 	if description, ok := detailMap["description"].(string); ok {
-		sb.WriteString(fmt.Sprintf("Description: %s\n", description))
+		fmt.Fprintf(&sb, "Description: %s\n", description)
 	}
 	if tags, ok := detailMap["tags"].([]any); ok {
 		var tagStrs []string
@@ -99,7 +99,7 @@ func formatEndpoint(path, method string, details any) string {
 				tagStrs = append(tagStrs, s)
 			}
 		}
-		sb.WriteString(fmt.Sprintf("Tags: %s\n", strings.Join(tagStrs, ", ")))
+		fmt.Fprintf(&sb, "Tags: %s\n", strings.Join(tagStrs, ", "))
 	}
 
 	// Parameters
@@ -110,7 +110,7 @@ func formatEndpoint(path, method string, details any) string {
 				name, _ := param["name"].(string)
 				in, _ := param["in"].(string)
 				desc, _ := param["description"].(string)
-				sb.WriteString(fmt.Sprintf("  - %s (in: %s): %s\n", name, in, desc))
+				fmt.Fprintf(&sb, "  - %s (in: %s): %s\n", name, in, desc)
 			}
 		}
 	}
@@ -119,11 +119,11 @@ func formatEndpoint(path, method string, details any) string {
 	if reqBody, ok := detailMap["requestBody"].(map[string]any); ok {
 		sb.WriteString("Request Body:\n")
 		if desc, ok := reqBody["description"].(string); ok {
-			sb.WriteString(fmt.Sprintf("  Description: %s\n", desc))
+			fmt.Fprintf(&sb, "  Description: %s\n", desc)
 		}
 		if content, ok := reqBody["content"].(map[string]any); ok {
 			for contentType := range content {
-				sb.WriteString(fmt.Sprintf("  Content-Type: %s\n", contentType))
+				fmt.Fprintf(&sb, "  Content-Type: %s\n", contentType)
 			}
 		}
 	}
@@ -134,7 +134,7 @@ func formatEndpoint(path, method string, details any) string {
 		for code, resp := range responses {
 			if respMap, ok := resp.(map[string]any); ok {
 				desc, _ := respMap["description"].(string)
-				sb.WriteString(fmt.Sprintf("  %s: %s\n", code, desc))
+				fmt.Fprintf(&sb, "  %s: %s\n", code, desc)
 			}
 		}
 	}
@@ -144,7 +144,7 @@ func formatEndpoint(path, method string, details any) string {
 
 func formatSchema(name string, schema any) string {
 	var sb strings.Builder
-	sb.WriteString(fmt.Sprintf("Schema: %s\n", name))
+	fmt.Fprintf(&sb, "Schema: %s\n", name)
 
 	schemaMap, ok := schema.(map[string]any)
 	if !ok {
@@ -152,10 +152,10 @@ func formatSchema(name string, schema any) string {
 	}
 
 	if desc, ok := schemaMap["description"].(string); ok {
-		sb.WriteString(fmt.Sprintf("Description: %s\n", desc))
+		fmt.Fprintf(&sb, "Description: %s\n", desc)
 	}
 	if schemaType, ok := schemaMap["type"].(string); ok {
-		sb.WriteString(fmt.Sprintf("Type: %s\n", schemaType))
+		fmt.Fprintf(&sb, "Type: %s\n", schemaType)
 	}
 
 	if properties, ok := schemaMap["properties"].(map[string]any); ok {
@@ -164,7 +164,7 @@ func formatSchema(name string, schema any) string {
 			if propMap, ok := prop.(map[string]any); ok {
 				propType, _ := propMap["type"].(string)
 				propDesc, _ := propMap["description"].(string)
-				sb.WriteString(fmt.Sprintf("  - %s (%s): %s\n", propName, propType, propDesc))
+				fmt.Fprintf(&sb, "  - %s (%s): %s\n", propName, propType, propDesc)
 			}
 		}
 	}

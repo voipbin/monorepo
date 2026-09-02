@@ -6,7 +6,7 @@ context_production: &context_production
 
 references:
   go_image: &go_image
-    - image: cimg/go:1.25.3
+    - image: cimg/go:1.27.1
   gcp_image: &gcp_image
     - image: cimg/gcp:2026.02
 

@@ -49,7 +49,7 @@ func convertMySQLTimestampToISO8601(s string) string {
 // Recursively processes embedded structs
 func GetDBFields(model interface{}) []string {
 	val := reflect.ValueOf(model)
-	if val.Kind() == reflect.Ptr {
+	if val.Kind() == reflect.Pointer {
 		if val.IsNil() {
 			return []string{}
 		}
@@ -65,7 +65,7 @@ func GetDBFields(model interface{}) []string {
 // Returns map[string]any suitable for squirrel.Insert().SetMap() or Update().SetMap()
 func PrepareFields(data any) (map[string]any, error) {
 	val := reflect.ValueOf(data)
-	if val.Kind() == reflect.Ptr {
+	if val.Kind() == reflect.Pointer {
 		val = val.Elem()
 	}
 
@@ -84,7 +84,7 @@ func PrepareFields(data any) (map[string]any, error) {
 // Supports UUID and JSON conversions via db tag conversion types
 func ScanRow(row *sql.Rows, dest interface{}) error {
 	destVal := reflect.ValueOf(dest)
-	if destVal.Kind() != reflect.Ptr {
+	if destVal.Kind() != reflect.Pointer {
 		return fmt.Errorf("dest must be a pointer to struct")
 	}
 
@@ -184,7 +184,7 @@ func convertValueForDB(value interface{}, conversionType string) (interface{}, e
 	// Auto-detect: complex types get JSON marshaled
 	rv := reflect.ValueOf(value)
 	// Handle pointer types - dereference and check the underlying type
-	if rv.Kind() == reflect.Ptr {
+	if rv.Kind() == reflect.Pointer {
 		if rv.IsNil() {
 			return nil, nil
 		}
@@ -512,7 +512,7 @@ func (t *scanTarget) copyTimePtr(s string) error {
 
 // buildScanTargets builds scan targets for all db-tagged fields
 func buildScanTargets(val reflect.Value) []scanTarget {
-	if val.Kind() == reflect.Ptr {
+	if val.Kind() == reflect.Pointer {
 		val = val.Elem()
 	}
 	if val.Kind() != reflect.Struct {

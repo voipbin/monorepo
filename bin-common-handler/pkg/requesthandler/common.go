@@ -161,7 +161,7 @@ func parseResponse(resp *sock.Response, out any) error {
 
 	// out must be a pointer
 	rv := reflect.ValueOf(out)
-	if rv.Kind() != reflect.Ptr {
+	if rv.Kind() != reflect.Pointer {
 		return fmt.Errorf("out must be a pointer, got %T", out)
 	}
 

@@ -88,15 +88,15 @@ func (mr *MockNumberHandlerTelnyxMockRecorder) NumberRelease(ctx, num any) *gomo
 }
 
 // NumberUpdateTags mocks base method.
-func (m *MockNumberHandlerTelnyx) NumberUpdateTags(ctx context.Context, number *number.Number, tags []string) error {
+func (m *MockNumberHandlerTelnyx) NumberUpdateTags(ctx context.Context, arg1 *number.Number, tags []string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NumberUpdateTags", ctx, number, tags)
+	ret := m.ctrl.Call(m, "NumberUpdateTags", ctx, arg1, tags)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // NumberUpdateTags indicates an expected call of NumberUpdateTags.
-func (mr *MockNumberHandlerTelnyxMockRecorder) NumberUpdateTags(ctx, number, tags any) *gomock.Call {
+func (mr *MockNumberHandlerTelnyxMockRecorder) NumberUpdateTags(ctx, arg1, tags any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberUpdateTags", reflect.TypeOf((*MockNumberHandlerTelnyx)(nil).NumberUpdateTags), ctx, number, tags)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberUpdateTags", reflect.TypeOf((*MockNumberHandlerTelnyx)(nil).NumberUpdateTags), ctx, arg1, tags)
 }

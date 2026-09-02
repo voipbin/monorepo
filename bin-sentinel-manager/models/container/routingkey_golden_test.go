@@ -61,7 +61,7 @@ func resolveSubscriptionID(t *testing.T, data any) string {
 		return ""
 	}
 
-	if v := reflect.ValueOf(data); v.Kind() == reflect.Ptr && v.IsNil() {
+	if v := reflect.ValueOf(data); v.Kind() == reflect.Pointer && v.IsNil() {
 		return ""
 	}
 

@@ -1,6 +1,6 @@
 module monorepo/voip-asterisk-proxy
 
-go 1.25.3
+go 1.27.1
 
 replace monorepo/bin-agent-manager => ../bin-agent-manager
 
@@ -82,8 +82,6 @@ require (
 	k8s.io/client-go v0.36.0-alpha.0
 	monorepo/bin-common-handler v0.0.0-20240408033155-50f0cd082334
 )
-
-require monorepo/bin-direct-manager v0.0.0-00010101000000-000000000000 // indirect
 
 require (
 	cel.dev/expr v0.25.1 // indirect
@@ -195,6 +193,7 @@ require (
 	monorepo/bin-contact-manager v0.0.0-00010101000000-000000000000 // indirect
 	monorepo/bin-conversation-manager v0.0.0-20231117134833-7918f76572d4 // indirect
 	monorepo/bin-customer-manager v0.0.0-20240408042746-c45b2b5aa984 // indirect
+	monorepo/bin-direct-manager v0.0.0-00010101000000-000000000000 // indirect
 	monorepo/bin-email-manager v0.0.0-00010101000000-000000000000 // indirect
 	monorepo/bin-flow-manager v0.0.0-20240403034140-ce82222fe7f4 // indirect
 	monorepo/bin-hook-manager v0.0.0-20240313052650-d3e4c79af4c0 // indirect

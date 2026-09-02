@@ -62,7 +62,7 @@ func resolveSubscriptionID(t *testing.T, data any) string {
 	// interface still SATISFIES the assertion, and every real implementation dereferences its
 	// receiver -- calling the method would panic. Production resolves such a payload to the
 	// `-` placeholder, so this returns "".
-	if v := reflect.ValueOf(data); v.Kind() == reflect.Ptr && v.IsNil() {
+	if v := reflect.ValueOf(data); v.Kind() == reflect.Pointer && v.IsNil() {
 		return ""
 	}
 

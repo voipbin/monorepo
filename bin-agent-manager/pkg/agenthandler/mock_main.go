@@ -134,31 +134,31 @@ func (mr *MockAgentHandlerMockRecorder) EventCustomerDeleted(ctx, cu any) *gomoc
 }
 
 // EventGroupcallCreated mocks base method.
-func (m *MockAgentHandler) EventGroupcallCreated(ctx context.Context, groupcall *groupcall.Groupcall) error {
+func (m *MockAgentHandler) EventGroupcallCreated(ctx context.Context, arg1 *groupcall.Groupcall) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EventGroupcallCreated", ctx, groupcall)
+	ret := m.ctrl.Call(m, "EventGroupcallCreated", ctx, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // EventGroupcallCreated indicates an expected call of EventGroupcallCreated.
-func (mr *MockAgentHandlerMockRecorder) EventGroupcallCreated(ctx, groupcall any) *gomock.Call {
+func (mr *MockAgentHandlerMockRecorder) EventGroupcallCreated(ctx, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventGroupcallCreated", reflect.TypeOf((*MockAgentHandler)(nil).EventGroupcallCreated), ctx, groupcall)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventGroupcallCreated", reflect.TypeOf((*MockAgentHandler)(nil).EventGroupcallCreated), ctx, arg1)
 }
 
 // EventGroupcallProgressing mocks base method.
-func (m *MockAgentHandler) EventGroupcallProgressing(ctx context.Context, groupcall *groupcall.Groupcall) error {
+func (m *MockAgentHandler) EventGroupcallProgressing(ctx context.Context, arg1 *groupcall.Groupcall) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EventGroupcallProgressing", ctx, groupcall)
+	ret := m.ctrl.Call(m, "EventGroupcallProgressing", ctx, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // EventGroupcallProgressing indicates an expected call of EventGroupcallProgressing.
-func (mr *MockAgentHandlerMockRecorder) EventGroupcallProgressing(ctx, groupcall any) *gomock.Call {
+func (mr *MockAgentHandlerMockRecorder) EventGroupcallProgressing(ctx, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventGroupcallProgressing", reflect.TypeOf((*MockAgentHandler)(nil).EventGroupcallProgressing), ctx, groupcall)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventGroupcallProgressing", reflect.TypeOf((*MockAgentHandler)(nil).EventGroupcallProgressing), ctx, arg1)
 }
 
 // Get mocks base method.

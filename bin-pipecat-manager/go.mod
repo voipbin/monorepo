@@ -1,6 +1,6 @@
 module monorepo/bin-pipecat-manager
 
-go 1.25.3
+go 1.27.1
 
 replace monorepo/bin-agent-manager => ../bin-agent-manager
 

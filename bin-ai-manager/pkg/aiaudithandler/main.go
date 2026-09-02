@@ -421,15 +421,15 @@ func buildTranscript(msgs []*message.Message, truncated *bool) string {
 
 		if len(m.ToolCalls) > 0 {
 			// Format tool calls as a summary.
-			sb.WriteString(fmt.Sprintf("[%s]: <tool_call>\n", m.Role))
+			fmt.Fprintf(&sb, "[%s]: <tool_call>\n", m.Role)
 			continue
 		}
 		if m.ToolCallID != "" {
-			sb.WriteString(fmt.Sprintf("[%s]: <tool_result> %s\n", m.Role, content))
+			fmt.Fprintf(&sb, "[%s]: <tool_result> %s\n", m.Role, content)
 			continue
 		}
 
-		sb.WriteString(fmt.Sprintf("[%s]: %s\n", m.Role, content))
+		fmt.Fprintf(&sb, "[%s]: %s\n", m.Role, content)
 	}
 
 	return sb.String()

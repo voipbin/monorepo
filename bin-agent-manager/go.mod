@@ -1,6 +1,6 @@
 module monorepo/bin-agent-manager
 
-go 1.25.3
+go 1.27.1
 
 replace monorepo/bin-call-manager => ../bin-call-manager
 
