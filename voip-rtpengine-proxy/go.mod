@@ -2,8 +2,6 @@ module monorepo/voip-rtpengine-proxy
 
 go 1.27.1
 
-godebug default=go1.25
-
 replace monorepo/bin-common-handler => ../bin-common-handler
 
 replace monorepo/bin-schedule-manager => ../bin-schedule-manager
