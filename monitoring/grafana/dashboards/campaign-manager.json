@@ -510,6 +510,40 @@
           "legendFormat": "{{ type }}"
         }
       ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 59 },
+      "id": 600,
+      "panels": [],
+      "title": "Delete Cleanup Diagnostics",
+      "type": "row"
+    },
+    {
+      "datasource": "${DS_PROMETHEUS}",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "lineWidth": 2, "fillOpacity": 10, "spanNulls": true, "axisLabel": "failures" },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 60 },
+      "id": 14,
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull", "max"] },
+        "tooltip": { "mode": "multi" }
+      },
+      "title": "Campaign Flow-Delete Failures by Reason",
+      "type": "timeseries",
+      "description": "Failures to delete a campaign's backing flow during campaign delete (best-effort cleanup; does not fail the delete). reason=not_found is benign (already deleted); reason=error is a real failure and a leak candidate against bin-flow-manager's per-customer flow cap. Both series are pre-initialized to 0, so \"No data\" here means the metric isn't being scraped, not that there have been zero failures.",
+      "targets": [
+        {
+          "datasource": "${DS_PROMETHEUS}",
+          "expr": "campaign_manager_campaign_flow_delete_failed_total",
+          "legendFormat": "{{ reason }}"
+        }
+      ]
     }
   ],
   "schemaVersion": 30,

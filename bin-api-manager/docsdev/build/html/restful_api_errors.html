@@ -1296,6 +1296,10 @@
 <td><p>404</p></td>
 <td><p>Outplan ID does not exist or belongs to another customer. Fired by <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/outplans/{id}</span></code>, <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/outplans/{id}</span></code>, <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/outplans/{id}</span></code>, and <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/outplans/{id}/dial_info</span></code>. <strong>Fix:</strong> Verify the ID was obtained from a recent <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/outplans</span></code> list call.</p></td>
 </tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">CAMPAIGN_NOT_STOPPED</span></code></p></td>
+<td><p>409</p></td>
+<td><p>Campaign is not in <code class="docutils literal notranslate"><span class="pre">stop</span></code> status. Fired by <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/campaigns/{id}</span></code> — a campaign must be stopped before it can be deleted. <strong>Fix:</strong> Set the campaign to <code class="docutils literal notranslate"><span class="pre">stop</span></code> via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/campaigns/{id}/status</span></code> first, then retry the delete.</p></td>
+</tr>
 </tbody>
 </table>
 </div>
