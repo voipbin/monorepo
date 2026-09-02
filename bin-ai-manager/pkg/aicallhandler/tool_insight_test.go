@@ -19,6 +19,7 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
 	cmcasenote "monorepo/bin-contact-manager/models/casenote"
+	cmcontact "monorepo/bin-contact-manager/models/contact"
 	kmkase "monorepo/bin-contact-manager/models/kase"
 	cvmessage "monorepo/bin-conversation-manager/models/message"
 	tmpeerevent "monorepo/bin-timeline-manager/models/peerevent"
@@ -741,6 +742,292 @@ func Test_isNotFoundErr(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := isNotFoundErr(tt.err); got != tt.want {
 				t.Errorf("isNotFoundErr(%v) = %v, want %v", tt.err, got, tt.want)
+			}
+		})
+	}
+}
+
+// Test_toolHandleGetContactProfile covers design docs/plans/
+// 2026-09-02-insight-assistant-get-contact-profile-design.md §4: the
+// ReferenceType entry guard, the two-RPC resolution flow, the mandatory
+// response-side tenant check on the UNSCOPED ContactV1ContactGet, the
+// "never call the unscoped RPC with a nil contact id" guard, and the
+// header/lines rendering split with its own truncation note.
+func Test_toolHandleGetContactProfile(t *testing.T) {
+	customerID := uuid.FromStringOrNil("9a1f2c10-c001-11f0-9000-000000000002")
+	otherCustomerID := uuid.FromStringOrNil("9a1f2c10-c001-11f0-9000-0000000000ff")
+	caseID := uuid.FromStringOrNil("9a1f2c10-c001-11f0-9000-000000000003")
+	contactID := uuid.FromStringOrNil("9a1f2c10-c001-11f0-9000-000000000004")
+	toolCallID := "9a1f2c10-c001-11f0-9000-000000000006"
+
+	tc := &message.ToolCall{
+		ID:   toolCallID,
+		Type: message.ToolTypeFunction,
+		Function: message.FunctionCall{
+			Name:      message.FunctionCallNameGetContactProfile,
+			Arguments: `{}`,
+		},
+	}
+
+	testAddress := func(t commonaddress.Type, target string) cmcontact.Address {
+		return cmcontact.Address{
+			Address:    commonaddress.Address{Type: t, Target: target},
+			CustomerID: customerID,
+			ContactID:  contactID,
+		}
+	}
+
+	// A contact with more addresses than insightContactAddressLimit, used by
+	// the address-cap case below.
+	manyAddresses := make([]cmcontact.Address, 0, insightContactAddressLimit+2)
+	for i := 0; i < insightContactAddressLimit+2; i++ {
+		manyAddresses = append(manyAddresses, testAddress(commonaddress.TypeTel, fmt.Sprintf("+8210000000%02d", i)))
+	}
+
+	tests := []struct {
+		name string
+
+		referenceType aicall.ReferenceType
+
+		expectCaseGetCall bool
+		responseCase      *kmkase.Case
+		responseCaseErr   error
+
+		expectContactGetCall bool
+		responseContact      *cmcontact.Contact
+		responseContactErr   error
+
+		expectResult      string
+		expectMessage     string
+		expectContains    []string
+		expectNotContains []string
+	}{
+		{
+			name:                 "reference type guard -> failed, zero RPC calls",
+			referenceType:        aicall.ReferenceTypeCall,
+			expectCaseGetCall:    false,
+			expectContactGetCall: false,
+			expectResult:         "failed",
+		},
+		{
+			name:              "happy path: full profile",
+			referenceType:     aicall.ReferenceTypeContactCase,
+			expectCaseGetCall: true,
+			responseCase: &kmkase.Case{
+				ID:         caseID,
+				CustomerID: customerID,
+				ContactID:  &contactID,
+			},
+			expectContactGetCall: true,
+			responseContact: &cmcontact.Contact{
+				Identity:    commonidentity.Identity{ID: contactID, CustomerID: customerID},
+				DisplayName: "John Smith",
+				Company:     "Acme Corporation",
+				JobTitle:    "Sales Manager",
+				Addresses: []cmcontact.Address{
+					testAddress(commonaddress.TypeTel, "+821011112222"),
+					testAddress(commonaddress.TypeEmail, "john@acme.example"),
+				},
+			},
+			expectResult: "success",
+			expectContains: []string{
+				`name="John Smith"`,
+				`company="Acme Corporation"`,
+				`job_title="Sales Manager"`,
+				`address: type=tel target="+821011112222"`,
+				`address: type=email target="john@acme.example"`,
+			},
+		},
+		{
+			name:              "happy path: sparse profile falls back to first+last name and omits empty lines",
+			referenceType:     aicall.ReferenceTypeContactCase,
+			expectCaseGetCall: true,
+			responseCase: &kmkase.Case{
+				ID:         caseID,
+				CustomerID: customerID,
+				ContactID:  &contactID,
+			},
+			expectContactGetCall: true,
+			responseContact: &cmcontact.Contact{
+				Identity:  commonidentity.Identity{ID: contactID, CustomerID: customerID},
+				FirstName: "Jane",
+				LastName:  "Doe",
+			},
+			expectResult:      "success",
+			expectMessage:     `name="Jane Doe"`,
+			expectNotContains: []string{"company=", "job_title=", "address:"},
+		},
+		{
+			name:              "address cap: own truncation note in header, no misleading 'most recent' marker",
+			referenceType:     aicall.ReferenceTypeContactCase,
+			expectCaseGetCall: true,
+			responseCase: &kmkase.Case{
+				ID:         caseID,
+				CustomerID: customerID,
+				ContactID:  &contactID,
+			},
+			expectContactGetCall: true,
+			responseContact: &cmcontact.Contact{
+				Identity:    commonidentity.Identity{ID: contactID, CustomerID: customerID},
+				DisplayName: "Many Numbers",
+				Company:     "Acme Corporation",
+				Addresses:   manyAddresses,
+			},
+			expectResult: "success",
+			expectContains: []string{
+				// Identity lines must survive in the header regardless of
+				// address count (round-2 finding N1 regression).
+				`name="Many Numbers"`,
+				`company="Acme Corporation"`,
+				fmt.Sprintf("(showing %d of %d addresses)", insightContactAddressLimit, len(manyAddresses)),
+				`target="+821000000000"`,
+				fmt.Sprintf(`target="+8210000000%02d"`, insightContactAddressLimit-1),
+			},
+			expectNotContains: []string{
+				// renderBodyLines' built-in marker must never fire here: it
+				// asserts recency about a primary-first list (round-5 finding).
+				"showing the most recent",
+				fmt.Sprintf(`target="+8210000000%02d"`, insightContactAddressLimit),
+			},
+		},
+		{
+			name:                 "case not found -> masked, contact RPC never called",
+			referenceType:        aicall.ReferenceTypeContactCase,
+			expectCaseGetCall:    true,
+			responseCaseErr:      requesthandler.ErrNotFound,
+			expectContactGetCall: false,
+			expectResult:         "success",
+			expectMessage:        msgResourceNotFound,
+		},
+		{
+			name:              "cross-customer case -> masked, contact RPC never called",
+			referenceType:     aicall.ReferenceTypeContactCase,
+			expectCaseGetCall: true,
+			responseCase: &kmkase.Case{
+				ID:         caseID,
+				CustomerID: otherCustomerID,
+				ContactID:  &contactID,
+			},
+			expectContactGetCall: false,
+			expectResult:         "success",
+			expectMessage:        msgResourceNotFound,
+		},
+		{
+			// The single most security-load-bearing assertion in this set:
+			// ContactV1ContactGet is UNSCOPED, so it must never be reached
+			// with a nil/zero contact id. Asserted via gomock Times(0).
+			name:              "nil ContactID -> distinct non-masked message, unscoped contact RPC never called",
+			referenceType:     aicall.ReferenceTypeContactCase,
+			expectCaseGetCall: true,
+			responseCase: &kmkase.Case{
+				ID:         caseID,
+				CustomerID: customerID,
+				ContactID:  nil,
+			},
+			expectContactGetCall: false,
+			expectResult:         "success",
+			expectMessage:        "no contact profile found",
+		},
+		{
+			name:              "contact not found -> masked",
+			referenceType:     aicall.ReferenceTypeContactCase,
+			expectCaseGetCall: true,
+			responseCase: &kmkase.Case{
+				ID:         caseID,
+				CustomerID: customerID,
+				ContactID:  &contactID,
+			},
+			expectContactGetCall: true,
+			responseContactErr:   requesthandler.ErrNotFound,
+			expectResult:         "success",
+			expectMessage:        msgResourceNotFound,
+		},
+		{
+			// The mandatory design §3.2 step 5 check -- the SOLE tenant
+			// enforcement on the unscoped ContactV1ContactGet.
+			name:              "cross-customer contact -> masked, no panic",
+			referenceType:     aicall.ReferenceTypeContactCase,
+			expectCaseGetCall: true,
+			responseCase: &kmkase.Case{
+				ID:         caseID,
+				CustomerID: customerID,
+				ContactID:  &contactID,
+			},
+			expectContactGetCall: true,
+			responseContact: &cmcontact.Contact{
+				Identity:    commonidentity.Identity{ID: contactID, CustomerID: otherCustomerID},
+				DisplayName: "Someone Else's Contact",
+				Addresses:   []cmcontact.Address{testAddress(commonaddress.TypeTel, "+821099998888")},
+			},
+			expectResult:      "success",
+			expectMessage:     msgResourceNotFound,
+			expectNotContains: []string{"Someone Else's Contact", "+821099998888"},
+		},
+		{
+			// Distinct from the case above: contact itself is nil, which the
+			// nil-safe audit log on that branch must survive.
+			name:              "nil contact response -> masked, no panic",
+			referenceType:     aicall.ReferenceTypeContactCase,
+			expectCaseGetCall: true,
+			responseCase: &kmkase.Case{
+				ID:         caseID,
+				CustomerID: customerID,
+				ContactID:  &contactID,
+			},
+			expectContactGetCall: true,
+			responseContact:      nil,
+			expectResult:         "success",
+			expectMessage:        msgResourceNotFound,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			h := &aicallHandler{reqHandler: mockReq}
+			ctx := context.Background()
+			c := testAIcallForCase(customerID, caseID)
+			c.ReferenceType = tt.referenceType
+
+			if tt.expectCaseGetCall {
+				mockReq.EXPECT().ContactV1CaseGet(ctx, customerID, caseID).Return(tt.responseCase, tt.responseCaseErr)
+			} else {
+				mockReq.EXPECT().ContactV1CaseGet(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+			}
+
+			if tt.expectContactGetCall {
+				mockReq.EXPECT().ContactV1ContactGet(ctx, contactID).Return(tt.responseContact, tt.responseContactErr)
+			} else {
+				mockReq.EXPECT().ContactV1ContactGet(gomock.Any(), gomock.Any()).Times(0)
+			}
+
+			res := h.toolHandleGetContactProfile(ctx, c, tc)
+
+			if res.Result != tt.expectResult {
+				t.Fatalf("Result = %q, want %q (message: %s)", res.Result, tt.expectResult, res.Message)
+			}
+			if tt.expectMessage != "" && res.Message != tt.expectMessage {
+				t.Errorf("Message = %q, want %q", res.Message, tt.expectMessage)
+			}
+			for _, want := range tt.expectContains {
+				if !strings.Contains(res.Message, want) {
+					t.Errorf("Message = %q, want it to contain %q", res.Message, want)
+				}
+			}
+			for _, notWant := range tt.expectNotContains {
+				if strings.Contains(res.Message, notWant) {
+					t.Errorf("Message = %q, want it NOT to contain %q", res.Message, notWant)
+				}
+			}
+			if tt.expectResult == "success" && res.ResourceType != "contact_profile" {
+				t.Errorf("ResourceType = %q, want %q", res.ResourceType, "contact_profile")
+			}
+			if tt.expectResult == "success" && res.ResourceID != caseID.String() {
+				t.Errorf("ResourceID = %q, want %q", res.ResourceID, caseID.String())
 			}
 		})
 	}

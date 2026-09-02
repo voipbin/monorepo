@@ -2156,7 +2156,7 @@
                     "items": {
                       "$ref": "#/components/schemas/AIManagerToolName"
                     },
-                    "description": "List of tool names to enable for this AI. Use [\"all\"] to enable all available tools. For type=insight AIs, only Insight tool names are permitted (currently: get_contact_interactions, get_conversation_content); type=normal AIs may use any Normal tool name or [\"all\"]. Mismatched combinations are rejected with a 400."
+                    "description": "List of tool names to enable for this AI. Use [\"all\"] to enable all available tools. For type=insight AIs, only Insight tool names are permitted (currently: get_contact_interactions, get_conversation_content, get_related_cases, get_case_notes, get_contact_profile); type=normal AIs may use any Normal tool name or [\"all\"]. Mismatched combinations are rejected with a 400."
                   },
                   "auto_aicall_audit_enabled": {
                     "type": "boolean",
@@ -2610,7 +2610,7 @@
                     "items": {
                       "$ref": "#/components/schemas/AIManagerToolName"
                     },
-                    "description": "List of tool names to enable for this AI. Use [\"all\"] to enable all available tools. For type=insight AIs, only Insight tool names are permitted (currently: get_contact_interactions, get_conversation_content); type=normal AIs may use any Normal tool name or [\"all\"]. Mismatched combinations are rejected with a 400."
+                    "description": "List of tool names to enable for this AI. Use [\"all\"] to enable all available tools. For type=insight AIs, only Insight tool names are permitted (currently: get_contact_interactions, get_conversation_content, get_related_cases, get_case_notes, get_contact_profile); type=normal AIs may use any Normal tool name or [\"all\"]. Mismatched combinations are rejected with a 400."
                   },
                   "auto_aicall_audit_enabled": {
                     "type": "boolean",
@@ -26971,7 +26971,8 @@
           "get_contact_interactions",
           "get_conversation_content",
           "get_related_cases",
-          "get_case_notes"
+          "get_case_notes",
+          "get_contact_profile"
         ],
         "x-enum-varnames": [
           "AIManagerToolNameAll",
@@ -26993,7 +26994,8 @@
           "AIManagerToolNameGetContactInteractions",
           "AIManagerToolNameGetConversationContent",
           "AIManagerToolNameGetRelatedCases",
-          "AIManagerToolNameGetCaseNotes"
+          "AIManagerToolNameGetCaseNotes",
+          "AIManagerToolNameGetContactProfile"
         ]
       },
       "AIManagerAIcall": {

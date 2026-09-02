@@ -30,6 +30,10 @@ const (
 	// 2026-07-30-case-insight-assistant-tool-expansion-design.md §1).
 	ToolNameGetRelatedCases ToolName = "get_related_cases"
 	ToolNameGetCaseNotes    ToolName = "get_case_notes"
+
+	// Insight AI tool set expansion (NOJIRA, docs/plans/
+	// 2026-09-02-insight-assistant-get-contact-profile-design.md).
+	ToolNameGetContactProfile ToolName = "get_contact_profile"
 )
 
 // AllToolNames returns all available tool names (excluding "all")
@@ -59,6 +63,7 @@ var AllInsightToolNames = []ToolName{
 	ToolNameGetConversationContent,
 	ToolNameGetRelatedCases,
 	ToolNameGetCaseNotes,
+	ToolNameGetContactProfile,
 }
 
 // Tool defines a tool with its schema for LLM function calling.

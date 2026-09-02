@@ -5,12 +5,14 @@ import (
 	"encoding/json"
 	stderrors "errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	cmcontact "monorepo/bin-contact-manager/models/contact"
 	kmkase "monorepo/bin-contact-manager/models/kase"
 	cvmessage "monorepo/bin-conversation-manager/models/message"
 	tmpeerevent "monorepo/bin-timeline-manager/models/peerevent"
@@ -28,6 +30,14 @@ const (
 	insightDefaultListLimit = 20
 	insightMaxListLimit     = 50
 )
+
+// insightContactAddressLimit caps how many of a contact's reachable
+// addresses get_contact_profile renders. Deliberately NOT insightMaxListLimit
+// (50): a profile record is not a list tool, and 50 phone numbers is not a
+// plausible answer to "이 사람 전화번호가 뭐야". insightMaxListLimit stays
+// reserved for the actual list tools (interactions/related cases/notes).
+// Design docs/plans/2026-09-02-insight-assistant-get-contact-profile-design.md §3.4.
+const insightContactAddressLimit = 5
 
 // resolveInsightListLimit clamps an LLM-supplied limit into
 // [1, insightMaxListLimit], defaulting to insightDefaultListLimit when unset
@@ -433,5 +443,173 @@ func (h *aicallHandler) toolHandleGetCaseNotes(ctx context.Context, c *aicall.AI
 
 	body := renderBodyLines("", lines, truncated, "notes")
 	fillSuccess(res, "case_note_list", c.ReferenceID.String(), body)
+	return res
+}
+
+// contactDisplayName resolves a human-readable name for a contact: prefer
+// DisplayName, fall back to "FirstName LastName", and finally the fixed
+// "(unknown)" placeholder. The placeholder is a literal, not user data, so
+// it is deliberately returned unquoted here -- the caller %q-quotes whatever
+// this returns, which is correct for all three cases.
+func contactDisplayName(contact *cmcontact.Contact) string {
+	if name := strings.TrimSpace(contact.DisplayName); name != "" {
+		return name
+	}
+	if name := strings.TrimSpace(contact.FirstName + " " + contact.LastName); name != "" {
+		return name
+	}
+	return "(unknown)"
+}
+
+// toolHandleGetContactProfile returns the profile (name/company/job title and
+// a capped set of reachable addresses) of the contact linked to the CURRENT
+// Insight AIcall's Case. Design docs/plans/
+// 2026-09-02-insight-assistant-get-contact-profile-design.md.
+//
+// Scope is always c.ReferenceID (the current Case) -- there is no contact_id
+// or case_id argument, and the tool parses no arguments at all. No
+// LLM-suppliable identifier exists anywhere in this tool's call surface, which
+// removes the IDOR-shaped bug class by construction (design §3.1).
+func (h *aicallHandler) toolHandleGetContactProfile(ctx context.Context, c *aicall.AIcall, tc *message.ToolCall) *messageContent {
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "toolHandleGetContactProfile",
+		"aicall_id": c.ID,
+	})
+	log.Debugf("handling tool get_contact_profile.")
+
+	res := newToolResult(tc.ID)
+
+	if c.ReferenceType != aicall.ReferenceTypeContactCase {
+		fillFailed(res, fmt.Errorf("get_contact_profile is only supported for contact_case reference type"))
+		return res
+	}
+
+	// RPC 1/2: ContactV1CaseGet IS genuinely tenant-scoped server-side (it
+	// takes customerID), so this both resolves the Case and establishes that
+	// the ContactID read off it belongs to this tenant.
+	kase, err := h.reqHandler.ContactV1CaseGet(ctx, c.CustomerID, c.ReferenceID)
+	if err != nil {
+		if isNotFoundErr(err) {
+			fillSuccess(res, "contact_profile", c.ReferenceID.String(), msgResourceNotFound)
+			return res
+		}
+		log.Errorf("Could not get the case. err: %v", err)
+		fillFailed(res, fmt.Errorf("resource lookup failed"))
+		return res
+	}
+	if kase.CustomerID != c.CustomerID || kase.CustomerID == uuid.Nil {
+		// Defensive: tenant is already embedded in the RPC, but fail closed
+		// on any mismatch rather than trust a foreign response shape.
+		log.Warnf("Cross-customer case access blocked. case_customer_id: %s", kase.CustomerID)
+		fillSuccess(res, "contact_profile", c.ReferenceID.String(), msgResourceNotFound)
+		return res
+	}
+
+	if kase.ContactID == nil || *kase.ContactID == uuid.Nil {
+		// Legitimate outcome (no linked contact) -- not a denial, so this
+		// stays a distinct, non-masked message rather than collapsing into
+		// msgResourceNotFound (same precedent as get_related_cases). Also a
+		// hard guard: ContactV1ContactGet must NEVER be reached with a nil or
+		// zero contact id (design §3.2 step 3).
+		fillSuccess(res, "contact_profile", c.ReferenceID.String(), "no contact profile found")
+		return res
+	}
+
+	// RPC 2/2: ContactV1ContactGet takes NO customerID and does NO server-side
+	// tenant filtering (contacthandler.Get only rejects soft-deleted rows).
+	contact, err := h.reqHandler.ContactV1ContactGet(ctx, *kase.ContactID)
+	if err != nil {
+		if isNotFoundErr(err) {
+			// Includes the soft-deleted contact case (merge, GDPR erasure).
+			fillSuccess(res, "contact_profile", c.ReferenceID.String(), msgResourceNotFound)
+			return res
+		}
+		log.Errorf("Could not get the contact. err: %v", err)
+		fillFailed(res, fmt.Errorf("resource lookup failed"))
+		return res
+	}
+
+	// MANDATORY tenant enforcement -- NOT defensive, NOT redundant, and NOT
+	// removable. ContactV1ContactGet above has no server-side tenant filter of
+	// any kind, so this response-side check is the SOLE thing preventing
+	// cross-tenant contact disclosure on this path. It is safe today only
+	// because *kase.ContactID was read off a Case already tenant-verified
+	// above -- i.e. tenancy here rests on contact_cases.contact_id referential
+	// integrity, not on the RPC. Anyone changing either table's write path, or
+	// tempted to delete this block as "already covered upstream", must read
+	// design §3.2 step 5 / §5 first. Deleting it is a real cross-tenant leak.
+	if contact == nil || contact.CustomerID != c.CustomerID || contact.CustomerID == uuid.Nil {
+		// Nil-safe forensic audit line: contact may legitimately be nil here,
+		// so the offending tenant id is resolved through a guarded local.
+		foreignCustomerID := "nil-contact"
+		if contact != nil {
+			foreignCustomerID = contact.CustomerID.String()
+		}
+		log.Warnf("Cross-customer or missing contact on lookup. case_id: %s, contact_id: %s, contact_customer_id: %s",
+			c.ReferenceID, *kase.ContactID, foreignCustomerID)
+		fillSuccess(res, "contact_profile", c.ReferenceID.String(), msgResourceNotFound)
+		return res
+	}
+
+	// Identity fields go in the HEADER, never in `lines`: renderBodyLines is
+	// contracted for a chronological, homogeneous list and on overflow drops
+	// from the FRONT of `lines`. Mixing identity fields into `lines` would
+	// sacrifice name/company first while keeping raw phone/email lines --
+	// both the wrong UX and privacy-inverted (design §3.4, round-2 finding).
+	headerLines := []string{fmt.Sprintf("name=%q", contactDisplayName(contact))}
+	if contact.Company != "" {
+		headerLines = append(headerLines, fmt.Sprintf("company=%q", contact.Company))
+	}
+	if contact.JobTitle != "" {
+		headerLines = append(headerLines, fmt.Sprintf("job_title=%q", contact.JobTitle))
+	}
+
+	addrs := contact.Addresses
+	if len(addrs) > insightContactAddressLimit {
+		// Head-cap, which is meaningful only because AddressListByContactID
+		// orders rows `is_primary desc, tm_create asc`
+		// (bin-contact-manager/pkg/dbhandler/address.go) -- so the cap is
+		// primary-preserving by construction, not an arbitrary truncation.
+		addrs = addrs[:insightContactAddressLimit]
+
+		// Write our OWN honest, ordering-agnostic truncation note into the
+		// header instead of letting renderBodyLines emit its built-in
+		// "...(earlier addresses omitted; showing the most recent N)" marker.
+		// That marker asserts recency, which would be a false claim about a
+		// primary-first list, and renderBodyLines forces it whenever
+		// pagedOut=true regardless of actual overflow -- i.e. it would fire on
+		// the ordinary common path, not a rare edge case (design §3.4 rev5).
+		headerLines = append(headerLines, fmt.Sprintf(
+			"(showing %d of %d addresses)", len(addrs), len(contact.Addresses)))
+	}
+	header := strings.Join(headerLines, "\n")
+
+	addrLines := make([]string, 0, len(addrs))
+	for _, a := range addrs {
+		// Defense in depth: each address row carries its own CustomerID, so
+		// skip any row that does not match rather than trusting the parent
+		// contact's tenant check to cover every nested row.
+		if a.CustomerID != uuid.Nil && a.CustomerID != c.CustomerID {
+			log.Warnf("Skipping cross-customer contact address row. case_id: %s, address_customer_id: %s", c.ReferenceID, a.CustomerID)
+			continue
+		}
+		// Type + Target ONLY -- never the free-text Detail/Name/TargetName
+		// sub-fields (same sensitivity class as Notes; design §5).
+		addrLines = append(addrLines, fmt.Sprintf("address: type=%s target=%q", a.Type, a.Target))
+	}
+
+	var body string
+	if len(addrLines) == 0 {
+		// renderBodyLines' own empty-lines fallback does exactly this, but
+		// calling it explicitly documents the no-addresses case.
+		body = capSummaryRunes(header)
+	} else {
+		// pagedOut is hardcoded false (NOT the truncation condition above):
+		// our own note is already in the header, and renderBodyLines' marker
+		// would be misleading here. See the header comment above.
+		body = renderBodyLines(header, addrLines, false, "addresses")
+	}
+
+	fillSuccess(res, "contact_profile", c.ReferenceID.String(), body)
 	return res
 }

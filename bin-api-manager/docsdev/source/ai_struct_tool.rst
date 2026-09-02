@@ -842,6 +842,7 @@ get_contact_interactions   List past interactions with the Case's contact     ``
 get_conversation_content   Retrieve a conversation's message transcript       ``true``
 get_related_cases          List the contact's other cases                     ``true``
 get_case_notes             Retrieve internal agent notes on the current Case  ``true``
+get_contact_profile        Retrieve the Case contact's profile and addresses  ``true``
 ========================== ================================================= ===============
 
 .. _ai-struct-tool-get_contact_interactions:
@@ -990,6 +991,40 @@ Returns the internal agent notes on the current Case, useful for picking up cont
         }
     }
 
+.. _ai-struct-tool-get_contact_profile:
+
+get_contact_profile
+~~~~~~~~~~~~~~~~~~~~
+
+Returns the profile of the contact linked to the current Case: name, company, job title, and up to 5 reachable addresses (phone/email), primary address first. If the Case has no linked contact, the tool returns ``no contact profile found``.
+
+Free-text contact notes, integration metadata (``source``/``external_id``), tags, and address ``name``/``detail`` sub-fields are never returned.
+
+**When to use:**
+
+* Answering "who am I talking to" / "what company is this person from" / "what is this contact's phone number or email address"
+
+**When NOT to use:**
+
+* The history of past contacts with this person is needed (use ``get_contact_interactions``)
+* The contact's other cases are needed (use ``get_related_cases``)
+* The internal agent notes on this Case are needed (use ``get_case_notes``)
+
+**Parameters:**
+
+.. code::
+
+    {
+        "type": "object",
+        "properties": {
+            "run_llm": {
+                "type": "boolean",
+                "description": "Set true to reason about the retrieved contact profile.",
+                "default": true
+            }
+        }
+    }
+
 
 run_llm Parameter
 -----------------
@@ -1034,6 +1069,7 @@ Tool Name                    run_llm   Why
 ``get_conversation_content`` ``true``  Insight tool — LLM reasons about the retrieved conversation content.
 ``get_related_cases``        ``true``  Insight tool — LLM reasons about the retrieved related-case history.
 ``get_case_notes``           ``true``  Insight tool — LLM reasons about the retrieved case notes.
+``get_contact_profile``      ``true``  Insight tool — LLM reasons about the retrieved contact profile.
 ============================ ========= ========================================================================================
 
 .. note:: **AI Implementation Hint**

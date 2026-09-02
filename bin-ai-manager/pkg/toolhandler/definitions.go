@@ -875,4 +875,31 @@ run_llm: Set true to reason about the retrieved notes.`,
 			},
 		},
 	},
+	{
+		Name:   tool.ToolNameGetContactProfile,
+		RunLLM: true,
+		Description: `Returns the profile of the contact linked to the CURRENT Case: name, company, job title, and up to 5 reachable addresses (phone/email), primary first.
+
+WHEN TO USE:
+- Answering "who am I talking to" / "what company is this person from" / "what is this contact's phone number or email address".
+
+WHEN NOT TO USE:
+- You want the history of past contacts with this person (use get_contact_interactions).
+- You want the OTHER cases raised by this contact (use get_related_cases).
+- You want the internal agent notes on this case (use get_case_notes).
+
+Always scoped to the current Case's contact; there is no argument to target a different Case or contact. If the Case has no linked contact, this returns "no contact profile found".
+
+run_llm: Set true to reason about the returned contact profile.`,
+		Parameters: map[string]any{
+			"type": "object",
+			"properties": map[string]any{
+				"run_llm": map[string]any{
+					"type":        "boolean",
+					"description": "Set true to reason about the retrieved contact profile.",
+					"default":     true,
+				},
+			},
+		},
+	},
 }

@@ -1458,6 +1458,10 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
 <td><p>Retrieve internal agent notes on the current Case</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">true</span></code></p></td>
 </tr>
+<tr class="row-even"><td><p>get_contact_profile</p></td>
+<td><p>Retrieve the Case contact’s profile and addresses</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">true</span></code></p></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -1588,6 +1592,34 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
 </pre></div>
 </div>
 </section>
+<section id="get-contact-profile">
+<span id="ai-struct-tool-get-contact-profile"></span><h3>get_contact_profile<a class="headerlink" href="#get-contact-profile" title="Link to this heading">¶</a></h3>
+<p>Returns the profile of the contact linked to the current Case: name, company, job title, and up to 5 reachable addresses (phone/email), primary address first. If the Case has no linked contact, the tool returns <code class="docutils literal notranslate"><span class="pre">no</span> <span class="pre">contact</span> <span class="pre">profile</span> <span class="pre">found</span></code>.</p>
+<p>Free-text contact notes, integration metadata (<code class="docutils literal notranslate"><span class="pre">source</span></code>/<code class="docutils literal notranslate"><span class="pre">external_id</span></code>), tags, and address <code class="docutils literal notranslate"><span class="pre">name</span></code>/<code class="docutils literal notranslate"><span class="pre">detail</span></code> sub-fields are never returned.</p>
+<p><strong>When to use:</strong></p>
+<ul class="simple">
+<li><p>Answering “who am I talking to” / “what company is this person from” / “what is this contact’s phone number or email address”</p></li>
+</ul>
+<p><strong>When NOT to use:</strong></p>
+<ul class="simple">
+<li><p>The history of past contacts with this person is needed (use <code class="docutils literal notranslate"><span class="pre">get_contact_interactions</span></code>)</p></li>
+<li><p>The contact’s other cases are needed (use <code class="docutils literal notranslate"><span class="pre">get_related_cases</span></code>)</p></li>
+<li><p>The internal agent notes on this Case are needed (use <code class="docutils literal notranslate"><span class="pre">get_case_notes</span></code>)</p></li>
+</ul>
+<p><strong>Parameters:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;run_llm&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;boolean&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Set true to reason about the retrieved contact profile.&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="n">true</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
 </section>
 <section id="run-llm-parameter">
 <h2>run_llm Parameter<a class="headerlink" href="#run-llm-parameter" title="Link to this heading">¶</a></h2>
@@ -1690,6 +1722,10 @@ Each tool has a platform-set default (shown in the table below). This value is <
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">get_case_notes</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">true</span></code></p></td>
 <td><p>Insight tool — LLM reasons about the retrieved case notes.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">get_contact_profile</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">true</span></code></p></td>
+<td><p>Insight tool — LLM reasons about the retrieved contact profile.</p></td>
 </tr>
 </tbody>
 </table>
@@ -1857,6 +1893,7 @@ It determines whether the LLM generates a response after tool execution:</p>
 <li><a class="reference internal" href="#get-conversation-content">get_conversation_content</a></li>
 <li><a class="reference internal" href="#get-related-cases">get_related_cases</a></li>
 <li><a class="reference internal" href="#get-case-notes">get_case_notes</a></li>
+<li><a class="reference internal" href="#get-contact-profile">get_contact_profile</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#run-llm-parameter">run_llm Parameter</a></li>
