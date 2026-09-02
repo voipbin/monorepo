@@ -504,6 +504,41 @@ leave until "~32 services, any order":
   `models/container` into its own minimal module becomes worth reconsidering
   at that time, not now.
 
+## Amendment (2026-09-03): godebug freeze dropped
+
+The "What actually needs to change, per service" and "Risks and mitigations"
+sections above originally specified a `godebug default=go1.25` line on every
+bumped `go.mod`, to decouple the mandatory compiler upgrade (needed for
+`k8s.io/client-go` GA) from adopting Go 1.27's GODEBUG runtime-behavior
+defaults, with the freeze intended to be dropped in a later, separately
+staged and verified follow-up once the compiler bump had soaked in
+production.
+
+대표님 explicit decision after this PR's initial implementation was already
+verified and pushed: skip the staged rollback plan and adopt the Go 1.27
+GODEBUG defaults immediately, in this same PR, accepting the (judged low)
+behavioral risk now rather than carrying the freeze forward with an
+unscheduled removal date. Rationale given: fix forward if something breaks,
+rather than run two upgrade cycles for one compiler bump.
+
+Executed as a second fleet-wide pass: removed `godebug default=go1.25` from
+all 38 `go.mod` files, then re-ran the full 5-step verification workflow
+(`go mod tidy`, `go mod vendor`, `go generate ./...`, `go test ./...`,
+`golangci-lint run`) on all 38 modules. Result: zero `go.sum` drift, zero new
+test failures, zero new lint findings, no TLS/map-iteration/http-behavior/
+gotypesalias regressions observed anywhere in the fleet (including the three
+network-proxy services — `voip-asterisk-proxy`, `voip-kamailio-proxy`,
+`voip-rtpengine-proxy` — checked most carefully as the category most exposed
+to GODEBUG-driven TLS/network/timer behavior changes; one proxy showed two
+transient port/mock-timing test flakes that cleared on rerun, judged ordinary
+flakiness, not a GODEBUG regression).
+
+The permanently-removed GODEBUG settings noted in "Risks and mitigations"
+(`tlsunsafeekm`, `tlsrsakex`, `tls3des`, `tls10server`, `x509keypairleaf`,
+`gotypesalias`, `asynctimerchan`) were never restorable by the freeze in the
+first place, so this amendment does not change that risk's status — it was
+already live the moment the `go 1.27.1` directive landed.
+
 ## References
 
 - [VOIP-1446](https://voipbin.atlassian.net/browse/VOIP-1446) — the triggering
