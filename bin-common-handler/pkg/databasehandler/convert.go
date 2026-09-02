@@ -40,7 +40,7 @@ func ConvertMapToTypedMap(src map[string]any, modelStruct any) (map[string]any, 
 
 	// Get struct type info
 	structType := reflect.TypeOf(modelStruct)
-	if structType.Kind() == reflect.Ptr {
+	if structType.Kind() == reflect.Pointer {
 		structType = structType.Elem()
 	}
 
@@ -221,7 +221,7 @@ func buildFieldTypeMap(structType reflect.Type, fieldTypeMap map[string]reflect.
 		} else if field.Anonymous {
 			// Recursively process embedded struct fields
 			fieldType := field.Type
-			if fieldType.Kind() == reflect.Ptr {
+			if fieldType.Kind() == reflect.Pointer {
 				fieldType = fieldType.Elem()
 			}
 			if fieldType.Kind() == reflect.Struct {

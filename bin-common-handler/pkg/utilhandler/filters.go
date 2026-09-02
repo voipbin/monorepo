@@ -43,7 +43,7 @@ func ConvertFilters[FS any, F ~string](fieldStruct FS, filters map[string]any) (
 
 	// Get FieldStruct type
 	typ := reflect.TypeOf(fieldStruct)
-	if typ.Kind() == reflect.Ptr {
+	if typ.Kind() == reflect.Pointer {
 		typ = typ.Elem()
 	}
 

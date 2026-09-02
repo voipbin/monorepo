@@ -1,6 +1,8 @@
 module monorepo/bin-common-handler
 
-go 1.25.3
+go 1.27.1
+
+godebug default=go1.25
 
 replace monorepo/bin-agent-manager => ../bin-agent-manager
 
@@ -67,12 +69,6 @@ replace monorepo/bin-tts-manager => ../bin-tts-manager
 replace monorepo/bin-webhook-manager => ../bin-webhook-manager
 
 require (
-	github.com/sirupsen/logrus v1.9.4
-	go.uber.org/mock v0.6.0
-	golang.org/x/sys v0.47.0 // indirect
-)
-
-require (
 	github.com/Masterminds/squirrel v1.5.4
 	github.com/go-sql-driver/mysql v1.9.3
 	github.com/gofrs/uuid v4.4.0+incompatible
@@ -80,6 +76,8 @@ require (
 	github.com/prometheus/client_golang v1.23.2
 	github.com/prometheus/client_model v0.6.2
 	github.com/rabbitmq/amqp091-go v1.10.0
+	github.com/sirupsen/logrus v1.9.4
+	go.uber.org/mock v0.6.0
 	golang.org/x/crypto v0.55.0
 	golang.org/x/exp v0.0.0-20251219203646-944ab1f22d93
 	monorepo/bin-agent-manager v0.0.0-20240328054741-55144017eccd
@@ -129,5 +127,6 @@ require (
 	github.com/robfig/cron/v3 v3.0.1 // indirect
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
 	golang.org/x/net v0.58.0 // indirect
+	golang.org/x/sys v0.47.0 // indirect
 	google.golang.org/protobuf v1.36.12 // indirect
 )
