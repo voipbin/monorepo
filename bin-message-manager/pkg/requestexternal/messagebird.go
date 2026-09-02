@@ -36,10 +36,10 @@ func (h *requestExternal) MessagebirdSendMessage(ctx context.Context, sender str
 	data.Set("body", text)
 
 	t := &http.Transport{
-		Dial: (&net.Dialer{
+		DialContext: (&net.Dialer{
 			Timeout:   60 * time.Second,
 			KeepAlive: 30 * time.Second,
-		}).Dial,
+		}).DialContext,
 		// We use ABSURDLY large keys, and should probably not.
 		TLSHandshakeTimeout: 60 * time.Second,
 	}
