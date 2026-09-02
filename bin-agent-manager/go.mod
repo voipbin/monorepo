@@ -2,8 +2,6 @@ module monorepo/bin-agent-manager
 
 go 1.27.1
 
-godebug default=go1.25
-
 replace monorepo/bin-call-manager => ../bin-call-manager
 
 replace monorepo/bin-common-handler => ../bin-common-handler
