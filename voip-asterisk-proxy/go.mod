@@ -2,8 +2,6 @@ module monorepo/voip-asterisk-proxy
 
 go 1.27.1
 
-godebug default=go1.25
-
 replace monorepo/bin-agent-manager => ../bin-agent-manager
 
 replace monorepo/bin-call-manager => ../bin-call-manager
