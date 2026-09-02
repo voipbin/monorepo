@@ -65,12 +65,17 @@ func (h *k8sWatchHandler) runInformer(ctx context.Context, target watchTarget) e
 	})
 
 	informer := cache.NewSharedIndexInformer(
+		// ListFunc/WatchFunc are deprecated in favor of ListWithContext/WatchWithContext as of a
+		// later client-go than the v0.36.0-alpha.0 this service currently pins (VOIP-1418). Migrating
+		// is part of VOIP-1446's k8s.io/* GA bump, not this purely-mechanical Go toolchain upgrade
+		// (VOIP-1447) -- deferred rather than done here to keep this PR's blast radius to go.mod/
+		// Dockerfile/CI only.
 		&cache.ListWatch{
-			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
+			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) { //nolint:staticcheck // see above, VOIP-1446
 				options.LabelSelector = target.LabelSelector
 				return h.clientset.CoreV1().Pods(target.Namespace).List(ctx, options)
 			},
-			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
+			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) { //nolint:staticcheck // see above, VOIP-1446
 				options.LabelSelector = target.LabelSelector
 				return h.clientset.CoreV1().Pods(target.Namespace).Watch(ctx, options)
 			},
