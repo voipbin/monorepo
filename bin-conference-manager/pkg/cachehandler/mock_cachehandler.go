@@ -59,17 +59,17 @@ func (mr *MockCacheHandlerMockRecorder) ConferenceGet(ctx, id any) *gomock.Call 
 }
 
 // ConferenceSet mocks base method.
-func (m *MockCacheHandler) ConferenceSet(ctx context.Context, conference *conference.Conference) error {
+func (m *MockCacheHandler) ConferenceSet(ctx context.Context, arg1 *conference.Conference) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConferenceSet", ctx, conference)
+	ret := m.ctrl.Call(m, "ConferenceSet", ctx, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ConferenceSet indicates an expected call of ConferenceSet.
-func (mr *MockCacheHandlerMockRecorder) ConferenceSet(ctx, conference any) *gomock.Call {
+func (mr *MockCacheHandlerMockRecorder) ConferenceSet(ctx, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceSet", reflect.TypeOf((*MockCacheHandler)(nil).ConferenceSet), ctx, conference)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferenceSet", reflect.TypeOf((*MockCacheHandler)(nil).ConferenceSet), ctx, arg1)
 }
 
 // ConferencecallGet mocks base method.
@@ -103,17 +103,17 @@ func (mr *MockCacheHandlerMockRecorder) ConferencecallGetByReferenceID(ctx, refe
 }
 
 // ConferencecallSet mocks base method.
-func (m *MockCacheHandler) ConferencecallSet(ctx context.Context, conference *conferencecall.Conferencecall) error {
+func (m *MockCacheHandler) ConferencecallSet(ctx context.Context, arg1 *conferencecall.Conferencecall) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConferencecallSet", ctx, conference)
+	ret := m.ctrl.Call(m, "ConferencecallSet", ctx, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ConferencecallSet indicates an expected call of ConferencecallSet.
-func (mr *MockCacheHandlerMockRecorder) ConferencecallSet(ctx, conference any) *gomock.Call {
+func (mr *MockCacheHandlerMockRecorder) ConferencecallSet(ctx, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferencecallSet", reflect.TypeOf((*MockCacheHandler)(nil).ConferencecallSet), ctx, conference)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConferencecallSet", reflect.TypeOf((*MockCacheHandler)(nil).ConferencecallSet), ctx, arg1)
 }
 
 // Connect mocks base method.
