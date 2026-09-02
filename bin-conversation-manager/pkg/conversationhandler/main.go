@@ -38,16 +38,11 @@ type ConversationHandler interface {
 		peer commonaddress.Address,
 	) (*conversation.Conversation, error)
 	Get(ctx context.Context, id uuid.UUID) (*conversation.Conversation, error)
-	// GetBySelfAndPeer is a get-only lookup (never creates), used by
-	// bin-contact-manager's proactive Case-linking write path
-	// (contact-case-management design §4.4). A miss must not have any
-	// create side-effect.
-	GetBySelfAndPeer(ctx context.Context, self commonaddress.Address, peer commonaddress.Address) (*conversation.Conversation, error)
-	// GetOrCreateBySelfAndPeer is a distinct, separate RPC from
-	// GetBySelfAndPeer above (round-12 correction, contact-case-management
-	// design §4.5): creating a Conversation on a miss is correct here
-	// because this is only called from the agent-send path, where a real
-	// message is genuinely about to be sent.
+	// GetOrCreateBySelfAndPeer looks up a Conversation and creates one on a
+	// miss (round-12 correction, contact-case-management design §4.5).
+	// Creating on a miss is correct here because this is only called from
+	// the agent-send path, where a real message is genuinely about to be
+	// sent.
 	GetOrCreateBySelfAndPeer(
 		ctx context.Context,
 		customerID uuid.UUID,

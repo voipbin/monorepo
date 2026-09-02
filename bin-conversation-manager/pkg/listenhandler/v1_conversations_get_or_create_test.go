@@ -19,8 +19,8 @@ import (
 // Test_processV1ConversationsGetOrCreateBySelfAndPeerPost verifies the
 // distinct get-or-create endpoint used by bin-contact-manager's
 // agent-send Case-linked messaging path (contact-case-management design
-// §4.5, round-12 correction). Must call GetOrCreateBySelfAndPeer, NOT
-// GetBySelfAndPeer.
+// §4.5, round-12 correction). Must call GetOrCreateBySelfAndPeer, which
+// creates a Conversation on a miss.
 func Test_processV1ConversationsGetOrCreateBySelfAndPeerPost(t *testing.T) {
 	tests := []struct {
 		name string

@@ -19,9 +19,6 @@
       "pattern": "/v1/conversations$"
     },
     {
-      "pattern": "/v1/conversations/self_and_peer$"
-    },
-    {
       "pattern": "/v1/conversations/get_or_create_by_self_and_peer$"
     },
     {
