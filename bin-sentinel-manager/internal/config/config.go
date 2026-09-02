@@ -2,17 +2,20 @@ package config
 
 import (
 	"fmt"
-	"sync"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
-var (
-	cfg  Config
-	once sync.Once
-)
+// cfg is written by LoadGlobalConfig and read by Get with NO synchronization. Both binaries
+// load it exactly once, single-goroutine, before any worker starts, which is the only reason
+// this is safe. Removing the former sync.Once did not make Get()'s read safe (it never was),
+// but it DID drop the write/write exclusion Once.Do provided: concurrent LoadGlobalConfig
+// calls are now a data race. A future runtime-reload feature therefore cannot just call
+// LoadGlobalConfig() again while other goroutines are live -- it needs atomic.Pointer[Config]
+// or a lock covering Get() as well as the write.
+var cfg Config
 
 // defaults of the configuration values.
 const (
@@ -118,28 +121,26 @@ func Bootstrap(cmd *cobra.Command) error {
 	return nil
 }
 
-// LoadGlobalConfig loads configuration from viper into the global singleton.
+// LoadGlobalConfig loads configuration from viper into the global singleton, validating it first.
 //
-// It returns an error so that cmd/sentinel-control's PersistentPreRunE can actually PROPAGATE a
-// validation failure instead of discarding it. The two binaries bootstrap config through
-// different entry points -- sentinel-manager via InitConfig, sentinel-control via
-// Bootstrap + LoadGlobalConfig -- so validation does not wire itself into both just because they
-// share this package. The signature change is what makes the CLI fail the same way the service
-// does on a missing or invalid SENTINEL_BACKEND, rather than silently running against
-// unvalidated config.
+// It is the shared load-validate-store core for BOTH bootstrap paths: cmd/sentinel-control's
+// PersistentPreRunE calls it directly, and InitConfig (used by cmd/sentinel-manager) delegates to
+// it after binding its own flags. That delegation is what makes the CLI fail the same way the
+// service does on a missing or invalid SENTINEL_BACKEND -- the two binaries now share one
+// validation implementation structurally, not just by parallel test coverage.
+//
+// Every call reloads and re-validates from viper -- there is no caching. A failed call leaves cfg
+// untouched (assignment happens only after Validate succeeds) and is safe to retry; the earlier
+// sync.Once-guarded version consumed itself on a failed first call, so any later call would have
+// silently returned nil against a still-zero-value config.
 func LoadGlobalConfig() error {
-	var err error
+	loaded := loadFromViper()
+	if err := loaded.Validate(); err != nil {
+		return err
+	}
+	cfg = loaded
 
-	once.Do(func() {
-		loaded := loadFromViper()
-		if errValidate := loaded.Validate(); errValidate != nil {
-			err = errValidate
-			return
-		}
-		cfg = loaded
-	})
-
-	return err
+	return nil
 }
 
 // InitConfig initializes the configuration with Cobra command
@@ -168,13 +169,7 @@ func InitConfig(cmd *cobra.Command) error {
 		}
 	}
 
-	loaded := loadFromViper()
-	if err := loaded.Validate(); err != nil {
-		return err
-	}
-	cfg = loaded
-
-	return nil
+	return LoadGlobalConfig()
 }
 
 // Validate rejects a configuration the selected backend cannot actually run on.

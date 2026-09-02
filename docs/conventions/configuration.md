@@ -41,6 +41,15 @@ func LoadGlobalConfig() {
 func Get() *Config { return &globalConfig }
 ```
 
+All 33 service `internal/config` packages follow this shape; after
+`NOJIRA-Fix-sentinel-config-once-retry-bug`, 32 of them still wrap the loader in `sync.Once` and
+`bin-sentinel-manager` is the sole exception, on two linked axes. Its `LoadGlobalConfig` returns
+an `error` (the canonical form above returns nothing) so the CLI can propagate a validation
+failure; and *because* it can now fail, it deliberately does **not** wrap the load in `once` — a
+`once`-wrapped loader swallows every call after the first, so the retry after a validation failure
+would silently do nothing. See `bin-sentinel-manager/internal/config/config.go` for the
+unconditional load-validate-store alternative.
+
 ### 12.2 Environment Variable Binding
 
 Each config field maps to a CLI flag and an environment variable:
