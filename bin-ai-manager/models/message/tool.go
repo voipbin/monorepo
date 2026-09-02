@@ -48,4 +48,5 @@ const (
 	FunctionCallNameGetRelatedCases        FunctionCallName = "get_related_cases"
 	FunctionCallNameGetCaseNotes           FunctionCallName = "get_case_notes"
 	FunctionCallNameGetContactProfile      FunctionCallName = "get_contact_profile"
+	FunctionCallNameGetCallTranscript      FunctionCallName = "get_call_transcript"
 )

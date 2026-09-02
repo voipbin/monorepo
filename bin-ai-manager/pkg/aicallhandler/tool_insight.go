@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	stderrors "errors"
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
@@ -12,10 +13,13 @@ import (
 	"monorepo/bin-ai-manager/models/message"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 	cmcontact "monorepo/bin-contact-manager/models/contact"
 	kmkase "monorepo/bin-contact-manager/models/kase"
 	cvmessage "monorepo/bin-conversation-manager/models/message"
 	tmpeerevent "monorepo/bin-timeline-manager/models/peerevent"
+	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
+	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -38,6 +42,20 @@ const (
 // stays reserved for the actual list tools (interactions/related cases/notes).
 // Design docs/plans/2026-09-02-insight-assistant-get-contact-profile-design.md §3.4.
 const insightContactAddressLimit = 5
+
+// insightCallTranscribeSessionLimit / insightCallTranscribeFetchMaxPages
+// bound get_call_transcript's fetch. insightCallTranscribeSessionLimit is a
+// NEW, separate policy-bound constant (not insightMaxListLimit=50, not
+// derived from any codebase-enforced constraint) for the CUSTOMER-VISIBLE
+// number of transcribe sessions rendered -- raise if telemetry shows
+// truncation. insightCallTranscribeFetchMaxPages bounds the pagination loop
+// (§3.3/§3.4) that determines whether the true genuine count is known, not
+// how many rows are ultimately rendered. Design
+// docs/plans/2026-09-03-insight-assistant-get-call-transcript-design.md §3.3.
+const (
+	insightCallTranscribeSessionLimit  = 10
+	insightCallTranscribeFetchMaxPages = 5
+)
 
 // resolveInsightListLimit clamps an LLM-supplied limit into
 // [1, insightMaxListLimit], defaulting to insightDefaultListLimit when unset
@@ -623,5 +641,416 @@ func (h *aicallHandler) toolHandleGetContactProfile(ctx context.Context, c *aica
 	}
 
 	fillSuccess(res, "contact_profile", c.ReferenceID.String(), body)
+	return res
+}
+
+// transcriptLine is the intermediate accumulator entry for
+// toolHandleGetCallTranscript's cross-session merge (§3.5): one entry per
+// real Transcript row, plus one entry per synthesized gap marker (§3.6).
+// After the full merge is assembled it is sorted with sort.SliceStable on
+// the strict total-order key (tmCreate, rank, transcribeID, transcriptID,
+// seq), THEN rendered to its final display string (§3.7). Design
+// docs/plans/2026-09-03-insight-assistant-get-call-transcript-design.md §3.5.
+type transcriptLine struct {
+	tmCreate     *time.Time // sort key component 1; also the rendered timestamp
+	rank         int        // sort key component 2: 0 = gap marker, 1 = real row
+	transcribeID uuid.UUID  // sort key component 3 (uuid.Nil for markers)
+	transcriptID uuid.UUID  // sort key component 4 (uuid.Nil for markers)
+	seq          int        // sort key component 5, monotonic per-call counter
+	bracket      string     // "<direction> <language>" (or "gap <language>"),
+	// the content that goes INSIDE the rendered [<ts> ...] brackets
+	message string // the free text after the closing bracket
+}
+
+// toolHandleGetCallTranscript returns the merged, chronological transcript
+// of everything said on a call, sourced from live in-call transcription
+// (transcribe_start) sessions. Design docs/plans/
+// 2026-09-03-insight-assistant-get-call-transcript-design.md.
+//
+// Access is TENANT-ONLY (§3.2), a conscious, explicit product decision
+// (§0.2) to widen from case-level to tenant-level isolation, consistent with
+// the already-shipped get_conversation_content precedent: call_id is
+// LLM-suppliable, and this tool does not narrow to the current Case's
+// peer/contact.
+func (h *aicallHandler) toolHandleGetCallTranscript(ctx context.Context, c *aicall.AIcall, tc *message.ToolCall) *messageContent {
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "toolHandleGetCallTranscript",
+		"aicall_id": c.ID,
+	})
+	log.Debugf("handling tool get_call_transcript.")
+
+	res := newToolResult(tc.ID)
+
+	// §3.0 entry guard. This is explicitly NOT a security control -- unlike
+	// the Case-scoped sibling tools, this tool's access check (§3.2) derives
+	// nothing from the Case; c.CustomerID (used for the tenant check) is
+	// already present on the AIcall struct with no RPC needed. The guard
+	// exists purely to keep this tool scoped to the Insight-on-Case product
+	// surface, for consistency and blast-radius reduction, not because
+	// anything downstream depends on it.
+	if c.ReferenceType != aicall.ReferenceTypeContactCase {
+		fillFailed(res, fmt.Errorf("get_call_transcript is only supported for contact_case reference type"))
+		return res
+	}
+
+	// §3.1 argument: call_id is the ONLY tool in the Insight set besides
+	// get_conversation_content (reference_id) to take an LLM-suppliable
+	// identifier. Three-branch validation, mirroring
+	// get_conversation_content's handling exactly.
+	var args struct {
+		CallID string `json:"call_id"`
+	}
+	if err := json.Unmarshal([]byte(tc.Function.Arguments), &args); err != nil {
+		fillFailed(res, errors.Wrap(err, "invalid arguments"))
+		return res
+	}
+	if args.CallID == "" {
+		fillFailed(res, fmt.Errorf("call_id is required, call get_contact_interactions first to discover candidate call ids"))
+		return res
+	}
+	callID, err := uuid.FromString(args.CallID)
+	if err != nil || callID == uuid.Nil {
+		fillFailed(res, fmt.Errorf("invalid call_id"))
+		return res
+	}
+
+	// §3.2 access check -- TENANT-ONLY (confirmed product decision, §0.2).
+	// CallV1CallGet is unscoped (no customerID param), same shape as
+	// ContactV1ContactGet -- this check is the SOLE tenant enforcement on
+	// the call itself, load-bearing exactly like get_contact_profile's
+	// mandatory contact check. Do NOT treat this as "defensive" or
+	// "redundant". No further narrowing: this does NOT check whether call's
+	// peer matches c's Case's peer/contact (confirmed decision, §0.2/§5).
+	// Soft-deleted calls ARE returned by CallV1CallGet (no tm_delete filter
+	// server-side) -- accepted, intentional: calls are historical records,
+	// the Deleted:false filters/rechecks on Transcribe/Transcript below are
+	// the actual data-lifecycle boundary this tool respects.
+	call, err := h.reqHandler.CallV1CallGet(ctx, callID)
+	if err != nil {
+		if isNotFoundErr(err) {
+			fillSuccess(res, "call_transcript", callID.String(), msgResourceNotFound)
+			return res
+		}
+		log.Errorf("Could not get the call. err: %v", err)
+		fillFailed(res, fmt.Errorf("resource lookup failed"))
+		return res
+	}
+	if call == nil || call.CustomerID != c.CustomerID || call.CustomerID == uuid.Nil {
+		log.Warnf("Cross-customer or missing call on lookup. call_id: %s", callID)
+		fillSuccess(res, "call_transcript", callID.String(), msgResourceNotFound)
+		return res
+	}
+
+	// §3.3 Transcribe session list -- pagination-until-exact, MANDATORY
+	// filter + MANDATORY per-row recheck. customer_id is NOT server-enforced
+	// (transcribe-manager's list endpoint parses filters from the request
+	// body with no injected/enforced customer_id), so the per-row recheck
+	// below is MANDATORY, not optional. The exclusion rule is stated
+	// GENERICALLY ("exclude any row whose CustomerID != c.CustomerID"), not
+	// as "exclude IDAIManager specifically", so it stays correct if a future
+	// system-initiated transcriber appears (design §3.3's
+	// summaryhandler/start.go IDAIManager note).
+	var verified []tmtranscribe.Transcribe
+	pageToken := ""
+	pagesExhausted := false // true only once a short page PROVES no more source rows remain
+	for page := 0; page < insightCallTranscribeFetchMaxPages; page++ {
+		transcribes, err := h.reqHandler.TranscribeV1TranscribeList(ctx, pageToken, insightCallTranscribeSessionLimit+1, map[tmtranscribe.Field]any{
+			tmtranscribe.FieldCustomerID:    c.CustomerID,
+			tmtranscribe.FieldReferenceType: tmtranscribe.ReferenceTypeCall,
+			tmtranscribe.FieldReferenceID:   callID,
+			tmtranscribe.FieldDeleted:       false,
+		})
+		if err != nil {
+			// Honest failure, not masked -- this is a list call, not a
+			// not-found-shaped Get, and there is no partial result to
+			// salvage yet.
+			log.Errorf("Could not list transcribe sessions. call_id: %s, err: %v", callID, err)
+			fillFailed(res, fmt.Errorf("resource lookup failed"))
+			return res
+		}
+
+		// Filter FIRST, before deciding whether to fetch another page or
+		// stop -- every filter above is caller-supplied and NOT
+		// server-enforced, so an excluded row must never be allowed to
+		// count toward "we have enough genuine rows" or "the source is
+		// exhausted."
+		for _, t := range transcribes {
+			if t.CustomerID != c.CustomerID {
+				log.Warnf("Skipping cross-customer transcribe session. call_id: %s, transcribe_id: %s, transcribe_customer_id: %s", callID, t.ID, t.CustomerID)
+				continue
+			}
+			if t.ReferenceType != tmtranscribe.ReferenceTypeCall || t.ReferenceID != callID {
+				log.Warnf("Skipping transcribe session with mismatched reference. call_id: %s, transcribe_id: %s, transcribe_reference_type: %s, transcribe_reference_id: %s", callID, t.ID, t.ReferenceType, t.ReferenceID)
+				continue
+			}
+			if t.TMDelete != nil {
+				continue
+			}
+			verified = append(verified, t)
+		}
+
+		if len(transcribes) < insightCallTranscribeSessionLimit+1 {
+			pagesExhausted = true
+			break // raw page returned fewer than requested -- source is genuinely exhausted, no more pages exist regardless of how many were excluded
+		}
+		if len(verified) > insightCallTranscribeSessionLimit {
+			break // already have unambiguous proof of overflow -- no need to keep paging just to count higher
+		}
+
+		// Otherwise: the page was full AND we still don't have more than
+		// the limit worth of GENUINE rows -- keep paging, because the
+		// shortfall might be entirely accounted for by excluded rows in
+		// this page.
+		//
+		// This nil-TMCreate guard is DEFENSIVE, at an untrusted RPC/
+		// deserialization boundary -- it is NOT reachable via the current
+		// DB query in normal operation (TranscribeList/TranscriptList
+		// filter with WHERE tm_create < token, and under standard SQL
+		// three-valued logic NULL < <any value> evaluates to NULL, not
+		// TRUE, so a tm_create IS NULL row would be excluded by the WHERE
+		// clause on EVERY page; tm_create is also documented as never
+		// taking the sentinel/null treatment applied to tm_update/
+		// tm_delete). Kept as defense-in-depth against a malformed or
+		// future-changed RPC response, not because production data can
+		// trigger it.
+		last := transcribes[len(transcribes)-1]
+		if last.TMCreate == nil {
+			break // cannot safely construct a continuation token; sessionCapped below will honestly reflect "possibly incomplete"
+		}
+		// utilhandler.ISO8601Layout, NOT time.RFC3339Nano: bin-transcribe-
+		// manager's own default token (TimeGetCurTime()) uses this fixed-
+		// precision layout, not RFC3339Nano's variable-precision format.
+		pageToken = last.TMCreate.UTC().Format(utilhandler.ISO8601Layout)
+	}
+
+	// possiblyIncomplete captures every path that did not reach a proof
+	// (overflow or exhaustion) within the page budget -- falling out of the
+	// loop without either would otherwise silently report sessionCapped as
+	// false, exactly the unmarked hole this design exists to prevent.
+	possiblyIncomplete := !pagesExhausted && len(verified) <= insightCallTranscribeSessionLimit
+	sessionCapped := len(verified) > insightCallTranscribeSessionLimit || possiblyIncomplete
+	if len(verified) > insightCallTranscribeSessionLimit {
+		verified = verified[:insightCallTranscribeSessionLimit]
+	}
+
+	// Not-found handling, guarded by sessionCapped: if verified is empty
+	// AND sessionCapped == false (the loop actually proved exhaustion), this
+	// is a legitimate absence. If verified is empty but sessionCapped ==
+	// true (possiblyIncomplete fired before any genuine row was confirmed),
+	// the tool does NOT know whether a transcript exists -- asserting "no
+	// transcript found" would be affirmatively dishonest.
+	if len(verified) == 0 {
+		if !sessionCapped {
+			fillSuccess(res, "call_transcript", callID.String(), "no transcript found for this call")
+			return res
+		}
+		fillSuccess(res, "call_transcript", callID.String(), "could not confirm whether a transcript exists for this call")
+		return res
+	}
+
+	// §3.4 Transcript segment fetch -- pagination-until-exact per session,
+	// MANDATORY tenant filter + per-row recheck.
+	var mergedLines []transcriptLine
+	var sessionsUnavailable int
+	var realLineCount int
+	seq := 0
+
+	for _, t := range verified {
+		var verifiedTranscripts []tmtranscript.Transcript
+		pageToken := ""
+		fetchFailed := false
+		pagesExhausted := false
+		for page := 0; page < insightCallTranscribeFetchMaxPages; page++ {
+			transcripts, err := h.reqHandler.TranscribeV1TranscriptList(ctx, pageToken, resourceListPageSize+1, map[tmtranscript.Field]any{
+				tmtranscript.FieldCustomerID:   c.CustomerID,
+				tmtranscript.FieldTranscribeID: t.ID,
+				tmtranscript.FieldDeleted:      false,
+			})
+			if err != nil {
+				// Partial-failure policy: one session's TranscriptList call
+				// failing does NOT fail the whole tool -- skip this
+				// session, but make the skip VISIBLE (sessionsUnavailable,
+				// surfaced in §3.7's header) rather than a silent drop,
+				// matching renderTranscribe's own "(transcripts
+				// unavailable)" degrade-VISIBLY precedent.
+				log.Errorf("Could not list transcripts for session. call_id: %s, transcribe_id: %s, err: %v", callID, t.ID, err)
+				sessionsUnavailable++
+				fetchFailed = true
+				break
+			}
+
+			for _, tr := range transcripts {
+				if tr.CustomerID != c.CustomerID {
+					log.Warnf("Skipping cross-customer transcript row. call_id: %s, transcribe_id: %s, transcript_id: %s, transcript_customer_id: %s", callID, t.ID, tr.ID, tr.CustomerID)
+					continue
+				}
+				if tr.TranscribeID != t.ID {
+					// TranscribeID is exactly as unenforced as
+					// CustomerID/Deleted -- recheck it too. Without this, a
+					// same-tenant row from a DIFFERENT session could render
+					// under THIS session's t.Language tag, mislabeling
+					// which language was actually spoken on that line.
+					log.Warnf("Skipping transcript row with mismatched transcribe_id. call_id: %s, transcribe_id: %s, transcript_id: %s, transcript_transcribe_id: %s", callID, t.ID, tr.ID, tr.TranscribeID)
+					continue
+				}
+				if tr.TMDelete != nil {
+					continue
+				}
+				verifiedTranscripts = append(verifiedTranscripts, tr)
+			}
+
+			if len(transcripts) < resourceListPageSize+1 {
+				pagesExhausted = true
+				break // source exhausted for this session
+			}
+			if len(verifiedTranscripts) > resourceListPageSize {
+				break // already proven this session overflows the per-session cap
+			}
+
+			// Identical nil-TMCreate guard and ISO8601Layout token format
+			// as §3.3's loop above -- see that block's comment for the full
+			// rationale, which applies unchanged here (same RPC family,
+			// same *time.Time field, same DESC ordering).
+			last := transcripts[len(transcripts)-1]
+			if last.TMCreate == nil {
+				break // cannot safely construct a continuation token; sessionFetchTruncated below will honestly reflect "possibly incomplete"
+			}
+			pageToken = last.TMCreate.UTC().Format(utilhandler.ISO8601Layout)
+		}
+		if fetchFailed {
+			continue // to the next session in the outer loop; this session contributes nothing
+		}
+
+		// Mirrors §3.3's possiblyIncomplete term exactly -- falling out of
+		// the loop at insightCallTranscribeFetchMaxPages without proof of
+		// overflow or exhaustion must not silently read as "not truncated".
+		possiblyIncomplete := !pagesExhausted && len(verifiedTranscripts) <= resourceListPageSize
+		sessionFetchTruncated := len(verifiedTranscripts) > resourceListPageSize || possiblyIncomplete
+		if len(verifiedTranscripts) > resourceListPageSize {
+			verifiedTranscripts = verifiedTranscripts[:resourceListPageSize]
+		}
+		if sessionFetchTruncated && len(verifiedTranscripts) > 0 {
+			// Now load-bearing, not merely defense-in-depth -- with
+			// possiblyIncomplete folded into sessionFetchTruncated, the
+			// flag CAN be true while verifiedTranscripts is empty (the
+			// page-cap-exhaustion path), so this guard is what prevents an
+			// index-out-of-range on the boundary line below. When this
+			// branch is skipped for that reason, the session contributes
+			// ZERO lines and ZERO gap marker -- an honest, but currently
+			// unsurfaced, silent contribution of nothing; accepted as a
+			// narrow, documented residual rather than adding new header
+			// machinery for a path this pathological.
+			//
+			// The DB order is TMCreate DESC, so this slice keeps the
+			// newest resourceListPageSize rows and index len-1 is the
+			// earliest KEPT row -- the gap boundary. Copy its TMCreate
+			// VERBATIM, including if nil: §3.5's nil-sorts-last rule
+			// places the marker adjacent to that row wherever it ends up
+			// sorting, with no separate nil-handling case needed for the
+			// marker itself.
+			boundary := verifiedTranscripts[len(verifiedTranscripts)-1].TMCreate
+			mergedLines = append(mergedLines, transcriptLine{
+				tmCreate:     boundary,
+				rank:         0, // gap marker, per §3.5
+				transcribeID: uuid.Nil,
+				transcriptID: uuid.Nil,
+				seq:          seq,
+				bracket:      fmt.Sprintf("gap %s", t.Language),
+				message:      "(earlier lines of this transcribe session were not fetched -- omitted for length)",
+			})
+			seq++
+		}
+
+		for _, tr := range verifiedTranscripts {
+			mergedLines = append(mergedLines, transcriptLine{
+				tmCreate:     tr.TMCreate,
+				rank:         1, // real row
+				transcribeID: tr.TranscribeID,
+				transcriptID: tr.ID,
+				seq:          seq,
+				bracket:      fmt.Sprintf("%s %s", tr.Direction, t.Language),
+				message:      tr.Message,
+			})
+			seq++
+			realLineCount++
+		}
+	}
+
+	// §3.5/§3.7: sort the accumulated transcriptLine entries per the strict
+	// total-order key (tmCreate, rank, transcribeID, transcriptID, seq),
+	// THEN render each to its final display string. mergedLines (the
+	// []transcriptLine accumulator) and renderedLines (the []string it
+	// becomes) are deliberately different variables -- the sort key fields
+	// have no meaning once flattened to display text, so sorting must
+	// happen before rendering.
+	sort.SliceStable(mergedLines, func(i, j int) bool {
+		a, b := mergedLines[i], mergedLines[j]
+		// nil TMCreate sorts last (§3.5) -- treat nil as "infinitely new".
+		// This is a NEW decision this design makes, not an inherited file
+		// convention.
+		if (a.tmCreate == nil) != (b.tmCreate == nil) {
+			return b.tmCreate == nil // a sorts first iff b is the nil one
+		}
+		if a.tmCreate != nil && !a.tmCreate.Equal(*b.tmCreate) {
+			return a.tmCreate.Before(*b.tmCreate)
+		}
+		if a.rank != b.rank {
+			return a.rank < b.rank
+		}
+		if a.transcribeID != b.transcribeID {
+			return a.transcribeID.String() < b.transcribeID.String()
+		}
+		if a.transcriptID != b.transcriptID {
+			return a.transcriptID.String() < b.transcriptID.String()
+		}
+		return a.seq < b.seq
+	})
+
+	renderedLines := make([]string, 0, len(mergedLines))
+	for _, l := range mergedLines {
+		ts := "unknown"
+		if l.tmCreate != nil {
+			ts = l.tmCreate.UTC().Format(time.RFC3339)
+		}
+		renderedLines = append(renderedLines, fmt.Sprintf("[%s %s] %s", ts, l.bracket, l.message))
+	}
+
+	// transcript_lines: N is a PRE-RENDER, MERGED total (realLineCount),
+	// not the actually-rendered line count -- render-budget truncation
+	// below routinely drops it. transcribe_sessions deliberately omits a
+	// numeric "of N" total: given the +1-sentinel/pagination fetch, the
+	// true total is never exactly known, and a naive pre-filter total would
+	// numerically leak whether a hidden IDAIManager session exists on this
+	// call (§5).
+	headerParts := []string{fmt.Sprintf("transcript_lines: %d", realLineCount)}
+	if sessionCapped {
+		headerParts = append(headerParts, fmt.Sprintf("transcribe_sessions: %d (capped, more may exist)", insightCallTranscribeSessionLimit))
+	}
+	if sessionsUnavailable > 0 {
+		// Surface whole-session RPC failures (§3.4) visibly, rather than a
+		// silent drop.
+		headerParts = append(headerParts, fmt.Sprintf("sessions_unavailable: %d (transcript list fetch failed for this many sessions)", sessionsUnavailable))
+	}
+	header := strings.Join(headerParts, "\n")
+
+	// pagedOut is hardcoded false (not sessionCapped): renderBodyLines
+	// forces its head marker whenever pagedOut=true regardless of whether
+	// the rendered lines actually overflow the rune budget -- exactly the
+	// failure get_contact_profile already fixed in its own history. The
+	// session cap is instead reported in the caller-owned header above, and
+	// renderBodyLines' own fast-path/walk logic decides -- honestly --
+	// whether the render budget was actually exceeded.
+	//
+	// Cross-file dependency note (§3.6): the gap-marker mechanism's honesty
+	// guarantee depends on renderBodyLines retaining a CONTIGUOUS newest
+	// suffix of its lines input during its backward-walk truncation path
+	// (tool_resource.go's backward walk never skips/samples from the
+	// middle), and on its final capSummaryRunes(sb.String()) call being
+	// understood as a SEPARATE, coarser string-tail safety net layered on
+	// top of that walk, not the same mechanism. If either changes, a gap
+	// marker could stop honestly reflecting the true position of a fetch-
+	// layer hole -- re-read design §3.6 before modifying renderBodyLines.
+	body := renderBodyLines(header, renderedLines, false, "transcript lines")
+	fillSuccess(res, "call_transcript", callID.String(), body)
 	return res
 }

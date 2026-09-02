@@ -2846,6 +2846,7 @@ components:
         - get_related_cases
         - get_case_notes
         - get_contact_profile
+        - get_call_transcript
       x-enum-varnames:
         - AIManagerToolNameAll
         - AIManagerToolNameConnectCall
@@ -2868,6 +2869,7 @@ components:
         - AIManagerToolNameGetRelatedCases
         - AIManagerToolNameGetCaseNotes
         - AIManagerToolNameGetContactProfile
+        - AIManagerToolNameGetCallTranscript
 
     AIManagerAIcall:
       type: object

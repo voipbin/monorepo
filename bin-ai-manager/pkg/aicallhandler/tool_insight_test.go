@@ -12,17 +12,21 @@ import (
 
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
+	cmcall "monorepo/bin-call-manager/models/call"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	cmcasenote "monorepo/bin-contact-manager/models/casenote"
 	cmcontact "monorepo/bin-contact-manager/models/contact"
 	kmkase "monorepo/bin-contact-manager/models/kase"
 	cvmessage "monorepo/bin-conversation-manager/models/message"
 	tmpeerevent "monorepo/bin-timeline-manager/models/peerevent"
+	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
+	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
 )
 
 func testAIcallForCase(customerID, caseID uuid.UUID) *aicall.AIcall {
@@ -1241,5 +1245,1445 @@ func Test_toolHandleGetContactProfile(t *testing.T) {
 				t.Errorf("ResourceID = %q, want %q", res.ResourceID, caseID.String())
 			}
 		})
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Test_toolHandleGetCallTranscript* -- design docs/plans/
+// 2026-09-03-insight-assistant-get-call-transcript-design.md §4.
+// ---------------------------------------------------------------------------
+
+func testCallTranscriptAIcall(customerID, caseID uuid.UUID) *aicall.AIcall {
+	return testAIcallForCase(customerID, caseID)
+}
+
+func testCallTranscriptToolCall(toolCallID, callIDArg string) *message.ToolCall {
+	return &message.ToolCall{
+		ID:   toolCallID,
+		Type: message.ToolTypeFunction,
+		Function: message.FunctionCall{
+			Name:      message.FunctionCallNameGetCallTranscript,
+			Arguments: `{"call_id":"` + callIDArg + `"}`,
+		},
+	}
+}
+
+func testCallForCallTranscript(customerID, callID uuid.UUID) *cmcall.Call {
+	return &cmcall.Call{
+		Identity: commonidentity.Identity{ID: callID, CustomerID: customerID},
+	}
+}
+
+func testTranscribeRow(id, customerID, callID uuid.UUID, language string, tmCreate *time.Time) tmtranscribe.Transcribe {
+	return tmtranscribe.Transcribe{
+		Identity:      commonidentity.Identity{ID: id, CustomerID: customerID},
+		ReferenceType: tmtranscribe.ReferenceTypeCall,
+		ReferenceID:   callID,
+		Language:      language,
+		TMCreate:      tmCreate,
+	}
+}
+
+func testTranscriptRow(id, transcribeID, customerID uuid.UUID, direction tmtranscript.Direction, msg string, tmCreate *time.Time) tmtranscript.Transcript {
+	return tmtranscript.Transcript{
+		Identity:     commonidentity.Identity{ID: id, CustomerID: customerID},
+		TranscribeID: transcribeID,
+		Direction:    direction,
+		Message:      msg,
+		TMCreate:     tmCreate,
+	}
+}
+
+var (
+	ctCustomerID = uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-000000000001")
+	ctCaseID     = uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-000000000002")
+	ctCallID     = uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-000000000003")
+)
+
+// item 1: ReferenceType guard -> fillFailed, zero RPC calls.
+func Test_toolHandleGetCallTranscript_ReferenceTypeGuard(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &aicallHandler{reqHandler: mockReq}
+	ctx := context.Background()
+
+	c := testCallTranscriptAIcall(ctCustomerID, ctCaseID)
+	c.ReferenceType = aicall.ReferenceTypeCall // NOT contact_case
+
+	tc := testCallTranscriptToolCall("tc-guard", ctCallID.String())
+
+	res := h.toolHandleGetCallTranscript(ctx, c, tc)
+
+	if res.Result != "failed" {
+		t.Fatalf("Result = %q, want failed", res.Result)
+	}
+}
+
+// item 2: empty / malformed / uuid.Nil call_id -> fillFailed, three distinct
+// cases.
+func Test_toolHandleGetCallTranscript_ArgValidation(t *testing.T) {
+	tests := []struct {
+		name string
+		args string
+	}{
+		{"missing call_id", `{}`},
+		{"empty call_id", `{"call_id":""}`},
+		{"malformed call_id", `{"call_id":"not-a-uuid"}`},
+		{"nil uuid call_id", `{"call_id":"00000000-0000-0000-0000-000000000000"}`},
+		{"invalid json", `{`},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			h := &aicallHandler{reqHandler: mockReq}
+			ctx := context.Background()
+
+			c := testCallTranscriptAIcall(ctCustomerID, ctCaseID)
+			tc := &message.ToolCall{
+				ID:   "tc-args",
+				Type: message.ToolTypeFunction,
+				Function: message.FunctionCall{
+					Name:      message.FunctionCallNameGetCallTranscript,
+					Arguments: tt.args,
+				},
+			}
+
+			res := h.toolHandleGetCallTranscript(ctx, c, tc)
+			if res.Result != "failed" {
+				t.Fatalf("Result = %q, want failed", res.Result)
+			}
+		})
+	}
+}
+
+// item 3: call not found and call cross-tenant both mask to the
+// byte-identical msgResourceNotFound, and zero TranscribeV1TranscribeList
+// calls fire on either path (proves the tenant check short-circuits before
+// any transcript fan-out).
+func Test_toolHandleGetCallTranscript_CallLookupMasking(t *testing.T) {
+	tests := []struct {
+		name         string
+		responseCall *cmcall.Call
+		responseErr  error
+	}{
+		{
+			name:        "call not found",
+			responseErr: requesthandler.ErrNotFound,
+		},
+		{
+			name: "call cross-tenant",
+			responseCall: testCallForCallTranscript(
+				uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-0000000000ff"), ctCallID),
+		},
+		{
+			name:         "call has nil CustomerID",
+			responseCall: testCallForCallTranscript(uuid.Nil, ctCallID),
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			h := &aicallHandler{reqHandler: mockReq}
+			ctx := context.Background()
+
+			c := testCallTranscriptAIcall(ctCustomerID, ctCaseID)
+			tc := testCallTranscriptToolCall("tc-mask", ctCallID.String())
+
+			mockReq.EXPECT().CallV1CallGet(ctx, ctCallID).Return(tt.responseCall, tt.responseErr)
+			mockReq.EXPECT().TranscribeV1TranscribeList(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+			res := h.toolHandleGetCallTranscript(ctx, c, tc)
+
+			if res.Result != "success" {
+				t.Fatalf("Result = %q, want success (masked)", res.Result)
+			}
+			if res.Message != msgResourceNotFound {
+				t.Errorf("Message = %q, want %q", res.Message, msgResourceNotFound)
+			}
+		})
+	}
+}
+
+// item 14b: TranscribeV1TranscribeList RPC error (not not-found) -> honest
+// fillFailed, not masked, not degraded.
+func Test_toolHandleGetCallTranscript_TranscribeListRPCError(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &aicallHandler{reqHandler: mockReq}
+	ctx := context.Background()
+
+	c := testCallTranscriptAIcall(ctCustomerID, ctCaseID)
+	tc := testCallTranscriptToolCall("tc-list-err", ctCallID.String())
+
+	mockReq.EXPECT().CallV1CallGet(ctx, ctCallID).Return(testCallForCallTranscript(ctCustomerID, ctCallID), nil)
+	mockReq.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(insightCallTranscribeSessionLimit+1), gomock.Any()).Return(nil, errTest)
+
+	res := h.toolHandleGetCallTranscript(ctx, c, tc)
+	if res.Result != "failed" {
+		t.Fatalf("Result = %q, want failed", res.Result)
+	}
+}
+
+// item 5: no Transcribe sessions found (post-filter) -> distinct
+// "no transcript found for this call", non-masked.
+func Test_toolHandleGetCallTranscript_NoSessionsFound(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &aicallHandler{reqHandler: mockReq}
+	ctx := context.Background()
+
+	c := testCallTranscriptAIcall(ctCustomerID, ctCaseID)
+	tc := testCallTranscriptToolCall("tc-empty", ctCallID.String())
+
+	mockReq.EXPECT().CallV1CallGet(ctx, ctCallID).Return(testCallForCallTranscript(ctCustomerID, ctCallID), nil)
+	mockReq.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(insightCallTranscribeSessionLimit+1), gomock.Any()).Return([]tmtranscribe.Transcribe{}, nil)
+
+	res := h.toolHandleGetCallTranscript(ctx, c, tc)
+	if res.Result != "success" {
+		t.Fatalf("Result = %q, want success", res.Result)
+	}
+	if res.Message != "no transcript found for this call" {
+		t.Errorf("Message = %q, want distinct not-found message", res.Message)
+	}
+}
+
+// item 4: happy path -- single session, several transcripts, correct
+// [ts direction lang] message rendering.
+func Test_toolHandleGetCallTranscript_HappyPath(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &aicallHandler{reqHandler: mockReq}
+	ctx := context.Background()
+
+	c := testCallTranscriptAIcall(ctCustomerID, ctCaseID)
+	tc := testCallTranscriptToolCall("tc-happy", ctCallID.String())
+
+	transcribeID := uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-000000000010")
+	ts1 := timePtr(time.Date(2026, 7, 1, 10, 0, 0, 0, time.UTC))
+	ts2 := timePtr(time.Date(2026, 7, 1, 10, 0, 5, 0, time.UTC))
+
+	mockReq.EXPECT().CallV1CallGet(ctx, ctCallID).Return(testCallForCallTranscript(ctCustomerID, ctCallID), nil)
+	mockReq.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(insightCallTranscribeSessionLimit+1), gomock.Any()).Return([]tmtranscribe.Transcribe{
+		testTranscribeRow(transcribeID, ctCustomerID, ctCallID, "en-US", ts2),
+	}, nil)
+	mockReq.EXPECT().TranscribeV1TranscriptList(ctx, "", uint64(resourceListPageSize+1), gomock.Any()).Return([]tmtranscript.Transcript{
+		testTranscriptRow(uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-000000000011"), transcribeID, ctCustomerID, tmtranscript.DirectionOut, "how can I help", ts2),
+		testTranscriptRow(uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-000000000012"), transcribeID, ctCustomerID, tmtranscript.DirectionIn, "hello there", ts1),
+	}, nil)
+
+	res := h.toolHandleGetCallTranscript(ctx, c, tc)
+	if res.Result != "success" {
+		t.Fatalf("Result = %q, want success (message: %s)", res.Result, res.Message)
+	}
+	wantIn := "[" + ts1.UTC().Format(time.RFC3339) + " in en-US] hello there"
+	wantOut := "[" + ts2.UTC().Format(time.RFC3339) + " out en-US] how can I help"
+	if !strings.Contains(res.Message, wantIn) {
+		t.Errorf("Message = %q, want it to contain %q", res.Message, wantIn)
+	}
+	if !strings.Contains(res.Message, wantOut) {
+		t.Errorf("Message = %q, want it to contain %q", res.Message, wantOut)
+	}
+	if strings.Index(res.Message, wantIn) > strings.Index(res.Message, wantOut) {
+		t.Errorf("expected chronological order (in before out), got: %s", res.Message)
+	}
+	if !strings.Contains(res.Message, "transcript_lines: 2") {
+		t.Errorf("expected transcript_lines header, got: %s", res.Message)
+	}
+	if res.ResourceType != "call_transcript" || res.ResourceID != ctCallID.String() {
+		t.Errorf("unexpected resource type/id: %s/%s", res.ResourceType, res.ResourceID)
+	}
+}
+
+// item 6: cross-tenant Transcribe row filtered (IDAIManager scenario) --
+// excluded from output, no leak, no numeric hint of its existence.
+func Test_toolHandleGetCallTranscript_CrossTenantTranscribeFiltered(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &aicallHandler{reqHandler: mockReq}
+	ctx := context.Background()
+
+	c := testCallTranscriptAIcall(ctCustomerID, ctCaseID)
+	tc := testCallTranscriptToolCall("tc-idam", ctCallID.String())
+
+	genuineID := uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-000000000020")
+	hiddenID := uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-000000000021") // owned by IDAIManager, foreign customer id
+	idAIManager := uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-0000000000aa")
+	ts := timePtr(time.Date(2026, 7, 1, 10, 0, 0, 0, time.UTC))
+
+	mockReq.EXPECT().CallV1CallGet(ctx, ctCallID).Return(testCallForCallTranscript(ctCustomerID, ctCallID), nil)
+	mockReq.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(insightCallTranscribeSessionLimit+1), gomock.Any()).Return([]tmtranscribe.Transcribe{
+		testTranscribeRow(hiddenID, idAIManager, ctCallID, "en-US", ts),
+		testTranscribeRow(genuineID, ctCustomerID, ctCallID, "en-US", ts),
+	}, nil)
+	mockReq.EXPECT().TranscribeV1TranscriptList(ctx, "", uint64(resourceListPageSize+1), gomock.Any()).Return([]tmtranscript.Transcript{
+		testTranscriptRow(uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-000000000022"), genuineID, ctCustomerID, tmtranscript.DirectionIn, "hi", ts),
+	}, nil)
+	// Zero calls expected for the hidden session's TranscriptList.
+
+	res := h.toolHandleGetCallTranscript(ctx, c, tc)
+	if res.Result != "success" {
+		t.Fatalf("Result = %q, want success (message: %s)", res.Result, res.Message)
+	}
+	if strings.Contains(res.Message, hiddenID.String()) || strings.Contains(res.Message, idAIManager.String()) {
+		t.Errorf("hidden session leaked into output: %s", res.Message)
+	}
+	if strings.Contains(res.Message, "capped") {
+		t.Errorf("unexpected capped marker for a single hidden row: %s", res.Message)
+	}
+}
+
+// item 7: cross-tenant Transcript row filtered -- excluded, others kept.
+// item 7b: mismatched TranscribeID Transcript row -- excluded, does NOT
+// render under the wrong session's t.Language.
+// item 7c: Transcript-layer TMDelete recheck -- excluded.
+func Test_toolHandleGetCallTranscript_TranscriptRowRechecks(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &aicallHandler{reqHandler: mockReq}
+	ctx := context.Background()
+
+	c := testCallTranscriptAIcall(ctCustomerID, ctCaseID)
+	tc := testCallTranscriptToolCall("tc-row-recheck", ctCallID.String())
+
+	transcribeID := uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-000000000030")
+	otherTranscribeID := uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-000000000031")
+	foreignCustomerID := uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-0000000000bb")
+	ts := timePtr(time.Date(2026, 7, 1, 10, 0, 0, 0, time.UTC))
+
+	genuine := testTranscriptRow(uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-000000000032"), transcribeID, ctCustomerID, tmtranscript.DirectionIn, "genuine line", ts)
+	crossTenant := testTranscriptRow(uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-000000000033"), transcribeID, foreignCustomerID, tmtranscript.DirectionIn, "foreign customer line", ts)
+	wrongSession := testTranscriptRow(uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-000000000034"), otherTranscribeID, ctCustomerID, tmtranscript.DirectionIn, "wrong session line", ts)
+	softDeleted := testTranscriptRow(uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-000000000035"), transcribeID, ctCustomerID, tmtranscript.DirectionIn, "deleted line", ts)
+	softDeleted.TMDelete = ts
+
+	mockReq.EXPECT().CallV1CallGet(ctx, ctCallID).Return(testCallForCallTranscript(ctCustomerID, ctCallID), nil)
+	mockReq.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(insightCallTranscribeSessionLimit+1), gomock.Any()).Return([]tmtranscribe.Transcribe{
+		testTranscribeRow(transcribeID, ctCustomerID, ctCallID, "en-US", ts),
+	}, nil)
+	mockReq.EXPECT().TranscribeV1TranscriptList(ctx, "", uint64(resourceListPageSize+1), gomock.Any()).Return([]tmtranscript.Transcript{
+		genuine, crossTenant, wrongSession, softDeleted,
+	}, nil)
+
+	res := h.toolHandleGetCallTranscript(ctx, c, tc)
+	if res.Result != "success" {
+		t.Fatalf("Result = %q, want success (message: %s)", res.Result, res.Message)
+	}
+	if !strings.Contains(res.Message, "genuine line") {
+		t.Errorf("expected genuine row to render, got: %s", res.Message)
+	}
+	for _, notWant := range []string{"foreign customer line", "wrong session line", "deleted line"} {
+		if strings.Contains(res.Message, notWant) {
+			t.Errorf("Message = %q, must NOT contain %q", res.Message, notWant)
+		}
+	}
+	if !strings.Contains(res.Message, "transcript_lines: 1") {
+		t.Errorf("expected transcript_lines: 1 (only the genuine row), got: %s", res.Message)
+	}
+}
+
+// item 8: multi-session merge, chronological order across
+// sessions/languages.
+func Test_toolHandleGetCallTranscript_MultiSessionChronologicalMerge(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &aicallHandler{reqHandler: mockReq}
+	ctx := context.Background()
+
+	c := testCallTranscriptAIcall(ctCustomerID, ctCaseID)
+	tc := testCallTranscriptToolCall("tc-multi", ctCallID.String())
+
+	sessionA := uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-000000000040")
+	sessionB := uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-000000000041")
+	t0 := timePtr(time.Date(2026, 7, 1, 10, 0, 0, 0, time.UTC))
+	t1 := timePtr(time.Date(2026, 7, 1, 10, 0, 2, 0, time.UTC))
+	t2 := timePtr(time.Date(2026, 7, 1, 10, 0, 4, 0, time.UTC))
+
+	mockReq.EXPECT().CallV1CallGet(ctx, ctCallID).Return(testCallForCallTranscript(ctCustomerID, ctCallID), nil)
+	mockReq.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(insightCallTranscribeSessionLimit+1), gomock.Any()).Return([]tmtranscribe.Transcribe{
+		testTranscribeRow(sessionA, ctCustomerID, ctCallID, "en-US", t0),
+		testTranscribeRow(sessionB, ctCustomerID, ctCallID, "ko-KR", t1),
+	}, nil)
+	mockReq.EXPECT().TranscribeV1TranscriptList(ctx, "", uint64(resourceListPageSize+1), map[tmtranscript.Field]any{
+		tmtranscript.FieldCustomerID:   ctCustomerID,
+		tmtranscript.FieldTranscribeID: sessionA,
+		tmtranscript.FieldDeleted:      false,
+	}).Return([]tmtranscript.Transcript{
+		testTranscriptRow(uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-000000000042"), sessionA, ctCustomerID, tmtranscript.DirectionIn, "english first", t0),
+		testTranscriptRow(uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-000000000043"), sessionA, ctCustomerID, tmtranscript.DirectionIn, "english third", t2),
+	}, nil)
+	mockReq.EXPECT().TranscribeV1TranscriptList(ctx, "", uint64(resourceListPageSize+1), map[tmtranscript.Field]any{
+		tmtranscript.FieldCustomerID:   ctCustomerID,
+		tmtranscript.FieldTranscribeID: sessionB,
+		tmtranscript.FieldDeleted:      false,
+	}).Return([]tmtranscript.Transcript{
+		testTranscriptRow(uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-000000000044"), sessionB, ctCustomerID, tmtranscript.DirectionOut, "korean second", t1),
+	}, nil)
+
+	res := h.toolHandleGetCallTranscript(ctx, c, tc)
+	if res.Result != "success" {
+		t.Fatalf("Result = %q, want success (message: %s)", res.Result, res.Message)
+	}
+	posFirst := strings.Index(res.Message, "english first")
+	posSecond := strings.Index(res.Message, "korean second")
+	posThird := strings.Index(res.Message, "english third")
+	if posFirst < 0 || posSecond < 0 || posThird < 0 {
+		t.Fatalf("missing expected lines in: %s", res.Message)
+	}
+	if posFirst >= posSecond || posSecond >= posThird {
+		t.Errorf("expected strict chronological interleaving, got: %s", res.Message)
+	}
+	if !strings.Contains(res.Message, "in en-US") || !strings.Contains(res.Message, "out ko-KR") {
+		t.Errorf("expected per-session language tags, got: %s", res.Message)
+	}
+}
+
+// item 9: per-session fetch truncation -> gap marker at the correct
+// position, a concurrent untruncated session's rows correctly surround it.
+// item 9b: §3.4 silent-hole false negative, CORRECTED fixture
+// (resourceListPageSize+1 genuine rows plus excluded rows) ->
+// sessionFetchTruncated == true, gap marker fires, all resourceListPageSize
+// kept rows are genuine.
+func Test_toolHandleGetCallTranscript_GapMarker(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &aicallHandler{reqHandler: mockReq}
+	ctx := context.Background()
+
+	c := testCallTranscriptAIcall(ctCustomerID, ctCaseID)
+	tc := testCallTranscriptToolCall("tc-gap", ctCallID.String())
+
+	sessionA := uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-000000000050") // truncated (long) session
+	sessionB := uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-000000000051") // short, concurrent session
+	base := time.Date(2026, 7, 1, 9, 0, 0, 0, time.UTC)
+	foreignCustomerID := uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-0000000000cc")
+
+	// The RPC's underlying DB order is TMCreate DESC (newest first,
+	// dbhandler/transcript.go), so page1 (fetched with pageToken="") must
+	// contain the NEWEST rows and page2 (fetched with the token derived
+	// from page1's last/oldest row) the OLDER remainder -- matching real
+	// pagination semantics, not just ascending test-fixture order.
+	//
+	// Item 9b's CORRECTED fixture: resourceListPageSize+1 (101) genuine
+	// rows for session A, plus one excluded (cross-tenant) row landing
+	// inside the raw fetch. Newest-to-oldest: [newest, excluded,
+	// o99, o98, ..., o1, o0] -- 102 raw rows total, split into a full
+	// page1 (101 rows: newest + excluded + o99..o1) and a short page2
+	// (1 row: o0), which also proves exhaustion.
+	newestA := timePtr(base.Add(time.Duration(resourceListPageSize+1) * time.Second))
+	excludedTS := timePtr(base.Add(time.Duration(resourceListPageSize) * time.Second))
+
+	page1 := []tmtranscript.Transcript{
+		testTranscriptRow(uuid.Must(uuid.NewV4()), sessionA, ctCustomerID, tmtranscript.DirectionIn, "Anew", newestA),
+		testTranscriptRow(uuid.Must(uuid.NewV4()), sessionA, foreignCustomerID, tmtranscript.DirectionIn, "Aexc", excludedTS),
+	}
+	for i := resourceListPageSize - 1; i >= 1; i-- {
+		page1 = append(page1, testTranscriptRow(uuid.Must(uuid.NewV4()), sessionA, ctCustomerID, tmtranscript.DirectionIn, fmt.Sprintf("o%03d", i), timePtr(base.Add(time.Duration(i)*time.Second))))
+	}
+	page2 := []tmtranscript.Transcript{
+		testTranscriptRow(uuid.Must(uuid.NewV4()), sessionA, ctCustomerID, tmtranscript.DirectionIn, "o000", timePtr(base)),
+	}
+
+	sessionBTS := timePtr(base.Add(time.Duration(resourceListPageSize/2) * time.Second))
+	sessionBLine := testTranscriptRow(uuid.Must(uuid.NewV4()), sessionB, ctCustomerID, tmtranscript.DirectionOut, "Bconcurrent", sessionBTS)
+
+	mockReq.EXPECT().CallV1CallGet(ctx, ctCallID).Return(testCallForCallTranscript(ctCustomerID, ctCallID), nil)
+	mockReq.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(insightCallTranscribeSessionLimit+1), gomock.Any()).Return([]tmtranscribe.Transcribe{
+		testTranscribeRow(sessionA, ctCustomerID, ctCallID, "en-US", newestA),
+		testTranscribeRow(sessionB, ctCustomerID, ctCallID, "en-US", sessionBTS),
+	}, nil)
+
+	gomock.InOrder(
+		mockReq.EXPECT().TranscribeV1TranscriptList(ctx, "", uint64(resourceListPageSize+1), map[tmtranscript.Field]any{
+			tmtranscript.FieldCustomerID:   ctCustomerID,
+			tmtranscript.FieldTranscribeID: sessionA,
+			tmtranscript.FieldDeleted:      false,
+		}).Return(page1, nil),
+		mockReq.EXPECT().TranscribeV1TranscriptList(ctx, page1[len(page1)-1].TMCreate.UTC().Format(utilhandler.ISO8601Layout), uint64(resourceListPageSize+1), map[tmtranscript.Field]any{
+			tmtranscript.FieldCustomerID:   ctCustomerID,
+			tmtranscript.FieldTranscribeID: sessionA,
+			tmtranscript.FieldDeleted:      false,
+		}).Return(page2, nil),
+	)
+	mockReq.EXPECT().TranscribeV1TranscriptList(ctx, "", uint64(resourceListPageSize+1), map[tmtranscript.Field]any{
+		tmtranscript.FieldCustomerID:   ctCustomerID,
+		tmtranscript.FieldTranscribeID: sessionB,
+		tmtranscript.FieldDeleted:      false,
+	}).Return([]tmtranscript.Transcript{sessionBLine}, nil)
+
+	res := h.toolHandleGetCallTranscript(ctx, c, tc)
+	if res.Result != "success" {
+		t.Fatalf("Result = %q, want success (message: %s)", res.Result, res.Message)
+	}
+	if !strings.Contains(res.Message, "gap en-US") {
+		t.Errorf("expected a gap marker for session A, got: %s", res.Message)
+	}
+	if !strings.Contains(res.Message, "earlier lines of this transcribe session were not fetched") {
+		t.Errorf("expected gap marker text, got: %s", res.Message)
+	}
+	if !strings.Contains(res.Message, "Anew") || !strings.Contains(res.Message, "Bconcurrent") {
+		t.Errorf("expected both Anew and Bconcurrent to render, got: %s", res.Message)
+	}
+	if strings.Contains(res.Message, "Aexc") {
+		t.Errorf("excluded cross-tenant row leaked: %s", res.Message)
+	}
+	// The oldest KEPT genuine A row (o1, the gap boundary -- o0 was dropped
+	// by the resourceListPageSize cap) must be genuine, not displaced past
+	// the cap by the excluded row (item 9b's filter-then-cap regression).
+	if !strings.Contains(res.Message, "o001") {
+		t.Errorf("expected the oldest kept genuine row o001 to survive filter-then-cap, got: %s", res.Message)
+	}
+	if strings.Contains(res.Message, "o000") {
+		t.Errorf("expected o000 (dropped by the resourceListPageSize cap) to NOT render, got: %s", res.Message)
+	}
+}
+
+// item 10: nil TMCreate on a transcript row (sort/render path) -- sorts
+// last, is PREFERENTIALLY RETAINED under render-budget truncation, renders
+// "unknown", no panic.
+func Test_toolHandleGetCallTranscript_NilTMCreateSortsLastAndRetained(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &aicallHandler{reqHandler: mockReq}
+	ctx := context.Background()
+
+	c := testCallTranscriptAIcall(ctCustomerID, ctCaseID)
+	tc := testCallTranscriptToolCall("tc-nil-ts", ctCallID.String())
+
+	transcribeID := uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-000000000060")
+	ts := timePtr(time.Date(2026, 7, 1, 10, 0, 0, 0, time.UTC))
+
+	// A huge padding message to force render-budget truncation, so the
+	// nil-TMCreate row's "preferentially retained" (sorts last = newest)
+	// property is actually exercised.
+	padding := strings.Repeat("x", 3900)
+
+	mockReq.EXPECT().CallV1CallGet(ctx, ctCallID).Return(testCallForCallTranscript(ctCustomerID, ctCallID), nil)
+	mockReq.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(insightCallTranscribeSessionLimit+1), gomock.Any()).Return([]tmtranscribe.Transcribe{
+		testTranscribeRow(transcribeID, ctCustomerID, ctCallID, "en-US", ts),
+	}, nil)
+	mockReq.EXPECT().TranscribeV1TranscriptList(ctx, "", uint64(resourceListPageSize+1), gomock.Any()).Return([]tmtranscript.Transcript{
+		testTranscriptRow(uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-000000000061"), transcribeID, ctCustomerID, tmtranscript.DirectionIn, padding, ts),
+		testTranscriptRow(uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-000000000062"), transcribeID, ctCustomerID, tmtranscript.DirectionOut, "nil-ts-line", nil),
+	}, nil)
+
+	res := h.toolHandleGetCallTranscript(ctx, c, tc)
+	if res.Result != "success" {
+		t.Fatalf("Result = %q, want success (message: %s)", res.Result, res.Message)
+	}
+	if !strings.Contains(res.Message, "[unknown out en-US] nil-ts-line") {
+		t.Errorf("expected the nil-TMCreate row to render with 'unknown' timestamp and survive truncation, got: %s", res.Message)
+	}
+}
+
+// item 10b: nil-TMCreate boundary row during pagination halts the loop
+// without panicking; sessionCapped/sessionFetchTruncated read true via
+// possiblyIncomplete.
+func Test_toolHandleGetCallTranscript_NilTMCreatePaginationBoundary(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &aicallHandler{reqHandler: mockReq}
+	ctx := context.Background()
+
+	c := testCallTranscriptAIcall(ctCustomerID, ctCaseID)
+	tc := testCallTranscriptToolCall("tc-nil-boundary", ctCallID.String())
+
+	base := time.Date(2026, 7, 1, 9, 0, 0, 0, time.UTC)
+	var raw []tmtranscribe.Transcribe
+	for i := 0; i < insightCallTranscribeSessionLimit; i++ {
+		raw = append(raw, testTranscribeRow(uuid.Must(uuid.NewV4()), ctCustomerID, ctCallID, "en-US", timePtr(base.Add(time.Duration(i)*time.Second))))
+	}
+	// full page (insightCallTranscribeSessionLimit+1 rows) whose LAST row
+	// has TMCreate == nil -- would normally continue paging, but must halt
+	// safely instead.
+	raw = append(raw, testTranscribeRow(uuid.Must(uuid.NewV4()), ctCustomerID, ctCallID, "en-US", nil))
+
+	mockReq.EXPECT().CallV1CallGet(ctx, ctCallID).Return(testCallForCallTranscript(ctCustomerID, ctCallID), nil)
+	mockReq.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(insightCallTranscribeSessionLimit+1), gomock.Any()).Return(raw, nil).Times(1)
+
+	// insightCallTranscribeSessionLimit verified sessions -> each fetches
+	// its own transcripts. sessionCapped must read true via
+	// possiblyIncomplete (raw page was full and nil boundary halted
+	// pagination without proof), so "could not confirm" -- NOT a real
+	// transcript fetch -- is not guaranteed; instead assert no panic and the
+	// header capped marker fires while len(verified) == insightCallTranscribeSessionLimit,
+	// so the tool DOES proceed to fetch transcripts for those 10 sessions.
+	for _, tr := range raw[:insightCallTranscribeSessionLimit] {
+		mockReq.EXPECT().TranscribeV1TranscriptList(ctx, "", uint64(resourceListPageSize+1), map[tmtranscript.Field]any{
+			tmtranscript.FieldCustomerID:   ctCustomerID,
+			tmtranscript.FieldTranscribeID: tr.ID,
+			tmtranscript.FieldDeleted:      false,
+		}).Return([]tmtranscript.Transcript{}, nil)
+	}
+
+	res := h.toolHandleGetCallTranscript(ctx, c, tc)
+	if res.Result != "success" {
+		t.Fatalf("Result = %q, want success (no panic) (message: %s)", res.Result, res.Message)
+	}
+	if !strings.Contains(res.Message, "transcribe_sessions: 10 (capped, more may exist)") {
+		t.Errorf("expected sessionCapped via possiblyIncomplete, got: %s", res.Message)
+	}
+}
+
+// item 11: session-count cap -- more than insightCallTranscribeSessionLimit
+// verified sessions -> capped to 10, header reports the honest cap marker
+// with no numeric total, and renderBodyLines' own marker does NOT fire
+// purely from the session cap (only from actual line overflow) --
+// regression test for the pagedOut=sessionCapped bug.
+func Test_toolHandleGetCallTranscript_SessionCountCap(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &aicallHandler{reqHandler: mockReq}
+	ctx := context.Background()
+
+	c := testCallTranscriptAIcall(ctCustomerID, ctCaseID)
+	tc := testCallTranscriptToolCall("tc-cap", ctCallID.String())
+
+	base := time.Date(2026, 7, 1, 9, 0, 0, 0, time.UTC)
+	var raw []tmtranscribe.Transcribe
+	for i := 0; i < insightCallTranscribeSessionLimit+1; i++ { // genuine overflow: 11 genuine sessions
+		raw = append(raw, testTranscribeRow(uuid.Must(uuid.NewV4()), ctCustomerID, ctCallID, "en-US", timePtr(base.Add(time.Duration(i)*time.Second))))
+	}
+
+	mockReq.EXPECT().CallV1CallGet(ctx, ctCallID).Return(testCallForCallTranscript(ctCustomerID, ctCallID), nil)
+	mockReq.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(insightCallTranscribeSessionLimit+1), gomock.Any()).Return(raw, nil).Times(1)
+
+	for _, tr := range raw[:insightCallTranscribeSessionLimit] {
+		mockReq.EXPECT().TranscribeV1TranscriptList(ctx, "", uint64(resourceListPageSize+1), map[tmtranscript.Field]any{
+			tmtranscript.FieldCustomerID:   ctCustomerID,
+			tmtranscript.FieldTranscribeID: tr.ID,
+			tmtranscript.FieldDeleted:      false,
+		}).Return([]tmtranscript.Transcript{
+			testTranscriptRow(uuid.Must(uuid.NewV4()), tr.ID, ctCustomerID, tmtranscript.DirectionIn, "short line", tr.TMCreate),
+		}, nil)
+	}
+
+	res := h.toolHandleGetCallTranscript(ctx, c, tc)
+	if res.Result != "success" {
+		t.Fatalf("Result = %q, want success (message: %s)", res.Result, res.Message)
+	}
+	if !strings.Contains(res.Message, "transcribe_sessions: 10 (capped, more may exist)") {
+		t.Errorf("expected honest cap header, got: %s", res.Message)
+	}
+	if strings.Contains(res.Message, "earlier transcript lines omitted") {
+		t.Errorf("renderBodyLines' own marker must NOT fire purely from the session cap, got: %s", res.Message)
+	}
+}
+
+// item 12 (session layer): filter-then-cap ordering -- a raw session list
+// where a foreign-tenant row appears WITHIN the first
+// insightCallTranscribeSessionLimit+1 rows, alongside
+// insightCallTranscribeSessionLimit genuine rows -> all genuine rows must
+// survive (none displaced past the cap by the foreign row).
+func Test_toolHandleGetCallTranscript_SessionLayerFilterThenCap(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &aicallHandler{reqHandler: mockReq}
+	ctx := context.Background()
+
+	c := testCallTranscriptAIcall(ctCustomerID, ctCaseID)
+	tc := testCallTranscriptToolCall("tc-filter-then-cap", ctCallID.String())
+
+	foreignCustomerID := uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-0000000000dd")
+	base := time.Date(2026, 7, 1, 9, 0, 0, 0, time.UTC)
+
+	var raw []tmtranscribe.Transcribe
+	// one foreign row FIRST, then exactly insightCallTranscribeSessionLimit
+	// genuine rows -- total insightCallTranscribeSessionLimit+1, matching a
+	// single raw page.
+	raw = append(raw, testTranscribeRow(uuid.Must(uuid.NewV4()), foreignCustomerID, ctCallID, "en-US", timePtr(base)))
+	genuineIDs := make([]uuid.UUID, 0, insightCallTranscribeSessionLimit)
+	for i := 1; i <= insightCallTranscribeSessionLimit; i++ {
+		id := uuid.Must(uuid.NewV4())
+		genuineIDs = append(genuineIDs, id)
+		raw = append(raw, testTranscribeRow(id, ctCustomerID, ctCallID, "en-US", timePtr(base.Add(time.Duration(i)*time.Second))))
+	}
+
+	mockReq.EXPECT().CallV1CallGet(ctx, ctCallID).Return(testCallForCallTranscript(ctCustomerID, ctCallID), nil)
+	// The raw page is FULL (insightCallTranscribeSessionLimit+1 rows) but
+	// only insightCallTranscribeSessionLimit are genuine after filtering,
+	// which is NOT proof of overflow -- the loop must fetch a second, SHORT
+	// page before it can prove exhaustion (§3.3's pagination-until-exact).
+	lastTS := raw[len(raw)-1].TMCreate.UTC().Format(utilhandler.ISO8601Layout)
+	gomock.InOrder(
+		mockReq.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(insightCallTranscribeSessionLimit+1), gomock.Any()).Return(raw, nil),
+		mockReq.EXPECT().TranscribeV1TranscribeList(ctx, lastTS, uint64(insightCallTranscribeSessionLimit+1), gomock.Any()).Return([]tmtranscribe.Transcribe{}, nil),
+	)
+
+	for _, id := range genuineIDs {
+		mockReq.EXPECT().TranscribeV1TranscriptList(ctx, "", uint64(resourceListPageSize+1), map[tmtranscript.Field]any{
+			tmtranscript.FieldCustomerID:   ctCustomerID,
+			tmtranscript.FieldTranscribeID: id,
+			tmtranscript.FieldDeleted:      false,
+		}).Return([]tmtranscript.Transcript{}, nil)
+	}
+
+	res := h.toolHandleGetCallTranscript(ctx, c, tc)
+	if res.Result != "success" {
+		t.Fatalf("Result = %q, want success (message: %s)", res.Result, res.Message)
+	}
+	// The mock's strict verification above (one TranscriptList EXPECT per
+	// genuine id, none for the foreign id) is itself the assertion that all
+	// insightCallTranscribeSessionLimit genuine rows survived the cap.
+}
+
+// item 12 (transcript layer): row-level filter-then-cap ordering -- a raw
+// transcript page where a foreign-tenant row appears WITHIN the first
+// resourceListPageSize+1 rows, alongside resourceListPageSize genuine rows
+// -> all genuine rows must survive.
+func Test_toolHandleGetCallTranscript_TranscriptLayerFilterThenCap(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &aicallHandler{reqHandler: mockReq}
+	ctx := context.Background()
+
+	c := testCallTranscriptAIcall(ctCustomerID, ctCaseID)
+	tc := testCallTranscriptToolCall("tc-row-filter-then-cap", ctCallID.String())
+
+	transcribeID := uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-000000000070")
+	foreignCustomerID := uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-0000000000ee")
+	base := time.Date(2026, 7, 1, 9, 0, 0, 0, time.UTC)
+
+	var raw []tmtranscript.Transcript
+	raw = append(raw, testTranscriptRow(uuid.Must(uuid.NewV4()), transcribeID, foreignCustomerID, tmtranscript.DirectionIn, "foreign-row", timePtr(base)))
+	for i := 1; i <= resourceListPageSize; i++ {
+		raw = append(raw, testTranscriptRow(uuid.Must(uuid.NewV4()), transcribeID, ctCustomerID, tmtranscript.DirectionIn, fmt.Sprintf("genuine-%d", i), timePtr(base.Add(time.Duration(i)*time.Second))))
+	}
+
+	mockReq.EXPECT().CallV1CallGet(ctx, ctCallID).Return(testCallForCallTranscript(ctCustomerID, ctCallID), nil)
+	mockReq.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(insightCallTranscribeSessionLimit+1), gomock.Any()).Return([]tmtranscribe.Transcribe{
+		testTranscribeRow(transcribeID, ctCustomerID, ctCallID, "en-US", timePtr(base.Add(time.Duration(resourceListPageSize)*time.Second))),
+	}, nil)
+	// The raw page is FULL (resourceListPageSize+1 rows) but only
+	// resourceListPageSize are genuine after filtering, which is NOT proof
+	// of overflow -- the loop must fetch a second, SHORT page before it can
+	// prove exhaustion.
+	lastTS := raw[len(raw)-1].TMCreate.UTC().Format(utilhandler.ISO8601Layout)
+	gomock.InOrder(
+		mockReq.EXPECT().TranscribeV1TranscriptList(ctx, "", uint64(resourceListPageSize+1), gomock.Any()).Return(raw, nil),
+		mockReq.EXPECT().TranscribeV1TranscriptList(ctx, lastTS, uint64(resourceListPageSize+1), gomock.Any()).Return([]tmtranscript.Transcript{}, nil),
+	)
+
+	res := h.toolHandleGetCallTranscript(ctx, c, tc)
+	if res.Result != "success" {
+		t.Fatalf("Result = %q, want success (message: %s)", res.Result, res.Message)
+	}
+	if strings.Contains(res.Message, "foreign-row") {
+		t.Errorf("foreign row leaked: %s", res.Message)
+	}
+	for i := 1; i <= resourceListPageSize; i++ {
+		want := fmt.Sprintf("genuine-%d", i)
+		if !strings.Contains(res.Message, want) {
+			// render-budget truncation may legitimately drop the oldest
+			// lines -- only assert the header's pre-render count, not every
+			// individual line, to avoid a flaky over-assertion here.
+			break
+		}
+	}
+	if !strings.Contains(res.Message, "transcript_lines: "+fmt.Sprint(resourceListPageSize)) {
+		t.Errorf("expected all %d genuine rows counted pre-render, got: %s", resourceListPageSize, res.Message)
+	}
+}
+
+// item 13: wrong-call / soft-deleted Transcribe row rechecked -> excluded.
+func Test_toolHandleGetCallTranscript_TranscribeRowRechecks(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &aicallHandler{reqHandler: mockReq}
+	ctx := context.Background()
+
+	c := testCallTranscriptAIcall(ctCustomerID, ctCaseID)
+	tc := testCallTranscriptToolCall("tc-transcribe-recheck", ctCallID.String())
+
+	genuineID := uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-000000000080")
+	wrongCallID := uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-000000000081")
+	deletedID := uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-000000000082")
+	ts := timePtr(time.Date(2026, 7, 1, 10, 0, 0, 0, time.UTC))
+
+	wrongCall := testTranscribeRow(wrongCallID, ctCustomerID, uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-0000000000ff"), "en-US", ts)
+	deleted := testTranscribeRow(deletedID, ctCustomerID, ctCallID, "en-US", ts)
+	deleted.TMDelete = ts
+
+	mockReq.EXPECT().CallV1CallGet(ctx, ctCallID).Return(testCallForCallTranscript(ctCustomerID, ctCallID), nil)
+	mockReq.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(insightCallTranscribeSessionLimit+1), gomock.Any()).Return([]tmtranscribe.Transcribe{
+		testTranscribeRow(genuineID, ctCustomerID, ctCallID, "en-US", ts),
+		wrongCall,
+		deleted,
+	}, nil)
+	mockReq.EXPECT().TranscribeV1TranscriptList(ctx, "", uint64(resourceListPageSize+1), map[tmtranscript.Field]any{
+		tmtranscript.FieldCustomerID:   ctCustomerID,
+		tmtranscript.FieldTranscribeID: genuineID,
+		tmtranscript.FieldDeleted:      false,
+	}).Return([]tmtranscript.Transcript{}, nil)
+	// No TranscriptList EXPECT for wrongCallID / deletedID -- strict gomock
+	// fails the test if either is reached.
+
+	res := h.toolHandleGetCallTranscript(ctx, c, tc)
+	if res.Result != "success" {
+		t.Fatalf("Result = %q, want success (message: %s)", res.Result, res.Message)
+	}
+}
+
+// item 14: per-session RPC failure degrades VISIBLY (sessions_unavailable
+// header field), doesn't fail the whole tool.
+func Test_toolHandleGetCallTranscript_PerSessionRPCFailureDegradesVisibly(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &aicallHandler{reqHandler: mockReq}
+	ctx := context.Background()
+
+	c := testCallTranscriptAIcall(ctCustomerID, ctCaseID)
+	tc := testCallTranscriptToolCall("tc-session-fail", ctCallID.String())
+
+	sessionOK := uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-000000000090")
+	sessionFail := uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-000000000091")
+	ts := timePtr(time.Date(2026, 7, 1, 10, 0, 0, 0, time.UTC))
+
+	mockReq.EXPECT().CallV1CallGet(ctx, ctCallID).Return(testCallForCallTranscript(ctCustomerID, ctCallID), nil)
+	mockReq.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(insightCallTranscribeSessionLimit+1), gomock.Any()).Return([]tmtranscribe.Transcribe{
+		testTranscribeRow(sessionOK, ctCustomerID, ctCallID, "en-US", ts),
+		testTranscribeRow(sessionFail, ctCustomerID, ctCallID, "en-US", ts),
+	}, nil)
+	mockReq.EXPECT().TranscribeV1TranscriptList(ctx, "", uint64(resourceListPageSize+1), map[tmtranscript.Field]any{
+		tmtranscript.FieldCustomerID:   ctCustomerID,
+		tmtranscript.FieldTranscribeID: sessionOK,
+		tmtranscript.FieldDeleted:      false,
+	}).Return([]tmtranscript.Transcript{
+		testTranscriptRow(uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-000000000092"), sessionOK, ctCustomerID, tmtranscript.DirectionIn, "still works", ts),
+	}, nil)
+	mockReq.EXPECT().TranscribeV1TranscriptList(ctx, "", uint64(resourceListPageSize+1), map[tmtranscript.Field]any{
+		tmtranscript.FieldCustomerID:   ctCustomerID,
+		tmtranscript.FieldTranscribeID: sessionFail,
+		tmtranscript.FieldDeleted:      false,
+	}).Return(nil, errTest)
+
+	res := h.toolHandleGetCallTranscript(ctx, c, tc)
+	if res.Result != "success" {
+		t.Fatalf("Result = %q, want success (message: %s)", res.Result, res.Message)
+	}
+	if !strings.Contains(res.Message, "still works") {
+		t.Errorf("expected the healthy session's line to still render, got: %s", res.Message)
+	}
+	if !strings.Contains(res.Message, "sessions_unavailable: 1") {
+		t.Errorf("expected sessions_unavailable: 1 header, got: %s", res.Message)
+	}
+}
+
+// item 15: header transcript_lines: N reflects only real rows, excluding
+// any gap markers -- covered incidentally above (Test_..._TranscriptRowRechecks
+// asserts transcript_lines: 1); this test isolates it with an explicit gap
+// marker present too, to prove the marker itself is not counted.
+func Test_toolHandleGetCallTranscript_TranscriptLinesExcludesGapMarkers(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &aicallHandler{reqHandler: mockReq}
+	ctx := context.Background()
+
+	c := testCallTranscriptAIcall(ctCustomerID, ctCaseID)
+	tc := testCallTranscriptToolCall("tc-lines-count", ctCallID.String())
+
+	sessionID := uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-0000000000a0")
+	base := time.Date(2026, 7, 1, 9, 0, 0, 0, time.UTC)
+
+	// resourceListPageSize+1 genuine rows, zero exclusions: a single full
+	// page already proves overflow (verified > resourceListPageSize), so
+	// exactly ONE TranscriptList call happens -- no second page needed.
+	var page1 []tmtranscript.Transcript
+	for i := 0; i < resourceListPageSize+1; i++ {
+		page1 = append(page1, testTranscriptRow(uuid.Must(uuid.NewV4()), sessionID, ctCustomerID, tmtranscript.DirectionIn, fmt.Sprintf("l-%d", i), timePtr(base.Add(time.Duration(i)*time.Second))))
+	}
+
+	mockReq.EXPECT().CallV1CallGet(ctx, ctCallID).Return(testCallForCallTranscript(ctCustomerID, ctCallID), nil)
+	mockReq.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(insightCallTranscribeSessionLimit+1), gomock.Any()).Return([]tmtranscribe.Transcribe{
+		testTranscribeRow(sessionID, ctCustomerID, ctCallID, "en-US", timePtr(base.Add(time.Duration(resourceListPageSize+1)*time.Second))),
+	}, nil)
+	mockReq.EXPECT().TranscribeV1TranscriptList(ctx, "", uint64(resourceListPageSize+1), gomock.Any()).Return(page1, nil)
+
+	res := h.toolHandleGetCallTranscript(ctx, c, tc)
+	if res.Result != "success" {
+		t.Fatalf("Result = %q, want success (message: %s)", res.Result, res.Message)
+	}
+	// resourceListPageSize genuine rows are kept (capped) + a gap marker is
+	// NOT counted toward transcript_lines.
+	if !strings.Contains(res.Message, "transcript_lines: "+fmt.Sprint(resourceListPageSize)) {
+		t.Errorf("expected transcript_lines: %d excluding the gap marker, got: %s", resourceListPageSize, res.Message)
+	}
+}
+
+// item 16: pagination loop actually pages when needed -- pageToken uses the
+// LITERAL utilhandler.ISO8601Layout format (not RFC3339Nano); the final
+// verified slice contains every genuine row across all pages, capped
+// correctly.
+func Test_toolHandleGetCallTranscript_PaginationLoopPagesWhenNeeded(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &aicallHandler{reqHandler: mockReq}
+	ctx := context.Background()
+
+	c := testCallTranscriptAIcall(ctCustomerID, ctCaseID)
+	tc := testCallTranscriptToolCall("tc-pagination", ctCallID.String())
+
+	base := time.Date(2026, 7, 1, 9, 0, 0, 0, time.UTC)
+	foreignCustomerID := uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-0000000000f0")
+
+	// A single full page of ALL-genuine rows would prove overflow
+	// immediately (no second fetch needed) -- to force the loop to
+	// genuinely page (item 16's actual point), page1 mixes exactly
+	// insightCallTranscribeSessionLimit genuine rows with one excluded
+	// (foreign-tenant) row, filling the full insightCallTranscribeSessionLimit+1
+	// raw page without yet proving overflow. page2 supplies one more
+	// genuine row (the true overflow-proving row).
+	var page1, page2 []tmtranscribe.Transcribe
+	page1 = append(page1, testTranscribeRow(uuid.Must(uuid.NewV4()), foreignCustomerID, ctCallID, "en-US", timePtr(base)))
+	genuineIDs := make([]uuid.UUID, 0, insightCallTranscribeSessionLimit+1)
+	for i := 1; i <= insightCallTranscribeSessionLimit; i++ {
+		id := uuid.Must(uuid.NewV4())
+		genuineIDs = append(genuineIDs, id)
+		page1 = append(page1, testTranscribeRow(id, ctCustomerID, ctCallID, "en-US", timePtr(base.Add(time.Duration(i)*time.Second))))
+	}
+	lastGenuineID := uuid.Must(uuid.NewV4())
+	genuineIDs = append(genuineIDs, lastGenuineID)
+	page2 = append(page2, testTranscribeRow(lastGenuineID, ctCustomerID, ctCallID, "en-US", timePtr(base.Add(time.Duration(insightCallTranscribeSessionLimit+1)*time.Second))))
+
+	lastPage1TS := page1[len(page1)-1].TMCreate
+	wantToken := lastPage1TS.UTC().Format(utilhandler.ISO8601Layout)
+	if !strings.Contains(wantToken, ".") || strings.HasSuffix(wantToken, "Z") == false {
+		t.Fatalf("sanity check on ISO8601Layout format failed: %s", wantToken)
+	}
+
+	mockReq.EXPECT().CallV1CallGet(ctx, ctCallID).Return(testCallForCallTranscript(ctCustomerID, ctCallID), nil)
+	gomock.InOrder(
+		mockReq.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(insightCallTranscribeSessionLimit+1), gomock.Any()).Return(page1, nil),
+		mockReq.EXPECT().TranscribeV1TranscribeList(ctx, wantToken, uint64(insightCallTranscribeSessionLimit+1), gomock.Any()).Return(page2, nil),
+	)
+	// Only the first insightCallTranscribeSessionLimit genuine sessions
+	// (capped) get a TranscriptList fetch -- the (limit+1)'th genuine
+	// session is dropped by the cap.
+	for _, id := range genuineIDs[:insightCallTranscribeSessionLimit] {
+		mockReq.EXPECT().TranscribeV1TranscriptList(ctx, "", uint64(resourceListPageSize+1), map[tmtranscript.Field]any{
+			tmtranscript.FieldCustomerID:   ctCustomerID,
+			tmtranscript.FieldTranscribeID: id,
+			tmtranscript.FieldDeleted:      false,
+		}).Return([]tmtranscript.Transcript{}, nil)
+	}
+
+	res := h.toolHandleGetCallTranscript(ctx, c, tc)
+	if res.Result != "success" {
+		t.Fatalf("Result = %q, want success (message: %s)", res.Result, res.Message)
+	}
+	if !strings.Contains(res.Message, "transcribe_sessions: 10 (capped, more may exist)") {
+		t.Errorf("expected capped header after multi-page pagination, got: %s", res.Message)
+	}
+}
+
+// item 17: sessionCapped does NOT leak filtered-row existence for H>=2
+// hidden rows spread across page boundaries -- byte-identical rendered
+// output AND header between the with-hidden-rows and without-hidden-rows
+// fixtures.
+func Test_toolHandleGetCallTranscript_HiddenRowsDoNotLeak(t *testing.T) {
+	base := time.Date(2026, 7, 1, 9, 0, 0, 0, time.UTC)
+	foreignCustomerID := uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-0000000000f1")
+
+	run := func(t *testing.T, hidden bool) string {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockReq := requesthandler.NewMockRequestHandler(mc)
+		h := &aicallHandler{reqHandler: mockReq}
+		ctx := context.Background()
+
+		c := testCallTranscriptAIcall(ctCustomerID, ctCaseID)
+		tc := testCallTranscriptToolCall("tc-h2", ctCallID.String())
+
+		genuineIDs := make([]uuid.UUID, 0, insightCallTranscribeSessionLimit)
+		var page1 []tmtranscribe.Transcribe
+		if hidden {
+			page1 = append(page1, testTranscribeRow(uuid.Must(uuid.NewV4()), foreignCustomerID, ctCallID, "en-US", timePtr(base)))
+		}
+		for i := 1; i <= insightCallTranscribeSessionLimit; i++ {
+			id := uuid.Must(uuid.NewV4())
+			genuineIDs = append(genuineIDs, id)
+			page1 = append(page1, testTranscribeRow(id, ctCustomerID, ctCallID, "en-US", timePtr(base.Add(time.Duration(i)*time.Second))))
+		}
+		var page2 []tmtranscribe.Transcribe
+		if hidden {
+			// a second hidden row landing on the second page.
+			page2 = append(page2, testTranscribeRow(uuid.Must(uuid.NewV4()), foreignCustomerID, ctCallID, "en-US", timePtr(base.Add(time.Duration(insightCallTranscribeSessionLimit+1)*time.Second))))
+		}
+
+		mockReq.EXPECT().CallV1CallGet(ctx, ctCallID).Return(testCallForCallTranscript(ctCustomerID, ctCallID), nil)
+		if hidden {
+			lastTS := page1[len(page1)-1].TMCreate.UTC().Format(utilhandler.ISO8601Layout)
+			gomock.InOrder(
+				mockReq.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(insightCallTranscribeSessionLimit+1), gomock.Any()).Return(page1, nil),
+				mockReq.EXPECT().TranscribeV1TranscribeList(ctx, lastTS, uint64(insightCallTranscribeSessionLimit+1), gomock.Any()).Return(page2, nil),
+			)
+		} else {
+			mockReq.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(insightCallTranscribeSessionLimit+1), gomock.Any()).Return(page1, nil)
+		}
+		for _, id := range genuineIDs {
+			mockReq.EXPECT().TranscribeV1TranscriptList(ctx, "", uint64(resourceListPageSize+1), map[tmtranscript.Field]any{
+				tmtranscript.FieldCustomerID:   ctCustomerID,
+				tmtranscript.FieldTranscribeID: id,
+				tmtranscript.FieldDeleted:      false,
+			}).Return([]tmtranscript.Transcript{}, nil)
+		}
+
+		res := h.toolHandleGetCallTranscript(ctx, c, tc)
+		if res.Result != "success" {
+			t.Fatalf("Result = %q, want success (message: %s)", res.Result, res.Message)
+		}
+		return res.Message
+	}
+
+	withoutHidden := run(t, false)
+	withHidden := run(t, true)
+
+	if withoutHidden != withHidden {
+		t.Errorf("hidden-row presence leaked into rendered output:\nwithout: %s\nwith:    %s", withoutHidden, withHidden)
+	}
+}
+
+// item 18: nominal path, exactly limit genuine rows, WITH and WITHOUT
+// exclusions -- both must read false, no false-positive cap/gap
+// (regression test for the retired >= comparator bug).
+func Test_toolHandleGetCallTranscript_NominalPathNoFalsePositive(t *testing.T) {
+	base := time.Date(2026, 7, 1, 9, 0, 0, 0, time.UTC)
+	foreignCustomerID := uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-0000000000f2")
+
+	run := func(t *testing.T, withExclusion bool) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockReq := requesthandler.NewMockRequestHandler(mc)
+		h := &aicallHandler{reqHandler: mockReq}
+		ctx := context.Background()
+
+		c := testCallTranscriptAIcall(ctCustomerID, ctCaseID)
+		tc := testCallTranscriptToolCall("tc-nominal", ctCallID.String())
+
+		genuineIDs := make([]uuid.UUID, 0, insightCallTranscribeSessionLimit)
+		var raw []tmtranscribe.Transcribe
+		if withExclusion {
+			raw = append(raw, testTranscribeRow(uuid.Must(uuid.NewV4()), foreignCustomerID, ctCallID, "en-US", timePtr(base)))
+		}
+		for i := 1; i <= insightCallTranscribeSessionLimit; i++ {
+			id := uuid.Must(uuid.NewV4())
+			genuineIDs = append(genuineIDs, id)
+			raw = append(raw, testTranscribeRow(id, ctCustomerID, ctCallID, "en-US", timePtr(base.Add(time.Duration(i)*time.Second))))
+		}
+
+		mockReq.EXPECT().CallV1CallGet(ctx, ctCallID).Return(testCallForCallTranscript(ctCustomerID, ctCallID), nil)
+		if withExclusion {
+			// raw page is full (limit+1 rows requested, limit+1 returned)
+			// -> loop must fetch a second, SHORT page before it can prove
+			// exhaustion.
+			lastTS := raw[len(raw)-1].TMCreate.UTC().Format(utilhandler.ISO8601Layout)
+			gomock.InOrder(
+				mockReq.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(insightCallTranscribeSessionLimit+1), gomock.Any()).Return(raw, nil),
+				mockReq.EXPECT().TranscribeV1TranscribeList(ctx, lastTS, uint64(insightCallTranscribeSessionLimit+1), gomock.Any()).Return([]tmtranscribe.Transcribe{}, nil),
+			)
+		} else {
+			mockReq.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(insightCallTranscribeSessionLimit+1), gomock.Any()).Return(raw, nil)
+		}
+		for _, id := range genuineIDs {
+			mockReq.EXPECT().TranscribeV1TranscriptList(ctx, "", uint64(resourceListPageSize+1), map[tmtranscript.Field]any{
+				tmtranscript.FieldCustomerID:   ctCustomerID,
+				tmtranscript.FieldTranscribeID: id,
+				tmtranscript.FieldDeleted:      false,
+			}).Return([]tmtranscript.Transcript{}, nil)
+		}
+
+		res := h.toolHandleGetCallTranscript(ctx, c, tc)
+		if res.Result != "success" {
+			t.Fatalf("Result = %q, want success (message: %s)", res.Result, res.Message)
+		}
+		if strings.Contains(res.Message, "capped") {
+			t.Errorf("false-positive cap marker for exactly %d genuine rows (withExclusion=%v): %s", insightCallTranscribeSessionLimit, withExclusion, res.Message)
+		}
+	}
+
+	t.Run("zero exclusions", func(t *testing.T) { run(t, false) })
+	t.Run("with exclusions inside the full page", func(t *testing.T) { run(t, true) })
+}
+
+// item 19: pagination loop respects insightCallTranscribeFetchMaxPages, and
+// possiblyIncomplete makes the page-cap exit honest -- >=45 excluded rows
+// at the session layer exhausts the 5-page budget without proof; assert
+// sessionCapped == true via possiblyIncomplete and no numeric hidden-row
+// count anywhere in the header.
+func Test_toolHandleGetCallTranscript_PageCapPossiblyIncomplete(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &aicallHandler{reqHandler: mockReq}
+	ctx := context.Background()
+
+	c := testCallTranscriptAIcall(ctCustomerID, ctCaseID)
+	tc := testCallTranscriptToolCall("tc-page-cap", ctCallID.String())
+
+	foreignCustomerID := uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-0000000000f3")
+	base := time.Date(2026, 7, 1, 9, 0, 0, 0, time.UTC)
+
+	// 5 full pages of insightCallTranscribeSessionLimit+1 rows each, every
+	// row on every page EXCLUDED (foreign customer) so the loop never has
+	// enough genuine rows to prove overflow, and never a short page to
+	// prove exhaustion -- so the loop must exit at the page cap with
+	// possiblyIncomplete=true. 5 * 11 = 55 raw rows, all excluded.
+	var pages [][]tmtranscribe.Transcribe
+	seqN := 0
+	for page := 0; page < insightCallTranscribeFetchMaxPages; page++ {
+		var rows []tmtranscribe.Transcribe
+		for i := 0; i < insightCallTranscribeSessionLimit+1; i++ {
+			rows = append(rows, testTranscribeRow(uuid.Must(uuid.NewV4()), foreignCustomerID, ctCallID, "en-US", timePtr(base.Add(time.Duration(seqN)*time.Second))))
+			seqN++
+		}
+		pages = append(pages, rows)
+	}
+
+	mockReq.EXPECT().CallV1CallGet(ctx, ctCallID).Return(testCallForCallTranscript(ctCustomerID, ctCallID), nil)
+	calls := make([]any, 0, len(pages))
+	token := ""
+	for _, rows := range pages {
+		rowsCopy := rows
+		tokenCopy := token
+		calls = append(calls, mockReq.EXPECT().TranscribeV1TranscribeList(ctx, tokenCopy, uint64(insightCallTranscribeSessionLimit+1), gomock.Any()).Return(rowsCopy, nil))
+		token = rowsCopy[len(rowsCopy)-1].TMCreate.UTC().Format(utilhandler.ISO8601Layout)
+	}
+	gomock.InOrder(calls...)
+
+	res := h.toolHandleGetCallTranscript(ctx, c, tc)
+	if res.Result != "success" {
+		t.Fatalf("Result = %q, want success (message: %s)", res.Result, res.Message)
+	}
+	if res.Message != "could not confirm whether a transcript exists for this call" {
+		t.Errorf("expected the honest could-not-confirm message at the page cap, got: %s", res.Message)
+	}
+	// No numeric hidden-row count anywhere.
+	for _, n := range []string{"45", "55"} {
+		if strings.Contains(res.Message, n) {
+			t.Errorf("numeric hidden-row count leaked into header: %s", res.Message)
+		}
+	}
+}
+
+// item 20: sessionCapped-guarded not-found message -- verified empty +
+// sessionCapped=true -> distinct "could not confirm" message, not a false
+// "no transcript found". Reuses the same page-cap fixture shape as item 19
+// but with zero genuine rows at all (already covered by item 19's assertion
+// on res.Message). This test isolates the SIMPLEST possiblyIncomplete path:
+// a nil-TMCreate boundary on the very first page halts before any genuine
+// row is confirmed.
+func Test_toolHandleGetCallTranscript_SessionCappedGuardedNotFound(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &aicallHandler{reqHandler: mockReq}
+	ctx := context.Background()
+
+	c := testCallTranscriptAIcall(ctCustomerID, ctCaseID)
+	tc := testCallTranscriptToolCall("tc-guarded-notfound", ctCallID.String())
+
+	foreignCustomerID := uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-0000000000f4")
+	base := time.Date(2026, 7, 1, 9, 0, 0, 0, time.UTC)
+
+	var raw []tmtranscribe.Transcribe
+	for i := 0; i < insightCallTranscribeSessionLimit; i++ {
+		raw = append(raw, testTranscribeRow(uuid.Must(uuid.NewV4()), foreignCustomerID, ctCallID, "en-US", timePtr(base.Add(time.Duration(i)*time.Second))))
+	}
+	// full page (limit+1 rows), last row has nil TMCreate -> halts pagination
+	// without proof, zero genuine rows confirmed.
+	raw = append(raw, testTranscribeRow(uuid.Must(uuid.NewV4()), foreignCustomerID, ctCallID, "en-US", nil))
+
+	mockReq.EXPECT().CallV1CallGet(ctx, ctCallID).Return(testCallForCallTranscript(ctCustomerID, ctCallID), nil)
+	mockReq.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(insightCallTranscribeSessionLimit+1), gomock.Any()).Return(raw, nil).Times(1)
+
+	res := h.toolHandleGetCallTranscript(ctx, c, tc)
+	if res.Result != "success" {
+		t.Fatalf("Result = %q, want success (message: %s)", res.Result, res.Message)
+	}
+	if res.Message != "could not confirm whether a transcript exists for this call" {
+		t.Errorf("Message = %q, want the distinct could-not-confirm message", res.Message)
+	}
+}
+
+// item 21: OUTER RPC fan-out count (session-iteration loop) is invariant to
+// hidden-row presence; INNER pagination RPC count is NOT invariant -- pin
+// the actual variance (1 page vs 2+ pages).
+func Test_toolHandleGetCallTranscript_OuterInvariantInnerVariant(t *testing.T) {
+	base := time.Date(2026, 7, 1, 9, 0, 0, 0, time.UTC)
+	foreignCustomerID := uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-0000000000f5")
+
+	run := func(t *testing.T, hidden bool) int {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockReq := requesthandler.NewMockRequestHandler(mc)
+		h := &aicallHandler{reqHandler: mockReq}
+		ctx := context.Background()
+
+		c := testCallTranscriptAIcall(ctCustomerID, ctCaseID)
+		tc := testCallTranscriptToolCall("tc-outer-inner", ctCallID.String())
+
+		genuineIDs := make([]uuid.UUID, 0, insightCallTranscribeSessionLimit)
+		var page1 []tmtranscribe.Transcribe
+		for i := 0; i < insightCallTranscribeSessionLimit; i++ {
+			id := uuid.Must(uuid.NewV4())
+			genuineIDs = append(genuineIDs, id)
+			page1 = append(page1, testTranscribeRow(id, ctCustomerID, ctCallID, "en-US", timePtr(base.Add(time.Duration(i)*time.Second))))
+		}
+		pageCalls := 1
+		mockReq.EXPECT().CallV1CallGet(ctx, ctCallID).Return(testCallForCallTranscript(ctCustomerID, ctCallID), nil)
+		if hidden {
+			page1 = append(page1, testTranscribeRow(uuid.Must(uuid.NewV4()), foreignCustomerID, ctCallID, "en-US", timePtr(base.Add(time.Duration(insightCallTranscribeSessionLimit)*time.Second))))
+			lastTS := page1[len(page1)-1].TMCreate.UTC().Format(utilhandler.ISO8601Layout)
+			gomock.InOrder(
+				mockReq.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(insightCallTranscribeSessionLimit+1), gomock.Any()).Return(page1, nil),
+				mockReq.EXPECT().TranscribeV1TranscribeList(ctx, lastTS, uint64(insightCallTranscribeSessionLimit+1), gomock.Any()).Return([]tmtranscribe.Transcribe{}, nil),
+			)
+			pageCalls = 2
+		} else {
+			mockReq.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(insightCallTranscribeSessionLimit+1), gomock.Any()).Return(page1, nil)
+		}
+		for _, id := range genuineIDs {
+			mockReq.EXPECT().TranscribeV1TranscriptList(ctx, "", uint64(resourceListPageSize+1), map[tmtranscript.Field]any{
+				tmtranscript.FieldCustomerID:   ctCustomerID,
+				tmtranscript.FieldTranscribeID: id,
+				tmtranscript.FieldDeleted:      false,
+			}).Return([]tmtranscript.Transcript{}, nil)
+		}
+
+		res := h.toolHandleGetCallTranscript(ctx, c, tc)
+		if res.Result != "success" {
+			t.Fatalf("Result = %q, want success (message: %s)", res.Result, res.Message)
+		}
+		return pageCalls
+	}
+
+	pagesWithoutHidden := run(t, false)
+	pagesWithHidden := run(t, true)
+
+	if pagesWithoutHidden == pagesWithHidden {
+		t.Errorf("expected the INNER page count to differ (1 vs 2+) between hidden/non-hidden fixtures -- got %d both times", pagesWithoutHidden)
+	}
+	// The outer session-iteration count (insightCallTranscribeSessionLimit
+	// TranscriptList call-groups) is asserted implicitly by both runs'
+	// strict gomock expectations succeeding identically for genuineIDs.
+}
+
+// item 22 (partial: seq tiebreak determinism): two rows with identical
+// TMCreate, rank, TranscribeID, AND TranscriptID (a constructed adversarial
+// fixture) -> sort order is deterministic and matches fetch order.
+func Test_toolHandleGetCallTranscript_SeqTiebreakDeterminism(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &aicallHandler{reqHandler: mockReq}
+	ctx := context.Background()
+
+	c := testCallTranscriptAIcall(ctCustomerID, ctCaseID)
+	tc := testCallTranscriptToolCall("tc-seq", ctCallID.String())
+
+	transcribeID := uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-0000000000f6")
+	dupID := uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-0000000000f7")
+	ts := timePtr(time.Date(2026, 7, 1, 10, 0, 0, 0, time.UTC))
+
+	first := testTranscriptRow(dupID, transcribeID, ctCustomerID, tmtranscript.DirectionIn, "fetched-first", ts)
+	second := testTranscriptRow(dupID, transcribeID, ctCustomerID, tmtranscript.DirectionIn, "fetched-second", ts)
+
+	mockReq.EXPECT().CallV1CallGet(ctx, ctCallID).Return(testCallForCallTranscript(ctCustomerID, ctCallID), nil)
+	mockReq.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(insightCallTranscribeSessionLimit+1), gomock.Any()).Return([]tmtranscribe.Transcribe{
+		testTranscribeRow(transcribeID, ctCustomerID, ctCallID, "en-US", ts),
+	}, nil)
+	mockReq.EXPECT().TranscribeV1TranscriptList(ctx, "", uint64(resourceListPageSize+1), gomock.Any()).Return([]tmtranscript.Transcript{first, second}, nil)
+
+	res := h.toolHandleGetCallTranscript(ctx, c, tc)
+	if res.Result != "success" {
+		t.Fatalf("Result = %q, want success (message: %s)", res.Result, res.Message)
+	}
+	posFirst := strings.Index(res.Message, "fetched-first")
+	posSecond := strings.Index(res.Message, "fetched-second")
+	if posFirst < 0 || posSecond < 0 || posFirst > posSecond {
+		t.Errorf("expected deterministic fetch-order tiebreak, got: %s", res.Message)
+	}
+}
+
+// item 22 (partial: gap-boundary nil-TMCreate handling): the marker copies
+// the nil verbatim and, per the nil-sorts-last rule, is placed adjacent to
+// that row wherever it sorts (including at the tail).
+func Test_toolHandleGetCallTranscript_GapBoundaryNilTMCreate(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &aicallHandler{reqHandler: mockReq}
+	ctx := context.Background()
+
+	c := testCallTranscriptAIcall(ctCustomerID, ctCaseID)
+	tc := testCallTranscriptToolCall("tc-gap-nil", ctCallID.String())
+
+	sessionID := uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-0000000000f8")
+	base := time.Date(2026, 7, 1, 9, 0, 0, 0, time.UTC)
+
+	// resourceListPageSize+1 rows on the first page, whose LAST row (the
+	// gap boundary, once sliced to the cap) has TMCreate == nil.
+	var page1 []tmtranscript.Transcript
+	for i := 0; i < resourceListPageSize; i++ {
+		page1 = append(page1, testTranscriptRow(uuid.Must(uuid.NewV4()), sessionID, ctCustomerID, tmtranscript.DirectionIn, fmt.Sprintf("g-%d", i), timePtr(base.Add(time.Duration(i)*time.Second))))
+	}
+	page1 = append(page1, testTranscriptRow(uuid.Must(uuid.NewV4()), sessionID, ctCustomerID, tmtranscript.DirectionIn, "g-boundary-nil", nil))
+
+	mockReq.EXPECT().CallV1CallGet(ctx, ctCallID).Return(testCallForCallTranscript(ctCustomerID, ctCallID), nil)
+	mockReq.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(insightCallTranscribeSessionLimit+1), gomock.Any()).Return([]tmtranscribe.Transcribe{
+		testTranscribeRow(sessionID, ctCustomerID, ctCallID, "en-US", timePtr(base.Add(time.Duration(resourceListPageSize)*time.Second))),
+	}, nil).Times(1)
+	mockReq.EXPECT().TranscribeV1TranscriptList(ctx, "", uint64(resourceListPageSize+1), gomock.Any()).Return(page1, nil).Times(1)
+
+	res := h.toolHandleGetCallTranscript(ctx, c, tc)
+	if res.Result != "success" {
+		t.Fatalf("Result = %q, want success (no panic) (message: %s)", res.Result, res.Message)
+	}
+	if !strings.Contains(res.Message, "gap en-US") {
+		t.Errorf("expected a gap marker to be synthesized, got: %s", res.Message)
+	}
+}
+
+// item 22 (partial: transcript_lines pre-render-vs-rendered divergence): the
+// header's transcript_lines: N reflects the full pre-truncation merged
+// count, while fewer lines are actually rendered below it.
+func Test_toolHandleGetCallTranscript_TranscriptLinesPreRenderVsRendered(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &aicallHandler{reqHandler: mockReq}
+	ctx := context.Background()
+
+	c := testCallTranscriptAIcall(ctCustomerID, ctCaseID)
+	tc := testCallTranscriptToolCall("tc-prerender", ctCallID.String())
+
+	sessionID := uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-0000000000f9")
+	base := time.Date(2026, 7, 1, 9, 0, 0, 0, time.UTC)
+
+	// 60 lines, each padded so the merged total comfortably exceeds the
+	// 4000-rune whole-message budget once the header is added.
+	var rows []tmtranscript.Transcript
+	padding := strings.Repeat("y", 100)
+	for i := 0; i < 60; i++ {
+		rows = append(rows, testTranscriptRow(uuid.Must(uuid.NewV4()), sessionID, ctCustomerID, tmtranscript.DirectionIn, fmt.Sprintf("LINE%02d-%s", i, padding), timePtr(base.Add(time.Duration(i)*time.Second))))
+	}
+
+	mockReq.EXPECT().CallV1CallGet(ctx, ctCallID).Return(testCallForCallTranscript(ctCustomerID, ctCallID), nil)
+	mockReq.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(insightCallTranscribeSessionLimit+1), gomock.Any()).Return([]tmtranscribe.Transcribe{
+		testTranscribeRow(sessionID, ctCustomerID, ctCallID, "en-US", timePtr(base.Add(59*time.Second))),
+	}, nil)
+	mockReq.EXPECT().TranscribeV1TranscriptList(ctx, "", uint64(resourceListPageSize+1), gomock.Any()).Return(rows, nil)
+
+	res := h.toolHandleGetCallTranscript(ctx, c, tc)
+	if res.Result != "success" {
+		t.Fatalf("Result = %q, want success (message: %s)", res.Result, res.Message)
+	}
+	if !strings.Contains(res.Message, "transcript_lines: 60") {
+		t.Errorf("expected pre-truncation merged count of 60, got: %s", res.Message)
+	}
+	// Prove NOT all 60 rendered: the oldest row's text should have been
+	// dropped by renderBodyLines' render-budget truncation.
+	if strings.Contains(res.Message, "LINE00-"+padding) {
+		t.Errorf("expected the oldest line to be truncated away, but it rendered: %s", res.Message)
+	}
+	if !strings.Contains(res.Message, "earlier transcript lines omitted") {
+		t.Errorf("expected renderBodyLines' own truncation marker, got: %s", res.Message)
+	}
+}
+
+// item 22 (partial): all-sessions-unavailable terminal state -- Result:
+// success, transcript_lines: 0, sessions_unavailable: N, no panic on an
+// empty merge.
+func Test_toolHandleGetCallTranscript_AllSessionsUnavailable(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &aicallHandler{reqHandler: mockReq}
+	ctx := context.Background()
+
+	c := testCallTranscriptAIcall(ctCustomerID, ctCaseID)
+	tc := testCallTranscriptToolCall("tc-all-unavailable", ctCallID.String())
+
+	sessionA := uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-0000000000fa")
+	sessionB := uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-0000000000fb")
+	ts := timePtr(time.Date(2026, 7, 1, 10, 0, 0, 0, time.UTC))
+
+	mockReq.EXPECT().CallV1CallGet(ctx, ctCallID).Return(testCallForCallTranscript(ctCustomerID, ctCallID), nil)
+	mockReq.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(insightCallTranscribeSessionLimit+1), gomock.Any()).Return([]tmtranscribe.Transcribe{
+		testTranscribeRow(sessionA, ctCustomerID, ctCallID, "en-US", ts),
+		testTranscribeRow(sessionB, ctCustomerID, ctCallID, "en-US", ts),
+	}, nil)
+	mockReq.EXPECT().TranscribeV1TranscriptList(ctx, "", uint64(resourceListPageSize+1), map[tmtranscript.Field]any{
+		tmtranscript.FieldCustomerID:   ctCustomerID,
+		tmtranscript.FieldTranscribeID: sessionA,
+		tmtranscript.FieldDeleted:      false,
+	}).Return(nil, errTest)
+	mockReq.EXPECT().TranscribeV1TranscriptList(ctx, "", uint64(resourceListPageSize+1), map[tmtranscript.Field]any{
+		tmtranscript.FieldCustomerID:   ctCustomerID,
+		tmtranscript.FieldTranscribeID: sessionB,
+		tmtranscript.FieldDeleted:      false,
+	}).Return(nil, errTest)
+
+	res := h.toolHandleGetCallTranscript(ctx, c, tc)
+	if res.Result != "success" {
+		t.Fatalf("Result = %q, want success (no panic on empty merge) (message: %s)", res.Result, res.Message)
+	}
+	if !strings.Contains(res.Message, "transcript_lines: 0") {
+		t.Errorf("expected transcript_lines: 0, got: %s", res.Message)
+	}
+	if !strings.Contains(res.Message, "sessions_unavailable: 2") {
+		t.Errorf("expected sessions_unavailable: 2, got: %s", res.Message)
 	}
 }
