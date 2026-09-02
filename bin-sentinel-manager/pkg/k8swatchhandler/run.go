@@ -65,19 +65,19 @@ func (h *k8sWatchHandler) runInformer(ctx context.Context, target watchTarget) e
 	})
 
 	informer := cache.NewSharedIndexInformer(
-		// ListFunc/WatchFunc are deprecated in favor of ListWithContext/WatchWithContext as of a
-		// later client-go than the v0.36.0-alpha.0 this service currently pins (VOIP-1418). Migrating
-		// is part of VOIP-1446's k8s.io/* GA bump, not this purely-mechanical Go toolchain upgrade
-		// (VOIP-1447) -- deferred rather than done here to keep this PR's blast radius to go.mod/
-		// Dockerfile/CI only.
+		// ListWithContextFunc/WatchFuncWithContext (rather than the deprecated
+		// ListFunc/WatchFunc) match what client-go's Reflector actually calls
+		// (tools/cache/reflector.go calls only the WithContext variants). listCtx/watchCtx are
+		// named distinctly from this function's own ctx to avoid shadowing it -- ctx stays live
+		// below for handleUpdate/handleDelete/waitForCacheSync.
 		&cache.ListWatch{
-			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) { //nolint:staticcheck // see above, VOIP-1446
+			ListWithContextFunc: func(listCtx context.Context, options metav1.ListOptions) (runtime.Object, error) {
 				options.LabelSelector = target.LabelSelector
-				return h.clientset.CoreV1().Pods(target.Namespace).List(ctx, options)
+				return h.clientset.CoreV1().Pods(target.Namespace).List(listCtx, options)
 			},
-			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) { //nolint:staticcheck // see above, VOIP-1446
+			WatchFuncWithContext: func(watchCtx context.Context, options metav1.ListOptions) (watch.Interface, error) {
 				options.LabelSelector = target.LabelSelector
-				return h.clientset.CoreV1().Pods(target.Namespace).Watch(ctx, options)
+				return h.clientset.CoreV1().Pods(target.Namespace).Watch(watchCtx, options)
 			},
 		},
 		&corev1.Pod{},
@@ -122,16 +122,10 @@ func (h *k8sWatchHandler) runInformer(ctx context.Context, target watchTarget) e
 		return errors.Wrapf(err, "could not set the pod watch error handler. namespace: %s, selector: %s", target.Namespace, target.LabelSelector)
 	}
 
-	stopCh := make(chan struct{})
-	go func() {
-		<-ctx.Done()
-		close(stopCh)
-	}()
-
 	done := make(chan struct{})
 	go func() {
 		defer close(done)
-		informer.Run(stopCh)
+		informer.RunWithContext(ctx)
 	}()
 
 	log.Infof("Started the pod informer.")
