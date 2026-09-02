@@ -2,8 +2,6 @@ module monorepo/bin-rag-manager
 
 go 1.27.1
 
-godebug default=go1.25
-
 replace monorepo/bin-agent-manager => ../bin-agent-manager
 
 replace monorepo/bin-ai-manager => ../bin-ai-manager
