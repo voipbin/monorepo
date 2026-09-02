@@ -32,8 +32,9 @@ against the code, not the tracker, if any time has passed.
    `voipbin-api-manager` and `voipbin-hook-manager` literally as
    reverse_proxy upstreams; P10 converted both to `dynamic a` upstreams
    resolving the Compose service name instead, so neither service needs
-   a Caddy-side companion change to scale. api's remaining blocker is
-   unrelated: a per-pod `streamData` state redesign.
+   a Caddy-side companion change to scale. api's other blocker (per-pod
+   `streamData` state) is resolved per item 6 below (VOIP-1442) — no
+   code redesign was needed.
 4. **Per-container mutable state is concurrency-safe.** If the service
    writes to a bind mount or other shared location, confirm two
    replicas cannot corrupt it (e.g. schedule-manager's backup dir is
@@ -51,9 +52,12 @@ against the code, not the tracker, if any time has passed.
    via a shared competing-consumer queue, or Redis lock + DB CAS, or an
    equivalent — never "I am the only instance". (route's provider
    healthcheck loop is now guarded by a redsync lock (P23b), timeline's
-   drop-metrics gate passed its 24h baseline (P23a), and contact's
-   GetOrCreate/peerlock turned out to be dead code (VOIP-1439) — all
-   three resolved.)
+   drop-metrics gate passed its 24h baseline (P23a), contact's
+   GetOrCreate/peerlock turned out to be dead code (VOIP-1439), and
+   api's streamData process-local state turned out not to be reachable
+   via any cross-replica request path in the current code (VOIP-1442;
+   confirmed by a review-response-session direct-dial synthetic test)
+   — all four resolved.)
 
 Not a concern: **host-port collisions** — no `bin-*-manager` compose
 publishes host ports, so replicas cannot conflict there.
@@ -121,6 +125,34 @@ count(up{job="voipbin-managers", service="<service>"})
 Also give the service's Grafana dashboard a quick sanity pass:
 per-instance panels now show two series per service (harmless — proven
 by the schedule-manager pilot — but confirm nothing renders wrong).
+
+### Per-pod fanout queue services (e.g. api-manager)
+
+Most scaled services follow the "queue consumers=2 (subscribe +
+request)" pattern: a fixed, shared queue name with one competing
+consumer per replica. **This does not apply to a service whose only
+queue is a per-pod fanout queue** — one where each replica appends a
+random UUID to the queue name at startup so it receives its own full
+copy of every event (needed when a replica must locally filter/forward
+events to WebSocket clients connected only to itself, rather than
+racing other replicas for a shared work item). api-manager is the
+first service in this fleet with that shape: it runs no
+`QueueNameAPIRequest` listenhandler at all (it only calls other
+services, never receives RPCs), and its sole queue is
+`bin-manager.api-manager.subscribe-<uuid>`, unique per process
+(`cmd/api-manager/main.go`).
+
+For this category, "consumers=2 on one queue" is the wrong check — it
+will never be true by design. Verify instead, via the RabbitMQ
+management API/UI, queue-name pattern search:
+
+- Exactly 2 distinct queues matching
+  `bin-manager.<service>.subscribe-*` exist (one per replica).
+- Each of those queues has exactly 1 consumer (its own pod).
+
+A single shared queue matching that prefix, or a queue with 0 or >1
+consumers, indicates the per-pod fanout isn't set up correctly for the
+new replica count.
 
 ## 5. Known fleet-wide gaps (tracked in the rollout design doc — do not re-derive per service)
 
