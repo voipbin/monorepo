@@ -1,6 +1,8 @@
 module monorepo/bin-rag-manager
 
-go 1.25.3
+go 1.27.1
+
+godebug default=go1.25
 
 replace monorepo/bin-agent-manager => ../bin-agent-manager
 
@@ -75,6 +77,7 @@ require (
 	github.com/lib/pq v1.11.2
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.23.2
+	github.com/rabbitmq/amqp091-go v1.10.0
 	github.com/sirupsen/logrus v1.9.4
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/viper v1.21.0
@@ -83,11 +86,6 @@ require (
 	golang.org/x/net v0.58.0
 	google.golang.org/genai v1.50.0
 	monorepo/bin-common-handler v0.0.0-20240408033155-50f0cd082334
-)
-
-require (
-	github.com/robfig/cron/v3 v3.0.1 // indirect
-	monorepo/bin-schedule-manager v0.0.0-00010101000000-000000000000 // indirect
 )
 
 require (
@@ -131,7 +129,7 @@ require (
 	github.com/prometheus/client_model v0.6.2 // indirect
 	github.com/prometheus/common v0.67.5 // indirect
 	github.com/prometheus/procfs v0.19.2 // indirect
-	github.com/rabbitmq/amqp091-go v1.10.0
+	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/sagikazarmark/locafero v0.12.0 // indirect
 	github.com/spf13/afero v1.15.0 // indirect
 	github.com/spf13/cast v1.10.0 // indirect
@@ -181,6 +179,7 @@ require (
 	monorepo/bin-queue-manager v0.0.0-20240402021210-adac880b81da // indirect
 	monorepo/bin-registrar-manager v0.0.0-20240402051305-cf14186e380d // indirect
 	monorepo/bin-route-manager v0.0.0-20240313065038-1498b922bb24 // indirect
+	monorepo/bin-schedule-manager v0.0.0-00010101000000-000000000000 // indirect
 	monorepo/bin-storage-manager v0.0.0-20240330083852-ab008a2e3880 // indirect
 	monorepo/bin-tag-manager v0.0.0-20240313070856-7d3433af905d // indirect
 	monorepo/bin-talk-manager v0.0.0-00010101000000-000000000000 // indirect
