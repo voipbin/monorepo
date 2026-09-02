@@ -2,7 +2,6 @@ package config
 
 import (
 	"os"
-	"sync"
 	"testing"
 
 	"github.com/spf13/cobra"
@@ -242,7 +241,6 @@ func Test_BootstrapWithEnv(t *testing.T) {
 
 func Test_LoadGlobalConfig(t *testing.T) {
 	viper.Reset()
-	once = sync.Once{}
 	cfg = Config{}
 
 	viperValues := map[string]any{
@@ -279,37 +277,93 @@ func Test_LoadGlobalConfig(t *testing.T) {
 	}
 }
 
-func Test_LoadGlobalConfigOnlyOnce(t *testing.T) {
+// Test_LoadGlobalConfig_retriesAfterFailure is the regression test for the sync.Once bug this
+// change removes: under the old once.Do-guarded LoadGlobalConfig, a failed first call still
+// consumed the Once, so every later call silently returned nil against a still-zero-value cfg.
+// This pins the new contract -- every call reloads and re-validates from viper, so a failure is
+// retryable -- across three calls: fail, then succeed, then reload with changed viper state.
+func Test_LoadGlobalConfig_retriesAfterFailure(t *testing.T) {
 	viper.Reset()
-	once = sync.Once{}
 	cfg = Config{}
 
-	viper.Set("prometheus_endpoint", "/first")
-	viper.Set("docker_socket_proxy_address", "tcp://first:2375")
-	viper.Set("redis_address", "localhost:6379")
-	viper.Set("sentinel_backend", BackendDocker)
+	// (a) an invalid backend is rejected.
+	viper.Set("sentinel_backend", "nomad")
+
+	if err := LoadGlobalConfig(); err == nil {
+		t.Fatal("Wrong match. expect: error, got: nil")
+	}
+
+	// (b) the failed call must not leave any partial state visible through Get -- cfg is only
+	// assigned after Validate succeeds, so it should still be the zero value.
+	if res := Get(); res != (Config{}) {
+		t.Errorf("Wrong match. expect: zero-value Config after a failed load, got: %+v", res)
+	}
+
+	// (c) a later call with a corrected, valid backend must succeed -- this is what the old
+	// once.Do-guarded version got wrong: it would have returned nil here with cfg still zero.
+	viper.Set("sentinel_backend", BackendKubernetes)
+	viper.Set("prometheus_endpoint", "/metrics-first")
+	viper.Set("rabbitmq_address", "amqp://first:first@localhost:5672")
+
+	if err := LoadGlobalConfig(); err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	expect := Config{
+		PrometheusEndpoint: "/metrics-first",
+		RabbitMQAddress:    "amqp://first:first@localhost:5672",
+		SentinelBackend:    BackendKubernetes,
+	}
+	if res := Get(); res != expect {
+		t.Errorf("Wrong match. expect: %+v, got: %+v", expect, res)
+	}
+
+	// (d) a third call with different viper state must reload -- proving no caching was silently
+	// reintroduced. This is the direct inverse of the deleted Test_LoadGlobalConfigOnlyOnce, whose
+	// pinned "second call is a no-op" invariant is exactly the bug this change removes.
+	viper.Set("prometheus_endpoint", "/metrics-second")
+
+	if err := LoadGlobalConfig(); err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+	if res := Get(); res.PrometheusEndpoint != "/metrics-second" {
+		t.Errorf("Wrong match. expect: /metrics-second, got: %s", res.PrometheusEndpoint)
+	}
+}
+
+// Test_LoadGlobalConfig_failureDoesNotClobberPriorSuccess guards a property that only became
+// load-bearing once LoadGlobalConfig lost its once.Do guard: cfg is assigned only after Validate
+// succeeds, so a later failed call cannot clobber a previously-good config with a partial or
+// zero-value one. That ordering was already correct on a first call before this change (the old
+// once.Do body also validated before assigning); what changes is that a SECOND call can now reach
+// the assignment at all, which makes the ordering guard load-bearing on every call, not just the
+// first. This test protects against a plausible future refactor -- e.g. simplifying to
+// `cfg = loadFromViper(); if err := cfg.Validate(); err != nil { return err }` -- that would leak
+// an invalid config through Get() before returning the error.
+func Test_LoadGlobalConfig_failureDoesNotClobberPriorSuccess(t *testing.T) {
+	viper.Reset()
+	cfg = Config{}
+
+	// (a) a valid load succeeds.
+	viper.Set("sentinel_backend", BackendKubernetes)
+	viper.Set("prometheus_endpoint", "/metrics")
 
 	if err := LoadGlobalConfig(); err != nil {
 		t.Fatalf("Wrong match. expect: ok, got: %v", err)
 	}
 	firstCfg := Get()
 
-	viper.Set("prometheus_endpoint", "/second")
-	viper.Set("docker_socket_proxy_address", "tcp://second:2375")
+	// (b) a later call with an invalid backend fails.
+	viper.Set("sentinel_backend", "nomad")
 
-	if err := LoadGlobalConfig(); err != nil {
-		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	if err := LoadGlobalConfig(); err == nil {
+		t.Fatal("Wrong match. expect: error, got: nil")
 	}
-	secondCfg := Get()
 
-	if firstCfg != secondCfg {
-		t.Errorf("Wrong match. expect: config unchanged after a second LoadGlobalConfig, got: %+v vs %+v", firstCfg, secondCfg)
-	}
-	if secondCfg.PrometheusEndpoint != "/first" {
-		t.Errorf("Wrong match. expect: /first, got: %s", secondCfg.PrometheusEndpoint)
-	}
-	if secondCfg.DockerSocketProxyAddress != "tcp://first:2375" {
-		t.Errorf("Wrong match. expect: tcp://first:2375, got: %s", secondCfg.DockerSocketProxyAddress)
+	// (c) the failed call must not have touched cfg -- Get still returns the last known good
+	// config from (a), not a zero-value or partially-applied one.
+	if res := Get(); res != firstCfg {
+		t.Errorf("Wrong match. expect: cfg unchanged after a failed reload, got: %+v vs %+v", firstCfg, res)
 	}
 }
 
@@ -482,13 +536,16 @@ func Test_InitConfig_failsFastOnInvalidBackend(t *testing.T) {
 	}
 }
 
-// Test_LoadGlobalConfig_failsFastOnInvalidBackend pins the OTHER bootstrap path.
+// Test_LoadGlobalConfig_failsFastOnInvalidBackend pins the CLI bootstrap path end-to-end: flag
+// binding via Bootstrap, then loading via LoadGlobalConfig.
 //
-// This is the one that does not wire itself: cmd/sentinel-manager loads config through
-// InitConfig, while cmd/sentinel-control uses Bootstrap + LoadGlobalConfig. Sharing the config
-// package is NOT enough to share the validation — LoadGlobalConfig had to grow an error return
-// for the CLI to be able to fail the same way the service does. Without this test, the two
-// binaries could diverge silently.
+// InitConfig (used by cmd/sentinel-manager) now delegates to LoadGlobalConfig directly, so
+// validation itself can no longer diverge between the two binaries -- they share one
+// implementation structurally, not by parallel test coverage. What CAN still diverge is flag/env
+// *binding*: Bootstrap and InitConfig each register and bind their own flags independently, and
+// cmd/sentinel-manager's init() hardcodes its own default literals separately from this package's
+// unexported default constants. This test still matters because it is the only one that exercises
+// LoadGlobalConfig through the CLI's actual bootstrap path rather than calling it directly.
 func Test_LoadGlobalConfig_failsFastOnInvalidBackend(t *testing.T) {
 	tests := []struct {
 		name string
@@ -505,8 +562,9 @@ func Test_LoadGlobalConfig_failsFastOnInvalidBackend(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			viper.Reset()
-			// once is a package singleton; reset it or only the first subtest would load anything.
-			once = sync.Once{}
+			// Each subtest reloads unconditionally now that LoadGlobalConfig has no once.Do guard,
+			// so only cfg needs resetting here -- a prior subtest's success must not mask this
+			// subtest's expected failure (or vice versa) through a stale cfg.
 			cfg = Config{}
 
 			viper.Set("sentinel_backend", tt.backend)

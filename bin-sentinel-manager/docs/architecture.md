@@ -97,7 +97,7 @@ There is no HTTP server, no listenhandler, and no inbound RPC queue. All inputs 
 
 `internal/config` validates `SENTINEL_BACKEND` at startup and rejects an unset or unknown value outright. Validation is backend-conditional: `DOCKER_SOCKET_PROXY_ADDRESS` and `REDIS_ADDRESS` are required only for `docker`, and nothing extra is required for `kubernetes` beyond the in-cluster service-account mount that `rest.InClusterConfig()` reads. Validating all fields unconditionally would reject a perfectly good Kubernetes deployment for not supplying Redis config it has no reason to have.
 
-Both `cmd/sentinel-manager` and `cmd/sentinel-control` enforce this, through different bootstrap entry points (`InitConfig` and `Bootstrap` + `LoadGlobalConfig` respectively). Sharing the config package is not enough to share the validation — `LoadGlobalConfig` returns an error specifically so the CLI can fail the same way the service does.
+Both `cmd/sentinel-manager` and `cmd/sentinel-control` enforce this. `InitConfig` (used by `cmd/sentinel-manager`) binds its own flags and then calls `LoadGlobalConfig` directly — the two binaries share one validation implementation structurally, not just by parallel test coverage. `LoadGlobalConfig` reloads and re-validates from viper on every call, with no caching, so a failed attempt is retryable rather than poisoning all future calls; it returns an error specifically so the CLI can fail the same way the service does.
 
 ### What triggers sentinel (docker backend)
 
