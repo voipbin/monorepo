@@ -452,6 +452,9 @@ Reasons fired by campaign, campaign-call, and outplan endpoints (``/campaigns``,
    * - ``OUTPLAN_NOT_FOUND``
      - 404
      - Outplan ID does not exist or belongs to another customer. Fired by ``GET /outplans/{id}``, ``PUT /outplans/{id}``, ``DELETE /outplans/{id}``, and ``PUT /outplans/{id}/dial_info``. **Fix:** Verify the ID was obtained from a recent ``GET /outplans`` list call.
+   * - ``CAMPAIGN_NOT_STOPPED``
+     - 409
+     - Campaign is not in ``stop`` status. Fired by ``DELETE /campaigns/{id}`` — a campaign must be stopped before it can be deleted. **Fix:** Set the campaign to ``stop`` via ``PUT /campaigns/{id}/status`` first, then retry the delete.
 
 Outdial Reasons
 ^^^^^^^^^^^^^^^
