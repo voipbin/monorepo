@@ -158,6 +158,21 @@ func (mr *MockCampaignHandlerMockRecorder) ListByCustomerID(ctx, customerID, tok
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListByCustomerID", reflect.TypeOf((*MockCampaignHandler)(nil).ListByCustomerID), ctx, customerID, token, limit)
 }
 
+// ReconcileOrphanedFlows mocks base method.
+func (m *MockCampaignHandler) ReconcileOrphanedFlows(ctx context.Context, recentIntervalSec int64) (campaign.ReconcileResult, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReconcileOrphanedFlows", ctx, recentIntervalSec)
+	ret0, _ := ret[0].(campaign.ReconcileResult)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReconcileOrphanedFlows indicates an expected call of ReconcileOrphanedFlows.
+func (mr *MockCampaignHandlerMockRecorder) ReconcileOrphanedFlows(ctx, recentIntervalSec any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReconcileOrphanedFlows", reflect.TypeOf((*MockCampaignHandler)(nil).ReconcileOrphanedFlows), ctx, recentIntervalSec)
+}
+
 // UpdateActions mocks base method.
 func (m *MockCampaignHandler) UpdateActions(ctx context.Context, id uuid.UUID, actions []action.Action) (*campaign.Campaign, error) {
 	m.ctrl.T.Helper()

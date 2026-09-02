@@ -63,6 +63,7 @@ Requests arrive via RabbitMQ queue `bin-manager.campaign-manager.request`. The `
 | `/v1/campaigns/{{UUID}}/actions$` | GET/PUT | Get or update campaign actions (flow actions to run on connect) |
 | `/v1/campaigns/{{UUID}}/resource_info$` | GET | Get resource usage info for a campaign |
 | `/v1/campaigns/{{UUID}}/next_campaign_id$` | PUT | Set the next campaign to run after this one completes |
+| `/v1/campaigns/flows/reconcile$` | POST | (VOIP-1444) Internal-only: scan campaigns deleted within a recent window and delete any still-live backing flow. Dispatched by the `bin-schedule-manager` "campaign-flow-reconcile" schedule (or a manual `/v1/schedules/{id}/execute`) — never exposed through `bin-api-manager`. See [docs/operations.md](operations.md#orphaned-flow-reconciliation-voip-1444). |
 | `/v1/campaigncalls\?` | GET | List campaigncalls with filters/pagination |
 | `/v1/campaigncalls/{{UUID}}$` | GET/DELETE | Get or delete a campaigncall |
 | `/v1/outplans$` | POST | Create a new outplan |
