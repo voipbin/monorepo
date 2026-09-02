@@ -94,8 +94,6 @@ func (c *ngClient) readLoop() {
 			logrus.Warn("NG response missing space separator")
 			continue
 		}
-		cookie := string(data[:idx])
-
 		var resp map[string]interface{}
 		if err := bencode.DecodeString(string(data[idx+1:]), &resp); err != nil {
 			logrus.WithError(err).Warn("Failed to decode NG response")
@@ -103,7 +101,7 @@ func (c *ngClient) readLoop() {
 		}
 
 		c.mu.Lock()
-		ch, found := c.pending[cookie]
+		ch, found := c.pending[string(data[:idx])]
 		c.mu.Unlock()
 
 		if found {
