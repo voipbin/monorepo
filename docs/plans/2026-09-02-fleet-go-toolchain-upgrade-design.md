@@ -35,8 +35,13 @@ directives propagate `go` directive requirements:
   directive, never transitively through a `replace`d dependency's stricter
   requirement.
 - `bin-call-manager` is itself `replace`d (with a matching `require`, i.e. not
-  orphaned) by **35 of the other 38 Go modules** in the monorepo, including
-  `bin-common-handler` — the shared library that in turn is `replace`d by
+  orphaned) by **34 of the other 38 Go modules** in the monorepo, including
+  `bin-common-handler`. (A 35th, `voip-kamailio-proxy`, also carries a
+  `replace monorepo/bin-call-manager` line but has no matching `require` —
+  Go ignores a replace for a module absent from the graph, so that one edge
+  propagates nothing. `voip-kamailio-proxy` is still pulled into scope
+  regardless, through its real `replace`+`require` on `bin-common-handler`
+  below.) `bin-common-handler` — the shared library — in turn is `replace`d by
   **36 of the other 38 modules** (37 files match `replace
   monorepo/bin-common-handler`, but one of those is `bin-common-handler/go.mod`
   itself — a harmless self-replace — so the real dependent count is 36).
@@ -61,24 +66,33 @@ So the two-service k8s.io bump forces a `go.mod` `go`-directive bump on every
 module that (transitively, through local `replace`s) reaches
 `bin-sentinel-manager` — which is effectively the whole fleet.
 **대표님 결정: since the fleet is forced to touch nearly every `go.mod` anyway,
-bump all 39 Go modules in the monorepo to the same target in one coordinated
-change**, rather than trying to draw an artificial boundary that the module
-graph doesn't actually respect.
+bump all active Go modules in the monorepo to the same target in one
+coordinated change**, rather than trying to draw an artificial boundary that
+the module graph doesn't actually respect.
 
 ## Scope
 
-All 39 `bin-*`/`voip-*` Go modules (every directory with a `go.mod`;
-`bin-dbscheme-manager` is Python and is out of scope, it has no `go.mod`).
-Full list captured at `git ls bin-*/go.mod voip-*/go.mod` — 36 services on
-`golang:1.25-alpine`, one (`bin-pipecat-manager`) on `golang:1.25-bookworm`,
-and two Go modules (`bin-common-handler`, `bin-openapi-manager`) with no
-Dockerfile at all (not deployed as their own container image;
-`bin-dbscheme-manager` also has no Dockerfile but is excluded above as it has
-no `go.mod` either). `bin-openapi-manager` and `bin-trigger-sender` are the only
-two Go modules that do *not* `replace`/`require` `bin-common-handler` — they
-have no local-module dependency chain into this at all, but are included for
-fleet consistency (same `go` directive floor as everything else, same
-CircleCI executor image).
+**38 of the 39** `bin-*`/`voip-*` Go modules (every directory with a
+`go.mod`, except `bin-trigger-sender` — see below; `bin-dbscheme-manager` is
+Python and is out of scope regardless, it has no `go.mod`). Full list
+captured at `git ls-files bin-*/go.mod voip-*/go.mod` — of the 36
+Dockerfile-bearing services in scope (37 fleet-wide minus the excluded
+`bin-trigger-sender`), 35 are on `golang:1.25-alpine`, one
+(`bin-pipecat-manager`) on `golang:1.25-bookworm`, and two Go modules
+(`bin-common-handler`, `bin-openapi-manager`) have no Dockerfile at all (not
+deployed as their own container image; `bin-dbscheme-manager` also has no
+Dockerfile but is excluded above as it has no `go.mod` either).
+`bin-openapi-manager` is the only in-scope module that does *not*
+`replace`/`require` `bin-common-handler` — it has no local-module dependency
+chain into this at all, but is included for fleet consistency (same `go`
+directive floor as everything else, same CircleCI executor image).
+
+**`bin-trigger-sender` is explicitly OUT of scope** — resolved as dead code
+with zero production deployment (see "Sequencing" below for the investigation)
+rather than bumped for consistency. Its `-test` CI job keeps working
+unmodified against the shared, upgraded `go_image` anchor without any
+`go.mod` change of its own, since it was never part of the replace-chain that
+forces this upgrade in the first place.
 
 **Target Go version: 1.27.1** — confirmed the latest stable release
 (`stable: true` on `https://go.dev/dl/?mode=json`) as of this check;
@@ -97,7 +111,8 @@ silently use a stale number if `go1.27.2` or `go1.28.0` has since gone stable.
    graph churn from the raised floor) is expected and should be committed as-is
    — this mirrors the "purely mechanical indirect-version churn" ripple already
    accepted in VOIP-1418's PR #1240 across 36+ services.
-2. **`Dockerfile`** (36 services on `-alpine`, 1 on `-bookworm`, 2 with none):
+2. **`Dockerfile`** (35 in-scope services on `-alpine`, 1 on `-bookworm`, 2
+   with none — `bin-trigger-sender`'s Dockerfile is untouched, per Scope):
    `FROM public.ecr.aws/docker/library/golang:1.25-*` → `golang:1.27.1-*`
    (matching each service's existing base — alpine stays alpine,
    `bin-pipecat-manager`'s bookworm stays bookworm). **Pin the exact patch
@@ -182,8 +197,9 @@ instead of caught in one PR's CI. `bin-common-handler` and `bin-call-manager`
 `replace`/`require` each other, which independently rules out any
 dependency-ordered rollout for those two alone.
 
-**Therefore: one PR, all 39 modules' `go.mod` + Dockerfile + the shared
-CircleCI anchor, landed atomically.** This does not mean one giant manual
+**Therefore: one PR, all 38 in-scope modules' `go.mod` + Dockerfile + the
+shared CircleCI anchor, landed atomically.** (`bin-trigger-sender` excluded —
+see Scope above.) This does not mean one giant manual
 edit — the mechanical per-service work (bump the two version strings, run the
 5-step verification) is independent per module and safely parallelizable
 (each is a separate Go module with no cross-module test execution), so
@@ -260,7 +276,7 @@ checks replace `kubectl rollout status` below), and the risk this change
 introduces — a Go 1.27 runtime behavior change in TLS/`net/http`/crypto
 defaults — is **homogeneous across services**, not service-specific the way
 a Dockerfile's COPY/ENTRYPOINT differences were. The 30th serialized deploy
-carries almost no more information than the 3rd; a strict 39-step serial
+carries almost no more information than the 3rd; a strict 33-step serial
 rollout would mostly be cost with no matching signal, and a rollout that
 predictably gets abandoned partway through (because it takes days) is worse
 than a right-sized batched one specified up front.
@@ -291,33 +307,44 @@ than a right-sized batched one specified up front.
    33 services in batches with observation windows between them — this is
    not a same-day rollout, and the plan should not be read as if it were.
 
-**`bin-trigger-sender` — open question, not a re-verify-later hedge.**
-Checked directly rather than carried forward from VOIP-1277: the CronJob
-manifest the distroless design referenced
-(`bin-number-manager/k8s/cronjob.yml`) no longer exists anywhere in the repo,
-`bin-trigger-sender` has no `komodo/` directory (unlike all 33 deployed
-services), and a live query against bm-nyc-01's actual running containers via
-the Komodo API found no `bin-trigger-sender` container at all. The only
-surviving reference is a stale CircleCI comment about `imagePullPolicy:
-Always` on a fleet that no longer runs Kubernetes. Its `:latest` tag is only
-pushed on `main` branch builds (`config_work.yml`'s `docker-build` command),
-so even if some out-of-repo mechanism still consumes `:latest`, nothing new
-would be available to it until after this PR merges. **This needs a real
-answer before the implementation plan is finalized**: either
-`bin-trigger-sender` has no current production deployment at all (in which
-case this design's only obligation to it is the standard `go.mod`/Dockerfile
-bump and verification, with no deploy-stage handling needed), or it is
-deployed through some mechanism this repo's CircleCI config doesn't show
-(in which case that owner needs the same new-image handoff `voip-*-proxy`
-gets above). Do not guess; ask 대표님 or check the actual host/scheduler
-before this item leaves "open."
+**`bin-trigger-sender` — RESOLVED (2026-09-02): zero production deployment,
+excluded from this ticket's scope entirely.** The open question above was
+closed by reading `docs/plans/2026-08-01-bin-schedule-manager-design.md`
+(VOIP-1281, Done), which had already investigated this exact service in
+detail while designing its replacement: the `number-renew` CronJob
+(`bin-number-manager/k8s/cronjob.yml`) was **already commented out of
+`kustomization.yml` before that design even started** — i.e. never actually
+applied by `kubectl apply -k` — and that design's own risk assessment for
+deleting the manifest was "risk ≈ 0" for exactly that reason. `bin-trigger-sender`'s
+one function (`number-renew`) was absorbed into `bin-schedule-manager`'s
+proper scheduling system as an internal library call; the CronJob manifest
+was deleted; `bin-trigger-sender`'s binary and CI entries were deliberately
+left in place at the time ("binary + CI remain") pending a "trivial follow-up"
+retirement once install/sandbox confirmed nothing invokes it, tracked under
+VOIP-1281's cutover checklist. VOIP-1281 itself is now **Done** (closed
+2026-08-02) — its retirement checklist passed — but the actual follow-up
+(delete `bin-trigger-sender`'s directory + CircleCI entries) was never
+executed; the service still sits in the tree, unused, a month later.
+
+**Decision**: exclude `bin-trigger-sender` from this ticket's `go.mod`/
+Dockerfile bump. Upgrading a service confirmed dead and pending deletion is
+wasted work, and it never appears in any of this document's deployment-risk
+discussion since it has nothing to deploy. Its `-test` CI job continues to
+work unmodified against the shared `go_image` anchor once that anchor moves
+to `cimg/go:1.27.1` — a newer toolchain building an older-declared (`go
+1.25.3`) module needs no `go.mod` change, and `bin-trigger-sender` has no
+`replace`/`require` on `bin-common-handler` or `bin-sentinel-manager` (per
+the Context section), so it was never part of the forcing cascade to begin
+with. Its actual retirement (directory + CI entry deletion) is unrelated
+dead-code cleanup, not a Go-toolchain concern — flagged as a small, ready,
+independent follow-up rather than folded into this PR.
 
 ### Pre-merge verification: build every image locally first
 
 Also per the distroless precedent (`전 서비스(34개) docker build를 머지 전
 로컬 완주` — every service's docker build run to completion locally before
-merge): run `docker build -f <service>/Dockerfile .` for all 37 Dockerfile-
-bearing services locally (or in a scratch CI run) **before** opening the PR,
+merge): run `docker build -f <service>/Dockerfile .` for all 36 in-scope
+Dockerfile-bearing services locally (or in a scratch CI run) **before** opening the PR,
 not just `go test`/`golangci-lint`. The 5-step verification workflow (below)
 exercises the Go toolchain but not the Docker base-image change; a bad
 `golang:1.27.1-*` tag or a base-image-specific build failure (e.g.
@@ -329,7 +356,7 @@ production rollout above.
 
 Reordered to front-load both the module-graph risk (unchanged from the first
 draft) and the build-environment outliers a purely graph-based order would
-leave until "36 services, any order":
+leave until "~32 services, any order":
 
 1. `bin-sentinel-manager` and `bin-call-manager` (the two modules whose
    replace-chain position actually forced this document to exist) — if these
@@ -341,7 +368,9 @@ leave until "36 services, any order":
    `bin-api-manager` (its own `go-test-api-manager` CircleCI command, not the
    shared `go-test`), `bin-openapi-manager` (the only `-validate` job,
    oapi-codegen-driven).
-4. Remaining ~33 services, in any order, in parallel.
+4. Remaining ~32 services, in any order, in parallel (38 in-scope − 6 named
+   above; `bin-trigger-sender` is out of scope entirely, not merely deferred
+   to this bucket).
 
 ## Risks and mitigations
 
@@ -388,20 +417,22 @@ leave until "36 services, any order":
   commented-out/disabled repo-wide (pre-existing OOM issue on `small`
   resource class, unrelated to this ticket) — root CLAUDE.md's mandatory
   local lint step is the only place this can actually surface.
-- **Fleet Go-version consistency is preserved, not fragmented** — unlike the
+- **Fleet Go-version consistency, with one accepted exception.** Unlike the
   originally-considered 2-or-3-service partial bump (which would have left
   the fleet permanently split across two Go versions with one CircleCI
-  anchor awkwardly forked), this design keeps all 39 modules on the same
-  version and the CircleCI config on a single shared anchor. No follow-up
-  "fleet alignment" ticket is needed as a consequence of this change.
+  anchor awkwardly forked), this design keeps 38 of 39 modules on the same
+  version and the CircleCI config on a single shared anchor. The one
+  exception, `bin-trigger-sender`, is confirmed dead code pending deletion
+  (see Scope/Sequencing), not a live fragmentation — no follow-up "fleet
+  alignment" ticket is needed as a consequence of this change.
 - **Codegen tooling compatibility.** `go generate ./...` (step 3 of the
   mandatory workflow) drives `go.uber.org/mock` (mockgen) fleet-wide, plus
   `oapi-codegen` (`bin-openapi-manager`/`bin-api-manager`) and
   `protoc-gen-go` where used. A Go 1.25→1.27 jump can change a generator's
   output or break it outright; this is exactly the kind of thing step 3
   exists to catch, but expect at least one generator-output diff somewhere in
-  39 services and don't treat a non-empty diff there as a bug in this
-  change — verify it's cosmetic (formatting/comment changes) before
+  the 38 in-scope services and don't treat a non-empty diff there as a bug in
+  this change — verify it's cosmetic (formatting/comment changes) before
   committing.
 - **Go 1.27 recency vs. Go 1.26 maturity — recorded as an informed choice,
   not an oversight.** Go 1.27 was roughly a month old at the time this
@@ -409,10 +440,10 @@ leave until "36 services, any order":
   `k8s.io/client-go`'s actual floor (`go 1.26.0`) exactly, with no version to
   spare. 대표님 explicitly chose "latest stable" over "the dependency's bare
   minimum" when asked. Noting the tradeoff here so the choice is on the
-  record as deliberate for a change touching all 39 production services, not
+  record as deliberate for a change touching 38 production services, not
   because either version is expected to cause problems.
-- **Rollback.** Module-graph level: revert the PR (all 39 modules move back
-  together, same atomicity argument as the forward move). Deployment level:
+- **Rollback.** Module-graph level: revert the PR (all 38 in-scope modules
+  move back together, same atomicity argument as the forward move). Deployment level:
   per-service image-tag rollback to the pre-upgrade `$CIRCLE_SHA1`, exactly
   as the distroless precedent used — this is why deployment is staged
   per-service rather than bulk-approved, so a bad rollout on one service
@@ -420,12 +451,13 @@ leave until "36 services, any order":
 - **Sandbox digest-lock consequence.** The distroless design flagged that
   `sandbox/` pins image digests, and a fleet-wide image rebuild changes every
   digest, requiring a coordinated separate PR in that repo once the new
-  images are live. A Go-version bump rebuilds all 37 images the same way —
+  images are live. A Go-version bump rebuilds 36 of the 37 images the same
+  way (`bin-trigger-sender`'s image is unchanged, per Scope) —
   this needs the same follow-up. Not solved here; flagged so it isn't
   rediscovered mid-rollout the way the annotation-testability and
   bin-call-manager cascade findings were rediscovered mid-analysis in this
   document's own history.
-- **CI capacity.** 39 services' worth of `go mod vendor` + `go test` +
+- **CI capacity.** 38 services' worth of `go mod vendor` + `go test` +
   (locally) `golangci-lint`, on a raised `go` floor that generally means
   larger vendor trees and longer builds, run on CircleCI's `small`
   `resource_class` — the same class that already OOMs on `golangci-lint`
