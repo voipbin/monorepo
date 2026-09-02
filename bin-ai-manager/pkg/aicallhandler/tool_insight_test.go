@@ -1059,6 +1059,59 @@ func Test_toolHandleGetContactProfile(t *testing.T) {
 			},
 		},
 		{
+			// Round-2 code review MEDIUM fix: the case above has only 2
+			// addresses, so filter-before-cap and filter-after-cap produce
+			// byte-identical output and the case cannot actually prove the
+			// ordering fix. This fixture has 7 rows with a foreign row
+			// inside the first 6 -- 6 survive filtering, which is still
+			// >insightContactAddressLimit (5), so the cap AND the note both
+			// engage. Filter-after-cap (the old, buggy order) would produce
+			// "(showing 5 of 7 addresses)" and DROP the valid
+			// +821000000005 row to make room for the (then still present)
+			// foreign row; filter-before-cap produces "(showing 5 of 6
+			// addresses)" and keeps it.
+			name:              "cross-customer address row excluded from both the count and the cap",
+			referenceType:     aicall.ReferenceTypeContactCase,
+			expectCaseGetCall: true,
+			responseCase: &kmkase.Case{
+				ID:         caseID,
+				CustomerID: customerID,
+				ContactID:  &contactID,
+			},
+			expectContactGetCall: true,
+			responseContact: &cmcontact.Contact{
+				Identity:    commonidentity.Identity{ID: contactID, CustomerID: customerID},
+				DisplayName: "Mixed Many",
+				Addresses: []cmcontact.Address{
+					testAddress(commonaddress.TypeTel, "+821000000000"),
+					{
+						Address:    commonaddress.Address{Type: commonaddress.TypeTel, Target: "+821099990000"},
+						CustomerID: otherCustomerID,
+						ContactID:  contactID,
+					},
+					testAddress(commonaddress.TypeTel, "+821000000001"),
+					testAddress(commonaddress.TypeTel, "+821000000002"),
+					testAddress(commonaddress.TypeTel, "+821000000003"),
+					testAddress(commonaddress.TypeTel, "+821000000004"),
+					testAddress(commonaddress.TypeTel, "+821000000005"),
+				},
+			},
+			expectResult: "success",
+			expectContains: []string{
+				"(showing 5 of 6 addresses)",
+				`target="+821000000004"`, // the 5th SURVIVING (post-filter)
+				// address. Under the old, buggy filter-after-cap order, the
+				// pre-filter cap keeps [000, foreign, 001, 002, 003] and
+				// then drops the foreign row from THAT set, so 004 never
+				// appears -- this assertion is what actually fails against
+				// 082c7e735's original code.
+			},
+			expectNotContains: []string{
+				"+821099990000",
+				"(showing 5 of 7 addresses)", // the old code's overclaim
+			},
+		},
+		{
 			// Design §5's field-exclusion contract (Notes/ExternalID/Source,
 			// address Detail/Name/TargetName) has no code path that could emit
 			// these today, but nothing pins that -- this locks it down so a
@@ -1078,6 +1131,7 @@ func Test_toolHandleGetContactProfile(t *testing.T) {
 				Notes:       "internal-notes-should-never-leak",
 				ExternalID:  "sf_003x000001ABC",
 				Source:      cmcontact.SourceImport,
+				TagIDs:      []uuid.UUID{uuid.FromStringOrNil("9a1f2c10-c001-11f0-9000-0000000000aa")},
 				Addresses: []cmcontact.Address{
 					{
 						Address: commonaddress.Address{
@@ -1103,6 +1157,7 @@ func Test_toolHandleGetContactProfile(t *testing.T) {
 				"target-name-should-never-leak",
 				"addr-name-should-never-leak",
 				"addr-detail-should-never-leak",
+				"9a1f2c10-c001-11f0-9000-0000000000aa", // TagIDs (design §5/§6: dropped entirely from v1)
 			},
 		},
 		{
