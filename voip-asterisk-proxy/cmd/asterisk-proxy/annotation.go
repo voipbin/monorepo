@@ -83,7 +83,7 @@ func setProxyInfoAnnotation(asteriskID string) error {
 	return nil
 }
 
-func patchPodAnnotation(clientset *kubernetes.Clientset, namespace, podName, annotationKey, annotationValue string) error {
+func patchPodAnnotation(clientset kubernetes.Interface, namespace, podName, annotationKey, annotationValue string) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "patchPodAnnotation",
 		"namespace":  namespace,
@@ -93,12 +93,11 @@ func patchPodAnnotation(clientset *kubernetes.Clientset, namespace, podName, ann
 
 	log.Info("Attempting to patch pod annotation")
 
-	escapedAnnotationKey := strings.ReplaceAll(annotationKey, "/", "~1")
-	patchPayload := []map[string]string{
-		{
-			"op":    "add",
-			"path":  fmt.Sprintf("/metadata/annotations/%s", escapedAnnotationKey),
-			"value": annotationValue,
+	patchPayload := map[string]any{
+		"metadata": map[string]any{
+			"annotations": map[string]string{
+				annotationKey: annotationValue,
+			},
 		},
 	}
 	patchBytes, err := json.Marshal(patchPayload)
@@ -107,7 +106,7 @@ func patchPodAnnotation(clientset *kubernetes.Clientset, namespace, podName, ann
 	}
 
 	for i := 0; i < defaultMaxRetries; i++ {
-		_, err = clientset.CoreV1().Pods(namespace).Patch(context.TODO(), podName, types.JSONPatchType, patchBytes, metav1.PatchOptions{})
+		_, err = clientset.CoreV1().Pods(namespace).Patch(context.TODO(), podName, types.MergePatchType, patchBytes, metav1.PatchOptions{})
 		if err == nil {
 			log.Info("Successfully patched pod annotation")
 			return nil
