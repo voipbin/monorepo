@@ -37,3 +37,4 @@ create index idx_campaign_campaigns_flow_id on campaign_campaigns(flow_id);
 create index idx_campaign_campaigns_outplan_id on campaign_campaigns(outplan_id);
 create index idx_campaign_campaigns_outdial_id on campaign_campaigns(outdial_id);
 create index idx_campaign_campaigns_queue_id on campaign_campaigns(queue_id);
+create index idx_campaign_campaigns_tm_delete on campaign_campaigns(tm_delete);

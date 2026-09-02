@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
@@ -245,6 +246,59 @@ func (h *handler) CampaignList(ctx context.Context, token string, size uint64, f
 	}
 	if err = rows.Err(); err != nil {
 		return nil, fmt.Errorf("rows iteration error. CampaignList. err: %v", err)
+	}
+
+	return res, nil
+}
+
+// CampaignListDeletedSince returns campaigns deleted on or after the given
+// time, most-recently-deleted first, bounded by limit. Used by the
+// orphaned-flow reconciliation job (VOIP-1444) to find recently deleted
+// campaigns whose backing flow may still be live.
+//
+// DESC order (not ASC) is deliberate: with no cursor between passes, ASC
+// LIMIT would return the exact same oldest rows forever once in-window
+// candidates exceed limit, permanently starving newer deletions. DESC
+// guarantees every pass covers the most recent deletions first, matching
+// this job's actual purpose (catch a leak shortly after it happens). See
+// docs/plans/2026-09-02-voip-1444-orphaned-flow-reconciliation-plan.md's
+// "Scan order and coverage" section for the full analysis.
+//
+// The comparison against the nullable tm_delete column naturally excludes
+// live campaigns (tm_delete IS NULL) via standard SQL NULL-comparison
+// semantics — no separate IS NOT NULL predicate is needed.
+func (h *handler) CampaignListDeletedSince(ctx context.Context, since time.Time, limit uint64) ([]*campaign.Campaign, error) {
+	fields := commondatabasehandler.GetDBFields(&campaign.Campaign{})
+	query, args, err := squirrel.
+		Select(fields...).
+		From(campaignsTable).
+		Where(squirrel.GtOrEq{string(campaign.FieldTMDelete): since}).
+		OrderBy(string(campaign.FieldTMDelete) + " DESC").
+		Limit(limit).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. CampaignListDeletedSince. err: %v", err)
+	}
+
+	rows, err := h.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. CampaignListDeletedSince. err: %v", err)
+	}
+	defer func() {
+		_ = rows.Close()
+	}()
+
+	res := []*campaign.Campaign{}
+	for rows.Next() {
+		u, err := h.campaignGetFromRow(rows)
+		if err != nil {
+			return nil, fmt.Errorf("could not get data. CampaignListDeletedSince, err: %v", err)
+		}
+		res = append(res, u)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error. CampaignListDeletedSince. err: %v", err)
 	}
 
 	return res, nil

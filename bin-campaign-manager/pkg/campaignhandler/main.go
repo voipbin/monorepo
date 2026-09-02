@@ -71,6 +71,36 @@ var (
 		},
 		[]string{"reason"},
 	)
+
+	// promCampaignFlowReconcileCleanedTotal and
+	// promCampaignFlowReconcileFailedTotal are dedicated to the
+	// orphaned-flow reconciliation job (VOIP-1444,
+	// pkg/campaignhandler/reconcile.go). They deliberately do not reuse
+	// promCampaignFlowDeleteFailedTotal above: that metric is documented
+	// as "failures during a live campaign delete", an operationally
+	// distinct signal from "the reconciler couldn't clean up a
+	// known-orphaned flow" — reusing it here would conflate the two into
+	// one series.
+	//
+	// promCampaignFlowReconcileFailedTotal has no "reason" label: both a
+	// non-not-found FlowV1FlowGet error and a FlowV1FlowDelete error on a
+	// genuine orphan increment this one shared counter (see
+	// reconcile.go and docs/operations.md).
+	promCampaignFlowReconcileCleanedTotal = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "campaign_flow_reconcile_cleaned_total",
+			Help:      "Total number of orphaned flows cleaned up by the reconciliation job.",
+		},
+	)
+
+	promCampaignFlowReconcileFailedTotal = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "campaign_flow_reconcile_failed_total",
+			Help:      "Total number of row-level failures during flow reconciliation (a non-not-found FlowV1FlowGet error, or a FlowV1FlowDelete error on a genuine orphan; no reason label distinguishes which).",
+		},
+	)
 )
 
 func init() {
@@ -80,6 +110,8 @@ func init() {
 		promCampaignStatusStopTotal,
 		promCampaignExecuteTotal,
 		promCampaignFlowDeleteFailedTotal,
+		promCampaignFlowReconcileCleanedTotal,
+		promCampaignFlowReconcileFailedTotal,
 	)
 
 	// pre-initialize both label series so they read 0 from process start,
@@ -142,6 +174,8 @@ type CampaignHandler interface {
 
 	EventHandleActiveflowDeleted(ctx context.Context, campaignID uuid.UUID) error
 	EventHandleReferenceCallHungup(ctx context.Context, campaignID uuid.UUID) error
+
+	ReconcileOrphanedFlows(ctx context.Context, recentIntervalSec int64) (campaign.ReconcileResult, error)
 }
 
 // NewCampaignHandler return CampaignHandler

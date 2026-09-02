@@ -52,6 +52,7 @@ type DBHandler interface {
 	CampaignGet(ctx context.Context, id uuid.UUID) (*campaign.Campaign, error)
 	CampaignList(ctx context.Context, token string, size uint64, filters map[campaign.Field]any) ([]*campaign.Campaign, error)
 	CampaignListByCustomerID(ctx context.Context, customerID uuid.UUID, token string, limit uint64) ([]*campaign.Campaign, error)
+	CampaignListDeletedSince(ctx context.Context, since time.Time, limit uint64) ([]*campaign.Campaign, error)
 	CampaignUpdate(ctx context.Context, id uuid.UUID, fields map[campaign.Field]any) error
 	CampaignUpdateBasicInfo(
 		ctx context.Context,

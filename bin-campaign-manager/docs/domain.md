@@ -24,6 +24,32 @@ Dialing configuration shared across one or more campaigns. Defines the dial timi
 
 Key fields: `customer_id`, `name`, `source` (caller ID to use), `dial_timeout` (seconds to wait for answer), `try_interval` (seconds between retries), `max_try_count_0` through `max_try_count_4` (max retries per destination slot), `dials` (list of phone numbers or patterns to dial).
 
+### ReconcileResult (VOIP-1444)
+
+The result of a single orphaned-flow reconciliation pass
+(`pkg/campaignhandler.ReconcileOrphanedFlows`, `models/campaign/reconcile.go`).
+This is a domain type that also serves directly as the wire shape for
+`POST /v1/campaigns/flows/reconcile`'s response (style (A): the
+`listenhandler` marshals it as-is, with no separate `response.*` DTO — see
+the root CLAUDE.md's transport-DTO layering rule).
+
+Key fields: `cleaned` (orphaned flows successfully deleted this pass),
+`skipped` (candidates needing no action: flow already deleted, a typed
+not-found from `bin-flow-manager`, or the defensive nil-`TMDelete` guard),
+`failed` (row-level failures — a non-not-found `FlowV1FlowGet` error or a
+`FlowV1FlowDelete` error on a genuine orphan; both share one counter, see
+[docs/operations.md](operations.md#orphaned-flow-reconciliation-voip-1444)),
+`saturated` (this pass's batch reached the compiled `scanLimit`;
+informational only), `recent_saturated` (the actionable rate-risk signal —
+deletions within the caller-supplied `recent_interval_sec` alone already
+fill `scanLimit`), `partial` (the pass's own self-imposed timeout cut the
+RPC loop short before every candidate was examined).
+
+`err` from `ReconcileOrphanedFlows` is non-nil only when the initial
+`CampaignListDeletedSince` (`pkg/dbhandler/campaign.go`) query itself
+fails; every other outcome is counted in `ReconcileResult`, never
+propagated as an error.
+
 ## Key Business Rules
 
 1. **Campaign status controls dialing**: Only campaigns in `run` status make new call attempts. A campaign in `stop` state will not dial. The `stopping` state is a transitional state while in-progress calls are being wrapped up before the campaign fully stops.

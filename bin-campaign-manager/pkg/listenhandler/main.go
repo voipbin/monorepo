@@ -54,6 +54,10 @@ var (
 	regV1CampaignsIDResourceInfo   = regexp.MustCompile("/v1/campaigns/" + regUUID + "/resource_info$")
 	regV1CampaignsIDNextCampaignID = regexp.MustCompile("/v1/campaigns/" + regUUID + "/next_campaign_id$")
 
+	// campaigns/flows -- internal-only, dispatched by bin-schedule-manager
+	// (VOIP-1444), never exposed through bin-api-manager
+	regV1CampaignsFlowsReconcile = regexp.MustCompile("/v1/campaigns/flows/reconcile$")
+
 	// campaigncalls
 	regV1CampaigncallsGet = regexp.MustCompile(`/v1/campaigncalls\?`)
 	regV1CampaigncallsID  = regexp.MustCompile("/v1/campaigncalls/" + regUUID + "$")
@@ -232,6 +236,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1CampaignsIDNextCampaignID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		requestType = "/v1/campaigns/<campaign-id>/next_campaign_id"
 		response, err = h.v1CampaignsIDNextCampaignIDPut(ctx, m)
+
+	// /v1/campaigns/flows/reconcile
+	case regV1CampaignsFlowsReconcile.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		requestType = "/v1/campaigns/flows/reconcile"
+		response, err = h.v1CampaignsFlowsReconcilePost(ctx, m)
 
 	// campaigncalls
 	// /v1/campaigncalls

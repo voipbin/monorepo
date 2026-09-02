@@ -17,6 +17,7 @@ import (
 	address "monorepo/bin-common-handler/models/address"
 	action "monorepo/bin-flow-manager/models/action"
 	reflect "reflect"
+	time "time"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -117,6 +118,21 @@ func (m *MockDBHandler) CampaignListByCustomerID(ctx context.Context, customerID
 func (mr *MockDBHandlerMockRecorder) CampaignListByCustomerID(ctx, customerID, token, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignListByCustomerID", reflect.TypeOf((*MockDBHandler)(nil).CampaignListByCustomerID), ctx, customerID, token, limit)
+}
+
+// CampaignListDeletedSince mocks base method.
+func (m *MockDBHandler) CampaignListDeletedSince(ctx context.Context, since time.Time, limit uint64) ([]*campaign.Campaign, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CampaignListDeletedSince", ctx, since, limit)
+	ret0, _ := ret[0].([]*campaign.Campaign)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CampaignListDeletedSince indicates an expected call of CampaignListDeletedSince.
+func (mr *MockDBHandlerMockRecorder) CampaignListDeletedSince(ctx, since, limit any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CampaignListDeletedSince", reflect.TypeOf((*MockDBHandler)(nil).CampaignListDeletedSince), ctx, since, limit)
 }
 
 // CampaignUpdate mocks base method.
