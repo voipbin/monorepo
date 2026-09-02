@@ -2,8 +2,6 @@ module monorepo/bin-timeline-manager
 
 go 1.27.1
 
-godebug default=go1.25
-
 replace monorepo/bin-common-handler => ../bin-common-handler
 
 replace monorepo/bin-direct-manager => ../bin-direct-manager
