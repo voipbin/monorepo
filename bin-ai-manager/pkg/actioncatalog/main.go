@@ -275,8 +275,8 @@ func buildCatalogByType() map[fmaction.Type]actionCatalogEntry {
 // by the LLM; it is pinned by a golden test.
 func renderActionCatalogEntry(e actionCatalogEntry) string {
 	var b strings.Builder
-	b.WriteString(fmt.Sprintf("action: %s\n", e.Type))
-	b.WriteString(fmt.Sprintf("summary: %s\n", e.Summary))
+	fmt.Fprintf(&b, "action: %s\n", e.Type)
+	fmt.Fprintf(&b, "summary: %s\n", e.Summary)
 	if len(e.Options) == 0 {
 		b.WriteString("options: this action takes no options.")
 		return b.String()
