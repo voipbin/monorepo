@@ -97,6 +97,7 @@ All metric names are prefixed with `campaign_manager_` at runtime.
 | `campaigncall_done_total` | Counter | Total campaigncalls completed (any outcome) |
 | `campaign_create_total` | Counter | Total campaigns created |
 | `campaign_execute_total` | Counter | Total campaign execute calls (each execution loop trigger) |
+| `campaign_flow_delete_failed_total` | CounterVec | Total failures to delete a campaign's backing flow during campaign delete (labels: `reason` = `not_found` \| `error`). Best-effort cleanup; a failure here does not fail the campaign delete but leaves the flow orphaned, counting against bin-flow-manager's per-customer flow cap. |
 | `campaign_status_run_total` | Counter | Total campaigns transitioned to `run` status |
 | `campaign_status_stop_total` | Counter | Total campaigns transitioned to `stop` status |
 | `receive_request_process_time` | Histogram | RPC request processing time (labels: `type`, `method`) |

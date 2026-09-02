@@ -8,6 +8,7 @@ import (
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 	fmaction "monorepo/bin-flow-manager/models/action"
 	fmflow "monorepo/bin-flow-manager/models/flow"
 
@@ -127,7 +128,7 @@ func (h *campaignHandler) Delete(ctx context.Context, id uuid.UUID) (*campaign.C
 
 	if c.Status != campaign.StatusStop {
 		log.Errorf("The campaign is not stop. status: %s", c.Status)
-		return nil, err
+		return nil, cerrors.FailedPrecondition(commonoutline.ServiceNameCampaignManager, "CAMPAIGN_NOT_STOPPED", "The campaign must be stopped before it can be deleted.")
 	}
 	log.WithField("campaign", c).Debugf("Deleting.")
 
@@ -148,8 +149,27 @@ func (h *campaignHandler) Delete(ctx context.Context, id uuid.UUID) (*campaign.C
 	f, err := h.reqHandler.FlowV1FlowDelete(ctx, res.FlowID)
 	if err != nil {
 		// we got an error here, but we've deleted the campaign already.
-		// just write the log only.
-		log.Errorf("Could not delete the flow. err: %v", err)
+		// just write the log and a metric; do not fail the campaign delete over
+		// a best-effort cleanup step. reason distinguishes a benign idempotent
+		// re-delete (flow already gone) from a real failure that leaves the flow
+		// orphaned and counting against bin-flow-manager's per-customer hard cap.
+		//
+		// NOTE: this classification relies on bin-flow-manager's flow-delete path
+		// still returning a bare 404 (which surfaces here as the sentinel
+		// requesthandler.ErrNotFound) rather than a typed *cerrors.VoipbinError.
+		// If that path is ever migrated to the typed-error envelope, this check
+		// needs to switch to stderrors.As(err, &ve) && ve.Status == cerrors.StatusNotFound,
+		// since VoipbinError doesn't implement Is() against this sentinel.
+		reason := "error"
+		if stderrors.Is(err, requesthandler.ErrNotFound) {
+			reason = "not_found"
+		}
+		promCampaignFlowDeleteFailedTotal.WithLabelValues(reason).Inc()
+		log.WithFields(logrus.Fields{
+			"flow_id":     res.FlowID,
+			"customer_id": res.CustomerID,
+			"reason":      reason,
+		}).Errorf("Could not delete the flow. err: %v", err)
 	} else {
 		log.WithField("flow", f).Debugf("Deleted campaign flow. flow_id: %s", f.ID)
 	}

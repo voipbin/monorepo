@@ -2,9 +2,11 @@ package campaignhandler
 
 import (
 	"context"
+	stderrors "errors"
 	reflect "reflect"
 	"testing"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -18,6 +20,7 @@ import (
 	qmqueue "monorepo/bin-queue-manager/models/queue"
 
 	"github.com/gofrs/uuid"
+	"github.com/prometheus/client_golang/prometheus/testutil"
 	gomock "go.uber.org/mock/gomock"
 
 	"monorepo/bin-campaign-manager/models/campaign"
@@ -224,6 +227,138 @@ func Test_Delete(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
+	}
+}
+
+func Test_Delete_flow_delete_failure(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id               uuid.UUID
+		responseCampaign *campaign.Campaign
+		flowDeleteErr    error
+
+		expectReason string
+	}{
+		{
+			"flow already deleted -- benign, counted as not_found",
+
+			uuid.FromStringOrNil("ef3feb86-db79-4dab-a55d-41d65a231c10"),
+			&campaign.Campaign{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("ef3feb86-db79-4dab-a55d-41d65a231c10"),
+					CustomerID: uuid.FromStringOrNil("6634faca-f71b-40e5-97f4-dc393107aace"),
+				},
+				FlowID: uuid.FromStringOrNil("60e0f90a-db73-4aaf-add8-6b7cd8edc82c"),
+				Status: campaign.StatusStop,
+			},
+			requesthandler.ErrNotFound,
+
+			"not_found",
+		},
+		{
+			"flow delete backend error -- a real leak candidate, counted as error",
+
+			uuid.FromStringOrNil("f350fbc4-2f97-11f0-8cf4-e33ea69f0355"),
+			&campaign.Campaign{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("f350fbc4-2f97-11f0-8cf4-e33ea69f0355"),
+					CustomerID: uuid.FromStringOrNil("f373e5e6-2f97-11f0-8ac5-6be21fca0a54"),
+				},
+				FlowID: uuid.FromStringOrNil("f39a2192-2f97-11f0-a1a4-4b2a9f2f7c7b"),
+				Status: campaign.StatusStop,
+			},
+			requesthandler.ErrBadRequest,
+
+			"error",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			h := &campaignHandler{
+				db:            mockDB,
+				notifyHandler: mockNotify,
+				reqHandler:    mockReq,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().CampaignGet(ctx, tt.id).Return(tt.responseCampaign, nil)
+			mockDB.EXPECT().CampaignDelete(ctx, tt.id).Return(nil)
+			mockDB.EXPECT().CampaignGet(ctx, gomock.Any()).Return(tt.responseCampaign, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCampaign.CustomerID, campaign.EventTypeCampaignDeleted, tt.responseCampaign)
+			mockReq.EXPECT().FlowV1FlowDelete(ctx, tt.responseCampaign.FlowID).Return(nil, tt.flowDeleteErr)
+
+			before := testutil.ToFloat64(promCampaignFlowDeleteFailedTotal.WithLabelValues(tt.expectReason))
+
+			res, err := h.Delete(ctx, tt.id)
+			if err != nil {
+				t.Errorf("Wrong match. A flow-delete failure must not fail the campaign delete. expect: ok, got: %v", err)
+			}
+			if res == nil {
+				t.Errorf("Wrong match. expect: non-nil campaign, got: nil")
+			}
+
+			after := testutil.ToFloat64(promCampaignFlowDeleteFailedTotal.WithLabelValues(tt.expectReason))
+			if after != before+1 {
+				t.Errorf("Wrong match. reason: %s, expect delta: 1, got: %v", tt.expectReason, after-before)
+			}
+		})
+	}
+}
+
+func Test_Delete_not_stopped(t *testing.T) {
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &campaignHandler{
+		db:            mockDB,
+		notifyHandler: mockNotify,
+		reqHandler:    mockReq,
+	}
+
+	ctx := context.Background()
+	id := uuid.FromStringOrNil("0e6f7de6-2f98-11f0-9c93-4b1f6f2f2f1a")
+	responseCampaign := &campaign.Campaign{
+		Identity: commonidentity.Identity{
+			ID:         id,
+			CustomerID: uuid.FromStringOrNil("13d3e2ce-2f98-11f0-9f8b-7bcaf4c8f9d2"),
+		},
+		FlowID: uuid.FromStringOrNil("1898b83a-2f98-11f0-92ea-236c6acb0f21"),
+		Status: campaign.StatusRun,
+	}
+
+	mockDB.EXPECT().CampaignGet(ctx, id).Return(responseCampaign, nil)
+
+	res, err := h.Delete(ctx, id)
+	if res != nil {
+		t.Errorf("Wrong match. expect: nil, got: %v", res)
+	}
+	if err == nil {
+		t.Errorf("Wrong match. expect: a non-nil error, got: nil")
+	}
+
+	var ve *cerrors.VoipbinError
+	if !stderrors.As(err, &ve) {
+		t.Fatalf("Wrong match. expect: a *cerrors.VoipbinError, got: %T (%v)", err, err)
+	}
+	if ve.Reason != "CAMPAIGN_NOT_STOPPED" {
+		t.Errorf("Wrong match. expect: CAMPAIGN_NOT_STOPPED, got: %s", ve.Reason)
+	}
+	if ve.Status != cerrors.StatusFailedPrecondition {
+		t.Errorf("Wrong match. expect: %s, got: %s", cerrors.StatusFailedPrecondition, ve.Status)
 	}
 }
 

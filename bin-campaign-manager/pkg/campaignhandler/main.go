@@ -54,6 +54,23 @@ var (
 			Help:      "Total number of campaign execution loops.",
 		},
 	)
+
+	// promCampaignFlowDeleteFailedTotal counts failures to delete a campaign's
+	// backing flow during campaign delete. The delete is best-effort (the
+	// campaign itself is already deleted by the time this runs) so a failure
+	// here does not fail the campaign delete request; this counter is the only
+	// durable, always-on signal that a flow was left orphaned, since the flow
+	// count is capped per customer (see bin-flow-manager's maxFlowCount).
+	// reason="not_found" is a benign, idempotent re-delete of an already-gone
+	// flow; reason="error" is a real failure and a leak candidate.
+	promCampaignFlowDeleteFailedTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "campaign_flow_delete_failed_total",
+			Help:      "Total number of failures to delete a campaign's backing flow, by reason.",
+		},
+		[]string{"reason"},
+	)
 )
 
 func init() {
@@ -62,7 +79,15 @@ func init() {
 		promCampaignStatusRunTotal,
 		promCampaignStatusStopTotal,
 		promCampaignExecuteTotal,
+		promCampaignFlowDeleteFailedTotal,
 	)
+
+	// pre-initialize both label series so they read 0 from process start,
+	// rather than "No data" until the first failure. Without this, a
+	// dashboard panel on this metric can't distinguish "healthy, zero
+	// failures" from "metric never registered / service not being scraped."
+	promCampaignFlowDeleteFailedTotal.WithLabelValues("not_found")
+	promCampaignFlowDeleteFailedTotal.WithLabelValues("error")
 }
 
 // campaignHandler defines
