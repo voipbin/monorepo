@@ -69,7 +69,7 @@ func resolveSubscriptionID(data any) string {
 	// typed-nil guard, mirroring notifyhandler: a nil pointer whose type implements the interface
 	// still SATISFIES the assertion, and every real implementation dereferences its receiver --
 	// calling the method would panic. Such a payload resolves to the `-` placeholder.
-	if v := reflect.ValueOf(data); v.Kind() == reflect.Ptr && v.IsNil() {
+	if v := reflect.ValueOf(data); v.Kind() == reflect.Pointer && v.IsNil() {
 		return ""
 	}
 
