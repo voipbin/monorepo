@@ -91,17 +91,17 @@ func (mr *MockTransferHandlerMockRecorder) ServiceStart(ctx, transferType, Trans
 }
 
 // TransfereeAnswer mocks base method.
-func (m *MockTransferHandler) TransfereeAnswer(ctx context.Context, tr *transfer.Transfer, groupcall *groupcall.Groupcall) error {
+func (m *MockTransferHandler) TransfereeAnswer(ctx context.Context, tr *transfer.Transfer, arg2 *groupcall.Groupcall) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TransfereeAnswer", ctx, tr, groupcall)
+	ret := m.ctrl.Call(m, "TransfereeAnswer", ctx, tr, arg2)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // TransfereeAnswer indicates an expected call of TransfereeAnswer.
-func (mr *MockTransferHandlerMockRecorder) TransfereeAnswer(ctx, tr, groupcall any) *gomock.Call {
+func (mr *MockTransferHandlerMockRecorder) TransfereeAnswer(ctx, tr, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TransfereeAnswer", reflect.TypeOf((*MockTransferHandler)(nil).TransfereeAnswer), ctx, tr, groupcall)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TransfereeAnswer", reflect.TypeOf((*MockTransferHandler)(nil).TransfereeAnswer), ctx, tr, arg2)
 }
 
 // TransfereeHangup mocks base method.
