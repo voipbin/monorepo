@@ -2,8 +2,6 @@ module monorepo/bin-email-manager
 
 go 1.27.1
 
-godebug default=go1.25
-
 replace monorepo/bin-agent-manager => ../bin-agent-manager
 
 replace monorepo/bin-billing-manager => ../bin-billing-manager
