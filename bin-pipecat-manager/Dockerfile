@@ -1,5 +1,5 @@
 # build
-FROM public.ecr.aws/docker/library/golang:1.25-bookworm AS build
+FROM public.ecr.aws/docker/library/golang:1.27.1-bookworm AS build
 
 LABEL maintainer="Sungtae Kim <pchero21@gmail.com>"
 
