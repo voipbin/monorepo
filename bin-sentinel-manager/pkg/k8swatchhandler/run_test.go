@@ -531,14 +531,14 @@ func Test_waitForCacheSync_parentCancellationIsGraceful(t *testing.T) {
 // newTestInformer builds an informer against the fake clientset without running it.
 func (h *k8sWatchHandler) newTestInformer() cache.SharedIndexInformer {
 	return cache.NewSharedIndexInformer(
-		// See the matching comment in run.go -- deprecated ListFunc/WatchFunc, migration deferred to
-		// VOIP-1446 alongside the k8s.io/* GA bump.
+		// See the matching comment in run.go -- WithContext ListWatch fields, matching what
+		// client-go's Reflector actually calls.
 		&cache.ListWatch{
-			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) { //nolint:staticcheck // see above, VOIP-1446
-				return h.clientset.CoreV1().Pods(watchedNamespace).List(context.Background(), options)
+			ListWithContextFunc: func(listCtx context.Context, options metav1.ListOptions) (runtime.Object, error) {
+				return h.clientset.CoreV1().Pods(watchedNamespace).List(listCtx, options)
 			},
-			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) { //nolint:staticcheck // see above, VOIP-1446
-				return h.clientset.CoreV1().Pods(watchedNamespace).Watch(context.Background(), options)
+			WatchFuncWithContext: func(watchCtx context.Context, options metav1.ListOptions) (watch.Interface, error) {
+				return h.clientset.CoreV1().Pods(watchedNamespace).Watch(watchCtx, options)
 			},
 		},
 		&corev1.Pod{},
