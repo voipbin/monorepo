@@ -1,6 +1,6 @@
 # InsightAI Realtime Listen (Proactive Notification) — Design
 
-Status: Draft (rev 4, addressing 2026-09-03 independent review round 3)
+Status: Draft (rev 5, addressing 2026-09-03 independent review round 4)
 Branch: `NOJIRA-Insight-AI-realtime-listen`
 Owner: CPO-directed backend feature
 
@@ -12,6 +12,7 @@ Owner: CPO-directed backend feature
 | 2 | 2026-09-03 | **Rewritten after architect review round 1 (REQUEST_CHANGES, 7 BLOCKING + 4 HIGH).** Transcript segments no longer become `Message` rows and no longer go through `Send`. New two-layer architecture: a Redis-backed transcript buffer plus a debounced *listen evaluation turn* that runs on its own pipecatcall. `notify_agent` gets `RunLLM:false`. Proactive origin becomes a first-class `Message.Origin` field, stored as `role=assistant`. Hangup cleanup uses a new indexed `listen_call_id` column. Transcribe session runs under `IDAIManager`. STT stop on hangup delegated entirely to transcribe-manager's own handler. §10 maps every review item to its resolution. |
 | 3 | 2026-09-03 | **Revised after independent review round 2 (REQUEST_CHANGES, 3 BLOCKING + 4 HIGH + 4 MEDIUM + 2 LOW).** Fixed a real correctness bug: the 1:1 Redis resolver key breaks the moment a second Case listens to the same call (§5.2.4/§5.3.3, now a set). Re-diagnosed §5.6.3 — the "tool_calls ordering" fix in rev 2 was a no-op; the actual mechanism (`ToolHandle` writes the tool-call row with empty `content`, which pipecat-manager's own context filter drops) surfaces a **pre-existing production defect predating this design**, now called out explicitly and routed to its own ticket rather than papered over here. Replaced the sole `RunLLM:false` defense for `notify_agent` with an explicit reject-if-called-from-a-real-Q&A-turn guard, closing the "the agent's question silently gets no answer" hole. Added the missing `InsightSystemPrompt` guardrails to the listen-turn context. Stated plainly (§4, §5.6.4) that a proactive notification surfaces multiple rows today and added a frontend render filter as the mitigation. Decided the listen-vs-AI-summary transcribe collision (§5.2.2). Corrected the hangup-cleanup justification (§5.7.1) and the STT-stream-count claim (§5.11) to what the cited code actually establishes, rather than overstating it. Fixed metric-name namespacing (§5.13). §10 gains a round-2 matrix. |
 | 4 | 2026-09-03 | **Revised after independent review round 3 (REQUEST_CHANGES, 4 BLOCKING + 3 HIGH + 5 MEDIUM).** Two of rev 3's own new mechanisms turned out broken: §5.4.4(c)'s reject-guard assumed a pipecatcall id ai-manager doesn't actually receive (fixed by a real, scoped cross-service change, §5.4.3a) and §5.2.2a's summary-transcribe reuse-tolerance broke `summaryhandler`'s read/lifecycle assumptions (replaced by giving listen its own system customer id, §5.2.1, so it never shares a transcribe with `ai_summary` at all). Separately, rev 1's original defect — Q&A context eviction via `getPipecatcallMessages`'s 100-row window — resurfaced through listen-turn tool-call rows and is closed at the source (§5.4.5: a new `Origin=listen_internal` tag excluded from replay at the query level), which also narrows the orphaned-tool-message finding back to a non-blocking follow-up. Narrowed the pipecatcall-identity guard to the two handlers that can actually fire from a listen turn and scoped its cache-bypass re-read to the one handler that persists (§5.4.4(b)). Fixed a self-contradictory cleanup step order, a stale citation, and frontend field-name mismatches (camelCase vs. the actual snake_case wire fields) that would have made the render filter never fire. §10.2 gains a round-3 matrix. |
+| 5 | 2026-09-03 | **Revised after independent review round 4 (REQUEST_CHANGES, 4 BLOCKING + 5 HIGH + 9 MEDIUM + 3 LOW).** Reviewer's own assessment: no remaining structural blockers, only implementation-level bugs in rev 4's three new mechanisms. Fixed §5.4.4(c)'s inverted branch logic (the cache-bypass re-read was in the wrong condition, both failing to catch the case it was meant for and creating a new false-allow) with a single always-fresh-read design. Added explicit `pipecatcallID == uuid.Nil` handling (safe default: treat as a real Q&A turn, never as listen-internal) to protect against permanent message-tagging corruption during a rolling deploy, and confirmed the wire field can be optional so no forced deployment order is needed. Corrected `ApplyFields`'s actual location (`bin-common-handler`, not `bin-ai-manager`) and replaced the unspecified `FieldOriginNot` with a concrete, generic `databasehandler.NotEq` wrapper type. Closed the remaining system-prompt-eviction gap (proactive/real-Q&A-tool rows still competing for the 100-row window) by fetching the leading system row(s) unconditionally, separate from the capped window. Scoped `Origin` tagging to `contact_case` only, so ordinary conversation-AIcall pipecatcall rotation is never mistagged. Fixed the cache-bypass re-read's actual code path (an RPC client argument, not a direct `dbhandler` call), a stop-time `Send`-cooldown collision, a missing OpenAPI tool-name enum update, and several citation errors. §10.3 gains a round-4 matrix. |
 
 Every code reference below was re-verified against the worktree at rev 2 authoring time; file:line citations are load-bearing and were read, not assumed.
 
@@ -291,6 +292,21 @@ customer table (FK-backed) or is usable as a bare UUID constant the way
 `IDAIManager` apparently already is (per round 1/2's verified read-only
 usage) — flagged in §11 rather than assumed here.
 
+**Deliberately not added, stated rather than silently decided (review
+round 4, finding M1):** `bin-customer-manager`'s hardcoded
+"known-system-id" whitelist (`models/customer/ids.go` and its inline
+duplicate in `bin-call-manager/pkg/callhandler/validate.go`) is used to
+gate certain call-origination paths — not anything on listen's transcribe
+start/list/stop path, so `IDAIManagerListen` not being in that whitelist
+does **not** block this feature (verified: listening never calls into
+whatever checks that list). It is left out deliberately, not by
+oversight: adding a new sentinel to a validation whitelist it was never
+designed to need would be an unrelated, unrequested change to
+`bin-customer-manager`'s and `bin-call-manager`'s call-path validation —
+exactly the kind of scope creep root `CLAUDE.md`'s "smallest change that
+works" principle argues against here. Revisit only if a future feature
+needs `IDAIManagerListen` to pass that specific gate.
+
 **Consequence, stated explicitly:** the event-time tenant check rev 1
 proposed (`AIcall.CustomerID == transcript's CustomerID`) is impossible —
 it would *always* fail, because the transcript's `CustomerID` is the
@@ -426,12 +442,23 @@ in every observed case) sets this key ever holds).
 session** (one at start, one at stop). It is *not* per turn. That bounds
 the known `tm_update` ↔ `Send`-cooldown coupling
 (`dbhandler/aicall.go:240` bumps `tm_update`; `send.go:27-32` reads it) to
-a single ~3s window immediately after listening starts — which happens
-inside a detached goroutine during panel open, before the agent could
-plausibly have typed a question. Accepted as a bounded cost, with a
-recorded follow-up (§11) to decouple the cooldown from `tm_update` onto a
-dedicated `tm_last_send`, which is a pre-existing fragility this design
-deliberately does not widen.
+two ~3s windows per listening session, not an unbounded number: one right
+after listening starts (inside a detached goroutine during panel open,
+before the agent could plausibly have typed a question — negligible), and
+**one right after it stops (§5.7.3) — flagged as a real cost in rev 5,
+review round 4 finding H1, not negligible.** Listening stops on call
+hangup, which is exactly when an agent is likely to ask the Insight AI a
+follow-up ("what was that about?"); a `Send()` landing inside that ~3s
+window gets rejected by the cooldown it did nothing to deserve. Rather
+than accept this silently, `clearListenState` (§5.7.3) skips its
+`AIcallUpdate`'s `tm_update` bump specifically: the write uses
+`dbhandler.AIcallUpdateWithoutTouchingTMUpdate` (or an equivalent
+targeted-column update that bypasses the standard `tm_update`-on-any-write
+convention) for this one write path, so listen's own bookkeeping never
+contributes to the cooldown at all — start or stop. This is narrower and
+safer than the `tm_last_send` decoupling recorded as a follow-up in §11:
+it fixes listen's own two writes specifically, without touching `Send`'s
+cooldown semantics for every other AIcall write path.
 
 ### 5.3 Layer 1 — event intake
 
@@ -656,21 +683,54 @@ separate mechanisms:
    signature and its wire marshalling gain the field; regenerate its
    mock.
 3. `V1DataAIcallsIDToolExecutePost` (`listenhandler/models/request/aicalls.go`)
-   gains `pipecatcall_id`; the `listenhandler` handler for
-   `POST /v1/aicalls/<uuid>/tool_execute` passes it through as an
-   unwrapped argument (root `CLAUDE.md`'s transport-DTO-ownership rule —
-   this stays a domain argument from here on, never a `request.*` value
-   past `listenhandler`).
+   gains `pipecatcall_id`, **`json:"pipecatcall_id,omitempty"` — omittable,
+   not required** (see the rollout note below); the `listenhandler`
+   handler for `POST /v1/aicalls/<uuid>/tool_execute`
+   (`pkg/listenhandler/v1_aicalls.go`) passes it through as an unwrapped
+   argument (root `CLAUDE.md`'s transport-DTO-ownership rule — this stays
+   a domain argument from here on, never a `request.*` value past
+   `listenhandler`).
 4. `ToolHandle(ctx, id, toolID, toolType, function, pipecatcallID
-   uuid.UUID)` — one new parameter. Regenerate the `AIcallHandler` mock.
-5. Inside `ToolHandle`, `isListenTurn := pipecatcallID != c.PipecatcallID`
-   — the same comparison §5.4.4(b) already performs per pipecat message
-   event, now available at tool-execution time too.
+   uuid.UUID)` — one new parameter on the interface method itself
+   (`pkg/aicallhandler/main.go`'s `AIcallHandler` interface, not just its
+   implementation). **Scope corrected in rev 5, review round 4 finding
+   M2**: this is not "one new parameter" in isolation — `mapFunctions`'
+   value type (`tool.go:54-76`) is
+   `func(ctx, *aicall.AIcall, *message.ToolCall) *messageContent`, shared
+   by all 21 `toolHandleXxx` functions. `pipecatcallID` is consumed by
+   `ToolHandle` itself (for §5.4.5's `Origin` tagging, decided before
+   dispatch) and passed explicitly only to `toolHandleNotifyAgent`
+   (§5.4.4(c)) — the other 20 handlers' signatures are **unchanged**,
+   avoiding a 21-function signature churn for a value only one handler
+   needs. Regenerate the `AIcallHandler` mock (any other file that
+   implements or mocks this interface — checked at implementation time —
+   picks up the new method signature too).
+5. Inside `ToolHandle`, the same comparison used for §5.4.5's `Origin`
+   tagging and §5.4.4(c)'s reject-guard — see both for the exact,
+   corrected logic (rev 5 fixes both; rev 4's version of each had a
+   distinct bug).
 
 This is a real, scoped cross-service change (pipecat-manager +
 common-handler + ai-manager's listen surface + `ToolHandle`'s callers),
 correctly reflected in §8's rollout and §9's impacted-files list — rev 3
 under-scoped this as a single `mapFunctions` line; that was wrong.
+
+**Rollout ordering, new in rev 5 (review round 4, finding B2).** Making
+the wire field optional (step 3) means a rolling deploy where
+`bin-pipecat-manager` still runs the old binary sends no
+`pipecatcall_id` at all — unmarshalled as `uuid.Nil`. §5.4.4(c) and
+§5.4.5 both already treat `uuid.Nil` as "assume this is the agent's real
+turn" (fail toward doing nothing new, never toward mistagging real
+content — see §5.4.4(c)'s worked rationale), so an old `pipecat-manager`
+talking to a new `ai-manager` **degrades safely**: `notify_agent` calls
+simply get rejected (harmless — nothing calls it before listening ships
+anyway) and no row is ever mistagged. The unsafe direction — new
+`pipecat-manager` behavior reaching an old `ai-manager` that doesn't
+expect the field — cannot happen (an old `ai-manager` ignores an unknown
+JSON field). Net: **no forced deployment order is required between the
+three touched services**, but `bin-pipecat-manager` should still land
+first as ordinary good practice (its change is additive and inert until
+`ai-manager`'s side consumes it).
 
 #### 5.4.4 Suppressing all output except `notify_agent` (resolves review-round-1 B1)
 
@@ -692,9 +752,11 @@ the happy path passes `FunctionCallResultProperties(run_llm=should_run_llm)`
    generic) — a failed or slow `notify_agent` call re-runs the LLM and can
    still emit follow-up text.
 2. **The model can override the default.** `args.pop("run_llm", …)`
-   (`tools.py:~60`) takes the LLM's own `run_llm` argument first if it
-   supplies one — `models/tool/main.go:75-77`'s own comment says as much:
-   *"The LLM can still override this per-call via a `run_llm` argument."*
+   (`tools.py:105` — **line corrected in rev 5, review round 4 finding
+   M5**: rev 4 cited `tools.py:~60`) takes the LLM's own `run_llm`
+   argument first if it supplies one — `models/tool/main.go:75-77`'s own
+   comment says as much: *"The LLM can still override this per-call via a
+   `run_llm` argument."*
 3. **Correcting a false claim from rev 2**: it is not true that "every
    other tool in `definitions.go` uses `RunLLM: true`" — 9 of the 21 tools
    do not (`connect_call`, `send_email`, `send_message`, `stop_media`,
@@ -703,11 +765,13 @@ the happy path passes `FunctionCallResultProperties(run_llm=should_run_llm)`
    306, 335, 376, 409). The accurate, and stronger, statement is that
    **all six existing Insight tools** use `RunLLM: true` — their tool
    *definitions* (as opposed to their handler implementations, which do
-   live in `tool_insight.go`) are registered in `pkg/toolhandler/definitions.go`
-   at the same line numbers cited above for the `RunLLM: false` tools
-   (**citation corrected in rev 4, review round 3 finding M3**: rev 3
-   mis-attributed these to `tool_insight.go`, which contains none of the
-   string `RunLLM`) — which is exactly why `notify_agent` being the one Insight
+   live in `tool_insight.go`) are registered in
+   `pkg/toolhandler/definitions.go` at **lines 754-755, 785-786, 824-825,
+   849-850, 879-880, 906-907** (**line numbers corrected in rev 5, review
+   round 4 finding M4**: rev 4's fix for review round 3's M3 corrected the
+   *file* but reused the *wrong* line numbers — the ones for the
+   `RunLLM: false` tools listed just above, not the six Insight tools'
+   own lines) — which is exactly why `notify_agent` being the one Insight
    tool with `RunLLM: false` is a deliberate outlier, not a "usual
    pattern," and needs (b)/(c) below to actually hold.
 
@@ -730,11 +794,14 @@ from four in rev 3, review round 3 finding H2**: `EventPMMessageUserLLM`
 (`event.go:293-307`) and `EventPMMessageUserTranscription`
 (`event.go:115-133`) are both driven by an STT leg, and a listen turn is
 started with `STTTypeNone` (§5.4.3's `startListenPipecatcall` call), so
-neither event can ever originate from a listen turn's pipecatcall. Adding
-the guard there would only add a per-utterance AIcall lookup to a
-platform-wide hot path (every spoken word on every voice AIcall) for a
-condition that structurally cannot occur — pure cost, no benefit. Left
-unchanged, exactly as rev 1 had them.
+neither event can ever originate from a listen turn's pipecatcall. **Cost
+argument corrected in rev 5, review round 4 finding M6**: both handlers
+already call `resolveActiveAIID` → `AIV1AIcallGet` per event today
+(`event.go:73-83`, called from `:125` and `:299`), so adding the guard
+would not be a *new* AIcall lookup — the real reason to leave them
+unguarded is purely structural (the condition the guard checks for cannot
+occur on these two paths, per `STTTypeNone` above), not a cost argument
+this design invented. Left unchanged, exactly as rev 1 had them.
 
 | Handler | File:line | Today | Rev 4 |
 |---|---|---|---|
@@ -755,12 +822,27 @@ turn (b) into a false positive against a genuine answer.**
 real `Send()`'s `UpdatePipecatcallID` (`aicallhandler/db.go:244-248`)
 transiently fails, the cached AIcall keeps the *old* `PipecatcallID` for
 up to its TTL — and (b) would then drop the agent's genuine answer as
-"foreign." **Fix: on a mismatch, re-read the AIcall bypassing the cache**
-(`dbhandler.AIcallGet(ctx, id, skipCache: true)` — a small addition to
-the existing `Get` signature, following the same shape as the
-`conversation` branch's own stale-reply guard at `event.go:209-219`, which
-this design's guard is explicitly modelled on) before deciding to drop.
-Only drop if the DB-authoritative read still disagrees.
+"foreign."
+
+**Fix, path corrected in rev 5 (review round 4, finding H4).**
+`EventPMMessageBotLLM` gets the AIcall via
+`h.reqHandler.AIV1AIcallGet(ctx, ...)` (`messagehandler/event.go:160`) —
+a RabbitMQ RPC to ai-manager's own `listenhandler`, not a direct
+`dbhandler` call, and rev 4's `dbhandler.AIcallGet(skipCache: true)`
+citation was never on this code path. `AIV1AIcallGet`'s underlying
+`listenhandler` route already resolves through the same cache-first
+`dbhandler.AIcallGet` rev 4 assumed `messagehandler` called directly, so
+the fix is: `AIV1AIcallGet` gains an optional cache-bypass argument (or a
+sibling method), threaded down to the `dbhandler.AIcallGet(skipCache:
+true)` call rev 4 correctly identified as the eventual target — it is
+just one RPC hop further away than rev 4's snippet showed. On a
+mismatch, `messagehandler` issues this cache-bypassing variant of the
+same RPC it already makes, following the same shape as the `conversation`
+branch's own stale-reply guard at `event.go:209-219`, which this design's
+guard is explicitly modelled on. Only drop if the DB-authoritative read
+still disagrees. (`bin-ai-manager`'s `listenhandler` route and RPC client
+both need this optional parameter — a small, contained addition confined
+to `bin-ai-manager`, unlike §5.4.3a's cross-service thread.)
 
 **Scoped to the one handler that actually persists — review round 3
 finding H1.** `EventPMMessageBotLLMIntermediate` fires once per streamed
@@ -802,37 +884,55 @@ puts it in the URL path from pipecat to pipecat-manager only;
 pipecat-manager's own `runner.go:457` never forwards it to ai-manager. §5.4.3a
 fixes exactly this, and `toolHandleNotifyAgent` now receives the real
 `pipecatcallID` as a parameter (threaded from `ToolHandle`, itself
-threaded per §5.4.3a) and compares it against `c.PipecatcallID`:
+threaded per §5.4.3a).
+
+**Rewritten in rev 5 (review round 4, finding B1): rev 4's two-branch
+version put the cache-bypass re-read inside the wrong branch.** Walking
+both stale-cache directions shows why a single-branch check is wrong no
+matter which branch carries the re-read: if the cached `c.PipecatcallID`
+is stale, an `==` comparison against it can be a false match *or* a false
+mismatch depending on which way the staleness runs, so *either* outcome
+of the cheap comparison can be wrong. The fix is not to move the re-read
+to the other branch — it is to not trust the cheap comparison's *outcome*
+at all, only use it as a hint, and always resolve the actual decision
+from one authoritative read:
 
 ```go
-if pipecatcallID == c.PipecatcallID {
-    // This tool fired on the agent's own conversational turn, not a
-    // listen evaluation turn (§5.4.3's throwaway ids never equal
-    // c.PipecatcallID by construction). Reject rather than let RunLLM's
+// notify_agent is not on a hot path (at most one call per listen turn,
+// itself debounced to one per AICallListenEvaluateIntervalSeconds — §5.3.4),
+// so unlike (b) there is no cost reason to trust the cache here. Always
+// resolve against a fresh, cache-bypassing read.
+fresh, err := h.db.AIcallGet(ctx, c.ID, dbhandler.SkipCache(true))
+if err != nil {
+    // Can't determine the real turn; fail closed on the side that costs
+    // nothing (a rejected tool call), not the side that could silently
+    // eat a real answer.
+    fillFailed(res, errors.Wrap(err, "could not verify calling turn"))
+    return res
+}
+
+// New in rev 5 (review round 4, finding B2): a pipecatcallID of uuid.Nil
+// means the caller didn't send one at all — either a pipecat-manager
+// build that predates §5.4.3a's field (a rolling-deploy window), or a
+// genuine bug upstream. Treat unknown as "assume this is the agent's
+// real turn," never as "assume it's a listen turn": the failure mode of
+// guessing wrong the safe way is one rejected notify_agent call (costs
+// nothing); the failure mode of guessing wrong the unsafe way is exactly
+// §5.4.5's data-corruption risk (a real Q&A tool row permanently
+// mistagged as listen_internal and dropped from every future context).
+if pipecatcallID == uuid.Nil || pipecatcallID == fresh.PipecatcallID {
+    // This tool fired on the agent's own conversational turn (or we
+    // can't prove otherwise) — reject rather than let RunLLM's
     // best-effort suppression silently eat the agent's real question.
-    //
-    // Cache-freshness note (mirrors (b)'s F4 fix): c.PipecatcallID here
-    // comes from ToolHandle's own h.Get(ctx, id) (tool.go:33), which is
-    // cache-first (dbhandler/aicall.go:112-115). If this comparison
-    // matches "foreign" only because of a stale cache read, the
-    // consequence is a real Q&A tool call being wrongly treated as a
-    // listen turn — not silently eating an answer (that only happens on
-    // the reverse mismatch, handled by "==" above, not "!="). Re-reading
-    // bypassing cache before REJECTING (the pipecatcallID == c.PipecatcallID
-    // branch) is therefore the one that needs the fresh read, symmetric
-    // with (b): a stale cache could make a genuine Q&A-turn notify_agent
-    // call look like a listen turn and be wrongly allowed through.
-    if fresh, err := h.db.AIcallGet(ctx, c.ID, dbhandler.SkipCache(true)); err == nil && pipecatcallID != fresh.PipecatcallID {
-        // Cache was stale; the fresh read disagrees. Fall through and allow.
-    } else {
-        fillFailed(res, fmt.Errorf("notify_agent is only usable while proactively monitoring a call; you were asked a question — answer it directly instead"))
-        return res
-    }
+    fillFailed(res, fmt.Errorf("notify_agent is only usable while proactively monitoring a call; you were asked a question — answer it directly instead"))
+    return res
 }
 ```
 
 This makes `notify_agent` fail closed exactly when (a)'s guarantee is
-weakest, independent of whether (a) actually suppressed the follow-up.
+weakest, independent of whether (a) actually suppressed the follow-up,
+and fails closed (reject, not silently corrupt) on the unknown-id case
+too.
 
 Net effect: **a listen turn produces exactly zero persisted rows and zero
 webhooks unless the LLM calls `notify_agent` from that turn — and a call
@@ -855,9 +955,10 @@ top-100 window (`start.go:620-661`) the **next** time the agent asks the
 Insight AI a real question. This is exactly rev 1's B2 defect, recurring
 through a mechanism rev 2 did not create and rev 3 did not check for.
 
-**Fix: tag every row a listen turn writes, and exclude tagged rows from
-the agent's own Q&A replay at the query level (not by fetching more and
-filtering in Go — a larger fetch is not a bound).**
+**Fix: tag every row a listen turn writes, exclude tagged rows from the
+agent's own Q&A replay at the query level, and — new in rev 5 — guarantee
+the leading system-prompt row(s) survive independent of that window
+entirely.**
 
 1. `message.Origin` (§5.6.2) gains a second value:
    ```go
@@ -869,40 +970,129 @@ filtering in Go — a larger fetch is not a bound).**
    // matters for getPipecatcallMessages (a real Q&A turn's context).
    ```
 2. `ToolHandle` (extended per §5.4.3a to know `pipecatcallID`) tags the
-   tool-call and tool-result rows it writes: `Origin = OriginListenInternal`
-   when `pipecatcallID != c.PipecatcallID` (a listen turn), `Origin =
-   OriginNone` otherwise (a real Q&A turn — unchanged from today). The
-   proactive `notify_agent` output row itself keeps `Origin =
+   tool-call and tool-result rows it writes. **Scoping corrected in rev 5,
+   review round 4 finding H2**: rev 4's rule (`pipecatcallID !=
+   c.PipecatcallID` → tag) fires for *any* reference type, but
+   `PipecatcallID` also rotates on every ordinary `Send()` for
+   `conversation`/`task`/`none` AIcalls (`send.go:116-122`) — none of
+   which have anything to do with listening. Tagging those would mislabel
+   ordinary conversation history. The rule is now:
+   ```go
+   listenTurn := ac.ReferenceType == aicall.ReferenceTypeContactCase &&
+       pipecatcallID != uuid.Nil &&        // §5.4.3a's B2 fix: unknown id
+       pipecatcallID != c.PipecatcallID    // is never treated as a listen turn
+   ```
+   `Origin = OriginListenInternal` when `listenTurn`, `Origin = OriginNone`
+   otherwise — unchanged from today for every AIcall this feature doesn't
+   touch. The proactive `notify_agent` output row itself keeps `Origin =
    OriginProactive` (§5.6.2) — it is real conversational content the
    agent should see and the AI should remember, unlike the mechanical
    tool-call/result exchange that produced it.
-3. `models/message/filters.go`'s `FieldStruct` gains an exclusion
-   capability for `Origin` (`FieldOriginNot`, mapped to Squirrel's
-   `NotEq` — a small, scoped `dbhandler`/`ApplyFields` addition, since
-   today's `ApplyFields` only expresses equality per review round 2's own
-   note on `FieldStruct`'s current shape).
-4. `getPipecatcallMessages` (`start.go:620-661`) queries
-   `messageHandler.List(ctx, 100, "", {FieldAIcallID: c.ID,
-   FieldOriginNot: message.OriginListenInternal})` instead of the bare
-   `{FieldAIcallID: c.ID}` it uses today. Because the exclusion happens in
-   the SQL `WHERE` clause, not after the `LIMIT 100` fetch, the top-100
-   window is guaranteed to be 100 rows of real conversation (system
-   prompt, Q&A, and proactive notifications) regardless of how many
-   listen-internal rows sit between them chronologically.
+3. **Mechanism and location corrected in rev 5, review round 4 finding
+   B3.** `ApplyFields` does **not** live in `bin-ai-manager` — it is
+   `bin-common-handler/pkg/databasehandler/main.go:61-110`, shared by
+   every service in the monorepo (`bin-ai-manager`, `bin-call-manager`,
+   `bin-message-manager`, …), and today it only ever builds
+   `squirrel.Eq{...}` per field, with one hardcoded special case for the
+   `"deleted"` key (`main.go:76-85`). Passing a `FieldOriginNot` key
+   straight through would build `squirrel.Eq{"origin_not": ...}` — a SQL
+   error on a nonexistent column, on every single `getPipecatcallMessages`
+   call.
+
+   **Decision: add a typed exclusion wrapper to `databasehandler`, not
+   another hardcoded field-name special case** (the `"deleted"` special
+   case is not a pattern to extend — see `bin-common-handler/CLAUDE.md`'s
+   3-service admission rule, which already governs what this shared
+   package may grow):
+   ```go
+   // bin-common-handler/pkg/databasehandler/main.go
+   // NotEq wraps a filter value to signal "!=" instead of ApplyFields'
+   // default "=". Any field, any service — generic, not string-keyed.
+   type NotEq struct{ Value any }
+
+   // inside ApplyFields' per-field switch:
+   if ne, ok := value.(NotEq); ok {
+       sb = sb.Where(squirrel.NotEq{string(field): ne.Value})
+       continue
+   }
+   ```
+   `getPipecatcallMessages` then passes
+   `{FieldAIcallID: c.ID, FieldOrigin: databasehandler.NotEq{Value:
+   message.OriginListenInternal}}` — no new `Field` constant needed
+   (`FieldOrigin` already exists for `Origin`'s equality filter, §5.8),
+   and no `FieldStruct`/`ConvertFilters` allowlist entry either (review
+   round 4 finding M3: `FieldStruct` only gates what an *external RPC
+   caller* may filter by, `pkg/listenhandler/v1_messages.go:45` —
+   `getPipecatcallMessages` builds its filter map directly in Go code, so
+   exposing an `origin_not` RPC filter would be pure unused surface area,
+   not a requirement). Being a `bin-common-handler` change, it needs the
+   full monorepo-wide verification workflow for every consumer, not just
+   the services this design otherwise touches (§8).
+4. **New in rev 5, review round 4 finding B4: excluding listen-internal
+   rows narrows the eviction risk but does not eliminate it** — rev 4's
+   own worked example (60 turns × 2 tagged rows = 120 rows evicting the
+   system prompt) applies just as well to 60 *proactive* rows (never
+   tagged, since they are real content) plus the agent's own Q&A tool
+   rows (also never tagged). The fix has to guarantee the system prompt
+   specifically, not merely reduce the row count competing for the
+   window. `getPipecatcallMessages` (`start.go:620-661`) is restructured
+   into two fetches instead of one:
+   ```go
+   // (1) The leading system row(s) — always small (1-3 rows: InsightSystemPrompt
+   //     is not applicable here, this is the Q&A path; a normal AIcall has
+   //     exactly the init_prompt + optional parameter-JSON system rows from
+   //     startInitMessages, start.go:790-819) — fetched by role, oldest
+   //     first, independent of the window below. These can never be evicted
+   //     no matter how much conversation follows.
+   systemRows, _ := h.messageHandler.List(ctx, 5, "", map[message.Field]any{
+       message.FieldAIcallID: c.ID,
+       message.FieldRole:     message.RoleSystem,
+   })
+
+   // (2) The newest 100 non-system, non-listen-internal rows — Q&A history
+   //     and proactive notifications, exactly as before, minus §5.4.5's
+   //     listen-internal exclusion.
+   rest, _ := h.messageHandler.List(ctx, 100, "", map[message.Field]any{
+       message.FieldAIcallID: c.ID,
+       message.FieldRole:     databasehandler.NotEq{Value: message.RoleSystem},
+       message.FieldOrigin:   databasehandler.NotEq{Value: message.OriginListenInternal},
+   })
+   // merge: systemRows (oldest-first) ++ rest (oldest-first, after the
+   // existing reversal step, start.go:633-635)
+   ```
+   This guarantees the AI's own instructions are never lost regardless of
+   conversation or notification volume — the thing rev 1's B2, and its
+   rev-4 recurrence, were both actually about. The 100-row cap on *the
+   rest* still means very old Q&A history can eventually be pushed out by
+   a long call full of proactive notifications, same as any capped window
+   already accepts for an unusually long conversation; that is a bounded,
+   pre-existing trade-off, not the defect being fixed here.
 
 **This also resolves review round 3's B2** (the "orphaned `tool`-role
-message" finding, §5.6.3, §11 item 2), for the instances this feature
+message" finding, §5.6.3, §11 item 3), for the instances this feature
 itself creates: a listen turn's tool-call/tool-result rows are now
 permanently excluded from ever being replayed into any future context —
 `getPipecatcallMessages` (step 4 above) and the listen turn's own
 explicit assembly (§5.4.2, which never reads message rows for this
 portion in the first place). They cannot become "orphaned" in a context
-they are never placed into. **§11 item 2 is narrowed accordingly**: the
+they are never placed into. **§11 item 3 is narrowed accordingly**: the
 general defect (an agent-initiated tool call's own tool-call row already
 gets filtered by `run.py:450`'s empty-content check today, independent of
 listening) is still real and still worth confirming, but it is no longer
 gated on or made worse by this feature shipping — restored to a
 follow-up-ticket item rather than a rollout blocker.
+
+**Known remaining gap, stated rather than silently left (review round 4
+finding M7): `get_aicall_messages`.** This existing tool
+(`toolHandleGetAIcallMessages`, `tool.go:761-763`) reads up to 1000
+messages by `FieldAIcallID` alone and hands them to the LLM verbatim — it
+does not go through `getPipecatcallMessages` and is therefore unaffected
+by this section's `NotEq` filtering. A `contact_case` AIcall's `Origin =
+OriginListenInternal` rows can reach the LLM through this tool. This is
+lower severity than the context-eviction defect (it is a content-leak of
+mechanical tool-call JSON into a Q&A answer, not a lost system prompt or
+lost history), and is left as a follow-up rather than fixed in this
+design — recorded in §11.
 
 ### 5.5 The `notify_agent` tool
 
@@ -953,6 +1143,17 @@ mechanism: `amai.AllowedToolNames(TypeInsight)`
 (`toolhandler/main.go:91-108`). Also needs
 `message.FunctionCallNameNotifyAgent` (`models/message/tool.go`) and an
 entry in `ToolHandle`'s `mapFunctions` (`aicallhandler/tool.go:54-76`).
+
+**OpenAPI surface — missing from rev 4, added in rev 5 (review round 4
+finding H3).** The tool-name vocabulary is also public API surface, not
+just an internal Go constant: `bin-openapi-manager/openapi/openapi.yaml`
+carries a tool-name enum, and `paths/ais/main.yaml` /
+`paths/ais/id.yaml` document the Insight-allowed tool list in prose —
+both were updated for every prior Insight tool (`get_call_transcript`,
+etc.) and must be updated here too, followed by the standard
+`go generate ./...` regen in both `bin-openapi-manager` and
+`bin-api-manager`. Listed explicitly in §9, not left implicit under
+"`Origin` in the spec."
 
 #### 5.5.2 Relaxing the Insight read-only invariant (resolves review H1)
 
@@ -1629,11 +1830,25 @@ read as an endorsed alternative).
     is treated as the agent's real Q&A turn; a call with any other id is
     treated as a listen turn (tags rows `Origin=listen_internal` per
     §5.4.5, and is what §5.4.4(c)'s `notify_agent` guard checks).
-11. **New in rev 4, pins B1:** `getPipecatcallMessages`'s
-    `FieldOriginNot: OriginListenInternal` query — a golden test seeding
-    150+ listen-internal rows interleaved with 10 real Q&A rows and the
-    leading system-prompt rows asserts the top-100 window returned is
-    exactly the real rows, none evicted, regardless of listen-row volume.
+11. `getPipecatcallMessages`'s two-fetch context assembly (§5.4.5,
+    revised in rev 5): a golden test seeding 150+ listen-internal rows
+    interleaved with 10 real Q&A rows and the leading system-prompt rows
+    asserts (a) the system-prompt row(s) are always present regardless of
+    how many listen-internal or proactive rows follow, and (b) the
+    "rest" fetch excludes every listen-internal row via the `NotEq`
+    filter. Additional cases, new in rev 5:
+    - `Origin` tagging only applies for `ReferenceTypeContactCase`; a
+      `conversation`-type AIcall's ordinary `Send()`-driven pipecatcall
+      rotation never tags anything `listen_internal` (pins review round 4
+      H2).
+    - a `pipecatcallID == uuid.Nil` tool call is tagged `OriginNone` (a
+      real turn), never `listen_internal` (pins review round 4 B2).
+    - `toolHandleNotifyAgent`'s reject logic: called with the AIcall's
+      true current `PipecatcallID` → rejected; called with any other id
+      (including after a simulated stale-cache read that used to
+      disagree) → allowed; `AIcallGet` returning an error → rejected,
+      never allowed (pins review round 4 B1 — the corrected single-path
+      logic, replacing rev 4's inverted two-branch version).
 
 **`bin-ai-manager` model/golden:**
 
@@ -1683,12 +1898,25 @@ read as an endorsed alternative).
 1. Backend PR in `monorepo` — code + migrations (drafted, **not**
    applied), service docs, RST + rebuilt HTML. **Corrected in rev 4**:
    `bin-common-handler` is touched unconditionally now (§5.4.3a's
-   `pipecatcallID` parameter), not "if touched." Full verification
-   workflow in `bin-ai-manager`, `bin-common-handler`,
-   `bin-pipecat-manager` (§5.4.3a), `bin-contact-manager`,
-   `bin-customer-manager` (§5.2.1, pending §11 item 5), `bin-api-manager`,
-   `bin-openapi-manager`.
-2. Human applies the Alembic migrations (§9).
+   `pipecatcallID` parameter, and §5.4.5's `databasehandler.NotEq`), not
+   "if touched." Full verification workflow in `bin-ai-manager`,
+   `bin-common-handler` (monorepo-wide, since `databasehandler` is shared
+   by every service — §5.4.5 step 3), `bin-pipecat-manager` (§5.4.3a),
+   `bin-contact-manager`, `bin-customer-manager` (§5.2.1, pending §11 item
+   5), `bin-api-manager`, `bin-openapi-manager`.
+2. **Migration-before-deploy ordering — new in rev 5, review round 4
+   finding H5.** `messageHandler.List`/`MessageList` builds its `SELECT`
+   column list by reflecting the `Message` struct
+   (`commondatabasehandler.GetDBFields`, `dbhandler/message.go:210`);
+   `AIcallList` does the same for `AIcall`. The instant the `Origin` field
+   (or `ListenCallID`) exists in the Go struct, every message/AIcall
+   query — including ones this feature never touches — selects that
+   column. **A code deploy landing before its migration is a hard outage
+   for every AIcall/message read in `bin-ai-manager`** (`Unknown column`),
+   not a soft degradation. Human applies the Alembic migrations *before*
+   the code deploy that references the new columns reaches any pod — not
+   merely "before implementation sign-off" as §9 lists them, but as an
+   explicit, ordered deploy-gate step here.
 3. Deploy with `aicall_listen_enabled=false`. Confirm zero behaviour
    change: `ai_manager_aicall_listen_*` all flat, existing Insight Q&A
    metrics unchanged.
@@ -1715,26 +1943,33 @@ transcribe-manager on call hangup; the `listen_call_id` column and
 - `models/tool/main.go` — `ToolNameNotifyAgent`, `AllInsightToolNames`, invariant comment
 - `models/ai/allowed_tools_test.go` — sanctioned-write map
 - `models/message/{main,field,filters,webhook}.go` + tests — `Origin`
-  (both values: `proactive` and, **new in rev 4**, `listen_internal`, §5.4.5)
+  (both values: `proactive` and `listen_internal`, §5.4.5)
 - `models/aicall/{main,field,filters}.go` + tests — `ListenCallID`, metadata keys
-- `pkg/dbhandler/{message,aicall}.go` — **new in rev 4**: `FieldOriginNot`
-  exclusion filter support in `ApplyFields`/the Squirrel query builder
-  (§5.4.5); `AIcallGet`'s cache-bypass option (§5.4.4(b)/(c))
-- `pkg/toolhandler/definitions.go` — `notify_agent` (`RunLLM:false`)
-- `pkg/aicallhandler/main.go` — `ListenTurnSystemPrompt`, config-derived constants
+- `pkg/aicallhandler/main.go` — **the `AIcallHandler` interface itself**
+  (`ToolHandle`'s new `pipecatcallID` parameter, §5.4.3a — corrected in
+  rev 5: this is an interface-level change, not just the implementation
+  file below), plus `ListenTurnSystemPrompt`, config-derived constants
 - `pkg/aicallhandler/start.go` — `Start` hook, `ensureListen`,
-  `startListenPipecatcall`, `getPipecatcallMessages`'s `FieldOriginNot`
-  query change (§5.4.5)
+  `startListenPipecatcall`, `getPipecatcallMessages`'s two-fetch rewrite
+  (leading system rows + `databasehandler.NotEq`-filtered rest, §5.4.5)
 - `pkg/aicallhandler/listen.go` *(new)* — `EventTMTranscriptCreated`, `RunListenTurn`, context assembly, `stopListenByCallID`, `clearListenState`
-- `pkg/aicallhandler/tool.go` — `ToolHandle`'s new `pipecatcallID`
-  parameter (§5.4.3a), `mapFunctions` entry for `notify_agent`, `Origin`
-  tagging on tool-call/tool-result rows (§5.4.5)
-- `pkg/aicallhandler/tool_insight.go` — `toolHandleNotifyAgent`, `parseNotifyAgentMessage`
+- `pkg/aicallhandler/tool.go` — `ToolHandle`'s implementation of the new
+  `pipecatcallID` parameter, `mapFunctions` entry for `notify_agent`
+  (unchanged signature, §5.4.3a step 4), `Origin` tagging on tool-call/
+  tool-result rows (§5.4.5)
+- `pkg/aicallhandler/tool_insight.go` — `toolHandleNotifyAgent` (fresh
+  cache-bypass read + reject logic, §5.4.4(c)), `parseNotifyAgentMessage`
 - `pkg/aicallhandler/event.go` — `EventCMCallHangup` second lookup
 - `pkg/aicallhandler/process.go` — terminate-path stop
-- `pkg/messagehandler/event.go` — `isForeignPipecatcall`, applied to the
-  two handlers that can actually fire from a listen turn (§5.4.4(b),
-  narrowed from four in rev 3)
+- `pkg/listenhandler/v1_aicalls.go`, `pkg/listenhandler/models/request/aicalls.go`
+  — **new in rev 5**: `pipecatcall_id` on `V1DataAIcallsIDToolExecutePost`
+  and its handler (§5.4.3a step 3; missing from rev 3/4's file list)
+- `pkg/messagehandler/main.go`, `event.go` — `isForeignPipecatcall`,
+  applied to the two handlers that can actually fire from a listen turn
+  (§5.4.4(b)); the cache-bypass re-read now goes through `AIV1AIcallGet`'s
+  RPC client with a new optional argument, not a direct `dbhandler` call
+  (§5.4.4(b), path corrected in rev 5)
+- `pkg/toolhandler/definitions.go` — `notify_agent` (`RunLLM:false`)
 - `pkg/cachehandler/{main,handler}.go` **or a new `pkg/listencachehandler`
   package** — see the scope note below
 - `pkg/subscribehandler/{main,transcribemanager,binding_golden_test}.go`
@@ -1750,18 +1985,30 @@ item 5's confirmation of whether it needs a backing row
 `bin-pipecat-manager` — **new in rev 4 (§5.4.3a)**:
 `pkg/pipecatcallhandler/runner.go` forwards `pc.ID` on `tool_execute`
 
-`bin-common-handler` — **new in rev 4 (§5.4.3a)**:
-`pkg/requesthandler`'s `AIV1AIcallToolExecute` signature gains a
-`pipecatcallID` parameter; mock regen
+`bin-common-handler` — `pkg/requesthandler`'s `AIV1AIcallToolExecute`
+signature gains a `pipecatcallID` parameter (§5.4.3a) and its
+`AIV1AIcallGet` client gains an optional cache-bypass argument (§5.4.4(b),
+corrected in rev 5); mock regen for both. **New in rev 5 (§5.4.5, review
+round 4 finding B3)**: `pkg/databasehandler/main.go` gains the `NotEq`
+wrapper type and its handling in `ApplyFields` — this is the
+monorepo-wide-consumed change, requiring the full verification workflow
+across every service that calls `ApplyFields`, not just the ones this
+design otherwise touches (§8).
 
 `bin-dbscheme-manager` — three generated migrations (two from rev 1–3,
 plus `bin-customer-manager`'s system-customer seed if §11 item 5
 concludes one is needed)
 
-`bin-openapi-manager`, `bin-api-manager` — `Origin` in the spec (values
-`proactive` and `listen_internal` — the latter is internal-only and
-should **not** be documented in the public RST, only `proactive`; see
-§5.10.2), regen, RST + build. `ToolHandle`'s new parameter and
+`bin-openapi-manager`, `bin-api-manager` — `Origin` in the spec, both
+values (**corrected in rev 5, review round 4 finding M8**: rev 4 said to
+document only `proactive` and leave `listen_internal` undocumented, but
+`listen_internal` rows are created through the same `ToolHandle` →
+`messageHandler.Create` → `ConvertWebhookMessage` path as any other
+message, so the value genuinely reaches a tenant's webhook payload —
+leaving it undocumented while it's on the wire is worse than documenting
+it plainly as "internal bookkeeping; do not depend on this value's
+presence or meaning" in the RST `origin` field description, §5.10.2),
+regen, RST + build. `ToolHandle`'s new parameter and
 `AIV1AIcallToolExecute`'s new argument are internal RPC surface, not
 public API — no OpenAPI change from those.
 
@@ -1857,6 +2104,37 @@ rev 3's own new mechanisms, not by anything earlier.
 | M3 | The six Insight tools' `RunLLM: true` citation was attributed to `tool_insight.go` (which contains no `RunLLM` occurrences); the real location is `pkg/toolhandler/definitions.go` at the same line numbers | Citation corrected | §5.4.4(a) |
 | M4 | §5.4.2 item 4's `Role ∈ {user, assistant}` filter still admits empty-content tool-call rows that `run.py:450` discards anyway, so the effective Q&A context is smaller than the configured 10-row budget | Noted as a known, minor inefficiency; not blocking (§5.4.5's `Origin` exclusion is the mechanism that matters for correctness, this is a small further headroom improvement left for implementation) |  — |
 | M5 | §5.6.4's render-filter coverage claim ("every existing... panel noise") overstated: it does not hide `role=system` rows (`startInitMessages`, `start.go:812-819`), which both panels already render today | Scope note added: the filter covers tool-call/tool-result noise specifically; `role=system` rendering is a separate, pre-existing, out-of-scope concern | §5.6.4 |
+
+### 10.3 Review-response matrix (round 4 → rev 5)
+
+Round 4 (again an independent, skeptical-by-instruction review) found
+that of rev 4's three new mechanisms, only §5.2.1 (the separate system
+customer id) held up cleanly; §5.4.4(c) and §5.4.5 each had a real bug,
+and the reviewer's own closing assessment was that the design's skeleton
+is sound and consistent with the code — the remaining issues were all in
+implementation-level details of the newest additions, not architecture.
+
+| # | Review finding | Resolution | Where |
+|---|---|---|---|
+| B1 | §5.4.4(c)'s cache-bypass re-read sat in the wrong branch: it neither caught the false-allow case it was written for, nor avoided creating a new one | Rewritten as a single always-fresh-read (not on a hot path, so no reason to trust the cache at all here), removing the two-branch logic entirely | §5.4.4(c) |
+| B2 | A `pipecatcallID` of `uuid.Nil` (old `pipecat-manager` build, rolling-deploy window) was unhandled; depending on how §5.4.4(c)/§5.4.5 read it, could permanently mistag real Q&A content as `listen_internal` | `uuid.Nil` explicitly treated as "assume a real Q&A turn" in both places — the fail-safe direction, since guessing wrong that way costs one rejected tool call, never data corruption. Wire field made optional so no deploy ordering is forced | §5.4.3a, §5.4.4(c), §5.4.5 |
+| B3 | `ApplyFields` was mis-located in `bin-ai-manager` (actually `bin-common-handler/pkg/databasehandler`, shared by every service); the proposed `FieldOriginNot` mechanism was unspecified and would have produced a SQL error on every Q&A turn | Correct location cited; mechanism decided as a generic `databasehandler.NotEq` wrapper type (not another hardcoded field-name special case), verification scope widened to the whole monorepo for this one change | §5.4.5 step 3, §8, §9 |
+| B4 | Excluding only listen-internal rows narrows but does not close the context-eviction risk — proactive rows and the agent's own Q&A tool rows still compete for the 100-row window and can still evict the system prompt | `getPipecatcallMessages` restructured into two fetches: the leading system row(s), always included regardless of window pressure, plus the capped, `NotEq`-filtered rest | §5.4.5 step 4 |
+| H1 | Guarding all four original pipecatcall-message handlers would put an uncached DB read on the highest-volume one; narrowed to two, but the *justification* given (the other two "can never fire from a listen turn") was correct while the guard itself was still overbroad on the two it did cover | (carried forward from round 3, no new action — round 4 confirmed round 3's H1/H2 fix as correct) |  — |
+| H2 | `Origin` tagging in `ToolHandle` was not scoped by reference type, so an ordinary `conversation`/`task`/`none` AIcall's routine pipecatcall rotation (via `Send()`) would be mistagged `listen_internal` and silently lose history | Tagging rule now requires `ac.ReferenceType == ReferenceTypeContactCase` in addition to the pipecatcall-id mismatch | §5.4.5 step 2 |
+| H3 | `notify_agent` was missing from the public OpenAPI tool-name enum and the Insight-tool-list prose docs, unlike every prior Insight tool | Added explicitly to §5.5.1 and §9 | §5.5.1 |
+| H4 | The cache-bypass re-read's cited code path (`dbhandler.AIcallGet(skipCache)`) doesn't match how `EventPMMessageBotLLM` actually fetches the AIcall (an RPC, `AIV1AIcallGet`, not a direct `dbhandler` call) | Corrected: the RPC client gains the optional cache-bypass argument instead, one hop further down than rev 4's snippet showed | §5.4.4(b) |
+| H5 | No explicit migration-before-deploy ordering; `Origin`/`ListenCallID` existing in the Go struct changes every message/AIcall query's `SELECT`, so a code deploy landing before its migration is a hard outage, not a soft degradation | Made an explicit, ordered rollout step rather than an implicit assumption | §8 |
+| M1 | `IDAIManagerListen` not registered in `bin-customer-manager`'s known-system-id whitelist | Confirmed the listen path never traverses that gate (so this doesn't block), and stated the omission is deliberate scope discipline, not an oversight | §5.2.1 |
+| M2 | §5.4.3a's "one new parameter" understated the change — `mapFunctions`' shared signature is used by 21 handlers | Clarified: only `ToolHandle` and `toolHandleNotifyAgent` need the new parameter; the other 20 handlers are unaffected | §5.4.3a step 4 |
+| M3 | Adding `FieldOriginNot` to `FieldStruct` would expose an unused, unnecessary RPC filter surface (`FieldStruct` only gates external-RPC-visible filters; `getPipecatcallMessages` builds its filter map directly) | Not added — the existing `FieldOrigin` constant plus the new `NotEq` wrapper is sufficient, no `FieldStruct`/`ConvertFilters` change needed | §5.4.5 step 3 |
+| M4 | The `RunLLM: true` line-number citation for the six Insight tools was still wrong after round 3's file-path fix — it reused the `RunLLM: false` tools' line numbers | Corrected to the six tools' own lines (754-755, 785-786, 824-825, 849-850, 879-880, 906-907) | §5.4.4(a) |
+| M5 | `args.pop("run_llm", …)` cited at `tools.py:~60`; actual location `tools.py:105` | Corrected | §5.4.4(a) |
+| M6 | The stated cost reason for not guarding two handlers ("adds a per-utterance AIcall lookup") was factually wrong — both already do that lookup today; the real reason is structural (the condition cannot occur) | Cost claim removed, structural reasoning kept (conclusion was already correct) | §5.4.4(b) |
+| M7 | `get_aicall_messages` (an existing tool) bypasses `getPipecatcallMessages` entirely and can leak `listen_internal` rows' raw JSON into an LLM answer | Acknowledged as a real, lower-severity gap and left as a follow-up rather than fixed here | §5.4.5, §11 |
+| M8 | `listen_internal` was to be left undocumented in the public RST while still appearing on actual webhook payloads | Documented plainly instead (as an internal-bookkeeping value, not relied upon), since hiding a value that's genuinely on the wire is worse than documenting it | §9 |
+| M9 | Two items in §11 (Redis version, speaker mapping) are still open and self-marked blocking | Correct as stated — both remain open pending empirical/operational confirmation, not resolved by this revision |  — |
+| L1–L3 | Minor citation/line-number errors (`PromptSnapshot` location, missing files in §9, raw-vs-`.String()` UUID convention) | Corrected where cited above; `.String()` convention left to implementation (both forms work through `ConvertFilters`) | various |
 
 ---
 
