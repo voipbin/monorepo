@@ -1,6 +1,6 @@
 # InsightAI Realtime Listen (Proactive Notification) — Design
 
-Status: Draft (rev 8, addressing 2026-09-03 independent review round 7 — round 7 APPROVEd; rev 8 closes its recommended follow-ups before the second consecutive approval)
+Status: **Approved** (rev 9 — review round 7 and round 8 both APPROVEd rev 7/rev 8, the two-consecutive-approval bar this project's review-loop policy requires; rev 9 is post-approval polish closing round 8's own non-blocking recommendations, not a new review round)
 Branch: `NOJIRA-Insight-AI-realtime-listen`
 Owner: CPO-directed backend feature
 
@@ -16,6 +16,7 @@ Owner: CPO-directed backend feature
 | 6 | 2026-09-03 | **Revised after independent review round 5 (REQUEST_CHANGES, 2 BLOCKING + 2 HIGH + 3 MEDIUM — reviewer's own assessment: architecture stabilized, remaining findings all localized to specific sections).** Unified the "is this a listen turn?" decision to one fresh, cache-bypassing read in `ToolHandle`, consumed by both §5.4.5's `Origin` tagging and §5.4.4(c)'s reject-guard — rev 5 had fixed the guard's own cache-bypass logic but left the tagging step trusting a stale cache, which is the more dangerous of the two (permanent data mistagging vs. one rejected tool call). Added a positive "is this AIcall actually in a listening session" check (`ListenCallID != uuid.Nil`) to the listen-turn predicate, closing a false-positive window from best-effort pipecatcall interruption timing. Corrected `getPipecatcallMessages`'s two-fetch restructure to match `MessageList`'s actual newest-first ordering (both fetches reversed the same way, not one assumed oldest-first) and fixed a false claim about `InsightSystemPrompt` not applying to this path. Replaced §8's "zero behaviour change with the flag off" claim with an explicit table of what is and isn't gated — several fixes (context-assembly, stale-reply guard) are general and code-deploy-scoped, not listen-specific. Corrected the service boundary and scope claims for the cache-bypass RPC change and the `NotEq` wrapper's safe value-type range. §10.4 gains a round-5 matrix. |
 | 7 | 2026-09-03 | **Revised after independent review round 6 (a scoped, targeted review per round 5's own recommendation — REQUEST_CHANGES, 2 BLOCKING + 3 MEDIUM, reviewer's own assessment: "light," architecture confirmed stable).** Replaced the `ListenCallID != uuid.Nil` term (which contributed no discrimination once a listen session was already active) with a genuinely positive signal: §5.4.3 now registers each listen turn's throwaway pipecatcall id in a Redis set the moment it's minted, and `ToolHandle`'s `listenTurn` resolution becomes a direct membership check — closing a race where a real Q&A tool call, delayed behind a best-effort-interrupted turn, could still be mistagged. This also removes the `AIcallGet` fresh read §5.4.5 previously needed (Redis membership is authoritative on its own), and gates the read that remains (`ReferenceType == ContactCase`) on an immutable, cache-safe field first, so the cost is confined to `contact_case` AIcalls again. Added the flag check `RunListenTurn` was missing, making §8's "rollback stops in-flight sessions" claim literally true rather than aspirational. Corrected several places across §6, §7, §9 that still described the mechanism's now-superseded rev-5/rev-6 shape. §10.5 gains a round-6 matrix. |
 | 8 | 2026-09-03 | **Review round 7 APPROVEd rev 7** (0 BLOCKING; 7 localized findings, N-1 through N-7, offered as recommendations for before implementation starts rather than approval blockers). This revision closes all 7 rather than deferring any, since the review loop's own history is that a deferred finding tends to resurface: (N-1) a Redis `SISMEMBER` failure in §5.4.5 step 2 now degrades to `listenTurn=false` instead of failing the tool call closed — provably correct during a Redis outage, since no genuine listen turn can exist then either, and it restores §6's "Q&A unaffected by Redis outage" claim rev 7 had quietly broken; (N-2) a failed turn-id registration (§5.4.3) now aborts that turn instead of proceeding unregistered, which would have reproduced the exact permanent-mistagging failure mode §5.4.5's B1 fix exists to prevent; (N-3) the flag check moved from a standalone step 0 (which ran before the AIcall was fetched) into step 1's require-list, alongside the `c` it and `clearListenState` both need; (N-4) that same path now performs a full stop (releasing an owned transcribe) rather than a bare state clear, so a flag-off rollback doesn't strand a still-running, now-unreachable STT session; (N-5/N-6/N-7) new metric labels, TTL/cleanup documentation, and an explicit statement of where in `ToolHandle` the listen-turn check runs. §10.6 gains a round-7 matrix. |
+| 9 | 2026-09-03 | **Review round 8 APPROVEd rev 8 — the second consecutive approval; the review loop concludes.** Round 8 flagged five non-blocking polish items, closed here: (M-1) §8's "next scheduled turn" language corrected — `RunListenTurn` is segment-triggered, not timer-scheduled, so a flag-off rollback's effect lands on the next transcript segment (or, in a quiet call, at hangup), not on a fixed clock; (M-2) named and scoped `stopListening(ctx, c)` as a single two-step helper (§5.7.2's stop snippet, then `clearListenState`) that never calls `ProcessTerminate`, closing the ambiguity that could have wired a listening rollback into ending the agent's whole Q&A session; (L-2/L-4) added test coverage for §5.4.3's registration-failure abort path and the new `skipped_disabled`/`skipped_invalid` outcomes. (L-3, the one remaining citation in §10.5's historical round-6 matrix pointing at the since-renamed step, is left as an accurate record of what rev 7 did at the time, per this document's own convention of not rewriting past rounds' matrices.) |
 
 Every code reference below was re-verified against the worktree at rev 2 authoring time; file:line citations are load-bearing and were read, not assumed.
 
@@ -599,31 +600,45 @@ not lost. A wall-clock flush timer is deliberately not introduced.
 #### 5.4.1 Preconditions
 
 1. `c := h.Get(aicallID)`. **Reordered in rev 8 (review round 7, finding
-   N-3): the flag check moved from a standalone step 0 to here, merged
-   with the existing require-list, because it needs `c` and rev 7's step
-   0 ran before `c` existed** — §5.7.3's `clearListenState` explicitly
-   documents "no extra fetch — callers already hold `c`" (§5.7.3 step 1),
-   which rev 7's ordering violated. Require `config.Get().AIcallListenEnabled`,
+   N-3), placement clarified in rev 9 (review round 8, finding L-3): `c`
+   is not needed by the flag comparison itself, only by what runs when a
+   condition fails** — `stopListening(ctx, c)` below (and, indirectly,
+   `clearListenState`, per §5.7.3's "callers already hold `c`"). Rev 7's
+   standalone step 0 ran before `c` existed and could not have called
+   either. Require `config.Get().AIcallListenEnabled`,
    `c.Status == progressing`, `c.ReferenceType == contact_case`,
-   `c.Metadata[listen_transcribe_id]` set — any failing → **stop listening
-   entirely** (§5.7.2's owned-transcribe stop path, not just a Redis/DB
-   state clear) and return (`skipped_disabled` if the flag was the failing
-   condition, `skipped_invalid` otherwise). **Also corrected in rev 8
-   (finding N-4)**: rev 7's step 0 said "clear listen state" while step 3
-   below says "stop listening entirely" for what is operationally the
-   same kind of exit (nothing left to evaluate) — both now go through the
-   same full stop, so a flag-off rollback also releases any transcribe
-   session this AIcall owns instead of leaving it running until hangup
-   and losing the handle to it (§5.7.3's Redis/metadata clear on its own
-   does not stop a still-running owned transcribe — only §5.7.2 does).
+   `c.Metadata[listen_transcribe_id]` set — any failing → `stopListening`
+   and return (`skipped_disabled` if the flag was the failing condition,
+   `skipped_invalid` otherwise).
+
+   **`stopListening(ctx, c)` — named and scoped precisely in rev 9
+   (review round 8, finding M-2), replacing the informal "stop listening
+   entirely" phrase rev 8 used without a single definition.** It is
+   exactly two calls, in order, and nothing else:
+   1. If `c.Metadata[listen_owns_transcribe]`, run §5.7.2's stop
+      snippet (fresh `TranscribeV1TranscribeGet` + conditional
+      `TranscribeV1TranscribeStop`, non-fatal on failure).
+   2. `clearListenState(ctx, c)` (§5.7.3).
+
+   **It never calls `ProcessTerminate`** (`process.go:38-68`) — that
+   function ends the *AIcall itself* (`UpdateStatus` to terminated +
+   `FlowV1ActiveflowServiceStop`), which would kill the agent's entire
+   Insight Q&A session, directly contradicting §6's "the Q&A panel keeps
+   working normally" row. §5.7.2's own heading ("Hooked into
+   `ProcessTerminate`... for `contact_case` AIcalls") describes a
+   *different* call site — the AIcall-is-ending path — reusing the same
+   stop snippet; `stopListening` is the shared helper both that path and
+   `RunListenTurn`'s preconditions call into, not a call to
+   `ProcessTerminate` itself. §7's cleanup tests (item 7) cover both
+   call sites.
 2. `lines := cache.ListenPendingPopAll(ctx, aicallID)` — a single `LPOP
    key count` (Redis ≥6.2), atomic, so no concurrent appender can lose a
    line between a read and a trim. Empty → return (`skipped_empty`).
 3. Cost cap: a per-AIcall turn counter (`INCR ai:listen:turns:<id>`, same
    TTL as the buffer) bounded by
    `AIcallListenMaxTurnsPerAIcall` (default 60 ≈ 20 minutes of continuous
-   speech at a 20s interval). Exceeded → stop listening entirely (§5.7)
-   and return (`skipped_cap`). This is the hard backstop against a
+   speech at a 20s interval). Exceeded → `stopListening(ctx, c)` (step 1's
+   helper) and return (`skipped_cap`). This is the hard backstop against a
    pathological long call.
 
 **On intake (§5.3) needing no flag check of its own, reconfirmed in rev
@@ -633,6 +648,17 @@ evaluating them (zero further LLM turns) and clears the resolver-set
 membership that intake depends on, so the very next segment after that
 stops matching anything at §5.3.2's `SMEMBERS` check. Bounded, self-limiting
 staleness — not a gap.
+
+**Trigger cadence, precision added in rev 9 (review round 8, finding
+M-1): `RunListenTurn` is segment-triggered (§5.3.4's debounce lock), not
+timer-scheduled.** A flag-off rollback's `stopListening` call therefore
+fires on the *next transcript segment that arrives* for an in-flight
+session, not on a fixed clock — if the call has gone quiet, that is
+whenever the next word is spoken, or, in the limit, never before the call
+itself ends (at which point §5.7.1's hangup path is the actual backstop,
+independent of the flag). §8's "within one `AIcallListenEvaluateIntervalSeconds`"
+framing describes the common case (an active conversation), not a
+guarantee; corrected there too.
 
 #### 5.4.2 Context assembly (resolves review B2)
 
@@ -1951,13 +1977,16 @@ read as an endorsed alternative).
    fix**: two AIcalls in the same resolver set both get the segment
    buffered independently, and clearing one (`SREM`) leaves the other's
    membership and buffering intact.
-4. `RunListenTurn` — empty pending → skip; turn cap → stop listening;
-   context assembly golden test asserting exact message count and order —
-   `InsightSystemPrompt` first, the prompt snapshot second, then
-   `ListenTurnSystemPrompt` (this is the direct regression test for both
-   the rev-1 context-eviction defect and rev-2's missing-guardrails defect,
-   F6); asserts `getPipecatcallMessages` is **not** called and
-   `c.PipecatcallID` is **not** written.
+4. `RunListenTurn` — empty pending → skip; turn cap → `stopListening`
+   called, `skipped_cap`; flag off → `stopListening` called,
+   `skipped_disabled` (**new in rev 9, review round 8 finding L-4**);
+   each other failing require-list condition → `stopListening` called,
+   `skipped_invalid`; context assembly golden test asserting exact
+   message count and order — `InsightSystemPrompt` first, the prompt
+   snapshot second, then `ListenTurnSystemPrompt` (this is the direct
+   regression test for both the rev-1 context-eviction defect and
+   rev-2's missing-guardrails defect, F6); asserts `getPipecatcallMessages`
+   is **not** called and `c.PipecatcallID` is **not** written.
 5. `messagehandler.isForeignPipecatcall` — for each of the **two**
    handlers it applies to (§5.4.4(b), narrowed from four in rev 3):
    matching id persists/publishes, mismatched id drops, and (for
@@ -1972,19 +2001,33 @@ read as an endorsed alternative).
 7. Cleanup — `stopListenByCallID` clears **all** matching AIcalls (two-row
    case); `ProcessTerminate` stops only when `owns=true`; stop-RPC failure
    is non-fatal and metered; `clearListenState` `SREM`s only its own
-   membership, not the whole resolver set.
-8. **New in rev 3, pins F4:** the pipecatcall-identity guard's
+   membership, not the whole resolver set. **New in rev 9, review round 8
+   finding M-2:** `stopListening` itself — asserts it calls the §5.7.2
+   stop snippet then `clearListenState`, in that order, and that it
+   **never** calls `ProcessTerminate` (a regression test for the
+   AIcall-termination mixup the naming ambiguity risked); both its call
+   sites (§5.4.1's require-list failure, §5.4.1 step 3's turn cap) are
+   covered by item 4 above.
+8. **New in rev 9, review round 8 finding N-2/L-2:** §5.4.3's registration
+   failure — `ListenTurnPipecatcallIDAdd` erroring aborts before
+   `startListenPipecatcall`/`PipecatV1PipecatcallStart` is ever called
+   (no pipecat session started, nothing to clean up), metered
+   `skipped_register_failed`; the turn's `pending` lines were already
+   popped by §5.4.1 step 2 before this point and are not requeued —
+   consistent with the existing "lost lines beyond the 40-line window"
+   trade-off (§6), not a new one.
+9. **New in rev 3, pins F4:** the pipecatcall-identity guard's
    cache-bypass re-read — a mismatch against the cached `PipecatcallID`
    that resolves to a match on a DB-authoritative re-read persists the
    message; a mismatch that still disagrees on re-read drops it.
-9. **New in rev 4, pins B3:** listen and a concurrent `ai_summary` on the
+10. **New in rev 4, pins B3:** listen and a concurrent `ai_summary` on the
    same call each get their own transcribe session (`IDAIManagerListen`
    vs. `IDAIManager`); `TranscribeV1TranscribeList` scoped to
    `IDAIManagerListen` never returns a summary's session and vice versa;
    `summaryhandler.startReferenceTypeCall`'s own tests are unaffected by
    listen having run on the same call (a direct regression test for the
    rev-3 defect this replaces).
-10. **`ToolHandle`'s `listenTurn` resolution (§5.4.5 step 2) — rewritten
+11. **`ToolHandle`'s `listenTurn` resolution (§5.4.5 step 2) — rewritten
     across rev 4 through rev 7, current shape tested here:**
     - `c.ReferenceType != ReferenceTypeContactCase` → `listenTurn=false`
       unconditionally, no Redis call made (pins review round 6 F2: cost
@@ -2005,7 +2048,7 @@ read as an endorsed alternative).
       `promListenMembershipCheckFailedTotal`, and `toolHandleNotifyAgent`
       still reached (with `listenTurn=false`, so it still correctly
       rejects if this happened to be a `notify_agent` call).
-11. `getPipecatcallMessages`'s two-fetch context assembly (§5.4.5,
+12. `getPipecatcallMessages`'s two-fetch context assembly (§5.4.5,
     revised across rev 5-7): a golden test seeding 150+ listen-internal
     rows interleaved with 10 real Q&A rows and the leading system-prompt
     rows asserts (a) the system-prompt row(s) are always present
@@ -2014,26 +2057,26 @@ read as an endorsed alternative).
     fetches are newest-first and must be reversed before use, not just
     the first), and (b) the "rest" fetch excludes every listen-internal
     row via the `NotEq` filter.
-12. `toolHandleNotifyAgent`'s reject logic (§5.4.4(c)) — takes the
+13. `toolHandleNotifyAgent`'s reject logic (§5.4.4(c)) — takes the
     pre-resolved `listenTurn bool` directly (no `AIcallGet` call of its
     own to test/mock here, since rev 7 removed it): `listenTurn=true` →
     allowed; `listenTurn=false` → rejected with no proactive row written.
 
 **`bin-ai-manager` model/golden:**
 
-13. `models/ai/allowed_tools_test.go` — `notify_agent` passes via
+14. `models/ai/allowed_tools_test.go` — `notify_agent` passes via
     `knownSanctionedWrite`; a hypothetical unlisted write tool still fails;
     `TestValidateToolNames_WriteToolNeverAllowedForInsight` still passes
     unchanged.
-14. `pkg/subscribehandler/binding_golden_test.go` — updated to 12 patterns
+15. `pkg/subscribehandler/binding_golden_test.go` — updated to 12 patterns
     with the new one appended last.
-15. `models/aicall/field_test.go`, `filters_test.go`,
+16. `models/aicall/field_test.go`, `filters_test.go`,
     `models/message/field_test.go`, `webhook_test.go` — new fields,
     including `Origin`'s two values.
 
 **Boundary:**
 
-16. `requesthandler` mock expectations pinning the exact
+17. `requesthandler` mock expectations pinning the exact
     `TranscribeV1TranscribeStart` argument list including `provider` and
     `onEndFlowID` (§5.2.2), and `TranscribeV1TranscribeStop(ctx, hostID,
     transcribeID)` argument order (§5.7.2) — both were wrong in rev 1, so
@@ -2043,13 +2086,13 @@ read as an endorsed alternative).
 
 **Deferred until §5.9's empirical check lands:**
 
-17. A pinned golden-transcript test for the `in`/`out` → `[CUSTOMER]`/
+18. A pinned golden-transcript test for the `in`/`out` → `[CUSTOMER]`/
     `[AGENT]` mapping. This is exactly the silent-wrong-attribution class
     that deserves a pinned test rather than a happy-path assertion.
 
 **Frontend (`monorepo-javascript`):**
 
-18. Both `CaseInsightAssistantPanel` suites: renders an
+19. Both `CaseInsightAssistantPanel` suites: renders an
     `origin: 'proactive'` message with its distinct treatment and
     accessible label; renders a normal assistant message unchanged;
     renders a message with no `origin` field (backward compatibility with
@@ -2120,21 +2163,26 @@ read as an endorsed alternative).
 
 **Rollback:** set `aicall_listen_enabled=false`. **Made literally true in
 rev 7 (review round 6, finding F3), tightened in rev 8 (review round 7,
-findings N-3/N-4)**: §5.4.1 step 1 checks the flag directly inside
-`RunListenTurn` (merged with the existing require-list, not a separate
-step 0 that ran before the AIcall was even fetched — N-3), so an
-in-flight session's *next* scheduled turn (within one
-`AIcallListenEvaluateIntervalSeconds`, default 20s — not "immediately" in
-the sub-second sense, but bounded and short) sees the flag off and **stops
-listening entirely**, including releasing any transcribe session this
+findings N-3/N-4), timing corrected in rev 9 (review round 8, finding
+M-1)**: §5.4.1 step 1 checks the flag directly inside `RunListenTurn`
+(merged with the existing require-list, not a separate step 0 that ran
+before the AIcall was even fetched — N-3), so an in-flight session's
+*next evaluated turn* sees the flag off and calls `stopListening`
+(§5.4.1's helper — M-2), including releasing any transcribe session this
 AIcall itself owns (§5.7.2) — not just clearing Redis/DB bookkeeping and
 leaving an owned session to run until hangup, which is what a bare state
-clear would have left standing (N-4). Before rev 7's fix, nothing on the
-intake or evaluation path read the flag at all, so a session that started
-while the flag was on would have run to call-end or the turn cap
-regardless of a rollback. A session this AIcall doesn't own is never
-touched by any of this and is reaped by transcribe-manager on call
-hangup either way, same as always; the `listen_call_id` column and
+clear would have left standing (N-4). **`RunListenTurn` is
+segment-triggered, not on a fixed timer (§5.3.4)**, so "next evaluated
+turn" means the next time the call actually produces a transcript
+segment — typically within one `AIcallListenEvaluateIntervalSeconds`
+(default 20s) for an active conversation, but not a guarantee for a
+quiet stretch; §5.7.1's hangup-triggered cleanup is the actual backstop
+if the call goes silent before another segment arrives. Before rev 7's
+fix, nothing on the intake or evaluation path read the flag at all, so a
+session that started while the flag was on would have run to call-end or
+the turn cap regardless of a rollback. A session this AIcall doesn't own
+is never touched by any of this and is reaped by transcribe-manager on
+call hangup either way, same as always; the `listen_call_id` column and
 `origin` field are inert **for the listening path specifically**. The §8
 table above still applies — rollback does not roll back the always-active
 context-assembly fix or the stale-reply guard, which are code-deploy
