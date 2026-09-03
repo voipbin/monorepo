@@ -146,6 +146,7 @@ func Test_ServiceAgentTranscribeStart(t *testing.T) {
 		name string
 
 		agent         *auth.AuthIdentity
+		id            uuid.UUID
 		referenceType string
 		referenceID   uuid.UUID
 		language      string
@@ -230,6 +231,7 @@ func Test_ServiceAgentTranscribeStart(t *testing.T) {
 			}
 			mockReq.EXPECT().TranscribeV1TranscribeStart(
 				ctx,
+				tt.id,
 				tt.agent.CustomerID,
 				uuid.Nil,
 				tt.onEndFlowID,
@@ -241,7 +243,7 @@ func Test_ServiceAgentTranscribeStart(t *testing.T) {
 				60000,
 			).Return(tt.responseTranscribe, nil)
 
-			res, err := h.ServiceAgentTranscribeStart(ctx, tt.agent, tt.referenceType, tt.referenceID, tt.language, tt.direction, tt.onEndFlowID, tt.provider)
+			res, err := h.ServiceAgentTranscribeStart(ctx, tt.agent, tt.id, tt.referenceType, tt.referenceID, tt.language, tt.direction, tt.onEndFlowID, tt.provider)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

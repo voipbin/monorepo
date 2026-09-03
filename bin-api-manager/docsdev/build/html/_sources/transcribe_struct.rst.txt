@@ -24,7 +24,7 @@ Transcribe
         "tm_delete": "<string>"
     }
 
-* ``id`` (UUID): The transcribe session's unique identifier. Returned when creating a transcription via ``POST /transcribes`` or listing via ``GET /transcribes``.
+* ``id`` (UUID): The transcribe session's unique identifier. Returned when creating a transcription via ``POST /transcribes`` or listing via ``GET /transcribes``. Normally server-generated; a caller may optionally supply this id on ``POST /transcribes`` (see :ref:`Tutorial <transcribe-tutorial>`), in which case ``id`` in the response equals the caller-supplied value.
 * ``customer_id`` (UUID): The customer who owns this transcription. Obtained from ``GET /customers``.
 * ``activeflow_id`` (UUID): The activeflow ID associated with this transcription session. Obtained from the ``id`` field of ``GET /activeflows``. Set to ``00000000-0000-0000-0000-000000000000`` if no activeflow is associated.
 * ``on_end_flow_id`` (UUID): The flow to execute when the transcription session ends. Obtained from the ``id`` field of ``GET /flows``. Set to ``00000000-0000-0000-0000-000000000000`` if no on-end flow is assigned.

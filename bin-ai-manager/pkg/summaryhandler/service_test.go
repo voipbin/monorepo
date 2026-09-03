@@ -109,6 +109,7 @@ func Test_ServiceStart_referencetype_call(t *testing.T) {
 			mockDB.EXPECT().SummaryList(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf(""))
 			mockReq.EXPECT().TranscribeV1TranscribeStart(
 				ctx,
+				uuid.Nil,
 				cmcustomer.IDAIManager,
 				tt.activeflowID,
 				uuid.Nil,

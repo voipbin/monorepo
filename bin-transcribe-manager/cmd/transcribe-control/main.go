@@ -182,6 +182,7 @@ func runStart(cmd *cobra.Command, args []string) error {
 
 	res, err := handler.Start(
 		context.Background(),
+		uuid.Nil,
 		customerID,
 		activeflowID,
 		onEndFlowID,

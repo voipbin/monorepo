@@ -84,6 +84,7 @@ func (h *serviceHandler) ServiceAgentTranscribeList(ctx context.Context, a *auth
 func (h *serviceHandler) ServiceAgentTranscribeStart(
 	ctx context.Context,
 	a *auth.AuthIdentity,
+	id uuid.UUID,
 	referenceType string,
 	referenceID uuid.UUID,
 	language string,
@@ -98,6 +99,7 @@ func (h *serviceHandler) ServiceAgentTranscribeStart(
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "ServiceAgentTranscribeStart",
 		"customer_id":    a.CustomerID,
+		"id":             id,
 		"reference_type": referenceType,
 		"reference_id":   referenceID,
 		"language":       language,
@@ -121,6 +123,7 @@ func (h *serviceHandler) ServiceAgentTranscribeStart(
 
 	tmp, err := h.reqHandler.TranscribeV1TranscribeStart(
 		ctx,
+		id,
 		a.CustomerID,
 		uuid.Nil,
 		onEndFlowID,

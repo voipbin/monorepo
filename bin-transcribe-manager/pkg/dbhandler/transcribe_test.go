@@ -2,6 +2,7 @@ package dbhandler
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"reflect"
 	"testing"
@@ -128,6 +129,66 @@ func Test_TranscribeCreate(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
 			}
 		})
+	}
+}
+
+// Test_TranscribeCreate_duplicateID verifies that inserting a transcribe
+// whose id already exists (a primary-key collision) returns the sentinel
+// ErrDuplicateID, not a generic wrapped error -- this is what lets Start's
+// post-dispatch duplicate-key mapping distinguish a caller-supplied-id
+// collision (409) from any other DB failure (500).
+func Test_TranscribeCreate_duplicateID(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
+	h := handler{
+		utilHandler: mockUtil,
+		db:          dbTest,
+		cache:       mockCache,
+	}
+
+	id := uuid.FromStringOrNil("e1a1a1a1-0000-11ed-0000-000000000001")
+	first := &transcribe.Transcribe{
+		Identity: commonidentity.Identity{
+			ID:         id,
+			CustomerID: uuid.FromStringOrNil("e1a1a1a1-0000-11ed-0000-000000000002"),
+		},
+		ReferenceType: transcribe.ReferenceTypeCall,
+		ReferenceID:   uuid.FromStringOrNil("e1a1a1a1-0000-11ed-0000-000000000003"),
+		Language:      "en-US",
+		Direction:     transcribe.DirectionBoth,
+	}
+
+	curTime := time.Date(2023, 1, 3, 21, 35, 2, 809000000, time.UTC)
+	mockUtil.EXPECT().TimeNow().Return(&curTime)
+	mockCache.EXPECT().TranscribeSet(gomock.Any(), gomock.Any())
+	if err := h.TranscribeCreate(context.Background(), first); err != nil {
+		t.Fatalf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	// insert a second, distinct transcribe using the SAME id -- this must
+	// hit the primary-key unique constraint on transcribe_transcribes.id.
+	second := &transcribe.Transcribe{
+		Identity: commonidentity.Identity{
+			ID:         id,
+			CustomerID: uuid.FromStringOrNil("e1a1a1a1-0000-11ed-0000-000000000099"),
+		},
+		ReferenceType: transcribe.ReferenceTypeCall,
+		ReferenceID:   uuid.FromStringOrNil("e1a1a1a1-0000-11ed-0000-000000000004"),
+		Language:      "en-US",
+		Direction:     transcribe.DirectionBoth,
+	}
+
+	mockUtil.EXPECT().TimeNow().Return(&curTime)
+	err := h.TranscribeCreate(context.Background(), second)
+	if err == nil {
+		t.Fatalf("Wrong match. expect: error, got: ok")
+	}
+	if !errors.Is(err, ErrDuplicateID) {
+		t.Errorf("Wrong error. expect: ErrDuplicateID, got: %v", err)
 	}
 }
 

@@ -5419,18 +5419,18 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentTranscribeList(ctx, a, siz
 }
 
 // ServiceAgentTranscribeStart mocks base method.
-func (m *MockServiceHandler) ServiceAgentTranscribeStart(ctx context.Context, a *auth.AuthIdentity, referenceType string, referenceID uuid.UUID, language string, direction transcribe.Direction, onEndFlowID uuid.UUID, arg7 transcribe.Provider) (*transcribe.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentTranscribeStart(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, referenceType string, referenceID uuid.UUID, language string, direction transcribe.Direction, onEndFlowID uuid.UUID, arg8 transcribe.Provider) (*transcribe.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ServiceAgentTranscribeStart", ctx, a, referenceType, referenceID, language, direction, onEndFlowID, arg7)
+	ret := m.ctrl.Call(m, "ServiceAgentTranscribeStart", ctx, a, id, referenceType, referenceID, language, direction, onEndFlowID, arg8)
 	ret0, _ := ret[0].(*transcribe.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ServiceAgentTranscribeStart indicates an expected call of ServiceAgentTranscribeStart.
-func (mr *MockServiceHandlerMockRecorder) ServiceAgentTranscribeStart(ctx, a, referenceType, referenceID, language, direction, onEndFlowID, arg7 any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentTranscribeStart(ctx, a, id, referenceType, referenceID, language, direction, onEndFlowID, arg8 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentTranscribeStart", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentTranscribeStart), ctx, a, referenceType, referenceID, language, direction, onEndFlowID, arg7)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentTranscribeStart", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentTranscribeStart), ctx, a, id, referenceType, referenceID, language, direction, onEndFlowID, arg8)
 }
 
 // ServiceAgentTranscriptList mocks base method.
@@ -6020,18 +6020,18 @@ func (mr *MockServiceHandlerMockRecorder) TranscribeList(ctx, a, size, token, re
 }
 
 // TranscribeStart mocks base method.
-func (m *MockServiceHandler) TranscribeStart(ctx context.Context, a *auth.AuthIdentity, referenceType string, referenceID uuid.UUID, language string, direction transcribe.Direction, onEndFlowID uuid.UUID, arg7 transcribe.Provider) (*transcribe.WebhookMessage, error) {
+func (m *MockServiceHandler) TranscribeStart(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, referenceType string, referenceID uuid.UUID, language string, direction transcribe.Direction, onEndFlowID uuid.UUID, arg8 transcribe.Provider) (*transcribe.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TranscribeStart", ctx, a, referenceType, referenceID, language, direction, onEndFlowID, arg7)
+	ret := m.ctrl.Call(m, "TranscribeStart", ctx, a, id, referenceType, referenceID, language, direction, onEndFlowID, arg8)
 	ret0, _ := ret[0].(*transcribe.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // TranscribeStart indicates an expected call of TranscribeStart.
-func (mr *MockServiceHandlerMockRecorder) TranscribeStart(ctx, a, referenceType, referenceID, language, direction, onEndFlowID, arg7 any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) TranscribeStart(ctx, a, id, referenceType, referenceID, language, direction, onEndFlowID, arg8 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscribeStart", reflect.TypeOf((*MockServiceHandler)(nil).TranscribeStart), ctx, a, referenceType, referenceID, language, direction, onEndFlowID, arg7)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranscribeStart", reflect.TypeOf((*MockServiceHandler)(nil).TranscribeStart), ctx, a, id, referenceType, referenceID, language, direction, onEndFlowID, arg8)
 }
 
 // TranscribeStop mocks base method.

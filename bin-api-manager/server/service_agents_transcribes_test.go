@@ -187,6 +187,7 @@ func Test_PostServiceAgentsTranscribes(t *testing.T) {
 
 		responseTranscribe *tmtranscribe.WebhookMessage
 
+		expectID            uuid.UUID
 		expectReferenceType string
 		expectReferenceID   uuid.UUID
 		expectLanguage      string
@@ -247,6 +248,32 @@ func Test_PostServiceAgentsTranscribes(t *testing.T) {
 			expectProvider:      tmtranscribe.ProviderEmpty,
 			expectRes:           `{"id":"72e68b78-8286-11ed-8875-378ced61c021","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","on_end_flow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","language":"","direction":"","provider":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
+		{
+			name: "id supplied is threaded through to the service handler",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4e72f3ea-8285-11ed-a55b-6bf44eeb8a87"),
+				},
+			}),
+
+			reqQuery: "/service_agents/transcribes",
+			reqBody:  []byte(`{"id":"72e68b78-8286-11ed-8875-378ced61c021","reference_type":"call","reference_id":"4ecc56ec-8285-11ed-9958-8b0a60b665bf","language":"en-US","direction":"both","on_end_flow_id":"199a8a78-0944-11f0-b57c-dbf18b86df64"}`),
+
+			responseTranscribe: &tmtranscribe.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("72e68b78-8286-11ed-8875-378ced61c021"),
+				},
+			},
+
+			expectID:            uuid.FromStringOrNil("72e68b78-8286-11ed-8875-378ced61c021"),
+			expectReferenceType: "call",
+			expectReferenceID:   uuid.FromStringOrNil("4ecc56ec-8285-11ed-9958-8b0a60b665bf"),
+			expectLanguage:      "en-US",
+			expectDirection:     tmtranscribe.DirectionBoth,
+			expectOnEndFlowID:   uuid.FromStringOrNil("199a8a78-0944-11f0-b57c-dbf18b86df64"),
+			expectProvider:      tmtranscribe.ProviderEmpty,
+			expectRes:           `{"id":"72e68b78-8286-11ed-8875-378ced61c021","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","on_end_flow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","language":"","direction":"","provider":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
+		},
 	}
 
 	for _, tt := range tests {
@@ -273,6 +300,7 @@ func Test_PostServiceAgentsTranscribes(t *testing.T) {
 			mockSvc.EXPECT().ServiceAgentTranscribeStart(
 				req.Context(),
 				tt.agent,
+				tt.expectID,
 				tt.expectReferenceType,
 				tt.expectReferenceID,
 				tt.expectLanguage,
@@ -290,5 +318,42 @@ func Test_PostServiceAgentsTranscribes(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, w.Body)
 			}
 		})
+	}
+}
+
+// Test_PostServiceAgentsTranscribes_malformedID mirrors
+// Test_transcribesPOST_malformedID for the service_agents surface: the
+// OpenAPI-generated binder rejects a malformed id with a 400 before ever
+// reaching serviceHandler.ServiceAgentTranscribeStart.
+func Test_PostServiceAgentsTranscribes_malformedID(t *testing.T) {
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("4e72f3ea-8285-11ed-a55b-6bf44eeb8a87"),
+		},
+	})
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{
+		serviceHandler: mockSvc,
+	}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+
+	r.Use(func(c *gin.Context) {
+		c.Set("auth_identity", agent)
+	})
+	openapi_server.RegisterHandlers(r, h)
+
+	reqBody := []byte(`{"id":"not-a-valid-uuid","reference_type":"call","reference_id":"4ecc56ec-8285-11ed-9958-8b0a60b665bf","language":"en-US"}`)
+	req, _ := http.NewRequest("POST", "/service_agents/transcribes", bytes.NewBuffer(reqBody))
+	req.Header.Set("Content-Type", "application/json")
+
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("Wrong match. expect: %d, got: %d, body: %s", http.StatusBadRequest, w.Code, w.Body.String())
 	}
 }

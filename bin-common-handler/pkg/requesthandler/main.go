@@ -1484,6 +1484,7 @@ type RequestHandler interface {
 	TranscribeV1TranscribeHealthCheck(ctx context.Context, hostID uuid.UUID, id uuid.UUID, delay int, retryCount int) error
 	TranscribeV1TranscribeStart(
 		ctx context.Context,
+		id uuid.UUID,
 		customerID uuid.UUID,
 		activeflowID uuid.UUID,
 		onEndFlowID uuid.UUID,

@@ -1062,6 +1062,7 @@ type ServiceHandler interface {
 	ServiceAgentTranscribeStart(
 		ctx context.Context,
 		a *auth.AuthIdentity,
+		id uuid.UUID,
 		referenceType string,
 		referenceID uuid.UUID,
 		language string,
@@ -1137,6 +1138,7 @@ type ServiceHandler interface {
 	TranscribeStart(
 		ctx context.Context,
 		a *auth.AuthIdentity,
+		id uuid.UUID,
 		referenceType string,
 		referenceID uuid.UUID,
 		language string,

@@ -8,7 +8,7 @@ A transcription session associating a call/conference/recording with an STT prov
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `id` | UUID | Primary key |
+| `id` | UUID | Primary key. Caller-settable (optional) on `Start`: if the caller supplies a non-nil `id`, it is used as-is (subject to the pre-check/TOCTOU handling below); if omitted, the server generates one, unchanged from prior behavior. |
 | `customer_id` | UUID | Owning tenant |
 | `reference_type` | string | Type of resource being transcribed (call, conference, recording) |
 | `reference_id` | UUID | ID of the resource being transcribed |
@@ -59,6 +59,16 @@ Always lock/unlock the session map when accessing it. Implement proper cleanup i
 The streaming handler dials out to Asterisk's `chan_websocket` endpoint (MediaURI from `ExternalMediaStart`). Asterisk pushes raw 8 kHz slin binary frames over WebSocket; these frames are forwarded to the STT provider stream.
 
 WebSocket connection is `client` side (Go dials Asterisk), connection type `server`, transport `websocket`, encapsulation `none`.
+
+### Caller-Specified id
+
+`Start` accepts an optional caller-supplied `id` (see the `Transcribe` table above). A caller-supplied `id` is single-use and non-idempotent: a retried request with the exact same `id` always returns `TRANSCRIBE_ID_ALREADY_EXISTS`, never the original result. New error reasons introduced by this:
+
+- `TRANSCRIBE_ID_ALREADY_EXISTS` (409): the pre-check (or a TOCTOU race resolved via a DB duplicate-key error) found that the caller-supplied `id` is already in use by some row (any customer, any status, soft-deleted or not).
+- `TRANSCRIBE_ID_GENERATION_COLLISION` (500, internal): a server-generated `id` collided with an existing row — not a caller error.
+- `TRANSCRIBE_ALREADY_EXISTS_DIFFERENT_ID` (on the recording path, 409-class `FailedPrecondition`): the caller supplied an `id`, but a transcribe already exists for that recording/language under a different `id`. Unlike the no-`id` case (which returns the existing transcribe), this is always a conflict.
+
+See `docs/plans/2026-09-03-caller-specified-transcribe-id-design.md` for the full design, including the TOCTOU handling and streaming-session rollback.
 
 ### Status Transitions
 

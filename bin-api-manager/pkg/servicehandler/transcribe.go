@@ -126,6 +126,7 @@ func (h *serviceHandler) TranscribeList(ctx context.Context, a *auth.AuthIdentit
 func (h *serviceHandler) TranscribeStart(
 	ctx context.Context,
 	a *auth.AuthIdentity,
+	id uuid.UUID,
 	referenceType string,
 	referenceID uuid.UUID,
 	language string,
@@ -140,6 +141,7 @@ func (h *serviceHandler) TranscribeStart(
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "TranscribeStart",
 		"customer_id":    a.CustomerID,
+		"id":             id,
 		"reference_type": referenceType,
 		"reference_id":   referenceID,
 		"language":       language,
@@ -162,6 +164,7 @@ func (h *serviceHandler) TranscribeStart(
 
 	tmp, err := h.reqHandler.TranscribeV1TranscribeStart(
 		ctx,
+		id,
 		a.CustomerID,
 		uuid.Nil,
 		onEndFlowID,

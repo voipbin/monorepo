@@ -108,6 +108,7 @@ func Test_startReferenceTypeCall(t *testing.T) {
 			mockReq.EXPECT().CallV1CallGet(ctx, tt.referenceID).Return(tt.responseCall, nil)
 			mockReq.EXPECT().TranscribeV1TranscribeStart(
 				ctx,
+				uuid.Nil,
 				cmcustomer.IDAIManager,
 				tt.activeflowID,
 				uuid.Nil,
@@ -221,6 +222,7 @@ func Test_startReferenceTypeConference(t *testing.T) {
 
 			mockReq.EXPECT().TranscribeV1TranscribeStart(
 				ctx,
+				uuid.Nil,
 				cmcustomer.IDAIManager,
 				tt.activeflowID,
 				uuid.Nil,
@@ -524,6 +526,7 @@ func Test_startReferenceTypeRecording(t *testing.T) {
 
 			mockReq.EXPECT().TranscribeV1TranscribeStart(
 				ctx,
+				uuid.Nil,
 				cmcustomer.IDAIManager,
 				tt.activeflowID,
 				uuid.Nil,

@@ -87,6 +87,7 @@ func (h *summaryHandler) startReferenceTypeCall(
 	// customer's transcribe list.
 	tr, err := h.reqHandler.TranscribeV1TranscribeStart(
 		ctx,
+		uuid.Nil,
 		cmcustomer.IDAIManager,
 		activeflowID,
 		uuid.Nil,
@@ -150,6 +151,7 @@ func (h *summaryHandler) startReferenceTypeConference(
 	// customer's transcribe list.
 	tr, err := h.reqHandler.TranscribeV1TranscribeStart(
 		ctx,
+		uuid.Nil,
 		cmcustomer.IDAIManager,
 		activeflowID,
 		uuid.Nil,
@@ -251,6 +253,7 @@ func (h *summaryHandler) startReferenceTypeRecording(
 	// customer's transcribe list.
 	tr, err := h.reqHandler.TranscribeV1TranscribeStart(
 		ctx,
+		uuid.Nil,
 		cmcustomer.IDAIManager,
 		activeflowID,
 		uuid.Nil,

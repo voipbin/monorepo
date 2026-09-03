@@ -70,6 +70,14 @@ For existing calls or conferences, start transcription manually by making an API
 
    You may include an optional ``on_end_flow_id`` (a flow UUID) in the request body. When the transcription ends, VoIPBIN executes that flow, which is useful for post-transcription processing (for example, running an AI summary flow). If omitted, no follow-up flow is triggered. The ``reference_type``, ``reference_id``, and ``language`` fields are required.
 
+.. note:: **Optional parameter:** ``id`` (caller-specified transcribe id)
+
+   You may include an optional ``id`` (a UUID you generate) in the request body to pre-declare the transcribe's id before it is created. This is useful when you need to subscribe to the transcribe's WebSocket event topic (see "Real-Time Transcription with WebSocket" below) *before* the first event can be published, closing the race between "receive the id in the response" and "the first event already fired." If omitted, the server generates one, exactly as before.
+
+   A caller-supplied ``id`` is **single-use and not idempotent**. It must not already be in use by any transcribe (a duplicate returns ``409 TRANSCRIBE_ID_ALREADY_EXISTS``), and retrying the exact same request with the same ``id`` after an ambiguous outcome (for example a client timeout) always returns ``409`` — it never returns the original result. If a request's outcome is unclear, call ``GET /transcribes/{id}`` to check whether the first attempt succeeded, and only mint a new ``id`` if it did not.
+
+   On the recording path specifically, supplying ``id`` when a transcribe already exists for that recording/language is **always** a conflict (``409 TRANSCRIBE_ALREADY_EXISTS_DIFFERENT_ID``) — unlike the no-``id`` case, which keeps today's behavior of returning the existing transcribe.
+
 **Transcribe an Active Call:**
 
 .. code::
