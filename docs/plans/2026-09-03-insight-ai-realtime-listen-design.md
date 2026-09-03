@@ -1,6 +1,6 @@
 # InsightAI Realtime Listen (Proactive Notification) — Design
 
-Status: Draft (rev 2, addressing 2026-09-03 architect review round 1)
+Status: Draft (rev 3, addressing 2026-09-03 independent review round 2)
 Branch: `NOJIRA-Insight-AI-realtime-listen`
 Owner: CPO-directed backend feature
 
@@ -9,7 +9,8 @@ Owner: CPO-directed backend feature
 | Rev | Date | Change |
 |---|---|---|
 | 1 | 2026-09-03 | Initial draft. Fed each transcript segment through `aicallHandler.Send` as a `role=user` message; proactive origin derived from tool-call history; `TranscribeV1TranscribeStop(transcribeID)`; hangup cleanup via the existing `EventCMCallHangup` lookup. |
-| 2 | 2026-09-03 | **Rewritten after architect review (REQUEST_CHANGES, 7 BLOCKING + 4 HIGH).** Transcript segments no longer become `Message` rows and no longer go through `Send`. New two-layer architecture: a Redis-backed transcript buffer plus a debounced *listen evaluation turn* that runs on its own pipecatcall. `notify_agent` gets `RunLLM:false`. Proactive origin becomes a first-class `Message.Origin` field, stored as `role=assistant`. Hangup cleanup uses a new indexed `listen_call_id` column. Transcribe session runs under `IDAIManager`. STT stop on hangup delegated entirely to transcribe-manager's own handler. §10 maps every review item to its resolution. |
+| 2 | 2026-09-03 | **Rewritten after architect review round 1 (REQUEST_CHANGES, 7 BLOCKING + 4 HIGH).** Transcript segments no longer become `Message` rows and no longer go through `Send`. New two-layer architecture: a Redis-backed transcript buffer plus a debounced *listen evaluation turn* that runs on its own pipecatcall. `notify_agent` gets `RunLLM:false`. Proactive origin becomes a first-class `Message.Origin` field, stored as `role=assistant`. Hangup cleanup uses a new indexed `listen_call_id` column. Transcribe session runs under `IDAIManager`. STT stop on hangup delegated entirely to transcribe-manager's own handler. §10 maps every review item to its resolution. |
+| 3 | 2026-09-03 | **Revised after independent review round 2 (REQUEST_CHANGES, 3 BLOCKING + 4 HIGH + 4 MEDIUM + 2 LOW).** Fixed a real correctness bug: the 1:1 Redis resolver key breaks the moment a second Case listens to the same call (§5.2.4/§5.3.3, now a set). Re-diagnosed §5.6.3 — the "tool_calls ordering" fix in rev 2 was a no-op; the actual mechanism (`ToolHandle` writes the tool-call row with empty `content`, which pipecat-manager's own context filter drops) surfaces a **pre-existing production defect predating this design**, now called out explicitly and routed to its own ticket rather than papered over here. Replaced the sole `RunLLM:false` defense for `notify_agent` with an explicit reject-if-called-from-a-real-Q&A-turn guard, closing the "the agent's question silently gets no answer" hole. Added the missing `InsightSystemPrompt` guardrails to the listen-turn context. Stated plainly (§4, §5.6.4) that a proactive notification surfaces multiple rows today and added a frontend render filter as the mitigation. Decided the listen-vs-AI-summary transcribe collision (§5.2.2). Corrected the hangup-cleanup justification (§5.7.1) and the STT-stream-count claim (§5.11) to what the cited code actually establishes, rather than overstating it. Fixed metric-name namespacing (§5.13). §10 gains a round-2 matrix. |
 
 Every code reference below was re-verified against the worktree at rev 2 authoring time; file:line citations are load-bearing and were read, not assumed.
 
@@ -82,8 +83,8 @@ workloads on one AIcall, and they must not share a code path.**
       │ LAYER 1 — intake (no LLM, no DB write, no webhook)     │
       │  subscribehandler.processEventTMTranscriptCreated      │
       │   • drop if TMDelete != nil  (H3)                      │
-      │   • Redis GET ai:listen:transcribe:<transcribe_id>     │
-      │     → miss = not ours, drop (this is the whole filter) │
+      │   • Redis SMEMBERS ai:listen:transcribe:<transcribe_id>│
+      │     → empty = not ours, drop; else fan out per AIcall  │
       │   • RPUSH pending + window lists, LTRIM, EXPIRE        │
       └───────────────────────────┬───────────────────────────┘
                                   │ try Redis SET NX EX (debounce lock)
@@ -131,8 +132,16 @@ review's blocking items:
   (`start.go:620-661`) — which, because the system prompt is itself
   message row #1 (`start.go:812-819`), would have evicted the AI's own
   instructions after ~100 spoken lines.
-- **Nothing a listen turn does is visible to the customer** unless the
-  LLM deliberately calls `notify_agent`.
+- **Nothing a listen turn produces reaches the customer's (tenant's) own
+  webhook endpoint or the agent's panel** unless the LLM deliberately
+  calls `notify_agent` — and **corrected in rev 3**: when it does, or when
+  it uses any other Insight tool during a listen turn (§6, still allowed),
+  more rows go out than the one intended notification, because
+  `ToolHandle` writes a tool-call row and a tool-result row for every
+  tool invocation, and both are webhook-published and panel-rendered
+  today. So the guarantee is "silence unless the LLM acts," not "exactly
+  one row when it does" — see §5.6.4 for what the tenant's webhook
+  consumer and the agent's panel actually receive, and the mitigation.
 
 ---
 
@@ -329,6 +338,40 @@ existing := TranscribeV1TranscribeList(ctx, "", 10, {
   cannot see it (different owner in our filter) and must not affect its
   lifecycle.
 
+#### 5.2.2a Collision with `ai_summary` on the same live call (resolves review-round-2 F5)
+
+`startLive`'s dedup guard is `(customer_id=IDAIManager, reference_id,
+language, status=progressing, deleted=false)`
+(`transcribehandler/start.go:196-214`). Under §5.2.1's `IDAIManager`
+decision, the only sessions listening can ever collide with are
+ai-manager's own — and `summaryhandler.startReferenceTypeCall`
+(`pkg/summaryhandler/start.go:84-99`) is the other place that starts an
+`IDAIManager` transcribe on a call. §5.2.2's "list, reuse if progressing"
+rule handles **listen-starts-second** (it finds and reuses the summary's
+session). It did not handle the reverse:
+
+- Listen starts a transcribe on call X under `IDAIManager` first.
+- A flow/API later starts an AI summary on the same live call, same
+  language → `TranscribeV1TranscribeStart` returns
+  `TRANSCRIBE_ALREADY_PROGRESSING` (409), and
+  `summaryhandler.startReferenceTypeCall` propagates it as a hard error —
+  the summary silently fails to start.
+
+**Decision: make `summaryhandler.startReferenceTypeCall` reuse-tolerant,
+symmetrically with §5.2.2.** Before calling `TranscribeV1TranscribeStart`,
+it runs the same `TranscribeV1TranscribeList(customer_id=IDAIManager,
+reference_id=callID, status=progressing)` check listening already does,
+and reuses a match instead of unconditionally starting. This is a small,
+targeted change to `bin-ai-manager/pkg/summaryhandler/start.go` — in
+scope for this design, not deferred — because leaving it unfixed means
+shipping this feature can silently break a paying customer's AI call
+summary the first time both features are used on the same call. Both
+call sites end up sharing one small helper,
+`ensureIDAIManagerTranscribe(ctx, callID, language)`, added to
+`pkg/aicallhandler` and imported by `summaryhandler` (both already sit in
+`bin-ai-manager`, so this is an in-package refactor, not a new
+cross-service dependency).
+
 #### 5.2.3 Language selection
 
 `language` for a session we start: `c.STTLanguage` if non-empty, else
@@ -349,8 +392,24 @@ which performs **one** `AIcallUpdate` writing:
 - `metadata[listen_transcribe_id] = tr.ID`,
 - `metadata[listen_owns_transcribe] = owns`,
 
-and then writes the Redis resolver key
-`ai:listen:transcribe:<tr.ID> = <c.ID>` (TTL 12h).
+and then adds this AIcall to the Redis resolver **set**:
+`SADD ai:listen:transcribe:<tr.ID> <c.ID>`, `EXPIRE ai:listen:transcribe:<tr.ID> 12h`.
+
+**Set, not a single value — fixed in rev 3.** Rev 2 wrote a single key
+(`ai:listen:transcribe:<tr.ID> = <c.ID>`), which directly contradicts
+§5.2.2's own reuse rule and §5.11's own edge case: **N AIcalls can share one
+`IDAIManager` transcribe** (two Cases on one call, §5.11). With a
+single-valued key, the second AIcall's `UpdateListenState` would silently
+overwrite the first's mapping — the first AIcall stops receiving segments
+for the rest of the call, with no error and no metric — and either
+AIcall's `clearListenState` would delete the shared key out from under the
+other. A set fixes both: every listening AIcall adds itself
+(`SADD`), every listening AIcall removes only itself on cleanup (`SREM`,
+§5.7.3), and Redis deletes the key automatically once the set is empty.
+§5.3.2's intake step becomes `SMEMBERS`, fanning the same segment out to
+every AIcall in the set (still one Redis round trip per platform speech
+turn — `SMEMBERS` costs the same order as `GET` for the tiny (≤2-3 member,
+in every observed case) sets this key ever holds).
 
 **This is the only `ai_aicalls` write the feature makes during a listening
 session** (one at start, one at stop). It is *not* per turn. That bounds
@@ -413,30 +472,35 @@ func (h *subscribeHandler) processEventTMTranscriptCreated(ctx context.Context, 
 }
 ```
 
-and `EventTMTranscriptCreated` opens with a single Redis `GET`:
+and `EventTMTranscriptCreated` opens with a single Redis `SMEMBERS`
+(§5.2.4's fix — a set, not a single value):
 
 ```
-aicallID, ok := cache.ListenAIcallIDGet(ctx, evt.TranscribeID)  // GET ai:listen:transcribe:<id>
-if !ok { return nil }   // not a session we started — 99.9% of platform events end here
+aicallIDs, ok := cache.ListenAIcallIDsGet(ctx, evt.TranscribeID)  // SMEMBERS ai:listen:transcribe:<id>
+if !ok || len(aicallIDs) == 0 { return nil }   // not a session we started — 99.9% of platform events end here
+for _, aicallID := range aicallIDs {
+    // buffer + debounce (§5.3.3/§5.3.4) independently per listening AIcall
+}
 ```
 
 **Sized cost of keeping the wildcard:** per final STT result anywhere on
 the platform — one AMQP delivery, one goroutine, one JSON unmarshal, one
-Redis `GET`. No DB query, no RPC. At VoIPBin's current single-node scale
-that is a rounding error; the escape hatch (dynamic per-transcribe
+Redis `SMEMBERS`. No DB query, no RPC. At VoIPBin's current single-node
+scale that is a rounding error; the escape hatch (dynamic per-transcribe
 binding) and its leak-sweeper requirement are pre-documented in §3 so the
 switch is a decision, not a redesign.
 
 **On the Redis resolver being the sole filter:** the key is written
-explicitly at listen start and deleted explicitly at listen stop (§5.7).
-It is *not* part of `cachehandler.AIcallSet`'s snapshot-index scheme
-(`pkg/cachehandler/handler.go:79-97`), which writes secondary keys
-(`ai:aicall:reference_id:<id>`, `ai:aicall:pipecatcall_id:<id>`) and never
-invalidates the old key when the indexed field changes. Reusing that
-scheme for listen state would leave stale keys pointing at stale snapshots
-and would collide every non-listening AIcall on a shared nil-UUID key
-(review M1). This key is a purpose-built, explicitly-managed pointer, not
-a snapshot index — that distinction is the fix.
+explicitly at listen start and deleted (well, `SREM`'d) explicitly at
+listen stop (§5.7). It is *not* part of `cachehandler.AIcallSet`'s
+snapshot-index scheme (`pkg/cachehandler/handler.go:79-97`), which writes
+secondary keys (`ai:aicall:reference_id:<id>`, `ai:aicall:pipecatcall_id:<id>`)
+and never invalidates the old key when the indexed field changes. Reusing
+that scheme for listen state would leave stale keys pointing at stale
+snapshots and would collide every non-listening AIcall on a shared
+nil-UUID key (review round-1 M1). This key is a purpose-built,
+explicitly-managed pointer, not a snapshot index — that distinction is
+the fix.
 
 **Cache-loss behaviour (stated, not hidden):** a Redis flush drops the
 resolver keys, so in-flight calls stop being listened to until the panel
@@ -512,15 +576,19 @@ Built explicitly — **`getPipecatcallMessages` is not called**:
 
 | # | Role | Content | Bound |
 |---|---|---|---|
-| 1 | `system` | The frozen prompt snapshot from `c.Metadata[prompt_snapshots]` (`models/aicall/main.go:12-22`) — for `AssistanceTypeAI` there is exactly one; for `AssistanceTypeTeam`, the one whose `MemberID == c.CurrentMemberID`, else the first. Already substituted at AIcall start (`start.go:128-166`), so **no DB read and no re-substitution** | 1 message |
-| 2 | `system` | `ListenTurnSystemPrompt` — a new constant beside `InsightSystemPrompt` (`pkg/aicallhandler/main.go:264-282`), describing the watch task and the `notify_agent` contract (§5.5.3) | 1 message |
-| 3 | `user`/`assistant` | The last `AIcallListenQAContextSize` (default 10) rows of this AIcall with `Role ∈ {user, assistant}`, oldest-first. Fetched as `messageHandler.List(ctx, 30, "", {FieldAIcallID: c.ID, FieldDeleted: false})` then filtered in-process (`ApplyFields` has no `IN` support) and truncated. Gives the AI continuity with what the agent asked and with its own earlier notifications | ≤10 messages |
-| 4 | `user` | The transcript block: `cache.ListenWindowGet` (≤40 lines) rendered with a marker separating already-seen lines from the newly popped ones | 1 message, ≤40 lines |
+| 1 | `system` | `InsightSystemPrompt` (`pkg/aicallhandler/main.go:264-282`) — **added in rev 3**. `startInitMessages` normally puts this first for every `ai.TypeInsight` AIcall (`start.go:790-797`), ahead of the customer's own `init_prompt`. Rev 2's context assembly read only `Metadata[prompt_snapshots]`, which holds **just** the substituted `init_prompt` (`buildPromptSnapshots`, `start.go:128-166`) — it never captured `InsightSystemPrompt`. Without it, a listen turn ran with none of the platform's own Insight guardrails ("base every answer strictly on retrieved data", "never expose raw JSON or tool responses", "never mention tool names/JSON/backend logic") — exactly the rules that keep *unsolicited* output sane. `InsightSystemPrompt` is a fixed platform constant (not per-customer), so it needs no DB read either | 1 message |
+| 2 | `system` | The frozen prompt snapshot from `c.Metadata[prompt_snapshots]` (`models/aicall/main.go:12-22`) — for `AssistanceTypeAI` there is exactly one; for `AssistanceTypeTeam`, the one whose `MemberID == c.CurrentMemberID`, else the first. Already substituted at AIcall start (`start.go:128-166`), so **no DB read and no re-substitution** | 1 message |
+| 3 | `system` | `ListenTurnSystemPrompt` — a new constant beside `InsightSystemPrompt`, describing the watch task and the `notify_agent` contract (§5.5.3) | 1 message |
+| 4 | `user`/`assistant` | The last `AIcallListenQAContextSize` (default 10) rows of this AIcall with `Role ∈ {user, assistant}`, oldest-first. Fetched as `messageHandler.List(ctx, 30, "", {FieldAIcallID: c.ID, FieldDeleted: false})` then filtered in-process (`ApplyFields` has no `IN` support) and truncated. Gives the AI continuity with what the agent asked and with its own earlier notifications | ≤10 messages |
+| 5 | `user` | The transcript block: `cache.ListenWindowGet` (≤40 lines) rendered with a marker separating already-seen lines from the newly popped ones | 1 message, ≤40 lines |
 
-Total: a constant-shaped, small prompt, independent of call length. The
-system prompt can never be evicted, because it is not competing with
+Total: a constant-shaped, small prompt, independent of call length. Both
+system prompts can never be evicted, because they are not competing with
 transcript rows for a 100-row window — transcript lines are not rows at
-all.
+all. (The flow-parameter JSON block `startInitMessages` also appends for
+some AIcalls is deliberately *not* replayed here — listen turns are never
+flow-parameterized, since a panel-started `contact_case` AIcall has
+`ActiveflowID == uuid.Nil`, so there is nothing for it to carry.)
 
 #### 5.4.3 Session start
 
@@ -552,24 +620,43 @@ resolves the aicall from the *pipecatcall's* `ReferenceID` (= `c.ID`), not
 from `AIcall.PipecatcallID`. `ToolHandle` therefore operates on the right
 AIcall.
 
-#### 5.4.4 Suppressing all output except `notify_agent` (resolves review B1)
+#### 5.4.4 Suppressing all output except `notify_agent` (resolves review-round-1 B1)
 
-Two independent mechanisms, belt and braces:
+Three independent mechanisms, not two — rev 2's "belt and braces" was
+missing a buckle. Review round 2 (finding F3) showed `RunLLM: false` is
+not the reliable primitive rev 2 treated it as, so it is now the weakest
+of three layers rather than the primary one.
 
-**(a) `notify_agent` is defined with `RunLLM: false`.** Verified end to
-end: `tool.Tool.RunLLM` (`models/tool/main.go:74-83`) is serialised to
-pipecat, `_build_run_llm_defaults` reads it
-(`scripts/pipecat/tools.py:58-85`), and `tool_execute` passes it as
-`FunctionCallResultProperties(run_llm=should_run_llm)`
-(`tools.py:105,142-152`). With `run_llm=False` the pipeline does **not**
-run the LLM again after the tool result, so no `bot_llm` text frame is
-produced. This is the in-convention way to express "tool fired, no
-follow-up text" — every other tool in `definitions.go` uses
-`RunLLM: true` precisely because it *wants* the follow-up.
+**(a) `notify_agent` is defined with `RunLLM: false` — a best-effort
+hint, not a guarantee.** Verified end to end: `tool.Tool.RunLLM`
+(`models/tool/main.go:74-83`) is serialised to pipecat,
+`_build_run_llm_defaults` reads it (`scripts/pipecat/tools.py:58-85`), and
+the happy path passes `FunctionCallResultProperties(run_llm=should_run_llm)`
+(`tools.py:105,142-152`), suppressing the follow-up `bot_llm` text frame.
+**Three caveats review round 2 found, all confirmed by re-reading
+`tools.py`:**
+1. **Every error path drops `properties` entirely** (`tools.py:135-138`
+   HTTP≥400, `:156-159` timeout, `:163-166` `ClientError`, `:170-173`
+   generic) — a failed or slow `notify_agent` call re-runs the LLM and can
+   still emit follow-up text.
+2. **The model can override the default.** `args.pop("run_llm", …)`
+   (`tools.py:~60`) takes the LLM's own `run_llm` argument first if it
+   supplies one — `models/tool/main.go:75-77`'s own comment says as much:
+   *"The LLM can still override this per-call via a `run_llm` argument."*
+3. **Correcting a false claim from rev 2**: it is not true that "every
+   other tool in `definitions.go` uses `RunLLM: true`" — 9 of the 21 tools
+   do not (`connect_call`, `send_email`, `send_message`, `stop_media`,
+   `stop_service`, `stop_flow`, `set_variables`, `get_variables`,
+   `get_aicall_messages`; `definitions.go` lines 10, 83, 163, 240, 276,
+   306, 335, 376, 409). The accurate, and stronger, statement is that
+   **all six existing Insight tools** use `RunLLM: true`
+   (`tool_insight.go`-registered definitions at lines 755, 786, 825, 850,
+   880, 907) — which is exactly why `notify_agent` being the one Insight
+   tool with `RunLLM: false` is a deliberate outlier, not a "usual
+   pattern," and needs (b)/(c) below to actually hold.
 
 **(b) A pipecatcall-identity guard on every inbound pipecat message
-event.** A misbehaving model can still emit text instead of (or before)
-calling the tool. `messagehandler` gains one shared helper:
+event.** `messagehandler` gains one shared helper:
 
 ```go
 // isForeignPipecatcall reports whether evt.PipecatcallID differs from the
@@ -583,7 +670,7 @@ func (h *messageHandler) isForeignPipecatcall(ac *aicall.AIcall, evtPipecatcallI
 applied for `ac.ReferenceType == aicall.ReferenceTypeContactCase` in all
 four handlers that today would persist or publish:
 
-| Handler | File:line | Today | Rev 2 |
+| Handler | File:line | Today | Rev 2/3 |
 |---|---|---|---|
 | `EventPMMessageBotLLM` | `messagehandler/event.go:167-180` | persists **any** non-empty text unconditionally on the non-conversation branch | drop if foreign; also pass `WithPipecatcallID(evt.PipecatcallID)` on the row it does persist |
 | `EventPMMessageBotLLMIntermediate` | `event.go:260-291` | publishes an `EventTypeMessageIntermediate` **webhook per token chunk**, no aicall check | drop if foreign |
@@ -596,16 +683,64 @@ already has (`event.go:182-189`), so today's silently-persisted stale
 contact_case replies stop appearing too. Metric:
 `ai_manager_aicall_foreign_pipecatcall_dropped_total{handler}`.
 
+**Correctness caveat found in review round 2 (F4): a stale cache read can
+turn (b) into a false positive against a genuine answer.**
+`AIcallGet` is cache-first (`pkg/dbhandler/aicall.go:112-115`), and
+`AIcallUpdate`'s cache refresh discards its own error
+(`_ = h.aicallUpdateToCache(ctx, id)`). If the Redis write right after a
+real `Send()`'s `UpdatePipecatcallID` (`aicallhandler/db.go:244-248`)
+transiently fails, the cached AIcall keeps the *old* `PipecatcallID` for
+up to its TTL — and (b) would then drop the agent's genuine answer as
+"foreign." **Fix: on a mismatch, re-read the AIcall bypassing the cache**
+(`dbhandler.AIcallGet(ctx, id, skipCache: true)` — a small addition to
+the existing `Get` signature, following the same shape as the
+`conversation` branch's own stale-reply guard at `event.go:209-219`, which
+this design's guard is explicitly modelled on) before deciding to drop.
+Only drop if the DB-authoritative read still disagrees.
+
 Two existing handlers were checked and need **no** change:
 - `EventPMPipecatcallTerminated` returns early unless
-  `ac.ReferenceType == ReferenceTypeConversation` (`event.go:405-408`), so
-  a listen turn's termination never triggers the "Sorry, I'm having
-  trouble responding right now" backstop.
+  `ac.ReferenceType == ReferenceTypeConversation` (`event.go:405-408`) —
+  **noted as a real gap, not dismissed**: this means `contact_case` has no
+  termination-triggered "Sorry, I'm having trouble responding right now"
+  backstop the way `conversation` does, so (b)'s cache-bypass re-read in
+  the paragraph above is the only safety net for a stale-cache false
+  drop on this reference type. Acceptable because it is a re-read, not a
+  guess.
 - `EventPMPipecatcallInitialized` returns early unless
   `cc.ReferenceType == ReferenceTypeCall` (`aicallhandler/event.go:110-112`).
 
+**(c) `toolHandleNotifyAgent` itself rejects the call outright when it did
+not arrive on a listen turn — closing the review-round-2 F3 hole.**
+(a) alone has a failure mode rev 2 did not analyze: if `notify_agent` is
+invoked during the agent's *own* Q&A turn (on `c.PipecatcallID` itself,
+not a throwaway listen-turn id) and `run_llm=False` actually takes effect,
+the agent's real question gets **no answer at all** — just an unrelated
+notification. §6 ("LLM calls `notify_agent` during a normal Q&A turn →
+Allowed... Harmless") was wrong about this in rev 2; it is not harmless.
+So `toolHandleNotifyAgent` checks the invoking pipecatcall id
+(threaded through from `ToolHandle`'s caller — pipecat already sends the
+pipecatcall id on every `tool_execute` POST, `tools.py:107`) against
+`c.PipecatcallID`:
+
+```go
+if toolCallPipecatcallID == c.PipecatcallID {
+    // This tool fired on the agent's own conversational turn, not a
+    // listen evaluation turn (§5.4.3's throwaway ids never equal
+    // c.PipecatcallID by construction). Reject rather than let RunLLM's
+    // best-effort suppression silently eat the agent's real question.
+    fillFailed(res, fmt.Errorf("notify_agent is only usable while proactively monitoring a call; you were asked a question — answer it directly instead"))
+    return res
+}
+```
+
+This makes `notify_agent` fail closed exactly when (a)'s guarantee is
+weakest, independent of whether (a) actually suppressed the follow-up.
+
 Net effect: **a listen turn produces exactly zero persisted rows and zero
-webhooks unless the LLM calls `notify_agent`.**
+webhooks unless the LLM calls `notify_agent` from that turn — and a call
+to `notify_agent` from any other context is rejected rather than silently
+eating a real answer.**
 
 ### 5.5 The `notify_agent` tool
 
@@ -697,10 +832,15 @@ message. **This design deliberately relaxes that invariant, narrowly:**
 **Auto-grant blast radius, acknowledged:** Insight AIs typically store
 `tool_names=["all"]`, which `AllowedToolNames` expands at runtime, so every
 existing Insight AI gains `notify_agent` on deploy with no re-consent
-step. The accepted worst case is that a model calls it during an ordinary
-Q&A turn and the agent sees one extra message in the thread they are
-already looking at — no external action, no spend, no data change. The
-tool description explicitly tells the model not to do this.
+step. **Corrected in rev 3**: the worst case if a model calls it during an
+ordinary Q&A turn is *not* "one extra harmless message" — §5.4.4(c) now
+rejects that call outright, precisely because rev 2's "harmless" framing
+was wrong (§5.4.4(c)'s own rationale). So the actual worst case is a
+failed tool call the agent never sees (it just gets its real answer,
+unaffected) — no external action, no spend, no data change, and no
+silently-eaten answer either. The tool description still explicitly
+tells the model not to do this; (c) is the backstop for when the
+description is not followed.
 
 #### 5.5.3 Customer-configurable triggering
 
@@ -773,43 +913,108 @@ const (
 - Exposed in `message.WebhookMessage` + `ConvertWebhookMessage` — the
   frontends key their badge off it (§5.10).
 
-#### 5.6.3 Message ordering — a correctness constraint, not a detail
+#### 5.6.3 Message ordering — re-diagnosed in rev 3; surfaces a pre-existing production defect
 
-`ToolHandle` (`aicallhandler/tool.go:24-100`) writes, in order:
-1. `role=assistant` with `ToolCalls` (line 47),
-2. runs the handler,
-3. `role=tool` with the result (line 88 → `toolCreateResultMessage`).
+Rev 2 claimed creating the proactive row *inside* `ToolHandle`'s step 2
+would produce `assistant(tool_calls) → assistant(text) → tool(result)`,
+which OpenAI rejects unless the `tool_calls` message is immediately
+followed by its results — and "fixed" this by moving the proactive row to
+*after* the tool-result row. **Review round 2 (finding F2) showed this
+diagnosis was wrong, and the fix was consequently a no-op.** Re-verified
+directly against the code for rev 3:
 
-If `toolHandleNotifyAgent` created the proactive row *inside* step 2, the
-persisted sequence would be `assistant(tool_calls)` →
-`assistant(text)` → `tool(result)`. `getPipecatcallMessages` replays
-`tool_calls` and `tool_call_id` verbatim (`start.go:643-655`), and the
-OpenAI chat API rejects a `tool_calls` assistant message that is not
-immediately followed by its `tool` results — so every *subsequent* Q&A
-turn on that AIcall would 400. That would be a latent, hard-to-diagnose
-break.
+- `ToolHandle` creates the tool-call row with **empty content**:
+  `h.messageHandler.Create(ctx, uuid.Nil, c.CustomerID, c.ID, c.ActiveflowID,
+  message.DirectionIncoming, message.RoleAssistant, "", []message.ToolCall{*tool}, ...)`
+  (`tool.go:47` — the `""` is the `content` argument).
+- `bin-pipecat-manager/scripts/pipecat/run.py:450` builds the replayed
+  context as `valid_messages = [m for m in messages if m.get("role") and
+  m.get("content")]` — an empty-string `content` is falsy in Python, so
+  **the `assistant(tool_calls)` row is filtered out of the context before
+  it ever reaches `LLMContext`**, regardless of which row was created
+  first or second on the DB side. The same filter runs on the
+  team-conversation path (`run.py:637`). Rev 2's reordering therefore
+  changes nothing about what pipecat-manager actually sends to the LLM —
+  **both orderings produce byte-identical payloads.**
+- What *does* reach the LLM, because it has real content, is the
+  `role=tool` result row (`toolCreateResultMessage`, `tool.go:88`) — with
+  **no preceding `tool_calls` entry in the same context**, because that
+  entry was just filtered out. This is the actual OpenAI-API-incompatible
+  shape (a `tool`-role message must reference a `tool_calls` entry present
+  in the same request), just the reverse of what rev 2 diagnosed.
 
-**Therefore the proactive row is created after the tool-result row**, as
-an explicit post-step in `ToolHandle`:
+**This is not a defect this feature introduces.** Every existing Insight
+tool (`get_call_transcript`, `get_contact_profile`, …) follows the exact
+same `ToolHandle` path today, so **any multi-turn `contact_case` Q&A
+session where the agent's first question triggers a tool call, and the
+agent then asks a follow-up question, already replays this orphaned
+`tool`-role row into the follow-up's context** — independent of listen,
+independent of `notify_agent`. This design does not change that shape for
+`notify_agent`'s own tool-call/result pair (they follow the identical
+`ToolHandle` sequence as every other tool), and does not attempt to fix
+it here: fixing `run.py:450`'s content-truthiness filter (or giving the
+tool-call row non-empty placeholder content) is a change to shared
+`ToolHandle`/pipecat-manager behaviour affecting every AI tool call
+platform-wide, not something scoped to Insight listening.
 
-```go
-msg, err := h.toolCreateResultMessage(ctx, c, tool, tmpMessageContent, toolCallActiveAIID)
-...
-// Post-step: notify_agent's visible output is emitted only AFTER the tool
-// result row, so the persisted sequence stays a valid
-// assistant(tool_calls) -> tool(result) -> assistant(text) chain for any
-// later LLM replay (see design §5.6.3).
-if tool.Function.Name == message.FunctionCallNameNotifyAgent && tmpMessageContent.Result == "success" {
-    if text, errParse := parseNotifyAgentMessage(tool.Function.Arguments); errParse == nil {
-        h.createProactiveMessage(ctx, c, text, toolCallActiveAIID)  // role=assistant, Origin=proactive
-    }
-}
-```
+**Action item, separate from this design (§11 item 3, escalated in rev
+3 from "follow-up" to "recommend filing and investigating immediately"):**
+confirm empirically whether this is actually causing production failures
+today (it may be masked if OpenAI's Chat Completions API is in practice
+lenient about an orphaned `tool` message, or if few real sessions exercise
+a tool call followed by a genuine follow-up question on the same AIcall —
+that needs checking, not assuming). If confirmed, it is a platform-wide
+correctness bug predating and independent of this feature and should be
+triaged on its own ticket, at whatever urgency the confirmation warrants.
 
-`parseNotifyAgentMessage` (unmarshal + trim + non-empty + length cap) is
-shared with `toolHandleNotifyAgent`, so validation cannot drift between the
-two call sites. `toolHandleNotifyAgent` itself only validates and returns
-success/failure — it writes nothing.
+The proactive `Origin=proactive` row itself needs no special ordering
+relative to the tool-call/result pair — it is a wholly separate `Message`
+row, written by `toolHandleNotifyAgent` (§5.5) once it validates the
+argument, with no OpenAI-payload constraint linking it to the tool-call
+sequence above.
+
+#### 5.6.4 What actually surfaces per `notify_agent` call (new in rev 3, resolves review-round-2 F7)
+
+Rev 2 asserted a single new row per notification. **That is wrong.**
+`ToolHandle` (`aicallhandler/tool.go:24-100`) writes, for **every** tool
+invocation including `notify_agent`:
+
+1. `role=assistant`, `content=""`, carrying `ToolCalls` (`tool.go:47`),
+2. `role=tool`, the raw JSON result (`tool.go:88` →
+   `toolCreateResultMessage`),
+3. — and only for `notify_agent` — the new `role=assistant`,
+   `Origin=proactive` row (§5.6.2).
+
+`messageHandler.Create` publishes `aimessage_created` to the customer's
+(tenant's) configured webhook **unconditionally** for every row
+(`pkg/messagehandler/db.go:81` → `notifyhandler/publish.go:24-26`), and
+neither panel special-cases roles when rendering — square-admin styles on
+`msg.role === 'user'` and treats everything else uniformly
+(`CaseInsightAssistantPanel.js:44`); square-talk does the same
+(`.jsx:62`). So **one proactive notification is, today, three
+webhook-published, panel-rendered rows**: an empty bubble, a raw-JSON
+blob, and the intended note.
+
+This is **not new to this feature** — every existing Insight tool call
+already produces rows 1 and 2 and already surfaces them the same way; it
+predates this design (same root cause as §5.6.3's finding: `ToolHandle`'s
+two-row-per-tool-call shape). This design makes it materially more
+visible because listening is the first thing that can trigger a tool call
+*without the agent having asked for it*, so the noise now appears
+unprompted mid-call, not as a byproduct of a question the agent typed.
+
+**Mitigation shipped with this design (frontend, §5.10.1): filter, don't
+suppress.** Both `CaseInsightAssistantPanel` components stop rendering a
+message if `role === 'tool'` or (`role === 'assistant' && content === ''
+&& toolCalls?.length`) — a generically useful filter, not scoped to
+listening, since it also cleans up every existing Insight Q&A tool call's
+panel noise today. This is a client-side render filter only; it does
+**not** touch the webhook delivery, `Create`, or `PublishWebhookEvent` —
+those keep firing for rows 1 and 2 exactly as before, so a tenant's own
+webhook-consuming automation still sees every tool-call row it does
+today. Suppressing *those* webhooks is a separate, larger decision
+(whether tenants rely on tool-call webhooks for their own automation is
+unknown) and is recorded as a follow-up (§11 item 6), not attempted here.
 
 ### 5.7 Lifecycle and cleanup
 
@@ -841,18 +1046,41 @@ FieldDeleted: false}` — hence the indexed **column** in §5.8 — and clears
 each match. Plural on purpose: two Cases on one call each get their own
 AIcall (see §5.11), and both must be cleared.
 
-**STT stop: not ai-manager's job on this path.**
-`bin-transcribe-manager/pkg/transcribehandler/event.go:51-81`
-(`EventCMCallHangup`) already lists **every** non-deleted transcribe with
-`reference_id == call.ID`, owner-agnostic, and stops each one. The listen
-session is therefore already stopped by transcribe-manager itself. Rev 1's
-`TranscribeV1TranscribeStop` call on hangup was both wrongly-signed and
-redundant.
+**STT stop: not ai-manager's job on this path — reasoning corrected in
+rev 3.** `bin-transcribe-manager/pkg/transcribehandler/event.go:51-81`
+(`EventCMCallHangup`) does list every non-deleted transcribe with
+`reference_id == call.ID`, owner-agnostic, and call `Stop` on each — but
+**review round 2 (finding F8) showed the DB-status-flip half of that path
+is pod-local, not the platform-wide guarantee rev 2 stated.** `Stop` →
+`stopLive` → `streamingHandler.Stop` reads the **per-pod in-memory**
+`mapStreaming`; on whichever pod happens to consume the shared hangup
+subscribe queue (`cmd/transcribe-manager/main.go:201`) that is *not* the
+session's owning pod, the in-memory lookup misses,
+`isSafeToConsiderStopped` treats that as "already gone," the physical
+streaming stop is skipped, and `UpdateStatus(StatusDone)` is written
+anyway — regardless of whether the physical STT stream actually stopped.
+The safety comment at `stop.go:155-166` that justifies this branch
+explicitly assumes routed-to-owning-pod delivery (*"the RPC can only ever
+reach the pod identified by the transcribe's `HostID`"*), which is true of
+the direct `TranscribeV1TranscribeStop`/health-check RPCs but **not** of
+this in-process hangup-event path.
 
-This removes the per-pod `HostID` reachability problem from the hangup
-path entirely — which matters, because `bin-transcribe-manager/CLAUDE.md`
-documents that `HostID` is a fresh random UUID generated on every process
-start, so a persisted `HostID` can address a queue that no longer exists.
+The *actual* backstop this design relies on is simpler and does not
+depend on that DB write: hanging up the call closes Asterisk's external-
+media WebSocket connection that was feeding the streaming session's audio
+(`bin-transcribe-manager/CLAUDE.md`'s own description of the transport —
+"Go dials out to Asterisk's `chan_websocket` endpoint... raw 8kHz slin
+binary frames"). Once that socket closes, the STT read loop ends and
+billing for that stream stops, independent of whether `ai_transcribes`'s
+row shows `progressing` or `done` on a non-owning pod. **This is a
+pre-existing property of every transcribe session on the platform today,
+not something this design introduces or changes** — listening rides the
+same guarantee every flow-driven and summary-driven transcribe already
+relies on. ai-manager's hangup path therefore still issues no stop RPC (a
+persisted `HostID` could address a queue that no longer exists after a
+transcribe-manager restart, per `bin-transcribe-manager/CLAUDE.md`), but
+the justification is "the audio transport itself terminates," not "the DB
+row is guaranteed accurate."
 
 Before returning, `stopListenByCallID` runs one final flush turn
 (`RunListenTurn`, bypassing the debounce lock) if `pending` is non-empty,
@@ -887,22 +1115,33 @@ transcribe-manager restart.
 owning pod restarted, the per-pod queue
 `bin-manager.transcribe-manager-<host_id>.request` no longer exists and
 the stop RPC times out. That is logged, metered, and tolerated — the
-session is guaranteed to be cleaned up by transcribe-manager's own
-`EventCMCallHangup` when the call ends, which is at most one call-duration
-away. The failure mode is a slightly-longer-than-necessary STT session,
-never a permanently orphaned one.
+session's audio transport is guaranteed to end when the call itself ends
+(§5.7.1's corrected reasoning), which is at most one call-duration away.
+The failure mode is a slightly-longer-than-necessary STT session, never a
+permanently orphaned one.
+
+**Second-order consequence of §5.7.1's correction, noted here rather than
+hidden:** the `tr.Status == tmtranscribe.StatusProgressing` gate above can
+itself already read `done` on a call that hung up moments earlier but
+whose STT-stop RPC never reached the owning pod (§5.7.1) — in which case
+this branch is simply skipped, which is the correct outcome (nothing left
+to stop).
 
 #### 5.7.3 Clearing state (all paths)
 
 `clearListenState(ctx, aicallID)`:
 1. `AIcallUpdate` → `listen_call_id = uuid.Nil`, remove both metadata keys
    (one write).
-2. Redis: `DEL ai:listen:transcribe:<transcribe_id>`,
-   `ai:listen:pending:<aicall_id>`, `ai:listen:window:<aicall_id>`,
-   `ai:listen:lock:<aicall_id>`, `ai:listen:turns:<aicall_id>`.
+2. Redis: `SREM ai:listen:transcribe:<transcribe_id> <aicall_id>` (§5.2.4's
+   set fix — removes only this AIcall's membership; Redis deletes the key
+   itself once the set empties, so a shared transcribe stays resolvable
+   for whichever AIcall(s) are still listening to it), plus
+   `DEL ai:listen:pending:<aicall_id>`, `ai:listen:window:<aicall_id>`,
+   `ai:listen:lock:<aicall_id>`, `ai:listen:turns:<aicall_id>` (these four
+   are per-AIcall, never shared, so a plain `DEL` is correct for them).
 
-Deleting the resolver key first is what guarantees a stale
-`transcribe_id` can never be matched again by §5.3.
+Removing this AIcall's set membership first is what guarantees a stale
+`(transcribe_id, aicall_id)` pairing can never be matched again by §5.3.
 
 ### 5.8 Data model and plumbing scope (resolves review M2)
 
@@ -1011,13 +1250,19 @@ Correction to the rev-1 review's M6: `square-admin` and `square-talk` are
   already subscribes to `customer_id:{id}:aicall:{aicallId}` and receives
   every new message over the existing WebSocket path — no transport
   change. `MessageThread` currently styles on `msg.role === 'user'`
-  (line 44); it gains a third branch for `msg.origin === 'proactive'`
-  (distinct surface + a `Sparkles`/bell affordance + an accessible label
-  such as "Proactive insight"), so a notification is never mistaken for an
-  answer.
+  (line 44); it gains:
+  - a render filter (**new in rev 3, resolves review-round-2 F7, detailed
+    in §5.6.4**): skip rendering any message with `role === 'tool'`, or
+    `role === 'assistant' && !content && toolCalls?.length`. This is a
+    client-side filter only — it hides the two noise rows every tool call
+    (not just `notify_agent`) already produces, without touching what the
+    tenant's own webhook consumer receives (§5.6.4, §11 item 6);
+  - a third branch for `msg.origin === 'proactive'` (distinct surface + a
+    `Sparkles`/bell affordance + an accessible label such as "Proactive
+    insight"), so a notification is never mistaken for an answer.
 - **square-talk** (`src/features/cases/CaseInsightAssistantPanel.jsx`):
-  unchanged transport (2s poll); identical `origin`-driven treatment at
-  line 62.
+  unchanged transport (2s poll); identical render-filter and
+  `origin`-driven treatment at line 62.
 - No backend read-surface work is needed:
   `ServiceAgentAImessageList` returns `ConvertWebhookMessage()` output
   (`bin-api-manager/pkg/servicehandler/serviceagent_aimessage.go:68-72`),
@@ -1053,16 +1298,17 @@ sessions. Bounds that actually apply:
 
 | Bound | Value |
 |---|---|
-| STT sessions per call | 1 — any progressing `IDAIManager` session on that call is reused (§5.2.2) |
+| **Transcribe sessions** per call | 1 — any progressing `IDAIManager` session on that call is reused (§5.2.2) |
+| **STT streams** per call (corrected in rev 3, review-round-2 F11) | 2, not 1 — `DirectionBoth` expands to two independent streamings, one per direction (`transcribehandler/start.go:~216-219`: `directions := []transcript.Direction{DirectionIn, DirectionOut}`), each its own external-media leg and provider stream. One shared *transcribe session* still means one shared *billing/lifecycle record* (§5.2.2's reuse rule dedupes at that level), but the underlying STT cost is two streams, not one |
 | LLM turns per AIcall per minute | `60 / AIcallListenEvaluateIntervalSeconds` = 3 at the default |
 | LLM turns per AIcall, total | `AIcallListenMaxTurnsPerAIcall` = 60 (hard stop, then listening ends) |
-| Tokens per turn | constant-shaped: 2 system messages + ≤10 Q&A messages + ≤40 transcript lines (§5.4.2) |
+| Tokens per turn | constant-shaped: 3 system messages (`InsightSystemPrompt` + prompt snapshot + `ListenTurnSystemPrompt`, §5.4.2) + ≤10 Q&A messages + ≤40 transcript lines |
 | Concurrent listen sessions | number of open Case panels whose Case call is live |
 
 **Worst case per listened call at defaults:** 3 small LLM turns/min,
-capped at 60 turns (~20 min of continuous speech), one shared STT session.
-Contrast with rev 1, which was one *unbounded-context* LLM call per spoken
-sentence.
+capped at 60 turns (~20 min of continuous speech), one shared transcribe
+session (two STT streams). Contrast with rev 1, which was one
+*unbounded-context* LLM call per spoken sentence.
 
 **Kill switch.** `AIcallListenEnabled` defaults to **false**. The feature
 ships dark and is enabled deliberately.
@@ -1085,16 +1331,26 @@ the existing pattern (`config/main.go:159-177`), and documented in
 
 ### 5.13 New metrics
 
-| Metric | Labels | Meaning |
-|---|---|---|
-| `ai_manager_aicall_listen_start_total` | `result` = started / reused / skipped_not_listenable / failed | §5.1–5.2 outcomes |
-| `ai_manager_aicall_listen_segment_total` | `result` = buffered / dropped_deleted / dropped_unknown | §5.3 intake |
-| `ai_manager_aicall_listen_turn_total` | `result` = ran / skipped_locked / skipped_empty / skipped_cap / failed | §5.4 turns |
-| `ai_manager_aicall_listen_notify_total` | — | proactive messages actually delivered |
-| `ai_manager_aicall_foreign_pipecatcall_dropped_total` | `handler` | §5.4.4 guard firings (also covers pre-existing stale contact_case replies) |
-| `ai_manager_aicall_listen_stop_failed_total` | — | §5.7.2 stop RPC failures falling back to transcribe-manager cleanup |
+**Naming corrected in rev 3 (review-round-2 F12).** Existing ai-manager
+metrics are declared with `Namespace: metricsNamespace` (`"ai_manager"`)
+plus a bare `Name:` (e.g. `aicall_create_total`,
+`aicall_tool_execute_total`, `message_create_total`) — the namespace is
+prepended by the Prometheus client library, not typed into the name
+string. Rev 2's names already included `ai_manager_` as a literal prefix,
+which would render as `ai_manager_ai_manager_aicall_listen_start_total`.
+The table below gives the `Name:` value only; the namespace is implicit,
+exactly like every existing ai-manager metric.
 
-`ai_manager_aicall_listen_turn_total{result="skipped_locked"}` is the
+| Metric (full name = `ai_manager_` + this) | Labels | Meaning |
+|---|---|---|
+| `aicall_listen_start_total` | `result` = started / reused / skipped_not_listenable / failed | §5.1–5.2 outcomes |
+| `aicall_listen_segment_total` | `result` = buffered / dropped_deleted / dropped_unknown | §5.3 intake |
+| `aicall_listen_turn_total` | `result` = ran / skipped_locked / skipped_empty / skipped_cap / failed | §5.4 turns |
+| `aicall_listen_notify_total` | — | proactive messages actually delivered |
+| `aicall_foreign_pipecatcall_dropped_total` | `handler` | §5.4.4(b) guard firings (also covers pre-existing stale contact_case replies) |
+| `aicall_listen_stop_failed_total` | — | §5.7.2 stop RPC failures falling back to the call-hangup-ends-the-transport backstop (§5.7.1) |
+
+`aicall_listen_turn_total{result="skipped_locked"}` is the
 direct measure of how much LLM spend the debounce is saving; if it is near
 zero, the interval is too short for the traffic.
 
@@ -1123,10 +1379,11 @@ read as an endorsed alternative).
 | `transcript_created` arrives after listening stopped | Redis resolver key already deleted → dropped |
 | Redis unavailable | Buffering and the debounce lock fail → no listen turns run. Q&A is completely unaffected (it never touches these keys). Degrades to today's reactive-only behaviour |
 | Redis flushed mid-call | Listening silently stops for in-flight calls until the panel is reopened (§5.3.2). Stated, accepted, self-healing |
-| LLM emits text instead of calling `notify_agent` | Dropped by the pipecatcall-identity guard on all four pipecat message handlers (§5.4.4); metered. Nothing persisted, no webhook |
+| `RunListenTurn` fails after popping `pending` (pipecatcall start error, pod loss) (**new in rev 3**) | The popped lines are gone — `LPOP` already removed them, and only the ≤40-line `window` retains a copy for the *next* turn's context. Accepted, bounded data loss: at most one debounce interval's worth of transcript is skipped from evaluation, never from the call itself (nothing about the actual call or its recording is affected) |
+| LLM emits text instead of calling `notify_agent` | Dropped by the pipecatcall-identity guard on all four pipecat message handlers (§5.4.4(b)); metered. Nothing persisted, no webhook |
 | LLM calls `notify_agent` with empty/whitespace/oversized `message` | Rejected in `parseNotifyAgentMessage`; `fillFailed` (same style as the other tools in `tool_insight.go`); tool-result row records the failure; **no** proactive message row |
-| LLM calls `notify_agent` during a normal Q&A turn | Allowed. Produces one extra `origin=proactive` message alongside the normal answer. Harmless (§5.5.2) |
-| LLM calls other Insight tools during a listen turn | Allowed (no per-turn tool restriction — §3). Adds tool rows and their webhooks. Discouraged by `ListenTurnSystemPrompt` |
+| LLM calls `notify_agent` during a normal Q&A turn (**corrected in rev 3, was "harmless" in rev 2**) | **Rejected outright** by §5.4.4(c)'s pipecatcall-identity check in `toolHandleNotifyAgent` — the call fails, the agent's real answer proceeds unaffected. Rev 2 called this harmless; it was not (§5.4.4(c)) |
+| LLM calls other Insight tools during a listen turn | Allowed (no per-turn tool restriction — §3). Adds tool-call/result rows, webhook-published as always; hidden from the panel by the render filter (§5.6.4, §5.10.1) but still delivered to the tenant's webhook consumer. Discouraged by `ListenTurnSystemPrompt` |
 | Turn cap reached on a very long call | Listening stops cleanly with `skipped_cap`; the Q&A panel keeps working normally |
 | Agent asks a question while a listen turn is mid-flight | Both proceed independently on separate pipecatcalls. `Send` rotates `c.PipecatcallID`, which makes the still-running listen turn's id "foreign" — so if that turn later emits text it is dropped, and if it calls `notify_agent` the notification still lands correctly (tool routing goes through the pipecatcall's `ReferenceID`, not `AIcall.PipecatcallID`) |
 | transcribe-manager pod restarted; stop RPC unreachable | Logged + metered; transcribe-manager's own hangup handler is the guaranteed backstop (§5.7.2) |
@@ -1149,41 +1406,53 @@ read as an endorsed alternative).
    reuse case is the specific regression rev 1 shipped; it gets a named
    test.
 3. `EventTMTranscriptCreated` — `TMDelete != nil` drop; empty-message
-   drop; Redis-miss drop (asserting **no** DB call); buffered-but-locked
-   (no turn); buffered-and-unlocked (turn runs).
+   drop; empty-set drop (asserting **no** DB call); buffered-but-locked
+   (no turn); buffered-and-unlocked (turn runs); **new in rev 3, pins F1's
+   fix**: two AIcalls in the same resolver set both get the segment
+   buffered independently, and clearing one (`SREM`) leaves the other's
+   membership and buffering intact.
 4. `RunListenTurn` — empty pending → skip; turn cap → stop listening;
-   context assembly golden test asserting exact message count, order, and
-   that the snapshot system prompt is message #1 (this is the direct
-   regression test for the rev-1 context-eviction defect); asserts
-   `getPipecatcallMessages` is **not** called and `c.PipecatcallID` is
-   **not** written.
+   context assembly golden test asserting exact message count and order —
+   `InsightSystemPrompt` first, the prompt snapshot second, then
+   `ListenTurnSystemPrompt` (this is the direct regression test for both
+   the rev-1 context-eviction defect and rev-2's missing-guardrails defect,
+   F6); asserts `getPipecatcallMessages` is **not** called and
+   `c.PipecatcallID` is **not** written.
 5. `messagehandler.isForeignPipecatcall` — for each of the four handlers:
    matching id persists/publishes, mismatched id drops, and (for
    `EventPMMessageBotLLMIntermediate`) **no webhook is published** on
    mismatch.
-6. `toolHandleNotifyAgent` + the `ToolHandle` post-step — success writes
-   the proactive row **after** the tool-result row (assert relative
-   ordering explicitly; this pins §5.6.3), with `Role=assistant` and
-   `Origin=proactive`; empty/whitespace/oversized argument writes no
-   proactive row; a failed tool writes no proactive row.
+6. `toolHandleNotifyAgent` — success writes exactly one proactive row with
+   `Role=assistant` and `Origin=proactive`; called on `c.PipecatcallID`
+   itself (§5.4.4(c)) is rejected with no row written; empty/whitespace/
+   oversized argument writes no proactive row.
 7. Cleanup — `stopListenByCallID` clears **all** matching AIcalls (two-row
    case); `ProcessTerminate` stops only when `owns=true`; stop-RPC failure
-   is non-fatal and metered; `clearListenState` deletes every Redis key.
+   is non-fatal and metered; `clearListenState` `SREM`s only its own
+   membership, not the whole resolver set.
+8. **New in rev 3, pins F4:** the pipecatcall-identity guard's
+   cache-bypass re-read — a mismatch against the cached `PipecatcallID`
+   that resolves to a match on a DB-authoritative re-read persists the
+   message; a mismatch that still disagrees on re-read drops it.
+9. **New in rev 3, pins F5:** `ensureIDAIManagerTranscribe` — listen
+   reuses an in-progress summary transcribe; a summary attempt started
+   after listen reuses listen's transcribe instead of failing with
+   `TRANSCRIBE_ALREADY_PROGRESSING`.
 
 **`bin-ai-manager` model/golden:**
 
-8. `models/ai/allowed_tools_test.go` — `notify_agent` passes via
-   `knownSanctionedWrite`; a hypothetical unlisted write tool still fails;
-   `TestValidateToolNames_WriteToolNeverAllowedForInsight` still passes
-   unchanged.
-9. `pkg/subscribehandler/binding_golden_test.go` — updated to 12 patterns
-   with the new one appended last.
-10. `models/aicall/field_test.go`, `filters_test.go`,
+10. `models/ai/allowed_tools_test.go` — `notify_agent` passes via
+    `knownSanctionedWrite`; a hypothetical unlisted write tool still fails;
+    `TestValidateToolNames_WriteToolNeverAllowedForInsight` still passes
+    unchanged.
+11. `pkg/subscribehandler/binding_golden_test.go` — updated to 12 patterns
+    with the new one appended last.
+12. `models/aicall/field_test.go`, `filters_test.go`,
     `models/message/field_test.go`, `webhook_test.go` — new fields.
 
 **Boundary:**
 
-11. `requesthandler` mock expectations pinning the exact
+13. `requesthandler` mock expectations pinning the exact
     `TranscribeV1TranscribeStart` argument list including `provider` and
     `onEndFlowID` (§5.2.2), and `TranscribeV1TranscribeStop(ctx, hostID,
     transcribeID)` argument order (§5.7.2) — both were wrong in rev 1, so
@@ -1191,17 +1460,19 @@ read as an endorsed alternative).
 
 **Deferred until §5.9's empirical check lands:**
 
-12. A pinned golden-transcript test for the `in`/`out` → `[CUSTOMER]`/
+14. A pinned golden-transcript test for the `in`/`out` → `[CUSTOMER]`/
     `[AGENT]` mapping. This is exactly the silent-wrong-attribution class
     that deserves a pinned test rather than a happy-path assertion.
 
 **Frontend (`monorepo-javascript`):**
 
-13. Both `CaseInsightAssistantPanel` suites: renders an
+15. Both `CaseInsightAssistantPanel` suites: renders an
     `origin: 'proactive'` message with its distinct treatment and
     accessible label; renders a normal assistant message unchanged;
     renders a message with no `origin` field (backward compatibility with
-    every existing row) unchanged.
+    every existing row) unchanged; **new in rev 3**: the tool-call/
+    tool-result render filter (§5.6.4) hides `role='tool'` and empty-content
+    `role='assistant'` rows.
 
 ---
 
@@ -1244,12 +1515,13 @@ transcribe-manager on call hangup; the `listen_call_id` column and
 - `pkg/aicallhandler/main.go` — `ListenTurnSystemPrompt`, config-derived constants
 - `pkg/aicallhandler/start.go` — `Start` hook, `ensureListen`, `startListenPipecatcall`
 - `pkg/aicallhandler/listen.go` *(new)* — `EventTMTranscriptCreated`, `RunListenTurn`, context assembly, `stopListenByCallID`, `clearListenState`
-- `pkg/aicallhandler/tool.go` — `mapFunctions` entry + proactive post-step
+- `pkg/aicallhandler/tool.go` — `mapFunctions` entry for `notify_agent`
 - `pkg/aicallhandler/tool_insight.go` — `toolHandleNotifyAgent`, `parseNotifyAgentMessage`
 - `pkg/aicallhandler/event.go` — `EventCMCallHangup` second lookup
 - `pkg/aicallhandler/process.go` — terminate-path stop
 - `pkg/messagehandler/event.go` — `isForeignPipecatcall` + four call sites
-- `pkg/cachehandler/{main,handler}.go` — six listen key operations + mock regen
+- `pkg/cachehandler/{main,handler}.go` **or a new `pkg/listencachehandler`
+  package** — see the scope note below
 - `pkg/subscribehandler/{main,transcribemanager,binding_golden_test}.go`
 - `internal/config/main.go` — seven flags
 - `docs/{domain,architecture,operations}.md`
@@ -1261,6 +1533,20 @@ transcribe-manager on call hangup; the `listen_call_id` column and
 `bin-openapi-manager`, `bin-api-manager` — `Origin` in the spec, regen, RST + build
 
 `monorepo-javascript` — both `CaseInsightAssistantPanel` files + tests
+
+**Scope note on `cachehandler` (review-round-2 F10), acknowledged rather
+than resolved here:** today the package is a pure JSON entity-snapshot
+cache — two primitives, `getSerialize`/`setSerialize`
+(`handler.go:17-41`), fixed 24h TTL, no raw Redis data-structure or lock
+primitive of any kind. §5.3.3/§5.3.4/§5.4.1 add `SADD`/`SREM`/`SMEMBERS`,
+`RPUSH`/`LTRIM`/`EXPIRE`, `LPOP count`, `SET NX EX`, and `INCR` — a
+second, structurally different responsibility (ephemeral buffers +
+distributed rate limiting) that does not fit the existing package's
+shape. This design does not resolve which is right (extend
+`cachehandler` with a new file, or give listen state its own small
+package sharing the same Redis client) — it belongs with whoever
+implements this, informed by how the team wants shared-infra Redis usage
+organised. Flagged, not decided, in §11 item 7.
 
 ---
 
@@ -1291,6 +1577,30 @@ transcribe-manager on call hangup; the `listen_call_id` column and
 | L3 | `AIcallUpdate` bumps `tm_update`, feeding the `Send` cooldown | Reduced to exactly two writes per listening session (start, stop) — never per turn — so the window is bounded and pre-agent-input; decoupling the cooldown recorded as a follow-up | §5.2.4, §11 |
 | — | §3 non-goals table, §4.4 self-flagged speaker mapping (confirmed correct; do not re-litigate) | Preserved verbatim / carried forward unchanged | §3, §5.9 |
 
+### 10.1 Review-response matrix (round 2 → rev 3)
+
+Round 2 (an independent review, deliberately skeptical of rev 2's own
+claims, run against the actual code rather than the review-round-1
+matrix) confirmed most of rev 2's fixes hold, and found 3 BLOCKING + 4
+HIGH + 4 MEDIUM + 2 LOW new issues, all introduced by rev 2's own new
+mechanisms.
+
+| # | Review finding | Resolution | Where |
+|---|---|---|---|
+| F1 | Single-valued Redis resolver key contradicts the N-AIcalls-share-one-transcribe design; second listener silently steals the first's mapping, either's cleanup deletes the shared key | Resolver key changed to a Redis set (`SADD`/`SREM`/`SMEMBERS`); every listening AIcall keeps its own membership | §5.2.4, §5.3.2, §5.7.3 |
+| F2 | The "tool_calls ordering" defect and fix in rev 2's §5.6.3 were mis-diagnosed; the reordering is a no-op because the tool-call row is filtered out of context by empty `content`, not by ordering | Re-diagnosed against `run.py:450` directly. The real (and pre-existing, feature-independent) defect is an orphaned `tool`-role row with no preceding `tool_calls` entry. Documented plainly, not silently fixed here, escalated to an immediate-verification item rather than a deferred ticket | §5.6.3, §11 item 2 |
+| F3 | `RunLLM:false` has undocumented error-path, override, and Q&A-turn-collision holes; the "every other tool uses RunLLM:true" supporting claim is false | Rewrote as a three-layer defense: (a) `RunLLM:false` as a best-effort hint with its real caveats stated, (b) the pipecatcall-identity guard, (c) a new explicit reject-if-invoked-from-the-agent's-own-turn check in `toolHandleNotifyAgent`. Corrected the false claim (all six *Insight* tools use `RunLLM:true`, not "every other tool") | §5.4.4(a)(c) |
+| F4 | The pipecatcall-identity guard can false-positive against a genuine reply if a post-`Send` cache write transiently fails, and `contact_case` has no termination-triggered backstop the way `conversation` does | Guard now re-reads the AIcall bypassing cache before dropping on a mismatch; the missing backstop is stated explicitly rather than silently assumed covered | §5.4.4(b) |
+| F5 | Listen-vs-`ai_summary` transcribe collision only analysed in one direction; the reverse (listen starts first) makes a later summary attempt fail with `TRANSCRIBE_ALREADY_PROGRESSING` | `summaryhandler.startReferenceTypeCall` made reuse-tolerant, symmetric with listen's own rule, via a shared `ensureIDAIManagerTranscribe` helper | §5.2.2a |
+| F6 | Listen-turn context assembly omits `InsightSystemPrompt` (the platform's own hallucination/tool-leakage guardrails for Insight AIs) | Added as message #1, ahead of the customer's own prompt snapshot | §5.4.2 |
+| F7 | A proactive notification is claimed to be "one new row"; it is actually three (tool-call row, tool-result row, proactive row), all webhook-published and panel-rendered, contradicting §4's "invisible unless notified" claim | Stated plainly as a pre-existing, feature-independent `ToolHandle` shape made more visible by listening; a frontend render filter (not a webhook suppression) is the shipped mitigation, with the larger webhook-level fix recorded as a separate follow-up | §5.6.4, §5.10.1, §11 item 6 |
+| F8 | "transcribe-manager's `EventCMCallHangup` already stops every session, owner-agnostic" overstates a pod-local mechanism as a platform-wide guarantee | Reasoning corrected: the real backstop is that hanging up the call closes the Asterisk WebSocket feeding the STT stream, independent of whether the DB status write on a non-owning pod is accurate. Conclusion (no stop RPC needed here) unchanged; justification rewritten to match what the cited code actually establishes | §5.7.1, §5.7.2 |
+| F9 | Redis `SET NX EX` debounce is a rate limiter, not a lock; a turn that fails after popping `pending` loses those lines beyond the 40-line window; `LPOP count` needs Redis ≥6.2, unverified against the deployed server | Both risks stated explicitly as accepted/bounded rather than left implicit; Redis-version confirmation added as an implementation-time open item | §6 (new row), §11 item 7 |
+| F10 | The `cachehandler` change (six Redis primitives beyond its current two) is a second, structurally different responsibility, understated as "+ mock regen" | Acknowledged explicitly as an open scope question (extend `cachehandler` vs. a new package) rather than a decided detail | §9 scope note, §11 item 7 |
+| F11 | "STT sessions per call: 1" understates cost — `DirectionBoth` is two independent STT streams, not one | Split into "transcribe sessions" (1, still deduped) vs. "STT streams" (2) in the bounds table | §5.11 |
+| F12 | Metric names double the `ai_manager` namespace prefix | Corrected to bare `Name:` values, namespace implicit per existing convention | §5.13 |
+| F13 | §5.3.1's "three coupled places" was read as undercounting the golden-test edit count | Table already enumerated all four edits within `binding_golden_test.go` (expected slice, length check, message string, doc comment) grouped under one of the three *places*; left as-is, no defect found on re-check |  — |
+
 ---
 
 ## 11. Open items before implementation sign-off
@@ -1299,24 +1609,47 @@ transcribe-manager on call hangup; the `listen_call_id` column and
    Capture one real or staged agent-bridged call and confirm the mapping
    against known speaker identity before merge. A reversed mapping is a
    silent correctness failure, not a cosmetic one.
-2. **No Jira ticket filed.** Recommend filing a `VOIP-*` ticket for this
-   feature before implementation starts, per project convention.
-3. **Follow-up ticket (separate):** `transcripthandler.dbDelete` publishes
+2. **Pre-existing orphaned `tool`-role message defect (§5.6.3) — escalated
+   in rev 3 from "follow-up ticket" to "confirm and triage immediately,
+   independent of this feature."** `ToolHandle`'s tool-call row is created
+   with empty `content`, which pipecat-manager's own context filter
+   (`run.py:450,637`) drops from any replayed conversation, leaving an
+   orphaned `role=tool` result row with no preceding `tool_calls` entry —
+   a shape OpenAI's Chat Completions API rejects. If real, this can
+   already be failing production `contact_case` Q&A sessions today, on
+   any multi-turn conversation where an earlier turn used a tool. This
+   design neither introduces nor fixes it (`notify_agent`'s own tool-call/
+   result pair follows the identical, unmodified `ToolHandle` path).
+   Recommend: verify against real traffic/logs before this feature ships,
+   independent of this design's own timeline, since listening will
+   increase how often Insight tools fire and therefore how often this
+   path is exercised.
+3. **No Jira ticket filed.** Recommend filing a `VOIP-*` ticket for this
+   feature before implementation starts, per project convention — and a
+   **separate** ticket for item 2 above, filed now rather than deferred.
+4. **Follow-up ticket (separate):** `transcripthandler.dbDelete` publishes
    `EventTypeTranscriptCreated` on delete
    (`bin-transcribe-manager/pkg/transcripthandler/db.go:33`). This design
    defends against it rather than fixing it, because changing the emitted
    event type is a routing-key-visible change affecting every current
    subscriber. It should be fixed on its own ticket.
-4. **Follow-up ticket (separate):** decouple `Send`'s cooldown from
+5. **Follow-up ticket (separate):** decouple `Send`'s cooldown from
    `tm_update` onto a dedicated `tm_last_send`. Pre-existing fragility
    (`send.go:27-32` + `dbhandler/aicall.go:240`) that this design bounds
    but does not remove.
-5. **Follow-up ticket (separate):** panel noise from tool-call rows.
-   `ToolHandle` writes two rows per tool invocation, both webhook-published
-   and both rendered by the panels today. Pre-existing for every Insight
-   tool; listening makes it more visible. Options are a role/origin-based
-   render filter or suppressing webhooks for `role=tool` rows.
-6. **Product decision (not blocking implementation):** whether Insight
+6. **Follow-up ticket (separate):** webhook noise from tool-call rows.
+   §5.6.4/§5.10.1 hide the two per-tool-call noise rows from the *panel*
+   (a client-side render filter), but the tenant's own webhook consumer
+   still receives every `aimessage_created` delivery for them, exactly as
+   today. Whether to suppress those webhooks too (and whether any tenant
+   automation actually depends on receiving them) is a genuinely separate
+   decision from the frontend fix shipped with this design.
+7. **Implementation-time decision, not blocking:** where listen's new
+   Redis operations live — extend `pkg/cachehandler` or give them their
+   own small package (§9's scope note). Also confirm the deployed Redis
+   version supports `LPOP key count` (Redis ≥ 6.2), assumed but not
+   verified against the actual production Redis at design time (§5.4.1).
+8. **Product decision (not blocking implementation):** whether Insight
    listening becomes a billed line item, and if so under which meter
    (§3, §5.2.1). The architecture keeps the STT cost off the customer's
    transcription bill, which makes this a clean, deliberate pricing choice
