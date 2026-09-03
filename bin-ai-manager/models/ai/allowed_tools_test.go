@@ -76,6 +76,7 @@ func TestAllInsightToolNamesAreReadOnly(t *testing.T) {
 		tool.ToolNameGetRelatedCases:        true,
 		tool.ToolNameGetCaseNotes:           true,
 		tool.ToolNameGetContactProfile:      true,
+		tool.ToolNameGetCallTranscript:      true,
 	}
 
 	for _, n := range tool.AllInsightToolNames {

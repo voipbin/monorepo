@@ -415,6 +415,7 @@ const (
 	AIManagerToolNameCreateCall             AIManagerToolName = "create_call"
 	AIManagerToolNameDescribeAction         AIManagerToolName = "describe_action"
 	AIManagerToolNameGetAicallMessages      AIManagerToolName = "get_aicall_messages"
+	AIManagerToolNameGetCallTranscript      AIManagerToolName = "get_call_transcript"
 	AIManagerToolNameGetCaseNotes           AIManagerToolName = "get_case_notes"
 	AIManagerToolNameGetContactInteractions AIManagerToolName = "get_contact_interactions"
 	AIManagerToolNameGetContactProfile      AIManagerToolName = "get_contact_profile"
@@ -446,6 +447,8 @@ func (e AIManagerToolName) Valid() bool {
 	case AIManagerToolNameDescribeAction:
 		return true
 	case AIManagerToolNameGetAicallMessages:
+		return true
+	case AIManagerToolNameGetCallTranscript:
 		return true
 	case AIManagerToolNameGetCaseNotes:
 		return true
@@ -10265,7 +10268,7 @@ type PostAisJSONBody struct {
 	// SttType Speech-to-text engine type.
 	SttType string `json:"stt_type"`
 
-	// ToolNames List of tool names to enable for this AI. Use ["all"] to enable all available tools. For type=insight AIs, only Insight tool names are permitted (currently: get_contact_interactions, get_conversation_content, get_related_cases, get_case_notes, get_contact_profile); type=normal AIs may use any Normal tool name or ["all"]. Mismatched combinations are rejected with a 400.
+	// ToolNames List of tool names to enable for this AI. Use ["all"] to enable all available tools. For type=insight AIs, only Insight tool names are permitted (currently: get_contact_interactions, get_conversation_content, get_related_cases, get_case_notes, get_contact_profile, get_call_transcript); type=normal AIs may use any Normal tool name or ["all"]. Mismatched combinations are rejected with a 400.
 	ToolNames *[]AIManagerToolName `json:"tool_names,omitempty"`
 
 	// TtsType Text-to-speech engine type.
@@ -10318,7 +10321,7 @@ type PutAisIdJSONBody struct {
 	// SttType Speech-to-text engine type.
 	SttType string `json:"stt_type"`
 
-	// ToolNames List of tool names to enable for this AI. Use ["all"] to enable all available tools. For type=insight AIs, only Insight tool names are permitted (currently: get_contact_interactions, get_conversation_content, get_related_cases, get_case_notes, get_contact_profile); type=normal AIs may use any Normal tool name or ["all"]. Mismatched combinations are rejected with a 400.
+	// ToolNames List of tool names to enable for this AI. Use ["all"] to enable all available tools. For type=insight AIs, only Insight tool names are permitted (currently: get_contact_interactions, get_conversation_content, get_related_cases, get_case_notes, get_contact_profile, get_call_transcript); type=normal AIs may use any Normal tool name or ["all"]. Mismatched combinations are rejected with a 400.
 	ToolNames *[]AIManagerToolName `json:"tool_names,omitempty"`
 
 	// TtsType Text-to-speech engine type.

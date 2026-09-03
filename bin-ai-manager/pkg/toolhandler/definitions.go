@@ -902,4 +902,38 @@ run_llm: Set true to reason about the returned contact profile.`,
 			},
 		},
 	},
+	{
+		Name:   tool.ToolNameGetCallTranscript,
+		RunLLM: true,
+		Description: `Returns the merged, chronological transcript of everything said on a call, given a call_id, sourced from live in-call transcription sessions.
+
+WHEN TO USE:
+- Answering "what did the customer actually say on this call" / "what happened during that call".
+- You already have a call_id (a reference_id) from get_contact_interactions for the call you want to read.
+
+WHEN NOT TO USE:
+- You have not yet called get_contact_interactions -- call it first to discover candidate call_id values.
+
+ARGUMENTS:
+- call_id (required): the id of a call, as returned by get_contact_interactions (reference_id of a call-type interaction).
+
+Access is tenant-only: any call belonging to your own account is readable once its call_id is known, not only calls tied to the current Case's contact. Anything outside your account returns "Resource not found."
+
+run_llm: Set true to reason about the retrieved transcript.`,
+		Parameters: map[string]any{
+			"type": "object",
+			"properties": map[string]any{
+				"run_llm": map[string]any{
+					"type":        "boolean",
+					"description": "Set true to reason about the retrieved call transcript.",
+					"default":     true,
+				},
+				"call_id": map[string]any{
+					"type":        "string",
+					"description": "The id of a call, as returned by get_contact_interactions. Call get_contact_interactions first to discover candidate call ids.",
+				},
+			},
+			"required": []string{"call_id"},
+		},
+	},
 }

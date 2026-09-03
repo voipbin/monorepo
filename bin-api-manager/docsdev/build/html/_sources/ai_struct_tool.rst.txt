@@ -833,7 +833,7 @@ Creates a new CRM case for the current contact/interaction.
 Insight Tools
 -------------
 
-The following tools are exclusive to ``type=insight`` AIs (see :ref:`Type <ai-struct-ai-type>`) and are not selectable by ``type=normal`` AIs. They are always scoped to the Case the Insight AI session was opened for; none of them accept an argument to target a different Case or contact.
+The following tools are exclusive to ``type=insight`` AIs (see :ref:`Type <ai-struct-ai-type>`) and are not selectable by ``type=normal`` AIs. Most are always scoped to the Case the Insight AI session was opened for and accept no argument to target a different Case or contact; ``get_call_transcript`` is the exception — it takes an explicit ``call_id`` and is scoped to the caller's own account (tenant), not to the current Case's contact/peer (see its own section below).
 
 ========================== ================================================= ===============
 Tool Name                  Description                                       run_llm Default
@@ -843,6 +843,7 @@ get_conversation_content   Retrieve a conversation's message transcript       ``
 get_related_cases          List the contact's other cases                     ``true``
 get_case_notes             Retrieve internal agent notes on the current Case  ``true``
 get_contact_profile        Retrieve the Case contact's profile and addresses  ``true``
+get_call_transcript        Retrieve a call's merged live-transcription text   ``true``
 ========================== ================================================= ===============
 
 .. _ai-struct-tool-get_contact_interactions:
@@ -1025,6 +1026,46 @@ Free-text contact notes, integration metadata (``source``/``external_id``), tags
         }
     }
 
+.. _ai-struct-tool-get_call_transcript:
+
+get_call_transcript
+~~~~~~~~~~~~~~~~~~~~
+
+Returns the merged, chronological transcript of everything said on a call, given a ``call_id``, sourced from live in-call transcription (``transcribe_start``) sessions.
+
+.. note:: **AI Implementation Hint**
+
+   Unlike every other Insight tool, ``get_call_transcript`` is scoped to the caller's own account (tenant), not to the current Case's contact/peer — any call belonging to the caller's own account is readable once its ``call_id`` is known, not only calls tied to the current Case's contact.
+
+**When to use:**
+
+* Answering "what did the customer actually say on this call" / "what happened during that call"
+* A ``call_id`` from ``get_contact_interactions`` is already available for the call to read
+
+**When NOT to use:**
+
+* ``get_contact_interactions`` has not been called yet — call it first to discover candidate ``call_id`` values
+
+**Parameters:**
+
+.. code::
+
+    {
+        "type": "object",
+        "properties": {
+            "run_llm": {
+                "type": "boolean",
+                "description": "Set true to reason about the retrieved call transcript.",
+                "default": true
+            },
+            "call_id": {
+                "type": "string",
+                "description": "The id of a call, as returned by get_contact_interactions."
+            }
+        },
+        "required": ["call_id"]
+    }
+
 
 run_llm Parameter
 -----------------
@@ -1070,6 +1111,7 @@ Tool Name                    run_llm   Why
 ``get_related_cases``        ``true``  Insight tool — LLM reasons about the retrieved related-case history.
 ``get_case_notes``           ``true``  Insight tool — LLM reasons about the retrieved case notes.
 ``get_contact_profile``      ``true``  Insight tool — LLM reasons about the retrieved contact profile.
+``get_call_transcript``      ``true``  Insight tool — LLM reasons about the retrieved call transcript.
 ============================ ========= ========================================================================================
 
 .. note:: **AI Implementation Hint**
