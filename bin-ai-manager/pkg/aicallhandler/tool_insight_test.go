@@ -2831,3 +2831,182 @@ func Test_toolHandleGetCallTranscript_NilCallNoError(t *testing.T) {
 		t.Errorf("Message = %q, want %q (literal nil call, no error, must still mask as not-found)", res.Message, msgResourceNotFound)
 	}
 }
+
+// paginateItem is a minimal test-only type for exercising paginateUntilExact
+// in isolation, independent of the tmtranscribe/tmtranscript-shaped call
+// sites in tool_insight.go.
+type paginateItem struct {
+	id       int
+	tmCreate *time.Time
+	excluded bool // when true, `keep` rejects this item
+}
+
+func Test_paginateUntilExact(t *testing.T) {
+	base := time.Date(2026, 7, 1, 9, 0, 0, 0, time.UTC)
+	ts := func(sec int) *time.Time {
+		v := base.Add(time.Duration(sec) * time.Second)
+		return &v
+	}
+	keep := func(it paginateItem) bool { return !it.excluded }
+	tmOf := func(it paginateItem) *time.Time { return it.tmCreate }
+
+	t.Run("nominal path, zero exclusions, exactly limit genuine rows -> not capped", func(t *testing.T) {
+		var items []paginateItem
+		for i := 0; i < 3; i++ {
+			items = append(items, paginateItem{id: i, tmCreate: ts(i)})
+		}
+		calls := 0
+		verified, capped, err := paginateUntilExact(context.Background(), 5, 3,
+			func(ctx context.Context, pageToken string) ([]paginateItem, error) {
+				calls++
+				if calls > 1 {
+					t.Fatalf("expected exactly 1 page (short page proves exhaustion), got a 2nd call")
+				}
+				return items, nil
+			},
+			tmOf, keep,
+		)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if capped {
+			t.Errorf("capped = true, want false (no false-positive on the nominal path)")
+		}
+		if len(verified) != 3 {
+			t.Errorf("len(verified) = %d, want 3", len(verified))
+		}
+	})
+
+	t.Run("overflow proof -> capped true, truncated to limit", func(t *testing.T) {
+		var items []paginateItem
+		for i := 0; i < 4; i++ { // limit+1
+			items = append(items, paginateItem{id: i, tmCreate: ts(i)})
+		}
+		verified, capped, err := paginateUntilExact(context.Background(), 5, 3,
+			func(ctx context.Context, pageToken string) ([]paginateItem, error) {
+				return items, nil
+			},
+			tmOf, keep,
+		)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if !capped {
+			t.Errorf("capped = false, want true (genuine overflow)")
+		}
+		if len(verified) != 3 {
+			t.Errorf("len(verified) = %d, want 3 (truncated to limit)", len(verified))
+		}
+	})
+
+	t.Run("multi-page continuation: excluded rows in a full page delay proof, hidden rows never leak into the result", func(t *testing.T) {
+		page1 := []paginateItem{
+			{id: 0, tmCreate: ts(0)}, {id: 1, tmCreate: ts(1)}, {id: 2, tmCreate: ts(2)},
+			{id: 99, tmCreate: ts(3), excluded: true}, // hidden row, fills the page but must not count
+		}
+		page2 := []paginateItem{} // short page proves exhaustion
+		calls := 0
+		verified, capped, err := paginateUntilExact(context.Background(), 5, 3,
+			func(ctx context.Context, pageToken string) ([]paginateItem, error) {
+				calls++
+				if calls == 1 {
+					return page1, nil
+				}
+				return page2, nil
+			},
+			tmOf, keep,
+		)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if calls != 2 {
+			t.Errorf("calls = %d, want 2 (page 1 full with an excluded row can't prove exhaustion alone)", calls)
+		}
+		if capped {
+			t.Errorf("capped = true, want false -- must be byte-identical to the zero-hidden-row nominal case")
+		}
+		if len(verified) != 3 {
+			t.Errorf("len(verified) = %d, want 3 (hidden row must never appear)", len(verified))
+		}
+		for _, v := range verified {
+			if v.id == 99 {
+				t.Fatalf("hidden/excluded row leaked into verified: %+v", v)
+			}
+		}
+	})
+
+	t.Run("RPC error discards any partial page and propagates", func(t *testing.T) {
+		verified, capped, err := paginateUntilExact(context.Background(), 5, 3,
+			func(ctx context.Context, pageToken string) ([]paginateItem, error) {
+				return nil, fmt.Errorf("boom")
+			},
+			tmOf, keep,
+		)
+		if err == nil {
+			t.Fatalf("expected an error, got nil")
+		}
+		if verified != nil {
+			t.Errorf("verified = %+v, want nil on error", verified)
+		}
+		if capped {
+			t.Errorf("capped = true, want false on error")
+		}
+	})
+
+	t.Run("nil TMCreate on the last row of a full page halts pagination without panicking, capped honestly true", func(t *testing.T) {
+		// limit=3: exactly 3 genuine (kept) rows plus one EXCLUDED row with
+		// nil TMCreate as the raw page's last item -- genuine count stays
+		// <= limit (no overflow proof), the page is nonetheless full (no
+		// exhaustion proof), and the nil-TMCreate guard fires on the raw
+		// last item regardless of it being excluded.
+		items := []paginateItem{
+			{id: 0, tmCreate: ts(0)}, {id: 1, tmCreate: ts(1)}, {id: 2, tmCreate: ts(2)},
+			{id: 3, tmCreate: nil, excluded: true},
+		}
+		verified, capped, err := paginateUntilExact(context.Background(), 5, 3,
+			func(ctx context.Context, pageToken string) ([]paginateItem, error) {
+				return items, nil
+			},
+			tmOf, keep,
+		)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if !capped {
+			t.Errorf("capped = false, want true (possiblyIncomplete via the nil-TMCreate halt)")
+		}
+		if len(verified) != 3 {
+			t.Errorf("len(verified) = %d, want 3 (the 3 genuine rows kept, excluded nil-TMCreate row never appears)", len(verified))
+		}
+	})
+
+	t.Run("page cap exhaustion without proof -> capped true, no panic, no infinite loop", func(t *testing.T) {
+		calls := 0
+		verified, capped, err := paginateUntilExact(context.Background(), 3, 3, // maxPages=3
+			func(ctx context.Context, pageToken string) ([]paginateItem, error) {
+				calls++
+				// always return a full page of entirely-excluded rows --
+				// never enough genuine rows to prove overflow, never a
+				// short page to prove exhaustion.
+				var items []paginateItem
+				for i := 0; i < 4; i++ {
+					items = append(items, paginateItem{id: calls*10 + i, tmCreate: ts(calls*10 + i), excluded: true})
+				}
+				return items, nil
+			},
+			tmOf, keep,
+		)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if calls != 3 {
+			t.Errorf("calls = %d, want exactly 3 (respects maxPages, no infinite loop)", calls)
+		}
+		if !capped {
+			t.Errorf("capped = false, want true (possiblyIncomplete: no proof reached within the page budget)")
+		}
+		if len(verified) != 0 {
+			t.Errorf("len(verified) = %d, want 0 (all rows were excluded)", len(verified))
+		}
+	})
+}

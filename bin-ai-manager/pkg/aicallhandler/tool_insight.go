@@ -672,6 +672,122 @@ type transcriptLine struct {
 // the already-shipped get_conversation_content precedent: call_id is
 // LLM-suppliable, and this tool does not narrow to the current Case's
 // peer/contact.
+// paginateUntilExact fetches pages of T from fetch, keeping only items for
+// which keep returns true, until it has unambiguous proof of either
+// overflow (more than `limit` genuine items exist) or exhaustion (the
+// source is genuinely out of rows) -- or gives up honestly at `maxPages`.
+// See docs/plans/2026-09-03-insight-assistant-get-call-transcript-design.md
+// §3.3 (lines ~103-220) for the full history of how this invariant was
+// derived across 11 design-review rounds; do not change the comparators
+// below without re-reading that section first.
+//
+// capped is true iff genuine overflow occurred OR the loop could not
+// obtain proof within maxPages (the caller must treat this as "possibly
+// incomplete", not "definitely not capped" -- see the design doc's
+// possiblyIncomplete discussion).
+//
+// SECURITY: `keep` is the ONLY tenant/deletion enforcement this helper
+// performs -- paginateUntilExact itself does no filtering by identity. Every
+// call site MUST independently re-verify ownership fields (CustomerID,
+// ReferenceID/TranscribeID, TMDelete) inside `keep`, mirroring §3.3/§3.4 of
+// the design doc, because the underlying RPC's filter map is caller-supplied
+// and NOT server-enforced. Do not add a new call site whose `keep` trusts
+// the RPC's own filtering.
+//
+// `limit` MUST match the `+1` sentinel size actually requested inside
+// `fetch` (i.e. fetch should request `limit+1` items per page) -- the
+// pagesExhausted/overflow proof below depends on that exact coupling, and
+// nothing in this function's signature enforces it. If a future edit
+// changes one without the other, `capped` silently stops meaning what it
+// claims to mean.
+func paginateUntilExact[T any](
+	ctx context.Context,
+	maxPages int,
+	limit uint64,
+	fetch func(ctx context.Context, pageToken string) ([]T, error),
+	tmCreateOf func(T) *time.Time,
+	keep func(T) bool,
+) (verified []T, capped bool, err error) {
+	pageToken := ""
+	pagesExhausted := false // true only once a short page PROVES no more source rows remain
+	for page := 0; page < maxPages; page++ {
+		items, ferr := fetch(ctx, pageToken)
+		if ferr != nil {
+			// Whole-call-failure vs. degrade-one-unit-visibly is a POLICY
+			// decision that varies by caller (fail the whole tool vs. skip
+			// just this unit) -- deliberately left to the caller, not
+			// decided here. Any partial `verified` accumulated so far in
+			// THIS call is discarded on error, matching both of this
+			// function's original call sites' behavior exactly (neither
+			// ever returned a partial page's worth of rows alongside an
+			// error).
+			return nil, false, ferr
+		}
+
+		// Filter FIRST, before deciding whether to fetch another page or
+		// stop -- every field `keep` checks is caller-supplied to the RPC
+		// and NOT server-enforced (RPC list endpoints parse filters from
+		// the request body with no injected/enforced identity constraint),
+		// so an excluded row must never be allowed to count toward "we
+		// have enough genuine rows" or "the source is exhausted." This
+		// ordering is the single most safety-critical property of this
+		// function -- do not move the exhaustion/overflow checks above it.
+		for _, it := range items {
+			if keep(it) {
+				verified = append(verified, it)
+			}
+		}
+		if uint64(len(items)) < limit+1 {
+			pagesExhausted = true
+			break // raw page returned fewer than requested -- source is genuinely exhausted, regardless of how many were excluded
+		}
+		if uint64(len(verified)) > limit {
+			break // already have unambiguous proof of overflow -- no need to keep paging just to count higher
+		}
+
+		// Otherwise: the page was full AND we still don't have more than
+		// `limit` worth of GENUINE rows -- keep paging, because the
+		// shortfall might be entirely accounted for by excluded rows in
+		// this page.
+		//
+		// This nil-TMCreate guard is DEFENSIVE, at an untrusted RPC/
+		// deserialization boundary -- for the two current call sites it is
+		// NOT reachable via their DB queries in normal operation (both
+		// filter with WHERE tm_create < token, and under standard SQL
+		// three-valued logic NULL < <any value> evaluates to NULL, not
+		// TRUE, so a tm_create IS NULL row would be excluded by the WHERE
+		// clause on every page). Kept as defense-in-depth against a
+		// malformed or future-changed RPC response, not because current
+		// production data can trigger it -- but a NEW caller of this
+		// generic helper must not assume that same DB-level guarantee
+		// without re-verifying it for its own data source.
+		last := items[len(items)-1]
+		tm := tmCreateOf(last)
+		if tm == nil {
+			break // cannot safely construct a continuation token; `capped` below will honestly reflect "possibly incomplete"
+		}
+		// utilhandler.ISO8601Layout, NOT time.RFC3339Nano: this function's
+		// two current callers both talk to bin-transcribe-manager, whose
+		// own default token (TimeGetCurTime()) uses this fixed-precision
+		// layout, not RFC3339Nano's variable-precision format -- a token
+		// built with the wrong layout will not error, it will silently
+		// mis-paginate. A future caller against a DIFFERENT RPC must
+		// confirm which layout THAT service's own list endpoint expects
+		// rather than assuming this one.
+		pageToken = tm.UTC().Format(utilhandler.ISO8601Layout)
+	}
+	// possiblyIncomplete captures every path that did not reach a proof
+	// (overflow or exhaustion) within the page budget -- falling out of
+	// the loop without either would otherwise silently report `capped` as
+	// false, exactly the unmarked hole this function exists to prevent.
+	possiblyIncomplete := !pagesExhausted && uint64(len(verified)) <= limit
+	capped = uint64(len(verified)) > limit || possiblyIncomplete
+	if uint64(len(verified)) > limit {
+		verified = verified[:limit]
+	}
+	return verified, capped, nil
+}
+
 func (h *aicallHandler) toolHandleGetCallTranscript(ctx context.Context, c *aicall.AIcall, tc *message.ToolCall) *messageContent {
 	log := logrus.WithFields(logrus.Fields{
 		"func":      "toolHandleGetCallTranscript",
@@ -741,96 +857,42 @@ func (h *aicallHandler) toolHandleGetCallTranscript(ctx context.Context, c *aica
 		return res
 	}
 
-	// §3.3 Transcribe session list -- pagination-until-exact, MANDATORY
-	// filter + MANDATORY per-row recheck. customer_id is NOT server-enforced
-	// (transcribe-manager's list endpoint parses filters from the request
-	// body with no injected/enforced customer_id), so the per-row recheck
-	// below is MANDATORY, not optional. The exclusion rule is stated
+	// §3.3 Transcribe session list -- pagination-until-exact via the shared
+	// paginateUntilExact helper. The exclusion rule below is stated
 	// GENERICALLY ("exclude any row whose CustomerID != c.CustomerID"), not
 	// as "exclude IDAIManager specifically", so it stays correct if a future
 	// system-initiated transcriber appears (design §3.3's
 	// summaryhandler/start.go IDAIManager note).
-	var verified []tmtranscribe.Transcribe
-	pageToken := ""
-	pagesExhausted := false // true only once a short page PROVES no more source rows remain
-	for page := 0; page < insightCallTranscribeFetchMaxPages; page++ {
-		transcribes, err := h.reqHandler.TranscribeV1TranscribeList(ctx, pageToken, insightCallTranscribeSessionLimit+1, map[tmtranscribe.Field]any{
-			tmtranscribe.FieldCustomerID:    c.CustomerID,
-			tmtranscribe.FieldReferenceType: tmtranscribe.ReferenceTypeCall,
-			tmtranscribe.FieldReferenceID:   callID,
-			tmtranscribe.FieldDeleted:       false,
-		})
-		if err != nil {
-			// Honest failure, not masked -- this is a list call, not a
-			// not-found-shaped Get, and there is no partial result to
-			// salvage yet.
-			log.Errorf("Could not list transcribe sessions. call_id: %s, err: %v", callID, err)
-			fillFailed(res, fmt.Errorf("resource lookup failed"))
-			return res
-		}
-
-		// Filter FIRST, before deciding whether to fetch another page or
-		// stop -- every filter above is caller-supplied and NOT
-		// server-enforced, so an excluded row must never be allowed to
-		// count toward "we have enough genuine rows" or "the source is
-		// exhausted."
-		for _, t := range transcribes {
+	verified, sessionCapped, err := paginateUntilExact(ctx, insightCallTranscribeFetchMaxPages, insightCallTranscribeSessionLimit,
+		func(ctx context.Context, pageToken string) ([]tmtranscribe.Transcribe, error) {
+			return h.reqHandler.TranscribeV1TranscribeList(ctx, pageToken, insightCallTranscribeSessionLimit+1, map[tmtranscribe.Field]any{
+				tmtranscribe.FieldCustomerID:    c.CustomerID,
+				tmtranscribe.FieldReferenceType: tmtranscribe.ReferenceTypeCall,
+				tmtranscribe.FieldReferenceID:   callID,
+				tmtranscribe.FieldDeleted:       false,
+			})
+		},
+		func(t tmtranscribe.Transcribe) *time.Time { return t.TMCreate },
+		func(t tmtranscribe.Transcribe) bool {
 			if t.CustomerID != c.CustomerID {
 				log.Warnf("Skipping cross-customer transcribe session. call_id: %s, transcribe_id: %s, transcribe_customer_id: %s", callID, t.ID, t.CustomerID)
-				continue
+				return false
 			}
 			if t.ReferenceType != tmtranscribe.ReferenceTypeCall || t.ReferenceID != callID {
 				log.Warnf("Skipping transcribe session with mismatched reference. call_id: %s, transcribe_id: %s, transcribe_reference_type: %s, transcribe_reference_id: %s", callID, t.ID, t.ReferenceType, t.ReferenceID)
-				continue
+				return false
 			}
-			if t.TMDelete != nil {
-				continue
-			}
-			verified = append(verified, t)
-		}
-
-		if len(transcribes) < insightCallTranscribeSessionLimit+1 {
-			pagesExhausted = true
-			break // raw page returned fewer than requested -- source is genuinely exhausted, no more pages exist regardless of how many were excluded
-		}
-		if len(verified) > insightCallTranscribeSessionLimit {
-			break // already have unambiguous proof of overflow -- no need to keep paging just to count higher
-		}
-
-		// Otherwise: the page was full AND we still don't have more than
-		// the limit worth of GENUINE rows -- keep paging, because the
-		// shortfall might be entirely accounted for by excluded rows in
-		// this page.
-		//
-		// This nil-TMCreate guard is DEFENSIVE, at an untrusted RPC/
-		// deserialization boundary -- it is NOT reachable via the current
-		// DB query in normal operation (TranscribeList/TranscriptList
-		// filter with WHERE tm_create < token, and under standard SQL
-		// three-valued logic NULL < <any value> evaluates to NULL, not
-		// TRUE, so a tm_create IS NULL row would be excluded by the WHERE
-		// clause on EVERY page; tm_create is also documented as never
-		// taking the sentinel/null treatment applied to tm_update/
-		// tm_delete). Kept as defense-in-depth against a malformed or
-		// future-changed RPC response, not because production data can
-		// trigger it.
-		last := transcribes[len(transcribes)-1]
-		if last.TMCreate == nil {
-			break // cannot safely construct a continuation token; sessionCapped below will honestly reflect "possibly incomplete"
-		}
-		// utilhandler.ISO8601Layout, NOT time.RFC3339Nano: bin-transcribe-
-		// manager's own default token (TimeGetCurTime()) uses this fixed-
-		// precision layout, not RFC3339Nano's variable-precision format.
-		pageToken = last.TMCreate.UTC().Format(utilhandler.ISO8601Layout)
-	}
-
-	// possiblyIncomplete captures every path that did not reach a proof
-	// (overflow or exhaustion) within the page budget -- falling out of the
-	// loop without either would otherwise silently report sessionCapped as
-	// false, exactly the unmarked hole this design exists to prevent.
-	possiblyIncomplete := !pagesExhausted && len(verified) <= insightCallTranscribeSessionLimit
-	sessionCapped := len(verified) > insightCallTranscribeSessionLimit || possiblyIncomplete
-	if len(verified) > insightCallTranscribeSessionLimit {
-		verified = verified[:insightCallTranscribeSessionLimit]
+			return t.TMDelete == nil
+		},
+	)
+	if err != nil {
+		// Honest failure, not masked -- this is a list call, not a
+		// not-found-shaped Get, and there is no partial result to salvage
+		// yet (unlike §3.4's per-session degrade-visibly policy below, a
+		// session-list failure fails the whole tool).
+		log.Errorf("Could not list transcribe sessions. call_id: %s, err: %v", callID, err)
+		fillFailed(res, fmt.Errorf("resource lookup failed"))
+		return res
 	}
 
 	// Not-found handling, guarded by sessionCapped: if verified is empty
@@ -856,33 +918,19 @@ func (h *aicallHandler) toolHandleGetCallTranscript(ctx context.Context, c *aica
 	seq := 0
 
 	for _, t := range verified {
-		var verifiedTranscripts []tmtranscript.Transcript
-		pageToken := ""
-		fetchFailed := false
-		pagesExhausted := false
-		for page := 0; page < insightCallTranscribeFetchMaxPages; page++ {
-			transcripts, err := h.reqHandler.TranscribeV1TranscriptList(ctx, pageToken, resourceListPageSize+1, map[tmtranscript.Field]any{
-				tmtranscript.FieldCustomerID:   c.CustomerID,
-				tmtranscript.FieldTranscribeID: t.ID,
-				tmtranscript.FieldDeleted:      false,
-			})
-			if err != nil {
-				// Partial-failure policy: one session's TranscriptList call
-				// failing does NOT fail the whole tool -- skip this
-				// session, but make the skip VISIBLE (sessionsUnavailable,
-				// surfaced in §3.7's header) rather than a silent drop,
-				// matching renderTranscribe's own "(transcripts
-				// unavailable)" degrade-VISIBLY precedent.
-				log.Errorf("Could not list transcripts for session. call_id: %s, transcribe_id: %s, err: %v", callID, t.ID, err)
-				sessionsUnavailable++
-				fetchFailed = true
-				break
-			}
-
-			for _, tr := range transcripts {
+		verifiedTranscripts, sessionFetchTruncated, err := paginateUntilExact(ctx, insightCallTranscribeFetchMaxPages, resourceListPageSize,
+			func(ctx context.Context, pageToken string) ([]tmtranscript.Transcript, error) {
+				return h.reqHandler.TranscribeV1TranscriptList(ctx, pageToken, resourceListPageSize+1, map[tmtranscript.Field]any{
+					tmtranscript.FieldCustomerID:   c.CustomerID,
+					tmtranscript.FieldTranscribeID: t.ID,
+					tmtranscript.FieldDeleted:      false,
+				})
+			},
+			func(tr tmtranscript.Transcript) *time.Time { return tr.TMCreate },
+			func(tr tmtranscript.Transcript) bool {
 				if tr.CustomerID != c.CustomerID {
 					log.Warnf("Skipping cross-customer transcript row. call_id: %s, transcribe_id: %s, transcript_id: %s, transcript_customer_id: %s", callID, t.ID, tr.ID, tr.CustomerID)
-					continue
+					return false
 				}
 				if tr.TranscribeID != t.ID {
 					// TranscribeID is exactly as unenforced as
@@ -891,44 +939,26 @@ func (h *aicallHandler) toolHandleGetCallTranscript(ctx context.Context, c *aica
 					// under THIS session's t.Language tag, mislabeling
 					// which language was actually spoken on that line.
 					log.Warnf("Skipping transcript row with mismatched transcribe_id. call_id: %s, transcribe_id: %s, transcript_id: %s, transcript_transcribe_id: %s", callID, t.ID, tr.ID, tr.TranscribeID)
-					continue
+					return false
 				}
-				if tr.TMDelete != nil {
-					continue
-				}
-				verifiedTranscripts = append(verifiedTranscripts, tr)
-			}
-
-			if len(transcripts) < resourceListPageSize+1 {
-				pagesExhausted = true
-				break // source exhausted for this session
-			}
-			if len(verifiedTranscripts) > resourceListPageSize {
-				break // already proven this session overflows the per-session cap
-			}
-
-			// Identical nil-TMCreate guard and ISO8601Layout token format
-			// as §3.3's loop above -- see that block's comment for the full
-			// rationale, which applies unchanged here (same RPC family,
-			// same *time.Time field, same DESC ordering).
-			last := transcripts[len(transcripts)-1]
-			if last.TMCreate == nil {
-				break // cannot safely construct a continuation token; sessionFetchTruncated below will honestly reflect "possibly incomplete"
-			}
-			pageToken = last.TMCreate.UTC().Format(utilhandler.ISO8601Layout)
-		}
-		if fetchFailed {
+				return tr.TMDelete == nil
+			},
+		)
+		if err != nil {
+			// Partial-failure policy: one session's TranscriptList call
+			// failing does NOT fail the whole tool -- skip this session,
+			// but make the skip VISIBLE (sessionsUnavailable, surfaced in
+			// §3.7's header) rather than a silent drop, matching
+			// renderTranscribe's own "(transcripts unavailable)"
+			// degrade-VISIBLY precedent. Contrast with §3.3's call site
+			// above, which fails the whole tool on error -- this is the
+			// caller-side policy difference paginateUntilExact
+			// deliberately stays out of.
+			log.Errorf("Could not list transcripts for session. call_id: %s, transcribe_id: %s, err: %v", callID, t.ID, err)
+			sessionsUnavailable++
 			continue // to the next session in the outer loop; this session contributes nothing
 		}
 
-		// Mirrors §3.3's possiblyIncomplete term exactly -- falling out of
-		// the loop at insightCallTranscribeFetchMaxPages without proof of
-		// overflow or exhaustion must not silently read as "not truncated".
-		possiblyIncomplete := !pagesExhausted && len(verifiedTranscripts) <= resourceListPageSize
-		sessionFetchTruncated := len(verifiedTranscripts) > resourceListPageSize || possiblyIncomplete
-		if len(verifiedTranscripts) > resourceListPageSize {
-			verifiedTranscripts = verifiedTranscripts[:resourceListPageSize]
-		}
 		if sessionFetchTruncated && len(verifiedTranscripts) > 0 {
 			// Now load-bearing, not merely defense-in-depth -- with
 			// possiblyIncomplete folded into sessionFetchTruncated, the
