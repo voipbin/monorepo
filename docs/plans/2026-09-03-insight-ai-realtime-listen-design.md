@@ -1,6 +1,6 @@
 # InsightAI Realtime Listen (Proactive Notification) — Design
 
-Status: Draft (rev 7, addressing 2026-09-03 independent review round 6)
+Status: Draft (rev 8, addressing 2026-09-03 independent review round 7 — round 7 APPROVEd; rev 8 closes its recommended follow-ups before the second consecutive approval)
 Branch: `NOJIRA-Insight-AI-realtime-listen`
 Owner: CPO-directed backend feature
 
@@ -15,6 +15,7 @@ Owner: CPO-directed backend feature
 | 5 | 2026-09-03 | **Revised after independent review round 4 (REQUEST_CHANGES, 4 BLOCKING + 5 HIGH + 9 MEDIUM + 3 LOW).** Reviewer's own assessment: no remaining structural blockers, only implementation-level bugs in rev 4's three new mechanisms. Fixed §5.4.4(c)'s inverted branch logic (the cache-bypass re-read was in the wrong condition, both failing to catch the case it was meant for and creating a new false-allow) with a single always-fresh-read design. Added explicit `pipecatcallID == uuid.Nil` handling (safe default: treat as a real Q&A turn, never as listen-internal) to protect against permanent message-tagging corruption during a rolling deploy, and confirmed the wire field can be optional so no forced deployment order is needed. Corrected `ApplyFields`'s actual location (`bin-common-handler`, not `bin-ai-manager`) and replaced the unspecified `FieldOriginNot` with a concrete, generic `databasehandler.NotEq` wrapper type. Closed the remaining system-prompt-eviction gap (proactive/real-Q&A-tool rows still competing for the 100-row window) by fetching the leading system row(s) unconditionally, separate from the capped window. Scoped `Origin` tagging to `contact_case` only, so ordinary conversation-AIcall pipecatcall rotation is never mistagged. Fixed the cache-bypass re-read's actual code path (an RPC client argument, not a direct `dbhandler` call), a stop-time `Send`-cooldown collision, a missing OpenAPI tool-name enum update, and several citation errors. §10.3 gains a round-4 matrix. |
 | 6 | 2026-09-03 | **Revised after independent review round 5 (REQUEST_CHANGES, 2 BLOCKING + 2 HIGH + 3 MEDIUM — reviewer's own assessment: architecture stabilized, remaining findings all localized to specific sections).** Unified the "is this a listen turn?" decision to one fresh, cache-bypassing read in `ToolHandle`, consumed by both §5.4.5's `Origin` tagging and §5.4.4(c)'s reject-guard — rev 5 had fixed the guard's own cache-bypass logic but left the tagging step trusting a stale cache, which is the more dangerous of the two (permanent data mistagging vs. one rejected tool call). Added a positive "is this AIcall actually in a listening session" check (`ListenCallID != uuid.Nil`) to the listen-turn predicate, closing a false-positive window from best-effort pipecatcall interruption timing. Corrected `getPipecatcallMessages`'s two-fetch restructure to match `MessageList`'s actual newest-first ordering (both fetches reversed the same way, not one assumed oldest-first) and fixed a false claim about `InsightSystemPrompt` not applying to this path. Replaced §8's "zero behaviour change with the flag off" claim with an explicit table of what is and isn't gated — several fixes (context-assembly, stale-reply guard) are general and code-deploy-scoped, not listen-specific. Corrected the service boundary and scope claims for the cache-bypass RPC change and the `NotEq` wrapper's safe value-type range. §10.4 gains a round-5 matrix. |
 | 7 | 2026-09-03 | **Revised after independent review round 6 (a scoped, targeted review per round 5's own recommendation — REQUEST_CHANGES, 2 BLOCKING + 3 MEDIUM, reviewer's own assessment: "light," architecture confirmed stable).** Replaced the `ListenCallID != uuid.Nil` term (which contributed no discrimination once a listen session was already active) with a genuinely positive signal: §5.4.3 now registers each listen turn's throwaway pipecatcall id in a Redis set the moment it's minted, and `ToolHandle`'s `listenTurn` resolution becomes a direct membership check — closing a race where a real Q&A tool call, delayed behind a best-effort-interrupted turn, could still be mistagged. This also removes the `AIcallGet` fresh read §5.4.5 previously needed (Redis membership is authoritative on its own), and gates the read that remains (`ReferenceType == ContactCase`) on an immutable, cache-safe field first, so the cost is confined to `contact_case` AIcalls again. Added the flag check `RunListenTurn` was missing, making §8's "rollback stops in-flight sessions" claim literally true rather than aspirational. Corrected several places across §6, §7, §9 that still described the mechanism's now-superseded rev-5/rev-6 shape. §10.5 gains a round-6 matrix. |
+| 8 | 2026-09-03 | **Review round 7 APPROVEd rev 7** (0 BLOCKING; 7 localized findings, N-1 through N-7, offered as recommendations for before implementation starts rather than approval blockers). This revision closes all 7 rather than deferring any, since the review loop's own history is that a deferred finding tends to resurface: (N-1) a Redis `SISMEMBER` failure in §5.4.5 step 2 now degrades to `listenTurn=false` instead of failing the tool call closed — provably correct during a Redis outage, since no genuine listen turn can exist then either, and it restores §6's "Q&A unaffected by Redis outage" claim rev 7 had quietly broken; (N-2) a failed turn-id registration (§5.4.3) now aborts that turn instead of proceeding unregistered, which would have reproduced the exact permanent-mistagging failure mode §5.4.5's B1 fix exists to prevent; (N-3) the flag check moved from a standalone step 0 (which ran before the AIcall was fetched) into step 1's require-list, alongside the `c` it and `clearListenState` both need; (N-4) that same path now performs a full stop (releasing an owned transcribe) rather than a bare state clear, so a flag-off rollback doesn't strand a still-running, now-unreachable STT session; (N-5/N-6/N-7) new metric labels, TTL/cleanup documentation, and an explicit statement of where in `ToolHandle` the listen-turn check runs. §10.6 gains a round-7 matrix. |
 
 Every code reference below was re-verified against the worktree at rev 2 authoring time; file:line citations are load-bearing and were read, not assumed.
 
@@ -597,18 +598,24 @@ not lost. A wall-clock flush timer is deliberately not introduced.
 
 #### 5.4.1 Preconditions
 
-0. **New in rev 7 (review round 6, finding F3): `config.Get().AIcallListenEnabled`
-   false → clear listen state (§5.7) and return (`skipped_disabled`).**
-   Without this, §8's rollback story ("set the flag false, in-flight
-   listening stops immediately") was aspirational, not real — nothing in
-   §5.3's intake or this function previously read the flag at all, so a
-   session that started while the flag was on would keep running
-   entirely unaffected by flipping it off, until the call ended or the
-   turn cap tripped. This step is what actually makes the flag a kill
-   switch for in-flight sessions, not just a gate on starting new ones.
-1. `c := h.Get(aicallID)`; require `c.Status == progressing`,
-   `c.ReferenceType == contact_case`, `c.Metadata[listen_transcribe_id]`
-   set. Otherwise clear listen state (§5.7) and return.
+1. `c := h.Get(aicallID)`. **Reordered in rev 8 (review round 7, finding
+   N-3): the flag check moved from a standalone step 0 to here, merged
+   with the existing require-list, because it needs `c` and rev 7's step
+   0 ran before `c` existed** — §5.7.3's `clearListenState` explicitly
+   documents "no extra fetch — callers already hold `c`" (§5.7.3 step 1),
+   which rev 7's ordering violated. Require `config.Get().AIcallListenEnabled`,
+   `c.Status == progressing`, `c.ReferenceType == contact_case`,
+   `c.Metadata[listen_transcribe_id]` set — any failing → **stop listening
+   entirely** (§5.7.2's owned-transcribe stop path, not just a Redis/DB
+   state clear) and return (`skipped_disabled` if the flag was the failing
+   condition, `skipped_invalid` otherwise). **Also corrected in rev 8
+   (finding N-4)**: rev 7's step 0 said "clear listen state" while step 3
+   below says "stop listening entirely" for what is operationally the
+   same kind of exit (nothing left to evaluate) — both now go through the
+   same full stop, so a flag-off rollback also releases any transcribe
+   session this AIcall owns instead of leaving it running until hangup
+   and losing the handle to it (§5.7.3's Redis/metadata clear on its own
+   does not stop a still-running owned transcribe — only §5.7.2 does).
 2. `lines := cache.ListenPendingPopAll(ctx, aicallID)` — a single `LPOP
    key count` (Redis ≥6.2), atomic, so no concurrent appender can lose a
    line between a read and a trim. Empty → return (`skipped_empty`).
@@ -618,6 +625,14 @@ not lost. A wall-clock flush timer is deliberately not introduced.
    speech at a 20s interval). Exceeded → stop listening entirely (§5.7)
    and return (`skipped_cap`). This is the hard backstop against a
    pathological long call.
+
+**On intake (§5.3) needing no flag check of its own, reconfirmed in rev
+8**: a flag-off rollback still lets §5.3 buffer incoming segments for up
+to one more `AIcallListenEvaluateIntervalSeconds`, but step 1 above stops
+evaluating them (zero further LLM turns) and clears the resolver-set
+membership that intake depends on, so the very next segment after that
+stops matching anything at §5.3.2's `SMEMBERS` check. Bounded, self-limiting
+staleness — not a gap.
 
 #### 5.4.2 Context assembly (resolves review B2)
 
@@ -648,7 +663,21 @@ turnPipecatcallID := h.utilHandler.UUIDCreate()   // NOT written to c.Pipecatcal
 // negative check ("not the currently-bound id") isn't enough on its own.
 // TTL comfortably exceeds the terminate-with-delay below so the entry
 // outlives the turn; self-expiring, no explicit cleanup needed.
-_ = cache.ListenTurnPipecatcallIDAdd(ctx, c.ID, turnPipecatcallID, listenTurnPipecatcallIDTTL) // SADD ai:listen:turnpcid:<aicall_id> <turnPipecatcallID>, EXPIRE
+//
+// Error handling tightened in rev 8 (review round 7, finding N-2): a
+// silently-ignored SADD failure here would let the turn proceed
+// unregistered, so any tool call it makes would resolve listenTurn=false
+// at §5.4.5 step 2 — the tool-call/tool-result rows get permanently
+// tagged Origin=OriginNone (never excluded from future Q&A replay) and
+// notify_agent gets rejected, i.e. exactly the "worse failure mode"
+// §5.4.5 step 2's B1 fix exists to avoid, reintroduced through the one
+// write this section owns. Abort the turn instead of proceeding
+// unregistered.
+if errAdd := cache.ListenTurnPipecatcallIDAdd(ctx, c.ID, turnPipecatcallID, listenTurnPipecatcallIDTTL); errAdd != nil { // SADD ai:listen:turnpcid:<aicall_id> <turnPipecatcallID>, EXPIRE
+    log.Warnf("could not register listen turn id, skipping this turn: %v", errAdd)
+    promListenTurnTotal.WithLabelValues("skipped_register_failed").Inc()
+    return
+}
 pc, err := h.startListenPipecatcall(ctx, c, turnPipecatcallID, llmMessages)
 // → PipecatV1PipecatcallStart(ctx, turnPipecatcallID, c.CustomerID, c.ActiveflowID,
 //      pmpipecatcall.ReferenceTypeAICall, c.ID, llmType, llmMessages,
@@ -936,12 +965,13 @@ elsewhere, by §5.4.4(b)'s stale-reply guard, for an unrelated reason):
 // resolved once by ToolHandle (§5.4.5 step 2) via Redis set membership,
 // not re-derived here. One source of truth, not two that can disagree.
 if !listenTurn {
-    // This tool fired on the agent's own conversational turn (or we
-    // couldn't prove it was a listen turn — §5.4.5's Redis membership
-    // check failing is handled there, failing the whole tool call
-    // closed, never reaching this function with an unresolved state) —
-    // reject rather than let RunLLM's best-effort suppression silently
-    // eat the agent's real question.
+    // This tool fired on the agent's own conversational turn (or the
+    // membership check couldn't run at all — §5.4.5 step 2 degrades a
+    // Redis failure there to listenTurn=false rather than failing the
+    // tool call closed, since that is the provably correct value under
+    // a Redis outage, review round 7 finding N-1) — reject rather than
+    // let RunLLM's best-effort suppression silently eat the agent's
+    // real question.
     fillFailed(res, fmt.Errorf("notify_agent is only usable while proactively monitoring a call; you were asked a question — answer it directly instead"))
     return res
 }
@@ -1026,17 +1056,32 @@ entirely.**
      // this gate, every tool call on every AIcall type (all 21
      // mapFunctions handlers, not just contact_case) would pay an
      // uncached read that only ever matters for contact_case.
+     //
+     // Placement (review round 7, finding N-7): this runs between
+     // ToolHandle's existing h.Get (tool.go:33) and its first
+     // messageHandler.Create (tool.go:47) — i.e. before any row for this
+     // tool call is written, so there is no already-persisted row left
+     // orphaned if this returns an error below.
      listenTurn := false
      if c.ReferenceType == aicall.ReferenceTypeContactCase {
          isMember, errMember := cache.ListenTurnPipecatcallIDIsMember(ctx, c.ID, pipecatcallID) // SISMEMBER ai:listen:turnpcid:<aicall_id> <pipecatcallID>
          if errMember != nil {
-             // Can't determine the real turn. Fail the whole tool call
-             // closed, same outcome §5.4.4(c) reaches on any read
-             // failure — better an occasional spurious tool-call
-             // rejection than a silently wrong Origin tag.
-             return nil, errors.Wrap(errMember, "could not verify calling turn")
+             // Degrade, don't fail closed — corrected in rev 8, review
+             // round 7 finding N-1. A Redis outage means §5.4.3's SADD and
+             // §5.3.4's debounce lock are ALSO failing, so no genuine
+             // listen turn can be running platform-wide at that moment —
+             // every tool call arriving during a Redis outage is
+             // structurally a real Q&A call. Failing the tool call closed
+             // here would make an Insight Q&A session's ordinary tool use
+             // (get_call_transcript, etc.) go down with Redis, contradicting
+             // §6's "Redis unavailable → Q&A is completely unaffected"
+             // row. listenTurn=false is therefore not a guess; it is the
+             // provably correct value under this specific failure.
+             log.Warnf("listen-turn membership check failed, assuming a real Q&A turn: %v", errMember)
+             promListenMembershipCheckFailedTotal.Inc()
+         } else {
+             listenTurn = isMember
          }
-         listenTurn = isMember
      }
      ```
      This is a direct positive test — pipecatcall A from the race above
@@ -1619,6 +1664,13 @@ longer exists once step 1 runs). Actual order:
    `DEL ai:listen:pending:<aicallID>`, `ai:listen:window:<aicallID>`,
    `ai:listen:lock:<aicallID>`, `ai:listen:turns:<aicallID>` (these four
    are per-AIcall, never shared, so a plain `DEL` is correct for them).
+   **Not included, deliberately (review round 7, finding N-6): any
+   `ai:listen:turnpcid:<aicallID>` entries §5.4.3 registered.** They are
+   short-TTL (§5.12) and self-expiring by design, and leaving a stale one
+   past this stop causes no incorrect behaviour — a tool call arriving
+   late for an already-stopped listen turn still correctly resolves
+   `listenTurn=true` and gets `Origin=OriginListenInternal`, exactly as
+   it should for a row that genuinely came from that turn.
 3. `AIcallUpdate` → `listen_call_id = uuid.Nil`, remove both metadata keys
    (one write) — last, since nothing downstream needs the old value once
    step 2 has consumed it.
@@ -1808,7 +1860,7 @@ ships dark and is enabled deliberately.
 | `aicall_listen_window_size` | `40` | rolling transcript lines in context |
 | `aicall_listen_qa_context_size` | `10` | Q&A rows in context |
 | `aicall_listen_max_turns_per_aicall` | `60` | hard per-AIcall turn cap |
-| `aicall_listen_buffer_ttl_hours` | `6` | Redis TTL on all listen keys |
+| `aicall_listen_buffer_ttl_hours` | `6` | Redis TTL on the buffer/lock/turn-count keys (§5.3.3, §5.3.4, §5.4.1) — **not** `ai:listen:turnpcid:*`, which uses its own, much shorter `aicall_listen_turn_pipecatcall_id_ttl_seconds` (rev 7, review round 6 F1) since a turn-id entry only ever needs to outlive one listen turn |
 | `aicall_listen_default_language` | `en-US` | fallback when `STTLanguage` is empty |
 | `aicall_listen_turn_pipecatcall_id_ttl_seconds` | `180` | **new in rev 7**: TTL on the `ai:listen:turnpcid:<aicall_id>` set entries (§5.4.3, §5.4.5 step 2) |
 
@@ -1832,10 +1884,11 @@ exactly like every existing ai-manager metric.
 |---|---|---|
 | `aicall_listen_start_total` | `result` = started / reused / skipped_not_listenable / failed | §5.1–5.2 outcomes |
 | `aicall_listen_segment_total` | `result` = buffered / dropped_deleted / dropped_unknown | §5.3 intake |
-| `aicall_listen_turn_total` | `result` = ran / skipped_locked / skipped_empty / skipped_cap / failed | §5.4 turns |
+| `aicall_listen_turn_total` | `result` = ran / skipped_locked / skipped_empty / skipped_cap / skipped_disabled / skipped_invalid / skipped_register_failed / failed | §5.4 turns. **New in rev 8**: `skipped_disabled` (§5.4.1 step 1, flag off — review round 6 F3), `skipped_invalid` (same step, any of the other require-list conditions), `skipped_register_failed` (§5.4.3, the turn-id `SADD` failed — review round 7 N-2) |
 | `aicall_listen_notify_total` | — | proactive messages actually delivered |
 | `aicall_foreign_pipecatcall_dropped_total` | `handler` | §5.4.4(b) guard firings (also covers pre-existing stale contact_case replies) |
 | `aicall_listen_stop_failed_total` | — | §5.7.2 stop RPC failures falling back to the call-hangup-ends-the-transport backstop (§5.7.1) |
+| `aicall_listen_membership_check_failed_total` | — | **new in rev 8, review round 7 N-1**: §5.4.5 step 2's `SISMEMBER` errored and degraded to `listenTurn=false`. Near-zero expected; a sustained non-zero rate means Redis is unhealthy, not that anything listen-specific is wrong |
 
 `aicall_listen_turn_total{result="skipped_locked"}` is the
 direct measure of how much LLM spend the debounce is saving; if it is near
@@ -1864,7 +1917,7 @@ read as an endorsed alternative).
 | Two Cases on one live call | Two AIcalls (the unique key is per-Case), one shared STT session. The first to arrive owns it (`owns=true`); the second reuses (`owns=false`) and never stops it. Both are cleared on hangup by `stopListenByCallID`'s plural lookup |
 | `transcript_created` arrives for a deleted transcript | Dropped on `TMDelete != nil` (§5.3.2, review H3) |
 | `transcript_created` arrives after listening stopped | Redis resolver key already deleted → dropped |
-| Redis unavailable | Buffering and the debounce lock fail → no listen turns run. Q&A is completely unaffected (it never touches these keys). Degrades to today's reactive-only behaviour |
+| Redis unavailable | Buffering and the debounce lock fail → no listen turns run (and, since §5.4.3's `SADD` also fails, none *can* run — see below). **Q&A is unaffected — restated precisely in rev 8, review round 7 finding N-1**: as of rev 7, `ToolHandle` *does* touch `ai:listen:turnpcid:*` for every `contact_case` tool call (§5.4.5 step 2), so "never touches these keys" is no longer literally true — but a `SISMEMBER` error there degrades to `listenTurn=false` rather than failing the tool call, and that is provably the correct value during a Redis outage (no genuine listen turn can exist at that moment either, for the same reason). Net effect on Q&A is unchanged: it still runs normally, just via a degrade path instead of never touching the keys at all. Listening itself degrades to today's reactive-only behaviour |
 | Redis flushed mid-call | Listening silently stops for in-flight calls until the panel is reopened (§5.3.2). Stated, accepted, self-healing |
 | `RunListenTurn` fails after popping `pending` (pipecatcall start error, pod loss) (**new in rev 3**) | The popped lines are gone — `LPOP` already removed them, and only the ≤40-line `window` retains a copy for the *next* turn's context. Accepted, bounded data loss: at most one debounce interval's worth of transcript is skipped from evaluation, never from the call itself (nothing about the actual call or its recording is affected) |
 | LLM emits text instead of calling `notify_agent` | Dropped by the pipecatcall-identity guard on the two pipecat message handlers it applies to (§5.4.4(b), narrowed from four in rev 3); metered. Nothing persisted, no webhook |
@@ -1946,9 +1999,12 @@ read as an endorsed alternative).
       a tool call arriving with id A still resolves `listenTurn=false`).
     - `pipecatcallID == uuid.Nil` → `listenTurn=false` (pins review round
       4's B2: unknown id treated as a real turn, never as listen).
-    - Redis `SISMEMBER` erroring → the whole tool call fails closed
-      (`return nil, err`), `toolHandleNotifyAgent` never reached with an
-      unresolved state.
+    - Redis `SISMEMBER` erroring → **degrades to `listenTurn=false`**
+      (review round 7 finding N-1, not a hard tool-call failure) — the
+      tool call proceeds normally as a real Q&A turn; metered via
+      `promListenMembershipCheckFailedTotal`, and `toolHandleNotifyAgent`
+      still reached (with `listenTurn=false`, so it still correctly
+      rejects if this happened to be a `notify_agent` call).
 11. `getPipecatcallMessages`'s two-fetch context assembly (§5.4.5,
     revised across rev 5-7): a golden test seeding 150+ listen-internal
     rows interleaved with 10 real Q&A rows and the leading system-prompt
@@ -2063,17 +2119,24 @@ read as an endorsed alternative).
    before wider enablement.
 
 **Rollback:** set `aicall_listen_enabled=false`. **Made literally true in
-rev 7 (review round 6, finding F3)**: §5.4.1 step 0 now checks the flag
-directly inside `RunListenTurn`, so an in-flight session's *next*
-scheduled turn (within one `AIcallListenEvaluateIntervalSeconds`, default
-20s — not "immediately" in the sub-second sense, but bounded and short)
-sees the flag off and clears its own state; before this fix, nothing on
-the intake or evaluation path read the flag at all, so a session that
-started while the flag was on would have run to call-end or the turn cap
-regardless of a rollback. STT sessions are reaped by transcribe-manager
-on call hangup either way; the `listen_call_id` column and `origin` field
-are inert **for the listening path specifically**. The §8 table above
-still applies — rollback does not roll back the always-active
+rev 7 (review round 6, finding F3), tightened in rev 8 (review round 7,
+findings N-3/N-4)**: §5.4.1 step 1 checks the flag directly inside
+`RunListenTurn` (merged with the existing require-list, not a separate
+step 0 that ran before the AIcall was even fetched — N-3), so an
+in-flight session's *next* scheduled turn (within one
+`AIcallListenEvaluateIntervalSeconds`, default 20s — not "immediately" in
+the sub-second sense, but bounded and short) sees the flag off and **stops
+listening entirely**, including releasing any transcribe session this
+AIcall itself owns (§5.7.2) — not just clearing Redis/DB bookkeeping and
+leaving an owned session to run until hangup, which is what a bare state
+clear would have left standing (N-4). Before rev 7's fix, nothing on the
+intake or evaluation path read the flag at all, so a session that started
+while the flag was on would have run to call-end or the turn cap
+regardless of a rollback. A session this AIcall doesn't own is never
+touched by any of this and is reaped by transcribe-manager on call
+hangup either way, same as always; the `listen_call_id` column and
+`origin` field are inert **for the listening path specifically**. The §8
+table above still applies — rollback does not roll back the always-active
 context-assembly fix or the stale-reply guard, which are code-deploy
 changes, not flag-gated ones. No migration rollback is required.
 
@@ -2107,9 +2170,9 @@ changes, not flag-gated ones. No migration rollback is required.
   two-fetch rewrite (leading system rows + `databasehandler.NotEq`
   -filtered rest, §5.4.5)
 - `pkg/aicallhandler/listen.go` *(new)* — `EventTMTranscriptCreated`,
-  `RunListenTurn` (**new in rev 7**: `AIcallListenEnabled` precondition,
-  §5.4.1 step 0), context assembly, `stopListenByCallID`,
-  `clearListenState`
+  `RunListenTurn` (`AIcallListenEnabled` precondition, merged into
+  §5.4.1 step 1's require-list as of rev 8), context assembly,
+  `stopListenByCallID`, `clearListenState`
 - `pkg/aicallhandler/tool.go` — `ToolHandle`'s implementation of the new
   `pipecatcallID` parameter, the `listenTurn` resolution (§5.4.5 step 2 —
   `ReferenceType` pre-gate + Redis `SISMEMBER`, not an `AIcallGet`),
@@ -2331,6 +2394,27 @@ gaps left over from the mechanism's rapid iteration across rev 4-6.
 | F4 | Several passages in §6, §7, §9 still described rev 5/rev 6's now-superseded mechanism (a fresh `AIcallGet` shared via `toolHandleNotifyAgent`'s own call, `pipecatcallID` passed as a raw parameter rather than the resolved `listenTurn bool`) | Swept and corrected in the same pass as F1's rewrite, since the mechanism change made them stale | §5.4.3a step 4, §6, §7 items 10-12, §9 |
 | F5 | §6 and §7 still said "all four" pipecat message handlers, though §5.4.4(b) narrowed the guard to two back in rev 3 | Corrected to "two" in both places | §6, §7 item 5 |
 | F6-F8 | Minor: the `NotEq` snippet's shape doesn't match `ApplyFields`' real `switch`/`case` structure; "same shape as the `conversation` branch's guard" overstates similarity (that guard is still cache-first); the two-AIcall-read-per-tool-call shape (`h.Get` plus the listen-turn check) wasn't stated as deliberate | Not addressed in rev 7 — reviewer's own assessment was these are cosmetic and can be fixed while touching the file during implementation, not blocking |  — |
+
+### 10.6 Review-response matrix (round 7 → rev 8)
+
+**Round 7 APPROVEd rev 7 outright — zero BLOCKING findings, architecture
+confirmed stable, monotonically decreasing severity across rounds 5-7.**
+It offered 7 localized findings (N-1 through N-7) explicitly as
+pre-implementation recommendations, not approval conditions. rev 8
+closes all 7, on the view that the loop's own five-round history is that
+a "recommended, not required" finding left in the document tends to
+resurface as a defect in the next round anyway (as F1 in round 6 did with
+rev 5's own deferred residual, and B3 in round 4 did with rev 3's).
+
+| # | Review finding | Resolution | Where |
+|---|---|---|---|
+| N-1 | §5.4.5 step 2's Redis `SISMEMBER` failure path (`return nil, err`) contradicts §6's "Redis unavailable → Q&A completely unaffected" row — a Redis outage would now fail every `contact_case` Insight tool call, not just listening | Degrades to `listenTurn=false` instead — provably correct during an outage, since §5.4.3's `SADD` and §5.3.4's lock are failing too, so no genuine listen turn can exist at that moment. §6's row restated to describe the degrade path precisely rather than claim the keys are never touched | §5.4.5 step 2, §6 |
+| N-2 | §5.4.3's turn-id `SADD` error was silently discarded (`_ = ...`); a failed registration lets the turn proceed unregistered, reproducing the exact permanent-mistagging failure mode §5.4.5's B1 fix (round 5) exists to prevent | Turn aborts on a registration failure instead of proceeding, metered via a new `skipped_register_failed` result | §5.4.3 |
+| N-3 | §5.4.1's flag check (step 0) ran before `c := h.Get(aicallID)` (step 1), but `clearListenState` (called on the flag-off path) is documented as requiring the caller to already hold `c` — the same class of self-contradictory step ordering review round 4's M1 caught in §5.7.3 | Flag check merged into step 1's require-list, after `c` is fetched | §5.4.1 |
+| N-4 | The flag-off path said "clear listen state" while the turn-cap path said "stop listening entirely" for what should be the same kind of exit; a bare state clear doesn't stop a still-running owned transcribe, so a rollback could strand a billed STT session with its handle lost | Both paths now go through the same full stop (§5.7.2's owned-transcribe stop included) | §5.4.1, §8 |
+| N-5 | New `skipped_disabled`/`skipped_register_failed` outcomes had no corresponding metric labels | Added to `aicall_listen_turn_total`'s label list, plus a new `aicall_listen_membership_check_failed_total` for N-1's degrade path | §5.13 |
+| N-6 | `aicall_listen_buffer_ttl_hours`'s description ("TTL on all listen keys") no longer covered `ai:listen:turnpcid:*`'s separate, shorter TTL; §5.7.3's cleanup list didn't mention (or explain the deliberate omission of) that key | Both corrected/clarified | §5.12, §5.7.3 |
+| N-7 | §5.4.5 step 2's listen-turn check didn't state where in `ToolHandle`'s existing flow it runs, relative to the tool-call row it's meant to gate | Stated explicitly: between the existing `h.Get` and the first `messageHandler.Create`, so a failure here never leaves an already-written row behind | §5.4.5 step 2 |
 
 ---
 
