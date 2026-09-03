@@ -63,6 +63,7 @@ func (r *requestHandler) TranscribeV1TranscribeList(ctx context.Context, pageTok
 // it returns created transcribe info if it succeed.
 func (r *requestHandler) TranscribeV1TranscribeStart(
 	ctx context.Context,
+	id uuid.UUID,
 	customerID uuid.UUID,
 	activeflowID uuid.UUID,
 	onEndFlowID uuid.UUID,
@@ -76,6 +77,7 @@ func (r *requestHandler) TranscribeV1TranscribeStart(
 	uri := "/v1/transcribes"
 
 	data := &tmrequest.V1DataTranscribesPost{
+		ID:            id,
 		CustomerID:    customerID,
 		ActiveflowID:  activeflowID,
 		OnEndFlowID:   onEndFlowID,

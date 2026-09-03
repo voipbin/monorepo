@@ -3639,6 +3639,7 @@ func Test_actionHandleTranscribeRecording(t *testing.T) {
 			for _, recordingID := range tt.responseCall.RecordingIDs {
 				mockReq.EXPECT().TranscribeV1TranscribeStart(
 					ctx,
+					uuid.Nil,
 					tt.activeflow.CustomerID,
 					tt.activeflow.ID,
 					tt.expectedOnEndFlowID,
@@ -3807,6 +3808,7 @@ func Test_actionHandleTranscribeStart(t *testing.T) {
 
 			mockReq.EXPECT().TranscribeV1TranscribeStart(
 				ctx,
+				uuid.Nil,
 				tt.expectedCustomerID,
 				tt.expectedActiveflowID,
 				tt.expectedOnEndFlowID,

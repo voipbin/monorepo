@@ -192,6 +192,7 @@ func Test_TranscribeV1TranscribeStart(t *testing.T) {
 	tests := []struct {
 		name string
 
+		id            uuid.UUID
 		customerID    uuid.UUID
 		activeflowID  uuid.UUID
 		onEndFlowID   uuid.UUID
@@ -211,6 +212,7 @@ func Test_TranscribeV1TranscribeStart(t *testing.T) {
 		{
 			name: "normal",
 
+			id:            uuid.Nil,
 			customerID:    uuid.FromStringOrNil("2ab9c63a-8227-11ed-928b-1b90501adbe2"),
 			activeflowID:  uuid.FromStringOrNil("d7794d42-0938-11f0-a95d-e3a4c60962f2"),
 			onEndFlowID:   uuid.FromStringOrNil("d7b01a98-0938-11f0-85a1-cb7a3f01f80f"),
@@ -232,7 +234,40 @@ func Test_TranscribeV1TranscribeStart(t *testing.T) {
 				URI:      "/v1/transcribes",
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"customer_id":"2ab9c63a-8227-11ed-928b-1b90501adbe2","activeflow_id":"d7794d42-0938-11f0-a95d-e3a4c60962f2","on_end_flow_id":"d7b01a98-0938-11f0-85a1-cb7a3f01f80f","reference_type":"call","reference_id":"2ae8944c-8227-11ed-acb4-c3e23ea3a2a4","language":"en-US","direction":"both"}`),
+				Data:     []byte(`{"id":"00000000-0000-0000-0000-000000000000","customer_id":"2ab9c63a-8227-11ed-928b-1b90501adbe2","activeflow_id":"d7794d42-0938-11f0-a95d-e3a4c60962f2","on_end_flow_id":"d7b01a98-0938-11f0-85a1-cb7a3f01f80f","reference_type":"call","reference_id":"2ae8944c-8227-11ed-acb4-c3e23ea3a2a4","language":"en-US","direction":"both"}`),
+			},
+			expectedRes: &tmtranscribe.Transcribe{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("2b13a4ca-8227-11ed-8bad-b7bb9aa7f185"),
+				},
+			},
+		},
+		{
+			name: "id supplied is marshaled into the request body",
+
+			id:            uuid.FromStringOrNil("2b13a4ca-8227-11ed-8bad-b7bb9aa7f185"),
+			customerID:    uuid.FromStringOrNil("2ab9c63a-8227-11ed-928b-1b90501adbe2"),
+			activeflowID:  uuid.FromStringOrNil("d7794d42-0938-11f0-a95d-e3a4c60962f2"),
+			onEndFlowID:   uuid.FromStringOrNil("d7b01a98-0938-11f0-85a1-cb7a3f01f80f"),
+			referenceType: tmtranscribe.ReferenceTypeCall,
+			referenceID:   uuid.FromStringOrNil("2ae8944c-8227-11ed-acb4-c3e23ea3a2a4"),
+			language:      "en-US",
+			direction:     tmtranscribe.DirectionBoth,
+			provider:      tmtranscribe.ProviderEmpty,
+			timeout:       30000,
+
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"2b13a4ca-8227-11ed-8bad-b7bb9aa7f185"}`),
+			},
+
+			expectedTarget: "bin-manager.transcribe-manager.request",
+			expectedRequest: &sock.Request{
+				URI:      "/v1/transcribes",
+				Method:   sock.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"id":"2b13a4ca-8227-11ed-8bad-b7bb9aa7f185","customer_id":"2ab9c63a-8227-11ed-928b-1b90501adbe2","activeflow_id":"d7794d42-0938-11f0-a95d-e3a4c60962f2","on_end_flow_id":"d7b01a98-0938-11f0-85a1-cb7a3f01f80f","reference_type":"call","reference_id":"2ae8944c-8227-11ed-acb4-c3e23ea3a2a4","language":"en-US","direction":"both"}`),
 			},
 			expectedRes: &tmtranscribe.Transcribe{
 				Identity: identity.Identity{
@@ -255,7 +290,7 @@ func Test_TranscribeV1TranscribeStart(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectedTarget, tt.expectedRequest).Return(tt.response, nil)
 
-			res, err := h.TranscribeV1TranscribeStart(ctx, tt.customerID, tt.activeflowID, tt.onEndFlowID, tt.referenceType, tt.referenceID, tt.language, tt.direction, tt.provider, tt.timeout)
+			res, err := h.TranscribeV1TranscribeStart(ctx, tt.id, tt.customerID, tt.activeflowID, tt.onEndFlowID, tt.referenceType, tt.referenceID, tt.language, tt.direction, tt.provider, tt.timeout)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

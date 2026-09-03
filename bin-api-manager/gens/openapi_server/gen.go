@@ -10054,6 +10054,9 @@ type PostServiceAgentsTranscribesJSONBody struct {
 	// Direction Which audio legs to transcribe. If omitted, defaults to "both".
 	Direction *TranscribeManagerTranscribeDirection `json:"direction,omitempty"`
 
+	// Id Optional caller-specified id to use for the created transcribe. If omitted, the server generates one. A caller-supplied id is single-use: it must not already exist (a duplicate returns 409), and retrying the same request with the same id after an ambiguous outcome (e.g. a client timeout) always returns 409 rather than the original result -- check with GET /service_agents/transcribes first instead of retrying blindly.
+	Id *openapi_types.UUID `json:"id,omitempty"`
+
 	// Language The language of the transcription.
 	Language string `json:"language"`
 
@@ -10266,6 +10269,9 @@ type GetTranscribesParams struct {
 type PostTranscribesJSONBody struct {
 	// Direction Which audio legs to transcribe. If omitted, defaults to "both".
 	Direction *TranscribeManagerTranscribeDirection `json:"direction,omitempty"`
+
+	// Id Optional caller-specified id to use for the created transcribe. If omitted, the server generates one. A caller-supplied id is single-use: it must not already exist (a duplicate returns 409), and retrying the same request with the same id after an ambiguous outcome (e.g. a client timeout) always returns 409 rather than the original result -- check with GET /transcribes/{id} first instead of retrying blindly.
+	Id *openapi_types.UUID `json:"id,omitempty"`
 
 	// Language The language of the transcription.
 	Language string `json:"language"`

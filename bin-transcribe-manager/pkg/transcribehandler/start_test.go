@@ -157,7 +157,7 @@ func Test_Start_referencetype_call(t *testing.T) {
 			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.activeflowID, gomock.Any()).Return(nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), gomock.Any(), gomock.Any())
 
-			res, err := h.Start(ctx, tt.customerID, tt.activeflowID, tt.onEndFlowID, tt.referenceType, tt.referenceID, tt.language, tt.direction, tt.provider)
+			res, err := h.Start(ctx, uuid.Nil, tt.customerID, tt.activeflowID, tt.onEndFlowID, tt.referenceType, tt.referenceID, tt.language, tt.direction, tt.provider)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -340,7 +340,6 @@ func Test_startLive(t *testing.T) {
 			mockDB.EXPECT().TranscribeList(ctx, uint64(1), "", gomock.Any()).Return([]*transcribe.Transcribe{}, nil)
 
 			// create
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDB.EXPECT().TranscribeCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().TranscribeGet(ctx, gomock.Any()).Return(tt.responseTranscribe, nil)
 			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.activeflowID, gomock.Any()).Return(nil)
@@ -353,7 +352,7 @@ func Test_startLive(t *testing.T) {
 				mockStreaming.EXPECT().Start(ctx, tt.customerID, tt.responseUUID, tt.referenceType, tt.referenceID, tt.language, tt.direction, tt.provider).Return(tt.responseStreamings[0], nil)
 			}
 
-			res, err := h.startLive(ctx, tt.customerID, tt.activeflowID, tt.onEndFlowID, tt.referenceType, tt.referenceID, tt.language, tt.direction, tt.provider)
+			res, err := h.startLive(ctx, tt.responseUUID, tt.customerID, tt.activeflowID, tt.onEndFlowID, tt.referenceType, tt.referenceID, tt.language, tt.direction, tt.provider)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -361,7 +360,6 @@ func Test_startLive(t *testing.T) {
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
-
 
 		})
 	}
@@ -411,17 +409,13 @@ func Test_startLive_duplicate_rejected(t *testing.T) {
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 
 			h := &transcribeHandler{
-				utilHandler: mockUtil,
-				db:          mockDB,
+				db: mockDB,
 			}
 
 			ctx := context.Background()
-
-			mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("ad23290c-9877-11ed-8d54-07172f870dfb"))
 
 			// exact-match the duplicate-check filters: if any scoping key
 			// (customer_id, language, status) is dropped from dupFilters,
@@ -437,7 +431,7 @@ func Test_startLive_duplicate_rejected(t *testing.T) {
 			}
 			mockDB.EXPECT().TranscribeList(ctx, uint64(1), "", expectFilters).Return(tt.responseExisting, nil)
 
-			res, err := h.startLive(ctx, tt.customerID, tt.activeflowID, tt.onEndFlowID, tt.referenceType, tt.referenceID, tt.language, tt.direction, tt.provider)
+			res, err := h.startLive(ctx, uuid.FromStringOrNil("ad23290c-9877-11ed-8d54-07172f870dfb"), tt.customerID, tt.activeflowID, tt.onEndFlowID, tt.referenceType, tt.referenceID, tt.language, tt.direction, tt.provider)
 			if err == nil {
 				t.Errorf("Wrong match. expect: error, got: ok. res: %v", res)
 			}
@@ -472,14 +466,12 @@ func Test_startLive_different_language_coexists(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
-	mockUtil := utilhandler.NewMockUtilHandler(mc)
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	mockStreaming := streaminghandler.NewMockStreamingHandler(mc)
 
 	h := &transcribeHandler{
-		utilHandler:      mockUtil,
 		reqHandler:       mockReq,
 		db:               mockDB,
 		notifyHandler:    mockNotify,
@@ -487,8 +479,6 @@ func Test_startLive_different_language_coexists(t *testing.T) {
 	}
 
 	ctx := context.Background()
-
-	mockUtil.EXPECT().UUIDCreate().Return(responseUUID)
 
 	expectFilters := map[transcribe.Field]any{
 		transcribe.FieldCustomerID:  customerID,
@@ -505,7 +495,7 @@ func Test_startLive_different_language_coexists(t *testing.T) {
 	mockReq.EXPECT().FlowV1VariableSetVariable(ctx, activeflowID, gomock.Any()).Return(nil)
 	mockNotify.EXPECT().PublishWebhookEvent(ctx, responseTranscribe.CustomerID, transcribe.EventTypeTranscribeCreated, responseTranscribe)
 
-	res, err := h.startLive(ctx, customerID, activeflowID, onEndFlowID, transcribe.ReferenceTypeCall, referenceID, "ja-JP", transcribe.DirectionIn, transcribe.ProviderEmpty)
+	res, err := h.startLive(ctx, responseUUID, customerID, activeflowID, onEndFlowID, transcribe.ReferenceTypeCall, referenceID, "ja-JP", transcribe.DirectionIn, transcribe.ProviderEmpty)
 	if err != nil {
 		t.Errorf("Wrong match. expect: ok, got: %v", err)
 	}
@@ -738,10 +728,301 @@ func Test_Start_direction_normalize(t *testing.T) {
 			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.activeflowID, gomock.Any()).Return(nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), gomock.Any(), gomock.Any())
 
-			_, err := h.Start(ctx, tt.customerID, tt.activeflowID, tt.onEndFlowID, tt.referenceType, tt.referenceID, tt.language, tt.direction, tt.provider)
+			_, err := h.Start(ctx, uuid.Nil, tt.customerID, tt.activeflowID, tt.onEndFlowID, tt.referenceType, tt.referenceID, tt.language, tt.direction, tt.provider)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
+	}
+}
+
+// Test_Start_callerSpecifiedID_free covers: id provided & free -- the
+// caller-supplied id passes the pre-check (no existing row) and is used
+// as-is for the created transcribe.
+func Test_Start_callerSpecifiedID_free(t *testing.T) {
+	customerID := uuid.FromStringOrNil("c1a1a1a1-0000-11ed-0000-000000000001")
+	activeflowID := uuid.FromStringOrNil("c1a1a1a1-0000-11ed-0000-000000000002")
+	onEndFlowID := uuid.FromStringOrNil("c1a1a1a1-0000-11ed-0000-000000000003")
+	referenceID := uuid.FromStringOrNil("c1a1a1a1-0000-11ed-0000-000000000004")
+	callerID := uuid.FromStringOrNil("c1a1a1a1-0000-11ed-0000-000000000099")
+
+	responseCall := &cmcall.Call{
+		Identity: commonidentity.Identity{ID: referenceID},
+		Status:   cmcall.StatusProgressing,
+	}
+	responseStreaming := &streaming.Streaming{
+		Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("c1a1a1a1-0000-11ed-0000-0000000000aa")},
+	}
+	responseTranscribe := &transcribe.Transcribe{
+		Identity: commonidentity.Identity{ID: callerID},
+	}
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockStreaming := streaminghandler.NewMockStreamingHandler(mc)
+
+	h := &transcribeHandler{
+		reqHandler:       mockReq,
+		db:               mockDB,
+		notifyHandler:    mockNotify,
+		streamingHandler: mockStreaming,
+	}
+
+	ctx := context.Background()
+
+	mockReq.EXPECT().CallV1CallGet(ctx, referenceID).Return(responseCall, nil)
+
+	// pre-check: no row with the caller-supplied id exists yet
+	mockDB.EXPECT().TranscribeGet(ctx, callerID).Return(nil, dbhandler.ErrNotFound)
+
+	// dup check (customer+reference+language) finds nothing
+	mockDB.EXPECT().TranscribeList(ctx, uint64(1), "", gomock.Any()).Return([]*transcribe.Transcribe{}, nil)
+
+	mockStreaming.EXPECT().Start(ctx, customerID, callerID, transcribe.ReferenceTypeCall, referenceID, "en-US", transcript.DirectionIn, transcribe.ProviderEmpty).Return(responseStreaming, nil)
+
+	mockDB.EXPECT().TranscribeCreate(ctx, gomock.Cond(func(x any) bool {
+		tr, ok := x.(*transcribe.Transcribe)
+		return ok && tr.ID == callerID
+	})).Return(nil)
+	mockDB.EXPECT().TranscribeGet(ctx, gomock.Any()).Return(responseTranscribe, nil)
+	mockReq.EXPECT().FlowV1VariableSetVariable(ctx, activeflowID, gomock.Any()).Return(nil)
+	mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), gomock.Any(), gomock.Any())
+
+	res, err := h.Start(ctx, callerID, customerID, activeflowID, onEndFlowID, transcribe.ReferenceTypeCall, referenceID, "en-US", transcribe.DirectionIn, transcribe.ProviderEmpty)
+	if err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+	if res == nil || res.ID != callerID {
+		t.Errorf("Wrong match. expect id: %s, got: %v", callerID, res)
+	}
+}
+
+// Test_Start_callerSpecifiedID_preCheckConflict covers: id provided &
+// already exists via the pre-check -- Start returns 409
+// TRANSCRIBE_ID_ALREADY_EXISTS immediately, without dispatching to
+// startLive/startRecording at all.
+func Test_Start_callerSpecifiedID_preCheckConflict(t *testing.T) {
+	customerID := uuid.FromStringOrNil("c2a1a1a1-0000-11ed-0000-000000000001")
+	activeflowID := uuid.FromStringOrNil("c2a1a1a1-0000-11ed-0000-000000000002")
+	onEndFlowID := uuid.FromStringOrNil("c2a1a1a1-0000-11ed-0000-000000000003")
+	referenceID := uuid.FromStringOrNil("c2a1a1a1-0000-11ed-0000-000000000004")
+	callerID := uuid.FromStringOrNil("c2a1a1a1-0000-11ed-0000-000000000099")
+
+	responseCall := &cmcall.Call{
+		Identity: commonidentity.Identity{ID: referenceID},
+		Status:   cmcall.StatusProgressing,
+	}
+	existingTranscribe := &transcribe.Transcribe{
+		Identity: commonidentity.Identity{ID: callerID},
+	}
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &transcribeHandler{
+		reqHandler: mockReq,
+		db:         mockDB,
+	}
+
+	ctx := context.Background()
+
+	mockReq.EXPECT().CallV1CallGet(ctx, referenceID).Return(responseCall, nil)
+
+	// pre-check: a row with this id already exists (any customer/status)
+	mockDB.EXPECT().TranscribeGet(ctx, callerID).Return(existingTranscribe, nil)
+
+	res, err := h.Start(ctx, callerID, customerID, activeflowID, onEndFlowID, transcribe.ReferenceTypeCall, referenceID, "en-US", transcribe.DirectionBoth, transcribe.ProviderEmpty)
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: ok. res: %v", res)
+	}
+
+	var ve *cerrors.VoipbinError
+	if !stderrors.As(err, &ve) {
+		t.Errorf("Wrong error type. expect: VoipbinError, got: %T", err)
+	} else {
+		if ve.Status != cerrors.StatusAlreadyExists {
+			t.Errorf("Wrong status. expect: %s, got: %s", cerrors.StatusAlreadyExists, ve.Status)
+		}
+		if ve.Reason != "TRANSCRIBE_ID_ALREADY_EXISTS" {
+			t.Errorf("Wrong reason. expect: TRANSCRIBE_ID_ALREADY_EXISTS, got: %s", ve.Reason)
+		}
+	}
+}
+
+// Test_Start_callerSpecifiedID_toctouRace covers: id provided & wins the
+// TOCTOU race against the pre-check -- the pre-check Get returns not-found,
+// but the insert itself races another request with the same id and the DB
+// layer reports ErrDuplicateID. Start must still map this to the
+// caller-facing 409 (not a 500), and must stop the streaming session(s)
+// already started for this attempt before returning.
+func Test_Start_callerSpecifiedID_toctouRace(t *testing.T) {
+	customerID := uuid.FromStringOrNil("c3a1a1a1-0000-11ed-0000-000000000001")
+	activeflowID := uuid.FromStringOrNil("c3a1a1a1-0000-11ed-0000-000000000002")
+	onEndFlowID := uuid.FromStringOrNil("c3a1a1a1-0000-11ed-0000-000000000003")
+	referenceID := uuid.FromStringOrNil("c3a1a1a1-0000-11ed-0000-000000000004")
+	callerID := uuid.FromStringOrNil("c3a1a1a1-0000-11ed-0000-000000000099")
+	streamingID := uuid.FromStringOrNil("c3a1a1a1-0000-11ed-0000-0000000000aa")
+
+	responseCall := &cmcall.Call{
+		Identity: commonidentity.Identity{ID: referenceID},
+		Status:   cmcall.StatusProgressing,
+	}
+	responseStreaming := &streaming.Streaming{
+		Identity: commonidentity.Identity{ID: streamingID},
+	}
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockStreaming := streaminghandler.NewMockStreamingHandler(mc)
+
+	h := &transcribeHandler{
+		reqHandler:       mockReq,
+		db:               mockDB,
+		streamingHandler: mockStreaming,
+	}
+
+	ctx := context.Background()
+
+	mockReq.EXPECT().CallV1CallGet(ctx, referenceID).Return(responseCall, nil)
+
+	// pre-check passes: no row yet
+	mockDB.EXPECT().TranscribeGet(ctx, callerID).Return(nil, dbhandler.ErrNotFound)
+
+	// dup check (customer+reference+language) finds nothing
+	mockDB.EXPECT().TranscribeList(ctx, uint64(1), "", gomock.Any()).Return([]*transcribe.Transcribe{}, nil)
+
+	mockStreaming.EXPECT().Start(ctx, customerID, callerID, transcribe.ReferenceTypeCall, referenceID, "en-US", transcript.DirectionIn, transcribe.ProviderEmpty).Return(responseStreaming, nil)
+
+	// the insert races another request with the same id
+	mockDB.EXPECT().TranscribeCreate(ctx, gomock.Any()).Return(dbhandler.ErrDuplicateID)
+
+	// rollback: the streaming session started for this attempt is stopped
+	mockStreaming.EXPECT().Stop(ctx, streamingID).Return(&streaming.Streaming{}, nil)
+
+	res, err := h.Start(ctx, callerID, customerID, activeflowID, onEndFlowID, transcribe.ReferenceTypeCall, referenceID, "en-US", transcribe.DirectionIn, transcribe.ProviderEmpty)
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: ok. res: %v", res)
+	}
+
+	var ve *cerrors.VoipbinError
+	if !stderrors.As(err, &ve) {
+		t.Errorf("Wrong error type. expect: VoipbinError, got: %T", err)
+	} else {
+		if ve.Status != cerrors.StatusAlreadyExists {
+			t.Errorf("Wrong status. expect: %s, got: %s", cerrors.StatusAlreadyExists, ve.Status)
+		}
+		if ve.Reason != "TRANSCRIBE_ID_ALREADY_EXISTS" {
+			t.Errorf("Wrong reason. expect: TRANSCRIBE_ID_ALREADY_EXISTS, got: %s", ve.Reason)
+		}
+	}
+}
+
+// Test_Start_serverGeneratedID_collision covers: id omitted & the
+// freshly-generated id somehow collides -- ErrDuplicateID with
+// callerSpecifiedID == false must map to cerrors.Internal
+// (TRANSCRIBE_ID_GENERATION_COLLISION), not the caller-facing 409, since
+// this is not a caller error. Also exercises the streaming rollback on a
+// post-loop h.Create failure.
+func Test_Start_serverGeneratedID_collision(t *testing.T) {
+	customerID := uuid.FromStringOrNil("c4a1a1a1-0000-11ed-0000-000000000001")
+	activeflowID := uuid.FromStringOrNil("c4a1a1a1-0000-11ed-0000-000000000002")
+	onEndFlowID := uuid.FromStringOrNil("c4a1a1a1-0000-11ed-0000-000000000003")
+	referenceID := uuid.FromStringOrNil("c4a1a1a1-0000-11ed-0000-000000000004")
+	generatedID := uuid.FromStringOrNil("c4a1a1a1-0000-11ed-0000-000000000099")
+	streamingID := uuid.FromStringOrNil("c4a1a1a1-0000-11ed-0000-0000000000aa")
+
+	responseCall := &cmcall.Call{
+		Identity: commonidentity.Identity{ID: referenceID},
+		Status:   cmcall.StatusProgressing,
+	}
+	responseStreaming := &streaming.Streaming{
+		Identity: commonidentity.Identity{ID: streamingID},
+	}
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockStreaming := streaminghandler.NewMockStreamingHandler(mc)
+
+	h := &transcribeHandler{
+		utilHandler:      mockUtil,
+		reqHandler:       mockReq,
+		db:               mockDB,
+		streamingHandler: mockStreaming,
+	}
+
+	ctx := context.Background()
+
+	mockReq.EXPECT().CallV1CallGet(ctx, referenceID).Return(responseCall, nil)
+
+	// id omitted -- server generates one. No pre-check Get is performed
+	// (callerSpecifiedID is false).
+	mockUtil.EXPECT().UUIDCreate().Return(generatedID)
+
+	mockDB.EXPECT().TranscribeList(ctx, uint64(1), "", gomock.Any()).Return([]*transcribe.Transcribe{}, nil)
+
+	mockStreaming.EXPECT().Start(ctx, customerID, generatedID, transcribe.ReferenceTypeCall, referenceID, "en-US", transcript.DirectionIn, transcribe.ProviderEmpty).Return(responseStreaming, nil)
+
+	// the server-generated id collides with an existing row
+	mockDB.EXPECT().TranscribeCreate(ctx, gomock.Any()).Return(dbhandler.ErrDuplicateID)
+
+	// rollback: the streaming session started for this attempt is stopped
+	mockStreaming.EXPECT().Stop(ctx, streamingID).Return(&streaming.Streaming{}, nil)
+
+	res, err := h.Start(ctx, uuid.Nil, customerID, activeflowID, onEndFlowID, transcribe.ReferenceTypeCall, referenceID, "en-US", transcribe.DirectionIn, transcribe.ProviderEmpty)
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: ok. res: %v", res)
+	}
+
+	var ve *cerrors.VoipbinError
+	if !stderrors.As(err, &ve) {
+		t.Errorf("Wrong error type. expect: VoipbinError, got: %T", err)
+	} else {
+		if ve.Status != cerrors.StatusInternal {
+			t.Errorf("Wrong status. expect: %s, got: %s", cerrors.StatusInternal, ve.Status)
+		}
+		if ve.Reason != "TRANSCRIBE_ID_GENERATION_COLLISION" {
+			t.Errorf("Wrong reason. expect: TRANSCRIBE_ID_GENERATION_COLLISION, got: %s", ve.Reason)
+		}
+	}
+}
+
+// Test_Start_unsupportedReferenceType_returnsError guards against a
+// regression of the E2 bug class (errors.Wrapf(nil, ...) silently
+// producing (nil, nil)): Start must never return a nil error together with
+// a nil result for an unsupported reference type. Note isValidReference
+// rejects every reference type Start's own switch doesn't handle, so in
+// practice this error surfaces from isValidReference's guard rather than
+// from Start's switch default branch -- both paths must stay non-nil.
+func Test_Start_unsupportedReferenceType_returnsError(t *testing.T) {
+	customerID := uuid.FromStringOrNil("c5a1a1a1-0000-11ed-0000-000000000001")
+	referenceID := uuid.FromStringOrNil("c5a1a1a1-0000-11ed-0000-000000000004")
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	h := &transcribeHandler{}
+
+	ctx := context.Background()
+
+	res, err := h.Start(ctx, uuid.Nil, customerID, uuid.Nil, uuid.Nil, transcribe.ReferenceType("unsupported"), referenceID, "en-US", transcribe.DirectionBoth, transcribe.ProviderEmpty)
+	if err == nil {
+		t.Fatalf("Wrong match. expect: error, got: ok. res: %v", res)
+	}
+	if res != nil {
+		t.Errorf("Wrong match. expect: nil, got: %v", res)
 	}
 }

@@ -109,6 +109,12 @@ func (h *server) PostServiceAgentsTranscribes(c *gin.Context) {
 		onEndFlowID = uuid.FromStringOrNil(*req.OnEndFlowId)
 	}
 
+	// id is optional: omitted/zero means the server generates one.
+	id := uuid.Nil
+	if req.Id != nil {
+		id = uuid.UUID(*req.Id)
+	}
+
 	var provider tmtranscribe.Provider
 	if req.Provider != nil {
 		provider = tmtranscribe.Provider(*req.Provider)
@@ -129,6 +135,7 @@ func (h *server) PostServiceAgentsTranscribes(c *gin.Context) {
 	res, err := h.serviceHandler.ServiceAgentTranscribeStart(
 		c.Request.Context(),
 		a,
+		id,
 		string(req.ReferenceType),
 		referenceID,
 		req.Language,

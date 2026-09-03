@@ -48,6 +48,8 @@ go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-l
 
 **Status validation**: Use `models/transcribe/transcribe.go:IsUpdatableStatus` before any status transition. `done` sessions cannot be restarted.
 
+**Transcribe ids are no longer guaranteed-unguessable server-generated v4 UUIDs**: `transcribehandler.Start` accepts an optional caller-supplied `id`. A caller can set a transcribe's `id` equal to another resource's id (e.g. a call id), which makes log/timeline correlation by "looks like a call id" unreliable going forward — always confirm via the actual `reference_id`/`reference_type` fields, not by eyeballing whether an id "looks like" a particular resource type. See `docs/plans/2026-09-03-caller-specified-transcribe-id-design.md` for the full design.
+
 **WebSocket audio transport**: Go dials out to Asterisk's `chan_websocket` endpoint (`MediaURI` from `ExternalMediaStart`). Connection type: `server`, transport: `websocket`, encapsulation: `none`. Raw 8 kHz slin binary frames.
 
 **Language codes**: Must be valid BCP47 format (e.g., `en-US`, `ko-KR`). Validate at session creation.

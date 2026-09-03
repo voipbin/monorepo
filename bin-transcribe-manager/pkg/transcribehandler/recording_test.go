@@ -2,10 +2,12 @@ package transcribehandler
 
 import (
 	"context"
+	stderrors "errors"
 	"fmt"
 	"reflect"
 	"testing"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -112,7 +114,6 @@ func Test_startRecording(t *testing.T) {
 			mockDB.EXPECT().TranscribeGetByReferenceIDAndLanguage(ctx, tt.recordingID, tt.language).Return(nil, fmt.Errorf(""))
 
 			// create
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			mockDB.EXPECT().TranscribeCreate(ctx, tt.expectTranscribe).Return(nil)
 			mockDB.EXPECT().TranscribeGet(ctx, tt.responseUUID).Return(tt.responseTranscribe, nil)
 			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.activeflowID, gomock.Any()).Return(nil)
@@ -127,7 +128,7 @@ func Test_startRecording(t *testing.T) {
 			mockDB.EXPECT().TranscribeGet(ctx, tt.responseTranscribe.ID).Return(tt.responseTranscribe, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseTranscribe.CustomerID, transcribe.EventTypeTranscribeDone, tt.responseTranscribe)
 
-			res, err := h.startRecording(ctx, tt.customerID, tt.activeflowID, tt.onEndFlowID, tt.recordingID, tt.language, tt.provider)
+			res, err := h.startRecording(ctx, tt.responseUUID, false, tt.customerID, tt.activeflowID, tt.onEndFlowID, tt.recordingID, tt.language, tt.provider)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -137,5 +138,94 @@ func Test_startRecording(t *testing.T) {
 			}
 
 		})
+	}
+}
+
+// Test_startRecording_idOmitted_existingRow covers: id omitted + an
+// existing transcribe for the same recording/language -- unchanged
+// idempotent-return behavior: the existing row is returned as-is, no
+// TRANSCRIBE_ALREADY_EXISTS_DIFFERENT_ID error.
+func Test_startRecording_idOmitted_existingRow(t *testing.T) {
+	customerID := uuid.FromStringOrNil("d1a1a1a1-0000-11ed-0000-000000000001")
+	activeflowID := uuid.FromStringOrNil("d1a1a1a1-0000-11ed-0000-000000000002")
+	onEndFlowID := uuid.FromStringOrNil("d1a1a1a1-0000-11ed-0000-000000000003")
+	recordingID := uuid.FromStringOrNil("d1a1a1a1-0000-11ed-0000-000000000004")
+	existingID := uuid.FromStringOrNil("d1a1a1a1-0000-11ed-0000-000000000005")
+
+	existingTranscribe := &transcribe.Transcribe{
+		Identity: commonidentity.Identity{ID: existingID},
+	}
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &transcribeHandler{
+		db: mockDB,
+	}
+
+	ctx := context.Background()
+
+	mockDB.EXPECT().TranscribeGetByReferenceIDAndLanguage(ctx, recordingID, "en-US").Return(existingTranscribe, nil)
+
+	// callerSpecifiedID == false: the resolved id (uuid.Nil is never passed
+	// here since Start always resolves id before dispatch) is irrelevant --
+	// only callerSpecifiedID drives the branch.
+	res, err := h.startRecording(ctx, uuid.FromStringOrNil("d1a1a1a1-0000-11ed-0000-0000000000ff"), false, customerID, activeflowID, onEndFlowID, recordingID, "en-US", transcribe.ProviderEmpty)
+	if err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+	if !reflect.DeepEqual(res, existingTranscribe) {
+		t.Errorf("Wrong match.\nexpect: %v\ngot: %v", existingTranscribe, res)
+	}
+}
+
+// Test_startRecording_callerSpecifiedID_alwaysConflicts covers: id provided
+// + an existing transcribe for the same recording/language -- this is
+// always a conflict (TRANSCRIBE_ALREADY_EXISTS_DIFFERENT_ID), never the
+// idempotent return, per the B6/B10 corrections. The "matching id" case is
+// unreachable (Start's pre-check guarantees no row has this id yet) and is
+// intentionally not a test case here.
+func Test_startRecording_callerSpecifiedID_alwaysConflicts(t *testing.T) {
+	customerID := uuid.FromStringOrNil("d2a1a1a1-0000-11ed-0000-000000000001")
+	activeflowID := uuid.FromStringOrNil("d2a1a1a1-0000-11ed-0000-000000000002")
+	onEndFlowID := uuid.FromStringOrNil("d2a1a1a1-0000-11ed-0000-000000000003")
+	recordingID := uuid.FromStringOrNil("d2a1a1a1-0000-11ed-0000-000000000004")
+	callerID := uuid.FromStringOrNil("d2a1a1a1-0000-11ed-0000-000000000005")
+	existingID := uuid.FromStringOrNil("d2a1a1a1-0000-11ed-0000-000000000006")
+
+	existingTranscribe := &transcribe.Transcribe{
+		Identity: commonidentity.Identity{ID: existingID},
+	}
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &transcribeHandler{
+		db: mockDB,
+	}
+
+	ctx := context.Background()
+
+	mockDB.EXPECT().TranscribeGetByReferenceIDAndLanguage(ctx, recordingID, "en-US").Return(existingTranscribe, nil)
+
+	res, err := h.startRecording(ctx, callerID, true, customerID, activeflowID, onEndFlowID, recordingID, "en-US", transcribe.ProviderEmpty)
+	if err == nil {
+		t.Errorf("Wrong match. expect: error, got: ok. res: %v", res)
+	}
+
+	var ve *cerrors.VoipbinError
+	if !stderrors.As(err, &ve) {
+		t.Errorf("Wrong error type. expect: VoipbinError, got: %T", err)
+	} else {
+		if ve.Status != cerrors.StatusFailedPrecondition {
+			t.Errorf("Wrong status. expect: %s, got: %s", cerrors.StatusFailedPrecondition, ve.Status)
+		}
+		if ve.Reason != "TRANSCRIBE_ALREADY_EXISTS_DIFFERENT_ID" {
+			t.Errorf("Wrong reason. expect: TRANSCRIBE_ALREADY_EXISTS_DIFFERENT_ID, got: %s", ve.Reason)
+		}
 	}
 }

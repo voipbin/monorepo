@@ -675,6 +675,7 @@ func (h *activeflowHandler) actionHandleTranscribeRecording(ctx context.Context,
 	for _, recordingID := range c.RecordingIDs {
 		tmp, err := h.reqHandler.TranscribeV1TranscribeStart(
 			ctx,
+			uuid.Nil,
 			af.CustomerID,
 			af.ID,
 			opt.OnEndFlowID,
@@ -727,6 +728,7 @@ func (h *activeflowHandler) actionHandleTranscribeStart(ctx context.Context, af 
 	// transcribe start
 	trans, err := h.reqHandler.TranscribeV1TranscribeStart(
 		ctx,
+		uuid.Nil,
 		af.CustomerID,
 		af.ID,
 		opt.OnEndFlowID,

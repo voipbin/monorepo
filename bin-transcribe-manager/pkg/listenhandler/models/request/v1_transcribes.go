@@ -10,6 +10,7 @@ import (
 // v1 data type request struct for
 // /v1/transcribes POST
 type V1DataTranscribesPost struct {
+	ID            uuid.UUID                `json:"id,omitempty"`          // optional caller-specified transcribe id; zero/omitted => server generates one
 	CustomerID    uuid.UUID                `json:"customer_id,omitempty"` // customer id
 	ActiveflowID  uuid.UUID                `json:"activeflow_id,omitempty"`
 	OnEndFlowID   uuid.UUID                `json:"on_end_flow_id,omitempty"`

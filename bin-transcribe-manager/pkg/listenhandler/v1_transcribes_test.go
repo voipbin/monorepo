@@ -5,8 +5,8 @@ import (
 	"reflect"
 	"testing"
 
-	commonidentity "monorepo/bin-common-handler/models/identity"
 	cerrors "monorepo/bin-common-handler/models/errors"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -28,6 +28,7 @@ func Test_processV1TranscribesPost(t *testing.T) {
 
 		responseTranscribe *transcribe.Transcribe
 
+		expectID            uuid.UUID
 		expectCustomerID    uuid.UUID
 		expectActiveflowID  uuid.UUID
 		expectOnEndFlowID   uuid.UUID
@@ -56,6 +57,7 @@ func Test_processV1TranscribesPost(t *testing.T) {
 				},
 			},
 
+			expectID:            uuid.Nil,
 			expectCustomerID:    uuid.FromStringOrNil("10a7593a-9693-11ed-b4b7-7b48322d6a8d"),
 			expectActiveflowID:  uuid.FromStringOrNil("586e7c60-0925-11f0-85f7-ffa1f967c6d0"),
 			expectOnEndFlowID:   uuid.FromStringOrNil("58aedc4c-0925-11f0-a2ea-b36d37f1d67c"),
@@ -72,6 +74,38 @@ func Test_processV1TranscribesPost(t *testing.T) {
 			},
 		},
 		{
+			name: "id supplied is threaded through to Start",
+
+			request: &sock.Request{
+				URI:      "/v1/transcribes",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"id":"2ab1e178-9693-11ed-9bcf-974fbfeb1ea3","customer_id":"10a7593a-9693-11ed-b4b7-7b48322d6a8d","activeflow_id":"586e7c60-0925-11f0-85f7-ffa1f967c6d0","on_end_flow_id":"58aedc4c-0925-11f0-a2ea-b36d37f1d67c","reference_type":"call","reference_id":"112d907c-9693-11ed-a72c-8fa9ccd046a7","language":"en-US","direction":"both"}`),
+			},
+
+			responseTranscribe: &transcribe.Transcribe{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2ab1e178-9693-11ed-9bcf-974fbfeb1ea3"),
+				},
+			},
+
+			expectID:            uuid.FromStringOrNil("2ab1e178-9693-11ed-9bcf-974fbfeb1ea3"),
+			expectCustomerID:    uuid.FromStringOrNil("10a7593a-9693-11ed-b4b7-7b48322d6a8d"),
+			expectActiveflowID:  uuid.FromStringOrNil("586e7c60-0925-11f0-85f7-ffa1f967c6d0"),
+			expectOnEndFlowID:   uuid.FromStringOrNil("58aedc4c-0925-11f0-a2ea-b36d37f1d67c"),
+			expectReferenceType: transcribe.ReferenceTypeCall,
+			expectReferenceID:   uuid.FromStringOrNil("112d907c-9693-11ed-a72c-8fa9ccd046a7"),
+			expectLanguage:      "en-US",
+			expectDirection:     transcribe.DirectionBoth,
+			expectProvider:      transcribe.ProviderEmpty,
+
+			expectRes: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"2ab1e178-9693-11ed-9bcf-974fbfeb1ea3","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","on_end_flow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","host_id":"00000000-0000-0000-0000-000000000000","language":"","direction":"","provider":"","streaming_ids":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
+			},
+		},
+		{
 			name: "error returns typed error response",
 
 			request: &sock.Request{
@@ -81,6 +115,7 @@ func Test_processV1TranscribesPost(t *testing.T) {
 				Data:     []byte(`{"customer_id":"10a7593a-9693-11ed-b4b7-7b48322d6a8d","reference_type":"call","reference_id":"112d907c-9693-11ed-a72c-8fa9ccd046a7","language":"en-US","direction":"both"}`),
 			},
 
+			expectID:            uuid.Nil,
 			expectCustomerID:    uuid.FromStringOrNil("10a7593a-9693-11ed-b4b7-7b48322d6a8d"),
 			expectActiveflowID:  uuid.Nil,
 			expectOnEndFlowID:   uuid.Nil,
@@ -114,9 +149,9 @@ func Test_processV1TranscribesPost(t *testing.T) {
 			}
 
 			if tt.responseTranscribe != nil {
-				mockTranscribe.EXPECT().Start(gomock.Any(), tt.expectCustomerID, tt.expectActiveflowID, tt.expectOnEndFlowID, tt.expectReferenceType, tt.expectReferenceID, tt.expectLanguage, tt.expectDirection, tt.expectProvider).Return(tt.responseTranscribe, nil)
+				mockTranscribe.EXPECT().Start(gomock.Any(), tt.expectID, tt.expectCustomerID, tt.expectActiveflowID, tt.expectOnEndFlowID, tt.expectReferenceType, tt.expectReferenceID, tt.expectLanguage, tt.expectDirection, tt.expectProvider).Return(tt.responseTranscribe, nil)
 			} else {
-				mockTranscribe.EXPECT().Start(gomock.Any(), tt.expectCustomerID, tt.expectActiveflowID, tt.expectOnEndFlowID, tt.expectReferenceType, tt.expectReferenceID, tt.expectLanguage, tt.expectDirection, tt.expectProvider).Return(nil, cerrors.Internal(commonoutline.ServiceNameTranscribeManager, "START_FAILED", "Could not start the transcribe."))
+				mockTranscribe.EXPECT().Start(gomock.Any(), tt.expectID, tt.expectCustomerID, tt.expectActiveflowID, tt.expectOnEndFlowID, tt.expectReferenceType, tt.expectReferenceID, tt.expectLanguage, tt.expectDirection, tt.expectProvider).Return(nil, cerrors.Internal(commonoutline.ServiceNameTranscribeManager, "START_FAILED", "Could not start the transcribe."))
 			}
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -127,6 +162,44 @@ func Test_processV1TranscribesPost(t *testing.T) {
 				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
+	}
+}
+
+// Test_processV1TranscribesPost_malformedID covers: a malformed id string
+// in the request body fails json.Unmarshal (uuid.UUID's UnmarshalJSON
+// rejects a non-UUID string) and the handler returns 400, without ever
+// calling transcribeHandler.Start. This is the listenhandler-internal RPC
+// path -- there is no generated binder here (that mechanism is
+// bin-api-manager-only); the 400 comes from the typed uuid.UUID field
+// failing to unmarshal.
+func Test_processV1TranscribesPost_malformedID(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockTranscribe := transcribehandler.NewMockTranscribeHandler(mc)
+
+	h := &listenHandler{
+		sockHandler:       mockSock,
+		reqHandler:        mockReq,
+		transcribeHandler: mockTranscribe,
+	}
+
+	request := &sock.Request{
+		URI:      "/v1/transcribes",
+		Method:   sock.RequestMethodPost,
+		DataType: "application/json",
+		Data:     []byte(`{"id":"not-a-valid-uuid","customer_id":"10a7593a-9693-11ed-b4b7-7b48322d6a8d","reference_type":"call","reference_id":"112d907c-9693-11ed-a72c-8fa9ccd046a7","language":"en-US"}`),
+	}
+
+	// transcribeHandler.Start must never be called -- unmarshal fails first.
+	res, err := h.processRequest(request)
+	if err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+	if res == nil || res.StatusCode != 400 {
+		t.Errorf("Wrong match. expect: 400, got: %v", res)
 	}
 }
 

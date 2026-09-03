@@ -2,6 +2,7 @@ package transcribehandler
 
 import (
 	"context"
+	stderrors "errors"
 	"fmt"
 
 	cmcall "monorepo/bin-call-manager/models/call"
@@ -14,11 +15,18 @@ import (
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-transcribe-manager/models/transcribe"
 	"monorepo/bin-transcribe-manager/models/transcript"
+	"monorepo/bin-transcribe-manager/pkg/dbhandler"
 )
 
-// Start starts a transcribe
+// Start starts a transcribe.
+// If id is uuid.Nil, the server generates one. If id is non-nil, the caller
+// is asking to pre-declare the transcribe's id (e.g. to pre-subscribe to its
+// event topic before starting); see docs/plans/2026-09-03-caller-specified-
+// transcribe-id-design.md for the full contract, including why a
+// caller-supplied id is single-use/non-idempotent.
 func (h *transcribeHandler) Start(
 	ctx context.Context,
+	id uuid.UUID,
 	customerID uuid.UUID,
 	activeflowID uuid.UUID,
 	onEndFlowID uuid.UUID,
@@ -30,6 +38,7 @@ func (h *transcribeHandler) Start(
 ) (*transcribe.Transcribe, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "Start",
+		"id":             id,
 		"customer_id":    customerID,
 		"reference_type": referenceType,
 		"reference_id":   referenceID,
@@ -65,26 +74,70 @@ func (h *transcribeHandler) Start(
 	lang := getBCP47LanguageCode(language)
 	log.Debugf("Parsed BCP47 language code. lang: %s", lang)
 
+	// captured BEFORE any reassignment -- this is the one and only signal for
+	// "did the caller ask for a specific id", and it must survive past the
+	// point where id itself becomes always-non-nil.
+	callerSpecifiedID := id != uuid.Nil
+
+	if !callerSpecifiedID {
+		id = h.utilHandler.UUIDCreate()
+	} else if _, err := h.Get(ctx, id); err == nil {
+		// a row with this id already exists (any customer, any status,
+		// soft-deleted or not -- Get()/TranscribeGet() do not filter on
+		// customer_id or tm_delete)
+		return nil, errTranscribeIDAlreadyExists()
+	} else if !stderrors.Is(err, dbhandler.ErrNotFound) {
+		return nil, err // defensive; Get() already wraps not-found
+	}
+
 	var res *transcribe.Transcribe
 	var err error
 	switch referenceType {
 	case transcribe.ReferenceTypeRecording:
-		res, err = h.startRecording(ctx, customerID, activeflowID, onEndFlowID, referenceID, lang, provider)
+		res, err = h.startRecording(ctx, id, callerSpecifiedID, customerID, activeflowID, onEndFlowID, referenceID, lang, provider)
 		if err != nil {
-			return nil, errors.Wrapf(err, "could not start the recording transcribe. reference_id: %s", referenceID)
+			err = errors.Wrapf(err, "could not start the recording transcribe. reference_id: %s", referenceID)
 		}
 
 	case transcribe.ReferenceTypeCall, transcribe.ReferenceTypeConfbridge:
-		res, err = h.startLive(ctx, customerID, activeflowID, onEndFlowID, referenceType, referenceID, lang, direction, provider)
+		res, err = h.startLive(ctx, id, customerID, activeflowID, onEndFlowID, referenceType, referenceID, lang, direction, provider)
 		if err != nil {
-			return nil, errors.Wrapf(err, "could not start the live transcribe. reference_id: %s", referenceID)
+			err = errors.Wrapf(err, "could not start the live transcribe. reference_id: %s", referenceID)
 		}
 
 	default:
-		return nil, errors.Wrapf(err, "unsupported reference type. reference_type: %s", referenceType)
+		return nil, fmt.Errorf("unsupported reference type. reference_type: %s", referenceType)
+	}
+
+	if err != nil {
+		if stderrors.Is(err, dbhandler.ErrDuplicateID) {
+			if callerSpecifiedID {
+				return nil, errTranscribeIDAlreadyExists()
+			}
+			// a server-generated id collided -- not a caller error
+			return nil, cerrors.Internal(
+				commonoutline.ServiceNameTranscribeManager,
+				"TRANSCRIBE_ID_GENERATION_COLLISION",
+				"Could not create the transcribe due to an internal id collision.",
+			)
+		}
+		return nil, err
 	}
 
 	return res, nil
+}
+
+// errTranscribeIDAlreadyExists builds the caller-facing 409 for a
+// caller-supplied transcribe id that collides with an existing row --
+// either caught up front by Start's pre-check, or caught as a TOCTOU race
+// by TranscribeCreate's duplicate-key classification. Both call sites
+// return the identical caller-facing error, so it's factored out once here.
+func errTranscribeIDAlreadyExists() error {
+	return cerrors.AlreadyExists(
+		commonoutline.ServiceNameTranscribeManager,
+		"TRANSCRIBE_ID_ALREADY_EXISTS",
+		"A transcribe with the given id already exists. Use a different id or omit it.",
+	)
 }
 
 // isValidReference returns false if the given reference is not valid for transcribe.
@@ -140,9 +193,11 @@ func (h *transcribeHandler) isValidReference(ctx context.Context, referenceType 
 	return true
 }
 
-// startLive starts the streaming transcribe
+// startLive starts the streaming transcribe using the given (already
+// resolved) id.
 func (h *transcribeHandler) startLive(
 	ctx context.Context,
+	id uuid.UUID,
 	customerID uuid.UUID,
 	activeflowID uuid.UUID,
 	onEndFlowID uuid.UUID,
@@ -154,6 +209,7 @@ func (h *transcribeHandler) startLive(
 ) (*transcribe.Transcribe, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "startLive",
+		"transcribe_id":  id,
 		"customer_id":    customerID,
 		"activeflow_id":  activeflowID,
 		"on_end_flow_id": onEndFlowID,
@@ -163,10 +219,6 @@ func (h *transcribeHandler) startLive(
 		"direction":      direction,
 		"provider":       provider,
 	})
-
-	// create transcribe id
-	id := h.utilHandler.UUIDCreate()
-	log = log.WithField("transcribe_id", id)
 	log.Debugf("Starting live transcribe. transcribe_id: %s", id)
 
 	// Reject a duplicate live session: if a progressing transcribe already
@@ -218,7 +270,11 @@ func (h *transcribeHandler) startLive(
 		directions = []transcript.Direction{transcript.DirectionIn, transcript.DirectionOut}
 	}
 
-	// start streamings
+	// start streamings. On any failure -- either a mid-loop leg failure (e.g.
+	// the second leg of a "both" direction start after the first already
+	// succeeded) or a later h.Create failure below -- every streaming session
+	// already started for this attempt is stopped, best-effort, before
+	// returning the original error.
 	streamingIDs := []uuid.UUID{}
 	for _, dr := range directions {
 
@@ -226,6 +282,7 @@ func (h *transcribeHandler) startLive(
 		st, err := h.streamingHandler.Start(ctx, customerID, id, referenceType, referenceID, language, dr, provider)
 		if err != nil {
 			log.Errorf("Could not start the streaming stt. direction: %s, err: %v", dr, err)
+			h.stopStreamings(ctx, streamingIDs)
 			return nil, err
 		}
 		log.WithField("streaming", st).Debugf("Streaming started. streaming_id: %s", st.ID)
@@ -237,9 +294,24 @@ func (h *transcribeHandler) startLive(
 	res, err := h.Create(ctx, id, customerID, activeflowID, onEndFlowID, referenceType, referenceID, language, direction, provider, streamingIDs)
 	if err != nil {
 		log.Errorf("Could not create the transcribe. err: %v", err)
+		h.stopStreamings(ctx, streamingIDs)
 		return nil, err
 	}
 	log.WithField("transcribe", res).Debugf("Created transcribe. transcribe_id: %s", res.ID)
 
 	return res, nil
+}
+
+// stopStreamings best-effort stops every streaming session in streamingIDs,
+// logging (not returning) any failure. Used to roll back streaming legs
+// already started in startLive when a later step fails.
+func (h *transcribeHandler) stopStreamings(ctx context.Context, streamingIDs []uuid.UUID) {
+	for _, streamingID := range streamingIDs {
+		if _, err := h.streamingHandler.Stop(ctx, streamingID); err != nil {
+			logrus.WithFields(logrus.Fields{
+				"func":         "stopStreamings",
+				"streaming_id": streamingID,
+			}).Errorf("Could not stop the streaming during rollback. err: %v", err)
+		}
+	}
 }

@@ -47,10 +47,14 @@ type handler struct {
 	cache       cachehandler.CacheHandler
 }
 
-
 // handler errors
 var (
 	ErrNotFound = errors.New("record not found")
+
+	// ErrDuplicateID is returned by TranscribeCreate when the insert fails
+	// on a duplicate primary-key (id) constraint. See isDuplicateKeyErr in
+	// duplicate.go.
+	ErrDuplicateID = errors.New("duplicate id")
 )
 
 // NewHandler creates DBHandler

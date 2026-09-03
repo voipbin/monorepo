@@ -65,6 +65,9 @@ func (h *handler) TranscribeCreate(ctx context.Context, t *transcribe.Transcribe
 	}
 
 	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
+		if isDuplicateKeyErr(err) {
+			return ErrDuplicateID
+		}
 		return fmt.Errorf("could not execute query. TranscribeCreate. err: %v", err)
 	}
 

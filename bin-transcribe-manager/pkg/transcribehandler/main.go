@@ -35,6 +35,7 @@ type TranscribeHandler interface {
 
 	Start(
 		ctx context.Context,
+		id uuid.UUID,
 		customerID uuid.UUID,
 		activeflowID uuid.UUID,
 		onEndFlowID uuid.UUID,

@@ -7,12 +7,19 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-transcribe-manager/models/transcribe"
 )
 
 // startRecording transcribe the recoring
 // returns created transcribe
-func (h *transcribeHandler) startRecording(ctx context.Context, customerID uuid.UUID, activeflowID uuid.UUID, onEndFlowID uuid.UUID, recordingID uuid.UUID, language string, provider transcribe.Provider) (*transcribe.Transcribe, error) {
+//
+// id is the already-resolved id to create with (either server-generated or
+// caller-supplied); callerSpecifiedID indicates which, and is required
+// because id alone is always non-nil by the time this is called (Start
+// resolves it before dispatch) -- see the design doc's B10 correction.
+func (h *transcribeHandler) startRecording(ctx context.Context, id uuid.UUID, callerSpecifiedID bool, customerID uuid.UUID, activeflowID uuid.UUID, onEndFlowID uuid.UUID, recordingID uuid.UUID, language string, provider transcribe.Provider) (*transcribe.Transcribe, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "startRecording",
 		"recording_id": recordingID,
@@ -21,13 +28,24 @@ func (h *transcribeHandler) startRecording(ctx context.Context, customerID uuid.
 	// check if the given recording's transcribe is already exist
 	tmp, err := h.GetByReferenceIDAndLanguage(ctx, recordingID, language)
 	if err == nil {
+		if callerSpecifiedID {
+			// Start's pre-check guarantees a caller-specified id isn't already
+			// in use, so a row found here by reference+language is guaranteed
+			// to have a different id -- this is always a conflict, never a
+			// match on the id itself.
+			return nil, cerrors.FailedPrecondition(
+				commonoutline.ServiceNameTranscribeManager,
+				"TRANSCRIBE_ALREADY_EXISTS_DIFFERENT_ID",
+				"A transcribe for this recording/language already exists with a different id.",
+			)
+		}
+
 		// we have a transcribe already
 		log.Debugf("Found existing transcribe. transcribe_id: %s", tmp.ID)
 		return tmp, nil
 	}
 
 	// create transcribing
-	id := h.utilHandler.UUIDCreate()
 	tr, err := h.Create(
 		ctx,
 		id,

@@ -72,6 +72,7 @@ func Test_TranscribeStart(t *testing.T) {
 			mockDB.EXPECT().ConferenceGet(ctx, tt.id).Return(tt.responseConference, nil)
 			mockReq.EXPECT().TranscribeV1TranscribeStart(
 				ctx,
+				uuid.Nil,
 				tt.responseConference.CustomerID,
 				uuid.Nil,
 				uuid.Nil,
