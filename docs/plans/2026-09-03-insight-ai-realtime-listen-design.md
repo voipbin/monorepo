@@ -1,6 +1,6 @@
 # InsightAI Realtime Listen (Proactive Notification) — Design
 
-Status: Draft (rev 6, addressing 2026-09-03 independent review round 5)
+Status: Draft (rev 7, addressing 2026-09-03 independent review round 6)
 Branch: `NOJIRA-Insight-AI-realtime-listen`
 Owner: CPO-directed backend feature
 
@@ -14,6 +14,7 @@ Owner: CPO-directed backend feature
 | 4 | 2026-09-03 | **Revised after independent review round 3 (REQUEST_CHANGES, 4 BLOCKING + 3 HIGH + 5 MEDIUM).** Two of rev 3's own new mechanisms turned out broken: §5.4.4(c)'s reject-guard assumed a pipecatcall id ai-manager doesn't actually receive (fixed by a real, scoped cross-service change, §5.4.3a) and §5.2.2a's summary-transcribe reuse-tolerance broke `summaryhandler`'s read/lifecycle assumptions (replaced by giving listen its own system customer id, §5.2.1, so it never shares a transcribe with `ai_summary` at all). Separately, rev 1's original defect — Q&A context eviction via `getPipecatcallMessages`'s 100-row window — resurfaced through listen-turn tool-call rows and is closed at the source (§5.4.5: a new `Origin=listen_internal` tag excluded from replay at the query level), which also narrows the orphaned-tool-message finding back to a non-blocking follow-up. Narrowed the pipecatcall-identity guard to the two handlers that can actually fire from a listen turn and scoped its cache-bypass re-read to the one handler that persists (§5.4.4(b)). Fixed a self-contradictory cleanup step order, a stale citation, and frontend field-name mismatches (camelCase vs. the actual snake_case wire fields) that would have made the render filter never fire. §10.2 gains a round-3 matrix. |
 | 5 | 2026-09-03 | **Revised after independent review round 4 (REQUEST_CHANGES, 4 BLOCKING + 5 HIGH + 9 MEDIUM + 3 LOW).** Reviewer's own assessment: no remaining structural blockers, only implementation-level bugs in rev 4's three new mechanisms. Fixed §5.4.4(c)'s inverted branch logic (the cache-bypass re-read was in the wrong condition, both failing to catch the case it was meant for and creating a new false-allow) with a single always-fresh-read design. Added explicit `pipecatcallID == uuid.Nil` handling (safe default: treat as a real Q&A turn, never as listen-internal) to protect against permanent message-tagging corruption during a rolling deploy, and confirmed the wire field can be optional so no forced deployment order is needed. Corrected `ApplyFields`'s actual location (`bin-common-handler`, not `bin-ai-manager`) and replaced the unspecified `FieldOriginNot` with a concrete, generic `databasehandler.NotEq` wrapper type. Closed the remaining system-prompt-eviction gap (proactive/real-Q&A-tool rows still competing for the 100-row window) by fetching the leading system row(s) unconditionally, separate from the capped window. Scoped `Origin` tagging to `contact_case` only, so ordinary conversation-AIcall pipecatcall rotation is never mistagged. Fixed the cache-bypass re-read's actual code path (an RPC client argument, not a direct `dbhandler` call), a stop-time `Send`-cooldown collision, a missing OpenAPI tool-name enum update, and several citation errors. §10.3 gains a round-4 matrix. |
 | 6 | 2026-09-03 | **Revised after independent review round 5 (REQUEST_CHANGES, 2 BLOCKING + 2 HIGH + 3 MEDIUM — reviewer's own assessment: architecture stabilized, remaining findings all localized to specific sections).** Unified the "is this a listen turn?" decision to one fresh, cache-bypassing read in `ToolHandle`, consumed by both §5.4.5's `Origin` tagging and §5.4.4(c)'s reject-guard — rev 5 had fixed the guard's own cache-bypass logic but left the tagging step trusting a stale cache, which is the more dangerous of the two (permanent data mistagging vs. one rejected tool call). Added a positive "is this AIcall actually in a listening session" check (`ListenCallID != uuid.Nil`) to the listen-turn predicate, closing a false-positive window from best-effort pipecatcall interruption timing. Corrected `getPipecatcallMessages`'s two-fetch restructure to match `MessageList`'s actual newest-first ordering (both fetches reversed the same way, not one assumed oldest-first) and fixed a false claim about `InsightSystemPrompt` not applying to this path. Replaced §8's "zero behaviour change with the flag off" claim with an explicit table of what is and isn't gated — several fixes (context-assembly, stale-reply guard) are general and code-deploy-scoped, not listen-specific. Corrected the service boundary and scope claims for the cache-bypass RPC change and the `NotEq` wrapper's safe value-type range. §10.4 gains a round-5 matrix. |
+| 7 | 2026-09-03 | **Revised after independent review round 6 (a scoped, targeted review per round 5's own recommendation — REQUEST_CHANGES, 2 BLOCKING + 3 MEDIUM, reviewer's own assessment: "light," architecture confirmed stable).** Replaced the `ListenCallID != uuid.Nil` term (which contributed no discrimination once a listen session was already active) with a genuinely positive signal: §5.4.3 now registers each listen turn's throwaway pipecatcall id in a Redis set the moment it's minted, and `ToolHandle`'s `listenTurn` resolution becomes a direct membership check — closing a race where a real Q&A tool call, delayed behind a best-effort-interrupted turn, could still be mistagged. This also removes the `AIcallGet` fresh read §5.4.5 previously needed (Redis membership is authoritative on its own), and gates the read that remains (`ReferenceType == ContactCase`) on an immutable, cache-safe field first, so the cost is confined to `contact_case` AIcalls again. Added the flag check `RunListenTurn` was missing, making §8's "rollback stops in-flight sessions" claim literally true rather than aspirational. Corrected several places across §6, §7, §9 that still described the mechanism's now-superseded rev-5/rev-6 shape. §10.5 gains a round-6 matrix. |
 
 Every code reference below was re-verified against the worktree at rev 2 authoring time; file:line citations are load-bearing and were read, not assumed.
 
@@ -596,6 +597,15 @@ not lost. A wall-clock flush timer is deliberately not introduced.
 
 #### 5.4.1 Preconditions
 
+0. **New in rev 7 (review round 6, finding F3): `config.Get().AIcallListenEnabled`
+   false → clear listen state (§5.7) and return (`skipped_disabled`).**
+   Without this, §8's rollback story ("set the flag false, in-flight
+   listening stops immediately") was aspirational, not real — nothing in
+   §5.3's intake or this function previously read the flag at all, so a
+   session that started while the flag was on would keep running
+   entirely unaffected by flipping it off, until the call ended or the
+   turn cap tripped. This step is what actually makes the flag a kill
+   switch for in-flight sessions, not just a gate on starting new ones.
 1. `c := h.Get(aicallID)`; require `c.Status == progressing`,
    `c.ReferenceType == contact_case`, `c.Metadata[listen_transcribe_id]`
    set. Otherwise clear listen state (§5.7) and return.
@@ -633,12 +643,23 @@ flow-parameterized, since a panel-started `contact_case` AIcall has
 
 ```go
 turnPipecatcallID := h.utilHandler.UUIDCreate()   // NOT written to c.PipecatcallID
+// New in rev 7 (review round 6, finding F1): register this turn id as a
+// genuine, positively-known listen turn — see §5.4.5 step 2 for why a
+// negative check ("not the currently-bound id") isn't enough on its own.
+// TTL comfortably exceeds the terminate-with-delay below so the entry
+// outlives the turn; self-expiring, no explicit cleanup needed.
+_ = cache.ListenTurnPipecatcallIDAdd(ctx, c.ID, turnPipecatcallID, listenTurnPipecatcallIDTTL) // SADD ai:listen:turnpcid:<aicall_id> <turnPipecatcallID>, EXPIRE
 pc, err := h.startListenPipecatcall(ctx, c, turnPipecatcallID, llmMessages)
 // → PipecatV1PipecatcallStart(ctx, turnPipecatcallID, c.CustomerID, c.ActiveflowID,
 //      pmpipecatcall.ReferenceTypeAICall, c.ID, llmType, llmMessages,
 //      STTTypeNone, "", TTSTypeNone, "", "")
 _ = h.reqHandler.PipecatV1PipecatcallTerminateWithDelay(ctx, pc.HostID, pc.ID, defaultListenTurnTimeout) // 60s
 ```
+
+`listenTurnPipecatcallIDTTL` (default 180s — 3× `defaultListenTurnTimeout`)
+is a new config-derived constant alongside the others in §5.12; generous
+headroom is cheap (a handful of UUIDs per AIcall, self-expiring) and the
+cost of it being too short is exactly the bug this section fixes.
 
 `startListenPipecatcall` is a sibling of `startPipecatcall`
 (`start.go:697-744`) that takes the pipecatcall id and the message list as
@@ -699,13 +720,15 @@ separate mechanisms:
    value type (`tool.go:54-76`) is
    `func(ctx, *aicall.AIcall, *message.ToolCall) *messageContent`, shared
    by all 21 `toolHandleXxx` functions. `pipecatcallID` is consumed by
-   `ToolHandle` itself (for §5.4.5's `Origin` tagging, decided before
-   dispatch) and passed explicitly only to `toolHandleNotifyAgent`
-   (§5.4.4(c)) — the other 20 handlers' signatures are **unchanged**,
-   avoiding a 21-function signature churn for a value only one handler
-   needs. Regenerate the `AIcallHandler` mock (any other file that
-   implements or mocks this interface — checked at implementation time —
-   picks up the new method signature too).
+   `ToolHandle` itself — used to resolve `listenTurn bool` (§5.4.5 step 2;
+   as of rev 7, via a Redis membership check, not an `AIcallGet`) — and
+   only the resulting **`listenTurn bool`**, not `pipecatcallID` itself,
+   is passed explicitly to `toolHandleNotifyAgent` (§5.4.4(c)) — the
+   other 20 handlers' signatures are **unchanged**, avoiding a
+   21-function signature churn for a value only one handler needs.
+   Regenerate the `AIcallHandler` mock (any other file that implements or
+   mocks this interface — checked at implementation time — picks up the
+   new method signature too).
 5. Inside `ToolHandle`, the same comparison used for §5.4.5's `Origin`
    tagging and §5.4.4(c)'s reject-guard — see both for the exact,
    corrected logic (rev 5 fixes both; rev 4's version of each had a
@@ -895,32 +918,30 @@ fixes exactly this, and `toolHandleNotifyAgent` now receives the real
 `pipecatcallID` as a parameter (threaded from `ToolHandle`, itself
 threaded per §5.4.3a).
 
-**Rewritten twice now — rev 5 (review round 4, finding B1) fixed the
-inverted two-branch logic; rev 6 (review round 5, finding B1) fixes a
-follow-on problem the rev-5 version left standing: `toolHandleNotifyAgent`
-did its own fresh `AIcallGet`, but `ToolHandle`'s `Origin` tagging
-(§5.4.5 step 2) used the *cached* value — the two consumers of "is this a
-listen turn?" disagreed on which read to trust, and the one that
-mattered more for data safety was the stale one.** Fixed by resolving the
-question exactly once, in `ToolHandle`, before dispatch — both this
-guard and §5.4.5's tagging now consume the same `listenTurn bool`,
-computed from one fresh, cache-bypassing read (§5.4.5 step 2 shows the
-full predicate, including the positive `ListenCallID != uuid.Nil`
-check that closes review round 5's B2):
+**Rewritten three times now.** Rev 5 (review round 4, finding B1) fixed
+the inverted two-branch logic. Rev 6 (review round 5, finding B1) moved
+resolution into `ToolHandle` so both this guard and §5.4.5's tagging
+shared one fresh `AIcallGet` — but the *comparison* that read still fed
+(`pipecatcallID != c.PipecatcallID`) remained a negative test, which rev
+6's own `ListenCallID` addition didn't actually fix (review round 6,
+finding F1). Rev 7 replaces the comparison itself: `ToolHandle` (§5.4.5
+step 2) now resolves `listenTurn` via a direct Redis membership check
+against the set of ids §5.4.3 registers when it mints a listen turn — a
+positive, race-free signal that makes the `AIcallGet` read this section
+used to describe **unnecessary for this decision** (it is still used
+elsewhere, by §5.4.4(b)'s stale-reply guard, for an unrelated reason):
 
 ```go
 // toolHandleNotifyAgent(ctx, c, tool, listenTurn) — listenTurn is
-// resolved once by ToolHandle (§5.4.5 step 2) from a single fresh,
-// cache-bypassing AIcallGet shared with the Origin-tagging decision, not
-// re-derived here. One RPC per tool call, not two; one source of truth,
-// not two that can disagree.
+// resolved once by ToolHandle (§5.4.5 step 2) via Redis set membership,
+// not re-derived here. One source of truth, not two that can disagree.
 if !listenTurn {
     // This tool fired on the agent's own conversational turn (or we
-    // couldn't prove it was a listen turn — §5.4.5's fresh read failing
-    // is handled there, failing the whole tool call closed, never
-    // reaching this function with an unresolved state) — reject rather
-    // than let RunLLM's best-effort suppression silently eat the agent's
-    // real question.
+    // couldn't prove it was a listen turn — §5.4.5's Redis membership
+    // check failing is handled there, failing the whole tool call
+    // closed, never reaching this function with an unresolved state) —
+    // reject rather than let RunLLM's best-effort suppression silently
+    // eat the agent's real question.
     fillFailed(res, fmt.Errorf("notify_agent is only usable while proactively monitoring a call; you were asked a question — answer it directly instead"))
     return res
 }
@@ -967,60 +988,65 @@ entirely.**
    // matters for getPipecatcallMessages (a real Q&A turn's context).
    ```
 2. `ToolHandle` (extended per §5.4.3a to know `pipecatcallID`) tags the
-   tool-call and tool-result rows it writes. **Rewritten in rev 6 (review
-   round 5, findings B1 and B2) — two compounding problems in rev 5's
-   version:**
+   tool-call and tool-result rows it writes. **Rewritten across rev 6
+   (review round 5, findings B1/B2) and rev 7 (review round 6, findings
+   F1/F2) — the predicate went through three shapes before landing on one
+   that is both correct and cheap:**
 
-   - **B1: the tagging decision used the cached `c.PipecatcallID`
-     (`ToolHandle`'s own `h.Get`, `tool.go:33`, which is cache-first via
-     `dbhandler.AIcallGet`), while §5.4.4(c)'s reject-guard already moved
-     to a fresh, cache-bypassing read for exactly this reason.** A stale
-     cache is precisely the scenario §5.4.4(c) was rewritten to survive
-     — and the tagging step, which has the *worse* failure mode (a
-     mistagged row is excluded from replay **permanently**, vs. one
-     rejected tool call), was still trusting the cache. Fixed by doing
-     the fresh read **once**, in `ToolHandle`, before either the tagging
-     decision or the call to `toolHandleNotifyAgent` — both now consume
-     the same authoritative value instead of each doing (or, in rev 5's
-     case, not doing) its own resolution:
+   - **B1 (rev 6): the tagging decision used the cached `c.PipecatcallID`
+     while §5.4.4(c)'s reject-guard used a fresh, cache-bypassing read —
+     the tagging step, which has the *worse* failure mode (permanent
+     exclusion vs. one rejected tool call), was trusting the weaker
+     source.** Fixed by resolving `listenTurn` once and sharing it with
+     both consumers (kept in rev 7, see the snippet below).
+   - **B2 (rev 6, incompletely) → F1 (rev 7): `pipecatcallID !=
+     c.PipecatcallID` proves only "not the currently-bound turn," not "a
+     listen turn," and rev 6's fix (`ListenCallID != uuid.Nil`) doesn't
+     close the gap — inside an active listening session that term is a
+     constant `true` and adds no discrimination.** Concretely: agent asks
+     Q1 (pipecatcall A minted); before `ToolHandle` processes Q1's tool
+     call, agent asks Q2, `Send` best-effort-interrupts A and rotates to
+     B (`send.go:113-122`); Q1's tool call now arrives with
+     `pipecatcallID=A`, and `A != fresh.PipecatcallID(B)` is true — indistinguishable
+     from a genuine listen turn under rev 6's predicate, even though
+     `ListenCallID` being set is unrelated to which turn this call came
+     from. **The fix needs a signal that is positively "this specific id
+     was minted as a listen turn," not "this id currently isn't the bound
+     one."** §5.4.3 now registers exactly that, in Redis, at the moment a
+     listen turn's throwaway id is minted (`SADD
+     ai:listen:turnpcid:<aicall_id> <turnPipecatcallID>`, self-expiring
+     TTL) — so the predicate becomes a direct membership check instead of
+     an inference from what it *isn't*:
      ```go
-     // One fresh, cache-bypassing read per tool call — not a hot path
-     // (bounded by §5.3.4's turn debounce), so there is no cost reason to
-     // ever trust the cache here, for either consumer of this value.
-     fresh, errFresh := h.db.AIcallGet(ctx, c.ID, dbhandler.SkipCache(true))
-     if errFresh != nil {
-         // Can't determine the real turn. Fail the whole tool call closed
-         // — same outcome §5.4.4(c) reaches on its own read failure, now
-         // reached once here instead of possibly twice. `c` (ToolHandle's
-         // existing cached read, tool.go:33) is used only for CustomerID/
-         // ActiveflowID bookkeeping already unaffected by this decision;
-         // it is never used as a fallback for `listenTurn` itself.
-         return nil, errors.Wrap(errFresh, "could not verify calling turn")
+     // New in rev 7: cheap, cache-safe pre-filter before paying for a
+     // fresh DB read at all — c.ReferenceType is immutable (never among
+     // AIcallUpdate's written fields, pkg/dbhandler/aicall.go), so the
+     // cached copy is trustworthy for this one check regardless of
+     // staleness elsewhere. Also closes review round 6's F2: without
+     // this gate, every tool call on every AIcall type (all 21
+     // mapFunctions handlers, not just contact_case) would pay an
+     // uncached read that only ever matters for contact_case.
+     listenTurn := false
+     if c.ReferenceType == aicall.ReferenceTypeContactCase {
+         isMember, errMember := cache.ListenTurnPipecatcallIDIsMember(ctx, c.ID, pipecatcallID) // SISMEMBER ai:listen:turnpcid:<aicall_id> <pipecatcallID>
+         if errMember != nil {
+             // Can't determine the real turn. Fail the whole tool call
+             // closed, same outcome §5.4.4(c) reaches on any read
+             // failure — better an occasional spurious tool-call
+             // rejection than a silently wrong Origin tag.
+             return nil, errors.Wrap(errMember, "could not verify calling turn")
+         }
+         listenTurn = isMember
      }
      ```
-     `toolHandleNotifyAgent` (§5.4.4(c)) is simplified to take the
-     already-resolved `listenTurn bool` as a parameter instead of doing
-     its own `AIcallGet` — one RPC per tool call, not two.
-   - **B2: `pipecatcallID != c.PipecatcallID` only proves "not the
-     currently-bound turn," not "a listen turn."** `PipecatcallID`
-     rotates on every ordinary `Send()` (`send.go:116-122`), and
-     `interruptPreviousPipecatcall` is explicitly best-effort
-     (`send.go:113-116`) — a tool call from an agent's *just-interrupted*
-     real Q&A turn can still land after the id has already rotated to the
-     next turn, matching this predicate by coincidence, not by actually
-     being a listen turn. The predicate needs a **positive** signal that
-     this AIcall is actually in a listening session, not just a negative
-     one:
-     ```go
-     listenTurn := fresh.ReferenceType == aicall.ReferenceTypeContactCase &&
-         fresh.ListenCallID != uuid.Nil &&   // §5.8: only set while an
-                                              // active listen session exists
-         pipecatcallID != uuid.Nil &&
-         pipecatcallID != fresh.PipecatcallID
-     ```
-     `fresh.ListenCallID` is the exact signal §5.7.3 clears on stop, so
-     this is `false` outside a genuine listening window even if the
-     other three conditions happen to align.
+     This is a direct positive test — pipecatcall A from the race above
+     was never `SADD`'d as a listen-turn id, so `isMember` is `false`
+     regardless of what `c.PipecatcallID` happens to be at read time. The
+     fresh, cache-bypassing `AIcallGet` rev 6 introduced for this
+     decision is **no longer needed at all**: Redis set membership is
+     already the authoritative, race-free source `AIcallGet` was being
+     used as a proxy for. `toolHandleNotifyAgent` (§5.4.4(c)) takes the
+     resulting `listenTurn bool` as a parameter, unchanged from rev 6.
 
    `Origin = OriginListenInternal` when `listenTurn`, `Origin = OriginNone`
    otherwise — unchanged from today for every AIcall this feature doesn't
@@ -1784,6 +1810,7 @@ ships dark and is enabled deliberately.
 | `aicall_listen_max_turns_per_aicall` | `60` | hard per-AIcall turn cap |
 | `aicall_listen_buffer_ttl_hours` | `6` | Redis TTL on all listen keys |
 | `aicall_listen_default_language` | `en-US` | fallback when `STTLanguage` is empty |
+| `aicall_listen_turn_pipecatcall_id_ttl_seconds` | `180` | **new in rev 7**: TTL on the `ai:listen:turnpcid:<aicall_id>` set entries (§5.4.3, §5.4.5 step 2) |
 
 All in `internal/config/main.go` with `SetXxxForTest` helpers, following
 the existing pattern (`config/main.go:159-177`), and documented in
@@ -1840,9 +1867,9 @@ read as an endorsed alternative).
 | Redis unavailable | Buffering and the debounce lock fail → no listen turns run. Q&A is completely unaffected (it never touches these keys). Degrades to today's reactive-only behaviour |
 | Redis flushed mid-call | Listening silently stops for in-flight calls until the panel is reopened (§5.3.2). Stated, accepted, self-healing |
 | `RunListenTurn` fails after popping `pending` (pipecatcall start error, pod loss) (**new in rev 3**) | The popped lines are gone — `LPOP` already removed them, and only the ≤40-line `window` retains a copy for the *next* turn's context. Accepted, bounded data loss: at most one debounce interval's worth of transcript is skipped from evaluation, never from the call itself (nothing about the actual call or its recording is affected) |
-| LLM emits text instead of calling `notify_agent` | Dropped by the pipecatcall-identity guard on all four pipecat message handlers (§5.4.4(b)); metered. Nothing persisted, no webhook |
+| LLM emits text instead of calling `notify_agent` | Dropped by the pipecatcall-identity guard on the two pipecat message handlers it applies to (§5.4.4(b), narrowed from four in rev 3); metered. Nothing persisted, no webhook |
 | LLM calls `notify_agent` with empty/whitespace/oversized `message` | Rejected in `parseNotifyAgentMessage`; `fillFailed` (same style as the other tools in `tool_insight.go`); tool-result row records the failure; **no** proactive message row |
-| LLM calls `notify_agent` during a normal Q&A turn (**corrected in rev 3, was "harmless" in rev 2**) | **Rejected outright** by §5.4.4(c)'s pipecatcall-identity check in `toolHandleNotifyAgent` — the call fails, the agent's real answer proceeds unaffected. Rev 2 called this harmless; it was not (§5.4.4(c)) |
+| LLM calls `notify_agent` during a normal Q&A turn (**corrected in rev 3, was "harmless" in rev 2**) | **Rejected outright** by the `listenTurn` check `ToolHandle` resolves and passes to `toolHandleNotifyAgent` (§5.4.5 step 2, §5.4.4(c)) — the call fails, the agent's real answer proceeds unaffected. Rev 2 called this harmless; it was not (§5.4.4(c)) |
 | LLM calls other Insight tools during a listen turn | Allowed (no per-turn tool restriction — §3). Adds tool-call/result rows, webhook-published as always; hidden from the panel by the render filter (§5.6.4, §5.10.1) but still delivered to the tenant's webhook consumer. Discouraged by `ListenTurnSystemPrompt` |
 | Turn cap reached on a very long call | Listening stops cleanly with `skipped_cap`; the Q&A panel keeps working normally |
 | Agent asks a question while a listen turn is mid-flight | Both proceed independently on separate pipecatcalls. `Send` rotates `c.PipecatcallID`, which makes the still-running listen turn's id "foreign" — so if that turn later emits text it is dropped, and if it calls `notify_agent` the notification still lands correctly (tool routing goes through the pipecatcall's `ReferenceID`, not `AIcall.PipecatcallID`) |
@@ -1878,13 +1905,16 @@ read as an endorsed alternative).
    the rev-1 context-eviction defect and rev-2's missing-guardrails defect,
    F6); asserts `getPipecatcallMessages` is **not** called and
    `c.PipecatcallID` is **not** written.
-5. `messagehandler.isForeignPipecatcall` — for each of the four handlers:
+5. `messagehandler.isForeignPipecatcall` — for each of the **two**
+   handlers it applies to (§5.4.4(b), narrowed from four in rev 3):
    matching id persists/publishes, mismatched id drops, and (for
    `EventPMMessageBotLLMIntermediate`) **no webhook is published** on
-   mismatch.
+   mismatch. Also: a mismatch that resolves to a match on the
+   cache-bypassing re-read still persists (pins review round 4's F4 fix,
+   scoped in rev 5 to `EventPMMessageBotLLM` only).
 6. `toolHandleNotifyAgent` — success writes exactly one proactive row with
-   `Role=assistant` and `Origin=proactive`; called on `c.PipecatcallID`
-   itself (§5.4.4(c)) is rejected with no row written; empty/whitespace/
+   `Role=assistant` and `Origin=proactive`; called with `listenTurn=false`
+   (§5.4.4(c)) is rejected with no row written; empty/whitespace/
    oversized argument writes no proactive row.
 7. Cleanup — `stopListenByCallID` clears **all** matching AIcalls (two-row
    case); `ProcessTerminate` stops only when `owns=true`; stop-RPC failure
@@ -1901,71 +1931,76 @@ read as an endorsed alternative).
    `summaryhandler.startReferenceTypeCall`'s own tests are unaffected by
    listen having run on the same call (a direct regression test for the
    rev-3 defect this replaces).
-10. **New in rev 4, pins B4:** `ToolHandle` receives and uses
-    `pipecatcallID` — a call arriving with `pipecatcallID == c.PipecatcallID`
-    is treated as the agent's real Q&A turn; a call with any other id is
-    treated as a listen turn (tags rows `Origin=listen_internal` per
-    §5.4.5, and is what §5.4.4(c)'s `notify_agent` guard checks).
+10. **`ToolHandle`'s `listenTurn` resolution (§5.4.5 step 2) — rewritten
+    across rev 4 through rev 7, current shape tested here:**
+    - `c.ReferenceType != ReferenceTypeContactCase` → `listenTurn=false`
+      unconditionally, no Redis call made (pins review round 6 F2: cost
+      confined to the one reference type that needs it).
+    - `pipecatcallID` registered via §5.4.3's `SADD` for this AIcall →
+      `listenTurn=true` (a genuine listen turn).
+    - `pipecatcallID` **not** registered (a real Q&A turn's id, including
+      one from a just-interrupted, since-rotated-away turn — the specific
+      race review round 6's F1 named) → `listenTurn=false` (pins F1: no
+      longer inferred from "not currently bound," directly tested by
+      registering turn A, rotating `c.PipecatcallID` to B, and confirming
+      a tool call arriving with id A still resolves `listenTurn=false`).
+    - `pipecatcallID == uuid.Nil` → `listenTurn=false` (pins review round
+      4's B2: unknown id treated as a real turn, never as listen).
+    - Redis `SISMEMBER` erroring → the whole tool call fails closed
+      (`return nil, err`), `toolHandleNotifyAgent` never reached with an
+      unresolved state.
 11. `getPipecatcallMessages`'s two-fetch context assembly (§5.4.5,
-    revised in rev 5): a golden test seeding 150+ listen-internal rows
-    interleaved with 10 real Q&A rows and the leading system-prompt rows
-    asserts (a) the system-prompt row(s) are always present regardless of
-    how many listen-internal or proactive rows follow, and (b) the
-    "rest" fetch excludes every listen-internal row via the `NotEq`
-    filter. Additional cases, new in rev 5:
-    - `Origin` tagging only applies for `ReferenceTypeContactCase`; a
-      `conversation`-type AIcall's ordinary `Send()`-driven pipecatcall
-      rotation never tags anything `listen_internal` (pins review round 4
-      H2).
-    - a `pipecatcallID == uuid.Nil` tool call is tagged `OriginNone` (a
-      real turn), never `listen_internal` (pins review round 4 B2).
-    - `toolHandleNotifyAgent`'s reject logic: called with the AIcall's
-      true current `PipecatcallID` → rejected; called with any other id
-      (including after a simulated stale-cache read that used to
-      disagree) → allowed; `AIcallGet` returning an error → rejected,
-      never allowed (pins review round 4 B1 — the corrected single-path
-      logic, replacing rev 4's inverted two-branch version).
+    revised across rev 5-7): a golden test seeding 150+ listen-internal
+    rows interleaved with 10 real Q&A rows and the leading system-prompt
+    rows asserts (a) the system-prompt row(s) are always present
+    regardless of how many listen-internal or proactive rows follow, in
+    their original creation order (pins review round 6's H2 — both
+    fetches are newest-first and must be reversed before use, not just
+    the first), and (b) the "rest" fetch excludes every listen-internal
+    row via the `NotEq` filter.
+12. `toolHandleNotifyAgent`'s reject logic (§5.4.4(c)) — takes the
+    pre-resolved `listenTurn bool` directly (no `AIcallGet` call of its
+    own to test/mock here, since rev 7 removed it): `listenTurn=true` →
+    allowed; `listenTurn=false` → rejected with no proactive row written.
 
 **`bin-ai-manager` model/golden:**
 
-12. `models/ai/allowed_tools_test.go` — `notify_agent` passes via
+13. `models/ai/allowed_tools_test.go` — `notify_agent` passes via
     `knownSanctionedWrite`; a hypothetical unlisted write tool still fails;
     `TestValidateToolNames_WriteToolNeverAllowedForInsight` still passes
     unchanged.
-13. `pkg/subscribehandler/binding_golden_test.go` — updated to 12 patterns
+14. `pkg/subscribehandler/binding_golden_test.go` — updated to 12 patterns
     with the new one appended last.
-14. `models/aicall/field_test.go`, `filters_test.go`,
+15. `models/aicall/field_test.go`, `filters_test.go`,
     `models/message/field_test.go`, `webhook_test.go` — new fields,
     including `Origin`'s two values.
 
 **Boundary:**
 
-15. `requesthandler` mock expectations pinning the exact
+16. `requesthandler` mock expectations pinning the exact
     `TranscribeV1TranscribeStart` argument list including `provider` and
     `onEndFlowID` (§5.2.2), and `TranscribeV1TranscribeStop(ctx, hostID,
     transcribeID)` argument order (§5.7.2) — both were wrong in rev 1, so
-    both get an argument-shape test. **New in rev 4:**
-    `AIV1AIcallToolExecute`'s new `pipecatcallID` argument (§5.4.3a), both
-    at the `bin-common-handler` client and the `bin-pipecat-manager`
-    call-site.
+    both get an argument-shape test. `AIV1AIcallToolExecute`'s new
+    `pipecatcallID` argument (§5.4.3a), both at the `bin-common-handler`
+    client and the `bin-pipecat-manager` call-site.
 
 **Deferred until §5.9's empirical check lands:**
 
-16. A pinned golden-transcript test for the `in`/`out` → `[CUSTOMER]`/
+17. A pinned golden-transcript test for the `in`/`out` → `[CUSTOMER]`/
     `[AGENT]` mapping. This is exactly the silent-wrong-attribution class
     that deserves a pinned test rather than a happy-path assertion.
 
 **Frontend (`monorepo-javascript`):**
 
-17. Both `CaseInsightAssistantPanel` suites: renders an
+18. Both `CaseInsightAssistantPanel` suites: renders an
     `origin: 'proactive'` message with its distinct treatment and
     accessible label; renders a normal assistant message unchanged;
     renders a message with no `origin` field (backward compatibility with
     every existing row) unchanged; the tool-call/tool-result render
     filter (§5.6.4) hides `role='tool'` and empty-content
-    `role='assistant'` rows (**field names corrected in rev 4** — a
-    regression test asserting the filter actually matches the real
-    `tool_calls`/`content` wire field names, not the rev-3 typo).
+    `role='assistant'` rows (field names matching the real `tool_calls`/
+    `content` wire fields, not camelCase).
 
 ---
 
@@ -2003,7 +2038,8 @@ read as an endorsed alternative).
    | §5.1's `ensureListen` trigger, §5.2–§5.7's transcribe/Redis/turn machinery | Fully inert | `ensureListen` step 1 returns immediately on the flag (§5.1.1) — nothing downstream ever runs |
    | §5.4.5's `getPipecatcallMessages` two-fetch restructure | **Always active**, for every `call`/`conversation`/`task`/`contact_case` AIcall, regardless of the flag | It is a general context-assembly fix (guarantees the system prompt, §5.4.5 step 4), not listen-specific machinery — there is no listen state to gate it on for AIcalls that were never going to listen anyway |
    | §5.4.4(b)'s `isForeignPipecatcall` guard on `EventPMMessageBotLLM`/`…Intermediate` | **Always active** for `contact_case` AIcalls | Same reasoning: it is a general stale-reply guard (the design's own §5.4.4(b) text calls it "a strict improvement beyond this feature"), not conditioned on a listen session existing |
-   | §5.4.5's `Origin` tagging in `ToolHandle` | Inert in practice — `listenTurn` (§5.4.5 step 2) requires `fresh.ListenCallID != uuid.Nil`, which is never true while the flag keeps `ensureListen` from ever setting it | Gated *indirectly*, through the positive listen-state check added in review round 5's B2 fix, not through an explicit flag read in `ToolHandle` |
+   | §5.4.5's `Origin` tagging in `ToolHandle` | Inert in practice — `listenTurn` (§5.4.5 step 2, rewritten in rev 7) checks Redis membership in `ai:listen:turnpcid:<aicall_id>`, which is never populated while the flag keeps `ensureListen`/§5.4.3 from ever running | Gated *indirectly*, through the positive listen-turn-id registration (review round 6's F1 fix), not through an explicit flag read in `ToolHandle` |
+   | `ToolHandle`'s per-tool-call `ReferenceType` check (§5.4.5 step 2, review round 6 F2) | **Always active**, for every AIcall type | A single cached-field comparison (`c.ReferenceType == ReferenceTypeContactCase`), not a DB read — cheap enough to run unconditionally rather than threading the flag through `ToolHandle` for one branch |
    | Frontend render filter (§5.10.1) | **Always active** | Client-side; ships with its own PR regardless of the backend flag (step 4 below) |
 
    **Confirm accordingly**: `ai_manager_aicall_listen_*` metrics all flat
@@ -2026,11 +2062,18 @@ read as an endorsed alternative).
 6. Tune `aicall_listen_evaluate_interval_seconds` from observed data
    before wider enablement.
 
-**Rollback:** set `aicall_listen_enabled=false`. In-flight listen sessions
-stop being evaluated immediately; their STT sessions are reaped by
-transcribe-manager on call hangup; the `listen_call_id` column and
-`origin` field are inert **for the listening path specifically**. The
-table above still applies — this does not roll back the always-active
+**Rollback:** set `aicall_listen_enabled=false`. **Made literally true in
+rev 7 (review round 6, finding F3)**: §5.4.1 step 0 now checks the flag
+directly inside `RunListenTurn`, so an in-flight session's *next*
+scheduled turn (within one `AIcallListenEvaluateIntervalSeconds`, default
+20s — not "immediately" in the sub-second sense, but bounded and short)
+sees the flag off and clears its own state; before this fix, nothing on
+the intake or evaluation path read the flag at all, so a session that
+started while the flag was on would have run to call-end or the turn cap
+regardless of a rollback. STT sessions are reaped by transcribe-manager
+on call hangup either way; the `listen_call_id` column and `origin` field
+are inert **for the listening path specifically**. The §8 table above
+still applies — rollback does not roll back the always-active
 context-assembly fix or the stale-reply guard, which are code-deploy
 changes, not flag-gated ones. No migration rollback is required.
 
@@ -2049,23 +2092,32 @@ changes, not flag-gated ones. No migration rollback is required.
   rev 5: this is an interface-level change, not just the implementation
   file below), plus `ListenTurnSystemPrompt`, config-derived constants
 - `pkg/dbhandler/{main,aicall}.go` + mocks — **new in rev 6, review round
-  5 finding M1**: `AIcallGet` gains an optional cache-bypass argument
-  (consumed by §5.4.5 step 2's fresh read and, via `AIV1AIcallGet`'s new
-  argument, by `messagehandler`'s guard, §5.4.4(b)); a targeted
-  `AIcallUpdate` variant that writes `listen_call_id`/metadata without
-  bumping `tm_update` (§5.2.4/§5.7.3, resolving review round 4's H1).
-  Both are `DBHandler` interface changes, so the interface, its
-  implementation, and its mock all move together.
+  5 finding M1, narrowed in rev 7**: `AIcallGet` gains an optional
+  cache-bypass argument, consumed via `AIV1AIcallGet`'s new argument by
+  `messagehandler`'s stale-reply guard (§5.4.4(b)) — **no longer** also
+  needed by §5.4.5's `listenTurn` resolution, which moved to a Redis
+  membership check in rev 7 (§5.4.3, §5.4.5 step 2) instead of an
+  `AIcallGet` call. Also: a targeted `AIcallUpdate` variant that writes
+  `listen_call_id`/metadata without bumping `tm_update` (§5.2.4/§5.7.3,
+  resolving review round 4's H1). Both are `DBHandler` interface changes,
+  so the interface, its implementation, and its mock all move together.
 - `pkg/aicallhandler/start.go` — `Start` hook, `ensureListen`,
-  `startListenPipecatcall`, `getPipecatcallMessages`'s two-fetch rewrite
-  (leading system rows + `databasehandler.NotEq`-filtered rest, §5.4.5)
-- `pkg/aicallhandler/listen.go` *(new)* — `EventTMTranscriptCreated`, `RunListenTurn`, context assembly, `stopListenByCallID`, `clearListenState`
+  `startListenPipecatcall` (**new in rev 7**: registers
+  `turnPipecatcallID` in Redis, §5.4.3), `getPipecatcallMessages`'s
+  two-fetch rewrite (leading system rows + `databasehandler.NotEq`
+  -filtered rest, §5.4.5)
+- `pkg/aicallhandler/listen.go` *(new)* — `EventTMTranscriptCreated`,
+  `RunListenTurn` (**new in rev 7**: `AIcallListenEnabled` precondition,
+  §5.4.1 step 0), context assembly, `stopListenByCallID`,
+  `clearListenState`
 - `pkg/aicallhandler/tool.go` — `ToolHandle`'s implementation of the new
-  `pipecatcallID` parameter, `mapFunctions` entry for `notify_agent`
-  (unchanged signature, §5.4.3a step 4), `Origin` tagging on tool-call/
-  tool-result rows (§5.4.5)
-- `pkg/aicallhandler/tool_insight.go` — `toolHandleNotifyAgent` (fresh
-  cache-bypass read + reject logic, §5.4.4(c)), `parseNotifyAgentMessage`
+  `pipecatcallID` parameter, the `listenTurn` resolution (§5.4.5 step 2 —
+  `ReferenceType` pre-gate + Redis `SISMEMBER`, not an `AIcallGet`),
+  `mapFunctions` entry for `notify_agent` (unchanged signature, §5.4.3a
+  step 4), `Origin` tagging on tool-call/tool-result rows (§5.4.5)
+- `pkg/aicallhandler/tool_insight.go` — `toolHandleNotifyAgent` (takes
+  `listenTurn bool`, no `AIcallGet` of its own — §5.4.4(c)),
+  `parseNotifyAgentMessage`
 - `pkg/aicallhandler/event.go` — `EventCMCallHangup` second lookup
 - `pkg/aicallhandler/process.go` — terminate-path stop
 - `pkg/listenhandler/v1_aicalls.go`, `pkg/listenhandler/models/request/aicalls.go`
@@ -2078,7 +2130,8 @@ changes, not flag-gated ones. No migration rollback is required.
   (§5.4.4(b), path corrected in rev 5)
 - `pkg/toolhandler/definitions.go` — `notify_agent` (`RunLLM:false`)
 - `pkg/cachehandler/{main,handler}.go` **or a new `pkg/listencachehandler`
-  package** — see the scope note below
+  package** — see the scope note below. **New in rev 7**: also
+  `ListenTurnPipecatcallIDAdd`/`IsMember` (§5.4.3, §5.4.5 step 2).
 - `pkg/subscribehandler/{main,transcribemanager,binding_golden_test}.go`
 - `internal/config/main.go` — seven flags
 - `docs/{domain,architecture,operations}.md`
@@ -2260,6 +2313,24 @@ two different levels of trust in the cache.
 | M1 | §9 omitted the `dbhandler`/`DBHandler` interface changes rev 5 actually requires (cache-bypass `AIcallGet`, a `tm_update`-preserving `AIcallUpdate` variant) | Added explicitly | §9 |
 | M2 | §5.4.4(b)'s claim that the cache-bypass RPC change is "confined to `bin-ai-manager`" is wrong — `AIV1AIcallGet`'s client lives in `bin-common-handler` | Corrected, with the concrete shape (query parameter or sibling route) specified | §5.4.4(b) |
 | M3 | The `NotEq` wrapper's "any field, any service, generic" framing overstated its safety — `ApplyFields`'s existing per-type normalization (UUID `.Bytes()`, the `deleted` bool special case) isn't applied to `NotEq`'s bare pass-through | Scoped explicitly to `Origin` (a string field) for this design; broader safety left as an explicit non-claim rather than an implied one | §5.4.5 step 3 |
+
+### 10.5 Review-response matrix (round 6 → rev 7)
+
+Round 6 was explicitly scoped by the reviewer to rev 6's own changes
+only, per round 5's recommendation — settled architecture and long-closed
+findings were not re-litigated. It found rev 6's B1 fix (unifying the
+fresh read) was real, but the comparison that read fed was still not a
+genuine positive listen-turn signal, plus three document-consistency
+gaps left over from the mechanism's rapid iteration across rev 4-6.
+
+| # | Review finding | Resolution | Where |
+|---|---|---|---|
+| F1 | `ListenCallID != uuid.Nil` is a constant `true` for the entire duration of an active listening session, so it adds no discrimination exactly when the predicate is ever consulted — a real Q&A tool call delayed behind a best-effort pipecatcall rotation could still be mistagged `listen_internal` | Replaced with a direct, positive signal: §5.4.3 registers each listen turn's throwaway pipecatcall id in a Redis set at mint time; `listenTurn` becomes a `SISMEMBER` check against that set, which a real Q&A turn's id was never added to, regardless of timing | §5.4.3, §5.4.5 step 2 |
+| F2 | The unified fresh read (rev 6) ran unconditionally for every tool call on every AIcall type, with a debounce-based cost justification that only applies to listen turns | Fixed as a side effect of F1's rewrite: the (now Redis, not DB) check is pre-gated on `c.ReferenceType == ReferenceTypeContactCase` (an immutable, cache-safe field) before any Redis call is made, so non-`contact_case` AIcalls pay nothing | §5.4.5 step 2 |
+| F3 | §8's "rollback stops in-flight sessions" claim was aspirational — nothing on the intake or evaluation path read `AIcallListenEnabled`, so a running session would ignore a rollback until call-end or the turn cap | Added as `RunListenTurn`'s first precondition; §8's rollback text and table updated to describe the real (bounded, ~one evaluate-interval) latency instead of "immediately" | §5.4.1 step 0, §8 |
+| F4 | Several passages in §6, §7, §9 still described rev 5/rev 6's now-superseded mechanism (a fresh `AIcallGet` shared via `toolHandleNotifyAgent`'s own call, `pipecatcallID` passed as a raw parameter rather than the resolved `listenTurn bool`) | Swept and corrected in the same pass as F1's rewrite, since the mechanism change made them stale | §5.4.3a step 4, §6, §7 items 10-12, §9 |
+| F5 | §6 and §7 still said "all four" pipecat message handlers, though §5.4.4(b) narrowed the guard to two back in rev 3 | Corrected to "two" in both places | §6, §7 item 5 |
+| F6-F8 | Minor: the `NotEq` snippet's shape doesn't match `ApplyFields`' real `switch`/`case` structure; "same shape as the `conversation` branch's guard" overstates similarity (that guard is still cache-first); the two-AIcall-read-per-tool-call shape (`h.Get` plus the listen-turn check) wasn't stated as deliberate | Not addressed in rev 7 — reviewer's own assessment was these are cosmetic and can be fixed while touching the file during implementation, not blocking |  — |
 
 ---
 
