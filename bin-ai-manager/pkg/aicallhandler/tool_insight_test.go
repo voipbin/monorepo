@@ -2687,3 +2687,147 @@ func Test_toolHandleGetCallTranscript_AllSessionsUnavailable(t *testing.T) {
 		t.Errorf("expected sessions_unavailable: 2, got: %s", res.Message)
 	}
 }
+
+// Round-2 code review finding (both reviewers independently converged on
+// this gap): design §4 line 512 specifies the page-cap/possiblyIncomplete
+// residual test at BOTH thresholds -- session layer (>=45 excluded rows,
+// already covered by Test_toolHandleGetCallTranscript_PageCapPossiblyIncomplete
+// above) AND transcript layer (>=405 excluded rows). This test is the
+// transcript-layer (inner §3.4 loop) equivalent: one genuine session, whose
+// TranscriptList pagination never finds enough genuine rows to prove
+// overflow and never gets a short page to prove exhaustion, so it must
+// exit at insightCallTranscribeFetchMaxPages with possiblyIncomplete=true.
+// 5 * (resourceListPageSize+1) = 505 raw rows, all excluded (foreign
+// customer) -- well over the >=405 threshold.
+func Test_toolHandleGetCallTranscript_TranscriptLayerPageCapPossiblyIncomplete(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &aicallHandler{reqHandler: mockReq}
+	ctx := context.Background()
+
+	c := testCallTranscriptAIcall(ctCustomerID, ctCaseID)
+	tc := testCallTranscriptToolCall("tc-transcript-page-cap", ctCallID.String())
+
+	transcribeID := uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-0000000000fc")
+	foreignCustomerID := uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-0000000000fd")
+	base := time.Date(2026, 7, 1, 9, 0, 0, 0, time.UTC)
+
+	mockReq.EXPECT().CallV1CallGet(ctx, ctCallID).Return(testCallForCallTranscript(ctCustomerID, ctCallID), nil)
+	mockReq.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(insightCallTranscribeSessionLimit+1), gomock.Any()).Return([]tmtranscribe.Transcribe{
+		testTranscribeRow(transcribeID, ctCustomerID, ctCallID, "en-US", timePtr(base)),
+	}, nil)
+
+	var pages [][]tmtranscript.Transcript
+	seqN := 0
+	for page := 0; page < insightCallTranscribeFetchMaxPages; page++ {
+		var rows []tmtranscript.Transcript
+		for i := 0; i < resourceListPageSize+1; i++ {
+			rows = append(rows, testTranscriptRow(uuid.Must(uuid.NewV4()), transcribeID, foreignCustomerID, tmtranscript.DirectionIn, "foreign", timePtr(base.Add(time.Duration(seqN)*time.Second))))
+			seqN++
+		}
+		pages = append(pages, rows)
+	}
+	calls := make([]any, 0, len(pages))
+	token := ""
+	for _, rows := range pages {
+		rowsCopy := rows
+		tokenCopy := token
+		calls = append(calls, mockReq.EXPECT().TranscribeV1TranscriptList(ctx, tokenCopy, uint64(resourceListPageSize+1), gomock.Any()).Return(rowsCopy, nil))
+		token = rowsCopy[len(rowsCopy)-1].TMCreate.UTC().Format(utilhandler.ISO8601Layout)
+	}
+	gomock.InOrder(calls...)
+
+	res := h.toolHandleGetCallTranscript(ctx, c, tc)
+	if res.Result != "success" {
+		t.Fatalf("Result = %q, want success (message: %s)", res.Result, res.Message)
+	}
+	// Per design §3.4's M-A note (accepted residual): a session whose
+	// transcript pagination hits the page cap without proof contributes
+	// ZERO real lines AND ZERO gap marker -- there is no boundary row to
+	// anchor one to. This is the documented, honest behavior, not a bug:
+	// assert the header stays at transcript_lines: 0, with no numeric
+	// hidden/excluded-row count anywhere.
+	if !strings.Contains(res.Message, "transcript_lines: 0") {
+		t.Errorf("expected transcript_lines: 0 (session contributes nothing at the page cap), got: %s", res.Message)
+	}
+	for _, n := range []string{"405", "505"} {
+		if strings.Contains(res.Message, n) {
+			t.Errorf("numeric excluded-row count leaked into header: %s", res.Message)
+		}
+	}
+	if strings.Contains(res.Message, "foreign") {
+		t.Errorf("excluded row content leaked: %s", res.Message)
+	}
+}
+
+// Round-2 code review finding: no test exercises all sessions genuinely
+// SUCCEEDING but returning zero transcript rows (e.g. a transcribed call
+// where no speech was detected on either leg), as opposed to
+// AllSessionsUnavailable's RPC-failure path above. Traced: mergedLines
+// stays empty, renderBodyLines' len(lines)==0 fast path returns safely --
+// this test pins that success path explicitly rather than leaving it
+// merely traced-by-hand.
+func Test_toolHandleGetCallTranscript_AllSessionsSucceedZeroRows(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &aicallHandler{reqHandler: mockReq}
+	ctx := context.Background()
+
+	c := testCallTranscriptAIcall(ctCustomerID, ctCaseID)
+	tc := testCallTranscriptToolCall("tc-zero-rows", ctCallID.String())
+
+	sessionID := uuid.FromStringOrNil("7b2e3d20-c002-11f0-9000-0000000000fe")
+	ts := timePtr(time.Date(2026, 7, 1, 10, 0, 0, 0, time.UTC))
+
+	mockReq.EXPECT().CallV1CallGet(ctx, ctCallID).Return(testCallForCallTranscript(ctCustomerID, ctCallID), nil)
+	mockReq.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(insightCallTranscribeSessionLimit+1), gomock.Any()).Return([]tmtranscribe.Transcribe{
+		testTranscribeRow(sessionID, ctCustomerID, ctCallID, "en-US", ts),
+	}, nil)
+	mockReq.EXPECT().TranscribeV1TranscriptList(ctx, "", uint64(resourceListPageSize+1), map[tmtranscript.Field]any{
+		tmtranscript.FieldCustomerID:   ctCustomerID,
+		tmtranscript.FieldTranscribeID: sessionID,
+		tmtranscript.FieldDeleted:      false,
+	}).Return([]tmtranscript.Transcript{}, nil)
+
+	res := h.toolHandleGetCallTranscript(ctx, c, tc)
+	if res.Result != "success" {
+		t.Fatalf("Result = %q, want success (message: %s)", res.Result, res.Message)
+	}
+	if !strings.Contains(res.Message, "transcript_lines: 0") {
+		t.Errorf("expected transcript_lines: 0, got: %s", res.Message)
+	}
+	if strings.Contains(res.Message, "sessions_unavailable") {
+		t.Errorf("no RPC failed, sessions_unavailable should not appear: %s", res.Message)
+	}
+}
+
+// Round-2 code review finding: Test_toolHandleGetCallTranscript_CallLookupMasking's
+// three sub-cases all use a non-nil *cmcall.Call with a bad/zero
+// CustomerID -- none exercise CallV1CallGet returning (nil, nil) literally
+// (no error, but a nil call), which the guard's `call == nil` disjunct
+// exists specifically to handle. This test isolates that literal branch.
+func Test_toolHandleGetCallTranscript_NilCallNoError(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &aicallHandler{reqHandler: mockReq}
+	ctx := context.Background()
+
+	c := testCallTranscriptAIcall(ctCustomerID, ctCaseID)
+	tc := testCallTranscriptToolCall("tc-nil-call-no-error", ctCallID.String())
+
+	mockReq.EXPECT().CallV1CallGet(ctx, ctCallID).Return(nil, nil)
+
+	res := h.toolHandleGetCallTranscript(ctx, c, tc)
+	if res.Result != "success" {
+		t.Fatalf("Result = %q, want success (masked as not-found)", res.Result)
+	}
+	if res.Message != msgResourceNotFound {
+		t.Errorf("Message = %q, want %q (literal nil call, no error, must still mask as not-found)", res.Message, msgResourceNotFound)
+	}
+}
