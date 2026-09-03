@@ -85,11 +85,7 @@ func (h *transcribeHandler) Start(
 		// a row with this id already exists (any customer, any status,
 		// soft-deleted or not -- Get()/TranscribeGet() do not filter on
 		// customer_id or tm_delete)
-		return nil, cerrors.AlreadyExists(
-			commonoutline.ServiceNameTranscribeManager,
-			"TRANSCRIBE_ID_ALREADY_EXISTS",
-			"A transcribe with the given id already exists. Use a different id or omit it.",
-		)
+		return nil, errTranscribeIDAlreadyExists()
 	} else if !stderrors.Is(err, dbhandler.ErrNotFound) {
 		return nil, err // defensive; Get() already wraps not-found
 	}
@@ -116,11 +112,7 @@ func (h *transcribeHandler) Start(
 	if err != nil {
 		if stderrors.Is(err, dbhandler.ErrDuplicateID) {
 			if callerSpecifiedID {
-				return nil, cerrors.AlreadyExists(
-					commonoutline.ServiceNameTranscribeManager,
-					"TRANSCRIBE_ID_ALREADY_EXISTS",
-					"A transcribe with the given id already exists. Use a different id or omit it.",
-				)
+				return nil, errTranscribeIDAlreadyExists()
 			}
 			// a server-generated id collided -- not a caller error
 			return nil, cerrors.Internal(
@@ -133,6 +125,19 @@ func (h *transcribeHandler) Start(
 	}
 
 	return res, nil
+}
+
+// errTranscribeIDAlreadyExists builds the caller-facing 409 for a
+// caller-supplied transcribe id that collides with an existing row --
+// either caught up front by Start's pre-check, or caught as a TOCTOU race
+// by TranscribeCreate's duplicate-key classification. Both call sites
+// return the identical caller-facing error, so it's factored out once here.
+func errTranscribeIDAlreadyExists() error {
+	return cerrors.AlreadyExists(
+		commonoutline.ServiceNameTranscribeManager,
+		"TRANSCRIBE_ID_ALREADY_EXISTS",
+		"A transcribe with the given id already exists. Use a different id or omit it.",
+	)
 }
 
 // isValidReference returns false if the given reference is not valid for transcribe.
