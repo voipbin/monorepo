@@ -1,6 +1,6 @@
 # InsightAI Realtime Listen (Proactive Notification) — Design
 
-Status: **Approved** (rev 9 — review round 7 and round 8 both APPROVEd rev 7/rev 8, the two-consecutive-approval bar this project's review-loop policy requires; rev 9 is post-approval polish closing round 8's own non-blocking recommendations, not a new review round)
+Status: **Approved** (rev 9 approved via review round 7/8; rev 10 is a `main`-rebase reconciliation, not a new review round — see §0)
 Branch: `NOJIRA-Insight-AI-realtime-listen`
 Owner: CPO-directed backend feature
 
@@ -17,6 +17,7 @@ Owner: CPO-directed backend feature
 | 7 | 2026-09-03 | **Revised after independent review round 6 (a scoped, targeted review per round 5's own recommendation — REQUEST_CHANGES, 2 BLOCKING + 3 MEDIUM, reviewer's own assessment: "light," architecture confirmed stable).** Replaced the `ListenCallID != uuid.Nil` term (which contributed no discrimination once a listen session was already active) with a genuinely positive signal: §5.4.3 now registers each listen turn's throwaway pipecatcall id in a Redis set the moment it's minted, and `ToolHandle`'s `listenTurn` resolution becomes a direct membership check — closing a race where a real Q&A tool call, delayed behind a best-effort-interrupted turn, could still be mistagged. This also removes the `AIcallGet` fresh read §5.4.5 previously needed (Redis membership is authoritative on its own), and gates the read that remains (`ReferenceType == ContactCase`) on an immutable, cache-safe field first, so the cost is confined to `contact_case` AIcalls again. Added the flag check `RunListenTurn` was missing, making §8's "rollback stops in-flight sessions" claim literally true rather than aspirational. Corrected several places across §6, §7, §9 that still described the mechanism's now-superseded rev-5/rev-6 shape. §10.5 gains a round-6 matrix. |
 | 8 | 2026-09-03 | **Review round 7 APPROVEd rev 7** (0 BLOCKING; 7 localized findings, N-1 through N-7, offered as recommendations for before implementation starts rather than approval blockers). This revision closes all 7 rather than deferring any, since the review loop's own history is that a deferred finding tends to resurface: (N-1) a Redis `SISMEMBER` failure in §5.4.5 step 2 now degrades to `listenTurn=false` instead of failing the tool call closed — provably correct during a Redis outage, since no genuine listen turn can exist then either, and it restores §6's "Q&A unaffected by Redis outage" claim rev 7 had quietly broken; (N-2) a failed turn-id registration (§5.4.3) now aborts that turn instead of proceeding unregistered, which would have reproduced the exact permanent-mistagging failure mode §5.4.5's B1 fix exists to prevent; (N-3) the flag check moved from a standalone step 0 (which ran before the AIcall was fetched) into step 1's require-list, alongside the `c` it and `clearListenState` both need; (N-4) that same path now performs a full stop (releasing an owned transcribe) rather than a bare state clear, so a flag-off rollback doesn't strand a still-running, now-unreachable STT session; (N-5/N-6/N-7) new metric labels, TTL/cleanup documentation, and an explicit statement of where in `ToolHandle` the listen-turn check runs. §10.6 gains a round-7 matrix. |
 | 9 | 2026-09-03 | **Review round 8 APPROVEd rev 8 — the second consecutive approval; the review loop concludes.** Round 8 flagged five non-blocking polish items, closed here: (M-1) §8's "next scheduled turn" language corrected — `RunListenTurn` is segment-triggered, not timer-scheduled, so a flag-off rollback's effect lands on the next transcript segment (or, in a quiet call, at hangup), not on a fixed clock; (M-2) named and scoped `stopListening(ctx, c)` as a single two-step helper (§5.7.2's stop snippet, then `clearListenState`) that never calls `ProcessTerminate`, closing the ambiguity that could have wired a listening rollback into ending the agent's whole Q&A session; (L-2/L-4) added test coverage for §5.4.3's registration-failure abort path and the new `skipped_disabled`/`skipped_invalid` outcomes. (L-3, the one remaining citation in §10.5's historical round-6 matrix pointing at the since-renamed step, is left as an accurate record of what rev 7 did at the time, per this document's own convention of not rewriting past rounds' matrices.) |
+| 10 | 2026-09-04 | **`main`-rebase reconciliation, not a new review round** — the branch was rebased onto two commits merged to `main` after rev 9: `NOJIRA-Extract-call-transcript-pagination-helper` (pure refactor of `toolHandleGetCallTranscript`, no behaviour change — confirmed via its own PR's test-suite-unchanged claim) and `NOJIRA-Allow-caller-specified-transcribe-id` (adds an optional `id` parameter to `TranscribeV1TranscribeStart`, the RPC this design's §5.2.2 already calls). Reconciled directly against the current source rather than re-reviewed, since both changes are additive/mechanical, not design-affecting: added the new `id` parameter (`uuid.Nil`, preserving server-generated behaviour) to §5.2.2's snippet; updated two `tool_insight.go` line citations shifted by the pagination-helper refactor (§5.1 step 6, §5.2.1's second consequence) — confirmed the underlying logic they describe is unchanged, and that the refactored code's own comments already generically anticipate a second system-initiated transcriber (i.e. `IDAIManagerListen`), which needed no accommodation as a result; documented why the new caller-specified-transcribe-id capability (built for a different use case — pre-binding a per-transcribe RabbitMQ subscription) doesn't change §3's earlier decision against dynamic per-transcribe bindings. No other cited line ranges in `bin-ai-manager` shifted (spot-checked: `AllInsightToolNames`, `mapFunctions`, `ToolHandle`, `toolHandleGetContactInteractions`'s tenant checks, `pkg/toolhandler/definitions.go`'s `RunLLM` lines all unchanged). |
 
 Every code reference below was re-verified against the worktree at rev 2 authoring time; file:line citations are load-bearing and were read, not assumed.
 
@@ -240,7 +241,10 @@ fire-and-forget by design; §6 covers the failure modes.
    not under `monorepo/docs/plans/`.)
 6. **Call liveness + ownership.** `CallV1CallGet(callID)`; require
    `call.CustomerID == c.CustomerID` (defence in depth, same shape as
-   `tool_insight.go:738`), `call.TMDelete == nil`, and `call.Status ∈
+   `tool_insight.go:854` — line renumbered by the `paginateUntilExact`
+   refactor (`NOJIRA-Extract-call-transcript-pagination-helper`, merged to
+   `main` 2026-09-04); logic unchanged), `call.TMDelete == nil`, and
+   `call.Status ∈
    {dialing, ringing, progressing}` — the exact set
    `transcribehandler.isValidReference` treats as transcribable
    (`bin-transcribe-manager/pkg/transcribehandler/start.go:107-115`).
@@ -323,11 +327,18 @@ stronger property than a field comparison — the id is one ai-manager
 generated and persisted, not attacker-influenceable.
 
 **Second consequence:** `get_call_transcript`'s own listing is filtered by
-`tmtranscribe.FieldCustomerID: c.CustomerID` (`tool_insight.go:757-758`),
-so it will not see the listen session. That is correct and intended: the
-agent reads *finished* transcripts of *the customer's own* sessions
-through that tool; the live listen session is an internal, platform-owned
-stream. Nothing regresses.
+`tmtranscribe.FieldCustomerID: c.CustomerID` (`tool_insight.go:869` — line
+renumbered by the `paginateUntilExact` refactor, see above; logic
+unchanged), so it will not see the listen session. That is correct and
+intended: the agent reads *finished* transcripts of *the customer's own*
+sessions through that tool; the live listen session is an internal,
+platform-owned stream. Nothing regresses. **Confirmed directly against
+the current code (2026-09-04)**: the exclusion is stated generically in
+the surrounding comment as "exclude any row whose `CustomerID !=
+c.CustomerID`," not hardcoded to `IDAIManager` specifically — the
+comment names exactly this scenario, a future system-initiated
+transcriber, as already anticipated. `IDAIManagerListen` needs no change
+to `get_call_transcript` to stay correctly excluded.
 
 #### 5.2.2 Reuse rule — listen-to-listen only, language-tolerant
 
@@ -361,6 +372,9 @@ existing := TranscribeV1TranscribeList(ctx, "", 10, {
   ```go
   tr, err := h.reqHandler.TranscribeV1TranscribeStart(
       ctx,
+      uuid.Nil,                    // id — let transcribe-manager generate one;
+                                   //   see the note below on the caller-specified-id
+                                   //   option this signature now supports
       cmcustomer.IDAIManagerListen, // customerID  (§5.2.1)
       call.ActiveflowID,           // activeflowID — the call's, not the AIcall's:
                                    //   a panel-started contact_case AIcall has
@@ -376,8 +390,27 @@ existing := TranscribeV1TranscribeList(ctx, "", 10, {
   )
   ```
   Signature verified against
-  `bin-common-handler/pkg/requesthandler/transcribe_transcribes.go:64-105`.
-  (Rev 1 omitted `provider` and `onEndFlowID` entirely.)
+  `bin-common-handler/pkg/requesthandler/transcribe_transcribes.go:64-76`
+  as of `NOJIRA-Allow-caller-specified-transcribe-id` (merged to `main`
+  2026-09-04, after rev 9 — reconciled here without a new review round
+  since it is a pure signature/citation update, not a design change; see
+  §0's rev 10 entry). Rev 1 omitted `provider` and `onEndFlowID`
+  entirely; this `id` parameter did not exist before rev 10.
+
+  **On the new caller-specified-id capability itself: deliberately not
+  adopted here.** Its purpose (per its own design doc,
+  `bin-transcribe-manager/docs/plans/2026-09-03-caller-specified-transcribe-id-design.md`)
+  is letting a caller pre-declare a transcribe's id so it can bind a
+  *dynamic, per-transcribe* RabbitMQ subscription
+  (`transcribe-manager.transcript.<id>.#`) before the session starts
+  producing events. §3's non-goals table already considered and rejected
+  exactly that binding pattern for this design — not because of the
+  race this new feature solves, but because of the bind/unbind lifecycle
+  it would add on top of the wildcard subscription this design already
+  uses (§5.3.1) with a Redis-based filter (§5.3.2) that needs no
+  per-transcribe binding at all. The new capability doesn't change that
+  trade-off; noted here so a future reader doesn't wonder why it isn't
+  used.
 
 - A session ai-manager does **not** own — i.e. one started by the customer
   under their own `customer_id`, or one started by `ai_summary` under
