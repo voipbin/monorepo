@@ -193,13 +193,18 @@ separately once this backend PR is ready.
 
 ## Phase 4 - Ship
 
-- [ ] `git fetch origin main` + conflict check
-- [ ] Commit (VOIP-1455 title format, project-prefixed bullets, no AI
-      attribution per this repo's CLAUDE.md)
-- [ ] Push, open PR
-- [ ] Note in PR: frontend work is a separate PR in monorepo-javascript,
+- [x] `git fetch origin main` + conflict check -- no conflicts, branch base
+      was current
+- [x] Committed (VOIP-1455 title format, project-prefixed bullets, no AI
+      attribution per this repo's CLAUDE.md) -- 2 commits (design doc WIP +
+      implementation)
+- [x] Pushed, opened PR: https://github.com/voipbin/monorepo/pull/1264
+- [x] Noted in PR: frontend work is a separate PR in monorepo-javascript,
       depends on this PR's tool name/wire format (D1) landing first (or at
       least being stable) but not on deployment order (§1.1)
+
+**PR #1264 open, awaiting human review/merge (not merged by this session
+per policy -- merge requires explicit instruction).**
 
 ## Working Notes
 
