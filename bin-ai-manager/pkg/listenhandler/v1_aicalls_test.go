@@ -547,3 +547,78 @@ func Test_processV1AIcallsIDToolExecutePost_errorMapping(t *testing.T) {
 		})
 	}
 }
+
+// Test_processV1AIcallsIDGet_SkipCache pins that a GET carrying a query string
+// still routes and still parses its id.
+//
+// Two independent things would break it. (1) regV1AIcallsID is anchored with
+// "$", so a query string makes it match nothing and the request silently falls
+// through to the router's default -- hence the separate query-tolerant pattern.
+// (2) The handler used to split the URI on "/" and take element 3, which for a
+// query-bearing URI is "<uuid>?skip_cache=true" and parses to uuid.Nil -- hence
+// url.Parse.
+func Test_processV1AIcallsIDGet_SkipCache(t *testing.T) {
+	aicallID := uuid.FromStringOrNil("3f2a1b0c-9d8e-4f7a-8b6c-5d4e3f2a1b0c")
+
+	tests := []struct {
+		name string
+
+		request *sock.Request
+
+		expectSkipCache bool
+	}{
+		{
+			name: "no query string reads through the cache",
+			request: &sock.Request{
+				URI:    "/v1/aicalls/3f2a1b0c-9d8e-4f7a-8b6c-5d4e3f2a1b0c",
+				Method: sock.RequestMethodGet,
+			},
+			expectSkipCache: false,
+		},
+		{
+			name: "skip_cache=true bypasses the cache",
+			request: &sock.Request{
+				URI:    "/v1/aicalls/3f2a1b0c-9d8e-4f7a-8b6c-5d4e3f2a1b0c?skip_cache=true",
+				Method: sock.RequestMethodGet,
+			},
+			expectSkipCache: true,
+		},
+		{
+			name: "skip_cache=false reads through the cache",
+			request: &sock.Request{
+				URI:    "/v1/aicalls/3f2a1b0c-9d8e-4f7a-8b6c-5d4e3f2a1b0c?skip_cache=false",
+				Method: sock.RequestMethodGet,
+			},
+			expectSkipCache: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockAIcall := aicallhandler.NewMockAIcallHandler(mc)
+
+			h := &listenHandler{
+				sockHandler:   mockSock,
+				aicallHandler: mockAIcall,
+			}
+
+			if tt.expectSkipCache {
+				mockAIcall.EXPECT().GetSkipCache(gomock.Any(), aicallID).Return(&aicall.AIcall{}, nil)
+			} else {
+				mockAIcall.EXPECT().Get(gomock.Any(), aicallID).Return(&aicall.AIcall{}, nil)
+			}
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Fatalf("processRequest returned an unexpected error. err: %v", err)
+			}
+			if res.StatusCode != 200 {
+				t.Errorf("status mismatch. expected: 200, got: %d", res.StatusCode)
+			}
+		})
+	}
+}

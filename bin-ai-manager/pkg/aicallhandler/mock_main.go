@@ -153,6 +153,21 @@ func (mr *MockAIcallHandlerMockRecorder) GetByReferenceID(ctx, referenceID any) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByReferenceID", reflect.TypeOf((*MockAIcallHandler)(nil).GetByReferenceID), ctx, referenceID)
 }
 
+// GetSkipCache mocks base method.
+func (m *MockAIcallHandler) GetSkipCache(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSkipCache", ctx, id)
+	ret0, _ := ret[0].(*aicall.AIcall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSkipCache indicates an expected call of GetSkipCache.
+func (mr *MockAIcallHandlerMockRecorder) GetSkipCache(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSkipCache", reflect.TypeOf((*MockAIcallHandler)(nil).GetSkipCache), ctx, id)
+}
+
 // List mocks base method.
 func (m *MockAIcallHandler) List(ctx context.Context, size uint64, token string, filters map[aicall.Field]any) ([]*aicall.AIcall, error) {
 	m.ctrl.T.Helper()

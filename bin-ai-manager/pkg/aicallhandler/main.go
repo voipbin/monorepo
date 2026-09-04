@@ -32,6 +32,7 @@ import (
 type AIcallHandler interface {
 	Delete(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error)
 	Get(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error)
+	GetSkipCache(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error)
 	GetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*aicall.AIcall, error)
 	List(ctx context.Context, size uint64, token string, filters map[aicall.Field]any) ([]*aicall.AIcall, error)
 

@@ -109,14 +109,29 @@ func (h *listenHandler) processV1AIcallsPost(ctx context.Context, m *sock.Reques
 	return res, nil
 }
 
-// processV1AIcallsIDGet handles GET /v1/aicalls/<aicall-id> request
+// processV1AIcallsIDGet handles GET /v1/aicalls/<aicall-id> request.
+//
+// The optional skip_cache=true query parameter forces a database-authoritative
+// read, bypassing ai-manager's own Redis snapshot cache. Its one caller today is
+// messagehandler's stale-reply guard, which must not drop the agent's genuine
+// answer because of a transiently-stale cached PipecatcallID. See
+// docs/plans/2026-09-03-insight-ai-realtime-listen-design.md §5.4.4(b).
 func (h *listenHandler) processV1AIcallsIDGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"handler": "processV1AIcallsIDGet",
 		"request": m,
 	})
 
-	uriItems := strings.Split(m.URI, "/")
+	// url.Parse, not strings.Split(m.URI, "/"): with a query string attached,
+	// splitting on "/" yields "<uuid>?skip_cache=true" as the id element, which
+	// parses to uuid.Nil.
+	u, err := url.Parse(m.URI)
+	if err != nil {
+		log.Errorf("Could not parse the uri. err: %v", err)
+		return simpleResponse(400), nil
+	}
+
+	uriItems := strings.Split(u.Path, "/")
 	if len(uriItems) < 4 {
 		log.Errorf("Wrong uri item count. uri_items: %d", len(uriItems))
 		return simpleResponse(400), nil
@@ -127,7 +142,14 @@ func (h *listenHandler) processV1AIcallsIDGet(ctx context.Context, m *sock.Reque
 		return simpleResponse(400), nil
 	}
 
-	tmp, err := h.aicallHandler.Get(ctx, id)
+	skipCache := u.Query().Get("skip_cache") == "true"
+
+	var tmp *aicall.AIcall
+	if skipCache {
+		tmp, err = h.aicallHandler.GetSkipCache(ctx, id)
+	} else {
+		tmp, err = h.aicallHandler.Get(ctx, id)
+	}
 	if err != nil {
 		log.Errorf("Could not get ai. err: %v", err)
 		return errorResponse(err), nil
