@@ -1,6 +1,6 @@
 # InsightAI Realtime Listen (Proactive Notification) — Design
 
-Status: **Approved** (rev 9 approved via review round 7/8; rev 10 is a `main`-rebase reconciliation, not a new review round — see §0)
+Status: **Approved — 2 consecutive review approvals (rounds 19 and 20) reached on rev 22; this design-stage review sub-loop (rounds 13-20, covering rev 15's trigger-API/event-ordering rewrite and its follow-on per-AIcall lock) is CLOSED. rev 23 fixes two non-blocking prose-attribution nitpicks round 20 itself flagged as not warranting further review (rev 9 approved via review round 7/8; rev 10 was a `main`-rebase reconciliation; rev 11-14 added and then stabilized the confbridge participant-count guard through review rounds 9-12, closing with round 12's second consecutive approval on rev 14 — see §0 rows 11-14, §10.7-§10.10 for that sub-loop. Rev 15 reopened the design with a substantive, CEO/CTO-directed change — an explicit trigger API replacing the implicit `Start`-hook, plus a related event-ordering fix — resetting the consecutive-approval count per policy. Review round 13 returned REQUEST_CHANGES on rev 15 (1 BLOCKING + 3 HIGH + 4 MEDIUM + 3 LOW, §10.11), fixed in rev 16. Review round 14 found rev 16's ordering fix, once collapsed into a single write-before-create sequence, collided with two pre-existing §5.2.4 rules once concurrent `runListenStart` goroutines for the same AIcall are considered (2 HIGH + 3 MEDIUM + 5 LOW, §10.12), fixed in rev 17 with a per-AIcall create-or-reuse lock and a scoped `owns`-merge. Review round 15 confirmed rev 17's diagnosis and rule were correct, but found the lock itself under-specified — an undersized TTL relative to a hardcoded 30s dependency, and an ownerless release that could delete a different goroutine's still-valid lock, reopening the same race the lock exists to close — plus a description in §5.2.4 that stated the resulting stop-path consequence backwards, and citations for the error-discrimination pattern that didn't show what they claimed (1 HIGH + 3 MEDIUM + 7 LOW, §10.13), fixed in rev 18 with a TTL sized against the goroutine's own outer timeout (not the RPC clients' own internal ones), a per-goroutine ownership token released via compare-and-delete, and the described inaccuracies corrected. Review round 16 independently re-verified rev 18's fixes against actual source (confirming the TTL derivation, the `TranscribeV1TranscribeList` 30000ms citation, and both corrected citations/consequence-descriptions were all genuinely right) but found rev 18's own TTL fix was only half-applied — §5.12's config table and §11 item 13 still carried the old `15`s default and its withdrawn "sum the RPC timeouts" rationale, directly contradicting §5.2.2's new rule — plus three further defects the TTL-vs-timeout change itself exposed: the lock's release ran under the same `ctx` the goroutine's own outer timeout cancels, stranding the lock in exactly the scenario the new TTL sizing was meant to keep working; raising the TTL above the goroutine timeout silently reversed §7 item 2's own "a later goroutine can proceed normally" test claim without updating it; and the lock's new compare-and-delete semantics had no regression test of their own (1 HIGH + **4** MEDIUM + 11 LOW, §10.14 — **§0 row 19 and this line itself originally undercounted this as "3 MEDIUM," a discrepancy review round 17 caught; row 19's own text is left as the historical record per this document's convention, corrected here since this line, unlike §0's rows, is continuously-updated current-state summary, not an append-only log**), fixed in rev 19 by actually updating §5.12/§11 item 13's TTL default and rationale, detaching the lock's release from the acquiring goroutine's own context (`context.WithoutCancel`, precedented elsewhere in this monorepo), correcting §7 item 2's test claim to the TTL-elapsed condition it now actually requires, adding release-layer regression coverage, and sweeping the LOW findings. **Review round 17 independently re-verified all six of round 16's findings against current text and actual source (including the `context.WithoutCancel` precedent citation and this monorepo's Go version) and confirmed every one genuinely fixed, but found rev 19's own sweep left several sections it touched internally inconsistent with each other: the miscount above; a still-uncompiling illustrative code snippet that LOW-7's fix claimed had gained an error check but had not; a brand-new brittle doc-internal line citation introduced by the very fix (LOW-10) meant to remove that pattern, already off by one line; §5.8's file-list bullet now claiming `rollbackListenState` lives in `pkg/cachehandler` alongside the lock/removal primitives, contradicting §9's placement of it in `listen_trigger.go`; §9's own flag count left at "twelve" after this same revision added a thirteenth; §6/§7's lock-error-handling text left describing an acquire-only failure mode ("no transcribe is started") as if it also covered the deferred release, which by construction runs after `TranscribeV1TranscribeStart`; and an acquire-succeeds-but-client-errors edge case that could strand the lock for the new, longer TTL without the crash the design's own residual-risk paragraph names as the only cause (7 MEDIUM + 3 LOW, plus 5 non-blocking nitpicks, §10.15) — fixed in rev 20, see §0 row 20. **Review round 18 independently re-verified all ten of round 17's findings (including re-checking the `context.WithoutCancel`/Go-version citations and confirming the B-7 best-effort-release code is valid, non-leaking Go) and confirmed nine of the ten genuinely fixed with no reservations, but found two new defects inside rev 20's own edit radius: a code comment citing a review finding ("B-9") that does not exist in this document's own numbering (the actual finding was LOW-1); and, more substantively, the `dupFilters` illustrative block B-2's fix rewrote still would not compile — its map was keyed by bare strings (`map[string]any`) rather than `TranscribeV1TranscribeList`'s actual `map[tmtranscribe.Field]any` parameter type, the same "real Go would not compile this" class as two of this loop's own recent findings — plus 6 LOW-severity attribution/wording residue items from B-6/B-7/LOW-1's own fixes (a mislabeled compound finding-id, an "accepted residual" paragraph and a §5.12 row that named crash-only stranding without also naming B-7's new ambiguous-acquire-then-release-also-fails residual, two lingering `tr` identifier references from LOW-1's own rename left in §7 item 2 and §5.2.4, an unflagged intentional-constant 12h TTL, and one self-undermining rationale clause in §10.15's own B-1 row) (0 BLOCKING + 2 MEDIUM + 6 LOW, §10.16)** — fixed in rev 21, see §0 row 21. **Review round 19 independently re-derived all eight of round 18's findings from current text and re-verified every load-bearing citation a second time (`TranscribeV1TranscribeList`'s real signature and every `tmtranscribe.Field` constant used in the corrected map, `TranscribeV1TranscribeStart`'s full 11-argument call, `context.WithoutCancel`'s precedent, this monorepo's Go version) — full compile-read of §5.2.2's entire snippet, not just the two lines MEDIUM-2 named — and returned this design-stage sub-loop's first APPROVE since rev 15 reopened it: 0 BLOCKING, 0 HIGH, 0 MEDIUM. It recorded 5 LOW/nitpick items (a stray "(above)" that should read "(below)," a third leftover `tr.ID` reference in §5.2.4 beyond the two LOW-4 fixed, a mis-citation inside §10.16's own LOW-6 row pointing at the wrong section for a quoted phrase, two now-stale doc-internal line citations in §10.15's nitpick paragraph, and two dangling "the List bullet above" references left behind by B-2's own fix removing that bullet's List call) — none blocking, all fixed here in rev 22 (§10.17) purely to maximize round 20's odds of delivering the second consecutive APPROVE this sub-loop needs to close, given round 20 is this policy's last round before its 20-round cap.** **Review round 20 independently re-derived all five of round 19's findings from current text, performed a second full compile-read of §5.2.2's entire lock snippet against real `bin-common-handler`/`bin-transcribe-manager` source (variable liveness, every RPC call's argument count/types, every cited line range), and confirmed all clean — no BLOCKING/HIGH/MEDIUM findings. It recorded 2 LOW attribution nitpicks inside rev 22's own fixes (one "since rev 21" that should say "since rev 20"; one "trailing clause" descriptor that no longer matched its re-pointed referent) and 3 non-blocking style/philosophical observations, explicitly assessing none of them as warranting a further review round — APPROVE, the second consecutive approval.** Fixed in rev 23 (§0 row 23) purely as a doc touch-up, per round 20's own recommendation, not as a new review-loop iteration — see §0)
 Branch: `NOJIRA-Insight-AI-realtime-listen`
 Owner: CPO-directed backend feature
 
@@ -18,6 +18,19 @@ Owner: CPO-directed backend feature
 | 8 | 2026-09-03 | **Review round 7 APPROVEd rev 7** (0 BLOCKING; 7 localized findings, N-1 through N-7, offered as recommendations for before implementation starts rather than approval blockers). This revision closes all 7 rather than deferring any, since the review loop's own history is that a deferred finding tends to resurface: (N-1) a Redis `SISMEMBER` failure in §5.4.5 step 2 now degrades to `listenTurn=false` instead of failing the tool call closed — provably correct during a Redis outage, since no genuine listen turn can exist then either, and it restores §6's "Q&A unaffected by Redis outage" claim rev 7 had quietly broken; (N-2) a failed turn-id registration (§5.4.3) now aborts that turn instead of proceeding unregistered, which would have reproduced the exact permanent-mistagging failure mode §5.4.5's B1 fix exists to prevent; (N-3) the flag check moved from a standalone step 0 (which ran before the AIcall was fetched) into step 1's require-list, alongside the `c` it and `clearListenState` both need; (N-4) that same path now performs a full stop (releasing an owned transcribe) rather than a bare state clear, so a flag-off rollback doesn't strand a still-running, now-unreachable STT session; (N-5/N-6/N-7) new metric labels, TTL/cleanup documentation, and an explicit statement of where in `ToolHandle` the listen-turn check runs. §10.6 gains a round-7 matrix. |
 | 9 | 2026-09-03 | **Review round 8 APPROVEd rev 8 — the second consecutive approval; the review loop concludes.** Round 8 flagged five non-blocking polish items, closed here: (M-1) §8's "next scheduled turn" language corrected — `RunListenTurn` is segment-triggered, not timer-scheduled, so a flag-off rollback's effect lands on the next transcript segment (or, in a quiet call, at hangup), not on a fixed clock; (M-2) named and scoped `stopListening(ctx, c)` as a single two-step helper (§5.7.2's stop snippet, then `clearListenState`) that never calls `ProcessTerminate`, closing the ambiguity that could have wired a listening rollback into ending the agent's whole Q&A session; (L-2/L-4) added test coverage for §5.4.3's registration-failure abort path and the new `skipped_disabled`/`skipped_invalid` outcomes. (L-3, the one remaining citation in §10.5's historical round-6 matrix pointing at the since-renamed step, is left as an accurate record of what rev 7 did at the time, per this document's own convention of not rewriting past rounds' matrices.) |
 | 10 | 2026-09-04 | **`main`-rebase reconciliation, not a new review round** — the branch was rebased onto two commits merged to `main` after rev 9: `NOJIRA-Extract-call-transcript-pagination-helper` (pure refactor of `toolHandleGetCallTranscript`, no behaviour change — confirmed via its own PR's test-suite-unchanged claim) and `NOJIRA-Allow-caller-specified-transcribe-id` (adds an optional `id` parameter to `TranscribeV1TranscribeStart`, the RPC this design's §5.2.2 already calls). Reconciled directly against the current source rather than re-reviewed, since both changes are additive/mechanical, not design-affecting: added the new `id` parameter (`uuid.Nil`, preserving server-generated behaviour) to §5.2.2's snippet; updated two `tool_insight.go` line citations shifted by the pagination-helper refactor (§5.1 step 6, §5.2.1's second consequence) — confirmed the underlying logic they describe is unchanged, and that the refactored code's own comments already generically anticipate a second system-initiated transcriber (i.e. `IDAIManagerListen`), which needed no accommodation as a result; documented why the new caller-specified-transcribe-id capability (built for a different use case — pre-binding a per-transcribe RabbitMQ subscription) doesn't change §3's earlier decision against dynamic per-transcribe bindings. No other cited line ranges in `bin-ai-manager` shifted (spot-checked: `AllInsightToolNames`, `mapFunctions`, `ToolHandle`, `toolHandleGetContactInteractions`'s tenant checks, `pkg/toolhandler/definitions.go`'s `RunLLM` lines all unchanged). |
+| 11 | 2026-09-04 | **Answers the CEO/CTO's own architectural question — "a conversation is two bridged calls (A-leg, B-leg); which leg do we base listening on?" — and closes part of §11's remaining blocking item. Revised in place after review round 9 (REQUEST_CHANGES, 1 BLOCKING + 3 HIGH + 3 MEDIUM + 3 LOW) — see below for what changed and §10.7 for the full matrix.** First pass confirmed, by reading the actual routing and confbridge code rather than assuming, that (a) `Case.ReferenceID` names the **A-leg (customer) call** because system-generated B-leg flows (`generateFlowForAgentCall` and the `connect` action's B-leg flow) can never carry `case_create`; (b) the two legs are separate `Call` rows joined through per-leg auxiliary join channels into a shared `Confbridge`, without either leg's original channel moving; and (c) the Snoop/ExternalMedia tap attaches to the listened call's own primary channel regardless of that topology, so the join-channel mechanism does not change §5.9's channel-relative `in`/`out` reading. §5.1.1 gained a new participant-count guard (originally numbered step 6a) requiring the listened call's confbridge to have exactly 2 parties before proceeding. **Round 9 found four defects in that first pass, all fixed in this revision:** (1) BLOCKING — the guard's one-shot form fails closed on a perfectly normal call, since `Call.ConfbridgeID`/`ChannelCallIDs` only reach "2 parties" after the agent *answers*, not when `ensureListen` may first run (e.g. at screen-pop/ring time); fixed by turning it into a bounded, metered retry (renumbered as step 7, §5.1.1). (2) HIGH — the "A-leg is structural" claim was over-stated (citing only `case_create`/`ai_talk` broadly); narrowed to the specific system-generated flows that can't carry it, with `actionHandleCall`/the agent-dial RPC named as the (out-of-scope) escape hatches, and a stronger, independent invariant added (`in == Case.Peer`, guaranteed CRM-eligible by `case_create`'s own `isCRMEligiblePeer` check). (3) HIGH — the declared "click-to-call inversion" residual risk is very likely impossible given that same `isCRMEligiblePeer` check (agent/extension/SIP peers can't produce a Case at all); reframed in §5.9/§11 as the narrower "staff calling in as a CRM-eligible peer" vector. (4) HIGH — the guard was undocumented as start-time-only; §5.9/§6/§11 now say plainly it does not catch a 3rd party joining mid-session. Mechanical fixes: corrected stale `§5.2.3`/`step 6` cross-references (the guard is step 7, not 6a), added `§6` error-table rows, `§5.12`/`§5.13` config and metric entries, `§7` test coverage, and `§2`/`§3`/`§8` scope/rollout notes for the new retry and the narrowed listen-eligibility scope — none of which existed after the first pass. |
+| 12 | 2026-09-04 | **Fixes review round 10's findings against rev 11's round-9 fix itself — see §10.8 for the full matrix.** Round 10 confirmed BLOCKING-1/HIGH-1/HIGH-2/HIGH-3/MEDIUM-1/MEDIUM-2/MEDIUM-3/LOW-2/LOW-3 from round 9 were genuinely and honestly fixed, but found one new HIGH defect introduced by the BLOCKING-1 fix itself, plus 3 MEDIUM/4 LOW accuracy problems. **HIGH-A**: step 7's "give up on `len >= 3` once the call is `progressing`" fast-fail used `call.Status` (the *listened leg's own* answer state) as a proxy for "has the extra party lingered," but the listened leg is `progressing` for this design's entire target window (queue-wait + agent-ring), so the fast-fail was in practice unconditional the instant any 3rd party appeared — including during a documented, legitimate transient state (`connect` with `early_media: true` and multiple destinations bridges several ringing legs before the losing ones hang up, `bin-call-manager/pkg/confbridgehandler/joined.go:87-97` explicitly anticipates this). Fixed by dropping the fast-fail entirely: the guard now keeps polling on any non-2 count for the full wait budget, with no attempt to distinguish "still converging" from "stably wrong" (removing the now-meaningless `skipped_confbridge_invalid_topology` label). **MEDIUM-A**: the diagnosis of BLOCKING-1 itself misattributed the mechanism — `Call.ConfbridgeID` is set at *each leg's own* join, not only the B-leg's; what stays at 1 through the wait is the party *count*, not `ConfbridgeID`'s nil-ness — corrected. **MEDIUM-B**: the retry's wait budget was claimed to be "well inside the goroutine's own outer timeout," a value the document never actually set (and the two cited precedents are unbounded or unrelated); added an explicit `aicall_listen_ensure_goroutine_timeout_seconds` config (§5.12, §11 item 13). **MEDIUM-C**: §0/status undercounted round 9 as "2 HIGH" against its own 3-item enumeration; corrected. **LOW-A/B/C/D**: an unsound "len==0 impossible" aside (resolved as a byproduct of the HIGH-A rewrite), a "§7 gains item 1a" claim in §10.7 that itself used the broken list-marker pattern LOW-3 flagged (corrected to describe the actual sub-paragraph), an inverted-reading §8 sentence about the flag gate, and an over-attribution in §11 item 1's pointer to items 11/12 — all corrected in place. |
+| 13 | 2026-09-04 | **Fixes review round 11's findings — APPROVE, 0 BLOCKING/HIGH, 1 MEDIUM + 6 LOW — see §10.9 for the full matrix.** Round 11 confirmed round 10's HIGH-A/MEDIUM-A/MEDIUM-B/MEDIUM-C/LOW-A/B/C/D were genuinely and completely fixed, and found no new structural defect — only accuracy items left over from round 10's own fix landing in one place without a full sweep. **MEDIUM-1**: §2 Goal 1 still said a 3+-party confbridge is "out of scope entirely," which was true before round 10's HIGH-A fix but not after — a *transiently* 3+ confbridge (the early-media scenario) now resolves via the same retry and has its own §7 regression test; only a *stably* non-2-party call is out of scope. Corrected. **LOW-1**: the status line's own round number was stale relative to the fix it was describing; corrected, and restated as "N of 2 consecutive approvals" to make the loop's remaining condition explicit. **LOW-2**: a stray blank line between rev 10's and rev 11's rows made this table split into two tables under GFM, silently breaking rendering of the two most load-bearing rows in this section; removed. **LOW-3**: §5.1.1's intro still cited `tool.go:191-199` as a "`context.Background()` + timeout" precedent after step 7/§5.12 had already disclaimed it as unbounded; corrected at the source. **LOW-4**: §5.2.4 named the `tm_update`-bypass as covering "this one write path" while concluding "start or stop," and separately still carried a "negligible" timing rationale for the start-write path that the bounded retry (rev 11/12) makes false — a start write can now land 30s+ after panel open, squarely in a window where `Send`'s 3s cooldown could reject a real agent question if an implementer trusted the stale rationale instead of the bypass. Restated plainly: both writes use the bypass, the timing rationale is dropped. **LOW-5**: credited `AddChannelCallID` alone with setting `Call.ConfbridgeID`; named the actual sibling RPC (`CallV1CallUpdateConfbridgeID`) that performs that specific write. **LOW-6**: added an explicit note that repeated panel re-opens during a long ring now spawn multiple concurrent bounded retry loops (bounded, detached, and covered by §5.2.2's existing transcribe-reuse race handling — not a new failure mode, but previously undocumented and worth stating so `skipped_confbridge_not_ready`'s rate isn't misread without it). |
+| 14 | 2026-09-04 | **Fixes review round 12's findings — APPROVE, the second consecutive approval; the review loop concludes — see §10.10 for the full matrix.** All four items are non-blocking accuracy polish, none changing a design decision. **MEDIUM-1**: rev 10's rebase sweep (row 10 above) was explicitly scoped to `bin-ai-manager` and never re-checked `bin-transcribe-manager/pkg/transcribehandler/start.go`, which the same merge (`NOJIRA-Allow-caller-specified-transcribe-id`) shifted by ~46-52 lines; 7 citations across §5.1.1, §5.2.1, §5.2.2, §5.2.3, §5.11, and §6 were stale pointers to code that still exists and still does what was claimed — corrected to current line numbers. **MEDIUM-2**: §5.1.1 step 7's own bounded retry means the same AIcall can have two concurrent `ensureListen` goroutines (from repeated panel re-opens during one long ring, §11 item 13's LOW-6 note) resolve to the same transcribe id and race to write `listen_owns_transcribe` on the same row — a naive last-write-wins could leave the actual owner recorded as `owns=false`, which would make §5.7.2's stop path skip a session it should stop (bounded by the call-hangup backstop, but avoidable). §5.2.4 now specifies `UpdateListenState` must OR a `true` into `owns`, never overwrite one with `false`. **LOW-1**: §2 Goal 1's own attribution said its wording was "corrected in rev 12," when the wording itself landed in rev 13 (the *mechanism* it describes was rev 12's); corrected to name rev 13. **LOW-2**: §5.12's `aicall_listen_ensure_goroutine_timeout_seconds` row said "new in rev 11," contradicting its own next clause ("added after review round 10 finding MEDIUM-B") since round 10 postdates rev 11 — the config was actually introduced in rev 12; corrected. |
+| 15 | 2026-09-04 | **Substantive rev, opens a new review sub-loop (round 13+) — CEO/CTO-directed architectural change, reached through a `superpowers:brainstorming`-skill dialogue, not an independent review round.** Two changes: (1) **the trigger becomes an explicit public API, `POST /v1/aicalls/{id}/listen`, replacing rev 1-14's implicit `Start`-hook design** (§5.1, rewritten). Rationale (CEO/CTO's own, confirmed in dialogue): bundling "start listening" as a side effect of "create/reuse the Q&A AIcall" conflates two independent concerns that should be independently callable and observable at the API layer — not a correctness fix, a separation-of-concerns one. `ensureListen` is split into `EnsureListenPrecheck` (steps 1-6, synchronous, runs inline in the new HTTP handler) and `ensureListenAsync` (steps 7-8, still a detached goroutine, unchanged in shape). The endpoint returns immediately after the synchronous prechecks — it does not block for step 7's up-to-45s confbridge wait — matching the API's stated purpose (no status-visibility requirement was raised in the dialogue; see §11 item 14 if that changes). Follows the existing `POST /v1/aicalls/{id}/terminate` action-endpoint idiom exactly (verified against source, not assumed — `main.go:348-351`, `ai_aicalls.go:113-131`, `servicehandler/aicall.go:250-270`), so this is a new instance of an established pattern, not a new one. `Start`'s three-success-return problem (§5.1's original subject, rev 1-14) needs no fix under rev 15, since `Start` no longer triggers listening at all. (2) **A real event-ordering gap the same dialogue surfaced is closed**: §5.2.2's transcribe-creation path used to register this AIcall's Redis resolver-set membership *after* `TranscribeV1TranscribeStart` succeeded, leaving a short window in which the freshly-created transcribe's own earliest events would be silently dropped as `dropped_unknown` — closed by pre-generating the transcribe id, registering it in Redis first, then passing that id to `TranscribeV1TranscribeStart` via the caller-specified-id capability (adopted for this ordering purpose only — the dynamic-RabbitMQ-binding purpose that capability was built for, and that §3 already rejected, is explicitly unaffected). §5.2.4, §5.8, §5.10.1a (new), §6, §7, §9, and §11 (items 14-15, new) updated accordingly. Neither change touches §5.2-§5.9's Layer 1/2 architecture, §5.4-§5.7's turn/tool/lifecycle mechanisms, or §5.9's speaker-mapping conclusions — those are unaffected and not re-reviewed by this revision's own review round. |
+| 16 | 2026-09-04 | **Fixes review round 13's findings against rev 15 — REQUEST_CHANGES, 1 BLOCKING + 3 HIGH + 4 MEDIUM + 3 LOW — see §10.11 for the full matrix.** Round 13 confirmed rev 15's core motivation was sound (the event-ordering gap is real, the caller-specified-id mechanism works exactly as documented, adopting it doesn't quietly adopt dynamic RabbitMQ binding too) but found rev 15's own two changes each introduced a new defect, plus citation drift. **BLOCKING-1**: the endpoint was designed at the top-level `POST /v1/aicalls/{id}/listen`, mirroring `terminate` — but `terminate` is gated on Admin-console permissions (`PermissionCustomerAdmin`/`PermissionCustomerManager`), while the panel's own existing `Start` call is on the Agent-facing `/service_agents/*` surface (`PermissionAll`) per `bin-api-manager/docs/auth.md`'s explicit rule that Agent frontends must never call the top-level path. An ordinary agent in square-talk would have been denied. Moved to `POST /service_agents/aicalls/{id}/listen`, mirroring the existing `POST /service_agents/contact_addresses/:id/claim` precedent instead. **HIGH-1**: the `EnsureListenPrecheck`/`ensureListenAsync` split lost `kase`/`callID`/`call` across the function boundary (only a bare `bool` crossed it), forcing the async stage to silently re-fetch them — a duplicate RPC pair and a re-derived tenant boundary. **HIGH-2**: `ensureListenAsync` was specified lowercase/unexported, unreachable from `pkg/listenhandler` and unmockable on the `AIcallHandler` interface, making §7's own test items for it unimplementable. Both fixed together by collapsing into one exported `ProcessListen`, closing over `checkListenEligible`'s already-resolved values directly for `runListenStart` — also resolving **MEDIUM-4** (this now matches `ProcessTerminate`'s one-call shape exactly, where rev 15 had put orchestration logic in `listenhandler` instead). **HIGH-3**: rev 15's ordering fix pre-registered only the Redis `SADD`, leaving §5.2.4's DB write exactly where it was (after `TranscribeV1TranscribeStart`) — reopening a *different*, worse race: an early `transcript_created` event could resolve through the now-registered set before the DB write lands, fail `RunListenTurn`'s precondition, and trigger `stopListening`/`clearListenState`, deleting the very state rev 15's own fix had just created and killing the session for the whole call. Fixed by moving the DB write earlier too — both writes now happen together, speculatively, before `TranscribeV1TranscribeStart`, with an explicit `rollbackListenState` undo path on failure. **MEDIUM-3**: that undo path, as first drafted for HIGH-3's fix, treated every `TranscribeV1TranscribeStart` error identically, silently dropping §6's already-documented `TRANSCRIBE_ALREADY_PROGRESSING` reuse-on-conflict behaviour — restored as an explicit discriminated branch. **MEDIUM-2**: rev 15's public, arbitrarily-callable endpoint removed the implicit "just created/reused, therefore live" guarantee `Start`'s old hook relied on; a terminated/deleted AIcall could still reach step 7 and spawn a billed STT session. Step 2 (renamed "AIcall gate") now also requires `c.Status == progressing && c.TMDelete == nil`. **MEDIUM-1**: the precheck's own worst-case sequential RPC latency (~9s across three non-cache-first calls) exceeded `AIV1AIcallListen`'s inherited 3s default RPC timeout; given an explicit 10s timeout instead, following the same per-call-override pattern `TranscribeV1TranscribeStart` already uses. **LOW-1/LOW-2/LOW-3**: a sweep of now-stale bare `ensureListen` references in current-state prose (not the historical §0/§10.x rows, left as an accurate record per this document's own convention); three drifted citations (`ai_aicalls.go`, `servicehandler/aicall.go`, `transcribehandler/start.go`) corrected to their actual current lines; a new open item (§11 item 16) recording that rev 15/16's new failure branches still need explicit metric labels rather than folding silently into existing buckets. |
+| 17 | 2026-09-04 | **Fixes review round 14's findings against rev 16 — REQUEST_CHANGES, 0 BLOCKING + 2 HIGH + 3 MEDIUM + 5 LOW — see §10.12 for the full matrix.** Round 14 independently re-verified every one of round 13's fixes against current source (not §10.11's own description) and confirmed all genuinely correct — BLOCKING-1's permission-surface fix in particular checked out line-for-line, and the reviewer traced the full round-trip proving the `TRANSCRIBE_ALREADY_PROGRESSING` discrimination is achievable (though rev 16's own helper for it didn't exist, MEDIUM-1 below). What round 14 found instead was two new defects created by rev 16's own HIGH-3 fix, both arising from a premise rev 16 carried forward without re-checking: that concurrent `runListenStart` goroutines for the *same* AIcall (already documented in §5.1.1's own LOW-6 note as an expected consequence of the bounded retry) would still resolve to the *same* transcribe id, as they did before rev 16 moved the write earlier. They no longer do — each goroutine now mints its own speculative id before either writes anything. **HIGH-1**: `UpdateListenState`'s "OR a `true` in, never overwrite with `false`" `owns`-merge rule (rev 14) was unconditional on transcribe id — so writing `owns=false` against a *different* id (the create-then-fall-back-to-reuse branch) could incorrectly carry forward a stale `owns=true` from an abandoned speculative write, making this AIcall believe it owns a session it does not, which §5.7.2's stop path would then wrongly stop. Fixed by scoping the OR-merge to same-transcribe-id writes only; a differing-id write sets `owns` directly, no carry-over. **HIGH-2**: two concurrent goroutines for the same AIcall, each pre-writing against its own freshly-generated id, can have the second `SREM` the first's already-live session out of the resolver set (rev-4's stale-id-replacement logic, applied incorrectly to a session that was never actually stale), or have a later rollback from the second goroutine delete DB/Redis state belonging to the first's live, billed session. Fixed by wrapping the whole reuse-check-through-write sequence in a new per-AIcall `SET NX EX` lock (`ai:listen:startlock:<aicall_id>`, new config `aicall_listen_start_lock_ttl_seconds`), reversing an earlier "considered and rejected" decision whose reasoning (§5.2.2's cross-AIcall dedup guard already prevents the worse outcome) covered only cross-AIcall races, not this same-AIcall one rev 16's write-ordering change newly exposed. **MEDIUM-1**: rev 16's `cerrors.IsReason` helper does not exist anywhere in this codebase; replaced with the actual established `errors.As(err, &ve) && ve.Reason == "..."` pattern, verified end-to-end against transcribe-manager's actual error construction and ai-manager's actual error-recovery path. **MEDIUM-2**: BLOCKING-1's endpoint-path sweep missed four current-state mentions of the old top-level path (§7 item 20, §8 step 4, §5.10.2 ×2) — corrected. **MEDIUM-3**: the 10s RPC timeout's stated justification ("none of the three RPCs are cache-first") was itself wrong for `CallV1CallGet`, which is cache-first — restated on the timeout-per-hop reasoning that actually holds regardless of caching. **LOW-1 through LOW-5**: a `checkListenEligible` signature mismatch between §5.1's snippet and §5.1.1's prose; two citation slips introduced by the BLOCKING-1 fix itself (`serviceagent_transcribe.go` line range, and using `AIV1AIcallGet` directly instead of the mandated two-level `aicallGet` helper); a handful of `ensureListen` references the rev-16 sweep missed in truly current-state (non-historical) prose; a redundant-but-harmless SREM now explained rather than left implicit; and two stale internal cross-references (§11 item numbering, §5.8-vs-§9 file placement) — all corrected. |
+| 18 | 2026-09-04 | **Fixes review round 15's findings against rev 17 — REQUEST_CHANGES, 0 BLOCKING + 1 HIGH + 3 MEDIUM + 7 LOW — see §10.13 for the full matrix.** Round 15 confirmed rev 17's core diagnosis and its `owns`-merge rule were both correct, and independently re-verified round 14's other four findings as genuinely fixed (re-tracing the full `TRANSCRIBE_ALREADY_PROGRESSING` error round-trip end to end). What it found was that rev 17's own new lock — the mechanism meant to *close* round 14's HIGH-2 — was itself under-specified in two ways that could reopen the exact race it exists to prevent. **HIGH-1**: the lock's TTL (`15`s) was sized against only `TranscribeV1TranscribeStart`'s 5000ms timeout, but the lock also wraps up to two `TranscribeV1TranscribeList` calls, whose RPC client hardcodes a **30000ms** timeout not exposed to the caller — nominally summing to 65s, comfortably exceeding 15s. Separately, the lock's release (`h.cache.Del`, unconditional) and acquisition (a constant value) meant one goroutine's release could delete a *different* goroutine's still-valid lock if the first's TTL had already lapsed — reopening round 14's HIGH-2 outright. Fixed by re-deriving the TTL from the goroutine's own outer timeout instead of the RPC clients' internal ones (no call inside the lock can outlive the `ctx` it runs under, regardless of what its own timeout constant claims, so a TTL that exceeds the outer `AIcallListenEnsureGoroutineTimeoutSeconds` — default raised to `60`, strictly above the `45` default — can never expire under genuinely ongoing work), and by giving the lock a per-goroutine ownership token released only via an atomic Redis `EVAL` compare-and-delete (`ListenStartLockRelease`, new cache primitive), not a bare `Del`. **MEDIUM-1**: §5.2.4's own description of the bug HIGH-1 (round 14) fixed stated the consequence backwards — a stale carried-forward `owns=true` makes §5.7.2's stop path **incorrectly stop** a session this AIcall doesn't own (`!owns` evaluates false, so the "never touch it" branch is skipped), not "correctly skip stopping it" as an earlier draft said; corrected, and §10.11's own matrix (which had it right) is now the two sections agree with. **MEDIUM-2**: the two source citations offered as evidence for round 14 MEDIUM-1's fix (`disabled.go:24-28`, `bin-direct-manager/.../main.go:104-112`) don't actually contain the `errors.As`+`Reason` pattern they were cited for — neither has an `errors.As` call performing a `Reason` comparison at all; repointed to the two citations that do (`transcribehandler/stop.go:196-205`, and `bin-storage-manager/pkg/filehandler/signing.go:79` for the exact one-line-wrapper shape used here). **MEDIUM-3**: §5.2.4 overclaimed the lock's scope ("within one AIcall only one write sequence is ever in flight") — true only for the create-or-reuse sequence the lock actually wraps, not for teardown paths (`clearListenState`, `stopListenByCallID`), which do not take this lock and can still interleave with it; restated narrower, with the existing bounded-harm reasoning (§6, `isValidReference`) named as why this is an accepted precision gap rather than a new correctness issue. **LOW-1 through LOW-7**: the lock's own two outcomes (a losing goroutine, a `SetNX`/release Redis error) had no §6 row or §5.13 label — added, and folded into §11 item 16's existing open-item tracking; §5.1.1's own LOW-6 note still described the same-AIcall race as "already covered" by mechanisms round 14 found insufficient — repointed at the lock; §9 still said "seven flags" against §5.12's actual twelve, and omitted the lock's own two cache primitives from its `cachehandler` bullet and Redis-primitive enumeration — both corrected; a genuine Go-level bug in rev 17's own snippet (the reuse-path `List` call's error return was silently dropped, so an RPC failure would have read as "no existing session" and started a duplicate) — fixed, verified against the two other `List` call sites in the same snippet which already handled it correctly; §5.1's claim that the two-level `aicallGet` helper performs the ownership compare itself was imprecise (the helper only fetches; the compare is the caller's own, matching the sibling `ServiceAgentAIcallGet`'s actual division of labour) — restated; the "row's current value" the `owns`-merge rule and the rev-4 SREM rule both depend on was never stated as a fresh DB read (as opposed to the calling goroutine's own, potentially stale, in-hand `c`) — clarified, and confirmed the ambiguity was harmless for `owns` specifically (only the SREM half was ever exposed to it) given the lock already serializes this AIcall's own writers; and four spots this document's own MEDIUM-2 (round 14) sweep touched were attributed to "rev 16" when the text at each spot actually changed in rev 17 — corrected to name the revision that actually touched each one, the same attribution-precision class this document has now caught and fixed three separate times (rounds 12, 13, 15). |
+| 19 | 2026-09-04 | **Fixes review round 16's findings against rev 18 — REQUEST_CHANGES, 0 BLOCKING + 1 HIGH + 3 MEDIUM + 11 LOW — see §10.14 for the full matrix.** Round 16 independently re-verified round 15's TTL-derivation reasoning and both corrected citations/prose against actual source and confirmed them genuinely right, but found rev 18's own TTL fix had only been applied to §5.2.2's prose, not to §5.12's config-table row or §11 item 13, which still carried the withdrawn `15`s default and its "sum the RPC timeouts" rationale — the document simultaneously mandated two contradictory TTL constraints. Rev 18's ownership-token/compare-and-delete release fix, once actually applied consistently, also exposed a defect of its own: the release ran under the acquiring goroutine's own `ctx`, so the one case the new TTL-vs-timeout margin exists for (a goroutine reaching its own outer timeout while still legitimately working) was exactly the case where the release would fail, stranding the lock anyway. **HIGH-1**: §5.12's `aicall_listen_start_lock_ttl_seconds` row and §11 item 13 still said `15` with the old rationale, contradicting §5.2.2's `60`/exceed-the-outer-timeout rule. Fixed by actually updating both to `60` with §5.2.2's derivation. **MEDIUM-1**: §5.2.2's own prose named `newTranscribeID` as the lock's ownership token, contradicting its own code block four lines later, which correctly mints a separate `lockToken`; corrected to match the code, and the prose now states plainly why the two identifiers must stay independent (`newTranscribeID` isn't minted until after lock acquisition, and isn't minted at all on the reuse path). **MEDIUM-2**: the deferred release ran under `ctx`, so a goroutine reaching its own outer timeout — cancelling `ctx` — would have its release call fail immediately, stranding the lock for the full TTL in exactly the scenario the TTL-vs-timeout margin was supposed to keep working; fixed by detaching the release's context from `ctx`'s own cancellation (`context.WithoutCancel`, precedented in this monorepo at `bin-schedule-manager/pkg/dispatchhandler/manual.go:102`) with its own short timeout (`aicall_listen_start_lock_release_timeout_seconds`, new config, proposed default `3`), and withdrawing the earlier, false "margin for the deferred release itself to run" justification. **MEDIUM-3**: raising the TTL strictly above the goroutine timeout means a genuinely crashed goroutine (pod loss — the release `defer` never runs at all, unaffected by MEDIUM-2's fix) now strands the lock for the full TTL rather than for less than the outer timeout as rev 17's original `15`s default implied; §7 item 2's own "a later goroutine can acquire it and proceed normally" test claim was stale against this and is corrected to the TTL-elapsed condition it now actually requires, with the trade-off (slower crash recovery, in exchange for the TTL never lapsing under legitimate work) stated explicitly in §5.12/§5.2.2 rather than left implicit. **LOW-1 through LOW-11**: §10.13's own LOW-6 "Where" column incorrectly named §5.10.1a (never touched by that sweep; correctly still "rev 16") and omitted §9 (the actual fifth site) — corrected; a broken doc-internal line citation (`` `:1013-1014` above ``) in §5.2.4's LOW-7 fix replaced with a named-subsection reference; §6's `skipped_start_locked` mention read as though §5.13 already carried that label, when §11 item 16 says the label is still an open decision — reworded to match; §0's own rev-18 row's "default raised to `60`" aside read as attached to the wrong config (the goroutine timeout, not the lock TTL) — left as the historical record per this document's convention, not rewritten, since the row is not factually wrong, only ambiguously worded; §5.8's file-list bullet still omitted the lock's two cache primitives that §9's parallel enumeration already carried — added; the lock's acquire/release API was asymmetric (a raw inline `SetNX` call paired with a named `Release` function, duplicating the key format in two places) — given a matched `ListenStartLockAcquire`/`ListenStartLockRelease` pair, key format built in exactly one place; and §9's "same primitive as the existing debounce lock" phrasing, read literally, implied §5.3.4's lock predates this whole feature rather than an earlier revision of this same still-unshipped design — reworded. Also fixed, closer to housekeeping: the illustrative `dupFilters` pseudo-block (§5.2.2) now actually binds the name the lock sequence references and includes its own error check, rather than showing the exact dropped-error shape round 15's LOW-4 had just fixed a few paragraphs later; the reuse-path `switch` statement's conflict-recovery `List` call renamed (`existingRetry`/`errListRetry`) so it no longer shadows the create path's own `existing`/`errList` names in a section whose most recent bug was about that exact pair; and a pre-existing (not rev-18) conflation of the confbridge-wait budget (`aicall_listen_confbridge_ready_max_wait_seconds`, `30`s) with the goroutine's own outer timeout (`45`s) in §5.1's response-timing prose, corrected to name the right config. §7 item 2 also gains direct regression coverage for the release's compare-and-delete no-op semantics and for the detached-context release itself — neither had a test of its own before this revision. |
+| 20 | 2026-09-04 | **Fixes review round 17's findings against rev 19 — REQUEST_CHANGES, 0 BLOCKING + 7 MEDIUM + 3 LOW + 5 non-blocking nitpicks — see §10.15 for the full matrix.** Round 17 independently re-verified all six of round 16's own findings (the TTL derivation, the `context.WithoutCancel` precedent and this monorepo's Go version, the token-naming fix, and the corrected §7 test claim) and confirmed every one genuinely fixed. What it found instead was that rev 19's own sweep, while fixing round 16's specific findings, left several sections it touched internally inconsistent with each other or with sections just outside its own edit radius — the same "fixed the cited defect, broke something adjacent" pattern this loop has now shown five rounds running. **B-1 (MEDIUM)**: the Status line and §0 row 19 itself undercounted round 16 as "3 MEDIUM" against §10.14's own 4-row enumeration. Fixed on the Status line (continuously-updated current-state summary, not a frozen historical row); row 19's own text is left alone, per this document's own distinction between factually-wrong text (corrected) and merely historical text (not rewritten) — the miscount is noted on the Status line instead. **B-2 (MEDIUM)**: §10.14's LOW-7 claimed the illustrative `dupFilters` pseudo-block had been rewritten "with its own error check," but it still declared `err`/`existing` from a `List` call with no `if err != nil` — the same dropped-error shape it claimed to remove, just wearing an `existing, err :=` mask instead of `existing :=`. Fixed by dropping the call from the illustrative block entirely — it now only binds the filter map, with both real call sites (each with their own, already-correct error handling) referenced by name. **B-3 (MEDIUM)**: rev 19's own LOW-10 fix introduced a new brittle doc-internal line citation ("line-990") in the same breath as replacing a different one (LOW-2) — and it was already off by one. Replaced with a description naming the create-path call, not a line number. **B-4 (MEDIUM)**: §5.8's file-list bullet, rewritten in rev 19 to add the lock's two primitives, ended up claiming all four names (including `rollbackListenState`, an `aicallHandler`-level helper that issues an `AIcallUpdate`, not a cache primitive) lived in `pkg/cachehandler` — contradicting §9's placement of `rollbackListenState` in `listen_trigger.go`, and §9 itself still omitted `ListenTranscribeAIcallRemove` from its own `cachehandler` enumeration. Both sections corrected to agree: `rollbackListenState` stays with the trigger logic in `listen_trigger.go`; `ListenTranscribeAIcallRemove`/`ListenStartLockAcquire`/`ListenStartLockRelease` are the three cache primitives, listed in both §5.8 and §9. **B-5 (MEDIUM)**: §9's flag count was left at "twelve" the moment rev 19 added a thirteenth flag (`aicall_listen_start_lock_release_timeout_seconds`) without updating this count — corrected to "thirteen." **B-6 (MEDIUM)**: §6's lock-error row and §7 item 2's matching test both described `ListenStartLockAcquire`/`ListenStartLockRelease` errors identically ("no transcribe is started," "metered `failed`," attributed to `checkListenEligible`) — which cannot hold for the deferred `Release` call, since it runs *after* `TranscribeV1TranscribeStart` may already have succeeded, its own error is discarded (`_ =`) by design, and the lock lives in `runListenStart` (§5.2.2, step 8), never in `checkListenEligible` (steps 1-6). Split into two rows/two test cases: an acquire-error path (still fail-closed, still metered `failed`, zero `TranscribeV1TranscribeStart` calls) and a release-error path (best-effort, never metered, the lock falls back to its own TTL if the release genuinely didn't happen). **B-7 (MEDIUM)**: an acquire call that succeeds server-side (the `SET NX` lands) but errors client-side (timeout, connection reset mid-response) registers no `defer`, so nothing would ever release that lock — a stranding path the design's own "reserved for an actual crash" claim didn't cover. Fixed by attempting a best-effort release with the same token on the acquire-error path itself, before returning the error, collapsing the residual (a second failure on that same attempt) into the already-accepted crash case rather than leaving it as a distinct, undocumented one. **LOW-1/LOW-2/LOW-3**: `tr` was declared from `TranscribeV1TranscribeStart`'s return and never used (real Go would not compile this) — replaced with `_`; `skipped_start_locked` was asserted as settled in two places in §7 item 2's own text after §6 had already been reworded (rev 19, round 16 LOW-3) to call it "proposed, not yet added to §5.13" — both §7 mentions reworded to match; and the "already uses"/"already established" wording split rev 19 introduced between §5.2.2 and §9 for the debounce-lock cross-reference is now consistent in both places. Five non-blocking nitpicks (a scoped, unambiguous-in-context "already uses" phrasing since generalized anyway; a `45s`-attributed-to-step-7 imprecision distinct from LOW-11's already-fixed conflation; a defensible internal-route-path mention; and confirmation that the §0-row-freezing convention itself was applied correctly and consistently) recorded in §10.15, not separately fixed. |
+| 21 | 2026-09-04 | **Fixes review round 18's findings against rev 20 — REQUEST_CHANGES, 0 BLOCKING + 2 MEDIUM + 6 LOW — see §10.16 for the full matrix.** Round 18 independently re-derived all ten of round 17's findings from current text (not §10.15's description) and re-verified the load-bearing citations a second time — `context.WithoutCancel` at `bin-schedule-manager/pkg/dispatchhandler/manual.go:102`, this monorepo's `go 1.27.1`, `TranscribeV1TranscribeList`'s hardcoded `30000`ms client timeout, and `TranscribeV1TranscribeStart`'s 10-parameter signature — confirming all still accurate, and further confirmed B-7's new best-effort-release code is valid Go with no leaked `cancel()`. Nine of round 17's ten findings were confirmed genuinely and completely fixed with no reservations. **MEDIUM-1**: §5.2.2's own code comment, explaining why `TranscribeV1TranscribeStart`'s return is discarded, cited "round 17 finding B-9" — a finding id that does not exist anywhere in this document's numbering (B-1 through B-7 is round 17's actual range); the finding that actually motivated this specific edit is LOW-1. Corrected. **MEDIUM-2**: more substantively, the `dupFilters` illustrative block B-2's fix (rev 20) rewrote to remove its dropped-error bug still would not compile — it declared `map[string]any` with bare string keys, but `TranscribeV1TranscribeList`'s actual signature (`bin-common-handler/pkg/requesthandler/transcribe_transcribes.go:40`) takes `filters map[tmtranscribe.Field]any`, a distinct named type Go does not implicitly convert between; the block also mixed an untyped string-keyed map with an already-typed value (`tmtranscribe.StatusProgressing`). Fixed by keying the map with the actual `tmtranscribe.Field` constants (`FieldCustomerID`, `FieldReferenceID`, `FieldStatus`, `FieldDeleted`, all verified present at `bin-transcribe-manager/models/transcribe/field.go`). **LOW-1 through LOW-6**: §7 item 2's new deferred-release test case attributed itself to "round 17 finding B-6/MEDIUM-4," reading as if MEDIUM-4 were also round 17's when it is round 16's — reworded to "B-6, extending round 16's MEDIUM-4 coverage"; both the §5.2.2 "accepted residual" paragraph and §5.12's lock-TTL row named crash-only ("pod loss") stranding as the sole cause of a full-TTL strand, without also naming B-7's own new residual (an ambiguous acquire error whose best-effort release also fails) — both now name it explicitly; §7 item 2's happy-path assertion and §5.2.4's `UpdateListenState` description both still referenced `tr.ID`, a variable that either no longer exists (§7, after LOW-1's rev-20 rename) or was never in scope there in the first place (§5.2.4, whose own parameter is `transcribeID`) — both corrected; the Redis resolver set's `12h` membership TTL was the only listen timing constant in this design with no §5.12 config row and no stated reason why — a sentence added stating this is deliberate (a safety-margin bound, not a tuning knob), not an oversight, so it is not promoted to a fourteenth flag; and §10.15's own B-1 row argued from a slightly different, self-undermining framing ("factually-wrong text (corrected) … merely historical text (not rewritten)" — row 19's miscount *is* factually wrong, which argues for correcting it, not leaving it) than the actually-operative rule its own trailing clause stated correctly (a still-current summary line is corrected; a frozen historical row is not) — **left as the historical record of round 17's own review, per this document's now well-established convention, rather than rewritten; noted here instead**, the same treatment §0 row 18's LOW-4 (round 16) and row 19's B-1 (round 17) both received before it. |
+| 22 | 2026-09-04 | **Fixes review round 19's findings against rev 21 — APPROVE (first of 2 consecutive needed), 0 BLOCKING/HIGH/MEDIUM + 5 LOW — see §10.17 for the full matrix.** Round 19 independently re-derived all eight of round 18's findings from current text, re-verified every load-bearing citation a second time, and additionally performed a full line-by-line compile-read of §5.2.2's entire lock snippet (not just the two lines MEDIUM-2's fix touched) — every variable declaration, every RPC call's argument count and types, against the actual signatures in `bin-common-handler`/`bin-transcribe-manager` — and found the snippet clean: no unused variables, no dropped errors, no type mismatches. This is the sub-loop's first APPROVE since rev 15 reopened it. Round 19 also independently confirmed §5.8/§9's file placement and §9's "thirteen" flag count (a fresh count of §5.12) were undisturbed by rev 21, and that §10.15's B-1 row was correctly left unrewritten. Five LOW/nitpick items, none blocking, fixed here anyway to maximize round 20's odds of the second consecutive APPROVE this sub-loop needs before its 20-round cap: **LOW-1**: §5.2.2's own "accepted residual" paragraph, extended in rev 21 to name a second stranding cause, pointed readers "(above)" to text that is actually ~40 lines below — corrected to "(below)." **LOW-2**: a third `tr.ID` reference survived in §5.2.4's historical description of rev 2's original (since-replaced) key format, beyond the two rev-21 LOW-4 already fixed — corrected to `transcribeID`, matching the other two. **LOW-3**: §10.16's own LOW-6 row quoted a framing phrase and attributed it to "§10.15's own B-1 row," but that exact phrase is not there — it is verbatim in §0's row 20; corrected the attribution (row 20 itself, being a frozen historical row, is left unrewritten; only the matrix's mis-citation of *which* row carries the phrase is corrected). **LOW-4**: §10.15's own nitpick paragraph carried two doc-internal line citations that had already drifted stale by the time round 19 checked them — replaced with descriptive references, the same fix this exact anti-pattern has already received twice elsewhere in this document (round 16's LOW-2, round 17's B-3). **LOW-5**: two mentions of "the `List` bullet/call ... above" in §5.2.2 went stale the moment rev 20's B-2 fix removed the illustrative block's own `List` call, leaving nothing above either mention that still shows one — reworded to describe the reuse-check bullet and the `dupFilters` binding directly, without implying a `List` call sits where it no longer does. |
+| 23 | 2026-09-04 | **Fixes review round 20's two LOW nitpicks against rev 22 — APPROVE (second consecutive), 0 BLOCKING/HIGH/MEDIUM + 2 LOW + 3 non-blocking observations — see §10.17 (this row extends its scope; round 20 did not open a new §10.18, since it found nothing warranting a further review round).** Round 20 independently re-derived all five of round 19's findings from current text and performed a second full compile-read of §5.2.2's entire snippet against real `bin-common-handler`/`bin-transcribe-manager` source, confirming the sub-loop's second consecutive APPROVE — **closing the review sub-loop opened by rev 15** (rounds 13-20). It found rev 22's own LOW-5 fix (§5.2.2) had itself introduced an attribution slip: "not, since rev 21, shown as its own illustrative `List` call" — the `List` call was actually removed in **rev 20** (round 17 finding B-2), not rev 21 (rev 21 only re-keyed the map's type, round 18 finding MEDIUM-2); corrected, and the finding's origin (round 17 B-2) named explicitly. It also found rev 22's own LOW-3 fix (§10.16) had left a stale positional descriptor: "its own trailing clause states correctly" was accurate for §10.15's B-1 row (whose operative-rule statement is trailing) but not for §0's row 20 (the corrected referent), whose statement appears earlier in the same sentence, in a parenthetical, not a trailing clause; reworded to name the parenthetical precisely. Three further observations — a tension between §0 row 9's "matrices are never rewritten" framing and this loop's actual practice since rev 19 of correcting factually-wrong matrix rows in place, a self-referential "(§5.2.2 above)" citation, and a locally-inconsistent (but not convention-violating) `err`-vs-`errUpdate` naming choice inside one `if`-init — were recorded by round 20 as pre-existing, cosmetic, and explicitly not worth their own fix or a further review round; left as-is. No further review round was dispatched for this row: round 20's own verdict already closed the sub-loop, and both fixes here are the kind of trivial, non-substantive prose correction this document's own policy treats as ordinary editing rather than a new design change. |
 
 Every code reference below was re-verified against the worktree at rev 2 authoring time; file:line citations are load-bearing and were read, not assumed.
 
@@ -42,8 +55,19 @@ the agent before being asked.
 ## 2. Goals
 
 1. When an agent opens/resumes a Case whose linked call is still in
-   progress, InsightAI automatically starts listening to that call's live
-   transcript.
+   progress **and bridged 1:1 to exactly one other party** (the normal
+   agent-answers-the-call shape), InsightAI automatically starts listening
+   to that call's live transcript. **Scope narrowed in rev 11 (the retry
+   mechanism), the wording here corrected in rev 13, review round 11
+   finding MEDIUM-1** (§5.1.1 step 7): a Case's call that is still queued, still
+   ringing, or *transiently* in a 3+-party confbridge (e.g. an
+   early-media multi-destination `connect` before the losing legs hang
+   up) all resolve themselves via the same bounded retry once the call
+   settles to a normal 2-party bridge — round 10's own HIGH-A finding is
+   precisely that a fast-fail on 3+ was unsound and had to be removed. Only
+   a call that is *stably* not 2-party for the entire retry budget is out
+   of scope (§3); rev 11's first draft of this goal understated that
+   distinction before that fix existed.
 2. The **same** Insight AIcall the agent already chats with is the one that
    watches the call and speaks up — no second AI config, no second AIcall,
    no separate "watcher" session record.
@@ -68,7 +92,7 @@ the agent before being asked.
 | Rule-based / keyword-only condition detection | CPO explicitly directed LLM judgment over customer-defined prompt instead (2026-09-03 design discussion) | N/A — deliberately rejected for MVP |
 | Separate watcher AI / second AIcall session | CPO explicitly directed single-AI consolidation (2026-09-03 design discussion) | A demonstrated need to decouple watch-cadence from the agent-facing chat session (e.g. cost isolation) |
 | square-talk WebSocket push (replacing its 2s poll) | Existing poll cadence is adequate to surface a proactive message with acceptable latency; SQUARE-52 already tracks square-talk WebSocket parity as a separate concern | SQUARE-52 lands, or proactive-message latency is reported as a problem |
-| Multi-party (3+) speaker attribution | `transcript.Direction` is binary (`in`/`out`); conferences already only distinguish two "sides" (`call_media.rst`: "direction indicates speaker relative to conference"). Out of reach without a data-model change upstream in `bin-transcribe-manager` | A concrete multi-party Insight request |
+| Multi-party (3+) speaker attribution | `transcript.Direction` is binary (`in`/`out`); conferences already only distinguish two "sides" (`call_media.rst`: "direction indicates speaker relative to conference"). Out of reach without a data-model change upstream in `bin-transcribe-manager`. **Enforced at listen-start in rev 11** by §5.1.1 step 7's confbridge participant-count guard — a call that is not (or no longer, at start-check time) a stable 2-party bridge simply does not begin listening. That guard is start-time only, not a running invariant (§11 item 12) | A concrete multi-party Insight request |
 | Transcript content stored as `Message` rows (any role) | **Changed in rev 2.** Rev 1 proposed `role=user` with a speaker tag. That makes every spoken line a customer webhook delivery (`messagehandler/db.go:81` → `notifyhandler/publish.go:24-26`), a panel-visible bubble, and a consumer of the 100-row LLM replay window (`aicallhandler/start.go:620-661`) that would evict the system prompt itself. Transcript is now ephemeral Redis state (§5.3), never a row | A concrete need to persist/audit what the AI heard — which should then be a purpose-built table, not the Q&A message thread |
 | Per-turn LLM tool restriction (listen turns limited to `notify_agent` only) | `PipecatV1PipecatcallStart` takes no tool list — pipecat-manager resolves tools from the AI record via `toolhandler.GetByNames` (`bin-pipecat-manager/pkg/toolhandler/main.go:91-108`). Restricting per session means a new field on the pipecatcall start contract, in both Go and the Python runner | Telemetry shows listen turns burning cost on unnecessary read-only tool calls |
 | Billing Insight listening to the customer | The listen STT session runs under `cmcustomer.IDAIManagerListen` (§5.2.1), so it is not attributed to the customer's transcription usage. Whether Insight listening becomes a billed line item is a pricing decision, not an architecture one | A pricing decision to monetise Insight listening |
@@ -154,13 +178,16 @@ review's blocking items:
 
 ## 5. Design
 
-### 5.1 Trigger: where the listen-ensure hook goes
+### 5.1 Trigger: an explicit `POST /service_agents/aicalls/{id}/listen` API (rev 15 — replaces the `Start`-hook design; endpoint surface corrected in rev 16, review round 13 finding BLOCKING-1)
 
-Rev 1 placed the hook at "the `initiating → progressing` transition."
-That is wrong: `startReferenceTypeContactCase` has **three** success
-returns and only two of them transition status.
-
-Verified in `pkg/aicallhandler/start.go`:
+**Rev 1-14 hooked listening inside `Start` as an implicit side effect of
+creating or reusing the Q&A AIcall.** That design itself required solving
+a real problem: `startReferenceTypeContactCase` has **three** success
+returns and only two of them transition status, so a hook keyed on the
+`initiating → progressing` transition (rev 1's original placement) would
+never fire on the *common* path (every panel re-open reuses an
+already-active AIcall with no status write at all). Verified in
+`pkg/aicallhandler/start.go`:
 
 | Return | Line | Goes through `startContactCaseTurn` (which owns the `UpdateStatus(...Progressing)` at `start.go:542`)? |
 |---|---|---|
@@ -168,41 +195,293 @@ Verified in `pkg/aicallhandler/start.go`:
 | Existing row stuck at `Initiating` | `start.go:509` | yes |
 | **Reuse an already-active AIcall** | `start.go:512-513` | **no — returns `existing` with no status write at all** |
 
-The reuse path is the *common* path: it is what every panel re-open hits.
-A hook on the status transition would therefore essentially never fire in
-production.
+Rev 2-14's fix was to hook `Start` itself (the sole caller of
+`startReferenceTypeContactCase`, `start.go:168-199,190-191`) rather than
+the status transition, covering all three returns with one call.
 
-**Decision: hook the caller, not the callee.** `Start`
-(`start.go:168-199`) is the sole caller of
-`startReferenceTypeContactCase` (`start.go:190-191`). The
-`case aicall.ReferenceTypeContactCase:` branch becomes:
+**Rev 15 removes this hook entirely — the problem above no longer needs
+solving, because `Start` no longer triggers listening at all.** The
+CEO/CTO's own architectural review of this design (2026-09-04 design
+discussion) concluded that bundling "start listening" as a side effect of
+"create/reuse the Q&A AIcall" conflates two independent concerns: the
+caller has no way to observe whether listening was attempted or
+succeeded, no way to trigger one without the other, and — as this
+document's own revision history shows (§0, rev 11's confbridge guard,
+rev 12/13's fixes to it) — listening has accreted enough of its own
+failure modes and observability needs that treating it as a bare side
+effect of AIcall creation understates how independent a capability it
+actually is. The two capabilities are now independently callable and
+independently observable at the API layer, even though today only one
+caller (the panel-open flow, §5.10.1) ever exercises the second one right
+after the first.
+
+**The fix: a new, dedicated endpoint on the Agent-facing surface, not the
+top-level Admin one — corrected in rev 16 after review round 13's
+BLOCKING-1.** Rev 15's first draft put this at the top-level
+`POST /v1/aicalls/{id}/listen`, mirroring `terminate`
+(`pkg/listenhandler/main.go:348-351`). That was wrong: `AIcallTerminate`
+(`servicehandler/aicall.go:249-277` — line range corrected in rev 16,
+review round 13 finding LOW-2) gates on
+`amagent.PermissionCustomerAdmin|PermissionCustomerManager`
+(`aicall.go:258`), an **Admin-console** permission tier. The panel's own
+existing "Start" call — `ServiceAgentAIcallCreate`
+(`pkg/servicehandler/serviceagent_aicall.go`) — is on the **Agent**
+surface instead, gated only on `amagent.PermissionAll` via
+`h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionAll)`, the same
+shape `ServiceAgentTranscribeList` uses (`serviceagent_transcribe.go:27-29`
+for the `IsAgent()` check, `:45-48` for the permission check — corrected
+in rev 17, review round 14 finding LOW-2; an earlier draft cited `:41-44`,
+which is the unrelated `if token == "" { … }` block in between).
+`bin-api-manager/docs/auth.md:119`
+states this in the imperative, as a rule this design must not violate:
+"`square-talk` (and any other Agent-facing frontend) MUST call ONLY
+`/service_agents/*` paths — never the top-level `/<resource>` path
+directly, even if the top-level path's permission bitmask happens to
+allow Agent-level access," and `:124`: "Do NOT 'fix' a missing
+Agent-facing capability by relaxing the top-level endpoint's permission
+bitmask." Putting `listen` at the top-level path would have meant an
+ordinary agent in square-talk (holding neither admin nor manager
+permission) gets `ErrPermissionDenied` calling it — **listening would
+never start in the feature's actual primary use case** — and relaxing
+`terminate`'s own bitmask to fix that is explicitly the wrong move per
+`auth.md:124`.
+
+- **Route**: `POST /service_agents/aicalls/{id}/listen`
+  (`bin-ai-manager/pkg/listenhandler`), following the existing id-scoped
+  action-verb idiom already used on this exact surface —
+  `POST /service_agents/contact_addresses/:id/claim`
+  (`bin-openapi-manager/openapi/paths/service_agents/contact_addresses/id_claim.yaml`,
+  generated handler `PostServiceAgentsContactAddressesIdClaim`,
+  `gen.go:23354`) is the closest precedent: verb as the trailing path
+  segment, `POST`, no request body, same as every other action route
+  cited in this design. New `regV1AIcallsIDListen =
+  regexp.MustCompile("/v1/aicalls/" + regUUID + "/listen$")` and a
+  `processV1AIcallsIDListenPost` switch case in
+  `bin-ai-manager/pkg/listenhandler/main.go` — **the internal ai-manager
+  RPC surface itself stays at the plain `/v1/aicalls/{id}/listen` path**;
+  it is the *public, api-manager-facing* path that moves to
+  `/service_agents/aicalls/{id}/listen`. These are two different
+  services' routes with the same trailing segment, not one route
+  reachable two ways.
+- **RPC client**: `AIV1AIcallListen(ctx, aicallID uuid.UUID) (*amaicall.AIcall, error)`
+  in `bin-common-handler/pkg/requesthandler/ai_aicalls.go`, mirroring
+  `AIV1AIcallTerminate`'s shape (`ai_aicalls.go:110-127` — corrected in
+  rev 16, review round 13 finding LOW-2) — `POST` to
+  `/v1/aicalls/<id>/listen` with `ContentTypeNone` (no request body,
+  same as `terminate`). **Given a longer explicit timeout than
+  `requestTimeoutDefault` (3000ms,
+  `bin-common-handler/pkg/requesthandler/main.go:150`) — new in rev 16,
+  review round 13 finding MEDIUM-1, corrected in rev 17 (review round 14
+  finding MEDIUM-3)**: `ProcessListen` (below) runs up to three
+  **sequential**, cross-service RPCs (`TranscribeV1TranscribeGet`,
+  `ContactV1CaseGet`, `CallV1CallGet`), each already subject to its own
+  `requestTimeoutDefault`. (An earlier draft of this paragraph justified
+  the 10s figure by claiming none of the three is cache-first —
+  incorrect for `CallV1CallGet`, which *is* cache-first
+  `bin-call-manager/pkg/dbhandler/call.go:115-130`; the actual
+  `bin-call-manager/pkg/callhandler/db.go:171-185` this design cited only
+  shows the handler delegating to `dbhandler`, not bypassing its cache.
+  Withdrawn as the stated reason.) The real justification is simpler and
+  holds regardless of caching: **each hop can independently take up to
+  its own default timeout**, so three sequential RPC hops can add up to
+  roughly 3× a single hop's timeout worst-case — comfortably exceeding
+  `AIV1AIcallListen`'s own inherited 3s default if it used one, and
+  failing the *client's* request even if ai-manager's own precheck later
+  succeeds. `AIV1AIcallListen` passes an explicit `10000` (10s) timeout,
+  the same pattern
+  `TranscribeV1TranscribeStart` already uses for its own `5000`
+  (§5.2.2), rather than inheriting the default.
+- **Public exposure**: new
+  `bin-openapi-manager/openapi/paths/service_agents/aicalls/id_listen.yaml`
+  (mirroring `contact_addresses/id_claim.yaml`'s shape: no request body,
+  200 returns the existing `AIManagerAIcall`), regenerated into
+  `bin-api-manager/gens/openapi_server/gen.go`
+  (`router.POST(options.BaseURL+"/service_agents/aicalls/:id/listen",
+  wrapper.PostServiceAgentsAicallsIdListen)`, alongside the existing
+  `PostServiceAgentsAicalls` registration at `gen.go:23344`), wired
+  through a new handler in `bin-api-manager/server/service_agents_aicalls.go`
+  → `pkg/servicehandler/serviceagent_aicall.go`'s new
+  `ServiceAgentAIcallListen(ctx, a *auth.AuthIdentity, id uuid.UUID) (*amaicall.WebhookMessage, error)`,
+  which: checks `a.IsAgent()` (else `ErrAuthenticationRequired`, matching
+  `ServiceAgentTranscribeList`'s and `ServiceAgentAIcallList`'s own first
+  line); checks `h.hasPermission(ctx, a, a.CustomerID,
+  amagent.PermissionAll)` (else `ErrPermissionDenied`); fetches the
+  AIcall via the private two-level helper `h.aicallGet(ctx, id)`
+  (**corrected in rev 17, review round 14 finding LOW-2**, which found
+  the first draft calling `AIV1AIcallGet` directly — `serviceagent_aicall.go:112`
+  already wraps this exact fetch, and `bin-api-manager/CLAUDE.md`'s
+  two-level handler pattern expects it reused rather than re-inlined),
+  **then performs the ownership compare itself** (`tmp.CustomerID !=
+  a.CustomerID → ErrPermissionDenied`) — **restated precisely in rev 18,
+  review round 15 finding LOW-5**: `aicallGet` only fetches; the sibling
+  `ServiceAgentAIcallGet` (`serviceagent_aicall.go:117-120`) does the
+  compare itself, in the public method, not inside the helper, and
+  `ServiceAgentAIcallListen` follows that same division of labour, not
+  (as an earlier draft implied) a compare bundled into `aicallGet` —
+  then calls `h.reqHandler.AIV1AIcallListen(ctx, id)` and
+  `.ConvertWebhookMessage()`.
+  **A top-level Admin-console
+  `/v1/aicalls/{id}/listen` public route is deliberately not added** —
+  nothing in this design's scope needs an admin-console caller for this
+  action, and adding an unused surface is scope creep (YAGNI); add one on
+  its own ticket if a genuine admin-console use case appears.
+- **Caller**: square-admin and square-talk call this once, automatically,
+  when the Case Insight Assistant panel opens — right after the existing
+  `Start` call that creates/reuses the Q&A AIcall (§5.10.1), which is
+  itself already on this same `/service_agents/*` surface
+  (`ServiceAgentAIcallCreate`). This is the **same trigger timing** as
+  rev 1-14's hook: nothing about §5.1.1 step 7's confbridge-readiness
+  guard (which exists precisely because this can fire as early as ring
+  time) changes. Only the entry point moves from an implicit `Start` side
+  effect to an explicit second call.
+
+**Response shape and timing.** The endpoint returns the current
+`*amaicall.AIcall` immediately, having run only `ProcessListen`'s fast
+synchronous prechecks (§5.1.1 steps 1-6) — it does **not** block for step
+7's up-to-30s confbridge-readiness wait (`aicall_listen_confbridge_ready_max_wait_seconds`,
+§5.12 — distinct from the goroutine's own 45s outer timeout budget,
+**conflated here before review round 16 finding LOW-11**). Blocking an
+HTTP request even for that shorter window would be a bad pattern on its
+own merits, and the API's stated purpose
+here (separation of concerns, §5.1's rewrite above) does not require
+synchronous status visibility — that remains a deliberate scope cut
+(§3), not an oversight; see §11 item 14 if that changes. If the fast
+prechecks pass, the confbridge-wait-and-start stage continues in the same
+detached, best-effort goroutine as before; if they fail (flag off,
+non-Insight AI, no live Case-linked call, etc.), nothing further runs and
+the response simply reflects the AIcall's unchanged state. The caller has
+no way to observe from this response alone whether listening ultimately
+started.
+
+**Interface shape — a single exported method, not a two-function split —
+corrected in rev 16 after review round 13's HIGH-1/HIGH-2/MEDIUM-4.**
+Rev 15's first draft split `ensureListen(ctx, a, c)` into
+`EnsureListenPrecheck(ctx, c) (proceed bool, err error)` (steps 1-6) and
+a separately-named `ensureListenAsync(c)` (steps 7-8), on the theory that
+the new HTTP handler only starts with an AIcall id, not an
+already-resolved `*ai.AI`. Two defects followed: (a) steps 4-6 resolve
+`kase`, `callID`, and `call` — locals steps 7-8 also need (step 7 polls
+`call.ConfbridgeID`; §5.2.2 passes `call.ActiveflowID` and `callID` to
+`TranscribeV1TranscribeStart`) — and a two-function split with only a
+bare `bool` crossing the boundary discards all of them, forcing
+`ensureListenAsync` to silently re-fetch the Case and the call before it
+could even start step 7 (a duplicate RPC pair and a re-derived tenant
+boundary, contradicting §5.1.1 step 4's own description of that check as
+"the tenant boundary for the whole feature"); (b) `ensureListenAsync`
+was specified lowercase — unexported, unreachable from `pkg/listenhandler`
+and unmockable on the `AIcallHandler` interface
+(`pkg/aicallhandler/main.go:31-71`, where every method is exported, as
+Go requires for cross-package interface satisfaction) — making §7's own
+test items for it unimplementable as written. The fix collapses both
+into **one exported method**, matching `terminate`'s own one-call shape
+exactly (`ProcessTerminate`, called once by
+`processV1AIcallsIDTerminatePost` — `v1_aicalls.go:191-227`):
 
 ```go
-case aicall.ReferenceTypeContactCase:
-    res, err := h.startReferenceTypeContactCase(ctx, c, assistanceType, assistanceID, activeflowID, referenceID, teamParameter, currentMemberID)
+// ProcessListen is the sole entry point for listen's trigger, called
+// once by processV1AIcallsIDListenPost — the same one-call shape as
+// ProcessTerminate. It resolves the AIcall and AI record, runs §5.1.1
+// steps 1-6 inline (synchronously — never anything slower than the
+// three RPCs the caller's own longer timeout above already budgets
+// for), and — only if every step passes — spawns a detached goroutine
+// for steps 7-8, closing over the already-resolved a/c/kase/callID/call
+// values directly. No value crosses a function boundary by itself, so
+// there is nothing to re-fetch and nothing to silently lose.
+func (h *aicallHandler) ProcessListen(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error) {
+    c, err := h.Get(ctx, id) // cache-first, same as every other single-AIcall route
     if err != nil {
         return nil, err
     }
-    h.ensureListenAsync(c, res) // best-effort, non-blocking; §5.1.1
-    return res, nil
+
+    a, kase, callID, call, proceed, err := h.checkListenEligible(ctx, c) // §5.1.1 steps 1-6, inline
+    if err != nil {
+        return nil, err
+    }
+    if proceed {
+        go func() {
+            ctx, cancel := context.WithTimeout(context.Background(), listenEnsureGoroutineTimeout)
+            defer cancel()
+            h.runListenStart(ctx, a, c, kase, callID, call) // §5.1.1 steps 7-8
+        }()
+    }
+    return c, nil // unchanged by steps 1-6 themselves; steps 7-8 write asynchronously
+}
 ```
 
-One hook, all three success returns covered, no duplication, no coupling
-to the status machine.
+`processV1AIcallsIDListenPost` itself is thin: parse `id`, call
+`h.aicallHandler.ProcessListen(ctx, id)`, marshal the result, return 200
+— matching `processV1AIcallsIDTerminatePost`'s shape exactly (one
+business-handler call, no orchestration logic in `listenhandler`,
+resolving review round 13's MEDIUM-4).
 
-#### 5.1.1 `ensureListenAsync` / `ensureListen`
+`Start`'s own three success-return paths (`start.go:439/509/512-513` —
+the historical problem this section used to be about) need no fix at
+all under rev 15/16: `Start` calls neither `ProcessListen` nor any of its
+internal helpers any more. The new listenhandler route is the only
+caller.
 
-`ensureListenAsync` spawns a detached goroutine with its own
-`context.Background()` + timeout (the pattern already used at
-`tool.go:191-199` and `start.go:97-100`) so panel-open latency is
-unchanged and no listen failure can ever fail an AIcall start. It is
-fire-and-forget by design; §6 covers the failure modes.
+#### 5.1.1 `ProcessListen` — `checkListenEligible` (steps 1-6) and `runListenStart` (steps 7-8)
 
-`ensureListen(ctx, a *ai.AI, c *aicall.AIcall)` runs:
+**One exported entry point, `ProcessListen`, since rev 16 (§5.1, review
+round 13 findings HIGH-1/HIGH-2/MEDIUM-4) — steps 1-6 run synchronously
+before the HTTP response, steps 7-8 run in a detached goroutine closing
+directly over steps 1-6's own already-resolved values, same as every
+prior revision's underlying two-stage shape.** The step numbering and
+the logic within each step are otherwise unchanged from rev 1-14; only
+which function owns which steps, and who calls them, changed. (Rev 15's
+first draft split this into two separately-callable functions,
+`EnsureListenPrecheck`/`ensureListenAsync`, connected only by a bare
+`bool` — losing `kase`/`callID`/`call` across that boundary and forcing
+steps 7-8 to silently re-fetch them, plus specifying `ensureListenAsync`
+unexported and therefore unreachable from `pkg/listenhandler`. Rev 16
+collapses both into `ProcessListen`, per §5.1's own snippet.)
+
+`ProcessListen(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error)`
+fetches `c` (cache-first), then calls `checkListenEligible(ctx, c)`
+(§5.1's own snippet — **signature corrected in rev 17, review round 14
+finding LOW-1**, which found this prose and §5.1's code disagreeing on
+whether `a` is resolved by `ProcessListen` first or by
+`checkListenEligible` itself; `checkListenEligible` owns it, matching
+step 2's own resolution of `a`, and returns it alongside `kase`/`callID`/
+`call`) for steps 1-6 below — the caller only has `c`'s id from the URL
+path, not an already-resolved `*ai.AI` the way `Start`'s old hook had.
+Every step is a cache-first read or a single RPC — never the
+confbridge-readiness wait — which is what makes running all six inline
+before the HTTP response correct, not just convenient (§5.1's explicit
+longer RPC timeout is the budget for this).
+
+If `checkListenEligible` returns `proceed=true`, `ProcessListen` spawns a
+detached goroutine — with its own `context.Background()`, following the
+same detached-goroutine shape already used at `tool.go:191-199` (which
+itself runs unbounded, with no timeout) and `start.go:97-100` (a 5s
+timeout, but for an unrelated best-effort member-AI fetch — not a
+precedent this design's own timeout value is drawn from; **corrected in
+rev 13, review round 11 finding LOW-3**: this goroutine's own timeout is
+step 7's purpose-built `AIcallListenEnsureGoroutineTimeoutSeconds`,
+§5.12) — running `runListenStart(ctx, a, c, kase, callID, call)` for
+steps 7-8, with every value it needs passed directly from
+`checkListenEligible`'s own return values, not re-derived. It is
+fire-and-forget by design, as before; §6 covers the failure modes.
+
+**Steps 1-6 (`checkListenEligible`):**
 
 1. **Feature gate.** `config.Get().AIcallListenEnabled` false → return.
-2. **Type gate.** `a.Type != ai.TypeInsight` → return. (`contact_case`
-   AIcalls are Insight in practice, but this is deny-by-default.)
+2. **AIcall gate.** `a.Type != ai.TypeInsight` → return. (`contact_case`
+   AIcalls are Insight in practice, but this is deny-by-default.) **Also
+   requires `c.Status == aicall.StatusProgressing && c.TMDelete == nil`
+   — new in rev 16, review round 13 finding MEDIUM-2.** Rev 1-14 never
+   needed this: `Start`'s own hook only ever ran against an AIcall it had
+   just created or reused as active. Rev 15's public, arbitrarily-callable
+   `POST /service_agents/aicalls/{id}/listen` removed that guarantee —
+   any caller can `POST` against any AIcall id it owns, including one
+   already `terminated`/deleted — so the type gate is extended into a
+   combined AIcall-liveness gate rather than left to rely on the implicit
+   "this was just created" assumption that no longer holds. Without this,
+   a terminated AIcall could still pass steps 3-6, spawn step 7's 45s
+   goroutine, and start a billed STT session that only §5.4.1's own
+   `c.Status == progressing` require-list check (unrelated to this one)
+   would eventually reap on the first transcript segment — later and
+   less directly than catching it here.
 3. **Idempotency.** If `c.Metadata[listen_transcribe_id]` is set and
    `TranscribeV1TranscribeGet(thatID)` reports
    `Status == progressing && TMDelete == nil && ReferenceID == <the call
@@ -247,14 +526,212 @@ fire-and-forget by design; §6 covers the failure modes.
    `call.Status ∈
    {dialing, ringing, progressing}` — the exact set
    `transcribehandler.isValidReference` treats as transcribable
-   (`bin-transcribe-manager/pkg/transcribehandler/start.go:107-115`).
+   (`bin-transcribe-manager/pkg/transcribehandler/start.go:160-163`, drift
+   from `107-115` fixed in rev 14/§10.10, off-by-two corrected in rev
+   16/§10.11 review round 13 finding LOW-2 — `NOJIRA-Allow-caller-specified-transcribe-id`
+   shifted this file by ~46-50 lines after rev 10's sweep, scoped to
+   `bin-ai-manager`, missed it).
    Anything else → the call is over; return (the agent can still use
    `get_call_transcript` on the finished call, unchanged).
-7. Proceed to §5.2.
+
+**Steps 7-8 (`runListenStart`, detached goroutine, called with `a`, `c`,
+`kase`, `callID`, `call` already resolved by `checkListenEligible` —
+rev 16):**
+
+7. **Confbridge participant-count guard, with bounded retry (rev 11;
+   revised after review round 9 found the first version fails closed on
+   the normal path — see below).**
+
+   **Why the A-leg is the right call.** `Case.ReferenceID` (from step 4)
+   resolves to the **A-leg (customer) call**, not the agent's B-leg. The
+   correct claim is narrower than "structural for all of `case_create`" —
+   it is: **no *system-generated* leg flow can carry `case_create` or
+   `ai_talk`.** Two such generators were checked, not one:
+   `bin-queue-manager/pkg/queuecallhandler/execute.go:generateFlowForAgentCall`
+   (`74-97`) builds the agent's B-leg flow from a single hardcoded
+   `confbridge_join` action, and `actionHandleConnect`'s own B-leg flow
+   (`bin-flow-manager/pkg/activeflowhandler/actionhandle.go:495-514`) is
+   likewise hardcoded to `confbridge_join` + `hangup`. Neither can ever
+   contain `case_create`. This is **not** a categorical guarantee across
+   the whole platform: `actionHandleCall` can chain a **customer-authored**
+   flow onto a new leg (`actionhandle.go:899-937`, `masterCallID =
+   af.ReferenceID` at `~932-934` when `opt.Chained`), and
+   `bin-agent-manager`'s agent-dial RPC similarly accepts a caller-supplied
+   `FlowID` on a leg carrying `MasterCallID`
+   (`bin-agent-manager/pkg/listenhandler/models/request/agents.go:87-91`).
+   Either of those *could* in principle place `case_create` on a B-leg.
+   This design's guarantee is therefore scoped to the standard
+   queue-routing flow (`generateFlowForAgentCall`) and the `connect`
+   action, not to every conceivable flow shape — `ai_talk` is dropped from
+   this claim entirely, since it only ever targets `ReferenceTypeCall`/
+   `ReferenceTypeConversation` AIcalls (`actionhandle.go:1083-1086`), never
+   `contact_case`, and was never actually load-bearing here.
+
+   A stronger and simpler guarantee covers the gap: `actionHandleCaseCreate`
+   itself only creates a Case when the call's peer is CRM-eligible —
+   `crmIneligiblePeerTypes` excludes `agent`/`extension`/`sip`/`conference`/
+   `ai`/`ai_team`/`none` (`actionhandle.go:1259-1266`), checked via
+   `isCRMEligiblePeer` (`:1272-1275`) at `:1354`, against the peer resolved
+   by `deriveEndpointsForCase` (`:1287-1300`: incoming → peer=source,
+   outgoing → peer=dest — i.e. always the far-end party on *that call's own
+   channel*). So the real invariant this design relies on is **`in` = the
+   listened channel's own remote party = `Case.Peer`, which `case_create`
+   already guarantees is an external contact**, not merely "A-leg." See
+   §5.9 for how this reframes the click-to-call residual risk.
+
+   **What bridging does and does not change.** Bridging the two legs does
+   not move either leg's original channel: each keeps its own local
+   Asterisk bridge and joins the shared `Confbridge` through an auxiliary
+   join channel (`bin-call-manager/pkg/confbridgehandler/join.go:Join`,
+   `~21-90`; bridge creation `~106-137`; `StartChannelWithBaseChannel`
+   dialing `PJSIP/conf-join/...`, `~85-88`/`~150-163`). §5.9's
+   Snoop/ExternalMedia tap attaches to the call's own primary channel
+   regardless (`bin-call-manager/pkg/externalmediahandler/start.go:startReferenceTypeCall`,
+   `~60-90`; `channelhandler/start.go:StartSnoop`, `~14-42`), so this
+   2-stage join-channel mechanism does not change §5.9's channel-relative
+   `in`/`out` reading — only who ends up on the other end of the channel.
+   That "who's on the other end" question is exactly what this guard
+   checks: the clean `in=customer`/`out=agent` reading assumes precisely
+   one other party.
+
+   **The check, and the bounded retry review round 9 found missing —
+   revised again after review round 10 found the first retry design's
+   give-up rule unsound (see below).**
+   `Joined()` (`bin-call-manager/pkg/confbridgehandler/joined.go:33-44`)
+   makes two separate writes for *whichever* call joins: `AddChannelCallID`
+   (`:33`) extends `len(ChannelCallIDs)` on the confbridge side, and the
+   sibling `CallV1CallUpdateConfbridgeID` RPC (`:40`) sets that call's own
+   `Call.ConfbridgeID` (**named explicitly here per review round 11
+   finding LOW-5**, which is the write that actually sets the field, not
+   `AddChannelCallID`) — so the A-leg's own `ConfbridgeID` is already
+   non-nil from its own join, at `execute.go:66`'s forward, well before
+   the agent answers. What actually stays at 1 through the whole
+   agent-ring window is `len(ChannelCallIDs)`, not `ConfbridgeID`'s
+   nil-ness — round 9's original diagnosis conflated the two, which round
+   10 caught as a self-contradiction (the very next sentence already
+   describes the A-leg "sitting alone" post-forward, which requires a
+   non-nil `ConfbridgeID`). In the standard queue-routing flow, `len`
+   reaches 2 only once the B-leg's own join channel completes
+   `ChannelEnteredBridge`
+   (`bin-queue-manager/pkg/queuecallhandler/service.go:124-151` — the
+   A-leg's queue-wait actions are `fetch_flow`/`empty` only;
+   `execute.go:48,66` create the B-leg and forward the A-leg's activeflow
+   essentially at the same time, before the agent has answered). A
+   one-shot check at `ProcessListen`/`runListenStart` time (rev 16
+   naming) — which can run as early as panel-open, and a screen-pop UI
+   opening the Case panel at ring time is entirely plausible — would
+   therefore see `len(ChannelCallIDs) == 1` on a perfectly normal call
+   and silently never listen, with no retry and nothing recorded to
+   explain why. That is a reliability regression this guard must not
+   introduce.
+
+   So the check retries, bounded, inside `runListenStart`'s own
+   goroutine — which this feature gives an **explicit**
+   `AIcallListenEnsureGoroutineTimeoutSeconds` (new config, default `45`;
+   review round 10 found the intro's cited precedents, `tool.go:191-199`'s
+   unbounded `context.Background()` and `start.go:97-100`'s unrelated 5s
+   fetch timeout, do not actually bound anything for this path, so this
+   feature does not inherit either — it sets its own) rather than firing
+   once: poll every `AIcallListenConfbridgeReadyPollIntervalSeconds` (new
+   config, default `2`) for up to
+   `AIcallListenConfbridgeReadyMaxWaitSeconds` (new config, default `30` —
+   strictly less than the goroutine timeout above, leaving margin for the
+   RPC calls themselves), re-running step 6's call-liveness check and this
+   confbridge check together each poll — a call that goes from
+   `dialing`/`ringing` to terminated during the wait exits the loop via
+   step 6, not this one. On each poll:
+   - `call.ConfbridgeID == uuid.Nil`, or `CallV1ConfbridgeGet` returns a
+     confbridge with `TMDelete != nil` or `Status != progressing`
+     (`bin-call-manager/models/confbridge/main.go:~35-37,~64-68` —
+     checked in addition to the participant count, since
+     `confbridgehandler/leaved.go:~43-48` resets `Call.ConfbridgeID` to
+     `uuid.Nil` from a goroutine that can outlive its own request context,
+     making a stale non-nil id reachable in principle even though today's
+     code paths happen to avoid it) → **not ready yet**, keep polling.
+   - `len(confbridge.ChannelCallIDs) == 2` and the confbridge is live →
+     proceed to §5.2.
+   - `len(confbridge.ChannelCallIDs) != 2` — **keep polling regardless of
+     the count or the call's own status, full stop (revised after review
+     round 10 finding HIGH-A).** The first version of this retry tried to
+     fast-fail on `len >= 3` once `call.Status == progressing`, reasoning
+     that a `progressing` call was "past" the pre-answer window where an
+     extra party could still be transient noise. That reasoning does not
+     hold: `call.Status` reflects only the *listened* leg's own answer
+     state, and in this design's own target flow the A-leg is already
+     `progressing` from before `case_create` even runs, for the entire
+     subsequent queue-wait and agent-ring window — so the fast-fail
+     condition was, in practice, always true the instant a 3rd party
+     appeared, not just once one had lingered. A concrete, documented
+     platform pattern hits exactly this: a `connect` action with
+     `early_media: true` and multiple destinations
+     (`bin-api-manager/docsdev/source/flow_advanced_patterns.rst:1317-1338`)
+     runs each ringing destination's `confbridge_join` **before answer**
+     (`actionhandle.go:opt.EarlyMedia`; `bin-call-manager/pkg/callhandler/status.go:35-38`
+     fires `ActionNext` on `ringing` for an early-execution call), so the
+     confbridge can transiently hold the A-leg plus several ringing B-legs
+     — `confbridgehandler/joined.go:87-97` explicitly iterates members
+     looking for a `dialing`/`ringing` outgoing call, confirming this
+     state is expected — before settling to 2 within seconds as the
+     losing legs hang up. The original fast-fail would have given up on
+     that call permanently, on the very first (and, per BLOCKING-1's
+     screen-pop scenario, possibly only) `ProcessListen` invocation — the
+     same failure class round 9 blocked on, reintroduced by its own fix.
+     There is no cheap, sound way to distinguish "stably wrong" from
+     "transiently 3+ while settling" mid-wait, and the loop is already
+     bounded, so it does not try: any non-2 count just keeps polling until
+     the budget runs out.
+   - The wait budget elapses (whether the count was stuck at 1, stuck at
+     3+, or oscillating — this design does not distinguish those cases),
+     `CallV1ConfbridgeGet` errors, or step 6's own liveness check fails
+     during a poll → stop, do not listen. This is still a silent no-op
+     from the *AIcall*'s perspective (§6), but it is **not silent
+     operationally**: each distinct outcome gets its own
+     `aicall_listen_start_total` label (§5.13) —
+     `skipped_confbridge_not_ready` for the max-wait timeout with the last
+     observed count logged (not label-cardinality-bearing, but present in
+     the log line for diagnosis), `skipped_confbridge_error` for the RPC
+     failure — so the false-negative rate this retry exists to bound stays
+     visible in production rather than merely bounded on paper. §7 gains
+     explicit coverage for each new branch, including a 3→2 settle within
+     the wait budget.
+
+   **What this guard does not do, stated plainly rather than assumed.**
+   It is enforced only inside `checkListenEligible`/`runListenStart`,
+   before listening starts —
+   there is no ongoing re-check once a listen session is live. A 3rd party
+   joining *after* listening has started (barge-in, an attended-transfer
+   leg — `bin-transfer-manager/pkg/transferhandler/attended.go:139` — a
+   `conference`-type join) is not caught by this guard and is documented
+   as open residual risk in §5.9/§11, not mitigated here. Note also that a
+   3rd party degrades only the `out` side of the mapping — `in` (the
+   listened channel's own party) stays correct regardless of who else is
+   in the bridge, since it never depended on the other parties' identities
+   in the first place (see the `in == Case.Peer` framing above).
+
+   **One more consequence of the retry, noted explicitly per review round
+   11 finding LOW-6, corrected in rev 18 (review round 15 finding
+   LOW-2):** the idempotency check (step 3) only short-circuits
+   once `listen_transcribe_id` is set, which never happens while step 7 is
+   still polling — so if the agent re-opens the Case panel several times
+   during a long ring, each open spawns its *own* concurrent, independently
+   bounded retry loop. This is not a new failure mode: it is bounded (each
+   loop still respects the same wait budget and goroutine timeout),
+   detached (§5.1.1 intro), and the resulting race to actually start the
+   transcribe session once the confbridge is ready is now serialized by
+   §5.2.2's per-AIcall lock (an earlier draft of this paragraph said the
+   race was "already covered by §5.2.2's reuse rule and §6's
+   `TRANSCRIBE_ALREADY_PROGRESSING` row" alone — the exact unexamined
+   premise review round 14's HIGH-2 found insufficient once rev 16 moved
+   the write before creation) — but it does mean
+   `skipped_confbridge_not_ready`'s raw rate can be inflated by repeated
+   re-opens of the same still-ringing call, not just by distinct calls,
+   which matters when interpreting that metric per §5.13's guidance.
+8. Proceed to §5.2.
 
 No new event subscription is needed for the trigger — it is a one-shot
-check at AIcall-start time, not a standing watch for "some future call on
-this contact."
+check triggered by the `POST /v1/aicalls/{id}/listen` call (§5.1, rev 15
+— previously tied to AIcall-start time under rev 1-14's `Start`-hook
+design), not a standing watch for "some future call on this contact."
 
 ### 5.2 The transcribe session: owner, start, and reuse
 
@@ -279,7 +756,8 @@ separate from `IDAIManager`.** `cmcustomer.IDAIManagerListen` (exact
 value TBD at implementation time — a new constant alongside `IDAIManager`
 in `bin-customer-manager/models/customer/customer.go`). This makes
 listen's and summary's transcribe sessions **provably independent** at
-the `startLive` dedup-guard layer (`transcribehandler/start.go:196-214`,
+the `startLive` dedup-guard layer (`transcribehandler/start.go:248-266`,
+drift fixed in rev 14/§10.10 — see §5.1.1 step 6's citation note,
 scoped by `customer_id`), because they are never the same owner — no
 hand-off logic, no shared lifecycle, no read-path ambiguity, and §5.2.2a
 is **deleted, not fixed**: `summaryhandler.startReferenceTypeCall` needs
@@ -344,19 +822,32 @@ to `get_call_transcript` to stay correctly excluded.
 
 `startLive`'s duplicate guard is scoped `(customer_id, reference_id,
 language, status=progressing, deleted=false)`
-(`transcribehandler/start.go:196-214`). Under §5.2.1's rev-4 decision
+(`transcribehandler/start.go:248-266`). Under §5.2.1's rev-4 decision
 (listen's own `IDAIManagerListen`, never shared with `ai_summary`'s
 `IDAIManager`), the **only** sessions listening can ever collide with are
 **other listen sessions on the same call** — the two-Cases-one-call case
 (§5.11) — never a concurrent `ai_summary`.
 
-```
-existing := TranscribeV1TranscribeList(ctx, "", 10, {
-    customer_id:   cmcustomer.IDAIManagerListen,
-    reference_id:  callID,
-    status:        progressing,
-    deleted:       false,
-})
+```go
+// dupFilters — bound once here, referenced by name from both
+// TranscribeV1TranscribeList calls in the lock sequence below. Shown as
+// a standalone map, not a full call, deliberately: both actual call
+// sites (below) own their own error handling, and round 17 (finding
+// B-2) found an earlier draft of this illustrative block that combined
+// the two — a `List` call with a declared, never-checked `err` — read as
+// exactly the dropped-error bug round 15's LOW-4 had just fixed a few
+// paragraphs later.
+dupFilters := map[tmtranscribe.Field]any{ // keyed by the typed Field, not
+    tmtranscribe.FieldCustomerID:  cmcustomer.IDAIManagerListen, //   a bare
+    tmtranscribe.FieldReferenceID: callID,                       //   string —
+    tmtranscribe.FieldStatus:      tmtranscribe.StatusProgressing, // matching
+    tmtranscribe.FieldDeleted:     false,                        //   TranscribeV1TranscribeList's
+                                                                  //   actual `filters map[tmtranscribe.Field]any`
+                                                                  //   parameter (review round 18 finding
+                                                                  //   MEDIUM-2 — an earlier draft used
+                                                                  //   map[string]any, which would not
+                                                                  //   compile against that signature)
+}
 ```
 
 - **Any** progressing `IDAIManagerListen` session on this call is reused,
@@ -367,14 +858,197 @@ existing := TranscribeV1TranscribeList(ctx, "", 10, {
   reads whatever language comes out. Maximising reuse is the cheaper and
   simpler rule. This is the explicit answer to review round 2's "the
   reuse rule must account for language/owner."
-- Otherwise start one, with `Metadata[listen_owns_transcribe] = true`:
+- Otherwise start one, with `Metadata[listen_owns_transcribe] = true`.
+  **Revised in rev 15, again in rev 16 (review round 13 finding HIGH-3),
+  and once more in rev 17 (review round 14 findings HIGH-1/HIGH-2)** —
+  each round found the previous fix closed one race while opening
+  another, which is why this whole bullet is now guarded by an explicit
+  per-AIcall lock rather than relying on write ordering alone.
+
+  **The three problems, in the order they were found, and what each fix
+  actually closes:**
+  1. *(rev 15's problem, still the root motivation.)* Registering this
+     AIcall in the Redis resolver set (§5.2.4) used to happen *after*
+     `TranscribeV1TranscribeStart` succeeded, leaving a short window in
+     which the freshly-created transcribe could already be emitting
+     `transcript_created` events for lines nobody had registered to
+     receive yet — silently dropped as `dropped_unknown` (§6).
+  2. *(rev 16's problem, per review round 13 HIGH-3.)* Pre-registering
+     only the Redis `SADD` (rev 15's fix) left §5.2.4's DB write
+     (`listen_call_id`, `metadata[listen_transcribe_id]`) *after*
+     creation — so an early event could resolve through the
+     now-registered set, fail `RunListenTurn`'s precondition (§5.4.1 step
+     1, which requires the metadata **set**, not just the Redis
+     membership present), and trigger `stopListening`/`clearListenState`,
+     deleting the state the fix had just created. Rev 16 moved the DB
+     write earlier too, so both land together, before creation.
+  3. *(rev 17's problem, per review round 14 HIGH-1/HIGH-2.)* Rev 16's
+     fix pre-writes speculatively **per goroutine**, using a freshly
+     generated id each time. §5.1.1 step 7's own retry (and its LOW-6
+     note, §11 item 13) already establishes that the *same* AIcall can
+     have multiple concurrent `runListenStart` goroutines in flight from
+     repeated panel re-opens — and two of them can now both pass the
+     `TranscribeV1TranscribeList` check (below) before either finishes
+     writing, each minting its **own** `newTranscribeID` and pre-writing
+     against it. Depending on interleaving this either (a) has the
+     second goroutine's write `SREM` the first goroutine's *already-live*
+     session out of the resolver set (§5.2.4's rev-4 stale-id logic,
+     applied to a session that was never actually stale), silently
+     dropping events for a live session, or (b) has a later rollback
+     (e.g. the second goroutine's own `TranscribeV1TranscribeStart`
+     failing) delete DB/Redis state that in fact belongs to the first
+     goroutine's live, billed session.
+
+  Problem 3 is not fixable by write-ordering alone — it needs mutual
+  exclusion. So the whole reuse-check-through-write sequence for a given
+  AIcall (both the reuse-check bullet above — **not**, since rev 20
+  (review round 17 finding B-2), shown as its own illustrative `List`
+  call; this mention corrected to match in rev 23, review round 20
+  finding LOW-1 — and everything below) is now
+  wrapped in a Redis lock. **Revised again in rev 18 (review round 15
+  finding HIGH-1): rev 17's first version of this lock had two defects
+  of its own — an undersized TTL and an unconditional, ownerless
+  release — each of which could reopen problem 3 rather than close it.**
+
+  **TTL sizing (rev 18).** Rev 17 sized the TTL (`15`s) against only
+  `TranscribeV1TranscribeStart`'s explicit 5000ms timeout, but the lock
+  also wraps up to two `TranscribeV1TranscribeList` calls (the reuse
+  check below, and the conflict-recovery re-run further down) — and that
+  RPC client hardcodes its own **30000ms** timeout, not caller-adjustable
+  (`bin-common-handler/pkg/requesthandler/transcribe_transcribes.go:48`;
+  changing it would touch every existing caller across the monorepo,
+  out of scope here). Summed naively that is up to 65s, comfortably
+  exceeding a 15s TTL. But every one of these calls runs under the same
+  `ctx` this goroutine derived from
+  `AIcallListenEnsureGoroutineTimeoutSeconds` (§5.1.1) — so no call can
+  actually run longer than whatever budget remains on that outer
+  context, regardless of what its own internal timeout constant claims.
+  A goroutine can therefore never *legitimately* hold this lock longer
+  than its own outer timeout allows. The correct TTL is not "sum the
+  RPC timeouts" but "exceed the outer goroutine timeout, so the lock can
+  never expire while a goroutine that is still within its own legitimate
+  budget holds it": `aicall_listen_start_lock_ttl_seconds` default
+  changes from `15` to `60` (§5.12) — strictly greater than
+  `aicall_listen_ensure_goroutine_timeout_seconds`'s own default `45`.
+
+  **This margin is deliberately about legitimate work, not about the
+  release itself — corrected in rev 19, review round 16 finding
+  MEDIUM-2/MEDIUM-3.** An earlier draft of this paragraph justified the
+  `60`-vs-`45` gap partly as "margin for the deferred release itself to
+  run," which does not hold: the release below is a `defer`, and if the
+  goroutine reaches its own outer timeout, `ctx` is already cancelled at
+  that point, so a release call still keyed off `ctx` would fail
+  immediately rather than get any extra time from the gap. The gap exists
+  for one reason only — so the TTL cannot lapse under a goroutine that is
+  still legitimately working — and the release is instead made
+  independent of `ctx`'s own cancellation (below), which is the actual
+  fix for the case this paragraph used to (incorrectly) credit to the
+  TTL margin. **The accepted residual**, stated plainly rather than
+  papered over: a goroutine that genuinely crashes (pod loss, process
+  kill — anywhere the `defer` itself never runs, as opposed to `ctx`
+  merely expiring) still strands the lock for the full TTL, since nothing
+  is left to release it early — **and, more narrowly (review round 18
+  finding LOW-2), so does an ambiguous `ListenStartLockAcquire` error
+  (below) whose own best-effort release also fails**: that second
+  failure collapses into this same residual rather than getting its own
+  handling, since by that point there is nothing left this goroutine can
+  do differently from a genuine crash. §7 item 2 covers both as the
+  expected, accepted behaviour rather than a defect: a shorter TTL would
+  only reopen rev 17's original race (HIGH-2, round 14) in exchange for
+  faster crash recovery, which is the wrong trade for a lock whose entire
+  purpose is preventing two writers from clobbering a live, billed STT
+  session.
+
+  **Ownership token + compare-and-delete release, run on a context
+  detached from the goroutine's own cancellation (rev 18, release
+  context fixed in rev 19).** Rev 17's release (`h.cache.Del(ctx,
+  lockKey)`, unconditional) and acquisition (a constant value, `"1"`)
+  meant any holder's release could delete a *different* holder's lock if
+  the first's TTL had already expired and a second goroutine had since
+  acquired it — silently reopening problem 3 rather than closing it,
+  since the debounce lock's own "anyone may release it" shape (§5.3.4) is
+  safe only because stealing that lock merely delays a turn, not because
+  it is a generally-safe pattern for every lock in this design. Rev 18
+  fixed the ownership half of this (a per-goroutine token, checked before
+  delete) but, as first drafted, still ran the release under this
+  goroutine's own `ctx` — so the one case the TTL-vs-timeout margin above
+  exists for (a goroutine reaching its own outer timeout while still
+  correctly finishing its work) was exactly the case where the release
+  would fail, since a cancelled `ctx` fails any further Redis call
+  immediately (**review round 16 finding MEDIUM-2**). Fixed by detaching
+  the release's context from `ctx`'s own deadline/cancellation —
+  `context.WithoutCancel`, already used for this same
+  detach-from-the-triggering-context purpose elsewhere in this monorepo
+  (`bin-schedule-manager/pkg/dispatchhandler/manual.go:102`) — with its
+  own short bound so a truly stuck Redis call still returns:
+
+  Acquisition and release are now a matched, named pair — **not** a raw
+  `SetNX` call plus a named release, which round 16 (LOW-6) noted let the
+  key format drift between the two call sites:
 
   ```go
-  tr, err := h.reqHandler.TranscribeV1TranscribeStart(
+  lockToken := h.utilHandler.UUIDCreate() // this goroutine's own identity for
+                                          //   the lock — independent of
+                                          //   newTranscribeID, minted below
+  acquired, err := h.cache.ListenStartLockAcquire(ctx, c.ID, lockToken.String(), listenStartLockTTL) // new config default 60s, §5.12
+  if err != nil {
+      // Ambiguous outcome — new in rev 20, review round 17 finding B-7:
+      // the SET NX may have landed server-side even though the client
+      // saw an error (timeout, connection reset mid-response — a Redis
+      // client cannot always tell "definitely not set" from "set, but
+      // the response was lost"). Attempt a best-effort release with our
+      // own token so an ambiguous acquire error doesn't strand the lock
+      // for the full TTL the same way a genuine crash does. If this
+      // second call also fails, the outcome collapses into that same
+      // crash case below — accepted, not specially handled further.
+      releaseCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), listenStartLockReleaseTimeout)
+      _ = h.cache.ListenStartLockRelease(releaseCtx, c.ID, lockToken.String())
+      cancel()
+      return err // fail closed, same as every other §5.2 RPC failure — no
+                 // transcribe list/start call has been made yet
+  }
+  if !acquired {
+      // Another goroutine for this exact AIcall is already inside this
+      // sequence (§5.1.1 step 7's own retry, or a second panel-open
+      // during the same ring). Let it finish — this goroutine's job is
+      // now redundant, and racing it is exactly problem 3 above.
+      return nil
+  }
+  defer func() {
+      // Detached from ctx's own cancellation/deadline (review round 16
+      // finding MEDIUM-2) so a goroutine that reaches its own outer
+      // timeout still releases promptly instead of stranding the lock
+      // for the full TTL — combined with the best-effort release on the
+      // acquire-error path above (round 17 finding B-7), stranding for
+      // the full TTL is now reserved for an actual crash (pod loss,
+      // process kill — anywhere this `defer` itself never runs), not
+      // merely an error return from either call.
+      releaseCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), listenStartLockReleaseTimeout) // new, small — e.g. 3s
+      defer cancel()
+      _ = h.cache.ListenStartLockRelease(releaseCtx, c.ID, lockToken.String()) // compare-and-delete, best-effort — see below
+  }()
+
+  existing, errList := h.reqHandler.TranscribeV1TranscribeList(ctx, "", 10, dupFilters) // implements the reuse-check bullet above, using dupFilters (§5.2.2 above), now inside the lock
+  if errList != nil {
+      return errList // fail closed — an unhandled error here previously
+                      // read as "no existing session found" (rev 17's
+                      // bug, review round 15 finding LOW-4) and could
+                      // have started a duplicate session
+  }
+  if len(existing) > 0 {
+      _, errUpdate := h.UpdateListenState(ctx, c.ID, callID, existing[0].ID, false) // reuse bullet, unchanged logic, now serialized
+      return errUpdate
+  }
+
+  newTranscribeID := h.utilHandler.UUIDCreate()
+  if _, err := h.UpdateListenState(ctx, c.ID, callID, newTranscribeID, true); err != nil {
+      return err // fail closed: no transcribe created yet, nothing to roll back
+  }
+  _, err = h.reqHandler.TranscribeV1TranscribeStart(
       ctx,
-      uuid.Nil,                    // id — let transcribe-manager generate one;
-                                   //   see the note below on the caller-specified-id
-                                   //   option this signature now supports
+      newTranscribeID,              // id — caller-specified, not uuid.Nil;
+                                    //   this ordering fix is the one and only
+                                    //   reason this design uses that capability
       cmcustomer.IDAIManagerListen, // customerID  (§5.2.1)
       call.ActiveflowID,           // activeflowID — the call's, not the AIcall's:
                                    //   a panel-started contact_case AIcall has
@@ -388,29 +1062,158 @@ existing := TranscribeV1TranscribeList(ctx, "", 10, {
       tmtranscribe.ProviderEmpty,  // provider: default order gcp → aws
       5000,                        // timeout ms, same as summaryhandler
   )
+  switch {
+  case err == nil:
+      // The created transcribe's id equals newTranscribeID (caller-
+      // specified, above) — not captured into its own variable (round
+      // 17 finding LOW-1: an earlier draft did, as `tr`, and never used
+      // it) since the DB/Redis state written above already matches;
+      // nothing further to write for this path.
+  case isAlreadyProgressing(err): // helper below; the read-then-create
+      // race §6 already documents — this AIcall's own List() above ran
+      // just before another writer (a different AIcall on the same
+      // call, §5.11's two-Cases-one-call case; the lock above only
+      // serializes writers sharing this same AIcall) won the create.
+      // Re-run the list once (§6, unchanged behaviour) and, if a winner
+      // is found, rewrite our state to point at it instead of giving up
+      // — the discrimination review round 13's MEDIUM-3 required, since
+      // a blanket rollback-and-fail here would silently drop the
+      // reuse-on-conflict behaviour §6 already promises.
+      existingRetry, errListRetry := h.reqHandler.TranscribeV1TranscribeList(ctx, "", 10, dupFilters) // deliberately
+                                    //   re-declared, not reused — this is a
+                                    //   second, later List() call, and round
+                                    //   16 (LOW-10) flagged shadowing the
+                                    //   create-path List() call's own
+                                    //   `existing`/`errList` names, above,
+                                    //   as confusable with that call's
+                                    //   already-fixed dropped-error bug
+                                    //   (round 15 LOW-4; round 17 finding
+                                    //   B-3: an earlier draft of this
+                                    //   comment cited a doc line number
+                                    //   here instead, already wrong by the
+                                    //   time it was written)
+      if errListRetry != nil || len(existingRetry) == 0 {
+          _ = h.rollbackListenState(ctx, c.ID, newTranscribeID) // no winner found either; give up
+          return err
+      }
+      if _, errUpdate := h.UpdateListenState(ctx, c.ID, callID, existingRetry[0].ID, false); errUpdate != nil {
+          _ = h.rollbackListenState(ctx, c.ID, newTranscribeID)
+          return errUpdate
+      }
+      // our own speculative id never got created — remove only that
+      // membership, never touch the winner's (UpdateListenState above
+      // already registered us against the winner correctly)
+      _ = h.cache.ListenTranscribeAIcallRemove(ctx, newTranscribeID, c.ID)
+  default:
+      // Any other TranscribeV1TranscribeStart failure: give up, undo the
+      // speculative write.
+      _ = h.rollbackListenState(ctx, c.ID, newTranscribeID)
+      return err
+  }
   ```
+
+  `isAlreadyProgressing(err)` — **named explicitly in rev 17, review
+  round 14 finding MEDIUM-1: rev 16's snippet invented a
+  `cerrors.IsReason` helper that does not exist anywhere in this
+  codebase.** The actual, established pattern is
+  `errors.As(err, &ve) && ve.Reason == "TRANSCRIBE_ALREADY_PROGRESSING"`
+  against `*cerrors.VoipbinError` (`bin-common-handler/models/errors/voipbin_error.go:26-30`),
+  used at `bin-transcribe-manager/pkg/transcribehandler/stop.go:196-205`
+  and, in exactly the one-line wrapper shape used here, at
+  `bin-storage-manager/pkg/filehandler/signing.go:79` (**citations
+  corrected in rev 18, review round 15 finding MEDIUM-2** — rev 17's
+  citations, `streaminghandler/disabled.go:24-28` and
+  `bin-direct-manager/pkg/listenhandler/main.go:104-112`, turned out not
+  to contain this pattern at all: the former is a doc comment describing
+  it happening elsewhere, the latter is an unrelated `errors.Is`/generic
+  error-mapper pair). `isAlreadyProgressing` is a one-line local wrapper
+  around that pattern, named for readability in the `switch` above; no
+  new helper is added to `bin-common-handler` itself (§9).
+
+  `ListenStartLockAcquire(ctx, aicallID, token, ttl)` / `ListenStartLockRelease(ctx, aicallID, token)`
+  — **new in rev 18, given a matched, symmetric pair of names and moved
+  off a raw `SetNX` call in rev 19 (review round 16 finding LOW-6)** — are
+  this lock's only two entry points; the `ai:listen:startlock:<aicallID>`
+  key format is built in exactly one place (inside these two functions),
+  not once inline at the call site and once inside the release helper as
+  rev 18 first had it, so the two can no longer drift apart. `Acquire` is
+  a thin `SetNX` wrapper (same underlying Redis command already
+  established for §5.3.4's debounce lock — no new primitive there).
+  `Release` performs the
+  lock's compare-and-delete: `GET`s the current value at the key, and
+  `DEL`s it only if that value still equals `token`, via a single Redis
+  `EVAL` (a short Lua script — `if redis.call("GET",KEYS[1])==ARGV[1]
+  then return redis.call("DEL",KEYS[1]) else return 0 end` — so the
+  compare-and-delete is atomic, not a separate `GET` then `DEL` that
+  could itself race). If the value no longer matches (this goroutine's
+  TTL already expired and someone else acquired it), the call is a
+  deliberate no-op — releasing would delete a lock this goroutine no
+  longer legitimately holds, which is precisely the defect rev 18 fixes
+  and §7 item 2 now tests directly (round 16 finding MEDIUM-4). `Release`
+  is always called on a context detached from the acquiring goroutine's
+  own `ctx` (above) — the two functions do not otherwise share a context
+  source, and neither should: `Acquire` must respect the caller's
+  deadline like any other step-7 RPC, `Release` deliberately must not.
+
+  `rollbackListenState(ctx, aicallID, transcribeID)` is a small,
+  dedicated helper — not a reuse of `clearListenState` (§5.7.3), whose
+  own contract reads `listen_transcribe_id` from an AIcall struct
+  "already in hand," an assumption that does not cleanly hold here since
+  `UpdateListenState` writes through the DB rather than mutating the
+  caller's in-memory `c`. `rollbackListenState` instead takes the known
+  `transcribeID` directly: `SREM`s the Redis membership for exactly that
+  id, and clears `listen_call_id`/the two metadata keys via a targeted
+  `AIcallUpdate` — the same shape `clearListenState` uses, just addressed
+  by an explicit id instead of a re-read one.
+
   Signature verified against
   `bin-common-handler/pkg/requesthandler/transcribe_transcribes.go:64-76`
   as of `NOJIRA-Allow-caller-specified-transcribe-id` (merged to `main`
-  2026-09-04, after rev 9 — reconciled here without a new review round
-  since it is a pure signature/citation update, not a design change; see
-  §0's rev 10 entry). Rev 1 omitted `provider` and `onEndFlowID`
+  2026-09-04, after rev 9). Rev 1 omitted `provider` and `onEndFlowID`
   entirely; this `id` parameter did not exist before rev 10.
 
-  **On the new caller-specified-id capability itself: deliberately not
-  adopted here.** Its purpose (per its own design doc,
+  **On the new caller-specified-id capability: adopted in rev 15 for
+  ordering only, still not for its originally-intended purpose.** Its
+  purpose (per its own design doc,
   `bin-transcribe-manager/docs/plans/2026-09-03-caller-specified-transcribe-id-design.md`)
   is letting a caller pre-declare a transcribe's id so it can bind a
   *dynamic, per-transcribe* RabbitMQ subscription
   (`transcribe-manager.transcript.<id>.#`) before the session starts
   producing events. §3's non-goals table already considered and rejected
   exactly that binding pattern for this design — not because of the
-  race this new feature solves, but because of the bind/unbind lifecycle
-  it would add on top of the wildcard subscription this design already
-  uses (§5.3.1) with a Redis-based filter (§5.3.2) that needs no
-  per-transcribe binding at all. The new capability doesn't change that
-  trade-off; noted here so a future reader doesn't wonder why it isn't
-  used.
+  ordering race rev 15 now fixes, but because of the bind/unbind
+  lifecycle it would add on top of the wildcard subscription this design
+  already uses (§5.3.1) with a Redis-based filter (§5.3.2) that needs no
+  per-transcribe binding at all. **That rejection is unchanged.** Rev 15
+  uses only the *id-predeclaration* half of the capability (so the
+  Redis resolver set can be populated before creation) without the
+  *binding* half (a new per-id RabbitMQ subscription) — the pre-declared
+  id only ever feeds the existing Redis resolver set, never a queue
+  binding.
+
+  **On the `SET NX` lock (rev 17): this reverses an earlier decision, and
+  says so.** §11's original item 9-adjacent reasoning (and this
+  document's own §5.1.1 LOW-6 note, §11 item 13) had argued deduping
+  concurrent `ProcessListen`/`runListenStart` calls outright was
+  "unnecessary complexity: §5.2.2's guard already prevents the far worse
+  outcome — two live transcribe sessions." That reasoning covered
+  cross-AIcall duplication (transcribe-manager's own `startLive` dedup
+  guard, §5.2.2's `List` check) but not this same-AIcall, same-goroutine-
+  class race, which only became reachable once rev 16 moved the write
+  before creation. The lock is scoped narrowly — one short-TTL key per
+  AIcall, held only for the duration of this one sequence — not a general
+  concurrency-control layer.
+
+  **Scope of the wider fix: the create-or-reuse sequence for one AIcall's
+  own attempts, not the reuse-of-another-AIcall's-session case above.**
+  When *this* AIcall's own `List` call (inside the lock) finds an
+  existing session another AIcall already created, that session was
+  already running and producing events before this AIcall ever looked —
+  there is no "before creation" moment for *this* AIcall to register
+  ahead of, since it did not create that session. That remains a
+  pre-existing, narrower, and effectively unclosable race (shared across
+  every revision of this design), distinct from the same-AIcall race the
+  lock above closes.
 
 - A session ai-manager does **not** own — i.e. one started by the customer
   under their own `customer_id`, or one started by `ai_summary` under
@@ -430,15 +1233,28 @@ existing := TranscribeV1TranscribeList(ctx, "", 10, {
 `language` for a session we start: `c.STTLanguage` if non-empty, else
 `config.Get().AIcallListenDefaultLanguage` (default `"en-US"`).
 `transcribe-manager` normalises to BCP47 itself
-(`transcribehandler/start.go:64-66`), so no client-side validation.
+(`transcribehandler/start.go:73-75`), so no client-side validation.
 
 #### 5.2.4 Persisting listen state
 
-On success:
-
 ```go
-h.UpdateListenState(ctx, c.ID, callID, tr.ID, owns)
+h.UpdateListenState(ctx, c.ID, callID, transcribeID, owns)
 ```
+
+**Two calling conventions as of rev 16 (review round 13 finding
+HIGH-3), not one.** On the **reuse** path (§5.2.2), this is still called
+*after* the `List` call finds an existing session, exactly as rev 1-14
+always did — there is nothing to pre-write ahead of when reusing someone
+else's already-running session. On the **create** path (§5.2.2), this is
+now called *before* `TranscribeV1TranscribeStart`, speculatively, against
+the id that call generates for itself and passes in — closing the
+teardown race rev 15's narrower fix (pre-registering only the Redis
+`SADD`) reopened; see §5.2.2 for the full before/after account, the
+per-AIcall lock added in rev 17, and the rollback path when
+`TranscribeV1TranscribeStart` then fails.
+**`UpdateListenState`'s own `owns`-merge rule *did* need a change to
+support the create path safely — corrected in rev 17, review round 14
+finding HIGH-1; see below.**
 
 **New in rev 4 (review round 3, finding M2):** if `c.Metadata` already
 carries a *different* `listen_transcribe_id` — the §5.1.1 step-3
@@ -447,20 +1263,110 @@ fresh one — `UpdateListenState` first `SREM`s this AIcall's own id from
 the **old** transcribe's resolver set before `SADD`-ing it to the new
 one. Without this, the stale membership survives until its 12h TTL,
 which does no *functional* harm (the old transcribe's own events have
-stopped, so nothing is buffered against it — §5.4.1's precondition would
-also refuse to act on a mismatched `listen_transcribe_id`) but leaves an
-unnecessary, undocumented dangling set entry.
+stopped, so nothing is buffered against it) but leaves an unnecessary,
+undocumented dangling set entry. **Correction, rev 17, review round 14
+finding LOW-5**: an earlier draft of this paragraph additionally claimed
+"§5.4.1's precondition would also refuse to act on a mismatched
+`listen_transcribe_id`" — false as stated; §5.4.1 step 1 only requires
+the field to be **set**, it never compares it against anything, so this
+parenthetical is removed rather than relied upon.
 
 `UpdateListenState` performs **one** `AIcallUpdate` writing:
 - column `listen_call_id = callID` (§5.8),
-- `metadata[listen_transcribe_id] = tr.ID`,
+- `metadata[listen_transcribe_id] = transcribeID` (**`tr.ID` in an earlier
+  draft — corrected in rev 21, review round 18 finding LOW-4: `tr` is
+  §5.2.2's local variable, not in scope here; this section's own
+  parameter is `transcribeID`**),
 - `metadata[listen_owns_transcribe] = owns`,
 
 and then adds this AIcall to the Redis resolver **set**:
-`SADD ai:listen:transcribe:<tr.ID> <c.ID>`, `EXPIRE ai:listen:transcribe:<tr.ID> 12h`.
+`SADD ai:listen:transcribe:<transcribeID> <c.ID>`, `EXPIRE ai:listen:transcribe:<transcribeID> 12h`.
+This `12h` is a hardcoded constant, not one of §5.12's flags — deliberately,
+not by omission (**noted explicitly in rev 21, review round 18 finding
+LOW-5**): unlike §5.12's timing flags, it bounds a worst-case safety
+margin (how long a genuinely-orphaned resolver-set entry can outlive its
+transcribe, §5.11) rather than a value expected to need real-world
+tuning, so it is not added as a fourteenth flag.
+
+**`owns` must never be allowed to downgrade for the same transcribe id —
+new in rev 14 (review round 12 finding MEDIUM-2), the OR-merge itself
+scoped to same-id writes only in rev 17 (review round 14 finding
+HIGH-1).** §5.1.1 step 7's bounded retry (§11 item 13's own LOW-6 note)
+means the *same* AIcall can have two concurrent `runListenStart`
+goroutines racing to reach this call (one per panel re-open during a long
+ring). Historically (rev 14's own framing) both were assumed to resolve
+to the **same** transcribe id — `startLive`'s dedup guard (§5.2.2)
+guarantees that *across* AIcalls, but rev 16 broke the assumption
+*within* one AIcall's own two racing goroutines, each of which could
+mint a different speculative id before either finished writing. Rev 17/18's
+per-AIcall lock (§5.2.2) now serializes those two goroutines *for the
+create-or-reuse sequence specifically* — teardown paths
+(`clearListenState`/§5.7.3, `stopListenByCallID`/§5.7.1) do not take this
+lock and can still interleave with it (§5.2.2's own scope note); the
+claim here is narrower than "only one write sequence is ever in flight
+for this AIcall, full stop" (**precision corrected in rev 18, review
+round 15 finding MEDIUM-3**). Within the create-or-reuse sequence itself,
+though, the same row can still legitimately be written against **two
+different transcribe ids in sequence** (the create-then-fall-back-to-
+reuse branch, §5.2.2's `switch`), and an unconditional OR-merge is wrong
+across that boundary: it would carry a stale `owns=true` from the
+abandoned speculative id forward onto the row now describing a *different*
+transcribe id — one this AIcall does not actually own. **Corrected in
+rev 18, review round 15 finding MEDIUM-1**: this makes §5.7.2's stop
+path (`if !owns { … never touch it }`) **incorrectly stop** that
+session — since `!owns` evaluates to `false`, the "never touch it"
+branch is skipped and the session is torn down — not, as an earlier
+draft of this paragraph said, correctly skip stopping it. In §5.11's
+two-Cases-one-call scenario this AIcall would stop the *other* Case's
+still-live, still-listening session out from under it.
+
+The rule is therefore: `UpdateListenState` writes
+`listen_owns_transcribe` as `owns || <the row's current value>` **only
+when `transcribeID` equals the row's current `listen_transcribe_id`** —
+i.e. this write is *re-affirming* the same session another concurrent
+write already touched, which is exactly rev 14's original same-AIcall
+race. When `transcribeID` **differs** from the row's current value —
+whether via §5.1.1 step 3's idempotency check finding a stale session and
+starting fresh (rev 4's original SREM-from-old-id case, just above), or
+via §5.2.2's create-then-reuse fallback — `owns` is set directly to the
+caller's given value, with no carry-over: the row is now describing a
+different transcribe relationship entirely, and the previous `owns` value
+said nothing meaningful about it.
+
+**Which read "the row's current value" means — clarified in rev 18,
+review round 15 finding LOW-7.** `UpdateListenState` takes `c.ID`, not
+the in-hand `*aicall.AIcall`, and §5.2.2's `rollbackListenState`
+discussion already notes the caller's own `c` is never mutated by this
+write (**a bare doc-internal line citation here was fixed in rev 19,
+review round 16 finding LOW-2** — every revision shifts line numbers, so
+this points at the named subsection instead) — so "the row's current
+value" means a fresh `AIcallGet` inside `UpdateListenState`
+itself, immediately before the merge decision, not whatever the calling
+goroutine's own stale `c.Metadata` happens to hold. This matters only
+for the `SREM`-from-old-id half of the rule (rev 4, just above) — a
+stale in-hand `c` could name the wrong old id to `SREM` — not for the
+`owns` value itself, which is identical either way inside §5.2.2's
+create-then-fall-back-to-reuse branch (both reads agree once the lock,
+§5.2.2, has serialized this AIcall's own writers).
+
+(Deduping the two `runListenStart` goroutines entirely, via the same
+`SET NX` primitive §5.3.4 already uses, was considered and rejected in
+rev 1-16 as unnecessary complexity — "§5.2.2's guard already prevents the
+far worse outcome, two live transcribe sessions." Review round 14 found
+that reasoning covered only *cross*-AIcall duplication, not the
+*same*-AIcall race rev 16's write-ordering change newly exposed; rev 17
+adds exactly that lock, scoped narrowly, in §5.2.2. This paragraph's own
+`owns`-merge fix is a second, independent layer on top of that lock —
+the lock prevents the race from happening at all in the common case; the
+scoped merge rule keeps the single remaining legitimate same-AIcall,
+different-id sequence — the create-then-fall-back-to-reuse branch — from
+writing stale ownership.)
 
 **Set, not a single value — fixed in rev 3.** Rev 2 wrote a single key
-(`ai:listen:transcribe:<tr.ID> = <c.ID>`), which directly contradicts
+(`ai:listen:transcribe:<transcribeID> = <c.ID>`) (**`tr.ID` in an earlier
+draft — corrected in rev 22, review round 19 finding LOW-2, the third
+survivor of the same out-of-scope `tr` reference §5.2.4's other two
+mentions were already fixed for in rev 21**), which directly contradicts
 §5.2.2's own reuse rule and §5.11's own edge case: **N AIcalls can share
 one listen transcribe** (two Cases on one call, §5.11). With a
 single-valued key, the second AIcall's `UpdateListenState` would silently
@@ -479,19 +1385,26 @@ in every observed case) sets this key ever holds).
 session** (one at start, one at stop). It is *not* per turn. That bounds
 the known `tm_update` ↔ `Send`-cooldown coupling
 (`dbhandler/aicall.go:240` bumps `tm_update`; `send.go:27-32` reads it) to
-two ~3s windows per listening session, not an unbounded number: one right
-after listening starts (inside a detached goroutine during panel open,
-before the agent could plausibly have typed a question — negligible), and
-**one right after it stops (§5.7.3) — flagged as a real cost in rev 5,
-review round 4 finding H1, not negligible.** Listening stops on call
-hangup, which is exactly when an agent is likely to ask the Insight AI a
-follow-up ("what was that about?"); a `Send()` landing inside that ~3s
-window gets rejected by the cooldown it did nothing to deserve. Rather
-than accept this silently, `clearListenState` (§5.7.3) skips its
-`AIcallUpdate`'s `tm_update` bump specifically: the write uses
+two ~3s windows per listening session, not an unbounded number — but both
+are genuine risk, not just the stop one. **Rev 5 (review round 4 finding
+H1) flagged the *stop*-time write as a real cost**: listening stops on
+call hangup, which is exactly when an agent is likely to ask the Insight
+AI a follow-up ("what was that about?"), and a `Send()` landing inside
+that ~3s window would be rejected by a cooldown it did nothing to
+deserve. **The *start*-time write is no longer safe to dismiss as
+negligible either, since rev 11/12's bounded confbridge-readiness retry
+(§5.1.1 step 7) means the start write can now land up to
+`AIcallListenConfbridgeReadyMaxWaitSeconds` (default 30s) after panel
+open, not immediately — comfortably inside a window where the agent may
+already have typed a real question** (corrected in rev 13, review round
+11 finding LOW-4; earlier revisions' "negligible" framing predates the
+retry and no longer holds). Rather than accept either window silently,
+**both** `UpdateListenState` (the start write, §5.2.4) and
+`clearListenState` (the stop write, §5.7.3) skip their `AIcallUpdate`'s
+`tm_update` bump: the write uses
 `dbhandler.AIcallUpdateWithoutTouchingTMUpdate` (or an equivalent
 targeted-column update that bypasses the standard `tm_update`-on-any-write
-convention) for this one write path, so listen's own bookkeeping never
+convention) for both write paths, so listen's own bookkeeping never
 contributes to the cooldown at all — start or stop. This is narrower and
 safer than the `tm_last_send` decoupling recorded as a follow-up in §11:
 it fixes listen's own two writes specifically, without touching `Send`'s
@@ -1732,7 +2645,10 @@ longer exists once step 1 runs). Actual order:
    it should for a row that genuinely came from that turn.
 3. `AIcallUpdate` → `listen_call_id = uuid.Nil`, remove both metadata keys
    (one write) — last, since nothing downstream needs the old value once
-   step 2 has consumed it.
+   step 2 has consumed it. **Uses the `tm_update`-bypassing write variant
+   (§5.2.4), same as the start-time `UpdateListenState` write** — named
+   explicitly here per review round 11 finding LOW-4, since this section
+   previously said only "`AIcallUpdate`" and left the bypass implicit.
 
 Removing this AIcall's set membership before clearing the DB metadata is
 what guarantees a stale `(transcribe_id, aicall_id)` pairing can never be
@@ -1799,31 +2715,146 @@ For `Message.Origin` (§5.6.2), which **is** user-visible:
   `bin-api-manager` → `go generate ./...`
 - RST (§5.10.2)
 
+For the new `POST /service_agents/aicalls/{id}/listen` endpoint (§5.1,
+**new in rev 15, endpoint surface corrected in rev 16**), user-visible (a
+new public API surface):
+
+- `bin-ai-manager/pkg/listenhandler/main.go` — `regV1AIcallsIDListen`,
+  route table entry, `processV1AIcallsIDListenPost` (the internal
+  ai-manager route stays at the plain `/v1/aicalls/{id}/listen` path —
+  §5.1 — it is only the public api-manager path that moved)
+- `bin-ai-manager/pkg/aicallhandler/{main,start}.go` — `ProcessListen`
+  (single exported method, rev 16), the `Start` hook removed (§5.1.1)
+- `bin-common-handler/pkg/requesthandler/ai_aicalls.go` + mock — `AIV1AIcallListen`
+  (with its own longer RPC timeout, §5.1)
+- `bin-openapi-manager/openapi/paths/service_agents/aicalls/id_listen.yaml`
+  (new file, mirroring `service_agents/contact_addresses/id_claim.yaml`)
+  → `go generate ./...` in both `bin-openapi-manager` and `bin-api-manager`
+- `bin-api-manager/server/service_agents_aicalls.go` — `PostServiceAgentsAicallsIdListen`
+- `bin-api-manager/pkg/servicehandler/serviceagent_aicall.go` + interface
+  in `main.go` — `ServiceAgentAIcallListen`
+- RST: `ai_overview.rst`'s new "Insight Assistant: live call listening"
+  subsection (§5.10.2) gains the endpoint's method/path/response shape;
+  no new `*_struct_*.rst` file, since the response is the existing
+  `AIManagerAIcall`/`WebhookMessage` shape, unchanged by this endpoint
+- `bin-ai-manager/pkg/aicallhandler/listen_trigger.go` (§9's own file
+  list — **corrected in rev 17, review round 14 finding LOW-5**, which
+  found this bullet and §9 disagreeing on which file holds
+  `rollbackListenState`) — `rollbackListenState` (§5.2.2's rev-16/17
+  rewrite of the ordering fix): an `aicallHandler`-level helper, not a
+  cache primitive — it reads `c.ID`/`transcribeID` and issues a targeted
+  `AIcallUpdate` (§5.2.2) — so it stays in this file with `ProcessListen`
+  and the rest of the trigger's own logic, distinct from the three cache
+  primitives below (**this split stated explicitly in rev 20, review
+  round 17 finding B-4 — an earlier draft folded all four names into one
+  "all in `pkg/cachehandler`" sentence, which was wrong for this one**)
+- `pkg/cachehandler/{main,handler}.go` **or the new package (§9's scope
+  note)** — `ListenTranscribeAIcallRemove` (§5.2.2's conflict-recovery
+  branch — **added to this bullet in rev 20, review round 17 finding
+  B-4, to match §9's own placement of it as a cache primitive; an
+  earlier draft of this bullet had grouped it with `rollbackListenState`
+  above instead**) and `ListenStartLockAcquire`/`ListenStartLockRelease`
+  (§5.2.2's per-AIcall lock, added in rev 19, review round 16 finding
+  LOW-5) — the `Add` primitive rev 15 introduced is **removed in rev
+  16**: its job is now folded into `UpdateListenState`'s own existing
+  `SADD`, called earlier (§5.2.4)
+
 `bin-contact-manager` is touched only by the one-line
-`kmkase.ReferenceTypeCall` constant (§5.1 step 5) and must be run through
-the full verification workflow as well.
+`kmkase.ReferenceTypeCall` constant (§5.1.1 step 5) and must be run
+through the full verification workflow as well.
 
-### 5.9 Speaker mapping — unchanged open item
+### 5.9 Speaker mapping — general semantics confirmed empirically; the A-leg/B-leg question closed structurally in rev 11; one empirical gap remains open
 
-**`in`/`out` → customer/agent mapping still needs empirical confirmation
-before merge.** Traced through
-`bin-transcribe-manager/pkg/transcribehandler/start.go` and
-`docsdev/source/transcribe_tutorial.rst`: `direction` is relative to the
-transcribed *channel*, not the call as a whole — `in` is audio arriving
-into that channel from the far end, `out` is audio sent out through it.
-`Case.ReferenceID` is the customer-facing (inbound) call leg. Once that leg
-is bridged to an agent, audio "sent out" through it is the bridged agent's
-voice, so `in=customer`/`out=agent` is the structurally correct reading.
-The only documented example (`quickstart_transcribe.rst`) is a flow/TTS
-scenario, not an agent-bridged one, so this has **not been empirically
-verified against a real agent-bridged call's transcript**. Reversed, this
-silently mislabels who said what and could produce a materially wrong
-proactive message (e.g. attributing a customer's complaint to the agent).
+**What is now confirmed.** Two independent things back the `in=customer`/
+`out=agent` reading, from two different kinds of evidence, plus a third,
+stronger invariant found while answering the CEO/CTO's own question this
+session (review round 9 pushed this from "assumed" to "reasoned from
+code"):
 
-**Action item for implementation, before this ships:** capture one real
-(or staged) agent-bridged call's transcript segments and confirm `in`/`out`
-against known speaker identity. Blocks §11's sign-off, not the rest of
-this design.
+1. **General channel-relative semantics, confirmed against real production
+   data, not just documentation.** Traced through
+   `bin-transcribe-manager/pkg/transcribehandler/start.go` and
+   `docsdev/source/transcribe_tutorial.rst`, then checked against a real
+   transcribe sample (`transcribe_id=BEED29D2D0C64848B9899B357E974BB1`)
+   pulled directly from the production `bin_manager` database. Stated
+   precisely, to avoid the ambiguity round 9 flagged in an earlier
+   phrasing: `direction` is relative to the transcribed *channel*'s own
+   read/write direction — `in` is the audio Asterisk *reads from* that
+   channel (i.e. what the channel's own owner said), `out` is the audio
+   Asterisk *writes to* that channel (i.e. what was played to them, which
+   in a bridge is whoever else is on the call). This is not merely a
+   documentation reading; the production `transcribe_transcripts` rows for
+   that session were consistent with it, and it also matches
+   `streaminghandler/start.go:67-68`'s snoop *spy* direction and
+   `transcribehandler/start.go:268-271`'s split of a `both`-direction
+   session into two independent per-direction snoops.
+2. **Which leg is transcribed, confirmed in rev 11 (§5.1.1 step 7) —
+   narrower than "structural for all of `case_create`."** The precise,
+   code-checked claim is: no *system-generated* B-leg flow
+   (`generateFlowForAgentCall` or the `connect` action's B-leg flow, both
+   cited in §5.1.1 step 7) can ever contain `case_create`, so for the
+   flows this design targets, `Case.ReferenceID` cannot name a B-leg
+   produced by them.
+3. **The stronger invariant, which is what actually closes most of the
+   speaker-identity question (§5.1.1 step 7):** `actionHandleCaseCreate`
+   only creates a Case when the call's peer is CRM-eligible
+   (`isCRMEligiblePeer`/`crmIneligiblePeerTypes`,
+   `bin-flow-manager/pkg/activeflowhandler/actionhandle.go:1259-1275,1354`),
+   which excludes `agent`/`extension`/`sip`/`conference`/`ai`/`ai_team`/
+   `none` peer types outright — and the peer is always resolved as the far
+   end of *that call's own channel*
+   (`deriveEndpointsForCase`, `:1287-1300`). So **`in` = the listened
+   channel's own remote party = `Case.Peer`**, and `case_create` itself
+   already guarantees that party is not an internal agent/extension/SIP
+   endpoint. This is a stronger, non-circular guarantee than "it happens
+   to be the A-leg," and it is what actually bounds point (2) below.
+
+Once the listened leg is bridged to an agent, audio "sent out" through it
+(point 1's `out`) is the bridged agent's voice, so `in=customer`/
+`out=agent` follows directly.
+
+**What is still open — do not overstate the above as full closure.**
+
+- **The one item rev 1-10 already flagged is still open:** none of (1),
+  (2), or (3) is a substitute for capturing one real (or staged)
+  **agent-bridged** call's transcript segments and confirming `in`/`out`
+  against known speaker identity end-to-end. The production sample in (1)
+  confirms the channel-relative *mechanism*; it does not by itself confirm
+  that a live agent-bridged session labels the *specific* speaker pair
+  correctly. Still blocks §11's sign-off, not the rest of this design.
+- **New from rev 11, then narrowed by review round 9's own verification —
+  the "click-to-call inverts the mapping" risk as first stated in rev 11
+  is very likely impossible, not merely guarded.** Rev 11's first draft of
+  this section named an agent-outbound call (e.g. click-to-call dialing
+  the agent's own SIP/extension leg) as an unguarded inversion risk. But
+  per invariant (3), that exact shape cannot produce a Case at all — the
+  agent/extension/SIP peer types are CRM-ineligible, so
+  `actionHandleCaseCreate` returns without creating one. The genuine,
+  narrower residual vector is different: **an *inbound* call whose peer
+  address happens to be CRM-eligible (`tel`/`email`) but is actually staff
+  in disguise** — a supervisor or remote agent calling in via a plain DID
+  rather than through the agent-dial path, for instance — which
+  `case_create` cannot distinguish from a real customer, and which
+  inversion would then affect. §5.1.1 step 7's participant-count guard
+  does not catch this either (a 2-party bridge still reads as 2 parties).
+  This is documented residual risk, not mitigated in this revision — a
+  caller-role signal beyond address type would be needed to close it, and
+  is out of scope here.
+- **New from rev 11, not yet investigated:** call-transfer scenarios via
+  `bin-transfer-manager` were not traced this session — whether a
+  transfer changes which leg is transcribed, or produces a transient
+  3-party bridge, is unconfirmed. §5.1.1 step 7's guard is enforced only
+  at listen-start and is **not** re-checked once a listen session is
+  live, so a transfer occurring mid-session is unguarded, not merely
+  "refused" — see §5.1.1 step 7's closing paragraph and §11 item 12.
+- **Unchanged from rev 1-10, precision added in rev 11:** a 3rd party in
+  the bridge degrades only the `out` side of the mapping (`out` was never
+  more specific than "whoever else is on the call," and a 3rd party makes
+  that ambiguous); `in` stays correct regardless, since invariant (3)
+  never depended on how many other parties there are. §5.1.1 step 7's
+  guard refuses to *start* listening on a stably-non-2-party bridge; it
+  has no mechanism to stop an already-listening session if a 3rd party
+  joins mid-call (see the point above).
 
 Tags are structural (`[CUSTOMER]`/`[AGENT]`), not localized, so prompt
 behaviour does not fork by call language. `transcript.Direction` also
@@ -1866,6 +2897,32 @@ Correction to the rev-1 review's M6: `square-admin` and `square-talk` are
   #2 ("does the read surface expose what the badge needs?") is hereby
   **closed**: it does, once the field exists.
 
+#### 5.10.1a Triggering listen explicitly (new in rev 15, replaces the implicit trigger; endpoint path corrected in rev 16)
+
+Both panels now make **two** sequential calls when opening (previously
+one): the existing call that creates/reuses the Q&A AIcall (`Start`,
+already `POST /service_agents/aicalls` per `ServiceAgentAIcallCreate`),
+then a new call to `POST /service_agents/aicalls/{id}/listen` (§5.1 —
+**not** the top-level `/v1/aicalls/{id}/listen`; that path is
+Admin-console-only and would reject an ordinary agent, §5.1's BLOCKING-1
+fix) using the AIcall id `Start`'s response returned. The second call is
+fire-and-forget from the frontend's own perspective too — its response
+(the current AIcall, §5.1) carries no listening-status field to act on
+(§5.1's own scope cut), so the panel does not need to branch on it; a
+failed or slow response does not block rendering the panel, and a
+repeated call (e.g. a fast double-open) is free (§5.1.1 step 3's
+idempotency check, now reached via `checkListenEligible`).
+
+- **square-admin** (`src/views/contacts/CaseInsightAssistantPanel.js`):
+  fire the `listen` call immediately after `Start` resolves, in the same
+  effect that currently calls `Start`.
+- **square-talk** (`src/features/cases/CaseInsightAssistantPanel.jsx`):
+  same pattern, same call site as its own `Start` invocation.
+- No new WebSocket/poll subscription is needed for this call itself — it
+  is a one-shot trigger, not a data source. Any resulting proactive
+  message still arrives over each panel's existing message transport
+  (WebSocket for square-admin, 2s poll for square-talk), unchanged.
+
 #### 5.10.2 RST docs (resolves review M7)
 
 Mandatory per root `CLAUDE.md` for user-visible changes:
@@ -1876,8 +2933,23 @@ Mandatory per root `CLAUDE.md` for user-visible changes:
   `ai_overview.rst` — the `notify_agent` tool and the Insight-only tool
   set.
 - `ai_overview.rst` — a short "Insight Assistant: live call listening"
-  subsection: what triggers it, that it is `init_prompt`-driven, and that
-  proactive messages are marked `origin=proactive`.
+  subsection: that it is triggered by
+  `POST /service_agents/aicalls/{id}/listen` (**updated in rev 15, the
+  route itself moved to this path in rev 16 (§5.1's BLOCKING-1 fix), this
+  specific mention corrected to match in rev 17, review round 14 finding
+  MEDIUM-2** — no longer described as automatic on AIcall creation), that
+  it is `init_prompt`-driven, and that proactive messages are marked
+  `origin=proactive`.
+- New endpoint doc for `POST /service_agents/aicalls/{id}/listen` itself
+  (**new in rev 15; the route moved here in rev 16 per review round 13
+  finding BLOCKING-1; this specific mention corrected to match in rev
+  17, review round 14 finding MEDIUM-2**) — method, path, empty request body, 200 response shape
+  (the existing `AIManagerAIcall` struct, already documented), following
+  whichever existing pattern documents
+  `POST /service_agents/contact_addresses/:id/claim` today (same
+  directory, same doc generation path) — **not**
+  `POST /v1/aicalls/{id}/terminate`, which is on the Admin-console
+  surface this endpoint deliberately is not (§5.1).
 - Build procedure: `cd bin-api-manager/docsdev && rm -rf build &&
   python3 -m sphinx -M html source build`, then
   `git add -f bin-api-manager/docsdev/build/`, RST + HTML in the same
@@ -1896,7 +2968,7 @@ sessions. Bounds that actually apply:
 |---|---|
 | **Transcribe sessions** per call — for listen alone | 1 — any progressing `IDAIManagerListen` session on that call is reused (§5.2.2) |
 | **Transcribe sessions** per call — listen + a concurrent `ai_summary` (rare) | up to 2, since rev 4 (§5.2.1) deliberately no longer shares ownership with `ai_summary`'s `IDAIManager` session |
-| **STT streams** per call (corrected in rev 3, review-round-2 F11) | 2, not 1 — `DirectionBoth` expands to two independent streamings, one per direction (`transcribehandler/start.go:~216-219`: `directions := []transcript.Direction{DirectionIn, DirectionOut}`), each its own external-media leg and provider stream. One shared *transcribe session* still means one shared *billing/lifecycle record* (§5.2.2's reuse rule dedupes at that level), but the underlying STT cost is two streams, not one |
+| **STT streams** per call (corrected in rev 3, review-round-2 F11) | 2, not 1 — `DirectionBoth` expands to two independent streamings, one per direction (`transcribehandler/start.go:268-271`, drift from `~216-219` fixed in rev 14/§10.10: `directions := []transcript.Direction{DirectionIn, DirectionOut}`), each its own external-media leg and provider stream. One shared *transcribe session* still means one shared *billing/lifecycle record* (§5.2.2's reuse rule dedupes at that level), but the underlying STT cost is two streams, not one |
 | LLM turns per AIcall per minute | `60 / AIcallListenEvaluateIntervalSeconds` = 3 at the default |
 | LLM turns per AIcall, total | `AIcallListenMaxTurnsPerAIcall` = 60 (hard stop, then listening ends) |
 | Tokens per turn | constant-shaped: 3 system messages (`InsightSystemPrompt` + prompt snapshot + `ListenTurnSystemPrompt`, §5.4.2) + ≤10 Q&A messages + ≤40 transcript lines |
@@ -1922,6 +2994,11 @@ ships dark and is enabled deliberately.
 | `aicall_listen_buffer_ttl_hours` | `6` | Redis TTL on the buffer/lock/turn-count keys (§5.3.3, §5.3.4, §5.4.1) — **not** `ai:listen:turnpcid:*`, which uses its own, much shorter `aicall_listen_turn_pipecatcall_id_ttl_seconds` (rev 7, review round 6 F1) since a turn-id entry only ever needs to outlive one listen turn |
 | `aicall_listen_default_language` | `en-US` | fallback when `STTLanguage` is empty |
 | `aicall_listen_turn_pipecatcall_id_ttl_seconds` | `180` | **new in rev 7**: TTL on the `ai:listen:turnpcid:<aicall_id>` set entries (§5.4.3, §5.4.5 step 2) |
+| `aicall_listen_confbridge_ready_poll_interval_seconds` | `2` (proposed — §11 item 13) | **new in rev 11**: poll interval for §5.1.1 step 7's bounded confbridge-readiness retry |
+| `aicall_listen_confbridge_ready_max_wait_seconds` | `30` (proposed — §11 item 13) | **new in rev 11**: total wait budget for the same retry, before giving up with `skipped_confbridge_not_ready` |
+| `aicall_listen_ensure_goroutine_timeout_seconds` | `45` (proposed — §11 item 13) | **new in rev 12, added after review round 10 finding MEDIUM-B** (corrected from a mistaken "rev 11" attribution in review round 12 finding LOW-2): the steps-7-8 goroutine's (`runListenStart`, renamed rev 16) own `context.WithTimeout`, explicit and specific to this feature (§5.1.1 step 7) — must stay strictly greater than `aicall_listen_confbridge_ready_max_wait_seconds` to leave margin for the RPC calls the retry loop itself makes each poll; the two pre-existing detached-goroutine patterns cited in §5.1.1's intro (`tool.go:191-199`, unbounded; `start.go:97-100`, an unrelated 5s fetch) do not bound this path and are not reused here |
+| `aicall_listen_start_lock_ttl_seconds` | `60` (proposed — §11 item 13; **raised from `15` in rev 18, kept at `60` — this row's own derivation text corrected in rev 19, review round 16 finding HIGH-1, which found the `15` default had never actually been updated here despite §5.2.2 saying it was**) | **new in rev 17, review round 14 finding HIGH-2**: TTL on the `ai:listen:startlock:<aicall_id>` key (§5.2.2), the per-AIcall `SET NX EX` lock serializing concurrent `runListenStart` goroutines' create-or-reuse sequence. Must strictly **exceed** `aicall_listen_ensure_goroutine_timeout_seconds`'s own default (`45`) — not merely one RPC call's own timeout — so the lock cannot expire out from under a goroutine that is still legitimately working within its own outer budget (§5.2.2's derivation; an earlier "sum the RPC timeouts inside the lock" derivation was wrong, review round 15 finding HIGH-1). A lock-holder that genuinely crashes (pod loss — the release `defer` never runs at all, §5.2.2), or whose acquire call errors ambiguously and whose own best-effort release attempt also fails (review round 18 finding LOW-2, §5.2.2), still strands the lock for the full TTL; accepted, since a shorter TTL only reopens review round 14's HIGH-2 in exchange for faster crash recovery |
+| `aicall_listen_start_lock_release_timeout_seconds` | `3` (proposed — §11 item 13) | **new in rev 19, review round 16 finding MEDIUM-2**: bound on the detached `context.WithTimeout(context.WithoutCancel(ctx), …)` the lock's `Release` call runs under (§5.2.2), so a genuinely stuck Redis call during cleanup cannot hang the releasing goroutine indefinitely — independent of, and much shorter than, the lock's own TTL above |
 
 All in `internal/config/main.go` with `SetXxxForTest` helpers, following
 the existing pattern (`config/main.go:159-177`), and documented in
@@ -1941,7 +3018,7 @@ exactly like every existing ai-manager metric.
 
 | Metric (full name = `ai_manager_` + this) | Labels | Meaning |
 |---|---|---|
-| `aicall_listen_start_total` | `result` = started / reused / skipped_not_listenable / failed | §5.1–5.2 outcomes |
+| `aicall_listen_start_total` | `result` = started / reused / skipped_not_listenable / skipped_confbridge_not_ready / skipped_confbridge_error / failed | §5.1–5.2 outcomes. **New in rev 11** (review round 9 BLOCKING-1/MEDIUM-2, revised after review round 10 HIGH-A removed the unsound `skipped_confbridge_invalid_topology` fast-fail label — see §5.1.1 step 7): the two `skipped_confbridge_*` labels give step 7's bounded retry the observability it needs — a sustained non-zero `skipped_confbridge_not_ready` rate is the direct signal that the retry budget (§11 item 13) is too short for real ring times (or genuinely non-2-party topology, which this design does not attempt to distinguish from a slow ring — see step 7), which a bare `skipped_not_listenable` bucket would have hidden |
 | `aicall_listen_segment_total` | `result` = buffered / dropped_deleted / dropped_unknown | §5.3 intake |
 | `aicall_listen_turn_total` | `result` = ran / skipped_locked / skipped_empty / skipped_cap / skipped_disabled / skipped_invalid / skipped_register_failed / failed | §5.4 turns. **New in rev 8**: `skipped_disabled` (§5.4.1 step 1, flag off — review round 6 F3), `skipped_invalid` (same step, any of the other require-list conditions), `skipped_register_failed` (§5.4.3, the turn-id `SADD` failed — review round 7 N-2) |
 | `aicall_listen_notify_total` | — | proactive messages actually delivered |
@@ -1970,9 +3047,15 @@ read as an endorsed alternative).
 
 | Case | Behaviour |
 |---|---|
-| Case lookup, call lookup, transcribe list/start fails | Logged, metered `skipped_*`/`failed`, listening simply does not start. Never fails AIcall start — the whole ensure path runs detached (§5.1.1) |
-| Call ends between the §5.1 liveness check and `TranscribeV1TranscribeStart` | `isValidReference` rejects a non-active call (`transcribehandler/start.go:107-115`); treated as a no-op, logged |
-| `TranscribeV1TranscribeStart` returns `TRANSCRIBE_ALREADY_PROGRESSING` despite the list showing none (read-then-create race, acknowledged at `transcribehandler/start.go:190-195`) | Re-run the list once and reuse the winner; if still nothing, give up and log |
+| Case lookup, call lookup, transcribe list/start fails | Logged, metered `skipped_*`/`failed`, listening simply does not start. Never fails the triggering call — steps 1-6 (`checkListenEligible`) fail fast and cheap inside the `POST /service_agents/aicalls/{id}/listen` request itself, and steps 7-8 run detached (§5.1.1, rev 16 naming) |
+| Terminated/deleted AIcall passed to `ProcessListen` (**new in rev 16, review round 13 finding MEDIUM-2**) | Step 2's now-combined AIcall gate rejects `c.Status != progressing \|\| c.TMDelete != nil` before any of steps 3-6 run — no transcribe list/start RPCs are made at all, since rev 15's public endpoint removed the implicit "just created/reused" guarantee `Start`'s old hook relied on |
+| `UpdateListenState`'s speculative pre-write (DB + Redis) fails, before `TranscribeV1TranscribeStart` is even called (**rev 16, review round 13 finding HIGH-3 — supersedes rev 15's Redis-only pre-registration**) | Fail closed: return without calling `TranscribeV1TranscribeStart` at all — no transcribe is created, nothing to roll back. Logged, metered as a `skipped_*`/`failed` outcome same as any other step-7 RPC failure |
+| `TranscribeV1TranscribeStart` fails *after* the speculative pre-write above succeeded, for any reason other than `TRANSCRIBE_ALREADY_PROGRESSING` (**rev 16**) | `rollbackListenState` (§5.2.2) explicitly undoes both the DB write and the Redis `SADD` against the pre-generated id, rather than leaving either for TTL/next-idempotency-check cleanup — no functional harm either way, but explicit rollback is preferred, matching this design's existing convention (§5.2.4's stale-membership case) |
+| Call ends between the §5.1.1 step-6 liveness check and `TranscribeV1TranscribeStart` | `isValidReference` rejects a non-active call (`transcribehandler/start.go:160-163`, line drift fixed in rev 14/§10.10, corrected again in rev 16/§10.11 LOW-2); treated as a no-op, logged |
+| `TranscribeV1TranscribeStart` returns `TRANSCRIBE_ALREADY_PROGRESSING` despite the list showing none (read-then-create race, acknowledged at `transcribehandler/start.go:242-247`) — **rev 16, review round 13 finding MEDIUM-3: rev 15's rollback-on-any-error snippet had silently dropped this discrimination; restored explicitly** | Re-run the list once (§5.2.2's `switch` case) and rewrite this AIcall's state to reuse the winner, undoing the speculative write against our own pre-generated id instead of keeping it; if still nothing, roll back and give up, same as any other failure |
+| Two concurrent `runListenStart` goroutines for the *same* AIcall reach §5.2.2's create-or-reuse lock at once (**new in rev 18, review round 15 finding LOW-1**) | The losing goroutine's `ListenStartLockAcquire` returns `acquired=false`; it returns immediately without any RPC call, metered under `aicall_listen_start_total` as one of `skipped_*` — **`skipped_start_locked` is this design's proposed label for it, not yet added to §5.13's enumerated set; §11 item 16 tracks the decision (corrected in rev 19, review round 16 finding LOW-3, from wording that read as already settled)** — the winning goroutine's sequence is unaffected |
+| §5.2.2's lock `ListenStartLockAcquire` call errors (Redis unavailable) (**new in rev 18, renamed in rev 19 with the acquire/release symmetry fix**) | Fail closed, same as every other Redis-dependent step in this design (§6's Redis-unavailable row below): no `TranscribeV1TranscribeList`/`TranscribeV1TranscribeStart` call has been made yet, so no transcribe is started; a best-effort release is attempted with the same token first (§5.2.2, review round 17 finding B-7 — the underlying `SET NX` may have landed despite the client-visible error), but the outcome is metered `failed` regardless of whether that release itself succeeds |
+| §5.2.2's lock `ListenStartLockRelease` call errors, on the normal (deferred) release path after a successful acquire (**split out from the row above in rev 20, review round 17 finding B-6, which found the row above's "no transcribe is started" and "metered `failed`" claims did not hold for this path — by construction the deferred release runs *after* `TranscribeV1TranscribeStart` may already have run**) | Best-effort only: the return value is deliberately discarded (`_ =`, §5.2.2), so there is nothing to meter here specifically. If the underlying `DEL` genuinely did not happen, the lock simply falls back to expiring on its own TTL (§5.2.2's accepted residual) — no different in outcome from the crash case the TTL is already sized to tolerate |
 | Two Cases on one live call | Two AIcalls (the unique key is per-Case), one shared STT session. The first to arrive owns it (`owns=true`); the second reuses (`owns=false`) and never stops it. Both are cleared on hangup by `stopListenByCallID`'s plural lookup |
 | `transcript_created` arrives for a deleted transcript | Dropped on `TMDelete != nil` (§5.3.2, review H3) |
 | `transcript_created` arrives after listening stopped | Redis resolver key already deleted → dropped |
@@ -1986,6 +3069,10 @@ read as an endorsed alternative).
 | Turn cap reached on a very long call | Listening stops cleanly with `skipped_cap`; the Q&A panel keeps working normally |
 | Agent asks a question while a listen turn is mid-flight | Both proceed independently on separate pipecatcalls. `Send` rotates `c.PipecatcallID`, which makes the still-running listen turn's id "foreign" — so if that turn later emits text it is dropped, and if it calls `notify_agent` the notification still lands correctly (tool routing goes through the pipecatcall's `ReferenceID`, not `AIcall.PipecatcallID`) |
 | transcribe-manager pod restarted; stop RPC unreachable | Logged + metered; transcribe-manager's own hangup handler is the guaranteed backstop (§5.7.2) |
+| `ProcessListen` runs while the call is still queued/ringing, or the confbridge is transiently deleted/non-`progressing`/non-2-party (agent hasn't joined yet, or an early-media multi-destination `connect` has extra ringing legs still in the bridge) (**new in rev 11, review round 9 BLOCKING-1, retry logic revised after review round 10 HIGH-A**) | Not treated as failure: §5.1.1 step 7 polls (bounded) until the confbridge is live with exactly 2 parties, the call ends, or the wait budget elapses. Never fails the triggering `POST` (still detached, §5.1.1). The loop does not attempt to distinguish "still converging" from "will never converge" — see step 7 for why that distinction was tried and dropped |
+| `CallV1ConfbridgeGet` errors while polling (**new in rev 11**) | Logged, metered `skipped_confbridge_error`; listening does not start; retried on the *next* `POST /service_agents/aicalls/{id}/listen` call (next panel open), not within the same poll loop |
+| The wait budget (`AIcallListenConfbridgeReadyMaxWaitSeconds`) elapses without ever reaching a live 2-party confbridge (**new in rev 11**) | Logged, metered `skipped_confbridge_not_ready` (the last observed party count is included in the log line, not as a metric label); listening does not start for this `ProcessListen` invocation; retried on the next panel open |
+| A 3rd party joins the confbridge *after* listening has already started (**new in rev 11, review round 9 HIGH-3 — documented, not mitigated**) | §5.1.1 step 7's guard is start-time only; there is no re-check once listening is live. `out` becomes ambiguous (no longer reliably "the agent"); `in` is unaffected. Open residual risk, §11 item 12 |
 
 ---
 
@@ -1994,16 +3081,158 @@ read as an endorsed alternative).
 **`bin-ai-manager` unit (gomock, table-driven, following
 `pkg/aicallhandler/start_test.go`):**
 
-1. `ensureListen` — every branch of §5.1: disabled flag; non-Insight AI;
-   already-listening idempotency (must make **zero** transcribe-start
-   calls); `ReferenceType != "call"`; unparseable `ReferenceID`;
-   cross-customer Case; cross-customer call; each non-live call status;
-   happy path start; happy path reuse.
-2. **`Start` hook coverage — one test per success return of
-   `startReferenceTypeContactCase`** (fresh create, stuck-Initiating,
-   **reuse**), asserting the ensure step is invoked in all three. The
-   reuse case is the specific regression rev 1 shipped; it gets a named
-   test.
+1. `checkListenEligible` — every branch of §5.1.1 steps 1-6: disabled
+   flag; non-Insight AI; **terminated/deleted AIcall (new in rev 16,
+   review round 13 finding MEDIUM-2 — must make zero transcribe list/start
+   calls, unlike every other branch below it need not even reach the
+   idempotency check)**; already-listening idempotency (must make **zero**
+   transcribe-start calls); `ReferenceType != "call"`; unparseable
+   `ReferenceID`; cross-customer Case; cross-customer call; each non-live
+   call status; each returns `proceed=false` synchronously with **zero**
+   goroutines spawned. Separately, happy-path `proceed=true` asserts
+   `runListenStart` is invoked exactly once by `ProcessListen`, receiving
+   the already-resolved `a`/`c`/`kase`/`callID`/`call` values directly
+   (asserting **zero** additional `ContactV1CaseGet`/`CallV1CallGet` calls
+   inside the goroutine — the direct regression test for review round
+   13's HIGH-1) rather than re-fetching them (**rewritten in rev 16**;
+   rev 15's first draft split this into two separately-callable
+   functions connected only by a bare `bool`, which is what created the
+   re-fetch risk this test now pins against).
+
+   *Step 7's confbridge participant-count guard, added in rev 11 (review
+   round 9 required this after BLOCKING-1; the retry logic itself was
+   revised after review round 10 finding HIGH-A), gets its own dedicated
+   coverage within this same test suite:* `ConfbridgeID == uuid.Nil`
+   while the call is `ringing`, polled until it resolves and the party
+   count reaches 2 (asserts the retry actually re-polls, not just that it
+   eventually succeeds — the false-negative regression test for
+   BLOCKING-1); wait budget exhausted while still `len == 1` →
+   `skipped_confbridge_not_ready`, no transcribe-start call; **`len == 3`
+   while the call is `progressing`, then settling back to `len == 2`
+   within the wait budget → proceeds to §5.2 normally, does NOT give up**
+   (the direct regression test for review round 10's HIGH-A — an
+   early-media multi-destination `connect` transiently over-populating the
+   confbridge before settling); a *stable* `len == 3` for the entire wait
+   budget → `skipped_confbridge_not_ready` (same label as any other
+   timeout — this design does not distinguish the two causes, §5.1.1 step
+   7); `CallV1ConfbridgeGet` error → `skipped_confbridge_error`; a
+   confbridge with `TMDelete != nil` or non-`progressing` `Status` treated
+   the same as "not ready," not as "2 parties confirmed"; call transitions
+   to a non-live status *during* the poll loop → step 6's own liveness
+   check ends the loop, not the confbridge check; happy path (`len == 2`,
+   confbridge `progressing`) → proceeds to §5.2 with **zero** extra polls
+   once satisfied.
+2. **`POST /service_agents/aicalls/{id}/listen` handler coverage
+   (rewritten in rev 15, endpoint surface and handler shape corrected in
+   rev 16 — `Start` no longer has a hook to test here at all).** At the
+   `serviceHandler` layer (`ServiceAgentAIcallListen`): non-agent identity
+   → `ErrAuthenticationRequired`, no RPC calls; agent without
+   `PermissionAll` → `ErrPermissionDenied`, no `AIV1AIcallListen` call
+   (the direct regression test for review round 13's BLOCKING-1);
+   cross-customer AIcall (fetched but `CustomerID != a.CustomerID`) →
+   rejected before `AIV1AIcallListen` is called. At the `aicallHandler`
+   layer (`ProcessListen`, gomock, single exported method — collapsed in
+   rev 16 per review round 13's HIGH-2/MEDIUM-4, so this is the only
+   handler-layer test surface now, not two): unknown `id` → 404, no
+   `checkListenEligible` call. `checkListenEligible` returning
+   `proceed=false` → 200 with the unchanged AIcall, **zero**
+   `runListenStart` invocations (asserts the method actually branches on
+   the returned bool, not just always firing the goroutine). Happy path →
+   returns within test-reasonable latency (asserts `ProcessListen` does
+   **not** block on step 7's confbridge wait — the single most
+   safety-critical property of the sync/async split, §5.1). Repeated
+   calls on an already-listening AIcall are free (rev 1's original
+   reuse-path regression, now exercised via two consecutive HTTP calls
+   instead of two `Start` returns, since `Start` itself no longer
+   triggers this at all).
+   **Event-ordering fix (§5.2.2, new in rev 15, restructured in rev 16
+   per review round 13's HIGH-3/MEDIUM-3):** `UpdateListenState`'s
+   speculative pre-write (DB + Redis, against a pre-generated id) happens
+   before `TranscribeV1TranscribeStart` is called (assert call order via
+   gomock `gomock.InOrder`, not just that both eventually happen);
+   pre-write failure → `TranscribeV1TranscribeStart` never called;
+   `TranscribeV1TranscribeStart` failure with a **non**-`TRANSCRIBE_ALREADY_PROGRESSING`
+   error → `rollbackListenState` called with the pre-generated id;
+   `TranscribeV1TranscribeStart` failure **with**
+   `TRANSCRIBE_ALREADY_PROGRESSING` and the re-run list finds a winner →
+   `UpdateListenState` called again with the winner's id and `owns=false`,
+   `ListenTranscribeAIcallRemove` called for the AIcall's own
+   never-created pre-generated id, **not** `rollbackListenState` (the
+   direct regression test for review round 13's MEDIUM-3 — rev 15's
+   snippet would have rolled back and given up here instead of reusing
+   the winner, silently dropping §6's documented reuse-on-conflict
+   behaviour); same case but the re-run list also comes up empty →
+   `rollbackListenState`, give up; **an early `transcript_created` event
+   arriving between the pre-write and `TranscribeV1TranscribeStart`
+   returning must not trigger `stopListening`/`clearListenState`** (the
+   direct regression test for review round 13's HIGH-3 — assert
+   `RunListenTurn`'s precondition check reads the pre-written
+   `listen_transcribe_id` correctly and processes the segment normally,
+   not as a `skipped_invalid` teardown); happy path → the transcribe id
+   the mocked `TranscribeV1TranscribeStart` reports back equals the
+   pre-generated id already written.
+   **Per-AIcall create-or-reuse lock, and the scoped `owns`-merge (rev
+   17, review round 14 findings HIGH-1/HIGH-2; lock coverage extended in
+   rev 19, review round 16 finding MEDIUM-4):** two concurrent
+   `runListenStart` invocations for the *same* AIcall — the second
+   `ListenStartLockAcquire` call must fail (`acquired=false`) while the
+   first still holds `ai:listen:startlock:<aicall_id>`, and the second
+   goroutine returns immediately with **zero**
+   `TranscribeV1TranscribeStart`/`UpdateListenState` calls of its own (the
+   direct regression test for HIGH-2's clobbering scenario — assert the
+   first goroutine's session survives untouched), metered under this
+   design's proposed (not yet added to §5.13, §11 item 16) label
+   `skipped_start_locked`. A goroutine that completes normally —
+   including one whose own `ctx` has already been cancelled by
+   `aicall_listen_ensure_goroutine_timeout_seconds` — always calls
+   `ListenStartLockRelease` and the key is gone immediately after,
+   asserted by mocking `ListenStartLockRelease` to capture the context it
+   receives and confirming that context is **not** `ctx` and is not
+   already `Done()` (the direct regression test for round 16's MEDIUM-2 —
+   a release still keyed off the cancelled `ctx` would silently no-op).
+   **`ListenStartLockRelease`'s compare-and-delete semantics** (round 15
+   HIGH-1(b), re-verified in round 16): a release call whose token no
+   longer matches the key's current value — this goroutine's own TTL
+   already lapsed and a different goroutine has since acquired the same
+   key — is a no-op; the second goroutine's still-live lock is
+   unaffected (the direct regression test for the exact clobbering this
+   lock exists to prevent, now exercised at the release layer directly
+   rather than only inferred from HIGH-2's create-path test above).
+   **Simulated crash (no `defer` ever runs, e.g. the goroutine is killed
+   mid-sequence rather than merely timing out):** the lock is held for
+   the full `aicall_listen_start_lock_ttl_seconds`; a goroutine that
+   attempts `ListenStartLockAcquire` before that window elapses observes
+   `acquired=false` (proposed label `skipped_start_locked` again, not an
+   error); one that attempts after the window elapses acquires normally
+   and proceeds (**corrected in rev 19, review round 16 finding
+   MEDIUM-3**, from an earlier claim that any "later goroutine" could
+   acquire and proceed — true only once the TTL has actually elapsed,
+   since the TTL now exceeds a single goroutine's own outer timeout
+   budget). **Acquire-error path, including the best-effort release
+   attempt (rev 20, review round 17 finding B-7):** `ListenStartLockAcquire`
+   returning a Redis error → `runListenStart` (not `checkListenEligible`,
+   which never reaches this lock — **mislabeled before rev 20, review
+   round 17 finding B-6**) fails closed, metered `failed`, **zero**
+   `TranscribeV1TranscribeStart` calls, regardless of whether the
+   best-effort `ListenStartLockRelease` attempt on this path itself
+   succeeds (asserted by making that release call also fail and
+   confirming `runListenStart` still returns the original acquire
+   error). **Deferred-release-error path (new in rev 20, review round 17
+   finding B-6, extending round 16's MEDIUM-4 coverage):** a
+   `ListenStartLockRelease` error on the
+   normal, successful-acquire path is swallowed (`_ =`) by design — assert
+   this does **not** propagate as a `runListenStart` failure and does
+   **not** get separately metered, distinguishing it from the
+   acquire-error path above.
+   `UpdateListenState`'s `owns`-merge: writing the **same**
+   `transcribeID` as the row's current one with `owns=false` after a
+   prior `owns=true` write → merged result is `true` (rev 14's original
+   case, unchanged); writing a **different** `transcribeID` (the
+   create-then-fall-back-to-reuse branch above) with `owns=false` after
+   a prior `owns=true` write **against the old id** → merged result is
+   `false`, not carried forward (the direct regression test for HIGH-1 —
+   asserts this AIcall does not end up believing it owns a session it
+   fell back away from).
 3. `EventTMTranscriptCreated` — `TMDelete != nil` drop; empty-message
    drop; empty-set drop (asserting **no** DB call); buffered-but-locked
    (no turn); buffered-and-unlocked (turn runs); **new in rev 3, pins F1's
@@ -2133,6 +3362,17 @@ read as an endorsed alternative).
     filter (§5.6.4) hides `role='tool'` and empty-content
     `role='assistant'` rows (field names matching the real `tool_calls`/
     `content` wire fields, not camelCase).
+20. **New in rev 15, path corrected in rev 17 (§5.10.1a, review round 14 finding MEDIUM-2):** both panels
+    call `POST /service_agents/aicalls/{id}/listen` exactly once per
+    panel-open, using the AIcall id from the `Start` response, and do
+    **not** block rendering
+    on that call's response; a rejected/slow `listen` response does not
+    prevent the panel from rendering or from receiving/displaying Q&A
+    messages. A second rapid open/close/reopen does not spawn duplicate
+    in-flight `listen` calls beyond what the existing effect-dependency
+    array already guards against for `Start` itself (no new
+    frontend-side dedup logic is required — §5.1.1 step 3's server-side
+    idempotency check is what actually makes repeats free).
 
 ---
 
@@ -2167,12 +3407,13 @@ read as an endorsed alternative).
 
    | Change | Behaviour with flag **off** | Why |
    |---|---|---|
-   | §5.1's `ensureListen` trigger, §5.2–§5.7's transcribe/Redis/turn machinery | Fully inert | `ensureListen` step 1 returns immediately on the flag (§5.1.1) — nothing downstream ever runs |
+   | §5.1's `POST /service_agents/aicalls/{id}/listen` endpoint and `ProcessListen`/`checkListenEligible`/`runListenStart`, §5.2–§5.7's transcribe/Redis/turn machinery | Endpoint reachable, but fully inert downstream (**endpoint existence itself is rev 15/16's own change, not flag-gated — see below**) | `checkListenEligible` step 1 returns `proceed=false` immediately on the flag (§5.1.1) — `runListenStart` is never even called, so nothing downstream ever runs. The endpoint always exists once this PR deploys; calling it with the flag off is a harmless no-op, same as every other §5.1/§5.2 step failing its precheck |
    | §5.4.5's `getPipecatcallMessages` two-fetch restructure | **Always active**, for every `call`/`conversation`/`task`/`contact_case` AIcall, regardless of the flag | It is a general context-assembly fix (guarantees the system prompt, §5.4.5 step 4), not listen-specific machinery — there is no listen state to gate it on for AIcalls that were never going to listen anyway |
    | §5.4.4(b)'s `isForeignPipecatcall` guard on `EventPMMessageBotLLM`/`…Intermediate` | **Always active** for `contact_case` AIcalls | Same reasoning: it is a general stale-reply guard (the design's own §5.4.4(b) text calls it "a strict improvement beyond this feature"), not conditioned on a listen session existing |
-   | §5.4.5's `Origin` tagging in `ToolHandle` | Inert in practice — `listenTurn` (§5.4.5 step 2, rewritten in rev 7) checks Redis membership in `ai:listen:turnpcid:<aicall_id>`, which is never populated while the flag keeps `ensureListen`/§5.4.3 from ever running | Gated *indirectly*, through the positive listen-turn-id registration (review round 6's F1 fix), not through an explicit flag read in `ToolHandle` |
+   | §5.4.5's `Origin` tagging in `ToolHandle` | Inert in practice — `listenTurn` (§5.4.5 step 2, rewritten in rev 7) checks Redis membership in `ai:listen:turnpcid:<aicall_id>`, which is never populated while the flag keeps `checkListenEligible`/§5.4.3 from ever running | Gated *indirectly*, through the positive listen-turn-id registration (review round 6's F1 fix), not through an explicit flag read in `ToolHandle` |
    | `ToolHandle`'s per-tool-call `ReferenceType` check (§5.4.5 step 2, review round 6 F2) | **Always active**, for every AIcall type | A single cached-field comparison (`c.ReferenceType == ReferenceTypeContactCase`), not a DB read — cheap enough to run unconditionally rather than threading the flag through `ToolHandle` for one branch |
    | Frontend render filter (§5.10.1) | **Always active** | Client-side; ships with its own PR regardless of the backend flag (step 4 below) |
+   | §5.1.1 step 7's confbridge participant-count guard and its bounded retry (**new in rev 11**) | Fully inert | Never reached — step 1's flag check returns first, same as every other §5.1/§5.2 step; the new `skipped_confbridge_*` metrics (§5.13) stay at true zero with the flag off |
 
    **Confirm accordingly**: `ai_manager_aicall_listen_*` metrics all flat
    (true zero-activity signal), but do **not** expect
@@ -2186,7 +3427,12 @@ read as an endorsed alternative).
 4. Frontend PR in `monorepo-javascript` (both apps). Safe to deploy while
    the backend flag is off — no message will ever carry
    `origin=proactive`, and the render filter only ever hides rows that
-   were noise before this feature too.
+   were noise before this feature too. **New in rev 15, path corrected in
+   rev 17 (review round 14 finding MEDIUM-2)**: both panels' new
+   `POST /service_agents/aicalls/{id}/listen` call (§5.10.1a) is equally
+   safe to deploy first — it always exists
+   once step 1's backend PR lands (the table above), and is a harmless
+   no-op with the flag off.
 5. Enable the flag for one pilot customer. Watch
    `listen_turn_total{result}` (especially `skipped_locked` vs `ran`),
    `listen_notify_total`, `foreign_pipecatcall_dropped_total`, and LLM
@@ -2245,11 +3491,17 @@ changes, not flag-gated ones. No migration rollback is required.
   `listen_call_id`/metadata without bumping `tm_update` (§5.2.4/§5.7.3,
   resolving review round 4's H1). Both are `DBHandler` interface changes,
   so the interface, its implementation, and its mock all move together.
-- `pkg/aicallhandler/start.go` — `Start` hook, `ensureListen`,
-  `startListenPipecatcall` (**new in rev 7**: registers
-  `turnPipecatcallID` in Redis, §5.4.3), `getPipecatcallMessages`'s
-  two-fetch rewrite (leading system rows + `databasehandler.NotEq`
-  -filtered rest, §5.4.5)
+- `pkg/aicallhandler/start.go` — **the `Start` hook is removed in rev
+  15** (§5.1), not added — `getPipecatcallMessages`'s two-fetch rewrite
+  (leading system rows + `databasehandler.NotEq`-filtered rest, §5.4.5)
+  stays here since it is unrelated to the trigger
+- `pkg/aicallhandler/listen_trigger.go` *(new, rev 15, single-method
+  shape corrected in rev 16)* — `ProcessListen` (the sole exported entry
+  point), `checkListenEligible` (§5.1.1 steps 1-6), `runListenStart`
+  (§5.1.1 steps 7-8), `rollbackListenState` (§5.2.2); `startListenPipecatcall`
+  (**new in rev 7**: registers `turnPipecatcallID` in Redis, §5.4.3)
+  stays with whichever of this file or `listen.go` below owns turn
+  execution — implementation-time call, not a design decision
 - `pkg/aicallhandler/listen.go` *(new)* — `EventTMTranscriptCreated`,
   `RunListenTurn` (`AIcallListenEnabled` precondition, merged into
   §5.4.1 step 1's require-list as of rev 8), context assembly,
@@ -2266,7 +3518,9 @@ changes, not flag-gated ones. No migration rollback is required.
 - `pkg/aicallhandler/process.go` — terminate-path stop
 - `pkg/listenhandler/v1_aicalls.go`, `pkg/listenhandler/models/request/aicalls.go`
   — **new in rev 5**: `pipecatcall_id` on `V1DataAIcallsIDToolExecutePost`
-  and its handler (§5.4.3a step 3; missing from rev 3/4's file list)
+  and its handler (§5.4.3a step 3; missing from rev 3/4's file list).
+  **New in rev 15**: `regV1AIcallsIDListen`, route table entry,
+  `processV1AIcallsIDListenPost` (§5.1)
 - `pkg/messagehandler/main.go`, `event.go` — `isForeignPipecatcall`,
   applied to the two handlers that can actually fire from a listen turn
   (§5.4.4(b)); the cache-bypass re-read now goes through `AIV1AIcallGet`'s
@@ -2276,8 +3530,23 @@ changes, not flag-gated ones. No migration rollback is required.
 - `pkg/cachehandler/{main,handler}.go` **or a new `pkg/listencachehandler`
   package** — see the scope note below. **New in rev 7**: also
   `ListenTurnPipecatcallIDAdd`/`IsMember` (§5.4.3, §5.4.5 step 2).
+  `ListenTranscribeAIcallRemove` (§5.2.2's conflict-recovery branch —
+  **added to this bullet in rev 20, review round 17 finding B-4**; it
+  existed in the design since rev 4 but this enumeration had never
+  listed it). **New in rev 18** (corrected in the same revision, review
+  round 15 finding LOW-3, from an earlier draft that listed the lock TTL
+  config but not the primitives it backs): `ListenStartLockAcquire` (the
+  per-AIcall start lock's `SetNX`, §5.2.2 — same underlying Redis
+  command as the debounce lock already established in §5.3.4, no new
+  Redis command; **named as a symmetric pair with `Release` in rev 19,
+  review round 16 finding LOW-6**, replacing a raw inline `SetNX` call)
+  and `ListenStartLockRelease` (the lock's compare-and-delete release, a
+  Lua `EVAL`, genuinely new — §5.2.2).
 - `pkg/subscribehandler/{main,transcribemanager,binding_golden_test}.go`
-- `internal/config/main.go` — seven flags
+- `internal/config/main.go` — thirteen flags (**corrected in rev 20,
+  review round 17 finding B-5**, from "twelve," which rev 19 left stale
+  the moment it added `aicall_listen_start_lock_release_timeout_seconds`
+  — see §5.12 for the current enumerated list)
 - `docs/{domain,architecture,operations}.md`
 
 `bin-contact-manager` — `models/kase/kase.go` (`ReferenceTypeCall`)
@@ -2297,7 +3566,8 @@ round 4 finding B3)**: `pkg/databasehandler/main.go` gains the `NotEq`
 wrapper type and its handling in `ApplyFields` — this is the
 monorepo-wide-consumed change, requiring the full verification workflow
 across every service that calls `ApplyFields`, not just the ones this
-design otherwise touches (§8).
+design otherwise touches (§8). **New in rev 15**: `pkg/requesthandler/ai_aicalls.go`
+gains `AIV1AIcallListen` (§5.1); mock regen.
 
 `bin-dbscheme-manager` — three generated migrations (two from rev 1–3,
 plus `bin-customer-manager`'s system-customer seed if §11 item 5
@@ -2314,23 +3584,38 @@ it plainly as "internal bookkeeping; do not depend on this value's
 presence or meaning" in the RST `origin` field description, §5.10.2),
 regen, RST + build. `ToolHandle`'s new parameter and
 `AIV1AIcallToolExecute`'s new argument are internal RPC surface, not
-public API — no OpenAPI change from those.
+public API — no OpenAPI change from those. **New in rev 15, and this one
+*is* public API surface — on the Agent-facing `/service_agents/*` tree,
+not the top-level Admin one (corrected in rev 16, review round 13
+finding BLOCKING-1)**:
+`openapi/paths/service_agents/aicalls/id_listen.yaml` (new file), regen;
+`bin-api-manager/server/service_agents_aicalls.go`'s
+`PostServiceAgentsAicallsIdListen`,
+`pkg/servicehandler/serviceagent_aicall.go`'s
+`ServiceAgentAIcallListen` + its `ServiceHandler` interface entry in
+`main.go` (§5.1).
 
-`monorepo-javascript` — both `CaseInsightAssistantPanel` files + tests
+`monorepo-javascript` — both `CaseInsightAssistantPanel` files + tests,
+**plus (new in rev 15) the `POST /service_agents/aicalls/{id}/listen`
+call site in each (§5.10.1a, path corrected in rev 17)**
 
 **Scope note on `cachehandler` (review-round-2 F10), acknowledged rather
 than resolved here:** today the package is a pure JSON entity-snapshot
 cache — two primitives, `getSerialize`/`setSerialize`
 (`handler.go:17-41`), fixed 24h TTL, no raw Redis data-structure or lock
 primitive of any kind. §5.3.3/§5.3.4/§5.4.1 add `SADD`/`SREM`/`SMEMBERS`,
-`RPUSH`/`LTRIM`/`EXPIRE`, `LPOP count`, `SET NX EX`, and `INCR` — a
-second, structurally different responsibility (ephemeral buffers +
-distributed rate limiting) that does not fit the existing package's
-shape. This design does not resolve which is right (extend
+`RPUSH`/`LTRIM`/`EXPIRE`, `LPOP count`, `SET NX EX`, and `INCR`; §5.2.2
+(rev 18) adds a compare-and-delete `EVAL` for the start lock's release
+(**added to this enumeration in rev 18, review round 15 finding LOW-3**)
+— a second, structurally different responsibility (ephemeral buffers +
+distributed rate limiting + a mutual-exclusion lock) that does not fit
+the existing package's shape. This design does not resolve which is right (extend
 `cachehandler` with a new file, or give listen state its own small
 package sharing the same Redis client) — it belongs with whoever
 implements this, informed by how the team wants shared-infra Redis usage
-organised. Flagged, not decided, in §11 item 7.
+organised. Flagged, not decided, in §11 item 9 (renumbered as this
+document grew; corrected in rev 17, review round 14 finding LOW-5, from
+a stale "item 7" reference).
 
 ---
 
@@ -2497,14 +3782,284 @@ rev 5's own deferred residual, and B3 in round 4 did with rev 3's).
 | N-6 | `aicall_listen_buffer_ttl_hours`'s description ("TTL on all listen keys") no longer covered `ai:listen:turnpcid:*`'s separate, shorter TTL; §5.7.3's cleanup list didn't mention (or explain the deliberate omission of) that key | Both corrected/clarified | §5.12, §5.7.3 |
 | N-7 | §5.4.5 step 2's listen-turn check didn't state where in `ToolHandle`'s existing flow it runs, relative to the tool-call row it's meant to gate | Stated explicitly: between the existing `h.Get` and the first `messageHandler.Create`, so a failure here never leaves an already-written row behind | §5.4.5 step 2 |
 
+### 10.7 Review-response matrix (round 9 → rev 11, revised in place)
+
+**Round 9 reviewed only rev 11's own new content** (§0 row 11, §5.1.1's
+new guard, §5.9, §11 items 1/1a/1b), per this loop's established practice
+of scoping a round to what actually changed rather than re-litigating
+settled sections (rounds 6 and 8 did the same). Verdict: REQUEST_CHANGES —
+every file:line citation checked out, but the *reasoning* built on top of
+them did not: the structural claim was broader than the code supports,
+the newly-declared residual risk was likely contradicted by code the
+reviewer traced one function away from what rev 11 cited, and the new
+guard's failure mode was both undiscussed and, on the normal path, wrong.
+
+| # | Review finding | Resolution | Where |
+|---|---|---|---|
+| BLOCKING-1 | The participant-count guard's one-shot form reads `len(ChannelCallIDs) != 2` for the entire queue-wait and agent-ring period (`Call.ConfbridgeID` is only set once the B-leg's join channel reaches `ChannelEnteredBridge`, which happens after answer) — so a screen-pop-timed or ring-timed `ensureListen` call would silently never listen on an entirely normal call, with no retry and nothing to explain why | Rebuilt as a bounded, metered retry inside the existing `ensureListenAsync` goroutine (renumbered step 7): polls until the confbridge reaches 2 live parties, the call itself becomes non-live (step 6 exits the loop), or a wait budget elapses; each distinct give-up reason gets its own metric label | §5.1.1 step 7, §6, §5.12, §5.13, §11 item 13 |
+| HIGH-1 | "`case_create`/`ai_talk` only ever execute on the A-leg's own activeflow" is broader than the code supports — `actionHandleCall` can chain a customer-authored flow onto a new leg, and the agent-dial RPC accepts a caller-supplied `FlowID`; only the two *specific* system-generated B-leg flow builders actually checked (`generateFlowForAgentCall`, the `connect` action's B-leg flow) are guaranteed empty of `case_create`. The `ai_talk` half of the claim was also unverified and, on inspection, irrelevant (`ai_talk` never targets `contact_case`) | Restated as "no *system-generated* B-leg flow can carry `case_create`," citing both flow builders; named the two customer-authored-flow escape hatches explicitly as out of this guarantee's scope; dropped the `ai_talk` clause; added the independent, stronger `in == Case.Peer` invariant (backed by `case_create`'s own `isCRMEligiblePeer` check) as the thing that actually does most of the load-bearing work | §5.1.1 step 7, §5.9 |
+| HIGH-2 | The declared "agent-outbound call inverts the mapping" residual risk is very likely impossible: `actionHandleCaseCreate`'s own `isCRMEligiblePeer` check excludes agent/extension/SIP/conference/AI peer types, so that exact scenario can't produce a Case at all — a real vulnerability was reframed as a phantom one, and a real, cheaper guarantee (`in == Case.Peer`) was left undiscovered | Reframed §5.9/§11 around the actual narrower vector (an inbound call whose CRM-eligible peer happens to be staff dialing in via a plain DID, not through the agent-dial path) and added the `in == Case.Peer` invariant as newly-stated, code-backed closure for the scenario rev 11 originally worried about | §5.9, §11 item 11 |
+| HIGH-3 | §5.9 claimed 3+-party confbridges "break the assumption outright" and that the guard "is not trusted" mid-call, describing a re-check mechanism that doesn't exist — the guard is start-time only, and a 3rd party joining after listening starts is entirely unguarded | Stated plainly: start-time only, no ongoing re-check; precision added that only `out` degrades (`in` stays correct regardless of party count, since it never depended on other parties' identity) | §5.1.1 step 7 (closing paragraph), §5.9, §6, §11 item 12 |
+| MEDIUM-1 | Stale cross-references: "§5.2.3's Snoop/ExternalMedia tap" (§5.2.3 is Language selection, unrelated) and three "§5.1.1 step 6" citations that should say "step 7" (the guard, not call-liveness) | Corrected throughout §5.1.1 and §5.9 | §5.1.1, §5.9, §11 item 1 |
+| MEDIUM-2 | The new guard added an RPC and a gate with no corresponding §6 error row, no confbridge liveness check (`TMDelete`/`Status`, asymmetric with the neighbouring steps' checks), no §5.13 metric label, and no §7 test coverage for its new branches | All four added: §6 gains new rows, step 7 checks confbridge `TMDelete`/`Status` alongside party count, §5.13 gains new `skipped_confbridge_*` labels (reduced to 2 after round 10's own HIGH-A removed the third), and coverage for every new branch is folded into §7 item 1 as a labelled sub-paragraph — **not** a separate "item 1a," since ordered-list sub-numbering is exactly what LOW-3 in this same round flagged as broken | §6, §5.1.1 step 7, §5.13, §7 |
+| MEDIUM-3 | The guard silently narrows Goal 1's scope (every non-confbridged live call becomes permanently non-listenable) without updating §2/§3/§8 | Goal 1 (§2) and the multi-party non-goal row (§3) now state the narrowed scope explicitly; §8's flag-gating table gains a row for the new mechanism | §2, §3, §8 |
+| LOW-1 | (Verification only, no defect) Is the guard's silent-no-op failure mode consistent with the neighbouring gates' shape? | Confirmed consistent — no change needed | — |
+| LOW-2 | §5.9's original "`in` is audio arriving into that channel from the far end" wording is ambiguous and, read literally, backwards from Asterisk's actual read/write convention, even though the conclusion (`in=customer`) was correct | Reworded to state the channel's own read/write direction explicitly (`in` = read from the channel's own owner, `out` = written to them) | §5.9 |
+| LOW-3 | `6a.`/`1a.`/`1b.` markdown list markers don't continue an ordered list and would render as plain paragraphs, breaking §5.1.1's and §11's numbering | §5.1.1's guard renumbered to step 7 (old step 7 → 8); §11's new items appended as 11-13 instead of sub-numbered under item 1 | §5.1.1, §11 |
+
+### 10.8 Review-response matrix (round 10 → rev 12)
+
+**Round 10 confirmed round 9's own findings were genuinely and honestly
+fixed** — it independently re-verified BLOCKING-1/HIGH-1/HIGH-2/HIGH-3/
+MEDIUM-1/MEDIUM-2/MEDIUM-3/LOW-2/LOW-3 against the current source rather
+than trusting §10.7's description, and confirmed each closure rather than
+rubber-stamping it. What it did not approve was one genuinely new defect
+the BLOCKING-1 fix itself introduced, plus accuracy problems in how that
+fix and its neighbours were described.
+
+| # | Review finding | Resolution | Where |
+|---|---|---|---|
+| HIGH-A | Step 7's original retry design fast-failed on `len(ChannelCallIDs) >= 3` once `call.Status == progressing`, reasoning that a `progressing` call was past the window where an extra party could be transient pre-answer noise — but `call.Status` reflects only the *listened leg's own* answer state, which is already `progressing` for this design's entire target window (queue-wait + agent-ring), so the fast-fail condition was true the instant any 3rd party appeared, not just once one had lingered. A documented platform pattern (`connect` with `early_media: true` and multiple destinations) legitimately produces a transient 3+-party state that settles to 2 within seconds — `confbridgehandler/joined.go:87-97` explicitly anticipates ringing legs inside the bridge — and the original fast-fail would have given up on such a call permanently, on possibly the only `ensureListen` invocation it ever gets (the same screen-pop scenario BLOCKING-1 itself was about) | Removed the fast-fail: any non-2 count now just keeps polling for the full wait budget, with no attempt to distinguish "still converging" from "stably wrong." The now-meaningless `skipped_confbridge_invalid_topology` label is removed; §7 gains an explicit 3→2-settle-within-budget test as the direct regression case | §5.1.1 step 7, §6, §5.13, §7 |
+| MEDIUM-A | The BLOCKING-1 diagnosis itself misattributed the mechanism: it said `Call.ConfbridgeID` "is only populated once the *B-leg's* join channel" completes, then two sentences later described the A-leg "sitting alone" post-forward — which requires the A-leg's own `ConfbridgeID` to already be non-nil. `AddChannelCallID` sets `ConfbridgeID` for whichever call joins, A-leg included; it is `len(ChannelCallIDs)`, not `ConfbridgeID`'s nil-ness, that stays at 1 through the wait | Corrected the diagnostic paragraph to attribute the stuck state to the party count, not to `ConfbridgeID` | §5.1.1 step 7 |
+| MEDIUM-B | The 30s wait budget was described as "well inside the goroutine's own outer timeout," but the document never actually sets that outer timeout, and the two precedents §5.1.1's intro cites for the detached-goroutine pattern don't bound this path either (`tool.go:191-199` is an unbounded `context.Background()`; `start.go:97-100` is an unrelated 5s fetch, six times smaller than the proposed budget) — the claim could ship unchecked and silently truncate the retry | Added an explicit, feature-specific `aicall_listen_ensure_goroutine_timeout_seconds` config (default `45`, strictly greater than the 30s wait budget), and added it to §11 item 13's implementation sign-off list | §5.1.1 step 7, §5.12, §11 item 13 |
+| MEDIUM-C | §0's status line and row 11 both recorded round 9 as "1 BLOCKING + 2 HIGH + 3 MEDIUM + 3 LOW," undercounting against §0 row 11's own enumeration and §10.7's table, both of which list 3 HIGH findings | Corrected to "3 HIGH" in both places | §0 (status line, row 11) |
+| LOW-A | "`len == 0` impossible given `ConfbridgeID != uuid.Nil`" asserted impossibility the design's own reasoning ten lines earlier (a stale non-nil `ConfbridgeID` via `leaved.go`'s goroutine) contradicts, and was also the one count the retry's original branching left unhandled | Resolved as a byproduct of the HIGH-A rewrite — the retry no longer branches on the specific count at all, only on `== 2` vs. everything else | §5.1.1 step 7 |
+| LOW-B | §10.7's own MEDIUM-2 resolution text claimed "§7 gains item 1a" — reusing the exact broken list-marker pattern that same round's LOW-3 finding required removing | Corrected to describe what actually shipped: a labelled sub-paragraph folded into §7 item 1, not a separate numbered item | §10.7 (MEDIUM-2 row) |
+| LOW-C | §8's flag-gating table said the new guard is "reached only after step 1's flag check already returned" — worded as if the guard *is* reached, when the point is that it never is, with the flag off | Reworded to "never reached — step 1's flag check returns first" | §8 |
+| LOW-D | §11 item 1 credited review round 9 with surfacing "the two new residual-risk vectors" in items 11-12, but item 12 (call-transfer) was rev 11's own first-draft addition — round 9 only corrected its "refused vs. unguarded" framing (§10.7's HIGH-3 row records this accurately) | Reworded item 1's pointer to attribute each item correctly | §11 item 1 |
+
+### 10.9 Review-response matrix (round 11 → rev 13)
+
+**Round 11 APPROVEd rev 12 — the first of the two consecutive approvals
+this loop's policy requires to close.** It independently re-verified every
+one of round 10's findings against current source (not against §10.8's
+own description of them) and confirmed all were genuinely and completely
+fixed, including the substantive one (HIGH-A) — tracing the early-media
+multi-destination scenario through four separate files rather than taking
+§10.8's citation at face value. What remained was one MEDIUM (a summary
+section, §2, that fell out of sync with the HIGH-A fix landing two rounds
+after it was written) and six LOW findings — wording, a stale citation,
+and one real GFM table-rendering break introduced while fixing something
+else.
+
+| # | Review finding | Resolution | Where |
+|---|---|---|---|
+| MEDIUM-1 | §2 Goal 1 still said a live call in a 3+-party confbridge is "out of scope entirely" — true of rev 11's first-pass fast-fail design, no longer true after round 10's HIGH-A removed it: a *transiently* 3+ confbridge (the early-media scenario) now resolves via the same retry, with its own §7 regression test proving it. Only a *stably* non-2-party call is genuinely out of scope | Reworded to state the distinction explicitly, crediting round 10's HIGH-A fix as the reason rev 11's original wording no longer held | §2 |
+| LOW-1 | The status line's own "pending review round 10" had gone stale relative to the sentence describing round 10's fix having already happened, and to the "needs round 11" clause immediately after it | Corrected the round number and restated the line around the loop's actual remaining condition ("N of 2 consecutive approvals") so it can't drift the same way again | §0 (status line) |
+| LOW-2 | A stray blank line between rev 10's and rev 11's rows split §0's revision-history table into two tables under GFM — silently breaking table rendering for the two most load-bearing rows in the section, the same rendering-defect class as round 9's own LOW-3 | Removed the blank line | §0 |
+| LOW-3 | §5.1.1's intro still cited `tool.go:191-199` as a "`context.Background()` + timeout" precedent, 140 lines upstream of where step 7/§5.12 had already disclaimed it (rev 12, MEDIUM-B) as actually unbounded | Corrected at the source to state plainly that `tool.go:191-199` has no timeout and `start.go:97-100`'s 5s is for an unrelated fetch, and that this feature's own timeout is purpose-built, not inherited | §5.1.1 intro |
+| LOW-4 | §5.2.4 said the `tm_update`-bypass covered "this one write path" while concluding "start or stop" (self-contradictory), and separately still called the start-time write's cooldown-collision risk "negligible" — a claim the bounded retry (rev 11/12) invalidated, since the start write can now land up to 30s after panel open, squarely in a window an agent could be typing a real question | Restated plainly: both `UpdateListenState` (start) and `clearListenState` (stop) use the bypass; the now-false "negligible" framing for the start write is dropped. §5.7.3 step 3 also now names the bypass variant explicitly, closing the implicit reference LOW-4 flagged there | §5.2.4, §5.7.3 step 3 |
+| LOW-5 | Step 7's diagnostic paragraph credited `AddChannelCallID` alone with setting `Call.ConfbridgeID`, when that specific write is actually performed by the sibling `CallV1CallUpdateConfbridgeID` RPC `Joined()` also calls | Named both writes and which one does which, in the same paragraph MEDIUM-A (round 10) had already corrected once | §5.1.1 step 7 |
+| LOW-6 | Repeated panel re-opens during a long ring now spawn multiple concurrent, independently bounded retry loops (step 3's idempotency check can't short-circuit until `listen_transcribe_id` is set, which never happens while step 7 is still polling) — bounded and already covered by §5.2.2's reuse rule and §6's race handling, but previously undocumented, and relevant to interpreting `skipped_confbridge_not_ready`'s rate | Added an explicit paragraph to step 7 stating this consequence and its interaction with the metric | §5.1.1 step 7 |
+
+### 10.10 Review-response matrix (round 12 → rev 14) — second consecutive approval, loop closes
+
+**Round 12 APPROVEd rev 13 — the second of the two consecutive approvals
+this loop's policy requires.** It independently re-verified all seven of
+round 11's findings against current document text and current source
+(including a direct check of both cited goroutine-timeout precedents and
+the `joined.go` write attribution), confirmed each was genuinely fixed,
+and swept the whole document one more time as the round meant to close
+the loop — table structure, list numbering, metric/config/error-row
+consistency, and a spot-check of the freshest citations. It found zero
+BLOCKING and zero HIGH findings. The two MEDIUM and two LOW items below
+are non-blocking: one is citation drift from a merge two revisions
+earlier that a scoped rebase sweep missed, one is a genuine but small and
+already-bounded concurrency edge case worth closing at negligible cost,
+and two are self-contradictory attribution sentences pointing at the
+wrong revision number. None changes a design decision, a failure mode, or
+a rollout step — which is why, per this loop's policy, they do not reset
+the consecutive-approval count and this design is **Approved**.
+
+| # | Review finding | Resolution | Where |
+|---|---|---|---|
+| MEDIUM-1 | Rev 10's rebase-reconciliation sweep (row 10, §0) was explicitly scoped to `bin-ai-manager` and its own text says so — but the same merge (`NOJIRA-Allow-caller-specified-transcribe-id`) also shifted `bin-transcribe-manager/pkg/transcribehandler/start.go` by ~46-52 lines, and that file was never re-checked. 7 citations across §5.1.1 step 6, §5.2.1, §5.2.2, §5.2.3, §5.11, and §6 (two rows) pointed at stale line numbers for code that still exists and still does exactly what was claimed (confirmed independently: the transcribable-status set, the dedup guard and its filter scope, the BCP47 normalisation, the `both`-direction split, and the read-then-create race comment) | All 7 corrected to current line numbers, each flagged inline as a rev-14 fix so a future rebase sweep doesn't miss them again | §5.1.1 step 6, §5.2.1, §5.2.2, §5.2.3, §5.11, §6 (×2) |
+| MEDIUM-2 | §5.1.1 step 7's bounded retry (LOW-6, round 11) means the *same* AIcall can have two concurrent `ensureListen` goroutines resolve to the *same* transcribe id (guaranteed by §5.2.2's dedup guard) and race to write `listen_owns_transcribe` on the same row via `UpdateListenState` — a naive last-write-wins could persist `owns=false` for the AIcall that actually started the session, making §5.7.2's stop path skip a session it should stop. Bounded (call-hangup transport closure is a hard backstop) but avoidable at negligible cost | `UpdateListenState` now specified to OR a `true` into `owns`, never overwrite one with `false`, rather than blindly writing the caller's value. Deduping the two `ensureListen` calls outright (a `SET NX` guard, mirroring §5.3.4) was considered and explicitly rejected as unnecessary — §5.2.2's guard already prevents the worse outcome (two live sessions), so this is a narrow single-column fix, not a new concurrency layer | §5.2.4 |
+| LOW-1 | §2 Goal 1's own attribution said its wording was "corrected in rev 12," but the wording change itself landed in rev 13 (round 11's MEDIUM-1 fix) — rev 12 only fixed the underlying *mechanism* (step 7's fast-fail removal) the wording describes | Corrected to name rev 13 for the wording, rev 11 for the mechanism | §2 |
+| LOW-2 | §5.12's `aicall_listen_ensure_goroutine_timeout_seconds` row said "new in rev 11, added after review round 10 finding MEDIUM-B" — self-contradictory, since round 10 (which found MEDIUM-B) reviewed rev 11 and could not have motivated a change already present in rev 11; the config was actually introduced in rev 12, in direct response to MEDIUM-B | Corrected to "new in rev 12" | §5.12 |
+
+### 10.11 Review-response matrix (round 13 → rev 16)
+
+**Round 13 was the first review of rev 15's own substantive change** —
+not a continuation of the confbridge sub-loop (rounds 9-12), which
+closed with 2 consecutive approvals on rev 14 and stays closed; rev 15
+reopened the design with new content, resetting the consecutive-approval
+count per this document's own policy. Round 13 confirmed rev 15's
+underlying motivation independently against source — the event-ordering
+gap is real (`bin-transcribe-manager/pkg/transcribehandler/start.go:273-279`
+starts streaming before its own DB row is created), the caller-specified-id
+mechanism works exactly as documented (`transcribehandler/start.go:80-91`),
+and adopting id-predeclaration does not quietly also adopt the
+dynamic-RabbitMQ-binding purpose §3 already rejected — but found that
+rev 15's own two changes each introduced a new defect, on top of the
+endpoint being wired onto the wrong permission surface for its actual
+caller.
+
+| # | Review finding | Resolution | Where |
+|---|---|---|---|
+| BLOCKING-1 | The new endpoint was designed at the top-level `POST /v1/aicalls/{id}/listen`, mirroring `terminate` — but `terminate` (`servicehandler/aicall.go:258`) is gated on `PermissionCustomerAdmin`/`PermissionCustomerManager`, an Admin-console tier, while the panel's own existing `Start` call (`ServiceAgentAIcallCreate`) is on the Agent-facing `/service_agents/*` surface, gated only on `PermissionAll`. `bin-api-manager/docs/auth.md:119,124` states in the imperative that Agent frontends must never call the top-level path, and that relaxing the top-level bitmask is the wrong fix for a missing Agent-facing capability. As designed, an ordinary square-talk agent would have gotten `ErrPermissionDenied` on every call — listening would never start in the feature's actual primary use case | Moved to `POST /service_agents/aicalls/{id}/listen`, mirroring the existing `POST /service_agents/contact_addresses/:id/claim` precedent (`gen.go:23354`) instead of `terminate`. New `ServiceAgentAIcallListen` in `pkg/servicehandler/serviceagent_aicall.go`, following `ServiceAgentTranscribeList`'s auth shape (`IsAgent()` + `hasPermission(..., PermissionAll)`) plus an explicit ownership recheck. The internal ai-manager RPC route stays at the plain `/v1/aicalls/{id}/listen` path — only the public api-manager path moved | §5.1, §5.8, §5.10.1a, §7 item 2, §9 |
+| HIGH-1 | `EnsureListenPrecheck(ctx, c) (proceed bool, err error)` and `ensureListenAsync(c)` were connected only by a bare `bool` — `kase`, `callID`, and `call`, all resolved by steps 4-6, were discarded at the function boundary, forcing `ensureListenAsync` to silently re-fetch the Case and the call before it could even start step 7 (a duplicate RPC pair and a re-derivation of what §5.1.1 step 4 calls "the tenant boundary for the whole feature"), contradicting the claim that `ensureListenAsync` was "unchanged in shape" from rev 1-14 | Collapsed into one exported `ProcessListen`, whose goroutine (`runListenStart`) closes directly over `checkListenEligible`'s already-resolved `a`/`c`/`kase`/`callID`/`call` — nothing crosses a function boundary by itself, so there is nothing to re-fetch and nothing to silently lose | §5.1, §5.1.1, §7 item 1 |
+| HIGH-2 | `ensureListenAsync` was specified lowercase — unexported, and therefore unreachable from `pkg/listenhandler` and unmockable on the `AIcallHandler` interface (every method on which Go requires to be exported for cross-package interface satisfaction) — making §7's own test items asserting its invocation count unimplementable as written | Resolved by the same `ProcessListen` collapse as HIGH-1: one exported method, directly mockable | §5.1, §7 item 2 |
+| HIGH-3 | Rev 15's ordering fix pre-registered only the Redis `SADD`, leaving §5.2.4's DB write (`listen_call_id`/`listen_transcribe_id` metadata) exactly where it always was — *after* `TranscribeV1TranscribeStart` succeeded. That reopened a different, worse race: in the interval between the pre-registered `SADD` and the DB write landing, a real `transcript_created` event could already resolve through the now-registered resolver set and reach `RunListenTurn`, whose precondition (§5.4.1 step 1) requires `listen_transcribe_id` to be **set** — which it is not yet — triggering `stopListening`/`clearListenState` and deleting the very membership and buffers rev 15's own fix had just created, killing the session for the rest of the call on what should have been a completely ordinary start | §5.2.4's DB write moved earlier too — both the DB write and the Redis `SADD` now happen together, speculatively, against a pre-generated id, *before* `TranscribeV1TranscribeStart` is called, with an explicit `rollbackListenState` undo (both the DB fields and the Redis membership) on any failure | §5.2.2, §5.2.4, §6, §7 item 2 |
+| MEDIUM-1 | `checkListenEligible`'s own worst-case latency (~9s across three sequential, non-cache-first RPCs — `ContactV1CaseGet`, `CallV1CallGet`, `TranscribeV1TranscribeGet`) exceeds `requestTimeoutDefault` (3000ms), the timeout `AIV1AIcallListen` would otherwise inherit — under a degraded contact-manager/call-manager, the caller's own request could time out even though ai-manager's precheck later succeeds | `AIV1AIcallListen` given an explicit 10s timeout, the same per-call-override pattern `TranscribeV1TranscribeStart` already uses for its own 5s | §5.1 |
+| MEDIUM-2 | Rev 15's public, arbitrarily-callable endpoint removed the implicit "just created/reused, therefore live" guarantee `Start`'s old hook relied on — a terminated/deleted AIcall could still pass steps 3-6, spawn step 7's 45s goroutine, and start a billed STT session, caught only much later (and less directly) by §5.4.1's own unrelated status check | Step 2 (renamed "AIcall gate") now also requires `c.Status == progressing && c.TMDelete == nil`, rejecting before any of steps 3-6 run | §5.1.1 step 2, §6, §7 item 1 |
+| MEDIUM-3 | The rollback-on-any-error snippet HIGH-3's first fix used treated every `TranscribeV1TranscribeStart` error identically, silently dropping §6's already-documented `TRANSCRIBE_ALREADY_PROGRESSING` reuse-on-conflict behaviour (the read-then-create race `startLive`'s own comments acknowledge) | Restored as an explicit discriminated `switch` branch: on `TRANSCRIBE_ALREADY_PROGRESSING`, re-run the list once and rewrite this AIcall's state to the winner instead of rolling back and giving up | §5.2.2, §6, §7 item 2 |
+| MEDIUM-4 | The new route's handler orchestrated three separate business-handler calls plus a conditional goroutine spawn directly in `pkg/listenhandler`, unlike every sibling route (`terminate`, `Get`, `Delete`), each of which makes exactly one business-handler call | Resolved by the same `ProcessListen` collapse as HIGH-1/HIGH-2 — the handler now makes one call, matching `processV1AIcallsIDTerminatePost`'s shape exactly | §5.1 |
+| LOW-1 | Several current-state (non-historical) mentions of the now-superseded unified `ensureListen`/`ensureListenAsync` names survived rev 15's own sweep, in §5.1.1's step-7 prose, §5.2.2/§5.2.4, §6, §7, §9, and §5.12/§5.13 | Swept to the rev-16 names (`ProcessListen`/`checkListenEligible`/`runListenStart`) everywhere current-state prose referenced them; historical §0 rows and §10.x matrices intentionally left as an accurate record of what each revision said at the time, per this document's established convention | §5.1.1, §5.2, §6, §7, §9, §5.12, §5.13 |
+| LOW-2 | Three citations drifted: `ai_aicalls.go:113-131` (actually `:110-127`, `:131` falls inside a different function), `servicehandler/aicall.go:250-270` (actually `:249-277`, the cited range stopped mid-function), `transcribehandler/start.go:158-161` (actually `:160-163`) | All three corrected | §5.1, §5.1.1 |
+| LOW-3 | §6's new error rows describe rev 15/16's new failure branches as folding into existing `skipped_*`/`failed` metric buckets, but no explicit label was actually added to §5.13's enumerated set the way every other outcome is listed | Recorded as an explicit open item rather than left implicit — a label name (or an explicit decision to fold silently) is needed before implementation | §11 item 16 (new) |
+
+### 10.12 Review-response matrix (round 14 → rev 17)
+
+**Round 14 independently re-verified every one of round 13's ten
+findings against current source, not §10.11's own description** — and
+confirmed all ten genuinely and honestly fixed, BLOCKING-1's permission
+surface in particular checked line-for-line against
+`bin-api-manager/docs/auth.md`, the actual `terminate`/`ServiceAgentTranscribeList`
+gates, and the actual `gen.go` route registrations. It also traced the
+full `TRANSCRIBE_ALREADY_PROGRESSING` round trip end to end and confirmed
+the discrimination MEDIUM-3 (round 13) required is genuinely achievable
+— just not via the helper rev 16's snippet invented. What round 14 found
+instead were two new defects, both arising from the same unexamined
+premise: that concurrent `runListenStart` goroutines for one AIcall
+(already documented, §5.1.1's own LOW-6 note) still resolve to the same
+transcribe id, which stopped being true the moment rev 16 moved the write
+before creation.
+
+| # | Review finding | Resolution | Where |
+|---|---|---|---|
+| HIGH-1 | `UpdateListenState`'s rev-14 `owns`-merge rule ("OR a `true` in, never overwrite with `false`") was unconditional on transcribe id. On the create-then-fall-back-to-reuse branch (§5.2.2's `switch`), the row is written first against a speculative id (`owns=true`), then — on `TRANSCRIBE_ALREADY_PROGRESSING` — against a *different*, winning id (`owns=false`); the unconditional merge would carry the stale `true` forward onto the winning id's row, making this AIcall believe it owns a session it does not, which §5.7.2's stop path would then incorrectly stop | The OR-merge is scoped to same-transcribe-id writes only; a write against a differing id sets `owns` directly from the caller's value, no carry-over | §5.2.4, §7 item 2 |
+| HIGH-2 | Two concurrent `runListenStart` goroutines for the *same* AIcall (an expected consequence of §5.1.1 step 7's own retry, per the LOW-6 note) can now each pass §5.2.2's `List` check and mint their own speculative transcribe id before either finishes writing — one goroutine's pre-write can `SREM` the other's already-live session out of the resolver set (rev-4's stale-id logic, misapplied to a session that was never stale), or a later rollback from one goroutine can delete DB/Redis state belonging to the other's live, billed session | Wrapped the whole reuse-check-through-write sequence in a new per-AIcall `SET NX EX` lock (`ai:listen:startlock:<aicall_id>`, new config `aicall_listen_start_lock_ttl_seconds`) — reversing the earlier "considered and rejected" decision, whose stated reasoning covered only cross-AIcall duplication (already prevented by §5.2.2's `List`-based dedup guard), not this same-AIcall race rev 16's write-ordering change newly exposed | §5.2.2, §5.12, §7 item 2 |
+| MEDIUM-1 | `cerrors.IsReason(err, "...")`, used in rev 16's `switch` to discriminate `TRANSCRIBE_ALREADY_PROGRESSING`, does not exist anywhere in this codebase | Replaced with the actual established pattern (`errors.As(err, &ve) && ve.Reason == "..."` against `*cerrors.VoipbinError`), verified end-to-end: transcribe-manager's actual error construction, the wire round trip, and ai-manager's actual error-recovery call sites all confirmed to use this shape | §5.2.2 |
+| MEDIUM-2 | BLOCKING-1's (round 13) endpoint-path fix swept most of the document but missed four current-state mentions of the old top-level `/v1/aicalls/{id}/listen` public path: §7 item 20 (frontend test spec), §8 step 4 (rollout), §5.10.2 ×2 (mandated RST deliverable, including instructing it to follow `terminate`'s pattern rather than `claim`'s) | All four corrected to `/service_agents/aicalls/{id}/listen` | §7 item 20, §8, §5.10.2 |
+| MEDIUM-3 | The 10s RPC timeout's stated justification — "none of the three RPCs are cache-first" — was itself factually wrong for `CallV1CallGet`, which the actual `bin-call-manager/pkg/dbhandler/call.go:115-130` shows *is* cache-first; the cited `callhandler/db.go:171-185` only shows delegation to the (cache-first) `dbhandler`, not a bypass of it | Restated on the reasoning that actually holds regardless of caching: three sequential cross-service RPC hops, each independently subject to its own default timeout, can sum to roughly 3× a single hop's timeout worst-case | §5.1 |
+| LOW-1 | §5.1's `checkListenEligible` snippet (`ctx, c`) and §5.1.1's prose (claiming `ProcessListen` resolves `a` first, then calls `checkListenEligible(ctx, c, a)`) disagreed on the function's own signature | `checkListenEligible` resolves `a` itself internally (matching the snippet); §5.1.1's prose corrected to match | §5.1.1 |
+| LOW-2 | Two citation/convention slips introduced by round 13's own BLOCKING-1 fix: `serviceagent_transcribe.go:41-44` cited for the auth-check shape is actually the unrelated `if token == ""` block (the real lines are `:27-29`/`:45-48`); the new ownership check called `AIV1AIcallGet` directly where the sibling `ServiceAgentAIcallGet` uses the private two-level `aicallGet` helper `bin-api-manager/CLAUDE.md`'s two-level handler pattern expects reused | Both corrected | §5.1 |
+| LOW-3 | A handful of current-state (non-historical) mentions of the superseded `ensureListen` name survived rev 16's own sweep: §8's flag-gating table (a different row from the one round 13 already fixed) and §11 item 13's prose | Corrected to `checkListenEligible`/`ProcessListen` | §8, §11 item 13 |
+| LOW-4 | The conflict-recovery branch's redundant `ListenTranscribeAIcallRemove` call (immediately after an `UpdateListenState` that had already `SREM`'d the same membership) was harmless but unexplained — direct evidence the two mechanisms hadn't been reconciled, which HIGH-1/HIGH-2 then found the substance of | Left in place (still correct — an idempotent duplicate) but now explained inline: it removes only the AIcall's own never-created speculative id, never the winner's membership, which `UpdateListenState` already registered correctly | §5.2.2 |
+| LOW-5 | Three small cross-reference errors: §5.2.4 claimed §5.4.1's precondition "would also refuse to act on a mismatched `listen_transcribe_id`" (false — §5.4.1 step 1 only checks the field is set, never compares it); §9's cachehandler scope note pointed at "§11 item 7" (actually item 9, renumbered as the document grew); §5.8 and §9 disagreed on which file holds `rollbackListenState` | All three corrected | §5.2.4, §9, §5.8 |
+
+### 10.13 Review-response matrix (round 15 → rev 18)
+
+**Round 15 confirmed rev 17's diagnosis of round 14's HIGH-1/HIGH-2 and
+its own `owns`-merge rule were correct** — the reviewer stated explicitly
+they "could not construct a case where the scoped rule produces a wrong
+`owns` value" — and independently re-verified round 14's other four
+findings against current source rather than trusting §10.12's own
+description, confirming all genuinely fixed (including re-tracing the
+`TRANSCRIBE_ALREADY_PROGRESSING` error round-trip end to end a second
+time). What it found instead was that rev 17's own new lock — the fix
+for round 14's HIGH-2 — was itself under-specified, in a way that could
+reopen the very race it was built to close.
+
+| # | Review finding | Resolution | Where |
+|---|---|---|---|
+| HIGH-1 | Two compounding defects in the new lock: (a) its TTL (`15`s, §5.12) was sized against only `TranscribeV1TranscribeStart`'s explicit 5000ms timeout, but the lock also wraps up to two `TranscribeV1TranscribeList` calls, whose RPC client hardcodes an uncontrollable **30000ms** timeout — nominally summing to as much as 65s in-lock, comfortably exceeding a 15s TTL; (b) the lock's release (`h.cache.Del`, unconditional) and acquisition (a constant value, not a per-goroutine token) meant one goroutine's release could delete a *different*, still-legitimately-working goroutine's lock once the first's TTL had lapsed — silently reopening round 14's HIGH-2 rather than closing it | Re-derived the TTL from the goroutine's own outer `AIcallListenEnsureGoroutineTimeoutSeconds` (default unchanged at `45`; lock TTL default raised from `15` to `60`, strictly above it) rather than from the RPC clients' own internal timeouts — no call inside the lock can outlive the `ctx` it runs under regardless of its own timeout constant, so a TTL exceeding the outer goroutine timeout can never expire under genuinely ongoing work; gave the lock a per-goroutine ownership token, released only via an atomic Redis `EVAL` compare-and-delete (`ListenStartLockRelease`, new cache primitive) rather than a bare, ownerless `Del` | §5.2.2, §5.12 |
+| MEDIUM-1 | §5.2.4's own description of the bug round 14's HIGH-1 fixed stated the consequence backwards: a stale carried-forward `owns=true` makes §5.7.2's stop path **incorrectly stop** a session this AIcall doesn't own (`!owns` evaluates `false`, so the guard clause is skipped) — not, as an earlier draft said, "correctly skip stopping it." §10.11's own matrix already had this right, so the two sections contradicted each other | §5.2.4's prose corrected to match §10.11's (and the actual mechanics) | §5.2.4 |
+| MEDIUM-2 | The two source citations offered as evidence for round 14 MEDIUM-1's fix (`disabled.go:24-28`, `bin-direct-manager/.../main.go:104-112`) don't contain the `errors.As`+`Reason` pattern they were cited for — neither file has an `errors.As` call performing a `Reason` comparison | Repointed to citations that actually show the pattern: `transcribehandler/stop.go:196-205`, and `bin-storage-manager/pkg/filehandler/signing.go:79` for the exact one-line-wrapper shape used here | §5.2.2 |
+| MEDIUM-3 | §5.2.4 overclaimed the lock's scope — "within one AIcall only one write sequence is ever in flight" is true only for the create-or-reuse sequence the lock actually wraps, not for teardown paths (`clearListenState`/§5.7.3, `stopListenByCallID`/§5.7.1), which don't take this lock and can still interleave with it | Restated narrower, with the existing bounded-harm reasoning (§6, `isValidReference`) named as why this stays an accepted precision gap rather than a new correctness issue | §5.2.4 |
+| LOW-1 | The lock's own two outcomes (a losing goroutine on contention; a `SetNX`/release Redis error) had no §6 error-table row and no §5.13 metric label | Two new §6 rows added; folded into §11 item 16's existing open-item tracking, with `skipped_start_locked` flagged as worth its own label specifically (a useful concurrency-pressure signal, unlike the other fold-candidates) | §6, §11 item 16 |
+| LOW-2 | §5.1.1's own LOW-6 note still described the same-AIcall concurrent-goroutine race as "already covered by §5.2.2's reuse rule and §6's `TRANSCRIBE_ALREADY_PROGRESSING` row alone" — the exact unexamined premise round 14's HIGH-2 found insufficient | Repointed at §5.2.2's lock, with the correction noted explicitly | §5.1.1 step 7 |
+| LOW-3 | §9 said "seven flags" against §5.12's actual twelve, and its `cachehandler`/Redis-primitive enumeration omitted the lock's two new primitives (`SetNX` reuse, `ListenStartLockRelease`) | Both corrected | §9 |
+| LOW-4 | A genuine Go-level bug in rev 17's own snippet: the reuse-path `TranscribeV1TranscribeList` call's error return was silently dropped (`existing := ...` instead of `existing, err := ...`), so an RPC failure would have read as "no existing session found" and started a duplicate — inconsistent with the same snippet's other two `List`/write calls, which already handled their errors correctly | Fixed to check and propagate the error, matching the pattern used everywhere else in the same snippet | §5.2.2 |
+| LOW-5 | §5.1 said the two-level `aicallGet` helper performs the ownership `CustomerID` compare itself — imprecise; the helper only fetches, and the compare is the caller's own, matching the sibling `ServiceAgentAIcallGet`'s actual division of labour | Restated precisely | §5.1 |
+| LOW-6 | Four spots this document's own MEDIUM-2 (round 14) sweep touched were attributed to "path corrected in rev 16," when the text at each of those specific spots actually changed in rev 17 (rev 16 only moved the route itself, in §5.1). **This row's own "Where" column was itself wrong — corrected in rev 19, review round 16 finding LOW-1**: it named §5.10.1a, which was never touched by this sweep and correctly still reads "corrected in rev 16" (§5.10.1a describes the route itself, not one of the four re-mentions); the actual fifth site the rev-17 sweep touched, §9, was omitted | Corrected to name the revision that actually touched each spot | §5.10.2 (×2), §7 item 20, §8 step 4, §9 |
+| LOW-7 | Neither the rev-4 SREM-from-old-id rule nor the new scoped `owns`-merge rule stated which read of "the row's current value" they meant — the calling goroutine's own (potentially stale) in-hand `c`, or a fresh DB read inside `UpdateListenState` itself | Clarified as a fresh read; confirmed the ambiguity was harmless for `owns` specifically (only the SREM half was ever exposed to it), given the lock already serializes this AIcall's own writers | §5.2.4 |
+
+---
+
+### 10.14 Review-response matrix (round 16 → rev 19)
+
+**Round 16 independently re-verified round 15's own findings against actual current source rather than trusting §10.13's description** — confirming the TTL-derivation reasoning, the `TranscribeV1TranscribeList` 30000ms hardcoded-timeout citation, the corrected `errors.As`+`Reason` citations, and the corrected owns-merge consequence description were all genuinely right. What it found was that rev 18's own fixes were incompletely or, in one case, incorrectly applied — the TTL default was raised in the prose that derives it but not in the config table that governs it, and the release fix (a genuine improvement over rev 17) introduced a context-lifetime defect of its own that only became reachable once the TTL was sized correctly.
+
+| # | Review finding | Resolution | Where |
+|---|---|---|---|
+| HIGH-1 | §5.12's `aicall_listen_start_lock_ttl_seconds` row and §11 item 13 still said `15` (proposed) with the withdrawn "sum the RPC timeouts, stay well inside the goroutine timeout" rationale — directly contradicting §5.2.2's rev-18 rule that the TTL must instead *exceed* the goroutine timeout, default `60` | Both updated to `60` with §5.2.2's actual derivation | §5.12, §11 item 13 |
+| MEDIUM-1 | §5.2.2's prose said the lock's ownership token was `newTranscribeID`, but the code block four lines later mints a separate `lockToken := h.utilHandler.UUIDCreate()` — and `newTranscribeID` isn't minted until after lock acquisition, nor at all on the reuse path, making the prose's claim unimplementable, not just imprecise | Prose corrected to name `lockToken` and explain why it must be independent of `newTranscribeID` | §5.2.2 |
+| MEDIUM-2 | The deferred release ran under the acquiring goroutine's own `ctx`; a goroutine reaching its own outer timeout cancels `ctx`, so the release call would fail immediately — stranding the lock in exactly the legitimate-work scenario the TTL-vs-timeout margin exists to keep working, and invalidating the withdrawn "margin for the deferred release to run" claim from rev 18 | Release now runs under a context detached from `ctx`'s own cancellation (`context.WithoutCancel`, precedented at `bin-schedule-manager/pkg/dispatchhandler/manual.go:102`), bounded by its own new, short timeout config | §5.2.2, §5.12 |
+| MEDIUM-3 | Raising the TTL strictly above the goroutine timeout means a genuinely crashed goroutine (pod loss, the release `defer` never runs) now strands the lock for the full TTL rather than for less than the outer timeout as rev 17's original default implied; §7 item 2's own "a later goroutine can acquire it and proceed normally" test claim went stale against this without being updated | §7 item 2 corrected to the TTL-elapsed condition it now actually requires; the accepted trade-off (slower crash recovery in exchange for the TTL never lapsing under legitimate work) stated explicitly rather than left implicit | §7 item 2, §5.12, §5.2.2 |
+| MEDIUM-4 | The lock's compare-and-delete release semantics (a stale-token release is a deliberate no-op, not a delete) and its Redis-error path had no regression test of their own | Added directly to §7 item 2, alongside a new test that the release call itself runs on a detached, non-cancelled context | §7 item 2 |
+| LOW-1 | §10.13's own LOW-6 "Where" column named §5.10.1a as one of the four spots corrected in rev 17, but §5.10.1a was never touched by that sweep (it correctly still reads "corrected in rev 16") and the actual fifth site touched, §9, was omitted | Corrected | §10.13 |
+| LOW-2 | §5.2.4's LOW-7 fix cited its own supporting claim with a bare, brittle doc-internal line reference (`` `:1013-1014` above ``), which every subsequent revision's edits shift out from under | Replaced with a named-subsection reference | §5.2.4 |
+| LOW-3 | §6's `skipped_start_locked` mention read as though the label were already added to §5.13's enumerated set, when §11 item 16 states plainly the label is still an open, undecided item | Reworded to state it as this design's proposed label, not a settled one | §6 |
+| LOW-4 | §0's rev-18 row's "default raised to `60`" aside reads, on a literal parse, as attached to `AIcallListenEnsureGoroutineTimeoutSeconds` rather than the lock TTL it actually describes | Left as the historical record, per this document's own convention of not rewriting past revision rows — the row is ambiguously worded, not factually wrong, and the ambiguity is noted here instead | §10.14 (this row) |
+| LOW-5 | §5.8's file-list bullet for `listen_trigger.go` omitted the lock's two cache primitives, which §9's parallel enumeration already listed — the two sections disagreed again, the same class of drift LOW-5 (round 14) had already corrected once | `ListenStartLockAcquire`/`ListenStartLockRelease` added to §5.8's bullet | §5.8 |
+| LOW-6 | The lock's acquire/release API was asymmetric: acquisition was a raw, inline `SetNX` call with the key built at the call site, while release was a named function that rebuilt the same key format internally — the format lived in two places and could drift | Given a matched `ListenStartLockAcquire`/`ListenStartLockRelease` pair; the key format now lives in exactly one place | §5.2.2, §9, §5.8 |
+| LOW-7 | The illustrative `dupFilters` pseudo-block earlier in §5.2.2 showed `existing := TranscribeV1TranscribeList(...)` with no error check — the exact dropped-error shape round 15's LOW-4 had just fixed a few paragraphs later in the real snippet, left as a stale, confusing echo | Rewritten as the actual `dupFilters` binding, with its own error check, referenced by name from the lock sequence below | §5.2.2 |
+| LOW-8 | `dupFilters` was referenced by name in the lock's Go snippet but never bound anywhere in it | Bound once in the illustrative block above (LOW-7's fix) and referenced by name | §5.2.2 |
+| LOW-9 | The deferred release call discarded its error return without the explicit `_ =` this snippet uses everywhere else it intentionally ignores an error — inconsistent, and the kind of thing an `errcheck` gate would flag | Naturally fixed by MEDIUM-2's rewrite, which wraps the release in a closure using `_ =` | §5.2.2 |
+| LOW-10 | The conflict-recovery branch's `existing, errList := ...` shadowed the create path's own `existing`/`errList` names a few lines above, in a section whose most recent bug (round 15 LOW-4) was about that exact pair's error handling | Renamed to `existingRetry`/`errListRetry` | §5.2.2 |
+| LOW-11 | Pre-existing, not introduced in rev 18: §5.1's response-timing prose described step 7's confbridge wait as "up-to-45s," conflating the confbridge-wait budget (`aicall_listen_confbridge_ready_max_wait_seconds`, `30`s) with the goroutine's own separate outer timeout (`45`s) | Corrected to name the right config and its actual value | §5.1 |
+
+---
+
+### 10.15 Review-response matrix (round 17 → rev 20)
+
+**Round 17 independently re-verified all six of round 16's findings against current text and, where load-bearing, against actual source** — including confirming `context.WithoutCancel` really is used at the cited precedent (`bin-schedule-manager/pkg/dispatchhandler/manual.go:102`) and that this monorepo's Go version (`go 1.27.1`) supports it — and confirmed every one genuinely fixed, with no reservations. What it found instead was that rev 19's own edits, while correctly fixing round 16's specific findings, left several of the sections they touched inconsistent with each other or with immediately adjacent text the edits didn't reach.
+
+| # | Review finding | Resolution | Where |
+|---|---|---|---|
+| B-1 | The Status line and §0 row 19 both undercounted round 16 as "3 MEDIUM" against §10.14's own 4-row (MEDIUM-1 through MEDIUM-4) enumeration | Fixed on the Status line, which is continuously-updated current-state summary; row 19's own text left alone per this document's convention (a factual miscount on a still-current summary line is corrected; a frozen historical row is not rewritten — the two are treated differently on purpose, not inconsistently) | Status line |
+| B-2 | §10.14's own LOW-7 row claimed the illustrative `dupFilters` block had been rewritten "with its own error check" — it had not; it still declared `existing, err := TranscribeV1TranscribeList(...)` with no `if err != nil`, the same dropped-error shape under a different mask | The call removed from the illustrative block entirely; it now only binds the filter map, referenced by name from both real call sites, each of which already has its own correct error handling | §5.2.2 |
+| B-3 | Rev 19's own LOW-10 fix (renaming shadowed variables) introduced a brand-new brittle doc-internal line citation ("line-990") in its explanatory comment, already off by one line | Replaced with a description naming the create-path call directly, no line number | §5.2.2 |
+| B-4 | §5.8's file-list bullet, rewritten in rev 19, ended up claiming `rollbackListenState` — an `aicallHandler`-level helper, not a cache primitive — lived in `pkg/cachehandler` alongside the lock's two primitives, contradicting §9's placement of it in `listen_trigger.go`; separately, §9's own `cachehandler` enumeration still omitted `ListenTranscribeAIcallRemove` | §5.8 split into two bullets matching §9's placement exactly: `rollbackListenState` stays in `listen_trigger.go`; `ListenTranscribeAIcallRemove`/`ListenStartLockAcquire`/`ListenStartLockRelease` are the cache primitives, now listed in both §5.8 and §9 | §5.8, §9 |
+| B-5 | §9 said "twelve flags" against §5.12's actual thirteen, the moment rev 19 added `aicall_listen_start_lock_release_timeout_seconds` without updating this count | Corrected to "thirteen" | §9 |
+| B-6 | §6's lock-error row and §7 item 2's matching test both described `ListenStartLockAcquire`/`ListenStartLockRelease` errors identically — but a deferred `Release` error can't yield "no transcribe is started" (the `Release` runs after `TranscribeV1TranscribeStart` may have already succeeded) or "metered `failed`" (its error is deliberately discarded via `_ =`); the test text also mislabeled the lock as reachable from `checkListenEligible`, which never touches it | Split into an acquire-error row/test (fail-closed, metered `failed`, zero `TranscribeV1TranscribeStart` calls, attributed to `runListenStart` not `checkListenEligible`) and a release-error row/test (best-effort, never metered, falls back to the lock's own TTL) | §6, §7 item 2 |
+| B-7 | An acquire call whose `SET NX` lands server-side but errors client-side (timeout, connection reset) registers no `defer`, so nothing would ever release that lock — a stranding path the "reserved for an actual crash" residual-risk claim didn't name | A best-effort release with the same token is now attempted on the acquire-error path itself before returning the error, collapsing this case into the already-accepted crash residual rather than leaving it as a separate, silent one | §5.2.2 |
+| LOW-1 | `tr`, captured from `TranscribeV1TranscribeStart`'s return, was never used anywhere except inside a comment — real Go would not compile this | Replaced with `_` | §5.2.2 |
+| LOW-2 | §7 item 2 asserted `skipped_start_locked` as a settled label in two places, after §6 had already been reworded (rev 19, round 16 LOW-3) to call it "proposed, not yet added to §5.13" | Both §7 mentions reworded to match §6 | §7 item 2 |
+| LOW-3 | Rev 19 reworded §9's debounce-lock cross-reference ("already established in §5.3.4") but left §5.2.2's parallel mention ("already uses") in the older phrasing | Made consistent | §5.2.2 |
+
+**Nitpicks recorded, not separately fixed** (round 17's own assessment: none block approval; **the two doc-internal line citations below were themselves found stale by review round 19 finding LOW-4 and are given as descriptive references instead, rather than re-pinned to new line numbers that will just as surely drift again**): a residual "already uses"-style phrasing elsewhere, scoped unambiguously by an explicit §5.3.4 reference; §5.1's response-timing prose naming "step 7's 45s goroutine" attributes the goroutine's own outer timeout to step 7 by name, a narrower imprecision than LOW-11's already-fixed budget/timeout conflation; §5.1.1's mention of the internal `POST /v1/aicalls/{id}/listen` route is accurate per §5.1's own statement that the internal path never moved, just reads adjacent to BLOCKING-1's public-path history; and round 17's own explicit confirmation that this document's row-freezing convention (§0's historical rows left alone; only continuously-updated summary text like the Status line corrected) was applied consistently, not selectively, in resolving B-1.
+
+---
+
+### 10.16 Review-response matrix (round 18 → rev 21)
+
+**Round 18 independently re-derived all ten of round 17's findings from current text rather than trusting §10.15, and re-verified every load-bearing source citation a second time** (`context.WithoutCancel`'s precedent and this monorepo's Go version, `TranscribeV1TranscribeList`'s hardcoded timeout, `TranscribeV1TranscribeStart`'s signature) — all still accurate — and further confirmed B-7's new best-effort-release code is valid, non-leaking Go. Nine of round 17's ten findings were confirmed genuinely and completely fixed, no reservations. What it found was one real compile-breaking defect inside the very block rev 20 rewrote to fix a *different* compile-breaking defect (B-2), plus a cluster of small attribution/wording residue from the same revision's other fixes.
+
+| # | Review finding | Resolution | Where |
+|---|---|---|---|
+| MEDIUM-1 | §5.2.2's own code comment, added by rev 20 to explain a discarded return value, cited "round 17 finding B-9" — an id that does not exist in this document's numbering (round 17's range is B-1 through B-7); the finding that actually produced this edit was LOW-1 | Corrected to cite LOW-1 | §5.2.2 |
+| MEDIUM-2 | The `dupFilters` illustrative block, rewritten in rev 20 to fix B-2's dropped-error shape, introduced a different compile error: it declared `map[string]any` with bare string keys, but `TranscribeV1TranscribeList`'s actual parameter type is `map[tmtranscribe.Field]any` (`bin-common-handler/pkg/requesthandler/transcribe_transcribes.go:40`) — a distinct named type Go does not implicitly convert between | Rekeyed with the actual `tmtranscribe.Field` constants (`FieldCustomerID`, `FieldReferenceID`, `FieldStatus`, `FieldDeleted`), verified present at `bin-transcribe-manager/models/transcribe/field.go` | §5.2.2 |
+| LOW-1 | §7 item 2's new deferred-release test case cited "round 17 finding B-6/MEDIUM-4," reading as though MEDIUM-4 were also round 17's when it is round 16's | Reworded to "B-6, extending round 16's MEDIUM-4 coverage" | §7 item 2 |
+| LOW-2 | The §5.2.2 "accepted residual" paragraph and §5.12's lock-TTL row both named crash-only (pod loss) stranding as the sole cause of a full-TTL strand, without naming B-7's own new residual (an ambiguous acquire error whose best-effort release also fails) | Both now name the second residual explicitly | §5.2.2, §5.12 |
+| LOW-3 | §7 item 2's happy-path assertion still referenced `tr.ID`, a variable LOW-1's own rev-20 rename removed from §5.2.2's snippet | Reworded to describe the mocked return value without naming a variable | §7 item 2 |
+| LOW-4 | §5.2.4's `UpdateListenState` description also referenced `tr.ID`, but `tr` was never in scope in that section at all — its own parameter is `transcribeID` | Corrected to `transcribeID` in both mentions | §5.2.4 |
+| LOW-5 | The Redis resolver set's `12h` membership TTL was the only listen timing constant in this design with no §5.12 config row and no stated reason why not | A sentence added stating this is deliberate — a safety-margin bound, not a value expected to need tuning — so it is not promoted to a fourteenth flag | §5.2.4 |
+| LOW-6 | **Mis-cited by rev 21 itself, review round 19 finding LOW-3: the quoted framing ("factually-wrong text (corrected) … merely historical text (not rewritten)") is not in §10.15's B-1 row at all — §10.15's B-1 row uses only the operative-rule phrasing. The quote is verbatim in §0's own row 20.** So it is row 20, not §10.15's B-1 row, whose framing argues (as literally phrased) for correcting row 19's miscount rather than leaving it, against the operative rule that row 20's own parenthetical states correctly a few words earlier in the same sentence ("continuously-updated current-state summary, not a frozen historical row") (**descriptor corrected in rev 23, review round 20 finding LOW-2, from "its own trailing clause" — accurate for §10.15's B-1 row, whose operative-rule statement really is trailing, but not for row 20, whose statement comes earlier in the sentence**) | Row 20 left as the historical record of round 17's own review, per this document's convention, rather than rewritten — the mis-citation corrected here instead, since this matrix (unlike §0's own rows) is not itself frozen | §10.16 (this row) |
+
+---
+
+### 10.17 Review-response matrix (round 19 → rev 22)
+
+**Round 19 independently re-derived all eight of round 18's findings from current text and re-verified every load-bearing citation a second time, plus performed a full compile-read of §5.2.2's entire lock snippet** (not just the lines MEDIUM-2 named) — every variable, every RPC call's argument count and types, checked against the actual signatures in `bin-common-handler`/`bin-transcribe-manager`, and against the `Field` constants used in the corrected `dupFilters` map. All eight were confirmed genuinely and completely fixed. **This is the sub-loop's first APPROVE.** One more consecutive APPROVE (round 20) closes it.
+
+| # | Review finding | Resolution | Where |
+|---|---|---|---|
+| LOW-1 | The "accepted residual" paragraph, extended in rev 21 to name a second stranding cause, pointed to it as "(above)" — the actual text is ~40 lines below, not above | Corrected to "(below)" | §5.2.2 |
+| LOW-2 | A third `tr.ID` reference survived in §5.2.4's historical description of rev 2's original key format, beyond the two rev-21 LOW-4 fixed | Corrected to `transcribeID` | §5.2.4 |
+| LOW-3 | §10.16's own LOW-6 row attributed a quoted framing phrase to "§10.15's own B-1 row," but that exact phrase is not there — it is verbatim in §0's row 20 | Attribution corrected in §10.16's row; §0 row 20 itself left unrewritten (frozen, per convention) | §10.16 |
+| LOW-4 | §10.15's own nitpick paragraph carried two doc-internal line citations already stale by the time round 19 checked them | Replaced with descriptive references — the same fix this recurring anti-pattern already received in round 16 (LOW-2) and round 17 (B-3) | §10.15 |
+| LOW-5 | Two mentions of "the `List` bullet/call … above" in §5.2.2 went stale the moment rev 20's B-2 fix removed the illustrative block's own `List` call | Reworded to reference the reuse-check bullet and the `dupFilters` binding directly | §5.2.2 |
+
 ---
 
 ## 11. Open items before implementation sign-off
 
-1. **`in`/`out` speaker mapping empirical verification (§5.9) — blocking.**
-   Capture one real or staged agent-bridged call and confirm the mapping
-   against known speaker identity before merge. A reversed mapping is a
-   silent correctness failure, not a cosmetic one.
+1. **`in`/`out` speaker mapping empirical verification (§5.9) — blocking,
+   narrowed in rev 11.** The general channel-relative mechanism is now
+   confirmed against real production transcript data, and which leg gets
+   transcribed is now backed by a stronger, code-checked invariant
+   (`in == Case.Peer`, guaranteed CRM-eligible by `case_create` itself —
+   §5.1.1 step 7) rather than assumed. What remains open: capture one real
+   or staged **agent-bridged** call and confirm the mapping against known
+   speaker identity end-to-end before merge. A reversed mapping is a
+   silent correctness failure, not a cosmetic one. See item 11 for the
+   residual-risk vector review round 9 surfaced while narrowing this item
+   (correcting rev 11's own first-draft framing of it), and item 12 for a
+   separate residual risk rev 11 itself first surfaced, whose "refused
+   vs. unguarded" framing review round 9 later corrected.
 2. **Confirm the deployed Redis version supports `LPOP key count` (Redis
    ≥ 6.2) — blocking, elevated in rev 4 (review round 3: this is not a
    deferrable implementation nicety).** §5.4.1's atomic pop-all of the
@@ -2559,3 +4114,103 @@ rev 5's own deferred residual, and B3 in round 4 did with rev 3's).
     (§3, §5.2.1). The architecture keeps the STT cost off the customer's
     transcription bill, which makes this a clean, deliberate pricing
     choice rather than an accident.
+11. **Staff-calling-in-as-a-CRM-eligible-peer inversion (§5.9) — new in
+    rev 11, corrected by review round 9, not blocking this design's
+    scope, but should get an explicit product decision before rollout.**
+    Round 9 found rev 11's first framing of this risk (an agent-outbound
+    click-to-call leg) is very likely impossible: `case_create`'s own
+    `isCRMEligiblePeer` check already excludes agent/extension/SIP peers,
+    so that exact scenario cannot produce a Case at all
+    (`bin-flow-manager/pkg/activeflowhandler/actionhandle.go:1259-1275`).
+    The real, narrower vector is an **inbound** call whose peer address is
+    CRM-eligible (`tel`/`email`) but is actually staff calling in via a
+    plain DID rather than the agent-dial path — `case_create` cannot
+    distinguish that from a genuine customer, and `in`/`out` would be
+    silently inverted for such a call. §5.1.1 step 7's participant-count
+    guard does not catch it (a 2-party bridge still reads as 2 parties).
+    Out of scope to fix here; needs its own follow-up ticket if this
+    scenario is a realistic concern for any customer's call routing.
+12. **Call-transfer interaction with listening (§5.1.1 step 7, §5.9) —
+    new in rev 11, not investigated.** Whether a `bin-transfer-manager`
+    transfer changes which leg is transcribed mid-listen, or produces a
+    transient 3-party bridge state, is unconfirmed. §5.1.1 step 7's guard
+    is enforced only at listen-start, with **no ongoing re-check** once a
+    session is live — so a transfer occurring mid-session is unguarded,
+    not merely refused, contrary to what an earlier draft of this item
+    implied. Recommend a follow-up ticket rather than blocking this
+    design on it, since transfer-during-listen is a narrower scenario
+    than the base feature.
+13. **New config, needs a value before implementation (§5.1.1 step 7,
+    §5.12):** `aicall_listen_confbridge_ready_poll_interval_seconds`
+    (proposed default `2`), `aicall_listen_confbridge_ready_max_wait_seconds`
+    (proposed default `30`), and — **added after review round 10 finding
+    MEDIUM-B**, since the design otherwise left this unbounded/implicit —
+    `aicall_listen_ensure_goroutine_timeout_seconds` (proposed default
+    `45`, strictly greater than the max-wait value above). Together these
+    are the bounded retry that review round 9 required after finding the
+    original one-shot participant-count check fails closed on a perfectly
+    normal call (agent still ringing when `ProcessListen` first runs). All
+    three defaults are this design's proposal, not yet validated against
+    real hold/ring-time distributions — in particular, since review round
+    10's HIGH-A fix means a stably-wrong topology and a merely-slow ring
+    now share the same `skipped_confbridge_not_ready` outcome and the same
+    30s budget, an unusually long real ring time would show up
+    indistinguishably from a genuine topology problem, which is a
+    reason to err toward a longer default here rather than a shorter one.
+    Confirm before rev 11 is considered final for implementation. **Rev
+    17, review round 14 finding HIGH-2 adds a fourth (default corrected
+    from `15` to `60` in rev 18-19, §5.12)**:
+    `aicall_listen_start_lock_ttl_seconds` (proposed default `60`,
+    §5.2.2, §5.12) — the per-AIcall create-or-reuse lock's TTL, needing
+    the same validate-before-final treatment as the three above. **Rev
+    19 adds a fifth**: `aicall_listen_start_lock_release_timeout_seconds`
+    (proposed default `3`, §5.2.2, §5.12) — the detached-context bound on
+    the same lock's `Release` call.
+14. **Product decision, not blocking (§5.1, new in rev 15, path
+    corrected in rev 16):** the new
+    `POST /service_agents/aicalls/{id}/listen` endpoint deliberately
+    returns no listening-status field — the caller cannot tell "started"
+    from "reused" from "not eligible" from "still waiting on confbridge"
+    from the response alone. This matches the CEO/CTO's own stated scope for
+    this API (separation of concerns, not status visibility — 2026-09-04
+    design discussion). If a future UI need arises (e.g. a "🎧
+    listening" indicator in the panel), closing this gap does not require
+    blocking the endpoint's own HTTP response on step 7's confbridge wait
+    — the AIcall's own `ListenCallID`/`Metadata[listen_transcribe_id]`
+    fields (§5.8) already carry the eventual outcome and could be
+    surfaced through the existing WebSocket/poll transport the panel
+    already uses for messages, on a follow-up ticket.
+15. **Naming, not blocking (§5.1, new in rev 15, updated in rev 16):**
+    `ProcessListen`/`checkListenEligible`/`runListenStart`/`rollbackListenState`/
+    `ListenTranscribeAIcallRemove` are this design's proposed names,
+    chosen to be self-describing and consistent with this file's existing
+    naming (`UpdateListenState`, `clearListenState`,
+    `ListenTurnPipecatcallIDAdd`) — not verified against any
+    linter/style convention beyond that. Fine to bikeshed at
+    implementation time; not a design-level decision.
+16. **New metric label, needs a name before implementation (§6, §5.13 —
+    new in rev 16, review round 13 finding LOW-3; extended in rev 18,
+    review round 15 finding LOW-1; §6's own rows split further in rev
+    20, review round 17 finding B-6, once acquire- and release-side lock
+    errors turned out to need different handling — the label question
+    below is unaffected by that split, since a release error is
+    deliberately never metered at all, §6):** §6's new rows for
+    `checkListenEligible`'s AIcall-liveness rejection (MEDIUM-2), the
+    pre-write/rollback failures (HIGH-3), and — newly, rev 18 — the
+    per-AIcall start lock's own two outcomes (`skipped_start_locked`, a
+    losing goroutine; `failed` on a `ListenStartLockAcquire` Redis error
+    specifically, **not** a `ListenStartLockRelease` one, §6) are
+    described only as folding into the existing `skipped_*`/`failed`
+    buckets of `aicall_listen_start_total` (§5.13)
+    — no new label was actually added to that metric's enumerated set
+    the way §5.13's table lists every other outcome explicitly. Either
+    add explicit labels (e.g. `skipped_aicall_not_live`,
+    `failed_prewrite`, `skipped_start_locked`) or state plainly that
+    these fold into `skipped_not_listenable`/`failed` and accept the
+    reduced observability; small either way, but should be a deliberate
+    choice recorded in §5.13's table before implementation, not left
+    implicit. `skipped_start_locked` in particular is worth its own
+    label regardless of the others' fate: unlike the other new outcomes,
+    a sustained non-zero rate is a genuinely useful signal (heavy
+    concurrent re-open pressure on one AIcall), not just a fail-closed
+    edge case.
