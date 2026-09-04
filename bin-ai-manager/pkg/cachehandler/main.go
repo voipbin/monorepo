@@ -4,6 +4,7 @@ package cachehandler
 
 import (
 	"context"
+	"time"
 
 	"github.com/go-redis/redis/v8"
 	uuid "github.com/gofrs/uuid"
@@ -43,6 +44,30 @@ type CacheHandler interface {
 
 	TeamGet(ctx context.Context, id uuid.UUID) (*team.Team, error)
 	TeamSet(ctx context.Context, data *team.Team) error
+
+	// Insight AI realtime call listening (see listen.go).
+	ListenAIcallIDsGet(ctx context.Context, transcribeID uuid.UUID) ([]uuid.UUID, error)
+	ListenAIcallIDAdd(ctx context.Context, transcribeID uuid.UUID, aicallID uuid.UUID, ttl time.Duration) error
+	ListenAIcallIDRemove(ctx context.Context, transcribeID uuid.UUID, aicallID uuid.UUID) error
+
+	ListenPendingPush(ctx context.Context, aicallID uuid.UUID, line string, ttl time.Duration) error
+	ListenPendingPopAll(ctx context.Context, aicallID uuid.UUID) ([]string, error)
+
+	ListenWindowPush(ctx context.Context, aicallID uuid.UUID, line string, windowSize int, ttl time.Duration) error
+	ListenWindowGet(ctx context.Context, aicallID uuid.UUID) ([]string, error)
+
+	ListenTurnTryLock(ctx context.Context, aicallID uuid.UUID, ttl time.Duration) (bool, error)
+	ListenTurnCountIncr(ctx context.Context, aicallID uuid.UUID, ttl time.Duration) (int64, error)
+
+	ListenTurnPipecatcallIDAdd(ctx context.Context, aicallID uuid.UUID, pipecatcallID uuid.UUID, ttl time.Duration) error
+	ListenTurnPipecatcallIDIsMember(ctx context.Context, aicallID uuid.UUID, pipecatcallID uuid.UUID) (bool, error)
+
+	// The per-AIcall create-or-reuse lock (design §5.2.2). A matched, symmetric
+	// pair -- the key format lives in these two functions and nowhere else.
+	ListenStartLockAcquire(ctx context.Context, aicallID uuid.UUID, token string, ttl time.Duration) (bool, error)
+	ListenStartLockRelease(ctx context.Context, aicallID uuid.UUID, token string) error
+
+	ListenStateClear(ctx context.Context, aicallID uuid.UUID) error
 }
 
 // NewHandler creates DBHandler
