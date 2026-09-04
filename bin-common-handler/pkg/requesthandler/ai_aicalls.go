@@ -183,6 +183,7 @@ func (r *requestHandler) AIV1AIcallToolExecute(
 	toolID string,
 	toolType ammessage.ToolType,
 	function *ammessage.FunctionCall,
+	pipecatcallID uuid.UUID,
 ) (map[string]any, error) {
 	uri := fmt.Sprintf("/v1/aicalls/%s/tool_execute", aicallID)
 
@@ -191,6 +192,11 @@ func (r *requestHandler) AIV1AIcallToolExecute(
 
 		Type:     toolType,
 		Function: *function,
+
+		// The session this tool call arrived on. ai-manager uses it to tell a
+		// listen evaluation turn from the agent's own Q&A turn. See
+		// docs/plans/2026-09-03-insight-ai-realtime-listen-design.md §5.4.3a.
+		PipecatcallID: pipecatcallID,
 	}
 
 	m, err := json.Marshal(data)

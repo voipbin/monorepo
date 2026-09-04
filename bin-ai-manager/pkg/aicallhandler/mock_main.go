@@ -259,18 +259,18 @@ func (mr *MockAIcallHandlerMockRecorder) Start(ctx, assistanceType, assistanceID
 }
 
 // ToolHandle mocks base method.
-func (m *MockAIcallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID string, toolType message.ToolType, function message.FunctionCall) (map[string]any, error) {
+func (m *MockAIcallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID string, toolType message.ToolType, function message.FunctionCall, pipecatcallID uuid.UUID) (map[string]any, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ToolHandle", ctx, id, toolID, toolType, function)
+	ret := m.ctrl.Call(m, "ToolHandle", ctx, id, toolID, toolType, function, pipecatcallID)
 	ret0, _ := ret[0].(map[string]any)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ToolHandle indicates an expected call of ToolHandle.
-func (mr *MockAIcallHandlerMockRecorder) ToolHandle(ctx, id, toolID, toolType, function any) *gomock.Call {
+func (mr *MockAIcallHandlerMockRecorder) ToolHandle(ctx, id, toolID, toolType, function, pipecatcallID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToolHandle", reflect.TypeOf((*MockAIcallHandler)(nil).ToolHandle), ctx, id, toolID, toolType, function)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToolHandle", reflect.TypeOf((*MockAIcallHandler)(nil).ToolHandle), ctx, id, toolID, toolType, function, pipecatcallID)
 }
 
 // UpdateActiveflowID mocks base method.

@@ -347,15 +347,48 @@ func Test_processV1AIcallsIDToolExecutePost(t *testing.T) {
 
 		responseToolHandle map[string]any
 
-		expectedID           uuid.UUID
-		expectedToolID       string
-		expectedToolType     message.ToolType
-		expectedToolFunction message.FunctionCall
+		expectedID            uuid.UUID
+		expectedToolID        string
+		expectedToolType      message.ToolType
+		expectedToolFunction  message.FunctionCall
+		expectedPipecatcallID uuid.UUID
 
 		expectedRes *sock.Response
 	}{
 		{
 			name: "normal",
+			request: &sock.Request{
+				URI:      "/v1/aicalls/a02f9d60-bbb6-11f0-81e6-7fbbd900fc6b/tool_execute",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"id":"tool-1234","type":"function","function":{"name":"connect","arguments":"{\"source\":{\"target\":\"+1234567890\"}}"},"pipecatcall_id":"2c1d4e6f-8a9b-4c0d-9e1f-3a5b7c9d1e2f"}`),
+			},
+
+			responseToolHandle: map[string]any{
+				"result":  "success",
+				"message": "",
+			},
+
+			expectedID:       uuid.FromStringOrNil("a02f9d60-bbb6-11f0-81e6-7fbbd900fc6b"),
+			expectedToolID:   "tool-1234",
+			expectedToolType: message.ToolTypeFunction,
+			expectedToolFunction: message.FunctionCall{
+				Name:      "connect",
+				Arguments: `{"source":{"target":"+1234567890"}}`,
+			},
+			expectedPipecatcallID: uuid.FromStringOrNil("2c1d4e6f-8a9b-4c0d-9e1f-3a5b7c9d1e2f"),
+			expectedRes: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"message":"","result":"success"}`),
+			},
+		},
+		{
+			// Pins the rolling-deploy compatibility promise in
+			// V1DataAIcallsIDToolExecutePost.PipecatcallID's own doc comment: an
+			// old bin-pipecat-manager sends no such field, and it must unmarshal
+			// to uuid.Nil rather than fail the request.
+			name: "no pipecatcall_id in the body unmarshals to uuid.Nil",
 			request: &sock.Request{
 				URI:      "/v1/aicalls/a02f9d60-bbb6-11f0-81e6-7fbbd900fc6b/tool_execute",
 				Method:   sock.RequestMethodPost,
@@ -375,6 +408,7 @@ func Test_processV1AIcallsIDToolExecutePost(t *testing.T) {
 				Name:      "connect",
 				Arguments: `{"source":{"target":"+1234567890"}}`,
 			},
+			expectedPipecatcallID: uuid.Nil,
 			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
@@ -396,7 +430,7 @@ func Test_processV1AIcallsIDToolExecutePost(t *testing.T) {
 				aicallHandler: mockAIcall,
 			}
 
-			mockAIcall.EXPECT().ToolHandle(gomock.Any(), tt.expectedID, tt.expectedToolID, tt.expectedToolType, tt.expectedToolFunction).Return(tt.responseToolHandle, nil)
+			mockAIcall.EXPECT().ToolHandle(gomock.Any(), tt.expectedID, tt.expectedToolID, tt.expectedToolType, tt.expectedToolFunction, tt.expectedPipecatcallID).Return(tt.responseToolHandle, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -502,7 +536,7 @@ func Test_processV1AIcallsIDToolExecutePost_errorMapping(t *testing.T) {
 				aicallHandler: mockAIcall,
 			}
 
-			mockAIcall.EXPECT().ToolHandle(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, tt.handlerErr)
+			mockAIcall.EXPECT().ToolHandle(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, tt.handlerErr)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Fatalf("expected no error, got: %v", err)

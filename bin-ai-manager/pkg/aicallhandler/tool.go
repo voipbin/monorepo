@@ -21,13 +21,14 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID string, toolType message.ToolType, function message.FunctionCall) (map[string]any, error) {
+func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID string, toolType message.ToolType, function message.FunctionCall, pipecatcallID uuid.UUID) (map[string]any, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":      "ToolHandle",
-		"aicall_id": id,
-		"tool_id":   toolID,
-		"tool_type": toolType,
-		"function":  function,
+		"func":           "ToolHandle",
+		"aicall_id":      id,
+		"tool_id":        toolID,
+		"tool_type":      toolType,
+		"function":       function,
+		"pipecatcall_id": pipecatcallID,
 	})
 
 	c, err := h.Get(ctx, id)

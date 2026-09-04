@@ -454,7 +454,10 @@ func (h *pipecatcallHandler) RunnerToolHandle(id uuid.UUID, c *gin.Context) erro
 		return fmt.Errorf("could not bind tool request JSON: %w", errBind)
 	}
 
-	res, err := h.requestHandler.AIV1AIcallToolExecute(ctx, pc.ReferenceID, request.ID, ammessage.ToolType(request.Type), &request.Function)
+	// pc.ID -- the pipecatcall this tool call arrived on -- lets ai-manager tell
+	// a listen evaluation turn from the agent's own Q&A turn. See
+	// docs/plans/2026-09-03-insight-ai-realtime-listen-design.md §5.4.3a.
+	res, err := h.requestHandler.AIV1AIcallToolExecute(ctx, pc.ReferenceID, request.ID, ammessage.ToolType(request.Type), &request.Function, pc.ID)
 	if err != nil {
 		return fmt.Errorf("could not execute tool via ai-manager: %w", err)
 	}

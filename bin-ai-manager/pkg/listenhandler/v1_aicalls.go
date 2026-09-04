@@ -246,7 +246,7 @@ func (h *listenHandler) processV1AIcallsIDToolExecutePost(ctx context.Context, m
 		return simpleResponse(400), nil
 	}
 
-	tmp, err := h.aicallHandler.ToolHandle(ctx, id, req.ID, req.Type, req.Function)
+	tmp, err := h.aicallHandler.ToolHandle(ctx, id, req.ID, req.Type, req.Function, req.PipecatcallID)
 	if err != nil {
 		log.Errorf("Could not execute tool. err: %v", err)
 		return errorResponse(err), nil

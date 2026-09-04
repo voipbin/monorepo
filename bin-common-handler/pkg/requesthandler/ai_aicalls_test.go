@@ -414,10 +414,11 @@ func Test_AIV1AIcallToolExecute(t *testing.T) {
 	tests := []struct {
 		name string
 
-		aicallID uuid.UUID
-		toolID   string
-		toolType ammessage.ToolType
-		function *ammessage.FunctionCall
+		aicallID      uuid.UUID
+		toolID        string
+		toolType      ammessage.ToolType
+		function      *ammessage.FunctionCall
+		pipecatcallID uuid.UUID
 
 		response *sock.Response
 
@@ -435,6 +436,7 @@ func Test_AIV1AIcallToolExecute(t *testing.T) {
 				Name:      ammessage.FunctionCallNameConnectCall,
 				Arguments: `{"source":{"type":"tel","target":"+123456789"},"destinations":[{"type":"tel","target":"+111111"},{"type":"tel","target":"+22222"}]}`,
 			},
+			pipecatcallID: uuid.FromStringOrNil("2c1d4e6f-8a9b-4c0d-9e1f-3a5b7c9d1e2f"),
 
 			response: &sock.Response{
 				StatusCode: 200,
@@ -447,7 +449,46 @@ func Test_AIV1AIcallToolExecute(t *testing.T) {
 				URI:      "/v1/aicalls/780281fa-bbec-11f0-a56b-fb82bf5a05ef/tool_execute",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"id":"77d4c710-bbec-11f0-826e-2f6827c0d353","type":"function","function":{"name":"connect_call","arguments":"{\"source\":{\"type\":\"tel\",\"target\":\"+123456789\"},\"destinations\":[{\"type\":\"tel\",\"target\":\"+111111\"},{\"type\":\"tel\",\"target\":\"+22222\"}]}"}}`),
+				Data:     []byte(`{"id":"77d4c710-bbec-11f0-826e-2f6827c0d353","type":"function","function":{"name":"connect_call","arguments":"{\"source\":{\"type\":\"tel\",\"target\":\"+123456789\"},\"destinations\":[{\"type\":\"tel\",\"target\":\"+111111\"},{\"type\":\"tel\",\"target\":\"+22222\"}]}"},"pipecatcall_id":"2c1d4e6f-8a9b-4c0d-9e1f-3a5b7c9d1e2f"}`),
+			},
+			expectRes: map[string]any{
+				"result":  "success",
+				"message": "",
+			},
+		},
+		{
+			// uuid.UUID is an array type, so encoding/json's omitempty does not
+			// elide it -- a uuid.Nil argument goes on the wire as the all-zero
+			// uuid string, exactly like this DTO's other uuid fields. That is
+			// harmless and is what ai-manager reads back as uuid.Nil.
+			//
+			// The genuinely-absent-key half of the rolling-deploy promise comes
+			// from an OLD bin-pipecat-manager marshalling an OLD struct that has
+			// no such field at all; it is asserted on the receiving side, in
+			// bin-ai-manager's Test_processV1AIcallsIDToolExecutePost.
+			name: "uuid.Nil pipecatcall id is sent as the zero uuid",
+
+			aicallID: uuid.FromStringOrNil("780281fa-bbec-11f0-a56b-fb82bf5a05ef"),
+			toolID:   "77d4c710-bbec-11f0-826e-2f6827c0d353",
+			toolType: ammessage.ToolTypeFunction,
+			function: &ammessage.FunctionCall{
+				Name:      ammessage.FunctionCallNameConnectCall,
+				Arguments: `{}`,
+			},
+			pipecatcallID: uuid.Nil,
+
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   ContentTypeJSON,
+				Data:       []byte(`{"result":"success", "message": ""}`),
+			},
+
+			expectTarget: string(outline.QueueNameAIRequest),
+			expectRequest: &sock.Request{
+				URI:      "/v1/aicalls/780281fa-bbec-11f0-a56b-fb82bf5a05ef/tool_execute",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"id":"77d4c710-bbec-11f0-826e-2f6827c0d353","type":"function","function":{"name":"connect_call","arguments":"{}"},"pipecatcall_id":"00000000-0000-0000-0000-000000000000"}`),
 			},
 			expectRes: map[string]any{
 				"result":  "success",
@@ -469,7 +510,7 @@ func Test_AIV1AIcallToolExecute(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.AIV1AIcallToolExecute(ctx, tt.aicallID, tt.toolID, tt.toolType, tt.function)
+			res, err := reqHandler.AIV1AIcallToolExecute(ctx, tt.aicallID, tt.toolID, tt.toolType, tt.function, tt.pipecatcallID)
 			if err != nil {
 				t.Errorf("Wrong match. expect ok, got: %v", err)
 			}

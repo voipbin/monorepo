@@ -570,18 +570,18 @@ func (mr *MockRequestHandlerMockRecorder) AIV1AIcallTerminateWithDelay(ctx, aica
 }
 
 // AIV1AIcallToolExecute mocks base method.
-func (m *MockRequestHandler) AIV1AIcallToolExecute(ctx context.Context, aicallID uuid.UUID, toolID string, toolType message.ToolType, function *message.FunctionCall) (map[string]any, error) {
+func (m *MockRequestHandler) AIV1AIcallToolExecute(ctx context.Context, aicallID uuid.UUID, toolID string, toolType message.ToolType, function *message.FunctionCall, pipecatcallID uuid.UUID) (map[string]any, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AIV1AIcallToolExecute", ctx, aicallID, toolID, toolType, function)
+	ret := m.ctrl.Call(m, "AIV1AIcallToolExecute", ctx, aicallID, toolID, toolType, function, pipecatcallID)
 	ret0, _ := ret[0].(map[string]any)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AIV1AIcallToolExecute indicates an expected call of AIV1AIcallToolExecute.
-func (mr *MockRequestHandlerMockRecorder) AIV1AIcallToolExecute(ctx, aicallID, toolID, toolType, function any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AIV1AIcallToolExecute(ctx, aicallID, toolID, toolType, function, pipecatcallID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIcallToolExecute", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIcallToolExecute), ctx, aicallID, toolID, toolType, function)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIcallToolExecute", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIcallToolExecute), ctx, aicallID, toolID, toolType, function, pipecatcallID)
 }
 
 // AIV1MessageDelete mocks base method.

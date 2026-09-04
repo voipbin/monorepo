@@ -293,6 +293,7 @@ type RequestHandler interface {
 		toolID string,
 		toolType ammessage.ToolType,
 		function *ammessage.FunctionCall,
+		pipecatcallID uuid.UUID,
 	) (map[string]any, error)
 
 	// ai-manager message
