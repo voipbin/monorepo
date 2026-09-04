@@ -7,7 +7,7 @@ All resolved via `replace` directives in `go.mod`.
 | Module | Purpose |
 |--------|---------|
 | `bin-common-handler` | Shared transport (sockhandler, requesthandler, notifyhandler, circuit breaker) |
-| `bin-ai-manager` | AI call models; target service for tool execution RPCs |
+| `bin-ai-manager` | AI call models; target service for tool execution RPCs; also the source of the Insight-tool whitelist (see note below) |
 | `bin-call-manager` | External media models; RPC to create Asterisk WebSocket endpoint |
 | `bin-agent-manager` | Agent models |
 | `bin-billing-manager` | Billing events |
@@ -35,6 +35,26 @@ All resolved via `replace` directives in `go.mod`.
 | `bin-transfer-manager` | Transfer models |
 | `bin-tts-manager` | TTS models |
 | `bin-webhook-manager` | Webhook models |
+
+**Redeploy trigger, no source change required:** `pkg/toolhandler/main.go`'s
+`GetByNames` filters every tool through `amai.AllowedToolNames(aiType)`
+(`bin-ai-manager/models/ai/tool_validation.go`, which derives from
+`bin-ai-manager/models/tool`'s `AllInsightToolNames`/`AllToolNames`). Because
+that whitelist is a Go value compiled into this service's binary via the
+local module `replace` above (not fetched at runtime), **adding or removing a
+tool from those lists in `bin-ai-manager` has no effect here until this
+service is rebuilt and redeployed** -- even though this service's own source
+is untouched. (Tool *definitions* -- name/description/parameters/`run_llm`
+-- are different: those are fetched at runtime via `AIV1ToolList` RPC on a
+5-minute ticker, so they propagate without a redeploy. Only the whitelist
+membership is compile-time.) There is no ordering requirement between the
+two services' deploys -- whichever lags simply filters the new tool out
+(or doesn't yet know its definition), with no error either way -- but until
+both have deployed, the tool is not usable by an Insight AI. See VOIP-1455 (`docs/plans/2026-09-04-insight-assistant-emit-info-card-design.md`
+at the monorepo root, §1.1) for the incident that surfaced this: `bin-ai-manager`
+deployed a new whitelist entry (`emit_info_card`) and this service was never
+redeployed to pick it up, so the new tool silently had no effect for roughly
+a day until someone noticed and triggered a manual redeploy.
 
 ## External Dependencies
 
