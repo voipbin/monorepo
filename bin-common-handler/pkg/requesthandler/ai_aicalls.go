@@ -88,6 +88,36 @@ func (r *requestHandler) AIV1AIcallGet(ctx context.Context, aicallID uuid.UUID) 
 	return &res, nil
 }
 
+// AIV1AIcallGetSkipCache sends a request to ai-manager to get the aicall,
+// bypassing ai-manager's own Redis snapshot cache and reading the row from the
+// database.
+//
+// Use it ONLY where a stale read would produce a wrong, irreversible decision.
+// The one such site today is bin-ai-manager's messagehandler stale-reply guard
+// (docs/plans/2026-09-03-insight-ai-realtime-listen-design.md §5.4.4(b)): the
+// guard drops a bot-LLM message whose pipecatcall id does not match the
+// AIcall's bound one, and AIcallUpdate's cache refresh discards its own error,
+// so a transiently-stale cached PipecatcallID would make the guard drop the
+// agent's genuine answer. The guard confirms against the database before
+// dropping. Everywhere else, prefer AIV1AIcallGet -- this variant defeats the
+// cache on purpose and costs a real query.
+func (r *requestHandler) AIV1AIcallGetSkipCache(ctx context.Context, aicallID uuid.UUID) (*amaicall.AIcall, error) {
+
+	uri := fmt.Sprintf("/v1/aicalls/%s?skip_cache=true", aicallID)
+
+	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodGet, "ai/aicalls/<aicall-id>", requestTimeoutDefault, 0, ContentTypeNone, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var res amaicall.AIcall
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
+}
+
 // AIV1AIcallDelete sends a request to ai-manager
 // to deleting a aicall.
 // it returns deleted aicall if it succeed.

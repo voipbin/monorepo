@@ -480,6 +480,21 @@ func (mr *MockRequestHandlerMockRecorder) AIV1AIcallGet(ctx, aicallID any) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIcallGet", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIcallGet), ctx, aicallID)
 }
 
+// AIV1AIcallGetSkipCache mocks base method.
+func (m *MockRequestHandler) AIV1AIcallGetSkipCache(ctx context.Context, aicallID uuid.UUID) (*aicall.AIcall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIV1AIcallGetSkipCache", ctx, aicallID)
+	ret0, _ := ret[0].(*aicall.AIcall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIV1AIcallGetSkipCache indicates an expected call of AIV1AIcallGetSkipCache.
+func (mr *MockRequestHandlerMockRecorder) AIV1AIcallGetSkipCache(ctx, aicallID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIcallGetSkipCache", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIcallGetSkipCache), ctx, aicallID)
+}
+
 // AIV1AIcallList mocks base method.
 func (m *MockRequestHandler) AIV1AIcallList(ctx context.Context, pageToken string, pageSize uint64, filters map[aicall.Field]any) ([]aicall.AIcall, error) {
 	m.ctrl.T.Helper()

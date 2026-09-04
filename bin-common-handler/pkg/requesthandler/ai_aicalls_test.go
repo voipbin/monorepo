@@ -480,3 +480,70 @@ func Test_AIV1AIcallToolExecute(t *testing.T) {
 		})
 	}
 }
+
+// Test_AIV1AIcallGetSkipCache pins the one thing that differs from
+// AIV1AIcallGet: the request URI carries skip_cache=true, which ai-manager's
+// listenhandler routes to a cache-bypassing read. Introduced by docs/plans/
+// 2026-09-03-insight-ai-realtime-listen-design.md §5.4.4(b).
+func Test_AIV1AIcallGetSkipCache(t *testing.T) {
+
+	type test struct {
+		name string
+
+		aicallID uuid.UUID
+
+		expectQueue   string
+		expectRequest *sock.Request
+
+		response  *sock.Response
+		expectRes *amaicall.AIcall
+	}
+
+	tests := []test{
+		{
+			"normal",
+			uuid.FromStringOrNil("8f4b9c2a-1d3e-4f5a-9b8c-7d6e5f4a3b2c"),
+
+			string(outline.QueueNameAIRequest),
+			&sock.Request{
+				URI:    "/v1/aicalls/8f4b9c2a-1d3e-4f5a-9b8c-7d6e5f4a3b2c?skip_cache=true",
+				Method: sock.RequestMethodGet,
+			},
+
+			&sock.Response{
+				StatusCode: 200,
+				DataType:   ContentTypeJSON,
+				Data:       []byte(`{"id":"8f4b9c2a-1d3e-4f5a-9b8c-7d6e5f4a3b2c"}`),
+			},
+			&amaicall.AIcall{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("8f4b9c2a-1d3e-4f5a-9b8c-7d6e5f4a3b2c"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+			ctx := context.Background()
+
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectQueue, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.AIV1AIcallGetSkipCache(ctx, tt.aicallID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}

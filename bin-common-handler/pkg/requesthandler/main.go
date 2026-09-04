@@ -283,6 +283,7 @@ type RequestHandler interface {
 	AIV1AIcallStart(ctx context.Context, assistanceType amaicall.AssistanceType, assistanceID uuid.UUID, activeflowID uuid.UUID, referenceType amaicall.ReferenceType, referenceID uuid.UUID) (*amaicall.AIcall, error)
 	AIV1AIcallList(ctx context.Context, pageToken string, pageSize uint64, filters map[amaicall.Field]any) ([]amaicall.AIcall, error)
 	AIV1AIcallGet(ctx context.Context, aicallID uuid.UUID) (*amaicall.AIcall, error)
+	AIV1AIcallGetSkipCache(ctx context.Context, aicallID uuid.UUID) (*amaicall.AIcall, error)
 	AIV1AIcallDelete(ctx context.Context, aicallID uuid.UUID) (*amaicall.AIcall, error)
 	AIV1AIcallTerminate(ctx context.Context, aicallID uuid.UUID) (*amaicall.AIcall, error)
 	AIV1AIcallTerminateWithDelay(ctx context.Context, aicallID uuid.UUID, delay int) error
