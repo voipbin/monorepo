@@ -6,7 +6,7 @@ imported and unit-tested in isolation. See VOIP-1460 design doc
 """
 
 
-def filter_valid_messages(messages):
+def filter_valid_messages(messages: list[dict]) -> list[dict]:
     """Keep role+content-or-tool_calls messages, then drop any tool_calls /
     tool-result that isn't actually paired. A tool-call-request message
     survives only if EVERY one of its tool_calls has a matching role="tool"
@@ -21,13 +21,12 @@ def filter_valid_messages(messages):
     truncation cut, or anything else not yet discovered) -- see VOIP-1460
     design doc section 2-1.
 
-    (This function went through two broken drafts in design review before
-    reaching this shape -- both broke by emitting output from more than one
-    loop/list, which let a message dropped in one place resurface via a
-    stray `else: append` in another. The fix is structural: compute
-    `kept_assistant_call_ids` first with NO side effect on the output, then
-    emit the final list from a SINGLE loop that is the only place `append`
-    is ever called.)
+    Structural invariant: `kept_assistant_call_ids` is computed with NO side
+    effect on the output (pass 1), then the final list is emitted from a
+    SINGLE loop that is the only place `append` is ever called (pass 2) --
+    this is what keeps the two halves of a pair from being judged by
+    different criteria (see design doc section 2-1 for the two earlier
+    drafts that broke by emitting output from more than one place).
     """
     candidates = [m for m in messages if m.get("role") and (m.get("content") or m.get("tool_calls"))]
     result_ids = {m.get("tool_call_id") for m in candidates if m.get("role") == "tool"}
