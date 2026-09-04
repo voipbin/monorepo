@@ -231,3 +231,74 @@ func TestLoadGlobalConfig(t *testing.T) {
 		})
 	}
 }
+
+// Test_ListenConfigDefaults pins the shipped defaults for the Insight AI
+// realtime-listen flags. The first assertion is the important one: the feature
+// must ship dark. The rest guard against a zero-value default silently
+// disabling the debounce (interval 0 = a turn per transcript segment, the exact
+// unbounded-cost shape the design exists to avoid) or the turn cap.
+func Test_ListenConfigDefaults(t *testing.T) {
+	SetListenDefaultsForTest()
+
+	cfg := Get()
+
+	if cfg.AIcallListenEnabled {
+		t.Errorf("AIcallListenEnabled must default to false -- the feature ships dark")
+	}
+	if cfg.AIcallListenEvaluateIntervalSeconds != 20 {
+		t.Errorf("AIcallListenEvaluateIntervalSeconds mismatch. expected: 20, got: %d", cfg.AIcallListenEvaluateIntervalSeconds)
+	}
+	if cfg.AIcallListenWindowSize != 40 {
+		t.Errorf("AIcallListenWindowSize mismatch. expected: 40, got: %d", cfg.AIcallListenWindowSize)
+	}
+	if cfg.AIcallListenQAContextSize != 10 {
+		t.Errorf("AIcallListenQAContextSize mismatch. expected: 10, got: %d", cfg.AIcallListenQAContextSize)
+	}
+	if cfg.AIcallListenMaxTurnsPerAIcall != 60 {
+		t.Errorf("AIcallListenMaxTurnsPerAIcall mismatch. expected: 60, got: %d", cfg.AIcallListenMaxTurnsPerAIcall)
+	}
+	if cfg.AIcallListenBufferTTLHours != 6 {
+		t.Errorf("AIcallListenBufferTTLHours mismatch. expected: 6, got: %d", cfg.AIcallListenBufferTTLHours)
+	}
+	if cfg.AIcallListenTurnPipecatcallIDTTLSeconds != 180 {
+		t.Errorf("AIcallListenTurnPipecatcallIDTTLSeconds mismatch. expected: 180, got: %d", cfg.AIcallListenTurnPipecatcallIDTTLSeconds)
+	}
+	if cfg.AIcallListenDefaultLanguage != "en-US" {
+		t.Errorf("AIcallListenDefaultLanguage mismatch. expected: %q, got: %q", "en-US", cfg.AIcallListenDefaultLanguage)
+	}
+	if cfg.AIcallListenConfbridgeReadyPollIntervalSeconds != 2 {
+		t.Errorf("AIcallListenConfbridgeReadyPollIntervalSeconds mismatch. expected: 2, got: %d", cfg.AIcallListenConfbridgeReadyPollIntervalSeconds)
+	}
+	if cfg.AIcallListenConfbridgeReadyMaxWaitSeconds != 30 {
+		t.Errorf("AIcallListenConfbridgeReadyMaxWaitSeconds mismatch. expected: 30, got: %d", cfg.AIcallListenConfbridgeReadyMaxWaitSeconds)
+	}
+	if cfg.AIcallListenEnsureGoroutineTimeoutSeconds != 45 {
+		t.Errorf("AIcallListenEnsureGoroutineTimeoutSeconds mismatch. expected: 45, got: %d", cfg.AIcallListenEnsureGoroutineTimeoutSeconds)
+	}
+	if cfg.AIcallListenStartLockTTLSeconds != 60 {
+		t.Errorf("AIcallListenStartLockTTLSeconds mismatch. expected: 60, got: %d", cfg.AIcallListenStartLockTTLSeconds)
+	}
+	if cfg.AIcallListenStartLockReleaseTimeoutSeconds != 3 {
+		t.Errorf("AIcallListenStartLockReleaseTimeoutSeconds mismatch. expected: 3, got: %d", cfg.AIcallListenStartLockReleaseTimeoutSeconds)
+	}
+	// The goroutine timeout must have headroom over the max-wait budget it
+	// encloses -- pinned here as a standing invariant, not just a one-time
+	// default check, since the two are set independently.
+	if cfg.AIcallListenEnsureGoroutineTimeoutSeconds <= cfg.AIcallListenConfbridgeReadyMaxWaitSeconds {
+		t.Errorf("AIcallListenEnsureGoroutineTimeoutSeconds (%d) must be strictly greater than AIcallListenConfbridgeReadyMaxWaitSeconds (%d)", cfg.AIcallListenEnsureGoroutineTimeoutSeconds, cfg.AIcallListenConfbridgeReadyMaxWaitSeconds)
+	}
+	// And the start lock's TTL must in turn exceed that goroutine timeout
+	// (design §5.2.2, review round 15 finding HIGH-1): the lock must never be
+	// able to expire out from under a goroutine that is still working inside
+	// its own legitimate budget, because a second goroutine acquiring it would
+	// reopen exactly the same-AIcall clobbering race the lock exists to close.
+	if cfg.AIcallListenStartLockTTLSeconds <= cfg.AIcallListenEnsureGoroutineTimeoutSeconds {
+		t.Errorf("AIcallListenStartLockTTLSeconds (%d) must be strictly greater than AIcallListenEnsureGoroutineTimeoutSeconds (%d)", cfg.AIcallListenStartLockTTLSeconds, cfg.AIcallListenEnsureGoroutineTimeoutSeconds)
+	}
+	// The release bound is a small, independent timeout on the DETACHED
+	// context the lock's Release call runs under -- it must stay far below the
+	// TTL, and must never be conflated with it.
+	if cfg.AIcallListenStartLockReleaseTimeoutSeconds >= cfg.AIcallListenStartLockTTLSeconds {
+		t.Errorf("AIcallListenStartLockReleaseTimeoutSeconds (%d) must stay well below AIcallListenStartLockTTLSeconds (%d)", cfg.AIcallListenStartLockReleaseTimeoutSeconds, cfg.AIcallListenStartLockTTLSeconds)
+	}
+}
