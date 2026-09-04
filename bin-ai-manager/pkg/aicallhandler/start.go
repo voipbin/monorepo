@@ -716,10 +716,13 @@ func (h *aicallHandler) getPipecatcallMessages(ctx context.Context, c *aicall.AI
 			// replaying it on a later turn. Build a COPIED slice rather than
 			// mutating m.ToolCalls in place; the tool_calls entry itself
 			// (id/type/name) is preserved, only Arguments is replaced. No-op for
-			// every other tool. Defense-in-depth (see VOIP-1460): not currently
-			// load-bearing since bin-pipecat-manager's Python filter already
-			// drops this entry today regardless of Arguments, but keeping the
-			// entry neutered here is what stays safe once that changes.
+			// every other tool. As of VOIP-1460 this is LOAD-BEARING: the
+			// bin-pipecat-manager filter no longer drops the tool-call request
+			// message (filter_valid_messages keeps a paired one), so this
+			// entry really is replayed to the LLM and the neutered Arguments
+			// are the only thing keeping the card content out of the prompt.
+			// Keep the placeholder valid JSON -- pipecat's Gemini adapter runs
+			// json.loads on Function.Arguments.
 			toolCalls := make([]message.ToolCall, len(m.ToolCalls))
 			for i, tc := range m.ToolCalls {
 				toolCalls[i] = tc

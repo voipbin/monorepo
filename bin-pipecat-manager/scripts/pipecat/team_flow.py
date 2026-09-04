@@ -7,6 +7,8 @@ import common
 from loguru import logger
 from pipecat_flows import FlowManager, FlowArgs, FlowsFunctionSchema, NodeConfig
 
+from message_filters import filter_valid_messages
+
 # Google Gemini requires function names: start with letter/underscore,
 # alphanumeric + _.-: only, max 64 chars.
 _MAX_FUNCTION_NAME_LENGTH = 64
@@ -115,9 +117,7 @@ def build_team_flow(
     # the shared LLMContext with only role_messages (system prompt), losing all
     # prior conversation history.
     if llm_messages:
-        start_node["task_messages"] = [
-            m for m in llm_messages if m.get("role") and m.get("content")
-        ]
+        start_node["task_messages"] = filter_valid_messages(llm_messages)
 
     return member_nodes, start_node
 
