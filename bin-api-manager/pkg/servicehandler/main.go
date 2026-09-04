@@ -1052,6 +1052,7 @@ type ServiceHandler interface {
 		referenceID uuid.UUID,
 	) (*amaicall.WebhookMessage, error)
 	ServiceAgentAIcallGet(ctx context.Context, a *auth.AuthIdentity, aicallID uuid.UUID) (*amaicall.WebhookMessage, error)
+	ServiceAgentAIcallListen(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*amaicall.WebhookMessage, error)
 
 	// service agent aimessage handlers
 	ServiceAgentAImessageList(ctx context.Context, a *auth.AuthIdentity, aicallID uuid.UUID, size uint64, token string) ([]*ammessage.WebhookMessage, error)

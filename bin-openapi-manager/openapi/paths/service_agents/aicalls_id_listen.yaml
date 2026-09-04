@@ -1,0 +1,43 @@
+post:
+  summary: Start listening to the linked live call
+  description: >-
+    Starts the Insight Assistant listening to the live call linked to this AI
+    call's case, so it can follow the transcript in real time and push a
+    proactive note when your configured prompt conditions are met.
+
+    There is no request body. The response is the current AI call, returned
+    immediately: it deliberately carries no listening-status field, so there is
+    nothing to poll on it. The call is safe to repeat -- opening the same case
+    panel again is free.
+
+    Listening does not start automatically when an AI call is created. The two
+    are separate actions on purpose, so either can be used without the other.
+    Listening stops automatically when the call ends.
+  tags:
+    - Service Agent
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        example: "550e8400-e29b-41d4-a716-446655440000"
+      description: "The unique identifier of the AI call. Returned from the `POST /service_agents/aicalls` response."
+  responses:
+    '200':
+      description: The AI call, unchanged by the synchronous part of the trigger.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AIManagerAIcall'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'

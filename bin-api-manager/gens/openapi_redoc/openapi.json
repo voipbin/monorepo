@@ -2156,7 +2156,7 @@
                     "items": {
                       "$ref": "#/components/schemas/AIManagerToolName"
                     },
-                    "description": "List of tool names to enable for this AI. Use [\"all\"] to enable all available tools. For type=insight AIs, only Insight tool names are permitted (currently: get_contact_interactions, get_conversation_content, get_related_cases, get_case_notes, get_contact_profile, get_call_transcript); type=normal AIs may use any Normal tool name or [\"all\"]. Mismatched combinations are rejected with a 400."
+                    "description": "List of tool names to enable for this AI. Use [\"all\"] to enable all available tools. For type=insight AIs, only Insight tool names are permitted (currently: get_contact_interactions, get_conversation_content, get_related_cases, get_case_notes, get_contact_profile, get_call_transcript, and notify_agent -- the one write tool, usable only while the assistant is monitoring a live call); type=normal AIs may use any Normal tool name or [\"all\"]. Mismatched combinations are rejected with a 400."
                   },
                   "auto_aicall_audit_enabled": {
                     "type": "boolean",
@@ -2610,7 +2610,7 @@
                     "items": {
                       "$ref": "#/components/schemas/AIManagerToolName"
                     },
-                    "description": "List of tool names to enable for this AI. Use [\"all\"] to enable all available tools. For type=insight AIs, only Insight tool names are permitted (currently: get_contact_interactions, get_conversation_content, get_related_cases, get_case_notes, get_contact_profile, get_call_transcript); type=normal AIs may use any Normal tool name or [\"all\"]. Mismatched combinations are rejected with a 400."
+                    "description": "List of tool names to enable for this AI. Use [\"all\"] to enable all available tools. For type=insight AIs, only Insight tool names are permitted (currently: get_contact_interactions, get_conversation_content, get_related_cases, get_case_notes, get_contact_profile, get_call_transcript, and notify_agent -- the one write tool, usable only while the assistant is monitoring a live call); type=normal AIs may use any Normal tool name or [\"all\"]. Mismatched combinations are rejected with a 400."
                   },
                   "auto_aicall_audit_enabled": {
                     "type": "boolean",
@@ -17338,6 +17338,55 @@
         }
       }
     },
+    "/service_agents/aicalls/{id}/listen": {
+      "post": {
+        "summary": "Start listening to the linked live call",
+        "description": "Starts the Insight Assistant listening to the live call linked to this AI call's case, so it can follow the transcript in real time and push a proactive note when your configured prompt conditions are met.\nThere is no request body. The response is the current AI call, returned immediately: it deliberately carries no listening-status field, so there is nothing to poll on it. The call is safe to repeat -- opening the same case panel again is free.\nListening does not start automatically when an AI call is created. The two are separate actions on purpose, so either can be used without the other. Listening stops automatically when the call ends.",
+        "tags": [
+          "Service Agent"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "550e8400-e29b-41d4-a716-446655440000"
+            },
+            "description": "The unique identifier of the AI call. Returned from the `POST /service_agents/aicalls` response."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The AI call, unchanged by the synchronous part of the trigger.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AIManagerAIcall"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
     "/service_agents/aimessages": {
       "get": {
         "summary": "List aimessages for an aicall",
@@ -26988,7 +27037,8 @@
           "get_related_cases",
           "get_case_notes",
           "get_contact_profile",
-          "get_call_transcript"
+          "get_call_transcript",
+          "notify_agent"
         ],
         "x-enum-varnames": [
           "AIManagerToolNameAll",
@@ -27012,7 +27062,8 @@
           "AIManagerToolNameGetRelatedCases",
           "AIManagerToolNameGetCaseNotes",
           "AIManagerToolNameGetContactProfile",
-          "AIManagerToolNameGetCallTranscript"
+          "AIManagerToolNameGetCallTranscript",
+          "AIManagerToolNameNotifyAgent"
         ]
       },
       "AIManagerAIcall": {
@@ -27272,6 +27323,16 @@
             "$ref": "#/components/schemas/AIManagerMessageDirection",
             "description": "Direction of the message.",
             "example": "incoming"
+          },
+          "origin": {
+            "type": "string",
+            "description": "How this message came to exist, orthogonally to role. Empty for ordinary messages. \"proactive\" marks a note the Insight AI sent on its own initiative while monitoring a live call, rather than in answer to anything. \"listen_internal\" marks internal bookkeeping rows produced while monitoring; do not depend on their presence or meaning.",
+            "enum": [
+              "",
+              "proactive",
+              "listen_internal"
+            ],
+            "example": "proactive"
           },
           "tool_calls": {
             "type": "array",

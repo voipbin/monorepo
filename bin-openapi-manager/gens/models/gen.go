@@ -305,6 +305,27 @@ func (e AIManagerAIcallStatus) Valid() bool {
 	}
 }
 
+// Defines values for AIManagerMessageOrigin.
+const (
+	AIManagerMessageOriginEmpty          AIManagerMessageOrigin = ""
+	AIManagerMessageOriginListenInternal AIManagerMessageOrigin = "listen_internal"
+	AIManagerMessageOriginProactive      AIManagerMessageOrigin = "proactive"
+)
+
+// Valid indicates whether the value is a known member of the AIManagerMessageOrigin enum.
+func (e AIManagerMessageOrigin) Valid() bool {
+	switch e {
+	case AIManagerMessageOriginEmpty:
+		return true
+	case AIManagerMessageOriginListenInternal:
+		return true
+	case AIManagerMessageOriginProactive:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for AIManagerMessageDirection.
 const (
 	AIManagerMessageDirectionIncoming AIManagerMessageDirection = "incoming"
@@ -424,6 +445,7 @@ const (
 	AIManagerToolNameGetRelatedCases        AIManagerToolName = "get_related_cases"
 	AIManagerToolNameGetResource            AIManagerToolName = "get_resource"
 	AIManagerToolNameGetVariables           AIManagerToolName = "get_variables"
+	AIManagerToolNameNotifyAgent            AIManagerToolName = "notify_agent"
 	AIManagerToolNameSearchKnowledge        AIManagerToolName = "search_knowledge"
 	AIManagerToolNameSendEmail              AIManagerToolName = "send_email"
 	AIManagerToolNameSendMessage            AIManagerToolName = "send_message"
@@ -465,6 +487,8 @@ func (e AIManagerToolName) Valid() bool {
 	case AIManagerToolNameGetResource:
 		return true
 	case AIManagerToolNameGetVariables:
+		return true
+	case AIManagerToolNameNotifyAgent:
 		return true
 	case AIManagerToolNameSearchKnowledge:
 		return true
@@ -2779,19 +2803,19 @@ func (e TimelineManagerAnalysisStatus) Valid() bool {
 
 // Defines values for TimelineManagerPeerEventDirection.
 const (
-	Empty    TimelineManagerPeerEventDirection = ""
-	Incoming TimelineManagerPeerEventDirection = "incoming"
-	Outgoing TimelineManagerPeerEventDirection = "outgoing"
+	TimelineManagerPeerEventDirectionEmpty    TimelineManagerPeerEventDirection = ""
+	TimelineManagerPeerEventDirectionIncoming TimelineManagerPeerEventDirection = "incoming"
+	TimelineManagerPeerEventDirectionOutgoing TimelineManagerPeerEventDirection = "outgoing"
 )
 
 // Valid indicates whether the value is a known member of the TimelineManagerPeerEventDirection enum.
 func (e TimelineManagerPeerEventDirection) Valid() bool {
 	switch e {
-	case Empty:
+	case TimelineManagerPeerEventDirectionEmpty:
 		return true
-	case Incoming:
+	case TimelineManagerPeerEventDirectionIncoming:
 		return true
-	case Outgoing:
+	case TimelineManagerPeerEventDirectionOutgoing:
 		return true
 	default:
 		return false
@@ -4111,6 +4135,11 @@ type AIManagerMessage struct {
 	// Example: 550e8400-e29b-41d4-a716-446655440000
 	Id *string `json:"id,omitempty"`
 
+	// Origin How this message came to exist, orthogonally to role. Empty for ordinary messages. "proactive" marks a note the Insight AI sent on its own initiative while monitoring a live call, rather than in answer to anything. "listen_internal" marks internal bookkeeping rows produced while monitoring; do not depend on their presence or meaning.
+	//
+	// Example: proactive
+	Origin *AIManagerMessageOrigin `json:"origin,omitempty"`
+
 	// Role Role of the entity in the conversation.
 	//
 	// Example: assistant
@@ -4152,6 +4181,11 @@ type AIManagerMessage struct {
 		Type *string `json:"type,omitempty"`
 	} `json:"tool_calls,omitempty"`
 }
+
+// AIManagerMessageOrigin How this message came to exist, orthogonally to role. Empty for ordinary messages. "proactive" marks a note the Insight AI sent on its own initiative while monitoring a live call, rather than in answer to anything. "listen_internal" marks internal bookkeeping rows produced while monitoring; do not depend on their presence or meaning.
+//
+// Example: proactive
+type AIManagerMessageOrigin string
 
 // AIManagerMessageDirection Direction of the message.
 //
@@ -10268,7 +10302,7 @@ type PostAisJSONBody struct {
 	// SttType Speech-to-text engine type.
 	SttType string `json:"stt_type"`
 
-	// ToolNames List of tool names to enable for this AI. Use ["all"] to enable all available tools. For type=insight AIs, only Insight tool names are permitted (currently: get_contact_interactions, get_conversation_content, get_related_cases, get_case_notes, get_contact_profile, get_call_transcript); type=normal AIs may use any Normal tool name or ["all"]. Mismatched combinations are rejected with a 400.
+	// ToolNames List of tool names to enable for this AI. Use ["all"] to enable all available tools. For type=insight AIs, only Insight tool names are permitted (currently: get_contact_interactions, get_conversation_content, get_related_cases, get_case_notes, get_contact_profile, get_call_transcript, and notify_agent -- the one write tool, usable only while the assistant is monitoring a live call); type=normal AIs may use any Normal tool name or ["all"]. Mismatched combinations are rejected with a 400.
 	ToolNames *[]AIManagerToolName `json:"tool_names,omitempty"`
 
 	// TtsType Text-to-speech engine type.
@@ -10321,7 +10355,7 @@ type PutAisIdJSONBody struct {
 	// SttType Speech-to-text engine type.
 	SttType string `json:"stt_type"`
 
-	// ToolNames List of tool names to enable for this AI. Use ["all"] to enable all available tools. For type=insight AIs, only Insight tool names are permitted (currently: get_contact_interactions, get_conversation_content, get_related_cases, get_case_notes, get_contact_profile, get_call_transcript); type=normal AIs may use any Normal tool name or ["all"]. Mismatched combinations are rejected with a 400.
+	// ToolNames List of tool names to enable for this AI. Use ["all"] to enable all available tools. For type=insight AIs, only Insight tool names are permitted (currently: get_contact_interactions, get_conversation_content, get_related_cases, get_case_notes, get_contact_profile, get_call_transcript, and notify_agent -- the one write tool, usable only while the assistant is monitoring a live call); type=normal AIs may use any Normal tool name or ["all"]. Mismatched combinations are rejected with a 400.
 	ToolNames *[]AIManagerToolName `json:"tool_names,omitempty"`
 
 	// TtsType Text-to-speech engine type.

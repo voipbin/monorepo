@@ -2847,6 +2847,7 @@ components:
         - get_case_notes
         - get_contact_profile
         - get_call_transcript
+        - notify_agent
       x-enum-varnames:
         - AIManagerToolNameAll
         - AIManagerToolNameConnectCall
@@ -2870,6 +2871,7 @@ components:
         - AIManagerToolNameGetCaseNotes
         - AIManagerToolNameGetContactProfile
         - AIManagerToolNameGetCallTranscript
+        - AIManagerToolNameNotifyAgent
 
     AIManagerAIcall:
       type: object
@@ -3090,6 +3092,20 @@ components:
           $ref: '#/components/schemas/AIManagerMessageDirection'
           description: Direction of the message.
           example: "incoming"
+        origin:
+          type: string
+          description: >-
+            How this message came to exist, orthogonally to role. Empty for
+            ordinary messages. "proactive" marks a note the Insight AI sent on
+            its own initiative while monitoring a live call, rather than in
+            answer to anything. "listen_internal" marks internal bookkeeping
+            rows produced while monitoring; do not depend on their presence or
+            meaning.
+          enum:
+            - ""
+            - proactive
+            - listen_internal
+          example: "proactive"
         tool_calls:
           type: array
           items:
@@ -8718,6 +8734,8 @@ paths:
     $ref: './paths/service_agents/agents.yaml'
   /service_agents/aicalls:
     $ref: './paths/service_agents/aicalls.yaml'
+  /service_agents/aicalls/{id}/listen:
+    $ref: './paths/service_agents/aicalls_id_listen.yaml'
   /service_agents/aimessages:
     $ref: './paths/service_agents/aimessages.yaml'
   /service_agents/calls/{id}:

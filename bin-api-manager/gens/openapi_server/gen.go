@@ -313,6 +313,27 @@ func (e AIManagerAIcallStatus) Valid() bool {
 	}
 }
 
+// Defines values for AIManagerMessageOrigin.
+const (
+	AIManagerMessageOriginEmpty          AIManagerMessageOrigin = ""
+	AIManagerMessageOriginListenInternal AIManagerMessageOrigin = "listen_internal"
+	AIManagerMessageOriginProactive      AIManagerMessageOrigin = "proactive"
+)
+
+// Valid indicates whether the value is a known member of the AIManagerMessageOrigin enum.
+func (e AIManagerMessageOrigin) Valid() bool {
+	switch e {
+	case AIManagerMessageOriginEmpty:
+		return true
+	case AIManagerMessageOriginListenInternal:
+		return true
+	case AIManagerMessageOriginProactive:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for AIManagerMessageDirection.
 const (
 	AIManagerMessageDirectionIncoming AIManagerMessageDirection = "incoming"
@@ -432,6 +453,7 @@ const (
 	AIManagerToolNameGetRelatedCases        AIManagerToolName = "get_related_cases"
 	AIManagerToolNameGetResource            AIManagerToolName = "get_resource"
 	AIManagerToolNameGetVariables           AIManagerToolName = "get_variables"
+	AIManagerToolNameNotifyAgent            AIManagerToolName = "notify_agent"
 	AIManagerToolNameSearchKnowledge        AIManagerToolName = "search_knowledge"
 	AIManagerToolNameSendEmail              AIManagerToolName = "send_email"
 	AIManagerToolNameSendMessage            AIManagerToolName = "send_message"
@@ -473,6 +495,8 @@ func (e AIManagerToolName) Valid() bool {
 	case AIManagerToolNameGetResource:
 		return true
 	case AIManagerToolNameGetVariables:
+		return true
+	case AIManagerToolNameNotifyAgent:
 		return true
 	case AIManagerToolNameSearchKnowledge:
 		return true
@@ -2787,19 +2811,19 @@ func (e TimelineManagerAnalysisStatus) Valid() bool {
 
 // Defines values for TimelineManagerPeerEventDirection.
 const (
-	Empty    TimelineManagerPeerEventDirection = ""
-	Incoming TimelineManagerPeerEventDirection = "incoming"
-	Outgoing TimelineManagerPeerEventDirection = "outgoing"
+	TimelineManagerPeerEventDirectionEmpty    TimelineManagerPeerEventDirection = ""
+	TimelineManagerPeerEventDirectionIncoming TimelineManagerPeerEventDirection = "incoming"
+	TimelineManagerPeerEventDirectionOutgoing TimelineManagerPeerEventDirection = "outgoing"
 )
 
 // Valid indicates whether the value is a known member of the TimelineManagerPeerEventDirection enum.
 func (e TimelineManagerPeerEventDirection) Valid() bool {
 	switch e {
-	case Empty:
+	case TimelineManagerPeerEventDirectionEmpty:
 		return true
-	case Incoming:
+	case TimelineManagerPeerEventDirectionIncoming:
 		return true
-	case Outgoing:
+	case TimelineManagerPeerEventDirectionOutgoing:
 		return true
 	default:
 		return false
@@ -3933,6 +3957,9 @@ type AIManagerMessage struct {
 	// Id The unique identifier of the message.
 	Id *string `json:"id,omitempty"`
 
+	// Origin How this message came to exist, orthogonally to role. Empty for ordinary messages. "proactive" marks a note the Insight AI sent on its own initiative while monitoring a live call, rather than in answer to anything. "listen_internal" marks internal bookkeeping rows produced while monitoring; do not depend on their presence or meaning.
+	Origin *AIManagerMessageOrigin `json:"origin,omitempty"`
+
 	// Role Role of the entity in the conversation.
 	Role *AIManagerMessageRole `json:"role,omitempty"`
 
@@ -3960,6 +3987,9 @@ type AIManagerMessage struct {
 		Type *string `json:"type,omitempty"`
 	} `json:"tool_calls,omitempty"`
 }
+
+// AIManagerMessageOrigin How this message came to exist, orthogonally to role. Empty for ordinary messages. "proactive" marks a note the Insight AI sent on its own initiative while monitoring a live call, rather than in answer to anything. "listen_internal" marks internal bookkeeping rows produced while monitoring; do not depend on their presence or meaning.
+type AIManagerMessageOrigin string
 
 // AIManagerMessageDirection Direction of the message.
 type AIManagerMessageDirection string
@@ -8006,7 +8036,7 @@ type PostAisJSONBody struct {
 	// SttType Speech-to-text engine type.
 	SttType string `json:"stt_type"`
 
-	// ToolNames List of tool names to enable for this AI. Use ["all"] to enable all available tools. For type=insight AIs, only Insight tool names are permitted (currently: get_contact_interactions, get_conversation_content, get_related_cases, get_case_notes, get_contact_profile, get_call_transcript); type=normal AIs may use any Normal tool name or ["all"]. Mismatched combinations are rejected with a 400.
+	// ToolNames List of tool names to enable for this AI. Use ["all"] to enable all available tools. For type=insight AIs, only Insight tool names are permitted (currently: get_contact_interactions, get_conversation_content, get_related_cases, get_case_notes, get_contact_profile, get_call_transcript, and notify_agent -- the one write tool, usable only while the assistant is monitoring a live call); type=normal AIs may use any Normal tool name or ["all"]. Mismatched combinations are rejected with a 400.
 	ToolNames *[]AIManagerToolName `json:"tool_names,omitempty"`
 
 	// TtsType Text-to-speech engine type.
@@ -8051,7 +8081,7 @@ type PutAisIdJSONBody struct {
 	// SttType Speech-to-text engine type.
 	SttType string `json:"stt_type"`
 
-	// ToolNames List of tool names to enable for this AI. Use ["all"] to enable all available tools. For type=insight AIs, only Insight tool names are permitted (currently: get_contact_interactions, get_conversation_content, get_related_cases, get_case_notes, get_contact_profile, get_call_transcript); type=normal AIs may use any Normal tool name or ["all"]. Mismatched combinations are rejected with a 400.
+	// ToolNames List of tool names to enable for this AI. Use ["all"] to enable all available tools. For type=insight AIs, only Insight tool names are permitted (currently: get_contact_interactions, get_conversation_content, get_related_cases, get_case_notes, get_contact_profile, get_call_transcript, and notify_agent -- the one write tool, usable only while the assistant is monitoring a live call); type=normal AIs may use any Normal tool name or ["all"]. Mismatched combinations are rejected with a 400.
 	ToolNames *[]AIManagerToolName `json:"tool_names,omitempty"`
 
 	// TtsType Text-to-speech engine type.
@@ -11742,6 +11772,9 @@ type ServerInterface interface {
 	// Create an aicall
 	// (POST /service_agents/aicalls)
 	PostServiceAgentsAicalls(c *gin.Context)
+	// Start listening to the linked live call
+	// (POST /service_agents/aicalls/{id}/listen)
+	PostServiceAgentsAicallsIdListen(c *gin.Context, id openapi_types.UUID)
 	// List aimessages for an aicall
 	// (GET /service_agents/aimessages)
 	GetServiceAgentsAimessages(c *gin.Context, params GetServiceAgentsAimessagesParams)
@@ -19457,6 +19490,31 @@ func (siw *ServerInterfaceWrapper) PostServiceAgentsAicalls(c *gin.Context) {
 	siw.Handler.PostServiceAgentsAicalls(c)
 }
 
+// PostServiceAgentsAicallsIdListen operation middleware
+func (siw *ServerInterfaceWrapper) PostServiceAgentsAicallsIdListen(c *gin.Context) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid"})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostServiceAgentsAicallsIdListen(c, id)
+}
+
 // GetServiceAgentsAimessages operation middleware
 func (siw *ServerInterfaceWrapper) GetServiceAgentsAimessages(c *gin.Context) {
 
@@ -23342,6 +23400,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.GET(options.BaseURL+"/service_agents/agents/:id", wrapper.GetServiceAgentsAgentsId)
 	router.GET(options.BaseURL+"/service_agents/aicalls", wrapper.GetServiceAgentsAicalls)
 	router.POST(options.BaseURL+"/service_agents/aicalls", wrapper.PostServiceAgentsAicalls)
+	router.POST(options.BaseURL+"/service_agents/aicalls/:id/listen", wrapper.PostServiceAgentsAicallsIdListen)
 	router.GET(options.BaseURL+"/service_agents/aimessages", wrapper.GetServiceAgentsAimessages)
 	router.POST(options.BaseURL+"/service_agents/aimessages", wrapper.PostServiceAgentsAimessages)
 	router.GET(options.BaseURL+"/service_agents/calls", wrapper.GetServiceAgentsCalls)
@@ -46626,6 +46685,98 @@ func (response PostServiceAgentsAicalls500JSONResponse) VisitPostServiceAgentsAi
 	return err
 }
 
+type PostServiceAgentsAicallsIdListenRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type PostServiceAgentsAicallsIdListenResponseObject interface {
+	VisitPostServiceAgentsAicallsIdListenResponse(w http.ResponseWriter) error
+}
+
+type PostServiceAgentsAicallsIdListen200JSONResponse AIManagerAIcall
+
+func (response PostServiceAgentsAicallsIdListen200JSONResponse) VisitPostServiceAgentsAicallsIdListenResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostServiceAgentsAicallsIdListen400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostServiceAgentsAicallsIdListen400JSONResponse) VisitPostServiceAgentsAicallsIdListenResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostServiceAgentsAicallsIdListen401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostServiceAgentsAicallsIdListen401JSONResponse) VisitPostServiceAgentsAicallsIdListenResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostServiceAgentsAicallsIdListen403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostServiceAgentsAicallsIdListen403JSONResponse) VisitPostServiceAgentsAicallsIdListenResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostServiceAgentsAicallsIdListen404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostServiceAgentsAicallsIdListen404JSONResponse) VisitPostServiceAgentsAicallsIdListenResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type PostServiceAgentsAicallsIdListen500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostServiceAgentsAicallsIdListen500JSONResponse) VisitPostServiceAgentsAicallsIdListenResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type GetServiceAgentsAimessagesRequestObject struct {
 	Params GetServiceAgentsAimessagesParams
 }
@@ -58254,6 +58405,9 @@ type StrictServerInterface interface {
 	// Create an aicall
 	// (POST /service_agents/aicalls)
 	PostServiceAgentsAicalls(ctx context.Context, request PostServiceAgentsAicallsRequestObject) (PostServiceAgentsAicallsResponseObject, error)
+	// Start listening to the linked live call
+	// (POST /service_agents/aicalls/{id}/listen)
+	PostServiceAgentsAicallsIdListen(ctx context.Context, request PostServiceAgentsAicallsIdListenRequestObject) (PostServiceAgentsAicallsIdListenResponseObject, error)
 	// List aimessages for an aicall
 	// (GET /service_agents/aimessages)
 	GetServiceAgentsAimessages(ctx context.Context, request GetServiceAgentsAimessagesRequestObject) (GetServiceAgentsAimessagesResponseObject, error)
@@ -66652,6 +66806,32 @@ func (sh *strictHandler) PostServiceAgentsAicalls(ctx *gin.Context) {
 		sh.options.HandlerErrorFunc(ctx, err)
 	} else if validResponse, ok := response.(PostServiceAgentsAicallsResponseObject); ok {
 		if err := validResponse.VisitPostServiceAgentsAicallsResponse(ctx.Writer); err != nil {
+			sh.options.ResponseErrorHandlerFunc(ctx, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(ctx, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostServiceAgentsAicallsIdListen operation middleware
+func (sh *strictHandler) PostServiceAgentsAicallsIdListen(ctx *gin.Context, id openapi_types.UUID) {
+	var request PostServiceAgentsAicallsIdListenRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostServiceAgentsAicallsIdListen(ctx, request.(PostServiceAgentsAicallsIdListenRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostServiceAgentsAicallsIdListen")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		sh.options.HandlerErrorFunc(ctx, err)
+	} else if validResponse, ok := response.(PostServiceAgentsAicallsIdListenResponseObject); ok {
+		if err := validResponse.VisitPostServiceAgentsAicallsIdListenResponse(ctx.Writer); err != nil {
 			sh.options.ResponseErrorHandlerFunc(ctx, err)
 		}
 	} else if response != nil {

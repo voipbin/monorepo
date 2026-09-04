@@ -156,6 +156,38 @@ func (r *requestHandler) AIV1AIcallTerminate(ctx context.Context, aicallID uuid.
 	return &res, nil
 }
 
+// AIV1AIcallListen sends a request to ai-manager to start Insight AI realtime
+// call listening on the given aicall.
+//
+// Mirrors AIV1AIcallTerminate's shape -- POST, no request body -- but with an
+// EXPLICIT 10s timeout rather than requestTimeoutDefault (3000ms). ai-manager's
+// ProcessListen runs up to three SEQUENTIAL cross-service RPCs synchronously
+// (TranscribeV1TranscribeGet, ContactV1CaseGet, CallV1CallGet), and each hop can
+// independently take up to its own default timeout -- so three hops can add up
+// to roughly 3x a single hop's timeout worst-case, failing the CLIENT's request
+// even when ai-manager's own precheck later succeeds.
+//
+// (The earlier justification, "none of the three is cache-first," was withdrawn:
+// CallV1CallGet IS cache-first. Do not reintroduce it if this value is ever
+// revisited.)
+//
+// See docs/plans/2026-09-03-insight-ai-realtime-listen-design.md §5.1.
+func (r *requestHandler) AIV1AIcallListen(ctx context.Context, aicallID uuid.UUID) (*amaicall.AIcall, error) {
+	uri := fmt.Sprintf("/v1/aicalls/%s/listen", aicallID)
+
+	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodPost, "ai/aicalls/<aicall-id>/listen", 10000, 0, ContentTypeNone, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var res amaicall.AIcall
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
+}
+
 // AIV1AIcallTerminateWithDelay sends a request to ai-manager
 // to terminate an aicall after delayed time.
 // it returns null if it succeed.
