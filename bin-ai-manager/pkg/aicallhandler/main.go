@@ -11,6 +11,7 @@ import (
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
+	kmkase "monorepo/bin-contact-manager/models/kase"
 	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
 
 	"github.com/gofrs/uuid"
@@ -38,6 +39,7 @@ type AIcallHandler interface {
 
 	ProcessStart(ctx context.Context, cb *aicall.AIcall) (*aicall.AIcall, error)
 	ProcessTerminate(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error)
+	ProcessListen(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error)
 
 	ToolHandle(ctx context.Context, id uuid.UUID, toolID string, toolType message.ToolType, function message.FunctionCall, pipecatcallID uuid.UUID) (map[string]any, error)
 
@@ -137,6 +139,15 @@ type aicallHandler struct {
 	teamHandler        teamhandler.TeamHandler
 	messageHandler     messagehandler.MessageHandler
 	participantHandler participanthandler.ParticipantHandler
+
+	// runListenStartHook is the injected seam ProcessListen's detached
+	// goroutine goes through (design §7 item 2: "runListenStart is detached, so
+	// assert on a seam ... never on wall-clock timing").
+	//
+	// nil in production and in every handler NewAIcallHandler builds, in which
+	// case runListenStart itself runs. Only the tests that must observe the
+	// async stage deterministically set it.
+	runListenStartHook func(ctx context.Context, a *ai.AI, c *aicall.AIcall, kase *kmkase.Case, callID uuid.UUID, call *cmcall.Call)
 }
 
 var (

@@ -52,8 +52,10 @@ ListenHandler (`pkg/listenhandler/`) routes by regex URI pattern over the shared
 | `POST /v1/ais/<uuid>/direct-hash-regenerate` | Regenerate AI secret hash |
 | `GET /v1/aicalls?` | List AI call sessions (paginated) |
 | `GET /v1/aicalls/<uuid>` | Get AI call session |
+| `GET /v1/aicalls/<uuid>?skip_cache=true` | Get AI call session, bypassing the Redis snapshot cache (database-authoritative read) |
 | `POST /v1/aicalls` | Start AI call session |
 | `POST /v1/aicalls/<uuid>/terminate` | Terminate AI call |
+| `POST /v1/aicalls/<uuid>/listen` | Start Insight AI realtime call listening (`ProcessListen`); steps 1-6 run synchronously, steps 7-8 detached. Public path is `POST /service_agents/aicalls/{id}/listen` |
 | `POST /v1/aicalls/<uuid>/tool_execute` | Execute LLM tool (called by pipecat-manager) |
 | `GET /v1/aicalls/<uuid>/participants(\?|$)` | List participants of an AI call (paginated) |
 | `GET /v1/ais/<uuid>/participants(\?|$)` | List AI calls an AI agent participated in (paginated) |

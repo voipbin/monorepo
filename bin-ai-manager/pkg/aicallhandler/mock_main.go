@@ -183,6 +183,21 @@ func (mr *MockAIcallHandlerMockRecorder) List(ctx, size, token, filters any) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockAIcallHandler)(nil).List), ctx, size, token, filters)
 }
 
+// ProcessListen mocks base method.
+func (m *MockAIcallHandler) ProcessListen(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ProcessListen", ctx, id)
+	ret0, _ := ret[0].(*aicall.AIcall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ProcessListen indicates an expected call of ProcessListen.
+func (mr *MockAIcallHandlerMockRecorder) ProcessListen(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProcessListen", reflect.TypeOf((*MockAIcallHandler)(nil).ProcessListen), ctx, id)
+}
+
 // ProcessStart mocks base method.
 func (m *MockAIcallHandler) ProcessStart(ctx context.Context, cb *aicall.AIcall) (*aicall.AIcall, error) {
 	m.ctrl.T.Helper()

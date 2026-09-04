@@ -248,6 +248,56 @@ func (h *listenHandler) processV1AIcallsIDTerminatePost(ctx context.Context, m *
 	return res, nil
 }
 
+// processV1AIcallsIDListenPost handles POST /v1/aicalls/<aicall-id>/listen request.
+//
+// Deliberately thin -- parse the id, one business-handler call, marshal, 200 --
+// matching processV1AIcallsIDTerminatePost's shape. No orchestration logic
+// belongs in listenhandler (design review round 13 finding MEDIUM-4), and the
+// handler returns a domain *aicall.AIcall which this layer marshals directly
+// (root CLAUDE.md layering style (A)), with no response.* DTO.
+//
+// Note the path: ai-manager's own RPC surface keeps the plain
+// /v1/aicalls/{id}/listen route. Only the PUBLIC, api-manager-facing path is
+// /service_agents/aicalls/{id}/listen. Two services, two routes, one shared
+// trailing segment -- do not "fix" this one to match the public path.
+func (h *listenHandler) processV1AIcallsIDListenPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"handler": "processV1AIcallsIDListenPost",
+		"request": m,
+	})
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		log.Errorf("Wrong uri item count. uri_items: %d", len(uriItems))
+		return simpleResponse(400), nil
+	}
+	id := uuid.FromStringOrNil(uriItems[3])
+	if id == uuid.Nil {
+		log.Errorf("Invalid AIcall ID.")
+		return simpleResponse(400), nil
+	}
+
+	tmp, err := h.aicallHandler.ProcessListen(ctx, id)
+	if err != nil {
+		log.Errorf("Could not start listening. err: %v", err)
+		return errorResponse(err), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &sock.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
 // processV1AIcallsIDToolExecutePost handles POST /v1/aicalls/<aicall-id>/tool_execute request
 func (h *listenHandler) processV1AIcallsIDToolExecutePost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{

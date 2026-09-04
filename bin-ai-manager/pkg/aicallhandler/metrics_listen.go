@@ -17,6 +17,15 @@ var (
 		},
 	)
 
+	promListenStartTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "aicall_listen_start_total",
+			Help:      "Total number of listen-start attempts by outcome. result values: started, reused, skipped_not_listenable, skipped_confbridge_not_ready, skipped_confbridge_error, skipped_start_locked, failed. All are values of the existing 'result' label -- no new CounterVec.",
+		},
+		[]string{"result"},
+	)
+
 	promListenNotifyTotal = prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Namespace: metricsNamespace,
@@ -30,5 +39,6 @@ func init() {
 	prometheus.MustRegister(
 		promListenMembershipCheckFailedTotal,
 		promListenNotifyTotal,
+		promListenStartTotal,
 	)
 }

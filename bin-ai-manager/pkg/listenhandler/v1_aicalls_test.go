@@ -622,3 +622,106 @@ func Test_processV1AIcallsIDGet_SkipCache(t *testing.T) {
 		})
 	}
 }
+
+// Test_processV1AIcallsIDListenPost pins the new route end to end at the
+// transport layer: the regex, the dispatcher case, the id parse, and the one
+// business-handler call.
+//
+// IT ROUTES THROUGH processRequest, NOT processV1AIcallsIDListenPost DIRECTLY.
+// That is the same deliberate choice Test_processV1AIcallsIDGet_SkipCache made,
+// for the same reason: the known regex-anchoring behaviour of this dispatcher
+// (regV1AIcallsID ends in "$", which is why a separate query-tolerant pattern
+// had to be added) lives in the dispatcher, so a test that calls the handler
+// function directly would pass while production never routes the request at all.
+func Test_processV1AIcallsIDListenPost(t *testing.T) {
+	aicallID := uuid.FromStringOrNil("6a1f0c22-9b3d-4e7f-8a5b-1c2d3e4f5a6b")
+
+	t.Run("valid id routes and calls ProcessListen exactly once", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockSock := sockhandler.NewMockSockHandler(mc)
+		mockAIcall := aicallhandler.NewMockAIcallHandler(mc)
+
+		h := &listenHandler{sockHandler: mockSock, aicallHandler: mockAIcall}
+
+		mockAIcall.EXPECT().ProcessListen(gomock.Any(), aicallID).
+			Return(&aicall.AIcall{Identity: identity.Identity{ID: aicallID}}, nil).Times(1)
+
+		res, err := h.processRequest(&sock.Request{
+			URI:    "/v1/aicalls/6a1f0c22-9b3d-4e7f-8a5b-1c2d3e4f5a6b/listen",
+			Method: sock.RequestMethodPost,
+		})
+		if err != nil {
+			t.Fatalf("processRequest returned an unexpected error. err: %v", err)
+		}
+		if res.StatusCode != 200 {
+			t.Errorf("status mismatch. expected: 200, got: %d", res.StatusCode)
+		}
+	})
+
+	t.Run("unknown id surfaces as 404, not a generic 500", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockSock := sockhandler.NewMockSockHandler(mc)
+		mockAIcall := aicallhandler.NewMockAIcallHandler(mc)
+
+		h := &listenHandler{sockHandler: mockSock, aicallHandler: mockAIcall}
+
+		mockAIcall.EXPECT().ProcessListen(gomock.Any(), aicallID).Return(nil, dbhandler.ErrNotFound)
+
+		res, err := h.processRequest(&sock.Request{
+			URI:    "/v1/aicalls/6a1f0c22-9b3d-4e7f-8a5b-1c2d3e4f5a6b/listen",
+			Method: sock.RequestMethodPost,
+		})
+		if err != nil {
+			t.Fatalf("processRequest returned an unexpected error. err: %v", err)
+		}
+		if res.StatusCode != 404 {
+			t.Errorf("status mismatch. expected: 404, got: %d", res.StatusCode)
+		}
+	})
+
+	t.Run("unparseable id never reaches ProcessListen", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockSock := sockhandler.NewMockSockHandler(mc)
+		mockAIcall := aicallhandler.NewMockAIcallHandler(mc)
+
+		h := &listenHandler{sockHandler: mockSock, aicallHandler: mockAIcall}
+
+		// The invariant that matters, whichever layer enforces it: no
+		// business-handler call is made on a malformed id.
+		mockAIcall.EXPECT().ProcessListen(gomock.Any(), gomock.Any()).Times(0)
+
+		if _, err := h.processRequest(&sock.Request{
+			URI:    "/v1/aicalls/not-a-uuid/listen",
+			Method: sock.RequestMethodPost,
+		}); err != nil {
+			t.Fatalf("processRequest returned an unexpected error. err: %v", err)
+		}
+	})
+
+	t.Run("GET on the same path does not dispatch to the listen handler", func(t *testing.T) {
+		// Pins the `&& m.Method == sock.RequestMethodPost` half of the switch
+		// case.
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockSock := sockhandler.NewMockSockHandler(mc)
+		mockAIcall := aicallhandler.NewMockAIcallHandler(mc)
+
+		h := &listenHandler{sockHandler: mockSock, aicallHandler: mockAIcall}
+
+		mockAIcall.EXPECT().ProcessListen(gomock.Any(), gomock.Any()).Times(0)
+
+		if _, err := h.processRequest(&sock.Request{
+			URI:    "/v1/aicalls/6a1f0c22-9b3d-4e7f-8a5b-1c2d3e4f5a6b/listen",
+			Method: sock.RequestMethodGet,
+		}); err != nil {
+			t.Fatalf("processRequest returned an unexpected error. err: %v", err)
+		}
+	})
+}
