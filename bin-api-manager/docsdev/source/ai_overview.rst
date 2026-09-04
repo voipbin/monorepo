@@ -328,10 +328,55 @@ case_create               Create a CRM case for the current contact
    ``type=insight`` AIs use a separate, smaller tool set instead of the tools
    above: ``get_contact_interactions``, ``get_conversation_content``,
    ``get_related_cases``, ``get_case_notes``,
-   ``get_contact_profile``, and ``get_call_transcript``. See
+   ``get_contact_profile``, ``get_call_transcript``, and ``notify_agent``. See
    :ref:`Insight Tools <ai-struct-tool-insight>`.
 
 For detailed documentation on each tool, see :ref:`Tool Functions <ai-struct-tool>`.
+
+.. _ai-overview-insight-listening:
+
+Insight Assistant: live call listening
+--------------------------------------
+
+When an agent opens a Case whose linked call is still in progress, the Insight
+Assistant can follow that call's live transcript and speak up on its own if the
+situation warrants it, instead of waiting to be asked.
+
+**What triggers a proactive note is entirely up to you.** It is defined in the
+AI's ``init_prompt``, the same field you already edit — for example: *"if the
+customer mentions cancellation, a compliance keyword, or requests something
+requiring approval, call notify_agent with a short actionable note; otherwise
+say nothing."* There is no separate rule engine and no extra configuration.
+
+Proactive notes arrive in the same Case Insight Assistant thread the agent is
+already reading, over the same delivery path as any other message, and are
+marked ``origin: "proactive"`` so they can be told apart from an answer to a
+question. See :ref:`Origin <ai-struct-message-origin>`.
+
+Listening stops automatically when the call ends. Saying nothing is the normal
+outcome of most checks — the assistant is expected to stay quiet unless your
+instructions genuinely call for an alert.
+
+Starting to listen
+++++++++++++++++++
+
+Listening is triggered explicitly, by a single call:
+
+.. code::
+
+    POST /service_agents/aicalls/<aicall-id>/listen
+
+There is no request body. The response is the current AI call
+(:ref:`AIcall <aicall-struct-aicall>`), returned immediately — it deliberately
+carries no listening-status field, so there is nothing to poll on it. The call
+is safe to repeat: opening the same Case panel again is free.
+
+Possible responses are ``200`` with the AI call, ``401``/``403`` if the caller
+is not an agent of the AI call's own customer, ``404`` if the AI call does not
+exist, and ``500`` on an internal error.
+
+Listening does **not** start automatically when an AI call is created. The two
+are separate actions on purpose, so either can be used without the other.
 
 Configuring Tools
 -----------------
