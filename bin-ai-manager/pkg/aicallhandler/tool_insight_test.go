@@ -12,6 +12,7 @@ import (
 
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
+	"monorepo/bin-ai-manager/pkg/messagehandler"
 	cmcall "monorepo/bin-call-manager/models/call"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	cerrors "monorepo/bin-common-handler/models/errors"
@@ -3009,4 +3010,111 @@ func Test_paginateUntilExact(t *testing.T) {
 			t.Errorf("len(verified) = %d, want 0 (all rows were excluded)", len(verified))
 		}
 	})
+}
+
+// Test_toolHandleNotifyAgent covers the whole contract: the happy path writes
+// exactly one proactive row, and every rejection path writes none.
+func Test_toolHandleNotifyAgent(t *testing.T) {
+	aicallID := uuid.FromStringOrNil("4d5e6f7a-8b9c-4d0e-9f1a-2b3c4d5e6f70")
+	customerID := uuid.FromStringOrNil("5e6f7a8b-9c0d-4e1f-8a2b-3c4d5e6f7a8b")
+
+	tests := []struct {
+		name string
+
+		listenTurn bool
+		arguments  string
+
+		expectProactiveRow bool
+		expectResult       string
+	}{
+		{
+			name:               "happy path writes one proactive row",
+			listenTurn:         true,
+			arguments:          `{"message":"Customer just mentioned cancelling."}`,
+			expectProactiveRow: true,
+			expectResult:       "success",
+		},
+		{
+			name: "rejected outside a listen turn, with no row written",
+			// The important case. Allowing it would let RunLLM's best-effort
+			// suppression silently eat the agent's real answer.
+			listenTurn:         false,
+			arguments:          `{"message":"Customer just mentioned cancelling."}`,
+			expectProactiveRow: false,
+			expectResult:       "failed",
+		},
+		{
+			name:               "empty message rejected",
+			listenTurn:         true,
+			arguments:          `{"message":""}`,
+			expectProactiveRow: false,
+			expectResult:       "failed",
+		},
+		{
+			name:               "whitespace-only message rejected",
+			listenTurn:         true,
+			arguments:          `{"message":"   \n\t  "}`,
+			expectProactiveRow: false,
+			expectResult:       "failed",
+		},
+		{
+			name:               "oversized message rejected",
+			listenTurn:         true,
+			arguments:          `{"message":"` + strings.Repeat("x", notifyAgentMaxMessageLen+1) + `"}`,
+			expectProactiveRow: false,
+			expectResult:       "failed",
+		},
+		{
+			name:               "malformed arguments rejected",
+			listenTurn:         true,
+			arguments:          `{"message":`,
+			expectProactiveRow: false,
+			expectResult:       "failed",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockMessage := messagehandler.NewMockMessageHandler(mc)
+			h := &aicallHandler{messageHandler: mockMessage}
+			ctx := context.Background()
+
+			c := &aicall.AIcall{
+				Identity:       commonidentity.Identity{ID: aicallID, CustomerID: customerID},
+				AssistanceType: aicall.AssistanceTypeAI,
+				ReferenceType:  aicall.ReferenceTypeContactCase,
+			}
+
+			if tt.expectProactiveRow {
+				mockMessage.EXPECT().
+					Create(ctx, uuid.Nil, customerID, aicallID, gomock.Any(),
+						message.DirectionIncoming, message.RoleAssistant, "Customer just mentioned cancelling.",
+						nil, "", gomock.Any(), gomock.Any()).
+					DoAndReturn(func(_ context.Context, _, _, _, _ uuid.UUID,
+						_ message.Direction, _ message.Role, _ string,
+						_ []message.ToolCall, _ string, opts ...messagehandler.CreateOption,
+					) (*message.Message, error) {
+						if got := messagehandler.ResolveOriginForTest(opts...); got != message.OriginProactive {
+							t.Errorf("Origin mismatch. expected: %q, got: %q", message.OriginProactive, got)
+						}
+						return &message.Message{}, nil
+					})
+			}
+			// No EXPECT() at all in the rejection cases: gomock fails the test
+			// if Create is called anyway, which is exactly the assertion.
+
+			tc := &message.ToolCall{
+				ID:       "tool-1",
+				Function: message.FunctionCall{Name: message.FunctionCallNameNotifyAgent, Arguments: tt.arguments},
+			}
+
+			res := h.toolHandleNotifyAgent(ctx, c, tc, tt.listenTurn)
+			if res.Result != tt.expectResult {
+				t.Errorf("result mismatch. expected: %q, got: %q (message: %q)", tt.expectResult, res.Result, res.Message)
+			}
+		})
+	}
 }

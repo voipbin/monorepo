@@ -119,11 +119,25 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 	promAIcallToolExecuteTotal.WithLabelValues(string(tool.Function.Name)).Inc()
 
 	var tmpMessageContent *messageContent
-	if fn, exists := mapFunctions[tool.Function.Name]; exists {
+	// Tagged switch on the tool name (staticcheck QF1002); the shape is
+	// otherwise exactly the design's own: one special case, everything else
+	// through mapFunctions.
+	switch tool.Function.Name {
+	case message.FunctionCallNameNotifyAgent:
+		// Dispatched outside mapFunctions deliberately. That map's value type is
+		// func(ctx, *aicall.AIcall, *message.ToolCall) *messageContent, shared by
+		// all 21 handlers; notify_agent is the only one that needs listenTurn,
+		// and widening the shared type for one handler would churn the other 20
+		// signatures for a value none of them use.
+		tmpMessageContent = h.toolHandleNotifyAgent(ctx, c, tool, listenTurn)
+
+	default:
+		fn, exists := mapFunctions[tool.Function.Name]
+		if !exists {
+			log.Debugf("unknown tool call: %s", tool.Function.Name)
+			return nil, fmt.Errorf("unknown tool call: %s", tool.Function.Name)
+		}
 		tmpMessageContent = fn(ctx, c, tool)
-	} else {
-		log.Debugf("unknown tool call: %s", tool.Function.Name)
-		return nil, fmt.Errorf("unknown tool call: %s", tool.Function.Name)
 	}
 
 	msg, err := h.toolCreateResultMessage(ctx, c, tool, tmpMessageContent, toolCallActiveAIID, rowOrigin)

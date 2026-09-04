@@ -16,10 +16,19 @@ var (
 			Help:      "Total number of listen-turn membership checks that errored and degraded to treating the tool call as a real Q&A turn. Near-zero expected; a sustained non-zero rate means Redis is unhealthy, not that anything listen-specific is wrong.",
 		},
 	)
+
+	promListenNotifyTotal = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "aicall_listen_notify_total",
+			Help:      "Total number of proactive notifications actually delivered to an agent's Insight panel.",
+		},
+	)
 )
 
 func init() {
 	prometheus.MustRegister(
 		promListenMembershipCheckFailedTotal,
+		promListenNotifyTotal,
 	)
 }
