@@ -11,6 +11,7 @@ import (
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/messagehandler"
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	cmcustomer "monorepo/bin-customer-manager/models/customer"
 	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
 	"time"
@@ -617,47 +618,92 @@ func (h *aicallHandler) startReferenceTypeNone(
 	return res, nil
 }
 
+// getPipecatcallMessages assembles the LLM context replayed into a pipecatcall.
+//
+// TWO fetches, not one. The reason is a real defect the single-fetch shape had:
+// startInitMessages writes the AIcall's system prompt(s) exactly once, at
+// creation, so under a single "newest 100 rows" fetch they are simply row
+// number N-100 eventually -- and the AI silently loses its own instructions
+// partway through a long conversation. Fetching them separately, uncapped,
+// makes that structurally impossible.
+//
+// The second fetch also excludes Origin=listen_internal at the SQL layer. Those
+// are the mechanical tool-call/tool-result rows a listen evaluation turn writes;
+// they are never useful context, and at up to two rows per turn they would
+// consume the capped budget that real Q&A history needs. Excluding them in Go
+// after the fact would not help -- they would already have taken the slots.
+//
+// Both fetches return NEWEST-first (MessageList orders tm_create DESC), so both
+// are reversed before use. Reversing only one is a subtle ordering bug that
+// still produces plausible-looking output.
+//
+// See docs/plans/2026-09-03-insight-ai-realtime-listen-design.md §5.4.5 step 4.
 func (h *aicallHandler) getPipecatcallMessages(ctx context.Context, c *aicall.AIcall) ([]map[string]any, error) {
 
-	// retrieve previous messages
-	tmpMessages, err := h.messageHandler.List(ctx, 100, "", map[message.Field]any{
+	// (1) The system row(s), independent of the capped window below. In
+	// production there are never more than three (the type-specific system
+	// prompt, the substituted init prompt, and an optional parameter-JSON
+	// block), all written once by startInitMessages and never again -- so
+	// "newest 5" and "all of them" are the same fetch. 5 is headroom, not a
+	// truncation risk.
+	systemRowsDesc, err := h.messageHandler.List(ctx, 5, "", map[message.Field]any{
 		message.FieldAIcallID: c.ID,
+		message.FieldRole:     message.RoleSystem,
+	})
+	if err != nil {
+		return nil, errors.Wrap(err, "Could not get system messages")
+	}
+
+	// (2) The newest 100 non-system, non-listen-internal rows: Q&A history and
+	// proactive notifications, exactly as before, minus the listen-internal
+	// exclusion.
+	restDesc, err := h.messageHandler.List(ctx, 100, "", map[message.Field]any{
+		message.FieldAIcallID: c.ID,
+		message.FieldRole:     commondatabasehandler.NotEq{Value: message.RoleSystem},
+		message.FieldOrigin:   commondatabasehandler.NotEq{Value: message.OriginListenInternal},
 	})
 	if err != nil {
 		return nil, errors.Wrap(err, "Could not get messages")
 	}
 
+	reverseMessages(systemRowsDesc)
+	reverseMessages(restDesc)
+
+	ordered := make([]*message.Message, 0, len(systemRowsDesc)+len(restDesc))
+	ordered = append(ordered, systemRowsDesc...)
+	ordered = append(ordered, restDesc...)
+
 	res := []map[string]any{}
-	if len(tmpMessages) > 0 {
-		// reverse the messages to have the correct order
-		for i, j := 0, len(tmpMessages)-1; i < j; i, j = i+1, j-1 {
-			tmpMessages[i], tmpMessages[j] = tmpMessages[j], tmpMessages[i]
+	for _, m := range ordered {
+		// skip non-LLM roles (e.g. notification) that would cause API errors
+		if m.Role == message.RoleNotification {
+			continue
 		}
 
-		for _, m := range tmpMessages {
-			// skip non-LLM roles (e.g. notification) that would cause API errors
-			if m.Role == message.RoleNotification {
-				continue
-			}
-
-			tmp := map[string]any{
-				"role":    string(m.Role),
-				"content": string(m.Content),
-			}
-
-			if len(m.ToolCalls) > 0 {
-				tmp["tool_calls"] = m.ToolCalls
-			}
-
-			if len(m.ToolCallID) > 0 {
-				tmp["tool_call_id"] = m.ToolCallID
-			}
-
-			res = append(res, tmp)
+		tmp := map[string]any{
+			"role":    string(m.Role),
+			"content": string(m.Content),
 		}
+
+		if len(m.ToolCalls) > 0 {
+			tmp["tool_calls"] = m.ToolCalls
+		}
+
+		if len(m.ToolCallID) > 0 {
+			tmp["tool_call_id"] = m.ToolCallID
+		}
+
+		res = append(res, tmp)
 	}
 
 	return res, nil
+}
+
+// reverseMessages flips a newest-first slice in place to oldest-first.
+func reverseMessages(messages []*message.Message) {
+	for i, j := 0, len(messages)-1; i < j; i, j = i+1, j-1 {
+		messages[i], messages[j] = messages[j], messages[i]
+	}
 }
 
 func (h *aicallHandler) getPipecatcallSTTType(c *aicall.AIcall) pmpipecatcall.STTType {

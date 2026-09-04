@@ -16,6 +16,7 @@ import (
 	"monorepo/bin-ai-manager/pkg/teamhandler"
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -335,7 +336,8 @@ func Test_startReferenceTypeCall(t *testing.T) {
 			mockReq.EXPECT().FlowV1VariableSubstitute(ctx, tt.responseAIcall.ActiveflowID, tt.ai.InitPrompt).Return(tt.ai.InitPrompt, nil).Times(2)
 
 			// startPipecatcall
-			mockMessage.EXPECT().List(ctx, uint64(100), gomock.Any(), gomock.Any()).Return(tt.responseMessages, nil)
+			mockMessage.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(tt.responseAIcall.ID)).Return([]*message.Message{}, nil)
+			mockMessage.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(tt.responseAIcall.ID)).Return(tt.responseMessages, nil)
 			mockReq.EXPECT().PipecatV1PipecatcallStart(
 				ctx,
 				tt.responseAIcall.PipecatcallID,
@@ -563,7 +565,8 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				m.message.EXPECT().Create(ctx, uuid.Nil, existing.CustomerID, existing.ID, existing.ActiveflowID, message.DirectionOutgoing, message.RoleUser, "test user message.", nil, "", gomock.Any()).Return(&message.Message{}, nil)
 
 				// startPipecatcall
-				m.message.EXPECT().List(ctx, uint64(100), gomock.Any(), gomock.Any()).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(existing.ID)).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(existing.ID)).Return([]*message.Message{}, nil)
 				m.req.EXPECT().PipecatV1PipecatcallStart(
 					ctx,
 					existing.PipecatcallID,
@@ -648,7 +651,8 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 
 				m.message.EXPECT().Create(ctx, uuid.Nil, existing.CustomerID, existing.ID, existing.ActiveflowID, message.DirectionOutgoing, message.RoleUser, "another user message.", nil, "", gomock.Any()).Return(&message.Message{}, nil)
 
-				m.message.EXPECT().List(ctx, uint64(100), gomock.Any(), gomock.Any()).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(existing.ID)).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(existing.ID)).Return([]*message.Message{}, nil)
 				m.req.EXPECT().PipecatV1PipecatcallStart(
 					ctx,
 					existing.PipecatcallID,
@@ -744,7 +748,8 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				m.message.EXPECT().Create(ctx, uuid.Nil, progressingAIcall.CustomerID, progressingAIcall.ID, progressingAIcall.ActiveflowID, message.DirectionOutgoing, message.RoleUser, "fresh user message.", nil, "", gomock.Any()).Return(&message.Message{}, nil)
 
 				// startPipecatcall
-				m.message.EXPECT().List(ctx, uint64(100), gomock.Any(), gomock.Any()).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(progressingAIcall.ID)).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(progressingAIcall.ID)).Return([]*message.Message{}, nil)
 				m.req.EXPECT().PipecatV1PipecatcallStart(
 					ctx,
 					progressingAIcall.PipecatcallID,
@@ -836,7 +841,8 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				m.message.EXPECT().Create(ctx, uuid.Nil, createdAIcall.CustomerID, createdAIcall.ID, createdAIcall.ActiveflowID, message.DirectionOutgoing, message.RoleUser, "fresh user message — update fails.", nil, "", gomock.Any()).Return(&message.Message{}, nil)
 
 				// startPipecatcall — proceeds despite UpdateStatus failure
-				m.message.EXPECT().List(ctx, uint64(100), gomock.Any(), gomock.Any()).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(createdAIcall.ID)).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(createdAIcall.ID)).Return([]*message.Message{}, nil)
 				m.req.EXPECT().PipecatV1PipecatcallStart(
 					ctx,
 					createdAIcall.PipecatcallID,
@@ -941,7 +947,8 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				m.message.EXPECT().Create(ctx, uuid.Nil, progressingAIcall.CustomerID, progressingAIcall.ID, progressingAIcall.ActiveflowID, message.DirectionOutgoing, message.RoleUser, "post-terminated user message.", nil, "", gomock.Any()).Return(&message.Message{}, nil)
 
 				// startPipecatcall
-				m.message.EXPECT().List(ctx, uint64(100), gomock.Any(), gomock.Any()).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(progressingAIcall.ID)).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(progressingAIcall.ID)).Return([]*message.Message{}, nil)
 				m.req.EXPECT().PipecatV1PipecatcallStart(
 					ctx,
 					progressingAIcall.PipecatcallID,
@@ -1052,7 +1059,8 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				// conversation message create
 				m.message.EXPECT().Create(ctx, uuid.Nil, progressingAIcall.CustomerID, progressingAIcall.ID, progressingAIcall.ActiveflowID, message.DirectionOutgoing, message.RoleUser, "after-idle user message.", nil, "", gomock.Any()).Return(&message.Message{}, nil)
 
-				m.message.EXPECT().List(ctx, uint64(100), gomock.Any(), gomock.Any()).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(progressingAIcall.ID)).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(progressingAIcall.ID)).Return([]*message.Message{}, nil)
 				m.req.EXPECT().PipecatV1PipecatcallStart(
 					ctx,
 					progressingAIcall.PipecatcallID,
@@ -1165,7 +1173,8 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 
 				m.message.EXPECT().Create(ctx, uuid.Nil, existing.CustomerID, existing.ID, existing.ActiveflowID, message.DirectionOutgoing, message.RoleUser, "team user message.", nil, "", gomock.Any()).Return(&message.Message{}, nil)
 
-				m.message.EXPECT().List(ctx, uint64(100), gomock.Any(), gomock.Any()).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(existing.ID)).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(existing.ID)).Return([]*message.Message{}, nil)
 				m.req.EXPECT().PipecatV1PipecatcallStart(
 					ctx,
 					existing.PipecatcallID,
@@ -1341,7 +1350,8 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				m.message.EXPECT().Create(ctx, uuid.Nil, progressingAIcall.CustomerID, progressingAIcall.ID, progressingAIcall.ActiveflowID, message.DirectionOutgoing, message.RoleUser, "post-terminating user message.", nil, "", gomock.Any()).Return(&message.Message{}, nil)
 
 				// startPipecatcall
-				m.message.EXPECT().List(ctx, uint64(100), gomock.Any(), gomock.Any()).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(progressingAIcall.ID)).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(progressingAIcall.ID)).Return([]*message.Message{}, nil)
 				m.req.EXPECT().PipecatV1PipecatcallStart(
 					ctx,
 					progressingAIcall.PipecatcallID,
@@ -1536,7 +1546,8 @@ func Test_getPipecatcallMessages(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockMessage.EXPECT().List(ctx, uint64(100), gomock.Any(), gomock.Any()).Return(tt.responseMessages, nil)
+			mockMessage.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(tt.aicall.ID)).Return([]*message.Message{}, nil)
+			mockMessage.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(tt.aicall.ID)).Return(tt.responseMessages, nil)
 
 			res, err := h.getPipecatcallMessages(ctx, tt.aicall)
 			if err != nil {
@@ -1782,7 +1793,8 @@ func Test_startPipecatcall(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockMessage.EXPECT().List(ctx, uint64(100), gomock.Any(), gomock.Any()).Return(tt.responseMessages, nil)
+			mockMessage.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(tt.aicall.ID)).Return([]*message.Message{}, nil)
+			mockMessage.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(tt.aicall.ID)).Return(tt.responseMessages, nil)
 			mockReq.EXPECT().PipecatV1PipecatcallStart(
 				ctx,
 				tt.aicall.PipecatcallID,
@@ -2849,7 +2861,8 @@ func Test_StartTask(t *testing.T) {
 				mockMessage.EXPECT().Create(ctx, uuid.Nil, tt.expectAIcall.CustomerID, tt.expectAIcall.ID, tt.expectAIcall.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, m, nil, "", gomock.Any()).Return(&message.Message{}, nil)
 			}
 
-			mockMessage.EXPECT().List(ctx, uint64(100), gomock.Any(), gomock.Any()).Return(tt.responseMessages, nil)
+			mockMessage.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(tt.expectAIcall.ID)).Return([]*message.Message{}, nil)
+			mockMessage.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(tt.expectAIcall.ID)).Return(tt.responseMessages, nil)
 			mockReq.EXPECT().PipecatV1PipecatcallStart(
 				ctx,
 				tt.expectAIcall.PipecatcallID,
@@ -3658,7 +3671,8 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				m.req.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any()).Return(nil)
 				m.message.EXPECT().Create(ctx, uuid.Nil, created.CustomerID, created.ID, created.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, gomock.Any(), nil, "", gomock.Any()).Return(&message.Message{}, nil)
 
-				m.message.EXPECT().List(ctx, uint64(100), gomock.Any(), gomock.Any()).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(created.ID)).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(created.ID)).Return([]*message.Message{}, nil)
 				responsePC := &pmpipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("10000000-0007-11f0-aaaa-000000000001")}, HostID: "host-x"}
 				m.req.EXPECT().PipecatV1PipecatcallStart(ctx, created.PipecatcallID, created.CustomerID, created.ActiveflowID, pmpipecatcall.ReferenceTypeAICall, created.ID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(responsePC, nil)
 				m.req.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, responsePC.HostID, responsePC.ID, defaultAITaskTimeout).Return(nil)
@@ -3777,7 +3791,8 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				m.req.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any()).Return(nil)
 				m.message.EXPECT().Create(ctx, uuid.Nil, created.CustomerID, created.ID, created.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, gomock.Any(), nil, "", gomock.Any()).Return(&message.Message{}, nil)
 
-				m.message.EXPECT().List(ctx, uint64(100), gomock.Any(), gomock.Any()).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(created.ID)).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(created.ID)).Return([]*message.Message{}, nil)
 				responsePC := &pmpipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("30000000-0010-11f0-cccc-000000000001")}, HostID: "host-x"}
 				m.req.EXPECT().PipecatV1PipecatcallStart(ctx, created.PipecatcallID, created.CustomerID, created.ActiveflowID, pmpipecatcall.ReferenceTypeAICall, created.ID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(responsePC, nil)
 				m.req.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, responsePC.HostID, responsePC.ID, defaultAITaskTimeout).Return(nil)
@@ -3979,7 +3994,8 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				m.req.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any()).Return(nil)
 				m.message.EXPECT().Create(ctx, uuid.Nil, created.CustomerID, created.ID, created.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, gomock.Any(), nil, "", gomock.Any()).Return(&message.Message{}, nil)
 
-				m.message.EXPECT().List(ctx, uint64(100), gomock.Any(), gomock.Any()).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(created.ID)).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(created.ID)).Return([]*message.Message{}, nil)
 				responsePC := &pmpipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("70000000-0010-11f0-1111-000000000001")}, HostID: "host-x"}
 				m.req.EXPECT().PipecatV1PipecatcallStart(ctx, created.PipecatcallID, created.CustomerID, created.ActiveflowID, pmpipecatcall.ReferenceTypeAICall, created.ID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(responsePC, nil)
 				m.req.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, responsePC.HostID, responsePC.ID, defaultAITaskTimeout).Return(nil)
@@ -4053,7 +4069,8 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				m.req.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any()).Return(nil)
 				m.message.EXPECT().Create(ctx, uuid.Nil, created.CustomerID, created.ID, created.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, gomock.Any(), nil, "", gomock.Any()).Return(&message.Message{}, nil)
 
-				m.message.EXPECT().List(ctx, uint64(100), gomock.Any(), gomock.Any()).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(created.ID)).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(created.ID)).Return([]*message.Message{}, nil)
 				responsePC := &pmpipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("80000000-0010-11f0-2222-000000000001")}, HostID: "host-x"}
 				m.req.EXPECT().PipecatV1PipecatcallStart(ctx, created.PipecatcallID, created.CustomerID, created.ActiveflowID, pmpipecatcall.ReferenceTypeAICall, created.ID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(responsePC, nil)
 				m.req.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, responsePC.HostID, responsePC.ID, defaultAITaskTimeout).Return(nil)
@@ -4111,7 +4128,8 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				m.req.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any()).Return(nil)
 				m.message.EXPECT().Create(ctx, uuid.Nil, created.CustomerID, created.ID, created.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, gomock.Any(), nil, "", gomock.Any()).Return(&message.Message{}, nil)
 
-				m.message.EXPECT().List(ctx, uint64(100), gomock.Any(), gomock.Any()).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(created.ID)).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(created.ID)).Return([]*message.Message{}, nil)
 				m.req.EXPECT().PipecatV1PipecatcallStart(ctx, created.PipecatcallID, created.CustomerID, created.ActiveflowID, pmpipecatcall.ReferenceTypeAICall, created.ID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("pipecat host unavailable"))
 			},
 
@@ -4159,7 +4177,8 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				m.req.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any()).Return(nil)
 				m.message.EXPECT().Create(ctx, uuid.Nil, created.CustomerID, created.ID, created.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, gomock.Any(), nil, "", gomock.Any()).Return(&message.Message{}, nil)
 
-				m.message.EXPECT().List(ctx, uint64(100), gomock.Any(), gomock.Any()).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(created.ID)).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(created.ID)).Return([]*message.Message{}, nil)
 				responsePC := &pmpipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("91000000-0007-11f0-4444-000000000001")}, HostID: "host-x"}
 				m.req.EXPECT().PipecatV1PipecatcallStart(ctx, created.PipecatcallID, created.CustomerID, created.ActiveflowID, pmpipecatcall.ReferenceTypeAICall, created.ID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(responsePC, nil)
 				m.req.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, responsePC.HostID, responsePC.ID, defaultAITaskTimeout).Return(fmt.Errorf("could not schedule termination"))
@@ -4220,7 +4239,8 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				m.db.EXPECT().AIcallCreate(ctx, gomock.Any()).Return(fmt.Errorf("Error 1062: Duplicate entry 'x' for key 'uq_aicall_active_reference_key'"))
 				m.db.EXPECT().AIcallGetByReferenceID(ctx, uuid.FromStringOrNil("92000000-0004-11f0-5555-000000000001")).Return(existingInitiating, nil)
 
-				m.message.EXPECT().List(ctx, uint64(100), gomock.Any(), gomock.Any()).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(existingInitiating.ID)).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(existingInitiating.ID)).Return([]*message.Message{}, nil)
 				responsePC := &pmpipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("92000000-0008-11f0-5555-000000000001")}, HostID: "host-x"}
 				m.req.EXPECT().PipecatV1PipecatcallStart(ctx, existingInitiating.PipecatcallID, existingInitiating.CustomerID, existingInitiating.ActiveflowID, pmpipecatcall.ReferenceTypeAICall, existingInitiating.ID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(responsePC, nil)
 				m.req.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, responsePC.HostID, responsePC.ID, defaultAITaskTimeout).Return(nil)
@@ -4304,7 +4324,8 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				m.notify.EXPECT().PublishWebhookEvent(ctx, created.CustomerID, aicall.EventTypeStatusInitializing, created)
 				m.req.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any()).Return(nil)
 				m.message.EXPECT().Create(ctx, uuid.Nil, created.CustomerID, created.ID, created.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, gomock.Any(), nil, "", gomock.Any()).Return(&message.Message{}, nil)
-				m.message.EXPECT().List(ctx, uint64(100), gomock.Any(), gomock.Any()).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(created.ID)).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(created.ID)).Return([]*message.Message{}, nil)
 				responsePC := &pmpipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("55000000-000a-11f0-eeee-000000000001")}, HostID: "host2"}
 				m.req.EXPECT().PipecatV1PipecatcallStart(ctx, created.PipecatcallID, created.CustomerID, created.ActiveflowID, pmpipecatcall.ReferenceTypeAICall, created.ID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(responsePC, nil)
 				m.req.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, responsePC.HostID, responsePC.ID, defaultAITaskTimeout).Return(nil)
@@ -4396,7 +4417,8 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				m.notify.EXPECT().PublishWebhookEvent(ctx, created.CustomerID, aicall.EventTypeStatusInitializing, created)
 				m.req.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any()).Return(nil)
 				m.message.EXPECT().Create(ctx, uuid.Nil, created.CustomerID, created.ID, created.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, gomock.Any(), nil, "", gomock.Any()).Return(&message.Message{}, nil)
-				m.message.EXPECT().List(ctx, uint64(100), gomock.Any(), gomock.Any()).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(5), "", pipecatSystemMessageFilters(created.ID)).Return([]*message.Message{}, nil)
+				m.message.EXPECT().List(ctx, uint64(100), "", pipecatRestMessageFilters(created.ID)).Return([]*message.Message{}, nil)
 				responsePC := &pmpipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("93000000-000a-11f0-6666-000000000001")}, HostID: "host3"}
 				m.req.EXPECT().PipecatV1PipecatcallStart(ctx, created.PipecatcallID, created.CustomerID, created.ActiveflowID, pmpipecatcall.ReferenceTypeAICall, created.ID, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(responsePC, nil)
 				m.req.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, responsePC.HostID, responsePC.ID, defaultAITaskTimeout).Return(nil)
@@ -4484,5 +4506,97 @@ func Test_startReferenceTypeContactCase(t *testing.T) {
 				t.Errorf("wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
+	}
+}
+
+// Test_getPipecatcallMessages_TwoFetch pins the two properties the restructure
+// exists for.
+//
+// (a) The system prompt survives unbounded conversation volume. It is written
+// once at AIcall creation and never again, so under the old single capped fetch
+// it was simply row number N-100 eventually, and the AI silently lost its own
+// instructions. The system rows now come from their own fetch, independent of
+// the capped window, so no amount of subsequent traffic can evict them.
+//
+// (b) Listen-internal rows are excluded at the SQL layer, not filtered in Go
+// after the fact. Filtering in Go would not help: the rows would still have
+// consumed the 100-row budget before being discarded, which is the whole
+// problem.
+//
+// Both fetches return newest-first (MessageList orders tm_create DESC) and both
+// must be reversed before use -- reversing only one silently emits the system
+// prompt in reverse order relative to the conversation.
+func Test_getPipecatcallMessages_TwoFetch(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockMessage := messagehandler.NewMockMessageHandler(mc)
+	h := &aicallHandler{messageHandler: mockMessage}
+	ctx := context.Background()
+
+	c := &aicall.AIcall{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("7e2c9a10-4b3d-4f8e-9c1a-2b3c4d5e6f70"),
+		},
+	}
+
+	// Fetch 1: the system rows, newest-first. In production there are at most
+	// three (the type-specific system prompt, the substituted init prompt, and
+	// an optional parameter-JSON block), all written at creation time.
+	mockMessage.EXPECT().List(ctx, uint64(5), "", map[message.Field]any{
+		message.FieldAIcallID: c.ID,
+		message.FieldRole:     message.RoleSystem,
+	}).Return([]*message.Message{
+		{Role: message.RoleSystem, Content: "init prompt"},
+		{Role: message.RoleSystem, Content: "system prompt"},
+	}, nil)
+
+	// Fetch 2: the newest 100 non-system, non-listen-internal rows.
+	mockMessage.EXPECT().List(ctx, uint64(100), "", map[message.Field]any{
+		message.FieldAIcallID: c.ID,
+		message.FieldRole:     commondatabasehandler.NotEq{Value: message.RoleSystem},
+		message.FieldOrigin:   commondatabasehandler.NotEq{Value: message.OriginListenInternal},
+	}).Return([]*message.Message{
+		{Role: message.RoleAssistant, Content: "answer"},
+		{Role: message.RoleUser, Content: "question"},
+	}, nil)
+
+	res, err := h.getPipecatcallMessages(ctx, c)
+	if err != nil {
+		t.Fatalf("getPipecatcallMessages returned an unexpected error. err: %v", err)
+	}
+
+	expect := []map[string]any{
+		{"role": "system", "content": "system prompt"},
+		{"role": "system", "content": "init prompt"},
+		{"role": "user", "content": "question"},
+		{"role": "assistant", "content": "answer"},
+	}
+
+	if !reflect.DeepEqual(res, expect) {
+		t.Errorf("message assembly mismatch.\nexpected: %v\ngot:      %v", expect, res)
+	}
+}
+
+// pipecatSystemMessageFilters and pipecatRestMessageFilters mirror
+// getPipecatcallMessages' two fetch filter maps exactly.
+//
+// Every mock expectation for that function's List calls pins its filters
+// through these helpers rather than waving them through with gomock.Any(): the
+// listen_internal / system-role exclusions ARE the thing the two-fetch
+// restructure introduced, so a silent regression there is exactly what these
+// expectations exist to catch.
+func pipecatSystemMessageFilters(aicallID uuid.UUID) map[message.Field]any {
+	return map[message.Field]any{
+		message.FieldAIcallID: aicallID,
+		message.FieldRole:     message.RoleSystem,
+	}
+}
+
+func pipecatRestMessageFilters(aicallID uuid.UUID) map[message.Field]any {
+	return map[message.Field]any{
+		message.FieldAIcallID: aicallID,
+		message.FieldRole:     commondatabasehandler.NotEq{Value: message.RoleSystem},
+		message.FieldOrigin:   commondatabasehandler.NotEq{Value: message.OriginListenInternal},
 	}
 }
