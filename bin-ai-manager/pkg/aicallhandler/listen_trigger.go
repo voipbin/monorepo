@@ -220,6 +220,21 @@ func (h *aicallHandler) checkListenEligible(ctx context.Context, c *aicall.AIcal
 	}
 
 	// Step 4: Case lookup, and the tenant boundary.
+	//
+	// THE REFERENCE-TYPE GATE IS EXPLICIT (review round 1 security finding
+	// LOW-1). c.ReferenceID is only a Case id when ReferenceType is
+	// contact_case; for any other reference type it addresses a call or a
+	// conversation, and handing that to ContactV1CaseGet is a lookup for a
+	// resource that is not a Case. It fails closed today (the Case simply is
+	// not found, or its CustomerID recheck below rejects it), but every sibling
+	// call site in this package -- RunListenTurn and all six Insight tools in
+	// tool_insight.go -- states this precondition explicitly rather than
+	// relying on that, and this one now matches them.
+	if c.ReferenceType != aicall.ReferenceTypeContactCase {
+		promListenStartTotal.WithLabelValues("skipped_not_listenable").Inc()
+		return nil, nil, uuid.Nil, nil, false, nil
+	}
+
 	kase, err := h.reqHandler.ContactV1CaseGet(ctx, c.CustomerID, c.ReferenceID)
 	if err != nil {
 		log.Errorf("Could not get the case. err: %v", err)
@@ -425,6 +440,46 @@ func (h *aicallHandler) startListenTranscribe(ctx context.Context, c *aicall.AIc
 		_ = h.cache.ListenStartLockRelease(releaseCtx, c.ID, lockToken.String()) // compare-and-delete, best-effort
 	}()
 
+	// RE-VALIDATE THE AICALL, FRESH, UNDER THE LOCK (review round 1 finding
+	// HIGH-1). checkListenEligible's step 2 already checked Status/TMDelete --
+	// but that ran BEFORE waitForConfbridgeReady, which can block for the whole
+	// AIcallListenConfbridgeReadyMaxWaitSeconds budget. Two concrete failures
+	// live in that window, and this single re-read is what closes them:
+	//
+	//   (a) The AIcall is terminated while the goroutine is still polling for
+	//       confbridge readiness. ProcessTerminate's own teardown no-ops on
+	//       this AIcall, because ListenCallID is still uuid.Nil until the
+	//       pre-write below lands -- so without this check the goroutine would
+	//       go on to pre-write and start a BILLED STT session on an AIcall that
+	//       is already dead. Fully closed here.
+	//
+	//   (b) Terminate interleaves between the pre-write and
+	//       TranscribeV1TranscribeStart. Teardown deliberately does NOT take
+	//       this start lock (see the scope note above), so it can clear the
+	//       resolver membership and listen_call_id and still leave the
+	//       transcribe to be created a moment later -- a live, billed session
+	//       with no resolver entry and no listen_call_id, unreapable by either
+	//       the transcript-intake path or the hangup path. This check NARROWS
+	//       that window to the sub-RPC gap between here and the start call; it
+	//       does not eliminate it. That residual is accepted and recorded in
+	//       docs/operations.md rather than closed by widening the lock over
+	//       teardown.
+	//
+	// Metered exactly as step 2's own check meters this outcome, and no
+	// transcribe RPC is made on this path. The read is the ordinary cache-first
+	// AIcallGet for the same reason UpdateListenState's own read is (every
+	// ai_aicalls writer refreshes the cache after its write, so a terminate
+	// that has landed is visible here).
+	fresh, errFresh := h.db.AIcallGet(ctx, c.ID)
+	if errFresh != nil {
+		// Unknown liveness. Fail closed rather than start a billed session on
+		// an AIcall whose state we could not confirm.
+		return "failed", errFresh
+	}
+	if fresh.Status != aicall.StatusProgressing || fresh.TMDelete != nil {
+		return "skipped_not_listenable", nil
+	}
+
 	// REUSE IS LANGUAGE-TOLERANT ON PURPOSE. Any progressing
 	// IDAIManagerListen session on this call is reused regardless of its
 	// language string -- starting a second session only because a language
@@ -442,8 +497,8 @@ func (h *aicallHandler) startListenTranscribe(ctx context.Context, c *aicall.AIc
 		// have started a duplicate session
 		return "failed", errList
 	}
-	if len(existing) > 0 {
-		if _, errUpdate := h.UpdateListenState(ctx, c.ID, callID, existing[0].ID, false); errUpdate != nil {
+	if reuseID, ok := pickReusableListenTranscribe(existing, callID); ok {
+		if _, errUpdate := h.UpdateListenState(ctx, c.ID, callID, reuseID, false); errUpdate != nil {
 			return "failed", errUpdate
 		}
 		return "reused", nil
@@ -461,7 +516,15 @@ func (h *aicallHandler) startListenTranscribe(ctx context.Context, c *aicall.AIc
 	// Do not "simplify" this back to writing after creation.
 	newTranscribeID := h.utilHandler.UUIDCreate()
 	if _, errPre := h.UpdateListenState(ctx, c.ID, callID, newTranscribeID, true); errPre != nil {
-		// fail closed: no transcribe created yet, nothing to roll back
+		// Fail closed -- no transcribe was created, so nothing is billed. But
+		// "nothing to roll back" is NOT true (review round 1 finding
+		// MEDIUM-4): UpdateListenState writes the ai_aicalls row BEFORE the
+		// Redis SADD and returns the SADD's error, so a SADD failure leaves the
+		// row pointing at a transcribe id that will never exist. That state is
+		// self-healing eventually (the next listen start overwrites it; the
+		// hangup path clears it), but rolling back here is cheap and makes the
+		// invariant actually hold instead of merely converging.
+		_ = h.rollbackListenState(ctx, c.ID, newTranscribeID)
 		return "failed", errPre
 	}
 
@@ -500,11 +563,19 @@ func (h *aicallHandler) startListenTranscribe(ctx context.Context, c *aicall.AIc
 		// reuse-on-conflict behaviour §6 promises (review round 13 finding
 		// MEDIUM-3).
 		existingRetry, errListRetry := h.reqHandler.TranscribeV1TranscribeList(ctx, "", 10, dupFilters)
-		if errListRetry != nil || len(existingRetry) == 0 {
+		if errListRetry != nil {
 			_ = h.rollbackListenState(ctx, c.ID, newTranscribeID) // no winner found either; give up
 			return "failed", err
 		}
-		if _, errUpdate := h.UpdateListenState(ctx, c.ID, callID, existingRetry[0].ID, false); errUpdate != nil {
+		// A row that does not survive pickReusableListenTranscribe is treated
+		// EXACTLY like an empty list: no winner found, roll back, give up.
+		// Adopting an unverified row here would be worse than finding none.
+		winnerID, okWinner := pickReusableListenTranscribe(existingRetry, callID)
+		if !okWinner {
+			_ = h.rollbackListenState(ctx, c.ID, newTranscribeID)
+			return "failed", err
+		}
+		if _, errUpdate := h.UpdateListenState(ctx, c.ID, callID, winnerID, false); errUpdate != nil {
 			_ = h.rollbackListenState(ctx, c.ID, newTranscribeID)
 			return "failed", errUpdate
 		}
@@ -524,6 +595,56 @@ func (h *aicallHandler) startListenTranscribe(ctx context.Context, c *aicall.AIc
 		_ = h.rollbackListenState(ctx, c.ID, newTranscribeID)
 		return "failed", err
 	}
+}
+
+// pickReusableListenTranscribe returns the id of the first row in rows that is
+// genuinely one of OUR listen sessions on callID, and whether such a row exists.
+//
+// WHY THIS EXISTS AT ALL (review round 1 security finding MEDIUM-1). This
+// package already states the invariant explicitly, in paginateUntilExact's own
+// doc comment in tool_insight.go: the RPC's filter map is CALLER-SUPPLIED and
+// NOT server-enforced, so every call site MUST independently re-verify the
+// ownership fields (CustomerID, ReferenceID, TMDelete) of the rows it gets
+// back. tool_insight.go's two `keep` closures do exactly that; the two reuse
+// branches in this file were the one place in this feature that trusted the
+// filter it sent. Adopting an unverified row means writing a foreign
+// transcribe's id onto this AIcall -- and, since the resolver membership is
+// keyed by transcribe id, subscribing this tenant's AIcall to another session's
+// transcript segments.
+//
+// The three checked fields are the same three that closure checks, and they are
+// checked against constants this process controls (the platform sentinel
+// customer id) or values it resolved itself (callID), never against anything
+// the listed row supplied about itself.
+//
+// A mismatch is not an error -- callers treat it identically to "the list came
+// back empty," which is the correct, fail-closed reading of "there is no
+// session here that we may reuse."
+func pickReusableListenTranscribe(rows []tmtranscribe.Transcribe, callID uuid.UUID) (uuid.UUID, bool) {
+	for _, row := range rows {
+		if row.CustomerID != cmcustomer.IDAIManagerListen {
+			logrus.Warnf("Skipping listen transcribe with a foreign customer id. call_id: %s, transcribe_id: %s, transcribe_customer_id: %s", callID, row.ID, row.CustomerID)
+			continue
+		}
+		if row.ReferenceID != callID {
+			logrus.Warnf("Skipping listen transcribe with a mismatched reference. call_id: %s, transcribe_id: %s, transcribe_reference_id: %s", callID, row.ID, row.ReferenceID)
+			continue
+		}
+		if row.TMDelete != nil {
+			logrus.Warnf("Skipping deleted listen transcribe. call_id: %s, transcribe_id: %s", callID, row.ID)
+			continue
+		}
+		if row.ID == uuid.Nil {
+			// A nil id cannot address a session; adopting it would write
+			// uuid.Nil into listen_transcribe_id and collide with every other
+			// non-listening row on the shared nil key.
+			continue
+		}
+
+		return row.ID, true
+	}
+
+	return uuid.Nil, false
 }
 
 // isAlreadyProgressing reports whether err is transcribe-manager's

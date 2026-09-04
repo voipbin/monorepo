@@ -38,6 +38,24 @@ func Close(db *sql.DB) {
 	}
 }
 
+// NotEq wraps a filter value to signal "<>" instead of ApplyFields' default
+// "=". It is a typed wrapper rather than another hardcoded field-name special
+// case (the "deleted" branch in ApplyFields is not a pattern to extend), so any
+// caller can express an exclusion on any field without this package learning
+// that field's name.
+//
+// SCOPE WARNING -- this is deliberately narrower than it looks. ApplyFields'
+// per-field switch normalizes some value types before comparing (a uuid.UUID
+// goes through .Bytes(); a bool named "deleted" maps onto tm_delete IS [NOT]
+// NULL). NotEq bypasses all of that and hands the raw value to squirrel. Only
+// use it with string-kind values until it is extended to route through the same
+// normalization. A NotEq{Value: someUUID} would silently compare against the
+// wrong byte representation.
+//
+// Introduced by docs/plans/2026-09-03-insight-ai-realtime-listen-design.md
+// §5.4.5 step 3.
+type NotEq struct{ Value any }
+
 // ApplyFields dynamically adds WHERE clauses to a squirrel.SelectBuilder based on the provided fields map.
 // It handles various data types for filter values:
 // - uuid.UUID: Converted to bytes for equality comparison.
@@ -58,24 +76,6 @@ func Close(db *sql.DB) {
 //
 //	The modified squirrel.SelectBuilder with added WHERE clauses.
 //	An error if an unsupported filter type is encountered.
-// NotEq wraps a filter value to signal "<>" instead of ApplyFields' default
-// "=". It is a typed wrapper rather than another hardcoded field-name special
-// case (the "deleted" branch below is not a pattern to extend), so any caller
-// can express an exclusion on any field without this package learning that
-// field's name.
-//
-// SCOPE WARNING -- this is deliberately narrower than it looks. ApplyFields'
-// per-field switch normalizes some value types before comparing (a uuid.UUID
-// goes through .Bytes(); a bool named "deleted" maps onto tm_delete IS [NOT]
-// NULL). NotEq bypasses all of that and hands the raw value to squirrel. Only
-// use it with string-kind values until it is extended to route through the same
-// normalization. A NotEq{Value: someUUID} would silently compare against the
-// wrong byte representation.
-//
-// Introduced by docs/plans/2026-09-03-insight-ai-realtime-listen-design.md
-// §5.4.5 step 3.
-type NotEq struct{ Value any }
-
 func ApplyFields[K ~string](sb squirrel.SelectBuilder, fields map[K]any) (squirrel.SelectBuilder, error) {
 	for k, v := range fields {
 		key := string(k)

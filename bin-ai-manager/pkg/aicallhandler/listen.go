@@ -10,6 +10,7 @@ import (
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
 	cmcall "monorepo/bin-call-manager/models/call"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
 	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
 	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
@@ -506,6 +507,22 @@ func (h *aicallHandler) clearListenState(ctx context.Context, c *aicall.AIcall) 
 	}
 }
 
+// listenStopPageSize is one page of stopListenByCallID's sweep.
+//
+// Small on purpose: the realistic population is 1-2 AIcalls (two Cases open on
+// one call), so this is sized for the normal case and the loop below handles
+// the tail rather than the page size being inflated to cover it.
+const listenStopPageSize = 10
+
+// listenStopMaxPages bounds that sweep.
+//
+// A hangup handler must terminate. 200 listening AIcalls on ONE call is far
+// beyond anything the product can produce -- reaching this bound means
+// something is wrong (a corrupted listen_call_id, a runaway Case creator), and
+// the right response is to stop and say so loudly, not to page forever inside
+// an event handler.
+const listenStopMaxPages = 20
+
 // stopListenByCallID stops every AIcall listening to the given call.
 //
 // PLURAL ON PURPOSE: the active-AIcall unique key is per Case, not per customer,
@@ -517,32 +534,79 @@ func (h *aicallHandler) clearListenState(ctx context.Context, c *aicall.AIcall) 
 // sitting unevaluated, and this is the only chance to read them -- there is no
 // next segment coming. It bypasses the debounce lock deliberately, which is why
 // the turn body was extracted as runListenTurnWithLines.
+//
+// IT PAGINATES, and that is not theoretical tidiness (review round 1 finding
+// MEDIUM-2). A single fixed page silently dropped every row past the first
+// page, and a dropped row is an AIcall left believing it is still listening: its
+// resolver membership survives, its listen_call_id survives, and if it owned the
+// transcribe session that session is never stopped.
 func (h *aicallHandler) stopListenByCallID(ctx context.Context, callID uuid.UUID) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "stopListenByCallID",
 		"call_id": callID,
 	})
 
-	listening, err := h.List(ctx, 10, "", map[aicall.Field]any{
-		aicall.FieldReferenceType: aicall.ReferenceTypeContactCase,
-		aicall.FieldListenCallID:  callID,
-		aicall.FieldDeleted:       false,
-	})
-	if err != nil {
-		log.Errorf("Could not list the listening aicalls. err: %v", err)
+	// A ZERO CALL ID MUST NEVER REACH THE QUERY (review round 1 security
+	// finding MEDIUM-2). callID comes from an unvalidated call_hangup event
+	// field, and the migration declares listen_call_id NOT NULL DEFAULT
+	// 0x00... -- i.e. uuid.Nil is the value EVERY non-listening contact_case
+	// AIcall carries, across every tenant. A malformed or mis-routed event with
+	// a zero id would therefore select an arbitrary page of unrelated tenants'
+	// non-listening AIcalls and run the whole teardown against them.
+	if callID == uuid.Nil {
+		log.Warn("Ignoring a listen stop request for a nil call id.")
 		return
 	}
 
-	for _, c := range listening {
-		lines, errPop := h.cache.ListenPendingPopAll(ctx, c.ID)
-		if errPop != nil {
-			log.Warnf("Could not drain the pending buffer for the final flush. aicall_id: %s, err: %v", c.ID, errPop)
-		} else if len(lines) > 0 {
-			h.runListenTurnWithLines(ctx, c, lines)
+	filters := map[aicall.Field]any{
+		aicall.FieldReferenceType: aicall.ReferenceTypeContactCase,
+		aicall.FieldListenCallID:  callID,
+		aicall.FieldDeleted:       false,
+	}
+
+	// Keyset pagination on tm_create desc, the same shape AIcallList itself
+	// implements (WHERE tm_create < token). utilhandler.ISO8601Layout, NOT
+	// RFC3339Nano: AIcallList's own default token is TimeGetCurTime(), which
+	// uses this fixed-precision layout, and a token built with a different
+	// layout would not error -- it would silently mis-paginate.
+	token := ""
+	for page := 0; page < listenStopMaxPages; page++ {
+		listening, err := h.List(ctx, listenStopPageSize, token, filters)
+		if err != nil {
+			log.Errorf("Could not list the listening aicalls. page: %d, err: %v", page, err)
+			return
 		}
 
-		h.stopListening(ctx, c)
+		for _, c := range listening {
+			lines, errPop := h.cache.ListenPendingPopAll(ctx, c.ID)
+			if errPop != nil {
+				log.Warnf("Could not drain the pending buffer for the final flush. aicall_id: %s, err: %v", c.ID, errPop)
+			} else if len(lines) > 0 {
+				h.runListenTurnWithLines(ctx, c, lines)
+			}
+
+			h.stopListening(ctx, c)
+		}
+
+		if len(listening) < listenStopPageSize {
+			// A short page proves the source is exhausted -- this is the
+			// overwhelmingly common exit, on the very first iteration.
+			return
+		}
+
+		last := listening[len(listening)-1]
+		if last.TMCreate == nil {
+			// Cannot construct a continuation token. Defensive only: the query
+			// itself is WHERE tm_create < token, and NULL < value is NULL (not
+			// TRUE) under SQL three-valued logic, so such a row cannot appear
+			// on any page after the first.
+			log.Warnf("Could not build the next page token; the listen stop sweep may be incomplete. aicall_id: %s", last.ID)
+			return
+		}
+		token = last.TMCreate.UTC().Format(utilhandler.ISO8601Layout)
 	}
+
+	log.Warnf("The listen stop sweep hit its page budget; some listening aicalls may not have been stopped. max_pages: %d", listenStopMaxPages)
 }
 
 // speakerTag renders a transcript segment's direction as a structural speaker

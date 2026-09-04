@@ -1,6 +1,7 @@
 package config
 
 import (
+	"strings"
 	"sync"
 	"testing"
 
@@ -300,5 +301,120 @@ func Test_ListenConfigDefaults(t *testing.T) {
 	// TTL, and must never be conflated with it.
 	if cfg.AIcallListenStartLockReleaseTimeoutSeconds >= cfg.AIcallListenStartLockTTLSeconds {
 		t.Errorf("AIcallListenStartLockReleaseTimeoutSeconds (%d) must stay well below AIcallListenStartLockTTLSeconds (%d)", cfg.AIcallListenStartLockReleaseTimeoutSeconds, cfg.AIcallListenStartLockTTLSeconds)
+	}
+}
+
+// Test_Validate_ListenTiming is the direct regression test for review round 1's
+// MEDIUM-1.
+//
+// Test_ListenConfigDefaults above asserts the ordering invariant, but only
+// against values it sets itself -- it structurally cannot catch a real
+// environment-variable override that violates it. Validate can, and it runs at
+// startup before anything serves.
+func Test_Validate_ListenTiming(t *testing.T) {
+	tests := []struct {
+		name string
+
+		// mutate applies one misconfiguration on top of the shipped defaults.
+		mutate func()
+
+		expectError bool
+	}{
+		{
+			name:        "the shipped defaults pass",
+			mutate:      func() {},
+			expectError: false,
+		},
+		{
+			name: "a zero confbridge poll interval is rejected",
+			// AICALL_LISTEN_CONFBRIDGE_READY_POLL_INTERVAL_SECONDS=0 turns
+			// waitForConfbridgeReady into a busy-loop.
+			mutate:      func() { globalConfig.AIcallListenConfbridgeReadyPollIntervalSeconds = 0 },
+			expectError: true,
+		},
+		{
+			name: "a zero start-lock release timeout is rejected",
+			// AICALL_LISTEN_START_LOCK_RELEASE_TIMEOUT_SECONDS=0 makes every
+			// lock release run on an already-expired context, so every release
+			// silently no-ops and every lock strands for its full TTL.
+			mutate:      func() { globalConfig.AIcallListenStartLockReleaseTimeoutSeconds = 0 },
+			expectError: true,
+		},
+		{
+			name:        "a negative timing value is rejected",
+			mutate:      func() { globalConfig.AIcallListenBufferTTLHours = -1 },
+			expectError: true,
+		},
+		{
+			name:        "a zero evaluate interval is rejected",
+			mutate:      func() { globalConfig.AIcallListenEvaluateIntervalSeconds = 0 },
+			expectError: true,
+		},
+		{
+			name:        "a zero turn-id TTL is rejected",
+			mutate:      func() { globalConfig.AIcallListenTurnPipecatcallIDTTLSeconds = 0 },
+			expectError: true,
+		},
+		{
+			name: "a confbridge wait budget that outlasts the goroutine timeout is rejected",
+			// The poll runs INSIDE the goroutine timeout and needs headroom for
+			// the RPCs each poll makes.
+			mutate:      func() { globalConfig.AIcallListenConfbridgeReadyMaxWaitSeconds = 50 },
+			expectError: true,
+		},
+		{
+			name: "a goroutine timeout that outlasts the lock TTL is rejected",
+			// The lock must outlive the goroutine holding it, or it can expire
+			// under a goroutine still legitimately working.
+			mutate:      func() { globalConfig.AIcallListenEnsureGoroutineTimeoutSeconds = 70 },
+			expectError: true,
+		},
+		{
+			name:        "equal values are rejected -- the ordering is STRICT",
+			mutate:      func() { globalConfig.AIcallListenEnsureGoroutineTimeoutSeconds = 30 },
+			expectError: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			SetListenDefaultsForTest()
+			defer SetListenDefaultsForTest()
+
+			tt.mutate()
+
+			err := Validate()
+			if tt.expectError && err == nil {
+				t.Fatalf("expected a validation error, got none")
+			}
+			if !tt.expectError && err != nil {
+				t.Fatalf("expected no validation error. err: %v", err)
+			}
+		})
+	}
+}
+
+// Test_Validate_ErrorNamesEveryOffendingValue pins that the failure message is
+// actionable: an operator must be able to read which flag is wrong straight off
+// the startup log, without bisecting their env.
+func Test_Validate_ErrorNamesEveryOffendingValue(t *testing.T) {
+	SetListenDefaultsForTest()
+	defer SetListenDefaultsForTest()
+
+	globalConfig.AIcallListenConfbridgeReadyPollIntervalSeconds = 0
+	globalConfig.AIcallListenStartLockReleaseTimeoutSeconds = 0
+
+	err := Validate()
+	if err == nil {
+		t.Fatalf("expected a validation error")
+	}
+
+	for _, want := range []string{
+		"aicall_listen_confbridge_ready_poll_interval_seconds",
+		"aicall_listen_start_lock_release_timeout_seconds",
+	} {
+		if !strings.Contains(err.Error(), want) {
+			t.Errorf("the error must name %s. got: %v", want, err)
+		}
 	}
 }

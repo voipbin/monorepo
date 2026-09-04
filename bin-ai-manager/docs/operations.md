@@ -188,3 +188,26 @@ one AIcall, further start attempts stand down as `skipped_start_locked` until
 then, and the next panel open after expiry works normally. Do not delete this key
 by hand to "unstick" a call: if a live goroutine still holds it, doing so
 reintroduces exactly the double-writer race the lock exists to prevent.
+
+**Residual: a terminate racing the transcribe-start RPC.** The listen-start
+sequence re-reads the AIcall under the start lock, immediately before its
+speculative state write, and stands down as `skipped_not_listenable` if the
+AIcall has been terminated or deleted while the confbridge-readiness wait was
+running. Teardown deliberately does not take that lock, so one narrow window
+remains: a terminate landing between that re-read and
+`TranscribeV1TranscribeStart` can clear the resolver membership and
+`listen_call_id` a moment before the transcribe is created, leaving a live STT
+session with no listener registered. It is sub-RPC in width and self-limiting
+(the session's audio transport ends when the call itself ends), and it is
+accepted rather than closed by widening the lock over teardown. It surfaces, if
+at all, as a `started` outcome on an AIcall that never receives a segment.
+
+**Startup validation of the listen timing flags.** The process refuses to start
+if any listen timing value is non-positive, or if
+`aicall_listen_confbridge_ready_max_wait_seconds` <
+`aicall_listen_ensure_goroutine_timeout_seconds` <
+`aicall_listen_start_lock_ttl_seconds` does not hold. The error names the
+offending values. It is not clamped: these are deploy-time typos, and a refused
+start is easier to diagnose than a process quietly disagreeing with its own
+configuration. The check runs even with `AICALL_LISTEN_ENABLED=false`, so a
+broken value cannot lie dormant until the flag is turned on.

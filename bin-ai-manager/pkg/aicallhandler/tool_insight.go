@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
@@ -1092,6 +1093,12 @@ func (h *aicallHandler) toolHandleGetCallTranscript(ctx context.Context, c *aica
 // mid-call; this is the backstop for when the model ignores that. It is
 // generous on purpose -- the point is to stop a runaway generation from landing
 // a wall of text in the agent's panel mid-call, not to police phrasing.
+//
+// COUNTED IN CHARACTERS (runes), NOT BYTES (review round 1 finding LOW-1). The
+// cap exists to bound what a human reads in a panel, and no downstream storage
+// imposes a byte limit here -- so a len() byte count would silently cut a
+// Korean or Japanese note to roughly a third of the intended length while the
+// error message still said "characters".
 const notifyAgentMaxMessageLen = 500
 
 // parseNotifyAgentMessage extracts and validates the note from a notify_agent
@@ -1109,8 +1116,8 @@ func parseNotifyAgentMessage(arguments string) (string, error) {
 		return "", fmt.Errorf("message is required and must not be empty")
 	}
 
-	if len(msg) > notifyAgentMaxMessageLen {
-		return "", fmt.Errorf("message is too long: %d characters, maximum %d", len(msg), notifyAgentMaxMessageLen)
+	if msgLen := utf8.RuneCountInString(msg); msgLen > notifyAgentMaxMessageLen {
+		return "", fmt.Errorf("message is too long: %d characters, maximum %d", msgLen, notifyAgentMaxMessageLen)
 	}
 
 	return msg, nil

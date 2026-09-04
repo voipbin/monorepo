@@ -74,6 +74,48 @@ func listenStartLockKey(aicallID uuid.UUID) string {
 // (design §5.2.2, review round 15 finding HIGH-1(b)).
 const listenStartLockReleaseScript = `if redis.call("GET",KEYS[1])==ARGV[1] then return redis.call("DEL",KEYS[1]) else return 0 end`
 
+// The three write scripts below all exist for ONE reason (review round 1
+// finding MEDIUM-4): a write followed by a SEPARATE Expire is not atomic, and a
+// failed Expire leaves the key with NO TTL at all. For the resolver set that
+// defeats listenResolverTTL outright -- the entry, and with it this AIcall's
+// subscription to a transcribe session's segments, would survive a lost cleanup
+// forever rather than for the bounded twelve hours the TTL promises.
+//
+// EVAL rather than a pipeline, matching listenStartLockReleaseScript above --
+// the one multi-command primitive this file already had. A TxPipeline would
+// also be atomic, but mixing two idioms for the same guarantee in one file
+// invites the next reader to assume the difference is meaningful.
+//
+// Each returns the EXPIRE result (1 on success), which callers ignore; what
+// matters is that neither command can land without the other.
+const (
+	// listenSetAddExpireScript: SADD one member, then (re)arm the key's TTL.
+	listenSetAddExpireScript = `redis.call("SADD",KEYS[1],ARGV[1]) return redis.call("EXPIRE",KEYS[1],ARGV[2])`
+
+	// listenListPushExpireScript: RPUSH one line, then (re)arm the key's TTL.
+	listenListPushExpireScript = `redis.call("RPUSH",KEYS[1],ARGV[1]) return redis.call("EXPIRE",KEYS[1],ARGV[2])`
+
+	// listenListPushTrimExpireScript: RPUSH one line, trim the list back to a
+	// bounded tail, then (re)arm the key's TTL. The trim joins the same script
+	// rather than staying a third round trip -- an untrimmed window between two
+	// commands is harmless, but there is no reason to keep the window open once
+	// the atomic form is already being used here.
+	listenListPushTrimExpireScript = `redis.call("RPUSH",KEYS[1],ARGV[1]) redis.call("LTRIM",KEYS[1],ARGV[3],-1) return redis.call("EXPIRE",KEYS[1],ARGV[2])`
+)
+
+// listenTTLSeconds renders a TTL for Redis's EXPIRE, which takes whole seconds.
+//
+// It floors at 1: EXPIRE with 0 (or a negative) DELETES the key immediately,
+// so a sub-second TTL -- only reachable from a test or a misconfiguration --
+// must never be allowed to turn a write into a delete.
+func listenTTLSeconds(ttl time.Duration) int {
+	if sec := int(ttl.Seconds()); sec > 0 {
+		return sec
+	}
+
+	return 1
+}
+
 // ListenAIcallIDsGet returns every AIcall id currently listening to the given
 // transcribe session.
 //
@@ -108,14 +150,14 @@ func (h *handler) ListenAIcallIDsGet(ctx context.Context, transcribeID uuid.UUID
 
 // ListenAIcallIDAdd registers this AIcall as a listener on the transcribe
 // session. Every listener adds only itself, so cleanup can remove only itself.
+//
+// The add and its TTL are ONE atomic EVAL -- see listenSetAddExpireScript for
+// why a membership that outlives its TTL is the specific failure this prevents.
 func (h *handler) ListenAIcallIDAdd(ctx context.Context, transcribeID uuid.UUID, aicallID uuid.UUID, ttl time.Duration) error {
-	key := listenTranscribeKey(transcribeID)
-
-	if err := h.Cache.SAdd(ctx, key, aicallID.String()).Err(); err != nil {
-		return err
-	}
-
-	return h.Cache.Expire(ctx, key, ttl).Err()
+	return h.Cache.Eval(ctx, listenSetAddExpireScript,
+		[]string{listenTranscribeKey(transcribeID)},
+		aicallID.String(), listenTTLSeconds(ttl),
+	).Err()
 }
 
 // ListenAIcallIDRemove removes only THIS AIcall's membership.
@@ -129,14 +171,15 @@ func (h *handler) ListenAIcallIDRemove(ctx context.Context, transcribeID uuid.UU
 
 // ListenPendingPush appends one transcript line to the not-yet-evaluated
 // buffer.
+//
+// Push and TTL are ONE atomic EVAL, for the same reason ListenAIcallIDAdd's
+// are: a buffer that lost its TTL is a key nothing will ever reclaim if its
+// AIcall's stop path is missed.
 func (h *handler) ListenPendingPush(ctx context.Context, aicallID uuid.UUID, line string, ttl time.Duration) error {
-	key := listenPendingKey(aicallID)
-
-	if err := h.Cache.RPush(ctx, key, line).Err(); err != nil {
-		return err
-	}
-
-	return h.Cache.Expire(ctx, key, ttl).Err()
+	return h.Cache.Eval(ctx, listenListPushExpireScript,
+		[]string{listenPendingKey(aicallID)},
+		line, listenTTLSeconds(ttl),
+	).Err()
 }
 
 // ListenPendingPopAll atomically drains the pending buffer.
@@ -160,22 +203,18 @@ func (h *handler) ListenPendingPopAll(ctx context.Context, aicallID uuid.UUID) (
 // ListenWindowPush appends one transcript line to the rolling window and trims
 // it back to windowSize.
 //
-// A second list rather than a counter on the first: both operations here are
-// single atomic Redis commands, so no cross-command consistency reasoning is
-// needed. A line briefly present in the window but not yet popped from pending
-// is harmless -- it is context either way.
+// A second list rather than a counter on the first: a line briefly present in
+// the window but not yet popped from pending is harmless -- it is context
+// either way.
+//
+// Push, trim and TTL are ONE atomic EVAL (listenListPushTrimExpireScript), so
+// the window can neither grow past its bound nor lose its TTL because a later
+// command in the sequence failed.
 func (h *handler) ListenWindowPush(ctx context.Context, aicallID uuid.UUID, line string, windowSize int, ttl time.Duration) error {
-	key := listenWindowKey(aicallID)
-
-	if err := h.Cache.RPush(ctx, key, line).Err(); err != nil {
-		return err
-	}
-
-	if err := h.Cache.LTrim(ctx, key, int64(-windowSize), -1).Err(); err != nil {
-		return err
-	}
-
-	return h.Cache.Expire(ctx, key, ttl).Err()
+	return h.Cache.Eval(ctx, listenListPushTrimExpireScript,
+		[]string{listenWindowKey(aicallID)},
+		line, listenTTLSeconds(ttl), -windowSize,
+	).Err()
 }
 
 // ListenWindowGet returns the rolling window, oldest line first.
@@ -231,15 +270,14 @@ func (h *handler) ListenTurnCountIncr(ctx context.Context, aicallID uuid.UUID, t
 // provably not a listen turn, whatever the AIcall row happens to say.
 //
 // Self-expiring: the entry only needs to outlive one turn, so it uses its own
-// short TTL and needs no explicit cleanup.
+// short TTL and needs no explicit cleanup -- which is exactly why the add and
+// the TTL go out as ONE atomic EVAL. Nothing else ever deletes this key, so a
+// membership that lost its TTL is a leak with no other reclaimer.
 func (h *handler) ListenTurnPipecatcallIDAdd(ctx context.Context, aicallID uuid.UUID, pipecatcallID uuid.UUID, ttl time.Duration) error {
-	key := listenTurnPipecatcallIDKey(aicallID)
-
-	if err := h.Cache.SAdd(ctx, key, pipecatcallID.String()).Err(); err != nil {
-		return err
-	}
-
-	return h.Cache.Expire(ctx, key, ttl).Err()
+	return h.Cache.Eval(ctx, listenSetAddExpireScript,
+		[]string{listenTurnPipecatcallIDKey(aicallID)},
+		pipecatcallID.String(), listenTTLSeconds(ttl),
+	).Err()
 }
 
 // ListenTurnPipecatcallIDIsMember reports whether the given pipecatcall id was

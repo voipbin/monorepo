@@ -10,6 +10,7 @@ import (
 	cmdtmf "monorepo/bin-call-manager/models/dtmf"
 	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
 
+	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 )
 
@@ -51,6 +52,15 @@ func (h *aicallHandler) EventCMConfbridgeLeaved(ctx context.Context, evt *cmconf
 
 // EventCMCallHangup handles the call-manager's call_hangup event
 func (h *aicallHandler) EventCMCallHangup(ctx context.Context, evt *cmcall.Call) {
+	// The event's id is unvalidated wire input. A zero id addresses no call,
+	// and both lookups below would then match on a nil-uuid column value that
+	// is the DEFAULT for unrelated rows -- so reject it here, once, ahead of
+	// either path (review round 1 security finding MEDIUM-2).
+	if evt.ID == uuid.Nil {
+		logrus.WithField("func", "EventCMCallHangup").Warn("Ignoring a call hangup event with a nil call id.")
+		return
+	}
+
 	// Existing path, unchanged: the AIcall whose reference IS this call.
 	if cc, err := h.GetByReferenceID(ctx, evt.ID); err == nil {
 		_, _ = h.ProcessTerminate(ctx, cc.ID)

@@ -1032,3 +1032,133 @@ func Test_stopListenByCallID_FinalFlush(t *testing.T) {
 		t.Errorf("the final flush must run exactly one turn. got: %v", delta)
 	}
 }
+
+// Test_stopListenByCallID_NilCallID is the direct regression test for review
+// round 1's security MEDIUM-2.
+//
+// callID arrives from an unvalidated call_hangup event field, and the migration
+// declares listen_call_id NOT NULL DEFAULT 0x00... -- so uuid.Nil is the value
+// EVERY non-listening contact_case AIcall carries, across every tenant. A zero
+// id must therefore never reach the query at all.
+func Test_stopListenByCallID_NilCallID(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	m := newListenTurnHarness(mc)
+	ctx := context.Background()
+
+	// Zero calls of any kind: no list, no drain, no clear, no stop.
+	m.db.EXPECT().AIcallList(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+	m.cache.EXPECT().ListenPendingPopAll(gomock.Any(), gomock.Any()).Times(0)
+	m.cache.EXPECT().ListenStateClear(gomock.Any(), gomock.Any()).Times(0)
+	m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+	m.h.stopListenByCallID(ctx, uuid.Nil)
+}
+
+// Test_EventCMCallHangup_NilCallID pins the same guard one layer up, at the
+// event boundary itself -- neither the reference lookup nor the listen sweep
+// may run for a zero id.
+func Test_EventCMCallHangup_NilCallID(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	m := newListenTurnHarness(mc)
+
+	m.db.EXPECT().AIcallGetByReferenceID(gomock.Any(), gomock.Any()).Times(0)
+	m.db.EXPECT().AIcallList(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+	m.h.EventCMCallHangup(context.Background(), &cmcall.Call{})
+}
+
+// Test_stopListenByCallID_Paginates is the direct regression test for review
+// round 1's MEDIUM-2 (code review).
+//
+// The lookup was a single fixed page of 10 with no continuation, so an
+// eleventh listening AIcall was silently never cleaned up: its resolver
+// membership survived, its listen_call_id survived, and if it owned the
+// transcribe session that session was never stopped.
+func Test_stopListenByCallID_Paginates(t *testing.T) {
+	ctx := context.Background()
+
+	// A full first page forces a second fetch; the short second page proves
+	// exhaustion and ends the sweep.
+	firstPage := []*aicall.AIcall{}
+	for i := 0; i < listenStopPageSize; i++ {
+		tm := time.Date(2026, 9, 4, 12, 0, i, 0, time.UTC)
+		firstPage = append(firstPage, &aicall.AIcall{
+			Identity:      commonidentity.Identity{ID: uuid.Must(uuid.NewV4())},
+			ReferenceType: aicall.ReferenceTypeContactCase,
+			TMCreate:      &tm,
+		})
+	}
+	lastTM := firstPage[len(firstPage)-1].TMCreate
+	expectedToken := lastTM.UTC().Format(utilhandler.ISO8601Layout)
+
+	overflow := &aicall.AIcall{
+		Identity:      commonidentity.Identity{ID: uuid.Must(uuid.NewV4())},
+		ReferenceType: aicall.ReferenceTypeContactCase,
+	}
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	m := newListenTurnHarness(mc)
+
+	filters := map[aicall.Field]any{
+		aicall.FieldReferenceType: aicall.ReferenceTypeContactCase,
+		aicall.FieldListenCallID:  ltCallID,
+		aicall.FieldDeleted:       false,
+	}
+
+	gomock.InOrder(
+		m.db.EXPECT().AIcallList(ctx, uint64(listenStopPageSize), "", filters).Return(firstPage, nil),
+		// The continuation token is the last row's tm_create, in the SAME
+		// fixed-precision layout AIcallList's own default token uses.
+		m.db.EXPECT().AIcallList(ctx, uint64(listenStopPageSize), expectedToken, filters).
+			Return([]*aicall.AIcall{overflow}, nil),
+	)
+
+	// Every row on BOTH pages is torn down -- the eleventh included.
+	for _, row := range append(append([]*aicall.AIcall{}, firstPage...), overflow) {
+		m.cache.EXPECT().ListenPendingPopAll(ctx, row.ID).Return(nil, nil)
+		m.cache.EXPECT().ListenStateClear(ctx, row.ID).Return(nil)
+		m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(ctx, row.ID, gomock.Any()).Return(nil)
+	}
+
+	m.h.stopListenByCallID(ctx, ltCallID)
+}
+
+// Test_stopListenByCallID_PageBudget pins that the sweep terminates rather
+// than paging forever, and that hitting the budget is not silent.
+func Test_stopListenByCallID_PageBudget(t *testing.T) {
+	ctx := context.Background()
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	m := newListenTurnHarness(mc)
+
+	// Always a full page: the source never proves exhaustion.
+	m.db.EXPECT().AIcallList(ctx, uint64(listenStopPageSize), gomock.Any(), gomock.Any()).
+		DoAndReturn(func(_ context.Context, size uint64, _ string, _ map[aicall.Field]any) ([]*aicall.AIcall, error) {
+			rows := []*aicall.AIcall{}
+			for i := uint64(0); i < size; i++ {
+				tm := time.Date(2026, 9, 4, 12, 0, int(i), 0, time.UTC)
+				rows = append(rows, &aicall.AIcall{
+					Identity:      commonidentity.Identity{ID: uuid.Must(uuid.NewV4())},
+					ReferenceType: aicall.ReferenceTypeContactCase,
+					TMCreate:      &tm,
+				})
+			}
+			return rows, nil
+		}).Times(listenStopMaxPages)
+
+	m.cache.EXPECT().ListenPendingPopAll(ctx, gomock.Any()).Return(nil, nil).AnyTimes()
+	m.cache.EXPECT().ListenStateClear(ctx, gomock.Any()).Return(nil).AnyTimes()
+	m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(ctx, gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+
+	// The assertion that matters: it returns. Times(listenStopMaxPages) above
+	// is what proves it stopped at the budget rather than looping.
+	m.h.stopListenByCallID(ctx, ltCallID)
+}

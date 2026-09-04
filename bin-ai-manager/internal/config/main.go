@@ -1,7 +1,9 @@
 package config
 
 import (
+	"fmt"
 	"net/http"
+	"strings"
 	"sync"
 
 	joonix "github.com/joonix/log"
@@ -239,6 +241,85 @@ func SetAIcallContactCaseRecreateRateLimitMinutesForTest(minutes int) {
 // SetAIcallSendCooldownSecondsForTest overrides the send cooldown in tests.
 func SetAIcallSendCooldownSecondsForTest(seconds int) {
 	globalConfig.AIcallSendCooldownSeconds = seconds
+}
+
+// Validate checks the loaded configuration for values that would make the
+// service misbehave at runtime, and returns an error naming every offending
+// value. Call it AFTER LoadGlobalConfig and BEFORE anything starts serving.
+//
+// IT FAILS THE PROCESS, IT DOES NOT CLAMP (review round 1 finding MEDIUM-1).
+// Every condition below is a deploy-time typo in an env var, not a state a
+// running system can drift into -- silently substituting a "sensible" value
+// would leave the operator's own configuration disagreeing with the process's
+// actual behaviour, which is strictly harder to diagnose than a refused start.
+func Validate() error {
+	if errListen := validateListenConfig(); errListen != nil {
+		return errListen
+	}
+
+	return nil
+}
+
+// validateListenConfig enforces the Insight AI listen flags' two standing
+// invariants.
+//
+// (1) EVERY TIMING VALUE IS STRICTLY POSITIVE. Two of these are actively
+// dangerous at zero, and neither is caught anywhere else:
+// AICALL_LISTEN_CONFBRIDGE_READY_POLL_INTERVAL_SECONDS=0 turns
+// waitForConfbridgeReady's select into a busy-loop that spins one pair of RPCs
+// per iteration for the whole wait budget, and
+// AICALL_LISTEN_START_LOCK_RELEASE_TIMEOUT_SECONDS=0 makes every lock release
+// run on an already-expired context, so EVERY release silently no-ops and every
+// per-AIcall start lock strands for its full TTL.
+//
+// (2) THE ORDERING ConfbridgeReadyMaxWait < EnsureGoroutineTimeout <
+// StartLockTTL. runListenStart's confbridge poll runs INSIDE the goroutine
+// timeout and needs headroom for the RPCs each poll makes, and the start lock
+// must outlive the goroutine that holds it or the lock can expire under a
+// goroutine still legitimately working (which is precisely the clobbering the
+// lock exists to prevent). Test_ListenConfigDefaults asserts this ordering, but
+// only against values the test itself sets -- it structurally cannot catch a
+// real environment-variable override, which is what this function is for.
+//
+// It runs regardless of AIcallListenEnabled: a flag-off deploy carrying a
+// broken timing value is a deploy that breaks the moment the flag is turned on,
+// and finding that out at rollout time is the whole failure this prevents.
+func validateListenConfig() error {
+	positives := []struct {
+		name  string
+		value int
+	}{
+		{"aicall_listen_evaluate_interval_seconds", globalConfig.AIcallListenEvaluateIntervalSeconds},
+		{"aicall_listen_buffer_ttl_hours", globalConfig.AIcallListenBufferTTLHours},
+		{"aicall_listen_turn_pipecatcall_id_ttl_seconds", globalConfig.AIcallListenTurnPipecatcallIDTTLSeconds},
+		{"aicall_listen_confbridge_ready_poll_interval_seconds", globalConfig.AIcallListenConfbridgeReadyPollIntervalSeconds},
+		{"aicall_listen_confbridge_ready_max_wait_seconds", globalConfig.AIcallListenConfbridgeReadyMaxWaitSeconds},
+		{"aicall_listen_ensure_goroutine_timeout_seconds", globalConfig.AIcallListenEnsureGoroutineTimeoutSeconds},
+		{"aicall_listen_start_lock_ttl_seconds", globalConfig.AIcallListenStartLockTTLSeconds},
+		{"aicall_listen_start_lock_release_timeout_seconds", globalConfig.AIcallListenStartLockReleaseTimeoutSeconds},
+	}
+
+	invalid := []string{}
+	for _, p := range positives {
+		if p.value <= 0 {
+			invalid = append(invalid, fmt.Sprintf("%s must be > 0, got %d", p.name, p.value))
+		}
+	}
+	if len(invalid) > 0 {
+		return errors.Errorf("invalid listen configuration: %s", strings.Join(invalid, "; "))
+	}
+
+	maxWait := globalConfig.AIcallListenConfbridgeReadyMaxWaitSeconds
+	goroutineTimeout := globalConfig.AIcallListenEnsureGoroutineTimeoutSeconds
+	lockTTL := globalConfig.AIcallListenStartLockTTLSeconds
+	if maxWait >= goroutineTimeout || goroutineTimeout >= lockTTL {
+		return errors.Errorf(
+			"invalid listen configuration: aicall_listen_confbridge_ready_max_wait_seconds (%d) < aicall_listen_ensure_goroutine_timeout_seconds (%d) < aicall_listen_start_lock_ttl_seconds (%d) must hold",
+			maxWait, goroutineTimeout, lockTTL,
+		)
+	}
+
+	return nil
 }
 
 // InitPrometheus initializes Prometheus metrics server.

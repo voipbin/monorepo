@@ -2,10 +2,12 @@ package aicallhandler
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"testing"
 	"time"
+	"unicode/utf8"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -3114,6 +3116,73 @@ func Test_toolHandleNotifyAgent(t *testing.T) {
 			res := h.toolHandleNotifyAgent(ctx, c, tc, tt.listenTurn)
 			if res.Result != tt.expectResult {
 				t.Errorf("result mismatch. expected: %q, got: %q (message: %q)", tt.expectResult, res.Result, res.Message)
+			}
+		})
+	}
+}
+
+// Test_parseNotifyAgentMessage_LengthIsCountedInRunes is the direct regression
+// test for review round 1's LOW-1.
+//
+// The cap was measured with len() (bytes) while the error message said
+// "characters", so a Korean or Japanese note -- 3 bytes per character in UTF-8
+// -- was cut at roughly a third of the documented length. The cap bounds what a
+// human reads in a panel, so runes are the correct unit.
+func Test_parseNotifyAgentMessage_LengthIsCountedInRunes(t *testing.T) {
+	tests := []struct {
+		name string
+
+		message string
+
+		expectError bool
+	}{
+		{
+			name:        "an ASCII message at exactly the cap is accepted",
+			message:     strings.Repeat("x", notifyAgentMaxMessageLen),
+			expectError: false,
+		},
+		{
+			name:        "an ASCII message one over the cap is rejected",
+			message:     strings.Repeat("x", notifyAgentMaxMessageLen+1),
+			expectError: true,
+		},
+		{
+			name: "a multi-byte message at exactly the cap is accepted",
+			// 500 Hangul syllables = 1500 bytes. Under the old byte cap this
+			// was rejected at 167 characters.
+			message:     strings.Repeat("가", notifyAgentMaxMessageLen),
+			expectError: false,
+		},
+		{
+			name:        "a multi-byte message one CHARACTER over the cap is rejected",
+			message:     strings.Repeat("가", notifyAgentMaxMessageLen+1),
+			expectError: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			arguments, err := json.Marshal(map[string]string{"message": tt.message})
+			if err != nil {
+				t.Fatalf("could not build the arguments. err: %v", err)
+			}
+
+			got, errParse := parseNotifyAgentMessage(string(arguments))
+			if tt.expectError {
+				if errParse == nil {
+					t.Fatalf("expected an error")
+				}
+				if !strings.Contains(errParse.Error(), "characters") {
+					t.Errorf("the error must state the unit it actually measures. got: %v", errParse)
+				}
+				return
+			}
+
+			if errParse != nil {
+				t.Fatalf("unexpected error. err: %v", errParse)
+			}
+			if got != tt.message {
+				t.Errorf("message mismatch. expected %d runes, got %d", utf8.RuneCountInString(tt.message), utf8.RuneCountInString(got))
 			}
 		})
 	}

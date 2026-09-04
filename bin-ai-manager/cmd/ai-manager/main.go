@@ -53,6 +53,14 @@ var rootCmd = &cobra.Command{
 	Long:  "AI Manager Service for VoIPbin platform",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		config.LoadGlobalConfig()
+
+		// Fail fast on a deploy-time misconfiguration, BEFORE anything starts
+		// serving. Returning the error here surfaces it through
+		// rootCmd.Execute()'s own logrus.Fatalf in main().
+		if errValidate := config.Validate(); errValidate != nil {
+			return errValidate
+		}
+
 		config.InitPrometheus()
 		return runDaemon()
 	},

@@ -24,6 +24,7 @@ import (
 	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
 
 	"github.com/gofrs/uuid"
+	"github.com/prometheus/client_golang/prometheus/testutil"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -602,6 +603,32 @@ func newStartListenHarness(mc *gomock.Controller) *startListenHarness {
 	}
 }
 
+// expectListenLivenessRecheck wires the fresh, under-the-lock AIcall re-read
+// startListenTranscribe performs before its speculative pre-write (review round
+// 1 finding HIGH-1). It is declared FIRST in every test that acquires the lock,
+// because gomock consumes same-signature expectations in declaration order and
+// this read always happens before UpdateListenState's own.
+func (m *startListenHarness) expectListenLivenessRecheck(ctx context.Context, cur *aicall.AIcall) *gomock.Call {
+	return m.db.EXPECT().AIcallGet(ctx, ltAIcallID).Return(cur, nil)
+}
+
+// listenReusableRow builds a transcribe row that PASSES
+// pickReusableListenTranscribe's ownership re-verification -- the platform
+// sentinel customer id, this call's id as the reference, not deleted. Tests
+// asserting reuse must use this rather than a bare id, because a bare id is now
+// (correctly) rejected as unverifiable.
+func listenReusableRow(id uuid.UUID) tmtranscribe.Transcribe {
+	return tmtranscribe.Transcribe{
+		Identity: commonidentity.Identity{
+			ID:         id,
+			CustomerID: cmcustomer.IDAIManagerListen,
+		},
+		ReferenceType: tmtranscribe.ReferenceTypeCall,
+		ReferenceID:   ltCallID,
+		Status:        tmtranscribe.StatusProgressing,
+	}
+}
+
 // expectUpdateListenState wires the DB+Redis pair UpdateListenState performs
 // for one write, returning nothing -- callers add ordering constraints
 // themselves where the ORDER is what is under test.
@@ -638,6 +665,7 @@ func Test_runListenStart_EventOrdering(t *testing.T) {
 		m.util.EXPECT().UUIDCreate().Return(lockToken)
 		m.cache.EXPECT().ListenStartLockAcquire(ctx, ltAIcallID, lockToken.String(), gomock.Any()).Return(true, nil)
 		m.cache.EXPECT().ListenStartLockRelease(gomock.Any(), ltAIcallID, lockToken.String()).Return(nil)
+		m.expectListenLivenessRecheck(ctx, c)
 		m.req.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(10), gomock.Any()).Return(nil, nil)
 		m.util.EXPECT().UUIDCreate().Return(newTranscribeID)
 
@@ -673,12 +701,21 @@ func Test_runListenStart_EventOrdering(t *testing.T) {
 		m.util.EXPECT().UUIDCreate().Return(lockToken)
 		m.cache.EXPECT().ListenStartLockAcquire(ctx, ltAIcallID, lockToken.String(), gomock.Any()).Return(true, nil)
 		m.cache.EXPECT().ListenStartLockRelease(gomock.Any(), ltAIcallID, lockToken.String()).Return(nil)
+		m.expectListenLivenessRecheck(ctx, c)
 		m.req.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(10), gomock.Any()).Return(nil, nil)
 		m.util.EXPECT().UUIDCreate().Return(newTranscribeID)
 
+		// UpdateListenState's own fresh read fails.
 		m.db.EXPECT().AIcallGet(ctx, ltAIcallID).Return(nil, fmt.Errorf("db down"))
 
-		// Fail closed: nothing was created, so there is nothing to roll back.
+		// The pre-write failure now ROLLS BACK rather than assuming there is
+		// nothing to undo (review round 1 finding MEDIUM-4): the DB row is
+		// written before the Redis SADD, so a SADD failure genuinely leaves
+		// state behind.
+		m.cache.EXPECT().ListenAIcallIDRemove(ctx, newTranscribeID, ltAIcallID).Return(nil)
+		m.db.EXPECT().AIcallGet(ctx, ltAIcallID).Return(nil, fmt.Errorf("db down"))
+
+		// Fail closed: nothing was created, so nothing is billed.
 		m.req.EXPECT().TranscribeV1TranscribeStart(
 			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
@@ -706,6 +743,7 @@ func Test_runListenStart_EventOrdering(t *testing.T) {
 		m.util.EXPECT().UUIDCreate().Return(lockToken)
 		m.cache.EXPECT().ListenStartLockAcquire(ctx, ltAIcallID, lockToken.String(), gomock.Any()).Return(true, nil)
 		m.cache.EXPECT().ListenStartLockRelease(gomock.Any(), ltAIcallID, lockToken.String()).Return(nil)
+		m.expectListenLivenessRecheck(ctx, c)
 		m.req.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(10), gomock.Any()).Return(nil, nil)
 		m.util.EXPECT().UUIDCreate().Return(newTranscribeID)
 		m.expectUpdateListenState(ctx, c, newTranscribeID)
@@ -749,13 +787,14 @@ func Test_runListenStart_EventOrdering(t *testing.T) {
 		gomock.InOrder(
 			m.req.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(10), gomock.Any()).Return(nil, nil),
 			m.req.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(10), gomock.Any()).Return(
-				[]tmtranscribe.Transcribe{{Identity: commonidentity.Identity{ID: winnerID}}}, nil),
+				[]tmtranscribe.Transcribe{listenReusableRow(winnerID)}, nil),
 		)
 		m.util.EXPECT().UUIDCreate().Return(newTranscribeID)
 
-		// pre-write against our own speculative id, then a second write
-		// against the WINNER's id with owns=false.
-		m.db.EXPECT().AIcallGet(ctx, ltAIcallID).Return(c, nil).Times(2)
+		// One liveness re-read under the lock, then the pre-write against our
+		// own speculative id, then a second write against the WINNER's id with
+		// owns=false.
+		m.db.EXPECT().AIcallGet(ctx, ltAIcallID).Return(c, nil).Times(3)
 		m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(ctx, ltAIcallID, gomock.Any()).Return(nil).Times(2)
 		m.cache.EXPECT().ListenAIcallIDAdd(ctx, newTranscribeID, ltAIcallID, listenResolverTTL).Return(nil)
 		m.cache.EXPECT().ListenAIcallIDAdd(ctx, winnerID, ltAIcallID, listenResolverTTL).Return(nil)
@@ -792,6 +831,7 @@ func Test_runListenStart_EventOrdering(t *testing.T) {
 		m.util.EXPECT().UUIDCreate().Return(lockToken)
 		m.cache.EXPECT().ListenStartLockAcquire(ctx, ltAIcallID, lockToken.String(), gomock.Any()).Return(true, nil)
 		m.cache.EXPECT().ListenStartLockRelease(gomock.Any(), ltAIcallID, lockToken.String()).Return(nil)
+		m.expectListenLivenessRecheck(ctx, c)
 		m.req.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(10), gomock.Any()).Return(nil, nil).Times(2)
 		m.util.EXPECT().UUIDCreate().Return(newTranscribeID)
 		m.expectUpdateListenState(ctx, c, newTranscribeID)
@@ -892,6 +932,7 @@ func Test_runListenStart_StartLock(t *testing.T) {
 
 		m.util.EXPECT().UUIDCreate().Return(lockToken)
 		m.cache.EXPECT().ListenStartLockAcquire(ctx, ltAIcallID, lockToken.String(), gomock.Any()).Return(true, nil)
+		m.expectListenLivenessRecheck(ctx, c)
 		m.req.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(10), gomock.Any()).
 			DoAndReturn(func(context.Context, string, uint64, map[tmtranscribe.Field]any) ([]tmtranscribe.Transcribe, error) {
 				// The goroutine reaches its own outer timeout while still
@@ -991,6 +1032,7 @@ func Test_runListenStart_StartLock(t *testing.T) {
 		m.cache.EXPECT().ListenStartLockAcquire(ctx, ltAIcallID, lockToken.String(), gomock.Any()).Return(true, nil)
 		m.cache.EXPECT().ListenStartLockRelease(gomock.Any(), ltAIcallID, lockToken.String()).
 			Return(fmt.Errorf("release failed"))
+		m.expectListenLivenessRecheck(ctx, c)
 		m.req.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(10), gomock.Any()).Return(nil, nil)
 		m.util.EXPECT().UUIDCreate().Return(newTranscribeID)
 		m.expectUpdateListenState(ctx, c, newTranscribeID)
@@ -1028,6 +1070,7 @@ func Test_runListenStart_StartLock(t *testing.T) {
 
 		m.util.EXPECT().UUIDCreate().Return(lockToken)
 		m.cache.EXPECT().ListenStartLockAcquire(ctx, ltAIcallID, lockToken.String(), gomock.Any()).Return(true, nil)
+		m.expectListenLivenessRecheck(ctx, c)
 		m.req.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(10), gomock.Any()).Return(nil, fmt.Errorf("stop here"))
 
 		// Never the other goroutine's token -- that is what makes the
@@ -1077,8 +1120,9 @@ func Test_runListenStart_StartLock(t *testing.T) {
 		m.cache.EXPECT().ListenStartLockAcquire(ctx, ltAIcallID, afterToken.String(), 1*time.Second).Return(true, nil)
 		m.cache.EXPECT().ListenStartLockRelease(gomock.Any(), ltAIcallID, afterToken.String()).Return(nil)
 		m.req.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(10), gomock.Any()).
-			Return([]tmtranscribe.Transcribe{{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("66660000-0000-4000-8000-000000000031")}}}, nil)
-		m.db.EXPECT().AIcallGet(ctx, ltAIcallID).Return(c, nil)
+			Return([]tmtranscribe.Transcribe{listenReusableRow(uuid.FromStringOrNil("66660000-0000-4000-8000-000000000031"))}, nil)
+		// One liveness re-read under the lock, plus UpdateListenState's own.
+		m.db.EXPECT().AIcallGet(ctx, ltAIcallID).Return(c, nil).Times(2)
 		m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(ctx, ltAIcallID, gomock.Any()).Return(nil)
 		m.cache.EXPECT().ListenAIcallIDAdd(ctx, gomock.Any(), ltAIcallID, listenResolverTTL).Return(nil)
 
@@ -1452,5 +1496,412 @@ func Test_waitForConfbridgeReady(t *testing.T) {
 func orderCalls(calls []*gomock.Call) {
 	for i := 1; i < len(calls); i++ {
 		calls[i].After(calls[i-1])
+	}
+}
+
+// Test_startListenTranscribe_LivenessRecheck is the direct regression test for
+// review round 1's HIGH-1.
+//
+// checkListenEligible's step 2 checks Status/TMDelete BEFORE
+// waitForConfbridgeReady, which can block for the whole confbridge-readiness
+// budget. Nothing re-checked the AIcall after that wait, so an AIcall
+// terminated (or deleted) during it went on to pre-write state and start a
+// BILLED STT session. The re-read under the start lock closes that.
+func Test_startListenTranscribe_LivenessRecheck(t *testing.T) {
+	lockToken := uuid.FromStringOrNil("88880000-0000-4000-8000-0000000000ff")
+	tmDelete := time.Date(2026, 9, 4, 0, 0, 0, 0, time.UTC)
+
+	tests := []struct {
+		name string
+
+		// The row as the FRESH under-the-lock read sees it -- deliberately
+		// different from the caller's in-hand copy, which is what the pre-wait
+		// check saw.
+		fresh *aicall.AIcall
+	}{
+		{
+			name: "terminated during the confbridge wait",
+			fresh: func() *aicall.AIcall {
+				c := listenEligibleAIcall()
+				c.Status = aicall.StatusTerminated
+				return c
+			}(),
+		},
+		{
+			name: "terminating during the confbridge wait",
+			fresh: func() *aicall.AIcall {
+				c := listenEligibleAIcall()
+				c.Status = aicall.StatusTerminating
+				return c
+			}(),
+		},
+		{
+			name: "deleted during the confbridge wait",
+			fresh: func() *aicall.AIcall {
+				c := listenEligibleAIcall()
+				c.TMDelete = &tmDelete
+				return c
+			}(),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			config.SetListenDefaultsForTest()
+
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			m := newStartListenHarness(mc)
+			ctx := context.Background()
+
+			// The caller's own copy still says progressing -- exactly the
+			// stale view checkListenEligible left behind before the wait.
+			c := listenEligibleAIcall()
+
+			m.util.EXPECT().UUIDCreate().Return(lockToken)
+			m.cache.EXPECT().ListenStartLockAcquire(ctx, ltAIcallID, lockToken.String(), gomock.Any()).Return(true, nil)
+			m.cache.EXPECT().ListenStartLockRelease(gomock.Any(), ltAIcallID, lockToken.String()).Return(nil)
+			m.db.EXPECT().AIcallGet(ctx, ltAIcallID).Return(tt.fresh, nil)
+
+			// NOTHING past the re-check: no list, no speculative id, no state
+			// write, and above all no billed transcribe.
+			m.req.EXPECT().TranscribeV1TranscribeList(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+			m.req.EXPECT().TranscribeV1TranscribeStart(
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+			).Times(0)
+			m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+			m.cache.EXPECT().ListenAIcallIDAdd(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+			before := testutil.ToFloat64(promListenStartTotal.WithLabelValues("skipped_not_listenable"))
+
+			res, err := m.h.startListenTranscribe(ctx, c, listenEligibleCall(), ltCallID)
+			if err != nil {
+				t.Fatalf("a no-longer-listenable aicall is not an error. err: %v", err)
+			}
+			if res != "skipped_not_listenable" {
+				t.Errorf("result mismatch. expected: skipped_not_listenable, got: %s", res)
+			}
+
+			// runListenStart is what actually emits the label, so emit it here
+			// the same way and assert the counter moved by exactly one.
+			promListenStartTotal.WithLabelValues(res).Inc()
+			if got := testutil.ToFloat64(promListenStartTotal.WithLabelValues("skipped_not_listenable")) - before; got != 1 {
+				t.Errorf("the outcome must be metered exactly once as skipped_not_listenable. got: %v", got)
+			}
+		})
+	}
+
+	t.Run("a failed re-read fails closed and starts nothing", func(t *testing.T) {
+		config.SetListenDefaultsForTest()
+
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		m := newStartListenHarness(mc)
+		ctx := context.Background()
+		c := listenEligibleAIcall()
+
+		m.util.EXPECT().UUIDCreate().Return(lockToken)
+		m.cache.EXPECT().ListenStartLockAcquire(ctx, ltAIcallID, lockToken.String(), gomock.Any()).Return(true, nil)
+		m.cache.EXPECT().ListenStartLockRelease(gomock.Any(), ltAIcallID, lockToken.String()).Return(nil)
+		m.db.EXPECT().AIcallGet(ctx, ltAIcallID).Return(nil, fmt.Errorf("db down"))
+
+		m.req.EXPECT().TranscribeV1TranscribeStart(
+			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+		).Times(0)
+
+		res, err := m.h.startListenTranscribe(ctx, c, listenEligibleCall(), ltCallID)
+		if err == nil {
+			t.Fatalf("expected an error")
+		}
+		if res != "failed" {
+			t.Errorf("result mismatch. expected: failed, got: %s", res)
+		}
+	})
+}
+
+// Test_runListenStart_TerminatedDuringConfbridgeWait exercises the SAME defect
+// through the whole detached stage, so the assertion is not merely about
+// startListenTranscribe in isolation: the confbridge wait really does run
+// first, and the transcribe start really is never reached afterwards.
+func Test_runListenStart_TerminatedDuringConfbridgeWait(t *testing.T) {
+	config.SetListenDefaultsForTest()
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	m := newStartListenHarness(mc)
+	ctx := context.Background()
+
+	lockToken := uuid.FromStringOrNil("88880000-0000-4000-8000-0000000001ff")
+	c := listenEligibleAIcall()
+
+	terminated := listenEligibleAIcall()
+	terminated.Status = aicall.StatusTerminated
+
+	// Step 7: the confbridge settles immediately -- the wait itself is not
+	// what is under test here.
+	m.req.EXPECT().CallV1CallGet(ctx, ltCallID).Return(listenEligibleCall(), nil)
+	m.req.EXPECT().CallV1ConfbridgeGet(ctx, ltConfID).Return(&cmconfbridge.Confbridge{
+		Status:         cmconfbridge.StatusProgressing,
+		ChannelCallIDs: map[string]uuid.UUID{"a": ltCallID, "b": ltAIcallID},
+	}, nil)
+
+	// Step 8: the AIcall was terminated while step 7 was polling.
+	m.util.EXPECT().UUIDCreate().Return(lockToken)
+	m.cache.EXPECT().ListenStartLockAcquire(ctx, ltAIcallID, lockToken.String(), gomock.Any()).Return(true, nil)
+	m.cache.EXPECT().ListenStartLockRelease(gomock.Any(), ltAIcallID, lockToken.String()).Return(nil)
+	m.db.EXPECT().AIcallGet(ctx, ltAIcallID).Return(terminated, nil)
+
+	m.req.EXPECT().TranscribeV1TranscribeStart(
+		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+	).Times(0)
+
+	before := testutil.ToFloat64(promListenStartTotal.WithLabelValues("skipped_not_listenable"))
+
+	m.h.runListenStart(ctx, &ai.AI{Type: ai.TypeInsight}, c, listenEligibleCase(), ltCallID, listenEligibleCall())
+
+	if got := testutil.ToFloat64(promListenStartTotal.WithLabelValues("skipped_not_listenable")) - before; got != 1 {
+		t.Errorf("the outcome must be metered exactly once as skipped_not_listenable. got: %v", got)
+	}
+}
+
+// Test_pickReusableListenTranscribe is the direct regression test for review
+// round 1's security MEDIUM-1: TranscribeV1TranscribeList's filter map is
+// caller-supplied and NOT server-enforced, so a returned row's ownership
+// fields must be re-verified before its id is adopted.
+func Test_pickReusableListenTranscribe(t *testing.T) {
+	goodID := uuid.FromStringOrNil("99990000-0000-4000-8000-000000000001")
+	otherCallID := uuid.FromStringOrNil("99990000-0000-4000-8000-0000000000aa")
+	tmDelete := time.Date(2026, 9, 4, 0, 0, 0, 0, time.UTC)
+
+	tests := []struct {
+		name string
+
+		rows []tmtranscribe.Transcribe
+
+		expectID uuid.UUID
+		expectOK bool
+	}{
+		{
+			name:     "an empty list yields no winner",
+			rows:     nil,
+			expectID: uuid.Nil,
+			expectOK: false,
+		},
+		{
+			name:     "a fully matching row is adopted",
+			rows:     []tmtranscribe.Transcribe{listenReusableRow(goodID)},
+			expectID: goodID,
+			expectOK: true,
+		},
+		{
+			name: "a foreign customer id is rejected",
+			rows: []tmtranscribe.Transcribe{func() tmtranscribe.Transcribe {
+				row := listenReusableRow(goodID)
+				row.CustomerID = ltCustomerID // the tenant's own id, not the platform sentinel
+				return row
+			}()},
+			expectID: uuid.Nil,
+			expectOK: false,
+		},
+		{
+			name: "a mismatched reference id is rejected",
+			rows: []tmtranscribe.Transcribe{func() tmtranscribe.Transcribe {
+				row := listenReusableRow(goodID)
+				row.ReferenceID = otherCallID
+				return row
+			}()},
+			expectID: uuid.Nil,
+			expectOK: false,
+		},
+		{
+			name: "a deleted row is rejected",
+			rows: []tmtranscribe.Transcribe{func() tmtranscribe.Transcribe {
+				row := listenReusableRow(goodID)
+				row.TMDelete = &tmDelete
+				return row
+			}()},
+			expectID: uuid.Nil,
+			expectOK: false,
+		},
+		{
+			name:     "a nil id is rejected",
+			rows:     []tmtranscribe.Transcribe{listenReusableRow(uuid.Nil)},
+			expectID: uuid.Nil,
+			expectOK: false,
+		},
+		{
+			name: "an unverifiable row does not mask a genuine one behind it",
+			rows: []tmtranscribe.Transcribe{
+				func() tmtranscribe.Transcribe {
+					row := listenReusableRow(otherCallID)
+					row.ReferenceID = otherCallID
+					return row
+				}(),
+				listenReusableRow(goodID),
+			},
+			expectID: goodID,
+			expectOK: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotID, gotOK := pickReusableListenTranscribe(tt.rows, ltCallID)
+			if gotOK != tt.expectOK {
+				t.Fatalf("ok mismatch. expected: %v, got: %v", tt.expectOK, gotOK)
+			}
+			if gotID != tt.expectID {
+				t.Errorf("id mismatch. expected: %s, got: %s", tt.expectID, gotID)
+			}
+		})
+	}
+}
+
+// Test_startListenTranscribe_ReuseOwnershipVerification pins the same finding
+// at BOTH call sites -- the initial reuse check and the
+// already-progressing re-run -- since either one adopting an unverified row is
+// the actual defect.
+func Test_startListenTranscribe_ReuseOwnershipVerification(t *testing.T) {
+	lockToken := uuid.FromStringOrNil("aaaa0000-0000-4000-8000-0000000000ff")
+	newTranscribeID := uuid.FromStringOrNil("aaaa0000-0000-4000-8000-000000000001")
+	foreignID := uuid.FromStringOrNil("aaaa0000-0000-4000-8000-000000000002")
+	otherCallID := uuid.FromStringOrNil("aaaa0000-0000-4000-8000-0000000000aa")
+
+	// Superficially a hit for the filter that was sent, but its reference is a
+	// DIFFERENT call -- exactly the row a non-enforcing list endpoint could
+	// return.
+	mismatched := listenReusableRow(foreignID)
+	mismatched.ReferenceID = otherCallID
+
+	t.Run("the initial reuse check does not adopt a mismatched row", func(t *testing.T) {
+		config.SetListenDefaultsForTest()
+
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		m := newStartListenHarness(mc)
+		ctx := context.Background()
+		c := listenEligibleAIcall()
+
+		m.util.EXPECT().UUIDCreate().Return(lockToken)
+		m.cache.EXPECT().ListenStartLockAcquire(ctx, ltAIcallID, lockToken.String(), gomock.Any()).Return(true, nil)
+		m.cache.EXPECT().ListenStartLockRelease(gomock.Any(), ltAIcallID, lockToken.String()).Return(nil)
+		m.expectListenLivenessRecheck(ctx, c)
+		m.req.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(10), gomock.Any()).
+			Return([]tmtranscribe.Transcribe{mismatched}, nil)
+
+		// The mismatched row is treated as "no session found": a fresh session
+		// is created instead, and the foreign id is NEVER written anywhere.
+		m.util.EXPECT().UUIDCreate().Return(newTranscribeID)
+		m.expectUpdateListenState(ctx, c, newTranscribeID)
+		m.cache.EXPECT().ListenAIcallIDAdd(ctx, foreignID, gomock.Any(), gomock.Any()).Times(0)
+		m.req.EXPECT().TranscribeV1TranscribeStart(
+			ctx, newTranscribeID, cmcustomer.IDAIManagerListen, gomock.Any(), uuid.Nil,
+			tmtranscribe.ReferenceTypeCall, ltCallID, gomock.Any(),
+			tmtranscribe.DirectionBoth, tmtranscribe.ProviderEmpty, defaultListenTranscribeStartTimeout,
+		).Return(&tmtranscribe.Transcribe{Identity: commonidentity.Identity{ID: newTranscribeID}}, nil)
+
+		res, err := m.h.startListenTranscribe(ctx, c, listenEligibleCall(), ltCallID)
+		if err != nil {
+			t.Fatalf("unexpected error. err: %v", err)
+		}
+		if res != "started" {
+			t.Errorf("an unverifiable row must not read as a reusable session. expected: started, got: %s", res)
+		}
+	})
+
+	t.Run("the already-progressing re-run does not adopt a mismatched row", func(t *testing.T) {
+		config.SetListenDefaultsForTest()
+
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		m := newStartListenHarness(mc)
+		ctx := context.Background()
+		c := listenEligibleAIcall()
+
+		alreadyProgressing := &cerrors.VoipbinError{Reason: transcribeReasonAlreadyProgressing}
+
+		m.util.EXPECT().UUIDCreate().Return(lockToken)
+		m.cache.EXPECT().ListenStartLockAcquire(ctx, ltAIcallID, lockToken.String(), gomock.Any()).Return(true, nil)
+		m.cache.EXPECT().ListenStartLockRelease(gomock.Any(), ltAIcallID, lockToken.String()).Return(nil)
+		m.expectListenLivenessRecheck(ctx, c)
+
+		gomock.InOrder(
+			m.req.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(10), gomock.Any()).Return(nil, nil),
+			m.req.EXPECT().TranscribeV1TranscribeList(ctx, "", uint64(10), gomock.Any()).
+				Return([]tmtranscribe.Transcribe{mismatched}, nil),
+		)
+		m.util.EXPECT().UUIDCreate().Return(newTranscribeID)
+		m.expectUpdateListenState(ctx, c, newTranscribeID)
+		m.req.EXPECT().TranscribeV1TranscribeStart(
+			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+		).Return(nil, alreadyProgressing)
+
+		// Same treatment as "no winner found": roll back our own speculative
+		// id and give up. The foreign id is never adopted.
+		m.cache.EXPECT().ListenAIcallIDRemove(ctx, newTranscribeID, ltAIcallID).Return(nil)
+		m.db.EXPECT().AIcallGet(ctx, ltAIcallID).Return(c, nil)
+		m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(ctx, ltAIcallID, gomock.Any()).Return(nil)
+		m.cache.EXPECT().ListenAIcallIDAdd(ctx, foreignID, gomock.Any(), gomock.Any()).Times(0)
+
+		res, err := m.h.startListenTranscribe(ctx, c, listenEligibleCall(), ltCallID)
+		if err == nil {
+			t.Fatalf("expected an error")
+		}
+		if res != "failed" {
+			t.Errorf("result mismatch. expected: failed, got: %s", res)
+		}
+	})
+}
+
+// Test_checkListenEligible_ReferenceTypeGate pins review round 1's security
+// LOW-1: c.ReferenceID is only a Case id for a contact_case AIcall, so the
+// Case lookup must not be attempted for any other reference type.
+func Test_checkListenEligible_ReferenceTypeGate(t *testing.T) {
+	for _, referenceType := range []aicall.ReferenceType{
+		aicall.ReferenceTypeCall,
+		aicall.ReferenceTypeConversation,
+		aicall.ReferenceType(""),
+	} {
+		t.Run(string("reference_type="+referenceType), func(t *testing.T) {
+			config.SetListenDefaultsForTest()
+			config.SetAIcallListenEnabledForTest(true)
+			defer config.SetListenDefaultsForTest()
+
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockAI := aihandler.NewMockAIHandler(mc)
+
+			h := &aicallHandler{
+				reqHandler: mockReq,
+				aiHandler:  mockAI,
+			}
+
+			ctx := context.Background()
+			c := listenEligibleAIcall()
+			c.ReferenceType = referenceType
+
+			mockAI.EXPECT().Get(ctx, ltAIID).Return(&ai.AI{Type: ai.TypeInsight}, nil)
+			// The gate is BEFORE the Case lookup, so no Case RPC is made at all.
+			mockReq.EXPECT().ContactV1CaseGet(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+			_, _, _, _, proceed, err := h.checkListenEligible(ctx, c)
+			if err != nil {
+				t.Fatalf("a non-listenable reference type is not an error. err: %v", err)
+			}
+			if proceed {
+				t.Errorf("listening must not proceed for reference_type %s", referenceType)
+			}
+		})
 	}
 }
