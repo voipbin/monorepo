@@ -248,3 +248,73 @@ func Test_Get(t *testing.T) {
 		})
 	}
 }
+
+// Test_Create_WithOrigin pins that WithOrigin lands on the persisted row, and
+// that omitting it still yields OriginNone. Origin drives both the frontend
+// badge (proactive) and the LLM-replay exclusion (listen_internal), so a
+// silently-dropped option is a silent correctness failure in two places.
+func Test_Create_WithOrigin(t *testing.T) {
+	tests := []struct {
+		name string
+
+		opts []CreateOption
+
+		expectOrigin message.Origin
+	}{
+		{
+			name:         "no option yields OriginNone",
+			opts:         nil,
+			expectOrigin: message.OriginNone,
+		},
+		{
+			name:         "WithOrigin proactive",
+			opts:         []CreateOption{WithOrigin(message.OriginProactive)},
+			expectOrigin: message.OriginProactive,
+		},
+		{
+			name:         "WithOrigin listen_internal",
+			opts:         []CreateOption{WithOrigin(message.OriginListenInternal)},
+			expectOrigin: message.OriginListenInternal,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &messageHandler{
+				utilHandler:   mockUtil,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			id := uuid.FromStringOrNil("6b1e8a40-2c7d-4f19-9a03-5e8c1d2f4b60")
+			mockUtil.EXPECT().UUIDCreate().Return(id)
+
+			mockDB.EXPECT().MessageCreate(ctx, gomock.Any()).DoAndReturn(
+				func(_ context.Context, m *message.Message) error {
+					if m.Origin != tt.expectOrigin {
+						t.Errorf("Origin mismatch. expected: %q, got: %q", tt.expectOrigin, m.Origin)
+					}
+					return nil
+				})
+			mockDB.EXPECT().MessageGet(ctx, id).Return(&message.Message{Origin: tt.expectOrigin}, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), message.EventTypeMessageCreated, gomock.Any())
+
+			res, err := h.Create(ctx, uuid.Nil, uuid.Nil, uuid.Nil, uuid.Nil,
+				message.DirectionIncoming, message.RoleAssistant, "hello", nil, "", tt.opts...)
+			if err != nil {
+				t.Fatalf("Create returned an unexpected error. err: %v", err)
+			}
+			if res.Origin != tt.expectOrigin {
+				t.Errorf("returned Origin mismatch. expected: %q, got: %q", tt.expectOrigin, res.Origin)
+			}
+		})
+	}
+}
