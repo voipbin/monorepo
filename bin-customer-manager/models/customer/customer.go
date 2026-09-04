@@ -78,6 +78,21 @@ var (
 	IDCallManager = uuid.FromStringOrNil("00000000-0000-0000-0001-00000000001")
 	IDAIManager   = uuid.FromStringOrNil("00000000-0000-0000-0001-00000000002")
 
+	// IDAIManagerListen is the customer id that owns transcribe sessions started
+	// by the Insight AI's realtime call-listening feature (docs/plans/
+	// 2026-09-03-insight-ai-realtime-listen-design.md §5.2.1). It is deliberately
+	// SEPARATE from IDAIManager -- bin-transcribe-manager's startLive duplicate
+	// guard is scoped by customer_id, so sharing an owner with the AI-summary
+	// feature would make the two collide on one session and entangle their
+	// lifecycles. Like IDAIManager, this is a bare sentinel with no
+	// customer_customers row behind it.
+	//
+	// NOTE on the literal: unlike the three sentinels above, this one is
+	// well-formed (12 hex digits in the last group). The older literals are not,
+	// so they all parse to uuid.Nil -- see TestSpecialIDConstants' own comment.
+	// Copying their shape here would silently make this equal to IDAIManager.
+	IDAIManagerListen = uuid.FromStringOrNil("00000000-0000-0000-0001-000000000003")
+
 	// IDBasicRoute is the customer ID for system-wide default routes.
 	// Used by route-manager to look up fallback routes when no customer-specific route exists.
 	IDBasicRoute = uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001")
