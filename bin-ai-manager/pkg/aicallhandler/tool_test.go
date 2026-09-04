@@ -2,9 +2,11 @@ package aicallhandler
 
 import (
 	"context"
+	"fmt"
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
 	"monorepo/bin-ai-manager/pkg/aihandler"
+	"monorepo/bin-ai-manager/pkg/cachehandler"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/messagehandler"
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
@@ -1001,5 +1003,156 @@ func Test_toolHandleGetAIcallMessages(t *testing.T) {
 				t.Errorf("expected: %v, got: %v", tt.expectRes, res)
 			}
 		})
+	}
+}
+
+// Test_ToolHandle_listenTurnResolution pins every branch of the listen-turn
+// decision. It is worth this much coverage because a wrong answer here is
+// permanent: a mistagged row is excluded from LLM replay forever, silently.
+func Test_ToolHandle_listenTurnResolution(t *testing.T) {
+	aicallID := uuid.FromStringOrNil("0a1b2c3d-4e5f-4a6b-8c9d-0e1f2a3b4c5d")
+	turnPCID := uuid.FromStringOrNil("1b2c3d4e-5f6a-4b7c-8d9e-1f2a3b4c5d6e")
+	boundPCID := uuid.FromStringOrNil("2c3d4e5f-6a7b-4c8d-9e0f-2a3b4c5d6e7f")
+
+	tests := []struct {
+		name string
+
+		referenceType aicall.ReferenceType
+		pipecatcallID uuid.UUID
+
+		expectRedisCall  bool
+		responseIsMember bool
+		responseErr      error
+
+		expectOrigin message.Origin
+	}{
+		{
+			name: "non contact_case never touches redis",
+			// Pins the cost gate: without it, every tool call on every AIcall
+			// type pays a Redis round trip for a decision that only ever
+			// matters for contact_case.
+			referenceType:   aicall.ReferenceTypeCall,
+			pipecatcallID:   turnPCID,
+			expectRedisCall: false,
+			expectOrigin:    message.OriginNone,
+		},
+		{
+			name:             "registered turn id is a listen turn",
+			referenceType:    aicall.ReferenceTypeContactCase,
+			pipecatcallID:    turnPCID,
+			expectRedisCall:  true,
+			responseIsMember: true,
+			expectOrigin:     message.OriginListenInternal,
+		},
+		{
+			name: "unregistered id is a real Q&A turn even when it is not the bound one",
+			// The race this design exists to close: a Q&A tool call delayed
+			// behind a best-effort pipecatcall rotation arrives with an id that
+			// is no longer bound, but was never registered as a listen turn.
+			referenceType:    aicall.ReferenceTypeContactCase,
+			pipecatcallID:    boundPCID,
+			expectRedisCall:  true,
+			responseIsMember: false,
+			expectOrigin:     message.OriginNone,
+		},
+		{
+			name: "uuid.Nil is treated as a real Q&A turn",
+			// Rolling-deploy window: an old pipecat-manager sends no
+			// pipecatcall_id. Fail toward doing nothing new, never toward
+			// mistagging real content.
+			referenceType:    aicall.ReferenceTypeContactCase,
+			pipecatcallID:    uuid.Nil,
+			expectRedisCall:  true,
+			responseIsMember: false,
+			expectOrigin:     message.OriginNone,
+		},
+		{
+			name: "a redis error degrades to a real Q&A turn, it does not fail the tool call",
+			// During a Redis outage the listen-turn registration and the
+			// debounce lock are failing too, so no genuine listen turn can
+			// exist -- listenTurn=false is not a guess, it is provably correct.
+			// Failing closed here would take ordinary Insight Q&A tool use down
+			// with Redis.
+			referenceType:   aicall.ReferenceTypeContactCase,
+			pipecatcallID:   turnPCID,
+			expectRedisCall: true,
+			responseErr:     fmt.Errorf("redis unavailable"),
+			expectOrigin:    message.OriginNone,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			mockMessage := messagehandler.NewMockMessageHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+
+			h := &aicallHandler{db: mockDB, cache: mockCache, messageHandler: mockMessage, reqHandler: mockReq}
+			ctx := context.Background()
+
+			// get_case_notes is only the vehicle here; this test is about the
+			// listen-turn decision, not about the tool's own result. Letting the
+			// lookup fail keeps the tool handler on its short path while still
+			// producing both message rows, which are what the assertions read.
+			mockReq.EXPECT().ContactV1CaseGet(gomock.Any(), gomock.Any(), gomock.Any()).
+				Return(nil, fmt.Errorf("not needed for this test")).AnyTimes()
+
+			c := &aicall.AIcall{
+				Identity:       commonidentity.Identity{ID: aicallID},
+				AssistanceType: aicall.AssistanceTypeAI,
+				ReferenceType:  tt.referenceType,
+				PipecatcallID:  boundPCID,
+			}
+			mockDB.EXPECT().AIcallGet(ctx, aicallID).Return(c, nil)
+
+			if tt.expectRedisCall {
+				mockCache.EXPECT().
+					ListenTurnPipecatcallIDIsMember(ctx, aicallID, tt.pipecatcallID).
+					Return(tt.responseIsMember, tt.responseErr)
+			}
+
+			// Both the tool-call row and the tool-result row carry the tag.
+			mockMessage.EXPECT().
+				Create(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+					message.DirectionIncoming, message.RoleAssistant, "", gomock.Any(), "",
+					gomock.Any(), gomock.Any()).
+				DoAndReturn(assertOriginOption(t, tt.expectOrigin))
+			mockMessage.EXPECT().
+				Create(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+					message.DirectionOutgoing, message.RoleTool, gomock.Any(), nil, gomock.Any(),
+					gomock.Any(), gomock.Any()).
+				DoAndReturn(assertOriginOption(t, tt.expectOrigin))
+
+			_, _ = h.ToolHandle(ctx, aicallID, "tool-1", message.ToolTypeFunction,
+				message.FunctionCall{Name: message.FunctionCallNameGetCaseNotes, Arguments: "{}"},
+				tt.pipecatcallID)
+		})
+	}
+}
+
+// assertOriginOption returns a MessageHandler.Create stub that applies the
+// supplied CreateOptions to a fresh createParams and asserts the resulting
+// Origin. Asserting on the applied result rather than on the opaque option
+// closure is the only way to see what WithOrigin actually set.
+func assertOriginOption(t *testing.T, expect message.Origin) func(
+	ctx context.Context, id, customerID, aicallID, activeflowID uuid.UUID,
+	direction message.Direction, role message.Role, content string,
+	toolCalls []message.ToolCall, toolCallID string, opts ...messagehandler.CreateOption,
+) (*message.Message, error) {
+	t.Helper()
+
+	return func(_ context.Context, _, _, _, _ uuid.UUID,
+		_ message.Direction, _ message.Role, _ string,
+		_ []message.ToolCall, _ string, opts ...messagehandler.CreateOption,
+	) (*message.Message, error) {
+		got := messagehandler.ResolveOriginForTest(opts...)
+		if got != expect {
+			t.Errorf("Origin mismatch. expected: %q, got: %q", expect, got)
+		}
+		return &message.Message{Content: "{}"}, nil
 	}
 }

@@ -37,6 +37,45 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 	}
 	log.WithField("aicall", c).Debugf("fetched aicall info.")
 
+	// Resolve, exactly once, whether this tool call arrived on a listen
+	// evaluation turn. Two consumers share this one answer -- the Origin tag
+	// below and toolHandleNotifyAgent's reject-guard -- deliberately, so they
+	// can never disagree.
+	//
+	// The ReferenceType pre-gate is a cached-field comparison, and it is safe to
+	// trust the cache for it: ReferenceType is immutable (it is never among
+	// AIcallUpdate's written fields). It confines the Redis round trip to the
+	// one reference type that can ever be listening, instead of charging every
+	// tool call on every AIcall type for it.
+	//
+	// See docs/plans/2026-09-03-insight-ai-realtime-listen-design.md §5.4.5.
+	listenTurn := false
+	if c.ReferenceType == aicall.ReferenceTypeContactCase {
+		isMember, errMember := h.cache.ListenTurnPipecatcallIDIsMember(ctx, c.ID, pipecatcallID)
+		if errMember != nil {
+			// Degrade, do not fail closed. A Redis outage means the listen-turn
+			// registration and the debounce lock are failing too, so no genuine
+			// listen turn can be running at this moment -- every tool call
+			// arriving during an outage is structurally a real Q&A call.
+			// listenTurn=false is therefore not a guess; it is the provably
+			// correct value under this specific failure. Failing the tool call
+			// here would take ordinary Insight Q&A tool use down with Redis.
+			log.Warnf("Listen-turn membership check failed, assuming a real Q&A turn. err: %v", errMember)
+			promListenMembershipCheckFailedTotal.Inc()
+		} else {
+			listenTurn = isMember
+		}
+	}
+
+	// Mechanical tool-call/tool-result rows from a listen turn are tagged so
+	// getPipecatcallMessages can exclude them from every future replay. A
+	// proactive notify_agent OUTPUT row is not tagged -- that is real
+	// conversational content the agent sees and the AI should remember.
+	rowOrigin := message.OriginNone
+	if listenTurn {
+		rowOrigin = message.OriginListenInternal
+	}
+
 	tool := &message.ToolCall{
 		ID:       toolID,
 		Type:     toolType,
@@ -46,7 +85,8 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 	// create a message for tool handle request
 	toolCallActiveAIID := h.resolveActiveAIIDFromAIcall(ctx, c)
 	tmp, errCreate := h.messageHandler.Create(ctx, uuid.Nil, c.CustomerID, c.ID, c.ActiveflowID, message.DirectionIncoming, message.RoleAssistant, "", []message.ToolCall{*tool}, "",
-		messagehandler.WithActiveAIID(toolCallActiveAIID))
+		messagehandler.WithActiveAIID(toolCallActiveAIID),
+		messagehandler.WithOrigin(rowOrigin))
 	if errCreate != nil {
 		return nil, errors.Wrapf(errCreate, "could not create the tool message")
 	}
@@ -86,7 +126,7 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 		return nil, fmt.Errorf("unknown tool call: %s", tool.Function.Name)
 	}
 
-	msg, err := h.toolCreateResultMessage(ctx, c, tool, tmpMessageContent, toolCallActiveAIID)
+	msg, err := h.toolCreateResultMessage(ctx, c, tool, tmpMessageContent, toolCallActiveAIID, rowOrigin)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create the tool message")
 	}
@@ -114,6 +154,7 @@ func (h *aicallHandler) toolCreateResultMessage(
 	tool *message.ToolCall,
 	tmpContent *messageContent,
 	activeAIID uuid.UUID,
+	origin message.Origin,
 ) (*message.Message, error) {
 
 	content, err := json.Marshal(tmpContent)
@@ -122,7 +163,8 @@ func (h *aicallHandler) toolCreateResultMessage(
 	}
 
 	tmp, err := h.messageHandler.Create(ctx, uuid.Nil, c.CustomerID, c.ID, c.ActiveflowID, message.DirectionOutgoing, message.RoleTool, string(content), nil, tool.ID,
-		messagehandler.WithActiveAIID(activeAIID))
+		messagehandler.WithActiveAIID(activeAIID),
+		messagehandler.WithOrigin(origin))
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create the tool message")
 	}

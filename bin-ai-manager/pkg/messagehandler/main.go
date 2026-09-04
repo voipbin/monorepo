@@ -140,3 +140,15 @@ func NewMessageHandler(
 		participantHandler:      participantHandler,
 	}
 }
+
+// ResolveOriginForTest applies the given options and reports the resulting
+// Origin. createParams is unexported, so a test in another package cannot
+// otherwise observe what an option actually set.
+// USE ONLY FROM TESTS.
+func ResolveOriginForTest(opts ...CreateOption) message.Origin {
+	p := createParams{}
+	for _, opt := range opts {
+		opt(&p)
+	}
+	return p.origin
+}
