@@ -263,14 +263,21 @@ func Validate() error {
 // validateListenConfig enforces the Insight AI listen flags' two standing
 // invariants.
 //
-// (1) EVERY TIMING VALUE IS STRICTLY POSITIVE. Two of these are actively
-// dangerous at zero, and neither is caught anywhere else:
+// (1) EVERY TIMING AND SIZING VALUE IS STRICTLY POSITIVE. Four of these are
+// actively dangerous at zero, and none is caught anywhere else:
 // AICALL_LISTEN_CONFBRIDGE_READY_POLL_INTERVAL_SECONDS=0 turns
 // waitForConfbridgeReady's select into a busy-loop that spins one pair of RPCs
-// per iteration for the whole wait budget, and
+// per iteration for the whole wait budget;
 // AICALL_LISTEN_START_LOCK_RELEASE_TIMEOUT_SECONDS=0 makes every lock release
 // run on an already-expired context, so EVERY release silently no-ops and every
-// per-AIcall start lock strands for its full TTL.
+// per-AIcall start lock strands for its full TTL;
+// AICALL_LISTEN_WINDOW_SIZE=0 makes the `LTRIM key 0 -1` inside the
+// window-push Lua script a no-op, so the rolling window grows unbounded on the
+// platform-wide transcript-intake hot path for the whole buffer TTL (and a
+// NEGATIVE value trims from the wrong end, keeping the OLDEST lines instead of
+// the newest); and AICALL_LISTEN_MAX_TURNS_PER_AICALL=0 makes the very first
+// turn exceed the cap, silently disabling listening turns outright (review
+// round 2 finding MEDIUM-4).
 //
 // (2) THE ORDERING ConfbridgeReadyMaxWait < EnsureGoroutineTimeout <
 // StartLockTTL. runListenStart's confbridge poll runs INSIDE the goroutine
@@ -290,6 +297,9 @@ func validateListenConfig() error {
 		value int
 	}{
 		{"aicall_listen_evaluate_interval_seconds", globalConfig.AIcallListenEvaluateIntervalSeconds},
+		{"aicall_listen_window_size", globalConfig.AIcallListenWindowSize},
+		{"aicall_listen_qa_context_size", globalConfig.AIcallListenQAContextSize},
+		{"aicall_listen_max_turns_per_aicall", globalConfig.AIcallListenMaxTurnsPerAIcall},
 		{"aicall_listen_buffer_ttl_hours", globalConfig.AIcallListenBufferTTLHours},
 		{"aicall_listen_turn_pipecatcall_id_ttl_seconds", globalConfig.AIcallListenTurnPipecatcallIDTTLSeconds},
 		{"aicall_listen_confbridge_ready_poll_interval_seconds", globalConfig.AIcallListenConfbridgeReadyPollIntervalSeconds},

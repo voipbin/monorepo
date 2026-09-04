@@ -394,6 +394,96 @@ func Test_Validate_ListenTiming(t *testing.T) {
 	}
 }
 
+// Test_Validate_ListenSizing is the direct regression test for review round 2's
+// MEDIUM-4: the three SIZING flags were not validated at all, and two of them
+// silently break a core mechanism at zero.
+func Test_Validate_ListenSizing(t *testing.T) {
+	tests := []struct {
+		name string
+
+		// mutate applies one misconfiguration on top of the shipped defaults.
+		mutate func()
+	}{
+		{
+			// AICALL_LISTEN_WINDOW_SIZE=0 makes the `LTRIM key 0 -1` inside
+			// the window-push Lua script a no-op, so the rolling window grows
+			// unbounded on the transcript-intake hot path for the whole buffer
+			// TTL.
+			name:   "a zero window size is rejected",
+			mutate: func() { globalConfig.AIcallListenWindowSize = 0 },
+		},
+		{
+			// A negative size trims from the wrong end, keeping the OLDEST
+			// lines instead of the newest.
+			name:   "a negative window size is rejected",
+			mutate: func() { globalConfig.AIcallListenWindowSize = -1 },
+		},
+		{
+			// AICALL_LISTEN_MAX_TURNS_PER_AICALL=0 makes the very first turn
+			// exceed the cap, silently disabling listening turns outright.
+			name:   "a zero max-turns cap is rejected",
+			mutate: func() { globalConfig.AIcallListenMaxTurnsPerAIcall = 0 },
+		},
+		{
+			name:   "a negative max-turns cap is rejected",
+			mutate: func() { globalConfig.AIcallListenMaxTurnsPerAIcall = -1 },
+		},
+		{
+			name:   "a zero QA context size is rejected",
+			mutate: func() { globalConfig.AIcallListenQAContextSize = 0 },
+		},
+		{
+			name:   "a negative QA context size is rejected",
+			mutate: func() { globalConfig.AIcallListenQAContextSize = -1 },
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			SetListenDefaultsForTest()
+			defer SetListenDefaultsForTest()
+
+			tt.mutate()
+
+			if err := Validate(); err == nil {
+				t.Fatalf("expected a validation error, got none")
+			}
+		})
+	}
+}
+
+// Test_Validate_SizingErrorNamesTheOffendingFlag pins that the sizing flags are
+// named in the message the same way the timing flags are -- an operator must be
+// able to read which flag is wrong straight off the startup log.
+func Test_Validate_SizingErrorNamesTheOffendingFlag(t *testing.T) {
+	tests := []struct {
+		name   string
+		mutate func()
+		expect string
+	}{
+		{"window size", func() { globalConfig.AIcallListenWindowSize = 0 }, "aicall_listen_window_size"},
+		{"qa context size", func() { globalConfig.AIcallListenQAContextSize = 0 }, "aicall_listen_qa_context_size"},
+		{"max turns", func() { globalConfig.AIcallListenMaxTurnsPerAIcall = 0 }, "aicall_listen_max_turns_per_aicall"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			SetListenDefaultsForTest()
+			defer SetListenDefaultsForTest()
+
+			tt.mutate()
+
+			err := Validate()
+			if err == nil {
+				t.Fatalf("expected a validation error")
+			}
+			if !strings.Contains(err.Error(), tt.expect) {
+				t.Errorf("the error must name %s. got: %v", tt.expect, err)
+			}
+		})
+	}
+}
+
 // Test_Validate_ErrorNamesEveryOffendingValue pins that the failure message is
 // actionable: an operator must be able to read which flag is wrong straight off
 // the startup log, without bisecting their env.

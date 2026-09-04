@@ -202,12 +202,21 @@ session with no listener registered. It is sub-RPC in width and self-limiting
 accepted rather than closed by widening the lock over teardown. It surfaces, if
 at all, as a `started` outcome on an AIcall that never receives a segment.
 
-**Startup validation of the listen timing flags.** The process refuses to start
-if any listen timing value is non-positive, or if
+**Startup validation of the listen timing and sizing flags.** The process
+refuses to start if any listen timing or sizing value is non-positive, or if
 `aicall_listen_confbridge_ready_max_wait_seconds` <
 `aicall_listen_ensure_goroutine_timeout_seconds` <
 `aicall_listen_start_lock_ttl_seconds` does not hold. The error names the
 offending values. It is not clamped: these are deploy-time typos, and a refused
 start is easier to diagnose than a process quietly disagreeing with its own
 configuration. The check runs even with `AICALL_LISTEN_ENABLED=false`, so a
-broken value cannot lie dormant until the flag is turned on.
+broken value cannot lie dormant until the flag is turned on, and it runs from
+both entrypoints (`cmd/ai-manager` and `cmd/ai-control`) so the invariant is the
+config package's, not one binary's.
+
+The sizing flags are validated for concrete reasons, not for symmetry:
+`aicall_listen_window_size` of `0` makes the `LTRIM` inside the window-push Lua
+script a no-op, so the rolling window grows unbounded on the transcript-intake
+hot path for the whole buffer TTL (a negative value trims from the wrong end,
+keeping the oldest lines), and `aicall_listen_max_turns_per_aicall` of `0` makes
+the very first turn exceed the cap, silently disabling listening turns.

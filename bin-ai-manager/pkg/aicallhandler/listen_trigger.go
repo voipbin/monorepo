@@ -466,11 +466,22 @@ func (h *aicallHandler) startListenTranscribe(ctx context.Context, c *aicall.AIc
 	//       teardown.
 	//
 	// Metered exactly as step 2's own check meters this outcome, and no
-	// transcribe RPC is made on this path. The read is the ordinary cache-first
-	// AIcallGet for the same reason UpdateListenState's own read is (every
-	// ai_aicalls writer refreshes the cache after its write, so a terminate
-	// that has landed is visible here).
-	fresh, errFresh := h.db.AIcallGet(ctx, c.ID)
+	// transcribe RPC is made on this path.
+	//
+	// THE READ DELIBERATELY SKIPS THE CACHE (review round 2 finding MEDIUM-2).
+	// The concurrent writer that matters here is ProcessTerminate, which lives
+	// OUTSIDE this feature, and every ai_aicalls writer in
+	// pkg/dbhandler/aicall.go refreshes the cache best-effort -- `_ =
+	// h.aicallUpdateToCache(...)`, its error discarded at every call site. A
+	// refresh that silently failed after a terminate would leave a stale
+	// `progressing` snapshot in Redis, and a cache-first read here would then
+	// hand back exactly the answer this check exists to disbelieve. Starting a
+	// billed STT session is irreversible, which is the precise class of
+	// "a stale read causes a wrong, irreversible decision" AIcallGetSkipCache
+	// was added for (see its doc comment in pkg/dbhandler/aicall.go). This runs
+	// once per listen start, not on any hot path, so the extra DB round trip
+	// costs nothing worth trading the correctness for.
+	fresh, errFresh := h.db.AIcallGetSkipCache(ctx, c.ID)
 	if errFresh != nil {
 		// Unknown liveness. Fail closed rather than start a billed session on
 		// an AIcall whose state we could not confirm.
@@ -504,7 +515,14 @@ func (h *aicallHandler) startListenTranscribe(ctx context.Context, c *aicall.AIc
 		return "reused", nil
 	}
 
-	language := c.STTLanguage
+	// FROM HERE ON, READ FIELDS OFF `fresh`, NOT OFF `c` (review round 2 finding
+	// LOW-3). `c` is the copy checkListenEligible resolved BEFORE
+	// waitForConfbridgeReady; `fresh` is the same row re-read under the lock,
+	// cache-skipping, moments ago. There is no cost to preferring it and no
+	// reason to read a value that is knowably older. (`c.ID` stays in use for
+	// identity below only because it is the id `fresh` was read BY, so the two
+	// are the same value by construction.)
+	language := fresh.STTLanguage
 	if language == "" {
 		language = config.Get().AIcallListenDefaultLanguage
 	}
@@ -612,10 +630,18 @@ func (h *aicallHandler) startListenTranscribe(ctx context.Context, c *aicall.AIc
 // keyed by transcribe id, subscribing this tenant's AIcall to another session's
 // transcript segments.
 //
-// The three checked fields are the same three that closure checks, and they are
-// checked against constants this process controls (the platform sentinel
-// customer id) or values it resolved itself (callID), never against anything
-// the listed row supplied about itself.
+// EVERY FIELD dupFilters CLAIMS TO ENFORCE IS RE-VERIFIED HERE, not merely the
+// ownership subset (review round 2 finding MEDIUM-1). The filter this file
+// sends also constrains Status to progressing, and this design only ever lists
+// ReferenceType == Call sessions -- so both are checked too. Without them, a
+// filter-mapping regression on the transcribe-manager side could hand back a
+// stopped or wrong-reference-type row, this AIcall would adopt it,
+// UpdateListenState would record "reused" as a success, and no listening would
+// ever actually happen: a silent failure with no error and no distinct metric.
+// Every check is against a constant this process controls (the platform
+// sentinel customer id, the progressing status, the call reference type) or a
+// value it resolved itself (callID), never against anything the listed row
+// supplied about itself.
 //
 // A mismatch is not an error -- callers treat it identically to "the list came
 // back empty," which is the correct, fail-closed reading of "there is no
@@ -626,8 +652,16 @@ func pickReusableListenTranscribe(rows []tmtranscribe.Transcribe, callID uuid.UU
 			logrus.Warnf("Skipping listen transcribe with a foreign customer id. call_id: %s, transcribe_id: %s, transcribe_customer_id: %s", callID, row.ID, row.CustomerID)
 			continue
 		}
+		if row.ReferenceType != tmtranscribe.ReferenceTypeCall {
+			logrus.Warnf("Skipping listen transcribe with a mismatched reference type. call_id: %s, transcribe_id: %s, transcribe_reference_type: %s", callID, row.ID, row.ReferenceType)
+			continue
+		}
 		if row.ReferenceID != callID {
 			logrus.Warnf("Skipping listen transcribe with a mismatched reference. call_id: %s, transcribe_id: %s, transcribe_reference_id: %s", callID, row.ID, row.ReferenceID)
+			continue
+		}
+		if row.Status != tmtranscribe.StatusProgressing {
+			logrus.Warnf("Skipping listen transcribe that is no longer progressing. call_id: %s, transcribe_id: %s, transcribe_status: %s", callID, row.ID, row.Status)
 			continue
 		}
 		if row.TMDelete != nil {

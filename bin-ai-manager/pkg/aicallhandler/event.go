@@ -52,18 +52,31 @@ func (h *aicallHandler) EventCMConfbridgeLeaved(ctx context.Context, evt *cmconf
 
 // EventCMCallHangup handles the call-manager's call_hangup event
 func (h *aicallHandler) EventCMCallHangup(ctx context.Context, evt *cmcall.Call) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "EventCMCallHangup",
+		"call_id": evt.ID,
+	})
+
 	// The event's id is unvalidated wire input. A zero id addresses no call,
 	// and both lookups below would then match on a nil-uuid column value that
 	// is the DEFAULT for unrelated rows -- so reject it here, once, ahead of
 	// either path (review round 1 security finding MEDIUM-2).
 	if evt.ID == uuid.Nil {
-		logrus.WithField("func", "EventCMCallHangup").Warn("Ignoring a call hangup event with a nil call id.")
+		log.Warn("Ignoring a call hangup event with a nil call id.")
 		return
 	}
 
 	// Existing path, unchanged: the AIcall whose reference IS this call.
+	//
+	// A terminate failure stays NON-FATAL -- the listening-AIcall teardown
+	// below must still run, and the call is gone either way -- but it is no
+	// longer INVISIBLE (review round 2 finding LOW-2). A silently discarded
+	// error here leaves an AIcall stuck in progressing with nothing in the log
+	// to explain it.
 	if cc, err := h.GetByReferenceID(ctx, evt.ID); err == nil {
-		_, _ = h.ProcessTerminate(ctx, cc.ID)
+		if _, errTerminate := h.ProcessTerminate(ctx, cc.ID); errTerminate != nil {
+			log.Warnf("Could not terminate the aicall on call hangup. aicall_id: %s, err: %v", cc.ID, errTerminate)
+		}
 	}
 
 	// New path: every contact_case AIcall LISTENING to this call.

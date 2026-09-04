@@ -130,6 +130,18 @@ func Test_listenWritesAreAtomicWithTheirTTL(t *testing.T) {
 			key:       listenTurnPipecatcallIDKey(aicallID),
 			expectTTL: ttl,
 		},
+		{
+			// Review round 2 MEDIUM-3: this was the last write in the file
+			// still on the INCR-then-separate-EXPIRE idiom the four above were
+			// converted away from.
+			name: "ListenTurnCountIncr",
+			write: func(h *handler) error {
+				_, err := h.ListenTurnCountIncr(context.Background(), aicallID, ttl)
+				return err
+			},
+			key:       listenTurnsKey(aicallID),
+			expectTTL: ttl,
+		},
 	}
 
 	for _, tt := range tests {
@@ -179,6 +191,33 @@ func Test_ListenWindowPush_TrimsInsideTheSameScript(t *testing.T) {
 		if got[i] != expect[i] {
 			t.Errorf("window content mismatch at %d. expected: %s, got: %s", i, expect[i], got[i])
 		}
+	}
+}
+
+// Test_ListenTurnCountIncr_ReturnsTheIncrementedCount pins that moving this
+// function onto a Lua script did not change its contract: it must still return
+// the counter's NEW value on every call, since that value is what the hard turn
+// cap compares against.
+func Test_ListenTurnCountIncr_ReturnsTheIncrementedCount(t *testing.T) {
+	aicallID := uuid.FromStringOrNil("66666666-7777-8888-9999-aaaaaaaaaaaa")
+
+	h, mr := setupListenTestHandler(t)
+	defer mr.Close()
+
+	ctx := context.Background()
+	for i := int64(1); i <= 3; i++ {
+		got, err := h.ListenTurnCountIncr(ctx, aicallID, time.Hour)
+		if err != nil {
+			t.Fatalf("unexpected error. err: %v", err)
+		}
+		if got != i {
+			t.Errorf("the incremented count must be returned. expected: %d, got: %d", i, got)
+		}
+	}
+
+	// And the TTL is re-armed by every one of those calls, not only the first.
+	if got := mr.TTL(listenTurnsKey(aicallID)); got != time.Hour {
+		t.Errorf("the TTL must be armed by the SAME command that incremented. expected: %s, got: %s", time.Hour, got)
 	}
 }
 

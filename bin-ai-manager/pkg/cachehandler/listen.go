@@ -74,7 +74,7 @@ func listenStartLockKey(aicallID uuid.UUID) string {
 // (design §5.2.2, review round 15 finding HIGH-1(b)).
 const listenStartLockReleaseScript = `if redis.call("GET",KEYS[1])==ARGV[1] then return redis.call("DEL",KEYS[1]) else return 0 end`
 
-// The three write scripts below all exist for ONE reason (review round 1
+// The four write scripts below all exist for ONE reason (review round 1
 // finding MEDIUM-4): a write followed by a SEPARATE Expire is not atomic, and a
 // failed Expire leaves the key with NO TTL at all. For the resolver set that
 // defeats listenResolverTTL outright -- the entry, and with it this AIcall's
@@ -86,8 +86,10 @@ const listenStartLockReleaseScript = `if redis.call("GET",KEYS[1])==ARGV[1] then
 // also be atomic, but mixing two idioms for the same guarantee in one file
 // invites the next reader to assume the difference is meaningful.
 //
-// Each returns the EXPIRE result (1 on success), which callers ignore; what
-// matters is that neither command can land without the other.
+// The first three return the EXPIRE result (1 on success), which callers
+// ignore; what matters is that neither command can land without the other.
+// listenIncrExpireScript is the one exception: its caller needs the counter's
+// new value, so it returns the INCR result and discards EXPIRE's.
 const (
 	// listenSetAddExpireScript: SADD one member, then (re)arm the key's TTL.
 	listenSetAddExpireScript = `redis.call("SADD",KEYS[1],ARGV[1]) return redis.call("EXPIRE",KEYS[1],ARGV[2])`
@@ -101,6 +103,13 @@ const (
 	// commands is harmless, but there is no reason to keep the window open once
 	// the atomic form is already being used here.
 	listenListPushTrimExpireScript = `redis.call("RPUSH",KEYS[1],ARGV[1]) redis.call("LTRIM",KEYS[1],ARGV[3],-1) return redis.call("EXPIRE",KEYS[1],ARGV[2])`
+
+	// listenIncrExpireScript: INCR the counter, then (re)arm the key's TTL,
+	// returning the INCR result rather than EXPIRE's -- the turn cap needs the
+	// count. Same atomicity requirement as the three above: a counter that lost
+	// its TTL is a key nothing else ever reclaims, and it would keep an old
+	// call's turn total alive against a later AIcall reusing the same id space.
+	listenIncrExpireScript = `local n = redis.call("INCR",KEYS[1]) redis.call("EXPIRE",KEYS[1],ARGV[1]) return n`
 )
 
 // listenTTLSeconds renders a TTL for Redis's EXPIRE, which takes whole seconds.
@@ -244,16 +253,20 @@ func (h *handler) ListenTurnTryLock(ctx context.Context, aicallID uuid.UUID, ttl
 // ListenTurnCountIncr increments and returns this AIcall's evaluation-turn
 // count. The hard cap it feeds is the backstop against a pathologically long
 // call burning LLM spend indefinitely.
+//
+// The increment and its TTL are ONE atomic EVAL (listenIncrExpireScript), for
+// the same reason every other write in this file is (review round 2 finding
+// MEDIUM-3). This function was the last one left on the INCR-then-separate-
+// EXPIRE idiom its four siblings were converted away from, and leaving one
+// behind invited exactly the reading the scripts' own comment warns about --
+// that the difference must mean something. It does not.
 func (h *handler) ListenTurnCountIncr(ctx context.Context, aicallID uuid.UUID, ttl time.Duration) (int64, error) {
-	key := listenTurnsKey(aicallID)
-
-	res, err := h.Cache.Incr(ctx, key).Result()
+	res, err := h.Cache.Eval(ctx, listenIncrExpireScript,
+		[]string{listenTurnsKey(aicallID)},
+		listenTTLSeconds(ttl),
+	).Int64()
 	if err != nil {
 		return 0, err
-	}
-
-	if errExpire := h.Cache.Expire(ctx, key, ttl).Err(); errExpire != nil {
-		return 0, errExpire
 	}
 
 	return res, nil
