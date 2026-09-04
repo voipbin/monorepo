@@ -4,6 +4,7 @@ package messagehandler
 
 import (
 	"context"
+	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/engine_dialogflow_handler"
@@ -151,4 +152,20 @@ func ResolveOriginForTest(opts ...CreateOption) message.Origin {
 		opt(&p)
 	}
 	return p.origin
+}
+
+// isForeignPipecatcall reports whether an inbound pipecat message event came
+// from a pipecatcall session the AIcall does not consider its current
+// conversational turn -- a listen evaluation turn, or a genuinely stale reply.
+// Such an event must not be persisted or delivered.
+//
+// It is applied only for aicall.ReferenceTypeContactCase, and only in the two
+// handlers a listen turn can actually reach. EventPMMessageUserLLM and
+// EventPMMessageUserTranscription are both driven by an STT leg, and a listen
+// turn starts with STTTypeNone, so the condition this checks for structurally
+// cannot occur on those paths.
+//
+// See docs/plans/2026-09-03-insight-ai-realtime-listen-design.md §5.4.4(b).
+func (h *messageHandler) isForeignPipecatcall(ac *aicall.AIcall, evtPipecatcallID uuid.UUID) bool {
+	return ac.PipecatcallID != evtPipecatcallID
 }
