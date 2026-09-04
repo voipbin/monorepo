@@ -1,6 +1,7 @@
 package aicall
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -54,5 +55,20 @@ func TestFieldStruct(t *testing.T) {
 				t.Error("FieldStruct should not be nil")
 			}
 		})
+	}
+}
+
+// Test_FieldStruct_ListenCallID pins that listen_call_id is a filterable field.
+// Without the struct tag, ConvertFilters drops it and stopListenByCallID's
+// AIcallList silently returns every contact_case AIcall on the platform instead
+// of the ones listening to the hung-up call.
+func Test_FieldStruct_ListenCallID(t *testing.T) {
+	field, ok := reflect.TypeOf(FieldStruct{}).FieldByName("ListenCallID")
+	if !ok {
+		t.Fatalf("FieldStruct has no ListenCallID member")
+	}
+
+	if got := field.Tag.Get("filter"); got != "listen_call_id" {
+		t.Errorf("filter tag mismatch. expected: %q, got: %q", "listen_call_id", got)
 	}
 }

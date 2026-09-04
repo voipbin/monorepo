@@ -26,6 +26,19 @@ const MetaKeyPromptSnapshots = "prompt_snapshots"
 // at call-creation time.
 const MetaKeyAutoAuditEnabled = "auto_audit_enabled"
 
+// MetaKeyListenTranscribeID is the Metadata map key (string, a UUID) holding the
+// transcribe session this AIcall is reading while listening to a live call.
+// Read by the listen-start idempotency check and by every stop path, always with
+// the AIcall row already in hand -- hence Metadata rather than a column.
+const MetaKeyListenTranscribeID = "listen_transcribe_id"
+
+// MetaKeyListenOwnsTranscribe is the Metadata map key (bool) recording whether
+// THIS AIcall started the transcribe session named by MetaKeyListenTranscribeID,
+// as opposed to reusing one another AIcall already had running on the same call.
+// Only the owner may stop it; a non-owner must never touch a session another
+// listener still depends on.
+const MetaKeyListenOwnsTranscribe = "listen_owns_transcribe"
+
 // AIcall define
 type AIcall struct {
 	identity.Identity
@@ -49,6 +62,21 @@ type AIcall struct {
 	ConfbridgeID  uuid.UUID `json:"confbridge_id,omitempty" db:"confbridge_id,uuid"`
 	PipecatcallID   uuid.UUID `json:"pipecatcall_id,omitempty" db:"pipecatcall_id,uuid"`
 	CurrentMemberID uuid.UUID `json:"current_member_id,omitempty" db:"current_member_id,uuid"`
+
+	// ListenCallID is the live call this contact_case Insight AIcall is
+	// currently listening to, or uuid.Nil when it is not listening.
+	//
+	// A real column rather than a Metadata key for exactly one reason: when a
+	// call hangs up, EventCMCallHangup must run WHERE listen_call_id = ? to find
+	// every AIcall watching it (plural -- two Cases can share one call), and
+	// JSON metadata is not usefully indexable. The transcribe id and ownership
+	// flag stay in Metadata precisely because they are only ever read with the
+	// row already in hand.
+	//
+	// Deliberately NOT exposed on the webhook -- internal plumbing, same
+	// treatment as Message.PipecatcallID. See docs/plans/
+	// 2026-09-03-insight-ai-realtime-listen-design.md §5.8.
+	ListenCallID uuid.UUID `json:"listen_call_id,omitempty" db:"listen_call_id,uuid"`
 
 	Status Status `json:"status,omitempty" db:"status"`
 

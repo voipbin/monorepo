@@ -130,3 +130,25 @@ func TestFieldConstants(t *testing.T) {
 		})
 	}
 }
+
+// Test_FieldListenCallID pins the listen_call_id column name. EventCMCallHangup
+// filters on it (WHERE listen_call_id = ?) to find every AIcall listening to a
+// call that just ended, so a rename without a matching migration means hangup
+// cleanup silently stops finding anything.
+func Test_FieldListenCallID(t *testing.T) {
+	if FieldListenCallID != "listen_call_id" {
+		t.Errorf("FieldListenCallID mismatch. expected: %q, got: %q", "listen_call_id", FieldListenCallID)
+	}
+}
+
+// Test_ListenMetaKeys pins the two Metadata map keys the listen lifecycle
+// writes. They are read back by the idempotency check and by every stop path;
+// a rename orphans a live listening session's bookkeeping.
+func Test_ListenMetaKeys(t *testing.T) {
+	if MetaKeyListenTranscribeID != "listen_transcribe_id" {
+		t.Errorf("MetaKeyListenTranscribeID mismatch. expected: %q, got: %q", "listen_transcribe_id", MetaKeyListenTranscribeID)
+	}
+	if MetaKeyListenOwnsTranscribe != "listen_owns_transcribe" {
+		t.Errorf("MetaKeyListenOwnsTranscribe mismatch. expected: %q, got: %q", "listen_owns_transcribe", MetaKeyListenOwnsTranscribe)
+	}
+}

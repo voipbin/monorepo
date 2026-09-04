@@ -11,10 +11,10 @@ const (
 	FieldAssistanceType Field = "assistance_type"
 	FieldAssistanceID   Field = "assistance_id"
 
-	FieldAIEngineModel Field = "ai_engine_model"
-	FieldAITTSType     Field = "ai_tts_type"
-	FieldAITTSVoiceID  Field = "ai_tts_voice_id"
-	FieldAISTTType     Field = "ai_stt_type"
+	FieldAIEngineModel      Field = "ai_engine_model"
+	FieldAITTSType          Field = "ai_tts_type"
+	FieldAITTSVoiceID       Field = "ai_tts_voice_id"
+	FieldAISTTType          Field = "ai_stt_type"
 	FieldAIVADConfig        Field = "ai_vad_config"
 	FieldAISmartTurnEnabled Field = "ai_smart_turn_enabled"
 
@@ -24,9 +24,11 @@ const (
 	FieldReferenceType Field = "reference_type"
 	FieldReferenceID   Field = "reference_id"
 
-	FieldConfbridgeID  Field = "confbridge_id"
+	FieldConfbridgeID    Field = "confbridge_id"
 	FieldPipecatcallID   Field = "pipecatcall_id"
 	FieldCurrentMemberID Field = "current_member_id"
+
+	FieldListenCallID Field = "listen_call_id"
 
 	FieldStatus Field = "status"
 
