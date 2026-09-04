@@ -18,6 +18,7 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
+	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
 
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus/testutil"
@@ -603,5 +604,192 @@ func Test_runListenTurnWithLines_HangupPath(t *testing.T) {
 	})
 	if delta != 1 {
 		t.Errorf("expected exactly one 'ran' increment. got: %v", delta)
+	}
+}
+
+// Test_speakerTag pins the in/out -> CUSTOMER/AGENT mapping.
+//
+// This is a golden test on purpose. A reversed mapping is a SILENT correctness
+// failure: the AI keeps working and keeps notifying, it just attributes the
+// customer's words to the agent and vice versa -- which can produce a
+// confidently wrong proactive message (e.g. telling the agent the customer
+// threatened to cancel when it was the agent who said it).
+//
+// The values below are the design's structural mapping, which the
+// implementation plan's Task 0 Step 1 records as PROVISIONAL pending an
+// end-to-end empirical check. If that check finds the reverse, this test and
+// speakerTag both flip together.
+func Test_speakerTag(t *testing.T) {
+	tests := []struct {
+		name      string
+		direction tmtranscript.Direction
+		expect    string
+	}{
+		{"in is the customer", tmtranscript.DirectionIn, "[CUSTOMER]"},
+		{"out is the agent", tmtranscript.DirectionOut, "[AGENT]"},
+		{"both is not guessed", tmtranscript.DirectionBoth, "[SPEAKER]"},
+		{"unknown is not guessed", tmtranscript.Direction("weird"), "[SPEAKER]"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := speakerTag(tt.direction); got != tt.expect {
+				t.Errorf("speakerTag(%q) mismatch. expected: %q, got: %q", tt.direction, tt.expect, got)
+			}
+		})
+	}
+}
+
+// Test_EventTMTranscriptCreated covers intake's drops and its fan-out.
+func Test_EventTMTranscriptCreated(t *testing.T) {
+	transcribeID := uuid.FromStringOrNil("aaaa0000-0000-4000-8000-000000000001")
+	aicallA := uuid.FromStringOrNil("aaaa0000-0000-4000-8000-00000000000a")
+	aicallB := uuid.FromStringOrNil("aaaa0000-0000-4000-8000-00000000000b")
+
+	deleted := func() *time.Time { tm := time.Now(); return &tm }()
+
+	tests := []struct {
+		name string
+
+		transcript *tmtranscript.Transcript
+
+		expectResolve bool
+		resolvedIDs   []uuid.UUID
+		resolveErr    error
+		lockAcquired  []bool
+
+		expectBuffered int
+		expectLocked   int
+		expectLine     string
+	}{
+		{
+			name: "a deleted transcript is dropped before any redis call",
+			// transcripthandler.dbDelete publishes transcript_created on DELETE
+			// too (a known upstream bug). Without this guard a deleted line
+			// replays into the LLM as freshly-spoken content.
+			transcript: &tmtranscript.Transcript{
+				TranscribeID: transcribeID,
+				Direction:    tmtranscript.DirectionIn,
+				Message:      "deleted line",
+				TMDelete:     deleted,
+			},
+			expectResolve: false,
+		},
+		{
+			name: "an empty message is dropped before any redis call",
+			transcript: &tmtranscript.Transcript{
+				TranscribeID: transcribeID,
+				Direction:    tmtranscript.DirectionIn,
+				Message:      "   \n\t ",
+			},
+			expectResolve: false,
+		},
+		{
+			name: "an unknown transcribe id is dropped after one redis call and no DB call",
+			// This is 99.9% of platform events. It must cost one SMEMBERS and
+			// nothing else -- no DB query, no RPC.
+			transcript: &tmtranscript.Transcript{
+				TranscribeID: transcribeID,
+				Direction:    tmtranscript.DirectionIn,
+				Message:      "hello",
+			},
+			expectResolve: true,
+			resolvedIDs:   nil,
+		},
+		{
+			name: "a resolver error is dropped, not propagated",
+			transcript: &tmtranscript.Transcript{
+				TranscribeID: transcribeID,
+				Direction:    tmtranscript.DirectionIn,
+				Message:      "hello",
+			},
+			expectResolve: true,
+			resolveErr:    fmt.Errorf("redis unavailable"),
+		},
+		{
+			name: "two AIcalls sharing one transcribe each get the segment buffered",
+			// Two Cases open on one call. A single-valued resolver key would let
+			// the second listener silently steal the first's mapping; the set
+			// makes both independent.
+			transcript: &tmtranscript.Transcript{
+				TranscribeID: transcribeID,
+				Direction:    tmtranscript.DirectionOut,
+				Message:      "  we can help with that  ",
+			},
+			expectResolve:  true,
+			resolvedIDs:    []uuid.UUID{aicallA, aicallB},
+			lockAcquired:   []bool{true, true},
+			expectBuffered: 2,
+			expectLine:     "[AGENT] we can help with that",
+		},
+		{
+			name: "a buffered-but-locked segment runs no turn",
+			transcript: &tmtranscript.Transcript{
+				TranscribeID: transcribeID,
+				Direction:    tmtranscript.DirectionIn,
+				Message:      "I want to cancel",
+			},
+			expectResolve:  true,
+			resolvedIDs:    []uuid.UUID{aicallA},
+			lockAcquired:   []bool{false},
+			expectBuffered: 1,
+			expectLocked:   1,
+			expectLine:     "[CUSTOMER] I want to cancel",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			config.SetListenDefaultsForTest()
+			defer config.SetListenDefaultsForTest()
+
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			m := newListenTurnHarness(mc)
+			ctx := context.Background()
+
+			if !tt.expectResolve {
+				// NO redis call at all -- the drop must happen before it.
+				m.cache.EXPECT().ListenAIcallIDsGet(gomock.Any(), gomock.Any()).Times(0)
+			} else {
+				m.cache.EXPECT().ListenAIcallIDsGet(ctx, transcribeID).Return(tt.resolvedIDs, tt.resolveErr).Times(1)
+			}
+
+			// Intake is NO-DB, NO-RPC by construction.
+			m.db.EXPECT().AIcallGet(gomock.Any(), gomock.Any()).AnyTimes()
+
+			for i, id := range tt.resolvedIDs {
+				m.cache.EXPECT().ListenPendingPush(ctx, id, tt.expectLine, listenBufferTTL()).Return(nil)
+				m.cache.EXPECT().ListenWindowPush(ctx, id, tt.expectLine, 40, listenBufferTTL()).Return(nil)
+				m.cache.EXPECT().ListenTurnTryLock(ctx, id, 20*time.Second).Return(tt.lockAcquired[i], nil)
+			}
+
+			// Winning the debounce spawns a detached turn; those goroutines run
+			// against a fresh handler-less context and are allowed to make any
+			// number of calls or none, so they are not asserted here (the turn
+			// body has its own tests).
+			m.cache.EXPECT().ListenTurnCountIncr(gomock.Any(), gomock.Any(), gomock.Any()).Return(int64(1), nil).AnyTimes()
+			m.cache.EXPECT().ListenPendingPopAll(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+
+			bufferedDelta := testutil.ToFloat64(promListenSegmentTotal.WithLabelValues("buffered"))
+			lockedDelta := testutil.ToFloat64(promListenTurnTotal.WithLabelValues("skipped_locked"))
+
+			m.h.EventTMTranscriptCreated(ctx, tt.transcript)
+
+			gotBuffered := testutil.ToFloat64(promListenSegmentTotal.WithLabelValues("buffered")) - bufferedDelta
+			if int(gotBuffered) != tt.expectBuffered {
+				t.Errorf("buffered count mismatch. expected: %d, got: %v", tt.expectBuffered, gotBuffered)
+			}
+			gotLocked := testutil.ToFloat64(promListenTurnTotal.WithLabelValues("skipped_locked")) - lockedDelta
+			if int(gotLocked) != tt.expectLocked {
+				t.Errorf("skipped_locked count mismatch. expected: %d, got: %v", tt.expectLocked, gotLocked)
+			}
+
+			// Let any spawned turn goroutine settle before the controller's
+			// Finish, so its calls land against the AnyTimes expectations above
+			// rather than after the controller closes.
+			time.Sleep(50 * time.Millisecond)
+		})
 	}
 }

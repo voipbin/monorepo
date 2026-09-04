@@ -13,6 +13,7 @@ import (
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	kmkase "monorepo/bin-contact-manager/models/kase"
 	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
+	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
 
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
@@ -70,6 +71,7 @@ type AIcallHandler interface {
 	EventCMConfbridgeLeaved(ctx context.Context, evt *cmconfbridge.EventConfbridgeLeaved)
 	EventCMDTMFReceived(ctx context.Context, evt *cmdtmf.DTMF)
 	EventPMPipecatcallInitialized(ctx context.Context, evt *pmpipecatcall.Pipecatcall)
+	EventTMTranscriptCreated(ctx context.Context, evt *tmtranscript.Transcript)
 
 	UpdateActiveflowID(ctx context.Context, id uuid.UUID, activeflowID uuid.UUID) (*aicall.AIcall, error)
 	UpdatePipecatcallIDAndActiveflowID(ctx context.Context, id uuid.UUID, pipecatcallID uuid.UUID, activeflowID uuid.UUID) (*aicall.AIcall, error)

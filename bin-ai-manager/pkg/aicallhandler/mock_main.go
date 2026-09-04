@@ -18,6 +18,7 @@ import (
 	dtmf "monorepo/bin-call-manager/models/dtmf"
 	service "monorepo/bin-common-handler/models/service"
 	pipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
+	transcript "monorepo/bin-transcribe-manager/models/transcript"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -121,6 +122,18 @@ func (m *MockAIcallHandler) EventPMPipecatcallInitialized(ctx context.Context, e
 func (mr *MockAIcallHandlerMockRecorder) EventPMPipecatcallInitialized(ctx, evt any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventPMPipecatcallInitialized", reflect.TypeOf((*MockAIcallHandler)(nil).EventPMPipecatcallInitialized), ctx, evt)
+}
+
+// EventTMTranscriptCreated mocks base method.
+func (m *MockAIcallHandler) EventTMTranscriptCreated(ctx context.Context, evt *transcript.Transcript) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "EventTMTranscriptCreated", ctx, evt)
+}
+
+// EventTMTranscriptCreated indicates an expected call of EventTMTranscriptCreated.
+func (mr *MockAIcallHandlerMockRecorder) EventTMTranscriptCreated(ctx, evt any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventTMTranscriptCreated", reflect.TypeOf((*MockAIcallHandler)(nil).EventTMTranscriptCreated), ctx, evt)
 }
 
 // Get mocks base method.

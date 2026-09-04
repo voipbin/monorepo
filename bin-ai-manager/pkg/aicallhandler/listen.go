@@ -2,6 +2,7 @@ package aicallhandler
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"time"
 
@@ -10,6 +11,7 @@ import (
 	"monorepo/bin-ai-manager/models/message"
 	cmcall "monorepo/bin-call-manager/models/call"
 	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
+	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -409,4 +411,127 @@ func listenBufferTTL() time.Duration {
 // then clearListenState).
 func (h *aicallHandler) stopListening(ctx context.Context, c *aicall.AIcall) {
 	_, _ = ctx, c
+}
+
+// speakerTag renders a transcript segment's direction as a structural speaker
+// label.
+//
+// The labels are STRUCTURAL, not localized, so prompt behaviour does not fork by
+// call language.
+//
+// The mapping (design §5.9, wording corrected in review round 11 finding
+// LOW-2 to match Asterisk's actual read/write convention unambiguously):
+// transcript.Direction is relative to the transcribed CHANNEL's own read/write
+// direction -- "in" is audio Asterisk reads FROM that channel (what the
+// channel's own party said), "out" is audio Asterisk writes TO it (what was
+// played to them). The listened channel's own party is always Case.Peer --
+// case_create only ever creates a Case from a CRM-eligible peer (never an
+// internal agent/extension/SIP/conference/AI endpoint), so in=CUSTOMER is a
+// code-checked invariant, not a bare assumption resting on which leg happens
+// to be transcribed. Once that leg is bridged to an agent, out=AGENT follows.
+//
+// Depends on waitForConfbridgeReady already having confirmed a live,
+// exactly-2-party confbridge before listening starts -- with 3+ parties in the
+// bridge, "out" stops reliably meaning "the agent" (design §5.1.1 step 7's
+// closing note); "in" is unaffected regardless of party count, since it never
+// depended on who else is in the bridge.
+//
+// MAPPING STATUS: the general channel-relative mechanism was independently
+// confirmed against real production transcript data during design review
+// (design §5.9), and which leg is transcribed is confirmed structurally, not
+// assumed. What is NOT yet confirmed end-to-end is one real agent-bridged
+// call's transcript segments against known speaker identity -- the
+// implementation plan's Task 0 Step 1 records that as PROVISIONAL, proceeding
+// on the structural reading, with empirical verification tracked separately.
+// Test_speakerTag pins whichever mapping that check confirms; if it comes back
+// reversed, this function and that test flip together.
+//
+// DirectionBoth (and anything unrecognised) is tagged [SPEAKER] rather than
+// guessed -- a wrong attribution is worse than an unattributed line.
+func speakerTag(direction tmtranscript.Direction) string {
+	switch direction {
+	case tmtranscript.DirectionIn:
+		return "[CUSTOMER]"
+	case tmtranscript.DirectionOut:
+		return "[AGENT]"
+	default:
+		return "[SPEAKER]"
+	}
+}
+
+// EventTMTranscriptCreated is layer 1: transcript intake.
+//
+// NO LLM, NO DB WRITE, NO WEBHOOK. This runs for every final STT result
+// PLATFORM-WIDE -- flow-driven, summary-driven, customer-started -- not just for
+// calls being listened to, so the per-event cost has to stay at one Redis round
+// trip. An empty resolver set means "not a session we started" and is the
+// overwhelmingly common outcome.
+//
+// See docs/plans/2026-09-03-insight-ai-realtime-listen-design.md §5.3.
+func (h *aicallHandler) EventTMTranscriptCreated(ctx context.Context, evt *tmtranscript.Transcript) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":          "EventTMTranscriptCreated",
+		"transcribe_id": evt.TranscribeID,
+	})
+
+	// transcripthandler.dbDelete publishes EventTypeTranscriptCreated on DELETE
+	// as well as on create -- a known upstream bug this design defends against
+	// rather than fixes, because changing the emitted event type is a
+	// routing-key-visible change affecting every current subscriber. Without
+	// this guard a deleted line replays into the LLM as freshly-spoken content.
+	if evt.TMDelete != nil || strings.TrimSpace(evt.Message) == "" {
+		promListenSegmentTotal.WithLabelValues("dropped_deleted").Inc()
+		return
+	}
+
+	aicallIDs, err := h.cache.ListenAIcallIDsGet(ctx, evt.TranscribeID)
+	if err != nil {
+		log.Warnf("Could not resolve the listening aicalls. err: %v", err)
+		promListenSegmentTotal.WithLabelValues("dropped_unknown").Inc()
+		return
+	}
+	if len(aicallIDs) == 0 {
+		promListenSegmentTotal.WithLabelValues("dropped_unknown").Inc()
+		return
+	}
+
+	line := fmt.Sprintf("%s %s", speakerTag(evt.Direction), strings.TrimSpace(evt.Message))
+	ttl := listenBufferTTL()
+	windowSize := config.Get().AIcallListenWindowSize
+	interval := time.Duration(config.Get().AIcallListenEvaluateIntervalSeconds) * time.Second
+
+	// Fan out per listening AIcall. Two Cases open on one call each get their
+	// own AIcall and each buffers and debounces independently.
+	for _, aicallID := range aicallIDs {
+		if errPending := h.cache.ListenPendingPush(ctx, aicallID, line, ttl); errPending != nil {
+			log.Warnf("Could not buffer the pending line. aicall_id: %s, err: %v", aicallID, errPending)
+			continue
+		}
+		if errWindow := h.cache.ListenWindowPush(ctx, aicallID, line, windowSize, ttl); errWindow != nil {
+			log.Warnf("Could not buffer the window line. aicall_id: %s, err: %v", aicallID, errWindow)
+		}
+		promListenSegmentTotal.WithLabelValues("buffered").Inc()
+
+		// Leaky-bucket debounce. Losing the race is the NORMAL case and is not
+		// an error -- the line stays buffered for whichever turn did win, which
+		// is exactly what decouples LLM invocations from speech volume.
+		acquired, errLock := h.cache.ListenTurnTryLock(ctx, aicallID, interval)
+		if errLock != nil {
+			log.Warnf("Could not take the listen turn lock. aicall_id: %s, err: %v", aicallID, errLock)
+			continue
+		}
+		if !acquired {
+			promListenTurnTotal.WithLabelValues("skipped_locked").Inc()
+			continue
+		}
+
+		// Detached: this handler must return promptly, and the turn's own
+		// lifetime is bounded by its pipecatcall terminate.
+		go func(id uuid.UUID) {
+			turnCtx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+			defer cancel()
+
+			h.RunListenTurn(turnCtx, id)
+		}(aicallID)
+	}
 }

@@ -35,6 +35,15 @@ var (
 		[]string{"result"},
 	)
 
+	promListenSegmentTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "aicall_listen_segment_total",
+			Help:      "Total transcript segments seen by listen intake, by outcome. dropped_unknown dominates by design -- this handler sees every final STT result platform-wide.",
+		},
+		[]string{"result"},
+	)
+
 	promListenNotifyTotal = prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Namespace: metricsNamespace,
@@ -50,5 +59,6 @@ func init() {
 		promListenNotifyTotal,
 		promListenStartTotal,
 		promListenTurnTotal,
+		promListenSegmentTotal,
 	)
 }
