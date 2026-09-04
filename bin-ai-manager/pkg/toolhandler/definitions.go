@@ -936,4 +936,43 @@ run_llm: Set true to reason about the retrieved transcript.`,
 			"required": []string{"call_id"},
 		},
 	},
+	{
+		Name: tool.ToolNameNotifyAgent,
+		// RunLLM:false deliberately: the notification IS the output, there is no
+		// follow-up text to generate. This is a best-effort hint to the Python
+		// runner, not a guarantee -- every error path there drops the properties
+		// entirely, and the model can override it per call with its own run_llm
+		// argument. toolHandleNotifyAgent's own reject-if-not-a-listen-turn
+		// guard is what actually holds.
+		RunLLM: false,
+		Description: `Pushes a short, actionable note to the human agent's Insight
+Assistant panel, without the agent having asked anything.
+
+WHEN TO USE:
+- You are watching a live call transcript and something just happened that the
+  agent needs to know right now, per your configured instructions.
+
+WHEN NOT TO USE:
+- The agent asked you a question - answer normally instead; do not call this.
+- You have nothing new or actionable to say. Saying nothing is the correct and
+  expected outcome for most checks.
+- You want to repeat something you already notified about on this call.
+
+ARGUMENTS:
+- message (required): one or two sentences, written for a busy human mid-call.
+
+This is the only way to reach the agent proactively. It writes into the same
+panel thread the agent is already reading; it cannot place calls, send email or
+SMS, change CRM records, or spend money.`,
+		Parameters: map[string]any{
+			"type": "object",
+			"properties": map[string]any{
+				"message": map[string]any{
+					"type":        "string",
+					"description": "The note to show the agent. One or two sentences.",
+				},
+			},
+			"required": []string{"message"},
+		},
+	},
 }

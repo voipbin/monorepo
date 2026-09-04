@@ -38,6 +38,10 @@ const (
 	// Insight AI tool set expansion (VOIP-1453, docs/plans/
 	// 2026-09-03-insight-assistant-get-call-transcript-design.md).
 	ToolNameGetCallTranscript ToolName = "get_call_transcript"
+
+	// Insight AI proactive notification (NOJIRA, docs/plans/
+	// 2026-09-03-insight-ai-realtime-listen-design.md §5.5).
+	ToolNameNotifyAgent ToolName = "notify_agent"
 )
 
 // AllToolNames returns all available tool names (excluding "all")
@@ -60,8 +64,15 @@ var AllToolNames = []ToolName{
 }
 
 // AllInsightToolNames defines the tool set available to ai.TypeInsight AIs.
-// Every entry MUST be read-only (no side effects) -- see
-// docs/plans/2026-07-30-case-insight-assistant-tool-expansion-design.md §2.6.
+//
+// Every entry must be read-only with respect to customer data and external
+// systems. The single sanctioned exception is notify_agent, whose only effect is
+// to write a message into the AIcall's own conversation thread -- the same
+// thread the agent is already reading. It cannot place calls, send email or SMS,
+// mutate CRM records, or spend money.
+//
+// See docs/plans/2026-07-30-case-insight-assistant-tool-expansion-design.md §2.6
+// and docs/plans/2026-09-03-insight-ai-realtime-listen-design.md §5.5.2.
 var AllInsightToolNames = []ToolName{
 	ToolNameGetContactInteractions,
 	ToolNameGetConversationContent,
@@ -69,6 +80,7 @@ var AllInsightToolNames = []ToolName{
 	ToolNameGetCaseNotes,
 	ToolNameGetContactProfile,
 	ToolNameGetCallTranscript,
+	ToolNameNotifyAgent,
 }
 
 // Tool defines a tool with its schema for LLM function calling.

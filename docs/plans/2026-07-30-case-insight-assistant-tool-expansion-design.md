@@ -332,6 +332,12 @@ struct/definition — introduce a metadata flag if none exists). Automating
 this via a structural guard (vs. a single assertion test) is a follow-up,
 not a requirement to ship.
 
+> **Exception, added 2026-09-04:** `notify_agent` is a sanctioned write, scoped
+> entirely to the AIcall's own conversation thread. See
+> `docs/plans/2026-09-03-insight-ai-realtime-listen-design.md` §5.5.2 for the
+> justification and for how `TestAllInsightToolNamesAreReadOnly` still fails
+> loudly for any other write tool.
+
 ### 2.7 Frontend (`square-admin`)
 
 - `src/views/ais/AIEngineFields.js`: extend the "Enable All Tools" checkbox
