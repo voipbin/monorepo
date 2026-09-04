@@ -130,7 +130,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 
 	participantHandler := participanthandler.New(db)
 	messageHandler := messagehandler.NewMessageHandler(requestHandler, notifyHandler, db, engineOpenaiHandler, engineDialogflowHandler, participantHandler)
-	aicallHandler := aicallhandler.NewAIcallHandler(requestHandler, notifyHandler, db, aiHandler, teamHandler, messageHandler, participantHandler)
+	aicallHandler := aicallhandler.NewAIcallHandler(requestHandler, notifyHandler, db, cache, aiHandler, teamHandler, messageHandler, participantHandler)
 	summaryHandler := summaryhandler.NewSummaryHandler(requestHandler, notifyHandler, db, engineOpenaiHandler)
 
 	// Build a dedicated engine for the analysis gateway. The provider is

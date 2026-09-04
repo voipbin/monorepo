@@ -20,6 +20,7 @@ import (
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
 	"monorepo/bin-ai-manager/pkg/aihandler"
+	"monorepo/bin-ai-manager/pkg/cachehandler"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/messagehandler"
 	"monorepo/bin-ai-manager/pkg/participanthandler"
@@ -100,7 +101,7 @@ var mapDefaultTTSVoiceIDByTTSType = map[ai.TTSType]string{
 	ai.TTSTypeDeepgram:   "aura-2-thalia-en",                     // Thalia (neutral, English). https://developers.deepgram.com/docs/tts-models#aura-2-all-available-spanish-voices
 	ai.TTSTypeElevenLabs: "EXAVITQu4vr4xnSDxMaL",                 // Rachel. https://api.elevenlabs.io/docs
 	ai.TTSTypeFish:       "",
-	ai.TTSTypeGoogle:     "en-US-Chirp3-HD-Charon",                 // Male, Chirp 3 HD (required for streaming synthesis). https://cloud.google.com/text-to-speech/docs/chirp3-hd
+	ai.TTSTypeGoogle:     "en-US-Chirp3-HD-Charon",                // Male, Chirp 3 HD (required for streaming synthesis). https://cloud.google.com/text-to-speech/docs/chirp3-hd
 	ai.TTSTypeGroq:       "llama-voice-en",                        // Placeholder (Groq doesn't expose standard TTS, assumed)
 	ai.TTSTypeHume:       "emotional-neutral-en",                  // Neutral English emotional TTS. https://dev.hume.ai/docs/tts
 	ai.TTSTypeInworld:    "English_Female_Generic",                // Generic female character. https://docs.inworld.ai/voices
@@ -122,6 +123,14 @@ type aicallHandler struct {
 	reqHandler    requesthandler.RequestHandler
 	notifyHandler notifyhandler.NotifyHandler
 	db            dbhandler.DBHandler
+
+	// cache backs the Insight AI's realtime call listening: the transcribe ->
+	// AIcall resolver set, the per-AIcall transcript buffers, the cross-replica
+	// debounce lock, the turn counter, and ToolHandle's listen-turn membership
+	// check. It is NOT a read-through cache for anything in this handler --
+	// entity snapshots still go through db (dbhandler owns that). See
+	// pkg/cachehandler/listen.go.
+	cache cachehandler.CacheHandler
 
 	aiHandler          aihandler.AIHandler
 	teamHandler        teamhandler.TeamHandler
@@ -181,6 +190,7 @@ func NewAIcallHandler(
 	req requesthandler.RequestHandler,
 	notify notifyhandler.NotifyHandler,
 	db dbhandler.DBHandler,
+	cache cachehandler.CacheHandler,
 	aiHandler aihandler.AIHandler,
 	teamHandler teamhandler.TeamHandler,
 	messageHandler messagehandler.MessageHandler,
@@ -191,6 +201,7 @@ func NewAIcallHandler(
 		reqHandler:    req,
 		notifyHandler: notify,
 		db:            db,
+		cache:         cache,
 
 		aiHandler:          aiHandler,
 		teamHandler:        teamHandler,
