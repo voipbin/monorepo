@@ -125,6 +125,23 @@ func (h *handler) AIcallGet(ctx context.Context, id uuid.UUID) (*aicall.AIcall, 
 	return res, nil
 }
 
+// AIcallGetSkipCache gets the aicall straight from the database, ignoring the
+// cache entirely.
+//
+// It still refreshes the cache with what it read -- a caller reaching for this
+// has just established that the cached copy was suspect, so leaving the stale
+// copy in place would make the next ordinary AIcallGet wrong again.
+func (h *handler) AIcallGetSkipCache(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error) {
+	res, err := h.aicallGetFromDB(id)
+	if err != nil {
+		return nil, err
+	}
+
+	_ = h.aicallSetToCache(ctx, res)
+
+	return res, nil
+}
+
 // AIcallGetByReferenceID gets aicall of the given reference_id.
 func (h *handler) AIcallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*aicall.AIcall, error) {
 	tmp, err := h.cache.AIcallGetByReferenceID(ctx, referenceID)
@@ -255,6 +272,56 @@ func (h *handler) AIcallUpdate(ctx context.Context, id uuid.UUID, fields map[aic
 	_, err = h.db.Exec(query, args...)
 	if err != nil {
 		return fmt.Errorf("AIcallUpdate: could not execute. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.aicallUpdateToCache(ctx, id)
+
+	return nil
+}
+
+// AIcallUpdateNoTouchTMUpdate updates the given aicall fields WITHOUT bumping
+// tm_update, unlike AIcallUpdate.
+//
+// This is deliberately narrow, and exists for one caller: the Insight AI's
+// realtime-listen bookkeeping (docs/plans/
+// 2026-09-03-insight-ai-realtime-listen-design.md §5.2.4, §5.7.3), which writes
+// listen_call_id and two metadata keys exactly twice per listening session.
+//
+// Send()'s cooldown reads tm_update to decide whether to reject a message.
+// Listening stops on call hangup -- exactly when an agent is most likely to ask
+// the Insight AI a follow-up question -- so a tm_update bump here would reject a
+// genuine question the agent just typed. Narrowing the fix to listen's own two
+// writes is safer than changing Send's cooldown semantics for every other write
+// path in this service.
+//
+// Do not reach for this for ordinary updates: tm_update is the general
+// last-modified signal and skipping it hides real changes from anything that
+// reads it.
+func (h *handler) AIcallUpdateNoTouchTMUpdate(ctx context.Context, id uuid.UUID, fields map[aicall.Field]any) error {
+	updateFields := make(map[string]any)
+	for k, v := range fields {
+		updateFields[string(k)] = v
+	}
+	// Deliberately no updateFields["tm_update"] = h.utilHandler.TimeNow() here.
+	// That single omission is this method's entire reason to exist.
+
+	preparedFields, err := commondatabasehandler.PrepareFields(updateFields)
+	if err != nil {
+		return fmt.Errorf("AIcallUpdateNoTouchTMUpdate: could not prepare fields. err: %v", err)
+	}
+
+	query, args, err := sq.Update(aicallTable).
+		SetMap(preparedFields).
+		Where(sq.Eq{"id": id.Bytes()}).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("AIcallUpdateNoTouchTMUpdate: could not build query. err: %v", err)
+	}
+
+	_, err = h.db.Exec(query, args...)
+	if err != nil {
+		return fmt.Errorf("AIcallUpdateNoTouchTMUpdate: could not execute. err: %v", err)
 	}
 
 	// update the cache

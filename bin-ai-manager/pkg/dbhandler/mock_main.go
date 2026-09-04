@@ -462,6 +462,21 @@ func (mr *MockDBHandlerMockRecorder) AIcallGetByReferenceID(ctx, referenceID any
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallGetByReferenceID", reflect.TypeOf((*MockDBHandler)(nil).AIcallGetByReferenceID), ctx, referenceID)
 }
 
+// AIcallGetSkipCache mocks base method.
+func (m *MockDBHandler) AIcallGetSkipCache(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIcallGetSkipCache", ctx, id)
+	ret0, _ := ret[0].(*aicall.AIcall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIcallGetSkipCache indicates an expected call of AIcallGetSkipCache.
+func (mr *MockDBHandlerMockRecorder) AIcallGetSkipCache(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallGetSkipCache", reflect.TypeOf((*MockDBHandler)(nil).AIcallGetSkipCache), ctx, id)
+}
+
 // AIcallList mocks base method.
 func (m *MockDBHandler) AIcallList(ctx context.Context, size uint64, token string, filters map[aicall.Field]any) ([]*aicall.AIcall, error) {
 	m.ctrl.T.Helper()
@@ -504,6 +519,20 @@ func (m *MockDBHandler) AIcallUpdateIfActive(ctx context.Context, id uuid.UUID, 
 func (mr *MockDBHandlerMockRecorder) AIcallUpdateIfActive(ctx, id, fields any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallUpdateIfActive", reflect.TypeOf((*MockDBHandler)(nil).AIcallUpdateIfActive), ctx, id, fields)
+}
+
+// AIcallUpdateNoTouchTMUpdate mocks base method.
+func (m *MockDBHandler) AIcallUpdateNoTouchTMUpdate(ctx context.Context, id uuid.UUID, fields map[aicall.Field]any) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIcallUpdateNoTouchTMUpdate", ctx, id, fields)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AIcallUpdateNoTouchTMUpdate indicates an expected call of AIcallUpdateNoTouchTMUpdate.
+func (mr *MockDBHandlerMockRecorder) AIcallUpdateNoTouchTMUpdate(ctx, id, fields any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallUpdateNoTouchTMUpdate", reflect.TypeOf((*MockDBHandler)(nil).AIcallUpdateNoTouchTMUpdate), ctx, id, fields)
 }
 
 // MessageAssistantReplyExists mocks base method.

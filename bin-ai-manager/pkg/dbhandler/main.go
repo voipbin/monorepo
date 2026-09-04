@@ -14,8 +14,8 @@ import (
 	uuid "github.com/gofrs/uuid"
 
 	"monorepo/bin-ai-manager/models/ai"
-	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/aiaudit"
+	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/aiprompthistory"
 	"monorepo/bin-ai-manager/models/aipromptproposal"
 	"monorepo/bin-ai-manager/models/message"
@@ -43,9 +43,11 @@ type DBHandler interface {
 	AIcallCreate(ctx context.Context, cb *aicall.AIcall) error
 	AIcallDelete(ctx context.Context, id uuid.UUID) error
 	AIcallGet(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error)
+	AIcallGetSkipCache(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error)
 	AIcallGetByReferenceID(ctx context.Context, referenceID uuid.UUID) (*aicall.AIcall, error)
 	AIcallList(ctx context.Context, size uint64, token string, filters map[aicall.Field]any) ([]*aicall.AIcall, error)
 	AIcallUpdate(ctx context.Context, id uuid.UUID, fields map[aicall.Field]any) error
+	AIcallUpdateNoTouchTMUpdate(ctx context.Context, id uuid.UUID, fields map[aicall.Field]any) error
 	AIcallUpdateIfActive(ctx context.Context, id uuid.UUID, fields map[aicall.Field]any) (rowsAffected int64, err error)
 
 	MessageCreate(ctx context.Context, c *message.Message) error
@@ -117,7 +119,6 @@ func IsErrDuplicate(err error) bool {
 	errStr := err.Error()
 	return strings.Contains(errStr, "Duplicate entry") || strings.Contains(errStr, "UNIQUE constraint failed")
 }
-
 
 // NewHandler creates DBHandler
 func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {
