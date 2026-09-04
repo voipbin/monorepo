@@ -11,5 +11,6 @@ type FieldStruct struct {
 	ActiveAIID   uuid.UUID `filter:"active_ai_id"`
 	Direction    Direction `filter:"direction"`
 	Role         Role      `filter:"role"`
+	Origin       Origin    `filter:"origin"`
 	Deleted      bool      `filter:"deleted"`
 }

@@ -73,3 +73,36 @@ func TestFieldConstants(t *testing.T) {
 		})
 	}
 }
+
+// Test_FieldOrigin pins the origin field's database column name. It is compared
+// against a literal because the value is written into SQL WHERE clauses by
+// getPipecatcallMessages (via databasehandler.NotEq) -- a rename here without a
+// matching migration is a silent query failure, not a compile error.
+func Test_FieldOrigin(t *testing.T) {
+	if FieldOrigin != "origin" {
+		t.Errorf("FieldOrigin mismatch. expected: %q, got: %q", "origin", FieldOrigin)
+	}
+}
+
+// Test_OriginValues pins the three Origin values. 'proactive' reaches the
+// frontends (they badge on it) and 'listen_internal' reaches tenant webhook
+// payloads, so both are external contract, not internal naming.
+func Test_OriginValues(t *testing.T) {
+	tests := []struct {
+		name   string
+		origin Origin
+		expect string
+	}{
+		{"none", OriginNone, ""},
+		{"proactive", OriginProactive, "proactive"},
+		{"listen_internal", OriginListenInternal, "listen_internal"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if string(tt.origin) != tt.expect {
+				t.Errorf("Origin mismatch. expected: %q, got: %q", tt.expect, string(tt.origin))
+			}
+		})
+	}
+}

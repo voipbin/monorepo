@@ -13,6 +13,10 @@ create table ai_messages(
   tool_calls    json,
   tool_call_id  varchar(255),
 
+  -- origin: '' (ordinary), 'proactive', 'listen_internal'.
+  -- Mirrors bin-dbscheme-manager migration 42cf2ffc4273.
+  origin        varchar(16) not null default '',
+
   -- active ai
   active_ai_id  binary(16),
 
