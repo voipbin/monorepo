@@ -31,6 +31,32 @@ All flags support equivalent `UPPER_SNAKE_CASE` environment variables.
 | `engine_key_chatgpt` | `ENGINE_KEY_CHATGPT` | OpenAI API key | yes |
 | `google_api_key` | `GOOGLE_API_KEY` | Google API key for Gemini audit evaluation | yes |
 | `aicall_conversation_idle_timeout_hours` | `AICALL_CONVERSATION_IDLE_TIMEOUT_HOURS` | Hours before idle AIcall expires | no |
+| `aicall_listen_enabled` | `AICALL_LISTEN_ENABLED` | Master kill switch for Insight AI realtime call listening. Default **`false`** — the feature ships dark | no |
+| `aicall_listen_evaluate_interval_seconds` | `AICALL_LISTEN_EVALUATE_INTERVAL_SECONDS` | Debounce window: one listen evaluation turn per AIcall per this many seconds, regardless of how much was said. This is what decouples LLM cost from speech volume. Default `20` | no |
+| `aicall_listen_window_size` | `AICALL_LISTEN_WINDOW_SIZE` | Rolling transcript lines kept for continuity across turns. Default `40` | no |
+| `aicall_listen_qa_context_size` | `AICALL_LISTEN_QA_CONTEXT_SIZE` | Q&A message rows replayed into a listen turn's context. Default `10` | no |
+| `aicall_listen_max_turns_per_aicall` | `AICALL_LISTEN_MAX_TURNS_PER_AICALL` | Hard per-AIcall turn cap; reaching it stops listening cleanly. The backstop against a pathologically long call. Default `60` | no |
+| `aicall_listen_buffer_ttl_hours` | `AICALL_LISTEN_BUFFER_TTL_HOURS` | TTL on the pending/window/debounce-lock/turn-count Redis keys. Default `6` | no |
+| `aicall_listen_turn_pipecatcall_id_ttl_seconds` | `AICALL_LISTEN_TURN_PIPECATCALL_ID_TTL_SECONDS` | TTL on registered listen-turn pipecatcall id set entries; only needs to outlive one turn. Default `180` | no |
+| `aicall_listen_default_language` | `AICALL_LISTEN_DEFAULT_LANGUAGE` | STT language used when the AIcall carries no `stt_language`. Default `en-US` | no |
+| `aicall_listen_confbridge_ready_poll_interval_seconds` | `AICALL_LISTEN_CONFBRIDGE_READY_POLL_INTERVAL_SECONDS` | Poll interval for the bounded confbridge-readiness retry. Default `2` | no |
+| `aicall_listen_confbridge_ready_max_wait_seconds` | `AICALL_LISTEN_CONFBRIDGE_READY_MAX_WAIT_SECONDS` | Total wait budget before giving up with `skipped_confbridge_not_ready`. Default `30` | no |
+| `aicall_listen_ensure_goroutine_timeout_seconds` | `AICALL_LISTEN_ENSURE_GOROUTINE_TIMEOUT_SECONDS` | `runListenStart`'s own detached-goroutine timeout. Default `45` | no |
+| `aicall_listen_start_lock_ttl_seconds` | `AICALL_LISTEN_START_LOCK_TTL_SECONDS` | TTL on `ai:listen:startlock:<aicall_id>`, the per-AIcall lock serializing concurrent create-or-reuse sequences. Default `60` | no |
+| `aicall_listen_start_lock_release_timeout_seconds` | `AICALL_LISTEN_START_LOCK_RELEASE_TIMEOUT_SECONDS` | Bound on the **detached** context the lock's release runs under, so a stuck Redis call during cleanup cannot hang the releasing goroutine. Independent of, and far below, the TTL above. Default `3` | no |
+
+**Two ordering invariants hold across the listen timing flags, and both are pinned as standing test assertions (`Test_ListenConfigDefaults`), not one-time default checks:**
+
+```
+aicall_listen_confbridge_ready_max_wait_seconds
+    <  aicall_listen_ensure_goroutine_timeout_seconds
+    <  aicall_listen_start_lock_ttl_seconds
+```
+
+1. The goroutine encloses the confbridge retry loop and needs headroom for the RPC calls each poll makes.
+2. No call inside the start lock can outlive the `ctx` it runs under, so a TTL above the outer goroutine timeout can never expire out from under a goroutine that is still legitimately working. The TTL is **not** derived by summing the RPC timeouts inside the lock — that derivation was tried and withdrawn; do not reintroduce it if these values are ever retuned.
+
+**Raising the max-wait value therefore cascades:** raise the other two to preserve the ordering.
 | `prometheus_endpoint` | `PROMETHEUS_ENDPOINT` | Metrics path | `/metrics` |
 | `prometheus_listen_address` | `PROMETHEUS_LISTEN_ADDRESS` | Metrics listen address | `:2112` |
 
@@ -52,6 +78,13 @@ Exposed at `PROMETHEUS_LISTEN_ADDRESS/PROMETHEUS_ENDPOINT` (default `:2112/metri
 | `aicall_idle_expired_total` | Counter | — | Sessions terminated due to idle timeout |
 | `aicall_interrupt_attempted_total` | Counter | — | Barge-in interruption attempts |
 | `aicall_stale_response_dropped_total` | Counter | — | Stale LLM responses discarded |
+| `aicall_listen_start_total` | Counter | `result` | Listen-start attempts by outcome. `result` values: `started`, `reused`, `skipped_not_listenable`, `skipped_confbridge_not_ready`, `skipped_confbridge_error`, `skipped_start_locked`, `failed` |
+| `aicall_listen_segment_total` | Counter | `result` | Transcript segments seen by listen intake. `dropped_unknown` dominates **by design** — this handler sees every final STT result platform-wide |
+| `aicall_listen_turn_total` | Counter | `result` | Listen evaluation turns by outcome: `ran`, `skipped_locked`, `skipped_empty`, `skipped_cap`, `skipped_disabled`, `skipped_invalid`, `skipped_register_failed`, `failed` |
+| `aicall_listen_notify_total` | Counter | — | Proactive notifications actually delivered to an agent's Insight panel |
+| `aicall_listen_stop_failed_total` | Counter | — | Listen transcribe-stop RPCs that failed and fell back to the call-hangup backstop |
+| `aicall_listen_membership_check_failed_total` | Counter | — | Listen-turn membership checks that errored and degraded to treating the tool call as a real Q&A turn |
+| `aicall_foreign_pipecatcall_dropped_total` | Counter | `handler` | Pipecat message events dropped because they came from a pipecatcall the AIcall no longer considers its conversational turn. Defined in `pkg/messagehandler/metrics_foreign.go`, not with the six above |
 | `message_create_total` | Counter | `role` | Messages created |
 | `message_delivery_status_update_failed_total` | Counter | — | Delivery status update failures |
 | `summary_start_total` | Counter | — | Summary jobs started |
@@ -101,3 +134,57 @@ Key signals to alert on:
 - `aicall_stale_response_dropped_total` — high rate may indicate LLM latency spikes
 - `aicall_interrupt_attempted_total` vs `aicall_duration_seconds` — barge-in health
 - `subscribe_event_process_time` p99 — event processing backlog
+
+### Insight AI live call listening
+
+Kill switch: `aicall_listen_enabled` / `AICALL_LISTEN_ENABLED`, default `false`.
+
+**How listening starts.** Explicitly, by `POST /service_agents/aicalls/<aicall-id>/listen`
+(routed internally to ai-manager's `POST /v1/aicalls/<aicall-id>/listen`). It is
+**not** a side effect of creating or reusing the Q&A AIcall — creating an AIcall
+never starts listening. The panels make the two calls in sequence when the Case
+panel opens, and the second is fire-and-forget: its response carries no
+listening-status field, so "did listening actually start?" is answered by the
+metrics below, not by the API.
+
+**Turning it off mid-call.** A rollback takes effect on an in-flight session at
+its next *evaluated turn*, and turns are triggered by transcript segments, not by
+a timer — so for an active conversation that is typically within one
+`aicall_listen_evaluate_interval_seconds` (default 20s), but a call that has gone
+quiet may not stop until it ends. Call hangup is the guaranteed backstop, and it
+is independent of the flag.
+
+**What the flag does NOT gate.** Two changes shipped with this feature are
+general fixes and are active regardless: the two-fetch LLM context assembly
+(which guarantees an AIcall's system prompt is never evicted), and the
+foreign-pipecatcall guard on `contact_case` bot-LLM messages (which also drops
+genuinely stale replies that used to be persisted silently). Expect
+`aicall_foreign_pipecatcall_dropped_total` to become non-zero and Insight answer
+*shape* to change slightly the moment the code deploys, independent of the flag.
+
+**What to watch:**
+
+| Signal | Reading |
+|---|---|
+| `aicall_listen_turn_total{result="skipped_locked"}` vs `{result="ran"}` | How much LLM spend the debounce is saving. Near-zero `skipped_locked` means the interval is too short for the traffic |
+| `aicall_listen_turn_total{result="skipped_cap"}` | Calls hitting the hard turn cap. A rising rate means the cap or the interval needs revisiting |
+| `aicall_listen_notify_total` | Proactive notes actually delivered. Zero with non-zero `ran` means prompts are not triggering — a prompt problem, not a system one |
+| `aicall_listen_membership_check_failed_total` | Should be ~0. Sustained non-zero means Redis is unhealthy, not that anything listen-specific is wrong |
+| `aicall_listen_stop_failed_total` | Stop RPCs that missed their pod. Tolerated — the audio transport ends with the call regardless — but a high rate suggests transcribe-manager instability |
+| `aicall_listen_start_total{result="skipped_confbridge_not_ready"}` | The confbridge never settled to a live 2-party bridge within the wait budget. Note this **cannot** distinguish a slow ring from a genuinely non-2-party topology, and repeated panel re-opens on one still-ringing call inflate it. A sustained rate means `aicall_listen_confbridge_ready_max_wait_seconds` is likely too short for real ring times |
+| `aicall_listen_start_total{result="skipped_start_locked"}` | A second concurrent start attempt for the *same* AIcall found the lock held and stood down. Expected in small numbers (an agent re-opening a panel during a long ring); a sustained high rate means heavy concurrent re-open pressure, not a fault |
+
+**Redis dependency.** Listening degrades to today's reactive-only behaviour if
+Redis is unavailable; Insight Q&A keeps working. A Redis flush silently stops
+listening for in-flight calls until the panel is reopened, which repopulates the
+state. This is deliberate: there is no DB fallback on a resolver miss, because
+that would put a query on a platform-wide hot path.
+
+**The `ai:listen:startlock:<aicall_id>` key.** Held only for the duration of one
+listen-start sequence, released by the goroutine that took it via a
+token-checked compare-and-delete. A goroutine that genuinely crashes (pod loss)
+leaves it to expire on its own `aicall_listen_start_lock_ttl_seconds` — for that
+one AIcall, further start attempts stand down as `skipped_start_locked` until
+then, and the next panel open after expiry works normally. Do not delete this key
+by hand to "unstick" a call: if a live goroutine still holds it, doing so
+reintroduces exactly the double-writer race the lock exists to prevent.

@@ -37,10 +37,16 @@
       "pattern": "/v1/aicalls/{{UUID}}/participants(\\?|$)"
     },
     {
+      "pattern": "/v1/aicalls/{{UUID}}\\?"
+    },
+    {
       "pattern": "/v1/aicalls/{{UUID}}$"
     },
     {
       "pattern": "/v1/aicalls/{{UUID}}/terminate$"
+    },
+    {
+      "pattern": "/v1/aicalls/{{UUID}}/listen$"
     },
     {
       "pattern": "/v1/aicalls/{{UUID}}/tool_execute$"
@@ -118,20 +124,7 @@
       "pattern": "/v1/teams/{{UUID}}$"
     }
   ],
-  "events_subscribed": [
-    {
-      "queue_symbol": "bin-manager.call-manager.event"
-    },
-    {
-      "queue_symbol": "bin-manager.transcribe-manager.event"
-    },
-    {
-      "queue_symbol": "bin-manager.tts-manager.event"
-    },
-    {
-      "queue_symbol": "bin-manager.pipecat-manager.event"
-    }
-  ],
+  "events_subscribed": [],
   "events_published": [
     {
       "event_type_symbol": "ai.EventTypeCreated"
@@ -317,6 +310,45 @@
       "flag": "aicall_send_cooldown_seconds"
     },
     {
+      "flag": "aicall_listen_enabled"
+    },
+    {
+      "flag": "aicall_listen_evaluate_interval_seconds"
+    },
+    {
+      "flag": "aicall_listen_window_size"
+    },
+    {
+      "flag": "aicall_listen_qa_context_size"
+    },
+    {
+      "flag": "aicall_listen_max_turns_per_aicall"
+    },
+    {
+      "flag": "aicall_listen_buffer_ttl_hours"
+    },
+    {
+      "flag": "aicall_listen_turn_pipecatcall_id_ttl_seconds"
+    },
+    {
+      "flag": "aicall_listen_default_language"
+    },
+    {
+      "flag": "aicall_listen_confbridge_ready_poll_interval_seconds"
+    },
+    {
+      "flag": "aicall_listen_confbridge_ready_max_wait_seconds"
+    },
+    {
+      "flag": "aicall_listen_ensure_goroutine_timeout_seconds"
+    },
+    {
+      "flag": "aicall_listen_start_lock_ttl_seconds"
+    },
+    {
+      "flag": "aicall_listen_start_lock_release_timeout_seconds"
+    },
+    {
       "flag": "analysis_default_model"
     },
     {
@@ -355,10 +387,31 @@
       "name": "aicall_end_total"
     },
     {
+      "name": "aicall_foreign_pipecatcall_dropped_total"
+    },
+    {
       "name": "aicall_idle_expired_total"
     },
     {
       "name": "aicall_interrupt_attempted_total"
+    },
+    {
+      "name": "aicall_listen_membership_check_failed_total"
+    },
+    {
+      "name": "aicall_listen_notify_total"
+    },
+    {
+      "name": "aicall_listen_segment_total"
+    },
+    {
+      "name": "aicall_listen_start_total"
+    },
+    {
+      "name": "aicall_listen_stop_failed_total"
+    },
+    {
+      "name": "aicall_listen_turn_total"
     },
     {
       "name": "aicall_stale_response_dropped_total"
@@ -394,5 +447,7 @@
       "name": "summary_start_total"
     }
   ],
-  "missing_fields": []
+  "missing_fields": [
+    "events_subscribed"
+  ]
 }
