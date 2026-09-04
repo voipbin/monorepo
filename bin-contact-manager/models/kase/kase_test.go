@@ -167,3 +167,15 @@ func Test_ClosedByTypeConstants(t *testing.T) {
 		})
 	}
 }
+
+// TestReferenceTypeCallValue pins the stored value of a Case created from a
+// call. Case.ReferenceType is a plain string mirroring
+// contact_interactions.reference_type's existing vocabulary, so this constant
+// is the single named spelling of a value that was previously written as a bare
+// "call" literal at every call site. Changing it silently orphans every stored
+// Case row.
+func TestReferenceTypeCallValue(t *testing.T) {
+	if ReferenceTypeCall != "call" {
+		t.Errorf("ReferenceTypeCall mismatch. expected: %q, got: %q", "call", ReferenceTypeCall)
+	}
+}

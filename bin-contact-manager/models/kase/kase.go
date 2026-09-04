@@ -98,6 +98,16 @@ type Case struct {
 	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`
 }
 
+// ReferenceTypeCall is the stored ReferenceType value for a Case created from a
+// call. Case.ReferenceType is a plain string (it mirrors
+// contact_interactions.reference_type's existing vocabulary, not a typed enum),
+// so this is an untyped string constant rather than a typed enum member.
+//
+// Introduced by docs/plans/2026-09-03-insight-ai-realtime-listen-design.md
+// §5.1 step 5, which needs to test "was this Case created from a call?" from
+// bin-ai-manager without repeating a bare "call" literal across services.
+const ReferenceTypeCall = "call"
+
 // Status defines the Case lifecycle status.
 type Status string
 
