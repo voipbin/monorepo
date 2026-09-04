@@ -11,6 +11,7 @@ import (
 	"monorepo/bin-ai-manager/models/message"
 	cmcall "monorepo/bin-call-manager/models/call"
 	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
+	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
 	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
 
 	"github.com/gofrs/uuid"
@@ -405,12 +406,143 @@ func listenBufferTTL() time.Duration {
 	return time.Duration(config.Get().AIcallListenBufferTTLHours) * time.Hour
 }
 
-// stopListening is implemented in Task 25 of the implementation plan; this
-// no-op stub keeps this commit green on its own.
-// TODO(Task 25): replace with the real two-step stop (owned-transcribe stop,
-// then clearListenState).
+// stopListening stops this AIcall listening. It is EXACTLY two steps, in order,
+// and nothing else:
+//
+//  1. If this AIcall owns the transcribe session, stop it.
+//  2. Clear the listen state.
+//
+// IT NEVER CALLS ProcessTerminate. That function ends the AIcall ITSELF (status
+// to terminated plus an activeflow service stop), which would kill the agent's
+// entire Insight Q&A session. Stopping listening must leave the panel working
+// normally -- the agent can still ask questions about a call that just ended,
+// and that is often exactly when they do.
 func (h *aicallHandler) stopListening(ctx context.Context, c *aicall.AIcall) {
-	_, _ = ctx, c
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "stopListening",
+		"aicall_id": c.ID,
+	})
+
+	if listenOwnsTranscribeFromMetadata(c) {
+		transcribeID := listenTranscribeIDFromMetadata(c)
+		if transcribeID != uuid.Nil {
+			// HostID is fetched FRESH rather than read from a persisted column,
+			// precisely because it is regenerated on every transcribe-manager
+			// restart -- a stale one addresses a queue that no longer exists.
+			tr, errGet := h.reqHandler.TranscribeV1TranscribeGet(ctx, transcribeID)
+			if errGet != nil {
+				log.Warnf("Could not get the transcribe to stop it. err: %v", errGet)
+				promListenStopFailedTotal.Inc()
+			} else if tr.Status == tmtranscribe.StatusProgressing {
+				if _, errStop := h.reqHandler.TranscribeV1TranscribeStop(ctx, tr.HostID, tr.ID); errStop != nil {
+					// NON-FATAL, and the fallback is stated rather than assumed:
+					// if the owning pod restarted, its per-pod request queue no
+					// longer exists and this times out. The session's audio
+					// transport still ends when the call itself ends (hanging up
+					// closes the Asterisk WebSocket feeding the STT stream), so
+					// the failure mode is a slightly-longer-than-necessary STT
+					// session, never a permanently orphaned one.
+					log.Warnf("Could not stop the transcribe. err: %v", errStop)
+					promListenStopFailedTotal.Inc()
+				}
+			}
+		}
+	}
+
+	h.clearListenState(ctx, c)
+}
+
+// clearListenState removes every trace of this AIcall's listening state.
+//
+// STEP ORDER IS LOAD-BEARING. Step 2 needs the transcribe id and step 3 destroys
+// it, so reading and using it must come first. Getting this backwards leaves a
+// stale (transcribe_id, aicall_id) pairing that intake can still match, feeding
+// segments to an AIcall that stopped listening.
+func (h *aicallHandler) clearListenState(ctx context.Context, c *aicall.AIcall) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "clearListenState",
+		"aicall_id": c.ID,
+	})
+
+	// 1. Read the transcribe id from the AIcall already in hand -- no extra
+	//    fetch; every caller holds `c`.
+	transcribeID := listenTranscribeIDFromMetadata(c)
+
+	// 2. Remove ONLY this AIcall's resolver membership. Never DEL the key: a
+	//    shared transcribe must stay resolvable for whichever AIcalls are still
+	//    listening to it. Redis drops the key once the set empties.
+	if transcribeID != uuid.Nil {
+		if errRem := h.cache.ListenAIcallIDRemove(ctx, transcribeID, c.ID); errRem != nil {
+			log.Warnf("Could not remove the listen resolver membership. err: %v", errRem)
+		}
+	}
+
+	// The per-AIcall keys are never shared, so a plain delete is correct for
+	// them. The turn-id set is deliberately NOT deleted: it is short-TTL and
+	// self-expiring, and a tool call arriving late for an already-stopped turn
+	// still correctly resolves as a listen turn -- which is exactly what it was.
+	if errClear := h.cache.ListenStateClear(ctx, c.ID); errClear != nil {
+		log.Warnf("Could not clear the listen state keys. err: %v", errClear)
+	}
+
+	// 3. Clear the DB bookkeeping LAST, since step 2 consumed the value it
+	//    holds. AIcallUpdateNoTouchTMUpdate, not AIcallUpdate: listening stops
+	//    on hangup, which is exactly when an agent is most likely to type a
+	//    follow-up question, and a tm_update bump here would have Send's cooldown
+	//    reject it.
+	metadata := map[string]any{}
+	for k, v := range c.Metadata {
+		if k == aicall.MetaKeyListenTranscribeID || k == aicall.MetaKeyListenOwnsTranscribe {
+			continue
+		}
+		metadata[k] = v
+	}
+
+	if errUpdate := h.db.AIcallUpdateNoTouchTMUpdate(ctx, c.ID, map[aicall.Field]any{
+		aicall.FieldListenCallID: uuid.Nil,
+		aicall.FieldMetadata:     metadata,
+	}); errUpdate != nil {
+		log.Warnf("Could not clear the listen state on the aicall row. err: %v", errUpdate)
+	}
+}
+
+// stopListenByCallID stops every AIcall listening to the given call.
+//
+// PLURAL ON PURPOSE: the active-AIcall unique key is per Case, not per customer,
+// so two Cases open on one call each get their own AIcall and both must be
+// cleared.
+//
+// Before clearing, it runs one final flush turn per AIcall with a non-empty
+// buffer. The debounce means the last few lines before a hangup are still
+// sitting unevaluated, and this is the only chance to read them -- there is no
+// next segment coming. It bypasses the debounce lock deliberately, which is why
+// the turn body was extracted as runListenTurnWithLines.
+func (h *aicallHandler) stopListenByCallID(ctx context.Context, callID uuid.UUID) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "stopListenByCallID",
+		"call_id": callID,
+	})
+
+	listening, err := h.List(ctx, 10, "", map[aicall.Field]any{
+		aicall.FieldReferenceType: aicall.ReferenceTypeContactCase,
+		aicall.FieldListenCallID:  callID,
+		aicall.FieldDeleted:       false,
+	})
+	if err != nil {
+		log.Errorf("Could not list the listening aicalls. err: %v", err)
+		return
+	}
+
+	for _, c := range listening {
+		lines, errPop := h.cache.ListenPendingPopAll(ctx, c.ID)
+		if errPop != nil {
+			log.Warnf("Could not drain the pending buffer for the final flush. aicall_id: %s, err: %v", c.ID, errPop)
+		} else if len(lines) > 0 {
+			h.runListenTurnWithLines(ctx, c, lines)
+		}
+
+		h.stopListening(ctx, c)
+	}
 }
 
 // speakerTag renders a transcript segment's direction as a structural speaker

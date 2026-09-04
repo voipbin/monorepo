@@ -18,6 +18,7 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
+	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
 	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
 
 	"github.com/gofrs/uuid"
@@ -344,40 +345,45 @@ func Test_RunListenTurn(t *testing.T) {
 		expectWindow bool
 		registerErr  error
 
-		expectPipecatStart bool
-		expectResult       string
+		expectPipecatStart  bool
+		expectStopListening bool
+		expectResult        string
 	}{
 		{
 			name: "flag off stops listening entirely",
 			// Not merely "clears bookkeeping": a bare state clear would leave a
 			// still-running owned STT session with its handle lost, so a
 			// rollback would strand a billed stream until the call ended.
-			flagEnabled:  false,
-			status:       aicall.StatusProgressing,
-			refType:      aicall.ReferenceTypeContactCase,
-			expectResult: "skipped_disabled",
+			flagEnabled:         false,
+			status:              aicall.StatusProgressing,
+			refType:             aicall.ReferenceTypeContactCase,
+			expectStopListening: true,
+			expectResult:        "skipped_disabled",
 		},
 		{
-			name:         "terminated aicall stops listening",
-			flagEnabled:  true,
-			status:       aicall.StatusTerminated,
-			refType:      aicall.ReferenceTypeContactCase,
-			expectResult: "skipped_invalid",
+			name:                "terminated aicall stops listening",
+			flagEnabled:         true,
+			status:              aicall.StatusTerminated,
+			refType:             aicall.ReferenceTypeContactCase,
+			expectStopListening: true,
+			expectResult:        "skipped_invalid",
 		},
 		{
-			name:         "non contact_case reference type stops listening",
-			flagEnabled:  true,
-			status:       aicall.StatusProgressing,
-			refType:      aicall.ReferenceTypeCall,
-			expectResult: "skipped_invalid",
+			name:                "non contact_case reference type stops listening",
+			flagEnabled:         true,
+			status:              aicall.StatusProgressing,
+			refType:             aicall.ReferenceTypeCall,
+			expectStopListening: true,
+			expectResult:        "skipped_invalid",
 		},
 		{
-			name:         "missing listen_transcribe_id metadata stops listening",
-			flagEnabled:  true,
-			status:       aicall.StatusProgressing,
-			refType:      aicall.ReferenceTypeContactCase,
-			metadata:     map[string]any{},
-			expectResult: "skipped_invalid",
+			name:                "missing listen_transcribe_id metadata stops listening",
+			flagEnabled:         true,
+			status:              aicall.StatusProgressing,
+			refType:             aicall.ReferenceTypeContactCase,
+			metadata:            map[string]any{},
+			expectStopListening: true,
+			expectResult:        "skipped_invalid",
 		},
 		{
 			name:            "empty pending buffer skips without stopping",
@@ -391,13 +397,14 @@ func Test_RunListenTurn(t *testing.T) {
 			expectResult:    "skipped_empty",
 		},
 		{
-			name:            "turn cap exceeded stops listening",
-			flagEnabled:     true,
-			status:          aicall.StatusProgressing,
-			refType:         aicall.ReferenceTypeContactCase,
-			expectCountIncr: true,
-			turnCount:       61,
-			expectResult:    "skipped_cap",
+			name:                "turn cap exceeded stops listening",
+			flagEnabled:         true,
+			status:              aicall.StatusProgressing,
+			refType:             aicall.ReferenceTypeContactCase,
+			expectCountIncr:     true,
+			turnCount:           61,
+			expectStopListening: true,
+			expectResult:        "skipped_cap",
 		},
 		{
 			name: "turn-id registration failure aborts before starting a pipecatcall",
@@ -451,6 +458,23 @@ func Test_RunListenTurn(t *testing.T) {
 				c.Metadata = tt.metadata
 			}
 			m.db.EXPECT().AIcallGet(ctx, ltAIcallID).Return(c, nil)
+
+			if tt.expectStopListening {
+				// stopListening on a non-owner (listeningAIcall carries no
+				// listen_owns_transcribe key) skips the transcribe stop and goes
+				// straight to clearListenState.
+				m.req.EXPECT().TranscribeV1TranscribeGet(gomock.Any(), gomock.Any()).Times(0)
+				m.req.EXPECT().TranscribeV1TranscribeStop(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+				if listenTranscribeIDFromMetadata(c) != uuid.Nil {
+					m.cache.EXPECT().ListenAIcallIDRemove(ctx, listenTranscribeIDFromMetadata(c), ltAIcallID).Return(nil)
+				} else {
+					m.cache.EXPECT().ListenAIcallIDRemove(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+				}
+				m.cache.EXPECT().ListenStateClear(ctx, ltAIcallID).Return(nil)
+				m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(ctx, ltAIcallID, gomock.Any()).Return(nil)
+			} else {
+				m.cache.EXPECT().ListenStateClear(gomock.Any(), gomock.Any()).Times(0)
+			}
 
 			if tt.expectCountIncr {
 				m.cache.EXPECT().ListenTurnCountIncr(ctx, ltAIcallID, listenBufferTTL()).Return(tt.turnCount, nil)
@@ -756,8 +780,12 @@ func Test_EventTMTranscriptCreated(t *testing.T) {
 				m.cache.EXPECT().ListenAIcallIDsGet(ctx, transcribeID).Return(tt.resolvedIDs, tt.resolveErr).Times(1)
 			}
 
-			// Intake is NO-DB, NO-RPC by construction.
-			m.db.EXPECT().AIcallGet(gomock.Any(), gomock.Any()).AnyTimes()
+			// Intake itself is NO-DB, NO-RPC by construction. The only DB read
+			// that can occur is inside a DETACHED turn goroutine a won debounce
+			// spawns; failing it there keeps that goroutine on RunListenTurn's
+			// own short-circuit so this test stays about intake.
+			m.db.EXPECT().AIcallGet(gomock.Any(), gomock.Any()).
+				Return(nil, fmt.Errorf("not under test here")).AnyTimes()
 
 			for i, id := range tt.resolvedIDs {
 				m.cache.EXPECT().ListenPendingPush(ctx, id, tt.expectLine, listenBufferTTL()).Return(nil)
@@ -791,5 +819,216 @@ func Test_EventTMTranscriptCreated(t *testing.T) {
 			// rather than after the controller closes.
 			time.Sleep(50 * time.Millisecond)
 		})
+	}
+}
+
+// Test_stopListening_NeverTerminatesTheAIcall is a regression test for a naming
+// hazard, not a hypothetical.
+//
+// "Stop listening" and "terminate the AIcall" are one word apart and worlds
+// apart in effect: ProcessTerminate ends the AIcall itself (status terminated +
+// activeflow service stop), which would kill the agent's entire Insight Q&A
+// session. Every stop path must leave the panel working normally.
+func Test_stopListening_NeverTerminatesTheAIcall(t *testing.T) {
+	transcribeID := uuid.FromStringOrNil("bbbb0000-0000-4000-8000-000000000001")
+	hostID := uuid.FromStringOrNil("bbbb0000-0000-4000-8000-0000000000ff")
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	m := newListenTurnHarness(mc)
+	ctx := context.Background()
+
+	c := listeningAIcall()
+	c.Metadata = map[string]any{
+		aicall.MetaKeyListenTranscribeID:   transcribeID.String(),
+		aicall.MetaKeyListenOwnsTranscribe: true,
+		"prompt_snapshots":                 []any{},
+	}
+
+	// NO FlowV1ActiveflowServiceStop and NO status update -- gomock fails if
+	// either is called.
+	m.req.EXPECT().FlowV1ActiveflowServiceStop(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+	m.db.EXPECT().AIcallUpdate(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+	// The two calls it SHOULD make, in order: the owned-transcribe stop, then
+	// clearListenState.
+	get := m.req.EXPECT().TranscribeV1TranscribeGet(ctx, transcribeID).Return(&tmtranscribe.Transcribe{
+		Identity: commonidentity.Identity{ID: transcribeID},
+		HostID:   hostID,
+		Status:   tmtranscribe.StatusProgressing,
+	}, nil)
+	stop := m.req.EXPECT().TranscribeV1TranscribeStop(ctx, hostID, transcribeID).Return(nil, nil)
+	rem := m.cache.EXPECT().ListenAIcallIDRemove(ctx, transcribeID, ltAIcallID).Return(nil)
+	clear := m.cache.EXPECT().ListenStateClear(ctx, ltAIcallID).Return(nil)
+
+	var wroteFields map[aicall.Field]any
+	update := m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(ctx, ltAIcallID, gomock.Any()).
+		DoAndReturn(func(_ context.Context, _ uuid.UUID, fields map[aicall.Field]any) error {
+			wroteFields = fields
+			return nil
+		})
+	gomock.InOrder(get, stop, rem, clear, update)
+
+	m.h.stopListening(ctx, c)
+
+	metadata, ok := wroteFields[aicall.FieldMetadata].(map[string]any)
+	if !ok {
+		t.Fatalf("the clear must carry a metadata map. got: %v", wroteFields[aicall.FieldMetadata])
+	}
+	if _, present := metadata[aicall.MetaKeyListenTranscribeID]; present {
+		t.Errorf("listen_transcribe_id must be removed from metadata")
+	}
+	if _, present := metadata[aicall.MetaKeyListenOwnsTranscribe]; present {
+		t.Errorf("listen_owns_transcribe must be removed from metadata")
+	}
+	if _, present := metadata["prompt_snapshots"]; !present {
+		t.Errorf("every other metadata key must survive the clear")
+	}
+	if got := wroteFields[aicall.FieldListenCallID]; got != uuid.Nil {
+		t.Errorf("listen_call_id must be cleared to uuid.Nil. got: %v", got)
+	}
+}
+
+// Test_stopListening_NonOwnerNeverStopsTheTranscribe pins the ownership guard:
+// a non-owner must never touch a session another listening Case still depends
+// on.
+func Test_stopListening_NonOwnerNeverStopsTheTranscribe(t *testing.T) {
+	transcribeID := uuid.FromStringOrNil("bbbb0000-0000-4000-8000-000000000002")
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	m := newListenTurnHarness(mc)
+	ctx := context.Background()
+
+	c := listeningAIcall()
+	c.Metadata = map[string]any{
+		aicall.MetaKeyListenTranscribeID:   transcribeID.String(),
+		aicall.MetaKeyListenOwnsTranscribe: false,
+	}
+
+	m.req.EXPECT().TranscribeV1TranscribeGet(gomock.Any(), gomock.Any()).Times(0)
+	m.req.EXPECT().TranscribeV1TranscribeStop(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+	// But this AIcall's OWN membership and state still go away.
+	m.cache.EXPECT().ListenAIcallIDRemove(ctx, transcribeID, ltAIcallID).Return(nil)
+	m.cache.EXPECT().ListenStateClear(ctx, ltAIcallID).Return(nil)
+	m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(ctx, ltAIcallID, gomock.Any()).Return(nil)
+
+	m.h.stopListening(ctx, c)
+}
+
+// Test_clearListenState_StepOrder pins that the resolver-set removal happens
+// BEFORE the metadata clear.
+//
+// The SREM needs the transcribe id, and the metadata clear destroys it. Doing
+// them in the other order leaves a stale (transcribe_id, aicall_id) pairing that
+// intake can still match, feeding segments to an AIcall that has stopped
+// listening.
+func Test_clearListenState_StepOrder(t *testing.T) {
+	transcribeID := uuid.FromStringOrNil("bbbb0000-0000-4000-8000-000000000003")
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	m := newListenTurnHarness(mc)
+	ctx := context.Background()
+
+	c := listeningAIcall()
+	c.Metadata = map[string]any{aicall.MetaKeyListenTranscribeID: transcribeID.String()}
+
+	rem := m.cache.EXPECT().ListenAIcallIDRemove(ctx, transcribeID, ltAIcallID).Return(nil)
+	clear := m.cache.EXPECT().ListenStateClear(ctx, ltAIcallID).Return(nil)
+	update := m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(ctx, ltAIcallID, gomock.Any()).Return(nil)
+	gomock.InOrder(rem, clear, update)
+
+	m.h.clearListenState(ctx, c)
+}
+
+// Test_stopListenByCallID_ClearsEveryMatch pins the plural lookup.
+//
+// Two Cases open on one call each get their own AIcall (the active-reference
+// unique key is per Case, not per customer), and BOTH must be cleared when the
+// call hangs up. Clearing only the first leaves the second listening to a
+// transcribe session that has stopped producing.
+func Test_stopListenByCallID_ClearsEveryMatch(t *testing.T) {
+	aicallA := uuid.FromStringOrNil("cccc0000-0000-4000-8000-00000000000a")
+	aicallB := uuid.FromStringOrNil("cccc0000-0000-4000-8000-00000000000b")
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	m := newListenTurnHarness(mc)
+	ctx := context.Background()
+
+	rows := []*aicall.AIcall{
+		{Identity: commonidentity.Identity{ID: aicallA}, ReferenceType: aicall.ReferenceTypeContactCase},
+		{Identity: commonidentity.Identity{ID: aicallB}, ReferenceType: aicall.ReferenceTypeContactCase},
+	}
+
+	m.db.EXPECT().AIcallList(ctx, uint64(10), "", map[aicall.Field]any{
+		aicall.FieldReferenceType: aicall.ReferenceTypeContactCase,
+		aicall.FieldListenCallID:  ltCallID,
+		aicall.FieldDeleted:       false,
+	}).Return(rows, nil)
+
+	// Empty buffers -> no flush turn, but BOTH get cleared.
+	for _, id := range []uuid.UUID{aicallA, aicallB} {
+		m.cache.EXPECT().ListenPendingPopAll(ctx, id).Return(nil, nil)
+		m.cache.EXPECT().ListenStateClear(ctx, id).Return(nil)
+		m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(ctx, id, gomock.Any()).Return(nil)
+	}
+
+	m.h.stopListenByCallID(ctx, ltCallID)
+}
+
+// Test_stopListenByCallID_FinalFlush pins that the last words of a call are
+// still evaluated.
+//
+// The debounce means the final lines before a hangup sit unevaluated in the
+// pending buffer. This is the only chance to read them, and it deliberately
+// bypasses the debounce lock -- there is no "next segment" coming.
+func Test_stopListenByCallID_FinalFlush(t *testing.T) {
+	turnPCID := uuid.FromStringOrNil("cccc0000-0000-4000-8000-0000000000cc")
+
+	config.SetListenDefaultsForTest()
+	defer config.SetListenDefaultsForTest()
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	m := newListenTurnHarness(mc)
+	ctx := context.Background()
+
+	row := listeningAIcall()
+	row.Metadata = map[string]any{}
+
+	m.db.EXPECT().AIcallList(ctx, uint64(10), "", gomock.Any()).Return([]*aicall.AIcall{row}, nil)
+
+	// A non-empty buffer reaches runListenTurnWithLines with exactly those
+	// lines -- and NEVER through the debounce lock.
+	m.cache.EXPECT().ListenPendingPopAll(ctx, ltAIcallID).Return([]string{"[CUSTOMER] one last thing"}, nil)
+	m.cache.EXPECT().ListenTurnTryLock(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+	m.cache.EXPECT().ListenWindowGet(ctx, ltAIcallID).Return([]string{"[CUSTOMER] one last thing"}, nil)
+	m.msg.EXPECT().List(ctx, uint64(30), "", gomock.Any()).Return(nil, nil)
+	m.util.EXPECT().UUIDCreate().Return(turnPCID)
+	m.cache.EXPECT().ListenTurnPipecatcallIDAdd(ctx, ltAIcallID, turnPCID, gomock.Any()).Return(nil)
+	m.req.EXPECT().PipecatV1PipecatcallStart(
+		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+	).Return(&pmpipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: turnPCID}, HostID: "10.0.0.1"}, nil)
+	m.req.EXPECT().PipecatV1PipecatcallTerminateWithDelay(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+
+	// Then the stop itself.
+	m.cache.EXPECT().ListenStateClear(ctx, ltAIcallID).Return(nil)
+	m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(ctx, ltAIcallID, gomock.Any()).Return(nil)
+
+	delta := metricDelta(t, "ran", func() {
+		m.h.stopListenByCallID(ctx, ltCallID)
+	})
+	if delta != 1 {
+		t.Errorf("the final flush must run exactly one turn. got: %v", delta)
 	}
 }

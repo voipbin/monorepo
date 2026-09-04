@@ -51,16 +51,18 @@ func (h *aicallHandler) EventCMConfbridgeLeaved(ctx context.Context, evt *cmconf
 
 // EventCMCallHangup handles the call-manager's call_hangup event
 func (h *aicallHandler) EventCMCallHangup(ctx context.Context, evt *cmcall.Call) {
-	// get aicall
-	cc, err := h.GetByReferenceID(ctx, evt.ID)
-	if err != nil {
-		return
+	// Existing path, unchanged: the AIcall whose reference IS this call.
+	if cc, err := h.GetByReferenceID(ctx, evt.ID); err == nil {
+		_, _ = h.ProcessTerminate(ctx, cc.ID)
 	}
 
-	_, err = h.ProcessTerminate(ctx, cc.ID)
-	if err != nil {
-		return
-	}
+	// New path: every contact_case AIcall LISTENING to this call.
+	//
+	// A second lookup is genuinely required, not a nicety. For an Insight
+	// AIcall, ReferenceID is the CASE id, so GetByReferenceID can never find a
+	// listening AIcall from a call id -- which is exactly why listen_call_id
+	// exists as an indexed column.
+	h.stopListenByCallID(ctx, evt.ID)
 }
 
 func (h *aicallHandler) EventCMDTMFReceived(ctx context.Context, evt *cmdtmf.DTMF) {

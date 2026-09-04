@@ -44,6 +44,14 @@ var (
 		[]string{"result"},
 	)
 
+	promListenStopFailedTotal = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "aicall_listen_stop_failed_total",
+			Help:      "Total listen transcribe-stop RPCs that failed and fell back to the call-hangup-ends-the-audio-transport backstop.",
+		},
+	)
+
 	promListenNotifyTotal = prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Namespace: metricsNamespace,
@@ -60,5 +68,6 @@ func init() {
 		promListenStartTotal,
 		promListenTurnTotal,
 		promListenSegmentTotal,
+		promListenStopFailedTotal,
 	)
 }
