@@ -328,7 +328,8 @@ case_create               Create a CRM case for the current contact
    ``type=insight`` AIs use a separate, smaller tool set instead of the tools
    above: ``get_contact_interactions``, ``get_conversation_content``,
    ``get_related_cases``, ``get_case_notes``,
-   ``get_contact_profile``, ``get_call_transcript``, and ``notify_agent``. See
+   ``get_contact_profile``, ``get_call_transcript``, ``emit_info_card``, and
+   ``notify_agent``. See
    :ref:`Insight Tools <ai-struct-tool-insight>`.
 
 For detailed documentation on each tool, see :ref:`Tool Functions <ai-struct-tool>`.

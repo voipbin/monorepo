@@ -62,13 +62,19 @@ func TestAllowedToolNames(t *testing.T) {
 }
 
 // TestAllInsightToolNamesAreReadOnly is the recommended (design §2.6) cheap
-// regression guard: every entry in tool.AllInsightToolNames must be a
-// read-only tool, since the "all" selector automatically grants any future
-// addition to every Insight AI already storing tool_names=["all"], with no
-// re-consent step. This is a hardcoded allowlist of known-read-only names
-// (not a structural Tool metadata flag -- deferred per design §2.6/non-goals)
-// so adding a write-capable tool to AllInsightToolNames without updating
-// this test fails loudly here rather than silently shipping.
+// regression guard: every entry in tool.AllInsightToolNames must have no
+// side effects outside the session's own message/expression surface, since
+// the "all" selector automatically grants any future addition to every
+// Insight AI already storing tool_names=["all"], with no re-consent step.
+// (Reworded from "must be a read-only tool" by docs/plans/
+// 2026-09-04-insight-assistant-emit-info-card-design.md §1.4: a literal
+// read-only reading would incorrectly exclude emit_info_card, which writes
+// a message -- but only into its own session's message stream, the same
+// surface a plain assistant-text turn already writes to.) This is a
+// hardcoded allowlist of known-safe names (not a structural Tool metadata
+// flag -- deferred per design §2.6/non-goals) so adding an unsafe tool to
+// AllInsightToolNames without updating this test fails loudly here rather
+// than silently shipping.
 func TestAllInsightToolNamesAreReadOnly(t *testing.T) {
 	knownReadOnly := map[tool.ToolName]bool{
 		tool.ToolNameGetContactInteractions: true,
@@ -77,6 +83,7 @@ func TestAllInsightToolNamesAreReadOnly(t *testing.T) {
 		tool.ToolNameGetCaseNotes:           true,
 		tool.ToolNameGetContactProfile:      true,
 		tool.ToolNameGetCallTranscript:      true,
+		tool.ToolNameEmitInfoCard:           true,
 	}
 
 	// Sanctioned write exceptions -- a SEPARATE map, deliberately, so this test
@@ -93,7 +100,7 @@ func TestAllInsightToolNamesAreReadOnly(t *testing.T) {
 	for _, n := range tool.AllInsightToolNames {
 		if !knownReadOnly[n] && !knownSanctionedWrite[n] {
 			t.Errorf("tool.AllInsightToolNames contains %q, which is in neither this test's known-read-only allowlist nor its sanctioned-write allowlist -- "+
-				"verify what it actually does, then add it to the right map", n)
+				"verify it has no side effects outside the session's own message/expression surface, then add it to the right map", n)
 		}
 	}
 }

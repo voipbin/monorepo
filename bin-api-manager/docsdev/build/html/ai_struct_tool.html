@@ -1432,8 +1432,8 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
 </section>
 <section id="insight-tools">
 <span id="ai-struct-tool-insight"></span><h2>Insight Tools<a class="headerlink" href="#insight-tools" title="Link to this heading">¶</a></h2>
-<p>The following tools are exclusive to <code class="docutils literal notranslate"><span class="pre">type=insight</span></code> AIs (see <a class="reference internal" href="ai_struct_ai.html#ai-struct-ai-type"><span class="std std-ref">Type</span></a>) and are not selectable by <code class="docutils literal notranslate"><span class="pre">type=normal</span></code> AIs. Most are always scoped to the Case the Insight AI session was opened for and accept no argument to target a different Case or contact; <code class="docutils literal notranslate"><span class="pre">get_call_transcript</span></code> is the exception — it takes an explicit <code class="docutils literal notranslate"><span class="pre">call_id</span></code> and is scoped to the caller’s own account (tenant), not to the current Case’s contact/peer (see its own section below).</p>
-<p>All of these tools are read-only with a single sanctioned exception: <code class="docutils literal notranslate"><span class="pre">notify_agent</span></code> writes one message into the AI call’s own conversation thread. It cannot place calls, send email or SMS, change CRM records, or spend money, and it is usable only while the assistant is monitoring a live call.</p>
+<p>The following tools are exclusive to <code class="docutils literal notranslate"><span class="pre">type=insight</span></code> AIs (see <a class="reference internal" href="ai_struct_ai.html#ai-struct-ai-type"><span class="std std-ref">Type</span></a>) and are not selectable by <code class="docutils literal notranslate"><span class="pre">type=normal</span></code> AIs. Most are always scoped to the Case the Insight AI session was opened for and accept no argument to target a different Case or contact; <code class="docutils literal notranslate"><span class="pre">get_call_transcript</span></code> is the exception — it takes an explicit <code class="docutils literal notranslate"><span class="pre">call_id</span></code> and is scoped to the caller’s own account (tenant), not to the current Case’s contact/peer (see its own section below). <code class="docutils literal notranslate"><span class="pre">emit_info_card</span></code> is the exception in the other direction — it takes no Case/contact-scoped argument at all; it renders whatever title/description/fields the AI supplies.</p>
+<p>None of these tools has any side effect outside the session’s own message surface. Two of them do write there: <code class="docutils literal notranslate"><span class="pre">emit_info_card</span></code> renders a card into the session’s own stream, and <code class="docutils literal notranslate"><span class="pre">notify_agent</span></code> writes one message into the AI call’s own conversation thread — the same thread the agent is already reading, and the same surface a plain assistant reply already writes to. Neither can place calls, send email or SMS, change CRM records, or spend money. <code class="docutils literal notranslate"><span class="pre">notify_agent</span></code> is additionally usable only while the assistant is monitoring a live call.</p>
 <div class="table-wrapper docutils container">
 <table class="docutils align-default">
 <thead>
@@ -1467,7 +1467,11 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
 <td><p>Retrieve a call’s merged live-transcription text</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">true</span></code></p></td>
 </tr>
-<tr class="row-even"><td><p>notify_agent</p></td>
+<tr class="row-even"><td><p>emit_info_card</p></td>
+<td><p>Display a structured info card in the panel</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">true</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>notify_agent</p></td>
 <td><p>Push a proactive note to the agent’s panel</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">false</span></code></p></td>
 </tr>
@@ -1665,6 +1669,58 @@ Use <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot
 </pre></div>
 </div>
 </section>
+<section id="emit-info-card">
+<span id="ai-struct-tool-emit-info-card"></span><h3>emit_info_card<a class="headerlink" href="#emit-info-card" title="Link to this heading">¶</a></h3>
+<p>Displays a structured “info card” (title, optional description, and up to 20 key/value fields) in the Insight Assistant panel. This is a visual UI element, not spoken/narrated text — the card is the primary artifact the AI is producing when it calls this tool.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Unlike every other Insight tool, <code class="docutils literal notranslate"><span class="pre">emit_info_card</span></code> takes no Case/contact-scoped argument at all — it renders whatever <code class="docutils literal notranslate"><span class="pre">title</span></code>/<code class="docutils literal notranslate"><span class="pre">description</span></code>/<code class="docutils literal notranslate"><span class="pre">fields</span></code> the AI supplies. Content is size-capped: at most 20 fields, and title/description/label/value are each truncated (with a trailing <code class="docutils literal notranslate"><span class="pre">...</span></code>) if they exceed the limits shown below. Any <code class="docutils literal notranslate"><span class="pre">run_llm</span></code> follow-up text should NOT restate the card’s field values — the card already displays them visually.</p>
+</div>
+<p><strong>When to use:</strong></p>
+<ul class="simple">
+<li><p>Presenting a structured summary that reads better as a title + key/value layout than as a wall of prose (e.g. a quick-reference snapshot of information already retrieved)</p></li>
+</ul>
+<p><strong>When NOT to use:</strong></p>
+<ul class="simple">
+<li><p>A simple conversational answer that reads fine as plain text — do not wrap every reply in a card</p></li>
+<li><p>Presenting more than one genuinely distinct item in a single turn without good reason — call this tool once per turn unless the response truly contains multiple distinct items</p></li>
+</ul>
+<p><strong>Parameters:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;run_llm&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;boolean&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Set true to add a brief follow-up after the card renders. Do not restate the card&#39;s field values in the follow-up text.&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="n">true</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Card title (required, &lt;=200 chars).&quot;</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Optional supporting text shown under the title (&lt;=1000 chars).&quot;</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;fields&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Key/value rows rendered in the card (at most 20 entries).&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;items&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Field label (&lt;=50 chars).&quot;</span> <span class="p">},</span>
+                    <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Field value (&lt;=500 chars).&quot;</span> <span class="p">}</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">]</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;title&quot;</span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
 <section id="notify-agent">
 <span id="ai-struct-tool-notify-agent"></span><h3>notify_agent<a class="headerlink" href="#notify-agent" title="Link to this heading">¶</a></h3>
 <p>Pushes a short, actionable note to the human agent’s Insight Assistant panel, without the agent having asked anything.</p>
@@ -1809,6 +1865,10 @@ Each tool has a platform-set default (shown in the table below). This value is <
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">get_call_transcript</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">true</span></code></p></td>
 <td><p>Insight tool — LLM reasons about the retrieved call transcript.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">emit_info_card</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">true</span></code></p></td>
+<td><p>Insight tool — the card is the primary artifact; a follow-up must not restate the field values.</p></td>
 </tr>
 </tbody>
 </table>
@@ -1978,6 +2038,7 @@ It determines whether the LLM generates a response after tool execution:</p>
 <li><a class="reference internal" href="#get-case-notes">get_case_notes</a></li>
 <li><a class="reference internal" href="#get-contact-profile">get_contact_profile</a></li>
 <li><a class="reference internal" href="#get-call-transcript">get_call_transcript</a></li>
+<li><a class="reference internal" href="#emit-info-card">emit_info_card</a></li>
 <li><a class="reference internal" href="#notify-agent">notify_agent</a></li>
 </ul>
 </li>

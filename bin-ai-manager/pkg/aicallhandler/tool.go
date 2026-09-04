@@ -114,6 +114,7 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 		message.FunctionCallNameGetCaseNotes:           h.toolHandleGetCaseNotes,
 		message.FunctionCallNameGetContactProfile:      h.toolHandleGetContactProfile,
 		message.FunctionCallNameGetCallTranscript:      h.toolHandleGetCallTranscript,
+		message.FunctionCallNameEmitInfoCard:           h.toolHandleEmitInfoCard,
 	}
 
 	promAIcallToolExecuteTotal.WithLabelValues(string(tool.Function.Name)).Inc()
@@ -146,12 +147,42 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 	}
 	log.WithField("message", msg).Debugf("Created the tool response message. message_id: %s", msg.ID)
 
-	res, err := h.unmarshalToolResponse(msg)
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not unmarshal the tool response message content correctly")
+	// emit_info_card bypasses unmarshalToolResponse: the stored message content
+	// carries Blocks (the card's title/description/fields), which must never be
+	// fed back into the LLM's prompt context (docs/plans/
+	// 2026-09-04-insight-assistant-emit-info-card-design.md D2). The LLM-facing
+	// map is built directly from tmpMessageContent instead -- same five keys as
+	// every other tool's unmarshalToolResponse output, Blocks excluded. Every
+	// other tool is unaffected and still goes through unmarshalToolResponse.
+	var res map[string]any
+	if tool.Function.Name == message.FunctionCallNameEmitInfoCard {
+		res = emitInfoCardLLMResult(tmpMessageContent)
+	} else {
+		res, err = h.unmarshalToolResponse(msg)
+		if err != nil {
+			return nil, errors.Wrapf(err, "could not unmarshal the tool response message content correctly")
+		}
 	}
 
 	return res, nil
+}
+
+// CardField is a single label/value row rendered inside a CardBlock.
+type CardField struct {
+	Label string `json:"label"`
+	Value string `json:"value"`
+}
+
+// CardBlock is the wire format for a structured "info card" emitted by the
+// emit_info_card tool. Type is a discriminator, fixed to "info" for now --
+// it allows future card types to share the Blocks array without a wire-
+// format break. See docs/plans/
+// 2026-09-04-insight-assistant-emit-info-card-design.md D1.
+type CardBlock struct {
+	Type        string      `json:"type"`
+	Title       string      `json:"title"`
+	Description string      `json:"description,omitempty"`
+	Fields      []CardField `json:"fields,omitempty"`
 }
 
 type messageContent struct {
@@ -160,6 +191,11 @@ type messageContent struct {
 	Message      string `json:"message"`
 	ResourceType string `json:"resource_type"`
 	ResourceID   string `json:"resource_id"`
+	// Blocks carries emit_info_card's card data. omitempty is mandatory: this
+	// struct wraps the result of every tool, and without omitempty every other
+	// tool's stored/returned JSON shape would change. Only emit_info_card's
+	// handler ever populates this field. See design doc D2.
+	Blocks []CardBlock `json:"blocks,omitempty"`
 }
 
 func (h *aicallHandler) toolCreateResultMessage(
@@ -207,6 +243,22 @@ func (h *aicallHandler) unmarshalToolResponse(tmp *message.Message) (map[string]
 		return nil, errors.Wrap(err, "could not unmarshal the tool response message content")
 	}
 	return res, nil
+}
+
+// emitInfoCardLLMResult builds emit_info_card's LLM-facing return value
+// directly from tmpContent, instead of re-parsing the stored message via
+// unmarshalToolResponse (design doc D2). It must produce the exact same key
+// set as unmarshalToolResponse does for every other tool -- tool_call_id,
+// result, message, resource_type, resource_id -- with Blocks excluded, so
+// pipecat-manager/Python never observes a tool-dependent shape.
+func emitInfoCardLLMResult(tmpContent *messageContent) map[string]any {
+	return map[string]any{
+		"tool_call_id":  tmpContent.ToolCallID,
+		"result":        tmpContent.Result,
+		"message":       tmpContent.Message,
+		"resource_type": tmpContent.ResourceType,
+		"resource_id":   tmpContent.ResourceID,
+	}
 }
 
 func (h *aicallHandler) toolHandleConnect(ctx context.Context, c *aicall.AIcall, tool *message.ToolCall) *messageContent {

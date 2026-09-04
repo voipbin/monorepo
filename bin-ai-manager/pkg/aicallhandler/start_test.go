@@ -1520,6 +1520,185 @@ func Test_getPipecatcallMessages(t *testing.T) {
 				},
 			},
 		},
+		{
+			// D2 fix part 1 (design doc §4/§6, design review round 3): a
+			// role:tool message's content may carry emit_info_card's "blocks"
+			// key. It must be stripped when rebuilding the LLM history for a
+			// later turn -- the stored DB row itself is untouched (only this
+			// read path is filtered).
+			name: "strips blocks from role:tool message content on history rebuild",
+
+			aicall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f47ac10b-58cc-4372-a567-0e02b2c3d479"),
+				},
+			},
+
+			responseMessages: []*message.Message{
+				{
+					Role:       message.RoleTool,
+					Content:    `{"tool_call_id":"tc-1","result":"success","message":"Displayed an info card titled 'X'.","resource_type":"card","resource_id":"","blocks":[{"type":"info","title":"X","fields":[{"label":"L","value":"V"}]}]}`,
+					ToolCallID: "tc-1",
+				},
+			},
+			expectRes: []map[string]any{
+				{
+					"role":         "tool",
+					"content":      `{"message":"Displayed an info card titled 'X'.","resource_id":"","resource_type":"card","result":"success","tool_call_id":"tc-1"}`,
+					"tool_call_id": "tc-1",
+				},
+			},
+		},
+		{
+			// D2 fix part 2 (design doc §4/§6, design review rounds 5-7): the
+			// tool-call REQUEST message's Function.Arguments for emit_info_card
+			// must be neutered to a placeholder on history rebuild, while the
+			// tool_calls entry itself (id/type/name) is preserved. Defense-in-
+			// depth (VOIP-1460), not currently API-pairing-load-bearing.
+			name: "neuters emit_info_card tool_calls Arguments while keeping the entry",
+
+			aicall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a1b2c3d4-58cc-4372-a567-0e02b2c3d479"),
+				},
+			},
+
+			responseMessages: []*message.Message{
+				{
+					Role: message.RoleAssistant,
+					ToolCalls: []message.ToolCall{
+						{
+							ID:   "tc-1",
+							Type: message.ToolTypeFunction,
+							Function: message.FunctionCall{
+								Name:      message.FunctionCallNameEmitInfoCard,
+								Arguments: `{"title":"X","fields":[{"label":"L","value":"V"}]}`,
+							},
+						},
+					},
+				},
+			},
+			expectRes: []map[string]any{
+				{
+					"role":    "assistant",
+					"content": "",
+					"tool_calls": []message.ToolCall{
+						{
+							ID:   "tc-1",
+							Type: message.ToolTypeFunction,
+							Function: message.FunctionCall{
+								Name:      message.FunctionCallNameEmitInfoCard,
+								Arguments: "{}",
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			// No-op guard: every other tool's tool_calls Arguments must survive
+			// history rebuild untouched.
+			name: "leaves non-emit_info_card tool_calls Arguments untouched",
+
+			aicall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c3d4e5f6-58cc-4372-a567-0e02b2c3d479"),
+				},
+			},
+
+			responseMessages: []*message.Message{
+				{
+					Role: message.RoleAssistant,
+					ToolCalls: []message.ToolCall{
+						{
+							ID:   "tc-2",
+							Type: message.ToolTypeFunction,
+							Function: message.FunctionCall{
+								Name:      message.FunctionCallNameGetContactProfile,
+								Arguments: `{}`,
+							},
+						},
+					},
+				},
+			},
+			expectRes: []map[string]any{
+				{
+					"role":    "assistant",
+					"content": "",
+					"tool_calls": []message.ToolCall{
+						{
+							ID:   "tc-2",
+							Type: message.ToolTypeFunction,
+							Function: message.FunctionCall{
+								Name:      message.FunctionCallNameGetContactProfile,
+								Arguments: `{}`,
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			// The combined, most important regression guard (design doc §6):
+			// a full card-bearing turn (tool-call request + tool result, both
+			// persisted) rebuilt as the NEXT turn's history must show (a) the
+			// role:tool entry's content has no "blocks" key, (b) the preceding
+			// role:assistant entry's tool_calls[].function.arguments is the
+			// placeholder, while (c) that same tool_calls entry is still
+			// present with its original id/type/function.name intact. Both
+			// fix parts 1+2 must be exercised together, not just individually.
+			name: "full card turn: strips blocks and neuters tool_calls together",
+
+			aicall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b2c3d4e5-58cc-4372-a567-0e02b2c3d479"),
+				},
+			},
+
+			// mock returns newest-first; the handler reverses to chronological
+			// order, so the tool result (created second) is listed first here.
+			responseMessages: []*message.Message{
+				{
+					Role:       message.RoleTool,
+					Content:    `{"tool_call_id":"call_card_1","result":"success","message":"Displayed an info card titled 'Contact Summary'.","resource_type":"card","resource_id":"","blocks":[{"type":"info","title":"Contact Summary","fields":[{"label":"Name","value":"Jane Doe"}]}]}`,
+					ToolCallID: "call_card_1",
+				},
+				{
+					Role: message.RoleAssistant,
+					ToolCalls: []message.ToolCall{
+						{
+							ID:   "call_card_1",
+							Type: message.ToolTypeFunction,
+							Function: message.FunctionCall{
+								Name:      message.FunctionCallNameEmitInfoCard,
+								Arguments: `{"title":"Contact Summary","fields":[{"label":"Name","value":"Jane Doe"}]}`,
+							},
+						},
+					},
+				},
+			},
+			expectRes: []map[string]any{
+				{
+					"role":    "assistant",
+					"content": "",
+					"tool_calls": []message.ToolCall{
+						{
+							ID:   "call_card_1",
+							Type: message.ToolTypeFunction,
+							Function: message.FunctionCall{
+								Name:      message.FunctionCallNameEmitInfoCard,
+								Arguments: "{}",
+							},
+						},
+					},
+				},
+				{
+					"role":         "tool",
+					"content":      `{"message":"Displayed an info card titled 'Contact Summary'.","resource_id":"","resource_type":"card","result":"success","tool_call_id":"call_card_1"}`,
+					"tool_call_id": "call_card_1",
+				},
+			},
+		},
 	}
 
 	for _, tt := range tests {

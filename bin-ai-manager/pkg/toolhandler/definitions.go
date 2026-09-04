@@ -975,4 +975,62 @@ SMS, change CRM records, or spend money.`,
 			"required": []string{"message"},
 		},
 	},
+	{
+		Name:   tool.ToolNameEmitInfoCard,
+		RunLLM: true,
+		Description: `Displays a structured "info card" (title + optional description + key/value fields) in the Insight Assistant panel -- a visual UI element, not spoken/narrated text.
+
+WHEN TO USE:
+- Presenting a structured summary that reads better as a title + key/value layout than as a wall of prose (e.g. a quick-reference snapshot of information you already retrieved).
+
+WHEN NOT TO USE:
+- A simple conversational answer that reads fine as plain text -- do not wrap every reply in a card.
+- Presenting more than one genuinely distinct item in a single turn without good reason -- call this tool once per turn unless the response truly contains multiple distinct items.
+
+Card content is capped: at most 20 fields; title/description/label/value are each truncated if they exceed the limits declared on the corresponding parameter below.
+
+run_llm: Set true to have the assistant add a brief spoken follow-up after the card renders. Because the card itself already displays the title/description/fields visually, the follow-up MUST NOT restate them -- do not repeat the card's field values in your response text.`,
+		Parameters: map[string]any{
+			"type": "object",
+			"properties": map[string]any{
+				"run_llm": map[string]any{
+					"type":        "boolean",
+					"description": "Set true to add a brief follow-up after the card renders. Do not restate the card's field values in the follow-up text.",
+					"default":     true,
+				},
+				"title": map[string]any{
+					"type":        "string",
+					"description": "Card title (required, <=200 chars).",
+					"maxLength":   200,
+				},
+				"description": map[string]any{
+					"type":        "string",
+					"description": "Optional supporting text shown under the title (<=1000 chars).",
+					"maxLength":   1000,
+				},
+				"fields": map[string]any{
+					"type":        "array",
+					"description": "Key/value rows rendered in the card (at most 20 entries).",
+					"items": map[string]any{
+						"type": "object",
+						"properties": map[string]any{
+							"label": map[string]any{
+								"type":        "string",
+								"description": "Field label (<=50 chars).",
+								"maxLength":   50,
+							},
+							"value": map[string]any{
+								"type":        "string",
+								"description": "Field value (<=500 chars).",
+								"maxLength":   500,
+							},
+						},
+						"required": []string{"label", "value"},
+					},
+					"maxItems": 20,
+				},
+			},
+			"required": []string{"title"},
+		},
+	},
 }

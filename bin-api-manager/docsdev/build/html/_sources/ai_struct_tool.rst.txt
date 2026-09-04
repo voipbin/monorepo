@@ -833,9 +833,9 @@ Creates a new CRM case for the current contact/interaction.
 Insight Tools
 -------------
 
-The following tools are exclusive to ``type=insight`` AIs (see :ref:`Type <ai-struct-ai-type>`) and are not selectable by ``type=normal`` AIs. Most are always scoped to the Case the Insight AI session was opened for and accept no argument to target a different Case or contact; ``get_call_transcript`` is the exception — it takes an explicit ``call_id`` and is scoped to the caller's own account (tenant), not to the current Case's contact/peer (see its own section below).
+The following tools are exclusive to ``type=insight`` AIs (see :ref:`Type <ai-struct-ai-type>`) and are not selectable by ``type=normal`` AIs. Most are always scoped to the Case the Insight AI session was opened for and accept no argument to target a different Case or contact; ``get_call_transcript`` is the exception — it takes an explicit ``call_id`` and is scoped to the caller's own account (tenant), not to the current Case's contact/peer (see its own section below). ``emit_info_card`` is the exception in the other direction — it takes no Case/contact-scoped argument at all; it renders whatever title/description/fields the AI supplies.
 
-All of these tools are read-only with a single sanctioned exception: ``notify_agent`` writes one message into the AI call's own conversation thread. It cannot place calls, send email or SMS, change CRM records, or spend money, and it is usable only while the assistant is monitoring a live call.
+None of these tools has any side effect outside the session's own message surface. Two of them do write there: ``emit_info_card`` renders a card into the session's own stream, and ``notify_agent`` writes one message into the AI call's own conversation thread — the same thread the agent is already reading, and the same surface a plain assistant reply already writes to. Neither can place calls, send email or SMS, change CRM records, or spend money. ``notify_agent`` is additionally usable only while the assistant is monitoring a live call.
 
 ========================== ================================================= ===============
 Tool Name                  Description                                       run_llm Default
@@ -846,6 +846,7 @@ get_related_cases          List the contact's other cases                     ``
 get_case_notes             Retrieve internal agent notes on the current Case  ``true``
 get_contact_profile        Retrieve the Case contact's profile and addresses  ``true``
 get_call_transcript        Retrieve a call's merged live-transcription text   ``true``
+emit_info_card             Display a structured info card in the panel        ``true``
 notify_agent               Push a proactive note to the agent's panel         ``false``
 ========================== ================================================= ===============
 
@@ -1069,6 +1070,62 @@ Returns the merged, chronological transcript of everything said on a call, given
         "required": ["call_id"]
     }
 
+.. _ai-struct-tool-emit_info_card:
+
+emit_info_card
+~~~~~~~~~~~~~~~
+
+Displays a structured "info card" (title, optional description, and up to 20 key/value fields) in the Insight Assistant panel. This is a visual UI element, not spoken/narrated text — the card is the primary artifact the AI is producing when it calls this tool.
+
+.. note:: **AI Implementation Hint**
+
+   Unlike every other Insight tool, ``emit_info_card`` takes no Case/contact-scoped argument at all — it renders whatever ``title``/``description``/``fields`` the AI supplies. Content is size-capped: at most 20 fields, and title/description/label/value are each truncated (with a trailing ``...``) if they exceed the limits shown below. Any ``run_llm`` follow-up text should NOT restate the card's field values — the card already displays them visually.
+
+**When to use:**
+
+* Presenting a structured summary that reads better as a title + key/value layout than as a wall of prose (e.g. a quick-reference snapshot of information already retrieved)
+
+**When NOT to use:**
+
+* A simple conversational answer that reads fine as plain text — do not wrap every reply in a card
+* Presenting more than one genuinely distinct item in a single turn without good reason — call this tool once per turn unless the response truly contains multiple distinct items
+
+**Parameters:**
+
+.. code::
+
+    {
+        "type": "object",
+        "properties": {
+            "run_llm": {
+                "type": "boolean",
+                "description": "Set true to add a brief follow-up after the card renders. Do not restate the card's field values in the follow-up text.",
+                "default": true
+            },
+            "title": {
+                "type": "string",
+                "description": "Card title (required, <=200 chars)."
+            },
+            "description": {
+                "type": "string",
+                "description": "Optional supporting text shown under the title (<=1000 chars)."
+            },
+            "fields": {
+                "type": "array",
+                "description": "Key/value rows rendered in the card (at most 20 entries).",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "label": { "type": "string", "description": "Field label (<=50 chars)." },
+                        "value": { "type": "string", "description": "Field value (<=500 chars)." }
+                    },
+                    "required": ["label", "value"]
+                }
+            }
+        },
+        "required": ["title"]
+    }
+
 
 .. _ai-struct-tool-notify_agent:
 
@@ -1156,6 +1213,7 @@ Tool Name                    run_llm   Why
 ``get_case_notes``           ``true``  Insight tool — LLM reasons about the retrieved case notes.
 ``get_contact_profile``      ``true``  Insight tool — LLM reasons about the retrieved contact profile.
 ``get_call_transcript``      ``true``  Insight tool — LLM reasons about the retrieved call transcript.
+``emit_info_card``           ``true``  Insight tool — the card is the primary artifact; a follow-up must not restate the field values.
 ============================ ========= ========================================================================================
 
 .. note:: **AI Implementation Hint**

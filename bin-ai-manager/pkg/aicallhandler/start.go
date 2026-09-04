@@ -2,6 +2,7 @@ package aicallhandler
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"monorepo/bin-ai-manager/internal/config"
 	"monorepo/bin-ai-manager/models/ai"
@@ -680,13 +681,53 @@ func (h *aicallHandler) getPipecatcallMessages(ctx context.Context, c *aicall.AI
 			continue
 		}
 
+		content := string(m.Content)
+
+		// Part 1 (VOIP-1455 design doc D2, "Fix, part 1"): a role:tool message's
+		// content may carry emit_info_card's "blocks" key (the card's title/
+		// description/fields). That must never re-enter the LLM's prompt on a
+		// LATER turn's rebuilt history -- strip it here, at the read boundary,
+		// rather than at storage time, so the stored DB row and the frontend-
+		// facing webhook payload are untouched. No-op for every other tool
+		// (their content never has a "blocks" key). Falls back to the original,
+		// unmodified content string on an unmarshal error, defensively.
+		if m.Role == message.RoleTool {
+			var decoded map[string]any
+			if errUnmarshal := json.Unmarshal([]byte(m.Content), &decoded); errUnmarshal == nil {
+				if _, ok := decoded["blocks"]; ok {
+					delete(decoded, "blocks")
+					if reencoded, errMarshal := json.Marshal(decoded); errMarshal == nil {
+						content = string(reencoded)
+					}
+				}
+			}
+		}
+
 		tmp := map[string]any{
 			"role":    string(m.Role),
-			"content": string(m.Content),
+			"content": content,
 		}
 
 		if len(m.ToolCalls) > 0 {
-			tmp["tool_calls"] = m.ToolCalls
+			// Part 2 (VOIP-1455 design doc D2, "Fix, part 2"): the emit_info_card
+			// tool-call REQUEST message (role:assistant) stores the LLM's raw
+			// Function.Arguments -- essentially the same card content as
+			// "blocks", just pre-execution. Neuter it with a placeholder before
+			// replaying it on a later turn. Build a COPIED slice rather than
+			// mutating m.ToolCalls in place; the tool_calls entry itself
+			// (id/type/name) is preserved, only Arguments is replaced. No-op for
+			// every other tool. Defense-in-depth (see VOIP-1460): not currently
+			// load-bearing since bin-pipecat-manager's Python filter already
+			// drops this entry today regardless of Arguments, but keeping the
+			// entry neutered here is what stays safe once that changes.
+			toolCalls := make([]message.ToolCall, len(m.ToolCalls))
+			for i, tc := range m.ToolCalls {
+				toolCalls[i] = tc
+				if tc.Function.Name == message.FunctionCallNameEmitInfoCard {
+					toolCalls[i].Function.Arguments = "{}"
+				}
+			}
+			tmp["tool_calls"] = toolCalls
 		}
 
 		if len(m.ToolCallID) > 0 {

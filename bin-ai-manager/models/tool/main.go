@@ -39,6 +39,10 @@ const (
 	// 2026-09-03-insight-assistant-get-call-transcript-design.md).
 	ToolNameGetCallTranscript ToolName = "get_call_transcript"
 
+	// Insight AI tool set expansion (VOIP-1455, docs/plans/
+	// 2026-09-04-insight-assistant-emit-info-card-design.md).
+	ToolNameEmitInfoCard ToolName = "emit_info_card"
+
 	// Insight AI proactive notification (NOJIRA, docs/plans/
 	// 2026-09-03-insight-ai-realtime-listen-design.md §5.5).
 	ToolNameNotifyAgent ToolName = "notify_agent"
@@ -65,14 +69,20 @@ var AllToolNames = []ToolName{
 
 // AllInsightToolNames defines the tool set available to ai.TypeInsight AIs.
 //
-// Every entry must be read-only with respect to customer data and external
-// systems. The single sanctioned exception is notify_agent, whose only effect is
-// to write a message into the AIcall's own conversation thread -- the same
-// thread the agent is already reading. It cannot place calls, send email or SMS,
-// mutate CRM records, or spend money.
+// Every entry MUST have no side effects outside the session's own
+// message/expression surface -- see
+// docs/plans/2026-07-30-case-insight-assistant-tool-expansion-design.md §2.6
+// (reworded from "must be read-only" by
+// docs/plans/2026-09-04-insight-assistant-emit-info-card-design.md §1.4:
+// emit_info_card writes a message into its own session's stream, the same
+// surface a plain assistant-text turn already writes to, so a literal
+// "read-only" reading would incorrectly exclude it).
 //
-// See docs/plans/2026-07-30-case-insight-assistant-tool-expansion-design.md §2.6
-// and docs/plans/2026-09-03-insight-ai-realtime-listen-design.md §5.5.2.
+// notify_agent is the same shape and is sanctioned on the same grounds
+// (docs/plans/2026-09-03-insight-ai-realtime-listen-design.md §5.5.2): its
+// only effect is a message in the AIcall's own conversation thread -- the
+// thread the agent is already reading. Neither tool can place calls, send
+// email or SMS, mutate CRM records, or spend money.
 var AllInsightToolNames = []ToolName{
 	ToolNameGetContactInteractions,
 	ToolNameGetConversationContent,
@@ -80,6 +90,7 @@ var AllInsightToolNames = []ToolName{
 	ToolNameGetCaseNotes,
 	ToolNameGetContactProfile,
 	ToolNameGetCallTranscript,
+	ToolNameEmitInfoCard,
 	ToolNameNotifyAgent,
 }
 

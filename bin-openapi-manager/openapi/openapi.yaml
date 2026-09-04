@@ -2847,6 +2847,7 @@ components:
         - get_case_notes
         - get_contact_profile
         - get_call_transcript
+        - emit_info_card
         - notify_agent
       x-enum-varnames:
         - AIManagerToolNameAll
@@ -2871,6 +2872,7 @@ components:
         - AIManagerToolNameGetCaseNotes
         - AIManagerToolNameGetContactProfile
         - AIManagerToolNameGetCallTranscript
+        - AIManagerToolNameEmitInfoCard
         - AIManagerToolNameNotifyAgent
 
     AIManagerAIcall:
