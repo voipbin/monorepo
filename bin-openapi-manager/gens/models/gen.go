@@ -414,6 +414,7 @@ const (
 	AIManagerToolNameConnectCall            AIManagerToolName = "connect_call"
 	AIManagerToolNameCreateCall             AIManagerToolName = "create_call"
 	AIManagerToolNameDescribeAction         AIManagerToolName = "describe_action"
+	AIManagerToolNameEmitInfoCard           AIManagerToolName = "emit_info_card"
 	AIManagerToolNameGetAicallMessages      AIManagerToolName = "get_aicall_messages"
 	AIManagerToolNameGetCallTranscript      AIManagerToolName = "get_call_transcript"
 	AIManagerToolNameGetCaseNotes           AIManagerToolName = "get_case_notes"
@@ -445,6 +446,8 @@ func (e AIManagerToolName) Valid() bool {
 	case AIManagerToolNameCreateCall:
 		return true
 	case AIManagerToolNameDescribeAction:
+		return true
+	case AIManagerToolNameEmitInfoCard:
 		return true
 	case AIManagerToolNameGetAicallMessages:
 		return true

@@ -81,27 +81,55 @@ separately once this backend PR is ready.
       ~15 files including frontend cross-repo citations, zero errors found.
       Design review loop closed at round 10 (min 2, 8 REQUEST_CHANGES + 2
       consecutive APPROVE). Ready for backend implementation.
-- [ ] Code review loop after backend implementation (min 3, until 2 consecutive approvals)
+- [x] Code review round 1 (code-reviewer, APPROVE) -- D1 truncation
+      (rune-based, no mid-char cuts), D2 (bypass, Message trace,
+      resource_type/id, 3-injection-point fix incl. non-mutating copy),
+      read-only invariant rewording, RunLLM guard text, test quality all
+      verified against code. Zero findings.
+- [x] Code review round 2 (security-reviewer, APPROVE) -- input validation/
+      DoS (rune-truncation safe, JSON depth bounded by stdlib), tenant
+      isolation, all 3 re-injection points independently re-verified closed,
+      webhook exposure, OpenAPI additive-only, log hygiene. 2 LOW/informational
+      notes (both pre-existing, all-21-tools patterns, not this PR's
+      regression, not blocking): (a) field-count truncation happens after
+      full JSON unmarshal, not before parsing -- LLM-output-bounded in
+      practice; (b) the tool-call REQUEST message's raw Arguments is
+      webhook-published before the handler's truncation runs -- follow-up
+      candidate, out of this ticket's scope (all 21 tools share this).
+- [x] Code review round 3 (go-reviewer, APPROVE) -- confirmed `message.ToolCall`/
+      `FunctionCall` are pure value types field-by-field (no pointer/slice/map
+      members), so Part 2's slice copy is genuinely safe (not a shallow-copy
+      trap); concurrency (no mutable package-level state, `-race` clean, 860
+      tests); JSON/naming idiom consistency; test idiom consistency (table-
+      driven, reflect.DeepEqual, matches package convention); checked for
+      over-defensive code too, found none.
+      **3 rounds run (min met), all 3 APPROVE (exceeds 2-consecutive
+      requirement) -- code review loop satisfied.**
 
 ## Phase 1 - Backend implementation (bin-ai-manager)
 
-- [ ] `models/tool/main.go`: `ToolNameEmitInfoCard`, add to `AllInsightToolNames`,
+- [x] `models/tool/main.go`: `ToolNameEmitInfoCard`, add to `AllInsightToolNames`,
       reword read-only invariant comment
-- [ ] `pkg/toolhandler/definitions.go`: tool definition (RunLLM:true + guard
+- [x] `pkg/toolhandler/definitions.go`: tool definition (RunLLM:true + guard
       description, JSON Schema params per D1)
-- [ ] `models/message/tool.go` (or wherever FunctionCallName lives):
+- [x] `models/message/tool.go` (or wherever FunctionCallName lives):
       `FunctionCallNameEmitInfoCard`
-- [ ] `pkg/aicallhandler/tool.go`: `CardField`/`CardBlock` types,
+- [x] `pkg/aicallhandler/tool.go`: `CardField`/`CardBlock` types,
       `Blocks omitempty` on `messageContent`, dispatch map entry
-- [ ] New `pkg/aicallhandler/tool_emit_info_card.go`: handler, validation/
+- [x] New `pkg/aicallhandler/tool_emit_info_card.go`: handler, validation/
       truncation per D1 caps
-- [ ] Bypass `unmarshalToolResponse` for this tool only (D2, first-turn fix)
-      -- verify isolated branch, no other tool affected
-- [ ] `start.go:637-657` `getPipecatcallMessages`, part 1: strip `blocks`
+- [x] Bypass `unmarshalToolResponse` for this tool only (D2, first-turn fix)
+      -- verify isolated branch, no other tool affected. Implemented as a
+      small extracted helper `emitInfoCardLLMResult(tmpContent
+      *messageContent) map[string]any` (not in the original design plan,
+      added during implementation purely so the bypass's exact key set is
+      independently unit-testable without mocking the full `ToolHandle`
+      dispatch path, which no existing test in this package does).
+- [x] `start.go:637-657` `getPipecatcallMessages`, part 1: strip `blocks`
       from `role: tool` message content when rebuilding LLM history (D2
       fix part 1, design review round 3; fall back to original string on
       unmarshal error; no-op for every other tool)
-- [ ] `start.go:637-657` `getPipecatcallMessages`, part 2: replace
+- [x] `start.go:637-657` `getPipecatcallMessages`, part 2: replace
       `emit_info_card` tool-call entries' `Function.Arguments` with a
       placeholder (e.g. `{}`) in a COPIED `[]message.ToolCall` (do not
       mutate `m.ToolCalls` in place) when attaching `tool_calls` to
@@ -112,27 +140,38 @@ separately once this backend PR is ready.
       what stays safe once VOIP-1460 is fixed and the entry starts
       reaching the LLM again (D2 fix part 2, design review rounds 5-7 --
       3rd injection point, not covered by part 1)
-- [ ] `models/ai/allowed_tools_test.go`: `knownReadOnly` +
+- [x] `models/ai/allowed_tools_test.go`: `knownReadOnly` +
       `ToolNameEmitInfoCard`, reword doc comment
-- [ ] Confirm `AllowedToolNames` derives from `AllInsightToolNames` (no dup
-      list to update)
+- [x] Confirm `AllowedToolNames` derives from `AllInsightToolNames` (no dup
+      list to update) -- confirmed by reading `models/ai/tool_validation.go`;
+      no code change needed, matches design doc §4.
 
 ## Phase 2 - Docs
 
-- [ ] RST: `ai_overview.rst`, `ai_struct_tool.rst`, `ai_struct_ai.rst`
-- [ ] Clean Sphinx rebuild (`rm -rf build && python3 -m sphinx -M html source build`)
-      + `git add -f docsdev/build/`
-- [ ] OpenAPI: `AIManagerToolName` enum + `x-enum-varnames` in
-      `bin-openapi-manager/openapi/openapi.yaml`
+- [x] RST: `ai_overview.rst`, `ai_struct_tool.rst`, `ai_struct_ai.rst`
+- [x] Clean Sphinx rebuild (`rm -rf build && python3 -m sphinx -M html source build`)
+      + `git add -f docsdev/build/` -- build succeeded with zero warnings/errors
+      for the three edited RST files; verified `emit_info_card` appears in the
+      built HTML.
+- [x] OpenAPI: `AIManagerToolName` enum + `x-enum-varnames` in
+      `bin-openapi-manager/openapi/openapi.yaml` -- regenerated
+      `gens/models/gen.go` via `go generate ./...`; verified `bin-ai-manager`
+      and `bin-api-manager` both still build against the updated types.
 
 ## Phase 3 - Tests
 
-- [ ] Unit tests for `toolHandleEmitInfoCard` (valid input, truncation,
-      empty fields, missing description)
-- [ ] Unit test: LLM-facing return excludes Blocks, includes the title-only
+- [x] Unit tests for `toolHandleEmitInfoCard` (valid input, truncation,
+      empty fields, missing description) -- `tool_emit_info_card_test.go`:
+      `Test_toolHandleEmitInfoCard` (3 cases: full input, empty fields,
+      missing description), `Test_toolHandleEmitInfoCard_Truncation` (all 5
+      D1 caps: title/description/label/value length + field count),
+      `Test_toolHandleEmitInfoCard_MissingTitle` (required-field rejection).
+- [x] Unit test: LLM-facing return excludes Blocks, includes the title-only
       `Message` trace (not empty, not the field values), uses
-      `resource_type: "card"` / `resource_id: ""` (first-turn fix)
-- [ ] Unit test: `getPipecatcallMessages` output for a card-bearing turn,
+      `resource_type: "card"` / `resource_id: ""` (first-turn fix) --
+      `Test_emitInfoCardLLMResult` (exact 5-key map, no `blocks` key) +
+      `Test_toolHandleEmitInfoCard_Message_NeverContainsFieldValues`.
+- [x] Unit test: `getPipecatcallMessages` output for a card-bearing turn,
       on a *second* call simulating the next turn -- (a) tool-result
       content has no `blocks`, (b) tool-call `Arguments` is the
       placeholder not the original card JSON, (c) the tool_calls entry is
@@ -140,9 +179,17 @@ separately once this backend PR is ready.
       not current API-pairing necessity -- see Phase 1 note above /
       VOIP-1460). This 3-part test is the design's most important
       regression guard -- parts 1+2 of the fix must BOTH be exercised.
-- [ ] `allowed_tools_test.go` consent-gate test passes
-- [ ] Full verification workflow: `go mod tidy && go mod vendor && go
+      Added to `start_test.go`'s `Test_getPipecatcallMessages` table: a
+      standalone blocks-strip case, a standalone Arguments-neuter case, a
+      non-card no-op guard case, and the combined full-turn case exercising
+      (a)+(b)+(c) together in one table entry.
+- [x] `allowed_tools_test.go` consent-gate test passes -- confirmed via full
+      `go test ./...` run (see below).
+- [x] Full verification workflow: `go mod tidy && go mod vendor && go
       generate ./... && go test ./... && golangci-lint run -v --timeout 5m`
+      -- all green in `bin-ai-manager`: `go mod tidy`/`go mod vendor`
+      produced no diff, `go generate ./...` no output, `go test ./...` 1410
+      passed / 38 packages, `golangci-lint run` no issues.
 
 ## Phase 4 - Ship
 
@@ -166,5 +213,81 @@ separately once this backend PR is ready.
 ## Results (fill in at the end)
 
 - What changed:
+  - `bin-ai-manager/models/tool/main.go`: added `ToolNameEmitInfoCard`,
+    registered it in `AllInsightToolNames`, reworded the read-only invariant
+    comment.
+  - `bin-ai-manager/models/message/tool.go`: added
+    `FunctionCallNameEmitInfoCard`.
+  - `bin-ai-manager/pkg/toolhandler/definitions.go`: added the
+    `emit_info_card` tool definition (`RunLLM: true`, anti-duplicate-
+    narration guard text, JSON Schema with `title`/`description`/`fields`
+    and `maxLength`/`maxItems` hints).
+  - `bin-ai-manager/pkg/aicallhandler/tool.go`: added `CardField`/`CardBlock`
+    types, `Blocks []CardBlock \`json:"blocks,omitempty"\`` on
+    `messageContent`, the `mapFunctions` dispatch entry, and the
+    `emit_info_card`-only `unmarshalToolResponse` bypass (extracted into
+    `emitInfoCardLLMResult`).
+  - `bin-ai-manager/pkg/aicallhandler/tool_emit_info_card.go` (new): the
+    `toolHandleEmitInfoCard` handler plus the size-guard constants/
+    `truncateCardText` helper (handler-side truncation is the real
+    enforcement per D1, not the JSON Schema hints).
+  - `bin-ai-manager/pkg/aicallhandler/start.go`: `getPipecatcallMessages`
+    now (part 1) strips a `role:tool` message's `blocks` key when rebuilding
+    LLM history, and (part 2) neuters `emit_info_card` tool-call entries'
+    `Function.Arguments` to `"{}"` in a copied slice while preserving the
+    entry itself.
+  - `bin-ai-manager/models/ai/allowed_tools_test.go`: added
+    `tool.ToolNameEmitInfoCard` to `knownReadOnly`, reworded the doc
+    comment.
+  - `bin-ai-manager/pkg/aicallhandler/tool_emit_info_card_test.go` (new) and
+    `bin-ai-manager/pkg/aicallhandler/start_test.go` (extended): new unit
+    tests, see Phase 3.
+  - `bin-api-manager/docsdev/source/ai_overview.rst`,
+    `ai_struct_tool.rst`, `ai_struct_ai.rst`: documented `emit_info_card`
+    (tool tables, its own reference section, `run_llm` defaults table,
+    `type=insight` tool-set mentions). `bin-api-manager/docsdev/build/`:
+    clean-rebuilt and force-added.
+  - `bin-openapi-manager/openapi/openapi.yaml`: added `emit_info_card` /
+    `AIManagerToolNameEmitInfoCard` to the `AIManagerToolName` enum +
+    `x-enum-varnames`; `bin-openapi-manager/gens/models/gen.go` regenerated.
 - How verified:
-- Lessons (append to tasks/lessons.md if any):
+  - `bin-ai-manager`: full verification workflow green -- `go mod tidy`
+    (no diff), `go mod vendor` (no diff), `go generate ./...` (no output),
+    `go test ./...` (1410 passed, 38 packages), `golangci-lint run -v
+    --timeout 5m` (no issues).
+  - `bin-openapi-manager`: `go generate ./...` regenerated `gen.go`
+    correctly (verified `AIManagerToolNameEmitInfoCard` present); `go build
+    ./...` succeeds (no test files in this service, matches its CLAUDE.md).
+  - Cross-service sanity: `bin-ai-manager` and `bin-api-manager` both still
+    `go build ./...` cleanly against the regenerated OpenAPI types.
+  - `bin-api-manager/docsdev`: clean Sphinx rebuild
+    (`rm -rf build && python3 -m sphinx -M html source build`) succeeded
+    with zero warnings/errors for the three edited RST files; confirmed
+    `emit_info_card` appears in the built HTML for all three pages.
+- Deviations from the design doc (for the next code-review round):
+  - The design doc's D2 "Confirmed locally implementable" note describes an
+    inline `if function.Name == ... { <build map> } else { unmarshalToolResponse(msg) }`
+    branch directly in `ToolHandle`. Implemented instead as that same
+    `if/else` branch calling a small extracted helper,
+    `emitInfoCardLLMResult(tmpContent *messageContent) map[string]any`, so
+    the bypass's exact 5-key output shape (no `blocks` key) could be unit-
+    tested directly -- no existing test in this package invokes the full
+    `ToolHandle` dispatch path (it requires mocking `Get`/two
+    `messageHandler.Create` calls/etc.), so testing the bypass logic in
+    isolation was the more consistent, lower-risk option. Behavior is
+    unchanged; this is a pure extract-function refactor.
+  - Everything else matches the design doc's file/line plan; no other
+    deviations found during implementation.
+- Not done (out of scope for this delegation, left unchecked deliberately):
+  - Phase 0's "Code review loop after backend implementation" -- this pass
+    was implementation + tests + docs + verification only. The review loop
+    is a separate step against this diff.
+  - Phase 4 (git fetch/conflict check, commit, push, PR) -- not started;
+    this delegation stopped at "implementation + tests + docs + green
+    verification," matching the instructions given.
+- Lessons (append to tasks/lessons.md if any): none from this pass -- the
+  design doc's 10-round review loop had already surfaced and resolved the
+  hard problems (the 3 card-JSON injection points, the `Message` field's
+  three-consumer conflict, the `resource_type`/`resource_id` precedent) before
+  implementation started, so implementation proceeded without new findings
+  that would change the design.

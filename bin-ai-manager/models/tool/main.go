@@ -38,6 +38,10 @@ const (
 	// Insight AI tool set expansion (VOIP-1453, docs/plans/
 	// 2026-09-03-insight-assistant-get-call-transcript-design.md).
 	ToolNameGetCallTranscript ToolName = "get_call_transcript"
+
+	// Insight AI tool set expansion (VOIP-1455, docs/plans/
+	// 2026-09-04-insight-assistant-emit-info-card-design.md).
+	ToolNameEmitInfoCard ToolName = "emit_info_card"
 )
 
 // AllToolNames returns all available tool names (excluding "all")
@@ -60,8 +64,14 @@ var AllToolNames = []ToolName{
 }
 
 // AllInsightToolNames defines the tool set available to ai.TypeInsight AIs.
-// Every entry MUST be read-only (no side effects) -- see
-// docs/plans/2026-07-30-case-insight-assistant-tool-expansion-design.md §2.6.
+// Every entry MUST have no side effects outside the session's own
+// message/expression surface -- see
+// docs/plans/2026-07-30-case-insight-assistant-tool-expansion-design.md §2.6
+// (reworded from "must be read-only" by
+// docs/plans/2026-09-04-insight-assistant-emit-info-card-design.md §1.4:
+// emit_info_card writes a message into its own session's stream, the same
+// surface a plain assistant-text turn already writes to, so a literal
+// "read-only" reading would incorrectly exclude it).
 var AllInsightToolNames = []ToolName{
 	ToolNameGetContactInteractions,
 	ToolNameGetConversationContent,
@@ -69,6 +79,7 @@ var AllInsightToolNames = []ToolName{
 	ToolNameGetCaseNotes,
 	ToolNameGetContactProfile,
 	ToolNameGetCallTranscript,
+	ToolNameEmitInfoCard,
 }
 
 // Tool defines a tool with its schema for LLM function calling.
