@@ -228,6 +228,18 @@ func (mr *MockAIcallHandlerMockRecorder) ProcessTerminate(ctx, id any) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProcessTerminate", reflect.TypeOf((*MockAIcallHandler)(nil).ProcessTerminate), ctx, id)
 }
 
+// RunListenTurn mocks base method.
+func (m *MockAIcallHandler) RunListenTurn(ctx context.Context, aicallID uuid.UUID) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "RunListenTurn", ctx, aicallID)
+}
+
+// RunListenTurn indicates an expected call of RunListenTurn.
+func (mr *MockAIcallHandlerMockRecorder) RunListenTurn(ctx, aicallID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RunListenTurn", reflect.TypeOf((*MockAIcallHandler)(nil).RunListenTurn), ctx, aicallID)
+}
+
 // Send mocks base method.
 func (m *MockAIcallHandler) Send(ctx context.Context, id uuid.UUID, role message.Role, messageText string, runImmediately, audioResponse bool) (*message.Message, error) {
 	m.ctrl.T.Helper()

@@ -40,6 +40,7 @@ type AIcallHandler interface {
 	ProcessStart(ctx context.Context, cb *aicall.AIcall) (*aicall.AIcall, error)
 	ProcessTerminate(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error)
 	ProcessListen(ctx context.Context, id uuid.UUID) (*aicall.AIcall, error)
+	RunListenTurn(ctx context.Context, aicallID uuid.UUID)
 
 	ToolHandle(ctx context.Context, id uuid.UUID, toolID string, toolType message.ToolType, function message.FunctionCall, pipecatcallID uuid.UUID) (map[string]any, error)
 

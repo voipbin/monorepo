@@ -2,17 +2,25 @@ package aicallhandler
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"testing"
+	"time"
 
 	"monorepo/bin-ai-manager/internal/config"
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
+	"monorepo/bin-ai-manager/pkg/cachehandler"
+	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/messagehandler"
 	cmcall "monorepo/bin-call-manager/models/call"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
+	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
 
 	"github.com/gofrs/uuid"
+	"github.com/prometheus/client_golang/prometheus/testutil"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -256,5 +264,344 @@ func Test_listenPromptSnapshot(t *testing.T) {
 				t.Errorf("mismatch. expected: %q, got: %q", tt.expect, got)
 			}
 		})
+	}
+}
+
+// listenTurnHarness bundles the mocks RunListenTurn and its body need.
+type listenTurnHarness struct {
+	req   *requesthandler.MockRequestHandler
+	db    *dbhandler.MockDBHandler
+	cache *cachehandler.MockCacheHandler
+	util  *utilhandler.MockUtilHandler
+	msg   *messagehandler.MockMessageHandler
+	h     *aicallHandler
+}
+
+func newListenTurnHarness(mc *gomock.Controller) *listenTurnHarness {
+	req := requesthandler.NewMockRequestHandler(mc)
+	db := dbhandler.NewMockDBHandler(mc)
+	cache := cachehandler.NewMockCacheHandler(mc)
+	util := utilhandler.NewMockUtilHandler(mc)
+	msg := messagehandler.NewMockMessageHandler(mc)
+
+	return &listenTurnHarness{
+		req: req, db: db, cache: cache, util: util, msg: msg,
+		h: &aicallHandler{
+			reqHandler:     req,
+			db:             db,
+			cache:          cache,
+			utilHandler:    util,
+			messageHandler: msg,
+		},
+	}
+}
+
+// listeningAIcall is an AIcall that passes every RunListenTurn precondition.
+func listeningAIcall() *aicall.AIcall {
+	return &aicall.AIcall{
+		Identity:       commonidentity.Identity{ID: ltAIcallID, CustomerID: ltCustomerID},
+		AssistanceType: aicall.AssistanceTypeAI,
+		ReferenceType:  aicall.ReferenceTypeContactCase,
+		Status:         aicall.StatusProgressing,
+		PipecatcallID:  uuid.FromStringOrNil("99990000-0000-4000-8000-0000000000aa"),
+		Metadata: map[string]any{
+			aicall.MetaKeyListenTranscribeID: uuid.FromStringOrNil("99990000-0000-4000-8000-0000000000bb").String(),
+		},
+	}
+}
+
+// metricDelta reports how much a promListenTurnTotal label moved across fn.
+func metricDelta(t *testing.T, label string, fn func()) float64 {
+	t.Helper()
+	before := testutil.ToFloat64(promListenTurnTotal.WithLabelValues(label))
+	fn()
+	return testutil.ToFloat64(promListenTurnTotal.WithLabelValues(label)) - before
+}
+
+// Test_RunListenTurn covers every precondition and outcome.
+//
+// NOTE: not parallel, and its sub-tests are sequential by default -- the
+// promListenTurnTotal snapshot deltas below would be corrupted by concurrent
+// increments (see metrics_conversation.go's own note on this pattern).
+func Test_RunListenTurn(t *testing.T) {
+	turnPCID := uuid.FromStringOrNil("99990000-0000-4000-8000-0000000000cc")
+
+	tests := []struct {
+		name string
+
+		flagEnabled bool
+		status      aicall.Status
+		refType     aicall.ReferenceType
+		metadata    map[string]any
+
+		expectCountIncr bool
+		turnCount       int64
+
+		expectDrain  bool
+		pendingLines []string
+
+		expectWindow bool
+		registerErr  error
+
+		expectPipecatStart bool
+		expectResult       string
+	}{
+		{
+			name: "flag off stops listening entirely",
+			// Not merely "clears bookkeeping": a bare state clear would leave a
+			// still-running owned STT session with its handle lost, so a
+			// rollback would strand a billed stream until the call ended.
+			flagEnabled:  false,
+			status:       aicall.StatusProgressing,
+			refType:      aicall.ReferenceTypeContactCase,
+			expectResult: "skipped_disabled",
+		},
+		{
+			name:         "terminated aicall stops listening",
+			flagEnabled:  true,
+			status:       aicall.StatusTerminated,
+			refType:      aicall.ReferenceTypeContactCase,
+			expectResult: "skipped_invalid",
+		},
+		{
+			name:         "non contact_case reference type stops listening",
+			flagEnabled:  true,
+			status:       aicall.StatusProgressing,
+			refType:      aicall.ReferenceTypeCall,
+			expectResult: "skipped_invalid",
+		},
+		{
+			name:         "missing listen_transcribe_id metadata stops listening",
+			flagEnabled:  true,
+			status:       aicall.StatusProgressing,
+			refType:      aicall.ReferenceTypeContactCase,
+			metadata:     map[string]any{},
+			expectResult: "skipped_invalid",
+		},
+		{
+			name:            "empty pending buffer skips without stopping",
+			flagEnabled:     true,
+			status:          aicall.StatusProgressing,
+			refType:         aicall.ReferenceTypeContactCase,
+			expectCountIncr: true,
+			turnCount:       1,
+			expectDrain:     true,
+			pendingLines:    []string{},
+			expectResult:    "skipped_empty",
+		},
+		{
+			name:            "turn cap exceeded stops listening",
+			flagEnabled:     true,
+			status:          aicall.StatusProgressing,
+			refType:         aicall.ReferenceTypeContactCase,
+			expectCountIncr: true,
+			turnCount:       61,
+			expectResult:    "skipped_cap",
+		},
+		{
+			name: "turn-id registration failure aborts before starting a pipecatcall",
+			// Proceeding unregistered would make every tool call from this turn
+			// resolve listenTurn=false: its rows get permanently tagged
+			// OriginNone and its notify_agent call gets rejected -- the exact
+			// failure the registration exists to prevent.
+			flagEnabled:        true,
+			status:             aicall.StatusProgressing,
+			refType:            aicall.ReferenceTypeContactCase,
+			expectCountIncr:    true,
+			turnCount:          1,
+			expectDrain:        true,
+			pendingLines:       []string{"[CUSTOMER] hi"},
+			expectWindow:       true,
+			registerErr:        fmt.Errorf("redis unavailable"),
+			expectPipecatStart: false,
+			expectResult:       "skipped_register_failed",
+		},
+		{
+			name:               "happy path runs one turn",
+			flagEnabled:        true,
+			status:             aicall.StatusProgressing,
+			refType:            aicall.ReferenceTypeContactCase,
+			expectCountIncr:    true,
+			turnCount:          1,
+			expectDrain:        true,
+			pendingLines:       []string{"[CUSTOMER] I want to cancel"},
+			expectWindow:       true,
+			expectPipecatStart: true,
+			expectResult:       "ran",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			config.SetListenDefaultsForTest()
+			config.SetAIcallListenEnabledForTest(tt.flagEnabled)
+			defer config.SetListenDefaultsForTest()
+
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			m := newListenTurnHarness(mc)
+			ctx := context.Background()
+
+			c := listeningAIcall()
+			c.Status = tt.status
+			c.ReferenceType = tt.refType
+			if tt.metadata != nil {
+				c.Metadata = tt.metadata
+			}
+			m.db.EXPECT().AIcallGet(ctx, ltAIcallID).Return(c, nil)
+
+			if tt.expectCountIncr {
+				m.cache.EXPECT().ListenTurnCountIncr(ctx, ltAIcallID, listenBufferTTL()).Return(tt.turnCount, nil)
+			} else {
+				m.cache.EXPECT().ListenTurnCountIncr(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+			}
+
+			if tt.expectDrain {
+				m.cache.EXPECT().ListenPendingPopAll(ctx, ltAIcallID).Return(tt.pendingLines, nil)
+			} else {
+				m.cache.EXPECT().ListenPendingPopAll(gomock.Any(), gomock.Any()).Times(0)
+			}
+
+			if tt.expectWindow {
+				m.cache.EXPECT().ListenWindowGet(ctx, ltAIcallID).Return(tt.pendingLines, nil)
+				m.msg.EXPECT().List(ctx, uint64(30), "", gomock.Any()).Return(nil, nil)
+				m.util.EXPECT().UUIDCreate().Return(turnPCID)
+				m.cache.EXPECT().ListenTurnPipecatcallIDAdd(ctx, ltAIcallID, turnPCID, gomock.Any()).Return(tt.registerErr)
+			}
+
+			if tt.expectPipecatStart {
+				m.req.EXPECT().PipecatV1PipecatcallStart(
+					ctx, turnPCID, ltCustomerID, gomock.Any(), pmpipecatcall.ReferenceTypeAICall, ltAIcallID,
+					gomock.Any(), gomock.Any(),
+					pmpipecatcall.STTTypeNone, "", pmpipecatcall.TTSTypeNone, "", "",
+				).Return(&pmpipecatcall.Pipecatcall{
+					Identity: commonidentity.Identity{ID: turnPCID},
+					HostID:   "10.0.0.1",
+				}, nil)
+				m.req.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, "10.0.0.1", turnPCID, defaultListenTurnTimeout).Return(nil)
+			} else {
+				m.req.EXPECT().PipecatV1PipecatcallStart(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				).Times(0)
+			}
+
+			delta := metricDelta(t, tt.expectResult, func() {
+				m.h.RunListenTurn(ctx, ltAIcallID)
+			})
+			if delta != 1 {
+				t.Errorf("expected exactly one %q increment. got: %v", tt.expectResult, delta)
+			}
+		})
+	}
+}
+
+// Test_RunListenTurn_DoesNotWritePipecatcallID pins the load-bearing decision.
+//
+// Writing the turn's throwaway id to the AIcall row would rotate the agent's own
+// conversational turn out from under an in-flight answer, bump tm_update into
+// Send's cooldown, and destroy the id mismatch that is the drop signal for
+// anything the turn emits. All three at once, silently.
+func Test_RunListenTurn_DoesNotWritePipecatcallID(t *testing.T) {
+	config.SetListenDefaultsForTest()
+	config.SetAIcallListenEnabledForTest(true)
+	defer config.SetListenDefaultsForTest()
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	m := newListenTurnHarness(mc)
+	ctx := context.Background()
+
+	c := listeningAIcall()
+	boundPCID := c.PipecatcallID
+	turnPCID := uuid.FromStringOrNil("99990000-0000-4000-8000-0000000000dd")
+
+	m.db.EXPECT().AIcallGet(ctx, ltAIcallID).Return(c, nil)
+	m.cache.EXPECT().ListenTurnCountIncr(ctx, ltAIcallID, listenBufferTTL()).Return(int64(1), nil)
+	m.cache.EXPECT().ListenPendingPopAll(ctx, ltAIcallID).Return([]string{"[CUSTOMER] hello"}, nil)
+	m.cache.EXPECT().ListenWindowGet(ctx, ltAIcallID).Return([]string{"[CUSTOMER] hello"}, nil)
+	m.msg.EXPECT().List(ctx, uint64(30), "", gomock.Any()).Return(nil, nil)
+	m.util.EXPECT().UUIDCreate().Return(turnPCID)
+
+	var registeredID uuid.UUID
+	m.cache.EXPECT().ListenTurnPipecatcallIDAdd(ctx, ltAIcallID, gomock.Any(), gomock.Any()).
+		DoAndReturn(func(_ context.Context, _ uuid.UUID, pcID uuid.UUID, _ time.Duration) error {
+			registeredID = pcID
+			return nil
+		})
+
+	var startedID uuid.UUID
+	m.req.EXPECT().PipecatV1PipecatcallStart(
+		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+	).DoAndReturn(func(_ context.Context, id, _, _ uuid.UUID, _ pmpipecatcall.ReferenceType, _ uuid.UUID,
+		_ pmpipecatcall.LLMType, _ []map[string]any, _ pmpipecatcall.STTType, _ string,
+		_ pmpipecatcall.TTSType, _, _ string) (*pmpipecatcall.Pipecatcall, error) {
+		startedID = id
+		return &pmpipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: id}, HostID: "10.0.0.1"}, nil
+	})
+	m.req.EXPECT().PipecatV1PipecatcallTerminateWithDelay(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+
+	// NO AIcallUpdate / AIcallUpdateIfActive / AIcallUpdateNoTouchTMUpdate
+	// expectation at all -- gomock fails the test if the turn writes the row.
+	m.db.EXPECT().AIcallUpdate(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+	m.db.EXPECT().AIcallUpdateIfActive(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+	m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+	m.h.RunListenTurn(ctx, ltAIcallID)
+
+	if startedID == boundPCID {
+		t.Errorf("the turn must run on a throwaway id, not the AIcall's bound one. got: %s", startedID)
+	}
+	if startedID != registeredID {
+		t.Errorf("the started id must be the one registered as a listen turn. started: %s, registered: %s", startedID, registeredID)
+	}
+	if c.PipecatcallID != boundPCID {
+		t.Errorf("the AIcall's bound pipecatcall id must be untouched. expected: %s, got: %s", boundPCID, c.PipecatcallID)
+	}
+}
+
+// Test_runListenTurnWithLines_HangupPath pins that the hangup flush can
+// evaluate lines it already holds, bypassing both the drain and the debounce
+// lock.
+//
+// This is why the turn body is a separate function at all: RunListenTurn drains
+// the buffer itself and respects the lock, so the hangup path -- which has
+// already drained -- would otherwise have no way in.
+func Test_runListenTurnWithLines_HangupPath(t *testing.T) {
+	config.SetListenDefaultsForTest()
+	config.SetAIcallListenEnabledForTest(true)
+	defer config.SetListenDefaultsForTest()
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	m := newListenTurnHarness(mc)
+	ctx := context.Background()
+
+	c := listeningAIcall()
+	turnPCID := uuid.FromStringOrNil("99990000-0000-4000-8000-0000000000ee")
+
+	// The hangup path has ALREADY drained, so neither of these may be called.
+	m.cache.EXPECT().ListenPendingPopAll(gomock.Any(), gomock.Any()).Times(0)
+	m.cache.EXPECT().ListenTurnTryLock(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+	m.cache.EXPECT().ListenWindowGet(ctx, ltAIcallID).Return([]string{"[AGENT] bye"}, nil)
+	m.msg.EXPECT().List(ctx, uint64(30), "", gomock.Any()).Return(nil, nil)
+	m.util.EXPECT().UUIDCreate().Return(turnPCID)
+	m.cache.EXPECT().ListenTurnPipecatcallIDAdd(ctx, ltAIcallID, turnPCID, gomock.Any()).Return(nil)
+	m.req.EXPECT().PipecatV1PipecatcallStart(
+		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+	).Return(&pmpipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: turnPCID}, HostID: "10.0.0.1"}, nil).Times(1)
+	m.req.EXPECT().PipecatV1PipecatcallTerminateWithDelay(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+
+	delta := metricDelta(t, "ran", func() {
+		m.h.runListenTurnWithLines(ctx, c, []string{"[AGENT] bye"})
+	})
+	if delta != 1 {
+		t.Errorf("expected exactly one 'ran' increment. got: %v", delta)
 	}
 }

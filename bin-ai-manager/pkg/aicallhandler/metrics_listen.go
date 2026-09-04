@@ -26,6 +26,15 @@ var (
 		[]string{"result"},
 	)
 
+	promListenTurnTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "aicall_listen_turn_total",
+			Help:      "Total listen evaluation turns by outcome. skipped_locked measured against ran is the direct read on how much LLM spend the debounce is saving -- near-zero skipped_locked means the interval is too short for the traffic.",
+		},
+		[]string{"result"},
+	)
+
 	promListenNotifyTotal = prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Namespace: metricsNamespace,
@@ -40,5 +49,6 @@ func init() {
 		promListenMembershipCheckFailedTotal,
 		promListenNotifyTotal,
 		promListenStartTotal,
+		promListenTurnTotal,
 	)
 }
