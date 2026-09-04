@@ -208,6 +208,76 @@ class TestCreateLLMService:
         assert passed_messages[0] == {"role": "system", "content": "You are helpful."}
         assert passed_messages[1] == {"role": "user", "content": "valid message"}
 
+    @patch("run.LLMContextAggregatorPair")
+    @patch("run.LLMContext")
+    @patch("run.OpenAILLMService")
+    def test_openai_preserves_paired_tool_call_messages(self, mock_service, mock_context, mock_pair):
+        """create_llm_service must route messages through filter_valid_messages.
+
+        Production shape (VOIP-1460): the tool-call request message has
+        content="" and a populated tool_calls list, followed by its
+        role="tool" result. The old predicate dropped the request and
+        orphaned the result. Both halves must now survive, in order, while an
+        unpaired tool-call request is still dropped.
+        """
+        from run import create_llm_service
+
+        mock_service.return_value = MagicMock()
+
+        tool_call_request = {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+                {
+                    "id": "call_abc",
+                    "type": "function",
+                    "function": {"name": "get_resource", "arguments": "{}"},
+                }
+            ],
+        }
+        tool_call_result = {
+            "role": "tool",
+            "content": '{"tool_call_id": "call_abc", "result": "success"}',
+            "tool_call_id": "call_abc",
+        }
+        unpaired_request = {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+                {
+                    "id": "call_orphan",
+                    "type": "function",
+                    "function": {"name": "unknown_tool", "arguments": "{}"},
+                }
+            ],
+        }
+
+        messages = [
+            {"role": "system", "content": "You are helpful."},
+            {"role": "user", "content": "What is the status?"},
+            tool_call_request,
+            tool_call_result,
+            unpaired_request,
+            {"role": "user", "content": "and now?"},
+        ]
+
+        create_llm_service(
+            type="openai.gpt-4o",
+            key="test-key",
+            messages=messages,
+            tools=[]
+        )
+
+        mock_context.assert_called_once()
+        passed_messages = mock_context.call_args[1]["messages"]
+        assert passed_messages == [
+            {"role": "system", "content": "You are helpful."},
+            {"role": "user", "content": "What is the status?"},
+            tool_call_request,
+            tool_call_result,
+            {"role": "user", "content": "and now?"},
+        ]
+
     @patch("run.ToolsSchema")
     @patch("run._openai_tools_to_standard")
     @patch("run.LLMContextAggregatorPair")

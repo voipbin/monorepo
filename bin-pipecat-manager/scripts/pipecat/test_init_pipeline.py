@@ -291,3 +291,113 @@ async def test_init_team_pipeline_swaps_flowmanager_llm_to_router():
         )
 
     assert flow_manager_stub._llm is mock_routing
+
+
+@pytest.mark.asyncio
+async def test_init_team_pipeline_preserves_paired_tool_call_messages():
+    """init_team_pipeline routes llm_messages through filter_valid_messages.
+
+    VOIP-1460: reuses the working success-path harness from
+    test_init_team_pipeline_swaps_flowmanager_llm_to_router and adds
+    patch("run.LLMContext") so the message list the shared LLMContext is
+    built with can be asserted. The production shape (assistant message with
+    content="" + tool_calls, followed by its role="tool" result) must survive
+    intact; an unpaired tool-call request must still be dropped.
+    """
+    mock_llm = MagicMock()
+
+    mock_routing = MagicMock()
+    mock_routing.active_service = mock_llm
+    mock_routing.cleanup = AsyncMock()
+
+    resolved_team = {
+        "id": "team-7",
+        "start_member_id": "member-1",
+        "members": [
+            {
+                "id": "member-1",
+                "name": "Agent A",
+                "ai": {
+                    "engine_model": "openai.gpt-4o",
+                    "engine_key": "fake-key",
+                    "init_prompt": "You are helpful.",
+                },
+                "tools": [],
+                "transitions": [],
+            }
+        ],
+    }
+
+    tool_call_request = {
+        "role": "assistant",
+        "content": "",
+        "tool_calls": [
+            {
+                "id": "call_abc",
+                "type": "function",
+                "function": {"name": "get_resource", "arguments": "{}"},
+            }
+        ],
+    }
+    tool_call_result = {
+        "role": "tool",
+        "content": '{"tool_call_id": "call_abc", "result": "success"}',
+        "tool_call_id": "call_abc",
+    }
+    unpaired_request = {
+        "role": "assistant",
+        "content": "",
+        "tool_calls": [
+            {
+                "id": "call_orphan",
+                "type": "function",
+                "function": {"name": "unknown_tool", "arguments": "{}"},
+            }
+        ],
+    }
+
+    llm_messages = [
+        {"role": "user", "content": "What is the status?"},
+        tool_call_request,
+        tool_call_result,
+        unpaired_request,
+        {"role": "user", "content": "and now?"},
+    ]
+
+    mock_task = MagicMock()
+    mock_task.cancel = AsyncMock()
+    mock_task.queue_frames = AsyncMock()
+    mock_transport = MagicMock()
+    mock_transport.cleanup = AsyncMock()
+
+    flow_manager_stub = MagicMock()
+    flow_manager_stub._llm = MagicMock()
+    flow_manager_stub.initialize = AsyncMock()
+
+    with patch("run.create_llm_service", return_value=(mock_llm, MagicMock())), \
+         patch("run.RoutingLLMService", return_value=mock_routing), \
+         patch("run.create_websocket_transport", return_value=mock_transport), \
+         patch("run.Pipeline"), \
+         patch("run.PipelineTask", return_value=mock_task), \
+         patch("run.build_team_flow", return_value=({}, MagicMock())), \
+         patch("run.FlowManager", return_value=flow_manager_stub), \
+         patch("run.LLMContext") as mock_context, \
+         patch("run.task_manager") as mock_task_mgr:
+        mock_task_mgr.add = AsyncMock()
+        mock_task_mgr.remove = AsyncMock()
+
+        await init_team_pipeline(
+            id="test-11",
+            resolved_team=resolved_team,
+            llm_messages=llm_messages,
+        )
+
+    mock_context.assert_called_once()
+    passed_messages = mock_context.call_args[1]["messages"]
+    assert passed_messages == [
+        {"role": "system", "content": "You are helpful."},
+        {"role": "user", "content": "What is the status?"},
+        tool_call_request,
+        tool_call_result,
+        {"role": "user", "content": "and now?"},
+    ]

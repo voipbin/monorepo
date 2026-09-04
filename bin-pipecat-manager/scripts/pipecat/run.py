@@ -41,6 +41,7 @@ from pipecat.transports.websocket.client import (
     WebsocketClientTransport,
 )
 
+from message_filters import filter_valid_messages
 from tools import tool_register, tool_unregister, convert_to_openai_format, get_tool_names
 from task import task_manager
 from routing_llm import RoutingLLMService
@@ -447,7 +448,7 @@ def _openai_tools_to_standard(openai_tools: list[dict]) -> list[FunctionSchema]:
 
 
 def create_llm_service(type: str, key: str, messages: list[dict], tools: list[dict], **options):
-    valid_messages = [m for m in messages if m.get("role") and m.get("content")]
+    valid_messages = filter_valid_messages(messages)
 
     if "." in type:
         service_name, model_name = type.split(".", 1)
@@ -634,7 +635,7 @@ async def init_team_pipeline(
     start_messages = []
     if start_member["ai"].get("init_prompt"):
         start_messages.append({"role": "system", "content": start_member["ai"]["init_prompt"]})
-    start_messages.extend([m for m in llm_messages if m.get("role") and m.get("content")])
+    start_messages.extend(filter_valid_messages(llm_messages))
 
     # Use universal LLMContext + LLMContextAggregatorPair so FlowManager's
     # create_adapter() returns UniversalLLMAdapter. This ensures tools are

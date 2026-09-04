@@ -170,13 +170,31 @@ class TestBuildTeamFlowConversationHistory:
             {"role": "user", "content": "valid"},
         ]
 
-    def test_tool_role_messages_preserved(self):
-        """Tool call results (role=tool) should pass through the filter."""
+    def test_tool_role_messages_preserved_with_content(self):
+        """Tool call results (role=tool) should pass through the filter.
+
+        VOIP-1460: the original fixture carried a role="tool" message whose
+        tool_call_id ("call_123") had no matching assistant tool_calls entry,
+        i.e. an orphaned tool result. The pairing re-check in
+        filter_valid_messages correctly drops such a message, so the fixture
+        is repaired into a complete pair here to preserve the test's original
+        intent (a tool result WITH content survives).
+        """
         member = _make_member("m1")
         team = _make_team([member], "m1")
         llm_messages = [
             {"role": "user", "content": "Transfer me to sales"},
-            {"role": "assistant", "content": "Transferring now."},
+            {
+                "role": "assistant",
+                "content": "Transferring now.",
+                "tool_calls": [
+                    {
+                        "id": "call_123",
+                        "type": "function",
+                        "function": {"name": "transfer", "arguments": "{}"},
+                    }
+                ],
+            },
             {"role": "tool", "content": '{"status": "ok"}', "tool_call_id": "call_123"},
         ]
 
@@ -186,6 +204,64 @@ class TestBuildTeamFlowConversationHistory:
         )
 
         assert start_node["task_messages"] == llm_messages
+
+    def test_tool_role_messages_preserved_with_empty_content_and_tool_calls(self):
+        """Production shape: content="" + tool_calls survives with its result.
+
+        VOIP-1460: bin-ai-manager stores the tool-call request message as
+        role="assistant", content="", tool_calls=[...] (tool.go:47). The old
+        `m.get("content")` predicate dropped it and orphaned the following
+        role="tool" result. Both halves must now survive in order, while an
+        unpaired tool-call request is still dropped.
+        """
+        member = _make_member("m1")
+        team = _make_team([member], "m1")
+        tool_call_request = {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+                {
+                    "id": "call_abc",
+                    "type": "function",
+                    "function": {"name": "get_resource", "arguments": "{}"},
+                }
+            ],
+        }
+        tool_call_result = {
+            "role": "tool",
+            "content": '{"tool_call_id": "call_abc", "result": "success"}',
+            "tool_call_id": "call_abc",
+        }
+        unpaired_request = {
+            "role": "assistant",
+            "content": "",
+            "tool_calls": [
+                {
+                    "id": "call_orphan",
+                    "type": "function",
+                    "function": {"name": "unknown_tool", "arguments": "{}"},
+                }
+            ],
+        }
+        llm_messages = [
+            {"role": "user", "content": "What is the status?"},
+            tool_call_request,
+            tool_call_result,
+            unpaired_request,
+            {"role": "user", "content": "and now?"},
+        ]
+
+        _, start_node = build_team_flow(
+            team, "pc-1", MagicMock(), None, None,
+            llm_messages=llm_messages,
+        )
+
+        assert start_node["task_messages"] == [
+            {"role": "user", "content": "What is the status?"},
+            tool_call_request,
+            tool_call_result,
+            {"role": "user", "content": "and now?"},
+        ]
 
     def test_extra_keys_in_messages_preserved(self):
         """Extra keys in message dicts should pass through unmodified."""

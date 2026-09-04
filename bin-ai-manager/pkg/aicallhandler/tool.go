@@ -83,7 +83,17 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 		tmpMessageContent = fn(ctx, c, tool)
 	} else {
 		log.Debugf("unknown tool call: %s", tool.Function.Name)
-		return nil, fmt.Errorf("unknown tool call: %s", tool.Function.Name)
+		// Record a failure result message before returning. Without this the
+		// tool-call request message created above stays permanently unpaired,
+		// which breaks every later turn of this aicall once the pipecat-side
+		// filter stops dropping unpaired tool-call messages (VOIP-1460).
+		errMsg := fmt.Sprintf("unknown tool call: %s", tool.Function.Name)
+		failContent := newToolResult(tool.ID)
+		fillFailed(failContent, stderrors.New(errMsg))
+		if _, errRecord := h.toolCreateResultMessage(ctx, c, tool, failContent, toolCallActiveAIID); errRecord != nil {
+			log.WithError(errRecord).Error("could not record the failure result message for the unknown tool call")
+		}
+		return nil, stderrors.New(errMsg)
 	}
 
 	msg, err := h.toolCreateResultMessage(ctx, c, tool, tmpMessageContent, toolCallActiveAIID)
