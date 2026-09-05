@@ -204,10 +204,12 @@ func truncateListenLineText(s string, maxChars int) string {
 // conversationMessageLine renders one buffered line (design 2026-09-05 §5.3.3):
 // tag, optional "Subject: ..." line, text truncated to
 // aicall_listen_conversation_max_message_chars, and one "[media: <type>]"
-// token per attachment (raw media.Type, no allowlist, no URL or payload).
+// token per attachment (the media.Type string, no allowlist, no URL or
+// payload).
 //
-// Both customer-controlled strings (subject and text) go through
-// sanitizeListenLineText first, and both are then capped by the same
+// All three customer-controlled strings (subject, text and the media type,
+// which is a provider-supplied string on the message row) go through
+// sanitizeListenLineText first; subject and text are then capped by the same
 // per-message limit -- an unbounded subject would otherwise be a way around
 // the text cap. Truncation runs on the sanitized string so the cap is measured
 // against what actually reaches the prompt. The newline after the subject is
@@ -235,8 +237,12 @@ func conversationMessageLine(evt *cvmessage.Message) string {
 		if s := sb.String(); !strings.HasSuffix(s, " ") && !strings.HasSuffix(s, "\n") {
 			sb.WriteString(" ")
 		}
+		mediaType := sanitizeListenLineText(string(m.Type))
+		if mediaType == "" {
+			mediaType = "unknown"
+		}
 		sb.WriteString("[media: ")
-		sb.WriteString(string(m.Type))
+		sb.WriteString(mediaType)
 		sb.WriteString("]")
 	}
 
@@ -325,6 +331,15 @@ func (h *aicallHandler) EventCVMessageCreated(ctx context.Context, evt *cvmessag
 		}
 		promListenConversationSegmentTotal.WithLabelValues("buffered").Inc()
 
+		// re-arm on every buffered line so the resolver entry outlives any
+		// conversation that is actually active; design §5.2.2 promised
+		// refresh-on-SADD and start is the only SADD, so this is where the
+		// refresh has to live.
+		if errRearm := h.cache.ListenConversationAIcallIDAdd(ctx, evt.ConversationID, aicallID, listenResolverTTL); errRearm != nil {
+			// The line is already buffered; at worst the entry expires.
+			log.Warnf("Could not re-arm the conversation listen resolver entry. aicall_id: %s, err: %v", aicallID, errRearm)
+		}
+
 		// Only a customer message starts a turn; agent/bot output is context.
 		if evt.Direction != cvmessage.DirectionIncoming {
 			continue
@@ -333,6 +348,9 @@ func (h *aicallHandler) EventCVMessageCreated(ctx context.Context, evt *cvmessag
 		acquired, errLock := h.cache.ListenTurnTryLock(ctx, aicallID, interval)
 		if errLock != nil {
 			log.Warnf("Could not take the listen turn lock. aicall_id: %s, err: %v", aicallID, errLock)
+			// The line is buffered but no turn was started, so arm the
+			// deferred flush rather than stranding it until the next message.
+			h.scheduleListenFlush(aicallID)
 			continue
 		}
 		if !acquired {
