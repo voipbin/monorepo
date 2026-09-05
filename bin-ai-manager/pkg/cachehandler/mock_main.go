@@ -192,6 +192,79 @@ func (mr *MockCacheHandlerMockRecorder) ListenAIcallIDsGet(ctx, transcribeID any
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListenAIcallIDsGet", reflect.TypeOf((*MockCacheHandler)(nil).ListenAIcallIDsGet), ctx, transcribeID)
 }
 
+// ListenConversationAIcallIDAdd mocks base method.
+func (m *MockCacheHandler) ListenConversationAIcallIDAdd(ctx context.Context, conversationID, aicallID uuid.UUID, ttl time.Duration) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListenConversationAIcallIDAdd", ctx, conversationID, aicallID, ttl)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ListenConversationAIcallIDAdd indicates an expected call of ListenConversationAIcallIDAdd.
+func (mr *MockCacheHandlerMockRecorder) ListenConversationAIcallIDAdd(ctx, conversationID, aicallID, ttl any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListenConversationAIcallIDAdd", reflect.TypeOf((*MockCacheHandler)(nil).ListenConversationAIcallIDAdd), ctx, conversationID, aicallID, ttl)
+}
+
+// ListenConversationAIcallIDIsMember mocks base method.
+func (m *MockCacheHandler) ListenConversationAIcallIDIsMember(ctx context.Context, conversationID, aicallID uuid.UUID) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListenConversationAIcallIDIsMember", ctx, conversationID, aicallID)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListenConversationAIcallIDIsMember indicates an expected call of ListenConversationAIcallIDIsMember.
+func (mr *MockCacheHandlerMockRecorder) ListenConversationAIcallIDIsMember(ctx, conversationID, aicallID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListenConversationAIcallIDIsMember", reflect.TypeOf((*MockCacheHandler)(nil).ListenConversationAIcallIDIsMember), ctx, conversationID, aicallID)
+}
+
+// ListenConversationAIcallIDRemove mocks base method.
+func (m *MockCacheHandler) ListenConversationAIcallIDRemove(ctx context.Context, conversationID, aicallID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListenConversationAIcallIDRemove", ctx, conversationID, aicallID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ListenConversationAIcallIDRemove indicates an expected call of ListenConversationAIcallIDRemove.
+func (mr *MockCacheHandlerMockRecorder) ListenConversationAIcallIDRemove(ctx, conversationID, aicallID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListenConversationAIcallIDRemove", reflect.TypeOf((*MockCacheHandler)(nil).ListenConversationAIcallIDRemove), ctx, conversationID, aicallID)
+}
+
+// ListenConversationAIcallIDsGet mocks base method.
+func (m *MockCacheHandler) ListenConversationAIcallIDsGet(ctx context.Context, conversationID uuid.UUID) ([]uuid.UUID, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListenConversationAIcallIDsGet", ctx, conversationID)
+	ret0, _ := ret[0].([]uuid.UUID)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListenConversationAIcallIDsGet indicates an expected call of ListenConversationAIcallIDsGet.
+func (mr *MockCacheHandlerMockRecorder) ListenConversationAIcallIDsGet(ctx, conversationID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListenConversationAIcallIDsGet", reflect.TypeOf((*MockCacheHandler)(nil).ListenConversationAIcallIDsGet), ctx, conversationID)
+}
+
+// ListenPendingLen mocks base method.
+func (m *MockCacheHandler) ListenPendingLen(ctx context.Context, aicallID uuid.UUID) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListenPendingLen", ctx, aicallID)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListenPendingLen indicates an expected call of ListenPendingLen.
+func (mr *MockCacheHandlerMockRecorder) ListenPendingLen(ctx, aicallID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListenPendingLen", reflect.TypeOf((*MockCacheHandler)(nil).ListenPendingLen), ctx, aicallID)
+}
+
 // ListenPendingPopAll mocks base method.
 func (m *MockCacheHandler) ListenPendingPopAll(ctx context.Context, aicallID uuid.UUID) ([]string, error) {
 	m.ctrl.T.Helper()

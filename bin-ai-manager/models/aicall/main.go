@@ -39,6 +39,14 @@ const MetaKeyListenTranscribeID = "listen_transcribe_id"
 // listener still depends on.
 const MetaKeyListenOwnsTranscribe = "listen_owns_transcribe"
 
+// MetaKeyListenConversationID is the Metadata map key (string, a UUID) holding
+// the conversation this AIcall is listening to (design
+// docs/plans/2026-09-05-insight-ai-conversation-listen-design.md §5.2.1).
+// Metadata rather than a column: unlike listen_call_id there is no event-driven
+// sweep that needs to query by it; every reader already has the row in hand. An
+// AIcall carries at most one of MetaKeyListenTranscribeID / this key.
+const MetaKeyListenConversationID = "listen_conversation_id"
+
 // AIcall define
 type AIcall struct {
 	identity.Identity
