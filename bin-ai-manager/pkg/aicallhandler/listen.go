@@ -11,6 +11,7 @@ import (
 	"monorepo/bin-ai-manager/models/message"
 	cmcall "monorepo/bin-call-manager/models/call"
 	"monorepo/bin-common-handler/pkg/utilhandler"
+	kmkase "monorepo/bin-contact-manager/models/kase"
 	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
 	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
 	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
@@ -30,7 +31,7 @@ func isListenableCallStatus(status cmcall.Status) bool {
 // listenTranscribeIDFromMetadata reads the listen transcribe id off the AIcall's
 // metadata, returning uuid.Nil when absent or unparseable.
 func listenTranscribeIDFromMetadata(c *aicall.AIcall) uuid.UUID {
-	if c.Metadata == nil {
+	if c == nil || c.Metadata == nil {
 		return uuid.Nil
 	}
 
@@ -104,9 +105,13 @@ func (h *aicallHandler) buildListenTurnMessages(ctx context.Context, c *aicall.A
 	}
 
 	// (3) The mechanics of a listen turn.
+	turnPrompt := ListenTurnSystemPrompt
+	if listenKindOf(c) == listenKindConversation {
+		turnPrompt = ListenTurnConversationSystemPrompt
+	}
 	res = append(res, map[string]any{
 		"role":    string(message.RoleSystem),
-		"content": ListenTurnSystemPrompt,
+		"content": turnPrompt,
 	})
 
 	// (4) Recent Q&A, so the AI has continuity with what the agent asked and
@@ -155,25 +160,28 @@ func (h *aicallHandler) buildListenTurnMessages(ctx context.Context, c *aicall.A
 	// (5) The transcript block.
 	res = append(res, map[string]any{
 		"role":    string(message.RoleUser),
-		"content": buildListenTranscriptBlock(window, newLines),
+		"content": buildListenTranscriptBlock(listenTranscriptHeader(listenKindOf(c)), window, newLines),
 	})
 
 	return res, nil
 }
 
-// buildListenTranscriptBlock renders the rolling window with the new lines
-// marked off.
+// buildListenTranscriptBlock renders the rolling window plus the new lines
+// under a kind-specific header. The header is a parameter (rather than a
+// second wrapper function) because the only caller is buildListenTurnMessages
+// and an unused wrapper would fail golangci-lint's unused check.
 //
 // The window already contains the new lines (both lists are appended to on
 // intake), so the seen portion is the window minus its own tail.
-func buildListenTranscriptBlock(window []string, newLines []string) string {
+func buildListenTranscriptBlock(header string, window []string, newLines []string) string {
 	seen := window
 	if len(newLines) > 0 && len(window) >= len(newLines) {
 		seen = window[:len(window)-len(newLines)]
 	}
 
 	var sb strings.Builder
-	sb.WriteString("Live call transcript so far:\n")
+	sb.WriteString(header)
+	sb.WriteString("\n")
 	for _, line := range seen {
 		sb.WriteString(line)
 		sb.WriteString("\n")
@@ -240,6 +248,9 @@ const defaultListenTurnTimeout = 60000
 // single LPOP-count command precisely so a line pushed concurrently cannot be
 // lost between a read and a trim.
 //
+// Conversation-kind AIcalls additionally pass an empty-buffer short-circuit and
+// a turn-time Case status check before anything is counted or popped.
+//
 // See docs/plans/2026-09-03-insight-ai-realtime-listen-design.md §5.4.
 func (h *aicallHandler) RunListenTurn(ctx context.Context, aicallID uuid.UUID) {
 	log := logrus.WithFields(logrus.Fields{
@@ -250,27 +261,46 @@ func (h *aicallHandler) RunListenTurn(ctx context.Context, aicallID uuid.UUID) {
 	c, err := h.Get(ctx, aicallID)
 	if err != nil {
 		// No AIcall means nothing to stop and nothing to evaluate.
-		promListenTurnTotal.WithLabelValues("skipped_invalid").Inc()
+		promListenTurnTotal.WithLabelValues(listenKindLabelUnknown, "skipped_invalid").Inc()
 		return
 	}
-
-	// The flag check lives HERE, in the require-list, not in a separate earlier
-	// step: everything a failing condition does next needs `c`, which does not
-	// exist until the fetch above. It is also what makes a rollback real -- with
-	// no flag read on this path, a session that started while the flag was on
-	// would run to call-end or the turn cap regardless.
-	if !config.Get().AIcallListenEnabled {
-		h.stopListening(ctx, c)
-		promListenTurnTotal.WithLabelValues("skipped_disabled").Inc()
-		return
-	}
+	kind := listenKindOf(c)
+	kindLabel := kind.label()
 
 	if c.Status != aicall.StatusProgressing ||
 		c.ReferenceType != aicall.ReferenceTypeContactCase ||
-		listenTranscribeIDFromMetadata(c) == uuid.Nil {
+		kind == listenKindNone {
 		h.stopListening(ctx, c)
-		promListenTurnTotal.WithLabelValues("skipped_invalid").Inc()
+		promListenTurnTotal.WithLabelValues(kindLabel, "skipped_invalid").Inc()
 		return
+	}
+
+	if kind == listenKindConversation {
+		// Empty short-circuit BEFORE the Case RPC and BEFORE the turn counter:
+		// a deferred flush that finds nothing must cost neither (§5.4). The
+		// check is non-atomic with the pop below; a line landing in between only
+		// means one turn is counted normally.
+		pending, errLen := h.cache.ListenPendingLen(ctx, aicallID)
+		if errLen != nil {
+			log.Warnf("Could not read the pending buffer length; proceeding as non-empty. err: %v", errLen)
+		} else if pending == 0 {
+			promListenTurnTotal.WithLabelValues(kindLabel, "skipped_empty").Inc()
+			return
+		}
+
+		// Turn-time Case status check: contact-manager publishes nothing on
+		// Close, so this is the conversation kind's primary stop signal (§5.5.2).
+		kase, errCase := h.reqHandler.ContactV1CaseGet(ctx, c.CustomerID, c.ReferenceID)
+		if errCase != nil {
+			log.Errorf("Could not get the case for the listen turn. err: %v", errCase)
+			promListenTurnTotal.WithLabelValues(kindLabel, "failed").Inc()
+			return
+		}
+		if kase.Status == kmkase.StatusClosed {
+			h.stopListening(ctx, c)
+			promListenTurnTotal.WithLabelValues(kindLabel, "skipped_case_closed").Inc()
+			return
+		}
 	}
 
 	// Hard backstop against a pathologically long call. Reaching it stops
@@ -280,18 +310,18 @@ func (h *aicallHandler) RunListenTurn(ctx context.Context, aicallID uuid.UUID) {
 		log.Warnf("Could not increment the listen turn counter. err: %v", errCount)
 	} else if turns > int64(config.Get().AIcallListenMaxTurnsPerAIcall) {
 		h.stopListening(ctx, c)
-		promListenTurnTotal.WithLabelValues("skipped_cap").Inc()
+		promListenTurnTotal.WithLabelValues(kindLabel, "skipped_cap").Inc()
 		return
 	}
 
 	lines, err := h.cache.ListenPendingPopAll(ctx, aicallID)
 	if err != nil {
 		log.Errorf("Could not drain the pending buffer. err: %v", err)
-		promListenTurnTotal.WithLabelValues("failed").Inc()
+		promListenTurnTotal.WithLabelValues(kindLabel, "failed").Inc()
 		return
 	}
 	if len(lines) == 0 {
-		promListenTurnTotal.WithLabelValues("skipped_empty").Inc()
+		promListenTurnTotal.WithLabelValues(kindLabel, "skipped_empty").Inc()
 		return
 	}
 
@@ -313,6 +343,8 @@ func (h *aicallHandler) runListenTurnWithLines(ctx context.Context, c *aicall.AI
 		"aicall_id": c.ID,
 	})
 
+	kindLabel := listenKindOf(c).label()
+
 	window, errWindow := h.cache.ListenWindowGet(ctx, c.ID)
 	if errWindow != nil {
 		log.Warnf("Could not read the transcript window; evaluating the new lines alone. err: %v", errWindow)
@@ -322,7 +354,7 @@ func (h *aicallHandler) runListenTurnWithLines(ctx context.Context, c *aicall.AI
 	llmMessages, err := h.buildListenTurnMessages(ctx, c, window, lines)
 	if err != nil {
 		log.Errorf("Could not build the listen turn context. err: %v", err)
-		promListenTurnTotal.WithLabelValues("failed").Inc()
+		promListenTurnTotal.WithLabelValues(kindLabel, "failed").Inc()
 		return
 	}
 
@@ -349,14 +381,14 @@ func (h *aicallHandler) runListenTurnWithLines(ctx context.Context, c *aicall.AI
 	ttl := time.Duration(config.Get().AIcallListenTurnPipecatcallIDTTLSeconds) * time.Second
 	if errAdd := h.cache.ListenTurnPipecatcallIDAdd(ctx, c.ID, turnPipecatcallID, ttl); errAdd != nil {
 		log.Warnf("Could not register the listen turn id; skipping this turn. err: %v", errAdd)
-		promListenTurnTotal.WithLabelValues("skipped_register_failed").Inc()
+		promListenTurnTotal.WithLabelValues(kindLabel, "skipped_register_failed").Inc()
 		return
 	}
 
 	pc, err := h.startListenPipecatcall(ctx, c, turnPipecatcallID, llmMessages)
 	if err != nil {
 		log.Errorf("Could not start the listen pipecatcall. err: %v", err)
-		promListenTurnTotal.WithLabelValues("failed").Inc()
+		promListenTurnTotal.WithLabelValues(kindLabel, "failed").Inc()
 		return
 	}
 
@@ -366,7 +398,7 @@ func (h *aicallHandler) runListenTurnWithLines(ctx context.Context, c *aicall.AI
 		log.Warnf("Could not schedule the listen pipecatcall terminate. err: %v", errTerm)
 	}
 
-	promListenTurnTotal.WithLabelValues("ran").Inc()
+	promListenTurnTotal.WithLabelValues(kindLabel, "ran").Inc()
 }
 
 // startListenPipecatcall is a sibling of startPipecatcall that takes the
@@ -478,6 +510,12 @@ func (h *aicallHandler) clearListenState(ctx context.Context, c *aicall.AIcall) 
 		}
 	}
 
+	if conversationID := listenConversationIDFromMetadata(c); conversationID != uuid.Nil {
+		if errRem := h.cache.ListenConversationAIcallIDRemove(ctx, conversationID, c.ID); errRem != nil {
+			log.Warnf("Could not remove the conversation listen resolver membership. err: %v", errRem)
+		}
+	}
+
 	// The per-AIcall keys are never shared, so a plain delete is correct for
 	// them. The turn-id set is deliberately NOT deleted: it is short-TTL and
 	// self-expiring, and a tool call arriving late for an already-stopped turn
@@ -493,7 +531,7 @@ func (h *aicallHandler) clearListenState(ctx context.Context, c *aicall.AIcall) 
 	//    reject it.
 	metadata := map[string]any{}
 	for k, v := range c.Metadata {
-		if k == aicall.MetaKeyListenTranscribeID || k == aicall.MetaKeyListenOwnsTranscribe {
+		if k == aicall.MetaKeyListenTranscribeID || k == aicall.MetaKeyListenOwnsTranscribe || k == aicall.MetaKeyListenConversationID {
 			continue
 		}
 		metadata[k] = v
@@ -717,7 +755,7 @@ func (h *aicallHandler) EventTMTranscriptCreated(ctx context.Context, evt *tmtra
 			continue
 		}
 		if !acquired {
-			promListenTurnTotal.WithLabelValues("skipped_locked").Inc()
+			promListenTurnTotal.WithLabelValues(string(listenKindCall), "skipped_locked").Inc()
 			continue
 		}
 

@@ -8,10 +8,13 @@ import "github.com/gofrs/uuid"
 // own dedicated update RPC rather than the general partial-update
 // field allowlist.
 type Metadata struct {
-	// ContactCaseID is set by bin-contact-manager, from either write path
-	// described in docs/plans/2026-07-07-contact-case-management-design.md
-	// §4.3, to claim this Conversation for a Case. Read-only from
-	// conversation-manager's own perspective: never read by
+	// ContactCaseID claims this Conversation for a Case. Its only writer today
+	// is bin-api-manager's Case message-reply path
+	// (pkg/servicehandler/case_message.go), via ConversationV1ConversationUpdateMetadata;
+	// flow-manager's case_create action does NOT set it, so consumers must not
+	// rely on it being present for every conversation-origin Case (see
+	// docs/plans/2026-09-05-insight-ai-conversation-listen-design.md §5.2).
+	// Read-only from conversation-manager's own perspective: never read by
 	// getExecuteMode or any flow/agent-routing dispatch decision.
 	ContactCaseID *uuid.UUID `json:"contact_case_id,omitempty"`
 }

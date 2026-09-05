@@ -38,6 +38,7 @@ func Test_listenKeys(t *testing.T) {
 		// finding LOW-6). Pinning it here is what keeps a future caller from
 		// re-deriving it inline and drifting.
 		{"start lock", listenStartLockKey(aicallID), "ai:listen:startlock:66666666-7777-8888-9999-aaaaaaaaaaaa"},
+		{"conversation resolver set", listenConversationKey(transcribeID), "ai:listen:conversation:11111111-2222-3333-4444-555555555555"},
 	}
 
 	for _, tt := range tests {
@@ -142,6 +143,16 @@ func Test_listenWritesAreAtomicWithTheirTTL(t *testing.T) {
 			key:       listenTurnsKey(aicallID),
 			expectTTL: ttl,
 		},
+		{
+			// VOIP-1470: the conversation resolver reuses listenSetAddExpireScript,
+			// so its add must carry its TTL atomically like the transcribe set.
+			name: "ListenConversationAIcallIDAdd",
+			write: func(h *handler) error {
+				return h.ListenConversationAIcallIDAdd(context.Background(), transcribeID, aicallID, ttl)
+			},
+			key:       listenConversationKey(transcribeID),
+			expectTTL: ttl,
+		},
 	}
 
 	for _, tt := range tests {
@@ -242,5 +253,83 @@ func Test_listenTTLSeconds(t *testing.T) {
 				t.Errorf("mismatch. expected: %d, got: %d", tt.expect, got)
 			}
 		})
+	}
+}
+
+// Test_listenConversationResolverAndPendingLen exercises the VOIP-1470
+// primitives end to end: membership add/is-member/get/remove and the pending
+// list length the conversation turn short-circuits on.
+func Test_listenConversationResolverAndPendingLen(t *testing.T) {
+	conversationID := uuid.FromStringOrNil("11111111-2222-3333-4444-555555555555")
+	aicallID := uuid.FromStringOrNil("66666666-7777-8888-9999-aaaaaaaaaaaa")
+	otherID := uuid.FromStringOrNil("77777777-7777-8888-9999-aaaaaaaaaaaa")
+	ctx := context.Background()
+
+	h, mr := setupListenTestHandler(t)
+	defer mr.Close()
+
+	if member, err := h.ListenConversationAIcallIDIsMember(ctx, conversationID, aicallID); err != nil || member {
+		t.Fatalf("fresh key must not have members. member: %v, err: %v", member, err)
+	}
+	if err := h.ListenConversationAIcallIDAdd(ctx, conversationID, aicallID, time.Hour); err != nil {
+		t.Fatalf("add failed. err: %v", err)
+	}
+	if err := h.ListenConversationAIcallIDAdd(ctx, conversationID, otherID, time.Hour); err != nil {
+		t.Fatalf("second add failed. err: %v", err)
+	}
+	if member, err := h.ListenConversationAIcallIDIsMember(ctx, conversationID, aicallID); err != nil || !member {
+		t.Fatalf("added id must be a member. member: %v, err: %v", member, err)
+	}
+	got, err := h.ListenConversationAIcallIDsGet(ctx, conversationID)
+	if err != nil || len(got) != 2 {
+		t.Fatalf("get must return both members. got: %v, err: %v", got, err)
+	}
+
+	// The intake's re-arm is EXPIRE-only (code review round 4): it must refresh
+	// the resolver set's TTL without touching membership, so it can never
+	// resurrect a membership a concurrent stop just SREM'd.
+	if err := h.ListenConversationResolverTouch(ctx, conversationID, time.Hour); err != nil {
+		t.Fatalf("touch failed. err: %v", err)
+	}
+	if ttl := mr.TTL(listenConversationKey(conversationID)); ttl <= 0 || ttl > time.Hour {
+		t.Errorf("touch must arm the resolver TTL. expected: 0 < ttl <= %s, got: %s", time.Hour, ttl)
+	}
+	if got, err := h.ListenConversationAIcallIDsGet(ctx, conversationID); err != nil || len(got) != 2 {
+		t.Fatalf("touch must not change membership. got: %v, err: %v", got, err)
+	}
+
+	// EXPIRE on a missing key is a no-op, so a stopped conversation is never
+	// re-created by a late intake line.
+	freshID := uuid.FromStringOrNil("88888888-7777-8888-9999-aaaaaaaaaaaa")
+	if err := h.ListenConversationResolverTouch(ctx, freshID, time.Hour); err != nil {
+		t.Fatalf("touch on a missing key must not error. err: %v", err)
+	}
+	if mr.Exists(listenConversationKey(freshID)) {
+		t.Errorf("touch must never create the resolver key. key: %s", listenConversationKey(freshID))
+	}
+	if err := h.ListenConversationAIcallIDRemove(ctx, conversationID, aicallID); err != nil {
+		t.Fatalf("remove failed. err: %v", err)
+	}
+	got, err = h.ListenConversationAIcallIDsGet(ctx, conversationID)
+	if err != nil || len(got) != 1 || got[0] != otherID {
+		t.Fatalf("remove must leave only the other member. got: %v, err: %v", got, err)
+	}
+
+	if n, err := h.ListenPendingLen(ctx, aicallID); err != nil || n != 0 {
+		t.Fatalf("empty pending list must be 0. n: %d, err: %v", n, err)
+	}
+	for i := 0; i < 3; i++ {
+		if err := h.ListenPendingPush(ctx, aicallID, fmt.Sprintf("[CUSTOMER] %d", i), time.Hour); err != nil {
+			t.Fatalf("push failed. err: %v", err)
+		}
+	}
+	if n, err := h.ListenPendingLen(ctx, aicallID); err != nil || n != 3 {
+		t.Fatalf("pending list must count pushes. n: %d, err: %v", n, err)
+	}
+	if _, err := h.ListenPendingPopAll(ctx, aicallID); err != nil {
+		t.Fatalf("pop failed. err: %v", err)
+	}
+	if n, err := h.ListenPendingLen(ctx, aicallID); err != nil || n != 0 {
+		t.Fatalf("drained pending list must be 0. n: %d, err: %v", n, err)
 	}
 }

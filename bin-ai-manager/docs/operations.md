@@ -31,7 +31,6 @@ All flags support equivalent `UPPER_SNAKE_CASE` environment variables.
 | `engine_key_chatgpt` | `ENGINE_KEY_CHATGPT` | OpenAI API key | yes |
 | `google_api_key` | `GOOGLE_API_KEY` | Google API key for Gemini audit evaluation | yes |
 | `aicall_conversation_idle_timeout_hours` | `AICALL_CONVERSATION_IDLE_TIMEOUT_HOURS` | Hours before idle AIcall expires | no |
-| `aicall_listen_enabled` | `AICALL_LISTEN_ENABLED` | Master kill switch for Insight AI realtime call listening. Default **`false`** — the feature ships dark | no |
 | `aicall_listen_evaluate_interval_seconds` | `AICALL_LISTEN_EVALUATE_INTERVAL_SECONDS` | Debounce window: one listen evaluation turn per AIcall per this many seconds, regardless of how much was said. This is what decouples LLM cost from speech volume. Default `20` | no |
 | `aicall_listen_window_size` | `AICALL_LISTEN_WINDOW_SIZE` | Rolling transcript lines kept for continuity across turns. Default `40` | no |
 | `aicall_listen_qa_context_size` | `AICALL_LISTEN_QA_CONTEXT_SIZE` | Q&A message rows replayed into a listen turn's context. Default `10` | no |
@@ -44,6 +43,8 @@ All flags support equivalent `UPPER_SNAKE_CASE` environment variables.
 | `aicall_listen_ensure_goroutine_timeout_seconds` | `AICALL_LISTEN_ENSURE_GOROUTINE_TIMEOUT_SECONDS` | `runListenStart`'s own detached-goroutine timeout. Default `45` | no |
 | `aicall_listen_start_lock_ttl_seconds` | `AICALL_LISTEN_START_LOCK_TTL_SECONDS` | TTL on `ai:listen:startlock:<aicall_id>`, the per-AIcall lock serializing concurrent create-or-reuse sequences. Default `60` | no |
 | `aicall_listen_start_lock_release_timeout_seconds` | `AICALL_LISTEN_START_LOCK_RELEASE_TIMEOUT_SECONDS` | Bound on the **detached** context the lock's release runs under, so a stuck Redis call during cleanup cannot hang the releasing goroutine. Independent of, and far below, the TTL above. Default `3` | no |
+| `aicall_listen_conversation_max_message_chars` | `AICALL_LISTEN_CONVERSATION_MAX_MESSAGE_CHARS` | Per-field cap (subject, text and the joined media tokens are each capped, so one message contributes at most about three times this many characters) before a conversation line is buffered (suffix ` [truncated]`). Default `2000` | no |
+| `aicall_listen_conversation_flush_jitter_ms` | `AICALL_LISTEN_CONVERSATION_FLUSH_JITTER_MS` | Upper bound of the random jitter added to the deferred flush delay (`aicall_listen_evaluate_interval_seconds` + jitter). Default `1000` | no |
 
 **Two ordering invariants hold across the listen timing flags, and both are pinned as standing test assertions (`Test_ListenConfigDefaults`), not one-time default checks:**
 
@@ -78,10 +79,12 @@ Exposed at `PROMETHEUS_LISTEN_ADDRESS/PROMETHEUS_ENDPOINT` (default `:2112/metri
 | `aicall_idle_expired_total` | Counter | — | Sessions terminated due to idle timeout |
 | `aicall_interrupt_attempted_total` | Counter | — | Barge-in interruption attempts |
 | `aicall_stale_response_dropped_total` | Counter | — | Stale LLM responses discarded |
-| `aicall_listen_start_total` | Counter | `result` | Listen-start attempts by outcome. `result` values: `started`, `reused`, `skipped_not_listenable`, `skipped_confbridge_not_ready`, `skipped_confbridge_error`, `skipped_start_locked`, `failed` |
+| `aicall_listen_start_total` | Counter | `kind`, `result` | Listen-start attempts by kind and outcome. `kind` values: `call`, `conversation`, `unknown` (gates that run before the Case's reference type is known). `result` values: `started`, `reused`, `skipped_not_listenable`, `skipped_confbridge_not_ready`, `skipped_confbridge_error`, `skipped_start_locked`, `failed` |
 | `aicall_listen_segment_total` | Counter | `result` | Transcript segments seen by listen intake. `dropped_unknown` dominates **by design** — this handler sees every final STT result platform-wide |
-| `aicall_listen_turn_total` | Counter | `result` | Listen evaluation turns by outcome: `ran`, `skipped_locked`, `skipped_empty`, `skipped_cap`, `skipped_disabled`, `skipped_invalid`, `skipped_register_failed`, `failed` |
-| `aicall_listen_notify_total` | Counter | — | Proactive notifications actually delivered to an agent's Insight panel |
+| `aicall_listen_turn_total` | Counter | `kind`, `result` | Listen evaluation turns by kind and outcome. `kind` values: `call`, `conversation`, `unknown`. `result` values: `ran`, `skipped_locked`, `skipped_empty`, `skipped_cap`, `skipped_case_closed` (conversation kind's stop signal), `skipped_invalid`, `skipped_register_failed`, `failed` |
+| `aicall_listen_conversation_segment_total` | Counter | `result` | Conversation messages seen by listen intake, by outcome: `buffered`, `dropped_deleted`, `dropped_empty`, `dropped_unknown` (no listener resolved, or the resolver errored), `dropped_stale` (a resolved AIcall is already over, or its pointer names another conversation), `dropped_tenant_mismatch`, `failed`. `dropped_unknown` dominates **by design** — this handler sees every conversation message platform-wide; `dropped_tenant_mismatch` must stay at zero |
+| `aicall_listen_conversation_flush_total` | Counter | `result` | Deferred flush timers for conversation listening, by outcome: `ran` (won the lock and invoked a turn; read against `aicall_listen_turn_total` `skipped_empty`), `skipped_locked`, `skipped_scheduled` (a timer was already armed for this AIcall on this replica) |
+| `aicall_listen_notify_total` | Counter | `kind` | Proactive notifications actually delivered to an agent's Insight panel, by listen kind |
 | `aicall_listen_stop_failed_total` | Counter | — | Listen transcribe-stop RPCs that failed and fell back to the call-hangup backstop |
 | `aicall_listen_membership_check_failed_total` | Counter | — | Listen-turn membership checks that errored and degraded to treating the tool call as a real Q&A turn |
 | `aicall_foreign_pipecatcall_dropped_total` | Counter | `handler` | Pipecat message events dropped because they came from a pipecatcall the AIcall no longer considers its conversational turn. Defined in `pkg/messagehandler/metrics_foreign.go`, not with the six above |
@@ -137,7 +140,10 @@ Key signals to alert on:
 
 ### Insight AI live call listening
 
-Kill switch: `aicall_listen_enabled` / `AICALL_LISTEN_ENABLED`, default `false`.
+Listening is always on: it starts when an Insight panel opens on a call or conversation Case and stops with the Case, the call, or the AIcall.
+
+`aicall_listen_conversation_max_message_chars` / `AICALL_LISTEN_CONVERSATION_MAX_MESSAGE_CHARS`, default `2000`. Per-field cap (subject, text and the joined media tokens are each capped, so one message contributes at most about three times this many characters) before a conversation line is buffered (suffix ` [truncated]`).
+`aicall_listen_conversation_flush_jitter_ms` / `AICALL_LISTEN_CONVERSATION_FLUSH_JITTER_MS`, default `1000`. Upper bound of the random jitter added to the deferred flush delay (`aicall_listen_evaluate_interval_seconds` + jitter).
 
 **How listening starts.** Explicitly, by `POST /service_agents/aicalls/<aicall-id>/listen`
 (routed internally to ai-manager's `POST /v1/aicalls/<aicall-id>/listen`). It is
@@ -147,20 +153,13 @@ panel opens, and the second is fire-and-forget: its response carries no
 listening-status field, so "did listening actually start?" is answered by the
 metrics below, not by the API.
 
-**Turning it off mid-call.** A rollback takes effect on an in-flight session at
-its next *evaluated turn*, and turns are triggered by transcript segments, not by
-a timer — so for an active conversation that is typically within one
-`aicall_listen_evaluate_interval_seconds` (default 20s), but a call that has gone
-quiet may not stop until it ends. Call hangup is the guaranteed backstop, and it
-is independent of the flag.
-
-**What the flag does NOT gate.** Two changes shipped with this feature are
-general fixes and are active regardless: the two-fetch LLM context assembly
-(which guarantees an AIcall's system prompt is never evicted), and the
+**What shipped alongside listening.** Two changes shipped with this feature are
+general fixes, always active: the two-fetch LLM context assembly (which
+guarantees an AIcall's system prompt is never evicted), and the
 foreign-pipecatcall guard on `contact_case` bot-LLM messages (which also drops
 genuinely stale replies that used to be persisted silently). Expect
-`aicall_foreign_pipecatcall_dropped_total` to become non-zero and Insight answer
-*shape* to change slightly the moment the code deploys, independent of the flag.
+`aicall_foreign_pipecatcall_dropped_total` to become non-zero and Insight
+answer *shape* to change slightly the moment the code deploys.
 
 **What to watch:**
 
@@ -209,10 +208,9 @@ refuses to start if any listen timing or sizing value is non-positive, or if
 `aicall_listen_start_lock_ttl_seconds` does not hold. The error names the
 offending values. It is not clamped: these are deploy-time typos, and a refused
 start is easier to diagnose than a process quietly disagreeing with its own
-configuration. The check runs even with `AICALL_LISTEN_ENABLED=false`, so a
-broken value cannot lie dormant until the flag is turned on, and it runs from
-both entrypoints (`cmd/ai-manager` and `cmd/ai-control`) so the invariant is the
-config package's, not one binary's.
+configuration. The check runs at startup on both entrypoints
+(`cmd/ai-manager` and `cmd/ai-control`), so a broken value cannot lie dormant
+and the invariant is the config package's, not one binary's.
 
 The sizing flags are validated for concrete reasons, not for symmetry:
 `aicall_listen_window_size` of `0` makes the `LTRIM` inside the window-push Lua
