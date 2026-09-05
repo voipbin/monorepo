@@ -44,6 +44,9 @@ All flags support equivalent `UPPER_SNAKE_CASE` environment variables.
 | `aicall_listen_ensure_goroutine_timeout_seconds` | `AICALL_LISTEN_ENSURE_GOROUTINE_TIMEOUT_SECONDS` | `runListenStart`'s own detached-goroutine timeout. Default `45` | no |
 | `aicall_listen_start_lock_ttl_seconds` | `AICALL_LISTEN_START_LOCK_TTL_SECONDS` | TTL on `ai:listen:startlock:<aicall_id>`, the per-AIcall lock serializing concurrent create-or-reuse sequences. Default `60` | no |
 | `aicall_listen_start_lock_release_timeout_seconds` | `AICALL_LISTEN_START_LOCK_RELEASE_TIMEOUT_SECONDS` | Bound on the **detached** context the lock's release runs under, so a stuck Redis call during cleanup cannot hang the releasing goroutine. Independent of, and far below, the TTL above. Default `3` | no |
+| `aicall_listen_conversation_enabled` | `AICALL_LISTEN_CONVERSATION_ENABLED` | Variant switch for realtime listening on conversation (message) Cases; evaluated after `aicall_listen_enabled` and only on the conversation branch. Off: trigger returns `skipped_disabled`, running conversation listens stop at their next turn; call listens unaffected. Default `false` | no |
+| `aicall_listen_conversation_max_message_chars` | `AICALL_LISTEN_CONVERSATION_MAX_MESSAGE_CHARS` | Per-message character cap before a conversation line is buffered (suffix ` [truncated]`). Default `2000` | no |
+| `aicall_listen_conversation_flush_jitter_ms` | `AICALL_LISTEN_CONVERSATION_FLUSH_JITTER_MS` | Upper bound of the random jitter added to the deferred flush delay (`aicall_listen_evaluate_interval_seconds` + jitter). Default `1000` | no |
 
 **Two ordering invariants hold across the listen timing flags, and both are pinned as standing test assertions (`Test_ListenConfigDefaults`), not one-time default checks:**
 
