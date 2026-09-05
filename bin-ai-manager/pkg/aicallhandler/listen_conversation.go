@@ -57,6 +57,13 @@ func (h *aicallHandler) checkListenEligibleConversation(ctx context.Context, c *
 		return
 	}
 
+	// A Case that is already closed never starts listening. RunListenTurn's
+	// own Case check stays the runtime stop for a Case closed mid-session.
+	if kase.Status == kmkase.StatusClosed {
+		promListenStartTotal.WithLabelValues(string(listenKindConversation), "skipped_not_listenable").Inc()
+		return
+	}
+
 	h.startListenConversation(ctx, c, conversationID)
 }
 
@@ -146,15 +153,52 @@ func speakerTagForDirection(direction cvmessage.Direction) string {
 
 const listenConversationTruncatedSuffix = " [truncated]"
 
+// sanitizeListenLineText neutralizes customer-controlled text before it becomes
+// part of a listen line.
+//
+// The buffered lines are concatenated verbatim into the listen turn's prompt,
+// where two things are structural: a line's speaker tag ("[CUSTOMER] ",
+// "[AGENT] ") sits at position 0 of the line, and listenTranscriptNewMarker is
+// its own line separating already-seen lines from new ones. Raw message text
+// can carry both, so without this a customer could write a body containing a
+// newline followed by "[AGENT] ..." to forge agent speech, or the marker itself
+// to forge the seen/new boundary. Multi-line text also breaks the line-counted
+// window, where one message must cost exactly one line.
+//
+// Three rules, in order:
+//
+//   - every CRLF/CR/LF becomes a space and whitespace runs collapse to one
+//     space, so one message is always exactly one line;
+//   - the new-since marker is rewritten to "[marker]", so it cannot be forged;
+//   - text that itself begins with "[" is prefixed with "> ", so it can never
+//     be read as this line's tag.
+//
+// A tag-shaped token left mid-line (".. [AGENT] ..") is accepted residual: the
+// tag convention is position-0 only, so a mid-line one reads as quoted text.
+func sanitizeListenLineText(s string) string {
+	res := strings.Join(strings.Fields(s), " ")
+	res = strings.ReplaceAll(res, listenTranscriptNewMarker, "[marker]")
+	if strings.HasPrefix(res, "[") {
+		res = "> " + res
+	}
+
+	return res
+}
+
 // conversationMessageLine renders one buffered line (design 2026-09-05 §5.3.3):
-// tag, optional "Subject: ..." line, whitespace-trimmed text truncated to
+// tag, optional "Subject: ..." line, text truncated to
 // aicall_listen_conversation_max_message_chars, and one "[media: <type>]"
 // token per attachment (raw media.Type, no allowlist, no URL or payload).
+//
+// Both customer-controlled strings (subject and text) go through
+// sanitizeListenLineText first, and truncation runs on the sanitized text so
+// the cap is measured against what actually reaches the prompt. The newline
+// after the subject is ours, not the customer's, so it survives sanitizing.
 func conversationMessageLine(evt *cvmessage.Message) string {
 	var sb strings.Builder
 	sb.WriteString(speakerTagForDirection(evt.Direction))
 
-	if subject := strings.TrimSpace(evt.Subject); subject != "" {
+	if subject := sanitizeListenLineText(evt.Subject); subject != "" {
 		sb.WriteString(" Subject: ")
 		sb.WriteString(subject)
 		sb.WriteString("\n")
@@ -162,7 +206,7 @@ func conversationMessageLine(evt *cvmessage.Message) string {
 		sb.WriteString(" ")
 	}
 
-	text := strings.TrimSpace(evt.Text)
+	text := sanitizeListenLineText(evt.Text)
 	if maxChars := config.Get().AIcallListenConversationMaxMessageChars; maxChars > 0 {
 		if runes := []rune(text); len(runes) > maxChars {
 			text = string(runes[:maxChars]) + listenConversationTruncatedSuffix
@@ -234,6 +278,20 @@ func (h *aicallHandler) EventCVMessageCreated(ctx context.Context, evt *cvmessag
 		if c.CustomerID == uuid.Nil || evt.CustomerID == uuid.Nil || c.CustomerID != evt.CustomerID {
 			log.Warnf("Cross-customer conversation message blocked. aicall_id: %s, aicall_customer_id: %s, message_customer_id: %s", aicallID, c.CustomerID, evt.CustomerID)
 			promListenConversationSegmentTotal.WithLabelValues("dropped_tenant_mismatch").Inc()
+			continue
+		}
+		if c.Status != aicall.StatusProgressing || c.TMDelete != nil {
+			// A stale resolver entry (the SREM lost a race, or the TTL has not
+			// expired yet) must never feed a session that is already over.
+			log.Warnf("Skipping a non-progressing listening aicall. aicall_id: %s, status: %s", aicallID, c.Status)
+			promListenConversationSegmentTotal.WithLabelValues("dropped_unknown").Inc()
+			continue
+		}
+		if listenConversationIDFromMetadata(c) != evt.ConversationID {
+			// The resolver said this AIcall listens here, but its own pointer
+			// names another conversation. Trust the pointer.
+			log.Warnf("Skipping a listening aicall whose pointer names another conversation. aicall_id: %s, pointer: %s", aicallID, listenConversationIDFromMetadata(c))
+			promListenConversationSegmentTotal.WithLabelValues("dropped_unknown").Inc()
 			continue
 		}
 
