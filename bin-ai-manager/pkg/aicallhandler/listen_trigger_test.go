@@ -1594,7 +1594,7 @@ func Test_startListenTranscribe_LivenessRecheck(t *testing.T) {
 			m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 			m.cache.EXPECT().ListenAIcallIDAdd(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 
-			before := testutil.ToFloat64(promListenStartTotal.WithLabelValues("skipped_not_listenable"))
+			before := testutil.ToFloat64(promListenStartTotal.WithLabelValues("call", "skipped_not_listenable"))
 
 			res, err := m.h.startListenTranscribe(ctx, c, listenEligibleCall(), ltCallID)
 			if err != nil {
@@ -1606,8 +1606,8 @@ func Test_startListenTranscribe_LivenessRecheck(t *testing.T) {
 
 			// runListenStart is what actually emits the label, so emit it here
 			// the same way and assert the counter moved by exactly one.
-			promListenStartTotal.WithLabelValues(res).Inc()
-			if got := testutil.ToFloat64(promListenStartTotal.WithLabelValues("skipped_not_listenable")) - before; got != 1 {
+			promListenStartTotal.WithLabelValues("call", res).Inc()
+			if got := testutil.ToFloat64(promListenStartTotal.WithLabelValues("call", "skipped_not_listenable")) - before; got != 1 {
 				t.Errorf("the outcome must be metered exactly once as skipped_not_listenable. got: %v", got)
 			}
 		})
@@ -1731,11 +1731,11 @@ func Test_runListenStart_TerminatedDuringConfbridgeWait(t *testing.T) {
 		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 	).Times(0)
 
-	before := testutil.ToFloat64(promListenStartTotal.WithLabelValues("skipped_not_listenable"))
+	before := testutil.ToFloat64(promListenStartTotal.WithLabelValues("call", "skipped_not_listenable"))
 
 	m.h.runListenStart(ctx, &ai.AI{Type: ai.TypeInsight}, c, listenEligibleCase(), ltCallID, listenEligibleCall())
 
-	if got := testutil.ToFloat64(promListenStartTotal.WithLabelValues("skipped_not_listenable")) - before; got != 1 {
+	if got := testutil.ToFloat64(promListenStartTotal.WithLabelValues("call", "skipped_not_listenable")) - before; got != 1 {
 		t.Errorf("the outcome must be metered exactly once as skipped_not_listenable. got: %v", got)
 	}
 }

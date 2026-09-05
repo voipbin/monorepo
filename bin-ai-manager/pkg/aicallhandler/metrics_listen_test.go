@@ -19,12 +19,14 @@ func Test_listenMetricNames(t *testing.T) {
 	// A counter with no observations may not appear in Gather() output at all,
 	// so force a zero sample for each first. Done here, in the test, never in
 	// production code.
-	promListenStartTotal.WithLabelValues("started")
+	promListenStartTotal.WithLabelValues("call", "started")
 	promListenSegmentTotal.WithLabelValues("buffered")
-	promListenTurnTotal.WithLabelValues("ran")
-	promListenNotifyTotal.Add(0)
+	promListenTurnTotal.WithLabelValues("call", "ran")
+	promListenNotifyTotal.WithLabelValues("call")
 	promListenStopFailedTotal.Add(0)
 	promListenMembershipCheckFailedTotal.Add(0)
+	promListenConversationSegmentTotal.WithLabelValues("buffered")
+	promListenConversationFlushTotal.WithLabelValues("ran")
 
 	expected := map[string]bool{
 		"ai_manager_aicall_listen_start_total":                   false,
@@ -33,6 +35,8 @@ func Test_listenMetricNames(t *testing.T) {
 		"ai_manager_aicall_listen_notify_total":                  false,
 		"ai_manager_aicall_listen_stop_failed_total":             false,
 		"ai_manager_aicall_listen_membership_check_failed_total": false,
+		"ai_manager_aicall_listen_conversation_segment_total":    false,
+		"ai_manager_aicall_listen_conversation_flush_total":      false,
 	}
 
 	families, err := prometheus.DefaultGatherer.Gather()

@@ -312,12 +312,12 @@ func listeningAIcall() *aicall.AIcall {
 	}
 }
 
-// metricDelta reports how much a promListenTurnTotal label moved across fn.
-func metricDelta(t *testing.T, label string, fn func()) float64 {
+// metricDelta reports how much a promListenTurnTotal (kind, label) cell moved across fn.
+func metricDelta(t *testing.T, kind string, label string, fn func()) float64 {
 	t.Helper()
-	before := testutil.ToFloat64(promListenTurnTotal.WithLabelValues(label))
+	before := testutil.ToFloat64(promListenTurnTotal.WithLabelValues(kind, label))
 	fn()
-	return testutil.ToFloat64(promListenTurnTotal.WithLabelValues(label)) - before
+	return testutil.ToFloat64(promListenTurnTotal.WithLabelValues(kind, label)) - before
 }
 
 // Test_RunListenTurn covers every precondition and outcome.
@@ -348,6 +348,7 @@ func Test_RunListenTurn(t *testing.T) {
 		expectPipecatStart  bool
 		expectStopListening bool
 		expectResult        string
+		expectKind          string
 	}{
 		{
 			name: "flag off stops listening entirely",
@@ -384,6 +385,7 @@ func Test_RunListenTurn(t *testing.T) {
 			metadata:            map[string]any{},
 			expectStopListening: true,
 			expectResult:        "skipped_invalid",
+			expectKind:          "unknown",
 		},
 		{
 			name:            "empty pending buffer skips without stopping",
@@ -512,7 +514,11 @@ func Test_RunListenTurn(t *testing.T) {
 				).Times(0)
 			}
 
-			delta := metricDelta(t, tt.expectResult, func() {
+			kind := tt.expectKind
+			if kind == "" {
+				kind = "call"
+			}
+			delta := metricDelta(t, kind, tt.expectResult, func() {
 				m.h.RunListenTurn(ctx, ltAIcallID)
 			})
 			if delta != 1 {
@@ -623,7 +629,7 @@ func Test_runListenTurnWithLines_HangupPath(t *testing.T) {
 	).Return(&pmpipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: turnPCID}, HostID: "10.0.0.1"}, nil).Times(1)
 	m.req.EXPECT().PipecatV1PipecatcallTerminateWithDelay(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 
-	delta := metricDelta(t, "ran", func() {
+	delta := metricDelta(t, "call", "ran", func() {
 		m.h.runListenTurnWithLines(ctx, c, []string{"[AGENT] bye"})
 	})
 	if delta != 1 {
@@ -801,7 +807,7 @@ func Test_EventTMTranscriptCreated(t *testing.T) {
 			m.cache.EXPECT().ListenPendingPopAll(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
 
 			bufferedDelta := testutil.ToFloat64(promListenSegmentTotal.WithLabelValues("buffered"))
-			lockedDelta := testutil.ToFloat64(promListenTurnTotal.WithLabelValues("skipped_locked"))
+			lockedDelta := testutil.ToFloat64(promListenTurnTotal.WithLabelValues("call", "skipped_locked"))
 
 			m.h.EventTMTranscriptCreated(ctx, tt.transcript)
 
@@ -809,7 +815,7 @@ func Test_EventTMTranscriptCreated(t *testing.T) {
 			if int(gotBuffered) != tt.expectBuffered {
 				t.Errorf("buffered count mismatch. expected: %d, got: %v", tt.expectBuffered, gotBuffered)
 			}
-			gotLocked := testutil.ToFloat64(promListenTurnTotal.WithLabelValues("skipped_locked")) - lockedDelta
+			gotLocked := testutil.ToFloat64(promListenTurnTotal.WithLabelValues("call", "skipped_locked")) - lockedDelta
 			if int(gotLocked) != tt.expectLocked {
 				t.Errorf("skipped_locked count mismatch. expected: %d, got: %v", tt.expectLocked, gotLocked)
 			}
@@ -1001,8 +1007,10 @@ func Test_stopListenByCallID_FinalFlush(t *testing.T) {
 	m := newListenTurnHarness(mc)
 	ctx := context.Background()
 
+	// Keeps listeningAIcall's default listen_transcribe_id metadata: this row
+	// is a genuine call-kind listen session, and clearListenState below reads
+	// that same id to remove the AIcall's resolver membership.
 	row := listeningAIcall()
-	row.Metadata = map[string]any{}
 
 	m.db.EXPECT().AIcallList(ctx, uint64(10), "", gomock.Any()).Return([]*aicall.AIcall{row}, nil)
 
@@ -1021,11 +1029,14 @@ func Test_stopListenByCallID_FinalFlush(t *testing.T) {
 	).Return(&pmpipecatcall.Pipecatcall{Identity: commonidentity.Identity{ID: turnPCID}, HostID: "10.0.0.1"}, nil)
 	m.req.EXPECT().PipecatV1PipecatcallTerminateWithDelay(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 
-	// Then the stop itself.
+	// Then the stop itself. listeningAIcall carries no listen_owns_transcribe
+	// key, so stopListening skips the transcribe stop and clearListenState
+	// only removes this AIcall's resolver membership.
+	m.cache.EXPECT().ListenAIcallIDRemove(ctx, listenTranscribeIDFromMetadata(row), ltAIcallID).Return(nil)
 	m.cache.EXPECT().ListenStateClear(ctx, ltAIcallID).Return(nil)
 	m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(ctx, ltAIcallID, gomock.Any()).Return(nil)
 
-	delta := metricDelta(t, "ran", func() {
+	delta := metricDelta(t, "call", "ran", func() {
 		m.h.stopListenByCallID(ctx, ltCallID)
 	})
 	if delta != 1 {

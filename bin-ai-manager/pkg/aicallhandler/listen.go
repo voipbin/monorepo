@@ -57,6 +57,55 @@ func listenOwnsTranscribeFromMetadata(c *aicall.AIcall) bool {
 	return owns
 }
 
+// listenKind discriminates which kind of listen session an AIcall holds
+// (design 2026-09-05 §5.2.1). An AIcall carries at most one listen pointer.
+type listenKind string
+
+const (
+	listenKindNone         listenKind = ""
+	listenKindCall         listenKind = "call"
+	listenKindConversation listenKind = "conversation"
+)
+
+// listenKindLabelUnknown is the metric `kind` label value for sites that fire
+// before a listen pointer exists or before the Case's reference type is known
+// (design 2026-09-05 §5.13).
+const listenKindLabelUnknown = "unknown"
+
+// listenConversationIDFromMetadata reads the conversation this AIcall listens
+// to, or uuid.Nil when the key is absent or malformed.
+func listenConversationIDFromMetadata(c *aicall.AIcall) uuid.UUID {
+	if c == nil || c.Metadata == nil {
+		return uuid.Nil
+	}
+
+	tmp, ok := c.Metadata[aicall.MetaKeyListenConversationID].(string)
+	if !ok {
+		return uuid.Nil
+	}
+
+	return uuid.FromStringOrNil(tmp)
+}
+
+// listenKindOf resolves the AIcall's listen kind from its metadata pointers.
+func listenKindOf(c *aicall.AIcall) listenKind {
+	if listenTranscribeIDFromMetadata(c) != uuid.Nil {
+		return listenKindCall
+	}
+	if listenConversationIDFromMetadata(c) != uuid.Nil {
+		return listenKindConversation
+	}
+	return listenKindNone
+}
+
+// label renders the kind as its metric label value; none maps to unknown.
+func (k listenKind) label() string {
+	if k == listenKindNone {
+		return listenKindLabelUnknown
+	}
+	return string(k)
+}
+
 // listenTranscriptNewMarker separates the lines a previous turn already
 // evaluated from the ones this turn is seeing for the first time.
 //
@@ -250,9 +299,11 @@ func (h *aicallHandler) RunListenTurn(ctx context.Context, aicallID uuid.UUID) {
 	c, err := h.Get(ctx, aicallID)
 	if err != nil {
 		// No AIcall means nothing to stop and nothing to evaluate.
-		promListenTurnTotal.WithLabelValues("skipped_invalid").Inc()
+		promListenTurnTotal.WithLabelValues(listenKindLabelUnknown, "skipped_invalid").Inc()
 		return
 	}
+
+	kindLabel := listenKindOf(c).label()
 
 	// The flag check lives HERE, in the require-list, not in a separate earlier
 	// step: everything a failing condition does next needs `c`, which does not
@@ -261,7 +312,7 @@ func (h *aicallHandler) RunListenTurn(ctx context.Context, aicallID uuid.UUID) {
 	// would run to call-end or the turn cap regardless.
 	if !config.Get().AIcallListenEnabled {
 		h.stopListening(ctx, c)
-		promListenTurnTotal.WithLabelValues("skipped_disabled").Inc()
+		promListenTurnTotal.WithLabelValues(kindLabel, "skipped_disabled").Inc()
 		return
 	}
 
@@ -269,7 +320,7 @@ func (h *aicallHandler) RunListenTurn(ctx context.Context, aicallID uuid.UUID) {
 		c.ReferenceType != aicall.ReferenceTypeContactCase ||
 		listenTranscribeIDFromMetadata(c) == uuid.Nil {
 		h.stopListening(ctx, c)
-		promListenTurnTotal.WithLabelValues("skipped_invalid").Inc()
+		promListenTurnTotal.WithLabelValues(kindLabel, "skipped_invalid").Inc()
 		return
 	}
 
@@ -280,18 +331,18 @@ func (h *aicallHandler) RunListenTurn(ctx context.Context, aicallID uuid.UUID) {
 		log.Warnf("Could not increment the listen turn counter. err: %v", errCount)
 	} else if turns > int64(config.Get().AIcallListenMaxTurnsPerAIcall) {
 		h.stopListening(ctx, c)
-		promListenTurnTotal.WithLabelValues("skipped_cap").Inc()
+		promListenTurnTotal.WithLabelValues(kindLabel, "skipped_cap").Inc()
 		return
 	}
 
 	lines, err := h.cache.ListenPendingPopAll(ctx, aicallID)
 	if err != nil {
 		log.Errorf("Could not drain the pending buffer. err: %v", err)
-		promListenTurnTotal.WithLabelValues("failed").Inc()
+		promListenTurnTotal.WithLabelValues(kindLabel, "failed").Inc()
 		return
 	}
 	if len(lines) == 0 {
-		promListenTurnTotal.WithLabelValues("skipped_empty").Inc()
+		promListenTurnTotal.WithLabelValues(kindLabel, "skipped_empty").Inc()
 		return
 	}
 
@@ -313,6 +364,8 @@ func (h *aicallHandler) runListenTurnWithLines(ctx context.Context, c *aicall.AI
 		"aicall_id": c.ID,
 	})
 
+	kindLabel := listenKindOf(c).label()
+
 	window, errWindow := h.cache.ListenWindowGet(ctx, c.ID)
 	if errWindow != nil {
 		log.Warnf("Could not read the transcript window; evaluating the new lines alone. err: %v", errWindow)
@@ -322,7 +375,7 @@ func (h *aicallHandler) runListenTurnWithLines(ctx context.Context, c *aicall.AI
 	llmMessages, err := h.buildListenTurnMessages(ctx, c, window, lines)
 	if err != nil {
 		log.Errorf("Could not build the listen turn context. err: %v", err)
-		promListenTurnTotal.WithLabelValues("failed").Inc()
+		promListenTurnTotal.WithLabelValues(kindLabel, "failed").Inc()
 		return
 	}
 
@@ -349,14 +402,14 @@ func (h *aicallHandler) runListenTurnWithLines(ctx context.Context, c *aicall.AI
 	ttl := time.Duration(config.Get().AIcallListenTurnPipecatcallIDTTLSeconds) * time.Second
 	if errAdd := h.cache.ListenTurnPipecatcallIDAdd(ctx, c.ID, turnPipecatcallID, ttl); errAdd != nil {
 		log.Warnf("Could not register the listen turn id; skipping this turn. err: %v", errAdd)
-		promListenTurnTotal.WithLabelValues("skipped_register_failed").Inc()
+		promListenTurnTotal.WithLabelValues(kindLabel, "skipped_register_failed").Inc()
 		return
 	}
 
 	pc, err := h.startListenPipecatcall(ctx, c, turnPipecatcallID, llmMessages)
 	if err != nil {
 		log.Errorf("Could not start the listen pipecatcall. err: %v", err)
-		promListenTurnTotal.WithLabelValues("failed").Inc()
+		promListenTurnTotal.WithLabelValues(kindLabel, "failed").Inc()
 		return
 	}
 
@@ -366,7 +419,7 @@ func (h *aicallHandler) runListenTurnWithLines(ctx context.Context, c *aicall.AI
 		log.Warnf("Could not schedule the listen pipecatcall terminate. err: %v", errTerm)
 	}
 
-	promListenTurnTotal.WithLabelValues("ran").Inc()
+	promListenTurnTotal.WithLabelValues(kindLabel, "ran").Inc()
 }
 
 // startListenPipecatcall is a sibling of startPipecatcall that takes the
@@ -717,7 +770,7 @@ func (h *aicallHandler) EventTMTranscriptCreated(ctx context.Context, evt *tmtra
 			continue
 		}
 		if !acquired {
-			promListenTurnTotal.WithLabelValues("skipped_locked").Inc()
+			promListenTurnTotal.WithLabelValues(string(listenKindCall), "skipped_locked").Inc()
 			continue
 		}
 
