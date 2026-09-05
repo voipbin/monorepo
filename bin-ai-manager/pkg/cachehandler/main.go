@@ -54,6 +54,7 @@ type CacheHandler interface {
 	ListenConversationAIcallIDAdd(ctx context.Context, conversationID uuid.UUID, aicallID uuid.UUID, ttl time.Duration) error
 	ListenConversationAIcallIDRemove(ctx context.Context, conversationID uuid.UUID, aicallID uuid.UUID) error
 	ListenConversationAIcallIDIsMember(ctx context.Context, conversationID uuid.UUID, aicallID uuid.UUID) (bool, error)
+	ListenConversationResolverTouch(ctx context.Context, conversationID uuid.UUID, ttl time.Duration) error
 
 	ListenPendingPush(ctx context.Context, aicallID uuid.UUID, line string, ttl time.Duration) error
 	ListenPendingPopAll(ctx context.Context, aicallID uuid.UUID) ([]string, error)

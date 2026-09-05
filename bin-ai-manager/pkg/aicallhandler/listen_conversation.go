@@ -230,20 +230,35 @@ func conversationMessageLine(evt *cvmessage.Message) string {
 
 	sb.WriteString(truncateListenLineText(sanitizeListenLineText(evt.Text), maxChars))
 
+	// The tokens are joined into their own builder and capped by the SAME
+	// per-message limit as the text and the subject (code review round 4).
+	// Appending them straight onto sb would leave a message carrying many
+	// attachments as an unbounded way around that cap. The cap is applied to
+	// the joined tokens alone -- the separator that attaches the suffix to the
+	// text is ours and is added after the truncation, so it cannot be eaten by
+	// the cut.
+	var msb strings.Builder
 	for _, m := range evt.Medias {
-		// One separator before each token. When text is empty the builder
-		// already ends in the tag's trailing space (or the subject's newline),
-		// so only add a space after non-empty content.
-		if s := sb.String(); !strings.HasSuffix(s, " ") && !strings.HasSuffix(s, "\n") {
-			sb.WriteString(" ")
+		if msb.Len() > 0 {
+			msb.WriteString(" ")
 		}
 		mediaType := sanitizeListenLineText(string(m.Type))
 		if mediaType == "" {
 			mediaType = "unknown"
 		}
-		sb.WriteString("[media: ")
-		sb.WriteString(mediaType)
-		sb.WriteString("]")
+		msb.WriteString("[media: ")
+		msb.WriteString(mediaType)
+		msb.WriteString("]")
+	}
+
+	if mediaSuffix := truncateListenLineText(msb.String(), maxChars); mediaSuffix != "" {
+		// One separator before the suffix. When text is empty the builder
+		// already ends in the tag's trailing space (or the subject's newline),
+		// so only add a space after non-empty content.
+		if s := sb.String(); !strings.HasSuffix(s, " ") && !strings.HasSuffix(s, "\n") {
+			sb.WriteString(" ")
+		}
+		sb.WriteString(mediaSuffix)
 	}
 
 	return strings.TrimRight(sb.String(), " \n")
@@ -335,7 +350,12 @@ func (h *aicallHandler) EventCVMessageCreated(ctx context.Context, evt *cvmessag
 		// conversation that is actually active; design §5.2.2 promised
 		// refresh-on-SADD and start is the only SADD, so this is where the
 		// refresh has to live.
-		if errRearm := h.cache.ListenConversationAIcallIDAdd(ctx, evt.ConversationID, aicallID, listenResolverTTL); errRearm != nil {
+		//
+		// EXPIRE only, never SADD (code review round 4). The re-arm runs only
+		// for ids SMEMBERS already returned, so a SADD would add nothing -- but
+		// it WOULD resurrect a membership a concurrent stop removed between the
+		// lookup and here. EXPIRE on a missing key is a no-op instead.
+		if errRearm := h.cache.ListenConversationResolverTouch(ctx, evt.ConversationID, listenResolverTTL); errRearm != nil {
 			// The line is already buffered; at worst the entry expires.
 			log.Warnf("Could not re-arm the conversation listen resolver entry. aicall_id: %s, err: %v", aicallID, errRearm)
 		}
@@ -348,6 +368,9 @@ func (h *aicallHandler) EventCVMessageCreated(ctx context.Context, evt *cvmessag
 		acquired, errLock := h.cache.ListenTurnTryLock(ctx, aicallID, interval)
 		if errLock != nil {
 			log.Warnf("Could not take the listen turn lock. aicall_id: %s, err: %v", aicallID, errLock)
+			// A lock error is a real failure, not the debounce doing its job,
+			// so it is metered apart from skipped_locked (code review round 4).
+			promListenTurnTotal.WithLabelValues(string(listenKindConversation), "failed").Inc()
 			// The line is buffered but no turn was started, so arm the
 			// deferred flush rather than stranding it until the next message.
 			h.scheduleListenFlush(aicallID)

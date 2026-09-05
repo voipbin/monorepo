@@ -250,6 +250,20 @@ func (mr *MockCacheHandlerMockRecorder) ListenConversationAIcallIDsGet(ctx, conv
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListenConversationAIcallIDsGet", reflect.TypeOf((*MockCacheHandler)(nil).ListenConversationAIcallIDsGet), ctx, conversationID)
 }
 
+// ListenConversationResolverTouch mocks base method.
+func (m *MockCacheHandler) ListenConversationResolverTouch(ctx context.Context, conversationID uuid.UUID, ttl time.Duration) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListenConversationResolverTouch", ctx, conversationID, ttl)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ListenConversationResolverTouch indicates an expected call of ListenConversationResolverTouch.
+func (mr *MockCacheHandlerMockRecorder) ListenConversationResolverTouch(ctx, conversationID, ttl any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListenConversationResolverTouch", reflect.TypeOf((*MockCacheHandler)(nil).ListenConversationResolverTouch), ctx, conversationID, ttl)
+}
+
 // ListenPendingLen mocks base method.
 func (m *MockCacheHandler) ListenPendingLen(ctx context.Context, aicallID uuid.UUID) (int64, error) {
 	m.ctrl.T.Helper()

@@ -221,6 +221,14 @@ func (h *handler) ListenConversationAIcallIDRemove(ctx context.Context, conversa
 	return h.Cache.SRem(ctx, listenConversationKey(conversationID), aicallID.String()).Err()
 }
 
+// ListenConversationResolverTouch re-arms the resolver set's TTL without adding
+// members; EXPIRE on a missing key is a no-op, so a membership a concurrent
+// stop removed is never resurrected (design 2026-09-05 §5.2.2, code review
+// round 4).
+func (h *handler) ListenConversationResolverTouch(ctx context.Context, conversationID uuid.UUID, ttl time.Duration) error {
+	return h.Cache.Expire(ctx, listenConversationKey(conversationID), time.Duration(listenTTLSeconds(ttl))*time.Second).Err()
+}
+
 // ListenConversationAIcallIDIsMember reports whether aicallID is registered as
 // a listener of the conversation. Used by the conversation start's idempotency
 // check (design 2026-09-05 §5.1.1 step 0).

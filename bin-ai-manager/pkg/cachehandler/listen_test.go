@@ -284,6 +284,29 @@ func Test_listenConversationResolverAndPendingLen(t *testing.T) {
 	if err != nil || len(got) != 2 {
 		t.Fatalf("get must return both members. got: %v, err: %v", got, err)
 	}
+
+	// The intake's re-arm is EXPIRE-only (code review round 4): it must refresh
+	// the resolver set's TTL without touching membership, so it can never
+	// resurrect a membership a concurrent stop just SREM'd.
+	if err := h.ListenConversationResolverTouch(ctx, conversationID, time.Hour); err != nil {
+		t.Fatalf("touch failed. err: %v", err)
+	}
+	if ttl := mr.TTL(listenConversationKey(conversationID)); ttl <= 0 || ttl > time.Hour {
+		t.Errorf("touch must arm the resolver TTL. expected: 0 < ttl <= %s, got: %s", time.Hour, ttl)
+	}
+	if got, err := h.ListenConversationAIcallIDsGet(ctx, conversationID); err != nil || len(got) != 2 {
+		t.Fatalf("touch must not change membership. got: %v, err: %v", got, err)
+	}
+
+	// EXPIRE on a missing key is a no-op, so a stopped conversation is never
+	// re-created by a late intake line.
+	freshID := uuid.FromStringOrNil("88888888-7777-8888-9999-aaaaaaaaaaaa")
+	if err := h.ListenConversationResolverTouch(ctx, freshID, time.Hour); err != nil {
+		t.Fatalf("touch on a missing key must not error. err: %v", err)
+	}
+	if mr.Exists(listenConversationKey(freshID)) {
+		t.Errorf("touch must never create the resolver key. key: %s", listenConversationKey(freshID))
+	}
 	if err := h.ListenConversationAIcallIDRemove(ctx, conversationID, aicallID); err != nil {
 		t.Fatalf("remove failed. err: %v", err)
 	}
