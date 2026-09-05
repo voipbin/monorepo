@@ -234,8 +234,7 @@ func TestLoadGlobalConfig(t *testing.T) {
 }
 
 // Test_ListenConfigDefaults pins the shipped defaults for the Insight AI
-// realtime-listen flags. The first assertion is the important one: the feature
-// must ship dark. The rest guard against a zero-value default silently
+// realtime-listen settings. They guard against a zero-value default silently
 // disabling the debounce (interval 0 = a turn per transcript segment, the exact
 // unbounded-cost shape the design exists to avoid) or the turn cap.
 func Test_ListenConfigDefaults(t *testing.T) {
@@ -243,9 +242,6 @@ func Test_ListenConfigDefaults(t *testing.T) {
 
 	cfg := Get()
 
-	if cfg.AIcallListenEnabled {
-		t.Errorf("AIcallListenEnabled must default to false -- the feature ships dark")
-	}
 	if cfg.AIcallListenEvaluateIntervalSeconds != 20 {
 		t.Errorf("AIcallListenEvaluateIntervalSeconds mismatch. expected: 20, got: %d", cfg.AIcallListenEvaluateIntervalSeconds)
 	}
@@ -281,9 +277,6 @@ func Test_ListenConfigDefaults(t *testing.T) {
 	}
 	if cfg.AIcallListenStartLockReleaseTimeoutSeconds != 3 {
 		t.Errorf("AIcallListenStartLockReleaseTimeoutSeconds mismatch. expected: 3, got: %d", cfg.AIcallListenStartLockReleaseTimeoutSeconds)
-	}
-	if cfg.AIcallListenConversationEnabled {
-		t.Errorf("AIcallListenConversationEnabled must default to false -- the conversation variant ships dark independently of the master switch")
 	}
 	if cfg.AIcallListenConversationMaxMessageChars != 2000 {
 		t.Errorf("AIcallListenConversationMaxMessageChars mismatch. expected: 2000, got: %d", cfg.AIcallListenConversationMaxMessageChars)

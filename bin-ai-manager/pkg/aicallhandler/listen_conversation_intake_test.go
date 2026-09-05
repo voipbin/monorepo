@@ -120,19 +120,16 @@ func Test_EventCVMessageCreated(t *testing.T) {
 		aicallPointer uuid.UUID
 		// pushErr makes the pending-line push fail. rearmErr makes the
 		// post-buffer resolver re-arm fail. lockErr makes the debounce lock
-		// error out. masterOff / conversationOff clear exactly one listen flag
-		// AFTER the per-row defaults, for the dark-feature early-out.
-		pushErr         error
-		rearmErr        error
-		lockErr         error
-		masterOff       bool
-		conversationOff bool
-		lockAcquired    bool
-		expectSegment   string
-		expectBuffered  int
-		expectLock      bool
-		expectTurn      bool
-		expectFlush     string
+		// error out.
+		pushErr        error
+		rearmErr       error
+		lockErr        error
+		lockAcquired   bool
+		expectSegment  string
+		expectBuffered int
+		expectLock     bool
+		expectTurn     bool
+		expectFlush    string
 		// expectTurnFailed is the promListenTurnTotal{conversation,failed}
 		// delta the row must produce.
 		expectTurnFailed int
@@ -146,16 +143,6 @@ func Test_EventCVMessageCreated(t *testing.T) {
 			name:          "empty text without media is dropped before the resolver",
 			msg:           &cvmessage.Message{Identity: commonidentity.Identity{CustomerID: ltCustomerID}, ConversationID: lcConversationID, Direction: cvmessage.DirectionIncoming, Text: "   "},
 			expectSegment: "dropped_empty",
-		},
-		{
-			name:      "master flag off returns before the resolver",
-			msg:       &cvmessage.Message{Identity: commonidentity.Identity{CustomerID: ltCustomerID}, ConversationID: lcConversationID, Direction: cvmessage.DirectionIncoming, Text: "x"},
-			masterOff: true,
-		},
-		{
-			name:            "conversation flag off returns before the resolver",
-			msg:             &cvmessage.Message{Identity: commonidentity.Identity{CustomerID: ltCustomerID}, ConversationID: lcConversationID, Direction: cvmessage.DirectionIncoming, Text: "x"},
-			conversationOff: true,
 		},
 		{
 			name:          "unknown conversation is dropped",
@@ -288,16 +275,7 @@ func Test_EventCVMessageCreated(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			config.SetListenDefaultsForTest()
-			config.SetAIcallListenEnabledForTest(true)
-			config.SetAIcallListenConversationEnabledForTest(true)
 			config.SetAIcallListenConversationFlushJitterMsForTest(0)
-			if tt.masterOff {
-				config.SetAIcallListenEnabledForTest(false)
-			}
-			if tt.conversationOff {
-				config.SetAIcallListenConversationEnabledForTest(false)
-			}
-			flagsOff := tt.masterOff || tt.conversationOff
 
 			mc := gomock.NewController(t)
 			defer mc.Finish()
@@ -315,7 +293,7 @@ func Test_EventCVMessageCreated(t *testing.T) {
 			turnsSpawned := make(chan uuid.UUID, 4)
 			m.h.runListenTurnHook = func(_ context.Context, id uuid.UUID) { turnsSpawned <- id }
 
-			if !flagsOff && tt.msg.TMDelete == nil && (strings.TrimSpace(tt.msg.Text) != "" || strings.TrimSpace(tt.msg.Subject) != "" || len(tt.msg.Medias) > 0) {
+			if tt.msg.TMDelete == nil && (strings.TrimSpace(tt.msg.Text) != "" || strings.TrimSpace(tt.msg.Subject) != "" || len(tt.msg.Medias) > 0) {
 				m.cache.EXPECT().ListenConversationAIcallIDsGet(ctx, lcConversationID).Return(tt.resolved, tt.resolveErr).MaxTimes(1)
 			} else {
 				// Either flag off must return before the resolver is touched.
@@ -419,8 +397,6 @@ func Test_EventCVMessageCreated(t *testing.T) {
 // arrival can re-arm, and lock-lost leaves the buffer alone.
 func Test_listenFlush(t *testing.T) {
 	config.SetListenDefaultsForTest()
-	config.SetAIcallListenEnabledForTest(true)
-	config.SetAIcallListenConversationEnabledForTest(true)
 	config.SetAIcallListenConversationFlushJitterMsForTest(0)
 
 	mc := gomock.NewController(t)

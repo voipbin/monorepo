@@ -29,11 +29,6 @@ func (h *aicallHandler) checkListenEligibleConversation(ctx context.Context, c *
 		"case_id":   kase.ID,
 	})
 
-	if !config.Get().AIcallListenConversationEnabled {
-		promListenStartTotal.WithLabelValues(string(listenKindConversation), "skipped_disabled").Inc()
-		return
-	}
-
 	conversationID := uuid.FromStringOrNil(kase.ReferenceID)
 	if conversationID == uuid.Nil {
 		// flow-manager's case_create may legitimately store an empty ReferenceID.
@@ -271,12 +266,6 @@ func conversationMessageLine(evt *cvmessage.Message) string {
 // before the resolver lookup must stay trivially cheap, and the resolver
 // lookup itself is the only Redis round trip for the >99% that are not ours.
 func (h *aicallHandler) EventCVMessageCreated(ctx context.Context, evt *cvmessage.Message) {
-	// While the feature is dark it must not cost a Redis round trip per
-	// platform-wide message. A mid-session flag flip is handled turn-side.
-	if !config.Get().AIcallListenEnabled || !config.Get().AIcallListenConversationEnabled {
-		return
-	}
-
 	if evt.TMDelete != nil {
 		promListenConversationSegmentTotal.WithLabelValues("dropped_deleted").Inc()
 		return

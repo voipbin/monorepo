@@ -75,7 +75,6 @@ func Test_checkListenEligible(t *testing.T) {
 	tests := []struct {
 		name string
 
-		flagEnabled  bool
 		aiType       ai.Type
 		aicallStatus aicall.Status
 		aicallDelete bool
@@ -94,12 +93,7 @@ func Test_checkListenEligible(t *testing.T) {
 		expectProceed       bool
 	}{
 		{
-			name:        "flag disabled returns immediately",
-			flagEnabled: false,
-		},
-		{
 			name:         "non-insight AI returns immediately",
-			flagEnabled:  true,
 			aiType:       ai.TypeNormal,
 			aicallStatus: aicall.StatusProgressing,
 		},
@@ -110,20 +104,17 @@ func Test_checkListenEligible(t *testing.T) {
 			// therefore live" guarantee: ZERO TranscribeV1*/ContactV1*/CallV1*
 			// calls, and it must not even reach the idempotency check.
 			name:         "terminated aicall is refused before any cross-service RPC",
-			flagEnabled:  true,
 			aiType:       ai.TypeInsight,
 			aicallStatus: aicall.StatusTerminated,
 		},
 		{
 			name:         "soft-deleted aicall (TMDelete set) is refused before any cross-service RPC",
-			flagEnabled:  true,
 			aiType:       ai.TypeInsight,
 			aicallStatus: aicall.StatusProgressing,
 			aicallDelete: true,
 		},
 		{
 			name:         "already listening on a valid session makes zero transcribe-start calls",
-			flagEnabled:  true,
 			aiType:       ai.TypeInsight,
 			aicallStatus: aicall.StatusProgressing,
 			metadata: map[string]any{
@@ -139,7 +130,6 @@ func Test_checkListenEligible(t *testing.T) {
 		},
 		{
 			name:         "case reference type is neither call nor conversation_message",
-			flagEnabled:  true,
 			aiType:       ai.TypeInsight,
 			aicallStatus: aicall.StatusProgressing,
 			responseCase: &kmkase.Case{
@@ -150,7 +140,6 @@ func Test_checkListenEligible(t *testing.T) {
 		},
 		{
 			name:         "case reference id does not parse as a uuid",
-			flagEnabled:  true,
 			aiType:       ai.TypeInsight,
 			aicallStatus: aicall.StatusProgressing,
 			responseCase: &kmkase.Case{
@@ -161,7 +150,6 @@ func Test_checkListenEligible(t *testing.T) {
 		},
 		{
 			name:         "cross-customer case is refused",
-			flagEnabled:  true,
 			aiType:       ai.TypeInsight,
 			aicallStatus: aicall.StatusProgressing,
 			responseCase: &kmkase.Case{
@@ -172,7 +160,6 @@ func Test_checkListenEligible(t *testing.T) {
 		},
 		{
 			name:         "cross-customer call is refused",
-			flagEnabled:  true,
 			aiType:       ai.TypeInsight,
 			aicallStatus: aicall.StatusProgressing,
 			responseCase: listenEligibleCase(),
@@ -185,7 +172,6 @@ func Test_checkListenEligible(t *testing.T) {
 		},
 		{
 			name:         "call status hangup is not listenable",
-			flagEnabled:  true,
 			aiType:       ai.TypeInsight,
 			aicallStatus: aicall.StatusProgressing,
 			responseCase: listenEligibleCase(),
@@ -198,7 +184,6 @@ func Test_checkListenEligible(t *testing.T) {
 		},
 		{
 			name:         "case lookup failure does not proceed and does not error",
-			flagEnabled:  true,
 			aiType:       ai.TypeInsight,
 			aicallStatus: aicall.StatusProgressing,
 			// Design §6's first row: a lookup failure is logged and metered,
@@ -208,7 +193,6 @@ func Test_checkListenEligible(t *testing.T) {
 		},
 		{
 			name:            "call lookup failure does not proceed and does not error",
-			flagEnabled:     true,
 			aiType:          ai.TypeInsight,
 			aicallStatus:    aicall.StatusProgressing,
 			responseCase:    listenEligibleCase(),
@@ -218,7 +202,6 @@ func Test_checkListenEligible(t *testing.T) {
 		},
 		{
 			name:         "call status dialing is listenable and proceeds",
-			flagEnabled:  true,
 			aiType:       ai.TypeInsight,
 			aicallStatus: aicall.StatusProgressing,
 			responseCase: listenEligibleCase(),
@@ -232,7 +215,6 @@ func Test_checkListenEligible(t *testing.T) {
 		},
 		{
 			name:         "call status ringing is listenable and proceeds",
-			flagEnabled:  true,
 			aiType:       ai.TypeInsight,
 			aicallStatus: aicall.StatusProgressing,
 			responseCase: listenEligibleCase(),
@@ -246,7 +228,6 @@ func Test_checkListenEligible(t *testing.T) {
 		},
 		{
 			name:          "call status progressing is listenable and proceeds",
-			flagEnabled:   true,
 			aiType:        ai.TypeInsight,
 			aicallStatus:  aicall.StatusProgressing,
 			responseCase:  listenEligibleCase(),
@@ -260,7 +241,6 @@ func Test_checkListenEligible(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			config.SetListenDefaultsForTest()
-			config.SetAIcallListenEnabledForTest(tt.flagEnabled)
 
 			mc := gomock.NewController(t)
 			defer mc.Finish()
@@ -284,12 +264,10 @@ func Test_checkListenEligible(t *testing.T) {
 			// cannot check a.Type without the struct. What must NOT happen on
 			// the refusal rows is a cross-service RPC, which the Times()
 			// expectations below assert.
-			if tt.flagEnabled {
-				mockAI.EXPECT().Get(ctx, ltAIID).Return(&ai.AI{
-					Identity: commonidentity.Identity{ID: ltAIID},
-					Type:     tt.aiType,
-				}, nil)
-			}
+			mockAI.EXPECT().Get(ctx, ltAIID).Return(&ai.AI{
+				Identity: commonidentity.Identity{ID: ltAIID},
+				Type:     tt.aiType,
+			}, nil)
 
 			if tt.expectTranscribeGet {
 				mockReq.EXPECT().TranscribeV1TranscribeGet(ctx, gomock.Any()).Return(tt.responseTranscribe, nil).Times(1)
@@ -351,7 +329,6 @@ func Test_checkListenEligible(t *testing.T) {
 func Test_ProcessListen(t *testing.T) {
 	t.Run("unknown id returns the Get error and never runs checkListenEligible", func(t *testing.T) {
 		config.SetListenDefaultsForTest()
-		config.SetAIcallListenEnabledForTest(true)
 
 		mc := gomock.NewController(t)
 		defer mc.Finish()
@@ -377,18 +354,27 @@ func Test_ProcessListen(t *testing.T) {
 		}
 	})
 
-	t.Run("not eligible returns the unchanged aicall and never runs the async stage", func(t *testing.T) {
-		config.SetListenDefaultsForTest() // flag off -> checkListenEligible refuses at step 1
+	t.Run("terminated aicall is refused and never runs the async stage", func(t *testing.T) {
+		config.SetListenDefaultsForTest()
 
 		mc := gomock.NewController(t)
 		defer mc.Finish()
 
 		mockDB := dbhandler.NewMockDBHandler(mc)
-		h := &aicallHandler{db: mockDB}
+		mockAI := aihandler.NewMockAIHandler(mc)
+		h := &aicallHandler{db: mockDB, aiHandler: mockAI}
 		ctx := context.Background()
 
+		// Step 2's liveness half is what refuses here: the AIcall is an Insight
+		// AIcall, but it is terminated, so the trigger stops before any
+		// cross-service RPC and before the async stage (design rev 16).
 		c := listenEligibleAIcall()
+		c.Status = aicall.StatusTerminated
 		mockDB.EXPECT().AIcallGet(ctx, ltAIcallID).Return(c, nil)
+		mockAI.EXPECT().Get(ctx, ltAIID).Return(&ai.AI{
+			Identity: commonidentity.Identity{ID: ltAIID},
+			Type:     ai.TypeInsight,
+		}, nil)
 
 		var hookCalls int32
 		var mu sync.Mutex
@@ -419,7 +405,6 @@ func Test_ProcessListen(t *testing.T) {
 
 	t.Run("happy path returns immediately, runs the async stage exactly once, and re-fetches nothing", func(t *testing.T) {
 		config.SetListenDefaultsForTest()
-		config.SetAIcallListenEnabledForTest(true)
 
 		mc := gomock.NewController(t)
 		defer mc.Finish()
@@ -510,7 +495,6 @@ func Test_ProcessListen(t *testing.T) {
 
 	t.Run("repeated calls on an already-listening aicall are free", func(t *testing.T) {
 		config.SetListenDefaultsForTest()
-		config.SetAIcallListenEnabledForTest(true)
 
 		mc := gomock.NewController(t)
 		defer mc.Finish()
@@ -1996,7 +1980,6 @@ func Test_checkListenEligible_ReferenceTypeGate(t *testing.T) {
 	} {
 		t.Run(string("reference_type="+referenceType), func(t *testing.T) {
 			config.SetListenDefaultsForTest()
-			config.SetAIcallListenEnabledForTest(true)
 			defer config.SetListenDefaultsForTest()
 
 			mc := gomock.NewController(t)

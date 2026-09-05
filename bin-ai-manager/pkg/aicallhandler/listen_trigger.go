@@ -128,23 +128,9 @@ func (h *aicallHandler) checkListenEligible(ctx context.Context, c *aicall.AIcal
 		"aicall_id": c.ID,
 	})
 
-	// Step 1: feature gate.
-	//
-	// NOT METERED, and that is a gap this plan records rather than papers
-	// over (review round 1 finding LOW-8). Design §5.13 enumerates
-	// aicall_listen_start_total's `result` values as started / reused /
-	// skipped_not_listenable / skipped_confbridge_not_ready /
-	// skipped_confbridge_error / failed, and never says which one covers "the
-	// feature flag is off." Folding it into skipped_not_listenable is the
-	// plausible reading, but the design does not state it and inventing a
-	// seventh value here would be exactly the kind of unilateral decision this
-	// task flags elsewhere. Leaving it unmetered is also defensible on its own:
-	// during a flag-off rollout stage EVERY call takes this branch, so the
-	// counter would say nothing the flag's own value does not already say. If
-	// a reviewer wants it metered, decide the label in the design first.
-	if !config.Get().AIcallListenEnabled {
-		return nil, nil, uuid.Nil, nil, false, nil
-	}
+	// Step 1 (the feature gate) was removed on 2026-09-06: listening is always
+	// on. The remaining step numbers are kept so the design references and the
+	// tests that cite them stay readable.
 
 	// Step 2: AIcall gate -- type AND liveness, combined.
 	//

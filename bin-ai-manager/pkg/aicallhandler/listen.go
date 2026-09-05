@@ -267,25 +267,6 @@ func (h *aicallHandler) RunListenTurn(ctx context.Context, aicallID uuid.UUID) {
 	kind := listenKindOf(c)
 	kindLabel := kind.label()
 
-	// The flag check lives HERE, in the require-list, not in a separate earlier
-	// step: everything a failing condition does next needs `c`, which does not
-	// exist until the fetch above. It is also what makes a rollback real -- with
-	// no flag read on this path, a session that started while the flag was on
-	// would run to call-end or the turn cap regardless.
-	if !config.Get().AIcallListenEnabled {
-		h.stopListening(ctx, c)
-		promListenTurnTotal.WithLabelValues(kindLabel, "skipped_disabled").Inc()
-		return
-	}
-
-	// Scoped to the conversation kind so a disabled conversation variant can
-	// never stop a call listen (design 2026-09-05 §5.5.1).
-	if kind == listenKindConversation && !config.Get().AIcallListenConversationEnabled {
-		h.stopListening(ctx, c)
-		promListenTurnTotal.WithLabelValues(kindLabel, "skipped_disabled").Inc()
-		return
-	}
-
 	if c.Status != aicall.StatusProgressing ||
 		c.ReferenceType != aicall.ReferenceTypeContactCase ||
 		kind == listenKindNone {

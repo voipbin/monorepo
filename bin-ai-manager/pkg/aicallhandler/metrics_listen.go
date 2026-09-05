@@ -21,7 +21,7 @@ var (
 		prometheus.CounterOpts{
 			Namespace: metricsNamespace,
 			Name:      "aicall_listen_start_total",
-			Help:      "Total number of listen-start attempts by kind and outcome. kind: call, conversation, or unknown for the gates that run before the Case's reference type is known. result: started, reused, skipped_not_listenable, skipped_disabled, skipped_confbridge_not_ready, skipped_confbridge_error, skipped_start_locked, failed.",
+			Help:      "Total number of listen-start attempts by kind and outcome. kind: call, conversation, or unknown for the gates that run before the Case's reference type is known. result: started, reused, skipped_not_listenable, skipped_confbridge_not_ready, skipped_confbridge_error, skipped_start_locked, failed.",
 		},
 		[]string{"kind", "result"},
 	)

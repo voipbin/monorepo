@@ -331,10 +331,9 @@ func Test_RunListenTurn(t *testing.T) {
 	tests := []struct {
 		name string
 
-		flagEnabled bool
-		status      aicall.Status
-		refType     aicall.ReferenceType
-		metadata    map[string]any
+		status   aicall.Status
+		refType  aicall.ReferenceType
+		metadata map[string]any
 
 		expectCountIncr bool
 		turnCount       int64
@@ -351,19 +350,7 @@ func Test_RunListenTurn(t *testing.T) {
 		expectKind          string
 	}{
 		{
-			name: "flag off stops listening entirely",
-			// Not merely "clears bookkeeping": a bare state clear would leave a
-			// still-running owned STT session with its handle lost, so a
-			// rollback would strand a billed stream until the call ended.
-			flagEnabled:         false,
-			status:              aicall.StatusProgressing,
-			refType:             aicall.ReferenceTypeContactCase,
-			expectStopListening: true,
-			expectResult:        "skipped_disabled",
-		},
-		{
 			name:                "terminated aicall stops listening",
-			flagEnabled:         true,
 			status:              aicall.StatusTerminated,
 			refType:             aicall.ReferenceTypeContactCase,
 			expectStopListening: true,
@@ -371,7 +358,6 @@ func Test_RunListenTurn(t *testing.T) {
 		},
 		{
 			name:                "non contact_case reference type stops listening",
-			flagEnabled:         true,
 			status:              aicall.StatusProgressing,
 			refType:             aicall.ReferenceTypeCall,
 			expectStopListening: true,
@@ -379,7 +365,6 @@ func Test_RunListenTurn(t *testing.T) {
 		},
 		{
 			name:                "missing listen_transcribe_id metadata stops listening",
-			flagEnabled:         true,
 			status:              aicall.StatusProgressing,
 			refType:             aicall.ReferenceTypeContactCase,
 			metadata:            map[string]any{},
@@ -389,7 +374,6 @@ func Test_RunListenTurn(t *testing.T) {
 		},
 		{
 			name:            "empty pending buffer skips without stopping",
-			flagEnabled:     true,
 			status:          aicall.StatusProgressing,
 			refType:         aicall.ReferenceTypeContactCase,
 			expectCountIncr: true,
@@ -400,7 +384,6 @@ func Test_RunListenTurn(t *testing.T) {
 		},
 		{
 			name:                "turn cap exceeded stops listening",
-			flagEnabled:         true,
 			status:              aicall.StatusProgressing,
 			refType:             aicall.ReferenceTypeContactCase,
 			expectCountIncr:     true,
@@ -414,7 +397,6 @@ func Test_RunListenTurn(t *testing.T) {
 			// resolve listenTurn=false: its rows get permanently tagged
 			// OriginNone and its notify_agent call gets rejected -- the exact
 			// failure the registration exists to prevent.
-			flagEnabled:        true,
 			status:             aicall.StatusProgressing,
 			refType:            aicall.ReferenceTypeContactCase,
 			expectCountIncr:    true,
@@ -428,7 +410,6 @@ func Test_RunListenTurn(t *testing.T) {
 		},
 		{
 			name:               "happy path runs one turn",
-			flagEnabled:        true,
 			status:             aicall.StatusProgressing,
 			refType:            aicall.ReferenceTypeContactCase,
 			expectCountIncr:    true,
@@ -444,7 +425,6 @@ func Test_RunListenTurn(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			config.SetListenDefaultsForTest()
-			config.SetAIcallListenEnabledForTest(tt.flagEnabled)
 			defer config.SetListenDefaultsForTest()
 
 			mc := gomock.NewController(t)
@@ -536,7 +516,6 @@ func Test_RunListenTurn(t *testing.T) {
 // anything the turn emits. All three at once, silently.
 func Test_RunListenTurn_DoesNotWritePipecatcallID(t *testing.T) {
 	config.SetListenDefaultsForTest()
-	config.SetAIcallListenEnabledForTest(true)
 	defer config.SetListenDefaultsForTest()
 
 	mc := gomock.NewController(t)
@@ -603,7 +582,6 @@ func Test_RunListenTurn_DoesNotWritePipecatcallID(t *testing.T) {
 // already drained -- would otherwise have no way in.
 func Test_runListenTurnWithLines_HangupPath(t *testing.T) {
 	config.SetListenDefaultsForTest()
-	config.SetAIcallListenEnabledForTest(true)
 	defer config.SetListenDefaultsForTest()
 
 	mc := gomock.NewController(t)

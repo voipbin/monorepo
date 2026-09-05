@@ -86,7 +86,6 @@ func Test_RunListenTurn_Conversation(t *testing.T) {
 	tests := []struct {
 		name              string
 		callKind          bool
-		conversationFlag  bool
 		pendingLen        int64
 		pendingLenErr     error
 		responseCase      *kmkase.Case
@@ -97,20 +96,12 @@ func Test_RunListenTurn_Conversation(t *testing.T) {
 		expectResultLabel string
 	}{
 		{
-			name:              "conversation sub-flag off stops the session without a Case RPC",
-			conversationFlag:  false,
-			expectStop:        true,
-			expectResultLabel: "skipped_disabled",
-		},
-		{
 			name:              "empty pending buffer short-circuits before the Case RPC and the counter",
-			conversationFlag:  true,
 			pendingLen:        0,
 			expectResultLabel: "skipped_empty",
 		},
 		{
 			name:              "LLEN error is tolerated and the turn proceeds to the Case check",
-			conversationFlag:  true,
 			pendingLenErr:     fmt.Errorf("redis down"),
 			responseCase:      openConversationCase(),
 			expectCaseGet:     true,
@@ -119,7 +110,6 @@ func Test_RunListenTurn_Conversation(t *testing.T) {
 		},
 		{
 			name:              "closed Case stops listening",
-			conversationFlag:  true,
 			pendingLen:        2,
 			responseCase:      &kmkase.Case{ID: ltCaseID, CustomerID: ltCustomerID, ReferenceType: kmkase.ReferenceTypeConversationMessage, ReferenceID: lcConversationID.String(), Status: kmkase.StatusClosed},
 			expectCaseGet:     true,
@@ -128,7 +118,6 @@ func Test_RunListenTurn_Conversation(t *testing.T) {
 		},
 		{
 			name:              "Case RPC failure is metered as failed and nothing is popped or counted",
-			conversationFlag:  true,
 			pendingLen:        2,
 			responseCaseErr:   fmt.Errorf("rpc timeout"),
 			expectCaseGet:     true,
@@ -136,11 +125,9 @@ func Test_RunListenTurn_Conversation(t *testing.T) {
 		},
 		{
 			// Design §7 item 4: a CALL-kind AIcall in the same table must be
-			// untouched by the conversation gates -- no LLEN, no Case RPC, and
-			// the conversation sub-flag being OFF must not stop it.
-			name:              "call kind ignores the conversation sub-flag and never calls LLEN or the Case RPC",
+			// untouched by the conversation gates -- no LLEN and no Case RPC.
+			name:              "call kind never calls LLEN or the Case RPC",
 			callKind:          true,
-			conversationFlag:  false,
 			expectCounter:     true,
 			expectResultLabel: "skipped_empty",
 		},
@@ -149,8 +136,6 @@ func Test_RunListenTurn_Conversation(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			config.SetListenDefaultsForTest()
-			config.SetAIcallListenEnabledForTest(true)
-			config.SetAIcallListenConversationEnabledForTest(tt.conversationFlag)
 
 			mc := gomock.NewController(t)
 			defer mc.Finish()
@@ -165,10 +150,10 @@ func Test_RunListenTurn_Conversation(t *testing.T) {
 			}
 			m.db.EXPECT().AIcallGet(ctx, ltAIcallID).Return(c, nil)
 
-			if tt.conversationFlag && !tt.callKind {
-				m.cache.EXPECT().ListenPendingLen(ctx, ltAIcallID).Return(tt.pendingLen, tt.pendingLenErr)
-			} else {
+			if tt.callKind {
 				m.cache.EXPECT().ListenPendingLen(gomock.Any(), gomock.Any()).Times(0)
+			} else {
+				m.cache.EXPECT().ListenPendingLen(ctx, ltAIcallID).Return(tt.pendingLen, tt.pendingLenErr)
 			}
 			if tt.expectCaseGet {
 				m.req.EXPECT().ContactV1CaseGet(ctx, ltCustomerID, ltCaseID).Return(tt.responseCase, tt.responseCaseErr)
@@ -404,9 +389,8 @@ func Test_startListenConversation(t *testing.T) {
 // ProcessListen never spawns the call-only runListenStart.
 func Test_checkListenEligible_ConversationBranch(t *testing.T) {
 	tests := []struct {
-		name             string
-		conversationFlag bool
-		referenceID      string
+		name        string
+		referenceID string
 		// caseStatus overrides the fixture's open status; empty keeps it open.
 		caseStatus kmkase.Status
 		// expectConversationGet marks the rows that reach the parse and so run
@@ -417,20 +401,17 @@ func Test_checkListenEligible_ConversationBranch(t *testing.T) {
 		expectStart           bool
 		expectLabel           string
 	}{
-		{name: "sub-flag off is skipped_disabled", conversationFlag: false, referenceID: lcConversationID.String(), expectLabel: "skipped_disabled"},
-		{name: "empty reference id is skipped_not_listenable", conversationFlag: true, referenceID: "", expectLabel: "skipped_not_listenable"},
-		{name: "garbage reference id is skipped_not_listenable", conversationFlag: true, referenceID: "not-a-uuid", expectLabel: "skipped_not_listenable"},
-		{name: "conversation RPC failure is failed", conversationFlag: true, referenceID: lcConversationID.String(), expectConversationGet: true, conversationGetErr: fmt.Errorf("rpc timeout"), expectLabel: "failed"},
-		{name: "cross-customer conversation is refused", conversationFlag: true, referenceID: lcConversationID.String(), expectConversationGet: true, conversationCustomer: uuid.FromStringOrNil("55550000-0000-4000-8000-000000000002"), expectLabel: "skipped_not_listenable"},
-		{name: "valid conversation id starts inline", conversationFlag: true, referenceID: lcConversationID.String(), expectConversationGet: true, conversationCustomer: ltCustomerID, expectStart: true, expectLabel: "started"},
-		{name: "closed Case is skipped_not_listenable", conversationFlag: true, referenceID: lcConversationID.String(), caseStatus: kmkase.StatusClosed, expectConversationGet: true, conversationCustomer: ltCustomerID, expectLabel: "skipped_not_listenable"},
+		{name: "empty reference id is skipped_not_listenable", referenceID: "", expectLabel: "skipped_not_listenable"},
+		{name: "garbage reference id is skipped_not_listenable", referenceID: "not-a-uuid", expectLabel: "skipped_not_listenable"},
+		{name: "conversation RPC failure is failed", referenceID: lcConversationID.String(), expectConversationGet: true, conversationGetErr: fmt.Errorf("rpc timeout"), expectLabel: "failed"},
+		{name: "cross-customer conversation is refused", referenceID: lcConversationID.String(), expectConversationGet: true, conversationCustomer: uuid.FromStringOrNil("55550000-0000-4000-8000-000000000002"), expectLabel: "skipped_not_listenable"},
+		{name: "valid conversation id starts inline", referenceID: lcConversationID.String(), expectConversationGet: true, conversationCustomer: ltCustomerID, expectStart: true, expectLabel: "started"},
+		{name: "closed Case is skipped_not_listenable", referenceID: lcConversationID.String(), caseStatus: kmkase.StatusClosed, expectConversationGet: true, conversationCustomer: ltCustomerID, expectLabel: "skipped_not_listenable"},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			config.SetListenDefaultsForTest()
-			config.SetAIcallListenEnabledForTest(true)
-			config.SetAIcallListenConversationEnabledForTest(tt.conversationFlag)
 
 			mc := gomock.NewController(t)
 			defer mc.Finish()
@@ -491,8 +472,6 @@ func Test_checkListenEligible_ConversationBranch(t *testing.T) {
 // refused under kind="unknown", not under either concrete kind.
 func Test_checkListenEligible_UnknownReferenceTypeMetersUnknown(t *testing.T) {
 	config.SetListenDefaultsForTest()
-	config.SetAIcallListenEnabledForTest(true)
-	config.SetAIcallListenConversationEnabledForTest(true)
 
 	mc := gomock.NewController(t)
 	defer mc.Finish()
@@ -537,8 +516,6 @@ func Test_checkListenEligible_UnknownReferenceTypeMetersUnknown(t *testing.T) {
 // call-only async stage.
 func Test_ProcessListen_ConversationBranchNeverSpawnsRunListenStart(t *testing.T) {
 	config.SetListenDefaultsForTest()
-	config.SetAIcallListenEnabledForTest(true)
-	config.SetAIcallListenConversationEnabledForTest(true)
 
 	mc := gomock.NewController(t)
 	defer mc.Finish()

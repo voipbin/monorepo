@@ -40,7 +40,6 @@ type Config struct {
 
 	// Insight AI realtime call listening (docs/plans/
 	// 2026-09-03-insight-ai-realtime-listen-design.md §5.12).
-	AIcallListenEnabled                     bool   // Master kill switch. False ships the feature dark; a rollback to false stops in-flight sessions at their next evaluated turn.
 	AIcallListenEvaluateIntervalSeconds     int    // Debounce window. One listen evaluation turn per AIcall per this many seconds, regardless of how many sentences were spoken -- this is what decouples LLM cost from speech volume.
 	AIcallListenWindowSize                  int    // Rolling transcript lines kept for continuity across turns and fed into each turn's context.
 	AIcallListenQAContextSize               int    // Q&A message rows replayed into a listen turn's context, so the AI has continuity with what the agent asked.
@@ -63,9 +62,8 @@ type Config struct {
 
 	// Insight AI realtime listening on conversation (message) Cases
 	// (docs/plans/2026-09-05-insight-ai-conversation-listen-design.md §5.12).
-	AIcallListenConversationEnabled         bool // Variant switch, evaluated after AIcallListenEnabled and only on the conversation branch. Off: the trigger returns skipped_disabled and a running conversation listen stops at its next turn. Never affects call listens.
-	AIcallListenConversationMaxMessageChars int  // Per-field cap (subject, text and the joined media tokens are each capped, so one message contributes at most about three times this many characters) applied before a conversation line is buffered; the window is line-counted, not byte-counted, so an email body must not be allowed to dominate it.
-	AIcallListenConversationFlushJitterMs   int  // Upper bound of the random jitter added to the deferred flush delay, so two replicas' timers for one AIcall do not race the debounce lock at the same instant.
+	AIcallListenConversationMaxMessageChars int // Per-field cap (subject, text and the joined media tokens are each capped, so one message contributes at most about three times this many characters) applied before a conversation line is buffered; the window is line-counted, not byte-counted, so an email body must not be allowed to dominate it.
+	AIcallListenConversationFlushJitterMs   int // Upper bound of the random jitter added to the deferred flush delay, so two replicas' timers for one AIcall do not race the debounce lock at the same instant.
 
 	AnalysisDefaultModel    string // AnalysisDefaultModel is the default model for the generic analysis gateway.
 	AnalysisAllowedModels   string // AnalysisAllowedModels is a comma-separated allow-set of models the analysis gateway accepts.
@@ -102,7 +100,6 @@ func bindConfig(cmd *cobra.Command) error {
 	f.Int("aicall_conversation_idle_timeout_hours", 24, "Idle timeout (hours) for conversation-typed AIcalls before they expire")
 	f.Int("aicall_contact_case_recreate_rate_limit_minutes", 5, "Rate limit window (minutes) after a contact_case-typed AIcall terminates during which recreation for the same reference_id is blocked")
 	f.Int("aicall_send_cooldown_seconds", 3, "Minimum seconds between two Send() calls on the same AIcall")
-	f.Bool("aicall_listen_enabled", false, "Master kill switch for Insight AI realtime call listening")
 	f.Int("aicall_listen_evaluate_interval_seconds", 20, "Debounce window (seconds) between Insight AI listen evaluation turns on one AIcall")
 	f.Int("aicall_listen_window_size", 40, "Rolling transcript lines kept in a listen turn's context")
 	f.Int("aicall_listen_qa_context_size", 10, "Q&A message rows replayed into a listen turn's context")
@@ -115,7 +112,6 @@ func bindConfig(cmd *cobra.Command) error {
 	f.Int("aicall_listen_ensure_goroutine_timeout_seconds", 45, "Timeout (seconds) for runListenStart's own detached goroutine; must stay strictly greater than aicall_listen_confbridge_ready_max_wait_seconds")
 	f.Int("aicall_listen_start_lock_ttl_seconds", 60, "TTL (seconds) on the per-AIcall listen-start lock; must stay strictly greater than aicall_listen_ensure_goroutine_timeout_seconds")
 	f.Int("aicall_listen_start_lock_release_timeout_seconds", 3, "Timeout (seconds) on the detached context the listen-start lock's release runs under")
-	f.Bool("aicall_listen_conversation_enabled", false, "Variant switch for Insight AI realtime listening on conversation (message) Cases; requires aicall_listen_enabled too")
 	f.Int("aicall_listen_conversation_max_message_chars", 2000, "Per-field character cap (subject, text and the joined media tokens each) applied before a conversation line is buffered for listening")
 	f.Int("aicall_listen_conversation_flush_jitter_ms", 1000, "Upper bound (milliseconds) of the random jitter added to the conversation listen deferred-flush delay")
 	f.String("analysis_default_model", "gemini-2.5-flash", "Default model for the generic analysis gateway")
@@ -140,7 +136,6 @@ func bindConfig(cmd *cobra.Command) error {
 		"aicall_contact_case_recreate_rate_limit_minutes": "AICALL_CONTACT_CASE_RECREATE_RATE_LIMIT_MINUTES",
 		"aicall_send_cooldown_seconds":                    "AICALL_SEND_COOLDOWN_SECONDS",
 
-		"aicall_listen_enabled":                                "AICALL_LISTEN_ENABLED",
 		"aicall_listen_evaluate_interval_seconds":              "AICALL_LISTEN_EVALUATE_INTERVAL_SECONDS",
 		"aicall_listen_window_size":                            "AICALL_LISTEN_WINDOW_SIZE",
 		"aicall_listen_qa_context_size":                        "AICALL_LISTEN_QA_CONTEXT_SIZE",
@@ -154,7 +149,6 @@ func bindConfig(cmd *cobra.Command) error {
 		"aicall_listen_start_lock_ttl_seconds":                 "AICALL_LISTEN_START_LOCK_TTL_SECONDS",
 		"aicall_listen_start_lock_release_timeout_seconds":     "AICALL_LISTEN_START_LOCK_RELEASE_TIMEOUT_SECONDS",
 
-		"aicall_listen_conversation_enabled":           "AICALL_LISTEN_CONVERSATION_ENABLED",
 		"aicall_listen_conversation_max_message_chars": "AICALL_LISTEN_CONVERSATION_MAX_MESSAGE_CHARS",
 		"aicall_listen_conversation_flush_jitter_ms":   "AICALL_LISTEN_CONVERSATION_FLUSH_JITTER_MS",
 
@@ -205,7 +199,6 @@ func LoadGlobalConfig() {
 
 			AIcallSendCooldownSeconds: viper.GetInt("aicall_send_cooldown_seconds"),
 
-			AIcallListenEnabled:                     viper.GetBool("aicall_listen_enabled"),
 			AIcallListenEvaluateIntervalSeconds:     viper.GetInt("aicall_listen_evaluate_interval_seconds"),
 			AIcallListenWindowSize:                  viper.GetInt("aicall_listen_window_size"),
 			AIcallListenQAContextSize:               viper.GetInt("aicall_listen_qa_context_size"),
@@ -220,7 +213,6 @@ func LoadGlobalConfig() {
 			AIcallListenStartLockTTLSeconds:                viper.GetInt("aicall_listen_start_lock_ttl_seconds"),
 			AIcallListenStartLockReleaseTimeoutSeconds:     viper.GetInt("aicall_listen_start_lock_release_timeout_seconds"),
 
-			AIcallListenConversationEnabled:         viper.GetBool("aicall_listen_conversation_enabled"),
 			AIcallListenConversationMaxMessageChars: viper.GetInt("aicall_listen_conversation_max_message_chars"),
 			AIcallListenConversationFlushJitterMs:   viper.GetInt("aicall_listen_conversation_flush_jitter_ms"),
 
@@ -305,9 +297,9 @@ func Validate() error {
 // only against values the test itself sets -- it structurally cannot catch a
 // real environment-variable override, which is what this function is for.
 //
-// It runs regardless of AIcallListenEnabled: a flag-off deploy carrying a
-// broken timing value is a deploy that breaks the moment the flag is turned on,
-// and finding that out at rollout time is the whole failure this prevents.
+// It runs unconditionally at startup: a deploy carrying a broken timing value
+// is a deploy that breaks the moment a listen session runs, and finding that
+// out at rollout time is the whole failure this prevents.
 func validateListenConfig() error {
 	positives := []struct {
 		name  string
@@ -380,7 +372,6 @@ func InitPrometheus() {
 // test cannot re-run it).
 // USE ONLY FROM TESTS.
 func SetListenDefaultsForTest() {
-	globalConfig.AIcallListenEnabled = false
 	globalConfig.AIcallListenEvaluateIntervalSeconds = 20
 	globalConfig.AIcallListenWindowSize = 40
 	globalConfig.AIcallListenQAContextSize = 10
@@ -393,7 +384,6 @@ func SetListenDefaultsForTest() {
 	globalConfig.AIcallListenEnsureGoroutineTimeoutSeconds = 45
 	globalConfig.AIcallListenStartLockTTLSeconds = 60
 	globalConfig.AIcallListenStartLockReleaseTimeoutSeconds = 3
-	globalConfig.AIcallListenConversationEnabled = false
 	globalConfig.AIcallListenConversationMaxMessageChars = 2000
 	globalConfig.AIcallListenConversationFlushJitterMs = 1000
 }
@@ -422,12 +412,6 @@ func SetAIcallListenConfbridgeReadyMaxWaitForTest(seconds int) {
 	globalConfig.AIcallListenConfbridgeReadyMaxWaitSeconds = seconds
 }
 
-// SetAIcallListenEnabledForTest overrides the listen kill switch in tests.
-// USE ONLY FROM TESTS.
-func SetAIcallListenEnabledForTest(enabled bool) {
-	globalConfig.AIcallListenEnabled = enabled
-}
-
 // SetAIcallListenMaxTurnsPerAIcallForTest overrides the per-AIcall turn cap in
 // tests, so a cap-exceeded path can be exercised without running 60 turns.
 // USE ONLY FROM TESTS.
@@ -447,13 +431,6 @@ func SetAIcallListenWindowSizeForTest(size int) {
 // USE ONLY FROM TESTS.
 func SetAIcallListenQAContextSizeForTest(size int) {
 	globalConfig.AIcallListenQAContextSize = size
-}
-
-// SetAIcallListenConversationEnabledForTest overrides the conversation listen
-// variant switch in tests.
-// USE ONLY FROM TESTS.
-func SetAIcallListenConversationEnabledForTest(enabled bool) {
-	globalConfig.AIcallListenConversationEnabled = enabled
 }
 
 // SetAIcallListenConversationMaxMessageCharsForTest overrides the per-message
