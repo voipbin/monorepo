@@ -48,7 +48,7 @@ var (
 		prometheus.CounterOpts{
 			Namespace: metricsNamespace,
 			Name:      "aicall_listen_conversation_segment_total",
-			Help:      "Total conversation messages seen by listen intake, by outcome: buffered, dropped_deleted, dropped_empty, dropped_unknown, dropped_tenant_mismatch, failed. dropped_unknown dominates by design -- this handler sees every conversation message platform-wide; dropped_tenant_mismatch must stay at zero.",
+			Help:      "Total conversation messages seen by listen intake, by outcome: buffered, dropped_deleted, dropped_empty, dropped_unknown (no listener resolved, or the resolver errored), dropped_stale (a resolved AIcall is already over, or its pointer names another conversation), dropped_tenant_mismatch, failed. dropped_unknown dominates by design -- this handler sees every conversation message platform-wide; dropped_tenant_mismatch must stay at zero. Nothing is metered while the listen flags are off.",
 		},
 		[]string{"result"},
 	)

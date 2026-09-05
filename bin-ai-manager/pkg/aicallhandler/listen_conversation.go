@@ -185,20 +185,40 @@ func sanitizeListenLineText(s string) string {
 	return res
 }
 
+// truncateListenLineText caps one sanitized customer-controlled string at
+// maxChars runes, marking the cut so the model can tell a clipped line from a
+// short one. maxChars <= 0 disables the cap.
+func truncateListenLineText(s string, maxChars int) string {
+	if maxChars <= 0 {
+		return s
+	}
+
+	runes := []rune(s)
+	if len(runes) <= maxChars {
+		return s
+	}
+
+	return string(runes[:maxChars]) + listenConversationTruncatedSuffix
+}
+
 // conversationMessageLine renders one buffered line (design 2026-09-05 §5.3.3):
 // tag, optional "Subject: ..." line, text truncated to
 // aicall_listen_conversation_max_message_chars, and one "[media: <type>]"
 // token per attachment (raw media.Type, no allowlist, no URL or payload).
 //
 // Both customer-controlled strings (subject and text) go through
-// sanitizeListenLineText first, and truncation runs on the sanitized text so
-// the cap is measured against what actually reaches the prompt. The newline
-// after the subject is ours, not the customer's, so it survives sanitizing.
+// sanitizeListenLineText first, and both are then capped by the same
+// per-message limit -- an unbounded subject would otherwise be a way around
+// the text cap. Truncation runs on the sanitized string so the cap is measured
+// against what actually reaches the prompt. The newline after the subject is
+// ours, not the customer's, so it survives sanitizing.
 func conversationMessageLine(evt *cvmessage.Message) string {
+	maxChars := config.Get().AIcallListenConversationMaxMessageChars
+
 	var sb strings.Builder
 	sb.WriteString(speakerTagForDirection(evt.Direction))
 
-	if subject := sanitizeListenLineText(evt.Subject); subject != "" {
+	if subject := truncateListenLineText(sanitizeListenLineText(evt.Subject), maxChars); subject != "" {
 		sb.WriteString(" Subject: ")
 		sb.WriteString(subject)
 		sb.WriteString("\n")
@@ -206,13 +226,7 @@ func conversationMessageLine(evt *cvmessage.Message) string {
 		sb.WriteString(" ")
 	}
 
-	text := sanitizeListenLineText(evt.Text)
-	if maxChars := config.Get().AIcallListenConversationMaxMessageChars; maxChars > 0 {
-		if runes := []rune(text); len(runes) > maxChars {
-			text = string(runes[:maxChars]) + listenConversationTruncatedSuffix
-		}
-	}
-	sb.WriteString(text)
+	sb.WriteString(truncateListenLineText(sanitizeListenLineText(evt.Text), maxChars))
 
 	for _, m := range evt.Medias {
 		// One separator before each token. When text is empty the builder
@@ -234,11 +248,17 @@ func conversationMessageLine(evt *cvmessage.Message) string {
 // before the resolver lookup must stay trivially cheap, and the resolver
 // lookup itself is the only Redis round trip for the >99% that are not ours.
 func (h *aicallHandler) EventCVMessageCreated(ctx context.Context, evt *cvmessage.Message) {
+	// While the feature is dark it must not cost a Redis round trip per
+	// platform-wide message. A mid-session flag flip is handled turn-side.
+	if !config.Get().AIcallListenEnabled || !config.Get().AIcallListenConversationEnabled {
+		return
+	}
+
 	if evt.TMDelete != nil {
 		promListenConversationSegmentTotal.WithLabelValues("dropped_deleted").Inc()
 		return
 	}
-	if strings.TrimSpace(evt.Text) == "" && len(evt.Medias) == 0 {
+	if strings.TrimSpace(evt.Text) == "" && strings.TrimSpace(evt.Subject) == "" && len(evt.Medias) == 0 {
 		promListenConversationSegmentTotal.WithLabelValues("dropped_empty").Inc()
 		return
 	}
@@ -284,19 +304,20 @@ func (h *aicallHandler) EventCVMessageCreated(ctx context.Context, evt *cvmessag
 			// A stale resolver entry (the SREM lost a race, or the TTL has not
 			// expired yet) must never feed a session that is already over.
 			log.Warnf("Skipping a non-progressing listening aicall. aicall_id: %s, status: %s", aicallID, c.Status)
-			promListenConversationSegmentTotal.WithLabelValues("dropped_unknown").Inc()
+			promListenConversationSegmentTotal.WithLabelValues("dropped_stale").Inc()
 			continue
 		}
 		if listenConversationIDFromMetadata(c) != evt.ConversationID {
 			// The resolver said this AIcall listens here, but its own pointer
 			// names another conversation. Trust the pointer.
 			log.Warnf("Skipping a listening aicall whose pointer names another conversation. aicall_id: %s, pointer: %s", aicallID, listenConversationIDFromMetadata(c))
-			promListenConversationSegmentTotal.WithLabelValues("dropped_unknown").Inc()
+			promListenConversationSegmentTotal.WithLabelValues("dropped_stale").Inc()
 			continue
 		}
 
 		if errPending := h.cache.ListenPendingPush(ctx, aicallID, line, ttl); errPending != nil {
 			log.Warnf("Could not buffer the pending line. aicall_id: %s, err: %v", aicallID, errPending)
+			promListenConversationSegmentTotal.WithLabelValues("failed").Inc()
 			continue
 		}
 		if errWindow := h.cache.ListenWindowPush(ctx, aicallID, line, windowSize, ttl); errWindow != nil {

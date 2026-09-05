@@ -600,7 +600,9 @@ func Test_conversationMessageLine(t *testing.T) {
 		{"outgoing text", &cvmessage.Message{Direction: cvmessage.DirectionOutgoing, Text: "hi"}, 0, "[AGENT] hi"},
 		{"no direction", &cvmessage.Message{Direction: cvmessage.DirectionNond, Text: "x"}, 0, "[SPEAKER] x"},
 		{"subject prefixes the text", &cvmessage.Message{Direction: cvmessage.DirectionIncoming, Subject: "Re: bill", Text: "hi"}, 0, "[CUSTOMER] Subject: Re: bill\nhi"},
+		{"subject only, without text", &cvmessage.Message{Direction: cvmessage.DirectionIncoming, Subject: "Re: invoice"}, 64, "[CUSTOMER] Subject: Re: invoice"},
 		{"text over the cap is truncated", &cvmessage.Message{Direction: cvmessage.DirectionIncoming, Text: "0123456789ABCDEF"}, 0, "[CUSTOMER] 0123456789 [truncated]"},
+		{"subject over the cap is truncated too", &cvmessage.Message{Direction: cvmessage.DirectionIncoming, Subject: "0123456789ABCDEF", Text: "hi"}, 10, "[CUSTOMER] Subject: 0123456789 [truncated]\nhi"},
 		{"media only", &cvmessage.Message{Direction: cvmessage.DirectionIncoming, Medias: []cvmedia.Media{{Type: cvmedia.TypeImage}}}, 0, "[CUSTOMER] [media: image]"},
 		{"text and two medias", &cvmessage.Message{Direction: cvmessage.DirectionIncoming, Text: "see", Medias: []cvmedia.Media{{Type: cvmedia.TypeImage}, {Type: cvmedia.TypeFile}}}, 0, "[CUSTOMER] see [media: image] [media: file]"},
 
@@ -628,6 +630,31 @@ func Test_conversationMessageLine(t *testing.T) {
 	}
 }
 
+// listenConversationSegmentResults is every result label EventCVMessageCreated
+// can emit. Keep it in sync with the metric's Help string and docs/operations.md.
+var listenConversationSegmentResults = []string{
+	"buffered",
+	"dropped_deleted",
+	"dropped_empty",
+	"dropped_stale",
+	"dropped_tenant_mismatch",
+	"dropped_unknown",
+	"failed",
+}
+
+// listenConversationSegmentSum totals the conversation segment counter across
+// every result, so a row can assert that nothing at all was metered.
+func listenConversationSegmentSum(t *testing.T) float64 {
+	t.Helper()
+
+	res := 0.0
+	for _, result := range listenConversationSegmentResults {
+		res += testutil.ToFloat64(promListenConversationSegmentTotal.WithLabelValues(result))
+	}
+
+	return res
+}
+
 // Test_EventCVMessageCreated covers design 2026-09-05 §5.3.2 exit by exit and
 // the §5.4 debounce/flush decisions. Not parallel: metric deltas.
 func Test_EventCVMessageCreated(t *testing.T) {
@@ -643,8 +670,12 @@ func Test_EventCVMessageCreated(t *testing.T) {
 		// aicallStatus overrides the resolved AIcall's status; empty keeps the
 		// fixture's progressing. aicallPointer overrides its listen pointer;
 		// uuid.Nil keeps the fixture's lcConversationID.
-		aicallStatus   aicall.Status
-		aicallPointer  uuid.UUID
+		aicallStatus  aicall.Status
+		aicallPointer uuid.UUID
+		// pushErr makes the pending-line push fail. flagsOff clears both listen
+		// flags AFTER the per-row defaults, for the dark-feature early-out.
+		pushErr        error
+		flagsOff       bool
 		lockAcquired   bool
 		expectSegment  string
 		expectBuffered int
@@ -661,6 +692,11 @@ func Test_EventCVMessageCreated(t *testing.T) {
 			name:          "empty text without media is dropped before the resolver",
 			msg:           &cvmessage.Message{Identity: commonidentity.Identity{CustomerID: ltCustomerID}, ConversationID: lcConversationID, Direction: cvmessage.DirectionIncoming, Text: "   "},
 			expectSegment: "dropped_empty",
+		},
+		{
+			name:     "flags off returns before the resolver",
+			msg:      &cvmessage.Message{Identity: commonidentity.Identity{CustomerID: ltCustomerID}, ConversationID: lcConversationID, Direction: cvmessage.DirectionIncoming, Text: "x"},
+			flagsOff: true,
 		},
 		{
 			name:          "unknown conversation is dropped",
@@ -694,7 +730,7 @@ func Test_EventCVMessageCreated(t *testing.T) {
 			resolved:       []uuid.UUID{ltAIcallID},
 			aicallCustomer: ltCustomerID,
 			aicallStatus:   aicall.StatusTerminated,
-			expectSegment:  "dropped_unknown",
+			expectSegment:  "dropped_stale",
 		},
 		{
 			name:           "aicall whose pointer names another conversation is dropped",
@@ -702,7 +738,15 @@ func Test_EventCVMessageCreated(t *testing.T) {
 			resolved:       []uuid.UUID{ltAIcallID},
 			aicallCustomer: ltCustomerID,
 			aicallPointer:  uuid.FromStringOrNil("44440000-0000-4000-8000-0000000000bb"),
-			expectSegment:  "dropped_unknown",
+			expectSegment:  "dropped_stale",
+		},
+		{
+			name:           "pending push failure is failed",
+			msg:            &cvmessage.Message{Identity: commonidentity.Identity{CustomerID: ltCustomerID}, ConversationID: lcConversationID, Direction: cvmessage.DirectionIncoming, Text: "customer"},
+			resolved:       []uuid.UUID{ltAIcallID},
+			aicallCustomer: ltCustomerID,
+			pushErr:        fmt.Errorf("redis down"),
+			expectSegment:  "failed",
 		},
 		{
 			name:           "outgoing line is buffered but never tries the lock",
@@ -715,6 +759,17 @@ func Test_EventCVMessageCreated(t *testing.T) {
 		{
 			name:           "incoming line wins the lock and spawns a turn",
 			msg:            &cvmessage.Message{Identity: commonidentity.Identity{CustomerID: ltCustomerID}, ConversationID: lcConversationID, Direction: cvmessage.DirectionIncoming, Text: "customer"},
+			resolved:       []uuid.UUID{ltAIcallID},
+			aicallCustomer: ltCustomerID,
+			lockAcquired:   true,
+			expectSegment:  "buffered",
+			expectBuffered: 1,
+			expectLock:     true,
+			expectTurn:     true,
+		},
+		{
+			name:           "subject-only message is buffered",
+			msg:            &cvmessage.Message{Identity: commonidentity.Identity{CustomerID: ltCustomerID}, ConversationID: lcConversationID, Direction: cvmessage.DirectionIncoming, Subject: "Re: invoice"},
 			resolved:       []uuid.UUID{ltAIcallID},
 			aicallCustomer: ltCustomerID,
 			lockAcquired:   true,
@@ -753,6 +808,10 @@ func Test_EventCVMessageCreated(t *testing.T) {
 			config.SetAIcallListenEnabledForTest(true)
 			config.SetAIcallListenConversationEnabledForTest(true)
 			config.SetAIcallListenConversationFlushJitterMsForTest(0)
+			if tt.flagsOff {
+				config.SetAIcallListenEnabledForTest(false)
+				config.SetAIcallListenConversationEnabledForTest(false)
+			}
 
 			mc := gomock.NewController(t)
 			defer mc.Finish()
@@ -770,7 +829,7 @@ func Test_EventCVMessageCreated(t *testing.T) {
 			turnsSpawned := make(chan uuid.UUID, 4)
 			m.h.runListenTurnHook = func(_ context.Context, id uuid.UUID) { turnsSpawned <- id }
 
-			if tt.msg.TMDelete == nil && (strings.TrimSpace(tt.msg.Text) != "" || len(tt.msg.Medias) > 0) {
+			if !tt.flagsOff && tt.msg.TMDelete == nil && (strings.TrimSpace(tt.msg.Text) != "" || strings.TrimSpace(tt.msg.Subject) != "" || len(tt.msg.Medias) > 0) {
 				m.cache.EXPECT().ListenConversationAIcallIDsGet(ctx, lcConversationID).Return(tt.resolved, tt.resolveErr).MaxTimes(1)
 			}
 			for _, id := range tt.resolved {
@@ -789,7 +848,12 @@ func Test_EventCVMessageCreated(t *testing.T) {
 					continue
 				}
 				m.db.EXPECT().AIcallGet(ctx, id).Return(c, nil)
-				if tt.expectBuffered > 0 {
+				if tt.pushErr != nil {
+					// The pending push is the gate: a failure must not reach
+					// the window push or the turn lock.
+					m.cache.EXPECT().ListenPendingPush(ctx, id, gomock.Any(), gomock.Any()).Return(tt.pushErr)
+					m.cache.EXPECT().ListenWindowPush(gomock.Any(), id, gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+				} else if tt.expectBuffered > 0 {
 					m.cache.EXPECT().ListenPendingPush(ctx, id, gomock.Any(), gomock.Any()).Return(nil)
 					m.cache.EXPECT().ListenWindowPush(ctx, id, gomock.Any(), 40, gomock.Any()).Return(nil)
 				}
@@ -800,11 +864,23 @@ func Test_EventCVMessageCreated(t *testing.T) {
 				}
 			}
 
-			segBefore := testutil.ToFloat64(promListenConversationSegmentTotal.WithLabelValues(tt.expectSegment))
+			// An empty expectSegment means the row must meter nothing at all:
+			// the flags-off early-out is silent by design.
+			totalBefore := listenConversationSegmentSum(t)
+			segBefore := 0.0
+			if tt.expectSegment != "" {
+				segBefore = testutil.ToFloat64(promListenConversationSegmentTotal.WithLabelValues(tt.expectSegment))
+			}
 			m.h.EventCVMessageCreated(ctx, tt.msg)
-			segGot := testutil.ToFloat64(promListenConversationSegmentTotal.WithLabelValues(tt.expectSegment)) - segBefore
-			if int(segGot) < 1 {
-				t.Errorf("segment result %q must be metered. got: %v", tt.expectSegment, segGot)
+			if tt.expectSegment == "" {
+				if got := listenConversationSegmentSum(t) - totalBefore; got != 0 {
+					t.Errorf("no segment result must be metered. got: %v", got)
+				}
+			} else {
+				segGot := testutil.ToFloat64(promListenConversationSegmentTotal.WithLabelValues(tt.expectSegment)) - segBefore
+				if int(segGot) < 1 {
+					t.Errorf("segment result %q must be metered. got: %v", tt.expectSegment, segGot)
+				}
 			}
 
 			if tt.expectTurn {
