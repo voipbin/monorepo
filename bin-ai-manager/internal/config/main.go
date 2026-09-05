@@ -61,6 +61,12 @@ type Config struct {
 	AIcallListenStartLockTTLSeconds                int // TTL on ai:listen:startlock:<aicall_id>, the per-AIcall lock serializing concurrent runListenStart create-or-reuse sequences. Must strictly EXCEED AIcallListenEnsureGoroutineTimeoutSeconds so it can never expire under a goroutine still working inside its own budget -- NOT derived by summing the RPC timeouts inside the lock, a derivation the design tried and withdrew.
 	AIcallListenStartLockReleaseTimeoutSeconds     int // Bound on the DETACHED context (context.WithTimeout(context.WithoutCancel(ctx), ...)) the lock's Release call runs under, so a stuck Redis call during cleanup cannot hang the releasing goroutine. Independent of, and far below, the TTL above.
 
+	// Insight AI realtime listening on conversation (message) Cases
+	// (docs/plans/2026-09-05-insight-ai-conversation-listen-design.md §5.12).
+	AIcallListenConversationEnabled         bool // Variant switch, evaluated after AIcallListenEnabled and only on the conversation branch. Off: the trigger returns skipped_disabled and a running conversation listen stops at its next turn. Never affects call listens.
+	AIcallListenConversationMaxMessageChars int  // Per-message truncation applied before a conversation line is buffered; the window is line-counted, not byte-counted, so an email body must not be allowed to dominate it.
+	AIcallListenConversationFlushJitterMs   int  // Upper bound of the random jitter added to the deferred flush delay, so two replicas' timers for one AIcall do not race the debounce lock at the same instant.
+
 	AnalysisDefaultModel    string // AnalysisDefaultModel is the default model for the generic analysis gateway.
 	AnalysisAllowedModels   string // AnalysisAllowedModels is a comma-separated allow-set of models the analysis gateway accepts.
 	AnalysisEngineBaseURL   string // AnalysisEngineBaseURL is the base URL for the analysis gateway LLM engine (Gemini OpenAI-compat by default; clear to use OpenAI).
@@ -109,6 +115,9 @@ func bindConfig(cmd *cobra.Command) error {
 	f.Int("aicall_listen_ensure_goroutine_timeout_seconds", 45, "Timeout (seconds) for runListenStart's own detached goroutine; must stay strictly greater than aicall_listen_confbridge_ready_max_wait_seconds")
 	f.Int("aicall_listen_start_lock_ttl_seconds", 60, "TTL (seconds) on the per-AIcall listen-start lock; must stay strictly greater than aicall_listen_ensure_goroutine_timeout_seconds")
 	f.Int("aicall_listen_start_lock_release_timeout_seconds", 3, "Timeout (seconds) on the detached context the listen-start lock's release runs under")
+	f.Bool("aicall_listen_conversation_enabled", false, "Variant switch for Insight AI realtime listening on conversation (message) Cases; requires aicall_listen_enabled too")
+	f.Int("aicall_listen_conversation_max_message_chars", 2000, "Per-message character cap applied before a conversation line is buffered for listening")
+	f.Int("aicall_listen_conversation_flush_jitter_ms", 1000, "Upper bound (milliseconds) of the random jitter added to the conversation listen deferred-flush delay")
 	f.String("analysis_default_model", "gemini-2.5-flash", "Default model for the generic analysis gateway")
 	f.String("analysis_allowed_models", "gemini-2.5-flash,gemini-2.5-pro", "Comma-separated allow-set of models for the analysis gateway")
 	f.String("analysis_engine_base_url", "https://generativelanguage.googleapis.com/v1beta/openai/", "Base URL for the analysis gateway LLM engine (Gemini OpenAI-compat by default; clear to use OpenAI)")
@@ -144,6 +153,10 @@ func bindConfig(cmd *cobra.Command) error {
 		"aicall_listen_ensure_goroutine_timeout_seconds":       "AICALL_LISTEN_ENSURE_GOROUTINE_TIMEOUT_SECONDS",
 		"aicall_listen_start_lock_ttl_seconds":                 "AICALL_LISTEN_START_LOCK_TTL_SECONDS",
 		"aicall_listen_start_lock_release_timeout_seconds":     "AICALL_LISTEN_START_LOCK_RELEASE_TIMEOUT_SECONDS",
+
+		"aicall_listen_conversation_enabled":           "AICALL_LISTEN_CONVERSATION_ENABLED",
+		"aicall_listen_conversation_max_message_chars": "AICALL_LISTEN_CONVERSATION_MAX_MESSAGE_CHARS",
+		"aicall_listen_conversation_flush_jitter_ms":   "AICALL_LISTEN_CONVERSATION_FLUSH_JITTER_MS",
 
 		"analysis_default_model":     "ANALYSIS_DEFAULT_MODEL",
 		"analysis_allowed_models":    "ANALYSIS_ALLOWED_MODELS",
@@ -206,6 +219,10 @@ func LoadGlobalConfig() {
 			AIcallListenEnsureGoroutineTimeoutSeconds:      viper.GetInt("aicall_listen_ensure_goroutine_timeout_seconds"),
 			AIcallListenStartLockTTLSeconds:                viper.GetInt("aicall_listen_start_lock_ttl_seconds"),
 			AIcallListenStartLockReleaseTimeoutSeconds:     viper.GetInt("aicall_listen_start_lock_release_timeout_seconds"),
+
+			AIcallListenConversationEnabled:         viper.GetBool("aicall_listen_conversation_enabled"),
+			AIcallListenConversationMaxMessageChars: viper.GetInt("aicall_listen_conversation_max_message_chars"),
+			AIcallListenConversationFlushJitterMs:   viper.GetInt("aicall_listen_conversation_flush_jitter_ms"),
 
 			AnalysisDefaultModel:    viper.GetString("analysis_default_model"),
 			AnalysisAllowedModels:   viper.GetString("analysis_allowed_models"),
@@ -307,6 +324,7 @@ func validateListenConfig() error {
 		{"aicall_listen_ensure_goroutine_timeout_seconds", globalConfig.AIcallListenEnsureGoroutineTimeoutSeconds},
 		{"aicall_listen_start_lock_ttl_seconds", globalConfig.AIcallListenStartLockTTLSeconds},
 		{"aicall_listen_start_lock_release_timeout_seconds", globalConfig.AIcallListenStartLockReleaseTimeoutSeconds},
+		{"aicall_listen_conversation_max_message_chars", globalConfig.AIcallListenConversationMaxMessageChars},
 	}
 
 	invalid := []string{}
@@ -317,6 +335,10 @@ func validateListenConfig() error {
 	}
 	if len(invalid) > 0 {
 		return errors.Errorf("invalid listen configuration: %s", strings.Join(invalid, "; "))
+	}
+
+	if globalConfig.AIcallListenConversationFlushJitterMs < 0 {
+		return errors.Errorf("invalid listen configuration: aicall_listen_conversation_flush_jitter_ms must be >= 0, got %d", globalConfig.AIcallListenConversationFlushJitterMs)
 	}
 
 	maxWait := globalConfig.AIcallListenConfbridgeReadyMaxWaitSeconds
@@ -371,6 +393,9 @@ func SetListenDefaultsForTest() {
 	globalConfig.AIcallListenEnsureGoroutineTimeoutSeconds = 45
 	globalConfig.AIcallListenStartLockTTLSeconds = 60
 	globalConfig.AIcallListenStartLockReleaseTimeoutSeconds = 3
+	globalConfig.AIcallListenConversationEnabled = false
+	globalConfig.AIcallListenConversationMaxMessageChars = 2000
+	globalConfig.AIcallListenConversationFlushJitterMs = 1000
 }
 
 // SetAIcallListenStartLockTTLForTest overrides the per-AIcall listen-start
@@ -422,4 +447,25 @@ func SetAIcallListenWindowSizeForTest(size int) {
 // USE ONLY FROM TESTS.
 func SetAIcallListenQAContextSizeForTest(size int) {
 	globalConfig.AIcallListenQAContextSize = size
+}
+
+// SetAIcallListenConversationEnabledForTest overrides the conversation listen
+// variant switch in tests.
+// USE ONLY FROM TESTS.
+func SetAIcallListenConversationEnabledForTest(enabled bool) {
+	globalConfig.AIcallListenConversationEnabled = enabled
+}
+
+// SetAIcallListenConversationMaxMessageCharsForTest overrides the per-message
+// truncation cap in tests.
+// USE ONLY FROM TESTS.
+func SetAIcallListenConversationMaxMessageCharsForTest(chars int) {
+	globalConfig.AIcallListenConversationMaxMessageChars = chars
+}
+
+// SetAIcallListenConversationFlushJitterMsForTest overrides the deferred-flush
+// jitter bound in tests (0 makes the delay deterministic).
+// USE ONLY FROM TESTS.
+func SetAIcallListenConversationFlushJitterMsForTest(ms int) {
+	globalConfig.AIcallListenConversationFlushJitterMs = ms
 }

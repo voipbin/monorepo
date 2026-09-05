@@ -139,6 +139,10 @@ Key signals to alert on:
 
 Kill switch: `aicall_listen_enabled` / `AICALL_LISTEN_ENABLED`, default `false`.
 
+`aicall_listen_conversation_enabled` / `AICALL_LISTEN_CONVERSATION_ENABLED`, default `false`. Variant switch for realtime listening on conversation (message) Cases; evaluated after `aicall_listen_enabled` and only on the conversation branch. Off: the trigger returns `skipped_disabled`; a running conversation listen stops at its next turn. Call listens are unaffected.
+`aicall_listen_conversation_max_message_chars` / `AICALL_LISTEN_CONVERSATION_MAX_MESSAGE_CHARS`, default `2000`. Per-message character cap before a conversation line is buffered (suffix ` [truncated]`).
+`aicall_listen_conversation_flush_jitter_ms` / `AICALL_LISTEN_CONVERSATION_FLUSH_JITTER_MS`, default `1000`. Upper bound of the random jitter added to the deferred flush delay (`aicall_listen_evaluate_interval_seconds` + jitter).
+
 **How listening starts.** Explicitly, by `POST /service_agents/aicalls/<aicall-id>/listen`
 (routed internally to ai-manager's `POST /v1/aicalls/<aicall-id>/listen`). It is
 **not** a side effect of creating or reusing the Q&A AIcall — creating an AIcall

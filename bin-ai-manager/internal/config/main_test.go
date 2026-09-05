@@ -282,6 +282,15 @@ func Test_ListenConfigDefaults(t *testing.T) {
 	if cfg.AIcallListenStartLockReleaseTimeoutSeconds != 3 {
 		t.Errorf("AIcallListenStartLockReleaseTimeoutSeconds mismatch. expected: 3, got: %d", cfg.AIcallListenStartLockReleaseTimeoutSeconds)
 	}
+	if cfg.AIcallListenConversationEnabled {
+		t.Errorf("AIcallListenConversationEnabled must default to false -- the conversation variant ships dark independently of the master switch")
+	}
+	if cfg.AIcallListenConversationMaxMessageChars != 2000 {
+		t.Errorf("AIcallListenConversationMaxMessageChars mismatch. expected: 2000, got: %d", cfg.AIcallListenConversationMaxMessageChars)
+	}
+	if cfg.AIcallListenConversationFlushJitterMs != 1000 {
+		t.Errorf("AIcallListenConversationFlushJitterMs mismatch. expected: 1000, got: %d", cfg.AIcallListenConversationFlushJitterMs)
+	}
 	// The goroutine timeout must have headroom over the max-wait budget it
 	// encloses -- pinned here as a standing invariant, not just a one-time
 	// default check, since the two are set independently.
@@ -436,6 +445,14 @@ func Test_Validate_ListenSizing(t *testing.T) {
 			name:   "a negative QA context size is rejected",
 			mutate: func() { globalConfig.AIcallListenQAContextSize = -1 },
 		},
+		{
+			name:   "a zero conversation message cap is rejected",
+			mutate: func() { globalConfig.AIcallListenConversationMaxMessageChars = 0 },
+		},
+		{
+			name:   "a negative conversation flush jitter is rejected",
+			mutate: func() { globalConfig.AIcallListenConversationFlushJitterMs = -1 },
+		},
 	}
 
 	for _, tt := range tests {
@@ -449,6 +466,19 @@ func Test_Validate_ListenSizing(t *testing.T) {
 				t.Fatalf("expected a validation error, got none")
 			}
 		})
+	}
+}
+
+// Test_Validate_ZeroConversationFlushJitterIsAllowed pins that jitter is a
+// non-negative bound, not a positive one: 0 disables jitter and must validate.
+func Test_Validate_ZeroConversationFlushJitterIsAllowed(t *testing.T) {
+	SetListenDefaultsForTest()
+	defer SetListenDefaultsForTest()
+
+	globalConfig.AIcallListenConversationFlushJitterMs = 0
+
+	if err := Validate(); err != nil {
+		t.Fatalf("zero jitter must be valid. err: %v", err)
 	}
 }
 
