@@ -76,31 +76,6 @@ func Test_conversationMessageLine(t *testing.T) {
 	}
 }
 
-// listenConversationSegmentResults is every result label EventCVMessageCreated
-// can emit. Keep it in sync with the metric's Help string and docs/operations.md.
-var listenConversationSegmentResults = []string{
-	"buffered",
-	"dropped_deleted",
-	"dropped_empty",
-	"dropped_stale",
-	"dropped_tenant_mismatch",
-	"dropped_unknown",
-	"failed",
-}
-
-// listenConversationSegmentSum totals the conversation segment counter across
-// every result, so a row can assert that nothing at all was metered.
-func listenConversationSegmentSum(t *testing.T) float64 {
-	t.Helper()
-
-	res := 0.0
-	for _, result := range listenConversationSegmentResults {
-		res += testutil.ToFloat64(promListenConversationSegmentTotal.WithLabelValues(result))
-	}
-
-	return res
-}
-
 // Test_EventCVMessageCreated covers design 2026-09-05 §5.3.2 exit by exit and
 // the §5.4 debounce/flush decisions. Not parallel: metric deltas.
 func Test_EventCVMessageCreated(t *testing.T) {
@@ -296,7 +271,8 @@ func Test_EventCVMessageCreated(t *testing.T) {
 			if tt.msg.TMDelete == nil && (strings.TrimSpace(tt.msg.Text) != "" || strings.TrimSpace(tt.msg.Subject) != "" || len(tt.msg.Medias) > 0) {
 				m.cache.EXPECT().ListenConversationAIcallIDsGet(ctx, lcConversationID).Return(tt.resolved, tt.resolveErr).MaxTimes(1)
 			} else {
-				// Either flag off must return before the resolver is touched.
+				// A deleted message or an empty one (no text, no subject, no
+				// media) is dropped before the resolver is touched.
 				m.cache.EXPECT().ListenConversationAIcallIDsGet(gomock.Any(), gomock.Any()).Times(0)
 			}
 			// The intake re-arms the resolver's TTL with an EXPIRE-only touch,
@@ -344,27 +320,17 @@ func Test_EventCVMessageCreated(t *testing.T) {
 				}
 			}
 
-			// An empty expectSegment means the row must meter nothing at all:
-			// the flags-off early-out is silent by design.
-			totalBefore := listenConversationSegmentSum(t)
-			segBefore := 0.0
-			if tt.expectSegment != "" {
-				segBefore = testutil.ToFloat64(promListenConversationSegmentTotal.WithLabelValues(tt.expectSegment))
-			}
+			// Every row sets expectSegment: EventCVMessageCreated always
+			// meters exactly one outcome for a message it is handed.
+			segBefore := testutil.ToFloat64(promListenConversationSegmentTotal.WithLabelValues(tt.expectSegment))
 			turnFailedBefore := testutil.ToFloat64(promListenTurnTotal.WithLabelValues(string(listenKindConversation), "failed"))
 			m.h.EventCVMessageCreated(ctx, tt.msg)
 			if got := testutil.ToFloat64(promListenTurnTotal.WithLabelValues(string(listenKindConversation), "failed")) - turnFailedBefore; int(got) != tt.expectTurnFailed {
 				t.Errorf("turn failed delta mismatch. expected: %d, got: %v", tt.expectTurnFailed, got)
 			}
-			if tt.expectSegment == "" {
-				if got := listenConversationSegmentSum(t) - totalBefore; got != 0 {
-					t.Errorf("no segment result must be metered. got: %v", got)
-				}
-			} else {
-				segGot := testutil.ToFloat64(promListenConversationSegmentTotal.WithLabelValues(tt.expectSegment)) - segBefore
-				if int(segGot) < 1 {
-					t.Errorf("segment result %q must be metered. got: %v", tt.expectSegment, segGot)
-				}
+			segGot := testutil.ToFloat64(promListenConversationSegmentTotal.WithLabelValues(tt.expectSegment)) - segBefore
+			if int(segGot) < 1 {
+				t.Errorf("segment result %q must be metered. got: %v", tt.expectSegment, segGot)
 			}
 
 			if tt.expectTurn {

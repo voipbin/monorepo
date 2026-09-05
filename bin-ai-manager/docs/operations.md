@@ -82,7 +82,7 @@ Exposed at `PROMETHEUS_LISTEN_ADDRESS/PROMETHEUS_ENDPOINT` (default `:2112/metri
 | `aicall_listen_start_total` | Counter | `kind`, `result` | Listen-start attempts by kind and outcome. `kind` values: `call`, `conversation`, `unknown` (gates that run before the Case's reference type is known). `result` values: `started`, `reused`, `skipped_not_listenable`, `skipped_confbridge_not_ready`, `skipped_confbridge_error`, `skipped_start_locked`, `failed` |
 | `aicall_listen_segment_total` | Counter | `result` | Transcript segments seen by listen intake. `dropped_unknown` dominates **by design** — this handler sees every final STT result platform-wide |
 | `aicall_listen_turn_total` | Counter | `kind`, `result` | Listen evaluation turns by kind and outcome. `kind` values: `call`, `conversation`, `unknown`. `result` values: `ran`, `skipped_locked`, `skipped_empty`, `skipped_cap`, `skipped_case_closed` (conversation kind's stop signal), `skipped_invalid`, `skipped_register_failed`, `failed` |
-| `aicall_listen_conversation_segment_total` | Counter | `result` | Conversation messages seen by listen intake, by outcome: `buffered`, `dropped_deleted`, `dropped_empty`, `dropped_unknown` (no listener resolved, or the resolver errored), `dropped_stale` (a resolved AIcall is already over, or its pointer names another conversation), `dropped_tenant_mismatch`, `failed`. `dropped_unknown` dominates **by design** — this handler sees every conversation message platform-wide; `dropped_tenant_mismatch` must stay at zero. Nothing is metered while the listen flags are off — intake returns before the resolver |
+| `aicall_listen_conversation_segment_total` | Counter | `result` | Conversation messages seen by listen intake, by outcome: `buffered`, `dropped_deleted`, `dropped_empty`, `dropped_unknown` (no listener resolved, or the resolver errored), `dropped_stale` (a resolved AIcall is already over, or its pointer names another conversation), `dropped_tenant_mismatch`, `failed`. `dropped_unknown` dominates **by design** — this handler sees every conversation message platform-wide; `dropped_tenant_mismatch` must stay at zero |
 | `aicall_listen_conversation_flush_total` | Counter | `result` | Deferred flush timers for conversation listening, by outcome: `ran` (won the lock and invoked a turn; read against `aicall_listen_turn_total` `skipped_empty`), `skipped_locked`, `skipped_scheduled` (a timer was already armed for this AIcall on this replica) |
 | `aicall_listen_notify_total` | Counter | `kind` | Proactive notifications actually delivered to an agent's Insight panel, by listen kind |
 | `aicall_listen_stop_failed_total` | Counter | — | Listen transcribe-stop RPCs that failed and fell back to the call-hangup backstop |
@@ -153,20 +153,13 @@ panel opens, and the second is fire-and-forget: its response carries no
 listening-status field, so "did listening actually start?" is answered by the
 metrics below, not by the API.
 
-**Turning it off mid-call.** A rollback takes effect on an in-flight session at
-its next *evaluated turn*, and turns are triggered by transcript segments, not by
-a timer — so for an active conversation that is typically within one
-`aicall_listen_evaluate_interval_seconds` (default 20s), but a call that has gone
-quiet may not stop until it ends. Call hangup is the guaranteed backstop, and it
-is independent of the flag.
-
-**What the flag does NOT gate.** Two changes shipped with this feature are
-general fixes and are active regardless: the two-fetch LLM context assembly
-(which guarantees an AIcall's system prompt is never evicted), and the
+**What shipped alongside listening.** Two changes shipped with this feature are
+general fixes, always active: the two-fetch LLM context assembly (which
+guarantees an AIcall's system prompt is never evicted), and the
 foreign-pipecatcall guard on `contact_case` bot-LLM messages (which also drops
 genuinely stale replies that used to be persisted silently). Expect
-`aicall_foreign_pipecatcall_dropped_total` to become non-zero and Insight answer
-*shape* to change slightly the moment the code deploys, independent of the flag.
+`aicall_foreign_pipecatcall_dropped_total` to become non-zero and Insight
+answer *shape* to change slightly the moment the code deploys.
 
 **What to watch:**
 
