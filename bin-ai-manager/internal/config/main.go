@@ -116,7 +116,7 @@ func bindConfig(cmd *cobra.Command) error {
 	f.Int("aicall_listen_start_lock_ttl_seconds", 60, "TTL (seconds) on the per-AIcall listen-start lock; must stay strictly greater than aicall_listen_ensure_goroutine_timeout_seconds")
 	f.Int("aicall_listen_start_lock_release_timeout_seconds", 3, "Timeout (seconds) on the detached context the listen-start lock's release runs under")
 	f.Bool("aicall_listen_conversation_enabled", false, "Variant switch for Insight AI realtime listening on conversation (message) Cases; requires aicall_listen_enabled too")
-	f.Int("aicall_listen_conversation_max_message_chars", 2000, "Per-message character cap applied before a conversation line is buffered for listening")
+	f.Int("aicall_listen_conversation_max_message_chars", 2000, "Per-field character cap (subject, text and the joined media tokens each) applied before a conversation line is buffered for listening")
 	f.Int("aicall_listen_conversation_flush_jitter_ms", 1000, "Upper bound (milliseconds) of the random jitter added to the conversation listen deferred-flush delay")
 	f.String("analysis_default_model", "gemini-2.5-flash", "Default model for the generic analysis gateway")
 	f.String("analysis_allowed_models", "gemini-2.5-flash,gemini-2.5-pro", "Comma-separated allow-set of models for the analysis gateway")

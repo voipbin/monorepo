@@ -376,7 +376,7 @@ func (h *aicallHandler) EventCVMessageCreated(ctx context.Context, evt *cvmessag
 	}
 
 	if buffered {
-		// re-arm on every buffered line so the resolver entry outlives any
+		// re-arm once per message that buffered at least one line, so the resolver entry outlives any
 		// conversation that is actually active; design §5.2.2 promised
 		// refresh-on-SADD and start is the only SADD, so this is where the
 		// refresh has to live.
