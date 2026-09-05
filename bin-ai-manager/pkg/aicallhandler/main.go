@@ -4,6 +4,8 @@ package aicallhandler
 
 import (
 	"context"
+	"sync"
+	"time"
 
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
@@ -12,6 +14,7 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	kmkase "monorepo/bin-contact-manager/models/kase"
+	cvmessage "monorepo/bin-conversation-manager/models/message"
 	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
 	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
 
@@ -72,6 +75,7 @@ type AIcallHandler interface {
 	EventCMDTMFReceived(ctx context.Context, evt *cmdtmf.DTMF)
 	EventPMPipecatcallInitialized(ctx context.Context, evt *pmpipecatcall.Pipecatcall)
 	EventTMTranscriptCreated(ctx context.Context, evt *tmtranscript.Transcript)
+	EventCVMessageCreated(ctx context.Context, evt *cvmessage.Message)
 
 	UpdateActiveflowID(ctx context.Context, id uuid.UUID, activeflowID uuid.UUID) (*aicall.AIcall, error)
 	UpdatePipecatcallIDAndActiveflowID(ctx context.Context, id uuid.UUID, pipecatcallID uuid.UUID, activeflowID uuid.UUID) (*aicall.AIcall, error)
@@ -151,6 +155,19 @@ type aicallHandler struct {
 	// case runListenStart itself runs. Only the tests that must observe the
 	// async stage deterministically set it.
 	runListenStartHook func(ctx context.Context, a *ai.AI, c *aicall.AIcall, kase *kmkase.Case, callID uuid.UUID, call *cmcall.Call)
+
+	// afterFunc is the deferred-flush timer seam (design 2026-09-05 §5.4). nil
+	// means time.AfterFunc; tests inject a capturing stub.
+	afterFunc func(d time.Duration, fn func()) *time.Timer
+
+	// runListenTurnHook, when set, replaces the detached RunListenTurn goroutine
+	// spawned by the conversation intake and flush so tests can observe it.
+	runListenTurnHook func(ctx context.Context, aicallID uuid.UUID)
+
+	// flushScheduled marks AIcall ids with a deferred flush timer armed in THIS
+	// process. Advisory only -- the correctness bounds come from the Redis lock
+	// and pending list; this merely stops a burst from arming N timers.
+	flushScheduled sync.Map
 }
 
 var (

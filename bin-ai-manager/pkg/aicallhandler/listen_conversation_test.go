@@ -16,6 +16,9 @@ import (
 	cmcall "monorepo/bin-call-manager/models/call"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	kmkase "monorepo/bin-contact-manager/models/kase"
+	cvconversation "monorepo/bin-conversation-manager/models/conversation"
+	cvmedia "monorepo/bin-conversation-manager/models/media"
+	cvmessage "monorepo/bin-conversation-manager/models/message"
 
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus/testutil"
@@ -407,13 +410,20 @@ func Test_checkListenEligible_ConversationBranch(t *testing.T) {
 		name             string
 		conversationFlag bool
 		referenceID      string
-		expectStart      bool
-		expectLabel      string
+		// expectConversationGet marks the rows that reach the parse and so run
+		// the defence-in-depth tenant assertion's RPC.
+		expectConversationGet bool
+		conversationCustomer  uuid.UUID
+		conversationGetErr    error
+		expectStart           bool
+		expectLabel           string
 	}{
-		{"sub-flag off is skipped_disabled", false, lcConversationID.String(), false, "skipped_disabled"},
-		{"empty reference id is skipped_not_listenable", true, "", false, "skipped_not_listenable"},
-		{"garbage reference id is skipped_not_listenable", true, "not-a-uuid", false, "skipped_not_listenable"},
-		{"valid conversation id starts inline", true, lcConversationID.String(), true, "started"},
+		{name: "sub-flag off is skipped_disabled", conversationFlag: false, referenceID: lcConversationID.String(), expectLabel: "skipped_disabled"},
+		{name: "empty reference id is skipped_not_listenable", conversationFlag: true, referenceID: "", expectLabel: "skipped_not_listenable"},
+		{name: "garbage reference id is skipped_not_listenable", conversationFlag: true, referenceID: "not-a-uuid", expectLabel: "skipped_not_listenable"},
+		{name: "conversation RPC failure is failed", conversationFlag: true, referenceID: lcConversationID.String(), expectConversationGet: true, conversationGetErr: fmt.Errorf("rpc timeout"), expectLabel: "failed"},
+		{name: "cross-customer conversation is refused", conversationFlag: true, referenceID: lcConversationID.String(), expectConversationGet: true, conversationCustomer: uuid.FromStringOrNil("55550000-0000-4000-8000-000000000002"), expectLabel: "skipped_not_listenable"},
+		{name: "valid conversation id starts inline", conversationFlag: true, referenceID: lcConversationID.String(), expectConversationGet: true, conversationCustomer: ltCustomerID, expectStart: true, expectLabel: "started"},
 	}
 
 	for _, tt := range tests {
@@ -439,6 +449,16 @@ func Test_checkListenEligible_ConversationBranch(t *testing.T) {
 				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
 			).Times(0)
+
+			if tt.expectConversationGet {
+				var cv *cvconversation.Conversation
+				if tt.conversationGetErr == nil {
+					cv = &cvconversation.Conversation{Identity: commonidentity.Identity{ID: lcConversationID, CustomerID: tt.conversationCustomer}}
+				}
+				m.req.EXPECT().ConversationV1ConversationGet(ctx, lcConversationID).Return(cv, tt.conversationGetErr)
+			} else {
+				m.req.EXPECT().ConversationV1ConversationGet(gomock.Any(), gomock.Any()).Times(0)
+			}
 
 			if tt.expectStart {
 				m.cache.EXPECT().ListenConversationAIcallIDAdd(ctx, lcConversationID, ltAIcallID, listenResolverTTL).Return(nil)
@@ -528,6 +548,7 @@ func Test_ProcessListen_ConversationBranchNeverSpawnsRunListenStart(t *testing.T
 	m.db.EXPECT().AIcallGet(ctx, ltAIcallID).Return(c, nil).Times(2) // ProcessListen's Get, then startListenConversation's re-read
 	mockAI.EXPECT().Get(ctx, ltAIID).Return(&ai.AI{Identity: commonidentity.Identity{ID: ltAIID}, Type: ai.TypeInsight}, nil)
 	m.req.EXPECT().ContactV1CaseGet(ctx, ltCustomerID, ltCaseID).Return(openConversationCase(), nil)
+	m.req.EXPECT().ConversationV1ConversationGet(ctx, lcConversationID).Return(&cvconversation.Conversation{Identity: commonidentity.Identity{ID: lcConversationID, CustomerID: ltCustomerID}}, nil)
 	m.cache.EXPECT().ListenConversationAIcallIDAdd(ctx, lcConversationID, ltAIcallID, listenResolverTTL).Return(nil)
 	m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(ctx, ltAIcallID, gomock.Any()).Return(nil)
 
@@ -557,4 +578,278 @@ func Test_ProcessListen_ConversationBranchNeverSpawnsRunListenStart(t *testing.T
 
 func aihandlerMockForTrigger(mc *gomock.Controller) *aihandler.MockAIHandler {
 	return aihandler.NewMockAIHandler(mc)
+}
+
+func Test_conversationMessageLine(t *testing.T) {
+	config.SetListenDefaultsForTest()
+	config.SetAIcallListenConversationMaxMessageCharsForTest(10)
+
+	tests := []struct {
+		name   string
+		msg    *cvmessage.Message
+		expect string
+	}{
+		{"incoming text", &cvmessage.Message{Direction: cvmessage.DirectionIncoming, Text: "  hello  "}, "[CUSTOMER] hello"},
+		{"outgoing text", &cvmessage.Message{Direction: cvmessage.DirectionOutgoing, Text: "hi"}, "[AGENT] hi"},
+		{"no direction", &cvmessage.Message{Direction: cvmessage.DirectionNond, Text: "x"}, "[SPEAKER] x"},
+		{"subject prefixes the text", &cvmessage.Message{Direction: cvmessage.DirectionIncoming, Subject: "Re: bill", Text: "hi"}, "[CUSTOMER] Subject: Re: bill\nhi"},
+		{"text over the cap is truncated", &cvmessage.Message{Direction: cvmessage.DirectionIncoming, Text: "0123456789ABCDEF"}, "[CUSTOMER] 0123456789 [truncated]"},
+		{"media only", &cvmessage.Message{Direction: cvmessage.DirectionIncoming, Medias: []cvmedia.Media{{Type: cvmedia.TypeImage}}}, "[CUSTOMER] [media: image]"},
+		{"text and two medias", &cvmessage.Message{Direction: cvmessage.DirectionIncoming, Text: "see", Medias: []cvmedia.Media{{Type: cvmedia.TypeImage}, {Type: cvmedia.TypeFile}}}, "[CUSTOMER] see [media: image] [media: file]"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := conversationMessageLine(tt.msg); got != tt.expect {
+				t.Errorf("line mismatch.\nexpected: %q\ngot:      %q", tt.expect, got)
+			}
+		})
+	}
+}
+
+// Test_EventCVMessageCreated covers design 2026-09-05 §5.3.2 exit by exit and
+// the §5.4 debounce/flush decisions. Not parallel: metric deltas.
+func Test_EventCVMessageCreated(t *testing.T) {
+	otherAIcallID := uuid.FromStringOrNil("44440000-0000-4000-8000-000000000002")
+
+	tests := []struct {
+		name           string
+		msg            *cvmessage.Message
+		resolved       []uuid.UUID
+		resolveErr     error
+		getErr         error
+		aicallCustomer uuid.UUID
+		lockAcquired   bool
+		expectSegment  string
+		expectBuffered int
+		expectLock     bool
+		expectTurn     bool
+		expectFlush    string
+	}{
+		{
+			name:          "deleted message is dropped before the resolver",
+			msg:           &cvmessage.Message{Identity: commonidentity.Identity{CustomerID: ltCustomerID}, ConversationID: lcConversationID, Direction: cvmessage.DirectionIncoming, Text: "x", TMDelete: ptrTimeNow()},
+			expectSegment: "dropped_deleted",
+		},
+		{
+			name:          "empty text without media is dropped before the resolver",
+			msg:           &cvmessage.Message{Identity: commonidentity.Identity{CustomerID: ltCustomerID}, ConversationID: lcConversationID, Direction: cvmessage.DirectionIncoming, Text: "   "},
+			expectSegment: "dropped_empty",
+		},
+		{
+			name:          "unknown conversation is dropped",
+			msg:           &cvmessage.Message{Identity: commonidentity.Identity{CustomerID: ltCustomerID}, ConversationID: lcConversationID, Direction: cvmessage.DirectionIncoming, Text: "x"},
+			resolved:      []uuid.UUID{},
+			expectSegment: "dropped_unknown",
+		},
+		{
+			name:          "resolver error is dropped_unknown",
+			msg:           &cvmessage.Message{Identity: commonidentity.Identity{CustomerID: ltCustomerID}, ConversationID: lcConversationID, Direction: cvmessage.DirectionIncoming, Text: "x"},
+			resolveErr:    fmt.Errorf("redis down"),
+			expectSegment: "dropped_unknown",
+		},
+		{
+			name:          "aicall lookup failure is failed and nothing is buffered",
+			msg:           &cvmessage.Message{Identity: commonidentity.Identity{CustomerID: ltCustomerID}, ConversationID: lcConversationID, Direction: cvmessage.DirectionIncoming, Text: "x"},
+			resolved:      []uuid.UUID{ltAIcallID},
+			getErr:        fmt.Errorf("not found"),
+			expectSegment: "failed",
+		},
+		{
+			name:           "tenant mismatch is dropped and nothing is buffered",
+			msg:            &cvmessage.Message{Identity: commonidentity.Identity{CustomerID: uuid.FromStringOrNil("55550000-0000-4000-8000-000000000001")}, ConversationID: lcConversationID, Direction: cvmessage.DirectionIncoming, Text: "x"},
+			resolved:       []uuid.UUID{ltAIcallID},
+			aicallCustomer: ltCustomerID,
+			expectSegment:  "dropped_tenant_mismatch",
+		},
+		{
+			name:           "outgoing line is buffered but never tries the lock",
+			msg:            &cvmessage.Message{Identity: commonidentity.Identity{CustomerID: ltCustomerID}, ConversationID: lcConversationID, Direction: cvmessage.DirectionOutgoing, Text: "agent reply"},
+			resolved:       []uuid.UUID{ltAIcallID},
+			aicallCustomer: ltCustomerID,
+			expectSegment:  "buffered",
+			expectBuffered: 1,
+		},
+		{
+			name:           "incoming line wins the lock and spawns a turn",
+			msg:            &cvmessage.Message{Identity: commonidentity.Identity{CustomerID: ltCustomerID}, ConversationID: lcConversationID, Direction: cvmessage.DirectionIncoming, Text: "customer"},
+			resolved:       []uuid.UUID{ltAIcallID},
+			aicallCustomer: ltCustomerID,
+			lockAcquired:   true,
+			expectSegment:  "buffered",
+			expectBuffered: 1,
+			expectLock:     true,
+			expectTurn:     true,
+		},
+		{
+			name:           "incoming line loses the lock and arms one deferred flush",
+			msg:            &cvmessage.Message{Identity: commonidentity.Identity{CustomerID: ltCustomerID}, ConversationID: lcConversationID, Direction: cvmessage.DirectionIncoming, Text: "customer"},
+			resolved:       []uuid.UUID{ltAIcallID},
+			aicallCustomer: ltCustomerID,
+			lockAcquired:   false,
+			expectSegment:  "buffered",
+			expectBuffered: 1,
+			expectLock:     true,
+			expectFlush:    "armed",
+		},
+		{
+			name:           "two listeners each get their own buffer and lock attempt",
+			msg:            &cvmessage.Message{Identity: commonidentity.Identity{CustomerID: ltCustomerID}, ConversationID: lcConversationID, Direction: cvmessage.DirectionIncoming, Text: "customer"},
+			resolved:       []uuid.UUID{ltAIcallID, otherAIcallID},
+			aicallCustomer: ltCustomerID,
+			lockAcquired:   true,
+			expectSegment:  "buffered",
+			expectBuffered: 2,
+			expectLock:     true,
+			expectTurn:     true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			config.SetListenDefaultsForTest()
+			config.SetAIcallListenEnabledForTest(true)
+			config.SetAIcallListenConversationEnabledForTest(true)
+			config.SetAIcallListenConversationFlushJitterMsForTest(0)
+
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+			m := newListenTurnHarness(mc)
+			ctx := context.Background()
+
+			armed := 0
+			m.h.afterFunc = func(d time.Duration, fn func()) *time.Timer {
+				armed++
+				if d != 20*time.Second {
+					t.Errorf("flush delay must be interval + 0 jitter. got: %v", d)
+				}
+				return time.NewTimer(time.Hour) // never fires in this test
+			}
+			turnsSpawned := make(chan uuid.UUID, 4)
+			m.h.runListenTurnHook = func(_ context.Context, id uuid.UUID) { turnsSpawned <- id }
+
+			if tt.msg.TMDelete == nil && strings.TrimSpace(tt.msg.Text) != "" || len(tt.msg.Medias) > 0 {
+				m.cache.EXPECT().ListenConversationAIcallIDsGet(ctx, lcConversationID).Return(tt.resolved, tt.resolveErr).MaxTimes(1)
+			}
+			for _, id := range tt.resolved {
+				id := id
+				c := listeningConversationAIcall()
+				c.ID = id
+				c.CustomerID = tt.aicallCustomer
+				if tt.getErr != nil {
+					m.db.EXPECT().AIcallGet(ctx, id).Return(nil, tt.getErr)
+					continue
+				}
+				m.db.EXPECT().AIcallGet(ctx, id).Return(c, nil)
+				if tt.expectBuffered > 0 {
+					m.cache.EXPECT().ListenPendingPush(ctx, id, gomock.Any(), gomock.Any()).Return(nil)
+					m.cache.EXPECT().ListenWindowPush(ctx, id, gomock.Any(), 40, gomock.Any()).Return(nil)
+				}
+				if tt.expectLock {
+					m.cache.EXPECT().ListenTurnTryLock(ctx, id, 20*time.Second).Return(tt.lockAcquired, nil)
+				} else {
+					m.cache.EXPECT().ListenTurnTryLock(gomock.Any(), id, gomock.Any()).Times(0)
+				}
+			}
+
+			segBefore := testutil.ToFloat64(promListenConversationSegmentTotal.WithLabelValues(tt.expectSegment))
+			m.h.EventCVMessageCreated(ctx, tt.msg)
+			segGot := testutil.ToFloat64(promListenConversationSegmentTotal.WithLabelValues(tt.expectSegment)) - segBefore
+			if int(segGot) < 1 {
+				t.Errorf("segment result %q must be metered. got: %v", tt.expectSegment, segGot)
+			}
+
+			if tt.expectTurn {
+				for i := 0; i < len(tt.resolved); i++ {
+					select {
+					case <-turnsSpawned:
+					case <-time.After(2 * time.Second):
+						t.Fatalf("expected a turn to be spawned")
+					}
+				}
+			} else if len(turnsSpawned) != 0 {
+				t.Errorf("no turn must be spawned. got: %d", len(turnsSpawned))
+			}
+			switch tt.expectFlush {
+			case "armed":
+				if armed != 1 {
+					t.Errorf("exactly one flush timer must be armed. got: %d", armed)
+				}
+			default:
+				if armed != 0 {
+					t.Errorf("no flush timer must be armed. got: %d", armed)
+				}
+			}
+		})
+	}
+}
+
+// Test_listenFlush pins the §5.4 invariants: one timer per AIcall per process
+// while armed (skipped_scheduled), Delete-before-TryLock so a mid-flush
+// arrival can re-arm, and lock-lost leaves the buffer alone.
+func Test_listenFlush(t *testing.T) {
+	config.SetListenDefaultsForTest()
+	config.SetAIcallListenEnabledForTest(true)
+	config.SetAIcallListenConversationEnabledForTest(true)
+	config.SetAIcallListenConversationFlushJitterMsForTest(0)
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+	m := newListenTurnHarness(mc)
+	ctx := context.Background()
+
+	var captured func()
+	m.h.afterFunc = func(_ time.Duration, fn func()) *time.Timer {
+		captured = fn
+		return time.NewTimer(time.Hour)
+	}
+	turns := 0
+	m.h.runListenTurnHook = func(_ context.Context, _ uuid.UUID) { turns++ }
+
+	// First arm.
+	scheduledBefore := testutil.ToFloat64(promListenConversationFlushTotal.WithLabelValues("skipped_scheduled"))
+	m.h.scheduleListenFlush(ctx, ltAIcallID)
+	if captured == nil {
+		t.Fatalf("first call must arm a timer")
+	}
+	// Second arm while the first is pending is skipped_scheduled.
+	first := captured
+	m.h.scheduleListenFlush(ctx, ltAIcallID)
+	if got := testutil.ToFloat64(promListenConversationFlushTotal.WithLabelValues("skipped_scheduled")) - scheduledBefore; got != 1 {
+		t.Errorf("second arm must be skipped_scheduled. got: %v", got)
+	}
+
+	// Fire: lock lost -> skipped_locked, no turn, and the marker is already
+	// cleared so a re-arm from inside the callback succeeds (Delete before
+	// TryLock).
+	m.cache.EXPECT().ListenTurnTryLock(gomock.Any(), ltAIcallID, 20*time.Second).Return(false, nil)
+	lockedBefore := testutil.ToFloat64(promListenConversationFlushTotal.WithLabelValues("skipped_locked"))
+	rearmed := false
+	m.h.afterFunc = func(_ time.Duration, fn func()) *time.Timer { rearmed = true; return time.NewTimer(time.Hour) }
+	first()
+	if got := testutil.ToFloat64(promListenConversationFlushTotal.WithLabelValues("skipped_locked")) - lockedBefore; got != 1 {
+		t.Errorf("lock lost must be skipped_locked. got: %v", got)
+	}
+	if turns != 0 {
+		t.Errorf("no turn on a lost lock. got: %d", turns)
+	}
+	m.h.scheduleListenFlush(ctx, ltAIcallID)
+	if !rearmed {
+		t.Errorf("the marker must be cleared before TryLock so a new arm succeeds")
+	}
+
+	// Fire: lock won -> ran and a turn.
+	m.cache.EXPECT().ListenTurnTryLock(gomock.Any(), ltAIcallID, 20*time.Second).Return(true, nil)
+	ranBefore := testutil.ToFloat64(promListenConversationFlushTotal.WithLabelValues("ran"))
+	m.h.listenFlushFire(ltAIcallID)
+	if got := testutil.ToFloat64(promListenConversationFlushTotal.WithLabelValues("ran")) - ranBefore; got != 1 {
+		t.Errorf("lock won must be ran. got: %v", got)
+	}
+	if turns != 1 {
+		t.Errorf("exactly one turn on a won lock. got: %d", turns)
+	}
+}
+
+func ptrTimeNow() *time.Time {
+	now := time.Now()
+	return &now
 }

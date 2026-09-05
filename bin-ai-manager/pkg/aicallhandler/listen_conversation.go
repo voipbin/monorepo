@@ -2,10 +2,14 @@ package aicallhandler
 
 import (
 	"context"
+	"math/rand/v2"
+	"strings"
+	"time"
 
 	"monorepo/bin-ai-manager/internal/config"
 	"monorepo/bin-ai-manager/models/aicall"
 	kmkase "monorepo/bin-contact-manager/models/kase"
+	cvmessage "monorepo/bin-conversation-manager/models/message"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -19,6 +23,12 @@ import (
 // The caller returns proceed=false regardless of the outcome; every outcome is
 // metered here under kind="conversation".
 func (h *aicallHandler) checkListenEligibleConversation(ctx context.Context, c *aicall.AIcall, kase *kmkase.Case) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "checkListenEligibleConversation",
+		"aicall_id": c.ID,
+		"case_id":   kase.ID,
+	})
+
 	if !config.Get().AIcallListenConversationEnabled {
 		promListenStartTotal.WithLabelValues(string(listenKindConversation), "skipped_disabled").Inc()
 		return
@@ -27,6 +37,22 @@ func (h *aicallHandler) checkListenEligibleConversation(ctx context.Context, c *
 	conversationID := uuid.FromStringOrNil(kase.ReferenceID)
 	if conversationID == uuid.Nil {
 		// flow-manager's case_create may legitimately store an empty ReferenceID.
+		promListenStartTotal.WithLabelValues(string(listenKindConversation), "skipped_not_listenable").Inc()
+		return
+	}
+
+	// Defence in depth. The Case is already tenant-checked upstream, but the
+	// conversation id is a free-form ReferenceID string on that row, so assert
+	// the conversation itself belongs to the same customer before registering
+	// this AIcall as one of its listeners.
+	cv, errGet := h.reqHandler.ConversationV1ConversationGet(ctx, conversationID)
+	if errGet != nil {
+		log.Errorf("Could not get the conversation. err: %v", errGet)
+		promListenStartTotal.WithLabelValues(string(listenKindConversation), "failed").Inc()
+		return
+	}
+	if cv.CustomerID != c.CustomerID || cv.CustomerID == uuid.Nil {
+		log.Warnf("Cross-customer conversation access blocked. conversation_customer_id: %s", cv.CustomerID)
 		promListenStartTotal.WithLabelValues(string(listenKindConversation), "skipped_not_listenable").Inc()
 		return
 	}
@@ -100,7 +126,206 @@ func (h *aicallHandler) startListenConversation(ctx context.Context, c *aicall.A
 // reaches RunListenTurn's predicate clears it.
 func (h *aicallHandler) rollbackListenConversation(ctx context.Context, conversationID uuid.UUID, aicallID uuid.UUID) {
 	if errRem := h.cache.ListenConversationAIcallIDRemove(ctx, conversationID, aicallID); errRem != nil {
-		logrus.WithFields(logrus.Fields{"func": "rollbackListenConversation", "aicall_id": aicallID}).
+		logrus.WithFields(logrus.Fields{"func": "rollbackListenConversation", "aicall_id": aicallID, "conversation_id": conversationID}).
 			Warnf("Could not roll back the conversation listen resolver membership. err: %v", errRem)
 	}
+}
+
+// speakerTagForDirection maps a conversation message's direction to the
+// structural speaker tag the listen turn prompt expects.
+func speakerTagForDirection(direction cvmessage.Direction) string {
+	switch direction {
+	case cvmessage.DirectionIncoming:
+		return "[CUSTOMER]"
+	case cvmessage.DirectionOutgoing:
+		return "[AGENT]"
+	default:
+		return "[SPEAKER]"
+	}
+}
+
+const listenConversationTruncatedSuffix = " [truncated]"
+
+// conversationMessageLine renders one buffered line (design 2026-09-05 §5.3.3):
+// tag, optional "Subject: ..." line, whitespace-trimmed text truncated to
+// aicall_listen_conversation_max_message_chars, and one "[media: <type>]"
+// token per attachment (raw media.Type, no allowlist, no URL or payload).
+func conversationMessageLine(evt *cvmessage.Message) string {
+	var sb strings.Builder
+	sb.WriteString(speakerTagForDirection(evt.Direction))
+
+	if subject := strings.TrimSpace(evt.Subject); subject != "" {
+		sb.WriteString(" Subject: ")
+		sb.WriteString(subject)
+		sb.WriteString("\n")
+	} else {
+		sb.WriteString(" ")
+	}
+
+	text := strings.TrimSpace(evt.Text)
+	if maxChars := config.Get().AIcallListenConversationMaxMessageChars; maxChars > 0 {
+		if runes := []rune(text); len(runes) > maxChars {
+			text = string(runes[:maxChars]) + listenConversationTruncatedSuffix
+		}
+	}
+	sb.WriteString(text)
+
+	for _, m := range evt.Medias {
+		// One separator before each token. When text is empty the builder
+		// already ends in the tag's trailing space (or the subject's newline),
+		// so only add a space after non-empty content.
+		if s := sb.String(); !strings.HasSuffix(s, " ") && !strings.HasSuffix(s, "\n") {
+			sb.WriteString(" ")
+		}
+		sb.WriteString("[media: ")
+		sb.WriteString(string(m.Type))
+		sb.WriteString("]")
+	}
+
+	return strings.TrimRight(sb.String(), " \n")
+}
+
+// EventCVMessageCreated is the conversation listen intake (design 2026-09-05
+// §5.3.2). It runs for EVERY conversation message platform-wide, so everything
+// before the resolver lookup must stay trivially cheap, and the resolver
+// lookup itself is the only Redis round trip for the >99% that are not ours.
+func (h *aicallHandler) EventCVMessageCreated(ctx context.Context, evt *cvmessage.Message) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "EventCVMessageCreated",
+		"conversation_id": evt.ConversationID,
+		"message_id":      evt.ID,
+	})
+
+	if evt.TMDelete != nil {
+		promListenConversationSegmentTotal.WithLabelValues("dropped_deleted").Inc()
+		return
+	}
+	if strings.TrimSpace(evt.Text) == "" && len(evt.Medias) == 0 {
+		promListenConversationSegmentTotal.WithLabelValues("dropped_empty").Inc()
+		return
+	}
+
+	aicallIDs, err := h.cache.ListenConversationAIcallIDsGet(ctx, evt.ConversationID)
+	if err != nil {
+		log.Warnf("Could not resolve the listening aicalls. err: %v", err)
+		promListenConversationSegmentTotal.WithLabelValues("dropped_unknown").Inc()
+		return
+	}
+	if len(aicallIDs) == 0 {
+		promListenConversationSegmentTotal.WithLabelValues("dropped_unknown").Inc()
+		return
+	}
+
+	line := conversationMessageLine(evt)
+	ttl := listenBufferTTL()
+	windowSize := config.Get().AIcallListenWindowSize
+	interval := time.Duration(config.Get().AIcallListenEvaluateIntervalSeconds) * time.Second
+
+	for _, aicallID := range aicallIDs {
+		// h.Get -> h.db.AIcallGet (the dbhandler is cache-first with a DB
+		// fallback); acceptable because this runs only for the resolved
+		// fraction. The tenant assertion needs the row.
+		c, errGet := h.Get(ctx, aicallID)
+		if errGet != nil {
+			log.Warnf("Could not get the listening aicall. aicall_id: %s, err: %v", aicallID, errGet)
+			promListenConversationSegmentTotal.WithLabelValues("failed").Inc()
+			continue
+		}
+		if c.CustomerID == uuid.Nil || evt.CustomerID == uuid.Nil || c.CustomerID != evt.CustomerID {
+			log.Warnf("Cross-customer conversation message blocked. aicall_id: %s, aicall_customer_id: %s, message_customer_id: %s", aicallID, c.CustomerID, evt.CustomerID)
+			promListenConversationSegmentTotal.WithLabelValues("dropped_tenant_mismatch").Inc()
+			continue
+		}
+
+		if errPending := h.cache.ListenPendingPush(ctx, aicallID, line, ttl); errPending != nil {
+			log.Warnf("Could not buffer the pending line. aicall_id: %s, err: %v", aicallID, errPending)
+			continue
+		}
+		if errWindow := h.cache.ListenWindowPush(ctx, aicallID, line, windowSize, ttl); errWindow != nil {
+			log.Warnf("Could not buffer the window line. aicall_id: %s, err: %v", aicallID, errWindow)
+		}
+		promListenConversationSegmentTotal.WithLabelValues("buffered").Inc()
+
+		// Only a customer message starts a turn; agent/bot output is context.
+		if evt.Direction != cvmessage.DirectionIncoming {
+			continue
+		}
+
+		acquired, errLock := h.cache.ListenTurnTryLock(ctx, aicallID, interval)
+		if errLock != nil {
+			log.Warnf("Could not take the listen turn lock. aicall_id: %s, err: %v", aicallID, errLock)
+			continue
+		}
+		if !acquired {
+			promListenTurnTotal.WithLabelValues(string(listenKindConversation), "skipped_locked").Inc()
+			h.scheduleListenFlush(ctx, aicallID)
+			continue
+		}
+
+		h.spawnListenTurn(aicallID)
+	}
+}
+
+// spawnListenTurn runs RunListenTurn detached, or hands the id to the test hook.
+func (h *aicallHandler) spawnListenTurn(aicallID uuid.UUID) {
+	if h.runListenTurnHook != nil {
+		h.runListenTurnHook(context.Background(), aicallID)
+		return
+	}
+	go func(id uuid.UUID) {
+		turnCtx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+		defer cancel()
+		h.RunListenTurn(turnCtx, id)
+	}(aicallID)
+}
+
+// scheduleListenFlush arms at most one deferred flush per AIcall per process
+// (design 2026-09-05 §5.4). The delay is the debounce interval plus a random
+// jitter so the two replicas' timers do not race the lock at the same instant.
+func (h *aicallHandler) scheduleListenFlush(ctx context.Context, aicallID uuid.UUID) {
+	if _, loaded := h.flushScheduled.LoadOrStore(aicallID, struct{}{}); loaded {
+		promListenConversationFlushTotal.WithLabelValues("skipped_scheduled").Inc()
+		return
+	}
+
+	delay := time.Duration(config.Get().AIcallListenEvaluateIntervalSeconds) * time.Second
+	if jitter := config.Get().AIcallListenConversationFlushJitterMs; jitter > 0 {
+		delay += time.Duration(rand.IntN(jitter+1)) * time.Millisecond
+	}
+
+	after := h.afterFunc
+	if after == nil {
+		after = time.AfterFunc
+	}
+	after(delay, func() { h.listenFlushFire(aicallID) })
+}
+
+// listenFlushFire is the timer body. INVARIANT: the marker is deleted BEFORE
+// TryLock, never after the turn, so a message arriving mid-flush can arm a
+// fresh timer instead of being stranded behind a marker nobody will clear.
+func (h *aicallHandler) listenFlushFire(aicallID uuid.UUID) {
+	h.flushScheduled.Delete(aicallID)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	defer cancel()
+
+	interval := time.Duration(config.Get().AIcallListenEvaluateIntervalSeconds) * time.Second
+	acquired, err := h.cache.ListenTurnTryLock(ctx, aicallID, interval)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{"func": "listenFlushFire", "aicall_id": aicallID}).
+			Warnf("Could not take the listen turn lock for the flush. err: %v", err)
+		promListenConversationFlushTotal.WithLabelValues("skipped_locked").Inc()
+		return
+	}
+	if !acquired {
+		promListenConversationFlushTotal.WithLabelValues("skipped_locked").Inc()
+		return
+	}
+
+	promListenConversationFlushTotal.WithLabelValues("ran").Inc()
+	if h.runListenTurnHook != nil {
+		h.runListenTurnHook(ctx, aicallID)
+		return
+	}
+	h.RunListenTurn(ctx, aicallID)
 }
