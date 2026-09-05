@@ -2987,7 +2987,7 @@ ships dark and is enabled deliberately.~~
 
 | Flag / env | Default | Purpose |
 |---|---|---|
-| `aicall_listen_enabled` / `AICALL_LISTEN_ENABLED` | `false` | master kill switch |
+| `aicall_listen_enabled` / `AICALL_LISTEN_ENABLED` | ~~`false`~~ | **Superseded by rev 24 (2026-09-06): removed; listening is always on.** Formerly the master kill switch |
 | `aicall_listen_evaluate_interval_seconds` | `20` | debounce window (§5.3.4) |
 | `aicall_listen_window_size` | `40` | rolling transcript lines in context |
 | `aicall_listen_qa_context_size` | `10` | Q&A rows in context |

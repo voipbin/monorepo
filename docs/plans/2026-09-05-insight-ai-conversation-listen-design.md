@@ -172,8 +172,8 @@ is unchanged. `startListenConversation` meters `aicall_listen_start_total{kind="
 Variant gate (step 5b, evaluated only on the conversation branch, after the reference-type switch):
 `aicall_listen_conversation_enabled` (§5.12). Off -> `skipped_disabled` on
 `aicall_listen_start_total{kind="conversation"}` (§5.13). Placed at step 5b rather than next to the master
-flag so a disabled conversation variant can never affect the call branch. This lets the call variant be
-enabled in production while this one stays dark, and vice versa.
+flag so a disabled conversation variant can never affect the call branch. (Superseded by rev 8: switches removed; listening is always on.) Formerly: this let the call variant be
+enabled in production while this one stayed dark, and vice versa.
 
 #### 5.1.1 `checkListenEligibleConversation` -> `startListenConversation`
 
