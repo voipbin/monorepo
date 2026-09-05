@@ -108,6 +108,16 @@ type Case struct {
 // bin-ai-manager without repeating a bare "call" literal across services.
 const ReferenceTypeCall = "call"
 
+// ReferenceTypeConversationMessage is the stored ReferenceType value for a Case
+// created from a messaging conversation (SMS/MMS, LINE, WhatsApp, webchat,
+// email). Case.ReferenceID is then the conversation id. Same untyped-string
+// rationale as ReferenceTypeCall above.
+//
+// Introduced by docs/plans/2026-09-05-insight-ai-conversation-listen-design.md
+// §5.1, which branches on it from bin-ai-manager; bin-flow-manager's case_create
+// action is the producer.
+const ReferenceTypeConversationMessage = "conversation_message"
+
 // Status defines the Case lifecycle status.
 type Status string
 

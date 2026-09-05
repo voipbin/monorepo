@@ -179,3 +179,13 @@ func TestReferenceTypeCallValue(t *testing.T) {
 		t.Errorf("ReferenceTypeCall mismatch. expected: %q, got: %q", "call", ReferenceTypeCall)
 	}
 }
+
+// TestReferenceTypeConversationMessageValue pins the stored value of a Case
+// created from a messaging conversation. flow-manager's case_create action wrote
+// this as a bare literal before VOIP-1470; the constant is now the single named
+// spelling. Changing it silently orphans every stored conversation Case row.
+func TestReferenceTypeConversationMessageValue(t *testing.T) {
+	if ReferenceTypeConversationMessage != "conversation_message" {
+		t.Errorf("ReferenceTypeConversationMessage mismatch. expected: %q, got: %q", "conversation_message", ReferenceTypeConversationMessage)
+	}
+}
