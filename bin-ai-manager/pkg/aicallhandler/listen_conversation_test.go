@@ -4,15 +4,21 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"sync"
 	"testing"
+	"time"
 
 	"monorepo/bin-ai-manager/internal/config"
+	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
+	"monorepo/bin-ai-manager/pkg/aihandler"
+	cmcall "monorepo/bin-call-manager/models/call"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	kmkase "monorepo/bin-contact-manager/models/kase"
 
 	"github.com/gofrs/uuid"
+	"github.com/prometheus/client_golang/prometheus/testutil"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -237,9 +243,10 @@ func Test_buildListenTurnMessages_ConversationKind(t *testing.T) {
 	}
 }
 
-// Test_ProcessTerminate_ConversationListenGate pins process.go's widened gate:
-// a conversation listener (ListenCallID == Nil, metadata pointer set) must
-// still have its state cleared on terminate.
+// Test_clearListenState_ConversationKind pins that stopListening on a
+// conversation-kind AIcall skips every transcribe RPC and clears the
+// conversation resolver membership, the Redis keys and the metadata pointer,
+// in that order.
 func Test_clearListenState_ConversationKind(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
@@ -278,4 +285,276 @@ func Test_listenTerminateNeedsStop(t *testing.T) {
 			}
 		})
 	}
+}
+
+// Test_startListenConversation covers design 2026-09-05 §5.1.1 exit by exit.
+func Test_startListenConversation(t *testing.T) {
+	tests := []struct {
+		name         string
+		metadata     map[string]any
+		isMember     bool
+		isMemberErr  error
+		addErr       error
+		updateErr    error
+		expectResult string
+		expectAdd    bool
+		expectUpdate bool
+		expectRemove bool
+	}{
+		{
+			name:         "pointer set and member present is reused with zero writes",
+			metadata:     map[string]any{aicall.MetaKeyListenConversationID: lcConversationID.String()},
+			isMember:     true,
+			expectResult: "reused",
+		},
+		{
+			name:         "pointer set but membership missing re-adds and rewrites",
+			metadata:     map[string]any{aicall.MetaKeyListenConversationID: lcConversationID.String()},
+			isMember:     false,
+			expectResult: "started",
+			expectAdd:    true,
+			expectUpdate: true,
+		},
+		{
+			name:         "SISMEMBER error degrades to a fresh start",
+			metadata:     map[string]any{aicall.MetaKeyListenConversationID: lcConversationID.String()},
+			isMemberErr:  fmt.Errorf("redis down"),
+			expectResult: "started",
+			expectAdd:    true,
+			expectUpdate: true,
+		},
+		{
+			name:         "pointer absent starts",
+			expectResult: "started",
+			expectAdd:    true,
+			expectUpdate: true,
+		},
+		{
+			name:         "SADD failure is failed with no DB write",
+			addErr:       fmt.Errorf("redis down"),
+			expectResult: "failed",
+			expectAdd:    true,
+		},
+		{
+			name:         "DB failure rolls the SADD back",
+			updateErr:    fmt.Errorf("db down"),
+			expectResult: "failed",
+			expectAdd:    true,
+			expectUpdate: true,
+			expectRemove: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			config.SetListenDefaultsForTest()
+
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+			m := newListenTurnHarness(mc)
+			ctx := context.Background()
+
+			c := listeningConversationAIcall()
+			c.Metadata = tt.metadata
+
+			if tt.metadata != nil {
+				m.cache.EXPECT().ListenConversationAIcallIDIsMember(ctx, lcConversationID, ltAIcallID).Return(tt.isMember, tt.isMemberErr)
+			}
+			if tt.expectAdd {
+				m.cache.EXPECT().ListenConversationAIcallIDAdd(ctx, lcConversationID, ltAIcallID, listenResolverTTL).Return(tt.addErr)
+			} else {
+				m.cache.EXPECT().ListenConversationAIcallIDAdd(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+			}
+			if tt.expectUpdate {
+				m.db.EXPECT().AIcallGet(ctx, ltAIcallID).Return(c, nil)
+				m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(ctx, ltAIcallID, gomock.Any()).DoAndReturn(
+					func(_ context.Context, _ uuid.UUID, fields map[aicall.Field]any) error {
+						meta, _ := fields[aicall.FieldMetadata].(map[string]any)
+						if meta[aicall.MetaKeyListenConversationID] != lcConversationID.String() {
+							t.Errorf("metadata must carry listen_conversation_id. got: %v", meta)
+						}
+						if _, has := fields[aicall.FieldListenCallID]; has {
+							t.Errorf("a conversation start must never write listen_call_id")
+						}
+						return tt.updateErr
+					})
+			} else {
+				m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+			}
+			if tt.expectRemove {
+				m.cache.EXPECT().ListenConversationAIcallIDRemove(ctx, lcConversationID, ltAIcallID).Return(nil)
+			} else {
+				m.cache.EXPECT().ListenConversationAIcallIDRemove(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+			}
+
+			before := testutil.ToFloat64(promListenStartTotal.WithLabelValues("conversation", tt.expectResult))
+			res := m.h.startListenConversation(ctx, c, lcConversationID)
+			if res != tt.expectResult {
+				t.Errorf("result mismatch. expected: %s, got: %s", tt.expectResult, res)
+			}
+			if got := testutil.ToFloat64(promListenStartTotal.WithLabelValues("conversation", tt.expectResult)) - before; got != 1 {
+				t.Errorf("result %q must be metered exactly once. got: %v", tt.expectResult, got)
+			}
+		})
+	}
+}
+
+// Test_checkListenEligible_ConversationBranch pins the step-5 switch: a
+// conversation Case runs the inline start and returns proceed=false so
+// ProcessListen never spawns the call-only runListenStart.
+func Test_checkListenEligible_ConversationBranch(t *testing.T) {
+	tests := []struct {
+		name             string
+		conversationFlag bool
+		referenceID      string
+		expectStart      bool
+		expectLabel      string
+	}{
+		{"sub-flag off is skipped_disabled", false, lcConversationID.String(), false, "skipped_disabled"},
+		{"empty reference id is skipped_not_listenable", true, "", false, "skipped_not_listenable"},
+		{"garbage reference id is skipped_not_listenable", true, "not-a-uuid", false, "skipped_not_listenable"},
+		{"valid conversation id starts inline", true, lcConversationID.String(), true, "started"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			config.SetListenDefaultsForTest()
+			config.SetAIcallListenEnabledForTest(true)
+			config.SetAIcallListenConversationEnabledForTest(tt.conversationFlag)
+
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+			m := newListenTurnHarness(mc)
+			mockAI := aihandlerMockForTrigger(mc)
+			m.h.aiHandler = mockAI
+			ctx := context.Background()
+
+			c := listenEligibleAIcall()
+			mockAI.EXPECT().Get(ctx, ltAIID).Return(&ai.AI{Identity: commonidentity.Identity{ID: ltAIID}, Type: ai.TypeInsight}, nil)
+			kase := openConversationCase()
+			kase.ReferenceID = tt.referenceID
+			m.req.EXPECT().ContactV1CaseGet(ctx, ltCustomerID, ltCaseID).Return(kase, nil)
+			m.req.EXPECT().CallV1CallGet(gomock.Any(), gomock.Any()).Times(0)
+			m.req.EXPECT().TranscribeV1TranscribeStart(
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+			).Times(0)
+
+			if tt.expectStart {
+				m.cache.EXPECT().ListenConversationAIcallIDAdd(ctx, lcConversationID, ltAIcallID, listenResolverTTL).Return(nil)
+				m.db.EXPECT().AIcallGet(ctx, ltAIcallID).Return(c, nil)
+				m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(ctx, ltAIcallID, gomock.Any()).Return(nil)
+			} else {
+				m.cache.EXPECT().ListenConversationAIcallIDAdd(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+			}
+
+			before := testutil.ToFloat64(promListenStartTotal.WithLabelValues("conversation", tt.expectLabel))
+			a, k, callID, call, proceed, err := m.h.checkListenEligible(ctx, c)
+			if err != nil {
+				t.Fatalf("checkListenEligible must never return an error. got: %v", err)
+			}
+			if proceed || a != nil || k != nil || call != nil || callID != uuid.Nil {
+				t.Errorf("the conversation branch must return proceed=false with zero values. proceed: %v", proceed)
+			}
+			if got := testutil.ToFloat64(promListenStartTotal.WithLabelValues("conversation", tt.expectLabel)) - before; got != 1 {
+				t.Errorf("label %q must be metered exactly once. got: %v", tt.expectLabel, got)
+			}
+		})
+	}
+}
+
+// Test_checkListenEligible_UnknownReferenceTypeMetersUnknown pins the step-5
+// switch's default arm: a Case that is neither a call nor a conversation is
+// refused under kind="unknown", not under either concrete kind.
+func Test_checkListenEligible_UnknownReferenceTypeMetersUnknown(t *testing.T) {
+	config.SetListenDefaultsForTest()
+	config.SetAIcallListenEnabledForTest(true)
+	config.SetAIcallListenConversationEnabledForTest(true)
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+	m := newListenTurnHarness(mc)
+	mockAI := aihandlerMockForTrigger(mc)
+	m.h.aiHandler = mockAI
+	ctx := context.Background()
+
+	c := listenEligibleAIcall()
+	mockAI.EXPECT().Get(ctx, ltAIID).Return(&ai.AI{Identity: commonidentity.Identity{ID: ltAIID}, Type: ai.TypeInsight}, nil)
+	kase := openConversationCase()
+	kase.ReferenceType = "email_thread"
+	m.req.EXPECT().ContactV1CaseGet(ctx, ltCustomerID, ltCaseID).Return(kase, nil)
+	m.req.EXPECT().CallV1CallGet(gomock.Any(), gomock.Any()).Times(0)
+	m.cache.EXPECT().ListenConversationAIcallIDAdd(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+
+	beforeUnknown := testutil.ToFloat64(promListenStartTotal.WithLabelValues("unknown", "skipped_not_listenable"))
+	beforeCall := testutil.ToFloat64(promListenStartTotal.WithLabelValues("call", "skipped_not_listenable"))
+	beforeConversation := testutil.ToFloat64(promListenStartTotal.WithLabelValues("conversation", "skipped_not_listenable"))
+
+	_, _, _, _, proceed, err := m.h.checkListenEligible(ctx, c)
+	if err != nil {
+		t.Fatalf("checkListenEligible must never return an error. got: %v", err)
+	}
+	if proceed {
+		t.Errorf("an unknown reference type must never proceed")
+	}
+
+	if got := testutil.ToFloat64(promListenStartTotal.WithLabelValues("unknown", "skipped_not_listenable")) - beforeUnknown; got != 1 {
+		t.Errorf("the default arm must meter kind=unknown exactly once. got: %v", got)
+	}
+	if got := testutil.ToFloat64(promListenStartTotal.WithLabelValues("call", "skipped_not_listenable")) - beforeCall; got != 0 {
+		t.Errorf("the default arm must not meter kind=call. got: %v", got)
+	}
+	if got := testutil.ToFloat64(promListenStartTotal.WithLabelValues("conversation", "skipped_not_listenable")) - beforeConversation; got != 0 {
+		t.Errorf("the default arm must not meter kind=conversation. got: %v", got)
+	}
+}
+
+// Test_ProcessListen_ConversationBranchNeverSpawnsRunListenStart pins that the
+// conversation branch completes inline and ProcessListen never spawns the
+// call-only async stage.
+func Test_ProcessListen_ConversationBranchNeverSpawnsRunListenStart(t *testing.T) {
+	config.SetListenDefaultsForTest()
+	config.SetAIcallListenEnabledForTest(true)
+	config.SetAIcallListenConversationEnabledForTest(true)
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+	m := newListenTurnHarness(mc)
+	mockAI := aihandlerMockForTrigger(mc)
+	m.h.aiHandler = mockAI
+	ctx := context.Background()
+
+	c := listenEligibleAIcall()
+	m.db.EXPECT().AIcallGet(ctx, ltAIcallID).Return(c, nil).Times(2) // ProcessListen's Get, then startListenConversation's re-read
+	mockAI.EXPECT().Get(ctx, ltAIID).Return(&ai.AI{Identity: commonidentity.Identity{ID: ltAIID}, Type: ai.TypeInsight}, nil)
+	m.req.EXPECT().ContactV1CaseGet(ctx, ltCustomerID, ltCaseID).Return(openConversationCase(), nil)
+	m.cache.EXPECT().ListenConversationAIcallIDAdd(ctx, lcConversationID, ltAIcallID, listenResolverTTL).Return(nil)
+	m.db.EXPECT().AIcallUpdateNoTouchTMUpdate(ctx, ltAIcallID, gomock.Any()).Return(nil)
+
+	var hookCalls int32
+	var mu sync.Mutex
+	m.h.runListenStartHook = func(context.Context, *ai.AI, *aicall.AIcall, *kmkase.Case, uuid.UUID, *cmcall.Call) {
+		mu.Lock()
+		hookCalls++
+		mu.Unlock()
+	}
+
+	res, err := m.h.ProcessListen(ctx, ltAIcallID)
+	if err != nil {
+		t.Fatalf("unexpected error. err: %v", err)
+	}
+	if res != c {
+		t.Errorf("ProcessListen must return the AIcall it fetched")
+	}
+
+	time.Sleep(50 * time.Millisecond)
+	mu.Lock()
+	defer mu.Unlock()
+	if hookCalls != 0 {
+		t.Errorf("runListenStart must never run on the conversation branch. calls: %d", hookCalls)
+	}
+}
+
+func aihandlerMockForTrigger(mc *gomock.Controller) *aihandler.MockAIHandler {
+	return aihandler.NewMockAIHandler(mc)
 }

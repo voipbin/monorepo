@@ -138,13 +138,13 @@ func Test_checkListenEligible(t *testing.T) {
 			expectTranscribeGet: true,
 		},
 		{
-			name:         "case reference type is not call",
+			name:         "case reference type is neither call nor conversation_message",
 			flagEnabled:  true,
 			aiType:       ai.TypeInsight,
 			aicallStatus: aicall.StatusProgressing,
 			responseCase: &kmkase.Case{
 				ID: ltCaseID, CustomerID: ltCustomerID,
-				ReferenceType: "conversation_message", ReferenceID: ltCallID.String(),
+				ReferenceType: "email_thread", ReferenceID: ltCallID.String(),
 			},
 			expectCaseGet: true,
 		},

@@ -249,11 +249,20 @@ func (h *aicallHandler) checkListenEligible(ctx context.Context, c *aicall.AIcal
 		return nil, nil, uuid.Nil, nil, false, nil
 	}
 
-	// Step 5: reference typing.
-	if kase.ReferenceType != kmkase.ReferenceTypeCall {
-		promListenStartTotal.WithLabelValues(string(listenKindCall), "skipped_not_listenable").Inc()
+	// Step 5: reference typing. The conversation branch runs its whole start
+	// inline and never proceeds to steps 6-8, which are call-only (design
+	// 2026-09-05 §5.1).
+	switch kase.ReferenceType {
+	case kmkase.ReferenceTypeCall:
+		// steps 6-8 below
+	case kmkase.ReferenceTypeConversationMessage:
+		h.checkListenEligibleConversation(ctx, c, kase)
+		return nil, nil, uuid.Nil, nil, false, nil
+	default:
+		promListenStartTotal.WithLabelValues(listenKindLabelUnknown, "skipped_not_listenable").Inc()
 		return nil, nil, uuid.Nil, nil, false, nil
 	}
+
 	callID := uuid.FromStringOrNil(kase.ReferenceID)
 	if callID == uuid.Nil {
 		promListenStartTotal.WithLabelValues(string(listenKindCall), "skipped_not_listenable").Inc()
