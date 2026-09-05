@@ -190,12 +190,6 @@ func conversationMessageLine(evt *cvmessage.Message) string {
 // before the resolver lookup must stay trivially cheap, and the resolver
 // lookup itself is the only Redis round trip for the >99% that are not ours.
 func (h *aicallHandler) EventCVMessageCreated(ctx context.Context, evt *cvmessage.Message) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":            "EventCVMessageCreated",
-		"conversation_id": evt.ConversationID,
-		"message_id":      evt.ID,
-	})
-
 	if evt.TMDelete != nil {
 		promListenConversationSegmentTotal.WithLabelValues("dropped_deleted").Inc()
 		return
@@ -204,6 +198,12 @@ func (h *aicallHandler) EventCVMessageCreated(ctx context.Context, evt *cvmessag
 		promListenConversationSegmentTotal.WithLabelValues("dropped_empty").Inc()
 		return
 	}
+
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "EventCVMessageCreated",
+		"conversation_id": evt.ConversationID,
+		"message_id":      evt.ID,
+	})
 
 	aicallIDs, err := h.cache.ListenConversationAIcallIDsGet(ctx, evt.ConversationID)
 	if err != nil {
@@ -258,7 +258,7 @@ func (h *aicallHandler) EventCVMessageCreated(ctx context.Context, evt *cvmessag
 		}
 		if !acquired {
 			promListenTurnTotal.WithLabelValues(string(listenKindConversation), "skipped_locked").Inc()
-			h.scheduleListenFlush(ctx, aicallID)
+			h.scheduleListenFlush(aicallID)
 			continue
 		}
 
@@ -282,7 +282,7 @@ func (h *aicallHandler) spawnListenTurn(aicallID uuid.UUID) {
 // scheduleListenFlush arms at most one deferred flush per AIcall per process
 // (design 2026-09-05 §5.4). The delay is the debounce interval plus a random
 // jitter so the two replicas' timers do not race the lock at the same instant.
-func (h *aicallHandler) scheduleListenFlush(ctx context.Context, aicallID uuid.UUID) {
+func (h *aicallHandler) scheduleListenFlush(aicallID uuid.UUID) {
 	if _, loaded := h.flushScheduled.LoadOrStore(aicallID, struct{}{}); loaded {
 		promListenConversationFlushTotal.WithLabelValues("skipped_scheduled").Inc()
 		return

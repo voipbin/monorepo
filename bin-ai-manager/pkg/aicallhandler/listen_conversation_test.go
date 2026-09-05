@@ -727,7 +727,7 @@ func Test_EventCVMessageCreated(t *testing.T) {
 			turnsSpawned := make(chan uuid.UUID, 4)
 			m.h.runListenTurnHook = func(_ context.Context, id uuid.UUID) { turnsSpawned <- id }
 
-			if tt.msg.TMDelete == nil && strings.TrimSpace(tt.msg.Text) != "" || len(tt.msg.Medias) > 0 {
+			if tt.msg.TMDelete == nil && (strings.TrimSpace(tt.msg.Text) != "" || len(tt.msg.Medias) > 0) {
 				m.cache.EXPECT().ListenConversationAIcallIDsGet(ctx, lcConversationID).Return(tt.resolved, tt.resolveErr).MaxTimes(1)
 			}
 			for _, id := range tt.resolved {
@@ -795,7 +795,6 @@ func Test_listenFlush(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 	m := newListenTurnHarness(mc)
-	ctx := context.Background()
 
 	var captured func()
 	m.h.afterFunc = func(_ time.Duration, fn func()) *time.Timer {
@@ -807,13 +806,13 @@ func Test_listenFlush(t *testing.T) {
 
 	// First arm.
 	scheduledBefore := testutil.ToFloat64(promListenConversationFlushTotal.WithLabelValues("skipped_scheduled"))
-	m.h.scheduleListenFlush(ctx, ltAIcallID)
+	m.h.scheduleListenFlush(ltAIcallID)
 	if captured == nil {
 		t.Fatalf("first call must arm a timer")
 	}
 	// Second arm while the first is pending is skipped_scheduled.
 	first := captured
-	m.h.scheduleListenFlush(ctx, ltAIcallID)
+	m.h.scheduleListenFlush(ltAIcallID)
 	if got := testutil.ToFloat64(promListenConversationFlushTotal.WithLabelValues("skipped_scheduled")) - scheduledBefore; got != 1 {
 		t.Errorf("second arm must be skipped_scheduled. got: %v", got)
 	}
@@ -832,7 +831,7 @@ func Test_listenFlush(t *testing.T) {
 	if turns != 0 {
 		t.Errorf("no turn on a lost lock. got: %d", turns)
 	}
-	m.h.scheduleListenFlush(ctx, ltAIcallID)
+	m.h.scheduleListenFlush(ltAIcallID)
 	if !rearmed {
 		t.Errorf("the marker must be cleared before TryLock so a new arm succeeds")
 	}
