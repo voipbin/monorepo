@@ -2980,8 +2980,8 @@ capped at 60 turns (~20 min of continuous speech), one shared transcribe
 session (two STT streams). Contrast with rev 1, which was one
 *unbounded-context* LLM call per spoken sentence.
 
-**Kill switch.** `AIcallListenEnabled` defaults to **false**. The feature
-ships dark and is enabled deliberately.
+**Superseded by rev 24 (2026-09-06): the switch was removed; listening is always on.** ~~**Kill switch.** `AIcallListenEnabled` defaults to **false**. The feature
+ships dark and is enabled deliberately.~~
 
 ### 5.12 New configuration
 

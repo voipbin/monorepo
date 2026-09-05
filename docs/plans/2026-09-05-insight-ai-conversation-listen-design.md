@@ -23,7 +23,7 @@ All `file:line` references were read against `main @ c243f926b` on 2026-09-05.
 | 5 | 2026-09-05 | Review round 4 (APPROVE, 4 LOW): three more `kind` sites classified (`listen_trigger.go:254`, `listen.go:272` -> `unknown`; `listen_trigger.go:217` -> `call`) (L-1); §4 diagram corrected (pending is not trimmed) and a §6 row for the closed-Case, outgoing-only accumulation path with its bounds (L-2); §5.3.2 wrapper returns `error`, handler has no return (L-3); §11 row 10 annotated (L-4). Matrix in §11.3. |
 | 6 | 2026-09-05 | Review round 5 (APPROVE, 5 LOW, no re-review required): §5.1 call signature matched to §5.1.1 (L-1); intake-path `kind` attribution incl. `listen.go:720` and the `none -> unknown` rule (L-2, L-3); `failed` bucket for the step-4 `h.Get` error (L-4); `processEvent*` signature citation (L-5). Design APPROVED. Matrix in §11.4. |
 | 7 | 2026-09-05 | Implementation notes (VOIP-1470 PR): (a) the trigger's conversation branch additionally fetches the conversation via ConversationV1ConversationGet and refuses a cross-customer or nil-customer conversation with skipped_not_listenable (RPC error -> failed), a defence-in-depth check the intake tenant assertion already implied (code review finding); (b) listenKind helpers live in pkg/aicallhandler/listen_kind.go to keep listen.go under the 800-line guideline; (c) the terminate gate is the pure helper listenTerminateNeedsStop (ListenCallID OR listen pointer), unit-tested directly; (d) RunListenTurn's predicate-failed skipped_invalid emits the AIcall's actual kind (unknown only when no pointer exists); (e) intake meters stale resolver entries as dropped_stale (a resolved AIcall already over, or a pointer naming another conversation), keeping dropped_unknown for an unresolved or errored lookup; (f) the intake re-arms the conversation resolver TTL (EXPIRE only, never SADD, so a concurrently stopped membership is never resurrected) once per message that buffered at least one line, because start is the only SADD and a session can outlive listenResolverTTL (code review round 3, round 4). |
-| 8 | 2026-09-06 | **CEO/CTO decision: both listen switches removed; listening is always on.** `aicall_listen_enabled` / `AICALL_LISTEN_ENABLED` and `aicall_listen_conversation_enabled` / `AICALL_LISTEN_CONVERSATION_ENABLED` no longer exist. §5.1 step 5b, §5.5.1's scoped sub-flag check, §5.12's `aicall_listen_conversation_enabled` row, and §8's flag-based rollout no longer apply; the §5.12/§5.13 `skipped_disabled` result is retired. Two documents that still describe the switches are deliberately left untouched as frozen implementation records: `docs/plans/2026-09-04-insightai-realtime-listen-plan.md` and `docs/superpowers/plans/2026-09-05-insight-ai-conversation-listen.md`. |
+| 8 | 2026-09-06 | **CEO/CTO decision: both listen switches removed; listening is always on.** `aicall_listen_enabled` / `AICALL_LISTEN_ENABLED` and `aicall_listen_conversation_enabled` / `AICALL_LISTEN_CONVERSATION_ENABLED` no longer exist. §5.1 step 5b, §5.5.1's scoped sub-flag check, §5.12's `aicall_listen_conversation_enabled` row, and §8's flag-based rollout no longer apply; the §5.12/§5.13 `skipped_disabled` result is retired. Two documents that still describe the switches are deliberately left untouched as frozen implementation records: `docs/plans/2026-09-04-insightai-realtime-listen-plan.md` and `docs/superpowers/plans/2026-09-05-insight-ai-conversation-listen.md`. All other flag/kill-switch/dark-rollout prose in this document is historical and superseded by this row. |
 
 ---
 
@@ -57,7 +57,7 @@ Today the only conversation-aware path is pull: the `get_conversation_content` t
    panel rendering. **Only the input source and the lifecycle differ.**
 3. No new billed resource. There is no STT session; the only paid unit per turn is the LLM call,
    bounded by the existing debounce and per-AIcall turn cap.
-4. Ship dark behind the existing `aicall_listen_enabled` master switch plus a variant-specific
+4. **Superseded by rev 8 (2026-09-06): the switches were removed; listening is always on.** Ship dark behind the existing `aicall_listen_enabled` master switch plus a variant-specific
    sub-switch, with a rollback that stops in-flight sessions at their next evaluated turn.
 5. No DB migration.
 
@@ -669,7 +669,7 @@ Everywhere else the kind is known from the branch taken (trigger), from `listenK
 notify, terminate), or from the intake path itself (transcript intake `listen.go:720` `skipped_locked`
 is `call`; §5.3.2/§5.4 intake and flush sites are `conversation`). Rule: `listenKind == none` maps to the
 label value `unknown`. A dashboard splitting by kind therefore sees pre-branch rejections under
-`unknown` rather than misattributed to a kind. The feature is dark and no Grafana dashboard references `aicall_listen_*` yet
+`unknown` rather than misattributed to a kind. No Grafana dashboard references `aicall_listen_*` yet
 (grep of `monorepo-monitoring` and `monorepo-etc` on 2026-09-05 returned nothing), so relabelling costs
 only mechanical edits, enumerated (review round 2 finding 5): every `promListenStartTotal` /
 `promListenTurnTotal` `.WithLabelValues(...)` site in `pkg/aicallhandler/listen.go` and
@@ -712,7 +712,7 @@ one selector.
 | Redis down at intake | `SMEMBERS` error -> `dropped_unknown` + warn; no crash, no retry (hot path) |
 | Idle-expired AIcall reclaimed on next Start/reuse | `UpdateStatus(Terminated)` followed by the new `stopListening` call (§5.7); resolver `SREM`, keys cleared |
 | Closed Case, only outgoing lines ever arrive afterwards | Outgoing lines never start a turn (§5.3.3), so no turn-time Case check runs and the pending list grows (`ListenPendingPush` is `RPUSH`+`EXPIRE` with no trim, `cachehandler/listen.go:187-192`; only the window is `LTRIM`med, `:222-227`). Bounded by: 6h buffer TTL; 12h resolver TTL (refreshed only by a panel open, never by traffic); idle expiry at `start.go:492`; `ProcessTerminate`; and the next incoming line, whose turn runs the Case check and stops the session. A later drain pops at most `listenPendingPopMax` = 500 lines per turn (`:38`). Zero LLM or billing exposure while it accumulates |
-| `aicall_listen_enabled` or `_conversation_enabled` flipped off | next turn stops the session (`skipped_disabled`) and clears state |
+| `aicall_listen_enabled` or `_conversation_enabled` flipped off | Superseded by rev 8: switches removed. Formerly: next turn stops the session (`skipped_disabled`) and clears state |
 | Pod restart with a pending deferred flush | timer lost; lines wait for the next incoming message; stated degradation |
 | Duplicate `message_created` delivery (AMQP redelivery) | duplicate line in the window; the LLM sees it twice; no dedupe, matching CL's handling of duplicate transcript segments |
 | Message `TMDelete != nil` on the created event | dropped (defensive; not produced today) |
@@ -727,7 +727,7 @@ and every row of §6.
    `ReferenceID` in {valid, `""`, garbage}; asserts which branch runs and which `promListen*StartTotal`
    result is incremented. Idempotency: metadata present + `SISMEMBER` true -> `reused` with no writes;
    metadata present + `SISMEMBER` false -> re-`SADD`. Rollback: DB write error -> `SREM` called.
-   Both flags off/on matrix.
+   (Superseded by rev 8: switches removed.) Both flags off/on matrix.
 2. **Intake**: `EventCVMessageCreated` with incoming/outgoing/nond, empty text with and without media,
    `TMDelete` set, subject present, text over the char cap, two AIcalls in the resolver; asserts exact
    line strings and that outgoing never calls `ListenTurnTryLock`.
@@ -741,7 +741,7 @@ and every row of §6.
    `skipped_case_closed`; `ContactV1CaseGet` error -> `failed` **and `ListenPendingPopAll` / turn counter
    never called**; open Case -> proceeds and the built messages contain
    `ListenTurnConversationSystemPrompt` and `"Conversation so far:"`; call-kind AIcall never calls
-   `ContactV1CaseGet`; conversation sub-flag off stops a conversation listen but a call-kind AIcall in the
+   `ContactV1CaseGet`; (Superseded by rev 8: switches removed.) conversation sub-flag off stops a conversation listen but a call-kind AIcall in the
    same test table proceeds.
 5. **Stop paths**: `ProcessTerminate` with only `listen_conversation_id` set calls `stopListening`, and
    with `ReferenceType != contact_case` does not; `clearListenState` `SREM`s the conversation key and
