@@ -209,11 +209,13 @@ func truncateListenLineText(s string, maxChars int) string {
 //
 // All three customer-controlled strings (subject, text and the media type,
 // which is a provider-supplied string on the message row) go through
-// sanitizeListenLineText first; subject and text are then capped by the same
-// per-message limit -- an unbounded subject would otherwise be a way around
-// the text cap. Truncation runs on the sanitized string so the cap is measured
-// against what actually reaches the prompt. The newline after the subject is
-// ours, not the customer's, so it survives sanitizing.
+// sanitizeListenLineText first; subject, text and the joined media tokens are
+// then each capped independently by the same per-field cap -- an unbounded
+// subject (or an unbounded run of attachments) would otherwise be a way
+// around the text cap, and one message can contribute at most about three
+// times this many characters. Truncation runs on the sanitized string so the
+// cap is measured against what actually reaches the prompt. The newline after
+// the subject is ours, not the customer's, so it survives sanitizing.
 func conversationMessageLine(evt *cvmessage.Message) string {
 	maxChars := config.Get().AIcallListenConversationMaxMessageChars
 
@@ -305,6 +307,7 @@ func (h *aicallHandler) EventCVMessageCreated(ctx context.Context, evt *cvmessag
 	ttl := listenBufferTTL()
 	windowSize := config.Get().AIcallListenWindowSize
 	interval := time.Duration(config.Get().AIcallListenEvaluateIntervalSeconds) * time.Second
+	buffered := false
 
 	for _, aicallID := range aicallIDs {
 		// h.Get -> h.db.AIcallGet (the dbhandler is cache-first with a DB
@@ -345,20 +348,7 @@ func (h *aicallHandler) EventCVMessageCreated(ctx context.Context, evt *cvmessag
 			log.Warnf("Could not buffer the window line. aicall_id: %s, err: %v", aicallID, errWindow)
 		}
 		promListenConversationSegmentTotal.WithLabelValues("buffered").Inc()
-
-		// re-arm on every buffered line so the resolver entry outlives any
-		// conversation that is actually active; design §5.2.2 promised
-		// refresh-on-SADD and start is the only SADD, so this is where the
-		// refresh has to live.
-		//
-		// EXPIRE only, never SADD (code review round 4). The re-arm runs only
-		// for ids SMEMBERS already returned, so a SADD would add nothing -- but
-		// it WOULD resurrect a membership a concurrent stop removed between the
-		// lookup and here. EXPIRE on a missing key is a no-op instead.
-		if errRearm := h.cache.ListenConversationResolverTouch(ctx, evt.ConversationID, listenResolverTTL); errRearm != nil {
-			// The line is already buffered; at worst the entry expires.
-			log.Warnf("Could not re-arm the conversation listen resolver entry. aicall_id: %s, err: %v", aicallID, errRearm)
-		}
+		buffered = true
 
 		// Only a customer message starts a turn; agent/bot output is context.
 		if evt.Direction != cvmessage.DirectionIncoming {
@@ -383,6 +373,22 @@ func (h *aicallHandler) EventCVMessageCreated(ctx context.Context, evt *cvmessag
 		}
 
 		h.spawnListenTurn(aicallID)
+	}
+
+	if buffered {
+		// re-arm on every buffered line so the resolver entry outlives any
+		// conversation that is actually active; design §5.2.2 promised
+		// refresh-on-SADD and start is the only SADD, so this is where the
+		// refresh has to live.
+		//
+		// EXPIRE only, never SADD (code review round 4). The re-arm runs only
+		// for ids SMEMBERS already returned, so a SADD would add nothing -- but
+		// it WOULD resurrect a membership a concurrent stop removed between the
+		// lookup and here. EXPIRE on a missing key is a no-op instead.
+		if errRearm := h.cache.ListenConversationResolverTouch(ctx, evt.ConversationID, listenResolverTTL); errRearm != nil {
+			// The line is already buffered; at worst the entry expires.
+			log.Warnf("Could not re-arm the conversation listen resolver entry. err: %v", errRearm)
+		}
 	}
 }
 

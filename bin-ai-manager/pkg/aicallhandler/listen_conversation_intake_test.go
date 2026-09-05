@@ -322,13 +322,14 @@ func Test_EventCVMessageCreated(t *testing.T) {
 				m.cache.EXPECT().ListenConversationAIcallIDsGet(gomock.Any(), gomock.Any()).Times(0)
 			}
 			// The intake re-arms the resolver's TTL with an EXPIRE-only touch,
-			// once per buffered line, and it is keyed by CONVERSATION -- so two
-			// resolved listeners touch the same key twice. It must never SADD:
-			// a SADD would resurrect a membership a concurrent stop just
-			// removed (code review round 4).
+			// once per message regardless of how many listeners resolved to
+			// it -- it is keyed by CONVERSATION, so touching it once already
+			// covers every resolved listener. It must never SADD: a SADD
+			// would resurrect a membership a concurrent stop just removed
+			// (code review round 4).
 			m.cache.EXPECT().ListenConversationAIcallIDAdd(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 			if tt.expectBuffered > 0 {
-				m.cache.EXPECT().ListenConversationResolverTouch(ctx, lcConversationID, listenResolverTTL).Return(tt.rearmErr).Times(tt.expectBuffered)
+				m.cache.EXPECT().ListenConversationResolverTouch(ctx, lcConversationID, listenResolverTTL).Return(tt.rearmErr).Times(1)
 			} else {
 				m.cache.EXPECT().ListenConversationResolverTouch(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 			}

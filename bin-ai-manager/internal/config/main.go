@@ -64,7 +64,7 @@ type Config struct {
 	// Insight AI realtime listening on conversation (message) Cases
 	// (docs/plans/2026-09-05-insight-ai-conversation-listen-design.md §5.12).
 	AIcallListenConversationEnabled         bool // Variant switch, evaluated after AIcallListenEnabled and only on the conversation branch. Off: the trigger returns skipped_disabled and a running conversation listen stops at its next turn. Never affects call listens.
-	AIcallListenConversationMaxMessageChars int  // Per-message truncation applied before a conversation line is buffered; the window is line-counted, not byte-counted, so an email body must not be allowed to dominate it.
+	AIcallListenConversationMaxMessageChars int  // Per-field cap (subject, text and the joined media tokens are each capped, so one message contributes at most about three times this many characters) applied before a conversation line is buffered; the window is line-counted, not byte-counted, so an email body must not be allowed to dominate it.
 	AIcallListenConversationFlushJitterMs   int  // Upper bound of the random jitter added to the deferred flush delay, so two replicas' timers for one AIcall do not race the debounce lock at the same instant.
 
 	AnalysisDefaultModel    string // AnalysisDefaultModel is the default model for the generic analysis gateway.
